@@ -200,7 +200,27 @@ def copy_candidate(candidate: dict[str, Any]) -> tuple[Path, str]:
         validation_file.write(data)
         validation_path = Path(validation_file.name)
     try:
-        subprocess.run(["node", str(ROOT / "scripts" / "validate_provider_artifact.cjs"), str(validation_path)], check=True, capture_output=True, text=True)
+        validation = subprocess.run(
+            [
+                "node",
+                str(ROOT / "scripts" / "validate_provider_artifact.cjs"),
+                str(validation_path),
+            ],
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        if validation.returncode != 0:
+            details = "\n".join(
+                part.strip()
+                for part in (validation.stdout, validation.stderr)
+                if part and part.strip()
+            )
+            raise ValueError(
+                f"generated provider artifact rejected for {candidate.get('key', candidate.get('canonical_id', 'unknown'))}: "
+                f"validator exit={validation.returncode}\n"
+                f"{details or 'validator returned no diagnostic'}"
+            )
     finally:
         validation_path.unlink(missing_ok=True)
     if promotion_patches:
@@ -1556,7 +1576,69 @@ def main() -> int:
             gates = decision["activation_gates"]
             proof = decision["proof"]
             activation_mode = decision["activation_mode"]
-            destination, digest = copy_candidate(selected)
+            try:
+                destination, digest = copy_candidate(selected)
+            except (ValueError, OSError, subprocess.SubprocessError) as exc:
+                # A generated candidate may still be invalid after all upstream
+                # checks. Reject only that candidate, retain the last published
+                # local artifact when it is safe, and continue promoting the
+                # remaining providers. The validator diagnostic is surfaced in
+                # the Actions log instead of being hidden by capture_output.
+                print(
+                    f"::error title=Provider candidate rejected::{cid}: {exc}",
+                    file=sys.stderr,
+                )
+                old_entry = existing.get(cid)
+                filename = old_entry.get("filename") if old_entry else None
+                target = (ROOT / filename).resolve() if isinstance(filename, str) else None
+                if (
+                    old_entry
+                    and target
+                    and is_under(target, ROOT / "providers")
+                    and target.exists()
+                    and not metadata_is_excluded(old_entry, sources)
+                ):
+                    retained = dict(old_entry)
+                    retained["enabled"] = bool(old_entry.get("enabled", False))
+                    entries[cid] = retained
+                    old_provenance = previous_provenance.get("providers", {}).get(cid, {})
+                    provenance[cid] = {
+                        **old_provenance,
+                        "id": cid,
+                        "published_filename": filename,
+                        "sha256": hashlib.sha256(target.read_bytes()).hexdigest(),
+                        "activation_eligible": False,
+                        "activation_blockers": ["generated_candidate_validation_failed"],
+                        "promotion_error": str(exc),
+                    }
+                    report_items.append(
+                        {
+                            "id": cid,
+                            "action": "retained-local-copy-generated-candidate-invalid",
+                            "enabled": bool(retained.get("enabled", False)),
+                            "activation_eligible": False,
+                            "failed_gates": [],
+                            "activation_blockers": ["generated_candidate_validation_failed"],
+                            "activation_gates": {},
+                            "promotion_error": str(exc),
+                            "variant_count": len(variants),
+                        }
+                    )
+                else:
+                    report_items.append(
+                        {
+                            "id": cid,
+                            "action": "omitted-generated-candidate-invalid-no-local-copy",
+                            "enabled": False,
+                            "activation_eligible": False,
+                            "failed_gates": [],
+                            "activation_blockers": ["generated_candidate_validation_failed"],
+                            "activation_gates": {},
+                            "promotion_error": str(exc),
+                            "variant_count": len(variants),
+                        }
+                    )
+                continue
             result = selected["health"]
             aggregated_claims = (
                 result.get("candidate_profile", {}).get("manifest_claims_aggregated", {})
