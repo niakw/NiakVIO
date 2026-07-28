@@ -437,6 +437,22 @@ function settingsProfiles(moduleValue, sourceText, context) {
   const contextual = context.settings && typeof context.settings === 'object' ? context.settings : {};
   const base = { ...defaults, ...contextual };
   if (Object.keys(base).length) profiles.push({ name: 'defaults', settings: base });
+
+  // Some providers do not query their server until title/year metadata is
+  // available in settings. Exercise that path during every deep check instead
+  // of treating an empty-settings result as representative.
+  const fixture = context.fixtureMetadata && typeof context.fixtureMetadata === 'object'
+    ? context.fixtureMetadata
+    : {};
+  const fixtureSettings = {};
+  for (const key of ['title', 'year', 'label', 'category', 'mediaType']) {
+    const value = scalar(fixture[key]);
+    if (value !== undefined && value !== '') fixtureSettings[key] = value;
+  }
+  if (Object.keys(fixtureSettings).length) {
+    profiles.push({ name: 'fixture_metadata', settings: { ...base, ...fixtureSettings } });
+  }
+
   for (const [key, vals] of alternatives.slice(0, 12)) {
     for (const val of vals.slice(0, 4)) profiles.push({ name: `option:${key}=${String(val)}`, settings: { ...base, [key]: val } });
   }
