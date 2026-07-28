@@ -29,6 +29,7 @@ import os
 import re
 import shutil
 import subprocess
+import sys
 import unicodedata
 import tempfile
 from datetime import datetime, timezone
@@ -196,7 +197,7 @@ def copy_candidate(candidate: dict[str, Any]) -> tuple[Path, str]:
     # candidate from ever reaching providers/ even if staging changes later.
     data, promotion_patches = apply_overrides(candidate["canonical_id"], staged_data)
     digest = hashlib.sha256(data).hexdigest()
-    with tempfile.NamedTemporaryFile(suffix=".js", delete=False) as validation_file:
+    with tempfile.NamedTemporaryFile(suffix=".js", delete=False, dir=ROOT) as validation_file:
         validation_file.write(data)
         validation_path = Path(validation_file.name)
     try:
