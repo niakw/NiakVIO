@@ -1,0 +1,302 @@
+{
+  "schema_version": 64,
+  "concurrency": 4,
+  "modes": {
+    "availability": {
+      "fixture_limit": 1,
+      "max_streams_to_probe": 1,
+      "provider_timeout_ms": 30000,
+      "stream_probe_timeout_ms": 8000,
+      "sample_bytes": 65536,
+      "inspect_quality": false,
+      "probe_best_variant": false,
+      "probe_first_segment": false,
+      "probe_subtitles": false,
+      "max_subtitles_to_probe": 0,
+      "max_provider_fetches": 30,
+      "max_redirects": 5,
+      "max_provider_response_bytes": 5242880
+    },
+    "retry": {
+      "fixture_limit": 1,
+      "max_streams_to_probe": 1,
+      "provider_timeout_ms": 30000,
+      "stream_probe_timeout_ms": 8000,
+      "sample_bytes": 65536,
+      "inspect_quality": false,
+      "probe_best_variant": false,
+      "probe_first_segment": false,
+      "probe_subtitles": false,
+      "max_subtitles_to_probe": 0,
+      "max_provider_fetches": 20,
+      "max_redirects": 5,
+      "max_provider_response_bytes": 5242880
+    },
+    "quick": {
+      "fixture_limit": 1,
+      "max_streams_to_probe": 1,
+      "provider_timeout_ms": 50000,
+      "stream_probe_timeout_ms": 14000,
+      "sample_bytes": 393216,
+      "inspect_quality": false,
+      "probe_best_variant": false,
+      "probe_first_segment": false,
+      "probe_subtitles": false,
+      "max_subtitles_to_probe": 0,
+      "max_provider_fetches": 20,
+      "max_redirects": 5,
+      "max_provider_response_bytes": 5242880
+    },
+    "deep": {
+      "fixture_limit": 1,
+      "max_streams_to_probe": 1,
+      "provider_timeout_ms": 70000,
+      "stream_probe_timeout_ms": 18000,
+      "sample_bytes": 524288,
+      "inspect_quality": false,
+      "probe_best_variant": false,
+      "probe_first_segment": false,
+      "probe_subtitles": false,
+      "max_subtitles_to_probe": 0,
+      "fallback_fixture_limit": 0,
+      "fallback_only_when_all_primary_no_streams": true,
+      "max_provider_fetches": 30,
+      "max_redirects": 5,
+      "max_provider_response_bytes": 5242880
+    }
+  },
+  "fixtures": {
+    "movie": [
+      {
+        "label": "Oppenheimer",
+        "tmdbId": "872585",
+        "mediaType": "movie"
+      },
+      {
+        "label": "Inception",
+        "tmdbId": "27205",
+        "mediaType": "movie"
+      },
+      {
+        "label": "The Matrix",
+        "tmdbId": "603",
+        "mediaType": "movie"
+      },
+      {
+        "label": "Interstellar",
+        "tmdbId": "157336",
+        "mediaType": "movie"
+      },
+      {
+        "label": "Avatar",
+        "tmdbId": "19995",
+        "mediaType": "movie"
+      },
+      {
+        "label": "The Dark Knight",
+        "tmdbId": "155",
+        "mediaType": "movie"
+      },
+      {
+        "label": "Fight Club",
+        "tmdbId": "550",
+        "mediaType": "movie"
+      }
+    ],
+    "tv": [
+      {
+        "label": "Breaking Bad S01E01",
+        "tmdbId": "1396",
+        "mediaType": "tv",
+        "season": 1,
+        "episode": 1
+      },
+      {
+        "label": "Game of Thrones S01E01",
+        "tmdbId": "1399",
+        "mediaType": "tv",
+        "season": 1,
+        "episode": 1
+      },
+      {
+        "label": "The Last of Us S01E01",
+        "tmdbId": "100088",
+        "mediaType": "tv",
+        "season": 1,
+        "episode": 1
+      },
+      {
+        "label": "Stranger Things S01E01",
+        "tmdbId": "66732",
+        "mediaType": "tv",
+        "season": 1,
+        "episode": 1
+      },
+      {
+        "label": "The Walking Dead S01E01",
+        "tmdbId": "1402",
+        "mediaType": "tv",
+        "season": 1,
+        "episode": 1
+      },
+      {
+        "label": "The Boys S01E01",
+        "tmdbId": "76479",
+        "mediaType": "tv",
+        "season": 1,
+        "episode": 1
+      },
+      {
+        "label": "Better Call Saul S01E01",
+        "tmdbId": "60059",
+        "mediaType": "tv",
+        "season": 1,
+        "episode": 1
+      }
+    ],
+    "anime": [
+      {
+        "label": "One Piece S01E01",
+        "tmdbId": "37854",
+        "mediaType": "tv",
+        "season": 1,
+        "episode": 1
+      },
+      {
+        "label": "Attack on Titan S01E01",
+        "tmdbId": "1429",
+        "mediaType": "tv",
+        "season": 1,
+        "episode": 1
+      },
+      {
+        "label": "Jujutsu Kaisen S01E01",
+        "tmdbId": "95479",
+        "mediaType": "tv",
+        "season": 1,
+        "episode": 1
+      },
+      {
+        "label": "Death Note S01E01",
+        "tmdbId": "13916",
+        "mediaType": "tv",
+        "season": 1,
+        "episode": 1
+      },
+      {
+        "label": "Demon Slayer S01E01",
+        "tmdbId": "85937",
+        "mediaType": "tv",
+        "season": 1,
+        "episode": 1
+      },
+      {
+        "label": "Fullmetal Alchemist Brotherhood S01E01",
+        "tmdbId": "31911",
+        "mediaType": "tv",
+        "season": 1,
+        "episode": 1
+      },
+      {
+        "label": "Naruto S01E01",
+        "tmdbId": "46260",
+        "mediaType": "tv",
+        "season": 1,
+        "episode": 1
+      }
+    ]
+  },
+  "activation": {
+    "publish_every_discovered_provider": true,
+    "include_unconfirmed_providers": true,
+    "required_validation_mode": "deep",
+    "respect_upstream_disabled_state": true,
+    "disable_all_other_statuses": true,
+    "minimum_score_enabled": 70,
+    "minimum_healthy_fixtures": 1,
+    "minimum_healthy_fixture_ratio": 0.5,
+    "require_declared_type_coverage": true,
+    "minimum_playable_streams": 1,
+    "minimum_playable_fixtures": 1,
+    "minimum_distinct_hosts": 1,
+    "minimum_payload_verified_streams": 1,
+    "minimum_effective_height": 720,
+    "preferred_height": 1080,
+    "minimum_bandwidth_bps_when_reported": 1000000,
+    "accepted_audio_languages": [
+      "fr",
+      "en"
+    ],
+    "accepted_subtitle_languages": [
+      "fr",
+      "en"
+    ],
+    "anime_original_audio_languages": [
+      "ja"
+    ],
+    "require_accepted_language_evidence": true,
+    "require_reachable_accepted_subtitle_when_advertised": true,
+    "allow_accepted_audio_without_subtitles": true,
+    "maximum_provider_median_latency_ms": 15000,
+    "maximum_stream_median_latency_ms": 12000,
+    "minimum_consecutive_deep_passes": 1,
+    "minimum_total_deep_passes": 1,
+    "reset_stability_on_sha_change": true,
+    "quality_auto_disable": true,
+    "activation_gate_count": 10,
+    "inconclusive_statuses": [
+      "no_streams",
+      "blocked",
+      "provider_unreachable",
+      "runtime_error"
+    ],
+    "preserve_strict_history_on_inconclusive": true,
+    "maximum_consecutive_inconclusive_deep_checks_for_strict_grace": 2,
+    "manual_runtime_evidence_file": "runtime-evidence.json",
+    "allow_manual_runtime_evidence_for_inconclusive_only": true,
+    "manual_runtime_evidence_requires_matching_sha256": true,
+    "manual_runtime_evidence_requires_upstream_enabled": true,
+    "manual_runtime_evidence_never_bypasses_p2p_or_hard_failure": true,
+    "allow_same_sha_historical_quality_grace": true,
+    "historical_quality_grace_requires_prior_minimum_score": true,
+    "historical_quality_grace_requires_prior_gates_01_and_03_to_09": true,
+    "automatic_manifest_version_bump_on_payload_change": true,
+    "minimum_manifest_curation_score": 5,
+    "representative_fixture_mode": true,
+    "optional_subtitles_do_not_block_accepted_audio": true,
+    "current_deep_success_activates_without_prior_history": true
+  },
+  "availability": {
+    "auto_disable": true,
+    "auto_disable_after_hard_failures": 6,
+    "auto_reenable_after_successes": 2,
+    "blocked_does_not_count_as_hard_failure": true,
+    "no_streams_does_not_count_as_hard_failure": true,
+    "minimum_failure_window_hours": 8,
+    "targeted_retry_frequency": "hourly",
+    "full_check_frequency": "every 4 hours",
+    "auto_disable_only_on_confirmed_media_endpoint_outage": true,
+    "runtime_errors_do_not_count_as_hard_failure": true,
+    "provider_search_failures_do_not_count_as_hard_failure": true
+  },
+  "execution_context": {
+    "simulate_nuvio_browser_environment": true,
+    "derive_locale_from_provider_metadata": true,
+    "default_locale": "en-US",
+    "default_platform": "android",
+    "inject_accept_language": true,
+    "provide_local_and_session_storage": true
+  },
+  "network_policy": {
+    "block_private_networks": true,
+    "resolve_dns_before_connect": true,
+    "validate_every_redirect": true,
+    "allowed_protocols": [
+      "http",
+      "https"
+    ],
+    "max_redirects": 5,
+    "provider_max_fetches": 30,
+    "provider_max_response_bytes": 5242880
+  }
+}

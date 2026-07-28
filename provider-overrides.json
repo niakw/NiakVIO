@@ -1,0 +1,129 @@
+{
+  "schema_version": 4,
+  "domain_replacements": {
+    "api.movix.cash": "api.movix.show"
+  },
+  "blocked_domains": [
+    "localhost",
+    "127.0.0.1",
+    "169.254.169.254",
+    "metadata.google.internal"
+  ],
+  "provider_patches": {
+    "movix": {
+      "notes": [
+        "Use the reachable Movix API domain."
+      ],
+      "replacements": {
+        "api.movix.cash": "api.movix.show"
+      },
+      "route_replacements": {},
+      "required_route_values": []
+    },
+    "frenchstream": {
+      "notes": [
+        "Use the locally verified reachable Frenchstream domain.",
+        "Behavioural repairs are selected by provider-agnostic runtime signatures during the deep repair loop."
+      ],
+      "replacements": {
+        "french-stream.one": "frenchstream.food"
+      },
+      "required_values": [
+        "frenchstream.food"
+      ],
+      "route_replacements": {},
+      "required_route_values": [],
+      "manifest_overrides": {
+        "logo": "https://frenchstream.food/favicon.ico"
+      }
+    },
+    "streamzo": {
+      "notes": [
+        "Keep the locally verified reachable StreamZo domain."
+      ],
+      "replacements": {},
+      "required_values": [
+        "streamzo.fr"
+      ],
+      "route_replacements": {},
+      "required_route_values": []
+    }
+  },
+  "route_override_defaults": {
+    "minimum_requests": 3,
+    "obsolete_statuses": [
+      404,
+      410
+    ],
+    "obsolete_ratio": 0.75,
+    "require_successful_origin_probe": false,
+    "strict_mode": "report_only_global_policy"
+  },
+  "patch_profiles": {
+    "metadata_context_recovery": {
+      "description": "Preserve fixture settings through a wrapper and use fixture title metadata when title aggregation aborts before any provider-origin request.",
+      "phase": "runtime",
+      "auto_apply": false,
+      "priority": 10,
+      "runtime_trigger": "metadata_only_no_origin",
+      "detect_all": [
+        "function*(",
+        "{signal:",
+        "length===0)return[]"
+      ],
+      "detect_any": [
+        "effectiveSeason",
+        "season:"
+      ],
+      "patch_script": "scripts/provider_patches/metadata_context_recovery.py",
+      "options": {
+        "success_marker": "[Nuvio Runtime Repair] Using fixture title metadata"
+      },
+      "required_values": [
+        "[Nuvio Runtime Repair] Using fixture title metadata"
+      ]
+    },
+    "dle_html_search_recovery": {
+      "description": "Search-first recovery for structurally compatible DLE-like HTML providers whose search succeeds while legacy fallback routes are obsolete.",
+      "phase": "runtime",
+      "auto_apply": false,
+      "priority": 20,
+      "runtime_trigger": "search_success_with_obsolete_fallback",
+      "detect_all": [
+        "Ko.default.load",
+        "function ex(",
+        "function gx(",
+        "yield ix(",
+        "yield cs(",
+        "yield mi(",
+        "rx(n)"
+      ],
+      "patch_script": "scripts/provider_patches/html_search_recovery.py",
+      "options": {
+        "parser_function": "ex",
+        "movie_lookup_function": "gx",
+        "cheerio_loader": "Ko.default.load",
+        "normalize_url": "tx",
+        "extract_id": "ZE",
+        "is_series": "QE",
+        "query_builder": "rx",
+        "search_request": "ix",
+        "fetch_players": "cs",
+        "resolve_streams": "mi",
+        "async_helper": "G",
+        "minimum_score": 40,
+        "max_candidates": 6,
+        "success_marker": "[Nuvio Runtime Repair] Content found via HTML search"
+      },
+      "required_values": [
+        "[Nuvio Runtime Repair] Content found via HTML search"
+      ]
+    }
+  },
+  "runtime_repair": {
+    "enabled": true,
+    "max_rounds": 3,
+    "accept_only_strict_runtime_improvement": true,
+    "retain_parent_on_failure": true
+  }
+}

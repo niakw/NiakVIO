@@ -1,0 +1,43 @@
+{
+  "schema_version": 65,
+  "release": "5.15.0",
+  "purpose": "Global provider route override framework and sanitized route-regression detection.",
+  "checks": {
+    "node_provider_worker_syntax": true,
+    "node_health_check_syntax": true,
+    "python_compile_all_scripts": true,
+    "workflow_yaml_parse": true,
+    "full_npm_test": true,
+    "route_override_schema": true,
+    "route_regression_self_test": true,
+    "domain_override_regressions": true,
+    "published_override_regressions": true
+  },
+  "route_observability": {
+    "fields": [
+      "stage",
+      "host",
+      "method",
+      "path_pattern",
+      "status"
+    ],
+    "query_values_redacted": true,
+    "long_tokens_redacted": true,
+    "raw_stream_urls_not_published": true
+  },
+  "route_override_policy": {
+    "central_config": "provider-overrides.json",
+    "provider_scoped": true,
+    "automatic_global_blind_rewrite": false,
+    "obsolete_statuses": [
+      404,
+      410
+    ],
+    "minimum_requests": 3,
+    "obsolete_ratio": 0.75,
+    "strict_gate_is_opt_in_after_fixture_validation": true
+  },
+  "limitations": [
+    "The framework detects obsolete route signatures but does not invent a replacement route. A route override is activated only after validation on a known fixture."
+  ]
+}

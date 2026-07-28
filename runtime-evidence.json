@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "policy": {
+    "purpose": "Optional generic records for any provider directly confirmed in Nuvio when CI is inconclusive.",
+    "automatic_activation_still_requires_all_ten_gates": true,
+    "evidence_applies_only_to_inconclusive_ci_statuses": true,
+    "sha256_must_match_exactly": true,
+    "p2p_or_confirmed_media_failure_can_never_be_overridden": true,
+    "provider_specific_exceptions_forbidden": true,
+    "historical_score_and_quality_are_preferred": true
+  },
+  "providers": {}
+}
