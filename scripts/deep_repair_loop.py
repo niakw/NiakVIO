@@ -67,6 +67,10 @@ def run_health(
             "NUVIO_CANDIDATES_PATH": str(registry_path),
             "NUVIO_HEALTH_OUTPUT": str(output_dir),
             "NUVIO_HEALTH_RESULTS_FILENAME": "health-results.json",
+            "NUVIO_DNS_PREFLIGHT_RESULTS": os.environ.get(
+                "NUVIO_DNS_PREFLIGHT_RESULTS",
+                str(output_dir.parent / "dns-preflight-report.json"),
+            ),
         }
     )
     command = ["node", str(health_check), f"--{mode}"]

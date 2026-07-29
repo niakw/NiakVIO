@@ -26,6 +26,9 @@ const OUTPUT_DIR = path.resolve(process.env.NUVIO_HEALTH_OUTPUT || STAGE);
 const REGISTRY_PATH = path.resolve(process.env.NUVIO_CANDIDATES_PATH || path.join(STAGE, 'candidates.json'));
 const RESULTS_FILENAME = String(process.env.NUVIO_HEALTH_RESULTS_FILENAME || 'health-results.json');
 const WORKER_PATH = path.join(ROOT, 'scripts', 'provider_worker.cjs');
+const DNS_PREFLIGHT_PATH = path.resolve(
+  process.env.NUVIO_DNS_PREFLIGHT_RESULTS || path.join(OUTPUT_DIR, 'dns-preflight-report.json'),
+);
 
 const requestedMode = process.argv.includes('--retry')
   ? 'retry'
@@ -40,7 +43,26 @@ const config = JSON.parse(await fs.readFile(CONFIG_PATH, 'utf8'));
 const modeConfig = config.modes?.[requestedMode] || config.modes?.quick || {};
 const activationConfig = config.activation || {};
 const executionConfig = config.execution_context || {};
+const dnsPreflightConfig = config.dns_preflight || {};
 const concurrency = Math.max(1, Number(config.concurrency || 4));
+let dnsPreflightReport = null;
+try {
+  dnsPreflightReport = JSON.parse(await fs.readFile(DNS_PREFLIGHT_PATH, 'utf8'));
+} catch (error) {
+  if (dnsPreflightConfig.enabled !== false) {
+    process.stderr.write(`[DNS WARN] preflight report unavailable: ${sanitizeError(error)}\n`);
+  }
+}
+const dnsPreflightRows = Array.isArray(dnsPreflightReport?.providers) ? dnsPreflightReport.providers : [];
+const dnsPreflightByKey = new Map(dnsPreflightRows.map((item) => [String(item.key || ''), item]));
+const dnsPreflightBySourceCanonical = new Map(
+  dnsPreflightRows.map((item) => [`${String(item.source || '')}:${String(item.canonical_id || '')}`, item]),
+);
+const dnsPreflightByCanonical = new Map();
+for (const item of dnsPreflightRows) {
+  const canonical = String(item.canonical_id || '');
+  if (canonical && !dnsPreflightByCanonical.has(canonical)) dnsPreflightByCanonical.set(canonical, item);
+}
 
 const ACCEPTED_AUDIO = new Set(
   (activationConfig.accepted_audio_languages || ['fr', 'en']).map((value) => String(value).toLowerCase()),
@@ -893,7 +915,109 @@ function manifestClaims(candidate) {
   };
 }
 
+function dnsPreflightForCandidate(candidate) {
+  return dnsPreflightByKey.get(String(candidate.key || ''))
+    || dnsPreflightBySourceCanonical.get(`${String(candidate.source || '')}:${String(candidate.canonical_id || '')}`)
+    || dnsPreflightByCanonical.get(String(candidate.canonical_id || ''))
+    || null;
+}
+
+function preflightOnlyResult(candidate, preflight) {
+  const { profile } = fixturesForCandidate(candidate);
+  const claims = manifestClaims(candidate);
+  const decision = preflight?.decision || {};
+  const status = decision.status === 'confirmed_french_block' ? 'blocked' : 'provider_unreachable';
+  const score = status === 'blocked' ? 45 : 0;
+  return {
+    key: candidate.key,
+    source: candidate.source,
+    upstream_id: candidate.upstream_id,
+    canonical_id: candidate.canonical_id,
+    sha256: candidate.sha256,
+    mode: requestedMode,
+    status,
+    ci_classification: 'inconclusive',
+    score,
+    dns_preflight: preflight,
+    candidate_profile: {
+      anime: profile.anime,
+      supported_types: profile.types,
+      required_fixture_categories: profile.requiredCategories,
+      derived_locale: providerLocale(candidate),
+      has_settings: Boolean(candidate.metadata?.hasSettings),
+      manifest_claims: claims,
+    },
+    evidence: {
+      primary_fixtures_tested: 0,
+      fallback_fixtures_tested: 0,
+      fallback_triggered: false,
+      fixtures_tested: 0,
+      total_fixtures_executed: 0,
+      activation_fixture_phase: 'dns_preflight',
+      healthy_fixtures: 0,
+      healthy_fixture_ratio: 0,
+      playable_fixtures: 0,
+      required_fixture_categories: profile.requiredCategories,
+      healthy_fixture_categories: [],
+      streams_playable: 0,
+      payload_verified_streams: 0,
+      distinct_reachable_hosts: 0,
+      reachable_hosts: [],
+      verified_max_height: null,
+      reported_max_height: null,
+      effective_max_height: null,
+      max_bandwidth: null,
+      audio_languages: [],
+      subtitle_languages: [],
+      accepted_audio_languages: [],
+      accepted_subtitle_languages: [],
+      accepted_subtitles_advertised: 0,
+      accepted_subtitles_reachable: 0,
+      provider_median_latency_ms: null,
+      stream_median_latency_ms: null,
+      disallowed_streams: 0,
+      provider_server_accessible: false,
+      provider_server_successful_response: false,
+      provider_server_hosts: [],
+      provider_server_http_statuses: [],
+      manifest_description_present: claims.description_present,
+      manifest_supported_types: claims.supported_types,
+      manifest_effective_height: claims.max_height,
+      manifest_accepted_languages: claims.accepted_languages,
+      manifest_formats: claims.formats,
+      manifest_curation_score: claims.curation_score,
+      manifest_quality_signals: claims.quality_signals,
+      settings_profiles_tested: 0,
+      settings_profiles_producing_streams: 0,
+      selected_settings_profiles: [],
+      selected_setting_keys: [],
+      settings_diagnostics: [],
+      dns_preflight_status: decision.status || 'unknown',
+      dns_preflight_reason: decision.reason || null,
+      dns_preflight_selected_resolver: decision.selected_resolver || null,
+      dns_migration_candidate: decision.migration_candidate || null,
+      runtime_skipped_by_dns_preflight: true,
+    },
+    verified_max_height: null,
+    reported_max_height: null,
+    max_bandwidth: null,
+    audio_languages: [],
+    subtitle_languages: [],
+    codecs: [],
+    hdr_formats: [],
+    formats: [],
+    hosts: [],
+    host_results: [],
+    response_categories: ['dns_preflight'],
+    tests: [],
+  };
+}
+
 async function testCandidate(candidate) {
+  const dnsPreflight = dnsPreflightForCandidate(candidate);
+  if (dnsPreflight && dnsPreflight.decision?.continue_runtime === false) {
+    return preflightOnlyResult(candidate, dnsPreflight);
+  }
   const fixtureResults = [];
   const { profile, fixtures, fallbackFixtures } = fixturesForCandidate(candidate);
 
@@ -1082,6 +1206,7 @@ async function testCandidate(candidate) {
           ? 'conclusive_success'
           : 'unknown',
     score,
+    dns_preflight: dnsPreflight,
     candidate_profile: {
       anime: profile.anime,
       supported_types: profile.types,
@@ -1135,6 +1260,11 @@ async function testCandidate(candidate) {
       selected_settings_profiles: selectedProfiles,
       selected_setting_keys: selectedSettingKeys,
       settings_diagnostics: settingsProfileAttempts,
+      dns_preflight_status: dnsPreflight?.decision?.status || null,
+      dns_preflight_reason: dnsPreflight?.decision?.reason || null,
+      dns_preflight_selected_resolver: dnsPreflight?.decision?.selected_resolver || null,
+      dns_migration_candidate: dnsPreflight?.decision?.migration_candidate || null,
+      runtime_skipped_by_dns_preflight: false,
     },
     verified_max_height: Math.max(0, ...fixtureResults.map((item) => item.verified_max_height || 0)) || null,
     reported_max_height: Math.max(0, ...fixtureResults.map((item) => item.reported_max_height || 0)) || null,
@@ -1189,13 +1319,19 @@ const startedAt = new Date();
 const results = await runPool(registry.candidates, testCandidate, concurrency);
 const statuses = ['healthy', 'reachable', 'blocked', 'degraded', 'no_streams', 'provider_unreachable', 'runtime_error', 'unavailable', 'excluded'];
 const report = {
-  schema_version: 63,
+  schema_version: 65,
   environment: 'github-actions-node',
   mode: requestedMode,
   generated_at: new Date().toISOString(),
   duration_seconds: Math.round((Date.now() - startedAt.getTime()) / 1000),
   candidate_count: results.length,
   excluded_during_discovery: registry.excluded_count || 0,
+  dns_preflight: dnsPreflightReport ? {
+    generated_at: dnsPreflightReport.generated_at || null,
+    counts: dnsPreflightReport.counts || {},
+    resolver_order: dnsPreflightReport.resolver_order || [],
+    neutral_resolvers: dnsPreflightReport.neutral_resolvers || [],
+  } : null,
   counts: Object.fromEntries(statuses.map((status) => [status, results.filter((item) => item.status === status).length])),
   results,
 };

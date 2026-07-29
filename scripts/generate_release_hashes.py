@@ -18,6 +18,7 @@ CORE_FILES = [
     "scripts/deep_repair_loop.py",
     "scripts/runtime_repair.py",
     "scripts/reapply_published_overrides.py",
+    "scripts/provider_dns_preflight.mjs",
 ]
 
 
