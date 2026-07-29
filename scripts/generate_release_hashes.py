@@ -8,7 +8,14 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 GENERATED = {"FILE-HASHES.json", "PATCH-SHA256SUMS.txt"}
-IGNORED_PARTS = {".git", "node_modules", "staging", "health-output", "__pycache__"}
+IGNORED_PARTS = {
+    ".git",
+    "node_modules",
+    "staging",
+    "health-output",
+    "checked-artifact",
+    "__pycache__",
+}
 CORE_FILES = [
     "package.json",
     "sources.json",
