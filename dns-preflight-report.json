@@ -1,0 +1,3587 @@
+{
+  "schema_version": 1,
+  "enabled": true,
+  "generated_at": "2026-07-29T15:36:00.009Z",
+  "candidate_count": 109,
+  "resolver_order": [
+    "sfr",
+    "orange",
+    "free"
+  ],
+  "resolver_transport": {
+    "control_domain": "example.com",
+    "french_isp_transport_available": false,
+    "checks": [
+      {
+        "resolver": "sfr",
+        "servers": [
+          "109.0.66.10",
+          "109.0.66.20"
+        ],
+        "status": "unavailable",
+        "addresses": [],
+        "errors": [
+          {
+            "family": 4,
+            "code": "ETIMEOUT"
+          },
+          {
+            "family": 6,
+            "code": "ETIMEOUT"
+          }
+        ]
+      },
+      {
+        "resolver": "orange",
+        "servers": [
+          "80.10.246.2",
+          "80.10.246.129"
+        ],
+        "status": "unavailable",
+        "addresses": [],
+        "errors": [
+          {
+            "family": 4,
+            "code": "ETIMEOUT"
+          },
+          {
+            "family": 6,
+            "code": "ETIMEOUT"
+          }
+        ]
+      },
+      {
+        "resolver": "free",
+        "servers": [
+          "212.27.40.240",
+          "212.27.40.241"
+        ],
+        "status": "unavailable",
+        "addresses": [],
+        "errors": [
+          {
+            "family": 4,
+            "code": "ETIMEOUT"
+          },
+          {
+            "family": 6,
+            "code": "ETIMEOUT"
+          }
+        ]
+      }
+    ]
+  },
+  "neutral_resolvers": [
+    "cloudflare",
+    "google"
+  ],
+  "counts": {
+    "inconclusive": 109
+  },
+  "providers": [
+    {
+      "key": "gowaru:anime-sama",
+      "source": "gowaru",
+      "canonical_id": "anime-sama",
+      "sha256": "b4a11d425eb20f0592d3ec8c7b1bc8cc1470064b0f5abc05c2206bee7256220e",
+      "domain_hints": [
+        {
+          "host": "s.includes",
+          "score": 552,
+          "evidence": [
+            "javascript_domain"
+          ]
+        },
+        {
+          "host": "n.includes",
+          "score": 360,
+          "evidence": [
+            "javascript_domain"
+          ]
+        },
+        {
+          "host": "pt.call",
+          "score": 348,
+          "evidence": [
+            "javascript_domain"
+          ]
+        }
+      ],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "gowaru:animesama-co",
+      "source": "gowaru",
+      "canonical_id": "animesama-co",
+      "sha256": "31bae18a6833be22892954bb842d29ac32f17da47367a9437777926091450e08",
+      "domain_hints": [
+        {
+          "host": "s.includes",
+          "score": 552,
+          "evidence": [
+            "javascript_domain"
+          ]
+        },
+        {
+          "host": "pt.call",
+          "score": 348,
+          "evidence": [
+            "javascript_domain"
+          ]
+        },
+        {
+          "host": "t.name",
+          "score": 300,
+          "evidence": [
+            "javascript_domain"
+          ]
+        }
+      ],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "gowaru:animesultra",
+      "source": "gowaru",
+      "canonical_id": "animesultra",
+      "sha256": "1057b64a820fd6cb6d95c9a361002422d30ef45900263bb45fb9eb83a42323c8",
+      "domain_hints": [
+        {
+          "host": "s.includes",
+          "score": 564,
+          "evidence": [
+            "javascript_domain"
+          ]
+        },
+        {
+          "host": "yt.call",
+          "score": 360,
+          "evidence": [
+            "javascript_domain"
+          ]
+        },
+        {
+          "host": "t.name",
+          "score": 300,
+          "evidence": [
+            "javascript_domain"
+          ]
+        }
+      ],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "gowaru:animevostfr",
+      "source": "gowaru",
+      "canonical_id": "animevostfr",
+      "sha256": "4948742da89428fb0a6a29cf5f63bd0c79df559c192caefce4a9c8483b4080e3",
+      "domain_hints": [
+        {
+          "host": "s.includes",
+          "score": 540,
+          "evidence": [
+            "javascript_domain"
+          ]
+        },
+        {
+          "host": "dt.call",
+          "score": 348,
+          "evidence": [
+            "javascript_domain"
+          ]
+        },
+        {
+          "host": "t.name",
+          "score": 300,
+          "evidence": [
+            "javascript_domain"
+          ]
+        }
+      ],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "gowaru:animoflix",
+      "source": "gowaru",
+      "canonical_id": "animoflix",
+      "sha256": "8f75aecbbf3e691da0dcaacdec5b9f8de411c350820d41bae05f8ab7c41f0389",
+      "domain_hints": [
+        {
+          "host": "s.includes",
+          "score": 564,
+          "evidence": [
+            "javascript_domain"
+          ]
+        },
+        {
+          "host": "gt.call",
+          "score": 348,
+          "evidence": [
+            "javascript_domain"
+          ]
+        },
+        {
+          "host": "t.name",
+          "score": 300,
+          "evidence": [
+            "javascript_domain"
+          ]
+        }
+      ],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "gowaru:coflix",
+      "source": "gowaru",
+      "canonical_id": "coflix",
+      "sha256": "646ea53318b3ec62e22240bb48b221fbf45b8d808f96e04060b2888d3446eeeb",
+      "domain_hints": [
+        {
+          "host": "s.includes",
+          "score": 576,
+          "evidence": [
+            "javascript_domain"
+          ]
+        },
+        {
+          "host": "dt.call",
+          "score": 348,
+          "evidence": [
+            "javascript_domain"
+          ]
+        },
+        {
+          "host": "t.name",
+          "score": 300,
+          "evidence": [
+            "javascript_domain"
+          ]
+        }
+      ],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "gowaru:dulourd",
+      "source": "gowaru",
+      "canonical_id": "dulourd",
+      "sha256": "bbe650e07b8ceb5486e02ac498b8ecf01a1a521a9770abfaa5d08f67803e0fb2",
+      "domain_hints": [
+        {
+          "host": "s.includes",
+          "score": 540,
+          "evidence": [
+            "javascript_domain"
+          ]
+        },
+        {
+          "host": "pt.call",
+          "score": 348,
+          "evidence": [
+            "javascript_domain"
+          ]
+        },
+        {
+          "host": "t.name",
+          "score": 300,
+          "evidence": [
+            "javascript_domain"
+          ]
+        }
+      ],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "gowaru:flemmix",
+      "source": "gowaru",
+      "canonical_id": "flemmix",
+      "sha256": "f993f57febc7b1ff6c9d23a93990cafc35d1331bf601d788ae92d6f7e9a652cc",
+      "domain_hints": [
+        {
+          "host": "s.includes",
+          "score": 552,
+          "evidence": [
+            "javascript_domain"
+          ]
+        },
+        {
+          "host": "pt.call",
+          "score": 348,
+          "evidence": [
+            "javascript_domain"
+          ]
+        },
+        {
+          "host": "t.name",
+          "score": 300,
+          "evidence": [
+            "javascript_domain"
+          ]
+        }
+      ],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "gowaru:french-manga",
+      "source": "gowaru",
+      "canonical_id": "french-manga",
+      "sha256": "739f1b45bbe6704358dffc9147951c1be0da73e00994c0b341f273b9f2d0fd81",
+      "domain_hints": [
+        {
+          "host": "s.includes",
+          "score": 552,
+          "evidence": [
+            "javascript_domain"
+          ]
+        },
+        {
+          "host": "pt.call",
+          "score": 348,
+          "evidence": [
+            "javascript_domain"
+          ]
+        },
+        {
+          "host": "t.name",
+          "score": 300,
+          "evidence": [
+            "javascript_domain"
+          ]
+        }
+      ],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "gowaru:frenchstream",
+      "source": "gowaru",
+      "canonical_id": "frenchstream",
+      "sha256": "c4735951ca7fb2df38cadc26c38cb4bbb01c8d91a251aacf954f6cda7eeaa1eb",
+      "domain_hints": [
+        {
+          "host": "s.includes",
+          "score": 540,
+          "evidence": [
+            "javascript_domain"
+          ]
+        },
+        {
+          "host": "pt.call",
+          "score": 348,
+          "evidence": [
+            "javascript_domain"
+          ]
+        },
+        {
+          "host": "object.keys",
+          "score": 312,
+          "evidence": [
+            "javascript_domain"
+          ]
+        }
+      ],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "gowaru:movix",
+      "source": "gowaru",
+      "canonical_id": "movix",
+      "sha256": "49186f76495c897958ef138d25cb32cc7cadd0ec9dcd182271afb1e0095ea31a",
+      "domain_hints": [
+        {
+          "host": "s.includes",
+          "score": 540,
+          "evidence": [
+            "javascript_domain"
+          ]
+        },
+        {
+          "host": "n.includes",
+          "score": 528,
+          "evidence": [
+            "javascript_domain"
+          ]
+        },
+        {
+          "host": "api.movix.fun",
+          "score": 479,
+          "evidence": [
+            "fixed_endpoint",
+            "javascript_domain",
+            "javascript_url",
+            "provider_replacement",
+            "runtime_domain_override"
+          ]
+        }
+      ],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "gowaru:mugiwarastream",
+      "source": "gowaru",
+      "canonical_id": "mugiwarastream",
+      "sha256": "50bc339f1ff922fc7a40fb827b5fd3d96ea633157b8e2af7c7e496aaa1f3575c",
+      "domain_hints": [
+        {
+          "host": "s.includes",
+          "score": 540,
+          "evidence": [
+            "javascript_domain"
+          ]
+        },
+        {
+          "host": "array.isarray",
+          "score": 360,
+          "evidence": [
+            "javascript_domain"
+          ]
+        },
+        {
+          "host": "pt.call",
+          "score": 348,
+          "evidence": [
+            "javascript_domain"
+          ]
+        }
+      ],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "gowaru:sekai",
+      "source": "gowaru",
+      "canonical_id": "sekai",
+      "sha256": "7e8126549e67a003c35d548711055b2c3862e57c00842994731aad5e6c8edda4",
+      "domain_hints": [
+        {
+          "host": "ft.call",
+          "score": 360,
+          "evidence": [
+            "javascript_domain"
+          ]
+        },
+        {
+          "host": "object.keys",
+          "score": 312,
+          "evidence": [
+            "javascript_domain"
+          ]
+        },
+        {
+          "host": "t.name",
+          "score": 300,
+          "evidence": [
+            "javascript_domain"
+          ]
+        }
+      ],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "gowaru:voiranime",
+      "source": "gowaru",
+      "canonical_id": "voiranime",
+      "sha256": "3ad19191a7704e13b2e696ac9ef0eb311c1f7301a3b4f8ea11c85c691c0a9721",
+      "domain_hints": [
+        {
+          "host": "s.includes",
+          "score": 552,
+          "evidence": [
+            "javascript_domain"
+          ]
+        },
+        {
+          "host": "dt.call",
+          "score": 348,
+          "evidence": [
+            "javascript_domain"
+          ]
+        },
+        {
+          "host": "t.name",
+          "score": 300,
+          "evidence": [
+            "javascript_domain"
+          ]
+        }
+      ],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "gowaru:voiranime-rip",
+      "source": "gowaru",
+      "canonical_id": "voiranime-rip",
+      "sha256": "3ab6f187bceca1329ef5038a01c2ea0c0122ce1a031936b349627eaf7be6e8ad",
+      "domain_hints": [
+        {
+          "host": "s.includes",
+          "score": 552,
+          "evidence": [
+            "javascript_domain"
+          ]
+        },
+        {
+          "host": "pt.call",
+          "score": 348,
+          "evidence": [
+            "javascript_domain"
+          ]
+        },
+        {
+          "host": "t.name",
+          "score": 300,
+          "evidence": [
+            "javascript_domain"
+          ]
+        }
+      ],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "gowaru:vostfree",
+      "source": "gowaru",
+      "canonical_id": "vostfree",
+      "sha256": "a6b4fc1304a1e993deab3aa720d7b2fd63f6634fc7baa9eba13151c8ac6df370",
+      "domain_hints": [
+        {
+          "host": "s.includes",
+          "score": 540,
+          "evidence": [
+            "javascript_domain"
+          ]
+        },
+        {
+          "host": "dt.call",
+          "score": 348,
+          "evidence": [
+            "javascript_domain"
+          ]
+        },
+        {
+          "host": "t.name",
+          "score": 300,
+          "evidence": [
+            "javascript_domain"
+          ]
+        }
+      ],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "gowaru:nakios",
+      "source": "gowaru",
+      "canonical_id": "nakios",
+      "sha256": "da620424092ff3fd4f1251143498e7f8d78c30a8f11c0e757d377c8141ea2846",
+      "domain_hints": [
+        {
+          "host": "t.includes",
+          "score": 240,
+          "evidence": [
+            "javascript_domain"
+          ]
+        },
+        {
+          "host": "console.warn",
+          "score": 192,
+          "evidence": [
+            "javascript_domain"
+          ]
+        },
+        {
+          "host": "date.now",
+          "score": 192,
+          "evidence": [
+            "javascript_domain"
+          ]
+        }
+      ],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "gowaru:papadustream",
+      "source": "gowaru",
+      "canonical_id": "papadustream",
+      "sha256": "e6f61b097ef0b24c3980ea4fd4780e44b52592ed940e511c1f8a1840dd9a4387",
+      "domain_hints": [
+        {
+          "host": "it.call",
+          "score": 348,
+          "evidence": [
+            "javascript_domain"
+          ]
+        },
+        {
+          "host": "t.name",
+          "score": 300,
+          "evidence": [
+            "javascript_domain"
+          ]
+        },
+        {
+          "host": "object.defineproperty",
+          "score": 276,
+          "evidence": [
+            "javascript_domain"
+          ]
+        }
+      ],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "gowaru:wookafr",
+      "source": "gowaru",
+      "canonical_id": "wookafr",
+      "sha256": "fb93694d58fec212a7f1294515b966b3cac8fa71e7ff301383c0894b9f05ceff",
+      "domain_hints": [
+        {
+          "host": "s.includes",
+          "score": 552,
+          "evidence": [
+            "javascript_domain"
+          ]
+        },
+        {
+          "host": "pt.call",
+          "score": 348,
+          "evidence": [
+            "javascript_domain"
+          ]
+        },
+        {
+          "host": "t.name",
+          "score": 300,
+          "evidence": [
+            "javascript_domain"
+          ]
+        }
+      ],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "gowaru:streamzo",
+      "source": "gowaru",
+      "canonical_id": "streamzo",
+      "sha256": "21b1ab41d4a41315ed83095ceb4d267cf846616869215140d97e4eb7d177da69",
+      "domain_hints": [
+        {
+          "host": "s.includes",
+          "score": 564,
+          "evidence": [
+            "javascript_domain"
+          ]
+        },
+        {
+          "host": "ht.call",
+          "score": 348,
+          "evidence": [
+            "javascript_domain"
+          ]
+        },
+        {
+          "host": "i.match",
+          "score": 300,
+          "evidence": [
+            "javascript_domain"
+          ]
+        }
+      ],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "aio:allanime",
+      "source": "aio",
+      "canonical_id": "allanime",
+      "sha256": "25fb224e2ac0575055aca1dfce4263bc069780b99d86433692f770289971c3ce",
+      "domain_hints": [
+        {
+          "host": "allanime.day",
+          "score": 47,
+          "evidence": [
+            "javascript_domain",
+            "javascript_url"
+          ]
+        },
+        {
+          "host": "graphql.anilist.co",
+          "score": 47,
+          "evidence": [
+            "javascript_domain",
+            "javascript_url"
+          ]
+        }
+      ],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "aio:4khdhub",
+      "source": "aio",
+      "canonical_id": "4khdhub",
+      "sha256": "e832fd85b3dd128bef5ca8f5f86ce49ec9a390be653ec9fb5feab146db81a41e",
+      "domain_hints": [
+        {
+          "host": "4khdhub.one",
+          "score": 47,
+          "evidence": [
+            "javascript_domain",
+            "javascript_url"
+          ]
+        },
+        {
+          "host": "gamerxyt.com",
+          "score": 12,
+          "evidence": [
+            "javascript_domain"
+          ]
+        },
+        {
+          "host": "pixel.hubcloud",
+          "score": 12,
+          "evidence": [
+            "javascript_domain"
+          ]
+        }
+      ],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "aio:4khdhubnew",
+      "source": "aio",
+      "canonical_id": "4khdhubnew",
+      "sha256": "4e94d338cb79d914cd9e5c48419e4d334ed557b96657476d2eb27367a5984749",
+      "domain_hints": [
+        {
+          "host": "4khdhub.dad",
+          "score": 47,
+          "evidence": [
+            "javascript_domain",
+            "javascript_url"
+          ]
+        },
+        {
+          "host": "workers.dev",
+          "score": 36,
+          "evidence": [
+            "javascript_domain"
+          ]
+        },
+        {
+          "host": "r2.dev",
+          "score": 24,
+          "evidence": [
+            "javascript_domain"
+          ]
+        }
+      ],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "aio:allwish",
+      "source": "aio",
+      "canonical_id": "allwish",
+      "sha256": "647edc750491af2165d0d8ab9d49e799c87e5d6e7571728e63582936589562a8",
+      "domain_hints": [
+        {
+          "host": "megaplay.buzz",
+          "score": 47,
+          "evidence": [
+            "javascript_domain",
+            "javascript_url"
+          ]
+        },
+        {
+          "host": "x20div.container",
+          "score": 12,
+          "evidence": [
+            "javascript_domain"
+          ]
+        }
+      ],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "aio:animekai",
+      "source": "aio",
+      "canonical_id": "animekai",
+      "sha256": "d90f82732579bb1a1519b08791a64c27fa055ed7adbb1a5b1fba43792a7752e0",
+      "domain_hints": [
+        {
+          "host": "enc-dec.app",
+          "score": 47,
+          "evidence": [
+            "javascript_domain",
+            "javascript_url"
+          ]
+        },
+        {
+          "host": "graphql.anilist.co",
+          "score": 47,
+          "evidence": [
+            "javascript_domain",
+            "javascript_url"
+          ]
+        },
+        {
+          "host": "v3-cinemeta.strem.io",
+          "score": 47,
+          "evidence": [
+            "javascript_domain",
+            "javascript_url"
+          ]
+        }
+      ],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "aio:anikototv",
+      "source": "aio",
+      "canonical_id": "anikototv",
+      "sha256": "4b75a13ad9f3a9e7c067e8cbd18a66830cce4ad0d7e75ed28eca66cf1ed32b5d",
+      "domain_hints": [
+        {
+          "host": "anikototv.to",
+          "score": 60,
+          "evidence": [
+            "metadata_description_domain"
+          ]
+        },
+        {
+          "host": "graphql.anilist.co",
+          "score": 47,
+          "evidence": [
+            "javascript_domain",
+            "javascript_url"
+          ]
+        },
+        {
+          "host": "megaplay.buzz",
+          "score": 12,
+          "evidence": [
+            "javascript_domain"
+          ]
+        }
+      ],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "aio:anidb",
+      "source": "aio",
+      "canonical_id": "anidb",
+      "sha256": "60ec5bba1e6d0052b9fa495ddaeec23841a43dcaee18158db5f222e055c0c209",
+      "domain_hints": [],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "aio:animepahe",
+      "source": "aio",
+      "canonical_id": "animepahe",
+      "sha256": "a1f38e1819d61f9efd91648372ead67ce805c1ffd9f46acdff136d83a9e0715e",
+      "domain_hints": [
+        {
+          "host": "animepahe.com",
+          "score": 106,
+          "evidence": [
+            "javascript_domain",
+            "javascript_url"
+          ]
+        },
+        {
+          "host": "kwik.cx",
+          "score": 47,
+          "evidence": [
+            "javascript_domain",
+            "javascript_url"
+          ]
+        }
+      ],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "aio:animesalt",
+      "source": "aio",
+      "canonical_id": "animesalt",
+      "sha256": "513ff88e1da2c9e90b58cccceffae23ec64add413354603ddf5e9c8accfb9d3c",
+      "domain_hints": [
+        {
+          "host": "as-cdn21.top",
+          "score": 47,
+          "evidence": [
+            "javascript_domain",
+            "javascript_url"
+          ]
+        }
+      ],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "aio:animetsu",
+      "source": "aio",
+      "canonical_id": "animetsu",
+      "sha256": "243edd8c76b0995a72e02ba6ff7ca47add6063b1d471ebe378d3d6842bd8cadb",
+      "domain_hints": [
+        {
+          "host": "animetsu.live",
+          "score": 141,
+          "evidence": [
+            "javascript_domain",
+            "javascript_url"
+          ]
+        },
+        {
+          "host": "api4.thetvdb.com",
+          "score": 141,
+          "evidence": [
+            "javascript_domain",
+            "javascript_url"
+          ]
+        },
+        {
+          "host": "aiometadata.elfhosted.com",
+          "score": 47,
+          "evidence": [
+            "javascript_domain",
+            "javascript_url"
+          ]
+        }
+      ],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "aio:animeworld",
+      "source": "aio",
+      "canonical_id": "animeworld",
+      "sha256": "bba8152dfabeba85879015ad2b313022784dcd07560d07a1b3fed152d703c4e8",
+      "domain_hints": [
+        {
+          "host": "play.zephyrflick.top",
+          "score": 47,
+          "evidence": [
+            "javascript_domain",
+            "javascript_url"
+          ]
+        },
+        {
+          "host": "admin-ajax.php",
+          "score": 12,
+          "evidence": [
+            "javascript_domain"
+          ]
+        }
+      ],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "aio:anime-sama",
+      "source": "aio",
+      "canonical_id": "anime-sama",
+      "sha256": "264b604bab0dedf5f1b50cd0b165ecb50fffb516c6cb8eca50ba07c0bcbec995",
+      "domain_hints": [
+        {
+          "host": "s.includes",
+          "score": 444,
+          "evidence": [
+            "javascript_domain"
+          ]
+        },
+        {
+          "host": "n.includes",
+          "score": 360,
+          "evidence": [
+            "javascript_domain"
+          ]
+        },
+        {
+          "host": "st.call",
+          "score": 348,
+          "evidence": [
+            "javascript_domain"
+          ]
+        }
+      ],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "aio:allmovieland",
+      "source": "aio",
+      "canonical_id": "allmovieland",
+      "sha256": "0b4533ed32c82b28813b97fe9deb44d97d1f1884adf1a8208d231967347ae3ce",
+      "domain_hints": [
+        {
+          "host": "allmovieland.you",
+          "score": 47,
+          "evidence": [
+            "javascript_domain",
+            "javascript_url"
+          ]
+        }
+      ],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "aio:desiflix",
+      "source": "aio",
+      "canonical_id": "desiflix",
+      "sha256": "75083d8b7abd22536d3d8de40e4e339a7fffe33942ab8f0bd8d308c8c0f3732d",
+      "domain_hints": [],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "aio:castle",
+      "source": "aio",
+      "canonical_id": "castle",
+      "sha256": "1b23fb0b7740e707fb2e3c5f6f69ca51c4bb4fc6afc8f1ae851af22e3f66bb89",
+      "domain_hints": [
+        {
+          "host": "api.hlowb.com",
+          "score": 47,
+          "evidence": [
+            "javascript_domain",
+            "javascript_url"
+          ]
+        }
+      ],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "aio:Cineby",
+      "source": "aio",
+      "canonical_id": "cineby",
+      "sha256": "3f2ca1c49fbf6bbcb8af1ab838b77e95da21c5381a2b9728dda7b858b7b69f4d",
+      "domain_hints": [
+        {
+          "host": "vidlink.pro",
+          "score": 94,
+          "evidence": [
+            "javascript_domain",
+            "javascript_url"
+          ]
+        },
+        {
+          "host": "anime-db.videasy.net",
+          "score": 47,
+          "evidence": [
+            "javascript_domain",
+            "javascript_url"
+          ]
+        },
+        {
+          "host": "api.videasy.to",
+          "score": 47,
+          "evidence": [
+            "javascript_domain",
+            "javascript_url"
+          ]
+        }
+      ],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "aio:cinefreak",
+      "source": "aio",
+      "canonical_id": "cinefreak",
+      "sha256": "422d7f2fc6c51ea3d4f77596382cd817b1d482997c46ff7509b6ce11b205404d",
+      "domain_hints": [
+        {
+          "host": "cinefreak.nl",
+          "score": 107,
+          "evidence": [
+            "javascript_domain",
+            "javascript_url",
+            "metadata_description_domain"
+          ]
+        },
+        {
+          "host": "cropped-cgk-192x192.png",
+          "score": 12,
+          "evidence": [
+            "javascript_domain"
+          ]
+        },
+        {
+          "host": "generate.php",
+          "score": 12,
+          "evidence": [
+            "javascript_domain"
+          ]
+        }
+      ],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "aio:cinemm",
+      "source": "aio",
+      "canonical_id": "cinemm",
+      "sha256": "a5b5565452b28f36764f8119097309da115c5ab9f46703b8e58227c79972f441",
+      "domain_hints": [
+        {
+          "host": "cinemm.com",
+          "score": 107,
+          "evidence": [
+            "javascript_domain",
+            "javascript_url",
+            "metadata_description_domain"
+          ]
+        },
+        {
+          "host": "next.js",
+          "score": 60,
+          "evidence": [
+            "metadata_description_domain"
+          ]
+        },
+        {
+          "host": "stream.cmapp.tv",
+          "score": 60,
+          "evidence": [
+            "metadata_description_domain"
+          ]
+        }
+      ],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "aio:cinemacity",
+      "source": "aio",
+      "canonical_id": "cinemacity",
+      "sha256": "e97516075e2f0d47042ab2cfef717d615a79ff6a4f44ff4667c75b027fc1a0fc",
+      "domain_hints": [
+        {
+          "host": "animemapping.realbestia.com",
+          "score": 47,
+          "evidence": [
+            "javascript_domain",
+            "javascript_url"
+          ]
+        },
+        {
+          "host": "formatter.js",
+          "score": 12,
+          "evidence": [
+            "javascript_domain"
+          ]
+        },
+        {
+          "host": "loadm.cam",
+          "score": 12,
+          "evidence": [
+            "javascript_domain"
+          ]
+        }
+      ],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "aio:ctgmovies",
+      "source": "aio",
+      "canonical_id": "ctgmovies",
+      "sha256": "29128d8b2dac99a3ae3ff8e771ccbe14598efab021981b02867c7f3f7fc0e6c4",
+      "domain_hints": [
+        {
+          "host": "cockpit.103.109.92.178.nip.io",
+          "score": 47,
+          "evidence": [
+            "javascript_domain",
+            "javascript_url"
+          ]
+        },
+        {
+          "host": "ctgmovies.com",
+          "score": 47,
+          "evidence": [
+            "javascript_domain",
+            "javascript_url"
+          ]
+        }
+      ],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "aio:dahmermovies",
+      "source": "aio",
+      "canonical_id": "dahmermovies",
+      "sha256": "891e5d0661a57ad5c0cdd64cf612f37098e7f86a95fc4096c09c87695ee86d1e",
+      "domain_hints": [
+        {
+          "host": "a.111477.xyz",
+          "score": 47,
+          "evidence": [
+            "javascript_domain",
+            "javascript_url"
+          ]
+        }
+      ],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "aio:dahmermovies-tv",
+      "source": "aio",
+      "canonical_id": "dahmermovies-tv",
+      "sha256": "aa7da3b571ac5fcbce194e31e54b6c57f5e34c84f457097cd16c474d841fe479",
+      "domain_hints": [],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "aio:dooflix",
+      "source": "aio",
+      "canonical_id": "dooflix",
+      "sha256": "2691befa44f5d8d8f30c1711021a9fb0fdfe09a90f5640dd97ede5670f3dca5a",
+      "domain_hints": [
+        {
+          "host": "com.king.moja",
+          "score": 12,
+          "evidence": [
+            "javascript_domain"
+          ]
+        }
+      ],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "aio:einthusan",
+      "source": "aio",
+      "canonical_id": "einthusan",
+      "sha256": "34adb013fbac73ba3688f9bcc93e6418e28aeda1433dd04eb50cdec9cb6a82c8",
+      "domain_hints": [
+        {
+          "host": "einthusan.tv",
+          "score": 141,
+          "evidence": [
+            "javascript_domain",
+            "javascript_url"
+          ]
+        },
+        {
+          "host": "cdn2.einthusan.io",
+          "score": 47,
+          "evidence": [
+            "javascript_domain",
+            "javascript_url"
+          ]
+        },
+        {
+          "host": "einthusan.asaddon.com",
+          "score": 47,
+          "evidence": [
+            "javascript_domain",
+            "javascript_url"
+          ]
+        }
+      ],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "aio:fibwatch",
+      "source": "aio",
+      "canonical_id": "fibwatch",
+      "sha256": "283284e818443cd3ef98ca58aaf0b2c594ecd61219881cb2561baf6c37e545e9",
+      "domain_hints": [
+        {
+          "host": "urlshortlink.top",
+          "score": 94,
+          "evidence": [
+            "javascript_domain",
+            "javascript_url"
+          ]
+        },
+        {
+          "host": "a.hidden-button.buttondownloadnew",
+          "score": 12,
+          "evidence": [
+            "javascript_domain"
+          ]
+        },
+        {
+          "host": "p.hptag",
+          "score": 12,
+          "evidence": [
+            "javascript_domain"
+          ]
+        }
+      ],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "aio:goatapi",
+      "source": "aio",
+      "canonical_id": "goatapi",
+      "sha256": "d2986824928bdab6b237a4d5b3394b6e4c149b4ca63e24a7ae925c0472c8a4c9",
+      "domain_hints": [
+        {
+          "host": "goatapi.imreallydagoatt.workers.dev",
+          "score": 47,
+          "evidence": [
+            "javascript_domain",
+            "javascript_url"
+          ]
+        },
+        {
+          "host": "stream.mkv",
+          "score": 12,
+          "evidence": [
+            "javascript_domain"
+          ]
+        }
+      ],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "aio:gramcinema",
+      "source": "aio",
+      "canonical_id": "gramcinema",
+      "sha256": "03865cdddc4b4ae9e8155e1ccdf691b725ede65a9d86b3f4ca9b4943eed9d0bb",
+      "domain_hints": [
+        {
+          "host": "bollywood.eu.org",
+          "score": 201,
+          "evidence": [
+            "javascript_domain",
+            "javascript_url",
+            "metadata_description_domain"
+          ]
+        }
+      ],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "aio:hdghartv",
+      "source": "aio",
+      "canonical_id": "hdghartv",
+      "sha256": "8f6931a418a437f64d697f6eafdc27b8c2408cefd9accc5c7e7d9810871ed81a",
+      "domain_hints": [],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "aio:hdhub4u",
+      "source": "aio",
+      "canonical_id": "hdhub4u",
+      "sha256": "35f3a66b3ff1e7d73fca85955920bb134d2e14f74e12a8ceb362782f06ae8c48",
+      "domain_hints": [
+        {
+          "host": "workers.dev",
+          "score": 24,
+          "evidence": [
+            "javascript_domain"
+          ]
+        },
+        {
+          "host": "a.btn",
+          "score": 12,
+          "evidence": [
+            "javascript_domain"
+          ]
+        },
+        {
+          "host": "ampproject.org",
+          "score": 12,
+          "evidence": [
+            "javascript_domain"
+          ]
+        }
+      ],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "aio:hianime",
+      "source": "aio",
+      "canonical_id": "hianime",
+      "sha256": "11124b38985b9780ad49e040b5d30a7143bc9541e27c7e314e70d9778a227af9",
+      "domain_hints": [],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "aio:hindmoviez",
+      "source": "aio",
+      "canonical_id": "hindmoviez",
+      "sha256": "86b8c3a4dff3c98c05db88eb075936b2f4ec00d504b967f1150bdfbd6fa620ac",
+      "domain_hints": [
+        {
+          "host": "mvlink.blog",
+          "score": 47,
+          "evidence": [
+            "javascript_domain",
+            "javascript_url"
+          ]
+        },
+        {
+          "host": "admin-ajax.php",
+          "score": 12,
+          "evidence": [
+            "javascript_domain"
+          ]
+        }
+      ],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "aio:kurage",
+      "source": "aio",
+      "canonical_id": "kurage",
+      "sha256": "668797edb270c5fed931b08e0c92ca6693420041838f3b8ef49e28ddb1e7e463",
+      "domain_hints": [
+        {
+          "host": "kurage.live",
+          "score": 107,
+          "evidence": [
+            "javascript_domain",
+            "javascript_url",
+            "metadata_description_domain"
+          ]
+        },
+        {
+          "host": "arm.haglund.dev",
+          "score": 47,
+          "evidence": [
+            "javascript_domain",
+            "javascript_url"
+          ]
+        },
+        {
+          "host": "v3-cinemeta.strem.io",
+          "score": 47,
+          "evidence": [
+            "javascript_domain",
+            "javascript_url"
+          ]
+        }
+      ],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "aio:moviebox",
+      "source": "aio",
+      "canonical_id": "moviebox",
+      "sha256": "f19ec5a037e53220e1457e6db0cb9abee1d2f9f299c594dddefb14df7822c847",
+      "domain_hints": [
+        {
+          "host": "pengu.uk",
+          "score": 47,
+          "evidence": [
+            "javascript_domain",
+            "javascript_url"
+          ]
+        },
+        {
+          "host": "stremio-moviebox-1.onrender.com",
+          "score": 47,
+          "evidence": [
+            "javascript_domain",
+            "javascript_url"
+          ]
+        },
+        {
+          "host": "bcdnxw.hakunaymatata.com",
+          "score": 12,
+          "evidence": [
+            "javascript_domain"
+          ]
+        }
+      ],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "aio:movieblast",
+      "source": "aio",
+      "canonical_id": "movieblast",
+      "sha256": "d3b04a5ee1a13fed77192b5226d46001508fe321fa747f0c519d0c23d5b1a974",
+      "domain_hints": [
+        {
+          "host": "app.cloud-mb.xyz",
+          "score": 47,
+          "evidence": [
+            "javascript_domain",
+            "javascript_url"
+          ]
+        },
+        {
+          "host": "com.movieblast",
+          "score": 24,
+          "evidence": [
+            "javascript_domain"
+          ]
+        }
+      ],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "aio:moviesdrive",
+      "source": "aio",
+      "canonical_id": "moviesdrive",
+      "sha256": "d25ca5545a5e16c881eb5c37cd5851cfdce5ff1fd47b8f0a00ca38f29bdb5d37",
+      "domain_hints": [
+        {
+          "host": "mdrive.lol",
+          "score": 47,
+          "evidence": [
+            "javascript_domain",
+            "javascript_url"
+          ]
+        }
+      ],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "aio:movieshunt",
+      "source": "aio",
+      "canonical_id": "movieshunt",
+      "sha256": "6796beaa02d57e69cb033eec47a14a3b74782a0d08bcfd260421f10d4041392e",
+      "domain_hints": [
+        {
+          "host": "abhilinks.site",
+          "score": 47,
+          "evidence": [
+            "javascript_domain",
+            "javascript_url"
+          ]
+        },
+        {
+          "host": "vcloud.zip",
+          "score": 47,
+          "evidence": [
+            "javascript_domain",
+            "javascript_url"
+          ]
+        }
+      ],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "aio:moviesmod",
+      "source": "aio",
+      "canonical_id": "moviesmod",
+      "sha256": "fa98d90649af9a798c3cbe1c4340f3b0c4cd511acab0984805c05525cd845cd0",
+      "domain_hints": [
+        {
+          "host": "driveseed.org",
+          "score": 106,
+          "evidence": [
+            "javascript_domain",
+            "javascript_url"
+          ]
+        },
+        {
+          "host": "links.modpro.blog",
+          "score": 47,
+          "evidence": [
+            "javascript_domain",
+            "javascript_url"
+          ]
+        },
+        {
+          "host": "moviesmod.money",
+          "score": 47,
+          "evidence": [
+            "javascript_domain",
+            "javascript_url"
+          ]
+        }
+      ],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "aio:movies4u",
+      "source": "aio",
+      "canonical_id": "movies4u",
+      "sha256": "67219ceb8c27e42ef617982a242a11955823113e79ac06565c4243c1a0131bd1",
+      "domain_hints": [
+        {
+          "host": "m4uplay.store",
+          "score": 224,
+          "evidence": [
+            "javascript_domain",
+            "javascript_url"
+          ]
+        },
+        {
+          "host": "hc-zf3c.vercel.app",
+          "score": 47,
+          "evidence": [
+            "javascript_domain",
+            "javascript_url"
+          ]
+        },
+        {
+          "host": "a.btn",
+          "score": 12,
+          "evidence": [
+            "javascript_domain"
+          ]
+        }
+      ],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "aio:movix",
+      "source": "aio",
+      "canonical_id": "movix",
+      "sha256": "4fd2573baa76e79e87933414b290e844c152de2b4486f79911947d9cfb1c1c4b",
+      "domain_hints": [
+        {
+          "host": "api.movix.fun",
+          "score": 526,
+          "evidence": [
+            "fixed_endpoint",
+            "javascript_domain",
+            "javascript_url",
+            "provider_replacement",
+            "runtime_domain_override"
+          ]
+        },
+        {
+          "host": "movix.fun",
+          "score": 47,
+          "evidence": [
+            "javascript_domain",
+            "javascript_url"
+          ]
+        },
+        {
+          "host": "g.fetch",
+          "score": 24,
+          "evidence": [
+            "javascript_domain"
+          ]
+        }
+      ],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "aio:nakios",
+      "source": "aio",
+      "canonical_id": "nakios",
+      "sha256": "450b43a5eaebb8b3f3710fcf393271f5d739df9e0967d1f175d36b4fae17c8da",
+      "domain_hints": [
+        {
+          "host": "domains.json",
+          "score": 12,
+          "evidence": [
+            "javascript_domain"
+          ]
+        }
+      ],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "aio:netmirror",
+      "source": "aio",
+      "canonical_id": "netmirror",
+      "sha256": "5cc8283a945c663ea55e049931f22c3f9afdeb3ff38e564899dc5359d40600c1",
+      "domain_hints": [
+        {
+          "host": "net27.cc",
+          "score": 94,
+          "evidence": [
+            "javascript_domain",
+            "javascript_url"
+          ]
+        },
+        {
+          "host": "playlist.php",
+          "score": 36,
+          "evidence": [
+            "javascript_domain"
+          ]
+        },
+        {
+          "host": "search.php",
+          "score": 36,
+          "evidence": [
+            "javascript_domain"
+          ]
+        }
+      ],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "aio:persianstremio",
+      "source": "aio",
+      "canonical_id": "persianstremio",
+      "sha256": "04c8664fd3977a3279fc262be15e2dde88b409e79eb27cc2ae0d1c0b1056b7f9",
+      "domain_hints": [],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "aio:peachify",
+      "source": "aio",
+      "canonical_id": "peachify",
+      "sha256": "0f9f52a4c69bebe4c843c0b3ae06a410d3688569316446f45877ad964c316499",
+      "domain_hints": [
+        {
+          "host": "peachify.top",
+          "score": 60,
+          "evidence": [
+            "metadata_description_domain"
+          ]
+        },
+        {
+          "host": "usa.eat-peach.sbs",
+          "score": 47,
+          "evidence": [
+            "javascript_domain",
+            "javascript_url"
+          ]
+        },
+        {
+          "host": "uwu.eat-peach.sbs",
+          "score": 47,
+          "evidence": [
+            "javascript_domain",
+            "javascript_url"
+          ]
+        }
+      ],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "aio:playimdb",
+      "source": "aio",
+      "canonical_id": "playimdb",
+      "sha256": "e00e7b0d65b15622e0b6bcdce3ccc92d6226853197962348ced4af47343f07ab",
+      "domain_hints": [
+        {
+          "host": "nextgencloudfabric.com",
+          "score": 94,
+          "evidence": [
+            "javascript_domain",
+            "javascript_url"
+          ]
+        },
+        {
+          "host": "streamdata.vaplayer.ru",
+          "score": 47,
+          "evidence": [
+            "javascript_domain",
+            "javascript_url"
+          ]
+        },
+        {
+          "host": "api.php",
+          "score": 12,
+          "evidence": [
+            "javascript_domain"
+          ]
+        }
+      ],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "aio:purstream",
+      "source": "aio",
+      "canonical_id": "purstream",
+      "sha256": "02173d75d873826f33e7bd45bb1c7973e557845548a8634b3ed1a5161c89abb8",
+      "domain_hints": [
+        {
+          "host": "purstream.art",
+          "score": 60,
+          "evidence": [
+            "metadata_description_domain"
+          ]
+        },
+        {
+          "host": "api.purstream",
+          "score": 24,
+          "evidence": [
+            "javascript_domain"
+          ]
+        },
+        {
+          "host": "domains.json",
+          "score": 12,
+          "evidence": [
+            "javascript_domain"
+          ]
+        }
+      ],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "aio:showbox",
+      "source": "aio",
+      "canonical_id": "showbox",
+      "sha256": "b90ce3c9aceca167d9f97d57ba2487029b0dd75e61abc4d7e8ad1dd97864a1d5",
+      "domain_hints": [
+        {
+          "host": "febbox.com",
+          "score": 141,
+          "evidence": [
+            "javascript_domain",
+            "javascript_url"
+          ]
+        }
+      ],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "aio:toflix",
+      "source": "aio",
+      "canonical_id": "toflix",
+      "sha256": "dd2dbb2d068dae2142d2e20522d1b348b18d8308e7e7c9f2fb292c9406e89a29",
+      "domain_hints": [
+        {
+          "host": "apis.wavewatch.xyz",
+          "score": 47,
+          "evidence": [
+            "javascript_domain",
+            "javascript_url"
+          ]
+        },
+        {
+          "host": "zeus.php",
+          "score": 12,
+          "evidence": [
+            "javascript_domain"
+          ]
+        }
+      ],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "aio:topcartoons",
+      "source": "aio",
+      "canonical_id": "topcartoons",
+      "sha256": "df33f490a73779f40b29ad612863fd4b192768567338a2171289fe5316e40ef6",
+      "domain_hints": [],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "aio:vidrock",
+      "source": "aio",
+      "canonical_id": "vidrock",
+      "sha256": "f679614bf1f955dcfea633d527e9ce40b56768ec3ff32648a651f565c121b70c",
+      "domain_hints": [
+        {
+          "host": "vidrock.ru",
+          "score": 141,
+          "evidence": [
+            "javascript_domain",
+            "javascript_url"
+          ]
+        }
+      ],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "aio:uhdmovies",
+      "source": "aio",
+      "canonical_id": "uhdmovies",
+      "sha256": "69b4277574bf29bd898305b9043988f725ad30914e86a803c1d951ac4e556e6b",
+      "domain_hints": [
+        {
+          "host": "video-gen.xyz",
+          "score": 12,
+          "evidence": [
+            "javascript_domain"
+          ]
+        },
+        {
+          "host": "video-seed.pro",
+          "score": 12,
+          "evidence": [
+            "javascript_domain"
+          ]
+        },
+        {
+          "host": "video-seed.xyz",
+          "score": 12,
+          "evidence": [
+            "javascript_domain"
+          ]
+        }
+      ],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "aio:vegamovies",
+      "source": "aio",
+      "canonical_id": "vegamovies",
+      "sha256": "0641a31d6068d8d2f3e5ca5d734494b24f69b89d6a5d027ae1a7b5eee1953d1a",
+      "domain_hints": [
+        {
+          "host": "vcloud.zip",
+          "score": 47,
+          "evidence": [
+            "javascript_domain",
+            "javascript_url"
+          ]
+        },
+        {
+          "host": "a.btn",
+          "score": 24,
+          "evidence": [
+            "javascript_domain"
+          ]
+        },
+        {
+          "host": "workers.dev",
+          "score": 24,
+          "evidence": [
+            "javascript_domain"
+          ]
+        }
+      ],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "aio:vidlink",
+      "source": "aio",
+      "canonical_id": "vidlink",
+      "sha256": "bedc41b8caf7e7cb371b5b96bb949970278c8a51b83847eaa64f46ca0317c521",
+      "domain_hints": [
+        {
+          "host": "vidlink.pro",
+          "score": 47,
+          "evidence": [
+            "javascript_domain",
+            "javascript_url"
+          ]
+        }
+      ],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "aio:videasy",
+      "source": "aio",
+      "canonical_id": "videasy",
+      "sha256": "cc6345f01636806c66c685534766f9bd6b32df4d2ab9e9898a8b8ab478534ed0",
+      "domain_hints": [
+        {
+          "host": "api.wingsdatabase.com",
+          "score": 47,
+          "evidence": [
+            "javascript_domain",
+            "javascript_url"
+          ]
+        },
+        {
+          "host": "vidking.net",
+          "score": 47,
+          "evidence": [
+            "javascript_domain",
+            "javascript_url"
+          ]
+        }
+      ],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "aio:vidsrc",
+      "source": "aio",
+      "canonical_id": "vidsrc",
+      "sha256": "c83b23943f9783f2b57008fac62f5fd2a05fea0c826f4b1ca74d53198152b286",
+      "domain_hints": [
+        {
+          "host": "vidsrc.me",
+          "score": 213,
+          "evidence": [
+            "javascript_domain",
+            "javascript_url"
+          ]
+        },
+        {
+          "host": "whisperingauroras.com",
+          "score": 47,
+          "evidence": [
+            "javascript_domain",
+            "javascript_url"
+          ]
+        },
+        {
+          "host": "cpt.js",
+          "score": 12,
+          "evidence": [
+            "javascript_domain"
+          ]
+        }
+      ],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "aio:vixsrc",
+      "source": "aio",
+      "canonical_id": "vixsrc",
+      "sha256": "5950ab608cddc8995854c9611e6e0e08b7b72eaea0f813a7aef38296e7a280b8",
+      "domain_hints": [
+        {
+          "host": "undici.error",
+          "score": 180,
+          "evidence": [
+            "javascript_domain"
+          ]
+        },
+        {
+          "host": "index.js",
+          "score": 84,
+          "evidence": [
+            "javascript_domain"
+          ]
+        },
+        {
+          "host": "util.js",
+          "score": 72,
+          "evidence": [
+            "javascript_domain"
+          ]
+        }
+      ],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "aio:vidfast",
+      "source": "aio",
+      "canonical_id": "vidfast",
+      "sha256": "9750c41a72fe7978d81eabd1b3704529cac0c13a7830a1d608afec5c892271cd",
+      "domain_hints": [
+        {
+          "host": "vidfast.pro",
+          "score": 60,
+          "evidence": [
+            "metadata_description_domain"
+          ]
+        },
+        {
+          "host": "vidfast.vc",
+          "score": 47,
+          "evidence": [
+            "javascript_domain",
+            "javascript_url"
+          ]
+        }
+      ],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "aio:xpass",
+      "source": "aio",
+      "canonical_id": "xpass",
+      "sha256": "ad02f9faf8385c8857123ccb2931aa171f219a43c822daef32822ce1a834dbe5",
+      "domain_hints": [
+        {
+          "host": "play.xpass.top",
+          "score": 47,
+          "evidence": [
+            "javascript_domain",
+            "javascript_url"
+          ]
+        }
+      ],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "aio:zinkmovies",
+      "source": "aio",
+      "canonical_id": "zinkmovies",
+      "sha256": "5989f97be6cce82a382e7dc29b8bc8e4c0441146fb994cf1950607fe5cae8bce",
+      "domain_hints": [
+        {
+          "host": "gemma416okl.com",
+          "score": 188,
+          "evidence": [
+            "javascript_domain",
+            "javascript_url"
+          ]
+        },
+        {
+          "host": "i-arch-400.keymi417exx.com",
+          "score": 47,
+          "evidence": [
+            "javascript_domain",
+            "javascript_url"
+          ]
+        },
+        {
+          "host": "zinkmovies.wtf",
+          "score": 47,
+          "evidence": [
+            "javascript_domain",
+            "javascript_url"
+          ]
+        }
+      ],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "aio:onlykdrama",
+      "source": "aio",
+      "canonical_id": "onlykdrama",
+      "sha256": "f96d16c8b4e067394dd41f41a7fbc1a5bb1c3179c5198d35faaaa627e3cac02e",
+      "domain_hints": [],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "aio:kisskh",
+      "source": "aio",
+      "canonical_id": "kisskh",
+      "sha256": "81b0afffb337390782cace12c5d657c6aa42765d05f5da986022284a99bafb98",
+      "domain_hints": [
+        {
+          "host": "api4.thetvdb.com",
+          "score": 94,
+          "evidence": [
+            "javascript_domain",
+            "javascript_url"
+          ]
+        },
+        {
+          "host": "onlykdrama.top",
+          "score": 60,
+          "evidence": [
+            "metadata_description_domain"
+          ]
+        },
+        {
+          "host": "aiometadata.elfhosted.com",
+          "score": 47,
+          "evidence": [
+            "javascript_domain",
+            "javascript_url"
+          ]
+        }
+      ],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "yoru:4khdhub",
+      "source": "yoru",
+      "canonical_id": "4khdhub",
+      "sha256": "65e7dabe9629f1185c046e156941f6cf05312e9c52996c70c24a6b6ddc075a9c",
+      "domain_hints": [
+        {
+          "host": "href.includes",
+          "score": 108,
+          "evidence": [
+            "javascript_domain"
+          ]
+        },
+        {
+          "host": "text.includes",
+          "score": 96,
+          "evidence": [
+            "javascript_domain"
+          ]
+        },
+        {
+          "host": "results.push",
+          "score": 48,
+          "evidence": [
+            "javascript_domain"
+          ]
+        }
+      ],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "yoru:animepahe",
+      "source": "yoru",
+      "canonical_id": "animepahe",
+      "sha256": "3b567b1e8e83d64777b617ee9323f411dab1474c700864058c4444e4f52cf842",
+      "domain_hints": [
+        {
+          "host": "animepahe.com",
+          "score": 247,
+          "evidence": [
+            "javascript_domain",
+            "javascript_url"
+          ]
+        },
+        {
+          "host": "kwik.cx",
+          "score": 188,
+          "evidence": [
+            "javascript_domain",
+            "javascript_url"
+          ]
+        },
+        {
+          "host": "animepahe.org",
+          "score": 59,
+          "evidence": [
+            "javascript_domain",
+            "javascript_url"
+          ]
+        }
+      ],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "yoru:uhdmovies",
+      "source": "yoru",
+      "canonical_id": "uhdmovies",
+      "sha256": "910588acb9a44abb569391dc61643aead09fef349f00887740bb9fa5889bd36e",
+      "domain_hints": [
+        {
+          "host": "default.load",
+          "score": 96,
+          "evidence": [
+            "javascript_domain"
+          ]
+        },
+        {
+          "host": "item.quality",
+          "score": 60,
+          "evidence": [
+            "javascript_domain"
+          ]
+        },
+        {
+          "host": "finallink.includes",
+          "score": 48,
+          "evidence": [
+            "javascript_domain"
+          ]
+        }
+      ],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "yoru:moviesmod",
+      "source": "yoru",
+      "canonical_id": "moviesmod",
+      "sha256": "98aeea26aa4511affc468b897dc050ca1d481684fcf712693fb8b1928f7135f8",
+      "domain_hints": [
+        {
+          "host": "default.load",
+          "score": 108,
+          "evidence": [
+            "javascript_domain"
+          ]
+        },
+        {
+          "host": "text.includes",
+          "score": 48,
+          "evidence": [
+            "javascript_domain"
+          ]
+        },
+        {
+          "host": "moviesmod.cc",
+          "score": 47,
+          "evidence": [
+            "javascript_domain",
+            "javascript_url"
+          ]
+        }
+      ],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "yoru:dahmermovies",
+      "source": "yoru",
+      "canonical_id": "dahmermovies",
+      "sha256": "469a6a06dc8af06013adc7ad966e0082429ad776d4f0dba4e57ec815e3e88bb5",
+      "domain_hints": [
+        {
+          "host": "path.text",
+          "score": 96,
+          "evidence": [
+            "javascript_domain"
+          ]
+        },
+        {
+          "host": "a.111477.xyz",
+          "score": 94,
+          "evidence": [
+            "javascript_domain",
+            "javascript_url"
+          ]
+        },
+        {
+          "host": "lowerstr.includes",
+          "score": 84,
+          "evidence": [
+            "javascript_domain"
+          ]
+        }
+      ],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "yoru:netmirror",
+      "source": "yoru",
+      "canonical_id": "netmirror",
+      "sha256": "30c207564c1b85bc0fd01bfc9a4741727593c535b9b13c2702b2c0453326b8f8",
+      "domain_hints": [
+        {
+          "host": "ep.ep",
+          "score": 60,
+          "evidence": [
+            "javascript_domain"
+          ]
+        },
+        {
+          "host": "episodes.php",
+          "score": 60,
+          "evidence": [
+            "javascript_domain"
+          ]
+        },
+        {
+          "host": "post.php",
+          "score": 60,
+          "evidence": [
+            "javascript_domain"
+          ]
+        }
+      ],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "yoru:streamflix",
+      "source": "yoru",
+      "canonical_id": "streamflix",
+      "sha256": "a9e7deb56fd5b3c93458e01fe7d32a764ee1defe3e88759dcb68f448006ded31",
+      "domain_hints": [
+        {
+          "host": "api.streamflix.app",
+          "score": 329,
+          "evidence": [
+            "javascript_domain",
+            "javascript_url"
+          ]
+        },
+        {
+          "host": "config.premium",
+          "score": 84,
+          "evidence": [
+            "javascript_domain"
+          ]
+        },
+        {
+          "host": "streams.push",
+          "score": 60,
+          "evidence": [
+            "javascript_domain"
+          ]
+        }
+      ],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "yoru:moviebox",
+      "source": "yoru",
+      "canonical_id": "moviebox",
+      "sha256": "5b3d2c649dc4b5c223e70dd0e0d74fb544f15f99019864d44502dded2c6928d4",
+      "domain_hints": [
+        {
+          "host": "array.isarray",
+          "score": 72,
+          "evidence": [
+            "javascript_domain"
+          ]
+        },
+        {
+          "host": "details.title",
+          "score": 60,
+          "evidence": [
+            "javascript_domain"
+          ]
+        },
+        {
+          "host": "cap.lanname",
+          "score": 48,
+          "evidence": [
+            "javascript_domain"
+          ]
+        }
+      ],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "yoru:vixsrc",
+      "source": "yoru",
+      "canonical_id": "vixsrc",
+      "sha256": "c91c43aedb5b489c07a030766fd22550cf8773fce6845f21f4a20c7398efeb94",
+      "domain_hints": [
+        {
+          "host": "sub.wyzie.ru",
+          "score": 94,
+          "evidence": [
+            "javascript_domain",
+            "javascript_url"
+          ]
+        },
+        {
+          "host": "vixsrc.to",
+          "score": 72,
+          "evidence": [
+            "javascript_domain",
+            "javascript_url",
+            "metadata_logo"
+          ]
+        },
+        {
+          "host": "html.match",
+          "score": 60,
+          "evidence": [
+            "javascript_domain"
+          ]
+        }
+      ],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "yoru:dvdplay",
+      "source": "yoru",
+      "canonical_id": "dvdplay",
+      "sha256": "d67399b8f3d221dea530132cbaafc95777469e1f12fed665b7c2d90f5823e195",
+      "domain_hints": [
+        {
+          "host": "error.message",
+          "score": 108,
+          "evidence": [
+            "javascript_domain"
+          ]
+        },
+        {
+          "host": "titleparts.push",
+          "score": 96,
+          "evidence": [
+            "javascript_domain"
+          ]
+        },
+        {
+          "host": "360news4u.net",
+          "score": 84,
+          "evidence": [
+            "javascript_domain"
+          ]
+        }
+      ],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "yoru:yflix",
+      "source": "yoru",
+      "canonical_id": "yflix",
+      "sha256": "ca1223b5ee78c12b0cbca6f208e977a14ab78d699893f6225aac04f8b60f8a94",
+      "domain_hints": [
+        {
+          "host": "currentinfo.quality",
+          "score": 108,
+          "evidence": [
+            "javascript_domain"
+          ]
+        },
+        {
+          "host": "enc-dec.app",
+          "score": 106,
+          "evidence": [
+            "javascript_domain",
+            "javascript_url"
+          ]
+        },
+        {
+          "host": "s.url",
+          "score": 96,
+          "evidence": [
+            "javascript_domain"
+          ]
+        }
+      ],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "yoru:videasy",
+      "source": "yoru",
+      "canonical_id": "videasy",
+      "sha256": "3e554771641bd6208cd763c6ee6aa12a06ad858a52d7430cd43571fa9cde068d",
+      "domain_hints": [
+        {
+          "host": "api.videasy.net",
+          "score": 893,
+          "evidence": [
+            "javascript_domain",
+            "javascript_url"
+          ]
+        },
+        {
+          "host": "url.includes",
+          "score": 120,
+          "evidence": [
+            "javascript_domain"
+          ]
+        },
+        {
+          "host": "quality.tolowercase",
+          "score": 108,
+          "evidence": [
+            "javascript_domain"
+          ]
+        }
+      ],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "yoru:mallumv",
+      "source": "yoru",
+      "canonical_id": "mallumv",
+      "sha256": "bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677",
+      "domain_hints": [
+        {
+          "host": "mallumv.gay",
+          "score": 141,
+          "evidence": [
+            "javascript_domain",
+            "javascript_url"
+          ]
+        },
+        {
+          "host": "dl.php",
+          "score": 132,
+          "evidence": [
+            "javascript_domain"
+          ]
+        },
+        {
+          "host": "error.message",
+          "score": 120,
+          "evidence": [
+            "javascript_domain"
+          ]
+        }
+      ],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "yoru:vidlink",
+      "source": "yoru",
+      "canonical_id": "vidlink",
+      "sha256": "00389aa68899e4924186a24741e3b0a00cebb12486bf3e91fda6ff47311ae8ea",
+      "domain_hints": [
+        {
+          "host": "vidlink.pro",
+          "score": 166,
+          "evidence": [
+            "javascript_domain",
+            "javascript_url",
+            "metadata_logo"
+          ]
+        },
+        {
+          "host": "quality.includes",
+          "score": 144,
+          "evidence": [
+            "javascript_domain"
+          ]
+        },
+        {
+          "host": "streams.push",
+          "score": 96,
+          "evidence": [
+            "javascript_domain"
+          ]
+        }
+      ],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "yoru:vidnest",
+      "source": "yoru",
+      "canonical_id": "vidnest",
+      "sha256": "25135c174b05435d6dc8fe5216eb78b836150646ed15a7da65e8e85d70bd1c98",
+      "domain_hints": [
+        {
+          "host": "url.includes",
+          "score": 276,
+          "evidence": [
+            "javascript_domain"
+          ]
+        },
+        {
+          "host": "flashstream.cc",
+          "score": 142,
+          "evidence": [
+            "javascript_domain",
+            "javascript_url"
+          ]
+        },
+        {
+          "host": "vidnest.fun",
+          "score": 119,
+          "evidence": [
+            "javascript_domain",
+            "javascript_url",
+            "metadata_logo"
+          ]
+        }
+      ],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "yoru:vidnest-anime",
+      "source": "yoru",
+      "canonical_id": "vidnest-anime",
+      "sha256": "7613343c5da60daeafe3be8882b3a7636c0ff4db3e62f22831a715f0d01e7b27",
+      "domain_hints": [
+        {
+          "host": "vidnest.fun",
+          "score": 119,
+          "evidence": [
+            "javascript_domain",
+            "javascript_url",
+            "metadata_logo"
+          ]
+        },
+        {
+          "host": "console.error",
+          "score": 108,
+          "evidence": [
+            "javascript_domain"
+          ]
+        },
+        {
+          "host": "error.message",
+          "score": 84,
+          "evidence": [
+            "javascript_domain"
+          ]
+        }
+      ],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "yoru:cinevibe",
+      "source": "yoru",
+      "canonical_id": "cinevibe",
+      "sha256": "e1549e3093c7b378c12ea2227c07090f6a50376e139979446e2a96f27e3e119a",
+      "domain_hints": [
+        {
+          "host": "contenttype.includes",
+          "score": 156,
+          "evidence": [
+            "javascript_domain"
+          ]
+        },
+        {
+          "host": "label.includes",
+          "score": 120,
+          "evidence": [
+            "javascript_domain"
+          ]
+        },
+        {
+          "host": "quality.includes",
+          "score": 108,
+          "evidence": [
+            "javascript_domain"
+          ]
+        }
+      ],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "yoru:cinemacity",
+      "source": "yoru",
+      "canonical_id": "cinemacity",
+      "sha256": "e3a5ca37785b04610a23a44a509dabf134c9154a35dd91d3070f3766029b5792",
+      "domain_hints": [
+        {
+          "host": "cinemacity.cc",
+          "score": 188,
+          "evidence": [
+            "javascript_domain",
+            "javascript_url"
+          ]
+        },
+        {
+          "host": "low.includes",
+          "score": 72,
+          "evidence": [
+            "javascript_domain"
+          ]
+        },
+        {
+          "host": "decoded.match",
+          "score": 48,
+          "evidence": [
+            "javascript_domain"
+          ]
+        }
+      ],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "yoru:castle",
+      "source": "yoru",
+      "canonical_id": "castle",
+      "sha256": "43c70c0cad61e4f16fe3d114a87045d6aeb71047dda1d104f31d055a129ce135",
+      "domain_hints": [
+        {
+          "host": "json.parse",
+          "score": 60,
+          "evidence": [
+            "javascript_domain"
+          ]
+        },
+        {
+          "host": "console.error",
+          "score": 48,
+          "evidence": [
+            "javascript_domain"
+          ]
+        },
+        {
+          "host": "error.message",
+          "score": 48,
+          "evidence": [
+            "javascript_domain"
+          ]
+        }
+      ],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "yoru:showbox",
+      "source": "yoru",
+      "canonical_id": "showbox",
+      "sha256": "95a080c30f77d7dd9f7bd151d0d4f976164328cd1ce61cecad330199e91c2683",
+      "domain_hints": [
+        {
+          "host": "febbox.com",
+          "score": 247,
+          "evidence": [
+            "javascript_domain",
+            "javascript_url"
+          ]
+        },
+        {
+          "host": "console.error",
+          "score": 60,
+          "evidence": [
+            "javascript_domain"
+          ]
+        },
+        {
+          "host": "listres.data",
+          "score": 48,
+          "evidence": [
+            "javascript_domain"
+          ]
+        }
+      ],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "yoru:hdhub4u",
+      "source": "yoru",
+      "canonical_id": "hdhub4u",
+      "sha256": "9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21",
+      "domain_hints": [
+        {
+          "host": "hostname.includes",
+          "score": 180,
+          "evidence": [
+            "javascript_domain"
+          ]
+        },
+        {
+          "host": "text.includes",
+          "score": 144,
+          "evidence": [
+            "javascript_domain"
+          ]
+        },
+        {
+          "host": "link.includes",
+          "score": 108,
+          "evidence": [
+            "javascript_domain"
+          ]
+        }
+      ],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "yoru:allmovieland",
+      "source": "yoru",
+      "canonical_id": "allmovieland",
+      "sha256": "d1b156dffd03425f57e3ac042ddadf05edc56d834be0134a013abf8e54b9bf9b",
+      "domain_hints": [
+        {
+          "host": "allmovieland.one",
+          "score": 47,
+          "evidence": [
+            "javascript_domain",
+            "javascript_url"
+          ]
+        },
+        {
+          "host": "default.load",
+          "score": 36,
+          "evidence": [
+            "javascript_domain"
+          ]
+        },
+        {
+          "host": "mediainfo.title",
+          "score": 36,
+          "evidence": [
+            "javascript_domain"
+          ]
+        }
+      ],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "yoru:dooflix",
+      "source": "yoru",
+      "canonical_id": "dooflix",
+      "sha256": "0e8ad342ffe970ea100695f521f10bdf880d869aa9228713a0848a20dc9bd412",
+      "domain_hints": [
+        {
+          "host": "molop.art",
+          "score": 47,
+          "evidence": [
+            "javascript_domain",
+            "javascript_url"
+          ]
+        },
+        {
+          "host": "panel.watchkaroabhi.com",
+          "score": 47,
+          "evidence": [
+            "javascript_domain",
+            "javascript_url"
+          ]
+        },
+        {
+          "host": "linkobj.url",
+          "score": 36,
+          "evidence": [
+            "javascript_domain"
+          ]
+        }
+      ],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "yoru:movieblast",
+      "source": "yoru",
+      "canonical_id": "movieblast",
+      "sha256": "8fc6c9c3b021df2df2430dbd2559aece034cea02c5f0f9d4d514eebbb394584c",
+      "domain_hints": [
+        {
+          "host": "v.includes",
+          "score": 84,
+          "evidence": [
+            "javascript_domain"
+          ]
+        },
+        {
+          "host": "console.error",
+          "score": 48,
+          "evidence": [
+            "javascript_domain"
+          ]
+        },
+        {
+          "host": "app.cloud-mb.xyz",
+          "score": 47,
+          "evidence": [
+            "javascript_domain",
+            "javascript_url"
+          ]
+        }
+      ],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "yoru:mycima",
+      "source": "yoru",
+      "canonical_id": "mycima",
+      "sha256": "d2b77225d84c2929f5a4f1c90f1de3b43f45628c70543df2451f21d7c87cc6bd",
+      "domain_hints": [
+        {
+          "host": "domain.includes",
+          "score": 288,
+          "evidence": [
+            "javascript_domain"
+          ]
+        },
+        {
+          "host": "url.includes",
+          "score": 108,
+          "evidence": [
+            "javascript_domain"
+          ]
+        },
+        {
+          "host": "el.find",
+          "score": 84,
+          "evidence": [
+            "javascript_domain"
+          ]
+        }
+      ],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "yoru:moviesdrive",
+      "source": "yoru",
+      "canonical_id": "moviesdrive",
+      "sha256": "73098d13964fbeca2b19a3c80782a27b08129898b8da5a82f9b8088f37168d68",
+      "domain_hints": [
+        {
+          "host": "text.includes",
+          "score": 108,
+          "evidence": [
+            "javascript_domain"
+          ]
+        },
+        {
+          "host": "new3.moviesdrives.my",
+          "score": 94,
+          "evidence": [
+            "javascript_domain",
+            "javascript_url"
+          ]
+        },
+        {
+          "host": "default.load",
+          "score": 60,
+          "evidence": [
+            "javascript_domain"
+          ]
+        }
+      ],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "yoru:hianime",
+      "source": "yoru",
+      "canonical_id": "hianime",
+      "sha256": "d6b79c8d8e8e19d4362d33cdd8a9107e425ce1eeefb55b56f8ec8b961126e09f",
+      "domain_hints": [
+        {
+          "host": "api.jikan.moe",
+          "score": 47,
+          "evidence": [
+            "javascript_domain",
+            "javascript_url"
+          ]
+        },
+        {
+          "host": "id-mapping-api-malid.hf.space",
+          "score": 47,
+          "evidence": [
+            "javascript_domain",
+            "javascript_url"
+          ]
+        },
+        {
+          "host": "megacloud.bloggy.click",
+          "score": 47,
+          "evidence": [
+            "javascript_domain",
+            "javascript_url"
+          ]
+        }
+      ],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "yoru:kurage",
+      "source": "yoru",
+      "canonical_id": "kurage",
+      "sha256": "87bbb1d8359caec9c7b98f22c9a88a9045c8bb1b5c0780a0e04842ab62bbabdb",
+      "domain_hints": [
+        {
+          "host": "kurage.live",
+          "score": 132,
+          "evidence": [
+            "javascript_domain",
+            "javascript_url",
+            "metadata_description_domain",
+            "metadata_logo"
+          ]
+        },
+        {
+          "host": "anime.format",
+          "score": 48,
+          "evidence": [
+            "javascript_domain"
+          ]
+        },
+        {
+          "host": "arm.haglund.dev",
+          "score": 47,
+          "evidence": [
+            "javascript_domain",
+            "javascript_url"
+          ]
+        }
+      ],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    },
+    {
+      "key": "yoru:anizone",
+      "source": "yoru",
+      "canonical_id": "anizone",
+      "sha256": "0dbdc78b24804babc29f0674da00a46e7b7915ebb5278d58790439d4ba03690b",
+      "domain_hints": [
+        {
+          "host": "anizone.to",
+          "score": 166,
+          "evidence": [
+            "javascript_domain",
+            "javascript_url",
+            "metadata_logo"
+          ]
+        },
+        {
+          "host": "card.titles",
+          "score": 72,
+          "evidence": [
+            "javascript_domain"
+          ]
+        },
+        {
+          "host": "card.slug",
+          "score": 48,
+          "evidence": [
+            "javascript_domain"
+          ]
+        }
+      ],
+      "domains": [],
+      "decision": {
+        "status": "inconclusive",
+        "continue_runtime": true,
+        "reason": "french_isp_dns_transport_unavailable_from_runner"
+      }
+    }
+  ]
+}

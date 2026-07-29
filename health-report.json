@@ -1,6 +1,6 @@
 {
   "schema_version": 63,
-  "generated_at": "2026-07-29T13:26:27.611067+00:00",
+  "generated_at": "2026-07-29T15:39:12.009741+00:00",
   "test_environment": "github-actions-node",
   "test_mode": "deep",
   "upstream_manifest_count": 3,
@@ -22,12 +22,12 @@
   "ci_inconclusive_disabled_providers": 23,
   "status_counts": {
     "healthy": 0,
-    "reachable": 51,
+    "reachable": 50,
     "blocked": 0,
     "degraded": 0,
     "no_streams": 56,
     "provider_unreachable": 1,
-    "runtime_error": 1,
+    "runtime_error": 2,
     "unavailable": 0,
     "excluded": 0
   },
@@ -292,7 +292,7 @@
           }
         }
       },
-      "selected_source": "gowaru",
+      "selected_source": "aio",
       "selected_upstream_id": "movix",
       "observed_status": "reachable",
       "observed_score": 75,
@@ -302,7 +302,7 @@
         "quality_height": 0,
         "health_score": 75,
         "manifest_curation_score": 6,
-        "provider_server_successful_response": true,
+        "provider_server_successful_response": false,
         "observed_language_modes": []
       },
       "settings_validation": {
@@ -370,13 +370,11 @@
         "stream_median_latency_ms": null,
         "disallowed_streams": 0,
         "provider_server_accessible": true,
-        "provider_server_successful_response": true,
+        "provider_server_successful_response": false,
         "provider_server_hosts": [
-          "api.movix.cloud",
           "api.movix.fun"
         ],
         "provider_server_http_statuses": [
-          200,
           403
         ],
         "manifest_description_present": true,
@@ -428,6 +426,11 @@
             "error": null
           }
         ],
+        "dns_preflight_status": "inconclusive",
+        "dns_preflight_reason": "french_isp_dns_transport_unavailable_from_runner",
+        "dns_preflight_selected_resolver": null,
+        "dns_migration_candidate": null,
+        "runtime_skipped_by_dns_preflight": false,
         "manifest_source_count": 2,
         "manifest_sources": [
           "aio",
@@ -739,6 +742,11 @@
             "error": null
           }
         ],
+        "dns_preflight_status": "inconclusive",
+        "dns_preflight_reason": "french_isp_dns_transport_unavailable_from_runner",
+        "dns_preflight_selected_resolver": null,
+        "dns_migration_candidate": null,
+        "runtime_skipped_by_dns_preflight": false,
         "manifest_source_count": 1,
         "manifest_sources": [
           "gowaru"
@@ -1056,6 +1064,11 @@
             "error": null
           }
         ],
+        "dns_preflight_status": "inconclusive",
+        "dns_preflight_reason": "french_isp_dns_transport_unavailable_from_runner",
+        "dns_preflight_selected_resolver": null,
+        "dns_migration_candidate": null,
+        "runtime_skipped_by_dns_preflight": false,
         "manifest_source_count": 1,
         "manifest_sources": [
           "gowaru"
@@ -1373,6 +1386,11 @@
             "error": null
           }
         ],
+        "dns_preflight_status": "inconclusive",
+        "dns_preflight_reason": "french_isp_dns_transport_unavailable_from_runner",
+        "dns_preflight_selected_resolver": null,
+        "dns_migration_candidate": null,
+        "runtime_skipped_by_dns_preflight": false,
         "manifest_source_count": 1,
         "manifest_sources": [
           "gowaru"
@@ -1683,6 +1701,11 @@
             "error": null
           }
         ],
+        "dns_preflight_status": "inconclusive",
+        "dns_preflight_reason": "french_isp_dns_transport_unavailable_from_runner",
+        "dns_preflight_selected_resolver": null,
+        "dns_migration_candidate": null,
+        "runtime_skipped_by_dns_preflight": false,
         "manifest_source_count": 1,
         "manifest_sources": [
           "gowaru"
@@ -1994,6 +2017,11 @@
             "error": null
           }
         ],
+        "dns_preflight_status": "inconclusive",
+        "dns_preflight_reason": "french_isp_dns_transport_unavailable_from_runner",
+        "dns_preflight_selected_resolver": null,
+        "dns_migration_candidate": null,
+        "runtime_skipped_by_dns_preflight": false,
         "manifest_source_count": 1,
         "manifest_sources": [
           "gowaru"
@@ -2307,6 +2335,11 @@
             "error": null
           }
         ],
+        "dns_preflight_status": "inconclusive",
+        "dns_preflight_reason": "french_isp_dns_transport_unavailable_from_runner",
+        "dns_preflight_selected_resolver": null,
+        "dns_migration_candidate": null,
+        "runtime_skipped_by_dns_preflight": false,
         "manifest_source_count": 1,
         "manifest_sources": [
           "aio"
@@ -2487,7 +2520,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 2,
-            "consecutive_inconclusive_deep_checks": 10
+            "consecutive_inconclusive_deep_checks": 11
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -2619,6 +2652,11 @@
             "error": null
           }
         ],
+        "dns_preflight_status": "inconclusive",
+        "dns_preflight_reason": "french_isp_dns_transport_unavailable_from_runner",
+        "dns_preflight_selected_resolver": null,
+        "dns_migration_candidate": null,
+        "runtime_skipped_by_dns_preflight": false,
         "manifest_source_count": 1,
         "manifest_sources": [
           "gowaru"
@@ -2799,7 +2837,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 1,
-            "consecutive_inconclusive_deep_checks": 10
+            "consecutive_inconclusive_deep_checks": 11
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -2931,6 +2969,11 @@
             "error": null
           }
         ],
+        "dns_preflight_status": "inconclusive",
+        "dns_preflight_reason": "french_isp_dns_transport_unavailable_from_runner",
+        "dns_preflight_selected_resolver": null,
+        "dns_migration_candidate": null,
+        "runtime_skipped_by_dns_preflight": false,
         "manifest_source_count": 1,
         "manifest_sources": [
           "gowaru"
@@ -3112,7 +3155,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 10
+            "consecutive_inconclusive_deep_checks": 11
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -3246,6 +3289,11 @@
             "error": null
           }
         ],
+        "dns_preflight_status": "inconclusive",
+        "dns_preflight_reason": "french_isp_dns_transport_unavailable_from_runner",
+        "dns_preflight_selected_resolver": null,
+        "dns_migration_candidate": null,
+        "runtime_skipped_by_dns_preflight": false,
         "manifest_source_count": 1,
         "manifest_sources": [
           "gowaru"
@@ -3426,7 +3474,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 7
+            "consecutive_inconclusive_deep_checks": 8
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -3559,6 +3607,11 @@
             "error": null
           }
         ],
+        "dns_preflight_status": "inconclusive",
+        "dns_preflight_reason": "french_isp_dns_transport_unavailable_from_runner",
+        "dns_preflight_selected_resolver": null,
+        "dns_migration_candidate": null,
+        "runtime_skipped_by_dns_preflight": false,
         "manifest_source_count": 1,
         "manifest_sources": [
           "gowaru"
@@ -3739,7 +3792,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 1,
-            "consecutive_inconclusive_deep_checks": 10
+            "consecutive_inconclusive_deep_checks": 11
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -3871,6 +3924,11 @@
             "error": null
           }
         ],
+        "dns_preflight_status": "inconclusive",
+        "dns_preflight_reason": "french_isp_dns_transport_unavailable_from_runner",
+        "dns_preflight_selected_resolver": null,
+        "dns_migration_candidate": null,
+        "runtime_skipped_by_dns_preflight": false,
         "manifest_source_count": 1,
         "manifest_sources": [
           "gowaru"
@@ -4193,6 +4251,11 @@
             "error": null
           }
         ],
+        "dns_preflight_status": "inconclusive",
+        "dns_preflight_reason": "french_isp_dns_transport_unavailable_from_runner",
+        "dns_preflight_selected_resolver": null,
+        "dns_migration_candidate": null,
+        "runtime_skipped_by_dns_preflight": false,
         "manifest_source_count": 2,
         "manifest_sources": [
           "aio",
@@ -4374,7 +4437,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 3,
-            "consecutive_inconclusive_deep_checks": 10
+            "consecutive_inconclusive_deep_checks": 11
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -4508,6 +4571,11 @@
             "error": null
           }
         ],
+        "dns_preflight_status": "inconclusive",
+        "dns_preflight_reason": "french_isp_dns_transport_unavailable_from_runner",
+        "dns_preflight_selected_resolver": null,
+        "dns_migration_candidate": null,
+        "runtime_skipped_by_dns_preflight": false,
         "manifest_source_count": 1,
         "manifest_sources": [
           "gowaru"
@@ -4690,7 +4758,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 2,
-            "consecutive_inconclusive_deep_checks": 10
+            "consecutive_inconclusive_deep_checks": 11
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -4825,6 +4893,11 @@
             "error": null
           }
         ],
+        "dns_preflight_status": "inconclusive",
+        "dns_preflight_reason": "french_isp_dns_transport_unavailable_from_runner",
+        "dns_preflight_selected_resolver": null,
+        "dns_migration_candidate": null,
+        "runtime_skipped_by_dns_preflight": false,
         "manifest_source_count": 1,
         "manifest_sources": [
           "gowaru"
@@ -5138,6 +5211,11 @@
             "error": null
           }
         ],
+        "dns_preflight_status": "inconclusive",
+        "dns_preflight_reason": "french_isp_dns_transport_unavailable_from_runner",
+        "dns_preflight_selected_resolver": null,
+        "dns_migration_candidate": null,
+        "runtime_skipped_by_dns_preflight": false,
         "manifest_source_count": 1,
         "manifest_sources": [
           "aio"
@@ -5321,7 +5399,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 3,
-            "consecutive_inconclusive_deep_checks": 10
+            "consecutive_inconclusive_deep_checks": 11
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -5456,6 +5534,11 @@
             "error": null
           }
         ],
+        "dns_preflight_status": "inconclusive",
+        "dns_preflight_reason": "french_isp_dns_transport_unavailable_from_runner",
+        "dns_preflight_selected_resolver": null,
+        "dns_migration_candidate": null,
+        "runtime_skipped_by_dns_preflight": false,
         "manifest_source_count": 2,
         "manifest_sources": [
           "aio",
@@ -5638,7 +5721,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 3,
-            "consecutive_inconclusive_deep_checks": 10
+            "consecutive_inconclusive_deep_checks": 11
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -5772,6 +5855,11 @@
             "error": null
           }
         ],
+        "dns_preflight_status": "inconclusive",
+        "dns_preflight_reason": "french_isp_dns_transport_unavailable_from_runner",
+        "dns_preflight_selected_resolver": null,
+        "dns_migration_candidate": null,
+        "runtime_skipped_by_dns_preflight": false,
         "manifest_source_count": 1,
         "manifest_sources": [
           "gowaru"
@@ -6088,6 +6176,11 @@
             "error": null
           }
         ],
+        "dns_preflight_status": "inconclusive",
+        "dns_preflight_reason": "french_isp_dns_transport_unavailable_from_runner",
+        "dns_preflight_selected_resolver": null,
+        "dns_migration_candidate": null,
+        "runtime_skipped_by_dns_preflight": false,
         "manifest_source_count": 1,
         "manifest_sources": [
           "aio"
@@ -6408,6 +6501,11 @@
             "error": null
           }
         ],
+        "dns_preflight_status": "inconclusive",
+        "dns_preflight_reason": "french_isp_dns_transport_unavailable_from_runner",
+        "dns_preflight_selected_resolver": null,
+        "dns_migration_candidate": null,
+        "runtime_skipped_by_dns_preflight": false,
         "manifest_source_count": 2,
         "manifest_sources": [
           "aio",
@@ -6725,6 +6823,11 @@
             "error": null
           }
         ],
+        "dns_preflight_status": "inconclusive",
+        "dns_preflight_reason": "french_isp_dns_transport_unavailable_from_runner",
+        "dns_preflight_selected_resolver": null,
+        "dns_migration_candidate": null,
+        "runtime_skipped_by_dns_preflight": false,
         "manifest_source_count": 1,
         "manifest_sources": [
           "aio"
@@ -7042,6 +7145,11 @@
             "error": null
           }
         ],
+        "dns_preflight_status": "inconclusive",
+        "dns_preflight_reason": "french_isp_dns_transport_unavailable_from_runner",
+        "dns_preflight_selected_resolver": null,
+        "dns_migration_candidate": null,
+        "runtime_skipped_by_dns_preflight": false,
         "manifest_source_count": 2,
         "manifest_sources": [
           "aio",
@@ -7360,6 +7468,11 @@
             "error": null
           }
         ],
+        "dns_preflight_status": "inconclusive",
+        "dns_preflight_reason": "french_isp_dns_transport_unavailable_from_runner",
+        "dns_preflight_selected_resolver": null,
+        "dns_migration_candidate": null,
+        "runtime_skipped_by_dns_preflight": false,
         "manifest_source_count": 2,
         "manifest_sources": [
           "aio",
@@ -7675,6 +7788,11 @@
             "error": null
           }
         ],
+        "dns_preflight_status": "inconclusive",
+        "dns_preflight_reason": "french_isp_dns_transport_unavailable_from_runner",
+        "dns_preflight_selected_resolver": null,
+        "dns_migration_candidate": null,
+        "runtime_skipped_by_dns_preflight": false,
         "manifest_source_count": 1,
         "manifest_sources": [
           "aio"
@@ -7999,6 +8117,11 @@
             "error": null
           }
         ],
+        "dns_preflight_status": "inconclusive",
+        "dns_preflight_reason": "french_isp_dns_transport_unavailable_from_runner",
+        "dns_preflight_selected_resolver": null,
+        "dns_migration_candidate": null,
+        "runtime_skipped_by_dns_preflight": false,
         "manifest_source_count": 2,
         "manifest_sources": [
           "aio",
@@ -8316,6 +8439,11 @@
             "error": null
           }
         ],
+        "dns_preflight_status": "inconclusive",
+        "dns_preflight_reason": "french_isp_dns_transport_unavailable_from_runner",
+        "dns_preflight_selected_resolver": null,
+        "dns_migration_candidate": null,
+        "runtime_skipped_by_dns_preflight": false,
         "manifest_source_count": 1,
         "manifest_sources": [
           "aio"
@@ -8632,6 +8760,11 @@
             "error": null
           }
         ],
+        "dns_preflight_status": "inconclusive",
+        "dns_preflight_reason": "french_isp_dns_transport_unavailable_from_runner",
+        "dns_preflight_selected_resolver": null,
+        "dns_migration_candidate": null,
+        "runtime_skipped_by_dns_preflight": false,
         "manifest_source_count": 1,
         "manifest_sources": [
           "aio"
@@ -8955,6 +9088,11 @@
             "error": null
           }
         ],
+        "dns_preflight_status": "inconclusive",
+        "dns_preflight_reason": "french_isp_dns_transport_unavailable_from_runner",
+        "dns_preflight_selected_resolver": null,
+        "dns_migration_candidate": null,
+        "runtime_skipped_by_dns_preflight": false,
         "manifest_source_count": 2,
         "manifest_sources": [
           "aio",
@@ -9273,6 +9411,11 @@
             "error": null
           }
         ],
+        "dns_preflight_status": "inconclusive",
+        "dns_preflight_reason": "french_isp_dns_transport_unavailable_from_runner",
+        "dns_preflight_selected_resolver": null,
+        "dns_migration_candidate": null,
+        "runtime_skipped_by_dns_preflight": false,
         "manifest_source_count": 2,
         "manifest_sources": [
           "aio",
@@ -9567,6 +9710,11 @@
             "error": null
           }
         ],
+        "dns_preflight_status": "inconclusive",
+        "dns_preflight_reason": "french_isp_dns_transport_unavailable_from_runner",
+        "dns_preflight_selected_resolver": null,
+        "dns_migration_candidate": null,
+        "runtime_skipped_by_dns_preflight": false,
         "manifest_source_count": 2,
         "manifest_sources": [
           "aio",
@@ -9887,6 +10035,11 @@
             "error": null
           }
         ],
+        "dns_preflight_status": "inconclusive",
+        "dns_preflight_reason": "french_isp_dns_transport_unavailable_from_runner",
+        "dns_preflight_selected_resolver": null,
+        "dns_migration_candidate": null,
+        "runtime_skipped_by_dns_preflight": false,
         "manifest_source_count": 2,
         "manifest_sources": [
           "aio",
@@ -10207,6 +10360,11 @@
             "error": null
           }
         ],
+        "dns_preflight_status": "inconclusive",
+        "dns_preflight_reason": "french_isp_dns_transport_unavailable_from_runner",
+        "dns_preflight_selected_resolver": null,
+        "dns_migration_candidate": null,
+        "runtime_skipped_by_dns_preflight": false,
         "manifest_source_count": 2,
         "manifest_sources": [
           "aio",
@@ -10524,6 +10682,11 @@
             "error": null
           }
         ],
+        "dns_preflight_status": "inconclusive",
+        "dns_preflight_reason": "french_isp_dns_transport_unavailable_from_runner",
+        "dns_preflight_selected_resolver": null,
+        "dns_migration_candidate": null,
+        "runtime_skipped_by_dns_preflight": false,
         "manifest_source_count": 1,
         "manifest_sources": [
           "aio"
@@ -10849,6 +11012,11 @@
             "error": null
           }
         ],
+        "dns_preflight_status": "inconclusive",
+        "dns_preflight_reason": "french_isp_dns_transport_unavailable_from_runner",
+        "dns_preflight_selected_resolver": null,
+        "dns_migration_candidate": null,
+        "runtime_skipped_by_dns_preflight": false,
         "manifest_source_count": 2,
         "manifest_sources": [
           "aio",
@@ -11162,6 +11330,11 @@
             "error": null
           }
         ],
+        "dns_preflight_status": "inconclusive",
+        "dns_preflight_reason": "french_isp_dns_transport_unavailable_from_runner",
+        "dns_preflight_selected_resolver": null,
+        "dns_migration_candidate": null,
+        "runtime_skipped_by_dns_preflight": false,
         "manifest_source_count": 1,
         "manifest_sources": [
           "aio"
@@ -11486,6 +11659,11 @@
             "error": null
           }
         ],
+        "dns_preflight_status": "inconclusive",
+        "dns_preflight_reason": "french_isp_dns_transport_unavailable_from_runner",
+        "dns_preflight_selected_resolver": null,
+        "dns_migration_candidate": null,
+        "runtime_skipped_by_dns_preflight": false,
         "manifest_source_count": 2,
         "manifest_sources": [
           "aio",
@@ -11801,6 +11979,11 @@
             "error": null
           }
         ],
+        "dns_preflight_status": "inconclusive",
+        "dns_preflight_reason": "french_isp_dns_transport_unavailable_from_runner",
+        "dns_preflight_selected_resolver": null,
+        "dns_migration_candidate": null,
+        "runtime_skipped_by_dns_preflight": false,
         "manifest_source_count": 2,
         "manifest_sources": [
           "aio",
@@ -12110,6 +12293,11 @@
             "error": null
           }
         ],
+        "dns_preflight_status": "inconclusive",
+        "dns_preflight_reason": "french_isp_dns_transport_unavailable_from_runner",
+        "dns_preflight_selected_resolver": null,
+        "dns_migration_candidate": null,
+        "runtime_skipped_by_dns_preflight": false,
         "manifest_source_count": 1,
         "manifest_sources": [
           "aio"
@@ -12290,7 +12478,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 10
+            "consecutive_inconclusive_deep_checks": 11
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -12426,6 +12614,11 @@
             "error": null
           }
         ],
+        "dns_preflight_status": "inconclusive",
+        "dns_preflight_reason": "french_isp_dns_transport_unavailable_from_runner",
+        "dns_preflight_selected_resolver": null,
+        "dns_migration_candidate": null,
+        "runtime_skipped_by_dns_preflight": false,
         "manifest_source_count": 1,
         "manifest_sources": [
           "aio"
@@ -12604,7 +12797,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 10
+            "consecutive_inconclusive_deep_checks": 11
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -12737,6 +12930,11 @@
             "error": null
           }
         ],
+        "dns_preflight_status": "inconclusive",
+        "dns_preflight_reason": "french_isp_dns_transport_unavailable_from_runner",
+        "dns_preflight_selected_resolver": null,
+        "dns_migration_candidate": null,
+        "runtime_skipped_by_dns_preflight": false,
         "manifest_source_count": 1,
         "manifest_sources": [
           "yoru"
@@ -12919,7 +13117,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 10
+            "consecutive_inconclusive_deep_checks": 11
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -13056,6 +13254,11 @@
             "error": null
           }
         ],
+        "dns_preflight_status": "inconclusive",
+        "dns_preflight_reason": "french_isp_dns_transport_unavailable_from_runner",
+        "dns_preflight_selected_resolver": null,
+        "dns_migration_candidate": null,
+        "runtime_skipped_by_dns_preflight": false,
         "manifest_source_count": 2,
         "manifest_sources": [
           "aio",
@@ -13240,7 +13443,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 10
+            "consecutive_inconclusive_deep_checks": 11
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -13379,6 +13582,11 @@
             "error": null
           }
         ],
+        "dns_preflight_status": "inconclusive",
+        "dns_preflight_reason": "french_isp_dns_transport_unavailable_from_runner",
+        "dns_preflight_selected_resolver": null,
+        "dns_migration_candidate": null,
+        "runtime_skipped_by_dns_preflight": false,
         "manifest_source_count": 2,
         "manifest_sources": [
           "aio",
@@ -13560,7 +13768,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 10
+            "consecutive_inconclusive_deep_checks": 11
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -13698,6 +13906,11 @@
             "error": null
           }
         ],
+        "dns_preflight_status": "inconclusive",
+        "dns_preflight_reason": "french_isp_dns_transport_unavailable_from_runner",
+        "dns_preflight_selected_resolver": null,
+        "dns_migration_candidate": null,
+        "runtime_skipped_by_dns_preflight": false,
         "manifest_source_count": 2,
         "manifest_sources": [
           "aio",
@@ -13877,7 +14090,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 10
+            "consecutive_inconclusive_deep_checks": 11
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -14011,6 +14224,11 @@
             "error": null
           }
         ],
+        "dns_preflight_status": "inconclusive",
+        "dns_preflight_reason": "french_isp_dns_transport_unavailable_from_runner",
+        "dns_preflight_selected_resolver": null,
+        "dns_migration_candidate": null,
+        "runtime_skipped_by_dns_preflight": false,
         "manifest_source_count": 1,
         "manifest_sources": [
           "aio"
@@ -14190,7 +14408,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 10
+            "consecutive_inconclusive_deep_checks": 11
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -14326,6 +14544,11 @@
             "error": null
           }
         ],
+        "dns_preflight_status": "inconclusive",
+        "dns_preflight_reason": "french_isp_dns_transport_unavailable_from_runner",
+        "dns_preflight_selected_resolver": null,
+        "dns_migration_candidate": null,
+        "runtime_skipped_by_dns_preflight": false,
         "manifest_source_count": 1,
         "manifest_sources": [
           "yoru"
@@ -14507,7 +14730,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 10
+            "consecutive_inconclusive_deep_checks": 11
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -14647,6 +14870,11 @@
             "error": null
           }
         ],
+        "dns_preflight_status": "inconclusive",
+        "dns_preflight_reason": "french_isp_dns_transport_unavailable_from_runner",
+        "dns_preflight_selected_resolver": null,
+        "dns_migration_candidate": null,
+        "runtime_skipped_by_dns_preflight": false,
         "manifest_source_count": 1,
         "manifest_sources": [
           "aio"
@@ -14824,7 +15052,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 10
+            "consecutive_inconclusive_deep_checks": 11
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -14958,6 +15186,11 @@
             "error": null
           }
         ],
+        "dns_preflight_status": "inconclusive",
+        "dns_preflight_reason": "french_isp_dns_transport_unavailable_from_runner",
+        "dns_preflight_selected_resolver": null,
+        "dns_migration_candidate": null,
+        "runtime_skipped_by_dns_preflight": false,
         "manifest_source_count": 1,
         "manifest_sources": [
           "aio"
@@ -15134,7 +15367,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 10
+            "consecutive_inconclusive_deep_checks": 11
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -15266,6 +15499,11 @@
             "error": null
           }
         ],
+        "dns_preflight_status": "inconclusive",
+        "dns_preflight_reason": "french_isp_dns_transport_unavailable_from_runner",
+        "dns_preflight_selected_resolver": null,
+        "dns_migration_candidate": null,
+        "runtime_skipped_by_dns_preflight": false,
         "manifest_source_count": 1,
         "manifest_sources": [
           "aio"
@@ -15446,7 +15684,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 5
+            "consecutive_inconclusive_deep_checks": 6
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -15538,6 +15776,11 @@
         "selected_settings_profiles": [],
         "selected_setting_keys": [],
         "settings_diagnostics": [],
+        "dns_preflight_status": "inconclusive",
+        "dns_preflight_reason": "french_isp_dns_transport_unavailable_from_runner",
+        "dns_preflight_selected_resolver": null,
+        "dns_migration_candidate": null,
+        "runtime_skipped_by_dns_preflight": false,
         "manifest_source_count": 1,
         "manifest_sources": [
           "aio"
@@ -15726,7 +15969,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 12
+            "consecutive_inconclusive_deep_checks": 13
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -15858,6 +16101,11 @@
             "error": null
           }
         ],
+        "dns_preflight_status": "inconclusive",
+        "dns_preflight_reason": "french_isp_dns_transport_unavailable_from_runner",
+        "dns_preflight_selected_resolver": null,
+        "dns_migration_candidate": null,
+        "runtime_skipped_by_dns_preflight": false,
         "manifest_source_count": 1,
         "manifest_sources": [
           "gowaru"
@@ -16049,7 +16297,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 10
+            "consecutive_inconclusive_deep_checks": 11
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -16181,6 +16429,11 @@
             "error": null
           }
         ],
+        "dns_preflight_status": "inconclusive",
+        "dns_preflight_reason": "french_isp_dns_transport_unavailable_from_runner",
+        "dns_preflight_selected_resolver": null,
+        "dns_migration_candidate": null,
+        "runtime_skipped_by_dns_preflight": false,
         "manifest_source_count": 1,
         "manifest_sources": [
           "gowaru"
@@ -16373,7 +16626,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 12
+            "consecutive_inconclusive_deep_checks": 13
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -16507,6 +16760,11 @@
             "error": null
           }
         ],
+        "dns_preflight_status": "inconclusive",
+        "dns_preflight_reason": "french_isp_dns_transport_unavailable_from_runner",
+        "dns_preflight_selected_resolver": null,
+        "dns_migration_candidate": null,
+        "runtime_skipped_by_dns_preflight": false,
         "manifest_source_count": 1,
         "manifest_sources": [
           "gowaru"
@@ -16540,14 +16798,14 @@
         "eligible": false,
         "checks": {
           "current_status_inconclusive": true,
-          "same_sha256": false,
+          "same_sha256": true,
           "prior_score_meets_threshold": false,
           "prior_quality_gates_passed": false,
           "current_no_p2p": true,
           "upstream_enabled": false
         },
-        "previous_health_score": 0,
-        "reason": "historical_inconclusive_rejected:same_sha256,prior_score_meets_threshold,prior_quality_gates_passed,upstream_enabled"
+        "previous_health_score": 10,
+        "reason": "historical_inconclusive_rejected:prior_score_meets_threshold,prior_quality_gates_passed,upstream_enabled"
       },
       "runtime_evidence": {
         "eligible": false,
@@ -16704,7 +16962,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 10
+            "consecutive_inconclusive_deep_checks": 11
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -16848,6 +17106,11 @@
             "error": null
           }
         ],
+        "dns_preflight_status": "inconclusive",
+        "dns_preflight_reason": "french_isp_dns_transport_unavailable_from_runner",
+        "dns_preflight_selected_resolver": null,
+        "dns_migration_candidate": null,
+        "runtime_skipped_by_dns_preflight": false,
         "manifest_source_count": 2,
         "manifest_sources": [
           "aio",
@@ -17040,7 +17303,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 12
+            "consecutive_inconclusive_deep_checks": 13
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -17173,6 +17436,11 @@
             "error": null
           }
         ],
+        "dns_preflight_status": "inconclusive",
+        "dns_preflight_reason": "french_isp_dns_transport_unavailable_from_runner",
+        "dns_preflight_selected_resolver": null,
+        "dns_migration_candidate": null,
+        "runtime_skipped_by_dns_preflight": false,
         "manifest_source_count": 1,
         "manifest_sources": [
           "gowaru"
@@ -17490,6 +17758,11 @@
             "error": null
           }
         ],
+        "dns_preflight_status": "inconclusive",
+        "dns_preflight_reason": "french_isp_dns_transport_unavailable_from_runner",
+        "dns_preflight_selected_resolver": null,
+        "dns_migration_candidate": null,
+        "runtime_skipped_by_dns_preflight": false,
         "manifest_source_count": 1,
         "manifest_sources": [
           "aio"
@@ -17801,6 +18074,11 @@
             "error": null
           }
         ],
+        "dns_preflight_status": "inconclusive",
+        "dns_preflight_reason": "french_isp_dns_transport_unavailable_from_runner",
+        "dns_preflight_selected_resolver": null,
+        "dns_migration_candidate": null,
+        "runtime_skipped_by_dns_preflight": false,
         "manifest_source_count": 1,
         "manifest_sources": [
           "aio"
@@ -18117,6 +18395,11 @@
             "error": null
           }
         ],
+        "dns_preflight_status": "inconclusive",
+        "dns_preflight_reason": "french_isp_dns_transport_unavailable_from_runner",
+        "dns_preflight_selected_resolver": null,
+        "dns_migration_candidate": null,
+        "runtime_skipped_by_dns_preflight": false,
         "manifest_source_count": 1,
         "manifest_sources": [
           "aio"
@@ -18429,6 +18712,11 @@
             "error": null
           }
         ],
+        "dns_preflight_status": "inconclusive",
+        "dns_preflight_reason": "french_isp_dns_transport_unavailable_from_runner",
+        "dns_preflight_selected_resolver": null,
+        "dns_migration_candidate": null,
+        "runtime_skipped_by_dns_preflight": false,
         "manifest_source_count": 1,
         "manifest_sources": [
           "aio"
@@ -18743,6 +19031,11 @@
             "error": null
           }
         ],
+        "dns_preflight_status": "inconclusive",
+        "dns_preflight_reason": "french_isp_dns_transport_unavailable_from_runner",
+        "dns_preflight_selected_resolver": null,
+        "dns_migration_candidate": null,
+        "runtime_skipped_by_dns_preflight": false,
         "manifest_source_count": 1,
         "manifest_sources": [
           "aio"
@@ -19055,6 +19348,11 @@
             "error": null
           }
         ],
+        "dns_preflight_status": "inconclusive",
+        "dns_preflight_reason": "french_isp_dns_transport_unavailable_from_runner",
+        "dns_preflight_selected_resolver": null,
+        "dns_migration_candidate": null,
+        "runtime_skipped_by_dns_preflight": false,
         "manifest_source_count": 1,
         "manifest_sources": [
           "aio"
@@ -19369,6 +19667,11 @@
             "error": null
           }
         ],
+        "dns_preflight_status": "inconclusive",
+        "dns_preflight_reason": "french_isp_dns_transport_unavailable_from_runner",
+        "dns_preflight_selected_resolver": null,
+        "dns_migration_candidate": null,
+        "runtime_skipped_by_dns_preflight": false,
         "manifest_source_count": 1,
         "manifest_sources": [
           "aio"
@@ -19681,6 +19984,11 @@
             "error": null
           }
         ],
+        "dns_preflight_status": "inconclusive",
+        "dns_preflight_reason": "french_isp_dns_transport_unavailable_from_runner",
+        "dns_preflight_selected_resolver": null,
+        "dns_migration_candidate": null,
+        "runtime_skipped_by_dns_preflight": false,
         "manifest_source_count": 1,
         "manifest_sources": [
           "yoru"
@@ -19995,6 +20303,11 @@
             "error": null
           }
         ],
+        "dns_preflight_status": "inconclusive",
+        "dns_preflight_reason": "french_isp_dns_transport_unavailable_from_runner",
+        "dns_preflight_selected_resolver": null,
+        "dns_migration_candidate": null,
+        "runtime_skipped_by_dns_preflight": false,
         "manifest_source_count": 1,
         "manifest_sources": [
           "aio"
@@ -20309,6 +20622,11 @@
             "error": null
           }
         ],
+        "dns_preflight_status": "inconclusive",
+        "dns_preflight_reason": "french_isp_dns_transport_unavailable_from_runner",
+        "dns_preflight_selected_resolver": null,
+        "dns_migration_candidate": null,
+        "runtime_skipped_by_dns_preflight": false,
         "manifest_source_count": 1,
         "manifest_sources": [
           "aio"
@@ -20623,6 +20941,11 @@
             "error": null
           }
         ],
+        "dns_preflight_status": "inconclusive",
+        "dns_preflight_reason": "french_isp_dns_transport_unavailable_from_runner",
+        "dns_preflight_selected_resolver": null,
+        "dns_migration_candidate": null,
+        "runtime_skipped_by_dns_preflight": false,
         "manifest_source_count": 1,
         "manifest_sources": [
           "aio"
@@ -20940,6 +21263,11 @@
             "error": null
           }
         ],
+        "dns_preflight_status": "inconclusive",
+        "dns_preflight_reason": "french_isp_dns_transport_unavailable_from_runner",
+        "dns_preflight_selected_resolver": null,
+        "dns_migration_candidate": null,
+        "runtime_skipped_by_dns_preflight": false,
         "manifest_source_count": 1,
         "manifest_sources": [
           "aio"
@@ -21251,6 +21579,11 @@
             "error": null
           }
         ],
+        "dns_preflight_status": "inconclusive",
+        "dns_preflight_reason": "french_isp_dns_transport_unavailable_from_runner",
+        "dns_preflight_selected_resolver": null,
+        "dns_migration_candidate": null,
+        "runtime_skipped_by_dns_preflight": false,
         "manifest_source_count": 1,
         "manifest_sources": [
           "aio"
@@ -21567,6 +21900,11 @@
             "error": null
           }
         ],
+        "dns_preflight_status": "inconclusive",
+        "dns_preflight_reason": "french_isp_dns_transport_unavailable_from_runner",
+        "dns_preflight_selected_resolver": null,
+        "dns_migration_candidate": null,
+        "runtime_skipped_by_dns_preflight": false,
         "manifest_source_count": 1,
         "manifest_sources": [
           "aio"
@@ -21758,7 +22096,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 10
+            "consecutive_inconclusive_deep_checks": 11
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -21897,6 +22235,11 @@
             "error": null
           }
         ],
+        "dns_preflight_status": "inconclusive",
+        "dns_preflight_reason": "french_isp_dns_transport_unavailable_from_runner",
+        "dns_preflight_selected_resolver": null,
+        "dns_migration_candidate": null,
+        "runtime_skipped_by_dns_preflight": false,
         "manifest_source_count": 1,
         "manifest_sources": [
           "aio"
@@ -22092,7 +22435,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 6,
-            "consecutive_inconclusive_deep_checks": 10
+            "consecutive_inconclusive_deep_checks": 11
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -22234,6 +22577,11 @@
             "error": null
           }
         ],
+        "dns_preflight_status": "inconclusive",
+        "dns_preflight_reason": "french_isp_dns_transport_unavailable_from_runner",
+        "dns_preflight_selected_resolver": null,
+        "dns_migration_candidate": null,
+        "runtime_skipped_by_dns_preflight": false,
         "manifest_source_count": 2,
         "manifest_sources": [
           "aio",
@@ -22426,7 +22774,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 10
+            "consecutive_inconclusive_deep_checks": 11
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -22561,6 +22909,11 @@
             "error": null
           }
         ],
+        "dns_preflight_status": "inconclusive",
+        "dns_preflight_reason": "french_isp_dns_transport_unavailable_from_runner",
+        "dns_preflight_selected_resolver": null,
+        "dns_migration_candidate": null,
+        "runtime_skipped_by_dns_preflight": false,
         "manifest_source_count": 2,
         "manifest_sources": [
           "aio",
@@ -22756,7 +23109,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 23
+            "consecutive_inconclusive_deep_checks": 24
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -22894,6 +23247,11 @@
             "error": null
           }
         ],
+        "dns_preflight_status": "inconclusive",
+        "dns_preflight_reason": "french_isp_dns_transport_unavailable_from_runner",
+        "dns_preflight_selected_resolver": null,
+        "dns_migration_candidate": null,
+        "runtime_skipped_by_dns_preflight": false,
         "manifest_source_count": 2,
         "manifest_sources": [
           "aio",
@@ -23087,7 +23445,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 6,
-            "consecutive_inconclusive_deep_checks": 10
+            "consecutive_inconclusive_deep_checks": 11
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -23228,6 +23586,11 @@
             "error": null
           }
         ],
+        "dns_preflight_status": "inconclusive",
+        "dns_preflight_reason": "french_isp_dns_transport_unavailable_from_runner",
+        "dns_preflight_selected_resolver": null,
+        "dns_migration_candidate": null,
+        "runtime_skipped_by_dns_preflight": false,
         "manifest_source_count": 2,
         "manifest_sources": [
           "aio",
@@ -23418,7 +23781,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 23
+            "consecutive_inconclusive_deep_checks": 24
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -23555,6 +23918,11 @@
             "error": null
           }
         ],
+        "dns_preflight_status": "inconclusive",
+        "dns_preflight_reason": "french_isp_dns_transport_unavailable_from_runner",
+        "dns_preflight_selected_resolver": null,
+        "dns_migration_candidate": null,
+        "runtime_skipped_by_dns_preflight": false,
         "manifest_source_count": 1,
         "manifest_sources": [
           "aio"
@@ -23744,7 +24112,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 10
+            "consecutive_inconclusive_deep_checks": 11
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -23878,6 +24246,11 @@
             "error": null
           }
         ],
+        "dns_preflight_status": "inconclusive",
+        "dns_preflight_reason": "french_isp_dns_transport_unavailable_from_runner",
+        "dns_preflight_selected_resolver": null,
+        "dns_migration_candidate": null,
+        "runtime_skipped_by_dns_preflight": false,
         "manifest_source_count": 1,
         "manifest_sources": [
           "aio"
@@ -24067,7 +24440,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 10
+            "consecutive_inconclusive_deep_checks": 11
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -24201,6 +24574,11 @@
             "error": null
           }
         ],
+        "dns_preflight_status": "inconclusive",
+        "dns_preflight_reason": "french_isp_dns_transport_unavailable_from_runner",
+        "dns_preflight_selected_resolver": null,
+        "dns_migration_candidate": null,
+        "runtime_skipped_by_dns_preflight": false,
         "manifest_source_count": 1,
         "manifest_sources": [
           "aio"
@@ -24390,7 +24768,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 10
+            "consecutive_inconclusive_deep_checks": 11
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -24525,6 +24903,11 @@
             "error": null
           }
         ],
+        "dns_preflight_status": "inconclusive",
+        "dns_preflight_reason": "french_isp_dns_transport_unavailable_from_runner",
+        "dns_preflight_selected_resolver": null,
+        "dns_migration_candidate": null,
+        "runtime_skipped_by_dns_preflight": false,
         "manifest_source_count": 1,
         "manifest_sources": [
           "aio"
@@ -24713,7 +25096,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 10
+            "consecutive_inconclusive_deep_checks": 11
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -24845,6 +25228,11 @@
             "error": null
           }
         ],
+        "dns_preflight_status": "inconclusive",
+        "dns_preflight_reason": "french_isp_dns_transport_unavailable_from_runner",
+        "dns_preflight_selected_resolver": null,
+        "dns_migration_candidate": null,
+        "runtime_skipped_by_dns_preflight": false,
         "manifest_source_count": 1,
         "manifest_sources": [
           "yoru"
@@ -25035,7 +25423,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 11,
-            "consecutive_inconclusive_deep_checks": 10
+            "consecutive_inconclusive_deep_checks": 11
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -25171,6 +25559,11 @@
             "error": null
           }
         ],
+        "dns_preflight_status": "inconclusive",
+        "dns_preflight_reason": "french_isp_dns_transport_unavailable_from_runner",
+        "dns_preflight_selected_resolver": null,
+        "dns_migration_candidate": null,
+        "runtime_skipped_by_dns_preflight": false,
         "manifest_source_count": 1,
         "manifest_sources": [
           "aio"
@@ -25361,7 +25754,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 10
+            "consecutive_inconclusive_deep_checks": 11
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -25499,6 +25892,11 @@
             "error": null
           }
         ],
+        "dns_preflight_status": "inconclusive",
+        "dns_preflight_reason": "french_isp_dns_transport_unavailable_from_runner",
+        "dns_preflight_selected_resolver": null,
+        "dns_migration_candidate": null,
+        "runtime_skipped_by_dns_preflight": false,
         "manifest_source_count": 1,
         "manifest_sources": [
           "yoru"
@@ -25688,7 +26086,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 10
+            "consecutive_inconclusive_deep_checks": 11
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -25822,6 +26220,11 @@
             "error": null
           }
         ],
+        "dns_preflight_status": "inconclusive",
+        "dns_preflight_reason": "french_isp_dns_transport_unavailable_from_runner",
+        "dns_preflight_selected_resolver": null,
+        "dns_migration_candidate": null,
+        "runtime_skipped_by_dns_preflight": false,
         "manifest_source_count": 1,
         "manifest_sources": [
           "yoru"
@@ -26009,7 +26412,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 10
+            "consecutive_inconclusive_deep_checks": 11
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -26142,6 +26545,11 @@
             "error": null
           }
         ],
+        "dns_preflight_status": "inconclusive",
+        "dns_preflight_reason": "french_isp_dns_transport_unavailable_from_runner",
+        "dns_preflight_selected_resolver": null,
+        "dns_migration_candidate": null,
+        "runtime_skipped_by_dns_preflight": false,
         "manifest_source_count": 1,
         "manifest_sources": [
           "yoru"
@@ -26330,7 +26738,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 10
+            "consecutive_inconclusive_deep_checks": 11
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -26465,6 +26873,11 @@
             "error": null
           }
         ],
+        "dns_preflight_status": "inconclusive",
+        "dns_preflight_reason": "french_isp_dns_transport_unavailable_from_runner",
+        "dns_preflight_selected_resolver": null,
+        "dns_migration_candidate": null,
+        "runtime_skipped_by_dns_preflight": false,
         "manifest_source_count": 1,
         "manifest_sources": [
           "yoru"
@@ -26654,7 +27067,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 10
+            "consecutive_inconclusive_deep_checks": 11
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -26791,6 +27204,11 @@
             "error": null
           }
         ],
+        "dns_preflight_status": "inconclusive",
+        "dns_preflight_reason": "french_isp_dns_transport_unavailable_from_runner",
+        "dns_preflight_selected_resolver": null,
+        "dns_migration_candidate": null,
+        "runtime_skipped_by_dns_preflight": false,
         "manifest_source_count": 1,
         "manifest_sources": [
           "aio"
@@ -26981,7 +27399,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 10
+            "consecutive_inconclusive_deep_checks": 11
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -27117,6 +27535,11 @@
             "error": null
           }
         ],
+        "dns_preflight_status": "inconclusive",
+        "dns_preflight_reason": "french_isp_dns_transport_unavailable_from_runner",
+        "dns_preflight_selected_resolver": null,
+        "dns_migration_candidate": null,
+        "runtime_skipped_by_dns_preflight": false,
         "manifest_source_count": 1,
         "manifest_sources": [
           "yoru"
@@ -27307,7 +27730,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 10
+            "consecutive_inconclusive_deep_checks": 11
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -27442,6 +27865,11 @@
             "error": null
           }
         ],
+        "dns_preflight_status": "inconclusive",
+        "dns_preflight_reason": "french_isp_dns_transport_unavailable_from_runner",
+        "dns_preflight_selected_resolver": null,
+        "dns_migration_candidate": null,
+        "runtime_skipped_by_dns_preflight": false,
         "manifest_source_count": 1,
         "manifest_sources": [
           "aio"
