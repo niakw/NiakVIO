@@ -16,7 +16,7 @@ from apply_provider_overrides import apply_overrides
 
 # Stable replacements still happen during discovery.
 patched, records = apply_overrides("movix", b'const API="https://api.movix.cash/";')
-assert b"api.movix.show" in patched
+assert b"api.movix.fun" in patched
 assert b"api.movix.cash" not in patched
 assert records and records[0]["count"] == 1
 
@@ -109,4 +109,40 @@ def test_runtime_profiles_are_not_blindly_applied() -> None:
 test_staged_artifact_contract()
 test_domain_overrides()
 test_runtime_profiles_are_not_blindly_applied()
+
+
+def test_obfuscated_runtime_endpoint_override() -> None:
+    source = b"""var DOMAINS_URL='https://raw.githubusercontent.com/wooodyhood/nuvio-repo/main/domains.json',MOVIX_FALLBACK='cash',_cachedEndpoint=null;function detectApi(){if(_cachedEndpoint)return Promise.resolve(_cachedEndpoint);return fetch(DOMAINS_URL).then(function(r){return r.json()}).then(function(x){return {api:'https://api.movix.'+x.movix}}).catch(function(){return {api:'https://api.movix.'+MOVIX_FALLBACK}})};module.exports={getStreams:async function(){var e=await detectApi();await fetch(e.api+'/api/purstream/movie/157336/stream');return []}};"""
+    output, records = apply_overrides("movix", source)
+    assert b"NUVIO_FIXED_ENDPOINT:https://api.movix.fun" in output
+    assert b"NUVIO_RUNTIME_DOMAIN_OVERRIDES_V1" in output
+    assert b"fetch(DOMAINS_URL)" not in output
+    assert any(row.get("type") == "fixed_endpoint" for row in records)
+    assert any(row.get("type") == "runtime_domain_overrides" for row in records)
+    second, second_records = apply_overrides("movix", output)
+    assert second == output
+    assert not any(row.get("type") in {"fixed_endpoint", "runtime_domain_overrides"} for row in second_records)
+    with tempfile.TemporaryDirectory(dir=ROOT) as tmp:
+        target = Path(tmp) / "provider.js"
+        target.write_bytes(output)
+        subprocess.run(["node", "--check", str(target)], check=True)
+        result = subprocess.run(
+            [
+                "node",
+                str(ROOT / "scripts" / "provider_worker.cjs"),
+                str(target),
+                '{"tmdbId":"157336","mediaType":"movie","title":"Interstellar","year":2014,"label":"Interstellar (2014)","category":"movie"}',
+                '{"locale":"fr-FR","language":"fr","languages":["fr-FR","fr"],"platform":"android","settings":{},"storage":{}}',
+            ],
+            text=True,
+            capture_output=True,
+            check=True,
+        )
+        assert "wooodyhood/nuvio-repo/main/domains.json" not in result.stdout
+        assert '"host":"api.movix.fun"' in result.stdout
+        assert '"host":"api.movix.cash"' not in result.stdout
+
+
+test_obfuscated_runtime_endpoint_override()
+
 print("override tests passed")
