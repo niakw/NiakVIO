@@ -1,5 +1,5 @@
 {
-  "schema_version": 64,
+  "schema_version": 65,
   "concurrency": 4,
   "modes": {
     "availability": {
@@ -298,5 +298,70 @@
     "max_redirects": 5,
     "provider_max_fetches": 30,
     "provider_max_response_bytes": 5242880
+  },
+  "dns_preflight": {
+    "enabled": true,
+    "concurrency": 5,
+    "max_domains_per_provider": 3,
+    "query_timeout_ms": 1800,
+    "dns_tries": 1,
+    "http_timeout_ms": 6500,
+    "max_redirects": 3,
+    "max_body_bytes": 131072,
+    "primary_french_isp": "sfr",
+    "fallback_french_isps": [
+      "orange",
+      "free"
+    ],
+    "neutral_resolvers": [
+      "cloudflare",
+      "google"
+    ],
+    "continue_on_inconclusive": true,
+    "continue_on_global_unreachable": false,
+    "skip_runtime_on_confirmed_french_block": true,
+    "migration_discovery": {
+      "enabled": true,
+      "minimum_confidence": 80,
+      "same_brand_required": true,
+      "automatic_override": true
+    },
+    "resolvers": {
+      "sfr": {
+        "kind": "french_isp",
+        "servers": [
+          "109.0.66.10",
+          "109.0.66.20"
+        ]
+      },
+      "orange": {
+        "kind": "french_isp",
+        "servers": [
+          "80.10.246.2",
+          "80.10.246.129"
+        ]
+      },
+      "free": {
+        "kind": "french_isp",
+        "servers": [
+          "212.27.40.240",
+          "212.27.40.241"
+        ]
+      },
+      "cloudflare": {
+        "kind": "neutral",
+        "servers": [
+          "1.1.1.1",
+          "1.0.0.1"
+        ]
+      },
+      "google": {
+        "kind": "neutral",
+        "servers": [
+          "8.8.8.8",
+          "8.8.4.4"
+        ]
+      }
+    }
   }
 }
