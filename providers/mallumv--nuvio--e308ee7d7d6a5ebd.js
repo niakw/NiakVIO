@@ -1,9 +1,35 @@
+/* NUVIO_RUNTIME_DOMAIN_OVERRIDES_V1 */
+;(function(g,rules){
+  if(!g||typeof g.fetch!=="function")return;
+  var key="__nuvioDomainOverrideV1";
+  var state=g[key];
+  if(!state){
+    state={native:g.fetch.bind(g),rules:Object.create(null)};
+    g[key]=state;
+    g.fetch=function(input,init){
+      var next=input;
+      try{
+        var raw=(typeof Request!=="undefined"&&input instanceof Request)?input.url:String(input);
+        var url=new URL(raw);
+        var replacement=state.rules[String(url.hostname).toLowerCase()];
+        if(replacement){
+          url.hostname=replacement;
+          next=(typeof Request!=="undefined"&&input instanceof Request)?new Request(url.toString(),input):url.toString();
+        }
+      }catch(_error){}
+      return state.native(next,init);
+    };
+  }
+  for(var i=0;i<rules.length;i++){
+    try{state.rules[atob(rules[i][0])]=rules[i][1];}catch(_error){}
+  }
+})(typeof globalThis!=="undefined"?globalThis:this,[["bWFsbHVtdi5nYXk=","mallumv.wiki"]]);
 // MalluMV scraper for Nuvio
 // Scrapes content from mallumv.fit with multi-step download link extraction
 
 // Constants
 const TMDB_API_KEY = "439c478a771f35c05022f9feabcca01c"; // This will be replaced by Nuvio
-const BASE_URL = 'https://mallumv.gay';
+const BASE_URL = 'https://mallumv.wiki';
 
 // Temporarily disable URL validation for faster results
 global.URL_VALIDATION_ENABLED = true;
@@ -14,8 +40,8 @@ const WORKING_HEADERS = {
     'Accept': 'video/webm,video/ogg,video/*;q=0.9,application/ogg;q=0.7,audio/*;q=0.6,*/*;q=0.5',
     'Accept-Language': 'en-US,en;q=0.9',
     'Accept-Encoding': 'identity',
-    'Origin': 'https://mallumv.gay',
-    'Referer': 'https://mallumv.gay/',
+    'Origin': 'https://mallumv.wiki',
+    'Referer': 'https://mallumv.wiki/',
     'Sec-Fetch-Dest': 'video',
     'Sec-Fetch-Mode': 'no-cors',
     'Sec-Fetch-Site': 'cross-site',
