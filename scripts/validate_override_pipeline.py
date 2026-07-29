@@ -2,6 +2,8 @@
 # SPDX-License-Identifier: GPL-3.0-only
 """Validate that configured provider overrides reached the staged artefacts.
 
+Validator revision: dns-chain-terminal-v2.
+
 This is an end-to-end guard: it inspects staging/candidates.json and the exact
 JavaScript files later executed and promoted. A unit test of string replacement
 alone cannot catch a workflow that accidentally validates or publishes the
@@ -21,6 +23,17 @@ CONFIG = ROOT / "provider-overrides.json"
 
 def canonical(value: Any) -> str:
     return str(value or "").strip().casefold().replace("_", "-")
+
+
+
+def terminal_replacement(value: str, replacements: dict[str, object]) -> str:
+    """Resolve chained replacements without requiring intermediate hosts to remain."""
+    current = str(value)
+    seen: set[str] = set()
+    while current in replacements and current not in seen:
+        seen.add(current)
+        current = str(replacements[current])
+    return current
 
 
 def main() -> int:
@@ -53,6 +66,7 @@ def main() -> int:
         required_values = []
         if isinstance(specific, dict):
             replacements.update(specific.get("replacements") or {})
+            replacements.update(specific.get("runtime_domain_replacements") or {})
             required_values = list(specific.get("required_values") or [])
         records = candidate.get("local_patches") or []
         applied_profiles = {
@@ -96,8 +110,11 @@ def main() -> int:
             ]
             if old in text:
                 failures.append(f"{candidate.get('key')}: forbidden pre-override value remains: {old}")
-            if matching_records and new not in text:
-                failures.append(f"{candidate.get('key')}: patch recorded but replacement absent: {new}")
+            terminal = terminal_replacement(new, replacements)
+            if matching_records and terminal not in text:
+                failures.append(
+                    f"{candidate.get('key')}: patch recorded but terminal replacement absent: {terminal}"
+                )
         for required in required_values:
             required = str(required)
             if required not in text:
@@ -112,7 +129,7 @@ def main() -> int:
         for failure in failures:
             print(f"- {failure}")
         return 1
-    print(f"override pipeline validation passed ({checked} staged candidates inspected)")
+    print(f"override pipeline validation passed ({checked} staged candidates inspected; validator=dns-chain-terminal-v2)")
     return 0
 
 

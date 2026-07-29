@@ -34,6 +34,25 @@ def replace_host_in_url(value: str, old_host: str, new_host: str) -> str:
     return urlunsplit((parsed.scheme, f"{new_host}{port}", parsed.path, parsed.query, parsed.fragment))
 
 
+
+
+def collapse_replacement_chain(mapping: dict, old_host: str, new_host: str) -> bool:
+    """Retarget earlier migrations that ended at old_host to the new terminal host.
+
+    Example: a -> b followed by b -> c becomes a -> c plus b -> c. This
+    prevents the validator from treating the intentionally removed intermediate
+    host as a missing replacement target.
+    """
+    changed = False
+    for source, target in list(mapping.items()):
+        if str(target).strip().casefold() == old_host.casefold() and str(target) != new_host:
+            mapping[source] = new_host
+            changed = True
+    if mapping.get(old_host) != new_host:
+        mapping[old_host] = new_host
+        changed = True
+    return changed
+
 def accepted_migration(decision: dict, config: dict) -> dict | None:
     migration = decision.get("migration_candidate")
     if not isinstance(migration, dict):
@@ -69,7 +88,11 @@ def main() -> int:
     report = json.loads(args.report.read_text(encoding="utf-8"))
     config = json.loads(args.config.read_text(encoding="utf-8")).get("dns_preflight") or {}
     overrides = json.loads(args.overrides.read_text(encoding="utf-8"))
-    registry = json.loads(registry_path.read_text(encoding="utf-8"))
+    registry = (
+        json.loads(registry_path.read_text(encoding="utf-8"))
+        if registry_path.is_file()
+        else {"candidates": []}
+    )
 
     by_key = {str(item.get("key")): item for item in registry.get("candidates", []) if isinstance(item, dict)}
     changes: list[dict] = []
@@ -83,7 +106,7 @@ def main() -> int:
             continue
         provider_id = canonical(provider.get("canonical_id"))
         candidate = by_key.get(str(provider.get("key")))
-        if not provider_id or not candidate:
+        if not provider_id:
             continue
         old_host = str(migration["original_host"]).lower()
         new_host = str(migration["host"]).lower()
@@ -91,12 +114,8 @@ def main() -> int:
         replacements = patch.setdefault("replacements", {})
         runtime = patch.setdefault("runtime_domain_replacements", {})
         changed = False
-        if replacements.get(old_host) != new_host:
-            replacements[old_host] = new_host
-            changed = True
-        if runtime.get(old_host) != new_host:
-            runtime[old_host] = new_host
-            changed = True
+        changed = collapse_replacement_chain(replacements, old_host, new_host) or changed
+        changed = collapse_replacement_chain(runtime, old_host, new_host) or changed
 
         fixed = patch.get("fixed_endpoint")
         if isinstance(fixed, dict):
@@ -150,6 +169,8 @@ def main() -> int:
 
         local_path = (stage / str(candidate.get("local_path") or "")).resolve()
         local_path.relative_to(providers_root)
+        if not local_path.is_file():
+            continue
         original = local_path.read_bytes()
         patched, records = apply_overrides(candidate_provider, original, phase="discovery")
         local_path.write_bytes(patched)
@@ -166,7 +187,8 @@ def main() -> int:
                 existing_migrations.append(change)
         repatched_variants += 1
 
-    registry_path.write_text(json.dumps(registry, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    if registry_path.is_file():
+        registry_path.write_text(json.dumps(registry, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     print(f"DNS migration overrides applied: {len(changes)}")
     for change in changes:
         print(f"- {change['provider']}: {change['from']} -> {change['to']} ({change['confidence']})")
