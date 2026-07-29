@@ -99,6 +99,8 @@ jobs:
         run: python scripts/validate_override_pipeline.py
 
       - name: Check French ISP DNS and HTTP access before runtime scoring
+        env:
+          GLOBALPING_API_TOKEN: ${{ secrets.GLOBALPING_API_TOKEN }}
         run: |
           node scripts/provider_dns_preflight.mjs \
             --stage staging \
