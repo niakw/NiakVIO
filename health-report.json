@@ -1,6 +1,6 @@
 {
   "schema_version": 63,
-  "generated_at": "2026-07-28T05:32:40.235422+00:00",
+  "generated_at": "2026-07-29T13:11:35.699076+00:00",
   "test_environment": "github-actions-node",
   "test_mode": "deep",
   "upstream_manifest_count": 3,
@@ -16,17 +16,17 @@
   "enabled_providers": 50,
   "disabled_providers": 36,
   "activation_eligible_providers": 50,
-  "strictly_validated_enabled_providers": 30,
+  "strictly_validated_enabled_providers": 29,
   "strict_grace_enabled_providers": 0,
   "runtime_evidence_enabled_providers": 0,
   "ci_inconclusive_disabled_providers": 22,
   "status_counts": {
-    "healthy": 1,
+    "healthy": 0,
     "reachable": 50,
     "blocked": 0,
     "degraded": 0,
     "no_streams": 56,
-    "provider_unreachable": 0,
+    "provider_unreachable": 1,
     "runtime_error": 2,
     "unavailable": 0,
     "excluded": 0
@@ -137,14 +137,14 @@
         "eligible": false,
         "checks": {
           "current_status_inconclusive": false,
-          "same_sha256": true,
+          "same_sha256": false,
           "prior_score_meets_threshold": true,
           "prior_quality_gates_passed": true,
           "current_no_p2p": true,
           "upstream_enabled": true
         },
         "previous_health_score": 86,
-        "reason": "historical_inconclusive_rejected:current_status_inconclusive"
+        "reason": "historical_inconclusive_rejected:current_status_inconclusive,same_sha256"
       },
       "runtime_evidence": {
         "eligible": false,
@@ -161,35 +161,33 @@
         "01_policy_safe_no_p2p": {
           "passed": true,
           "evidence": {
-            "status": "healthy",
+            "status": "reachable",
             "disallowed_streams": 0
           },
           "threshold": "no disallowed P2P/torrent output"
         },
         "02_healthy_functional_status": {
           "passed": true,
-          "evidence": "healthy",
+          "evidence": "reachable",
           "threshold": "healthy or reachable server/API"
         },
         "03_minimum_score": {
           "passed": true,
-          "evidence": 86,
+          "evidence": 75,
           "threshold": 70
         },
         "04_fixture_and_type_coverage": {
           "passed": true,
           "evidence": {
-            "healthy_fixtures": 1,
+            "healthy_fixtures": 0,
             "fixtures_tested": 1,
-            "healthy_fixture_ratio": 1.0,
+            "healthy_fixture_ratio": 0.0,
             "required_categories": [
               "anime",
               "movie",
               "tv"
             ],
-            "healthy_categories": [
-              "movie"
-            ]
+            "healthy_categories": []
           },
           "threshold": {
             "minimum_healthy_fixtures": 1,
@@ -201,8 +199,8 @@
         "05_stream_and_fixture_coverage": {
           "passed": true,
           "evidence": {
-            "playable_streams": 1,
-            "playable_fixtures": 1
+            "playable_streams": 0,
+            "playable_fixtures": 0
           },
           "threshold": {
             "minimum_playable_streams": 1,
@@ -212,18 +210,16 @@
         "06_distinct_host_diversity": {
           "passed": true,
           "evidence": {
-            "distinct_reachable_hosts": 1,
-            "reachable_hosts": [
-              "free.finepulfe.xyz"
-            ]
+            "distinct_reachable_hosts": 0,
+            "reachable_hosts": []
           },
           "threshold": 1
         },
         "07_verified_payload_playability": {
           "passed": true,
           "evidence": {
-            "payload_verified_streams": 1,
-            "playable_streams": 1
+            "payload_verified_streams": 0,
+            "playable_streams": 0
           },
           "threshold": {
             "minimum_payload_verified_streams": 1,
@@ -233,8 +229,8 @@
         "08_quality_and_bitrate": {
           "passed": true,
           "evidence": {
-            "effective_max_height": 1080,
-            "max_bandwidth": 3000000,
+            "effective_max_height": null,
+            "max_bandwidth": null,
             "manifest_effective_height": null,
             "manifest_curation_score": 6,
             "manifest_quality_signals": [
@@ -263,11 +259,8 @@
               "en",
               "fr"
             ],
-            "accepted_subtitle_languages": [
-              "en",
-              "fr"
-            ],
-            "accepted_subtitles_advertised": 3,
+            "accepted_subtitle_languages": [],
+            "accepted_subtitles_advertised": 0,
             "accepted_subtitles_reachable": 0
           },
           "threshold": {
@@ -285,10 +278,10 @@
         "10_performance_and_stability": {
           "passed": true,
           "evidence": {
-            "provider_median_latency_ms": 694,
-            "stream_median_latency_ms": 107,
-            "strict_consecutive_deep_passes": 13,
-            "strict_total_deep_passes": 13,
+            "provider_median_latency_ms": null,
+            "stream_median_latency_ms": null,
+            "strict_consecutive_deep_passes": 0,
+            "strict_total_deep_passes": 0,
             "consecutive_inconclusive_deep_checks": 0
           },
           "threshold": {
@@ -301,22 +294,20 @@
       },
       "selected_source": "aio",
       "selected_upstream_id": "movix",
-      "observed_status": "healthy",
-      "observed_score": 86,
+      "observed_status": "reachable",
+      "observed_score": 75,
       "manifest_ordering": {
         "language_group": "vf",
         "language_tier": 0,
-        "quality_height": 1080,
-        "health_score": 86,
+        "quality_height": 0,
+        "health_score": 75,
         "manifest_curation_score": 6,
-        "provider_server_successful_response": true,
-        "observed_language_modes": [
-          "vf"
-        ]
+        "provider_server_successful_response": false,
+        "observed_language_modes": []
       },
       "settings_validation": {
-        "settings_profiles_tested": 1,
-        "settings_profiles_producing_streams": 1,
+        "settings_profiles_tested": 2,
+        "settings_profiles_producing_streams": 0,
         "selected_settings_profiles": [
           "empty"
         ],
@@ -327,7 +318,20 @@
             "fixture_phase": "primary",
             "profile": "empty",
             "setting_keys": [],
-            "stream_count": 1,
+            "stream_count": 0,
+            "error": null
+          },
+          {
+            "fixture": "Oppenheimer",
+            "fixture_phase": "primary",
+            "profile": "fixture_metadata",
+            "setting_keys": [
+              "title",
+              "label",
+              "category",
+              "mediaType"
+            ],
+            "stream_count": 0,
             "error": null
           }
         ]
@@ -339,56 +343,38 @@
         "fixtures_tested": 1,
         "total_fixtures_executed": 1,
         "activation_fixture_phase": "primary",
-        "healthy_fixtures": 1,
-        "healthy_fixture_ratio": 1,
-        "playable_fixtures": 1,
+        "healthy_fixtures": 0,
+        "healthy_fixture_ratio": 0,
+        "playable_fixtures": 0,
         "required_fixture_categories": [
           "movie",
           "tv",
           "anime"
         ],
-        "healthy_fixture_categories": [
-          "movie"
-        ],
-        "streams_playable": 1,
-        "payload_verified_streams": 1,
-        "distinct_reachable_hosts": 1,
-        "reachable_hosts": [
-          "free.finepulfe.xyz"
-        ],
-        "verified_max_height": 720,
-        "reported_max_height": 1080,
-        "effective_max_height": 1080,
-        "max_bandwidth": 3000000,
-        "audio_languages": [
-          "en",
-          "fr"
-        ],
-        "subtitle_languages": [
-          "en",
-          "fr"
-        ],
-        "accepted_audio_languages": [
-          "en",
-          "fr"
-        ],
-        "accepted_subtitle_languages": [
-          "en",
-          "fr"
-        ],
-        "accepted_subtitles_advertised": 3,
+        "healthy_fixture_categories": [],
+        "streams_playable": 0,
+        "payload_verified_streams": 0,
+        "distinct_reachable_hosts": 0,
+        "reachable_hosts": [],
+        "verified_max_height": null,
+        "reported_max_height": null,
+        "effective_max_height": null,
+        "max_bandwidth": null,
+        "audio_languages": [],
+        "subtitle_languages": [],
+        "accepted_audio_languages": [],
+        "accepted_subtitle_languages": [],
+        "accepted_subtitles_advertised": 0,
         "accepted_subtitles_reachable": 0,
-        "provider_median_latency_ms": 694,
-        "stream_median_latency_ms": 107,
+        "provider_median_latency_ms": null,
+        "stream_median_latency_ms": null,
         "disallowed_streams": 0,
         "provider_server_accessible": true,
-        "provider_server_successful_response": true,
+        "provider_server_successful_response": false,
         "provider_server_hosts": [
-          "api.movix.cash",
-          "free.finepulfe.xyz"
+          "api.movix.fun"
         ],
         "provider_server_http_statuses": [
-          200,
           403
         ],
         "manifest_description_present": true,
@@ -411,8 +397,8 @@
         "manifest_quality_signals": [
           "declared_by_multiple_manifests"
         ],
-        "settings_profiles_tested": 1,
-        "settings_profiles_producing_streams": 1,
+        "settings_profiles_tested": 2,
+        "settings_profiles_producing_streams": 0,
         "selected_settings_profiles": [
           "empty"
         ],
@@ -423,7 +409,20 @@
             "fixture_phase": "primary",
             "profile": "empty",
             "setting_keys": [],
-            "stream_count": 1,
+            "stream_count": 0,
+            "error": null
+          },
+          {
+            "fixture": "Oppenheimer",
+            "fixture_phase": "primary",
+            "profile": "fixture_metadata",
+            "setting_keys": [
+              "title",
+              "label",
+              "category",
+              "mediaType"
+            ],
+            "stream_count": 0,
             "error": null
           }
         ],
@@ -439,9 +438,9 @@
           "vostfr"
         ],
         "performance": {
-          "passed": true,
-          "provider_median_latency_ms": 694,
-          "stream_median_latency_ms": 107,
+          "passed": false,
+          "provider_median_latency_ms": null,
+          "stream_median_latency_ms": null,
           "maximum_provider_median_latency_ms": 15000,
           "maximum_stream_median_latency_ms": 12000
         }
@@ -2486,7 +2485,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 2,
-            "consecutive_inconclusive_deep_checks": 8
+            "consecutive_inconclusive_deep_checks": 9
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -2798,7 +2797,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 1,
-            "consecutive_inconclusive_deep_checks": 8
+            "consecutive_inconclusive_deep_checks": 9
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -3111,7 +3110,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 8
+            "consecutive_inconclusive_deep_checks": 9
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -3425,7 +3424,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 5
+            "consecutive_inconclusive_deep_checks": 6
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -3738,7 +3737,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 1,
-            "consecutive_inconclusive_deep_checks": 8
+            "consecutive_inconclusive_deep_checks": 9
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -4373,7 +4372,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 3,
-            "consecutive_inconclusive_deep_checks": 8
+            "consecutive_inconclusive_deep_checks": 9
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -4689,7 +4688,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 2,
-            "consecutive_inconclusive_deep_checks": 8
+            "consecutive_inconclusive_deep_checks": 9
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -4843,339 +4842,6 @@
       },
       "variant_count": 1,
       "manifest_position": 15
-    },
-    {
-      "id": "videasy",
-      "action": "enabled-all-ten-gates-passed",
-      "enabled": true,
-      "activation_eligible": true,
-      "strict_activation_eligible": true,
-      "strict_grace_eligible": false,
-      "runtime_evidence_eligible": false,
-      "activation_mode": "strict",
-      "historical_quality_grace": {
-        "eligible": false,
-        "checks": {
-          "current_status_inconclusive": false,
-          "same_sha256": true,
-          "prior_score_meets_threshold": true,
-          "prior_quality_gates_passed": true,
-          "current_no_p2p": true,
-          "upstream_enabled": true
-        },
-        "previous_health_score": 75,
-        "reason": "historical_inconclusive_rejected:current_status_inconclusive"
-      },
-      "runtime_evidence": {
-        "eligible": false,
-        "record": null,
-        "checks": {
-          "policy_allows_runtime_evidence": true,
-          "record_present": false
-        },
-        "reason": "runtime_evidence_missing"
-      },
-      "failed_gates": [],
-      "activation_blockers": [],
-      "activation_gates": {
-        "01_policy_safe_no_p2p": {
-          "passed": true,
-          "evidence": {
-            "status": "reachable",
-            "disallowed_streams": 0
-          },
-          "threshold": "no disallowed P2P/torrent output"
-        },
-        "02_healthy_functional_status": {
-          "passed": true,
-          "evidence": "reachable",
-          "threshold": "healthy or reachable server/API"
-        },
-        "03_minimum_score": {
-          "passed": true,
-          "evidence": 75,
-          "threshold": 70
-        },
-        "04_fixture_and_type_coverage": {
-          "passed": true,
-          "evidence": {
-            "healthy_fixtures": 0,
-            "fixtures_tested": 1,
-            "healthy_fixture_ratio": 0.0,
-            "required_categories": [
-              "movie",
-              "tv"
-            ],
-            "healthy_categories": []
-          },
-          "threshold": {
-            "minimum_healthy_fixtures": 1,
-            "minimum_healthy_fixture_ratio": 0.5,
-            "require_declared_type_coverage": true,
-            "representative_fixture_mode": true
-          }
-        },
-        "05_stream_and_fixture_coverage": {
-          "passed": true,
-          "evidence": {
-            "playable_streams": 0,
-            "playable_fixtures": 0
-          },
-          "threshold": {
-            "minimum_playable_streams": 1,
-            "minimum_playable_fixtures": 1
-          }
-        },
-        "06_distinct_host_diversity": {
-          "passed": true,
-          "evidence": {
-            "distinct_reachable_hosts": 0,
-            "reachable_hosts": []
-          },
-          "threshold": 1
-        },
-        "07_verified_payload_playability": {
-          "passed": true,
-          "evidence": {
-            "payload_verified_streams": 0,
-            "playable_streams": 0
-          },
-          "threshold": {
-            "minimum_payload_verified_streams": 1,
-            "minimum_playable_streams": 1
-          }
-        },
-        "08_quality_and_bitrate": {
-          "passed": true,
-          "evidence": {
-            "effective_max_height": null,
-            "max_bandwidth": null,
-            "manifest_effective_height": null,
-            "manifest_curation_score": 8,
-            "manifest_quality_signals": [
-              "declared_by_multiple_manifests",
-              "multiple_servers"
-            ],
-            "manifest_formats": [
-              "m3u8",
-              "mkv",
-              "mp4"
-            ],
-            "manifest_sources": [
-              "aio",
-              "yoru"
-            ]
-          },
-          "threshold": {
-            "minimum_effective_height": 720,
-            "minimum_bandwidth_bps_when_reported": 1000000,
-            "minimum_manifest_curation_score_when_stream_is_not_returned": 5
-          }
-        },
-        "09_language_and_subtitle_integrity": {
-          "passed": true,
-          "evidence": {
-            "accepted_audio_languages": [
-              "de",
-              "en",
-              "es",
-              "fr",
-              "hi",
-              "it",
-              "pt"
-            ],
-            "accepted_subtitle_languages": [],
-            "accepted_subtitles_advertised": 0,
-            "accepted_subtitles_reachable": 0
-          },
-          "threshold": {
-            "accepted_audio_languages": [
-              "fr",
-              "en"
-            ],
-            "accepted_subtitle_languages": [
-              "fr",
-              "en"
-            ],
-            "reachable_advertised_subtitle_required": true
-          }
-        },
-        "10_performance_and_stability": {
-          "passed": true,
-          "evidence": {
-            "provider_median_latency_ms": null,
-            "stream_median_latency_ms": null,
-            "strict_consecutive_deep_passes": 0,
-            "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 0
-          },
-          "threshold": {
-            "maximum_provider_median_latency_ms": 15000,
-            "maximum_stream_median_latency_ms": 12000,
-            "minimum_consecutive_deep_passes": 1,
-            "minimum_total_deep_passes": 1
-          }
-        }
-      },
-      "selected_source": "aio",
-      "selected_upstream_id": "videasy",
-      "observed_status": "reachable",
-      "observed_score": 75,
-      "manifest_ordering": {
-        "language_group": "fr_unspecified",
-        "language_tier": 2,
-        "quality_height": 0,
-        "health_score": 75,
-        "manifest_curation_score": 8,
-        "provider_server_successful_response": true,
-        "observed_language_modes": []
-      },
-      "settings_validation": {
-        "settings_profiles_tested": 2,
-        "settings_profiles_producing_streams": 0,
-        "selected_settings_profiles": [
-          "empty"
-        ],
-        "selected_setting_keys": [],
-        "settings_diagnostics": [
-          {
-            "fixture": "Oppenheimer",
-            "fixture_phase": "primary",
-            "profile": "empty",
-            "setting_keys": [],
-            "stream_count": 0,
-            "error": null
-          },
-          {
-            "fixture": "Oppenheimer",
-            "fixture_phase": "primary",
-            "profile": "fixture_metadata",
-            "setting_keys": [
-              "title",
-              "label",
-              "category",
-              "mediaType"
-            ],
-            "stream_count": 0,
-            "error": null
-          }
-        ]
-      },
-      "evidence": {
-        "primary_fixtures_tested": 1,
-        "fallback_fixtures_tested": 0,
-        "fallback_triggered": false,
-        "fixtures_tested": 1,
-        "total_fixtures_executed": 1,
-        "activation_fixture_phase": "primary",
-        "healthy_fixtures": 0,
-        "healthy_fixture_ratio": 0,
-        "playable_fixtures": 0,
-        "required_fixture_categories": [
-          "movie",
-          "tv"
-        ],
-        "healthy_fixture_categories": [],
-        "streams_playable": 0,
-        "payload_verified_streams": 0,
-        "distinct_reachable_hosts": 0,
-        "reachable_hosts": [],
-        "verified_max_height": null,
-        "reported_max_height": null,
-        "effective_max_height": null,
-        "max_bandwidth": null,
-        "audio_languages": [],
-        "subtitle_languages": [],
-        "accepted_audio_languages": [],
-        "accepted_subtitle_languages": [],
-        "accepted_subtitles_advertised": 0,
-        "accepted_subtitles_reachable": 0,
-        "provider_median_latency_ms": null,
-        "stream_median_latency_ms": null,
-        "disallowed_streams": 0,
-        "provider_server_accessible": true,
-        "provider_server_successful_response": true,
-        "provider_server_hosts": [
-          "api.wingsdatabase.com"
-        ],
-        "provider_server_http_statuses": [
-          200,
-          400
-        ],
-        "manifest_description_present": true,
-        "manifest_supported_types": [
-          "movie",
-          "tv"
-        ],
-        "manifest_effective_height": null,
-        "manifest_accepted_languages": [
-          "de",
-          "en",
-          "es",
-          "fr",
-          "hi",
-          "it",
-          "pt"
-        ],
-        "manifest_formats": [
-          "m3u8",
-          "mkv",
-          "mp4"
-        ],
-        "manifest_curation_score": 8,
-        "manifest_quality_signals": [
-          "declared_by_multiple_manifests",
-          "multiple_servers"
-        ],
-        "settings_profiles_tested": 2,
-        "settings_profiles_producing_streams": 0,
-        "selected_settings_profiles": [
-          "empty"
-        ],
-        "selected_setting_keys": [],
-        "settings_diagnostics": [
-          {
-            "fixture": "Oppenheimer",
-            "fixture_phase": "primary",
-            "profile": "empty",
-            "setting_keys": [],
-            "stream_count": 0,
-            "error": null
-          },
-          {
-            "fixture": "Oppenheimer",
-            "fixture_phase": "primary",
-            "profile": "fixture_metadata",
-            "setting_keys": [
-              "title",
-              "label",
-              "category",
-              "mediaType"
-            ],
-            "stream_count": 0,
-            "error": null
-          }
-        ],
-        "manifest_source_count": 2,
-        "manifest_sources": [
-          "aio",
-          "yoru"
-        ],
-        "manifest_usable_stream_format": true,
-        "manifest_rich_language_description": true,
-        "manifest_language_modes": [
-          "fr_unspecified"
-        ],
-        "performance": {
-          "passed": false,
-          "provider_median_latency_ms": null,
-          "stream_median_latency_ms": null,
-          "maximum_provider_median_latency_ms": 15000,
-          "maximum_stream_median_latency_ms": 12000
-        }
-      },
-      "variant_count": 2,
-      "manifest_position": 16
     },
     {
       "id": "toflix",
@@ -5488,7 +5154,7 @@
         }
       },
       "variant_count": 1,
-      "manifest_position": 17
+      "manifest_position": 16
     },
     {
       "id": "anime-sama",
@@ -5653,7 +5319,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 3,
-            "consecutive_inconclusive_deep_checks": 8
+            "consecutive_inconclusive_deep_checks": 9
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -5807,7 +5473,7 @@
         }
       },
       "variant_count": 2,
-      "manifest_position": 18
+      "manifest_position": 17
     },
     {
       "id": "sekai",
@@ -5970,7 +5636,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 3,
-            "consecutive_inconclusive_deep_checks": 8
+            "consecutive_inconclusive_deep_checks": 9
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -6122,6 +5788,288 @@
         }
       },
       "variant_count": 1,
+      "manifest_position": 18
+    },
+    {
+      "id": "videasy",
+      "action": "enabled-same-sha-prior-score-and-quality-gates",
+      "enabled": true,
+      "activation_eligible": true,
+      "strict_activation_eligible": false,
+      "strict_grace_eligible": false,
+      "runtime_evidence_eligible": false,
+      "activation_mode": "historical_quality_grace",
+      "historical_quality_grace": {
+        "eligible": true,
+        "checks": {
+          "current_status_inconclusive": true,
+          "same_sha256": true,
+          "prior_score_meets_threshold": true,
+          "prior_quality_gates_passed": true,
+          "current_no_p2p": true,
+          "upstream_enabled": true
+        },
+        "previous_health_score": 75,
+        "reason": null
+      },
+      "runtime_evidence": {
+        "eligible": false,
+        "record": null,
+        "checks": {
+          "policy_allows_runtime_evidence": true,
+          "record_present": false
+        },
+        "reason": "runtime_evidence_missing"
+      },
+      "failed_gates": [
+        "02_healthy_functional_status",
+        "03_minimum_score",
+        "04_fixture_and_type_coverage",
+        "05_stream_and_fixture_coverage",
+        "06_distinct_host_diversity",
+        "07_verified_payload_playability",
+        "08_quality_and_bitrate",
+        "09_language_and_subtitle_integrity",
+        "10_performance_and_stability"
+      ],
+      "activation_blockers": [],
+      "activation_gates": {
+        "01_policy_safe_no_p2p": {
+          "passed": true,
+          "evidence": {
+            "status": "provider_unreachable",
+            "disallowed_streams": 0
+          },
+          "threshold": "no disallowed P2P/torrent output"
+        },
+        "02_healthy_functional_status": {
+          "passed": false,
+          "evidence": "provider_unreachable",
+          "threshold": "healthy or reachable server/API"
+        },
+        "03_minimum_score": {
+          "passed": false,
+          "evidence": 0,
+          "threshold": 70
+        },
+        "04_fixture_and_type_coverage": {
+          "passed": false,
+          "evidence": {
+            "healthy_fixtures": 0,
+            "fixtures_tested": 1,
+            "healthy_fixture_ratio": 0.0,
+            "required_categories": [
+              "movie",
+              "tv"
+            ],
+            "healthy_categories": []
+          },
+          "threshold": {
+            "minimum_healthy_fixtures": 1,
+            "minimum_healthy_fixture_ratio": 0.5,
+            "require_declared_type_coverage": true,
+            "representative_fixture_mode": true
+          }
+        },
+        "05_stream_and_fixture_coverage": {
+          "passed": false,
+          "evidence": {
+            "playable_streams": 0,
+            "playable_fixtures": 0
+          },
+          "threshold": {
+            "minimum_playable_streams": 1,
+            "minimum_playable_fixtures": 1
+          }
+        },
+        "06_distinct_host_diversity": {
+          "passed": false,
+          "evidence": {
+            "distinct_reachable_hosts": 0,
+            "reachable_hosts": []
+          },
+          "threshold": 1
+        },
+        "07_verified_payload_playability": {
+          "passed": false,
+          "evidence": {
+            "payload_verified_streams": 0,
+            "playable_streams": 0
+          },
+          "threshold": {
+            "minimum_payload_verified_streams": 1,
+            "minimum_playable_streams": 1
+          }
+        },
+        "08_quality_and_bitrate": {
+          "passed": false,
+          "evidence": {
+            "effective_max_height": null,
+            "max_bandwidth": null,
+            "manifest_effective_height": null,
+            "manifest_curation_score": 8,
+            "manifest_quality_signals": [
+              "declared_by_multiple_manifests",
+              "multiple_servers"
+            ],
+            "manifest_formats": [
+              "m3u8",
+              "mkv",
+              "mp4"
+            ],
+            "manifest_sources": [
+              "aio",
+              "yoru"
+            ]
+          },
+          "threshold": {
+            "minimum_effective_height": 720,
+            "minimum_bandwidth_bps_when_reported": 1000000,
+            "minimum_manifest_curation_score_when_stream_is_not_returned": 5
+          }
+        },
+        "09_language_and_subtitle_integrity": {
+          "passed": false,
+          "evidence": {
+            "accepted_audio_languages": [],
+            "accepted_subtitle_languages": [],
+            "accepted_subtitles_advertised": 0,
+            "accepted_subtitles_reachable": 0
+          },
+          "threshold": {
+            "accepted_audio_languages": [
+              "fr",
+              "en"
+            ],
+            "accepted_subtitle_languages": [
+              "fr",
+              "en"
+            ],
+            "reachable_advertised_subtitle_required": true
+          }
+        },
+        "10_performance_and_stability": {
+          "passed": false,
+          "evidence": {
+            "provider_median_latency_ms": null,
+            "stream_median_latency_ms": null,
+            "strict_consecutive_deep_passes": 0,
+            "strict_total_deep_passes": 0,
+            "consecutive_inconclusive_deep_checks": 1
+          },
+          "threshold": {
+            "maximum_provider_median_latency_ms": 15000,
+            "maximum_stream_median_latency_ms": 12000,
+            "minimum_consecutive_deep_passes": 1,
+            "minimum_total_deep_passes": 1
+          }
+        }
+      },
+      "selected_source": "aio",
+      "selected_upstream_id": "videasy",
+      "observed_status": "provider_unreachable",
+      "observed_score": 0,
+      "manifest_ordering": {
+        "language_group": "fr_unspecified",
+        "language_tier": 2,
+        "quality_height": 0,
+        "health_score": 0,
+        "manifest_curation_score": 8,
+        "provider_server_successful_response": false,
+        "observed_language_modes": []
+      },
+      "settings_validation": {
+        "settings_profiles_tested": 0,
+        "settings_profiles_producing_streams": 0,
+        "selected_settings_profiles": [],
+        "selected_setting_keys": [],
+        "settings_diagnostics": []
+      },
+      "evidence": {
+        "primary_fixtures_tested": 1,
+        "fallback_fixtures_tested": 0,
+        "fallback_triggered": false,
+        "fixtures_tested": 1,
+        "total_fixtures_executed": 1,
+        "activation_fixture_phase": "primary",
+        "healthy_fixtures": 0,
+        "healthy_fixture_ratio": 0,
+        "playable_fixtures": 0,
+        "required_fixture_categories": [
+          "movie",
+          "tv"
+        ],
+        "healthy_fixture_categories": [],
+        "streams_playable": 0,
+        "payload_verified_streams": 0,
+        "distinct_reachable_hosts": 0,
+        "reachable_hosts": [],
+        "verified_max_height": null,
+        "reported_max_height": null,
+        "effective_max_height": null,
+        "max_bandwidth": null,
+        "audio_languages": [],
+        "subtitle_languages": [],
+        "accepted_audio_languages": [],
+        "accepted_subtitle_languages": [],
+        "accepted_subtitles_advertised": 0,
+        "accepted_subtitles_reachable": 0,
+        "provider_median_latency_ms": null,
+        "stream_median_latency_ms": null,
+        "disallowed_streams": 0,
+        "provider_server_accessible": false,
+        "provider_server_successful_response": false,
+        "provider_server_hosts": [],
+        "provider_server_http_statuses": [],
+        "manifest_description_present": true,
+        "manifest_supported_types": [
+          "movie",
+          "tv"
+        ],
+        "manifest_effective_height": null,
+        "manifest_accepted_languages": [
+          "de",
+          "en",
+          "es",
+          "fr",
+          "hi",
+          "it",
+          "pt"
+        ],
+        "manifest_formats": [
+          "m3u8",
+          "mkv",
+          "mp4"
+        ],
+        "manifest_curation_score": 8,
+        "manifest_quality_signals": [
+          "declared_by_multiple_manifests",
+          "multiple_servers"
+        ],
+        "settings_profiles_tested": 0,
+        "settings_profiles_producing_streams": 0,
+        "selected_settings_profiles": [],
+        "selected_setting_keys": [],
+        "settings_diagnostics": [],
+        "manifest_source_count": 2,
+        "manifest_sources": [
+          "aio",
+          "yoru"
+        ],
+        "manifest_usable_stream_format": true,
+        "manifest_rich_language_description": true,
+        "manifest_language_modes": [
+          "fr_unspecified"
+        ],
+        "performance": {
+          "passed": false,
+          "provider_median_latency_ms": null,
+          "stream_median_latency_ms": null,
+          "maximum_provider_median_latency_ms": 15000,
+          "maximum_stream_median_latency_ms": 12000
+        }
+      },
+      "variant_count": 2,
       "manifest_position": 19
     },
     {
@@ -8526,7 +8474,7 @@
         "quality_height": 720,
         "health_score": 75,
         "manifest_curation_score": 9,
-        "provider_server_successful_response": true,
+        "provider_server_successful_response": false,
         "observed_language_modes": []
       },
       "settings_validation": {
@@ -8593,12 +8541,12 @@
         "stream_median_latency_ms": null,
         "disallowed_streams": 0,
         "provider_server_accessible": true,
-        "provider_server_successful_response": true,
+        "provider_server_successful_response": false,
         "provider_server_hosts": [
           "vegamovies.mq"
         ],
         "provider_server_http_statuses": [
-          200
+          404
         ],
         "manifest_description_present": true,
         "manifest_supported_types": [
@@ -12622,7 +12570,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 8
+            "consecutive_inconclusive_deep_checks": 9
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -12936,7 +12884,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 8
+            "consecutive_inconclusive_deep_checks": 9
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -13251,7 +13199,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 8
+            "consecutive_inconclusive_deep_checks": 9
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -13572,7 +13520,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 8
+            "consecutive_inconclusive_deep_checks": 9
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -13892,7 +13840,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 8
+            "consecutive_inconclusive_deep_checks": 9
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -14209,7 +14157,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 8
+            "consecutive_inconclusive_deep_checks": 9
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -14522,7 +14470,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 8
+            "consecutive_inconclusive_deep_checks": 9
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -14839,7 +14787,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 8
+            "consecutive_inconclusive_deep_checks": 9
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -15156,7 +15104,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 8
+            "consecutive_inconclusive_deep_checks": 9
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -15466,7 +15414,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 8
+            "consecutive_inconclusive_deep_checks": 9
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -15778,7 +15726,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 3
+            "consecutive_inconclusive_deep_checks": 4
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -16058,7 +16006,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 10
+            "consecutive_inconclusive_deep_checks": 11
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -16381,7 +16329,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 8
+            "consecutive_inconclusive_deep_checks": 9
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -16705,7 +16653,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 10
+            "consecutive_inconclusive_deep_checks": 11
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -17030,7 +16978,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 10
+            "consecutive_inconclusive_deep_checks": 11
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -21748,7 +21696,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 8
+            "consecutive_inconclusive_deep_checks": 9
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -22082,7 +22030,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 6,
-            "consecutive_inconclusive_deep_checks": 8
+            "consecutive_inconclusive_deep_checks": 9
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -22416,7 +22364,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 8
+            "consecutive_inconclusive_deep_checks": 9
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -22746,7 +22694,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 21
+            "consecutive_inconclusive_deep_checks": 22
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -23077,7 +23025,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 6,
-            "consecutive_inconclusive_deep_checks": 8
+            "consecutive_inconclusive_deep_checks": 9
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -23408,7 +23356,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 21
+            "consecutive_inconclusive_deep_checks": 22
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -23734,7 +23682,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 8
+            "consecutive_inconclusive_deep_checks": 9
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -24057,7 +24005,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 8
+            "consecutive_inconclusive_deep_checks": 9
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -24380,7 +24328,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 8
+            "consecutive_inconclusive_deep_checks": 9
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -24703,7 +24651,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 8
+            "consecutive_inconclusive_deep_checks": 9
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -25025,7 +24973,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 11,
-            "consecutive_inconclusive_deep_checks": 8
+            "consecutive_inconclusive_deep_checks": 9
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -25351,7 +25299,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 8
+            "consecutive_inconclusive_deep_checks": 9
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -25678,7 +25626,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 8
+            "consecutive_inconclusive_deep_checks": 9
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -25999,7 +25947,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 8
+            "consecutive_inconclusive_deep_checks": 9
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -26320,7 +26268,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 8
+            "consecutive_inconclusive_deep_checks": 9
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -26644,7 +26592,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 8
+            "consecutive_inconclusive_deep_checks": 9
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -26971,7 +26919,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 8
+            "consecutive_inconclusive_deep_checks": 9
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -27297,7 +27245,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 8
+            "consecutive_inconclusive_deep_checks": 9
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
