@@ -49,6 +49,228 @@ const BLOCK_PATTERNS = [
   /this site has been blocked/i,
 ];
 
+
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function globalpingHeaders(remoteConfig = {}) {
+  const headers = {
+    'Content-Type': 'application/json',
+    Accept: 'application/json',
+    'User-Agent': 'niakw-nuvio-providers/GlobalpingDNSPreflight',
+  };
+  const token = process.env[String(remoteConfig.token_env || 'GLOBALPING_API_TOKEN')];
+  if (token) headers.Authorization = `Bearer ${token}`;
+  return headers;
+}
+
+async function globalpingJson(url, init, remoteConfig = {}) {
+  const timeoutMs = Math.max(3000, Number(remoteConfig.request_timeout_ms || 15000));
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetch(url, { ...init, signal: controller.signal, headers: { ...globalpingHeaders(remoteConfig), ...(init?.headers || {}) } });
+    const text = await response.text();
+    let payload = null;
+    try { payload = text ? JSON.parse(text) : {}; } catch { payload = { raw: text }; }
+    if (!response.ok) {
+      const error = new Error(`Globalping HTTP ${response.status}: ${String(payload?.message || payload?.error || text).slice(0, 300)}`);
+      error.status = response.status;
+      error.payload = payload;
+      throw error;
+    }
+    return payload;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+async function runGlobalpingMeasurement(body, remoteConfig = {}) {
+  const apiBase = String(remoteConfig.api_base || 'https://api.globalping.io/v1').replace(/\/$/, '');
+  const created = await globalpingJson(`${apiBase}/measurements`, {
+    method: 'POST',
+    body: JSON.stringify(body),
+  }, remoteConfig);
+  const id = String(created?.id || '');
+  if (!id) throw new Error('Globalping did not return a measurement id');
+  const pollInterval = Math.max(500, Number(remoteConfig.poll_interval_ms || 1200));
+  const deadline = Date.now() + Math.max(5000, Number(remoteConfig.measurement_timeout_ms || 30000));
+  while (Date.now() < deadline) {
+    const result = await globalpingJson(`${apiBase}/measurements/${encodeURIComponent(id)}`, { method: 'GET' }, remoteConfig);
+    if (result?.status && result.status !== 'in-progress') return { id, payload: result };
+    await sleep(pollInterval);
+  }
+  throw Object.assign(new Error(`Globalping measurement ${id} timed out`), { code: 'ETIMEOUT' });
+}
+
+function firstGlobalpingResult(payload) {
+  return Array.isArray(payload?.results) ? payload.results[0] || null : null;
+}
+
+function globalpingProbeSummary(entry) {
+  const probe = entry?.probe || {};
+  return {
+    country: probe.country || probe.location?.country || null,
+    city: probe.city || probe.location?.city || null,
+    network: probe.network || null,
+    asn: probe.asn || null,
+    tags: probe.tags || [],
+  };
+}
+
+function parseGlobalpingDns(measurement, resolverName, resolverConfig) {
+  const entry = firstGlobalpingResult(measurement.payload);
+  if (!entry) {
+    return { resolver: resolverName, servers: resolverConfig.servers || [], status: 'unavailable', addresses: [], errors: [{ family: 4, code: 'GLOBALPING_NO_PROBE_RESULT' }], transport: 'globalping', measurement_id: measurement.id };
+  }
+  const result = entry.result || {};
+  const answers = Array.isArray(result.answers) ? result.answers : [];
+  const addresses = [];
+  for (const answer of answers) {
+    const value = String(answer?.value || answer?.data || '').trim();
+    const family = net.isIP(value);
+    if ((family === 4 || family === 6) && !isPrivateIp(value)) addresses.push({ address: value, family });
+  }
+  const statusCode = String(result.statusCode || result.status || '').toUpperCase();
+  const raw = String(result.rawOutput || '');
+  const negative = /NXDOMAIN|NODATA|NOTFOUND/.test(statusCode) || /status:\s*(?:NXDOMAIN|NODATA)/i.test(raw);
+  const unavailable = /SERVFAIL|REFUSED|TIMEOUT/.test(statusCode) || /timed out|no servers could be reached|connection refused/i.test(raw);
+  return {
+    resolver: resolverName,
+    servers: resolverConfig.servers || [],
+    status: addresses.length ? 'resolved' : negative ? 'negative' : unavailable ? 'unavailable' : 'error',
+    addresses,
+    errors: addresses.length ? [] : [{ family: 4, code: statusCode || 'GLOBALPING_DNS_EMPTY' }],
+    transport: 'globalping',
+    measurement_id: measurement.id,
+    probe: globalpingProbeSummary(entry),
+    raw_status: statusCode || null,
+  };
+}
+
+function headersToObject(value) {
+  if (!value) return {};
+  if (!Array.isArray(value)) return typeof value === 'object' ? value : {};
+  const output = {};
+  for (const item of value) {
+    const name = String(item?.name || item?.key || '').toLowerCase();
+    if (name) output[name] = item?.value;
+  }
+  return output;
+}
+
+function parseGlobalpingHttp(measurement, originalHost) {
+  const entry = firstGlobalpingResult(measurement.payload);
+  if (!entry) return { status: 'unreachable', http_status: null, final_host: normalizeHost(originalHost), redirects: [], body_excerpt: '', attempts: [], error: 'GLOBALPING_NO_PROBE_RESULT', transport: 'globalping', measurement_id: measurement.id };
+  const result = entry.result || {};
+  const raw = String(result.rawOutput || '');
+  const headers = headersToObject(result.headers);
+  const status = Number(result.statusCode || result.status || (raw.match(/HTTP\/\S+\s+(\d{3})/i) || [])[1]) || null;
+  const location = String(headers.location || (raw.match(/^location:\s*(\S+)/im) || [])[1] || '');
+  const redirects = [];
+  let finalHost = normalizeHost(originalHost);
+  if (location) {
+    try {
+      const next = new URL(location, `https://${originalHost}/`);
+      finalHost = normalizeHost(next.hostname);
+      redirects.push({ from: normalizeHost(originalHost), to: finalHost, status });
+    } catch {}
+  }
+  const blockPattern = BLOCK_PATTERNS.find((pattern) => pattern.test(raw));
+  const blocked = status === 451 || Boolean(blockPattern);
+  const reachable = Number.isInteger(status) && status < 500 && !blocked;
+  return {
+    status: blocked ? 'blocked' : reachable ? 'reachable' : 'http_error',
+    http_status: status,
+    final_host: finalHost,
+    redirects,
+    body_excerpt: raw.replace(/\s+/g, ' ').slice(0, 700),
+    block_signal: blockPattern?.source || (status === 451 ? 'http_451' : null),
+    attempts: [{ host: normalizeHost(originalHost), status, ok: reachable, transport: 'globalping' }],
+    transport: 'globalping',
+    measurement_id: measurement.id,
+    probe: globalpingProbeSummary(entry),
+  };
+}
+
+export function createGlobalpingDependencies(preflightConfig, injected = {}) {
+  const remoteConfig = preflightConfig.remote_probe || {};
+  const runMeasurement = injected.runMeasurement || runGlobalpingMeasurement;
+  const dnsCache = new Map();
+  const httpCache = new Map();
+  const magicTable = remoteConfig.location_magic || {};
+
+  async function runAtFirstAvailableLocation(bodyFactory, resolverName) {
+    const candidates = Array.isArray(magicTable[resolverName]) ? magicTable[resolverName] : [magicTable[resolverName] || `France+${resolverName}+eyeball`];
+    let lastError = null;
+    for (const magic of candidates.filter(Boolean)) {
+      try {
+        return await runMeasurement(bodyFactory(String(magic)), remoteConfig);
+      } catch (error) {
+        lastError = error;
+        if (![400, 404, 422].includes(Number(error?.status))) break;
+      }
+    }
+    throw lastError || new Error(`No Globalping location available for ${resolverName}`);
+  }
+
+  async function resolveFn(host, resolverConfig, options = preflightConfig) {
+    if (resolverConfig?.kind !== 'french_isp' || remoteConfig.enabled === false) {
+      return resolveWithResolver(host, resolverConfig, options);
+    }
+    const key = `${resolverConfig.name}:${normalizeHost(host)}`;
+    if (!dnsCache.has(key)) {
+      dnsCache.set(key, (async () => {
+        try {
+          const resolver = String((resolverConfig.servers || [])[0] || '');
+          const measurement = await runAtFirstAvailableLocation((magic) => ({
+            type: 'dns',
+            target: normalizeHost(host),
+            locations: [{ magic }],
+            limit: 1,
+            measurementOptions: { query: { type: 'A' }, resolver, protocol: 'UDP' },
+          }), resolverConfig.name);
+          return parseGlobalpingDns(measurement, resolverConfig.name, resolverConfig);
+        } catch (error) {
+          if (remoteConfig.fallback_to_direct === true) return resolveWithResolver(host, resolverConfig, options);
+          return { resolver: resolverConfig.name, servers: resolverConfig.servers || [], status: 'unavailable', addresses: [], errors: [{ family: 4, code: compactError(error) }], transport: 'globalping', error: compactError(error) };
+        }
+      })());
+    }
+    return dnsCache.get(key);
+  }
+
+  async function probeFn(host, resolverConfig, options = preflightConfig) {
+    if (resolverConfig?.kind !== 'french_isp' || remoteConfig.enabled === false) {
+      return probeHttpThroughResolver(host, resolverConfig, options, { resolveHost: (targetHost) => resolveFn(targetHost, resolverConfig, options) });
+    }
+    const key = `${resolverConfig.name}:${normalizeHost(host)}`;
+    if (!httpCache.has(key)) {
+      httpCache.set(key, (async () => {
+        try {
+          const dnsResult = await resolveFn(host, resolverConfig, options);
+          if (!dnsResult.measurement_id) return { status: 'unreachable', http_status: null, final_host: normalizeHost(host), redirects: [], body_excerpt: '', attempts: [], error: 'GLOBALPING_DNS_MEASUREMENT_MISSING', transport: 'globalping' };
+          const measurement = await runMeasurement({
+            type: 'http',
+            target: `https://${normalizeHost(host)}/`,
+            locations: [{ magic: dnsResult.measurement_id }],
+            limit: 1,
+            measurementOptions: { request: { method: 'GET' } },
+          }, remoteConfig);
+          return parseGlobalpingHttp(measurement, host);
+        } catch (error) {
+          return { status: 'unreachable', http_status: null, final_host: normalizeHost(host), redirects: [], body_excerpt: '', attempts: [], error: compactError(error), transport: 'globalping' };
+        }
+      })());
+    }
+    return httpCache.get(key);
+  }
+
+  return { resolveFn, probeFn, dnsCache, httpCache };
+}
+
 function parseArgs(argv) {
   const args = {};
   for (let index = 0; index < argv.length; index += 1) {
@@ -582,37 +804,15 @@ async function runCli() {
   const concurrency = Math.max(1, Math.min(8, Number(preflightConfig.concurrency || 3)));
   const candidates = Array.isArray(registry.candidates) ? registry.candidates : [];
   const frenchResolverNames = [preflightConfig.primary_french_isp, ...(preflightConfig.fallback_french_isps || [])].filter(Boolean);
-  const resolverTransport = [];
-  for (const name of frenchResolverNames) {
-    const resolverConfig = { name, ...(preflightConfig.resolvers?.[name] || {}) };
-    resolverTransport.push(await resolveWithResolver('example.com', resolverConfig, preflightConfig));
-  }
-  const frenchResolverTransportAvailable = resolverTransport.some((item) => item.status === 'resolved');
+  const remoteDependencies = createGlobalpingDependencies(preflightConfig);
+  const resolverTransport = frenchResolverNames.map((name) => ({
+    resolver: name,
+    status: preflightConfig.remote_probe?.enabled === false ? 'direct' : 'globalping',
+    location_magic: preflightConfig.remote_probe?.location_magic?.[name] || [],
+  }));
+  const frenchResolverTransportAvailable = preflightConfig.remote_probe?.enabled !== false;
   let nextIndex = 0;
   const results = new Array(candidates.length);
-
-  if (!frenchResolverTransportAvailable && resolverTransport.length
-      && resolverTransport.every((item) => item.status === 'unavailable')) {
-    for (let index = 0; index < candidates.length; index += 1) {
-      const candidate = candidates[index];
-      const providerPath = path.resolve(stage, String(candidate.local_path || ''));
-      let sourceText = '';
-      try { sourceText = await fs.readFile(providerPath, 'utf8'); } catch {}
-      results[index] = {
-        key: candidate.key,
-        source: candidate.source,
-        canonical_id: candidate.canonical_id,
-        sha256: candidate.sha256,
-        domain_hints: extractCandidateDomains(candidate, sourceText, overrides, preflightConfig.max_domains_per_provider || 4),
-        domains: [],
-        decision: {
-          status: 'inconclusive',
-          continue_runtime: true,
-          reason: 'french_isp_dns_transport_unavailable_from_runner',
-        },
-      };
-    }
-  }
 
   async function worker() {
     while (true) {
@@ -625,7 +825,7 @@ async function runCli() {
         const domainHints = extractCandidateDomains(candidate, sourceText, overrides, preflightConfig.max_domains_per_provider || 4);
         const domainResults = [];
         for (const hint of domainHints) {
-          domainResults.push(await checkDomainAcrossResolvers(hint.host, preflightConfig, { domainHints }));
+          domainResults.push(await checkDomainAcrossResolvers(hint.host, preflightConfig, { domainHints, resolveFn: remoteDependencies.resolveFn, probeFn: remoteDependencies.probeFn }));
           if (domainResults.at(-1)?.status.startsWith('accessible_')) break;
         }
         const decision = providerDecision(domainResults, preflightConfig);
@@ -653,9 +853,7 @@ async function runCli() {
       }
     }
   }
-  if (frenchResolverTransportAvailable || !resolverTransport.every((item) => item.status === 'unavailable')) {
-    await Promise.all(Array.from({ length: Math.min(concurrency, candidates.length || 1) }, () => worker()));
-  }
+  await Promise.all(Array.from({ length: Math.min(concurrency, candidates.length || 1) }, () => worker()));
   providers.push(...results.filter(Boolean));
   const counts = {};
   for (const item of providers) counts[item.decision.status] = (counts[item.decision.status] || 0) + 1;
@@ -668,6 +866,7 @@ async function runCli() {
     resolver_transport: {
       control_domain: 'example.com',
       french_isp_transport_available: frenchResolverTransportAvailable,
+      mode: preflightConfig.remote_probe?.enabled === false ? 'direct' : 'globalping',
       checks: resolverTransport,
     },
     neutral_resolvers: preflightConfig.neutral_resolvers || [],
