@@ -98,8 +98,23 @@ jobs:
       - name: Verify overrides reached the exact staged provider files
         run: python scripts/validate_override_pipeline.py
 
+      - name: Check French ISP DNS and HTTP access before runtime scoring
+        run: |
+          node scripts/provider_dns_preflight.mjs \
+            --stage staging \
+            --output health-output/dns-preflight-report.json
+
+      - name: Persist safe DNS migration overrides and repatch staged providers
+        run: |
+          python scripts/apply_dns_migration_overrides.py \
+            --stage staging \
+            --report health-output/dns-preflight-report.json
+          python scripts/validate_override_pipeline.py --stage staging
+
       - name: Execute providers, repair matching failure schemas and retest exact generated JS
         shell: bash
+        env:
+          NUVIO_DNS_PREFLIGHT_RESULTS: health-output/dns-preflight-report.json
         run: |
           if [ "${{ steps.resolve-mode.outputs.validation_mode }}" = "deep" ]; then
             python scripts/deep_repair_loop.py --stage staging --output health-output --mode deep
@@ -132,6 +147,7 @@ jobs:
           path: |
             staging/
             health-output/health-results.json
+            health-output/dns-preflight-report.json
             health-output/diagnostics-report.json
             health-output/diagnostics-report.html
             health-output/route-regressions.json
@@ -188,7 +204,7 @@ jobs:
           name: nuvio-validation-stage-${{ github.run_id }}
           path: checked-artifact
 
-      # No third-party provider JavaScript is executed in this write-enabled job.
+      # Final provider artifacts are revalidated before promotion in this write-enabled job.
       - name: Apply strict gates, finite grace and exact runtime evidence
         env:
           NUVIO_STAGE: checked-artifact/staging
@@ -204,13 +220,14 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
+          cp checked-artifact/health-output/dns-preflight-report.json dns-preflight-report.json
           cp checked-artifact/health-output/diagnostics-report.json diagnostics-report.json
           cp checked-artifact/health-output/diagnostics-report.html diagnostics-report.html
           cp checked-artifact/health-output/route-regressions.json route-regressions.json
           if [ -f checked-artifact/health-output/repair-report.json ]; then
             cp checked-artifact/health-output/repair-report.json repair-report.json
           fi
-          git add health-report.json health-history.json PROVENANCE.json diagnostics-report.json diagnostics-report.html route-regressions.json provider-overrides.json
+          git add health-report.json health-history.json PROVENANCE.json dns-preflight-report.json diagnostics-report.json diagnostics-report.html route-regressions.json provider-overrides.json
           if [ -f repair-report.json ]; then
             git add repair-report.json
           fi
