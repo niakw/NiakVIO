@@ -1,16 +1,16 @@
 {
   "schema_version": 63,
-  "updated_at": "2026-07-29T15:39:12.008810+00:00",
+  "updated_at": "2026-07-29T16:29:21.782001+00:00",
   "variants": {
     "gowaru:anime-sama": {
       "source": "gowaru",
       "upstream_id": "anime-sama",
       "canonical_id": "anime-sama",
       "sha256": "b4a11d425eb20f0592d3ec8c7b1bc8cc1470064b0f5abc05c2206bee7256220e",
-      "last_status": "no_streams",
-      "last_score": 10,
+      "last_status": "provider_unreachable",
+      "last_score": 0,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": "2026-07-26T03:32:36.205204+00:00",
       "total_checks": 4,
       "total_successes": 4,
@@ -26,26 +26,26 @@
         "01_policy_safe_no_p2p": {
           "passed": true,
           "evidence": {
-            "status": "no_streams",
+            "status": "provider_unreachable",
             "disallowed_streams": 0
           },
           "threshold": "no disallowed P2P/torrent output"
         },
         "02_healthy_functional_status": {
           "passed": false,
-          "evidence": "no_streams",
+          "evidence": "provider_unreachable",
           "threshold": "healthy or reachable server/API"
         },
         "03_minimum_score": {
           "passed": false,
-          "evidence": 10,
+          "evidence": 0,
           "threshold": 70
         },
         "04_fixture_and_type_coverage": {
           "passed": false,
           "evidence": {
             "healthy_fixtures": 0,
-            "fixtures_tested": 1,
+            "fixtures_tested": 0,
             "healthy_fixture_ratio": 0.0,
             "required_categories": [
               "anime"
@@ -144,7 +144,7 @@
         "maximum_stream_median_latency_ms": 12000
       },
       "last_ci_classification": "inconclusive",
-      "consecutive_inconclusive_deep_checks": 11,
+      "consecutive_inconclusive_deep_checks": 12,
       "strict_validated_sha256": null,
       "strict_last_success_at": "2026-07-27T22:52:18.351320+00:00"
     },
@@ -153,10 +153,10 @@
       "upstream_id": "animesama-co",
       "canonical_id": "animesama-co",
       "sha256": "31bae18a6833be22892954bb842d29ac32f17da47367a9437777926091450e08",
-      "last_status": "no_streams",
-      "last_score": 10,
+      "last_status": "provider_unreachable",
+      "last_score": 0,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": "2026-07-26T03:32:36.205204+00:00",
       "total_checks": 4,
       "total_successes": 2,
@@ -172,26 +172,26 @@
         "01_policy_safe_no_p2p": {
           "passed": true,
           "evidence": {
-            "status": "no_streams",
+            "status": "provider_unreachable",
             "disallowed_streams": 0
           },
           "threshold": "no disallowed P2P/torrent output"
         },
         "02_healthy_functional_status": {
           "passed": false,
-          "evidence": "no_streams",
+          "evidence": "provider_unreachable",
           "threshold": "healthy or reachable server/API"
         },
         "03_minimum_score": {
           "passed": false,
-          "evidence": 10,
+          "evidence": 0,
           "threshold": 70
         },
         "04_fixture_and_type_coverage": {
           "passed": false,
           "evidence": {
             "healthy_fixtures": 0,
-            "fixtures_tested": 1,
+            "fixtures_tested": 0,
             "healthy_fixture_ratio": 0.0,
             "required_categories": [
               "anime"
@@ -286,7 +286,7 @@
         "maximum_stream_median_latency_ms": 12000
       },
       "last_ci_classification": "inconclusive",
-      "consecutive_inconclusive_deep_checks": 11,
+      "consecutive_inconclusive_deep_checks": 12,
       "strict_validated_sha256": null,
       "strict_last_success_at": "2026-07-27T22:52:18.351320+00:00"
     },
@@ -294,11 +294,11 @@
       "source": "gowaru",
       "upstream_id": "animesultra",
       "canonical_id": "animesultra",
-      "sha256": "3070dcba468c3d8e6ad5f9df24cdf480825d6ee8703a1267d3fe0fac82bb3357",
-      "last_status": "reachable",
-      "last_score": 75,
+      "sha256": "1057b64a820fd6cb6d95c9a361002422d30ef45900263bb45fb9eb83a42323c8",
+      "last_status": "provider_unreachable",
+      "last_score": 0,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -314,26 +314,26 @@
         "01_policy_safe_no_p2p": {
           "passed": true,
           "evidence": {
-            "status": "reachable",
+            "status": "provider_unreachable",
             "disallowed_streams": 0
           },
           "threshold": "no disallowed P2P/torrent output"
         },
         "02_healthy_functional_status": {
-          "passed": true,
-          "evidence": "reachable",
+          "passed": false,
+          "evidence": "provider_unreachable",
           "threshold": "healthy or reachable server/API"
         },
         "03_minimum_score": {
-          "passed": true,
-          "evidence": 75,
+          "passed": false,
+          "evidence": 0,
           "threshold": 70
         },
         "04_fixture_and_type_coverage": {
-          "passed": true,
+          "passed": false,
           "evidence": {
             "healthy_fixtures": 0,
-            "fixtures_tested": 1,
+            "fixtures_tested": 0,
             "healthy_fixture_ratio": 0.0,
             "required_categories": [
               "anime"
@@ -348,7 +348,7 @@
           }
         },
         "05_stream_and_fixture_coverage": {
-          "passed": true,
+          "passed": false,
           "evidence": {
             "playable_streams": 0,
             "playable_fixtures": 0
@@ -359,7 +359,7 @@
           }
         },
         "06_distinct_host_diversity": {
-          "passed": true,
+          "passed": false,
           "evidence": {
             "distinct_reachable_hosts": 0,
             "reachable_hosts": []
@@ -367,7 +367,7 @@
           "threshold": 1
         },
         "07_verified_payload_playability": {
-          "passed": true,
+          "passed": false,
           "evidence": {
             "payload_verified_streams": 0,
             "playable_streams": 0
@@ -378,7 +378,7 @@
           }
         },
         "08_quality_and_bitrate": {
-          "passed": true,
+          "passed": false,
           "evidence": {
             "effective_max_height": null,
             "max_bandwidth": null,
@@ -400,11 +400,9 @@
           }
         },
         "09_language_and_subtitle_integrity": {
-          "passed": true,
+          "passed": false,
           "evidence": {
-            "accepted_audio_languages": [
-              "fr"
-            ],
+            "accepted_audio_languages": [],
             "accepted_subtitle_languages": [],
             "accepted_subtitles_advertised": 0,
             "accepted_subtitles_reachable": 0
@@ -429,7 +427,7 @@
         "maximum_provider_median_latency_ms": 15000,
         "maximum_stream_median_latency_ms": 12000
       },
-      "last_ci_classification": "unknown",
+      "last_ci_classification": "inconclusive",
       "consecutive_inconclusive_deep_checks": 0,
       "strict_validated_sha256": null,
       "strict_last_success_at": null
@@ -439,10 +437,10 @@
       "upstream_id": "animevostfr",
       "canonical_id": "animevostfr",
       "sha256": "4948742da89428fb0a6a29cf5f63bd0c79df559c192caefce4a9c8483b4080e3",
-      "last_status": "no_streams",
-      "last_score": 10,
+      "last_status": "provider_unreachable",
+      "last_score": 0,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": "2026-07-26T03:32:36.205204+00:00",
       "total_checks": 4,
       "total_successes": 2,
@@ -458,26 +456,26 @@
         "01_policy_safe_no_p2p": {
           "passed": true,
           "evidence": {
-            "status": "no_streams",
+            "status": "provider_unreachable",
             "disallowed_streams": 0
           },
           "threshold": "no disallowed P2P/torrent output"
         },
         "02_healthy_functional_status": {
           "passed": false,
-          "evidence": "no_streams",
+          "evidence": "provider_unreachable",
           "threshold": "healthy or reachable server/API"
         },
         "03_minimum_score": {
           "passed": false,
-          "evidence": 10,
+          "evidence": 0,
           "threshold": 70
         },
         "04_fixture_and_type_coverage": {
           "passed": false,
           "evidence": {
             "healthy_fixtures": 0,
-            "fixtures_tested": 1,
+            "fixtures_tested": 0,
             "healthy_fixture_ratio": 0.0,
             "required_categories": [
               "anime"
@@ -572,7 +570,7 @@
         "maximum_stream_median_latency_ms": 12000
       },
       "last_ci_classification": "inconclusive",
-      "consecutive_inconclusive_deep_checks": 11,
+      "consecutive_inconclusive_deep_checks": 12,
       "strict_validated_sha256": null,
       "strict_last_success_at": "2026-07-27T21:55:06.274582+00:00"
     },
@@ -581,10 +579,10 @@
       "upstream_id": "animoflix",
       "canonical_id": "animoflix",
       "sha256": "8f75aecbbf3e691da0dcaacdec5b9f8de411c350820d41bae05f8ab7c41f0389",
-      "last_status": "no_streams",
-      "last_score": 10,
+      "last_status": "provider_unreachable",
+      "last_score": 0,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -600,26 +598,26 @@
         "01_policy_safe_no_p2p": {
           "passed": true,
           "evidence": {
-            "status": "no_streams",
+            "status": "provider_unreachable",
             "disallowed_streams": 0
           },
           "threshold": "no disallowed P2P/torrent output"
         },
         "02_healthy_functional_status": {
           "passed": false,
-          "evidence": "no_streams",
+          "evidence": "provider_unreachable",
           "threshold": "healthy or reachable server/API"
         },
         "03_minimum_score": {
           "passed": false,
-          "evidence": 10,
+          "evidence": 0,
           "threshold": 70
         },
         "04_fixture_and_type_coverage": {
           "passed": false,
           "evidence": {
             "healthy_fixtures": 0,
-            "fixtures_tested": 1,
+            "fixtures_tested": 0,
             "healthy_fixture_ratio": 0.0,
             "required_categories": [
               "anime"
@@ -714,7 +712,7 @@
         "maximum_stream_median_latency_ms": 12000
       },
       "last_ci_classification": "inconclusive",
-      "consecutive_inconclusive_deep_checks": 13,
+      "consecutive_inconclusive_deep_checks": 14,
       "strict_validated_sha256": null,
       "strict_last_success_at": null
     },
@@ -722,11 +720,11 @@
       "source": "gowaru",
       "upstream_id": "coflix",
       "canonical_id": "coflix",
-      "sha256": "0c8fd89c778d2ee885af6efab71677735ae2b2de75c8e958cc84d64fb2b007dd",
-      "last_status": "reachable",
-      "last_score": 75,
+      "sha256": "646ea53318b3ec62e22240bb48b221fbf45b8d808f96e04060b2888d3446eeeb",
+      "last_status": "provider_unreachable",
+      "last_score": 0,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -742,316 +740,26 @@
         "01_policy_safe_no_p2p": {
           "passed": true,
           "evidence": {
-            "status": "reachable",
-            "disallowed_streams": 0
-          },
-          "threshold": "no disallowed P2P/torrent output"
-        },
-        "02_healthy_functional_status": {
-          "passed": true,
-          "evidence": "reachable",
-          "threshold": "healthy or reachable server/API"
-        },
-        "03_minimum_score": {
-          "passed": true,
-          "evidence": 75,
-          "threshold": 70
-        },
-        "04_fixture_and_type_coverage": {
-          "passed": true,
-          "evidence": {
-            "healthy_fixtures": 0,
-            "fixtures_tested": 1,
-            "healthy_fixture_ratio": 0.0,
-            "required_categories": [
-              "movie",
-              "tv"
-            ],
-            "healthy_categories": []
-          },
-          "threshold": {
-            "minimum_healthy_fixtures": 1,
-            "minimum_healthy_fixture_ratio": 0.5,
-            "require_declared_type_coverage": true,
-            "representative_fixture_mode": true
-          }
-        },
-        "05_stream_and_fixture_coverage": {
-          "passed": true,
-          "evidence": {
-            "playable_streams": 0,
-            "playable_fixtures": 0
-          },
-          "threshold": {
-            "minimum_playable_streams": 1,
-            "minimum_playable_fixtures": 1
-          }
-        },
-        "06_distinct_host_diversity": {
-          "passed": true,
-          "evidence": {
-            "distinct_reachable_hosts": 0,
-            "reachable_hosts": []
-          },
-          "threshold": 1
-        },
-        "07_verified_payload_playability": {
-          "passed": true,
-          "evidence": {
-            "payload_verified_streams": 0,
-            "playable_streams": 0
-          },
-          "threshold": {
-            "minimum_payload_verified_streams": 1,
-            "minimum_playable_streams": 1
-          }
-        },
-        "08_quality_and_bitrate": {
-          "passed": true,
-          "evidence": {
-            "effective_max_height": null,
-            "max_bandwidth": null,
-            "manifest_effective_height": null,
-            "manifest_curation_score": 5,
-            "manifest_quality_signals": [],
-            "manifest_formats": [
-              "m3u8",
-              "mp4"
-            ],
-            "manifest_sources": [
-              "gowaru"
-            ]
-          },
-          "threshold": {
-            "minimum_effective_height": 720,
-            "minimum_bandwidth_bps_when_reported": 1000000,
-            "minimum_manifest_curation_score_when_stream_is_not_returned": 5
-          }
-        },
-        "09_language_and_subtitle_integrity": {
-          "passed": true,
-          "evidence": {
-            "accepted_audio_languages": [
-              "fr"
-            ],
-            "accepted_subtitle_languages": [],
-            "accepted_subtitles_advertised": 0,
-            "accepted_subtitles_reachable": 0
-          },
-          "threshold": {
-            "accepted_audio_languages": [
-              "fr",
-              "en"
-            ],
-            "accepted_subtitle_languages": [
-              "fr",
-              "en"
-            ],
-            "reachable_advertised_subtitle_required": true
-          }
-        }
-      },
-      "last_performance_result": {
-        "passed": false,
-        "provider_median_latency_ms": null,
-        "stream_median_latency_ms": null,
-        "maximum_provider_median_latency_ms": 15000,
-        "maximum_stream_median_latency_ms": 12000
-      },
-      "last_ci_classification": "unknown",
-      "consecutive_inconclusive_deep_checks": 0,
-      "strict_validated_sha256": null,
-      "strict_last_success_at": null
-    },
-    "gowaru:dulourd": {
-      "source": "gowaru",
-      "upstream_id": "dulourd",
-      "canonical_id": "dulourd",
-      "sha256": "e35becdba118cdacb05134954ca1bb1dc4a9ddce6b1cd34bd1c2699e7ca03fa4",
-      "last_status": "reachable",
-      "last_score": 75,
-      "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
-      "last_success_at": null,
-      "total_checks": 4,
-      "total_successes": 0,
-      "consecutive_successes": 0,
-      "consecutive_hard_failures": 0,
-      "consecutive_blocked": 0,
-      "consecutive_degraded": 1,
-      "present_in_latest_discovery": true,
-      "last_deep_pre_stability_pass": false,
-      "strict_consecutive_deep_passes": 0,
-      "strict_total_deep_passes": 0,
-      "last_gate_results": {
-        "01_policy_safe_no_p2p": {
-          "passed": true,
-          "evidence": {
-            "status": "reachable",
-            "disallowed_streams": 0
-          },
-          "threshold": "no disallowed P2P/torrent output"
-        },
-        "02_healthy_functional_status": {
-          "passed": true,
-          "evidence": "reachable",
-          "threshold": "healthy or reachable server/API"
-        },
-        "03_minimum_score": {
-          "passed": true,
-          "evidence": 75,
-          "threshold": 70
-        },
-        "04_fixture_and_type_coverage": {
-          "passed": true,
-          "evidence": {
-            "healthy_fixtures": 0,
-            "fixtures_tested": 1,
-            "healthy_fixture_ratio": 0.0,
-            "required_categories": [
-              "anime",
-              "tv"
-            ],
-            "healthy_categories": []
-          },
-          "threshold": {
-            "minimum_healthy_fixtures": 1,
-            "minimum_healthy_fixture_ratio": 0.5,
-            "require_declared_type_coverage": true,
-            "representative_fixture_mode": true
-          }
-        },
-        "05_stream_and_fixture_coverage": {
-          "passed": true,
-          "evidence": {
-            "playable_streams": 0,
-            "playable_fixtures": 0
-          },
-          "threshold": {
-            "minimum_playable_streams": 1,
-            "minimum_playable_fixtures": 1
-          }
-        },
-        "06_distinct_host_diversity": {
-          "passed": true,
-          "evidence": {
-            "distinct_reachable_hosts": 0,
-            "reachable_hosts": []
-          },
-          "threshold": 1
-        },
-        "07_verified_payload_playability": {
-          "passed": true,
-          "evidence": {
-            "payload_verified_streams": 0,
-            "playable_streams": 0
-          },
-          "threshold": {
-            "minimum_payload_verified_streams": 1,
-            "minimum_playable_streams": 1
-          }
-        },
-        "08_quality_and_bitrate": {
-          "passed": true,
-          "evidence": {
-            "effective_max_height": null,
-            "max_bandwidth": null,
-            "manifest_effective_height": null,
-            "manifest_curation_score": 5,
-            "manifest_quality_signals": [],
-            "manifest_formats": [
-              "m3u8",
-              "mp4"
-            ],
-            "manifest_sources": [
-              "gowaru"
-            ]
-          },
-          "threshold": {
-            "minimum_effective_height": 720,
-            "minimum_bandwidth_bps_when_reported": 1000000,
-            "minimum_manifest_curation_score_when_stream_is_not_returned": 5
-          }
-        },
-        "09_language_and_subtitle_integrity": {
-          "passed": true,
-          "evidence": {
-            "accepted_audio_languages": [
-              "fr"
-            ],
-            "accepted_subtitle_languages": [],
-            "accepted_subtitles_advertised": 0,
-            "accepted_subtitles_reachable": 0
-          },
-          "threshold": {
-            "accepted_audio_languages": [
-              "fr",
-              "en"
-            ],
-            "accepted_subtitle_languages": [
-              "fr",
-              "en"
-            ],
-            "reachable_advertised_subtitle_required": true
-          }
-        }
-      },
-      "last_performance_result": {
-        "passed": false,
-        "provider_median_latency_ms": null,
-        "stream_median_latency_ms": null,
-        "maximum_provider_median_latency_ms": 15000,
-        "maximum_stream_median_latency_ms": 12000
-      },
-      "last_ci_classification": "unknown",
-      "consecutive_inconclusive_deep_checks": 0,
-      "strict_validated_sha256": null,
-      "strict_last_success_at": null
-    },
-    "gowaru:flemmix": {
-      "source": "gowaru",
-      "upstream_id": "flemmix",
-      "canonical_id": "flemmix",
-      "sha256": "f993f57febc7b1ff6c9d23a93990cafc35d1331bf601d788ae92d6f7e9a652cc",
-      "last_status": "no_streams",
-      "last_score": 10,
-      "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
-      "last_success_at": null,
-      "total_checks": 4,
-      "total_successes": 0,
-      "consecutive_successes": 0,
-      "consecutive_hard_failures": 0,
-      "consecutive_blocked": 0,
-      "consecutive_degraded": 3,
-      "present_in_latest_discovery": true,
-      "last_deep_pre_stability_pass": false,
-      "strict_consecutive_deep_passes": 0,
-      "strict_total_deep_passes": 0,
-      "last_gate_results": {
-        "01_policy_safe_no_p2p": {
-          "passed": true,
-          "evidence": {
-            "status": "no_streams",
+            "status": "provider_unreachable",
             "disallowed_streams": 0
           },
           "threshold": "no disallowed P2P/torrent output"
         },
         "02_healthy_functional_status": {
           "passed": false,
-          "evidence": "no_streams",
+          "evidence": "provider_unreachable",
           "threshold": "healthy or reachable server/API"
         },
         "03_minimum_score": {
           "passed": false,
-          "evidence": 10,
+          "evidence": 0,
           "threshold": 70
         },
         "04_fixture_and_type_coverage": {
           "passed": false,
           "evidence": {
             "healthy_fixtures": 0,
-            "fixtures_tested": 1,
+            "fixtures_tested": 0,
             "healthy_fixture_ratio": 0.0,
             "required_categories": [
               "movie",
@@ -1147,7 +855,293 @@
         "maximum_stream_median_latency_ms": 12000
       },
       "last_ci_classification": "inconclusive",
-      "consecutive_inconclusive_deep_checks": 11,
+      "consecutive_inconclusive_deep_checks": 0,
+      "strict_validated_sha256": null,
+      "strict_last_success_at": null
+    },
+    "gowaru:dulourd": {
+      "source": "gowaru",
+      "upstream_id": "dulourd",
+      "canonical_id": "dulourd",
+      "sha256": "bbe650e07b8ceb5486e02ac498b8ecf01a1a521a9770abfaa5d08f67803e0fb2",
+      "last_status": "provider_unreachable",
+      "last_score": 0,
+      "last_mode": "deep",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
+      "last_success_at": null,
+      "total_checks": 4,
+      "total_successes": 0,
+      "consecutive_successes": 0,
+      "consecutive_hard_failures": 0,
+      "consecutive_blocked": 0,
+      "consecutive_degraded": 1,
+      "present_in_latest_discovery": true,
+      "last_deep_pre_stability_pass": false,
+      "strict_consecutive_deep_passes": 0,
+      "strict_total_deep_passes": 0,
+      "last_gate_results": {
+        "01_policy_safe_no_p2p": {
+          "passed": true,
+          "evidence": {
+            "status": "provider_unreachable",
+            "disallowed_streams": 0
+          },
+          "threshold": "no disallowed P2P/torrent output"
+        },
+        "02_healthy_functional_status": {
+          "passed": false,
+          "evidence": "provider_unreachable",
+          "threshold": "healthy or reachable server/API"
+        },
+        "03_minimum_score": {
+          "passed": false,
+          "evidence": 0,
+          "threshold": 70
+        },
+        "04_fixture_and_type_coverage": {
+          "passed": false,
+          "evidence": {
+            "healthy_fixtures": 0,
+            "fixtures_tested": 0,
+            "healthy_fixture_ratio": 0.0,
+            "required_categories": [
+              "anime",
+              "tv"
+            ],
+            "healthy_categories": []
+          },
+          "threshold": {
+            "minimum_healthy_fixtures": 1,
+            "minimum_healthy_fixture_ratio": 0.5,
+            "require_declared_type_coverage": true,
+            "representative_fixture_mode": true
+          }
+        },
+        "05_stream_and_fixture_coverage": {
+          "passed": false,
+          "evidence": {
+            "playable_streams": 0,
+            "playable_fixtures": 0
+          },
+          "threshold": {
+            "minimum_playable_streams": 1,
+            "minimum_playable_fixtures": 1
+          }
+        },
+        "06_distinct_host_diversity": {
+          "passed": false,
+          "evidence": {
+            "distinct_reachable_hosts": 0,
+            "reachable_hosts": []
+          },
+          "threshold": 1
+        },
+        "07_verified_payload_playability": {
+          "passed": false,
+          "evidence": {
+            "payload_verified_streams": 0,
+            "playable_streams": 0
+          },
+          "threshold": {
+            "minimum_payload_verified_streams": 1,
+            "minimum_playable_streams": 1
+          }
+        },
+        "08_quality_and_bitrate": {
+          "passed": false,
+          "evidence": {
+            "effective_max_height": null,
+            "max_bandwidth": null,
+            "manifest_effective_height": null,
+            "manifest_curation_score": 5,
+            "manifest_quality_signals": [],
+            "manifest_formats": [
+              "m3u8",
+              "mp4"
+            ],
+            "manifest_sources": [
+              "gowaru"
+            ]
+          },
+          "threshold": {
+            "minimum_effective_height": 720,
+            "minimum_bandwidth_bps_when_reported": 1000000,
+            "minimum_manifest_curation_score_when_stream_is_not_returned": 5
+          }
+        },
+        "09_language_and_subtitle_integrity": {
+          "passed": false,
+          "evidence": {
+            "accepted_audio_languages": [],
+            "accepted_subtitle_languages": [],
+            "accepted_subtitles_advertised": 0,
+            "accepted_subtitles_reachable": 0
+          },
+          "threshold": {
+            "accepted_audio_languages": [
+              "fr",
+              "en"
+            ],
+            "accepted_subtitle_languages": [
+              "fr",
+              "en"
+            ],
+            "reachable_advertised_subtitle_required": true
+          }
+        }
+      },
+      "last_performance_result": {
+        "passed": false,
+        "provider_median_latency_ms": null,
+        "stream_median_latency_ms": null,
+        "maximum_provider_median_latency_ms": 15000,
+        "maximum_stream_median_latency_ms": 12000
+      },
+      "last_ci_classification": "inconclusive",
+      "consecutive_inconclusive_deep_checks": 0,
+      "strict_validated_sha256": null,
+      "strict_last_success_at": null
+    },
+    "gowaru:flemmix": {
+      "source": "gowaru",
+      "upstream_id": "flemmix",
+      "canonical_id": "flemmix",
+      "sha256": "f993f57febc7b1ff6c9d23a93990cafc35d1331bf601d788ae92d6f7e9a652cc",
+      "last_status": "provider_unreachable",
+      "last_score": 0,
+      "last_mode": "deep",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
+      "last_success_at": null,
+      "total_checks": 4,
+      "total_successes": 0,
+      "consecutive_successes": 0,
+      "consecutive_hard_failures": 0,
+      "consecutive_blocked": 0,
+      "consecutive_degraded": 3,
+      "present_in_latest_discovery": true,
+      "last_deep_pre_stability_pass": false,
+      "strict_consecutive_deep_passes": 0,
+      "strict_total_deep_passes": 0,
+      "last_gate_results": {
+        "01_policy_safe_no_p2p": {
+          "passed": true,
+          "evidence": {
+            "status": "provider_unreachable",
+            "disallowed_streams": 0
+          },
+          "threshold": "no disallowed P2P/torrent output"
+        },
+        "02_healthy_functional_status": {
+          "passed": false,
+          "evidence": "provider_unreachable",
+          "threshold": "healthy or reachable server/API"
+        },
+        "03_minimum_score": {
+          "passed": false,
+          "evidence": 0,
+          "threshold": 70
+        },
+        "04_fixture_and_type_coverage": {
+          "passed": false,
+          "evidence": {
+            "healthy_fixtures": 0,
+            "fixtures_tested": 0,
+            "healthy_fixture_ratio": 0.0,
+            "required_categories": [
+              "movie",
+              "tv"
+            ],
+            "healthy_categories": []
+          },
+          "threshold": {
+            "minimum_healthy_fixtures": 1,
+            "minimum_healthy_fixture_ratio": 0.5,
+            "require_declared_type_coverage": true,
+            "representative_fixture_mode": true
+          }
+        },
+        "05_stream_and_fixture_coverage": {
+          "passed": false,
+          "evidence": {
+            "playable_streams": 0,
+            "playable_fixtures": 0
+          },
+          "threshold": {
+            "minimum_playable_streams": 1,
+            "minimum_playable_fixtures": 1
+          }
+        },
+        "06_distinct_host_diversity": {
+          "passed": false,
+          "evidence": {
+            "distinct_reachable_hosts": 0,
+            "reachable_hosts": []
+          },
+          "threshold": 1
+        },
+        "07_verified_payload_playability": {
+          "passed": false,
+          "evidence": {
+            "payload_verified_streams": 0,
+            "playable_streams": 0
+          },
+          "threshold": {
+            "minimum_payload_verified_streams": 1,
+            "minimum_playable_streams": 1
+          }
+        },
+        "08_quality_and_bitrate": {
+          "passed": false,
+          "evidence": {
+            "effective_max_height": null,
+            "max_bandwidth": null,
+            "manifest_effective_height": null,
+            "manifest_curation_score": 5,
+            "manifest_quality_signals": [],
+            "manifest_formats": [
+              "m3u8",
+              "mp4"
+            ],
+            "manifest_sources": [
+              "gowaru"
+            ]
+          },
+          "threshold": {
+            "minimum_effective_height": 720,
+            "minimum_bandwidth_bps_when_reported": 1000000,
+            "minimum_manifest_curation_score_when_stream_is_not_returned": 5
+          }
+        },
+        "09_language_and_subtitle_integrity": {
+          "passed": false,
+          "evidence": {
+            "accepted_audio_languages": [],
+            "accepted_subtitle_languages": [],
+            "accepted_subtitles_advertised": 0,
+            "accepted_subtitles_reachable": 0
+          },
+          "threshold": {
+            "accepted_audio_languages": [
+              "fr",
+              "en"
+            ],
+            "accepted_subtitle_languages": [
+              "fr",
+              "en"
+            ],
+            "reachable_advertised_subtitle_required": true
+          }
+        }
+      },
+      "last_performance_result": {
+        "passed": false,
+        "provider_median_latency_ms": null,
+        "stream_median_latency_ms": null,
+        "maximum_provider_median_latency_ms": 15000,
+        "maximum_stream_median_latency_ms": 12000
+      },
+      "last_ci_classification": "inconclusive",
+      "consecutive_inconclusive_deep_checks": 12,
       "strict_validated_sha256": null,
       "strict_last_success_at": null
     },
@@ -1156,10 +1150,10 @@
       "upstream_id": "french-manga",
       "canonical_id": "french-manga",
       "sha256": "739f1b45bbe6704358dffc9147951c1be0da73e00994c0b341f273b9f2d0fd81",
-      "last_status": "no_streams",
-      "last_score": 10,
+      "last_status": "provider_unreachable",
+      "last_score": 0,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": "2026-07-26T03:32:36.205204+00:00",
       "total_checks": 4,
       "total_successes": 4,
@@ -1175,26 +1169,26 @@
         "01_policy_safe_no_p2p": {
           "passed": true,
           "evidence": {
-            "status": "no_streams",
+            "status": "provider_unreachable",
             "disallowed_streams": 0
           },
           "threshold": "no disallowed P2P/torrent output"
         },
         "02_healthy_functional_status": {
           "passed": false,
-          "evidence": "no_streams",
+          "evidence": "provider_unreachable",
           "threshold": "healthy or reachable server/API"
         },
         "03_minimum_score": {
           "passed": false,
-          "evidence": 10,
+          "evidence": 0,
           "threshold": 70
         },
         "04_fixture_and_type_coverage": {
           "passed": false,
           "evidence": {
             "healthy_fixtures": 0,
-            "fixtures_tested": 1,
+            "fixtures_tested": 0,
             "healthy_fixture_ratio": 0.0,
             "required_categories": [
               "anime"
@@ -1289,7 +1283,7 @@
         "maximum_stream_median_latency_ms": 12000
       },
       "last_ci_classification": "inconclusive",
-      "consecutive_inconclusive_deep_checks": 11,
+      "consecutive_inconclusive_deep_checks": 12,
       "strict_validated_sha256": null,
       "strict_last_success_at": null
     },
@@ -1297,11 +1291,11 @@
       "source": "gowaru",
       "upstream_id": "frenchstream",
       "canonical_id": "frenchstream",
-      "sha256": "809ceb163c8e318bf41eae6d885362cd6a01a6b3b773b78e367e071df2fdbbb5",
-      "last_status": "reachable",
-      "last_score": 75,
+      "sha256": "c4735951ca7fb2df38cadc26c38cb4bbb01c8d91a251aacf954f6cda7eeaa1eb",
+      "last_status": "provider_unreachable",
+      "last_score": 0,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": "2026-07-26T03:32:36.205204+00:00",
       "total_checks": 4,
       "total_successes": 3,
@@ -1317,26 +1311,26 @@
         "01_policy_safe_no_p2p": {
           "passed": true,
           "evidence": {
-            "status": "reachable",
+            "status": "provider_unreachable",
             "disallowed_streams": 0
           },
           "threshold": "no disallowed P2P/torrent output"
         },
         "02_healthy_functional_status": {
-          "passed": true,
-          "evidence": "reachable",
+          "passed": false,
+          "evidence": "provider_unreachable",
           "threshold": "healthy or reachable server/API"
         },
         "03_minimum_score": {
-          "passed": true,
-          "evidence": 75,
+          "passed": false,
+          "evidence": 0,
           "threshold": 70
         },
         "04_fixture_and_type_coverage": {
-          "passed": true,
+          "passed": false,
           "evidence": {
             "healthy_fixtures": 0,
-            "fixtures_tested": 1,
+            "fixtures_tested": 0,
             "healthy_fixture_ratio": 0.0,
             "required_categories": [
               "anime",
@@ -1353,7 +1347,7 @@
           }
         },
         "05_stream_and_fixture_coverage": {
-          "passed": true,
+          "passed": false,
           "evidence": {
             "playable_streams": 0,
             "playable_fixtures": 0
@@ -1364,7 +1358,7 @@
           }
         },
         "06_distinct_host_diversity": {
-          "passed": true,
+          "passed": false,
           "evidence": {
             "distinct_reachable_hosts": 0,
             "reachable_hosts": []
@@ -1372,7 +1366,7 @@
           "threshold": 1
         },
         "07_verified_payload_playability": {
-          "passed": true,
+          "passed": false,
           "evidence": {
             "payload_verified_streams": 0,
             "playable_streams": 0
@@ -1383,7 +1377,7 @@
           }
         },
         "08_quality_and_bitrate": {
-          "passed": true,
+          "passed": false,
           "evidence": {
             "effective_max_height": null,
             "max_bandwidth": null,
@@ -1406,11 +1400,9 @@
           }
         },
         "09_language_and_subtitle_integrity": {
-          "passed": true,
+          "passed": false,
           "evidence": {
-            "accepted_audio_languages": [
-              "fr"
-            ],
+            "accepted_audio_languages": [],
             "accepted_subtitle_languages": [],
             "accepted_subtitles_advertised": 0,
             "accepted_subtitles_reachable": 0
@@ -1435,7 +1427,7 @@
         "maximum_provider_median_latency_ms": 15000,
         "maximum_stream_median_latency_ms": 12000
       },
-      "last_ci_classification": "unknown",
+      "last_ci_classification": "inconclusive",
       "consecutive_inconclusive_deep_checks": 0,
       "strict_validated_sha256": null,
       "strict_last_success_at": null
@@ -1448,7 +1440,7 @@
       "last_status": "runtime_error",
       "last_score": 0,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": "2026-07-26T03:32:36.205204+00:00",
       "total_checks": 4,
       "total_successes": 3,
@@ -1584,7 +1576,7 @@
         "maximum_stream_median_latency_ms": 12000
       },
       "last_ci_classification": "inconclusive",
-      "consecutive_inconclusive_deep_checks": 1,
+      "consecutive_inconclusive_deep_checks": 2,
       "strict_validated_sha256": null,
       "strict_last_success_at": null
     },
@@ -1593,10 +1585,10 @@
       "upstream_id": "mugiwarastream",
       "canonical_id": "mugiwarastream",
       "sha256": "50bc339f1ff922fc7a40fb827b5fd3d96ea633157b8e2af7c7e496aaa1f3575c",
-      "last_status": "no_streams",
-      "last_score": 10,
+      "last_status": "provider_unreachable",
+      "last_score": 0,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": "2026-07-26T03:32:36.205204+00:00",
       "total_checks": 4,
       "total_successes": 4,
@@ -1612,26 +1604,26 @@
         "01_policy_safe_no_p2p": {
           "passed": true,
           "evidence": {
-            "status": "no_streams",
+            "status": "provider_unreachable",
             "disallowed_streams": 0
           },
           "threshold": "no disallowed P2P/torrent output"
         },
         "02_healthy_functional_status": {
           "passed": false,
-          "evidence": "no_streams",
+          "evidence": "provider_unreachable",
           "threshold": "healthy or reachable server/API"
         },
         "03_minimum_score": {
           "passed": false,
-          "evidence": 10,
+          "evidence": 0,
           "threshold": 70
         },
         "04_fixture_and_type_coverage": {
           "passed": false,
           "evidence": {
             "healthy_fixtures": 0,
-            "fixtures_tested": 1,
+            "fixtures_tested": 0,
             "healthy_fixture_ratio": 0.0,
             "required_categories": [
               "anime"
@@ -1729,7 +1721,7 @@
         "maximum_stream_median_latency_ms": 12000
       },
       "last_ci_classification": "inconclusive",
-      "consecutive_inconclusive_deep_checks": 11,
+      "consecutive_inconclusive_deep_checks": 12,
       "strict_validated_sha256": null,
       "strict_last_success_at": "2026-07-27T22:52:18.351320+00:00"
     },
@@ -1738,10 +1730,10 @@
       "upstream_id": "sekai",
       "canonical_id": "sekai",
       "sha256": "7e8126549e67a003c35d548711055b2c3862e57c00842994731aad5e6c8edda4",
-      "last_status": "no_streams",
-      "last_score": 10,
+      "last_status": "provider_unreachable",
+      "last_score": 0,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": "2026-07-26T03:32:36.205204+00:00",
       "total_checks": 4,
       "total_successes": 3,
@@ -1757,26 +1749,26 @@
         "01_policy_safe_no_p2p": {
           "passed": true,
           "evidence": {
-            "status": "no_streams",
+            "status": "provider_unreachable",
             "disallowed_streams": 0
           },
           "threshold": "no disallowed P2P/torrent output"
         },
         "02_healthy_functional_status": {
           "passed": false,
-          "evidence": "no_streams",
+          "evidence": "provider_unreachable",
           "threshold": "healthy or reachable server/API"
         },
         "03_minimum_score": {
           "passed": false,
-          "evidence": 10,
+          "evidence": 0,
           "threshold": 70
         },
         "04_fixture_and_type_coverage": {
           "passed": false,
           "evidence": {
             "healthy_fixtures": 0,
-            "fixtures_tested": 1,
+            "fixtures_tested": 0,
             "healthy_fixture_ratio": 0.0,
             "required_categories": [
               "anime"
@@ -1873,7 +1865,7 @@
         "maximum_stream_median_latency_ms": 12000
       },
       "last_ci_classification": "inconclusive",
-      "consecutive_inconclusive_deep_checks": 11,
+      "consecutive_inconclusive_deep_checks": 12,
       "strict_validated_sha256": null,
       "strict_last_success_at": "2026-07-27T22:52:18.351320+00:00"
     },
@@ -1882,10 +1874,10 @@
       "upstream_id": "voiranime",
       "canonical_id": "voiranime",
       "sha256": "3ad19191a7704e13b2e696ac9ef0eb311c1f7301a3b4f8ea11c85c691c0a9721",
-      "last_status": "no_streams",
-      "last_score": 10,
+      "last_status": "provider_unreachable",
+      "last_score": 0,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": "2026-07-26T03:32:36.205204+00:00",
       "total_checks": 4,
       "total_successes": 4,
@@ -1901,26 +1893,26 @@
         "01_policy_safe_no_p2p": {
           "passed": true,
           "evidence": {
-            "status": "no_streams",
+            "status": "provider_unreachable",
             "disallowed_streams": 0
           },
           "threshold": "no disallowed P2P/torrent output"
         },
         "02_healthy_functional_status": {
           "passed": false,
-          "evidence": "no_streams",
+          "evidence": "provider_unreachable",
           "threshold": "healthy or reachable server/API"
         },
         "03_minimum_score": {
           "passed": false,
-          "evidence": 10,
+          "evidence": 0,
           "threshold": 70
         },
         "04_fixture_and_type_coverage": {
           "passed": false,
           "evidence": {
             "healthy_fixtures": 0,
-            "fixtures_tested": 1,
+            "fixtures_tested": 0,
             "healthy_fixture_ratio": 0.0,
             "required_categories": [
               "anime"
@@ -2016,7 +2008,7 @@
         "maximum_stream_median_latency_ms": 12000
       },
       "last_ci_classification": "inconclusive",
-      "consecutive_inconclusive_deep_checks": 13,
+      "consecutive_inconclusive_deep_checks": 14,
       "strict_validated_sha256": null,
       "strict_last_success_at": null
     },
@@ -2025,10 +2017,10 @@
       "upstream_id": "voiranime-rip",
       "canonical_id": "voiranime-rip",
       "sha256": "3ab6f187bceca1329ef5038a01c2ea0c0122ce1a031936b349627eaf7be6e8ad",
-      "last_status": "no_streams",
-      "last_score": 10,
+      "last_status": "provider_unreachable",
+      "last_score": 0,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": "2026-07-26T03:32:36.205204+00:00",
       "total_checks": 4,
       "total_successes": 2,
@@ -2044,26 +2036,26 @@
         "01_policy_safe_no_p2p": {
           "passed": true,
           "evidence": {
-            "status": "no_streams",
+            "status": "provider_unreachable",
             "disallowed_streams": 0
           },
           "threshold": "no disallowed P2P/torrent output"
         },
         "02_healthy_functional_status": {
           "passed": false,
-          "evidence": "no_streams",
+          "evidence": "provider_unreachable",
           "threshold": "healthy or reachable server/API"
         },
         "03_minimum_score": {
           "passed": false,
-          "evidence": 10,
+          "evidence": 0,
           "threshold": 70
         },
         "04_fixture_and_type_coverage": {
           "passed": false,
           "evidence": {
             "healthy_fixtures": 0,
-            "fixtures_tested": 1,
+            "fixtures_tested": 0,
             "healthy_fixture_ratio": 0.0,
             "required_categories": [
               "anime"
@@ -2158,7 +2150,7 @@
         "maximum_stream_median_latency_ms": 12000
       },
       "last_ci_classification": "inconclusive",
-      "consecutive_inconclusive_deep_checks": 11,
+      "consecutive_inconclusive_deep_checks": 12,
       "strict_validated_sha256": null,
       "strict_last_success_at": "2026-07-27T21:55:06.274582+00:00"
     },
@@ -2166,11 +2158,11 @@
       "source": "gowaru",
       "upstream_id": "vostfree",
       "canonical_id": "vostfree",
-      "sha256": "8954d094969384479ab51fc7f97f54f5a0da51adf23712e97bca559dc72719f9",
-      "last_status": "reachable",
-      "last_score": 75,
+      "sha256": "a6b4fc1304a1e993deab3aa720d7b2fd63f6634fc7baa9eba13151c8ac6df370",
+      "last_status": "provider_unreachable",
+      "last_score": 0,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -2186,26 +2178,26 @@
         "01_policy_safe_no_p2p": {
           "passed": true,
           "evidence": {
-            "status": "reachable",
+            "status": "provider_unreachable",
             "disallowed_streams": 0
           },
           "threshold": "no disallowed P2P/torrent output"
         },
         "02_healthy_functional_status": {
-          "passed": true,
-          "evidence": "reachable",
+          "passed": false,
+          "evidence": "provider_unreachable",
           "threshold": "healthy or reachable server/API"
         },
         "03_minimum_score": {
-          "passed": true,
-          "evidence": 75,
+          "passed": false,
+          "evidence": 0,
           "threshold": 70
         },
         "04_fixture_and_type_coverage": {
-          "passed": true,
+          "passed": false,
           "evidence": {
             "healthy_fixtures": 0,
-            "fixtures_tested": 1,
+            "fixtures_tested": 0,
             "healthy_fixture_ratio": 0.0,
             "required_categories": [
               "anime"
@@ -2220,7 +2212,7 @@
           }
         },
         "05_stream_and_fixture_coverage": {
-          "passed": true,
+          "passed": false,
           "evidence": {
             "playable_streams": 0,
             "playable_fixtures": 0
@@ -2231,7 +2223,7 @@
           }
         },
         "06_distinct_host_diversity": {
-          "passed": true,
+          "passed": false,
           "evidence": {
             "distinct_reachable_hosts": 0,
             "reachable_hosts": []
@@ -2239,7 +2231,7 @@
           "threshold": 1
         },
         "07_verified_payload_playability": {
-          "passed": true,
+          "passed": false,
           "evidence": {
             "payload_verified_streams": 0,
             "playable_streams": 0
@@ -2250,7 +2242,7 @@
           }
         },
         "08_quality_and_bitrate": {
-          "passed": true,
+          "passed": false,
           "evidence": {
             "effective_max_height": null,
             "max_bandwidth": null,
@@ -2272,11 +2264,9 @@
           }
         },
         "09_language_and_subtitle_integrity": {
-          "passed": true,
+          "passed": false,
           "evidence": {
-            "accepted_audio_languages": [
-              "fr"
-            ],
+            "accepted_audio_languages": [],
             "accepted_subtitle_languages": [],
             "accepted_subtitles_advertised": 0,
             "accepted_subtitles_reachable": 0
@@ -2301,7 +2291,7 @@
         "maximum_provider_median_latency_ms": 15000,
         "maximum_stream_median_latency_ms": 12000
       },
-      "last_ci_classification": "unknown",
+      "last_ci_classification": "inconclusive",
       "consecutive_inconclusive_deep_checks": 0,
       "strict_validated_sha256": null,
       "strict_last_success_at": null
@@ -2314,7 +2304,7 @@
       "last_status": "reachable",
       "last_score": 75,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -2462,10 +2452,10 @@
       "upstream_id": "papadustream",
       "canonical_id": "papadustream",
       "sha256": "e6f61b097ef0b24c3980ea4fd4780e44b52592ed940e511c1f8a1840dd9a4387",
-      "last_status": "no_streams",
-      "last_score": 10,
+      "last_status": "provider_unreachable",
+      "last_score": 0,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": "2026-07-26T03:32:36.205204+00:00",
       "total_checks": 4,
       "total_successes": 3,
@@ -2481,26 +2471,26 @@
         "01_policy_safe_no_p2p": {
           "passed": true,
           "evidence": {
-            "status": "no_streams",
+            "status": "provider_unreachable",
             "disallowed_streams": 0
           },
           "threshold": "no disallowed P2P/torrent output"
         },
         "02_healthy_functional_status": {
           "passed": false,
-          "evidence": "no_streams",
+          "evidence": "provider_unreachable",
           "threshold": "healthy or reachable server/API"
         },
         "03_minimum_score": {
           "passed": false,
-          "evidence": 10,
+          "evidence": 0,
           "threshold": 70
         },
         "04_fixture_and_type_coverage": {
           "passed": false,
           "evidence": {
             "healthy_fixtures": 0,
-            "fixtures_tested": 1,
+            "fixtures_tested": 0,
             "healthy_fixture_ratio": 0.0,
             "required_categories": [
               "tv"
@@ -2596,7 +2586,7 @@
         "maximum_stream_median_latency_ms": 12000
       },
       "last_ci_classification": "inconclusive",
-      "consecutive_inconclusive_deep_checks": 11,
+      "consecutive_inconclusive_deep_checks": 12,
       "strict_validated_sha256": null,
       "strict_last_success_at": "2026-07-27T22:52:18.351320+00:00"
     },
@@ -2605,10 +2595,10 @@
       "upstream_id": "wookafr",
       "canonical_id": "wookafr",
       "sha256": "fb93694d58fec212a7f1294515b966b3cac8fa71e7ff301383c0894b9f05ceff",
-      "last_status": "no_streams",
-      "last_score": 10,
+      "last_status": "provider_unreachable",
+      "last_score": 0,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -2624,26 +2614,26 @@
         "01_policy_safe_no_p2p": {
           "passed": true,
           "evidence": {
-            "status": "no_streams",
+            "status": "provider_unreachable",
             "disallowed_streams": 0
           },
           "threshold": "no disallowed P2P/torrent output"
         },
         "02_healthy_functional_status": {
           "passed": false,
-          "evidence": "no_streams",
+          "evidence": "provider_unreachable",
           "threshold": "healthy or reachable server/API"
         },
         "03_minimum_score": {
           "passed": false,
-          "evidence": 10,
+          "evidence": 0,
           "threshold": 70
         },
         "04_fixture_and_type_coverage": {
           "passed": false,
           "evidence": {
             "healthy_fixtures": 0,
-            "fixtures_tested": 1,
+            "fixtures_tested": 0,
             "healthy_fixture_ratio": 0.0,
             "required_categories": [
               "movie",
@@ -2739,7 +2729,7 @@
         "maximum_stream_median_latency_ms": 12000
       },
       "last_ci_classification": "inconclusive",
-      "consecutive_inconclusive_deep_checks": 13,
+      "consecutive_inconclusive_deep_checks": 14,
       "strict_validated_sha256": null,
       "strict_last_success_at": null
     },
@@ -2748,10 +2738,10 @@
       "upstream_id": "streamzo",
       "canonical_id": "streamzo",
       "sha256": "21b1ab41d4a41315ed83095ceb4d267cf846616869215140d97e4eb7d177da69",
-      "last_status": "no_streams",
-      "last_score": 10,
+      "last_status": "provider_unreachable",
+      "last_score": 0,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -2767,26 +2757,26 @@
         "01_policy_safe_no_p2p": {
           "passed": true,
           "evidence": {
-            "status": "no_streams",
+            "status": "provider_unreachable",
             "disallowed_streams": 0
           },
           "threshold": "no disallowed P2P/torrent output"
         },
         "02_healthy_functional_status": {
           "passed": false,
-          "evidence": "no_streams",
+          "evidence": "provider_unreachable",
           "threshold": "healthy or reachable server/API"
         },
         "03_minimum_score": {
           "passed": false,
-          "evidence": 10,
+          "evidence": 0,
           "threshold": 70
         },
         "04_fixture_and_type_coverage": {
           "passed": false,
           "evidence": {
             "healthy_fixtures": 0,
-            "fixtures_tested": 1,
+            "fixtures_tested": 0,
             "healthy_fixture_ratio": 0.0,
             "required_categories": [
               "movie",
@@ -2881,7 +2871,7 @@
         "maximum_stream_median_latency_ms": 12000
       },
       "last_ci_classification": "inconclusive",
-      "consecutive_inconclusive_deep_checks": 8,
+      "consecutive_inconclusive_deep_checks": 9,
       "strict_validated_sha256": null,
       "strict_last_success_at": null
     },
@@ -2893,7 +2883,7 @@
       "last_status": "reachable",
       "last_score": 75,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -3039,7 +3029,7 @@
       "last_status": "no_streams",
       "last_score": 10,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -3175,7 +3165,7 @@
         "maximum_stream_median_latency_ms": 12000
       },
       "last_ci_classification": "inconclusive",
-      "consecutive_inconclusive_deep_checks": 11,
+      "consecutive_inconclusive_deep_checks": 12,
       "strict_validated_sha256": null,
       "strict_last_success_at": null
     },
@@ -3187,7 +3177,7 @@
       "last_status": "no_streams",
       "last_score": 10,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -3318,7 +3308,7 @@
         "maximum_stream_median_latency_ms": 12000
       },
       "last_ci_classification": "inconclusive",
-      "consecutive_inconclusive_deep_checks": 11,
+      "consecutive_inconclusive_deep_checks": 12,
       "strict_validated_sha256": null,
       "strict_last_success_at": null
     },
@@ -3330,7 +3320,7 @@
       "last_status": "reachable",
       "last_score": 75,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -3476,7 +3466,7 @@
       "last_status": "no_streams",
       "last_score": 10,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -3607,7 +3597,7 @@
         "maximum_stream_median_latency_ms": 12000
       },
       "last_ci_classification": "inconclusive",
-      "consecutive_inconclusive_deep_checks": 11,
+      "consecutive_inconclusive_deep_checks": 12,
       "strict_validated_sha256": null,
       "strict_last_success_at": null
     },
@@ -3619,7 +3609,7 @@
       "last_status": "reachable",
       "last_score": 75,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": "2026-07-26T03:32:36.205204+00:00",
       "total_checks": 4,
       "total_successes": 4,
@@ -3763,7 +3753,7 @@
       "last_status": "no_streams",
       "last_score": 10,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -3893,7 +3883,7 @@
         "maximum_stream_median_latency_ms": 12000
       },
       "last_ci_classification": "inconclusive",
-      "consecutive_inconclusive_deep_checks": 11,
+      "consecutive_inconclusive_deep_checks": 12,
       "strict_validated_sha256": null,
       "strict_last_success_at": null
     },
@@ -3901,11 +3891,11 @@
       "source": "aio",
       "upstream_id": "animepahe",
       "canonical_id": "animepahe",
-      "sha256": "a1f38e1819d61f9efd91648372ead67ce805c1ffd9f46acdff136d83a9e0715e",
+      "sha256": "b89c4b017df58fffda6d8efff10bd5adb610134d914e723c3ca63e1a5a14ecb0",
       "last_status": "reachable",
       "last_score": 75,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -4058,7 +4048,7 @@
       "last_status": "reachable",
       "last_score": 75,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -4205,7 +4195,7 @@
       "last_status": "no_streams",
       "last_score": 10,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -4336,7 +4326,7 @@
         "maximum_stream_median_latency_ms": 12000
       },
       "last_ci_classification": "inconclusive",
-      "consecutive_inconclusive_deep_checks": 11,
+      "consecutive_inconclusive_deep_checks": 12,
       "strict_validated_sha256": null,
       "strict_last_success_at": null
     },
@@ -4348,7 +4338,7 @@
       "last_status": "reachable",
       "last_score": 75,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -4491,10 +4481,10 @@
       "upstream_id": "anime-sama",
       "canonical_id": "anime-sama",
       "sha256": "264b604bab0dedf5f1b50cd0b165ecb50fffb516c6cb8eca50ba07c0bcbec995",
-      "last_status": "no_streams",
-      "last_score": 10,
+      "last_status": "provider_unreachable",
+      "last_score": 0,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": "2026-07-26T03:32:36.205204+00:00",
       "total_checks": 4,
       "total_successes": 4,
@@ -4510,26 +4500,26 @@
         "01_policy_safe_no_p2p": {
           "passed": true,
           "evidence": {
-            "status": "no_streams",
+            "status": "provider_unreachable",
             "disallowed_streams": 0
           },
           "threshold": "no disallowed P2P/torrent output"
         },
         "02_healthy_functional_status": {
           "passed": false,
-          "evidence": "no_streams",
+          "evidence": "provider_unreachable",
           "threshold": "healthy or reachable server/API"
         },
         "03_minimum_score": {
           "passed": false,
-          "evidence": 10,
+          "evidence": 0,
           "threshold": 70
         },
         "04_fixture_and_type_coverage": {
           "passed": false,
           "evidence": {
             "healthy_fixtures": 0,
-            "fixtures_tested": 1,
+            "fixtures_tested": 0,
             "healthy_fixture_ratio": 0.0,
             "required_categories": [
               "anime"
@@ -4628,7 +4618,7 @@
         "maximum_stream_median_latency_ms": 12000
       },
       "last_ci_classification": "inconclusive",
-      "consecutive_inconclusive_deep_checks": 11,
+      "consecutive_inconclusive_deep_checks": 12,
       "strict_validated_sha256": null,
       "strict_last_success_at": "2026-07-27T22:52:18.351320+00:00"
     },
@@ -4636,11 +4626,11 @@
       "source": "aio",
       "upstream_id": "allmovieland",
       "canonical_id": "allmovieland",
-      "sha256": "0b4533ed32c82b28813b97fe9deb44d97d1f1884adf1a8208d231967347ae3ce",
+      "sha256": "b90380c255ba69045b311797eb61861de4dcea751da01f1ad036cec48b42cf1e",
       "last_status": "no_streams",
       "last_score": 10,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -4773,7 +4763,7 @@
         "maximum_stream_median_latency_ms": 12000
       },
       "last_ci_classification": "inconclusive",
-      "consecutive_inconclusive_deep_checks": 11,
+      "consecutive_inconclusive_deep_checks": 0,
       "strict_validated_sha256": null,
       "strict_last_success_at": null
     },
@@ -4785,7 +4775,7 @@
       "last_status": "reachable",
       "last_score": 75,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": "2026-07-26T03:32:36.205204+00:00",
       "total_checks": 4,
       "total_successes": 4,
@@ -4932,7 +4922,7 @@
       "last_status": "no_streams",
       "last_score": 10,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": "2026-07-26T03:32:36.205204+00:00",
       "total_checks": 4,
       "total_successes": 4,
@@ -5066,7 +5056,7 @@
         "maximum_stream_median_latency_ms": 12000
       },
       "last_ci_classification": "inconclusive",
-      "consecutive_inconclusive_deep_checks": 11,
+      "consecutive_inconclusive_deep_checks": 12,
       "strict_validated_sha256": null,
       "strict_last_success_at": "2026-07-26T07:58:54.134968+00:00"
     },
@@ -5075,10 +5065,10 @@
       "upstream_id": "Cineby",
       "canonical_id": "cineby",
       "sha256": "3f2ca1c49fbf6bbcb8af1ab838b77e95da21c5381a2b9728dda7b858b7b69f4d",
-      "last_status": "reachable",
-      "last_score": 75,
+      "last_status": "blocked",
+      "last_score": 45,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -5094,26 +5084,26 @@
         "01_policy_safe_no_p2p": {
           "passed": true,
           "evidence": {
-            "status": "reachable",
+            "status": "blocked",
             "disallowed_streams": 0
           },
           "threshold": "no disallowed P2P/torrent output"
         },
         "02_healthy_functional_status": {
-          "passed": true,
-          "evidence": "reachable",
+          "passed": false,
+          "evidence": "blocked",
           "threshold": "healthy or reachable server/API"
         },
         "03_minimum_score": {
-          "passed": true,
-          "evidence": 75,
+          "passed": false,
+          "evidence": 45,
           "threshold": 70
         },
         "04_fixture_and_type_coverage": {
-          "passed": true,
+          "passed": false,
           "evidence": {
             "healthy_fixtures": 0,
-            "fixtures_tested": 1,
+            "fixtures_tested": 0,
             "healthy_fixture_ratio": 0.0,
             "required_categories": [
               "movie",
@@ -5129,7 +5119,7 @@
           }
         },
         "05_stream_and_fixture_coverage": {
-          "passed": true,
+          "passed": false,
           "evidence": {
             "playable_streams": 0,
             "playable_fixtures": 0
@@ -5140,7 +5130,7 @@
           }
         },
         "06_distinct_host_diversity": {
-          "passed": true,
+          "passed": false,
           "evidence": {
             "distinct_reachable_hosts": 0,
             "reachable_hosts": []
@@ -5148,7 +5138,7 @@
           "threshold": 1
         },
         "07_verified_payload_playability": {
-          "passed": true,
+          "passed": false,
           "evidence": {
             "payload_verified_streams": 0,
             "playable_streams": 0
@@ -5159,7 +5149,7 @@
           }
         },
         "08_quality_and_bitrate": {
-          "passed": true,
+          "passed": false,
           "evidence": {
             "effective_max_height": null,
             "max_bandwidth": null,
@@ -5183,12 +5173,9 @@
           }
         },
         "09_language_and_subtitle_integrity": {
-          "passed": true,
+          "passed": false,
           "evidence": {
-            "accepted_audio_languages": [
-              "ar",
-              "en"
-            ],
+            "accepted_audio_languages": [],
             "accepted_subtitle_languages": [],
             "accepted_subtitles_advertised": 0,
             "accepted_subtitles_reachable": 0
@@ -5213,8 +5200,8 @@
         "maximum_provider_median_latency_ms": 15000,
         "maximum_stream_median_latency_ms": 12000
       },
-      "last_ci_classification": "unknown",
-      "consecutive_inconclusive_deep_checks": 0,
+      "last_ci_classification": "inconclusive",
+      "consecutive_inconclusive_deep_checks": 1,
       "strict_validated_sha256": null,
       "strict_last_success_at": null
     },
@@ -5226,7 +5213,7 @@
       "last_status": "no_streams",
       "last_score": 10,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -5357,7 +5344,7 @@
         "maximum_stream_median_latency_ms": 12000
       },
       "last_ci_classification": "inconclusive",
-      "consecutive_inconclusive_deep_checks": 11,
+      "consecutive_inconclusive_deep_checks": 12,
       "strict_validated_sha256": null,
       "strict_last_success_at": null
     },
@@ -5369,7 +5356,7 @@
       "last_status": "reachable",
       "last_score": 75,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -5514,7 +5501,7 @@
       "last_status": "no_streams",
       "last_score": 10,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -5648,7 +5635,7 @@
         "maximum_stream_median_latency_ms": 12000
       },
       "last_ci_classification": "inconclusive",
-      "consecutive_inconclusive_deep_checks": 24,
+      "consecutive_inconclusive_deep_checks": 25,
       "strict_validated_sha256": null,
       "strict_last_success_at": null
     },
@@ -5660,7 +5647,7 @@
       "last_status": "no_streams",
       "last_score": 10,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": "2026-07-26T03:32:36.205204+00:00",
       "total_checks": 4,
       "total_successes": 4,
@@ -5792,7 +5779,7 @@
         "maximum_stream_median_latency_ms": 12000
       },
       "last_ci_classification": "inconclusive",
-      "consecutive_inconclusive_deep_checks": 11,
+      "consecutive_inconclusive_deep_checks": 12,
       "strict_validated_sha256": null,
       "strict_last_success_at": "2026-07-27T22:37:32.382098+00:00"
     },
@@ -5804,7 +5791,7 @@
       "last_status": "reachable",
       "last_score": 75,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -5954,7 +5941,7 @@
       "last_status": "reachable",
       "last_score": 75,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -6097,10 +6084,10 @@
       "upstream_id": "dooflix",
       "canonical_id": "dooflix",
       "sha256": "2691befa44f5d8d8f30c1711021a9fb0fdfe09a90f5640dd97ede5670f3dca5a",
-      "last_status": "reachable",
-      "last_score": 75,
+      "last_status": "provider_unreachable",
+      "last_score": 0,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -6116,26 +6103,26 @@
         "01_policy_safe_no_p2p": {
           "passed": true,
           "evidence": {
-            "status": "reachable",
+            "status": "provider_unreachable",
             "disallowed_streams": 0
           },
           "threshold": "no disallowed P2P/torrent output"
         },
         "02_healthy_functional_status": {
-          "passed": true,
-          "evidence": "reachable",
+          "passed": false,
+          "evidence": "provider_unreachable",
           "threshold": "healthy or reachable server/API"
         },
         "03_minimum_score": {
-          "passed": true,
-          "evidence": 75,
+          "passed": false,
+          "evidence": 0,
           "threshold": 70
         },
         "04_fixture_and_type_coverage": {
-          "passed": true,
+          "passed": false,
           "evidence": {
             "healthy_fixtures": 0,
-            "fixtures_tested": 1,
+            "fixtures_tested": 0,
             "healthy_fixture_ratio": 0.0,
             "required_categories": [
               "movie",
@@ -6151,7 +6138,7 @@
           }
         },
         "05_stream_and_fixture_coverage": {
-          "passed": true,
+          "passed": false,
           "evidence": {
             "playable_streams": 0,
             "playable_fixtures": 0
@@ -6162,7 +6149,7 @@
           }
         },
         "06_distinct_host_diversity": {
-          "passed": true,
+          "passed": false,
           "evidence": {
             "distinct_reachable_hosts": 0,
             "reachable_hosts": []
@@ -6170,7 +6157,7 @@
           "threshold": 1
         },
         "07_verified_payload_playability": {
-          "passed": true,
+          "passed": false,
           "evidence": {
             "payload_verified_streams": 0,
             "playable_streams": 0
@@ -6181,7 +6168,7 @@
           }
         },
         "08_quality_and_bitrate": {
-          "passed": true,
+          "passed": false,
           "evidence": {
             "effective_max_height": null,
             "max_bandwidth": null,
@@ -6207,13 +6194,9 @@
           }
         },
         "09_language_and_subtitle_integrity": {
-          "passed": true,
+          "passed": false,
           "evidence": {
-            "accepted_audio_languages": [
-              "en",
-              "es",
-              "hi"
-            ],
+            "accepted_audio_languages": [],
             "accepted_subtitle_languages": [],
             "accepted_subtitles_advertised": 0,
             "accepted_subtitles_reachable": 0
@@ -6238,8 +6221,8 @@
         "maximum_provider_median_latency_ms": 15000,
         "maximum_stream_median_latency_ms": 12000
       },
-      "last_ci_classification": "unknown",
-      "consecutive_inconclusive_deep_checks": 0,
+      "last_ci_classification": "inconclusive",
+      "consecutive_inconclusive_deep_checks": 1,
       "strict_validated_sha256": null,
       "strict_last_success_at": null
     },
@@ -6251,7 +6234,7 @@
       "last_status": "no_streams",
       "last_score": 10,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -6384,7 +6367,7 @@
         "maximum_stream_median_latency_ms": 12000
       },
       "last_ci_classification": "inconclusive",
-      "consecutive_inconclusive_deep_checks": 11,
+      "consecutive_inconclusive_deep_checks": 12,
       "strict_validated_sha256": null,
       "strict_last_success_at": null
     },
@@ -6396,7 +6379,7 @@
       "last_status": "reachable",
       "last_score": 75,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -6543,7 +6526,7 @@
       "last_status": "reachable",
       "last_score": 75,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -6688,7 +6671,7 @@
       "last_status": "no_streams",
       "last_score": 10,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -6819,7 +6802,7 @@
         "maximum_stream_median_latency_ms": 12000
       },
       "last_ci_classification": "inconclusive",
-      "consecutive_inconclusive_deep_checks": 24,
+      "consecutive_inconclusive_deep_checks": 25,
       "strict_validated_sha256": null,
       "strict_last_success_at": null
     },
@@ -6831,7 +6814,7 @@
       "last_status": "reachable",
       "last_score": 75,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": "2026-07-26T03:32:36.205204+00:00",
       "total_checks": 4,
       "total_successes": 4,
@@ -6976,7 +6959,7 @@
       "last_status": "no_streams",
       "last_score": 10,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -7112,7 +7095,7 @@
         "maximum_stream_median_latency_ms": 12000
       },
       "last_ci_classification": "inconclusive",
-      "consecutive_inconclusive_deep_checks": 11,
+      "consecutive_inconclusive_deep_checks": 12,
       "strict_validated_sha256": null,
       "strict_last_success_at": null
     },
@@ -7124,7 +7107,7 @@
       "last_status": "no_streams",
       "last_score": 10,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": "2026-07-26T03:32:36.205204+00:00",
       "total_checks": 4,
       "total_successes": 4,
@@ -7257,7 +7240,7 @@
         "maximum_stream_median_latency_ms": 12000
       },
       "last_ci_classification": "inconclusive",
-      "consecutive_inconclusive_deep_checks": 11,
+      "consecutive_inconclusive_deep_checks": 12,
       "strict_validated_sha256": null,
       "strict_last_success_at": null
     },
@@ -7269,7 +7252,7 @@
       "last_status": "reachable",
       "last_score": 75,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": "2026-07-26T03:32:36.205204+00:00",
       "total_checks": 4,
       "total_successes": 3,
@@ -7418,7 +7401,7 @@
       "last_status": "no_streams",
       "last_score": 10,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": "2026-07-26T03:32:36.205204+00:00",
       "total_checks": 4,
       "total_successes": 1,
@@ -7553,7 +7536,7 @@
         "maximum_stream_median_latency_ms": 12000
       },
       "last_ci_classification": "inconclusive",
-      "consecutive_inconclusive_deep_checks": 11,
+      "consecutive_inconclusive_deep_checks": 12,
       "strict_validated_sha256": null,
       "strict_last_success_at": null
     },
@@ -7565,7 +7548,7 @@
       "last_status": "reachable",
       "last_score": 75,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -7718,7 +7701,7 @@
       "last_status": "no_streams",
       "last_score": 10,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": "2026-07-26T03:32:36.205204+00:00",
       "total_checks": 4,
       "total_successes": 4,
@@ -7855,7 +7838,7 @@
         "maximum_stream_median_latency_ms": 12000
       },
       "last_ci_classification": "inconclusive",
-      "consecutive_inconclusive_deep_checks": 11,
+      "consecutive_inconclusive_deep_checks": 12,
       "strict_validated_sha256": null,
       "strict_last_success_at": "2026-07-26T07:58:54.134968+00:00"
     },
@@ -7863,11 +7846,11 @@
       "source": "aio",
       "upstream_id": "moviesdrive",
       "canonical_id": "moviesdrive",
-      "sha256": "d25ca5545a5e16c881eb5c37cd5851cfdce5ff1fd47b8f0a00ca38f29bdb5d37",
+      "sha256": "5412759346b172cf7da14e3b24eb143ae00520a2b1e85ac2f0e4f4ecec6789b3",
       "last_status": "reachable",
       "last_score": 75,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -8018,7 +8001,7 @@
       "last_status": "no_streams",
       "last_score": 10,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": "2026-07-26T03:32:36.205204+00:00",
       "total_checks": 4,
       "total_successes": 4,
@@ -8147,7 +8130,7 @@
         "maximum_stream_median_latency_ms": 12000
       },
       "last_ci_classification": "inconclusive",
-      "consecutive_inconclusive_deep_checks": 11,
+      "consecutive_inconclusive_deep_checks": 12,
       "strict_validated_sha256": null,
       "strict_last_success_at": null
     },
@@ -8159,7 +8142,7 @@
       "last_status": "no_streams",
       "last_score": 10,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -8295,7 +8278,7 @@
         "maximum_stream_median_latency_ms": 12000
       },
       "last_ci_classification": "inconclusive",
-      "consecutive_inconclusive_deep_checks": 11,
+      "consecutive_inconclusive_deep_checks": 12,
       "strict_validated_sha256": null,
       "strict_last_success_at": null
     },
@@ -8307,7 +8290,7 @@
       "last_status": "reachable",
       "last_score": 75,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -8456,7 +8439,7 @@
       "last_status": "reachable",
       "last_score": 75,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": "2026-07-26T03:32:36.205204+00:00",
       "total_checks": 4,
       "total_successes": 4,
@@ -8604,10 +8587,10 @@
       "upstream_id": "nakios",
       "canonical_id": "nakios",
       "sha256": "450b43a5eaebb8b3f3710fcf393271f5d739df9e0967d1f175d36b4fae17c8da",
-      "last_status": "reachable",
-      "last_score": 75,
+      "last_status": "provider_unreachable",
+      "last_score": 0,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -8623,26 +8606,26 @@
         "01_policy_safe_no_p2p": {
           "passed": true,
           "evidence": {
-            "status": "reachable",
+            "status": "provider_unreachable",
             "disallowed_streams": 0
           },
           "threshold": "no disallowed P2P/torrent output"
         },
         "02_healthy_functional_status": {
-          "passed": true,
-          "evidence": "reachable",
+          "passed": false,
+          "evidence": "provider_unreachable",
           "threshold": "healthy or reachable server/API"
         },
         "03_minimum_score": {
-          "passed": true,
-          "evidence": 75,
+          "passed": false,
+          "evidence": 0,
           "threshold": 70
         },
         "04_fixture_and_type_coverage": {
-          "passed": true,
+          "passed": false,
           "evidence": {
             "healthy_fixtures": 0,
-            "fixtures_tested": 1,
+            "fixtures_tested": 0,
             "healthy_fixture_ratio": 0.0,
             "required_categories": [
               "movie",
@@ -8658,7 +8641,7 @@
           }
         },
         "05_stream_and_fixture_coverage": {
-          "passed": true,
+          "passed": false,
           "evidence": {
             "playable_streams": 0,
             "playable_fixtures": 0
@@ -8669,7 +8652,7 @@
           }
         },
         "06_distinct_host_diversity": {
-          "passed": true,
+          "passed": false,
           "evidence": {
             "distinct_reachable_hosts": 0,
             "reachable_hosts": []
@@ -8677,7 +8660,7 @@
           "threshold": 1
         },
         "07_verified_payload_playability": {
-          "passed": true,
+          "passed": false,
           "evidence": {
             "payload_verified_streams": 0,
             "playable_streams": 0
@@ -8688,7 +8671,7 @@
           }
         },
         "08_quality_and_bitrate": {
-          "passed": true,
+          "passed": false,
           "evidence": {
             "effective_max_height": null,
             "max_bandwidth": null,
@@ -8715,12 +8698,9 @@
           }
         },
         "09_language_and_subtitle_integrity": {
-          "passed": true,
+          "passed": false,
           "evidence": {
-            "accepted_audio_languages": [
-              "en",
-              "fr"
-            ],
+            "accepted_audio_languages": [],
             "accepted_subtitle_languages": [],
             "accepted_subtitles_advertised": 0,
             "accepted_subtitles_reachable": 0
@@ -8745,8 +8725,8 @@
         "maximum_provider_median_latency_ms": 15000,
         "maximum_stream_median_latency_ms": 12000
       },
-      "last_ci_classification": "unknown",
-      "consecutive_inconclusive_deep_checks": 0,
+      "last_ci_classification": "inconclusive",
+      "consecutive_inconclusive_deep_checks": 1,
       "strict_validated_sha256": null,
       "strict_last_success_at": null
     },
@@ -8758,7 +8738,7 @@
       "last_status": "reachable",
       "last_score": 75,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": "2026-07-26T01:52:47.450358+00:00",
       "total_checks": 4,
       "total_successes": 1,
@@ -8910,7 +8890,7 @@
       "last_status": "reachable",
       "last_score": 75,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": "2026-07-26T03:01:03.588479+00:00",
       "total_checks": 4,
       "total_successes": 1,
@@ -9056,7 +9036,7 @@
       "last_status": "runtime_error",
       "last_score": 0,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -9189,7 +9169,7 @@
         "maximum_stream_median_latency_ms": 12000
       },
       "last_ci_classification": "inconclusive",
-      "consecutive_inconclusive_deep_checks": 6,
+      "consecutive_inconclusive_deep_checks": 7,
       "strict_validated_sha256": null,
       "strict_last_success_at": null
     },
@@ -9201,7 +9181,7 @@
       "last_status": "reachable",
       "last_score": 75,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": "2026-07-26T03:32:36.205204+00:00",
       "total_checks": 4,
       "total_successes": 4,
@@ -9346,11 +9326,11 @@
       "source": "aio",
       "upstream_id": "purstream",
       "canonical_id": "purstream",
-      "sha256": "02173d75d873826f33e7bd45bb1c7973e557845548a8634b3ed1a5161c89abb8",
-      "last_status": "reachable",
-      "last_score": 75,
+      "sha256": "d4df31bc7a42192379f1e0b1b391567f36bbd4924ed22792e4b2cdeb60d1a98b",
+      "last_status": "blocked",
+      "last_score": 45,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -9366,26 +9346,26 @@
         "01_policy_safe_no_p2p": {
           "passed": true,
           "evidence": {
-            "status": "reachable",
+            "status": "blocked",
             "disallowed_streams": 0
           },
           "threshold": "no disallowed P2P/torrent output"
         },
         "02_healthy_functional_status": {
-          "passed": true,
-          "evidence": "reachable",
+          "passed": false,
+          "evidence": "blocked",
           "threshold": "healthy or reachable server/API"
         },
         "03_minimum_score": {
-          "passed": true,
-          "evidence": 75,
+          "passed": false,
+          "evidence": 45,
           "threshold": 70
         },
         "04_fixture_and_type_coverage": {
-          "passed": true,
+          "passed": false,
           "evidence": {
             "healthy_fixtures": 0,
-            "fixtures_tested": 1,
+            "fixtures_tested": 0,
             "healthy_fixture_ratio": 0.0,
             "required_categories": [
               "movie",
@@ -9401,7 +9381,7 @@
           }
         },
         "05_stream_and_fixture_coverage": {
-          "passed": true,
+          "passed": false,
           "evidence": {
             "playable_streams": 0,
             "playable_fixtures": 0
@@ -9412,7 +9392,7 @@
           }
         },
         "06_distinct_host_diversity": {
-          "passed": true,
+          "passed": false,
           "evidence": {
             "distinct_reachable_hosts": 0,
             "reachable_hosts": []
@@ -9420,7 +9400,7 @@
           "threshold": 1
         },
         "07_verified_payload_playability": {
-          "passed": true,
+          "passed": false,
           "evidence": {
             "payload_verified_streams": 0,
             "playable_streams": 0
@@ -9431,7 +9411,7 @@
           }
         },
         "08_quality_and_bitrate": {
-          "passed": true,
+          "passed": false,
           "evidence": {
             "effective_max_height": null,
             "max_bandwidth": null,
@@ -9453,12 +9433,9 @@
           }
         },
         "09_language_and_subtitle_integrity": {
-          "passed": true,
+          "passed": false,
           "evidence": {
-            "accepted_audio_languages": [
-              "en",
-              "fr"
-            ],
+            "accepted_audio_languages": [],
             "accepted_subtitle_languages": [],
             "accepted_subtitles_advertised": 0,
             "accepted_subtitles_reachable": 0
@@ -9483,7 +9460,7 @@
         "maximum_provider_median_latency_ms": 15000,
         "maximum_stream_median_latency_ms": 12000
       },
-      "last_ci_classification": "unknown",
+      "last_ci_classification": "inconclusive",
       "consecutive_inconclusive_deep_checks": 0,
       "strict_validated_sha256": null,
       "strict_last_success_at": null
@@ -9496,7 +9473,7 @@
       "last_status": "no_streams",
       "last_score": 10,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -9632,7 +9609,7 @@
         "maximum_stream_median_latency_ms": 12000
       },
       "last_ci_classification": "inconclusive",
-      "consecutive_inconclusive_deep_checks": 24,
+      "consecutive_inconclusive_deep_checks": 25,
       "strict_validated_sha256": null,
       "strict_last_success_at": null
     },
@@ -9641,10 +9618,10 @@
       "upstream_id": "toflix",
       "canonical_id": "toflix",
       "sha256": "dd2dbb2d068dae2142d2e20522d1b348b18d8308e7e7c9f2fb292c9406e89a29",
-      "last_status": "reachable",
-      "last_score": 75,
+      "last_status": "provider_unreachable",
+      "last_score": 0,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -9660,26 +9637,26 @@
         "01_policy_safe_no_p2p": {
           "passed": true,
           "evidence": {
-            "status": "reachable",
+            "status": "provider_unreachable",
             "disallowed_streams": 0
           },
           "threshold": "no disallowed P2P/torrent output"
         },
         "02_healthy_functional_status": {
-          "passed": true,
-          "evidence": "reachable",
+          "passed": false,
+          "evidence": "provider_unreachable",
           "threshold": "healthy or reachable server/API"
         },
         "03_minimum_score": {
-          "passed": true,
-          "evidence": 75,
+          "passed": false,
+          "evidence": 0,
           "threshold": 70
         },
         "04_fixture_and_type_coverage": {
-          "passed": true,
+          "passed": false,
           "evidence": {
             "healthy_fixtures": 0,
-            "fixtures_tested": 1,
+            "fixtures_tested": 0,
             "healthy_fixture_ratio": 0.0,
             "required_categories": [
               "movie",
@@ -9695,7 +9672,7 @@
           }
         },
         "05_stream_and_fixture_coverage": {
-          "passed": true,
+          "passed": false,
           "evidence": {
             "playable_streams": 0,
             "playable_fixtures": 0
@@ -9706,7 +9683,7 @@
           }
         },
         "06_distinct_host_diversity": {
-          "passed": true,
+          "passed": false,
           "evidence": {
             "distinct_reachable_hosts": 0,
             "reachable_hosts": []
@@ -9714,7 +9691,7 @@
           "threshold": 1
         },
         "07_verified_payload_playability": {
-          "passed": true,
+          "passed": false,
           "evidence": {
             "payload_verified_streams": 0,
             "playable_streams": 0
@@ -9725,7 +9702,7 @@
           }
         },
         "08_quality_and_bitrate": {
-          "passed": true,
+          "passed": false,
           "evidence": {
             "effective_max_height": null,
             "max_bandwidth": null,
@@ -9747,12 +9724,9 @@
           }
         },
         "09_language_and_subtitle_integrity": {
-          "passed": true,
+          "passed": false,
           "evidence": {
-            "accepted_audio_languages": [
-              "en",
-              "fr"
-            ],
+            "accepted_audio_languages": [],
             "accepted_subtitle_languages": [],
             "accepted_subtitles_advertised": 0,
             "accepted_subtitles_reachable": 0
@@ -9777,8 +9751,8 @@
         "maximum_provider_median_latency_ms": 15000,
         "maximum_stream_median_latency_ms": 12000
       },
-      "last_ci_classification": "unknown",
-      "consecutive_inconclusive_deep_checks": 0,
+      "last_ci_classification": "inconclusive",
+      "consecutive_inconclusive_deep_checks": 1,
       "strict_validated_sha256": null,
       "strict_last_success_at": null
     },
@@ -9790,7 +9764,7 @@
       "last_status": "reachable",
       "last_score": 75,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": "2026-07-26T03:32:36.205204+00:00",
       "total_checks": 4,
       "total_successes": 4,
@@ -9935,7 +9909,7 @@
       "last_status": "no_streams",
       "last_score": 10,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -10068,7 +10042,7 @@
         "maximum_stream_median_latency_ms": 12000
       },
       "last_ci_classification": "inconclusive",
-      "consecutive_inconclusive_deep_checks": 11,
+      "consecutive_inconclusive_deep_checks": 12,
       "strict_validated_sha256": null,
       "strict_last_success_at": null
     },
@@ -10080,7 +10054,7 @@
       "last_status": "reachable",
       "last_score": 75,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": "2026-07-26T03:32:36.205204+00:00",
       "total_checks": 4,
       "total_successes": 4,
@@ -10231,7 +10205,7 @@
       "last_status": "reachable",
       "last_score": 75,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": "2026-07-26T03:32:36.205204+00:00",
       "total_checks": 4,
       "total_successes": 3,
@@ -10377,10 +10351,10 @@
       "upstream_id": "vidlink",
       "canonical_id": "vidlink",
       "sha256": "bedc41b8caf7e7cb371b5b96bb949970278c8a51b83847eaa64f46ca0317c521",
-      "last_status": "reachable",
-      "last_score": 75,
+      "last_status": "blocked",
+      "last_score": 45,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -10396,26 +10370,26 @@
         "01_policy_safe_no_p2p": {
           "passed": true,
           "evidence": {
-            "status": "reachable",
+            "status": "blocked",
             "disallowed_streams": 0
           },
           "threshold": "no disallowed P2P/torrent output"
         },
         "02_healthy_functional_status": {
-          "passed": true,
-          "evidence": "reachable",
+          "passed": false,
+          "evidence": "blocked",
           "threshold": "healthy or reachable server/API"
         },
         "03_minimum_score": {
-          "passed": true,
-          "evidence": 75,
+          "passed": false,
+          "evidence": 45,
           "threshold": 70
         },
         "04_fixture_and_type_coverage": {
-          "passed": true,
+          "passed": false,
           "evidence": {
             "healthy_fixtures": 0,
-            "fixtures_tested": 1,
+            "fixtures_tested": 0,
             "healthy_fixture_ratio": 0.0,
             "required_categories": [
               "movie",
@@ -10431,7 +10405,7 @@
           }
         },
         "05_stream_and_fixture_coverage": {
-          "passed": true,
+          "passed": false,
           "evidence": {
             "playable_streams": 0,
             "playable_fixtures": 0
@@ -10442,7 +10416,7 @@
           }
         },
         "06_distinct_host_diversity": {
-          "passed": true,
+          "passed": false,
           "evidence": {
             "distinct_reachable_hosts": 0,
             "reachable_hosts": []
@@ -10450,7 +10424,7 @@
           "threshold": 1
         },
         "07_verified_payload_playability": {
-          "passed": true,
+          "passed": false,
           "evidence": {
             "payload_verified_streams": 0,
             "playable_streams": 0
@@ -10461,7 +10435,7 @@
           }
         },
         "08_quality_and_bitrate": {
-          "passed": true,
+          "passed": false,
           "evidence": {
             "effective_max_height": null,
             "max_bandwidth": null,
@@ -10486,11 +10460,9 @@
           }
         },
         "09_language_and_subtitle_integrity": {
-          "passed": true,
+          "passed": false,
           "evidence": {
-            "accepted_audio_languages": [
-              "en"
-            ],
+            "accepted_audio_languages": [],
             "accepted_subtitle_languages": [],
             "accepted_subtitles_advertised": 0,
             "accepted_subtitles_reachable": 0
@@ -10515,8 +10487,8 @@
         "maximum_provider_median_latency_ms": 15000,
         "maximum_stream_median_latency_ms": 12000
       },
-      "last_ci_classification": "unknown",
-      "consecutive_inconclusive_deep_checks": 0,
+      "last_ci_classification": "inconclusive",
+      "consecutive_inconclusive_deep_checks": 1,
       "strict_validated_sha256": null,
       "strict_last_success_at": null
     },
@@ -10528,7 +10500,7 @@
       "last_status": "provider_unreachable",
       "last_score": 0,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -10664,7 +10636,7 @@
         "maximum_stream_median_latency_ms": 12000
       },
       "last_ci_classification": "inconclusive",
-      "consecutive_inconclusive_deep_checks": 3,
+      "consecutive_inconclusive_deep_checks": 4,
       "strict_validated_sha256": null,
       "strict_last_success_at": null
     },
@@ -10676,7 +10648,7 @@
       "last_status": "reachable",
       "last_score": 75,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": "2026-07-26T03:32:36.205204+00:00",
       "total_checks": 4,
       "total_successes": 3,
@@ -10819,11 +10791,11 @@
       "source": "aio",
       "upstream_id": "vixsrc",
       "canonical_id": "vixsrc",
-      "sha256": "5950ab608cddc8995854c9611e6e0e08b7b72eaea0f813a7aef38296e7a280b8",
-      "last_status": "reachable",
-      "last_score": 75,
+      "sha256": "8b2e6f9dc29e2610737e07646bb40d4314f2cc108f758b9654ede0435276034a",
+      "last_status": "provider_unreachable",
+      "last_score": 0,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": "2026-07-26T03:32:36.205204+00:00",
       "total_checks": 4,
       "total_successes": 4,
@@ -10834,31 +10806,31 @@
       "present_in_latest_discovery": true,
       "last_deep_pre_stability_pass": false,
       "strict_consecutive_deep_passes": 0,
-      "strict_total_deep_passes": 6,
+      "strict_total_deep_passes": 0,
       "last_gate_results": {
         "01_policy_safe_no_p2p": {
           "passed": true,
           "evidence": {
-            "status": "reachable",
+            "status": "provider_unreachable",
             "disallowed_streams": 0
           },
           "threshold": "no disallowed P2P/torrent output"
         },
         "02_healthy_functional_status": {
-          "passed": true,
-          "evidence": "reachable",
+          "passed": false,
+          "evidence": "provider_unreachable",
           "threshold": "healthy or reachable server/API"
         },
         "03_minimum_score": {
-          "passed": true,
-          "evidence": 75,
+          "passed": false,
+          "evidence": 0,
           "threshold": 70
         },
         "04_fixture_and_type_coverage": {
-          "passed": true,
+          "passed": false,
           "evidence": {
             "healthy_fixtures": 0,
-            "fixtures_tested": 1,
+            "fixtures_tested": 0,
             "healthy_fixture_ratio": 0.0,
             "required_categories": [
               "movie",
@@ -10874,7 +10846,7 @@
           }
         },
         "05_stream_and_fixture_coverage": {
-          "passed": true,
+          "passed": false,
           "evidence": {
             "playable_streams": 0,
             "playable_fixtures": 0
@@ -10885,7 +10857,7 @@
           }
         },
         "06_distinct_host_diversity": {
-          "passed": true,
+          "passed": false,
           "evidence": {
             "distinct_reachable_hosts": 0,
             "reachable_hosts": []
@@ -10893,7 +10865,7 @@
           "threshold": 1
         },
         "07_verified_payload_playability": {
-          "passed": true,
+          "passed": false,
           "evidence": {
             "payload_verified_streams": 0,
             "playable_streams": 0
@@ -10904,7 +10876,7 @@
           }
         },
         "08_quality_and_bitrate": {
-          "passed": true,
+          "passed": false,
           "evidence": {
             "effective_max_height": null,
             "max_bandwidth": null,
@@ -10930,12 +10902,9 @@
           }
         },
         "09_language_and_subtitle_integrity": {
-          "passed": true,
+          "passed": false,
           "evidence": {
-            "accepted_audio_languages": [
-              "en",
-              "it"
-            ],
+            "accepted_audio_languages": [],
             "accepted_subtitle_languages": [],
             "accepted_subtitles_advertised": 0,
             "accepted_subtitles_reachable": 0
@@ -10960,20 +10929,20 @@
         "maximum_provider_median_latency_ms": 15000,
         "maximum_stream_median_latency_ms": 12000
       },
-      "last_ci_classification": "unknown",
+      "last_ci_classification": "inconclusive",
       "consecutive_inconclusive_deep_checks": 0,
       "strict_validated_sha256": null,
-      "strict_last_success_at": "2026-07-27T22:52:18.351320+00:00"
+      "strict_last_success_at": null
     },
     "aio:vidfast": {
       "source": "aio",
       "upstream_id": "vidfast",
       "canonical_id": "vidfast",
-      "sha256": "9750c41a72fe7978d81eabd1b3704529cac0c13a7830a1d608afec5c892271cd",
+      "sha256": "733ad5a6d582968ea9044de80f985626b60528e0ca41d29fadef4c5730702ab8",
       "last_status": "reachable",
       "last_score": 75,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -11118,7 +11087,7 @@
       "last_status": "reachable",
       "last_score": 75,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -11265,7 +11234,7 @@
       "last_status": "no_streams",
       "last_score": 10,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -11399,7 +11368,7 @@
         "maximum_stream_median_latency_ms": 12000
       },
       "last_ci_classification": "inconclusive",
-      "consecutive_inconclusive_deep_checks": 11,
+      "consecutive_inconclusive_deep_checks": 12,
       "strict_validated_sha256": null,
       "strict_last_success_at": null
     },
@@ -11411,7 +11380,7 @@
       "last_status": "no_streams",
       "last_score": 10,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -11543,7 +11512,7 @@
         "maximum_stream_median_latency_ms": 12000
       },
       "last_ci_classification": "inconclusive",
-      "consecutive_inconclusive_deep_checks": 11,
+      "consecutive_inconclusive_deep_checks": 12,
       "strict_validated_sha256": null,
       "strict_last_success_at": null
     },
@@ -11555,7 +11524,7 @@
       "last_status": "no_streams",
       "last_score": 10,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": "2026-07-26T03:32:36.205204+00:00",
       "total_checks": 4,
       "total_successes": 4,
@@ -11686,7 +11655,7 @@
         "maximum_stream_median_latency_ms": 12000
       },
       "last_ci_classification": "inconclusive",
-      "consecutive_inconclusive_deep_checks": 11,
+      "consecutive_inconclusive_deep_checks": 12,
       "strict_validated_sha256": null,
       "strict_last_success_at": null
     },
@@ -11695,10 +11664,10 @@
       "upstream_id": "4khdhub",
       "canonical_id": "4khdhub",
       "sha256": "65e7dabe9629f1185c046e156941f6cf05312e9c52996c70c24a6b6ddc075a9c",
-      "last_status": "reachable",
-      "last_score": 75,
+      "last_status": "provider_unreachable",
+      "last_score": 0,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": "2026-07-26T03:32:36.205204+00:00",
       "total_checks": 4,
       "total_successes": 4,
@@ -11714,26 +11683,26 @@
         "01_policy_safe_no_p2p": {
           "passed": true,
           "evidence": {
-            "status": "reachable",
+            "status": "provider_unreachable",
             "disallowed_streams": 0
           },
           "threshold": "no disallowed P2P/torrent output"
         },
         "02_healthy_functional_status": {
-          "passed": true,
-          "evidence": "reachable",
+          "passed": false,
+          "evidence": "provider_unreachable",
           "threshold": "healthy or reachable server/API"
         },
         "03_minimum_score": {
-          "passed": true,
-          "evidence": 75,
+          "passed": false,
+          "evidence": 0,
           "threshold": 70
         },
         "04_fixture_and_type_coverage": {
-          "passed": true,
+          "passed": false,
           "evidence": {
             "healthy_fixtures": 0,
-            "fixtures_tested": 1,
+            "fixtures_tested": 0,
             "healthy_fixture_ratio": 0.0,
             "required_categories": [
               "movie",
@@ -11749,7 +11718,7 @@
           }
         },
         "05_stream_and_fixture_coverage": {
-          "passed": true,
+          "passed": false,
           "evidence": {
             "playable_streams": 0,
             "playable_fixtures": 0
@@ -11760,7 +11729,7 @@
           }
         },
         "06_distinct_host_diversity": {
-          "passed": true,
+          "passed": false,
           "evidence": {
             "distinct_reachable_hosts": 0,
             "reachable_hosts": []
@@ -11768,7 +11737,7 @@
           "threshold": 1
         },
         "07_verified_payload_playability": {
-          "passed": true,
+          "passed": false,
           "evidence": {
             "payload_verified_streams": 0,
             "playable_streams": 0
@@ -11779,7 +11748,7 @@
           }
         },
         "08_quality_and_bitrate": {
-          "passed": true,
+          "passed": false,
           "evidence": {
             "effective_max_height": null,
             "max_bandwidth": null,
@@ -11806,11 +11775,9 @@
           }
         },
         "09_language_and_subtitle_integrity": {
-          "passed": true,
+          "passed": false,
           "evidence": {
-            "accepted_audio_languages": [
-              "en"
-            ],
+            "accepted_audio_languages": [],
             "accepted_subtitle_languages": [],
             "accepted_subtitles_advertised": 0,
             "accepted_subtitles_reachable": 0
@@ -11835,8 +11802,8 @@
         "maximum_provider_median_latency_ms": 15000,
         "maximum_stream_median_latency_ms": 12000
       },
-      "last_ci_classification": "unknown",
-      "consecutive_inconclusive_deep_checks": 0,
+      "last_ci_classification": "inconclusive",
+      "consecutive_inconclusive_deep_checks": 1,
       "strict_validated_sha256": null,
       "strict_last_success_at": "2026-07-26T06:09:39.996555+00:00"
     },
@@ -11844,11 +11811,11 @@
       "source": "yoru",
       "upstream_id": "animepahe",
       "canonical_id": "animepahe",
-      "sha256": "3b567b1e8e83d64777b617ee9323f411dab1474c700864058c4444e4f52cf842",
+      "sha256": "e953b1e4b56dd2640bd84f5877fc40cd76a148444f41d17b98fd23579af10157",
       "last_status": "reachable",
       "last_score": 75,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -11998,10 +11965,10 @@
       "upstream_id": "uhdmovies",
       "canonical_id": "uhdmovies",
       "sha256": "910588acb9a44abb569391dc61643aead09fef349f00887740bb9fa5889bd36e",
-      "last_status": "reachable",
-      "last_score": 75,
+      "last_status": "provider_unreachable",
+      "last_score": 0,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": "2026-07-26T03:32:36.205204+00:00",
       "total_checks": 4,
       "total_successes": 4,
@@ -12017,26 +11984,26 @@
         "01_policy_safe_no_p2p": {
           "passed": true,
           "evidence": {
-            "status": "reachable",
+            "status": "provider_unreachable",
             "disallowed_streams": 0
           },
           "threshold": "no disallowed P2P/torrent output"
         },
         "02_healthy_functional_status": {
-          "passed": true,
-          "evidence": "reachable",
+          "passed": false,
+          "evidence": "provider_unreachable",
           "threshold": "healthy or reachable server/API"
         },
         "03_minimum_score": {
-          "passed": true,
-          "evidence": 75,
+          "passed": false,
+          "evidence": 0,
           "threshold": 70
         },
         "04_fixture_and_type_coverage": {
-          "passed": true,
+          "passed": false,
           "evidence": {
             "healthy_fixtures": 0,
-            "fixtures_tested": 1,
+            "fixtures_tested": 0,
             "healthy_fixture_ratio": 0.0,
             "required_categories": [
               "movie",
@@ -12052,7 +12019,7 @@
           }
         },
         "05_stream_and_fixture_coverage": {
-          "passed": true,
+          "passed": false,
           "evidence": {
             "playable_streams": 0,
             "playable_fixtures": 0
@@ -12063,7 +12030,7 @@
           }
         },
         "06_distinct_host_diversity": {
-          "passed": true,
+          "passed": false,
           "evidence": {
             "distinct_reachable_hosts": 0,
             "reachable_hosts": []
@@ -12071,7 +12038,7 @@
           "threshold": 1
         },
         "07_verified_payload_playability": {
-          "passed": true,
+          "passed": false,
           "evidence": {
             "payload_verified_streams": 0,
             "playable_streams": 0
@@ -12082,7 +12049,7 @@
           }
         },
         "08_quality_and_bitrate": {
-          "passed": true,
+          "passed": false,
           "evidence": {
             "effective_max_height": null,
             "max_bandwidth": null,
@@ -12110,11 +12077,9 @@
           }
         },
         "09_language_and_subtitle_integrity": {
-          "passed": true,
+          "passed": false,
           "evidence": {
-            "accepted_audio_languages": [
-              "en"
-            ],
+            "accepted_audio_languages": [],
             "accepted_subtitle_languages": [],
             "accepted_subtitles_advertised": 0,
             "accepted_subtitles_reachable": 0
@@ -12139,8 +12104,8 @@
         "maximum_provider_median_latency_ms": 15000,
         "maximum_stream_median_latency_ms": 12000
       },
-      "last_ci_classification": "unknown",
-      "consecutive_inconclusive_deep_checks": 0,
+      "last_ci_classification": "inconclusive",
+      "consecutive_inconclusive_deep_checks": 1,
       "strict_validated_sha256": null,
       "strict_last_success_at": null
     },
@@ -12149,10 +12114,10 @@
       "upstream_id": "moviesmod",
       "canonical_id": "moviesmod",
       "sha256": "98aeea26aa4511affc468b897dc050ca1d481684fcf712693fb8b1928f7135f8",
-      "last_status": "reachable",
-      "last_score": 75,
+      "last_status": "provider_unreachable",
+      "last_score": 0,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -12168,26 +12133,26 @@
         "01_policy_safe_no_p2p": {
           "passed": true,
           "evidence": {
-            "status": "reachable",
+            "status": "provider_unreachable",
             "disallowed_streams": 0
           },
           "threshold": "no disallowed P2P/torrent output"
         },
         "02_healthy_functional_status": {
-          "passed": true,
-          "evidence": "reachable",
+          "passed": false,
+          "evidence": "provider_unreachable",
           "threshold": "healthy or reachable server/API"
         },
         "03_minimum_score": {
-          "passed": true,
-          "evidence": 75,
+          "passed": false,
+          "evidence": 0,
           "threshold": 70
         },
         "04_fixture_and_type_coverage": {
-          "passed": true,
+          "passed": false,
           "evidence": {
             "healthy_fixtures": 0,
-            "fixtures_tested": 1,
+            "fixtures_tested": 0,
             "healthy_fixture_ratio": 0.0,
             "required_categories": [
               "movie",
@@ -12203,7 +12168,7 @@
           }
         },
         "05_stream_and_fixture_coverage": {
-          "passed": true,
+          "passed": false,
           "evidence": {
             "playable_streams": 0,
             "playable_fixtures": 0
@@ -12214,7 +12179,7 @@
           }
         },
         "06_distinct_host_diversity": {
-          "passed": true,
+          "passed": false,
           "evidence": {
             "distinct_reachable_hosts": 0,
             "reachable_hosts": []
@@ -12222,7 +12187,7 @@
           "threshold": 1
         },
         "07_verified_payload_playability": {
-          "passed": true,
+          "passed": false,
           "evidence": {
             "payload_verified_streams": 0,
             "playable_streams": 0
@@ -12233,7 +12198,7 @@
           }
         },
         "08_quality_and_bitrate": {
-          "passed": true,
+          "passed": false,
           "evidence": {
             "effective_max_height": null,
             "max_bandwidth": null,
@@ -12260,11 +12225,9 @@
           }
         },
         "09_language_and_subtitle_integrity": {
-          "passed": true,
+          "passed": false,
           "evidence": {
-            "accepted_audio_languages": [
-              "en"
-            ],
+            "accepted_audio_languages": [],
             "accepted_subtitle_languages": [],
             "accepted_subtitles_advertised": 0,
             "accepted_subtitles_reachable": 0
@@ -12289,8 +12252,8 @@
         "maximum_provider_median_latency_ms": 15000,
         "maximum_stream_median_latency_ms": 12000
       },
-      "last_ci_classification": "unknown",
-      "consecutive_inconclusive_deep_checks": 0,
+      "last_ci_classification": "inconclusive",
+      "consecutive_inconclusive_deep_checks": 1,
       "strict_validated_sha256": null,
       "strict_last_success_at": null
     },
@@ -12302,7 +12265,7 @@
       "last_status": "no_streams",
       "last_score": 10,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -12438,7 +12401,7 @@
         "maximum_stream_median_latency_ms": 12000
       },
       "last_ci_classification": "inconclusive",
-      "consecutive_inconclusive_deep_checks": 11,
+      "consecutive_inconclusive_deep_checks": 12,
       "strict_validated_sha256": null,
       "strict_last_success_at": null
     },
@@ -12450,7 +12413,7 @@
       "last_status": "reachable",
       "last_score": 75,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -12602,7 +12565,7 @@
       "last_status": "no_streams",
       "last_score": 10,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -12734,7 +12697,7 @@
         "maximum_stream_median_latency_ms": 12000
       },
       "last_ci_classification": "inconclusive",
-      "consecutive_inconclusive_deep_checks": 11,
+      "consecutive_inconclusive_deep_checks": 12,
       "strict_validated_sha256": null,
       "strict_last_success_at": null
     },
@@ -12746,7 +12709,7 @@
       "last_status": "reachable",
       "last_score": 75,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -12895,11 +12858,11 @@
       "source": "yoru",
       "upstream_id": "vixsrc",
       "canonical_id": "vixsrc",
-      "sha256": "c91c43aedb5b489c07a030766fd22550cf8773fce6845f21f4a20c7398efeb94",
+      "sha256": "ffa5fb44653a1d9fab1cfa03080ed08f2ea2ff30d9b505a026c7010e6b85d4aa",
       "last_status": "no_streams",
       "last_score": 10,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -13034,7 +12997,7 @@
         "maximum_stream_median_latency_ms": 12000
       },
       "last_ci_classification": "inconclusive",
-      "consecutive_inconclusive_deep_checks": 11,
+      "consecutive_inconclusive_deep_checks": 0,
       "strict_validated_sha256": null,
       "strict_last_success_at": null
     },
@@ -13046,7 +13009,7 @@
       "last_status": "no_streams",
       "last_score": 10,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": "2026-07-26T03:32:36.205204+00:00",
       "total_checks": 4,
       "total_successes": 4,
@@ -13176,7 +13139,7 @@
         "maximum_stream_median_latency_ms": 12000
       },
       "last_ci_classification": "inconclusive",
-      "consecutive_inconclusive_deep_checks": 11,
+      "consecutive_inconclusive_deep_checks": 12,
       "strict_validated_sha256": null,
       "strict_last_success_at": null
     },
@@ -13188,7 +13151,7 @@
       "last_status": "reachable",
       "last_score": 75,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -13333,7 +13296,7 @@
       "last_status": "no_streams",
       "last_score": 10,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -13469,7 +13432,7 @@
         "maximum_stream_median_latency_ms": 12000
       },
       "last_ci_classification": "inconclusive",
-      "consecutive_inconclusive_deep_checks": 11,
+      "consecutive_inconclusive_deep_checks": 12,
       "strict_validated_sha256": null,
       "strict_last_success_at": null
     },
@@ -13477,11 +13440,11 @@
       "source": "yoru",
       "upstream_id": "mallumv",
       "canonical_id": "mallumv",
-      "sha256": "bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677",
+      "sha256": "568896dfd355e9f4d9947540d4bc8581ae9c4cf3f3a21aa309f4ef582e138197",
       "last_status": "no_streams",
       "last_score": 10,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -13613,7 +13576,7 @@
         "maximum_stream_median_latency_ms": 12000
       },
       "last_ci_classification": "inconclusive",
-      "consecutive_inconclusive_deep_checks": 11,
+      "consecutive_inconclusive_deep_checks": 0,
       "strict_validated_sha256": null,
       "strict_last_success_at": null
     },
@@ -13622,10 +13585,10 @@
       "upstream_id": "vidlink",
       "canonical_id": "vidlink",
       "sha256": "00389aa68899e4924186a24741e3b0a00cebb12486bf3e91fda6ff47311ae8ea",
-      "last_status": "no_streams",
-      "last_score": 10,
+      "last_status": "blocked",
+      "last_score": 45,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -13641,26 +13604,26 @@
         "01_policy_safe_no_p2p": {
           "passed": true,
           "evidence": {
-            "status": "no_streams",
+            "status": "blocked",
             "disallowed_streams": 0
           },
           "threshold": "no disallowed P2P/torrent output"
         },
         "02_healthy_functional_status": {
           "passed": false,
-          "evidence": "no_streams",
+          "evidence": "blocked",
           "threshold": "healthy or reachable server/API"
         },
         "03_minimum_score": {
           "passed": false,
-          "evidence": 10,
+          "evidence": 45,
           "threshold": 70
         },
         "04_fixture_and_type_coverage": {
           "passed": false,
           "evidence": {
             "healthy_fixtures": 0,
-            "fixtures_tested": 1,
+            "fixtures_tested": 0,
             "healthy_fixture_ratio": 0.0,
             "required_categories": [
               "movie",
@@ -13759,7 +13722,7 @@
         "maximum_stream_median_latency_ms": 12000
       },
       "last_ci_classification": "inconclusive",
-      "consecutive_inconclusive_deep_checks": 11,
+      "consecutive_inconclusive_deep_checks": 12,
       "strict_validated_sha256": null,
       "strict_last_success_at": null
     },
@@ -13771,7 +13734,7 @@
       "last_status": "no_streams",
       "last_score": 10,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -13902,7 +13865,7 @@
         "maximum_stream_median_latency_ms": 12000
       },
       "last_ci_classification": "inconclusive",
-      "consecutive_inconclusive_deep_checks": 11,
+      "consecutive_inconclusive_deep_checks": 12,
       "strict_validated_sha256": null,
       "strict_last_success_at": null
     },
@@ -13914,7 +13877,7 @@
       "last_status": "no_streams",
       "last_score": 10,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -14043,7 +14006,7 @@
         "maximum_stream_median_latency_ms": 12000
       },
       "last_ci_classification": "inconclusive",
-      "consecutive_inconclusive_deep_checks": 11,
+      "consecutive_inconclusive_deep_checks": 12,
       "strict_validated_sha256": null,
       "strict_last_success_at": null
     },
@@ -14055,7 +14018,7 @@
       "last_status": "no_streams",
       "last_score": 10,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -14185,7 +14148,7 @@
         "maximum_stream_median_latency_ms": 12000
       },
       "last_ci_classification": "inconclusive",
-      "consecutive_inconclusive_deep_checks": 11,
+      "consecutive_inconclusive_deep_checks": 12,
       "strict_validated_sha256": null,
       "strict_last_success_at": null
     },
@@ -14197,7 +14160,7 @@
       "last_status": "reachable",
       "last_score": 75,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -14351,7 +14314,7 @@
       "last_status": "no_streams",
       "last_score": 10,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": "2026-07-26T03:32:36.205204+00:00",
       "total_checks": 4,
       "total_successes": 4,
@@ -14485,7 +14448,7 @@
         "maximum_stream_median_latency_ms": 12000
       },
       "last_ci_classification": "inconclusive",
-      "consecutive_inconclusive_deep_checks": 11,
+      "consecutive_inconclusive_deep_checks": 12,
       "strict_validated_sha256": null,
       "strict_last_success_at": "2026-07-26T07:58:54.134968+00:00"
     },
@@ -14497,7 +14460,7 @@
       "last_status": "no_streams",
       "last_score": 10,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -14633,7 +14596,7 @@
         "maximum_stream_median_latency_ms": 12000
       },
       "last_ci_classification": "inconclusive",
-      "consecutive_inconclusive_deep_checks": 24,
+      "consecutive_inconclusive_deep_checks": 25,
       "strict_validated_sha256": null,
       "strict_last_success_at": null
     },
@@ -14645,7 +14608,7 @@
       "last_status": "no_streams",
       "last_score": 10,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -14781,7 +14744,7 @@
         "maximum_stream_median_latency_ms": 12000
       },
       "last_ci_classification": "inconclusive",
-      "consecutive_inconclusive_deep_checks": 11,
+      "consecutive_inconclusive_deep_checks": 12,
       "strict_validated_sha256": null,
       "strict_last_success_at": null
     },
@@ -14789,11 +14752,11 @@
       "source": "yoru",
       "upstream_id": "allmovieland",
       "canonical_id": "allmovieland",
-      "sha256": "d1b156dffd03425f57e3ac042ddadf05edc56d834be0134a013abf8e54b9bf9b",
+      "sha256": "605b4548c6c3c5e97d8a8f97891898c6b37a3854a1b1a6aed1de58de5e531206",
       "last_status": "no_streams",
       "last_score": 10,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -14926,7 +14889,7 @@
         "maximum_stream_median_latency_ms": 12000
       },
       "last_ci_classification": "inconclusive",
-      "consecutive_inconclusive_deep_checks": 11,
+      "consecutive_inconclusive_deep_checks": 0,
       "strict_validated_sha256": null,
       "strict_last_success_at": null
     },
@@ -14938,7 +14901,7 @@
       "last_status": "reachable",
       "last_score": 75,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -15089,7 +15052,7 @@
       "last_status": "no_streams",
       "last_score": 10,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": "2026-07-26T03:32:36.205204+00:00",
       "total_checks": 4,
       "total_successes": 4,
@@ -15226,7 +15189,7 @@
         "maximum_stream_median_latency_ms": 12000
       },
       "last_ci_classification": "inconclusive",
-      "consecutive_inconclusive_deep_checks": 11,
+      "consecutive_inconclusive_deep_checks": 12,
       "strict_validated_sha256": null,
       "strict_last_success_at": "2026-07-26T07:58:54.134968+00:00"
     },
@@ -15238,7 +15201,7 @@
       "last_status": "no_streams",
       "last_score": 10,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -15370,7 +15333,7 @@
         "maximum_stream_median_latency_ms": 12000
       },
       "last_ci_classification": "inconclusive",
-      "consecutive_inconclusive_deep_checks": 11,
+      "consecutive_inconclusive_deep_checks": 12,
       "strict_validated_sha256": null,
       "strict_last_success_at": null
     },
@@ -15378,11 +15341,11 @@
       "source": "yoru",
       "upstream_id": "moviesdrive",
       "canonical_id": "moviesdrive",
-      "sha256": "73098d13964fbeca2b19a3c80782a27b08129898b8da5a82f9b8088f37168d68",
+      "sha256": "a8bd0faa4f782f7a32da6008028dd3b2c6574f66e7ce7e0c73d3f9a5ae590661",
       "last_status": "reachable",
       "last_score": 75,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -15533,7 +15496,7 @@
       "last_status": "no_streams",
       "last_score": 10,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": "2026-07-26T03:32:36.205204+00:00",
       "total_checks": 4,
       "total_successes": 4,
@@ -15666,7 +15629,7 @@
         "maximum_stream_median_latency_ms": 12000
       },
       "last_ci_classification": "inconclusive",
-      "consecutive_inconclusive_deep_checks": 11,
+      "consecutive_inconclusive_deep_checks": 12,
       "strict_validated_sha256": null,
       "strict_last_success_at": null
     },
@@ -15678,7 +15641,7 @@
       "last_status": "no_streams",
       "last_score": 10,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -15813,7 +15776,7 @@
         "maximum_stream_median_latency_ms": 12000
       },
       "last_ci_classification": "inconclusive",
-      "consecutive_inconclusive_deep_checks": 11,
+      "consecutive_inconclusive_deep_checks": 12,
       "strict_validated_sha256": null,
       "strict_last_success_at": null
     },
@@ -15825,7 +15788,7 @@
       "last_status": "no_streams",
       "last_score": 10,
       "last_mode": "deep",
-      "last_checked_at": "2026-07-29T15:39:12.008810+00:00",
+      "last_checked_at": "2026-07-29T16:29:21.782001+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -15956,7 +15919,7 @@
         "maximum_stream_median_latency_ms": 12000
       },
       "last_ci_classification": "inconclusive",
-      "consecutive_inconclusive_deep_checks": 11,
+      "consecutive_inconclusive_deep_checks": 12,
       "strict_validated_sha256": null,
       "strict_last_success_at": null
     }
