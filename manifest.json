@@ -3,27 +3,29 @@
   "scrapers": [
     {
       "id": "movix",
-      "name": "Movix VF",
-      "description": "Movies and TV series in English & French (dubbed/subtitled)",
-      "version": "1.0.0",
-      "author": "wooodyhood",
+      "name": "Movix",
+      "description": "Films, Séries et Animes en VF et VOSTFR.",
+      "version": "1.0.35",
+      "author": "Gowaru",
       "supportedTypes": [
         "anime",
         "movie",
         "tv"
       ],
-      "filename": "providers/movix--nuvio--4fd2573baa76e79e.js",
+      "filename": "providers/movix--nuvio--49186f76495c8979.js",
       "enabled": true,
-      "hasSettings": true,
+      "logo": "https://movix.cash/movix.png",
+      "contentLanguage": [
+        "fr"
+      ],
       "formats": [
         "mp4",
+        "mkv",
         "m3u8"
       ],
-      "logo": "https://i.postimg.cc/XYrPQm87/movix.png",
-      "contentLanguage": [
-        "en",
-        "fr"
-      ]
+      "limited": false,
+      "disabledPlatforms": [],
+      "supportsExternalPlayer": true
     },
     {
       "id": "animesultra",
@@ -423,28 +425,6 @@
       "limited": false,
       "disabledPlatforms": [],
       "supportsExternalPlayer": false
-    },
-    {
-      "id": "videasy",
-      "name": "VidEasy",
-      "description": "Videasy streaming with encrypted TMDB ID support for movies and TV shows",
-      "version": "1.0.0",
-      "author": "Nuvio Team",
-      "supportedTypes": [
-        "movie",
-        "tv"
-      ],
-      "filename": "providers/videasy--aio--cc6345f01636806c.js",
-      "enabled": true,
-      "hasSettings": true,
-      "formats": [
-        "mp4",
-        "m3u8"
-      ],
-      "logo": "https://i.postimg.cc/7LHYMtVV/videasy.png",
-      "contentLanguage": [
-        "en"
-      ]
     },
     {
       "id": "Cineby",
@@ -1230,6 +1210,35 @@
       "supportsExternalPlayer": false
     },
     {
+      "id": "videasy",
+      "name": "VIDEASY",
+      "description": "VideoEasy streaming with multiple server support and languages",
+      "version": "1.0.0",
+      "author": "Nuvio Team",
+      "supportedTypes": [
+        "movie",
+        "tv"
+      ],
+      "filename": "providers/videasy--yoru--3e554771641bd620.js",
+      "enabled": false,
+      "limited": true,
+      "formats": [
+        "m3u8",
+        "mp4",
+        "mkv"
+      ],
+      "logo": "https://www.videasy.net/logo.png",
+      "contentLanguage": [
+        "en",
+        "de",
+        "it",
+        "fr",
+        "hi",
+        "es",
+        "pt"
+      ]
+    },
+    {
       "id": "voiranime",
       "name": "VoirAnime",
       "description": "Un des plus gros catalogues français d'animes.",
@@ -1988,5 +1997,5 @@
       ]
     }
   ],
-  "version": "5.18.5"
+  "version": "5.18.6"
 }
