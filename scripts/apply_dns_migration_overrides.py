@@ -129,22 +129,48 @@ def main() -> int:
 
     args.overrides.write_text(json.dumps(overrides, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 
-    # Repatch exact staged files and keep candidates.json in sync with their bytes.
+    # Repatch every staged variant sharing an affected canonical provider id.
+    # A migration may be discovered by aio:animepahe while yoru:animepahe is a
+    # different staged artefact containing the same obsolete host. Validating
+    # immediately after patching only the discovering candidate would therefore
+    # reject the still-unpatched sibling variant.
+    changes_by_provider: dict[str, list[dict]] = {}
     for change in changes:
-        candidate = by_key[change["key"]]
+        changes_by_provider.setdefault(change["provider"], []).append(change)
+
+    providers_root = (stage / "providers").resolve()
+    repatched_variants = 0
+    for candidate in registry.get("candidates", []):
+        if not isinstance(candidate, dict):
+            continue
+        candidate_provider = canonical(candidate.get("canonical_id") or candidate.get("upstream_id"))
+        provider_changes = changes_by_provider.get(candidate_provider)
+        if not provider_changes:
+            continue
+
         local_path = (stage / str(candidate.get("local_path") or "")).resolve()
-        local_path.relative_to((stage / "providers").resolve())
+        local_path.relative_to(providers_root)
         original = local_path.read_bytes()
-        patched, records = apply_overrides(change["provider"], original, phase="discovery")
+        patched, records = apply_overrides(candidate_provider, original, phase="discovery")
         local_path.write_bytes(patched)
         candidate["sha256"] = hashlib.sha256(patched).hexdigest()
-        candidate.setdefault("local_patches", []).extend(records)
-        candidate.setdefault("dns_migration_overrides", []).append(change)
+
+        existing_records = candidate.setdefault("local_patches", [])
+        for record in records:
+            if record not in existing_records:
+                existing_records.append(record)
+
+        existing_migrations = candidate.setdefault("dns_migration_overrides", [])
+        for change in provider_changes:
+            if change not in existing_migrations:
+                existing_migrations.append(change)
+        repatched_variants += 1
 
     registry_path.write_text(json.dumps(registry, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     print(f"DNS migration overrides applied: {len(changes)}")
     for change in changes:
         print(f"- {change['provider']}: {change['from']} -> {change['to']} ({change['confidence']})")
+    print(f"Staged provider variants repatched: {repatched_variants}")
     return 0
 
 
