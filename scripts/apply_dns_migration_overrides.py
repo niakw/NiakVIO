@@ -69,7 +69,11 @@ def main() -> int:
     report = json.loads(args.report.read_text(encoding="utf-8"))
     config = json.loads(args.config.read_text(encoding="utf-8")).get("dns_preflight") or {}
     overrides = json.loads(args.overrides.read_text(encoding="utf-8"))
-    registry = json.loads(registry_path.read_text(encoding="utf-8"))
+    registry = (
+        json.loads(registry_path.read_text(encoding="utf-8"))
+        if registry_path.is_file()
+        else {"candidates": []}
+    )
 
     by_key = {str(item.get("key")): item for item in registry.get("candidates", []) if isinstance(item, dict)}
     changes: list[dict] = []
@@ -83,7 +87,7 @@ def main() -> int:
             continue
         provider_id = canonical(provider.get("canonical_id"))
         candidate = by_key.get(str(provider.get("key")))
-        if not provider_id or not candidate:
+        if not provider_id:
             continue
         old_host = str(migration["original_host"]).lower()
         new_host = str(migration["host"]).lower()
@@ -150,6 +154,8 @@ def main() -> int:
 
         local_path = (stage / str(candidate.get("local_path") or "")).resolve()
         local_path.relative_to(providers_root)
+        if not local_path.is_file():
+            continue
         original = local_path.read_bytes()
         patched, records = apply_overrides(candidate_provider, original, phase="discovery")
         local_path.write_bytes(patched)
@@ -166,7 +172,8 @@ def main() -> int:
                 existing_migrations.append(change)
         repatched_variants += 1
 
-    registry_path.write_text(json.dumps(registry, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    if registry_path.is_file():
+        registry_path.write_text(json.dumps(registry, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     print(f"DNS migration overrides applied: {len(changes)}")
     for change in changes:
         print(f"- {change['provider']}: {change['from']} -> {change['to']} ({change['confidence']})")
