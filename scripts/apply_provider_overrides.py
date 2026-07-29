@@ -92,6 +92,140 @@ def _normalize_profile_names(values: Iterable[str] | None) -> set[str]:
     return {str(value) for value in (values or []) if str(value).strip()}
 
 
+
+def _replace_named_function(text: str, function_name: str, replacement: str) -> tuple[str, bool]:
+    """Replace a classic named JavaScript function using balanced braces."""
+    import re
+
+    match = re.search(rf"function\s+{re.escape(function_name)}\s*\([^)]*\)\s*\{{", text)
+    if not match:
+        return text, False
+    start = match.start()
+    brace = text.find("{", match.start(), match.end())
+    depth = 0
+    quote: str | None = None
+    escaped = False
+    line_comment = False
+    block_comment = False
+    index = brace
+    while index < len(text):
+        char = text[index]
+        nxt = text[index + 1] if index + 1 < len(text) else ""
+        if line_comment:
+            if char in "\r\n":
+                line_comment = False
+        elif block_comment:
+            if char == "*" and nxt == "/":
+                block_comment = False
+                index += 1
+        elif quote:
+            if escaped:
+                escaped = False
+            elif char == "\\":
+                escaped = True
+            elif char == quote:
+                quote = None
+        else:
+            if char in ("'", '"', "`"):
+                quote = char
+            elif char == "/" and nxt == "/":
+                line_comment = True
+                index += 1
+            elif char == "/" and nxt == "*":
+                block_comment = True
+                index += 1
+            elif char == "{":
+                depth += 1
+            elif char == "}":
+                depth -= 1
+                if depth == 0:
+                    return text[:start] + replacement + text[index + 1 :], True
+        index += 1
+    raise ValueError(f"unterminated function body: {function_name}")
+
+
+def _apply_fixed_endpoint(text: str, provider_id: str, config: dict[str, Any]) -> tuple[str, dict[str, Any] | None]:
+    fixed = config.get("fixed_endpoint")
+    if not isinstance(fixed, dict):
+        return text, None
+    function_name = str(fixed.get("resolver_function") or "").strip()
+    api = str(fixed.get("api") or "").rstrip("/")
+    referer = str(fixed.get("referer") or "").rstrip("/") + "/"
+    if not function_name or not api:
+        raise ValueError(f"provider_patches.{provider_id}.fixed_endpoint is incomplete")
+    marker = f"NUVIO_FIXED_ENDPOINT:{api}"
+    if marker in text:
+        return text, None
+    replacement = (
+        f"function {function_name}(){{"
+        f"/* {marker} */"
+        f"return Promise.resolve({{api:{json.dumps(api)},referer:{json.dumps(referer)}}});"
+        "}"
+    )
+    output, changed = _replace_named_function(text, function_name, replacement)
+    if not changed:
+        return text, None
+    return output, {
+        "type": "fixed_endpoint",
+        "resolver_function": function_name,
+        "api": api,
+        "referer": referer,
+    }
+
+
+def _inject_runtime_domain_overrides(text: str, replacements: dict[str, Any]) -> tuple[str, int]:
+    """Embed host rewriting into the provider JavaScript artifact itself."""
+    from urllib.parse import urlparse
+
+    rules: dict[str, str] = {}
+    for old, new in replacements.items():
+        old_value = str(old).lower().strip().rstrip("/")
+        new_value = str(new).lower().strip().rstrip("/")
+        old_host = urlparse(old_value).hostname if "://" in old_value else old_value
+        new_host = urlparse(new_value).hostname if "://" in new_value else new_value
+        if old_host and new_host and old_host != new_host:
+            rules[old_host] = new_host
+    if not rules:
+        return text, 0
+    marker = "NUVIO_RUNTIME_DOMAIN_OVERRIDES_V1"
+    if marker in text:
+        return text, 0
+    import base64
+    encoded_rules = [
+        [base64.b64encode(old.encode("utf-8")).decode("ascii"), new]
+        for old, new in sorted(rules.items())
+    ]
+    payload = json.dumps(encoded_rules, separators=(",", ":"))
+    bootstrap = """/* %s */
+;(function(g,rules){
+  if(!g||typeof g.fetch!=="function")return;
+  var key="__nuvioDomainOverrideV1";
+  var state=g[key];
+  if(!state){
+    state={native:g.fetch.bind(g),rules:Object.create(null)};
+    g[key]=state;
+    g.fetch=function(input,init){
+      var next=input;
+      try{
+        var raw=(typeof Request!=="undefined"&&input instanceof Request)?input.url:String(input);
+        var url=new URL(raw);
+        var replacement=state.rules[String(url.hostname).toLowerCase()];
+        if(replacement){
+          url.hostname=replacement;
+          next=(typeof Request!=="undefined"&&input instanceof Request)?new Request(url.toString(),input):url.toString();
+        }
+      }catch(_error){}
+      return state.native(next,init);
+    };
+  }
+  for(var i=0;i<rules.length;i++){
+    try{state.rules[atob(rules[i][0])]=rules[i][1];}catch(_error){}
+  }
+})(typeof globalThis!=="undefined"?globalThis:this,%s);
+""" % (marker, payload)
+    return bootstrap + text, len(rules)
+
+
 def apply_overrides(
     provider_id: str,
     data: bytes,
@@ -130,6 +264,18 @@ def apply_overrides(
                     "phase": phase,
                 }
             )
+
+    text, fixed_record = _apply_fixed_endpoint(text, provider_id, specific)
+    if fixed_record:
+        fixed_record["phase"] = phase
+        applied.append(fixed_record)
+
+    runtime_replacements = specific.get("runtime_domain_replacements") or {}
+    if not isinstance(runtime_replacements, dict):
+        raise ValueError(f"provider_patches.{provider_id}.runtime_domain_replacements must be an object")
+    text, runtime_rule_count = _inject_runtime_domain_overrides(text, runtime_replacements)
+    if runtime_rule_count:
+        applied.append({"type": "runtime_domain_overrides", "count": runtime_rule_count, "phase": phase})
 
     profiles = config.get("patch_profiles") or {}
     if not isinstance(profiles, dict):
