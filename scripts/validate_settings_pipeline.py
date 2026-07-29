@@ -20,7 +20,7 @@ required_health = [
     "settings_profiles_producing_streams",
     "selected_settings_profiles",
     "settings_diagnostics: settingsProfileAttempts",
-    "schema_version: 63",
+    "schema_version: 65",
     "manifest_curation_score",
     "manifest_quality_signals",
 ]
@@ -46,4 +46,4 @@ for label, text, tokens in [
             missing.append(f"{label}: {token}")
 if missing:
     raise SystemExit("Missing settings pipeline elements:\n- " + "\n- ".join(missing))
-print("[OK] Settings extraction -> health-results -> health-report pipeline is complete (schema 62).")
+print("[OK] Settings extraction -> health-results -> health-report pipeline is complete (health schema 65; promotion schema 63).")
