@@ -17,6 +17,7 @@ CORE_FILES = [
     "provider-overrides.json",
     "scripts/deep_repair_loop.py",
     "scripts/runtime_repair.py",
+    "scripts/reapply_published_overrides.py",
 ]
 
 
