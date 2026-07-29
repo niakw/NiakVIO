@@ -516,7 +516,15 @@ export async function probeHttpThroughResolver(initialHost, resolverConfig, opti
     const redirects = [];
     for (let redirectCount = 0; redirectCount <= maxRedirects; redirectCount += 1) {
       const dnsResult = await resolveHost(current.hostname);
-      const safeAddresses = (dnsResult.addresses || []).filter((record) => !isPrivateIp(record.address)).slice(0, 3);
+      const publicAddresses = (dnsResult.addresses || []).filter((record) => !isPrivateIp(record.address));
+      const ipv4Addresses = publicAddresses.filter((record) => Number(record.family) === 4);
+      const ipv6Addresses = publicAddresses.filter((record) => Number(record.family) === 6);
+      // GitHub-hosted runners do not consistently expose outbound IPv6. Prefer IPv4
+      // for the local HTTP fallback and only use IPv6 when explicitly enabled.
+      const safeAddresses = [
+        ...ipv4Addresses,
+        ...(options.allow_ipv6_http === true ? ipv6Addresses : []),
+      ].slice(0, 3);
       if (!safeAddresses.length) {
         attempts.push({ scheme, host: current.hostname, dns_status: dnsResult.status, error: 'no_public_address' });
         break;
