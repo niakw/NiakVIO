@@ -2,6 +2,7 @@
 import assert from 'node:assert/strict';
 import {
   checkDomainAcrossResolvers,
+  createGlobalpingDependencies,
   discoverMigrationCandidates,
   extractCandidateDomains,
   providerDecision,
@@ -126,6 +127,58 @@ function dnsResult(name, status, addresses = []) {
   ], baseConfig);
   assert.equal(decision.status, 'inconclusive');
   assert.equal(decision.continue_runtime, true);
+}
+
+
+{
+  const calls = [];
+  const fakeRunMeasurement = async (body) => {
+    calls.push(body);
+    if (body.type === 'dns') {
+      return {
+        id: 'dns-measurement-sfr',
+        payload: {
+          status: 'finished',
+          results: [{
+            probe: { country: 'FR', city: 'Paris', network: 'SFR', asn: 15557, tags: ['eyeball'] },
+            result: { statusCode: 'NOERROR', answers: [{ type: 'A', value: '93.184.216.34' }], rawOutput: 'status: NOERROR' },
+          }],
+        },
+      };
+    }
+    return {
+      id: 'http-measurement-sfr',
+      payload: {
+        status: 'finished',
+        results: [{
+          probe: { country: 'FR', city: 'Paris', network: 'SFR', asn: 15557, tags: ['eyeball'] },
+          result: { statusCode: 200, headers: [], rawOutput: 'HTTP/2 200\ncontent-type: text/html' },
+        }],
+      },
+    };
+  };
+  const config = {
+    ...baseConfig,
+    remote_probe: {
+      enabled: true,
+      location_magic: { sfr: ['France+SFR+eyeball'] },
+    },
+    resolvers: {
+      ...baseConfig.resolvers,
+      sfr: { kind: 'french_isp', servers: ['109.0.66.10'] },
+    },
+  };
+  const dependencies = createGlobalpingDependencies(config, { runMeasurement: fakeRunMeasurement });
+  const dns = await dependencies.resolveFn('example.com', { name: 'sfr', kind: 'french_isp', servers: ['109.0.66.10'] }, config);
+  assert.equal(dns.status, 'resolved');
+  assert.equal(dns.transport, 'globalping');
+  assert.equal(dns.measurement_id, 'dns-measurement-sfr');
+  const http = await dependencies.probeFn('example.com', { name: 'sfr', kind: 'french_isp', servers: ['109.0.66.10'] }, config);
+  assert.equal(http.status, 'reachable');
+  assert.equal(http.transport, 'globalping');
+  assert.equal(calls[0].locations[0].magic, 'France+SFR+eyeball');
+  assert.equal(calls[0].measurementOptions.resolver, '109.0.66.10');
+  assert.equal(calls[1].locations[0].magic, 'dns-measurement-sfr');
 }
 
 console.log('French ISP DNS preflight tests passed');
