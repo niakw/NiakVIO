@@ -12,13 +12,22 @@
   "provider_patches": {
     "movix": {
       "notes": [
-        "Use the reachable Movix API domain."
+        "Force the reachable Movix endpoint inside the published JavaScript artifact.",
+        "Rewrite dynamically reconstructed legacy hosts at fetch time as defense in depth."
       ],
       "replacements": {
         "api.movix.cash": "api.movix.fun"
       },
       "route_replacements": {},
-      "required_route_values": []
+      "required_route_values": [],
+      "runtime_domain_replacements": {
+        "api.movix.cash": "api.movix.fun"
+      },
+      "fixed_endpoint": {
+        "resolver_function": "detectApi",
+        "api": "https://api.movix.fun",
+        "referer": "https://movix.fun/"
+      }
     },
     "frenchstream": {
       "notes": [
