@@ -92,6 +92,12 @@ jobs:
       - name: Verify provider catalogue and language semantics
         run: node scripts/validate_provider_semantics.cjs
 
+      - name: Resolve official provider address hubs before discovery
+        run: |
+          python scripts/resolve_provider_hubs.py \
+            --apply \
+            --output health-output/provider-hub-report.json
+
       - name: Discover every non-P2P provider from every upstream manifest
         run: python scripts/discover_candidates.py --require-all-upstreams
 
