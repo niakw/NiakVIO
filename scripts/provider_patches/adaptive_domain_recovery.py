@@ -28,15 +28,38 @@ def apply(text: str, *, options=None, context=None) -> str:
             normalized.append({"hosts": hosts, "candidates": candidates})
     if not normalized:
         return text
-    # Remove a prior copy before re-injection when configuration evolves.
+    payload = base64.b64encode(
+        json.dumps(normalized, separators=(",", ":"), sort_keys=True).encode()
+    ).decode()
+
+    # Idempotency is essential because the deep pipeline can apply build
+    # profiles more than once to the same staged/published artifact. If the
+    # existing block already carries the exact deterministic payload, preserve
+    # the bytes unchanged. When the configuration evolved, remove the old block
+    # together with only its owned separator before injecting the new one.
     begin = f"/* {MARKER}:BEGIN */"
     end = f"/* {MARKER}:END */"
-    while begin in text and end in text:
+    if begin in text and end in text:
         a = text.index(begin)
         b = text.index(end, a) + len(end)
-        text = text[:a] + text[b:]
-
-    payload = base64.b64encode(json.dumps(normalized, separators=(",", ":")).encode()).decode()
+        existing = text[a:b]
+        if f'"{payload}"' in existing:
+            return text
+        suffix = text[b:]
+        if suffix.startswith("\r\n"):
+            suffix = suffix[2:]
+        elif suffix.startswith("\n") or suffix.startswith("\r"):
+            suffix = suffix[1:]
+        text = text[:a] + suffix
+        while begin in text and end in text:
+            a = text.index(begin)
+            b = text.index(end, a) + len(end)
+            suffix = text[b:]
+            if suffix.startswith("\r\n"):
+                suffix = suffix[2:]
+            elif suffix.startswith("\n") or suffix.startswith("\r"):
+                suffix = suffix[1:]
+            text = text[:a] + suffix
     bootstrap = r'''/* NUVIO_ADAPTIVE_DOMAIN_RECOVERY_V1:BEGIN */
 ;(function(g,encoded){
   if(!g||typeof g.fetch!=="function"||g.__nuvioAdaptiveDomainRecoveryV1)return;
