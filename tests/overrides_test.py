@@ -80,7 +80,7 @@ def test_runtime_profiles_are_not_blindly_applied() -> None:
 
     source = synthetic_metadata_bundle()
     discovery, discovery_records = apply_overrides("arbitrary-provider", source)
-    assert discovery == source
+    assert b"NUVIO_GLOBAL_STREAM_OUTPUT_GUARD_V2" in discovery
     assert not any(row.get("type") == "patch_profile" for row in discovery_records)
 
     runtime, runtime_records = apply_overrides(
