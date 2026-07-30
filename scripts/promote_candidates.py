@@ -273,6 +273,31 @@ def build_entry(
     return entry
 
 
+
+def bump_provider_version(value: str) -> str:
+    """Increment a provider patch version, defaulting malformed values to 1.0.1."""
+    match = re.fullmatch(r"(\d+)\.(\d+)\.(\d+)", str(value or "").strip())
+    if not match:
+        return "1.0.1"
+    major, minor, patch = (int(part) for part in match.groups())
+    return f"{major}.{minor}.{patch + 1}"
+
+
+def provider_entry_version(new_entry: dict[str, Any], old_entry: dict[str, Any] | None) -> str:
+    """Bump the scraper version whenever its published artifact changes.
+
+    Nuvio caches providers by manifest metadata. A hash-addressed filename change
+    therefore needs a matching scraper version change, otherwise clients may keep
+    the previous JavaScript even though the repository manifest changed.
+    """
+    declared = str(new_entry.get("version") or "1.0.0")
+    if not isinstance(old_entry, dict):
+        return declared
+    previous = str(old_entry.get("version") or declared or "1.0.0")
+    if str(old_entry.get("filename") or "") != str(new_entry.get("filename") or ""):
+        return bump_provider_version(previous)
+    return previous
+
 def validate_manifest(manifest: dict[str, Any], sources: dict[str, Any]) -> None:
     scrapers = manifest.get("scrapers")
     if not isinstance(scrapers, list) or not scrapers:
@@ -1646,7 +1671,9 @@ def main() -> int:
                 if isinstance(result.get("candidate_profile"), dict)
                 else {}
             )
-            entries[cid] = build_entry(selected, destination, enabled, aggregated_claims)
+            promoted_entry = build_entry(selected, destination, enabled, aggregated_claims)
+            promoted_entry["version"] = provider_entry_version(promoted_entry, existing.get(cid))
+            entries[cid] = promoted_entry
             ordering = manifest_ordering_profile(result, proof)
             manifest_order_profiles[cid] = ordering
 

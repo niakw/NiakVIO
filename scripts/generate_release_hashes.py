@@ -26,6 +26,7 @@ CORE_FILES = [
     "scripts/runtime_repair.py",
     "scripts/reapply_published_overrides.py",
     "scripts/provider_dns_preflight.mjs",
+    "scripts/prune_unreferenced_providers.py",
 ]
 
 

@@ -202,8 +202,13 @@ export function createGlobalpingDependencies(preflightConfig, injected = {}) {
   const httpCache = new Map();
   const magicTable = remoteConfig.location_magic || {};
 
-  async function runAtFirstAvailableLocation(bodyFactory, resolverName) {
-    const candidates = Array.isArray(magicTable[resolverName]) ? magicTable[resolverName] : [magicTable[resolverName] || `France+${resolverName}+eyeball`];
+  async function runAtFirstAvailableLocation(bodyFactory, resolverName, resolverConfig = {}) {
+    const configured = magicTable[resolverName];
+    const generic = remoteConfig.neutral_location_magic || ['France+eyeball', 'France'];
+    const fallback = resolverConfig?.kind === 'french_isp'
+      ? [`France+${resolverName}+eyeball`, `France+${resolverName}`]
+      : (Array.isArray(generic) ? generic : [generic]);
+    const candidates = Array.isArray(configured) ? configured : configured ? [configured] : fallback;
     let lastError = null;
     for (const magic of candidates.filter(Boolean)) {
       try {
@@ -217,7 +222,7 @@ export function createGlobalpingDependencies(preflightConfig, injected = {}) {
   }
 
   async function resolveFn(host, resolverConfig, options = preflightConfig) {
-    if (resolverConfig?.kind !== 'french_isp' || remoteConfig.enabled === false) {
+    if (remoteConfig.enabled === false) {
       return resolveWithResolver(host, resolverConfig, options);
     }
     const key = `${resolverConfig.name}:${normalizeHost(host)}`;
@@ -231,7 +236,7 @@ export function createGlobalpingDependencies(preflightConfig, injected = {}) {
             locations: [{ magic }],
             limit: 1,
             measurementOptions: { query: { type: 'A' }, resolver, protocol: 'UDP' },
-          }), resolverConfig.name);
+          }), resolverConfig.name, resolverConfig);
           return parseGlobalpingDns(measurement, resolverConfig.name, resolverConfig);
         } catch (error) {
           if (remoteConfig.fallback_to_direct === true) return resolveWithResolver(host, resolverConfig, options);
@@ -243,7 +248,7 @@ export function createGlobalpingDependencies(preflightConfig, injected = {}) {
   }
 
   async function probeFn(host, resolverConfig, options = preflightConfig) {
-    if (resolverConfig?.kind !== 'french_isp' || remoteConfig.enabled === false) {
+    if (remoteConfig.enabled === false) {
       return probeHttpThroughResolver(host, resolverConfig, options, { resolveHost: (targetHost) => resolveFn(targetHost, resolverConfig, options) });
     }
     const key = `${resolverConfig.name}:${normalizeHost(host)}`;
@@ -257,11 +262,24 @@ export function createGlobalpingDependencies(preflightConfig, injected = {}) {
             target: `https://${normalizeHost(host)}/`,
             locations: [{ magic: dnsResult.measurement_id }],
             limit: 1,
-            measurementOptions: { request: { method: 'GET' } },
+            // Globalping HTTP options are top-level within measurementOptions.
+            // The previous nested request object was rejected with HTTP 400.
+            measurementOptions: { method: 'GET', ipVersion: 4 },
           }, remoteConfig);
           return parseGlobalpingHttp(measurement, host);
         } catch (error) {
-          return { status: 'unreachable', http_status: null, final_host: normalizeHost(host), redirects: [], body_excerpt: '', attempts: [], error: compactError(error), transport: 'globalping' };
+          const rateLimited = Number(error?.status) === 429;
+          return {
+            status: rateLimited ? 'unavailable' : 'unreachable',
+            http_status: null,
+            final_host: normalizeHost(host),
+            redirects: [],
+            body_excerpt: '',
+            attempts: [],
+            error: compactError(error),
+            transport: 'globalping',
+            rate_limited: rateLimited,
+          };
         }
       })());
     }
@@ -303,16 +321,30 @@ function isInfrastructureHost(host) {
   return !normalized || INFRASTRUCTURE_HOST_PATTERNS.some((pattern) => pattern.test(normalized));
 }
 
+const PUBLIC_TLDS = new Set([
+  'app','art','be','biz','blog','ca','cash','cc','ch','cloud','co','com','cyou','de','dev','eu','fr','fun','gay',
+  'gg','in','info','io','is','it','jp','li','live','lol','me','mx','my','net','nl','one','online','org','ph','pl',
+  'pro','pw','ru','se','site','so','sx','to','tv','uk','us','vc','wiki','ws','xyz',
+]);
+const CODELIKE_LABELS = new Set([
+  'array','boolean','document','exports','function','global','json','module','null','number','object','process',
+  'promise','prototype','regexp','state','string','symbol','url','window',
+]);
+const CODELIKE_SUFFIXES = new Set([
+  'assign','call','catch','constructor','default','env','exports','fetch','filter','finally','forEach','get','has',
+  'hostname','includes','isarray','keys','length','log','map','name','parse','prototype','push','reject','replace',
+  'resolve','rules','set','status','stringify','then','values',
+].map((value) => value.toLowerCase()));
+
 function validPublicHost(host) {
   const normalized = normalizeHost(host);
-  const codeSuffixes = new Set([
-    'assign', 'catch', 'constructor', 'default', 'env', 'exports', 'finally',
-    'length', 'log', 'map', 'prototype', 'reject', 'resolve', 'status', 'then',
-  ]);
-  const suffix = normalized.split('.').at(-1);
-  if (!normalized || codeSuffixes.has(suffix) || normalized === 'localhost' || normalized.endsWith('.localhost')) return false;
+  if (!normalized || normalized === 'localhost' || normalized.endsWith('.localhost')) return false;
   if (net.isIP(normalized)) return !isPrivateIp(normalized);
   if (!/^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,24}$/i.test(normalized)) return false;
+  const labels = normalized.split('.');
+  const suffix = labels.at(-1);
+  if (!PUBLIC_TLDS.has(suffix) || CODELIKE_SUFFIXES.has(suffix)) return false;
+  if (labels.some((label) => CODELIKE_LABELS.has(label))) return false;
   return !isInfrastructureHost(normalized);
 }
 
