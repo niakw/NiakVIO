@@ -228,266 +228,21 @@ def _inject_runtime_domain_overrides(text: str, replacements: dict[str, Any]) ->
 
 
 
+def _strip_legacy_global_stream_guards(text: str) -> tuple[str, int]:
+    """Remove the obsolete one-size-fits-all output guards.
 
-def _inject_request_header_overrides(text: str, config: dict[str, Any]) -> tuple[str, bool]:
-    '''Inject provider-scoped fetch headers before the provider initializes.
-
-    Output normalization happens after ``getStreams`` and therefore cannot fix
-    401/403 responses raised while a provider is fetching its API or source
-    pages. These rules wrap the provider's own fetch calls and only add missing
-    headers. Existing provider headers always win.
-    '''
-    if not isinstance(config, dict):
-        return text, False
-    defaults = config.get("defaults") or {}
-    host_rules = config.get("host_rules") or {}
-    if not isinstance(defaults, dict) or not isinstance(host_rules, dict):
-        raise ValueError("request_headers defaults and host_rules must be objects")
-    marker = "NUVIO_REQUEST_HEADER_OVERRIDES_V1"
-    end_marker = "NUVIO_REQUEST_HEADER_OVERRIDES_END"
-    cleaned = re.sub(
-        rf"/\* {marker} \*/[\s\S]*?/\* {end_marker} \*/\s*",
-        "",
-        text,
-        count=1,
-    )
-    if not defaults and not host_rules:
-        return cleaned, cleaned != text
-    payload = json.dumps(
-        {"defaults": defaults, "host_rules": host_rules},
-        separators=(",", ":"),
-    )
-    bootstrap = r'''/* NUVIO_REQUEST_HEADER_OVERRIDES_V1 */
-;(function(g,policy){
-  if(!g||typeof g.fetch!=="function")return;
-  var key="__nuvioRequestHeaderOverridesV1";
-  var state=g[key];
-  function copyHeaders(target,source){
-    if(!source)return target;
-    try{
-      if(typeof source.forEach==="function"){
-        source.forEach(function(v,k){target[String(k)]=String(v)});
-        return target;
-      }
-    }catch(_e){}
-    if(Array.isArray(source)){
-      for(var i=0;i<source.length;i++){
-        var pair=source[i];
-        if(pair&&pair.length>=2)target[String(pair[0])]=String(pair[1]);
-      }
-      return target;
-    }
-    if(typeof source==="object"){
-      Object.keys(source).forEach(function(k){if(source[k]!=null)target[String(k)]=String(source[k])});
-    }
-    return target;
-  }
-  function lowerIndex(headers){
-    var out={};Object.keys(headers).forEach(function(k){out[k.toLowerCase()]=k});return out;
-  }
-  function matchingRule(host){
-    var rules=state.policy.host_rules||{};
-    if(rules[host])return rules[host];
-    var names=Object.keys(rules);
-    for(var i=0;i<names.length;i++){
-      var name=String(names[i]).toLowerCase();
-      if(name.indexOf("*.")===0){
-        var suffix=name.slice(1);
-        if(host.length>suffix.length&&host.slice(-suffix.length)===suffix)return rules[names[i]];
-      }
-    }
-    return null;
-  }
-  function mergeMissing(headers,values){
-    if(!values||typeof values!=="object")return headers;
-    var lower=lowerIndex(headers);
-    Object.keys(values).forEach(function(k){
-      if(values[k]!=null&&!lower[String(k).toLowerCase()])headers[String(k)]=String(values[k]);
-    });
-    return headers;
-  }
-  if(!state){
-    state={native:g.fetch.bind(g),policy:{defaults:{},host_rules:{}}};
-    g[key]=state;
-    g.fetch=function(input,init){
-      var nextInit={},sourceInit=init&&typeof init==="object"?init:{};
-      Object.keys(sourceInit).forEach(function(k){nextInit[k]=sourceInit[k]});
-      var headers={};
-      try{
-        if(typeof Request!=="undefined"&&input instanceof Request)copyHeaders(headers,input.headers);
-      }catch(_e){}
-      copyHeaders(headers,sourceInit.headers);
-      mergeMissing(headers,state.policy.defaults||{});
-      var raw="";
-      try{raw=(typeof Request!=="undefined"&&input instanceof Request)?input.url:String(input)}catch(_e){}
-      try{
-        var url=new URL(raw),rule=matchingRule(String(url.hostname||"").toLowerCase());
-        if(rule){
-          if(rule.headers&&typeof rule.headers==="object")mergeMissing(headers,rule.headers);
-          var direct={Referer:rule.referer,Origin:rule.origin,Accept:rule.accept};
-          mergeMissing(headers,direct);
-        }
-      }catch(_e){}
-      nextInit.headers=headers;
-      return state.native(input,nextInit);
-    };
-  }
-  policy=policy||{defaults:{},host_rules:{}};
-  state.policy.defaults=state.policy.defaults||{};
-  state.policy.host_rules=state.policy.host_rules||{};
-  mergeMissing(state.policy.defaults,policy.defaults||{});
-  var incomingRules=policy.host_rules||{};
-  Object.keys(incomingRules).forEach(function(host){
-    var existing=state.policy.host_rules[host]||{},incoming=incomingRules[host]||{},merged={};
-    Object.keys(existing).forEach(function(k){merged[k]=existing[k]});
-    Object.keys(incoming).forEach(function(k){merged[k]=incoming[k]});
-    if(existing.headers||incoming.headers){
-      merged.headers={};
-      Object.keys(existing.headers||{}).forEach(function(k){merged.headers[k]=existing.headers[k]});
-      Object.keys(incoming.headers||{}).forEach(function(k){merged.headers[k]=incoming.headers[k]});
-    }
-    state.policy.host_rules[host]=merged;
-  });
-})(typeof globalThis!=="undefined"?globalThis:this,__POLICY__);
-/* NUVIO_REQUEST_HEADER_OVERRIDES_END */
-'''.replace("__POLICY__", payload)
-    return bootstrap + "\n" + cleaned.lstrip(), True
-
-def _inject_global_stream_output_guard(text: str, config: dict[str, Any]) -> tuple[str, bool]:
-    """Append a provider-agnostic output guard around every CommonJS/global export.
-
-    The previous implementation depended on a source variable named ``__provider``
-    and therefore missed most minified bundles. This version wraps the public
-    export after the provider has finished initialising, so it works regardless of
-    internal variable names or bundler layout.
+    Playback semantics are provider-capability specific. The global guards
+    changed iframe players, direct-media providers and API resolvers in the same
+    way, which could make valid results disappear in Nuvio. Only the appended
+    markers owned by this repository are removed; provider source code is left
+    untouched.
     """
-    policy = config.get("global_stream_output") or {}
-    if not isinstance(policy, dict):
-        policy = {}
-    original = text
-    # Blanket output wrapping caused app/runtime regressions even when Node
-    # smoke tests passed. Always remove legacy global guards first. Output
-    # hardening now belongs to a targeted runtime profile retained only after
-    # a strict deep retest improves the affected provider.
-    text = re.sub(
+    pattern = re.compile(
         r"\n?/\* NUVIO_GLOBAL_STREAM_OUTPUT_GUARD_V(?:1|2|3) \*/[\s\S]*$",
-        "",
-        text,
-        flags=re.MULTILINE,
-    ).rstrip()
-    if policy.get("enabled") is not True:
-        return text, text != original
-    marker = "NUVIO_GLOBAL_STREAM_OUTPUT_GUARD_V3"
-    if marker in text:
-        return text, text != original
-    defaults = {
-        "user_agent": policy.get("user_agent") or "Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 Chrome/124 Mobile Safari/537.36",
-        "add_accept": policy.get("add_accept", True),
-        "add_range": policy.get("add_range", True),
-        "reject_extensions": policy.get("reject_extensions") or [".avi", ".wmv", ".flv"],
-        "host_rules": policy.get("host_rules") or {},
-    }
-    payload = json.dumps(defaults, separators=(",", ":"))
-    guard_template = r"""
-/* NUVIO_GLOBAL_STREAM_OUTPUT_GUARD_V3 */
-;(function(g,policy){
-  function text(v){return v==null?"":String(v)}
-  function inferQuality(stream){
-    var hay=(text(stream.quality)+" "+text(stream.name)+" "+text(stream.title)+" "+text(stream.size)).toLowerCase();
-    var m=hay.match(/(?:^|\D)(2160|1440|1080|720|576|540|480|360)(?:p|\D|$)/);
-    if(m)return m[1]+"p";
-    if(/\b(?:4k|uhd)\b/.test(hay))return"2160p";
-    if(/\bfhd\b|full[ -]?hd/.test(hay))return"1080p";
-    if(/\bhd\b/.test(hay))return"720p";
-    return text(stream.quality)||"HD";
-  }
-  function inferLanguage(stream){
-    var current=text(stream.language).trim();
-    if(current)return current;
-    var hay=(text(stream.name)+" "+text(stream.title)+" "+text(stream.size)).toUpperCase();
-    if(/VOSTFR|VOST[ -]?FR|SUB(?:BED)?[ -]?FR/.test(hay))return"VOSTFR";
-    if(/DUAL[ -]?AUDIO|MULTI(?:LANG)?|VFQ\s*[+\/]|VFF\s*[+\/]/.test(hay))return"MULTI";
-    if(/\bVFQ\b/.test(hay))return"VFQ";
-    if(/\bVFF\b|\bVF\b|FRENCH/.test(hay))return"VF";
-    if(/\bVO\b|ENGLISH|ORIGINAL/.test(hay))return"VO";
-    return null;
-  }
-  function hostOf(url){try{return new URL(url).hostname.toLowerCase()}catch(_e){return""}}
-  function normalizeHeaders(stream){
-    var out={};
-    var source=stream&&stream.headers&&typeof stream.headers==="object"?stream.headers:{};
-    Object.keys(source).forEach(function(k){if(source[k]!=null)out[k]=String(source[k])});
-    var lower={};Object.keys(out).forEach(function(k){lower[k.toLowerCase()]=k});
-    if(!lower["user-agent"])out["User-Agent"]=policy.user_agent;
-    if(policy.add_accept&&!lower.accept)out.Accept="*/*";
-    if(policy.add_range&&!lower.range)out.Range="bytes=0-";
-    var host=hostOf(stream.url),rule=null,rules=policy.host_rules||{};
-    if(rules[host])rule=rules[host];
-    if(!rule){
-      var ruleNames=Object.keys(rules);
-      for(var ri=0;ri<ruleNames.length;ri++){
-        var ruleName=String(ruleNames[ri]).toLowerCase();
-        if(ruleName.indexOf("*.")===0){
-          var suffix=ruleName.slice(1);
-          if(host.length>suffix.length&&host.slice(-suffix.length)===suffix){rule=rules[ruleNames[ri]];break}
-        }
-      }
-    }
-    if(rule&&typeof rule==="object"){
-      if(rule.referer&&!lower.referer)out.Referer=String(rule.referer);
-      if(rule.origin&&!lower.origin)out.Origin=String(rule.origin);
-      if(rule.headers&&typeof rule.headers==="object")Object.keys(rule.headers).forEach(function(k){out[k]=String(rule.headers[k])});
-    }
-    return out;
-  }
-  function unsupported(url){
-    var value=text(url).toLowerCase().split("?")[0].split("#")[0];
-    return (policy.reject_extensions||[]).some(function(ext){return value.endsWith(String(ext).toLowerCase())});
-  }
-  function normalize(result){
-    var list=Array.isArray(result)?result:[];
-    var seen=Object.create(null),clean=[];
-    for(var i=0;i<list.length;i++){
-      var stream=list[i];
-      if(!stream||typeof stream!=="object"||typeof stream.url!=="string")continue;
-      var url=stream.url.trim();
-      if(!/^https?:\/\//i.test(url)||unsupported(url)||seen[url])continue;
-      seen[url]=1;
-      var normalized=Object.assign({},stream,{url:url});
-      normalized.quality=inferQuality(normalized);
-      normalized.language=inferLanguage(normalized);
-      normalized.headers=normalizeHeaders(normalized);
-      clean.push(normalized);
-    }
-    return clean;
-  }
-  function wrapFunction(fn){
-    if(typeof fn!=="function"||fn.__nuvioGlobalStreamGuardV3)return fn;
-    var wrapped=function(){
-      var self=this,args=arguments;
-      try{return Promise.resolve(fn.apply(self,args)).then(normalize)}
-      catch(error){return Promise.reject(error)}
-    };
-    try{Object.keys(fn).forEach(function(k){wrapped[k]=fn[k]})}catch(_e){}
-    try{Object.defineProperty(wrapped,"__nuvioGlobalStreamGuardV3",{value:true})}catch(_e){wrapped.__nuvioGlobalStreamGuardV3=true}
-    return wrapped;
-  }
-  function wrapTarget(target){
-    if(!target)return target;
-    if(typeof target==="function")return wrapFunction(target);
-    if(typeof target==="object"&&typeof target.getStreams==="function")target.getStreams=wrapFunction(target.getStreams);
-    return target;
-  }
-  try{
-    if(typeof module!=="undefined"&&module&&module.exports)module.exports=wrapTarget(module.exports);
-  }catch(_e){}
-  try{
-    if(g&&typeof g.getStreams==="function")g.getStreams=wrapFunction(g.getStreams);
-  }catch(_e){}
-})(typeof globalThis!=="undefined"?globalThis:this,__POLICY__);
-"""
-    guard = guard_template.replace("__POLICY__", payload)
-    return text.rstrip() + "\n" + guard, True
+        re.MULTILINE,
+    )
+    output, count = pattern.subn("", text)
+    return output.rstrip() + ("\n" if output else ""), count
 
 
 def apply_overrides(
@@ -540,15 +295,6 @@ def apply_overrides(
     text, runtime_rule_count = _inject_runtime_domain_overrides(text, runtime_replacements)
     if runtime_rule_count:
         applied.append({"type": "runtime_domain_overrides", "count": runtime_rule_count, "phase": phase})
-
-    request_headers = specific.get("request_headers") or {}
-    text, request_headers_changed = _inject_request_header_overrides(text, request_headers)
-    if request_headers_changed and request_headers:
-        applied.append({
-            "type": "request_header_overrides",
-            "hosts": sorted(str(host) for host in (request_headers.get("host_rules") or {})),
-            "phase": phase,
-        })
 
     profiles = config.get("patch_profiles") or {}
     if not isinstance(profiles, dict):
@@ -615,9 +361,9 @@ def apply_overrides(
                 {"type": "patch_script", "path": str(patch_script), "phase": phase}
             )
 
-    text, guard_added = _inject_global_stream_output_guard(text, config)
-    if guard_added:
-        applied.append({"type": "global_stream_output_guard", "phase": phase})
+    text, removed_guards = _strip_legacy_global_stream_guards(text)
+    if removed_guards:
+        applied.append({"type": "remove_legacy_global_stream_guard", "count": removed_guards, "phase": phase})
     return text.encode("utf-8"), applied
 
 
