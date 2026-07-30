@@ -1,30 +1,79 @@
 {
   "name": "Nuvio Curated Providers — VF uniquement",
-  "version": "5.18.12",
+  "version": "5.18.13",
   "scrapers": [
     {
       "id": "movix",
-      "name": "Movix VF",
-      "description": "Movies and TV series in English & French (dubbed/subtitled)",
-      "version": "1.0.1",
-      "author": "wooodyhood",
+      "name": "Movix",
+      "description": "Films, Séries et Animes en VF et VOSTFR.",
+      "version": "1.0.2",
+      "author": "Gowaru",
       "supportedTypes": [
         "anime",
         "movie",
         "tv"
       ],
-      "filename": "../providers/movix--nuvio--29929d05058ae5c1.js",
+      "filename": "../providers/movix--nuvio--1233010fe4e58795.js",
       "enabled": true,
-      "hasSettings": true,
+      "logo": "https://movix.cash/movix.png",
+      "contentLanguage": [
+        "fr"
+      ],
+      "formats": [
+        "mp4",
+        "mkv",
+        "m3u8"
+      ],
+      "limited": false,
+      "disabledPlatforms": [],
+      "supportsExternalPlayer": true
+    },
+    {
+      "id": "animesultra",
+      "name": "AnimesUltra",
+      "description": "Animes en streaming VOSTFR et VF.",
+      "version": "1.0.32",
+      "author": "Gowaru",
+      "supportedTypes": [
+        "anime"
+      ],
+      "filename": "../providers/animesultra--nuvio--3070dcba468c3d8e.js",
+      "enabled": true,
+      "logo": "https://animesultra.org/templates/animeultra/images/favicon.ico",
+      "contentLanguage": [
+        "fr"
+      ],
+      "formats": [
+        "mp4",
+        "mkv"
+      ],
+      "limited": false,
+      "disabledPlatforms": [],
+      "supportsExternalPlayer": false
+    },
+    {
+      "id": "coflix",
+      "name": "Coflix",
+      "description": "Films et séries en streaming VF/VOSTFR sur Coflix.wiki.",
+      "version": "1.0.9",
+      "author": "Gowaru",
+      "supportedTypes": [
+        "movie",
+        "tv"
+      ],
+      "filename": "../providers/coflix--nuvio--a2447651b746c4d8.js",
+      "enabled": true,
+      "logo": "https://coflix.wiki/images/favicon-coflix.png",
+      "contentLanguage": [
+        "fr"
+      ],
       "formats": [
         "mp4",
         "m3u8"
       ],
-      "logo": "https://i.postimg.cc/XYrPQm87/movix.png",
-      "contentLanguage": [
-        "en",
-        "fr"
-      ]
+      "limited": false,
+      "disabledPlatforms": [],
+      "supportsExternalPlayer": false
     },
     {
       "id": "frenchstream",
@@ -76,6 +125,30 @@
       "supportsExternalPlayer": false
     },
     {
+      "id": "dulourd",
+      "name": "DuLourd",
+      "description": "Séries, animes et cartoons en streaming VF et VOSTFR.",
+      "version": "1.0.12",
+      "author": "Gowaru",
+      "supportedTypes": [
+        "anime",
+        "tv"
+      ],
+      "filename": "../providers/dulourd--nuvio--e35becdba118cdac.js",
+      "enabled": true,
+      "logo": "https://www.dulourd.hair/templates/dulourd2/icon/favicon.png",
+      "contentLanguage": [
+        "fr"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "limited": false,
+      "disabledPlatforms": [],
+      "supportsExternalPlayer": false
+    },
+    {
       "id": "purstream",
       "name": "Purstream",
       "description": "Films and series in French (VF) / subtitled French (VOSTFR) / multi-language (MULTI) from purstream.art.",
@@ -99,18 +172,64 @@
       ]
     },
     {
-      "id": "coflix",
-      "name": "Coflix",
-      "description": "Films et séries en streaming VF/VOSTFR sur Coflix.wiki.",
+      "id": "animesama-co",
+      "name": "AnimeSama.co (DLE Mirror)",
+      "description": "Animes VF et VOSTFR en streaming sur AnimeSama.co (miroir DLE).",
+      "version": "1.0.7",
+      "author": "Gowaru",
+      "supportedTypes": [
+        "anime"
+      ],
+      "filename": "../providers/animesama-co--gowaru--31bae18a6833be22.js",
+      "enabled": true,
+      "logo": "https://raw.githubusercontent.com/Anime-Sama/IMG/img/autres/logo.png",
+      "contentLanguage": [
+        "fr"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "limited": false,
+      "disabledPlatforms": [],
+      "supportsExternalPlayer": false
+    },
+    {
+      "id": "animevostfr",
+      "name": "AnimeVOSTFR",
+      "description": "Animes VF et VOSTFR en streaming gratuit sur AnimeVOSTFR.",
+      "version": "1.1.45",
+      "author": "Gowaru",
+      "supportedTypes": [
+        "anime"
+      ],
+      "filename": "../providers/animevostfr--gowaru--4948742da89428fb.js",
+      "enabled": true,
+      "logo": "https://animevostfr.org/wp-content/uploads/luffy-icon.jpg",
+      "contentLanguage": [
+        "fr"
+      ],
+      "formats": [
+        "mp4",
+        "mkv"
+      ],
+      "limited": false,
+      "disabledPlatforms": [],
+      "supportsExternalPlayer": false
+    },
+    {
+      "id": "flemmix",
+      "name": "Flemmix",
+      "description": "Films et séries en streaming VF/VOSTFR sur Flemmix.",
       "version": "1.0.8",
       "author": "Gowaru",
       "supportedTypes": [
         "movie",
         "tv"
       ],
-      "filename": "../providers/coflix--nuvio--a027b069c509697c.js",
+      "filename": "../providers/flemmix--gowaru--f993f57febc7b1ff.js",
       "enabled": true,
-      "logo": "https://coflix.wiki/images/favicon-coflix.png",
+      "logo": "https://flemmix.me/favicon.ico",
       "contentLanguage": [
         "fr"
       ],
@@ -146,123 +265,6 @@
       "supportsExternalPlayer": false
     },
     {
-      "id": "animesama-co",
-      "name": "AnimeSama.co (DLE Mirror)",
-      "description": "Animes VF et VOSTFR en streaming sur AnimeSama.co (miroir DLE).",
-      "version": "1.0.7",
-      "author": "Gowaru",
-      "supportedTypes": [
-        "anime"
-      ],
-      "filename": "../providers/animesama-co--gowaru--31bae18a6833be22.js",
-      "enabled": true,
-      "logo": "https://raw.githubusercontent.com/Anime-Sama/IMG/img/autres/logo.png",
-      "contentLanguage": [
-        "fr"
-      ],
-      "formats": [
-        "mp4",
-        "m3u8"
-      ],
-      "limited": false,
-      "disabledPlatforms": [],
-      "supportsExternalPlayer": false
-    },
-    {
-      "id": "animesultra",
-      "name": "AnimesUltra",
-      "description": "Animes en streaming VOSTFR et VF.",
-      "version": "1.0.31",
-      "author": "Gowaru",
-      "supportedTypes": [
-        "anime"
-      ],
-      "filename": "../providers/animesultra--gowaru--1057b64a820fd6cb.js",
-      "enabled": true,
-      "logo": "https://animesultra.org/templates/animeultra/images/favicon.ico",
-      "contentLanguage": [
-        "fr"
-      ],
-      "formats": [
-        "mp4",
-        "mkv"
-      ],
-      "limited": false,
-      "disabledPlatforms": [],
-      "supportsExternalPlayer": false
-    },
-    {
-      "id": "animevostfr",
-      "name": "AnimeVOSTFR",
-      "description": "Animes VF et VOSTFR en streaming gratuit sur AnimeVOSTFR.",
-      "version": "1.1.45",
-      "author": "Gowaru",
-      "supportedTypes": [
-        "anime"
-      ],
-      "filename": "../providers/animevostfr--gowaru--4948742da89428fb.js",
-      "enabled": true,
-      "logo": "https://animevostfr.org/wp-content/uploads/luffy-icon.jpg",
-      "contentLanguage": [
-        "fr"
-      ],
-      "formats": [
-        "mp4",
-        "mkv"
-      ],
-      "limited": false,
-      "disabledPlatforms": [],
-      "supportsExternalPlayer": false
-    },
-    {
-      "id": "dulourd",
-      "name": "DuLourd",
-      "description": "Séries, animes et cartoons en streaming VF et VOSTFR.",
-      "version": "1.0.11",
-      "author": "Gowaru",
-      "supportedTypes": [
-        "anime",
-        "tv"
-      ],
-      "filename": "../providers/dulourd--gowaru--bbe650e07b8ceb54.js",
-      "enabled": true,
-      "logo": "https://www.dulourd.hair/templates/dulourd2/icon/favicon.png",
-      "contentLanguage": [
-        "fr"
-      ],
-      "formats": [
-        "mp4",
-        "m3u8"
-      ],
-      "limited": false,
-      "disabledPlatforms": [],
-      "supportsExternalPlayer": false
-    },
-    {
-      "id": "flemmix",
-      "name": "Flemmix",
-      "description": "Films et séries en streaming VF/VOSTFR sur Flemmix.",
-      "version": "1.0.8",
-      "author": "Gowaru",
-      "supportedTypes": [
-        "movie",
-        "tv"
-      ],
-      "filename": "../providers/flemmix--gowaru--f993f57febc7b1ff.js",
-      "enabled": true,
-      "logo": "https://flemmix.me/favicon.ico",
-      "contentLanguage": [
-        "fr"
-      ],
-      "formats": [
-        "mp4",
-        "m3u8"
-      ],
-      "limited": false,
-      "disabledPlatforms": [],
-      "supportsExternalPlayer": false
-    },
-    {
       "id": "voiranime-rip",
       "name": "VoirAnime.rip",
       "description": "Animes VF et VOSTFR en streaming sur VoirAnime.rip (site DLE).",
@@ -288,25 +290,26 @@
     {
       "id": "nakios",
       "name": "Nakios",
-      "description": "Mainly French, Some English & 4K Quality",
-      "version": "3.8.2",
-      "author": "Wooodyhood",
+      "description": "Films et séries en streaming MP4 via Nakios (API REST, TMDB natif, CDN direct).",
+      "version": "3.8.3",
+      "author": "Gowaru",
       "supportedTypes": [
         "movie",
         "tv"
       ],
-      "filename": "../providers/nakios--aio--450b43a5eaebb8b3.js",
+      "filename": "../providers/nakios--gowaru--da620424092ff3fd.js",
       "enabled": true,
-      "hasSettings": true,
-      "formats": [
-        "mp4",
-        "m3u8"
-      ],
-      "logo": "https://i.postimg.cc/nLwY1pJB/nakios.png",
+      "logo": "https://nakios.store/favicon.png",
       "contentLanguage": [
         "fr",
         "en"
-      ]
+      ],
+      "formats": [
+        "mp4"
+      ],
+      "limited": false,
+      "disabledPlatforms": [],
+      "supportsExternalPlayer": false
     },
     {
       "id": "papadustream",
@@ -379,29 +382,6 @@
       ]
     },
     {
-      "id": "sekai",
-      "name": "Sekai",
-      "description": "Fournisseur spécialisé sur les gros animes. Streams directs très rapides sans iFrames.",
-      "version": "1.0.21",
-      "author": "Gowaru",
-      "supportedTypes": [
-        "anime"
-      ],
-      "filename": "../providers/sekai--gowaru--7e8126549e67a003.js",
-      "enabled": true,
-      "logo": "https://sekai.one/favicon.ico",
-      "contentLanguage": [
-        "fr"
-      ],
-      "formats": [
-        "mp4",
-        "mkv"
-      ],
-      "limited": false,
-      "disabledPlatforms": [],
-      "supportsExternalPlayer": false
-    },
-    {
       "id": "anime-sama",
       "name": "Anime-Sama",
       "description": "Un des plus gros catalogues français, très actif, sorties du jour.",
@@ -425,24 +405,23 @@
       "supportsExternalPlayer": false
     },
     {
-      "id": "wookafr",
-      "name": "Wookafr",
-      "description": "Films et séries en streaming VF sur Wookafr.",
-      "version": "1.0.8",
+      "id": "sekai",
+      "name": "Sekai",
+      "description": "Fournisseur spécialisé sur les gros animes. Streams directs très rapides sans iFrames.",
+      "version": "1.0.21",
       "author": "Gowaru",
       "supportedTypes": [
-        "movie",
-        "tv"
+        "anime"
       ],
-      "filename": "../providers/wookafr--gowaru--fb93694d58fec212.js",
-      "enabled": false,
-      "logo": "https://wookafr.fyi/favicon.ico",
+      "filename": "../providers/sekai--gowaru--7e8126549e67a003.js",
+      "enabled": true,
+      "logo": "https://sekai.one/favicon.ico",
       "contentLanguage": [
         "fr"
       ],
       "formats": [
         "mp4",
-        "m3u8"
+        "mkv"
       ],
       "limited": false,
       "disabledPlatforms": [],
@@ -495,33 +474,28 @@
       "supportsExternalPlayer": false
     },
     {
-      "id": "videasy",
-      "name": "VIDEASY",
-      "description": "VideoEasy streaming with multiple server support and languages",
-      "version": "1.0.0",
-      "author": "Nuvio Team",
+      "id": "wookafr",
+      "name": "Wookafr",
+      "description": "Films et séries en streaming VF sur Wookafr.",
+      "version": "1.0.8",
+      "author": "Gowaru",
       "supportedTypes": [
         "movie",
         "tv"
       ],
-      "filename": "../providers/videasy--nuvio--7130b908cffb829c.js",
+      "filename": "../providers/wookafr--gowaru--fb93694d58fec212.js",
       "enabled": false,
-      "limited": true,
-      "formats": [
-        "m3u8",
-        "mp4",
-        "mkv"
-      ],
-      "logo": "https://www.videasy.net/logo.png",
+      "logo": "https://wookafr.fyi/favicon.ico",
       "contentLanguage": [
-        "en",
-        "de",
-        "it",
-        "fr",
-        "hi",
-        "es",
-        "pt"
-      ]
+        "fr"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "limited": false,
+      "disabledPlatforms": [],
+      "supportsExternalPlayer": false
     },
     {
       "id": "voiranime",
