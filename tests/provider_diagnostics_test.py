@@ -24,6 +24,6 @@ assert preflight.get('fallback_french_isps') == ['orange', 'free']
 assert preflight.get('skip_runtime_on_confirmed_french_block') is True
 assert 'dnsPreflightForCandidate' in health
 assert 'runtime_skipped_by_dns_preflight' in health
-assert workflow.index('Check French ISP DNS and HTTP access before runtime scoring') < workflow.index('Execute providers, repair matching failure schemas')
+assert workflow.index('Test DNS and locate validated alternative domains') < workflow.index('Test provider access and repair failed routes')
 
 print('provider diagnostics tests passed')
