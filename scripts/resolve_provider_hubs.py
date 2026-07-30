@@ -56,9 +56,19 @@ def links(document: str, base: str) -> list[tuple[str, str]]:
         url = urllib.parse.urljoin(base, html.unescape(href))
         if url.startswith(("http://", "https://")):
             output.append((url, text))
-    # visible bare URLs are common on official-address dashboards
-    for url in re.findall(r"https?://[a-z0-9.-]+(?:/[A-Za-z0-9_./?=&%+#-]*)?", document, re.I):
-        output.append((html.unescape(url), "visible_url"))
+    # Dynamic dashboards often keep the terminal URL in JSON/JS, data-* attributes,
+    # window.location assignments, or a meta refresh rather than a server-rendered anchor.
+    decoded = html.unescape(document).replace("\\/", "/")
+    patterns = [
+        r"https?://[a-z0-9.-]+(?:/[A-Za-z0-9_./?=&%+#-]*)?",
+        r"(?:href|url|officialUrl|official_url|currentUrl|current_url|target|destination)\s*[:=]\s*[\"'](https?://[^\"']+)",
+        r"(?:window\.)?location(?:\.href)?\s*=\s*[\"'](https?://[^\"']+)",
+        r"content=[\"'][^\"']*url=(https?://[^\"'; ]+)",
+    ]
+    for pattern in patterns:
+        for match in re.findall(pattern, decoded, re.I):
+            url = match if isinstance(match, str) else match[0]
+            output.append((url.rstrip("\\"), "dynamic_official_url"))
     return output
 
 
@@ -180,13 +190,18 @@ def main() -> int:
                     break
             item["api_probes"] = api_probes
             require_api = bool(hub_cfg.get("require_api_validation", True))
+            persist_site = bool(hub_cfg.get("persist_official_site_without_api", False))
             if require_api and not validated_api:
                 item["reason"] = "api_not_runtime_validated"
                 report["providers"][provider_id] = item
                 continue
+            if not validated_api and not persist_site:
+                item["reason"] = "official_site_found_but_runtime_not_validated"
+                report["providers"][provider_id] = item
+                continue
             item["validated_api"] = validated_api
-            item["status"] = "validated"
-            item["reason"] = "official_site_and_runtime_endpoint_validated"
+            item["status"] = "validated" if validated_api else "site_validated"
+            item["reason"] = "official_site_and_runtime_endpoint_validated" if validated_api else "official_terminal_site_extracted"
             if args.apply:
                 changes = update_provider_patch(config, provider_id, hub_cfg, final_site.rstrip("/"), validated_api)
                 item["applied_changes"] = changes

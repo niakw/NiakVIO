@@ -492,8 +492,10 @@ async function invokeProvider(getStreams, fixture, settings) {
   for (const attempt of attempts) {
     try {
       const value = await attempt();
-      if (Array.isArray(value) && value.length) return value;
-      if (Array.isArray(value) && !lastError) lastError = null;
+      // An empty array is a valid provider result. Retrying another calling
+      // convention after a successful invocation can pass an object where a
+      // TMDB id is expected, creating [object Object] requests and false 404s.
+      if (Array.isArray(value)) return value;
     } catch (error) { lastError = error; }
   }
   if (lastError) throw lastError;
