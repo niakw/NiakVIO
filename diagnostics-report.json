@@ -1,123 +1,482 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-07-30T05:13:13.726919+00:00",
+  "generated_at": "2026-07-30T05:51:48.112301+00:00",
   "providers": [
     {
       "id": "anime-sama",
       "source": "gowaru",
-      "status": "provider_unreachable",
-      "score": 0,
-      "dns_preflight_status": "globally_unreachable",
+      "status": "no_streams",
+      "score": 10,
+      "dns_preflight_status": "inconclusive",
       "dns_resolver": null,
       "dns_migration_candidate": null,
-      "diagnostic_stages": [],
-      "language_evidence": [],
-      "route_observations": [],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "diagnostic_stages": [
+        "content_not_found"
+      ],
+      "language_evidence": [
+        {
+          "group": "unknown",
+          "confidence": "none",
+          "evidence": []
+        }
+      ],
+      "route_observations": [
+        []
+      ],
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "animesama-co",
       "source": "gowaru",
-      "status": "provider_unreachable",
-      "score": 0,
-      "dns_preflight_status": "globally_unreachable",
+      "status": "no_streams",
+      "score": 10,
+      "dns_preflight_status": "inconclusive",
       "dns_resolver": null,
       "dns_migration_candidate": null,
-      "diagnostic_stages": [],
-      "language_evidence": [],
-      "route_observations": [],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "diagnostic_stages": [
+        "content_not_found"
+      ],
+      "language_evidence": [
+        {
+          "group": "unknown",
+          "confidence": "none",
+          "evidence": []
+        }
+      ],
+      "route_observations": [
+        []
+      ],
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "animesultra",
       "source": "gowaru",
-      "status": "provider_unreachable",
-      "score": 0,
-      "dns_preflight_status": "globally_unreachable",
+      "status": "reachable",
+      "score": 75,
+      "dns_preflight_status": "inconclusive",
       "dns_resolver": null,
       "dns_migration_candidate": null,
-      "diagnostic_stages": [],
-      "language_evidence": [],
-      "route_observations": [],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "diagnostic_stages": [
+        "content_not_found_or_parser_failed"
+      ],
+      "language_evidence": [
+        {
+          "group": "unknown",
+          "confidence": "none",
+          "evidence": []
+        }
+      ],
+      "route_observations": [
+        [
+          {
+            "stage": "content_lookup",
+            "host": "arm.haglund.dev",
+            "method": "GET",
+            "path_pattern": "/api/v2/themoviedb?id={value}",
+            "status": 200
+          },
+          {
+            "stage": "content_lookup",
+            "host": "ww.animesultra.org",
+            "method": "GET",
+            "path_pattern": "/index.php?do={value}&story={value}&subaction={value}",
+            "status": 403
+          },
+          {
+            "stage": "content_lookup",
+            "host": "ww.animesultra.org",
+            "method": "GET",
+            "path_pattern": "/index.php?do={value}&story={value}&subaction={value}",
+            "status": 403
+          },
+          {
+            "stage": "content_lookup",
+            "host": "ww.animesultra.org",
+            "method": "GET",
+            "path_pattern": "/index.php?do={value}&story={value}&subaction={value}",
+            "status": 403
+          }
+        ]
+      ],
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "animevostfr",
       "source": "gowaru",
-      "status": "provider_unreachable",
-      "score": 0,
-      "dns_preflight_status": "globally_unreachable",
+      "status": "no_streams",
+      "score": 10,
+      "dns_preflight_status": "inconclusive",
       "dns_resolver": null,
       "dns_migration_candidate": null,
-      "diagnostic_stages": [],
-      "language_evidence": [],
-      "route_observations": [],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "diagnostic_stages": [
+        "content_not_found"
+      ],
+      "language_evidence": [
+        {
+          "group": "unknown",
+          "confidence": "none",
+          "evidence": []
+        }
+      ],
+      "route_observations": [
+        []
+      ],
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "animoflix",
       "source": "gowaru",
-      "status": "provider_unreachable",
-      "score": 0,
-      "dns_preflight_status": "globally_unreachable",
+      "status": "no_streams",
+      "score": 10,
+      "dns_preflight_status": "inconclusive",
       "dns_resolver": null,
       "dns_migration_candidate": null,
-      "diagnostic_stages": [],
-      "language_evidence": [],
-      "route_observations": [],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "diagnostic_stages": [
+        "content_not_found"
+      ],
+      "language_evidence": [
+        {
+          "group": "unknown",
+          "confidence": "none",
+          "evidence": []
+        }
+      ],
+      "route_observations": [
+        []
+      ],
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "coflix",
       "source": "gowaru",
-      "status": "blocked",
-      "score": 45,
-      "dns_preflight_status": "confirmed_french_block",
+      "status": "reachable",
+      "score": 75,
+      "dns_preflight_status": "inconclusive",
       "dns_resolver": null,
-      "dns_migration_candidate": "coflix.blue",
-      "diagnostic_stages": [],
-      "language_evidence": [],
-      "route_observations": [],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "dns_migration_candidate": null,
+      "diagnostic_stages": [
+        "content_not_found_or_parser_failed"
+      ],
+      "language_evidence": [
+        {
+          "group": "unknown",
+          "confidence": "none",
+          "evidence": []
+        }
+      ],
+      "route_observations": [
+        [
+          {
+            "stage": "content_lookup",
+            "host": "coflix.boston",
+            "method": "GET",
+            "path_pattern": "/film/oppenheimer/",
+            "status": null
+          },
+          {
+            "stage": "content_lookup",
+            "host": "coflix.boston",
+            "method": "GET",
+            "path_pattern": "/film/oppenheimer/",
+            "status": null
+          },
+          {
+            "stage": "content_lookup",
+            "host": "coflix.to",
+            "method": "GET",
+            "path_pattern": "/film/oppenheimer/",
+            "status": null
+          },
+          {
+            "stage": "content_lookup",
+            "host": "coflix.blue",
+            "method": "GET",
+            "path_pattern": "/film/oppenheimer/",
+            "status": null
+          },
+          {
+            "stage": "content_lookup",
+            "host": "coflix.fr",
+            "method": "GET",
+            "path_pattern": "/film/oppenheimer/",
+            "status": 200
+          },
+          {
+            "stage": "content_lookup",
+            "host": "coflix.blog",
+            "method": "GET",
+            "path_pattern": "/film/oppenheimer/",
+            "status": 404
+          },
+          {
+            "stage": "content_lookup",
+            "host": "coflix.boston",
+            "method": "GET",
+            "path_pattern": "/movie/oppenheimer/",
+            "status": 200
+          },
+          {
+            "stage": "content_lookup",
+            "host": "coflix.boston",
+            "method": "GET",
+            "path_pattern": "/movie/oppenheimer/",
+            "status": 200
+          },
+          {
+            "stage": "content_lookup",
+            "host": "coflix.to",
+            "method": "GET",
+            "path_pattern": "/movie/oppenheimer/",
+            "status": null
+          },
+          {
+            "stage": "content_lookup",
+            "host": "coflix.blue",
+            "method": "GET",
+            "path_pattern": "/movie/oppenheimer/",
+            "status": null
+          },
+          {
+            "stage": "content_lookup",
+            "host": "coflix.fr",
+            "method": "GET",
+            "path_pattern": "/movie/oppenheimer/",
+            "status": 200
+          },
+          {
+            "stage": "content_lookup",
+            "host": "coflix.blog",
+            "method": "GET",
+            "path_pattern": "/movie/oppenheimer/",
+            "status": 404
+          },
+          {
+            "stage": "search",
+            "host": "coflix.boston",
+            "method": "GET",
+            "path_pattern": "/wp-json/v2/posts?per_page={value}&search={value}",
+            "status": 200
+          },
+          {
+            "stage": "search",
+            "host": "coflix.boston",
+            "method": "GET",
+            "path_pattern": "/wp-json/v2/posts?per_page={value}&search={value}",
+            "status": 200
+          },
+          {
+            "stage": "search",
+            "host": "coflix.to",
+            "method": "GET",
+            "path_pattern": "/wp-json/v2/posts?per_page={value}&search={value}",
+            "status": null
+          },
+          {
+            "stage": "search",
+            "host": "coflix.blue",
+            "method": "GET",
+            "path_pattern": "/wp-json/v2/posts?per_page={value}&search={value}",
+            "status": null
+          }
+        ]
+      ],
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "dulourd",
       "source": "gowaru",
-      "status": "provider_unreachable",
-      "score": 0,
-      "dns_preflight_status": "globally_unreachable",
+      "status": "reachable",
+      "score": 75,
+      "dns_preflight_status": "inconclusive",
       "dns_resolver": null,
       "dns_migration_candidate": null,
-      "diagnostic_stages": [],
-      "language_evidence": [],
-      "route_observations": [],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "diagnostic_stages": [
+        "provider_reachable_http_error"
+      ],
+      "language_evidence": [
+        {
+          "group": "unknown",
+          "confidence": "none",
+          "evidence": []
+        }
+      ],
+      "route_observations": [
+        [
+          {
+            "stage": "content_lookup",
+            "host": "www.dulourd.hair",
+            "method": "GET",
+            "path_pattern": "/?do={value}&story={value}&subaction={value}",
+            "status": 403
+          },
+          {
+            "stage": "content_lookup",
+            "host": "www.dulourd.hair",
+            "method": "GET",
+            "path_pattern": "/?do={value}&story={value}&subaction={value}",
+            "status": 403
+          },
+          {
+            "stage": "content_lookup",
+            "host": "www.dulourd.hair",
+            "method": "GET",
+            "path_pattern": "/?do={value}&story={value}&subaction={value}",
+            "status": 403
+          },
+          {
+            "stage": "content_lookup",
+            "host": "www.dulourd.hair",
+            "method": "GET",
+            "path_pattern": "/?do={value}&story={value}&subaction={value}",
+            "status": 403
+          },
+          {
+            "stage": "content_lookup",
+            "host": "www.dulourd.hair",
+            "method": "GET",
+            "path_pattern": "/?do={value}&story={value}&subaction={value}",
+            "status": 403
+          },
+          {
+            "stage": "content_lookup",
+            "host": "www.dulourd.hair",
+            "method": "GET",
+            "path_pattern": "/?do={value}&story={value}&subaction={value}",
+            "status": 403
+          },
+          {
+            "stage": "content_lookup",
+            "host": "www.dulourd.hair",
+            "method": "GET",
+            "path_pattern": "/?do={value}&story={value}&subaction={value}",
+            "status": 403
+          },
+          {
+            "stage": "content_lookup",
+            "host": "www.dulourd.hair",
+            "method": "GET",
+            "path_pattern": "/?do={value}&story={value}&subaction={value}",
+            "status": 403
+          },
+          {
+            "stage": "content_lookup",
+            "host": "www.dulourd.hair",
+            "method": "GET",
+            "path_pattern": "/?do={value}&story={value}&subaction={value}",
+            "status": 403
+          },
+          {
+            "stage": "content_lookup",
+            "host": "www.dulourd.hair",
+            "method": "GET",
+            "path_pattern": "/?do={value}&story={value}&subaction={value}",
+            "status": 403
+          },
+          {
+            "stage": "content_lookup",
+            "host": "www.dulourd.hair",
+            "method": "GET",
+            "path_pattern": "/?do={value}&story={value}&subaction={value}",
+            "status": 403
+          },
+          {
+            "stage": "content_lookup",
+            "host": "www.dulourd.hair",
+            "method": "GET",
+            "path_pattern": "/?do={value}&story={value}&subaction={value}",
+            "status": 403
+          },
+          {
+            "stage": "content_lookup",
+            "host": "www.dulourd.hair",
+            "method": "GET",
+            "path_pattern": "/?do={value}&story={value}&subaction={value}",
+            "status": 403
+          },
+          {
+            "stage": "content_lookup",
+            "host": "www.dulourd.hair",
+            "method": "GET",
+            "path_pattern": "/?do={value}&story={value}&subaction={value}",
+            "status": 403
+          },
+          {
+            "stage": "content_lookup",
+            "host": "www.dulourd.hair",
+            "method": "GET",
+            "path_pattern": "/?do={value}&story={value}&subaction={value}",
+            "status": 403
+          },
+          {
+            "stage": "content_lookup",
+            "host": "www.dulourd.hair",
+            "method": "GET",
+            "path_pattern": "/?do={value}&story={value}&subaction={value}",
+            "status": 403
+          },
+          {
+            "stage": "content_lookup",
+            "host": "www.dulourd.hair",
+            "method": "GET",
+            "path_pattern": "/?do={value}&story={value}&subaction={value}",
+            "status": 403
+          },
+          {
+            "stage": "content_lookup",
+            "host": "www.dulourd.hair",
+            "method": "GET",
+            "path_pattern": "/?do={value}&story={value}&subaction={value}",
+            "status": 403
+          }
+        ]
+      ],
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "flemmix",
       "source": "gowaru",
-      "status": "provider_unreachable",
-      "score": 0,
-      "dns_preflight_status": "globally_unreachable",
+      "status": "no_streams",
+      "score": 10,
+      "dns_preflight_status": "inconclusive",
       "dns_resolver": null,
       "dns_migration_candidate": null,
-      "diagnostic_stages": [],
-      "language_evidence": [],
-      "route_observations": [],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "diagnostic_stages": [
+        "content_not_found"
+      ],
+      "language_evidence": [
+        {
+          "group": "unknown",
+          "confidence": "none",
+          "evidence": []
+        }
+      ],
+      "route_observations": [
+        []
+      ],
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "french-manga",
       "source": "gowaru",
-      "status": "provider_unreachable",
-      "score": 0,
-      "dns_preflight_status": "globally_unreachable",
+      "status": "no_streams",
+      "score": 10,
+      "dns_preflight_status": "inconclusive",
       "dns_resolver": null,
       "dns_migration_candidate": null,
-      "diagnostic_stages": [],
-      "language_evidence": [],
-      "route_observations": [],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "diagnostic_stages": [
+        "content_not_found"
+      ],
+      "language_evidence": [
+        {
+          "group": "unknown",
+          "confidence": "none",
+          "evidence": []
+        }
+      ],
+      "route_observations": [
+        []
+      ],
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "frenchstream",
@@ -150,21 +509,14 @@
             "stage": "content_lookup",
             "host": "frenchstream.food",
             "method": "GET",
-            "path_pattern": "/films/actions/",
-            "status": 404
-          },
-          {
-            "stage": "content_lookup",
-            "host": "frenchstream.food",
-            "method": "GET",
-            "path_pattern": "/films/aventures/",
-            "status": 404
-          },
-          {
-            "stage": "content_lookup",
-            "host": "frenchstream.food",
-            "method": "GET",
             "path_pattern": "/films/animations/",
+            "status": 404
+          },
+          {
+            "stage": "content_lookup",
+            "host": "frenchstream.food",
+            "method": "GET",
+            "path_pattern": "/films/actions/",
             "status": 404
           },
           {
@@ -180,21 +532,192 @@
             "method": "GET",
             "path_pattern": "/films/biopics/",
             "status": 404
+          },
+          {
+            "stage": "content_lookup",
+            "host": "frenchstream.food",
+            "method": "GET",
+            "path_pattern": "/films/aventures/",
+            "status": 404
           }
         ]
       ],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "movix",
       "source": "gowaru",
-      "status": "runtime_error",
-      "score": 0,
+      "status": "reachable",
+      "score": 75,
       "dns_preflight_status": "inconclusive",
       "dns_resolver": null,
       "dns_migration_candidate": null,
       "diagnostic_stages": [
-        "provider_unreachable_or_runtime_error"
+        "provider_reachable_http_error"
+      ],
+      "language_evidence": [
+        {
+          "group": "unknown",
+          "confidence": "none",
+          "evidence": []
+        }
+      ],
+      "route_observations": [
+        [
+          {
+            "stage": "player",
+            "host": "api.movix.fun",
+            "method": "GET",
+            "path_pattern": "/api/fstream/movie/{id}",
+            "status": 403
+          },
+          {
+            "stage": "player",
+            "host": "api.movix.fun",
+            "method": "GET",
+            "path_pattern": "/api/fstream/movie/{id}",
+            "status": 403
+          },
+          {
+            "stage": "player",
+            "host": "api.movix.fun",
+            "method": "GET",
+            "path_pattern": "/api/fstream/movie/{id}",
+            "status": 403
+          },
+          {
+            "stage": "player",
+            "host": "api.movix.fun",
+            "method": "GET",
+            "path_pattern": "/api/fstream/movie/{id}",
+            "status": 403
+          },
+          {
+            "stage": "player",
+            "host": "api.movix.fun",
+            "method": "GET",
+            "path_pattern": "/api/fstream/tv/[object%20Object]/season/{id}",
+            "status": 403
+          },
+          {
+            "stage": "player",
+            "host": "api.movix.fun",
+            "method": "GET",
+            "path_pattern": "/api/fstream/tv/[object%20Object]/season/{id}",
+            "status": 403
+          },
+          {
+            "stage": "player",
+            "host": "api.movix.fun",
+            "method": "GET",
+            "path_pattern": "/api/fstream/tv/[object%20Object]/season/{id}",
+            "status": 403
+          },
+          {
+            "stage": "player",
+            "host": "api.movix.fun",
+            "method": "GET",
+            "path_pattern": "/api/fstream/tv/[object%20Object]/season/{id}",
+            "status": 403
+          },
+          {
+            "stage": "player",
+            "host": "api.movix.fun",
+            "method": "GET",
+            "path_pattern": "/api/fstream/movie/{id}",
+            "status": 403
+          },
+          {
+            "stage": "player",
+            "host": "api.movix.fun",
+            "method": "GET",
+            "path_pattern": "/api/fstream/movie/{id}",
+            "status": 403
+          },
+          {
+            "stage": "player",
+            "host": "api.movix.fun",
+            "method": "GET",
+            "path_pattern": "/api/fstream/movie/{id}",
+            "status": 403
+          },
+          {
+            "stage": "player",
+            "host": "api.movix.fun",
+            "method": "GET",
+            "path_pattern": "/api/fstream/movie/{id}",
+            "status": 403
+          },
+          {
+            "stage": "player",
+            "host": "api.movix.fun",
+            "method": "GET",
+            "path_pattern": "/api/fstream/movie/{id}",
+            "status": 403
+          },
+          {
+            "stage": "player",
+            "host": "api.movix.fun",
+            "method": "GET",
+            "path_pattern": "/api/fstream/movie/{id}",
+            "status": 403
+          },
+          {
+            "stage": "player",
+            "host": "api.movix.fun",
+            "method": "GET",
+            "path_pattern": "/api/fstream/movie/{id}",
+            "status": 403
+          },
+          {
+            "stage": "player",
+            "host": "api.movix.fun",
+            "method": "GET",
+            "path_pattern": "/api/fstream/movie/{id}",
+            "status": 403
+          },
+          {
+            "stage": "player",
+            "host": "api.movix.fun",
+            "method": "GET",
+            "path_pattern": "/api/fstream/tv/[object%20Object]/season/{id}",
+            "status": 403
+          },
+          {
+            "stage": "player",
+            "host": "api.movix.fun",
+            "method": "GET",
+            "path_pattern": "/api/fstream/tv/[object%20Object]/season/{id}",
+            "status": 403
+          },
+          {
+            "stage": "player",
+            "host": "api.movix.fun",
+            "method": "GET",
+            "path_pattern": "/api/fstream/tv/[object%20Object]/season/{id}",
+            "status": 403
+          },
+          {
+            "stage": "player",
+            "host": "api.movix.fun",
+            "method": "GET",
+            "path_pattern": "/api/fstream/tv/[object%20Object]/season/{id}",
+            "status": 403
+          }
+        ]
+      ],
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
+    },
+    {
+      "id": "mugiwarastream",
+      "source": "gowaru",
+      "status": "no_streams",
+      "score": 10,
+      "dns_preflight_status": "inconclusive",
+      "dns_resolver": null,
+      "dns_migration_candidate": null,
+      "diagnostic_stages": [
+        "content_not_found"
       ],
       "language_evidence": [
         {
@@ -206,20 +729,7 @@
       "route_observations": [
         []
       ],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
-    },
-    {
-      "id": "mugiwarastream",
-      "source": "gowaru",
-      "status": "provider_unreachable",
-      "score": 0,
-      "dns_preflight_status": "globally_unreachable",
-      "dns_resolver": null,
-      "dns_migration_candidate": null,
-      "diagnostic_stages": [],
-      "language_evidence": [],
-      "route_observations": [],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "sekai",
@@ -242,33 +752,53 @@
       "route_observations": [
         []
       ],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "voiranime",
       "source": "gowaru",
-      "status": "provider_unreachable",
-      "score": 0,
-      "dns_preflight_status": "globally_unreachable",
+      "status": "no_streams",
+      "score": 10,
+      "dns_preflight_status": "inconclusive",
       "dns_resolver": null,
       "dns_migration_candidate": null,
-      "diagnostic_stages": [],
-      "language_evidence": [],
-      "route_observations": [],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "diagnostic_stages": [
+        "content_not_found"
+      ],
+      "language_evidence": [
+        {
+          "group": "unknown",
+          "confidence": "none",
+          "evidence": []
+        }
+      ],
+      "route_observations": [
+        []
+      ],
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "voiranime-rip",
       "source": "gowaru",
-      "status": "provider_unreachable",
-      "score": 0,
-      "dns_preflight_status": "globally_unreachable",
+      "status": "no_streams",
+      "score": 10,
+      "dns_preflight_status": "inconclusive",
       "dns_resolver": null,
       "dns_migration_candidate": null,
-      "diagnostic_stages": [],
-      "language_evidence": [],
-      "route_observations": [],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "diagnostic_stages": [
+        "content_not_found"
+      ],
+      "language_evidence": [
+        {
+          "group": "unknown",
+          "confidence": "none",
+          "evidence": []
+        }
+      ],
+      "route_observations": [
+        []
+      ],
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "vostfree",
@@ -313,20 +843,45 @@
           }
         ]
       ],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "nakios",
       "source": "gowaru",
-      "status": "blocked",
-      "score": 45,
-      "dns_preflight_status": "confirmed_french_block",
+      "status": "reachable",
+      "score": 75,
+      "dns_preflight_status": "inconclusive",
       "dns_resolver": null,
       "dns_migration_candidate": null,
-      "diagnostic_stages": [],
-      "language_evidence": [],
-      "route_observations": [],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "diagnostic_stages": [
+        "content_not_found_or_parser_failed"
+      ],
+      "language_evidence": [
+        {
+          "group": "unknown",
+          "confidence": "none",
+          "evidence": []
+        }
+      ],
+      "route_observations": [
+        [
+          {
+            "stage": "content_lookup",
+            "host": "api.nakios.store",
+            "method": "GET",
+            "path_pattern": "/api/sources/movie/{id}",
+            "status": 200
+          },
+          {
+            "stage": "content_lookup",
+            "host": "api.nakios.store",
+            "method": "GET",
+            "path_pattern": "/api/sources/tv/[object%20Object]/{id}/{id}",
+            "status": 200
+          }
+        ]
+      ],
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "papadustream",
@@ -349,7 +904,7 @@
       "route_observations": [
         []
       ],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "wookafr",
@@ -372,7 +927,7 @@
       "route_observations": [
         []
       ],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "streamzo",
@@ -395,7 +950,7 @@
       "route_observations": [
         []
       ],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "allanime",
@@ -545,7 +1100,7 @@
           }
         ]
       ],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "4khdhub",
@@ -568,7 +1123,7 @@
       "route_observations": [
         []
       ],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "4khdhubnew",
@@ -591,14 +1146,14 @@
       "route_observations": [
         []
       ],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "allwish",
       "source": "aio",
       "status": "reachable",
       "score": 75,
-      "dns_preflight_status": "inconclusive",
+      "dns_preflight_status": "no_provider_domain_detected",
       "dns_resolver": null,
       "dns_migration_candidate": null,
       "diagnostic_stages": [
@@ -643,7 +1198,7 @@
           }
         ]
       ],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "animekai",
@@ -666,7 +1221,7 @@
       "route_observations": [
         []
       ],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "anikototv",
@@ -795,7 +1350,7 @@
           }
         ]
       ],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "anidb",
@@ -818,7 +1373,7 @@
       "route_observations": [
         []
       ],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "animepahe",
@@ -870,14 +1425,14 @@
           }
         ]
       ],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "animesalt",
       "source": "aio",
       "status": "reachable",
       "score": 75,
-      "dns_preflight_status": "inconclusive",
+      "dns_preflight_status": "no_provider_domain_detected",
       "dns_resolver": null,
       "dns_migration_candidate": null,
       "diagnostic_stages": [
@@ -922,7 +1477,7 @@
           }
         ]
       ],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "animetsu",
@@ -945,14 +1500,14 @@
       "route_observations": [
         []
       ],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "animeworld",
       "source": "aio",
       "status": "reachable",
       "score": 75,
-      "dns_preflight_status": "inconclusive",
+      "dns_preflight_status": "no_provider_domain_detected",
       "dns_resolver": null,
       "dns_migration_candidate": null,
       "diagnostic_stages": [
@@ -1011,20 +1566,30 @@
           }
         ]
       ],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "anime-sama",
       "source": "aio",
-      "status": "provider_unreachable",
-      "score": 0,
-      "dns_preflight_status": "globally_unreachable",
+      "status": "no_streams",
+      "score": 10,
+      "dns_preflight_status": "inconclusive",
       "dns_resolver": null,
       "dns_migration_candidate": null,
-      "diagnostic_stages": [],
-      "language_evidence": [],
-      "route_observations": [],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "diagnostic_stages": [
+        "content_not_found"
+      ],
+      "language_evidence": [
+        {
+          "group": "unknown",
+          "confidence": "none",
+          "evidence": []
+        }
+      ],
+      "route_observations": [
+        []
+      ],
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "allmovieland",
@@ -1047,7 +1612,7 @@
       "route_observations": [
         []
       ],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "desiflix",
@@ -1113,7 +1678,7 @@
           }
         ]
       ],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "castle",
@@ -1136,20 +1701,73 @@
       "route_observations": [
         []
       ],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "cineby",
       "source": "aio",
-      "status": "blocked",
-      "score": 45,
-      "dns_preflight_status": "confirmed_french_block",
+      "status": "reachable",
+      "score": 75,
+      "dns_preflight_status": "inconclusive",
       "dns_resolver": null,
       "dns_migration_candidate": null,
-      "diagnostic_stages": [],
-      "language_evidence": [],
-      "route_observations": [],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "diagnostic_stages": [
+        "search_or_route_obsolete"
+      ],
+      "language_evidence": [
+        {
+          "group": "unknown",
+          "confidence": "none",
+          "evidence": []
+        }
+      ],
+      "route_observations": [
+        [
+          {
+            "stage": "content_lookup",
+            "host": "db.videasy.to",
+            "method": "GET",
+            "path_pattern": "/{id}/movie/{id}?append_to_response={value}",
+            "status": 404
+          },
+          {
+            "stage": "content_lookup",
+            "host": "db.videasy.to",
+            "method": "GET",
+            "path_pattern": "/{id}/tv/[object%20Object]?append_to_response={value}",
+            "status": 404
+          },
+          {
+            "stage": "content_lookup",
+            "host": "db.videasy.to",
+            "method": "GET",
+            "path_pattern": "/{id}/movie/{id}?append_to_response={value}",
+            "status": 404
+          },
+          {
+            "stage": "content_lookup",
+            "host": "db.videasy.to",
+            "method": "GET",
+            "path_pattern": "/{id}/movie/{id}?append_to_response={value}",
+            "status": 404
+          },
+          {
+            "stage": "content_lookup",
+            "host": "db.videasy.to",
+            "method": "GET",
+            "path_pattern": "/{id}/tv/[object%20Object]?append_to_response={value}",
+            "status": 404
+          },
+          {
+            "stage": "content_lookup",
+            "host": "db.videasy.to",
+            "method": "GET",
+            "path_pattern": "/{id}/movie/{id}?append_to_response={value}",
+            "status": 404
+          }
+        ]
+      ],
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "cinefreak",
@@ -1172,7 +1790,7 @@
       "route_observations": [
         []
       ],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "cinemm",
@@ -1238,7 +1856,7 @@
           }
         ]
       ],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "cinemacity",
@@ -1261,7 +1879,7 @@
       "route_observations": [
         []
       ],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "ctgmovies",
@@ -1284,7 +1902,7 @@
       "route_observations": [
         []
       ],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "dahmermovies",
@@ -1336,7 +1954,7 @@
           }
         ]
       ],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "dahmermovies-tv",
@@ -1388,14 +2006,14 @@
           }
         ]
       ],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "dooflix",
       "source": "aio",
       "status": "reachable",
       "score": 75,
-      "dns_preflight_status": "inconclusive",
+      "dns_preflight_status": "no_provider_domain_detected",
       "dns_resolver": null,
       "dns_migration_candidate": null,
       "diagnostic_stages": [
@@ -1454,7 +2072,7 @@
           }
         ]
       ],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "einthusan",
@@ -1477,14 +2095,14 @@
       "route_observations": [
         []
       ],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "fibwatch",
       "source": "aio",
       "status": "reachable",
       "score": 75,
-      "dns_preflight_status": "inconclusive",
+      "dns_preflight_status": "no_provider_domain_detected",
       "dns_resolver": null,
       "dns_migration_candidate": null,
       "diagnostic_stages": [
@@ -1529,7 +2147,7 @@
           }
         ]
       ],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "goatapi",
@@ -1581,7 +2199,7 @@
           }
         ]
       ],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "gramcinema",
@@ -1604,7 +2222,7 @@
       "route_observations": [
         []
       ],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "hdghartv",
@@ -1670,7 +2288,7 @@
           }
         ]
       ],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "hdhub4u",
@@ -1693,7 +2311,7 @@
       "route_observations": [
         []
       ],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "hianime",
@@ -1716,7 +2334,7 @@
       "route_observations": [
         []
       ],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "hindmoviez",
@@ -1782,7 +2400,7 @@
           }
         ]
       ],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "kurage",
@@ -1805,7 +2423,7 @@
       "route_observations": [
         []
       ],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "moviebox",
@@ -1857,7 +2475,7 @@
           }
         ]
       ],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "movieblast",
@@ -1880,7 +2498,7 @@
       "route_observations": [
         []
       ],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "moviesdrive",
@@ -1946,7 +2564,7 @@
           }
         ]
       ],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "movieshunt",
@@ -1969,7 +2587,7 @@
       "route_observations": [
         []
       ],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "moviesmod",
@@ -1978,7 +2596,7 @@
       "score": 10,
       "dns_preflight_status": "inconclusive",
       "dns_resolver": null,
-      "dns_migration_candidate": "moviesmod.army",
+      "dns_migration_candidate": null,
       "diagnostic_stages": [
         "content_not_found"
       ],
@@ -1992,7 +2610,7 @@
       "route_observations": [
         []
       ],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "movies4u",
@@ -2044,7 +2662,7 @@
           }
         ]
       ],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "movix",
@@ -2152,14 +2770,14 @@
           }
         ]
       ],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "nakios",
       "source": "aio",
       "status": "reachable",
       "score": 75,
-      "dns_preflight_status": "inconclusive",
+      "dns_preflight_status": "no_provider_domain_detected",
       "dns_resolver": null,
       "dns_migration_candidate": null,
       "diagnostic_stages": [
@@ -2218,7 +2836,7 @@
           }
         ]
       ],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "netmirror",
@@ -2389,7 +3007,7 @@
           }
         ]
       ],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "persianstremio",
@@ -2455,14 +3073,14 @@
           }
         ]
       ],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "peachify",
       "source": "aio",
       "status": "runtime_error",
       "score": 0,
-      "dns_preflight_status": "inconclusive",
+      "dns_preflight_status": "no_provider_domain_detected",
       "dns_resolver": null,
       "dns_migration_candidate": null,
       "diagnostic_stages": [
@@ -2478,7 +3096,7 @@
       "route_observations": [
         []
       ],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "playimdb",
@@ -2544,7 +3162,7 @@
           }
         ]
       ],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "purstream",
@@ -2553,7 +3171,7 @@
       "score": 75,
       "dns_preflight_status": "inconclusive",
       "dns_resolver": null,
-      "dns_migration_candidate": "purstream.wiki",
+      "dns_migration_candidate": null,
       "diagnostic_stages": [
         "provider_reachable_http_error"
       ],
@@ -2652,7 +3270,7 @@
           }
         ]
       ],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "showbox",
@@ -2675,7 +3293,7 @@
       "route_observations": [
         []
       ],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "toflix",
@@ -2783,7 +3401,7 @@
           }
         ]
       ],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "topcartoons",
@@ -2835,7 +3453,7 @@
           }
         ]
       ],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "vidrock",
@@ -2858,7 +3476,7 @@
       "route_observations": [
         []
       ],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "uhdmovies",
@@ -2930,34 +3548,6 @@
             "status": 200
           },
           {
-            "stage": "content_lookup",
-            "host": "cloud.unblockedgames.world",
-            "method": "GET",
-            "path_pattern": "/?sid={value}",
-            "status": 200
-          },
-          {
-            "stage": "content_lookup",
-            "host": "cloud.unblockedgames.world",
-            "method": "GET",
-            "path_pattern": "/?sid={value}",
-            "status": 200
-          },
-          {
-            "stage": "content_lookup",
-            "host": "cloud.unblockedgames.world",
-            "method": "GET",
-            "path_pattern": "/?sid={value}",
-            "status": 200
-          },
-          {
-            "stage": "content_lookup",
-            "host": "cloud.unblockedgames.world",
-            "method": "GET",
-            "path_pattern": "/?sid={value}",
-            "status": 200
-          },
-          {
             "stage": "origin_probe",
             "host": "cloud.unblockedgames.world",
             "method": "POST",
@@ -2986,10 +3576,10 @@
             "status": 200
           },
           {
-            "stage": "origin_probe",
+            "stage": "content_lookup",
             "host": "cloud.unblockedgames.world",
-            "method": "POST",
-            "path_pattern": "/",
+            "method": "GET",
+            "path_pattern": "/?sid={value}",
             "status": 200
           },
           {
@@ -3000,17 +3590,24 @@
             "status": 200
           },
           {
-            "stage": "origin_probe",
+            "stage": "content_lookup",
             "host": "cloud.unblockedgames.world",
-            "method": "POST",
-            "path_pattern": "/",
+            "method": "GET",
+            "path_pattern": "/?sid={value}",
             "status": 200
           },
           {
-            "stage": "origin_probe",
+            "stage": "content_lookup",
             "host": "cloud.unblockedgames.world",
-            "method": "POST",
-            "path_pattern": "/",
+            "method": "GET",
+            "path_pattern": "/?sid={value}",
+            "status": 200
+          },
+          {
+            "stage": "content_lookup",
+            "host": "cloud.unblockedgames.world",
+            "method": "GET",
+            "path_pattern": "/?sid={value}",
             "status": 200
           },
           {
@@ -3035,10 +3632,10 @@
             "status": 200
           },
           {
-            "stage": "content_lookup",
+            "stage": "origin_probe",
             "host": "cloud.unblockedgames.world",
             "method": "POST",
-            "path_pattern": "/{token}/",
+            "path_pattern": "/",
             "status": 200
           },
           {
@@ -3081,11 +3678,32 @@
             "host": "cloud.unblockedgames.world",
             "method": "POST",
             "path_pattern": "/{token}/",
+            "status": 200
+          },
+          {
+            "stage": "content_lookup",
+            "host": "cloud.unblockedgames.world",
+            "method": "POST",
+            "path_pattern": "/{token}/",
+            "status": 200
+          },
+          {
+            "stage": "origin_probe",
+            "host": "cloud.unblockedgames.world",
+            "method": "POST",
+            "path_pattern": "/",
+            "status": 200
+          },
+          {
+            "stage": "origin_probe",
+            "host": "cloud.unblockedgames.world",
+            "method": "POST",
+            "path_pattern": "/",
             "status": 200
           }
         ]
       ],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "vegamovies",
@@ -3151,31 +3769,18 @@
           }
         ]
       ],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "vidlink",
       "source": "aio",
-      "status": "blocked",
-      "score": 45,
-      "dns_preflight_status": "confirmed_french_block",
-      "dns_resolver": null,
-      "dns_migration_candidate": null,
-      "diagnostic_stages": [],
-      "language_evidence": [],
-      "route_observations": [],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
-    },
-    {
-      "id": "videasy",
-      "source": "aio",
-      "status": "provider_unreachable",
-      "score": 0,
+      "status": "reachable",
+      "score": 75,
       "dns_preflight_status": "inconclusive",
       "dns_resolver": null,
       "dns_migration_candidate": null,
       "diagnostic_stages": [
-        "provider_unreachable_or_runtime_error"
+        "content_not_found_or_parser_failed"
       ],
       "language_evidence": [
         {
@@ -3185,9 +3790,160 @@
         }
       ],
       "route_observations": [
-        []
+        [
+          {
+            "stage": "content_lookup",
+            "host": "enc-dec.app",
+            "method": "GET",
+            "path_pattern": "/api/enc-vidlink?text={value}",
+            "status": 200
+          },
+          {
+            "stage": "content_lookup",
+            "host": "vidlink.pro",
+            "method": "GET",
+            "path_pattern": "/api/b/movie/{token}",
+            "status": 200
+          },
+          {
+            "stage": "content_lookup",
+            "host": "enc-dec.app",
+            "method": "GET",
+            "path_pattern": "/api/enc-vidlink?text={value}",
+            "status": 200
+          },
+          {
+            "stage": "content_lookup",
+            "host": "vidlink.pro",
+            "method": "GET",
+            "path_pattern": "/api/b/movie/{token}",
+            "status": 200
+          },
+          {
+            "stage": "content_lookup",
+            "host": "enc-dec.app",
+            "method": "GET",
+            "path_pattern": "/api/enc-vidlink?text={value}",
+            "status": 200
+          },
+          {
+            "stage": "content_lookup",
+            "host": "vidlink.pro",
+            "method": "GET",
+            "path_pattern": "/api/b/movie/{token}",
+            "status": 200
+          },
+          {
+            "stage": "content_lookup",
+            "host": "enc-dec.app",
+            "method": "GET",
+            "path_pattern": "/api/enc-vidlink?text={value}",
+            "status": 200
+          },
+          {
+            "stage": "content_lookup",
+            "host": "vidlink.pro",
+            "method": "GET",
+            "path_pattern": "/api/b/movie/{token}",
+            "status": 200
+          },
+          {
+            "stage": "content_lookup",
+            "host": "enc-dec.app",
+            "method": "GET",
+            "path_pattern": "/api/enc-vidlink?text={value}",
+            "status": 200
+          },
+          {
+            "stage": "content_lookup",
+            "host": "vidlink.pro",
+            "method": "GET",
+            "path_pattern": "/api/b/movie/{token}",
+            "status": 200
+          },
+          {
+            "stage": "content_lookup",
+            "host": "enc-dec.app",
+            "method": "GET",
+            "path_pattern": "/api/enc-vidlink?text={value}",
+            "status": 200
+          },
+          {
+            "stage": "content_lookup",
+            "host": "vidlink.pro",
+            "method": "GET",
+            "path_pattern": "/api/b/movie/{token}",
+            "status": 200
+          }
+        ]
       ],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
+    },
+    {
+      "id": "videasy",
+      "source": "aio",
+      "status": "reachable",
+      "score": 75,
+      "dns_preflight_status": "inconclusive",
+      "dns_resolver": null,
+      "dns_migration_candidate": null,
+      "diagnostic_stages": [
+        "content_not_found_or_parser_failed"
+      ],
+      "language_evidence": [
+        {
+          "group": "unknown",
+          "confidence": "none",
+          "evidence": []
+        }
+      ],
+      "route_observations": [
+        [
+          {
+            "stage": "content_lookup",
+            "host": "api.wingsdatabase.com",
+            "method": "GET",
+            "path_pattern": "/seed?mediaId={value}",
+            "status": 200
+          },
+          {
+            "stage": "content_lookup",
+            "host": "api.wingsdatabase.com",
+            "method": "GET",
+            "path_pattern": "/seed?mediaId={value}",
+            "status": 400
+          },
+          {
+            "stage": "content_lookup",
+            "host": "api.wingsdatabase.com",
+            "method": "GET",
+            "path_pattern": "/seed?mediaId={value}",
+            "status": 200
+          },
+          {
+            "stage": "content_lookup",
+            "host": "api.wingsdatabase.com",
+            "method": "GET",
+            "path_pattern": "/seed?mediaId={value}",
+            "status": 200
+          },
+          {
+            "stage": "content_lookup",
+            "host": "api.wingsdatabase.com",
+            "method": "GET",
+            "path_pattern": "/seed?mediaId={value}",
+            "status": 400
+          },
+          {
+            "stage": "content_lookup",
+            "host": "api.wingsdatabase.com",
+            "method": "GET",
+            "path_pattern": "/seed?mediaId={value}",
+            "status": 200
+          }
+        ]
+      ],
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "vidsrc",
@@ -3221,14 +3977,7 @@
             "host": "cloudorchestranova.com",
             "method": "GET",
             "path_pattern": "/rcp/{token}",
-            "status": 200
-          },
-          {
-            "stage": "content_lookup",
-            "host": "cloudorchestranova.com",
-            "method": "GET",
-            "path_pattern": "/prorcp/{token}",
-            "status": 200
+            "status": null
           },
           {
             "stage": "player",
@@ -3256,7 +4005,7 @@
             "host": "cloudorchestranova.com",
             "method": "GET",
             "path_pattern": "/prorcp/{token}",
-            "status": 200
+            "status": null
           },
           {
             "stage": "player",
@@ -3309,7 +4058,7 @@
           }
         ]
       ],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "vixsrc",
@@ -3361,7 +4110,7 @@
           }
         ]
       ],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "vidfast",
@@ -3370,7 +4119,7 @@
       "score": 75,
       "dns_preflight_status": "inconclusive",
       "dns_resolver": null,
-      "dns_migration_candidate": "vidfast.vc",
+      "dns_migration_candidate": null,
       "diagnostic_stages": [
         "content_not_found_or_parser_failed"
       ],
@@ -3455,14 +4204,14 @@
           }
         ]
       ],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "xpass",
       "source": "aio",
       "status": "reachable",
       "score": 75,
-      "dns_preflight_status": "inconclusive",
+      "dns_preflight_status": "no_provider_domain_detected",
       "dns_resolver": null,
       "dns_migration_candidate": null,
       "diagnostic_stages": [
@@ -3521,7 +4270,7 @@
           }
         ]
       ],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "zinkmovies",
@@ -3544,7 +4293,7 @@
       "route_observations": [
         []
       ],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "onlykdrama",
@@ -3567,7 +4316,7 @@
       "route_observations": [
         []
       ],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "kisskh",
@@ -3575,8 +4324,8 @@
       "status": "no_streams",
       "score": 10,
       "dns_preflight_status": "inconclusive",
-      "dns_resolver": "cloudflare",
-      "dns_migration_candidate": "onlykdrama.shop",
+      "dns_resolver": null,
+      "dns_migration_candidate": null,
       "diagnostic_stages": [
         "content_not_found"
       ],
@@ -3590,7 +4339,7 @@
       "route_observations": [
         []
       ],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "4khdhub",
@@ -3630,6 +4379,34 @@
             "stage": "content_lookup",
             "host": "hubcloud.ist",
             "method": "GET",
+            "path_pattern": "/drive/bp2xymfqlml10as",
+            "status": 200
+          },
+          {
+            "stage": "content_lookup",
+            "host": "hubcloud.ist",
+            "method": "GET",
+            "path_pattern": "/drive/ztcziri5x4v25jn",
+            "status": 200
+          },
+          {
+            "stage": "content_lookup",
+            "host": "hubcloud.ist",
+            "method": "GET",
+            "path_pattern": "/drive/o5o7fnsher5hh75",
+            "status": 200
+          },
+          {
+            "stage": "content_lookup",
+            "host": "hubcloud.ist",
+            "method": "GET",
+            "path_pattern": "/drive/zdipi12a91di9xd",
+            "status": 200
+          },
+          {
+            "stage": "content_lookup",
+            "host": "hubcloud.ist",
+            "method": "GET",
             "path_pattern": "/drive/uw5wucb1a6qy5y7",
             "status": 200
           },
@@ -3649,13 +4426,6 @@
           },
           {
             "stage": "content_lookup",
-            "host": "hubcloud.ist",
-            "method": "GET",
-            "path_pattern": "/drive/ztcziri5x4v25jn",
-            "status": 200
-          },
-          {
-            "stage": "content_lookup",
             "host": "sportverse.cc",
             "method": "GET",
             "path_pattern": "/hubcloud.php?host={value}&id={value}&token={value}",
@@ -3680,27 +4450,6 @@
             "host": "sportverse.cc",
             "method": "GET",
             "path_pattern": "/hubcloud.php?host={value}&id={value}&token={value}",
-            "status": 200
-          },
-          {
-            "stage": "content_lookup",
-            "host": "hubcloud.ist",
-            "method": "GET",
-            "path_pattern": "/drive/zdipi12a91di9xd",
-            "status": 200
-          },
-          {
-            "stage": "content_lookup",
-            "host": "hubcloud.ist",
-            "method": "GET",
-            "path_pattern": "/drive/o5o7fnsher5hh75",
-            "status": 200
-          },
-          {
-            "stage": "content_lookup",
-            "host": "hubcloud.ist",
-            "method": "GET",
-            "path_pattern": "/drive/bp2xymfqlml10as",
             "status": 200
           },
           {
@@ -3726,7 +4475,7 @@
           }
         ]
       ],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "animepahe",
@@ -3734,8 +4483,8 @@
       "status": "reachable",
       "score": 75,
       "dns_preflight_status": "inconclusive",
-      "dns_resolver": "cloudflare",
-      "dns_migration_candidate": "animepahe.pw",
+      "dns_resolver": null,
+      "dns_migration_candidate": null,
       "diagnostic_stages": [
         "provider_reachable_http_error"
       ],
@@ -3792,7 +4541,7 @@
           }
         ]
       ],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "uhdmovies",
@@ -3801,7 +4550,7 @@
       "score": 75,
       "dns_preflight_status": "inconclusive",
       "dns_resolver": null,
-      "dns_migration_candidate": "uhdmovies.casa",
+      "dns_migration_candidate": null,
       "diagnostic_stages": [
         "content_not_found_or_parser_failed"
       ],
@@ -4012,7 +4761,7 @@
           }
         ]
       ],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "moviesmod",
@@ -4078,7 +4827,7 @@
           }
         ]
       ],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "dahmermovies",
@@ -4101,7 +4850,7 @@
       "route_observations": [
         []
       ],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "netmirror",
@@ -4244,7 +4993,7 @@
           }
         ]
       ],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "streamflix",
@@ -4267,7 +5016,7 @@
       "route_observations": [
         []
       ],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "moviebox",
@@ -4375,7 +5124,7 @@
           }
         ]
       ],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "vixsrc",
@@ -4398,7 +5147,7 @@
       "route_observations": [
         []
       ],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "dvdplay",
@@ -4421,7 +5170,7 @@
       "route_observations": [
         []
       ],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "yflix",
@@ -4487,7 +5236,7 @@
           }
         ]
       ],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "videasy",
@@ -4495,8 +5244,8 @@
       "status": "no_streams",
       "score": 10,
       "dns_preflight_status": "inconclusive",
-      "dns_resolver": "cloudflare",
-      "dns_migration_candidate": "player.videasy.to",
+      "dns_resolver": null,
+      "dns_migration_candidate": null,
       "diagnostic_stages": [
         "content_not_found"
       ],
@@ -4510,7 +5259,7 @@
       "route_observations": [
         []
       ],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "mallumv",
@@ -4533,20 +5282,30 @@
       "route_observations": [
         []
       ],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "vidlink",
       "source": "yoru",
-      "status": "blocked",
-      "score": 45,
-      "dns_preflight_status": "confirmed_french_block",
+      "status": "no_streams",
+      "score": 10,
+      "dns_preflight_status": "inconclusive",
       "dns_resolver": null,
       "dns_migration_candidate": null,
-      "diagnostic_stages": [],
-      "language_evidence": [],
-      "route_observations": [],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "diagnostic_stages": [
+        "content_not_found"
+      ],
+      "language_evidence": [
+        {
+          "group": "unknown",
+          "confidence": "none",
+          "evidence": []
+        }
+      ],
+      "route_observations": [
+        []
+      ],
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "vidnest",
@@ -4569,7 +5328,7 @@
       "route_observations": [
         []
       ],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "vidnest-anime",
@@ -4592,14 +5351,14 @@
       "route_observations": [
         []
       ],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "cinevibe",
       "source": "yoru",
       "status": "no_streams",
       "score": 10,
-      "dns_preflight_status": "inconclusive",
+      "dns_preflight_status": "no_provider_domain_detected",
       "dns_resolver": null,
       "dns_migration_candidate": null,
       "diagnostic_stages": [
@@ -4615,7 +5374,7 @@
       "route_observations": [
         []
       ],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "cinemacity",
@@ -4695,7 +5454,7 @@
           }
         ]
       ],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "castle",
@@ -4718,7 +5477,7 @@
       "route_observations": [
         []
       ],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "showbox",
@@ -4741,7 +5500,7 @@
       "route_observations": [
         []
       ],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "hdhub4u",
@@ -4764,7 +5523,7 @@
       "route_observations": [
         []
       ],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "allmovieland",
@@ -4787,7 +5546,7 @@
       "route_observations": [
         []
       ],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "dooflix",
@@ -4853,7 +5612,7 @@
           }
         ]
       ],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "movieblast",
@@ -4876,7 +5635,7 @@
       "route_observations": [
         []
       ],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "mycima",
@@ -4885,7 +5644,7 @@
       "score": 10,
       "dns_preflight_status": "inconclusive",
       "dns_resolver": null,
-      "dns_migration_candidate": "mycima.camp",
+      "dns_migration_candidate": null,
       "diagnostic_stages": [
         "content_not_found"
       ],
@@ -4899,7 +5658,7 @@
       "route_observations": [
         []
       ],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "moviesdrive",
@@ -4951,7 +5710,7 @@
           }
         ]
       ],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "hianime",
@@ -4974,7 +5733,7 @@
       "route_observations": [
         []
       ],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "kurage",
@@ -4997,7 +5756,7 @@
       "route_observations": [
         []
       ],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     },
     {
       "id": "anizone",
@@ -5020,7 +5779,7 @@
       "route_observations": [
         []
       ],
-      "last_checked": "2026-07-30T05:13:13.304686+00:00"
+      "last_checked": "2026-07-30T05:51:47.744022+00:00"
     }
   ]
 }
