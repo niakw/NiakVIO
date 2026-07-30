@@ -35,9 +35,7 @@
       "patch_script": "scripts/provider_patches/movix_multi_source.py",
       "patch_options": {},
       "capability": "mixed_embed_resolver",
-      "profiles": [
-        "adaptive_domain_movix"
-      ]
+      "profiles": []
     },
     "frenchstream": {
       "notes": [
@@ -787,44 +785,6 @@
             ],
             "candidates": [
               "https://moviesmod.army"
-            ]
-          }
-        ]
-      },
-      "description": "Provider-specific same-route failover built from this provider's own observed origins and durable replacements."
-    },
-    "adaptive_domain_movix": {
-      "phase": "build",
-      "auto_apply": true,
-      "patch_script": "scripts/provider_patches/adaptive_domain_recovery.py",
-      "options": {
-        "groups": [
-          {
-            "hosts": [
-              "api.movix.cash"
-            ],
-            "candidates": [
-              "https://api.movix.fun",
-              "https://movix.cash"
-            ]
-          },
-          {
-            "hosts": [
-              "api.movix.cloud"
-            ],
-            "candidates": [
-              "https://api.movix.fun",
-              "https://movix.cash"
-            ]
-          },
-          {
-            "hosts": [
-              "movix.cash",
-              "api.movix.fun"
-            ],
-            "candidates": [
-              "https://movix.cash",
-              "https://api.movix.fun"
             ]
           }
         ]
