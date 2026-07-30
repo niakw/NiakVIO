@@ -1,28 +1,206 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-07-29T17:13:04.716777+00:00",
+  "generated_at": "2026-07-30T05:12:42.550114+00:00",
   "mode": "deep",
   "provider_specific_rules": false,
   "max_rounds": 3,
   "rounds": [
     {
       "round": 1,
-      "generated_candidates": 0,
-      "attempts": [],
+      "generated_candidates": 5,
+      "attempts": [
+        {
+          "parent_key": "gowaru:frenchstream",
+          "parent_sha256": "c4735951ca7fb2df38cadc26c38cb4bbb01c8d91a251aacf954f6cda7eeaa1eb",
+          "profile": "metadata_context_recovery",
+          "baseline_status": "no_streams",
+          "baseline_score": 10,
+          "status": "generated",
+          "repair_key": "gowaru:frenchstream::repair:r1:metadata_context_recovery:809ceb16",
+          "repair_sha256": "809ceb163c8e318bf41eae6d885362cd6a01a6b3b773b78e367e071df2fdbbb5"
+        },
+        {
+          "parent_key": "gowaru:sekai",
+          "parent_sha256": "7e8126549e67a003c35d548711055b2c3862e57c00842994731aad5e6c8edda4",
+          "profile": "metadata_context_recovery",
+          "baseline_status": "no_streams",
+          "baseline_score": 10,
+          "status": "generated",
+          "repair_key": "gowaru:sekai::repair:r1:metadata_context_recovery:984600a1",
+          "repair_sha256": "984600a123b4c6dfe9b7af9de08432353f29e67b5b2ee30e6e720df06c7258f3"
+        },
+        {
+          "parent_key": "gowaru:vostfree",
+          "parent_sha256": "a6b4fc1304a1e993deab3aa720d7b2fd63f6634fc7baa9eba13151c8ac6df370",
+          "profile": "metadata_context_recovery",
+          "baseline_status": "no_streams",
+          "baseline_score": 10,
+          "status": "generated",
+          "repair_key": "gowaru:vostfree::repair:r1:metadata_context_recovery:8954d094",
+          "repair_sha256": "8954d094969384479ab51fc7f97f54f5a0da51adf23712e97bca559dc72719f9"
+        },
+        {
+          "parent_key": "gowaru:wookafr",
+          "parent_sha256": "fb93694d58fec212a7f1294515b966b3cac8fa71e7ff301383c0894b9f05ceff",
+          "profile": "metadata_context_recovery",
+          "baseline_status": "no_streams",
+          "baseline_score": 10,
+          "status": "generated",
+          "repair_key": "gowaru:wookafr::repair:r1:metadata_context_recovery:ce4597ed",
+          "repair_sha256": "ce4597ed7a82d2234692f14ea4b83e31d7132ed4624ff69a0cb99d6eaf75bee1"
+        },
+        {
+          "parent_key": "gowaru:streamzo",
+          "parent_sha256": "21b1ab41d4a41315ed83095ceb4d267cf846616869215140d97e4eb7d177da69",
+          "profile": "metadata_context_recovery",
+          "baseline_status": "no_streams",
+          "baseline_score": 10,
+          "status": "generated",
+          "repair_key": "gowaru:streamzo::repair:r1:metadata_context_recovery:5a348239",
+          "repair_sha256": "5a3482397a743fbcdf28a0af950394a9fb724f1d23b9b2cc98d9722e62027b97"
+        }
+      ],
+      "accepted": [
+        {
+          "parent_key": "gowaru:frenchstream",
+          "profile": "metadata_context_recovery",
+          "sha256": "809ceb163c8e318bf41eae6d885362cd6a01a6b3b773b78e367e071df2fdbbb5",
+          "status_before": "no_streams",
+          "status_after": "reachable",
+          "score_before": 10,
+          "score_after": 75,
+          "reason": "strict_runtime_improvement"
+        },
+        {
+          "parent_key": "gowaru:vostfree",
+          "profile": "metadata_context_recovery",
+          "sha256": "8954d094969384479ab51fc7f97f54f5a0da51adf23712e97bca559dc72719f9",
+          "status_before": "no_streams",
+          "status_after": "reachable",
+          "score_before": 10,
+          "score_after": 75,
+          "reason": "strict_runtime_improvement"
+        }
+      ],
+      "rejected": [
+        {
+          "parent_key": "gowaru:sekai",
+          "repair_key": "gowaru:sekai::repair:r1:metadata_context_recovery:984600a1",
+          "profile": "metadata_context_recovery",
+          "status": "runtime_error",
+          "score": 0,
+          "reason": "hard_failure:runtime_error"
+        },
+        {
+          "parent_key": "gowaru:wookafr",
+          "repair_key": "gowaru:wookafr::repair:r1:metadata_context_recovery:ce4597ed",
+          "profile": "metadata_context_recovery",
+          "status": "runtime_error",
+          "score": 0,
+          "reason": "hard_failure:runtime_error"
+        },
+        {
+          "parent_key": "gowaru:streamzo",
+          "repair_key": "gowaru:streamzo::repair:r1:metadata_context_recovery:5a348239",
+          "profile": "metadata_context_recovery",
+          "status": "runtime_error",
+          "score": 0,
+          "reason": "hard_failure:runtime_error"
+        }
+      ]
+    },
+    {
+      "round": 2,
+      "generated_candidates": 4,
+      "attempts": [
+        {
+          "parent_key": "gowaru:frenchstream",
+          "parent_sha256": "809ceb163c8e318bf41eae6d885362cd6a01a6b3b773b78e367e071df2fdbbb5",
+          "profile": "dle_html_search_recovery",
+          "baseline_status": "reachable",
+          "baseline_score": 75,
+          "status": "generated",
+          "repair_key": "gowaru:frenchstream::repair:r2:dle_html_search_recovery:4a65f400",
+          "repair_sha256": "4a65f400062f20ca447a4275b7e9d4be99cb1a1a2a238563ee9cbd671cb882da"
+        },
+        {
+          "parent_key": "gowaru:sekai",
+          "parent_sha256": "7e8126549e67a003c35d548711055b2c3862e57c00842994731aad5e6c8edda4",
+          "profile": "metadata_context_recovery",
+          "baseline_status": "no_streams",
+          "baseline_score": 10,
+          "status": "generated",
+          "repair_key": "gowaru:sekai::repair:r2:metadata_context_recovery:984600a1",
+          "repair_sha256": "984600a123b4c6dfe9b7af9de08432353f29e67b5b2ee30e6e720df06c7258f3"
+        },
+        {
+          "parent_key": "gowaru:wookafr",
+          "parent_sha256": "fb93694d58fec212a7f1294515b966b3cac8fa71e7ff301383c0894b9f05ceff",
+          "profile": "metadata_context_recovery",
+          "baseline_status": "no_streams",
+          "baseline_score": 10,
+          "status": "generated",
+          "repair_key": "gowaru:wookafr::repair:r2:metadata_context_recovery:ce4597ed",
+          "repair_sha256": "ce4597ed7a82d2234692f14ea4b83e31d7132ed4624ff69a0cb99d6eaf75bee1"
+        },
+        {
+          "parent_key": "gowaru:streamzo",
+          "parent_sha256": "21b1ab41d4a41315ed83095ceb4d267cf846616869215140d97e4eb7d177da69",
+          "profile": "metadata_context_recovery",
+          "baseline_status": "no_streams",
+          "baseline_score": 10,
+          "status": "generated",
+          "repair_key": "gowaru:streamzo::repair:r2:metadata_context_recovery:5a348239",
+          "repair_sha256": "5a3482397a743fbcdf28a0af950394a9fb724f1d23b9b2cc98d9722e62027b97"
+        }
+      ],
       "accepted": [],
-      "rejected": []
+      "rejected": [
+        {
+          "parent_key": "gowaru:frenchstream",
+          "repair_key": "gowaru:frenchstream::repair:r2:dle_html_search_recovery:4a65f400",
+          "profile": "dle_html_search_recovery",
+          "status": "reachable",
+          "score": 75,
+          "reason": "no_strict_runtime_improvement"
+        },
+        {
+          "parent_key": "gowaru:sekai",
+          "repair_key": "gowaru:sekai::repair:r2:metadata_context_recovery:984600a1",
+          "profile": "metadata_context_recovery",
+          "status": "runtime_error",
+          "score": 0,
+          "reason": "hard_failure:runtime_error"
+        },
+        {
+          "parent_key": "gowaru:wookafr",
+          "repair_key": "gowaru:wookafr::repair:r2:metadata_context_recovery:ce4597ed",
+          "profile": "metadata_context_recovery",
+          "status": "runtime_error",
+          "score": 0,
+          "reason": "hard_failure:runtime_error"
+        },
+        {
+          "parent_key": "gowaru:streamzo",
+          "repair_key": "gowaru:streamzo::repair:r2:metadata_context_recovery:5a348239",
+          "profile": "metadata_context_recovery",
+          "status": "runtime_error",
+          "score": 0,
+          "reason": "hard_failure:runtime_error"
+        }
+      ]
     }
   ],
-  "completed_at": "2026-07-29T17:13:04.852426+00:00",
-  "accepted_repairs": 0,
+  "completed_at": "2026-07-30T05:13:13.482147+00:00",
+  "accepted_repairs": 2,
   "final_counts": {
     "healthy": 0,
-    "reachable": 36,
+    "reachable": 42,
     "blocked": 5,
     "degraded": 0,
-    "no_streams": 41,
-    "provider_unreachable": 26,
-    "runtime_error": 1,
+    "no_streams": 47,
+    "provider_unreachable": 13,
+    "runtime_error": 2,
     "unavailable": 0,
     "excluded": 0
   }

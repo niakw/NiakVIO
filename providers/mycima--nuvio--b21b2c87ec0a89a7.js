@@ -1,3 +1,29 @@
+/* NUVIO_RUNTIME_DOMAIN_OVERRIDES_V1 */
+;(function(g,rules){
+  if(!g||typeof g.fetch!=="function")return;
+  var key="__nuvioDomainOverrideV1";
+  var state=g[key];
+  if(!state){
+    state={native:g.fetch.bind(g),rules:Object.create(null)};
+    g[key]=state;
+    g.fetch=function(input,init){
+      var next=input;
+      try{
+        var raw=(typeof Request!=="undefined"&&input instanceof Request)?input.url:String(input);
+        var url=new URL(raw);
+        var replacement=state.rules[String(url.hostname).toLowerCase()];
+        if(replacement){
+          url.hostname=replacement;
+          next=(typeof Request!=="undefined"&&input instanceof Request)?new Request(url.toString(),input):url.toString();
+        }
+      }catch(_error){}
+      return state.native(next,init);
+    };
+  }
+  for(var i=0;i<rules.length;i++){
+    try{state.rules[atob(rules[i][0])]=rules[i][1];}catch(_error){}
+  }
+})(typeof globalThis!=="undefined"?globalThis:this,[["bXljaW1hLnJlZA==","mycima.camp"]]);
 /**
  * mycima - Built from src/mycima/
  * Generated: 2026-06-01T14:20:20.835Z
@@ -66,7 +92,7 @@ var __async = (__this, __arguments, generator) => {
 var import_cheerio_without_node_native2 = __toESM(require("cheerio-without-node-native"));
 
 // src/mycima/constants.js
-var MAIN_URL = "https://mycima.red";
+var MAIN_URL = "https://mycima.camp";
 var HEADERS = {
   "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
   "Referer": MAIN_URL + "/",

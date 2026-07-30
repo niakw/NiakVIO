@@ -1,3 +1,29 @@
+/* NUVIO_RUNTIME_DOMAIN_OVERRIDES_V1 */
+;(function(g,rules){
+  if(!g||typeof g.fetch!=="function")return;
+  var key="__nuvioDomainOverrideV1";
+  var state=g[key];
+  if(!state){
+    state={native:g.fetch.bind(g),rules:Object.create(null)};
+    g[key]=state;
+    g.fetch=function(input,init){
+      var next=input;
+      try{
+        var raw=(typeof Request!=="undefined"&&input instanceof Request)?input.url:String(input);
+        var url=new URL(raw);
+        var replacement=state.rules[String(url.hostname).toLowerCase()];
+        if(replacement){
+          url.hostname=replacement;
+          next=(typeof Request!=="undefined"&&input instanceof Request)?new Request(url.toString(),input):url.toString();
+        }
+      }catch(_error){}
+      return state.native(next,init);
+    };
+  }
+  for(var i=0;i<rules.length;i++){
+    try{state.rules[atob(rules[i][0])]=rules[i][1];}catch(_error){}
+  }
+})(typeof globalThis!=="undefined"?globalThis:this,[["cGxheWVyLnZpZGVhc3kubmV0","player.videasy.to"]]);
 // VideoEasy Scraper for Nuvio Local Scrapers
 // React Native compatible version - Promise-based (no async/await)
 // Extracts streaming links using TMDB ID for all VideoEasy servers
@@ -503,7 +529,7 @@ function formatStreamsForNuvio(mediaData, serverName, serverConfig, mediaDetails
       let streamType = 'unknown';
       let headers = Object.assign({}, HEADERS, {
         'Referer': 'https://api.videasy.net/',
-        'Origin': 'https://player.videasy.net'
+        'Origin': 'https://player.videasy.to'
       });
 
       if (source.url.includes('.m3u8')) {
