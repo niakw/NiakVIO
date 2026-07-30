@@ -1614,6 +1614,34 @@ def main() -> int:
             gates = decision["activation_gates"]
             proof = decision["proof"]
             activation_mode = decision["activation_mode"]
+
+            # CI cannot reliably distinguish a provider that is genuinely dead
+            # from one whose search/runtime is blocked or content-specific. A
+            # new provider still requires current positive proof, but a provider
+            # already enabled in the published manifest is preserved when the
+            # current result is merely inconclusive. It is disabled only by an
+            # explicit exclusion, an upstream-disabled declaration, sustained
+            # availability failure, or another conclusive failure.
+            old_entry = existing.get(cid, {})
+            observed_status = str(selected.get("health", {}).get("status", "runtime_error"))
+            upstream_enabled = bool(selected.get("metadata", {}).get("enabled", True))
+            selected_is_published_baseline = bool(selected.get("baseline"))
+            preserve_current = (
+                not enabled
+                and bool(old_entry.get("enabled", False))
+                and not auto_disabled
+                and upstream_enabled
+                and selected_is_published_baseline
+                and observed_status in inconclusive_statuses(activation)
+            )
+            if preserve_current:
+                enabled = True
+                activation_mode = "preserved_current_inconclusive"
+                blockers = [
+                    blocker for blocker in blockers
+                    if blocker != "availability_auto_disabled"
+                ]
+
             try:
                 destination, digest = copy_candidate(selected)
             except (ValueError, OSError, subprocess.SubprocessError) as exc:
@@ -1694,6 +1722,8 @@ def main() -> int:
             ]
             if enabled and activation_mode == "strict_current":
                 action = "enabled-current-dns-access-stream-quality-passed"
+            elif enabled and activation_mode == "preserved_current_inconclusive":
+                action = "preserved-current-enabled-ci-inconclusive"
             elif enabled and activation_mode == "strict_grace_inconclusive":
                 action = "enabled-strict-validation-grace-ci-inconclusive"
             elif enabled and activation_mode == "historical_quality_grace":
