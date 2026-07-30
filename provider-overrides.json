@@ -31,6 +31,20 @@
         "resolver_function": "detectApi",
         "api": "https://api.movix.fun",
         "referer": "https://movix.fun/"
+      },
+      "request_headers": {
+        "defaults": {
+          "User-Agent": "Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 Chrome/124 Mobile Safari/537.36",
+          "Accept": "application/json, text/plain, */*",
+          "Accept-Language": "fr-FR,fr;q=0.9,en;q=0.8"
+        },
+        "host_rules": {
+          "api.movix.fun": {
+            "referer": "https://movix.fun/",
+            "origin": "https://movix.fun",
+            "accept": "application/json, text/plain, */*"
+          }
+        }
       }
     },
     "frenchstream": {
@@ -201,6 +215,42 @@
       "notes": [
         "Automatically migrated mycima.red to mycima.camp after DNS/HTTP preflight validation of a redirect or a reachable same-role provider endpoint."
       ]
+    },
+    "dahmermovies": {
+      "notes": [
+        "Apply browser-compatible request headers to the source host after confirmed HTTP 403 responses."
+      ],
+      "request_headers": {
+        "defaults": {
+          "User-Agent": "Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 Chrome/124 Mobile Safari/537.36",
+          "Accept": "text/html,application/xhtml+xml,application/json;q=0.9,*/*;q=0.8",
+          "Accept-Language": "en-US,en;q=0.9"
+        },
+        "host_rules": {
+          "a.111477.xyz": {
+            "referer": "https://a.111477.xyz/",
+            "origin": "https://a.111477.xyz"
+          }
+        }
+      }
+    },
+    "dahmermovies-tv": {
+      "notes": [
+        "Apply browser-compatible request headers to the source host after confirmed HTTP 403 responses."
+      ],
+      "request_headers": {
+        "defaults": {
+          "User-Agent": "Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 Chrome/124 Mobile Safari/537.36",
+          "Accept": "text/html,application/xhtml+xml,application/json;q=0.9,*/*;q=0.8",
+          "Accept-Language": "en-US,en;q=0.9"
+        },
+        "host_rules": {
+          "a.111477.xyz": {
+            "referer": "https://a.111477.xyz/",
+            "origin": "https://a.111477.xyz"
+          }
+        }
+      }
     }
   },
   "route_override_defaults": {
@@ -272,6 +322,54 @@
       "required_values": [
         "[Nuvio Runtime Repair] Content found via HTML search"
       ]
+    },
+    "request_header_recovery": {
+      "description": "Add conservative browser-compatible headers when provider-origin requests are consistently rejected with HTTP 403, then keep the patch only after a successful deep retest.",
+      "phase": "runtime",
+      "auto_apply": false,
+      "priority": 5,
+      "runtime_trigger": "provider_http_forbidden",
+      "detect_any": [
+        "fetch(",
+        "fetch["
+      ],
+      "patch_script": "scripts/provider_patches/request_header_recovery.py",
+      "options": {
+        "user_agent": "Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 Chrome/124 Mobile Safari/537.36",
+        "accept": "*/*",
+        "accept_language": "en-US,en;q=0.9",
+        "success_marker": "NUVIO_REQUEST_HEADER_RECOVERY_V1",
+        "same_origin_context": true
+      },
+      "required_values": [
+        "NUVIO_REQUEST_HEADER_RECOVERY_V1"
+      ]
+    },
+    "stream_output_recovery": {
+      "description": "Normalize only a provider whose returned streams fail an HTTP playback probe; retain the patch only after a strict improving deep retest.",
+      "phase": "runtime",
+      "auto_apply": false,
+      "priority": 6,
+      "runtime_trigger": "stream_http_forbidden",
+      "detect_any": [
+        "module.exports",
+        "getStreams"
+      ],
+      "patch_script": "scripts/provider_patches/stream_output_recovery.py",
+      "options": {
+        "user_agent": "Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 Chrome/124 Mobile Safari/537.36",
+        "add_accept": true,
+        "add_range": true,
+        "reject_extensions": [
+          ".avi",
+          ".wmv",
+          ".flv"
+        ],
+        "success_marker": "NUVIO_STREAM_OUTPUT_RECOVERY_V1"
+      },
+      "required_values": [
+        "NUVIO_STREAM_OUTPUT_RECOVERY_V1"
+      ]
     }
   },
   "runtime_repair": {
@@ -281,7 +379,7 @@
     "retain_parent_on_failure": true
   },
   "global_stream_output": {
-    "enabled": true,
+    "enabled": false,
     "user_agent": "Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 Chrome/124 Mobile Safari/537.36",
     "add_accept": true,
     "add_range": true,
@@ -290,6 +388,18 @@
       ".wmv",
       ".flv"
     ],
-    "host_rules": {}
+    "host_rules": {
+      "*.finepulfe.xyz": {
+        "referer": "https://movix.fun/",
+        "origin": "https://movix.fun",
+        "headers": {
+          "Accept": "application/vnd.apple.mpegurl,application/x-mpegURL,*/*"
+        }
+      }
+    },
+    "notes": [
+      "Blanket wrapping is disabled because Node-compatible wrappers caused all-provider regressions in the embedded Nuvio runtime.",
+      "Stream-output repair is applied only after runtime evidence and a strict improving retest."
+    ]
   }
 }
