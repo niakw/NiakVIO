@@ -675,16 +675,17 @@ function fixturesForCandidate(candidate) {
   const slot = Math.floor(Date.now() / period);
   const start = requestedMode === 'deep' ? 0 : slot % profile.pool.length;
 
-  // Deep validation must exercise every declared catalogue category. A single
-  // round-robin fixture could previously test only movie for a provider that
-  // also declared TV/anime, allowing broken category paths to be published.
+  // Deep validation exercises every declared catalogue category. Each category
+  // gets one deterministic primary title and its own alternates, so a catalogue
+  // miss for one anime/movie/series cannot hide a working provider or replace a
+  // last-known-good artifact with a false zero-stream regression.
+  const groups = {
+    movie: withCategory(config.fixtures.movie, 'movie'),
+    tv: withCategory(config.fixtures.tv, 'tv'),
+    anime: withCategory(config.fixtures.anime, 'anime'),
+  };
   let fixtures;
   if (requestedMode === 'deep' && modeConfig.fixture_limit_per_category === true) {
-    const groups = {
-      movie: withCategory(config.fixtures.movie, 'movie'),
-      tv: withCategory(config.fixtures.tv, 'tv'),
-      anime: withCategory(config.fixtures.anime, 'anime'),
-    };
     fixtures = profile.requiredCategories
       .map((category) => (groups[category] || [])[0])
       .filter(Boolean);
@@ -692,11 +693,16 @@ function fixturesForCandidate(candidate) {
     fixtures = rotateSlice(profile.pool, start, limit);
   }
   const selected = new Set(fixtures.map(fixtureKey));
-  const remaining = profile.pool.filter((fixture) => !selected.has(fixtureKey(fixture)));
-  const fallbackLimit = requestedMode === 'deep'
-    ? Math.max(0, Number(modeConfig.fallback_fixture_limit || 0))
+  const fallbackPerCategory = requestedMode === 'deep'
+    ? Math.max(0, Number(modeConfig.fallback_fixture_limit_per_category || 0))
     : 0;
-  const fallbackFixtures = evenlySpacedSlice(remaining, fallbackLimit);
+  const fallbackFixtures = [];
+  for (const category of profile.requiredCategories) {
+    const alternatives = (groups[category] || [])
+      .filter((fixture) => !selected.has(fixtureKey(fixture)))
+      .slice(0, fallbackPerCategory);
+    fallbackFixtures.push(...alternatives);
+  }
   return { profile, fixtures, fallbackFixtures };
 }
 
@@ -1138,14 +1144,21 @@ async function testCandidate(candidate) {
 
   for (const fixture of fixtures) await executeFixture(fixture, 'primary');
 
-  const allPrimaryNoStreams = fixtureResults.length > 0
-    && fixtureResults.every((item) => item.fixture_phase === 'primary' && item.status === 'no_streams');
-  const useFallback = requestedMode === 'deep'
-    && fallbackFixtures.length > 0
-    && modeConfig.fallback_only_when_all_primary_no_streams !== false
-    && allPrimaryNoStreams;
+  const primaryResults = fixtureResults.filter((item) => item.fixture_phase === 'primary');
+  const categoriesNeedingFallback = new Set(
+    profile.requiredCategories.filter((category) => {
+      const rows = primaryResults.filter((item) => item.fixture?.category === category);
+      return rows.length > 0
+        && !rows.some((item) => item.status === 'healthy')
+        && !rows.some((item) => item.status === 'excluded');
+    }),
+  );
+  const fallbackToRun = requestedMode === 'deep'
+    ? fallbackFixtures.filter((fixture) => categoriesNeedingFallback.has(fixture.category))
+    : [];
+  const useFallback = fallbackToRun.length > 0;
   if (useFallback) {
-    for (const fixture of fallbackFixtures) await executeFixture(fixture, 'fallback');
+    for (const fixture of fallbackToRun) await executeFixture(fixture, 'fallback');
   }
 
   const anyP2p = fixtureResults.some((item) => (item.disallowed_streams || 0) > 0 || item.status === 'excluded');
@@ -1157,9 +1170,12 @@ async function testCandidate(candidate) {
     status = priority.find((candidateStatus) => fixtureResults.some((item) => item.status === candidateStatus)) || 'runtime_error';
   }
 
-  const activationTests = useFallback
-    ? fixtureResults.filter((item) => item.fixture_phase === 'fallback')
-    : fixtureResults.filter((item) => item.fixture_phase === 'primary');
+  const activationTests = profile.requiredCategories.flatMap((category) => {
+    const primary = fixtureResults.filter((item) => item.fixture_phase === 'primary' && item.fixture?.category === category);
+    if (primary.some((item) => item.status === 'healthy')) return primary;
+    const fallback = fixtureResults.filter((item) => item.fixture_phase === 'fallback' && item.fixture?.category === category);
+    return fallback.length ? fallback : primary;
+  });
   const healthyTests = fixtureResults.filter((item) => item.status === 'healthy');
   const activationHealthyTests = activationTests.filter((item) => item.status === 'healthy');
   const healthyAverage = activationHealthyTests.length
@@ -1175,7 +1191,7 @@ async function testCandidate(candidate) {
   const score = status === 'healthy'
     ? Math.round(healthyAverage * 0.8 + coverageRatio * 20)
     : status === 'reachable' && claims.description_present && claims.max_height && claims.accepted_languages.length
-      ? 75
+      ? 25
       : Math.max(0, ...fixtureResults.map((item) => Number(item.score || 0)));
 
   const healthyCategories = [...new Set(activationHealthyTests.map((item) => item.fixture.category).filter(Boolean))].sort();

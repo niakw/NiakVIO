@@ -29,6 +29,7 @@ from apply_provider_overrides import apply_overrides
 ROOT = Path(__file__).resolve().parents[1]
 SOURCES_PATH = ROOT / "sources.json"
 DEFAULT_STAGE = ROOT / "staging"
+LKG_PATH = ROOT / "provider-lkg.json"
 USER_AGENT = "Nuvio-Curated-Discovery/5.12 (+GitHub Actions)"
 
 
@@ -234,6 +235,11 @@ def main() -> int:
         published_manifest = {"scrapers": []}
     baseline_dir = providers_dir / "published-baseline"
     baseline_dir.mkdir(parents=True, exist_ok=True)
+    try:
+        lkg_registry = json.loads(LKG_PATH.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        lkg_registry = {"providers": {}}
+    lkg_records = lkg_registry.get("providers", {}) if isinstance(lkg_registry, dict) else {}
     known_keys = {str(item.get("key")) for item in candidates}
     for entry in published_manifest.get("scrapers", []):
         if not isinstance(entry, dict):
@@ -257,6 +263,8 @@ def main() -> int:
         local_path = baseline_dir / f"{safe_fragment(provider_id)}.js"
         local_path.write_bytes(data)
         digest = hashlib.sha256(data).hexdigest()
+        lkg_record = lkg_records.get(provider_id, {}) if isinstance(lkg_records, dict) else {}
+        is_registered_lkg = isinstance(lkg_record, dict) and lkg_record.get("sha256") == digest
         candidates.append({
             "key": key,
             "source": "published-baseline",
@@ -277,6 +285,70 @@ def main() -> int:
             "bytes": len(data),
             "metadata": dict(entry),
             "baseline": True,
+            "lkg": is_registered_lkg,
+            "lkg_verified_categories": list(lkg_record.get("verified_categories") or []) if is_registered_lkg else [],
+        })
+        known_keys.add(key)
+
+    # Keep registered last-known-good artifacts available even after a future
+    # manifest has moved to another hash. The pruner also retains these files.
+    existing_entries = {
+        canonical_id(str(entry.get("id") or entry.get("name") or "")): entry
+        for entry in published_manifest.get("scrapers", []) if isinstance(entry, dict)
+    }
+    for provider_id, record in sorted(lkg_records.items() if isinstance(lkg_records, dict) else []):
+        if not isinstance(record, dict):
+            continue
+        filename = record.get("filename")
+        expected_sha = record.get("sha256")
+        if not isinstance(filename, str) or not isinstance(expected_sha, str):
+            continue
+        source_path = (ROOT / filename).resolve()
+        try:
+            source_path.relative_to((ROOT / "providers").resolve())
+        except ValueError:
+            continue
+        if not source_path.is_file():
+            continue
+        data = source_path.read_bytes()
+        digest = hashlib.sha256(data).hexdigest()
+        if digest != expected_sha:
+            continue
+        published_key = f"published:{provider_id}"
+        published = next((item for item in candidates if item.get("key") == published_key), None)
+        if published and published.get("sha256") == digest:
+            published["lkg"] = True
+            published["lkg_verified_categories"] = list(record.get("verified_categories") or [])
+            continue
+        key = f"lkg:{provider_id}"
+        if key in known_keys:
+            continue
+        local_path = baseline_dir / f"lkg-{safe_fragment(provider_id)}.js"
+        local_path.write_bytes(data)
+        metadata = dict(existing_entries.get(provider_id) or {"id": provider_id, "name": provider_id})
+        metadata["filename"] = filename
+        candidates.append({
+            "key": key,
+            "source": "local-lkg",
+            "source_name": "Registered last-known-good artifact",
+            "source_priority": len(config.get("upstreams", {})) + 101,
+            "source_repository": config.get("repository", {}).get("name"),
+            "source_license": "GPL-3.0-only",
+            "source_license_evidence": "LICENSE",
+            "manifest_url": "provider-lkg.json",
+            "upstream_id": provider_id,
+            "canonical_id": provider_id,
+            "provider_url": filename,
+            "local_path": str(local_path.relative_to(stage)),
+            "sha256": digest,
+            "upstream_sha256": digest,
+            "local_patches": [],
+            "baseline_origin": "provider_lkg_registry",
+            "bytes": len(data),
+            "metadata": metadata,
+            "baseline": True,
+            "lkg": True,
+            "lkg_verified_categories": list(record.get("verified_categories") or []),
         })
         known_keys.add(key)
 

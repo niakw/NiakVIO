@@ -43,6 +43,7 @@ STAGE = Path(os.environ.get("NUVIO_STAGE", ROOT / "staging")).resolve()
 SOURCES_PATH = ROOT / "sources.json"
 CONFIG_PATH = ROOT / "health-config.json"
 RUNTIME_EVIDENCE_PATH = ROOT / "runtime-evidence.json"
+LKG_PATH = ROOT / "provider-lkg.json"
 HEALTH_RESULTS_PATH = Path(
     os.environ.get("NUVIO_HEALTH_RESULTS", STAGE / "health-results.json")
 ).resolve()
@@ -1410,6 +1411,59 @@ def failed_declared_ids(registry: dict[str, Any]) -> set[str]:
     return output
 
 
+def has_conclusive_stream_proof(variant: dict[str, Any]) -> bool:
+    health = variant.get("health", {}) if isinstance(variant.get("health"), dict) else {}
+    evidence = health.get("evidence", {}) if isinstance(health.get("evidence"), dict) else {}
+    return (
+        health.get("status") == "healthy"
+        and int(evidence.get("streams_playable", 0)) > 0
+        and int(evidence.get("healthy_fixtures", 0)) > 0
+    )
+
+
+def healthy_categories(variant: dict[str, Any]) -> set[str]:
+    health = variant.get("health", {}) if isinstance(variant.get("health"), dict) else {}
+    evidence = health.get("evidence", {}) if isinstance(health.get("evidence"), dict) else {}
+    return {str(value) for value in (evidence.get("healthy_fixture_categories") or []) if value}
+
+
+def choose_variant_with_baseline_protection(
+    variants: list[dict[str, Any]],
+    rank,
+    lkg_record: dict[str, Any] | None = None,
+) -> dict[str, Any] | None:
+    if not variants:
+        return None
+    ranked = sorted(variants, key=rank, reverse=True)
+    baselines = [variant for variant in ranked if bool(variant.get("baseline"))]
+    record = lkg_record if isinstance(lkg_record, dict) else {}
+    required_categories = {str(value) for value in (record.get("verified_categories") or []) if value}
+    if not required_categories and baselines:
+        metadata = baselines[0].get("metadata", {}) if isinstance(baselines[0].get("metadata"), dict) else {}
+        required_categories = {
+            str(value) for value in (metadata.get("supportedTypes") or [])
+            if value in {"movie", "tv", "anime"}
+        }
+    replacements = [
+        variant for variant in ranked
+        if not bool(variant.get("baseline"))
+        and has_conclusive_stream_proof(variant)
+        and (not required_categories or required_categories.issubset(healthy_categories(variant)))
+    ]
+    if replacements:
+        candidates = [
+            *replacements,
+            *[variant for variant in baselines if has_conclusive_stream_proof(variant)],
+        ]
+        return max(candidates, key=rank)
+    if baselines:
+        return max(
+            baselines,
+            key=lambda variant: (1 if variant.get("lkg") else 0, rank(variant)),
+        )
+    return ranked[0]
+
+
 def main() -> int:
     sources = load_json(SOURCES_PATH, {})
     config = load_json(CONFIG_PATH, {})
@@ -1419,6 +1473,8 @@ def main() -> int:
     previous_history = load_json(HISTORY_PATH, {"variants": {}})
     previous_provenance = load_json(PROVENANCE_PATH, {"providers": {}})
     availability = load_json(AVAILABILITY_HISTORY_PATH, {"providers": {}})
+    lkg_registry = load_json(LKG_PATH, {"providers": {}})
+    lkg_records = lkg_registry.get("providers", {}) if isinstance(lkg_registry, dict) else {}
 
     if not registry or not health:
         raise RuntimeError("missing candidates or health results")
@@ -1577,8 +1633,8 @@ def main() -> int:
                 -int(variant.get("source_priority", 999)),
             )
 
-        variants.sort(key=rank, reverse=True)
-        selected = variants[0] if variants else None
+        lkg_record = lkg_records.get(cid, {}) if isinstance(lkg_records, dict) else {}
+        selected = choose_variant_with_baseline_protection(variants, rank, lkg_record)
 
         if selected is not None:
             decision = decisions[selected["key"]]
@@ -1590,7 +1646,9 @@ def main() -> int:
             current_status = str(selected.get("health", {}).get("status", "runtime_error"))
             no_p2p = bool(decision.get("activation_gates", {}).get("01_policy_safe_no_p2p", {}).get("passed", False))
             upstream_enabled = bool(selected.get("metadata", {}).get("enabled", True))
-            if (not enabled and previous_enabled and current_status in inconclusive_statuses(activation)
+            selected_is_baseline = bool(selected.get("baseline"))
+            if (not enabled and previous_enabled and selected_is_baseline
+                    and current_status in inconclusive_statuses(activation)
                     and no_p2p and upstream_enabled and not auto_disabled):
                 enabled = True
                 eligible = True

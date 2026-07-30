@@ -310,7 +310,7 @@ def apply_overrides(
         if not isinstance(profile, dict):
             continue
         profile_phase = str(profile.get("phase") or "discovery")
-        requested = profile_name in explicitly_requested
+        requested = profile_name in explicitly_requested and profile_phase == phase
         automatic = bool(profile.get("auto_apply")) and profile_phase == phase
         if not (requested or automatic):
             continue

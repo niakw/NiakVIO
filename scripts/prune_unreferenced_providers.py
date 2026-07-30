@@ -84,6 +84,17 @@ def main() -> int:
         raise SystemExit("No manifest.next.json or published manifest.json found; refusing to prune.")
 
     referenced = referenced_provider_paths(manifests)
+    lkg_path = root / "provider-lkg.json"
+    if lkg_path.is_file():
+        try:
+            lkg = json.loads(lkg_path.read_text(encoding="utf-8"))
+            for record in (lkg.get("providers", {}) if isinstance(lkg, dict) else {}).values():
+                if isinstance(record, dict) and isinstance(record.get("filename"), str):
+                    normalized = normalize_provider_path(record["filename"])
+                    if normalized:
+                        referenced.add(normalized)
+        except json.JSONDecodeError as exc:
+            raise SystemExit(f"Invalid provider-lkg.json; refusing to prune: {exc}")
     if not referenced:
         raise SystemExit("No provider JavaScript paths found in authoritative manifest; refusing to prune.")
 

@@ -487,28 +487,37 @@ function providerObservationCount() {
 async function invokeProvider(getStreams, fixture, settings) {
   installSettingsAccessors(settings);
   const positional = [String(fixture.tmdbId), fixture.mediaType, fixture.season ?? null, fixture.episode ?? null];
+  const objectArgument = {
+    ...fixture,
+    id: String(fixture.tmdbId),
+    tmdbId: String(fixture.tmdbId),
+    mediaType: fixture.mediaType,
+    type: fixture.mediaType,
+    category: fixture.category || fixture.mediaType,
+    season: fixture.season ?? null,
+    episode: fixture.episode ?? null,
+    settings,
+  };
   const attempts = [
     { name: 'positional_with_settings', run: () => getStreams(...positional, settings) },
-    { name: 'object', run: () => getStreams({ tmdbId: String(fixture.tmdbId), mediaType: fixture.mediaType, type: fixture.mediaType, season: fixture.season ?? null, episode: fixture.episode ?? null, settings }) },
+    { name: 'object', run: () => getStreams(objectArgument) },
     { name: 'positional', run: () => getStreams(...positional) },
   ];
   let lastError;
   let lastEmpty = [];
   for (const attempt of attempts) {
-    const observationsBefore = providerObservationCount();
     try {
       const value = await attempt.run();
       if (!Array.isArray(value)) continue;
       if (value.length > 0) return value;
       lastEmpty = value;
 
-      // A zero-result call is authoritative only when the provider actually
-      // contacted one of its own hosts. When no provider request occurred, the
-      // most likely cause is a mismatched invocation signature; safely try the
-      // next documented Nuvio convention. This avoids both silent [] results
-      // and the old [object Object] retry bug after a real provider request.
-      const observationsAfter = providerObservationCount();
-      if (observationsAfter > observationsBefore) return value;
+      // Empty output is never proof that the invocation convention was right.
+      // Provider bundles merged from the three repositories use both positional
+      // and object signatures, and a mismatched call may still contact a host
+      // before returning []. Exercise every supported convention in the isolated
+      // health worker and retain the first non-empty result.
+      continue;
     } catch (error) { lastError = error; }
   }
   if (lastError && providerObservationCount() === 0) throw lastError;

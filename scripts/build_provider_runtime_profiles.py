@@ -167,57 +167,18 @@ def build_profiles(data: dict, providers: dict[str, tuple[dict, Path]]) -> int:
 
         patch = patches.setdefault(provider_id, {})
         patch.setdefault("capability", strategy)
-        replacements: dict[str, str] = {}
-        for key in ("replacements", "runtime_domain_replacements"):
-            value = patch.get(key)
-            if isinstance(value, dict):
-                replacements.update({str(old): str(new) for old, new in value.items()})
 
-        groups: list[dict] = []
-        owned_origins = provider_owned_origins(provider_id, origins)
-
-        # A provider with an explicit fixed endpoint already has a stronger,
-        # deterministic migration contract. Do not add a generic same-route
-        # failover around it: observed website origins can have different roles
-        # (frontend vs API) and may silently redirect API calls to the wrong host.
-        has_fixed_endpoint = isinstance(patch.get("fixed_endpoint"), dict) and bool(
-            patch.get("fixed_endpoint", {}).get("api")
-        )
-        if not has_fixed_endpoint:
-            for old, new in replacements.items():
-                old_host = urlparse(old).hostname if "://" in old else old
-                new_origin = new if "://" in new else "https://" + new
-                if old_host:
-                    candidates: list[str] = []
-                    normalized = origin(new_origin)
-                    if normalized:
-                        candidates.append(normalized)
-                    for observed in owned_origins:
-                        if observed not in candidates:
-                            candidates.append(observed)
-                    if candidates:
-                        groups.append({"hosts": [old_host.lower()], "candidates": candidates[:8]})
-        if not has_fixed_endpoint and len(owned_origins) > 1:
-            hosts = [urlparse(value).hostname for value in owned_origins if urlparse(value).hostname]
-            groups.append({"hosts": hosts, "candidates": owned_origins[:8]})
-
-        profile_name = f"adaptive_domain_{provider_id}"
-        if groups:
-            profiles[profile_name] = {
-                "phase": "build",
-                "auto_apply": True,
-                "patch_script": "scripts/provider_patches/adaptive_domain_recovery.py",
-                "options": {"groups": groups},
-                "description": "Provider-specific same-route failover built from this provider's own observed origins and durable replacements.",
-            }
-            selected = patch.setdefault("profiles", [])
-            if profile_name not in selected:
-                selected.append(profile_name)
-        else:
-            selected = patch.get("profiles")
-            if isinstance(selected, list) and profile_name in selected:
-                selected.remove(profile_name)
-            profiles.pop(profile_name, None)
+        # Runtime profiles generated only from URL strings are diagnostic. They
+        # must never rewrite a provider bundle automatically: frontend, API and
+        # player hosts often have different route contracts. Stable migrations
+        # stay in explicit provider_patches replacements/patch scripts and are
+        # still applied to new staged providers in the same deep run.
+        selected = patch.get("profiles")
+        if isinstance(selected, list):
+            patch["profiles"] = [
+                name for name in selected
+                if not str(name).startswith("adaptive_domain_")
+            ]
     return len(providers)
 
 
@@ -284,11 +245,12 @@ def main() -> int:
 
     count = build_profiles(data, providers)
     data["provider_profile_generation"] = {
-        "schema_version": 2,
+        "schema_version": 3,
         "provider_count": count,
         "staged_provider_count": staged_count,
         "source": "manifest_published_bundles_and_current_staging",
         "same_deep_new_provider_support": True,
+        "automatic_bundle_rewrite": False,
     }
     OVR.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
