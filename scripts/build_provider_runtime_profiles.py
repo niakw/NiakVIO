@@ -13,6 +13,7 @@ ROOT = Path(__file__).resolve().parents[1]
 OVR = ROOT / "provider-overrides.json"
 MANIFESTS = [ROOT / "manifest.json"] + sorted(ROOT.glob("*/manifest.json"))
 URL_RE = re.compile(r"https?://[^\s\"'`<>\\)]+", re.I)
+HOST_RE = re.compile(r"^(?=.{1,253}$)(?!-)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$", re.I)
 INFRA = {
     "api.themoviedb.org", "raw.githubusercontent.com", "github.com", "www.github.com",
     "cdn.jsdelivr.net", "fonts.googleapis.com", "fonts.gstatic.com", "image.tmdb.org",
@@ -26,12 +27,28 @@ def origin(url: str) -> str | None:
         if parsed.scheme not in {"http", "https"} or not parsed.hostname:
             return None
         host = parsed.hostname.lower().strip(".")
-        if host in INFRA:
+        if host in INFRA or not HOST_RE.fullmatch(host):
+            return None
+        if any(token in host for token in ("${", "}", "_")):
             return None
         return f"{parsed.scheme}://{host}"
     except Exception:
         return None
 
+
+
+def provider_owned_origins(provider_id: str, origins: list[str]) -> list[str]:
+    """Keep only origins plausibly owned by the provider, not bundled dependency/docs hosts."""
+    key = re.sub(r"[^a-z0-9]", "", provider_id.lower())
+    if len(key) < 4:
+        return []
+    owned: list[str] = []
+    for value in origins:
+        host = (urlparse(value).hostname or "").lower()
+        normalized = re.sub(r"[^a-z0-9]", "", host)
+        if key in normalized or normalized.split("www", 1)[-1].startswith(key):
+            owned.append(value)
+    return owned
 
 def classify(item: dict, text: str, origins: list[str]) -> str:
     provider_id = str(item.get("id") or item.get("canonical_id") or "").lower()
@@ -142,6 +159,7 @@ def build_profiles(data: dict, providers: dict[str, tuple[dict, Path]]) -> int:
                 replacements.update({str(old): str(new) for old, new in value.items()})
 
         groups: list[dict] = []
+        owned_origins = provider_owned_origins(provider_id, origins)
         for old, new in replacements.items():
             old_host = urlparse(old).hostname if "://" in old else old
             new_origin = new if "://" in new else "https://" + new
@@ -150,14 +168,14 @@ def build_profiles(data: dict, providers: dict[str, tuple[dict, Path]]) -> int:
                 normalized = origin(new_origin)
                 if normalized:
                     candidates.append(normalized)
-                for observed in origins:
+                for observed in owned_origins:
                     if observed not in candidates:
                         candidates.append(observed)
                 if candidates:
                     groups.append({"hosts": [old_host.lower()], "candidates": candidates[:8]})
-        if len(origins) > 1:
-            hosts = [urlparse(value).hostname for value in origins if urlparse(value).hostname]
-            groups.append({"hosts": hosts, "candidates": origins[:8]})
+        if len(owned_origins) > 1:
+            hosts = [urlparse(value).hostname for value in owned_origins if urlparse(value).hostname]
+            groups.append({"hosts": hosts, "candidates": owned_origins[:8]})
 
         profile_name = f"adaptive_domain_{provider_id}"
         if groups:
