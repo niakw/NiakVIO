@@ -674,7 +674,23 @@ function fixturesForCandidate(candidate) {
       : 24 * 60 * 60 * 1000;
   const slot = Math.floor(Date.now() / period);
   const start = requestedMode === 'deep' ? 0 : slot % profile.pool.length;
-  const fixtures = rotateSlice(profile.pool, start, limit);
+
+  // Deep validation must exercise every declared catalogue category. A single
+  // round-robin fixture could previously test only movie for a provider that
+  // also declared TV/anime, allowing broken category paths to be published.
+  let fixtures;
+  if (requestedMode === 'deep' && modeConfig.fixture_limit_per_category === true) {
+    const groups = {
+      movie: withCategory(config.fixtures.movie, 'movie'),
+      tv: withCategory(config.fixtures.tv, 'tv'),
+      anime: withCategory(config.fixtures.anime, 'anime'),
+    };
+    fixtures = profile.requiredCategories
+      .map((category) => (groups[category] || [])[0])
+      .filter(Boolean);
+  } else {
+    fixtures = rotateSlice(profile.pool, start, limit);
+  }
   const selected = new Set(fixtures.map(fixtureKey));
   const remaining = profile.pool.filter((fixture) => !selected.has(fixtureKey(fixture)));
   const fallbackLimit = requestedMode === 'deep'

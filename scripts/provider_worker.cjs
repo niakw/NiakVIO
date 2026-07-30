@@ -480,26 +480,39 @@ function installSettingsAccessors(settings) {
   }
 }
 
+function providerObservationCount() {
+  return networkObservations.filter((item) => !item.infrastructure).length;
+}
+
 async function invokeProvider(getStreams, fixture, settings) {
   installSettingsAccessors(settings);
   const positional = [String(fixture.tmdbId), fixture.mediaType, fixture.season ?? null, fixture.episode ?? null];
   const attempts = [
-    () => getStreams(...positional, settings),
-    () => getStreams({ tmdbId: String(fixture.tmdbId), mediaType: fixture.mediaType, type: fixture.mediaType, season: fixture.season ?? null, episode: fixture.episode ?? null, settings }),
-    () => getStreams(...positional),
+    { name: 'positional_with_settings', run: () => getStreams(...positional, settings) },
+    { name: 'object', run: () => getStreams({ tmdbId: String(fixture.tmdbId), mediaType: fixture.mediaType, type: fixture.mediaType, season: fixture.season ?? null, episode: fixture.episode ?? null, settings }) },
+    { name: 'positional', run: () => getStreams(...positional) },
   ];
   let lastError;
+  let lastEmpty = [];
   for (const attempt of attempts) {
+    const observationsBefore = providerObservationCount();
     try {
-      const value = await attempt();
-      // An empty array is a valid provider result. Retrying another calling
-      // convention after a successful invocation can pass an object where a
-      // TMDB id is expected, creating [object Object] requests and false 404s.
-      if (Array.isArray(value)) return value;
+      const value = await attempt.run();
+      if (!Array.isArray(value)) continue;
+      if (value.length > 0) return value;
+      lastEmpty = value;
+
+      // A zero-result call is authoritative only when the provider actually
+      // contacted one of its own hosts. When no provider request occurred, the
+      // most likely cause is a mismatched invocation signature; safely try the
+      // next documented Nuvio convention. This avoids both silent [] results
+      // and the old [object Object] retry bug after a real provider request.
+      const observationsAfter = providerObservationCount();
+      if (observationsAfter > observationsBefore) return value;
     } catch (error) { lastError = error; }
   }
-  if (lastError) throw lastError;
-  return [];
+  if (lastError && providerObservationCount() === 0) throw lastError;
+  return lastEmpty;
 }
 
 async function main() {

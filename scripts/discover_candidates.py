@@ -222,6 +222,63 @@ def main() -> int:
             upstream_reports[source_key] = {"status": "failed", "error": str(exc)}
             print(f"[ERROR] {message}", file=sys.stderr)
 
+    # Stage the currently published artifacts as low-priority baseline variants.
+    # They are executed by the exact same movie/TV/anime health checks as fresh
+    # upstream candidates. When an upstream update regresses to zero streams,
+    # the last working local artifact can therefore win promotion instead of
+    # being overwritten and pruned before the regression is visible in Nuvio.
+    manifest_path = ROOT / "manifest.json"
+    try:
+        published_manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        published_manifest = {"scrapers": []}
+    baseline_dir = providers_dir / "published-baseline"
+    baseline_dir.mkdir(parents=True, exist_ok=True)
+    known_keys = {str(item.get("key")) for item in candidates}
+    for entry in published_manifest.get("scrapers", []):
+        if not isinstance(entry, dict):
+            continue
+        provider_id = canonical_id(str(entry.get("id") or entry.get("name") or ""))
+        filename = entry.get("filename")
+        if not provider_id or not isinstance(filename, str):
+            continue
+        source_path = (ROOT / filename).resolve()
+        try:
+            source_path.relative_to((ROOT / "providers").resolve())
+        except ValueError:
+            continue
+        if not source_path.is_file() or exclusion_reason(entry, source_path.read_bytes(), exclusions):
+            continue
+        key = f"published:{provider_id}"
+        if key in known_keys:
+            continue
+        data = source_path.read_bytes()
+        validate_javascript(data, filename)
+        local_path = baseline_dir / f"{safe_fragment(provider_id)}.js"
+        local_path.write_bytes(data)
+        digest = hashlib.sha256(data).hexdigest()
+        candidates.append({
+            "key": key,
+            "source": "published-baseline",
+            "source_name": "Last published local artifact",
+            "source_priority": len(config.get("upstreams", {})) + 100,
+            "source_repository": config.get("repository", {}).get("name"),
+            "source_license": "GPL-3.0-only",
+            "source_license_evidence": "LICENSE",
+            "manifest_url": "manifest.json",
+            "upstream_id": str(entry.get("id") or provider_id),
+            "canonical_id": provider_id,
+            "provider_url": filename,
+            "local_path": str(local_path.relative_to(stage)),
+            "sha256": digest,
+            "upstream_sha256": digest,
+            "local_patches": ["published_baseline"],
+            "bytes": len(data),
+            "metadata": dict(entry),
+            "baseline": True,
+        })
+        known_keys.add(key)
+
     # Attach a canonical metadata summary before runtime validation so fixture
     # selection can use the combined descriptions of all three manifests rather
     # than whichever upstream variant happens to execute first.
