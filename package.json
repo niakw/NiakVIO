@@ -1,6 +1,6 @@
 {
   "name": "nuvio-provider-health-check",
-  "version": "5.18.11",
+  "version": "5.18.12",
   "private": true,
   "type": "commonjs",
   "description": "Hardened Nuvio provider validation with bounded provider-agnostic runtime repair, durable overrides, constrained execution, SSRF-safe networking, and evidence-based language curation.",
@@ -16,7 +16,7 @@
     "node": ">=24"
   },
   "scripts": {
-    "test": "node tests/network_guard.test.cjs && node tests/dns_preflight.test.mjs && python tests/overrides_test.py && python tests/runtime_repair_test.py && python tests/published_overrides_test.py && python scripts/validate_policy.py && node scripts/validate_provider_semantics.cjs && python scripts/test_route_overrides.py && python tests/provider_diagnostics_test.py && node tests/provider_worker_security.test.cjs && node tests/patched_provider_runtime_smoke.test.cjs && node scripts/provider_worker.cjs --self-test-fixture-fallback && python tests/release_version_sync_test.py && python scripts/validate_release_integrity.py",
+    "test": "node tests/network_guard.test.cjs && node tests/dns_preflight.test.mjs && python tests/overrides_test.py && python tests/runtime_repair_test.py && python tests/published_overrides_test.py && python tests/prune_unreferenced_providers_test.py && python scripts/validate_policy.py && node scripts/validate_provider_semantics.cjs && python scripts/test_route_overrides.py && python tests/provider_diagnostics_test.py && node tests/provider_worker_security.test.cjs && node tests/patched_provider_runtime_smoke.test.cjs && node scripts/provider_worker.cjs --self-test-fixture-fallback && python tests/provider_versioning_test.py && python tests/release_version_sync_test.py && python scripts/validate_release_integrity.py",
     "diagnostics": "python scripts/generate_diagnostics.py"
   }
 }
