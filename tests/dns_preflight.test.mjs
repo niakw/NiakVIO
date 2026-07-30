@@ -180,6 +180,9 @@ function dnsResult(name, status, addresses = []) {
   assert.equal(calls[0].locations[0].magic, 'France+SFR+eyeball');
   assert.equal(calls[0].measurementOptions.resolver, '109.0.66.10');
   assert.equal(calls[1].locations[0].magic, 'dns-measurement-sfr');
+  assert.equal(calls[1].measurementOptions.method, 'GET');
+  assert.equal(calls[1].measurementOptions.ipVersion, 4);
+  assert.equal('request' in calls[1].measurementOptions, false);
 }
 
 
@@ -201,3 +204,43 @@ function dnsResult(name, status, addresses = []) {
 }
 
 console.log('French ISP DNS preflight tests passed');
+
+
+// Minified JavaScript member accesses must never become DNS candidates.
+{
+  const candidate = { canonical_id: 'demo', metadata: {} };
+  const hints = extractCandidateDomains(candidate, `
+    s.includes(x); Array.isArray(v); Object.keys(v); g.fetch(url);
+    const a = "api.movix.fun"; const b = "https://real-provider.example.com/path";
+  `, {}, 12);
+  const hosts = hints.map((item) => item.host);
+  for (const fake of ['s.includes', 'array.isarray', 'object.keys', 'g.fetch']) {
+    assert.equal(hosts.includes(fake), false, `false JavaScript domain leaked: ${fake}`);
+  }
+  assert.equal(hosts.includes('api.movix.fun'), true);
+  assert.equal(hosts.includes('real-provider.example.com'), true);
+}
+
+
+// Neutral resolvers also use Globalping when remote probing is enabled, avoiding
+// blocked outbound UDP from GitHub-hosted runners.
+{
+  const calls = [];
+  const fakeRunMeasurement = async (body) => {
+    calls.push(body);
+    return {
+      id: 'dns-neutral',
+      payload: { status: 'finished', results: [{ probe: { country: 'FR' }, result: { statusCode: 'NOERROR', answers: [{ value: '93.184.216.34' }] } }] },
+    };
+  };
+  const config = {
+    ...baseConfig,
+    remote_probe: { enabled: true, neutral_location_magic: ['France+eyeball'] },
+    resolvers: { cloudflare: { kind: 'neutral', servers: ['1.1.1.1'] } },
+  };
+  const dependencies = createGlobalpingDependencies(config, { runMeasurement: fakeRunMeasurement });
+  const dns = await dependencies.resolveFn('example.com', { name: 'cloudflare', kind: 'neutral', servers: ['1.1.1.1'] }, config);
+  assert.equal(dns.transport, 'globalping');
+  assert.equal(calls[0].locations[0].magic, 'France+eyeball');
+  assert.equal(calls[0].measurementOptions.resolver, '1.1.1.1');
+}
