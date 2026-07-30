@@ -31,7 +31,13 @@
         "resolver_function": "detectApi",
         "api": "https://api.movix.fun",
         "referer": "https://movix.fun/"
-      }
+      },
+      "patch_script": "scripts/provider_patches/movix_multi_source.py",
+      "patch_options": {},
+      "capability": "mixed_embed_resolver",
+      "profiles": [
+        "adaptive_domain_movix"
+      ]
     },
     "frenchstream": {
       "notes": [
@@ -50,8 +56,10 @@
         "logo": "https://frenchstream.food/favicon.ico"
       },
       "profiles": [
-        "metadata_context_recovery"
-      ]
+        "metadata_context_recovery",
+        "adaptive_domain_frenchstream"
+      ],
+      "capability": "html_scraper"
     },
     "streamzo": {
       "notes": [
@@ -62,7 +70,11 @@
         "streamzo.fr"
       ],
       "route_replacements": {},
-      "required_route_values": []
+      "required_route_values": [],
+      "profiles": [
+        "adaptive_domain_streamzo"
+      ],
+      "capability": "html_scraper"
     },
     "animepahe": {
       "replacements": {
@@ -76,6 +88,10 @@
       "notes": [
         "Automatically migrated animepahe.com to animepahe.pw after French ISP DNS/HTTP preflight redirect validation.",
         "Automatically migrated animepahe.org to animepahe.pw after DNS/HTTP preflight validation of a redirect or a reachable same-role provider endpoint."
+      ],
+      "capability": "html_scraper",
+      "profiles": [
+        "adaptive_domain_animepahe"
       ]
     },
     "allmovieland": {
@@ -90,6 +106,10 @@
       "notes": [
         "Automatically migrated allmovieland.you to allmovieland.art after French ISP DNS/HTTP preflight redirect validation.",
         "Automatically migrated allmovieland.one to allmovieland.art after French ISP DNS/HTTP preflight redirect validation."
+      ],
+      "capability": "html_scraper",
+      "profiles": [
+        "adaptive_domain_allmovieland"
       ]
     },
     "purstream": {
@@ -97,7 +117,12 @@
         "Do not map the provider to the hub itself. resolve_provider_hubs.py follows the official-address page and persists only a runtime-validated terminal site/API."
       ],
       "capability": "official_domain_hub",
-      "official_hub": "https://purstream.wiki"
+      "official_hub": "https://purstream.wiki",
+      "patch_script": "scripts/provider_patches/purstream_bridge.py",
+      "patch_options": {},
+      "profiles": [
+        "adaptive_domain_purstream"
+      ]
     },
     "vidfast": {
       "replacements": {
@@ -110,7 +135,10 @@
         "Use VidFast documented movie/tv embed routes. Do not force direct-media validation on the iframe URL."
       ],
       "capability": "iframe_player",
-      "preserve_embed_urls": true
+      "preserve_embed_urls": true,
+      "profiles": [
+        "adaptive_domain_vidfast"
+      ]
     },
     "vixsrc": {
       "replacements": {
@@ -121,6 +149,10 @@
       },
       "notes": [
         "Automatically migrated sub.wyzie.ru to sub.wyzie.io after French ISP DNS/HTTP preflight redirect validation."
+      ],
+      "capability": "direct_media",
+      "profiles": [
+        "adaptive_domain_vixsrc"
       ]
     },
     "mallumv": {
@@ -135,6 +167,10 @@
       "notes": [
         "Automatically migrated mallumv.gay to mallumv.cyou after French ISP DNS/HTTP preflight redirect validation.",
         "Automatically migrated mallumv.cyou to mallumv.wiki after French ISP DNS/HTTP preflight redirect validation."
+      ],
+      "capability": "html_scraper",
+      "profiles": [
+        "adaptive_domain_mallumv"
       ]
     },
     "moviesdrive": {
@@ -146,6 +182,10 @@
       },
       "notes": [
         "Automatically migrated new3.moviesdrives.my to new7.moviesdrives.my after French ISP DNS/HTTP preflight redirect validation."
+      ],
+      "capability": "html_scraper",
+      "profiles": [
+        "adaptive_domain_moviesdrive"
       ]
     },
     "coflix": {
@@ -159,8 +199,10 @@
         "Automatically migrated coflix.cymru to coflix.blue after DNS/HTTP preflight validation of a redirect or a reachable same-role provider endpoint."
       ],
       "profiles": [
-        "metadata_context_recovery"
-      ]
+        "metadata_context_recovery",
+        "adaptive_domain_coflix"
+      ],
+      "capability": "html_scraper"
     },
     "moviesmod": {
       "replacements": {
@@ -171,6 +213,10 @@
       },
       "notes": [
         "Automatically migrated moviesmod.money to moviesmod.army after DNS/HTTP preflight validation of a redirect or a reachable same-role provider endpoint."
+      ],
+      "capability": "html_scraper",
+      "profiles": [
+        "adaptive_domain_moviesmod"
       ]
     },
     "uhdmovies": {
@@ -182,6 +228,10 @@
       },
       "notes": [
         "Automatically migrated uhdmovies.pink to uhdmovies.casa after DNS/HTTP preflight validation of a redirect or a reachable same-role provider endpoint."
+      ],
+      "capability": "html_scraper",
+      "profiles": [
+        "adaptive_domain_uhdmovies"
       ]
     },
     "videasy": {
@@ -193,6 +243,10 @@
       },
       "notes": [
         "Automatically migrated player.videasy.net to player.videasy.to after DNS/HTTP preflight validation of a redirect or a reachable same-role provider endpoint."
+      ],
+      "capability": "api_stream_resolver",
+      "profiles": [
+        "adaptive_domain_videasy"
       ]
     },
     "mycima": {
@@ -204,21 +258,346 @@
       },
       "notes": [
         "Automatically migrated mycima.red to mycima.camp after DNS/HTTP preflight validation of a redirect or a reachable same-role provider endpoint."
+      ],
+      "capability": "mixed_embed_resolver",
+      "profiles": [
+        "adaptive_domain_mycima"
       ]
     },
     "animesultra": {
       "profiles": [
-        "metadata_context_recovery"
-      ]
+        "metadata_context_recovery",
+        "adaptive_domain_animesultra"
+      ],
+      "capability": "mixed_embed_resolver"
     },
     "dulourd": {
       "profiles": [
-        "metadata_context_recovery"
-      ]
+        "metadata_context_recovery",
+        "adaptive_domain_dulourd"
+      ],
+      "capability": "html_scraper"
     },
     "vostfree": {
       "profiles": [
-        "metadata_context_recovery"
+        "metadata_context_recovery",
+        "adaptive_domain_vostfree"
+      ],
+      "capability": "mixed_embed_resolver"
+    },
+    "flemmix": {
+      "profiles": [
+        "adaptive_domain_flemmix"
+      ],
+      "capability": "html_scraper"
+    },
+    "nakios": {
+      "profiles": [
+        "adaptive_domain_nakios"
+      ],
+      "capability": "html_scraper"
+    },
+    "papadustream": {
+      "profiles": [
+        "adaptive_domain_papadustream"
+      ],
+      "capability": "html_scraper"
+    },
+    "toflix": {
+      "profiles": [
+        "adaptive_domain_toflix"
+      ],
+      "capability": "html_scraper"
+    },
+    "4khdhub": {
+      "capability": "html_scraper"
+    },
+    "4khdhubnew": {
+      "capability": "html_scraper"
+    },
+    "Cineby": {
+      "capability": "api_stream_resolver",
+      "profiles": [
+        "adaptive_domain_Cineby"
+      ]
+    },
+    "allanime": {
+      "capability": "direct_media",
+      "profiles": [
+        "adaptive_domain_allanime"
+      ]
+    },
+    "allwish": {
+      "capability": "html_scraper"
+    },
+    "anidb": {
+      "capability": "html_scraper"
+    },
+    "anikototv": {
+      "capability": "mixed_embed_resolver"
+    },
+    "anime-sama": {
+      "capability": "mixed_embed_resolver",
+      "profiles": [
+        "adaptive_domain_anime-sama"
+      ]
+    },
+    "animekai": {
+      "capability": "mixed_embed_resolver",
+      "profiles": [
+        "adaptive_domain_animekai"
+      ]
+    },
+    "animesalt": {
+      "capability": "html_scraper"
+    },
+    "animesama-co": {
+      "capability": "mixed_embed_resolver",
+      "profiles": [
+        "adaptive_domain_animesama-co"
+      ]
+    },
+    "animetsu": {
+      "capability": "direct_media",
+      "profiles": [
+        "adaptive_domain_animetsu"
+      ]
+    },
+    "animevostfr": {
+      "capability": "mixed_embed_resolver",
+      "profiles": [
+        "adaptive_domain_animevostfr"
+      ]
+    },
+    "animeworld": {
+      "capability": "html_scraper"
+    },
+    "animoflix": {
+      "capability": "mixed_embed_resolver",
+      "profiles": [
+        "adaptive_domain_animoflix"
+      ]
+    },
+    "anizone": {
+      "capability": "api_stream_resolver",
+      "profiles": [
+        "adaptive_domain_anizone"
+      ]
+    },
+    "castle": {
+      "capability": "api_stream_resolver"
+    },
+    "cinefreak": {
+      "capability": "html_scraper"
+    },
+    "cinemacity": {
+      "capability": "direct_media"
+    },
+    "cinemm": {
+      "capability": "html_scraper",
+      "profiles": [
+        "adaptive_domain_cinemm"
+      ]
+    },
+    "cinevibe": {
+      "capability": "direct_media"
+    },
+    "ctgmovies": {
+      "capability": "direct_media",
+      "profiles": [
+        "adaptive_domain_ctgmovies"
+      ]
+    },
+    "dahmermovies": {
+      "capability": "html_scraper"
+    },
+    "dahmermovies-tv": {
+      "capability": "html_scraper"
+    },
+    "desiflix": {
+      "capability": "html_scraper"
+    },
+    "dooflix": {
+      "capability": "html_scraper"
+    },
+    "dvdplay": {
+      "capability": "html_scraper",
+      "profiles": [
+        "adaptive_domain_dvdplay"
+      ]
+    },
+    "einthusan": {
+      "capability": "direct_media",
+      "profiles": [
+        "adaptive_domain_einthusan"
+      ]
+    },
+    "fibwatch": {
+      "capability": "html_scraper"
+    },
+    "french-manga": {
+      "capability": "mixed_embed_resolver",
+      "profiles": [
+        "adaptive_domain_french-manga"
+      ]
+    },
+    "goatapi": {
+      "capability": "html_scraper"
+    },
+    "gramcinema": {
+      "capability": "html_scraper"
+    },
+    "hdghartv": {
+      "capability": "html_scraper"
+    },
+    "hdhub4u": {
+      "capability": "html_scraper"
+    },
+    "hianime": {
+      "capability": "html_scraper"
+    },
+    "hindmoviez": {
+      "capability": "direct_media"
+    },
+    "kisskh": {
+      "capability": "direct_media",
+      "profiles": [
+        "adaptive_domain_kisskh"
+      ]
+    },
+    "kurage": {
+      "capability": "html_scraper",
+      "profiles": [
+        "adaptive_domain_kurage"
+      ]
+    },
+    "movieblast": {
+      "capability": "html_scraper"
+    },
+    "moviebox": {
+      "capability": "html_scraper",
+      "profiles": [
+        "adaptive_domain_moviebox"
+      ]
+    },
+    "movies4u": {
+      "capability": "html_scraper",
+      "profiles": [
+        "adaptive_domain_movies4u"
+      ]
+    },
+    "movieshunt": {
+      "capability": "direct_media",
+      "profiles": [
+        "adaptive_domain_movieshunt"
+      ]
+    },
+    "mugiwarastream": {
+      "capability": "mixed_embed_resolver",
+      "profiles": [
+        "adaptive_domain_mugiwarastream"
+      ]
+    },
+    "netmirror": {
+      "capability": "mixed_embed_resolver"
+    },
+    "onlykdrama": {
+      "capability": "html_scraper"
+    },
+    "peachify": {
+      "capability": "mixed_embed_resolver",
+      "profiles": [
+        "adaptive_domain_peachify"
+      ]
+    },
+    "persianstremio": {
+      "capability": "direct_media"
+    },
+    "playimdb": {
+      "capability": "direct_media",
+      "profiles": [
+        "adaptive_domain_playimdb"
+      ]
+    },
+    "sekai": {
+      "capability": "html_scraper",
+      "profiles": [
+        "adaptive_domain_sekai"
+      ]
+    },
+    "showbox": {
+      "capability": "html_scraper"
+    },
+    "streamflix": {
+      "capability": "api_stream_resolver"
+    },
+    "topcartoons": {
+      "capability": "html_scraper"
+    },
+    "vegamovies": {
+      "capability": "html_scraper"
+    },
+    "vidlink": {
+      "capability": "html_scraper"
+    },
+    "vidnest": {
+      "capability": "direct_media",
+      "profiles": [
+        "adaptive_domain_vidnest"
+      ]
+    },
+    "vidnest-anime": {
+      "capability": "api_stream_resolver",
+      "profiles": [
+        "adaptive_domain_vidnest-anime"
+      ]
+    },
+    "vidrock": {
+      "capability": "html_scraper"
+    },
+    "vidsrc": {
+      "capability": "mixed_embed_resolver",
+      "profiles": [
+        "adaptive_domain_vidsrc"
+      ]
+    },
+    "voiranime": {
+      "capability": "mixed_embed_resolver",
+      "profiles": [
+        "adaptive_domain_voiranime"
+      ]
+    },
+    "voiranime-rip": {
+      "capability": "mixed_embed_resolver",
+      "profiles": [
+        "adaptive_domain_voiranime-rip"
+      ]
+    },
+    "wookafr": {
+      "capability": "mixed_embed_resolver",
+      "profiles": [
+        "adaptive_domain_wookafr"
+      ]
+    },
+    "xpass": {
+      "capability": "html_scraper"
+    },
+    "yflix": {
+      "capability": "mixed_embed_resolver",
+      "profiles": [
+        "adaptive_domain_yflix"
+      ]
+    },
+    "zinkmovies": {
+      "capability": "direct_media",
+      "profiles": [
+        "adaptive_domain_zinkmovies"
+      ]
+    },
+    "brandnew": {
+      "capability": "mixed_embed_resolver",
+      "profiles": [
+        "adaptive_domain_brandnew"
       ]
     }
   },
@@ -291,6 +670,1716 @@
       "required_values": [
         "[Nuvio Runtime Repair] Content found via HTML search"
       ]
+    },
+    "adaptive_domain_coflix": {
+      "phase": "build",
+      "auto_apply": true,
+      "patch_script": "scripts/provider_patches/adaptive_domain_recovery.py",
+      "options": {
+        "groups": [
+          {
+            "hosts": [
+              "coflix.cymru"
+            ],
+            "candidates": [
+              "https://coflix.blue",
+              "https://npms.io",
+              "https://video.sibnet.ru",
+              "https://${s}",
+              "https://vidmoly.me",
+              "https://${_}",
+              "https://${v}${n}",
+              "https://${v}"
+            ]
+          },
+          {
+            "hosts": [
+              "npms.io",
+              "video.sibnet.ru",
+              "${s}",
+              "vidmoly.me",
+              "${_}",
+              "${v}${n}",
+              "${v}",
+              "streamtape.com",
+              "sendvid.com",
+              "${i}",
+              "www.myvi.ru",
+              "younetu.org",
+              "vidoza.net",
+              "lecteurvideo.com",
+              "up4fun.top",
+              "arm.haglund.dev",
+              "v3-cinemeta.strem.io",
+              "${t}${n}",
+              "kitsu.io",
+              "coflix.blue",
+              "lodash.com",
+              "openjsf.org",
+              "underscorejs.org"
+            ],
+            "candidates": [
+              "https://npms.io",
+              "https://video.sibnet.ru",
+              "https://${s}",
+              "https://vidmoly.me",
+              "https://${_}",
+              "https://${v}${n}",
+              "https://${v}",
+              "https://streamtape.com"
+            ]
+          }
+        ]
+      },
+      "description": "Provider-specific same-route failover built from this provider's own observed origins and durable replacements."
+    },
+    "adaptive_domain_frenchstream": {
+      "phase": "build",
+      "auto_apply": true,
+      "patch_script": "scripts/provider_patches/adaptive_domain_recovery.py",
+      "options": {
+        "groups": [
+          {
+            "hosts": [
+              "french-stream.one"
+            ],
+            "candidates": [
+              "https://frenchstream.food",
+              "https://npms.io",
+              "https://video.sibnet.ru",
+              "https://${s}",
+              "https://vidmoly.me",
+              "https://${_}",
+              "https://${m}${n}",
+              "https://${m}"
+            ]
+          },
+          {
+            "hosts": [
+              "npms.io",
+              "video.sibnet.ru",
+              "${s}",
+              "vidmoly.me",
+              "${_}",
+              "${m}${n}",
+              "${m}",
+              "streamtape.com",
+              "sendvid.com",
+              "${i}",
+              "www.myvi.ru",
+              "younetu.org",
+              "vidoza.net",
+              "lecteurvideo.com",
+              "up4fun.top",
+              "arm.haglund.dev",
+              "v3-cinemeta.strem.io",
+              "kitsu.io",
+              "frenchstream.food",
+              "lodash.com",
+              "openjsf.org",
+              "underscorejs.org"
+            ],
+            "candidates": [
+              "https://npms.io",
+              "https://video.sibnet.ru",
+              "https://${s}",
+              "https://vidmoly.me",
+              "https://${_}",
+              "https://${m}${n}",
+              "https://${m}",
+              "https://streamtape.com"
+            ]
+          }
+        ]
+      },
+      "description": "Provider-specific same-route failover built from this provider's own observed origins and durable replacements."
+    },
+    "adaptive_domain_dulourd": {
+      "phase": "build",
+      "auto_apply": true,
+      "patch_script": "scripts/provider_patches/adaptive_domain_recovery.py",
+      "options": {
+        "groups": [
+          {
+            "hosts": [
+              "npms.io",
+              "video.sibnet.ru",
+              "${s}",
+              "vidmoly.me",
+              "${_}",
+              "${v}${n}",
+              "${v}",
+              "streamtape.com",
+              "sendvid.com",
+              "${i}",
+              "www.myvi.ru",
+              "younetu.org",
+              "vidoza.net",
+              "lecteurvideo.com",
+              "up4fun.top",
+              "www.dulourd.hair",
+              "www.dulourd.net",
+              "kitsu.io",
+              "lodash.com",
+              "openjsf.org",
+              "underscorejs.org"
+            ],
+            "candidates": [
+              "https://npms.io",
+              "https://video.sibnet.ru",
+              "https://${s}",
+              "https://vidmoly.me",
+              "https://${_}",
+              "https://${v}${n}",
+              "https://${v}",
+              "https://streamtape.com"
+            ]
+          }
+        ]
+      },
+      "description": "Provider-specific same-route failover built from this provider's own observed origins and durable replacements."
+    },
+    "adaptive_domain_flemmix": {
+      "phase": "build",
+      "auto_apply": true,
+      "patch_script": "scripts/provider_patches/adaptive_domain_recovery.py",
+      "options": {
+        "groups": [
+          {
+            "hosts": [
+              "video.sibnet.ru",
+              "${s}",
+              "vidmoly.me",
+              "${_}",
+              "${m}${n}",
+              "${m}",
+              "streamtape.com",
+              "sendvid.com",
+              "${i}",
+              "www.myvi.ru",
+              "younetu.org",
+              "vidoza.net",
+              "lecteurvideo.com",
+              "up4fun.top",
+              "flemmix.me",
+              "npms.io",
+              "kitsu.io",
+              "arm.haglund.dev",
+              "v3-cinemeta.strem.io",
+              "lodash.com",
+              "openjsf.org",
+              "underscorejs.org"
+            ],
+            "candidates": [
+              "https://video.sibnet.ru",
+              "https://${s}",
+              "https://vidmoly.me",
+              "https://${_}",
+              "https://${m}${n}",
+              "https://${m}",
+              "https://streamtape.com",
+              "https://sendvid.com"
+            ]
+          }
+        ]
+      },
+      "description": "Provider-specific same-route failover built from this provider's own observed origins and durable replacements."
+    },
+    "adaptive_domain_streamzo": {
+      "phase": "build",
+      "auto_apply": true,
+      "patch_script": "scripts/provider_patches/adaptive_domain_recovery.py",
+      "options": {
+        "groups": [
+          {
+            "hosts": [
+              "video.sibnet.ru",
+              "${s}",
+              "vidmoly.me",
+              "${_}",
+              "${v}${n}",
+              "${v}",
+              "streamtape.com",
+              "sendvid.com",
+              "${i}",
+              "www.myvi.ru",
+              "younetu.org",
+              "vidoza.net",
+              "lecteurvideo.com",
+              "up4fun.top",
+              "streamzo.fr",
+              "kitsu.io",
+              "npms.io",
+              "lodash.com",
+              "openjsf.org",
+              "underscorejs.org"
+            ],
+            "candidates": [
+              "https://video.sibnet.ru",
+              "https://${s}",
+              "https://vidmoly.me",
+              "https://${_}",
+              "https://${v}${n}",
+              "https://${v}",
+              "https://streamtape.com",
+              "https://sendvid.com"
+            ]
+          }
+        ]
+      },
+      "description": "Provider-specific same-route failover built from this provider's own observed origins and durable replacements."
+    },
+    "adaptive_domain_nakios": {
+      "phase": "build",
+      "auto_apply": true,
+      "patch_script": "scripts/provider_patches/adaptive_domain_recovery.py",
+      "options": {
+        "groups": [
+          {
+            "hosts": [
+              "nakios.store",
+              "api.nakios.store"
+            ],
+            "candidates": [
+              "https://nakios.store",
+              "https://api.nakios.store"
+            ]
+          }
+        ]
+      },
+      "description": "Provider-specific same-route failover built from this provider's own observed origins and durable replacements."
+    },
+    "adaptive_domain_papadustream": {
+      "phase": "build",
+      "auto_apply": true,
+      "patch_script": "scripts/provider_patches/adaptive_domain_recovery.py",
+      "options": {
+        "groups": [
+          {
+            "hosts": [
+              "${t}${u}",
+              "${t}",
+              "papadustream.club",
+              "npms.io",
+              "arm.haglund.dev",
+              "v3-cinemeta.strem.io",
+              "lodash.com",
+              "openjsf.org",
+              "underscorejs.org"
+            ],
+            "candidates": [
+              "https://${t}${u}",
+              "https://${t}",
+              "https://papadustream.club",
+              "https://npms.io",
+              "https://arm.haglund.dev",
+              "https://v3-cinemeta.strem.io",
+              "https://lodash.com",
+              "https://openjsf.org"
+            ]
+          }
+        ]
+      },
+      "description": "Provider-specific same-route failover built from this provider's own observed origins and durable replacements."
+    },
+    "adaptive_domain_toflix": {
+      "phase": "build",
+      "auto_apply": true,
+      "patch_script": "scripts/provider_patches/adaptive_domain_recovery.py",
+      "options": {
+        "groups": [
+          {
+            "hosts": [
+              "apis.wavewatch.xyz",
+              "toflix"
+            ],
+            "candidates": [
+              "https://apis.wavewatch.xyz",
+              "https://toflix"
+            ]
+          }
+        ]
+      },
+      "description": "Provider-specific same-route failover built from this provider's own observed origins and durable replacements."
+    },
+    "adaptive_domain_Cineby": {
+      "phase": "build",
+      "auto_apply": true,
+      "patch_script": "scripts/provider_patches/adaptive_domain_recovery.py",
+      "options": {
+        "groups": [
+          {
+            "hosts": [
+              "145.241.158.129",
+              "api.videasy.to",
+              "anime-db.videasy.net",
+              "player.videasy.to",
+              "vidlink.pro"
+            ],
+            "candidates": [
+              "http://145.241.158.129",
+              "https://api.videasy.to",
+              "https://anime-db.videasy.net",
+              "https://player.videasy.to",
+              "https://vidlink.pro"
+            ]
+          }
+        ]
+      },
+      "description": "Provider-specific same-route failover built from this provider's own observed origins and durable replacements."
+    },
+    "adaptive_domain_allanime": {
+      "phase": "build",
+      "auto_apply": true,
+      "patch_script": "scripts/provider_patches/adaptive_domain_recovery.py",
+      "options": {
+        "groups": [
+          {
+            "hosts": [
+              "graphql.anilist.co",
+              "allanime.day"
+            ],
+            "candidates": [
+              "https://graphql.anilist.co",
+              "https://allanime.day"
+            ]
+          }
+        ]
+      },
+      "description": "Provider-specific same-route failover built from this provider's own observed origins and durable replacements."
+    },
+    "adaptive_domain_allmovieland": {
+      "phase": "build",
+      "auto_apply": true,
+      "patch_script": "scripts/provider_patches/adaptive_domain_recovery.py",
+      "options": {
+        "groups": [
+          {
+            "hosts": [
+              "allmovieland.you"
+            ],
+            "candidates": [
+              "https://allmovieland.art"
+            ]
+          },
+          {
+            "hosts": [
+              "allmovieland.one"
+            ],
+            "candidates": [
+              "https://allmovieland.art"
+            ]
+          }
+        ]
+      },
+      "description": "Provider-specific same-route failover built from this provider's own observed origins and durable replacements."
+    },
+    "adaptive_domain_anime-sama": {
+      "phase": "build",
+      "auto_apply": true,
+      "patch_script": "scripts/provider_patches/adaptive_domain_recovery.py",
+      "options": {
+        "groups": [
+          {
+            "hosts": [
+              "video.sibnet.ru",
+              "${s}",
+              "vidmoly.me",
+              "${_}",
+              "${v}${n}",
+              "${v}",
+              "streamtape.com",
+              "sendvid.com",
+              "${i}",
+              "www.myvi.ru",
+              "younetu.org",
+              "vidoza.net",
+              "lecteurvideo.com",
+              "up4fun.top",
+              "npms.io",
+              "kitsu.io",
+              "arm.haglund.dev",
+              "v3-cinemeta.strem.io",
+              "anime-sama.to",
+              "lodash.com",
+              "openjsf.org",
+              "underscorejs.org"
+            ],
+            "candidates": [
+              "https://video.sibnet.ru",
+              "https://${s}",
+              "https://vidmoly.me",
+              "https://${_}",
+              "https://${v}${n}",
+              "https://${v}",
+              "https://streamtape.com",
+              "https://sendvid.com"
+            ]
+          }
+        ]
+      },
+      "description": "Provider-specific same-route failover built from this provider's own observed origins and durable replacements."
+    },
+    "adaptive_domain_animekai": {
+      "phase": "build",
+      "auto_apply": true,
+      "patch_script": "scripts/provider_patches/adaptive_domain_recovery.py",
+      "options": {
+        "groups": [
+          {
+            "hosts": [
+              "graphql.anilist.co",
+              "enc-dec.app",
+              "v3-cinemeta.strem.io"
+            ],
+            "candidates": [
+              "https://graphql.anilist.co",
+              "https://enc-dec.app",
+              "https://v3-cinemeta.strem.io"
+            ]
+          }
+        ]
+      },
+      "description": "Provider-specific same-route failover built from this provider's own observed origins and durable replacements."
+    },
+    "adaptive_domain_animepahe": {
+      "phase": "build",
+      "auto_apply": true,
+      "patch_script": "scripts/provider_patches/adaptive_domain_recovery.py",
+      "options": {
+        "groups": [
+          {
+            "hosts": [
+              "animepahe.com"
+            ],
+            "candidates": [
+              "https://animepahe.pw",
+              "https://kwik.cx"
+            ]
+          },
+          {
+            "hosts": [
+              "animepahe.org"
+            ],
+            "candidates": [
+              "https://animepahe.pw",
+              "https://kwik.cx"
+            ]
+          },
+          {
+            "hosts": [
+              "kwik.cx",
+              "animepahe.pw"
+            ],
+            "candidates": [
+              "https://kwik.cx",
+              "https://animepahe.pw"
+            ]
+          }
+        ]
+      },
+      "description": "Provider-specific same-route failover built from this provider's own observed origins and durable replacements."
+    },
+    "adaptive_domain_animesama-co": {
+      "phase": "build",
+      "auto_apply": true,
+      "patch_script": "scripts/provider_patches/adaptive_domain_recovery.py",
+      "options": {
+        "groups": [
+          {
+            "hosts": [
+              "npms.io",
+              "video.sibnet.ru",
+              "${s}",
+              "vidmoly.me",
+              "${_}",
+              "${m}${n}",
+              "${m}",
+              "streamtape.com",
+              "sendvid.com",
+              "${i}",
+              "www.myvi.ru",
+              "younetu.org",
+              "vidoza.net",
+              "lecteurvideo.com",
+              "up4fun.top",
+              "animesama.co",
+              "kitsu.io",
+              "arm.haglund.dev",
+              "v3-cinemeta.strem.io",
+              "lodash.com",
+              "openjsf.org",
+              "underscorejs.org"
+            ],
+            "candidates": [
+              "https://npms.io",
+              "https://video.sibnet.ru",
+              "https://${s}",
+              "https://vidmoly.me",
+              "https://${_}",
+              "https://${m}${n}",
+              "https://${m}",
+              "https://streamtape.com"
+            ]
+          }
+        ]
+      },
+      "description": "Provider-specific same-route failover built from this provider's own observed origins and durable replacements."
+    },
+    "adaptive_domain_animesultra": {
+      "phase": "build",
+      "auto_apply": true,
+      "patch_script": "scripts/provider_patches/adaptive_domain_recovery.py",
+      "options": {
+        "groups": [
+          {
+            "hosts": [
+              "npms.io",
+              "video.sibnet.ru",
+              "${s}",
+              "vidmoly.me",
+              "${_}",
+              "${v}${n}",
+              "${v}",
+              "streamtape.com",
+              "sendvid.com",
+              "${i}",
+              "www.myvi.ru",
+              "younetu.org",
+              "vidoza.net",
+              "lecteurvideo.com",
+              "up4fun.top",
+              "arm.haglund.dev",
+              "v3-cinemeta.strem.io",
+              "kitsu.io",
+              "ww.animesultra.org",
+              "lodash.com",
+              "openjsf.org",
+              "underscorejs.org"
+            ],
+            "candidates": [
+              "https://npms.io",
+              "https://video.sibnet.ru",
+              "https://${s}",
+              "https://vidmoly.me",
+              "https://${_}",
+              "https://${v}${n}",
+              "https://${v}",
+              "https://streamtape.com"
+            ]
+          }
+        ]
+      },
+      "description": "Provider-specific same-route failover built from this provider's own observed origins and durable replacements."
+    },
+    "adaptive_domain_animetsu": {
+      "phase": "build",
+      "auto_apply": true,
+      "patch_script": "scripts/provider_patches/adaptive_domain_recovery.py",
+      "options": {
+        "groups": [
+          {
+            "hosts": [
+              "animetsu.live",
+              "graphql.anilist.co",
+              "api4.thetvdb.com",
+              "aiometadata.elfhosted.com"
+            ],
+            "candidates": [
+              "https://animetsu.live",
+              "https://graphql.anilist.co",
+              "https://api4.thetvdb.com",
+              "https://aiometadata.elfhosted.com"
+            ]
+          }
+        ]
+      },
+      "description": "Provider-specific same-route failover built from this provider's own observed origins and durable replacements."
+    },
+    "adaptive_domain_animevostfr": {
+      "phase": "build",
+      "auto_apply": true,
+      "patch_script": "scripts/provider_patches/adaptive_domain_recovery.py",
+      "options": {
+        "groups": [
+          {
+            "hosts": [
+              "npms.io",
+              "video.sibnet.ru",
+              "${s}",
+              "vidmoly.me",
+              "${_}",
+              "${m}${n}",
+              "${m}",
+              "streamtape.com",
+              "sendvid.com",
+              "${i}",
+              "www.myvi.ru",
+              "younetu.org",
+              "vidoza.net",
+              "lecteurvideo.com",
+              "up4fun.top",
+              "arm.haglund.dev",
+              "v3-cinemeta.strem.io",
+              "kitsu.io",
+              "v2.animevostfr.org",
+              "lodash.com",
+              "openjsf.org",
+              "underscorejs.org"
+            ],
+            "candidates": [
+              "https://npms.io",
+              "https://video.sibnet.ru",
+              "https://${s}",
+              "https://vidmoly.me",
+              "https://${_}",
+              "https://${m}${n}",
+              "https://${m}",
+              "https://streamtape.com"
+            ]
+          }
+        ]
+      },
+      "description": "Provider-specific same-route failover built from this provider's own observed origins and durable replacements."
+    },
+    "adaptive_domain_animoflix": {
+      "phase": "build",
+      "auto_apply": true,
+      "patch_script": "scripts/provider_patches/adaptive_domain_recovery.py",
+      "options": {
+        "groups": [
+          {
+            "hosts": [
+              "video.sibnet.ru",
+              "${s}",
+              "vidmoly.me",
+              "${m}",
+              "${_}${n}",
+              "${_}",
+              "streamtape.com",
+              "sendvid.com",
+              "${i}",
+              "www.myvi.ru",
+              "younetu.org",
+              "vidoza.net",
+              "lecteurvideo.com",
+              "up4fun.top",
+              "animoflix.to",
+              "npms.io",
+              "arm.haglund.dev",
+              "v3-cinemeta.strem.io",
+              "kitsu.io",
+              "lodash.com",
+              "openjsf.org",
+              "underscorejs.org"
+            ],
+            "candidates": [
+              "https://video.sibnet.ru",
+              "https://${s}",
+              "https://vidmoly.me",
+              "https://${m}",
+              "https://${_}${n}",
+              "https://${_}",
+              "https://streamtape.com",
+              "https://sendvid.com"
+            ]
+          }
+        ]
+      },
+      "description": "Provider-specific same-route failover built from this provider's own observed origins and durable replacements."
+    },
+    "adaptive_domain_anizone": {
+      "phase": "build",
+      "auto_apply": true,
+      "patch_script": "scripts/provider_patches/adaptive_domain_recovery.py",
+      "options": {
+        "groups": [
+          {
+            "hosts": [
+              "anizone.to",
+              "id-mapping-api-malid.hf.space",
+              "api.jikan.moe"
+            ],
+            "candidates": [
+              "https://anizone.to",
+              "https://id-mapping-api-malid.hf.space",
+              "https://api.jikan.moe"
+            ]
+          }
+        ]
+      },
+      "description": "Provider-specific same-route failover built from this provider's own observed origins and durable replacements."
+    },
+    "adaptive_domain_cinemm": {
+      "phase": "build",
+      "auto_apply": true,
+      "patch_script": "scripts/provider_patches/adaptive_domain_recovery.py",
+      "options": {
+        "groups": [
+          {
+            "hosts": [
+              "cinemm.com",
+              "v3-cinemeta.strem.io"
+            ],
+            "candidates": [
+              "https://cinemm.com",
+              "https://v3-cinemeta.strem.io"
+            ]
+          }
+        ]
+      },
+      "description": "Provider-specific same-route failover built from this provider's own observed origins and durable replacements."
+    },
+    "adaptive_domain_ctgmovies": {
+      "phase": "build",
+      "auto_apply": true,
+      "patch_script": "scripts/provider_patches/adaptive_domain_recovery.py",
+      "options": {
+        "groups": [
+          {
+            "hosts": [
+              "ctgmovies.com",
+              "cockpit.103.109.92.178.nip.io"
+            ],
+            "candidates": [
+              "https://ctgmovies.com",
+              "https://cockpit.103.109.92.178.nip.io"
+            ]
+          }
+        ]
+      },
+      "description": "Provider-specific same-route failover built from this provider's own observed origins and durable replacements."
+    },
+    "adaptive_domain_dvdplay": {
+      "phase": "build",
+      "auto_apply": true,
+      "patch_script": "scripts/provider_patches/adaptive_domain_recovery.py",
+      "options": {
+        "groups": [
+          {
+            "hosts": [
+              "dvdplay.cv",
+              "pixeldrain.net"
+            ],
+            "candidates": [
+              "https://dvdplay.cv",
+              "https://pixeldrain.net"
+            ]
+          }
+        ]
+      },
+      "description": "Provider-specific same-route failover built from this provider's own observed origins and durable replacements."
+    },
+    "adaptive_domain_einthusan": {
+      "phase": "build",
+      "auto_apply": true,
+      "patch_script": "scripts/provider_patches/adaptive_domain_recovery.py",
+      "options": {
+        "groups": [
+          {
+            "hosts": [
+              "einthusan.asaddon.com",
+              "einthusan.tv",
+              "cdn2.einthusan.io"
+            ],
+            "candidates": [
+              "https://einthusan.asaddon.com",
+              "https://einthusan.tv",
+              "https://cdn2.einthusan.io"
+            ]
+          }
+        ]
+      },
+      "description": "Provider-specific same-route failover built from this provider's own observed origins and durable replacements."
+    },
+    "adaptive_domain_french-manga": {
+      "phase": "build",
+      "auto_apply": true,
+      "patch_script": "scripts/provider_patches/adaptive_domain_recovery.py",
+      "options": {
+        "groups": [
+          {
+            "hosts": [
+              "npms.io",
+              "video.sibnet.ru",
+              "${s}",
+              "vidmoly.me",
+              "${_}",
+              "${m}${n}",
+              "${m}",
+              "streamtape.com",
+              "sendvid.com",
+              "${i}",
+              "www.myvi.ru",
+              "younetu.org",
+              "vidoza.net",
+              "lecteurvideo.com",
+              "up4fun.top",
+              "w16.french-manga.net",
+              "kitsu.io",
+              "arm.haglund.dev",
+              "v3-cinemeta.strem.io",
+              "lodash.com",
+              "openjsf.org",
+              "underscorejs.org"
+            ],
+            "candidates": [
+              "https://npms.io",
+              "https://video.sibnet.ru",
+              "https://${s}",
+              "https://vidmoly.me",
+              "https://${_}",
+              "https://${m}${n}",
+              "https://${m}",
+              "https://streamtape.com"
+            ]
+          }
+        ]
+      },
+      "description": "Provider-specific same-route failover built from this provider's own observed origins and durable replacements."
+    },
+    "adaptive_domain_kisskh": {
+      "phase": "build",
+      "auto_apply": true,
+      "patch_script": "scripts/provider_patches/adaptive_domain_recovery.py",
+      "options": {
+        "groups": [
+          {
+            "hosts": [
+              "api4.thetvdb.com",
+              "aiometadata.elfhosted.com"
+            ],
+            "candidates": [
+              "https://api4.thetvdb.com",
+              "https://aiometadata.elfhosted.com"
+            ]
+          }
+        ]
+      },
+      "description": "Provider-specific same-route failover built from this provider's own observed origins and durable replacements."
+    },
+    "adaptive_domain_kurage": {
+      "phase": "build",
+      "auto_apply": true,
+      "patch_script": "scripts/provider_patches/adaptive_domain_recovery.py",
+      "options": {
+        "groups": [
+          {
+            "hosts": [
+              "kurage.live",
+              "arm.haglund.dev",
+              "v3-cinemeta.strem.io"
+            ],
+            "candidates": [
+              "https://kurage.live",
+              "https://arm.haglund.dev",
+              "https://v3-cinemeta.strem.io"
+            ]
+          }
+        ]
+      },
+      "description": "Provider-specific same-route failover built from this provider's own observed origins and durable replacements."
+    },
+    "adaptive_domain_mallumv": {
+      "phase": "build",
+      "auto_apply": true,
+      "patch_script": "scripts/provider_patches/adaptive_domain_recovery.py",
+      "options": {
+        "groups": [
+          {
+            "hosts": [
+              "mallumv.gay"
+            ],
+            "candidates": [
+              "https://mallumv.wiki",
+              "https://pixeldrain.net"
+            ]
+          },
+          {
+            "hosts": [
+              "mallumv.cyou"
+            ],
+            "candidates": [
+              "https://mallumv.wiki",
+              "https://pixeldrain.net"
+            ]
+          },
+          {
+            "hosts": [
+              "mallumv.wiki",
+              "pixeldrain.net"
+            ],
+            "candidates": [
+              "https://mallumv.wiki",
+              "https://pixeldrain.net"
+            ]
+          }
+        ]
+      },
+      "description": "Provider-specific same-route failover built from this provider's own observed origins and durable replacements."
+    },
+    "adaptive_domain_moviebox": {
+      "phase": "build",
+      "auto_apply": true,
+      "patch_script": "scripts/provider_patches/adaptive_domain_recovery.py",
+      "options": {
+        "groups": [
+          {
+            "hosts": [
+              "pengu.uk",
+              "stremio-moviebox-1.onrender.com"
+            ],
+            "candidates": [
+              "https://pengu.uk",
+              "https://stremio-moviebox-1.onrender.com"
+            ]
+          }
+        ]
+      },
+      "description": "Provider-specific same-route failover built from this provider's own observed origins and durable replacements."
+    },
+    "adaptive_domain_movies4u": {
+      "phase": "build",
+      "auto_apply": true,
+      "patch_script": "scripts/provider_patches/adaptive_domain_recovery.py",
+      "options": {
+        "groups": [
+          {
+            "hosts": [
+              "hc-zf3c.vercel.app",
+              "m4uplay.store"
+            ],
+            "candidates": [
+              "https://hc-zf3c.vercel.app",
+              "https://m4uplay.store"
+            ]
+          }
+        ]
+      },
+      "description": "Provider-specific same-route failover built from this provider's own observed origins and durable replacements."
+    },
+    "adaptive_domain_moviesdrive": {
+      "phase": "build",
+      "auto_apply": true,
+      "patch_script": "scripts/provider_patches/adaptive_domain_recovery.py",
+      "options": {
+        "groups": [
+          {
+            "hosts": [
+              "new3.moviesdrives.my"
+            ],
+            "candidates": [
+              "https://new7.moviesdrives.my",
+              "https://mdrive.lol"
+            ]
+          }
+        ]
+      },
+      "description": "Provider-specific same-route failover built from this provider's own observed origins and durable replacements."
+    },
+    "adaptive_domain_movieshunt": {
+      "phase": "build",
+      "auto_apply": true,
+      "patch_script": "scripts/provider_patches/adaptive_domain_recovery.py",
+      "options": {
+        "groups": [
+          {
+            "hosts": [
+              "abhilinks.site",
+              "vcloud.zip"
+            ],
+            "candidates": [
+              "https://abhilinks.site",
+              "https://vcloud.zip"
+            ]
+          }
+        ]
+      },
+      "description": "Provider-specific same-route failover built from this provider's own observed origins and durable replacements."
+    },
+    "adaptive_domain_moviesmod": {
+      "phase": "build",
+      "auto_apply": true,
+      "patch_script": "scripts/provider_patches/adaptive_domain_recovery.py",
+      "options": {
+        "groups": [
+          {
+            "hosts": [
+              "moviesmod.money"
+            ],
+            "candidates": [
+              "https://moviesmod.army",
+              "https://links.modpro.blog",
+              "https://driveseed.org"
+            ]
+          },
+          {
+            "hosts": [
+              "moviesmod.army",
+              "links.modpro.blog",
+              "driveseed.org"
+            ],
+            "candidates": [
+              "https://moviesmod.army",
+              "https://links.modpro.blog",
+              "https://driveseed.org"
+            ]
+          }
+        ]
+      },
+      "description": "Provider-specific same-route failover built from this provider's own observed origins and durable replacements."
+    },
+    "adaptive_domain_movix": {
+      "phase": "build",
+      "auto_apply": true,
+      "patch_script": "scripts/provider_patches/adaptive_domain_recovery.py",
+      "options": {
+        "groups": [
+          {
+            "hosts": [
+              "api.movix.cash"
+            ],
+            "candidates": [
+              "https://api.movix.fun",
+              "https://video.sibnet.ru",
+              "https://${s}",
+              "https://vidmoly.me",
+              "https://${v}",
+              "https://${a}${n}",
+              "https://${a}",
+              "https://streamtape.com"
+            ]
+          },
+          {
+            "hosts": [
+              "api.movix.cloud"
+            ],
+            "candidates": [
+              "https://api.movix.fun",
+              "https://video.sibnet.ru",
+              "https://${s}",
+              "https://vidmoly.me",
+              "https://${v}",
+              "https://${a}${n}",
+              "https://${a}",
+              "https://streamtape.com"
+            ]
+          },
+          {
+            "hosts": [
+              "video.sibnet.ru",
+              "${s}",
+              "vidmoly.me",
+              "${v}",
+              "${a}${n}",
+              "${a}",
+              "streamtape.com",
+              "sendvid.com",
+              "${i}",
+              "www.myvi.ru",
+              "younetu.org",
+              "vidoza.net",
+              "lecteurvideo.com",
+              "up4fun.top",
+              "movix.cash",
+              "npms.io",
+              "api.movix.fun",
+              "lodash.com",
+              "openjsf.org",
+              "underscorejs.org"
+            ],
+            "candidates": [
+              "https://video.sibnet.ru",
+              "https://${s}",
+              "https://vidmoly.me",
+              "https://${v}",
+              "https://${a}${n}",
+              "https://${a}",
+              "https://streamtape.com",
+              "https://sendvid.com"
+            ]
+          }
+        ]
+      },
+      "description": "Provider-specific same-route failover built from this provider's own observed origins and durable replacements."
+    },
+    "adaptive_domain_mugiwarastream": {
+      "phase": "build",
+      "auto_apply": true,
+      "patch_script": "scripts/provider_patches/adaptive_domain_recovery.py",
+      "options": {
+        "groups": [
+          {
+            "hosts": [
+              "video.sibnet.ru",
+              "${s}",
+              "vidmoly.me",
+              "${_}",
+              "${m}${n}",
+              "${m}",
+              "streamtape.com",
+              "sendvid.com",
+              "${i}",
+              "www.myvi.ru",
+              "younetu.org",
+              "vidoza.net",
+              "lecteurvideo.com",
+              "up4fun.top",
+              "www.mugiwara-no-streaming.com",
+              "kitsu.io",
+              "npms.io",
+              "lodash.com",
+              "openjsf.org",
+              "underscorejs.org"
+            ],
+            "candidates": [
+              "https://video.sibnet.ru",
+              "https://${s}",
+              "https://vidmoly.me",
+              "https://${_}",
+              "https://${m}${n}",
+              "https://${m}",
+              "https://streamtape.com",
+              "https://sendvid.com"
+            ]
+          }
+        ]
+      },
+      "description": "Provider-specific same-route failover built from this provider's own observed origins and durable replacements."
+    },
+    "adaptive_domain_mycima": {
+      "phase": "build",
+      "auto_apply": true,
+      "patch_script": "scripts/provider_patches/adaptive_domain_recovery.py",
+      "options": {
+        "groups": [
+          {
+            "hosts": [
+              "mycima.red"
+            ],
+            "candidates": [
+              "https://mycima.camp",
+              "https://dood.re"
+            ]
+          },
+          {
+            "hosts": [
+              "mycima.camp",
+              "dood.re"
+            ],
+            "candidates": [
+              "https://mycima.camp",
+              "https://dood.re"
+            ]
+          }
+        ]
+      },
+      "description": "Provider-specific same-route failover built from this provider's own observed origins and durable replacements."
+    },
+    "adaptive_domain_peachify": {
+      "phase": "build",
+      "auto_apply": true,
+      "patch_script": "scripts/provider_patches/adaptive_domain_recovery.py",
+      "options": {
+        "groups": [
+          {
+            "hosts": [
+              "uwu.eat-peach.sbs",
+              "usa.eat-peach.sbs"
+            ],
+            "candidates": [
+              "https://uwu.eat-peach.sbs",
+              "https://usa.eat-peach.sbs"
+            ]
+          }
+        ]
+      },
+      "description": "Provider-specific same-route failover built from this provider's own observed origins and durable replacements."
+    },
+    "adaptive_domain_playimdb": {
+      "phase": "build",
+      "auto_apply": true,
+      "patch_script": "scripts/provider_patches/adaptive_domain_recovery.py",
+      "options": {
+        "groups": [
+          {
+            "hosts": [
+              "streamdata.vaplayer.ru",
+              "nextgencloudfabric.com"
+            ],
+            "candidates": [
+              "https://streamdata.vaplayer.ru",
+              "https://nextgencloudfabric.com"
+            ]
+          }
+        ]
+      },
+      "description": "Provider-specific same-route failover built from this provider's own observed origins and durable replacements."
+    },
+    "adaptive_domain_purstream": {
+      "phase": "build",
+      "auto_apply": true,
+      "patch_script": "scripts/provider_patches/adaptive_domain_recovery.py",
+      "options": {
+        "groups": [
+          {
+            "hosts": [
+              "api.purstream",
+              "purstream"
+            ],
+            "candidates": [
+              "https://api.purstream",
+              "https://purstream"
+            ]
+          }
+        ]
+      },
+      "description": "Provider-specific same-route failover built from this provider's own observed origins and durable replacements."
+    },
+    "adaptive_domain_sekai": {
+      "phase": "build",
+      "auto_apply": true,
+      "patch_script": "scripts/provider_patches/adaptive_domain_recovery.py",
+      "options": {
+        "groups": [
+          {
+            "hosts": [
+              "npms.io",
+              "arm.haglund.dev",
+              "v3-cinemeta.strem.io",
+              "kitsu.io",
+              "sekai.one",
+              "lodash.com",
+              "openjsf.org",
+              "underscorejs.org"
+            ],
+            "candidates": [
+              "https://npms.io",
+              "https://arm.haglund.dev",
+              "https://v3-cinemeta.strem.io",
+              "https://kitsu.io",
+              "https://sekai.one",
+              "https://lodash.com",
+              "https://openjsf.org",
+              "http://underscorejs.org"
+            ]
+          }
+        ]
+      },
+      "description": "Provider-specific same-route failover built from this provider's own observed origins and durable replacements."
+    },
+    "adaptive_domain_uhdmovies": {
+      "phase": "build",
+      "auto_apply": true,
+      "patch_script": "scripts/provider_patches/adaptive_domain_recovery.py",
+      "options": {
+        "groups": [
+          {
+            "hosts": [
+              "uhdmovies.pink"
+            ],
+            "candidates": [
+              "https://uhdmovies.casa"
+            ]
+          }
+        ]
+      },
+      "description": "Provider-specific same-route failover built from this provider's own observed origins and durable replacements."
+    },
+    "adaptive_domain_videasy": {
+      "phase": "build",
+      "auto_apply": true,
+      "patch_script": "scripts/provider_patches/adaptive_domain_recovery.py",
+      "options": {
+        "groups": [
+          {
+            "hosts": [
+              "player.videasy.net"
+            ],
+            "candidates": [
+              "https://player.videasy.to",
+              "https://enc-dec.app",
+              "https://api.videasy.net"
+            ]
+          },
+          {
+            "hosts": [
+              "enc-dec.app",
+              "api.videasy.net",
+              "player.videasy.to"
+            ],
+            "candidates": [
+              "https://enc-dec.app",
+              "https://api.videasy.net",
+              "https://player.videasy.to"
+            ]
+          }
+        ]
+      },
+      "description": "Provider-specific same-route failover built from this provider's own observed origins and durable replacements."
+    },
+    "adaptive_domain_vidfast": {
+      "phase": "build",
+      "auto_apply": true,
+      "patch_script": "scripts/provider_patches/adaptive_domain_recovery.py",
+      "options": {
+        "groups": [
+          {
+            "hosts": [
+              "vidfast.pro"
+            ],
+            "candidates": [
+              "https://vidfast.vc"
+            ]
+          }
+        ]
+      },
+      "description": "Provider-specific same-route failover built from this provider's own observed origins and durable replacements."
+    },
+    "adaptive_domain_vidnest": {
+      "phase": "build",
+      "auto_apply": true,
+      "patch_script": "scripts/provider_patches/adaptive_domain_recovery.py",
+      "options": {
+        "groups": [
+          {
+            "hosts": [
+              "first.vidnest.fun",
+              "vidnest.animanga.fun",
+              "vidnest.fun",
+              "aesdec.nuvioapp.space",
+              "flashstream.cc",
+              "lethe399key.com"
+            ],
+            "candidates": [
+              "https://first.vidnest.fun",
+              "https://vidnest.animanga.fun",
+              "https://vidnest.fun",
+              "https://aesdec.nuvioapp.space",
+              "https://flashstream.cc",
+              "https://lethe399key.com"
+            ]
+          }
+        ]
+      },
+      "description": "Provider-specific same-route failover built from this provider's own observed origins and durable replacements."
+    },
+    "adaptive_domain_vidnest-anime": {
+      "phase": "build",
+      "auto_apply": true,
+      "patch_script": "scripts/provider_patches/adaptive_domain_recovery.py",
+      "options": {
+        "groups": [
+          {
+            "hosts": [
+              "backend.vidnest.fun",
+              "vidnest.fun",
+              "aesdec.nuvioapp.space",
+              "graphql.anilist.co",
+              "api.ani.zip"
+            ],
+            "candidates": [
+              "https://backend.vidnest.fun",
+              "https://vidnest.fun",
+              "https://aesdec.nuvioapp.space",
+              "https://graphql.anilist.co",
+              "https://api.ani.zip"
+            ]
+          }
+        ]
+      },
+      "description": "Provider-specific same-route failover built from this provider's own observed origins and durable replacements."
+    },
+    "adaptive_domain_vidsrc": {
+      "phase": "build",
+      "auto_apply": true,
+      "patch_script": "scripts/provider_patches/adaptive_domain_recovery.py",
+      "options": {
+        "groups": [
+          {
+            "hosts": [
+              "whisperingauroras.com",
+              "vidsrc.me"
+            ],
+            "candidates": [
+              "https://whisperingauroras.com",
+              "https://vidsrc.me"
+            ]
+          }
+        ]
+      },
+      "description": "Provider-specific same-route failover built from this provider's own observed origins and durable replacements."
+    },
+    "adaptive_domain_vixsrc": {
+      "phase": "build",
+      "auto_apply": true,
+      "patch_script": "scripts/provider_patches/adaptive_domain_recovery.py",
+      "options": {
+        "groups": [
+          {
+            "hosts": [
+              "sub.wyzie.ru"
+            ],
+            "candidates": [
+              "https://sub.wyzie.io"
+            ]
+          }
+        ]
+      },
+      "description": "Provider-specific same-route failover built from this provider's own observed origins and durable replacements."
+    },
+    "adaptive_domain_voiranime": {
+      "phase": "build",
+      "auto_apply": true,
+      "patch_script": "scripts/provider_patches/adaptive_domain_recovery.py",
+      "options": {
+        "groups": [
+          {
+            "hosts": [
+              "video.sibnet.ru",
+              "${s}",
+              "vidmoly.me",
+              "${m}",
+              "${_}${n}",
+              "${_}",
+              "streamtape.com",
+              "sendvid.com",
+              "${i}",
+              "www.myvi.ru",
+              "younetu.org",
+              "vidoza.net",
+              "lecteurvideo.com",
+              "up4fun.top",
+              "npms.io",
+              "arm.haglund.dev",
+              "v3-cinemeta.strem.io",
+              "kitsu.io",
+              "voir-anime.to",
+              "lodash.com",
+              "openjsf.org",
+              "underscorejs.org"
+            ],
+            "candidates": [
+              "https://video.sibnet.ru",
+              "https://${s}",
+              "https://vidmoly.me",
+              "https://${m}",
+              "https://${_}${n}",
+              "https://${_}",
+              "https://streamtape.com",
+              "https://sendvid.com"
+            ]
+          }
+        ]
+      },
+      "description": "Provider-specific same-route failover built from this provider's own observed origins and durable replacements."
+    },
+    "adaptive_domain_voiranime-rip": {
+      "phase": "build",
+      "auto_apply": true,
+      "patch_script": "scripts/provider_patches/adaptive_domain_recovery.py",
+      "options": {
+        "groups": [
+          {
+            "hosts": [
+              "npms.io",
+              "video.sibnet.ru",
+              "${s}",
+              "vidmoly.me",
+              "${_}",
+              "${m}${n}",
+              "${m}",
+              "streamtape.com",
+              "sendvid.com",
+              "${i}",
+              "www.myvi.ru",
+              "younetu.org",
+              "vidoza.net",
+              "lecteurvideo.com",
+              "up4fun.top",
+              "voiranime.rip",
+              "kitsu.io",
+              "arm.haglund.dev",
+              "v3-cinemeta.strem.io",
+              "lodash.com",
+              "openjsf.org",
+              "underscorejs.org"
+            ],
+            "candidates": [
+              "https://npms.io",
+              "https://video.sibnet.ru",
+              "https://${s}",
+              "https://vidmoly.me",
+              "https://${_}",
+              "https://${m}${n}",
+              "https://${m}",
+              "https://streamtape.com"
+            ]
+          }
+        ]
+      },
+      "description": "Provider-specific same-route failover built from this provider's own observed origins and durable replacements."
+    },
+    "adaptive_domain_vostfree": {
+      "phase": "build",
+      "auto_apply": true,
+      "patch_script": "scripts/provider_patches/adaptive_domain_recovery.py",
+      "options": {
+        "groups": [
+          {
+            "hosts": [
+              "video.sibnet.ru",
+              "${s}",
+              "vidmoly.me",
+              "${_}",
+              "${v}${n}",
+              "${v}",
+              "streamtape.com",
+              "sendvid.com",
+              "${i}",
+              "www.myvi.ru",
+              "younetu.org",
+              "vidoza.net",
+              "lecteurvideo.com",
+              "up4fun.top",
+              "npms.io",
+              "arm.haglund.dev",
+              "v3-cinemeta.strem.io",
+              "kitsu.io",
+              "vidmoly.to",
+              "uqload.com",
+              "voe.sx",
+              "dood.to",
+              "ipv4.vostfree.ws",
+              "lodash.com",
+              "openjsf.org",
+              "underscorejs.org"
+            ],
+            "candidates": [
+              "https://video.sibnet.ru",
+              "https://${s}",
+              "https://vidmoly.me",
+              "https://${_}",
+              "https://${v}${n}",
+              "https://${v}",
+              "https://streamtape.com",
+              "https://sendvid.com"
+            ]
+          }
+        ]
+      },
+      "description": "Provider-specific same-route failover built from this provider's own observed origins and durable replacements."
+    },
+    "adaptive_domain_wookafr": {
+      "phase": "build",
+      "auto_apply": true,
+      "patch_script": "scripts/provider_patches/adaptive_domain_recovery.py",
+      "options": {
+        "groups": [
+          {
+            "hosts": [
+              "video.sibnet.ru",
+              "${s}",
+              "vidmoly.me",
+              "${_}",
+              "${m}${n}",
+              "${m}",
+              "streamtape.com",
+              "sendvid.com",
+              "${i}",
+              "www.myvi.ru",
+              "younetu.org",
+              "vidoza.net",
+              "lecteurvideo.com",
+              "up4fun.top",
+              "wookafr.cymru",
+              "wookafr.fyi",
+              "wookafr.app",
+              "wookafr.to",
+              "npms.io",
+              "kitsu.io",
+              "arm.haglund.dev",
+              "v3-cinemeta.strem.io",
+              "lodash.com",
+              "openjsf.org",
+              "underscorejs.org"
+            ],
+            "candidates": [
+              "https://video.sibnet.ru",
+              "https://${s}",
+              "https://vidmoly.me",
+              "https://${_}",
+              "https://${m}${n}",
+              "https://${m}",
+              "https://streamtape.com",
+              "https://sendvid.com"
+            ]
+          }
+        ]
+      },
+      "description": "Provider-specific same-route failover built from this provider's own observed origins and durable replacements."
+    },
+    "adaptive_domain_yflix": {
+      "phase": "build",
+      "auto_apply": true,
+      "patch_script": "scripts/provider_patches/adaptive_domain_recovery.py",
+      "options": {
+        "groups": [
+          {
+            "hosts": [
+              "enc-dec.app",
+              "1moviesz.to"
+            ],
+            "candidates": [
+              "https://enc-dec.app",
+              "https://1moviesz.to"
+            ]
+          }
+        ]
+      },
+      "description": "Provider-specific same-route failover built from this provider's own observed origins and durable replacements."
+    },
+    "adaptive_domain_zinkmovies": {
+      "phase": "build",
+      "auto_apply": true,
+      "patch_script": "scripts/provider_patches/adaptive_domain_recovery.py",
+      "options": {
+        "groups": [
+          {
+            "hosts": [
+              "zinkmovies.wtf",
+              "gemma416okl.com",
+              "i-arch-400.keymi417exx.com"
+            ],
+            "candidates": [
+              "https://zinkmovies.wtf",
+              "https://gemma416okl.com",
+              "https://i-arch-400.keymi417exx.com"
+            ]
+          }
+        ]
+      },
+      "description": "Provider-specific same-route failover built from this provider's own observed origins and durable replacements."
+    },
+    "adaptive_domain_brandnew": {
+      "phase": "build",
+      "auto_apply": true,
+      "patch_script": "scripts/provider_patches/adaptive_domain_recovery.py",
+      "options": {
+        "groups": [
+          {
+            "hosts": [
+              "api.brandnew.example",
+              "brandnew.example"
+            ],
+            "candidates": [
+              "https://api.brandnew.example",
+              "https://brandnew.example"
+            ]
+          }
+        ]
+      },
+      "description": "Provider-specific same-route failover built from this provider's own observed origins and durable replacements."
     }
   },
   "runtime_repair": {
@@ -319,7 +2408,12 @@
       "tv_template": "https://vidfast.vc/tv/{tmdbId}/{season}/{episode}?autoPlay=true",
       "notes": [
         "Preserve the documented iframe/player contract; do not reject HTML embed URLs or force direct-media headers."
-      ]
+      ],
+      "observed_origins": [
+        "https://vidfast.vc"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true
     },
     "purstream": {
       "strategy": "official_domain_hub",
@@ -328,7 +2422,1342 @@
       "requires_direct_media": true,
       "notes": [
         "The .wiki address is a hub, not the streaming/API origin. Persist a migration only after the official site and API route are both validated."
-      ]
+      ],
+      "allow_html_url": false,
+      "observed_origins": [
+        "https://api.purstream",
+        "https://purstream"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true
+    },
+    "4khdhub": {
+      "strategy": "html_scraper",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://4khdhub.click"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true
+    },
+    "4khdhubnew": {
+      "strategy": "html_scraper",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://4khdhub.dad"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true
+    },
+    "Cineby": {
+      "strategy": "api_stream_resolver",
+      "validation": "api_and_provider_native",
+      "allow_html_url": false,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "http://145.241.158.129",
+        "https://api.videasy.to",
+        "https://anime-db.videasy.net",
+        "https://player.videasy.to",
+        "https://vidlink.pro"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true
+    },
+    "allanime": {
+      "strategy": "direct_media",
+      "validation": "media_url",
+      "allow_html_url": false,
+      "requires_direct_media": true,
+      "observed_origins": [
+        "https://graphql.anilist.co",
+        "https://allanime.day"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true
+    },
+    "allmovieland": {
+      "strategy": "html_scraper",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://allmovieland.art"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true
+    },
+    "allwish": {
+      "strategy": "html_scraper",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://megaplay.buzz"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true
+    },
+    "anidb": {
+      "strategy": "html_scraper",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true
+    },
+    "anikototv": {
+      "strategy": "mixed_embed_resolver",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://graphql.anilist.co"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true
+    },
+    "anime-sama": {
+      "strategy": "mixed_embed_resolver",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://video.sibnet.ru",
+        "https://${s}",
+        "https://vidmoly.me",
+        "https://${_}",
+        "https://${v}${n}",
+        "https://${v}",
+        "https://streamtape.com",
+        "https://sendvid.com",
+        "https://${i}",
+        "https://www.myvi.ru",
+        "https://younetu.org",
+        "https://vidoza.net",
+        "https://lecteurvideo.com",
+        "https://up4fun.top",
+        "https://npms.io",
+        "https://kitsu.io",
+        "https://arm.haglund.dev",
+        "https://v3-cinemeta.strem.io",
+        "https://anime-sama.to",
+        "https://lodash.com",
+        "https://openjsf.org",
+        "http://underscorejs.org"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true
+    },
+    "animekai": {
+      "strategy": "mixed_embed_resolver",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://graphql.anilist.co",
+        "https://enc-dec.app",
+        "https://v3-cinemeta.strem.io"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true
+    },
+    "animepahe": {
+      "strategy": "html_scraper",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://kwik.cx",
+        "https://animepahe.pw"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true
+    },
+    "animesalt": {
+      "strategy": "html_scraper",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://as-cdn21.top"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true
+    },
+    "animesama-co": {
+      "strategy": "mixed_embed_resolver",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://npms.io",
+        "https://video.sibnet.ru",
+        "https://${s}",
+        "https://vidmoly.me",
+        "https://${_}",
+        "https://${m}${n}",
+        "https://${m}",
+        "https://streamtape.com",
+        "https://sendvid.com",
+        "https://${i}",
+        "https://www.myvi.ru",
+        "https://younetu.org",
+        "https://vidoza.net",
+        "https://lecteurvideo.com",
+        "https://up4fun.top",
+        "https://animesama.co",
+        "https://kitsu.io",
+        "https://arm.haglund.dev",
+        "https://v3-cinemeta.strem.io",
+        "https://lodash.com",
+        "https://openjsf.org",
+        "http://underscorejs.org"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true
+    },
+    "animesultra": {
+      "strategy": "mixed_embed_resolver",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://npms.io",
+        "https://video.sibnet.ru",
+        "https://${s}",
+        "https://vidmoly.me",
+        "https://${_}",
+        "https://${v}${n}",
+        "https://${v}",
+        "https://streamtape.com",
+        "https://sendvid.com",
+        "https://${i}",
+        "https://www.myvi.ru",
+        "https://younetu.org",
+        "https://vidoza.net",
+        "https://lecteurvideo.com",
+        "https://up4fun.top",
+        "https://arm.haglund.dev",
+        "https://v3-cinemeta.strem.io",
+        "https://kitsu.io",
+        "https://ww.animesultra.org",
+        "https://lodash.com",
+        "https://openjsf.org",
+        "http://underscorejs.org"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true
+    },
+    "animetsu": {
+      "strategy": "direct_media",
+      "validation": "media_url",
+      "allow_html_url": false,
+      "requires_direct_media": true,
+      "observed_origins": [
+        "https://animetsu.live",
+        "https://graphql.anilist.co",
+        "https://api4.thetvdb.com",
+        "https://aiometadata.elfhosted.com"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true
+    },
+    "animevostfr": {
+      "strategy": "mixed_embed_resolver",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://npms.io",
+        "https://video.sibnet.ru",
+        "https://${s}",
+        "https://vidmoly.me",
+        "https://${_}",
+        "https://${m}${n}",
+        "https://${m}",
+        "https://streamtape.com",
+        "https://sendvid.com",
+        "https://${i}",
+        "https://www.myvi.ru",
+        "https://younetu.org",
+        "https://vidoza.net",
+        "https://lecteurvideo.com",
+        "https://up4fun.top",
+        "https://arm.haglund.dev",
+        "https://v3-cinemeta.strem.io",
+        "https://kitsu.io",
+        "https://v2.animevostfr.org",
+        "https://lodash.com",
+        "https://openjsf.org",
+        "http://underscorejs.org"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true
+    },
+    "animeworld": {
+      "strategy": "html_scraper",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://play.zephyrflick.top"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true
+    },
+    "animoflix": {
+      "strategy": "mixed_embed_resolver",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://video.sibnet.ru",
+        "https://${s}",
+        "https://vidmoly.me",
+        "https://${m}",
+        "https://${_}${n}",
+        "https://${_}",
+        "https://streamtape.com",
+        "https://sendvid.com",
+        "https://${i}",
+        "https://www.myvi.ru",
+        "https://younetu.org",
+        "https://vidoza.net",
+        "https://lecteurvideo.com",
+        "https://up4fun.top",
+        "https://animoflix.to",
+        "https://npms.io",
+        "https://arm.haglund.dev",
+        "https://v3-cinemeta.strem.io",
+        "https://kitsu.io",
+        "https://lodash.com",
+        "https://openjsf.org",
+        "http://underscorejs.org"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true
+    },
+    "anizone": {
+      "strategy": "api_stream_resolver",
+      "validation": "api_and_provider_native",
+      "allow_html_url": false,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://anizone.to",
+        "https://id-mapping-api-malid.hf.space",
+        "https://api.jikan.moe"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true
+    },
+    "castle": {
+      "strategy": "api_stream_resolver",
+      "validation": "api_and_provider_native",
+      "allow_html_url": false,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://api.hlowb.com"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true
+    },
+    "cinefreak": {
+      "strategy": "html_scraper",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://cinefreak.nl"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true
+    },
+    "cinemacity": {
+      "strategy": "direct_media",
+      "validation": "media_url",
+      "allow_html_url": false,
+      "requires_direct_media": true,
+      "observed_origins": [
+        "https://animemapping.realbestia.com"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true
+    },
+    "cinemm": {
+      "strategy": "html_scraper",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://cinemm.com",
+        "https://v3-cinemeta.strem.io"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true
+    },
+    "cinevibe": {
+      "strategy": "direct_media",
+      "validation": "media_url",
+      "allow_html_url": false,
+      "requires_direct_media": true,
+      "observed_origins": [
+        "https://cinevibe.asia"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true
+    },
+    "coflix": {
+      "strategy": "mixed_embed_resolver",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://npms.io",
+        "https://video.sibnet.ru",
+        "https://${s}",
+        "https://vidmoly.me",
+        "https://${_}",
+        "https://${v}${n}",
+        "https://${v}",
+        "https://streamtape.com",
+        "https://sendvid.com",
+        "https://${i}",
+        "https://www.myvi.ru",
+        "https://younetu.org",
+        "https://vidoza.net",
+        "https://lecteurvideo.com",
+        "https://up4fun.top",
+        "https://arm.haglund.dev",
+        "https://v3-cinemeta.strem.io",
+        "https://${t}${n}",
+        "https://kitsu.io",
+        "https://coflix.blue",
+        "https://lodash.com",
+        "https://openjsf.org",
+        "http://underscorejs.org"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true
+    },
+    "ctgmovies": {
+      "strategy": "direct_media",
+      "validation": "media_url",
+      "allow_html_url": false,
+      "requires_direct_media": true,
+      "observed_origins": [
+        "https://ctgmovies.com",
+        "https://cockpit.103.109.92.178.nip.io"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true
+    },
+    "dahmermovies": {
+      "strategy": "html_scraper",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://a.111477.xyz"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true
+    },
+    "dahmermovies-tv": {
+      "strategy": "html_scraper",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true
+    },
+    "desiflix": {
+      "strategy": "html_scraper",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true
+    },
+    "dooflix": {
+      "strategy": "html_scraper",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true
+    },
+    "dulourd": {
+      "strategy": "mixed_embed_resolver",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://npms.io",
+        "https://video.sibnet.ru",
+        "https://${s}",
+        "https://vidmoly.me",
+        "https://${_}",
+        "https://${v}${n}",
+        "https://${v}",
+        "https://streamtape.com",
+        "https://sendvid.com",
+        "https://${i}",
+        "https://www.myvi.ru",
+        "https://younetu.org",
+        "https://vidoza.net",
+        "https://lecteurvideo.com",
+        "https://up4fun.top",
+        "https://www.dulourd.hair",
+        "https://www.dulourd.net",
+        "https://kitsu.io",
+        "https://lodash.com",
+        "https://openjsf.org",
+        "http://underscorejs.org"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true
+    },
+    "dvdplay": {
+      "strategy": "html_scraper",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://dvdplay.cv",
+        "https://pixeldrain.net"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true
+    },
+    "einthusan": {
+      "strategy": "direct_media",
+      "validation": "media_url",
+      "allow_html_url": false,
+      "requires_direct_media": true,
+      "observed_origins": [
+        "https://einthusan.asaddon.com",
+        "https://einthusan.tv",
+        "https://cdn2.einthusan.io"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true
+    },
+    "fibwatch": {
+      "strategy": "html_scraper",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://urlshortlink.top"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true
+    },
+    "flemmix": {
+      "strategy": "mixed_embed_resolver",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://video.sibnet.ru",
+        "https://${s}",
+        "https://vidmoly.me",
+        "https://${_}",
+        "https://${m}${n}",
+        "https://${m}",
+        "https://streamtape.com",
+        "https://sendvid.com",
+        "https://${i}",
+        "https://www.myvi.ru",
+        "https://younetu.org",
+        "https://vidoza.net",
+        "https://lecteurvideo.com",
+        "https://up4fun.top",
+        "https://flemmix.me",
+        "https://npms.io",
+        "https://kitsu.io",
+        "https://arm.haglund.dev",
+        "https://v3-cinemeta.strem.io",
+        "https://lodash.com",
+        "https://openjsf.org",
+        "http://underscorejs.org"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true
+    },
+    "french-manga": {
+      "strategy": "mixed_embed_resolver",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://npms.io",
+        "https://video.sibnet.ru",
+        "https://${s}",
+        "https://vidmoly.me",
+        "https://${_}",
+        "https://${m}${n}",
+        "https://${m}",
+        "https://streamtape.com",
+        "https://sendvid.com",
+        "https://${i}",
+        "https://www.myvi.ru",
+        "https://younetu.org",
+        "https://vidoza.net",
+        "https://lecteurvideo.com",
+        "https://up4fun.top",
+        "https://w16.french-manga.net",
+        "https://kitsu.io",
+        "https://arm.haglund.dev",
+        "https://v3-cinemeta.strem.io",
+        "https://lodash.com",
+        "https://openjsf.org",
+        "http://underscorejs.org"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true
+    },
+    "frenchstream": {
+      "strategy": "mixed_embed_resolver",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://npms.io",
+        "https://video.sibnet.ru",
+        "https://${s}",
+        "https://vidmoly.me",
+        "https://${_}",
+        "https://${m}${n}",
+        "https://${m}",
+        "https://streamtape.com",
+        "https://sendvid.com",
+        "https://${i}",
+        "https://www.myvi.ru",
+        "https://younetu.org",
+        "https://vidoza.net",
+        "https://lecteurvideo.com",
+        "https://up4fun.top",
+        "https://arm.haglund.dev",
+        "https://v3-cinemeta.strem.io",
+        "https://kitsu.io",
+        "https://frenchstream.food",
+        "https://lodash.com",
+        "https://openjsf.org",
+        "http://underscorejs.org"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true
+    },
+    "goatapi": {
+      "strategy": "html_scraper",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://goatapi.imreallydagoatt.workers.dev"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true
+    },
+    "gramcinema": {
+      "strategy": "html_scraper",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://bollywood.eu.org"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true
+    },
+    "hdghartv": {
+      "strategy": "html_scraper",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true
+    },
+    "hdhub4u": {
+      "strategy": "html_scraper",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true
+    },
+    "hianime": {
+      "strategy": "html_scraper",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true
+    },
+    "hindmoviez": {
+      "strategy": "direct_media",
+      "validation": "media_url",
+      "allow_html_url": false,
+      "requires_direct_media": true,
+      "observed_origins": [
+        "https://mvlink.blog"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true
+    },
+    "kisskh": {
+      "strategy": "direct_media",
+      "validation": "media_url",
+      "allow_html_url": false,
+      "requires_direct_media": true,
+      "observed_origins": [
+        "https://api4.thetvdb.com",
+        "https://aiometadata.elfhosted.com"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true
+    },
+    "kurage": {
+      "strategy": "html_scraper",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://kurage.live",
+        "https://arm.haglund.dev",
+        "https://v3-cinemeta.strem.io"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true
+    },
+    "mallumv": {
+      "strategy": "html_scraper",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://mallumv.wiki",
+        "https://pixeldrain.net"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true
+    },
+    "movieblast": {
+      "strategy": "html_scraper",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://app.cloud-mb.xyz"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true
+    },
+    "moviebox": {
+      "strategy": "html_scraper",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://pengu.uk",
+        "https://stremio-moviebox-1.onrender.com"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true
+    },
+    "movies4u": {
+      "strategy": "html_scraper",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://hc-zf3c.vercel.app",
+        "https://m4uplay.store"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true
+    },
+    "moviesdrive": {
+      "strategy": "html_scraper",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://mdrive.lol"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true
+    },
+    "movieshunt": {
+      "strategy": "direct_media",
+      "validation": "media_url",
+      "allow_html_url": false,
+      "requires_direct_media": true,
+      "observed_origins": [
+        "https://abhilinks.site",
+        "https://vcloud.zip"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true
+    },
+    "moviesmod": {
+      "strategy": "html_scraper",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://moviesmod.army",
+        "https://links.modpro.blog",
+        "https://driveseed.org"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true
+    },
+    "movix": {
+      "strategy": "mixed_embed_resolver",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://video.sibnet.ru",
+        "https://${s}",
+        "https://vidmoly.me",
+        "https://${v}",
+        "https://${a}${n}",
+        "https://${a}",
+        "https://streamtape.com",
+        "https://sendvid.com",
+        "https://${i}",
+        "https://www.myvi.ru",
+        "https://younetu.org",
+        "https://vidoza.net",
+        "https://lecteurvideo.com",
+        "https://up4fun.top",
+        "https://movix.cash",
+        "https://npms.io",
+        "https://api.movix.fun",
+        "https://lodash.com",
+        "https://openjsf.org",
+        "http://underscorejs.org"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true
+    },
+    "mugiwarastream": {
+      "strategy": "mixed_embed_resolver",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://video.sibnet.ru",
+        "https://${s}",
+        "https://vidmoly.me",
+        "https://${_}",
+        "https://${m}${n}",
+        "https://${m}",
+        "https://streamtape.com",
+        "https://sendvid.com",
+        "https://${i}",
+        "https://www.myvi.ru",
+        "https://younetu.org",
+        "https://vidoza.net",
+        "https://lecteurvideo.com",
+        "https://up4fun.top",
+        "https://www.mugiwara-no-streaming.com",
+        "https://kitsu.io",
+        "https://npms.io",
+        "https://lodash.com",
+        "https://openjsf.org",
+        "http://underscorejs.org"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true
+    },
+    "mycima": {
+      "strategy": "mixed_embed_resolver",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://mycima.camp",
+        "https://dood.re"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true
+    },
+    "nakios": {
+      "strategy": "api_stream_resolver",
+      "validation": "api_and_provider_native",
+      "allow_html_url": false,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://nakios.store",
+        "https://api.nakios.store"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true
+    },
+    "netmirror": {
+      "strategy": "mixed_embed_resolver",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://net27.cc"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true
+    },
+    "onlykdrama": {
+      "strategy": "html_scraper",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true
+    },
+    "papadustream": {
+      "strategy": "html_scraper",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://${t}${u}",
+        "https://${t}",
+        "https://papadustream.club",
+        "https://npms.io",
+        "https://arm.haglund.dev",
+        "https://v3-cinemeta.strem.io",
+        "https://lodash.com",
+        "https://openjsf.org",
+        "http://underscorejs.org"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true
+    },
+    "peachify": {
+      "strategy": "mixed_embed_resolver",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://uwu.eat-peach.sbs",
+        "https://usa.eat-peach.sbs"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true
+    },
+    "persianstremio": {
+      "strategy": "direct_media",
+      "validation": "media_url",
+      "allow_html_url": false,
+      "requires_direct_media": true,
+      "observed_origins": [],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true
+    },
+    "playimdb": {
+      "strategy": "direct_media",
+      "validation": "media_url",
+      "allow_html_url": false,
+      "requires_direct_media": true,
+      "observed_origins": [
+        "https://streamdata.vaplayer.ru",
+        "https://nextgencloudfabric.com"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true
+    },
+    "sekai": {
+      "strategy": "html_scraper",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://npms.io",
+        "https://arm.haglund.dev",
+        "https://v3-cinemeta.strem.io",
+        "https://kitsu.io",
+        "https://sekai.one",
+        "https://lodash.com",
+        "https://openjsf.org",
+        "http://underscorejs.org"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true
+    },
+    "showbox": {
+      "strategy": "html_scraper",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://www.febbox.com"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true
+    },
+    "streamflix": {
+      "strategy": "api_stream_resolver",
+      "validation": "api_and_provider_native",
+      "allow_html_url": false,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://api.streamflix.app"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true
+    },
+    "streamzo": {
+      "strategy": "mixed_embed_resolver",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://video.sibnet.ru",
+        "https://${s}",
+        "https://vidmoly.me",
+        "https://${_}",
+        "https://${v}${n}",
+        "https://${v}",
+        "https://streamtape.com",
+        "https://sendvid.com",
+        "https://${i}",
+        "https://www.myvi.ru",
+        "https://younetu.org",
+        "https://vidoza.net",
+        "https://lecteurvideo.com",
+        "https://up4fun.top",
+        "https://streamzo.fr",
+        "https://kitsu.io",
+        "https://npms.io",
+        "https://lodash.com",
+        "https://openjsf.org",
+        "http://underscorejs.org"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true
+    },
+    "toflix": {
+      "strategy": "direct_media",
+      "validation": "media_url",
+      "allow_html_url": false,
+      "requires_direct_media": true,
+      "observed_origins": [
+        "https://apis.wavewatch.xyz",
+        "https://toflix"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true
+    },
+    "topcartoons": {
+      "strategy": "html_scraper",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true
+    },
+    "uhdmovies": {
+      "strategy": "html_scraper",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true
+    },
+    "vegamovies": {
+      "strategy": "html_scraper",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://vcloud.zip"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true
+    },
+    "videasy": {
+      "strategy": "api_stream_resolver",
+      "validation": "api_and_provider_native",
+      "allow_html_url": false,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://enc-dec.app",
+        "https://api.videasy.net",
+        "https://player.videasy.to"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true
+    },
+    "vidlink": {
+      "strategy": "html_scraper",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://vidlink.pro"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true
+    },
+    "vidnest": {
+      "strategy": "direct_media",
+      "validation": "media_url",
+      "allow_html_url": false,
+      "requires_direct_media": true,
+      "observed_origins": [
+        "https://first.vidnest.fun",
+        "https://vidnest.animanga.fun",
+        "https://vidnest.fun",
+        "https://aesdec.nuvioapp.space",
+        "https://flashstream.cc",
+        "https://lethe399key.com"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true
+    },
+    "vidnest-anime": {
+      "strategy": "api_stream_resolver",
+      "validation": "api_and_provider_native",
+      "allow_html_url": false,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://backend.vidnest.fun",
+        "https://vidnest.fun",
+        "https://aesdec.nuvioapp.space",
+        "https://graphql.anilist.co",
+        "https://api.ani.zip"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true
+    },
+    "vidrock": {
+      "strategy": "html_scraper",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://vidrock.ru"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true
+    },
+    "vidsrc": {
+      "strategy": "mixed_embed_resolver",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://whisperingauroras.com",
+        "https://vidsrc.me"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true
+    },
+    "vixsrc": {
+      "strategy": "direct_media",
+      "validation": "media_url",
+      "allow_html_url": false,
+      "requires_direct_media": true,
+      "observed_origins": [],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true
+    },
+    "voiranime": {
+      "strategy": "mixed_embed_resolver",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://video.sibnet.ru",
+        "https://${s}",
+        "https://vidmoly.me",
+        "https://${m}",
+        "https://${_}${n}",
+        "https://${_}",
+        "https://streamtape.com",
+        "https://sendvid.com",
+        "https://${i}",
+        "https://www.myvi.ru",
+        "https://younetu.org",
+        "https://vidoza.net",
+        "https://lecteurvideo.com",
+        "https://up4fun.top",
+        "https://npms.io",
+        "https://arm.haglund.dev",
+        "https://v3-cinemeta.strem.io",
+        "https://kitsu.io",
+        "https://voir-anime.to",
+        "https://lodash.com",
+        "https://openjsf.org",
+        "http://underscorejs.org"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true
+    },
+    "voiranime-rip": {
+      "strategy": "mixed_embed_resolver",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://npms.io",
+        "https://video.sibnet.ru",
+        "https://${s}",
+        "https://vidmoly.me",
+        "https://${_}",
+        "https://${m}${n}",
+        "https://${m}",
+        "https://streamtape.com",
+        "https://sendvid.com",
+        "https://${i}",
+        "https://www.myvi.ru",
+        "https://younetu.org",
+        "https://vidoza.net",
+        "https://lecteurvideo.com",
+        "https://up4fun.top",
+        "https://voiranime.rip",
+        "https://kitsu.io",
+        "https://arm.haglund.dev",
+        "https://v3-cinemeta.strem.io",
+        "https://lodash.com",
+        "https://openjsf.org",
+        "http://underscorejs.org"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true
+    },
+    "vostfree": {
+      "strategy": "mixed_embed_resolver",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://video.sibnet.ru",
+        "https://${s}",
+        "https://vidmoly.me",
+        "https://${_}",
+        "https://${v}${n}",
+        "https://${v}",
+        "https://streamtape.com",
+        "https://sendvid.com",
+        "https://${i}",
+        "https://www.myvi.ru",
+        "https://younetu.org",
+        "https://vidoza.net",
+        "https://lecteurvideo.com",
+        "https://up4fun.top",
+        "https://npms.io",
+        "https://arm.haglund.dev",
+        "https://v3-cinemeta.strem.io",
+        "https://kitsu.io",
+        "https://vidmoly.to",
+        "https://uqload.com",
+        "https://voe.sx",
+        "https://dood.to",
+        "https://ipv4.vostfree.ws",
+        "https://lodash.com"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true
+    },
+    "wookafr": {
+      "strategy": "mixed_embed_resolver",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://video.sibnet.ru",
+        "https://${s}",
+        "https://vidmoly.me",
+        "https://${_}",
+        "https://${m}${n}",
+        "https://${m}",
+        "https://streamtape.com",
+        "https://sendvid.com",
+        "https://${i}",
+        "https://www.myvi.ru",
+        "https://younetu.org",
+        "https://vidoza.net",
+        "https://lecteurvideo.com",
+        "https://up4fun.top",
+        "https://wookafr.cymru",
+        "https://wookafr.fyi",
+        "https://wookafr.app",
+        "https://wookafr.to",
+        "https://npms.io",
+        "https://kitsu.io",
+        "https://arm.haglund.dev",
+        "https://v3-cinemeta.strem.io",
+        "https://lodash.com",
+        "https://openjsf.org"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true
+    },
+    "xpass": {
+      "strategy": "html_scraper",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://play.xpass.top"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true
+    },
+    "yflix": {
+      "strategy": "mixed_embed_resolver",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://enc-dec.app",
+        "https://1moviesz.to"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true
+    },
+    "zinkmovies": {
+      "strategy": "direct_media",
+      "validation": "media_url",
+      "allow_html_url": false,
+      "requires_direct_media": true,
+      "observed_origins": [
+        "https://zinkmovies.wtf",
+        "https://gemma416okl.com",
+        "https://i-arch-400.keymi417exx.com"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true
+    },
+    "brandnew": {
+      "strategy": "mixed_embed_resolver",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://api.brandnew.example",
+        "https://brandnew.example"
+      ],
+      "generated_from_manifest_or_stage": true
     }
   },
   "official_domain_hubs": {
@@ -373,5 +3802,12 @@
       ],
       "require_api_validation": true
     }
+  },
+  "provider_profile_generation": {
+    "schema_version": 2,
+    "provider_count": 86,
+    "staged_provider_count": 0,
+    "source": "manifest_published_bundles_and_current_staging",
+    "same_deep_new_provider_support": true
   }
 }
