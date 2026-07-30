@@ -63,7 +63,8 @@
       "max_provider_fetches": 30,
       "max_redirects": 5,
       "max_provider_response_bytes": 5242880,
-      "fixture_limit_per_category": true
+      "fixture_limit_per_category": true,
+      "fallback_fixture_limit_per_category": 2
     }
   },
   "fixtures": {
@@ -71,37 +72,51 @@
       {
         "label": "Oppenheimer",
         "tmdbId": "872585",
-        "mediaType": "movie"
+        "mediaType": "movie",
+        "title": "Oppenheimer",
+        "year": 2023
       },
       {
         "label": "Inception",
         "tmdbId": "27205",
-        "mediaType": "movie"
+        "mediaType": "movie",
+        "title": "Inception",
+        "year": 2010
       },
       {
         "label": "The Matrix",
         "tmdbId": "603",
-        "mediaType": "movie"
+        "mediaType": "movie",
+        "title": "The Matrix",
+        "year": 1999
       },
       {
         "label": "Interstellar",
         "tmdbId": "157336",
-        "mediaType": "movie"
+        "mediaType": "movie",
+        "title": "Interstellar",
+        "year": 2014
       },
       {
         "label": "Avatar",
         "tmdbId": "19995",
-        "mediaType": "movie"
+        "mediaType": "movie",
+        "title": "Avatar",
+        "year": 2009
       },
       {
         "label": "The Dark Knight",
         "tmdbId": "155",
-        "mediaType": "movie"
+        "mediaType": "movie",
+        "title": "The Dark Knight",
+        "year": 2008
       },
       {
         "label": "Fight Club",
         "tmdbId": "550",
-        "mediaType": "movie"
+        "mediaType": "movie",
+        "title": "Fight Club",
+        "year": 1999
       }
     ],
     "tv": [
@@ -110,49 +125,63 @@
         "tmdbId": "1396",
         "mediaType": "tv",
         "season": 1,
-        "episode": 1
+        "episode": 1,
+        "title": "Breaking Bad",
+        "year": 2008
       },
       {
         "label": "Game of Thrones S01E01",
         "tmdbId": "1399",
         "mediaType": "tv",
         "season": 1,
-        "episode": 1
+        "episode": 1,
+        "title": "Game of Thrones",
+        "year": 2011
       },
       {
         "label": "The Last of Us S01E01",
         "tmdbId": "100088",
         "mediaType": "tv",
         "season": 1,
-        "episode": 1
+        "episode": 1,
+        "title": "The Last of Us",
+        "year": 2023
       },
       {
         "label": "Stranger Things S01E01",
         "tmdbId": "66732",
         "mediaType": "tv",
         "season": 1,
-        "episode": 1
+        "episode": 1,
+        "title": "Stranger Things",
+        "year": 2016
       },
       {
         "label": "The Walking Dead S01E01",
         "tmdbId": "1402",
         "mediaType": "tv",
         "season": 1,
-        "episode": 1
+        "episode": 1,
+        "title": "The Walking Dead",
+        "year": 2010
       },
       {
         "label": "The Boys S01E01",
         "tmdbId": "76479",
         "mediaType": "tv",
         "season": 1,
-        "episode": 1
+        "episode": 1,
+        "title": "The Boys",
+        "year": 2019
       },
       {
         "label": "Better Call Saul S01E01",
         "tmdbId": "60059",
         "mediaType": "tv",
         "season": 1,
-        "episode": 1
+        "episode": 1,
+        "title": "Better Call Saul",
+        "year": 2015
       }
     ],
     "anime": [
@@ -161,49 +190,63 @@
         "tmdbId": "37854",
         "mediaType": "tv",
         "season": 1,
-        "episode": 1
+        "episode": 1,
+        "title": "One Piece",
+        "year": 1999
       },
       {
         "label": "Attack on Titan S01E01",
         "tmdbId": "1429",
         "mediaType": "tv",
         "season": 1,
-        "episode": 1
+        "episode": 1,
+        "title": "Attack on Titan",
+        "year": 2013
       },
       {
         "label": "Jujutsu Kaisen S01E01",
         "tmdbId": "95479",
         "mediaType": "tv",
         "season": 1,
-        "episode": 1
+        "episode": 1,
+        "title": "Jujutsu Kaisen",
+        "year": 2020
       },
       {
         "label": "Death Note S01E01",
         "tmdbId": "13916",
         "mediaType": "tv",
         "season": 1,
-        "episode": 1
+        "episode": 1,
+        "title": "Death Note",
+        "year": 2006
       },
       {
         "label": "Demon Slayer S01E01",
         "tmdbId": "85937",
         "mediaType": "tv",
         "season": 1,
-        "episode": 1
+        "episode": 1,
+        "title": "Demon Slayer: Kimetsu no Yaiba",
+        "year": 2019
       },
       {
         "label": "Fullmetal Alchemist Brotherhood S01E01",
         "tmdbId": "31911",
         "mediaType": "tv",
         "season": 1,
-        "episode": 1
+        "episode": 1,
+        "title": "Fullmetal Alchemist: Brotherhood",
+        "year": 2009
       },
       {
         "label": "Naruto S01E01",
         "tmdbId": "46260",
         "mediaType": "tv",
         "season": 1,
-        "episode": 1
+        "episode": 1,
+        "title": "Naruto",
+        "year": 2002
       }
     ]
   },
@@ -249,7 +292,8 @@
       "no_streams",
       "blocked",
       "provider_unreachable",
-      "runtime_error"
+      "runtime_error",
+      "reachable"
     ],
     "preserve_strict_history_on_inconclusive": true,
     "maximum_consecutive_inconclusive_deep_checks_for_strict_grace": 2,

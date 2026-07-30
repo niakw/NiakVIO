@@ -1,18 +1,50 @@
-Copier ces fichiers à la racine du dépôt en conservant leur arborescence :
+Copier tous les fichiers de ce ZIP à la racine du dépôt en conservant l’arborescence.
 
-package.json
+Fichiers de configuration et d’intégrité :
+APPLY-NOTE.txt
+FILES_TO_DELETE_AFTER_COPY.txt
+FILES_TO_UPDATE.txt
 FILE-HASHES.json
 PATCH-SHA256SUMS.txt
-sources.json
 SHA256SUMS.json
-manifest.json
 health-config.json
+manifest.json
+package.json
+provider-lkg.json
+provider-overrides.json
+sources.json
 vf/manifest.json
-scripts/provider_worker.cjs
+
+Scripts :
+scripts/apply_provider_overrides.py
+scripts/build_provider_runtime_profiles.py
 scripts/discover_candidates.py
 scripts/health_check.mjs
-tests/provider_signature_fallback.test.cjs
-tests/category_regression_policy_test.py
+scripts/promote_candidates.py
+scripts/provider_patches/movix_multi_source.py
+scripts/provider_worker.cjs
+scripts/prune_unreferenced_providers.py
 
-Aucun fichier à supprimer.
-Les dossiers __pycache__ du dépôt complet ont volontairement été exclus.
+Tests :
+tests/category_regression_policy_test.py
+tests/lkg_regression_policy_test.py
+tests/new_provider_same_deep_profile_test.py
+tests/prune_unreferenced_providers_test.py
+
+Bundles restaurés/remplacés :
+providers/anime-sama--gowaru--40b94a990ee08c84.js
+providers/animesama-co--gowaru--7b179e4ecea74ff9.js
+providers/animesultra--gowaru--7704e3a452b17554.js
+providers/animevostfr--gowaru--2070fb94f7559b99.js
+providers/coflix--nuvio--de425d2de9270c5c.js
+providers/flemmix--gowaru--3b7069f72aa1cb23.js
+providers/french-manga--gowaru--87f344ef6e681b81.js
+providers/frenchstream--nuvio-lkg--cd46283e71b7c18d.js
+providers/movix--nuvio--1233010fe4e58795.js
+providers/mugiwarastream--gowaru--4ca91d321825979c.js
+providers/nakios--gowaru--54004069c8c37177.js
+providers/sekai--gowaru--07eef83e8d37a79c.js
+providers/streamzo--gowaru--88e947979172fb58.js
+providers/voiranime--gowaru--5968627d7b5aabbb.js
+providers/voiranime-rip--gowaru--73c16daff03e96b1.js
+providers/vostfree--gowaru--8e9b00d7aff4dd9a.js

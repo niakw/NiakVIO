@@ -54,8 +54,7 @@
         "logo": "https://frenchstream.food/favicon.ico"
       },
       "profiles": [
-        "metadata_context_recovery",
-        "adaptive_domain_frenchstream"
+        "metadata_context_recovery"
       ],
       "capability": "html_scraper"
     },
@@ -86,9 +85,7 @@
         "Automatically migrated animepahe.org to animepahe.pw after DNS/HTTP preflight validation of a redirect or a reachable same-role provider endpoint."
       ],
       "capability": "html_scraper",
-      "profiles": [
-        "adaptive_domain_animepahe"
-      ]
+      "profiles": []
     },
     "allmovieland": {
       "replacements": {
@@ -104,9 +101,7 @@
         "Automatically migrated allmovieland.one to allmovieland.art after French ISP DNS/HTTP preflight redirect validation."
       ],
       "capability": "html_scraper",
-      "profiles": [
-        "adaptive_domain_allmovieland"
-      ]
+      "profiles": []
     },
     "purstream": {
       "notes": [
@@ -130,9 +125,7 @@
       ],
       "capability": "iframe_player",
       "preserve_embed_urls": true,
-      "profiles": [
-        "adaptive_domain_vidfast"
-      ]
+      "profiles": []
     },
     "vixsrc": {
       "replacements": {
@@ -145,9 +138,7 @@
         "Automatically migrated sub.wyzie.ru to sub.wyzie.io after French ISP DNS/HTTP preflight redirect validation."
       ],
       "capability": "direct_media",
-      "profiles": [
-        "adaptive_domain_vixsrc"
-      ]
+      "profiles": []
     },
     "mallumv": {
       "replacements": {
@@ -163,9 +154,7 @@
         "Automatically migrated mallumv.cyou to mallumv.wiki after French ISP DNS/HTTP preflight redirect validation."
       ],
       "capability": "html_scraper",
-      "profiles": [
-        "adaptive_domain_mallumv"
-      ]
+      "profiles": []
     },
     "moviesdrive": {
       "replacements": {
@@ -178,9 +167,7 @@
         "Automatically migrated new3.moviesdrives.my to new7.moviesdrives.my after French ISP DNS/HTTP preflight redirect validation."
       ],
       "capability": "html_scraper",
-      "profiles": [
-        "adaptive_domain_moviesdrive"
-      ]
+      "profiles": []
     },
     "coflix": {
       "replacements": {
@@ -193,8 +180,7 @@
         "Automatically migrated coflix.cymru to coflix.blue after DNS/HTTP preflight validation of a redirect or a reachable same-role provider endpoint."
       ],
       "profiles": [
-        "metadata_context_recovery",
-        "adaptive_domain_coflix"
+        "metadata_context_recovery"
       ],
       "capability": "html_scraper"
     },
@@ -209,9 +195,7 @@
         "Automatically migrated moviesmod.money to moviesmod.army after DNS/HTTP preflight validation of a redirect or a reachable same-role provider endpoint."
       ],
       "capability": "html_scraper",
-      "profiles": [
-        "adaptive_domain_moviesmod"
-      ]
+      "profiles": []
     },
     "uhdmovies": {
       "replacements": {
@@ -224,9 +208,7 @@
         "Automatically migrated uhdmovies.pink to uhdmovies.casa after DNS/HTTP preflight validation of a redirect or a reachable same-role provider endpoint."
       ],
       "capability": "html_scraper",
-      "profiles": [
-        "adaptive_domain_uhdmovies"
-      ]
+      "profiles": []
     },
     "videasy": {
       "replacements": {
@@ -239,9 +221,7 @@
         "Automatically migrated player.videasy.net to player.videasy.to after DNS/HTTP preflight validation of a redirect or a reachable same-role provider endpoint."
       ],
       "capability": "api_stream_resolver",
-      "profiles": [
-        "adaptive_domain_videasy"
-      ]
+      "profiles": []
     },
     "mycima": {
       "replacements": {
@@ -254,9 +234,7 @@
         "Automatically migrated mycima.red to mycima.camp after DNS/HTTP preflight validation of a redirect or a reachable same-role provider endpoint."
       ],
       "capability": "mixed_embed_resolver",
-      "profiles": [
-        "adaptive_domain_mycima"
-      ]
+      "profiles": []
     },
     "animesultra": {
       "profiles": [
@@ -266,8 +244,7 @@
     },
     "dulourd": {
       "profiles": [
-        "metadata_context_recovery",
-        "adaptive_domain_dulourd"
+        "metadata_context_recovery"
       ],
       "capability": "html_scraper"
     },
@@ -282,9 +259,7 @@
       "capability": "html_scraper"
     },
     "nakios": {
-      "profiles": [
-        "adaptive_domain_nakios"
-      ],
+      "profiles": [],
       "capability": "html_scraper"
     },
     "papadustream": {
@@ -390,9 +365,7 @@
     },
     "einthusan": {
       "capability": "direct_media",
-      "profiles": [
-        "adaptive_domain_einthusan"
-      ]
+      "profiles": []
     },
     "fibwatch": {
       "capability": "html_scraper"
@@ -484,9 +457,7 @@
     },
     "vidnest": {
       "capability": "direct_media",
-      "profiles": [
-        "adaptive_domain_vidnest"
-      ]
+      "profiles": []
     },
     "vidnest-anime": {
       "capability": "api_stream_resolver",
@@ -509,9 +480,7 @@
     },
     "wookafr": {
       "capability": "mixed_embed_resolver",
-      "profiles": [
-        "adaptive_domain_wookafr"
-      ]
+      "profiles": []
     },
     "xpass": {
       "capability": "html_scraper"
@@ -601,354 +570,6 @@
       "required_values": [
         "[Nuvio Runtime Repair] Content found via HTML search"
       ]
-    },
-    "adaptive_domain_allmovieland": {
-      "phase": "build",
-      "auto_apply": true,
-      "patch_script": "scripts/provider_patches/adaptive_domain_recovery.py",
-      "options": {
-        "groups": [
-          {
-            "hosts": [
-              "allmovieland.you"
-            ],
-            "candidates": [
-              "https://allmovieland.art"
-            ]
-          },
-          {
-            "hosts": [
-              "allmovieland.one"
-            ],
-            "candidates": [
-              "https://allmovieland.art"
-            ]
-          }
-        ]
-      },
-      "description": "Provider-specific same-route failover built from this provider's own observed origins and durable replacements."
-    },
-    "adaptive_domain_animepahe": {
-      "phase": "build",
-      "auto_apply": true,
-      "patch_script": "scripts/provider_patches/adaptive_domain_recovery.py",
-      "options": {
-        "groups": [
-          {
-            "hosts": [
-              "animepahe.com"
-            ],
-            "candidates": [
-              "https://animepahe.pw"
-            ]
-          },
-          {
-            "hosts": [
-              "animepahe.org"
-            ],
-            "candidates": [
-              "https://animepahe.pw"
-            ]
-          }
-        ]
-      },
-      "description": "Provider-specific same-route failover built from this provider's own observed origins and durable replacements."
-    },
-    "adaptive_domain_coflix": {
-      "phase": "build",
-      "auto_apply": true,
-      "patch_script": "scripts/provider_patches/adaptive_domain_recovery.py",
-      "options": {
-        "groups": [
-          {
-            "hosts": [
-              "coflix.cymru"
-            ],
-            "candidates": [
-              "https://coflix.blue"
-            ]
-          }
-        ]
-      },
-      "description": "Provider-specific same-route failover built from this provider's own observed origins and durable replacements."
-    },
-    "adaptive_domain_dulourd": {
-      "phase": "build",
-      "auto_apply": true,
-      "patch_script": "scripts/provider_patches/adaptive_domain_recovery.py",
-      "options": {
-        "groups": [
-          {
-            "hosts": [
-              "www.dulourd.hair",
-              "www.dulourd.net"
-            ],
-            "candidates": [
-              "https://www.dulourd.hair",
-              "https://www.dulourd.net"
-            ]
-          }
-        ]
-      },
-      "description": "Provider-specific same-route failover built from this provider's own observed origins and durable replacements."
-    },
-    "adaptive_domain_einthusan": {
-      "phase": "build",
-      "auto_apply": true,
-      "patch_script": "scripts/provider_patches/adaptive_domain_recovery.py",
-      "options": {
-        "groups": [
-          {
-            "hosts": [
-              "einthusan.asaddon.com",
-              "einthusan.tv",
-              "cdn2.einthusan.io"
-            ],
-            "candidates": [
-              "https://einthusan.asaddon.com",
-              "https://einthusan.tv",
-              "https://cdn2.einthusan.io"
-            ]
-          }
-        ]
-      },
-      "description": "Provider-specific same-route failover built from this provider's own observed origins and durable replacements."
-    },
-    "adaptive_domain_frenchstream": {
-      "phase": "build",
-      "auto_apply": true,
-      "patch_script": "scripts/provider_patches/adaptive_domain_recovery.py",
-      "options": {
-        "groups": [
-          {
-            "hosts": [
-              "french-stream.one"
-            ],
-            "candidates": [
-              "https://frenchstream.food"
-            ]
-          }
-        ]
-      },
-      "description": "Provider-specific same-route failover built from this provider's own observed origins and durable replacements."
-    },
-    "adaptive_domain_mallumv": {
-      "phase": "build",
-      "auto_apply": true,
-      "patch_script": "scripts/provider_patches/adaptive_domain_recovery.py",
-      "options": {
-        "groups": [
-          {
-            "hosts": [
-              "mallumv.gay"
-            ],
-            "candidates": [
-              "https://mallumv.wiki"
-            ]
-          },
-          {
-            "hosts": [
-              "mallumv.cyou"
-            ],
-            "candidates": [
-              "https://mallumv.wiki"
-            ]
-          }
-        ]
-      },
-      "description": "Provider-specific same-route failover built from this provider's own observed origins and durable replacements."
-    },
-    "adaptive_domain_moviesdrive": {
-      "phase": "build",
-      "auto_apply": true,
-      "patch_script": "scripts/provider_patches/adaptive_domain_recovery.py",
-      "options": {
-        "groups": [
-          {
-            "hosts": [
-              "new3.moviesdrives.my"
-            ],
-            "candidates": [
-              "https://new7.moviesdrives.my"
-            ]
-          }
-        ]
-      },
-      "description": "Provider-specific same-route failover built from this provider's own observed origins and durable replacements."
-    },
-    "adaptive_domain_moviesmod": {
-      "phase": "build",
-      "auto_apply": true,
-      "patch_script": "scripts/provider_patches/adaptive_domain_recovery.py",
-      "options": {
-        "groups": [
-          {
-            "hosts": [
-              "moviesmod.money"
-            ],
-            "candidates": [
-              "https://moviesmod.army"
-            ]
-          }
-        ]
-      },
-      "description": "Provider-specific same-route failover built from this provider's own observed origins and durable replacements."
-    },
-    "adaptive_domain_mycima": {
-      "phase": "build",
-      "auto_apply": true,
-      "patch_script": "scripts/provider_patches/adaptive_domain_recovery.py",
-      "options": {
-        "groups": [
-          {
-            "hosts": [
-              "mycima.red"
-            ],
-            "candidates": [
-              "https://mycima.camp"
-            ]
-          }
-        ]
-      },
-      "description": "Provider-specific same-route failover built from this provider's own observed origins and durable replacements."
-    },
-    "adaptive_domain_nakios": {
-      "phase": "build",
-      "auto_apply": true,
-      "patch_script": "scripts/provider_patches/adaptive_domain_recovery.py",
-      "options": {
-        "groups": [
-          {
-            "hosts": [
-              "nakios.store",
-              "api.nakios.store"
-            ],
-            "candidates": [
-              "https://nakios.store",
-              "https://api.nakios.store"
-            ]
-          }
-        ]
-      },
-      "description": "Provider-specific same-route failover built from this provider's own observed origins and durable replacements."
-    },
-    "adaptive_domain_uhdmovies": {
-      "phase": "build",
-      "auto_apply": true,
-      "patch_script": "scripts/provider_patches/adaptive_domain_recovery.py",
-      "options": {
-        "groups": [
-          {
-            "hosts": [
-              "uhdmovies.pink"
-            ],
-            "candidates": [
-              "https://uhdmovies.casa"
-            ]
-          }
-        ]
-      },
-      "description": "Provider-specific same-route failover built from this provider's own observed origins and durable replacements."
-    },
-    "adaptive_domain_videasy": {
-      "phase": "build",
-      "auto_apply": true,
-      "patch_script": "scripts/provider_patches/adaptive_domain_recovery.py",
-      "options": {
-        "groups": [
-          {
-            "hosts": [
-              "player.videasy.net"
-            ],
-            "candidates": [
-              "https://player.videasy.to"
-            ]
-          }
-        ]
-      },
-      "description": "Provider-specific same-route failover built from this provider's own observed origins and durable replacements."
-    },
-    "adaptive_domain_vidfast": {
-      "phase": "build",
-      "auto_apply": true,
-      "patch_script": "scripts/provider_patches/adaptive_domain_recovery.py",
-      "options": {
-        "groups": [
-          {
-            "hosts": [
-              "vidfast.pro"
-            ],
-            "candidates": [
-              "https://vidfast.vc"
-            ]
-          }
-        ]
-      },
-      "description": "Provider-specific same-route failover built from this provider's own observed origins and durable replacements."
-    },
-    "adaptive_domain_vidnest": {
-      "phase": "build",
-      "auto_apply": true,
-      "patch_script": "scripts/provider_patches/adaptive_domain_recovery.py",
-      "options": {
-        "groups": [
-          {
-            "hosts": [
-              "first.vidnest.fun",
-              "vidnest.animanga.fun",
-              "vidnest.fun"
-            ],
-            "candidates": [
-              "https://first.vidnest.fun",
-              "https://vidnest.animanga.fun",
-              "https://vidnest.fun"
-            ]
-          }
-        ]
-      },
-      "description": "Provider-specific same-route failover built from this provider's own observed origins and durable replacements."
-    },
-    "adaptive_domain_vixsrc": {
-      "phase": "build",
-      "auto_apply": true,
-      "patch_script": "scripts/provider_patches/adaptive_domain_recovery.py",
-      "options": {
-        "groups": [
-          {
-            "hosts": [
-              "sub.wyzie.ru"
-            ],
-            "candidates": [
-              "https://sub.wyzie.io"
-            ]
-          }
-        ]
-      },
-      "description": "Provider-specific same-route failover built from this provider's own observed origins and durable replacements."
-    },
-    "adaptive_domain_wookafr": {
-      "phase": "build",
-      "auto_apply": true,
-      "patch_script": "scripts/provider_patches/adaptive_domain_recovery.py",
-      "options": {
-        "groups": [
-          {
-            "hosts": [
-              "wookafr.cymru",
-              "wookafr.fyi",
-              "wookafr.app",
-              "wookafr.to"
-            ],
-            "candidates": [
-              "https://wookafr.cymru",
-              "https://wookafr.fyi",
-              "https://wookafr.app",
-              "https://wookafr.to"
-            ]
-          }
-        ]
-      },
-      "description": "Provider-specific same-route failover built from this provider's own observed origins and durable replacements."
     }
   },
   "runtime_repair": {
@@ -1007,7 +628,7 @@
       "allow_html_url": true,
       "requires_direct_media": false,
       "observed_origins": [
-        "https://4khdhub.one"
+        "https://4khdhub.click"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
@@ -1764,8 +1385,7 @@
         "https://api.movix.fun",
         "https://lodash.com",
         "https://openjsf.org",
-        "http://underscorejs.org",
-        "https://movix.fun"
+        "http://underscorejs.org"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
@@ -2300,10 +1920,11 @@
     }
   },
   "provider_profile_generation": {
-    "schema_version": 2,
-    "provider_count": 87,
-    "staged_provider_count": 86,
+    "schema_version": 3,
+    "provider_count": 86,
+    "staged_provider_count": 0,
     "source": "manifest_published_bundles_and_current_staging",
-    "same_deep_new_provider_support": true
+    "same_deep_new_provider_support": true,
+    "automatic_bundle_rewrite": false
   }
 }
