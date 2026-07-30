@@ -125,6 +125,21 @@ def build_profiles(data: dict, providers: dict[str, tuple[dict, Path]]) -> int:
     caps = data.setdefault("provider_capabilities", {})
     profiles = data.setdefault("patch_profiles", {})
 
+    # Generated adaptive-domain profiles are derived artifacts. Rebuild them from
+    # scratch so stale hosts extracted by an older generator can never survive.
+    generated_names = {
+        name for name in profiles
+        if isinstance(name, str) and name.startswith("adaptive_domain_")
+    }
+    for name in generated_names:
+        profiles.pop(name, None)
+    for patch in patches.values():
+        if not isinstance(patch, dict):
+            continue
+        selected = patch.get("profiles")
+        if isinstance(selected, list):
+            patch["profiles"] = [name for name in selected if name not in generated_names]
+
     for provider_id, (item, path) in sorted(providers.items()):
         text = path.read_text(encoding="utf-8", errors="ignore")
         origins: list[str] = []
