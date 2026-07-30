@@ -119,8 +119,20 @@ def main() -> int:
             required = str(required)
             if required not in text:
                 failures.append(f"{candidate.get('key')}: required value missing from staged file: {required}")
-        if records and candidate.get("upstream_sha256") == candidate.get("sha256"):
-            failures.append(f"{candidate.get('key')}: patches recorded but upstream and patched SHA are equal")
+        # Metadata-only records (and legacy string markers such as
+        # ``published_baseline``) do not prove that the JavaScript was mutated.
+        # Only records emitted by apply_provider_overrides after a real content
+        # change may require the patched SHA to differ from the upstream SHA.
+        effective_records = [
+            record for record in records
+            if isinstance(record, dict)
+            and (
+                record.get("type") in {"patch_profile", "patch_script", "fixed_endpoint"}
+                or int(record.get("count", 0) or 0) > 0
+            )
+        ]
+        if effective_records and candidate.get("upstream_sha256") == candidate.get("sha256"):
+            failures.append(f"{candidate.get('key')}: effective patches recorded but upstream and patched SHA are equal")
         checked += 1
 
 
