@@ -217,6 +217,9 @@ jobs:
           NUVIO_HEALTH_RESULTS: checked-artifact/health-output/health-results.json
         run: python scripts/promote_candidates.py
 
+      - name: Remove stale content-hashed provider bundles
+        run: python scripts/prune_unreferenced_providers.py
+
       - name: Verify overrides reached final published provider files
         run: python scripts/validate_published_overrides.py
 
@@ -238,7 +241,7 @@ jobs:
             git add repair-report.json
           fi
           if [ -d providers ]; then
-            git add providers
+            git add -A providers
           fi
 
           if ! git diff --cached --quiet; then
@@ -254,6 +257,7 @@ jobs:
           test -f manifest.next.json
           mv manifest.next.json manifest.json
           python scripts/generate_language_manifests.py
+          python scripts/prune_unreferenced_providers.py
           python scripts/sync_release_versions.py --manifest manifest.json
           python scripts/generate_release_hashes.py
           python scripts/validate_release_integrity.py
