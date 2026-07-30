@@ -73,10 +73,16 @@ def synthetic_metadata_bundle() -> bytes:
 def test_runtime_profiles_are_not_blindly_applied() -> None:
     config = json.loads((ROOT / "provider-overrides.json").read_text())
     for name, profile in config["patch_profiles"].items():
-        assert profile["phase"] == "runtime", name
-        assert profile["auto_apply"] is False, name
+        phase = profile.get("phase")
+        assert phase in {"runtime", "build"}, name
         assert "provider_id" not in profile, name
-        assert profile["runtime_trigger"], name
+        if phase == "runtime":
+            assert profile.get("auto_apply") is False, name
+            assert profile.get("runtime_trigger"), name
+        else:
+            assert profile.get("auto_apply") is True, name
+            assert profile.get("patch_script"), name
+            assert "runtime_trigger" not in profile, name
 
     source = synthetic_metadata_bundle()
     discovery, discovery_records = apply_overrides("arbitrary-provider", source)
