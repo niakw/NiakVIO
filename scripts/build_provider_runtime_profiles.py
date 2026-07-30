@@ -175,20 +175,29 @@ def build_profiles(data: dict, providers: dict[str, tuple[dict, Path]]) -> int:
 
         groups: list[dict] = []
         owned_origins = provider_owned_origins(provider_id, origins)
-        for old, new in replacements.items():
-            old_host = urlparse(old).hostname if "://" in old else old
-            new_origin = new if "://" in new else "https://" + new
-            if old_host:
-                candidates: list[str] = []
-                normalized = origin(new_origin)
-                if normalized:
-                    candidates.append(normalized)
-                for observed in owned_origins:
-                    if observed not in candidates:
-                        candidates.append(observed)
-                if candidates:
-                    groups.append({"hosts": [old_host.lower()], "candidates": candidates[:8]})
-        if len(owned_origins) > 1:
+
+        # A provider with an explicit fixed endpoint already has a stronger,
+        # deterministic migration contract. Do not add a generic same-route
+        # failover around it: observed website origins can have different roles
+        # (frontend vs API) and may silently redirect API calls to the wrong host.
+        has_fixed_endpoint = isinstance(patch.get("fixed_endpoint"), dict) and bool(
+            patch.get("fixed_endpoint", {}).get("api")
+        )
+        if not has_fixed_endpoint:
+            for old, new in replacements.items():
+                old_host = urlparse(old).hostname if "://" in old else old
+                new_origin = new if "://" in new else "https://" + new
+                if old_host:
+                    candidates: list[str] = []
+                    normalized = origin(new_origin)
+                    if normalized:
+                        candidates.append(normalized)
+                    for observed in owned_origins:
+                        if observed not in candidates:
+                            candidates.append(observed)
+                    if candidates:
+                        groups.append({"hosts": [old_host.lower()], "candidates": candidates[:8]})
+        if not has_fixed_endpoint and len(owned_origins) > 1:
             hosts = [urlparse(value).hostname for value in owned_origins if urlparse(value).hostname]
             groups.append({"hosts": hosts, "candidates": owned_origins[:8]})
 
