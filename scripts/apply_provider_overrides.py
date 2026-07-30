@@ -228,15 +228,18 @@ def _inject_runtime_domain_overrides(text: str, replacements: dict[str, Any]) ->
 
 
 def _inject_global_stream_output_guard(text: str, config: dict[str, Any]) -> tuple[str, bool]:
-    """Wrap every exported getStreams with provider-agnostic output normalization."""
+    """Append a provider-agnostic output guard around every CommonJS/global export.
+
+    The previous implementation depended on a source variable named ``__provider``
+    and therefore missed most minified bundles. This version wraps the public
+    export after the provider has finished initialising, so it works regardless of
+    internal variable names or bundler layout.
+    """
     policy = config.get("global_stream_output") or {}
     if not isinstance(policy, dict) or policy.get("enabled") is False:
         return text, False
-    marker = "NUVIO_GLOBAL_STREAM_OUTPUT_GUARD_V1"
+    marker = "NUVIO_GLOBAL_STREAM_OUTPUT_GUARD_V2"
     if marker in text:
-        return text, False
-    anchor = "if (typeof module !== 'undefined' && module.exports) {"
-    if anchor not in text or "__provider" not in text:
         return text, False
     defaults = {
         "user_agent": policy.get("user_agent") or "Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 Chrome/124 Mobile Safari/537.36",
@@ -246,10 +249,9 @@ def _inject_global_stream_output_guard(text: str, config: dict[str, Any]) -> tup
         "host_rules": policy.get("host_rules") or {},
     }
     payload = json.dumps(defaults, separators=(",", ":"))
-    guard_template = r"""/* NUVIO_GLOBAL_STREAM_OUTPUT_GUARD_V1 */
-;(function(provider,policy){
-  if(!provider||typeof provider.getStreams!=="function")return;
-  var original=provider.getStreams;
+    guard_template = r"""
+/* NUVIO_GLOBAL_STREAM_OUTPUT_GUARD_V2 */
+;(function(g,policy){
   function text(v){return v==null?"":String(v)}
   function inferQuality(stream){
     var hay=(text(stream.quality)+" "+text(stream.name)+" "+text(stream.title)+" "+text(stream.size)).toLowerCase();
@@ -292,8 +294,7 @@ def _inject_global_stream_output_guard(text: str, config: dict[str, Any]) -> tup
     var value=text(url).toLowerCase().split("?")[0].split("#")[0];
     return (policy.reject_extensions||[]).some(function(ext){return value.endsWith(String(ext).toLowerCase())});
   }
-  provider.getStreams=async function(){
-    var result=await original.apply(this,arguments);
+  function normalize(result){
     var list=Array.isArray(result)?result:[];
     var seen=Object.create(null),clean=[];
     for(var i=0;i<list.length;i++){
@@ -309,11 +310,30 @@ def _inject_global_stream_output_guard(text: str, config: dict[str, Any]) -> tup
       clean.push(normalized);
     }
     return clean;
-  };
-})(__provider,__POLICY__);
+  }
+  function wrapFunction(fn){
+    if(typeof fn!=="function"||fn.__nuvioGlobalStreamGuardV2)return fn;
+    var wrapped=async function(){return normalize(await fn.apply(this,arguments))};
+    try{Object.keys(fn).forEach(function(k){wrapped[k]=fn[k]})}catch(_e){}
+    try{Object.defineProperty(wrapped,"__nuvioGlobalStreamGuardV2",{value:true})}catch(_e){wrapped.__nuvioGlobalStreamGuardV2=true}
+    return wrapped;
+  }
+  function wrapTarget(target){
+    if(!target)return target;
+    if(typeof target==="function")return wrapFunction(target);
+    if(typeof target==="object"&&typeof target.getStreams==="function")target.getStreams=wrapFunction(target.getStreams);
+    return target;
+  }
+  try{
+    if(typeof module!=="undefined"&&module&&module.exports)module.exports=wrapTarget(module.exports);
+  }catch(_e){}
+  try{
+    if(g&&typeof g.getStreams==="function")g.getStreams=wrapFunction(g.getStreams);
+  }catch(_e){}
+})(typeof globalThis!=="undefined"?globalThis:this,__POLICY__);
 """
     guard = guard_template.replace("__POLICY__", payload)
-    return text.replace(anchor, guard + "\n" + anchor, 1), True
+    return text.rstrip() + "\n" + guard, True
 
 
 def apply_overrides(
