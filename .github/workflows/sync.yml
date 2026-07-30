@@ -75,58 +75,42 @@ jobs:
             npm install --ignore-scripts --no-audit --no-fund --package-lock=false
           fi
 
-      - name: Build provider-specific runtime profiles for every manifest provider
-        run: python scripts/build_provider_runtime_profiles.py
-
-      - name: Reapply overrides to already published providers
-        run: |
-          python scripts/reapply_published_overrides.py
-          python scripts/generate_release_hashes.py
-
+      # Phase 0: repository safety. This does not decide provider activation.
       - name: Run repository regression tests
         run: npm test
 
-      - name: Verify strict gates and SHA-pinned runtime-evidence safeguards
-        run: python scripts/validate_policy.py
-
-      - name: Verify provider settings diagnostic pipeline
-        run: python scripts/validate_settings_pipeline.py
-
-      - name: Verify provider catalogue and language semantics
-        run: node scripts/validate_provider_semantics.cjs
-
-      - name: Resolve official provider address hubs before discovery
+      - name: Verify repository policy and provider semantics
         run: |
-          python scripts/resolve_provider_hubs.py \
-            --apply \
-            --output health-output/provider-hub-report.json
+          python scripts/validate_policy.py
+          python scripts/validate_settings_pipeline.py
+          node scripts/validate_provider_semantics.cjs
 
+      # Phase 1: discover raw candidates, then solve DNS/domain failures first.
       - name: Discover every non-P2P provider from every upstream manifest
         run: python scripts/discover_candidates.py --require-all-upstreams
 
-      - name: Build and apply capability profiles to newly discovered providers in this deep
-        run: |
-          python scripts/build_provider_runtime_profiles.py --stage staging --apply-stage
-
-      - name: Verify overrides reached the exact staged provider files
-        run: python scripts/validate_override_pipeline.py
-
-      - name: Check French ISP DNS and HTTP access before runtime scoring
+      - name: Test DNS and locate validated alternative domains
         env:
           GLOBALPING_API_TOKEN: ${{ secrets.GLOBALPING_API_TOKEN }}
         run: |
           node scripts/provider_dns_preflight.mjs \
             --stage staging \
             --output health-output/dns-preflight-report.json
-
-      - name: Persist safe DNS migration overrides and repatch staged providers
-        run: |
           python scripts/apply_dns_migration_overrides.py \
             --stage staging \
             --report health-output/dns-preflight-report.json
+
+      # Phase 2: apply deterministic provider routes only after DNS is known.
+      - name: Apply provider runtime profiles and exact overrides
+        run: |
+          python scripts/build_provider_runtime_profiles.py
+          python scripts/reapply_published_overrides.py
+          python scripts/build_provider_runtime_profiles.py --stage staging --apply-stage
           python scripts/validate_override_pipeline.py --stage staging
 
-      - name: Execute providers, repair matching failure schemas and retest exact generated JS
+      # Phase 3: execute provider-specific access, try targeted route recovery,
+      # then retest the exact generated JavaScript. No historical state can pass.
+      - name: Test provider access and repair failed routes
         shell: bash
         env:
           NUVIO_DNS_PREFLIGHT_RESULTS: health-output/dns-preflight-report.json
@@ -139,16 +123,17 @@ jobs:
             printf '%s\n' '{"schema_version":1,"mode":"quick","provider_specific_rules":false,"rounds":[],"accepted_repairs":0}' > health-output/repair-report.json
           fi
 
+      # Phase 4: report quality from the final exact files. Promotion later
+      # enables only current DNS + access + playable-stream + quality passes.
+      - name: Generate final diagnostics and route regressions
+        run: |
+          python scripts/generate_diagnostics.py --results health-output/health-results.json --output health-output
+          python scripts/validate_route_overrides.py --results health-output/health-results.json --report health-output/route-regressions.json
+
       - name: Lock the final tested staging tree against modification
         run: |
           sudo chown -R root:root staging
           sudo chmod -R a-w staging
-
-      - name: Generate stage-by-stage diagnostics
-        run: python scripts/generate_diagnostics.py --results health-output/health-results.json --output health-output
-
-      - name: Detect obsolete route patterns
-        run: python scripts/validate_route_overrides.py --results health-output/health-results.json --report health-output/route-regressions.json
 
       - name: Lock generated validation result
         run: |
