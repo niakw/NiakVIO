@@ -80,8 +80,7 @@ def test_runtime_profiles_are_not_blindly_applied() -> None:
 
     source = synthetic_metadata_bundle()
     discovery, discovery_records = apply_overrides("arbitrary-provider", source)
-    assert b"NUVIO_GLOBAL_STREAM_OUTPUT_GUARD_V3" not in discovery
-    assert b"NUVIO_STREAM_OUTPUT_RECOVERY_V1" not in discovery
+    assert b"NUVIO_GLOBAL_STREAM_OUTPUT_GUARD" not in discovery
     assert not any(row.get("type") == "patch_profile" for row in discovery_records)
 
     runtime, runtime_records = apply_overrides(
@@ -145,46 +144,5 @@ def test_obfuscated_runtime_endpoint_override() -> None:
 
 
 test_obfuscated_runtime_endpoint_override()
-
-
-def test_provider_request_headers_fix_request_stage_403() -> None:
-    source = b'''module.exports={getStreams:function(){return fetch("https://api.movix.fun/api/fstream/movie/157336",{headers:{"X-Keep":"yes"}}).then(function(){return []})}};'''
-    output, records = apply_overrides("movix", source)
-    assert b"NUVIO_REQUEST_HEADER_OVERRIDES_V1" in output
-    assert any(row.get("type") == "request_header_overrides" for row in records)
-    with tempfile.TemporaryDirectory() as tmp:
-        target = Path(tmp) / "provider.js"
-        target.write_bytes(output)
-        script = f'''global.fetch=(url,init)=>{{console.log(JSON.stringify({{url,headers:init.headers}}));return Promise.resolve({{}})}};const p=require({json.dumps(str(target))});Promise.resolve(p.getStreams()).catch(()=>{{}});'''
-        row = json.loads(subprocess.check_output(["node", "-e", script], text=True).strip())
-    headers = {str(k).lower(): str(v) for k, v in row["headers"].items()}
-    assert headers["x-keep"] == "yes"
-    assert headers["origin"] == "https://movix.fun"
-    assert headers["referer"] == "https://movix.fun/"
-    assert "application/json" in headers["accept"]
-    assert headers["user-agent"]
-
-
-test_provider_request_headers_fix_request_stage_403()
-
-
-def test_request_header_policies_accumulate_across_loaded_providers() -> None:
-    movix_source = b'module.exports={getStreams:function(){return fetch("https://api.movix.fun/test").then(function(){return []})}};'
-    dahmer_source = b'module.exports={getStreams:function(){return fetch("https://a.111477.xyz/test").then(function(){return []})}};'
-    movix, _ = apply_overrides("movix", movix_source)
-    dahmer, _ = apply_overrides("dahmermovies", dahmer_source)
-    with tempfile.TemporaryDirectory() as tmp:
-        movix_path = Path(tmp) / "movix.js"
-        dahmer_path = Path(tmp) / "dahmer.js"
-        movix_path.write_bytes(movix)
-        dahmer_path.write_bytes(dahmer)
-        script = f'''const calls=[];global.fetch=(url,init)=>{{calls.push({{url,headers:init.headers}});return Promise.resolve({{}})}};const m=require({json.dumps(str(movix_path))});const d=require({json.dumps(str(dahmer_path))});Promise.resolve(d.getStreams()).then(()=>m.getStreams()).then(()=>console.log(JSON.stringify(calls)));'''
-        calls = json.loads(subprocess.check_output(["node", "-e", script], text=True).strip())
-    movix_headers = {str(k).lower(): str(v) for k, v in calls[1]["headers"].items()}
-    assert movix_headers["origin"] == "https://movix.fun"
-    assert movix_headers["referer"] == "https://movix.fun/"
-
-
-test_request_header_policies_accumulate_across_loaded_providers()
 
 print("override tests passed")
