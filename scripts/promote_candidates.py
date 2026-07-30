@@ -1282,122 +1282,95 @@ def activation_decision(
     evidence_registry: dict[str, Any] | None = None,
     previous_record: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
+    """Enable only a provider proven functional by the current deep run.
+
+    Publication follows three ordered gates:
+      1. DNS/access preflight succeeded;
+      2. provider-specific runtime access succeeded;
+      3. at least one playable stream passed the quality gates.
+
+    Historical state, an old SHA, manual runtime evidence, or an inconclusive
+    result can never enable a provider. They remain diagnostic data only.
+    """
     gates, proof = pre_evaluation
     gates = {name: dict(value) for name, value in gates.items()}
-    evidence_registry = evidence_registry or {"providers": {}}
-
-    performance = proof.get("performance", {})
-    consecutive = int(history_item.get("strict_consecutive_deep_passes", 0))
-    total = int(history_item.get("strict_total_deep_passes", 0))
-    consecutive_inconclusive = int(
-        history_item.get("consecutive_inconclusive_deep_checks", 0)
-    )
-    minimum_consecutive = int(
-        activation.get("minimum_consecutive_deep_passes", 1)
-    )
-    minimum_total = int(activation.get("minimum_total_deep_passes", 1))
-    # A successful current deep check is sufficient for immediate activation.
-    # Historical counters are retained only for finite grace on a later
-    # inconclusive run; they are not a prerequisite on a new provider SHA.
-    performance_stability_pass = bool(performance.get("passed", False)) or (
-        str(item.get("health", {}).get("status", "")) == "reachable"
-        and bool(proof.get("provider_server_accessible", False))
-    )
-    gates["10_performance_and_stability"] = gate(
-        performance_stability_pass,
-        {
-            "provider_median_latency_ms": performance.get("provider_median_latency_ms"),
-            "stream_median_latency_ms": performance.get("stream_median_latency_ms"),
-            "strict_consecutive_deep_passes": consecutive,
-            "strict_total_deep_passes": total,
-            "consecutive_inconclusive_deep_checks": consecutive_inconclusive,
-        },
-        {
-            "maximum_provider_median_latency_ms": performance.get(
-                "maximum_provider_median_latency_ms"
-            ),
-            "maximum_stream_median_latency_ms": performance.get(
-                "maximum_stream_median_latency_ms"
-            ),
-            "minimum_consecutive_deep_passes": minimum_consecutive,
-            "minimum_total_deep_passes": minimum_total,
-        },
-    )
-
-    upstream_enabled = bool(item.get("metadata", {}).get("enabled", True))
-    respect_upstream = bool(activation.get("respect_upstream_disabled_state", True))
-    strict_eligible = all_gates_pass(gates) and (upstream_enabled or not respect_upstream)
 
     status = str(item.get("health", {}).get("status", "runtime_error"))
-    same_validated_sha = (
-        bool(item.get("sha256"))
-        and history_item.get("strict_validated_sha256") == item.get("sha256")
-    )
-    grace_limit = int(
-        activation.get(
-            "maximum_consecutive_inconclusive_deep_checks_for_strict_grace", 2
-        )
-    )
-    strict_grace_eligible = (
-        bool(activation.get("preserve_strict_history_on_inconclusive", True))
-        and status in inconclusive_statuses(activation)
-        and same_validated_sha
-        and 1 <= consecutive_inconclusive <= grace_limit
-        and bool(gates.get("01_policy_safe_no_p2p", {}).get("passed", False))
-        and (upstream_enabled or not respect_upstream)
+    upstream_enabled = bool(item.get("metadata", {}).get("enabled", True))
+    respect_upstream = bool(activation.get("respect_upstream_disabled_state", True))
+
+    dns = item.get("health", {}).get("dns_preflight") or {}
+    dns_decision = dns.get("decision") if isinstance(dns, dict) else {}
+    dns_status = str((dns_decision or {}).get("status") or "unknown")
+    dns_pass = dns_status not in {
+        "confirmed_french_block", "dns_failed", "unresolved", "unreachable"
+    } and not bool(proof.get("runtime_skipped_by_dns_preflight", False))
+
+    access_pass = bool(proof.get("provider_server_successful_response", False))
+    stream_pass = (
+        status == "healthy"
+        and int(proof.get("streams_playable", 0)) > 0
+        and int(proof.get("healthy_fixtures", 0)) > 0
     )
 
-    historical = historical_inconclusive_decision(
-        item, activation, previous_record, gates
+    gates["00_dns_or_alternative_domain"] = gate(
+        dns_pass,
+        {"dns_status": dns_status},
+        {"required": "DNS resolution or validated alternative domain"},
     )
-    historical_eligible = bool(historical.get("eligible", False)) and (
-        upstream_enabled or not respect_upstream
+    gates["00_provider_specific_access"] = gate(
+        access_pass,
+        {
+            "provider_server_successful_response": proof.get("provider_server_successful_response", False),
+            "provider_server_hosts": proof.get("provider_server_hosts", []),
+            "provider_server_http_statuses": proof.get("provider_server_http_statuses", []),
+        },
+        {"required": "successful provider-owned HTTP response"},
     )
-    runtime = runtime_evidence_decision(
-        item, activation, evidence_registry, gates
-    )
-    runtime_eligible = bool(runtime.get("eligible", False)) and (
-        upstream_enabled or not respect_upstream
+    gates["00_current_playable_stream"] = gate(
+        stream_pass,
+        {
+            "status": status,
+            "streams_playable": proof.get("streams_playable", 0),
+            "healthy_fixtures": proof.get("healthy_fixtures", 0),
+            "effective_max_height": proof.get("effective_max_height"),
+        },
+        {"required": "at least one currently playable stream"},
     )
 
-    if strict_eligible:
-        mode = "strict"
-    elif strict_grace_eligible:
-        mode = "strict_grace_inconclusive"
-    elif historical_eligible:
-        mode = "historical_quality_grace"
-    elif runtime_eligible:
-        mode = "runtime_evidence"
-    else:
-        mode = "disabled"
-
-    eligible = mode != "disabled"
+    current_pass = dns_pass and access_pass and stream_pass and all_gates_pass(gates)
+    eligible = current_pass and (upstream_enabled or not respect_upstream)
     enabled = eligible and not auto_disabled
     blockers = [name for name, value in gates.items() if not value.get("passed")]
     if respect_upstream and not upstream_enabled:
         blockers.append("upstream_disabled")
-    if not eligible and status in inconclusive_statuses(activation):
-        blockers.append(runtime.get("reason") or "inconclusive_ci_without_runtime_evidence")
-    if eligible:
-        # Failed strict gates are diagnostic only when a safe alternate activation
-        # mode is explicitly in force; they must not be presented as active blockers.
-        blockers = []
     if eligible and auto_disabled:
         blockers.append("availability_auto_disabled")
+
+    disabled_reason = None
+    if not dns_pass:
+        disabled_reason = "dns_or_alternative_domain_failed"
+    elif not access_pass:
+        disabled_reason = "provider_specific_access_failed"
+    elif not stream_pass:
+        disabled_reason = "no_current_playable_stream"
+    elif blockers:
+        disabled_reason = "quality_gate_failed"
 
     return {
         "enabled": enabled,
         "activation_eligible": eligible,
-        "strict_activation_eligible": strict_eligible,
-        "strict_grace_eligible": strict_grace_eligible,
-        "historical_quality_grace_eligible": historical_eligible,
-        "runtime_evidence_eligible": runtime_eligible,
-        "activation_mode": mode,
+        "strict_activation_eligible": eligible,
+        "strict_grace_eligible": False,
+        "historical_quality_grace_eligible": False,
+        "runtime_evidence_eligible": False,
+        "activation_mode": "strict_current" if eligible else "disabled",
         "activation_blockers": blockers,
         "activation_gates": gates,
         "proof": proof,
-        "historical_quality_grace": historical,
-        "runtime_evidence": runtime,
+        "historical_quality_grace": {"eligible": False, "reason": "disabled_by_current_proof_policy"},
+        "runtime_evidence": {"eligible": False, "reason": "disabled_by_current_proof_policy"},
+        "disabled_reason": disabled_reason,
     }
 
 def failed_declared_ids(registry: dict[str, Any]) -> set[str]:
@@ -1616,10 +1589,7 @@ def main() -> int:
             gates = decision["activation_gates"]
             proof = decision["proof"]
             mode_priority = {
-                "strict": 3,
-                "strict_grace_inconclusive": 3,
-                "historical_quality_grace": 2,
-                "runtime_evidence": 1,
+                "strict_current": 3,
                 "disabled": 0,
             }.get(decision["activation_mode"], 0)
             passed_gates = sum(1 for value in gates.values() if value.get("passed"))
@@ -1640,22 +1610,6 @@ def main() -> int:
             decision = decisions[selected["key"]]
             enabled = bool(decision["enabled"])
             eligible = bool(decision["activation_eligible"])
-            # Preserve an already-enabled provider on inconclusive CI evidence.
-            # Only hard/conclusive failures, policy violations or sustained outage may disable it.
-            previous_enabled = bool(existing.get(cid, {}).get("enabled", False))
-            current_status = str(selected.get("health", {}).get("status", "runtime_error"))
-            no_p2p = bool(decision.get("activation_gates", {}).get("01_policy_safe_no_p2p", {}).get("passed", False))
-            upstream_enabled = bool(selected.get("metadata", {}).get("enabled", True))
-            selected_is_baseline = bool(selected.get("baseline"))
-            if (not enabled and previous_enabled and selected_is_baseline
-                    and current_status in inconclusive_statuses(activation)
-                    and no_p2p and upstream_enabled and not auto_disabled):
-                enabled = True
-                eligible = True
-                decision["enabled"] = True
-                decision["activation_eligible"] = True
-                decision["activation_mode"] = "preserved_manifest_inconclusive"
-                decision["activation_blockers"] = []
             blockers = list(decision["activation_blockers"])
             gates = decision["activation_gates"]
             proof = decision["proof"]
@@ -1738,8 +1692,8 @@ def main() -> int:
             failed_gate_names = [
                 name for name, value in gates.items() if not value.get("passed")
             ]
-            if enabled and activation_mode == "strict":
-                action = "enabled-all-ten-gates-passed"
+            if enabled and activation_mode == "strict_current":
+                action = "enabled-current-dns-access-stream-quality-passed"
             elif enabled and activation_mode == "strict_grace_inconclusive":
                 action = "enabled-strict-validation-grace-ci-inconclusive"
             elif enabled and activation_mode == "historical_quality_grace":

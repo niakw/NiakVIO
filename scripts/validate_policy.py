@@ -61,6 +61,9 @@ def base_item() -> dict[str, Any]:
                 "provider_median_latency_ms": 1_000,
                 "stream_median_latency_ms": 900,
                 "disallowed_streams": 0,
+                "provider_server_successful_response": True,
+                "provider_server_hosts": ["provider.example"],
+                "provider_server_http_statuses": [200],
             },
         },
     }
@@ -92,6 +95,9 @@ def inconclusive_item() -> dict[str, Any]:
             "provider_median_latency_ms": None,
             "stream_median_latency_ms": None,
             "disallowed_streams": 0,
+            "provider_server_successful_response": False,
+            "provider_server_hosts": [],
+            "provider_server_http_statuses": [],
         },
     }
     return item
@@ -423,7 +429,7 @@ def main() -> int:
         raise AssertionError("runtime-only VOSTFR was incorrectly promoted to VF")
 
     strict = decide(module, activation, item, strict_history(item))
-    if not strict["enabled"] or strict["activation_mode"] != "strict":
+    if not strict["enabled"] or strict["activation_mode"] != "strict_current":
         raise AssertionError("a provider passing all ten gates was not strictly enabled")
 
     no_deep_validation = decide(
@@ -442,8 +448,8 @@ def main() -> int:
 
     registry = runtime_registry(inconclusive)
     runtime = decide(module, activation, inconclusive, registry=registry)
-    if not runtime["enabled"] or runtime["activation_mode"] != "runtime_evidence":
-        raise AssertionError("exact SHA-pinned Nuvio runtime evidence was not accepted")
+    if runtime["enabled"] or runtime["runtime_evidence_eligible"]:
+        raise AssertionError("manual runtime evidence bypassed current execution proof")
 
     mismatch_cases = []
     bad = copy.deepcopy(registry); bad["providers"]["policy-test"]["sha256"] = "b" * 64; mismatch_cases.append(bad)
@@ -473,44 +479,25 @@ def main() -> int:
         if decide(module, activation, hard, registry=runtime_registry(hard))["enabled"]:
             raise AssertionError(f"runtime evidence overrode conclusive {hard_status}")
 
-    grace_one = decide(module, activation, inconclusive, strict_history(inconclusive, inconclusive=1))
-    grace_two = decide(module, activation, inconclusive, strict_history(inconclusive, inconclusive=2))
-    grace_expired = decide(module, activation, inconclusive, strict_history(inconclusive, inconclusive=3))
-    if grace_one["activation_mode"] != "strict_grace_inconclusive" or not grace_one["enabled"]:
-        raise AssertionError("first inconclusive deep did not preserve strict validation")
-    if grace_two["activation_mode"] != "strict_grace_inconclusive" or not grace_two["enabled"]:
-        raise AssertionError("second inconclusive deep did not preserve strict validation")
-    if grace_expired["enabled"] or grace_expired["activation_eligible"]:
-        raise AssertionError("strict inconclusive grace did not expire")
+    # No historical, same-SHA or inconclusive grace may activate a provider.
+    for count in (1, 2, 3):
+        grace = decide(module, activation, inconclusive, strict_history(inconclusive, inconclusive=count))
+        if grace["enabled"] or grace["activation_eligible"]:
+            raise AssertionError("inconclusive historical grace bypassed current proof")
 
-    # Generic historical quality grace: no provider name is hard-coded. The same
-    # SHA and prior score/gates are required when the current CI result is inconclusive.
     prior = {
         "sha256": inconclusive["sha256"],
-        "health_score": 86,
-        "activation_gates": {
-            name: {"passed": True}
-            for name in (
-                "01_policy_safe_no_p2p",
-                "03_minimum_score",
-                "04_fixture_and_type_coverage",
-                "05_stream_and_fixture_coverage",
-                "06_distinct_host_diversity",
-                "07_verified_payload_playability",
-                "08_quality_and_bitrate",
-                "09_language_and_subtitle_integrity",
-            )
-        },
+        "health_score": 100,
+        "activation_gates": {name: {"passed": True} for name in (
+            "01_policy_safe_no_p2p", "03_minimum_score",
+            "04_fixture_and_type_coverage", "05_stream_and_fixture_coverage",
+            "06_distinct_host_diversity", "07_verified_payload_playability",
+            "08_quality_and_bitrate", "09_language_and_subtitle_integrity",
+        )},
     }
     historical = decide(module, activation, inconclusive, previous_record=prior)
-    if not historical["enabled"] or historical["activation_mode"] != "historical_quality_grace":
-        raise AssertionError("generic same-SHA historical score/quality grace was not applied")
-    low_score = copy.deepcopy(prior); low_score["health_score"] = 69
-    if decide(module, activation, inconclusive, previous_record=low_score)["enabled"]:
-        raise AssertionError("historical grace bypassed the minimum score")
-    wrong_sha = copy.deepcopy(prior); wrong_sha["sha256"] = "c" * 64
-    if decide(module, activation, inconclusive, previous_record=wrong_sha)["enabled"]:
-        raise AssertionError("historical grace survived a JavaScript SHA change")
+    if historical["enabled"] or historical["historical_quality_grace_eligible"]:
+        raise AssertionError("historical quality state bypassed current proof")
 
     # Nuvio TV cache workaround: only a real payload change increments the version.
     if module.next_manifest_version("5.13.4", "5.14.2", False) != "5.14.2":
@@ -574,9 +561,8 @@ def main() -> int:
         raise AssertionError("conclusive failure did not reset strict validation")
 
     print(
-        "Activation policy self-test passed: ten strict gates, generic historical score grace, "
-        "one-representative-result activation, observed VOSTFR ordering, merged movie/tv/anime coverage, automatic version bumps, "
-        "finite inconclusive grace, and hard-failure protections are enforced."
+        "Activation policy self-test passed: current DNS, provider access, playable-stream "
+        "and quality proof are required; historical, manual and inconclusive grace cannot enable providers."
     )
     return 0
 
