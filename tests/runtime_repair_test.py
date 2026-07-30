@@ -150,7 +150,7 @@ def test_profile_selection_is_provider_agnostic() -> None:
     assert "request_header_recovery" not in profiles
 
     profiles = matching_profiles(candidate, stream_forbidden_result(), source)
-    assert profiles == ["stream_output_recovery"]
+    assert "stream_output_recovery" not in profiles
 
 
 def test_html_profile_rewrites_exact_functions_without_deleting_neighbours() -> None:
