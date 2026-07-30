@@ -31,20 +31,6 @@
         "resolver_function": "detectApi",
         "api": "https://api.movix.fun",
         "referer": "https://movix.fun/"
-      },
-      "request_headers": {
-        "defaults": {
-          "User-Agent": "Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 Chrome/124 Mobile Safari/537.36",
-          "Accept": "application/json, text/plain, */*",
-          "Accept-Language": "fr-FR,fr;q=0.9,en;q=0.8"
-        },
-        "host_rules": {
-          "api.movix.fun": {
-            "referer": "https://movix.fun/",
-            "origin": "https://movix.fun",
-            "accept": "application/json, text/plain, */*"
-          }
-        }
       }
     },
     "frenchstream": {
@@ -62,10 +48,7 @@
       "required_route_values": [],
       "manifest_overrides": {
         "logo": "https://frenchstream.food/favicon.ico"
-      },
-      "profiles": [
-        "metadata_context_recovery"
-      ]
+      }
     },
     "streamzo": {
       "notes": [
@@ -107,15 +90,11 @@
       ]
     },
     "purstream": {
-      "replacements": {
-        "purstream.art": "purstream.wiki"
-      },
-      "runtime_domain_replacements": {
-        "purstream.art": "purstream.wiki"
-      },
       "notes": [
-        "Automatically migrated purstream.art to purstream.wiki after French ISP DNS/HTTP preflight redirect validation."
-      ]
+        "Do not map the provider to the hub itself. resolve_provider_hubs.py follows the official-address page and persists only a runtime-validated terminal site/API."
+      ],
+      "capability": "official_domain_hub",
+      "official_hub": "https://purstream.wiki"
     },
     "vidfast": {
       "replacements": {
@@ -125,8 +104,10 @@
         "vidfast.pro": "vidfast.vc"
       },
       "notes": [
-        "Automatically migrated vidfast.pro to vidfast.vc after French ISP DNS/HTTP preflight redirect validation."
-      ]
+        "Use VidFast documented movie/tv embed routes. Do not force direct-media validation on the iframe URL."
+      ],
+      "capability": "iframe_player",
+      "preserve_embed_urls": true
     },
     "vixsrc": {
       "replacements": {
@@ -173,9 +154,6 @@
       },
       "notes": [
         "Automatically migrated coflix.cymru to coflix.blue after DNS/HTTP preflight validation of a redirect or a reachable same-role provider endpoint."
-      ],
-      "profiles": [
-        "metadata_context_recovery"
       ]
     },
     "moviesmod": {
@@ -220,57 +198,6 @@
       },
       "notes": [
         "Automatically migrated mycima.red to mycima.camp after DNS/HTTP preflight validation of a redirect or a reachable same-role provider endpoint."
-      ]
-    },
-    "dahmermovies": {
-      "notes": [
-        "Apply browser-compatible request headers to the source host after confirmed HTTP 403 responses."
-      ],
-      "request_headers": {
-        "defaults": {
-          "User-Agent": "Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 Chrome/124 Mobile Safari/537.36",
-          "Accept": "text/html,application/xhtml+xml,application/json;q=0.9,*/*;q=0.8",
-          "Accept-Language": "en-US,en;q=0.9"
-        },
-        "host_rules": {
-          "a.111477.xyz": {
-            "referer": "https://a.111477.xyz/",
-            "origin": "https://a.111477.xyz"
-          }
-        }
-      }
-    },
-    "dahmermovies-tv": {
-      "notes": [
-        "Apply browser-compatible request headers to the source host after confirmed HTTP 403 responses."
-      ],
-      "request_headers": {
-        "defaults": {
-          "User-Agent": "Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 Chrome/124 Mobile Safari/537.36",
-          "Accept": "text/html,application/xhtml+xml,application/json;q=0.9,*/*;q=0.8",
-          "Accept-Language": "en-US,en;q=0.9"
-        },
-        "host_rules": {
-          "a.111477.xyz": {
-            "referer": "https://a.111477.xyz/",
-            "origin": "https://a.111477.xyz"
-          }
-        }
-      }
-    },
-    "animesultra": {
-      "profiles": [
-        "metadata_context_recovery"
-      ]
-    },
-    "dulourd": {
-      "profiles": [
-        "metadata_context_recovery"
-      ]
-    },
-    "vostfree": {
-      "profiles": [
-        "metadata_context_recovery"
       ]
     }
   },
@@ -343,54 +270,6 @@
       "required_values": [
         "[Nuvio Runtime Repair] Content found via HTML search"
       ]
-    },
-    "request_header_recovery": {
-      "description": "Add conservative browser-compatible headers when provider-origin requests are consistently rejected with HTTP 403, then keep the patch only after a successful deep retest.",
-      "phase": "runtime",
-      "auto_apply": false,
-      "priority": 5,
-      "runtime_trigger": "provider_http_forbidden",
-      "detect_any": [
-        "fetch(",
-        "fetch["
-      ],
-      "patch_script": "scripts/provider_patches/request_header_recovery.py",
-      "options": {
-        "user_agent": "Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 Chrome/124 Mobile Safari/537.36",
-        "accept": "*/*",
-        "accept_language": "en-US,en;q=0.9",
-        "success_marker": "NUVIO_REQUEST_HEADER_RECOVERY_V1",
-        "same_origin_context": true
-      },
-      "required_values": [
-        "NUVIO_REQUEST_HEADER_RECOVERY_V1"
-      ]
-    },
-    "stream_output_recovery": {
-      "description": "Normalize only a provider whose returned streams fail an HTTP playback probe; retain the patch only after a strict improving deep retest.",
-      "phase": "runtime",
-      "auto_apply": false,
-      "priority": 6,
-      "runtime_trigger": "stream_http_forbidden",
-      "detect_any": [
-        "module.exports",
-        "getStreams"
-      ],
-      "patch_script": "scripts/provider_patches/stream_output_recovery.py",
-      "options": {
-        "user_agent": "Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 Chrome/124 Mobile Safari/537.36",
-        "add_accept": true,
-        "add_range": true,
-        "reject_extensions": [
-          ".avi",
-          ".wmv",
-          ".flv"
-        ],
-        "success_marker": "NUVIO_STREAM_OUTPUT_RECOVERY_V1"
-      },
-      "required_values": [
-        "NUVIO_STREAM_OUTPUT_RECOVERY_V1"
-      ]
     }
   },
   "runtime_repair": {
@@ -399,28 +278,79 @@
     "accept_only_strict_runtime_improvement": true,
     "retain_parent_on_failure": true
   },
-  "global_stream_output": {
-    "enabled": false,
-    "user_agent": "Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 Chrome/124 Mobile Safari/537.36",
-    "add_accept": true,
-    "add_range": true,
-    "reject_extensions": [
-      ".avi",
-      ".wmv",
-      ".flv"
-    ],
-    "host_rules": {
-      "*.finepulfe.xyz": {
-        "referer": "https://movix.fun/",
-        "origin": "https://movix.fun",
-        "headers": {
-          "Accept": "application/vnd.apple.mpegurl,application/x-mpegURL,*/*"
-        }
-      }
+  "provider_capabilities": {
+    "vidfast": {
+      "strategy": "iframe_player",
+      "validation": "embed_page",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "official_origins": [
+        "https://vidfast.vc",
+        "https://vidfast.bz",
+        "https://vidfast.pro",
+        "https://vidfast.in",
+        "https://vidfast.io",
+        "https://vidfast.me",
+        "https://vidfast.net",
+        "https://vidfast.pm"
+      ],
+      "movie_template": "https://vidfast.vc/movie/{tmdbId}?autoPlay=true",
+      "tv_template": "https://vidfast.vc/tv/{tmdbId}/{season}/{episode}?autoPlay=true",
+      "notes": [
+        "Preserve the documented iframe/player contract; do not reject HTML embed URLs or force direct-media headers."
+      ]
     },
-    "notes": [
-      "Blanket wrapping is disabled because Node-compatible wrappers caused all-provider regressions in the embedded Nuvio runtime.",
-      "Stream-output repair is applied only after runtime evidence and a strict improving retest."
-    ]
+    "purstream": {
+      "strategy": "official_domain_hub",
+      "validation": "follow_official_link_then_api_runtime",
+      "hub": "https://purstream.wiki",
+      "requires_direct_media": true,
+      "notes": [
+        "The .wiki address is a hub, not the streaming/API origin. Persist a migration only after the official site and API route are both validated."
+      ]
+    }
+  },
+  "official_domain_hubs": {
+    "purstream": {
+      "hub": "https://purstream.wiki",
+      "official_link_labels": [
+        "URL Officielle",
+        "Accédez à Purstream",
+        "Accedez a Purstream",
+        "site officiel",
+        "nouvelle adresse",
+        "lien vérifié",
+        "lien verifie"
+      ],
+      "old_site_hosts": [
+        "purstream.art",
+        "purstream.wiki",
+        "purstream.club"
+      ],
+      "old_api_hosts": [
+        "api.purstream.art",
+        "api.purstream.wiki",
+        "api.purstream.club"
+      ],
+      "api_templates": [
+        "https://api.purstream.{tld}",
+        "{site}/api"
+      ],
+      "api_probe_routes": [
+        "/api/v1/search",
+        "/api/v1",
+        "/health",
+        "/"
+      ],
+      "api_success_statuses": [
+        200,
+        400,
+        401,
+        403,
+        404,
+        405
+      ],
+      "require_api_validation": true
+    }
   }
 }
