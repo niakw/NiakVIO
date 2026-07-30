@@ -66,7 +66,12 @@ def accepted_migration(decision: dict, config: dict) -> dict | None:
     if migration_config.get("same_brand_required", True) and not migration.get("same_brand"):
         return None
     evidence = {str(item) for item in migration.get("evidence") or []}
-    if not any(item.startswith("http_redirect_") for item in evidence):
+    redirect_proof = any(item.startswith("http_redirect_") for item in evidence)
+    peer_proof = {
+        "provider_peer_globally_unreachable",
+        "provider_peer_reachable_same_role",
+    }.issubset(evidence) and migration.get("same_role") is True
+    if not (redirect_proof or peer_proof):
         return None
     old_host = str(migration.get("original_host") or "").strip().lower()
     new_host = str(migration.get("host") or "").strip().lower()
@@ -130,7 +135,7 @@ def main() -> int:
         if not changed:
             continue
         notes = patch.setdefault("notes", [])
-        note = f"Automatically migrated {old_host} to {new_host} after French ISP DNS/HTTP preflight redirect validation."
+        note = f"Automatically migrated {old_host} to {new_host} after DNS/HTTP preflight validation of a redirect or a reachable same-role provider endpoint."
         if note not in notes:
             notes.append(note)
         changes.append({

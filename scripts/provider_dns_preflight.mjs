@@ -752,18 +752,89 @@ export async function checkDomainAcrossResolvers(host, preflightConfig, dependen
   };
 }
 
+function hostRole(host) {
+  const labels = normalizeHost(host).split('.').filter(Boolean);
+  const first = labels[0] || '';
+  if (['api', 'api1', 'api2', 'backend', 'server'].includes(first)) return 'api';
+  if (['cdn', 'static', 'media', 'assets', 'img', 'images'].includes(first)) return 'asset';
+  return 'site';
+}
+
+export function discoverPeerMigrationCandidates(domainResults, preflightConfig = {}) {
+  const threshold = Number(preflightConfig?.migration_discovery?.minimum_confidence || 80);
+  const reachable = (domainResults || []).filter((item) =>
+    ['accessible_primary_french_isp', 'accessible_french_fallback', 'accessible_neutral_only'].includes(item?.status));
+  const unreachable = (domainResults || []).filter((item) => item?.status === 'globally_unreachable');
+  const candidates = [];
+
+  for (const dead of unreachable) {
+    const deadHost = normalizeHost(dead?.host);
+    const deadBrand = baseBrand(deadHost);
+    const deadRole = hostRole(deadHost);
+    if (!deadHost || !deadBrand) continue;
+
+    for (const live of reachable) {
+      const liveHost = normalizeHost(live?.host);
+      if (!liveHost || liveHost === deadHost) continue;
+      const sameBrand = baseBrand(liveHost) === deadBrand;
+      const sameRole = hostRole(liveHost) === deadRole;
+      if (!sameBrand || !sameRole) continue;
+      const confidence = 90;
+      if (confidence < threshold) continue;
+      candidates.push({
+        original_host: deadHost,
+        host: liveHost,
+        confidence,
+        same_brand: true,
+        same_role: true,
+        evidence: [
+          'provider_peer_globally_unreachable',
+          'provider_peer_reachable_same_role',
+        ],
+      });
+    }
+  }
+
+  return candidates.sort((left, right) =>
+    right.confidence - left.confidence
+    || left.original_host.localeCompare(right.original_host)
+    || left.host.localeCompare(right.host));
+}
+
 export function providerDecision(domainResults, preflightConfig) {
   if (!domainResults.length) {
     return { status: 'no_provider_domain_detected', continue_runtime: true, reason: 'no_static_provider_domain' };
   }
+  const redirectMigrations = domainResults
+    .flatMap((item) => item.migration_candidates || [])
+    .filter((item) => item.same_brand && item.confidence >= Number(preflightConfig?.migration_discovery?.minimum_confidence || 80));
+  const peerMigrations = discoverPeerMigrationCandidates(domainResults, preflightConfig);
+  const migrations = [...redirectMigrations, ...peerMigrations]
+    .sort((left, right) => right.confidence - left.confidence);
+  const migration = migrations[0] || null;
+
   const frenchPass = domainResults.find((item) => ['accessible_primary_french_isp', 'accessible_french_fallback'].includes(item.status));
   if (frenchPass) {
-    return { status: 'pass', continue_runtime: true, reason: frenchPass.status, selected_resolver: frenchPass.selected_resolver };
+    return {
+      status: 'pass',
+      continue_runtime: true,
+      reason: migration ? 'accessible_with_dead_peer_migration' : frenchPass.status,
+      selected_resolver: frenchPass.selected_resolver,
+      migration_candidate: migration,
+      migration_candidates: migrations,
+    };
   }
-  const migration = domainResults
-    .flatMap((item) => item.migration_candidates || [])
-    .filter((item) => item.same_brand && item.confidence >= Number(preflightConfig?.migration_discovery?.minimum_confidence || 80))
-    .sort((left, right) => right.confidence - left.confidence)[0] || null;
+  const neutralPass = domainResults.find((item) => item.status === 'accessible_neutral_only');
+  if (neutralPass && migration) {
+    return {
+      status: 'inconclusive',
+      continue_runtime: preflightConfig.continue_on_inconclusive !== false,
+      reason: 'neutral_accessible_with_dead_peer_migration',
+      selected_resolver: neutralPass.selected_resolver,
+      migration_candidate: migration,
+      migration_candidates: migrations,
+    };
+  }
   const confirmedBlock = domainResults.some((item) => item.status === 'confirmed_french_dns_or_http_block');
   if (confirmedBlock) {
     return {
@@ -771,6 +842,7 @@ export function providerDecision(domainResults, preflightConfig) {
       continue_runtime: preflightConfig.skip_runtime_on_confirmed_french_block === false,
       reason: migration ? 'confirmed_block_with_migration_candidate' : 'confirmed_block_without_safe_migration',
       migration_candidate: migration,
+      migration_candidates: migrations,
     };
   }
   if (domainResults.every((item) => item.status === 'globally_unreachable')) {
@@ -779,6 +851,7 @@ export function providerDecision(domainResults, preflightConfig) {
       continue_runtime: preflightConfig.continue_on_global_unreachable === true,
       reason: 'all_french_and_neutral_resolvers_confirmed_unreachable',
       migration_candidate: migration,
+      migration_candidates: migrations,
     };
   }
   return {
@@ -786,6 +859,7 @@ export function providerDecision(domainResults, preflightConfig) {
     continue_runtime: preflightConfig.continue_on_inconclusive !== false,
     reason: 'french_isp_resolvers_unavailable_or_neutral_only',
     migration_candidate: migration,
+    migration_candidates: migrations,
   };
 }
 
@@ -834,7 +908,6 @@ async function runCli() {
         const domainResults = [];
         for (const hint of domainHints) {
           domainResults.push(await checkDomainAcrossResolvers(hint.host, preflightConfig, { domainHints, resolveFn: remoteDependencies.resolveFn, probeFn: remoteDependencies.probeFn }));
-          if (domainResults.at(-1)?.status.startsWith('accessible_')) break;
         }
         const decision = providerDecision(domainResults, preflightConfig);
         results[index] = {
