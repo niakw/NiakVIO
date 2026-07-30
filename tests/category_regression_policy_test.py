@@ -8,8 +8,9 @@ health=(ROOT/'scripts/health_check.mjs').read_text()
 assert 'profile.requiredCategories' in health
 assert "groups[category]" in health
 worker=(ROOT/'scripts/provider_worker.cjs').read_text()
-assert 'observationsAfter > observationsBefore' in worker
+assert 'Empty output is never proof' in worker
 sync=(ROOT/'scripts/discover_candidates.py').read_text()
 assert 'published-baseline' in sync
+assert 'provider_lkg_registry' in sync
 assert 'Last published local artifact' in sync
 print('category regression and baseline policy tests passed')

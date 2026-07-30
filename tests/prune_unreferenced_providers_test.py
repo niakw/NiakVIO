@@ -24,7 +24,11 @@ with tempfile.TemporaryDirectory() as tmp:
         encoding="utf-8",
     )
     (root / "manifest.next.json").write_text(
-        json.dumps({"scrapers": [{"url": "https://example.invalid/providers/movix--nuvio--1111111111111111.js?x=1"}]}),
+        json.dumps({"scrapers": [{"url": "https://example.invalid/providers/movix--nuvio--2222222222222222.js?x=1"}]}),
+        encoding="utf-8",
+    )
+    (root / "provider-lkg.json").write_text(
+        json.dumps({"providers": {"movix": {"filename": "providers/movix--nuvio--1111111111111111.js"}}}),
         encoding="utf-8",
     )
 
@@ -35,8 +39,8 @@ with tempfile.TemporaryDirectory() as tmp:
         check=True,
     )
     assert keep.exists(), result.stdout
-    assert not stale.exists(), result.stdout
+    assert stale.exists(), result.stdout
     assert source.exists(), result.stdout
-    assert "removed=1" in result.stdout, result.stdout
+    assert "removed=0" in result.stdout, result.stdout
 
 print("provider prune test passed")

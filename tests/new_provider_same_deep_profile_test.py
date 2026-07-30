@@ -32,12 +32,13 @@ def main():
         assert data['provider_profile_generation']['same_deep_new_provider_support'] is True
         assert data['provider_profile_generation']['staged_provider_count'] >= 1
         assert 'brandnew' in data['provider_capabilities']
-        assert 'adaptive_domain_brandnew' in data['patch_profiles']
+        assert not any(name.startswith('adaptive_domain_') for name in data['patch_profiles'])
         patched=js.read_text()
-        assert 'NUVIO_ADAPTIVE_DOMAIN_RECOVERY_V1' in patched
+        assert 'NUVIO_ADAPTIVE_DOMAIN_RECOVERY_V1' not in patched
+        assert data['provider_profile_generation']['automatic_bundle_rewrite'] is False
         updated=json.loads((tmp/'candidates.json').read_text())['candidates'][0]
         assert updated['sha256']==hashlib.sha256(js.read_bytes()).hexdigest()
-        assert any('adaptive_domain_brandnew' in str(x) for x in updated.get('local_patches',[]))
+        assert not any('adaptive_domain_brandnew' in str(x) for x in updated.get('local_patches',[]))
         print('same-deep new provider profile test passed')
     finally:
         OVR.write_bytes(original)
