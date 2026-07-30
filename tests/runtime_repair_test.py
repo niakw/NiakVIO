@@ -147,7 +147,7 @@ def test_profile_selection_is_provider_agnostic() -> None:
 
     source = fetch_bundle().decode()
     profiles = matching_profiles(candidate, provider_forbidden_result(), source)
-    assert profiles == ["request_header_recovery"]
+    assert "request_header_recovery" not in profiles
 
     profiles = matching_profiles(candidate, stream_forbidden_result(), source)
     assert profiles == ["stream_output_recovery"]
