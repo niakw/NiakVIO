@@ -226,6 +226,96 @@ def _inject_runtime_domain_overrides(text: str, replacements: dict[str, Any]) ->
     return bootstrap + text, len(rules)
 
 
+
+def _inject_global_stream_output_guard(text: str, config: dict[str, Any]) -> tuple[str, bool]:
+    """Wrap every exported getStreams with provider-agnostic output normalization."""
+    policy = config.get("global_stream_output") or {}
+    if not isinstance(policy, dict) or policy.get("enabled") is False:
+        return text, False
+    marker = "NUVIO_GLOBAL_STREAM_OUTPUT_GUARD_V1"
+    if marker in text:
+        return text, False
+    anchor = "if (typeof module !== 'undefined' && module.exports) {"
+    if anchor not in text or "__provider" not in text:
+        return text, False
+    defaults = {
+        "user_agent": policy.get("user_agent") or "Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 Chrome/124 Mobile Safari/537.36",
+        "add_accept": policy.get("add_accept", True),
+        "add_range": policy.get("add_range", True),
+        "reject_extensions": policy.get("reject_extensions") or [".avi", ".wmv", ".flv"],
+        "host_rules": policy.get("host_rules") or {},
+    }
+    payload = json.dumps(defaults, separators=(",", ":"))
+    guard_template = r"""/* NUVIO_GLOBAL_STREAM_OUTPUT_GUARD_V1 */
+;(function(provider,policy){
+  if(!provider||typeof provider.getStreams!=="function")return;
+  var original=provider.getStreams;
+  function text(v){return v==null?"":String(v)}
+  function inferQuality(stream){
+    var hay=(text(stream.quality)+" "+text(stream.name)+" "+text(stream.title)+" "+text(stream.size)).toLowerCase();
+    var m=hay.match(/(?:^|\D)(2160|1440|1080|720|576|540|480|360)(?:p|\D|$)/);
+    if(m)return m[1]+"p";
+    if(/\b(?:4k|uhd)\b/.test(hay))return"2160p";
+    if(/\bfhd\b|full[ -]?hd/.test(hay))return"1080p";
+    if(/\bhd\b/.test(hay))return"720p";
+    return text(stream.quality)||"HD";
+  }
+  function inferLanguage(stream){
+    var current=text(stream.language).trim();
+    if(current)return current;
+    var hay=(text(stream.name)+" "+text(stream.title)+" "+text(stream.size)).toUpperCase();
+    if(/VOSTFR|VOST[ -]?FR|SUB(?:BED)?[ -]?FR/.test(hay))return"VOSTFR";
+    if(/DUAL[ -]?AUDIO|MULTI(?:LANG)?|VFQ\s*[+\/]|VFF\s*[+\/]/.test(hay))return"MULTI";
+    if(/\bVFQ\b/.test(hay))return"VFQ";
+    if(/\bVFF\b|\bVF\b|FRENCH/.test(hay))return"VF";
+    if(/\bVO\b|ENGLISH|ORIGINAL/.test(hay))return"VO";
+    return null;
+  }
+  function hostOf(url){try{return new URL(url).hostname.toLowerCase()}catch(_e){return""}}
+  function normalizeHeaders(stream){
+    var out={};
+    var source=stream&&stream.headers&&typeof stream.headers==="object"?stream.headers:{};
+    Object.keys(source).forEach(function(k){if(source[k]!=null)out[k]=String(source[k])});
+    var lower={};Object.keys(out).forEach(function(k){lower[k.toLowerCase()]=k});
+    if(!lower["user-agent"])out["User-Agent"]=policy.user_agent;
+    if(policy.add_accept&&!lower.accept)out.Accept="*/*";
+    if(policy.add_range&&!lower.range)out.Range="bytes=0-";
+    var host=hostOf(stream.url),rule=policy.host_rules&&policy.host_rules[host];
+    if(rule&&typeof rule==="object"){
+      if(rule.referer&&!lower.referer)out.Referer=String(rule.referer);
+      if(rule.origin&&!lower.origin)out.Origin=String(rule.origin);
+      if(rule.headers&&typeof rule.headers==="object")Object.keys(rule.headers).forEach(function(k){out[k]=String(rule.headers[k])});
+    }
+    return out;
+  }
+  function unsupported(url){
+    var value=text(url).toLowerCase().split("?")[0].split("#")[0];
+    return (policy.reject_extensions||[]).some(function(ext){return value.endsWith(String(ext).toLowerCase())});
+  }
+  provider.getStreams=async function(){
+    var result=await original.apply(this,arguments);
+    var list=Array.isArray(result)?result:[];
+    var seen=Object.create(null),clean=[];
+    for(var i=0;i<list.length;i++){
+      var stream=list[i];
+      if(!stream||typeof stream!=="object"||typeof stream.url!=="string")continue;
+      var url=stream.url.trim();
+      if(!/^https?:\/\//i.test(url)||unsupported(url)||seen[url])continue;
+      seen[url]=1;
+      var normalized=Object.assign({},stream,{url:url});
+      normalized.quality=inferQuality(normalized);
+      normalized.language=inferLanguage(normalized);
+      normalized.headers=normalizeHeaders(normalized);
+      clean.push(normalized);
+    }
+    return clean;
+  };
+})(__provider,__POLICY__);
+"""
+    guard = guard_template.replace("__POLICY__", payload)
+    return text.replace(anchor, guard + "\n" + anchor, 1), True
+
+
 def apply_overrides(
     provider_id: str,
     data: bytes,
@@ -341,6 +431,10 @@ def apply_overrides(
             applied.append(
                 {"type": "patch_script", "path": str(patch_script), "phase": phase}
             )
+
+    text, guard_added = _inject_global_stream_output_guard(text, config)
+    if guard_added:
+        applied.append({"type": "global_stream_output_guard", "phase": phase})
     return text.encode("utf-8"), applied
 
 
