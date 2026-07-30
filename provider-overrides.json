@@ -1,7 +1,8 @@
 {
   "schema_version": 4,
   "domain_replacements": {
-    "api.movix.cash": "api.movix.fun"
+    "api.movix.cash": "api.movix.fun",
+    "api.movix.cloud": "api.movix.fun"
   },
   "blocked_domains": [
     "localhost",
@@ -13,15 +14,18 @@
     "movix": {
       "notes": [
         "Force the reachable Movix endpoint inside the published JavaScript artifact.",
-        "Rewrite dynamically reconstructed legacy hosts at fetch time as defense in depth."
+        "Rewrite dynamically reconstructed legacy hosts at fetch time as defense in depth.",
+        "Automatically replace the globally unreachable api.movix.cloud endpoint with the verified api.movix.fun peer endpoint."
       ],
       "replacements": {
-        "api.movix.cash": "api.movix.fun"
+        "api.movix.cash": "api.movix.fun",
+        "api.movix.cloud": "api.movix.fun"
       },
       "route_replacements": {},
       "required_route_values": [],
       "runtime_domain_replacements": {
-        "api.movix.cash": "api.movix.fun"
+        "api.movix.cash": "api.movix.fun",
+        "api.movix.cloud": "api.movix.fun"
       },
       "fixed_endpoint": {
         "resolver_function": "detectApi",
