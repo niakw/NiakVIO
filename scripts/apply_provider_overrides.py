@@ -14,6 +14,7 @@ import hashlib
 import importlib.util
 import inspect
 import json
+import re
 from pathlib import Path
 from typing import Any, Iterable
 
@@ -238,9 +239,18 @@ def _inject_global_stream_output_guard(text: str, config: dict[str, Any]) -> tup
     policy = config.get("global_stream_output") or {}
     if not isinstance(policy, dict) or policy.get("enabled") is False:
         return text, False
-    marker = "NUVIO_GLOBAL_STREAM_OUTPUT_GUARD_V2"
+    marker = "NUVIO_GLOBAL_STREAM_OUTPUT_GUARD_V3"
     if marker in text:
         return text, False
+    # V1/V2 were appended after transpilation and V2 used raw async/await,
+    # which Node accepts but Nuvio's embedded runtime may reject. Replace any
+    # legacy appended guard before adding the Promise-chain-only V3 guard.
+    text = re.sub(
+        r"\n?/\* NUVIO_GLOBAL_STREAM_OUTPUT_GUARD_V(?:1|2) \*/[\s\S]*$",
+        "",
+        text,
+        flags=re.MULTILINE,
+    ).rstrip()
     defaults = {
         "user_agent": policy.get("user_agent") or "Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 Chrome/124 Mobile Safari/537.36",
         "add_accept": policy.get("add_accept", True),
@@ -250,7 +260,7 @@ def _inject_global_stream_output_guard(text: str, config: dict[str, Any]) -> tup
     }
     payload = json.dumps(defaults, separators=(",", ":"))
     guard_template = r"""
-/* NUVIO_GLOBAL_STREAM_OUTPUT_GUARD_V2 */
+/* NUVIO_GLOBAL_STREAM_OUTPUT_GUARD_V3 */
 ;(function(g,policy){
   function text(v){return v==null?"":String(v)}
   function inferQuality(stream){
@@ -312,10 +322,14 @@ def _inject_global_stream_output_guard(text: str, config: dict[str, Any]) -> tup
     return clean;
   }
   function wrapFunction(fn){
-    if(typeof fn!=="function"||fn.__nuvioGlobalStreamGuardV2)return fn;
-    var wrapped=async function(){return normalize(await fn.apply(this,arguments))};
+    if(typeof fn!=="function"||fn.__nuvioGlobalStreamGuardV3)return fn;
+    var wrapped=function(){
+      var self=this,args=arguments;
+      try{return Promise.resolve(fn.apply(self,args)).then(normalize)}
+      catch(error){return Promise.reject(error)}
+    };
     try{Object.keys(fn).forEach(function(k){wrapped[k]=fn[k]})}catch(_e){}
-    try{Object.defineProperty(wrapped,"__nuvioGlobalStreamGuardV2",{value:true})}catch(_e){wrapped.__nuvioGlobalStreamGuardV2=true}
+    try{Object.defineProperty(wrapped,"__nuvioGlobalStreamGuardV3",{value:true})}catch(_e){wrapped.__nuvioGlobalStreamGuardV3=true}
     return wrapped;
   }
   function wrapTarget(target){
