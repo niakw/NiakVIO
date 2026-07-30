@@ -122,3 +122,10 @@
 - Added stage-oriented JSON and HTML diagnostic reports.
 - Added regression tests for the network guard and override pipeline.
 - CI now runs the complete regression suite before upstream discovery.
+
+## Current-proof pipeline correction
+
+- Reordered the deep workflow around DNS/domain recovery, provider-specific access, then stream quality.
+- Removed activation through historical SHA grace, inconclusive manifest preservation, and manual runtime evidence.
+- Providers are enabled only when the current deep run proves DNS, successful provider-owned access, a playable stream, and all quality gates.
+- Reset the historical LKG registry; future records require exact-SHA, fixture, category, timestamp, and positive stream-count evidence.
