@@ -132,21 +132,36 @@ def test_obfuscated_runtime_endpoint_override() -> None:
         target = Path(tmp) / "provider.js"
         target.write_bytes(output)
         subprocess.run(["node", "--check", str(target)], check=True)
+        # This contract must not depend on live DNS/network conditions. Execute
+        # the synthetic provider with a deterministic fetch stub and inspect the
+        # URL actually requested after all runtime wrappers were installed.
+        harness = r"""
+const target = process.argv[1];
+const requested = [];
+global.fetch = async function(input) {
+  const url = typeof input === "string" ? input : String(input && input.url || input);
+  requested.push(url);
+  return { ok: true, status: 200, json: async () => ({}) };
+};
+(async () => {
+  const provider = require(target);
+  await provider.getStreams("157336", "movie", null, null);
+  process.stdout.write(JSON.stringify(requested));
+})().catch((error) => {
+  console.error(error && error.stack || error);
+  process.exit(1);
+});
+"""
         result = subprocess.run(
-            [
-                "node",
-                str(ROOT / "scripts" / "provider_worker.cjs"),
-                str(target),
-                '{"tmdbId":"157336","mediaType":"movie","title":"Interstellar","year":2014,"label":"Interstellar (2014)","category":"movie"}',
-                '{"locale":"fr-FR","language":"fr","languages":["fr-FR","fr"],"platform":"android","settings":{},"storage":{}}',
-            ],
+            ["node", "-e", harness, str(target.resolve())],
             text=True,
             capture_output=True,
             check=True,
         )
-        assert "wooodyhood/nuvio-repo/main/domains.json" not in result.stdout
-        assert '"host":"api.movix.fun"' in result.stdout
-        assert '"host":"api.movix.cash"' not in result.stdout
+        requested = json.loads(result.stdout)
+        expected = "https://api.movix.fun/api/purstream/movie/157336/stream"
+        assert requested, requested
+        assert all(url == expected for url in requested), requested
 
 
 test_obfuscated_runtime_endpoint_override()
