@@ -9,13 +9,16 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'scripts'))
 from apply_provider_overrides import apply_overrides
 
-MARKER = 'NUVIO_GLOBAL_STREAM_OUTPUT_GUARD_V2'
+MARKER = 'NUVIO_GLOBAL_STREAM_OUTPUT_GUARD_V3'
 
 
 def execute(source: bytes, provider_id: str = 'synthetic') -> list[dict]:
     patched, records = apply_overrides(provider_id, source)
     text = patched.decode()
     assert MARKER in text
+    guard = text[text.index(MARKER):]
+    assert "async function" not in guard, "guard must remain compatible with Nuvio dynamic runtime"
+    assert "await " not in guard, "guard must use Promise chains, not raw await"
     assert any(item.get('type') == 'global_stream_output_guard' for item in records)
     with tempfile.TemporaryDirectory() as td:
         provider = Path(td) / 'provider.js'
@@ -67,3 +70,11 @@ for relative, provider_id in sorted(referenced.items()):
     assert MARKER.encode() in provider_path.read_bytes() or any(item.get('type') == 'global_stream_output_guard' for item in records), relative
 
 print(f'global stream output guard test passed ({len(referenced)} referenced providers patchable)')
+
+# A previously published V2 guard is removed rather than stacked.
+legacy = b"module.exports={getStreams:function(){return Promise.resolve([])}};\n/* NUVIO_GLOBAL_STREAM_OUTPUT_GUARD_V2 */\n;(function(){ var wrapped=async function(){return []}; })();"
+patched, records = apply_overrides('legacy', legacy)
+legacy_text = patched.decode()
+assert 'NUVIO_GLOBAL_STREAM_OUTPUT_GUARD_V2' not in legacy_text
+assert legacy_text.count(MARKER) == 1
+assert any(item.get('type') == 'global_stream_output_guard' for item in records)
