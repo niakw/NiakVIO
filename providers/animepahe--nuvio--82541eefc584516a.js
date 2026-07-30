@@ -1,3 +1,53 @@
+/* NUVIO_ADAPTIVE_DOMAIN_RECOVERY_V1:BEGIN */
+;(function(g,encoded){
+  if(!g||typeof g.fetch!=="function"||g.__nuvioAdaptiveDomainRecoveryV1)return;
+  var nativeFetch=g.fetch.bind(g), groups=[];
+  try{groups=JSON.parse(typeof atob==="function"?atob(encoded):Buffer.from(encoded,"base64").toString("utf8"));}catch(_e){return;}
+  var cache=Object.create(null);
+  function obsolete(status){return status===404||status===410||status===451||status===521||status===522||status===523;}
+  function groupFor(host){
+    host=String(host||"").toLowerCase();
+    for(var i=0;i<groups.length;i++)if(groups[i].hosts.indexOf(host)!==-1)return groups[i];
+    return null;
+  }
+  function rebuild(raw,origin){
+    var source=new URL(raw), target=new URL(origin);
+    target.pathname=source.pathname; target.search=source.search; target.hash=source.hash;
+    return target.toString();
+  }
+  function cloneInput(input,url){
+    try{return typeof Request!=="undefined"&&input instanceof Request?new Request(url,input):url;}catch(_e){return url;}
+  }
+  function attempt(input,init,raw,group,index){
+    if(index>=group.candidates.length)return nativeFetch(input,init);
+    var origin=group.candidates[index], url;
+    try{url=rebuild(raw,origin);}catch(_e){return attempt(input,init,raw,group,index+1);}
+    return nativeFetch(cloneInput(input,url),init).then(function(response){
+      if(response&&!obsolete(response.status)){
+        try{cache[new URL(raw).hostname.toLowerCase()]=origin;}catch(_e){}
+        return response;
+      }
+      return attempt(input,init,raw,group,index+1);
+    },function(){return attempt(input,init,raw,group,index+1);});
+  }
+  g.fetch=function(input,init){
+    var raw;
+    try{raw=typeof Request!=="undefined"&&input instanceof Request?input.url:String(input);}catch(_e){return nativeFetch(input,init);}
+    var parsed, group;
+    try{parsed=new URL(raw);group=groupFor(parsed.hostname);}catch(_e){return nativeFetch(input,init);}
+    if(!group)return nativeFetch(input,init);
+    var remembered=cache[parsed.hostname.toLowerCase()];
+    if(remembered){
+      var preferred=[remembered], rest=[];
+      for(var i=0;i<group.candidates.length;i++)if(group.candidates[i]!==remembered)rest.push(group.candidates[i]);
+      group={hosts:group.hosts,candidates:preferred.concat(rest)};
+    }
+    return attempt(input,init,raw,group,0);
+  };
+  g.__nuvioAdaptiveDomainRecoveryV1=true;
+})(typeof globalThis!=="undefined"?globalThis:this,"W3siY2FuZGlkYXRlcyI6WyJodHRwczovL2FuaW1lcGFoZS5wdyJdLCJob3N0cyI6WyJhbmltZXBhaGUuY29tIl19LHsiY2FuZGlkYXRlcyI6WyJodHRwczovL2FuaW1lcGFoZS5wdyJdLCJob3N0cyI6WyJhbmltZXBhaGUub3JnIl19XQ==");
+/* NUVIO_ADAPTIVE_DOMAIN_RECOVERY_V1:END */
+
 /* NUVIO_RUNTIME_DOMAIN_OVERRIDES_V1 */
 ;(function(g,rules){
   if(!g||typeof g.fetch!=="function")return;

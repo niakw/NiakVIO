@@ -527,6 +527,9 @@
     "brandnew": {
       "capability": "mixed_embed_resolver",
       "profiles": []
+    },
+    "cineby": {
+      "capability": "api_stream_resolver"
     }
   },
   "route_override_defaults": {
@@ -858,17 +861,6 @@
               "player.videasy.net"
             ],
             "candidates": [
-              "https://player.videasy.to",
-              "https://api.videasy.net"
-            ]
-          },
-          {
-            "hosts": [
-              "api.videasy.net",
-              "player.videasy.to"
-            ],
-            "candidates": [
-              "https://api.videasy.net",
               "https://player.videasy.to"
             ]
           }
@@ -1002,7 +994,9 @@
       ],
       "allow_html_url": false,
       "observed_origins": [
-        "https://api.purstream"
+        "https://api.purstream",
+        "https://api.movix.fun",
+        "https://movix.fun"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
@@ -1013,7 +1007,7 @@
       "allow_html_url": true,
       "requires_direct_media": false,
       "observed_origins": [
-        "https://4khdhub.click"
+        "https://4khdhub.one"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
@@ -1770,7 +1764,8 @@
         "https://api.movix.fun",
         "https://lodash.com",
         "https://openjsf.org",
-        "http://underscorejs.org"
+        "http://underscorejs.org",
+        "https://movix.fun"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
@@ -2005,9 +2000,8 @@
       "allow_html_url": false,
       "requires_direct_media": false,
       "observed_origins": [
-        "https://enc-dec.app",
-        "https://api.videasy.net",
-        "https://player.videasy.to"
+        "https://api.wingsdatabase.com",
+        "https://www.vidking.net"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
@@ -2247,6 +2241,19 @@
         "https://brandnew.example"
       ],
       "generated_from_manifest_or_stage": true
+    },
+    "cineby": {
+      "strategy": "api_stream_resolver",
+      "validation": "api_and_provider_native",
+      "allow_html_url": false,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://api.videasy.to",
+        "https://anime-db.videasy.net",
+        "https://player.videasy.to",
+        "https://vidlink.pro"
+      ],
+      "generated_from_manifest_or_stage": true
     }
   },
   "official_domain_hubs": {
@@ -2294,8 +2301,8 @@
   },
   "provider_profile_generation": {
     "schema_version": 2,
-    "provider_count": 86,
-    "staged_provider_count": 0,
+    "provider_count": 87,
+    "staged_provider_count": 86,
     "source": "manifest_published_bundles_and_current_staging",
     "same_deep_new_provider_support": true
   }

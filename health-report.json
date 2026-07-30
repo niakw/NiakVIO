@@ -1,6 +1,6 @@
 {
   "schema_version": 63,
-  "generated_at": "2026-07-30T09:42:49.986782+00:00",
+  "generated_at": "2026-07-30T11:09:13.861787+00:00",
   "test_environment": "github-actions-node",
   "test_mode": "deep",
   "upstream_manifest_count": 3,
@@ -137,14 +137,14 @@
         "eligible": false,
         "checks": {
           "current_status_inconclusive": false,
-          "same_sha256": false,
+          "same_sha256": true,
           "prior_score_meets_threshold": true,
           "prior_quality_gates_passed": true,
           "current_no_p2p": true,
           "upstream_enabled": true
         },
         "previous_health_score": 75,
-        "reason": "historical_inconclusive_rejected:current_status_inconclusive,same_sha256"
+        "reason": "historical_inconclusive_rejected:current_status_inconclusive"
       },
       "runtime_evidence": {
         "eligible": false,
@@ -1095,14 +1095,14 @@
         "eligible": false,
         "checks": {
           "current_status_inconclusive": false,
-          "same_sha256": false,
+          "same_sha256": true,
           "prior_score_meets_threshold": true,
           "prior_quality_gates_passed": true,
           "current_no_p2p": true,
           "upstream_enabled": true
         },
         "previous_health_score": 75,
-        "reason": "historical_inconclusive_rejected:current_status_inconclusive,same_sha256"
+        "reason": "historical_inconclusive_rejected:current_status_inconclusive"
       },
       "runtime_evidence": {
         "eligible": false,
@@ -1746,14 +1746,14 @@
         "eligible": false,
         "checks": {
           "current_status_inconclusive": true,
-          "same_sha256": false,
+          "same_sha256": true,
           "prior_score_meets_threshold": false,
           "prior_quality_gates_passed": false,
           "current_no_p2p": true,
           "upstream_enabled": true
         },
         "previous_health_score": 10,
-        "reason": "historical_inconclusive_rejected:same_sha256,prior_score_meets_threshold,prior_quality_gates_passed"
+        "reason": "historical_inconclusive_rejected:prior_score_meets_threshold,prior_quality_gates_passed"
       },
       "runtime_evidence": {
         "eligible": false,
@@ -1892,7 +1892,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 0
+            "consecutive_inconclusive_deep_checks": 1
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -2063,14 +2063,14 @@
         "eligible": false,
         "checks": {
           "current_status_inconclusive": true,
-          "same_sha256": false,
+          "same_sha256": true,
           "prior_score_meets_threshold": false,
           "prior_quality_gates_passed": false,
           "current_no_p2p": true,
           "upstream_enabled": true
         },
         "previous_health_score": 10,
-        "reason": "historical_inconclusive_rejected:same_sha256,prior_score_meets_threshold,prior_quality_gates_passed"
+        "reason": "historical_inconclusive_rejected:prior_score_meets_threshold,prior_quality_gates_passed"
       },
       "runtime_evidence": {
         "eligible": false,
@@ -2209,7 +2209,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 0
+            "consecutive_inconclusive_deep_checks": 1
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -2704,14 +2704,14 @@
         "eligible": false,
         "checks": {
           "current_status_inconclusive": true,
-          "same_sha256": false,
+          "same_sha256": true,
           "prior_score_meets_threshold": false,
           "prior_quality_gates_passed": false,
           "current_no_p2p": true,
           "upstream_enabled": true
         },
         "previous_health_score": 10,
-        "reason": "historical_inconclusive_rejected:same_sha256,prior_score_meets_threshold,prior_quality_gates_passed"
+        "reason": "historical_inconclusive_rejected:prior_score_meets_threshold,prior_quality_gates_passed"
       },
       "runtime_evidence": {
         "eligible": false,
@@ -2851,7 +2851,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 0
+            "consecutive_inconclusive_deep_checks": 1
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -3260,6 +3260,7 @@
         "provider_server_accessible": true,
         "provider_server_successful_response": false,
         "provider_server_hosts": [
+          "api.movix.fun",
           "api.purstream.club"
         ],
         "provider_server_http_statuses": [
@@ -3349,14 +3350,14 @@
         "eligible": false,
         "checks": {
           "current_status_inconclusive": true,
-          "same_sha256": false,
+          "same_sha256": true,
           "prior_score_meets_threshold": false,
           "prior_quality_gates_passed": false,
           "current_no_p2p": true,
           "upstream_enabled": true
         },
         "previous_health_score": 10,
-        "reason": "historical_inconclusive_rejected:same_sha256,prior_score_meets_threshold,prior_quality_gates_passed"
+        "reason": "historical_inconclusive_rejected:prior_score_meets_threshold,prior_quality_gates_passed"
       },
       "runtime_evidence": {
         "eligible": false,
@@ -3495,7 +3496,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 0
+            "consecutive_inconclusive_deep_checks": 1
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -3667,14 +3668,14 @@
         "eligible": false,
         "checks": {
           "current_status_inconclusive": true,
-          "same_sha256": false,
+          "same_sha256": true,
           "prior_score_meets_threshold": false,
           "prior_quality_gates_passed": false,
           "current_no_p2p": true,
           "upstream_enabled": true
         },
         "previous_health_score": 10,
-        "reason": "historical_inconclusive_rejected:same_sha256,prior_score_meets_threshold,prior_quality_gates_passed"
+        "reason": "historical_inconclusive_rejected:prior_score_meets_threshold,prior_quality_gates_passed"
       },
       "runtime_evidence": {
         "eligible": false,
@@ -3813,7 +3814,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 0
+            "consecutive_inconclusive_deep_checks": 1
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -4218,7 +4219,7 @@
         "provider_server_accessible": true,
         "provider_server_successful_response": true,
         "provider_server_hosts": [
-          "api.nakios.store"
+          "nakios.store"
         ],
         "provider_server_http_statuses": [
           200
@@ -4311,14 +4312,14 @@
         "eligible": false,
         "checks": {
           "current_status_inconclusive": true,
-          "same_sha256": false,
+          "same_sha256": true,
           "prior_score_meets_threshold": false,
           "prior_quality_gates_passed": false,
           "current_no_p2p": true,
           "upstream_enabled": true
         },
         "previous_health_score": 10,
-        "reason": "historical_inconclusive_rejected:same_sha256,prior_score_meets_threshold,prior_quality_gates_passed"
+        "reason": "historical_inconclusive_rejected:prior_score_meets_threshold,prior_quality_gates_passed"
       },
       "runtime_evidence": {
         "eligible": false,
@@ -4458,7 +4459,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 0
+            "consecutive_inconclusive_deep_checks": 1
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -4630,14 +4631,14 @@
         "eligible": false,
         "checks": {
           "current_status_inconclusive": true,
-          "same_sha256": false,
+          "same_sha256": true,
           "prior_score_meets_threshold": false,
           "prior_quality_gates_passed": false,
           "current_no_p2p": true,
           "upstream_enabled": true
         },
         "previous_health_score": 10,
-        "reason": "historical_inconclusive_rejected:same_sha256,prior_score_meets_threshold,prior_quality_gates_passed"
+        "reason": "historical_inconclusive_rejected:prior_score_meets_threshold,prior_quality_gates_passed"
       },
       "runtime_evidence": {
         "eligible": false,
@@ -4779,7 +4780,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 0
+            "consecutive_inconclusive_deep_checks": 1
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -4952,14 +4953,14 @@
         "eligible": false,
         "checks": {
           "current_status_inconclusive": true,
-          "same_sha256": false,
+          "same_sha256": true,
           "prior_score_meets_threshold": false,
           "prior_quality_gates_passed": false,
           "current_no_p2p": true,
           "upstream_enabled": true
         },
         "previous_health_score": 10,
-        "reason": "historical_inconclusive_rejected:same_sha256,prior_score_meets_threshold,prior_quality_gates_passed"
+        "reason": "historical_inconclusive_rejected:prior_score_meets_threshold,prior_quality_gates_passed"
       },
       "runtime_evidence": {
         "eligible": false,
@@ -5102,7 +5103,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 0
+            "consecutive_inconclusive_deep_checks": 1
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -5276,14 +5277,14 @@
         "eligible": false,
         "checks": {
           "current_status_inconclusive": true,
-          "same_sha256": false,
+          "same_sha256": true,
           "prior_score_meets_threshold": false,
           "prior_quality_gates_passed": false,
           "current_no_p2p": true,
           "upstream_enabled": true
         },
         "previous_health_score": 10,
-        "reason": "historical_inconclusive_rejected:same_sha256,prior_score_meets_threshold,prior_quality_gates_passed"
+        "reason": "historical_inconclusive_rejected:prior_score_meets_threshold,prior_quality_gates_passed"
       },
       "runtime_evidence": {
         "eligible": false,
@@ -5424,7 +5425,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 0
+            "consecutive_inconclusive_deep_checks": 1
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -5596,14 +5597,14 @@
         "eligible": false,
         "checks": {
           "current_status_inconclusive": true,
-          "same_sha256": false,
+          "same_sha256": true,
           "prior_score_meets_threshold": false,
           "prior_quality_gates_passed": false,
           "current_no_p2p": true,
           "upstream_enabled": true
         },
         "previous_health_score": 10,
-        "reason": "historical_inconclusive_rejected:same_sha256,prior_score_meets_threshold,prior_quality_gates_passed"
+        "reason": "historical_inconclusive_rejected:prior_score_meets_threshold,prior_quality_gates_passed"
       },
       "runtime_evidence": {
         "eligible": false,
@@ -5743,7 +5744,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 0
+            "consecutive_inconclusive_deep_checks": 1
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -6247,14 +6248,14 @@
         "eligible": false,
         "checks": {
           "current_status_inconclusive": false,
-          "same_sha256": false,
+          "same_sha256": true,
           "prior_score_meets_threshold": true,
           "prior_quality_gates_passed": true,
           "current_no_p2p": true,
           "upstream_enabled": true
         },
         "previous_health_score": 75,
-        "reason": "historical_inconclusive_rejected:current_status_inconclusive,same_sha256"
+        "reason": "historical_inconclusive_rejected:current_status_inconclusive"
       },
       "runtime_evidence": {
         "eligible": false,
@@ -6891,14 +6892,14 @@
         "eligible": false,
         "checks": {
           "current_status_inconclusive": false,
-          "same_sha256": false,
+          "same_sha256": true,
           "prior_score_meets_threshold": true,
           "prior_quality_gates_passed": true,
           "current_no_p2p": true,
           "upstream_enabled": true
         },
         "previous_health_score": 75,
-        "reason": "historical_inconclusive_rejected:current_status_inconclusive,same_sha256"
+        "reason": "historical_inconclusive_rejected:current_status_inconclusive"
       },
       "runtime_evidence": {
         "eligible": false,
@@ -7125,8 +7126,7 @@
           "vidsrc.me"
         ],
         "provider_server_http_statuses": [
-          200,
-          404
+          200
         ],
         "manifest_description_present": true,
         "manifest_supported_types": [
@@ -7210,14 +7210,14 @@
         "eligible": false,
         "checks": {
           "current_status_inconclusive": false,
-          "same_sha256": false,
+          "same_sha256": true,
           "prior_score_meets_threshold": true,
           "prior_quality_gates_passed": true,
           "current_no_p2p": true,
           "upstream_enabled": true
         },
         "previous_health_score": 75,
-        "reason": "historical_inconclusive_rejected:current_status_inconclusive,same_sha256"
+        "reason": "historical_inconclusive_rejected:current_status_inconclusive"
       },
       "runtime_evidence": {
         "eligible": false,
@@ -7531,14 +7531,14 @@
         "eligible": false,
         "checks": {
           "current_status_inconclusive": false,
-          "same_sha256": false,
+          "same_sha256": true,
           "prior_score_meets_threshold": true,
           "prior_quality_gates_passed": true,
           "current_no_p2p": true,
           "upstream_enabled": true
         },
         "previous_health_score": 75,
-        "reason": "historical_inconclusive_rejected:current_status_inconclusive,same_sha256"
+        "reason": "historical_inconclusive_rejected:current_status_inconclusive"
       },
       "runtime_evidence": {
         "eligible": false,
@@ -7830,14 +7830,14 @@
         "eligible": false,
         "checks": {
           "current_status_inconclusive": false,
-          "same_sha256": false,
+          "same_sha256": true,
           "prior_score_meets_threshold": true,
           "prior_quality_gates_passed": true,
           "current_no_p2p": true,
           "upstream_enabled": true
         },
         "previous_health_score": 75,
-        "reason": "historical_inconclusive_rejected:current_status_inconclusive,same_sha256"
+        "reason": "historical_inconclusive_rejected:current_status_inconclusive"
       },
       "runtime_evidence": {
         "eligible": false,
@@ -8151,14 +8151,14 @@
         "eligible": false,
         "checks": {
           "current_status_inconclusive": false,
-          "same_sha256": false,
+          "same_sha256": true,
           "prior_score_meets_threshold": true,
           "prior_quality_gates_passed": true,
           "current_no_p2p": true,
           "upstream_enabled": true
         },
         "previous_health_score": 75,
-        "reason": "historical_inconclusive_rejected:current_status_inconclusive,same_sha256"
+        "reason": "historical_inconclusive_rejected:current_status_inconclusive"
       },
       "runtime_evidence": {
         "eligible": false,
@@ -8468,14 +8468,14 @@
         "eligible": false,
         "checks": {
           "current_status_inconclusive": false,
-          "same_sha256": false,
+          "same_sha256": true,
           "prior_score_meets_threshold": true,
           "prior_quality_gates_passed": true,
           "current_no_p2p": true,
           "upstream_enabled": true
         },
         "previous_health_score": 75,
-        "reason": "historical_inconclusive_rejected:current_status_inconclusive,same_sha256"
+        "reason": "historical_inconclusive_rejected:current_status_inconclusive"
       },
       "runtime_evidence": {
         "eligible": false,
@@ -8798,14 +8798,14 @@
         "eligible": false,
         "checks": {
           "current_status_inconclusive": false,
-          "same_sha256": false,
+          "same_sha256": true,
           "prior_score_meets_threshold": true,
           "prior_quality_gates_passed": true,
           "current_no_p2p": true,
           "upstream_enabled": true
         },
         "previous_health_score": 75,
-        "reason": "historical_inconclusive_rejected:current_status_inconclusive,same_sha256"
+        "reason": "historical_inconclusive_rejected:current_status_inconclusive"
       },
       "runtime_evidence": {
         "eligible": false,
@@ -9118,14 +9118,14 @@
         "eligible": false,
         "checks": {
           "current_status_inconclusive": true,
-          "same_sha256": false,
+          "same_sha256": true,
           "prior_score_meets_threshold": false,
           "prior_quality_gates_passed": false,
           "current_no_p2p": true,
           "upstream_enabled": true
         },
         "previous_health_score": 10,
-        "reason": "historical_inconclusive_rejected:same_sha256,prior_score_meets_threshold,prior_quality_gates_passed"
+        "reason": "historical_inconclusive_rejected:prior_score_meets_threshold,prior_quality_gates_passed"
       },
       "runtime_evidence": {
         "eligible": false,
@@ -9267,7 +9267,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 0
+            "consecutive_inconclusive_deep_checks": 1
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -9444,14 +9444,14 @@
         "eligible": false,
         "checks": {
           "current_status_inconclusive": true,
-          "same_sha256": false,
+          "same_sha256": true,
           "prior_score_meets_threshold": false,
           "prior_quality_gates_passed": false,
           "current_no_p2p": true,
           "upstream_enabled": true
         },
         "previous_health_score": 10,
-        "reason": "historical_inconclusive_rejected:same_sha256,prior_score_meets_threshold,prior_quality_gates_passed"
+        "reason": "historical_inconclusive_rejected:prior_score_meets_threshold,prior_quality_gates_passed"
       },
       "runtime_evidence": {
         "eligible": false,
@@ -9596,7 +9596,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 0
+            "consecutive_inconclusive_deep_checks": 1
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -9775,14 +9775,14 @@
         "eligible": false,
         "checks": {
           "current_status_inconclusive": true,
-          "same_sha256": false,
+          "same_sha256": true,
           "prior_score_meets_threshold": false,
           "prior_quality_gates_passed": false,
           "current_no_p2p": true,
           "upstream_enabled": true
         },
         "previous_health_score": 10,
-        "reason": "historical_inconclusive_rejected:same_sha256,prior_score_meets_threshold,prior_quality_gates_passed"
+        "reason": "historical_inconclusive_rejected:prior_score_meets_threshold,prior_quality_gates_passed"
       },
       "runtime_evidence": {
         "eligible": false,
@@ -9924,7 +9924,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 0
+            "consecutive_inconclusive_deep_checks": 1
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -10433,14 +10433,14 @@
         "eligible": false,
         "checks": {
           "current_status_inconclusive": true,
-          "same_sha256": false,
+          "same_sha256": true,
           "prior_score_meets_threshold": false,
           "prior_quality_gates_passed": false,
           "current_no_p2p": true,
           "upstream_enabled": true
         },
         "previous_health_score": 10,
-        "reason": "historical_inconclusive_rejected:same_sha256,prior_score_meets_threshold,prior_quality_gates_passed"
+        "reason": "historical_inconclusive_rejected:prior_score_meets_threshold,prior_quality_gates_passed"
       },
       "runtime_evidence": {
         "eligible": false,
@@ -10583,7 +10583,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 0
+            "consecutive_inconclusive_deep_checks": 1
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -10761,14 +10761,14 @@
         "eligible": false,
         "checks": {
           "current_status_inconclusive": true,
-          "same_sha256": false,
+          "same_sha256": true,
           "prior_score_meets_threshold": false,
           "prior_quality_gates_passed": false,
           "current_no_p2p": true,
           "upstream_enabled": true
         },
         "previous_health_score": 10,
-        "reason": "historical_inconclusive_rejected:same_sha256,prior_score_meets_threshold,prior_quality_gates_passed"
+        "reason": "historical_inconclusive_rejected:prior_score_meets_threshold,prior_quality_gates_passed"
       },
       "runtime_evidence": {
         "eligible": false,
@@ -10908,7 +10908,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 0
+            "consecutive_inconclusive_deep_checks": 1
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -11077,14 +11077,14 @@
         "eligible": false,
         "checks": {
           "current_status_inconclusive": true,
-          "same_sha256": false,
+          "same_sha256": true,
           "prior_score_meets_threshold": false,
           "prior_quality_gates_passed": false,
           "current_no_p2p": true,
           "upstream_enabled": true
         },
         "previous_health_score": 10,
-        "reason": "historical_inconclusive_rejected:same_sha256,prior_score_meets_threshold,prior_quality_gates_passed"
+        "reason": "historical_inconclusive_rejected:prior_score_meets_threshold,prior_quality_gates_passed"
       },
       "runtime_evidence": {
         "eligible": false,
@@ -11229,7 +11229,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 0
+            "consecutive_inconclusive_deep_checks": 1
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -11411,14 +11411,14 @@
         "eligible": false,
         "checks": {
           "current_status_inconclusive": true,
-          "same_sha256": false,
+          "same_sha256": true,
           "prior_score_meets_threshold": false,
           "prior_quality_gates_passed": false,
           "current_no_p2p": true,
           "upstream_enabled": true
         },
         "previous_health_score": 10,
-        "reason": "historical_inconclusive_rejected:same_sha256,prior_score_meets_threshold,prior_quality_gates_passed"
+        "reason": "historical_inconclusive_rejected:prior_score_meets_threshold,prior_quality_gates_passed"
       },
       "runtime_evidence": {
         "eligible": false,
@@ -11562,7 +11562,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 0
+            "consecutive_inconclusive_deep_checks": 1
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -12063,14 +12063,14 @@
         "eligible": false,
         "checks": {
           "current_status_inconclusive": true,
-          "same_sha256": false,
+          "same_sha256": true,
           "prior_score_meets_threshold": false,
           "prior_quality_gates_passed": false,
           "current_no_p2p": true,
           "upstream_enabled": true
         },
         "previous_health_score": 10,
-        "reason": "historical_inconclusive_rejected:same_sha256,prior_score_meets_threshold,prior_quality_gates_passed"
+        "reason": "historical_inconclusive_rejected:prior_score_meets_threshold,prior_quality_gates_passed"
       },
       "runtime_evidence": {
         "eligible": false,
@@ -12214,7 +12214,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 0
+            "consecutive_inconclusive_deep_checks": 1
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -12394,14 +12394,14 @@
         "eligible": false,
         "checks": {
           "current_status_inconclusive": true,
-          "same_sha256": false,
+          "same_sha256": true,
           "prior_score_meets_threshold": false,
           "prior_quality_gates_passed": false,
           "current_no_p2p": true,
           "upstream_enabled": true
         },
         "previous_health_score": 10,
-        "reason": "historical_inconclusive_rejected:same_sha256,prior_score_meets_threshold,prior_quality_gates_passed"
+        "reason": "historical_inconclusive_rejected:prior_score_meets_threshold,prior_quality_gates_passed"
       },
       "runtime_evidence": {
         "eligible": false,
@@ -12546,7 +12546,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 0
+            "consecutive_inconclusive_deep_checks": 1
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -13376,14 +13376,14 @@
         "eligible": false,
         "checks": {
           "current_status_inconclusive": true,
-          "same_sha256": false,
+          "same_sha256": true,
           "prior_score_meets_threshold": false,
           "prior_quality_gates_passed": false,
           "current_no_p2p": true,
           "upstream_enabled": true
         },
         "previous_health_score": 10,
-        "reason": "historical_inconclusive_rejected:same_sha256,prior_score_meets_threshold,prior_quality_gates_passed"
+        "reason": "historical_inconclusive_rejected:prior_score_meets_threshold,prior_quality_gates_passed"
       },
       "runtime_evidence": {
         "eligible": false,
@@ -13523,7 +13523,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 0
+            "consecutive_inconclusive_deep_checks": 1
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -13693,14 +13693,14 @@
         "eligible": false,
         "checks": {
           "current_status_inconclusive": true,
-          "same_sha256": false,
+          "same_sha256": true,
           "prior_score_meets_threshold": false,
           "prior_quality_gates_passed": false,
           "current_no_p2p": true,
           "upstream_enabled": true
         },
         "previous_health_score": 10,
-        "reason": "historical_inconclusive_rejected:same_sha256,prior_score_meets_threshold,prior_quality_gates_passed"
+        "reason": "historical_inconclusive_rejected:prior_score_meets_threshold,prior_quality_gates_passed"
       },
       "runtime_evidence": {
         "eligible": false,
@@ -13843,7 +13843,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 0
+            "consecutive_inconclusive_deep_checks": 1
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -14022,14 +14022,14 @@
         "eligible": false,
         "checks": {
           "current_status_inconclusive": true,
-          "same_sha256": false,
+          "same_sha256": true,
           "prior_score_meets_threshold": false,
           "prior_quality_gates_passed": false,
           "current_no_p2p": true,
           "upstream_enabled": true
         },
         "previous_health_score": 10,
-        "reason": "historical_inconclusive_rejected:same_sha256,prior_score_meets_threshold,prior_quality_gates_passed"
+        "reason": "historical_inconclusive_rejected:prior_score_meets_threshold,prior_quality_gates_passed"
       },
       "runtime_evidence": {
         "eligible": false,
@@ -14170,7 +14170,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 0
+            "consecutive_inconclusive_deep_checks": 1
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -14342,14 +14342,14 @@
         "eligible": false,
         "checks": {
           "current_status_inconclusive": true,
-          "same_sha256": false,
+          "same_sha256": true,
           "prior_score_meets_threshold": false,
           "prior_quality_gates_passed": false,
           "current_no_p2p": true,
           "upstream_enabled": true
         },
         "previous_health_score": 10,
-        "reason": "historical_inconclusive_rejected:same_sha256,prior_score_meets_threshold,prior_quality_gates_passed"
+        "reason": "historical_inconclusive_rejected:prior_score_meets_threshold,prior_quality_gates_passed"
       },
       "runtime_evidence": {
         "eligible": false,
@@ -14492,7 +14492,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 0
+            "consecutive_inconclusive_deep_checks": 1
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -14668,14 +14668,14 @@
         "eligible": false,
         "checks": {
           "current_status_inconclusive": true,
-          "same_sha256": false,
+          "same_sha256": true,
           "prior_score_meets_threshold": false,
           "prior_quality_gates_passed": false,
           "current_no_p2p": true,
           "upstream_enabled": true
         },
         "previous_health_score": 10,
-        "reason": "historical_inconclusive_rejected:same_sha256,prior_score_meets_threshold,prior_quality_gates_passed"
+        "reason": "historical_inconclusive_rejected:prior_score_meets_threshold,prior_quality_gates_passed"
       },
       "runtime_evidence": {
         "eligible": false,
@@ -14814,7 +14814,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 0
+            "consecutive_inconclusive_deep_checks": 1
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -14984,14 +14984,14 @@
         "eligible": false,
         "checks": {
           "current_status_inconclusive": true,
-          "same_sha256": false,
+          "same_sha256": true,
           "prior_score_meets_threshold": false,
           "prior_quality_gates_passed": false,
           "current_no_p2p": true,
           "upstream_enabled": true
         },
         "previous_health_score": 10,
-        "reason": "historical_inconclusive_rejected:same_sha256,prior_score_meets_threshold,prior_quality_gates_passed"
+        "reason": "historical_inconclusive_rejected:prior_score_meets_threshold,prior_quality_gates_passed"
       },
       "runtime_evidence": {
         "eligible": false,
@@ -15131,7 +15131,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 0
+            "consecutive_inconclusive_deep_checks": 1
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -15305,14 +15305,14 @@
         "eligible": false,
         "checks": {
           "current_status_inconclusive": true,
-          "same_sha256": false,
+          "same_sha256": true,
           "prior_score_meets_threshold": false,
           "prior_quality_gates_passed": false,
           "current_no_p2p": true,
           "upstream_enabled": true
         },
         "previous_health_score": 10,
-        "reason": "historical_inconclusive_rejected:same_sha256,prior_score_meets_threshold,prior_quality_gates_passed"
+        "reason": "historical_inconclusive_rejected:prior_score_meets_threshold,prior_quality_gates_passed"
       },
       "runtime_evidence": {
         "eligible": false,
@@ -15450,7 +15450,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 0
+            "consecutive_inconclusive_deep_checks": 1
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -15618,14 +15618,14 @@
         "eligible": false,
         "checks": {
           "current_status_inconclusive": true,
-          "same_sha256": false,
+          "same_sha256": true,
           "prior_score_meets_threshold": false,
           "prior_quality_gates_passed": false,
           "current_no_p2p": true,
           "upstream_enabled": true
         },
         "previous_health_score": 0,
-        "reason": "historical_inconclusive_rejected:same_sha256,prior_score_meets_threshold,prior_quality_gates_passed"
+        "reason": "historical_inconclusive_rejected:prior_score_meets_threshold,prior_quality_gates_passed"
       },
       "runtime_evidence": {
         "eligible": false,
@@ -15767,7 +15767,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 0
+            "consecutive_inconclusive_deep_checks": 1
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -15895,14 +15895,14 @@
         "eligible": false,
         "checks": {
           "current_status_inconclusive": true,
-          "same_sha256": false,
+          "same_sha256": true,
           "prior_score_meets_threshold": false,
           "prior_quality_gates_passed": false,
           "current_no_p2p": true,
           "upstream_enabled": true
         },
         "previous_health_score": 10,
-        "reason": "historical_inconclusive_rejected:same_sha256,prior_score_meets_threshold,prior_quality_gates_passed"
+        "reason": "historical_inconclusive_rejected:prior_score_meets_threshold,prior_quality_gates_passed"
       },
       "runtime_evidence": {
         "eligible": false,
@@ -16052,7 +16052,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 0
+            "consecutive_inconclusive_deep_checks": 1
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -16223,14 +16223,14 @@
         "eligible": false,
         "checks": {
           "current_status_inconclusive": true,
-          "same_sha256": false,
+          "same_sha256": true,
           "prior_score_meets_threshold": false,
           "prior_quality_gates_passed": false,
           "current_no_p2p": true,
           "upstream_enabled": true
         },
         "previous_health_score": 10,
-        "reason": "historical_inconclusive_rejected:same_sha256,prior_score_meets_threshold,prior_quality_gates_passed"
+        "reason": "historical_inconclusive_rejected:prior_score_meets_threshold,prior_quality_gates_passed"
       },
       "runtime_evidence": {
         "eligible": false,
@@ -16380,7 +16380,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 0
+            "consecutive_inconclusive_deep_checks": 1
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -17228,14 +17228,14 @@
         "eligible": false,
         "checks": {
           "current_status_inconclusive": true,
-          "same_sha256": false,
+          "same_sha256": true,
           "prior_score_meets_threshold": false,
           "prior_quality_gates_passed": false,
           "current_no_p2p": true,
           "upstream_enabled": true
         },
         "previous_health_score": 10,
-        "reason": "historical_inconclusive_rejected:same_sha256,prior_score_meets_threshold,prior_quality_gates_passed"
+        "reason": "historical_inconclusive_rejected:prior_score_meets_threshold,prior_quality_gates_passed"
       },
       "runtime_evidence": {
         "eligible": false,
@@ -17386,7 +17386,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 0
+            "consecutive_inconclusive_deep_checks": 1
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -17557,14 +17557,14 @@
         "eligible": false,
         "checks": {
           "current_status_inconclusive": false,
-          "same_sha256": false,
+          "same_sha256": true,
           "prior_score_meets_threshold": true,
           "prior_quality_gates_passed": false,
           "current_no_p2p": true,
           "upstream_enabled": true
         },
         "previous_health_score": 75,
-        "reason": "historical_inconclusive_rejected:current_status_inconclusive,same_sha256,prior_quality_gates_passed"
+        "reason": "historical_inconclusive_rejected:current_status_inconclusive,prior_quality_gates_passed"
       },
       "runtime_evidence": {
         "eligible": false,
@@ -17793,8 +17793,7 @@
           "arm.haglund.dev"
         ],
         "provider_server_http_statuses": [
-          200,
-          400
+          200
         ],
         "manifest_description_present": true,
         "manifest_supported_types": [
@@ -17877,14 +17876,14 @@
         "eligible": false,
         "checks": {
           "current_status_inconclusive": false,
-          "same_sha256": false,
+          "same_sha256": true,
           "prior_score_meets_threshold": true,
           "prior_quality_gates_passed": false,
           "current_no_p2p": true,
           "upstream_enabled": true
         },
         "previous_health_score": 75,
-        "reason": "historical_inconclusive_rejected:current_status_inconclusive,same_sha256,prior_quality_gates_passed"
+        "reason": "historical_inconclusive_rejected:current_status_inconclusive,prior_quality_gates_passed"
       },
       "runtime_evidence": {
         "eligible": false,
@@ -18193,14 +18192,14 @@
         "eligible": false,
         "checks": {
           "current_status_inconclusive": false,
-          "same_sha256": false,
+          "same_sha256": true,
           "prior_score_meets_threshold": true,
           "prior_quality_gates_passed": false,
           "current_no_p2p": true,
           "upstream_enabled": true
         },
         "previous_health_score": 75,
-        "reason": "historical_inconclusive_rejected:current_status_inconclusive,same_sha256,prior_quality_gates_passed"
+        "reason": "historical_inconclusive_rejected:current_status_inconclusive,prior_quality_gates_passed"
       },
       "runtime_evidence": {
         "eligible": false,
@@ -18514,14 +18513,14 @@
         "eligible": false,
         "checks": {
           "current_status_inconclusive": false,
-          "same_sha256": false,
+          "same_sha256": true,
           "prior_score_meets_threshold": true,
           "prior_quality_gates_passed": false,
           "current_no_p2p": true,
           "upstream_enabled": true
         },
         "previous_health_score": 75,
-        "reason": "historical_inconclusive_rejected:current_status_inconclusive,same_sha256,prior_quality_gates_passed"
+        "reason": "historical_inconclusive_rejected:current_status_inconclusive,prior_quality_gates_passed"
       },
       "runtime_evidence": {
         "eligible": false,
@@ -18831,14 +18830,14 @@
         "eligible": false,
         "checks": {
           "current_status_inconclusive": false,
-          "same_sha256": false,
+          "same_sha256": true,
           "prior_score_meets_threshold": true,
           "prior_quality_gates_passed": false,
           "current_no_p2p": true,
           "upstream_enabled": true
         },
         "previous_health_score": 75,
-        "reason": "historical_inconclusive_rejected:current_status_inconclusive,same_sha256,prior_quality_gates_passed"
+        "reason": "historical_inconclusive_rejected:current_status_inconclusive,prior_quality_gates_passed"
       },
       "runtime_evidence": {
         "eligible": false,
@@ -19150,14 +19149,14 @@
         "eligible": false,
         "checks": {
           "current_status_inconclusive": false,
-          "same_sha256": false,
+          "same_sha256": true,
           "prior_score_meets_threshold": true,
           "prior_quality_gates_passed": false,
           "current_no_p2p": true,
           "upstream_enabled": true
         },
         "previous_health_score": 75,
-        "reason": "historical_inconclusive_rejected:current_status_inconclusive,same_sha256,prior_quality_gates_passed"
+        "reason": "historical_inconclusive_rejected:current_status_inconclusive,prior_quality_gates_passed"
       },
       "runtime_evidence": {
         "eligible": false,
@@ -19703,8 +19702,7 @@
           "vidfast.vc"
         ],
         "provider_server_http_statuses": [
-          200,
-          404
+          200
         ],
         "manifest_description_present": true,
         "manifest_supported_types": [
@@ -19786,14 +19784,14 @@
         "eligible": false,
         "checks": {
           "current_status_inconclusive": false,
-          "same_sha256": false,
+          "same_sha256": true,
           "prior_score_meets_threshold": true,
           "prior_quality_gates_passed": false,
           "current_no_p2p": true,
           "upstream_enabled": true
         },
         "previous_health_score": 75,
-        "reason": "historical_inconclusive_rejected:current_status_inconclusive,same_sha256,prior_quality_gates_passed"
+        "reason": "historical_inconclusive_rejected:current_status_inconclusive,prior_quality_gates_passed"
       },
       "runtime_evidence": {
         "eligible": false,
@@ -20438,14 +20436,14 @@
         "eligible": false,
         "checks": {
           "current_status_inconclusive": true,
-          "same_sha256": false,
+          "same_sha256": true,
           "prior_score_meets_threshold": false,
           "prior_quality_gates_passed": false,
           "current_no_p2p": true,
           "upstream_enabled": true
         },
         "previous_health_score": 10,
-        "reason": "historical_inconclusive_rejected:same_sha256,prior_score_meets_threshold,prior_quality_gates_passed"
+        "reason": "historical_inconclusive_rejected:prior_score_meets_threshold,prior_quality_gates_passed"
       },
       "runtime_evidence": {
         "eligible": false,
@@ -20602,7 +20600,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 0
+            "consecutive_inconclusive_deep_checks": 1
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -20781,14 +20779,14 @@
         "eligible": false,
         "checks": {
           "current_status_inconclusive": true,
-          "same_sha256": false,
+          "same_sha256": true,
           "prior_score_meets_threshold": false,
           "prior_quality_gates_passed": false,
           "current_no_p2p": true,
           "upstream_enabled": true
         },
         "previous_health_score": 10,
-        "reason": "historical_inconclusive_rejected:same_sha256,prior_score_meets_threshold,prior_quality_gates_passed"
+        "reason": "historical_inconclusive_rejected:prior_score_meets_threshold,prior_quality_gates_passed"
       },
       "runtime_evidence": {
         "eligible": false,
@@ -20941,7 +20939,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 0
+            "consecutive_inconclusive_deep_checks": 1
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -21113,14 +21111,14 @@
         "eligible": false,
         "checks": {
           "current_status_inconclusive": true,
-          "same_sha256": false,
+          "same_sha256": true,
           "prior_score_meets_threshold": false,
           "prior_quality_gates_passed": false,
           "current_no_p2p": true,
           "upstream_enabled": true
         },
         "previous_health_score": 10,
-        "reason": "historical_inconclusive_rejected:same_sha256,prior_score_meets_threshold,prior_quality_gates_passed"
+        "reason": "historical_inconclusive_rejected:prior_score_meets_threshold,prior_quality_gates_passed"
       },
       "runtime_evidence": {
         "eligible": false,
@@ -21276,7 +21274,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 0
+            "consecutive_inconclusive_deep_checks": 1
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -21451,14 +21449,14 @@
         "eligible": false,
         "checks": {
           "current_status_inconclusive": true,
-          "same_sha256": false,
+          "same_sha256": true,
           "prior_score_meets_threshold": false,
           "prior_quality_gates_passed": false,
           "current_no_p2p": true,
           "upstream_enabled": true
         },
         "previous_health_score": 10,
-        "reason": "historical_inconclusive_rejected:same_sha256,prior_score_meets_threshold,prior_quality_gates_passed"
+        "reason": "historical_inconclusive_rejected:prior_score_meets_threshold,prior_quality_gates_passed"
       },
       "runtime_evidence": {
         "eligible": false,
@@ -21612,7 +21610,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 0
+            "consecutive_inconclusive_deep_checks": 1
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -21790,14 +21788,14 @@
         "eligible": false,
         "checks": {
           "current_status_inconclusive": true,
-          "same_sha256": false,
+          "same_sha256": true,
           "prior_score_meets_threshold": false,
           "prior_quality_gates_passed": false,
           "current_no_p2p": true,
           "upstream_enabled": true
         },
         "previous_health_score": 10,
-        "reason": "historical_inconclusive_rejected:same_sha256,prior_score_meets_threshold,prior_quality_gates_passed"
+        "reason": "historical_inconclusive_rejected:prior_score_meets_threshold,prior_quality_gates_passed"
       },
       "runtime_evidence": {
         "eligible": false,
@@ -21948,7 +21946,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 0
+            "consecutive_inconclusive_deep_checks": 1
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -22121,14 +22119,14 @@
         "eligible": false,
         "checks": {
           "current_status_inconclusive": true,
-          "same_sha256": false,
+          "same_sha256": true,
           "prior_score_meets_threshold": false,
           "prior_quality_gates_passed": false,
           "current_no_p2p": true,
           "upstream_enabled": true
         },
         "previous_health_score": 10,
-        "reason": "historical_inconclusive_rejected:same_sha256,prior_score_meets_threshold,prior_quality_gates_passed"
+        "reason": "historical_inconclusive_rejected:prior_score_meets_threshold,prior_quality_gates_passed"
       },
       "runtime_evidence": {
         "eligible": false,
@@ -22279,7 +22277,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 0
+            "consecutive_inconclusive_deep_checks": 1
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -22449,14 +22447,14 @@
         "eligible": false,
         "checks": {
           "current_status_inconclusive": true,
-          "same_sha256": false,
+          "same_sha256": true,
           "prior_score_meets_threshold": false,
           "prior_quality_gates_passed": false,
           "current_no_p2p": true,
           "upstream_enabled": true
         },
         "previous_health_score": 10,
-        "reason": "historical_inconclusive_rejected:same_sha256,prior_score_meets_threshold,prior_quality_gates_passed"
+        "reason": "historical_inconclusive_rejected:prior_score_meets_threshold,prior_quality_gates_passed"
       },
       "runtime_evidence": {
         "eligible": false,
@@ -22607,7 +22605,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 0
+            "consecutive_inconclusive_deep_checks": 1
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -22782,14 +22780,14 @@
         "eligible": false,
         "checks": {
           "current_status_inconclusive": true,
-          "same_sha256": false,
+          "same_sha256": true,
           "prior_score_meets_threshold": false,
           "prior_quality_gates_passed": false,
           "current_no_p2p": true,
           "upstream_enabled": true
         },
         "previous_health_score": 10,
-        "reason": "historical_inconclusive_rejected:same_sha256,prior_score_meets_threshold,prior_quality_gates_passed"
+        "reason": "historical_inconclusive_rejected:prior_score_meets_threshold,prior_quality_gates_passed"
       },
       "runtime_evidence": {
         "eligible": false,
@@ -22940,7 +22938,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 0
+            "consecutive_inconclusive_deep_checks": 1
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -23110,14 +23108,14 @@
         "eligible": false,
         "checks": {
           "current_status_inconclusive": true,
-          "same_sha256": false,
+          "same_sha256": true,
           "prior_score_meets_threshold": false,
           "prior_quality_gates_passed": false,
           "current_no_p2p": true,
           "upstream_enabled": true
         },
         "previous_health_score": 10,
-        "reason": "historical_inconclusive_rejected:same_sha256,prior_score_meets_threshold,prior_quality_gates_passed"
+        "reason": "historical_inconclusive_rejected:prior_score_meets_threshold,prior_quality_gates_passed"
       },
       "runtime_evidence": {
         "eligible": false,
@@ -23267,7 +23265,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 0
+            "consecutive_inconclusive_deep_checks": 1
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -23442,14 +23440,14 @@
         "eligible": false,
         "checks": {
           "current_status_inconclusive": true,
-          "same_sha256": false,
+          "same_sha256": true,
           "prior_score_meets_threshold": false,
           "prior_quality_gates_passed": false,
           "current_no_p2p": true,
           "upstream_enabled": true
         },
         "previous_health_score": 10,
-        "reason": "historical_inconclusive_rejected:same_sha256,prior_score_meets_threshold,prior_quality_gates_passed"
+        "reason": "historical_inconclusive_rejected:prior_score_meets_threshold,prior_quality_gates_passed"
       },
       "runtime_evidence": {
         "eligible": false,
@@ -23600,7 +23598,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 0
+            "consecutive_inconclusive_deep_checks": 1
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -23771,14 +23769,14 @@
         "eligible": false,
         "checks": {
           "current_status_inconclusive": true,
-          "same_sha256": false,
+          "same_sha256": true,
           "prior_score_meets_threshold": false,
           "prior_quality_gates_passed": false,
           "current_no_p2p": true,
           "upstream_enabled": true
         },
         "previous_health_score": 10,
-        "reason": "historical_inconclusive_rejected:same_sha256,prior_score_meets_threshold,prior_quality_gates_passed"
+        "reason": "historical_inconclusive_rejected:prior_score_meets_threshold,prior_quality_gates_passed"
       },
       "runtime_evidence": {
         "eligible": false,
@@ -23928,7 +23926,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 0
+            "consecutive_inconclusive_deep_checks": 1
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -24096,14 +24094,14 @@
         "eligible": false,
         "checks": {
           "current_status_inconclusive": true,
-          "same_sha256": false,
+          "same_sha256": true,
           "prior_score_meets_threshold": false,
           "prior_quality_gates_passed": false,
           "current_no_p2p": true,
           "upstream_enabled": true
         },
         "previous_health_score": 10,
-        "reason": "historical_inconclusive_rejected:same_sha256,prior_score_meets_threshold,prior_quality_gates_passed"
+        "reason": "historical_inconclusive_rejected:prior_score_meets_threshold,prior_quality_gates_passed"
       },
       "runtime_evidence": {
         "eligible": false,
@@ -24255,7 +24253,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 0
+            "consecutive_inconclusive_deep_checks": 1
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -24427,14 +24425,14 @@
         "eligible": false,
         "checks": {
           "current_status_inconclusive": true,
-          "same_sha256": false,
+          "same_sha256": true,
           "prior_score_meets_threshold": false,
           "prior_quality_gates_passed": false,
           "current_no_p2p": true,
           "upstream_enabled": true
         },
         "previous_health_score": 10,
-        "reason": "historical_inconclusive_rejected:same_sha256,prior_score_meets_threshold,prior_quality_gates_passed"
+        "reason": "historical_inconclusive_rejected:prior_score_meets_threshold,prior_quality_gates_passed"
       },
       "runtime_evidence": {
         "eligible": false,
@@ -24586,7 +24584,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 0
+            "consecutive_inconclusive_deep_checks": 1
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -24761,14 +24759,14 @@
         "eligible": false,
         "checks": {
           "current_status_inconclusive": true,
-          "same_sha256": false,
+          "same_sha256": true,
           "prior_score_meets_threshold": false,
           "prior_quality_gates_passed": false,
           "current_no_p2p": true,
           "upstream_enabled": true
         },
         "previous_health_score": 10,
-        "reason": "historical_inconclusive_rejected:same_sha256,prior_score_meets_threshold,prior_quality_gates_passed"
+        "reason": "historical_inconclusive_rejected:prior_score_meets_threshold,prior_quality_gates_passed"
       },
       "runtime_evidence": {
         "eligible": false,
@@ -24920,7 +24918,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 0
+            "consecutive_inconclusive_deep_checks": 1
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -25097,14 +25095,14 @@
         "eligible": false,
         "checks": {
           "current_status_inconclusive": true,
-          "same_sha256": false,
+          "same_sha256": true,
           "prior_score_meets_threshold": false,
           "prior_quality_gates_passed": false,
           "current_no_p2p": true,
           "upstream_enabled": true
         },
         "previous_health_score": 10,
-        "reason": "historical_inconclusive_rejected:same_sha256,prior_score_meets_threshold,prior_quality_gates_passed"
+        "reason": "historical_inconclusive_rejected:prior_score_meets_threshold,prior_quality_gates_passed"
       },
       "runtime_evidence": {
         "eligible": false,
@@ -25255,7 +25253,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 0
+            "consecutive_inconclusive_deep_checks": 1
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -26089,14 +26087,14 @@
         "eligible": false,
         "checks": {
           "current_status_inconclusive": true,
-          "same_sha256": false,
+          "same_sha256": true,
           "prior_score_meets_threshold": false,
           "prior_quality_gates_passed": false,
           "current_no_p2p": true,
           "upstream_enabled": true
         },
         "previous_health_score": 10,
-        "reason": "historical_inconclusive_rejected:same_sha256,prior_score_meets_threshold,prior_quality_gates_passed"
+        "reason": "historical_inconclusive_rejected:prior_score_meets_threshold,prior_quality_gates_passed"
       },
       "runtime_evidence": {
         "eligible": false,
@@ -26245,7 +26243,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 0
+            "consecutive_inconclusive_deep_checks": 1
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -26414,14 +26412,14 @@
         "eligible": false,
         "checks": {
           "current_status_inconclusive": true,
-          "same_sha256": false,
+          "same_sha256": true,
           "prior_score_meets_threshold": false,
           "prior_quality_gates_passed": false,
           "current_no_p2p": true,
           "upstream_enabled": true
         },
         "previous_health_score": 10,
-        "reason": "historical_inconclusive_rejected:same_sha256,prior_score_meets_threshold,prior_quality_gates_passed"
+        "reason": "historical_inconclusive_rejected:prior_score_meets_threshold,prior_quality_gates_passed"
       },
       "runtime_evidence": {
         "eligible": false,
@@ -26573,7 +26571,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 0
+            "consecutive_inconclusive_deep_checks": 1
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -26749,14 +26747,14 @@
         "eligible": false,
         "checks": {
           "current_status_inconclusive": true,
-          "same_sha256": false,
+          "same_sha256": true,
           "prior_score_meets_threshold": false,
           "prior_quality_gates_passed": false,
           "current_no_p2p": true,
           "upstream_enabled": true
         },
         "previous_health_score": 10,
-        "reason": "historical_inconclusive_rejected:same_sha256,prior_score_meets_threshold,prior_quality_gates_passed"
+        "reason": "historical_inconclusive_rejected:prior_score_meets_threshold,prior_quality_gates_passed"
       },
       "runtime_evidence": {
         "eligible": false,
@@ -26906,7 +26904,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 0
+            "consecutive_inconclusive_deep_checks": 1
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -27077,14 +27075,14 @@
         "eligible": false,
         "checks": {
           "current_status_inconclusive": true,
-          "same_sha256": false,
+          "same_sha256": true,
           "prior_score_meets_threshold": false,
           "prior_quality_gates_passed": false,
           "current_no_p2p": true,
           "upstream_enabled": true
         },
         "previous_health_score": 10,
-        "reason": "historical_inconclusive_rejected:same_sha256,prior_score_meets_threshold,prior_quality_gates_passed"
+        "reason": "historical_inconclusive_rejected:prior_score_meets_threshold,prior_quality_gates_passed"
       },
       "runtime_evidence": {
         "eligible": false,
@@ -27235,7 +27233,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 0
+            "consecutive_inconclusive_deep_checks": 1
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
@@ -27739,14 +27737,14 @@
         "eligible": false,
         "checks": {
           "current_status_inconclusive": true,
-          "same_sha256": false,
+          "same_sha256": true,
           "prior_score_meets_threshold": false,
           "prior_quality_gates_passed": false,
           "current_no_p2p": true,
           "upstream_enabled": true
         },
         "previous_health_score": 10,
-        "reason": "historical_inconclusive_rejected:same_sha256,prior_score_meets_threshold,prior_quality_gates_passed"
+        "reason": "historical_inconclusive_rejected:prior_score_meets_threshold,prior_quality_gates_passed"
       },
       "runtime_evidence": {
         "eligible": false,
@@ -27898,7 +27896,7 @@
             "stream_median_latency_ms": null,
             "strict_consecutive_deep_passes": 0,
             "strict_total_deep_passes": 0,
-            "consecutive_inconclusive_deep_checks": 0
+            "consecutive_inconclusive_deep_checks": 1
           },
           "threshold": {
             "maximum_provider_median_latency_ms": 15000,
