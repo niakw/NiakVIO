@@ -18,6 +18,7 @@ from runtime_repair import (
     matching_profiles,
     runtime_trigger_matches,
 )
+from deep_repair_loop import persist_runtime_profiles
 
 
 def metadata_only_result() -> dict:
@@ -71,6 +72,52 @@ def obsolete_fallback_result() -> dict:
     }
 
 
+def provider_forbidden_result() -> dict:
+    return {
+        "key": "source:sample",
+        "status": "reachable",
+        "score": 75,
+        "evidence": {
+            "streams_playable": 0,
+            "provider_server_accessible": True,
+            "provider_server_successful_response": False,
+        },
+        "tests": [{
+            "stream_count": 0,
+            "provider_server_accessible": True,
+            "provider_server_successful_response": False,
+            "network_observations": [
+                {"host": "provider.example", "status": 403, "infrastructure": False, "stage": "content_lookup"}
+            ],
+        }],
+    }
+
+
+def stream_forbidden_result() -> dict:
+    return {
+        "key": "source:sample",
+        "status": "degraded",
+        "score": 60,
+        "evidence": {
+            "streams_playable": 1,
+            "provider_server_accessible": True,
+            "provider_server_successful_response": True,
+        },
+        "tests": [{
+            "stream_count": 1,
+            "provider_server_accessible": True,
+            "provider_server_successful_response": True,
+            "network_observations": [
+                {"host": "media.example", "status": 403, "infrastructure": False, "stage": "content_lookup"}
+            ],
+        }],
+    }
+
+
+def fetch_bundle() -> bytes:
+    return b'module.exports={getStreams:function(){return fetch("https://provider.example/api").then(function(){return []})}};'
+
+
 def metadata_bundle() -> bytes:
     return b'''function G(a,b,c){return c()}function W(t,n){return function(A,D,T,x){return G(this,arguments,function*(f,g,h,_,m={}){let $=null,s=1,M="x";let P=yield zw(n(f,g,h,_,{signal:$}),s,M);return P})}}function zw(v){return v}function P(c,f,g,h){return G(this,arguments,function*(t,n,i,s,a={}){let D=yield X2(t,n,{season:i});if(!D||D.length===0)return[];return D})}function X2(){return Promise.resolve([])}module.exports={getStreams:async()=>[]}'''
 
@@ -83,6 +130,9 @@ def test_runtime_signatures() -> None:
     assert runtime_trigger_matches("metadata_only_no_origin", metadata_only_result())
     assert not runtime_trigger_matches("search_success_with_obsolete_fallback", metadata_only_result())
     assert runtime_trigger_matches("search_success_with_obsolete_fallback", obsolete_fallback_result())
+    assert runtime_trigger_matches("provider_http_forbidden", provider_forbidden_result())
+    assert not runtime_trigger_matches("stream_http_forbidden", provider_forbidden_result())
+    assert runtime_trigger_matches("stream_http_forbidden", stream_forbidden_result())
 
 
 def test_profile_selection_is_provider_agnostic() -> None:
@@ -94,6 +144,13 @@ def test_profile_selection_is_provider_agnostic() -> None:
     source = html_bundle().decode()
     profiles = matching_profiles(candidate, obsolete_fallback_result(), source)
     assert profiles == ["dle_html_search_recovery"]
+
+    source = fetch_bundle().decode()
+    profiles = matching_profiles(candidate, provider_forbidden_result(), source)
+    assert profiles == ["request_header_recovery"]
+
+    profiles = matching_profiles(candidate, stream_forbidden_result(), source)
+    assert profiles == ["stream_output_recovery"]
 
 
 def test_html_profile_rewrites_exact_functions_without_deleting_neighbours() -> None:
@@ -201,8 +258,17 @@ def test_repair_candidate_and_comparison() -> None:
         assert not accepted and reason == "no_strict_runtime_improvement"
 
 
+def test_accepted_profiles_are_persistable_without_provider_specific_code() -> None:
+    config = {"provider_patches": {"sample": {"profiles": ["existing"]}}}
+    records = persist_runtime_profiles(config, {"sample": {"request_header_recovery"}, "other": {"stream_output_recovery"}})
+    assert {row["profile"] for row in records} == {"request_header_recovery", "stream_output_recovery"}
+    assert config["provider_patches"]["sample"]["profiles"] == ["existing", "request_header_recovery"]
+    assert config["provider_patches"]["other"]["profiles"] == ["stream_output_recovery"]
+
+
 test_runtime_signatures()
 test_profile_selection_is_provider_agnostic()
+test_accepted_profiles_are_persistable_without_provider_specific_code()
 test_html_profile_rewrites_exact_functions_without_deleting_neighbours()
 test_repair_candidate_and_comparison()
 print("runtime repair tests passed")
