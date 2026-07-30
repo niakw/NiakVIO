@@ -228,6 +228,131 @@ def _inject_runtime_domain_overrides(text: str, replacements: dict[str, Any]) ->
 
 
 
+
+def _inject_request_header_overrides(text: str, config: dict[str, Any]) -> tuple[str, bool]:
+    '''Inject provider-scoped fetch headers before the provider initializes.
+
+    Output normalization happens after ``getStreams`` and therefore cannot fix
+    401/403 responses raised while a provider is fetching its API or source
+    pages. These rules wrap the provider's own fetch calls and only add missing
+    headers. Existing provider headers always win.
+    '''
+    if not isinstance(config, dict):
+        return text, False
+    defaults = config.get("defaults") or {}
+    host_rules = config.get("host_rules") or {}
+    if not isinstance(defaults, dict) or not isinstance(host_rules, dict):
+        raise ValueError("request_headers defaults and host_rules must be objects")
+    marker = "NUVIO_REQUEST_HEADER_OVERRIDES_V1"
+    end_marker = "NUVIO_REQUEST_HEADER_OVERRIDES_END"
+    cleaned = re.sub(
+        rf"/\* {marker} \*/[\s\S]*?/\* {end_marker} \*/\s*",
+        "",
+        text,
+        count=1,
+    )
+    if not defaults and not host_rules:
+        return cleaned, cleaned != text
+    payload = json.dumps(
+        {"defaults": defaults, "host_rules": host_rules},
+        separators=(",", ":"),
+    )
+    bootstrap = r'''/* NUVIO_REQUEST_HEADER_OVERRIDES_V1 */
+;(function(g,policy){
+  if(!g||typeof g.fetch!=="function")return;
+  var key="__nuvioRequestHeaderOverridesV1";
+  var state=g[key];
+  function copyHeaders(target,source){
+    if(!source)return target;
+    try{
+      if(typeof source.forEach==="function"){
+        source.forEach(function(v,k){target[String(k)]=String(v)});
+        return target;
+      }
+    }catch(_e){}
+    if(Array.isArray(source)){
+      for(var i=0;i<source.length;i++){
+        var pair=source[i];
+        if(pair&&pair.length>=2)target[String(pair[0])]=String(pair[1]);
+      }
+      return target;
+    }
+    if(typeof source==="object"){
+      Object.keys(source).forEach(function(k){if(source[k]!=null)target[String(k)]=String(source[k])});
+    }
+    return target;
+  }
+  function lowerIndex(headers){
+    var out={};Object.keys(headers).forEach(function(k){out[k.toLowerCase()]=k});return out;
+  }
+  function matchingRule(host){
+    var rules=state.policy.host_rules||{};
+    if(rules[host])return rules[host];
+    var names=Object.keys(rules);
+    for(var i=0;i<names.length;i++){
+      var name=String(names[i]).toLowerCase();
+      if(name.indexOf("*.")===0){
+        var suffix=name.slice(1);
+        if(host.length>suffix.length&&host.slice(-suffix.length)===suffix)return rules[names[i]];
+      }
+    }
+    return null;
+  }
+  function mergeMissing(headers,values){
+    if(!values||typeof values!=="object")return headers;
+    var lower=lowerIndex(headers);
+    Object.keys(values).forEach(function(k){
+      if(values[k]!=null&&!lower[String(k).toLowerCase()])headers[String(k)]=String(values[k]);
+    });
+    return headers;
+  }
+  if(!state){
+    state={native:g.fetch.bind(g),policy:{defaults:{},host_rules:{}}};
+    g[key]=state;
+    g.fetch=function(input,init){
+      var nextInit={},sourceInit=init&&typeof init==="object"?init:{};
+      Object.keys(sourceInit).forEach(function(k){nextInit[k]=sourceInit[k]});
+      var headers={};
+      try{
+        if(typeof Request!=="undefined"&&input instanceof Request)copyHeaders(headers,input.headers);
+      }catch(_e){}
+      copyHeaders(headers,sourceInit.headers);
+      mergeMissing(headers,state.policy.defaults||{});
+      var raw="";
+      try{raw=(typeof Request!=="undefined"&&input instanceof Request)?input.url:String(input)}catch(_e){}
+      try{
+        var url=new URL(raw),rule=matchingRule(String(url.hostname||"").toLowerCase());
+        if(rule){
+          if(rule.headers&&typeof rule.headers==="object")mergeMissing(headers,rule.headers);
+          var direct={Referer:rule.referer,Origin:rule.origin,Accept:rule.accept};
+          mergeMissing(headers,direct);
+        }
+      }catch(_e){}
+      nextInit.headers=headers;
+      return state.native(input,nextInit);
+    };
+  }
+  policy=policy||{defaults:{},host_rules:{}};
+  state.policy.defaults=state.policy.defaults||{};
+  state.policy.host_rules=state.policy.host_rules||{};
+  mergeMissing(state.policy.defaults,policy.defaults||{});
+  var incomingRules=policy.host_rules||{};
+  Object.keys(incomingRules).forEach(function(host){
+    var existing=state.policy.host_rules[host]||{},incoming=incomingRules[host]||{},merged={};
+    Object.keys(existing).forEach(function(k){merged[k]=existing[k]});
+    Object.keys(incoming).forEach(function(k){merged[k]=incoming[k]});
+    if(existing.headers||incoming.headers){
+      merged.headers={};
+      Object.keys(existing.headers||{}).forEach(function(k){merged.headers[k]=existing.headers[k]});
+      Object.keys(incoming.headers||{}).forEach(function(k){merged.headers[k]=incoming.headers[k]});
+    }
+    state.policy.host_rules[host]=merged;
+  });
+})(typeof globalThis!=="undefined"?globalThis:this,__POLICY__);
+/* NUVIO_REQUEST_HEADER_OVERRIDES_END */
+'''.replace("__POLICY__", payload)
+    return bootstrap + "\n" + cleaned.lstrip(), True
+
 def _inject_global_stream_output_guard(text: str, config: dict[str, Any]) -> tuple[str, bool]:
     """Append a provider-agnostic output guard around every CommonJS/global export.
 
@@ -237,20 +362,24 @@ def _inject_global_stream_output_guard(text: str, config: dict[str, Any]) -> tup
     internal variable names or bundler layout.
     """
     policy = config.get("global_stream_output") or {}
-    if not isinstance(policy, dict) or policy.get("enabled") is False:
-        return text, False
-    marker = "NUVIO_GLOBAL_STREAM_OUTPUT_GUARD_V3"
-    if marker in text:
-        return text, False
-    # V1/V2 were appended after transpilation and V2 used raw async/await,
-    # which Node accepts but Nuvio's embedded runtime may reject. Replace any
-    # legacy appended guard before adding the Promise-chain-only V3 guard.
+    if not isinstance(policy, dict):
+        policy = {}
+    original = text
+    # Blanket output wrapping caused app/runtime regressions even when Node
+    # smoke tests passed. Always remove legacy global guards first. Output
+    # hardening now belongs to a targeted runtime profile retained only after
+    # a strict deep retest improves the affected provider.
     text = re.sub(
-        r"\n?/\* NUVIO_GLOBAL_STREAM_OUTPUT_GUARD_V(?:1|2) \*/[\s\S]*$",
+        r"\n?/\* NUVIO_GLOBAL_STREAM_OUTPUT_GUARD_V(?:1|2|3) \*/[\s\S]*$",
         "",
         text,
         flags=re.MULTILINE,
     ).rstrip()
+    if policy.get("enabled") is not True:
+        return text, text != original
+    marker = "NUVIO_GLOBAL_STREAM_OUTPUT_GUARD_V3"
+    if marker in text:
+        return text, text != original
     defaults = {
         "user_agent": policy.get("user_agent") or "Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 Chrome/124 Mobile Safari/537.36",
         "add_accept": policy.get("add_accept", True),
@@ -292,7 +421,18 @@ def _inject_global_stream_output_guard(text: str, config: dict[str, Any]) -> tup
     if(!lower["user-agent"])out["User-Agent"]=policy.user_agent;
     if(policy.add_accept&&!lower.accept)out.Accept="*/*";
     if(policy.add_range&&!lower.range)out.Range="bytes=0-";
-    var host=hostOf(stream.url),rule=policy.host_rules&&policy.host_rules[host];
+    var host=hostOf(stream.url),rule=null,rules=policy.host_rules||{};
+    if(rules[host])rule=rules[host];
+    if(!rule){
+      var ruleNames=Object.keys(rules);
+      for(var ri=0;ri<ruleNames.length;ri++){
+        var ruleName=String(ruleNames[ri]).toLowerCase();
+        if(ruleName.indexOf("*.")===0){
+          var suffix=ruleName.slice(1);
+          if(host.length>suffix.length&&host.slice(-suffix.length)===suffix){rule=rules[ruleNames[ri]];break}
+        }
+      }
+    }
     if(rule&&typeof rule==="object"){
       if(rule.referer&&!lower.referer)out.Referer=String(rule.referer);
       if(rule.origin&&!lower.origin)out.Origin=String(rule.origin);
@@ -400,6 +540,15 @@ def apply_overrides(
     text, runtime_rule_count = _inject_runtime_domain_overrides(text, runtime_replacements)
     if runtime_rule_count:
         applied.append({"type": "runtime_domain_overrides", "count": runtime_rule_count, "phase": phase})
+
+    request_headers = specific.get("request_headers") or {}
+    text, request_headers_changed = _inject_request_header_overrides(text, request_headers)
+    if request_headers_changed and request_headers:
+        applied.append({
+            "type": "request_header_overrides",
+            "hosts": sorted(str(host) for host in (request_headers.get("host_rules") or {})),
+            "phase": phase,
+        })
 
     profiles = config.get("patch_profiles") or {}
     if not isinstance(profiles, dict):

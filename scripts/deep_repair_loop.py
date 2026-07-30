@@ -51,6 +51,29 @@ def write_json(path: Path, value: Any) -> None:
     path.write_text(json.dumps(value, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 
+def persist_runtime_profiles(config: dict[str, Any], assignments: dict[str, set[str]]) -> list[dict[str, Any]]:
+    """Persist only profiles already accepted by a strict real deep retest."""
+    provider_patches = config.setdefault("provider_patches", {})
+    if not isinstance(provider_patches, dict):
+        raise ValueError("provider_patches must be an object")
+    records: list[dict[str, Any]] = []
+    for provider_id, profile_names in sorted(assignments.items()):
+        if not provider_id or not profile_names:
+            continue
+        current = provider_patches.setdefault(provider_id.casefold(), {})
+        if not isinstance(current, dict):
+            raise ValueError(f"provider_patches.{provider_id} must be an object")
+        profiles = [str(value) for value in current.get("profiles") or [] if str(value).strip()]
+        before = set(profiles)
+        for profile_name in sorted(profile_names):
+            if profile_name not in before:
+                profiles.append(profile_name)
+                records.append({"provider_id": provider_id.casefold(), "profile": profile_name})
+        if profiles:
+            current["profiles"] = profiles
+    return records
+
+
 def run_health(
     *,
     stage: Path,
@@ -128,6 +151,7 @@ def main() -> int:
     }
 
     accepted_total = 0
+    accepted_profile_assignments: dict[str, set[str]] = {}
     for round_number in range(1, max_rounds + 1):
         attempts: list[dict[str, Any]] = []
         repair_candidates: list[dict[str, Any]] = []
@@ -245,6 +269,10 @@ def main() -> int:
                     )
                     accepted_this_round += 1
                     accepted_total += 1
+                    accepted_provider_id = str(updated_candidate.get("canonical_id") or updated_candidate.get("upstream_id") or "").casefold()
+                    accepted_profile = str(repair_event.get("profile") or "")
+                    if accepted_provider_id and accepted_profile:
+                        accepted_profile_assignments.setdefault(accepted_provider_id, set()).add(accepted_profile)
                     round_audit["accepted"].append(
                         {
                             "parent_key": parent_key,
@@ -299,8 +327,15 @@ def main() -> int:
     final_report["runtime_repair"] = registry["runtime_repair"]
     write_json(output / "health-results.json", final_report)
 
+    persisted_profiles: list[dict[str, Any]] = []
+    if health_check_path == HEALTH_CHECK.resolve() and accepted_profile_assignments:
+        persisted_profiles = persist_runtime_profiles(config, accepted_profile_assignments)
+        if persisted_profiles:
+            write_json(ROOT / "provider-overrides.json", config)
+
     audit["completed_at"] = datetime.now(timezone.utc).isoformat()
     audit["accepted_repairs"] = accepted_total
+    audit["persisted_runtime_profiles"] = persisted_profiles
     audit["final_counts"] = final_report["counts"]
     write_json(output / "repair-report.json", audit)
 

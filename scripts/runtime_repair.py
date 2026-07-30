@@ -77,6 +77,7 @@ def _observation_summary(result: dict[str, Any]) -> dict[str, Any]:
         if isinstance(row.get("status"), int) and 200 <= int(row["status"]) < 400
     ]
     obsolete = [row for row in provider_rows if row.get("status") in OBSOLETE_STATUSES]
+    forbidden = [row for row in provider_rows if row.get("status") in {401, 403}]
     by_host: dict[str, dict[str, int]] = defaultdict(lambda: {"success": 0, "obsolete": 0})
     for row in provider_success:
         if row.get("host"):
@@ -94,6 +95,7 @@ def _observation_summary(result: dict[str, Any]) -> dict[str, Any]:
         "provider_rows": len(provider_rows),
         "provider_success": len(provider_success),
         "obsolete": len(obsolete),
+        "forbidden": len(forbidden),
         "hosts": dict(by_host),
     }
 
@@ -126,6 +128,21 @@ def runtime_trigger_matches(trigger: str, result: dict[str, Any]) -> bool:
             and accessible
             and successful
             and same_host_pattern
+        )
+
+    if trigger == "provider_http_forbidden":
+        return (
+            status in {"no_streams", "reachable", "degraded", "provider_unreachable"}
+            and streams == 0
+            and summary["forbidden"] >= 1
+            and summary["provider_success"] == 0
+        )
+
+    if trigger == "stream_http_forbidden":
+        return (
+            status in {"healthy", "reachable", "degraded", "no_streams"}
+            and streams > 0
+            and summary["forbidden"] >= 1
         )
 
     if trigger == "runtime_error_after_local_patch":

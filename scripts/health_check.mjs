@@ -798,10 +798,11 @@ function runWorker(candidate, fixture) {
 function statusFrom(worker, probes) {
   if ((worker.disallowed_stream_count || 0) > 0) return 'excluded';
   if (probes.some((probe) => probe.playback_verified)) return 'healthy';
-  // Runtime validation is deliberately an access check, not a catalogue or
-  // playback benchmark. Once a provider-owned host answered at HTTP level, the
-  // editorial metadata gates decide whether it is worth publishing.
-  if (worker.ok && worker.provider_server_accessible) return 'reachable';
+  // A provider-owned host merely answering 401/403/404 is not a functional
+  // provider. Only a successful provider response may receive the editorial
+  // "reachable" status. This distinction also feeds the targeted deep repair
+  // profiles for request-stage 403 failures.
+  if (worker.ok && worker.provider_server_successful_response) return 'reachable';
   if (probes.some((probe) => probe.category === 'blocked')) return 'blocked';
   if (worker.ok && (worker.stream_count || 0) === 0) return 'no_streams';
   if (worker.ok && (worker.stream_count || 0) > 0) {
