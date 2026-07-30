@@ -4,6 +4,7 @@ import {
   checkDomainAcrossResolvers,
   createGlobalpingDependencies,
   discoverMigrationCandidates,
+  discoverPeerMigrationCandidates,
   extractCandidateDomains,
   providerDecision,
 } from '../scripts/provider_dns_preflight.mjs';
@@ -179,6 +180,24 @@ function dnsResult(name, status, addresses = []) {
   assert.equal(calls[0].locations[0].magic, 'France+SFR+eyeball');
   assert.equal(calls[0].measurementOptions.resolver, '109.0.66.10');
   assert.equal(calls[1].locations[0].magic, 'dns-measurement-sfr');
+}
+
+
+{
+  const domainResults = [
+    { host: 'api.movix.cloud', status: 'globally_unreachable', migration_candidates: [] },
+    { host: 'api.movix.fun', status: 'accessible_primary_french_isp', selected_resolver: 'sfr', migration_candidates: [] },
+    { host: 'movix.fun', status: 'accessible_primary_french_isp', selected_resolver: 'sfr', migration_candidates: [] },
+  ];
+  const migrations = discoverPeerMigrationCandidates(domainResults, baseConfig);
+  assert.equal(migrations.length, 1);
+  assert.equal(migrations[0].original_host, 'api.movix.cloud');
+  assert.equal(migrations[0].host, 'api.movix.fun');
+  assert.ok(migrations[0].evidence.includes('provider_peer_reachable_same_role'));
+  const decision = providerDecision(domainResults, baseConfig);
+  assert.equal(decision.status, 'pass');
+  assert.equal(decision.migration_candidate.original_host, 'api.movix.cloud');
+  assert.equal(decision.migration_candidate.host, 'api.movix.fun');
 }
 
 console.log('French ISP DNS preflight tests passed');
