@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-07-30T19:34:49.226035+00:00",
+  "generated_at": "2026-07-30T20:39:36.067729+00:00",
   "mode": "deep",
   "provider_specific_rules": false,
   "max_rounds": 3,
@@ -250,6 +250,16 @@
           "score_before": 10,
           "score_after": 75,
           "reason": "strict_runtime_improvement"
+        },
+        {
+          "parent_key": "published:wookafr",
+          "profile": "metadata_context_recovery",
+          "sha256": "5a3d04dfad6cb395508250985239b9f52f8d702709cc3c8ca7b42cf97fdb11a6",
+          "status_before": "no_streams",
+          "status_after": "no_streams",
+          "score_before": 10,
+          "score_after": 10,
+          "reason": "strict_runtime_improvement"
         }
       ],
       "rejected": [
@@ -356,20 +366,12 @@
           "status": "no_streams",
           "score": 10,
           "reason": "no_strict_runtime_improvement"
-        },
-        {
-          "parent_key": "published:wookafr",
-          "repair_key": "published:wookafr::repair:r1:metadata_context_recovery:5a3d04df",
-          "profile": "metadata_context_recovery",
-          "status": "runtime_error",
-          "score": 0,
-          "reason": "hard_failure:runtime_error"
         }
       ]
     },
     {
       "round": 2,
-      "generated_candidates": 15,
+      "generated_candidates": 14,
       "attempts": [
         {
           "parent_key": "gowaru:anime-sama",
@@ -510,16 +512,6 @@
           "status": "generated",
           "repair_key": "published:animoflix::repair:r2:metadata_context_recovery:95ae8616",
           "repair_sha256": "95ae8616efa9c9216469fe573f4b05bbeca39422c0530db36167b0d6617df99f"
-        },
-        {
-          "parent_key": "published:wookafr",
-          "parent_sha256": "a46def9e30849cbff67aad0af49f6d4f16ec19fad730619efa0643d04dec7fd6",
-          "profile": "metadata_context_recovery",
-          "baseline_status": "no_streams",
-          "baseline_score": 10,
-          "status": "generated",
-          "repair_key": "published:wookafr::repair:r2:metadata_context_recovery:5a3d04df",
-          "repair_sha256": "5a3d04dfad6cb395508250985239b9f52f8d702709cc3c8ca7b42cf97fdb11a6"
         }
       ],
       "accepted": [],
@@ -635,29 +627,26 @@
           "status": "no_streams",
           "score": 10,
           "reason": "no_strict_runtime_improvement"
-        },
-        {
-          "parent_key": "published:wookafr",
-          "repair_key": "published:wookafr::repair:r2:metadata_context_recovery:5a3d04df",
-          "profile": "metadata_context_recovery",
-          "status": "runtime_error",
-          "score": 0,
-          "reason": "hard_failure:runtime_error"
         }
       ]
     }
   ],
-  "completed_at": "2026-07-30T19:41:23.318134+00:00",
-  "accepted_repairs": 5,
-  "persisted_runtime_profiles": [],
+  "completed_at": "2026-07-30T20:46:19.383679+00:00",
+  "accepted_repairs": 6,
+  "persisted_runtime_profiles": [
+    {
+      "provider_id": "wookafr",
+      "profile": "metadata_context_recovery"
+    }
+  ],
   "final_counts": {
     "healthy": 2,
-    "reachable": 47,
+    "reachable": 46,
     "blocked": 0,
     "degraded": 0,
-    "no_streams": 143,
+    "no_streams": 146,
     "provider_unreachable": 1,
-    "runtime_error": 2,
+    "runtime_error": 0,
     "unavailable": 0,
     "excluded": 0
   }
