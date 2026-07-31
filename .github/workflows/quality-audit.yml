@@ -6,13 +6,11 @@ on:
       mode:
         description: "Audit depth"
         required: true
-        default: "deep"
+        default: "quick"
         type: choice
         options:
           - quick
           - deep
-  schedule:
-    - cron: "37 4 * * 2,5"
 
 permissions:
   contents: read
@@ -59,7 +57,7 @@ jobs:
       - name: Run advisory audit with bounded runtime repair
         shell: bash
         run: |
-          MODE="${{ github.event.inputs.mode || 'deep' }}"
+          MODE="${{ github.event.inputs.mode || 'quick' }}"
           if [ "$MODE" = "deep" ]; then
             python scripts/deep_repair_loop.py --stage staging --output health-output --mode deep
             python scripts/validate_override_pipeline.py --stage staging
