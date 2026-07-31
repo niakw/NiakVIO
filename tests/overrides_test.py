@@ -57,11 +57,11 @@ def test_staged_artifact_contract() -> None:
 def test_domain_overrides() -> None:
     source = b"const BASE='https://french-stream.one';"
     output, patch_records = apply_overrides("frenchstream", source)
-    assert b"frenchstream.food" in output
+    assert b"fs03.lol" in output
     assert b"french-stream.one" not in output
     assert any(
         row.get("from") == "french-stream.one"
-        and row.get("to") == "frenchstream.food"
+        and row.get("to") == "fs03.lol"
         for row in patch_records
     )
 
@@ -165,5 +165,61 @@ global.fetch = async function(input) {
 
 
 test_obfuscated_runtime_endpoint_override()
+
+
+def test_idempotent_override_validation() -> None:
+    validator = str(ROOT / "scripts" / "validate_override_pipeline.py")
+
+    # A staged provider that already contains the terminal target is valid even
+    # when no replacement record was emitted during this run.
+    with tempfile.TemporaryDirectory() as tmp:
+        stage = Path(tmp)
+        target = stage / "providers" / "gowaru" / "movix.js"
+        target.parent.mkdir(parents=True)
+        output = b'const API="https://api.movix.fun";'
+        target.write_bytes(output)
+        registry = {
+            "candidates": [{
+                "key": "gowaru:movix",
+                "canonical_id": "movix",
+                "upstream_id": "movix",
+                "local_path": "providers/gowaru/movix.js",
+                "upstream_sha256": hashlib.sha256(output).hexdigest(),
+                "sha256": hashlib.sha256(output).hexdigest(),
+                "local_patches": [],
+            }]
+        }
+        (stage / "candidates.json").write_text(json.dumps(registry), encoding="utf-8")
+        subprocess.run([sys.executable, validator, "--stage", str(stage)], check=True)
+
+    # Neither a historical value nor the terminal target means the provider
+    # structure changed and the configured override must be reviewed.
+    with tempfile.TemporaryDirectory() as tmp:
+        stage = Path(tmp)
+        target = stage / "providers" / "gowaru" / "movix.js"
+        target.parent.mkdir(parents=True)
+        output = b'const API="https://unexpected.example";'
+        target.write_bytes(output)
+        registry = {
+            "candidates": [{
+                "key": "gowaru:movix",
+                "canonical_id": "movix",
+                "upstream_id": "movix",
+                "local_path": "providers/gowaru/movix.js",
+                "upstream_sha256": hashlib.sha256(output).hexdigest(),
+                "sha256": hashlib.sha256(output).hexdigest(),
+                "local_patches": [],
+            }]
+        }
+        (stage / "candidates.json").write_text(json.dumps(registry), encoding="utf-8")
+        result = subprocess.run(
+            [sys.executable, validator, "--stage", str(stage)],
+            text=True, capture_output=True,
+        )
+        assert result.returncode == 1
+        assert "override stale" in result.stdout
+
+
+test_idempotent_override_validation()
 
 print("override tests passed")
