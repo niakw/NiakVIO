@@ -2,6 +2,30 @@
   "name": "Nuvio Curated Providers",
   "scrapers": [
     {
+      "id": "dulourd",
+      "name": "DuLourd",
+      "description": "Séries, animes et cartoons en streaming VF et VOSTFR.",
+      "version": "1.0.14",
+      "author": "Gowaru",
+      "supportedTypes": [
+        "anime",
+        "tv"
+      ],
+      "filename": "providers/dulourd--published-baseline--5801a7212df4ccfd.js",
+      "enabled": true,
+      "logo": "https://www.dulourd.hair/templates/dulourd2/icon/favicon.png",
+      "contentLanguage": [
+        "fr"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "limited": false,
+      "disabledPlatforms": [],
+      "supportsExternalPlayer": false
+    },
+    {
       "id": "animesama-co",
       "name": "AnimeSama.co (DLE Mirror)",
       "description": "Animes VF et VOSTFR en streaming sur AnimeSama.co (miroir DLE).",
@@ -95,30 +119,6 @@
       "supportsExternalPlayer": false
     },
     {
-      "id": "dulourd",
-      "name": "DuLourd",
-      "description": "Séries, animes et cartoons en streaming VF et VOSTFR.",
-      "version": "1.0.14",
-      "author": "Gowaru",
-      "supportedTypes": [
-        "anime",
-        "tv"
-      ],
-      "filename": "providers/dulourd--published-baseline--5801a7212df4ccfd.js",
-      "enabled": true,
-      "logo": "https://www.dulourd.hair/templates/dulourd2/icon/favicon.png",
-      "contentLanguage": [
-        "fr"
-      ],
-      "formats": [
-        "mp4",
-        "m3u8"
-      ],
-      "limited": false,
-      "disabledPlatforms": [],
-      "supportsExternalPlayer": false
-    },
-    {
       "id": "flemmix",
       "name": "Flemmix",
       "description": "Films et séries en streaming VF/VOSTFR sur Flemmix.",
@@ -176,9 +176,35 @@
         "movie",
         "tv"
       ],
-      "filename": "providers/frenchstream--published-baseline--cd46283e71b7c18d.js",
+      "filename": "providers/frenchstream--nuvio--a26e1343b38ba5d9.js",
       "enabled": true,
-      "logo": "https://fstream.org/favicon.ico",
+      "logo": "https://fs03.lol/favicon.ico",
+      "contentLanguage": [
+        "fr"
+      ],
+      "formats": [
+        "mp4",
+        "mkv",
+        "m3u8"
+      ],
+      "limited": false,
+      "disabledPlatforms": [],
+      "supportsExternalPlayer": true
+    },
+    {
+      "id": "movix",
+      "name": "Movix",
+      "description": "Films, Séries et Animes en VF et VOSTFR.",
+      "version": "1.0.5",
+      "author": "Gowaru",
+      "supportedTypes": [
+        "anime",
+        "movie",
+        "tv"
+      ],
+      "filename": "providers/movix--published-baseline--1233010fe4e58795.js",
+      "enabled": true,
+      "logo": "https://movix.cash/movix.png",
       "contentLanguage": [
         "fr"
       ],
@@ -224,7 +250,7 @@
         "movie",
         "tv"
       ],
-      "filename": "providers/streamzo--published-baseline--88e947979172fb58.js",
+      "filename": "providers/streamzo--published-baseline--758d90c6f2b1ef2f.js",
       "enabled": true,
       "logo": "https://streamzo.fr/favicon.ico",
       "contentLanguage": [
@@ -282,32 +308,6 @@
       "limited": false,
       "disabledPlatforms": [],
       "supportsExternalPlayer": false
-    },
-    {
-      "id": "movix",
-      "name": "Movix",
-      "description": "Films, Séries et Animes en VF et VOSTFR.",
-      "version": "1.0.5",
-      "author": "Gowaru",
-      "supportedTypes": [
-        "anime",
-        "movie",
-        "tv"
-      ],
-      "filename": "providers/movix--published-baseline--1233010fe4e58795.js",
-      "enabled": true,
-      "logo": "https://movix.cash/movix.png",
-      "contentLanguage": [
-        "fr"
-      ],
-      "formats": [
-        "mp4",
-        "mkv",
-        "m3u8"
-      ],
-      "limited": false,
-      "disabledPlatforms": [],
-      "supportsExternalPlayer": true
     },
     {
       "id": "nakios",
@@ -379,6 +379,28 @@
       "limited": false,
       "disabledPlatforms": [],
       "supportsExternalPlayer": false
+    },
+    {
+      "id": "videasy",
+      "name": "VidEasy",
+      "description": "Videasy streaming with encrypted TMDB ID support for movies and TV shows",
+      "version": "1.0.5",
+      "author": "Nuvio Team",
+      "supportedTypes": [
+        "movie",
+        "tv"
+      ],
+      "filename": "providers/videasy--published-baseline--8c30ffb09ca4279e.js",
+      "enabled": true,
+      "hasSettings": true,
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "logo": "https://i.postimg.cc/7LHYMtVV/videasy.png",
+      "contentLanguage": [
+        "en"
+      ]
     },
     {
       "id": "sekai",
@@ -472,28 +494,6 @@
       "limited": false,
       "disabledPlatforms": [],
       "supportsExternalPlayer": false
-    },
-    {
-      "id": "videasy",
-      "name": "VidEasy",
-      "description": "Videasy streaming with encrypted TMDB ID support for movies and TV shows",
-      "version": "1.0.5",
-      "author": "Nuvio Team",
-      "supportedTypes": [
-        "movie",
-        "tv"
-      ],
-      "filename": "providers/videasy--published-baseline--8c30ffb09ca4279e.js",
-      "enabled": true,
-      "hasSettings": true,
-      "formats": [
-        "mp4",
-        "m3u8"
-      ],
-      "logo": "https://i.postimg.cc/7LHYMtVV/videasy.png",
-      "contentLanguage": [
-        "en"
-      ]
     },
     {
       "id": "animepahe",
@@ -815,28 +815,6 @@
       "contentLanguage": [
         "en",
         "hi"
-      ]
-    },
-    {
-      "id": "uhdmovies",
-      "name": "UHDMovies",
-      "description": "UHD Movies streaming with multiple resolution",
-      "version": "1.0.1",
-      "author": "Nuvio Team",
-      "supportedTypes": [
-        "movie",
-        "tv"
-      ],
-      "filename": "providers/uhdmovies--published-baseline--677ca92a03d329e5.js",
-      "enabled": true,
-      "hasSettings": true,
-      "formats": [
-        "mp4",
-        "m3u8"
-      ],
-      "logo": "https://i.postimg.cc/KzDBBdbK/uhdmovies.png",
-      "contentLanguage": [
-        "en"
       ]
     },
     {
@@ -1181,6 +1159,32 @@
       ]
     },
     {
+      "id": "peachify",
+      "name": "🍑 Peachify",
+      "description": "Streams from peachify.top — 3 server sources (MovieBox/Holly/Air) via Cloudflare Workers with AES-256-GCM decryption",
+      "version": "1.0.3",
+      "author": "piratezoro9",
+      "supportedTypes": [
+        "movie",
+        "tv"
+      ],
+      "filename": "providers/peachify--published-baseline--3abd719532e31536.js",
+      "enabled": true,
+      "hasSettings": true,
+      "formats": [
+        "m3u8",
+        "mp4"
+      ],
+      "logo": "https://i.postimg.cc/tCz8CDH3/peachify.png",
+      "contentLanguage": [
+        "en",
+        "hi",
+        "te",
+        "ta",
+        "pt"
+      ]
+    },
+    {
       "id": "streamflix",
       "name": "StreamFlix",
       "description": "Direct links via StreamFlix API",
@@ -1342,32 +1346,6 @@
       ]
     },
     {
-      "id": "peachify",
-      "name": "🍑 Peachify",
-      "description": "Streams from peachify.top — 3 server sources (MovieBox/Holly/Air) via Cloudflare Workers with AES-256-GCM decryption",
-      "version": "1.0.3",
-      "author": "piratezoro9",
-      "supportedTypes": [
-        "movie",
-        "tv"
-      ],
-      "filename": "providers/peachify--published-baseline--3abd719532e31536.js",
-      "enabled": true,
-      "hasSettings": true,
-      "formats": [
-        "m3u8",
-        "mp4"
-      ],
-      "logo": "https://i.postimg.cc/tCz8CDH3/peachify.png",
-      "contentLanguage": [
-        "en",
-        "hi",
-        "te",
-        "ta",
-        "pt"
-      ]
-    },
-    {
       "id": "animoflix",
       "name": "AnimoFlix",
       "description": "Regarder des animes VF et VOSTFR gratuitement sur AnimoFlix.",
@@ -1413,6 +1391,28 @@
       "limited": false,
       "disabledPlatforms": [],
       "supportsExternalPlayer": false
+    },
+    {
+      "id": "uhdmovies",
+      "name": "UHDMovies",
+      "description": "UHD Movies streaming with multiple resolution",
+      "version": "1.0.1",
+      "author": "Nuvio Team",
+      "supportedTypes": [
+        "movie",
+        "tv"
+      ],
+      "filename": "providers/uhdmovies--published-baseline--677ca92a03d329e5.js",
+      "enabled": false,
+      "hasSettings": true,
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "logo": "https://i.postimg.cc/KzDBBdbK/uhdmovies.png",
+      "contentLanguage": [
+        "en"
+      ]
     },
     {
       "id": "topcartoons",
@@ -1785,28 +1785,6 @@
       ]
     },
     {
-      "id": "goatapi",
-      "name": "🐐 GoatAPI",
-      "description": "Movies via GoatAPI, indexed by TMDB",
-      "version": "1.0.3",
-      "author": "Aeyshx",
-      "supportedTypes": [
-        "movie"
-      ],
-      "filename": "providers/goatapi--published-baseline--0d23f6e9427957fd.js",
-      "enabled": false,
-      "hasSettings": true,
-      "formats": [
-        "mp4",
-        "mkv",
-        "m3u8"
-      ],
-      "logo": "https://i.postimg.cc/d1vkPZpY/goatapi.png",
-      "contentLanguage": [
-        "en"
-      ]
-    },
-    {
       "id": "mallumv",
       "name": "MalluMV",
       "description": "MalluMV direct links with support for Tamil, Telugu, Hindi, Malayalam, and Kannada movies",
@@ -1896,6 +1874,52 @@
       "contentLanguage": [
         "en",
         "hi"
+      ]
+    },
+    {
+      "id": "animezey",
+      "name": "AnimeZeY",
+      "description": "Movies via AnimeZeY, indexed by TMDB",
+      "version": "1.0.0",
+      "author": "Nuvio Team",
+      "supportedTypes": [
+        "movie",
+        "tv"
+      ],
+      "filename": "providers/animezey--aio--6506217ffdc81c9e.js",
+      "enabled": false,
+      "hasSettings": true,
+      "formats": [
+        "mp4",
+        "mkv",
+        "m3u8"
+      ],
+      "logo": "https://i.postimg.cc/RVTy2djk/ainimezey.png",
+      "contentLanguage": [
+        "en",
+        "pt"
+      ]
+    },
+    {
+      "id": "goatapi",
+      "name": "🐐 GoatAPI",
+      "description": "Movies via GoatAPI, indexed by TMDB",
+      "version": "1.0.3",
+      "author": "Aeyshx",
+      "supportedTypes": [
+        "movie"
+      ],
+      "filename": "providers/goatapi--published-baseline--0d23f6e9427957fd.js",
+      "enabled": false,
+      "hasSettings": true,
+      "formats": [
+        "mp4",
+        "mkv",
+        "m3u8"
+      ],
+      "logo": "https://i.postimg.cc/d1vkPZpY/goatapi.png",
+      "contentLanguage": [
+        "en"
       ]
     },
     {
@@ -1991,5 +2015,5 @@
       ]
     }
   ],
-  "version": "5.18.27"
+  "version": "5.18.28"
 }
