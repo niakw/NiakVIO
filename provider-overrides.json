@@ -508,6 +508,9 @@
     },
     "cineby": {
       "capability": "api_stream_resolver"
+    },
+    "animezey": {
+      "capability": "direct_media"
     }
   },
   "route_override_defaults": {
@@ -637,7 +640,7 @@
       "allow_html_url": true,
       "requires_direct_media": false,
       "observed_origins": [
-        "https://4khdhub.click"
+        "https://4khdhub.one"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
@@ -648,7 +651,7 @@
       "allow_html_url": true,
       "requires_direct_media": false,
       "observed_origins": [
-        "https://4khdhub.dad"
+        "https://4khdhub.one"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
@@ -1050,7 +1053,9 @@
       "validation": "provider_native",
       "allow_html_url": true,
       "requires_direct_media": false,
-      "observed_origins": [],
+      "observed_origins": [
+        "https://manifest.desitvhub.eu.org"
+      ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
     },
@@ -1629,7 +1634,6 @@
       "allow_html_url": false,
       "requires_direct_media": false,
       "observed_origins": [
-        "https://api.wingsdatabase.com",
         "https://www.vidking.net"
       ],
       "generated_from_manifest": true,
@@ -1883,6 +1887,16 @@
         "https://vidlink.pro"
       ],
       "generated_from_manifest_or_stage": true
+    },
+    "animezey": {
+      "strategy": "direct_media",
+      "validation": "media_url",
+      "allow_html_url": false,
+      "requires_direct_media": true,
+      "observed_origins": [
+        "https://1.animezey23112022.workers.dev"
+      ],
+      "generated_from_manifest_or_stage": true
     }
   },
   "official_domain_hubs": {
@@ -1930,8 +1944,8 @@
   },
   "provider_profile_generation": {
     "schema_version": 3,
-    "provider_count": 86,
-    "staged_provider_count": 0,
+    "provider_count": 88,
+    "staged_provider_count": 87,
     "source": "manifest_published_bundles_and_current_staging",
     "same_deep_new_provider_support": true,
     "automatic_bundle_rewrite": false

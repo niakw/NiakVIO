@@ -1,3 +1,29 @@
+/* NUVIO_RUNTIME_DOMAIN_OVERRIDES_V1 */
+;(function(g,rules){
+  if(!g||typeof g.fetch!=="function")return;
+  var key="__nuvioDomainOverrideV1";
+  var state=g[key];
+  if(!state){
+    state={native:g.fetch.bind(g),rules:Object.create(null)};
+    g[key]=state;
+    g.fetch=function(input,init){
+      var next=input;
+      try{
+        var raw=(typeof Request!=="undefined"&&input instanceof Request)?input.url:String(input);
+        var url=new URL(raw);
+        var replacement=state.rules[String(url.hostname).toLowerCase()];
+        if(replacement){
+          url.hostname=replacement;
+          next=(typeof Request!=="undefined"&&input instanceof Request)?new Request(url.toString(),input):url.toString();
+        }
+      }catch(_error){}
+      return state.native(next,init);
+    };
+  }
+  for(var i=0;i<rules.length;i++){
+    try{state.rules[atob(rules[i][0])]=rules[i][1];}catch(_error){}
+  }
+})(typeof globalThis!=="undefined"?globalThis:this,[["ZnJlbmNoLXN0cmVhbS5vbmU=","fs03.lol"],["ZnJlbmNoc3RyZWFtLmZvb2Q=","fs03.lol"]]);
 /**
  * frenchstream - Built from src/frenchstream/
  * Generated: 2026-07-14T19:23:45.984025943Z

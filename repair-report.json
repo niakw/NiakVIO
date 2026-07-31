@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-07-31T07:51:17.282264+00:00",
+  "generated_at": "2026-07-31T20:45:36.152702+00:00",
   "mode": "deep",
   "provider_specific_rules": false,
   "max_rounds": 3,
@@ -101,13 +101,13 @@
         },
         {
           "parent_key": "gowaru:frenchstream",
-          "parent_sha256": "c4735951ca7fb2df38cadc26c38cb4bbb01c8d91a251aacf954f6cda7eeaa1eb",
+          "parent_sha256": "12691452905c7956f299bee9f4f38dfef538e107a99a8cc8efce6ff8baedc145",
           "profile": "metadata_context_recovery",
           "baseline_status": "no_streams",
           "baseline_score": 10,
           "status": "generated",
-          "repair_key": "gowaru:frenchstream::repair:r1:metadata_context_recovery:809ceb16",
-          "repair_sha256": "809ceb163c8e318bf41eae6d885362cd6a01a6b3b773b78e367e071df2fdbbb5"
+          "repair_key": "gowaru:frenchstream::repair:r1:metadata_context_recovery:638cd0b0",
+          "repair_sha256": "638cd0b0a03aae9a43ed1bf5f914cd14acc0e7ab22e5ecc83ae71b25bb0473e1"
         },
         {
           "parent_key": "gowaru:mugiwarastream",
@@ -224,7 +224,7 @@
         {
           "parent_key": "gowaru:frenchstream",
           "profile": "metadata_context_recovery",
-          "sha256": "809ceb163c8e318bf41eae6d885362cd6a01a6b3b773b78e367e071df2fdbbb5",
+          "sha256": "638cd0b0a03aae9a43ed1bf5f914cd14acc0e7ab22e5ecc83ae71b25bb0473e1",
           "status_before": "no_streams",
           "status_after": "reachable",
           "score_before": 10,
@@ -351,7 +351,7 @@
     },
     {
       "round": 2,
-      "generated_candidates": 14,
+      "generated_candidates": 13,
       "attempts": [
         {
           "parent_key": "gowaru:anime-sama",
@@ -412,16 +412,6 @@
           "status": "generated",
           "repair_key": "gowaru:french-manga::repair:r2:metadata_context_recovery:6337eede",
           "repair_sha256": "6337eede7bd7c6a8a458893f7b99378a624c013e4f29487629c14e4ad76bf0a4"
-        },
-        {
-          "parent_key": "gowaru:frenchstream",
-          "parent_sha256": "809ceb163c8e318bf41eae6d885362cd6a01a6b3b773b78e367e071df2fdbbb5",
-          "profile": "dle_html_search_recovery",
-          "baseline_status": "reachable",
-          "baseline_score": 75,
-          "status": "generated",
-          "repair_key": "gowaru:frenchstream::repair:r2:dle_html_search_recovery:4a65f400",
-          "repair_sha256": "4a65f400062f20ca447a4275b7e9d4be99cb1a1a2a238563ee9cbd671cb882da"
         },
         {
           "parent_key": "gowaru:mugiwarastream",
@@ -545,14 +535,6 @@
           "reason": "hard_failure:runtime_error"
         },
         {
-          "parent_key": "gowaru:frenchstream",
-          "repair_key": "gowaru:frenchstream::repair:r2:dle_html_search_recovery:4a65f400",
-          "profile": "dle_html_search_recovery",
-          "status": "reachable",
-          "score": 75,
-          "reason": "no_strict_runtime_improvement"
-        },
-        {
           "parent_key": "gowaru:mugiwarastream",
           "repair_key": "gowaru:mugiwarastream::repair:r2:metadata_context_recovery:e2fae7e1",
           "profile": "metadata_context_recovery",
@@ -611,17 +593,17 @@
       ]
     }
   ],
-  "completed_at": "2026-07-31T07:58:09.163736+00:00",
+  "completed_at": "2026-07-31T20:52:23.799866+00:00",
   "accepted_repairs": 5,
   "persisted_runtime_profiles": [],
   "final_counts": {
-    "healthy": 2,
-    "reachable": 45,
+    "healthy": 4,
+    "reachable": 46,
     "blocked": 0,
     "degraded": 0,
-    "no_streams": 143,
-    "provider_unreachable": 2,
-    "runtime_error": 3,
+    "no_streams": 144,
+    "provider_unreachable": 0,
+    "runtime_error": 1,
     "unavailable": 0,
     "excluded": 0
   }
