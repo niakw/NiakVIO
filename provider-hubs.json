@@ -1,0 +1,935 @@
+{
+  "schema_version": 1,
+  "generated_from": "hubs_streams_manquants(1).xlsx + hubs supplied in chat",
+  "providers": {
+    "animesama-co": {
+      "id": "animesama-co",
+      "name": "AnimeSama.co (DLE Mirror)",
+      "manifest_status": "Actif",
+      "category": "Francophone / Anime",
+      "hub": "https://anime-sama.wiki/",
+      "direct": "https://anime-sama.store/",
+      "notes": "lien sur bloc \"Miroir Alpha\nLien de secours à utiliser si la plateforme principale rencontre une indisponibilité temporaire.\"",
+      "source": "user_workbook",
+      "aliases": [
+        "animesama",
+        "anime-sama"
+      ]
+    },
+    "animesultra": {
+      "id": "animesultra",
+      "name": "AnimesUltra",
+      "manifest_status": "Actif",
+      "category": "Francophone / Anime",
+      "hub": "recherche (yandex) avec le terme suivant pour trouver le lien : www1.animesultra",
+      "direct": "https://ww.animesultra.org/",
+      "notes": "recherche moteur de recherche",
+      "source": "user_workbook"
+    },
+    "animevostfr": {
+      "id": "animevostfr",
+      "name": "AnimeVOSTFR",
+      "manifest_status": "Actif",
+      "category": "Francophone / Anime",
+      "hub": "recherche (yandex) avec le terme suivant pour trouver le lien : animevostfr lien",
+      "direct": "https://v2.animevostfr.org/",
+      "notes": "recherche moteur de recherche",
+      "source": "user_workbook",
+      "aliases": [
+        "animevostfr"
+      ]
+    },
+    "dulourd": {
+      "id": "dulourd",
+      "name": "DuLourd",
+      "manifest_status": "Actif",
+      "category": "Francophone",
+      "hub": "recherche (yandex) avec le terme suivant pour trouver le lien : \"DuLourd\" streaming",
+      "direct": "https://www.dulourd.hair/",
+      "notes": "recherche moteur de recherche",
+      "source": "user_workbook"
+    },
+    "french-manga": {
+      "id": "french-manga",
+      "name": "French-Manga",
+      "manifest_status": "Actif",
+      "category": "Francophone / Anime",
+      "hub": "recherche (yandex) avec le terme suivant pour trouver le lien : \"French-Manga\" streaming",
+      "direct": "https://w16.french-manga.net/",
+      "notes": "recherche moteur de recherche",
+      "source": "user_workbook",
+      "aliases": [
+        "french-manga",
+        "frenchmanga"
+      ]
+    },
+    "streamzo": {
+      "id": "streamzo",
+      "name": "StreamZo",
+      "manifest_status": "Actif",
+      "category": "Francophone",
+      "hub": "recherche (yandex) avec le terme suivant pour trouver le lien : \"StreamZo\" streaming",
+      "direct": "https://streamzo.fr/",
+      "notes": "recherche moteur de recherche",
+      "source": "user_workbook"
+    },
+    "voiranime-rip": {
+      "id": "voiranime-rip",
+      "name": "VoirAnime.rip",
+      "manifest_status": "Actif",
+      "category": "Francophone / Anime",
+      "hub": "recherche (yandex) avec le terme suivant pour trouver le lien : VoirAnime.rip lien",
+      "direct": "https://voiranime.rip/",
+      "notes": "recherche moteur de recherche",
+      "source": "user_workbook",
+      "aliases": [
+        "voiranime"
+      ]
+    },
+    "vostfree": {
+      "id": "vostfree",
+      "name": "Vostfree",
+      "manifest_status": "Actif",
+      "category": "Francophone / Anime",
+      "hub": "https://streaminganime.fr/site/6/vostfree",
+      "direct": "https://ipv4.vostfree.ws/",
+      "notes": "bouton avec lien \"Visiter maintenant\"",
+      "source": "user_workbook"
+    },
+    "papadustream": {
+      "id": "papadustream",
+      "name": "Papadustream",
+      "manifest_status": "Actif",
+      "category": "Francophone",
+      "hub": "https://papadustream.info/acces/",
+      "direct": "https://papadustream-v2.watch/",
+      "notes": "bouton avec lien \"▶ Accéder au site\"",
+      "source": "user_workbook"
+    },
+    "mugiwarastream": {
+      "id": "mugiwarastream",
+      "name": "Mugiwara-no-Streaming",
+      "manifest_status": "Actif",
+      "category": "Francophone / Anime",
+      "hub": "https://streaminganime.fr/site/10/mugiwara-no-streaming",
+      "direct": "https://www.mugiwara-no-streaming.com/",
+      "notes": "bouton avec lien \"Visiter maintenant\"",
+      "source": "user_workbook",
+      "aliases": [
+        "mugiwara-no-streaming",
+        "mugiwarastream"
+      ]
+    },
+    "sekai": {
+      "id": "sekai",
+      "name": "Sekai",
+      "manifest_status": "Actif",
+      "category": "Francophone / Anime",
+      "hub": "recherche (yandex) avec le terme suivant pour trouver le lien : \"Sekai\" streaming",
+      "direct": "https://sekai.one/",
+      "notes": "recherche moteur de recherche",
+      "source": "user_workbook"
+    },
+    "anime-sama": {
+      "id": "anime-sama",
+      "name": "Anime-Sama",
+      "manifest_status": "Actif",
+      "category": "Francophone / Anime",
+      "hub": "https://anime-sama.wiki/",
+      "direct": "https://animes-sama.fr/",
+      "notes": "Plateforme principale\nAccès prioritaire au site principal avec l’environnement le plus à jour et les serveurs recommandés.",
+      "source": "user_workbook",
+      "aliases": [
+        "animesama",
+        "anime-sama"
+      ]
+    },
+    "voiranime": {
+      "id": "voiranime",
+      "name": "VoirAnime",
+      "manifest_status": "Actif",
+      "category": "Francophone / Anime",
+      "hub": "https://voiranime.org.uk/",
+      "direct": "https://voiranime.homes/",
+      "notes": "bouton avec lien \"Accéder à la page d'accueil\"",
+      "source": "user_workbook",
+      "aliases": [
+        "voiranime"
+      ]
+    },
+    "movix": {
+      "id": "movix",
+      "name": "Movix",
+      "manifest_status": "Actif",
+      "category": "International",
+      "hub": "https://movix.online/",
+      "direct": "https://movix.fun/",
+      "notes": "premier bloc button après \"Accéder à Movix\nChoisis ton domaine préféré, ou rejoins notre communauté sur Telegram.\"",
+      "source": "user_workbook"
+    },
+    "videasy": {
+      "id": "videasy",
+      "name": "VidEasy",
+      "manifest_status": "Actif",
+      "category": "International",
+      "hub": "https://www.videasy.to/docs",
+      "direct": "https://player.videasy.net/",
+      "notes": "Basic Implementation\n<iframe\n  src=\"https://player.videasy.net/movie/299534\"\n  width=\"100%\"\n  height=\"100%\"\n  frameborder=\"0\"\n  allowfullscreen\n  allow=\"encrypted-media\"\n></iframe>  ----- le lien ne semble pas bouger -- c'est un player",
+      "source": "user_workbook"
+    },
+    "animepahe": {
+      "id": "animepahe",
+      "name": "AnimePahe",
+      "manifest_status": "Actif",
+      "category": "International / Anime",
+      "hub": "https://theindex.moe/item/6128a375aa2f6e004d46d71d",
+      "direct": "https://animepahe.pw/",
+      "notes": "cloudfare detection robot --- lien autour des svg entourant le nom du strem \"Animepahe\"",
+      "source": "user_workbook"
+    },
+    "4khdhub": {
+      "id": "4khdhub",
+      "name": "4KHDHub",
+      "manifest_status": "Actif",
+      "category": "International",
+      "hub": "HDHub4u.Tv ou https://hdhub4u.ec/",
+      "direct": "https://new3.hdhub4u.cl/",
+      "notes": "lien sur \"Click Here\"",
+      "source": "user_workbook",
+      "aliases": [
+        "4khdhub",
+        "hdhub4u"
+      ]
+    },
+    "playimdb": {
+      "id": "playimdb",
+      "name": "PlayIMDb",
+      "manifest_status": "Actif",
+      "category": "International",
+      "hub": "https://playimdb.domains/",
+      "direct": null,
+      "notes": "je ne peux pas accéder au hub pour le moment, mais c'est le hub officiel",
+      "source": "user_workbook"
+    },
+    "desiflix": {
+      "id": "desiflix",
+      "name": "DesiFlix",
+      "manifest_status": "Actif",
+      "category": "International",
+      "hub": "http://desiflix.me/",
+      "direct": null,
+      "notes": "redirection auto vers le lien en ligne",
+      "source": "user_workbook"
+    },
+    "allanime": {
+      "id": "allanime",
+      "name": "AllAnime",
+      "manifest_status": "Actif",
+      "category": "International / Anime",
+      "hub": "https://allanime.sa.com/",
+      "direct": "https://ww2.aniwatch.fit/",
+      "notes": "bouton \" Go to Homepage – See What’s Popular\"",
+      "source": "user_workbook"
+    },
+    "anikototv": {
+      "id": "anikototv",
+      "name": "AnikotoTV",
+      "manifest_status": "Actif",
+      "category": "International / Anime",
+      "hub": "https://streamingsiteshub.com/",
+      "direct": "https://anikototv.to/",
+      "notes": "annuaire hub , possible recherche ou dans les résultats page d'accueil si visible (là oui)",
+      "source": "user_workbook"
+    },
+    "animesalt": {
+      "id": "animesalt",
+      "name": "AnimeSalt",
+      "manifest_status": "Actif",
+      "category": "International / Anime",
+      "hub": "http://animesalt.ac/",
+      "direct": "https://animesalt.link/",
+      "notes": "redirection auto vers le lien en ligne",
+      "source": "user_workbook"
+    },
+    "hdghartv": {
+      "id": "hdghartv",
+      "name": "HDGharTV",
+      "manifest_status": "Actif",
+      "category": "International",
+      "hub": "https://hdghartv.com.pk/",
+      "direct": "https://hdghartv.cc/",
+      "notes": "bouton \"GO TO HOME\"",
+      "source": "user_workbook"
+    },
+    "netmirror": {
+      "id": "netmirror",
+      "name": "NetMirror",
+      "manifest_status": "Actif",
+      "category": "International",
+      "hub": "https://netmiror.com/",
+      "direct": "https://net27.cc/",
+      "notes": "bouton \"Watch Now\"",
+      "source": "user_workbook"
+    },
+    "persianstremio": {
+      "id": "persianstremio",
+      "name": "PersianStremio",
+      "manifest_status": "Actif",
+      "category": "International",
+      "hub": null,
+      "direct": null,
+      "notes": "semble être un addons https://github.com/AbolfazlFarzadmehr/Persian-Stream-Stremio-Addon",
+      "source": "user_workbook"
+    },
+    "vidfast": {
+      "id": "vidfast",
+      "name": "VidFast",
+      "manifest_status": "Actif",
+      "category": "International",
+      "hub": "https://vidfast.vc/",
+      "direct": null,
+      "notes": "c'est un player, documentaire dessus https://vidfast.vc/movie/533535",
+      "source": "user_workbook"
+    },
+    "vidlink": {
+      "id": "vidlink",
+      "name": "VidLink",
+      "manifest_status": "Actif",
+      "category": "International",
+      "hub": "https://streamindex.live/site/vidlink",
+      "direct": null,
+      "notes": "lien à récupérer sur le hub, pour l'instant site off",
+      "source": "user_workbook"
+    },
+    "yflix": {
+      "id": "yflix",
+      "name": "YFlix",
+      "manifest_status": "Actif",
+      "category": "International",
+      "hub": null,
+      "direct": null,
+      "notes": "pas de hub public, la nouvelle adresse semble être https://yflix.in/",
+      "source": "user_workbook"
+    },
+    "hindmoviez": {
+      "id": "hindmoviez",
+      "name": "HindMoviez",
+      "manifest_status": "Actif",
+      "category": "International",
+      "hub": "https://t.me/s/hindmoviez/1975",
+      "direct": "https://hindmovie.icu",
+      "notes": "dernier message telegram (accès public ok)",
+      "source": "user_workbook"
+    },
+    "uhdmovies": {
+      "id": "uhdmovies",
+      "name": "UHDMovies",
+      "manifest_status": "Actif",
+      "category": "International",
+      "hub": "https://mmodlist.org/",
+      "direct": "https://uhdmovies.autos",
+      "notes": "premier lien en dessous du bouton/image join telegram",
+      "source": "user_workbook"
+    },
+    "vidsrc": {
+      "id": "vidsrc",
+      "name": "VidSrc",
+      "manifest_status": "Actif",
+      "category": "International",
+      "hub": "https://vidsrc.to/",
+      "direct": null,
+      "notes": "player - domaine qui ne semble pas bouger",
+      "source": "user_workbook"
+    },
+    "vixsrc": {
+      "id": "vixsrc",
+      "name": "VixSrc",
+      "manifest_status": "Actif",
+      "category": "International",
+      "hub": "https://vixsrc.to/",
+      "direct": null,
+      "notes": "player - domaine qui ne semble pas bouger",
+      "source": "user_workbook"
+    },
+    "movies4u": {
+      "id": "movies4u",
+      "name": "Movies4u",
+      "manifest_status": "Actif",
+      "category": "International",
+      "hub": "https://movies4u.tube/",
+      "direct": "https://new2.movies4u.clinic/",
+      "notes": "lien \"Open Movies4u Website Click Here\"",
+      "source": "user_workbook",
+      "aliases": [
+        "movies4u",
+        "m4u"
+      ]
+    },
+    "cineby": {
+      "id": "Cineby",
+      "name": "Cineby",
+      "manifest_status": "Actif",
+      "category": "International",
+      "hub": "https://warflix.cv/",
+      "direct": "https://cineby.top/",
+      "notes": "lien \"Domain - 1\"",
+      "source": "user_workbook",
+      "aliases": [
+        "cineby",
+        "warflix"
+      ]
+    },
+    "dahmermovies": {
+      "id": "dahmermovies",
+      "name": "Dahmermovies",
+      "manifest_status": "Actif",
+      "category": "International",
+      "hub": null,
+      "direct": null,
+      "notes": "rien trouvé, je veux qu'on retire ce domaine, trop de problème",
+      "source": "user_workbook"
+    },
+    "vidrock": {
+      "id": "vidrock",
+      "name": "VidRock",
+      "manifest_status": "Actif",
+      "category": "International",
+      "hub": "https://vidrock.ru/",
+      "direct": null,
+      "notes": "player - domaine qui ne semble pas bouger",
+      "source": "user_workbook"
+    },
+    "vegamovies": {
+      "id": "vegamovies",
+      "name": "VegaMovies",
+      "manifest_status": "Actif",
+      "category": "International",
+      "hub": "https://1vegamovies.tw/",
+      "direct": "https://vegamovies.catering/",
+      "notes": "bouton \"🌐 View Full Site\"",
+      "source": "user_workbook"
+    },
+    "anizone": {
+      "id": "anizone",
+      "name": "AniZone",
+      "manifest_status": "Actif",
+      "category": "International / Anime",
+      "hub": "https://everythingmoe.com/s/anizone",
+      "direct": "https://anizone.to/",
+      "notes": "lien \"AniZone\"",
+      "source": "user_workbook"
+    },
+    "moviebox": {
+      "id": "moviebox",
+      "name": "MovieBox",
+      "manifest_status": "Actif",
+      "category": "International",
+      "hub": "https://moviiebox.lol/",
+      "direct": "https://moviebox.yachts/",
+      "notes": "bouton \" Watch Here Moviebox\"",
+      "source": "user_workbook"
+    },
+    "kurage": {
+      "id": "kurage",
+      "name": "Kurage",
+      "manifest_status": "Actif",
+      "category": "International / Anime",
+      "hub": null,
+      "direct": "https://kurage.live/",
+      "notes": "je n'ai trouvé qu'un lien direct",
+      "source": "user_workbook"
+    },
+    "moviesmod": {
+      "id": "moviesmod",
+      "name": "MoviesMod",
+      "manifest_status": "Actif",
+      "category": "International",
+      "hub": null,
+      "direct": "https://moviesmod.zone/",
+      "notes": "https://moviesmod.at/ - \"We have Changed our Official Domain to MoviesMod Bookmarks Now.\" lien sur moviesmod",
+      "source": "user_workbook"
+    },
+    "animetsu": {
+      "id": "animetsu",
+      "name": "Animetsu",
+      "manifest_status": "Actif",
+      "category": "International / Anime",
+      "hub": "https://everythingmoe.com/s/animetsu",
+      "direct": null,
+      "notes": "This website was removed, Currnetly broken",
+      "source": "user_workbook"
+    },
+    "dooflix": {
+      "id": "dooflix",
+      "name": "DooFlix",
+      "manifest_status": "Actif",
+      "category": "International",
+      "hub": null,
+      "direct": null,
+      "notes": "app ? https://doflixindia.com/",
+      "source": "user_workbook"
+    },
+    "hdhub4u": {
+      "id": "hdhub4u",
+      "name": "HDHub4u",
+      "manifest_status": "Actif",
+      "category": "International",
+      "hub": "HDHub4u.Tv | HDHub4u.ec",
+      "direct": "https://new3.hdhub4u.cl/",
+      "notes": "doublon",
+      "source": "user_workbook",
+      "aliases": [
+        "hdhub4u",
+        "4khdhub"
+      ]
+    },
+    "moviesdrive": {
+      "id": "moviesdrive",
+      "name": "MoviesDrive",
+      "manifest_status": "Actif",
+      "category": "International",
+      "hub": "https://moviesdrives.mov/",
+      "direct": "https://new1.moviesdrive.christmas/",
+      "notes": "lien sur \"Explore Movies\" ; backup du hub MovieDrive.org\n",
+      "source": "user_workbook",
+      "aliases": [
+        "moviesdrive",
+        "moviesdrives",
+        "mdrive"
+      ]
+    },
+    "peachify": {
+      "id": "peachify",
+      "name": "Peachify",
+      "manifest_status": "Actif",
+      "category": "International",
+      "hub": null,
+      "direct": "https://peachify.top/",
+      "notes": "player - domaine qui ne semble pas bouger",
+      "source": "user_workbook"
+    },
+    "streamflix": {
+      "id": "streamflix",
+      "name": "StreamFlix",
+      "manifest_status": "Actif",
+      "category": "International",
+      "hub": null,
+      "direct": "https://streamflix.mom/",
+      "notes": "hub privé discord/telgram",
+      "source": "user_workbook"
+    },
+    "zinkmovies": {
+      "id": "zinkmovies",
+      "name": "ZinkMovies",
+      "manifest_status": "Actif",
+      "category": "International",
+      "hub": "https://redirect.zinkmovies.org/",
+      "direct": null,
+      "notes": "hub semble off pour le moment",
+      "source": "user_workbook"
+    },
+    "allmovieland": {
+      "id": "allmovieland",
+      "name": "AllMovieLand",
+      "manifest_status": "Actif",
+      "category": "International",
+      "hub": null,
+      "direct": "https://allmovieland.art/",
+      "notes": null,
+      "source": "user_workbook"
+    },
+    "anidb": {
+      "id": "anidb",
+      "name": "AniDB",
+      "manifest_status": "Actif",
+      "category": "International / Anime",
+      "hub": null,
+      "direct": "https://anidb.app/",
+      "notes": null,
+      "source": "user_workbook"
+    },
+    "cinemacity": {
+      "id": "cinemacity",
+      "name": "CinemaCity",
+      "manifest_status": "Actif",
+      "category": "International",
+      "hub": null,
+      "direct": "https://cinemacity.cc/",
+      "notes": null,
+      "source": "user_workbook"
+    },
+    "cinemm": {
+      "id": "cinemm",
+      "name": "CineMM",
+      "manifest_status": "Actif",
+      "category": "International",
+      "hub": null,
+      "direct": "https://cinemm.com/",
+      "notes": null,
+      "source": "user_workbook"
+    },
+    "movieshunt": {
+      "id": "movieshunt",
+      "name": "MoviesHunt",
+      "manifest_status": "Actif",
+      "category": "International",
+      "hub": "https://movieshunt.cc/",
+      "direct": "https://movieshunt.work/",
+      "notes": null,
+      "source": "user_workbook"
+    },
+    "animoflix": {
+      "id": "animoflix",
+      "name": "AnimoFlix",
+      "manifest_status": "Désactivé",
+      "category": "Francophone / Anime",
+      "hub": null,
+      "direct": null,
+      "notes": null,
+      "source": "user_workbook"
+    },
+    "wookafr": {
+      "id": "wookafr",
+      "name": "Wookafr",
+      "manifest_status": "Désactivé",
+      "category": "Francophone",
+      "hub": null,
+      "direct": null,
+      "notes": null,
+      "source": "user_workbook"
+    },
+    "topcartoons": {
+      "id": "topcartoons",
+      "name": "TopCartoons",
+      "manifest_status": "Désactivé",
+      "category": "International / Animation",
+      "hub": null,
+      "direct": null,
+      "notes": null,
+      "source": "user_workbook"
+    },
+    "einthusan": {
+      "id": "einthusan",
+      "name": "Einthustan",
+      "manifest_status": "Désactivé",
+      "category": "International",
+      "hub": null,
+      "direct": null,
+      "notes": null,
+      "source": "user_workbook"
+    },
+    "movieblast": {
+      "id": "movieblast",
+      "name": "MovieBlast",
+      "manifest_status": "Désactivé",
+      "category": "International",
+      "hub": null,
+      "direct": null,
+      "notes": null,
+      "source": "user_workbook"
+    },
+    "hianime": {
+      "id": "hianime",
+      "name": "HiAnime",
+      "manifest_status": "Désactivé",
+      "category": "International / Anime",
+      "hub": null,
+      "direct": null,
+      "notes": null,
+      "source": "user_workbook"
+    },
+    "showbox": {
+      "id": "showbox",
+      "name": "ShowBox",
+      "manifest_status": "Désactivé",
+      "category": "International",
+      "hub": null,
+      "direct": null,
+      "notes": null,
+      "source": "user_workbook"
+    },
+    "castle": {
+      "id": "castle",
+      "name": "Castle",
+      "manifest_status": "Désactivé",
+      "category": "International",
+      "hub": null,
+      "direct": null,
+      "notes": null,
+      "source": "user_workbook"
+    },
+    "gramcinema": {
+      "id": "gramcinema",
+      "name": "GramCinema",
+      "manifest_status": "Désactivé",
+      "category": "International",
+      "hub": null,
+      "direct": null,
+      "notes": null,
+      "source": "user_workbook"
+    },
+    "4khdhubnew": {
+      "id": "4khdhubnew",
+      "name": "4KHDHub-NEW",
+      "manifest_status": "Désactivé",
+      "category": "International",
+      "hub": null,
+      "direct": null,
+      "notes": null,
+      "source": "user_workbook"
+    },
+    "allwish": {
+      "id": "allwish",
+      "name": "All-Wish",
+      "manifest_status": "Désactivé",
+      "category": "International",
+      "hub": null,
+      "direct": null,
+      "notes": null,
+      "source": "user_workbook"
+    },
+    "animekai": {
+      "id": "animekai",
+      "name": "AnimeKai",
+      "manifest_status": "Désactivé",
+      "category": "International / Anime",
+      "hub": null,
+      "direct": null,
+      "notes": null,
+      "source": "user_workbook"
+    },
+    "animeworld": {
+      "id": "animeworld",
+      "name": "AnimeWorld",
+      "manifest_status": "Désactivé",
+      "category": "International / Anime",
+      "hub": null,
+      "direct": null,
+      "notes": null,
+      "source": "user_workbook"
+    },
+    "cinefreak": {
+      "id": "cinefreak",
+      "name": "CineFreak",
+      "manifest_status": "Désactivé",
+      "category": "International",
+      "hub": null,
+      "direct": null,
+      "notes": null,
+      "source": "user_workbook"
+    },
+    "cinevibe": {
+      "id": "cinevibe",
+      "name": "CineVibe",
+      "manifest_status": "Désactivé",
+      "category": "International",
+      "hub": null,
+      "direct": null,
+      "notes": null,
+      "source": "user_workbook"
+    },
+    "ctgmovies": {
+      "id": "ctgmovies",
+      "name": "CTGMovies",
+      "manifest_status": "Désactivé",
+      "category": "International",
+      "hub": null,
+      "direct": null,
+      "notes": null,
+      "source": "user_workbook"
+    },
+    "dahmermovies-tv": {
+      "id": "dahmermovies-tv",
+      "name": "Dahmermovies-TV",
+      "manifest_status": "Désactivé",
+      "category": "International",
+      "hub": null,
+      "direct": null,
+      "notes": null,
+      "source": "user_workbook"
+    },
+    "fibwatch": {
+      "id": "fibwatch",
+      "name": "FibWatch",
+      "manifest_status": "Désactivé",
+      "category": "International",
+      "hub": null,
+      "direct": null,
+      "notes": null,
+      "source": "user_workbook"
+    },
+    "goatapi": {
+      "id": "goatapi",
+      "name": "GoatAPI",
+      "manifest_status": "Désactivé",
+      "category": "International",
+      "hub": null,
+      "direct": null,
+      "notes": null,
+      "source": "user_workbook"
+    },
+    "mallumv": {
+      "id": "mallumv",
+      "name": "MalluMV",
+      "manifest_status": "Désactivé",
+      "category": "International",
+      "hub": null,
+      "direct": null,
+      "notes": null,
+      "source": "user_workbook"
+    },
+    "vidnest": {
+      "id": "vidnest",
+      "name": "Vidnest",
+      "manifest_status": "Désactivé",
+      "category": "International",
+      "hub": null,
+      "direct": null,
+      "notes": null,
+      "source": "user_workbook"
+    },
+    "vidnest-anime": {
+      "id": "vidnest-anime",
+      "name": "VidnestAnime",
+      "manifest_status": "Désactivé",
+      "category": "International / Anime",
+      "hub": null,
+      "direct": null,
+      "notes": null,
+      "source": "user_workbook"
+    },
+    "xpass": {
+      "id": "xpass",
+      "name": "XPass",
+      "manifest_status": "Désactivé",
+      "category": "International",
+      "hub": null,
+      "direct": null,
+      "notes": null,
+      "source": "user_workbook"
+    },
+    "dvdplay": {
+      "id": "dvdplay",
+      "name": "DVDPlay",
+      "manifest_status": "Désactivé",
+      "category": "International",
+      "hub": null,
+      "direct": null,
+      "notes": null,
+      "source": "user_workbook"
+    },
+    "kisskh": {
+      "id": "kisskh",
+      "name": "Kisskh",
+      "manifest_status": "Désactivé",
+      "category": "International",
+      "hub": null,
+      "direct": null,
+      "notes": null,
+      "source": "user_workbook"
+    },
+    "mycima": {
+      "id": "mycima",
+      "name": "MyCima",
+      "manifest_status": "Désactivé",
+      "category": "International",
+      "hub": null,
+      "direct": null,
+      "notes": null,
+      "source": "user_workbook"
+    },
+    "onlykdrama": {
+      "id": "onlykdrama",
+      "name": "OnlyKDrama",
+      "manifest_status": "Désactivé",
+      "category": "International",
+      "hub": null,
+      "direct": null,
+      "notes": null,
+      "source": "user_workbook"
+    },
+    "frenchstream": {
+      "id": "frenchstream",
+      "name": "frenchstream",
+      "manifest_status": "Actif",
+      "category": null,
+      "hub": "https://fstream.org/",
+      "notes": "Hub de référence pour le domaine courant",
+      "resolver": "frenchstream",
+      "source": "user_chat",
+      "aliases": [
+        "frenchstream",
+        "french-stream",
+        "fstream"
+      ],
+      "direct": "https://fs03.lol/",
+      "last_verified": "2026-07-31"
+    },
+    "nakios": {
+      "id": "nakios",
+      "name": "nakios",
+      "manifest_status": "Actif",
+      "category": null,
+      "hub": "https://nakios.org/",
+      "direct": "https://nakios.live/",
+      "notes": "Service catalogue / streaming associé",
+      "resolver": "nakios",
+      "source": "user_chat",
+      "aliases": [
+        "nakios"
+      ]
+    },
+    "purstream": {
+      "id": "purstream",
+      "name": "purstream",
+      "manifest_status": "Actif",
+      "category": null,
+      "hub": "https://purstream.wiki/",
+      "notes": "Hub connu",
+      "resolver": "same_brand",
+      "source": "user_chat",
+      "aliases": [
+        "purstream"
+      ]
+    },
+    "toflix": {
+      "id": "toflix",
+      "name": "toflix",
+      "manifest_status": "Actif",
+      "category": null,
+      "hub": "https://toflix.wiki/",
+      "notes": "Hub connu",
+      "resolver": "same_brand",
+      "source": "user_chat",
+      "aliases": [
+        "toflix"
+      ]
+    },
+    "coflix": {
+      "id": "coflix",
+      "name": "coflix",
+      "manifest_status": "Actif",
+      "category": null,
+      "hub": "https://coflix.life/",
+      "notes": "Hub connu",
+      "resolver": "same_brand",
+      "source": "user_chat"
+    },
+    "flemmix": {
+      "id": "flemmix",
+      "name": "flemmix",
+      "manifest_status": "Actif",
+      "category": null,
+      "hub": "https://ww1.wiflix-adresses.fun/",
+      "notes": "Hub connu",
+      "resolver": "flemmix",
+      "source": "user_chat",
+      "aliases": [
+        "flemmix",
+        "wiflix"
+      ],
+      "direct": "https://flemmix.casa/",
+      "last_verified": "2026-07-31"
+    }
+  }
+}
