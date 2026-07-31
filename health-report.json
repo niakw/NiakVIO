@@ -1,6 +1,6 @@
 {
   "schema_version": 63,
-  "generated_at": "2026-07-30T20:46:44.066598+00:00",
+  "generated_at": "2026-07-31T07:58:31.812083+00:00",
   "test_environment": "github-actions-node",
   "test_mode": "deep",
   "upstream_manifest_count": 3,
@@ -22,12 +22,12 @@
   "ci_inconclusive_disabled_providers": 26,
   "status_counts": {
     "healthy": 2,
-    "reachable": 46,
+    "reachable": 45,
     "blocked": 0,
     "degraded": 0,
-    "no_streams": 146,
-    "provider_unreachable": 1,
-    "runtime_error": 0,
+    "no_streams": 143,
+    "provider_unreachable": 2,
+    "runtime_error": 3,
     "unavailable": 0,
     "excluded": 0
   },
@@ -2173,7 +2173,7 @@
         "observed_language_modes": []
       },
       "settings_validation": {
-        "settings_profiles_tested": 12,
+        "settings_profiles_tested": 10,
         "settings_profiles_producing_streams": 0,
         "selected_settings_profiles": [
           "empty"
@@ -2190,28 +2190,6 @@
           },
           {
             "fixture": "Breaking Bad S01E01",
-            "fixture_phase": "primary",
-            "profile": "fixture_metadata",
-            "setting_keys": [
-              "title",
-              "year",
-              "label",
-              "category",
-              "mediaType"
-            ],
-            "stream_count": 0,
-            "error": null
-          },
-          {
-            "fixture": "One Piece S01E01",
-            "fixture_phase": "primary",
-            "profile": "empty",
-            "setting_keys": [],
-            "stream_count": 0,
-            "error": null
-          },
-          {
-            "fixture": "One Piece S01E01",
             "fixture_phase": "primary",
             "profile": "fixture_metadata",
             "setting_keys": [
@@ -2371,7 +2349,7 @@
         "manifest_quality_signals": [
           "declared_by_multiple_manifests"
         ],
-        "settings_profiles_tested": 12,
+        "settings_profiles_tested": 10,
         "settings_profiles_producing_streams": 0,
         "selected_settings_profiles": [
           "empty"
@@ -2388,28 +2366,6 @@
           },
           {
             "fixture": "Breaking Bad S01E01",
-            "fixture_phase": "primary",
-            "profile": "fixture_metadata",
-            "setting_keys": [
-              "title",
-              "year",
-              "label",
-              "category",
-              "mediaType"
-            ],
-            "stream_count": 0,
-            "error": null
-          },
-          {
-            "fixture": "One Piece S01E01",
-            "fixture_phase": "primary",
-            "profile": "empty",
-            "setting_keys": [],
-            "stream_count": 0,
-            "error": null
-          },
-          {
-            "fixture": "One Piece S01E01",
             "fixture_phase": "primary",
             "profile": "fixture_metadata",
             "setting_keys": [
@@ -4227,364 +4183,6 @@
       "manifest_position": 8
     },
     {
-      "id": "movix",
-      "action": "preserved-current-enabled-ci-inconclusive",
-      "enabled": true,
-      "activation_eligible": false,
-      "strict_activation_eligible": false,
-      "strict_grace_eligible": false,
-      "runtime_evidence_eligible": false,
-      "activation_mode": "preserved_current_inconclusive",
-      "historical_quality_grace": {
-        "eligible": false,
-        "reason": "disabled_by_current_proof_policy"
-      },
-      "runtime_evidence": {
-        "eligible": false,
-        "reason": "disabled_by_current_proof_policy"
-      },
-      "failed_gates": [
-        "02_healthy_functional_status",
-        "03_minimum_score",
-        "04_fixture_and_type_coverage",
-        "05_stream_and_fixture_coverage",
-        "06_distinct_host_diversity",
-        "07_verified_payload_playability",
-        "08_quality_and_bitrate",
-        "09_language_and_subtitle_integrity",
-        "00_provider_specific_access",
-        "00_current_playable_stream"
-      ],
-      "activation_blockers": [
-        "02_healthy_functional_status",
-        "03_minimum_score",
-        "04_fixture_and_type_coverage",
-        "05_stream_and_fixture_coverage",
-        "06_distinct_host_diversity",
-        "07_verified_payload_playability",
-        "08_quality_and_bitrate",
-        "09_language_and_subtitle_integrity",
-        "00_provider_specific_access",
-        "00_current_playable_stream"
-      ],
-      "activation_gates": {
-        "01_policy_safe_no_p2p": {
-          "passed": true,
-          "evidence": {
-            "status": "no_streams",
-            "disallowed_streams": 0
-          },
-          "threshold": "no disallowed P2P/torrent output"
-        },
-        "02_healthy_functional_status": {
-          "passed": false,
-          "evidence": "no_streams",
-          "threshold": "healthy or reachable server/API"
-        },
-        "03_minimum_score": {
-          "passed": false,
-          "evidence": 10,
-          "threshold": 70
-        },
-        "04_fixture_and_type_coverage": {
-          "passed": false,
-          "evidence": {
-            "healthy_fixtures": 0,
-            "fixtures_tested": 6,
-            "healthy_fixture_ratio": 0.0,
-            "required_categories": [
-              "anime",
-              "movie",
-              "tv"
-            ],
-            "healthy_categories": []
-          },
-          "threshold": {
-            "minimum_healthy_fixtures": 1,
-            "minimum_healthy_fixture_ratio": 0.5,
-            "require_declared_type_coverage": true,
-            "representative_fixture_mode": true
-          }
-        },
-        "05_stream_and_fixture_coverage": {
-          "passed": false,
-          "evidence": {
-            "playable_streams": 0,
-            "playable_fixtures": 0
-          },
-          "threshold": {
-            "minimum_playable_streams": 1,
-            "minimum_playable_fixtures": 1
-          }
-        },
-        "06_distinct_host_diversity": {
-          "passed": false,
-          "evidence": {
-            "distinct_reachable_hosts": 0,
-            "reachable_hosts": []
-          },
-          "threshold": 1
-        },
-        "07_verified_payload_playability": {
-          "passed": false,
-          "evidence": {
-            "payload_verified_streams": 0,
-            "playable_streams": 0
-          },
-          "threshold": {
-            "minimum_payload_verified_streams": 1,
-            "minimum_playable_streams": 1
-          }
-        },
-        "08_quality_and_bitrate": {
-          "passed": false,
-          "evidence": {
-            "effective_max_height": null,
-            "max_bandwidth": null,
-            "manifest_effective_height": null,
-            "manifest_curation_score": 6,
-            "manifest_quality_signals": [
-              "declared_by_multiple_manifests"
-            ],
-            "manifest_formats": [
-              "m3u8",
-              "mkv",
-              "mp4"
-            ],
-            "manifest_sources": [
-              "aio",
-              "gowaru",
-              "published-baseline"
-            ]
-          },
-          "threshold": {
-            "minimum_effective_height": 720,
-            "minimum_bandwidth_bps_when_reported": 1000000,
-            "minimum_manifest_curation_score_when_stream_is_not_returned": 5
-          }
-        },
-        "09_language_and_subtitle_integrity": {
-          "passed": false,
-          "evidence": {
-            "accepted_audio_languages": [],
-            "accepted_subtitle_languages": [],
-            "accepted_subtitles_advertised": 0,
-            "accepted_subtitles_reachable": 0
-          },
-          "threshold": {
-            "accepted_audio_languages": [
-              "fr",
-              "en"
-            ],
-            "accepted_subtitle_languages": [
-              "fr",
-              "en"
-            ],
-            "reachable_advertised_subtitle_required": true
-          }
-        },
-        "00_dns_or_alternative_domain": {
-          "passed": true,
-          "evidence": {
-            "dns_status": "inconclusive"
-          },
-          "threshold": {
-            "required": "DNS resolution or validated alternative domain"
-          }
-        },
-        "00_provider_specific_access": {
-          "passed": false,
-          "evidence": {
-            "provider_server_successful_response": false,
-            "provider_server_hosts": [
-              "api.movix.fun"
-            ],
-            "provider_server_http_statuses": [
-              403
-            ]
-          },
-          "threshold": {
-            "required": "successful provider-owned HTTP response"
-          }
-        },
-        "00_current_playable_stream": {
-          "passed": false,
-          "evidence": {
-            "status": "no_streams",
-            "streams_playable": 0,
-            "healthy_fixtures": 0,
-            "effective_max_height": null
-          },
-          "threshold": {
-            "required": "at least one currently playable stream"
-          }
-        }
-      },
-      "selected_source": "published-baseline",
-      "selected_upstream_id": "movix",
-      "observed_status": "no_streams",
-      "observed_score": 10,
-      "manifest_ordering": {
-        "language_group": "vf",
-        "language_tier": 0,
-        "quality_height": 0,
-        "health_score": 10,
-        "manifest_curation_score": 6,
-        "provider_server_successful_response": false,
-        "observed_language_modes": []
-      },
-      "settings_validation": {
-        "settings_profiles_tested": 2,
-        "settings_profiles_producing_streams": 0,
-        "selected_settings_profiles": [
-          "empty"
-        ],
-        "selected_setting_keys": [],
-        "settings_diagnostics": [
-          {
-            "fixture": "One Piece S01E01",
-            "fixture_phase": "primary",
-            "profile": "empty",
-            "setting_keys": [],
-            "stream_count": 0,
-            "error": null
-          },
-          {
-            "fixture": "One Piece S01E01",
-            "fixture_phase": "primary",
-            "profile": "fixture_metadata",
-            "setting_keys": [
-              "title",
-              "year",
-              "label",
-              "category",
-              "mediaType"
-            ],
-            "stream_count": 0,
-            "error": null
-          }
-        ]
-      },
-      "evidence": {
-        "primary_fixtures_tested": 3,
-        "fallback_fixtures_tested": 6,
-        "fallback_triggered": true,
-        "fixtures_tested": 6,
-        "total_fixtures_executed": 9,
-        "activation_fixture_phase": "fallback",
-        "healthy_fixtures": 0,
-        "healthy_fixture_ratio": 0,
-        "playable_fixtures": 0,
-        "required_fixture_categories": [
-          "movie",
-          "tv",
-          "anime"
-        ],
-        "healthy_fixture_categories": [],
-        "streams_playable": 0,
-        "payload_verified_streams": 0,
-        "distinct_reachable_hosts": 0,
-        "reachable_hosts": [],
-        "verified_max_height": null,
-        "reported_max_height": null,
-        "effective_max_height": null,
-        "max_bandwidth": null,
-        "audio_languages": [],
-        "subtitle_languages": [],
-        "accepted_audio_languages": [],
-        "accepted_subtitle_languages": [],
-        "accepted_subtitles_advertised": 0,
-        "accepted_subtitles_reachable": 0,
-        "provider_median_latency_ms": null,
-        "stream_median_latency_ms": null,
-        "disallowed_streams": 0,
-        "provider_server_accessible": true,
-        "provider_server_successful_response": false,
-        "provider_server_hosts": [
-          "api.movix.fun"
-        ],
-        "provider_server_http_statuses": [
-          403
-        ],
-        "manifest_description_present": true,
-        "manifest_supported_types": [
-          "anime",
-          "movie",
-          "tv"
-        ],
-        "manifest_effective_height": null,
-        "manifest_accepted_languages": [
-          "en",
-          "fr"
-        ],
-        "manifest_formats": [
-          "m3u8",
-          "mkv",
-          "mp4"
-        ],
-        "manifest_curation_score": 6,
-        "manifest_quality_signals": [
-          "declared_by_multiple_manifests"
-        ],
-        "settings_profiles_tested": 2,
-        "settings_profiles_producing_streams": 0,
-        "selected_settings_profiles": [
-          "empty"
-        ],
-        "selected_setting_keys": [],
-        "settings_diagnostics": [
-          {
-            "fixture": "One Piece S01E01",
-            "fixture_phase": "primary",
-            "profile": "empty",
-            "setting_keys": [],
-            "stream_count": 0,
-            "error": null
-          },
-          {
-            "fixture": "One Piece S01E01",
-            "fixture_phase": "primary",
-            "profile": "fixture_metadata",
-            "setting_keys": [
-              "title",
-              "year",
-              "label",
-              "category",
-              "mediaType"
-            ],
-            "stream_count": 0,
-            "error": null
-          }
-        ],
-        "dns_preflight_status": "inconclusive",
-        "dns_preflight_reason": "french_isp_resolvers_unavailable_or_neutral_only",
-        "dns_preflight_selected_resolver": null,
-        "dns_migration_candidate": null,
-        "runtime_skipped_by_dns_preflight": false,
-        "manifest_source_count": 3,
-        "manifest_sources": [
-          "aio",
-          "gowaru",
-          "published-baseline"
-        ],
-        "manifest_usable_stream_format": true,
-        "manifest_rich_language_description": true,
-        "manifest_language_modes": [
-          "vf",
-          "vostfr"
-        ],
-        "performance": {
-          "passed": false,
-          "provider_median_latency_ms": null,
-          "stream_median_latency_ms": null,
-          "maximum_provider_median_latency_ms": 15000,
-          "maximum_stream_median_latency_ms": 12000
-        }
-      },
-      "variant_count": 3,
-      "manifest_position": 9
-    },
-    {
       "id": "purstream",
       "action": "preserved-current-enabled-ci-inconclusive",
       "enabled": true,
@@ -5155,7 +4753,7 @@
         }
       },
       "variant_count": 2,
-      "manifest_position": 10
+      "manifest_position": 9
     },
     {
       "id": "streamzo",
@@ -5715,7 +5313,7 @@
         }
       },
       "variant_count": 2,
-      "manifest_position": 11
+      "manifest_position": 10
     },
     {
       "id": "voiranime-rip",
@@ -6142,7 +5740,7 @@
         }
       },
       "variant_count": 2,
-      "manifest_position": 12
+      "manifest_position": 11
     },
     {
       "id": "vostfree",
@@ -6569,6 +6167,306 @@
         }
       },
       "variant_count": 2,
+      "manifest_position": 12
+    },
+    {
+      "id": "movix",
+      "action": "preserved-current-enabled-ci-inconclusive",
+      "enabled": true,
+      "activation_eligible": false,
+      "strict_activation_eligible": false,
+      "strict_grace_eligible": false,
+      "runtime_evidence_eligible": false,
+      "activation_mode": "preserved_current_inconclusive",
+      "historical_quality_grace": {
+        "eligible": false,
+        "reason": "disabled_by_current_proof_policy"
+      },
+      "runtime_evidence": {
+        "eligible": false,
+        "reason": "disabled_by_current_proof_policy"
+      },
+      "failed_gates": [
+        "02_healthy_functional_status",
+        "03_minimum_score",
+        "04_fixture_and_type_coverage",
+        "05_stream_and_fixture_coverage",
+        "06_distinct_host_diversity",
+        "07_verified_payload_playability",
+        "08_quality_and_bitrate",
+        "09_language_and_subtitle_integrity",
+        "00_provider_specific_access",
+        "00_current_playable_stream"
+      ],
+      "activation_blockers": [
+        "02_healthy_functional_status",
+        "03_minimum_score",
+        "04_fixture_and_type_coverage",
+        "05_stream_and_fixture_coverage",
+        "06_distinct_host_diversity",
+        "07_verified_payload_playability",
+        "08_quality_and_bitrate",
+        "09_language_and_subtitle_integrity",
+        "00_provider_specific_access",
+        "00_current_playable_stream"
+      ],
+      "activation_gates": {
+        "01_policy_safe_no_p2p": {
+          "passed": true,
+          "evidence": {
+            "status": "runtime_error",
+            "disallowed_streams": 0
+          },
+          "threshold": "no disallowed P2P/torrent output"
+        },
+        "02_healthy_functional_status": {
+          "passed": false,
+          "evidence": "runtime_error",
+          "threshold": "healthy or reachable server/API"
+        },
+        "03_minimum_score": {
+          "passed": false,
+          "evidence": 0,
+          "threshold": 70
+        },
+        "04_fixture_and_type_coverage": {
+          "passed": false,
+          "evidence": {
+            "healthy_fixtures": 0,
+            "fixtures_tested": 6,
+            "healthy_fixture_ratio": 0.0,
+            "required_categories": [
+              "anime",
+              "movie",
+              "tv"
+            ],
+            "healthy_categories": []
+          },
+          "threshold": {
+            "minimum_healthy_fixtures": 1,
+            "minimum_healthy_fixture_ratio": 0.5,
+            "require_declared_type_coverage": true,
+            "representative_fixture_mode": true
+          }
+        },
+        "05_stream_and_fixture_coverage": {
+          "passed": false,
+          "evidence": {
+            "playable_streams": 0,
+            "playable_fixtures": 0
+          },
+          "threshold": {
+            "minimum_playable_streams": 1,
+            "minimum_playable_fixtures": 1
+          }
+        },
+        "06_distinct_host_diversity": {
+          "passed": false,
+          "evidence": {
+            "distinct_reachable_hosts": 0,
+            "reachable_hosts": []
+          },
+          "threshold": 1
+        },
+        "07_verified_payload_playability": {
+          "passed": false,
+          "evidence": {
+            "payload_verified_streams": 0,
+            "playable_streams": 0
+          },
+          "threshold": {
+            "minimum_payload_verified_streams": 1,
+            "minimum_playable_streams": 1
+          }
+        },
+        "08_quality_and_bitrate": {
+          "passed": false,
+          "evidence": {
+            "effective_max_height": null,
+            "max_bandwidth": null,
+            "manifest_effective_height": null,
+            "manifest_curation_score": 6,
+            "manifest_quality_signals": [
+              "declared_by_multiple_manifests"
+            ],
+            "manifest_formats": [
+              "m3u8",
+              "mkv",
+              "mp4"
+            ],
+            "manifest_sources": [
+              "aio",
+              "gowaru",
+              "published-baseline"
+            ]
+          },
+          "threshold": {
+            "minimum_effective_height": 720,
+            "minimum_bandwidth_bps_when_reported": 1000000,
+            "minimum_manifest_curation_score_when_stream_is_not_returned": 5
+          }
+        },
+        "09_language_and_subtitle_integrity": {
+          "passed": false,
+          "evidence": {
+            "accepted_audio_languages": [],
+            "accepted_subtitle_languages": [],
+            "accepted_subtitles_advertised": 0,
+            "accepted_subtitles_reachable": 0
+          },
+          "threshold": {
+            "accepted_audio_languages": [
+              "fr",
+              "en"
+            ],
+            "accepted_subtitle_languages": [
+              "fr",
+              "en"
+            ],
+            "reachable_advertised_subtitle_required": true
+          }
+        },
+        "00_dns_or_alternative_domain": {
+          "passed": true,
+          "evidence": {
+            "dns_status": "inconclusive"
+          },
+          "threshold": {
+            "required": "DNS resolution or validated alternative domain"
+          }
+        },
+        "00_provider_specific_access": {
+          "passed": false,
+          "evidence": {
+            "provider_server_successful_response": false,
+            "provider_server_hosts": [],
+            "provider_server_http_statuses": []
+          },
+          "threshold": {
+            "required": "successful provider-owned HTTP response"
+          }
+        },
+        "00_current_playable_stream": {
+          "passed": false,
+          "evidence": {
+            "status": "runtime_error",
+            "streams_playable": 0,
+            "healthy_fixtures": 0,
+            "effective_max_height": null
+          },
+          "threshold": {
+            "required": "at least one currently playable stream"
+          }
+        }
+      },
+      "selected_source": "published-baseline",
+      "selected_upstream_id": "movix",
+      "observed_status": "runtime_error",
+      "observed_score": 0,
+      "manifest_ordering": {
+        "language_group": "vf",
+        "language_tier": 0,
+        "quality_height": 0,
+        "health_score": 0,
+        "manifest_curation_score": 6,
+        "provider_server_successful_response": false,
+        "observed_language_modes": []
+      },
+      "settings_validation": {
+        "settings_profiles_tested": 0,
+        "settings_profiles_producing_streams": 0,
+        "selected_settings_profiles": [],
+        "selected_setting_keys": [],
+        "settings_diagnostics": []
+      },
+      "evidence": {
+        "primary_fixtures_tested": 3,
+        "fallback_fixtures_tested": 6,
+        "fallback_triggered": true,
+        "fixtures_tested": 6,
+        "total_fixtures_executed": 9,
+        "activation_fixture_phase": "fallback",
+        "healthy_fixtures": 0,
+        "healthy_fixture_ratio": 0,
+        "playable_fixtures": 0,
+        "required_fixture_categories": [
+          "movie",
+          "tv",
+          "anime"
+        ],
+        "healthy_fixture_categories": [],
+        "streams_playable": 0,
+        "payload_verified_streams": 0,
+        "distinct_reachable_hosts": 0,
+        "reachable_hosts": [],
+        "verified_max_height": null,
+        "reported_max_height": null,
+        "effective_max_height": null,
+        "max_bandwidth": null,
+        "audio_languages": [],
+        "subtitle_languages": [],
+        "accepted_audio_languages": [],
+        "accepted_subtitle_languages": [],
+        "accepted_subtitles_advertised": 0,
+        "accepted_subtitles_reachable": 0,
+        "provider_median_latency_ms": null,
+        "stream_median_latency_ms": null,
+        "disallowed_streams": 0,
+        "provider_server_accessible": false,
+        "provider_server_successful_response": false,
+        "provider_server_hosts": [],
+        "provider_server_http_statuses": [],
+        "manifest_description_present": true,
+        "manifest_supported_types": [
+          "anime",
+          "movie",
+          "tv"
+        ],
+        "manifest_effective_height": null,
+        "manifest_accepted_languages": [
+          "en",
+          "fr"
+        ],
+        "manifest_formats": [
+          "m3u8",
+          "mkv",
+          "mp4"
+        ],
+        "manifest_curation_score": 6,
+        "manifest_quality_signals": [
+          "declared_by_multiple_manifests"
+        ],
+        "settings_profiles_tested": 0,
+        "settings_profiles_producing_streams": 0,
+        "selected_settings_profiles": [],
+        "selected_setting_keys": [],
+        "settings_diagnostics": [],
+        "dns_preflight_status": "inconclusive",
+        "dns_preflight_reason": "french_isp_resolvers_unavailable_or_neutral_only",
+        "dns_preflight_selected_resolver": null,
+        "dns_migration_candidate": null,
+        "runtime_skipped_by_dns_preflight": false,
+        "manifest_source_count": 3,
+        "manifest_sources": [
+          "aio",
+          "gowaru",
+          "published-baseline"
+        ],
+        "manifest_usable_stream_format": true,
+        "manifest_rich_language_description": true,
+        "manifest_language_modes": [
+          "vf",
+          "vostfr"
+        ],
+        "performance": {
+          "passed": false,
+          "provider_median_latency_ms": null,
+          "stream_median_latency_ms": null,
+          "maximum_provider_median_latency_ms": 15000,
+          "maximum_stream_median_latency_ms": 12000
+        }
+      },
+      "variant_count": 3,
       "manifest_position": 13
     },
     {
@@ -14472,7 +14370,8 @@
             ],
             "provider_server_http_statuses": [
               200,
-              403
+              403,
+              429
             ]
           },
           "threshold": {
@@ -14688,7 +14587,8 @@
         ],
         "provider_server_http_statuses": [
           200,
-          403
+          403,
+          429
         ],
         "manifest_description_present": true,
         "manifest_supported_types": [
@@ -17809,16 +17709,13 @@
           "evidence": {
             "provider_server_successful_response": true,
             "provider_server_hosts": [
-              "cdn.video-gen.xyz",
-              "cdn.video-plex.xyz",
               "cloud.unblockedgames.world",
-              "driveseed.org",
               "uhdmovies.autos",
               "uhdmovies.casa"
             ],
             "provider_server_http_statuses": [
               200,
-              404
+              522
             ]
           },
           "threshold": {
@@ -17852,7 +17749,7 @@
         "observed_language_modes": []
       },
       "settings_validation": {
-        "settings_profiles_tested": 12,
+        "settings_profiles_tested": 4,
         "settings_profiles_producing_streams": 0,
         "selected_settings_profiles": [
           "empty"
@@ -17882,50 +17779,6 @@
             "error": null
           },
           {
-            "fixture": "Breaking Bad S01E01",
-            "fixture_phase": "primary",
-            "profile": "empty",
-            "setting_keys": [],
-            "stream_count": 0,
-            "error": null
-          },
-          {
-            "fixture": "Breaking Bad S01E01",
-            "fixture_phase": "primary",
-            "profile": "fixture_metadata",
-            "setting_keys": [
-              "title",
-              "year",
-              "label",
-              "category",
-              "mediaType"
-            ],
-            "stream_count": 0,
-            "error": null
-          },
-          {
-            "fixture": "Inception",
-            "fixture_phase": "fallback",
-            "profile": "empty",
-            "setting_keys": [],
-            "stream_count": 0,
-            "error": null
-          },
-          {
-            "fixture": "Inception",
-            "fixture_phase": "fallback",
-            "profile": "fixture_metadata",
-            "setting_keys": [
-              "title",
-              "year",
-              "label",
-              "category",
-              "mediaType"
-            ],
-            "stream_count": 0,
-            "error": null
-          },
-          {
             "fixture": "The Matrix",
             "fixture_phase": "fallback",
             "profile": "empty",
@@ -17935,50 +17788,6 @@
           },
           {
             "fixture": "The Matrix",
-            "fixture_phase": "fallback",
-            "profile": "fixture_metadata",
-            "setting_keys": [
-              "title",
-              "year",
-              "label",
-              "category",
-              "mediaType"
-            ],
-            "stream_count": 0,
-            "error": null
-          },
-          {
-            "fixture": "Game of Thrones S01E01",
-            "fixture_phase": "fallback",
-            "profile": "empty",
-            "setting_keys": [],
-            "stream_count": 0,
-            "error": null
-          },
-          {
-            "fixture": "Game of Thrones S01E01",
-            "fixture_phase": "fallback",
-            "profile": "fixture_metadata",
-            "setting_keys": [
-              "title",
-              "year",
-              "label",
-              "category",
-              "mediaType"
-            ],
-            "stream_count": 0,
-            "error": null
-          },
-          {
-            "fixture": "The Last of Us S01E01",
-            "fixture_phase": "fallback",
-            "profile": "empty",
-            "setting_keys": [],
-            "stream_count": 0,
-            "error": null
-          },
-          {
-            "fixture": "The Last of Us S01E01",
             "fixture_phase": "fallback",
             "profile": "fixture_metadata",
             "setting_keys": [
@@ -18028,16 +17837,13 @@
         "provider_server_accessible": true,
         "provider_server_successful_response": true,
         "provider_server_hosts": [
-          "cdn.video-gen.xyz",
-          "cdn.video-plex.xyz",
           "cloud.unblockedgames.world",
-          "driveseed.org",
           "uhdmovies.autos",
           "uhdmovies.casa"
         ],
         "provider_server_http_statuses": [
           200,
-          404
+          522
         ],
         "manifest_description_present": true,
         "manifest_supported_types": [
@@ -18059,7 +17865,7 @@
           "explicit_height:2160",
           "multiple_quality_options"
         ],
-        "settings_profiles_tested": 12,
+        "settings_profiles_tested": 4,
         "settings_profiles_producing_streams": 0,
         "selected_settings_profiles": [
           "empty"
@@ -18089,50 +17895,6 @@
             "error": null
           },
           {
-            "fixture": "Breaking Bad S01E01",
-            "fixture_phase": "primary",
-            "profile": "empty",
-            "setting_keys": [],
-            "stream_count": 0,
-            "error": null
-          },
-          {
-            "fixture": "Breaking Bad S01E01",
-            "fixture_phase": "primary",
-            "profile": "fixture_metadata",
-            "setting_keys": [
-              "title",
-              "year",
-              "label",
-              "category",
-              "mediaType"
-            ],
-            "stream_count": 0,
-            "error": null
-          },
-          {
-            "fixture": "Inception",
-            "fixture_phase": "fallback",
-            "profile": "empty",
-            "setting_keys": [],
-            "stream_count": 0,
-            "error": null
-          },
-          {
-            "fixture": "Inception",
-            "fixture_phase": "fallback",
-            "profile": "fixture_metadata",
-            "setting_keys": [
-              "title",
-              "year",
-              "label",
-              "category",
-              "mediaType"
-            ],
-            "stream_count": 0,
-            "error": null
-          },
-          {
             "fixture": "The Matrix",
             "fixture_phase": "fallback",
             "profile": "empty",
@@ -18142,50 +17904,6 @@
           },
           {
             "fixture": "The Matrix",
-            "fixture_phase": "fallback",
-            "profile": "fixture_metadata",
-            "setting_keys": [
-              "title",
-              "year",
-              "label",
-              "category",
-              "mediaType"
-            ],
-            "stream_count": 0,
-            "error": null
-          },
-          {
-            "fixture": "Game of Thrones S01E01",
-            "fixture_phase": "fallback",
-            "profile": "empty",
-            "setting_keys": [],
-            "stream_count": 0,
-            "error": null
-          },
-          {
-            "fixture": "Game of Thrones S01E01",
-            "fixture_phase": "fallback",
-            "profile": "fixture_metadata",
-            "setting_keys": [
-              "title",
-              "year",
-              "label",
-              "category",
-              "mediaType"
-            ],
-            "stream_count": 0,
-            "error": null
-          },
-          {
-            "fixture": "The Last of Us S01E01",
-            "fixture_phase": "fallback",
-            "profile": "empty",
-            "setting_keys": [],
-            "stream_count": 0,
-            "error": null
-          },
-          {
-            "fixture": "The Last of Us S01E01",
             "fixture_phase": "fallback",
             "profile": "fixture_metadata",
             "setting_keys": [
@@ -26308,405 +26026,6 @@
       "manifest_position": 51
     },
     {
-      "id": "peachify",
-      "action": "preserved-current-enabled-ci-inconclusive",
-      "enabled": true,
-      "activation_eligible": false,
-      "strict_activation_eligible": false,
-      "strict_grace_eligible": false,
-      "runtime_evidence_eligible": false,
-      "activation_mode": "preserved_current_inconclusive",
-      "historical_quality_grace": {
-        "eligible": false,
-        "reason": "disabled_by_current_proof_policy"
-      },
-      "runtime_evidence": {
-        "eligible": false,
-        "reason": "disabled_by_current_proof_policy"
-      },
-      "failed_gates": [
-        "02_healthy_functional_status",
-        "03_minimum_score",
-        "04_fixture_and_type_coverage",
-        "05_stream_and_fixture_coverage",
-        "06_distinct_host_diversity",
-        "07_verified_payload_playability",
-        "08_quality_and_bitrate",
-        "09_language_and_subtitle_integrity",
-        "00_provider_specific_access",
-        "00_current_playable_stream"
-      ],
-      "activation_blockers": [
-        "02_healthy_functional_status",
-        "03_minimum_score",
-        "04_fixture_and_type_coverage",
-        "05_stream_and_fixture_coverage",
-        "06_distinct_host_diversity",
-        "07_verified_payload_playability",
-        "08_quality_and_bitrate",
-        "09_language_and_subtitle_integrity",
-        "00_provider_specific_access",
-        "00_current_playable_stream"
-      ],
-      "activation_gates": {
-        "01_policy_safe_no_p2p": {
-          "passed": true,
-          "evidence": {
-            "status": "no_streams",
-            "disallowed_streams": 0
-          },
-          "threshold": "no disallowed P2P/torrent output"
-        },
-        "02_healthy_functional_status": {
-          "passed": false,
-          "evidence": "no_streams",
-          "threshold": "healthy or reachable server/API"
-        },
-        "03_minimum_score": {
-          "passed": false,
-          "evidence": 10,
-          "threshold": 70
-        },
-        "04_fixture_and_type_coverage": {
-          "passed": false,
-          "evidence": {
-            "healthy_fixtures": 0,
-            "fixtures_tested": 4,
-            "healthy_fixture_ratio": 0.0,
-            "required_categories": [
-              "movie",
-              "tv"
-            ],
-            "healthy_categories": []
-          },
-          "threshold": {
-            "minimum_healthy_fixtures": 1,
-            "minimum_healthy_fixture_ratio": 0.5,
-            "require_declared_type_coverage": true,
-            "representative_fixture_mode": true
-          }
-        },
-        "05_stream_and_fixture_coverage": {
-          "passed": false,
-          "evidence": {
-            "playable_streams": 0,
-            "playable_fixtures": 0
-          },
-          "threshold": {
-            "minimum_playable_streams": 1,
-            "minimum_playable_fixtures": 1
-          }
-        },
-        "06_distinct_host_diversity": {
-          "passed": false,
-          "evidence": {
-            "distinct_reachable_hosts": 0,
-            "reachable_hosts": []
-          },
-          "threshold": 1
-        },
-        "07_verified_payload_playability": {
-          "passed": false,
-          "evidence": {
-            "payload_verified_streams": 0,
-            "playable_streams": 0
-          },
-          "threshold": {
-            "minimum_payload_verified_streams": 1,
-            "minimum_playable_streams": 1
-          }
-        },
-        "08_quality_and_bitrate": {
-          "passed": false,
-          "evidence": {
-            "effective_max_height": null,
-            "max_bandwidth": null,
-            "manifest_effective_height": null,
-            "manifest_curation_score": 7,
-            "manifest_quality_signals": [
-              "declared_by_multiple_manifests",
-              "multiple_servers"
-            ],
-            "manifest_formats": [
-              "m3u8",
-              "mp4"
-            ],
-            "manifest_sources": [
-              "aio",
-              "published-baseline"
-            ]
-          },
-          "threshold": {
-            "minimum_effective_height": 720,
-            "minimum_bandwidth_bps_when_reported": 1000000,
-            "minimum_manifest_curation_score_when_stream_is_not_returned": 5
-          }
-        },
-        "09_language_and_subtitle_integrity": {
-          "passed": false,
-          "evidence": {
-            "accepted_audio_languages": [],
-            "accepted_subtitle_languages": [],
-            "accepted_subtitles_advertised": 0,
-            "accepted_subtitles_reachable": 0
-          },
-          "threshold": {
-            "accepted_audio_languages": [
-              "fr",
-              "en"
-            ],
-            "accepted_subtitle_languages": [
-              "fr",
-              "en"
-            ],
-            "reachable_advertised_subtitle_required": true
-          }
-        },
-        "00_dns_or_alternative_domain": {
-          "passed": true,
-          "evidence": {
-            "dns_status": "no_provider_domain_detected"
-          },
-          "threshold": {
-            "required": "DNS resolution or validated alternative domain"
-          }
-        },
-        "00_provider_specific_access": {
-          "passed": false,
-          "evidence": {
-            "provider_server_successful_response": false,
-            "provider_server_hosts": [
-              "usa.eat-peach.sbs",
-              "uwu.eat-peach.sbs"
-            ],
-            "provider_server_http_statuses": [
-              403
-            ]
-          },
-          "threshold": {
-            "required": "successful provider-owned HTTP response"
-          }
-        },
-        "00_current_playable_stream": {
-          "passed": false,
-          "evidence": {
-            "status": "no_streams",
-            "streams_playable": 0,
-            "healthy_fixtures": 0,
-            "effective_max_height": null
-          },
-          "threshold": {
-            "required": "at least one currently playable stream"
-          }
-        }
-      },
-      "selected_source": "published-baseline",
-      "selected_upstream_id": "peachify",
-      "observed_status": "no_streams",
-      "observed_score": 10,
-      "manifest_ordering": {
-        "language_group": "other",
-        "language_tier": 3,
-        "quality_height": 0,
-        "health_score": 10,
-        "manifest_curation_score": 7,
-        "provider_server_successful_response": false,
-        "observed_language_modes": []
-      },
-      "settings_validation": {
-        "settings_profiles_tested": 4,
-        "settings_profiles_producing_streams": 0,
-        "selected_settings_profiles": [
-          "empty"
-        ],
-        "selected_setting_keys": [],
-        "settings_diagnostics": [
-          {
-            "fixture": "Breaking Bad S01E01",
-            "fixture_phase": "primary",
-            "profile": "empty",
-            "setting_keys": [],
-            "stream_count": 0,
-            "error": null
-          },
-          {
-            "fixture": "Breaking Bad S01E01",
-            "fixture_phase": "primary",
-            "profile": "fixture_metadata",
-            "setting_keys": [
-              "title",
-              "year",
-              "label",
-              "category",
-              "mediaType"
-            ],
-            "stream_count": 0,
-            "error": null
-          },
-          {
-            "fixture": "Game of Thrones S01E01",
-            "fixture_phase": "fallback",
-            "profile": "empty",
-            "setting_keys": [],
-            "stream_count": 0,
-            "error": null
-          },
-          {
-            "fixture": "Game of Thrones S01E01",
-            "fixture_phase": "fallback",
-            "profile": "fixture_metadata",
-            "setting_keys": [
-              "title",
-              "year",
-              "label",
-              "category",
-              "mediaType"
-            ],
-            "stream_count": 0,
-            "error": null
-          }
-        ]
-      },
-      "evidence": {
-        "primary_fixtures_tested": 2,
-        "fallback_fixtures_tested": 4,
-        "fallback_triggered": true,
-        "fixtures_tested": 4,
-        "total_fixtures_executed": 6,
-        "activation_fixture_phase": "fallback",
-        "healthy_fixtures": 0,
-        "healthy_fixture_ratio": 0,
-        "playable_fixtures": 0,
-        "required_fixture_categories": [
-          "movie",
-          "tv"
-        ],
-        "healthy_fixture_categories": [],
-        "streams_playable": 0,
-        "payload_verified_streams": 0,
-        "distinct_reachable_hosts": 0,
-        "reachable_hosts": [],
-        "verified_max_height": null,
-        "reported_max_height": null,
-        "effective_max_height": null,
-        "max_bandwidth": null,
-        "audio_languages": [],
-        "subtitle_languages": [],
-        "accepted_audio_languages": [],
-        "accepted_subtitle_languages": [],
-        "accepted_subtitles_advertised": 0,
-        "accepted_subtitles_reachable": 0,
-        "provider_median_latency_ms": null,
-        "stream_median_latency_ms": null,
-        "disallowed_streams": 0,
-        "provider_server_accessible": true,
-        "provider_server_successful_response": false,
-        "provider_server_hosts": [
-          "usa.eat-peach.sbs",
-          "uwu.eat-peach.sbs"
-        ],
-        "provider_server_http_statuses": [
-          403
-        ],
-        "manifest_description_present": true,
-        "manifest_supported_types": [
-          "movie",
-          "tv"
-        ],
-        "manifest_effective_height": null,
-        "manifest_accepted_languages": [
-          "en",
-          "hi",
-          "pt",
-          "ta",
-          "te"
-        ],
-        "manifest_formats": [
-          "m3u8",
-          "mp4"
-        ],
-        "manifest_curation_score": 7,
-        "manifest_quality_signals": [
-          "declared_by_multiple_manifests",
-          "multiple_servers"
-        ],
-        "settings_profiles_tested": 4,
-        "settings_profiles_producing_streams": 0,
-        "selected_settings_profiles": [
-          "empty"
-        ],
-        "selected_setting_keys": [],
-        "settings_diagnostics": [
-          {
-            "fixture": "Breaking Bad S01E01",
-            "fixture_phase": "primary",
-            "profile": "empty",
-            "setting_keys": [],
-            "stream_count": 0,
-            "error": null
-          },
-          {
-            "fixture": "Breaking Bad S01E01",
-            "fixture_phase": "primary",
-            "profile": "fixture_metadata",
-            "setting_keys": [
-              "title",
-              "year",
-              "label",
-              "category",
-              "mediaType"
-            ],
-            "stream_count": 0,
-            "error": null
-          },
-          {
-            "fixture": "Game of Thrones S01E01",
-            "fixture_phase": "fallback",
-            "profile": "empty",
-            "setting_keys": [],
-            "stream_count": 0,
-            "error": null
-          },
-          {
-            "fixture": "Game of Thrones S01E01",
-            "fixture_phase": "fallback",
-            "profile": "fixture_metadata",
-            "setting_keys": [
-              "title",
-              "year",
-              "label",
-              "category",
-              "mediaType"
-            ],
-            "stream_count": 0,
-            "error": null
-          }
-        ],
-        "dns_preflight_status": "no_provider_domain_detected",
-        "dns_preflight_reason": "no_static_provider_domain",
-        "dns_preflight_selected_resolver": null,
-        "dns_migration_candidate": null,
-        "runtime_skipped_by_dns_preflight": false,
-        "manifest_source_count": 2,
-        "manifest_sources": [
-          "aio",
-          "published-baseline"
-        ],
-        "manifest_usable_stream_format": true,
-        "manifest_rich_language_description": false,
-        "manifest_language_modes": [],
-        "performance": {
-          "passed": false,
-          "provider_median_latency_ms": null,
-          "stream_median_latency_ms": null,
-          "maximum_provider_median_latency_ms": 15000,
-          "maximum_stream_median_latency_ms": 12000
-        }
-      },
-      "variant_count": 2,
-      "manifest_position": 52
-    },
-    {
       "id": "streamflix",
       "action": "preserved-current-enabled-ci-inconclusive",
       "enabled": true,
@@ -27264,7 +26583,7 @@
         }
       },
       "variant_count": 2,
-      "manifest_position": 53
+      "manifest_position": 52
     },
     {
       "id": "zinkmovies",
@@ -27830,7 +27149,7 @@
         }
       },
       "variant_count": 2,
-      "manifest_position": 54
+      "manifest_position": 53
     },
     {
       "id": "allmovieland",
@@ -28392,7 +27711,7 @@
         }
       },
       "variant_count": 3,
-      "manifest_position": 55
+      "manifest_position": 54
     },
     {
       "id": "anidb",
@@ -28818,7 +28137,7 @@
         }
       },
       "variant_count": 2,
-      "manifest_position": 56
+      "manifest_position": 55
     },
     {
       "id": "cinemacity",
@@ -29385,7 +28704,7 @@
         }
       },
       "variant_count": 3,
-      "manifest_position": 57
+      "manifest_position": 56
     },
     {
       "id": "cinemm",
@@ -29952,7 +29271,7 @@
         }
       },
       "variant_count": 2,
-      "manifest_position": 58
+      "manifest_position": 57
     },
     {
       "id": "movieshunt",
@@ -30365,6 +29684,301 @@
         ],
         "manifest_usable_stream_format": true,
         "manifest_rich_language_description": true,
+        "manifest_language_modes": [],
+        "performance": {
+          "passed": false,
+          "provider_median_latency_ms": null,
+          "stream_median_latency_ms": null,
+          "maximum_provider_median_latency_ms": 15000,
+          "maximum_stream_median_latency_ms": 12000
+        }
+      },
+      "variant_count": 2,
+      "manifest_position": 58
+    },
+    {
+      "id": "peachify",
+      "action": "preserved-current-enabled-ci-inconclusive",
+      "enabled": true,
+      "activation_eligible": false,
+      "strict_activation_eligible": false,
+      "strict_grace_eligible": false,
+      "runtime_evidence_eligible": false,
+      "activation_mode": "preserved_current_inconclusive",
+      "historical_quality_grace": {
+        "eligible": false,
+        "reason": "disabled_by_current_proof_policy"
+      },
+      "runtime_evidence": {
+        "eligible": false,
+        "reason": "disabled_by_current_proof_policy"
+      },
+      "failed_gates": [
+        "02_healthy_functional_status",
+        "03_minimum_score",
+        "04_fixture_and_type_coverage",
+        "05_stream_and_fixture_coverage",
+        "06_distinct_host_diversity",
+        "07_verified_payload_playability",
+        "08_quality_and_bitrate",
+        "09_language_and_subtitle_integrity",
+        "00_provider_specific_access",
+        "00_current_playable_stream"
+      ],
+      "activation_blockers": [
+        "02_healthy_functional_status",
+        "03_minimum_score",
+        "04_fixture_and_type_coverage",
+        "05_stream_and_fixture_coverage",
+        "06_distinct_host_diversity",
+        "07_verified_payload_playability",
+        "08_quality_and_bitrate",
+        "09_language_and_subtitle_integrity",
+        "00_provider_specific_access",
+        "00_current_playable_stream"
+      ],
+      "activation_gates": {
+        "01_policy_safe_no_p2p": {
+          "passed": true,
+          "evidence": {
+            "status": "runtime_error",
+            "disallowed_streams": 0
+          },
+          "threshold": "no disallowed P2P/torrent output"
+        },
+        "02_healthy_functional_status": {
+          "passed": false,
+          "evidence": "runtime_error",
+          "threshold": "healthy or reachable server/API"
+        },
+        "03_minimum_score": {
+          "passed": false,
+          "evidence": 0,
+          "threshold": 70
+        },
+        "04_fixture_and_type_coverage": {
+          "passed": false,
+          "evidence": {
+            "healthy_fixtures": 0,
+            "fixtures_tested": 4,
+            "healthy_fixture_ratio": 0.0,
+            "required_categories": [
+              "movie",
+              "tv"
+            ],
+            "healthy_categories": []
+          },
+          "threshold": {
+            "minimum_healthy_fixtures": 1,
+            "minimum_healthy_fixture_ratio": 0.5,
+            "require_declared_type_coverage": true,
+            "representative_fixture_mode": true
+          }
+        },
+        "05_stream_and_fixture_coverage": {
+          "passed": false,
+          "evidence": {
+            "playable_streams": 0,
+            "playable_fixtures": 0
+          },
+          "threshold": {
+            "minimum_playable_streams": 1,
+            "minimum_playable_fixtures": 1
+          }
+        },
+        "06_distinct_host_diversity": {
+          "passed": false,
+          "evidence": {
+            "distinct_reachable_hosts": 0,
+            "reachable_hosts": []
+          },
+          "threshold": 1
+        },
+        "07_verified_payload_playability": {
+          "passed": false,
+          "evidence": {
+            "payload_verified_streams": 0,
+            "playable_streams": 0
+          },
+          "threshold": {
+            "minimum_payload_verified_streams": 1,
+            "minimum_playable_streams": 1
+          }
+        },
+        "08_quality_and_bitrate": {
+          "passed": false,
+          "evidence": {
+            "effective_max_height": null,
+            "max_bandwidth": null,
+            "manifest_effective_height": null,
+            "manifest_curation_score": 7,
+            "manifest_quality_signals": [
+              "declared_by_multiple_manifests",
+              "multiple_servers"
+            ],
+            "manifest_formats": [
+              "m3u8",
+              "mp4"
+            ],
+            "manifest_sources": [
+              "aio",
+              "published-baseline"
+            ]
+          },
+          "threshold": {
+            "minimum_effective_height": 720,
+            "minimum_bandwidth_bps_when_reported": 1000000,
+            "minimum_manifest_curation_score_when_stream_is_not_returned": 5
+          }
+        },
+        "09_language_and_subtitle_integrity": {
+          "passed": false,
+          "evidence": {
+            "accepted_audio_languages": [],
+            "accepted_subtitle_languages": [],
+            "accepted_subtitles_advertised": 0,
+            "accepted_subtitles_reachable": 0
+          },
+          "threshold": {
+            "accepted_audio_languages": [
+              "fr",
+              "en"
+            ],
+            "accepted_subtitle_languages": [
+              "fr",
+              "en"
+            ],
+            "reachable_advertised_subtitle_required": true
+          }
+        },
+        "00_dns_or_alternative_domain": {
+          "passed": true,
+          "evidence": {
+            "dns_status": "no_provider_domain_detected"
+          },
+          "threshold": {
+            "required": "DNS resolution or validated alternative domain"
+          }
+        },
+        "00_provider_specific_access": {
+          "passed": false,
+          "evidence": {
+            "provider_server_successful_response": false,
+            "provider_server_hosts": [],
+            "provider_server_http_statuses": []
+          },
+          "threshold": {
+            "required": "successful provider-owned HTTP response"
+          }
+        },
+        "00_current_playable_stream": {
+          "passed": false,
+          "evidence": {
+            "status": "runtime_error",
+            "streams_playable": 0,
+            "healthy_fixtures": 0,
+            "effective_max_height": null
+          },
+          "threshold": {
+            "required": "at least one currently playable stream"
+          }
+        }
+      },
+      "selected_source": "published-baseline",
+      "selected_upstream_id": "peachify",
+      "observed_status": "runtime_error",
+      "observed_score": 0,
+      "manifest_ordering": {
+        "language_group": "other",
+        "language_tier": 3,
+        "quality_height": 0,
+        "health_score": 0,
+        "manifest_curation_score": 7,
+        "provider_server_successful_response": false,
+        "observed_language_modes": []
+      },
+      "settings_validation": {
+        "settings_profiles_tested": 0,
+        "settings_profiles_producing_streams": 0,
+        "selected_settings_profiles": [],
+        "selected_setting_keys": [],
+        "settings_diagnostics": []
+      },
+      "evidence": {
+        "primary_fixtures_tested": 2,
+        "fallback_fixtures_tested": 4,
+        "fallback_triggered": true,
+        "fixtures_tested": 4,
+        "total_fixtures_executed": 6,
+        "activation_fixture_phase": "fallback",
+        "healthy_fixtures": 0,
+        "healthy_fixture_ratio": 0,
+        "playable_fixtures": 0,
+        "required_fixture_categories": [
+          "movie",
+          "tv"
+        ],
+        "healthy_fixture_categories": [],
+        "streams_playable": 0,
+        "payload_verified_streams": 0,
+        "distinct_reachable_hosts": 0,
+        "reachable_hosts": [],
+        "verified_max_height": null,
+        "reported_max_height": null,
+        "effective_max_height": null,
+        "max_bandwidth": null,
+        "audio_languages": [],
+        "subtitle_languages": [],
+        "accepted_audio_languages": [],
+        "accepted_subtitle_languages": [],
+        "accepted_subtitles_advertised": 0,
+        "accepted_subtitles_reachable": 0,
+        "provider_median_latency_ms": null,
+        "stream_median_latency_ms": null,
+        "disallowed_streams": 0,
+        "provider_server_accessible": false,
+        "provider_server_successful_response": false,
+        "provider_server_hosts": [],
+        "provider_server_http_statuses": [],
+        "manifest_description_present": true,
+        "manifest_supported_types": [
+          "movie",
+          "tv"
+        ],
+        "manifest_effective_height": null,
+        "manifest_accepted_languages": [
+          "en",
+          "hi",
+          "pt",
+          "ta",
+          "te"
+        ],
+        "manifest_formats": [
+          "m3u8",
+          "mp4"
+        ],
+        "manifest_curation_score": 7,
+        "manifest_quality_signals": [
+          "declared_by_multiple_manifests",
+          "multiple_servers"
+        ],
+        "settings_profiles_tested": 0,
+        "settings_profiles_producing_streams": 0,
+        "selected_settings_profiles": [],
+        "selected_setting_keys": [],
+        "settings_diagnostics": [],
+        "dns_preflight_status": "no_provider_domain_detected",
+        "dns_preflight_reason": "no_static_provider_domain",
+        "dns_preflight_selected_resolver": null,
+        "dns_migration_candidate": null,
+        "runtime_skipped_by_dns_preflight": false,
+        "manifest_source_count": 2,
+        "manifest_sources": [
+          "aio",
+          "published-baseline"
+        ],
+        "manifest_usable_stream_format": true,
+        "manifest_rich_language_description": false,
         "manifest_language_modes": [],
         "performance": {
           "passed": false,
@@ -30851,19 +30465,19 @@
         "01_policy_safe_no_p2p": {
           "passed": true,
           "evidence": {
-            "status": "no_streams",
+            "status": "runtime_error",
             "disallowed_streams": 0
           },
           "threshold": "no disallowed P2P/torrent output"
         },
         "02_healthy_functional_status": {
           "passed": false,
-          "evidence": "no_streams",
+          "evidence": "runtime_error",
           "threshold": "healthy or reachable server/API"
         },
         "03_minimum_score": {
           "passed": false,
-          "evidence": 10,
+          "evidence": 0,
           "threshold": 70
         },
         "04_fixture_and_type_coverage": {
@@ -30973,12 +30587,8 @@
           "passed": false,
           "evidence": {
             "provider_server_successful_response": false,
-            "provider_server_hosts": [
-              "wookafr.cymru"
-            ],
-            "provider_server_http_statuses": [
-              502
-            ]
+            "provider_server_hosts": [],
+            "provider_server_http_statuses": []
           },
           "threshold": {
             "required": "successful provider-owned HTTP response"
@@ -30987,7 +30597,7 @@
         "00_current_playable_stream": {
           "passed": false,
           "evidence": {
-            "status": "no_streams",
+            "status": "runtime_error",
             "streams_playable": 0,
             "healthy_fixtures": 0,
             "effective_max_height": null
@@ -30999,48 +30609,23 @@
       },
       "selected_source": "published-baseline",
       "selected_upstream_id": "wookafr",
-      "observed_status": "no_streams",
-      "observed_score": 10,
+      "observed_status": "runtime_error",
+      "observed_score": 0,
       "manifest_ordering": {
         "language_group": "vf",
         "language_tier": 0,
         "quality_height": 0,
-        "health_score": 10,
+        "health_score": 0,
         "manifest_curation_score": 6,
         "provider_server_successful_response": false,
         "observed_language_modes": []
       },
       "settings_validation": {
-        "settings_profiles_tested": 2,
+        "settings_profiles_tested": 0,
         "settings_profiles_producing_streams": 0,
-        "selected_settings_profiles": [
-          "empty"
-        ],
+        "selected_settings_profiles": [],
         "selected_setting_keys": [],
-        "settings_diagnostics": [
-          {
-            "fixture": "Oppenheimer",
-            "fixture_phase": "primary",
-            "profile": "empty",
-            "setting_keys": [],
-            "stream_count": 0,
-            "error": null
-          },
-          {
-            "fixture": "Oppenheimer",
-            "fixture_phase": "primary",
-            "profile": "fixture_metadata",
-            "setting_keys": [
-              "title",
-              "year",
-              "label",
-              "category",
-              "mediaType"
-            ],
-            "stream_count": 0,
-            "error": null
-          }
-        ]
+        "settings_diagnostics": []
       },
       "evidence": {
         "primary_fixtures_tested": 2,
@@ -31074,14 +30659,10 @@
         "provider_median_latency_ms": null,
         "stream_median_latency_ms": null,
         "disallowed_streams": 0,
-        "provider_server_accessible": true,
+        "provider_server_accessible": false,
         "provider_server_successful_response": false,
-        "provider_server_hosts": [
-          "wookafr.cymru"
-        ],
-        "provider_server_http_statuses": [
-          502
-        ],
+        "provider_server_hosts": [],
+        "provider_server_http_statuses": [],
         "manifest_description_present": true,
         "manifest_supported_types": [
           "movie",
@@ -31099,36 +30680,11 @@
         "manifest_quality_signals": [
           "declared_by_multiple_manifests"
         ],
-        "settings_profiles_tested": 2,
+        "settings_profiles_tested": 0,
         "settings_profiles_producing_streams": 0,
-        "selected_settings_profiles": [
-          "empty"
-        ],
+        "selected_settings_profiles": [],
         "selected_setting_keys": [],
-        "settings_diagnostics": [
-          {
-            "fixture": "Oppenheimer",
-            "fixture_phase": "primary",
-            "profile": "empty",
-            "setting_keys": [],
-            "stream_count": 0,
-            "error": null
-          },
-          {
-            "fixture": "Oppenheimer",
-            "fixture_phase": "primary",
-            "profile": "fixture_metadata",
-            "setting_keys": [
-              "title",
-              "year",
-              "label",
-              "category",
-              "mediaType"
-            ],
-            "stream_count": 0,
-            "error": null
-          }
-        ],
+        "settings_diagnostics": [],
         "dns_preflight_status": "inconclusive",
         "dns_preflight_reason": "french_isp_resolvers_unavailable_or_neutral_only",
         "dns_preflight_selected_resolver": null,
@@ -31454,8 +31010,8 @@
         "accepted_subtitle_languages": [],
         "accepted_subtitles_advertised": 0,
         "accepted_subtitles_reachable": 0,
-        "provider_median_latency_ms": 1324,
-        "stream_median_latency_ms": 943,
+        "provider_median_latency_ms": 1114,
+        "stream_median_latency_ms": 896,
         "disallowed_streams": 0,
         "provider_server_accessible": true,
         "provider_server_successful_response": true,
@@ -31565,8 +31121,8 @@
         "manifest_language_modes": [],
         "performance": {
           "passed": true,
-          "provider_median_latency_ms": 1324,
-          "stream_median_latency_ms": 943,
+          "provider_median_latency_ms": 1114,
+          "stream_median_latency_ms": 896,
           "maximum_provider_median_latency_ms": 15000,
           "maximum_stream_median_latency_ms": 12000
         }
