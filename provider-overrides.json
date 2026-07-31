@@ -39,24 +39,31 @@
     },
     "frenchstream": {
       "notes": [
-        "Use the locally verified reachable Frenchstream domain.",
-        "Behavioural repairs are selected by provider-agnostic runtime signatures during the deep repair loop."
+        "Use the current Frenchstream domain resolved from the official fstream.org hub.",
+        "Recover detail-page players when the legacy film_api endpoint is unavailable."
       ],
       "replacements": {
-        "french-stream.one": "frenchstream.food"
+        "french-stream.one": "fs03.lol",
+        "frenchstream.food": "fs03.lol"
       },
       "required_values": [
-        "frenchstream.food"
+        "fs03.lol"
       ],
       "route_replacements": {},
       "required_route_values": [],
       "manifest_overrides": {
-        "logo": "https://frenchstream.food/favicon.ico"
+        "logo": "https://fs03.lol/favicon.ico"
       },
       "profiles": [
         "metadata_context_recovery"
       ],
-      "capability": "html_scraper"
+      "capability": "html_scraper",
+      "runtime_domain_replacements": {
+        "french-stream.one": "fs03.lol",
+        "frenchstream.food": "fs03.lol"
+      },
+      "patch_script": "scripts/provider_patches/frenchstream_detail_players.py",
+      "patch_options": {}
     },
     "streamzo": {
       "notes": [
