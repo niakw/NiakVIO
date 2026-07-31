@@ -1,6 +1,6 @@
 {
   "schema_version": 63,
-  "updated_at": "2026-07-31T11:01:30.770176+00:00",
+  "updated_at": "2026-07-31T14:39:52.236389+00:00",
   "providers": {
     "animesama-co": {
       "last_checked_at": "2026-07-28T10:47:07.106300+00:00",
@@ -1049,33 +1049,37 @@
       }
     },
     "uhdmovies": {
-      "last_checked_at": "2026-07-31T07:17:08.619006+00:00",
-      "last_status": "provider_unreachable",
-      "last_score": 0,
+      "last_checked_at": "2026-07-31T14:39:52.236389+00:00",
+      "last_status": "healthy",
+      "last_score": 100,
       "last_sha256": "677ca92a03d329e5eeae526c38343d6cc679382266967b6a98473c029cb52676",
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 0,
+      "consecutive_successes": 1,
       "consecutive_blocked": 0,
       "consecutive_no_streams": 0,
       "auto_disabled": false,
-      "last_success_at": "2026-07-26T17:29:31.828546+00:00",
-      "hosts": [],
-      "response_categories": [],
+      "last_success_at": "2026-07-31T14:39:52.236389+00:00",
+      "hosts": [
+        "pub-1f02063637e241f78720645df0ad3d99.r2.dev"
+      ],
+      "response_categories": [
+        "playable"
+      ],
       "host_health": {
         "video-downloads.googleusercontent.com": {
-          "last_checked_at": "2026-07-26T17:29:31.828546+00:00",
-          "last_category": "playable",
-          "reachable": true,
-          "http_status": 200,
-          "latency_ms": 939,
+          "last_checked_at": "2026-07-31T14:39:52.236389+00:00",
+          "last_category": "not_returned",
+          "reachable": false,
+          "http_status": null,
+          "latency_ms": null,
           "kind": "matroska",
           "consecutive_hard_failures": 0,
-          "consecutive_successes": 3,
+          "consecutive_successes": 0,
           "consecutive_blocked": 0
         },
         "driveseed.org": {
-          "last_checked_at": "2026-07-26T17:29:31.828546+00:00",
+          "last_checked_at": "2026-07-31T14:39:52.236389+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -1083,6 +1087,17 @@
           "kind": "html",
           "consecutive_hard_failures": 0,
           "consecutive_successes": 0,
+          "consecutive_blocked": 0
+        },
+        "pub-1f02063637e241f78720645df0ad3d99.r2.dev": {
+          "last_checked_at": "2026-07-31T14:39:52.236389+00:00",
+          "last_category": "playable",
+          "reachable": true,
+          "http_status": 206,
+          "latency_ms": 498,
+          "kind": "matroska",
+          "consecutive_hard_failures": 0,
+          "consecutive_successes": 1,
           "consecutive_blocked": 0
         }
       }
