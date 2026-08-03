@@ -57,11 +57,11 @@ def test_staged_artifact_contract() -> None:
 def test_domain_overrides() -> None:
     source = b"const BASE='https://french-stream.one';"
     output, patch_records = apply_overrides("frenchstream", source)
-    assert b"fs03.lol" in output
+    assert b"fs16.lol" in output
     assert b"french-stream.one" not in output
     assert any(
         row.get("from") == "french-stream.one"
-        and row.get("to") == "fs03.lol"
+        and row.get("to") == "fs16.lol"
         for row in patch_records
     )
 
@@ -221,5 +221,62 @@ def test_idempotent_override_validation() -> None:
 
 
 test_idempotent_override_validation()
+
+
+def test_chained_provider_patch_scripts_and_output_guard() -> None:
+    source = b'''async function getStreams(){return [{url:"http://fstream.top/bad.m3u8"},{url:"https://media.example/malformed.m3u8"},{url:"https://media.example/good.m3u8"}]};module.exports={getStreams};'''
+    output, records = apply_overrides("frenchstream", source)
+    assert b"NUVIO_STREAM_OUTPUT_SANITIZER_V2" in output
+    assert any(
+        row.get("type") == "patch_script"
+        and row.get("path") == "scripts/provider_patches/stream_output_sanitizer.py"
+        for row in records
+    )
+    second, second_records = apply_overrides("frenchstream", output)
+    assert second == output
+    assert not any(
+        row.get("path") == "scripts/provider_patches/stream_output_sanitizer.py"
+        for row in second_records
+    )
+    with tempfile.TemporaryDirectory(dir=ROOT) as tmp:
+        target = Path(tmp) / "provider.js"
+        target.write_bytes(output)
+        harness = r"""
+const provider = require(process.argv[1]);
+global.fetch = async function(url) {
+  return {
+    ok: true,
+    url: String(url),
+    headers: { get: () => "application/vnd.apple.mpegurl" },
+    body: {
+      getReader: () => ({
+        read: async () => ({ value: new TextEncoder().encode(String(url).includes("malformed") ? "<html>blocked</html>" : "#EXTM3U\n#EXT-X-VERSION:3\n") }),
+        cancel: async () => {}
+      })
+    }
+  };
+};
+provider.getStreams().then((rows) => process.stdout.write(JSON.stringify(rows)));
+"""
+        result = subprocess.run(
+            ["node", "-e", harness, str(target.resolve())],
+            check=True,
+            text=True,
+            capture_output=True,
+        )
+        rows = json.loads(result.stdout)
+        assert [row["url"] for row in rows] == ["https://media.example/good.m3u8"]
+
+
+def test_toflix_terminal_bootstrap_patch() -> None:
+    source = b'''var _cachedEndpoint=null;function detectToflixEndpoint(){return Promise.resolve({api:"https://api.toflix.site/toflix_api.php",referer:"https://toflix.site/"})}module.exports={getStreams:async()=>[]};'''
+    output, records = apply_overrides("toflix", source)
+    assert b"NUVIO_TOFLIX_OFFICIAL_ENDPOINT_V1" in output
+    assert b"https://tfx05.lol" in output
+    assert any(row.get("path") == "scripts/provider_patches/toflix_official_endpoint.py" for row in records)
+
+
+test_chained_provider_patch_scripts_and_output_guard()
+test_toflix_terminal_bootstrap_patch()
 
 print("override tests passed")
