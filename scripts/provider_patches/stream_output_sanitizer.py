@@ -12,7 +12,7 @@ import hashlib
 import json
 from typing import Any
 
-MARKER_PREFIX = "NUVIO_STREAM_OUTPUT_SANITIZER_V2"
+MARKER_PREFIX = "NUVIO_STREAM_OUTPUT_SANITIZER_V3"
 
 
 def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> str:
@@ -22,6 +22,8 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
     probe_all = bool(options.get("probe_all_urls", False))
     max_probes = max(0, min(int(options.get("max_probes", 6)), 20))
     timeout_ms = max(1000, min(int(options.get("probe_timeout_ms", 4500)), 12000))
+    min_vod_duration = max(0, min(int(options.get("min_vod_duration_seconds", 60)), 1800))
+    blocked_paths = sorted({str(v).strip().lower() for v in options.get("blocked_path_patterns", []) if str(v).strip()})
     payload = json.dumps(
         {
             "blockedHosts": blocked_hosts,
@@ -29,17 +31,24 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
             "probeAllUrls": probe_all,
             "maxProbes": max_probes,
             "timeoutMs": timeout_ms,
+            "minVodDurationSeconds": min_vod_duration,
+            "blockedPathPatterns": blocked_paths,
         },
         separators=(",", ":"),
     )
     marker = f"{MARKER_PREFIX}:{hashlib.sha256(payload.encode('utf-8')).hexdigest()[:12]}"
     if marker in text:
         return text
-    # The wrapper is always appended; replace older/config-different versions
-    # rather than stacking multiple asynchronous validators.
+    # Replace only the previous sanitizer wrapper.  Other wrappers may have
+    # been appended after it, so truncating from the marker to EOF would
+    # silently delete them during an idempotent reapply.
     legacy_index = text.find("/* NUVIO_STREAM_OUTPUT_SANITIZER_")
     if legacy_index >= 0:
-        text = text[:legacy_index].rstrip()
+        call = text.find('})(typeof globalThis!=="undefined"?globalThis:this,', legacy_index)
+        end = text.find(");", call) if call >= 0 else -1
+        if call < 0 or end < 0:
+            raise ValueError("unterminated stream output sanitizer wrapper")
+        text = (text[:legacy_index] + text[end + 2 :]).rstrip()
     wrapper = r'''
 /* MARKER_PLACEHOLDER */
 ;(function(g,config){
@@ -52,6 +61,12 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
       var rule=config.blockedHosts[i];
       if(host===rule||host.endsWith("."+rule))return true;
     }
+    try{
+      var path=new URL(String(raw)).pathname.toLowerCase();
+      for(var j=0;j<config.blockedPathPatterns.length;j++){
+        if(path.indexOf(config.blockedPathPatterns[j])>=0)return true;
+      }
+    }catch(_e){}
     return false;
   }
   function urlOf(stream){return stream&&typeof stream.url==="string"?stream.url.trim():""}
@@ -78,9 +93,21 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
     return new Uint8Array(buffer.slice(0,4096));
   }
   function ascii(bytes){
-    var end=Math.min(bytes.length,4096),out="";
+    var end=Math.min(bytes.length,16384),out="";
     for(var i=0;i<end;i++)out+=String.fromCharCode(bytes[i]);
     return out;
+  }
+  function validHls(text){
+    var value=String(text||"").replace(/^\uFEFF/,"").trimStart();
+    if(value.indexOf("#EXTM3U")!==0)return false;
+    var isVod=/#EXT-X-ENDLIST(?:\r?\n|$)/i.test(value);
+    var durations=[],match,re=/#EXTINF:([0-9]+(?:\.[0-9]+)?)/gi;
+    while((match=re.exec(value))!==null)durations.push(Number(match[1])||0);
+    if(isVod&&durations.length&&config.minVodDurationSeconds>0){
+      var total=durations.reduce(function(sum,item){return sum+item},0);
+      if(total<config.minVodDurationSeconds)return false;
+    }
+    return true;
   }
   async function probe(stream,url){
     if(typeof g.fetch!=="function")return true;
@@ -90,8 +117,8 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
       var response=await g.fetch(url,{method:"GET",headers:headersFor(stream),redirect:"follow",signal:controller.signal});
       if(!response||!response.ok||blocked(response.url||url))return false;
       var contentType=String(response.headers&&response.headers.get?response.headers.get("content-type")||"":"").toLowerCase();
-      var bytes=await prefixBytes(response,controller),text=ascii(bytes),trimmed=text.replace(/^\uFEFF/,"").trimStart();
-      if(/(?:\.m3u8)(?:[?#]|$)/i.test(url)||/(?:mpegurl|vnd\.apple)/.test(contentType))return trimmed.indexOf("#EXTM3U")===0;
+      var bytes=await prefixBytes(response,controller),text=ascii(bytes);
+      if(/(?:\.m3u8)(?:[?#]|$)/i.test(url)||/(?:mpegurl|vnd\.apple)/.test(contentType))return validHls(text);
       if(/(?:text\/html|application\/json|text\/plain)/.test(contentType)||/^\s*(?:<!doctype|<html|<body|\{|\[)/i.test(text))return false;
       if(/(?:\.mp4)(?:[?#]|$)/i.test(url)||/video\/mp4/.test(contentType))return /video\/mp4/.test(contentType)||(bytes.length>=8&&ascii(bytes.slice(4,8))==="ftyp");
       return bytes.length>0;
