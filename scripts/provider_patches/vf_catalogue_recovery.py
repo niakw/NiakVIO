@@ -139,6 +139,27 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
     return found;
   }
   function streamRows(urls,base,label){return urls.slice(0,config.maxPlayers).map(function(url,index){return {name:config.providerName+(urls.length>1?" #"+(index+1):""),title:config.providerName+" - "+label,url:url,quality:"HD",language:"fr",headers:headers(base),isDirect:/(?:\.m3u8|\.mp4|\.mpd)(?:[?#]|$)/i.test(url)}})}
+  function episodePlayers(html,base,req){
+    if(!req||req.mediaType!=="tv")return [];
+    var season=Number(req.season)||1,episode=Number(req.episode)||1,text=String(html||"").replace(/\\\//g,"/"),urls=[],seen=Object.create(null);
+    var blocks=text.match(/<[^>]+(?:data-season|data-saison)=["'][^"']+["'][^>]*(?:data-episode|data-ep)=["'][^"']+["'][^>]*>/gi)||[];
+    blocks.forEach(function(tag){
+      var sm=tag.match(/(?:data-season|data-saison)=["'](\d+)["']/i),em=tag.match(/(?:data-episode|data-ep)=["'](\d+)["']/i);
+      if(!sm||!em||Number(sm[1])!==season||Number(em[1])!==episode)return;
+      var um=tag.match(/(?:data-embed|data-src|data-player|data-url|data-video|src)=["']([^"']+)["']/i),u=um&&absolute(um[1],base);
+      if(usable(u)&&!seen[u]){seen[u]=1;urls.push(u)}
+    });
+    var jsonRe=/[\{,]\s*["']?(?:season|saison)["']?\s*:\s*(\d+)[\s\S]{0,500}?["']?(?:episode|ep)["']?\s*:\s*(\d+)[\s\S]{0,700}?["']?(?:url|src|embedUrl|embed_url|player)["']?\s*:\s*["'](https?:\\?\/\\?\/[^"']+)["']/gi,m;
+    while((m=jsonRe.exec(text))!==null){if(Number(m[1])!==season||Number(m[2])!==episode)continue;var u=absolute(m[3].replace(/\\\//g,"/"),base);if(usable(u)&&!seen[u]){seen[u]=1;urls.push(u)}}
+    return urls;
+  }
+  function episodeLinks(html,base,req){
+    if(!req||req.mediaType!=="tv")return [];
+    var season=Number(req.season)||1,episode=Number(req.episode)||1,out=[],seen=Object.create(null),re=/<a\b[^>]*href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi,m;
+    var patterns=[new RegExp("s(?:aison)?[ ._-]*0?"+season+"[ ._-]*e(?:p(?:isode)?)?[ ._-]*0?"+episode,"i"),new RegExp("saison[ ._-]*0?"+season+"[\s\S]{0,40}(?:episode|ep)[ ._-]*0?"+episode,"i")];
+    while((m=re.exec(String(html||"")))!==null){var u=absolute(m[1],base),label=stripHtml(m[2])+" "+m[1];if(!u||seen[u]||!patterns.some(function(p){return p.test(label)}))continue;seen[u]=1;out.push(u)}
+    return out.slice(0,8);
+  }
   var discoveredApiRoute=null,discoveryComplete=false;
   function routeFromText(text,req){
     var raw=String(text||""),matches=[],re=/["'`]([^"'`]{0,180}\/api\/[^"'`]{1,220})["'`]/g,m;
@@ -179,16 +200,26 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
     }
     return [];
   }
-  function apiPlayers(data){
+  function collectRows(rows,urls){if(Array.isArray(rows))rows.forEach(function(row){var u=clean(row&&row.url||row&&row.src||row&&row.embedUrl||row);if(usable(u))urls.push(u)})}
+  function apiPlayers(data,req){
     var groups=data&&data.players||data&&data.links||{},urls=[];
-    config.preferredPlayerGroups.forEach(function(group){var rows=groups[group];if(Array.isArray(rows))rows.forEach(function(row){var u=clean(row&&row.url);if(usable(u))urls.push(u)})});
-    if(!urls.length&&groups&&typeof groups==="object")Object.keys(groups).forEach(function(group){var rows=groups[group];if(Array.isArray(rows))rows.forEach(function(row){var u=clean(row&&row.url);if(usable(u))urls.push(u)})});
+    if(req&&req.mediaType==="tv"&&data&&data.episodes){
+      var season=String(Number(req.season)||1),episode=String(Number(req.episode)||1),root=data.episodes;
+      var selected=root[episode]||root[Number(episode)]||root[season]&&root[season][episode]||root[season]&&root[season][Number(episode)];
+      if(selected){
+        if(selected.languages&&typeof selected.languages==="object")Object.keys(selected.languages).forEach(function(k){collectRows(selected.languages[k],urls)});
+        ["vf","vff","vfq","vostfr","vo","default","players","links"].forEach(function(k){collectRows(selected[k],urls)});
+        if(Array.isArray(selected))collectRows(selected,urls);
+      }
+    }
+    config.preferredPlayerGroups.forEach(function(group){collectRows(groups[group],urls)});
+    if(!urls.length&&groups&&typeof groups==="object")Object.keys(groups).forEach(function(group){collectRows(groups[group],urls)});
     return Array.from(new Set(urls));
   }
   async function apiDiscovery(req,meta){
     var routes=await discoverApiRoutes(req);if(!routes.length)return [];
     var endpoint=absolute(materializeRoute(routes[0],req),config.apiUrl+"/"),data=await request(endpoint,true);if(!data||data.success===false)return [];
-    return streamRows(apiPlayers(data),config.baseUrl||config.apiUrl,meta.title||"Film");
+    return streamRows(apiPlayers(data,req),config.baseUrl||config.apiUrl,meta.title||(req.mediaType==="tv"?"Série":"Film"));
   }
   async function htmlRecovery(req,meta){
     var bases=[config.baseUrl],candidates=[];
@@ -197,11 +228,13 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
     for(var k=0;k<config.searchPaths.length;k++){
       var search=absolute(config.searchPaths[k].replace(/\{query\}/g,encodeURIComponent(meta.title)).replace(/\{slug\}/g,slug(meta.title)).replace(/\{id\}/g,req.tmdbId),config.baseUrl+"/");
       var page=await request(search,false);if(!page)continue;
-      var direct=players(page,search);if(direct.length)return streamRows(direct,search,meta.title);
+      var episodic=episodePlayers(page,search,req);if(episodic.length)return streamRows(episodic,search,meta.title);
+      var direct=req.mediaType==="tv"?[]:players(page,search);if(direct.length)return streamRows(direct,search,meta.title);
+      episodeLinks(page,search,req).forEach(function(url){candidates.push(url)});
       links(page,search,meta).forEach(function(row){candidates.push(row.url)});
     }
     var unique=Array.from(new Set(candidates.filter(Boolean))).slice(0,12);
-    for(var n=0;n<unique.length;n++){var detail=await request(unique[n],false);if(!detail)continue;var urls=players(detail,unique[n]);if(urls.length)return streamRows(urls,unique[n],meta.title)}
+    for(var n=0;n<unique.length;n++){var detail=await request(unique[n],false);if(!detail)continue;var urls=episodePlayers(detail,unique[n],req);if(!urls.length&&req.mediaType!=="tv")urls=players(detail,unique[n]);if(urls.length)return streamRows(urls,unique[n],meta.title)}
     return [];
   }
   async function recover(req){if(config.types.indexOf(req.mediaType)<0)return [];var meta=await metadata(req);if(!meta.title&&config.strategy!=="api_discovery")return [];return config.strategy==="api_discovery"?apiDiscovery(req,meta):htmlRecovery(req,meta)}
