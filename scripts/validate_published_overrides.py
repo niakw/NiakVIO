@@ -118,7 +118,15 @@ def main() -> int:
         # Remove stale aliases/old hashes only when they retain a forbidden value
         # and are not the exact file selected by manifest.next.json.
         if replacements:
-            for candidate in PROVIDERS.glob(f"{cid}*.js"):
+            # Match only bundles that belong to this exact provider id.
+            # A broad prefix glob such as ``4khdhub*.js`` also matches the
+            # distinct provider ``4khdhubnew`` and can delete its live bundle.
+            exact_prefix = f"{cid}--"
+            exact_plain = f"{cid}.js"
+            for candidate in PROVIDERS.glob("*.js"):
+                candidate_name = candidate.name.casefold()
+                if candidate_name != exact_plain and not candidate_name.startswith(exact_prefix):
+                    continue
                 if candidate.resolve() == target:
                     continue
                 candidate_text = candidate.read_text(encoding="utf-8", errors="ignore")
