@@ -36,7 +36,7 @@ ROOT = Path(__file__).resolve().parents[1]
 CONFIG_PATH = ROOT / "provider-overrides.json"
 HUBS_PATH = ROOT / "provider-hubs.json"
 HISTORY_PATH = ROOT / "provider-domain-history.json"
-UA = "NuvioProviderDomainResolver/5.19 (+https://github.com/niakw/niakw-nuvio-providers-group-1-0)"
+UA = "NuvioProviderDomainResolver/5.20 (+https://github.com/niakw/niakw-nuvio-providers-group-1-0)"
 SOCIAL_HOST_SUFFIXES = (
     "telegram.org", "t.me", "discord.gg", "discord.com", "facebook.com",
     "x.com", "twitter.com", "youtube.com", "youtu.be", "instagram.com",
@@ -607,8 +607,15 @@ def validate_terminal(provider_id: str, cfg: dict[str, Any], candidate: str, tim
     lowered = re.sub(r"\s+", " ", document[:150_000].casefold())
     if ok and any(marker in lowered for marker in PARKING_MARKERS):
         ok = False
-    source_hosts = {host(str(source.get("url"))) for source in cfg.get("sources") or [] if source.get("url")}
-    if ok and final_host in source_hosts and any(marker in lowered for marker in HUB_MARKERS):
+    source_hosts = {
+        host(str(source.get("url")))
+        for source in cfg.get("sources") or []
+        if source.get("url") and source.get("type") in {"hub", "telegram_public"}
+    }
+    # Address hubs and public announcement channels are discovery sources, never
+    # catalogue origins. A 200 response or a cached history entry must not turn
+    # the hub itself into the provider terminal route.
+    if ok and final_host in source_hosts:
         ok = False
     required_markers = [str(item).casefold() for item in cfg.get("terminal_markers") or [] if str(item).strip()]
     if ok and required_markers and not any(marker in lowered for marker in required_markers):
@@ -811,6 +818,15 @@ def update_provider_patch(config: dict[str, Any], provider_id: str, hub_cfg: dic
         options["site"] = site_url.rstrip("/")
         api_base = (api_url or f"https://api.{new_site_host}").rstrip("/")
         options["fallback_api"] = api_base if api_base.endswith("toflix_api.php") else api_base + "/toflix_api.php"
+    recovery_script = "scripts/provider_patches/vf_catalogue_recovery.py"
+    if recovery_script in (patch.get("patch_scripts") or []):
+        options = script_options.setdefault(recovery_script, {})
+        options["base_url"] = site_url.rstrip("/")
+        if str(options.get("strategy") or "") == "movix_api":
+            if api_url:
+                options["api_url"] = api_url.rstrip("/")
+            else:
+                options["api_url"] = f"https://api.{new_site_host}".rstrip("/")
     # `required_values` is reserved for concrete code markers injected by a
     # patch profile/script. A resolved domain is routing metadata and may never
     # appear literally in a provider bundle (for example when the endpoint is

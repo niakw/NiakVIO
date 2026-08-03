@@ -17,6 +17,7 @@ import json
 import re
 from pathlib import Path
 from typing import Any, Iterable
+from override_text_utils import replace_literal
 
 ROOT = Path(__file__).resolve().parents[1]
 CONFIG = ROOT / "provider-overrides.json"
@@ -280,9 +281,8 @@ def apply_overrides(
     replacements.update(specific.get("route_replacements") or {})
     for old, new in replacements.items():
         old_text, new_text = str(old), str(new)
-        count = text.count(old_text)
+        text, count = replace_literal(text, old_text, new_text)
         if count:
-            text = text.replace(old_text, new_text)
             applied.append(
                 {
                     "type": "replace",

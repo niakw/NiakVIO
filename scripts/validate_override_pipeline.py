@@ -15,6 +15,7 @@ import argparse
 import hashlib
 import json
 from pathlib import Path
+from override_text_utils import contains_literal
 from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -123,10 +124,10 @@ def main() -> int:
                 if str(record.get("from")) == old
                 and str(record.get("to")) == new
             ]
-            if old in text:
+            if contains_literal(text, old):
                 failures.append(f"{candidate.get('key')}: forbidden pre-override value remains: {old}")
             terminal = terminal_replacement(new, replacements)
-            if matching_records and terminal not in text:
+            if matching_records and not contains_literal(text, terminal):
                 failures.append(
                     f"{candidate.get('key')}: patch recorded but terminal replacement absent: {terminal}"
                 )
@@ -147,7 +148,7 @@ def main() -> int:
                 str(record.get("from")) in historical_values
                 for record in replacement_records
             )
-            if terminal in text:
+            if contains_literal(text, terminal):
                 continue
             if related_record:
                 failures.append(
@@ -167,7 +168,7 @@ def main() -> int:
             if bare_host_marker(required):
                 continue
             terminal_required = terminal_replacement(required, replacements)
-            if required in text or terminal_required in text:
+            if contains_literal(text, required) or contains_literal(text, terminal_required):
                 continue
             failures.append(
                 f"{candidate.get('key')}: required value missing from staged file: {required}"

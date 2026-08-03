@@ -262,11 +262,24 @@ def build_entry(
         for value in claims.get("supported_types", [])
         if str(value) in {"movie", "tv", "anime"}
     ]
-    if curated_types:
-        # The selected upstream entry may describe only one technical request
-        # type even when the merged descriptions clearly advertise films,
-        # series and anime. Publish the canonical union used by validation.
-        entry["supportedTypes"] = curated_types
+    canonical = str(candidate.get("canonical_id") or "").casefold()
+    capability = (config.get("provider_capabilities") or {}).get(canonical, {})
+    explicit_types = [
+        str(value)
+        for value in (capability.get("catalogue_types") or [])
+        if str(value) in {"movie", "tv", "anime"}
+    ] if isinstance(capability, dict) else []
+    policy_types = [
+        str(value)
+        for value in (specific.get("published_types") or [])
+        if str(value) in {"movie", "tv", "anime"}
+    ] if isinstance(specific, dict) else []
+    published_types = policy_types or list(dict.fromkeys(curated_types + explicit_types))
+    if published_types:
+        # A provider-level published_types policy is authoritative. It prevents
+        # an upstream metadata union from re-advertising request shapes that the
+        # current bundle does not implement (for example Papadustream movies).
+        entry["supportedTypes"] = published_types
     entry["filename"] = destination.relative_to(ROOT).as_posix()
     entry["enabled"] = bool(enabled)
     if not isinstance(entry.get("id"), str) or not entry["id"].strip():

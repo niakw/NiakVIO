@@ -172,12 +172,21 @@ function parseHls(text, baseUrl) {
   const variants = [];
   const segments = [];
   let maxBandwidth = null;
+  let totalDurationSeconds = 0;
+  let durationEntryCount = 0;
   const lines = String(text || '').split(/\r?\n/);
   const valid = lines.some((line) => line.trim() === '#EXTM3U');
+  const isVod = lines.some((line) => line.trim() === '#EXT-X-ENDLIST');
 
   for (let index = 0; index < lines.length; index += 1) {
     const line = lines[index].trim();
-    if (line.startsWith('#EXT-X-STREAM-INF:')) {
+    if (line.startsWith('#EXTINF:')) {
+      const duration = Number(line.slice('#EXTINF:'.length).split(',')[0]);
+      if (Number.isFinite(duration) && duration >= 0) {
+        totalDurationSeconds += duration;
+        durationEntryCount += 1;
+      }
+    } else if (line.startsWith('#EXT-X-STREAM-INF:')) {
       const attrs = parseAttributeList(line.slice('#EXT-X-STREAM-INF:'.length));
       const resolution = String(attrs.RESOLUTION || '').match(/(\d+)x(\d+)/i);
       const bandwidth = Number(attrs['AVERAGE-BANDWIDTH'] || attrs.BANDWIDTH || 0) || 0;
@@ -231,6 +240,9 @@ function parseHls(text, baseUrl) {
     maxBandwidth,
     bestVariant: variants[0] || null,
     firstSegment: segments[0] || null,
+    isVod,
+    totalDurationSeconds: durationEntryCount ? totalDurationSeconds : null,
+    durationEntryCount,
   };
 }
 
@@ -408,7 +420,10 @@ async function probeStream(stream, mode) {
   const hdrFormats = new Set();
   const timeoutMs = Number(mode.stream_probe_timeout_ms || 12000);
   const sampleBytes = Number(mode.sample_bytes || 262144);
+  const minimumVodDurationSeconds = Math.max(0, Number(mode.minimum_vod_duration_seconds || 60));
   let maxBandwidth = null;
+  let mediaDurationSeconds = null;
+  let shortVodPreview = false;
 
   const reported = qualityToHeight(`${stream.quality || ''} ${stream.title || ''}`);
   if (reported) reportedHeights.push(reported);
@@ -467,7 +482,9 @@ async function probeStream(stream, mode) {
     if (classification.endpointReachable && (lowerPath.includes('.m3u8') || kind === 'hls')) {
       kind = 'hls';
       const master = parseHls(text, result.finalUrl);
-      payloadVerified = master.valid;
+      mediaDurationSeconds = master.totalDurationSeconds;
+      shortVodPreview = Boolean(master.isVod && master.totalDurationSeconds != null && master.totalDurationSeconds < minimumVodDurationSeconds);
+      payloadVerified = master.valid && !shortVodPreview;
       verifiedHeights.push(...master.verifiedHeights);
       master.audioLanguages.forEach((value) => audioLanguages.add(value));
       master.subtitleLanguages.forEach((value) => subtitleLanguages.add(value));
@@ -485,6 +502,9 @@ async function probeStream(stream, mode) {
           variantReachable = variantClass.endpointReachable && parsedVariant.valid;
           if (variantReachable) {
             mediaPlaylist = parsedVariant;
+            mediaDurationSeconds = parsedVariant.totalDurationSeconds;
+            shortVodPreview = Boolean(parsedVariant.isVod && parsedVariant.totalDurationSeconds != null && parsedVariant.totalDurationSeconds < minimumVodDurationSeconds);
+            payloadVerified = payloadVerified && !shortVodPreview;
             mediaPlaylist.verifiedHeights.forEach((value) => verifiedHeights.push(value));
             mediaPlaylist.audioLanguages.forEach((value) => audioLanguages.add(value));
             mediaPlaylist.subtitleLanguages.forEach((value) => subtitleLanguages.add(value));
@@ -518,6 +538,7 @@ async function probeStream(stream, mode) {
       }
 
       playbackVerified = payloadVerified
+        && !shortVodPreview
         && variantReachable !== false
         && (mode.probe_first_segment ? segmentReachable === true : true);
     } else if (classification.endpointReachable && (lowerPath.includes('.mpd') || kind === 'dash')) {
@@ -572,13 +593,16 @@ async function probeStream(stream, mode) {
       playback_verified: playbackVerified,
       payload_verified: payloadVerified,
       direct_signature_verified: directSignatureVerified,
-      category: playbackVerified ? 'playable' : classification.category,
+      category: playbackVerified ? 'playable' : (shortVodPreview ? 'short_vod_preview' : classification.category),
       http_status: result.status,
       kind,
       bytes_sampled: result.body.length,
       latency_ms: result.latencyMs,
       variant_reachable: variantReachable,
       segment_reachable: segmentReachable,
+      media_duration_seconds: mediaDurationSeconds,
+      minimum_vod_duration_seconds: minimumVodDurationSeconds,
+      short_vod_preview: shortVodPreview,
       reportedHeights,
       verifiedHeights,
       effective_height: effectiveHeight,

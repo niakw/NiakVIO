@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from override_text_utils import contains_literal
 from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -34,19 +35,6 @@ def bare_host_marker(value: str) -> bool:
         return False
     labels = value.split(".")
     return len(labels) >= 2 and all(label and all(ch.isalnum() or ch == "-" for ch in label) for label in labels)
-
-
-def provider_file_matches_id(path: Path, provider_id: str) -> bool:
-    """Match one provider bundle exactly, never a longer provider-id prefix.
-
-    For example, ``4khdhub`` must not match ``4khdhubnew--...js``.  The old
-    prefix glob could delete another provider's freshly promoted bundle before
-    that provider was validated.
-    """
-    name = path.name
-    stem = name[:-3] if name.lower().endswith(".js") else name
-    bundle_id = stem.split("--", 1)[0]
-    return canonical_id(bundle_id) == canonical_id(provider_id)
 
 
 def main() -> int:
@@ -91,7 +79,7 @@ def main() -> int:
         replacements.update(cfg.get("route_replacements") or {})
         for old, new in replacements.items():
             old, new = str(old), str(new)
-            if old in text:
+            if contains_literal(text, old):
                 errors.append(f"{cid}: forbidden value remains in {target.relative_to(ROOT)}: {old}")
             # A destination is required only when this provider's provenance says
             # the corresponding replacement was actually applied.
@@ -103,7 +91,7 @@ def main() -> int:
                 and int(record.get("count") or 0) > 0
                 for record in records
             )
-            if applied and new not in text:
+            if applied and not contains_literal(text, new):
                 errors.append(f"{cid}: recorded replacement destination missing: {new}")
 
         required_values = [str(value) for value in cfg.get("required_values") or []]
@@ -130,13 +118,11 @@ def main() -> int:
         # Remove stale aliases/old hashes only when they retain a forbidden value
         # and are not the exact file selected by manifest.next.json.
         if replacements:
-            for candidate in PROVIDERS.glob("*.js"):
-                if not provider_file_matches_id(candidate, cid):
-                    continue
+            for candidate in PROVIDERS.glob(f"{cid}*.js"):
                 if candidate.resolve() == target:
                     continue
                 candidate_text = candidate.read_text(encoding="utf-8", errors="ignore")
-                if any(str(old) in candidate_text for old in replacements):
+                if any(contains_literal(candidate_text, str(old)) for old in replacements):
                     candidate.unlink()
                     removed.append(candidate.relative_to(ROOT).as_posix())
 

@@ -29,6 +29,14 @@ def safe_fragment(value: str) -> str:
     return re.sub(r"[^a-zA-Z0-9._-]+", "-", str(value).strip()).strip(".-")[:120] or "provider"
 
 
+def bump_provider_version(value: str) -> str:
+    match = re.fullmatch(r"(\d+)\.(\d+)\.(\d+)", str(value or "").strip())
+    if not match:
+        return "1.0.1"
+    major, minor, patch = (int(part) for part in match.groups())
+    return f"{major}.{minor}.{patch + 1}"
+
+
 def load_manifest(path: Path) -> dict[str, Any] | None:
     if not path.exists():
         return None
@@ -105,6 +113,8 @@ def main() -> int:
         outputs[new_relative] = patched
         old_paths.add(relative)
         entry["filename"] = new_relative
+        if relative != new_relative:
+            entry["version"] = bump_provider_version(str(entry.get("version") or "1.0.0"))
 
     secondary_payloads: list[tuple[Path, dict[str, Any]]] = []
     for path in SECONDARY:
@@ -119,6 +129,9 @@ def main() -> int:
                 continue
             _old, new = updates[provider_id]
             entry["filename"] = "../" + new
+            primary_entry = next((row for row in primary["scrapers"] if isinstance(row, dict) and str(row.get("id") or "").strip().casefold() == provider_id), None)
+            if isinstance(primary_entry, dict) and primary_entry.get("version"):
+                entry["version"] = primary_entry["version"]
         secondary_payloads.append((path, payload))
 
     stale = False
