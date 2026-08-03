@@ -28,11 +28,11 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
     preferred_groups = [str(v) for v in cfg.get("preferred_player_groups", ["VFF", "VFQ", "VF", "Default", "VOSTFR"])]
     max_players = max(1, min(int(cfg.get("max_players", 8)), 20))
     timeout_ms = max(1500, min(int(cfg.get("timeout_ms", 7000)), 15000))
-    if strategy not in {"html", "streamzo", "movix_api"}:
+    if strategy not in {"html", "streamzo", "api_discovery"}:
         raise ValueError(f"vf_catalogue_recovery: unsupported strategy {strategy!r}")
-    if strategy != "movix_api" and not base_url:
+    if strategy != "api_discovery" and not base_url:
         raise ValueError("vf_catalogue_recovery: base_url is required")
-    if strategy == "movix_api" and not api_url:
+    if strategy == "api_discovery" and not api_url:
         raise ValueError("vf_catalogue_recovery: api_url is required")
 
     payload = {
@@ -49,6 +49,9 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
         "timeoutMs": timeout_ms,
         "providerName": str(cfg.get("provider_name") or "VF source"),
         "recoveryFirst": bool(cfg.get("recovery_first", True)),
+        "skipNativeWhenUnresolved": bool(cfg.get("skip_native_when_unresolved", False)),
+        "obsoleteRouteTokens": [str(v).lower() for v in cfg.get("obsolete_route_tokens", []) if str(v).strip()],
+        "maxDiscoveryScripts": max(1, min(int(cfg.get("max_discovery_scripts", 8)), 20)),
     }
     serialized = json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
     marker = f"{MARKER}:{hashlib.sha256(serialized.encode()).hexdigest()[:12]}"
@@ -136,13 +139,56 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
     return found;
   }
   function streamRows(urls,base,label){return urls.slice(0,config.maxPlayers).map(function(url,index){return {name:config.providerName+(urls.length>1?" #"+(index+1):""),title:config.providerName+" - "+label,url:url,quality:"HD",language:"fr",headers:headers(base),isDirect:/(?:\.m3u8|\.mp4|\.mpd)(?:[?#]|$)/i.test(url)}})}
-  async function movix(req,meta){
-    var url=config.apiUrl+"/api/fstream/"+(req.mediaType==="tv"?"tv":"movie")+"/"+encodeURIComponent(req.tmdbId);
-    var data=await request(url,true);if(!data||data.success===false)return [];
-    var groups=data.players||{},urls=[];
+  var discoveredApiRoute=null,discoveryComplete=false;
+  function routeFromText(text,req){
+    var raw=String(text||""),matches=[],re=/["'`]([^"'`]{0,180}\/api\/[^"'`]{1,220})["'`]/g,m;
+    while((m=re.exec(raw))!==null){
+      var value=clean(m[1]);if(!/(?:movie|tv|film|season|episode)/i.test(value))continue;
+      var low=value.toLowerCase(),obsolete=false;
+      for(var i=0;i<config.obsoleteRouteTokens.length;i++)if(low.indexOf(config.obsoleteRouteTokens[i])>=0){obsolete=true;break}
+      if(obsolete)continue;
+      value=value.replace(/\$\{[^}]+\}|:[a-z_][a-z0-9_]*|\{(?:id|tmdbid|tmdb_id)\}/ig,"{id}")
+                 .replace(/\{(?:type|media_type|mediatype)\}/ig,"{type}")
+                 .replace(/\{season\}/ig,"{season}").replace(/\{episode\}/ig,"{episode}");
+      if(value.indexOf("{id}")<0){
+        if(/\/(?:movie|film|tv)(?:\/|$)/i.test(value))value=value.replace(/\/?$/,"/{id}");else continue;
+      }
+      matches.push(value);
+    }
+    return Array.from(new Set(matches));
+  }
+  function materializeRoute(tpl,req){
+    var type=req.mediaType==="tv"?"tv":"movie";
+    return tpl.replace(/\{id\}/g,encodeURIComponent(req.tmdbId)).replace(/\{type\}/g,type)
+      .replace(/\{season\}/g,String(Number(req.season)||1)).replace(/\{episode\}/g,String(Number(req.episode)||1));
+  }
+  async function discoverApiRoutes(req){
+    if(discoveryComplete)return discoveredApiRoute?[discoveredApiRoute]:[];
+    discoveryComplete=true;var documents=[],home=await request(config.baseUrl||config.apiUrl,false);if(home)documents.push(home);
+    if(home){
+      var scripts=[],re=/<script\b[^>]*src=["']([^"']+)["']/gi,m;
+      while((m=re.exec(home))!==null&&scripts.length<config.maxDiscoveryScripts){var u=absolute(m[1],config.baseUrl||config.apiUrl);if(u&&!blocked(u))scripts.push(u)}
+      for(var i=0;i<scripts.length;i++){var body=await request(scripts[i],false);if(body)documents.push(body)}
+    }
+    var candidates=[];documents.forEach(function(doc){candidates=candidates.concat(routeFromText(doc,req))});
+    candidates=Array.from(new Set(candidates)).slice(0,24);
+    for(var j=0;j<candidates.length;j++){
+      var endpoint=absolute(materializeRoute(candidates[j],req),config.apiUrl+"/");if(!endpoint)continue;
+      try{if(new URL(endpoint).origin!==new URL(config.apiUrl).origin)continue}catch(_e){continue}
+      var data=await request(endpoint,true);if(data&&data.success!==false){discoveredApiRoute=candidates[j];return [discoveredApiRoute]}
+    }
+    return [];
+  }
+  function apiPlayers(data){
+    var groups=data&&data.players||data&&data.links||{},urls=[];
     config.preferredPlayerGroups.forEach(function(group){var rows=groups[group];if(Array.isArray(rows))rows.forEach(function(row){var u=clean(row&&row.url);if(usable(u))urls.push(u)})});
-    if(!urls.length)Object.keys(groups).forEach(function(group){var rows=groups[group];if(Array.isArray(rows))rows.forEach(function(row){var u=clean(row&&row.url);if(usable(u))urls.push(u)})});
-    return streamRows(Array.from(new Set(urls)),config.baseUrl||config.apiUrl,meta.title||"Film");
+    if(!urls.length&&groups&&typeof groups==="object")Object.keys(groups).forEach(function(group){var rows=groups[group];if(Array.isArray(rows))rows.forEach(function(row){var u=clean(row&&row.url);if(usable(u))urls.push(u)})});
+    return Array.from(new Set(urls));
+  }
+  async function apiDiscovery(req,meta){
+    var routes=await discoverApiRoutes(req);if(!routes.length)return [];
+    var endpoint=absolute(materializeRoute(routes[0],req),config.apiUrl+"/"),data=await request(endpoint,true);if(!data||data.success===false)return [];
+    return streamRows(apiPlayers(data),config.baseUrl||config.apiUrl,meta.title||"Film");
   }
   async function htmlRecovery(req,meta){
     var bases=[config.baseUrl],candidates=[];
@@ -158,12 +204,12 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
     for(var n=0;n<unique.length;n++){var detail=await request(unique[n],false);if(!detail)continue;var urls=players(detail,unique[n]);if(urls.length)return streamRows(urls,unique[n],meta.title)}
     return [];
   }
-  async function recover(req){if(config.types.indexOf(req.mediaType)<0)return [];var meta=await metadata(req);if(!meta.title&&config.strategy!=="movix_api")return [];return config.strategy==="movix_api"?movix(req,meta):htmlRecovery(req,meta)}
+  async function recover(req){if(config.types.indexOf(req.mediaType)<0)return [];var meta=await metadata(req);if(!meta.title&&config.strategy!=="api_discovery")return [];return config.strategy==="api_discovery"?apiDiscovery(req,meta):htmlRecovery(req,meta)}
   function filterNative(rows){if(!Array.isArray(rows))return rows;var seen=Object.create(null);return rows.filter(function(row){var u=clean(row&&row.url);if(!usable(u)||seen[u])return false;seen[u]=1;return true})}
   function install(container,key){
     if(!container||typeof container[key]!=="function"||container[key].__nuvioVfRecovery)return false;
     var original=container[key];
-    var wrapped=async function(){var req=argumentsOf(arguments),fallback=[];if(config.recoveryFirst){fallback=await recover(req);if(fallback.length)return fallback}var native=[],nativeError=null;try{native=filterNative(await original.apply(this,arguments))}catch(error){nativeError=error}if(Array.isArray(native)&&native.length)return native;if(!config.recoveryFirst){fallback=await recover(req);if(fallback.length)return fallback}if(nativeError)throw nativeError;return Array.isArray(native)?native:[]};
+    var wrapped=async function(){var req=argumentsOf(arguments),fallback=[];if(config.recoveryFirst){fallback=await recover(req);if(fallback.length)return fallback;if(config.skipNativeWhenUnresolved&&config.strategy==="api_discovery"&&!discoveredApiRoute)return []}var native=[],nativeError=null;try{native=filterNative(await original.apply(this,arguments))}catch(error){nativeError=error}if(Array.isArray(native)&&native.length)return native;if(!config.recoveryFirst){fallback=await recover(req);if(fallback.length)return fallback}if(nativeError)throw nativeError;return Array.isArray(native)?native:[]};
     wrapped.__nuvioVfRecovery=true;wrapped.__nuvioOriginal=original;container[key]=wrapped;return true;
   }
   var installed=false;try{if(typeof module!=="undefined"&&module.exports)installed=install(module.exports,"getStreams")||installed}catch(_e){}
