@@ -5,6 +5,15 @@ from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
 SCRIPT=ROOT/'scripts/validate_deep_health_integrity.py'
 
+config=json.loads((ROOT/'health-config.json').read_text(encoding='utf-8'))
+health_source=(ROOT/'scripts/health_check.mjs').read_text(encoding='utf-8')
+assert int(config['modes']['deep']['worker_memory_mb']) >= 512
+assert int(config['modes']['availability']['worker_memory_mb']) < int(config['modes']['deep']['worker_memory_mb'])
+assert int(config['modes']['retry']['worker_memory_mb']) < int(config['modes']['deep']['worker_memory_mb'])
+assert int(config['modes']['quick']['worker_memory_mb']) < int(config['modes']['deep']['worker_memory_mb'])
+for token in ['modeConfig.worker_memory_mb', 'NUVIO_WORKER_MEMORY_MB', 'NUVIO_WORKER_MEMORY_EXHAUSTED', 'worker_memory_exhausted', 'appendTail']:
+    assert token in health_source, token
+
 def run(health, repairs):
     with tempfile.TemporaryDirectory() as tmp:
         root=Path(tmp); h=root/'health.json'; r=root/'repairs.json'
