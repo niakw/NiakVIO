@@ -1,6 +1,6 @@
 {
   "schema_version": 63,
-  "updated_at": "2026-08-03T21:46:49.135080+00:00",
+  "updated_at": "2026-08-03T23:44:33.157871+00:00",
   "providers": {
     "anime-sama": {
       "last_checked_at": "2026-08-03T21:33:27.600863+00:00",
@@ -56,6 +56,56 @@
       "hosts": [],
       "response_categories": [],
       "host_health": {}
+    },
+    "uhdmovies": {
+      "last_checked_at": "2026-08-03T21:33:27.600863+00:00",
+      "last_status": "no_streams",
+      "last_score": 25,
+      "last_sha256": "930006283991dc5455d4e5f61156835d22fbd2c55ed171b159aaae734eca6307",
+      "consecutive_hard_failures": 0,
+      "hard_failure_started_at": null,
+      "consecutive_successes": 0,
+      "consecutive_blocked": 0,
+      "consecutive_no_streams": 1,
+      "auto_disabled": false,
+      "last_success_at": "2026-08-03T18:11:22.640651+00:00",
+      "hosts": [],
+      "response_categories": [],
+      "host_health": {
+        "video-downloads.googleusercontent.com": {
+          "last_checked_at": "2026-08-03T18:11:22.640651+00:00",
+          "last_category": "not_returned",
+          "reachable": false,
+          "http_status": null,
+          "latency_ms": null,
+          "kind": "matroska",
+          "consecutive_hard_failures": 0,
+          "consecutive_successes": 0,
+          "consecutive_blocked": 0
+        },
+        "driveseed.org": {
+          "last_checked_at": "2026-08-03T18:11:22.640651+00:00",
+          "last_category": "not_returned",
+          "reachable": false,
+          "http_status": null,
+          "latency_ms": null,
+          "kind": "html",
+          "consecutive_hard_failures": 0,
+          "consecutive_successes": 0,
+          "consecutive_blocked": 0
+        },
+        "pub-1f02063637e241f78720645df0ad3d99.r2.dev": {
+          "last_checked_at": "2026-08-03T18:11:22.640651+00:00",
+          "last_category": "playable",
+          "reachable": true,
+          "http_status": 206,
+          "latency_ms": 323,
+          "kind": "matroska",
+          "consecutive_hard_failures": 0,
+          "consecutive_successes": 3,
+          "consecutive_blocked": 0
+        }
+      }
     },
     "zinkmovies": {
       "last_checked_at": "2026-07-26T07:09:33.481217+00:00",
@@ -358,9 +408,9 @@
       }
     },
     "mugiwarastream": {
-      "last_checked_at": "2026-08-03T21:46:49.135080+00:00",
-      "last_status": "runtime_error",
-      "last_score": 0,
+      "last_checked_at": "2026-08-03T23:44:33.157871+00:00",
+      "last_status": "degraded",
+      "last_score": 25,
       "last_sha256": "4ca91d321825979c065102e493f3b6b01d7b990ac3ee3412ac687a68ca0dcd9b",
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
@@ -370,7 +420,9 @@
       "auto_disabled": false,
       "last_success_at": "2026-07-26T14:04:06.325208+00:00",
       "hosts": [],
-      "response_categories": [],
+      "response_categories": [
+        "invalid_payload"
+      ],
       "host_health": {
         "prx-1328-ant.vmwesa.online": {
           "last_checked_at": "2026-07-26T14:04:06.325208+00:00",
@@ -415,89 +467,16 @@
           "consecutive_hard_failures": 1,
           "consecutive_successes": 0,
           "consecutive_blocked": 0
-        }
-      }
-    },
-    "animesama-co": {
-      "last_checked_at": "2026-08-03T21:33:27.600863+00:00",
-      "last_status": "runtime_error",
-      "last_score": 0,
-      "last_sha256": "1ab9fb1cec10acffb9d1e4a59f04ed1b18e20c5cef7632d63e0336c24a89eabe",
-      "consecutive_hard_failures": 0,
-      "hard_failure_started_at": null,
-      "consecutive_successes": 0,
-      "consecutive_blocked": 0,
-      "consecutive_no_streams": 0,
-      "auto_disabled": false,
-      "last_success_at": "2026-08-03T18:11:22.640651+00:00",
-      "hosts": [],
-      "response_categories": [],
-      "host_health": {
-        "video.sibnet.ru": {
-          "last_checked_at": "2026-08-03T18:11:22.640651+00:00",
-          "last_category": "playable",
-          "reachable": true,
-          "http_status": 206,
-          "latency_ms": 4143,
-          "kind": "mp4",
+        },
+        "vidmoly.biz": {
+          "last_checked_at": "2026-08-03T23:44:33.157871+00:00",
+          "last_category": "invalid_payload",
+          "reachable": false,
+          "http_status": 200,
+          "latency_ms": 476,
+          "kind": "html",
           "consecutive_hard_failures": 0,
-          "consecutive_successes": 3,
-          "consecutive_blocked": 0
-        }
-      }
-    },
-    "animevostfr": {
-      "last_checked_at": "2026-08-03T21:33:27.600863+00:00",
-      "last_status": "no_streams",
-      "last_score": 25,
-      "last_sha256": "9db362a48297eabbbbbf658a2aef5ea3084a9df09c64436f5b8b36e09b576619",
-      "consecutive_hard_failures": 0,
-      "hard_failure_started_at": null,
-      "consecutive_successes": 0,
-      "consecutive_blocked": 0,
-      "consecutive_no_streams": 1,
-      "auto_disabled": false,
-      "last_success_at": "2026-08-03T18:11:22.640651+00:00",
-      "hosts": [],
-      "response_categories": [],
-      "host_health": {
-        "video.sibnet.ru": {
-          "last_checked_at": "2026-08-03T18:11:22.640651+00:00",
-          "last_category": "playable",
-          "reachable": true,
-          "http_status": 206,
-          "latency_ms": 2996,
-          "kind": "mp4",
-          "consecutive_hard_failures": 0,
-          "consecutive_successes": 4,
-          "consecutive_blocked": 0
-        }
-      }
-    },
-    "voiranime-rip": {
-      "last_checked_at": "2026-08-03T21:33:27.600863+00:00",
-      "last_status": "runtime_error",
-      "last_score": 0,
-      "last_sha256": "cbf14d7c8fe2e76ed4aabc6a0dfa3677e3c0059fe6f6b1ac8d600065a7f4c359",
-      "consecutive_hard_failures": 0,
-      "hard_failure_started_at": null,
-      "consecutive_successes": 0,
-      "consecutive_blocked": 0,
-      "consecutive_no_streams": 0,
-      "auto_disabled": false,
-      "last_success_at": "2026-08-03T18:11:22.640651+00:00",
-      "hosts": [],
-      "response_categories": [],
-      "host_health": {
-        "video.sibnet.ru": {
-          "last_checked_at": "2026-08-03T18:11:22.640651+00:00",
-          "last_category": "playable",
-          "reachable": true,
-          "http_status": 206,
-          "latency_ms": 3703,
-          "kind": "mp4",
-          "consecutive_hard_failures": 0,
-          "consecutive_successes": 3,
+          "consecutive_successes": 0,
           "consecutive_blocked": 0
         }
       }
@@ -736,6 +715,34 @@
       "response_categories": [],
       "host_health": {}
     },
+    "animesama-co": {
+      "last_checked_at": "2026-08-03T21:33:27.600863+00:00",
+      "last_status": "runtime_error",
+      "last_score": 0,
+      "last_sha256": "1ab9fb1cec10acffb9d1e4a59f04ed1b18e20c5cef7632d63e0336c24a89eabe",
+      "consecutive_hard_failures": 0,
+      "hard_failure_started_at": null,
+      "consecutive_successes": 0,
+      "consecutive_blocked": 0,
+      "consecutive_no_streams": 0,
+      "auto_disabled": false,
+      "last_success_at": "2026-08-03T18:11:22.640651+00:00",
+      "hosts": [],
+      "response_categories": [],
+      "host_health": {
+        "video.sibnet.ru": {
+          "last_checked_at": "2026-08-03T18:11:22.640651+00:00",
+          "last_category": "playable",
+          "reachable": true,
+          "http_status": 206,
+          "latency_ms": 4143,
+          "kind": "mp4",
+          "consecutive_hard_failures": 0,
+          "consecutive_successes": 3,
+          "consecutive_blocked": 0
+        }
+      }
+    },
     "animesultra": {
       "last_checked_at": "2026-08-03T21:33:27.600863+00:00",
       "last_status": "blocked",
@@ -767,6 +774,34 @@
       "hosts": [],
       "response_categories": [],
       "host_health": {}
+    },
+    "animevostfr": {
+      "last_checked_at": "2026-08-03T21:33:27.600863+00:00",
+      "last_status": "no_streams",
+      "last_score": 25,
+      "last_sha256": "9db362a48297eabbbbbf658a2aef5ea3084a9df09c64436f5b8b36e09b576619",
+      "consecutive_hard_failures": 0,
+      "hard_failure_started_at": null,
+      "consecutive_successes": 0,
+      "consecutive_blocked": 0,
+      "consecutive_no_streams": 1,
+      "auto_disabled": false,
+      "last_success_at": "2026-08-03T18:11:22.640651+00:00",
+      "hosts": [],
+      "response_categories": [],
+      "host_health": {
+        "video.sibnet.ru": {
+          "last_checked_at": "2026-08-03T18:11:22.640651+00:00",
+          "last_category": "playable",
+          "reachable": true,
+          "http_status": 206,
+          "latency_ms": 2996,
+          "kind": "mp4",
+          "consecutive_hard_failures": 0,
+          "consecutive_successes": 4,
+          "consecutive_blocked": 0
+        }
+      }
     },
     "anizone": {
       "last_checked_at": "2026-08-03T21:33:27.600863+00:00",
@@ -1208,6 +1243,34 @@
         }
       }
     },
+    "voiranime-rip": {
+      "last_checked_at": "2026-08-03T21:33:27.600863+00:00",
+      "last_status": "runtime_error",
+      "last_score": 0,
+      "last_sha256": "cbf14d7c8fe2e76ed4aabc6a0dfa3677e3c0059fe6f6b1ac8d600065a7f4c359",
+      "consecutive_hard_failures": 0,
+      "hard_failure_started_at": null,
+      "consecutive_successes": 0,
+      "consecutive_blocked": 0,
+      "consecutive_no_streams": 0,
+      "auto_disabled": false,
+      "last_success_at": "2026-08-03T18:11:22.640651+00:00",
+      "hosts": [],
+      "response_categories": [],
+      "host_health": {
+        "video.sibnet.ru": {
+          "last_checked_at": "2026-08-03T18:11:22.640651+00:00",
+          "last_category": "playable",
+          "reachable": true,
+          "http_status": 206,
+          "latency_ms": 3703,
+          "kind": "mp4",
+          "consecutive_hard_failures": 0,
+          "consecutive_successes": 3,
+          "consecutive_blocked": 0
+        }
+      }
+    },
     "vostfree": {
       "last_checked_at": "2026-08-03T21:33:27.600863+00:00",
       "last_status": "blocked",
@@ -1255,56 +1318,6 @@
       "hosts": [],
       "response_categories": [],
       "host_health": {}
-    },
-    "uhdmovies": {
-      "last_checked_at": "2026-08-03T21:33:27.600863+00:00",
-      "last_status": "no_streams",
-      "last_score": 25,
-      "last_sha256": "930006283991dc5455d4e5f61156835d22fbd2c55ed171b159aaae734eca6307",
-      "consecutive_hard_failures": 0,
-      "hard_failure_started_at": null,
-      "consecutive_successes": 0,
-      "consecutive_blocked": 0,
-      "consecutive_no_streams": 1,
-      "auto_disabled": false,
-      "last_success_at": "2026-08-03T18:11:22.640651+00:00",
-      "hosts": [],
-      "response_categories": [],
-      "host_health": {
-        "video-downloads.googleusercontent.com": {
-          "last_checked_at": "2026-08-03T18:11:22.640651+00:00",
-          "last_category": "not_returned",
-          "reachable": false,
-          "http_status": null,
-          "latency_ms": null,
-          "kind": "matroska",
-          "consecutive_hard_failures": 0,
-          "consecutive_successes": 0,
-          "consecutive_blocked": 0
-        },
-        "driveseed.org": {
-          "last_checked_at": "2026-08-03T18:11:22.640651+00:00",
-          "last_category": "not_returned",
-          "reachable": false,
-          "http_status": null,
-          "latency_ms": null,
-          "kind": "html",
-          "consecutive_hard_failures": 0,
-          "consecutive_successes": 0,
-          "consecutive_blocked": 0
-        },
-        "pub-1f02063637e241f78720645df0ad3d99.r2.dev": {
-          "last_checked_at": "2026-08-03T18:11:22.640651+00:00",
-          "last_category": "playable",
-          "reachable": true,
-          "http_status": 206,
-          "latency_ms": 323,
-          "kind": "matroska",
-          "consecutive_hard_failures": 0,
-          "consecutive_successes": 3,
-          "consecutive_blocked": 0
-        }
-      }
     },
     "movieshunt": {
       "last_checked_at": "2026-08-03T18:11:22.640651+00:00",
