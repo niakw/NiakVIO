@@ -61,7 +61,8 @@ for provider_id in ('frenchstream', 'streamzo', 'movix', 'coflix', 'flemmix'):
     patch = patches[provider_id]
     assert recovery in patch.get('patch_scripts', []), provider_id
     options = patch.get('patch_script_options', {}).get(recovery, {})
-    assert options.get('types') == ['movie'], provider_id
+    expected_types = ['movie'] if provider_id == 'flemmix' else patch.get('published_types')
+    assert options.get('types') == expected_types, provider_id
     assert 'fstream.top' in options.get('blocked_hosts', []), provider_id
     assert '/troll/' in options.get('blocked_path_patterns', []), provider_id
 
