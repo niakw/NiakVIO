@@ -328,7 +328,16 @@
     "minimum_manifest_curation_score": 5,
     "representative_fixture_mode": true,
     "optional_subtitles_do_not_block_accepted_audio": true,
-    "current_deep_success_activates_without_prior_history": true
+    "current_deep_success_activates_without_prior_history": true,
+    "preserve_enabled_on_ci_uncertain_statuses": [
+      "blocked",
+      "provider_unreachable",
+      "runtime_error",
+      "unavailable",
+      "no_streams",
+      "reachable",
+      "degraded"
+    ]
   },
   "availability": {
     "auto_disable": true,

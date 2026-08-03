@@ -58,7 +58,7 @@
           "min_vod_duration_seconds": 60
         },
         "scripts/provider_patches/vf_catalogue_recovery.py": {
-          "strategy": "movix_api",
+          "strategy": "api_discovery",
           "provider_name": "Movix",
           "base_url": "https://movix.fun",
           "api_url": "https://api.movix.fun",
@@ -78,7 +78,13 @@
           "blocked_path_patterns": [
             "/troll/"
           ],
-          "max_players": 10
+          "max_players": 10,
+          "skip_native_when_unresolved": true,
+          "obsolete_route_tokens": [
+            "/api/fstream/",
+            "fstream"
+          ],
+          "max_discovery_scripts": 10
         }
       },
       "official_hub": "https://movix.online/",
@@ -1286,7 +1292,7 @@
       "allow_html_url": true,
       "requires_direct_media": false,
       "observed_origins": [
-        "https://4khdhub.one"
+        "https://4khdhub.dad"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
@@ -1467,8 +1473,6 @@
         "https://npms.io",
         "https://video.sibnet.ru",
         "https://vidmoly.me",
-        "https://fsvid.lol",
-        "https://vidzy.live",
         "https://streamtape.com",
         "https://sendvid.com",
         "https://www.myvi.ru",
@@ -1557,8 +1561,6 @@
       "observed_origins": [
         "https://video.sibnet.ru",
         "https://vidmoly.me",
-        "https://fsvid.lol",
-        "https://vidzy.live",
         "https://streamtape.com",
         "https://sendvid.com",
         "https://www.myvi.ru",
@@ -1660,8 +1662,6 @@
         "https://npms.io",
         "https://video.sibnet.ru",
         "https://vidmoly.me",
-        "https://fsvid.lol",
-        "https://vidzy.live",
         "https://streamtape.com",
         "https://sendvid.com",
         "https://www.myvi.ru",
@@ -1703,9 +1703,7 @@
       "validation": "provider_native",
       "allow_html_url": true,
       "requires_direct_media": false,
-      "observed_origins": [
-        "https://manifest.desitvhub.eu.org"
-      ],
+      "observed_origins": [],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
     },
@@ -1790,8 +1788,6 @@
       "observed_origins": [
         "https://video.sibnet.ru",
         "https://vidmoly.me",
-        "https://fsvid.lol",
-        "https://vidzy.live",
         "https://streamtape.com",
         "https://sendvid.com",
         "https://www.myvi.ru",
@@ -1820,8 +1816,6 @@
         "https://npms.io",
         "https://video.sibnet.ru",
         "https://vidmoly.me",
-        "https://fsvid.lol",
-        "https://vidzy.live",
         "https://streamtape.com",
         "https://sendvid.com",
         "https://www.myvi.ru",
@@ -1853,8 +1847,6 @@
         "https://npms.io",
         "https://video.sibnet.ru",
         "https://vidmoly.me",
-        "https://fsvid.lol",
-        "https://vidzy.live",
         "https://streamtape.com",
         "https://sendvid.com",
         "https://www.myvi.ru",
@@ -1999,7 +1991,7 @@
       "allow_html_url": true,
       "requires_direct_media": false,
       "observed_origins": [
-        "https://lucky-star-3059.salman-sohail93.workers.dev",
+        "https://hc-zf3c.vercel.app",
         "https://new2.movies4u.clinic"
       ],
       "generated_from_manifest": true,
@@ -2011,7 +2003,7 @@
       "allow_html_url": true,
       "requires_direct_media": false,
       "observed_origins": [
-        "https://new1.moviesdrive.christmas"
+        "https://mdrive.lol"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
@@ -2049,8 +2041,6 @@
       "observed_origins": [
         "https://video.sibnet.ru",
         "https://vidmoly.me",
-        "https://fsvid.lol",
-        "https://vidzy.live",
         "https://streamtape.com",
         "https://sendvid.com",
         "https://www.myvi.ru",
@@ -2076,8 +2066,6 @@
       "observed_origins": [
         "https://video.sibnet.ru",
         "https://vidmoly.me",
-        "https://fsvid.lol",
-        "https://vidzy.live",
         "https://streamtape.com",
         "https://sendvid.com",
         "https://www.myvi.ru",
@@ -2253,8 +2241,6 @@
       "observed_origins": [
         "https://video.sibnet.ru",
         "https://vidmoly.me",
-        "https://fsvid.lol",
-        "https://vidzy.live",
         "https://streamtape.com",
         "https://sendvid.com",
         "https://www.myvi.ru",
@@ -2412,8 +2398,6 @@
       "observed_origins": [
         "https://video.sibnet.ru",
         "https://vidmoly.me",
-        "https://fsvid.lol",
-        "https://vidzy.live",
         "https://streamtape.com",
         "https://sendvid.com",
         "https://www.myvi.ru",
@@ -2478,8 +2462,6 @@
       "observed_origins": [
         "https://video.sibnet.ru",
         "https://vidmoly.me",
-        "https://fsvid.lol",
-        "https://vidzy.live",
         "https://streamtape.com",
         "https://sendvid.com",
         "https://www.myvi.ru",
@@ -2599,7 +2581,7 @@
       "allow_html_url": false,
       "requires_direct_media": true,
       "observed_origins": [
-        "https://1.animezeydl.workers.dev"
+        "https://1.animezey23112022.workers.dev"
       ],
       "generated_from_manifest_or_stage": true
     },
@@ -3094,8 +3076,8 @@
   },
   "provider_profile_generation": {
     "schema_version": 3,
-    "provider_count": 90,
-    "staged_provider_count": 89,
+    "provider_count": 89,
+    "staged_provider_count": 0,
     "source": "manifest_published_bundles_and_current_staging",
     "same_deep_new_provider_support": true,
     "automatic_bundle_rewrite": false
