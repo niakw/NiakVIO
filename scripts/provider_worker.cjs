@@ -16,6 +16,32 @@ const { guardedFetch } = require('./network_guard.cjs');
 const Module = require('node:module');
 
 const networkObservations = [];
+let activeInvocation = null;
+let activeSettingsProfile = null;
+
+function sanitizeDiagnosticText(value, limit = 1000) {
+  return String(value || '')
+    .replace(/(?:https?|magnet|acestream|torrent):[^\s"']+/gi, '[endpoint]')
+    .replace(/[\r\t]+/g, ' ')
+    .slice(0, limit);
+}
+
+function structuredError(error, phase = 'provider_runtime') {
+  const value = error && typeof error === 'object' ? error : new Error(String(error));
+  const stack = sanitizeDiagnosticText(value.stack || '', 2400)
+    .split('\n')
+    .slice(0, 10)
+    .join('\n');
+  return {
+    name: sanitizeDiagnosticText(value.name || 'Error', 120),
+    code: sanitizeDiagnosticText(value.code || value.cause?.code || '', 120) || null,
+    message: sanitizeDiagnosticText(value.message || value, 1200),
+    phase,
+    invocation: activeInvocation,
+    settings_profile: activeSettingsProfile,
+    stack: stack || null,
+  };
+}
 function installModuleRestrictions() {
   const blocked = new Set([
     'child_process', 'node:child_process', 'cluster', 'node:cluster',
@@ -46,7 +72,8 @@ function wrapLimitedResponse(response, perResponseLimit, consumeBytes) {
       if (prop === 'json') return () => checked(async () => JSON.parse(await target.text()));
       if (prop === 'arrayBuffer') return () => checked(() => target.arrayBuffer());
       if (prop === 'blob') return () => checked(() => target.blob());
-      return Reflect.get(target, prop, receiver);
+      const value = Reflect.get(target, prop, target);
+      return typeof value === 'function' ? value.bind(target) : value;
     },
   });
 }
@@ -188,7 +215,7 @@ function installPolyfills(context = {}) {
   const platform = String(context.platform || 'android');
   const userAgent = String(
     context.userAgent
-      || `Nuvio-Health-Check/5.12 (${platform}; ${locale}; ReactNative-compatible)`,
+      || `Mozilla/5.0 (Linux; Android 14; Nuvio) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Mobile Safari/537.36`,
   );
 
   defineGlobal('navigator', {
@@ -254,6 +281,28 @@ function installPolyfills(context = {}) {
       if (context.injectAcceptLanguage !== false && !headers.has('Accept-Language')) headers.set('Accept-Language', languages.join(','));
       if (!headers.has('User-Agent')) headers.set('User-Agent', userAgent);
       const requestMeta = safeRequestMetadata(input, init);
+      const rawRequestUrl = (() => {
+        try { return typeof input === 'string' ? input : input?.url || ''; } catch { return ''; }
+      })();
+      if (/\[object(?:%20|\s)+object\]|%5Bobject(?:%20|\s)+object%5D/i.test(String(rawRequestUrl))) {
+        const invalid = new Error('invalid provider request: an object was serialized into the request URL');
+        invalid.code = 'NUVIO_INVALID_REQUEST_ARGUMENT';
+        networkObservations.push({
+          stage: inferRequestStage(requestMeta.path_pattern),
+          host: requestMeta.host,
+          method: requestMeta.method,
+          path_pattern: requestMeta.path_pattern,
+          status: null,
+          ok: false,
+          duration_ms: 0,
+          infrastructure: isInfrastructureHost(requestMeta.host),
+          invocation: activeInvocation,
+          settings_profile: activeSettingsProfile,
+          error_code: invalid.code,
+          error: invalid.message,
+        });
+        throw invalid;
+      }
       const host = requestMeta.host;
       if (host) contactedHosts.add(host);
       if (contactedHosts.size > maxDistinctHosts) throw new Error(`provider distinct-host limit exceeded (${maxDistinctHosts})`);
@@ -275,13 +324,13 @@ function installPolyfills(context = {}) {
         }
         const declaredLength = Number(response.headers.get('content-length') || 0);
         if (declaredLength > maxResponseBytes) throw new Error(`response body exceeds limit (${declaredLength} bytes)`);
-        networkObservations.push({ stage: requestStage, host, method: requestMeta.method, path_pattern: requestMeta.path_pattern, status: response.status, ok: response.ok, duration_ms: Date.now() - started, infrastructure: isInfrastructureHost(host), synthetic_fixture_fallback: synthetic });
+        networkObservations.push({ stage: requestStage, host, method: requestMeta.method, path_pattern: requestMeta.path_pattern, status: response.status, ok: response.ok, duration_ms: Date.now() - started, infrastructure: isInfrastructureHost(host), synthetic_fixture_fallback: synthetic, invocation: activeInvocation, settings_profile: activeSettingsProfile, error_code: null });
         return wrapLimitedResponse(response, maxResponseBytes, (bytes) => {
           totalResponseBytes += bytes;
           if (totalResponseBytes > maxTotalResponseBytes) throw new Error(`provider cumulative response limit exceeded (${maxTotalResponseBytes} bytes)`);
         });
       } catch (error) {
-        networkObservations.push({ stage: requestStage, host, method: requestMeta.method, path_pattern: requestMeta.path_pattern, status: null, ok: false, duration_ms: Date.now() - started, infrastructure: isInfrastructureHost(host), error: String(error?.message || error).slice(0, 180) });
+        networkObservations.push({ stage: requestStage, host, method: requestMeta.method, path_pattern: requestMeta.path_pattern, status: null, ok: false, duration_ms: Date.now() - started, infrastructure: isInfrastructureHost(host), invocation: activeInvocation, settings_profile: activeSettingsProfile, error_code: error?.code ? String(error.code).slice(0, 120) : null, error: sanitizeDiagnosticText(error?.message || error, 300) });
         throw error;
       }
     });
@@ -438,20 +487,9 @@ function settingsProfiles(moduleValue, sourceText, context) {
   const base = { ...defaults, ...contextual };
   if (Object.keys(base).length) profiles.push({ name: 'defaults', settings: base });
 
-  // Some providers do not query their server until title/year metadata is
-  // available in settings. Exercise that path during every deep check instead
-  // of treating an empty-settings result as representative.
-  const fixture = context.fixtureMetadata && typeof context.fixtureMetadata === 'object'
-    ? context.fixtureMetadata
-    : {};
-  const fixtureSettings = {};
-  for (const key of ['title', 'year', 'label', 'category', 'mediaType']) {
-    const value = scalar(fixture[key]);
-    if (value !== undefined && value !== '') fixtureSettings[key] = value;
-  }
-  if (Object.keys(fixtureSettings).length) {
-    profiles.push({ name: 'fixture_metadata', settings: { ...base, ...fixtureSettings } });
-  }
+  // Fixture metadata is passed through the invocation object/context, never
+  // invented as provider settings. Injecting title/year as arbitrary settings
+  // caused false branches and malformed requests in several bundles.
 
   for (const [key, vals] of alternatives.slice(0, 12)) {
     for (const val of vals.slice(0, 4)) profiles.push({ name: `option:${key}=${String(val)}`, settings: { ...base, [key]: val } });
@@ -484,7 +522,35 @@ function providerObservationCount() {
   return networkObservations.filter((item) => !item.infrastructure).length;
 }
 
-async function invokeProvider(getStreams, fixture, settings) {
+function inferInvocationMode(getStreams) {
+  let source = '';
+  try { source = Function.prototype.toString.call(getStreams); } catch {}
+  const compact = source.replace(/\s+/g, ' ');
+  if (/^(?:async\s*)?(?:function\s*[^()]*)?\(\s*\{/.test(compact)
+      || /^(?:async\s*)?\(?\s*\{[^}]*\}\s*\)?\s*=>/.test(compact)) return 'object';
+  const first = compact.match(/^[^(]*\(\s*([A-Za-z_$][A-Za-z0-9_$]*)/)?.[1]
+    || compact.match(/^\s*(?:async\s*)?([A-Za-z_$][A-Za-z0-9_$]*)\s*=>/)?.[1];
+  if (first && new RegExp(`\\b${first}\\s*\\.\\s*(?:tmdbId|id|mediaType|type|season|episode|title)\\b`).test(compact)) {
+    return 'object';
+  }
+  if (first) {
+    const dense = compact.replace(/\s+/g, '');
+    if (dense.includes(`typeof${first}==='object'`)
+        || dense.includes(`typeof${first}=="object"`)
+        || dense.includes(`typeof${first}=='object'`)
+        || dense.includes(`typeof${first}=="object"`)
+        || dense.includes(`'object'===typeof${first}`)
+        || dense.includes(`"object"===typeof${first}`)) return 'object';
+  }
+  if (Number(getStreams.length || 0) >= 2) return 'positional';
+  return 'positional';
+}
+
+function providerObservationsSince(index) {
+  return networkObservations.slice(index).filter((item) => !item.infrastructure);
+}
+
+async function invokeProvider(getStreams, fixture, settings, profileName) {
   installSettingsAccessors(settings);
   const positional = [String(fixture.tmdbId), fixture.mediaType, fixture.season ?? null, fixture.episode ?? null];
   const objectArgument = {
@@ -498,30 +564,79 @@ async function invokeProvider(getStreams, fixture, settings) {
     episode: fixture.episode ?? null,
     settings,
   };
-  const attempts = [
-    { name: 'positional_with_settings', run: () => getStreams(...positional, settings) },
-    { name: 'object', run: () => getStreams(objectArgument) },
-    { name: 'positional', run: () => getStreams(...positional) },
-  ];
-  let lastError;
+  const mode = inferInvocationMode(getStreams);
+  const attempts = mode === 'object'
+    ? [
+        { name: 'object', run: () => getStreams(objectArgument) },
+        { name: 'positional_with_settings', run: () => getStreams(...positional, settings) },
+      ]
+    : [
+        { name: 'positional_with_settings', run: () => getStreams(...positional, settings) },
+        { name: 'object', run: () => getStreams(objectArgument) },
+      ];
+  const diagnostics = [];
   let lastEmpty = [];
+  let arrayResultSeen = false;
+  const errors = [];
+
   for (const attempt of attempts) {
+    const observationStart = networkObservations.length;
+    activeInvocation = attempt.name;
+    activeSettingsProfile = profileName;
     try {
       const value = await attempt.run();
-      if (!Array.isArray(value)) continue;
-      if (value.length > 0) return value;
-      lastEmpty = value;
-
-      // Empty output is never proof that the invocation convention was right.
-      // Provider bundles merged from the three repositories use both positional
-      // and object signatures, and a mismatched call may still contact a host
-      // before returning []. Exercise every supported convention in the isolated
-      // health worker and retain the first non-empty result.
-      continue;
-    } catch (error) { lastError = error; }
+      const providerRows = providerObservationsSince(observationStart);
+      const isArray = Array.isArray(value);
+      diagnostics.push({
+        name: attempt.name,
+        inferred_mode: mode,
+        result: isArray ? (value.length ? 'streams' : 'empty') : 'non_array',
+        stream_count: isArray ? value.length : 0,
+        provider_observations: providerRows.length,
+        error: null,
+      });
+      if (isArray) {
+        // An array, including an empty one, is a valid provider contract result.
+        // Trying a second incompatible signature after that result created
+        // duplicate side effects and /[object Object]/ requests in the deep log.
+        arrayResultSeen = true;
+        return { value, diagnostics, arrayResultSeen };
+      }
+      // A provider-owned request proves the invocation convention reached the
+      // provider. Do not then try an incompatible signature and pollute the log
+      // with duplicate side effects.
+      if (providerRows.length > 0) break;
+    } catch (error) {
+      const detail = structuredError(error, 'provider_invocation');
+      const providerRows = providerObservationsSince(observationStart);
+      diagnostics.push({
+        name: attempt.name,
+        inferred_mode: mode,
+        result: 'error',
+        stream_count: 0,
+        provider_observations: providerRows.length,
+        error: detail,
+      });
+      errors.push(detail);
+      // If the request reached a provider host, the signature was actionable;
+      // trying another convention can only introduce unrelated failures.
+      if (providerRows.length > 0 && detail.code !== 'NUVIO_INVALID_REQUEST_ARGUMENT') break;
+    } finally {
+      activeInvocation = null;
+      activeSettingsProfile = null;
+    }
   }
-  if (lastError && providerObservationCount() === 0) throw lastError;
-  return lastEmpty;
+
+  if (!arrayResultSeen && errors.length) {
+    const error = new Error(errors.map((item) => item.message).filter(Boolean).join(' | ') || 'all provider invocation attempts failed');
+    error.name = 'ProviderInvocationError';
+    error.code = errors.some((item) => item.code === 'NUVIO_INVALID_REQUEST_ARGUMENT')
+      ? 'NUVIO_INVALID_REQUEST_ARGUMENT'
+      : 'NUVIO_PROVIDER_INVOCATION_FAILED';
+    error.nuvioDetails = { invocation_diagnostics: diagnostics, errors };
+    throw error;
+  }
+  return { value: lastEmpty, diagnostics, arrayResultSeen };
 }
 
 async function main() {
@@ -540,19 +655,42 @@ async function main() {
   if (!getStreams) throw new Error('module does not export getStreams');
 
   const sourceText = fs.readFileSync(providerPath, 'utf8');
-  const profiles = settingsProfiles(loaded, sourceText, context);
+  const profileLimit = Math.max(1, Math.min(12, Number(context.maxSettingsProfiles || 6)));
+  const profiles = settingsProfiles(loaded, sourceText, context).slice(0, profileLimit);
   let value = [];
-  let selectedProfile = profiles[0];
+  let selectedProfile = profiles[0] || { name: 'empty', settings: {} };
   const profileResults = [];
+  let successfulProfileInvocations = 0;
+  const profileErrors = [];
   for (const profile of profiles) {
     try {
-      const candidateValue = await invokeProvider(getStreams, fixture, profile.settings);
-      profileResults.push({ name: profile.name, setting_keys: Object.keys(profile.settings), stream_count: Array.isArray(candidateValue) ? candidateValue.length : 0 });
+      const invocation = await invokeProvider(getStreams, fixture, profile.settings, profile.name);
+      const candidateValue = invocation.value;
+      if (invocation.arrayResultSeen) successfulProfileInvocations += 1;
+      profileResults.push({
+        name: profile.name,
+        setting_keys: Object.keys(profile.settings),
+        stream_count: Array.isArray(candidateValue) ? candidateValue.length : 0,
+        invocation_diagnostics: invocation.diagnostics,
+        error: null,
+      });
       if (Array.isArray(candidateValue) && candidateValue.length > value.length) { value = candidateValue; selectedProfile = profile; }
       if (value.length > 0) break;
     } catch (error) {
-      profileResults.push({ name: profile.name, setting_keys: Object.keys(profile.settings), stream_count: 0, error: String(error.message || error).slice(0, 300) });
+      const detail = structuredError(error, 'settings_profile');
+      const invocationDiagnostics = error?.nuvioDetails?.invocation_diagnostics || [];
+      profileResults.push({ name: profile.name, setting_keys: Object.keys(profile.settings), stream_count: 0, invocation_diagnostics: invocationDiagnostics, error: detail });
+      profileErrors.push(detail);
     }
+  }
+  if (successfulProfileInvocations === 0 && profileErrors.length) {
+    const error = new Error(profileErrors.map((item) => item.message).filter(Boolean).join(' | ') || 'all settings profiles failed');
+    error.name = 'ProviderRuntimeError';
+    error.code = profileErrors.some((item) => item.code === 'NUVIO_INVALID_REQUEST_ARGUMENT')
+      ? 'NUVIO_INVALID_REQUEST_ARGUMENT'
+      : 'NUVIO_ALL_SETTINGS_PROFILES_FAILED';
+    error.nuvioDetails = { settings_diagnostics: profileResults, errors: profileErrors };
+    throw error;
   }
 
   const streams = [];
@@ -581,6 +719,8 @@ async function main() {
       selected_setting_keys: Object.keys(selectedProfile.settings),
     },
     settings_diagnostics: profileResults,
+    invocation_diagnostics: profileResults.flatMap((item) => item.invocation_diagnostics || []),
+    runtime_errors: profileErrors,
     network_observations: networkObservations.slice(0, 80),
     network_limits: context.networkLimits || null,
     // A server is accessible when it answered at the HTTP layer, even with a
@@ -594,6 +734,15 @@ async function main() {
     provider_server_http_statuses: [...new Set(networkObservations.filter((item) => !item.infrastructure && Number.isInteger(item.status)).map((item) => item.status))].sort((a, b) => a - b),
     streams,
   });
+}
+
+async function runResponseWrapperSelfTest() {
+  const original = new Response('ok', { status: 200, headers: { 'content-type': 'text/plain' } });
+  const wrapped = wrapLimitedResponse(original, 1024, () => {});
+  if (wrapped.status !== 200) throw new Error('wrapped Response status getter failed');
+  if (wrapped.headers.get('content-type') !== 'text/plain') throw new Error('wrapped Response headers getter failed');
+  if (await wrapped.text() !== 'ok') throw new Error('wrapped Response body reader failed');
+  process.stdout.write('provider Response wrapper tests passed\n');
 }
 
 async function runFixtureFallbackSelfTest() {
@@ -614,13 +763,18 @@ async function runFixtureFallbackSelfTest() {
 
 const entry = process.argv[2] === '--self-test-fixture-fallback'
   ? runFixtureFallbackSelfTest()
-  : main();
+  : process.argv[2] === '--self-test-response-wrapper'
+    ? runResponseWrapperSelfTest()
+    : main();
 
 entry
   .catch((error) => {
     emit({
       ok: false,
-      error: error && error.message ? String(error.message).slice(0, 2000) : String(error),
+      error: sanitizeDiagnosticText(error && error.message ? error.message : error, 2000),
+      error_details: structuredError(error, 'worker_main'),
+      settings_diagnostics: error?.nuvioDetails?.settings_diagnostics || [],
+      invocation_diagnostics: error?.nuvioDetails?.invocation_diagnostics || [],
       stream_count: 0,
       disallowed_stream_count: 0,
       network_observations: networkObservations.slice(0, 80),

@@ -51,10 +51,59 @@ def observations(result: dict[str, Any]) -> list[dict[str, Any]]:
 
 
 def stream_count(result: dict[str, Any]) -> int:
-    values = [int(test.get("stream_count") or 0) for test in _tests(result)]
+    """Return the strongest raw-stream evidence recorded by the harness."""
+    values: list[int] = []
+    for test in _tests(result):
+        values.append(int(test.get("stream_count") or 0))
+        values.append(int(test.get("streams_returned") or 0))
     evidence = result.get("evidence") or {}
+    values.append(int(evidence.get("streams_returned") or 0))
     values.append(int(evidence.get("streams_playable") or 0))
     return max(values or [0])
+
+
+def playable_stream_count(result: dict[str, Any]) -> int:
+    evidence = result.get("evidence") or {}
+    values = [int(evidence.get("streams_playable") or 0)]
+    values.extend(int(test.get("streams_playable") or 0) for test in _tests(result))
+    return max(values or [0])
+
+
+def runtime_error_count(result: dict[str, Any]) -> int:
+    count = 0
+    for test in _tests(result):
+        if str(test.get("status") or "") == "runtime_error":
+            count += 1
+        elif test.get("error_details"):
+            count += 1
+    evidence = result.get("evidence") or {}
+    return max(count, int((evidence.get("fixture_status_counts") or {}).get("runtime_error") or 0))
+
+
+def malformed_request_count(result: dict[str, Any]) -> int:
+    evidence = result.get("evidence") or {}
+    count = int(evidence.get("malformed_request_count") or 0)
+    for row in observations(result):
+        path = str(row.get("path_pattern") or "").casefold()
+        if row.get("error_code") == "NUVIO_INVALID_REQUEST_ARGUMENT" or "object%20object" in path or "object object" in path:
+            count += 1
+    return count
+
+
+def result_error_summary(result: dict[str, Any]) -> list[dict[str, Any]]:
+    rows: list[dict[str, Any]] = []
+    for test in _tests(result):
+        detail = test.get("error_details") or {}
+        if test.get("status") == "runtime_error" or detail:
+            rows.append({
+                "fixture": (test.get("fixture") or {}).get("label") or (test.get("fixture") or {}).get("tmdbId"),
+                "failure_class": test.get("failure_class"),
+                "name": detail.get("name"),
+                "code": detail.get("code"),
+                "message": detail.get("message") or test.get("error"),
+                "phase": detail.get("phase"),
+            })
+    return rows
 
 
 def _provider_flags(result: dict[str, Any]) -> tuple[bool, bool]:
@@ -132,7 +181,7 @@ def runtime_trigger_matches(trigger: str, result: dict[str, Any]) -> bool:
 
     if trigger == "provider_http_forbidden":
         return (
-            status in {"no_streams", "reachable", "degraded", "provider_unreachable"}
+            status in {"blocked", "no_streams", "reachable", "degraded", "provider_unreachable"}
             and streams == 0
             and summary["forbidden"] >= 1
             and summary["provider_success"] == 0
@@ -175,6 +224,11 @@ def matching_profiles(
         if not isinstance(profile, dict):
             continue
         if str(profile.get("phase") or "discovery") != "runtime":
+            continue
+        # Runtime source mutation is opt-in. A profile marked only auto_apply=false
+        # remains available for manual diagnostics but cannot rewrite dozens of
+        # providers during an unattended deep job.
+        if profile.get("runtime_auto_apply") is not True:
             continue
         if name in already:
             continue
@@ -277,7 +331,7 @@ def quality_vector(result: dict[str, Any]) -> tuple[int, ...]:
     status = str(result.get("status") or "runtime_error")
     accessible, successful = _provider_flags(result)
     evidence = result.get("evidence") or {}
-    playable = int(evidence.get("streams_playable") or 0)
+    playable = playable_stream_count(result)
     returned = stream_count(result)
     return (
         0 if status in HARD_FAILURES else 1,
@@ -297,10 +351,20 @@ def compare_results(parent: dict[str, Any], repaired: dict[str, Any]) -> tuple[b
     repaired_status = str(repaired.get("status") or "runtime_error")
     if repaired_status in HARD_FAILURES:
         return False, f"hard_failure:{repaired_status}"
+    if runtime_error_count(repaired) > runtime_error_count(parent):
+        return False, "introduced_runtime_error"
+    if malformed_request_count(repaired) > malformed_request_count(parent):
+        return False, "introduced_malformed_request"
+
+    parent_playable = playable_stream_count(parent)
+    repaired_playable = playable_stream_count(repaired)
+    if repaired_playable <= parent_playable:
+        return False, "insufficient_playable_stream_proof"
+
     parent_vector = quality_vector(parent)
     repaired_vector = quality_vector(repaired)
     if repaired_vector > parent_vector:
-        return True, "strict_runtime_improvement"
+        return True, "strict_playable_stream_improvement"
     return False, "no_strict_runtime_improvement"
 
 

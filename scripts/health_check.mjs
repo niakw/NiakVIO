@@ -85,6 +85,21 @@ function sanitizeError(value) {
     .slice(0, 700);
 }
 
+function sanitizeStructuredError(value) {
+  if (!value || typeof value !== 'object') {
+    return value ? { name: 'Error', code: null, message: sanitizeError(value), phase: null, invocation: null, settings_profile: null, stack: null } : null;
+  }
+  return {
+    name: sanitizeError(value.name || 'Error').slice(0, 120),
+    code: value.code ? sanitizeError(value.code).slice(0, 120) : null,
+    message: sanitizeError(value.message || 'unknown error'),
+    phase: value.phase ? sanitizeError(value.phase).slice(0, 120) : null,
+    invocation: value.invocation ? sanitizeError(value.invocation).slice(0, 120) : null,
+    settings_profile: value.settings_profile ? sanitizeError(value.settings_profile).slice(0, 160) : null,
+    stack: value.stack ? String(value.stack).replace(/(?:https?|magnet|acestream|torrent):[^\s"']+/gi, '[endpoint]').slice(0, 2400) : null,
+  };
+}
+
 function median(values) {
   const cleaned = values.filter(Number.isFinite).sort((a, b) => a - b);
   if (!cleaned.length) return null;
@@ -743,6 +758,7 @@ function executionContextForCandidate(candidate) {
       nuvio_content_language: language,
       nuvio_has_settings: String(Boolean(metadata.hasSettings)),
     },
+    maxSettingsProfiles: Math.max(1, Math.min(12, Number(modeConfig.max_settings_profiles || 6))),
     networkLimits: {
       maxFetches: Number(modeConfig.max_provider_fetches || 30),
       maxRedirects: Number(modeConfig.max_redirects || 5),
@@ -786,7 +802,15 @@ function runWorker(candidate, fixture) {
     };
     const timer = setTimeout(() => {
       child.kill('SIGKILL');
-      finish({ ok: false, timeout: true, error: `provider exceeded ${timeoutMs} ms`, streams: [], stream_count: 0 });
+      finish({
+        ok: false,
+        timeout: true,
+        error: `provider exceeded ${timeoutMs} ms`,
+        error_details: { name: 'ProviderTimeoutError', code: 'NUVIO_PROVIDER_TIMEOUT', message: `provider exceeded ${timeoutMs} ms`, phase: 'worker_process' },
+        streams: [],
+        stream_count: 0,
+        worker_exit: { code: null, signal: 'SIGKILL' },
+      });
     }, timeoutMs);
 
     const maxWorkerOutputBytes = 1024 * 1024;
@@ -796,46 +820,109 @@ function runWorker(candidate, fixture) {
     child.stderr.on('data', (chunk) => {
       if (Buffer.byteLength(stderr) < 16384) stderr += chunk.toString().slice(0, 16384 - Buffer.byteLength(stderr));
     });
-    child.on('error', (error) => finish({ ok: false, error: error.message, streams: [], stream_count: 0 }));
-    child.on('close', () => {
-      const marker = stdout.split(/\r?\n/).find((line) => line.startsWith('NUVIO_HEALTH_RESULT='));
+    child.on('error', (error) => finish({
+      ok: false,
+      error: error.message,
+      error_details: { name: error.name || 'WorkerSpawnError', code: error.code || null, message: error.message, phase: 'worker_spawn' },
+      streams: [],
+      stream_count: 0,
+      worker_exit: { code: null, signal: null },
+    }));
+    child.on('close', (code, signal) => {
+      const markers = stdout.split(/\r?\n/).filter((line) => line.startsWith('NUVIO_HEALTH_RESULT='));
+      const marker = markers.at(-1);
       if (!marker) {
         finish({
           ok: false,
           error: `worker returned no result${stderr ? `: ${stderr.slice(0, 500)}` : ''}`,
+          error_details: {
+            name: 'WorkerProtocolError',
+            code: 'NUVIO_WORKER_NO_RESULT',
+            message: `worker returned no result${stderr ? `: ${stderr.slice(0, 500)}` : ''}`,
+            phase: 'worker_process',
+          },
           streams: [],
           stream_count: 0,
+          worker_exit: { code, signal },
         });
         return;
       }
       try {
-        finish(JSON.parse(marker.slice('NUVIO_HEALTH_RESULT='.length)));
+        const value = JSON.parse(marker.slice('NUVIO_HEALTH_RESULT='.length));
+        value.worker_exit = { code, signal };
+        if (code !== 0 && value.ok) {
+          value.ok = false;
+          value.error = value.error || `worker exited with code ${code}`;
+          value.error_details = value.error_details || {
+            name: 'WorkerExitError',
+            code: 'NUVIO_WORKER_NONZERO_EXIT',
+            message: value.error,
+            phase: 'worker_process',
+          };
+        }
+        finish(value);
       } catch (error) {
-        finish({ ok: false, error: `invalid worker JSON: ${error.message}`, streams: [], stream_count: 0 });
+        finish({
+          ok: false,
+          error: `invalid worker JSON: ${error.message}`,
+          error_details: { name: error.name || 'SyntaxError', code: 'NUVIO_WORKER_INVALID_JSON', message: error.message, phase: 'worker_protocol' },
+          streams: [],
+          stream_count: 0,
+          worker_exit: { code, signal },
+        });
       }
     });
   });
 }
 
+function providerRows(worker) {
+  return (Array.isArray(worker.network_observations) ? worker.network_observations : [])
+    .filter((item) => item && !item.infrastructure);
+}
+
 function statusFrom(worker, probes) {
-  if ((worker.disallowed_stream_count || 0) > 0) return 'excluded';
-  if (probes.some((probe) => probe.playback_verified)) return 'healthy';
-  // A provider-owned host merely answering 401/403/404 is not a functional
-  // provider. Only a successful provider response may receive the editorial
-  // "reachable" status. This distinction also feeds the targeted deep repair
-  // profiles for request-stage 403 failures.
-  if (worker.ok && worker.provider_server_successful_response) return 'reachable';
-  if (probes.some((probe) => probe.category === 'blocked')) return 'blocked';
-  if (worker.ok && (worker.stream_count || 0) === 0) return 'no_streams';
-  if (worker.ok && (worker.stream_count || 0) > 0) {
-    const hard = probes.length > 0
-      && probes.every((probe) => ['host_down', 'not_found'].includes(probe.category));
-    return hard ? 'unavailable' : 'degraded';
+  if ((worker.disallowed_stream_count || 0) > 0) return { status: 'excluded', failureClass: 'disallowed_protocol' };
+  if (probes.some((probe) => probe.playback_verified)) return { status: 'healthy', failureClass: null };
+
+  const rows = providerRows(worker);
+  const streamCount = Number(worker.stream_count || 0);
+  const statuses = rows.map((item) => Number(item.status)).filter(Number.isInteger);
+  const successfulRows = rows.filter((item) => Number.isInteger(Number(item.status)) && Number(item.status) >= 200 && Number(item.status) < 400);
+  const meaningfulSuccess = successfulRows.filter((item) => ['search', 'content_lookup', 'episode', 'player'].includes(String(item.stage || '')));
+  const blockedRows = rows.filter((item) => [401, 403, 429, 451].includes(Number(item.status)));
+  const unavailableRows = rows.filter((item) => [404, 410].includes(Number(item.status)) || Number(item.status) >= 500);
+  const networkFailures = rows.filter((item) => item.status == null && item.error);
+  const invalidRequest = rows.some((item) => item.error_code === 'NUVIO_INVALID_REQUEST_ARGUMENT' || /object(?:%20|\s)*object/i.test(String(item.path_pattern || '')))
+    || worker.error_details?.code === 'NUVIO_INVALID_REQUEST_ARGUMENT'
+    || (worker.invocation_diagnostics || []).some((diag) => diag?.error?.code === 'NUVIO_INVALID_REQUEST_ARGUMENT');
+
+  if (!worker.ok) {
+    if (invalidRequest) return { status: 'runtime_error', failureClass: 'invalid_request_arguments' };
+    if (blockedRows.length && meaningfulSuccess.length === 0) return { status: 'blocked', failureClass: 'provider_http_blocked' };
+    if (unavailableRows.length && meaningfulSuccess.length === 0) return { status: 'unavailable', failureClass: 'provider_http_unavailable' };
+    if (worker.timeout || (networkFailures.length && statuses.length === 0)
+      || /timeout|enotfound|eai_again|econnrefused|econnreset|network|fetch failed/i.test(String(worker.error || ''))) {
+      return { status: 'provider_unreachable', failureClass: 'network_unreachable' };
+    }
+    return { status: 'runtime_error', failureClass: worker.error_details?.code || 'provider_runtime_exception' };
   }
-  if (worker.timeout || /timeout|enotfound|econnrefused|econnreset|network|fetch failed/i.test(String(worker.error || ''))) {
-    return 'provider_unreachable';
+
+  if (streamCount > 0) {
+    const probeBlocked = probes.length > 0 && probes.every((probe) => probe.category === 'blocked');
+    const probeUnavailable = probes.length > 0 && probes.every((probe) => ['host_down', 'not_found'].includes(probe.category));
+    if (probeBlocked) return { status: 'degraded', failureClass: 'stream_http_blocked' };
+    if (probeUnavailable) return { status: 'degraded', failureClass: 'stream_endpoint_unavailable' };
+    return { status: 'degraded', failureClass: 'stream_not_playback_verified' };
   }
-  return 'runtime_error';
+
+  if (invalidRequest) return { status: 'runtime_error', failureClass: 'invalid_request_arguments' };
+  if (blockedRows.length && meaningfulSuccess.length === 0) return { status: 'blocked', failureClass: 'provider_http_blocked' };
+  if (meaningfulSuccess.length > 0) return { status: 'no_streams', failureClass: 'content_lookup_completed_no_streams' };
+  if (unavailableRows.length && successfulRows.length === 0) return { status: 'unavailable', failureClass: 'provider_http_unavailable' };
+  if (networkFailures.length > 0 && statuses.length === 0) return { status: 'provider_unreachable', failureClass: 'network_unreachable' };
+  if (successfulRows.length > 0) return { status: 'reachable', failureClass: 'origin_only_reachable' };
+  if (statuses.length > 0) return { status: 'unavailable', failureClass: 'provider_http_error' };
+  return { status: 'provider_unreachable', failureClass: 'no_provider_request_observed' };
 }
 
 function scoreTest(worker, probes, status) {
@@ -1062,7 +1149,9 @@ async function testCandidate(candidate) {
       probes.push(await probeStream(stream, modeConfig));
     }
 
-    const status = statusFrom(worker, probes);
+    const classification = statusFrom(worker, probes);
+    const status = classification.status;
+    const failureClass = classification.failureClass;
     const score = scoreTest(worker, probes, status);
     const playable = probes.filter((probe) => probe.playback_verified);
     const reachableHosts = [...new Set(playable.map((probe) => probe.host).filter(Boolean))].sort();
@@ -1083,16 +1172,36 @@ async function testCandidate(candidate) {
       provider_server_successful_response: Boolean(worker.provider_server_successful_response),
       provider_server_hosts: Array.isArray(worker.provider_server_hosts) ? worker.provider_server_hosts : [],
       provider_server_http_statuses: Array.isArray(worker.provider_server_http_statuses) ? worker.provider_server_http_statuses : [],
-      network_observations: Array.isArray(worker.network_observations) ? worker.network_observations.map((item) => ({ stage: item.stage || 'provider_fetch', host: item.host || null, method: item.method || 'GET', path_pattern: item.path_pattern || null, status: item.status ?? null, ok: Boolean(item.ok), duration_ms: item.duration_ms ?? null, infrastructure: Boolean(item.infrastructure), error: item.error ? sanitizeError(item.error) : null, synthetic_fixture_fallback: Boolean(item.synthetic_fixture_fallback) })) : [],
+      network_observations: Array.isArray(worker.network_observations) ? worker.network_observations.map((item) => ({
+        stage: item.stage || 'provider_fetch',
+        host: item.host || null,
+        method: item.method || 'GET',
+        path_pattern: item.path_pattern || null,
+        status: item.status ?? null,
+        ok: Boolean(item.ok),
+        duration_ms: item.duration_ms ?? null,
+        infrastructure: Boolean(item.infrastructure),
+        invocation: item.invocation || null,
+        settings_profile: item.settings_profile || null,
+        error_code: item.error_code || null,
+        error: item.error ? sanitizeError(item.error) : null,
+        synthetic_fixture_fallback: Boolean(item.synthetic_fixture_fallback),
+      })) : [],
       settings_diagnostics: Array.isArray(worker.settings_diagnostics)
         ? worker.settings_diagnostics.map((item) => ({
             name: item?.name || 'unknown',
             setting_keys: Array.isArray(item?.setting_keys) ? item.setting_keys : [],
             stream_count: Number(item?.stream_count || 0),
-            error: item?.error ? sanitizeError(item.error) : null,
+            error: item?.error ? sanitizeStructuredError(item.error) : null,
           }))
         : [],
+      stream_count: streams.length,
       streams_returned: streams.length,
+      failure_class: failureClass,
+      worker_exit: worker.worker_exit || null,
+      error_details: sanitizeStructuredError(worker.error_details),
+      runtime_errors: Array.isArray(worker.runtime_errors) ? worker.runtime_errors.map(sanitizeStructuredError).filter(Boolean) : [],
+      invocation_diagnostics: Array.isArray(worker.invocation_diagnostics) ? worker.invocation_diagnostics.map((item) => ({ ...item, error: item?.error ? sanitizeStructuredError(item.error) : null })) : [],
       disallowed_streams: worker.disallowed_stream_count || 0,
       streams_probed: probes.length,
       endpoints_reachable: probes.filter((probe) => probe.endpoint_reachable).length,
@@ -1166,7 +1275,7 @@ async function testCandidate(candidate) {
   if (anyP2p) status = 'excluded';
   else if (fixtureResults.some((item) => item.status === 'healthy')) status = 'healthy';
   else {
-    const priority = ['reachable', 'unavailable', 'degraded', 'blocked', 'no_streams', 'provider_unreachable', 'runtime_error'];
+    const priority = ['degraded', 'runtime_error', 'blocked', 'unavailable', 'no_streams', 'provider_unreachable', 'reachable'];
     status = priority.find((candidateStatus) => fixtureResults.some((item) => item.status === candidateStatus)) || 'runtime_error';
   }
 
@@ -1222,6 +1331,23 @@ async function testCandidate(candidate) {
   )].sort();
   const settingsProfilesTestedTotal = settingsProfileAttempts.length;
   const settingsProfilesProducingStreams = settingsProfileAttempts.filter((item) => item.stream_count > 0).length;
+  const fixtureStatusCounts = Object.fromEntries(
+    ['healthy', 'reachable', 'blocked', 'degraded', 'no_streams', 'provider_unreachable', 'runtime_error', 'unavailable', 'excluded']
+      .map((fixtureStatus) => [fixtureStatus, fixtureResults.filter((item) => item.status === fixtureStatus).length]),
+  );
+  const failureClasses = [...new Set(fixtureResults.map((item) => item.failure_class).filter(Boolean))].sort();
+  const runtimeErrorFixtures = fixtureResults
+    .filter((item) => item.status === 'runtime_error' || item.error_details)
+    .map((item) => ({
+      fixture: item.fixture?.label || item.fixture?.tmdbId || null,
+      fixture_phase: item.fixture_phase,
+      failure_class: item.failure_class || null,
+      error: item.error || null,
+      error_details: item.error_details || null,
+    }));
+  const malformedRequestCount = fixtureResults.reduce((sum, item) => sum + (item.network_observations || []).filter(
+    (row) => row.error_code === 'NUVIO_INVALID_REQUEST_ARGUMENT' || /object(?:%20|\s)*object/i.test(String(row.path_pattern || '')),
+  ).length, 0);
 
   return {
     key: candidate.key,
@@ -1254,6 +1380,10 @@ async function testCandidate(candidate) {
       fallback_triggered: useFallback,
       fixtures_tested: activationTests.length,
       total_fixtures_executed: fixtureResults.length,
+      fixture_status_counts: fixtureStatusCounts,
+      failure_classes: failureClasses,
+      runtime_error_fixtures: runtimeErrorFixtures,
+      malformed_request_count: malformedRequestCount,
       activation_fixture_phase: useFallback ? 'fallback' : 'primary',
       healthy_fixtures: activationHealthyTests.length,
       healthy_fixture_ratio: coverageRatio,
@@ -1341,7 +1471,18 @@ async function runPool(items, worker, limit) {
         };
       }
       const result = results[index];
-      process.stdout.write(`[${index + 1}/${items.length}] ${result.key}: ${result.status} (${result.score})\n`);
+      const fixtureCount = Number(result.evidence?.total_fixtures_executed || result.tests?.length || 0);
+      const returnedStreams = (result.tests || []).reduce((sum, item) => sum + Number(item.streams_returned || item.stream_count || 0), 0);
+      const runtimeErrors = Number(result.evidence?.fixture_status_counts?.runtime_error || 0);
+      const failures = Array.isArray(result.evidence?.failure_classes) ? result.evidence.failure_classes.join(',') : '';
+      const errorSuffix = result.evidence?.runtime_error_fixtures?.[0]?.error_details?.code
+        || result.evidence?.runtime_error_fixtures?.[0]?.error_details?.name
+        || '';
+      process.stdout.write(
+        `[${index + 1}/${items.length}] ${result.key}: ${result.status} `
+        + `(score=${result.score}; fixtures=${fixtureCount}; streams=${returnedStreams}; runtime_errors=${runtimeErrors}`
+        + `${failures ? `; failures=${failures}` : ''}${errorSuffix ? `; error=${errorSuffix}` : ''})\n`,
+      );
     }
   }
   await Promise.all(Array.from({ length: Math.min(limit, items.length) }, () => runner()));
@@ -1352,7 +1493,7 @@ const startedAt = new Date();
 const results = await runPool(registry.candidates, testCandidate, concurrency);
 const statuses = ['healthy', 'reachable', 'blocked', 'degraded', 'no_streams', 'provider_unreachable', 'runtime_error', 'unavailable', 'excluded'];
 const report = {
-  schema_version: 65,
+  schema_version: 66,
   environment: 'github-actions-node',
   mode: requestedMode,
   generated_at: new Date().toISOString(),

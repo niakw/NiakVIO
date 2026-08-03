@@ -31,8 +31,13 @@ from runtime_repair import (
     create_repair_candidate,
     health_counts,
     matching_profiles,
+    malformed_request_count,
+    playable_stream_count,
     quality_vector,
+    result_error_summary,
     result_with_parent_key,
+    runtime_error_count,
+    stream_count,
 )
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -142,7 +147,7 @@ def main() -> int:
         raise RuntimeError("baseline health check omitted candidates: " + ", ".join(missing[:20]))
 
     audit: dict[str, Any] = {
-        "schema_version": 1,
+        "schema_version": 2,
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "mode": args.mode,
         "provider_specific_rules": False,
@@ -152,6 +157,7 @@ def main() -> int:
 
     accepted_total = 0
     accepted_profile_assignments: dict[str, set[str]] = {}
+    attempted_fingerprints: set[tuple[str, str, str]] = set()
     for round_number in range(1, max_rounds + 1):
         attempts: list[dict[str, Any]] = []
         repair_candidates: list[dict[str, Any]] = []
@@ -173,18 +179,39 @@ def main() -> int:
                     "profile": profile_name,
                     "baseline_status": result.get("status"),
                     "baseline_score": result.get("score"),
+                    "baseline_streams_returned": stream_count(result),
+                    "baseline_streams_playable": playable_stream_count(result),
+                    "baseline_runtime_errors": runtime_error_count(result),
+                    "baseline_malformed_requests": malformed_request_count(result),
                 }
                 if repaired is None:
                     row.update({"status": "not_generated", "reason": error})
                 else:
-                    row.update(
-                        {
-                            "status": "generated",
-                            "repair_key": repaired["key"],
-                            "repair_sha256": repaired["sha256"],
-                        }
+                    fingerprint = (
+                        str(repaired.get("runtime_repair", {}).get("parent_sha256") or candidate.get("sha256") or ""),
+                        str(profile_name),
+                        str(repaired.get("sha256") or ""),
                     )
-                    repair_candidates.append(repaired)
+                    if fingerprint in attempted_fingerprints:
+                        row.update(
+                            {
+                                "status": "skipped",
+                                "reason": "identical_repair_already_retested",
+                                "repair_key": repaired["key"],
+                                "repair_sha256": repaired["sha256"],
+                            }
+                        )
+                        (stage / repaired["local_path"]).unlink(missing_ok=True)
+                    else:
+                        attempted_fingerprints.add(fingerprint)
+                        row.update(
+                            {
+                                "status": "generated",
+                                "repair_key": repaired["key"],
+                                "repair_sha256": repaired["sha256"],
+                            }
+                        )
+                        repair_candidates.append(repaired)
                 attempts.append(row)
 
         round_audit: dict[str, Any] = {
@@ -256,6 +283,12 @@ def main() -> int:
                             "result_status": selected_result.get("status"),
                             "result_score": selected_result.get("score"),
                             "reason": reason,
+                            "streams_returned_before": stream_count(parent_result),
+                            "streams_returned_after": stream_count(selected_result),
+                            "streams_playable_before": playable_stream_count(parent_result),
+                            "streams_playable_after": playable_stream_count(selected_result),
+                            "runtime_errors_before": runtime_error_count(parent_result),
+                            "runtime_errors_after": runtime_error_count(selected_result),
                         }
                     )
                     history.append(repair_event)
@@ -283,6 +316,12 @@ def main() -> int:
                             "score_before": parent_result.get("score"),
                             "score_after": selected_result.get("score"),
                             "reason": reason,
+                            "streams_returned_before": stream_count(parent_result),
+                            "streams_returned_after": stream_count(selected_result),
+                            "streams_playable_before": playable_stream_count(parent_result),
+                            "streams_playable_after": playable_stream_count(selected_result),
+                            "runtime_errors_before": runtime_error_count(parent_result),
+                            "runtime_errors_after": runtime_error_count(selected_result),
                         }
                     )
                 else:
@@ -295,6 +334,12 @@ def main() -> int:
                             "status": result_variant.get("status"),
                             "score": result_variant.get("score"),
                             "reason": rejection_reason,
+                            "streams_returned": stream_count(result_variant),
+                            "streams_playable": playable_stream_count(result_variant),
+                            "runtime_errors": runtime_error_count(result_variant),
+                            "malformed_requests": malformed_request_count(result_variant),
+                            "error_summary": result_error_summary(result_variant),
+                            "fixture_status_counts": (result_variant.get("evidence") or {}).get("fixture_status_counts") or {},
                         }
                     )
                     (stage / candidate_variant["local_path"]).unlink(missing_ok=True)
@@ -313,6 +358,8 @@ def main() -> int:
         "provider_specific_rules": False,
         "rounds_executed": len(audit["rounds"]),
         "accepted_repairs": accepted_total,
+        "requires_playable_stream_proof": True,
+        "duplicate_retests_blocked": True,
     }
     write_json(registry_path, registry)
 
