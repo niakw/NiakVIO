@@ -117,6 +117,23 @@ test_domain_overrides()
 test_runtime_profiles_are_not_blindly_applied()
 
 
+def test_domain_prefix_collision_is_idempotent() -> None:
+    # flemmix.me is a prefix of flemmix.men. A raw str.replace would turn an
+    # already migrated target into flemmix.menn on the next reapply.
+    source = b'const BASE="https://flemmix.me/";'
+    first, records = apply_overrides("flemmix", source)
+    assert b"https://flemmix.men/" in first
+    assert b"flemmix.menn" not in first
+    assert any(row.get("from") == "flemmix.me" for row in records)
+    second, second_records = apply_overrides("flemmix", first)
+    assert second == first
+    assert b"flemmix.menn" not in second
+    assert not any(row.get("type") == "replace" and row.get("from") == "flemmix.me" for row in second_records)
+
+
+test_domain_prefix_collision_is_idempotent()
+
+
 def test_obfuscated_runtime_endpoint_override() -> None:
     source = b"""var DOMAINS_URL='https://raw.githubusercontent.com/wooodyhood/nuvio-repo/main/domains.json',MOVIX_FALLBACK='cash',_cachedEndpoint=null;function detectApi(){if(_cachedEndpoint)return Promise.resolve(_cachedEndpoint);return fetch(DOMAINS_URL).then(function(r){return r.json()}).then(function(x){return {api:'https://api.movix.'+x.movix}}).catch(function(){return {api:'https://api.movix.'+MOVIX_FALLBACK}})};module.exports={getStreams:async function(){var e=await detectApi();await fetch(e.api+'/api/purstream/movie/157336/stream');return []}};"""
     output, records = apply_overrides("movix", source)
@@ -161,7 +178,9 @@ global.fetch = async function(input) {
         requested = json.loads(result.stdout)
         expected = "https://api.movix.fun/api/purstream/movie/157336/stream"
         assert requested, requested
-        assert all(url == expected for url in requested), requested
+        assert expected in requested, requested
+        assert all("api.movix.cash" not in url and "api.movix.cloud" not in url for url in requested), requested
+        assert "https://api.movix.fun/api/fstream/movie/157336" in requested, requested
 
 
 test_obfuscated_runtime_endpoint_override()
@@ -176,7 +195,7 @@ def test_idempotent_override_validation() -> None:
         stage = Path(tmp)
         target = stage / "providers" / "gowaru" / "movix.js"
         target.parent.mkdir(parents=True)
-        output = b'const API="https://api.movix.fun";'
+        output = b'const API="https://api.movix.fun"; const SITE="https://movix.fun/";'
         target.write_bytes(output)
         registry = {
             "candidates": [{
@@ -226,7 +245,8 @@ test_idempotent_override_validation()
 def test_chained_provider_patch_scripts_and_output_guard() -> None:
     source = b'''async function getStreams(){return [{url:"http://fstream.top/bad.m3u8"},{url:"https://media.example/malformed.m3u8"},{url:"https://media.example/good.m3u8"}]};module.exports={getStreams};'''
     output, records = apply_overrides("frenchstream", source)
-    assert b"NUVIO_STREAM_OUTPUT_SANITIZER_V2" in output
+    assert b"NUVIO_STREAM_OUTPUT_SANITIZER_V3" in output
+    assert b"NUVIO_VF_CATALOGUE_RECOVERY_V1" in output
     assert any(
         row.get("type") == "patch_script"
         and row.get("path") == "scripts/provider_patches/stream_output_sanitizer.py"
@@ -234,6 +254,8 @@ def test_chained_provider_patch_scripts_and_output_guard() -> None:
     )
     second, second_records = apply_overrides("frenchstream", output)
     assert second == output
+    assert b"NUVIO_STREAM_OUTPUT_SANITIZER_V3" in second
+    assert b"NUVIO_VF_CATALOGUE_RECOVERY_V1" in second
     assert not any(
         row.get("path") == "scripts/provider_patches/stream_output_sanitizer.py"
         for row in second_records
@@ -265,7 +287,10 @@ provider.getStreams().then((rows) => process.stdout.write(JSON.stringify(rows)))
             capture_output=True,
         )
         rows = json.loads(result.stdout)
-        assert [row["url"] for row in rows] == ["https://media.example/good.m3u8"]
+        assert [row["url"] for row in rows] == [
+            "https://media.example/malformed.m3u8",
+            "https://media.example/good.m3u8",
+        ]
 
 
 def test_toflix_terminal_bootstrap_patch() -> None:

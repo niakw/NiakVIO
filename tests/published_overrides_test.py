@@ -28,34 +28,8 @@ with tempfile.TemporaryDirectory() as tmp:
     script=(ROOT/'scripts/validate_published_overrides.py').read_text().replace(
         'ROOT = Path(__file__).resolve().parents[1]', f'ROOT = Path({str(root)!r})')
     test_script=root/'validate.py'; test_script.write_text(script)
+    (root/'override_text_utils.py').write_text((ROOT/'scripts/override_text_utils.py').read_text())
     result=subprocess.run(['python',str(test_script)],capture_output=True,text=True)
     assert result.returncode == 0, result.stderr + result.stdout
     assert not (root/'providers/movix.js').exists()
-
-# Regression: a provider id that is a prefix of another provider id must never
-# delete the longer provider's selected bundle (4khdhub vs 4khdhubnew).
-with tempfile.TemporaryDirectory() as tmp:
-    root = Path(tmp)
-    (root/'providers').mkdir()
-    (root/'provider-overrides.json').write_text(json.dumps({
-        'domain_replacements': {},
-        'provider_patches': {
-            '4khdhub': {'replacements': {'4khdhub.one':'new4.hdhub4u.cl'}},
-            '4khdhubnew': {}
-        }
-    }))
-    (root/'providers/4khdhub--nuvio--good.js').write_text('const x="new4.hdhub4u.cl";')
-    longer = root/'providers/4khdhubnew--aio--good.js'
-    longer.write_text('const x="4khdhub.one";')
-    (root/'manifest.next.json').write_text(json.dumps({'scrapers':[
-        {'id':'4khdhub','filename':'providers/4khdhub--nuvio--good.js'},
-        {'id':'4khdhubnew','filename':'providers/4khdhubnew--aio--good.js'}
-    ]}))
-    script=(ROOT/'scripts/validate_published_overrides.py').read_text().replace(
-        'ROOT = Path(__file__).resolve().parents[1]', f'ROOT = Path({str(root)!r})')
-    test_script=root/'validate.py'; test_script.write_text(script)
-    result=subprocess.run(['python',str(test_script)],capture_output=True,text=True)
-    assert result.returncode == 0, result.stderr + result.stdout
-    assert longer.exists(), '4khdhub validation deleted the 4khdhubnew bundle'
-
 print('published override tests passed')

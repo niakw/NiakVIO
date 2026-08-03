@@ -11,7 +11,9 @@ assert int(config['modes']['deep']['worker_memory_mb']) >= 512
 assert int(config['modes']['availability']['worker_memory_mb']) < int(config['modes']['deep']['worker_memory_mb'])
 assert int(config['modes']['retry']['worker_memory_mb']) < int(config['modes']['deep']['worker_memory_mb'])
 assert int(config['modes']['quick']['worker_memory_mb']) < int(config['modes']['deep']['worker_memory_mb'])
-for token in ['modeConfig.worker_memory_mb', 'NUVIO_WORKER_MEMORY_MB', 'NUVIO_WORKER_MEMORY_EXHAUSTED', 'worker_memory_exhausted', 'appendTail']:
+for mode_name, mode in config['modes'].items():
+    assert int(mode.get('minimum_vod_duration_seconds', 0)) >= 60, mode_name
+for token in ['modeConfig.worker_memory_mb', 'NUVIO_WORKER_MEMORY_MB', 'NUVIO_WORKER_MEMORY_EXHAUSTED', 'worker_memory_exhausted', 'appendTail', 'short_vod_preview', 'minimum_vod_duration_seconds', 'totalDurationSeconds']:
     assert token in health_source, token
 
 def run(health, repairs):

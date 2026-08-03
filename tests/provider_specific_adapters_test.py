@@ -26,11 +26,14 @@ assert '/api/purstream/movie/' in p
 
 s = sanitizer.apply(
     'async function getStreams(){return []};module.exports={getStreams};',
-    options={'blocked_hosts': ['fstream.top'], 'probe_direct_media': True},
+    options={'blocked_hosts': ['fstream.top'], 'blocked_path_patterns': ['/troll/'], 'probe_direct_media': True, 'min_vod_duration_seconds': 60},
 )
-assert 'NUVIO_STREAM_OUTPUT_SANITIZER_V2' in s
+assert 'NUVIO_STREAM_OUTPUT_SANITIZER_V3' in s
 assert 'fstream.top' in s
-assert sanitizer.apply(s, options={'blocked_hosts': ['fstream.top'], 'probe_direct_media': True}) == s
+assert '/troll/' in s
+assert 'minVodDurationSeconds' in s
+assert 'total<config.minVodDurationSeconds' in s
+assert sanitizer.apply(s, options={'blocked_hosts': ['fstream.top'], 'blocked_path_patterns': ['/troll/'], 'probe_direct_media': True, 'min_vod_duration_seconds': 60}) == s
 
 t = toflix.apply('var _cachedEndpoint=null;function detectToflixEndpoint(){return Promise.resolve({})}module.exports={getStreams:async()=>[]};')
 assert 'NUVIO_TOFLIX_OFFICIAL_ENDPOINT_V1' in t
