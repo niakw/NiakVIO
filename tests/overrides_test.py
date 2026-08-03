@@ -176,11 +176,10 @@ global.fetch = async function(input) {
             check=True,
         )
         requested = json.loads(result.stdout)
-        expected = "https://api.movix.fun/api/purstream/movie/157336/stream"
         assert requested, requested
-        assert expected in requested, requested
+        assert "https://movix.fun" in requested, requested
         assert all("api.movix.cash" not in url and "api.movix.cloud" not in url for url in requested), requested
-        assert "https://api.movix.fun/api/fstream/movie/157336" in requested, requested
+        assert all("/api/fstream/" not in url for url in requested), requested
 
 
 test_obfuscated_runtime_endpoint_override()
