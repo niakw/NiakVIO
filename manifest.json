@@ -101,13 +101,13 @@
       "id": "hindmoviez",
       "name": "HindMoviez",
       "description": "HindMoviez - Hindi & English Movies and Series (480p / 720p / 1080p / 4K)",
-      "version": "1.0.3",
+      "version": "1.0.4",
       "author": "Sanchit (@S4NCHITT) — Murph's Streams",
       "supportedTypes": [
         "movie",
         "tv"
       ],
-      "filename": "providers/hindmoviez--published-baseline--86b8c3a4dff3c98c.js",
+      "filename": "providers/hindmoviez--aio--86b8c3a4dff3c98c.js",
       "enabled": true,
       "hasSettings": true,
       "formats": [
@@ -226,6 +226,29 @@
       "filename": "providers/animesultra--published-baseline--7704e3a452b17554.js",
       "enabled": true,
       "logo": "https://animesultra.org/templates/animeultra/images/favicon.ico",
+      "contentLanguage": [
+        "fr"
+      ],
+      "formats": [
+        "mp4",
+        "mkv"
+      ],
+      "limited": false,
+      "disabledPlatforms": [],
+      "supportsExternalPlayer": false
+    },
+    {
+      "id": "animevostfr",
+      "name": "AnimeVOSTFR",
+      "description": "Animes VF et VOSTFR en streaming gratuit sur AnimeVOSTFR.",
+      "version": "1.1.51",
+      "author": "Gowaru",
+      "supportedTypes": [
+        "anime"
+      ],
+      "filename": "providers/animevostfr--published-baseline--9db362a48297eabb.js",
+      "enabled": true,
+      "logo": "https://animevostfr.org/wp-content/uploads/luffy-icon.jpg",
       "contentLanguage": [
         "fr"
       ],
@@ -360,64 +383,15 @@
       "supportsExternalPlayer": true
     },
     {
-      "id": "goated",
-      "name": "🐐 Goated",
-      "description": "4K • 1080p Movies & Series in Multi Language",
-      "version": "1.0.0",
-      "author": "Nuvio Team",
-      "supportedTypes": [
-        "movie",
-        "tv"
-      ],
-      "filename": "providers/goated--aio--b4966c7fd78842d5.js",
-      "enabled": true,
-      "hasSettings": true,
-      "formats": [
-        "mkv",
-        "mp4",
-        "m3u8"
-      ],
-      "logo": "https://i.postimg.cc/qqsfgS0F/goated.png",
-      "contentLanguage": [
-        "en",
-        "hi",
-        "ru",
-        "es"
-      ]
-    },
-    {
-      "id": "animevostfr",
-      "name": "AnimeVOSTFR",
-      "description": "Animes VF et VOSTFR en streaming gratuit sur AnimeVOSTFR.",
-      "version": "1.1.50",
-      "author": "Gowaru",
-      "supportedTypes": [
-        "anime"
-      ],
-      "filename": "providers/animevostfr--gowaru--9db362a48297eabb.js",
-      "enabled": true,
-      "logo": "https://animevostfr.org/wp-content/uploads/luffy-icon.jpg",
-      "contentLanguage": [
-        "fr"
-      ],
-      "formats": [
-        "mp4",
-        "mkv"
-      ],
-      "limited": false,
-      "disabledPlatforms": [],
-      "supportsExternalPlayer": false
-    },
-    {
       "id": "mugiwarastream",
       "name": "Mugiwara-no-Streaming",
       "description": "Streaming gratuit d'animes et scans en bonne qualite via API Next.js.",
-      "version": "1.0.17",
+      "version": "1.0.18",
       "author": "Gowaru",
       "supportedTypes": [
         "anime"
       ],
-      "filename": "providers/mugiwarastream--published-baseline--4ca91d321825979c.js",
+      "filename": "providers/mugiwarastream--gowaru--01be002c28d0e160.js",
       "enabled": true,
       "logo": "https://raw.githubusercontent.com/NOUSSS/mugiwara-no-streaming-images/main/Logo.png",
       "contentLanguage": [
@@ -426,52 +400,6 @@
       "formats": [
         "mp4",
         "mkv",
-        "m3u8"
-      ],
-      "limited": false,
-      "disabledPlatforms": [],
-      "supportsExternalPlayer": false
-    },
-    {
-      "id": "animesama-co",
-      "name": "AnimeSama.co (DLE Mirror)",
-      "description": "Animes VF et VOSTFR en streaming sur AnimeSama.co (miroir DLE).",
-      "version": "1.0.12",
-      "author": "Gowaru",
-      "supportedTypes": [
-        "anime"
-      ],
-      "filename": "providers/animesama-co--gowaru--1ab9fb1cec10acff.js",
-      "enabled": true,
-      "logo": "https://raw.githubusercontent.com/Anime-Sama/IMG/img/autres/logo.png",
-      "contentLanguage": [
-        "fr"
-      ],
-      "formats": [
-        "mp4",
-        "m3u8"
-      ],
-      "limited": false,
-      "disabledPlatforms": [],
-      "supportsExternalPlayer": false
-    },
-    {
-      "id": "voiranime-rip",
-      "name": "VoirAnime.rip",
-      "description": "Animes VF et VOSTFR en streaming sur VoirAnime.rip (site DLE).",
-      "version": "1.0.14",
-      "author": "Gowaru",
-      "supportedTypes": [
-        "anime"
-      ],
-      "filename": "providers/voiranime-rip--gowaru--cbf14d7c8fe2e76e.js",
-      "enabled": true,
-      "logo": "https://voiranime.rip/img/icon.png",
-      "contentLanguage": [
-        "fr"
-      ],
-      "formats": [
-        "mp4",
         "m3u8"
       ],
       "limited": false,
@@ -496,30 +424,6 @@
       "formats": [
         "mp4",
         "mkv"
-      ],
-      "limited": false,
-      "disabledPlatforms": [],
-      "supportsExternalPlayer": false
-    },
-    {
-      "id": "voiranime",
-      "name": "VoirAnime",
-      "description": "Un des plus gros catalogues français d'animes.",
-      "version": "1.2.22",
-      "author": "Gowaru",
-      "supportedTypes": [
-        "anime"
-      ],
-      "filename": "providers/voiranime--published-baseline--5968627d7b5aabbb.js",
-      "enabled": true,
-      "logo": "https://lh3.googleusercontent.com/728eE_dzDC7HWN9Cs2eGkQg4Vlk1CqCJj3T8aAQs50srttRUl6pVmmD0O4t1Zxn4fdiVpPzcoPAzNS2EuUre29Dulw=s60",
-      "contentLanguage": [
-        "fr"
-      ],
-      "formats": [
-        "mp4",
-        "mkv",
-        "m3u8"
       ],
       "limited": false,
       "disabledPlatforms": [],
@@ -1124,6 +1028,52 @@
       "supportsExternalPlayer": false
     },
     {
+      "id": "animesama-co",
+      "name": "AnimeSama.co (DLE Mirror)",
+      "description": "Animes VF et VOSTFR en streaming sur AnimeSama.co (miroir DLE).",
+      "version": "1.0.13",
+      "author": "Gowaru",
+      "supportedTypes": [
+        "anime"
+      ],
+      "filename": "providers/animesama-co--published-baseline--1ab9fb1cec10acff.js",
+      "enabled": false,
+      "logo": "https://raw.githubusercontent.com/Anime-Sama/IMG/img/autres/logo.png",
+      "contentLanguage": [
+        "fr"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "limited": false,
+      "disabledPlatforms": [],
+      "supportsExternalPlayer": false
+    },
+    {
+      "id": "voiranime-rip",
+      "name": "VoirAnime.rip",
+      "description": "Animes VF et VOSTFR en streaming sur VoirAnime.rip (site DLE).",
+      "version": "1.0.15",
+      "author": "Gowaru",
+      "supportedTypes": [
+        "anime"
+      ],
+      "filename": "providers/voiranime-rip--published-baseline--cbf14d7c8fe2e76e.js",
+      "enabled": false,
+      "logo": "https://voiranime.rip/img/icon.png",
+      "contentLanguage": [
+        "fr"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "limited": false,
+      "disabledPlatforms": [],
+      "supportsExternalPlayer": false
+    },
+    {
       "id": "wookafr",
       "name": "Wookafr",
       "description": "Films et séries en streaming VF sur Wookafr.",
@@ -1239,6 +1189,32 @@
       ]
     },
     {
+      "id": "goated",
+      "name": "🐐 Goated",
+      "description": "4K • 1080p Movies & Series in Multi Language",
+      "version": "1.0.1",
+      "author": "Nuvio Team",
+      "supportedTypes": [
+        "movie",
+        "tv"
+      ],
+      "filename": "providers/goated--published-baseline--b4966c7fd78842d5.js",
+      "enabled": false,
+      "hasSettings": true,
+      "formats": [
+        "mkv",
+        "mp4",
+        "m3u8"
+      ],
+      "logo": "https://i.postimg.cc/qqsfgS0F/goated.png",
+      "contentLanguage": [
+        "en",
+        "hi",
+        "ru",
+        "es"
+      ]
+    },
+    {
       "id": "hianime",
       "name": "HiAnime",
       "description": "HiAnime multi-server anime streaming with real-time mapping and subtitles",
@@ -1308,6 +1284,30 @@
       ]
     },
     {
+      "id": "voiranime",
+      "name": "VoirAnime",
+      "description": "Un des plus gros catalogues français d'animes.",
+      "version": "1.2.22",
+      "author": "Gowaru",
+      "supportedTypes": [
+        "anime"
+      ],
+      "filename": "providers/voiranime--published-baseline--5968627d7b5aabbb.js",
+      "enabled": false,
+      "logo": "https://lh3.googleusercontent.com/728eE_dzDC7HWN9Cs2eGkQg4Vlk1CqCJj3T8aAQs50srttRUl6pVmmD0O4t1Zxn4fdiVpPzcoPAzNS2EuUre29Dulw=s60",
+      "contentLanguage": [
+        "fr"
+      ],
+      "formats": [
+        "mp4",
+        "mkv",
+        "m3u8"
+      ],
+      "limited": false,
+      "disabledPlatforms": [],
+      "supportsExternalPlayer": false
+    },
+    {
       "id": "waveanime",
       "name": "WaveAnime",
       "description": "Animes en DASH (MPD) via waveanime.fr — lecture native ExoPlayer/Media3 (Android), non supporté par AVPlayer (iOS).",
@@ -1354,6 +1354,28 @@
       ]
     },
     {
+      "id": "4khdhubnew",
+      "name": "4KHDHub-NEW",
+      "description": "4KHDHub- Now fetches every movie and series",
+      "version": "2.0.4",
+      "author": "Xyr0nX",
+      "supportedTypes": [
+        "movie",
+        "tv"
+      ],
+      "filename": "providers/4khdhubnew--aio--e64aea603b3c3786.js",
+      "enabled": false,
+      "hasSettings": true,
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "logo": "https://i.postimg.cc/DZpW6Xfb/4khdhub.png",
+      "contentLanguage": [
+        "en"
+      ]
+    },
+    {
       "id": "playimdb",
       "name": "PlayIMDb",
       "description": "High-Speed Direct Streaming for Movies (IMDb ID Extract)",
@@ -1393,31 +1415,6 @@
         "mp4"
       ],
       "logo": "https://i.postimg.cc/JhL3HBR4/anikototv.png",
-      "contentLanguage": [
-        "en",
-        "ja"
-      ]
-    },
-    {
-      "id": "kurage",
-      "name": "Kurage",
-      "description": "Kurage.live anime streaming with tRPC API and multi-server proxy support",
-      "version": "1.0.3",
-      "author": "Paregi12",
-      "supportedTypes": [
-        "anime"
-      ],
-      "filename": "providers/kurage--aio--668797edb270c5fe.js",
-      "enabled": false,
-      "hasSettings": true,
-      "resources": [
-        "stream"
-      ],
-      "formats": [
-        "mkv",
-        "m3u8"
-      ],
-      "logo": "https://i.postimg.cc/3N2V7pHc/kurage.png",
       "contentLanguage": [
         "en",
         "ja"
@@ -1609,6 +1606,31 @@
         "ta",
         "te",
         "ba"
+      ]
+    },
+    {
+      "id": "kurage",
+      "name": "Kurage",
+      "description": "Kurage.live anime streaming with tRPC API and multi-server proxy support",
+      "version": "1.0.4",
+      "author": "Paregi12",
+      "supportedTypes": [
+        "anime"
+      ],
+      "filename": "providers/kurage--published-baseline--668797edb270c5fe.js",
+      "enabled": false,
+      "hasSettings": true,
+      "resources": [
+        "stream"
+      ],
+      "formats": [
+        "mkv",
+        "m3u8"
+      ],
+      "logo": "https://i.postimg.cc/3N2V7pHc/kurage.png",
+      "contentLanguage": [
+        "en",
+        "ja"
       ]
     },
     {
@@ -1822,28 +1844,6 @@
       ],
       "limited": true,
       "notes": "Automatically maps TMDB IDs to AniList. Supports sub/dub."
-    },
-    {
-      "id": "4khdhubnew",
-      "name": "4KHDHub-NEW",
-      "description": "4KHDHub- Now fetches every movie and series",
-      "version": "2.0.3",
-      "author": "Xyr0nX",
-      "supportedTypes": [
-        "movie",
-        "tv"
-      ],
-      "filename": "providers/4khdhubnew--published-baseline--443f7eeef6ab7e02.js",
-      "enabled": false,
-      "hasSettings": true,
-      "formats": [
-        "mp4",
-        "m3u8"
-      ],
-      "logo": "https://i.postimg.cc/DZpW6Xfb/4khdhub.png",
-      "contentLanguage": [
-        "en"
-      ]
     },
     {
       "id": "allwish",
@@ -2072,5 +2072,5 @@
       ]
     }
   ],
-  "version": "5.19.3"
+  "version": "5.19.4"
 }

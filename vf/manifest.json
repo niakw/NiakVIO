@@ -1,6 +1,6 @@
 {
   "name": "Nuvio Curated Providers — VF uniquement",
-  "version": "5.19.3",
+  "version": "5.19.4",
   "scrapers": [
     {
       "id": "anime-sama",
@@ -146,6 +146,29 @@
       "supportsExternalPlayer": false
     },
     {
+      "id": "animevostfr",
+      "name": "AnimeVOSTFR",
+      "description": "Animes VF et VOSTFR en streaming gratuit sur AnimeVOSTFR.",
+      "version": "1.1.51",
+      "author": "Gowaru",
+      "supportedTypes": [
+        "anime"
+      ],
+      "filename": "../providers/animevostfr--published-baseline--9db362a48297eabb.js",
+      "enabled": true,
+      "logo": "https://animevostfr.org/wp-content/uploads/luffy-icon.jpg",
+      "contentLanguage": [
+        "fr"
+      ],
+      "formats": [
+        "mp4",
+        "mkv"
+      ],
+      "limited": false,
+      "disabledPlatforms": [],
+      "supportsExternalPlayer": false
+    },
+    {
       "id": "coflix",
       "name": "Coflix",
       "description": "Films et séries en streaming VF/VOSTFR sur Coflix.wiki.",
@@ -268,38 +291,15 @@
       "supportsExternalPlayer": true
     },
     {
-      "id": "animevostfr",
-      "name": "AnimeVOSTFR",
-      "description": "Animes VF et VOSTFR en streaming gratuit sur AnimeVOSTFR.",
-      "version": "1.1.50",
-      "author": "Gowaru",
-      "supportedTypes": [
-        "anime"
-      ],
-      "filename": "../providers/animevostfr--gowaru--9db362a48297eabb.js",
-      "enabled": true,
-      "logo": "https://animevostfr.org/wp-content/uploads/luffy-icon.jpg",
-      "contentLanguage": [
-        "fr"
-      ],
-      "formats": [
-        "mp4",
-        "mkv"
-      ],
-      "limited": false,
-      "disabledPlatforms": [],
-      "supportsExternalPlayer": false
-    },
-    {
       "id": "mugiwarastream",
       "name": "Mugiwara-no-Streaming",
       "description": "Streaming gratuit d'animes et scans en bonne qualite via API Next.js.",
-      "version": "1.0.17",
+      "version": "1.0.18",
       "author": "Gowaru",
       "supportedTypes": [
         "anime"
       ],
-      "filename": "../providers/mugiwarastream--published-baseline--4ca91d321825979c.js",
+      "filename": "../providers/mugiwarastream--gowaru--01be002c28d0e160.js",
       "enabled": true,
       "logo": "https://raw.githubusercontent.com/NOUSSS/mugiwara-no-streaming-images/main/Logo.png",
       "contentLanguage": [
@@ -308,52 +308,6 @@
       "formats": [
         "mp4",
         "mkv",
-        "m3u8"
-      ],
-      "limited": false,
-      "disabledPlatforms": [],
-      "supportsExternalPlayer": false
-    },
-    {
-      "id": "animesama-co",
-      "name": "AnimeSama.co (DLE Mirror)",
-      "description": "Animes VF et VOSTFR en streaming sur AnimeSama.co (miroir DLE).",
-      "version": "1.0.12",
-      "author": "Gowaru",
-      "supportedTypes": [
-        "anime"
-      ],
-      "filename": "../providers/animesama-co--gowaru--1ab9fb1cec10acff.js",
-      "enabled": true,
-      "logo": "https://raw.githubusercontent.com/Anime-Sama/IMG/img/autres/logo.png",
-      "contentLanguage": [
-        "fr"
-      ],
-      "formats": [
-        "mp4",
-        "m3u8"
-      ],
-      "limited": false,
-      "disabledPlatforms": [],
-      "supportsExternalPlayer": false
-    },
-    {
-      "id": "voiranime-rip",
-      "name": "VoirAnime.rip",
-      "description": "Animes VF et VOSTFR en streaming sur VoirAnime.rip (site DLE).",
-      "version": "1.0.14",
-      "author": "Gowaru",
-      "supportedTypes": [
-        "anime"
-      ],
-      "filename": "../providers/voiranime-rip--gowaru--cbf14d7c8fe2e76e.js",
-      "enabled": true,
-      "logo": "https://voiranime.rip/img/icon.png",
-      "contentLanguage": [
-        "fr"
-      ],
-      "formats": [
-        "mp4",
         "m3u8"
       ],
       "limited": false,
@@ -378,30 +332,6 @@
       "formats": [
         "mp4",
         "mkv"
-      ],
-      "limited": false,
-      "disabledPlatforms": [],
-      "supportsExternalPlayer": false
-    },
-    {
-      "id": "voiranime",
-      "name": "VoirAnime",
-      "description": "Un des plus gros catalogues français d'animes.",
-      "version": "1.2.22",
-      "author": "Gowaru",
-      "supportedTypes": [
-        "anime"
-      ],
-      "filename": "../providers/voiranime--published-baseline--5968627d7b5aabbb.js",
-      "enabled": true,
-      "logo": "https://lh3.googleusercontent.com/728eE_dzDC7HWN9Cs2eGkQg4Vlk1CqCJj3T8aAQs50srttRUl6pVmmD0O4t1Zxn4fdiVpPzcoPAzNS2EuUre29Dulw=s60",
-      "contentLanguage": [
-        "fr"
-      ],
-      "formats": [
-        "mp4",
-        "mkv",
-        "m3u8"
       ],
       "limited": false,
       "disabledPlatforms": [],
@@ -443,6 +373,52 @@
       "filename": "../providers/voiranime-homes--gowaru--349fcae9fefac112.js",
       "enabled": false,
       "logo": "https://voiranime.homes/img/icon.ico",
+      "contentLanguage": [
+        "fr"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "limited": false,
+      "disabledPlatforms": [],
+      "supportsExternalPlayer": false
+    },
+    {
+      "id": "animesama-co",
+      "name": "AnimeSama.co (DLE Mirror)",
+      "description": "Animes VF et VOSTFR en streaming sur AnimeSama.co (miroir DLE).",
+      "version": "1.0.13",
+      "author": "Gowaru",
+      "supportedTypes": [
+        "anime"
+      ],
+      "filename": "../providers/animesama-co--published-baseline--1ab9fb1cec10acff.js",
+      "enabled": false,
+      "logo": "https://raw.githubusercontent.com/Anime-Sama/IMG/img/autres/logo.png",
+      "contentLanguage": [
+        "fr"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "limited": false,
+      "disabledPlatforms": [],
+      "supportsExternalPlayer": false
+    },
+    {
+      "id": "voiranime-rip",
+      "name": "VoirAnime.rip",
+      "description": "Animes VF et VOSTFR en streaming sur VoirAnime.rip (site DLE).",
+      "version": "1.0.15",
+      "author": "Gowaru",
+      "supportedTypes": [
+        "anime"
+      ],
+      "filename": "../providers/voiranime-rip--published-baseline--cbf14d7c8fe2e76e.js",
+      "enabled": false,
+      "logo": "https://voiranime.rip/img/icon.png",
       "contentLanguage": [
         "fr"
       ],
@@ -572,6 +548,30 @@
         "en",
         "fr"
       ]
+    },
+    {
+      "id": "voiranime",
+      "name": "VoirAnime",
+      "description": "Un des plus gros catalogues français d'animes.",
+      "version": "1.2.22",
+      "author": "Gowaru",
+      "supportedTypes": [
+        "anime"
+      ],
+      "filename": "../providers/voiranime--published-baseline--5968627d7b5aabbb.js",
+      "enabled": false,
+      "logo": "https://lh3.googleusercontent.com/728eE_dzDC7HWN9Cs2eGkQg4Vlk1CqCJj3T8aAQs50srttRUl6pVmmD0O4t1Zxn4fdiVpPzcoPAzNS2EuUre29Dulw=s60",
+      "contentLanguage": [
+        "fr"
+      ],
+      "formats": [
+        "mp4",
+        "mkv",
+        "m3u8"
+      ],
+      "limited": false,
+      "disabledPlatforms": [],
+      "supportsExternalPlayer": false
     },
     {
       "id": "waveanime",
