@@ -1,7 +1,79 @@
 {
   "name": "Nuvio Curated Providers — VF uniquement",
-  "version": "5.18.28",
+  "version": "5.19.0",
   "scrapers": [
+    {
+      "id": "anime-sama",
+      "name": "Anime-Sama",
+      "description": "Un des plus gros catalogues français, très actif, sorties du jour.",
+      "version": "1.1.53",
+      "author": "Gowaru",
+      "supportedTypes": [
+        "movie",
+        "anime"
+      ],
+      "filename": "../providers/anime-sama--published-baseline--40b94a990ee08c84.js",
+      "enabled": true,
+      "logo": "https://raw.githubusercontent.com/Anime-Sama/IMG/img/autres/logo.png",
+      "contentLanguage": [
+        "fr"
+      ],
+      "formats": [
+        "mp4",
+        "mkv"
+      ],
+      "limited": false,
+      "disabledPlatforms": [],
+      "supportsExternalPlayer": false
+    },
+    {
+      "id": "purstream",
+      "name": "Purstream",
+      "description": "Films and series in French (VF) / subtitled French (VOSTFR) / multi-language (MULTI) from purstream.art.",
+      "version": "3.0.2",
+      "author": "wooodyhood",
+      "supportedTypes": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "filename": "../providers/purstream--published-baseline--8e14e434a2868d4f.js",
+      "enabled": true,
+      "hasSettings": true,
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "logo": "https://i.postimg.cc/7L5shxmC/purstream.png",
+      "contentLanguage": [
+        "en",
+        "fr"
+      ]
+    },
+    {
+      "id": "flemmix",
+      "name": "Flemmix",
+      "description": "Films et séries en streaming VF/VOSTFR sur Flemmix.",
+      "version": "1.0.12",
+      "author": "Gowaru",
+      "supportedTypes": [
+        "movie",
+        "tv"
+      ],
+      "filename": "../providers/flemmix--nuvio--77604db638a82bdd.js",
+      "enabled": true,
+      "logo": "https://flemmix.me/favicon.ico",
+      "contentLanguage": [
+        "fr"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "limited": false,
+      "disabledPlatforms": [],
+      "supportsExternalPlayer": false
+    },
     {
       "id": "dulourd",
       "name": "DuLourd",
@@ -9,8 +81,8 @@
       "version": "1.0.14",
       "author": "Gowaru",
       "supportedTypes": [
-        "anime",
-        "tv"
+        "tv",
+        "anime"
       ],
       "filename": "../providers/dulourd--published-baseline--5801a7212df4ccfd.js",
       "enabled": true,
@@ -33,6 +105,7 @@
       "version": "1.0.11",
       "author": "Gowaru",
       "supportedTypes": [
+        "movie",
         "anime"
       ],
       "filename": "../providers/animesama-co--published-baseline--7b179e4ecea74ff9.js",
@@ -56,6 +129,7 @@
       "version": "1.0.35",
       "author": "Gowaru",
       "supportedTypes": [
+        "movie",
         "anime"
       ],
       "filename": "../providers/animesultra--published-baseline--7704e3a452b17554.js",
@@ -79,6 +153,7 @@
       "version": "1.1.49",
       "author": "Gowaru",
       "supportedTypes": [
+        "movie",
         "anime"
       ],
       "filename": "../providers/animevostfr--published-baseline--2070fb94f7559b99.js",
@@ -103,35 +178,12 @@
       "author": "Gowaru",
       "supportedTypes": [
         "movie",
-        "tv"
+        "tv",
+        "anime"
       ],
       "filename": "../providers/coflix--published-baseline--de425d2de9270c5c.js",
       "enabled": true,
       "logo": "https://coflix.wiki/images/favicon-coflix.png",
-      "contentLanguage": [
-        "fr"
-      ],
-      "formats": [
-        "mp4",
-        "m3u8"
-      ],
-      "limited": false,
-      "disabledPlatforms": [],
-      "supportsExternalPlayer": false
-    },
-    {
-      "id": "flemmix",
-      "name": "Flemmix",
-      "description": "Films et séries en streaming VF/VOSTFR sur Flemmix.",
-      "version": "1.0.12",
-      "author": "Gowaru",
-      "supportedTypes": [
-        "movie",
-        "tv"
-      ],
-      "filename": "../providers/flemmix--published-baseline--3b7069f72aa1cb23.js",
-      "enabled": true,
-      "logo": "https://flemmix.me/favicon.ico",
       "contentLanguage": [
         "fr"
       ],
@@ -150,6 +202,7 @@
       "version": "1.0.11",
       "author": "Gowaru",
       "supportedTypes": [
+        "movie",
         "anime"
       ],
       "filename": "../providers/french-manga--published-baseline--87f344ef6e681b81.js",
@@ -170,14 +223,14 @@
       "id": "frenchstream",
       "name": "Frenchstream",
       "description": "Films, séries et animes en VF et VOSTFR, avec récupération des lecteurs depuis la fiche lorsque l’ancienne API est indisponible.",
-      "version": "2.0.15",
+      "version": "2.0.16",
       "author": "Gowaru",
       "supportedTypes": [
-        "anime",
         "movie",
-        "tv"
+        "tv",
+        "anime"
       ],
-      "filename": "../providers/frenchstream--nuvio--a26e1343b38ba5d9.js",
+      "filename": "../providers/frenchstream--nuvio--9c07a7dc9323af03.js",
       "enabled": true,
       "logo": "https://fs03.lol/favicon.ico",
       "contentLanguage": [
@@ -196,14 +249,14 @@
       "id": "movix",
       "name": "Movix",
       "description": "Films, Séries et Animes en VF et VOSTFR.",
-      "version": "1.0.5",
+      "version": "1.0.6",
       "author": "Gowaru",
       "supportedTypes": [
-        "anime",
         "movie",
-        "tv"
+        "tv",
+        "anime"
       ],
-      "filename": "../providers/movix--published-baseline--1233010fe4e58795.js",
+      "filename": "../providers/movix--nuvio--38264358da6eaa8a.js",
       "enabled": true,
       "logo": "https://movix.cash/movix.png",
       "contentLanguage": [
@@ -219,29 +272,6 @@
       "supportsExternalPlayer": true
     },
     {
-      "id": "purstream",
-      "name": "Purstream",
-      "description": "Films and series in French (VF) / subtitled French (VOSTFR) / multi-language (MULTI) from purstream.art.",
-      "version": "3.0.2",
-      "author": "wooodyhood",
-      "supportedTypes": [
-        "movie",
-        "tv"
-      ],
-      "filename": "../providers/purstream--published-baseline--8e14e434a2868d4f.js",
-      "enabled": true,
-      "hasSettings": true,
-      "formats": [
-        "mp4",
-        "m3u8"
-      ],
-      "logo": "https://i.postimg.cc/7L5shxmC/purstream.png",
-      "contentLanguage": [
-        "en",
-        "fr"
-      ]
-    },
-    {
       "id": "streamzo",
       "name": "StreamZo",
       "description": "Films et séries en streaming VF/VOSTFR sur Streamzo.fr (SPA, iframe injecté, multi-serveurs).",
@@ -249,7 +279,8 @@
       "author": "Gowaru",
       "supportedTypes": [
         "movie",
-        "tv"
+        "tv",
+        "anime"
       ],
       "filename": "../providers/streamzo--published-baseline--758d90c6f2b1ef2f.js",
       "enabled": true,
@@ -271,6 +302,7 @@
       "version": "1.0.13",
       "author": "Gowaru",
       "supportedTypes": [
+        "movie",
         "anime"
       ],
       "filename": "../providers/voiranime-rip--published-baseline--73c16daff03e96b1.js",
@@ -294,6 +326,7 @@
       "version": "1.1.52",
       "author": "Gowaru",
       "supportedTypes": [
+        "movie",
         "anime"
       ],
       "filename": "../providers/vostfree--published-baseline--8e9b00d7aff4dd9a.js",
@@ -318,9 +351,10 @@
       "author": "Gowaru",
       "supportedTypes": [
         "movie",
-        "tv"
+        "tv",
+        "anime"
       ],
-      "filename": "../providers/nakios--published-baseline--54004069c8c37177.js",
+      "filename": "../providers/nakios--nuvio--9f244357f0b66ad2.js",
       "enabled": true,
       "logo": "https://nakios.store/favicon.png",
       "contentLanguage": [
@@ -341,6 +375,7 @@
       "version": "1.0.4",
       "author": "Gowaru",
       "supportedTypes": [
+        "movie",
         "tv"
       ],
       "filename": "../providers/papadustream--published-baseline--e6f61b097ef0b24c.js",
@@ -364,6 +399,7 @@
       "version": "1.0.17",
       "author": "Gowaru",
       "supportedTypes": [
+        "movie",
         "anime"
       ],
       "filename": "../providers/mugiwarastream--published-baseline--4ca91d321825979c.js",
@@ -388,34 +424,12 @@
       "version": "1.0.25",
       "author": "Gowaru",
       "supportedTypes": [
+        "movie",
         "anime"
       ],
       "filename": "../providers/sekai--published-baseline--07eef83e8d37a79c.js",
       "enabled": true,
       "logo": "https://sekai.one/favicon.ico",
-      "contentLanguage": [
-        "fr"
-      ],
-      "formats": [
-        "mp4",
-        "mkv"
-      ],
-      "limited": false,
-      "disabledPlatforms": [],
-      "supportsExternalPlayer": false
-    },
-    {
-      "id": "anime-sama",
-      "name": "Anime-Sama",
-      "description": "Un des plus gros catalogues français, très actif, sorties du jour.",
-      "version": "1.1.53",
-      "author": "Gowaru",
-      "supportedTypes": [
-        "anime"
-      ],
-      "filename": "../providers/anime-sama--published-baseline--40b94a990ee08c84.js",
-      "enabled": true,
-      "logo": "https://raw.githubusercontent.com/Anime-Sama/IMG/img/autres/logo.png",
       "contentLanguage": [
         "fr"
       ],
@@ -437,7 +451,7 @@
         "movie",
         "tv"
       ],
-      "filename": "../providers/toflix--published-baseline--dd2dbb2d068dae21.js",
+      "filename": "../providers/toflix--nuvio--b219dd8537e95a54.js",
       "enabled": true,
       "hasSettings": true,
       "formats": [
@@ -457,6 +471,7 @@
       "version": "1.2.22",
       "author": "Gowaru",
       "supportedTypes": [
+        "movie",
         "anime"
       ],
       "filename": "../providers/voiranime--published-baseline--5968627d7b5aabbb.js",
@@ -481,6 +496,7 @@
       "version": "1.0.16",
       "author": "Gowaru",
       "supportedTypes": [
+        "movie",
         "anime"
       ],
       "filename": "../providers/animoflix--published-baseline--8f75aecbbf3e691d.js",
@@ -507,7 +523,7 @@
         "movie",
         "tv"
       ],
-      "filename": "../providers/wookafr--published-baseline--5a3d04dfad6cb395.js",
+      "filename": "../providers/wookafr--nuvio--0e26ebd372c411f5.js",
       "enabled": false,
       "logo": "https://wookafr.fyi/favicon.ico",
       "contentLanguage": [
