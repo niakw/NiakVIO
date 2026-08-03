@@ -51,7 +51,17 @@ jobs:
             npm install --ignore-scripts --no-audit --no-fund --package-lock=false
           fi
 
-      - name: Discover all non-P2P candidates
+      - name: Audit provider address sources without changing published routes
+        shell: bash
+        run: |
+          python scripts/resolve_provider_hubs.py \
+            --mode "${{ github.event.inputs.mode || 'quick' }}" \
+            --include-disabled \
+            --workers 8 \
+            --timeout 8 \
+            --output health-output/provider-hub-report.json
+
+      - name: Discover all non-P2P candidates with upstream fallbacks
         run: python scripts/discover_candidates.py --require-all-upstreams
 
       - name: Run advisory audit with bounded runtime repair
@@ -78,5 +88,6 @@ jobs:
           path: |
             health-output/health-results.json
             health-output/repair-report.json
+            health-output/provider-hub-report.json
           retention-days: 14
           if-no-files-found: error

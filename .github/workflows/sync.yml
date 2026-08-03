@@ -85,8 +85,24 @@ jobs:
           python scripts/validate_settings_pipeline.py
           node scripts/validate_provider_semantics.cjs
 
-      # Phase 1: discover raw candidates, then solve DNS/domain failures first.
-      - name: Discover every non-P2P provider from every upstream manifest
+      # Phase 1: refresh trusted address sources, discover raw candidates, then solve DNS failures.
+      - name: Resolve official provider hubs and retain last-known-good routes
+        shell: bash
+        run: |
+          MODE="${{ steps.resolve-mode.outputs.validation_mode }}"
+          APPLY=()
+          if [ "$MODE" = "deep" ]; then
+            APPLY+=(--apply)
+          fi
+          python scripts/resolve_provider_hubs.py \
+            "${APPLY[@]}" \
+            --mode "$MODE" \
+            --include-disabled \
+            --workers 8 \
+            --timeout 8 \
+            --output health-output/provider-hub-report.json
+
+      - name: Discover every non-P2P provider with upstream and published fallbacks
         run: python scripts/discover_candidates.py --require-all-upstreams
 
       - name: Test DNS and locate validated alternative domains
@@ -153,6 +169,10 @@ jobs:
             health-output/route-regressions.json
             health-output/repair-report.json
             provider-overrides.json
+            provider-domain-history.json
+            health-output/provider-hub-report.json
+            staging/upstream-lkg-pending.json
+            staging/upstream-lkg-pending/
           retention-days: 2
           if-no-files-found: error
 
@@ -202,10 +222,12 @@ jobs:
           name: nuvio-validation-stage-${{ github.run_id }}
           path: checked-artifact
 
-      - name: Restore validated DNS migration overrides
+      - name: Restore validated domain state and reapply published overrides
         run: |
           test -f checked-artifact/provider-overrides.json
+          test -f checked-artifact/provider-domain-history.json
           cp checked-artifact/provider-overrides.json provider-overrides.json
+          cp checked-artifact/provider-domain-history.json provider-domain-history.json
           python scripts/reapply_published_overrides.py
 
       # Final provider artifacts are revalidated before promotion in this write-enabled job.
@@ -214,6 +236,13 @@ jobs:
           NUVIO_STAGE: checked-artifact/staging
           NUVIO_HEALTH_RESULTS: checked-artifact/health-output/health-results.json
         run: python scripts/promote_candidates.py
+
+      - name: Finalize last-known-good snapshots of the three upstream repositories
+        run: |
+          test -f checked-artifact/staging/upstream-lkg-pending.json
+          python scripts/finalize_upstream_lkg.py \
+            --pending checked-artifact/staging/upstream-lkg-pending.json \
+            --keep-generations 2
 
       - name: Remove stale content-hashed provider bundles
         run: python scripts/prune_unreferenced_providers.py
@@ -228,13 +257,14 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
           cp checked-artifact/health-output/dns-preflight-report.json dns-preflight-report.json
+          cp checked-artifact/health-output/provider-hub-report.json provider-hub-report.json
           cp checked-artifact/health-output/diagnostics-report.json diagnostics-report.json
           cp checked-artifact/health-output/diagnostics-report.html diagnostics-report.html
           cp checked-artifact/health-output/route-regressions.json route-regressions.json
           if [ -f checked-artifact/health-output/repair-report.json ]; then
             cp checked-artifact/health-output/repair-report.json repair-report.json
           fi
-          git add health-report.json health-history.json PROVENANCE.json dns-preflight-report.json diagnostics-report.json diagnostics-report.html route-regressions.json provider-overrides.json
+          git add health-report.json health-history.json PROVENANCE.json dns-preflight-report.json provider-hub-report.json diagnostics-report.json diagnostics-report.html route-regressions.json provider-overrides.json provider-domain-history.json upstream-lkg.json upstream-lkg/
           if [ -f repair-report.json ]; then
             git add repair-report.json
           fi
