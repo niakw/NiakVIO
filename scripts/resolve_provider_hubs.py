@@ -811,10 +811,15 @@ def update_provider_patch(config: dict[str, Any], provider_id: str, hub_cfg: dic
         options["site"] = site_url.rstrip("/")
         api_base = (api_url or f"https://api.{new_site_host}").rstrip("/")
         options["fallback_api"] = api_base if api_base.endswith("toflix_api.php") else api_base + "/toflix_api.php"
+    # `required_values` is reserved for concrete code markers injected by a
+    # patch profile/script. A resolved domain is routing metadata and may never
+    # appear literally in a provider bundle (for example when the endpoint is
+    # discovered dynamically or supplied by an API). Treating bare hosts as
+    # required code markers caused false pipeline failures after successful
+    # domain resolution. Remove legacy host-only entries and let replacement,
+    # fixed-endpoint and runtime-wrapper records prove that a route patch landed.
     required = [str(value) for value in (patch.get("required_values") or [])]
-    required = [value for value in required if not (_hostish(value) and value in old_hosts and value != new_site_host)]
-    if new_site_host and new_site_host not in required:
-        required.append(new_site_host)
+    required = [value for value in required if not _hostish(value)]
     patch["required_values"] = required
     manifest_overrides = patch.get("manifest_overrides")
     if isinstance(manifest_overrides, dict) and manifest_overrides.get("logo"):

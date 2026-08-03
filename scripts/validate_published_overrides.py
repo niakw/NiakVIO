@@ -27,6 +27,15 @@ def load(path: Path, default: Any = None) -> Any:
     return value
 
 
+def bare_host_marker(value: str) -> bool:
+    """Return True for host-only routing metadata, not code markers/URLs."""
+    value = str(value or "").strip().lower().rstrip(".")
+    if not value or "://" in value or "/" in value or " " in value:
+        return False
+    labels = value.split(".")
+    return len(labels) >= 2 and all(label and all(ch.isalnum() or ch == "-" for ch in label) for label in labels)
+
+
 def main() -> int:
     config = load(CONFIG, {})
     manifest = load(MANIFEST, {})
@@ -96,6 +105,10 @@ def main() -> int:
                 continue
             required_values.extend(str(value) for value in profile.get("required_values") or [])
         for required in dict.fromkeys(required_values):
+            # Bare domains written by older resolver revisions are routing
+            # metadata. They are not guaranteed to be literals in provider code.
+            if bare_host_marker(required):
+                continue
             if required not in text:
                 errors.append(
                     f"{cid}: required value missing from {target.relative_to(ROOT)}: {required}"
