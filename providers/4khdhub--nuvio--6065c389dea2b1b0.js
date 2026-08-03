@@ -23,7 +23,7 @@
   for(var i=0;i<rules.length;i++){
     try{state.rules[atob(rules[i][0])]=rules[i][1];}catch(_error){}
   }
-})(typeof globalThis!=="undefined"?globalThis:this,[["NGtoZGh1Yi5jbGljaw==","new3.hdhub4u.cl"],["NGtoZGh1Yi5vbmU=","new3.hdhub4u.cl"]]);
+})(typeof globalThis!=="undefined"?globalThis:this,[["NGtoZGh1Yi5jbGljaw==","new4.hdhub4u.cl"],["NGtoZGh1Yi5vbmU=","new4.hdhub4u.cl"],["bmV3My5oZGh1YjR1LmNs","new4.hdhub4u.cl"]]);
 "use strict";
 var __defProp = Object.defineProperty;
 var __defProps = Object.defineProperties;
@@ -64,7 +64,7 @@ var __async = (__this, __arguments, generator) => {
     step((generator = generator.apply(__this, __arguments)).next());
   });
 };
-var BASE_URL = "https://new3.hdhub4u.cl";
+var BASE_URL = "https://new4.hdhub4u.cl";
 var TMDB_API_KEY = "439c478a771f35c05022f9feabcca01c";
 var USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36";
 var DOMAINS_URL = "https://raw.githubusercontent.com/phisher98/TVVVV/refs/heads/main/domains.json";

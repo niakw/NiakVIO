@@ -65,9 +65,7 @@
         "frenchstream.food": "fs16.lol",
         "fs03.lol": "fs16.lol"
       },
-      "required_values": [
-        "fs16.lol"
-      ],
+      "required_values": [],
       "route_replacements": {},
       "required_route_values": [],
       "manifest_overrides": {
@@ -96,20 +94,22 @@
         }
       },
       "official_hub": "https://fstream.org/",
-      "official_site": "https://fs16.lol/"
+      "official_site": "https://fs16.lol"
     },
     "streamzo": {
       "notes": [
         "Keep the locally verified reachable StreamZo domain."
       ],
       "replacements": {},
-      "required_values": [
-        "streamzo.fr"
-      ],
+      "required_values": [],
       "route_replacements": {},
       "required_route_values": [],
       "profiles": [],
-      "capability": "html_scraper"
+      "capability": "html_scraper",
+      "runtime_domain_replacements": {},
+      "official_hub": null,
+      "official_site": "https://streamzo.fr",
+      "patch_script_options": {}
     },
     "animepahe": {
       "replacements": {
@@ -141,7 +141,11 @@
         "Automatically migrated allmovieland.one to allmovieland.art after French ISP DNS/HTTP preflight redirect validation."
       ],
       "capability": "html_scraper",
-      "profiles": []
+      "profiles": [],
+      "official_hub": null,
+      "official_site": "https://allmovieland.art",
+      "patch_script_options": {},
+      "required_values": []
     },
     "purstream": {
       "notes": [
@@ -207,7 +211,11 @@
         "Automatically migrated new3.moviesdrives.my to new7.moviesdrives.my after French ISP DNS/HTTP preflight redirect validation."
       ],
       "capability": "html_scraper",
-      "profiles": []
+      "profiles": [],
+      "official_hub": "https://moviesdrives.mov/",
+      "official_site": "https://new1.moviesdrive.christmas",
+      "patch_script_options": {},
+      "required_values": []
     },
     "coflix": {
       "replacements": {
@@ -222,7 +230,11 @@
       "profiles": [
         "metadata_context_recovery"
       ],
-      "capability": "html_scraper"
+      "capability": "html_scraper",
+      "official_hub": "https://coflix.life/",
+      "official_site": "https://coflix.wiki",
+      "patch_script_options": {},
+      "required_values": []
     },
     "moviesmod": {
       "replacements": {
@@ -235,7 +247,11 @@
         "Automatically migrated moviesmod.money to moviesmod.army after DNS/HTTP preflight validation of a redirect or a reachable same-role provider endpoint."
       ],
       "capability": "html_scraper",
-      "profiles": []
+      "profiles": [],
+      "official_hub": null,
+      "official_site": "https://moviesmod.zone",
+      "patch_script_options": {},
+      "required_values": []
     },
     "uhdmovies": {
       "replacements": {
@@ -248,7 +264,11 @@
         "Automatically migrated uhdmovies.pink to uhdmovies.casa after DNS/HTTP preflight validation of a redirect or a reachable same-role provider endpoint."
       ],
       "capability": "html_scraper",
-      "profiles": []
+      "profiles": [],
+      "official_hub": "https://mmodlist.org/",
+      "official_site": "https://uhdmovies.autos",
+      "patch_script_options": {},
+      "required_values": []
     },
     "videasy": {
       "replacements": {
@@ -261,7 +281,11 @@
         "Automatically migrated player.videasy.net to player.videasy.to after DNS/HTTP preflight validation of a redirect or a reachable same-role provider endpoint."
       ],
       "capability": "api_stream_resolver",
-      "profiles": []
+      "profiles": [],
+      "official_hub": "https://www.videasy.to/docs",
+      "official_site": "https://player.videasy.to/fr",
+      "patch_script_options": {},
+      "required_values": []
     },
     "mycima": {
       "replacements": {
@@ -298,18 +322,18 @@
       "profiles": [],
       "capability": "mixed_embed_resolver",
       "replacements": {
-        "flemmix.me": "flemmix.casa",
-        "wiflix.name": "flemmix.casa",
-        "wiflix-hd.vip": "flemmix.casa"
+        "flemmix.me": "ww1.wiflix-adresses.fun",
+        "wiflix.name": "ww1.wiflix-adresses.fun",
+        "wiflix-hd.vip": "ww1.wiflix-adresses.fun",
+        "flemmix.casa": "ww1.wiflix-adresses.fun"
       },
       "runtime_domain_replacements": {
-        "flemmix.me": "flemmix.casa",
-        "wiflix.name": "flemmix.casa",
-        "wiflix-hd.vip": "flemmix.casa"
+        "flemmix.me": "ww1.wiflix-adresses.fun",
+        "wiflix.name": "ww1.wiflix-adresses.fun",
+        "wiflix-hd.vip": "ww1.wiflix-adresses.fun",
+        "flemmix.casa": "ww1.wiflix-adresses.fun"
       },
-      "required_values": [
-        "flemmix.casa"
-      ],
+      "required_values": [],
       "route_replacements": {},
       "required_route_values": [],
       "patch_scripts": [
@@ -326,7 +350,7 @@
         "Resolve the current Flemmix route from the Wiflix address hub and reject malformed direct-media responses before playback."
       ],
       "official_hub": "https://ww1.wiflix-adresses.fun/",
-      "official_site": "https://flemmix.casa/"
+      "official_site": "https://ww1.wiflix-adresses.fun"
     },
     "nakios": {
       "profiles": [],
@@ -339,9 +363,7 @@
         "nakios.store": "nakios.live",
         "api.nakios.store": "api.nakios.live"
       },
-      "required_values": [
-        "nakios.live"
-      ],
+      "required_values": [],
       "route_replacements": {},
       "required_route_values": [],
       "manifest_overrides": {
@@ -351,11 +373,18 @@
         "Use the catalogue/streaming service identified by nakios.org rather than the retired .store route."
       ],
       "official_hub": "https://nakios.org/",
-      "official_site": "https://nakios.live/"
+      "official_site": "https://nakios.live",
+      "patch_script_options": {}
     },
     "papadustream": {
       "profiles": [],
-      "capability": "html_scraper"
+      "capability": "html_scraper",
+      "replacements": {},
+      "runtime_domain_replacements": {},
+      "official_hub": "https://papadustream.info/acces/",
+      "official_site": "https://papadustream-v2.watch",
+      "patch_script_options": {},
+      "required_values": []
     },
     "toflix": {
       "profiles": [],
@@ -368,9 +397,7 @@
         "toflix.site": "tfx05.lol",
         "api.toflix.site": "api.tfx05.lol"
       },
-      "required_values": [
-        "tfx05.lol"
-      ],
+      "required_values": [],
       "route_replacements": {},
       "required_route_values": [],
       "patch_scripts": [
@@ -386,21 +413,22 @@
         "Bootstrap the current ToFlix terminal site from toflix.wiki and discover its API endpoint from the terminal page when available."
       ],
       "official_hub": "https://toflix.wiki/",
-      "official_site": "https://tfx05.lol/"
+      "official_site": "https://tfx05.lol",
+      "official_api": "https://api.tfx05.lol"
     },
     "4khdhub": {
       "capability": "html_scraper",
       "replacements": {
-        "4khdhub.one": "new3.hdhub4u.cl",
-        "4khdhub.click": "new3.hdhub4u.cl"
+        "4khdhub.one": "new4.hdhub4u.cl",
+        "4khdhub.click": "new4.hdhub4u.cl",
+        "new3.hdhub4u.cl": "new4.hdhub4u.cl"
       },
       "runtime_domain_replacements": {
-        "4khdhub.one": "new3.hdhub4u.cl",
-        "4khdhub.click": "new3.hdhub4u.cl"
+        "4khdhub.one": "new4.hdhub4u.cl",
+        "4khdhub.click": "new4.hdhub4u.cl",
+        "new3.hdhub4u.cl": "new4.hdhub4u.cl"
       },
-      "required_values": [
-        "new3.hdhub4u.cl"
-      ],
+      "required_values": [],
       "route_replacements": {},
       "required_route_values": [],
       "patch_scripts": [
@@ -417,7 +445,7 @@
         "Use the current HDHub4u terminal route and reject HTML/error bodies returned as HLS media."
       ],
       "official_hub": "https://hdhub4u.ec/",
-      "official_site": "https://new3.hdhub4u.cl/"
+      "official_site": "https://new4.hdhub4u.cl"
     },
     "4khdhubnew": {
       "capability": "html_scraper"
@@ -428,7 +456,17 @@
     },
     "allanime": {
       "capability": "direct_media",
-      "profiles": []
+      "profiles": [],
+      "replacements": {
+        "ww2.aniwatch.fit": "aniwatchtv.watch"
+      },
+      "runtime_domain_replacements": {
+        "ww2.aniwatch.fit": "aniwatchtv.watch"
+      },
+      "official_hub": "https://allanime.sa.com/",
+      "official_site": "https://aniwatchtv.watch",
+      "patch_script_options": {},
+      "required_values": []
     },
     "allwish": {
       "capability": "html_scraper"
@@ -437,22 +475,50 @@
       "capability": "html_scraper"
     },
     "anikototv": {
-      "capability": "mixed_embed_resolver"
+      "capability": "mixed_embed_resolver",
+      "replacements": {},
+      "runtime_domain_replacements": {},
+      "official_hub": "https://streamingsiteshub.com/",
+      "official_site": "https://anikototv.to",
+      "patch_script_options": {},
+      "required_values": []
     },
     "anime-sama": {
       "capability": "mixed_embed_resolver",
-      "profiles": []
+      "profiles": [],
+      "replacements": {
+        "animes-sama.fr": "anime-sama.store"
+      },
+      "runtime_domain_replacements": {
+        "animes-sama.fr": "anime-sama.store"
+      },
+      "official_hub": "https://anime-sama.wiki/",
+      "official_site": "https://anime-sama.store",
+      "patch_script_options": {},
+      "required_values": []
     },
     "animekai": {
       "capability": "mixed_embed_resolver",
       "profiles": []
     },
     "animesalt": {
-      "capability": "html_scraper"
+      "capability": "html_scraper",
+      "replacements": {},
+      "runtime_domain_replacements": {},
+      "official_hub": "http://animesalt.ac/",
+      "official_site": "https://animesalt.link",
+      "patch_script_options": {},
+      "required_values": []
     },
     "animesama-co": {
       "capability": "mixed_embed_resolver",
-      "profiles": []
+      "profiles": [],
+      "replacements": {},
+      "runtime_domain_replacements": {},
+      "official_hub": "https://anime-sama.wiki/",
+      "official_site": "https://anime-sama.store",
+      "patch_script_options": {},
+      "required_values": []
     },
     "animetsu": {
       "capability": "direct_media",
@@ -460,7 +526,13 @@
     },
     "animevostfr": {
       "capability": "mixed_embed_resolver",
-      "profiles": []
+      "profiles": [],
+      "replacements": {},
+      "runtime_domain_replacements": {},
+      "official_hub": null,
+      "official_site": "https://v2.animevostfr.org",
+      "patch_script_options": {},
+      "required_values": []
     },
     "animeworld": {
       "capability": "html_scraper"
@@ -484,7 +556,13 @@
     },
     "cinemm": {
       "capability": "html_scraper",
-      "profiles": []
+      "profiles": [],
+      "replacements": {},
+      "runtime_domain_replacements": {},
+      "official_hub": null,
+      "official_site": "https://cinemm.com",
+      "patch_script_options": {},
+      "required_values": []
     },
     "cinevibe": {
       "capability": "direct_media"
@@ -512,7 +590,13 @@
     },
     "french-manga": {
       "capability": "mixed_embed_resolver",
-      "profiles": []
+      "profiles": [],
+      "replacements": {},
+      "runtime_domain_replacements": {},
+      "official_hub": null,
+      "official_site": "https://w16.french-manga.net",
+      "patch_script_options": {},
+      "required_values": []
     },
     "goatapi": {
       "capability": "html_scraper"
@@ -521,16 +605,38 @@
       "capability": "html_scraper"
     },
     "hdghartv": {
-      "capability": "html_scraper"
+      "capability": "html_scraper",
+      "replacements": {},
+      "runtime_domain_replacements": {},
+      "official_hub": "https://hdghartv.com.pk/",
+      "official_site": "https://hdghartv.cc",
+      "patch_script_options": {},
+      "required_values": []
     },
     "hdhub4u": {
-      "capability": "html_scraper"
+      "capability": "html_scraper",
+      "replacements": {
+        "new3.hdhub4u.cl": "new4.hdhub4u.cl"
+      },
+      "runtime_domain_replacements": {
+        "new3.hdhub4u.cl": "new4.hdhub4u.cl"
+      },
+      "official_hub": null,
+      "official_site": "https://new4.hdhub4u.cl",
+      "patch_script_options": {},
+      "required_values": []
     },
     "hianime": {
       "capability": "html_scraper"
     },
     "hindmoviez": {
-      "capability": "direct_media"
+      "capability": "direct_media",
+      "replacements": {},
+      "runtime_domain_replacements": {},
+      "official_hub": "https://t.me/s/hindmoviez/1975",
+      "official_site": "https://hindmovie.icu",
+      "patch_script_options": {},
+      "required_values": []
     },
     "kisskh": {
       "capability": "direct_media",
@@ -545,7 +651,13 @@
     },
     "moviebox": {
       "capability": "html_scraper",
-      "profiles": []
+      "profiles": [],
+      "replacements": {},
+      "runtime_domain_replacements": {},
+      "official_hub": "https://moviiebox.lol/",
+      "official_site": "https://moviebox.yachts",
+      "patch_script_options": {},
+      "required_values": []
     },
     "movies4u": {
       "capability": "html_scraper",
@@ -556,9 +668,7 @@
       "runtime_domain_replacements": {
         "m4uplay.store": "new2.movies4u.clinic"
       },
-      "required_values": [
-        "new2.movies4u.clinic"
-      ],
+      "required_values": [],
       "route_replacements": {},
       "required_route_values": [],
       "patch_scripts": [
@@ -575,18 +685,36 @@
         "Use the current Movies4u terminal route and drop unresolved or non-media direct links before playback."
       ],
       "official_hub": "https://movies4u.tube/",
-      "official_site": "https://new2.movies4u.clinic/"
+      "official_site": "https://new2.movies4u.clinic"
     },
     "movieshunt": {
       "capability": "direct_media",
-      "profiles": []
+      "profiles": [],
+      "replacements": {},
+      "runtime_domain_replacements": {},
+      "official_hub": "https://movieshunt.cc/",
+      "official_site": "https://movieshunt.work",
+      "patch_script_options": {},
+      "required_values": []
     },
     "mugiwarastream": {
       "capability": "mixed_embed_resolver",
-      "profiles": []
+      "profiles": [],
+      "replacements": {},
+      "runtime_domain_replacements": {},
+      "official_hub": "https://streaminganime.fr/site/10/mugiwara-no-streaming",
+      "official_site": "https://www.mugiwara-no-streaming.com",
+      "patch_script_options": {},
+      "required_values": []
     },
     "netmirror": {
-      "capability": "mixed_embed_resolver"
+      "capability": "mixed_embed_resolver",
+      "replacements": {},
+      "runtime_domain_replacements": {},
+      "official_hub": "https://netmiror.com/",
+      "official_site": "https://net27.cc",
+      "patch_script_options": {},
+      "required_values": []
     },
     "onlykdrama": {
       "capability": "html_scraper"
@@ -604,19 +732,37 @@
     },
     "sekai": {
       "capability": "html_scraper",
-      "profiles": []
+      "profiles": [],
+      "replacements": {},
+      "runtime_domain_replacements": {},
+      "official_hub": null,
+      "official_site": "https://sekai.one/?v=15",
+      "patch_script_options": {},
+      "required_values": []
     },
     "showbox": {
       "capability": "html_scraper"
     },
     "streamflix": {
-      "capability": "api_stream_resolver"
+      "capability": "api_stream_resolver",
+      "replacements": {},
+      "runtime_domain_replacements": {},
+      "official_hub": null,
+      "official_site": "https://streamflix.mom",
+      "patch_script_options": {},
+      "required_values": []
     },
     "topcartoons": {
       "capability": "html_scraper"
     },
     "vegamovies": {
-      "capability": "html_scraper"
+      "capability": "html_scraper",
+      "replacements": {},
+      "runtime_domain_replacements": {},
+      "official_hub": "https://1vegamovies.tw/",
+      "official_site": "https://vegamovies.catering",
+      "patch_script_options": {},
+      "required_values": []
     },
     "vidlink": {
       "capability": "html_scraper"
@@ -638,11 +784,23 @@
     },
     "voiranime": {
       "capability": "mixed_embed_resolver",
-      "profiles": []
+      "profiles": [],
+      "replacements": {},
+      "runtime_domain_replacements": {},
+      "official_hub": "https://voiranime.org.uk/",
+      "official_site": "https://voiranime.homes",
+      "patch_script_options": {},
+      "required_values": []
     },
     "voiranime-rip": {
       "capability": "mixed_embed_resolver",
-      "profiles": []
+      "profiles": [],
+      "replacements": {},
+      "runtime_domain_replacements": {},
+      "official_hub": null,
+      "official_site": "https://voiranime.rip",
+      "patch_script_options": {},
+      "required_values": []
     },
     "wookafr": {
       "capability": "mixed_embed_resolver",
@@ -661,16 +819,15 @@
         "wookafr.app": "wookafr.center",
         "wookafr.to": "wookafr.center"
       },
-      "required_values": [
-        "wookafr.center"
-      ],
+      "required_values": [],
       "route_replacements": {},
       "required_route_values": [],
       "notes": [
         "Use the latest Wooka terminal domain announced by the official Telegram address channel."
       ],
       "official_hub": "https://t.me/s/Wookafr2",
-      "official_site": "https://wookafr.center/"
+      "official_site": "https://wookafr.center",
+      "patch_script_options": {}
     },
     "xpass": {
       "capability": "html_scraper"
@@ -688,10 +845,34 @@
       "profiles": []
     },
     "cineby": {
-      "capability": "api_stream_resolver"
+      "capability": "api_stream_resolver",
+      "replacements": {},
+      "runtime_domain_replacements": {},
+      "official_hub": "https://warflix.cv/",
+      "official_site": "https://cineby.top",
+      "patch_script_options": {},
+      "required_values": []
     },
     "animezey": {
       "capability": "direct_media"
+    },
+    "anime-ultime": {
+      "capability": "mixed_embed_resolver",
+      "profiles": [
+        "metadata_context_recovery"
+      ]
+    },
+    "goated": {
+      "capability": "api_stream_resolver"
+    },
+    "voiranime-homes": {
+      "capability": "mixed_embed_resolver"
+    },
+    "waveanime": {
+      "capability": "html_scraper",
+      "profiles": [
+        "metadata_context_recovery"
+      ]
     }
   },
   "route_override_defaults": {
@@ -826,7 +1007,7 @@
       "allow_html_url": true,
       "requires_direct_media": false,
       "observed_origins": [
-        "https://new3.hdhub4u.cl"
+        "https://new4.hdhub4u.cl"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
@@ -837,7 +1018,7 @@
       "allow_html_url": true,
       "requires_direct_media": false,
       "observed_origins": [
-        "https://4khdhub.dad"
+        "https://4khdhub.one"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
@@ -918,6 +1099,8 @@
       "observed_origins": [
         "https://video.sibnet.ru",
         "https://vidmoly.me",
+        "https://fsvid.lol",
+        "https://vidzy.live",
         "https://streamtape.com",
         "https://sendvid.com",
         "https://www.myvi.ru",
@@ -986,6 +1169,8 @@
         "https://npms.io",
         "https://video.sibnet.ru",
         "https://vidmoly.me",
+        "https://fsvid.lol",
+        "https://vidzy.live",
         "https://streamtape.com",
         "https://sendvid.com",
         "https://www.myvi.ru",
@@ -1017,6 +1202,8 @@
         "https://npms.io",
         "https://video.sibnet.ru",
         "https://vidmoly.me",
+        "https://fsvid.lol",
+        "https://vidzy.live",
         "https://streamtape.com",
         "https://sendvid.com",
         "https://www.myvi.ru",
@@ -1062,6 +1249,8 @@
         "https://npms.io",
         "https://video.sibnet.ru",
         "https://vidmoly.me",
+        "https://fsvid.lol",
+        "https://vidzy.live",
         "https://streamtape.com",
         "https://sendvid.com",
         "https://www.myvi.ru",
@@ -1103,6 +1292,8 @@
       "observed_origins": [
         "https://video.sibnet.ru",
         "https://vidmoly.me",
+        "https://fsvid.lol",
+        "https://vidzy.live",
         "https://streamtape.com",
         "https://sendvid.com",
         "https://www.myvi.ru",
@@ -1204,6 +1395,8 @@
         "https://npms.io",
         "https://video.sibnet.ru",
         "https://vidmoly.me",
+        "https://fsvid.lol",
+        "https://vidzy.live",
         "https://streamtape.com",
         "https://sendvid.com",
         "https://www.myvi.ru",
@@ -1244,7 +1437,9 @@
       "validation": "provider_native",
       "allow_html_url": true,
       "requires_direct_media": false,
-      "observed_origins": [],
+      "observed_origins": [
+        "https://manifest.desitvhub.eu.org"
+      ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
     },
@@ -1266,6 +1461,8 @@
         "https://npms.io",
         "https://video.sibnet.ru",
         "https://vidmoly.me",
+        "https://fsvid.lol",
+        "https://vidzy.live",
         "https://streamtape.com",
         "https://sendvid.com",
         "https://www.myvi.ru",
@@ -1327,6 +1524,8 @@
       "observed_origins": [
         "https://video.sibnet.ru",
         "https://vidmoly.me",
+        "https://fsvid.lol",
+        "https://vidzy.live",
         "https://streamtape.com",
         "https://sendvid.com",
         "https://www.myvi.ru",
@@ -1334,7 +1533,7 @@
         "https://vidoza.net",
         "https://lecteurvideo.com",
         "https://up4fun.top",
-        "https://flemmix.casa",
+        "https://ww1.wiflix-adresses.fun",
         "https://npms.io",
         "https://kitsu.io",
         "https://arm.haglund.dev",
@@ -1355,6 +1554,8 @@
         "https://npms.io",
         "https://video.sibnet.ru",
         "https://vidmoly.me",
+        "https://fsvid.lol",
+        "https://vidzy.live",
         "https://streamtape.com",
         "https://sendvid.com",
         "https://www.myvi.ru",
@@ -1386,6 +1587,8 @@
         "https://npms.io",
         "https://video.sibnet.ru",
         "https://vidmoly.me",
+        "https://fsvid.lol",
+        "https://vidzy.live",
         "https://streamtape.com",
         "https://sendvid.com",
         "https://www.myvi.ru",
@@ -1530,7 +1733,7 @@
       "allow_html_url": true,
       "requires_direct_media": false,
       "observed_origins": [
-        "https://hc-zf3c.vercel.app",
+        "https://lucky-star-3059.salman-sohail93.workers.dev",
         "https://new2.movies4u.clinic"
       ],
       "generated_from_manifest": true,
@@ -1580,6 +1783,8 @@
       "observed_origins": [
         "https://video.sibnet.ru",
         "https://vidmoly.me",
+        "https://fsvid.lol",
+        "https://vidzy.live",
         "https://streamtape.com",
         "https://sendvid.com",
         "https://www.myvi.ru",
@@ -1605,6 +1810,8 @@
       "observed_origins": [
         "https://video.sibnet.ru",
         "https://vidmoly.me",
+        "https://fsvid.lol",
+        "https://vidzy.live",
         "https://streamtape.com",
         "https://sendvid.com",
         "https://www.myvi.ru",
@@ -1781,6 +1988,8 @@
       "observed_origins": [
         "https://video.sibnet.ru",
         "https://vidmoly.me",
+        "https://fsvid.lol",
+        "https://vidzy.live",
         "https://streamtape.com",
         "https://sendvid.com",
         "https://www.myvi.ru",
@@ -1851,7 +2060,6 @@
       "allow_html_url": false,
       "requires_direct_media": false,
       "observed_origins": [
-        "https://api.wingsdatabase.com",
         "https://www.vidking.net"
       ],
       "generated_from_manifest": true,
@@ -1939,6 +2147,8 @@
       "observed_origins": [
         "https://video.sibnet.ru",
         "https://vidmoly.me",
+        "https://fsvid.lol",
+        "https://vidzy.live",
         "https://streamtape.com",
         "https://sendvid.com",
         "https://www.myvi.ru",
@@ -1971,6 +2181,8 @@
         "https://npms.io",
         "https://video.sibnet.ru",
         "https://vidmoly.me",
+        "https://fsvid.lol",
+        "https://vidzy.live",
         "https://streamtape.com",
         "https://sendvid.com",
         "https://www.myvi.ru",
@@ -2001,6 +2213,8 @@
       "observed_origins": [
         "https://video.sibnet.ru",
         "https://vidmoly.me",
+        "https://fsvid.lol",
+        "https://vidzy.live",
         "https://streamtape.com",
         "https://sendvid.com",
         "https://www.myvi.ru",
@@ -2036,6 +2250,8 @@
       "observed_origins": [
         "https://video.sibnet.ru",
         "https://vidmoly.me",
+        "https://fsvid.lol",
+        "https://vidzy.live",
         "https://streamtape.com",
         "https://sendvid.com",
         "https://www.myvi.ru",
@@ -2108,10 +2324,7 @@
       "allow_html_url": false,
       "requires_direct_media": false,
       "observed_origins": [
-        "https://api.videasy.to",
-        "https://anime-db.videasy.net",
-        "https://player.videasy.to",
-        "https://vidlink.pro"
+        "https://www.cineby.at"
       ],
       "generated_from_manifest_or_stage": true
     },
@@ -2121,7 +2334,89 @@
       "allow_html_url": false,
       "requires_direct_media": true,
       "observed_origins": [
-        "https://1.animezey23112022.workers.dev"
+        "https://1.animezeydl.workers.dev"
+      ],
+      "generated_from_manifest_or_stage": true
+    },
+    "anime-ultime": {
+      "strategy": "mixed_embed_resolver",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://video.sibnet.ru",
+        "https://vidmoly.me",
+        "https://fsvid.lol",
+        "https://vidzy.live",
+        "https://streamtape.com",
+        "https://sendvid.com",
+        "https://www.myvi.ru",
+        "https://younetu.org",
+        "https://vidoza.net",
+        "https://lecteurvideo.com",
+        "https://up4fun.top",
+        "https://v5.anime-ultime.net",
+        "https://npms.io",
+        "https://kitsu.io",
+        "https://arm.haglund.dev",
+        "https://v3-cinemeta.strem.io",
+        "https://lodash.com",
+        "https://openjsf.org",
+        "http://underscorejs.org"
+      ],
+      "generated_from_manifest_or_stage": true
+    },
+    "goated": {
+      "strategy": "api_stream_resolver",
+      "validation": "api_and_provider_native",
+      "allow_html_url": false,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://api.reallyfast.xyz",
+        "https://goated.cx"
+      ],
+      "generated_from_manifest_or_stage": true
+    },
+    "voiranime-homes": {
+      "strategy": "mixed_embed_resolver",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://npms.io",
+        "https://video.sibnet.ru",
+        "https://vidmoly.me",
+        "https://fsvid.lol",
+        "https://vidzy.live",
+        "https://streamtape.com",
+        "https://sendvid.com",
+        "https://www.myvi.ru",
+        "https://younetu.org",
+        "https://vidoza.net",
+        "https://lecteurvideo.com",
+        "https://up4fun.top",
+        "https://voiranime.homes",
+        "https://kitsu.io",
+        "https://arm.haglund.dev",
+        "https://v3-cinemeta.strem.io",
+        "https://lodash.com",
+        "https://openjsf.org",
+        "http://underscorejs.org"
+      ],
+      "generated_from_manifest_or_stage": true
+    },
+    "waveanime": {
+      "strategy": "html_scraper",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://waveanime.fr",
+        "https://kitsu.io",
+        "https://npms.io",
+        "https://lodash.com",
+        "https://openjsf.org",
+        "http://underscorejs.org"
       ],
       "generated_from_manifest_or_stage": true
     }
@@ -2472,8 +2767,8 @@
   },
   "provider_profile_generation": {
     "schema_version": 3,
-    "provider_count": 85,
-    "staged_provider_count": 0,
+    "provider_count": 90,
+    "staged_provider_count": 89,
     "source": "manifest_published_bundles_and_current_staging",
     "same_deep_new_provider_support": true,
     "automatic_bundle_rewrite": false
