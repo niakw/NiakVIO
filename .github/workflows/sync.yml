@@ -139,6 +139,13 @@ jobs:
             printf '%s\n' '{"schema_version":1,"mode":"quick","provider_specific_rules":false,"rounds":[],"accepted_repairs":0}' > health-output/repair-report.json
           fi
 
+      - name: Validate deep harness evidence before publication
+        if: steps.resolve-mode.outputs.validation_mode == 'deep'
+        run: |
+          python scripts/validate_deep_health_integrity.py \
+            --health health-output/health-results.json \
+            --repairs health-output/repair-report.json
+
       # Phase 4: report quality from the final exact files. Promotion later
       # enables only current DNS + access + playable-stream + quality passes.
       - name: Generate final diagnostics and route regressions
