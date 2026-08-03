@@ -41,7 +41,7 @@ resolver.update_provider_patch(cycle_config, 'frenchstream', cycle_hub, 'https:/
 cycle_patch = cycle_config['provider_patches']['frenchstream']
 assert 'fs03.lol' not in cycle_patch['replacements']
 assert cycle_patch['replacements']['fs16.lol'] == 'fs03.lol'
-assert cycle_patch['required_values'] == ['fs03.lol']
+assert cycle_patch['required_values'] == []
 
 # Provider-specific endpoint bootstraps follow the same resolved domain.
 toflix_config = {

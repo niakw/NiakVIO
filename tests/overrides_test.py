@@ -280,3 +280,43 @@ test_chained_provider_patch_scripts_and_output_guard()
 test_toflix_terminal_bootstrap_patch()
 
 print("override tests passed")
+
+
+def test_legacy_domain_required_values_are_metadata() -> None:
+    """A resolved bare host must not be required as a literal code marker."""
+    config_path = ROOT / "provider-overrides.json"
+    original = config_path.read_text(encoding="utf-8")
+    config = json.loads(original)
+    config["provider_patches"].setdefault("animesama-co", {})["required_values"] = [
+        "anime-sama.store"
+    ]
+    try:
+        config_path.write_text(json.dumps(config, indent=2) + "\n", encoding="utf-8")
+        with tempfile.TemporaryDirectory() as tmp:
+            stage = Path(tmp)
+            target = stage / "providers" / "gowaru" / "animesama-co.js"
+            target.parent.mkdir(parents=True)
+            output = b"module.exports={getStreams:async()=>[]};"
+            target.write_bytes(output)
+            registry = {
+                "candidates": [{
+                    "key": "gowaru:animesama-co",
+                    "canonical_id": "animesama-co",
+                    "upstream_id": "animesama-co",
+                    "local_path": "providers/gowaru/animesama-co.js",
+                    "upstream_sha256": hashlib.sha256(output).hexdigest(),
+                    "sha256": hashlib.sha256(output).hexdigest(),
+                    "local_patches": [],
+                }]
+            }
+            (stage / "candidates.json").write_text(json.dumps(registry), encoding="utf-8")
+            subprocess.run([
+                sys.executable,
+                str(ROOT / "scripts" / "validate_override_pipeline.py"),
+                "--stage", str(stage),
+            ], check=True)
+    finally:
+        config_path.write_text(original, encoding="utf-8")
+
+
+test_legacy_domain_required_values_are_metadata()
