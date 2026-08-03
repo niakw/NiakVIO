@@ -41,6 +41,15 @@ const requestedMode = process.argv.includes('--retry')
 const registry = JSON.parse(await fs.readFile(REGISTRY_PATH, 'utf8'));
 const config = JSON.parse(await fs.readFile(CONFIG_PATH, 'utf8'));
 const modeConfig = config.modes?.[requestedMode] || config.modes?.quick || {};
+
+function configuredWorkerMemoryMb() {
+  const fallback = requestedMode === 'deep' ? 512 : requestedMode === 'quick' ? 384 : 256;
+  const configured = Number(process.env.NUVIO_WORKER_MEMORY_MB || modeConfig.worker_memory_mb || fallback);
+  if (!Number.isFinite(configured)) return fallback;
+  return Math.max(128, Math.min(2048, Math.round(configured)));
+}
+
+const workerMemoryMb = configuredWorkerMemoryMb();
 const activationConfig = config.activation || {};
 const executionConfig = config.execution_context || {};
 const dnsPreflightConfig = config.dns_preflight || {};
@@ -769,13 +778,21 @@ function executionContextForCandidate(candidate) {
   };
 }
 
+function appendTail(current, chunk, maxBytes) {
+  const combined = Buffer.concat([Buffer.from(current), Buffer.from(chunk)]);
+  const selected = combined.length <= maxBytes
+    ? combined
+    : combined.subarray(combined.length - maxBytes);
+  return selected.toString('utf8');
+}
+
 function runWorker(candidate, fixture) {
   return new Promise((resolve) => {
     const providerPath = path.join(STAGE, candidate.local_path);
     const timeoutMs = Number(modeConfig.provider_timeout_ms || 45000);
     const context = { ...executionContextForCandidate(candidate), fixtureMetadata: fixture };
     const child = spawn(process.execPath, [
-      '--max-old-space-size=256',
+      `--max-old-space-size=${workerMemoryMb}`,
       WORKER_PATH,
       providerPath,
       JSON.stringify(fixture),
@@ -814,11 +831,14 @@ function runWorker(candidate, fixture) {
     }, timeoutMs);
 
     const maxWorkerOutputBytes = 1024 * 1024;
+    const maxWorkerErrorBytes = 32 * 1024;
     child.stdout.on('data', (chunk) => {
-      if (Buffer.byteLength(stdout) < maxWorkerOutputBytes) stdout += chunk.toString().slice(0, maxWorkerOutputBytes - Buffer.byteLength(stdout));
+      // Keep the tail: the protocol marker is emitted after provider logs.
+      stdout = appendTail(stdout, chunk, maxWorkerOutputBytes);
     });
     child.stderr.on('data', (chunk) => {
-      if (Buffer.byteLength(stderr) < 16384) stderr += chunk.toString().slice(0, 16384 - Buffer.byteLength(stderr));
+      // V8 writes the decisive heap-exhaustion message near the end.
+      stderr = appendTail(stderr, chunk, maxWorkerErrorBytes);
     });
     child.on('error', (error) => finish({
       ok: false,
@@ -832,23 +852,29 @@ function runWorker(candidate, fixture) {
       const markers = stdout.split(/\r?\n/).filter((line) => line.startsWith('NUVIO_HEALTH_RESULT='));
       const marker = markers.at(-1);
       if (!marker) {
+        const memoryExhausted = /(?:heap out of memory|reached heap limit|allocation failed[^\n]*heap|ineffective mark-compacts)/i.test(stderr);
+        const message = memoryExhausted
+          ? `worker exceeded its ${workerMemoryMb} MB JavaScript heap limit`
+          : `worker returned no result${stderr ? `: ${stderr.slice(-700)}` : ''}`;
         finish({
           ok: false,
-          error: `worker returned no result${stderr ? `: ${stderr.slice(0, 500)}` : ''}`,
+          error: message,
           error_details: {
-            name: 'WorkerProtocolError',
-            code: 'NUVIO_WORKER_NO_RESULT',
-            message: `worker returned no result${stderr ? `: ${stderr.slice(0, 500)}` : ''}`,
+            name: memoryExhausted ? 'WorkerMemoryExhaustedError' : 'WorkerProtocolError',
+            code: memoryExhausted ? 'NUVIO_WORKER_MEMORY_EXHAUSTED' : 'NUVIO_WORKER_NO_RESULT',
+            message,
             phase: 'worker_process',
           },
           streams: [],
           stream_count: 0,
+          worker_memory_mb: workerMemoryMb,
           worker_exit: { code, signal },
         });
         return;
       }
       try {
         const value = JSON.parse(marker.slice('NUVIO_HEALTH_RESULT='.length));
+        value.worker_memory_mb = workerMemoryMb;
         value.worker_exit = { code, signal };
         if (code !== 0 && value.ok) {
           value.ok = false;
@@ -897,6 +923,9 @@ function statusFrom(worker, probes) {
     || (worker.invocation_diagnostics || []).some((diag) => diag?.error?.code === 'NUVIO_INVALID_REQUEST_ARGUMENT');
 
   if (!worker.ok) {
+    if (worker.error_details?.code === 'NUVIO_WORKER_MEMORY_EXHAUSTED') {
+      return { status: 'runtime_error', failureClass: 'worker_memory_exhausted' };
+    }
     if (invalidRequest) return { status: 'runtime_error', failureClass: 'invalid_request_arguments' };
     if (blockedRows.length && meaningfulSuccess.length === 0) return { status: 'blocked', failureClass: 'provider_http_blocked' };
     if (unavailableRows.length && meaningfulSuccess.length === 0) return { status: 'unavailable', failureClass: 'provider_http_unavailable' };
@@ -1198,6 +1227,7 @@ async function testCandidate(candidate) {
       stream_count: streams.length,
       streams_returned: streams.length,
       failure_class: failureClass,
+      worker_memory_mb: Number(worker.worker_memory_mb || workerMemoryMb),
       worker_exit: worker.worker_exit || null,
       error_details: sanitizeStructuredError(worker.error_details),
       runtime_errors: Array.isArray(worker.runtime_errors) ? worker.runtime_errors.map(sanitizeStructuredError).filter(Boolean) : [],
