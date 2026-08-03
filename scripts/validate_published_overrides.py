@@ -36,6 +36,19 @@ def bare_host_marker(value: str) -> bool:
     return len(labels) >= 2 and all(label and all(ch.isalnum() or ch == "-" for ch in label) for label in labels)
 
 
+def provider_file_matches_id(path: Path, provider_id: str) -> bool:
+    """Match one provider bundle exactly, never a longer provider-id prefix.
+
+    For example, ``4khdhub`` must not match ``4khdhubnew--...js``.  The old
+    prefix glob could delete another provider's freshly promoted bundle before
+    that provider was validated.
+    """
+    name = path.name
+    stem = name[:-3] if name.lower().endswith(".js") else name
+    bundle_id = stem.split("--", 1)[0]
+    return canonical_id(bundle_id) == canonical_id(provider_id)
+
+
 def main() -> int:
     config = load(CONFIG, {})
     manifest = load(MANIFEST, {})
@@ -117,7 +130,9 @@ def main() -> int:
         # Remove stale aliases/old hashes only when they retain a forbidden value
         # and are not the exact file selected by manifest.next.json.
         if replacements:
-            for candidate in PROVIDERS.glob(f"{cid}*.js"):
+            for candidate in PROVIDERS.glob("*.js"):
+                if not provider_file_matches_id(candidate, cid):
+                    continue
                 if candidate.resolve() == target:
                     continue
                 candidate_text = candidate.read_text(encoding="utf-8", errors="ignore")
