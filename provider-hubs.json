@@ -190,7 +190,13 @@
           "purpose": "Fallback discovery when curated sources fail"
         }
       ],
-      "search_confirmation_runs": 2
+      "search_confirmation_runs": 2,
+      "terminal_markers": [
+        "rechercher un film",
+        "streaming cinéma & séries",
+        "titres"
+      ],
+      "validation_scope": "catalogue_terminal"
     },
     "voiranime-rip": {
       "id": "voiranime-rip",
@@ -477,7 +483,10 @@
       "search_confirmation_runs": 2,
       "blocked_hosts": [
         "fstream.top"
-      ]
+      ],
+      "validation_scope": "site_plus_api",
+      "require_api_validation": true,
+      "persist_official_site_without_api": false
     },
     "videasy": {
       "id": "videasy",
@@ -2545,11 +2554,13 @@
       "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
       "direct_candidates": [
         "https://fs16.lol/",
+        "https://fs09.lol/",
         "https://fs03.lol/"
       ],
       "allowed_terminal_hosts": [
-        "fs03.lol",
-        "fs16.lol"
+        "fs16.lol",
+        "fs09.lol",
+        "fs03.lol"
       ],
       "search_queries": [
         "site:fstream.org French Stream URL éphémère du moment"
@@ -2574,7 +2585,13 @@
       ],
       "allowed_terminal_host_patterns": [
         "^fs[0-9]{1,4}\\.[a-z0-9-]{2,20}$"
-      ]
+      ],
+      "terminal_markers": [
+        "tapez un titre",
+        "films avec vf",
+        "nouveautés films"
+      ],
+      "validation_scope": "catalogue_terminal"
     },
     "nakios": {
       "id": "nakios",
@@ -2605,7 +2622,10 @@
           "purpose": "Official ecosystem and service-role reference"
         }
       ],
-      "search_confirmation_runs": 2
+      "search_confirmation_runs": 2,
+      "validation_scope": "site_plus_api",
+      "require_api_validation": true,
+      "persist_official_site_without_api": false
     },
     "purstream": {
       "id": "purstream",
@@ -2630,7 +2650,10 @@
           "purpose": "Official current-address hub"
         }
       ],
-      "search_confirmation_runs": 2
+      "search_confirmation_runs": 2,
+      "validation_scope": "site_plus_api",
+      "require_api_validation": true,
+      "persist_official_site_without_api": false
     },
     "toflix": {
       "id": "toflix",
@@ -2673,32 +2696,49 @@
       "search_confirmation_runs": 2,
       "allowed_terminal_host_patterns": [
         "^tfx[0-9]{1,4}\\.[a-z0-9-]{2,20}$"
-      ]
+      ],
+      "validation_scope": "site_plus_api"
     },
     "coflix": {
       "id": "coflix",
       "name": "coflix",
       "manifest_status": "Actif",
       "category": null,
-      "hub": "https://coflix.life/",
+      "hub": "https://coflix.domains/",
       "resolver": "official_outbound",
       "source": "curated_user_registry",
       "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
       "aliases": [
         "coflix"
       ],
-      "direct_candidates": [],
-      "allowed_terminal_hosts": [],
-      "search_queries": [],
+      "direct_candidates": [
+        "https://coflix.esq/"
+      ],
+      "allowed_terminal_hosts": [
+        "coflix.esq"
+      ],
+      "search_queries": [
+        "site:coflix.domains adresse officielle active Coflix"
+      ],
       "sources": [
         {
           "type": "hub",
-          "url": "https://coflix.life/",
+          "url": "https://coflix.domains/",
           "priority": 110,
-          "purpose": "Official current-address hub"
+          "purpose": "Official current-address registry"
         }
       ],
-      "search_confirmation_runs": 2
+      "search_confirmation_runs": 2,
+      "direct": "https://coflix.esq/",
+      "allowed_terminal_host_patterns": [
+        "^coflix\\.[a-z0-9-]{2,20}$"
+      ],
+      "terminal_markers": [
+        "films à la une",
+        "aucun résultat trouvé",
+        "tendances du jour"
+      ],
+      "validation_scope": "catalogue_terminal"
     },
     "flemmix": {
       "id": "flemmix",
@@ -2712,14 +2752,14 @@
         "flemmix",
         "wiflix"
       ],
-      "direct": "https://flemmix.casa/",
+      "direct": "https://flemmix.men/",
       "last_verified": "2026-08-03",
       "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
       "direct_candidates": [
-        "https://flemmix.casa/"
+        "https://flemmix.men/"
       ],
       "allowed_terminal_hosts": [
-        "flemmix.casa"
+        "flemmix.men"
       ],
       "search_queries": [],
       "sources": [
@@ -2730,7 +2770,15 @@
           "purpose": "Official Wiflix/Flemmix address list"
         }
       ],
-      "search_confirmation_runs": 2
+      "search_confirmation_runs": 2,
+      "allowed_terminal_host_patterns": [
+        "^flemmix\\.[a-z0-9-]{2,20}$"
+      ],
+      "terminal_markers": [
+        "film",
+        "série"
+      ],
+      "validation_scope": "catalogue_terminal"
     },
     "animezey": {
       "id": "animezey",

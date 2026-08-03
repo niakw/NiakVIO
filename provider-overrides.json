@@ -41,6 +41,7 @@
       ],
       "patch_scripts": [
         "scripts/provider_patches/movix_multi_source.py",
+        "scripts/provider_patches/vf_catalogue_recovery.py",
         "scripts/provider_patches/stream_output_sanitizer.py"
       ],
       "patch_script_options": {
@@ -48,37 +49,79 @@
           "blocked_hosts": [
             "fstream.top"
           ],
-          "probe_direct_media": true,
-          "max_probes": 4
+          "blocked_path_patterns": [
+            "/troll/"
+          ],
+          "probe_direct_media": false,
+          "probe_all_urls": false,
+          "max_probes": 0,
+          "min_vod_duration_seconds": 60
+        },
+        "scripts/provider_patches/vf_catalogue_recovery.py": {
+          "strategy": "movix_api",
+          "provider_name": "Movix",
+          "base_url": "https://movix.fun",
+          "api_url": "https://api.movix.fun",
+          "types": [
+            "movie"
+          ],
+          "preferred_player_groups": [
+            "VFF",
+            "VFQ",
+            "VF",
+            "Default",
+            "VOSTFR"
+          ],
+          "blocked_hosts": [
+            "fstream.top"
+          ],
+          "blocked_path_patterns": [
+            "/troll/"
+          ],
+          "max_players": 10
         }
       },
       "official_hub": "https://movix.online/",
-      "official_site": "https://movix.fun/"
+      "official_site": "https://movix.fun",
+      "official_api": "https://api.movix.fun",
+      "manifest_overrides": {
+        "supportsExternalPlayer": true,
+        "logo": "https://movix.fun/favicon.ico"
+      },
+      "published_types": [
+        "movie",
+        "tv",
+        "anime"
+      ]
     },
     "frenchstream": {
       "notes": [
-        "Resolve the current site from fstream.org.",
-        "Reject the unrelated fstream.top short-video endpoint and recover players from the real detail page."
+        "Resolve the current terminal site from fstream.org before applying the provider.",
+        "Reject known short preview/troll players independently from the Frenchstream site address."
       ],
       "replacements": {
         "french-stream.one": "fs16.lol",
         "frenchstream.food": "fs16.lol",
-        "fs03.lol": "fs16.lol"
+        "fs03.lol": "fs16.lol",
+        "fs09.lol": "fs16.lol"
       },
       "required_values": [],
       "route_replacements": {},
       "required_route_values": [],
       "manifest_overrides": {
-        "logo": "https://fs16.lol/favicon.ico"
+        "logo": "https://fs16.lol/favicon.ico",
+        "supportsExternalPlayer": true
       },
       "capability": "mixed_embed_resolver",
       "runtime_domain_replacements": {
         "french-stream.one": "fs16.lol",
         "frenchstream.food": "fs16.lol",
-        "fs03.lol": "fs16.lol"
+        "fs03.lol": "fs16.lol",
+        "fs09.lol": "fs16.lol"
       },
       "patch_scripts": [
         "scripts/provider_patches/frenchstream_detail_players.py",
+        "scripts/provider_patches/vf_catalogue_recovery.py",
         "scripts/provider_patches/stream_output_sanitizer.py"
       ],
       "patch_script_options": {
@@ -86,12 +129,43 @@
           "blocked_hosts": [
             "fstream.top"
           ],
-          "probe_direct_media": true,
-          "max_probes": 4
+          "blocked_path_patterns": [
+            "/troll/"
+          ],
+          "probe_direct_media": false,
+          "probe_all_urls": false,
+          "max_probes": 0,
+          "min_vod_duration_seconds": 60
+        },
+        "scripts/provider_patches/vf_catalogue_recovery.py": {
+          "strategy": "html",
+          "provider_name": "Frenchstream",
+          "base_url": "https://fs16.lol",
+          "types": [
+            "movie"
+          ],
+          "search_paths": [
+            "/index.php?do=search&subaction=search&story={query}",
+            "/?do=search&subaction=search&story={query}",
+            "/?s={query}"
+          ],
+          "direct_paths": [],
+          "blocked_hosts": [
+            "fstream.top"
+          ],
+          "blocked_path_patterns": [
+            "/troll/"
+          ],
+          "max_players": 8
         }
       },
       "official_hub": "https://fstream.org/",
-      "official_site": "https://fs16.lol"
+      "official_site": "https://fs16.lol",
+      "published_types": [
+        "movie",
+        "tv",
+        "anime"
+      ]
     },
     "streamzo": {
       "notes": [
@@ -106,7 +180,56 @@
       "runtime_domain_replacements": {},
       "official_hub": null,
       "official_site": "https://streamzo.fr",
-      "patch_script_options": {}
+      "patch_script_options": {
+        "scripts/provider_patches/vf_catalogue_recovery.py": {
+          "strategy": "streamzo",
+          "provider_name": "StreamZo",
+          "base_url": "https://streamzo.fr",
+          "types": [
+            "movie"
+          ],
+          "direct_paths": [
+            "/{slug}"
+          ],
+          "search_paths": [
+            "/?s={query}",
+            "/search?q={query}"
+          ],
+          "blocked_hosts": [
+            "fstream.top"
+          ],
+          "blocked_path_patterns": [
+            "/troll/"
+          ],
+          "max_players": 6
+        },
+        "scripts/provider_patches/stream_output_sanitizer.py": {
+          "blocked_hosts": [
+            "fstream.top"
+          ],
+          "blocked_path_patterns": [
+            "/troll/"
+          ],
+          "probe_direct_media": false,
+          "probe_all_urls": false,
+          "max_probes": 0,
+          "min_vod_duration_seconds": 60
+        }
+      },
+      "manifest_overrides": {
+        "supportsExternalPlayer": true,
+        "logo": "https://streamzo.fr/favicon.ico"
+      },
+      "patch_scripts": [
+        "scripts/provider_patches/streamzo_data_embed.py",
+        "scripts/provider_patches/vf_catalogue_recovery.py",
+        "scripts/provider_patches/stream_output_sanitizer.py"
+      ],
+      "published_types": [
+        "movie",
+        "tv",
+        "anime"
+      ]
     },
     "animepahe": {
       "replacements": {
@@ -152,7 +275,12 @@
       "official_hub": "https://purstream.wiki",
       "patch_script": "scripts/provider_patches/purstream_bridge.py",
       "patch_options": {},
-      "profiles": []
+      "profiles": [],
+      "published_types": [
+        "movie",
+        "tv",
+        "anime"
+      ]
     },
     "vidfast": {
       "replacements": {
@@ -216,19 +344,79 @@
     },
     "coflix": {
       "replacements": {
-        "coflix.cymru": "coflix.blue"
+        "coflix.cymru": "coflix.esq",
+        "coflix.blue": "coflix.esq",
+        "coflix.wiki": "coflix.esq",
+        "coflix.life": "coflix.esq",
+        "coflix.fr": "coflix.esq"
       },
       "runtime_domain_replacements": {
-        "coflix.cymru": "coflix.blue"
+        "coflix.cymru": "coflix.esq",
+        "coflix.blue": "coflix.esq",
+        "coflix.wiki": "coflix.esq",
+        "coflix.life": "coflix.esq",
+        "coflix.fr": "coflix.esq"
       },
       "notes": [
         "Automatically migrated coflix.cymru to coflix.blue after DNS/HTTP preflight validation of a redirect or a reachable same-role provider endpoint."
       ],
       "capability": "html_scraper",
-      "official_hub": "https://coflix.life/",
-      "official_site": "https://coflix.wiki",
-      "patch_script_options": {},
-      "required_values": []
+      "official_hub": "https://coflix.domains/",
+      "official_site": "https://coflix.esq",
+      "patch_script_options": {
+        "scripts/provider_patches/vf_catalogue_recovery.py": {
+          "strategy": "html",
+          "provider_name": "Coflix",
+          "base_url": "https://coflix.esq",
+          "types": [
+            "movie"
+          ],
+          "search_paths": [
+            "/?s={query}",
+            "/index.php?do=search&subaction=search&story={query}",
+            "/?do=search&subaction=search&story={query}",
+            "/search?q={query}"
+          ],
+          "direct_paths": [
+            "/{slug}",
+            "/film/{slug}",
+            "/films/{slug}"
+          ],
+          "blocked_hosts": [
+            "fstream.top"
+          ],
+          "blocked_path_patterns": [
+            "/troll/"
+          ],
+          "max_players": 8
+        },
+        "scripts/provider_patches/stream_output_sanitizer.py": {
+          "blocked_hosts": [
+            "fstream.top"
+          ],
+          "blocked_path_patterns": [
+            "/troll/"
+          ],
+          "probe_direct_media": false,
+          "probe_all_urls": false,
+          "max_probes": 0,
+          "min_vod_duration_seconds": 60
+        }
+      },
+      "required_values": [],
+      "manifest_overrides": {
+        "supportsExternalPlayer": true,
+        "logo": "https://coflix.esq/favicon.ico"
+      },
+      "patch_scripts": [
+        "scripts/provider_patches/vf_catalogue_recovery.py",
+        "scripts/provider_patches/stream_output_sanitizer.py"
+      ],
+      "published_types": [
+        "movie",
+        "tv",
+        "anime"
+      ]
     },
     "moviesmod": {
       "replacements": {
@@ -307,35 +495,87 @@
       "profiles": [],
       "capability": "mixed_embed_resolver",
       "replacements": {
-        "flemmix.me": "ww1.wiflix-adresses.fun",
-        "wiflix.name": "ww1.wiflix-adresses.fun",
-        "wiflix-hd.vip": "ww1.wiflix-adresses.fun",
-        "flemmix.casa": "ww1.wiflix-adresses.fun"
+        "flemmix.me": "flemmix.men",
+        "flemmix.casa": "flemmix.men",
+        "flemmix.gold": "flemmix.men",
+        "flemmix.voto": "flemmix.men",
+        "flemmix.garden": "flemmix.men",
+        "wiflix.name": "flemmix.men",
+        "wiflix-hd.vip": "flemmix.men",
+        "ww1.wiflix-adresses.fun": "flemmix.men",
+        "flemmix.menn": "flemmix.men"
       },
       "runtime_domain_replacements": {
-        "flemmix.me": "ww1.wiflix-adresses.fun",
-        "wiflix.name": "ww1.wiflix-adresses.fun",
-        "wiflix-hd.vip": "ww1.wiflix-adresses.fun",
-        "flemmix.casa": "ww1.wiflix-adresses.fun"
+        "flemmix.me": "flemmix.men",
+        "flemmix.casa": "flemmix.men",
+        "flemmix.gold": "flemmix.men",
+        "flemmix.voto": "flemmix.men",
+        "flemmix.garden": "flemmix.men",
+        "wiflix.name": "flemmix.men",
+        "wiflix-hd.vip": "flemmix.men",
+        "ww1.wiflix-adresses.fun": "flemmix.men",
+        "flemmix.menn": "flemmix.men"
       },
       "required_values": [],
       "route_replacements": {},
       "required_route_values": [],
       "patch_scripts": [
+        "scripts/provider_patches/vf_catalogue_recovery.py",
         "scripts/provider_patches/stream_output_sanitizer.py"
       ],
       "patch_script_options": {
         "scripts/provider_patches/stream_output_sanitizer.py": {
-          "probe_direct_media": true,
-          "max_probes": 5,
-          "probe_all_urls": true
+          "blocked_hosts": [
+            "fstream.top"
+          ],
+          "blocked_path_patterns": [
+            "/troll/"
+          ],
+          "probe_direct_media": false,
+          "probe_all_urls": false,
+          "max_probes": 0,
+          "min_vod_duration_seconds": 60
+        },
+        "scripts/provider_patches/vf_catalogue_recovery.py": {
+          "strategy": "html",
+          "provider_name": "Flemmix",
+          "base_url": "https://flemmix.men",
+          "types": [
+            "movie"
+          ],
+          "search_paths": [
+            "/index.php?do=search&subaction=search&story={query}",
+            "/?do=search&subaction=search&story={query}",
+            "/?s={query}",
+            "/search?q={query}"
+          ],
+          "direct_paths": [
+            "/{slug}",
+            "/film/{slug}",
+            "/films/{slug}"
+          ],
+          "blocked_hosts": [
+            "fstream.top"
+          ],
+          "blocked_path_patterns": [
+            "/troll/"
+          ],
+          "max_players": 8
         }
       },
       "notes": [
         "Resolve the current Flemmix route from the Wiflix address hub and reject malformed direct-media responses before playback."
       ],
       "official_hub": "https://ww1.wiflix-adresses.fun/",
-      "official_site": "https://ww1.wiflix-adresses.fun"
+      "official_site": "https://flemmix.men",
+      "manifest_overrides": {
+        "supportsExternalPlayer": true,
+        "logo": "https://flemmix.men/favicon.ico"
+      },
+      "published_types": [
+        "movie",
+        "tv"
+      ]
     },
     "nakios": {
       "profiles": [],
@@ -359,7 +599,12 @@
       ],
       "official_hub": "https://nakios.org/",
       "official_site": "https://nakios.live",
-      "patch_script_options": {}
+      "patch_script_options": {},
+      "published_types": [
+        "movie",
+        "tv",
+        "anime"
+      ]
     },
     "papadustream": {
       "profiles": [],
@@ -369,7 +614,10 @@
       "official_hub": "https://papadustream.info/acces/",
       "official_site": "https://papadustream-v2.watch",
       "patch_script_options": {},
-      "required_values": []
+      "required_values": [],
+      "published_types": [
+        "tv"
+      ]
     },
     "toflix": {
       "profiles": [],
@@ -399,7 +647,10 @@
       ],
       "official_hub": "https://toflix.wiki/",
       "official_site": "https://tfx05.lol",
-      "official_api": "https://api.tfx05.lol"
+      "official_api": "https://api.tfx05.lol",
+      "published_types": [
+        "tv"
+      ]
     },
     "4khdhub": {
       "capability": "html_scraper",
@@ -580,8 +831,32 @@
       "runtime_domain_replacements": {},
       "official_hub": null,
       "official_site": "https://w16.french-manga.net",
-      "patch_script_options": {},
-      "required_values": []
+      "patch_script_options": {
+        "scripts/provider_patches/stream_output_sanitizer.py": {
+          "blocked_hosts": [
+            "fstream.top"
+          ],
+          "blocked_path_patterns": [
+            "/troll/"
+          ],
+          "probe_direct_media": false,
+          "probe_all_urls": false,
+          "max_probes": 0,
+          "min_vod_duration_seconds": 60
+        }
+      },
+      "required_values": [],
+      "patch_scripts": [
+        "scripts/provider_patches/stream_output_sanitizer.py"
+      ],
+      "manifest_overrides": {
+        "supportsExternalPlayer": true,
+        "logo": "https://w16.french-manga.net/favicon.ico"
+      },
+      "published_types": [
+        "movie",
+        "anime"
+      ]
     },
     "goatapi": {
       "capability": "html_scraper"
@@ -809,7 +1084,11 @@
       ],
       "official_hub": "https://t.me/s/Wookafr2",
       "official_site": "https://wookafr.center",
-      "patch_script_options": {}
+      "patch_script_options": {},
+      "published_types": [
+        "movie",
+        "tv"
+      ]
     },
     "xpass": {
       "capability": "html_scraper"
@@ -1001,7 +1280,7 @@
       "allow_html_url": true,
       "requires_direct_media": false,
       "observed_origins": [
-        "https://4khdhub.one"
+        "https://4khdhub.dad"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
@@ -1182,8 +1461,6 @@
         "https://npms.io",
         "https://video.sibnet.ru",
         "https://vidmoly.me",
-        "https://fsvid.lol",
-        "https://vidzy.live",
         "https://streamtape.com",
         "https://sendvid.com",
         "https://www.myvi.ru",
@@ -1272,8 +1549,6 @@
       "observed_origins": [
         "https://video.sibnet.ru",
         "https://vidmoly.me",
-        "https://fsvid.lol",
-        "https://vidzy.live",
         "https://streamtape.com",
         "https://sendvid.com",
         "https://www.myvi.ru",
@@ -1375,8 +1650,6 @@
         "https://npms.io",
         "https://video.sibnet.ru",
         "https://vidmoly.me",
-        "https://fsvid.lol",
-        "https://vidzy.live",
         "https://streamtape.com",
         "https://sendvid.com",
         "https://www.myvi.ru",
@@ -1387,7 +1660,7 @@
         "https://arm.haglund.dev",
         "https://v3-cinemeta.strem.io",
         "https://kitsu.io",
-        "https://coflix.blue",
+        "https://coflix.esq",
         "https://lodash.com",
         "https://openjsf.org",
         "http://underscorejs.org"
@@ -1417,9 +1690,7 @@
       "validation": "provider_native",
       "allow_html_url": true,
       "requires_direct_media": false,
-      "observed_origins": [
-        "https://manifest.desitvhub.eu.org"
-      ],
+      "observed_origins": [],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
     },
@@ -1504,8 +1775,6 @@
       "observed_origins": [
         "https://video.sibnet.ru",
         "https://vidmoly.me",
-        "https://fsvid.lol",
-        "https://vidzy.live",
         "https://streamtape.com",
         "https://sendvid.com",
         "https://www.myvi.ru",
@@ -1513,7 +1782,7 @@
         "https://vidoza.net",
         "https://lecteurvideo.com",
         "https://up4fun.top",
-        "https://ww1.wiflix-adresses.fun",
+        "https://flemmix.men",
         "https://npms.io",
         "https://kitsu.io",
         "https://arm.haglund.dev",
@@ -1534,8 +1803,6 @@
         "https://npms.io",
         "https://video.sibnet.ru",
         "https://vidmoly.me",
-        "https://fsvid.lol",
-        "https://vidzy.live",
         "https://streamtape.com",
         "https://sendvid.com",
         "https://www.myvi.ru",
@@ -1567,8 +1834,6 @@
         "https://npms.io",
         "https://video.sibnet.ru",
         "https://vidmoly.me",
-        "https://fsvid.lol",
-        "https://vidzy.live",
         "https://streamtape.com",
         "https://sendvid.com",
         "https://www.myvi.ru",
@@ -1713,7 +1978,7 @@
       "allow_html_url": true,
       "requires_direct_media": false,
       "observed_origins": [
-        "https://lucky-star-3059.salman-sohail93.workers.dev",
+        "https://hc-zf3c.vercel.app",
         "https://new2.movies4u.clinic"
       ],
       "generated_from_manifest": true,
@@ -1763,8 +2028,6 @@
       "observed_origins": [
         "https://video.sibnet.ru",
         "https://vidmoly.me",
-        "https://fsvid.lol",
-        "https://vidzy.live",
         "https://streamtape.com",
         "https://sendvid.com",
         "https://www.myvi.ru",
@@ -1790,8 +2053,6 @@
       "observed_origins": [
         "https://video.sibnet.ru",
         "https://vidmoly.me",
-        "https://fsvid.lol",
-        "https://vidzy.live",
         "https://streamtape.com",
         "https://sendvid.com",
         "https://www.myvi.ru",
@@ -1879,7 +2140,6 @@
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true,
       "catalogue_types": [
-        "movie",
         "tv"
       ]
     },
@@ -1968,8 +2228,6 @@
       "observed_origins": [
         "https://video.sibnet.ru",
         "https://vidmoly.me",
-        "https://fsvid.lol",
-        "https://vidzy.live",
         "https://streamtape.com",
         "https://sendvid.com",
         "https://www.myvi.ru",
@@ -2127,8 +2385,6 @@
       "observed_origins": [
         "https://video.sibnet.ru",
         "https://vidmoly.me",
-        "https://fsvid.lol",
-        "https://vidzy.live",
         "https://streamtape.com",
         "https://sendvid.com",
         "https://www.myvi.ru",
@@ -2193,8 +2449,6 @@
       "observed_origins": [
         "https://video.sibnet.ru",
         "https://vidmoly.me",
-        "https://fsvid.lol",
-        "https://vidzy.live",
         "https://streamtape.com",
         "https://sendvid.com",
         "https://www.myvi.ru",
@@ -2314,7 +2568,7 @@
       "allow_html_url": false,
       "requires_direct_media": true,
       "observed_origins": [
-        "https://1.animezeydl.workers.dev"
+        "https://1.animezey23112022.workers.dev"
       ],
       "generated_from_manifest_or_stage": true
     },
@@ -2428,20 +2682,19 @@
         "{site}/api"
       ],
       "api_probe_routes": [
-        "/api/v1/search",
+        "/api/v1/search?query=Interstellar",
         "/api/v1",
-        "/health",
-        "/"
+        "/health"
       ],
       "api_success_statuses": [
         200,
         400,
         401,
         403,
-        404,
-        405
+        429
       ],
-      "require_api_validation": true
+      "require_api_validation": true,
+      "persist_official_site_without_api": false
     },
     "frenchstream": {
       "hub": "https://fstream.org/",
@@ -2460,7 +2713,9 @@
       "old_site_hosts": [
         "french-stream.one",
         "frenchstream.food",
-        "fs03.lol"
+        "fs03.lol",
+        "fs09.lol",
+        "fs16.lol"
       ],
       "old_api_hosts": [],
       "api_templates": [],
@@ -2479,7 +2734,15 @@
       ],
       "require_api_validation": false,
       "persist_official_site_without_api": true,
-      "direct_fallback": "https://fs16.lol/"
+      "direct_fallback": "https://fs16.lol/",
+      "allowed_terminal_host_patterns": [
+        "^fs[0-9]{1,4}\\.[a-z0-9-]{2,20}$"
+      ],
+      "terminal_markers": [
+        "tapez un titre",
+        "films avec vf",
+        "nouveautés films"
+      ]
     },
     "movix": {
       "hub": "https://movix.online/",
@@ -2504,20 +2767,16 @@
         "https://api.{host}"
       ],
       "api_probe_routes": [
-        "/",
-        "/health",
-        "/api"
+        "/api/fstream/movie/157336"
       ],
       "api_success_statuses": [
         200,
-        400,
         401,
         403,
-        404,
-        405
+        429
       ],
-      "require_api_validation": false,
-      "persist_official_site_without_api": true,
+      "require_api_validation": true,
+      "persist_official_site_without_api": false,
       "direct_fallback": "https://movix.fun/"
     },
     "nakios": {
@@ -2539,23 +2798,23 @@
         "api.nakios.store"
       ],
       "api_templates": [
-        "https://api.{host}"
+        "https://api.{host}",
+        "{site}/api"
       ],
       "api_probe_routes": [
-        "/",
-        "/health",
-        "/api"
+        "/api/search?query=Interstellar",
+        "/api/movie/157336",
+        "/api/v1/search?query=Interstellar"
       ],
       "api_success_statuses": [
         200,
         400,
         401,
         403,
-        404,
-        405
+        429
       ],
-      "require_api_validation": false,
-      "persist_official_site_without_api": true,
+      "require_api_validation": true,
+      "persist_official_site_without_api": false,
       "direct_fallback": "https://nakios.live/"
     },
     "toflix": {
@@ -2614,8 +2873,13 @@
       ],
       "old_site_hosts": [
         "flemmix.me",
+        "flemmix.casa",
+        "flemmix.gold",
+        "flemmix.voto",
+        "flemmix.garden",
         "wiflix.name",
-        "wiflix-hd.vip"
+        "wiflix-hd.vip",
+        "flemmix.menn"
       ],
       "old_api_hosts": [],
       "api_templates": [],
@@ -2634,7 +2898,14 @@
       ],
       "require_api_validation": false,
       "persist_official_site_without_api": true,
-      "direct_fallback": "https://flemmix.casa/"
+      "direct_fallback": "https://flemmix.men/",
+      "allowed_terminal_host_patterns": [
+        "^flemmix\\.[a-z0-9-]{2,20}$"
+      ],
+      "terminal_markers": [
+        "film",
+        "série"
+      ]
     },
     "wookafr": {
       "hub": "https://t.me/s/Wookafr2",
@@ -2743,12 +3014,57 @@
       "require_api_validation": false,
       "persist_official_site_without_api": true,
       "direct_fallback": "https://new2.movies4u.clinic/"
+    },
+    "coflix": {
+      "hub": "https://coflix.domains/",
+      "aliases": [
+        "coflix"
+      ],
+      "resolver": "official_outbound",
+      "official_link_labels": [
+        "Accéder à CoFlix",
+        "Acceder a CoFlix",
+        "Adresse disponible",
+        "domaine actif",
+        "site officiel"
+      ],
+      "old_site_hosts": [
+        "coflix.cymru",
+        "coflix.blue",
+        "coflix.wiki",
+        "coflix.life",
+        "coflix.fr"
+      ],
+      "old_api_hosts": [],
+      "api_templates": [],
+      "api_probe_routes": [
+        "/"
+      ],
+      "api_success_statuses": [
+        200,
+        400,
+        401,
+        403,
+        404,
+        405
+      ],
+      "require_api_validation": false,
+      "persist_official_site_without_api": true,
+      "direct_fallback": "https://coflix.esq/",
+      "allowed_terminal_host_patterns": [
+        "^coflix\\.[a-z0-9-]{2,20}$"
+      ],
+      "terminal_markers": [
+        "films à la une",
+        "aucun résultat trouvé",
+        "tendances du jour"
+      ]
     }
   },
   "provider_profile_generation": {
     "schema_version": 3,
-    "provider_count": 90,
-    "staged_provider_count": 89,
+    "provider_count": 89,
+    "staged_provider_count": 0,
     "source": "manifest_published_bundles_and_current_staging",
     "same_deep_new_provider_support": true,
     "automatic_bundle_rewrite": false

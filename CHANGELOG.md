@@ -1,4 +1,23 @@
+## 5.20.0
+
+- Rebuilt the VF movie path around full catalogue recovery instead of domain-only validation.
+- Added verified movie recovery adapters for Frenchstream, StreamZo, Movix, Coflix and Flemmix, tested with Interstellar and Guardians of the Galaxy Vol. 3 response structures.
+- Kept Flemmix, Wooka, Nakios and ToFlix disabled until a current playable-stream proof exists; address discovery alone can no longer enable them.
+- Removed the unsupported movie capability from Papadustream and preserved explicit anime-movie capabilities.
+- Added strict hub-versus-terminal separation, catalogue-page markers and meaningful API probes for Purstream, Movix and Nakios. Generic HTTP 404 responses are no longer accepted as API validation.
+- Rejects fstream.top, /troll/ and short preview playlists before they reach the player.
+- Fixed domain-prefix replacement collisions such as flemmix.me -> flemmix.men and made coexisting recovery/sanitizer wrappers idempotent.
+- Keeps Dahmermovies and Dahmermovies-TV excluded from manifests, providers and future upstream promotion.
+
 ## 5.19.2 — Deep harness integrity and repair rollback
+
+## 5.19.4
+
+- Rejected short/troll HLS previews, including the 18-second French-Manga/FStream false player.
+- Refreshed Frenchstream from its official hub and preserved anime-film request types.
+- Added automatic provider/release version invalidation so removed or changed providers cannot remain cached under an unchanged release.
+- Kept Dahmermovies variants removed and explicitly excluded.
+
 
 - Fixed provider invocation selection so incompatible object/positional signatures cannot generate `[object Object]` URLs.
 - Preserved structured runtime exceptions for baseline, availability and repair rounds.
