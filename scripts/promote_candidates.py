@@ -1644,22 +1644,77 @@ def main() -> int:
             old_entry = existing.get(cid, {})
             observed_status = str(selected.get("health", {}).get("status", "runtime_error"))
             upstream_enabled = bool(selected.get("metadata", {}).get("enabled", True))
-            selected_is_published_baseline = bool(selected.get("baseline"))
+            preserve_statuses = {
+                str(value)
+                for value in activation.get(
+                    "preserve_enabled_on_ci_uncertain_statuses",
+                    [
+                        "blocked",
+                        "provider_unreachable",
+                        "runtime_error",
+                        "unavailable",
+                        "no_streams",
+                        "reachable",
+                        "degraded",
+                    ],
+                )
+            }
+            old_filename = old_entry.get("filename") if isinstance(old_entry, dict) else None
+            old_target = (ROOT / old_filename).resolve() if isinstance(old_filename, str) else None
+            old_artifact_available = bool(
+                old_target
+                and is_under(old_target, ROOT / "providers")
+                and old_target.exists()
+            )
             preserve_current = (
                 not enabled
                 and bool(old_entry.get("enabled", False))
                 and not auto_disabled
                 and upstream_enabled
-                and selected_is_published_baseline
-                and observed_status in inconclusive_statuses(activation)
+                and old_artifact_available
+                and observed_status in preserve_statuses
+                and not metadata_is_excluded(old_entry, sources)
             )
             if preserve_current:
-                enabled = True
-                activation_mode = "preserved_current_inconclusive"
-                blockers = [
-                    blocker for blocker in blockers
-                    if blocker != "availability_auto_disabled"
-                ]
+                retained = dict(old_entry)
+                retained["enabled"] = True
+                entries[cid] = retained
+                old_provenance = previous_provenance.get("providers", {}).get(cid, {})
+                retained_digest = hashlib.sha256(old_target.read_bytes()).hexdigest()
+                provenance[cid] = {
+                    **old_provenance,
+                    "id": cid,
+                    "published_filename": old_filename,
+                    "sha256": retained_digest,
+                    "patched_sha256": retained_digest,
+                    "checked_at": now,
+                    "check_mode": mode,
+                    "check_status": observed_status,
+                    "activation_eligible": False,
+                    "activation_mode": "preserved_current_ci_uncertain",
+                    "activation_blockers": blockers,
+                    "preserved_reason": "ci_uncertain_kept_last_published_artifact",
+                    "preserved_candidate_key": selected.get("key"),
+                    "preserved_candidate_sha256": selected.get("sha256"),
+                }
+                report_items.append(
+                    {
+                        "id": cid,
+                        "action": "preserved-current-enabled-ci-uncertain",
+                        "enabled": True,
+                        "activation_eligible": False,
+                        "activation_mode": "preserved_current_ci_uncertain",
+                        "failed_gates": [
+                            name for name, value in gates.items() if not value.get("passed")
+                        ],
+                        "activation_blockers": blockers,
+                        "activation_gates": gates,
+                        "observed_status": observed_status,
+                        "published_filename": old_filename,
+                        "variant_count": len(variants),
+                    }
+                )
+                continue
 
             try:
                 destination, digest = copy_candidate(selected)

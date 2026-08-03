@@ -179,6 +179,14 @@ def runtime_trigger_matches(trigger: str, result: dict[str, Any]) -> bool:
             and same_host_pattern
         )
 
+    if trigger == "provider_obsolete_route":
+        return (
+            status in {"no_streams", "reachable", "degraded", "provider_unreachable"}
+            and streams == 0
+            and summary["obsolete"] >= 2
+            and summary["provider_success"] == 0
+        )
+
     if trigger == "provider_http_forbidden":
         return (
             status in {"blocked", "no_streams", "reachable", "degraded", "provider_unreachable"}

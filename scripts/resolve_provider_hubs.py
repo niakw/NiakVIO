@@ -822,7 +822,7 @@ def update_provider_patch(config: dict[str, Any], provider_id: str, hub_cfg: dic
     if recovery_script in (patch.get("patch_scripts") or []):
         options = script_options.setdefault(recovery_script, {})
         options["base_url"] = site_url.rstrip("/")
-        if str(options.get("strategy") or "") == "movix_api":
+        if str(options.get("strategy") or "") == "api_discovery":
             if api_url:
                 options["api_url"] = api_url.rstrip("/")
             else:
