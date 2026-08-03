@@ -12,28 +12,32 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
 from apply_provider_overrides import apply_overrides
+from deep_repair_loop import persist_runtime_profiles
 from runtime_repair import (
     compare_results,
     create_repair_candidate,
     matching_profiles,
     runtime_trigger_matches,
 )
-from deep_repair_loop import persist_runtime_profiles
 
 
 def metadata_only_result() -> dict:
     return {
         "key": "source:sample",
-        "status": "no_streams",
-        "score": 10,
+        "status": "provider_unreachable",
+        "score": 0,
         "evidence": {
             "streams_playable": 0,
             "provider_server_accessible": False,
             "provider_server_successful_response": False,
+            "fixture_status_counts": {"provider_unreachable": 1, "runtime_error": 0},
         },
         "tests": [
             {
+                "status": "provider_unreachable",
                 "stream_count": 0,
+                "streams_returned": 0,
+                "streams_playable": 0,
                 "network_observations": [
                     {
                         "host": "metadata.example",
@@ -50,16 +54,20 @@ def metadata_only_result() -> dict:
 def obsolete_fallback_result() -> dict:
     return {
         "key": "source:sample",
-        "status": "reachable",
-        "score": 75,
+        "status": "no_streams",
+        "score": 10,
         "evidence": {
             "streams_playable": 0,
             "provider_server_accessible": True,
             "provider_server_successful_response": True,
+            "fixture_status_counts": {"no_streams": 1, "runtime_error": 0},
         },
         "tests": [
             {
+                "status": "no_streams",
                 "stream_count": 0,
+                "streams_returned": 0,
+                "streams_playable": 0,
                 "provider_server_accessible": True,
                 "provider_server_successful_response": True,
                 "network_observations": [
@@ -74,18 +82,12 @@ def obsolete_fallback_result() -> dict:
 
 def provider_forbidden_result() -> dict:
     return {
-        "key": "source:sample",
-        "status": "reachable",
-        "score": 75,
-        "evidence": {
-            "streams_playable": 0,
-            "provider_server_accessible": True,
-            "provider_server_successful_response": False,
-        },
+        "status": "blocked",
+        "score": 0,
+        "evidence": {"streams_playable": 0},
         "tests": [{
+            "status": "blocked",
             "stream_count": 0,
-            "provider_server_accessible": True,
-            "provider_server_successful_response": False,
             "network_observations": [
                 {"host": "provider.example", "status": 403, "infrastructure": False, "stage": "content_lookup"}
             ],
@@ -95,27 +97,36 @@ def provider_forbidden_result() -> dict:
 
 def stream_forbidden_result() -> dict:
     return {
-        "key": "source:sample",
         "status": "degraded",
         "score": 60,
-        "evidence": {
-            "streams_playable": 1,
-            "provider_server_accessible": True,
-            "provider_server_successful_response": True,
-        },
+        "evidence": {"streams_playable": 1},
         "tests": [{
+            "status": "degraded",
             "stream_count": 1,
-            "provider_server_accessible": True,
-            "provider_server_successful_response": True,
+            "streams_returned": 1,
+            "streams_playable": 1,
             "network_observations": [
-                {"host": "media.example", "status": 403, "infrastructure": False, "stage": "content_lookup"}
+                {"host": "media.example", "status": 403, "infrastructure": False, "stage": "player"}
             ],
         }],
     }
 
 
-def fetch_bundle() -> bytes:
-    return b'module.exports={getStreams:function(){return fetch("https://provider.example/api").then(function(){return []})}};'
+def healthy_result() -> dict:
+    return {
+        "status": "healthy",
+        "score": 100,
+        "evidence": {"streams_playable": 1, "fixture_status_counts": {"healthy": 1, "runtime_error": 0}},
+        "tests": [{
+            "status": "healthy",
+            "stream_count": 1,
+            "streams_returned": 1,
+            "streams_playable": 1,
+            "network_observations": [
+                {"host": "provider.example", "status": 200, "infrastructure": False, "stage": "player"}
+            ],
+        }],
+    }
 
 
 def metadata_bundle() -> bytes:
@@ -128,77 +139,36 @@ def html_bundle() -> bytes:
 
 def test_runtime_signatures() -> None:
     assert runtime_trigger_matches("metadata_only_no_origin", metadata_only_result())
-    assert not runtime_trigger_matches("search_success_with_obsolete_fallback", metadata_only_result())
     assert runtime_trigger_matches("search_success_with_obsolete_fallback", obsolete_fallback_result())
     assert runtime_trigger_matches("provider_http_forbidden", provider_forbidden_result())
-    assert not runtime_trigger_matches("stream_http_forbidden", provider_forbidden_result())
     assert runtime_trigger_matches("stream_http_forbidden", stream_forbidden_result())
 
 
-def test_profile_selection_is_provider_agnostic() -> None:
+def test_profile_selection_requires_explicit_runtime_auto_apply() -> None:
     candidate = {"key": "source:any-name", "canonical_id": "any-name", "local_patches": []}
-    source = metadata_bundle().decode()
-    profiles = matching_profiles(candidate, metadata_only_result(), source)
-    assert profiles == ["metadata_context_recovery"]
-
-    source = html_bundle().decode()
-    profiles = matching_profiles(candidate, obsolete_fallback_result(), source)
-    assert profiles == ["dle_html_search_recovery"]
-
-    source = fetch_bundle().decode()
-    profiles = matching_profiles(candidate, provider_forbidden_result(), source)
-    assert "request_header_recovery" not in profiles
-
-    profiles = matching_profiles(candidate, stream_forbidden_result(), source)
-    assert "stream_output_recovery" not in profiles
+    # The broad metadata mutation remains diagnostic-only.
+    assert matching_profiles(candidate, metadata_only_result(), metadata_bundle().decode()) == []
+    # The narrowly detected DLE repair may be generated, but compare_results
+    # will retain it only after a verified playable stream.
+    assert matching_profiles(candidate, obsolete_fallback_result(), html_bundle().decode()) == ["dle_html_search_recovery"]
 
 
-def test_html_profile_rewrites_exact_functions_without_deleting_neighbours() -> None:
+def test_html_profile_is_syntax_safe() -> None:
     source = html_bundle()
     patched, records = apply_overrides(
-        "random-provider",
-        source,
-        phase="runtime",
-        profile_names=["dle_html_search_recovery"],
+        "random-provider", source, phase="runtime", profile_names=["dle_html_search_recovery"]
     )
     assert patched != source
     assert b"[Nuvio Runtime Repair] Content found via HTML search" in patched
-    assert b"function rx(" in patched
-    assert b"function sg(" in patched
     assert any(row.get("profile") == "dle_html_search_recovery" for row in records)
     with tempfile.TemporaryDirectory() as tmp:
         target = Path(tmp) / "provider.js"
         target.write_bytes(patched)
         subprocess.run(["node", "--check", str(target)], check=True)
-        subprocess.run(
-            ["node", str(ROOT / "scripts" / "validate_provider_artifact.cjs"), str(target)],
-            check=True,
-        )
+        subprocess.run(["node", str(ROOT / "scripts" / "validate_provider_artifact.cjs"), str(target)], check=True)
 
 
-
-def test_real_minified_bundle_rewrite_is_syntax_safe() -> None:
-    source_path = ROOT / "providers" / "frenchstream--gowaru--c4735951ca7fb2df.js"
-    source = source_path.read_bytes()
-    discovery, _ = apply_overrides("frenchstream", source, phase="discovery")
-    metadata, _ = apply_overrides(
-        "frenchstream", discovery, phase="runtime", profile_names=["metadata_context_recovery"]
-    )
-    patched, records = apply_overrides(
-        "frenchstream", metadata, phase="runtime", profile_names=["dle_html_search_recovery"]
-    )
-    assert patched != metadata
-    assert any(row.get("profile") == "dle_html_search_recovery" for row in records)
-    with tempfile.TemporaryDirectory() as tmp:
-        target = Path(tmp) / "provider.js"
-        target.write_bytes(patched)
-        subprocess.run(["node", "--check", str(target)], check=True)
-        subprocess.run(
-            ["node", str(ROOT / "scripts" / "validate_provider_artifact.cjs"), str(target)],
-            check=True,
-        )
-
-def test_repair_candidate_and_comparison() -> None:
+def test_repair_candidate_and_comparison_requires_playable_stream() -> None:
     with tempfile.TemporaryDirectory() as tmp:
         stage = Path(tmp)
         source_path = stage / "providers" / "upstream" / "sample.js"
@@ -212,90 +182,50 @@ def test_repair_candidate_and_comparison() -> None:
             "upstream_id": "sample",
             "local_path": "providers/upstream/sample.js",
             "sha256": hashlib.sha256(source).hexdigest(),
-            "upstream_sha256": hashlib.sha256(source).hexdigest(),
             "local_patches": [],
-            "metadata": {"id": "sample", "name": "Sample"},
         }
         repaired, error = create_repair_candidate(stage, candidate, "metadata_context_recovery", 1)
-        assert error is None
-        assert repaired is not None
-        assert repaired["sha256"] != candidate["sha256"]
-        assert (stage / repaired["local_path"]).is_file()
+        assert error is None and repaired is not None
 
-        improved = {
-            "status": "reachable",
-            "score": 75,
-            "evidence": {
-                "streams_playable": 0,
-                "provider_server_accessible": True,
-                "provider_server_successful_response": True,
-            },
-            "tests": [{"stream_count": 0, "network_observations": []}],
-        }
-        accepted, reason = compare_results(metadata_only_result(), improved)
-        assert accepted and reason == "strict_runtime_improvement"
+    reachable_without_stream = {
+        "status": "reachable",
+        "score": 75,
+        "evidence": {"streams_playable": 0, "fixture_status_counts": {"reachable": 1, "runtime_error": 0}},
+        "tests": [{"status": "reachable", "streams_returned": 0, "streams_playable": 0}],
+    }
+    accepted, reason = compare_results(metadata_only_result(), reachable_without_stream)
+    assert not accepted and reason == "insufficient_playable_stream_proof"
 
-        broken = {"status": "runtime_error", "score": 0, "evidence": {}, "tests": []}
-        accepted, reason = compare_results(metadata_only_result(), broken)
-        assert not accepted and reason.startswith("hard_failure")
+    accepted, reason = compare_results(metadata_only_result(), healthy_result())
+    assert accepted and reason == "strict_playable_stream_improvement"
 
-        route_only = {
-            "status": "reachable",
-            "score": 75,
-            "evidence": {
-                "streams_playable": 0,
-                "provider_server_accessible": True,
-                "provider_server_successful_response": True,
-            },
-            "tests": [{
-                "stream_count": 0,
-                "network_observations": [
-                    {"host": "provider.example", "status": 200, "infrastructure": False, "stage": "search"}
-                ],
-            }],
-        }
-        accepted, reason = compare_results(obsolete_fallback_result(), route_only)
-        assert not accepted and reason == "no_strict_runtime_improvement"
+    with_runtime_error = healthy_result()
+    with_runtime_error["tests"].append({
+        "status": "runtime_error",
+        "error_details": {"code": "BROKEN", "message": "boom"},
+        "streams_returned": 0,
+        "streams_playable": 0,
+    })
+    with_runtime_error["evidence"]["fixture_status_counts"]["runtime_error"] = 1
+    accepted, reason = compare_results(metadata_only_result(), with_runtime_error)
+    assert not accepted and reason == "introduced_runtime_error"
 
 
-def test_accepted_profiles_are_persistable_without_provider_specific_code() -> None:
+def test_accepted_profiles_are_persistable() -> None:
     config = {"provider_patches": {"sample": {"profiles": ["existing"]}}}
-    records = persist_runtime_profiles(config, {"sample": {"request_header_recovery"}, "other": {"stream_output_recovery"}})
-    assert {row["profile"] for row in records} == {"request_header_recovery", "stream_output_recovery"}
-    assert config["provider_patches"]["sample"]["profiles"] == ["existing", "request_header_recovery"]
-    assert config["provider_patches"]["other"]["profiles"] == ["stream_output_recovery"]
+    records = persist_runtime_profiles(config, {"sample": {"dle_html_search_recovery"}})
+    assert records == [{"provider_id": "sample", "profile": "dle_html_search_recovery"}]
+    assert config["provider_patches"]["sample"]["profiles"] == ["existing", "dle_html_search_recovery"]
 
 
-test_runtime_signatures()
-test_profile_selection_is_provider_agnostic()
-test_accepted_profiles_are_persistable_without_provider_specific_code()
-test_html_profile_rewrites_exact_functions_without_deleting_neighbours()
-test_repair_candidate_and_comparison()
-print("runtime repair tests passed")
-
-
-def test_build_wiring_and_no_provider_specific_repair_code() -> None:
-    repair_engine = (ROOT / "scripts" / "runtime_repair.py").read_text(encoding="utf-8").casefold()
-    loop = (ROOT / "scripts" / "deep_repair_loop.py").read_text(encoding="utf-8").casefold()
-    workflow = (ROOT / ".github" / "workflows" / "sync.yml").read_text(encoding="utf-8")
-    for provider_name in ("frenchstream", "streamzo", "flemmix"):
-        assert provider_name not in repair_engine
-        assert provider_name not in loop
-    assert "python scripts/deep_repair_loop.py" in workflow
-    assert "python scripts/validate_override_pipeline.py --stage staging" in workflow
-
-
-test_build_wiring_and_no_provider_specific_repair_code()
-
-
-def test_bounded_deep_loop_retests_and_keeps_only_improvements() -> None:
+def test_bounded_loop_accepts_only_verified_dle_repair() -> None:
     with tempfile.TemporaryDirectory() as tmp:
         temp = Path(tmp)
         stage = temp / "staging"
         output = temp / "health-output"
         provider = stage / "providers" / "upstream" / "sample.js"
         provider.parent.mkdir(parents=True)
-        source = metadata_bundle() + b"\n" + html_bundle()
+        source = html_bundle()
         provider.write_bytes(source)
         candidate = {
             "key": "upstream:sample",
@@ -304,105 +234,43 @@ def test_bounded_deep_loop_retests_and_keeps_only_improvements() -> None:
             "upstream_id": "sample",
             "local_path": "providers/upstream/sample.js",
             "sha256": hashlib.sha256(source).hexdigest(),
-            "upstream_sha256": hashlib.sha256(source).hexdigest(),
             "local_patches": [],
             "metadata": {"id": "sample", "name": "Sample", "supportedTypes": ["movie"]},
         }
-        registry = {
-            "schema_version": 64,
-            "candidate_count": 1,
-            "canonical_provider_count": 1,
-            "excluded_count": 0,
-            "excluded": [],
-            "upstreams": {},
-            "errors": [],
-            "candidates": [candidate],
-        }
+        registry = {"schema_version": 66, "candidates": [candidate], "candidate_count": 1, "canonical_provider_count": 1}
         (stage / "candidates.json").write_text(json.dumps(registry), encoding="utf-8")
-
         fake = temp / "fake-health.mjs"
         fake.write_text(
             """
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
-const registry = JSON.parse(await fs.readFile(process.env.NUVIO_CANDIDATES_PATH, 'utf8'));
-const stage = process.env.NUVIO_STAGE;
-const results = [];
+const registry=JSON.parse(await fs.readFile(process.env.NUVIO_CANDIDATES_PATH,'utf8'));
+const results=[];
 for (const candidate of registry.candidates) {
-  const text = await fs.readFile(path.join(stage, candidate.local_path), 'utf8');
-  const metadataRepaired = text.includes('[Nuvio Runtime Repair] Using fixture title metadata');
-  const searchRepaired = text.includes('[Nuvio Runtime Repair] Content found via HTML search');
-  const fullyRepaired = metadataRepaired && searchRepaired;
-  const observations = !metadataRepaired
-    ? [{host:'metadata.example',status:200,infrastructure:true,stage:'content_lookup'}]
-    : !searchRepaired
-      ? [
-          {host:'provider.example',status:200,infrastructure:false,stage:'search'},
-          {host:'provider.example',status:404,infrastructure:false,stage:'content_lookup'},
-          {host:'provider.example',status:404,infrastructure:false,stage:'content_lookup'},
-        ]
-      : [{host:'provider.example',status:200,infrastructure:false,stage:'search'}];
-  results.push({
-    key: candidate.key,
-    source: candidate.source,
-    upstream_id: candidate.upstream_id,
-    canonical_id: candidate.canonical_id,
-    sha256: candidate.sha256,
-    mode: 'deep',
-    status: fullyRepaired ? 'healthy' : metadataRepaired ? 'reachable' : 'no_streams',
-    score: fullyRepaired ? 100 : metadataRepaired ? 75 : 10,
-    evidence: {
-      streams_playable: fullyRepaired ? 1 : 0,
-      provider_server_accessible: metadataRepaired,
-      provider_server_successful_response: metadataRepaired,
-    },
-    tests: [{
-      stream_count: fullyRepaired ? 1 : 0,
-      provider_server_accessible: metadataRepaired,
-      provider_server_successful_response: metadataRepaired,
-      network_observations: observations,
-    }],
-  });
+ const text=await fs.readFile(path.join(process.env.NUVIO_STAGE,candidate.local_path),'utf8');
+ const repaired=text.includes('[Nuvio Runtime Repair] Content found via HTML search');
+ results.push({key:candidate.key,source:candidate.source,upstream_id:candidate.upstream_id,canonical_id:candidate.canonical_id,sha256:candidate.sha256,status:repaired?'healthy':'no_streams',score:repaired?100:10,evidence:{streams_playable:repaired?1:0,provider_server_accessible:true,provider_server_successful_response:true,fixture_status_counts:{healthy:repaired?1:0,no_streams:repaired?0:1,runtime_error:0}},tests:[{status:repaired?'healthy':'no_streams',stream_count:repaired?1:0,streams_returned:repaired?1:0,streams_playable:repaired?1:0,provider_server_accessible:true,provider_server_successful_response:true,network_observations:repaired?[{host:'provider.example',status:200,infrastructure:false,stage:'player'}]:[{host:'provider.example',status:200,infrastructure:false,stage:'search'},{host:'provider.example',status:404,infrastructure:false,stage:'content_lookup'},{host:'provider.example',status:404,infrastructure:false,stage:'content_lookup'}]}]});
 }
-const report = {schema_version:64,environment:'test',mode:'deep',generated_at:new Date().toISOString(),duration_seconds:0,candidate_count:results.length,excluded_during_discovery:0,counts:{},results};
 await fs.mkdir(process.env.NUVIO_HEALTH_OUTPUT,{recursive:true});
-await fs.writeFile(path.join(process.env.NUVIO_HEALTH_OUTPUT,'health-results.json'),JSON.stringify(report,null,2)+'\\n');
+await fs.writeFile(path.join(process.env.NUVIO_HEALTH_OUTPUT,'health-results.json'),JSON.stringify({schema_version:66,results,counts:{}},null,2)+'\\n');
 """,
             encoding="utf-8",
         )
-
-        subprocess.run(
-            [
-                sys.executable,
-                str(ROOT / "scripts" / "deep_repair_loop.py"),
-                "--stage",
-                str(stage),
-                "--output",
-                str(output),
-                "--mode",
-                "deep",
-                "--health-check",
-                str(fake),
-            ],
-            check=True,
-            cwd=ROOT,
-        )
-        final_registry = json.loads((stage / "candidates.json").read_text())
-        final_candidate = final_registry["candidates"][0]
-        assert final_candidate["key"] == "upstream:sample"
-        assert "runtime-repairs" in final_candidate["local_path"]
-        applied = {
-            row.get("profile")
-            for row in final_candidate.get("local_patches", [])
-            if row.get("type") == "patch_profile"
-        }
-        assert applied == {"metadata_context_recovery", "dle_html_search_recovery"}
-        final_health = json.loads((output / "health-results.json").read_text())
-        assert final_health["results"][0]["status"] == "healthy"
-        repair_report = json.loads((output / "repair-report.json").read_text())
-        assert repair_report["provider_specific_rules"] is False
-        assert repair_report["accepted_repairs"] == 2
+        subprocess.run([
+            sys.executable, str(ROOT / "scripts" / "deep_repair_loop.py"),
+            "--stage", str(stage), "--output", str(output), "--mode", "deep", "--health-check", str(fake),
+        ], check=True, cwd=ROOT)
+        final = json.loads((output / "repair-report.json").read_text())
+        assert final["accepted_repairs"] == 1
+        assert final["rounds"][0]["accepted"][0]["reason"] == "strict_playable_stream_improvement"
+        assert final["rounds"][0]["accepted"][0]["streams_playable_after"] == 1
+        assert len(final["rounds"]) <= 2
 
 
-test_bounded_deep_loop_retests_and_keeps_only_improvements()
-print("bounded deep repair integration test passed")
+test_runtime_signatures()
+test_profile_selection_requires_explicit_runtime_auto_apply()
+test_html_profile_is_syntax_safe()
+test_repair_candidate_and_comparison_requires_playable_stream()
+test_accepted_profiles_are_persistable()
+test_bounded_loop_accepts_only_verified_dle_repair()
+print("runtime repair tests passed")

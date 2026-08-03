@@ -26,4 +26,18 @@ assert 'dnsPreflightForCandidate' in health
 assert 'runtime_skipped_by_dns_preflight' in health
 assert workflow.index('Test DNS and locate validated alternative domains') < workflow.index('Test provider access and repair failed routes')
 
+assert 'fixture_status_counts' in health
+assert 'failure_class' in health
+assert 'error_details' in health
+assert 'sanitizeStructuredError' in health
+assert 'runtime_errors: Array.isArray(worker.runtime_errors) ? worker.runtime_errors.map(sanitizeStructuredError)' in health
+assert 'score=${result.score}' in health
+assert "stream_count: streams.length" in health
+assert 'maxSettingsProfiles' in health
+assert 'NUVIO_INVALID_REQUEST_ARGUMENT' in worker
+assert 'runtime_errors: profileErrors' in worker
+assert 'fixture_metadata' not in worker
+assert overrides['runtime_repair']['require_playable_stream_proof'] is True
+assert overrides['patch_profiles']['metadata_context_recovery']['runtime_auto_apply'] is False
+
 print('provider diagnostics tests passed')

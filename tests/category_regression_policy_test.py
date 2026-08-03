@@ -8,7 +8,8 @@ health=(ROOT/'scripts/health_check.mjs').read_text()
 assert 'profile.requiredCategories' in health
 assert "groups[category]" in health
 worker=(ROOT/'scripts/provider_worker.cjs').read_text()
-assert 'Empty output is never proof' in worker
+assert 'An array, including an empty one, is a valid provider contract result.' in worker
+assert 'content_lookup_completed_no_streams' in health
 sync=(ROOT/'scripts/discover_candidates.py').read_text()
 assert 'published-baseline' in sync
 assert 'provider_lkg_registry' in sync
