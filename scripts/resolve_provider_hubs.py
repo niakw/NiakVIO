@@ -855,6 +855,68 @@ def _apply_confirmation(history_row: dict[str, Any], terminal: str, source_type:
     return observed >= required_runs, {"required": required_runs, "observed": observed}
 
 
+
+
+def _discover_api_probe_routes(site_url: str, site_document: str, api_origin: str, cfg: dict[str, Any], timeout: float) -> list[str]:
+    """Discover concrete API probe paths from the official page and its JS bundles.
+
+    This is intentionally conservative: only same-origin API candidates are used,
+    obsolete/foreign route tokens are rejected, and placeholders are materialized
+    with a representative movie fixture before probing.
+    """
+    if not bool(cfg.get("api_route_discovery", False)):
+        return list(cfg.get("api_probe_routes") or [])
+    documents = [str(site_document or "")]
+    scripts: list[str] = []
+    for match in re.finditer(r'<script\b[^>]*src=["\']([^"\']+)["\']', documents[0], re.I):
+        absolute_url = urllib.parse.urljoin(site_url.rstrip("/") + "/", html.unescape(match.group(1)))
+        if absolute_url not in scripts and is_public_url(absolute_url):
+            scripts.append(absolute_url)
+        if len(scripts) >= int(cfg.get("max_discovery_scripts") or 10):
+            break
+    for script_url in scripts:
+        try:
+            status, _final, body, _headers = fetch(script_url, timeout)
+        except Exception:
+            continue
+        if 200 <= int(status) < 400 and body:
+            documents.append(body)
+
+    obsolete = [str(token).casefold() for token in cfg.get("obsolete_route_tokens") or [] if str(token)]
+    fixture_id = str((cfg.get("api_discovery_fixture") or {}).get("movie") or "157336")
+    found: list[str] = []
+    route_re = re.compile(r'["\'`]([^"\'`]{0,180}/api/[^"\'`]{1,220})["\'`]', re.I)
+    for document in documents:
+        for match in route_re.finditer(str(document or "").replace('\\/', '/')):
+            value = html.unescape(match.group(1)).strip()
+            low = value.casefold()
+            if not any(word in low for word in ("movie", "film", "catalog", "stream", "player")):
+                continue
+            if any(token in low for token in obsolete):
+                continue
+            value = re.sub(r'\$\{[^}]+\}|:[a-z_][a-z0-9_]*|\{(?:id|tmdbid|tmdb_id)\}', '{id}', value, flags=re.I)
+            value = re.sub(r'\{(?:type|media_type|mediatype)\}', 'movie', value, flags=re.I)
+            if '{id}' not in value:
+                if re.search(r'/(?:movie|film)(?:/|$)', value, re.I):
+                    value = value.rstrip('/') + '/{id}'
+                else:
+                    continue
+            concrete = value.replace('{id}', urllib.parse.quote(fixture_id))
+            endpoint = urllib.parse.urljoin(api_origin.rstrip('/') + '/', concrete)
+            try:
+                if urllib.parse.urlparse(endpoint).netloc != urllib.parse.urlparse(api_origin).netloc:
+                    continue
+            except Exception:
+                continue
+            path = urllib.parse.urlparse(endpoint).path
+            if urllib.parse.urlparse(endpoint).query:
+                path += '?' + urllib.parse.urlparse(endpoint).query
+            if path not in found:
+                found.append(path)
+            if len(found) >= 24:
+                return found
+    return found
+
 def resolve_one(provider_id: str, cfg: dict[str, Any], history_row: dict[str, Any], mode: str, timeout: float) -> dict[str, Any]:
     item: dict[str, Any] = {"provider_id": provider_id, "status": "inconclusive"}
     candidates, source_observations = gather_candidates(provider_id, cfg, history_row, mode, timeout)
@@ -907,7 +969,12 @@ def resolve_one(provider_id: str, cfg: dict[str, Any], history_row: dict[str, An
     validated_api = None
     api_probes = []
     for candidate in api_candidates:
-        result = probe(candidate, list(cfg.get("api_probe_routes") or []), set(cfg.get("api_success_statuses") or [200, 400, 401, 403, 404, 405]), timeout)
+        probe_routes = _discover_api_probe_routes(final_site, site_document, candidate, cfg, timeout)
+        if bool(cfg.get("api_route_discovery", False)) and not probe_routes:
+            api_probes.append({"base": candidate, "ok": False, "reason": "no_discovered_api_route", "probes": []})
+            continue
+        result = probe(candidate, probe_routes, set(cfg.get("api_success_statuses") or [200, 400, 401, 403, 404, 405]), timeout)
+        result["discovered_routes"] = probe_routes
         api_probes.append(result)
         if result["ok"]:
             validated_api = candidate
