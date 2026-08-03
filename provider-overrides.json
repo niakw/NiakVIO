@@ -71,9 +71,6 @@
       "manifest_overrides": {
         "logo": "https://fs16.lol/favicon.ico"
       },
-      "profiles": [
-        "metadata_context_recovery"
-      ],
       "capability": "mixed_embed_resolver",
       "runtime_domain_replacements": {
         "french-stream.one": "fs16.lol",
@@ -227,9 +224,6 @@
       "notes": [
         "Automatically migrated coflix.cymru to coflix.blue after DNS/HTTP preflight validation of a redirect or a reachable same-role provider endpoint."
       ],
-      "profiles": [
-        "metadata_context_recovery"
-      ],
       "capability": "html_scraper",
       "official_hub": "https://coflix.life/",
       "official_site": "https://coflix.wiki",
@@ -301,21 +295,12 @@
       "profiles": []
     },
     "animesultra": {
-      "profiles": [
-        "metadata_context_recovery"
-      ],
       "capability": "mixed_embed_resolver"
     },
     "dulourd": {
-      "profiles": [
-        "metadata_context_recovery"
-      ],
       "capability": "html_scraper"
     },
     "vostfree": {
-      "profiles": [
-        "metadata_context_recovery"
-      ],
       "capability": "mixed_embed_resolver"
     },
     "flemmix": {
@@ -804,9 +789,6 @@
     },
     "wookafr": {
       "capability": "mixed_embed_resolver",
-      "profiles": [
-        "metadata_context_recovery"
-      ],
       "replacements": {
         "wookafr.cymru": "wookafr.center",
         "wookafr.fyi": "wookafr.center",
@@ -857,10 +839,7 @@
       "capability": "direct_media"
     },
     "anime-ultime": {
-      "capability": "mixed_embed_resolver",
-      "profiles": [
-        "metadata_context_recovery"
-      ]
+      "capability": "mixed_embed_resolver"
     },
     "goated": {
       "capability": "api_stream_resolver"
@@ -869,10 +848,7 @@
       "capability": "mixed_embed_resolver"
     },
     "waveanime": {
-      "capability": "html_scraper",
-      "profiles": [
-        "metadata_context_recovery"
-      ]
+      "capability": "html_scraper"
     }
   },
   "route_override_defaults": {
@@ -887,7 +863,7 @@
   },
   "patch_profiles": {
     "metadata_context_recovery": {
-      "description": "Preserve fixture settings through a wrapper and use fixture title metadata when title aggregation aborts before any provider-origin request.",
+      "description": "Diagnostic-only metadata wrapper. It is never auto-applied because the previous generic mutation caused repeated runtime errors and false reachability gains.",
       "phase": "runtime",
       "auto_apply": false,
       "priority": 10,
@@ -907,10 +883,11 @@
       },
       "required_values": [
         "[Nuvio Runtime Repair] Using fixture title metadata"
-      ]
+      ],
+      "runtime_auto_apply": false
     },
     "dle_html_search_recovery": {
-      "description": "Search-first recovery for structurally compatible DLE-like HTML providers whose search succeeds while legacy fallback routes are obsolete.",
+      "description": "Bounded structural DLE HTML-search candidate. It may be generated automatically, but is retained only after a playable stream is verified and no runtime error is introduced.",
       "phase": "runtime",
       "auto_apply": false,
       "priority": 20,
@@ -943,14 +920,20 @@
       },
       "required_values": [
         "[Nuvio Runtime Repair] Content found via HTML search"
-      ]
+      ],
+      "runtime_auto_apply": true
     }
   },
   "runtime_repair": {
     "enabled": true,
     "max_rounds": 3,
     "accept_only_strict_runtime_improvement": true,
-    "retain_parent_on_failure": true
+    "retain_parent_on_failure": true,
+    "require_playable_stream_proof": true,
+    "reject_new_runtime_errors": true,
+    "reject_malformed_requests": true,
+    "retry_identical_repairs": false,
+    "generic_metadata_mutation_enabled": false
   },
   "provider_capabilities": {
     "vidfast": {
@@ -1018,7 +1001,7 @@
       "allow_html_url": true,
       "requires_direct_media": false,
       "observed_origins": [
-        "https://4khdhub.one"
+        "https://4khdhub.dad"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
@@ -1099,8 +1082,6 @@
       "observed_origins": [
         "https://video.sibnet.ru",
         "https://vidmoly.me",
-        "https://fsvid.lol",
-        "https://vidzy.live",
         "https://streamtape.com",
         "https://sendvid.com",
         "https://www.myvi.ru",
@@ -1169,8 +1150,6 @@
         "https://npms.io",
         "https://video.sibnet.ru",
         "https://vidmoly.me",
-        "https://fsvid.lol",
-        "https://vidzy.live",
         "https://streamtape.com",
         "https://sendvid.com",
         "https://www.myvi.ru",
@@ -1202,8 +1181,6 @@
         "https://npms.io",
         "https://video.sibnet.ru",
         "https://vidmoly.me",
-        "https://fsvid.lol",
-        "https://vidzy.live",
         "https://streamtape.com",
         "https://sendvid.com",
         "https://www.myvi.ru",
@@ -1249,8 +1226,6 @@
         "https://npms.io",
         "https://video.sibnet.ru",
         "https://vidmoly.me",
-        "https://fsvid.lol",
-        "https://vidzy.live",
         "https://streamtape.com",
         "https://sendvid.com",
         "https://www.myvi.ru",
@@ -1292,8 +1267,6 @@
       "observed_origins": [
         "https://video.sibnet.ru",
         "https://vidmoly.me",
-        "https://fsvid.lol",
-        "https://vidzy.live",
         "https://streamtape.com",
         "https://sendvid.com",
         "https://www.myvi.ru",
@@ -1395,8 +1368,6 @@
         "https://npms.io",
         "https://video.sibnet.ru",
         "https://vidmoly.me",
-        "https://fsvid.lol",
-        "https://vidzy.live",
         "https://streamtape.com",
         "https://sendvid.com",
         "https://www.myvi.ru",
@@ -1437,9 +1408,7 @@
       "validation": "provider_native",
       "allow_html_url": true,
       "requires_direct_media": false,
-      "observed_origins": [
-        "https://manifest.desitvhub.eu.org"
-      ],
+      "observed_origins": [],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
     },
@@ -1524,8 +1493,6 @@
       "observed_origins": [
         "https://video.sibnet.ru",
         "https://vidmoly.me",
-        "https://fsvid.lol",
-        "https://vidzy.live",
         "https://streamtape.com",
         "https://sendvid.com",
         "https://www.myvi.ru",
@@ -1554,8 +1521,6 @@
         "https://npms.io",
         "https://video.sibnet.ru",
         "https://vidmoly.me",
-        "https://fsvid.lol",
-        "https://vidzy.live",
         "https://streamtape.com",
         "https://sendvid.com",
         "https://www.myvi.ru",
@@ -1587,8 +1552,6 @@
         "https://npms.io",
         "https://video.sibnet.ru",
         "https://vidmoly.me",
-        "https://fsvid.lol",
-        "https://vidzy.live",
         "https://streamtape.com",
         "https://sendvid.com",
         "https://www.myvi.ru",
@@ -1733,7 +1696,7 @@
       "allow_html_url": true,
       "requires_direct_media": false,
       "observed_origins": [
-        "https://lucky-star-3059.salman-sohail93.workers.dev",
+        "https://hc-zf3c.vercel.app",
         "https://new2.movies4u.clinic"
       ],
       "generated_from_manifest": true,
@@ -1783,8 +1746,6 @@
       "observed_origins": [
         "https://video.sibnet.ru",
         "https://vidmoly.me",
-        "https://fsvid.lol",
-        "https://vidzy.live",
         "https://streamtape.com",
         "https://sendvid.com",
         "https://www.myvi.ru",
@@ -1810,8 +1771,6 @@
       "observed_origins": [
         "https://video.sibnet.ru",
         "https://vidmoly.me",
-        "https://fsvid.lol",
-        "https://vidzy.live",
         "https://streamtape.com",
         "https://sendvid.com",
         "https://www.myvi.ru",
@@ -1988,8 +1947,6 @@
       "observed_origins": [
         "https://video.sibnet.ru",
         "https://vidmoly.me",
-        "https://fsvid.lol",
-        "https://vidzy.live",
         "https://streamtape.com",
         "https://sendvid.com",
         "https://www.myvi.ru",
@@ -2060,6 +2017,7 @@
       "allow_html_url": false,
       "requires_direct_media": false,
       "observed_origins": [
+        "https://api.wingsdatabase.com",
         "https://www.vidking.net"
       ],
       "generated_from_manifest": true,
@@ -2147,8 +2105,6 @@
       "observed_origins": [
         "https://video.sibnet.ru",
         "https://vidmoly.me",
-        "https://fsvid.lol",
-        "https://vidzy.live",
         "https://streamtape.com",
         "https://sendvid.com",
         "https://www.myvi.ru",
@@ -2181,8 +2137,6 @@
         "https://npms.io",
         "https://video.sibnet.ru",
         "https://vidmoly.me",
-        "https://fsvid.lol",
-        "https://vidzy.live",
         "https://streamtape.com",
         "https://sendvid.com",
         "https://www.myvi.ru",
@@ -2213,8 +2167,6 @@
       "observed_origins": [
         "https://video.sibnet.ru",
         "https://vidmoly.me",
-        "https://fsvid.lol",
-        "https://vidzy.live",
         "https://streamtape.com",
         "https://sendvid.com",
         "https://www.myvi.ru",
@@ -2334,7 +2286,7 @@
       "allow_html_url": false,
       "requires_direct_media": true,
       "observed_origins": [
-        "https://1.animezeydl.workers.dev"
+        "https://1.animezey23112022.workers.dev"
       ],
       "generated_from_manifest_or_stage": true
     },
@@ -2767,8 +2719,8 @@
   },
   "provider_profile_generation": {
     "schema_version": 3,
-    "provider_count": 90,
-    "staged_provider_count": 89,
+    "provider_count": 89,
+    "staged_provider_count": 0,
     "source": "manifest_published_bundles_and_current_staging",
     "same_deep_new_provider_support": true,
     "automatic_bundle_rewrite": false

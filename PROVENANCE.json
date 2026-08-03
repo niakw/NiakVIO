@@ -1726,18 +1726,11 @@
     },
     "anime-ultime": {
       "id": "anime-ultime",
-      "published_filename": "providers/anime-ultime--nuvio--f4764da821cbba42.js",
-      "sha256": "f4764da821cbba42491341c4b41d05aec424d84b8ad5063167b254fc1018177f",
-      "patched_sha256": "f4764da821cbba42491341c4b41d05aec424d84b8ad5063167b254fc1018177f",
+      "published_filename": "providers/anime-ultime--gowaru--667e5fba43cdd884.js",
+      "sha256": "667e5fba43cdd8840b4625ce13ae71cd2d4bdea3d668297a5a845c21b0e0399f",
+      "patched_sha256": "667e5fba43cdd8840b4625ce13ae71cd2d4bdea3d668297a5a845c21b0e0399f",
       "upstream_sha256": "667e5fba43cdd8840b4625ce13ae71cd2d4bdea3d668297a5a845c21b0e0399f",
-      "local_patches": [
-        {
-          "type": "patch_profile",
-          "profile": "metadata_context_recovery",
-          "path": "scripts/provider_patches/metadata_context_recovery.py",
-          "phase": "runtime"
-        }
-      ],
+      "local_patches": [],
       "source": "gowaru",
       "source_name": "Gowaru's Repo",
       "source_repository": "https://github.com/Gowaru/gowaru-nuvio-providers",
@@ -1747,8 +1740,8 @@
       "upstream_filename": "providers/anime-ultime.js",
       "checked_at": "2026-08-03T09:34:24.183601+00:00",
       "check_mode": "deep",
-      "check_status": "reachable",
-      "health_score": 75,
+      "check_status": "no_streams",
+      "health_score": 10,
       "activation_eligible": false,
       "strict_activation_eligible": false,
       "strict_grace_eligible": false,
@@ -1768,17 +1761,17 @@
           "threshold": "no disallowed P2P/torrent output"
         },
         "02_healthy_functional_status": {
-          "passed": true,
-          "evidence": "reachable",
+          "passed": false,
+          "evidence": "no_streams",
           "threshold": "healthy or reachable server/API"
         },
         "03_minimum_score": {
-          "passed": true,
-          "evidence": 75,
+          "passed": false,
+          "evidence": 10,
           "threshold": 70
         },
         "04_fixture_and_type_coverage": {
-          "passed": true,
+          "passed": false,
           "evidence": {
             "healthy_fixtures": 0,
             "fixtures_tested": 6,
@@ -1798,7 +1791,7 @@
           }
         },
         "05_stream_and_fixture_coverage": {
-          "passed": true,
+          "passed": false,
           "evidence": {
             "playable_streams": 0,
             "playable_fixtures": 0
@@ -1809,7 +1802,7 @@
           }
         },
         "06_distinct_host_diversity": {
-          "passed": true,
+          "passed": false,
           "evidence": {
             "distinct_reachable_hosts": 0,
             "reachable_hosts": []
@@ -1817,7 +1810,7 @@
           "threshold": 1
         },
         "07_verified_payload_playability": {
-          "passed": true,
+          "passed": false,
           "evidence": {
             "payload_verified_streams": 0,
             "playable_streams": 0
@@ -1880,17 +1873,9 @@
           }
         },
         "00_provider_specific_access": {
-          "passed": true,
+          "passed": false,
           "evidence": {
-            "provider_server_successful_response": true,
-            "provider_server_hosts": [
-              "arm.haglund.dev",
-              "v5.anime-ultime.net"
-            ],
-            "provider_server_http_statuses": [
-              200,
-              403
-            ]
+            "invalidated_by_repair_rollback": true
           },
           "threshold": {
             "required": "successful provider-owned HTTP response"
@@ -1913,9 +1898,9 @@
         "language_group": "vf",
         "language_tier": 0,
         "quality_height": 0,
-        "health_score": 75,
+        "health_score": 10,
         "manifest_curation_score": 5,
-        "provider_server_successful_response": true,
+        "provider_server_successful_response": false,
         "observed_language_modes": [],
         "manual_priority": 10000
       },
@@ -1936,7 +1921,13 @@
         "reason": "disabled_by_current_proof_policy"
       },
       "strict_consecutive_deep_passes": 0,
-      "strict_total_deep_passes": 0
+      "strict_total_deep_passes": 0,
+      "repair_rollback": {
+        "reason": "generic_metadata_context_recovery_was_accepted_without_playable_stream_proof",
+        "rejected_repair_sha256": "f4764da821cbba42491341c4b41d05aec424d84b8ad5063167b254fc1018177f",
+        "restored_parent_sha256": "667e5fba43cdd8840b4625ce13ae71cd2d4bdea3d668297a5a845c21b0e0399f",
+        "audit": "DEEP-LOG-AUDIT-2026-08-03.md"
+      }
     },
     "animekai": {
       "id": "animekai",
@@ -6412,18 +6403,18 @@
     },
     "dulourd": {
       "id": "dulourd",
-      "published_filename": "providers/dulourd--published-baseline--5801a7212df4ccfd.js",
-      "sha256": "5801a7212df4ccfd2dabd4dc0d264bb2229465e7da6309ab194d71a04de450bd",
-      "patched_sha256": "5801a7212df4ccfd2dabd4dc0d264bb2229465e7da6309ab194d71a04de450bd",
-      "upstream_sha256": "5801a7212df4ccfd2dabd4dc0d264bb2229465e7da6309ab194d71a04de450bd",
+      "published_filename": "providers/dulourd--gowaru--e62064b45a10a505.js",
+      "sha256": "e62064b45a10a505612be560f20cbd39ad34be7fa69c4fcafe51d9714f72aa05",
+      "patched_sha256": "e62064b45a10a505612be560f20cbd39ad34be7fa69c4fcafe51d9714f72aa05",
+      "upstream_sha256": "e62064b45a10a505612be560f20cbd39ad34be7fa69c4fcafe51d9714f72aa05",
       "local_patches": [],
-      "source": "published-baseline",
-      "source_name": "Last published local artifact",
-      "source_repository": "Nuvio Curated Providers",
-      "source_license": "GPL-3.0-only",
-      "source_license_evidence": "LICENSE",
+      "source": "gowaru",
+      "source_name": "Gowaru's Repo",
+      "source_repository": "https://github.com/Gowaru/gowaru-nuvio-providers",
+      "source_license": "GPL-3.0",
+      "source_license_evidence": "https://github.com/Gowaru/gowaru-nuvio-providers/blob/main/LICENSE",
       "upstream_id": "dulourd",
-      "upstream_filename": "providers/dulourd--published-baseline--5801a7212df4ccfd.js",
+      "upstream_filename": "providers/dulourd.js",
       "checked_at": "2026-08-03T09:34:24.183601+00:00",
       "check_mode": "deep",
       "check_status": "no_streams",
@@ -6433,8 +6424,10 @@
       "strict_grace_eligible": false,
       "historical_quality_grace_eligible": false,
       "runtime_evidence_eligible": false,
-      "activation_mode": "preserved_current_inconclusive",
+      "activation_mode": "disabled",
       "activation_blockers": [
+        "00_current_playable_stream",
+        "00_provider_specific_access",
         "02_healthy_functional_status",
         "03_minimum_score",
         "04_fixture_and_type_coverage",
@@ -6442,9 +6435,7 @@
         "06_distinct_host_diversity",
         "07_verified_payload_playability",
         "08_quality_and_bitrate",
-        "09_language_and_subtitle_integrity",
-        "00_provider_specific_access",
-        "00_current_playable_stream"
+        "09_language_and_subtitle_integrity"
       ],
       "activation_gates": {
         "01_policy_safe_no_p2p": {
@@ -6571,13 +6562,7 @@
         "00_provider_specific_access": {
           "passed": false,
           "evidence": {
-            "provider_server_successful_response": false,
-            "provider_server_hosts": [
-              "www.dulourd.hair"
-            ],
-            "provider_server_http_statuses": [
-              403
-            ]
+            "invalidated_by_repair_rollback": true
           },
           "threshold": {
             "required": "successful provider-owned HTTP response"
@@ -6623,7 +6608,13 @@
         "reason": "disabled_by_current_proof_policy"
       },
       "strict_consecutive_deep_passes": 0,
-      "strict_total_deep_passes": 0
+      "strict_total_deep_passes": 0,
+      "repair_rollback": {
+        "reason": "generic_metadata_context_recovery_was_accepted_without_playable_stream_proof",
+        "rejected_repair_sha256": "5801a7212df4ccfd2dabd4dc0d264bb2229465e7da6309ab194d71a04de450bd",
+        "restored_parent_sha256": "e62064b45a10a505612be560f20cbd39ad34be7fa69c4fcafe51d9714f72aa05",
+        "audit": "DEEP-LOG-AUDIT-2026-08-03.md"
+      }
     },
     "dvdplay": {
       "id": "dvdplay",
@@ -17929,18 +17920,11 @@
     },
     "waveanime": {
       "id": "waveanime",
-      "published_filename": "providers/waveanime--nuvio--ddb3016b783859b3.js",
-      "sha256": "ddb3016b783859b3be9bedcf012516ebcd5640ffa52d06f71b12102b98d8c576",
-      "patched_sha256": "ddb3016b783859b3be9bedcf012516ebcd5640ffa52d06f71b12102b98d8c576",
+      "published_filename": "providers/waveanime--gowaru--1a87a44dbbfb3bc6.js",
+      "sha256": "1a87a44dbbfb3bc6e7757c401eb0730e994f8661a8cc3b77741c3b36ba522c90",
+      "patched_sha256": "1a87a44dbbfb3bc6e7757c401eb0730e994f8661a8cc3b77741c3b36ba522c90",
       "upstream_sha256": "1a87a44dbbfb3bc6e7757c401eb0730e994f8661a8cc3b77741c3b36ba522c90",
-      "local_patches": [
-        {
-          "type": "patch_profile",
-          "profile": "metadata_context_recovery",
-          "path": "scripts/provider_patches/metadata_context_recovery.py",
-          "phase": "runtime"
-        }
-      ],
+      "local_patches": [],
       "source": "gowaru",
       "source_name": "Gowaru's Repo",
       "source_repository": "https://github.com/Gowaru/gowaru-nuvio-providers",
@@ -17959,6 +17943,8 @@
       "runtime_evidence_eligible": false,
       "activation_mode": "disabled",
       "activation_blockers": [
+        "00_current_playable_stream",
+        "00_provider_specific_access",
         "02_healthy_functional_status",
         "03_minimum_score",
         "04_fixture_and_type_coverage",
@@ -17966,9 +17952,7 @@
         "06_distinct_host_diversity",
         "07_verified_payload_playability",
         "08_quality_and_bitrate",
-        "09_language_and_subtitle_integrity",
-        "00_provider_specific_access",
-        "00_current_playable_stream"
+        "09_language_and_subtitle_integrity"
       ],
       "activation_gates": {
         "01_policy_safe_no_p2p": {
@@ -18091,13 +18075,7 @@
         "00_provider_specific_access": {
           "passed": false,
           "evidence": {
-            "provider_server_successful_response": false,
-            "provider_server_hosts": [
-              "waveanime.fr"
-            ],
-            "provider_server_http_statuses": [
-              403
-            ]
+            "invalidated_by_repair_rollback": true
           },
           "threshold": {
             "required": "successful provider-owned HTTP response"
@@ -18143,26 +18121,32 @@
         "reason": "disabled_by_current_proof_policy"
       },
       "strict_consecutive_deep_passes": 0,
-      "strict_total_deep_passes": 0
+      "strict_total_deep_passes": 0,
+      "repair_rollback": {
+        "reason": "generic_metadata_context_recovery_was_accepted_without_playable_stream_proof",
+        "rejected_repair_sha256": "ddb3016b783859b3be9bedcf012516ebcd5640ffa52d06f71b12102b98d8c576",
+        "restored_parent_sha256": "1a87a44dbbfb3bc6e7757c401eb0730e994f8661a8cc3b77741c3b36ba522c90",
+        "audit": "DEEP-LOG-AUDIT-2026-08-03.md"
+      }
     },
     "wookafr": {
       "id": "wookafr",
-      "published_filename": "providers/wookafr--published-baseline--0e26ebd372c411f5.js",
-      "sha256": "0e26ebd372c411f5ef8660195babd4a4b2fa170a70efe529c5a108af1df166ed",
-      "patched_sha256": "0e26ebd372c411f5ef8660195babd4a4b2fa170a70efe529c5a108af1df166ed",
-      "upstream_sha256": "0e26ebd372c411f5ef8660195babd4a4b2fa170a70efe529c5a108af1df166ed",
+      "published_filename": "providers/wookafr--gowaru--ccd4f619dc1f34dd.js",
+      "sha256": "ccd4f619dc1f34dd834b497fd643a8c5cf28888c268a4f6f9e1cceb5789135b1",
+      "patched_sha256": "ccd4f619dc1f34dd834b497fd643a8c5cf28888c268a4f6f9e1cceb5789135b1",
+      "upstream_sha256": "ccd4f619dc1f34dd834b497fd643a8c5cf28888c268a4f6f9e1cceb5789135b1",
       "local_patches": [],
-      "source": "published-baseline",
-      "source_name": "Last published local artifact",
-      "source_repository": "Nuvio Curated Providers",
-      "source_license": "GPL-3.0-only",
-      "source_license_evidence": "LICENSE",
+      "source": "gowaru",
+      "source_name": "Gowaru's Repo",
+      "source_repository": "https://github.com/Gowaru/gowaru-nuvio-providers",
+      "source_license": "GPL-3.0",
+      "source_license_evidence": "https://github.com/Gowaru/gowaru-nuvio-providers/blob/main/LICENSE",
       "upstream_id": "wookafr",
-      "upstream_filename": "providers/wookafr--nuvio--0e26ebd372c411f5.js",
+      "upstream_filename": "providers/wookafr.js",
       "checked_at": "2026-08-03T09:34:24.183601+00:00",
       "check_mode": "deep",
-      "check_status": "reachable",
-      "health_score": 75,
+      "check_status": "no_streams",
+      "health_score": 10,
       "activation_eligible": false,
       "strict_activation_eligible": false,
       "strict_grace_eligible": false,
@@ -18183,17 +18167,17 @@
           "threshold": "no disallowed P2P/torrent output"
         },
         "02_healthy_functional_status": {
-          "passed": true,
-          "evidence": "reachable",
+          "passed": false,
+          "evidence": "no_streams",
           "threshold": "healthy or reachable server/API"
         },
         "03_minimum_score": {
-          "passed": true,
-          "evidence": 75,
+          "passed": false,
+          "evidence": 10,
           "threshold": 70
         },
         "04_fixture_and_type_coverage": {
-          "passed": true,
+          "passed": false,
           "evidence": {
             "healthy_fixtures": 0,
             "fixtures_tested": 4,
@@ -18212,7 +18196,7 @@
           }
         },
         "05_stream_and_fixture_coverage": {
-          "passed": true,
+          "passed": false,
           "evidence": {
             "playable_streams": 0,
             "playable_fixtures": 0
@@ -18223,7 +18207,7 @@
           }
         },
         "06_distinct_host_diversity": {
-          "passed": true,
+          "passed": false,
           "evidence": {
             "distinct_reachable_hosts": 0,
             "reachable_hosts": []
@@ -18231,7 +18215,7 @@
           "threshold": 1
         },
         "07_verified_payload_playability": {
-          "passed": true,
+          "passed": false,
           "evidence": {
             "payload_verified_streams": 0,
             "playable_streams": 0
@@ -18298,17 +18282,9 @@
           }
         },
         "00_provider_specific_access": {
-          "passed": true,
+          "passed": false,
           "evidence": {
-            "provider_server_successful_response": true,
-            "provider_server_hosts": [
-              "arm.haglund.dev",
-              "wookafr.center"
-            ],
-            "provider_server_http_statuses": [
-              200,
-              404
-            ]
+            "invalidated_by_repair_rollback": true
           },
           "threshold": {
             "required": "successful provider-owned HTTP response"
@@ -18331,9 +18307,9 @@
         "language_group": "vf",
         "language_tier": 0,
         "quality_height": 0,
-        "health_score": 75,
+        "health_score": 10,
         "manifest_curation_score": 6,
-        "provider_server_successful_response": true,
+        "provider_server_successful_response": false,
         "observed_language_modes": [],
         "manual_priority": 10000
       },
@@ -18354,7 +18330,13 @@
         "reason": "disabled_by_current_proof_policy"
       },
       "strict_consecutive_deep_passes": 0,
-      "strict_total_deep_passes": 0
+      "strict_total_deep_passes": 0,
+      "repair_rollback": {
+        "reason": "generic_metadata_context_recovery_was_accepted_without_playable_stream_proof",
+        "rejected_repair_sha256": "0e26ebd372c411f5ef8660195babd4a4b2fa170a70efe529c5a108af1df166ed",
+        "restored_parent_sha256": "ccd4f619dc1f34dd834b497fd643a8c5cf28888c268a4f6f9e1cceb5789135b1",
+        "audit": "DEEP-LOG-AUDIT-2026-08-03.md"
+      }
     },
     "xpass": {
       "id": "xpass",

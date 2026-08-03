@@ -1,5 +1,5 @@
 {
-  "schema_version": 65,
+  "schema_version": 66,
   "concurrency": 4,
   "modes": {
     "availability": {
@@ -15,7 +15,8 @@
       "max_subtitles_to_probe": 0,
       "max_provider_fetches": 30,
       "max_redirects": 5,
-      "max_provider_response_bytes": 5242880
+      "max_provider_response_bytes": 5242880,
+      "max_settings_profiles": 2
     },
     "retry": {
       "fixture_limit": 1,
@@ -30,7 +31,8 @@
       "max_subtitles_to_probe": 0,
       "max_provider_fetches": 20,
       "max_redirects": 5,
-      "max_provider_response_bytes": 5242880
+      "max_provider_response_bytes": 5242880,
+      "max_settings_profiles": 2
     },
     "quick": {
       "fixture_limit": 1,
@@ -45,7 +47,8 @@
       "max_subtitles_to_probe": 0,
       "max_provider_fetches": 20,
       "max_redirects": 5,
-      "max_provider_response_bytes": 5242880
+      "max_provider_response_bytes": 5242880,
+      "max_settings_profiles": 3
     },
     "deep": {
       "fixture_limit": 1,
@@ -64,11 +67,26 @@
       "max_redirects": 5,
       "max_provider_response_bytes": 5242880,
       "fixture_limit_per_category": true,
-      "fallback_fixture_limit_per_category": 2
+      "fallback_fixture_limit_per_category": 1,
+      "max_settings_profiles": 4
     }
   },
   "fixtures": {
     "movie": [
+      {
+        "label": "Interstellar",
+        "tmdbId": "157336",
+        "mediaType": "movie",
+        "title": "Interstellar",
+        "year": 2014
+      },
+      {
+        "label": "Tenet",
+        "tmdbId": "577922",
+        "mediaType": "movie",
+        "title": "Tenet",
+        "year": 2020
+      },
       {
         "label": "Oppenheimer",
         "tmdbId": "872585",
@@ -89,13 +107,6 @@
         "mediaType": "movie",
         "title": "The Matrix",
         "year": 1999
-      },
-      {
-        "label": "Interstellar",
-        "tmdbId": "157336",
-        "mediaType": "movie",
-        "title": "Interstellar",
-        "year": 2014
       },
       {
         "label": "Avatar",
@@ -186,13 +197,13 @@
     ],
     "anime": [
       {
-        "label": "One Piece S01E01",
-        "tmdbId": "37854",
+        "label": "Jujutsu Kaisen S01E01",
+        "tmdbId": "95479",
         "mediaType": "tv",
         "season": 1,
         "episode": 1,
-        "title": "One Piece",
-        "year": 1999
+        "title": "Jujutsu Kaisen",
+        "year": 2020
       },
       {
         "label": "Attack on Titan S01E01",
@@ -204,13 +215,13 @@
         "year": 2013
       },
       {
-        "label": "Jujutsu Kaisen S01E01",
-        "tmdbId": "95479",
+        "label": "One Piece S01E01",
+        "tmdbId": "37854",
         "mediaType": "tv",
         "season": 1,
         "episode": 1,
-        "title": "Jujutsu Kaisen",
-        "year": 2020
+        "title": "One Piece",
+        "year": 1999
       },
       {
         "label": "Death Note S01E01",

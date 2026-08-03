@@ -1,3 +1,12 @@
+## 5.19.2 — Deep harness integrity and repair rollback
+
+- Fixed provider invocation selection so incompatible object/positional signatures cannot generate `[object Object]` URLs.
+- Preserved structured runtime exceptions for baseline, availability and repair rounds.
+- Reclassified blocked, unavailable, unreachable and genuine empty-catalogue results separately.
+- Required playable-stream proof before accepting any automatic source mutation.
+- Disabled the generic metadata repair that generated repeated runtime errors and rolled back its four published artifacts to their exact upstream parents.
+- Added a pre-publication deep-evidence integrity gate and blocked duplicate deterministic repair retests.
+
 ## 5.19.0
 
 - Turn the complete provider hub registry into an active runtime source instead of documentation only.
