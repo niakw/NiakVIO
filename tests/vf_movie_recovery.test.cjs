@@ -40,7 +40,13 @@ global.fetch = async (input) => {
   const raw = typeof input === 'string' ? input : input.url;
   const url = new URL(raw);
   if (url.hostname === 'api.themoviedb.org') return tmdbResponse(raw);
-  if (url.hostname === 'api.movix.fun') {
+  if (url.hostname === 'movix.fun' && url.pathname === '/') {
+    return new Response('<script src="/assets/app.js"></script>', { status: 200, headers: { 'content-type': 'text/html' } });
+  }
+  if (url.hostname === 'movix.fun' && url.pathname === '/assets/app.js') {
+    return new Response('const endpoint="/api/catalog/movie/{id}";', { status: 200, headers: { 'content-type': 'application/javascript' } });
+  }
+  if (url.hostname === 'api.movix.fun' && url.pathname.startsWith('/api/catalog/movie/')) {
     const fixture = fixtureForId(url.pathname.split('/').filter(Boolean).at(-1));
     return new Response(JSON.stringify({
       success: true,

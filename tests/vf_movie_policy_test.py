@@ -49,7 +49,12 @@ for provider_id in ('purstream', 'movix', 'nakios'):
     assert cfg.get('require_api_validation') is True, provider_id
     assert cfg.get('persist_official_site_without_api') is False, provider_id
     assert 404 not in cfg.get('api_success_statuses', []), provider_id
-    assert cfg.get('api_probe_routes'), provider_id
+    if provider_id == 'movix':
+        assert cfg.get('api_route_discovery') is True, provider_id
+        assert not cfg.get('api_probe_routes'), provider_id
+        assert 'fstream' in cfg.get('obsolete_route_tokens', []), provider_id
+    else:
+        assert cfg.get('api_probe_routes'), provider_id
 
 recovery = 'scripts/provider_patches/vf_catalogue_recovery.py'
 for provider_id in ('frenchstream', 'streamzo', 'movix', 'coflix', 'flemmix'):
