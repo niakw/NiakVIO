@@ -25,6 +25,10 @@ from pathlib import Path
 from typing import Any
 
 from apply_provider_overrides import apply_overrides
+from upstream_lkg import (
+    create_pending, load_manifest_snapshot, load_provider_snapshot, load_registry,
+    record_pending_source, validate_manifest_quality, write_pending,
+)
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCES_PATH = ROOT / "sources.json"
@@ -131,97 +135,149 @@ def main() -> int:
     upstream_reports: dict[str, Any] = {}
     errors: list[str] = []
 
+    upstream_lkg_registry = load_registry(ROOT)
+    upstream_lkg_pending = create_pending(stage)
+
     for priority, (source_key, source_cfg) in enumerate(config["upstreams"].items()):
+        manifest_origin = "live"
+        live_manifest = False
+        raw_provider_records: dict[str, tuple[bytes, str]] = {}
         try:
             manifest, manifest_url = fetch_manifest(source_cfg["manifest_urls"])
-            (manifests_dir / f"{safe_fragment(source_key)}.json").write_text(
-                json.dumps(manifest, ensure_ascii=False, indent=2) + "\n",
-                encoding="utf-8",
-            )
-            source_count = 0
-            source_excluded = 0
-            source_failures: list[dict[str, str]] = []
+            validate_manifest_quality(manifest, source_key, upstream_lkg_registry)
+            live_manifest = True
+        except Exception as live_exc:
+            snapshot = load_manifest_snapshot(upstream_lkg_registry, source_key, ROOT)
+            if snapshot is None:
+                message = f"{source_key}: live manifest unavailable/corrupt and no upstream LKG snapshot: {live_exc}"
+                errors.append(message)
+                upstream_reports[source_key] = {
+                    "status": "published_fallback_only",
+                    "error": str(live_exc),
+                    "fallback": "current published provider bundles",
+                }
+                print(f"[ERROR] {message}", file=sys.stderr)
+                continue
+            manifest, manifest_url = snapshot
+            validate_manifest_quality(manifest, source_key, upstream_lkg_registry)
+            manifest_origin = "upstream_lkg"
+            print(f"[WARN] {source_key}: using last-known-good upstream snapshot: {live_exc}", file=sys.stderr)
 
-            for index, entry in enumerate(manifest["scrapers"]):
-                if not isinstance(entry, dict):
-                    continue
-                upstream_id = str(entry.get("id") or entry.get("name") or f"entry-{index}")
-                preliminary_reason = exclusion_reason(entry, None, exclusions)
-                if preliminary_reason:
-                    excluded.append({"source": source_key, "id": upstream_id, "reason": preliminary_reason})
+        (manifests_dir / f"{safe_fragment(source_key)}.json").write_text(
+            json.dumps(manifest, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
+        source_count = 0
+        source_excluded = 0
+        source_failures: list[dict[str, str]] = []
+        source_lkg_provider_fallbacks = 0
+
+        for index, entry in enumerate(manifest["scrapers"]):
+            if not isinstance(entry, dict):
+                continue
+            upstream_id = str(entry.get("id") or entry.get("name") or f"entry-{index}")
+            preliminary_reason = exclusion_reason(entry, None, exclusions)
+            if preliminary_reason:
+                excluded.append({"source": source_key, "id": upstream_id, "reason": preliminary_reason})
+                source_excluded += 1
+                print(f"[SKIP] {source_key}:{upstream_id}: {preliminary_reason}")
+                continue
+
+            filename = entry.get("filename")
+            if not isinstance(filename, str) or not filename.strip():
+                source_failures.append({"id": upstream_id, "error": "missing filename"})
+                continue
+
+            provider_url = urllib.parse.urljoin(manifest_url, filename)
+            local_dir = providers_dir / safe_fragment(source_key)
+            local_dir.mkdir(parents=True, exist_ok=True)
+            local_name = f"{safe_fragment(upstream_id)}.js"
+            local_path = local_dir / local_name
+
+            try:
+                data: bytes | None = None
+                download_error: Exception | None = None
+                if live_manifest:
+                    try:
+                        data = fetch_bytes(provider_url)
+                        validate_javascript(data, provider_url)
+                        raw_provider_records[upstream_id] = (data, provider_url)
+                    except Exception as exc:
+                        download_error = exc
+                if data is None:
+                    data = load_provider_snapshot(upstream_lkg_registry, source_key, upstream_id, ROOT)
+                    if data is not None:
+                        source_lkg_provider_fallbacks += 1
+                        validate_javascript(data, f"upstream-lkg:{source_key}:{upstream_id}")
+                    elif not live_manifest:
+                        # A partially populated LKG may still reference a reachable historical URL.
+                        try:
+                            data = fetch_bytes(provider_url)
+                            validate_javascript(data, provider_url)
+                        except Exception as exc:
+                            download_error = exc
+                if data is None:
+                    raise RuntimeError(f"live and LKG provider downloads failed: {download_error}")
+
+                reason = exclusion_reason(entry, data, exclusions)
+                if reason:
+                    excluded.append({"source": source_key, "id": upstream_id, "reason": reason})
                     source_excluded += 1
-                    print(f"[SKIP] {source_key}:{upstream_id}: {preliminary_reason}")
+                    print(f"[SKIP] {source_key}:{upstream_id}: {reason}")
                     continue
 
-                filename = entry.get("filename")
-                if not isinstance(filename, str) or not filename.strip():
-                    source_failures.append({"id": upstream_id, "error": "missing filename"})
-                    continue
+                upstream_digest = hashlib.sha256(data).hexdigest()
+                data, applied_patches = apply_overrides(canonical_id(upstream_id), data)
+                validate_javascript(data, provider_url)
+                local_path.write_bytes(data)
+                subprocess.run([
+                    "node", str(ROOT / "scripts" / "validate_provider_artifact.cjs"), str(local_path)
+                ], check=True, capture_output=True, text=True)
+                digest = hashlib.sha256(data).hexdigest()
+                candidates.append(
+                    {
+                        "key": f"{source_key}:{upstream_id}",
+                        "source": source_key,
+                        "source_name": source_cfg.get("name", source_key),
+                        "source_priority": priority,
+                        "source_repository": source_cfg.get("repository"),
+                        "source_license": source_cfg.get("license"),
+                        "source_license_evidence": source_cfg.get("license_evidence"),
+                        "manifest_url": manifest_url,
+                        "manifest_origin": manifest_origin,
+                        "upstream_id": upstream_id,
+                        "canonical_id": canonical_id(upstream_id),
+                        "provider_url": provider_url,
+                        "local_path": str(local_path.relative_to(stage)),
+                        "sha256": digest,
+                        "upstream_sha256": upstream_digest,
+                        "local_patches": applied_patches,
+                        "bytes": len(data),
+                        "metadata": entry,
+                    }
+                )
+                source_count += 1
+                print(f"[OK] {source_key}:{upstream_id} ({manifest_origin})")
+            except Exception as exc:
+                source_failures.append({"id": upstream_id, "error": str(exc)})
+                print(f"[WARN] {source_key}:{upstream_id}: {exc}", file=sys.stderr)
 
-                provider_url = urllib.parse.urljoin(manifest_url, filename)
-                local_dir = providers_dir / safe_fragment(source_key)
-                local_dir.mkdir(parents=True, exist_ok=True)
-                local_name = f"{safe_fragment(upstream_id)}.js"
-                local_path = local_dir / local_name
+        if live_manifest:
+            record_pending_source(
+                upstream_lkg_pending, stage, source_key, manifest, manifest_url, raw_provider_records
+            )
+        upstream_reports[source_key] = {
+            "status": "loaded" if live_manifest else "loaded_from_upstream_lkg",
+            "manifest_origin": manifest_origin,
+            "manifest_url": manifest_url,
+            "declared": len(manifest["scrapers"]),
+            "downloaded": source_count,
+            "excluded": source_excluded,
+            "provider_lkg_fallbacks": source_lkg_provider_fallbacks,
+            "failures": source_failures,
+        }
 
-                try:
-                    data = fetch_bytes(provider_url)
-                    validate_javascript(data, provider_url)
-                    reason = exclusion_reason(entry, data, exclusions)
-                    if reason:
-                        excluded.append({"source": source_key, "id": upstream_id, "reason": reason})
-                        source_excluded += 1
-                        print(f"[SKIP] {source_key}:{upstream_id}: {reason}")
-                        continue
-
-                    upstream_digest = hashlib.sha256(data).hexdigest()
-                    data, applied_patches = apply_overrides(canonical_id(upstream_id), data)
-                    validate_javascript(data, provider_url)
-                    local_path.write_bytes(data)
-                    subprocess.run([
-                        "node", str(ROOT / "scripts" / "validate_provider_artifact.cjs"), str(local_path)
-                    ], check=True, capture_output=True, text=True)
-                    digest = hashlib.sha256(data).hexdigest()
-                    candidates.append(
-                        {
-                            "key": f"{source_key}:{upstream_id}",
-                            "source": source_key,
-                            "source_name": source_cfg.get("name", source_key),
-                            "source_priority": priority,
-                            "source_repository": source_cfg.get("repository"),
-                            "source_license": source_cfg.get("license"),
-                            "source_license_evidence": source_cfg.get("license_evidence"),
-                            "manifest_url": manifest_url,
-                            "upstream_id": upstream_id,
-                            "canonical_id": canonical_id(upstream_id),
-                            "provider_url": provider_url,
-                            "local_path": str(local_path.relative_to(stage)),
-                            "sha256": digest,
-                            "upstream_sha256": upstream_digest,
-                            "local_patches": applied_patches,
-                            "bytes": len(data),
-                            "metadata": entry,
-                        }
-                    )
-                    source_count += 1
-                    print(f"[OK] {source_key}:{upstream_id}")
-                except Exception as exc:
-                    source_failures.append({"id": upstream_id, "error": str(exc)})
-                    print(f"[WARN] {source_key}:{upstream_id}: {exc}", file=sys.stderr)
-
-            upstream_reports[source_key] = {
-                "status": "loaded",
-                "manifest_url": manifest_url,
-                "declared": len(manifest["scrapers"]),
-                "downloaded": source_count,
-                "excluded": source_excluded,
-                "failures": source_failures,
-            }
-        except Exception as exc:
-            message = f"{source_key}: {exc}"
-            errors.append(message)
-            upstream_reports[source_key] = {"status": "failed", "error": str(exc)}
-            print(f"[ERROR] {message}", file=sys.stderr)
+    write_pending(upstream_lkg_pending, stage)
 
     # Stage the currently published artifacts as low-priority baseline variants.
     # They are executed by the exact same movie/TV/anime health checks as fresh
@@ -414,7 +470,14 @@ def main() -> int:
         print("No non-P2P provider candidate was downloaded.", file=sys.stderr)
         return 1
     if errors and args.require_all_upstreams:
-        return 1
+        published_fallbacks = sum(1 for item in candidates if item.get("source") == "published-baseline")
+        if published_fallbacks <= 0:
+            return 1
+        print(
+            f"[WARN] {len(errors)} upstream source(s) unavailable without an upstream snapshot; "
+            f"continuing with {published_fallbacks} current published functional fallbacks.",
+            file=sys.stderr,
+        )
 
     print(
         f"Discovered {len(candidates)} variants for "

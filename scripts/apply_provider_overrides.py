@@ -178,6 +178,7 @@ def _inject_runtime_domain_overrides(text: str, replacements: dict[str, Any]) ->
     """Embed host rewriting into the provider JavaScript artifact itself."""
     from urllib.parse import urlparse
 
+    original_text = text
     rules: dict[str, str] = {}
     for old, new in replacements.items():
         old_value = str(old).lower().strip().rstrip("/")
@@ -186,10 +187,17 @@ def _inject_runtime_domain_overrides(text: str, replacements: dict[str, Any]) ->
         new_host = urlparse(new_value).hostname if "://" in new_value else new_value
         if old_host and new_host and old_host != new_host:
             rules[old_host] = new_host
-    if not rules:
-        return text, 0
     marker = "NUVIO_RUNTIME_DOMAIN_OVERRIDES_V1"
-    if marker in text:
+    marker_comment = f"/* {marker} */"
+    if marker_comment in text:
+        start = text.find(marker_comment)
+        call = text.find('})(typeof globalThis!=="undefined"?globalThis:this,', start)
+        end = text.find(");\n", call) if call >= 0 else -1
+        if start >= 0 and end >= 0:
+            text = text[:start] + text[end + 3:]
+        else:
+            raise ValueError("unterminated runtime domain override bootstrap")
+    if not rules:
         return text, 0
     import base64
     encoded_rules = [
@@ -224,7 +232,8 @@ def _inject_runtime_domain_overrides(text: str, replacements: dict[str, Any]) ->
   }
 })(typeof globalThis!=="undefined"?globalThis:this,%s);
 """ % (marker, payload)
-    return bootstrap + text, len(rules)
+    output = bootstrap + text
+    return output, 0 if output == original_text else len(rules)
 
 
 
@@ -344,21 +353,41 @@ def apply_overrides(
                 }
             )
 
-    # Legacy per-provider hooks remain supported only for existing repositories.
-    # New structural repairs belong in reusable patch_profiles.
-    patch_script = specific.get("patch_script")
-    if patch_script and phase == "discovery":
+    # Per-provider hooks may be chained. This is useful when one provider needs
+    # both a structural repair and the reusable stream-output validator. The
+    # historical singular fields remain supported for backward compatibility.
+    patch_scripts: list[str] = []
+    configured_scripts = specific.get("patch_scripts")
+    if configured_scripts is not None:
+        if not isinstance(configured_scripts, list):
+            raise ValueError(f"provider_patches.{provider_id}.patch_scripts must be an array")
+        patch_scripts.extend(str(value) for value in configured_scripts if str(value).strip())
+    legacy_patch_script = specific.get("patch_script")
+    if legacy_patch_script and str(legacy_patch_script) not in patch_scripts:
+        patch_scripts.append(str(legacy_patch_script))
+
+    script_options = specific.get("patch_script_options") or {}
+    if not isinstance(script_options, dict):
+        raise ValueError(f"provider_patches.{provider_id}.patch_script_options must be an object")
+    for patch_script in patch_scripts if phase == "discovery" else []:
+        per_script_options = script_options.get(patch_script)
+        if per_script_options is None:
+            per_script_options = specific.get("patch_options") or {}
+        if not isinstance(per_script_options, dict):
+            raise ValueError(
+                f"provider_patches.{provider_id}.patch_script_options[{patch_script!r}] must be an object"
+            )
         before = text
         text = _apply_patch_script(
             text,
             provider_id,
-            str(patch_script),
-            dict(specific.get("patch_options") or {}),
+            patch_script,
+            dict(per_script_options),
             None,
         )
         if text != before:
             applied.append(
-                {"type": "patch_script", "path": str(patch_script), "phase": phase}
+                {"type": "patch_script", "path": patch_script, "phase": phase}
             )
 
     text, removed_guards = _strip_legacy_global_stream_guards(text)

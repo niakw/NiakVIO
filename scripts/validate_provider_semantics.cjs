@@ -47,8 +47,8 @@ const animeOnly = {
 };
 assert.deepEqual(
   inferSupportedTypes(animeOnly),
-  ['anime'],
-  'anime-only descriptions must not be presented as general film/series catalogues',
+  ['movie', 'anime'],
+  'anime catalogues must expose anime films without being presented as general TV catalogues',
 );
 
 const pool = roundRobin([

@@ -27,10 +27,10 @@ function descriptionTypeSignals(textValue) {
 /**
  * Infer the catalogue coverage of one manifest entry.
  *
- * Some upstream anime entries technically declare movie/tv because those are
- * Nuvio's request media types. When the description only says anime/manga, the
- * provider is treated as anime-only. When the description explicitly says
- * films, series and anime (Movix), all three categories are preserved.
+ * Anime catalogues expose both anime episodes and anime films. Therefore an
+ * anime-only description maps to the anime and movie request types, but never
+ * to general TV unless series/TV coverage is explicitly declared. Mixed
+ * catalogues such as Movix preserve all three categories.
  */
 function inferSupportedTypes(candidate) {
   const metadata = candidate?.metadata || {};
@@ -55,7 +55,7 @@ function inferSupportedTypes(candidate) {
   if (signals.tv) inferred.add('tv');
   if (signals.anime) inferred.add('anime');
 
-  if (signals.anime && !signals.movie && !signals.tv) return ['anime'];
+  if (signals.anime && !signals.movie && !signals.tv) return ['movie', 'anime'];
 
   const combined = new Set([...declared, ...inferred]);
   if (!combined.size) {

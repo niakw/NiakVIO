@@ -639,9 +639,10 @@ def manifest_ordering_profile(result: dict[str, Any], proof: dict[str, Any]) -> 
 
 def manifest_entry_sort_key(
     entry: dict[str, Any], profiles: dict[str, dict[str, Any]]
-) -> tuple[int, int, int, int, int, int, str]:
+) -> tuple[int, int, int, int, int, int, int, str]:
     cid = canonical_id(str(entry.get("id", "")))
     profile = profiles.get(cid, {})
+    manual_priority = int(profile.get("manual_priority", 10_000))
     tier = int(profile.get("language_tier", 3))
     height = int(profile.get("quality_height", 0))
     health = int(profile.get("health_score", 0))
@@ -657,6 +658,7 @@ def manifest_entry_sort_key(
         secondary = -height
     return (
         0 if entry.get("enabled") else 1,
+        manual_priority,
         tier,
         primary,
         secondary,
@@ -1542,7 +1544,11 @@ def main() -> int:
     entries: dict[str, dict[str, Any]] = {}
     provenance: dict[str, dict[str, Any]] = {}
     report_items: list[dict[str, Any]] = []
-    manifest_order_profiles: dict[str, dict[str, Any]] = {}
+    priority_values = (sources.get("selection_policy") or {}).get("manual_provider_priority") or []
+    manual_priority = {canonical_id(str(value)): index for index, value in enumerate(priority_values)}
+    manifest_order_profiles: dict[str, dict[str, Any]] = {
+        cid: {"manual_priority": index} for cid, index in manual_priority.items()
+    }
     VERSIONS_DIR.mkdir(parents=True, exist_ok=True)
     now = datetime.now(timezone.utc).isoformat()
 
@@ -1715,6 +1721,7 @@ def main() -> int:
             promoted_entry["version"] = provider_entry_version(promoted_entry, existing.get(cid))
             entries[cid] = promoted_entry
             ordering = manifest_ordering_profile(result, proof)
+            ordering["manual_priority"] = manual_priority.get(cid, 10_000)
             manifest_order_profiles[cid] = ordering
 
             failed_gate_names = [
