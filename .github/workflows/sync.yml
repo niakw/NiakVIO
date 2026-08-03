@@ -290,7 +290,10 @@ jobs:
         shell: bash
         run: |
           test -f manifest.next.json
+          PREVIOUS_MANIFEST="$(mktemp)"
+          git show HEAD:manifest.json > "$PREVIOUS_MANIFEST"
           mv manifest.next.json manifest.json
+          python scripts/bump_release_patch_if_manifest_changed.py --previous "$PREVIOUS_MANIFEST" --manifest manifest.json
           python scripts/generate_language_manifests.py
           python scripts/prune_unreferenced_providers.py
           python scripts/sync_release_versions.py --manifest manifest.json
