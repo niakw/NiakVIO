@@ -5,9 +5,9 @@
 
 **Un manifest communautaire unifié pour Nuvio — VO, VF et VOSTFR.**
 
-[![Version](https://img.shields.io/badge/version-5.18.4-0969da?style=for-the-badge)](manifest.json)
+[![Version](https://img.shields.io/badge/version-5.19.0-0969da?style=for-the-badge)](manifest.json)
 [![Type](https://img.shields.io/badge/type-plugin%20Nuvio-1f6feb?style=for-the-badge)](#)
-[![Providers](https://img.shields.io/badge/providers-86%20%7C%2050%20actifs-2da44e?style=for-the-badge)](manifest.json)
+[![Providers](https://img.shields.io/badge/providers-85%20%7C%2058%20actifs-2da44e?style=for-the-badge)](manifest.json)
 [![Node](https://img.shields.io/badge/Node.js-%E2%89%A524-339933?style=for-the-badge&logo=node.js&logoColor=white)](package.json)
 [![Licence](https://img.shields.io/badge/licence-GPL--3.0-blue?style=for-the-badge)](LICENSE)
 [![Deep check](https://github.com/niakw/niakw-nuvio-providers-group-1-0/actions/workflows/sync.yml/badge.svg)](https://github.com/niakw/niakw-nuvio-providers-group-1-0/actions/workflows/sync.yml)
@@ -83,11 +83,11 @@ Chargement dans Nuvio
 
 | Information | Valeur |
 |---|---:|
-| Version du manifest | `5.18.4` |
-| Providers recensés | `86` |
-| Providers activés | `50` |
-| Providers désactivés mais conservés | `36` |
-| Manifest francophone | `22` providers, dont `18` actifs |
+| Version du manifest | `5.19.0` |
+| Providers recensés | `85` |
+| Providers activés | `58` |
+| Providers désactivés mais conservés | `27` |
+| Manifest francophone | `22` providers, dont `20` actifs |
 | Validation de publication | `deep` |
 | Runtime requis pour le dépôt | Node.js `>= 24` |
 | Licence du projet | `GPL-3.0-only` |
@@ -109,7 +109,9 @@ Lors d’un contrôle **deep**, le dépôt :
 - publie les fichiers JavaScript avant le manifest qui les référence ;
 - conserve les providers indisponibles avec `enabled: false` au lieu de les supprimer.
 
-Les contrôles rapides sont informatifs. Seule une validation `deep` peut modifier la publication.
+Les contrôles rapides du code restent informatifs. En parallèle, un workflow léger rafraîchit quotidiennement les adresses depuis les hubs officiels, les annonces Telegram publiques et l’historique du dernier domaine valide. Une recherche publique bornée n’est utilisée qu’en secours et une adresse trouvée uniquement par recherche doit être confirmée lors de deux exécutions consécutives.
+
+Chaque dépôt amont possède deux générations de sauvegarde. Si une source disparaît, renvoie un manifest incomplet ou un fichier corrompu, le système reprend la dernière sauvegarde saine ; les providers déjà publiés restent le dernier repli fonctionnel. Seule une validation `deep` peut promouvoir du nouveau code provider.
 
 ---
 

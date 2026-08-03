@@ -1,9 +1,9 @@
 {
-  "schema_version": 63,
+  "schema_version": 65,
   "repository": {
     "name": "Nuvio Curated Providers",
-    "manifest_version": "5.18.28",
-    "description": "Combined Nuvio manifest generated from every non-P2P entry declared by Gowaru, All-in-One-Nuvio and yoruix. Curation merges descriptions, catalogue types, languages, formats and quality signals across all three upstream manifests; runtime validation performs one representative server/API or playable-stream check. Enabled providers are ordered VF first, then VOSTFR, then other French-capable providers. VF/VOSTFR/French groups prioritize resolution; other-language providers prioritize health/quality score. P2P remains excluded."
+    "manifest_version": "5.19.0",
+    "description": "Combined Nuvio manifest generated from every non-P2P entry declared by Gowaru, All-in-One-Nuvio and Yoru. Official address hubs, public Telegram announcements, curated candidates, consecutive search confirmation and persistent last-known-good history maintain provider routes. Each upstream keeps two content-addressed snapshots; current published bundles remain the final functional fallback. Curation merges descriptions, catalogue types, languages, formats and quality signals across the three upstream manifests. Enabled providers follow the explicit priority list, then French-language and quality ranking. P2P remains excluded."
   },
   "upstreams": {
     "gowaru": {
@@ -46,7 +46,7 @@
     ],
     "preserve_complete_upstream_manifest_entry": "preserve all upstream fields, then replace supportedTypes with the canonical union inferred from all three manifests",
     "include_unconfirmed_providers_disabled": true,
-    "require_all_upstream_manifests_before_publication": true,
+    "require_all_upstream_manifests_before_publication": false,
     "content_addressed_provider_filenames": true,
     "checks_run_before_publication": true,
     "preserve_upstream_enabled_state": false,
@@ -87,7 +87,27 @@
       "other-language group: health/quality score, resolution, curation score descending"
     ],
     "representative_fixture_mode": true,
-    "content_type_inference": "merge supportedTypes with explicit film/series/anime wording; anime-only wording stays anime-only, while Films/Séries/Animes preserves all three"
+    "content_type_inference": "Anime catalogues also expose movie when they contain animated feature films; mixed catalogues expose anime explicitly; tv remains the series request type.",
+    "manual_provider_priority": [
+      "anime-sama",
+      "purstream",
+      "flemmix",
+      "uhdmovies",
+      "movieshunt",
+      "zinkmovies",
+      "vegamovies",
+      "hindmoviez",
+      "4khdhub",
+      "persianstremio",
+      "desiflix"
+    ],
+    "manual_provider_priority_scope": "Applied before language/quality ranking while preserving enabled providers before disabled providers.",
+    "upstream_availability_policy": "Prefer a complete live manifest; otherwise use one of the two retained upstream snapshots; otherwise retain current published functional provider bundles.",
+    "upstream_snapshot_generations": 2,
+    "provider_domain_resolution": "Official hubs and public Telegram first; redirects and curated candidates next; bounded Yandex/DuckDuckGo fallback only in deep mode; search-only changes require two consecutive validations.",
+    "provider_domain_refresh_schedule": "Daily lightweight validated refresh; strict code and stream promotion remains deep-only twice weekly.",
+    "last_known_good_domain_retention": true,
+    "published_provider_functional_fallback": true
   },
   "exclusions": {
     "provider_ids": [
@@ -97,7 +117,9 @@
       "prowlarr",
       "orion",
       "peerflix",
-      "webtorrent"
+      "webtorrent",
+      "dahmermovies",
+      "dahmermovies-tv"
     ],
     "metadata_patterns": [
       "torrent",
@@ -135,5 +157,5 @@
     "no_provider_specific_activation_exception": true,
     "manifest_version_bumps_when_payload_changes": true
   },
-  "manifest_version": "5.18.28"
+  "manifest_version": "5.19.0"
 }

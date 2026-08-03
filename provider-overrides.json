@@ -13,57 +13,90 @@
   "provider_patches": {
     "movix": {
       "notes": [
-        "Force the reachable Movix endpoint inside the published JavaScript artifact.",
-        "Rewrite dynamically reconstructed legacy hosts at fetch time as defense in depth.",
-        "Automatically replace the globally unreachable api.movix.cloud endpoint with the verified api.movix.fun peer endpoint."
+        "Resolve the official terminal site from movix.online.",
+        "Reject the unrelated fstream.top short-video endpoint."
       ],
       "replacements": {
         "api.movix.cash": "api.movix.fun",
-        "api.movix.cloud": "api.movix.fun"
+        "api.movix.cloud": "api.movix.fun",
+        "movix.cash": "movix.fun"
       },
       "route_replacements": {},
       "required_route_values": [],
       "runtime_domain_replacements": {
         "api.movix.cash": "api.movix.fun",
-        "api.movix.cloud": "api.movix.fun"
+        "api.movix.cloud": "api.movix.fun",
+        "movix.cash": "movix.fun"
       },
       "fixed_endpoint": {
         "resolver_function": "detectApi",
         "api": "https://api.movix.fun",
         "referer": "https://movix.fun/"
       },
-      "patch_script": "scripts/provider_patches/movix_multi_source.py",
-      "patch_options": {},
       "capability": "mixed_embed_resolver",
-      "profiles": []
+      "profiles": [],
+      "required_values": [
+        "api.movix.fun",
+        "movix.fun"
+      ],
+      "patch_scripts": [
+        "scripts/provider_patches/movix_multi_source.py",
+        "scripts/provider_patches/stream_output_sanitizer.py"
+      ],
+      "patch_script_options": {
+        "scripts/provider_patches/stream_output_sanitizer.py": {
+          "blocked_hosts": [
+            "fstream.top"
+          ],
+          "probe_direct_media": true,
+          "max_probes": 4
+        }
+      },
+      "official_hub": "https://movix.online/",
+      "official_site": "https://movix.fun/"
     },
     "frenchstream": {
       "notes": [
-        "Use the current Frenchstream domain resolved from the official fstream.org hub.",
-        "Recover detail-page players when the legacy film_api endpoint is unavailable."
+        "Resolve the current site from fstream.org.",
+        "Reject the unrelated fstream.top short-video endpoint and recover players from the real detail page."
       ],
       "replacements": {
-        "french-stream.one": "fs03.lol",
-        "frenchstream.food": "fs03.lol"
+        "french-stream.one": "fs16.lol",
+        "frenchstream.food": "fs16.lol",
+        "fs03.lol": "fs16.lol"
       },
       "required_values": [
-        "fs03.lol"
+        "fs16.lol"
       ],
       "route_replacements": {},
       "required_route_values": [],
       "manifest_overrides": {
-        "logo": "https://fs03.lol/favicon.ico"
+        "logo": "https://fs16.lol/favicon.ico"
       },
       "profiles": [
         "metadata_context_recovery"
       ],
-      "capability": "html_scraper",
+      "capability": "mixed_embed_resolver",
       "runtime_domain_replacements": {
-        "french-stream.one": "fs03.lol",
-        "frenchstream.food": "fs03.lol"
+        "french-stream.one": "fs16.lol",
+        "frenchstream.food": "fs16.lol",
+        "fs03.lol": "fs16.lol"
       },
-      "patch_script": "scripts/provider_patches/frenchstream_detail_players.py",
-      "patch_options": {}
+      "patch_scripts": [
+        "scripts/provider_patches/frenchstream_detail_players.py",
+        "scripts/provider_patches/stream_output_sanitizer.py"
+      ],
+      "patch_script_options": {
+        "scripts/provider_patches/stream_output_sanitizer.py": {
+          "blocked_hosts": [
+            "fstream.top"
+          ],
+          "probe_direct_media": true,
+          "max_probes": 4
+        }
+      },
+      "official_hub": "https://fstream.org/",
+      "official_site": "https://fs16.lol/"
     },
     "streamzo": {
       "notes": [
@@ -263,11 +296,62 @@
     },
     "flemmix": {
       "profiles": [],
-      "capability": "html_scraper"
+      "capability": "mixed_embed_resolver",
+      "replacements": {
+        "flemmix.me": "flemmix.casa",
+        "wiflix.name": "flemmix.casa",
+        "wiflix-hd.vip": "flemmix.casa"
+      },
+      "runtime_domain_replacements": {
+        "flemmix.me": "flemmix.casa",
+        "wiflix.name": "flemmix.casa",
+        "wiflix-hd.vip": "flemmix.casa"
+      },
+      "required_values": [
+        "flemmix.casa"
+      ],
+      "route_replacements": {},
+      "required_route_values": [],
+      "patch_scripts": [
+        "scripts/provider_patches/stream_output_sanitizer.py"
+      ],
+      "patch_script_options": {
+        "scripts/provider_patches/stream_output_sanitizer.py": {
+          "probe_direct_media": true,
+          "max_probes": 5,
+          "probe_all_urls": true
+        }
+      },
+      "notes": [
+        "Resolve the current Flemmix route from the Wiflix address hub and reject malformed direct-media responses before playback."
+      ],
+      "official_hub": "https://ww1.wiflix-adresses.fun/",
+      "official_site": "https://flemmix.casa/"
     },
     "nakios": {
       "profiles": [],
-      "capability": "html_scraper"
+      "capability": "api_stream_resolver",
+      "replacements": {
+        "nakios.store": "nakios.live",
+        "api.nakios.store": "api.nakios.live"
+      },
+      "runtime_domain_replacements": {
+        "nakios.store": "nakios.live",
+        "api.nakios.store": "api.nakios.live"
+      },
+      "required_values": [
+        "nakios.live"
+      ],
+      "route_replacements": {},
+      "required_route_values": [],
+      "manifest_overrides": {
+        "logo": "https://nakios.live/favicon.ico"
+      },
+      "notes": [
+        "Use the catalogue/streaming service identified by nakios.org rather than the retired .store route."
+      ],
+      "official_hub": "https://nakios.org/",
+      "official_site": "https://nakios.live/"
     },
     "papadustream": {
       "profiles": [],
@@ -275,10 +359,65 @@
     },
     "toflix": {
       "profiles": [],
-      "capability": "html_scraper"
+      "capability": "direct_media",
+      "replacements": {
+        "toflix.site": "tfx05.lol",
+        "api.toflix.site": "api.tfx05.lol"
+      },
+      "runtime_domain_replacements": {
+        "toflix.site": "tfx05.lol",
+        "api.toflix.site": "api.tfx05.lol"
+      },
+      "required_values": [
+        "tfx05.lol"
+      ],
+      "route_replacements": {},
+      "required_route_values": [],
+      "patch_scripts": [
+        "scripts/provider_patches/toflix_official_endpoint.py"
+      ],
+      "patch_script_options": {
+        "scripts/provider_patches/toflix_official_endpoint.py": {
+          "site": "https://tfx05.lol",
+          "fallback_api": "https://api.tfx05.lol/toflix_api.php"
+        }
+      },
+      "notes": [
+        "Bootstrap the current ToFlix terminal site from toflix.wiki and discover its API endpoint from the terminal page when available."
+      ],
+      "official_hub": "https://toflix.wiki/",
+      "official_site": "https://tfx05.lol/"
     },
     "4khdhub": {
-      "capability": "html_scraper"
+      "capability": "html_scraper",
+      "replacements": {
+        "4khdhub.one": "new3.hdhub4u.cl",
+        "4khdhub.click": "new3.hdhub4u.cl"
+      },
+      "runtime_domain_replacements": {
+        "4khdhub.one": "new3.hdhub4u.cl",
+        "4khdhub.click": "new3.hdhub4u.cl"
+      },
+      "required_values": [
+        "new3.hdhub4u.cl"
+      ],
+      "route_replacements": {},
+      "required_route_values": [],
+      "patch_scripts": [
+        "scripts/provider_patches/stream_output_sanitizer.py"
+      ],
+      "patch_script_options": {
+        "scripts/provider_patches/stream_output_sanitizer.py": {
+          "probe_direct_media": true,
+          "max_probes": 6,
+          "probe_all_urls": true
+        }
+      },
+      "notes": [
+        "Use the current HDHub4u terminal route and reject HTML/error bodies returned as HLS media."
+      ],
+      "official_hub": "https://hdhub4u.ec/",
+      "official_site": "https://new3.hdhub4u.cl/"
     },
     "4khdhubnew": {
       "capability": "html_scraper"
@@ -354,12 +493,6 @@
       "capability": "direct_media",
       "profiles": []
     },
-    "dahmermovies": {
-      "capability": "html_scraper"
-    },
-    "dahmermovies-tv": {
-      "capability": "html_scraper"
-    },
     "desiflix": {
       "capability": "html_scraper"
     },
@@ -416,7 +549,33 @@
     },
     "movies4u": {
       "capability": "html_scraper",
-      "profiles": []
+      "profiles": [],
+      "replacements": {
+        "m4uplay.store": "new2.movies4u.clinic"
+      },
+      "runtime_domain_replacements": {
+        "m4uplay.store": "new2.movies4u.clinic"
+      },
+      "required_values": [
+        "new2.movies4u.clinic"
+      ],
+      "route_replacements": {},
+      "required_route_values": [],
+      "patch_scripts": [
+        "scripts/provider_patches/stream_output_sanitizer.py"
+      ],
+      "patch_script_options": {
+        "scripts/provider_patches/stream_output_sanitizer.py": {
+          "probe_direct_media": true,
+          "max_probes": 6,
+          "probe_all_urls": true
+        }
+      },
+      "notes": [
+        "Use the current Movies4u terminal route and drop unresolved or non-media direct links before playback."
+      ],
+      "official_hub": "https://movies4u.tube/",
+      "official_site": "https://new2.movies4u.clinic/"
     },
     "movieshunt": {
       "capability": "direct_media",
@@ -489,7 +648,29 @@
       "capability": "mixed_embed_resolver",
       "profiles": [
         "metadata_context_recovery"
-      ]
+      ],
+      "replacements": {
+        "wookafr.cymru": "wookafr.center",
+        "wookafr.fyi": "wookafr.center",
+        "wookafr.app": "wookafr.center",
+        "wookafr.to": "wookafr.center"
+      },
+      "runtime_domain_replacements": {
+        "wookafr.cymru": "wookafr.center",
+        "wookafr.fyi": "wookafr.center",
+        "wookafr.app": "wookafr.center",
+        "wookafr.to": "wookafr.center"
+      },
+      "required_values": [
+        "wookafr.center"
+      ],
+      "route_replacements": {},
+      "required_route_values": [],
+      "notes": [
+        "Use the latest Wooka terminal domain announced by the official Telegram address channel."
+      ],
+      "official_hub": "https://t.me/s/Wookafr2",
+      "official_site": "https://wookafr.center/"
     },
     "xpass": {
       "capability": "html_scraper"
@@ -632,7 +813,12 @@
         "https://movix.fun"
       ],
       "generated_from_manifest": true,
-      "generated_from_manifest_or_stage": true
+      "generated_from_manifest_or_stage": true,
+      "catalogue_types": [
+        "movie",
+        "tv",
+        "anime"
+      ]
     },
     "4khdhub": {
       "strategy": "html_scraper",
@@ -640,7 +826,7 @@
       "allow_html_url": true,
       "requires_direct_media": false,
       "observed_origins": [
-        "https://4khdhub.one"
+        "https://new3.hdhub4u.cl"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
@@ -651,7 +837,7 @@
       "allow_html_url": true,
       "requires_direct_media": false,
       "observed_origins": [
-        "https://4khdhub.one"
+        "https://4khdhub.dad"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
@@ -749,7 +935,11 @@
         "http://underscorejs.org"
       ],
       "generated_from_manifest": true,
-      "generated_from_manifest_or_stage": true
+      "generated_from_manifest_or_stage": true,
+      "catalogue_types": [
+        "movie",
+        "anime"
+      ]
     },
     "animekai": {
       "strategy": "mixed_embed_resolver",
@@ -812,7 +1002,11 @@
         "http://underscorejs.org"
       ],
       "generated_from_manifest": true,
-      "generated_from_manifest_or_stage": true
+      "generated_from_manifest_or_stage": true,
+      "catalogue_types": [
+        "movie",
+        "anime"
+      ]
     },
     "animesultra": {
       "strategy": "mixed_embed_resolver",
@@ -839,7 +1033,11 @@
         "http://underscorejs.org"
       ],
       "generated_from_manifest": true,
-      "generated_from_manifest_or_stage": true
+      "generated_from_manifest_or_stage": true,
+      "catalogue_types": [
+        "movie",
+        "anime"
+      ]
     },
     "animetsu": {
       "strategy": "direct_media",
@@ -880,7 +1078,11 @@
         "http://underscorejs.org"
       ],
       "generated_from_manifest": true,
-      "generated_from_manifest_or_stage": true
+      "generated_from_manifest_or_stage": true,
+      "catalogue_types": [
+        "movie",
+        "anime"
+      ]
     },
     "animeworld": {
       "strategy": "html_scraper",
@@ -918,7 +1120,11 @@
         "http://underscorejs.org"
       ],
       "generated_from_manifest": true,
-      "generated_from_manifest_or_stage": true
+      "generated_from_manifest_or_stage": true,
+      "catalogue_types": [
+        "movie",
+        "anime"
+      ]
     },
     "anizone": {
       "strategy": "api_stream_resolver",
@@ -1014,7 +1220,12 @@
         "http://underscorejs.org"
       ],
       "generated_from_manifest": true,
-      "generated_from_manifest_or_stage": true
+      "generated_from_manifest_or_stage": true,
+      "catalogue_types": [
+        "movie",
+        "tv",
+        "anime"
+      ]
     },
     "ctgmovies": {
       "strategy": "direct_media",
@@ -1028,34 +1239,12 @@
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
     },
-    "dahmermovies": {
-      "strategy": "html_scraper",
-      "validation": "provider_native",
-      "allow_html_url": true,
-      "requires_direct_media": false,
-      "observed_origins": [
-        "https://a.111477.xyz"
-      ],
-      "generated_from_manifest": true,
-      "generated_from_manifest_or_stage": true
-    },
-    "dahmermovies-tv": {
-      "strategy": "html_scraper",
-      "validation": "provider_native",
-      "allow_html_url": true,
-      "requires_direct_media": false,
-      "observed_origins": [],
-      "generated_from_manifest": true,
-      "generated_from_manifest_or_stage": true
-    },
     "desiflix": {
       "strategy": "html_scraper",
       "validation": "provider_native",
       "allow_html_url": true,
       "requires_direct_media": false,
-      "observed_origins": [
-        "https://manifest.desitvhub.eu.org"
-      ],
+      "observed_origins": [],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
     },
@@ -1145,7 +1334,7 @@
         "https://vidoza.net",
         "https://lecteurvideo.com",
         "https://up4fun.top",
-        "https://flemmix.me",
+        "https://flemmix.casa",
         "https://npms.io",
         "https://kitsu.io",
         "https://arm.haglund.dev",
@@ -1182,7 +1371,11 @@
         "http://underscorejs.org"
       ],
       "generated_from_manifest": true,
-      "generated_from_manifest_or_stage": true
+      "generated_from_manifest_or_stage": true,
+      "catalogue_types": [
+        "movie",
+        "anime"
+      ]
     },
     "frenchstream": {
       "strategy": "mixed_embed_resolver",
@@ -1203,7 +1396,7 @@
         "https://arm.haglund.dev",
         "https://v3-cinemeta.strem.io",
         "https://kitsu.io",
-        "https://fs03.lol",
+        "https://fs16.lol",
         "https://lodash.com",
         "https://openjsf.org",
         "http://underscorejs.org"
@@ -1338,7 +1531,7 @@
       "requires_direct_media": false,
       "observed_origins": [
         "https://hc-zf3c.vercel.app",
-        "https://m4uplay.store"
+        "https://new2.movies4u.clinic"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
@@ -1394,7 +1587,7 @@
         "https://vidoza.net",
         "https://lecteurvideo.com",
         "https://up4fun.top",
-        "https://movix.cash",
+        "https://movix.fun",
         "https://npms.io",
         "https://api.movix.fun",
         "https://lodash.com",
@@ -1427,7 +1620,11 @@
         "http://underscorejs.org"
       ],
       "generated_from_manifest": true,
-      "generated_from_manifest_or_stage": true
+      "generated_from_manifest_or_stage": true,
+      "catalogue_types": [
+        "movie",
+        "anime"
+      ]
     },
     "mycima": {
       "strategy": "mixed_embed_resolver",
@@ -1447,11 +1644,16 @@
       "allow_html_url": false,
       "requires_direct_media": false,
       "observed_origins": [
-        "https://nakios.store",
-        "https://api.nakios.store"
+        "https://nakios.live",
+        "https://api.nakios.live"
       ],
       "generated_from_manifest": true,
-      "generated_from_manifest_or_stage": true
+      "generated_from_manifest_or_stage": true,
+      "catalogue_types": [
+        "movie",
+        "tv",
+        "anime"
+      ]
     },
     "netmirror": {
       "strategy": "mixed_embed_resolver",
@@ -1488,7 +1690,11 @@
         "http://underscorejs.org"
       ],
       "generated_from_manifest": true,
-      "generated_from_manifest_or_stage": true
+      "generated_from_manifest_or_stage": true,
+      "catalogue_types": [
+        "movie",
+        "tv"
+      ]
     },
     "peachify": {
       "strategy": "mixed_embed_resolver",
@@ -1539,7 +1745,11 @@
         "http://underscorejs.org"
       ],
       "generated_from_manifest": true,
-      "generated_from_manifest_or_stage": true
+      "generated_from_manifest_or_stage": true,
+      "catalogue_types": [
+        "movie",
+        "anime"
+      ]
     },
     "showbox": {
       "strategy": "html_scraper",
@@ -1586,7 +1796,12 @@
         "http://underscorejs.org"
       ],
       "generated_from_manifest": true,
-      "generated_from_manifest_or_stage": true
+      "generated_from_manifest_or_stage": true,
+      "catalogue_types": [
+        "movie",
+        "tv",
+        "anime"
+      ]
     },
     "toflix": {
       "strategy": "direct_media",
@@ -1594,7 +1809,9 @@
       "allow_html_url": false,
       "requires_direct_media": true,
       "observed_origins": [
-        "https://apis.wavewatch.xyz"
+        "https://apis.wavewatch.xyz",
+        "https://tfx05.lol",
+        "https://api.tfx05.lol"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
@@ -1634,6 +1851,7 @@
       "allow_html_url": false,
       "requires_direct_media": false,
       "observed_origins": [
+        "https://api.wingsdatabase.com",
         "https://www.vidking.net"
       ],
       "generated_from_manifest": true,
@@ -1738,7 +1956,11 @@
         "http://underscorejs.org"
       ],
       "generated_from_manifest": true,
-      "generated_from_manifest_or_stage": true
+      "generated_from_manifest_or_stage": true,
+      "catalogue_types": [
+        "movie",
+        "anime"
+      ]
     },
     "voiranime-rip": {
       "strategy": "mixed_embed_resolver",
@@ -1765,7 +1987,11 @@
         "http://underscorejs.org"
       ],
       "generated_from_manifest": true,
-      "generated_from_manifest_or_stage": true
+      "generated_from_manifest_or_stage": true,
+      "catalogue_types": [
+        "movie",
+        "anime"
+      ]
     },
     "vostfree": {
       "strategy": "mixed_embed_resolver",
@@ -1796,7 +2022,11 @@
         "http://underscorejs.org"
       ],
       "generated_from_manifest": true,
-      "generated_from_manifest_or_stage": true
+      "generated_from_manifest_or_stage": true,
+      "catalogue_types": [
+        "movie",
+        "anime"
+      ]
     },
     "wookafr": {
       "strategy": "mixed_embed_resolver",
@@ -1813,10 +2043,7 @@
         "https://vidoza.net",
         "https://lecteurvideo.com",
         "https://up4fun.top",
-        "https://wookafr.cymru",
-        "https://wookafr.fyi",
-        "https://wookafr.app",
-        "https://wookafr.to",
+        "https://wookafr.center",
         "https://npms.io",
         "https://kitsu.io",
         "https://arm.haglund.dev",
@@ -1940,12 +2167,313 @@
         405
       ],
       "require_api_validation": true
+    },
+    "frenchstream": {
+      "hub": "https://fstream.org/",
+      "aliases": [
+        "frenchstream",
+        "french-stream",
+        "fstream"
+      ],
+      "resolver": "official_outbound",
+      "official_link_labels": [
+        "Accéder",
+        "Accedez",
+        "adresse actuelle",
+        "site officiel"
+      ],
+      "old_site_hosts": [
+        "french-stream.one",
+        "frenchstream.food",
+        "fs03.lol"
+      ],
+      "old_api_hosts": [],
+      "api_templates": [],
+      "api_probe_routes": [
+        "/",
+        "/health",
+        "/api"
+      ],
+      "api_success_statuses": [
+        200,
+        400,
+        401,
+        403,
+        404,
+        405
+      ],
+      "require_api_validation": false,
+      "persist_official_site_without_api": true,
+      "direct_fallback": "https://fs16.lol/"
+    },
+    "movix": {
+      "hub": "https://movix.online/",
+      "aliases": [
+        "movix"
+      ],
+      "resolver": "official_outbound",
+      "official_link_labels": [
+        "Accéder à Movix",
+        "Acceder a Movix",
+        "Movie",
+        "site officiel"
+      ],
+      "old_site_hosts": [
+        "movix.cash"
+      ],
+      "old_api_hosts": [
+        "api.movix.cash",
+        "api.movix.cloud"
+      ],
+      "api_templates": [
+        "https://api.{host}"
+      ],
+      "api_probe_routes": [
+        "/",
+        "/health",
+        "/api"
+      ],
+      "api_success_statuses": [
+        200,
+        400,
+        401,
+        403,
+        404,
+        405
+      ],
+      "require_api_validation": false,
+      "persist_official_site_without_api": true,
+      "direct_fallback": "https://movix.fun/"
+    },
+    "nakios": {
+      "hub": "https://nakios.org/",
+      "aliases": [
+        "nakios"
+      ],
+      "resolver": "service_catalogue",
+      "official_link_labels": [
+        "catalogue",
+        "streaming",
+        "service associé",
+        "service associe"
+      ],
+      "old_site_hosts": [
+        "nakios.store"
+      ],
+      "old_api_hosts": [
+        "api.nakios.store"
+      ],
+      "api_templates": [
+        "https://api.{host}"
+      ],
+      "api_probe_routes": [
+        "/",
+        "/health",
+        "/api"
+      ],
+      "api_success_statuses": [
+        200,
+        400,
+        401,
+        403,
+        404,
+        405
+      ],
+      "require_api_validation": false,
+      "persist_official_site_without_api": true,
+      "direct_fallback": "https://nakios.live/"
+    },
+    "toflix": {
+      "hub": "https://toflix.wiki/",
+      "aliases": [
+        "toflix",
+        "tfx"
+      ],
+      "resolver": "official_outbound",
+      "official_link_labels": [
+        "Accéder à ToFlix",
+        "Acceder a ToFlix",
+        "site officiel"
+      ],
+      "old_site_hosts": [
+        "toflix.site"
+      ],
+      "old_api_hosts": [
+        "api.toflix.site"
+      ],
+      "api_templates": [
+        "https://api.{host}"
+      ],
+      "api_probe_routes": [
+        "/",
+        "/health",
+        "/api"
+      ],
+      "api_success_statuses": [
+        200,
+        400,
+        401,
+        403,
+        404,
+        405
+      ],
+      "require_api_validation": false,
+      "persist_official_site_without_api": true,
+      "direct_fallback": "https://tfx05.lol/"
+    },
+    "flemmix": {
+      "hub": "https://ww1.wiflix-adresses.fun/",
+      "aliases": [
+        "flemmix",
+        "wiflix"
+      ],
+      "resolver": "alias_outbound",
+      "official_link_labels": [
+        "Accéder",
+        "Accedez",
+        "site officiel",
+        "adresse officielle",
+        "ouvrir",
+        "website",
+        "click here"
+      ],
+      "old_site_hosts": [
+        "flemmix.me",
+        "wiflix.name",
+        "wiflix-hd.vip"
+      ],
+      "old_api_hosts": [],
+      "api_templates": [],
+      "api_probe_routes": [
+        "/",
+        "/health",
+        "/api"
+      ],
+      "api_success_statuses": [
+        200,
+        400,
+        401,
+        403,
+        404,
+        405
+      ],
+      "require_api_validation": false,
+      "persist_official_site_without_api": true,
+      "direct_fallback": "https://flemmix.casa/"
+    },
+    "wookafr": {
+      "hub": "https://t.me/s/Wookafr2",
+      "aliases": [
+        "wookafr",
+        "wooka"
+      ],
+      "resolver": "latest_telegram_domain",
+      "official_link_labels": [
+        "Accéder",
+        "Accedez",
+        "site officiel",
+        "adresse officielle",
+        "ouvrir",
+        "website",
+        "click here"
+      ],
+      "old_site_hosts": [
+        "wookafr.cymru",
+        "wookafr.fyi",
+        "wookafr.app",
+        "wookafr.to"
+      ],
+      "old_api_hosts": [],
+      "api_templates": [],
+      "api_probe_routes": [
+        "/",
+        "/health",
+        "/api"
+      ],
+      "api_success_statuses": [
+        200,
+        400,
+        401,
+        403,
+        404,
+        405
+      ],
+      "require_api_validation": false,
+      "persist_official_site_without_api": true,
+      "direct_fallback": "https://wookafr.center/"
+    },
+    "4khdhub": {
+      "hub": "https://hdhub4u.ec/",
+      "aliases": [
+        "4khdhub",
+        "hdhub4u"
+      ],
+      "resolver": "alias_outbound",
+      "official_link_labels": [
+        "Click Here",
+        "Open Website"
+      ],
+      "old_site_hosts": [
+        "4khdhub.one",
+        "4khdhub.click"
+      ],
+      "old_api_hosts": [],
+      "api_templates": [],
+      "api_probe_routes": [
+        "/",
+        "/health",
+        "/api"
+      ],
+      "api_success_statuses": [
+        200,
+        400,
+        401,
+        403,
+        404,
+        405
+      ],
+      "require_api_validation": false,
+      "persist_official_site_without_api": true,
+      "direct_fallback": "https://new3.hdhub4u.cl/"
+    },
+    "movies4u": {
+      "hub": "https://movies4u.tube/",
+      "aliases": [
+        "movies4u",
+        "m4u"
+      ],
+      "resolver": "alias_outbound",
+      "official_link_labels": [
+        "Open Movies4u Website",
+        "Click Here"
+      ],
+      "old_site_hosts": [
+        "m4uplay.store"
+      ],
+      "old_api_hosts": [],
+      "api_templates": [],
+      "api_probe_routes": [
+        "/",
+        "/health",
+        "/api"
+      ],
+      "api_success_statuses": [
+        200,
+        400,
+        401,
+        403,
+        404,
+        405
+      ],
+      "require_api_validation": false,
+      "persist_official_site_without_api": true,
+      "direct_fallback": "https://new2.movies4u.clinic/"
     }
   },
   "provider_profile_generation": {
     "schema_version": 3,
-    "provider_count": 88,
-    "staged_provider_count": 87,
+    "provider_count": 85,
+    "staged_provider_count": 0,
     "source": "manifest_published_bundles_and_current_staging",
     "same_deep_new_provider_support": true,
     "automatic_bundle_rewrite": false

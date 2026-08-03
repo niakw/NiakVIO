@@ -1,38 +1,43 @@
-# Sources amont
+# Sources amont et sauvegardes
+
+Le dépôt consolide trois sources communautaires principales.
 
 ## Gowaru
 
 - Dépôt : `https://github.com/Gowaru/gowaru-nuvio-providers`
 - Manifest : `https://raw.githubusercontent.com/Gowaru/gowaru-nuvio-providers/refs/heads/main/manifest.json`
-- Priorité : VF/VOSTFR et anime français.
+- Apport principal : providers VF, VOSTFR et anime francophone.
 
 ## All-in-One-Nuvio
 
 - Dépôt canonique : `https://github.com/NuvioPlugin/All-in-One-Nuvio`
-- Manifest : `https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/manifest.json`
-- Ancienne URL redirigée : `D3adlyRocket/All-in-One-Nuvio`
-- Priorité : providers VO et correctifs récents.
+- Manifest principal : `https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/manifest.json`
+- Ancien miroir accepté : `https://raw.githubusercontent.com/D3adlyRocket/All-in-One-Nuvio/refs/heads/main/manifest.json`
+- Apport principal : providers internationaux et correctifs récents.
 
 ## Yoru
 
 - Dépôt : `https://github.com/yoruix/nuvio-providers`
 - Manifest : `https://raw.githubusercontent.com/yoruix/nuvio-providers/refs/heads/main/manifest.json`
-- Priorité : YFlix, CinemaCity et providers exclusifs.
-- Repli : MovieBox, ShowBox, MoviesDrive, UHDMovies, VidEasy, AnimePahe,
-  HiAnime, VidLink, VixSrc et HDHub4U.
+- Apport principal : providers exclusifs et variantes complémentaires.
 
-## Nuvio-TV
+## Stratégie de repli
 
-- Dépôt : `https://github.com/D3adlyRocket/Nuvio-TV`
-- Manifest : `https://raw.githubusercontent.com/D3adlyRocket/Nuvio-TV/refs/heads/main/manifest.json`
-- Contenu : sept variantes ciblées Android TV.
-- Usage ici : dernier repli uniquement, car ce dépôt est plus réduit et moins
-  récemment mis à jour qu'All-in-One.
+Pour chacune des trois sources, le workflow profond conserve les **deux dernières générations complètes** du manifest et de ses fichiers providers dans `upstream-lkg/`.
+
+L’ordre de récupération est le suivant :
+
+1. manifest et provider actuels du dépôt amont ;
+2. dernière sauvegarde amont valide ;
+3. sauvegarde amont précédente ;
+4. provider fonctionnel déjà publié dans ce dépôt.
+
+Un manifest vide, dupliqué, fortement tronqué ou dont trop de fichiers sont invalides n’écrase jamais une sauvegarde saine. Les snapshots ne sont finalisés qu’après la réussite du cycle profond. Les providers déjà publiés restent le dernier repli fonctionnel, même lorsqu’aucune nouvelle sauvegarde amont ne peut être créée.
 
 ## Règles
 
-1. Ne pas activer deux copies du même provider.
-2. Préférer la version récemment maintenue.
-3. Garder Yoru pour ses exclusivités.
-4. Utiliser Nuvio-TV comme secours, pas comme source générale.
-5. Copier les fichiers JS dans notre propre dossier `providers/`.
+1. Ne jamais activer deux copies du même provider.
+2. Ne jamais remplacer un provider publié par une variante qui régresse.
+3. Exclure les providers et protocoles P2P.
+4. Conserver les anciennes variantes sous forme de sauvegardes bornées, pas indéfiniment.
+5. Publier les fichiers providers avant le manifest qui les référence.

@@ -1,3 +1,13 @@
+## 5.19.0
+
+- Turn the complete provider hub registry into an active runtime source instead of documentation only.
+- Resolve official hubs, public Telegram posts, redirects and curated candidates daily; use bounded Yandex/DuckDuckGo fallback only in deep mode.
+- Require two consecutive validations before accepting a search-only domain and retain the last-known-good domain whenever discovery is inconclusive.
+- Keep Frenchstream and Movix address resolution independent while filtering the unrelated `fstream.top` player output returned by either provider.
+- Retain two content-addressed generations for each of the three upstream repositories and fall back to current published provider artifacts when an upstream is missing, truncated or corrupt.
+- Add a focused daily domain-publication workflow while keeping full deep provider tests limited to Tuesday and Friday.
+- Preserve the curated manifest order, expanded movie/anime types, stream-output validation and complete removal of Dahmermovies variants.
+
 ## 5.18.0
 
 - Replace blind pre-build structural rewrites with a bounded baseline → diagnose → patch → exact deep retest → compare loop.

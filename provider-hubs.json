@@ -1,6 +1,6 @@
 {
-  "schema_version": 1,
-  "generated_from": "hubs_streams_manquants(1).xlsx + hubs supplied in chat",
+  "schema_version": 3,
+  "generated_from": "Curated address-source registry assembled from official hubs, public address channels, redirects, stable endpoints and bounded search fallbacks.",
   "providers": {
     "animesama-co": {
       "id": "animesama-co",
@@ -9,11 +9,31 @@
       "category": "Francophone / Anime",
       "hub": "https://anime-sama.wiki/",
       "direct": "https://anime-sama.store/",
-      "notes": "lien sur bloc \"Miroir Alpha\nLien de secours à utiliser si la plateforme principale rencontre une indisponibilité temporaire.\"",
-      "source": "user_workbook",
+      "source": "curated_user_registry",
       "aliases": [
-        "animesama",
-        "anime-sama"
+        "anime-sama",
+        "animesama"
+      ],
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "direct_candidates": [
+        "https://anime-sama.store/"
+      ],
+      "allowed_terminal_hosts": [
+        "anime-sama.store"
+      ],
+      "search_queries": [],
+      "sources": [
+        {
+          "type": "hub",
+          "url": "https://anime-sama.wiki/",
+          "priority": 110,
+          "purpose": "Official mirror access hub"
+        }
+      ],
+      "search_confirmation_runs": 2,
+      "resolver": "official_outbound",
+      "allowed_terminal_host_patterns": [
+        "^animes?-sama[a-z0-9-]*\\.[a-z0-9-]{2,20}$"
       ]
     },
     "animesultra": {
@@ -21,70 +41,187 @@
       "name": "AnimesUltra",
       "manifest_status": "Actif",
       "category": "Francophone / Anime",
-      "hub": "recherche (yandex) avec le terme suivant pour trouver le lien : www1.animesultra",
+      "hub": null,
       "direct": "https://ww.animesultra.org/",
-      "notes": "recherche moteur de recherche",
-      "source": "user_workbook"
+      "source": "curated_user_registry",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "animesultra"
+      ],
+      "search_queries": [
+        "www1.animesultra"
+      ],
+      "direct_candidates": [
+        "https://ww.animesultra.org/"
+      ],
+      "allowed_terminal_hosts": [
+        "ww.animesultra.org"
+      ],
+      "sources": [
+        {
+          "type": "search",
+          "query": "www1.animesultra",
+          "priority": 35,
+          "purpose": "Fallback discovery when curated sources fail"
+        }
+      ],
+      "search_confirmation_runs": 2
     },
     "animevostfr": {
       "id": "animevostfr",
       "name": "AnimeVOSTFR",
       "manifest_status": "Actif",
       "category": "Francophone / Anime",
-      "hub": "recherche (yandex) avec le terme suivant pour trouver le lien : animevostfr lien",
+      "hub": null,
       "direct": "https://v2.animevostfr.org/",
-      "notes": "recherche moteur de recherche",
-      "source": "user_workbook",
+      "source": "curated_user_registry",
       "aliases": [
         "animevostfr"
-      ]
+      ],
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "search_queries": [
+        "animevostfr lien"
+      ],
+      "direct_candidates": [
+        "https://v2.animevostfr.org/"
+      ],
+      "allowed_terminal_hosts": [
+        "v2.animevostfr.org"
+      ],
+      "sources": [
+        {
+          "type": "search",
+          "query": "animevostfr lien",
+          "priority": 35,
+          "purpose": "Fallback discovery when curated sources fail"
+        }
+      ],
+      "search_confirmation_runs": 2
     },
     "dulourd": {
       "id": "dulourd",
       "name": "DuLourd",
       "manifest_status": "Actif",
       "category": "Francophone",
-      "hub": "recherche (yandex) avec le terme suivant pour trouver le lien : \"DuLourd\" streaming",
+      "hub": null,
       "direct": "https://www.dulourd.hair/",
-      "notes": "recherche moteur de recherche",
-      "source": "user_workbook"
+      "source": "curated_user_registry",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "dulourd"
+      ],
+      "search_queries": [
+        "DuLourd\" streaming"
+      ],
+      "direct_candidates": [
+        "https://www.dulourd.hair/"
+      ],
+      "allowed_terminal_hosts": [
+        "www.dulourd.hair"
+      ],
+      "sources": [
+        {
+          "type": "search",
+          "query": "DuLourd\" streaming",
+          "priority": 35,
+          "purpose": "Fallback discovery when curated sources fail"
+        }
+      ],
+      "search_confirmation_runs": 2
     },
     "french-manga": {
       "id": "french-manga",
       "name": "French-Manga",
       "manifest_status": "Actif",
       "category": "Francophone / Anime",
-      "hub": "recherche (yandex) avec le terme suivant pour trouver le lien : \"French-Manga\" streaming",
+      "hub": null,
       "direct": "https://w16.french-manga.net/",
-      "notes": "recherche moteur de recherche",
-      "source": "user_workbook",
+      "source": "curated_user_registry",
       "aliases": [
         "french-manga",
         "frenchmanga"
-      ]
+      ],
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "search_queries": [
+        "French-Manga\" streaming"
+      ],
+      "direct_candidates": [
+        "https://w16.french-manga.net/"
+      ],
+      "allowed_terminal_hosts": [
+        "w16.french-manga.net"
+      ],
+      "sources": [
+        {
+          "type": "search",
+          "query": "French-Manga\" streaming",
+          "priority": 35,
+          "purpose": "Fallback discovery when curated sources fail"
+        }
+      ],
+      "search_confirmation_runs": 2
     },
     "streamzo": {
       "id": "streamzo",
       "name": "StreamZo",
       "manifest_status": "Actif",
       "category": "Francophone",
-      "hub": "recherche (yandex) avec le terme suivant pour trouver le lien : \"StreamZo\" streaming",
+      "hub": null,
       "direct": "https://streamzo.fr/",
-      "notes": "recherche moteur de recherche",
-      "source": "user_workbook"
+      "source": "curated_user_registry",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "streamzo"
+      ],
+      "search_queries": [
+        "StreamZo\" streaming"
+      ],
+      "direct_candidates": [
+        "https://streamzo.fr/"
+      ],
+      "allowed_terminal_hosts": [
+        "streamzo.fr"
+      ],
+      "sources": [
+        {
+          "type": "search",
+          "query": "StreamZo\" streaming",
+          "priority": 35,
+          "purpose": "Fallback discovery when curated sources fail"
+        }
+      ],
+      "search_confirmation_runs": 2
     },
     "voiranime-rip": {
       "id": "voiranime-rip",
       "name": "VoirAnime.rip",
       "manifest_status": "Actif",
       "category": "Francophone / Anime",
-      "hub": "recherche (yandex) avec le terme suivant pour trouver le lien : VoirAnime.rip lien",
+      "hub": null,
       "direct": "https://voiranime.rip/",
-      "notes": "recherche moteur de recherche",
-      "source": "user_workbook",
+      "source": "curated_user_registry",
       "aliases": [
         "voiranime"
-      ]
+      ],
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "search_queries": [
+        "VoirAnime.rip lien"
+      ],
+      "direct_candidates": [
+        "https://voiranime.rip/"
+      ],
+      "allowed_terminal_hosts": [
+        "voiranime.rip"
+      ],
+      "sources": [
+        {
+          "type": "search",
+          "query": "VoirAnime.rip lien",
+          "priority": 35,
+          "purpose": "Fallback discovery when curated sources fail"
+        }
+      ],
+      "search_confirmation_runs": 2
     },
     "vostfree": {
       "id": "vostfree",
@@ -93,8 +230,35 @@
       "category": "Francophone / Anime",
       "hub": "https://streaminganime.fr/site/6/vostfree",
       "direct": "https://ipv4.vostfree.ws/",
-      "notes": "bouton avec lien \"Visiter maintenant\"",
-      "source": "user_workbook"
+      "source": "curated_user_registry",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "vostfree"
+      ],
+      "direct_candidates": [
+        "https://ipv4.vostfree.ws/"
+      ],
+      "allowed_terminal_hosts": [
+        "ipv4.vostfree.ws"
+      ],
+      "search_queries": [
+        "\"Vostfree\" official domain"
+      ],
+      "sources": [
+        {
+          "type": "hub",
+          "url": "https://streaminganime.fr/site/6/vostfree",
+          "priority": 100,
+          "purpose": "Authoritative address reference"
+        },
+        {
+          "type": "search",
+          "query": "\"Vostfree\" official domain",
+          "priority": 35,
+          "purpose": "Fallback discovery when curated sources fail"
+        }
+      ],
+      "search_confirmation_runs": 2
     },
     "papadustream": {
       "id": "papadustream",
@@ -103,8 +267,35 @@
       "category": "Francophone",
       "hub": "https://papadustream.info/acces/",
       "direct": "https://papadustream-v2.watch/",
-      "notes": "bouton avec lien \"▶ Accéder au site\"",
-      "source": "user_workbook"
+      "source": "curated_user_registry",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "papadustream"
+      ],
+      "direct_candidates": [
+        "https://papadustream-v2.watch/"
+      ],
+      "allowed_terminal_hosts": [
+        "papadustream-v2.watch"
+      ],
+      "search_queries": [
+        "\"Papadustream\" official domain"
+      ],
+      "sources": [
+        {
+          "type": "hub",
+          "url": "https://papadustream.info/acces/",
+          "priority": 100,
+          "purpose": "Authoritative address reference"
+        },
+        {
+          "type": "search",
+          "query": "\"Papadustream\" official domain",
+          "priority": 35,
+          "purpose": "Fallback discovery when curated sources fail"
+        }
+      ],
+      "search_confirmation_runs": 2
     },
     "mugiwarastream": {
       "id": "mugiwarastream",
@@ -113,22 +304,67 @@
       "category": "Francophone / Anime",
       "hub": "https://streaminganime.fr/site/10/mugiwara-no-streaming",
       "direct": "https://www.mugiwara-no-streaming.com/",
-      "notes": "bouton avec lien \"Visiter maintenant\"",
-      "source": "user_workbook",
+      "source": "curated_user_registry",
       "aliases": [
         "mugiwara-no-streaming",
         "mugiwarastream"
-      ]
+      ],
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "direct_candidates": [
+        "https://www.mugiwara-no-streaming.com/"
+      ],
+      "allowed_terminal_hosts": [
+        "www.mugiwara-no-streaming.com"
+      ],
+      "search_queries": [
+        "\"Mugiwara-no-Streaming\" official domain"
+      ],
+      "sources": [
+        {
+          "type": "hub",
+          "url": "https://streaminganime.fr/site/10/mugiwara-no-streaming",
+          "priority": 100,
+          "purpose": "Authoritative address reference"
+        },
+        {
+          "type": "search",
+          "query": "\"Mugiwara-no-Streaming\" official domain",
+          "priority": 35,
+          "purpose": "Fallback discovery when curated sources fail"
+        }
+      ],
+      "search_confirmation_runs": 2
     },
     "sekai": {
       "id": "sekai",
       "name": "Sekai",
       "manifest_status": "Actif",
       "category": "Francophone / Anime",
-      "hub": "recherche (yandex) avec le terme suivant pour trouver le lien : \"Sekai\" streaming",
+      "hub": null,
       "direct": "https://sekai.one/",
-      "notes": "recherche moteur de recherche",
-      "source": "user_workbook"
+      "source": "curated_user_registry",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "sekai"
+      ],
+      "search_queries": [
+        "Sekai\" streaming"
+      ],
+      "direct_candidates": [
+        "https://sekai.one/"
+      ],
+      "allowed_terminal_hosts": [
+        "sekai.one"
+      ],
+      "sources": [
+        {
+          "type": "search",
+          "query": "Sekai\" streaming",
+          "priority": 35,
+          "purpose": "Fallback discovery when curated sources fail"
+        }
+      ],
+      "search_confirmation_runs": 2
     },
     "anime-sama": {
       "id": "anime-sama",
@@ -137,11 +373,31 @@
       "category": "Francophone / Anime",
       "hub": "https://anime-sama.wiki/",
       "direct": "https://animes-sama.fr/",
-      "notes": "Plateforme principale\nAccès prioritaire au site principal avec l’environnement le plus à jour et les serveurs recommandés.",
-      "source": "user_workbook",
+      "source": "curated_user_registry",
       "aliases": [
-        "animesama",
-        "anime-sama"
+        "anime-sama",
+        "animesama"
+      ],
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "direct_candidates": [
+        "https://animes-sama.fr/"
+      ],
+      "allowed_terminal_hosts": [
+        "animes-sama.fr"
+      ],
+      "search_queries": [],
+      "sources": [
+        {
+          "type": "hub",
+          "url": "https://anime-sama.wiki/",
+          "priority": 110,
+          "purpose": "Official primary and mirror access hub"
+        }
+      ],
+      "search_confirmation_runs": 2,
+      "resolver": "official_outbound",
+      "allowed_terminal_host_patterns": [
+        "^animes?-sama[a-z0-9-]*\\.[a-z0-9-]{2,20}$"
       ]
     },
     "voiranime": {
@@ -151,11 +407,35 @@
       "category": "Francophone / Anime",
       "hub": "https://voiranime.org.uk/",
       "direct": "https://voiranime.homes/",
-      "notes": "bouton avec lien \"Accéder à la page d'accueil\"",
-      "source": "user_workbook",
+      "source": "curated_user_registry",
       "aliases": [
         "voiranime"
-      ]
+      ],
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "direct_candidates": [
+        "https://voiranime.homes/"
+      ],
+      "allowed_terminal_hosts": [
+        "voiranime.homes"
+      ],
+      "search_queries": [
+        "\"VoirAnime\" official domain"
+      ],
+      "sources": [
+        {
+          "type": "hub",
+          "url": "https://voiranime.org.uk/",
+          "priority": 100,
+          "purpose": "Authoritative address reference"
+        },
+        {
+          "type": "search",
+          "query": "\"VoirAnime\" official domain",
+          "priority": 35,
+          "purpose": "Fallback discovery when curated sources fail"
+        }
+      ],
+      "search_confirmation_runs": 2
     },
     "movix": {
       "id": "movix",
@@ -164,8 +444,40 @@
       "category": "International",
       "hub": "https://movix.online/",
       "direct": "https://movix.fun/",
-      "notes": "premier bloc button après \"Accéder à Movix\nChoisis ton domaine préféré, ou rejoins notre communauté sur Telegram.\"",
-      "source": "user_workbook"
+      "source": "curated_user_registry",
+      "resolver": "official_outbound",
+      "aliases": [
+        "movix"
+      ],
+      "last_verified": "2026-08-03",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "direct_candidates": [
+        "https://movix.fun/"
+      ],
+      "allowed_terminal_hosts": [
+        "movix.fun"
+      ],
+      "search_queries": [
+        "site:movix.online adresse officielle active Movix"
+      ],
+      "sources": [
+        {
+          "type": "hub",
+          "url": "https://movix.online/",
+          "priority": 110,
+          "purpose": "Official address and anti-clone reference"
+        },
+        {
+          "type": "search",
+          "query": "site:movix.online adresse officielle active Movix",
+          "priority": 30,
+          "purpose": "Fallback index lookup"
+        }
+      ],
+      "search_confirmation_runs": 2,
+      "blocked_hosts": [
+        "fstream.top"
+      ]
     },
     "videasy": {
       "id": "videasy",
@@ -174,8 +486,35 @@
       "category": "International",
       "hub": "https://www.videasy.to/docs",
       "direct": "https://player.videasy.net/",
-      "notes": "Basic Implementation\n<iframe\n  src=\"https://player.videasy.net/movie/299534\"\n  width=\"100%\"\n  height=\"100%\"\n  frameborder=\"0\"\n  allowfullscreen\n  allow=\"encrypted-media\"\n></iframe>  ----- le lien ne semble pas bouger -- c'est un player",
-      "source": "user_workbook"
+      "source": "curated_user_registry",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "videasy"
+      ],
+      "direct_candidates": [
+        "https://player.videasy.net/"
+      ],
+      "allowed_terminal_hosts": [
+        "player.videasy.net"
+      ],
+      "search_queries": [
+        "\"VidEasy\" official domain"
+      ],
+      "sources": [
+        {
+          "type": "hub",
+          "url": "https://www.videasy.to/docs",
+          "priority": 100,
+          "purpose": "Authoritative address reference"
+        },
+        {
+          "type": "search",
+          "query": "\"VidEasy\" official domain",
+          "priority": 35,
+          "purpose": "Fallback discovery when curated sources fail"
+        }
+      ],
+      "search_confirmation_runs": 2
     },
     "animepahe": {
       "id": "animepahe",
@@ -184,19 +523,76 @@
       "category": "International / Anime",
       "hub": "https://theindex.moe/item/6128a375aa2f6e004d46d71d",
       "direct": "https://animepahe.pw/",
-      "notes": "cloudfare detection robot --- lien autour des svg entourant le nom du strem \"Animepahe\"",
-      "source": "user_workbook"
+      "source": "curated_user_registry",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "animepahe"
+      ],
+      "direct_candidates": [
+        "https://animepahe.pw/"
+      ],
+      "allowed_terminal_hosts": [
+        "animepahe.pw"
+      ],
+      "search_queries": [
+        "\"AnimePahe\" official domain"
+      ],
+      "sources": [
+        {
+          "type": "hub",
+          "url": "https://theindex.moe/item/6128a375aa2f6e004d46d71d",
+          "priority": 100,
+          "purpose": "Authoritative address reference"
+        },
+        {
+          "type": "search",
+          "query": "\"AnimePahe\" official domain",
+          "priority": 35,
+          "purpose": "Fallback discovery when curated sources fail"
+        }
+      ],
+      "search_confirmation_runs": 2
     },
     "4khdhub": {
       "id": "4khdhub",
       "name": "4KHDHub",
       "manifest_status": "Actif",
       "category": "International",
-      "hub": "HDHub4u.Tv ou https://hdhub4u.ec/",
+      "hub": "https://hdhub4u.ec/",
       "direct": "https://new3.hdhub4u.cl/",
-      "notes": "lien sur \"Click Here\"",
-      "source": "user_workbook",
+      "source": "curated_user_registry",
       "aliases": [
+        "4khdhub",
+        "hdhub4u"
+      ],
+      "resolver": "alias_outbound",
+      "last_verified": "2026-08-03",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "direct_candidates": [
+        "https://new3.hdhub4u.cl/"
+      ],
+      "allowed_terminal_hosts": [
+        "new3.hdhub4u.cl"
+      ],
+      "search_queries": [
+        "\"4KHDHub\" official domain"
+      ],
+      "sources": [
+        {
+          "type": "hub",
+          "url": "https://hdhub4u.ec/",
+          "priority": 100,
+          "purpose": "Authoritative address reference"
+        },
+        {
+          "type": "search",
+          "query": "\"4KHDHub\" official domain",
+          "priority": 35,
+          "purpose": "Fallback discovery when curated sources fail"
+        }
+      ],
+      "search_confirmation_runs": 2,
+      "terminal_aliases": [
         "4khdhub",
         "hdhub4u"
       ]
@@ -208,8 +604,31 @@
       "category": "International",
       "hub": "https://playimdb.domains/",
       "direct": null,
-      "notes": "je ne peux pas accéder au hub pour le moment, mais c'est le hub officiel",
-      "source": "user_workbook"
+      "source": "curated_user_registry",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "playimdb"
+      ],
+      "direct_candidates": [],
+      "allowed_terminal_hosts": [],
+      "search_queries": [
+        "\"PlayIMDb\" official domain"
+      ],
+      "sources": [
+        {
+          "type": "hub",
+          "url": "https://playimdb.domains/",
+          "priority": 100,
+          "purpose": "Authoritative address reference"
+        },
+        {
+          "type": "search",
+          "query": "\"PlayIMDb\" official domain",
+          "priority": 35,
+          "purpose": "Fallback discovery when curated sources fail"
+        }
+      ],
+      "search_confirmation_runs": 2
     },
     "desiflix": {
       "id": "desiflix",
@@ -218,8 +637,31 @@
       "category": "International",
       "hub": "http://desiflix.me/",
       "direct": null,
-      "notes": "redirection auto vers le lien en ligne",
-      "source": "user_workbook"
+      "source": "curated_user_registry",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "desiflix"
+      ],
+      "direct_candidates": [],
+      "allowed_terminal_hosts": [],
+      "search_queries": [
+        "\"DesiFlix\" official domain"
+      ],
+      "sources": [
+        {
+          "type": "hub",
+          "url": "http://desiflix.me/",
+          "priority": 100,
+          "purpose": "Authoritative address reference"
+        },
+        {
+          "type": "search",
+          "query": "\"DesiFlix\" official domain",
+          "priority": 35,
+          "purpose": "Fallback discovery when curated sources fail"
+        }
+      ],
+      "search_confirmation_runs": 2
     },
     "allanime": {
       "id": "allanime",
@@ -228,8 +670,39 @@
       "category": "International / Anime",
       "hub": "https://allanime.sa.com/",
       "direct": "https://ww2.aniwatch.fit/",
-      "notes": "bouton \" Go to Homepage – See What’s Popular\"",
-      "source": "user_workbook"
+      "source": "curated_user_registry",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "allanime"
+      ],
+      "direct_candidates": [
+        "https://ww2.aniwatch.fit/"
+      ],
+      "allowed_terminal_hosts": [
+        "ww2.aniwatch.fit"
+      ],
+      "search_queries": [
+        "\"AllAnime\" official domain"
+      ],
+      "sources": [
+        {
+          "type": "hub",
+          "url": "https://allanime.sa.com/",
+          "priority": 100,
+          "purpose": "Authoritative address reference"
+        },
+        {
+          "type": "search",
+          "query": "\"AllAnime\" official domain",
+          "priority": 35,
+          "purpose": "Fallback discovery when curated sources fail"
+        }
+      ],
+      "search_confirmation_runs": 2,
+      "terminal_aliases": [
+        "allanime",
+        "aniwatch"
+      ]
     },
     "anikototv": {
       "id": "anikototv",
@@ -238,8 +711,35 @@
       "category": "International / Anime",
       "hub": "https://streamingsiteshub.com/",
       "direct": "https://anikototv.to/",
-      "notes": "annuaire hub , possible recherche ou dans les résultats page d'accueil si visible (là oui)",
-      "source": "user_workbook"
+      "source": "curated_user_registry",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "anikototv"
+      ],
+      "direct_candidates": [
+        "https://anikototv.to/"
+      ],
+      "allowed_terminal_hosts": [
+        "anikototv.to"
+      ],
+      "search_queries": [
+        "\"AnikotoTV\" official domain"
+      ],
+      "sources": [
+        {
+          "type": "hub",
+          "url": "https://streamingsiteshub.com/",
+          "priority": 100,
+          "purpose": "Authoritative address reference"
+        },
+        {
+          "type": "search",
+          "query": "\"AnikotoTV\" official domain",
+          "priority": 35,
+          "purpose": "Fallback discovery when curated sources fail"
+        }
+      ],
+      "search_confirmation_runs": 2
     },
     "animesalt": {
       "id": "animesalt",
@@ -248,8 +748,35 @@
       "category": "International / Anime",
       "hub": "http://animesalt.ac/",
       "direct": "https://animesalt.link/",
-      "notes": "redirection auto vers le lien en ligne",
-      "source": "user_workbook"
+      "source": "curated_user_registry",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "animesalt"
+      ],
+      "direct_candidates": [
+        "https://animesalt.link/"
+      ],
+      "allowed_terminal_hosts": [
+        "animesalt.link"
+      ],
+      "search_queries": [
+        "\"AnimeSalt\" official domain"
+      ],
+      "sources": [
+        {
+          "type": "hub",
+          "url": "http://animesalt.ac/",
+          "priority": 100,
+          "purpose": "Authoritative address reference"
+        },
+        {
+          "type": "search",
+          "query": "\"AnimeSalt\" official domain",
+          "priority": 35,
+          "purpose": "Fallback discovery when curated sources fail"
+        }
+      ],
+      "search_confirmation_runs": 2
     },
     "hdghartv": {
       "id": "hdghartv",
@@ -258,8 +785,35 @@
       "category": "International",
       "hub": "https://hdghartv.com.pk/",
       "direct": "https://hdghartv.cc/",
-      "notes": "bouton \"GO TO HOME\"",
-      "source": "user_workbook"
+      "source": "curated_user_registry",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "hdghartv"
+      ],
+      "direct_candidates": [
+        "https://hdghartv.cc/"
+      ],
+      "allowed_terminal_hosts": [
+        "hdghartv.cc"
+      ],
+      "search_queries": [
+        "\"HDGharTV\" official domain"
+      ],
+      "sources": [
+        {
+          "type": "hub",
+          "url": "https://hdghartv.com.pk/",
+          "priority": 100,
+          "purpose": "Authoritative address reference"
+        },
+        {
+          "type": "search",
+          "query": "\"HDGharTV\" official domain",
+          "priority": 35,
+          "purpose": "Fallback discovery when curated sources fail"
+        }
+      ],
+      "search_confirmation_runs": 2
     },
     "netmirror": {
       "id": "netmirror",
@@ -268,8 +822,40 @@
       "category": "International",
       "hub": "https://netmiror.com/",
       "direct": "https://net27.cc/",
-      "notes": "bouton \"Watch Now\"",
-      "source": "user_workbook"
+      "source": "curated_user_registry",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "netmirror"
+      ],
+      "direct_candidates": [
+        "https://net27.cc/"
+      ],
+      "allowed_terminal_hosts": [
+        "net27.cc"
+      ],
+      "search_queries": [
+        "\"NetMirror\" official domain"
+      ],
+      "sources": [
+        {
+          "type": "hub",
+          "url": "https://netmiror.com/",
+          "priority": 100,
+          "purpose": "Authoritative address reference"
+        },
+        {
+          "type": "search",
+          "query": "\"NetMirror\" official domain",
+          "priority": 35,
+          "purpose": "Fallback discovery when curated sources fail"
+        }
+      ],
+      "search_confirmation_runs": 2,
+      "terminal_aliases": [
+        "netmirror",
+        "netmiror",
+        "net27"
+      ]
     },
     "persianstremio": {
       "id": "persianstremio",
@@ -278,8 +864,25 @@
       "category": "International",
       "hub": null,
       "direct": null,
-      "notes": "semble être un addons https://github.com/AbolfazlFarzadmehr/Persian-Stream-Stremio-Addon",
-      "source": "user_workbook"
+      "source": "curated_user_registry",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "persianstremio"
+      ],
+      "direct_candidates": [],
+      "allowed_terminal_hosts": [],
+      "search_queries": [
+        "\"PersianStremio\" official domain"
+      ],
+      "sources": [
+        {
+          "type": "search",
+          "query": "\"PersianStremio\" official domain",
+          "priority": 35,
+          "purpose": "Fallback discovery when curated sources fail"
+        }
+      ],
+      "search_confirmation_runs": 2
     },
     "vidfast": {
       "id": "vidfast",
@@ -288,8 +891,31 @@
       "category": "International",
       "hub": "https://vidfast.vc/",
       "direct": null,
-      "notes": "c'est un player, documentaire dessus https://vidfast.vc/movie/533535",
-      "source": "user_workbook"
+      "source": "curated_user_registry",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "vidfast"
+      ],
+      "direct_candidates": [],
+      "allowed_terminal_hosts": [],
+      "search_queries": [
+        "\"VidFast\" official domain"
+      ],
+      "sources": [
+        {
+          "type": "hub",
+          "url": "https://vidfast.vc/",
+          "priority": 100,
+          "purpose": "Authoritative address reference"
+        },
+        {
+          "type": "search",
+          "query": "\"VidFast\" official domain",
+          "priority": 35,
+          "purpose": "Fallback discovery when curated sources fail"
+        }
+      ],
+      "search_confirmation_runs": 2
     },
     "vidlink": {
       "id": "vidlink",
@@ -298,8 +924,31 @@
       "category": "International",
       "hub": "https://streamindex.live/site/vidlink",
       "direct": null,
-      "notes": "lien à récupérer sur le hub, pour l'instant site off",
-      "source": "user_workbook"
+      "source": "curated_user_registry",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "vidlink"
+      ],
+      "direct_candidates": [],
+      "allowed_terminal_hosts": [],
+      "search_queries": [
+        "\"VidLink\" official domain"
+      ],
+      "sources": [
+        {
+          "type": "hub",
+          "url": "https://streamindex.live/site/vidlink",
+          "priority": 100,
+          "purpose": "Authoritative address reference"
+        },
+        {
+          "type": "search",
+          "query": "\"VidLink\" official domain",
+          "priority": 35,
+          "purpose": "Fallback discovery when curated sources fail"
+        }
+      ],
+      "search_confirmation_runs": 2
     },
     "yflix": {
       "id": "yflix",
@@ -308,8 +957,25 @@
       "category": "International",
       "hub": null,
       "direct": null,
-      "notes": "pas de hub public, la nouvelle adresse semble être https://yflix.in/",
-      "source": "user_workbook"
+      "source": "curated_user_registry",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "yflix"
+      ],
+      "direct_candidates": [],
+      "allowed_terminal_hosts": [],
+      "search_queries": [
+        "\"YFlix\" official domain"
+      ],
+      "sources": [
+        {
+          "type": "search",
+          "query": "\"YFlix\" official domain",
+          "priority": 35,
+          "purpose": "Fallback discovery when curated sources fail"
+        }
+      ],
+      "search_confirmation_runs": 2
     },
     "hindmoviez": {
       "id": "hindmoviez",
@@ -318,8 +984,39 @@
       "category": "International",
       "hub": "https://t.me/s/hindmoviez/1975",
       "direct": "https://hindmovie.icu",
-      "notes": "dernier message telegram (accès public ok)",
-      "source": "user_workbook"
+      "source": "curated_user_registry",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "hindmoviez"
+      ],
+      "direct_candidates": [
+        "https://hindmovie.icu"
+      ],
+      "allowed_terminal_hosts": [
+        "hindmovie.icu"
+      ],
+      "search_queries": [
+        "\"HindMoviez\" official domain"
+      ],
+      "sources": [
+        {
+          "type": "telegram_public",
+          "url": "https://t.me/s/hindmoviez/1975",
+          "priority": 100,
+          "purpose": "Authoritative address reference"
+        },
+        {
+          "type": "search",
+          "query": "\"HindMoviez\" official domain",
+          "priority": 35,
+          "purpose": "Fallback discovery when curated sources fail"
+        }
+      ],
+      "search_confirmation_runs": 2,
+      "terminal_aliases": [
+        "hindmoviez",
+        "hindmovie"
+      ]
     },
     "uhdmovies": {
       "id": "uhdmovies",
@@ -328,8 +1025,35 @@
       "category": "International",
       "hub": "https://mmodlist.org/",
       "direct": "https://uhdmovies.autos",
-      "notes": "premier lien en dessous du bouton/image join telegram",
-      "source": "user_workbook"
+      "source": "curated_user_registry",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "uhdmovies"
+      ],
+      "direct_candidates": [
+        "https://uhdmovies.autos"
+      ],
+      "allowed_terminal_hosts": [
+        "uhdmovies.autos"
+      ],
+      "search_queries": [
+        "\"UHDMovies\" official domain"
+      ],
+      "sources": [
+        {
+          "type": "hub",
+          "url": "https://mmodlist.org/",
+          "priority": 100,
+          "purpose": "Authoritative address reference"
+        },
+        {
+          "type": "search",
+          "query": "\"UHDMovies\" official domain",
+          "priority": 35,
+          "purpose": "Fallback discovery when curated sources fail"
+        }
+      ],
+      "search_confirmation_runs": 2
     },
     "vidsrc": {
       "id": "vidsrc",
@@ -338,8 +1062,31 @@
       "category": "International",
       "hub": "https://vidsrc.to/",
       "direct": null,
-      "notes": "player - domaine qui ne semble pas bouger",
-      "source": "user_workbook"
+      "source": "curated_user_registry",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "vidsrc"
+      ],
+      "direct_candidates": [],
+      "allowed_terminal_hosts": [],
+      "search_queries": [
+        "\"VidSrc\" official domain"
+      ],
+      "sources": [
+        {
+          "type": "hub",
+          "url": "https://vidsrc.to/",
+          "priority": 100,
+          "purpose": "Authoritative address reference"
+        },
+        {
+          "type": "search",
+          "query": "\"VidSrc\" official domain",
+          "priority": 35,
+          "purpose": "Fallback discovery when curated sources fail"
+        }
+      ],
+      "search_confirmation_runs": 2
     },
     "vixsrc": {
       "id": "vixsrc",
@@ -348,8 +1095,31 @@
       "category": "International",
       "hub": "https://vixsrc.to/",
       "direct": null,
-      "notes": "player - domaine qui ne semble pas bouger",
-      "source": "user_workbook"
+      "source": "curated_user_registry",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "vixsrc"
+      ],
+      "direct_candidates": [],
+      "allowed_terminal_hosts": [],
+      "search_queries": [
+        "\"VixSrc\" official domain"
+      ],
+      "sources": [
+        {
+          "type": "hub",
+          "url": "https://vixsrc.to/",
+          "priority": 100,
+          "purpose": "Authoritative address reference"
+        },
+        {
+          "type": "search",
+          "query": "\"VixSrc\" official domain",
+          "priority": 35,
+          "purpose": "Fallback discovery when curated sources fail"
+        }
+      ],
+      "search_confirmation_runs": 2
     },
     "movies4u": {
       "id": "movies4u",
@@ -358,36 +1128,84 @@
       "category": "International",
       "hub": "https://movies4u.tube/",
       "direct": "https://new2.movies4u.clinic/",
-      "notes": "lien \"Open Movies4u Website Click Here\"",
-      "source": "user_workbook",
+      "source": "curated_user_registry",
       "aliases": [
+        "movies4u",
+        "m4u"
+      ],
+      "resolver": "alias_outbound",
+      "last_verified": "2026-08-03",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "direct_candidates": [
+        "https://new2.movies4u.clinic/"
+      ],
+      "allowed_terminal_hosts": [
+        "new2.movies4u.clinic"
+      ],
+      "search_queries": [
+        "\"Movies4u\" official domain"
+      ],
+      "sources": [
+        {
+          "type": "hub",
+          "url": "https://movies4u.tube/",
+          "priority": 100,
+          "purpose": "Authoritative address reference"
+        },
+        {
+          "type": "search",
+          "query": "\"Movies4u\" official domain",
+          "priority": 35,
+          "purpose": "Fallback discovery when curated sources fail"
+        }
+      ],
+      "search_confirmation_runs": 2,
+      "terminal_aliases": [
         "movies4u",
         "m4u"
       ]
     },
     "cineby": {
-      "id": "Cineby",
+      "id": "cineby",
       "name": "Cineby",
       "manifest_status": "Actif",
       "category": "International",
       "hub": "https://warflix.cv/",
       "direct": "https://cineby.top/",
-      "notes": "lien \"Domain - 1\"",
-      "source": "user_workbook",
+      "source": "curated_user_registry",
       "aliases": [
         "cineby",
         "warflix"
+      ],
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "direct_candidates": [
+        "https://cineby.top/"
+      ],
+      "allowed_terminal_hosts": [
+        "cineby.top"
+      ],
+      "search_queries": [
+        "\"Cineby\" official domain"
+      ],
+      "sources": [
+        {
+          "type": "hub",
+          "url": "https://warflix.cv/",
+          "priority": 100,
+          "purpose": "Authoritative address reference"
+        },
+        {
+          "type": "search",
+          "query": "\"Cineby\" official domain",
+          "priority": 35,
+          "purpose": "Fallback discovery when curated sources fail"
+        }
+      ],
+      "search_confirmation_runs": 2,
+      "terminal_aliases": [
+        "cineby",
+        "warflix"
       ]
-    },
-    "dahmermovies": {
-      "id": "dahmermovies",
-      "name": "Dahmermovies",
-      "manifest_status": "Actif",
-      "category": "International",
-      "hub": null,
-      "direct": null,
-      "notes": "rien trouvé, je veux qu'on retire ce domaine, trop de problème",
-      "source": "user_workbook"
     },
     "vidrock": {
       "id": "vidrock",
@@ -396,8 +1214,31 @@
       "category": "International",
       "hub": "https://vidrock.ru/",
       "direct": null,
-      "notes": "player - domaine qui ne semble pas bouger",
-      "source": "user_workbook"
+      "source": "curated_user_registry",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "vidrock"
+      ],
+      "direct_candidates": [],
+      "allowed_terminal_hosts": [],
+      "search_queries": [
+        "\"VidRock\" official domain"
+      ],
+      "sources": [
+        {
+          "type": "hub",
+          "url": "https://vidrock.ru/",
+          "priority": 100,
+          "purpose": "Authoritative address reference"
+        },
+        {
+          "type": "search",
+          "query": "\"VidRock\" official domain",
+          "priority": 35,
+          "purpose": "Fallback discovery when curated sources fail"
+        }
+      ],
+      "search_confirmation_runs": 2
     },
     "vegamovies": {
       "id": "vegamovies",
@@ -406,8 +1247,35 @@
       "category": "International",
       "hub": "https://1vegamovies.tw/",
       "direct": "https://vegamovies.catering/",
-      "notes": "bouton \"🌐 View Full Site\"",
-      "source": "user_workbook"
+      "source": "curated_user_registry",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "vegamovies"
+      ],
+      "direct_candidates": [
+        "https://vegamovies.catering/"
+      ],
+      "allowed_terminal_hosts": [
+        "vegamovies.catering"
+      ],
+      "search_queries": [
+        "\"VegaMovies\" official domain"
+      ],
+      "sources": [
+        {
+          "type": "hub",
+          "url": "https://1vegamovies.tw/",
+          "priority": 100,
+          "purpose": "Authoritative address reference"
+        },
+        {
+          "type": "search",
+          "query": "\"VegaMovies\" official domain",
+          "priority": 35,
+          "purpose": "Fallback discovery when curated sources fail"
+        }
+      ],
+      "search_confirmation_runs": 2
     },
     "anizone": {
       "id": "anizone",
@@ -416,8 +1284,35 @@
       "category": "International / Anime",
       "hub": "https://everythingmoe.com/s/anizone",
       "direct": "https://anizone.to/",
-      "notes": "lien \"AniZone\"",
-      "source": "user_workbook"
+      "source": "curated_user_registry",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "anizone"
+      ],
+      "direct_candidates": [
+        "https://anizone.to/"
+      ],
+      "allowed_terminal_hosts": [
+        "anizone.to"
+      ],
+      "search_queries": [
+        "\"AniZone\" official domain"
+      ],
+      "sources": [
+        {
+          "type": "hub",
+          "url": "https://everythingmoe.com/s/anizone",
+          "priority": 100,
+          "purpose": "Authoritative address reference"
+        },
+        {
+          "type": "search",
+          "query": "\"AniZone\" official domain",
+          "priority": 35,
+          "purpose": "Fallback discovery when curated sources fail"
+        }
+      ],
+      "search_confirmation_runs": 2
     },
     "moviebox": {
       "id": "moviebox",
@@ -426,8 +1321,35 @@
       "category": "International",
       "hub": "https://moviiebox.lol/",
       "direct": "https://moviebox.yachts/",
-      "notes": "bouton \" Watch Here Moviebox\"",
-      "source": "user_workbook"
+      "source": "curated_user_registry",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "moviebox"
+      ],
+      "direct_candidates": [
+        "https://moviebox.yachts/"
+      ],
+      "allowed_terminal_hosts": [
+        "moviebox.yachts"
+      ],
+      "search_queries": [
+        "\"MovieBox\" official domain"
+      ],
+      "sources": [
+        {
+          "type": "hub",
+          "url": "https://moviiebox.lol/",
+          "priority": 100,
+          "purpose": "Authoritative address reference"
+        },
+        {
+          "type": "search",
+          "query": "\"MovieBox\" official domain",
+          "priority": 35,
+          "purpose": "Fallback discovery when curated sources fail"
+        }
+      ],
+      "search_confirmation_runs": 2
     },
     "kurage": {
       "id": "kurage",
@@ -436,8 +1358,29 @@
       "category": "International / Anime",
       "hub": null,
       "direct": "https://kurage.live/",
-      "notes": "je n'ai trouvé qu'un lien direct",
-      "source": "user_workbook"
+      "source": "curated_user_registry",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "kurage"
+      ],
+      "direct_candidates": [
+        "https://kurage.live/"
+      ],
+      "allowed_terminal_hosts": [
+        "kurage.live"
+      ],
+      "search_queries": [
+        "\"Kurage\" official domain"
+      ],
+      "sources": [
+        {
+          "type": "search",
+          "query": "\"Kurage\" official domain",
+          "priority": 35,
+          "purpose": "Fallback discovery when curated sources fail"
+        }
+      ],
+      "search_confirmation_runs": 2
     },
     "moviesmod": {
       "id": "moviesmod",
@@ -446,8 +1389,29 @@
       "category": "International",
       "hub": null,
       "direct": "https://moviesmod.zone/",
-      "notes": "https://moviesmod.at/ - \"We have Changed our Official Domain to MoviesMod Bookmarks Now.\" lien sur moviesmod",
-      "source": "user_workbook"
+      "source": "curated_user_registry",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "moviesmod"
+      ],
+      "direct_candidates": [
+        "https://moviesmod.zone/"
+      ],
+      "allowed_terminal_hosts": [
+        "moviesmod.zone"
+      ],
+      "search_queries": [
+        "\"MoviesMod\" official domain"
+      ],
+      "sources": [
+        {
+          "type": "search",
+          "query": "\"MoviesMod\" official domain",
+          "priority": 35,
+          "purpose": "Fallback discovery when curated sources fail"
+        }
+      ],
+      "search_confirmation_runs": 2
     },
     "animetsu": {
       "id": "animetsu",
@@ -456,8 +1420,31 @@
       "category": "International / Anime",
       "hub": "https://everythingmoe.com/s/animetsu",
       "direct": null,
-      "notes": "This website was removed, Currnetly broken",
-      "source": "user_workbook"
+      "source": "curated_user_registry",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "animetsu"
+      ],
+      "direct_candidates": [],
+      "allowed_terminal_hosts": [],
+      "search_queries": [
+        "\"Animetsu\" official domain"
+      ],
+      "sources": [
+        {
+          "type": "hub",
+          "url": "https://everythingmoe.com/s/animetsu",
+          "priority": 100,
+          "purpose": "Authoritative address reference"
+        },
+        {
+          "type": "search",
+          "query": "\"Animetsu\" official domain",
+          "priority": 35,
+          "purpose": "Fallback discovery when curated sources fail"
+        }
+      ],
+      "search_confirmation_runs": 2
     },
     "dooflix": {
       "id": "dooflix",
@@ -466,19 +1453,58 @@
       "category": "International",
       "hub": null,
       "direct": null,
-      "notes": "app ? https://doflixindia.com/",
-      "source": "user_workbook"
+      "source": "curated_user_registry",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "dooflix"
+      ],
+      "direct_candidates": [],
+      "allowed_terminal_hosts": [],
+      "search_queries": [
+        "\"DooFlix\" official domain"
+      ],
+      "sources": [
+        {
+          "type": "search",
+          "query": "\"DooFlix\" official domain",
+          "priority": 35,
+          "purpose": "Fallback discovery when curated sources fail"
+        }
+      ],
+      "search_confirmation_runs": 2
     },
     "hdhub4u": {
       "id": "hdhub4u",
       "name": "HDHub4u",
       "manifest_status": "Actif",
       "category": "International",
-      "hub": "HDHub4u.Tv | HDHub4u.ec",
+      "hub": null,
       "direct": "https://new3.hdhub4u.cl/",
-      "notes": "doublon",
-      "source": "user_workbook",
+      "source": "curated_user_registry",
       "aliases": [
+        "hdhub4u",
+        "4khdhub"
+      ],
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "search_queries": [
+        "HDHub4u.Tv | HDHub4u.ec"
+      ],
+      "direct_candidates": [
+        "https://new3.hdhub4u.cl/"
+      ],
+      "allowed_terminal_hosts": [
+        "new3.hdhub4u.cl"
+      ],
+      "sources": [
+        {
+          "type": "search",
+          "query": "HDHub4u.Tv | HDHub4u.ec",
+          "priority": 35,
+          "purpose": "Fallback discovery when curated sources fail"
+        }
+      ],
+      "search_confirmation_runs": 2,
+      "terminal_aliases": [
         "hdhub4u",
         "4khdhub"
       ]
@@ -490,12 +1516,40 @@
       "category": "International",
       "hub": "https://moviesdrives.mov/",
       "direct": "https://new1.moviesdrive.christmas/",
-      "notes": "lien sur \"Explore Movies\" ; backup du hub MovieDrive.org\n",
-      "source": "user_workbook",
+      "source": "curated_user_registry",
       "aliases": [
         "moviesdrive",
         "moviesdrives",
         "mdrive"
+      ],
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "direct_candidates": [
+        "https://new1.moviesdrive.christmas/"
+      ],
+      "allowed_terminal_hosts": [
+        "new1.moviesdrive.christmas"
+      ],
+      "search_queries": [
+        "\"MoviesDrive\" official domain"
+      ],
+      "sources": [
+        {
+          "type": "hub",
+          "url": "https://moviesdrives.mov/",
+          "priority": 100,
+          "purpose": "Authoritative address reference"
+        },
+        {
+          "type": "search",
+          "query": "\"MoviesDrive\" official domain",
+          "priority": 35,
+          "purpose": "Fallback discovery when curated sources fail"
+        }
+      ],
+      "search_confirmation_runs": 2,
+      "terminal_aliases": [
+        "moviesdrive",
+        "moviesdrives"
       ]
     },
     "peachify": {
@@ -505,8 +1559,29 @@
       "category": "International",
       "hub": null,
       "direct": "https://peachify.top/",
-      "notes": "player - domaine qui ne semble pas bouger",
-      "source": "user_workbook"
+      "source": "curated_user_registry",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "peachify"
+      ],
+      "direct_candidates": [
+        "https://peachify.top/"
+      ],
+      "allowed_terminal_hosts": [
+        "peachify.top"
+      ],
+      "search_queries": [
+        "\"Peachify\" official domain"
+      ],
+      "sources": [
+        {
+          "type": "search",
+          "query": "\"Peachify\" official domain",
+          "priority": 35,
+          "purpose": "Fallback discovery when curated sources fail"
+        }
+      ],
+      "search_confirmation_runs": 2
     },
     "streamflix": {
       "id": "streamflix",
@@ -515,8 +1590,29 @@
       "category": "International",
       "hub": null,
       "direct": "https://streamflix.mom/",
-      "notes": "hub privé discord/telgram",
-      "source": "user_workbook"
+      "source": "curated_user_registry",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "streamflix"
+      ],
+      "direct_candidates": [
+        "https://streamflix.mom/"
+      ],
+      "allowed_terminal_hosts": [
+        "streamflix.mom"
+      ],
+      "search_queries": [
+        "\"StreamFlix\" official domain"
+      ],
+      "sources": [
+        {
+          "type": "search",
+          "query": "\"StreamFlix\" official domain",
+          "priority": 35,
+          "purpose": "Fallback discovery when curated sources fail"
+        }
+      ],
+      "search_confirmation_runs": 2
     },
     "zinkmovies": {
       "id": "zinkmovies",
@@ -525,8 +1621,31 @@
       "category": "International",
       "hub": "https://redirect.zinkmovies.org/",
       "direct": null,
-      "notes": "hub semble off pour le moment",
-      "source": "user_workbook"
+      "source": "curated_user_registry",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "zinkmovies"
+      ],
+      "direct_candidates": [],
+      "allowed_terminal_hosts": [],
+      "search_queries": [
+        "\"ZinkMovies\" official domain"
+      ],
+      "sources": [
+        {
+          "type": "hub",
+          "url": "https://redirect.zinkmovies.org/",
+          "priority": 100,
+          "purpose": "Authoritative address reference"
+        },
+        {
+          "type": "search",
+          "query": "\"ZinkMovies\" official domain",
+          "priority": 35,
+          "purpose": "Fallback discovery when curated sources fail"
+        }
+      ],
+      "search_confirmation_runs": 2
     },
     "allmovieland": {
       "id": "allmovieland",
@@ -535,8 +1654,29 @@
       "category": "International",
       "hub": null,
       "direct": "https://allmovieland.art/",
-      "notes": null,
-      "source": "user_workbook"
+      "source": "curated_user_registry",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "allmovieland"
+      ],
+      "direct_candidates": [
+        "https://allmovieland.art/"
+      ],
+      "allowed_terminal_hosts": [
+        "allmovieland.art"
+      ],
+      "search_queries": [
+        "\"AllMovieLand\" official domain"
+      ],
+      "sources": [
+        {
+          "type": "search",
+          "query": "\"AllMovieLand\" official domain",
+          "priority": 35,
+          "purpose": "Fallback discovery when curated sources fail"
+        }
+      ],
+      "search_confirmation_runs": 2
     },
     "anidb": {
       "id": "anidb",
@@ -545,8 +1685,29 @@
       "category": "International / Anime",
       "hub": null,
       "direct": "https://anidb.app/",
-      "notes": null,
-      "source": "user_workbook"
+      "source": "curated_user_registry",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "anidb"
+      ],
+      "direct_candidates": [
+        "https://anidb.app/"
+      ],
+      "allowed_terminal_hosts": [
+        "anidb.app"
+      ],
+      "search_queries": [
+        "\"AniDB\" official domain"
+      ],
+      "sources": [
+        {
+          "type": "search",
+          "query": "\"AniDB\" official domain",
+          "priority": 35,
+          "purpose": "Fallback discovery when curated sources fail"
+        }
+      ],
+      "search_confirmation_runs": 2
     },
     "cinemacity": {
       "id": "cinemacity",
@@ -555,8 +1716,29 @@
       "category": "International",
       "hub": null,
       "direct": "https://cinemacity.cc/",
-      "notes": null,
-      "source": "user_workbook"
+      "source": "curated_user_registry",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "cinemacity"
+      ],
+      "direct_candidates": [
+        "https://cinemacity.cc/"
+      ],
+      "allowed_terminal_hosts": [
+        "cinemacity.cc"
+      ],
+      "search_queries": [
+        "\"CinemaCity\" official domain"
+      ],
+      "sources": [
+        {
+          "type": "search",
+          "query": "\"CinemaCity\" official domain",
+          "priority": 35,
+          "purpose": "Fallback discovery when curated sources fail"
+        }
+      ],
+      "search_confirmation_runs": 2
     },
     "cinemm": {
       "id": "cinemm",
@@ -565,8 +1747,29 @@
       "category": "International",
       "hub": null,
       "direct": "https://cinemm.com/",
-      "notes": null,
-      "source": "user_workbook"
+      "source": "curated_user_registry",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "cinemm"
+      ],
+      "direct_candidates": [
+        "https://cinemm.com/"
+      ],
+      "allowed_terminal_hosts": [
+        "cinemm.com"
+      ],
+      "search_queries": [
+        "\"CineMM\" official domain"
+      ],
+      "sources": [
+        {
+          "type": "search",
+          "query": "\"CineMM\" official domain",
+          "priority": 35,
+          "purpose": "Fallback discovery when curated sources fail"
+        }
+      ],
+      "search_confirmation_runs": 2
     },
     "movieshunt": {
       "id": "movieshunt",
@@ -575,8 +1778,35 @@
       "category": "International",
       "hub": "https://movieshunt.cc/",
       "direct": "https://movieshunt.work/",
-      "notes": null,
-      "source": "user_workbook"
+      "source": "curated_user_registry",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "movieshunt"
+      ],
+      "direct_candidates": [
+        "https://movieshunt.work/"
+      ],
+      "allowed_terminal_hosts": [
+        "movieshunt.work"
+      ],
+      "search_queries": [
+        "\"MoviesHunt\" official domain"
+      ],
+      "sources": [
+        {
+          "type": "hub",
+          "url": "https://movieshunt.cc/",
+          "priority": 100,
+          "purpose": "Authoritative address reference"
+        },
+        {
+          "type": "search",
+          "query": "\"MoviesHunt\" official domain",
+          "priority": 35,
+          "purpose": "Fallback discovery when curated sources fail"
+        }
+      ],
+      "search_confirmation_runs": 2
     },
     "animoflix": {
       "id": "animoflix",
@@ -585,18 +1815,69 @@
       "category": "Francophone / Anime",
       "hub": null,
       "direct": null,
-      "notes": null,
-      "source": "user_workbook"
+      "source": "curated_user_registry",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "animoflix"
+      ],
+      "direct_candidates": [],
+      "allowed_terminal_hosts": [],
+      "search_queries": [
+        "\"AnimoFlix\" official streaming site"
+      ],
+      "sources": [
+        {
+          "type": "search",
+          "query": "\"AnimoFlix\" official streaming site",
+          "priority": 25,
+          "purpose": "Conservative fallback discovery; requires consecutive runtime validation before activation"
+        }
+      ],
+      "search_confirmation_runs": 2
     },
     "wookafr": {
       "id": "wookafr",
       "name": "Wookafr",
       "manifest_status": "Désactivé",
       "category": "Francophone",
-      "hub": null,
-      "direct": null,
-      "notes": null,
-      "source": "user_workbook"
+      "hub": "https://t.me/s/Wookafr2",
+      "direct": "https://wookafr.center/",
+      "source": "curated_user_registry",
+      "resolver": "latest_telegram_domain",
+      "aliases": [
+        "wookafr",
+        "wooka"
+      ],
+      "last_verified": "2026-08-03",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "direct_candidates": [
+        "https://wookafr.center/"
+      ],
+      "allowed_terminal_hosts": [
+        "wookafr.center"
+      ],
+      "search_queries": [
+        "site:t.me/s/Wookafr2 \"URL du nouveau site\""
+      ],
+      "sources": [
+        {
+          "type": "telegram_public",
+          "url": "https://t.me/s/Wookafr2",
+          "priority": 115,
+          "purpose": "Official public address announcements"
+        },
+        {
+          "type": "search",
+          "query": "site:t.me/s/Wookafr2 \"URL du nouveau site\"",
+          "priority": 30,
+          "purpose": "Fallback indexed Telegram lookup"
+        }
+      ],
+      "search_confirmation_runs": 2,
+      "allowed_terminal_host_patterns": [
+        "^(?:wooka|wookafr)[a-z0-9-]*\\.[a-z0-9-]{2,20}$"
+      ],
+      "search_when_disabled": true
     },
     "topcartoons": {
       "id": "topcartoons",
@@ -605,8 +1886,25 @@
       "category": "International / Animation",
       "hub": null,
       "direct": null,
-      "notes": null,
-      "source": "user_workbook"
+      "source": "curated_user_registry",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "topcartoons"
+      ],
+      "direct_candidates": [],
+      "allowed_terminal_hosts": [],
+      "search_queries": [
+        "\"TopCartoons\" official streaming site"
+      ],
+      "sources": [
+        {
+          "type": "search",
+          "query": "\"TopCartoons\" official streaming site",
+          "priority": 25,
+          "purpose": "Conservative fallback discovery; requires consecutive runtime validation before activation"
+        }
+      ],
+      "search_confirmation_runs": 2
     },
     "einthusan": {
       "id": "einthusan",
@@ -615,8 +1913,25 @@
       "category": "International",
       "hub": null,
       "direct": null,
-      "notes": null,
-      "source": "user_workbook"
+      "source": "curated_user_registry",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "einthusan"
+      ],
+      "direct_candidates": [],
+      "allowed_terminal_hosts": [],
+      "search_queries": [
+        "\"Einthustan\" official streaming site"
+      ],
+      "sources": [
+        {
+          "type": "search",
+          "query": "\"Einthustan\" official streaming site",
+          "priority": 25,
+          "purpose": "Conservative fallback discovery; requires consecutive runtime validation before activation"
+        }
+      ],
+      "search_confirmation_runs": 2
     },
     "movieblast": {
       "id": "movieblast",
@@ -625,8 +1940,25 @@
       "category": "International",
       "hub": null,
       "direct": null,
-      "notes": null,
-      "source": "user_workbook"
+      "source": "curated_user_registry",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "movieblast"
+      ],
+      "direct_candidates": [],
+      "allowed_terminal_hosts": [],
+      "search_queries": [
+        "\"MovieBlast\" official streaming site"
+      ],
+      "sources": [
+        {
+          "type": "search",
+          "query": "\"MovieBlast\" official streaming site",
+          "priority": 25,
+          "purpose": "Conservative fallback discovery; requires consecutive runtime validation before activation"
+        }
+      ],
+      "search_confirmation_runs": 2
     },
     "hianime": {
       "id": "hianime",
@@ -635,8 +1967,25 @@
       "category": "International / Anime",
       "hub": null,
       "direct": null,
-      "notes": null,
-      "source": "user_workbook"
+      "source": "curated_user_registry",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "hianime"
+      ],
+      "direct_candidates": [],
+      "allowed_terminal_hosts": [],
+      "search_queries": [
+        "\"HiAnime\" official streaming site"
+      ],
+      "sources": [
+        {
+          "type": "search",
+          "query": "\"HiAnime\" official streaming site",
+          "priority": 25,
+          "purpose": "Conservative fallback discovery; requires consecutive runtime validation before activation"
+        }
+      ],
+      "search_confirmation_runs": 2
     },
     "showbox": {
       "id": "showbox",
@@ -645,8 +1994,25 @@
       "category": "International",
       "hub": null,
       "direct": null,
-      "notes": null,
-      "source": "user_workbook"
+      "source": "curated_user_registry",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "showbox"
+      ],
+      "direct_candidates": [],
+      "allowed_terminal_hosts": [],
+      "search_queries": [
+        "\"ShowBox\" official streaming site"
+      ],
+      "sources": [
+        {
+          "type": "search",
+          "query": "\"ShowBox\" official streaming site",
+          "priority": 25,
+          "purpose": "Conservative fallback discovery; requires consecutive runtime validation before activation"
+        }
+      ],
+      "search_confirmation_runs": 2
     },
     "castle": {
       "id": "castle",
@@ -655,8 +2021,25 @@
       "category": "International",
       "hub": null,
       "direct": null,
-      "notes": null,
-      "source": "user_workbook"
+      "source": "curated_user_registry",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "castle"
+      ],
+      "direct_candidates": [],
+      "allowed_terminal_hosts": [],
+      "search_queries": [
+        "\"Castle\" official streaming site"
+      ],
+      "sources": [
+        {
+          "type": "search",
+          "query": "\"Castle\" official streaming site",
+          "priority": 25,
+          "purpose": "Conservative fallback discovery; requires consecutive runtime validation before activation"
+        }
+      ],
+      "search_confirmation_runs": 2
     },
     "gramcinema": {
       "id": "gramcinema",
@@ -665,8 +2048,25 @@
       "category": "International",
       "hub": null,
       "direct": null,
-      "notes": null,
-      "source": "user_workbook"
+      "source": "curated_user_registry",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "gramcinema"
+      ],
+      "direct_candidates": [],
+      "allowed_terminal_hosts": [],
+      "search_queries": [
+        "\"GramCinema\" official streaming site"
+      ],
+      "sources": [
+        {
+          "type": "search",
+          "query": "\"GramCinema\" official streaming site",
+          "priority": 25,
+          "purpose": "Conservative fallback discovery; requires consecutive runtime validation before activation"
+        }
+      ],
+      "search_confirmation_runs": 2
     },
     "4khdhubnew": {
       "id": "4khdhubnew",
@@ -675,8 +2075,25 @@
       "category": "International",
       "hub": null,
       "direct": null,
-      "notes": null,
-      "source": "user_workbook"
+      "source": "curated_user_registry",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "4khdhubnew"
+      ],
+      "direct_candidates": [],
+      "allowed_terminal_hosts": [],
+      "search_queries": [
+        "\"4KHDHub-NEW\" official streaming site"
+      ],
+      "sources": [
+        {
+          "type": "search",
+          "query": "\"4KHDHub-NEW\" official streaming site",
+          "priority": 25,
+          "purpose": "Conservative fallback discovery; requires consecutive runtime validation before activation"
+        }
+      ],
+      "search_confirmation_runs": 2
     },
     "allwish": {
       "id": "allwish",
@@ -685,8 +2102,25 @@
       "category": "International",
       "hub": null,
       "direct": null,
-      "notes": null,
-      "source": "user_workbook"
+      "source": "curated_user_registry",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "allwish"
+      ],
+      "direct_candidates": [],
+      "allowed_terminal_hosts": [],
+      "search_queries": [
+        "\"All-Wish\" official streaming site"
+      ],
+      "sources": [
+        {
+          "type": "search",
+          "query": "\"All-Wish\" official streaming site",
+          "priority": 25,
+          "purpose": "Conservative fallback discovery; requires consecutive runtime validation before activation"
+        }
+      ],
+      "search_confirmation_runs": 2
     },
     "animekai": {
       "id": "animekai",
@@ -695,8 +2129,25 @@
       "category": "International / Anime",
       "hub": null,
       "direct": null,
-      "notes": null,
-      "source": "user_workbook"
+      "source": "curated_user_registry",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "animekai"
+      ],
+      "direct_candidates": [],
+      "allowed_terminal_hosts": [],
+      "search_queries": [
+        "\"AnimeKai\" official streaming site"
+      ],
+      "sources": [
+        {
+          "type": "search",
+          "query": "\"AnimeKai\" official streaming site",
+          "priority": 25,
+          "purpose": "Conservative fallback discovery; requires consecutive runtime validation before activation"
+        }
+      ],
+      "search_confirmation_runs": 2
     },
     "animeworld": {
       "id": "animeworld",
@@ -705,8 +2156,25 @@
       "category": "International / Anime",
       "hub": null,
       "direct": null,
-      "notes": null,
-      "source": "user_workbook"
+      "source": "curated_user_registry",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "animeworld"
+      ],
+      "direct_candidates": [],
+      "allowed_terminal_hosts": [],
+      "search_queries": [
+        "\"AnimeWorld\" official streaming site"
+      ],
+      "sources": [
+        {
+          "type": "search",
+          "query": "\"AnimeWorld\" official streaming site",
+          "priority": 25,
+          "purpose": "Conservative fallback discovery; requires consecutive runtime validation before activation"
+        }
+      ],
+      "search_confirmation_runs": 2
     },
     "cinefreak": {
       "id": "cinefreak",
@@ -715,8 +2183,25 @@
       "category": "International",
       "hub": null,
       "direct": null,
-      "notes": null,
-      "source": "user_workbook"
+      "source": "curated_user_registry",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "cinefreak"
+      ],
+      "direct_candidates": [],
+      "allowed_terminal_hosts": [],
+      "search_queries": [
+        "\"CineFreak\" official streaming site"
+      ],
+      "sources": [
+        {
+          "type": "search",
+          "query": "\"CineFreak\" official streaming site",
+          "priority": 25,
+          "purpose": "Conservative fallback discovery; requires consecutive runtime validation before activation"
+        }
+      ],
+      "search_confirmation_runs": 2
     },
     "cinevibe": {
       "id": "cinevibe",
@@ -725,8 +2210,25 @@
       "category": "International",
       "hub": null,
       "direct": null,
-      "notes": null,
-      "source": "user_workbook"
+      "source": "curated_user_registry",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "cinevibe"
+      ],
+      "direct_candidates": [],
+      "allowed_terminal_hosts": [],
+      "search_queries": [
+        "\"CineVibe\" official streaming site"
+      ],
+      "sources": [
+        {
+          "type": "search",
+          "query": "\"CineVibe\" official streaming site",
+          "priority": 25,
+          "purpose": "Conservative fallback discovery; requires consecutive runtime validation before activation"
+        }
+      ],
+      "search_confirmation_runs": 2
     },
     "ctgmovies": {
       "id": "ctgmovies",
@@ -735,18 +2237,25 @@
       "category": "International",
       "hub": null,
       "direct": null,
-      "notes": null,
-      "source": "user_workbook"
-    },
-    "dahmermovies-tv": {
-      "id": "dahmermovies-tv",
-      "name": "Dahmermovies-TV",
-      "manifest_status": "Désactivé",
-      "category": "International",
-      "hub": null,
-      "direct": null,
-      "notes": null,
-      "source": "user_workbook"
+      "source": "curated_user_registry",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "ctgmovies"
+      ],
+      "direct_candidates": [],
+      "allowed_terminal_hosts": [],
+      "search_queries": [
+        "\"CTGMovies\" official streaming site"
+      ],
+      "sources": [
+        {
+          "type": "search",
+          "query": "\"CTGMovies\" official streaming site",
+          "priority": 25,
+          "purpose": "Conservative fallback discovery; requires consecutive runtime validation before activation"
+        }
+      ],
+      "search_confirmation_runs": 2
     },
     "fibwatch": {
       "id": "fibwatch",
@@ -755,8 +2264,25 @@
       "category": "International",
       "hub": null,
       "direct": null,
-      "notes": null,
-      "source": "user_workbook"
+      "source": "curated_user_registry",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "fibwatch"
+      ],
+      "direct_candidates": [],
+      "allowed_terminal_hosts": [],
+      "search_queries": [
+        "\"FibWatch\" official streaming site"
+      ],
+      "sources": [
+        {
+          "type": "search",
+          "query": "\"FibWatch\" official streaming site",
+          "priority": 25,
+          "purpose": "Conservative fallback discovery; requires consecutive runtime validation before activation"
+        }
+      ],
+      "search_confirmation_runs": 2
     },
     "goatapi": {
       "id": "goatapi",
@@ -765,8 +2291,25 @@
       "category": "International",
       "hub": null,
       "direct": null,
-      "notes": null,
-      "source": "user_workbook"
+      "source": "curated_user_registry",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "goatapi"
+      ],
+      "direct_candidates": [],
+      "allowed_terminal_hosts": [],
+      "search_queries": [
+        "\"GoatAPI\" official streaming site"
+      ],
+      "sources": [
+        {
+          "type": "search",
+          "query": "\"GoatAPI\" official streaming site",
+          "priority": 25,
+          "purpose": "Conservative fallback discovery; requires consecutive runtime validation before activation"
+        }
+      ],
+      "search_confirmation_runs": 2
     },
     "mallumv": {
       "id": "mallumv",
@@ -775,8 +2318,25 @@
       "category": "International",
       "hub": null,
       "direct": null,
-      "notes": null,
-      "source": "user_workbook"
+      "source": "curated_user_registry",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "mallumv"
+      ],
+      "direct_candidates": [],
+      "allowed_terminal_hosts": [],
+      "search_queries": [
+        "\"MalluMV\" official streaming site"
+      ],
+      "sources": [
+        {
+          "type": "search",
+          "query": "\"MalluMV\" official streaming site",
+          "priority": 25,
+          "purpose": "Conservative fallback discovery; requires consecutive runtime validation before activation"
+        }
+      ],
+      "search_confirmation_runs": 2
     },
     "vidnest": {
       "id": "vidnest",
@@ -785,8 +2345,25 @@
       "category": "International",
       "hub": null,
       "direct": null,
-      "notes": null,
-      "source": "user_workbook"
+      "source": "curated_user_registry",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "vidnest"
+      ],
+      "direct_candidates": [],
+      "allowed_terminal_hosts": [],
+      "search_queries": [
+        "\"Vidnest\" official streaming site"
+      ],
+      "sources": [
+        {
+          "type": "search",
+          "query": "\"Vidnest\" official streaming site",
+          "priority": 25,
+          "purpose": "Conservative fallback discovery; requires consecutive runtime validation before activation"
+        }
+      ],
+      "search_confirmation_runs": 2
     },
     "vidnest-anime": {
       "id": "vidnest-anime",
@@ -795,8 +2372,25 @@
       "category": "International / Anime",
       "hub": null,
       "direct": null,
-      "notes": null,
-      "source": "user_workbook"
+      "source": "curated_user_registry",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "vidnest-anime"
+      ],
+      "direct_candidates": [],
+      "allowed_terminal_hosts": [],
+      "search_queries": [
+        "\"VidnestAnime\" official streaming site"
+      ],
+      "sources": [
+        {
+          "type": "search",
+          "query": "\"VidnestAnime\" official streaming site",
+          "priority": 25,
+          "purpose": "Conservative fallback discovery; requires consecutive runtime validation before activation"
+        }
+      ],
+      "search_confirmation_runs": 2
     },
     "xpass": {
       "id": "xpass",
@@ -805,8 +2399,25 @@
       "category": "International",
       "hub": null,
       "direct": null,
-      "notes": null,
-      "source": "user_workbook"
+      "source": "curated_user_registry",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "xpass"
+      ],
+      "direct_candidates": [],
+      "allowed_terminal_hosts": [],
+      "search_queries": [
+        "\"XPass\" official streaming site"
+      ],
+      "sources": [
+        {
+          "type": "search",
+          "query": "\"XPass\" official streaming site",
+          "priority": 25,
+          "purpose": "Conservative fallback discovery; requires consecutive runtime validation before activation"
+        }
+      ],
+      "search_confirmation_runs": 2
     },
     "dvdplay": {
       "id": "dvdplay",
@@ -815,8 +2426,25 @@
       "category": "International",
       "hub": null,
       "direct": null,
-      "notes": null,
-      "source": "user_workbook"
+      "source": "curated_user_registry",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "dvdplay"
+      ],
+      "direct_candidates": [],
+      "allowed_terminal_hosts": [],
+      "search_queries": [
+        "\"DVDPlay\" official streaming site"
+      ],
+      "sources": [
+        {
+          "type": "search",
+          "query": "\"DVDPlay\" official streaming site",
+          "priority": 25,
+          "purpose": "Conservative fallback discovery; requires consecutive runtime validation before activation"
+        }
+      ],
+      "search_confirmation_runs": 2
     },
     "kisskh": {
       "id": "kisskh",
@@ -825,8 +2453,25 @@
       "category": "International",
       "hub": null,
       "direct": null,
-      "notes": null,
-      "source": "user_workbook"
+      "source": "curated_user_registry",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "kisskh"
+      ],
+      "direct_candidates": [],
+      "allowed_terminal_hosts": [],
+      "search_queries": [
+        "\"Kisskh\" official streaming site"
+      ],
+      "sources": [
+        {
+          "type": "search",
+          "query": "\"Kisskh\" official streaming site",
+          "priority": 25,
+          "purpose": "Conservative fallback discovery; requires consecutive runtime validation before activation"
+        }
+      ],
+      "search_confirmation_runs": 2
     },
     "mycima": {
       "id": "mycima",
@@ -835,8 +2480,25 @@
       "category": "International",
       "hub": null,
       "direct": null,
-      "notes": null,
-      "source": "user_workbook"
+      "source": "curated_user_registry",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "mycima"
+      ],
+      "direct_candidates": [],
+      "allowed_terminal_hosts": [],
+      "search_queries": [
+        "\"MyCima\" official streaming site"
+      ],
+      "sources": [
+        {
+          "type": "search",
+          "query": "\"MyCima\" official streaming site",
+          "priority": 25,
+          "purpose": "Conservative fallback discovery; requires consecutive runtime validation before activation"
+        }
+      ],
+      "search_confirmation_runs": 2
     },
     "onlykdrama": {
       "id": "onlykdrama",
@@ -845,8 +2507,25 @@
       "category": "International",
       "hub": null,
       "direct": null,
-      "notes": null,
-      "source": "user_workbook"
+      "source": "curated_user_registry",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "onlykdrama"
+      ],
+      "direct_candidates": [],
+      "allowed_terminal_hosts": [],
+      "search_queries": [
+        "\"OnlyKDrama\" official streaming site"
+      ],
+      "sources": [
+        {
+          "type": "search",
+          "query": "\"OnlyKDrama\" official streaming site",
+          "priority": 25,
+          "purpose": "Conservative fallback discovery; requires consecutive runtime validation before activation"
+        }
+      ],
+      "search_confirmation_runs": 2
     },
     "frenchstream": {
       "id": "frenchstream",
@@ -854,16 +2533,48 @@
       "manifest_status": "Actif",
       "category": null,
       "hub": "https://fstream.org/",
-      "notes": "Hub de référence pour le domaine courant",
-      "resolver": "frenchstream",
-      "source": "user_chat",
+      "resolver": "official_outbound",
+      "source": "curated_user_registry",
       "aliases": [
         "frenchstream",
         "french-stream",
         "fstream"
       ],
-      "direct": "https://fs03.lol/",
-      "last_verified": "2026-07-31"
+      "direct": "https://fs16.lol/",
+      "last_verified": "2026-08-03",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "direct_candidates": [
+        "https://fs16.lol/",
+        "https://fs03.lol/"
+      ],
+      "allowed_terminal_hosts": [
+        "fs03.lol",
+        "fs16.lol"
+      ],
+      "search_queries": [
+        "site:fstream.org French Stream URL éphémère du moment"
+      ],
+      "sources": [
+        {
+          "type": "hub",
+          "url": "https://fstream.org/",
+          "priority": 110,
+          "purpose": "Official current-address hub"
+        },
+        {
+          "type": "search",
+          "query": "site:fstream.org French Stream URL éphémère du moment",
+          "priority": 30,
+          "purpose": "Fallback index lookup"
+        }
+      ],
+      "search_confirmation_runs": 2,
+      "blocked_hosts": [
+        "fstream.top"
+      ],
+      "allowed_terminal_host_patterns": [
+        "^fs[0-9]{1,4}\\.[a-z0-9-]{2,20}$"
+      ]
     },
     "nakios": {
       "id": "nakios",
@@ -872,12 +2583,29 @@
       "category": null,
       "hub": "https://nakios.org/",
       "direct": "https://nakios.live/",
-      "notes": "Service catalogue / streaming associé",
-      "resolver": "nakios",
-      "source": "user_chat",
+      "resolver": "service_catalogue",
+      "source": "curated_user_registry",
       "aliases": [
         "nakios"
-      ]
+      ],
+      "last_verified": "2026-08-03",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "direct_candidates": [
+        "https://nakios.live/"
+      ],
+      "allowed_terminal_hosts": [
+        "nakios.live"
+      ],
+      "search_queries": [],
+      "sources": [
+        {
+          "type": "hub",
+          "url": "https://nakios.org/",
+          "priority": 110,
+          "purpose": "Official ecosystem and service-role reference"
+        }
+      ],
+      "search_confirmation_runs": 2
     },
     "purstream": {
       "id": "purstream",
@@ -885,12 +2613,24 @@
       "manifest_status": "Actif",
       "category": null,
       "hub": "https://purstream.wiki/",
-      "notes": "Hub connu",
-      "resolver": "same_brand",
-      "source": "user_chat",
+      "resolver": "official_outbound",
+      "source": "curated_user_registry",
       "aliases": [
         "purstream"
-      ]
+      ],
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "direct_candidates": [],
+      "allowed_terminal_hosts": [],
+      "search_queries": [],
+      "sources": [
+        {
+          "type": "hub",
+          "url": "https://purstream.wiki/",
+          "priority": 110,
+          "purpose": "Official current-address hub"
+        }
+      ],
+      "search_confirmation_runs": 2
     },
     "toflix": {
       "id": "toflix",
@@ -898,11 +2638,41 @@
       "manifest_status": "Actif",
       "category": null,
       "hub": "https://toflix.wiki/",
-      "notes": "Hub connu",
-      "resolver": "same_brand",
-      "source": "user_chat",
+      "resolver": "official_outbound",
+      "source": "curated_user_registry",
       "aliases": [
-        "toflix"
+        "toflix",
+        "tfx"
+      ],
+      "direct": "https://tfx05.lol/",
+      "last_verified": "2026-08-03",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "direct_candidates": [
+        "https://tfx05.lol/"
+      ],
+      "allowed_terminal_hosts": [
+        "tfx05.lol"
+      ],
+      "search_queries": [
+        "site:toflix.wiki \"Accéder à ToFlix\""
+      ],
+      "sources": [
+        {
+          "type": "hub",
+          "url": "https://toflix.wiki/",
+          "priority": 110,
+          "purpose": "Official current-address hub"
+        },
+        {
+          "type": "search",
+          "query": "site:toflix.wiki \"Accéder à ToFlix\"",
+          "priority": 30,
+          "purpose": "Fallback index lookup"
+        }
+      ],
+      "search_confirmation_runs": 2,
+      "allowed_terminal_host_patterns": [
+        "^tfx[0-9]{1,4}\\.[a-z0-9-]{2,20}$"
       ]
     },
     "coflix": {
@@ -911,9 +2681,24 @@
       "manifest_status": "Actif",
       "category": null,
       "hub": "https://coflix.life/",
-      "notes": "Hub connu",
-      "resolver": "same_brand",
-      "source": "user_chat"
+      "resolver": "official_outbound",
+      "source": "curated_user_registry",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "coflix"
+      ],
+      "direct_candidates": [],
+      "allowed_terminal_hosts": [],
+      "search_queries": [],
+      "sources": [
+        {
+          "type": "hub",
+          "url": "https://coflix.life/",
+          "priority": 110,
+          "purpose": "Official current-address hub"
+        }
+      ],
+      "search_confirmation_runs": 2
     },
     "flemmix": {
       "id": "flemmix",
@@ -921,15 +2706,70 @@
       "manifest_status": "Actif",
       "category": null,
       "hub": "https://ww1.wiflix-adresses.fun/",
-      "notes": "Hub connu",
-      "resolver": "flemmix",
-      "source": "user_chat",
+      "resolver": "alias_outbound",
+      "source": "curated_user_registry",
       "aliases": [
         "flemmix",
         "wiflix"
       ],
       "direct": "https://flemmix.casa/",
-      "last_verified": "2026-07-31"
+      "last_verified": "2026-08-03",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "direct_candidates": [
+        "https://flemmix.casa/"
+      ],
+      "allowed_terminal_hosts": [
+        "flemmix.casa"
+      ],
+      "search_queries": [],
+      "sources": [
+        {
+          "type": "hub",
+          "url": "https://ww1.wiflix-adresses.fun/",
+          "priority": 110,
+          "purpose": "Official Wiflix/Flemmix address list"
+        }
+      ],
+      "search_confirmation_runs": 2
+    },
+    "animezey": {
+      "id": "animezey",
+      "name": "AnimeZeY",
+      "manifest_status": "Désactivé",
+      "category": "International / Anime",
+      "hub": null,
+      "direct": null,
+      "source": "manifest_fallback_registry",
+      "resolver": "official_outbound",
+      "aliases": [
+        "animezey"
+      ],
+      "schema_notes": "No curated hub is currently known. Search discovery is conservative and requires consecutive runtime validation before activation.",
+      "search_queries": [
+        "\"AnimeZeY\" official streaming site"
+      ],
+      "sources": [
+        {
+          "type": "search",
+          "query": "\"AnimeZeY\" official streaming site",
+          "priority": 25,
+          "purpose": "Conservative fallback discovery; requires consecutive runtime validation before activation"
+        }
+      ],
+      "search_confirmation_runs": 2
     }
+  },
+  "resolution_policy": {
+    "source_order": [
+      "official hub/wiki",
+      "official public Telegram channel",
+      "validated redirect",
+      "curated direct candidate",
+      "last-known-good history",
+      "bounded search fallback"
+    ],
+    "validation": "A candidate is persisted only after public-route, HTTP, brand/alias and non-hub validation.",
+    "search_safety": "Search-only discoveries require two consecutive successful resolutions. CAPTCHA or robot checks are never bypassed.",
+    "failure_policy": "If no new route validates, retain the last-known-good domain and existing override."
   }
 }
