@@ -1,21 +1,21 @@
 {
   "schema_version": 63,
-  "generated_at": "2026-08-03T07:51:07.514930+00:00",
+  "generated_at": "2026-08-03T12:46:28.312505+00:00",
   "test_environment": "github-actions-node",
-  "checked_providers": 87,
+  "checked_providers": 1,
   "status_counts": {
-    "healthy": 1,
-    "reachable": 18,
+    "healthy": 0,
+    "reachable": 0,
     "blocked": 0,
-    "degraded": 0,
-    "no_streams": 65,
-    "provider_unreachable": 1,
-    "runtime_error": 2,
+    "degraded": 1,
+    "no_streams": 0,
+    "provider_unreachable": 0,
+    "runtime_error": 0,
     "unavailable": 0,
     "excluded": 0
   },
   "policy": {
-    "check_frequency_target": "every 4 hours full sweep",
+    "check_frequency_target": "hourly targeted retry",
     "auto_disable_after_hard_failures": 6,
     "minimum_failure_window_hours": 8.0,
     "auto_reenable_after_successes": 2,
@@ -33,440 +33,8 @@
   "manifest_changed": false,
   "providers": [
     {
-      "id": "dulourd",
-      "status": "reachable",
-      "action": "unchanged",
-      "enabled": true,
-      "consecutive_hard_failures": 0,
-      "hard_failure_started_at": null,
-      "consecutive_successes": 0,
-      "hosts": [],
-      "response_categories": [],
-      "host_health": {},
-      "activation_eligible": false,
-      "activation_mode": "preserved_current_inconclusive"
-    },
-    {
-      "id": "animesama-co",
-      "status": "no_streams",
-      "action": "unchanged",
-      "enabled": true,
-      "consecutive_hard_failures": 0,
-      "hard_failure_started_at": null,
-      "consecutive_successes": 0,
-      "hosts": [],
-      "response_categories": [],
-      "host_health": {
-        "video.sibnet.ru": {
-          "last_checked_at": "2026-07-26T14:04:06.325208+00:00",
-          "last_category": "playable",
-          "reachable": true,
-          "http_status": 206,
-          "latency_ms": 3441,
-          "kind": "mp4",
-          "consecutive_hard_failures": 0,
-          "consecutive_successes": 2,
-          "consecutive_blocked": 0
-        }
-      },
-      "activation_eligible": false,
-      "activation_mode": "preserved_current_inconclusive"
-    },
-    {
-      "id": "animesultra",
-      "status": "no_streams",
-      "action": "unchanged",
-      "enabled": true,
-      "consecutive_hard_failures": 0,
-      "hard_failure_started_at": null,
-      "consecutive_successes": 0,
-      "hosts": [],
-      "response_categories": [],
-      "host_health": {},
-      "activation_eligible": false,
-      "activation_mode": "preserved_current_inconclusive"
-    },
-    {
-      "id": "animevostfr",
-      "status": "no_streams",
-      "action": "unchanged",
-      "enabled": true,
-      "consecutive_hard_failures": 0,
-      "hard_failure_started_at": null,
-      "consecutive_successes": 0,
-      "hosts": [],
-      "response_categories": [],
-      "host_health": {
-        "video.sibnet.ru": {
-          "last_checked_at": "2026-07-26T14:04:06.325208+00:00",
-          "last_category": "playable",
-          "reachable": true,
-          "http_status": 206,
-          "latency_ms": 3150,
-          "kind": "mp4",
-          "consecutive_hard_failures": 0,
-          "consecutive_successes": 3,
-          "consecutive_blocked": 0
-        }
-      },
-      "activation_eligible": false,
-      "activation_mode": "preserved_current_inconclusive"
-    },
-    {
-      "id": "coflix",
-      "status": "no_streams",
-      "action": "unchanged",
-      "enabled": true,
-      "consecutive_hard_failures": 0,
-      "hard_failure_started_at": null,
-      "consecutive_successes": 0,
-      "hosts": [],
-      "response_categories": [],
-      "host_health": {
-        "lecteurvideo.com": {
-          "last_checked_at": "2026-07-26T07:09:33.481217+00:00",
-          "last_category": "blocked",
-          "reachable": false,
-          "http_status": 403,
-          "latency_ms": 436,
-          "kind": "html",
-          "consecutive_hard_failures": 0,
-          "consecutive_successes": 0,
-          "consecutive_blocked": 1
-        }
-      },
-      "activation_eligible": false,
-      "activation_mode": "preserved_current_inconclusive"
-    },
-    {
-      "id": "flemmix",
-      "status": "no_streams",
-      "action": "unchanged",
-      "enabled": true,
-      "consecutive_hard_failures": 0,
-      "hard_failure_started_at": null,
-      "consecutive_successes": 0,
-      "hosts": [],
-      "response_categories": [],
-      "host_health": {},
-      "activation_eligible": false,
-      "activation_mode": "preserved_current_inconclusive"
-    },
-    {
-      "id": "french-manga",
-      "status": "no_streams",
-      "action": "unchanged",
-      "enabled": true,
-      "consecutive_hard_failures": 0,
-      "hard_failure_started_at": null,
-      "consecutive_successes": 0,
-      "hosts": [],
-      "response_categories": [],
-      "host_health": {
-        "u14.vidzy.cc": {
-          "last_checked_at": "2026-07-26T14:04:06.325208+00:00",
-          "last_category": "playable",
-          "reachable": true,
-          "http_status": 200,
-          "latency_ms": 423,
-          "kind": "hls",
-          "consecutive_hard_failures": 0,
-          "consecutive_successes": 3,
-          "consecutive_blocked": 0
-        },
-        "v80nz3c7i6rr.tnmr.org": {
-          "last_checked_at": "2026-07-26T14:04:06.325208+00:00",
-          "last_category": "not_returned",
-          "reachable": false,
-          "http_status": null,
-          "latency_ms": null,
-          "kind": "html",
-          "consecutive_hard_failures": 0,
-          "consecutive_successes": 0,
-          "consecutive_blocked": 0
-        }
-      },
-      "activation_eligible": false,
-      "activation_mode": "preserved_current_inconclusive"
-    },
-    {
-      "id": "frenchstream",
-      "status": "no_streams",
-      "action": "unchanged",
-      "enabled": true,
-      "consecutive_hard_failures": 0,
-      "hard_failure_started_at": null,
-      "consecutive_successes": 0,
-      "hosts": [],
-      "response_categories": [],
-      "host_health": {
-        "r1.fsvid.lol": {
-          "last_checked_at": "2026-07-27T04:09:30.765947+00:00",
-          "last_category": "playable",
-          "reachable": true,
-          "http_status": 200,
-          "latency_ms": 700,
-          "kind": "hls",
-          "consecutive_hard_failures": 0,
-          "consecutive_successes": 2,
-          "consecutive_blocked": 0
-        }
-      },
-      "activation_eligible": false,
-      "activation_mode": "preserved_current_inconclusive"
-    },
-    {
-      "id": "movix",
-      "status": "no_streams",
-      "action": "unchanged",
-      "enabled": true,
-      "consecutive_hard_failures": 0,
-      "hard_failure_started_at": null,
-      "consecutive_successes": 0,
-      "hosts": [],
-      "response_categories": [],
-      "host_health": {
-        "free.finepulfe.xyz": {
-          "last_checked_at": "2026-07-26T17:29:31.828546+00:00",
-          "last_category": "playable",
-          "reachable": true,
-          "http_status": 206,
-          "latency_ms": 274,
-          "kind": "hls",
-          "consecutive_hard_failures": 0,
-          "consecutive_successes": 1,
-          "consecutive_blocked": 0
-        },
-        "r1.fsvid.lol": {
-          "last_checked_at": "2026-07-26T17:29:31.828546+00:00",
-          "last_category": "not_returned",
-          "reachable": false,
-          "http_status": null,
-          "latency_ms": null,
-          "kind": "hls",
-          "consecutive_hard_failures": 0,
-          "consecutive_successes": 0,
-          "consecutive_blocked": 0
-        }
-      },
-      "activation_eligible": false,
-      "activation_mode": "preserved_current_inconclusive"
-    },
-    {
-      "id": "purstream",
-      "status": "no_streams",
-      "action": "unchanged",
-      "enabled": true,
-      "consecutive_hard_failures": 0,
-      "hard_failure_started_at": null,
-      "consecutive_successes": 0,
-      "hosts": [],
-      "response_categories": [],
-      "host_health": {},
-      "activation_eligible": false,
-      "activation_mode": "preserved_current_inconclusive"
-    },
-    {
-      "id": "streamzo",
-      "status": "no_streams",
-      "action": "unchanged",
-      "enabled": true,
-      "consecutive_hard_failures": 0,
-      "hard_failure_started_at": null,
-      "consecutive_successes": 0,
-      "hosts": [],
-      "response_categories": [],
-      "host_health": {},
-      "activation_eligible": false,
-      "activation_mode": "preserved_current_inconclusive"
-    },
-    {
-      "id": "voiranime-rip",
-      "status": "no_streams",
-      "action": "unchanged",
-      "enabled": true,
-      "consecutive_hard_failures": 0,
-      "hard_failure_started_at": null,
-      "consecutive_successes": 0,
-      "hosts": [],
-      "response_categories": [],
-      "host_health": {
-        "video.sibnet.ru": {
-          "last_checked_at": "2026-07-26T14:04:06.325208+00:00",
-          "last_category": "playable",
-          "reachable": true,
-          "http_status": 206,
-          "latency_ms": 2906,
-          "kind": "mp4",
-          "consecutive_hard_failures": 0,
-          "consecutive_successes": 2,
-          "consecutive_blocked": 0
-        }
-      },
-      "activation_eligible": false,
-      "activation_mode": "preserved_current_inconclusive"
-    },
-    {
-      "id": "vostfree",
-      "status": "no_streams",
-      "action": "unchanged",
-      "enabled": true,
-      "consecutive_hard_failures": 0,
-      "hard_failure_started_at": null,
-      "consecutive_successes": 0,
-      "hosts": [],
-      "response_categories": [],
-      "host_health": {},
-      "activation_eligible": false,
-      "activation_mode": "preserved_current_inconclusive"
-    },
-    {
-      "id": "nakios",
-      "status": "reachable",
-      "action": "unchanged",
-      "enabled": true,
-      "consecutive_hard_failures": 0,
-      "hard_failure_started_at": null,
-      "consecutive_successes": 0,
-      "hosts": [
-        "sv.citron-edge.lol"
-      ],
-      "response_categories": [
-        "probe_error"
-      ],
-      "host_health": {
-        "sv.citron-edge.lol": {
-          "last_checked_at": "2026-07-26T01:56:20.022657+00:00",
-          "last_category": "probe_error",
-          "reachable": false,
-          "http_status": null,
-          "latency_ms": null,
-          "kind": null,
-          "consecutive_hard_failures": 1,
-          "consecutive_successes": 0,
-          "consecutive_blocked": 0
-        }
-      },
-      "activation_eligible": false,
-      "activation_mode": "preserved_current_inconclusive"
-    },
-    {
-      "id": "papadustream",
-      "status": "no_streams",
-      "action": "unchanged",
-      "enabled": true,
-      "consecutive_hard_failures": 0,
-      "hard_failure_started_at": null,
-      "consecutive_successes": 0,
-      "hosts": [],
-      "response_categories": [],
-      "host_health": {
-        "papadustream.club": {
-          "last_checked_at": "2026-07-26T07:09:33.481217+00:00",
-          "last_category": "playable",
-          "reachable": true,
-          "http_status": 200,
-          "latency_ms": 759,
-          "kind": "hls",
-          "consecutive_hard_failures": 0,
-          "consecutive_successes": 2,
-          "consecutive_blocked": 0
-        }
-      },
-      "activation_eligible": false,
-      "activation_mode": "preserved_current_inconclusive"
-    },
-    {
-      "id": "mugiwarastream",
-      "status": "no_streams",
-      "action": "unchanged",
-      "enabled": true,
-      "consecutive_hard_failures": 0,
-      "hard_failure_started_at": null,
-      "consecutive_successes": 0,
-      "hosts": [],
-      "response_categories": [],
-      "host_health": {
-        "prx-1328-ant.vmwesa.online": {
-          "last_checked_at": "2026-07-26T14:04:06.325208+00:00",
-          "last_category": "not_returned",
-          "reachable": false,
-          "http_status": null,
-          "latency_ms": null,
-          "kind": "hls",
-          "consecutive_hard_failures": 0,
-          "consecutive_successes": 0,
-          "consecutive_blocked": 0
-        },
-        "video.sibnet.ru": {
-          "last_checked_at": "2026-07-26T14:04:06.325208+00:00",
-          "last_category": "not_returned",
-          "reachable": false,
-          "http_status": null,
-          "latency_ms": null,
-          "kind": "html",
-          "consecutive_hard_failures": 0,
-          "consecutive_successes": 0,
-          "consecutive_blocked": 0
-        },
-        "prx-1353-ant-23.vmwesa.online": {
-          "last_checked_at": "2026-07-26T14:04:06.325208+00:00",
-          "last_category": "playable",
-          "reachable": true,
-          "http_status": 200,
-          "latency_ms": 508,
-          "kind": "hls",
-          "consecutive_hard_failures": 0,
-          "consecutive_successes": 2,
-          "consecutive_blocked": 0
-        }
-      },
-      "activation_eligible": false,
-      "activation_mode": "preserved_current_inconclusive"
-    },
-    {
-      "id": "videasy",
-      "status": "no_streams",
-      "action": "unchanged",
-      "enabled": true,
-      "consecutive_hard_failures": 1,
-      "hard_failure_started_at": "2026-07-26T01:56:20.022657+00:00",
-      "consecutive_successes": 0,
-      "hosts": [],
-      "response_categories": [],
-      "host_health": {},
-      "activation_eligible": false,
-      "activation_mode": "preserved_current_inconclusive"
-    },
-    {
-      "id": "sekai",
-      "status": "no_streams",
-      "action": "unchanged",
-      "enabled": true,
-      "consecutive_hard_failures": 0,
-      "hard_failure_started_at": null,
-      "consecutive_successes": 0,
-      "hosts": [],
-      "response_categories": [],
-      "host_health": {
-        "4.mugiwara.one": {
-          "last_checked_at": "2026-07-26T14:04:06.325208+00:00",
-          "last_category": "playable",
-          "reachable": true,
-          "http_status": 206,
-          "latency_ms": 534,
-          "kind": "mp4",
-          "consecutive_hard_failures": 0,
-          "consecutive_successes": 1,
-          "consecutive_blocked": 0
-        }
-      },
-      "activation_eligible": false,
-      "activation_mode": "preserved_current_inconclusive"
-    },
-    {
       "id": "anime-sama",
-      "status": "no_streams",
+      "status": "not-checked",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
@@ -497,13 +65,11 @@
           "consecutive_successes": 1,
           "consecutive_blocked": 0
         }
-      },
-      "activation_eligible": false,
-      "activation_mode": "preserved_current_inconclusive"
+      }
     },
     {
-      "id": "toflix",
-      "status": "no_streams",
+      "id": "purstream",
+      "status": "not-checked",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
@@ -511,13 +77,23 @@
       "consecutive_successes": 0,
       "hosts": [],
       "response_categories": [],
-      "host_health": {},
-      "activation_eligible": false,
-      "activation_mode": "preserved_current_inconclusive"
+      "host_health": {}
     },
     {
-      "id": "voiranime",
-      "status": "no_streams",
+      "id": "zinkmovies",
+      "status": "not-checked",
+      "action": "unchanged",
+      "enabled": true,
+      "consecutive_hard_failures": 0,
+      "hard_failure_started_at": null,
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
+      "host_health": {}
+    },
+    {
+      "id": "vegamovies",
+      "status": "not-checked",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
@@ -526,19 +102,8 @@
       "hosts": [],
       "response_categories": [],
       "host_health": {
-        "box-1429-v10.vmeas.cloud": {
-          "last_checked_at": "2026-07-26T21:16:00.568403+00:00",
-          "last_category": "not_returned",
-          "reachable": false,
-          "http_status": null,
-          "latency_ms": null,
-          "kind": "hls",
-          "consecutive_hard_failures": 0,
-          "consecutive_successes": 0,
-          "consecutive_blocked": 0
-        },
-        "streamtape.com": {
-          "last_checked_at": "2026-07-26T21:16:00.568403+00:00",
+        "withered-shadow-2bde.nanipic7351552.workers.dev": {
+          "last_checked_at": "2026-07-27T07:58:03.320236+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -548,373 +113,33 @@
           "consecutive_successes": 0,
           "consecutive_blocked": 0
         },
-        "prx-1476-ant.vmwesa.online": {
-          "last_checked_at": "2026-07-26T21:16:00.568403+00:00",
-          "last_category": "playable",
-          "reachable": true,
-          "http_status": 200,
-          "latency_ms": 582,
-          "kind": "hls",
-          "consecutive_hard_failures": 0,
-          "consecutive_successes": 1,
-          "consecutive_blocked": 0
-        }
-      },
-      "activation_eligible": false,
-      "activation_mode": "preserved_current_inconclusive"
-    },
-    {
-      "id": "animepahe",
-      "status": "no_streams",
-      "action": "unchanged",
-      "enabled": true,
-      "consecutive_hard_failures": 0,
-      "hard_failure_started_at": null,
-      "consecutive_successes": 0,
-      "hosts": [],
-      "response_categories": [],
-      "host_health": {},
-      "activation_eligible": false,
-      "activation_mode": "preserved_current_inconclusive"
-    },
-    {
-      "id": "4khdhub",
-      "status": "reachable",
-      "action": "unchanged",
-      "enabled": true,
-      "consecutive_hard_failures": 0,
-      "hard_failure_started_at": null,
-      "consecutive_successes": 0,
-      "hosts": [],
-      "response_categories": [],
-      "host_health": {
-        "hubcloud.cx": {
-          "last_checked_at": "2026-07-26T01:56:20.022657+00:00",
-          "last_category": "invalid_payload",
-          "reachable": false,
-          "http_status": 200,
-          "latency_ms": 515,
-          "kind": "html",
-          "consecutive_hard_failures": 0,
-          "consecutive_successes": 0,
-          "consecutive_blocked": 0
-        }
-      },
-      "activation_eligible": false,
-      "activation_mode": "preserved_current_inconclusive"
-    },
-    {
-      "id": "playimdb",
-      "status": "reachable",
-      "action": "unchanged",
-      "enabled": true,
-      "consecutive_hard_failures": 0,
-      "hard_failure_started_at": null,
-      "consecutive_successes": 2,
-      "hosts": [
-        "premiumcontentengine.site"
-      ],
-      "response_categories": [
-        "playable"
-      ],
-      "host_health": {
-        "quietmidnightgardeningideas.site": {
-          "last_checked_at": "2026-07-26T07:09:33.481217+00:00",
-          "last_category": "not_returned",
-          "reachable": false,
-          "http_status": null,
-          "latency_ms": null,
-          "kind": "hls",
-          "consecutive_hard_failures": 0,
-          "consecutive_successes": 0,
-          "consecutive_blocked": 0
-        },
-        "premiumcontentengine.site": {
-          "last_checked_at": "2026-07-26T07:09:33.481217+00:00",
-          "last_category": "playable",
-          "reachable": true,
-          "http_status": 200,
-          "latency_ms": 395,
-          "kind": "hls",
-          "consecutive_hard_failures": 0,
-          "consecutive_successes": 1,
-          "consecutive_blocked": 0
-        }
-      },
-      "activation_eligible": false,
-      "activation_mode": "preserved_current_inconclusive"
-    },
-    {
-      "id": "desiflix",
-      "status": "reachable",
-      "action": "unchanged",
-      "enabled": true,
-      "consecutive_hard_failures": 0,
-      "hard_failure_started_at": null,
-      "consecutive_successes": 0,
-      "hosts": [],
-      "response_categories": [],
-      "host_health": {
-        "desiflix-app.redgrass-e8268bc5.eastus2.azurecontainerapps.io": {
-          "last_checked_at": "2026-07-26T10:16:32.285555+00:00",
-          "last_category": "playable",
-          "reachable": true,
-          "http_status": 200,
-          "latency_ms": 544,
-          "kind": "hls",
-          "consecutive_hard_failures": 0,
-          "consecutive_successes": 2,
-          "consecutive_blocked": 0
-        }
-      },
-      "activation_eligible": false,
-      "activation_mode": "preserved_current_inconclusive"
-    },
-    {
-      "id": "allanime",
-      "status": "reachable",
-      "action": "unchanged",
-      "enabled": true,
-      "consecutive_hard_failures": 0,
-      "hard_failure_started_at": null,
-      "consecutive_successes": 0,
-      "hosts": [],
-      "response_categories": [],
-      "host_health": {},
-      "activation_eligible": false,
-      "activation_mode": "preserved_current_inconclusive"
-    },
-    {
-      "id": "anikototv",
-      "status": "reachable",
-      "action": "unchanged",
-      "enabled": true,
-      "consecutive_hard_failures": 0,
-      "hard_failure_started_at": null,
-      "consecutive_successes": 0,
-      "hosts": [],
-      "response_categories": [],
-      "host_health": {
-        "megap.kotocdn.site": {
-          "last_checked_at": "2026-07-26T07:09:33.481217+00:00",
+        "556138dca7367763ed46eecaa4284eca.r2.cloudflarestorage.com": {
+          "last_checked_at": "2026-07-27T07:58:03.320236+00:00",
           "last_category": "playable",
           "reachable": true,
           "http_status": 206,
-          "latency_ms": 19,
-          "kind": "hls",
-          "consecutive_hard_failures": 0,
-          "consecutive_successes": 2,
-          "consecutive_blocked": 0
-        }
-      },
-      "activation_eligible": false,
-      "activation_mode": "preserved_current_inconclusive"
-    },
-    {
-      "id": "animesalt",
-      "status": "reachable",
-      "action": "unchanged",
-      "enabled": true,
-      "consecutive_hard_failures": 0,
-      "hard_failure_started_at": null,
-      "consecutive_successes": 0,
-      "hosts": [],
-      "response_categories": [],
-      "host_health": {},
-      "activation_eligible": false,
-      "activation_mode": "preserved_current_inconclusive"
-    },
-    {
-      "id": "hdghartv",
-      "status": "reachable",
-      "action": "unchanged",
-      "enabled": true,
-      "consecutive_hard_failures": 0,
-      "hard_failure_started_at": null,
-      "consecutive_successes": 2,
-      "hosts": [
-        "cdn9.streamraiwind.stream"
-      ],
-      "response_categories": [
-        "playable"
-      ],
-      "host_health": {
-        "cdn6.streamraiwind.stream": {
-          "last_checked_at": "2026-07-26T14:04:06.325208+00:00",
-          "last_category": "not_returned",
-          "reachable": false,
-          "http_status": null,
-          "latency_ms": null,
-          "kind": "hls",
-          "consecutive_hard_failures": 0,
-          "consecutive_successes": 0,
-          "consecutive_blocked": 0
-        },
-        "cdn10.streamraiwind.stream": {
-          "last_checked_at": "2026-07-26T14:04:06.325208+00:00",
-          "last_category": "not_returned",
-          "reachable": false,
-          "http_status": null,
-          "latency_ms": null,
-          "kind": "hls",
-          "consecutive_hard_failures": 0,
-          "consecutive_successes": 0,
-          "consecutive_blocked": 0
-        },
-        "cdn4.streamraiwind.stream": {
-          "last_checked_at": "2026-07-26T14:04:06.325208+00:00",
-          "last_category": "not_returned",
-          "reachable": false,
-          "http_status": null,
-          "latency_ms": null,
-          "kind": null,
-          "consecutive_hard_failures": 0,
-          "consecutive_successes": 0,
-          "consecutive_blocked": 0
-        },
-        "cdn9.streamraiwind.stream": {
-          "last_checked_at": "2026-07-26T14:04:06.325208+00:00",
-          "last_category": "playable",
-          "reachable": true,
-          "http_status": 206,
-          "latency_ms": 341,
-          "kind": "hls",
-          "consecutive_hard_failures": 0,
-          "consecutive_successes": 1,
-          "consecutive_blocked": 0
-        }
-      },
-      "activation_eligible": false,
-      "activation_mode": "preserved_current_inconclusive"
-    },
-    {
-      "id": "netmirror",
-      "status": "reachable",
-      "action": "unchanged",
-      "enabled": true,
-      "consecutive_hard_failures": 0,
-      "hard_failure_started_at": null,
-      "consecutive_successes": 1,
-      "hosts": [
-        "bcdnw.hakunaymatata.com"
-      ],
-      "response_categories": [
-        "playable"
-      ],
-      "host_health": {
-        "bcdnw.hakunaymatata.com": {
-          "last_checked_at": "2026-07-26T07:09:33.481217+00:00",
-          "last_category": "playable",
-          "reachable": true,
-          "http_status": 206,
-          "latency_ms": 672,
-          "kind": "mp4",
-          "consecutive_hard_failures": 0,
-          "consecutive_successes": 1,
-          "consecutive_blocked": 0
-        }
-      },
-      "activation_eligible": false,
-      "activation_mode": "preserved_current_inconclusive"
-    },
-    {
-      "id": "persianstremio",
-      "status": "reachable",
-      "action": "unchanged",
-      "enabled": true,
-      "consecutive_hard_failures": 0,
-      "hard_failure_started_at": null,
-      "consecutive_successes": 2,
-      "hosts": [
-        "bvxbbajdhgxd9g87jwb463wx.abrtech.top"
-      ],
-      "response_categories": [
-        "playable"
-      ],
-      "host_health": {
-        "zz6rb5sa7t84cqpedeeqwjw5.abrtech.top": {
-          "last_checked_at": "2026-07-26T10:16:32.285555+00:00",
-          "last_category": "not_returned",
-          "reachable": false,
-          "http_status": null,
-          "latency_ms": null,
+          "latency_ms": 84,
           "kind": "matroska",
           "consecutive_hard_failures": 0,
-          "consecutive_successes": 0,
+          "consecutive_successes": 3,
           "consecutive_blocked": 0
         },
-        "bvxbbajdhgxd9g87jwb463wx.abrtech.top": {
-          "last_checked_at": "2026-07-26T10:16:32.285555+00:00",
-          "last_category": "playable",
-          "reachable": true,
-          "http_status": 206,
-          "latency_ms": 3732,
-          "kind": "matroska",
-          "consecutive_hard_failures": 0,
-          "consecutive_successes": 1,
-          "consecutive_blocked": 0
-        }
-      },
-      "activation_eligible": false,
-      "activation_mode": "preserved_current_inconclusive"
-    },
-    {
-      "id": "vidfast",
-      "status": "reachable",
-      "action": "unchanged",
-      "enabled": true,
-      "consecutive_hard_failures": 0,
-      "hard_failure_started_at": null,
-      "consecutive_successes": 0,
-      "hosts": [],
-      "response_categories": [],
-      "host_health": {},
-      "activation_eligible": false,
-      "activation_mode": "preserved_current_inconclusive"
-    },
-    {
-      "id": "vidlink",
-      "status": "reachable",
-      "action": "unchanged",
-      "enabled": true,
-      "consecutive_hard_failures": 0,
-      "hard_failure_started_at": null,
-      "consecutive_successes": 0,
-      "hosts": [],
-      "response_categories": [],
-      "host_health": {
-        "bcdn.hakunaymatata.com": {
-          "last_checked_at": "2026-07-26T07:09:33.481217+00:00",
-          "last_category": "blocked",
+        "silent-hill-3e77.wodikaf8189172.workers.dev": {
+          "last_checked_at": "2026-07-27T07:58:03.320236+00:00",
+          "last_category": "not_returned",
           "reachable": false,
-          "http_status": 429,
-          "latency_ms": 314,
+          "http_status": null,
+          "latency_ms": null,
           "kind": "html",
           "consecutive_hard_failures": 0,
           "consecutive_successes": 0,
-          "consecutive_blocked": 1
+          "consecutive_blocked": 0
         }
-      },
-      "activation_eligible": false,
-      "activation_mode": "preserved_current_inconclusive"
-    },
-    {
-      "id": "yflix",
-      "status": "reachable",
-      "action": "unchanged",
-      "enabled": true,
-      "consecutive_hard_failures": 0,
-      "hard_failure_started_at": null,
-      "consecutive_successes": 0,
-      "hosts": [],
-      "response_categories": [],
-      "host_health": {},
-      "activation_eligible": false,
-      "activation_mode": "preserved_current_inconclusive"
+      }
     },
     {
       "id": "hindmoviez",
-      "status": "reachable",
+      "status": "not-checked",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
@@ -1000,13 +225,556 @@
           "consecutive_successes": 1,
           "consecutive_blocked": 0
         }
-      },
-      "activation_eligible": false,
-      "activation_mode": "preserved_current_inconclusive"
+      }
+    },
+    {
+      "id": "4khdhub",
+      "status": "not-checked",
+      "action": "unchanged",
+      "enabled": true,
+      "consecutive_hard_failures": 0,
+      "hard_failure_started_at": null,
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
+      "host_health": {
+        "hubcloud.cx": {
+          "last_checked_at": "2026-07-26T01:56:20.022657+00:00",
+          "last_category": "invalid_payload",
+          "reachable": false,
+          "http_status": 200,
+          "latency_ms": 515,
+          "kind": "html",
+          "consecutive_hard_failures": 0,
+          "consecutive_successes": 0,
+          "consecutive_blocked": 0
+        }
+      }
+    },
+    {
+      "id": "papadustream",
+      "status": "not-checked",
+      "action": "unchanged",
+      "enabled": true,
+      "consecutive_hard_failures": 0,
+      "hard_failure_started_at": null,
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
+      "host_health": {
+        "papadustream.club": {
+          "last_checked_at": "2026-07-26T07:09:33.481217+00:00",
+          "last_category": "playable",
+          "reachable": true,
+          "http_status": 200,
+          "latency_ms": 759,
+          "kind": "hls",
+          "consecutive_hard_failures": 0,
+          "consecutive_successes": 2,
+          "consecutive_blocked": 0
+        }
+      }
+    },
+    {
+      "id": "frenchstream",
+      "status": "not-checked",
+      "action": "unchanged",
+      "enabled": true,
+      "consecutive_hard_failures": 0,
+      "hard_failure_started_at": null,
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
+      "host_health": {
+        "r1.fsvid.lol": {
+          "last_checked_at": "2026-07-27T04:09:30.765947+00:00",
+          "last_category": "playable",
+          "reachable": true,
+          "http_status": 200,
+          "latency_ms": 700,
+          "kind": "hls",
+          "consecutive_hard_failures": 0,
+          "consecutive_successes": 2,
+          "consecutive_blocked": 0
+        }
+      }
+    },
+    {
+      "id": "french-manga",
+      "status": "not-checked",
+      "action": "unchanged",
+      "enabled": true,
+      "consecutive_hard_failures": 0,
+      "hard_failure_started_at": null,
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
+      "host_health": {
+        "u14.vidzy.cc": {
+          "last_checked_at": "2026-07-26T14:04:06.325208+00:00",
+          "last_category": "playable",
+          "reachable": true,
+          "http_status": 200,
+          "latency_ms": 423,
+          "kind": "hls",
+          "consecutive_hard_failures": 0,
+          "consecutive_successes": 3,
+          "consecutive_blocked": 0
+        },
+        "v80nz3c7i6rr.tnmr.org": {
+          "last_checked_at": "2026-07-26T14:04:06.325208+00:00",
+          "last_category": "not_returned",
+          "reachable": false,
+          "http_status": null,
+          "latency_ms": null,
+          "kind": "html",
+          "consecutive_hard_failures": 0,
+          "consecutive_successes": 0,
+          "consecutive_blocked": 0
+        }
+      }
+    },
+    {
+      "id": "animesultra",
+      "status": "not-checked",
+      "action": "unchanged",
+      "enabled": true,
+      "consecutive_hard_failures": 0,
+      "hard_failure_started_at": null,
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
+      "host_health": {}
+    },
+    {
+      "id": "coflix",
+      "status": "not-checked",
+      "action": "unchanged",
+      "enabled": true,
+      "consecutive_hard_failures": 0,
+      "hard_failure_started_at": null,
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
+      "host_health": {
+        "lecteurvideo.com": {
+          "last_checked_at": "2026-07-26T07:09:33.481217+00:00",
+          "last_category": "blocked",
+          "reachable": false,
+          "http_status": 403,
+          "latency_ms": 436,
+          "kind": "html",
+          "consecutive_hard_failures": 0,
+          "consecutive_successes": 0,
+          "consecutive_blocked": 1
+        }
+      }
+    },
+    {
+      "id": "streamzo",
+      "status": "not-checked",
+      "action": "unchanged",
+      "enabled": true,
+      "consecutive_hard_failures": 0,
+      "hard_failure_started_at": null,
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
+      "host_health": {}
+    },
+    {
+      "id": "vostfree",
+      "status": "not-checked",
+      "action": "unchanged",
+      "enabled": true,
+      "consecutive_hard_failures": 0,
+      "hard_failure_started_at": null,
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
+      "host_health": {}
+    },
+    {
+      "id": "dulourd",
+      "status": "not-checked",
+      "action": "unchanged",
+      "enabled": true,
+      "consecutive_hard_failures": 0,
+      "hard_failure_started_at": null,
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
+      "host_health": {}
+    },
+    {
+      "id": "movix",
+      "status": "not-checked",
+      "action": "unchanged",
+      "enabled": true,
+      "consecutive_hard_failures": 0,
+      "hard_failure_started_at": null,
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
+      "host_health": {
+        "free.finepulfe.xyz": {
+          "last_checked_at": "2026-07-26T17:29:31.828546+00:00",
+          "last_category": "playable",
+          "reachable": true,
+          "http_status": 206,
+          "latency_ms": 274,
+          "kind": "hls",
+          "consecutive_hard_failures": 0,
+          "consecutive_successes": 1,
+          "consecutive_blocked": 0
+        },
+        "r1.fsvid.lol": {
+          "last_checked_at": "2026-07-26T17:29:31.828546+00:00",
+          "last_category": "not_returned",
+          "reachable": false,
+          "http_status": null,
+          "latency_ms": null,
+          "kind": "hls",
+          "consecutive_hard_failures": 0,
+          "consecutive_successes": 0,
+          "consecutive_blocked": 0
+        }
+      }
+    },
+    {
+      "id": "goated",
+      "status": "not-checked",
+      "action": "unchanged",
+      "enabled": true,
+      "consecutive_hard_failures": 0,
+      "hard_failure_started_at": null,
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
+      "host_health": {}
+    },
+    {
+      "id": "animevostfr",
+      "status": "not-checked",
+      "action": "unchanged",
+      "enabled": true,
+      "consecutive_hard_failures": 0,
+      "hard_failure_started_at": null,
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
+      "host_health": {
+        "video.sibnet.ru": {
+          "last_checked_at": "2026-07-26T14:04:06.325208+00:00",
+          "last_category": "playable",
+          "reachable": true,
+          "http_status": 206,
+          "latency_ms": 3150,
+          "kind": "mp4",
+          "consecutive_hard_failures": 0,
+          "consecutive_successes": 3,
+          "consecutive_blocked": 0
+        }
+      }
+    },
+    {
+      "id": "mugiwarastream",
+      "status": "not-checked",
+      "action": "unchanged",
+      "enabled": true,
+      "consecutive_hard_failures": 0,
+      "hard_failure_started_at": null,
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
+      "host_health": {
+        "prx-1328-ant.vmwesa.online": {
+          "last_checked_at": "2026-07-26T14:04:06.325208+00:00",
+          "last_category": "not_returned",
+          "reachable": false,
+          "http_status": null,
+          "latency_ms": null,
+          "kind": "hls",
+          "consecutive_hard_failures": 0,
+          "consecutive_successes": 0,
+          "consecutive_blocked": 0
+        },
+        "video.sibnet.ru": {
+          "last_checked_at": "2026-07-26T14:04:06.325208+00:00",
+          "last_category": "not_returned",
+          "reachable": false,
+          "http_status": null,
+          "latency_ms": null,
+          "kind": "html",
+          "consecutive_hard_failures": 0,
+          "consecutive_successes": 0,
+          "consecutive_blocked": 0
+        },
+        "prx-1353-ant-23.vmwesa.online": {
+          "last_checked_at": "2026-07-26T14:04:06.325208+00:00",
+          "last_category": "playable",
+          "reachable": true,
+          "http_status": 200,
+          "latency_ms": 508,
+          "kind": "hls",
+          "consecutive_hard_failures": 0,
+          "consecutive_successes": 2,
+          "consecutive_blocked": 0
+        }
+      }
+    },
+    {
+      "id": "animesama-co",
+      "status": "not-checked",
+      "action": "unchanged",
+      "enabled": true,
+      "consecutive_hard_failures": 0,
+      "hard_failure_started_at": null,
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
+      "host_health": {
+        "video.sibnet.ru": {
+          "last_checked_at": "2026-07-26T14:04:06.325208+00:00",
+          "last_category": "playable",
+          "reachable": true,
+          "http_status": 206,
+          "latency_ms": 3441,
+          "kind": "mp4",
+          "consecutive_hard_failures": 0,
+          "consecutive_successes": 2,
+          "consecutive_blocked": 0
+        }
+      }
+    },
+    {
+      "id": "voiranime-rip",
+      "status": "not-checked",
+      "action": "unchanged",
+      "enabled": true,
+      "consecutive_hard_failures": 0,
+      "hard_failure_started_at": null,
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
+      "host_health": {
+        "video.sibnet.ru": {
+          "last_checked_at": "2026-07-26T14:04:06.325208+00:00",
+          "last_category": "playable",
+          "reachable": true,
+          "http_status": 206,
+          "latency_ms": 2906,
+          "kind": "mp4",
+          "consecutive_hard_failures": 0,
+          "consecutive_successes": 2,
+          "consecutive_blocked": 0
+        }
+      }
+    },
+    {
+      "id": "sekai",
+      "status": "not-checked",
+      "action": "unchanged",
+      "enabled": true,
+      "consecutive_hard_failures": 0,
+      "hard_failure_started_at": null,
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
+      "host_health": {
+        "4.mugiwara.one": {
+          "last_checked_at": "2026-07-26T14:04:06.325208+00:00",
+          "last_category": "playable",
+          "reachable": true,
+          "http_status": 206,
+          "latency_ms": 534,
+          "kind": "mp4",
+          "consecutive_hard_failures": 0,
+          "consecutive_successes": 1,
+          "consecutive_blocked": 0
+        }
+      }
+    },
+    {
+      "id": "voiranime",
+      "status": "not-checked",
+      "action": "unchanged",
+      "enabled": true,
+      "consecutive_hard_failures": 0,
+      "hard_failure_started_at": null,
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
+      "host_health": {
+        "box-1429-v10.vmeas.cloud": {
+          "last_checked_at": "2026-07-26T21:16:00.568403+00:00",
+          "last_category": "not_returned",
+          "reachable": false,
+          "http_status": null,
+          "latency_ms": null,
+          "kind": "hls",
+          "consecutive_hard_failures": 0,
+          "consecutive_successes": 0,
+          "consecutive_blocked": 0
+        },
+        "streamtape.com": {
+          "last_checked_at": "2026-07-26T21:16:00.568403+00:00",
+          "last_category": "not_returned",
+          "reachable": false,
+          "http_status": null,
+          "latency_ms": null,
+          "kind": "html",
+          "consecutive_hard_failures": 0,
+          "consecutive_successes": 0,
+          "consecutive_blocked": 0
+        },
+        "prx-1476-ant.vmwesa.online": {
+          "last_checked_at": "2026-07-26T21:16:00.568403+00:00",
+          "last_category": "playable",
+          "reachable": true,
+          "http_status": 200,
+          "latency_ms": 582,
+          "kind": "hls",
+          "consecutive_hard_failures": 0,
+          "consecutive_successes": 1,
+          "consecutive_blocked": 0
+        }
+      }
+    },
+    {
+      "id": "hdghartv",
+      "status": "not-checked",
+      "action": "unchanged",
+      "enabled": true,
+      "consecutive_hard_failures": 0,
+      "hard_failure_started_at": null,
+      "consecutive_successes": 2,
+      "hosts": [
+        "cdn9.streamraiwind.stream"
+      ],
+      "response_categories": [
+        "playable"
+      ],
+      "host_health": {
+        "cdn6.streamraiwind.stream": {
+          "last_checked_at": "2026-07-26T14:04:06.325208+00:00",
+          "last_category": "not_returned",
+          "reachable": false,
+          "http_status": null,
+          "latency_ms": null,
+          "kind": "hls",
+          "consecutive_hard_failures": 0,
+          "consecutive_successes": 0,
+          "consecutive_blocked": 0
+        },
+        "cdn10.streamraiwind.stream": {
+          "last_checked_at": "2026-07-26T14:04:06.325208+00:00",
+          "last_category": "not_returned",
+          "reachable": false,
+          "http_status": null,
+          "latency_ms": null,
+          "kind": "hls",
+          "consecutive_hard_failures": 0,
+          "consecutive_successes": 0,
+          "consecutive_blocked": 0
+        },
+        "cdn4.streamraiwind.stream": {
+          "last_checked_at": "2026-07-26T14:04:06.325208+00:00",
+          "last_category": "not_returned",
+          "reachable": false,
+          "http_status": null,
+          "latency_ms": null,
+          "kind": null,
+          "consecutive_hard_failures": 0,
+          "consecutive_successes": 0,
+          "consecutive_blocked": 0
+        },
+        "cdn9.streamraiwind.stream": {
+          "last_checked_at": "2026-07-26T14:04:06.325208+00:00",
+          "last_category": "playable",
+          "reachable": true,
+          "http_status": 206,
+          "latency_ms": 341,
+          "kind": "hls",
+          "consecutive_hard_failures": 0,
+          "consecutive_successes": 1,
+          "consecutive_blocked": 0
+        }
+      }
+    },
+    {
+      "id": "movieblast",
+      "status": "not-checked",
+      "action": "unchanged",
+      "enabled": true,
+      "consecutive_hard_failures": 0,
+      "hard_failure_started_at": null,
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
+      "host_health": {
+        "mblinkserie.mycdn-mb.xyz": {
+          "last_checked_at": "2026-07-26T10:16:32.285555+00:00",
+          "last_category": "not_returned",
+          "reachable": false,
+          "http_status": null,
+          "latency_ms": null,
+          "kind": "matroska",
+          "consecutive_hard_failures": 0,
+          "consecutive_successes": 0,
+          "consecutive_blocked": 0
+        },
+        "mblinkmove.mycdn-mb.xyz": {
+          "last_checked_at": "2026-07-26T10:16:32.285555+00:00",
+          "last_category": "playable",
+          "reachable": true,
+          "http_status": 206,
+          "latency_ms": 436,
+          "kind": "matroska",
+          "consecutive_hard_failures": 0,
+          "consecutive_successes": 1,
+          "consecutive_blocked": 0
+        }
+      }
+    },
+    {
+      "id": "castle",
+      "status": "not-checked",
+      "action": "unchanged",
+      "enabled": true,
+      "consecutive_hard_failures": 0,
+      "hard_failure_started_at": null,
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
+      "host_health": {
+        "img1.fvncw.com": {
+          "last_checked_at": "2026-07-26T07:09:33.481217+00:00",
+          "last_category": "not_returned",
+          "reachable": false,
+          "http_status": null,
+          "latency_ms": null,
+          "kind": "hls",
+          "consecutive_hard_failures": 0,
+          "consecutive_successes": 0,
+          "consecutive_blocked": 0
+        },
+        "img1.nxocw.com": {
+          "last_checked_at": "2026-07-26T07:09:33.481217+00:00",
+          "last_category": "playable",
+          "reachable": true,
+          "http_status": 206,
+          "latency_ms": 316,
+          "kind": "hls",
+          "consecutive_hard_failures": 0,
+          "consecutive_successes": 1,
+          "consecutive_blocked": 0
+        }
+      }
     },
     {
       "id": "vidsrc",
-      "status": "reachable",
+      "status": "not-checked",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
@@ -1041,13 +809,11 @@
           "consecutive_successes": 1,
           "consecutive_blocked": 0
         }
-      },
-      "activation_eligible": false,
-      "activation_mode": "preserved_current_inconclusive"
+      }
     },
     {
-      "id": "vixsrc",
-      "status": "provider_unreachable",
+      "id": "animepahe",
+      "status": "not-checked",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
@@ -1055,129 +821,11 @@
       "consecutive_successes": 0,
       "hosts": [],
       "response_categories": [],
-      "host_health": {
-        "unitv.mom": {
-          "last_checked_at": "2026-07-26T07:09:33.481217+00:00",
-          "last_category": "playable",
-          "reachable": true,
-          "http_status": 200,
-          "latency_ms": 389,
-          "kind": "hls",
-          "consecutive_hard_failures": 0,
-          "consecutive_successes": 2,
-          "consecutive_blocked": 0
-        }
-      },
-      "activation_eligible": false,
-      "activation_mode": "preserved_current_inconclusive"
-    },
-    {
-      "id": "movies4u",
-      "status": "reachable",
-      "action": "unchanged",
-      "enabled": true,
-      "consecutive_hard_failures": 0,
-      "hard_failure_started_at": null,
-      "consecutive_successes": 0,
-      "hosts": [],
-      "response_categories": [],
-      "host_health": {},
-      "activation_eligible": false,
-      "activation_mode": "preserved_current_inconclusive"
-    },
-    {
-      "id": "cineby",
-      "status": "no_streams",
-      "action": "unchanged",
-      "enabled": true,
-      "consecutive_hard_failures": 0,
-      "hard_failure_started_at": null,
-      "consecutive_successes": 0,
-      "hosts": [],
-      "response_categories": [],
-      "host_health": {},
-      "activation_eligible": false,
-      "activation_mode": "preserved_current_inconclusive"
-    },
-    {
-      "id": "dahmermovies",
-      "status": "no_streams",
-      "action": "unchanged",
-      "enabled": true,
-      "consecutive_hard_failures": 0,
-      "hard_failure_started_at": null,
-      "consecutive_successes": 0,
-      "hosts": [],
-      "response_categories": [],
-      "host_health": {},
-      "activation_eligible": false,
-      "activation_mode": "preserved_current_inconclusive"
-    },
-    {
-      "id": "vidrock",
-      "status": "no_streams",
-      "action": "unchanged",
-      "enabled": true,
-      "consecutive_hard_failures": 0,
-      "hard_failure_started_at": null,
-      "consecutive_successes": 0,
-      "hosts": [],
-      "response_categories": [],
-      "host_health": {},
-      "activation_eligible": false,
-      "activation_mode": "preserved_current_inconclusive"
-    },
-    {
-      "id": "vegamovies",
-      "status": "no_streams",
-      "action": "unchanged",
-      "enabled": true,
-      "consecutive_hard_failures": 0,
-      "hard_failure_started_at": null,
-      "consecutive_successes": 0,
-      "hosts": [],
-      "response_categories": [],
-      "host_health": {
-        "withered-shadow-2bde.nanipic7351552.workers.dev": {
-          "last_checked_at": "2026-07-27T07:58:03.320236+00:00",
-          "last_category": "not_returned",
-          "reachable": false,
-          "http_status": null,
-          "latency_ms": null,
-          "kind": "html",
-          "consecutive_hard_failures": 0,
-          "consecutive_successes": 0,
-          "consecutive_blocked": 0
-        },
-        "556138dca7367763ed46eecaa4284eca.r2.cloudflarestorage.com": {
-          "last_checked_at": "2026-07-27T07:58:03.320236+00:00",
-          "last_category": "playable",
-          "reachable": true,
-          "http_status": 206,
-          "latency_ms": 84,
-          "kind": "matroska",
-          "consecutive_hard_failures": 0,
-          "consecutive_successes": 3,
-          "consecutive_blocked": 0
-        },
-        "silent-hill-3e77.wodikaf8189172.workers.dev": {
-          "last_checked_at": "2026-07-27T07:58:03.320236+00:00",
-          "last_category": "not_returned",
-          "reachable": false,
-          "http_status": null,
-          "latency_ms": null,
-          "kind": "html",
-          "consecutive_hard_failures": 0,
-          "consecutive_successes": 0,
-          "consecutive_blocked": 0
-        }
-      },
-      "activation_eligible": false,
-      "activation_mode": "preserved_current_inconclusive"
+      "host_health": {}
     },
     {
       "id": "anizone",
-      "status": "no_streams",
+      "status": "not-checked",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
@@ -1185,13 +833,23 @@
       "consecutive_successes": 0,
       "hosts": [],
       "response_categories": [],
-      "host_health": {},
-      "activation_eligible": false,
-      "activation_mode": "preserved_current_inconclusive"
+      "host_health": {}
+    },
+    {
+      "id": "movies4u",
+      "status": "not-checked",
+      "action": "unchanged",
+      "enabled": true,
+      "consecutive_hard_failures": 0,
+      "hard_failure_started_at": null,
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
+      "host_health": {}
     },
     {
       "id": "moviebox",
-      "status": "no_streams",
+      "status": "not-checked",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
@@ -1199,27 +857,11 @@
       "consecutive_successes": 0,
       "hosts": [],
       "response_categories": [],
-      "host_health": {},
-      "activation_eligible": false,
-      "activation_mode": "preserved_current_inconclusive"
-    },
-    {
-      "id": "kurage",
-      "status": "no_streams",
-      "action": "unchanged",
-      "enabled": true,
-      "consecutive_hard_failures": 0,
-      "hard_failure_started_at": null,
-      "consecutive_successes": 0,
-      "hosts": [],
-      "response_categories": [],
-      "host_health": {},
-      "activation_eligible": false,
-      "activation_mode": "preserved_current_inconclusive"
+      "host_health": {}
     },
     {
       "id": "moviesmod",
-      "status": "no_streams",
+      "status": "not-checked",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
@@ -1227,13 +869,11 @@
       "consecutive_successes": 0,
       "hosts": [],
       "response_categories": [],
-      "host_health": {},
-      "activation_eligible": false,
-      "activation_mode": "preserved_current_inconclusive"
+      "host_health": {}
     },
     {
       "id": "animetsu",
-      "status": "no_streams",
+      "status": "not-checked",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
@@ -1241,13 +881,11 @@
       "consecutive_successes": 0,
       "hosts": [],
       "response_categories": [],
-      "host_health": {},
-      "activation_eligible": false,
-      "activation_mode": "preserved_current_inconclusive"
+      "host_health": {}
     },
     {
       "id": "dooflix",
-      "status": "no_streams",
+      "status": "not-checked",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
@@ -1255,13 +893,11 @@
       "consecutive_successes": 0,
       "hosts": [],
       "response_categories": [],
-      "host_health": {},
-      "activation_eligible": false,
-      "activation_mode": "preserved_current_inconclusive"
+      "host_health": {}
     },
     {
       "id": "hdhub4u",
-      "status": "no_streams",
+      "status": "not-checked",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
@@ -1269,27 +905,11 @@
       "consecutive_successes": 0,
       "hosts": [],
       "response_categories": [],
-      "host_health": {},
-      "activation_eligible": false,
-      "activation_mode": "preserved_current_inconclusive"
-    },
-    {
-      "id": "moviesdrive",
-      "status": "no_streams",
-      "action": "unchanged",
-      "enabled": true,
-      "consecutive_hard_failures": 0,
-      "hard_failure_started_at": null,
-      "consecutive_successes": 0,
-      "hosts": [],
-      "response_categories": [],
-      "host_health": {},
-      "activation_eligible": false,
-      "activation_mode": "preserved_current_inconclusive"
+      "host_health": {}
     },
     {
       "id": "peachify",
-      "status": "runtime_error",
+      "status": "not-checked",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
@@ -1297,64 +917,11 @@
       "consecutive_successes": 0,
       "hosts": [],
       "response_categories": [],
-      "host_health": {},
-      "activation_eligible": false,
-      "activation_mode": "preserved_current_inconclusive"
-    },
-    {
-      "id": "streamflix",
-      "status": "no_streams",
-      "action": "unchanged",
-      "enabled": true,
-      "consecutive_hard_failures": 5,
-      "hard_failure_started_at": "2026-07-26T01:56:20.022657+00:00",
-      "consecutive_successes": 0,
-      "hosts": [],
-      "response_categories": [],
-      "host_health": {
-        "s3.ap-southeast-1.wasabisys.com": {
-          "last_checked_at": "2026-07-26T14:12:49.403947+00:00",
-          "last_category": "not_found",
-          "reachable": false,
-          "http_status": 404,
-          "latency_ms": 1614,
-          "kind": "direct",
-          "consecutive_hard_failures": 8,
-          "consecutive_successes": 0,
-          "consecutive_blocked": 0
-        },
-        "bb.streamflixserver.site": {
-          "last_checked_at": "2026-07-26T14:12:49.403947+00:00",
-          "last_category": "probe_error",
-          "reachable": false,
-          "http_status": null,
-          "latency_ms": null,
-          "kind": null,
-          "consecutive_hard_failures": 0,
-          "consecutive_successes": 0,
-          "consecutive_blocked": 0
-        }
-      },
-      "activation_eligible": false,
-      "activation_mode": "preserved_current_inconclusive"
-    },
-    {
-      "id": "zinkmovies",
-      "status": "no_streams",
-      "action": "unchanged",
-      "enabled": true,
-      "consecutive_hard_failures": 0,
-      "hard_failure_started_at": null,
-      "consecutive_successes": 0,
-      "hosts": [],
-      "response_categories": [],
-      "host_health": {},
-      "activation_eligible": false,
-      "activation_mode": "preserved_current_inconclusive"
+      "host_health": {}
     },
     {
       "id": "allmovieland",
-      "status": "no_streams",
+      "status": "not-checked",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
@@ -1362,13 +929,11 @@
       "consecutive_successes": 0,
       "hosts": [],
       "response_categories": [],
-      "host_health": {},
-      "activation_eligible": false,
-      "activation_mode": "preserved_current_inconclusive"
+      "host_health": {}
     },
     {
       "id": "anidb",
-      "status": "no_streams",
+      "status": "not-checked",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
@@ -1376,13 +941,11 @@
       "consecutive_successes": 0,
       "hosts": [],
       "response_categories": [],
-      "host_health": {},
-      "activation_eligible": false,
-      "activation_mode": "preserved_current_inconclusive"
+      "host_health": {}
     },
     {
-      "id": "cinemacity",
-      "status": "no_streams",
+      "id": "allanime",
+      "status": "not-checked",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
@@ -1390,13 +953,11 @@
       "consecutive_successes": 0,
       "hosts": [],
       "response_categories": [],
-      "host_health": {},
-      "activation_eligible": false,
-      "activation_mode": "preserved_current_inconclusive"
+      "host_health": {}
     },
     {
-      "id": "cinemm",
-      "status": "no_streams",
+      "id": "animesalt",
+      "status": "not-checked",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
@@ -1404,13 +965,23 @@
       "consecutive_successes": 0,
       "hosts": [],
       "response_categories": [],
-      "host_health": {},
-      "activation_eligible": false,
-      "activation_mode": "preserved_current_inconclusive"
+      "host_health": {}
     },
     {
-      "id": "movieshunt",
-      "status": "no_streams",
+      "id": "vidfast",
+      "status": "not-checked",
+      "action": "unchanged",
+      "enabled": true,
+      "consecutive_hard_failures": 0,
+      "hard_failure_started_at": null,
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
+      "host_health": {}
+    },
+    {
+      "id": "vidlink",
+      "status": "not-checked",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
@@ -1419,46 +990,34 @@
       "hosts": [],
       "response_categories": [],
       "host_health": {
-        "pub-a0a5ce422c034486a372657692292682.r2.dev": {
-          "last_checked_at": "2026-07-26T21:16:00.568403+00:00",
-          "last_category": "not_returned",
+        "bcdn.hakunaymatata.com": {
+          "last_checked_at": "2026-07-26T07:09:33.481217+00:00",
+          "last_category": "blocked",
           "reachable": false,
-          "http_status": null,
-          "latency_ms": null,
+          "http_status": 429,
+          "latency_ms": 314,
           "kind": "html",
           "consecutive_hard_failures": 0,
           "consecutive_successes": 0,
-          "consecutive_blocked": 0
-        },
-        "556138dca7367763ed46eecaa4284eca.r2.cloudflarestorage.com": {
-          "last_checked_at": "2026-07-26T21:16:00.568403+00:00",
-          "last_category": "not_returned",
-          "reachable": false,
-          "http_status": null,
-          "latency_ms": null,
-          "kind": "matroska",
-          "consecutive_hard_failures": 0,
-          "consecutive_successes": 0,
-          "consecutive_blocked": 0
-        },
-        "c6b1e8c93683bdde581e2164cb9657c9.r2.cloudflarestorage.com": {
-          "last_checked_at": "2026-07-26T21:16:00.568403+00:00",
-          "last_category": "playable",
-          "reachable": true,
-          "http_status": 206,
-          "latency_ms": 178,
-          "kind": "matroska",
-          "consecutive_hard_failures": 0,
-          "consecutive_successes": 1,
-          "consecutive_blocked": 0
+          "consecutive_blocked": 1
         }
-      },
-      "activation_eligible": false,
-      "activation_mode": "preserved_current_inconclusive"
+      }
     },
     {
-      "id": "animoflix",
-      "status": "no_streams",
+      "id": "yflix",
+      "status": "not-checked",
+      "action": "unchanged",
+      "enabled": true,
+      "consecutive_hard_failures": 0,
+      "hard_failure_started_at": null,
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
+      "host_health": {}
+    },
+    {
+      "id": "flemmix",
+      "status": "not-checked",
       "action": "unchanged",
       "enabled": false,
       "consecutive_hard_failures": 0,
@@ -1466,27 +1025,11 @@
       "consecutive_successes": 0,
       "hosts": [],
       "response_categories": [],
-      "host_health": {},
-      "activation_eligible": false,
-      "activation_mode": "disabled"
-    },
-    {
-      "id": "wookafr",
-      "status": "runtime_error",
-      "action": "unchanged",
-      "enabled": false,
-      "consecutive_hard_failures": 1,
-      "hard_failure_started_at": "2026-07-26T01:56:20.022657+00:00",
-      "consecutive_successes": 0,
-      "hosts": [],
-      "response_categories": [],
-      "host_health": {},
-      "activation_eligible": false,
-      "activation_mode": "disabled"
+      "host_health": {}
     },
     {
       "id": "uhdmovies",
-      "status": "reachable",
+      "status": "not-checked",
       "action": "unchanged",
       "enabled": false,
       "consecutive_hard_failures": 0,
@@ -1532,13 +1075,355 @@
           "consecutive_successes": 2,
           "consecutive_blocked": 0
         }
-      },
-      "activation_eligible": false,
-      "activation_mode": "disabled"
+      }
+    },
+    {
+      "id": "movieshunt",
+      "status": "not-checked",
+      "action": "unchanged",
+      "enabled": false,
+      "consecutive_hard_failures": 0,
+      "hard_failure_started_at": null,
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
+      "host_health": {
+        "pub-a0a5ce422c034486a372657692292682.r2.dev": {
+          "last_checked_at": "2026-07-26T21:16:00.568403+00:00",
+          "last_category": "not_returned",
+          "reachable": false,
+          "http_status": null,
+          "latency_ms": null,
+          "kind": "html",
+          "consecutive_hard_failures": 0,
+          "consecutive_successes": 0,
+          "consecutive_blocked": 0
+        },
+        "556138dca7367763ed46eecaa4284eca.r2.cloudflarestorage.com": {
+          "last_checked_at": "2026-07-26T21:16:00.568403+00:00",
+          "last_category": "not_returned",
+          "reachable": false,
+          "http_status": null,
+          "latency_ms": null,
+          "kind": "matroska",
+          "consecutive_hard_failures": 0,
+          "consecutive_successes": 0,
+          "consecutive_blocked": 0
+        },
+        "c6b1e8c93683bdde581e2164cb9657c9.r2.cloudflarestorage.com": {
+          "last_checked_at": "2026-07-26T21:16:00.568403+00:00",
+          "last_category": "playable",
+          "reachable": true,
+          "http_status": 206,
+          "latency_ms": 178,
+          "kind": "matroska",
+          "consecutive_hard_failures": 0,
+          "consecutive_successes": 1,
+          "consecutive_blocked": 0
+        }
+      }
+    },
+    {
+      "id": "persianstremio",
+      "status": "not-checked",
+      "action": "unchanged",
+      "enabled": false,
+      "consecutive_hard_failures": 0,
+      "hard_failure_started_at": null,
+      "consecutive_successes": 2,
+      "hosts": [
+        "bvxbbajdhgxd9g87jwb463wx.abrtech.top"
+      ],
+      "response_categories": [
+        "playable"
+      ],
+      "host_health": {
+        "zz6rb5sa7t84cqpedeeqwjw5.abrtech.top": {
+          "last_checked_at": "2026-07-26T10:16:32.285555+00:00",
+          "last_category": "not_returned",
+          "reachable": false,
+          "http_status": null,
+          "latency_ms": null,
+          "kind": "matroska",
+          "consecutive_hard_failures": 0,
+          "consecutive_successes": 0,
+          "consecutive_blocked": 0
+        },
+        "bvxbbajdhgxd9g87jwb463wx.abrtech.top": {
+          "last_checked_at": "2026-07-26T10:16:32.285555+00:00",
+          "last_category": "playable",
+          "reachable": true,
+          "http_status": 206,
+          "latency_ms": 3732,
+          "kind": "matroska",
+          "consecutive_hard_failures": 0,
+          "consecutive_successes": 1,
+          "consecutive_blocked": 0
+        }
+      }
+    },
+    {
+      "id": "desiflix",
+      "status": "not-checked",
+      "action": "unchanged",
+      "enabled": false,
+      "consecutive_hard_failures": 0,
+      "hard_failure_started_at": null,
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
+      "host_health": {
+        "desiflix-app.redgrass-e8268bc5.eastus2.azurecontainerapps.io": {
+          "last_checked_at": "2026-07-26T10:16:32.285555+00:00",
+          "last_category": "playable",
+          "reachable": true,
+          "http_status": 200,
+          "latency_ms": 544,
+          "kind": "hls",
+          "consecutive_hard_failures": 0,
+          "consecutive_successes": 2,
+          "consecutive_blocked": 0
+        }
+      }
+    },
+    {
+      "id": "voiranime-homes",
+      "status": "not-checked",
+      "action": "unchanged",
+      "enabled": false,
+      "consecutive_hard_failures": 0,
+      "hard_failure_started_at": null,
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
+      "host_health": {}
+    },
+    {
+      "id": "wookafr",
+      "status": "not-checked",
+      "action": "unchanged",
+      "enabled": false,
+      "consecutive_hard_failures": 1,
+      "hard_failure_started_at": "2026-07-26T01:56:20.022657+00:00",
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
+      "host_health": {}
+    },
+    {
+      "id": "anime-ultime",
+      "status": "not-checked",
+      "action": "unchanged",
+      "enabled": false,
+      "consecutive_hard_failures": 0,
+      "hard_failure_started_at": null,
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
+      "host_health": {}
+    },
+    {
+      "id": "animoflix",
+      "status": "not-checked",
+      "action": "unchanged",
+      "enabled": false,
+      "consecutive_hard_failures": 0,
+      "hard_failure_started_at": null,
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
+      "host_health": {}
+    },
+    {
+      "id": "cineby",
+      "status": "not-checked",
+      "action": "unchanged",
+      "enabled": false,
+      "consecutive_hard_failures": 0,
+      "hard_failure_started_at": null,
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
+      "host_health": {}
+    },
+    {
+      "id": "videasy",
+      "status": "not-checked",
+      "action": "unchanged",
+      "enabled": false,
+      "consecutive_hard_failures": 1,
+      "hard_failure_started_at": "2026-07-26T01:56:20.022657+00:00",
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
+      "host_health": {}
+    },
+    {
+      "id": "hianime",
+      "status": "not-checked",
+      "action": "unchanged",
+      "enabled": false,
+      "consecutive_hard_failures": 0,
+      "hard_failure_started_at": null,
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
+      "host_health": {
+        "megap.kotocdn.site": {
+          "last_checked_at": "2026-07-26T07:09:33.481217+00:00",
+          "last_category": "playable",
+          "reachable": true,
+          "http_status": 206,
+          "latency_ms": 23,
+          "kind": "hls",
+          "consecutive_hard_failures": 0,
+          "consecutive_successes": 2,
+          "consecutive_blocked": 0
+        }
+      }
+    },
+    {
+      "id": "nakios",
+      "status": "not-checked",
+      "action": "unchanged",
+      "enabled": false,
+      "consecutive_hard_failures": 0,
+      "hard_failure_started_at": null,
+      "consecutive_successes": 0,
+      "hosts": [
+        "sv.citron-edge.lol"
+      ],
+      "response_categories": [
+        "probe_error"
+      ],
+      "host_health": {
+        "sv.citron-edge.lol": {
+          "last_checked_at": "2026-07-26T01:56:20.022657+00:00",
+          "last_category": "probe_error",
+          "reachable": false,
+          "http_status": null,
+          "latency_ms": null,
+          "kind": null,
+          "consecutive_hard_failures": 1,
+          "consecutive_successes": 0,
+          "consecutive_blocked": 0
+        }
+      }
+    },
+    {
+      "id": "toflix",
+      "status": "not-checked",
+      "action": "unchanged",
+      "enabled": false,
+      "consecutive_hard_failures": 0,
+      "hard_failure_started_at": null,
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
+      "host_health": {}
+    },
+    {
+      "id": "waveanime",
+      "status": "not-checked",
+      "action": "unchanged",
+      "enabled": false,
+      "consecutive_hard_failures": 0,
+      "hard_failure_started_at": null,
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
+      "host_health": {}
+    },
+    {
+      "id": "animezey",
+      "status": "not-checked",
+      "action": "unchanged",
+      "enabled": false,
+      "consecutive_hard_failures": 0,
+      "hard_failure_started_at": null,
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
+      "host_health": {}
+    },
+    {
+      "id": "playimdb",
+      "status": "not-checked",
+      "action": "unchanged",
+      "enabled": false,
+      "consecutive_hard_failures": 0,
+      "hard_failure_started_at": null,
+      "consecutive_successes": 2,
+      "hosts": [
+        "premiumcontentengine.site"
+      ],
+      "response_categories": [
+        "playable"
+      ],
+      "host_health": {
+        "quietmidnightgardeningideas.site": {
+          "last_checked_at": "2026-07-26T07:09:33.481217+00:00",
+          "last_category": "not_returned",
+          "reachable": false,
+          "http_status": null,
+          "latency_ms": null,
+          "kind": "hls",
+          "consecutive_hard_failures": 0,
+          "consecutive_successes": 0,
+          "consecutive_blocked": 0
+        },
+        "premiumcontentengine.site": {
+          "last_checked_at": "2026-07-26T07:09:33.481217+00:00",
+          "last_category": "playable",
+          "reachable": true,
+          "http_status": 200,
+          "latency_ms": 395,
+          "kind": "hls",
+          "consecutive_hard_failures": 0,
+          "consecutive_successes": 1,
+          "consecutive_blocked": 0
+        }
+      }
+    },
+    {
+      "id": "anikototv",
+      "status": "not-checked",
+      "action": "unchanged",
+      "enabled": false,
+      "consecutive_hard_failures": 0,
+      "hard_failure_started_at": null,
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
+      "host_health": {
+        "megap.kotocdn.site": {
+          "last_checked_at": "2026-07-26T07:09:33.481217+00:00",
+          "last_category": "playable",
+          "reachable": true,
+          "http_status": 206,
+          "latency_ms": 19,
+          "kind": "hls",
+          "consecutive_hard_failures": 0,
+          "consecutive_successes": 2,
+          "consecutive_blocked": 0
+        }
+      }
+    },
+    {
+      "id": "kurage",
+      "status": "not-checked",
+      "action": "unchanged",
+      "enabled": false,
+      "consecutive_hard_failures": 0,
+      "hard_failure_started_at": null,
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
+      "host_health": {}
     },
     {
       "id": "topcartoons",
-      "status": "healthy",
+      "status": "not-checked",
       "action": "unchanged",
       "enabled": false,
       "consecutive_hard_failures": 0,
@@ -1562,403 +1447,11 @@
           "consecutive_successes": 2,
           "consecutive_blocked": 0
         }
-      },
-      "activation_eligible": false,
-      "activation_mode": "disabled"
-    },
-    {
-      "id": "einthusan",
-      "status": "no_streams",
-      "action": "unchanged",
-      "enabled": false,
-      "consecutive_hard_failures": 0,
-      "hard_failure_started_at": null,
-      "consecutive_successes": 0,
-      "hosts": [],
-      "response_categories": [],
-      "host_health": {},
-      "activation_eligible": false,
-      "activation_mode": "disabled"
-    },
-    {
-      "id": "movieblast",
-      "status": "no_streams",
-      "action": "unchanged",
-      "enabled": false,
-      "consecutive_hard_failures": 0,
-      "hard_failure_started_at": null,
-      "consecutive_successes": 0,
-      "hosts": [],
-      "response_categories": [],
-      "host_health": {
-        "mblinkserie.mycdn-mb.xyz": {
-          "last_checked_at": "2026-07-26T10:16:32.285555+00:00",
-          "last_category": "not_returned",
-          "reachable": false,
-          "http_status": null,
-          "latency_ms": null,
-          "kind": "matroska",
-          "consecutive_hard_failures": 0,
-          "consecutive_successes": 0,
-          "consecutive_blocked": 0
-        },
-        "mblinkmove.mycdn-mb.xyz": {
-          "last_checked_at": "2026-07-26T10:16:32.285555+00:00",
-          "last_category": "playable",
-          "reachable": true,
-          "http_status": 206,
-          "latency_ms": 436,
-          "kind": "matroska",
-          "consecutive_hard_failures": 0,
-          "consecutive_successes": 1,
-          "consecutive_blocked": 0
-        }
-      },
-      "activation_eligible": false,
-      "activation_mode": "disabled"
-    },
-    {
-      "id": "hianime",
-      "status": "no_streams",
-      "action": "unchanged",
-      "enabled": false,
-      "consecutive_hard_failures": 0,
-      "hard_failure_started_at": null,
-      "consecutive_successes": 0,
-      "hosts": [],
-      "response_categories": [],
-      "host_health": {
-        "megap.kotocdn.site": {
-          "last_checked_at": "2026-07-26T07:09:33.481217+00:00",
-          "last_category": "playable",
-          "reachable": true,
-          "http_status": 206,
-          "latency_ms": 23,
-          "kind": "hls",
-          "consecutive_hard_failures": 0,
-          "consecutive_successes": 2,
-          "consecutive_blocked": 0
-        }
-      },
-      "activation_eligible": false,
-      "activation_mode": "disabled"
-    },
-    {
-      "id": "showbox",
-      "status": "no_streams",
-      "action": "unchanged",
-      "enabled": false,
-      "consecutive_hard_failures": 0,
-      "hard_failure_started_at": null,
-      "consecutive_successes": 0,
-      "hosts": [],
-      "response_categories": [],
-      "host_health": {},
-      "activation_eligible": false,
-      "activation_mode": "disabled"
-    },
-    {
-      "id": "castle",
-      "status": "no_streams",
-      "action": "unchanged",
-      "enabled": false,
-      "consecutive_hard_failures": 0,
-      "hard_failure_started_at": null,
-      "consecutive_successes": 0,
-      "hosts": [],
-      "response_categories": [],
-      "host_health": {
-        "img1.fvncw.com": {
-          "last_checked_at": "2026-07-26T07:09:33.481217+00:00",
-          "last_category": "not_returned",
-          "reachable": false,
-          "http_status": null,
-          "latency_ms": null,
-          "kind": "hls",
-          "consecutive_hard_failures": 0,
-          "consecutive_successes": 0,
-          "consecutive_blocked": 0
-        },
-        "img1.nxocw.com": {
-          "last_checked_at": "2026-07-26T07:09:33.481217+00:00",
-          "last_category": "playable",
-          "reachable": true,
-          "http_status": 206,
-          "latency_ms": 316,
-          "kind": "hls",
-          "consecutive_hard_failures": 0,
-          "consecutive_successes": 1,
-          "consecutive_blocked": 0
-        }
-      },
-      "activation_eligible": false,
-      "activation_mode": "disabled"
-    },
-    {
-      "id": "gramcinema",
-      "status": "no_streams",
-      "action": "unchanged",
-      "enabled": false,
-      "consecutive_hard_failures": 0,
-      "hard_failure_started_at": null,
-      "consecutive_successes": 0,
-      "hosts": [],
-      "response_categories": [],
-      "host_health": {},
-      "activation_eligible": false,
-      "activation_mode": "disabled"
-    },
-    {
-      "id": "4khdhubnew",
-      "status": "no_streams",
-      "action": "unchanged",
-      "enabled": false,
-      "consecutive_hard_failures": 0,
-      "hard_failure_started_at": null,
-      "consecutive_successes": 0,
-      "hosts": [],
-      "response_categories": [],
-      "host_health": {},
-      "activation_eligible": false,
-      "activation_mode": "disabled"
-    },
-    {
-      "id": "allwish",
-      "status": "no_streams",
-      "action": "unchanged",
-      "enabled": false,
-      "consecutive_hard_failures": 0,
-      "hard_failure_started_at": null,
-      "consecutive_successes": 0,
-      "hosts": [],
-      "response_categories": [],
-      "host_health": {},
-      "activation_eligible": false,
-      "activation_mode": "disabled"
-    },
-    {
-      "id": "animekai",
-      "status": "no_streams",
-      "action": "unchanged",
-      "enabled": false,
-      "consecutive_hard_failures": 0,
-      "hard_failure_started_at": null,
-      "consecutive_successes": 0,
-      "hosts": [],
-      "response_categories": [],
-      "host_health": {},
-      "activation_eligible": false,
-      "activation_mode": "disabled"
-    },
-    {
-      "id": "animeworld",
-      "status": "no_streams",
-      "action": "unchanged",
-      "enabled": false,
-      "consecutive_hard_failures": 0,
-      "hard_failure_started_at": null,
-      "consecutive_successes": 0,
-      "hosts": [],
-      "response_categories": [],
-      "host_health": {},
-      "activation_eligible": false,
-      "activation_mode": "disabled"
-    },
-    {
-      "id": "cinefreak",
-      "status": "no_streams",
-      "action": "unchanged",
-      "enabled": false,
-      "consecutive_hard_failures": 0,
-      "hard_failure_started_at": null,
-      "consecutive_successes": 0,
-      "hosts": [],
-      "response_categories": [],
-      "host_health": {},
-      "activation_eligible": false,
-      "activation_mode": "disabled"
-    },
-    {
-      "id": "cinevibe",
-      "status": "no_streams",
-      "action": "unchanged",
-      "enabled": false,
-      "consecutive_hard_failures": 0,
-      "hard_failure_started_at": null,
-      "consecutive_successes": 0,
-      "hosts": [],
-      "response_categories": [],
-      "host_health": {},
-      "activation_eligible": false,
-      "activation_mode": "disabled"
-    },
-    {
-      "id": "ctgmovies",
-      "status": "no_streams",
-      "action": "unchanged",
-      "enabled": false,
-      "consecutive_hard_failures": 0,
-      "hard_failure_started_at": null,
-      "consecutive_successes": 0,
-      "hosts": [],
-      "response_categories": [],
-      "host_health": {
-        "movie.ctgfun.com": {
-          "last_checked_at": "2026-07-26T07:09:33.481217+00:00",
-          "last_category": "playable",
-          "reachable": true,
-          "http_status": 206,
-          "latency_ms": 1557,
-          "kind": "matroska",
-          "consecutive_hard_failures": 0,
-          "consecutive_successes": 2,
-          "consecutive_blocked": 0
-        }
-      },
-      "activation_eligible": false,
-      "activation_mode": "disabled"
-    },
-    {
-      "id": "dahmermovies-tv",
-      "status": "no_streams",
-      "action": "unchanged",
-      "enabled": false,
-      "consecutive_hard_failures": 0,
-      "hard_failure_started_at": null,
-      "consecutive_successes": 0,
-      "hosts": [],
-      "response_categories": [],
-      "host_health": {},
-      "activation_eligible": false,
-      "activation_mode": "disabled"
-    },
-    {
-      "id": "fibwatch",
-      "status": "no_streams",
-      "action": "unchanged",
-      "enabled": false,
-      "consecutive_hard_failures": 0,
-      "hard_failure_started_at": null,
-      "consecutive_successes": 0,
-      "hosts": [],
-      "response_categories": [],
-      "host_health": {},
-      "activation_eligible": false,
-      "activation_mode": "disabled"
-    },
-    {
-      "id": "mallumv",
-      "status": "no_streams",
-      "action": "unchanged",
-      "enabled": false,
-      "consecutive_hard_failures": 0,
-      "hard_failure_started_at": null,
-      "consecutive_successes": 0,
-      "hosts": [],
-      "response_categories": [],
-      "host_health": {},
-      "activation_eligible": false,
-      "activation_mode": "disabled"
-    },
-    {
-      "id": "vidnest",
-      "status": "no_streams",
-      "action": "unchanged",
-      "enabled": false,
-      "consecutive_hard_failures": 0,
-      "hard_failure_started_at": null,
-      "consecutive_successes": 0,
-      "hosts": [],
-      "response_categories": [],
-      "host_health": {},
-      "activation_eligible": false,
-      "activation_mode": "disabled"
-    },
-    {
-      "id": "vidnest-anime",
-      "status": "no_streams",
-      "action": "unchanged",
-      "enabled": false,
-      "consecutive_hard_failures": 0,
-      "hard_failure_started_at": null,
-      "consecutive_successes": 0,
-      "hosts": [],
-      "response_categories": [],
-      "host_health": {},
-      "activation_eligible": false,
-      "activation_mode": "disabled"
-    },
-    {
-      "id": "xpass",
-      "status": "no_streams",
-      "action": "unchanged",
-      "enabled": false,
-      "consecutive_hard_failures": 0,
-      "hard_failure_started_at": null,
-      "consecutive_successes": 0,
-      "hosts": [],
-      "response_categories": [],
-      "host_health": {},
-      "activation_eligible": false,
-      "activation_mode": "disabled"
-    },
-    {
-      "id": "animezey",
-      "status": "no_streams",
-      "action": "unchanged",
-      "enabled": false,
-      "consecutive_hard_failures": 0,
-      "hard_failure_started_at": null,
-      "consecutive_successes": 0,
-      "hosts": [],
-      "response_categories": [],
-      "host_health": {},
-      "activation_eligible": false,
-      "activation_mode": "disabled"
-    },
-    {
-      "id": "goatapi",
-      "status": "no_streams",
-      "action": "unchanged",
-      "enabled": false,
-      "consecutive_hard_failures": 0,
-      "hard_failure_started_at": null,
-      "consecutive_successes": 0,
-      "hosts": [],
-      "response_categories": [],
-      "host_health": {},
-      "activation_eligible": false,
-      "activation_mode": "disabled"
-    },
-    {
-      "id": "dvdplay",
-      "status": "no_streams",
-      "action": "unchanged",
-      "enabled": false,
-      "consecutive_hard_failures": 0,
-      "hard_failure_started_at": null,
-      "consecutive_successes": 0,
-      "hosts": [],
-      "response_categories": [],
-      "host_health": {
-        "pixeldrain.net": {
-          "last_checked_at": "2026-07-27T04:09:30.765947+00:00",
-          "last_category": "playable",
-          "reachable": true,
-          "http_status": 206,
-          "latency_ms": 375,
-          "kind": "matroska",
-          "consecutive_hard_failures": 0,
-          "consecutive_successes": 3,
-          "consecutive_blocked": 0
-        }
-      },
-      "activation_eligible": false,
-      "activation_mode": "disabled"
+      }
     },
     {
       "id": "kisskh",
-      "status": "no_streams",
+      "status": "not-checked",
       "action": "unchanged",
       "enabled": false,
       "consecutive_hard_failures": 0,
@@ -1978,13 +1471,50 @@
           "consecutive_successes": 2,
           "consecutive_blocked": 0
         }
+      }
+    },
+    {
+      "id": "streamflix",
+      "status": "degraded",
+      "action": "unchanged",
+      "enabled": false,
+      "consecutive_hard_failures": 5,
+      "hard_failure_started_at": "2026-07-26T01:56:20.022657+00:00",
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [
+        "not_found"
+      ],
+      "host_health": {
+        "s3.ap-southeast-1.wasabisys.com": {
+          "last_checked_at": "2026-08-03T12:46:28.312505+00:00",
+          "last_category": "not_found",
+          "reachable": false,
+          "http_status": 404,
+          "latency_ms": 1678,
+          "kind": "direct",
+          "consecutive_hard_failures": 9,
+          "consecutive_successes": 0,
+          "consecutive_blocked": 0
+        },
+        "bb.streamflixserver.site": {
+          "last_checked_at": "2026-07-26T14:12:49.403947+00:00",
+          "last_category": "probe_error",
+          "reachable": false,
+          "http_status": null,
+          "latency_ms": null,
+          "kind": null,
+          "consecutive_hard_failures": 0,
+          "consecutive_successes": 0,
+          "consecutive_blocked": 0
+        }
       },
       "activation_eligible": false,
       "activation_mode": "disabled"
     },
     {
-      "id": "mycima",
-      "status": "no_streams",
+      "id": "ctgmovies",
+      "status": "not-checked",
       "action": "unchanged",
       "enabled": false,
       "consecutive_hard_failures": 0,
@@ -1992,13 +1522,339 @@
       "consecutive_successes": 0,
       "hosts": [],
       "response_categories": [],
-      "host_health": {},
-      "activation_eligible": false,
-      "activation_mode": "disabled"
+      "host_health": {
+        "movie.ctgfun.com": {
+          "last_checked_at": "2026-07-26T07:09:33.481217+00:00",
+          "last_category": "playable",
+          "reachable": true,
+          "http_status": 206,
+          "latency_ms": 1557,
+          "kind": "matroska",
+          "consecutive_hard_failures": 0,
+          "consecutive_successes": 2,
+          "consecutive_blocked": 0
+        }
+      }
+    },
+    {
+      "id": "netmirror",
+      "status": "not-checked",
+      "action": "unchanged",
+      "enabled": false,
+      "consecutive_hard_failures": 0,
+      "hard_failure_started_at": null,
+      "consecutive_successes": 1,
+      "hosts": [
+        "bcdnw.hakunaymatata.com"
+      ],
+      "response_categories": [
+        "playable"
+      ],
+      "host_health": {
+        "bcdnw.hakunaymatata.com": {
+          "last_checked_at": "2026-07-26T07:09:33.481217+00:00",
+          "last_category": "playable",
+          "reachable": true,
+          "http_status": 206,
+          "latency_ms": 672,
+          "kind": "mp4",
+          "consecutive_hard_failures": 0,
+          "consecutive_successes": 1,
+          "consecutive_blocked": 0
+        }
+      }
+    },
+    {
+      "id": "vidrock",
+      "status": "not-checked",
+      "action": "unchanged",
+      "enabled": false,
+      "consecutive_hard_failures": 0,
+      "hard_failure_started_at": null,
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
+      "host_health": {}
+    },
+    {
+      "id": "vixsrc",
+      "status": "not-checked",
+      "action": "unchanged",
+      "enabled": false,
+      "consecutive_hard_failures": 0,
+      "hard_failure_started_at": null,
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
+      "host_health": {
+        "unitv.mom": {
+          "last_checked_at": "2026-07-26T07:09:33.481217+00:00",
+          "last_category": "playable",
+          "reachable": true,
+          "http_status": 200,
+          "latency_ms": 389,
+          "kind": "hls",
+          "consecutive_hard_failures": 0,
+          "consecutive_successes": 2,
+          "consecutive_blocked": 0
+        }
+      }
+    },
+    {
+      "id": "einthusan",
+      "status": "not-checked",
+      "action": "unchanged",
+      "enabled": false,
+      "consecutive_hard_failures": 0,
+      "hard_failure_started_at": null,
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
+      "host_health": {}
+    },
+    {
+      "id": "showbox",
+      "status": "not-checked",
+      "action": "unchanged",
+      "enabled": false,
+      "consecutive_hard_failures": 0,
+      "hard_failure_started_at": null,
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
+      "host_health": {}
+    },
+    {
+      "id": "moviesdrive",
+      "status": "not-checked",
+      "action": "unchanged",
+      "enabled": false,
+      "consecutive_hard_failures": 0,
+      "hard_failure_started_at": null,
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
+      "host_health": {}
+    },
+    {
+      "id": "cinemacity",
+      "status": "not-checked",
+      "action": "unchanged",
+      "enabled": false,
+      "consecutive_hard_failures": 0,
+      "hard_failure_started_at": null,
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
+      "host_health": {}
+    },
+    {
+      "id": "cinemm",
+      "status": "not-checked",
+      "action": "unchanged",
+      "enabled": false,
+      "consecutive_hard_failures": 0,
+      "hard_failure_started_at": null,
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
+      "host_health": {}
+    },
+    {
+      "id": "gramcinema",
+      "status": "not-checked",
+      "action": "unchanged",
+      "enabled": false,
+      "consecutive_hard_failures": 0,
+      "hard_failure_started_at": null,
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
+      "host_health": {}
+    },
+    {
+      "id": "animekai",
+      "status": "not-checked",
+      "action": "unchanged",
+      "enabled": false,
+      "consecutive_hard_failures": 0,
+      "hard_failure_started_at": null,
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
+      "host_health": {}
+    },
+    {
+      "id": "cinefreak",
+      "status": "not-checked",
+      "action": "unchanged",
+      "enabled": false,
+      "consecutive_hard_failures": 0,
+      "hard_failure_started_at": null,
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
+      "host_health": {}
+    },
+    {
+      "id": "mallumv",
+      "status": "not-checked",
+      "action": "unchanged",
+      "enabled": false,
+      "consecutive_hard_failures": 0,
+      "hard_failure_started_at": null,
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
+      "host_health": {}
+    },
+    {
+      "id": "vidnest-anime",
+      "status": "not-checked",
+      "action": "unchanged",
+      "enabled": false,
+      "consecutive_hard_failures": 0,
+      "hard_failure_started_at": null,
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
+      "host_health": {}
+    },
+    {
+      "id": "4khdhubnew",
+      "status": "not-checked",
+      "action": "unchanged",
+      "enabled": false,
+      "consecutive_hard_failures": 0,
+      "hard_failure_started_at": null,
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
+      "host_health": {}
+    },
+    {
+      "id": "allwish",
+      "status": "not-checked",
+      "action": "unchanged",
+      "enabled": false,
+      "consecutive_hard_failures": 0,
+      "hard_failure_started_at": null,
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
+      "host_health": {}
+    },
+    {
+      "id": "animeworld",
+      "status": "not-checked",
+      "action": "unchanged",
+      "enabled": false,
+      "consecutive_hard_failures": 0,
+      "hard_failure_started_at": null,
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
+      "host_health": {}
+    },
+    {
+      "id": "cinevibe",
+      "status": "not-checked",
+      "action": "unchanged",
+      "enabled": false,
+      "consecutive_hard_failures": 0,
+      "hard_failure_started_at": null,
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
+      "host_health": {}
+    },
+    {
+      "id": "fibwatch",
+      "status": "not-checked",
+      "action": "unchanged",
+      "enabled": false,
+      "consecutive_hard_failures": 0,
+      "hard_failure_started_at": null,
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
+      "host_health": {}
+    },
+    {
+      "id": "vidnest",
+      "status": "not-checked",
+      "action": "unchanged",
+      "enabled": false,
+      "consecutive_hard_failures": 0,
+      "hard_failure_started_at": null,
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
+      "host_health": {}
+    },
+    {
+      "id": "xpass",
+      "status": "not-checked",
+      "action": "unchanged",
+      "enabled": false,
+      "consecutive_hard_failures": 0,
+      "hard_failure_started_at": null,
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
+      "host_health": {}
+    },
+    {
+      "id": "goatapi",
+      "status": "not-checked",
+      "action": "unchanged",
+      "enabled": false,
+      "consecutive_hard_failures": 0,
+      "hard_failure_started_at": null,
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
+      "host_health": {}
+    },
+    {
+      "id": "dvdplay",
+      "status": "not-checked",
+      "action": "unchanged",
+      "enabled": false,
+      "consecutive_hard_failures": 0,
+      "hard_failure_started_at": null,
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
+      "host_health": {
+        "pixeldrain.net": {
+          "last_checked_at": "2026-07-27T04:09:30.765947+00:00",
+          "last_category": "playable",
+          "reachable": true,
+          "http_status": 206,
+          "latency_ms": 375,
+          "kind": "matroska",
+          "consecutive_hard_failures": 0,
+          "consecutive_successes": 3,
+          "consecutive_blocked": 0
+        }
+      }
+    },
+    {
+      "id": "mycima",
+      "status": "not-checked",
+      "action": "unchanged",
+      "enabled": false,
+      "consecutive_hard_failures": 0,
+      "hard_failure_started_at": null,
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
+      "host_health": {}
     },
     {
       "id": "onlykdrama",
-      "status": "no_streams",
+      "status": "not-checked",
       "action": "unchanged",
       "enabled": false,
       "consecutive_hard_failures": 0,
@@ -2006,9 +1862,7 @@
       "consecutive_successes": 0,
       "hosts": [],
       "response_categories": [],
-      "host_health": {},
-      "activation_eligible": false,
-      "activation_mode": "disabled"
+      "host_health": {}
     }
   ]
 }
