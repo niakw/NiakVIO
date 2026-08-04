@@ -244,7 +244,7 @@ test_idempotent_override_validation()
 def test_chained_provider_patch_scripts_and_output_guard() -> None:
     source = b'''async function getStreams(){return [{url:"http://fstream.top/bad.m3u8"},{url:"https://media.example/malformed.m3u8"},{url:"https://media.example/good.m3u8"}]};module.exports={getStreams};'''
     output, records = apply_overrides("frenchstream", source)
-    assert b"NUVIO_STREAM_OUTPUT_SANITIZER_V3" in output
+    assert b"NUVIO_STREAM_OUTPUT_SANITIZER_V4" in output
     assert b"NUVIO_VF_CATALOGUE_RECOVERY_V1" in output
     assert any(
         row.get("type") == "patch_script"
@@ -253,7 +253,7 @@ def test_chained_provider_patch_scripts_and_output_guard() -> None:
     )
     second, second_records = apply_overrides("frenchstream", output)
     assert second == output
-    assert b"NUVIO_STREAM_OUTPUT_SANITIZER_V3" in second
+    assert b"NUVIO_STREAM_OUTPUT_SANITIZER_V4" in second
     assert b"NUVIO_VF_CATALOGUE_RECOVERY_V1" in second
     assert not any(
         row.get("path") == "scripts/provider_patches/stream_output_sanitizer.py"
