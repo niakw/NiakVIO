@@ -105,20 +105,12 @@ jobs:
               major, minor, patch = map(int, match.groups())
               return f'{major}.{minor}.{patch + 1}'
 
-          # Derive one new provider version per canonical ID from the main manifest,
-          # then apply that exact version to both manifests so Nuvio invalidates cache.
           main = json.loads(Path('manifest.json').read_text(encoding='utf-8'))
           new_versions = {}
           for provider in main.get('scrapers', []):
               canonical = str(provider.get('id') or '')
               if canonical in filenames:
-                  target_filename = 'providers/' + filenames[canonical]
-                  if str(provider.get('filename') or '') != target_filename:
-                      new_versions[canonical] = bump_patch(provider.get('version'))
-                  else:
-                      # The repaired filename was already published by a previous run,
-                      # but its version was not bumped. Bump it once now.
-                      new_versions[canonical] = bump_patch(provider.get('version'))
+                  new_versions[canonical] = bump_patch(provider.get('version'))
           missing_versions = set(filenames) - set(new_versions)
           if missing_versions:
               raise SystemExit(f'main manifest missing providers: {sorted(missing_versions)}')
@@ -166,6 +158,15 @@ jobs:
           git commit -m "chore: publish validated VF provider repairs"
           git reset --hard HEAD
           git clean -fdx
-          git fetch origin main
-          git rebase origin/main
-          git push origin HEAD:main
+
+          for attempt in 1 2 3 4 5; do
+            git fetch origin main
+            git rebase origin/main
+            if git push origin HEAD:main; then
+              exit 0
+            fi
+            echo "Concurrent main update detected; retrying publication (${attempt}/5)."
+            sleep $((attempt * 2))
+          done
+          echo "Unable to publish after five race-safe attempts." >&2
+          exit 1
