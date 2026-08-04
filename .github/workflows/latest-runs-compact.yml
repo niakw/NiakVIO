@@ -32,7 +32,11 @@ jobs:
 
           with open('/tmp/runs.json', encoding='utf-8') as handle:
               payload = json.load(handle)
-          keys = ('id', 'name', 'display_title', 'status', 'conclusion', 'head_sha', 'created_at', 'updated_at', 'html_url')
+          keys = (
+              'id', 'workflow_id', 'path', 'name', 'display_title', 'event',
+              'status', 'conclusion', 'run_number', 'head_sha', 'created_at',
+              'updated_at', 'html_url',
+          )
           result = {
               'generated_at': datetime.now(timezone.utc).isoformat(),
               'runs': [{key: row.get(key) for key in keys} for row in payload.get('workflow_runs', [])],
