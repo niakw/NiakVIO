@@ -65,7 +65,7 @@ if (__provider && __provider.getStreams) {
         self.getStreams = __provider.getStreams;
     }
 }
-/* NUVIO_STREAM_OUTPUT_SANITIZER_V3:03621e645fce */
+/* NUVIO_STREAM_OUTPUT_SANITIZER_V4:0a571fc4f83c */
 ;(function(g,config){
   "use strict";
   function hostOf(raw){try{return new URL(String(raw)).hostname.toLowerCase()}catch(_e){return ""}}
@@ -77,10 +77,11 @@ if (__provider && __provider.getStreams) {
       if(host===rule||host.endsWith("."+rule))return true;
     }
     try{
-      var path=new URL(String(raw)).pathname.toLowerCase();
+      var parsed=new URL(String(raw)),path=parsed.pathname.toLowerCase();
       for(var j=0;j<config.blockedPathPatterns.length;j++){
         if(path.indexOf(config.blockedPathPatterns[j])>=0)return true;
       }
+      if(/\.(?:js|mjs|css|json|xml|txt|html?|map|woff2?|ttf|otf|ico|jpe?g|png|gif|webp|svg)(?:$|[?#])/i.test(path))return true;
     }catch(_e){}
     return false;
   }
@@ -88,6 +89,15 @@ if (__provider && __provider.getStreams) {
   function isDirect(stream,url){
     var hint=String((stream&&(stream.type||stream.format||stream.mimeType||stream.contentType))||"").toLowerCase();
     return /(?:\.m3u8|\.mp4|\.mkv|\.webm|\.mpd)(?:[?#]|$)/i.test(url)||/(?:hls|mpegurl|dash|mp4|video\/)/.test(hint);
+  }
+  function rank(stream,url){
+    if(isDirect(stream,url))return 0;
+    try{
+      var path=new URL(String(url)).pathname.toLowerCase();
+      if(/\/(?:embed|e|player|watch)(?:[-/]|$)/i.test(path))return 1;
+    }catch(_e){}
+    if(stream&&stream.headers&&typeof stream.headers==="object"&&Object.keys(stream.headers).length)return 2;
+    return 3;
   }
   function headersFor(stream){
     var output={"Accept":"application/vnd.apple.mpegurl,application/x-mpegURL,video/*,*/*;q=0.8","Range":"bytes=0-4095"};
@@ -151,7 +161,11 @@ if (__provider && __provider.getStreams) {
         var stream=result[i],url=urlOf(stream);
         if(!url||blocked(url)||seen[url])continue;
         seen[url]=true;
-        candidates.push({stream:stream,url:url,probe:(config.probeAllUrls||(config.probeDirectMedia&&isDirect(stream,url)))&&probeCount++<config.maxProbes});
+        candidates.push({stream:stream,url:url,rank:rank(stream,url),index:i});
+      }
+      candidates.sort(function(a,b){return a.rank-b.rank||a.index-b.index});
+      for(var c=0;c<candidates.length;c++){
+        candidates[c].probe=(config.probeAllUrls||(config.probeDirectMedia&&isDirect(candidates[c].stream,candidates[c].url)))&&probeCount++<config.maxProbes;
       }
       var checked=await Promise.all(candidates.map(async function(item){
         if(!item.probe)return item.stream;
@@ -170,4 +184,4 @@ if (__provider && __provider.getStreams) {
     if(installed&&typeof module!=="undefined"&&module.exports&&module.exports.getStreams)g.getStreams=module.exports.getStreams;
     else install(g,"getStreams");
   }}catch(_e){}
-})(typeof globalThis!=="undefined"?globalThis:this,{"blockedHosts":["fstream.top"],"probeDirectMedia":false,"probeAllUrls":false,"maxProbes":0,"timeoutMs":4500,"minVodDurationSeconds":60,"blockedPathPatterns":["/troll/"]});
+})(typeof globalThis!=="undefined"?globalThis:this,{"blockedHosts":["analytics.google.com","api.themoviedb.org","arm.haglund.dev","cloudflareinsights.com","connect.facebook.net","doubleclick.net","fstream.top","google-analytics.com","googlesyndication.com","googletagmanager.com","graphql.anilist.co","kitsu.io","lodash.com","npms.io","openjsf.org","pagead2.googlesyndication.com","static.cloudflareinsights.com","underscorejs.org","v3-cinemeta.strem.io"],"probeDirectMedia":false,"probeAllUrls":false,"maxProbes":0,"timeoutMs":4500,"minVodDurationSeconds":60,"blockedPathPatterns":["/analytics","/beacon.min.js","/cdn-cgi/rum","/collect","/gtag/js","/troll/"]});
