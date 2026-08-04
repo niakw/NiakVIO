@@ -4,6 +4,7 @@ from __future__ import annotations
 import json
 import pathlib
 import subprocess
+import sys
 import tempfile
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
@@ -44,7 +45,7 @@ with tempfile.TemporaryDirectory() as td:
     )
     local_script = root / 'finalize.py'
     local_script.write_text(script, encoding='utf-8')
-    subprocess.run(['python', str(local_script), '--before-manifest', str(before_path)], check=True)
+    subprocess.run([sys.executable, str(local_script), '--before-manifest', str(before_path)], check=True)
 
     finalized = json.loads((root / 'manifest.json').read_text())
     entries = {row['id']: row for row in finalized['scrapers']}
