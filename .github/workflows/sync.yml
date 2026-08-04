@@ -27,7 +27,7 @@ permissions:
 
 concurrency:
   group: nuvio-provider-publish
-  cancel-in-progress: false
+  cancel-in-progress: ${{ github.event_name == 'push' }}
 
 jobs:
   stage-and-test:
@@ -88,6 +88,7 @@ jobs:
           python -m py_compile scripts/provider_patches/adaptive_runtime_recovery.py
           python -m py_compile scripts/provider_patches/stream_output_sanitizer.py
           python -m py_compile scripts/run_adaptive_deep_repair.py
+          python tests/adaptive_runtime_repair_test.py
 
       # Phase 0: repository safety. This does not decide provider activation.
       - name: Run repository regression tests
