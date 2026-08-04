@@ -20,7 +20,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Collect recent workflow runs
+      - name: Collect recent workflow runs and stale marker references
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -29,6 +29,7 @@ jobs:
           python - <<'PY'
           import json
           from datetime import datetime, timezone
+          from pathlib import Path
 
           with open('/tmp/runs.json', encoding='utf-8') as handle:
               payload = json.load(handle)
@@ -39,9 +40,28 @@ jobs:
               'created_at', 'updated_at', 'html_url', 'jobs_url', 'artifacts_url'
           )
           runs = [{key: row.get(key) for key in keys} for row in payload.get('workflow_runs', [])]
+
+          needle = 'NUVIO_STREAM_OUTPUT_SANITIZER_' + 'V3'
+          references = []
+          for path in sorted(Path('.').rglob('*')):
+              if not path.is_file() or '.git' in path.parts:
+                  continue
+              try:
+                  text = path.read_text(encoding='utf-8')
+              except (UnicodeDecodeError, OSError):
+                  continue
+              for line_number, line in enumerate(text.splitlines(), 1):
+                  if needle in line:
+                      references.append({
+                          'path': path.as_posix(),
+                          'line': line_number,
+                          'text': line.strip(),
+                      })
+
           result = {
               'generated_at': datetime.now(timezone.utc).isoformat(),
               'repository': '${{ github.repository }}',
+              'stale_sanitizer_v3_references': references,
               'runs': runs,
           }
           with open('automation/action-runs.json', 'w', encoding='utf-8') as handle:
