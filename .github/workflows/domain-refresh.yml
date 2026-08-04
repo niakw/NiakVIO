@@ -76,6 +76,7 @@ jobs:
           python scripts/finalize_domain_refresh.py \
             --before-manifest "$RUNNER_TEMP/manifest.before.json" \
             --report health-output/domain-refresh-finalize.json
+          python scripts/enforce_provider_priority.py
           python scripts/prune_unreferenced_providers.py
 
       - name: Run focused non-network publication gates
@@ -83,8 +84,12 @@ jobs:
           python tests/provider_hub_registry_test.py
           python tests/provider_specific_adapters_test.py
           python tests/upstream_lkg_test.py
-          python scripts/validate_override_pipeline.py
+          python scripts/stage_published.py --stage staging
+          test -s staging/candidates.json
+          python scripts/validate_override_pipeline.py --stage staging
           python scripts/validate_published_overrides.py
+          python tests/domain_refresh_workflow_test.py
+          python tests/provider_priority_test.py
           node tests/patched_provider_runtime_smoke.test.cjs
           python scripts/generate_release_hashes.py
           python scripts/validate_release_integrity.py
