@@ -1,4 +1,4 @@
-name: Repair targeted VF providers
+name: Repair VF providers with general engine
 
 on:
   workflow_dispatch:
@@ -14,7 +14,7 @@ permissions:
 jobs:
   repair:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 60
     steps:
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -38,16 +38,16 @@ jobs:
             npm install --ignore-scripts --no-audit --no-fund --package-lock=false
           fi
 
-      - name: Run targeted VF repair
+      - name: Run provider-agnostic repair for VF manifest scope
         env:
-          NUVIO_WORKER_MEMORY_MB: "512"
-        run: python scripts/local/test_targeted_vf_repair.py
+          NUVIO_WORKER_MEMORY_MB: "1024"
+        run: python scripts/local/test_global_provider_repair.py --scope vf
 
       - name: Upload repair evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: targeted-vf-repair
-          path: local-output/targeted-vf-repair
+          name: general-vf-provider-repair
+          path: local-output/global-provider-repair
           if-no-files-found: error
           retention-days: 7
