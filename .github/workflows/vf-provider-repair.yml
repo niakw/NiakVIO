@@ -1,4 +1,4 @@
-name: Repair VF providers with general engine
+name: Validate VF provider health
 
 on:
   workflow_dispatch:
@@ -38,12 +38,19 @@ jobs:
             npm install --ignore-scripts --no-audit --no-fund --package-lock=false
           fi
 
-      - name: Run provider-agnostic repair for VF manifest scope
+      - name: Validate Python modules
+        run: |
+          python -m py_compile scripts/adaptive_runtime/runtime_repair.py
+          python -m py_compile scripts/provider_patches/adaptive_runtime_recovery.py
+          python -m py_compile scripts/provider_patches/stream_output_sanitizer.py
+
+      - name: Run provider health validation
         env:
           NUVIO_WORKER_MEMORY_MB: "1024"
+          PYTHONPATH: "${{ github.workspace }}/scripts/adaptive_runtime:${{ github.workspace }}/scripts"
         run: python scripts/local/test_global_provider_repair.py --scope vf
 
-      - name: Upload repair evidence
+      - name: Upload validation report
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
