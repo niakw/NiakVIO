@@ -79,6 +79,11 @@ jobs:
             exit 0
           fi
           git commit -m "test: migrate sanitizer marker assertions to v4"
+          # npm test regenerates release/report files. They were validated but
+          # are not part of this narrowly scoped test migration, so discard
+          # only the uncommitted outputs before rebasing the committed change.
+          git reset --hard HEAD
+          git clean -fd
           git fetch origin main
           git rebase origin/main
           git push origin HEAD:main
