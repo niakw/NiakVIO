@@ -43,12 +43,13 @@ jobs:
           python -m py_compile scripts/adaptive_runtime/runtime_repair.py
           python -m py_compile scripts/provider_patches/adaptive_runtime_recovery.py
           python -m py_compile scripts/provider_patches/stream_output_sanitizer.py
+          python -m py_compile scripts/run_adaptive_deep_repair.py
+          python -m py_compile scripts/local/test_adaptive_global_provider_repair.py
 
       - name: Run provider health validation
         env:
           NUVIO_WORKER_MEMORY_MB: "1024"
-          PYTHONPATH: "${{ github.workspace }}/scripts/adaptive_runtime:${{ github.workspace }}/scripts"
-        run: python scripts/local/test_global_provider_repair.py --scope vf
+        run: python scripts/local/test_adaptive_global_provider_repair.py --scope vf
 
       - name: Upload validation report
         if: always()
