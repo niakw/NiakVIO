@@ -1,0 +1,146 @@
+name: Promote validated VF repairs
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/triggers/promote-vf-repairs"
+
+permissions:
+  actions: read
+  contents: write
+
+concurrency:
+  group: nuvio-provider-publish
+  cancel-in-progress: false
+
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout current repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: "3.12"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: "24"
+          package-manager-cache: false
+
+      - name: Install pinned dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Download validated repair artifact
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: general-vf-provider-repair
+          path: checked-artifact
+          repository: niakw/Niakvio
+          run-id: 30950039181
+          github-token: ${{ github.token }}
+
+      - name: Promote strictly accepted canonical repairs
+        run: |
+          python - <<'PY'
+          import json
+          import shutil
+          from pathlib import Path
+
+          artifact = Path('checked-artifact')
+          report = json.loads((artifact / 'health-output/repair-report.json').read_text(encoding='utf-8'))
+          candidates_payload = json.loads((artifact / 'staging/candidates.json').read_text(encoding='utf-8'))
+          candidates = candidates_payload if isinstance(candidates_payload, list) else candidates_payload.get('candidates', [])
+          by_key = {str(row.get('key')): row for row in candidates}
+
+          accepted = []
+          for round_data in report.get('rounds', []):
+              accepted.extend(round_data.get('accepted', []))
+          if not accepted:
+              raise SystemExit('validated artifact contains no accepted repair')
+
+          # One final repair per canonical provider. Prefer the published-baseline
+          # candidate when it was independently accepted; otherwise use upstream.
+          selected = {}
+          for row in accepted:
+              parent_key = str(row.get('parent_key') or '')
+              candidate = by_key.get(parent_key)
+              if not candidate:
+                  raise SystemExit(f'missing accepted candidate: {parent_key}')
+              canonical = str(candidate.get('canonical_id') or '').strip()
+              if not canonical:
+                  raise SystemExit(f'missing canonical id: {parent_key}')
+              priority = 2 if parent_key.startswith('published:') else 1
+              current = selected.get(canonical)
+              if current is None or priority > current[0]:
+                  selected[canonical] = (priority, candidate, row)
+
+          expected = {'french-manga', 'voiranime-rip', 'wookafr'}
+          if set(selected) != expected:
+              raise SystemExit(f'unexpected accepted canonical set: {sorted(selected)}')
+
+          filenames = {}
+          for canonical, (_, candidate, accepted_row) in sorted(selected.items()):
+              source = artifact / 'staging' / str(candidate['local_path'])
+              if not source.is_file():
+                  raise SystemExit(f'missing validated repair file: {source}')
+              sha = str(accepted_row['sha256'])
+              target_name = f'{canonical}--adaptive-repair--{sha[:16]}.js'
+              target = Path('providers') / target_name
+              target.parent.mkdir(parents=True, exist_ok=True)
+              shutil.copyfile(source, target)
+              filenames[canonical] = target_name
+
+          for manifest_path, prefix in ((Path('manifest.json'), 'providers/'), (Path('vf/manifest.json'), '../providers/')):
+              manifest = json.loads(manifest_path.read_text(encoding='utf-8'))
+              found = set()
+              for provider in manifest.get('scrapers', []):
+                  canonical = str(provider.get('id') or '')
+                  if canonical in filenames:
+                      provider['filename'] = prefix + filenames[canonical]
+                      provider['enabled'] = True
+                      found.add(canonical)
+              missing = set(filenames) - found
+              if missing:
+                  raise SystemExit(f'{manifest_path}: providers missing from manifest: {sorted(missing)}')
+              manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+
+          shutil.copyfile(artifact / 'health-output/repair-report.json', 'repair-report.json')
+          print('promoted:', ', '.join(sorted(filenames)))
+          PY
+
+      - name: Regenerate release metadata and validate
+        run: |
+          PREVIOUS_MANIFEST="$(mktemp)"
+          git show HEAD:manifest.json > "$PREVIOUS_MANIFEST"
+          python scripts/bump_release_patch_if_manifest_changed.py --previous "$PREVIOUS_MANIFEST" --manifest manifest.json
+          python scripts/sync_release_versions.py --manifest manifest.json
+          python scripts/generate_release_hashes.py
+          python scripts/validate_release_integrity.py
+          node scripts/validate_provider_semantics.cjs
+
+      - name: Publish validated repairs
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A providers manifest.json vf/manifest.json package.json sources.json FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json repair-report.json
+          if git diff --cached --quiet; then
+            echo "Validated repairs are already published."
+            exit 0
+          fi
+          git commit -m "chore: publish validated VF provider repairs"
+          git reset --hard HEAD
+          git clean -fdx
+          git fetch origin main
+          git rebase origin/main
+          git push origin HEAD:main
