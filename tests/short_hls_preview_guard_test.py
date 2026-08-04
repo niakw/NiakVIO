@@ -19,7 +19,7 @@ patched=mod.apply(base,options={
     'min_vod_duration_seconds':60,
     'max_probes':6,
 })
-assert 'NUVIO_STREAM_OUTPUT_SANITIZER_V3' in patched
+assert 'NUVIO_STREAM_OUTPUT_SANITIZER_V4' in patched
 
 runner=r'''
 const vm=require('vm');
