@@ -119,13 +119,21 @@ jobs:
       - name: Publish changed availability reports
         shell: bash
         run: |
+          set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
           git add availability-report.json availability-history.json
           if ! git diff --cached --quiet; then
             git commit -m "chore: retry unavailable Nuvio providers"
+            test -f manifest.next.json
+            cp manifest.next.json "$RUNNER_TEMP/manifest.next.json"
+            git reset --hard HEAD
+            git clean -fdx
+            git fetch origin main
+            git rebase origin/main
             git push origin HEAD:main
+            cp "$RUNNER_TEMP/manifest.next.json" manifest.next.json
           else
             echo "Targeted availability state is unchanged."
           fi
@@ -133,6 +141,7 @@ jobs:
       - name: Publish availability toggles without bypassing publication eligibility
         shell: bash
         run: |
+          set -euo pipefail
           test -f manifest.next.json
           mv manifest.next.json manifest.json
           python scripts/generate_language_manifests.py
@@ -144,4 +153,8 @@ jobs:
           fi
 
           git commit -m "chore: apply targeted availability state"
+          git reset --hard HEAD
+          git clean -fdx
+          git fetch origin main
+          git rebase origin/main
           git push origin HEAD:main
