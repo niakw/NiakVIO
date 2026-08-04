@@ -9,7 +9,6 @@ EXPECTED = {
     'anime-ultime': '667e5fba43cdd8840b4625ce13ae71cd2d4bdea3d668297a5a845c21b0e0399f',
     'dulourd': 'e62064b45a10a505612be560f20cbd39ad34be7fa69c4fcafe51d9714f72aa05',
     'waveanime': '1a87a44dbbfb3bc6e7757c401eb0730e994f8661a8cc3b77741c3b36ba522c90',
-    'wookafr': 'ccd4f619dc1f34dd834b497fd643a8c5cf28888c268a4f6f9e1cceb5789135b1',
 }
 ALLOWED_SOURCES = {'gowaru', 'published-baseline'}
 OLD = {
@@ -40,6 +39,20 @@ for provider_id, digest in EXPECTED.items():
     assert row['published_filename'] == relative
     assert row['sha256'] == digest
     assert not any(item.get('profile') == 'metadata_context_recovery' for item in row.get('local_patches', []) if isinstance(item, dict))
+
+# Wookafr was manually validated in Nuvio on Interstellar and is intentionally
+# kept on its accepted adaptive bundle. Its filename must still be content
+# addressed and its provenance must match the bytes actually published.
+wookafr_relative = entries['wookafr']['filename']
+wookafr_target = ROOT / wookafr_relative
+assert wookafr_target.is_file(), wookafr_relative
+wookafr_digest = hashlib.sha256(wookafr_target.read_bytes()).hexdigest()
+assert wookafr_target.name == f'wookafr--adaptive-repair--{wookafr_digest[:16]}.js'
+assert MARKER not in wookafr_target.read_text(encoding='utf-8', errors='strict')
+assert entries['wookafr']['enabled'] is True
+assert provenance['wookafr']['published_filename'] == wookafr_relative
+assert provenance['wookafr']['sha256'] == wookafr_digest
+
 for relative in OLD:
     assert not (ROOT / relative).exists(), relative
 print('deep repair rollback test passed')
