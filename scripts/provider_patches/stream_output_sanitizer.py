@@ -2,9 +2,9 @@
 """Append a bounded, standards-based stream output validator.
 
 The wrapper does not attempt to hide automation or bypass access controls. It
-only rejects known wrong hosts, duplicate URLs, network failures, HTML error
-pages returned as media, and malformed HLS manifests before the player sees
-those entries.
+only rejects known wrong hosts, telemetry/assets, duplicate URLs, network
+failures, HTML error pages returned as media, and malformed HLS manifests
+before the player sees those entries.
 """
 from __future__ import annotations
 
@@ -12,18 +12,53 @@ import hashlib
 import json
 from typing import Any
 
-MARKER_PREFIX = "NUVIO_STREAM_OUTPUT_SANITIZER_V3"
+MARKER_PREFIX = "NUVIO_STREAM_OUTPUT_SANITIZER_V4"
+
+DEFAULT_BLOCKED_HOSTS = {
+    "googletagmanager.com",
+    "google-analytics.com",
+    "analytics.google.com",
+    "static.cloudflareinsights.com",
+    "cloudflareinsights.com",
+    "connect.facebook.net",
+    "doubleclick.net",
+    "googlesyndication.com",
+    "pagead2.googlesyndication.com",
+    "api.themoviedb.org",
+    "graphql.anilist.co",
+    "kitsu.io",
+    "arm.haglund.dev",
+    "v3-cinemeta.strem.io",
+    "npms.io",
+    "lodash.com",
+    "openjsf.org",
+    "underscorejs.org",
+}
+
+DEFAULT_BLOCKED_PATHS = {
+    "/gtag/js",
+    "/analytics",
+    "/collect",
+    "/cdn-cgi/rum",
+    "/beacon.min.js",
+}
 
 
 def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> str:
     options = dict(options or {})
-    blocked_hosts = sorted({str(v).lower().strip().lstrip(".") for v in options.get("blocked_hosts", []) if str(v).strip()})
+    blocked_hosts = sorted(
+        DEFAULT_BLOCKED_HOSTS
+        | {str(v).lower().strip().lstrip(".") for v in options.get("blocked_hosts", []) if str(v).strip()}
+    )
     probe_direct = bool(options.get("probe_direct_media", False))
     probe_all = bool(options.get("probe_all_urls", False))
     max_probes = max(0, min(int(options.get("max_probes", 6)), 20))
     timeout_ms = max(1000, min(int(options.get("probe_timeout_ms", 4500)), 12000))
     min_vod_duration = max(0, min(int(options.get("min_vod_duration_seconds", 60)), 1800))
-    blocked_paths = sorted({str(v).strip().lower() for v in options.get("blocked_path_patterns", []) if str(v).strip()})
+    blocked_paths = sorted(
+        DEFAULT_BLOCKED_PATHS
+        | {str(v).strip().lower() for v in options.get("blocked_path_patterns", []) if str(v).strip()}
+    )
     payload = json.dumps(
         {
             "blockedHosts": blocked_hosts,
@@ -39,9 +74,6 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
     marker = f"{MARKER_PREFIX}:{hashlib.sha256(payload.encode('utf-8')).hexdigest()[:12]}"
     if marker in text:
         return text
-    # Replace only the previous sanitizer wrapper.  Other wrappers may have
-    # been appended after it, so truncating from the marker to EOF would
-    # silently delete them during an idempotent reapply.
     legacy_index = text.find("/* NUVIO_STREAM_OUTPUT_SANITIZER_")
     if legacy_index >= 0:
         call = text.find('})(typeof globalThis!=="undefined"?globalThis:this,', legacy_index)
@@ -62,10 +94,11 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
       if(host===rule||host.endsWith("."+rule))return true;
     }
     try{
-      var path=new URL(String(raw)).pathname.toLowerCase();
+      var parsed=new URL(String(raw)),path=parsed.pathname.toLowerCase();
       for(var j=0;j<config.blockedPathPatterns.length;j++){
         if(path.indexOf(config.blockedPathPatterns[j])>=0)return true;
       }
+      if(/\.(?:js|mjs|css|json|xml|txt|html?|map|woff2?|ttf|otf|ico|jpe?g|png|gif|webp|svg)(?:$|[?#])/i.test(path))return true;
     }catch(_e){}
     return false;
   }
@@ -73,6 +106,15 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
   function isDirect(stream,url){
     var hint=String((stream&&(stream.type||stream.format||stream.mimeType||stream.contentType))||"").toLowerCase();
     return /(?:\.m3u8|\.mp4|\.mkv|\.webm|\.mpd)(?:[?#]|$)/i.test(url)||/(?:hls|mpegurl|dash|mp4|video\/)/.test(hint);
+  }
+  function rank(stream,url){
+    if(isDirect(stream,url))return 0;
+    try{
+      var path=new URL(String(url)).pathname.toLowerCase();
+      if(/\/(?:embed|e|player|watch)(?:[-/]|$)/i.test(path))return 1;
+    }catch(_e){}
+    if(stream&&stream.headers&&typeof stream.headers==="object"&&Object.keys(stream.headers).length)return 2;
+    return 3;
   }
   function headersFor(stream){
     var output={"Accept":"application/vnd.apple.mpegurl,application/x-mpegURL,video/*,*/*;q=0.8","Range":"bytes=0-4095"};
@@ -136,7 +178,11 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
         var stream=result[i],url=urlOf(stream);
         if(!url||blocked(url)||seen[url])continue;
         seen[url]=true;
-        candidates.push({stream:stream,url:url,probe:(config.probeAllUrls||(config.probeDirectMedia&&isDirect(stream,url)))&&probeCount++<config.maxProbes});
+        candidates.push({stream:stream,url:url,rank:rank(stream,url),index:i});
+      }
+      candidates.sort(function(a,b){return a.rank-b.rank||a.index-b.index});
+      for(var c=0;c<candidates.length;c++){
+        candidates[c].probe=(config.probeAllUrls||(config.probeDirectMedia&&isDirect(candidates[c].stream,candidates[c].url)))&&probeCount++<config.maxProbes;
       }
       var checked=await Promise.all(candidates.map(async function(item){
         if(!item.probe)return item.stream;
