@@ -38,13 +38,14 @@ jobs:
             npm install --ignore-scripts --no-audit --no-fund --package-lock=false
           fi
 
-      - name: Validate Python modules
+      - name: Validate adaptive recovery modules
         run: |
           python -m py_compile scripts/adaptive_runtime/runtime_repair.py
           python -m py_compile scripts/provider_patches/adaptive_runtime_recovery.py
           python -m py_compile scripts/provider_patches/stream_output_sanitizer.py
           python -m py_compile scripts/run_adaptive_deep_repair.py
           python -m py_compile scripts/local/test_adaptive_global_provider_repair.py
+          python tests/adaptive_runtime_repair_test.py
 
       - name: Run provider health validation
         env:
