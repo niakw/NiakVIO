@@ -8,7 +8,6 @@
 [![Type](https://img.shields.io/badge/type-plugin%20Nuvio-1f6feb?style=for-the-badge)](#installation)
 [![Node](https://img.shields.io/badge/Node.js-%E2%89%A524-339933?style=for-the-badge&logo=node.js&logoColor=white)](package.json)
 [![Licence](https://img.shields.io/badge/licence-GPL--3.0-blue?style=for-the-badge)](LICENSE)
-[![Deep check](https://github.com/niakw/Niakvio/actions/workflows/sync.yml/badge.svg)](https://github.com/niakw/Niakvio/actions/workflows/sync.yml)
 
 </div>
 
