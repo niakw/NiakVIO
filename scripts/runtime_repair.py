@@ -355,6 +355,16 @@ def quality_vector(result: dict[str, Any]) -> tuple[int, ...]:
     )
 
 
+def _fixture_categories(result: dict[str, Any], key: str) -> set[str]:
+    evidence = result.get("evidence") or {}
+    return {
+        str(value).casefold()
+        for value in evidence.get(key) or []
+        if str(value).strip()
+    }
+
+
+
 def compare_results(parent: dict[str, Any], repaired: dict[str, Any]) -> tuple[bool, str]:
     repaired_status = str(repaired.get("status") or "runtime_error")
     if repaired_status in HARD_FAILURES:
@@ -363,6 +373,12 @@ def compare_results(parent: dict[str, Any], repaired: dict[str, Any]) -> tuple[b
         return False, "introduced_runtime_error"
     if malformed_request_count(repaired) > malformed_request_count(parent):
         return False, "introduced_malformed_request"
+
+    required_categories = _fixture_categories(repaired, "required_fixture_categories")
+    healthy_categories = _fixture_categories(repaired, "healthy_fixture_categories")
+    if required_categories and not required_categories.issubset(healthy_categories):
+        missing = sorted(required_categories - healthy_categories)
+        return False, "required_category_playable_proof:" + ",".join(missing)
 
     parent_playable = playable_stream_count(parent)
     repaired_playable = playable_stream_count(repaired)

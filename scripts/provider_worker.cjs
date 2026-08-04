@@ -400,6 +400,23 @@ function sanitizeHeaders(headers) {
   );
 }
 
+
+// NUVIO_NON_MEDIA_ASSET_GUARD_V1
+// A technically valid media payload is not sufficient when it is a social,
+// store or decorative asset unrelated to the requested title.
+function isNonMediaAssetHost(host) {
+  const value = String(host || '').toLowerCase();
+  const exact = new Set([
+    'play-games.googleusercontent.com',
+    'play-lh.googleusercontent.com',
+    'video.twimg.com',
+    'pbs.twimg.com',
+  ]);
+  return exact.has(value)
+    || value.endsWith('.twimg.com')
+    || (value.endsWith('.googleusercontent.com') && /^(play-games|play-lh)\./.test(value));
+}
+
 function sanitizeStream(stream) {
   if (!stream || typeof stream !== 'object') return { stream: null, disallowed: null };
   const disallowed = p2pReason(stream);
@@ -407,6 +424,9 @@ function sanitizeStream(stream) {
 
   const url = typeof stream.url === 'string' ? stream.url.trim() : '';
   if (!url) return { stream: null, disallowed: null };
+  let streamHost = '';
+  try { streamHost = new URL(url).hostname.toLowerCase(); } catch { return { stream: null, disallowed: 'invalid_stream_url' }; }
+  if (isNonMediaAssetHost(streamHost)) return { stream: null, disallowed: 'non_media_asset_host' };
   return {
     disallowed: null,
     stream: {

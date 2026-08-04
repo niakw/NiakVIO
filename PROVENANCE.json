@@ -5696,14 +5696,19 @@
     },
     "coflix": {
       "id": "coflix",
-      "published_filename": "providers/coflix--nuvio--032d11ff5018415c.js",
-      "sha256": "032d11ff5018415c81a2c195cc69de7c6462ce292b57fb283ed89f8b5c995e85",
-      "patched_sha256": "032d11ff5018415c81a2c195cc69de7c6462ce292b57fb283ed89f8b5c995e85",
+      "published_filename": "providers/coflix--repatched--b40a0db6647575eb.js",
+      "sha256": "b40a0db6647575eb828121da5a44681b60a11d55db6840f7ab7f782817b9dbdc",
+      "patched_sha256": "b40a0db6647575eb828121da5a44681b60a11d55db6840f7ab7f782817b9dbdc",
       "upstream_sha256": "0ade0a55c45fc407eb1ef287e3506b262113266deff80bdc868bfa3b0fd4f135",
       "local_patches": [
         {
           "type": "patch_script",
           "path": "scripts/provider_patches/vf_catalogue_recovery.py",
+          "phase": "discovery"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/stream_output_sanitizer.py",
           "phase": "discovery"
         }
       ],
@@ -7891,11 +7896,17 @@
     },
     "frenchstream": {
       "id": "frenchstream",
-      "published_filename": "providers/frenchstream--nuvio--614b1a8d7a6d2090.js",
-      "sha256": "614b1a8d7a6d2090cdb1bcf8acf7398d31f3823a824484af84008e6dad896601",
-      "patched_sha256": "614b1a8d7a6d2090cdb1bcf8acf7398d31f3823a824484af84008e6dad896601",
+      "published_filename": "providers/frenchstream--repatched--0347b5b7d096c49b.js",
+      "sha256": "0347b5b7d096c49bc93957f26fbd0f7946eb6e170e1c01952069db3a1c321906",
+      "patched_sha256": "0347b5b7d096c49bc93957f26fbd0f7946eb6e170e1c01952069db3a1c321906",
       "upstream_sha256": "6e811019fee20e349d860784960e9f75722e26c1c890ce044e0dce834c0df498",
-      "local_patches": [],
+      "local_patches": [
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/stream_output_sanitizer.py",
+          "phase": "discovery"
+        }
+      ],
       "source": "published-baseline",
       "source_name": "Last published local artifact",
       "source_repository": "Nuvio Curated Providers",
@@ -11580,11 +11591,17 @@
     },
     "movix": {
       "id": "movix",
-      "published_filename": "providers/movix--nuvio--9c4ec5bcafb683c1.js",
-      "sha256": "9c4ec5bcafb683c12f548cb280a4c39e0acc668b827e9c4e359ef8a8ad52533c",
-      "patched_sha256": "9c4ec5bcafb683c12f548cb280a4c39e0acc668b827e9c4e359ef8a8ad52533c",
+      "published_filename": "providers/movix--repatched--7d1c8f018bd75cb8.js",
+      "sha256": "7d1c8f018bd75cb8d603cbd3c346667c8dba2a5b580126288b69f98b4290d6c7",
+      "patched_sha256": "7d1c8f018bd75cb8d603cbd3c346667c8dba2a5b580126288b69f98b4290d6c7",
       "upstream_sha256": "ba842c1f58b1db77b0b37a5550f92b177a57baa60b63cf55153b9f14f0a886c0",
-      "local_patches": [],
+      "local_patches": [
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/stream_output_sanitizer.py",
+          "phase": "discovery"
+        }
+      ],
       "source": "published-baseline",
       "source_name": "Last published local artifact",
       "source_repository": "Nuvio Curated Providers",
@@ -14627,11 +14644,17 @@
     },
     "streamzo": {
       "id": "streamzo",
-      "published_filename": "providers/streamzo--nuvio--191aaab2bb2ba5c4.js",
-      "sha256": "191aaab2bb2ba5c4a012cc9140cf487fbdd6eb67d9f328c3f703f5d530f806d6",
-      "patched_sha256": "191aaab2bb2ba5c4a012cc9140cf487fbdd6eb67d9f328c3f703f5d530f806d6",
+      "published_filename": "providers/streamzo--repatched--5d0ce1559e80f626.js",
+      "sha256": "5d0ce1559e80f62632e302db1de6b7b58075aeec88a0b5ffccbab48dc206b5d6",
+      "patched_sha256": "5d0ce1559e80f62632e302db1de6b7b58075aeec88a0b5ffccbab48dc206b5d6",
       "upstream_sha256": "cd90158022279da1aa3443c8631278fc02e2e1d83e28b77548518ac420115dad",
-      "local_patches": [],
+      "local_patches": [
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/stream_output_sanitizer.py",
+          "phase": "discovery"
+        }
+      ],
       "source": "published-baseline",
       "source_name": "Last published local artifact",
       "source_repository": "Nuvio Curated Providers",
@@ -18572,9 +18595,9 @@
     },
     "wookafr": {
       "id": "wookafr",
-      "published_filename": "providers/wookafr--published-baseline--ccd4f619dc1f34dd.js",
-      "sha256": "ccd4f619dc1f34dd834b497fd643a8c5cf28888c268a4f6f9e1cceb5789135b1",
-      "patched_sha256": "ccd4f619dc1f34dd834b497fd643a8c5cf28888c268a4f6f9e1cceb5789135b1",
+      "published_filename": "providers/wookafr--adaptive-repair--ddeb68905ae4aaaa.js",
+      "sha256": "ddeb68905ae4aaaa921f7f989215ec2a4126359a7caddc70e8fe075db7a02bd3",
+      "patched_sha256": "ddeb68905ae4aaaa921f7f989215ec2a4126359a7caddc70e8fe075db7a02bd3",
       "upstream_sha256": "ccd4f619dc1f34dd834b497fd643a8c5cf28888c268a4f6f9e1cceb5789135b1",
       "local_patches": [],
       "source": "published-baseline",

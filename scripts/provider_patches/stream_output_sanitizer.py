@@ -68,6 +68,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
             "timeoutMs": timeout_ms,
             "minVodDurationSeconds": min_vod_duration,
             "blockedPathPatterns": blocked_paths,
+            "implementationVersion": 5,
         },
         separators=(",", ":"),
     )
@@ -98,7 +99,12 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
       for(var j=0;j<config.blockedPathPatterns.length;j++){
         if(path.indexOf(config.blockedPathPatterns[j])>=0)return true;
       }
-      if(/\.(?:js|mjs|css|json|xml|txt|html?|map|woff2?|ttf|otf|ico|jpe?g|png|gif|webp|svg)(?:$|[?#])/i.test(path))return true;
+      // NUVIO_EMBED_HTML_ALLOWLIST_V1
+      // External-player pages often legitimately end in .html. Preserve them
+      // only when their path has an explicit player/embed/watch role.
+      var embedLike=/\/(?:embed|e|player|watch)(?:[-/]|$)/i.test(path);
+      if(/\.(?:js|mjs|css|json|xml|txt|map|woff2?|ttf|otf|ico|jpe?g|png|gif|webp|svg)(?:$|[?#])/i.test(path))return true;
+      if(/\.html?(?:$|[?#])/i.test(path)&&!embedLike)return true;
     }catch(_e){}
     return false;
   }
