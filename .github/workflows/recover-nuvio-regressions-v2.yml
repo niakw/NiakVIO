@@ -42,12 +42,14 @@ jobs:
         run: |
           cp manifest.json "$RUNNER_TEMP/manifest.before.json"
           python scripts/recover_nuvio_regressions.py
+          python scripts/finalize_nuvio_recovery.py --previous "$RUNNER_TEMP/manifest.before.json"
 
       - name: Run targeted regression tests
         run: |
           python tests/provider_repair_promotion_guard_test.py
           node tests/vf_movie_recovery.test.cjs
           python tests/vf_movie_policy_test.py
+          python tests/deep_repair_rollback_test.py
           node scripts/provider_worker.cjs --self-test-response-wrapper
           node scripts/provider_worker.cjs --self-test-fixture-fallback
 
@@ -87,8 +89,9 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add scripts/provider_worker.cjs scripts/runtime_repair.py scripts/provider_patches/stream_output_sanitizer.py \
-            scripts/recover_nuvio_regressions.py tests/provider_repair_promotion_guard_test.py \
-            tests/vf_movie_policy_test.py providers manifest.json vf/manifest.json package.json sources.json \
+            scripts/recover_nuvio_regressions.py scripts/finalize_nuvio_recovery.py \
+            tests/provider_repair_promotion_guard_test.py tests/vf_movie_policy_test.py tests/deep_repair_rollback_test.py \
+            providers manifest.json vf/manifest.json PROVENANCE.json package.json sources.json \
             FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json automation/cineby-recovery.json
           if git diff --cached --quiet; then
             echo "No validated recovery changes to publish."
