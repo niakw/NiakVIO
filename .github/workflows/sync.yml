@@ -11,6 +11,11 @@ on:
         options:
           - quick
           - deep
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/triggers/deep-provider-repair"
   schedule:
     # Report-only compatibility audit on five days each week.
     - cron: "17 5 * * 0,1,3,4,6"
@@ -47,6 +52,8 @@ jobs:
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             MODE="${{ github.event.inputs.mode }}"
+          elif [ "${{ github.event_name }}" = "push" ]; then
+            MODE="deep"
           elif [ "${{ github.event.schedule }}" = "47 4 * * 2,5" ]; then
             MODE="deep"
           else
@@ -74,6 +81,12 @@ jobs:
             echo '::warning::package-lock.json is absent; using pinned direct dependencies without lifecycle scripts.'
             npm install --ignore-scripts --no-audit --no-fund --package-lock=false
           fi
+
+      - name: Validate adaptive runtime modules
+        run: |
+          python -m py_compile scripts/adaptive_runtime/runtime_repair.py
+          python -m py_compile scripts/provider_patches/adaptive_runtime_recovery.py
+          python -m py_compile scripts/provider_patches/stream_output_sanitizer.py
 
       # Phase 0: repository safety. This does not decide provider activation.
       - name: Run repository regression tests
@@ -124,12 +137,14 @@ jobs:
           python scripts/build_provider_runtime_profiles.py --stage staging --apply-stage
           python scripts/validate_override_pipeline.py --stage staging
 
-      # Phase 3: execute provider-specific access, try targeted route recovery,
-      # then retest the exact generated JavaScript. No historical state can pass.
+      # Phase 3: execute provider access, generate provider-agnostic adaptive
+      # candidates for failures, then retest the exact generated JavaScript.
       - name: Test provider access and repair failed routes
         shell: bash
         env:
           NUVIO_DNS_PREFLIGHT_RESULTS: health-output/dns-preflight-report.json
+          NUVIO_WORKER_MEMORY_MB: "1024"
+          PYTHONPATH: "${{ github.workspace }}/scripts/adaptive_runtime:${{ github.workspace }}/scripts"
         run: |
           if [ "${{ steps.resolve-mode.outputs.validation_mode }}" = "deep" ]; then
             python scripts/deep_repair_loop.py --stage staging --output health-output --mode deep
@@ -281,6 +296,8 @@ jobs:
 
           if ! git diff --cached --quiet; then
             git commit -m "chore: stage validated provider versions"
+            git fetch origin main
+            git rebase origin/main
             git push origin HEAD:main
           else
             echo "No provider file or validation report change."
@@ -307,4 +324,6 @@ jobs:
           fi
 
           git commit -m "chore: publish Nuvio provider manifest"
+          git fetch origin main
+          git rebase origin/main
           git push origin HEAD:main
