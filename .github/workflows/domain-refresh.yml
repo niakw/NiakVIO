@@ -116,4 +116,6 @@ jobs:
           fi
 
           git commit -m "chore: refresh validated provider domains"
+          git fetch origin main
+          git rebase origin/main
           git push origin HEAD:main
