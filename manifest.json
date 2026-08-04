@@ -53,13 +53,13 @@
       "id": "uhdmovies",
       "name": "UHDMovies",
       "description": "UHD Movies streaming with multiple resolution",
-      "version": "1.0.4",
+      "version": "1.0.5",
       "author": "Nuvio Team",
       "supportedTypes": [
         "movie",
         "tv"
       ],
-      "filename": "providers/uhdmovies--nuvio--7b376a1c75017b88.js",
+      "filename": "providers/uhdmovies--published-baseline--7b376a1c75017b88.js",
       "enabled": true,
       "hasSettings": true,
       "formats": [
@@ -239,29 +239,6 @@
       "supportsExternalPlayer": false
     },
     {
-      "id": "hdghartv",
-      "name": "HDGharTV",
-      "description": "HDGhar TV allows users to watch movies, TV shows and web series in English & Hindi.",
-      "version": "1.0.3",
-      "author": "Nuvio Team",
-      "supportedTypes": [
-        "movie",
-        "tv"
-      ],
-      "filename": "providers/hdghartv--aio--8f6931a418a437f6.js",
-      "enabled": true,
-      "hasSettings": false,
-      "formats": [
-        "m3u8"
-      ],
-      "logo": "https://i.postimg.cc/761WVpJS/hdghartv.png",
-      "contentLanguage": [
-        "en",
-        "hi"
-      ],
-      "limited": false
-    },
-    {
       "id": "movieblast",
       "name": "MovieBlast",
       "description": "MovieBlast - Hindi, Tamil, Telugu & English Movies/Series with multi-quality streams",
@@ -289,40 +266,59 @@
     },
     {
       "id": "castle",
-      "name": "Castle",
+      "name": "🏰 Castle",
       "description": "Multi Lang provider",
-      "version": "2.0.4",
+      "version": "2.0.5",
       "author": "Nuvio Team",
       "supportedTypes": [
         "movie",
         "tv"
       ],
-      "filename": "providers/castle--yoru--43c70c0cad61e4f1.js",
+      "filename": "providers/castle--aio--1b23fb0b7740e707.js",
       "enabled": true,
+      "hasSettings": true,
       "formats": [
         "mp4",
         "m3u8"
       ],
-      "logo": "https://static.hbayy.com/simple-blog-13/prod/_nuxt/big-logo.DESZ4mBj.png",
+      "logo": "https://i.postimg.cc/0NvGzFyK/castle.png",
+      "contentLanguage": [
+        "en"
+      ]
+    },
+    {
+      "id": "hdghartv",
+      "name": "HDGharTV",
+      "description": "HDGhar TV allows users to watch movies, TV shows and web series in English & Hindi.",
+      "version": "1.0.3",
+      "author": "Nuvio Team",
+      "supportedTypes": [
+        "movie",
+        "tv"
+      ],
+      "filename": "providers/hdghartv--aio--8f6931a418a437f6.js",
+      "enabled": true,
+      "hasSettings": false,
+      "formats": [
+        "m3u8"
+      ],
+      "logo": "https://i.postimg.cc/761WVpJS/hdghartv.png",
       "contentLanguage": [
         "en",
-        "hi",
-        "ta",
-        "te",
-        "ml",
-        "kn"
-      ]
+        "hi"
+      ],
+      "limited": false
     },
     {
       "id": "allanime",
       "name": "AllAnime",
       "description": "AllAnime - Anime and Manga content streaming",
-      "version": "1.0.4",
+      "version": "1.0.5",
       "author": "",
       "supportedTypes": [
         "anime"
       ],
-      "filename": "providers/allanime--published-baseline--3fbd16d9f187dd3d.js",
+      "filename": "providers/allanime--nuvio--e0ef9326464924e5.js",
       "enabled": true,
       "hasSettings": true,
       "formats": [
@@ -1045,13 +1041,13 @@
       "id": "persianstremio",
       "name": "🌸 PersianStremio",
       "description": "Persian Stremio plugin for movies, series,and Persian media content in Iranian & English.",
-      "version": "1.4.4",
+      "version": "1.4.5",
       "author": "Nuvio Team",
       "supportedTypes": [
         "movie",
         "tv"
       ],
-      "filename": "providers/persianstremio--published-baseline--04c8664fd3977a32.js",
+      "filename": "providers/persianstremio--aio--04c8664fd3977a32.js",
       "enabled": false,
       "hasSettings": false,
       "formats": [
@@ -1068,13 +1064,13 @@
       "id": "desiflix",
       "name": "DesiFlix",
       "description": "Bollywood, Hollywood, and South Indian movies, in Dual Language",
-      "version": "1.0.3",
+      "version": "1.0.4",
       "author": "Nuvio Team",
       "supportedTypes": [
         "movie",
         "tv"
       ],
-      "filename": "providers/desiflix--aio--89d80b0ac5aac7e9.js",
+      "filename": "providers/desiflix--published-baseline--89d80b0ac5aac7e9.js",
       "enabled": false,
       "hasSettings": false,
       "formats": [
@@ -1367,28 +1363,6 @@
       ]
     },
     {
-      "id": "4khdhubnew",
-      "name": "4KHDHub-NEW",
-      "description": "4KHDHub- Now fetches every movie and series",
-      "version": "2.0.4",
-      "author": "Xyr0nX",
-      "supportedTypes": [
-        "movie",
-        "tv"
-      ],
-      "filename": "providers/4khdhubnew--aio--e64aea603b3c3786.js",
-      "enabled": false,
-      "hasSettings": true,
-      "formats": [
-        "mp4",
-        "m3u8"
-      ],
-      "logo": "https://i.postimg.cc/DZpW6Xfb/4khdhub.png",
-      "contentLanguage": [
-        "en"
-      ]
-    },
-    {
       "id": "playimdb",
       "name": "PlayIMDb",
       "description": "High-Speed Direct Streaming for Movies (IMDb ID Extract)",
@@ -1410,6 +1384,28 @@
       "contentLanguage": [
         "en",
         "hi"
+      ]
+    },
+    {
+      "id": "4khdhubnew",
+      "name": "4KHDHub-NEW",
+      "description": "4KHDHub- Now fetches every movie and series",
+      "version": "2.0.5",
+      "author": "Xyr0nX",
+      "supportedTypes": [
+        "movie",
+        "tv"
+      ],
+      "filename": "providers/4khdhubnew--published-baseline--e64aea603b3c3786.js",
+      "enabled": false,
+      "hasSettings": true,
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "logo": "https://i.postimg.cc/DZpW6Xfb/4khdhub.png",
+      "contentLanguage": [
+        "en"
       ]
     },
     {
@@ -2085,5 +2081,5 @@
       ]
     }
   ],
-  "version": "5.20.6"
+  "version": "5.20.7"
 }
