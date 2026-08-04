@@ -1,4 +1,4 @@
-name: Fix sync publication rebase
+name: Build corrected sync workflow
 
 on:
   push:
@@ -8,7 +8,7 @@ on:
       - ".github/triggers/fix-sync-publish-rebase"
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   patch:
@@ -16,8 +16,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-        with:
-          fetch-depth: 0
 
       - name: Patch both publication rebases
         run: |
@@ -82,12 +80,10 @@ jobs:
           test "$(grep -c 'git reset --hard HEAD' .github/workflows/sync.yml)" -ge 2
           test "$(grep -c 'git clean -fdx' .github/workflows/sync.yml)" -ge 2
 
-      - name: Publish workflow correction
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add .github/workflows/sync.yml
-          git commit -m "ci: clean generated outputs before publish rebases"
-          git fetch origin main
-          git rebase origin/main
-          git push origin HEAD:main
+      - name: Upload corrected workflow
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: corrected-sync-workflow
+          path: .github/workflows/sync.yml
+          if-no-files-found: error
+          retention-days: 1
