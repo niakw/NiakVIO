@@ -1,6 +1,6 @@
 {
   "schema_version": 63,
-  "updated_at": "2026-08-04T15:08:41.794078+00:00",
+  "updated_at": "2026-08-04T17:17:58.836333+00:00",
   "providers": {
     "anime-sama": {
       "last_checked_at": "2026-08-04T14:43:34.133058+00:00",
@@ -2280,19 +2280,21 @@
       }
     },
     "ctgmovies": {
-      "last_checked_at": "2026-08-04T14:43:34.133058+00:00",
-      "last_status": "no_streams",
+      "last_checked_at": "2026-08-04T17:17:58.836333+00:00",
+      "last_status": "degraded",
       "last_score": 25,
       "last_sha256": "29128d8b2dac99a3ae3ff8e771ccbe14598efab021981b02867c7f3f7fc0e6c4",
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
       "consecutive_successes": 0,
       "consecutive_blocked": 0,
-      "consecutive_no_streams": 1,
+      "consecutive_no_streams": 0,
       "auto_disabled": false,
       "last_success_at": "2026-07-26T07:09:33.481217+00:00",
       "hosts": [],
-      "response_categories": [],
+      "response_categories": [
+        "host_down"
+      ],
       "host_health": {
         "movie.ctgfun.com": {
           "last_checked_at": "2026-08-04T07:21:25.508835+00:00",
@@ -2307,6 +2309,17 @@
         },
         "dl.ctgfun.com": {
           "last_checked_at": "2026-08-03T18:11:22.640651+00:00",
+          "last_category": "host_down",
+          "reachable": false,
+          "http_status": null,
+          "latency_ms": null,
+          "kind": null,
+          "consecutive_hard_failures": 1,
+          "consecutive_successes": 0,
+          "consecutive_blocked": 0
+        },
+        "media.ctgfun.com": {
+          "last_checked_at": "2026-08-04T17:17:58.836333+00:00",
           "last_category": "host_down",
           "reachable": false,
           "http_status": null,

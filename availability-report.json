@@ -1,14 +1,14 @@
 {
   "schema_version": 63,
-  "generated_at": "2026-08-04T15:08:41.794078+00:00",
+  "generated_at": "2026-08-04T17:17:58.836333+00:00",
   "test_environment": "github-actions-node",
-  "checked_providers": 4,
+  "checked_providers": 2,
   "status_counts": {
-    "healthy": 2,
+    "healthy": 0,
     "reachable": 0,
     "blocked": 0,
-    "degraded": 1,
-    "no_streams": 1,
+    "degraded": 2,
+    "no_streams": 0,
     "provider_unreachable": 0,
     "runtime_error": 0,
     "unavailable": 0,
@@ -1363,7 +1363,7 @@
     },
     {
       "id": "persianstremio",
-      "status": "healthy",
+      "status": "not-checked",
       "action": "unchanged",
       "enabled": false,
       "consecutive_hard_failures": 0,
@@ -1398,9 +1398,7 @@
           "consecutive_successes": 1,
           "consecutive_blocked": 0
         }
-      },
-      "activation_eligible": false,
-      "activation_mode": "disabled"
+      }
     },
     {
       "id": "desiflix",
@@ -1756,7 +1754,7 @@
     },
     {
       "id": "playimdb",
-      "status": "healthy",
+      "status": "not-checked",
       "action": "unchanged",
       "enabled": false,
       "consecutive_hard_failures": 0,
@@ -1813,9 +1811,7 @@
           "consecutive_successes": 1,
           "consecutive_blocked": 0
         }
-      },
-      "activation_eligible": false,
-      "activation_mode": "disabled"
+      }
     },
     {
       "id": "4khdhubnew",
@@ -2061,14 +2057,16 @@
     },
     {
       "id": "ctgmovies",
-      "status": "no_streams",
+      "status": "degraded",
       "action": "unchanged",
       "enabled": false,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
       "consecutive_successes": 0,
       "hosts": [],
-      "response_categories": [],
+      "response_categories": [
+        "host_down"
+      ],
       "host_health": {
         "movie.ctgfun.com": {
           "last_checked_at": "2026-08-04T07:21:25.508835+00:00",
@@ -2083,6 +2081,17 @@
         },
         "dl.ctgfun.com": {
           "last_checked_at": "2026-08-03T18:11:22.640651+00:00",
+          "last_category": "host_down",
+          "reachable": false,
+          "http_status": null,
+          "latency_ms": null,
+          "kind": null,
+          "consecutive_hard_failures": 1,
+          "consecutive_successes": 0,
+          "consecutive_blocked": 0
+        },
+        "media.ctgfun.com": {
+          "last_checked_at": "2026-08-04T17:17:58.836333+00:00",
           "last_category": "host_down",
           "reachable": false,
           "http_status": null,
