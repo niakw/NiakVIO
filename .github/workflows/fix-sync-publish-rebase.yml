@@ -27,34 +27,42 @@ jobs:
           path = Path('.github/workflows/sync.yml')
           text = path.read_text(encoding='utf-8')
 
-          old_provider = '''            git commit -m "chore: stage validated provider versions"
-            git fetch origin main
-            git rebase origin/main
-            git push origin HEAD:main
-'''
-          new_provider = '''            git commit -m "chore: stage validated provider versions"
-            test -f manifest.next.json
-            cp manifest.next.json "$RUNNER_TEMP/manifest.next.json"
-            git reset --hard HEAD
-            git clean -fdx
-            git fetch origin main
-            git rebase origin/main
-            git push origin HEAD:main
-            cp "$RUNNER_TEMP/manifest.next.json" manifest.next.json
-'''
+          old_provider = '\n'.join([
+              '            git commit -m "chore: stage validated provider versions"',
+              '            git fetch origin main',
+              '            git rebase origin/main',
+              '            git push origin HEAD:main',
+              '',
+          ])
+          new_provider = '\n'.join([
+              '            git commit -m "chore: stage validated provider versions"',
+              '            test -f manifest.next.json',
+              '            cp manifest.next.json "$RUNNER_TEMP/manifest.next.json"',
+              '            git reset --hard HEAD',
+              '            git clean -fdx',
+              '            git fetch origin main',
+              '            git rebase origin/main',
+              '            git push origin HEAD:main',
+              '            cp "$RUNNER_TEMP/manifest.next.json" manifest.next.json',
+              '',
+          ])
 
-          old_manifest = '''          git commit -m "chore: publish Nuvio provider manifest"
-          git fetch origin main
-          git rebase origin/main
-          git push origin HEAD:main
-'''
-          new_manifest = '''          git commit -m "chore: publish Nuvio provider manifest"
-          git reset --hard HEAD
-          git clean -fdx
-          git fetch origin main
-          git rebase origin/main
-          git push origin HEAD:main
-'''
+          old_manifest = '\n'.join([
+              '          git commit -m "chore: publish Nuvio provider manifest"',
+              '          git fetch origin main',
+              '          git rebase origin/main',
+              '          git push origin HEAD:main',
+              '',
+          ])
+          new_manifest = '\n'.join([
+              '          git commit -m "chore: publish Nuvio provider manifest"',
+              '          git reset --hard HEAD',
+              '          git clean -fdx',
+              '          git fetch origin main',
+              '          git rebase origin/main',
+              '          git push origin HEAD:main',
+              '',
+          ])
 
           if text.count(old_provider) != 1:
               raise SystemExit(f'provider publish block count: {text.count(old_provider)}')
