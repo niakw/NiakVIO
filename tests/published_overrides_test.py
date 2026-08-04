@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import shutil
 import subprocess
+import sys
 import tempfile
 from pathlib import Path
 
@@ -29,7 +30,7 @@ with tempfile.TemporaryDirectory() as tmp:
         'ROOT = Path(__file__).resolve().parents[1]', f'ROOT = Path({str(root)!r})')
     test_script=root/'validate.py'; test_script.write_text(script)
     (root/'override_text_utils.py').write_text((ROOT/'scripts/override_text_utils.py').read_text())
-    result=subprocess.run(['python',str(test_script)],capture_output=True,text=True)
+    result=subprocess.run([sys.executable,str(test_script)],capture_output=True,text=True)
     assert result.returncode == 0, result.stderr + result.stdout
     assert not (root/'providers/movix.js').exists()
 
@@ -57,7 +58,7 @@ with tempfile.TemporaryDirectory() as tmp:
         'ROOT = Path(__file__).resolve().parents[1]', f'ROOT = Path({str(root)!r})')
     test_script=root/'validate.py'; test_script.write_text(script)
     (root/'override_text_utils.py').write_text((ROOT/'scripts/override_text_utils.py').read_text())
-    result=subprocess.run(['python',str(test_script)],capture_output=True,text=True)
+    result=subprocess.run([sys.executable,str(test_script)],capture_output=True,text=True)
     assert result.returncode == 0, result.stderr + result.stdout
     assert sibling.exists(), '4khdhub validation deleted the distinct 4khdhubnew provider'
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 from __future__ import annotations
-import hashlib, json, shutil, subprocess, tempfile
+import hashlib, json, shutil, subprocess, sys, tempfile
 from pathlib import Path
 
 ROOT=Path(__file__).resolve().parents[1]
@@ -25,7 +25,7 @@ def main():
         }
         (tmp/'candidates.json').write_text(json.dumps(registry,indent=2)+'\n')
         subprocess.run([
-          'python',str(ROOT/'scripts/build_provider_runtime_profiles.py'),
+          sys.executable,str(ROOT/'scripts/build_provider_runtime_profiles.py'),
           '--stage',str(tmp),'--apply-stage'
         ],cwd=ROOT,check=True,capture_output=True,text=True)
         data=json.loads(OVR.read_text())

@@ -4,6 +4,7 @@ from __future__ import annotations
 import json
 import pathlib
 import subprocess
+import sys
 import tempfile
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
@@ -32,7 +33,7 @@ with tempfile.TemporaryDirectory() as tmp:
     )
     test_script = root / "sync.py"
     test_script.write_text(script, encoding="utf-8")
-    subprocess.run(["python", str(test_script), "--version", "9.8.7"], check=True)
+    subprocess.run([sys.executable, str(test_script), "--version", "9.8.7"], check=True)
 
     assert json.loads((root / "package.json").read_text())["version"] == "9.8.7"
     assert json.loads((root / "manifest.json").read_text())["version"] == "9.8.7"
