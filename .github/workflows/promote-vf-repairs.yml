@@ -52,6 +52,7 @@ jobs:
         run: |
           python - <<'PY'
           import json
+          import re
           import shutil
           from pathlib import Path
 
@@ -67,8 +68,6 @@ jobs:
           if not accepted:
               raise SystemExit('validated artifact contains no accepted repair')
 
-          # One final repair per canonical provider. Prefer the published-baseline
-          # candidate when it was independently accepted; otherwise use upstream.
           selected = {}
           for row in accepted:
               parent_key = str(row.get('parent_key') or '')
@@ -99,6 +98,31 @@ jobs:
               shutil.copyfile(source, target)
               filenames[canonical] = target_name
 
+          def bump_patch(value):
+              match = re.fullmatch(r'(\d+)\.(\d+)\.(\d+)', str(value or ''))
+              if not match:
+                  return '1.0.1'
+              major, minor, patch = map(int, match.groups())
+              return f'{major}.{minor}.{patch + 1}'
+
+          # Derive one new provider version per canonical ID from the main manifest,
+          # then apply that exact version to both manifests so Nuvio invalidates cache.
+          main = json.loads(Path('manifest.json').read_text(encoding='utf-8'))
+          new_versions = {}
+          for provider in main.get('scrapers', []):
+              canonical = str(provider.get('id') or '')
+              if canonical in filenames:
+                  target_filename = 'providers/' + filenames[canonical]
+                  if str(provider.get('filename') or '') != target_filename:
+                      new_versions[canonical] = bump_patch(provider.get('version'))
+                  else:
+                      # The repaired filename was already published by a previous run,
+                      # but its version was not bumped. Bump it once now.
+                      new_versions[canonical] = bump_patch(provider.get('version'))
+          missing_versions = set(filenames) - set(new_versions)
+          if missing_versions:
+              raise SystemExit(f'main manifest missing providers: {sorted(missing_versions)}')
+
           for manifest_path, prefix in ((Path('manifest.json'), 'providers/'), (Path('vf/manifest.json'), '../providers/')):
               manifest = json.loads(manifest_path.read_text(encoding='utf-8'))
               found = set()
@@ -106,6 +130,7 @@ jobs:
                   canonical = str(provider.get('id') or '')
                   if canonical in filenames:
                       provider['filename'] = prefix + filenames[canonical]
+                      provider['version'] = new_versions[canonical]
                       provider['enabled'] = True
                       found.add(canonical)
               missing = set(filenames) - found
@@ -114,7 +139,7 @@ jobs:
               manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
 
           shutil.copyfile(artifact / 'health-output/repair-report.json', 'repair-report.json')
-          print('promoted:', ', '.join(sorted(filenames)))
+          print('promoted:', ', '.join(f'{key}@{new_versions[key]}' for key in sorted(filenames)))
           PY
 
       - name: Regenerate release metadata and validate
