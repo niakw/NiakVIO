@@ -87,6 +87,7 @@ jobs:
           python -m py_compile scripts/adaptive_runtime/runtime_repair.py
           python -m py_compile scripts/provider_patches/adaptive_runtime_recovery.py
           python -m py_compile scripts/provider_patches/stream_output_sanitizer.py
+          python -m py_compile scripts/run_adaptive_deep_repair.py
 
       # Phase 0: repository safety. This does not decide provider activation.
       - name: Run repository regression tests
@@ -144,10 +145,9 @@ jobs:
         env:
           NUVIO_DNS_PREFLIGHT_RESULTS: health-output/dns-preflight-report.json
           NUVIO_WORKER_MEMORY_MB: "1024"
-          PYTHONPATH: "${{ github.workspace }}/scripts/adaptive_runtime:${{ github.workspace }}/scripts"
         run: |
           if [ "${{ steps.resolve-mode.outputs.validation_mode }}" = "deep" ]; then
-            python scripts/deep_repair_loop.py --stage staging --output health-output --mode deep
+            python scripts/run_adaptive_deep_repair.py --stage staging --output health-output --mode deep
             python scripts/validate_override_pipeline.py --stage staging
           else
             NUVIO_HEALTH_OUTPUT=health-output node scripts/health_check.mjs
