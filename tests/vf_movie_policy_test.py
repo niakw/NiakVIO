@@ -12,7 +12,9 @@ patches = overrides['provider_patches']
 official = overrides['official_domain_hubs']
 
 # Providers that are actually intended to answer mainstream VF movie requests.
-expected_enabled_movie = {'purstream', 'frenchstream', 'streamzo', 'movix', 'coflix'}
+# Wookafr is protected by a current manual Nuvio playback validation on
+# Interstellar; an isolated GitHub-runner failure must not disable it.
+expected_enabled_movie = {'purstream', 'frenchstream', 'streamzo', 'movix', 'coflix', 'wookafr'}
 for provider_id in expected_enabled_movie:
     row = by_id[provider_id]
     assert row['enabled'] is True, provider_id
@@ -20,7 +22,7 @@ for provider_id in expected_enabled_movie:
 
 # Unproven routes stay published but disabled; they may only return after a new
 # current deep proof. This prevents address discovery alone from enabling them.
-for provider_id in ('flemmix', 'wookafr', 'nakios', 'toflix'):
+for provider_id in ('flemmix', 'nakios', 'toflix'):
     assert by_id[provider_id]['enabled'] is False, provider_id
 
 # Papadustream's implementation is series-only. Anime-only movie providers are
