@@ -1,0 +1,85 @@
+name: Fix sync publication rebase
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/triggers/fix-sync-publish-rebase"
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+
+      - name: Patch both publication rebases
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path('.github/workflows/sync.yml')
+          text = path.read_text(encoding='utf-8')
+
+          old_provider = '''            git commit -m "chore: stage validated provider versions"
+            git fetch origin main
+            git rebase origin/main
+            git push origin HEAD:main
+'''
+          new_provider = '''            git commit -m "chore: stage validated provider versions"
+            test -f manifest.next.json
+            cp manifest.next.json "$RUNNER_TEMP/manifest.next.json"
+            git reset --hard HEAD
+            git clean -fdx
+            git fetch origin main
+            git rebase origin/main
+            git push origin HEAD:main
+            cp "$RUNNER_TEMP/manifest.next.json" manifest.next.json
+'''
+
+          old_manifest = '''          git commit -m "chore: publish Nuvio provider manifest"
+          git fetch origin main
+          git rebase origin/main
+          git push origin HEAD:main
+'''
+          new_manifest = '''          git commit -m "chore: publish Nuvio provider manifest"
+          git reset --hard HEAD
+          git clean -fdx
+          git fetch origin main
+          git rebase origin/main
+          git push origin HEAD:main
+'''
+
+          if text.count(old_provider) != 1:
+              raise SystemExit(f'provider publish block count: {text.count(old_provider)}')
+          if text.count(old_manifest) != 1:
+              raise SystemExit(f'manifest publish block count: {text.count(old_manifest)}')
+
+          text = text.replace(old_provider, new_provider).replace(old_manifest, new_manifest)
+          if text.count('cp "$RUNNER_TEMP/manifest.next.json" manifest.next.json') != 1:
+              raise SystemExit('manifest.next preservation was not installed exactly once')
+          path.write_text(text, encoding='utf-8')
+          PY
+
+      - name: Validate patched workflow structure
+        run: |
+          grep -F 'cp manifest.next.json "$RUNNER_TEMP/manifest.next.json"' .github/workflows/sync.yml
+          grep -F 'cp "$RUNNER_TEMP/manifest.next.json" manifest.next.json' .github/workflows/sync.yml
+          test "$(grep -c 'git reset --hard HEAD' .github/workflows/sync.yml)" -ge 2
+          test "$(grep -c 'git clean -fdx' .github/workflows/sync.yml)" -ge 2
+
+      - name: Publish workflow correction
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .github/workflows/sync.yml
+          git commit -m "ci: clean generated outputs before publish rebases"
+          git fetch origin main
+          git rebase origin/main
+          git push origin HEAD:main
