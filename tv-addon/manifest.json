@@ -1,0 +1,20 @@
+{
+  "id": "community.niakvio.official-tv.static",
+  "version": "1.2.0",
+  "name": "Niakvio TV officielle",
+  "description": "Catalogues statiques de chaînes gratuites, avec lecture depuis les services déjà hébergés par leurs éditeurs.",
+  "logo": "https://raw.githubusercontent.com/niakw/Niakvio/main/assets/branding/nuvio-providers-logo.png",
+  "resources": ["catalog", "meta", "stream"],
+  "types": ["tv"],
+  "idPrefixes": ["niakvio-tv-"],
+  "catalogs": [
+    {"type": "tv", "id": "official-tv-all", "name": "TV — Toutes"},
+    {"type": "tv", "id": "official-tv-information", "name": "TV — Information"},
+    {"type": "tv", "id": "official-tv-culture", "name": "TV — Culture"},
+    {"type": "tv", "id": "official-tv-generaliste", "name": "TV — Généralistes"}
+  ],
+  "behaviorHints": {
+    "configurable": false,
+    "configurationRequired": false
+  }
+}
