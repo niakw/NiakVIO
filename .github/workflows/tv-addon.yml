@@ -1,0 +1,36 @@
+name: TV addon
+
+on:
+  pull_request:
+    paths:
+      - 'tv-addon/**'
+      - '.github/workflows/tv-addon.yml'
+      - 'render.yaml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'tv-addon/**'
+      - '.github/workflows/tv-addon.yml'
+      - 'render.yaml'
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: tv-addon
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: tv-addon/package-lock.json
+      - run: npm install --ignore-scripts
+      - run: npm run check
+      - run: npm test
+      - run: docker build -t niakvio-official-tv .
