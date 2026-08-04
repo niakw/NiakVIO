@@ -11,6 +11,11 @@ on:
         options:
           - quick
           - deep
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/triggers/domain-refresh"
   schedule:
     # Lightweight daily address refresh. The strict provider deep test remains
     # limited to Tuesday and Friday in sync.yml.
