@@ -76,7 +76,6 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
     metadata = _provider_metadata(candidate)
     canonical = candidate.get("canonical") if isinstance(candidate.get("canonical"), dict) else {}
 
-    # A hub is not a terminal provider origin. Never guess one when unresolved.
     if str(capability.get("strategy") or patch.get("capability") or "") == "official_domain_hub" and not patch.get("official_site"):
         return None
 
@@ -240,8 +239,13 @@ def create_repair_candidate(stage: Path, candidate: dict[str, Any], profile_name
     repaired["sha256"] = digest
     repaired["bytes"] = len(patched)
     repaired["local_patches"] = list(candidate.get("local_patches") or []) + records
+    # The strategy is generated from runtime evidence and per-candidate metadata.
+    # It must not be persisted as a static provider profile by deep_repair_loop.
     repaired["runtime_repair"] = {
-        "parent_key": parent_key, "parent_sha256": parent_digest,
-        "round": round_number, "profile": "adaptive_runtime_recovery",
+        "parent_key": parent_key,
+        "parent_sha256": parent_digest,
+        "round": round_number,
+        "profile": "",
+        "strategy": "adaptive_runtime_recovery",
     }
     return repaired, None
