@@ -28,7 +28,7 @@ s = sanitizer.apply(
     'async function getStreams(){return []};module.exports={getStreams};',
     options={'blocked_hosts': ['fstream.top'], 'blocked_path_patterns': ['/troll/'], 'probe_direct_media': True, 'min_vod_duration_seconds': 60},
 )
-assert 'NUVIO_STREAM_OUTPUT_SANITIZER_V3' in s
+assert 'NUVIO_STREAM_OUTPUT_SANITIZER_V4' in s
 assert 'fstream.top' in s
 assert '/troll/' in s
 assert 'minVodDurationSeconds' in s
