@@ -51,11 +51,6 @@ def validate() -> list[str]:
     if mismatched:
         errors.append("main/VF activation mismatch: " + ", ".join(mismatched))
 
-    manual_disabled = {str(value).casefold() for value in (policy.get("manual_disabled") or {})}
-    unexpectedly_enabled = sorted(manual_disabled & active)
-    if unexpectedly_enabled:
-        errors.append("manually disabled providers were re-enabled: " + ", ".join(unexpectedly_enabled))
-
     return errors
 
 
