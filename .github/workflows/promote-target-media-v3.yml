@@ -41,6 +41,8 @@ jobs:
 
       - name: Validate target resolver tooling
         run: |
+          python -m py_compile scripts/normalize_hls_override_policy.py
+          python -m py_compile scripts/provider_patches/stream_output_sanitizer_v5.py
           python -m py_compile scripts/provider_patches/nuvio_tv_target_media_v3.py
           python -m py_compile scripts/provider_patches/expose_strict_wrapper_original.py
           python -m py_compile scripts/provider_patches/target_media_host_filter_v4.py
@@ -48,6 +50,11 @@ jobs:
           python -m py_compile scripts/promote_target_media_v3.py
           python -m py_compile scripts/promote_target_media_v4.py
           node --check scripts/nuvio_tv_probe_v2.cjs
+
+      - name: Normalize global HLS policy
+        run: |
+          python scripts/normalize_hls_override_policy.py
+          python scripts/normalize_hls_override_policy.py --check
 
       - name: Revalidate target player chains and stage strict improvements
         run: |
@@ -117,6 +124,8 @@ jobs:
           git add manifest.json vf/manifest.json provider-overrides.json PROVENANCE.json \
             package.json sources.json nuvio-client-id-state.json \
             providers/frenchstream--target-media-v4--*.js \
+            scripts/normalize_hls_override_policy.py \
+            scripts/provider_patches/stream_output_sanitizer_v5.py \
             scripts/provider_patches/nuvio_tv_target_media_v3.py \
             scripts/provider_patches/expose_strict_wrapper_original.py \
             scripts/provider_patches/target_media_host_filter_v4.py \
