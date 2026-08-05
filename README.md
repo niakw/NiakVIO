@@ -20,22 +20,20 @@
 **VF + VOSTFR + VO + autres langues**
 
 ```text
-https://raw.githubusercontent.com/niakw/Niakvio/refs/heads/main/manifest.json?activation-profile=niakvio-v2
+https://raw.githubusercontent.com/niakw/Niakvio/refs/heads/main/manifest.json
 ```
 
-[Ouvrir le manifest général](https://raw.githubusercontent.com/niakw/Niakvio/refs/heads/main/manifest.json?activation-profile=niakvio-v2)
-
-Cette URL utilise une nouvelle identité d’installation Nuvio afin d’appliquer correctement l’état d’activation publié par Niakvio. Le contenu et les chemins des bundles restent ceux du manifest principal.
+[Ouvrir le manifest général](https://raw.githubusercontent.com/niakw/Niakvio/refs/heads/main/manifest.json)
 
 ### Manifest francophone
 
 **Sélection dédiée aux providers proposant du contenu en français ou sous-titré français.**
 
 ```text
-https://raw.githubusercontent.com/niakw/Niakvio/refs/heads/main/vf/manifest.json?activation-profile=niakvio-v2-vf
+https://raw.githubusercontent.com/niakw/Niakvio/refs/heads/main/vf/manifest.json
 ```
 
-[Ouvrir le manifest francophone](https://raw.githubusercontent.com/niakw/Niakvio/refs/heads/main/vf/manifest.json?activation-profile=niakvio-v2-vf)
+[Ouvrir le manifest francophone](https://raw.githubusercontent.com/niakw/Niakvio/refs/heads/main/vf/manifest.json)
 
 > Dans Nuvio, ajoutez l’une de ces URL dans la section **Plugins / Providers**.
 
@@ -43,13 +41,13 @@ https://raw.githubusercontent.com/niakw/Niakvio/refs/heads/main/vf/manifest.json
 
 ## Installation
 
-1. Supprimez l’ancienne entrée Niakvio si elle est encore installée.
-2. Copiez l’URL du manifest souhaité ci-dessus, y compris le paramètre `activation-profile`.
-3. Ouvrez **Nuvio**.
-4. Accédez à **Plugins / Providers**.
-5. Ajoutez ou importez l’URL, puis validez.
+1. Copiez l’URL stable du manifest souhaité.
+2. Ouvrez **Nuvio**.
+3. Accédez à **Plugins / Providers**.
+4. Ajoutez ou importez l’URL.
+5. Les mises à jour suivantes s’appliquent avec le bouton d’actualisation, sans changement de lien.
 
-> Nuvio conserve les activations choisies pour une identité de manifest existante. Le paramètre `activation-profile=niakvio-v2` force une identité neuve et applique les activations actuelles du manifest.
+> Lorsqu’un provider passe de désactivé à activé, Niakvio révise automatiquement son identifiant client interne afin que Nuvio applique l’activation au prochain rafraîchissement.
 
 ---
 
