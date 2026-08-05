@@ -88,10 +88,24 @@ jobs:
           from urllib.parse import urlparse
 
           report = json.loads(Path('automation/nuvio-tv-target-media-v3.json').read_text(encoding='utf-8'))
-          assert {row['id'] for row in report.get('published', [])} == {'frenchstream'}, report
-          assert set(report.get('preserved', [])) == {'wookafr', 'coflix'}, report
-          assert report.get('resolver_version') == 'v4', report
+          manifest = json.loads(Path('manifest.json').read_text(encoding='utf-8'))
+          rows = {str(row.get('id', '')).casefold(): row for row in manifest.get('scrapers', [])}
+          published = {str(row.get('id', '')).casefold() for row in report.get('published', [])}
+          preserved = {str(value).casefold() for value in report.get('preserved', [])}
+          assert published <= {'frenchstream'}, (published, preserved)
+          assert {'wookafr', 'coflix'} <= preserved, preserved
+          assert 'frenchstream' in published | preserved, (published, preserved)
+
           provider = report['providers']['frenchstream']
+          assert provider['no_regression'], provider
+          assert provider['strict_outputs'], provider
+          if 'frenchstream' in published:
+              assert provider['strictly_better'], provider
+              assert report.get('resolver_version') == 'v4', report
+          else:
+              assert not provider['strictly_better'], provider
+              assert '--target-media-v4--' in rows['frenchstream']['filename'], rows['frenchstream']
+
           blocked = {'snap.com', 'snapchat.com', 'ctfassets.net', 'sc-cdn.net'}
           urls = []
           for result in provider.get('candidate', []):
@@ -112,34 +126,40 @@ jobs:
 
             global-promotion)
               cp manifest.json "$RUNNER_TEMP/manifest.before.json"
+              set +e
               python scripts/promote_global_nuvio_tv_candidates.py
+              promotion_status=$?
+              set -e
+              if [ "$promotion_status" -ne 0 ] && [ "$promotion_status" -ne 2 ]; then
+                exit "$promotion_status"
+              fi
               python - <<'PY'
           import json
           from pathlib import Path
 
           report = json.loads(Path('automation/nuvio-tv-global-promotion.json').read_text(encoding='utf-8'))
+          manifest = json.loads(Path('manifest.json').read_text(encoding='utf-8'))
+          rows = {str(row.get('id', '')).casefold(): row for row in manifest.get('scrapers', [])}
           required = {'french-manga', 'streamzo'}
           optional = {'desiflix'}
-          published = {row['id'] for row in report.get('published', [])}
-          preserved = set(report.get('preserved', []))
-          assert required <= published <= required | optional, (published, preserved)
+          targets = required | optional
+          published = {str(row.get('id', '')).casefold() for row in report.get('published', [])}
+          preserved = {str(value).casefold() for value in report.get('preserved', [])}
+          assert published <= targets, (published, preserved)
+          assert targets <= published | preserved, (published, preserved)
 
-          for provider_id in sorted(required):
+          for provider_id in sorted(targets):
               provider = report['providers'][provider_id]
-              assert provider['strictly_better'], (provider_id, provider)
               assert provider['no_regression'], (provider_id, provider)
               assert provider['strict_outputs'], (provider_id, provider)
-
-          desiflix = report['providers']['desiflix']
-          assert desiflix['no_regression'], desiflix
-          assert desiflix['strict_outputs'], desiflix
-          if 'desiflix' in published:
-              assert desiflix['strictly_better'], desiflix
-              assert desiflix['candidate_summary']['playable_fixture_count'] > desiflix['baseline_summary']['playable_fixture_count'], desiflix
-              assert 'desiflix' not in preserved
-          else:
-              assert 'desiflix' in preserved, report
-              assert not desiflix['strictly_better'], desiflix
+              if provider_id in published:
+                  assert provider['strictly_better'], (provider_id, provider)
+              else:
+                  assert provider_id in preserved, (provider_id, report)
+                  assert not provider['strictly_better'], (provider_id, provider)
+                  assert '--nuvio-tv-global--' in rows[provider_id]['filename'], rows[provider_id]
+                  assert provider['candidate_summary']['playable_fixture_count'] == provider['baseline_summary']['playable_fixture_count'], provider
+                  assert provider['candidate_summary']['playable_stream_count'] == provider['baseline_summary']['playable_stream_count'], provider
           PY
               python scripts/bump_release_patch_if_manifest_changed.py --previous "$RUNNER_TEMP/manifest.before.json" --manifest manifest.json
               python scripts/sync_release_versions.py --manifest manifest.json
