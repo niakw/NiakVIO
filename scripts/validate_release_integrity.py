@@ -6,12 +6,13 @@ import json
 import pathlib
 import re
 
+from validate_activation_preservation import validate as validate_activation_preservation
+
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 
 
 def load(relative: str) -> dict:
     return json.loads((ROOT / relative).read_text(encoding="utf-8"))
-
 
 
 def sha256(path: pathlib.Path) -> str:
@@ -73,6 +74,7 @@ def validate_hash_inventory(expected_version: str) -> list[str]:
         elif sha256(target) != expected_hash:
             errors.append(f"PATCH-SHA256SUMS.txt:{number}: hash mismatch for {filename}")
     return errors
+
 
 def validate_manifest_paths(relative: str, *, nested: bool) -> list[str]:
     errors: list[str] = []
@@ -144,6 +146,7 @@ def main() -> int:
 
     errors.extend(validate_manifest_paths("manifest.json", nested=False))
     errors.extend(validate_manifest_paths("vf/manifest.json", nested=True))
+    errors.extend(validate_activation_preservation())
     errors.extend(validate_hash_inventory(expected))
 
     if errors:
