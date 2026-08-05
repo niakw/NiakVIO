@@ -241,7 +241,7 @@ if (__provider && __provider.getStreams) {
   var installed=false;try{if(typeof module!=="undefined"&&module.exports)installed=install(module.exports,"getStreams")||installed}catch(_e){}
   try{if(g&&typeof g.getStreams==="function"){if(installed&&typeof module!=="undefined"&&module.exports)g.getStreams=module.exports.getStreams;else install(g,"getStreams")}}catch(_e){}
 })(typeof globalThis!=="undefined"?globalThis:this,{"strategy":"html","baseUrl":"https://flemmix.men","apiUrl":"","types":["movie"],"searchPaths":["/index.php?do=search&subaction=search&story={query}","/?do=search&subaction=search&story={query}","/?s={query}","/search?q={query}"],"directPaths":["/{slug}","/film/{slug}","/films/{slug}"],"blockedHosts":["fstream.top"],"blockedPathPatterns":["/troll/"],"preferredPlayerGroups":["VFF","VFQ","VF","Default","VOSTFR"],"maxPlayers":8,"timeoutMs":7000,"providerName":"Flemmix","recoveryFirst":true,"skipNativeWhenUnresolved":false,"obsoleteRouteTokens":[],"maxDiscoveryScripts":8});
-/* NUVIO_STREAM_OUTPUT_SANITIZER_V4:0a571fc4f83c */
+/* NUVIO_STREAM_OUTPUT_SANITIZER_V4:e52ec0a354e4 */
 ;(function(g,config){
   "use strict";
   function hostOf(raw){try{return new URL(String(raw)).hostname.toLowerCase()}catch(_e){return ""}}
@@ -257,7 +257,12 @@ if (__provider && __provider.getStreams) {
       for(var j=0;j<config.blockedPathPatterns.length;j++){
         if(path.indexOf(config.blockedPathPatterns[j])>=0)return true;
       }
-      if(/\.(?:js|mjs|css|json|xml|txt|html?|map|woff2?|ttf|otf|ico|jpe?g|png|gif|webp|svg)(?:$|[?#])/i.test(path))return true;
+      // NUVIO_EMBED_HTML_ALLOWLIST_V1
+      // External-player pages often legitimately end in .html. Preserve them
+      // only when their path has an explicit player/embed/watch role.
+      var embedLike=/\/(?:embed|e|player|watch)(?:[-/]|$)/i.test(path);
+      if(/\.(?:js|mjs|css|json|xml|txt|map|woff2?|ttf|otf|ico|jpe?g|png|gif|webp|svg)(?:$|[?#])/i.test(path))return true;
+      if(/\.html?(?:$|[?#])/i.test(path)&&!embedLike)return true;
     }catch(_e){}
     return false;
   }
@@ -360,4 +365,4 @@ if (__provider && __provider.getStreams) {
     if(installed&&typeof module!=="undefined"&&module.exports&&module.exports.getStreams)g.getStreams=module.exports.getStreams;
     else install(g,"getStreams");
   }}catch(_e){}
-})(typeof globalThis!=="undefined"?globalThis:this,{"blockedHosts":["analytics.google.com","api.themoviedb.org","arm.haglund.dev","cloudflareinsights.com","connect.facebook.net","doubleclick.net","fstream.top","google-analytics.com","googlesyndication.com","googletagmanager.com","graphql.anilist.co","kitsu.io","lodash.com","npms.io","openjsf.org","pagead2.googlesyndication.com","static.cloudflareinsights.com","underscorejs.org","v3-cinemeta.strem.io"],"probeDirectMedia":false,"probeAllUrls":false,"maxProbes":0,"timeoutMs":4500,"minVodDurationSeconds":60,"blockedPathPatterns":["/analytics","/beacon.min.js","/cdn-cgi/rum","/collect","/gtag/js","/troll/"]});
+})(typeof globalThis!=="undefined"?globalThis:this,{"blockedHosts":["analytics.google.com","api.themoviedb.org","arm.haglund.dev","cloudflareinsights.com","connect.facebook.net","doubleclick.net","fstream.top","google-analytics.com","googlesyndication.com","googletagmanager.com","graphql.anilist.co","kitsu.io","lodash.com","npms.io","openjsf.org","pagead2.googlesyndication.com","static.cloudflareinsights.com","underscorejs.org","v3-cinemeta.strem.io"],"probeDirectMedia":false,"probeAllUrls":false,"maxProbes":0,"timeoutMs":4500,"minVodDurationSeconds":60,"blockedPathPatterns":["/analytics","/beacon.min.js","/cdn-cgi/rum","/collect","/gtag/js","/troll/"],"implementationVersion":5});

@@ -452,7 +452,7 @@ ${formatBytes(link.meta.bytes || 0)}`,
   });
 }
 module.exports = { getStreams };
-/* NUVIO_STREAM_OUTPUT_SANITIZER_V4:7ba1d33765a4 */
+/* NUVIO_STREAM_OUTPUT_SANITIZER_V4:a348b8fc0a19 */
 ;(function(g,config){
   "use strict";
   function hostOf(raw){try{return new URL(String(raw)).hostname.toLowerCase()}catch(_e){return ""}}
@@ -468,7 +468,12 @@ module.exports = { getStreams };
       for(var j=0;j<config.blockedPathPatterns.length;j++){
         if(path.indexOf(config.blockedPathPatterns[j])>=0)return true;
       }
-      if(/\.(?:js|mjs|css|json|xml|txt|html?|map|woff2?|ttf|otf|ico|jpe?g|png|gif|webp|svg)(?:$|[?#])/i.test(path))return true;
+      // NUVIO_EMBED_HTML_ALLOWLIST_V1
+      // External-player pages often legitimately end in .html. Preserve them
+      // only when their path has an explicit player/embed/watch role.
+      var embedLike=/\/(?:embed|e|player|watch)(?:[-/]|$)/i.test(path);
+      if(/\.(?:js|mjs|css|json|xml|txt|map|woff2?|ttf|otf|ico|jpe?g|png|gif|webp|svg)(?:$|[?#])/i.test(path))return true;
+      if(/\.html?(?:$|[?#])/i.test(path)&&!embedLike)return true;
     }catch(_e){}
     return false;
   }
@@ -571,4 +576,4 @@ module.exports = { getStreams };
     if(installed&&typeof module!=="undefined"&&module.exports&&module.exports.getStreams)g.getStreams=module.exports.getStreams;
     else install(g,"getStreams");
   }}catch(_e){}
-})(typeof globalThis!=="undefined"?globalThis:this,{"blockedHosts":["analytics.google.com","api.themoviedb.org","arm.haglund.dev","cloudflareinsights.com","connect.facebook.net","doubleclick.net","google-analytics.com","googlesyndication.com","googletagmanager.com","graphql.anilist.co","kitsu.io","lodash.com","npms.io","openjsf.org","pagead2.googlesyndication.com","static.cloudflareinsights.com","underscorejs.org","v3-cinemeta.strem.io"],"probeDirectMedia":true,"probeAllUrls":true,"maxProbes":6,"timeoutMs":4500,"minVodDurationSeconds":60,"blockedPathPatterns":["/analytics","/beacon.min.js","/cdn-cgi/rum","/collect","/gtag/js"]});
+})(typeof globalThis!=="undefined"?globalThis:this,{"blockedHosts":["analytics.google.com","api.themoviedb.org","arm.haglund.dev","cloudflareinsights.com","connect.facebook.net","doubleclick.net","google-analytics.com","googlesyndication.com","googletagmanager.com","graphql.anilist.co","kitsu.io","lodash.com","npms.io","openjsf.org","pagead2.googlesyndication.com","static.cloudflareinsights.com","underscorejs.org","v3-cinemeta.strem.io"],"probeDirectMedia":true,"probeAllUrls":true,"maxProbes":6,"timeoutMs":4500,"minVodDurationSeconds":60,"blockedPathPatterns":["/analytics","/beacon.min.js","/cdn-cgi/rum","/collect","/gtag/js"],"implementationVersion":5});
