@@ -62,24 +62,34 @@ jobs:
           python scripts/normalize_hls_override_policy.py --check
 
       - name: Revalidate target player chains and stage strict improvements
+        id: promotion
         run: |
           cp manifest.json "$RUNNER_TEMP/manifest.before.json"
           python scripts/promote_target_media_v4.py
           python - <<'PY'
           import json
+          import os
           from pathlib import Path
           from urllib.parse import urlparse
 
           report = json.loads(Path('automation/nuvio-tv-target-media-v3.json').read_text(encoding='utf-8'))
-          published = {row['id'] for row in report.get('published', [])}
-          assert published == {'frenchstream'}, (published, report.get('preserved'))
-          assert set(report.get('preserved', [])) == {'wookafr', 'coflix'}, report.get('preserved')
-          assert report.get('resolver_version') == 'v4', report
+          manifest = json.loads(Path('manifest.json').read_text(encoding='utf-8'))
+          rows = {str(row.get('id', '')).casefold(): row for row in manifest.get('scrapers', [])}
+          published = {str(row.get('id', '')).casefold() for row in report.get('published', [])}
+          preserved = {str(value).casefold() for value in report.get('preserved', [])}
+          assert published <= {'frenchstream'}, (published, preserved)
+          assert {'wookafr', 'coflix'} <= preserved, preserved
+          assert 'frenchstream' in published | preserved, (published, preserved)
 
           provider = report['providers']['frenchstream']
-          assert provider['strictly_better'], provider
           assert provider['no_regression'], provider
           assert provider['strict_outputs'], provider
+          if 'frenchstream' in published:
+              assert provider['strictly_better'], provider
+              assert report.get('resolver_version') == 'v4', report
+          else:
+              assert not provider['strictly_better'], provider
+              assert '--target-media-v4--' in rows['frenchstream']['filename'], rows['frenchstream']
 
           blocked = {'snap.com', 'snapchat.com', 'ctfassets.net', 'sc-cdn.net'}
           playable_urls = []
@@ -95,24 +105,26 @@ jobs:
               host = (urlparse(url).hostname or '').lower()
               assert not any(host == rule or host.endswith('.' + rule) for rule in blocked), (host, url)
 
-          manifest = json.loads(Path('manifest.json').read_text(encoding='utf-8'))
-          row = next(row for row in manifest['scrapers'] if str(row.get('id', '')).casefold() == 'frenchstream')
-          assert '--target-media-v4--' in row['filename'], row
-          print('target media provider published: frenchstream')
+          with open(os.environ['GITHUB_OUTPUT'], 'a', encoding='utf-8') as output:
+              output.write(f"changed={'true' if published else 'false'}\n")
+          print('target media promotion:', 'frenchstream' if published else 'none; Frenchstream V4 already proven')
           print('real content-proven HLS retained:', next(url for url in playable_urls if 's1.fsvid.lol' in url))
           print('preserved unresolved: coflix, wookafr')
           PY
 
       - name: Bump and synchronize release
+        if: steps.promotion.outputs.changed == 'true'
         run: |
           python scripts/bump_release_patch_if_manifest_changed.py --previous "$RUNNER_TEMP/manifest.before.json" --manifest manifest.json
           python scripts/sync_release_versions.py --manifest manifest.json
           python scripts/validate_vf_projection.py
 
       - name: Run complete regressions
+        if: steps.promotion.outputs.changed == 'true'
         run: npm test
 
       - name: Regenerate and validate release integrity
+        if: steps.promotion.outputs.changed == 'true'
         run: |
           python scripts/generate_release_hashes.py
           python scripts/validate_release_integrity.py
@@ -121,6 +133,7 @@ jobs:
           python scripts/validate_activation_preservation.py
 
       - name: Publish strict target media bundle
+        if: steps.promotion.outputs.changed == 'true'
         shell: bash
         run: |
           set -euo pipefail
