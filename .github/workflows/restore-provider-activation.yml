@@ -38,7 +38,7 @@ jobs:
       - name: Install dependencies
         run: npm ci --ignore-scripts --no-audit --no-fund
 
-      - name: Restore provider activation baseline
+      - name: Restore provider activation union
         run: |
           cp manifest.json "$RUNNER_TEMP/manifest.before.json"
           python scripts/restore_provider_activation_lkg.py
@@ -65,14 +65,10 @@ jobs:
               data = json.loads(Path(path).read_text(encoding='utf-8'))
               rows = {str(row.get('id') or '').casefold(): row for row in data.get('scrapers', [])}
               active = {provider_id for provider_id, row in rows.items() if row.get('enabled') is True}
-              assert len(active) == 59, (path, len(active))
-              assert rows['purstream']['enabled'] is True
-              assert rows['goated']['enabled'] is True
-              assert rows['wookafr']['enabled'] is True
-              assert rows['cineby']['enabled'] is False
-              assert rows['french-manga']['enabled'] is False
-              assert rows['voiranime-rip']['enabled'] is False
-          print('provider activation restoration assertions passed')
+              assert len(active) == 62, (path, len(active))
+              for provider_id in ('purstream', 'goated', 'wookafr', 'cineby', 'french-manga', 'voiranime-rip'):
+                  assert rows[provider_id]['enabled'] is True, (path, provider_id)
+          print('provider activation union assertions passed')
           PY
 
       - name: Publish validated restoration
@@ -89,7 +85,7 @@ jobs:
             echo "No activation changes to publish."
             exit 0
           fi
-          git commit -m "fix: restore validated provider activation set"
+          git commit -m "fix: restore validated provider activation union"
           git reset --hard HEAD
           git clean -fd
           for attempt in 1 2 3 4 5; do
