@@ -1,0 +1,108 @@
+name: Reactivate strictly proven main-only providers
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/reactivate-strict-main-providers.yml"
+      - ".github/triggers/reactivate-strict-main-providers"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: nuvio-provider-publish
+  cancel-in-progress: false
+
+jobs:
+  reactivate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: "3.12"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: "24"
+          package-manager-cache: false
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Validate reactivation tooling
+        run: |
+          python -m py_compile scripts/reactivate_strict_main_providers.py
+          node --check scripts/nuvio_tv_probe_v2.cjs
+
+      - name: Revalidate exact TV output and reactivate main-only providers
+        run: |
+          cp manifest.json "$RUNNER_TEMP/manifest.before.json"
+          cp vf/manifest.json "$RUNNER_TEMP/vf.before.json"
+          python scripts/reactivate_strict_main_providers.py
+          cmp -s vf/manifest.json "$RUNNER_TEMP/vf.before.json"
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          report = json.loads(Path('automation/strict-main-reactivation.json').read_text(encoding='utf-8'))
+          expected = {'4khdhubnew', 'animezey', 'hianime', 'kisskh'}
+          actual = set(report.get('reactivated', []))
+          assert actual == expected, (actual, expected, report.get('preserved_disabled'))
+          manifest = json.loads(Path('manifest.json').read_text(encoding='utf-8'))
+          rows = {str(row.get('id', '')).casefold(): row for row in manifest.get('scrapers', [])}
+          for provider_id in sorted(expected):
+              assert rows[provider_id]['enabled'] is True
+          assert rows['topcartoons']['enabled'] is False
+          print('main-only strict reactivations:', ', '.join(sorted(actual)))
+          print('content-mismatched provider preserved disabled: topcartoons')
+          PY
+
+      - name: Bump and synchronize release metadata
+        run: |
+          python scripts/bump_release_patch_if_manifest_changed.py --previous "$RUNNER_TEMP/manifest.before.json" --manifest manifest.json
+          python scripts/sync_release_versions.py --manifest manifest.json
+          cmp -s vf/manifest.json "$RUNNER_TEMP/vf.before.json"
+
+      - name: Run complete regressions
+        run: npm test
+
+      - name: Regenerate and validate release integrity
+        run: |
+          python scripts/generate_release_hashes.py
+          python scripts/validate_release_integrity.py
+          node scripts/validate_provider_semantics.cjs
+          python scripts/validate_activation_preservation.py
+          cmp -s vf/manifest.json "$RUNNER_TEMP/vf.before.json"
+
+      - name: Publish main-only reactivations
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add manifest.json PROVENANCE.json package.json sources.json nuvio-client-id-state.json \
+            scripts/reactivate_strict_main_providers.py \
+            automation/strict-main-reactivation.json \
+            FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json
+          git commit -m "fix: reactivate strictly proven main-only providers"
+          git reset --hard HEAD
+          git clean -fd
+          for attempt in 1 2 3 4 5; do
+            git fetch origin main
+            if git rebase origin/main && git push origin HEAD:main; then
+              exit 0
+            fi
+            git rebase --abort || true
+            sleep $((attempt * 2))
+          done
+          exit 1
