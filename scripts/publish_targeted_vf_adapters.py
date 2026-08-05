@@ -8,6 +8,7 @@ import os
 import re
 import subprocess
 import sys
+import urllib.parse
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -45,6 +46,30 @@ TARGETS = {
     },
 }
 SEMVER = re.compile(r"^(\d+)\.(\d+)\.(\d+)$")
+DIRECT_MEDIA = re.compile(r"\.(?:m3u8|mp4|mpd|mkv|webm)(?:[?#]|$)", re.I)
+PLAYER_PATH = re.compile(r"(?:/(?:embed|player|watch)(?:[-/]|$)|/(?:e|v)/)", re.I)
+PLAYER_HOST_TOKENS = (
+    "vidzy",
+    "vidnest",
+    "uqload",
+    "voe",
+    "vidmoly",
+    "sibnet",
+    "dailymotion",
+    "streamtape",
+    "sendvid",
+    "vidoza",
+    "filelions",
+    "dood",
+    "sharecloudy",
+)
+REJECT_HOSTS = {
+    "youtube.com",
+    "www.youtube.com",
+    "youtu.be",
+    "google.com",
+    "www.google.com",
+}
 
 
 def load(path: Path) -> dict[str, Any]:
@@ -72,23 +97,57 @@ def module_apply(path: Path):
     return module.apply
 
 
+def rows_from_value(value: Any) -> list[dict[str, Any]]:
+    if isinstance(value, list):
+        return [row for row in value if isinstance(row, dict)]
+    if isinstance(value, dict):
+        for key in ("streams", "results", "data"):
+            rows = value.get(key)
+            if isinstance(rows, list):
+                return [row for row in rows if isinstance(row, dict)]
+    return []
+
+
 def parse_worker(stdout: str) -> list[dict[str, Any]]:
     for line in reversed(stdout.splitlines()):
-        line = line.strip()
-        if not line:
+        payload = line.strip()
+        if not payload:
             continue
+        for prefix in ("NUVIO_HEALTH_RESULT=", "NUVIO_RESULT="):
+            if payload.startswith(prefix):
+                payload = payload[len(prefix) :].strip()
+                break
         try:
-            value = json.loads(line)
+            value = json.loads(payload)
         except json.JSONDecodeError:
             continue
-        if isinstance(value, list):
-            return [row for row in value if isinstance(row, dict)]
-        if isinstance(value, dict):
-            for key in ("streams", "results", "data"):
-                rows = value.get(key)
-                if isinstance(rows, list):
-                    return [row for row in rows if isinstance(row, dict)]
+        rows = rows_from_value(value)
+        if rows:
+            return rows
     return []
+
+
+def is_usable_stream(row: dict[str, Any]) -> bool:
+    url = str(row.get("url") or "").strip()
+    if not url.startswith(("http://", "https://")):
+        return False
+    if any(char in url for char in (" ", ")", "\"", "'")):
+        return False
+    try:
+        parsed = urllib.parse.urlsplit(url)
+    except ValueError:
+        return False
+    host = (parsed.hostname or "").casefold()
+    path = parsed.path.casefold()
+    if not host or host in REJECT_HOSTS or host.endswith(".youtube.com"):
+        return False
+    if re.search(r"\.(?:js|css|png|jpe?g|gif|svg|woff2?|ttf)(?:$|[?#])", path, re.I):
+        return False
+    if DIRECT_MEDIA.search(url):
+        return True
+    if PLAYER_PATH.search(path):
+        return True
+    return any(token in host for token in PLAYER_HOST_TOKENS) and "embed" in url.casefold()
 
 
 def validate_candidate(path: Path) -> dict[str, Any]:
@@ -113,10 +172,11 @@ def validate_candidate(path: Path) -> dict[str, Any]:
     except Exception as error:
         return {"ok": False, "error": f"{type(error).__name__}: {error}"}
     rows = parse_worker(process.stdout)
-    usable = [row for row in rows if str(row.get("url") or "").startswith(("http://", "https://"))]
+    usable = [row for row in rows if is_usable_stream(row)]
     return {
         "ok": process.returncode == 0 and bool(usable),
         "returncode": process.returncode,
+        "raw_stream_count": len(rows),
         "stream_count": len(usable),
         "streams": usable[:12],
         "stdout_tail": process.stdout[-5000:],
