@@ -42,8 +42,15 @@ assert by_id['goated']['enabled'] is True
 assert 'movie' in by_id['goated']['supportedTypes']
 assert 'goated' in activation['active_ids']
 
-for provider_id in ('streamzo', 'movix', 'coflix', 'flemmix'):
+for provider_id in ('movix', 'coflix', 'flemmix'):
     assert by_id[provider_id]['supportsExternalPlayer'] is True, provider_id
+# StreamZo historically exposed embeds. Once the globally audited direct-media
+# bundle is promoted, every surviving output is a content-proven HLS/container
+# and the provider must no longer advertise an external-player requirement.
+if '--nuvio-tv-global--' in str(by_id['streamzo'].get('filename') or ''):
+    assert by_id['streamzo']['supportsExternalPlayer'] is False
+else:
+    assert by_id['streamzo']['supportsExternalPlayer'] is True
 assert 'movie' in by_id['frenchstream']['supportedTypes']
 assert not ({'dahmermovies', 'dahmermovies-tv'} & set(by_id))
 assert not list((ROOT / 'providers').glob('dahmermovies*.js'))
@@ -71,14 +78,18 @@ for provider_id in ('purstream', 'movix', 'nakios'):
         assert cfg.get('api_probe_routes'), provider_id
 
 recovery = 'scripts/provider_patches/vf_catalogue_recovery.py'
+sanitizer_v5 = 'scripts/provider_patches/stream_output_sanitizer_v5.py'
 for provider_id in ('frenchstream', 'streamzo', 'movix', 'coflix', 'flemmix'):
     patch = patches[provider_id]
     assert recovery in patch.get('patch_scripts', []), provider_id
+    assert sanitizer_v5 in patch.get('patch_scripts', []), provider_id
     options = patch.get('patch_script_options', {}).get(recovery, {})
     expected_types = ['movie'] if provider_id == 'flemmix' else patch.get('published_types')
     assert options.get('types') == expected_types, provider_id
     assert 'fstream.top' in options.get('blocked_hosts', []), provider_id
-    assert '/troll/' in options.get('blocked_path_patterns', []), provider_id
+    # A path name is not proof of invalid media. The response body must prove
+    # `#EXTM3U`; HTML/403 responses and the known fake host remain rejected.
+    assert '/troll/' not in options.get('blocked_path_patterns', []), provider_id
 
 # Prefix collisions such as flemmix.me -> flemmix.men may never create .menn.
 for path in (ROOT / 'providers').glob('*.js'):

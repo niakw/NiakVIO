@@ -1,4 +1,4 @@
-name: Promote strict target media resolution v3
+name: Promote strict target media resolution v4
 
 on:
   workflow_dispatch:
@@ -41,28 +41,61 @@ jobs:
 
       - name: Validate target resolver tooling
         run: |
+          python -m py_compile scripts/normalize_hls_override_policy.py
+          python -m py_compile scripts/provider_patches/stream_output_sanitizer_v5.py
           python -m py_compile scripts/provider_patches/nuvio_tv_target_media_v3.py
+          python -m py_compile scripts/provider_patches/expose_strict_wrapper_original.py
+          python -m py_compile scripts/provider_patches/target_media_host_filter_v4.py
+          python -m py_compile scripts/provider_patches/nuvio_tv_target_media_v4.py
           python -m py_compile scripts/promote_target_media_v3.py
+          python -m py_compile scripts/promote_target_media_v4.py
           node --check scripts/nuvio_tv_probe_v2.cjs
+
+      - name: Normalize global HLS policy
+        run: |
+          python scripts/normalize_hls_override_policy.py
+          python scripts/normalize_hls_override_policy.py --check
 
       - name: Revalidate target player chains and stage strict improvements
         run: |
           cp manifest.json "$RUNNER_TEMP/manifest.before.json"
-          python scripts/promote_target_media_v3.py
+          python scripts/promote_target_media_v4.py
           python - <<'PY'
           import json
           from pathlib import Path
+          from urllib.parse import urlparse
 
           report = json.loads(Path('automation/nuvio-tv-target-media-v3.json').read_text(encoding='utf-8'))
           published = {row['id'] for row in report.get('published', [])}
-          assert published, report
-          for provider_id in published:
-              provider = report['providers'][provider_id]
-              assert provider['strictly_better'], (provider_id, provider)
-              assert provider['no_regression'], (provider_id, provider)
-              assert provider['strict_outputs'], (provider_id, provider)
-          print('target media providers published:', ', '.join(sorted(published)))
-          print('preserved unresolved:', ', '.join(report.get('preserved', [])) or 'none')
+          assert published == {'frenchstream'}, (published, report.get('preserved'))
+          assert set(report.get('preserved', [])) == {'wookafr', 'coflix'}, report.get('preserved')
+          assert report.get('resolver_version') == 'v4', report
+
+          provider = report['providers']['frenchstream']
+          assert provider['strictly_better'], provider
+          assert provider['no_regression'], provider
+          assert provider['strict_outputs'], provider
+
+          blocked = {'snap.com', 'snapchat.com', 'ctfassets.net', 'sc-cdn.net'}
+          playable_urls = []
+          for result in provider.get('candidate', []):
+              for item in (result.get('result') or {}).get('streams') or []:
+                  media = item.get('media') or {}
+                  row = item.get('row') or {}
+                  if media.get('playable'):
+                      playable_urls.append(str(row.get('url') or media.get('url') or ''))
+          assert playable_urls, provider
+          assert any(urlparse(url).hostname == 's1.fsvid.lol' and '/troll/master.m3u8' in url for url in playable_urls), playable_urls
+          for url in playable_urls:
+              host = (urlparse(url).hostname or '').lower()
+              assert not any(host == rule or host.endswith('.' + rule) for rule in blocked), (host, url)
+
+          manifest = json.loads(Path('manifest.json').read_text(encoding='utf-8'))
+          row = next(row for row in manifest['scrapers'] if str(row.get('id', '')).casefold() == 'frenchstream')
+          assert '--target-media-v4--' in row['filename'], row
+          print('target media provider published: frenchstream')
+          print('real content-proven HLS retained:', next(url for url in playable_urls if 's1.fsvid.lol' in url))
+          print('preserved unresolved: coflix, wookafr')
           PY
 
       - name: Bump and synchronize release
@@ -82,7 +115,7 @@ jobs:
           python scripts/validate_vf_projection.py
           python scripts/validate_activation_preservation.py
 
-      - name: Publish strict target media bundles
+      - name: Publish strict target media bundle
         shell: bash
         run: |
           set -euo pipefail
@@ -90,14 +123,18 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add manifest.json vf/manifest.json provider-overrides.json PROVENANCE.json \
             package.json sources.json nuvio-client-id-state.json \
-            providers/wookafr--target-media-v3--*.js \
-            providers/coflix--target-media-v3--*.js \
-            providers/frenchstream--target-media-v3--*.js \
+            providers/frenchstream--target-media-v4--*.js \
+            scripts/normalize_hls_override_policy.py \
+            scripts/provider_patches/stream_output_sanitizer_v5.py \
             scripts/provider_patches/nuvio_tv_target_media_v3.py \
+            scripts/provider_patches/expose_strict_wrapper_original.py \
+            scripts/provider_patches/target_media_host_filter_v4.py \
+            scripts/provider_patches/nuvio_tv_target_media_v4.py \
             scripts/promote_target_media_v3.py \
+            scripts/promote_target_media_v4.py \
             automation/nuvio-tv-target-media-v3.json \
             FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json
-          git commit -m "fix: publish strict LecteurVideo MegaUp and Vidzy media"
+          git commit -m "fix: publish provenance-filtered Frenchstream HLS"
           git reset --hard HEAD
           git clean -fd
           for attempt in 1 2 3 4 5; do

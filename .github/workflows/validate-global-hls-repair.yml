@@ -1,0 +1,180 @@
+name: Validate complete HLS and provider repair pipeline
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "scripts/**"
+      - "tests/**"
+      - ".github/workflows/promote-target-media-v3.yml"
+      - ".github/workflows/promote-global-nuvio-tv-candidates.yml"
+      - ".github/workflows/reactivate-strict-main-providers.yml"
+      - ".github/workflows/validate-global-hls-repair.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: ${{ matrix.mode }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 58
+    strategy:
+      fail-fast: false
+      matrix:
+        mode: [regressions, target-promotion, global-promotion, main-reactivation]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Set up Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: "3.12"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: "24"
+          package-manager-cache: false
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Validate Python and JavaScript tooling
+        run: |
+          python -m py_compile scripts/normalize_hls_override_policy.py
+          python -m py_compile scripts/promote_target_media_v4.py
+          python -m py_compile scripts/provider_patches/stream_output_sanitizer_v5.py
+          python -m py_compile scripts/provider_patches/nuvio_tv_target_media_v4.py
+          python -m py_compile scripts/provider_patches/target_media_host_filter_v4.py
+          python -m py_compile scripts/promote_global_nuvio_tv_candidates.py
+          python -m py_compile scripts/reactivate_strict_main_providers.py
+          node --check scripts/nuvio_tv_probe_v2.cjs
+          node --check tests/vf_movie_recovery.test.cjs
+
+      - name: Normalize global HLS policy
+        run: |
+          python scripts/normalize_hls_override_policy.py
+          python scripts/normalize_hls_override_policy.py --check
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          overrides = json.loads(Path('provider-overrides.json').read_text(encoding='utf-8'))
+          text = json.dumps(overrides, ensure_ascii=False)
+          assert '"/troll/"' not in text, 'path-name HLS rejection survived migration'
+          assert 'fstream.top' in text, 'known fake host block was removed'
+          assert 'scripts/provider_patches/stream_output_sanitizer_v5.py' in text
+          PY
+
+      - name: Run selected validation
+        env:
+          MODE: ${{ matrix.mode }}
+        run: |
+          set -euo pipefail
+          case "$MODE" in
+            regressions)
+              npm test
+              ;;
+
+            target-promotion)
+              cp manifest.json "$RUNNER_TEMP/manifest.before.json"
+              python scripts/promote_target_media_v4.py
+              python - <<'PY'
+          import json
+          from pathlib import Path
+          from urllib.parse import urlparse
+
+          report = json.loads(Path('automation/nuvio-tv-target-media-v3.json').read_text(encoding='utf-8'))
+          assert {row['id'] for row in report.get('published', [])} == {'frenchstream'}, report
+          assert set(report.get('preserved', [])) == {'wookafr', 'coflix'}, report
+          assert report.get('resolver_version') == 'v4', report
+          provider = report['providers']['frenchstream']
+          blocked = {'snap.com', 'snapchat.com', 'ctfassets.net', 'sc-cdn.net'}
+          urls = []
+          for result in provider.get('candidate', []):
+              for item in (result.get('result') or {}).get('streams') or []:
+                  media = item.get('media') or {}
+                  if media.get('playable'):
+                      urls.append(str((item.get('row') or {}).get('url') or media.get('url') or ''))
+          assert any(urlparse(url).hostname == 's1.fsvid.lol' and '/troll/master.m3u8' in url for url in urls), urls
+          for url in urls:
+              host = (urlparse(url).hostname or '').lower()
+              assert not any(host == rule or host.endswith('.' + rule) for rule in blocked), (host, url)
+          PY
+              python scripts/bump_release_patch_if_manifest_changed.py --previous "$RUNNER_TEMP/manifest.before.json" --manifest manifest.json
+              python scripts/sync_release_versions.py --manifest manifest.json
+              python scripts/validate_vf_projection.py
+              npm test
+              ;;
+
+            global-promotion)
+              cp manifest.json "$RUNNER_TEMP/manifest.before.json"
+              python scripts/promote_global_nuvio_tv_candidates.py
+              python - <<'PY'
+          import json
+          from pathlib import Path
+
+          report = json.loads(Path('automation/nuvio-tv-global-promotion.json').read_text(encoding='utf-8'))
+          required = {'french-manga', 'streamzo'}
+          optional = {'desiflix'}
+          published = {row['id'] for row in report.get('published', [])}
+          preserved = set(report.get('preserved', []))
+          assert required <= published <= required | optional, (published, preserved)
+
+          for provider_id in sorted(required):
+              provider = report['providers'][provider_id]
+              assert provider['strictly_better'], (provider_id, provider)
+              assert provider['no_regression'], (provider_id, provider)
+              assert provider['strict_outputs'], (provider_id, provider)
+
+          desiflix = report['providers']['desiflix']
+          assert desiflix['no_regression'], desiflix
+          assert desiflix['strict_outputs'], desiflix
+          if 'desiflix' in published:
+              assert desiflix['strictly_better'], desiflix
+              assert desiflix['candidate_summary']['playable_fixture_count'] > desiflix['baseline_summary']['playable_fixture_count'], desiflix
+              assert 'desiflix' not in preserved
+          else:
+              assert 'desiflix' in preserved, report
+              assert not desiflix['strictly_better'], desiflix
+          PY
+              python scripts/bump_release_patch_if_manifest_changed.py --previous "$RUNNER_TEMP/manifest.before.json" --manifest manifest.json
+              python scripts/sync_release_versions.py --manifest manifest.json
+              python scripts/validate_vf_projection.py
+              npm test
+              ;;
+
+            main-reactivation)
+              cp manifest.json "$RUNNER_TEMP/manifest.before.json"
+              cp vf/manifest.json "$RUNNER_TEMP/vf.before.json"
+              python scripts/reactivate_strict_main_providers.py
+              python scripts/bump_release_patch_if_manifest_changed.py --previous "$RUNNER_TEMP/manifest.before.json" --manifest manifest.json
+              python scripts/sync_release_versions.py --manifest manifest.json
+              python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          required = {'4khdhubnew', 'hianime', 'kisskh'}
+          optional = {'animezey'}
+          report = json.loads(Path('automation/strict-main-reactivation.json').read_text(encoding='utf-8'))
+          actual = set(report.get('reactivated', []))
+          assert required <= actual <= required | optional, (actual, report.get('preserved_disabled'))
+          manifest = json.loads(Path('manifest.json').read_text(encoding='utf-8'))
+          rows = {str(row.get('id', '')).casefold(): row for row in manifest.get('scrapers', [])}
+          assert all(rows[item]['enabled'] is True for item in actual), actual
+          if 'animezey' not in actual:
+              assert rows['animezey']['enabled'] is False
+          assert rows['topcartoons']['enabled'] is False, rows['topcartoons']
+          before = json.loads(Path(os.environ['RUNNER_TEMP'], 'vf.before.json').read_text(encoding='utf-8'))
+          after = json.loads(Path('vf/manifest.json').read_text(encoding='utf-8'))
+          assert before.get('scrapers') == after.get('scrapers'), 'main-only providers leaked into VF rows'
+          assert (required | optional).isdisjoint({str(row.get('id', '')).casefold() for row in after.get('scrapers', [])})
+          PY
+              python scripts/validate_vf_projection.py
+              npm test
+              ;;
+          esac

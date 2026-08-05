@@ -41,9 +41,16 @@ jobs:
 
       - name: Validate promotion tooling
         run: |
+          python -m py_compile scripts/normalize_hls_override_policy.py
+          python -m py_compile scripts/provider_patches/stream_output_sanitizer_v5.py
           python -m py_compile scripts/promote_global_nuvio_tv_candidates.py
           python -m py_compile scripts/provider_patches/nuvio_tv_direct_media_v2.py
           node --check scripts/nuvio_tv_probe_v2.cjs
+
+      - name: Normalize global HLS policy
+        run: |
+          python scripts/normalize_hls_override_policy.py
+          python scripts/normalize_hls_override_policy.py --check
 
       - name: Revalidate and stage independent strict improvements
         run: |
@@ -54,20 +61,34 @@ jobs:
           from pathlib import Path
 
           report = json.loads(Path('automation/nuvio-tv-global-promotion.json').read_text(encoding='utf-8'))
-          expected = {'french-manga', 'streamzo'}
+          required = {'french-manga', 'streamzo'}
+          optional = {'desiflix'}
           published = {row['id'] for row in report.get('published', [])}
-          assert published == expected, (published, expected, report.get('preserved'))
-          assert 'desiflix' in report.get('preserved', []), report
-          desiflix = report['providers']['desiflix']
-          assert desiflix['baseline_summary']['playable_fixture_count'] == 2, desiflix
-          assert not desiflix['strictly_better'], desiflix
-          for provider_id in sorted(expected):
+          preserved = set(report.get('preserved', []))
+          assert required <= published <= required | optional, (published, preserved)
+
+          for provider_id in sorted(required):
               provider = report['providers'][provider_id]
               assert provider['strictly_better'], (provider_id, provider)
               assert provider['no_regression'], (provider_id, provider)
               assert provider['strict_outputs'], (provider_id, provider)
+
+          desiflix = report['providers']['desiflix']
+          assert desiflix['no_regression'], desiflix
+          assert desiflix['strict_outputs'], desiflix
+          if 'desiflix' in published:
+              assert desiflix['strictly_better'], desiflix
+              assert desiflix['candidate_summary']['playable_fixture_count'] > desiflix['baseline_summary']['playable_fixture_count'], desiflix
+              assert 'desiflix' not in preserved
+          else:
+              assert 'desiflix' in preserved, report
+              assert not desiflix['strictly_better'], desiflix
+
           print('strict global promotions:', ', '.join(sorted(published)))
-          print('already healthy and preserved: desiflix')
+          if 'desiflix' in published:
+              print('DesiFlix promoted from current strict media proof')
+          else:
+              print('DesiFlix preserved without forced replacement')
           PY
 
       - name: Bump and synchronize release
@@ -95,8 +116,11 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add manifest.json vf/manifest.json provider-overrides.json PROVENANCE.json \
             package.json sources.json nuvio-client-id-state.json \
+            providers/desiflix--nuvio-tv-global--*.js \
             providers/french-manga--nuvio-tv-global--*.js \
             providers/streamzo--nuvio-tv-global--*.js \
+            scripts/normalize_hls_override_policy.py \
+            scripts/provider_patches/stream_output_sanitizer_v5.py \
             scripts/promote_global_nuvio_tv_candidates.py \
             automation/nuvio-tv-global-promotion.json \
             FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json
