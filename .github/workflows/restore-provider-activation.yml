@@ -1,0 +1,103 @@
+name: Restore validated provider activation set
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/restore-provider-activation.yml"
+      - ".github/triggers/restore-provider-activation"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: nuvio-provider-publish
+  cancel-in-progress: false
+
+jobs:
+  restore:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: "3.12"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: "24"
+          package-manager-cache: false
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Restore provider activation baseline
+        run: |
+          cp manifest.json "$RUNNER_TEMP/manifest.before.json"
+          python scripts/restore_provider_activation_lkg.py
+          python scripts/validate_activation_preservation.py
+
+      - name: Run provider regression tests
+        run: |
+          node tests/vf_movie_recovery.test.cjs
+          python tests/vf_movie_policy_test.py
+          python tests/deep_repair_rollback_test.py
+          npm test
+
+      - name: Regenerate and validate release
+        run: |
+          python scripts/bump_release_patch_if_manifest_changed.py --previous "$RUNNER_TEMP/manifest.before.json" --manifest manifest.json
+          python scripts/sync_release_versions.py --manifest manifest.json
+          python scripts/generate_release_hashes.py
+          python scripts/validate_release_integrity.py
+          node scripts/validate_provider_semantics.cjs
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          for path in ('manifest.json', 'vf/manifest.json'):
+              data = json.loads(Path(path).read_text(encoding='utf-8'))
+              rows = {str(row.get('id') or '').casefold(): row for row in data.get('scrapers', [])}
+              active = {provider_id for provider_id, row in rows.items() if row.get('enabled') is True}
+              assert len(active) == 59, (path, len(active))
+              assert rows['purstream']['enabled'] is True
+              assert rows['goated']['enabled'] is True
+              assert rows['wookafr']['enabled'] is True
+              assert rows['cineby']['enabled'] is False
+              assert rows['french-manga']['enabled'] is False
+              assert rows['voiranime-rip']['enabled'] is False
+          print('provider activation restoration assertions passed')
+          PY
+
+      - name: Publish validated restoration
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add manifest.json vf/manifest.json package.json sources.json \
+            FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json \
+            provider-activation-lkg.json scripts/restore_provider_activation_lkg.py \
+            scripts/validate_activation_preservation.py scripts/validate_release_integrity.py
+          if git diff --cached --quiet; then
+            echo "No activation changes to publish."
+            exit 0
+          fi
+          git commit -m "fix: restore validated provider activation set"
+          git reset --hard HEAD
+          git clean -fd
+          for attempt in 1 2 3 4 5; do
+            git fetch origin main
+            if git rebase origin/main && git push origin HEAD:main; then
+              exit 0
+            fi
+            git rebase --abort || true
+            sleep $((attempt * 2))
+          done
+          exit 1
