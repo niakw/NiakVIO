@@ -1,0 +1,109 @@
+name: Publish strict NuvioTV provider compatibility
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/publish-nuvio-tv-compat.yml"
+      - ".github/triggers/publish-nuvio-tv-compat"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: nuvio-provider-publish
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: "3.12"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: "24"
+          package-manager-cache: false
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Validate compatibility tooling
+        run: |
+          python -m py_compile scripts/provider_patches/nuvio_tv_direct_media.py
+          python -m py_compile scripts/publish_nuvio_tv_compat.py
+          node --check scripts/nuvio_tv_probe.cjs
+
+      - name: Require strict NuvioTV Interstellar proof
+        run: |
+          cp manifest.json "$RUNNER_TEMP/manifest.before.json"
+          python scripts/publish_nuvio_tv_compat.py
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          report = json.loads(Path('automation/nuvio-tv-compat-report.json').read_text(encoding='utf-8'))
+          expected = {'goated', 'wookafr', 'coflix', 'streamzo', 'frenchstream'}
+          published = {row['id'] for row in report.get('published', [])}
+          assert published == expected, (published, expected, report.get('blocked_publication'))
+          for provider_id in sorted(expected):
+              result = report['providers'][provider_id]['result']
+              assert result['playable_stream_count'] > 0, (provider_id, result)
+              for item in result['streams']:
+                  if item['media']['playable']:
+                      assert item['media']['error'] is None
+          print('strict NuvioTV providers validated:', ', '.join(sorted(published)))
+          PY
+
+      - name: Bump and synchronize release
+        run: |
+          python scripts/bump_release_patch_if_manifest_changed.py --previous "$RUNNER_TEMP/manifest.before.json" --manifest manifest.json
+          python scripts/sync_release_versions.py --manifest manifest.json
+          python scripts/validate_vf_projection.py
+
+      - name: Run regressions
+        run: npm test
+
+      - name: Regenerate release integrity
+        run: |
+          python scripts/generate_release_hashes.py
+          python scripts/validate_release_integrity.py
+          node scripts/validate_provider_semantics.cjs
+          python scripts/validate_vf_projection.py
+          python scripts/validate_activation_preservation.py
+
+      - name: Publish strict TV-compatible bundles
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add manifest.json vf/manifest.json provider-overrides.json PROVENANCE.json \
+            package.json sources.json nuvio-client-id-state.json \
+            providers/*--nuvio-tv--*.js \
+            scripts/provider_patches/nuvio_tv_direct_media.py \
+            scripts/nuvio_tv_probe.cjs scripts/publish_nuvio_tv_compat.py \
+            automation/nuvio-tv-compat-report.json \
+            FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json
+          git commit -m "fix: publish strict NuvioTV direct-media providers"
+          git reset --hard HEAD
+          git clean -fd
+          for attempt in 1 2 3 4 5; do
+            git fetch origin main
+            if git rebase origin/main && git push origin HEAD:main; then
+              exit 0
+            fi
+            git rebase --abort || true
+            sleep $((attempt * 2))
+          done
+          exit 1
