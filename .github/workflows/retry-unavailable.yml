@@ -3,15 +3,15 @@ name: Retry unavailable Nuvio providers
 on:
   workflow_dispatch:
   schedule:
-    # Hourly targeted retry. Runs only when availability history contains failures.
+    # Hourly targeted diagnostic retry. Runs only when history contains failures.
     - cron: "41 * * * *"
 
 permissions:
   contents: read
 
 concurrency:
-  group: nuvio-provider-publish
-  cancel-in-progress: false
+  group: nuvio-provider-retry
+  cancel-in-progress: true
 
 jobs:
   check:
@@ -72,7 +72,7 @@ jobs:
           NUVIO_HEALTH_OUTPUT: health-output
         run: node scripts/health_check.mjs --retry
 
-      - name: Upload targeted availability result
+      - name: Upload targeted diagnostic result
         if: steps.targets.outputs.has_targets == 'true'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
@@ -85,8 +85,8 @@ jobs:
         if: steps.targets.outputs.has_targets != 'true'
         run: echo "No unavailable or degraded provider currently needs an hourly retry."
 
-  publish:
-    name: Apply targeted retry state
+  report:
+    name: Update targeted diagnostic state only
     needs: check
     if: needs.check.outputs.has_targets == 'true'
     runs-on: ubuntu-latest
@@ -111,50 +111,37 @@ jobs:
           name: nuvio-retry-${{ github.run_id }}
           path: checked-artifact
 
-      - name: Apply cautious availability policy without bypassing publication eligibility
+      - name: Update reports without applying manifest toggles
         env:
           NUVIO_HEALTH_RESULTS: checked-artifact/health-results.json
-        run: python scripts/update_availability.py
+        run: |
+          cp manifest.json "$RUNNER_TEMP/manifest.before.json"
+          cp vf/manifest.json "$RUNNER_TEMP/vf.before.json"
+          python scripts/update_availability.py
+          rm -f manifest.next.json
+          cmp -s manifest.json "$RUNNER_TEMP/manifest.before.json"
+          cmp -s vf/manifest.json "$RUNNER_TEMP/vf.before.json"
 
-      - name: Publish changed availability reports
+      - name: Publish targeted diagnostic reports
         shell: bash
         run: |
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
           git add availability-report.json availability-history.json
-          if ! git diff --cached --quiet; then
-            git commit -m "chore: retry unavailable Nuvio providers"
-            test -f manifest.next.json
-            cp manifest.next.json "$RUNNER_TEMP/manifest.next.json"
-            git reset --hard HEAD
-            git clean -fdx
-            git fetch origin main
-            git rebase origin/main
-            git push origin HEAD:main
-            cp "$RUNNER_TEMP/manifest.next.json" manifest.next.json
-          else
-            echo "Targeted availability state is unchanged."
-          fi
-
-      - name: Publish availability toggles without bypassing publication eligibility
-        shell: bash
-        run: |
-          set -euo pipefail
-          test -f manifest.next.json
-          mv manifest.next.json manifest.json
-          python scripts/generate_language_manifests.py
-          git add manifest.json vf/manifest.json
-
           if git diff --cached --quiet; then
-            echo "No provider enablement change."
+            echo "Targeted availability reports are unchanged."
             exit 0
           fi
-
-          git commit -m "chore: apply targeted availability state"
+          git commit -m "chore: retry unavailable provider diagnostics"
           git reset --hard HEAD
-          git clean -fdx
-          git fetch origin main
-          git rebase origin/main
-          git push origin HEAD:main
+          git clean -fd
+          for attempt in 1 2 3 4 5; do
+            git fetch origin main
+            if git rebase origin/main && git push origin HEAD:main; then
+              exit 0
+            fi
+            git rebase --abort || true
+            sleep $((attempt * 2))
+          done
+          exit 1
