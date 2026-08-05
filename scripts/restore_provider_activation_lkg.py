@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Restore the last-known-good activation set without reverting provider code."""
+"""Restore the validated activation union without reverting provider code."""
 from __future__ import annotations
 
 import json
@@ -22,9 +22,14 @@ def bump_patch(value: object) -> str:
     return f"{major}.{minor}.{patch + 1}"
 
 
-def restore(path: Path, expected: set[str]) -> tuple[list[str], list[str]]:
+def restore(path: Path, expected: set[str], *, require_all: bool) -> tuple[list[str], list[str], set[str]]:
     data = load(path)
-    found: set[str] = set()
+    found: set[str] = {
+        str(row.get("id") or "").casefold()
+        for row in data.get("scrapers") or []
+        if isinstance(row, dict) and str(row.get("id") or "").strip()
+    }
+    applicable = expected if require_all else expected & found
     enabled_now: list[str] = []
     disabled_now: list[str] = []
 
@@ -34,8 +39,7 @@ def restore(path: Path, expected: set[str]) -> tuple[list[str], list[str]]:
         provider_id = str(row.get("id") or "").casefold()
         if not provider_id:
             continue
-        found.add(provider_id)
-        desired = provider_id in expected
+        desired = provider_id in applicable
         current = row.get("enabled") is True
         if current == desired:
             continue
@@ -43,12 +47,13 @@ def restore(path: Path, expected: set[str]) -> tuple[list[str], list[str]]:
         row["version"] = bump_patch(row.get("version"))
         (enabled_now if desired else disabled_now).append(provider_id)
 
-    missing = sorted(expected - found)
-    if missing:
-        raise RuntimeError(f"{path}: activation LKG providers missing: {missing}")
+    if require_all:
+        missing = sorted(expected - found)
+        if missing:
+            raise RuntimeError(f"{path}: activation union providers missing: {missing}")
 
     path.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    return sorted(enabled_now), sorted(disabled_now)
+    return sorted(enabled_now), sorted(disabled_now), applicable
 
 
 def main() -> int:
@@ -57,19 +62,28 @@ def main() -> int:
     if len(expected) != int(policy.get("minimum_enabled_count") or 0):
         raise RuntimeError("activation policy count does not match unique active_ids")
 
-    main_enabled, main_disabled = restore(ROOT / "manifest.json", expected)
-    vf_enabled, vf_disabled = restore(ROOT / "vf" / "manifest.json", expected)
+    main_enabled, main_disabled, _main_expected = restore(
+        ROOT / "manifest.json", expected, require_all=True
+    )
+    vf_enabled, vf_disabled, vf_expected = restore(
+        ROOT / "vf" / "manifest.json", expected, require_all=False
+    )
 
     main = load(ROOT / "manifest.json")
-    count = sum(1 for row in main.get("scrapers") or [] if row.get("enabled") is True)
-    if count != len(expected):
-        raise RuntimeError(f"restored enabled count is {count}, expected {len(expected)}")
+    main_count = sum(1 for row in main.get("scrapers") or [] if row.get("enabled") is True)
+    if main_count != len(expected):
+        raise RuntimeError(f"restored main enabled count is {main_count}, expected {len(expected)}")
+
+    vf = load(ROOT / "vf" / "manifest.json")
+    vf_count = sum(1 for row in vf.get("scrapers") or [] if row.get("enabled") is True)
+    if vf_count != len(vf_expected):
+        raise RuntimeError(f"restored VF enabled count is {vf_count}, expected {len(vf_expected)}")
 
     print("reactivated main:", ", ".join(main_enabled) or "none")
     print("disabled main:", ", ".join(main_disabled) or "none")
     print("reactivated vf:", ", ".join(vf_enabled) or "none")
     print("disabled vf:", ", ".join(vf_disabled) or "none")
-    print(f"restored provider activation set: {count} enabled")
+    print(f"restored activation union: main={main_count}, vf={vf_count}")
     return 0
 
 
