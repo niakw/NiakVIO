@@ -265,13 +265,16 @@ def test_chained_provider_patch_scripts_and_output_guard() -> None:
         harness = r'''
 const provider = require(process.argv[1]);
 global.fetch = async function(url) {
+  const payload = new TextEncoder().encode(String(url).includes("malformed") ? "<html>blocked</html>" : "#EXTM3U\n#EXT-X-VERSION:3\n");
   return {
     ok: true,
+    status: 200,
     url: String(url),
     headers: { get: () => "application/vnd.apple.mpegurl" },
+    arrayBuffer: async () => payload.buffer.slice(payload.byteOffset, payload.byteOffset + payload.byteLength),
     body: {
       getReader: () => ({
-        read: async () => ({ value: new TextEncoder().encode(String(url).includes("malformed") ? "<html>blocked</html>" : "#EXTM3U\n#EXT-X-VERSION:3\n") }),
+        read: async () => ({ value: payload }),
         cancel: async () => {}
       })
     }
