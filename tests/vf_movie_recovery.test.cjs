@@ -10,6 +10,7 @@ const fixtures = [
 ];
 const entries = Object.fromEntries(manifest.scrapers.map((row) => [String(row.id).toLowerCase(), row]));
 const externalPlayer = 'https://player.example/embed/movie';
+const provenHls = 'https://s1.fsvid.lol/troll/master.m3u8';
 const tvFixture = { id: '94605', title: 'Arcane', year: 2021, slug: 'arcane', season: 1, episode: 1 };
 
 function fixtureForId(id) {
@@ -42,6 +43,9 @@ function detailPage(fixture) {
   if (fixture.id === tvFixture.id) return `<!doctype html><h1>${fixture.title}</h1><button data-season="1" data-episode="1" data-lang="vf" data-src="https://player.example/embed/tv/${fixture.id}/1/1"></button>`;
   return `<!doctype html><h1>${fixture.title}</h1><section id="player" data-embed="${externalPlayer}/${fixture.id}"></section>`;
 }
+function hlsBody() {
+  return '\uFEFF  #EXTM3U\n#EXT-X-VERSION:3\n#EXT-X-TARGETDURATION:10\n#EXTINF:10.0,\nsegment-1.ts\n#EXTINF:10.0,\nsegment-2.ts\n#EXT-X-ENDLIST\n';
+}
 
 global.fetch = async (input) => {
   const raw = typeof input === 'string' ? input : input.url;
@@ -71,8 +75,11 @@ global.fetch = async (input) => {
       },
     }), { status: 200, headers: { 'content-type': 'application/json' } });
   }
+  if (url.hostname === 's1.fsvid.lol' && url.pathname === '/troll/master.m3u8') {
+    return new Response(hlsBody(), { status: 200, headers: { 'content-type': 'text/plain; charset=utf-8' } });
+  }
   if (['vidzy.example', 'player.example'].includes(url.hostname)) {
-    return new Response('<html>external player</html>', { status: 200, headers: { 'content-type': 'text/html' } });
+    return new Response(`<html><script>const file=${JSON.stringify(provenHls)};</script></html>`, { status: 200, headers: { 'content-type': 'text/html' } });
   }
   const fixture = fixtureForUrl(url);
   if (url.hostname === 'streamzo.fr') {
@@ -87,6 +94,13 @@ global.fetch = async (input) => {
   return new Response('not found', { status: 404, headers: { 'content-type': 'text/plain' } });
 };
 
+function assertSafeRows(id, fixtureId, rows, kind) {
+  assert(Array.isArray(rows) && rows.length > 0, `${id}/${fixtureId}: ${kind} recovery produced no player`);
+  assert(rows.every((row) => typeof row.url === 'string' && /^https?:\/\//.test(row.url)), `${id}/${fixtureId}: invalid ${kind} player URL`);
+  assert(rows.every((row) => !/fstream\.top/i.test(row.url)), `${id}/${fixtureId}: known fake short player escaped filtering`);
+  assert(rows.every((row) => !/(?:^|\.)(?:snap\.com|snapchat\.com|ctfassets\.net|sc-cdn\.net)$/i.test(new URL(row.url).hostname)), `${id}/${fixtureId}: unrelated advertising media escaped filtering`);
+}
+
 (async () => {
   for (const id of targets) {
     const entry = entries[id];
@@ -96,17 +110,13 @@ global.fetch = async (input) => {
     const provider = require(providerPath);
     for (const fixture of fixtures) {
       const rows = await provider.getStreams(fixture.id, 'movie', null, null, {});
-      assert(Array.isArray(rows) && rows.length > 0, `${id}/${fixture.id}: movie recovery produced no player`);
-      assert(rows.every((row) => typeof row.url === 'string' && /^https?:\/\//.test(row.url)), `${id}/${fixture.id}: invalid player URL`);
-      assert(rows.every((row) => !/fstream\.top|\/troll\//i.test(row.url)), `${id}/${fixture.id}: fake short player escaped filtering`);
+      assertSafeRows(id, fixture.id, rows, 'movie');
     }
     if (id === 'flemmix') continue;
     const tvRows = await provider.getStreams(tvFixture.id, 'tv', tvFixture.season, tvFixture.episode, {});
-    assert(Array.isArray(tvRows) && tvRows.length > 0, `${id}/${tvFixture.id}: TV recovery produced no player`);
-    assert(tvRows.every((row) => typeof row.url === 'string' && /^https?:\/\//.test(row.url)), `${id}/${tvFixture.id}: invalid TV player URL`);
-    assert(tvRows.every((row) => !/fstream\.top|\/troll\//i.test(row.url)), `${id}/${tvFixture.id}: fake TV player escaped filtering`);
+    assertSafeRows(id, tvFixture.id, tvRows, 'TV');
   }
-  console.log('VF catalogue recovery tests passed (Interstellar + Guardians Vol. 3 + Arcane S01E01)');
+  console.log('VF catalogue recovery tests passed with content-proven HLS (Interstellar + Guardians Vol. 3 + Arcane S01E01)');
 })().catch((error) => {
   console.error(error);
   process.exit(1);
