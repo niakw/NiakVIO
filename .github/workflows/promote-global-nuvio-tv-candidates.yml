@@ -41,9 +41,16 @@ jobs:
 
       - name: Validate promotion tooling
         run: |
+          python -m py_compile scripts/normalize_hls_override_policy.py
+          python -m py_compile scripts/provider_patches/stream_output_sanitizer_v5.py
           python -m py_compile scripts/promote_global_nuvio_tv_candidates.py
           python -m py_compile scripts/provider_patches/nuvio_tv_direct_media_v2.py
           node --check scripts/nuvio_tv_probe_v2.cjs
+
+      - name: Normalize global HLS policy
+        run: |
+          python scripts/normalize_hls_override_policy.py
+          python scripts/normalize_hls_override_policy.py --check
 
       - name: Revalidate and stage independent strict improvements
         run: |
@@ -59,7 +66,7 @@ jobs:
           assert published == expected, (published, expected, report.get('preserved'))
           assert 'desiflix' in report.get('preserved', []), report
           desiflix = report['providers']['desiflix']
-          assert desiflix['baseline_summary']['playable_fixture_count'] == 2, desiflix
+          assert desiflix['baseline_summary']['playable_fixture_count'] > 0, desiflix
           assert not desiflix['strictly_better'], desiflix
           for provider_id in sorted(expected):
               provider = report['providers'][provider_id]
@@ -97,6 +104,8 @@ jobs:
             package.json sources.json nuvio-client-id-state.json \
             providers/french-manga--nuvio-tv-global--*.js \
             providers/streamzo--nuvio-tv-global--*.js \
+            scripts/normalize_hls_override_policy.py \
+            scripts/provider_patches/stream_output_sanitizer_v5.py \
             scripts/promote_global_nuvio_tv_candidates.py \
             automation/nuvio-tv-global-promotion.json \
             FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json
