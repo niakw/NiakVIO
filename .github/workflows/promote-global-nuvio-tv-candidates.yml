@@ -54,15 +54,20 @@ jobs:
           from pathlib import Path
 
           report = json.loads(Path('automation/nuvio-tv-global-promotion.json').read_text(encoding='utf-8'))
-          expected = {'desiflix', 'french-manga', 'streamzo'}
+          expected = {'french-manga', 'streamzo'}
           published = {row['id'] for row in report.get('published', [])}
           assert published == expected, (published, expected, report.get('preserved'))
+          assert 'desiflix' in report.get('preserved', []), report
+          desiflix = report['providers']['desiflix']
+          assert desiflix['baseline_summary']['playable_fixture_count'] == 2, desiflix
+          assert not desiflix['strictly_better'], desiflix
           for provider_id in sorted(expected):
               provider = report['providers'][provider_id]
               assert provider['strictly_better'], (provider_id, provider)
               assert provider['no_regression'], (provider_id, provider)
               assert provider['strict_outputs'], (provider_id, provider)
           print('strict global promotions:', ', '.join(sorted(published)))
+          print('already healthy and preserved: desiflix')
           PY
 
       - name: Bump and synchronize release
@@ -90,7 +95,6 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add manifest.json vf/manifest.json provider-overrides.json PROVENANCE.json \
             package.json sources.json nuvio-client-id-state.json \
-            providers/desiflix--nuvio-tv-global--*.js \
             providers/french-manga--nuvio-tv-global--*.js \
             providers/streamzo--nuvio-tv-global--*.js \
             scripts/promote_global_nuvio_tv_candidates.py \
