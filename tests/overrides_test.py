@@ -242,23 +242,23 @@ test_idempotent_override_validation()
 
 
 def test_chained_provider_patch_scripts_and_output_guard() -> None:
+    sanitizer = "scripts/provider_patches/stream_output_sanitizer_v5.py"
     source = b'''async function getStreams(){return [{url:"http://fstream.top/bad.m3u8"},{url:"https://media.example/malformed.m3u8"},{url:"https://media.example/good.m3u8"}]};module.exports={getStreams};'''
     output, records = apply_overrides("frenchstream", source)
     assert b"NUVIO_STREAM_OUTPUT_SANITIZER_V4" in output
+    assert b"NUVIO_STREAM_OUTPUT_SANITIZER_UTF8_BOM_V5" in output
     assert b"NUVIO_VF_CATALOGUE_RECOVERY_V1" in output
     assert any(
         row.get("type") == "patch_script"
-        and row.get("path") == "scripts/provider_patches/stream_output_sanitizer.py"
+        and row.get("path") == sanitizer
         for row in records
     )
     second, second_records = apply_overrides("frenchstream", output)
     assert second == output
     assert b"NUVIO_STREAM_OUTPUT_SANITIZER_V4" in second
+    assert b"NUVIO_STREAM_OUTPUT_SANITIZER_UTF8_BOM_V5" in second
     assert b"NUVIO_VF_CATALOGUE_RECOVERY_V1" in second
-    assert not any(
-        row.get("path") == "scripts/provider_patches/stream_output_sanitizer.py"
-        for row in second_records
-    )
+    assert not any(row.get("path") == sanitizer for row in second_records)
     with tempfile.TemporaryDirectory(dir=ROOT) as tmp:
         target = Path(tmp) / "provider.js"
         target.write_bytes(output)
