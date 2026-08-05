@@ -20,20 +20,22 @@
 **VF + VOSTFR + VO + autres langues**
 
 ```text
-https://raw.githubusercontent.com/niakw/Niakvio/refs/heads/main/manifest.json
+https://raw.githubusercontent.com/niakw/Niakvio/refs/heads/main/manifest.json?activation-profile=niakvio-v2
 ```
 
-[Ouvrir le manifest général](https://raw.githubusercontent.com/niakw/Niakvio/refs/heads/main/manifest.json)
+[Ouvrir le manifest général](https://raw.githubusercontent.com/niakw/Niakvio/refs/heads/main/manifest.json?activation-profile=niakvio-v2)
+
+Cette URL utilise une nouvelle identité d’installation Nuvio afin d’appliquer correctement l’état d’activation publié par Niakvio. Le contenu et les chemins des bundles restent ceux du manifest principal.
 
 ### Manifest francophone
 
 **Sélection dédiée aux providers proposant du contenu en français ou sous-titré français.**
 
 ```text
-https://raw.githubusercontent.com/niakw/Niakvio/refs/heads/main/vf/manifest.json
+https://raw.githubusercontent.com/niakw/Niakvio/refs/heads/main/vf/manifest.json?activation-profile=niakvio-v2-vf
 ```
 
-[Ouvrir le manifest francophone](https://raw.githubusercontent.com/niakw/Niakvio/refs/heads/main/vf/manifest.json)
+[Ouvrir le manifest francophone](https://raw.githubusercontent.com/niakw/Niakvio/refs/heads/main/vf/manifest.json?activation-profile=niakvio-v2-vf)
 
 > Dans Nuvio, ajoutez l’une de ces URL dans la section **Plugins / Providers**.
 
@@ -41,13 +43,13 @@ https://raw.githubusercontent.com/niakw/Niakvio/refs/heads/main/vf/manifest.json
 
 ## Installation
 
-1. Copiez l’URL du manifest souhaité.
-2. Ouvrez **Nuvio**.
-3. Accédez à **Plugins / Providers**.
-4. Ajoutez ou importez l’URL.
-5. Validez, puis rechargez la liste des providers.
+1. Supprimez l’ancienne entrée Niakvio si elle est encore installée.
+2. Copiez l’URL du manifest souhaité ci-dessus, y compris le paramètre `activation-profile`.
+3. Ouvrez **Nuvio**.
+4. Accédez à **Plugins / Providers**.
+5. Ajoutez ou importez l’URL, puis validez.
 
-> **Le changement n’apparaît pas ?** Nuvio peut conserver une ancienne version en cache. Actualisez le plugin ou supprimez-le avant de l’ajouter de nouveau.
+> Nuvio conserve les activations choisies pour une identité de manifest existante. Le paramètre `activation-profile=niakvio-v2` force une identité neuve et applique les activations actuelles du manifest.
 
 ---
 
@@ -125,7 +127,7 @@ La validation cherche notamment à écarter :
 - les routes API obsolètes ;
 - les résultats incompatibles avec la catégorie demandée.
 
-Les providers qui ne disposent pas de preuve fonctionnelle suffisante restent présents avec `enabled: false`. Ils peuvent être réactivés lors d’une validation ultérieure réussie.
+Un échec depuis le runner GitHub reste un diagnostic : il ne désactive plus automatiquement un provider fonctionnel dans Nuvio.
 
 ---
 
