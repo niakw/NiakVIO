@@ -8,7 +8,7 @@ on:
       - ".github/triggers/diagnose-provider-activation"
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   diagnose:
@@ -26,6 +26,7 @@ jobs:
           python - <<'PY'
           import json
           import subprocess
+          from datetime import datetime, timezone
           from pathlib import Path
 
           def run(*args):
@@ -34,9 +35,8 @@ jobs:
           current = json.loads(Path('manifest.json').read_text(encoding='utf-8'))
           current_rows = {str(r.get('id') or '').casefold(): r for r in current.get('scrapers', [])}
           current_active = {pid for pid, row in current_rows.items() if row.get('enabled') is True}
-          print(f"CURRENT version={current.get('version')} active={len(current_active)} total={len(current_rows)}")
 
-          commits = run('git', 'log', '--first-parent', '--format=%H', '-n', '120', '--', 'manifest.json').splitlines()
+          commits = run('git', 'log', '--first-parent', '--format=%H', '-n', '160', '--', 'manifest.json').splitlines()
           snapshots = []
           for sha in commits:
               try:
@@ -47,15 +47,53 @@ jobs:
               rows = {str(r.get('id') or '').casefold(): r for r in data.get('scrapers', [])}
               active = {pid for pid, row in rows.items() if row.get('enabled') is True}
               meta = run('git', 'show', '-s', '--format=%cI|%s', sha)
-              snapshots.append((sha, data.get('version'), len(active), len(rows), active, meta))
-              print(f"HISTORY {sha[:12]} version={data.get('version')} active={len(active)} total={len(rows)} {meta}")
+              snapshots.append({
+                  'sha': sha,
+                  'version': data.get('version'),
+                  'active_count': len(active),
+                  'total_count': len(rows),
+                  'active_ids': sorted(active),
+                  'meta': meta,
+              })
 
-          previous = next((s for s in snapshots[1:] if s[2] > len(current_active)), None)
-          stable = next((s for s in snapshots[1:] if 55 <= s[2] <= 65), previous)
+          previous = next((s for s in snapshots[1:] if s['active_count'] > len(current_active)), None)
+          stable = next((s for s in snapshots[1:] if 55 <= s['active_count'] <= 65), previous)
           if not stable:
               raise SystemExit('No prior larger activation snapshot found')
-          sha, version, count, total, active, meta = stable
-          print(f"SELECTED {sha} version={version} active={count} total={total} {meta}")
-          print('DISABLED_SINCE_SELECTED=' + ','.join(sorted(active - current_active)))
-          print('NEWLY_ACTIVE_SINCE_SELECTED=' + ','.join(sorted(current_active - active)))
+          stable_active = set(stable['active_ids'])
+          report = {
+              'generated_at': datetime.now(timezone.utc).isoformat(),
+              'current': {
+                  'version': current.get('version'),
+                  'active_count': len(current_active),
+                  'total_count': len(current_rows),
+                  'active_ids': sorted(current_active),
+              },
+              'selected_stable': stable,
+              'disabled_since_selected': sorted(stable_active - current_active),
+              'newly_active_since_selected': sorted(current_active - stable_active),
+              'history': [{k: v for k, v in s.items() if k != 'active_ids'} for s in snapshots[:40]],
+          }
+          output = Path('automation/provider-activation-diagnostic.json')
+          output.parent.mkdir(parents=True, exist_ok=True)
+          output.write_text(json.dumps(report, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+          print(json.dumps(report, ensure_ascii=False, indent=2))
           PY
+
+      - name: Publish diagnostic
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add automation/provider-activation-diagnostic.json
+          git commit -m "ci: record provider activation regression" || exit 0
+          for attempt in 1 2 3 4 5; do
+            git fetch origin main
+            if git rebase origin/main && git push origin HEAD:main; then
+              exit 0
+            fi
+            git rebase --abort || true
+            sleep $((attempt * 2))
+          done
+          exit 1
