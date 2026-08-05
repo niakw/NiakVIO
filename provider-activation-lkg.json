@@ -1,9 +1,11 @@
 {
-  "schema_version": 1,
-  "description": "Last-known-good provider activation set. Automated publication may add providers but must not silently disable this validated set.",
-  "source_commit": "a32056efacc214a4e34c9b0bc867b45f42ca0530",
-  "source_version": "5.19.2",
-  "minimum_enabled_count": 59,
+  "schema_version": 2,
+  "description": "Validated activation union. Automated publication may add providers but must not silently disable this set; loading failures are diagnostics, not activation decisions.",
+  "source_commits": [
+    "a32056efacc214a4e34c9b0bc867b45f42ca0530",
+    "f7274b20e183055bf09ce894d2d6804561d67be8"
+  ],
+  "minimum_enabled_count": 62,
   "active_ids": [
     "4khdhub",
     "allanime",
@@ -19,6 +21,7 @@
     "animevostfr",
     "anizone",
     "castle",
+    "cineby",
     "cinemacity",
     "cinemm",
     "coflix",
@@ -26,6 +29,7 @@
     "dooflix",
     "dulourd",
     "flemmix",
+    "french-manga",
     "frenchstream",
     "goated",
     "hdghartv",
@@ -60,14 +64,15 @@
     "vidsrc",
     "vixsrc",
     "voiranime",
+    "voiranime-rip",
     "vostfree",
     "wookafr",
     "yflix",
     "zinkmovies"
   ],
-  "manual_disabled": {
-    "cineby": "Historical 1.9.2 bundle returned zero streams for Interstellar during recovery verification.",
-    "french-manga": "Does not currently load in Nuvio; previous automated validation used unrelated Google/Twitter media.",
-    "voiranime-rip": "Does not currently load in Nuvio; previous automated validation used unrelated Google/Twitter media."
+  "observed_loading_issues": {
+    "cineby": "Historical bundle returned zero streams for Interstellar in CI; keep enabled until a real Nuvio-side decision is made.",
+    "french-manga": "Currently does not surface in Nuvio; keep enabled and diagnose separately.",
+    "voiranime-rip": "Currently does not surface in Nuvio; keep enabled and diagnose separately."
   }
 }
