@@ -58,54 +58,63 @@ jobs:
           python scripts/normalize_hls_override_policy.py --check
 
       - name: Revalidate and stage independent strict improvements
+        id: promotion
+        shell: bash
         run: |
+          set -euo pipefail
           cp manifest.json "$RUNNER_TEMP/manifest.before.json"
+          set +e
           python scripts/promote_global_nuvio_tv_candidates.py
+          promotion_status=$?
+          set -e
+          if [ "$promotion_status" -ne 0 ] && [ "$promotion_status" -ne 2 ]; then
+            exit "$promotion_status"
+          fi
           python - <<'PY'
           import json
+          import os
           from pathlib import Path
 
           report = json.loads(Path('automation/nuvio-tv-global-promotion.json').read_text(encoding='utf-8'))
-          required = {'french-manga', 'streamzo'}
-          optional = {'desiflix'}
-          published = {row['id'] for row in report.get('published', [])}
-          preserved = set(report.get('preserved', []))
-          assert required <= published <= required | optional, (published, preserved)
+          manifest = json.loads(Path('manifest.json').read_text(encoding='utf-8'))
+          rows = {str(row.get('id', '')).casefold(): row for row in manifest.get('scrapers', [])}
+          targets = {'desiflix', 'french-manga', 'streamzo'}
+          published = {str(row.get('id', '')).casefold() for row in report.get('published', [])}
+          preserved = {str(value).casefold() for value in report.get('preserved', [])}
+          assert published <= targets, (published, preserved)
+          assert targets <= published | preserved, (published, preserved)
 
-          for provider_id in sorted(required):
+          for provider_id in sorted(targets):
               provider = report['providers'][provider_id]
-              assert provider['strictly_better'], (provider_id, provider)
               assert provider['no_regression'], (provider_id, provider)
               assert provider['strict_outputs'], (provider_id, provider)
+              if provider_id in published:
+                  assert provider['strictly_better'], (provider_id, provider)
+              else:
+                  assert provider_id in preserved, (provider_id, report)
+                  assert not provider['strictly_better'], (provider_id, provider)
+                  assert '--nuvio-tv-global--' in rows[provider_id]['filename'], rows[provider_id]
+                  assert provider['candidate_summary']['playable_fixture_count'] == provider['baseline_summary']['playable_fixture_count'], provider
+                  assert provider['candidate_summary']['playable_stream_count'] == provider['baseline_summary']['playable_stream_count'], provider
 
-          desiflix = report['providers']['desiflix']
-          assert desiflix['no_regression'], desiflix
-          assert desiflix['strict_outputs'], desiflix
-          if 'desiflix' in published:
-              assert desiflix['strictly_better'], desiflix
-              assert desiflix['candidate_summary']['playable_fixture_count'] > desiflix['baseline_summary']['playable_fixture_count'], desiflix
-              assert 'desiflix' not in preserved
-          else:
-              assert 'desiflix' in preserved, report
-              assert not desiflix['strictly_better'], desiflix
-
-          print('strict global promotions:', ', '.join(sorted(published)))
-          if 'desiflix' in published:
-              print('DesiFlix promoted from current strict media proof')
-          else:
-              print('DesiFlix preserved without forced replacement')
+          with open(os.environ['GITHUB_OUTPUT'], 'a', encoding='utf-8') as output:
+              output.write(f"changed={'true' if published else 'false'}\n")
+          print('strict global promotions:', ', '.join(sorted(published)) or 'none; current bundles already proven')
           PY
 
       - name: Bump and synchronize release
+        if: steps.promotion.outputs.changed == 'true'
         run: |
           python scripts/bump_release_patch_if_manifest_changed.py --previous "$RUNNER_TEMP/manifest.before.json" --manifest manifest.json
           python scripts/sync_release_versions.py --manifest manifest.json
           python scripts/validate_vf_projection.py
 
       - name: Run complete regressions
+        if: steps.promotion.outputs.changed == 'true'
         run: npm test
 
       - name: Regenerate and validate release integrity
+        if: steps.promotion.outputs.changed == 'true'
         run: |
           python scripts/generate_release_hashes.py
           python scripts/validate_release_integrity.py
@@ -114,6 +123,7 @@ jobs:
           python scripts/validate_activation_preservation.py
 
       - name: Publish strictly proven global candidates
+        if: steps.promotion.outputs.changed == 'true'
         shell: bash
         run: |
           set -euo pipefail
