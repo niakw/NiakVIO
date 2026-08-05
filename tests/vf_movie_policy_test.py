@@ -7,23 +7,28 @@ ROOT = Path(__file__).resolve().parents[1]
 overrides = json.loads((ROOT / 'provider-overrides.json').read_text())
 hubs = json.loads((ROOT / 'provider-hubs.json').read_text())['providers']
 manifest = json.loads((ROOT / 'manifest.json').read_text())['scrapers']
+activation = json.loads((ROOT / 'provider-activation-lkg.json').read_text())
 by_id = {str(row['id']).lower(): row for row in manifest}
 patches = overrides['provider_patches']
 official = overrides['official_domain_hubs']
 
-# Providers that are actually intended to answer mainstream VF movie requests.
-# Wookafr is protected by a current manual Nuvio playback validation on
-# Interstellar; an isolated GitHub-runner failure must not disable it.
-expected_enabled_movie = {'purstream', 'frenchstream', 'streamzo', 'movix', 'coflix', 'wookafr'}
+# Providers published for mainstream VF movie requests stay active. Network or
+# CI failures are diagnostic evidence and may not silently shrink the catalogue.
+expected_enabled_movie = {
+    'purstream', 'frenchstream', 'streamzo', 'movix', 'coflix', 'wookafr',
+    'flemmix', 'nakios', 'toflix',
+}
 for provider_id in expected_enabled_movie:
     row = by_id[provider_id]
     assert row['enabled'] is True, provider_id
     assert 'movie' in row['supportedTypes'], provider_id
+    assert provider_id in activation['active_ids'], provider_id
 
-# Unproven routes stay published but disabled; they may only return after a new
-# current deep proof. This prevents address discovery alone from enabling them.
-for provider_id in ('flemmix', 'nakios', 'toflix'):
-    assert by_id[provider_id]['enabled'] is False, provider_id
+# Goated is a manually confirmed Interstellar provider in Nuvio and its
+# activation must likewise survive an isolated GitHub-runner failure.
+assert by_id['goated']['enabled'] is True
+assert 'movie' in by_id['goated']['supportedTypes']
+assert 'goated' in activation['active_ids']
 
 # Papadustream's implementation is series-only. Anime-only movie providers are
 # tested separately and must not be counted as mainstream VF movie catalogues.
@@ -44,8 +49,8 @@ assert hubs['coflix']['direct'].startswith('https://coflix.')
 for provider_id in ('frenchstream', 'coflix', 'streamzo', 'flemmix'):
     assert hubs[provider_id].get('terminal_markers'), provider_id
 
-# API-backed providers may not persist or activate a new site address unless a
-# meaningful API route is also validated. A generic 404 is not API proof.
+# API-backed providers may not persist a new site address unless a meaningful
+# API route is also validated. This controls domain mutation, not activation.
 for provider_id in ('purstream', 'movix', 'nakios'):
     cfg = official[provider_id]
     assert cfg.get('require_api_validation') is True, provider_id
