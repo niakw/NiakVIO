@@ -7,8 +7,8 @@ import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-patch_path = ROOT / 'scripts/provider_patches/stream_output_sanitizer.py'
-spec = importlib.util.spec_from_file_location('stream_output_sanitizer', patch_path)
+patch_path = ROOT / 'scripts/provider_patches/stream_output_sanitizer_v5.py'
+spec = importlib.util.spec_from_file_location('stream_output_sanitizer_v5', patch_path)
 mod = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(mod)
 
@@ -19,7 +19,7 @@ patched = mod.apply(base, options={
     'min_vod_duration_seconds': 60,
     'max_probes': 6,
 })
-assert 'NUVIO_STREAM_OUTPUT_SANITIZER_V4' in patched
+assert 'NUVIO_STREAM_OUTPUT_SANITIZER_UTF8_BOM_V5' in patched
 
 runner = r'''
 const vm=require('vm');
@@ -48,4 +48,4 @@ with tempfile.TemporaryDirectory() as tmp:
     assert proc.returncode == 0, proc.stderr
     result = json.loads(proc.stdout.strip().splitlines()[-1])
     assert [row['url'] for row in result] == ['https://s1.fsvid.lol/troll/master.m3u8'], result
-print('HLS content guard tests passed: BOM/whitespace normalized, real /troll/ accepted, short and HTML manifests rejected')
+print('HLS content guard tests passed: UTF-8 BOM/whitespace normalized, real /troll/ accepted, short and HTML manifests rejected')
