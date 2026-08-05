@@ -8,6 +8,7 @@ overrides = json.loads((ROOT / 'provider-overrides.json').read_text())
 hubs = json.loads((ROOT / 'provider-hubs.json').read_text())['providers']
 manifest = json.loads((ROOT / 'manifest.json').read_text())['scrapers']
 activation = json.loads((ROOT / 'provider-activation-lkg.json').read_text())
+type_policy = json.loads((ROOT / 'provider-type-policy.json').read_text())['providers']
 by_id = {str(row['id']).lower(): row for row in manifest}
 patches = overrides['provider_patches']
 official = overrides['official_domain_hubs']
@@ -16,7 +17,7 @@ official = overrides['official_domain_hubs']
 # CI failures are diagnostic evidence and may not silently shrink the catalogue.
 expected_enabled_movie = {
     'purstream', 'frenchstream', 'streamzo', 'movix', 'coflix', 'wookafr',
-    'flemmix', 'nakios',
+    'flemmix', 'nakios', 'toflix', 'papadustream',
 }
 for provider_id in expected_enabled_movie:
     row = by_id[provider_id]
@@ -24,21 +25,22 @@ for provider_id in expected_enabled_movie:
     assert 'movie' in row['supportedTypes'], provider_id
     assert provider_id in activation['active_ids'], provider_id
 
-# Toflix remains part of the published activation union, but its actual
-# supportedTypes are preserved; activation must not invent movie capability.
-assert by_id['toflix']['enabled'] is True
-assert 'toflix' in activation['active_ids']
+# User-confirmed mappings are exact and must survive future sync/repair jobs.
+assert by_id['toflix']['supportedTypes'] == ['movie', 'tv', 'anime']
+assert type_policy['toflix']['supportedTypes'] == ['movie', 'tv', 'anime']
+assert by_id['papadustream']['supportedTypes'] == ['movie', 'tv']
+assert patches['papadustream']['published_types'] == ['movie', 'tv']
+assert type_policy['papadustream']['supportedTypes'] == ['movie', 'tv']
+
+for provider_id in ('purstream', 'coflix', 'frenchstream', 'movix', 'nakios', 'streamzo'):
+    assert by_id[provider_id]['supportedTypes'] == ['movie', 'tv', 'anime'], provider_id
+    assert type_policy[provider_id]['supportedTypes'] == ['movie', 'tv', 'anime'], provider_id
 
 # Goated is a manually confirmed Interstellar provider in Nuvio and its
 # activation must likewise survive an isolated GitHub-runner failure.
 assert by_id['goated']['enabled'] is True
 assert 'movie' in by_id['goated']['supportedTypes']
 assert 'goated' in activation['active_ids']
-
-# Papadustream's implementation is series-only. Anime-only movie providers are
-# tested separately and must not be counted as mainstream VF movie catalogues.
-assert patches['papadustream']['published_types'] == ['tv']
-assert by_id['papadustream']['supportedTypes'] == ['tv']
 
 for provider_id in ('streamzo', 'movix', 'coflix', 'flemmix'):
     assert by_id[provider_id]['supportsExternalPlayer'] is True, provider_id
