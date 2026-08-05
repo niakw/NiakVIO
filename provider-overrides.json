@@ -1,5 +1,5 @@
 {
-  "schema_version": 4,
+  "schema_version": 5,
   "domain_replacements": {
     "api.movix.cash": "api.movix.fun",
     "api.movix.cloud": "api.movix.fun"
@@ -42,16 +42,14 @@
       "patch_scripts": [
         "scripts/provider_patches/movix_multi_source.py",
         "scripts/provider_patches/vf_catalogue_recovery.py",
-        "scripts/provider_patches/stream_output_sanitizer.py"
+        "scripts/provider_patches/stream_output_sanitizer_v5.py"
       ],
       "patch_script_options": {
-        "scripts/provider_patches/stream_output_sanitizer.py": {
+        "scripts/provider_patches/stream_output_sanitizer_v5.py": {
           "blocked_hosts": [
             "fstream.top"
           ],
-          "blocked_path_patterns": [
-            "/troll/"
-          ],
+          "blocked_path_patterns": [],
           "probe_direct_media": false,
           "probe_all_urls": false,
           "max_probes": 0,
@@ -77,9 +75,7 @@
           "blocked_hosts": [
             "fstream.top"
           ],
-          "blocked_path_patterns": [
-            "/troll/"
-          ],
+          "blocked_path_patterns": [],
           "max_players": 10,
           "skip_native_when_unresolved": true,
           "obsolete_route_tokens": [
@@ -118,7 +114,7 @@
       "required_route_values": [],
       "manifest_overrides": {
         "logo": "https://fs16.lol/favicon.ico",
-        "supportsExternalPlayer": true
+        "supportsExternalPlayer": false
       },
       "capability": "mixed_embed_resolver",
       "runtime_domain_replacements": {
@@ -130,17 +126,16 @@
       "patch_scripts": [
         "scripts/provider_patches/frenchstream_detail_players.py",
         "scripts/provider_patches/vf_catalogue_recovery.py",
-        "scripts/provider_patches/stream_output_sanitizer.py",
-        "scripts/provider_patches/frenchstream_dle_catalogue.py"
+        "scripts/provider_patches/stream_output_sanitizer_v5.py",
+        "scripts/provider_patches/frenchstream_dle_catalogue.py",
+        "scripts/provider_patches/nuvio_tv_target_media_v4.py"
       ],
       "patch_script_options": {
-        "scripts/provider_patches/stream_output_sanitizer.py": {
+        "scripts/provider_patches/stream_output_sanitizer_v5.py": {
           "blocked_hosts": [
             "fstream.top"
           ],
-          "blocked_path_patterns": [
-            "/troll/"
-          ],
+          "blocked_path_patterns": [],
           "probe_direct_media": false,
           "probe_all_urls": false,
           "max_probes": 0,
@@ -164,15 +159,24 @@
           "blocked_hosts": [
             "fstream.top"
           ],
-          "blocked_path_patterns": [
-            "/troll/"
-          ],
+          "blocked_path_patterns": [],
           "max_players": 8
         },
         "scripts/provider_patches/frenchstream_dle_catalogue.py": {
           "hub_url": "https://www.fstream.org/",
           "base_url": "https://fs16.lol",
           "provider_name": "Frenchstream"
+        },
+        "scripts/provider_patches/nuvio_tv_target_media_v4.py": {
+          "provider_name": "Frenchstream",
+          "max_candidates": 22,
+          "timeout_ms": 20000,
+          "blocked_hosts": [
+            "snap.com",
+            "snapchat.com",
+            "ctfassets.net",
+            "sc-cdn.net"
+          ]
         }
       },
       "official_hub": "https://fstream.org/",
@@ -216,18 +220,14 @@
           "blocked_hosts": [
             "fstream.top"
           ],
-          "blocked_path_patterns": [
-            "/troll/"
-          ],
+          "blocked_path_patterns": [],
           "max_players": 6
         },
-        "scripts/provider_patches/stream_output_sanitizer.py": {
+        "scripts/provider_patches/stream_output_sanitizer_v5.py": {
           "blocked_hosts": [
             "fstream.top"
           ],
-          "blocked_path_patterns": [
-            "/troll/"
-          ],
+          "blocked_path_patterns": [],
           "probe_direct_media": false,
           "probe_all_urls": false,
           "max_probes": 0,
@@ -245,7 +245,7 @@
       "patch_scripts": [
         "scripts/provider_patches/streamzo_data_embed.py",
         "scripts/provider_patches/vf_catalogue_recovery.py",
-        "scripts/provider_patches/stream_output_sanitizer.py",
+        "scripts/provider_patches/stream_output_sanitizer_v5.py",
         "scripts/provider_patches/streamzo_public_catalogue.py"
       ],
       "published_types": [
@@ -410,18 +410,14 @@
           "blocked_hosts": [
             "fstream.top"
           ],
-          "blocked_path_patterns": [
-            "/troll/"
-          ],
+          "blocked_path_patterns": [],
           "max_players": 8
         },
-        "scripts/provider_patches/stream_output_sanitizer.py": {
+        "scripts/provider_patches/stream_output_sanitizer_v5.py": {
           "blocked_hosts": [
             "fstream.top"
           ],
-          "blocked_path_patterns": [
-            "/troll/"
-          ],
+          "blocked_path_patterns": [],
           "probe_direct_media": false,
           "probe_all_urls": false,
           "max_probes": 0,
@@ -435,7 +431,7 @@
       },
       "patch_scripts": [
         "scripts/provider_patches/vf_catalogue_recovery.py",
-        "scripts/provider_patches/stream_output_sanitizer.py"
+        "scripts/provider_patches/stream_output_sanitizer_v5.py"
       ],
       "published_types": [
         "movie",
@@ -546,16 +542,14 @@
       "required_route_values": [],
       "patch_scripts": [
         "scripts/provider_patches/vf_catalogue_recovery.py",
-        "scripts/provider_patches/stream_output_sanitizer.py"
+        "scripts/provider_patches/stream_output_sanitizer_v5.py"
       ],
       "patch_script_options": {
-        "scripts/provider_patches/stream_output_sanitizer.py": {
+        "scripts/provider_patches/stream_output_sanitizer_v5.py": {
           "blocked_hosts": [
             "fstream.top"
           ],
-          "blocked_path_patterns": [
-            "/troll/"
-          ],
+          "blocked_path_patterns": [],
           "probe_direct_media": false,
           "probe_all_urls": false,
           "max_probes": 0,
@@ -582,9 +576,7 @@
           "blocked_hosts": [
             "fstream.top"
           ],
-          "blocked_path_patterns": [
-            "/troll/"
-          ],
+          "blocked_path_patterns": [],
           "max_players": 8
         }
       },
@@ -696,10 +688,10 @@
       "route_replacements": {},
       "required_route_values": [],
       "patch_scripts": [
-        "scripts/provider_patches/stream_output_sanitizer.py"
+        "scripts/provider_patches/stream_output_sanitizer_v5.py"
       ],
       "patch_script_options": {
-        "scripts/provider_patches/stream_output_sanitizer.py": {
+        "scripts/provider_patches/stream_output_sanitizer_v5.py": {
           "probe_direct_media": true,
           "max_probes": 6,
           "probe_all_urls": true
@@ -860,13 +852,11 @@
       "official_hub": null,
       "official_site": "https://w16.french-manga.net",
       "patch_script_options": {
-        "scripts/provider_patches/stream_output_sanitizer.py": {
+        "scripts/provider_patches/stream_output_sanitizer_v5.py": {
           "blocked_hosts": [
             "fstream.top"
           ],
-          "blocked_path_patterns": [
-            "/troll/"
-          ],
+          "blocked_path_patterns": [],
           "probe_direct_media": false,
           "probe_all_urls": false,
           "max_probes": 0,
@@ -875,7 +865,7 @@
       },
       "required_values": [],
       "patch_scripts": [
-        "scripts/provider_patches/stream_output_sanitizer.py"
+        "scripts/provider_patches/stream_output_sanitizer_v5.py"
       ],
       "manifest_overrides": {
         "supportsExternalPlayer": true,
@@ -966,10 +956,10 @@
       "route_replacements": {},
       "required_route_values": [],
       "patch_scripts": [
-        "scripts/provider_patches/stream_output_sanitizer.py"
+        "scripts/provider_patches/stream_output_sanitizer_v5.py"
       ],
       "patch_script_options": {
-        "scripts/provider_patches/stream_output_sanitizer.py": {
+        "scripts/provider_patches/stream_output_sanitizer_v5.py": {
           "probe_direct_media": true,
           "max_probes": 6,
           "probe_all_urls": true

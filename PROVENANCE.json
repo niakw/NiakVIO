@@ -1,6 +1,6 @@
 {
-  "schema_version": 66,
-  "generated_at": "2026-08-05T13:56:12.013016+00:00",
+  "schema_version": 68,
+  "generated_at": "2026-08-05T23:25:14.590722+00:00",
   "notice": "Third-party files retain upstream authorship and licence. See THIRD_PARTY_NOTICES.md.",
   "providers": {
     "4khdhub": {
@@ -5708,7 +5708,7 @@
         },
         {
           "type": "patch_script",
-          "path": "scripts/provider_patches/stream_output_sanitizer.py",
+          "path": "scripts/provider_patches/stream_output_sanitizer_v5.py",
           "phase": "discovery"
         }
       ],
@@ -7456,7 +7456,7 @@
       "local_patches": [
         {
           "type": "patch_script",
-          "path": "scripts/provider_patches/stream_output_sanitizer.py",
+          "path": "scripts/provider_patches/stream_output_sanitizer_v5.py",
           "phase": "discovery"
         }
       ],
@@ -7896,23 +7896,24 @@
     },
     "frenchstream": {
       "id": "frenchstream",
-      "published_filename": "providers/frenchstream--targeted-repair--5b4a0e55eb79ae9e.js",
-      "sha256": "5b4a0e55eb79ae9e7df6bd9fd11c432efffc43c7761234be16ecb5ce07ced670",
-      "patched_sha256": "5b4a0e55eb79ae9e7df6bd9fd11c432efffc43c7761234be16ecb5ce07ced670",
+      "published_filename": "providers/frenchstream--target-media-v4--7ef8882294d0e205.js",
+      "sha256": "7ef8882294d0e20561711c3d85222b718333a931385b767e6679f7285941750e",
+      "patched_sha256": "7ef8882294d0e20561711c3d85222b718333a931385b767e6679f7285941750e",
       "upstream_sha256": "6e811019fee20e349d860784960e9f75722e26c1c890ce044e0dce834c0df498",
       "local_patches": [
         "{'type': 'patch_script', 'path': 'scripts/provider_patches/stream_output_sanitizer.py', 'phase': 'discovery'}",
-        "scripts/provider_patches/frenchstream_dle_catalogue.py"
+        "scripts/provider_patches/frenchstream_dle_catalogue.py",
+        "scripts/provider_patches/nuvio_tv_target_media_v4.py"
       ],
-      "source": "targeted-runtime-repair",
-      "source_name": "Niakvio exact public catalogue adapter",
+      "source": "target-media-v4",
+      "source_name": "Strict target media resolution with provenance filtering",
       "source_repository": "Nuvio Curated Providers",
       "source_license": "GPL-3.0-only",
       "source_license_evidence": "LICENSE",
       "upstream_id": "frenchstream",
       "upstream_filename": "providers/frenchstream--nuvio--6e811019fee20e34.js",
-      "checked_at": "2026-08-05T09:46:48.235401+00:00",
-      "check_mode": "targeted-live-nuvio",
+      "checked_at": "2026-08-05T23:25:14.590722+00:00",
+      "check_mode": "nuvio-tv-target-player-chain",
       "check_status": "healthy",
       "health_score": 80,
       "activation_eligible": true,
@@ -7920,7 +7921,7 @@
       "strict_grace_eligible": false,
       "historical_quality_grace_eligible": false,
       "runtime_evidence_eligible": true,
-      "activation_mode": "targeted_live_interstellar",
+      "activation_mode": "target_media_v4",
       "activation_blockers": [],
       "activation_gates": {
         "01_policy_safe_no_p2p": {
@@ -11587,7 +11588,7 @@
       "local_patches": [
         {
           "type": "patch_script",
-          "path": "scripts/provider_patches/stream_output_sanitizer.py",
+          "path": "scripts/provider_patches/stream_output_sanitizer_v5.py",
           "phase": "discovery"
         }
       ],
