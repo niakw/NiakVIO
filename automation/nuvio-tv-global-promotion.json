@@ -1,0 +1,922 @@
+{
+  "generated_at": "2026-08-05T23:26:45.641832+00:00",
+  "contract": "NuvioTV four positional args plus global SCRAPER_SETTINGS",
+  "media_gate": "#EXTM3U, DASH MPD, or real video container signature",
+  "providers": {
+    "desiflix": {
+      "baseline": [
+        {
+          "fixture": {
+            "label": "Interstellar",
+            "tmdbId": "157336",
+            "mediaType": "movie",
+            "title": "Interstellar",
+            "year": 2014,
+            "category": "movie"
+          },
+          "ok": false,
+          "returncode": 2,
+          "result": {
+            "ok": false,
+            "duration_ms": 12289,
+            "runtime_error": null,
+            "raw_stream_count": 0,
+            "playable_stream_count": 0,
+            "streams": []
+          },
+          "stdout_tail": "[DesiFlix] Request: tmdbId=157336 type=movie s=null e=null\n[DesiFlix] Fetching streams from: https://manifest.desitvhub.eu.org/stream/movie/tt0816692.json\n[DesiFlix] Retrying with fallback endpoint: https://manifest.desitvhub.eu.org/stream/movie/157336.json\n[DesiFlix] No streams returned from DesiFlix\n{\"ok\":false,\"duration_ms\":12289,\"runtime_error\":null,\"raw_stream_count\":0,\"playable_stream_count\":0,\"streams\":[]}\n",
+          "stderr_tail": "[DesiFlix] fetch failed: https://manifest.desitvhub.eu.org/stream/movie/tt0816692.json -> Timeout 12000ms\n"
+        },
+        {
+          "fixture": {
+            "label": "Breaking Bad S01E01",
+            "tmdbId": "1396",
+            "mediaType": "tv",
+            "season": 1,
+            "episode": 1,
+            "title": "Breaking Bad",
+            "year": 2008,
+            "category": "tv"
+          },
+          "ok": false,
+          "returncode": 2,
+          "result": {
+            "ok": false,
+            "duration_ms": 12146,
+            "runtime_error": null,
+            "raw_stream_count": 0,
+            "playable_stream_count": 0,
+            "streams": []
+          },
+          "stdout_tail": "[DesiFlix] Request: tmdbId=1396 type=tv s=1 e=1\n[DesiFlix] Fetching streams from: https://manifest.desitvhub.eu.org/stream/series/tt0903747:1:1.json\n[DesiFlix] Retrying with fallback endpoint: https://manifest.desitvhub.eu.org/stream/series/1396:1:1.json\n[DesiFlix] No streams returned from DesiFlix\n{\"ok\":false,\"duration_ms\":12146,\"runtime_error\":null,\"raw_stream_count\":0,\"playable_stream_count\":0,\"streams\":[]}\n",
+          "stderr_tail": "[DesiFlix] fetch failed: https://manifest.desitvhub.eu.org/stream/series/tt0903747:1:1.json -> Timeout 12000ms\n"
+        }
+      ],
+      "candidate": [
+        {
+          "fixture": {
+            "label": "Interstellar",
+            "tmdbId": "157336",
+            "mediaType": "movie",
+            "title": "Interstellar",
+            "year": 2014,
+            "category": "movie"
+          },
+          "ok": true,
+          "returncode": 0,
+          "result": {
+            "ok": true,
+            "duration_ms": 15495,
+            "runtime_error": null,
+            "raw_stream_count": 3,
+            "playable_stream_count": 3,
+            "streams": [
+              {
+                "row": {
+                  "name": "DesiFlix | 2160p | Hindi",
+                  "title": "🍿 Interstellar (2014)\n🌟 2160p | 💾 Variable Size | 🔊 Hindi\n🎥 x264 | 🎧 DD5.1\n📥 WEB-DL | 📦 MKV | 🌈 SDR\n📎 DesiFlix",
+                  "url": "https://ok6-3.vkuser.net/expires/1786058817235/clientType/0/srcIp/82.165.88.134/type/2/mid/14272207784563/id/15184418638451/ms/95.142.206.130/zs/43/srcAg/CHROME/urls/178.237.23.0%3B95.163.35.2/pr/10/ct/29/sig/9-aiDHk4LzY/ondemand/dash4_15184418638451.CPOUgI-wnwMw847U_okRQPOO1P6JEVAKJmY-egBa3mw.mpd",
+                  "quality": "HD",
+                  "headers": {
+                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+                    "Referer": "https://manifest.desitvhub.eu.org/",
+                    "Origin": "https://manifest.desitvhub.eu.org",
+                    "Accept": "*/*"
+                  },
+                  "isDirect": true,
+                  "type": "dash",
+                  "size": "🍿 Interstellar (2014)\n🌟 2160p | 💾 Variable Size | 🔊 Hindi\n🎥 x264 | 🎧 DD5.1\n📥 WEB-DL | 📦 MKV | 🌈 SDR\n📎 DesiFlix"
+                },
+                "media": {
+                  "url": "https://ok6-3.vkuser.net/expires/1786058817235/clientType/0/srcIp/82.165.88.134/type/2/mid/14272207784563/id/15184418638451/ms/95.142.206.130/zs/43/srcAg/CHROME/urls/178.237.23.0%3B95.163.35.2/pr/10/ct/29/sig/9-aiDHk4LzY/ondemand/dash4_15184418638451.CPOUgI-wnwMw847U_okRQPOO1P6JEVAKJmY-egBa3mw.mpd",
+                  "playable": true,
+                  "kind": "dash",
+                  "status": 206,
+                  "content_type": "application/dash+xml",
+                  "starts_extm3u": false,
+                  "binary_signature": null,
+                  "error": null
+                }
+              },
+              {
+                "row": {
+                  "name": "DesiFlix | 2160p | English",
+                  "title": "🍿 Interstellar (2014)\n🌟 2160p | 💾 Variable Size | 🔊 English\n🎥 x264 | 🎧 AAC\n📥 WEB-DL | 📦 MKV | 🌈 SDR\n📎 DesiFlix",
+                  "url": "https://vd401.okcdn.ru/expires/1786058817706/clientType/0/srcIp/82.165.88.134/type/2/mid/14272207719027/id/15184423291507/ms/176.112.172.120/zs/43/srcAg/CHROME/urls/178.237.23.110/pr/10/ct/29/sig/aNEzoYaqM-I/ondemand/dash4_15184423291507.CPOU_I6wnwMw847U_okRQPOO1P6JEVAKF4CLtjTv37I.mpd",
+                  "quality": "HD",
+                  "headers": {
+                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+                    "Referer": "https://manifest.desitvhub.eu.org/",
+                    "Origin": "https://manifest.desitvhub.eu.org",
+                    "Accept": "*/*"
+                  },
+                  "isDirect": true,
+                  "type": "dash",
+                  "size": "🍿 Interstellar (2014)\n🌟 2160p | 💾 Variable Size | 🔊 English\n🎥 x264 | 🎧 AAC\n📥 WEB-DL | 📦 MKV | 🌈 SDR\n📎 DesiFlix"
+                },
+                "media": {
+                  "url": "https://vd401.okcdn.ru/expires/1786058817706/clientType/0/srcIp/82.165.88.134/type/2/mid/14272207719027/id/15184423291507/ms/176.112.172.120/zs/43/srcAg/CHROME/urls/178.237.23.110/pr/10/ct/29/sig/aNEzoYaqM-I/ondemand/dash4_15184423291507.CPOU_I6wnwMw847U_okRQPOO1P6JEVAKF4CLtjTv37I.mpd",
+                  "playable": true,
+                  "kind": "dash",
+                  "status": 206,
+                  "content_type": "application/dash+xml",
+                  "starts_extm3u": false,
+                  "binary_signature": null,
+                  "error": null
+                }
+              },
+              {
+                "row": {
+                  "name": "DesiFlix | 1080p | Original",
+                  "title": "🍿 Interstellar (2014)\n🔥 1080p | 💾 Variable Size | 🔊 Original\n🎥 x264 | 🎧 AAC\n📥 WEB-DL | 📦 MKV | 🌈 SDR\n📎 DesiFlix",
+                  "url": "https://cdn4.streamraiwind.stream/img/b2df42324ab7/nasty.m3u8?token=rJvCOq_tdY7nGyykL0ZBBQ&expires=1785977383",
+                  "quality": "HD",
+                  "headers": {
+                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+                    "Referer": "https://manifest.desitvhub.eu.org/",
+                    "Origin": "https://manifest.desitvhub.eu.org",
+                    "Accept": "*/*"
+                  },
+                  "isDirect": true,
+                  "type": "hls",
+                  "size": "🍿 Interstellar (2014)\n🔥 1080p | 💾 Variable Size | 🔊 Original\n🎥 x264 | 🎧 AAC\n📥 WEB-DL | 📦 MKV | 🌈 SDR\n📎 DesiFlix"
+                },
+                "media": {
+                  "url": "https://cdn4.streamraiwind.stream/img/b2df42324ab7/nasty.m3u8?token=rJvCOq_tdY7nGyykL0ZBBQ&expires=1785977383",
+                  "playable": true,
+                  "kind": "hls",
+                  "status": 200,
+                  "content_type": "application/vnd.apple.mpegurl",
+                  "starts_extm3u": true,
+                  "binary_signature": null,
+                  "error": null
+                }
+              }
+            ]
+          },
+          "stdout_tail": "[DesiFlix] Request: tmdbId=157336 type=movie s=null e=null\n[DesiFlix] Fetching streams from: https://manifest.desitvhub.eu.org/stream/movie/tt0816692.json\n[DesiFlix] Returning 10 sorted streams\n{\"ok\":true,\"duration_ms\":15495,\"runtime_error\":null,\"raw_stream_count\":3,\"playable_stream_count\":3,\"streams\":[{\"row\":{\"name\":\"DesiFlix | 2160p | Hindi\",\"title\":\"🍿 Interstellar (2014)\\n🌟 2160p | 💾 Variable Size | 🔊 Hindi\\n🎥 x264 | 🎧 DD5.1\\n📥 WEB-DL | 📦 MKV | 🌈 SDR\\n📎 DesiFlix\",\"url\":\"https://ok6-3.vkuser.net/expires/1786058817235/clientType/0/srcIp/82.165.88.134/type/2/mid/14272207784563/id/15184418638451/ms/95.142.206.130/zs/43/srcAg/CHROME/urls/178.237.23.0%3B95.163.35.2/pr/10/ct/29/sig/9-aiDHk4LzY/ondemand/dash4_15184418638451.CPOUgI-wnwMw847U_okRQPOO1P6JEVAKJmY-egBa3mw.mpd\",\"quality\":\"HD\",\"headers\":{\"User-Agent\":\"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36\",\"Referer\":\"https://manifest.desitvhub.eu.org/\",\"Origin\":\"https://manifest.desitvhub.eu.org\",\"Accept\":\"*/*\"},\"isDirect\":true,\"type\":\"dash\",\"size\":\"🍿 Interstellar (2014)\\n🌟 2160p | 💾 Variable Size | 🔊 Hindi\\n🎥 x264 | 🎧 DD5.1\\n📥 WEB-DL | 📦 MKV | 🌈 SDR\\n📎 DesiFlix\"},\"media\":{\"url\":\"https://ok6-3.vkuser.net/expires/1786058817235/clientType/0/srcIp/82.165.88.134/type/2/mid/14272207784563/id/15184418638451/ms/95.142.206.130/zs/43/srcAg/CHROME/urls/178.237.23.0%3B95.163.35.2/pr/10/ct/29/sig/9-aiDHk4LzY/ondemand/dash4_15184418638451.CPOUgI-wnwMw847U_okRQPOO1P6JEVAKJmY-egBa3mw.mpd\",\"playable\":true,\"kind\":\"dash\",\"status\":206,\"content_type\":\"application/dash+xml\",\"starts_extm3u\":false,\"binary_signature\":null,\"error\":null}},{\"row\":{\"name\":\"DesiFlix | 2160p | English\",\"title\":\"🍿 Interstellar (2014)\\n🌟 2160p | 💾 Variable Size | 🔊 English\\n🎥 x264 | 🎧 AAC\\n📥 WEB-DL | 📦 MKV | 🌈 SDR\\n📎 DesiFlix\",\"url\":\"https://vd401.okcdn.ru/expires/1786058817706/clientType/0/srcIp/82.165.88.134/type/2/mid/14272207719027/id/15184423291507/ms/176.112.172.120/zs/43/srcAg/CHROME/urls/178.237.23.110/pr/10/ct/29/sig/aNEzoYaqM-I/ondemand/dash4_15184423291507.CPOU_I6wnwMw847U_okRQPOO1P6JEVAKF4CLtjTv37I.mpd\",\"quality\":\"HD\",\"headers\":{\"User-Agent\":\"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36\",\"Referer\":\"https://manifest.desitvhub.eu.org/\",\"Origin\":\"https://manifest.desitvhub.eu.org\",\"Accept\":\"*/*\"},\"isDirect\":true,\"type\":\"dash\",\"size\":\"🍿 Interstellar (2014)\\n🌟 2160p | 💾 Variable Size | 🔊 English\\n🎥 x264 | 🎧 AAC\\n📥 WEB-DL | 📦 MKV | 🌈 SDR\\n📎 DesiFlix\"},\"media\":{\"url\":\"https://vd401.okcdn.ru/expires/1786058817706/clientType/0/srcIp/82.165.88.134/type/2/mid/14272207719027/id/15184423291507/ms/176.112.172.120/zs/43/srcAg/CHROME/urls/178.237.23.110/pr/10/ct/29/sig/aNEzoYaqM-I/ondemand/dash4_15184423291507.CPOU_I6wnwMw847U_okRQPOO1P6JEVAKF4CLtjTv37I.mpd\",\"playable\":true,\"kind\":\"dash\",\"status\":206,\"content_type\":\"application/dash+xml\",\"starts_extm3u\":false,\"binary_signature\":null,\"error\":null}},{\"row\":{\"name\":\"DesiFlix | 1080p | Original\",\"title\":\"🍿 Interstellar (2014)\\n🔥 1080p | 💾 Variable Size | 🔊 Original\\n🎥 x264 | 🎧 AAC\\n📥 WEB-DL | 📦 MKV | 🌈 SDR\\n📎 DesiFlix\",\"url\":\"https://cdn4.streamraiwind.stream/img/b2df42324ab7/nasty.m3u8?token=rJvCOq_tdY7nGyykL0ZBBQ&expires=1785977383\",\"quality\":\"HD\",\"headers\":{\"User-Agent\":\"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36\",\"Referer\":\"https://manifest.desitvhub.eu.org/\",\"Origin\":\"https://manifest.desitvhub.eu.org\",\"Accept\":\"*/*\"},\"isDirect\":true,\"type\":\"hls\",\"size\":\"🍿 Interstellar (2014)\\n🔥 1080p | 💾 Variable Size | 🔊 Original\\n🎥 x264 | 🎧 AAC\\n📥 WEB-DL | 📦 MKV | 🌈 SDR\\n📎 DesiFlix\"},\"media\":{\"url\":\"https://cdn4.streamraiwind.stream/img/b2df42324ab7/nasty.m3u8?token=rJvCOq_tdY7nGyykL0ZBBQ&expires=1785977383\",\"playable\":true,\"kind\":\"hls\",\"status\":200,\"content_type\":\"application/vnd.apple.mpegurl\",\"starts_extm3u\":true,\"binary_signature\":null,\"error\":null}}]}\n",
+          "stderr_tail": ""
+        },
+        {
+          "fixture": {
+            "label": "Breaking Bad S01E01",
+            "tmdbId": "1396",
+            "mediaType": "tv",
+            "season": 1,
+            "episode": 1,
+            "title": "Breaking Bad",
+            "year": 2008,
+            "category": "tv"
+          },
+          "ok": true,
+          "returncode": 0,
+          "result": {
+            "ok": true,
+            "duration_ms": 31656,
+            "runtime_error": null,
+            "raw_stream_count": 2,
+            "playable_stream_count": 2,
+            "streams": [
+              {
+                "row": {
+                  "name": "DesiFlix | 2160p | Original",
+                  "title": "🍿 Breaking Bad (2008) | S01E01\n🌟 2160p | 💾 Variable Size | 🔊 Original\n🎥 x264 | 🎧 AAC\n📥 WEB-DL | 📦 MKV | 🌈 SDR\n📎 DesiFlix",
+                  "url": "https://desiflix-app.redgrass-e8268bc5.eastus2.azurecontainerapps.io/api/stream?url=https%3A%2F%2Fmoon.ironwallnet.net%2Fr2%2Fcdn2%2FVURlSG4tUEd3S2VITElwbldqdWZTUTpYbzJ6aEplcXV6cDZJYWZXVTU0YXFDdzlGRWNvblhETHBvNDdXWE1NcGh0bTNMTWlyaDdyRzZwT3BBVjdFVXZ3NjdrTF9NY09iekphckFHbTROWnViQTdiTEl6Y01IVHV0aFJjWW9NOEJYbw%2F1080p%2Findex.m3u8&headers=eyJSZWZlcmVyIjoiaHR0cHM6Ly9wbGF5ZXIudmlkZWFzeS50by8iLCJPcmlnaW4iOiJodHRwczovL3BsYXllci52aWRlYXN5LnRvIn0",
+                  "quality": "HD",
+                  "headers": {
+                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+                    "Referer": "https://manifest.desitvhub.eu.org/",
+                    "Origin": "https://manifest.desitvhub.eu.org",
+                    "Accept": "*/*"
+                  },
+                  "isDirect": true,
+                  "type": "hls",
+                  "size": "🍿 Breaking Bad (2008) | S01E01\n🌟 2160p | 💾 Variable Size | 🔊 Original\n🎥 x264 | 🎧 AAC\n📥 WEB-DL | 📦 MKV | 🌈 SDR\n📎 DesiFlix"
+                },
+                "media": {
+                  "url": "https://desiflix-app.redgrass-e8268bc5.eastus2.azurecontainerapps.io/api/stream?url=https%3A%2F%2Fmoon.ironwallnet.net%2Fr2%2Fcdn2%2FVURlSG4tUEd3S2VITElwbldqdWZTUTpYbzJ6aEplcXV6cDZJYWZXVTU0YXFDdzlGRWNvblhETHBvNDdXWE1NcGh0bTNMTWlyaDdyRzZwT3BBVjdFVXZ3NjdrTF9NY09iekphckFHbTROWnViQTdiTEl6Y01IVHV0aFJjWW9NOEJYbw%2F1080p%2Findex.m3u8&headers=eyJSZWZlcmVyIjoiaHR0cHM6Ly9wbGF5ZXIudmlkZWFzeS50by8iLCJPcmlnaW4iOiJodHRwczovL3BsYXllci52aWRlYXN5LnRvIn0",
+                  "playable": true,
+                  "kind": "hls",
+                  "status": 200,
+                  "content_type": "application/vnd.apple.mpegurl; charset=utf-8",
+                  "starts_extm3u": true,
+                  "binary_signature": null,
+                  "error": null
+                }
+              },
+              {
+                "row": {
+                  "name": "DesiFlix | 1080p | Original",
+                  "title": "🍿 Breaking Bad (2008) | S01E01\n🔥 1080p | 💾 Variable Size | 🔊 Original\n🎥 x264 | 🎧 AAC\n📥 WEB-DL | 📦 MKV | 🌈 SDR\n📎 DesiFlix",
+                  "url": "https://cdn6.streamraiwind.stream/img/fb9c96bab1ca/nasty.m3u8?token=LSTQ_XtnJm3hppKZkQ5h5g&expires=1785977427",
+                  "quality": "HD",
+                  "headers": {
+                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+                    "Referer": "https://manifest.desitvhub.eu.org/",
+                    "Origin": "https://manifest.desitvhub.eu.org",
+                    "Accept": "*/*"
+                  },
+                  "isDirect": true,
+                  "type": "hls",
+                  "size": "🍿 Breaking Bad (2008) | S01E01\n🔥 1080p | 💾 Variable Size | 🔊 Original\n🎥 x264 | 🎧 AAC\n📥 WEB-DL | 📦 MKV | 🌈 SDR\n📎 DesiFlix"
+                },
+                "media": {
+                  "url": "https://cdn6.streamraiwind.stream/img/fb9c96bab1ca/nasty.m3u8?token=LSTQ_XtnJm3hppKZkQ5h5g&expires=1785977427",
+                  "playable": true,
+                  "kind": "hls",
+                  "status": 200,
+                  "content_type": "application/vnd.apple.mpegurl",
+                  "starts_extm3u": true,
+                  "binary_signature": null,
+                  "error": null
+                }
+              }
+            ]
+          },
+          "stdout_tail": "[DesiFlix] Request: tmdbId=1396 type=tv s=1 e=1\n[DesiFlix] Fetching streams from: https://manifest.desitvhub.eu.org/stream/series/tt0903747:1:1.json\n[DesiFlix] Returning 5 sorted streams\n{\"ok\":true,\"duration_ms\":31656,\"runtime_error\":null,\"raw_stream_count\":2,\"playable_stream_count\":2,\"streams\":[{\"row\":{\"name\":\"DesiFlix | 2160p | Original\",\"title\":\"🍿 Breaking Bad (2008) | S01E01\\n🌟 2160p | 💾 Variable Size | 🔊 Original\\n🎥 x264 | 🎧 AAC\\n📥 WEB-DL | 📦 MKV | 🌈 SDR\\n📎 DesiFlix\",\"url\":\"https://desiflix-app.redgrass-e8268bc5.eastus2.azurecontainerapps.io/api/stream?url=https%3A%2F%2Fmoon.ironwallnet.net%2Fr2%2Fcdn2%2FVURlSG4tUEd3S2VITElwbldqdWZTUTpYbzJ6aEplcXV6cDZJYWZXVTU0YXFDdzlGRWNvblhETHBvNDdXWE1NcGh0bTNMTWlyaDdyRzZwT3BBVjdFVXZ3NjdrTF9NY09iekphckFHbTROWnViQTdiTEl6Y01IVHV0aFJjWW9NOEJYbw%2F1080p%2Findex.m3u8&headers=eyJSZWZlcmVyIjoiaHR0cHM6Ly9wbGF5ZXIudmlkZWFzeS50by8iLCJPcmlnaW4iOiJodHRwczovL3BsYXllci52aWRlYXN5LnRvIn0\",\"quality\":\"HD\",\"headers\":{\"User-Agent\":\"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36\",\"Referer\":\"https://manifest.desitvhub.eu.org/\",\"Origin\":\"https://manifest.desitvhub.eu.org\",\"Accept\":\"*/*\"},\"isDirect\":true,\"type\":\"hls\",\"size\":\"🍿 Breaking Bad (2008) | S01E01\\n🌟 2160p | 💾 Variable Size | 🔊 Original\\n🎥 x264 | 🎧 AAC\\n📥 WEB-DL | 📦 MKV | 🌈 SDR\\n📎 DesiFlix\"},\"media\":{\"url\":\"https://desiflix-app.redgrass-e8268bc5.eastus2.azurecontainerapps.io/api/stream?url=https%3A%2F%2Fmoon.ironwallnet.net%2Fr2%2Fcdn2%2FVURlSG4tUEd3S2VITElwbldqdWZTUTpYbzJ6aEplcXV6cDZJYWZXVTU0YXFDdzlGRWNvblhETHBvNDdXWE1NcGh0bTNMTWlyaDdyRzZwT3BBVjdFVXZ3NjdrTF9NY09iekphckFHbTROWnViQTdiTEl6Y01IVHV0aFJjWW9NOEJYbw%2F1080p%2Findex.m3u8&headers=eyJSZWZlcmVyIjoiaHR0cHM6Ly9wbGF5ZXIudmlkZWFzeS50by8iLCJPcmlnaW4iOiJodHRwczovL3BsYXllci52aWRlYXN5LnRvIn0\",\"playable\":true,\"kind\":\"hls\",\"status\":200,\"content_type\":\"application/vnd.apple.mpegurl; charset=utf-8\",\"starts_extm3u\":true,\"binary_signature\":null,\"error\":null}},{\"row\":{\"name\":\"DesiFlix | 1080p | Original\",\"title\":\"🍿 Breaking Bad (2008) | S01E01\\n🔥 1080p | 💾 Variable Size | 🔊 Original\\n🎥 x264 | 🎧 AAC\\n📥 WEB-DL | 📦 MKV | 🌈 SDR\\n📎 DesiFlix\",\"url\":\"https://cdn6.streamraiwind.stream/img/fb9c96bab1ca/nasty.m3u8?token=LSTQ_XtnJm3hppKZkQ5h5g&expires=1785977427\",\"quality\":\"HD\",\"headers\":{\"User-Agent\":\"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36\",\"Referer\":\"https://manifest.desitvhub.eu.org/\",\"Origin\":\"https://manifest.desitvhub.eu.org\",\"Accept\":\"*/*\"},\"isDirect\":true,\"type\":\"hls\",\"size\":\"🍿 Breaking Bad (2008) | S01E01\\n🔥 1080p | 💾 Variable Size | 🔊 Original\\n🎥 x264 | 🎧 AAC\\n📥 WEB-DL | 📦 MKV | 🌈 SDR\\n📎 DesiFlix\"},\"media\":{\"url\":\"https://cdn6.streamraiwind.stream/img/fb9c96bab1ca/nasty.m3u8?token=LSTQ_XtnJm3hppKZkQ5h5g&expires=1785977427\",\"playable\":true,\"kind\":\"hls\",\"status\":200,\"content_type\":\"application/vnd.apple.mpegurl\",\"starts_extm3u\":true,\"binary_signature\":null,\"error\":null}}]}\n",
+          "stderr_tail": ""
+        }
+      ],
+      "baseline_summary": {
+        "playable_fixture_count": 0,
+        "playable_stream_count": 0
+      },
+      "candidate_summary": {
+        "playable_fixture_count": 2,
+        "playable_stream_count": 5
+      },
+      "no_regression": true,
+      "strict_outputs": true,
+      "strictly_better": true,
+      "candidate_sha256": "11a20f7caa60aa7f845ef527d07178b7a0826c96d6350ff1f65b2211436d54d5",
+      "options": {
+        "provider_name": "DesiFlix",
+        "max_candidates": 14,
+        "timeout_ms": 14000
+      }
+    },
+    "french-manga": {
+      "baseline": [
+        {
+          "fixture": {
+            "label": "Interstellar",
+            "tmdbId": "157336",
+            "mediaType": "movie",
+            "title": "Interstellar",
+            "year": 2014,
+            "category": "movie"
+          },
+          "ok": false,
+          "returncode": 2,
+          "result": {
+            "ok": false,
+            "duration_ms": 1978,
+            "runtime_error": null,
+            "raw_stream_count": 0,
+            "playable_stream_count": 0,
+            "streams": []
+          },
+          "stdout_tail": "[FrenchManga] Request: FrenchManga movie 157336\n[Metadata] getTmdbTitles: id=\"157336\" type=\"movie\" season=null\n[Metadata] Titles for 157336: Interstellar | Interestelar | Csillagok Között | Ulduzlararası | Interstellaire | Tähtedevaheline | Tarp žvaigždžių | Interstellar: Călătorind Prin Univers | Medzvezdje | Međuzvjezdani | Yıldızlararası\n[FrenchManga] AJAX search found 1 results for \"Interstellar\"\n[FrenchManga] POST search missed, trying GET for \"Interstellar\"...\n[FrenchManga] POST search missed, trying GET for \"Interestelar\"...\n[FrenchManga] POST search missed, trying GET for \"Csillagok Között\"...\n[FrenchManga] Trying deep fallback on 1 POST results...\n{\"ok\":false,\"duration_ms\":1978,\"runtime_error\":null,\"raw_stream_count\":0,\"playable_stream_count\":0,\"streams\":[]}\n",
+          "stderr_tail": "[FrenchManga] Movie not found for TMDB 157336\n"
+        },
+        {
+          "fixture": {
+            "label": "Jujutsu Kaisen S01E01",
+            "tmdbId": "95479",
+            "mediaType": "tv",
+            "season": 1,
+            "episode": 1,
+            "title": "Jujutsu Kaisen",
+            "year": 2020,
+            "category": "anime"
+          },
+          "ok": false,
+          "returncode": 2,
+          "result": {
+            "ok": false,
+            "duration_ms": 2230,
+            "runtime_error": null,
+            "raw_stream_count": 0,
+            "playable_stream_count": 0,
+            "streams": []
+          },
+          "stdout_tail": "[FrenchManga] Request: FrenchManga tv 95479 S1E1\n[Metadata] getTmdbTitles: id=\"95479\" type=\"tv\" season=1\n[Metadata] Titles for 95479: JUJUTSU KAISEN | JUJUTSU KAISEN Season 1 | JUJUTSU KAISEN Saison 1 | JUJUTSU KAISEN S1 | Jujutsu Kaisen: Guerra de hechiceros | Jujutsu Kaisen: Shimetsu Kaiyuu - Zenpen | Guerra de magia | Sorcery Fight | JJK | JUJUTSU KAISEN Season 3: The Culling Game Part 1\n[Metadata] ✓ ID 95479: \"JUJUTSU KAISEN\" confirmed anime (ja)\n[FrenchManga] Detected subtype: anime\n[ArmSync] Resolved: S1E1 -> Absolute 1\n[FrenchManga] AJAX search found 5 results for \"JUJUTSU KAISEN\"\n[FrenchManga] Series match: Jujutsu Kaisen - Saison 1 -> https://w16.french-manga.net/1497198-jujutsu-kaisen.html (newsid: 1497198)\n[FrenchManga] Episode 1: \"Ryomen Sukuna\" (VF)\n[FrenchManga] Found episode 1 (VF) with 2 server(s)\n[Resolver] Domain corrected (direct): vidzy.live → vidzy.live\n[Resolver] Result: https://vidzy.live/embed-dprci7emo3bh.html → https://vidzy.live/embed-dprci7emo3bh.html\n[Resolver] Result: https://s1.fsvid.lol/troll/master.m3u8 → https://s1.fsvid.lol/troll/master.m3u8\n[FrenchManga] Resolved OK (868ms): https://vidzy.live/embed-dprci7emo3bh.html... → https://s1.fsvid.lol/troll/master.m3u8...\n[Resolver] Domain corrected (direct): vidhsareup.io → vidhsareup.fun\n[Resolver] Result: https://vidhsareup.io/embed-y7mddoqiyp00.html → https://vidhsareup.fun/embed-y7mddoqiyp00.html\n[FrenchManga] ✗ Resolve FAILED (53ms): https://vidhsareup.fun/embed-y7mddoqiyp00.html - isDirect=false, skipping\n[FrenchManga] Episode 1: \"Ryomen Sukuna\" (VOSTFR)\n[FrenchManga] Found episode 1 (VOSTFR) with 2 server(s)\n[Resolver] Domain corrected (direct): vidzy.live → vidzy.live\n[Resolver] Result: https://vidzy.live/embed-dprci7emo3bh.html → https://vidzy.live/embed-dprci7emo3bh.html\n[Resolver] Result: https://s1.fsvid.lol/troll/master.m3u8 → https://s1.fsvid.lol/troll/master.m3u8\n[FrenchManga] Resolved OK (2ms): https://vidzy.live/embed-dprci7emo3bh.html... → https://s1.fsvid.lol/troll/master.m3u8...\n[Resolver] Domain corrected (direct): vidhsareup.io → vidhsareup.fun\n[Resolver] Result: https://vidhsareup.io/embed-y7mddoqiyp00.html → https://vidhsareup.fun/embed-y7mddoqiyp00.html\n[FrenchManga] ✗ Resolve FAILED (16ms): https://vidhsareup.fun/embed-y7mddoqiyp00.html - isDirect=false, skipping\n[FrenchManga] Series: 2 streams for episode 1\n{\"ok\":false,\"duration_ms\":2230,\"runtime_error\":null,\"raw_stream_count\":0,\"playable_stream_count\":0,\"streams\":[]}\n",
+          "stderr_tail": ""
+        }
+      ],
+      "candidate": [
+        {
+          "fixture": {
+            "label": "Interstellar",
+            "tmdbId": "157336",
+            "mediaType": "movie",
+            "title": "Interstellar",
+            "year": 2014,
+            "category": "movie"
+          },
+          "ok": false,
+          "returncode": 2,
+          "result": {
+            "ok": false,
+            "duration_ms": 2168,
+            "runtime_error": null,
+            "raw_stream_count": 0,
+            "playable_stream_count": 0,
+            "streams": []
+          },
+          "stdout_tail": "[FrenchManga] Request: FrenchManga movie 157336\n[Metadata] getTmdbTitles: id=\"157336\" type=\"movie\" season=null\n[Metadata] Titles for 157336: Interstellar | Interestelar | Csillagok Között | Ulduzlararası | Interstellaire | Tähtedevaheline | Tarp žvaigždžių | Interstellar: Călătorind Prin Univers | Medzvezdje | Međuzvjezdani | Yıldızlararası\n[FrenchManga] AJAX search found 1 results for \"Interstellar\"\n[FrenchManga] POST search missed, trying GET for \"Interstellar\"...\n[FrenchManga] POST search missed, trying GET for \"Interestelar\"...\n[FrenchManga] POST search missed, trying GET for \"Csillagok Között\"...\n[FrenchManga] Trying deep fallback on 1 POST results...\n[FrenchManga] Request: FrenchManga movie 157336\n[Metadata] getTmdbTitles: id=\"157336\" type=\"movie\" season=null\n[Metadata] Titles for 157336: Interstellar | Interestelar | Csillagok Között | Ulduzlararası | Interstellaire | Tähtedevaheline | Tarp žvaigždžių | Interstellar: Călătorind Prin Univers | Medzvezdje | Međuzvjezdani | Yıldızlararası\n[FrenchManga] AJAX search found 1 results for \"Interstellar\"\n[FrenchManga] POST search missed, trying GET for \"Interstellar\"...\n[FrenchManga] POST search missed, trying GET for \"Interestelar\"...\n[FrenchManga] POST search missed, trying GET for \"Csillagok Között\"...\n[FrenchManga] Trying deep fallback on 1 POST results...\n[FrenchManga] Request: FrenchManga undefined [object Object] SundefinedEundefined\n[Metadata] getTmdbTitles: id=\"[object Object]\" type=\"undefined\" season=undefined\n[Metadata] Titles for [object Object]: \n{\"ok\":false,\"duration_ms\":2168,\"runtime_error\":null,\"raw_stream_count\":0,\"playable_stream_count\":0,\"streams\":[]}\n",
+          "stderr_tail": "[FrenchManga] Movie not found for TMDB 157336\n[FrenchManga] Movie not found for TMDB 157336\n"
+        },
+        {
+          "fixture": {
+            "label": "Jujutsu Kaisen S01E01",
+            "tmdbId": "95479",
+            "mediaType": "tv",
+            "season": 1,
+            "episode": 1,
+            "title": "Jujutsu Kaisen",
+            "year": 2020,
+            "category": "anime"
+          },
+          "ok": true,
+          "returncode": 0,
+          "result": {
+            "ok": true,
+            "duration_ms": 2328,
+            "runtime_error": null,
+            "raw_stream_count": 1,
+            "playable_stream_count": 1,
+            "streams": [
+              {
+                "row": {
+                  "name": "FrenchManga (VF)",
+                  "title": "[VF] FrenchManga",
+                  "url": "https://s1.fsvid.lol/troll/master.m3u8",
+                  "quality": "720p",
+                  "headers": {
+                    "Referer": "https://vidzy.live/",
+                    "Origin": "https://vidzy.live",
+                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+                    "Accept": "*/*"
+                  },
+                  "isDirect": true,
+                  "type": "hls",
+                  "language": "VF"
+                },
+                "media": {
+                  "url": "https://s1.fsvid.lol/troll/master.m3u8",
+                  "playable": true,
+                  "kind": "hls",
+                  "status": 200,
+                  "content_type": "application/vnd.apple.mpegurl",
+                  "starts_extm3u": true,
+                  "binary_signature": null,
+                  "error": null
+                }
+              }
+            ]
+          },
+          "stdout_tail": "[FrenchManga] Request: FrenchManga tv 95479 S1E1\n[Metadata] getTmdbTitles: id=\"95479\" type=\"tv\" season=1\n[Metadata] Titles for 95479: JUJUTSU KAISEN | JUJUTSU KAISEN Season 1 | JUJUTSU KAISEN Saison 1 | JUJUTSU KAISEN S1 | Jujutsu Kaisen: Guerra de hechiceros | Jujutsu Kaisen: Shimetsu Kaiyuu - Zenpen | Guerra de magia | Sorcery Fight | JJK | JUJUTSU KAISEN Season 3: The Culling Game Part 1\n[Metadata] ✓ ID 95479: \"JUJUTSU KAISEN\" confirmed anime (ja)\n[FrenchManga] Detected subtype: anime\n[ArmSync] Resolved: S1E1 -> Absolute 1\n[FrenchManga] AJAX search found 5 results for \"JUJUTSU KAISEN\"\n[FrenchManga] Series match: Jujutsu Kaisen - Saison 1 -> https://w16.french-manga.net/1497198-jujutsu-kaisen.html (newsid: 1497198)\n[FrenchManga] Episode 1: \"Ryomen Sukuna\" (VF)\n[FrenchManga] Found episode 1 (VF) with 2 server(s)\n[Resolver] Domain corrected (direct): vidzy.live → vidzy.live\n[Resolver] Result: https://vidzy.live/embed-dprci7emo3bh.html → https://vidzy.live/embed-dprci7emo3bh.html\n[Resolver] Result: https://s1.fsvid.lol/troll/master.m3u8 → https://s1.fsvid.lol/troll/master.m3u8\n[FrenchManga] Resolved OK (764ms): https://vidzy.live/embed-dprci7emo3bh.html... → https://s1.fsvid.lol/troll/master.m3u8...\n[Resolver] Domain corrected (direct): vidhsareup.io → vidhsareup.fun\n[Resolver] Result: https://vidhsareup.io/embed-y7mddoqiyp00.html → https://vidhsareup.fun/embed-y7mddoqiyp00.html\n[FrenchManga] ✗ Resolve FAILED (59ms): https://vidhsareup.fun/embed-y7mddoqiyp00.html - isDirect=false, skipping\n[FrenchManga] Episode 1: \"Ryomen Sukuna\" (VOSTFR)\n[FrenchManga] Found episode 1 (VOSTFR) with 2 server(s)\n[Resolver] Domain corrected (direct): vidzy.live → vidzy.live\n[Resolver] Result: https://vidzy.live/embed-dprci7emo3bh.html → https://vidzy.live/embed-dprci7emo3bh.html\n[Resolver] Result: https://s1.fsvid.lol/troll/master.m3u8 → https://s1.fsvid.lol/troll/master.m3u8\n[FrenchManga] Resolved OK (2ms): https://vidzy.live/embed-dprci7emo3bh.html... → https://s1.fsvid.lol/troll/master.m3u8...\n[Resolver] Domain corrected (direct): vidhsareup.io → vidhsareup.fun\n[Resolver] Result: https://vidhsareup.io/embed-y7mddoqiyp00.html → https://vidhsareup.fun/embed-y7mddoqiyp00.html\n[FrenchManga] ✗ Resolve FAILED (55ms): https://vidhsareup.fun/embed-y7mddoqiyp00.html - isDirect=false, skipping\n[FrenchManga] Series: 2 streams for episode 1\n{\"ok\":true,\"duration_ms\":2328,\"runtime_error\":null,\"raw_stream_count\":1,\"playable_stream_count\":1,\"streams\":[{\"row\":{\"name\":\"FrenchManga (VF)\",\"title\":\"[VF] FrenchManga\",\"url\":\"https://s1.fsvid.lol/troll/master.m3u8\",\"quality\":\"720p\",\"headers\":{\"Referer\":\"https://vidzy.live/\",\"Origin\":\"https://vidzy.live\",\"User-Agent\":\"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36\",\"Accept\":\"*/*\"},\"isDirect\":true,\"type\":\"hls\",\"language\":\"VF\"},\"media\":{\"url\":\"https://s1.fsvid.lol/troll/master.m3u8\",\"playable\":true,\"kind\":\"hls\",\"status\":200,\"content_type\":\"application/vnd.apple.mpegurl\",\"starts_extm3u\":true,\"binary_signature\":null,\"error\":null}}]}\n",
+          "stderr_tail": ""
+        }
+      ],
+      "baseline_summary": {
+        "playable_fixture_count": 0,
+        "playable_stream_count": 0
+      },
+      "candidate_summary": {
+        "playable_fixture_count": 1,
+        "playable_stream_count": 1
+      },
+      "no_regression": true,
+      "strict_outputs": true,
+      "strictly_better": true,
+      "candidate_sha256": "7be5ee4f732f17250046ffea9cda0f9b78976badb79cc269887223068e8b8c5d",
+      "options": {
+        "provider_name": "French-Manga",
+        "max_candidates": 14,
+        "timeout_ms": 14000,
+        "strip_unproven_wrappers": true
+      }
+    },
+    "streamzo": {
+      "baseline": [
+        {
+          "fixture": {
+            "label": "Interstellar",
+            "tmdbId": "157336",
+            "mediaType": "movie",
+            "title": "Interstellar",
+            "year": 2014,
+            "category": "movie"
+          },
+          "ok": false,
+          "returncode": 2,
+          "result": {
+            "ok": false,
+            "duration_ms": 5359,
+            "runtime_error": null,
+            "raw_stream_count": 6,
+            "playable_stream_count": 0,
+            "streams": [
+              {
+                "row": {
+                  "name": "StreamZo",
+                  "title": "StreamZo - Interstellar",
+                  "url": "https://streamzo.fr/embed/vidnest.fun/23254",
+                  "quality": "HD",
+                  "language": "fr",
+                  "isDirect": false,
+                  "headers": {
+                    "Referer": "https://streamzo.fr/interstellar",
+                    "Origin": "https://streamzo.fr"
+                  }
+                },
+                "media": {
+                  "url": "https://streamzo.fr/embed/vidnest.fun/23254",
+                  "playable": false,
+                  "kind": null,
+                  "status": 206,
+                  "content_type": "text/html; charset=utf-8",
+                  "starts_extm3u": false,
+                  "binary_signature": null,
+                  "error": "html_not_media"
+                }
+              },
+              {
+                "row": {
+                  "name": "StreamZo #2",
+                  "title": "StreamZo - Interstellar",
+                  "url": "https://streamzo.fr/interstellar",
+                  "quality": "HD",
+                  "language": "fr",
+                  "isDirect": false,
+                  "headers": {
+                    "Referer": "https://streamzo.fr/interstellar",
+                    "Origin": "https://streamzo.fr"
+                  }
+                },
+                "media": {
+                  "url": "https://streamzo.fr/interstellar",
+                  "playable": false,
+                  "kind": null,
+                  "status": 206,
+                  "content_type": "text/html; charset=utf-8",
+                  "starts_extm3u": false,
+                  "binary_signature": null,
+                  "error": "html_not_media"
+                }
+              },
+              {
+                "row": {
+                  "name": "StreamZo #3",
+                  "title": "StreamZo - Interstellar",
+                  "url": "https://www.youtube.com/watch?v=kTGDxqUowq4",
+                  "quality": "HD",
+                  "language": "fr",
+                  "isDirect": false,
+                  "headers": {
+                    "Referer": "https://streamzo.fr/interstellar",
+                    "Origin": "https://streamzo.fr"
+                  }
+                },
+                "media": {
+                  "url": "https://www.youtube.com/watch?v=kTGDxqUowq4",
+                  "playable": false,
+                  "kind": null,
+                  "status": 200,
+                  "content_type": "text/html; charset=utf-8",
+                  "starts_extm3u": false,
+                  "binary_signature": null,
+                  "error": "html_not_media"
+                }
+              },
+              {
+                "row": {
+                  "name": "StreamZo #4",
+                  "title": "StreamZo - Interstellar",
+                  "url": "https://streamzo.fr/embed/vidnest.fun/23254?src=https://vidnest.fun/movie/157336",
+                  "quality": "HD",
+                  "language": "fr",
+                  "isDirect": false,
+                  "headers": {
+                    "Referer": "https://streamzo.fr/interstellar",
+                    "Origin": "https://streamzo.fr"
+                  }
+                },
+                "media": {
+                  "url": "https://streamzo.fr/embed/vidnest.fun/23254?src=https://vidnest.fun/movie/157336",
+                  "playable": false,
+                  "kind": null,
+                  "status": 206,
+                  "content_type": "text/html; charset=utf-8",
+                  "starts_extm3u": false,
+                  "binary_signature": null,
+                  "error": "html_not_media"
+                }
+              },
+              {
+                "row": {
+                  "name": "StreamZo #5",
+                  "title": "StreamZo - Interstellar",
+                  "url": "https://uqload.is/embed-v8dv65a48f6x.html",
+                  "quality": "HD",
+                  "language": "fr",
+                  "isDirect": false,
+                  "headers": {
+                    "Referer": "https://streamzo.fr/interstellar",
+                    "Origin": "https://streamzo.fr"
+                  }
+                },
+                "media": {
+                  "url": "https://uqload.is/embed-v8dv65a48f6x.html",
+                  "playable": false,
+                  "kind": null,
+                  "status": 206,
+                  "content_type": "text/html; charset=UTF-8",
+                  "starts_extm3u": false,
+                  "binary_signature": null,
+                  "error": "html_not_media"
+                }
+              },
+              {
+                "row": {
+                  "name": "StreamZo #6",
+                  "title": "StreamZo - Interstellar",
+                  "url": "https://streamzo.fr/embed/uqload.is/23254?src=https://uqload.is/embed-v8dv65a48f6x.html",
+                  "quality": "HD",
+                  "language": "fr",
+                  "isDirect": false,
+                  "headers": {
+                    "Referer": "https://streamzo.fr/interstellar",
+                    "Origin": "https://streamzo.fr"
+                  }
+                },
+                "media": {
+                  "url": "https://streamzo.fr/embed/uqload.is/23254?src=https://uqload.is/embed-v8dv65a48f6x.html",
+                  "playable": false,
+                  "kind": null,
+                  "status": 206,
+                  "content_type": "text/html; charset=utf-8",
+                  "starts_extm3u": false,
+                  "binary_signature": null,
+                  "error": "html_not_media"
+                }
+              }
+            ]
+          },
+          "stdout_tail": "{\"ok\":false,\"duration_ms\":5359,\"runtime_error\":null,\"raw_stream_count\":6,\"playable_stream_count\":0,\"streams\":[{\"row\":{\"name\":\"StreamZo\",\"title\":\"StreamZo - Interstellar\",\"url\":\"https://streamzo.fr/embed/vidnest.fun/23254\",\"quality\":\"HD\",\"language\":\"fr\",\"isDirect\":false,\"headers\":{\"Referer\":\"https://streamzo.fr/interstellar\",\"Origin\":\"https://streamzo.fr\"}},\"media\":{\"url\":\"https://streamzo.fr/embed/vidnest.fun/23254\",\"playable\":false,\"kind\":null,\"status\":206,\"content_type\":\"text/html; charset=utf-8\",\"starts_extm3u\":false,\"binary_signature\":null,\"error\":\"html_not_media\"}},{\"row\":{\"name\":\"StreamZo #2\",\"title\":\"StreamZo - Interstellar\",\"url\":\"https://streamzo.fr/interstellar\",\"quality\":\"HD\",\"language\":\"fr\",\"isDirect\":false,\"headers\":{\"Referer\":\"https://streamzo.fr/interstellar\",\"Origin\":\"https://streamzo.fr\"}},\"media\":{\"url\":\"https://streamzo.fr/interstellar\",\"playable\":false,\"kind\":null,\"status\":206,\"content_type\":\"text/html; charset=utf-8\",\"starts_extm3u\":false,\"binary_signature\":null,\"error\":\"html_not_media\"}},{\"row\":{\"name\":\"StreamZo #3\",\"title\":\"StreamZo - Interstellar\",\"url\":\"https://www.youtube.com/watch?v=kTGDxqUowq4\",\"quality\":\"HD\",\"language\":\"fr\",\"isDirect\":false,\"headers\":{\"Referer\":\"https://streamzo.fr/interstellar\",\"Origin\":\"https://streamzo.fr\"}},\"media\":{\"url\":\"https://www.youtube.com/watch?v=kTGDxqUowq4\",\"playable\":false,\"kind\":null,\"status\":200,\"content_type\":\"text/html; charset=utf-8\",\"starts_extm3u\":false,\"binary_signature\":null,\"error\":\"html_not_media\"}},{\"row\":{\"name\":\"StreamZo #4\",\"title\":\"StreamZo - Interstellar\",\"url\":\"https://streamzo.fr/embed/vidnest.fun/23254?src=https://vidnest.fun/movie/157336\",\"quality\":\"HD\",\"language\":\"fr\",\"isDirect\":false,\"headers\":{\"Referer\":\"https://streamzo.fr/interstellar\",\"Origin\":\"https://streamzo.fr\"}},\"media\":{\"url\":\"https://streamzo.fr/embed/vidnest.fun/23254?src=https://vidnest.fun/movie/157336\",\"playable\":false,\"kind\":null,\"status\":206,\"content_type\":\"text/html; charset=utf-8\",\"starts_extm3u\":false,\"binary_signature\":null,\"error\":\"html_not_media\"}},{\"row\":{\"name\":\"StreamZo #5\",\"title\":\"StreamZo - Interstellar\",\"url\":\"https://uqload.is/embed-v8dv65a48f6x.html\",\"quality\":\"HD\",\"language\":\"fr\",\"isDirect\":false,\"headers\":{\"Referer\":\"https://streamzo.fr/interstellar\",\"Origin\":\"https://streamzo.fr\"}},\"media\":{\"url\":\"https://uqload.is/embed-v8dv65a48f6x.html\",\"playable\":false,\"kind\":null,\"status\":206,\"content_type\":\"text/html; charset=UTF-8\",\"starts_extm3u\":false,\"binary_signature\":null,\"error\":\"html_not_media\"}},{\"row\":{\"name\":\"StreamZo #6\",\"title\":\"StreamZo - Interstellar\",\"url\":\"https://streamzo.fr/embed/uqload.is/23254?src=https://uqload.is/embed-v8dv65a48f6x.html\",\"quality\":\"HD\",\"language\":\"fr\",\"isDirect\":false,\"headers\":{\"Referer\":\"https://streamzo.fr/interstellar\",\"Origin\":\"https://streamzo.fr\"}},\"media\":{\"url\":\"https://streamzo.fr/embed/uqload.is/23254?src=https://uqload.is/embed-v8dv65a48f6x.html\",\"playable\":false,\"kind\":null,\"status\":206,\"content_type\":\"text/html; charset=utf-8\",\"starts_extm3u\":false,\"binary_signature\":null,\"error\":\"html_not_media\"}}]}\n",
+          "stderr_tail": ""
+        },
+        {
+          "fixture": {
+            "label": "Breaking Bad S01E01",
+            "tmdbId": "1396",
+            "mediaType": "tv",
+            "season": 1,
+            "episode": 1,
+            "title": "Breaking Bad",
+            "year": 2008,
+            "category": "tv"
+          },
+          "ok": false,
+          "returncode": 2,
+          "result": {
+            "ok": false,
+            "duration_ms": 4998,
+            "runtime_error": null,
+            "raw_stream_count": 1,
+            "playable_stream_count": 0,
+            "streams": [
+              {
+                "row": {
+                  "name": "StreamZo",
+                  "title": "StreamZo - Breaking Bad",
+                  "url": "https://streamzo.fr/embed/uqload.is/episode/66792",
+                  "quality": "HD",
+                  "language": "fr",
+                  "headers": {
+                    "Referer": "https://streamzo.fr/",
+                    "Origin": "https://streamzo.fr",
+                    "Accept-Language": "fr-FR,fr;q=0.9,en;q=0.6"
+                  },
+                  "isDirect": false
+                },
+                "media": {
+                  "url": "https://streamzo.fr/embed/uqload.is/episode/66792",
+                  "playable": false,
+                  "kind": null,
+                  "status": 206,
+                  "content_type": "text/html; charset=utf-8",
+                  "starts_extm3u": false,
+                  "binary_signature": null,
+                  "error": "html_not_media"
+                }
+              }
+            ]
+          },
+          "stdout_tail": "{\"ok\":false,\"duration_ms\":4998,\"runtime_error\":null,\"raw_stream_count\":1,\"playable_stream_count\":0,\"streams\":[{\"row\":{\"name\":\"StreamZo\",\"title\":\"StreamZo - Breaking Bad\",\"url\":\"https://streamzo.fr/embed/uqload.is/episode/66792\",\"quality\":\"HD\",\"language\":\"fr\",\"headers\":{\"Referer\":\"https://streamzo.fr/\",\"Origin\":\"https://streamzo.fr\",\"Accept-Language\":\"fr-FR,fr;q=0.9,en;q=0.6\"},\"isDirect\":false},\"media\":{\"url\":\"https://streamzo.fr/embed/uqload.is/episode/66792\",\"playable\":false,\"kind\":null,\"status\":206,\"content_type\":\"text/html; charset=utf-8\",\"starts_extm3u\":false,\"binary_signature\":null,\"error\":\"html_not_media\"}}]}\n",
+          "stderr_tail": ""
+        },
+        {
+          "fixture": {
+            "label": "Jujutsu Kaisen S01E01",
+            "tmdbId": "95479",
+            "mediaType": "tv",
+            "season": 1,
+            "episode": 1,
+            "title": "Jujutsu Kaisen",
+            "year": 2020,
+            "category": "anime"
+          },
+          "ok": false,
+          "returncode": 2,
+          "result": {
+            "ok": false,
+            "duration_ms": 27421,
+            "runtime_error": null,
+            "raw_stream_count": 4,
+            "playable_stream_count": 0,
+            "streams": [
+              {
+                "row": {
+                  "name": "StreamZo",
+                  "title": "StreamZo - Jujutsu Kaisen",
+                  "url": "https://vidlink.pro/movie/1338799",
+                  "quality": "HD",
+                  "language": "fr",
+                  "isDirect": false,
+                  "headers": {
+                    "Referer": "https://streamzo.fr/jujutsu-kaisen-tresor-cache-mort-prematuree-le-film",
+                    "Origin": "https://streamzo.fr"
+                  }
+                },
+                "media": {
+                  "url": "https://vidlink.pro/movie/1338799",
+                  "playable": false,
+                  "kind": null,
+                  "status": 200,
+                  "content_type": "text/html; charset=utf-8",
+                  "starts_extm3u": false,
+                  "binary_signature": null,
+                  "error": "html_not_media"
+                }
+              },
+              {
+                "row": {
+                  "name": "StreamZo #2",
+                  "title": "StreamZo - Jujutsu Kaisen",
+                  "url": "https://streamzo.fr/jujutsu-kaisen-tresor-cache-mort-prematuree-le-film",
+                  "quality": "HD",
+                  "language": "fr",
+                  "isDirect": false,
+                  "headers": {
+                    "Referer": "https://streamzo.fr/jujutsu-kaisen-tresor-cache-mort-prematuree-le-film",
+                    "Origin": "https://streamzo.fr"
+                  }
+                },
+                "media": {
+                  "url": "https://streamzo.fr/jujutsu-kaisen-tresor-cache-mort-prematuree-le-film",
+                  "playable": false,
+                  "kind": null,
+                  "status": 206,
+                  "content_type": "text/html; charset=utf-8",
+                  "starts_extm3u": false,
+                  "binary_signature": null,
+                  "error": "html_not_media"
+                }
+              },
+              {
+                "row": {
+                  "name": "StreamZo #3",
+                  "title": "StreamZo - Jujutsu Kaisen",
+                  "url": "https://www.youtube.com/watch?v=y9Bd6FocV8A",
+                  "quality": "HD",
+                  "language": "fr",
+                  "isDirect": false,
+                  "headers": {
+                    "Referer": "https://streamzo.fr/jujutsu-kaisen-tresor-cache-mort-prematuree-le-film",
+                    "Origin": "https://streamzo.fr"
+                  }
+                },
+                "media": {
+                  "url": "https://www.youtube.com/watch?v=y9Bd6FocV8A",
+                  "playable": false,
+                  "kind": null,
+                  "status": 200,
+                  "content_type": "text/html; charset=utf-8",
+                  "starts_extm3u": false,
+                  "binary_signature": null,
+                  "error": "html_not_media"
+                }
+              },
+              {
+                "row": {
+                  "name": "StreamZo #4",
+                  "title": "StreamZo - Jujutsu Kaisen",
+                  "url": "https://streamzo.fr/embed/vidnest.fun/63091?src=https://vidnest.fun/movie/1338799",
+                  "quality": "HD",
+                  "language": "fr",
+                  "isDirect": false,
+                  "headers": {
+                    "Referer": "https://streamzo.fr/jujutsu-kaisen-tresor-cache-mort-prematuree-le-film",
+                    "Origin": "https://streamzo.fr"
+                  }
+                },
+                "media": {
+                  "url": "https://streamzo.fr/embed/vidnest.fun/63091?src=https://vidnest.fun/movie/1338799",
+                  "playable": false,
+                  "kind": null,
+                  "status": 206,
+                  "content_type": "text/html; charset=utf-8",
+                  "starts_extm3u": false,
+                  "binary_signature": null,
+                  "error": "html_not_media"
+                }
+              }
+            ]
+          },
+          "stdout_tail": "[Streamzo] Request: Streamzo tv 95479 S1E1\n[Metadata] getTmdbTitles: id=\"95479\" type=\"tv\" season=1\n[Metadata] Titles for 95479: JUJUTSU KAISEN | JUJUTSU KAISEN Season 1 | JUJUTSU KAISEN Saison 1 | JUJUTSU KAISEN S1 | Jujutsu Kaisen: Guerra de hechiceros | Jujutsu Kaisen: Shimetsu Kaiyuu - Zenpen | Guerra de magia | Sorcery Fight | JJK | JUJUTSU KAISEN Season 3: The Culling Game Part 1\n[Metadata] ✓ ID 95479: \"JUJUTSU KAISEN\" confirmed anime (ja)\n[Streamzo] Searching for tv 95479\n[Streamzo] Generated 26 slug candidate(s)\n[Streamzo] Cloudflare block (attempt 1), retrying...\n[Streamzo] Retry 1/2 in 1000ms\n[Streamzo] Cloudflare block (attempt 2), retrying...\n[Streamzo] Retry 2/2 in 3000ms\n[Streamzo] Cloudflare block (attempt 3), retrying...\n[Streamzo] Cloudflare block (attempt 1), retrying...\n[Streamzo] Retry 1/2 in 1000ms\n[Streamzo] Cloudflare block (attempt 2), retrying...\n[Streamzo] Retry 2/2 in 3000ms\n[Streamzo] Cloudflare block (attempt 3), retrying...\n[Streamzo] Cloudflare block (attempt 1), retrying...\n[Streamzo] Retry 1/2 in 1000ms\n[Streamzo] Cloudflare block (attempt 2), retrying...\n[Streamzo] Retry 2/2 in 3000ms\n[Streamzo] Content not found for TMDB 95479\n{\"ok\":false,\"duration_ms\":27421,\"runtime_error\":null,\"raw_stream_count\":4,\"playable_stream_count\":0,\"streams\":[{\"row\":{\"name\":\"StreamZo\",\"title\":\"StreamZo - Jujutsu Kaisen\",\"url\":\"https://vidlink.pro/movie/1338799\",\"quality\":\"HD\",\"language\":\"fr\",\"isDirect\":false,\"headers\":{\"Referer\":\"https://streamzo.fr/jujutsu-kaisen-tresor-cache-mort-prematuree-le-film\",\"Origin\":\"https://streamzo.fr\"}},\"media\":{\"url\":\"https://vidlink.pro/movie/1338799\",\"playable\":false,\"kind\":null,\"status\":200,\"content_type\":\"text/html; charset=utf-8\",\"starts_extm3u\":false,\"binary_signature\":null,\"error\":\"html_not_media\"}},{\"row\":{\"name\":\"StreamZo #2\",\"title\":\"StreamZo - Jujutsu Kaisen\",\"url\":\"https://streamzo.fr/jujutsu-kaisen-tresor-cache-mort-prematuree-le-film\",\"quality\":\"HD\",\"language\":\"fr\",\"isDirect\":false,\"headers\":{\"Referer\":\"https://streamzo.fr/jujutsu-kaisen-tresor-cache-mort-prematuree-le-film\",\"Origin\":\"https://streamzo.fr\"}},\"media\":{\"url\":\"https://streamzo.fr/jujutsu-kaisen-tresor-cache-mort-prematuree-le-film\",\"playable\":false,\"kind\":null,\"status\":206,\"content_type\":\"text/html; charset=utf-8\",\"starts_extm3u\":false,\"binary_signature\":null,\"error\":\"html_not_media\"}},{\"row\":{\"name\":\"StreamZo #3\",\"title\":\"StreamZo - Jujutsu Kaisen\",\"url\":\"https://www.youtube.com/watch?v=y9Bd6FocV8A\",\"quality\":\"HD\",\"language\":\"fr\",\"isDirect\":false,\"headers\":{\"Referer\":\"https://streamzo.fr/jujutsu-kaisen-tresor-cache-mort-prematuree-le-film\",\"Origin\":\"https://streamzo.fr\"}},\"media\":{\"url\":\"https://www.youtube.com/watch?v=y9Bd6FocV8A\",\"playable\":false,\"kind\":null,\"status\":200,\"content_type\":\"text/html; charset=utf-8\",\"starts_extm3u\":false,\"binary_signature\":null,\"error\":\"html_not_media\"}},{\"row\":{\"name\":\"StreamZo #4\",\"title\":\"StreamZo - Jujutsu Kaisen\",\"url\":\"https://streamzo.fr/embed/vidnest.fun/63091?src=https://vidnest.fun/movie/1338799\",\"quality\":\"HD\",\"language\":\"fr\",\"isDirect\":false,\"headers\":{\"Referer\":\"https://streamzo.fr/jujutsu-kaisen-tresor-cache-mort-prematuree-le-film\",\"Origin\":\"https://streamzo.fr\"}},\"media\":{\"url\":\"https://streamzo.fr/embed/vidnest.fun/63091?src=https://vidnest.fun/movie/1338799\",\"playable\":false,\"kind\":null,\"status\":206,\"content_type\":\"text/html; charset=utf-8\",\"starts_extm3u\":false,\"binary_signature\":null,\"error\":\"html_not_media\"}}]}\n",
+          "stderr_tail": ""
+        }
+      ],
+      "candidate": [
+        {
+          "fixture": {
+            "label": "Interstellar",
+            "tmdbId": "157336",
+            "mediaType": "movie",
+            "title": "Interstellar",
+            "year": 2014,
+            "category": "movie"
+          },
+          "ok": true,
+          "returncode": 0,
+          "result": {
+            "ok": true,
+            "duration_ms": 15170,
+            "runtime_error": null,
+            "raw_stream_count": 1,
+            "playable_stream_count": 1,
+            "streams": [
+              {
+                "row": {
+                  "name": "StreamZo #6",
+                  "title": "StreamZo - Interstellar",
+                  "url": "https://strm2.uqload.is/hls2/03/02554/v8dv65a48f6x_n/master.m3u8?t=NXFHnO8-TLXjycGV_EIjIXZo9yVqbF4WVFbUnuPiUFU&s=1785972518&e=43200&v=114339&i=0.0&sp=0",
+                  "quality": "HD",
+                  "headers": {
+                    "Referer": "https://streamzo.fr/interstellar",
+                    "Origin": "https://streamzo.fr",
+                    "Accept": "*/*"
+                  },
+                  "isDirect": true,
+                  "type": "hls",
+                  "language": "fr"
+                },
+                "media": {
+                  "url": "https://strm2.uqload.is/hls2/03/02554/v8dv65a48f6x_n/master.m3u8?t=NXFHnO8-TLXjycGV_EIjIXZo9yVqbF4WVFbUnuPiUFU&s=1785972518&e=43200&v=114339&i=0.0&sp=0",
+                  "playable": true,
+                  "kind": "hls",
+                  "status": 200,
+                  "content_type": "application/vnd.apple.mpegurl",
+                  "starts_extm3u": true,
+                  "binary_signature": null,
+                  "error": null
+                }
+              }
+            ]
+          },
+          "stdout_tail": "{\"ok\":true,\"duration_ms\":15170,\"runtime_error\":null,\"raw_stream_count\":1,\"playable_stream_count\":1,\"streams\":[{\"row\":{\"name\":\"StreamZo #6\",\"title\":\"StreamZo - Interstellar\",\"url\":\"https://strm2.uqload.is/hls2/03/02554/v8dv65a48f6x_n/master.m3u8?t=NXFHnO8-TLXjycGV_EIjIXZo9yVqbF4WVFbUnuPiUFU&s=1785972518&e=43200&v=114339&i=0.0&sp=0\",\"quality\":\"HD\",\"headers\":{\"Referer\":\"https://streamzo.fr/interstellar\",\"Origin\":\"https://streamzo.fr\",\"Accept\":\"*/*\"},\"isDirect\":true,\"type\":\"hls\",\"language\":\"fr\"},\"media\":{\"url\":\"https://strm2.uqload.is/hls2/03/02554/v8dv65a48f6x_n/master.m3u8?t=NXFHnO8-TLXjycGV_EIjIXZo9yVqbF4WVFbUnuPiUFU&s=1785972518&e=43200&v=114339&i=0.0&sp=0\",\"playable\":true,\"kind\":\"hls\",\"status\":200,\"content_type\":\"application/vnd.apple.mpegurl\",\"starts_extm3u\":true,\"binary_signature\":null,\"error\":null}}]}\n",
+          "stderr_tail": ""
+        },
+        {
+          "fixture": {
+            "label": "Breaking Bad S01E01",
+            "tmdbId": "1396",
+            "mediaType": "tv",
+            "season": 1,
+            "episode": 1,
+            "title": "Breaking Bad",
+            "year": 2008,
+            "category": "tv"
+          },
+          "ok": true,
+          "returncode": 0,
+          "result": {
+            "ok": true,
+            "duration_ms": 3180,
+            "runtime_error": null,
+            "raw_stream_count": 1,
+            "playable_stream_count": 1,
+            "streams": [
+              {
+                "row": {
+                  "name": "StreamZo",
+                  "title": "StreamZo - Breaking Bad",
+                  "url": "https://strm2.uqload.is/hls2/04/02497/1k2pzypa60vc_n/master.m3u8?t=dBBRc1LwOVN8uuergAzrm_hecXIHg3_dMQaFkNH9T64&s=1785972539&e=43200&v=22125&i=0.0&sp=0",
+                  "quality": "HD",
+                  "headers": {
+                    "Referer": "https://streamzo.fr/",
+                    "Origin": "https://streamzo.fr",
+                    "Accept-Language": "fr-FR,fr;q=0.9,en;q=0.6",
+                    "Accept": "*/*"
+                  },
+                  "isDirect": true,
+                  "type": "hls",
+                  "language": "fr"
+                },
+                "media": {
+                  "url": "https://strm2.uqload.is/hls2/04/02497/1k2pzypa60vc_n/master.m3u8?t=dBBRc1LwOVN8uuergAzrm_hecXIHg3_dMQaFkNH9T64&s=1785972539&e=43200&v=22125&i=0.0&sp=0",
+                  "playable": true,
+                  "kind": "hls",
+                  "status": 200,
+                  "content_type": "application/vnd.apple.mpegurl",
+                  "starts_extm3u": true,
+                  "binary_signature": null,
+                  "error": null
+                }
+              }
+            ]
+          },
+          "stdout_tail": "{\"ok\":true,\"duration_ms\":3180,\"runtime_error\":null,\"raw_stream_count\":1,\"playable_stream_count\":1,\"streams\":[{\"row\":{\"name\":\"StreamZo\",\"title\":\"StreamZo - Breaking Bad\",\"url\":\"https://strm2.uqload.is/hls2/04/02497/1k2pzypa60vc_n/master.m3u8?t=dBBRc1LwOVN8uuergAzrm_hecXIHg3_dMQaFkNH9T64&s=1785972539&e=43200&v=22125&i=0.0&sp=0\",\"quality\":\"HD\",\"headers\":{\"Referer\":\"https://streamzo.fr/\",\"Origin\":\"https://streamzo.fr\",\"Accept-Language\":\"fr-FR,fr;q=0.9,en;q=0.6\",\"Accept\":\"*/*\"},\"isDirect\":true,\"type\":\"hls\",\"language\":\"fr\"},\"media\":{\"url\":\"https://strm2.uqload.is/hls2/04/02497/1k2pzypa60vc_n/master.m3u8?t=dBBRc1LwOVN8uuergAzrm_hecXIHg3_dMQaFkNH9T64&s=1785972539&e=43200&v=22125&i=0.0&sp=0\",\"playable\":true,\"kind\":\"hls\",\"status\":200,\"content_type\":\"application/vnd.apple.mpegurl\",\"starts_extm3u\":true,\"binary_signature\":null,\"error\":null}}]}\n",
+          "stderr_tail": ""
+        },
+        {
+          "fixture": {
+            "label": "Jujutsu Kaisen S01E01",
+            "tmdbId": "95479",
+            "mediaType": "tv",
+            "season": 1,
+            "episode": 1,
+            "title": "Jujutsu Kaisen",
+            "year": 2020,
+            "category": "anime"
+          },
+          "ok": false,
+          "returncode": 2,
+          "result": {
+            "ok": false,
+            "duration_ms": 10329,
+            "runtime_error": null,
+            "raw_stream_count": 0,
+            "playable_stream_count": 0,
+            "streams": []
+          },
+          "stdout_tail": "[Streamzo] Request: Streamzo tv 95479 S1E1\n[Metadata] getTmdbTitles: id=\"95479\" type=\"tv\" season=1\n[Metadata] Titles for 95479: JUJUTSU KAISEN | JUJUTSU KAISEN Season 1 | JUJUTSU KAISEN Saison 1 | JUJUTSU KAISEN S1 | Jujutsu Kaisen: Guerra de hechiceros | Jujutsu Kaisen: Shimetsu Kaiyuu - Zenpen | Guerra de magia | Sorcery Fight | JJK | JUJUTSU KAISEN Season 3: The Culling Game Part 1\n[Metadata] ✓ ID 95479: \"JUJUTSU KAISEN\" confirmed anime (ja)\n[Streamzo] Searching for tv 95479\n[Streamzo] Generated 26 slug candidate(s)\n[Streamzo] Content not found for TMDB 95479\n{\"ok\":false,\"duration_ms\":10329,\"runtime_error\":null,\"raw_stream_count\":0,\"playable_stream_count\":0,\"streams\":[]}\n",
+          "stderr_tail": ""
+        }
+      ],
+      "baseline_summary": {
+        "playable_fixture_count": 0,
+        "playable_stream_count": 0
+      },
+      "candidate_summary": {
+        "playable_fixture_count": 2,
+        "playable_stream_count": 2
+      },
+      "no_regression": true,
+      "strict_outputs": true,
+      "strictly_better": true,
+      "candidate_sha256": "06da523af5cb02c1ed9cb0de15ee5298b0b1b87a10c8c74a1b7f1d35f0807650",
+      "options": {
+        "provider_name": "StreamZo",
+        "max_candidates": 14,
+        "timeout_ms": 14000
+      }
+    }
+  },
+  "published": [
+    {
+      "id": "desiflix",
+      "old_filename": "providers/desiflix--aio--89d80b0ac5aac7e9.js",
+      "filename": "providers/desiflix--nuvio-tv-global--11a20f7caa60aa7f.js",
+      "version": "1.0.8",
+      "candidate_summary": {
+        "playable_fixture_count": 2,
+        "playable_stream_count": 5
+      }
+    },
+    {
+      "id": "french-manga",
+      "old_filename": "providers/french-manga--nuvio--b99247f178fa9dec.js",
+      "filename": "providers/french-manga--nuvio-tv-global--7be5ee4f732f1725.js",
+      "version": "1.0.21",
+      "candidate_summary": {
+        "playable_fixture_count": 1,
+        "playable_stream_count": 1
+      }
+    },
+    {
+      "id": "streamzo",
+      "old_filename": "providers/streamzo--targeted-repair--7aca6edaa2db98cf.js",
+      "filename": "providers/streamzo--nuvio-tv-global--06da523af5cb02c1.js",
+      "version": "1.0.15",
+      "candidate_summary": {
+        "playable_fixture_count": 2,
+        "playable_stream_count": 2
+      }
+    }
+  ],
+  "preserved": []
+}

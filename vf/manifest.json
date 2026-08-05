@@ -1,6 +1,6 @@
 {
   "name": "Nuvio Curated Providers — VF uniquement",
-  "version": "5.20.18",
+  "version": "5.20.19",
   "scrapers": [
     {
       "id": "ANIME-SAMA",
@@ -224,13 +224,13 @@
       "id": "FRENCH-MANGA",
       "name": "French-Manga",
       "description": "Animes VF et VOSTFR en streaming sur French-Manga.net",
-      "version": "1.0.20",
+      "version": "1.0.21",
       "author": "Gowaru",
       "supportedTypes": [
         "movie",
         "anime"
       ],
-      "filename": "../providers/french-manga--nuvio--b99247f178fa9dec.js",
+      "filename": "../providers/french-manga--nuvio-tv-global--7be5ee4f732f1725.js",
       "enabled": true,
       "logo": "https://w16.french-manga.net/favicon.ico",
       "contentLanguage": [
@@ -242,7 +242,7 @@
       ],
       "limited": false,
       "disabledPlatforms": [],
-      "supportsExternalPlayer": true
+      "supportsExternalPlayer": false
     },
     {
       "id": "FRENCHSTREAM",
@@ -324,14 +324,14 @@
       "id": "STREAMZO",
       "name": "StreamZo",
       "description": "Films et séries en streaming VF/VOSTFR sur Streamzo.fr (SPA, iframe injecté, multi-serveurs).",
-      "version": "1.0.14",
+      "version": "1.0.15",
       "author": "Gowaru",
       "supportedTypes": [
         "movie",
         "tv",
         "anime"
       ],
-      "filename": "../providers/streamzo--targeted-repair--7aca6edaa2db98cf.js",
+      "filename": "../providers/streamzo--nuvio-tv-global--06da523af5cb02c1.js",
       "enabled": true,
       "logo": "https://streamzo.fr/favicon.ico",
       "contentLanguage": [
@@ -342,7 +342,7 @@
       ],
       "limited": false,
       "disabledPlatforms": [],
-      "supportsExternalPlayer": true
+      "supportsExternalPlayer": false
     },
     {
       "id": "VOIRANIME-RIP",
@@ -631,6 +631,31 @@
         "hi",
         "ru",
         "es"
+      ],
+      "supportsExternalPlayer": false
+    },
+    {
+      "id": "DESIFLIX",
+      "name": "DesiFlix",
+      "description": "Bollywood, Hollywood, and South Indian movies, in Dual Language",
+      "version": "1.0.8",
+      "author": "Nuvio Team",
+      "supportedTypes": [
+        "movie",
+        "tv"
+      ],
+      "filename": "../providers/desiflix--nuvio-tv-global--11a20f7caa60aa7f.js",
+      "enabled": true,
+      "hasSettings": false,
+      "formats": [
+        "mp4",
+        "mkv",
+        "m3u8"
+      ],
+      "logo": "https://i.postimg.cc/Vvs4fmwM/desiflix.png",
+      "contentLanguage": [
+        "en",
+        "hi"
       ],
       "supportsExternalPlayer": false
     }

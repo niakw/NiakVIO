@@ -236,17 +236,23 @@
         "scripts/provider_patches/streamzo_public_catalogue.py": {
           "base_url": "https://streamzo.fr",
           "provider_name": "StreamZo"
+        },
+        "scripts/provider_patches/nuvio_tv_direct_media_v2.py": {
+          "provider_name": "StreamZo",
+          "max_candidates": 14,
+          "timeout_ms": 14000
         }
       },
       "manifest_overrides": {
-        "supportsExternalPlayer": true,
+        "supportsExternalPlayer": false,
         "logo": "https://streamzo.fr/favicon.ico"
       },
       "patch_scripts": [
         "scripts/provider_patches/streamzo_data_embed.py",
         "scripts/provider_patches/vf_catalogue_recovery.py",
         "scripts/provider_patches/stream_output_sanitizer_v5.py",
-        "scripts/provider_patches/streamzo_public_catalogue.py"
+        "scripts/provider_patches/streamzo_public_catalogue.py",
+        "scripts/provider_patches/nuvio_tv_direct_media_v2.py"
       ],
       "published_types": [
         "movie",
@@ -828,7 +834,24 @@
       "profiles": []
     },
     "desiflix": {
-      "capability": "html_scraper"
+      "capability": "html_scraper",
+      "patch_scripts": [
+        "scripts/provider_patches/nuvio_tv_direct_media_v2.py"
+      ],
+      "patch_script_options": {
+        "scripts/provider_patches/nuvio_tv_direct_media_v2.py": {
+          "provider_name": "DesiFlix",
+          "max_candidates": 14,
+          "timeout_ms": 14000
+        }
+      },
+      "manifest_overrides": {
+        "supportsExternalPlayer": false
+      },
+      "published_types": [
+        "movie",
+        "tv"
+      ]
     },
     "dooflix": {
       "capability": "html_scraper"
@@ -861,14 +884,21 @@
           "probe_all_urls": false,
           "max_probes": 0,
           "min_vod_duration_seconds": 60
+        },
+        "scripts/provider_patches/nuvio_tv_direct_media_v2.py": {
+          "provider_name": "French-Manga",
+          "max_candidates": 14,
+          "timeout_ms": 14000,
+          "strip_unproven_wrappers": true
         }
       },
       "required_values": [],
       "patch_scripts": [
-        "scripts/provider_patches/stream_output_sanitizer_v5.py"
+        "scripts/provider_patches/stream_output_sanitizer_v5.py",
+        "scripts/provider_patches/nuvio_tv_direct_media_v2.py"
       ],
       "manifest_overrides": {
-        "supportsExternalPlayer": true,
+        "supportsExternalPlayer": false,
         "logo": "https://w16.french-manga.net/favicon.ico"
       },
       "published_types": [
