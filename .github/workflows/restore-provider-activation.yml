@@ -38,10 +38,11 @@ jobs:
       - name: Install dependencies
         run: npm ci --ignore-scripts --no-audit --no-fund
 
-      - name: Restore provider activation union
+      - name: Restore provider activation and type policies
         run: |
           cp manifest.json "$RUNNER_TEMP/manifest.before.json"
           python scripts/restore_provider_activation_lkg.py
+          python scripts/restore_provider_type_policy.py
           python scripts/validate_activation_preservation.py
 
       - name: Run provider regression tests
@@ -68,12 +69,18 @@ jobs:
           assert len(main_active) == 62, len(main_active)
           for provider_id in ('purstream', 'goated', 'wookafr', 'cineby', 'french-manga', 'voiranime-rip'):
               assert main_rows[provider_id]['enabled'] is True, provider_id
+          assert main_rows['toflix']['supportedTypes'] == ['movie', 'tv', 'anime']
+          assert main_rows['papadustream']['supportedTypes'] == ['movie', 'tv']
 
           vf = json.loads(Path('vf/manifest.json').read_text(encoding='utf-8'))
           vf_rows = {str(row.get('id') or '').casefold(): row for row in vf.get('scrapers', [])}
           for provider_id in ('purstream', 'goated', 'wookafr', 'french-manga', 'voiranime-rip'):
               if provider_id in vf_rows:
                   assert vf_rows[provider_id]['enabled'] is True, provider_id
+          if 'toflix' in vf_rows:
+              assert vf_rows['toflix']['supportedTypes'] == ['movie', 'tv', 'anime']
+          if 'papadustream' in vf_rows:
+              assert vf_rows['papadustream']['supportedTypes'] == ['movie', 'tv']
 
           overlap = set(main_rows) & set(vf_rows)
           mismatches = sorted(
@@ -81,7 +88,7 @@ jobs:
               if bool(main_rows[provider_id].get('enabled')) != bool(vf_rows[provider_id].get('enabled'))
           )
           assert not mismatches, mismatches
-          print(f'provider activation union assertions passed: main={len(main_active)}, vf={sum(1 for row in vf_rows.values() if row.get("enabled") is True)}')
+          print(f'provider activation/type assertions passed: main={len(main_active)}, vf={sum(1 for row in vf_rows.values() if row.get("enabled") is True)}')
           PY
 
       - name: Publish validated restoration
@@ -90,15 +97,16 @@ jobs:
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add manifest.json vf/manifest.json package.json sources.json \
+          git add manifest.json vf/manifest.json provider-overrides.json package.json sources.json \
             FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json \
-            provider-activation-lkg.json scripts/restore_provider_activation_lkg.py \
+            provider-activation-lkg.json provider-type-policy.json \
+            scripts/restore_provider_activation_lkg.py scripts/restore_provider_type_policy.py \
             scripts/validate_activation_preservation.py scripts/validate_release_integrity.py
           if git diff --cached --quiet; then
-            echo "No activation changes to publish."
+            echo "No provider metadata changes to publish."
             exit 0
           fi
-          git commit -m "fix: restore validated provider activation union"
+          git commit -m "fix: restore validated provider activation and types"
           git reset --hard HEAD
           git clean -fd
           for attempt in 1 2 3 4 5; do
