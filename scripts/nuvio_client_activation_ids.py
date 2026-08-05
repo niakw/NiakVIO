@@ -46,6 +46,15 @@ def bump_patch(value: object) -> str:
     return f"{major}.{minor}.{patch + 1}"
 
 
+def vf_filename(value: object) -> str:
+    filename = str(value or "").strip()
+    if not filename or filename.startswith(("http://", "https://", "../")):
+        return filename
+    if filename.startswith("providers/"):
+        return f"../{filename}"
+    return filename
+
+
 def apply_policy(*, bootstrap_active: bool = False) -> dict[str, Any]:
     main = load(MAIN_PATH)
     vf = load(VF_PATH)
@@ -87,7 +96,7 @@ def apply_policy(*, bootstrap_active: bool = False) -> dict[str, Any]:
         if row.get("id") != desired_id:
             row["id"] = desired_id
             changed_ids.append(canonical)
-        if bootstrap_active and enabled or transition:
+        if (bootstrap_active and enabled) or transition:
             row["version"] = bump_patch(row.get("version"))
             activation_transitions.append(canonical)
 
@@ -96,11 +105,11 @@ def apply_policy(*, bootstrap_active: bool = False) -> dict[str, Any]:
             "enabled": enabled,
         }
 
-    # Remove stale state for providers no longer published.
     for canonical in sorted(set(providers_state) - set(main_by_canonical)):
         providers_state.pop(canonical, None)
 
-    # VF is a strict projection of the principal manifest for shared providers.
+    # VF is a functional projection of principal; its relative bundle path is
+    # intentionally different because vf/manifest.json is one directory lower.
     for row in [item for item in vf.get("scrapers", []) if isinstance(item, dict)]:
         canonical = canonical_id(row.get("id"))
         source = main_by_canonical.get(canonical)
@@ -108,7 +117,7 @@ def apply_policy(*, bootstrap_active: bool = False) -> dict[str, Any]:
             raise RuntimeError(f"VF provider absent from principal manifest: {canonical}")
         row["id"] = source["id"]
         row["version"] = source.get("version")
-        row["filename"] = source.get("filename")
+        row["filename"] = vf_filename(source.get("filename"))
         row["enabled"] = source.get("enabled") is True
         row["supportedTypes"] = source.get("supportedTypes", [])
         for optional in (
