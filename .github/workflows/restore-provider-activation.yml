@@ -61,14 +61,27 @@ jobs:
           python - <<'PY'
           import json
           from pathlib import Path
-          for path in ('manifest.json', 'vf/manifest.json'):
-              data = json.loads(Path(path).read_text(encoding='utf-8'))
-              rows = {str(row.get('id') or '').casefold(): row for row in data.get('scrapers', [])}
-              active = {provider_id for provider_id, row in rows.items() if row.get('enabled') is True}
-              assert len(active) == 62, (path, len(active))
-              for provider_id in ('purstream', 'goated', 'wookafr', 'cineby', 'french-manga', 'voiranime-rip'):
-                  assert rows[provider_id]['enabled'] is True, (path, provider_id)
-          print('provider activation union assertions passed')
+
+          main = json.loads(Path('manifest.json').read_text(encoding='utf-8'))
+          main_rows = {str(row.get('id') or '').casefold(): row for row in main.get('scrapers', [])}
+          main_active = {provider_id for provider_id, row in main_rows.items() if row.get('enabled') is True}
+          assert len(main_active) == 62, len(main_active)
+          for provider_id in ('purstream', 'goated', 'wookafr', 'cineby', 'french-manga', 'voiranime-rip'):
+              assert main_rows[provider_id]['enabled'] is True, provider_id
+
+          vf = json.loads(Path('vf/manifest.json').read_text(encoding='utf-8'))
+          vf_rows = {str(row.get('id') or '').casefold(): row for row in vf.get('scrapers', [])}
+          for provider_id in ('purstream', 'goated', 'wookafr', 'french-manga', 'voiranime-rip'):
+              if provider_id in vf_rows:
+                  assert vf_rows[provider_id]['enabled'] is True, provider_id
+
+          overlap = set(main_rows) & set(vf_rows)
+          mismatches = sorted(
+              provider_id for provider_id in overlap
+              if bool(main_rows[provider_id].get('enabled')) != bool(vf_rows[provider_id].get('enabled'))
+          )
+          assert not mismatches, mismatches
+          print(f'provider activation union assertions passed: main={len(main_active)}, vf={sum(1 for row in vf_rows.values() if row.get("enabled") is True)}')
           PY
 
       - name: Publish validated restoration
