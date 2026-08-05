@@ -18,7 +18,7 @@ concurrency:
 jobs:
   diagnose:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -39,17 +39,19 @@ jobs:
       - name: Install dependencies
         run: npm ci --ignore-scripts --no-audit --no-fund
 
-      - name: Inspect exact provider routes
-        run: python scripts/targeted_provider_route_diagnostics.py
+      - name: Inspect exact provider routes and call contexts
+        run: |
+          python scripts/targeted_provider_route_diagnostics.py
+          python scripts/extract_targeted_route_contexts.py
 
-      - name: Publish diagnostic report
+      - name: Publish diagnostic reports
         shell: bash
         run: |
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add automation/targeted-provider-routes.json
-          git commit -m "diag: record targeted VF provider routes" || exit 0
+          git add automation/targeted-provider-routes.json automation/targeted-provider-contexts.json
+          git commit -m "diag: record targeted VF provider call contexts" || exit 0
           git reset --hard HEAD
           git clean -fd
           for attempt in 1 2 3 4 5; do
