@@ -6,6 +6,9 @@ on:
     branches: [main]
     paths:
       - "README.md"
+      - "manifest.json"
+      - "vf/manifest.json"
+      - "nuvio-client-id-state.json"
       - ".github/workflows/validate-nuvio-install-url.yml"
       - ".github/triggers/validate-nuvio-install-url"
 
@@ -20,32 +23,42 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - name: Validate exact public manifest identity and bundles
+      - name: Validate permanent manifest URL and published bundles
         env:
-          INSTALL_URL: https://raw.githubusercontent.com/niakw/Niakvio/refs/heads/main/manifest.json?activation-profile=niakvio-v2
+          INSTALL_URL: https://raw.githubusercontent.com/niakw/Niakvio/refs/heads/main/manifest.json
         run: |
           set -euo pipefail
           curl --fail --location --silent --show-error \
             -H 'Cache-Control: no-cache' \
-            "$INSTALL_URL" -o /tmp/manifest.json
+            "$INSTALL_URL" -o /tmp/public-manifest.json
           python - <<'PY'
+          import hashlib
           import json
           import os
-          import urllib.parse
           import urllib.request
           from pathlib import Path
 
           install_url = os.environ['INSTALL_URL']
-          manifest = json.loads(Path('/tmp/manifest.json').read_text(encoding='utf-8'))
+          assert '?' not in install_url, install_url
+          public_bytes = Path('/tmp/public-manifest.json').read_bytes()
+          repository_bytes = Path('manifest.json').read_bytes()
+          assert hashlib.sha256(public_bytes).digest() == hashlib.sha256(repository_bytes).digest(), 'public manifest differs from main'
+
+          manifest = json.loads(public_bytes)
+          state = json.loads(Path('nuvio-client-id-state.json').read_text(encoding='utf-8'))
           rows = manifest.get('scrapers') or []
           enabled = [row for row in rows if row.get('enabled') is True]
           assert len(rows) == 89, len(rows)
-          assert len(enabled) == 62, len(enabled)
-          assert manifest.get('version') == '5.20.14', manifest.get('version')
+          assert len(enabled) == state.get('active_count') == 62, (len(enabled), state.get('active_count'))
+          assert all(str(row.get('id') or '').isupper() for row in enabled)
 
-          parsed = urllib.parse.urlsplit(install_url)
-          manifest_without_query = urllib.parse.urlunsplit((parsed.scheme, parsed.netloc, parsed.path, '', ''))
-          base = manifest_without_query.removesuffix('/manifest.json')
+          canonical_rows = {str(row.get('id') or '').casefold(): row for row in rows}
+          for provider_id, recorded in (state.get('providers') or {}).items():
+              row = canonical_rows[provider_id]
+              assert row.get('id') == recorded.get('client_id'), provider_id
+              assert bool(row.get('enabled')) == bool(recorded.get('enabled')), provider_id
+
+          base = install_url.removesuffix('/manifest.json')
           failures = []
           for row in enabled:
               filename = str(row.get('filename') or '').lstrip('/')
@@ -59,9 +72,8 @@ jobs:
               except Exception as error:
                   failures.append((row.get('id'), str(error), code_url))
           assert not failures, failures[:10]
-
-          legacy_identity = f"{manifest_without_query.lower()}:goated"
-          fresh_identity = f"{install_url.lower()}:goated"
-          assert legacy_identity != fresh_identity
-          print(f'public Nuvio URL validated: version={manifest["version"]}, total={len(rows)}, enabled={len(enabled)}, bundles={len(enabled)}')
+          print(f'permanent Nuvio URL validated: version={manifest["version"]}, total={len(rows)}, enabled={len(enabled)}, bundles={len(enabled)}')
           PY
+
+      - name: Validate VF projection
+        run: python scripts/validate_vf_projection.py
