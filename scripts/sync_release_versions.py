@@ -19,6 +19,21 @@ def dump(path: pathlib.Path, payload: dict) -> None:
     path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 
+def apply_client_activation_ids() -> None:
+    script = ROOT / "scripts" / "nuvio_client_activation_ids.py"
+    state = ROOT / "nuvio-client-id-state.json"
+    if not script.exists() or not state.exists():
+        return
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location("nuvio_client_activation_ids", script)
+    if spec is None or spec.loader is None:
+        raise RuntimeError("unable to load Nuvio client activation id finalizer")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    module.apply_policy(bootstrap_active=False)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--version", help="Explicit authoritative version")
@@ -55,6 +70,7 @@ def main() -> int:
         payload["version"] = version
         dump(path, payload)
 
+    apply_client_activation_ids()
     print(f"release versions synchronized to {version}")
     return 0
 
