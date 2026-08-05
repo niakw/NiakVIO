@@ -1,14 +1,14 @@
 {
   "schema_version": 63,
-  "generated_at": "2026-08-05T21:52:48.387606+00:00",
+  "generated_at": "2026-08-05T23:35:00.572647+00:00",
   "test_environment": "github-actions-node",
-  "checked_providers": 3,
+  "checked_providers": 2,
   "status_counts": {
-    "healthy": 1,
+    "healthy": 0,
     "reachable": 0,
     "blocked": 0,
-    "degraded": 1,
-    "no_streams": 1,
+    "degraded": 2,
+    "no_streams": 0,
     "provider_unreachable": 0,
     "runtime_error": 0,
     "unavailable": 0,
@@ -1548,7 +1548,7 @@
     },
     {
       "id": "desiflix",
-      "status": "healthy",
+      "status": "not-checked",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
@@ -1583,9 +1583,7 @@
           "consecutive_successes": 0,
           "consecutive_blocked": 0
         }
-      },
-      "activation_eligible": false,
-      "activation_mode": "disabled"
+      }
     },
     {
       "id": "wookafr",
@@ -1709,7 +1707,7 @@
       "id": "hianime",
       "status": "not-checked",
       "action": "unchanged",
-      "enabled": false,
+      "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
       "consecutive_successes": 1,
@@ -1991,7 +1989,7 @@
       "id": "4khdhubnew",
       "status": "not-checked",
       "action": "unchanged",
-      "enabled": false,
+      "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
       "consecutive_successes": 2,
@@ -2240,7 +2238,7 @@
       "id": "kisskh",
       "status": "not-checked",
       "action": "unchanged",
-      "enabled": false,
+      "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
       "consecutive_successes": 1,
@@ -2316,14 +2314,16 @@
     },
     {
       "id": "ctgmovies",
-      "status": "no_streams",
+      "status": "degraded",
       "action": "unchanged",
       "enabled": false,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
       "consecutive_successes": 0,
       "hosts": [],
-      "response_categories": [],
+      "response_categories": [
+        "host_down"
+      ],
       "host_health": {
         "movie.ctgfun.com": {
           "last_checked_at": "2026-08-04T07:21:25.508835+00:00",
@@ -2348,13 +2348,13 @@
           "consecutive_blocked": 0
         },
         "media.ctgfun.com": {
-          "last_checked_at": "2026-08-04T17:17:58.836333+00:00",
+          "last_checked_at": "2026-08-05T23:35:00.572647+00:00",
           "last_category": "host_down",
           "reachable": false,
           "http_status": null,
           "latency_ms": null,
           "kind": null,
-          "consecutive_hard_failures": 1,
+          "consecutive_hard_failures": 2,
           "consecutive_successes": 0,
           "consecutive_blocked": 0
         }
