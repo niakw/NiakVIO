@@ -1155,7 +1155,24 @@
       "capability": "mixed_embed_resolver"
     },
     "goated": {
-      "capability": "api_stream_resolver"
+      "capability": "api_stream_resolver",
+      "patch_scripts": [
+        "scripts/provider_patches/nuvio_tv_direct_media_v2.py"
+      ],
+      "patch_script_options": {
+        "scripts/provider_patches/nuvio_tv_direct_media_v2.py": {
+          "provider_name": "Goated",
+          "max_candidates": 10,
+          "timeout_ms": 12000
+        }
+      },
+      "manifest_overrides": {
+        "supportsExternalPlayer": false
+      },
+      "published_types": [
+        "movie",
+        "tv"
+      ]
     },
     "voiranime-homes": {
       "capability": "mixed_embed_resolver"
