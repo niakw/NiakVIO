@@ -31,7 +31,9 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p export/providers export/automation export/scripts/provider_patches
-          cp manifest.json vf/manifest.json provider-overrides.json PROVENANCE.json health-config.json export/
+          cp manifest.json export/manifest.json
+          cp vf/manifest.json export/vf-manifest.json
+          cp provider-overrides.json PROVENANCE.json health-config.json export/
           cp automation/nuvio-tv-target-diagnostics-v2.json export/automation/ || true
           cp automation/target-provider-route-snippets-v3.json export/automation/ || true
           cp automation/nuvio-tv-global-audit.json export/automation/ || true
