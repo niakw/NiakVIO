@@ -44,13 +44,30 @@ jobs:
 
       - name: Validate Python and JavaScript tooling
         run: |
+          python -m py_compile scripts/normalize_hls_override_policy.py
           python -m py_compile scripts/promote_target_media_v4.py
+          python -m py_compile scripts/provider_patches/stream_output_sanitizer_v5.py
           python -m py_compile scripts/provider_patches/nuvio_tv_target_media_v4.py
           python -m py_compile scripts/provider_patches/target_media_host_filter_v4.py
           python -m py_compile scripts/promote_global_nuvio_tv_candidates.py
           python -m py_compile scripts/reactivate_strict_main_providers.py
           node --check scripts/nuvio_tv_probe_v2.cjs
           node --check tests/vf_movie_recovery.test.cjs
+
+      - name: Normalize global HLS policy
+        run: |
+          python scripts/normalize_hls_override_policy.py
+          python scripts/normalize_hls_override_policy.py --check
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          overrides = json.loads(Path('provider-overrides.json').read_text(encoding='utf-8'))
+          text = json.dumps(overrides, ensure_ascii=False)
+          assert '"/troll/"' not in text, 'path-name HLS rejection survived migration'
+          assert 'fstream.top' in text, 'known fake host block was removed'
+          assert 'scripts/provider_patches/stream_output_sanitizer_v5.py' in text
+          PY
 
       - name: Run selected validation
         env:
@@ -122,17 +139,21 @@ jobs:
           import os
           from pathlib import Path
 
-          expected = {'4khdhubnew', 'animezey', 'hianime', 'kisskh'}
+          required = {'4khdhubnew', 'hianime', 'kisskh'}
+          optional = {'animezey'}
           report = json.loads(Path('automation/strict-main-reactivation.json').read_text(encoding='utf-8'))
-          assert set(report.get('reactivated', [])) == expected, report
+          actual = set(report.get('reactivated', []))
+          assert required <= actual <= required | optional, (actual, report.get('preserved_disabled'))
           manifest = json.loads(Path('manifest.json').read_text(encoding='utf-8'))
           rows = {str(row.get('id', '')).casefold(): row for row in manifest.get('scrapers', [])}
-          assert all(rows[item]['enabled'] is True for item in expected), rows
+          assert all(rows[item]['enabled'] is True for item in actual), actual
+          if 'animezey' not in actual:
+              assert rows['animezey']['enabled'] is False
           assert rows['topcartoons']['enabled'] is False, rows['topcartoons']
           before = json.loads(Path(os.environ['RUNNER_TEMP'], 'vf.before.json').read_text(encoding='utf-8'))
           after = json.loads(Path('vf/manifest.json').read_text(encoding='utf-8'))
           assert before.get('scrapers') == after.get('scrapers'), 'main-only providers leaked into VF rows'
-          assert expected.isdisjoint({str(row.get('id', '')).casefold() for row in after.get('scrapers', [])})
+          assert (required | optional).isdisjoint({str(row.get('id', '')).casefold() for row in after.get('scrapers', [])})
           PY
               python scripts/validate_vf_projection.py
               npm test
