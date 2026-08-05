@@ -13,10 +13,26 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 REPORT_PATH = ROOT / "automation" / "strict-main-reactivation.json"
 TARGETS: dict[str, dict[str, Any]] = {
-    "4khdhubnew": {"require_title_in_output": True},
-    "animezey": {"require_title_in_output": False},
-    "hianime": {"require_title_in_output": False},
-    "kisskh": {"require_title_in_output": True},
+    # 4KHDHub is useful for movies even when short-lived TV download workers
+    # temporarily answer 403. Never publish the failing rows, but do not hide
+    # independently proven movie output either.
+    "4khdhubnew": {
+        "require_title_in_output": True,
+        "minimum_valid_fixtures": 1,
+        "probe_attempts": 2,
+    },
+    "animezey": {
+        "require_title_in_output": False,
+        "probe_attempts": 2,
+    },
+    "hianime": {
+        "require_title_in_output": False,
+        "probe_attempts": 2,
+    },
+    "kisskh": {
+        "require_title_in_output": True,
+        "probe_attempts": 2,
+    },
 }
 FORBIDDEN = re.compile(r"(?:magnet:|\.torrent(?:[?#]|$)|btih:|tracker\.|peer[-_]?id|webtorrent)", re.I)
 
@@ -171,6 +187,7 @@ def main() -> int:
         "scope": "main manifest only",
         "contract": "NuvioTV four positional arguments and global SCRAPER_SETTINGS",
         "media_gate": "#EXTM3U, DASH MPD, or real video container signature; no P2P/torrent",
+        "activation_policy": "All declared fixtures by default; an explicit per-provider minimum may retain independently proven media types while failed rows remain untrusted.",
         "providers": {},
         "reactivated": [],
         "preserved_disabled": [],
@@ -194,30 +211,75 @@ def main() -> int:
             report["preserved_disabled"].append(provider_id)
             continue
 
-        all_valid = True
-        for fixture in fixtures_for(row, health):
-            result = probe(bundle, fixture)
-            valid, issues = validate_output(
-                provider_id,
-                fixture,
-                result,
-                bool(policy.get("require_title_in_output")),
-            )
-            entry["fixtures"].append(
-                {
-                    "fixture": fixture,
-                    "valid": valid,
-                    "issues": issues,
-                    "probe": result,
-                }
-            )
-            all_valid = all_valid and valid
+        fixtures = fixtures_for(row, health)
+        requested_minimum = policy.get("minimum_valid_fixtures")
+        minimum_valid = len(fixtures) if requested_minimum is None else int(requested_minimum)
+        minimum_valid = max(1, min(minimum_valid, len(fixtures)))
+        attempts_allowed = max(1, min(int(policy.get("probe_attempts") or 1), 3))
+        valid_count = 0
+        unsafe_detected = False
+        degraded_fixtures: list[str] = []
 
-        if not all_valid:
+        for fixture in fixtures:
+            attempt_rows: list[dict[str, Any]] = []
+            selected_result: dict[str, Any] = {"ok": False, "result": None, "error": "probe not run"}
+            selected_issues: list[str] = ["probe not run"]
+            selected_valid = False
+
+            for attempt_number in range(1, attempts_allowed + 1):
+                result = probe(bundle, fixture)
+                valid, issues = validate_output(
+                    provider_id,
+                    fixture,
+                    result,
+                    bool(policy.get("require_title_in_output")),
+                )
+                attempt_rows.append(
+                    {
+                        "attempt": attempt_number,
+                        "valid": valid,
+                        "issues": issues,
+                        "probe": result,
+                    }
+                )
+                selected_result = result
+                selected_issues = issues
+                selected_valid = valid
+                if any("P2P/torrent" in issue for issue in issues):
+                    unsafe_detected = True
+                    break
+                if valid:
+                    break
+
+            label = str(fixture.get("label") or fixture.get("title") or fixture.get("category") or "fixture")
+            if selected_valid:
+                valid_count += 1
+            else:
+                degraded_fixtures.append(label)
+
+            fixture_entry: dict[str, Any] = {
+                "fixture": fixture,
+                "valid": selected_valid,
+                "issues": selected_issues,
+                "probe": selected_result,
+            }
+            if len(attempt_rows) > 1:
+                fixture_entry["attempts"] = attempt_rows
+            entry["fixtures"].append(fixture_entry)
+
+        entry["valid_fixture_count"] = valid_count
+        entry["fixture_count"] = len(fixtures)
+        entry["minimum_valid_fixtures"] = minimum_valid
+        entry["partial_activation"] = valid_count < len(fixtures)
+        entry["degraded_fixtures"] = degraded_fixtures
+        entry["unsafe_output_detected"] = unsafe_detected
+
+        if unsafe_detected or valid_count < minimum_valid:
             report["preserved_disabled"].append(provider_id)
             continue
 
         row["enabled"] = True
+        partial = valid_count < len(fixtures)
         current = dict(provenance.setdefault("providers", {}).get(provider_id) or {})
         current.update(
             {
@@ -229,7 +291,12 @@ def main() -> int:
                 "runtime_evidence_eligible": True,
                 "activation_mode": "strict_main_only_reactivation",
                 "activation_blockers": [],
-                "reactivation_reason": "All declared media types returned relevant strict direct media under the exact NuvioTV contract; no P2P/torrent output detected.",
+                "degraded_fixtures": degraded_fixtures,
+                "partial_media_type_evidence": partial,
+                "reactivation_reason": (
+                    f"{valid_count}/{len(fixtures)} declared media fixture(s) returned relevant strict direct media under the exact NuvioTV contract; "
+                    "failed fixtures remain recorded as degraded and no P2P/torrent output was detected."
+                ),
             }
         )
         provenance["providers"][provider_id] = current
