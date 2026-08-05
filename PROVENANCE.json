@@ -1,6 +1,6 @@
 {
-  "schema_version": 63,
-  "generated_at": "2026-08-04T20:32:31.878079+00:00",
+  "schema_version": 65,
+  "generated_at": "2026-08-05T09:46:48.235401+00:00",
   "notice": "Third-party files retain upstream authorship and licence. See THIRD_PARTY_NOTICES.md.",
   "providers": {
     "4khdhub": {
@@ -7896,45 +7896,32 @@
     },
     "frenchstream": {
       "id": "frenchstream",
-      "published_filename": "providers/frenchstream--repatched--0347b5b7d096c49b.js",
-      "sha256": "0347b5b7d096c49bc93957f26fbd0f7946eb6e170e1c01952069db3a1c321906",
-      "patched_sha256": "0347b5b7d096c49bc93957f26fbd0f7946eb6e170e1c01952069db3a1c321906",
+      "published_filename": "providers/frenchstream--targeted-repair--5b4a0e55eb79ae9e.js",
+      "sha256": "5b4a0e55eb79ae9e7df6bd9fd11c432efffc43c7761234be16ecb5ce07ced670",
+      "patched_sha256": "5b4a0e55eb79ae9e7df6bd9fd11c432efffc43c7761234be16ecb5ce07ced670",
       "upstream_sha256": "6e811019fee20e349d860784960e9f75722e26c1c890ce044e0dce834c0df498",
       "local_patches": [
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/stream_output_sanitizer.py",
-          "phase": "discovery"
-        }
+        "{'type': 'patch_script', 'path': 'scripts/provider_patches/stream_output_sanitizer.py', 'phase': 'discovery'}",
+        "scripts/provider_patches/frenchstream_dle_catalogue.py"
       ],
-      "source": "published-baseline",
-      "source_name": "Last published local artifact",
+      "source": "targeted-runtime-repair",
+      "source_name": "Niakvio exact public catalogue adapter",
       "source_repository": "Nuvio Curated Providers",
       "source_license": "GPL-3.0-only",
       "source_license_evidence": "LICENSE",
       "upstream_id": "frenchstream",
       "upstream_filename": "providers/frenchstream--nuvio--6e811019fee20e34.js",
-      "checked_at": "2026-08-04T20:32:31.878079+00:00",
-      "check_mode": "deep",
-      "check_status": "no_streams",
-      "health_score": 20,
-      "activation_eligible": false,
-      "strict_activation_eligible": false,
+      "checked_at": "2026-08-05T09:46:48.235401+00:00",
+      "check_mode": "targeted-live-nuvio",
+      "check_status": "healthy",
+      "health_score": 80,
+      "activation_eligible": true,
+      "strict_activation_eligible": true,
       "strict_grace_eligible": false,
       "historical_quality_grace_eligible": false,
-      "runtime_evidence_eligible": false,
-      "activation_mode": "preserved_current_ci_uncertain",
-      "activation_blockers": [
-        "02_healthy_functional_status",
-        "03_minimum_score",
-        "04_fixture_and_type_coverage",
-        "05_stream_and_fixture_coverage",
-        "06_distinct_host_diversity",
-        "07_verified_payload_playability",
-        "08_quality_and_bitrate",
-        "09_language_and_subtitle_integrity",
-        "00_current_playable_stream"
-      ],
+      "runtime_evidence_eligible": true,
+      "activation_mode": "targeted_live_interstellar",
+      "activation_blockers": [],
       "activation_gates": {
         "01_policy_safe_no_p2p": {
           "passed": true,
@@ -14644,45 +14631,32 @@
     },
     "streamzo": {
       "id": "streamzo",
-      "published_filename": "providers/streamzo--repatched--5d0ce1559e80f626.js",
-      "sha256": "5d0ce1559e80f62632e302db1de6b7b58075aeec88a0b5ffccbab48dc206b5d6",
-      "patched_sha256": "5d0ce1559e80f62632e302db1de6b7b58075aeec88a0b5ffccbab48dc206b5d6",
+      "published_filename": "providers/streamzo--targeted-repair--7aca6edaa2db98cf.js",
+      "sha256": "7aca6edaa2db98cf2538cf170a3c89de8a9c1c7df2c70f08178c58e73cecd710",
+      "patched_sha256": "7aca6edaa2db98cf2538cf170a3c89de8a9c1c7df2c70f08178c58e73cecd710",
       "upstream_sha256": "cd90158022279da1aa3443c8631278fc02e2e1d83e28b77548518ac420115dad",
       "local_patches": [
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/stream_output_sanitizer.py",
-          "phase": "discovery"
-        }
+        "{'type': 'patch_script', 'path': 'scripts/provider_patches/stream_output_sanitizer.py', 'phase': 'discovery'}",
+        "scripts/provider_patches/streamzo_public_catalogue.py"
       ],
-      "source": "published-baseline",
-      "source_name": "Last published local artifact",
+      "source": "targeted-runtime-repair",
+      "source_name": "Niakvio exact public catalogue adapter",
       "source_repository": "Nuvio Curated Providers",
       "source_license": "GPL-3.0-only",
       "source_license_evidence": "LICENSE",
       "upstream_id": "streamzo",
       "upstream_filename": "providers/streamzo--nuvio--cd90158022279da1.js",
-      "checked_at": "2026-08-04T20:32:31.878079+00:00",
-      "check_mode": "deep",
-      "check_status": "no_streams",
-      "health_score": 20,
-      "activation_eligible": false,
-      "strict_activation_eligible": false,
+      "checked_at": "2026-08-05T09:46:45.730197+00:00",
+      "check_mode": "targeted-live-nuvio",
+      "check_status": "healthy",
+      "health_score": 80,
+      "activation_eligible": true,
+      "strict_activation_eligible": true,
       "strict_grace_eligible": false,
       "historical_quality_grace_eligible": false,
-      "runtime_evidence_eligible": false,
-      "activation_mode": "preserved_current_ci_uncertain",
-      "activation_blockers": [
-        "02_healthy_functional_status",
-        "03_minimum_score",
-        "04_fixture_and_type_coverage",
-        "05_stream_and_fixture_coverage",
-        "06_distinct_host_diversity",
-        "07_verified_payload_playability",
-        "08_quality_and_bitrate",
-        "09_language_and_subtitle_integrity",
-        "00_current_playable_stream"
-      ],
+      "runtime_evidence_eligible": true,
+      "activation_mode": "targeted_live_interstellar",
+      "activation_blockers": [],
       "activation_gates": {
         "01_policy_safe_no_p2p": {
           "passed": true,

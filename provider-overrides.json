@@ -130,7 +130,8 @@
       "patch_scripts": [
         "scripts/provider_patches/frenchstream_detail_players.py",
         "scripts/provider_patches/vf_catalogue_recovery.py",
-        "scripts/provider_patches/stream_output_sanitizer.py"
+        "scripts/provider_patches/stream_output_sanitizer.py",
+        "scripts/provider_patches/frenchstream_dle_catalogue.py"
       ],
       "patch_script_options": {
         "scripts/provider_patches/stream_output_sanitizer.py": {
@@ -167,6 +168,11 @@
             "/troll/"
           ],
           "max_players": 8
+        },
+        "scripts/provider_patches/frenchstream_dle_catalogue.py": {
+          "hub_url": "https://www.fstream.org/",
+          "base_url": "https://fs16.lol",
+          "provider_name": "Frenchstream"
         }
       },
       "official_hub": "https://fstream.org/",
@@ -226,6 +232,10 @@
           "probe_all_urls": false,
           "max_probes": 0,
           "min_vod_duration_seconds": 60
+        },
+        "scripts/provider_patches/streamzo_public_catalogue.py": {
+          "base_url": "https://streamzo.fr",
+          "provider_name": "StreamZo"
         }
       },
       "manifest_overrides": {
@@ -235,7 +245,8 @@
       "patch_scripts": [
         "scripts/provider_patches/streamzo_data_embed.py",
         "scripts/provider_patches/vf_catalogue_recovery.py",
-        "scripts/provider_patches/stream_output_sanitizer.py"
+        "scripts/provider_patches/stream_output_sanitizer.py",
+        "scripts/provider_patches/streamzo_public_catalogue.py"
       ],
       "published_types": [
         "movie",
@@ -1151,6 +1162,192 @@
     },
     "waveanime": {
       "capability": "html_scraper"
+    },
+    "4KHDHUB": {
+      "capability": "mixed_embed_resolver"
+    },
+    "ALLANIME": {
+      "capability": "direct_media"
+    },
+    "ALLMOVIELAND": {
+      "capability": "html_scraper"
+    },
+    "ANIDB": {
+      "capability": "html_scraper"
+    },
+    "ANIKOTOTV": {
+      "capability": "mixed_embed_resolver"
+    },
+    "ANIME-SAMA": {
+      "capability": "mixed_embed_resolver"
+    },
+    "ANIMEPAHE": {
+      "capability": "html_scraper"
+    },
+    "ANIMESALT": {
+      "capability": "html_scraper"
+    },
+    "ANIMESAMA-CO": {
+      "capability": "mixed_embed_resolver"
+    },
+    "ANIMESULTRA": {
+      "capability": "mixed_embed_resolver"
+    },
+    "ANIMETSU": {
+      "capability": "direct_media"
+    },
+    "ANIMEVOSTFR": {
+      "capability": "mixed_embed_resolver"
+    },
+    "ANIZONE": {
+      "capability": "api_stream_resolver"
+    },
+    "CASTLE": {
+      "capability": "api_stream_resolver"
+    },
+    "CINEBY": {
+      "capability": "html_scraper"
+    },
+    "CINEMACITY": {
+      "capability": "direct_media"
+    },
+    "CINEMM": {
+      "capability": "html_scraper"
+    },
+    "COFLIX": {
+      "capability": "mixed_embed_resolver"
+    },
+    "DESIFLIX": {
+      "capability": "html_scraper"
+    },
+    "DOOFLIX": {
+      "capability": "html_scraper"
+    },
+    "DULOURD": {
+      "capability": "mixed_embed_resolver"
+    },
+    "FLEMMIX": {
+      "capability": "mixed_embed_resolver"
+    },
+    "FRENCH-MANGA": {
+      "capability": "mixed_embed_resolver"
+    },
+    "FRENCHSTREAM": {
+      "capability": "mixed_embed_resolver"
+    },
+    "GOATED": {
+      "capability": "api_stream_resolver"
+    },
+    "HDGHARTV": {
+      "capability": "html_scraper"
+    },
+    "HDHUB4U": {
+      "capability": "html_scraper"
+    },
+    "HINDMOVIEZ": {
+      "capability": "direct_media"
+    },
+    "KURAGE": {
+      "capability": "html_scraper"
+    },
+    "MOVIEBLAST": {
+      "capability": "html_scraper"
+    },
+    "MOVIEBOX": {
+      "capability": "html_scraper"
+    },
+    "MOVIES4U": {
+      "capability": "mixed_embed_resolver"
+    },
+    "MOVIESDRIVE": {
+      "capability": "html_scraper"
+    },
+    "MOVIESHUNT": {
+      "capability": "direct_media"
+    },
+    "MOVIESMOD": {
+      "capability": "html_scraper"
+    },
+    "MOVIX": {
+      "capability": "mixed_embed_resolver"
+    },
+    "MUGIWARASTREAM": {
+      "capability": "mixed_embed_resolver"
+    },
+    "NAKIOS": {
+      "capability": "api_stream_resolver"
+    },
+    "NETMIRROR": {
+      "capability": "mixed_embed_resolver"
+    },
+    "PAPADUSTREAM": {
+      "capability": "html_scraper"
+    },
+    "PEACHIFY": {
+      "capability": "mixed_embed_resolver"
+    },
+    "PERSIANSTREMIO": {
+      "capability": "direct_media"
+    },
+    "PLAYIMDB": {
+      "capability": "direct_media"
+    },
+    "PURSTREAM": {
+      "capability": "api_stream_resolver"
+    },
+    "SEKAI": {
+      "capability": "html_scraper"
+    },
+    "STREAMFLIX": {
+      "capability": "api_stream_resolver"
+    },
+    "STREAMZO": {
+      "capability": "mixed_embed_resolver"
+    },
+    "TOFLIX": {
+      "capability": "api_stream_resolver"
+    },
+    "UHDMOVIES": {
+      "capability": "html_scraper"
+    },
+    "VEGAMOVIES": {
+      "capability": "html_scraper"
+    },
+    "VIDEASY": {
+      "capability": "direct_media"
+    },
+    "VIDFAST": {
+      "capability": "iframe_player"
+    },
+    "VIDLINK": {
+      "capability": "html_scraper"
+    },
+    "VIDROCK": {
+      "capability": "html_scraper"
+    },
+    "VIDSRC": {
+      "capability": "mixed_embed_resolver"
+    },
+    "VIXSRC": {
+      "capability": "direct_media"
+    },
+    "VOIRANIME": {
+      "capability": "mixed_embed_resolver"
+    },
+    "VOIRANIME-RIP": {
+      "capability": "mixed_embed_resolver"
+    },
+    "VOSTFREE": {
+      "capability": "mixed_embed_resolver"
+    },
+    "WOOKAFR": {
+      "capability": "mixed_embed_resolver"
+    },
+    "YFLIX": {
+      "capability": "mixed_embed_resolver"
+    },
+    "ZINKMOVIES": {
+      "capability": "direct_media"
     }
   },
   "route_override_defaults": {
@@ -2677,6 +2874,919 @@
         "https://lodash.com",
         "https://openjsf.org",
         "http://underscorejs.org"
+      ],
+      "generated_from_manifest_or_stage": true
+    },
+    "4KHDHUB": {
+      "strategy": "mixed_embed_resolver",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://new4.hdhub4u.cl"
+      ],
+      "generated_from_manifest_or_stage": true
+    },
+    "ALLANIME": {
+      "strategy": "direct_media",
+      "validation": "media_url",
+      "allow_html_url": false,
+      "requires_direct_media": true,
+      "observed_origins": [
+        "https://graphql.anilist.co",
+        "https://allanime.day"
+      ],
+      "generated_from_manifest_or_stage": true
+    },
+    "ALLMOVIELAND": {
+      "strategy": "html_scraper",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://allmovieland.art"
+      ],
+      "generated_from_manifest_or_stage": true
+    },
+    "ANIDB": {
+      "strategy": "html_scraper",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [],
+      "generated_from_manifest_or_stage": true
+    },
+    "ANIKOTOTV": {
+      "strategy": "mixed_embed_resolver",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://graphql.anilist.co"
+      ],
+      "generated_from_manifest_or_stage": true
+    },
+    "ANIME-SAMA": {
+      "strategy": "mixed_embed_resolver",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://video.sibnet.ru",
+        "https://vidmoly.me",
+        "https://fsvid.lol",
+        "https://vidzy.live",
+        "https://streamtape.com",
+        "https://sendvid.com",
+        "https://www.myvi.ru",
+        "https://younetu.org",
+        "https://vidoza.net",
+        "https://lecteurvideo.com",
+        "https://up4fun.top",
+        "https://npms.io",
+        "https://kitsu.io",
+        "https://arm.haglund.dev",
+        "https://v3-cinemeta.strem.io",
+        "https://anime-sama.to",
+        "https://lodash.com",
+        "https://openjsf.org",
+        "http://underscorejs.org"
+      ],
+      "generated_from_manifest_or_stage": true
+    },
+    "ANIMEPAHE": {
+      "strategy": "html_scraper",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://kwik.cx",
+        "https://animepahe.pw"
+      ],
+      "generated_from_manifest_or_stage": true
+    },
+    "ANIMESALT": {
+      "strategy": "html_scraper",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://as-cdn21.top"
+      ],
+      "generated_from_manifest_or_stage": true
+    },
+    "ANIMESAMA-CO": {
+      "strategy": "mixed_embed_resolver",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://npms.io",
+        "https://video.sibnet.ru",
+        "https://vidmoly.me",
+        "https://fsvid.lol",
+        "https://vidzy.live",
+        "https://streamtape.com",
+        "https://sendvid.com",
+        "https://www.myvi.ru",
+        "https://younetu.org",
+        "https://vidoza.net",
+        "https://lecteurvideo.com",
+        "https://up4fun.top",
+        "https://animesama.co",
+        "https://kitsu.io",
+        "https://arm.haglund.dev",
+        "https://v3-cinemeta.strem.io",
+        "https://lodash.com",
+        "https://openjsf.org",
+        "http://underscorejs.org"
+      ],
+      "generated_from_manifest_or_stage": true
+    },
+    "ANIMESULTRA": {
+      "strategy": "mixed_embed_resolver",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://npms.io",
+        "https://video.sibnet.ru",
+        "https://vidmoly.me",
+        "https://streamtape.com",
+        "https://sendvid.com",
+        "https://www.myvi.ru",
+        "https://younetu.org",
+        "https://vidoza.net",
+        "https://lecteurvideo.com",
+        "https://up4fun.top",
+        "https://arm.haglund.dev",
+        "https://v3-cinemeta.strem.io",
+        "https://kitsu.io",
+        "https://ww.animesultra.org",
+        "https://lodash.com",
+        "https://openjsf.org",
+        "http://underscorejs.org"
+      ],
+      "generated_from_manifest_or_stage": true
+    },
+    "ANIMETSU": {
+      "strategy": "direct_media",
+      "validation": "media_url",
+      "allow_html_url": false,
+      "requires_direct_media": true,
+      "observed_origins": [
+        "https://animetsu.live",
+        "https://graphql.anilist.co",
+        "https://api4.thetvdb.com",
+        "https://aiometadata.elfhosted.com"
+      ],
+      "generated_from_manifest_or_stage": true
+    },
+    "ANIMEVOSTFR": {
+      "strategy": "mixed_embed_resolver",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://npms.io",
+        "https://video.sibnet.ru",
+        "https://vidmoly.me",
+        "https://fsvid.lol",
+        "https://vidzy.live",
+        "https://streamtape.com",
+        "https://sendvid.com",
+        "https://www.myvi.ru",
+        "https://younetu.org",
+        "https://vidoza.net",
+        "https://lecteurvideo.com",
+        "https://up4fun.top",
+        "https://arm.haglund.dev",
+        "https://v3-cinemeta.strem.io",
+        "https://kitsu.io",
+        "https://v2.animevostfr.org",
+        "https://lodash.com",
+        "https://openjsf.org",
+        "http://underscorejs.org"
+      ],
+      "generated_from_manifest_or_stage": true
+    },
+    "ANIZONE": {
+      "strategy": "api_stream_resolver",
+      "validation": "api_and_provider_native",
+      "allow_html_url": false,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://anizone.to",
+        "https://id-mapping-api-malid.hf.space",
+        "https://api.jikan.moe"
+      ],
+      "generated_from_manifest_or_stage": true
+    },
+    "CASTLE": {
+      "strategy": "api_stream_resolver",
+      "validation": "api_and_provider_native",
+      "allow_html_url": false,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://api.hlowb.com"
+      ],
+      "generated_from_manifest_or_stage": true
+    },
+    "CINEBY": {
+      "strategy": "html_scraper",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://www.cineby.at"
+      ],
+      "generated_from_manifest_or_stage": true
+    },
+    "CINEMACITY": {
+      "strategy": "direct_media",
+      "validation": "media_url",
+      "allow_html_url": false,
+      "requires_direct_media": true,
+      "observed_origins": [
+        "https://animemapping.realbestia.com"
+      ],
+      "generated_from_manifest_or_stage": true
+    },
+    "CINEMM": {
+      "strategy": "html_scraper",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://cinemm.com",
+        "https://v3-cinemeta.strem.io"
+      ],
+      "generated_from_manifest_or_stage": true
+    },
+    "COFLIX": {
+      "strategy": "mixed_embed_resolver",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://npms.io",
+        "https://video.sibnet.ru",
+        "https://vidmoly.me",
+        "https://streamtape.com",
+        "https://sendvid.com",
+        "https://www.myvi.ru",
+        "https://younetu.org",
+        "https://vidoza.net",
+        "https://lecteurvideo.com",
+        "https://up4fun.top",
+        "https://arm.haglund.dev",
+        "https://v3-cinemeta.strem.io",
+        "https://kitsu.io",
+        "https://coflix.esq",
+        "https://lodash.com",
+        "https://openjsf.org",
+        "http://underscorejs.org"
+      ],
+      "generated_from_manifest_or_stage": true
+    },
+    "DESIFLIX": {
+      "strategy": "html_scraper",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://manifest.desitvhub.eu.org"
+      ],
+      "generated_from_manifest_or_stage": true
+    },
+    "DOOFLIX": {
+      "strategy": "html_scraper",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [],
+      "generated_from_manifest_or_stage": true
+    },
+    "DULOURD": {
+      "strategy": "mixed_embed_resolver",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://npms.io",
+        "https://video.sibnet.ru",
+        "https://vidmoly.me",
+        "https://fsvid.lol",
+        "https://vidzy.live",
+        "https://streamtape.com",
+        "https://sendvid.com",
+        "https://www.myvi.ru",
+        "https://younetu.org",
+        "https://vidoza.net",
+        "https://lecteurvideo.com",
+        "https://up4fun.top",
+        "https://www.dulourd.hair",
+        "https://www.dulourd.net",
+        "https://kitsu.io",
+        "https://lodash.com",
+        "https://openjsf.org",
+        "http://underscorejs.org"
+      ],
+      "generated_from_manifest_or_stage": true
+    },
+    "FLEMMIX": {
+      "strategy": "mixed_embed_resolver",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://video.sibnet.ru",
+        "https://vidmoly.me",
+        "https://streamtape.com",
+        "https://sendvid.com",
+        "https://www.myvi.ru",
+        "https://younetu.org",
+        "https://vidoza.net",
+        "https://lecteurvideo.com",
+        "https://up4fun.top",
+        "https://flemmix.men",
+        "https://npms.io",
+        "https://kitsu.io",
+        "https://arm.haglund.dev",
+        "https://v3-cinemeta.strem.io",
+        "https://lodash.com",
+        "https://openjsf.org",
+        "http://underscorejs.org"
+      ],
+      "generated_from_manifest_or_stage": true
+    },
+    "FRENCH-MANGA": {
+      "strategy": "mixed_embed_resolver",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://npms.io",
+        "https://video.sibnet.ru",
+        "https://vidmoly.me",
+        "https://streamtape.com",
+        "https://sendvid.com",
+        "https://www.myvi.ru",
+        "https://younetu.org",
+        "https://vidoza.net",
+        "https://lecteurvideo.com",
+        "https://up4fun.top",
+        "https://w16.french-manga.net",
+        "https://kitsu.io",
+        "https://arm.haglund.dev",
+        "https://v3-cinemeta.strem.io",
+        "https://lodash.com",
+        "https://openjsf.org",
+        "http://underscorejs.org"
+      ],
+      "generated_from_manifest_or_stage": true
+    },
+    "FRENCHSTREAM": {
+      "strategy": "mixed_embed_resolver",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://npms.io",
+        "https://video.sibnet.ru",
+        "https://vidmoly.me",
+        "https://streamtape.com",
+        "https://sendvid.com",
+        "https://www.myvi.ru",
+        "https://younetu.org",
+        "https://vidoza.net",
+        "https://lecteurvideo.com",
+        "https://up4fun.top",
+        "https://arm.haglund.dev",
+        "https://v3-cinemeta.strem.io",
+        "https://kitsu.io",
+        "https://fs16.lol",
+        "https://lodash.com",
+        "https://openjsf.org",
+        "http://underscorejs.org",
+        "https://www.fstream.org"
+      ],
+      "generated_from_manifest_or_stage": true
+    },
+    "GOATED": {
+      "strategy": "api_stream_resolver",
+      "validation": "api_and_provider_native",
+      "allow_html_url": false,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://api.reallyfast.xyz",
+        "https://goated.cx"
+      ],
+      "generated_from_manifest_or_stage": true
+    },
+    "HDGHARTV": {
+      "strategy": "html_scraper",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [],
+      "generated_from_manifest_or_stage": true
+    },
+    "HDHUB4U": {
+      "strategy": "html_scraper",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [],
+      "generated_from_manifest_or_stage": true
+    },
+    "HINDMOVIEZ": {
+      "strategy": "direct_media",
+      "validation": "media_url",
+      "allow_html_url": false,
+      "requires_direct_media": true,
+      "observed_origins": [
+        "https://mvlink.blog"
+      ],
+      "generated_from_manifest_or_stage": true
+    },
+    "KURAGE": {
+      "strategy": "html_scraper",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://kurage.live",
+        "https://arm.haglund.dev",
+        "https://v3-cinemeta.strem.io"
+      ],
+      "generated_from_manifest_or_stage": true
+    },
+    "MOVIEBLAST": {
+      "strategy": "html_scraper",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://app.cloud-mb.xyz"
+      ],
+      "generated_from_manifest_or_stage": true
+    },
+    "MOVIEBOX": {
+      "strategy": "html_scraper",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://pengu.uk",
+        "https://stremio-moviebox-1.onrender.com"
+      ],
+      "generated_from_manifest_or_stage": true
+    },
+    "MOVIES4U": {
+      "strategy": "mixed_embed_resolver",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://hc-zf3c.vercel.app",
+        "https://new2.movies4u.clinic"
+      ],
+      "generated_from_manifest_or_stage": true
+    },
+    "MOVIESDRIVE": {
+      "strategy": "html_scraper",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://mdrive.lol"
+      ],
+      "generated_from_manifest_or_stage": true
+    },
+    "MOVIESHUNT": {
+      "strategy": "direct_media",
+      "validation": "media_url",
+      "allow_html_url": false,
+      "requires_direct_media": true,
+      "observed_origins": [
+        "https://abhilinks.site",
+        "https://vcloud.zip"
+      ],
+      "generated_from_manifest_or_stage": true
+    },
+    "MOVIESMOD": {
+      "strategy": "html_scraper",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://moviesmod.army",
+        "https://links.modpro.blog",
+        "https://driveseed.org"
+      ],
+      "generated_from_manifest_or_stage": true
+    },
+    "MOVIX": {
+      "strategy": "mixed_embed_resolver",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://video.sibnet.ru",
+        "https://vidmoly.me",
+        "https://streamtape.com",
+        "https://sendvid.com",
+        "https://www.myvi.ru",
+        "https://younetu.org",
+        "https://vidoza.net",
+        "https://lecteurvideo.com",
+        "https://up4fun.top",
+        "https://movix.fun",
+        "https://npms.io",
+        "https://api.movix.fun",
+        "https://lodash.com",
+        "https://openjsf.org",
+        "http://underscorejs.org"
+      ],
+      "generated_from_manifest_or_stage": true
+    },
+    "MUGIWARASTREAM": {
+      "strategy": "mixed_embed_resolver",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://video.sibnet.ru",
+        "https://vidmoly.me",
+        "https://streamtape.com",
+        "https://sendvid.com",
+        "https://www.myvi.ru",
+        "https://younetu.org",
+        "https://vidoza.net",
+        "https://lecteurvideo.com",
+        "https://up4fun.top",
+        "https://www.mugiwara-no-streaming.com",
+        "https://kitsu.io",
+        "https://npms.io",
+        "https://lodash.com",
+        "https://openjsf.org",
+        "http://underscorejs.org"
+      ],
+      "generated_from_manifest_or_stage": true
+    },
+    "NAKIOS": {
+      "strategy": "api_stream_resolver",
+      "validation": "api_and_provider_native",
+      "allow_html_url": false,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://nakios.live",
+        "https://api.nakios.live"
+      ],
+      "generated_from_manifest_or_stage": true
+    },
+    "NETMIRROR": {
+      "strategy": "mixed_embed_resolver",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://net27.cc"
+      ],
+      "generated_from_manifest_or_stage": true
+    },
+    "PAPADUSTREAM": {
+      "strategy": "html_scraper",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://papadustream.club",
+        "https://npms.io",
+        "https://arm.haglund.dev",
+        "https://v3-cinemeta.strem.io",
+        "https://lodash.com",
+        "https://openjsf.org",
+        "http://underscorejs.org"
+      ],
+      "generated_from_manifest_or_stage": true
+    },
+    "PEACHIFY": {
+      "strategy": "mixed_embed_resolver",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://uwu.eat-peach.sbs",
+        "https://usa.eat-peach.sbs"
+      ],
+      "generated_from_manifest_or_stage": true
+    },
+    "PERSIANSTREMIO": {
+      "strategy": "direct_media",
+      "validation": "media_url",
+      "allow_html_url": false,
+      "requires_direct_media": true,
+      "observed_origins": [],
+      "generated_from_manifest_or_stage": true
+    },
+    "PLAYIMDB": {
+      "strategy": "direct_media",
+      "validation": "media_url",
+      "allow_html_url": false,
+      "requires_direct_media": true,
+      "observed_origins": [
+        "https://streamdata.vaplayer.ru",
+        "https://nextgencloudfabric.com"
+      ],
+      "generated_from_manifest_or_stage": true
+    },
+    "PURSTREAM": {
+      "strategy": "api_stream_resolver",
+      "validation": "api_and_provider_native",
+      "allow_html_url": false,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://api.purstream",
+        "https://api.movix.fun",
+        "https://movix.fun"
+      ],
+      "generated_from_manifest_or_stage": true
+    },
+    "SEKAI": {
+      "strategy": "html_scraper",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://npms.io",
+        "https://arm.haglund.dev",
+        "https://v3-cinemeta.strem.io",
+        "https://kitsu.io",
+        "https://sekai.one",
+        "https://lodash.com",
+        "https://openjsf.org",
+        "http://underscorejs.org"
+      ],
+      "generated_from_manifest_or_stage": true
+    },
+    "STREAMFLIX": {
+      "strategy": "api_stream_resolver",
+      "validation": "api_and_provider_native",
+      "allow_html_url": false,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://api.streamflix.app"
+      ],
+      "generated_from_manifest_or_stage": true
+    },
+    "STREAMZO": {
+      "strategy": "mixed_embed_resolver",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://video.sibnet.ru",
+        "https://vidmoly.me",
+        "https://streamtape.com",
+        "https://sendvid.com",
+        "https://www.myvi.ru",
+        "https://younetu.org",
+        "https://vidoza.net",
+        "https://lecteurvideo.com",
+        "https://up4fun.top",
+        "https://streamzo.fr",
+        "https://kitsu.io",
+        "https://npms.io",
+        "https://lodash.com",
+        "https://openjsf.org",
+        "http://underscorejs.org"
+      ],
+      "generated_from_manifest_or_stage": true
+    },
+    "TOFLIX": {
+      "strategy": "api_stream_resolver",
+      "validation": "api_and_provider_native",
+      "allow_html_url": false,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://apis.wavewatch.xyz",
+        "https://tfx05.lol",
+        "https://api.tfx05.lol"
+      ],
+      "generated_from_manifest_or_stage": true
+    },
+    "UHDMOVIES": {
+      "strategy": "html_scraper",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [],
+      "generated_from_manifest_or_stage": true
+    },
+    "VEGAMOVIES": {
+      "strategy": "html_scraper",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://vcloud.zip"
+      ],
+      "generated_from_manifest_or_stage": true
+    },
+    "VIDEASY": {
+      "strategy": "direct_media",
+      "validation": "media_url",
+      "allow_html_url": false,
+      "requires_direct_media": true,
+      "observed_origins": [
+        "https://www.vidking.net"
+      ],
+      "generated_from_manifest_or_stage": true
+    },
+    "VIDFAST": {
+      "strategy": "iframe_player",
+      "validation": "embed_page",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://vidfast.vc"
+      ],
+      "generated_from_manifest_or_stage": true
+    },
+    "VIDLINK": {
+      "strategy": "html_scraper",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://vidlink.pro"
+      ],
+      "generated_from_manifest_or_stage": true
+    },
+    "VIDROCK": {
+      "strategy": "html_scraper",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://vidrock.ru"
+      ],
+      "generated_from_manifest_or_stage": true
+    },
+    "VIDSRC": {
+      "strategy": "mixed_embed_resolver",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://whisperingauroras.com",
+        "https://vidsrc.me"
+      ],
+      "generated_from_manifest_or_stage": true
+    },
+    "VIXSRC": {
+      "strategy": "direct_media",
+      "validation": "media_url",
+      "allow_html_url": false,
+      "requires_direct_media": true,
+      "observed_origins": [],
+      "generated_from_manifest_or_stage": true
+    },
+    "VOIRANIME": {
+      "strategy": "mixed_embed_resolver",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://video.sibnet.ru",
+        "https://vidmoly.me",
+        "https://streamtape.com",
+        "https://sendvid.com",
+        "https://www.myvi.ru",
+        "https://younetu.org",
+        "https://vidoza.net",
+        "https://lecteurvideo.com",
+        "https://up4fun.top",
+        "https://npms.io",
+        "https://arm.haglund.dev",
+        "https://v3-cinemeta.strem.io",
+        "https://kitsu.io",
+        "https://voir-anime.to",
+        "https://lodash.com",
+        "https://openjsf.org",
+        "http://underscorejs.org"
+      ],
+      "generated_from_manifest_or_stage": true
+    },
+    "VOIRANIME-RIP": {
+      "strategy": "mixed_embed_resolver",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://npms.io",
+        "https://video.sibnet.ru",
+        "https://vidmoly.me",
+        "https://fsvid.lol",
+        "https://vidzy.live",
+        "https://streamtape.com",
+        "https://sendvid.com",
+        "https://www.myvi.ru",
+        "https://younetu.org",
+        "https://vidoza.net",
+        "https://lecteurvideo.com",
+        "https://up4fun.top",
+        "https://voiranime.rip",
+        "https://kitsu.io",
+        "https://arm.haglund.dev",
+        "https://v3-cinemeta.strem.io",
+        "https://lodash.com",
+        "https://openjsf.org",
+        "http://underscorejs.org"
+      ],
+      "generated_from_manifest_or_stage": true
+    },
+    "VOSTFREE": {
+      "strategy": "mixed_embed_resolver",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://video.sibnet.ru",
+        "https://vidmoly.me",
+        "https://streamtape.com",
+        "https://sendvid.com",
+        "https://www.myvi.ru",
+        "https://younetu.org",
+        "https://vidoza.net",
+        "https://lecteurvideo.com",
+        "https://up4fun.top",
+        "https://npms.io",
+        "https://arm.haglund.dev",
+        "https://v3-cinemeta.strem.io",
+        "https://kitsu.io",
+        "https://vidmoly.to",
+        "https://uqload.com",
+        "https://voe.sx",
+        "https://dood.to",
+        "https://ipv4.vostfree.ws",
+        "https://lodash.com",
+        "https://openjsf.org",
+        "http://underscorejs.org"
+      ],
+      "generated_from_manifest_or_stage": true
+    },
+    "WOOKAFR": {
+      "strategy": "mixed_embed_resolver",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://video.sibnet.ru",
+        "https://vidmoly.me",
+        "https://fsvid.lol",
+        "https://vidzy.live",
+        "https://streamtape.com",
+        "https://sendvid.com",
+        "https://www.myvi.ru",
+        "https://younetu.org",
+        "https://vidoza.net",
+        "https://lecteurvideo.com",
+        "https://up4fun.top",
+        "https://wookafr.center",
+        "https://npms.io",
+        "https://kitsu.io",
+        "https://arm.haglund.dev",
+        "https://v3-cinemeta.strem.io",
+        "https://lodash.com",
+        "https://openjsf.org",
+        "http://underscorejs.org",
+        "https://www.dailymotion.com"
+      ],
+      "generated_from_manifest_or_stage": true
+    },
+    "YFLIX": {
+      "strategy": "mixed_embed_resolver",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://enc-dec.app",
+        "https://1moviesz.to"
+      ],
+      "generated_from_manifest_or_stage": true
+    },
+    "ZINKMOVIES": {
+      "strategy": "direct_media",
+      "validation": "media_url",
+      "allow_html_url": false,
+      "requires_direct_media": true,
+      "observed_origins": [
+        "https://zinkmovies.wtf",
+        "https://gemma416okl.com",
+        "https://i-arch-400.keymi417exx.com"
       ],
       "generated_from_manifest_or_stage": true
     }
