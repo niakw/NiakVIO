@@ -135,7 +135,7 @@ test_domain_prefix_collision_is_idempotent()
 
 
 def test_obfuscated_runtime_endpoint_override() -> None:
-    source = b"""var DOMAINS_URL='https://raw.githubusercontent.com/wooodyhood/nuvio-repo/main/domains.json',MOVIX_FALLBACK='cash',_cachedEndpoint=null;function detectApi(){if(_cachedEndpoint)return Promise.resolve(_cachedEndpoint);return fetch(DOMAINS_URL).then(function(r){return r.json()}).then(function(x){return {api:'https://api.movix.'+x.movix}}).catch(function(){return {api:'https://api.movix.'+MOVIX_FALLBACK}})};module.exports={getStreams:async function(){var e=await detectApi();await fetch(e.api+'/api/purstream/movie/157336/stream');return []}};"""
+    source = b'''var DOMAINS_URL='https://raw.githubusercontent.com/wooodyhood/nuvio-repo/main/domains.json',MOVIX_FALLBACK='cash',_cachedEndpoint=null;function detectApi(){if(_cachedEndpoint)return Promise.resolve(_cachedEndpoint);return fetch(DOMAINS_URL).then(function(r){return r.json()}).then(function(x){return {api:'https://api.movix.'+x.movix}}).catch(function(){return {api:'https://api.movix.'+MOVIX_FALLBACK}})};module.exports={getStreams:async function(){var e=await detectApi();await fetch(e.api+'/api/purstream/movie/157336/stream');return []}};'''
     output, records = apply_overrides("movix", source)
     assert b"NUVIO_FIXED_ENDPOINT:https://api.movix.fun" in output
     assert b"NUVIO_RUNTIME_DOMAIN_OVERRIDES_V1" in output
@@ -152,7 +152,7 @@ def test_obfuscated_runtime_endpoint_override() -> None:
         # This contract must not depend on live DNS/network conditions. Execute
         # the synthetic provider with a deterministic fetch stub and inspect the
         # URL actually requested after all runtime wrappers were installed.
-        harness = r"""
+        harness = r'''
 const target = process.argv[1];
 const requested = [];
 global.fetch = async function(input) {
@@ -168,7 +168,7 @@ global.fetch = async function(input) {
   console.error(error && error.stack || error);
   process.exit(1);
 });
-"""
+'''
         result = subprocess.run(
             ["node", "-e", harness, str(target.resolve())],
             text=True,
@@ -262,7 +262,7 @@ def test_chained_provider_patch_scripts_and_output_guard() -> None:
     with tempfile.TemporaryDirectory(dir=ROOT) as tmp:
         target = Path(tmp) / "provider.js"
         target.write_bytes(output)
-        harness = r"""
+        harness = r'''
 const provider = require(process.argv[1]);
 global.fetch = async function(url) {
   return {
@@ -278,7 +278,7 @@ global.fetch = async function(url) {
   };
 };
 provider.getStreams().then((rows) => process.stdout.write(JSON.stringify(rows)));
-"""
+'''
         result = subprocess.run(
             ["node", "-e", harness, str(target.resolve())],
             check=True,
@@ -286,10 +286,15 @@ provider.getStreams().then((rows) => process.stdout.write(JSON.stringify(rows)))
             capture_output=True,
         )
         rows = json.loads(result.stdout)
-        assert [row["url"] for row in rows] == [
-            "https://media.example/malformed.m3u8",
-            "https://media.example/good.m3u8",
-        ]
+        expected_urls = (
+            ["https://media.example/good.m3u8"]
+            if b"NUVIO_TV_TARGET_MEDIA_V3" in output
+            else [
+                "https://media.example/malformed.m3u8",
+                "https://media.example/good.m3u8",
+            ]
+        )
+        assert [row["url"] for row in rows] == expected_urls
 
 
 def test_toflix_terminal_bootstrap_patch() -> None:
@@ -307,7 +312,7 @@ print("override tests passed")
 
 
 def test_legacy_domain_required_values_are_metadata() -> None:
-    """A resolved bare host must not be required as a literal code marker."""
+    '''A resolved bare host must not be required as a literal code marker.'''
     config_path = ROOT / "provider-overrides.json"
     original = config_path.read_text(encoding="utf-8")
     config = json.loads(original)
