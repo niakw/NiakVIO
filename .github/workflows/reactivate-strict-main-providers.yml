@@ -49,13 +49,18 @@ jobs:
           cp manifest.json "$RUNNER_TEMP/manifest.before.json"
           cp vf/manifest.json "$RUNNER_TEMP/vf.before.json"
           python scripts/reactivate_strict_main_providers.py
-          cmp -s vf/manifest.json "$RUNNER_TEMP/vf.before.json"
           python - <<'PY'
           import json
           from pathlib import Path
 
-          report = json.loads(Path('automation/strict-main-reactivation.json').read_text(encoding='utf-8'))
           expected = {'4khdhubnew', 'animezey', 'hianime', 'kisskh'}
+          before_vf = json.loads(Path('${{ runner.temp }}/vf.before.json').read_text(encoding='utf-8'))
+          after_vf = json.loads(Path('vf/manifest.json').read_text(encoding='utf-8'))
+          assert before_vf.get('scrapers') == after_vf.get('scrapers'), 'main-only reactivation changed VF provider rows'
+          vf_ids = {str(row.get('id', '')).casefold() for row in after_vf.get('scrapers', [])}
+          assert expected.isdisjoint(vf_ids), expected & vf_ids
+
+          report = json.loads(Path('automation/strict-main-reactivation.json').read_text(encoding='utf-8'))
           actual = set(report.get('reactivated', []))
           assert actual == expected, (actual, expected, report.get('preserved_disabled'))
           manifest = json.loads(Path('manifest.json').read_text(encoding='utf-8'))
@@ -71,7 +76,19 @@ jobs:
         run: |
           python scripts/bump_release_patch_if_manifest_changed.py --previous "$RUNNER_TEMP/manifest.before.json" --manifest manifest.json
           python scripts/sync_release_versions.py --manifest manifest.json
-          cmp -s vf/manifest.json "$RUNNER_TEMP/vf.before.json"
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          expected = {'4khdhubnew', 'animezey', 'hianime', 'kisskh'}
+          before = json.loads(Path(os.environ['RUNNER_TEMP'], 'vf.before.json').read_text(encoding='utf-8'))
+          after = json.loads(Path('vf/manifest.json').read_text(encoding='utf-8'))
+          assert before.get('scrapers') == after.get('scrapers'), 'release synchronization changed VF provider rows'
+          ids = {str(row.get('id', '')).casefold() for row in after.get('scrapers', [])}
+          assert expected.isdisjoint(ids), expected & ids
+          print('VF provider projection preserved; release metadata synchronized')
+          PY
 
       - name: Run complete regressions
         run: npm test
@@ -82,7 +99,19 @@ jobs:
           python scripts/validate_release_integrity.py
           node scripts/validate_provider_semantics.cjs
           python scripts/validate_activation_preservation.py
-          cmp -s vf/manifest.json "$RUNNER_TEMP/vf.before.json"
+          python scripts/validate_vf_projection.py
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          expected = {'4khdhubnew', 'animezey', 'hianime', 'kisskh'}
+          before = json.loads(Path(os.environ['RUNNER_TEMP'], 'vf.before.json').read_text(encoding='utf-8'))
+          after = json.loads(Path('vf/manifest.json').read_text(encoding='utf-8'))
+          assert before.get('scrapers') == after.get('scrapers'), 'integrity regeneration changed VF provider rows'
+          ids = {str(row.get('id', '')).casefold() for row in after.get('scrapers', [])}
+          assert expected.isdisjoint(ids), expected & ids
+          PY
 
       - name: Publish main-only reactivations
         shell: bash
@@ -90,7 +119,7 @@ jobs:
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add manifest.json PROVENANCE.json package.json sources.json nuvio-client-id-state.json \
+          git add manifest.json vf/manifest.json PROVENANCE.json package.json sources.json nuvio-client-id-state.json \
             scripts/reactivate_strict_main_providers.py \
             automation/strict-main-reactivation.json \
             FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json
