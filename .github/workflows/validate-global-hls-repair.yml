@@ -120,7 +120,10 @@ jobs:
           report = json.loads(Path('automation/nuvio-tv-global-promotion.json').read_text(encoding='utf-8'))
           assert {row['id'] for row in report.get('published', [])} == {'french-manga', 'streamzo'}, report
           assert 'desiflix' in report.get('preserved', []), report
-          assert report['providers']['desiflix']['baseline_summary']['playable_fixture_count'] > 0, report['providers']['desiflix']
+          desiflix = report['providers']['desiflix']
+          assert not desiflix['strictly_better'], desiflix
+          assert desiflix['no_regression'], desiflix
+          assert desiflix['strict_outputs'], desiflix
           PY
               python scripts/bump_release_patch_if_manifest_changed.py --previous "$RUNNER_TEMP/manifest.before.json" --manifest manifest.json
               python scripts/sync_release_versions.py --manifest manifest.json
