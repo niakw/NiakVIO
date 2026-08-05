@@ -3,15 +3,15 @@ name: Check published provider availability
 on:
   workflow_dispatch:
   schedule:
-    # Six low-cost checks per day. GitHub schedules use UTC.
+    # Six low-cost diagnostic checks per day. GitHub schedules use UTC.
     - cron: "23 */4 * * *"
 
 permissions:
   contents: read
 
 concurrency:
-  group: nuvio-provider-publish
-  cancel-in-progress: false
+  group: nuvio-provider-availability
+  cancel-in-progress: true
 
 jobs:
   check:
@@ -55,12 +55,12 @@ jobs:
           sudo chown -R root:root staging
           sudo chmod -R a-w staging
 
-      - name: Run low-cost availability checks
+      - name: Run low-cost availability diagnostics
         env:
           NUVIO_HEALTH_OUTPUT: health-output
         run: node scripts/health_check.mjs --availability
 
-      - name: Upload availability result
+      - name: Upload diagnostic result
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: nuvio-availability-${{ github.run_id }}
@@ -68,8 +68,8 @@ jobs:
           retention-days: 2
           if-no-files-found: error
 
-  publish:
-    name: Update availability state
+  report:
+    name: Update diagnostic reports only
     needs: check
     runs-on: ubuntu-latest
     timeout-minutes: 12
@@ -93,37 +93,37 @@ jobs:
           name: nuvio-availability-${{ github.run_id }}
           path: checked-artifact
 
-      - name: Apply cautious availability policy without bypassing publication eligibility
+      - name: Update reports without applying manifest toggles
         env:
           NUVIO_HEALTH_RESULTS: checked-artifact/health-results.json
-        run: python scripts/update_availability.py
+        run: |
+          cp manifest.json "$RUNNER_TEMP/manifest.before.json"
+          cp vf/manifest.json "$RUNNER_TEMP/vf.before.json"
+          python scripts/update_availability.py
+          rm -f manifest.next.json
+          cmp -s manifest.json "$RUNNER_TEMP/manifest.before.json"
+          cmp -s vf/manifest.json "$RUNNER_TEMP/vf.before.json"
 
-      - name: Publish changed availability reports
+      - name: Publish diagnostic reports
         shell: bash
         run: |
+          set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
           git add availability-report.json availability-history.json
-          if ! git diff --cached --quiet; then
-            git commit -m "chore: update provider availability"
-            git push origin HEAD:main
-          else
-            echo "Availability state is unchanged."
-          fi
-
-      - name: Publish availability toggles without bypassing publication eligibility
-        shell: bash
-        run: |
-          test -f manifest.next.json
-          mv manifest.next.json manifest.json
-          python scripts/generate_language_manifests.py
-          git add manifest.json vf/manifest.json
-
           if git diff --cached --quiet; then
-            echo "No provider enablement change."
+            echo "Availability reports are unchanged."
             exit 0
           fi
-
-          git commit -m "chore: apply provider availability state"
-          git push origin HEAD:main
+          git commit -m "chore: update provider availability diagnostics"
+          git reset --hard HEAD
+          git clean -fd
+          for attempt in 1 2 3 4 5; do
+            git fetch origin main
+            if git rebase origin/main && git push origin HEAD:main; then
+              exit 0
+            fi
+            git rebase --abort || true
+            sleep $((attempt * 2))
+          done
+          exit 1
