@@ -1,0 +1,67 @@
+name: Validate public Nuvio install URL
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "README.md"
+      - ".github/workflows/validate-nuvio-install-url.yml"
+      - ".github/triggers/validate-nuvio-install-url"
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Validate exact public manifest identity and bundles
+        env:
+          INSTALL_URL: https://raw.githubusercontent.com/niakw/Niakvio/refs/heads/main/manifest.json?activation-profile=niakvio-v2
+        run: |
+          set -euo pipefail
+          curl --fail --location --silent --show-error \
+            -H 'Cache-Control: no-cache' \
+            "$INSTALL_URL" -o /tmp/manifest.json
+          python - <<'PY'
+          import json
+          import os
+          import urllib.parse
+          import urllib.request
+          from pathlib import Path
+
+          install_url = os.environ['INSTALL_URL']
+          manifest = json.loads(Path('/tmp/manifest.json').read_text(encoding='utf-8'))
+          rows = manifest.get('scrapers') or []
+          enabled = [row for row in rows if row.get('enabled') is True]
+          assert len(rows) == 89, len(rows)
+          assert len(enabled) == 62, len(enabled)
+          assert manifest.get('version') == '5.20.14', manifest.get('version')
+
+          parsed = urllib.parse.urlsplit(install_url)
+          manifest_without_query = urllib.parse.urlunsplit((parsed.scheme, parsed.netloc, parsed.path, '', ''))
+          base = manifest_without_query.removesuffix('/manifest.json')
+          failures = []
+          for row in enabled:
+              filename = str(row.get('filename') or '').lstrip('/')
+              code_url = filename if filename.startswith(('http://', 'https://')) else f'{base}/{filename}'
+              try:
+                  request = urllib.request.Request(code_url, headers={'Cache-Control': 'no-cache'})
+                  with urllib.request.urlopen(request, timeout=20) as response:
+                      payload = response.read(256)
+                      if response.status != 200 or not payload:
+                          failures.append((row.get('id'), response.status, code_url))
+              except Exception as error:
+                  failures.append((row.get('id'), str(error), code_url))
+          assert not failures, failures[:10]
+
+          legacy_identity = f"{manifest_without_query.lower()}:goated"
+          fresh_identity = f"{install_url.lower()}:goated"
+          assert legacy_identity != fresh_identity
+          print(f'public Nuvio URL validated: version={manifest["version"]}, total={len(rows)}, enabled={len(enabled)}, bundles={len(enabled)}')
+          PY
