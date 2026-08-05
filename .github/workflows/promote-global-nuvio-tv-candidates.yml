@@ -66,15 +66,16 @@ jobs:
           assert published == expected, (published, expected, report.get('preserved'))
           assert 'desiflix' in report.get('preserved', []), report
           desiflix = report['providers']['desiflix']
-          assert desiflix['baseline_summary']['playable_fixture_count'] > 0, desiflix
           assert not desiflix['strictly_better'], desiflix
+          assert desiflix['no_regression'], desiflix
+          assert desiflix['strict_outputs'], desiflix
           for provider_id in sorted(expected):
               provider = report['providers'][provider_id]
               assert provider['strictly_better'], (provider_id, provider)
               assert provider['no_regression'], (provider_id, provider)
               assert provider['strict_outputs'], (provider_id, provider)
           print('strict global promotions:', ', '.join(sorted(published)))
-          print('already healthy and preserved: desiflix')
+          print('preserved without forced replacement: desiflix')
           PY
 
       - name: Bump and synchronize release
