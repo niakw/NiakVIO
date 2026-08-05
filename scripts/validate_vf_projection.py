@@ -12,7 +12,6 @@ main_by_id = {str(row.get("id") or "").casefold(): row for row in main.get("scra
 functional_fields = (
     "id",
     "version",
-    "filename",
     "enabled",
     "supportedTypes",
     "hasSettings",
@@ -25,6 +24,16 @@ functional_fields = (
     "supportedPlatforms",
 )
 
+
+def normalized_bundle(value: object, *, nested: bool) -> str:
+    filename = str(value or "").strip()
+    if filename.startswith(("http://", "https://")):
+        return filename
+    if nested and filename.startswith("../"):
+        filename = filename[3:]
+    return filename
+
+
 errors: list[str] = []
 for row in vf.get("scrapers", []):
     canonical = str(row.get("id") or "").casefold()
@@ -32,6 +41,10 @@ for row in vf.get("scrapers", []):
     if source is None:
         errors.append(f"VF provider absent from principal: {canonical}")
         continue
+    if normalized_bundle(row.get("filename"), nested=True) != normalized_bundle(source.get("filename"), nested=False):
+        errors.append(
+            f"{canonical}:filename: vf={row.get('filename')!r} main={source.get('filename')!r}"
+        )
     for field in functional_fields:
         if row.get(field) != source.get(field):
             errors.append(f"{canonical}:{field}: vf={row.get(field)!r} main={source.get(field)!r}")
