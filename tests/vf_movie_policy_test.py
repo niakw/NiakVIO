@@ -42,8 +42,15 @@ assert by_id['goated']['enabled'] is True
 assert 'movie' in by_id['goated']['supportedTypes']
 assert 'goated' in activation['active_ids']
 
-for provider_id in ('streamzo', 'movix', 'coflix', 'flemmix'):
+for provider_id in ('movix', 'coflix', 'flemmix'):
     assert by_id[provider_id]['supportsExternalPlayer'] is True, provider_id
+# StreamZo historically exposed embeds. Once the globally audited direct-media
+# bundle is promoted, every surviving output is a content-proven HLS/container
+# and the provider must no longer advertise an external-player requirement.
+if '--nuvio-tv-global--' in str(by_id['streamzo'].get('filename') or ''):
+    assert by_id['streamzo']['supportsExternalPlayer'] is False
+else:
+    assert by_id['streamzo']['supportsExternalPlayer'] is True
 assert 'movie' in by_id['frenchstream']['supportedTypes']
 assert not ({'dahmermovies', 'dahmermovies-tv'} & set(by_id))
 assert not list((ROOT / 'providers').glob('dahmermovies*.js'))
