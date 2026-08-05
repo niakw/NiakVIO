@@ -1,0 +1,61 @@
+name: Diagnose provider activation regression
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/diagnose-provider-activation.yml"
+      - ".github/triggers/diagnose-provider-activation"
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout full history
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+
+      - name: Compare activation history
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          import subprocess
+          from pathlib import Path
+
+          def run(*args):
+              return subprocess.check_output(args, text=True).strip()
+
+          current = json.loads(Path('manifest.json').read_text(encoding='utf-8'))
+          current_rows = {str(r.get('id') or '').casefold(): r for r in current.get('scrapers', [])}
+          current_active = {pid for pid, row in current_rows.items() if row.get('enabled') is True}
+          print(f"CURRENT version={current.get('version')} active={len(current_active)} total={len(current_rows)}")
+
+          commits = run('git', 'log', '--first-parent', '--format=%H', '-n', '120', '--', 'manifest.json').splitlines()
+          snapshots = []
+          for sha in commits:
+              try:
+                  raw = subprocess.check_output(['git', 'show', f'{sha}:manifest.json'], text=True, stderr=subprocess.DEVNULL)
+                  data = json.loads(raw)
+              except Exception:
+                  continue
+              rows = {str(r.get('id') or '').casefold(): r for r in data.get('scrapers', [])}
+              active = {pid for pid, row in rows.items() if row.get('enabled') is True}
+              meta = run('git', 'show', '-s', '--format=%cI|%s', sha)
+              snapshots.append((sha, data.get('version'), len(active), len(rows), active, meta))
+              print(f"HISTORY {sha[:12]} version={data.get('version')} active={len(active)} total={len(rows)} {meta}")
+
+          previous = next((s for s in snapshots[1:] if s[2] > len(current_active)), None)
+          stable = next((s for s in snapshots[1:] if 55 <= s[2] <= 65), previous)
+          if not stable:
+              raise SystemExit('No prior larger activation snapshot found')
+          sha, version, count, total, active, meta = stable
+          print(f"SELECTED {sha} version={version} active={count} total={total} {meta}")
+          print('DISABLED_SINCE_SELECTED=' + ','.join(sorted(active - current_active)))
+          print('NEWLY_ACTIVE_SINCE_SELECTED=' + ','.join(sorted(current_active - active)))
+          PY
