@@ -16,13 +16,18 @@ official = overrides['official_domain_hubs']
 # CI failures are diagnostic evidence and may not silently shrink the catalogue.
 expected_enabled_movie = {
     'purstream', 'frenchstream', 'streamzo', 'movix', 'coflix', 'wookafr',
-    'flemmix', 'nakios', 'toflix',
+    'flemmix', 'nakios',
 }
 for provider_id in expected_enabled_movie:
     row = by_id[provider_id]
     assert row['enabled'] is True, provider_id
     assert 'movie' in row['supportedTypes'], provider_id
     assert provider_id in activation['active_ids'], provider_id
+
+# Toflix remains part of the published activation union, but its actual
+# supportedTypes are preserved; activation must not invent movie capability.
+assert by_id['toflix']['enabled'] is True
+assert 'toflix' in activation['active_ids']
 
 # Goated is a manually confirmed Interstellar provider in Nuvio and its
 # activation must likewise survive an isolated GitHub-runner failure.
