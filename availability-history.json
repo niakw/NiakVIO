@@ -1,6 +1,6 @@
 {
   "schema_version": 63,
-  "updated_at": "2026-08-06T10:57:34.407299+00:00",
+  "updated_at": "2026-08-06T11:06:16.073964+00:00",
   "providers": {
     "anime-sama": {
       "last_checked_at": "2026-08-06T10:57:34.407299+00:00",
@@ -331,21 +331,19 @@
       }
     },
     "hindmoviez": {
-      "last_checked_at": "2026-08-06T10:57:34.407299+00:00",
-      "last_status": "degraded",
+      "last_checked_at": "2026-08-06T11:06:16.073964+00:00",
+      "last_status": "no_streams",
       "last_score": 25,
       "last_sha256": "86b8c3a4dff3c98c05db88eb075936b2f4ec00d504b967f1150bdfbd6fa620ac",
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
       "consecutive_successes": 0,
       "consecutive_blocked": 0,
-      "consecutive_no_streams": 0,
+      "consecutive_no_streams": 1,
       "auto_disabled": false,
       "last_success_at": "2026-08-06T06:50:04.380611+00:00",
       "hosts": [],
-      "response_categories": [
-        "host_down"
-      ],
+      "response_categories": [],
       "host_health": {
         "share.kujeucoixeti-6043.workers.dev": {
           "last_checked_at": "2026-08-06T06:50:04.380611+00:00",
@@ -593,19 +591,21 @@
       }
     },
     "mugiwarastream": {
-      "last_checked_at": "2026-08-06T08:05:31.320680+00:00",
-      "last_status": "no_streams",
+      "last_checked_at": "2026-08-06T11:06:16.073964+00:00",
+      "last_status": "degraded",
       "last_score": 25,
       "last_sha256": "4ca91d321825979c065102e493f3b6b01d7b990ac3ee3412ac687a68ca0dcd9b",
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
       "consecutive_successes": 0,
       "consecutive_blocked": 0,
-      "consecutive_no_streams": 1,
+      "consecutive_no_streams": 0,
       "auto_disabled": false,
       "last_success_at": "2026-08-05T21:37:00.671515+00:00",
       "hosts": [],
-      "response_categories": [],
+      "response_categories": [
+        "invalid_payload"
+      ],
       "host_health": {
         "prx-1328-ant.vmwesa.online": {
           "last_checked_at": "2026-08-05T21:37:00.671515+00:00",
@@ -652,11 +652,11 @@
           "consecutive_blocked": 0
         },
         "vidmoly.biz": {
-          "last_checked_at": "2026-08-05T21:37:00.671515+00:00",
-          "last_category": "not_returned",
+          "last_checked_at": "2026-08-06T11:06:16.073964+00:00",
+          "last_category": "invalid_payload",
           "reachable": false,
-          "http_status": null,
-          "latency_ms": null,
+          "http_status": 200,
+          "latency_ms": 451,
           "kind": "html",
           "consecutive_hard_failures": 0,
           "consecutive_successes": 0,
