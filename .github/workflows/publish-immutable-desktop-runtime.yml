@@ -1,0 +1,162 @@
+name: Publish immutable Desktop runtime bundles
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency:
+  group: immutable-desktop-runtime-publication
+  cancel-in-progress: true
+
+jobs:
+  publish:
+    if: github.event.issue.title == 'run: immutable desktop runtime publication'
+    runs-on: ubuntu-latest
+    timeout-minutes: 58
+    steps:
+      - name: Mark publication started
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+        run: gh issue comment "$ISSUE_NUMBER" --repo "$GITHUB_REPOSITORY" --body "Immutable Desktop runtime publication started."
+
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+
+      - name: Synchronize with latest main
+        run: |
+          git fetch origin main
+          git checkout -B main origin/main
+
+      - name: Set up Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: "3.12"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: "24"
+          package-manager-cache: false
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Restore immutable provider sources for staging
+        shell: bash
+        run: |
+          set -euo pipefail
+          SOURCE_COMMIT=35a91bdc7962223344751153dd80c3097aff51a5
+          paths=(
+            providers/coflix--nuvio--48239f7b107a98b2.js
+            providers/frenchstream--nuvio--38cf074196379a8d.js
+            providers/movix--nuvio--b31ef87b05d3a4f3.js
+            providers/streamzo--nuvio--5ee8d74abe45cd42.js
+            providers/flemmix--nuvio--e0c40c452aca0d66.js
+            providers/wookafr--adaptive-repair--ddeb68905ae4aaaa.js
+            providers/hindmoviez--aio--86b8c3a4dff3c98c.js
+            providers/purstream--published-baseline--8e14e434a2868d4f.js
+          )
+          for path in "${paths[@]}"; do
+            git show "$SOURCE_COMMIT:$path" > "$path"
+          done
+
+      - name: Generate immutable Desktop bundles
+        id: publication
+        run: |
+          cp manifest.json "$RUNNER_TEMP/manifest.before.json"
+          python scripts/publish_desktop_runtime_compat.py
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          expected = {
+              'coflix', 'frenchstream', 'movix', 'streamzo',
+              'flemmix', 'wookafr', 'hindmoviez', 'purstream',
+          }
+          report = json.loads(Path('automation/desktop-runtime-compat-v1.json').read_text(encoding='utf-8'))
+          manifest = json.loads(Path('manifest.json').read_text(encoding='utf-8'))
+          rows = {str(row.get('id', '')).casefold(): row for row in manifest.get('scrapers', [])}
+          assert expected == set(report.get('published', [])), report
+          for provider_id in expected:
+              row = rows[provider_id]
+              assert '--desktop-runtime-v1--' in row['filename'], row
+              text = Path(row['filename']).read_text(encoding='utf-8', errors='replace')
+              assert 'NUVIO_DESKTOP_RUNTIME_COMPAT_V1' in text, provider_id
+          assert rows['4khdhub']['enabled'] is False, rows['4khdhub']
+          assert rows['4khdhubnew']['enabled'] is True, rows['4khdhubnew']
+          purstream = Path(rows['purstream']['filename']).read_text(encoding='utf-8', errors='replace')
+          assert '"api.purstream.club":"api.purstream.art"' in purstream
+          hindmoviez = Path(rows['hindmoviez']['filename']).read_text(encoding='utf-8', errors='replace')
+          assert '"maxSeriesStreams":24' in hindmoviez
+          assert '"filterEpisodeLabels":true' in hindmoviez
+          with open(os.environ['GITHUB_OUTPUT'], 'a', encoding='utf-8') as output:
+              output.write('changed=true\n')
+          PY
+
+      - name: Restore legacy cache paths from main
+        run: |
+          git restore \
+            providers/coflix--nuvio--48239f7b107a98b2.js \
+            providers/frenchstream--nuvio--38cf074196379a8d.js \
+            providers/movix--nuvio--b31ef87b05d3a4f3.js \
+            providers/streamzo--nuvio--5ee8d74abe45cd42.js \
+            providers/flemmix--nuvio--e0c40c452aca0d66.js \
+            providers/wookafr--adaptive-repair--ddeb68905ae4aaaa.js \
+            providers/hindmoviez--aio--86b8c3a4dff3c98c.js \
+            providers/purstream--published-baseline--8e14e434a2868d4f.js
+
+      - name: Bump release and validate
+        run: |
+          python scripts/bump_release_patch_if_manifest_changed.py --previous "$RUNNER_TEMP/manifest.before.json" --manifest manifest.json
+          python scripts/sync_release_versions.py --manifest manifest.json
+          python scripts/validate_vf_projection.py
+          python tests/desktop_runtime_compat_test.py
+          npm test
+          python scripts/generate_release_hashes.py
+          python scripts/validate_release_integrity.py
+          node scripts/validate_provider_semantics.cjs
+          python scripts/validate_activation_preservation.py
+
+      - name: Commit immutable runtime release
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add manifest.json vf/manifest.json provider-overrides.json PROVENANCE.json \
+            package.json sources.json nuvio-client-id-state.json \
+            providers/*--desktop-runtime-v1--*.js \
+            automation/desktop-runtime-compat-v1.json \
+            FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json
+          git commit -m "fix: publish immutable Nuvio Desktop runtime bundles"
+          for attempt in 1 2 3 4 5; do
+            git fetch origin main
+            if git rebase origin/main && git push origin HEAD:main; then
+              exit 0
+            fi
+            git rebase --abort || true
+            sleep $((attempt * 2))
+          done
+          exit 1
+
+      - name: Mark publication completed
+        if: success()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+        run: gh issue comment "$ISSUE_NUMBER" --repo "$GITHUB_REPOSITORY" --body "Immutable Desktop runtime publication completed successfully."
+
+      - name: Mark publication failed
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+        run: gh issue comment "$ISSUE_NUMBER" --repo "$GITHUB_REPOSITORY" --body "Immutable Desktop runtime publication failed. Check the workflow logs."
