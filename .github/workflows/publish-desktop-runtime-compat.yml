@@ -77,7 +77,7 @@ jobs:
           assert rows['4khdhub']['enabled'] is False
           assert rows['4khdhubnew']['enabled'] is True
           if 'nakios' in rows:
-              assert rows['nakios']['enabled'] is False
+              assert rows['nakios']['enabled'] is True
           with open(os.environ['GITHUB_OUTPUT'], 'a', encoding='utf-8') as output:
               output.write(f"changed={'true' if report.get('changed') else 'false'}\n")
           print('published:', ', '.join(report.get('published', [])) or 'none; already compatible')
