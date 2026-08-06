@@ -19,12 +19,19 @@ MARKER_PREFIX = "NUVIO_DESKTOP_RUNTIME_COMPAT_V1"
 
 def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> str:
     options = dict(options or {})
+    raw_replacements = options.get("domain_replacements") or {}
+    domain_replacements = {
+        str(source).strip().casefold(): str(target).strip().casefold()
+        for source, target in dict(raw_replacements).items()
+        if str(source).strip() and str(target).strip()
+    }
     config = {
         "normalizeMissingEpisodes": bool(options.get("normalize_missing_episodes", False)),
         "fallbackSeason": max(1, int(options.get("fallback_season", 1))),
         "fallbackEpisode": max(1, int(options.get("fallback_episode", 1))),
         "filterEpisodeLabels": bool(options.get("filter_episode_labels", False)),
         "maxSeriesStreams": max(0, min(int(options.get("max_series_streams", 0)), 100)),
+        "domainReplacements": domain_replacements,
     }
     payload = json.dumps(config, separators=(",", ":"))
     marker = f"{MARKER_PREFIX}:{hashlib.sha256(payload.encode('utf-8')).hexdigest()[:12]}"
@@ -36,6 +43,32 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
 ;(function(g,config){
   "use strict";
   if(!g)return;
+
+  // Apply only explicitly configured, evidence-backed domain migrations.
+  // The wrapper is installed before getStreams is called, so providers using
+  // the global fetch bridge transparently receive the current endpoint.
+  if(config.domainReplacements&&typeof g.fetch==="function"){
+    var fetchKey="__nuvioDesktopFetchCompatV1",fetchState=g[fetchKey];
+    if(!fetchState){
+      fetchState={native:g.fetch.bind(g),rules:Object.create(null)};
+      g[fetchKey]=fetchState;
+      g.fetch=function(input,init){
+        var next=input;
+        try{
+          var raw=(typeof Request!=="undefined"&&input instanceof Request)?input.url:String(input);
+          var url=new URL(raw),replacement=fetchState.rules[String(url.hostname).toLowerCase()];
+          if(replacement){
+            url.hostname=replacement;
+            next=(typeof Request!=="undefined"&&input instanceof Request)?new Request(url.toString(),input):url.toString();
+          }
+        }catch(_error){}
+        return fetchState.native(next,init);
+      };
+    }
+    Object.keys(config.domainReplacements).forEach(function(source){
+      fetchState.rules[String(source).toLowerCase()]=String(config.domainReplacements[source]).toLowerCase();
+    });
+  }
 
   // QuickJS Desktop has no browser timers.  Provider HTTP calls already have
   // native client timeouts, so a non-firing fallback is safer than aborting
