@@ -76,8 +76,7 @@ jobs:
                   assert vf_rows[provider_id]['filename'] == '../' + row['filename'], (provider_id, vf_rows[provider_id])
 
           purstream = Path(rows['purstream']['filename']).read_text(encoding='utf-8', errors='replace')
-          assert 'NUVIO_PURSTREAM_CURRENT_DOMAIN_V1' in purstream
-          assert 'api.purstream.art' in purstream
+          assert '"api.purstream.club":"api.purstream.art"' in purstream
 
           hindmoviez = Path(rows['hindmoviez']['filename']).read_text(encoding='utf-8', errors='replace')
           assert '"maxSeriesStreams":24' in hindmoviez
