@@ -35,14 +35,14 @@ TARGETS: dict[str, dict[str, Any]] = {
         "filter_episode_labels": True,
         "max_series_streams": 24,
     },
-    "purstream": {"normalize_missing_episodes": True},
+    "purstream": {
+        "normalize_missing_episodes": True,
+        "domain_replacements": {
+            "api.purstream.club": "api.purstream.art",
+            "purstream.club": "purstream.art",
+        },
+    },
 }
-
-PURSTREAM_DOMAIN_RULES = [
-    ["api.purstream.club", "api.purstream.art"],
-    ["purstream.club", "purstream.art"],
-]
-DOMAIN_MARKER = "NUVIO_PURSTREAM_CURRENT_DOMAIN_V1"
 
 
 def load(path: Path) -> dict[str, Any]:
@@ -90,37 +90,6 @@ def sync_existing_vf(rows: list[dict[str, Any]], source: dict[str, Any]) -> None
     target.clear()
     target.update(deepcopy(source))
     target["filename"] = vf_filename(source.get("filename"))
-
-
-def with_purstream_domain_bridge(text: str) -> str:
-    if DOMAIN_MARKER in text:
-        return text
-    rules = json.dumps(PURSTREAM_DOMAIN_RULES, separators=(",", ":"))
-    bridge = r'''
-/* NUVIO_PURSTREAM_CURRENT_DOMAIN_V1 */
-;(function(g,rules){
-  if(!g||typeof g.fetch!=="function")return;
-  var key="__nuvioPurstreamDomainV1",state=g[key];
-  if(!state){
-    state={native:g.fetch.bind(g),rules:Object.create(null)};
-    g[key]=state;
-    g.fetch=function(input,init){
-      var next=input;
-      try{
-        var raw=(typeof Request!=="undefined"&&input instanceof Request)?input.url:String(input);
-        var url=new URL(raw),replacement=state.rules[String(url.hostname).toLowerCase()];
-        if(replacement){
-          url.hostname=replacement;
-          next=(typeof Request!=="undefined"&&input instanceof Request)?new Request(url.toString(),input):url.toString();
-        }
-      }catch(_error){}
-      return state.native(next,init);
-    };
-  }
-  for(var i=0;i<rules.length;i++)state.rules[rules[i][0]]=rules[i][1];
-})(typeof globalThis!=="undefined"?globalThis:this,RULES_PLACEHOLDER);
-'''.replace("RULES_PLACEHOLDER", rules)
-    return bridge.lstrip() + text.lstrip()
 
 
 def update_metadata(
@@ -238,8 +207,7 @@ def main() -> int:
             report["preserved"].append(provider_id)
             continue
         source = source_path.read_text(encoding="utf-8", errors="replace")
-        patched_source = with_purstream_domain_bridge(source) if provider_id == "purstream" else source
-        patched = apply(patched_source, options)
+        patched = apply(source, options)
         if patched == source:
             report["providers"][provider_id] = {"ok": True, "changed": False, "filename": source_filename}
             report["preserved"].append(provider_id)
