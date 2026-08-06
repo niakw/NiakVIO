@@ -2,39 +2,28 @@ name: Validate Desktop runtime compatibility
 
 on:
   pull_request:
-    branches: [main]
     paths:
-      - ".github/triggers/run-desktop-publication-v2"
+      - "scripts/provider_patches/desktop_runtime_compat_v1.py"
+      - "scripts/publish_desktop_runtime_compat.py"
+      - "tests/desktop_runtime_compat_test.py"
+      - ".github/workflows/validate-desktop-runtime-compat.yml"
+      - ".github/workflows/publish-desktop-runtime-compat.yml"
+      - ".github/triggers/publish-desktop-runtime-compat"
 
 permissions:
-  contents: write
-  pull-requests: write
+  contents: read
 
 concurrency:
-  group: desktop-runtime-publication
+  group: desktop-runtime-compat-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
-  publish:
-    if: github.event.pull_request.title == 'Run Desktop runtime publication v2'
-    runs-on: ubuntu-latest
+  validate:
+    runs-on: macos-14
     timeout-minutes: 58
     steps:
-      - name: Mark publication started
-        env:
-          GH_TOKEN: ${{ github.token }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
-        run: gh pr comment "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --body "Desktop runtime publication started."
-
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-        with:
-          fetch-depth: 0
-
-      - name: Synchronize with latest main
-        run: |
-          git fetch origin main
-          git checkout -B main origin/main
 
       - name: Set up Python
         uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
@@ -54,50 +43,59 @@ jobs:
         run: |
           python -m py_compile scripts/provider_patches/desktop_runtime_compat_v1.py
           python -m py_compile scripts/publish_desktop_runtime_compat.py
+          python -m py_compile tests/desktop_runtime_compat_test.py
           python tests/desktop_runtime_compat_test.py
 
-      - name: Publish runtime-compatible bundles
+      - name: Stage runtime-compatible bundles
         run: |
           cp manifest.json "$RUNNER_TEMP/manifest.before.json"
           python scripts/publish_desktop_runtime_compat.py
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          expected = {
+              'coflix', 'frenchstream', 'movix', 'streamzo',
+              'flemmix', 'wookafr', 'hindmoviez', 'purstream',
+          }
+          report = json.loads(Path('automation/desktop-runtime-compat-v1.json').read_text(encoding='utf-8'))
+          manifest = json.loads(Path('manifest.json').read_text(encoding='utf-8'))
+          vf_manifest = json.loads(Path('vf/manifest.json').read_text(encoding='utf-8'))
+          rows = {str(row.get('id', '')).casefold(): row for row in manifest.get('scrapers', [])}
+          vf_rows = {str(row.get('id', '')).casefold(): row for row in vf_manifest.get('scrapers', [])}
+
+          assert expected <= set(report.get('published', [])) | set(report.get('preserved', [])), report
+          for provider_id in expected:
+              row = rows[provider_id]
+              assert '--desktop-runtime-v1--' in row['filename'], row
+              bundle = Path(row['filename'])
+              assert bundle.is_file(), bundle
+              text = bundle.read_text(encoding='utf-8', errors='replace')
+              assert 'NUVIO_DESKTOP_RUNTIME_COMPAT_V1' in text, provider_id
+              if provider_id in vf_rows:
+                  assert vf_rows[provider_id]['filename'] == '../' + row['filename'], (provider_id, vf_rows[provider_id])
+
+          purstream = Path(rows['purstream']['filename']).read_text(encoding='utf-8', errors='replace')
+          assert '"api.purstream.club":"api.purstream.art"' in purstream
+
+          hindmoviez = Path(rows['hindmoviez']['filename']).read_text(encoding='utf-8', errors='replace')
+          assert '"maxSeriesStreams":24' in hindmoviez
+          assert '"filterEpisodeLabels":true' in hindmoviez
+
+          assert rows['4khdhub']['enabled'] is False, rows['4khdhub']
+          assert rows['4khdhubnew']['enabled'] is True, rows['4khdhubnew']
+          if 'nakios' in rows:
+              assert rows['nakios']['enabled'] is True, rows['nakios']
+          print('desktop runtime publication staging validated')
+          PY
+
+      - name: Validate release after staged publication
+        run: |
           python scripts/bump_release_patch_if_manifest_changed.py --previous "$RUNNER_TEMP/manifest.before.json" --manifest manifest.json
           python scripts/sync_release_versions.py --manifest manifest.json
           python scripts/validate_vf_projection.py
-
-      - name: Run complete regressions
-        run: npm test
-
-      - name: Regenerate and validate release integrity
-        run: |
+          npm test
           python scripts/generate_release_hashes.py
           python scripts/validate_release_integrity.py
           node scripts/validate_provider_semantics.cjs
           python scripts/validate_vf_projection.py
-
-      - name: Commit runtime-compatible release
-        shell: bash
-        run: |
-          set -euo pipefail
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add manifest.json vf/manifest.json provider-overrides.json PROVENANCE.json \
-            package.json sources.json nuvio-client-id-state.json \
-            providers/*--desktop-runtime-v1--*.js \
-            automation/desktop-runtime-compat-v1.json \
-            FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json
-          git commit -m "fix: publish Nuvio Desktop runtime-compatible providers"
-          git push origin HEAD:main
-
-      - name: Mark publication completed
-        if: success()
-        env:
-          GH_TOKEN: ${{ github.token }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
-        run: gh pr comment "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --body "Desktop runtime publication completed successfully."
-
-      - name: Mark publication failed
-        if: failure()
-        env:
-          GH_TOKEN: ${{ github.token }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
-        run: gh pr comment "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --body "Desktop runtime publication failed. Check the workflow logs."
