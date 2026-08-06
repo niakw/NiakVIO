@@ -86,7 +86,7 @@ jobs:
           assert rows['4khdhub']['enabled'] is False, rows['4khdhub']
           assert rows['4khdhubnew']['enabled'] is True, rows['4khdhubnew']
           if 'nakios' in rows:
-              assert rows['nakios']['enabled'] is False, rows['nakios']
+              assert rows['nakios']['enabled'] is True, rows['nakios']
           print('desktop runtime publication staging validated')
           PY
 
