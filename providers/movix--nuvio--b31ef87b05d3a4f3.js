@@ -92,7 +92,9 @@ if (__provider && __provider.getStreams) {
     }
 }
 
-/* NUVIO_VF_CATALOGUE_RECOVERY_V1:86e5a90ba2c0 */
+
+
+/* NUVIO_VF_CATALOGUE_RECOVERY_V1:d3ca6eb3d02a */
 ;(function(g,config){
   "use strict";
   var TMDB_KEY="8265bd1679663a7ea12ac168da84d2e8";
@@ -273,8 +275,8 @@ if (__provider && __provider.getStreams) {
   }
   var installed=false;try{if(typeof module!=="undefined"&&module.exports)installed=install(module.exports,"getStreams")||installed}catch(_e){}
   try{if(g&&typeof g.getStreams==="function"){if(installed&&typeof module!=="undefined"&&module.exports)g.getStreams=module.exports.getStreams;else install(g,"getStreams")}}catch(_e){}
-})(typeof globalThis!=="undefined"?globalThis:this,{"strategy":"api_discovery","baseUrl":"https://movix.fun","apiUrl":"https://api.movix.fun","types":["movie","tv","anime"],"searchPaths":[],"directPaths":[],"blockedHosts":["fstream.top"],"blockedPathPatterns":["/troll/"],"preferredPlayerGroups":["VFF","VFQ","VF","Default","VOSTFR"],"maxPlayers":10,"timeoutMs":7000,"providerName":"Movix","recoveryFirst":true,"skipNativeWhenUnresolved":true,"obsoleteRouteTokens":["/api/fstream/","fstream"],"maxDiscoveryScripts":10});
-/* NUVIO_STREAM_OUTPUT_SANITIZER_V4:e52ec0a354e4 */
+})(typeof globalThis!=="undefined"?globalThis:this,{"strategy":"api_discovery","baseUrl":"https://movix.fun","apiUrl":"https://api.movix.fun","types":["movie","tv","anime"],"searchPaths":[],"directPaths":[],"blockedHosts":["fstream.top"],"blockedPathPatterns":[],"preferredPlayerGroups":["VFF","VFQ","VF","Default","VOSTFR"],"maxPlayers":10,"timeoutMs":7000,"providerName":"Movix","recoveryFirst":true,"skipNativeWhenUnresolved":true,"obsoleteRouteTokens":["/api/fstream/","fstream"],"maxDiscoveryScripts":10});
+/* NUVIO_STREAM_OUTPUT_SANITIZER_V4:a626a59f3ec6 */
 ;(function(g,config){
   "use strict";
   function hostOf(raw){try{return new URL(String(raw)).hostname.toLowerCase()}catch(_e){return ""}}
@@ -337,7 +339,7 @@ if (__provider && __provider.getStreams) {
     return out;
   }
   function validHls(text){
-    var value=String(text||"").replace(/^\uFEFF/,"").trimStart();
+    var value=String(text||"").replace(/^(?:\uFEFF|\u00EF\u00BB\u00BF)/,"").trimStart();
     if(value.indexOf("#EXTM3U")!==0)return false;
     var isVod=/#EXT-X-ENDLIST(?:\r?\n|$)/i.test(value);
     var durations=[],match,re=/#EXTINF:([0-9]+(?:\.[0-9]+)?)/gi;
@@ -398,4 +400,5 @@ if (__provider && __provider.getStreams) {
     if(installed&&typeof module!=="undefined"&&module.exports&&module.exports.getStreams)g.getStreams=module.exports.getStreams;
     else install(g,"getStreams");
   }}catch(_e){}
-})(typeof globalThis!=="undefined"?globalThis:this,{"blockedHosts":["analytics.google.com","api.themoviedb.org","arm.haglund.dev","cloudflareinsights.com","connect.facebook.net","doubleclick.net","fstream.top","google-analytics.com","googlesyndication.com","googletagmanager.com","graphql.anilist.co","kitsu.io","lodash.com","npms.io","openjsf.org","pagead2.googlesyndication.com","static.cloudflareinsights.com","underscorejs.org","v3-cinemeta.strem.io"],"probeDirectMedia":false,"probeAllUrls":false,"maxProbes":0,"timeoutMs":4500,"minVodDurationSeconds":60,"blockedPathPatterns":["/analytics","/beacon.min.js","/cdn-cgi/rum","/collect","/gtag/js","/troll/"],"implementationVersion":5});
+})(typeof globalThis!=="undefined"?globalThis:this,{"blockedHosts":["analytics.google.com","api.themoviedb.org","arm.haglund.dev","cloudflareinsights.com","connect.facebook.net","doubleclick.net","fstream.top","google-analytics.com","googlesyndication.com","googletagmanager.com","graphql.anilist.co","kitsu.io","lodash.com","npms.io","openjsf.org","pagead2.googlesyndication.com","static.cloudflareinsights.com","underscorejs.org","v3-cinemeta.strem.io"],"probeDirectMedia":false,"probeAllUrls":false,"maxProbes":0,"timeoutMs":4500,"minVodDurationSeconds":60,"blockedPathPatterns":["/analytics","/beacon.min.js","/cdn-cgi/rum","/collect","/gtag/js"],"implementationVersion":5});
+/* NUVIO_STREAM_OUTPUT_SANITIZER_UTF8_BOM_V5 */

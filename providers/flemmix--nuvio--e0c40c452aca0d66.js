@@ -92,7 +92,9 @@ if (__provider && __provider.getStreams) {
     }
 }
 
-/* NUVIO_VF_CATALOGUE_RECOVERY_V1:336b7bfb7b37 */
+
+
+/* NUVIO_VF_CATALOGUE_RECOVERY_V1:0dfc9ac98862 */
 ;(function(g,config){
   "use strict";
   var TMDB_KEY="8265bd1679663a7ea12ac168da84d2e8";
@@ -165,6 +167,27 @@ if (__provider && __provider.getStreams) {
     return found;
   }
   function streamRows(urls,base,label){return urls.slice(0,config.maxPlayers).map(function(url,index){return {name:config.providerName+(urls.length>1?" #"+(index+1):""),title:config.providerName+" - "+label,url:url,quality:"HD",language:"fr",headers:headers(base),isDirect:/(?:\.m3u8|\.mp4|\.mpd)(?:[?#]|$)/i.test(url)}})}
+  function episodePlayers(html,base,req){
+    if(!req||req.mediaType!=="tv")return [];
+    var season=Number(req.season)||1,episode=Number(req.episode)||1,text=String(html||"").replace(/\\\//g,"/"),urls=[],seen=Object.create(null);
+    var blocks=text.match(/<[^>]+(?:data-season|data-saison)=["'][^"']+["'][^>]*(?:data-episode|data-ep)=["'][^"']+["'][^>]*>/gi)||[];
+    blocks.forEach(function(tag){
+      var sm=tag.match(/(?:data-season|data-saison)=["'](\d+)["']/i),em=tag.match(/(?:data-episode|data-ep)=["'](\d+)["']/i);
+      if(!sm||!em||Number(sm[1])!==season||Number(em[1])!==episode)return;
+      var um=tag.match(/(?:data-embed|data-src|data-player|data-url|data-video|src)=["']([^"']+)["']/i),u=um&&absolute(um[1],base);
+      if(usable(u)&&!seen[u]){seen[u]=1;urls.push(u)}
+    });
+    var jsonRe=/[\{,]\s*["']?(?:season|saison)["']?\s*:\s*(\d+)[\s\S]{0,500}?["']?(?:episode|ep)["']?\s*:\s*(\d+)[\s\S]{0,700}?["']?(?:url|src|embedUrl|embed_url|player)["']?\s*:\s*["'](https?:\\?\/\\?\/[^"']+)["']/gi,m;
+    while((m=jsonRe.exec(text))!==null){if(Number(m[1])!==season||Number(m[2])!==episode)continue;var u=absolute(m[3].replace(/\\\//g,"/"),base);if(usable(u)&&!seen[u]){seen[u]=1;urls.push(u)}}
+    return urls;
+  }
+  function episodeLinks(html,base,req){
+    if(!req||req.mediaType!=="tv")return [];
+    var season=Number(req.season)||1,episode=Number(req.episode)||1,out=[],seen=Object.create(null),re=/<a\b[^>]*href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi,m;
+    var patterns=[new RegExp("s(?:aison)?[ ._-]*0?"+season+"[ ._-]*e(?:p(?:isode)?)?[ ._-]*0?"+episode,"i"),new RegExp("saison[ ._-]*0?"+season+"[\s\S]{0,40}(?:episode|ep)[ ._-]*0?"+episode,"i")];
+    while((m=re.exec(String(html||"")))!==null){var u=absolute(m[1],base),label=stripHtml(m[2])+" "+m[1];if(!u||seen[u]||!patterns.some(function(p){return p.test(label)}))continue;seen[u]=1;out.push(u)}
+    return out.slice(0,8);
+  }
   var discoveredApiRoute=null,discoveryComplete=false;
   function routeFromText(text,req){
     var raw=String(text||""),matches=[],re=/["'`]([^"'`]{0,180}\/api\/[^"'`]{1,220})["'`]/g,m;
@@ -205,16 +228,26 @@ if (__provider && __provider.getStreams) {
     }
     return [];
   }
-  function apiPlayers(data){
+  function collectRows(rows,urls){if(Array.isArray(rows))rows.forEach(function(row){var u=clean(row&&row.url||row&&row.src||row&&row.embedUrl||row);if(usable(u))urls.push(u)})}
+  function apiPlayers(data,req){
     var groups=data&&data.players||data&&data.links||{},urls=[];
-    config.preferredPlayerGroups.forEach(function(group){var rows=groups[group];if(Array.isArray(rows))rows.forEach(function(row){var u=clean(row&&row.url);if(usable(u))urls.push(u)})});
-    if(!urls.length&&groups&&typeof groups==="object")Object.keys(groups).forEach(function(group){var rows=groups[group];if(Array.isArray(rows))rows.forEach(function(row){var u=clean(row&&row.url);if(usable(u))urls.push(u)})});
+    if(req&&req.mediaType==="tv"&&data&&data.episodes){
+      var season=String(Number(req.season)||1),episode=String(Number(req.episode)||1),root=data.episodes;
+      var selected=root[episode]||root[Number(episode)]||root[season]&&root[season][episode]||root[season]&&root[season][Number(episode)];
+      if(selected){
+        if(selected.languages&&typeof selected.languages==="object")Object.keys(selected.languages).forEach(function(k){collectRows(selected.languages[k],urls)});
+        ["vf","vff","vfq","vostfr","vo","default","players","links"].forEach(function(k){collectRows(selected[k],urls)});
+        if(Array.isArray(selected))collectRows(selected,urls);
+      }
+    }
+    config.preferredPlayerGroups.forEach(function(group){collectRows(groups[group],urls)});
+    if(!urls.length&&groups&&typeof groups==="object")Object.keys(groups).forEach(function(group){collectRows(groups[group],urls)});
     return Array.from(new Set(urls));
   }
   async function apiDiscovery(req,meta){
     var routes=await discoverApiRoutes(req);if(!routes.length)return [];
     var endpoint=absolute(materializeRoute(routes[0],req),config.apiUrl+"/"),data=await request(endpoint,true);if(!data||data.success===false)return [];
-    return streamRows(apiPlayers(data),config.baseUrl||config.apiUrl,meta.title||"Film");
+    return streamRows(apiPlayers(data,req),config.baseUrl||config.apiUrl,meta.title||(req.mediaType==="tv"?"Série":"Film"));
   }
   async function htmlRecovery(req,meta){
     var bases=[config.baseUrl],candidates=[];
@@ -223,11 +256,13 @@ if (__provider && __provider.getStreams) {
     for(var k=0;k<config.searchPaths.length;k++){
       var search=absolute(config.searchPaths[k].replace(/\{query\}/g,encodeURIComponent(meta.title)).replace(/\{slug\}/g,slug(meta.title)).replace(/\{id\}/g,req.tmdbId),config.baseUrl+"/");
       var page=await request(search,false);if(!page)continue;
-      var direct=players(page,search);if(direct.length)return streamRows(direct,search,meta.title);
+      var episodic=episodePlayers(page,search,req);if(episodic.length)return streamRows(episodic,search,meta.title);
+      var direct=req.mediaType==="tv"?[]:players(page,search);if(direct.length)return streamRows(direct,search,meta.title);
+      episodeLinks(page,search,req).forEach(function(url){candidates.push(url)});
       links(page,search,meta).forEach(function(row){candidates.push(row.url)});
     }
     var unique=Array.from(new Set(candidates.filter(Boolean))).slice(0,12);
-    for(var n=0;n<unique.length;n++){var detail=await request(unique[n],false);if(!detail)continue;var urls=players(detail,unique[n]);if(urls.length)return streamRows(urls,unique[n],meta.title)}
+    for(var n=0;n<unique.length;n++){var detail=await request(unique[n],false);if(!detail)continue;var urls=episodePlayers(detail,unique[n],req);if(!urls.length&&req.mediaType!=="tv")urls=players(detail,unique[n]);if(urls.length)return streamRows(urls,unique[n],meta.title)}
     return [];
   }
   async function recover(req){if(config.types.indexOf(req.mediaType)<0)return [];var meta=await metadata(req);if(!meta.title&&config.strategy!=="api_discovery")return [];return config.strategy==="api_discovery"?apiDiscovery(req,meta):htmlRecovery(req,meta)}
@@ -240,8 +275,8 @@ if (__provider && __provider.getStreams) {
   }
   var installed=false;try{if(typeof module!=="undefined"&&module.exports)installed=install(module.exports,"getStreams")||installed}catch(_e){}
   try{if(g&&typeof g.getStreams==="function"){if(installed&&typeof module!=="undefined"&&module.exports)g.getStreams=module.exports.getStreams;else install(g,"getStreams")}}catch(_e){}
-})(typeof globalThis!=="undefined"?globalThis:this,{"strategy":"html","baseUrl":"https://flemmix.men","apiUrl":"","types":["movie"],"searchPaths":["/index.php?do=search&subaction=search&story={query}","/?do=search&subaction=search&story={query}","/?s={query}","/search?q={query}"],"directPaths":["/{slug}","/film/{slug}","/films/{slug}"],"blockedHosts":["fstream.top"],"blockedPathPatterns":["/troll/"],"preferredPlayerGroups":["VFF","VFQ","VF","Default","VOSTFR"],"maxPlayers":8,"timeoutMs":7000,"providerName":"Flemmix","recoveryFirst":true,"skipNativeWhenUnresolved":false,"obsoleteRouteTokens":[],"maxDiscoveryScripts":8});
-/* NUVIO_STREAM_OUTPUT_SANITIZER_V4:e52ec0a354e4 */
+})(typeof globalThis!=="undefined"?globalThis:this,{"strategy":"html","baseUrl":"https://flemmix.men","apiUrl":"","types":["movie"],"searchPaths":["/index.php?do=search&subaction=search&story={query}","/?do=search&subaction=search&story={query}","/?s={query}","/search?q={query}"],"directPaths":["/{slug}","/film/{slug}","/films/{slug}"],"blockedHosts":["fstream.top"],"blockedPathPatterns":[],"preferredPlayerGroups":["VFF","VFQ","VF","Default","VOSTFR"],"maxPlayers":8,"timeoutMs":7000,"providerName":"Flemmix","recoveryFirst":true,"skipNativeWhenUnresolved":false,"obsoleteRouteTokens":[],"maxDiscoveryScripts":8});
+/* NUVIO_STREAM_OUTPUT_SANITIZER_V4:a626a59f3ec6 */
 ;(function(g,config){
   "use strict";
   function hostOf(raw){try{return new URL(String(raw)).hostname.toLowerCase()}catch(_e){return ""}}
@@ -304,7 +339,7 @@ if (__provider && __provider.getStreams) {
     return out;
   }
   function validHls(text){
-    var value=String(text||"").replace(/^\uFEFF/,"").trimStart();
+    var value=String(text||"").replace(/^(?:\uFEFF|\u00EF\u00BB\u00BF)/,"").trimStart();
     if(value.indexOf("#EXTM3U")!==0)return false;
     var isVod=/#EXT-X-ENDLIST(?:\r?\n|$)/i.test(value);
     var durations=[],match,re=/#EXTINF:([0-9]+(?:\.[0-9]+)?)/gi;
@@ -365,4 +400,5 @@ if (__provider && __provider.getStreams) {
     if(installed&&typeof module!=="undefined"&&module.exports&&module.exports.getStreams)g.getStreams=module.exports.getStreams;
     else install(g,"getStreams");
   }}catch(_e){}
-})(typeof globalThis!=="undefined"?globalThis:this,{"blockedHosts":["analytics.google.com","api.themoviedb.org","arm.haglund.dev","cloudflareinsights.com","connect.facebook.net","doubleclick.net","fstream.top","google-analytics.com","googlesyndication.com","googletagmanager.com","graphql.anilist.co","kitsu.io","lodash.com","npms.io","openjsf.org","pagead2.googlesyndication.com","static.cloudflareinsights.com","underscorejs.org","v3-cinemeta.strem.io"],"probeDirectMedia":false,"probeAllUrls":false,"maxProbes":0,"timeoutMs":4500,"minVodDurationSeconds":60,"blockedPathPatterns":["/analytics","/beacon.min.js","/cdn-cgi/rum","/collect","/gtag/js","/troll/"],"implementationVersion":5});
+})(typeof globalThis!=="undefined"?globalThis:this,{"blockedHosts":["analytics.google.com","api.themoviedb.org","arm.haglund.dev","cloudflareinsights.com","connect.facebook.net","doubleclick.net","fstream.top","google-analytics.com","googlesyndication.com","googletagmanager.com","graphql.anilist.co","kitsu.io","lodash.com","npms.io","openjsf.org","pagead2.googlesyndication.com","static.cloudflareinsights.com","underscorejs.org","v3-cinemeta.strem.io"],"probeDirectMedia":false,"probeAllUrls":false,"maxProbes":0,"timeoutMs":4500,"minVodDurationSeconds":60,"blockedPathPatterns":["/analytics","/beacon.min.js","/cdn-cgi/rum","/collect","/gtag/js"],"implementationVersion":5});
+/* NUVIO_STREAM_OUTPUT_SANITIZER_UTF8_BOM_V5 */

@@ -88,7 +88,7 @@ function _0x37fa(_0x22f59c,_0x479315){_0x22f59c=_0x22f59c-0x1c9;const _0x25521e=
     return out;
   }
   function validHls(text){
-    var value=String(text||"").replace(/^\uFEFF/,"").trimStart();
+    var value=String(text||"").replace(/^(?:\uFEFF|\u00EF\u00BB\u00BF)/,"").trimStart();
     if(value.indexOf("#EXTM3U")!==0)return false;
     var isVod=/#EXT-X-ENDLIST(?:\r?\n|$)/i.test(value);
     var durations=[],match,re=/#EXTINF:([0-9]+(?:\.[0-9]+)?)/gi;
@@ -150,3 +150,4 @@ function _0x37fa(_0x22f59c,_0x479315){_0x22f59c=_0x22f59c-0x1c9;const _0x25521e=
     else install(g,"getStreams");
   }}catch(_e){}
 })(typeof globalThis!=="undefined"?globalThis:this,{"blockedHosts":["analytics.google.com","api.themoviedb.org","arm.haglund.dev","cloudflareinsights.com","connect.facebook.net","doubleclick.net","google-analytics.com","googlesyndication.com","googletagmanager.com","graphql.anilist.co","kitsu.io","lodash.com","npms.io","openjsf.org","pagead2.googlesyndication.com","static.cloudflareinsights.com","underscorejs.org","v3-cinemeta.strem.io"],"probeDirectMedia":true,"probeAllUrls":true,"maxProbes":6,"timeoutMs":4500,"minVodDurationSeconds":60,"blockedPathPatterns":["/analytics","/beacon.min.js","/cdn-cgi/rum","/collect","/gtag/js"],"implementationVersion":5});
+/* NUVIO_STREAM_OUTPUT_SANITIZER_UTF8_BOM_V5 */
