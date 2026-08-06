@@ -11,9 +11,8 @@ permissions:
   contents: write
 
 concurrency:
-  group: nuvio-provider-publish
-  cancel-in-progress: false
-  queue: max
+  group: desktop-emergency-publish-20260806
+  cancel-in-progress: true
 
 jobs:
   promote:
