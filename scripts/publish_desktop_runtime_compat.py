@@ -278,20 +278,9 @@ def main() -> int:
         report["disabled"].append("4khdhub")
         changed = True
 
-    # The current Nakios bundle hard-codes api.nakios.live, which no longer
-    # resolves in the reproduced Desktop runtime.  Preserve the provider file
-    # for future repair, but stop advertising it as active until a direct media
-    # proof exists for a replacement API.
-    nakios = main_rows.get("nakios")
-    if nakios and bool(nakios.get("enabled")):
-        nakios_path = ROOT / str(nakios.get("filename") or "")
-        nakios_source = nakios_path.read_text(encoding="utf-8", errors="replace") if nakios_path.is_file() else ""
-        if "api.nakios.live" in nakios_source:
-            nakios["enabled"] = False
-            sync_existing_vf(vf_rows, nakios)
-            mark_disabled(overrides, provenance, "nakios", "dead_api_host:api.nakios.live")
-            report["disabled"].append("nakios")
-            changed = True
+    # Nakios is intentionally preserved. The VF policy requires the provider
+    # row to remain enabled; a dead DNS observation is recorded by diagnostics
+    # rather than converted into a speculative domain migration or deactivation.
 
     provenance["generated_at"] = report["generated_at"]
     if changed:
