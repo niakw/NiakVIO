@@ -2,6 +2,8 @@ name: Publish Desktop runtime compatibility
 
 on:
   workflow_dispatch:
+  schedule:
+    - cron: "*/5 * * * *"
   push:
     branches: [main]
     paths:
@@ -20,7 +22,7 @@ permissions:
   pull-requests: write
 
 concurrency:
-  group: nuvio-provider-publish
+  group: desktop-scheduled-publish-20260806
   cancel-in-progress: true
 
 jobs:
@@ -29,6 +31,12 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 58
     steps:
+      - name: Mark scheduled publication started
+        if: github.event_name == 'schedule'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh issue comment 18 --repo "$GITHUB_REPOSITORY" --body "Scheduled Desktop runtime publication started."
+
       - name: Mark issue-triggered publication started
         if: github.event_name == 'issues'
         env:
@@ -150,6 +158,18 @@ jobs:
             sleep $((attempt * 2))
           done
           exit 1
+
+      - name: Mark scheduled publication completed
+        if: success() && github.event_name == 'schedule'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh issue comment 18 --repo "$GITHUB_REPOSITORY" --body "Scheduled Desktop runtime publication completed successfully."
+
+      - name: Mark scheduled publication failed
+        if: failure() && github.event_name == 'schedule'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh issue comment 18 --repo "$GITHUB_REPOSITORY" --body "Scheduled Desktop runtime publication failed. Check the workflow logs."
 
       - name: Mark issue-triggered publication completed
         if: success() && github.event_name == 'issues'
