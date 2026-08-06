@@ -1,14 +1,14 @@
 {
   "schema_version": 63,
-  "generated_at": "2026-08-05T23:35:00.572647+00:00",
+  "generated_at": "2026-08-06T01:01:29.094095+00:00",
   "test_environment": "github-actions-node",
   "checked_providers": 2,
   "status_counts": {
     "healthy": 0,
     "reachable": 0,
     "blocked": 0,
-    "degraded": 2,
-    "no_streams": 0,
+    "degraded": 1,
+    "no_streams": 1,
     "provider_unreachable": 0,
     "runtime_error": 0,
     "unavailable": 0,
@@ -2314,16 +2314,14 @@
     },
     {
       "id": "ctgmovies",
-      "status": "degraded",
+      "status": "no_streams",
       "action": "unchanged",
       "enabled": false,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
       "consecutive_successes": 0,
       "hosts": [],
-      "response_categories": [
-        "host_down"
-      ],
+      "response_categories": [],
       "host_health": {
         "movie.ctgfun.com": {
           "last_checked_at": "2026-08-04T07:21:25.508835+00:00",
