@@ -1,8 +1,10 @@
 name: Publish immutable Desktop runtime bundles
 
 on:
-  issues:
-    types: [opened]
+  push:
+    branches: [main]
+    paths:
+      - ".github/triggers/immutable-desktop-runtime"
 
 permissions:
   contents: write
@@ -14,15 +16,13 @@ concurrency:
 
 jobs:
   publish:
-    if: github.event.issue.title == 'run: immutable desktop runtime publication'
     runs-on: ubuntu-latest
     timeout-minutes: 58
     steps:
       - name: Mark publication started
         env:
           GH_TOKEN: ${{ github.token }}
-          ISSUE_NUMBER: ${{ github.event.issue.number }}
-        run: gh issue comment "$ISSUE_NUMBER" --repo "$GITHUB_REPOSITORY" --body "Immutable Desktop runtime publication started."
+        run: gh issue comment 21 --repo "$GITHUB_REPOSITORY" --body "Immutable Desktop runtime publication started."
 
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -68,13 +68,11 @@ jobs:
           done
 
       - name: Generate immutable Desktop bundles
-        id: publication
         run: |
           cp manifest.json "$RUNNER_TEMP/manifest.before.json"
           python scripts/publish_desktop_runtime_compat.py
           python - <<'PY'
           import json
-          import os
           from pathlib import Path
 
           expected = {
@@ -97,8 +95,6 @@ jobs:
           hindmoviez = Path(rows['hindmoviez']['filename']).read_text(encoding='utf-8', errors='replace')
           assert '"maxSeriesStreams":24' in hindmoviez
           assert '"filterEpisodeLabels":true' in hindmoviez
-          with open(os.environ['GITHUB_OUTPUT'], 'a', encoding='utf-8') as output:
-              output.write('changed=true\n')
           PY
 
       - name: Restore legacy cache paths from main
@@ -151,12 +147,10 @@ jobs:
         if: success()
         env:
           GH_TOKEN: ${{ github.token }}
-          ISSUE_NUMBER: ${{ github.event.issue.number }}
-        run: gh issue comment "$ISSUE_NUMBER" --repo "$GITHUB_REPOSITORY" --body "Immutable Desktop runtime publication completed successfully."
+        run: gh issue comment 21 --repo "$GITHUB_REPOSITORY" --body "Immutable Desktop runtime publication completed successfully."
 
       - name: Mark publication failed
         if: failure()
         env:
           GH_TOKEN: ${{ github.token }}
-          ISSUE_NUMBER: ${{ github.event.issue.number }}
-        run: gh issue comment "$ISSUE_NUMBER" --repo "$GITHUB_REPOSITORY" --body "Immutable Desktop runtime publication failed. Check the workflow logs."
+        run: gh issue comment 21 --repo "$GITHUB_REPOSITORY" --body "Immutable Desktop runtime publication failed. Check the workflow logs."
