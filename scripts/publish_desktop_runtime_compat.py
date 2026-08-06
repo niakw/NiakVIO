@@ -254,6 +254,10 @@ def main() -> int:
         row["filename"] = filename
         row["version"] = bump(row.get("version"))
         row["enabled"] = True
+        if provider_id == "streamzo":
+            # Preserve the repository policy: only the globally audited
+            # direct-media lineage may disable the external-player hint.
+            row["supportsExternalPlayer"] = "--nuvio-tv-global--" not in source_filename
         sync_existing_vf(vf_rows, row)
         update_metadata(overrides, provenance, provider_id, filename, old_sha, new_sha, options)
         report["providers"][provider_id] = {
