@@ -6,6 +6,8 @@ on:
     branches: [main]
     paths:
       - ".github/triggers/publish-desktop-runtime-compat"
+  issues:
+    types: [opened]
 
 permissions:
   contents: write
@@ -17,6 +19,7 @@ concurrency:
 
 jobs:
   publish:
+    if: github.event_name != 'issues' || github.event.issue.title == 'run: desktop runtime publication'
     runs-on: ubuntu-latest
     timeout-minutes: 58
     steps:
