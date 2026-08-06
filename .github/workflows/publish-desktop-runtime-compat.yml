@@ -6,12 +6,17 @@ on:
     branches: [main]
     paths:
       - ".github/triggers/publish-desktop-runtime-compat"
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/triggers/run-desktop-publication"
   issues:
     types: [opened]
 
 permissions:
   contents: write
   issues: write
+  pull-requests: write
 
 concurrency:
   group: nuvio-provider-publish
@@ -29,6 +34,13 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           ISSUE_NUMBER: ${{ github.event.issue.number }}
         run: gh issue comment "$ISSUE_NUMBER" --repo "$GITHUB_REPOSITORY" --body "Desktop runtime publication started."
+
+      - name: Mark PR-triggered publication started
+        if: github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: gh pr comment "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --body "Desktop runtime publication started."
 
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -151,3 +163,17 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           ISSUE_NUMBER: ${{ github.event.issue.number }}
         run: gh issue comment "$ISSUE_NUMBER" --repo "$GITHUB_REPOSITORY" --body "Desktop runtime publication failed. Check the workflow logs."
+
+      - name: Mark PR-triggered publication completed
+        if: success() && github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: gh pr comment "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --body "Desktop runtime publication completed successfully."
+
+      - name: Mark PR-triggered publication failed
+        if: failure() && github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: gh pr comment "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --body "Desktop runtime publication failed. Check the workflow logs."
