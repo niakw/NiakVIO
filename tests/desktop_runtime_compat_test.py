@@ -60,3 +60,5 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
+# Synchronize the already-registered Desktop workflow for one-shot publication.
