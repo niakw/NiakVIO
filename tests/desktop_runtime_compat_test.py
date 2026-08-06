@@ -20,11 +20,12 @@ def load_apply():
 
 def main() -> int:
     apply = load_apply()
-    source = "module.exports={getStreams:async function(id,type,s,e){var t=setTimeout(function(){},5000);clearTimeout(t);return [{name:'Breaking.Bad.S01E01.1080p',url:'https://example/video.m3u8'},{name:'Breaking.Bad.S05E16.1080p',url:'https://example/other.m3u8'}]}};"
+    source = "module.exports={getStreams:async function(id,type,s,e){await fetch('https://api.purstream.club/test');var t=setTimeout(function(){},5000);clearTimeout(t);return [{name:'Breaking.Bad.S01E01.1080p',url:'https://example/video.m3u8'},{name:'Breaking.Bad.S05E16.1080p',url:'https://example/other.m3u8'}]}};"
     options = {
         "normalize_missing_episodes": True,
         "filter_episode_labels": True,
         "max_series_streams": 1,
+        "domain_replacements": {"api.purstream.club": "api.purstream.art"},
     }
     patched = apply(source, options)
     assert "NUVIO_DESKTOP_RUNTIME_COMPAT_V1" in patched
@@ -40,6 +41,7 @@ def main() -> int:
         bundle.write_text(patched, encoding="utf-8")
         runner.write_text(
             "delete global.setTimeout; delete global.clearTimeout;\n"
+            "global.fetch=async function(url){if(!String(url).startsWith('https://api.purstream.art/')) throw new Error(String(url)); return {ok:true};};\n"
             f"const provider=require({str(bundle)!r});\n"
             "provider.getStreams('1396','tv',undefined,undefined).then(function(rows){\n"
             "  if(typeof global.setTimeout!=='function') throw new Error('timer shim missing');\n"
