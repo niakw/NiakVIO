@@ -8,6 +8,8 @@ from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[1]
 SCRIPT = REPO / "scripts" / "prune_unreferenced_providers.py"
+WORKFLOW = (REPO / ".github/workflows/sync.yml").read_text(encoding="utf-8")
+assert WORKFLOW.count("git add -A providers") >= 2, "both publication phases must stage provider deletions"
 
 with tempfile.TemporaryDirectory() as tmp:
     root = Path(tmp)
