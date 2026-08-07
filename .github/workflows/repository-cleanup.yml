@@ -1,0 +1,215 @@
+name: Final repository cleanup
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/triggers/repository-cleanup-v1"
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency:
+  group: nuvio-provider-publish
+  cancel-in-progress: false
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 70
+    steps:
+      - name: Mark cleanup started
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh issue comment 21 --repo "$GITHUB_REPOSITORY" --body "Final repository cleanup started."
+
+      - name: Checkout current main
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+
+      - name: Synchronize with latest main
+        run: |
+          git fetch origin main
+          git checkout -B main origin/main
+
+      - name: Set up Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: "3.12"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: "24"
+          package-manager-cache: false
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Remove superseded workflows, triggers and scratch artifacts
+        shell: bash
+        run: |
+          set -euo pipefail
+          git rm -f --ignore-unmatch -- \
+            .github/workflows/audit-all-nuvio-tv-providers-v2.yml \
+            .github/workflows/audit-all-nuvio-tv-providers.yml \
+            .github/workflows/capture-target-player-pages.yml \
+            .github/workflows/diagnose-provider-activation.yml \
+            .github/workflows/export-nuvio-debug-context.yml \
+            .github/workflows/extract-target-provider-routes-v3.yml \
+            .github/workflows/interstellar-nuvio-matrix.yml \
+            .github/workflows/latest-runs-compact.yml \
+            .github/workflows/nuvio-tv-target-diagnostics-v2.yml \
+            .github/workflows/promote-global-nuvio-tv-candidates.yml \
+            .github/workflows/promote-target-media-v3.yml \
+            .github/workflows/promote-vf-repairs.yml \
+            .github/workflows/publish-desktop-runtime-compat.yml \
+            .github/workflows/publish-immutable-desktop-runtime.yml \
+            .github/workflows/publish-nuvio-tv-compat-v2.yml \
+            .github/workflows/publish-nuvio-tv-compat.yml \
+            .github/workflows/publish-stable-url-activation-refresh.yml \
+            .github/workflows/publish-targeted-vf-adapters.yml \
+            .github/workflows/quality-audit.yml \
+            .github/workflows/reactivate-strict-main-providers.yml \
+            .github/workflows/recover-nuvio-regressions-v2.yml \
+            .github/workflows/recover-nuvio-regressions.yml \
+            .github/workflows/restore-provider-activation.yml \
+            .github/workflows/resume-publish.yml \
+            .github/workflows/retry-unavailable.yml \
+            .github/workflows/targeted-provider-route-diagnostics.yml \
+            .github/workflows/validate-global-hls-repair.yml \
+            .github/workflows/validate-nuvio-install-url.yml \
+            .github/workflows/vf-provider-repair.yml \
+            .github/triggers/action-run-index \
+            .github/triggers/audit-all-nuvio-tv-providers \
+            .github/triggers/audit-all-nuvio-tv-providers-v2 \
+            .github/triggers/capture-target-player-pages \
+            .github/triggers/export-nuvio-debug-context \
+            .github/triggers/extract-target-provider-routes-v3 \
+            .github/triggers/immutable-desktop-runtime \
+            .github/triggers/interstellar-nuvio-matrix \
+            .github/triggers/nuvio-tv-target-diagnostics-v2 \
+            .github/triggers/promote-global-nuvio-tv-candidates \
+            .github/triggers/promote-target-media-v3 \
+            .github/triggers/promote-vf-repairs \
+            .github/triggers/publish-desktop-runtime-compat \
+            .github/triggers/publish-nuvio-tv-compat \
+            .github/triggers/publish-nuvio-tv-compat-v2 \
+            .github/triggers/publish-stable-url-activation-refresh \
+            .github/triggers/publish-targeted-vf-adapters \
+            .github/triggers/reactivate-strict-main-providers \
+            .github/triggers/recover-nuvio-regressions \
+            .github/triggers/restore-provider-activation \
+            .github/triggers/targeted-provider-route-diagnostics \
+            .github/triggers/validate-nuvio-install-url \
+            .github/triggers/vf-provider-repair \
+            .github/cleanup-plan.md \
+            automation/latest-runs.json \
+            automation/interstellar-nuvio-matrix.json \
+            automation/nuvio-tv-compat-v2-report.json \
+            APPLY-NOTE.txt \
+            DEEP-LOG-AUDIT-2026-08-03.md \
+            DEEP-LOG-LINES-2026-08-03.csv \
+            DEEP-REPAIR-LINES-2026-08-03.csv \
+            DELETE_DEEP_FALSE_REPAIRS.txt \
+            DELETE_THESE_FILES.txt \
+            FILES-TO-UPDATE.txt \
+            PR-NOTES-targeted-vf-repair.md \
+            README-MISE-A-JOUR.txt \
+            README-V5-SECTION.md \
+            UPDATE-SUMMARY.json
+
+      - name: Prune unreferenced provider bundles
+        run: python scripts/prune_unreferenced_providers.py
+
+      - name: Assert permanent CI surface
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          root = Path('.github')
+          workflows = sorted(path.name for path in (root / 'workflows').glob('*.yml'))
+          expected = sorted([
+              'availability.yml',
+              'domain-refresh.yml',
+              'repository-cleanup.yml',
+              'sync.yml',
+              'validate-desktop-runtime-compat.yml',
+          ])
+          assert workflows == expected, (workflows, expected)
+          triggers = sorted(path.name for path in (root / 'triggers').iterdir() if path.is_file())
+          assert triggers == sorted(['deep-provider-repair', 'domain-refresh', 'repository-cleanup-v1']), triggers
+          print('cleanup surface validated:', workflows, triggers)
+          PY
+
+      - name: Run Desktop compatibility regression
+        run: python tests/desktop_runtime_compat_test.py
+
+      - name: Run full repository regression suite
+        shell: bash
+        run: |
+          set -o pipefail
+          npm test 2>&1 | tee "$RUNNER_TEMP/repository-cleanup-regression.log"
+
+      - name: Regenerate and validate release integrity
+        run: |
+          python scripts/generate_release_hashes.py
+          python scripts/validate_release_integrity.py
+          node scripts/validate_provider_semantics.cjs
+          python scripts/validate_activation_preservation.py
+          python scripts/validate_vf_projection.py
+
+      - name: Remove cleanup workflow and trigger from final tree
+        run: |
+          git rm -f -- .github/workflows/repository-cleanup.yml .github/triggers/repository-cleanup-v1
+          python scripts/generate_release_hashes.py
+          python scripts/validate_release_integrity.py
+          python - <<'PY'
+          from pathlib import Path
+          workflows = sorted(path.name for path in Path('.github/workflows').glob('*.yml'))
+          assert workflows == sorted(['availability.yml','domain-refresh.yml','sync.yml','validate-desktop-runtime-compat.yml']), workflows
+          triggers = sorted(path.name for path in Path('.github/triggers').iterdir() if path.is_file())
+          assert triggers == sorted(['deep-provider-repair','domain-refresh']), triggers
+          print('final CI surface:', workflows, triggers)
+          PY
+
+      - name: Commit validated cleanup
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "chore: consolidate repository automation"
+          for attempt in 1 2 3 4 5; do
+            git fetch origin main
+            if git rebase origin/main && git push origin HEAD:main; then
+              exit 0
+            fi
+            git rebase --abort || true
+            sleep $((attempt * 2))
+          done
+          exit 1
+
+      - name: Mark cleanup completed
+        if: success()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh issue comment 21 --repo "$GITHUB_REPOSITORY" --body "Final repository cleanup completed successfully: 4 permanent workflows, 2 triggers, full regression and release integrity passed."
+
+      - name: Mark cleanup failed
+        if: failure()
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          report="$RUNNER_TEMP/repository-cleanup-failure.txt"
+          printf '%s\n\n' 'Final repository cleanup failed. No cleanup commit was published.' > "$report"
+          if [ -f "$RUNNER_TEMP/repository-cleanup-regression.log" ]; then
+            printf '%s\n' 'Regression tail:' >> "$report"
+            printf '%s\n' '```text' >> "$report"
+            tail -n 55 "$RUNNER_TEMP/repository-cleanup-regression.log" >> "$report"
+            printf '%s\n' '```' >> "$report"
+          fi
+          gh issue comment 21 --repo "$GITHUB_REPOSITORY" --body-file "$report"
