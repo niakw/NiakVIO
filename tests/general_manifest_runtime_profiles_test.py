@@ -1,16 +1,43 @@
 #!/usr/bin/env python3
-import json,subprocess,tempfile,shutil
+import json
+import subprocess
 from pathlib import Path
-ROOT=Path(__file__).resolve().parents[1]
-subprocess.run(['python3',str(ROOT/'scripts/build_provider_runtime_profiles.py')],check=True,cwd=ROOT)
-d=json.loads((ROOT/'provider-overrides.json').read_text())
-m=json.loads((ROOT/'manifest.json').read_text())
-ids={str(x.get('id')) for x in m.get('scrapers',[]) if x.get('id')}
-caps=d.get('provider_capabilities',{})
-missing=sorted(ids-set(caps))
-assert not missing, f'missing capability profiles: {missing}'
-valid={'iframe_player','mixed_embed_resolver','api_stream_resolver','direct_media','html_scraper','official_domain_hub'}
-bad=sorted((i,caps[i].get('strategy')) for i in ids if caps[i].get('strategy') not in valid)
-assert not bad,bad
-assert d.get('provider_profile_generation',{}).get('provider_count')>=len(ids)
-print(f'general manifest runtime profiles test passed ({len(ids)} providers covered)')
+
+ROOT = Path(__file__).resolve().parents[1]
+OVERRIDES = ROOT / 'provider-overrides.json'
+
+# This regression exercises the real generator, but a repository test may not
+# leave generated runtime-profile state behind. Release hashes are produced
+# inside npm test before the final regressions, so leaking this mutation makes a
+# successful test command corrupt the working tree and invalidates integrity.
+original = OVERRIDES.read_bytes()
+try:
+    subprocess.run(
+        ['python3', str(ROOT / 'scripts/build_provider_runtime_profiles.py')],
+        check=True,
+        cwd=ROOT,
+    )
+    d = json.loads(OVERRIDES.read_text())
+    m = json.loads((ROOT / 'manifest.json').read_text())
+    ids = {str(x.get('id')) for x in m.get('scrapers', []) if x.get('id')}
+    caps = d.get('provider_capabilities', {})
+    missing = sorted(ids - set(caps))
+    assert not missing, f'missing capability profiles: {missing}'
+    valid = {
+        'iframe_player',
+        'mixed_embed_resolver',
+        'api_stream_resolver',
+        'direct_media',
+        'html_scraper',
+        'official_domain_hub',
+    }
+    bad = sorted(
+        (provider_id, caps[provider_id].get('strategy'))
+        for provider_id in ids
+        if caps[provider_id].get('strategy') not in valid
+    )
+    assert not bad, bad
+    assert d.get('provider_profile_generation', {}).get('provider_count') >= len(ids)
+    print(f'general manifest runtime profiles test passed ({len(ids)} providers covered)')
+finally:
+    OVERRIDES.write_bytes(original)
