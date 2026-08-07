@@ -16,12 +16,12 @@ concurrency:
 
 jobs:
   verify-and-cleanup:
-    name: Verify published release and remove temporary phase-two runner
+    name: Verify final release tree and remove temporary phase-two runner
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
     steps:
-      - name: Checkout exact published main
+      - name: Checkout current published main
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           ref: main
@@ -41,7 +41,15 @@ jobs:
       - name: Install pinned dependencies
         run: npm ci --ignore-scripts --no-audit --no-fund
 
-      - name: Verify exact published release
+      - name: Build the exact final tree without temporary phase-two files
+        shell: bash
+        run: |
+          rm .github/workflows/publish-existing-stage.yml
+          rm .github/triggers/publish-existing-stage
+          python scripts/generate_release_hashes.py
+
+      - name: Verify exact final release tree
+        shell: bash
         run: |
           npm test
           python scripts/validate_activation_preservation.py
@@ -49,6 +57,7 @@ jobs:
           python scripts/validate_release_integrity.py
           python - <<'PY'
           import json
+          import subprocess
           from pathlib import Path
 
           def load(name):
@@ -69,19 +78,32 @@ jobs:
               raise SystemExit(f"final published release version mismatch: {versions}")
           if str(package.get("version")) != "5.20.26":
               raise SystemExit(f"unexpected final release version: {versions}")
+
+          allowed = {
+              ".github/workflows/publish-existing-stage.yml",
+              ".github/triggers/publish-existing-stage",
+              "FILE-HASHES.json",
+              "PATCH-SHA256SUMS.txt",
+              "SHA256SUMS.json",
+          }
+          changed = set(
+              subprocess.check_output(
+                  ["git", "status", "--porcelain", "--untracked-files=all"],
+                  text=True,
+              ).splitlines()
+          )
+          paths = {line[3:] for line in changed if len(line) >= 4}
+          unexpected = sorted(paths - allowed)
+          if unexpected:
+              raise SystemExit(f"unexpected final verification diff: {unexpected}")
           print(f"final published release verification passed: {versions}")
           PY
-          git diff --exit-code
 
-      - name: Remove temporary phase-two runner and refresh release hashes
+      - name: Commit final cleanup and refreshed hashes
         shell: bash
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          rm .github/workflows/publish-existing-stage.yml
-          rm .github/triggers/publish-existing-stage
-          python scripts/generate_release_hashes.py
-          python scripts/validate_release_integrity.py
           git add -A .github/workflows/publish-existing-stage.yml .github/triggers/publish-existing-stage FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json
           git commit -m "chore: remove temporary phase-two runner"
           git fetch origin main
