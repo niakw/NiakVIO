@@ -322,7 +322,7 @@ jobs:
           python scripts/sync_release_versions.py --manifest manifest.json
           python scripts/generate_release_hashes.py
           python scripts/validate_release_integrity.py
-          git add manifest.json vf/manifest.json package.json sources.json FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json
+          git add manifest.json vf/manifest.json package.json package-lock.json sources.json FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json
 
           if git diff --cached --quiet; then
             echo "Manifest is unchanged."
