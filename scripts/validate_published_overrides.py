@@ -14,6 +14,15 @@ MANIFEST = ROOT / "manifest.next.json"
 PROVENANCE = ROOT / "PROVENANCE.json"
 PROVIDERS = ROOT / "providers"
 
+# Runtime-generated strategies are deliberately not static patch_profiles in
+# provider-overrides.json. They are created from live deep-health evidence and
+# accepted only after a strict before/after retest. Their provenance still has
+# to be verifiable in the final published artifact, so keep an explicit marker
+# registry here rather than treating every unknown profile as valid.
+GENERATED_RUNTIME_PROFILE_MARKERS = {
+    "adaptive_runtime_recovery": "NUVIO_ADAPTIVE_RUNTIME_RECOVERY_V3",
+}
+
 
 def canonical_id(value: str) -> str:
     return value.strip().casefold().replace("_", "-")
@@ -101,10 +110,21 @@ def main() -> int:
                 continue
             profile_name = str(record.get("profile") or "")
             profile = profiles.get(profile_name)
-            if not isinstance(profile, dict):
-                errors.append(f"{cid}: provenance references unknown profile {profile_name}")
+            if isinstance(profile, dict):
+                required_values.extend(str(value) for value in profile.get("required_values") or [])
                 continue
-            required_values.extend(str(value) for value in profile.get("required_values") or [])
+
+            # Adaptive runtime repairs are generated from live deep evidence and
+            # intentionally do not live in provider-overrides.patch_profiles.
+            # Accept only a known generated strategy, only in runtime phase, and
+            # require its immutable code marker in the exact published bundle.
+            generated_marker = GENERATED_RUNTIME_PROFILE_MARKERS.get(profile_name)
+            if generated_marker and str(record.get("phase") or "") == "runtime":
+                required_values.append(generated_marker)
+                continue
+
+            errors.append(f"{cid}: provenance references unknown profile {profile_name}")
+
         for required in dict.fromkeys(required_values):
             # Bare domains written by older resolver revisions are routing
             # metadata. They are not guaranteed to be literals in provider code.
