@@ -42,7 +42,8 @@
       "patch_scripts": [
         "scripts/provider_patches/movix_multi_source.py",
         "scripts/provider_patches/vf_catalogue_recovery.py",
-        "scripts/provider_patches/stream_output_sanitizer_v5.py"
+        "scripts/provider_patches/stream_output_sanitizer_v5.py",
+        "scripts/provider_patches/desktop_runtime_compat_v1.py"
       ],
       "patch_script_options": {
         "scripts/provider_patches/stream_output_sanitizer_v5.py": {
@@ -83,6 +84,9 @@
             "fstream"
           ],
           "max_discovery_scripts": 10
+        },
+        "scripts/provider_patches/desktop_runtime_compat_v1.py": {
+          "normalize_missing_episodes": true
         }
       },
       "official_hub": "https://movix.online/",
@@ -128,7 +132,8 @@
         "scripts/provider_patches/vf_catalogue_recovery.py",
         "scripts/provider_patches/stream_output_sanitizer_v5.py",
         "scripts/provider_patches/frenchstream_dle_catalogue.py",
-        "scripts/provider_patches/nuvio_tv_target_media_v4.py"
+        "scripts/provider_patches/nuvio_tv_target_media_v4.py",
+        "scripts/provider_patches/desktop_runtime_compat_v1.py"
       ],
       "patch_script_options": {
         "scripts/provider_patches/stream_output_sanitizer_v5.py": {
@@ -177,6 +182,9 @@
             "ctfassets.net",
             "sc-cdn.net"
           ]
+        },
+        "scripts/provider_patches/desktop_runtime_compat_v1.py": {
+          "normalize_missing_episodes": true
         }
       },
       "official_hub": "https://fstream.org/",
@@ -241,6 +249,9 @@
           "provider_name": "StreamZo",
           "max_candidates": 14,
           "timeout_ms": 14000
+        },
+        "scripts/provider_patches/desktop_runtime_compat_v1.py": {
+          "normalize_missing_episodes": true
         }
       },
       "manifest_overrides": {
@@ -252,7 +263,8 @@
         "scripts/provider_patches/vf_catalogue_recovery.py",
         "scripts/provider_patches/stream_output_sanitizer_v5.py",
         "scripts/provider_patches/streamzo_public_catalogue.py",
-        "scripts/provider_patches/nuvio_tv_direct_media_v2.py"
+        "scripts/provider_patches/nuvio_tv_direct_media_v2.py",
+        "scripts/provider_patches/desktop_runtime_compat_v1.py"
       ],
       "published_types": [
         "movie",
@@ -309,7 +321,19 @@
         "movie",
         "tv",
         "anime"
-      ]
+      ],
+      "patch_scripts": [
+        "scripts/provider_patches/desktop_runtime_compat_v1.py"
+      ],
+      "patch_script_options": {
+        "scripts/provider_patches/desktop_runtime_compat_v1.py": {
+          "normalize_missing_episodes": true,
+          "domain_replacements": {
+            "api.purstream.club": "api.purstream.art",
+            "purstream.club": "purstream.art"
+          }
+        }
+      }
     },
     "vidfast": {
       "replacements": {
@@ -428,6 +452,9 @@
           "probe_all_urls": false,
           "max_probes": 0,
           "min_vod_duration_seconds": 60
+        },
+        "scripts/provider_patches/desktop_runtime_compat_v1.py": {
+          "normalize_missing_episodes": true
         }
       },
       "required_values": [],
@@ -437,7 +464,8 @@
       },
       "patch_scripts": [
         "scripts/provider_patches/vf_catalogue_recovery.py",
-        "scripts/provider_patches/stream_output_sanitizer_v5.py"
+        "scripts/provider_patches/stream_output_sanitizer_v5.py",
+        "scripts/provider_patches/desktop_runtime_compat_v1.py"
       ],
       "published_types": [
         "movie",
@@ -548,7 +576,8 @@
       "required_route_values": [],
       "patch_scripts": [
         "scripts/provider_patches/vf_catalogue_recovery.py",
-        "scripts/provider_patches/stream_output_sanitizer_v5.py"
+        "scripts/provider_patches/stream_output_sanitizer_v5.py",
+        "scripts/provider_patches/desktop_runtime_compat_v1.py"
       ],
       "patch_script_options": {
         "scripts/provider_patches/stream_output_sanitizer_v5.py": {
@@ -584,6 +613,9 @@
           ],
           "blocked_path_patterns": [],
           "max_players": 8
+        },
+        "scripts/provider_patches/desktop_runtime_compat_v1.py": {
+          "normalize_missing_episodes": true
         }
       },
       "notes": [
@@ -707,7 +739,10 @@
         "Use the current HDHub4u terminal route and reject HTML/error bodies returned as HLS media."
       ],
       "official_hub": "https://hdhub4u.ec/",
-      "official_site": "https://new4.hdhub4u.cl"
+      "official_site": "https://new4.hdhub4u.cl",
+      "manifest_overrides": {
+        "enabled": false
+      }
     },
     "4khdhubnew": {
       "capability": "html_scraper"
@@ -943,8 +978,17 @@
       "runtime_domain_replacements": {},
       "official_hub": "https://t.me/s/hindmoviez/1975",
       "official_site": "https://hindmovie.icu",
-      "patch_script_options": {},
-      "required_values": []
+      "patch_script_options": {
+        "scripts/provider_patches/desktop_runtime_compat_v1.py": {
+          "normalize_missing_episodes": true,
+          "filter_episode_labels": true,
+          "max_series_streams": 24
+        }
+      },
+      "required_values": [],
+      "patch_scripts": [
+        "scripts/provider_patches/desktop_runtime_compat_v1.py"
+      ]
     },
     "kisskh": {
       "capability": "direct_media",
@@ -1142,10 +1186,17 @@
       ],
       "official_hub": "https://t.me/s/Wookafr2",
       "official_site": "https://wookafr.blog",
-      "patch_script_options": {},
+      "patch_script_options": {
+        "scripts/provider_patches/desktop_runtime_compat_v1.py": {
+          "normalize_missing_episodes": true
+        }
+      },
       "published_types": [
         "movie",
         "tv"
+      ],
+      "patch_scripts": [
+        "scripts/provider_patches/desktop_runtime_compat_v1.py"
       ]
     },
     "xpass": {
@@ -3400,7 +3451,7 @@
       "requires_direct_media": false,
       "observed_origins": [
         "https://hc-zf3c.vercel.app",
-        "https://new2.movies4u.clinic"
+        "https://new3.movies4u.clinic"
       ],
       "generated_from_manifest_or_stage": true
     },
@@ -3805,7 +3856,7 @@
         "https://vidoza.net",
         "https://lecteurvideo.com",
         "https://up4fun.top",
-        "https://wookafr.center",
+        "https://wookafr.blog",
         "https://npms.io",
         "https://kitsu.io",
         "https://arm.haglund.dev",
