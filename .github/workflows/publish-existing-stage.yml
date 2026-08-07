@@ -41,11 +41,12 @@ jobs:
       - name: Install pinned dependencies
         run: npm ci --ignore-scripts --no-audit --no-fund
 
-      - name: Build the exact final tree without temporary phase-two files
+      - name: Build the exact final tree without temporary instrumentation
         shell: bash
         run: |
           rm .github/workflows/publish-existing-stage.yml
           rm .github/triggers/publish-existing-stage
+          rm .github/workflows/sync-outcome.yml
           python scripts/generate_release_hashes.py
 
       - name: Verify exact final release tree
@@ -82,17 +83,23 @@ jobs:
           allowed = {
               ".github/workflows/publish-existing-stage.yml",
               ".github/triggers/publish-existing-stage",
+              ".github/workflows/sync-outcome.yml",
               "FILE-HASHES.json",
               "PATCH-SHA256SUMS.txt",
               "SHA256SUMS.json",
           }
-          changed = set(
-              subprocess.check_output(
-                  ["git", "status", "--porcelain", "--untracked-files=all"],
-                  text=True,
-              ).splitlines()
-          )
-          paths = {line[3:] for line in changed if len(line) >= 4}
+          status = subprocess.check_output(
+              ["git", "status", "--porcelain", "--untracked-files=all"],
+              text=True,
+          ).splitlines()
+          paths = set()
+          for line in status:
+              if len(line) < 4:
+                  continue
+              path = line[3:]
+              if " -> " in path:
+                  path = path.split(" -> ", 1)[1]
+              paths.add(path)
           unexpected = sorted(paths - allowed)
           if unexpected:
               raise SystemExit(f"unexpected final verification diff: {unexpected}")
@@ -104,8 +111,8 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A .github/workflows/publish-existing-stage.yml .github/triggers/publish-existing-stage FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json
-          git commit -m "chore: remove temporary phase-two runner"
+          git add -A .github/workflows/publish-existing-stage.yml .github/triggers/publish-existing-stage .github/workflows/sync-outcome.yml FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json
+          git commit -m "chore: remove temporary finalization instrumentation"
           git fetch origin main
           git rebase origin/main
           git push origin HEAD:main
