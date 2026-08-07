@@ -10,7 +10,7 @@ f1b0043a61ade1c57840be7b87298d0f47ce9606e4fad89d63719c547382d7fd  ./.github/trig
 40bceaaa72325c820a7094c53ad104d1c66f493f8b15c736867b0405e42b2845  ./.github/triggers/domain-refresh
 e7a90f4f6d410c85fe006e6d82d35a2152a40aa4eeef5edfe0ca7289088151cf  ./.github/triggers/export-nuvio-debug-context
 d44c04ca00c024c8f83bc0f911ee179fe80cd0c91541468610254dabd3c02e61  ./.github/triggers/extract-target-provider-routes-v3
-bac69e481c66f0757337cc3f98a58b80452c18bd3e86210a1622c71af1786ae1  ./.github/triggers/immutable-desktop-runtime
+445a12065e4163ab91fc5679df3f7922c48710fed0fb13ac9b038cc795ef0adb  ./.github/triggers/immutable-desktop-runtime
 ef854a2fef9aef258a5dc159fd358e864ad17a8aeca075fca0ceceea7d2c79aa  ./.github/triggers/interstellar-nuvio-matrix
 3118dc30bdfa7b6e8faf14cb5faae42aafffaffa8d47abbea7b7e1ec6368fff9  ./.github/triggers/nuvio-tv-target-diagnostics-v2
 5953a497f4600a4bb5becf6bef045cd417d0ace2fbf332432a28fdffb025a947  ./.github/triggers/promote-global-nuvio-tv-candidates
@@ -42,7 +42,7 @@ b21fae38a2251d6b068c01153f370f4c877796dbdc7ec3ff868580a9f610b384  ./.github/work
 93ff1bba340a5fc7be2adc1ac9624c6239f0add2eeff2f22efb8176e3ca76bad  ./.github/workflows/promote-target-media-v3.yml
 05800c238e51ab0a870d119fe017fd2ca1dd069e97d3cdb9b5c79d5f102b96f0  ./.github/workflows/promote-vf-repairs.yml
 c6978ee7d483687935a6e48317b910b56e986463dad0af0e168b1b3c7b7e27be  ./.github/workflows/publish-desktop-runtime-compat.yml
-d3d4d61365e2c4725948f518dd4ab3c3a87f3b5767c9be96243c5dedb7cb3135  ./.github/workflows/publish-immutable-desktop-runtime.yml
+7bb5c04c191c434aaff13baf046e130bece659c847930d420337c9b429b8900f  ./.github/workflows/publish-immutable-desktop-runtime.yml
 95f1066ae5a829f17b1c98a81df4534ca253d3285d0ba0a289719b949af3e78f  ./.github/workflows/publish-nuvio-tv-compat-v2.yml
 08c9120fd7c6ec8c948f0b321c2bc2267a3bff7cba26f3914096894c09244eed  ./.github/workflows/publish-nuvio-tv-compat.yml
 f91844f7729a368afdf03d0abfc764081e4c9101f85051138ec4d8cd24af833c  ./.github/workflows/publish-stable-url-activation-refresh.yml
@@ -71,7 +71,7 @@ dde8be97b5b024a829fe290e93f4ab71373ccb2d21e5d61a5183219cdf9755f7  ./CHANGELOG.md
 fbe392fa8275bf28a2ab2647c90a92e3d724b02373c698a31cee12ebc7a2155b  ./DELETE_DEEP_FALSE_REPAIRS.txt
 7f1c677847a1debfc8e619730cf74d4e9befef6719e52fc754d1faf677f1f3c6  ./DELETE_THESE_FILES.txt
 956d54af42f7b1940d317ab5c6104e1f463aab04496ebe2514e6de3c86cf4adc  ./DISCLAIMER.md
-1dfdd8aa812f56daed5b3f84c01b13d00f7a2e6df4a1a6bbb7a833b5672e5e23  ./FILE-HASHES.json
+246fb1bfee85bab12abdf4a801bd4c9ba44517ac513acdde1b59dc17247e350f  ./FILE-HASHES.json
 67569f75c0ad134fe479ccae3a9d19b7cb49151ec3255ce14c05ed15d6ce06b7  ./FILES-TO-UPDATE.txt
 e6e2c7c8cc5ae6304bf0ff13ea34d3c1d5b4916b1ffb146dc00a88b67e64162b  ./FILES-TO-UPLOAD.txt
 d2346459073bdd6996ec31b320737d2fb8fdada8b50ba9a91daa3d1c7e439ba3  ./FILES_INCLUDED.txt
@@ -82,7 +82,7 @@ c156259add0681615c08c28708cbb04d6fdbe4ea1be3c2d504515e3c987ec5ff  ./INSTALL.md
 3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986  ./LICENSE
 0bceed973068d87d9f36b3467d5763d3e7b13dca0601d4fe1a2294593f5da617  ./NOTICE
 11b13a2f8c96229a4e71626626671796ec3817e474ae066aad937c278b339cab  ./PR-NOTES-targeted-vf-repair.md
-22571b76748391cb2b6ed957d1d0988b4b84c9af18452ff272234a359e61c572  ./PROVENANCE.json
+78a90a18cf2a8706492349bbc53c21a04d00ed57dbc3b06c0760ace1f6865a48  ./PROVENANCE.json
 c266a8f947ee601e43fd2e9629e031bfbd39dd9197a87df79004f9c5de4247ba  ./README-MISE-A-JOUR.txt
 76c450a91576f0f2cf51c34b0fe9f09cdc7bdf1f72ef111dac7b11d3d53cb63b  ./README-V5-SECTION.md
 b2502439683b95ef3eea39ac057bc283db55ffa35191c42c9a087a15ff242cd9  ./README.md
@@ -94,7 +94,7 @@ c2b82ce22dc51ab3298f23dc8cb38ad38efd7f9d2beb398eb45d502a3b37e13b  ./RELEASE-5.20
 c27713e8f740c3e88f2003d8f4407288a323bc977d61202ae96e0e9652898424  ./RUN-LOCAL-GLOBAL-REPAIR.command
 7f825e11cf2ab9a89f43d9e13451117b5caebbba5b5b1ac08c530e5d12838836  ./SECURITY.md
 3d8e32a18c34de2abebca6a8aa1bba60d066e886982b8863c103a1c0c81157a4  ./SELECTION.md
-2d09e11bbb751a8635f1ecb50d2e4e9ff9b5a53cddea5b748b788b737f1e6ece  ./SHA256SUMS.json
+e7f042c28776211a56d599a5915db519e34d40481870c8fe9c38525410e2caae  ./SHA256SUMS.json
 a511c14b47c10b13367f878d7710f0e1d95bc5b615e63a3c9d14f5225f83f191  ./THIRD_PARTY_NOTICES.md
 d7931c3a5f0c5a9181538e5340d30136521fb75b971c396237ac4a8f5f79dfa3  ./UPDATE-SUMMARY.json
 f2f73277723038134a9bf00965774124053de8df438f6ba3f0f0752b03f7d607  ./UPSTREAMS.md
@@ -106,7 +106,7 @@ cf7b08b40bead829f5d0575f35d573bd65107c8c2be20bd42cd1b1eb6ded714a  ./assets/brand
 67b69437fc5167a562e76d1278b22f5e0c238c15d9d78c79a00f7fe6291f9e85  ./assets/branding/nuvio-providers-logo.png
 7d6ce31c1ee6fb6f7445d4f9a86980d03f9524f498997ef400e4107f7cc6f7ae  ./assets/branding/vibe-coded-badge.png
 d8328f56c71c9449a505117eca2145cde0bdb486c5818f95ed6208e26e604ede  ./automation/cineby-recovery.json
-6777e4ed175d1be716b8b7f96eeb9cfce069989c661d248d0db113a276a23426  ./automation/desktop-runtime-compat-v1.json
+99754824360d7ea0794d80cb38d69072bc3858e586c36e47f5f8e93bde6e6c38  ./automation/desktop-runtime-compat-v1.json
 5c224d00038acac6ee2f7a08447a633de0670cf4491332826b8695d759db04f4  ./automation/interstellar-nuvio-matrix.json
 643e4c367eaced19d19b1aa4170db08011247a0946fe17e634c3bd26ebba998f  ./automation/latest-runs.json
 a1b2b8d5865f4534a30ad5255985816bcfdc93e7b28cac06b1671dd1acceb439  ./automation/nuvio-tv-compat-v2-report.json
@@ -132,16 +132,16 @@ dc73d2dfc0d70697fba8f6c579fb99304177f89110edc72f6b1fa6c4a1db448b  ./diagnostics-
 3c6efa2928924dd590c57430653d9148766b324cc5f4a5391ce96b5e37c04dc1  ./health-config.json
 f42bb0c6d1732d4094b88c189ab3aa86c19259f329febbad017ed523338221ba  ./health-history.json
 18ec47241f1011aff4e4b7f93f91f404bb36d075a8aee7cd52bb86b5d9a644bc  ./health-report.json
-9d849e5ec0aaa021f528e7fda964685a0d3e044f960ab7267ad0860f4abf2938  ./manifest.json
+9a2aff06923ad4ad6e023e5822ab3a85e6b7295eb1b2ecb54d4c24d44d0725c6  ./manifest.json
 934fbda71d8e66a3394f608aedaab0946d80f3a95fa8b5a16b06a13eb79fc3db  ./nuvio-client-id-state.json
 f09ae713d9972a0c05f6320b8e41e9b0586c5985f68be9f97625b5a3d06fdc8b  ./package-lock.json
-1a700cd17740a3ed82afa94e498ed0f4ed35377156d3bdd4293efdb36643a7d0  ./package.json
+fac08a45a9efbcdc5569b1d0cd383c524f08ea0a308d3f90e8e19dc0d4e77548  ./package.json
 0371751f2f0238fc106444bea7abe8c686d18a700c323de21938f02ea25712c8  ./provider-activation-lkg.json
 3c8744f6b85002dcd11af63e1b150da8220df350a5fbdc49ae25c8cd48a0e2a1  ./provider-domain-history.json
 3500eea897641b5949739a029f66bd44e94be3fa1ee8a62149cbf23687d73dd1  ./provider-hub-report.json
 e9c77e87d1465bafc1749ceb9607eb7f4ab96683c06ffeefcd5bfd2307a7d7f9  ./provider-hubs.json
 4a5e95b0d00e9723ea6cbe1dbdde97b94729af24144a90b804ea76448d528c47  ./provider-lkg.json
-6788756281817757f895401069bef602a2db9cd134ee7d46ac5645390e3ab856  ./provider-overrides.json
+2f296418a13c31b96be9caa3e3b609bde75fe8a5c92ffa15ddf08322c67328b7  ./provider-overrides.json
 a1c4af90fc06e7fdbc3ad446ac72f2fe60d9ea5ae81f9bd8731bc2f0fb3befbf  ./provider-type-policy.json
 4fa19a3fc87a95baca10c73f90e4a4cd0007390f811cb2d4c835f387490bbbf2  ./providers/4khdhub--nuvio--4fa19a3fc87a95ba.js
 e64aea603b3c3786a9f03e2a7b5dbee7e5666918a0ad606aeec87469ffafc4ec  ./providers/4khdhubnew--published-baseline--e64aea603b3c3786.js
@@ -181,6 +181,7 @@ a5b5565452b28f36764f8119097309da115c5ab9f46703b8e58227c79972f441  ./providers/ci
 901624fdf5c4e24414915aef8785e37daf217c56a14300dc7763dff80576c556  ./providers/cinevibe--published-baseline--901624fdf5c4e244.js
 e1549e3093c7b378c12ea2227c07090f6a50376e139979446e2a96f27e3e119a  ./providers/cinevibe.js
 989d6ec5b657cd3c9411d25be8a1c1066a38d423fb16b5c36c10d296374e8472  ./providers/coflix--desktop-runtime-v1--989d6ec5b657cd3c.js
+ad6e927e5eb840f0e2a9ae1d832015ef8b3e72baac2b79129ad83b6eea1dd19d  ./providers/coflix--desktop-runtime-v1--ad6e927e5eb840f0.js
 48239f7b107a98b295b0ddec8ed38805503a75975e1bee320543d856d0baa87c  ./providers/coflix--nuvio--48239f7b107a98b2.js
 29128d8b2dac99a3ae3ff8e771ccbe14598efab021981b02867c7f3f7fc0e6c4  ./providers/ctgmovies--published-baseline--29128d8b2dac99a3.js
 11a20f7caa60aa7f845ef527d07178b7a0826c96d6350ff1f65b2211436d54d5  ./providers/desiflix--nuvio-tv-global--11a20f7caa60aa7f.js
@@ -189,10 +190,12 @@ e62064b45a10a505612be560f20cbd39ad34be7fa69c4fcafe51d9714f72aa05  ./providers/du
 fe8f2d36918ae4d5cab2bd248b4baf51dd6dc6b68b20e2666006089ff100ec7e  ./providers/dvdplay--published-baseline--fe8f2d36918ae4d5.js
 0e1475ba4e0d943681e2fe351a94a5c2aad2d8aa97dc68787d08eb5abbb9acdd  ./providers/einthusan--published-baseline--0e1475ba4e0d9436.js
 283284e818443cd3ef98ca58aaf0b2c594ecd61219881cb2561baf6c37e545e9  ./providers/fibwatch--published-baseline--283284e818443cd3.js
+2afeed1caf9914218f2958f8a3282a9d48fcc7457dd73cdb8b3d0c64835d51da  ./providers/flemmix--desktop-runtime-v1--2afeed1caf991421.js
 a58430372644248f280bbc21fae1422f53d777b262d33531b33991a9205744fe  ./providers/flemmix--desktop-runtime-v1--a58430372644248f.js
 e0c40c452aca0d6685426c739729bc7bca333a187f4dc2737295f7394ff3955f  ./providers/flemmix--nuvio--e0c40c452aca0d66.js
 7be5ee4f732f17250046ffea9cda0f9b78976badb79cc269887223068e8b8c5d  ./providers/french-manga--nuvio-tv-global--7be5ee4f732f1725.js
 87f344ef6e681b81c2c1f4f7b8fa1e6e77cc4cde4aab1331ca8ef723857cac9b  ./providers/french-manga.js
+68c1ad516983e0a199a0d59759f0a0ed1bf1f11a91ee3ccf7d5b7330e065e3ff  ./providers/frenchstream--desktop-runtime-v1--68c1ad516983e0a1.js
 8e84e538db76f55e4f6ef1e97e50491e7926d9af23b015a5fb527be4316473c7  ./providers/frenchstream--desktop-runtime-v1--8e84e538db76f55e.js
 38cf074196379a8d88534366e9bf9b04c9c5f95c0f1d985c8a346ca3f67a85fd  ./providers/frenchstream--nuvio--38cf074196379a8d.js
 0d23f6e9427957fd77d7603d8f04c0cf51b647ace372c46c55761845ccddc3e1  ./providers/goatapi--published-baseline--0d23f6e9427957fd.js
@@ -204,6 +207,7 @@ f6e1007a3cd2764bb6fba94531bf634cb91019e62b08c8308217f151fb0a68ce  ./providers/hd
 11124b38985b9780ad49e040b5d30a7143bc9541e27c7e314e70d9778a227af9  ./providers/hianime--aio--11124b38985b9780.js
 11124b38985b9780ad49e040b5d30a7143bc9541e27c7e314e70d9778a227af9  ./providers/hianime.js
 86b8c3a4dff3c98c05db88eb075936b2f4ec00d504b967f1150bdfbd6fa620ac  ./providers/hindmoviez--aio--86b8c3a4dff3c98c.js
+a4ca5188f597a72e50221d031c0661b625522fd22594898b6fcdd33d89e821c5  ./providers/hindmoviez--desktop-runtime-v1--a4ca5188f597a72e.js
 af69551545a4c73b0f3fb1a9498f406390f771a8f5724587515834eb1c292bc2  ./providers/hindmoviez--desktop-runtime-v1--af69551545a4c73b.js
 81b0afffb337390782cace12c5d657c6aa42765d05f5da986022284a99bafb98  ./providers/kisskh--aio--81b0afffb3373907.js
 668797edb270c5fed931b08e0c92ca6693420041838f3b8ef49e28ddb1e7e463  ./providers/kurage--published-baseline--668797edb270c5fe.js
@@ -217,6 +221,7 @@ d25ca5545a5e16c881eb5c37cd5851cfdce5ff1fd47b8f0a00ca38f29bdb5d37  ./providers/mo
 6796beaa02d57e69cb033eec47a14a3b74782a0d08bcfd260421f10d4041392e  ./providers/movieshunt--aio--6796beaa02d57e69.js
 6796beaa02d57e69cb033eec47a14a3b74782a0d08bcfd260421f10d4041392e  ./providers/movieshunt.js
 c90890640a4598443ae4a264547b9ce1d089952f5d19ac9ab74e6cf1e28e0a9f  ./providers/moviesmod--published-baseline--c90890640a459844.js
+1c3118519a12e8e09c3ae843669337bb1222e89aef9236fda9d8c3868622d2e4  ./providers/movix--desktop-runtime-v1--1c3118519a12e8e0.js
 ccf0c7599398a5dcdd72574960c86327df0fa661a1ba4928dcb958cf7cc240a7  ./providers/movix--desktop-runtime-v1--ccf0c7599398a5dc.js
 b31ef87b05d3a4f351d20872e33980b4de95d73461ce2c27327d64bde9653787  ./providers/movix--nuvio--b31ef87b05d3a4f3.js
 4ca91d321825979c065102e493f3b6b01d7b990ac3ee3412ac687a68ca0dcd9b  ./providers/mugiwarastream--published-baseline--4ca91d321825979c.js
@@ -230,6 +235,7 @@ f96d16c8b4e067394dd41f41a7fbc1a5bb1c3179c5198d35faaaa627e3cac02e  ./providers/on
 3abd719532e31536f5ef1a5b98802779d66b3b84b37fc084d83908b6ff57c217  ./providers/peachify--published-baseline--3abd719532e31536.js
 04c8664fd3977a3279fc262be15e2dde88b409e79eb27cc2ae0d1c0b1056b7f9  ./providers/persianstremio--published-baseline--04c8664fd3977a32.js
 e00e7b0d65b15622e0b6bcdce3ccc92d6226853197962348ced4af47343f07ab  ./providers/playimdb--aio--e00e7b0d65b15622.js
+b775666f1ae1afca487a3aa2e5c24a979c358c090b665123464779292a01bf70  ./providers/purstream--desktop-runtime-v1--b775666f1ae1afca.js
 d8d63f6dce60f59e8e25a73dbec5cad295d27344cdcd8763bf28870d3cede65e  ./providers/purstream--desktop-runtime-v1--d8d63f6dce60f59e.js
 8e14e434a2868d4fb8883f94536fd5af2c6e1d1ee8c3fa85a856baff2c832d35  ./providers/purstream--published-baseline--8e14e434a2868d4f.js
 02173d75d873826f33e7bd45bb1c7973e557845548a8634b3ed1a5161c89abb8  ./providers/purstream.js
@@ -238,6 +244,7 @@ b90ce3c9aceca167d9f97d57ba2487029b0dd75e61abc4d7e8ad1dd97864a1d5  ./providers/sh
 b90ce3c9aceca167d9f97d57ba2487029b0dd75e61abc4d7e8ad1dd97864a1d5  ./providers/showbox.js
 a9e7deb56fd5b3c93458e01fe7d32a764ee1defe3e88759dcb68f448006ded31  ./providers/streamflix--published-baseline--a9e7deb56fd5b3c9.js
 a9e7deb56fd5b3c93458e01fe7d32a764ee1defe3e88759dcb68f448006ded31  ./providers/streamflix.js
+493f4301f237d1a0ff0d1c5b18e5d366bd9af4fc8f0358cb3aa4c04483f101ee  ./providers/streamzo--desktop-runtime-v1--493f4301f237d1a0.js
 bd04c635e08cfe9caaa8e95ab20ad4b22e129af5b84758866c2c18799f327603  ./providers/streamzo--desktop-runtime-v1--bd04c635e08cfe9c.js
 5ee8d74abe45cd42b5f0a7a79f8807355dd46fde04a1b00e9d134c511b776c12  ./providers/streamzo--nuvio--5ee8d74abe45cd42.js
 b219dd8537e95a54f229bfaf4f991b5402c0b11875424b649addf3da3fae2235  ./providers/toflix--published-baseline--b219dd8537e95a54.js
@@ -266,6 +273,7 @@ cbf14d7c8fe2e76ed4aabc6a0dfa3677e3c0059fe6f6b1ac8d600065a7f4c359  ./providers/vo
 8e9b00d7aff4dd9a06f259b4a61d2a6a5b0cfd82d7210e70b6b14e71f0e911b7  ./providers/vostfree--published-baseline--8e9b00d7aff4dd9a.js
 8e9b00d7aff4dd9a06f259b4a61d2a6a5b0cfd82d7210e70b6b14e71f0e911b7  ./providers/vostfree.js
 1a87a44dbbfb3bc6e7757c401eb0730e994f8661a8cc3b77741c3b36ba522c90  ./providers/waveanime--published-baseline--1a87a44dbbfb3bc6.js
+054b693c64c21f01a2d209f6bfca0010b34fc9c5ee3e55e49bc59ce3403be71b  ./providers/wookafr--desktop-runtime-v1--054b693c64c21f01.js
 ee6f267f6560a2a4a30bf3be757a5218fb6e09b58b7d61609be88bcf7273a2d3  ./providers/wookafr--desktop-runtime-v1--ee6f267f6560a2a4.js
 4ce4c33e2fe1d23bea7263bf07d4b760ec50169aa0c7b925a7103efc15271b67  ./providers/wookafr--nuvio--4ce4c33e2fe1d23b.js
 b4c8e6c0dc198a2fa61c5b840da4659a19aa85393bbb0ac74cd617f030bd2fb9  ./providers/xpass--published-baseline--b4c8e6c0dc198a2f.js
@@ -315,7 +323,7 @@ cc4f6024d463ecf1bd1db022f1e8e38e960ae9d9e10009907c139cc7bd4770d9  ./scripts/prom
 3241a9cbc0490b5d79aacc2ab72b43f8ea3d1625dc719e8a936d4266dc263404  ./scripts/provider_dns_preflight.mjs
 a153815e6bede10bf7ced82b64cc35d6e70be04e2a33c0f24d3124956ed570c9  ./scripts/provider_patches/adaptive_domain_recovery.py
 6386eae15dc26fc9901eb9ae40e9720acfbfcb8e33f13b974bd7643243785012  ./scripts/provider_patches/adaptive_runtime_recovery.py
-e25ee6dec37139d23ab4d5c936bd0626ab65c4f664bdf1bd0f495a8ac68c0501  ./scripts/provider_patches/desktop_runtime_compat_v1.py
+6c11ec9ea2c5fe243a46e7a881faf2858c5f87d7272881a8a32ebbf850dbb486  ./scripts/provider_patches/desktop_runtime_compat_v1.py
 1b68bb86975d13bfb66ce683d7e9fcd8c7b974b9c919de83c0099ad9d84b8934  ./scripts/provider_patches/expose_strict_wrapper_original.py
 9cd62413b8cc8b5891dac287dedff161e439510beccece7820e28c83ca236411  ./scripts/provider_patches/frenchstream_detail_players.py
 67b3ad1b5be070db0ec5c49530b933bc4adf8516c231410c8459193f5e7af111  ./scripts/provider_patches/frenchstream_dle_catalogue.py
@@ -340,7 +348,7 @@ a09f710375c46c305d2d75f0f8ac8ab1baf075722898286112c5c1d46424521c  ./scripts/prov
 68ee9a3e25e0ffed250175c0659f1a66e21b339879768308b53c1a95cde9714d  ./scripts/provider_semantics.cjs
 83d15b348355f661fb98d4cfaaf59b3506a301dfc89e383fae806f823a35c0d2  ./scripts/provider_worker.cjs
 c02cc054da32b6ad8f6bad61c1a8e7a0013808602cb2d3738bde07ff5bff28a1  ./scripts/prune_unreferenced_providers.py
-b4f4bd1cd8552fac9d83eaf242eeca2a5eb1c2b0af1baf664cf8bd01a6695f25  ./scripts/publish_desktop_runtime_compat.py
+abf231812faebfd4f61546b26d0cefaeeffba3c34bcf2c7e90c1732b3e672b74  ./scripts/publish_desktop_runtime_compat.py
 72bba0f6c1d423854d1936c0d86998d0f2707b5ca87e4ff45428d6f16ebf3449  ./scripts/publish_nuvio_tv_compat.py
 6efb60e85a24bb795e0b8ff745b089f9ebb7bacb5bb79e1adb3e6b14fc1f977b  ./scripts/publish_nuvio_tv_compat_v2.py
 32226ac3700cec2667289b0d1b055c363ecc3b2ae2c3b78110be16e96034fea3  ./scripts/publish_targeted_vf_adapters.py
@@ -372,7 +380,7 @@ bb24bdf21f1f1eb1ecf571f0e3bd26211817f4b0ecd056890af0dbbcc944b00c  ./scripts/vali
 f0e8a0a92a833d9f160fe653ac5ab9da1a85dcf7536b50958a9170feb5469851  ./scripts/validate_route_overrides.py
 a8c39889531a2cf0c1bf8bcec3771fa58d30bfb76f321edd5c920469ebd17f02  ./scripts/validate_settings_pipeline.py
 3b0dbf3b33349d4524e1b2ea06831e16806fa64af21f129445f733493c30f005  ./scripts/validate_vf_projection.py
-f736bd51f66aa04524bc0847b95ce2b3b91036a9905e55c455b637c4d8633b8c  ./sources.json
+bfc556d859eb2c6c385e7e721f5cf9a9fa8111fc2418daac464d9df13282bbf9  ./sources.json
 4a9c7117858dc806ddea3183721f9978485144d7d65f939d7a384d997a42a583  ./sync-report.json
 a62ffdc8f85fe54833f6ced467528aab1530c5d2efe4b8ec3cfcb053543cdfcd  ./tests/adaptive_domain_recovery_test.py
 1f5fd15d12bef5d9aef85245fdcd8e3f025f99b52a5d4144517f556754e65654  ./tests/adaptive_runtime_repair_test.py
@@ -380,7 +388,7 @@ c40d4111713af54d268ddad96223fa7ae4d2bcec6531ec7786aafad28e1499eb  ./tests/catego
 873ecf5c5a69da6baa66e470fcdc87a08d91497ad3a28791a364d49c1ed93d4c  ./tests/ci_preservation_policy_test.py
 c427e84aab324c6bd41106ef305980cc42051206555b85357c3fb5076ef11654  ./tests/deep_health_integrity_test.py
 14ab6c26afda1060d6559f279780417860dd366c66a9c94853f1199570a90e1e  ./tests/deep_repair_rollback_test.py
-d666c088d9ed33ce111f38d4519a6e69e846a0d0d875ddd449e7d1e8577f4d0a  ./tests/desktop_runtime_compat_test.py
+0256a63eff755718fc7360c27221403e0359c662abce7e19444443fb0ca884be  ./tests/desktop_runtime_compat_test.py
 e3dc637c7226f102e8a2cbbc762022231e62318f53016ab02969d9efd49db6f4  ./tests/dns_preflight.test.mjs
 09cf0628fdd3d455c4b1ea2d0da0f65c193f09304e9e141d41f8f521f74323ab  ./tests/domain_refresh_finalizer_test.py
 fb7e0434886ddd448927933fda6da616897aded96fd47301c270fd870fe8d7f0  ./tests/domain_refresh_workflow_test.py
@@ -533,4 +541,4 @@ f679614bf1f955dcfea633d527e9ce40b56768ec3ff32648a651f565c121b70c  ./upstream-lkg
 f96d16c8b4e067394dd41f41a7fbc1a5bb1c3179c5198d35faaaa627e3cac02e  ./upstream-lkg/providers/f96d16c8b4e067394dd41f41a7fbc1a5bb1c3179c5198d35faaaa627e3cac02e.js
 fa98d90649af9a798c3cbe1c4340f3b0c4cd511acab0984805c05525cd845cd0  ./upstream-lkg/providers/fa98d90649af9a798c3cbe1c4340f3b0c4cd511acab0984805c05525cd845cd0.js
 fb5dd39cd94f67a0e106b1c7e7a63c40ed72654920938ba798aaea18d15c8b1a  ./upstream-lkg.json
-34c640c6ae66967c2868456cc3d0546a0f0bf6627cf1dbcc5ead28aedac194d3  ./vf/manifest.json
+35048a91570b3a6c4580eb95ed4c197f7171769930b2be9845d2814cec1f0a39  ./vf/manifest.json

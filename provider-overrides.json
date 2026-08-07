@@ -328,9 +328,23 @@
       "patch_script_options": {
         "scripts/provider_patches/desktop_runtime_compat_v1.py": {
           "normalize_missing_episodes": true,
-          "domain_replacements": {
-            "api.purstream.club": "api.purstream.art",
-            "purstream.club": "purstream.art"
+          "domain_failover": {
+            "host_prefixes": [
+              "api.purstream",
+              "purstream"
+            ],
+            "suffixes": [
+              "club",
+              "mx",
+              "ch",
+              "ac",
+              "cx",
+              "art",
+              "co",
+              "me",
+              "to",
+              "store"
+            ]
           }
         }
       }
