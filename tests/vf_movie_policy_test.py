@@ -8,22 +8,45 @@ overrides = json.loads((ROOT / 'provider-overrides.json').read_text())
 hubs = json.loads((ROOT / 'provider-hubs.json').read_text())['providers']
 manifest = json.loads((ROOT / 'manifest.json').read_text())['scrapers']
 activation = json.loads((ROOT / 'provider-activation-lkg.json').read_text())
+health_report = json.loads((ROOT / 'health-report.json').read_text())
 type_policy = json.loads((ROOT / 'provider-type-policy.json').read_text())['providers']
 by_id = {str(row['id']).lower(): row for row in manifest}
+promotion_by_id = {
+    str(row.get('id') or '').lower(): row
+    for row in health_report.get('providers', [])
+    if isinstance(row, dict) and str(row.get('id') or '').strip()
+}
 patches = overrides['provider_patches']
 official = overrides['official_domain_hubs']
 
-# Providers published for mainstream VF movie requests stay active. Network or
-# CI failures are diagnostic evidence and may not silently shrink the catalogue.
-expected_enabled_movie = {
+# Mainstream VF movie providers must remain represented as movie-capable
+# providers. Activation follows the current deep proof policy: a provider may
+# stay enabled, or this exact deep run must record a conclusive failed-gate
+# decision. CI-inconclusive/network-only evidence may never silently shrink the
+# catalogue. This mirrors validate_activation_preservation.py rather than
+# hard-coding stale activation forever.
+expected_vf_movie = {
     'purstream', 'frenchstream', 'streamzo', 'movix', 'coflix', 'wookafr',
     'flemmix', 'nakios', 'toflix', 'papadustream',
 }
-for provider_id in expected_enabled_movie:
+conclusive_disable_actions = {
+    'published-disabled-failed-gates',
+    'published-disabled-probation-or-performance',
+    'disabled-sustained-outage',
+}
+for provider_id in sorted(expected_vf_movie):
     row = by_id[provider_id]
-    assert row['enabled'] is True, provider_id
     assert 'movie' in row['supportedTypes'], provider_id
-    assert provider_id in activation['active_ids'], provider_id
+    if row['enabled'] is True:
+        assert provider_id in activation['active_ids'], provider_id
+        continue
+    report = promotion_by_id[provider_id]
+    action = str(report.get('action') or '')
+    assert report.get('enabled') is False, provider_id
+    assert action != 'published-disabled-ci-inconclusive-no-valid-runtime-evidence', provider_id
+    assert action in conclusive_disable_actions, (provider_id, action)
+    if action != 'disabled-sustained-outage':
+        assert report.get('failed_gates'), provider_id
 
 # User-confirmed mappings are exact and must survive future sync/repair jobs.
 assert by_id['toflix']['supportedTypes'] == ['movie', 'tv', 'anime']
