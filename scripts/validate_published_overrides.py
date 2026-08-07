@@ -69,6 +69,8 @@ def main() -> int:
 
     errors: list[str] = []
     removed: list[str] = []
+    normalized_provenance: list[str] = []
+    provenance_changed = False
     provenance_by_id = provenance.get("providers") or {}
 
     for cid, target in referenced.items():
@@ -83,6 +85,8 @@ def main() -> int:
 
         text = target.read_text(encoding="utf-8", errors="strict")
         cfg = patches.get(cid) if isinstance(patches.get(cid), dict) else {}
+        provider_provenance = provenance_by_id.get(cid) or {}
+        records = provider_provenance.get("local_patches") or []
         replacements = dict(global_replacements)
         replacements.update(cfg.get("replacements") or {})
         replacements.update(cfg.get("route_replacements") or {})
@@ -92,7 +96,6 @@ def main() -> int:
                 errors.append(f"{cid}: forbidden value remains in {target.relative_to(ROOT)}: {old}")
             # A destination is required only when this provider's provenance says
             # the corresponding replacement was actually applied.
-            records = (provenance_by_id.get(cid) or {}).get("local_patches") or []
             applied = any(
                 isinstance(record, dict)
                 and record.get("type") == "replace"
@@ -104,14 +107,16 @@ def main() -> int:
                 errors.append(f"{cid}: recorded replacement destination missing: {new}")
 
         required_values = [str(value) for value in cfg.get("required_values") or []]
-        records = (provenance_by_id.get(cid) or {}).get("local_patches") or []
+        effective_records: list[Any] = []
         for record in records:
             if not isinstance(record, dict) or record.get("type") != "patch_profile":
+                effective_records.append(record)
                 continue
             profile_name = str(record.get("profile") or "")
             profile = profiles.get(profile_name)
             if isinstance(profile, dict):
                 required_values.extend(str(value) for value in profile.get("required_values") or [])
+                effective_records.append(record)
                 continue
 
             # Adaptive runtime repairs are generated from live deep evidence and
@@ -120,10 +125,53 @@ def main() -> int:
             # require its immutable code marker in the exact published bundle.
             generated_marker = GENERATED_RUNTIME_PROFILE_MARKERS.get(profile_name)
             if generated_marker and str(record.get("phase") or "") == "runtime":
+                if generated_marker in text:
+                    required_values.append(generated_marker)
+                    effective_records.append(record)
+                    continue
+
+                # A preserved-current publication deliberately keeps the exact
+                # previously published artifact when the fresh deep result is
+                # inconclusive. Older provenance may still describe a runtime
+                # repair candidate that was later rejected/replaced. Such a
+                # record cannot describe this preserved artifact when its
+                # immutable marker is absent, so remove the stale provenance
+                # instead of requiring code that was never published. This is
+                # intentionally limited to the explicit preservation path;
+                # missing markers on newly promoted/repaired artifacts remain
+                # fatal below.
+                preserved = (
+                    str(provider_provenance.get("activation_mode") or "")
+                    == "preserved_current_ci_uncertain"
+                    and str(provider_provenance.get("preserved_reason") or "")
+                    == "ci_uncertain_kept_last_published_artifact"
+                )
+                if preserved:
+                    normalized_provenance.append(f"{cid}:{profile_name}")
+                    discarded = provider_provenance.setdefault(
+                        "discarded_stale_patch_records", []
+                    )
+                    audit = {
+                        "type": "patch_profile",
+                        "profile": profile_name,
+                        "phase": "runtime",
+                        "reason": "marker_absent_from_preserved_artifact",
+                    }
+                    if audit not in discarded:
+                        discarded.append(audit)
+                    provenance_changed = True
+                    continue
+
                 required_values.append(generated_marker)
+                effective_records.append(record)
                 continue
 
             errors.append(f"{cid}: provenance references unknown profile {profile_name}")
+            effective_records.append(record)
+
+        if effective_records != records:
+            provider_provenance["local_patches"] = effective_records
+            provenance_changed = True
 
         for required in dict.fromkeys(required_values):
             # Bare domains written by older resolver revisions are routing
@@ -156,6 +204,13 @@ def main() -> int:
 
     if errors:
         raise SystemExit("published override validation failed:\n- " + "\n- ".join(errors))
+    if provenance_changed:
+        PROVENANCE.write_text(
+            json.dumps(provenance, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
+    for item in normalized_provenance:
+        print(f"discarded stale preserved runtime provenance: {item}")
     for item in removed:
         print(f"removed stale unpatched provider: {item}")
     print("published override validation passed")
