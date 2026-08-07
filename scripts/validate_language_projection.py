@@ -35,7 +35,7 @@ def main() -> int:
     report = load(args.report.resolve())
     actual = load(args.vf.resolve())
     language_by_id = {
-        str(item.get("id", "")): str(item.get("manifest_ordering", {}).get("language_group", "other"))
+        str(item.get("id", "")).casefold(): str(item.get("manifest_ordering", {}).get("language_group", "other"))
         for item in report.get("providers", [])
         if isinstance(item, dict)
     }
@@ -44,9 +44,15 @@ def main() -> int:
     if actual != expected:
         expected_ids = ids(expected)
         actual_ids = ids(actual)
-        missing = [value for value in expected_ids if value not in set(actual_ids)]
-        extra = [value for value in actual_ids if value not in set(expected_ids)]
-        order_mismatch = not missing and not extra and expected_ids != actual_ids
+        expected_canonical = {value.casefold() for value in expected_ids}
+        actual_canonical = {value.casefold() for value in actual_ids}
+        missing = [value for value in expected_ids if value.casefold() not in actual_canonical]
+        extra = [value for value in actual_ids if value.casefold() not in expected_canonical]
+        order_mismatch = (
+            not missing
+            and not extra
+            and [value.casefold() for value in expected_ids] != [value.casefold() for value in actual_ids]
+        )
         details = [
             f"expected={len(expected_ids)} actual={len(actual_ids)}",
             f"missing={missing[:20]}",
