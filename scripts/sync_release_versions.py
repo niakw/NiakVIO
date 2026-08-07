@@ -34,6 +34,20 @@ def apply_client_activation_ids() -> None:
     module.apply_policy(bootstrap_active=False)
 
 
+def sync_npm_lockfile(version: str) -> None:
+    lock_path = ROOT / "package-lock.json"
+    if not lock_path.exists():
+        return
+    lock = load(lock_path)
+    lock["version"] = version
+    packages = lock.get("packages")
+    if isinstance(packages, dict):
+        root_package = packages.get("")
+        if isinstance(root_package, dict):
+            root_package["version"] = version
+    dump(lock_path, lock)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--version", help="Explicit authoritative version")
@@ -54,6 +68,7 @@ def main() -> int:
     package = load(package_path)
     package["version"] = version
     dump(package_path, package)
+    sync_npm_lockfile(version)
 
     sources_path = ROOT / "sources.json"
     sources = load(sources_path)
