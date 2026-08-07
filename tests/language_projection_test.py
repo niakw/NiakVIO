@@ -26,10 +26,12 @@ with tempfile.TemporaryDirectory() as tmp:
                 "enabled": True,
             },
             {
-                "id": "observed-vf",
+                # Nuvio client activation intentionally toggles id case. Runtime
+                # language evidence remains keyed by the canonical lower-case id.
+                "id": "OBSERVED-VF",
                 "filename": "providers/observed-vf.js",
                 "contentLanguage": ["en"],
-                "enabled": False,
+                "enabled": True,
             },
             {
                 "id": "english-only",
@@ -57,10 +59,10 @@ with tempfile.TemporaryDirectory() as tmp:
                 "enabled": True,
             },
             {
-                "id": "observed-vf",
+                "id": "OBSERVED-VF",
                 "filename": "../providers/observed-vf.js",
                 "contentLanguage": ["en"],
-                "enabled": False,
+                "enabled": True,
             },
         ],
     }
@@ -88,7 +90,7 @@ with tempfile.TemporaryDirectory() as tmp:
 
     # Any semantic drift in the nested projection is publication-blocking.
     tampered = json.loads(json.dumps(expected_vf))
-    tampered["scrapers"][1]["enabled"] = True
+    tampered["scrapers"][1]["enabled"] = False
     vf_path.write_text(json.dumps(tampered), encoding="utf-8")
     result = subprocess.run(command, text=True, capture_output=True)
     assert result.returncode == 1
