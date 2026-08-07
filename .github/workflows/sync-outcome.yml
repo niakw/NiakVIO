@@ -5,6 +5,8 @@ on:
     workflows:
       - "Check all manifests and publish Nuvio providers"
     types:
+      - requested
+      - in_progress
       - completed
 
 permissions:
@@ -12,7 +14,7 @@ permissions:
 
 jobs:
   record:
-    name: Persist completed sync run id
+    name: Persist Nuvio sync run id
     if: github.event.workflow_run.head_repository.full_name == github.repository
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -67,7 +69,7 @@ jobs:
           if git diff --cached --quiet; then
             exit 0
           fi
-          git commit -m "chore: record completed Nuvio sync run"
+          git commit -m "chore: record Nuvio sync run state"
           git push origin HEAD:ci-status
 
   cleanup:
