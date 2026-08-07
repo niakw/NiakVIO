@@ -46,9 +46,8 @@ CORE_FILES = [
 def digest(path: Path) -> str:
     value = hashlib.sha256()
     with path.open("rb") as handle:
-        for chunk in iter(lambda: path.read_bytes(), b""):
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
             value.update(chunk)
-            break
     return value.hexdigest()
 
 
