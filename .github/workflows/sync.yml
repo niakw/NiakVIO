@@ -210,7 +210,7 @@ jobs:
     needs: stage-and-test
     if: needs.stage-and-test.outputs.validation_mode == 'deep'
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 40
     permissions:
       contents: write
 
@@ -340,3 +340,43 @@ jobs:
           git fetch origin main
           git rebase origin/main
           git push origin HEAD:main
+
+      - name: Verify exact published main after push
+        shell: bash
+        run: |
+          git fetch origin main
+          git reset --hard origin/main
+          git clean -fdx
+          if [ -f package-lock.json ]; then
+            npm ci --ignore-scripts --no-audit --no-fund
+          else
+            npm install --ignore-scripts --no-audit --no-fund --package-lock=false
+          fi
+          npm test
+          python scripts/validate_activation_preservation.py
+          python scripts/validate_language_projection.py
+          python scripts/validate_release_integrity.py
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          def load(name):
+              return json.loads(Path(name).read_text(encoding="utf-8"))
+
+          package = load("package.json")
+          lock = load("package-lock.json")
+          manifest = load("manifest.json")
+          vf = load("vf/manifest.json")
+          versions = {
+              "package.json": package.get("version"),
+              "package-lock.json": lock.get("version"),
+              "package-lock.json packages['']": (lock.get("packages") or {}).get("", {}).get("version"),
+              "manifest.json": manifest.get("version"),
+              "vf/manifest.json": vf.get("version"),
+          }
+          unique = {str(value) for value in versions.values()}
+          if len(unique) != 1:
+              raise SystemExit(f"final published release version mismatch: {versions}")
+          print(f"final published release version synchronization passed: {unique.pop()}")
+          PY
+          git diff --exit-code
