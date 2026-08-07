@@ -11,6 +11,10 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 script_path = ROOT / "scripts" / "sync_release_versions.py"
 workflow = (ROOT / ".github/workflows/sync.yml").read_text(encoding="utf-8")
 assert "python scripts/sync_release_versions.py --manifest manifest.json" in workflow
+assert "python scripts/validate_activation_preservation.py" in workflow
+assert "python scripts/validate_language_projection.py" in workflow
+assert workflow.index("python scripts/sync_release_versions.py --manifest manifest.json") < workflow.index("python scripts/validate_language_projection.py")
+assert workflow.index("python scripts/validate_language_projection.py") < workflow.index("python scripts/generate_release_hashes.py")
 assert "git add manifest.json vf/manifest.json package.json package-lock.json sources.json" in workflow
 
 with tempfile.TemporaryDirectory() as tmp:
