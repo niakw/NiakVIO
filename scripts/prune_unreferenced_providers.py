@@ -1,11 +1,18 @@
 #!/usr/bin/env python3
 """Delete stale content-hashed provider bundles not referenced by published state.
 
-When manifest.next.json exists it is authoritative for the pending publication. Otherwise
-all published manifests are combined. Content-addressed last-known-good artifacts and
-canonical provider sources recorded in provenance are retained as reproducible inputs.
-Plain source files (for example providers/foo.js) are never removed; only generated
-bundles ending in ``--<16 hex>.js`` are eligible.
+When manifest.next.json exists, pruning retains the union of the pending manifest
+and every currently published manifest. This is required by the two-phase
+publication transaction: phase one may publish new provider bundles before the
+new manifest is committed, so bundles referenced by the still-live manifest
+must remain available until phase two succeeds.
+
+Once manifest.next.json has been consumed, the published manifests become
+solely authoritative and old bundles can be pruned normally. Content-addressed
+last-known-good artifacts and canonical provider sources recorded in provenance
+are retained as reproducible inputs. Plain source files (for example
+providers/foo.js) are never removed; only generated bundles ending in
+``--<16 hex>.js`` are eligible.
 """
 from __future__ import annotations
 
@@ -48,11 +55,17 @@ def normalize_provider_path(value: str) -> str | None:
 
 
 def choose_manifests(root: Path) -> list[Path]:
+    """Return every manifest whose references must survive this transaction.
+
+    A pending manifest is additive here rather than exclusive. Until it is
+    promoted, clients can still fetch the currently published manifest and all
+    bundles referenced by that manifest therefore remain live dependencies.
+    """
+    manifests: list[Path] = []
     pending = root / "manifest.next.json"
     if pending.is_file():
-        return [pending]
+        manifests.append(pending)
 
-    manifests = []
     main = root / "manifest.json"
     if main.is_file():
         manifests.append(main)
