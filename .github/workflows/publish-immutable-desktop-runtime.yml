@@ -1,4 +1,4 @@
-name: Publish immutable Desktop runtime bundles
+name: Finalize Niakvio repository cleanup
 
 on:
   workflow_dispatch:
@@ -12,18 +12,18 @@ permissions:
   issues: write
 
 concurrency:
-  group: immutable-desktop-runtime-publication
-  cancel-in-progress: true
+  group: nuvio-provider-publish
+  cancel-in-progress: false
 
 jobs:
-  publish:
+  cleanup:
     runs-on: ubuntu-latest
-    timeout-minutes: 58
+    timeout-minutes: 70
     steps:
-      - name: Mark publication started
+      - name: Mark cleanup started
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh issue comment 21 --repo "$GITHUB_REPOSITORY" --body "Immutable Desktop runtime publication started."
+        run: gh issue comment 21 --repo "$GITHUB_REPOSITORY" --body "Final repository cleanup started."
 
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -49,89 +49,164 @@ jobs:
       - name: Install dependencies
         run: npm ci --ignore-scripts --no-audit --no-fund
 
-      - name: Generate immutable Desktop bundles
-        id: generate
+      - name: Remove superseded workflows, triggers and scratch artifacts
+        shell: bash
         run: |
-          cp manifest.json "$RUNNER_TEMP/manifest.before.json"
-          python scripts/publish_desktop_runtime_compat.py
-          python - <<'PY'
-          import json
-          from pathlib import Path
+          set -euo pipefail
+          git rm -f --ignore-unmatch -- \
+            .github/workflows/audit-all-nuvio-tv-providers-v2.yml \
+            .github/workflows/audit-all-nuvio-tv-providers.yml \
+            .github/workflows/capture-target-player-pages.yml \
+            .github/workflows/diagnose-provider-activation.yml \
+            .github/workflows/export-nuvio-debug-context.yml \
+            .github/workflows/extract-target-provider-routes-v3.yml \
+            .github/workflows/interstellar-nuvio-matrix.yml \
+            .github/workflows/latest-runs-compact.yml \
+            .github/workflows/nuvio-tv-target-diagnostics-v2.yml \
+            .github/workflows/promote-global-nuvio-tv-candidates.yml \
+            .github/workflows/promote-target-media-v3.yml \
+            .github/workflows/promote-vf-repairs.yml \
+            .github/workflows/publish-desktop-runtime-compat.yml \
+            .github/workflows/publish-nuvio-tv-compat-v2.yml \
+            .github/workflows/publish-nuvio-tv-compat.yml \
+            .github/workflows/publish-stable-url-activation-refresh.yml \
+            .github/workflows/publish-targeted-vf-adapters.yml \
+            .github/workflows/quality-audit.yml \
+            .github/workflows/reactivate-strict-main-providers.yml \
+            .github/workflows/recover-nuvio-regressions-v2.yml \
+            .github/workflows/recover-nuvio-regressions.yml \
+            .github/workflows/repository-cleanup.yml \
+            .github/workflows/restore-provider-activation.yml \
+            .github/workflows/resume-publish.yml \
+            .github/workflows/retry-unavailable.yml \
+            .github/workflows/targeted-provider-route-diagnostics.yml \
+            .github/workflows/validate-global-hls-repair.yml \
+            .github/workflows/validate-nuvio-install-url.yml \
+            .github/workflows/vf-provider-repair.yml \
+            .github/triggers/action-run-index \
+            .github/triggers/audit-all-nuvio-tv-providers \
+            .github/triggers/audit-all-nuvio-tv-providers-v2 \
+            .github/triggers/capture-target-player-pages \
+            .github/triggers/export-nuvio-debug-context \
+            .github/triggers/extract-target-provider-routes-v3 \
+            .github/triggers/interstellar-nuvio-matrix \
+            .github/triggers/nuvio-tv-target-diagnostics-v2 \
+            .github/triggers/promote-global-nuvio-tv-candidates \
+            .github/triggers/promote-target-media-v3 \
+            .github/triggers/promote-vf-repairs \
+            .github/triggers/publish-desktop-runtime-compat \
+            .github/triggers/publish-nuvio-tv-compat \
+            .github/triggers/publish-nuvio-tv-compat-v2 \
+            .github/triggers/publish-stable-url-activation-refresh \
+            .github/triggers/publish-targeted-vf-adapters \
+            .github/triggers/reactivate-strict-main-providers \
+            .github/triggers/recover-nuvio-regressions \
+            .github/triggers/repository-cleanup-v1 \
+            .github/triggers/restore-provider-activation \
+            .github/triggers/targeted-provider-route-diagnostics \
+            .github/triggers/validate-nuvio-install-url \
+            .github/triggers/vf-provider-repair \
+            .github/cleanup-plan.md \
+            automation/latest-runs.json \
+            automation/interstellar-nuvio-matrix.json \
+            automation/nuvio-tv-compat-v2-report.json \
+            APPLY-NOTE.txt \
+            DEEP-LOG-AUDIT-2026-08-03.md \
+            DEEP-LOG-LINES-2026-08-03.csv \
+            DEEP-REPAIR-LINES-2026-08-03.csv \
+            DELETE_DEEP_FALSE_REPAIRS.txt \
+            DELETE_THESE_FILES.txt \
+            FILES-TO-UPDATE.txt \
+            PR-NOTES-targeted-vf-repair.md \
+            README-MISE-A-JOUR.txt \
+            README-V5-SECTION.md \
+            UPDATE-SUMMARY.json
 
-          expected = {
-              'coflix', 'frenchstream', 'movix', 'streamzo',
-              'flemmix', 'wookafr', 'hindmoviez', 'purstream',
-          }
-          report = json.loads(Path('automation/desktop-runtime-compat-v1.json').read_text(encoding='utf-8'))
-          manifest = json.loads(Path('manifest.json').read_text(encoding='utf-8'))
-          rows = {str(row.get('id', '')).casefold(): row for row in manifest.get('scrapers', [])}
-          assert expected == set(report.get('published', [])), report
-          for provider_id in expected:
-              row = rows[provider_id]
-              assert '--desktop-runtime-v1--' in row['filename'], row
-              text = Path(row['filename']).read_text(encoding='utf-8', errors='replace')
-              assert 'NUVIO_DESKTOP_RUNTIME_COMPAT_V1' in text, provider_id
-          if rows.get('4khdhubnew', {}).get('enabled'):
-              assert rows.get('4khdhub', {}).get('enabled') is False, rows.get('4khdhub')
-          purstream = Path(rows['purstream']['filename']).read_text(encoding='utf-8', errors='replace')
-          assert '"hostPrefixes":["api.purstream","purstream"]' in purstream
-          assert '"suffixes":["club","mx","ch","ac","cx","art","co","me","to","store"]' in purstream
-          assert '"api.purstream.club":"api.purstream.art"' not in purstream
-          hindmoviez = Path(rows['hindmoviez']['filename']).read_text(encoding='utf-8', errors='replace')
-          assert '"maxSeriesStreams":24' in hindmoviez
-          assert '"filterEpisodeLabels":true' in hindmoviez
+      - name: Prune unreferenced provider bundles safely
+        run: python scripts/prune_unreferenced_providers.py
+
+      - name: Synchronize release metadata and npm lockfile
+        run: python scripts/sync_release_versions.py --manifest manifest.json
+
+      - name: Assert canonical Desktop sources and interim CI surface
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          canonical = [
+              'providers/coflix--nuvio--48239f7b107a98b2.js',
+              'providers/frenchstream--nuvio--38cf074196379a8d.js',
+              'providers/movix--nuvio--b31ef87b05d3a4f3.js',
+              'providers/streamzo--nuvio--5ee8d74abe45cd42.js',
+              'providers/flemmix--nuvio--e0c40c452aca0d66.js',
+              'providers/wookafr--nuvio--4ce4c33e2fe1d23b.js',
+              'providers/hindmoviez--aio--86b8c3a4dff3c98c.js',
+              'providers/purstream--published-baseline--8e14e434a2868d4f.js',
+          ]
+          missing = [path for path in canonical if not Path(path).is_file()]
+          assert not missing, missing
+          workflows = sorted(path.name for path in Path('.github/workflows').glob('*.yml'))
+          expected_workflows = sorted([
+              'availability.yml', 'domain-refresh.yml',
+              'publish-immutable-desktop-runtime.yml', 'sync.yml',
+              'validate-desktop-runtime-compat.yml',
+          ])
+          assert workflows == expected_workflows, (workflows, expected_workflows)
+          triggers = sorted(path.name for path in Path('.github/triggers').iterdir() if path.is_file())
+          assert triggers == sorted(['deep-provider-repair','domain-refresh','immutable-desktop-runtime']), triggers
+          print('interim cleanup surface validated')
           PY
 
-      - name: Bump and synchronize release version
-        id: version
-        run: |
-          python scripts/bump_release_patch_if_manifest_changed.py --previous "$RUNNER_TEMP/manifest.before.json" --manifest manifest.json
-          python scripts/sync_release_versions.py --manifest manifest.json
-
-      - name: Validate VF projection
-        id: vf
-        run: python scripts/validate_vf_projection.py
-
       - name: Validate Desktop runtime compatibility
-        id: desktop
         run: python tests/desktop_runtime_compat_test.py
 
-      - name: Run repository regression tests
-        id: regression
+      - name: Run full repository regression suite
         shell: bash
         run: |
           set -o pipefail
-          npm test 2>&1 | tee "$RUNNER_TEMP/immutable-desktop-regression.log"
+          npm test 2>&1 | tee "$RUNNER_TEMP/final-cleanup-regression.log"
 
-      - name: Generate release hashes
-        id: hashes
-        run: python scripts/generate_release_hashes.py
+      - name: Regenerate and validate release integrity
+        run: |
+          python scripts/generate_release_hashes.py
+          python scripts/validate_release_integrity.py
+          node scripts/validate_provider_semantics.cjs
+          python scripts/validate_activation_preservation.py
+          python scripts/validate_vf_projection.py
 
-      - name: Validate release integrity
-        id: integrity
-        run: python scripts/validate_release_integrity.py
+      - name: Remove final temporary workflow and trigger
+        run: |
+          git rm -f -- .github/workflows/publish-immutable-desktop-runtime.yml .github/triggers/immutable-desktop-runtime
+          python scripts/generate_release_hashes.py
+          python scripts/validate_release_integrity.py
+          python - <<'PY'
+          from pathlib import Path
+          workflows = sorted(path.name for path in Path('.github/workflows').glob('*.yml'))
+          assert workflows == sorted(['availability.yml','domain-refresh.yml','sync.yml','validate-desktop-runtime-compat.yml']), workflows
+          triggers = sorted(path.name for path in Path('.github/triggers').iterdir() if path.is_file())
+          assert triggers == sorted(['deep-provider-repair','domain-refresh']), triggers
+          canonical = [
+              'providers/coflix--nuvio--48239f7b107a98b2.js',
+              'providers/frenchstream--nuvio--38cf074196379a8d.js',
+              'providers/movix--nuvio--b31ef87b05d3a4f3.js',
+              'providers/streamzo--nuvio--5ee8d74abe45cd42.js',
+              'providers/flemmix--nuvio--e0c40c452aca0d66.js',
+              'providers/wookafr--nuvio--4ce4c33e2fe1d23b.js',
+              'providers/hindmoviez--aio--86b8c3a4dff3c98c.js',
+              'providers/purstream--published-baseline--8e14e434a2868d4f.js',
+          ]
+          missing = [path for path in canonical if not Path(path).is_file()]
+          assert not missing, missing
+          print('final CI surface validated: 4 workflows, 2 triggers, 8 canonical sources')
+          PY
 
-      - name: Validate provider semantics
-        id: semantics
-        run: node scripts/validate_provider_semantics.cjs
-
-      - name: Validate activation preservation
-        id: activation
-        run: python scripts/validate_activation_preservation.py
-
-      - name: Commit immutable runtime release
-        id: publish
+      - name: Commit validated cleanup
         shell: bash
         run: |
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add manifest.json vf/manifest.json provider-overrides.json PROVENANCE.json \
-            package.json sources.json nuvio-client-id-state.json \
-            providers/*--desktop-runtime-v1--*.js \
-            automation/desktop-runtime-compat-v1.json \
-            FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json
-          git commit -m "fix: publish immutable Nuvio Desktop runtime bundles"
+          git add -A
+          git commit -m "chore: consolidate repository automation"
           for attempt in 1 2 3 4 5; do
             git fetch origin main
             if git rebase origin/main && git push origin HEAD:main; then
@@ -142,25 +217,24 @@ jobs:
           done
           exit 1
 
-      - name: Mark publication completed
+      - name: Mark cleanup completed
         if: success()
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh issue comment 21 --repo "$GITHUB_REPOSITORY" --body "Immutable Desktop runtime publication completed successfully."
+        run: gh issue comment 21 --repo "$GITHUB_REPOSITORY" --body "Final repository cleanup completed successfully: 4 permanent workflows, 2 triggers, synchronized lockfile, 8 canonical Desktop sources preserved, full regression and release integrity passed."
 
-      - name: Mark publication failed with stage
+      - name: Mark cleanup failed
         if: failure()
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          set -euo pipefail
-          report="$RUNNER_TEMP/immutable-desktop-failure.txt"
-          printf '%s\n\n' "Immutable Desktop runtime publication failed. generate=${{ steps.generate.outcome }} version=${{ steps.version.outcome }} vf=${{ steps.vf.outcome }} desktop=${{ steps.desktop.outcome }} regression=${{ steps.regression.outcome }} hashes=${{ steps.hashes.outcome }} integrity=${{ steps.integrity.outcome }} semantics=${{ steps.semantics.outcome }} activation=${{ steps.activation.outcome }} publish=${{ steps.publish.outcome }}" > "$report"
-          if [ -f "$RUNNER_TEMP/immutable-desktop-regression.log" ]; then
+          report="$RUNNER_TEMP/final-cleanup-failure.txt"
+          printf '%s\n\n' 'Final repository cleanup failed. No cleanup commit was published.' > "$report"
+          if [ -f "$RUNNER_TEMP/final-cleanup-regression.log" ]; then
             printf '%s\n' 'Regression tail:' >> "$report"
             printf '%s\n' '```text' >> "$report"
-            tail -n 45 "$RUNNER_TEMP/immutable-desktop-regression.log" >> "$report"
+            tail -n 60 "$RUNNER_TEMP/final-cleanup-regression.log" >> "$report"
             printf '%s\n' '```' >> "$report"
           fi
           gh issue comment 21 --repo "$GITHUB_REPOSITORY" --body-file "$report"
