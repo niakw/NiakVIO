@@ -324,7 +324,7 @@ jobs:
           python scripts/validate_language_projection.py
           python scripts/generate_release_hashes.py
           python scripts/validate_release_integrity.py
-          git add manifest.json vf/manifest.json package.json package-lock.json sources.json FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json
+          git add manifest.json vf/manifest.json package.json package-lock.json sources.json nuvio-client-id-state.json FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json
           if [ -d providers ]; then
             git add -A providers
           fi
