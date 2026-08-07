@@ -1,5 +1,11 @@
 #!/usr/bin/env python3
-"""Generate deterministic release checksum inventories without circular hashes."""
+"""Generate deterministic release checksum inventories without circular hashes.
+
+Release inventories cover code, manifests, provider artifacts and durable
+configuration. Mutable operational telemetry that is intentionally updated by
+an independent diagnostics workflow is excluded; otherwise a harmless
+availability refresh would invalidate an otherwise immutable published release.
+"""
 from __future__ import annotations
 
 import hashlib
@@ -15,6 +21,13 @@ IGNORED_PARTS = {
     "health-output",
     "checked-artifact",
     "__pycache__",
+}
+# These reports are runtime telemetry, not release inputs. They are updated by
+# the independent availability workflow between releases and therefore cannot
+# participate in an immutable release checksum inventory.
+IGNORED_FILES = {
+    "availability-history.json",
+    "availability-report.json",
 }
 CORE_FILES = [
     "package.json",
@@ -33,8 +46,9 @@ CORE_FILES = [
 def digest(path: Path) -> str:
     value = hashlib.sha256()
     with path.open("rb") as handle:
-        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+        for chunk in iter(lambda: path.read_bytes(), b""):
             value.update(chunk)
+            break
     return value.hexdigest()
 
 
@@ -45,6 +59,8 @@ def inventory(*, include_file_hashes: bool) -> dict[str, str]:
             continue
         relative = path.relative_to(ROOT).as_posix()
         if any(part in IGNORED_PARTS for part in path.relative_to(ROOT).parts):
+            continue
+        if relative in IGNORED_FILES:
             continue
         if relative == "PATCH-SHA256SUMS.txt":
             continue
@@ -83,6 +99,7 @@ def main() -> int:
                 "release": version,
                 "algorithm": "sha256",
                 "excluded_generated_files": sorted(GENERATED),
+                "excluded_mutable_operational_files": sorted(IGNORED_FILES),
                 "files": files,
             },
             ensure_ascii=False,
