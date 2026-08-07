@@ -4,6 +4,7 @@ on:
   workflow_run:
     workflows:
       - "Check all manifests and publish Nuvio providers"
+      - "Publish existing validated Nuvio stage"
     types:
       - requested
       - in_progress
@@ -14,7 +15,7 @@ permissions:
 
 jobs:
   record:
-    name: Persist Nuvio sync run id
+    name: Persist Nuvio workflow run id
     if: github.event.workflow_run.head_repository.full_name == github.repository
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -69,35 +70,5 @@ jobs:
           if git diff --cached --quiet; then
             exit 0
           fi
-          git commit -m "chore: record Nuvio sync run state"
+          git commit -m "chore: record Nuvio workflow run state"
           git push origin HEAD:ci-status
-
-  cleanup:
-    name: Remove temporary run instrumentation after successful deep push
-    needs: record
-    if: >-
-      github.event.workflow_run.head_repository.full_name == github.repository &&
-      github.event.workflow_run.event == 'push' &&
-      github.event.workflow_run.conclusion == 'success'
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - name: Checkout final main state
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-        with:
-          ref: main
-          fetch-depth: 0
-
-      - name: Remove recorder and refresh final release hashes
-        shell: bash
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          rm .github/workflows/sync-outcome.yml
-          python scripts/generate_release_hashes.py
-          python scripts/validate_release_integrity.py
-          git add -A .github/workflows/sync-outcome.yml FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json
-          git commit -m "chore: remove temporary sync run instrumentation"
-          git fetch origin main
-          git rebase origin/main
-          git push origin HEAD:main
