@@ -32,12 +32,21 @@ assert run(valid_health,valid_repairs).returncode==0
 contained_health={'schema_version':66,'results':[{'key':'source:contained','tests':[{'status':'no_streams','failure_class':'content_lookup_completed_no_streams','worker_ok':True,'network_observations':[{'path_pattern':'/[object%20Object]/','status':None,'ok':False,'error_code':'NUVIO_INVALID_REQUEST_ARGUMENT'}]}]}]}
 assert run(contained_health,{'schema_version':2,'rounds':[]}).returncode==0
 
+# A fixture may be classified runtime_error from a contained invocation attempt
+# while the worker itself completed successfully. The structured error can live
+# in network/invocation evidence instead of the top-level error_details field.
+# This is the Desiflix shape observed in the live deep run.
+distributed_runtime_health={'schema_version':66,'results':[{'key':'aio:desiflix','tests':[{'fixture':{'label':'Breaking Bad S01E01'},'status':'runtime_error','failure_class':'invalid_request_arguments','worker_ok':True,'error_details':None,'network_observations':[{'path_pattern':'/search','status':None,'ok':False,'error_code':'NUVIO_INVALID_REQUEST_ARGUMENT','error':'invalid provider request: an object was serialized into the request URL'}],'runtime_errors':[],'invocation_diagnostics':[]}]}]}
+assert run(distributed_runtime_health,{'schema_version':2,'rounds':[]}).returncode==0
+
 # A malformed path with an HTTP status did escape local containment and remains
-# a publication-blocking integrity failure.
+# a publication-blocking integrity failure. It also deliberately has no
+# structured exception diagnostic, so both guards must fire.
 bad_health={'schema_version':66,'results':[{'key':'source:bad','tests':[{'status':'runtime_error','worker_ok':False,'network_observations':[{'path_pattern':'/[object%20Object]/','status':400,'ok':False,'error_code':None}]}]}]}
 bad_repairs={'schema_version':2,'rounds':[{'round':1,'attempts':[],'accepted':[{'parent_key':'source:bad','streams_playable_before':0,'streams_playable_after':0,'reason':'strict_runtime_improvement'}],'rejected':[{'parent_key':'source:bad','status':'runtime_error'}]}]}
 result=run(bad_health,bad_repairs)
 assert result.returncode==1
+assert 'runtime_error without structured error details' in result.stdout
 assert 'malformed invocation request' in result.stdout
 assert 'accepted without playable-stream improvement' in result.stdout
 assert 'runtime repair error not preserved' in result.stdout
