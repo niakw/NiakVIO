@@ -3,10 +3,10 @@
 
 The desktop QuickJS runtime currently does not expose browser timer globals,
 while several provider recovery layers and the stream sanitizer use setTimeout
-for cancellation.  The wrapper installs safe no-op timer fallbacks before any
-getStreams call and can normalize missing TV episode arguments.  It can also
-filter/cap oversized series results for providers that otherwise enumerate an
-entire show when Nuvio Desktop omits season/episode.
+for cancellation. The wrapper installs safe no-op timer fallbacks before any
+getStreams call, normalizes missing TV episode arguments, can filter/cap
+oversized series results, and supports bounded evidence-backed domain failover
+without changing the public manifest URL.
 """
 from __future__ import annotations
 
@@ -25,6 +25,24 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
         for source, target in dict(raw_replacements).items()
         if str(source).strip() and str(target).strip()
     }
+
+    raw_failover = dict(options.get("domain_failover") or {})
+    failover_prefixes = []
+    for value in raw_failover.get("host_prefixes") or []:
+        item = str(value).strip().casefold().strip(".")
+        if item and item not in failover_prefixes:
+            failover_prefixes.append(item)
+    failover_suffixes = []
+    for value in raw_failover.get("suffixes") or []:
+        item = str(value).strip().casefold().strip(".")
+        if item and item not in failover_suffixes:
+            failover_suffixes.append(item)
+    domain_failover = (
+        {"hostPrefixes": failover_prefixes, "suffixes": failover_suffixes}
+        if failover_prefixes and failover_suffixes
+        else {}
+    )
+
     config = {
         "normalizeMissingEpisodes": bool(options.get("normalize_missing_episodes", False)),
         "fallbackSeason": max(1, int(options.get("fallback_season", 1))),
@@ -32,6 +50,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
         "filterEpisodeLabels": bool(options.get("filter_episode_labels", False)),
         "maxSeriesStreams": max(0, min(int(options.get("max_series_streams", 0)), 100)),
         "domainReplacements": domain_replacements,
+        "domainFailover": domain_failover,
     }
     payload = json.dumps(config, separators=(",", ":"))
     marker = f"{MARKER_PREFIX}:{hashlib.sha256(payload.encode('utf-8')).hexdigest()[:12]}"
@@ -44,33 +63,105 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
   "use strict";
   if(!g)return;
 
-  // Apply only explicitly configured, evidence-backed domain migrations.
-  // The wrapper is installed before getStreams is called, so providers using
-  // the global fetch bridge transparently receive the current endpoint.
-  if(config.domainReplacements&&typeof g.fetch==="function"){
+  // Install one shared fetch bridge. It supports exact evidence-backed host
+  // replacements and bounded suffix failover rules. Failover only applies to
+  // explicitly configured host prefixes and remembers the last healthy suffix.
+  if((config.domainReplacements||config.domainFailover)&&typeof g.fetch==="function"){
     var fetchKey="__nuvioDesktopFetchCompatV1",fetchState=g[fetchKey];
     if(!fetchState){
-      fetchState={native:g.fetch.bind(g),rules:Object.create(null)};
+      fetchState={native:g.fetch.bind(g),rules:Object.create(null),failovers:Object.create(null)};
       g[fetchKey]=fetchState;
-      g.fetch=function(input,init){
-        var next=input;
+
+      function requestWithUrl(input,urlText){
         try{
-          var raw=(typeof Request!=="undefined"&&input instanceof Request)?input.url:String(input);
-          var url=new URL(raw),replacement=fetchState.rules[String(url.hostname).toLowerCase()];
-          if(replacement){
-            url.hostname=replacement;
-            next=(typeof Request!=="undefined"&&input instanceof Request)?new Request(url.toString(),input):url.toString();
-          }
+          if(typeof Request!=="undefined"&&input instanceof Request)return new Request(urlText,input);
         }catch(_error){}
-        return fetchState.native(next,init);
+        return urlText;
+      }
+      function rewriteInitHost(init,oldHost,newHost){
+        if(!init||typeof init!=="object"||!oldHost||!newHost||oldHost===newHost)return init;
+        var copy={},key;
+        Object.keys(init).forEach(function(name){copy[name]=init[name];});
+        var headers=init.headers;
+        if(headers&&typeof headers==="object"&&!Array.isArray(headers)){
+          var nextHeaders={};
+          Object.keys(headers).forEach(function(name){
+            var value=headers[name];
+            nextHeaders[name]=typeof value==="string"?value.split(oldHost).join(newHost):value;
+          });
+          copy.headers=nextHeaders;
+        }
+        return copy;
+      }
+      function failoverMatch(hostname){
+        var keys=Object.keys(fetchState.failovers);
+        for(var i=0;i<keys.length;i++){
+          var prefix=keys[i];
+          if(hostname.indexOf(prefix+".")===0)return prefix;
+        }
+        return null;
+      }
+      function orderedSuffixes(rule){
+        var output=[];
+        if(rule.selected)output.push(rule.selected);
+        rule.suffixes.forEach(function(suffix){if(output.indexOf(suffix)===-1)output.push(suffix);});
+        return output;
+      }
+
+      g.fetch=async function(input,init){
+        var raw;
+        try{raw=(typeof Request!=="undefined"&&input instanceof Request)?input.url:String(input);}catch(_error){raw=String(input);}
+        var url;
+        try{url=new URL(raw);}catch(_error){return fetchState.native(input,init);}
+
+        var replacement=fetchState.rules[String(url.hostname).toLowerCase()];
+        if(replacement)url.hostname=replacement;
+
+        var prefix=failoverMatch(String(url.hostname).toLowerCase());
+        if(!prefix){
+          return fetchState.native(requestWithUrl(input,url.toString()),init);
+        }
+
+        var rule=fetchState.failovers[prefix],suffixes=orderedSuffixes(rule);
+        var lastResponse=null,lastError=null,originalHost=String(url.hostname);
+        for(var i=0;i<suffixes.length;i++){
+          var suffix=suffixes[i],candidate;
+          try{
+            candidate=new URL(url.toString());
+            candidate.hostname=prefix+"."+suffix;
+            var response=await fetchState.native(
+              requestWithUrl(input,candidate.toString()),
+              rewriteInitHost(init,originalHost,String(candidate.hostname))
+            );
+            lastResponse=response;
+            if(response&&response.ok){rule.selected=suffix;return response;}
+          }catch(error){
+            lastError=error;
+          }
+        }
+        if(lastResponse)return lastResponse;
+        throw lastError||new Error("Nuvio Desktop domain failover exhausted for "+prefix);
       };
     }
-    Object.keys(config.domainReplacements).forEach(function(source){
+
+    Object.keys(config.domainReplacements||{}).forEach(function(source){
       fetchState.rules[String(source).toLowerCase()]=String(config.domainReplacements[source]).toLowerCase();
     });
+    if(config.domainFailover&&Array.isArray(config.domainFailover.hostPrefixes)&&Array.isArray(config.domainFailover.suffixes)){
+      config.domainFailover.hostPrefixes.forEach(function(prefix){
+        prefix=String(prefix||"").toLowerCase();
+        if(!prefix)return;
+        var rule=fetchState.failovers[prefix]||{suffixes:[],selected:null};
+        config.domainFailover.suffixes.forEach(function(suffix){
+          suffix=String(suffix||"").toLowerCase();
+          if(suffix&&rule.suffixes.indexOf(suffix)===-1)rule.suffixes.push(suffix);
+        });
+        fetchState.failovers[prefix]=rule;
+      });
+    }
   }
 
-  // QuickJS Desktop has no browser timers.  Provider HTTP calls already have
+  // QuickJS Desktop has no browser timers. Provider HTTP calls already have
   // native client timeouts, so a non-firing fallback is safer than aborting
   // every request immediately or throwing ReferenceError.
   if(typeof g.setTimeout!=="function"){
