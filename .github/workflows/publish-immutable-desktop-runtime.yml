@@ -138,7 +138,10 @@ jobs:
 
       - name: Run repository regression tests
         id: regression
-        run: npm test
+        shell: bash
+        run: |
+          set -o pipefail
+          npm test 2>&1 | tee "$RUNNER_TEMP/immutable-desktop-regression.log"
 
       - name: Generate release hashes
         id: hashes
@@ -187,7 +190,17 @@ jobs:
 
       - name: Mark publication failed with stage
         if: failure()
+        shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh issue comment 21 --repo "$GITHUB_REPOSITORY" --body "Immutable Desktop runtime publication failed. generate=${{ steps.generate.outcome }} restore=${{ steps.restore.outcome }} version=${{ steps.version.outcome }} vf=${{ steps.vf.outcome }} desktop=${{ steps.desktop.outcome }} regression=${{ steps.regression.outcome }} hashes=${{ steps.hashes.outcome }} integrity=${{ steps.integrity.outcome }} semantics=${{ steps.semantics.outcome }} activation=${{ steps.activation.outcome }} publish=${{ steps.publish.outcome }}"
+          set -euo pipefail
+          report="$RUNNER_TEMP/immutable-desktop-failure.txt"
+          printf '%s\n\n' "Immutable Desktop runtime publication failed. generate=${{ steps.generate.outcome }} restore=${{ steps.restore.outcome }} version=${{ steps.version.outcome }} vf=${{ steps.vf.outcome }} desktop=${{ steps.desktop.outcome }} regression=${{ steps.regression.outcome }} hashes=${{ steps.hashes.outcome }} integrity=${{ steps.integrity.outcome }} semantics=${{ steps.semantics.outcome }} activation=${{ steps.activation.outcome }} publish=${{ steps.publish.outcome }}" > "$report"
+          if [ -f "$RUNNER_TEMP/immutable-desktop-regression.log" ]; then
+            printf '%s\n' 'Regression tail:' >> "$report"
+            printf '%s\n' '```text' >> "$report"
+            tail -n 45 "$RUNNER_TEMP/immutable-desktop-regression.log" >> "$report"
+            printf '%s\n' '```' >> "$report"
+          fi
+          gh issue comment 21 --repo "$GITHUB_REPOSITORY" --body-file "$report"
