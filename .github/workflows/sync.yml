@@ -90,6 +90,7 @@ jobs:
           python -m py_compile scripts/run_adaptive_deep_repair.py
           python tests/adaptive_runtime_repair_test.py
 
+      # Phase 0: repository safety. This does not decide provider activation.
       - name: Run repository regression tests
         run: npm test
 
@@ -99,6 +100,7 @@ jobs:
           python scripts/validate_settings_pipeline.py
           node scripts/validate_provider_semantics.cjs
 
+      # Phase 1: refresh trusted address sources, discover raw candidates, then solve DNS failures.
       - name: Resolve official provider hubs and retain last-known-good routes
         shell: bash
         run: |
@@ -129,6 +131,7 @@ jobs:
             --stage staging \
             --report health-output/dns-preflight-report.json
 
+      # Phase 2: apply deterministic provider routes only after DNS is known.
       - name: Apply provider runtime profiles and exact overrides
         run: |
           python scripts/build_provider_runtime_profiles.py
@@ -136,6 +139,8 @@ jobs:
           python scripts/build_provider_runtime_profiles.py --stage staging --apply-stage
           python scripts/validate_override_pipeline.py --stage staging
 
+      # Phase 3: execute provider access, generate provider-agnostic adaptive
+      # candidates for failures, then retest the exact generated JavaScript.
       - name: Test provider access and repair failed routes
         shell: bash
         env:
@@ -157,6 +162,8 @@ jobs:
             --health health-output/health-results.json \
             --repairs health-output/repair-report.json
 
+      # Phase 4: report quality from the final exact files. Promotion later
+      # enables only current DNS + access + playable-stream + quality passes.
       - name: Generate final diagnostics and route regressions
         run: |
           python scripts/generate_diagnostics.py --results health-output/health-results.json --output health-output
@@ -246,6 +253,7 @@ jobs:
           cp checked-artifact/provider-domain-history.json provider-domain-history.json
           python scripts/reapply_published_overrides.py
 
+      # Final provider artifacts are revalidated before promotion in this write-enabled job.
       - name: Apply strict gates, finite grace and exact runtime evidence
         env:
           NUVIO_STAGE: checked-artifact/staging
@@ -327,229 +335,3 @@ jobs:
           git fetch origin main
           git rebase origin/main
           git push origin HEAD:main
-
-  post-deep-hygiene:
-    name: Consolidate repository automation after requested deep run
-    needs:
-      - stage-and-test
-      - publish
-    if: github.event_name == 'push' && needs.stage-and-test.outputs.validation_mode == 'deep' && needs.publish.result == 'success'
-    runs-on: ubuntu-latest
-    timeout-minutes: 70
-    permissions:
-      contents: write
-      issues: write
-
-    steps:
-      - name: Mark hygiene pass started
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: gh issue comment 21 --repo "$GITHUB_REPOSITORY" --body "Final repository hygiene pass started after successful deep validation."
-
-      - name: Checkout latest published main
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-        with:
-          fetch-depth: 0
-
-      - name: Synchronize with latest main
-        run: |
-          git fetch origin main
-          git checkout -B main origin/main
-
-      - name: Set up Python
-        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
-        with:
-          python-version: "3.12"
-
-      - name: Set up Node.js
-        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
-        with:
-          node-version: "24"
-          package-manager-cache: false
-
-      - name: Install dependencies
-        run: npm ci --ignore-scripts --no-audit --no-fund
-
-      - name: Remove superseded workflow campaigns, triggers and scratch artifacts
-        shell: bash
-        run: |
-          set -euo pipefail
-          git rm -f --ignore-unmatch -- \
-            .github/workflows/audit-all-nuvio-tv-providers-v2.yml \
-            .github/workflows/audit-all-nuvio-tv-providers.yml \
-            .github/workflows/capture-target-player-pages.yml \
-            .github/workflows/diagnose-provider-activation.yml \
-            .github/workflows/export-nuvio-debug-context.yml \
-            .github/workflows/extract-target-provider-routes-v3.yml \
-            .github/workflows/interstellar-nuvio-matrix.yml \
-            .github/workflows/latest-runs-compact.yml \
-            .github/workflows/nuvio-tv-target-diagnostics-v2.yml \
-            .github/workflows/promote-global-nuvio-tv-candidates.yml \
-            .github/workflows/promote-target-media-v3.yml \
-            .github/workflows/promote-vf-repairs.yml \
-            .github/workflows/publish-desktop-runtime-compat.yml \
-            .github/workflows/publish-immutable-desktop-runtime.yml \
-            .github/workflows/publish-nuvio-tv-compat-v2.yml \
-            .github/workflows/publish-nuvio-tv-compat.yml \
-            .github/workflows/publish-stable-url-activation-refresh.yml \
-            .github/workflows/publish-targeted-vf-adapters.yml \
-            .github/workflows/quality-audit.yml \
-            .github/workflows/reactivate-strict-main-providers.yml \
-            .github/workflows/recover-nuvio-regressions-v2.yml \
-            .github/workflows/recover-nuvio-regressions.yml \
-            .github/workflows/repository-cleanup.yml \
-            .github/workflows/restore-provider-activation.yml \
-            .github/workflows/resume-publish.yml \
-            .github/workflows/retry-unavailable.yml \
-            .github/workflows/targeted-provider-route-diagnostics.yml \
-            .github/workflows/validate-global-hls-repair.yml \
-            .github/workflows/validate-nuvio-install-url.yml \
-            .github/workflows/vf-provider-repair.yml \
-            .github/triggers/action-run-index \
-            .github/triggers/audit-all-nuvio-tv-providers \
-            .github/triggers/audit-all-nuvio-tv-providers-v2 \
-            .github/triggers/capture-target-player-pages \
-            .github/triggers/export-nuvio-debug-context \
-            .github/triggers/extract-target-provider-routes-v3 \
-            .github/triggers/immutable-desktop-runtime \
-            .github/triggers/interstellar-nuvio-matrix \
-            .github/triggers/nuvio-tv-target-diagnostics-v2 \
-            .github/triggers/promote-global-nuvio-tv-candidates \
-            .github/triggers/promote-target-media-v3 \
-            .github/triggers/promote-vf-repairs \
-            .github/triggers/publish-desktop-runtime-compat \
-            .github/triggers/publish-nuvio-tv-compat \
-            .github/triggers/publish-nuvio-tv-compat-v2 \
-            .github/triggers/publish-stable-url-activation-refresh \
-            .github/triggers/publish-targeted-vf-adapters \
-            .github/triggers/reactivate-strict-main-providers \
-            .github/triggers/recover-nuvio-regressions \
-            .github/triggers/repository-cleanup-v1 \
-            .github/triggers/restore-provider-activation \
-            .github/triggers/targeted-provider-route-diagnostics \
-            .github/triggers/validate-nuvio-install-url \
-            .github/triggers/vf-provider-repair \
-            .github/cleanup-plan.md \
-            automation/latest-runs.json \
-            automation/interstellar-nuvio-matrix.json \
-            automation/nuvio-tv-compat-v2-report.json \
-            APPLY-NOTE.txt \
-            DEEP-LOG-AUDIT-2026-08-03.md \
-            DEEP-LOG-LINES-2026-08-03.csv \
-            DEEP-REPAIR-LINES-2026-08-03.csv \
-            DELETE_DEEP_FALSE_REPAIRS.txt \
-            DELETE_THESE_FILES.txt \
-            FILES-TO-UPDATE.txt \
-            PR-NOTES-targeted-vf-repair.md \
-            README-MISE-A-JOUR.txt \
-            README-V5-SECTION.md \
-            UPDATE-SUMMARY.json
-
-      - name: Prune providers and synchronize release metadata
-        run: |
-          python scripts/prune_unreferenced_providers.py
-          python scripts/sync_release_versions.py --manifest manifest.json
-
-      - name: Assert final permanent surface and canonical Desktop sources
-        run: |
-          python - <<'PY'
-          from pathlib import Path
-          workflows = sorted(path.name for path in Path('.github/workflows').glob('*.yml'))
-          assert workflows == sorted(['availability.yml','domain-refresh.yml','sync.yml','validate-desktop-runtime-compat.yml']), workflows
-          triggers = sorted(path.name for path in Path('.github/triggers').iterdir() if path.is_file())
-          assert triggers == sorted(['deep-provider-repair','domain-refresh']), triggers
-          canonical = [
-              'providers/coflix--nuvio--48239f7b107a98b2.js',
-              'providers/frenchstream--nuvio--38cf074196379a8d.js',
-              'providers/movix--nuvio--b31ef87b05d3a4f3.js',
-              'providers/streamzo--nuvio--5ee8d74abe45cd42.js',
-              'providers/flemmix--nuvio--e0c40c452aca0d66.js',
-              'providers/wookafr--nuvio--4ce4c33e2fe1d23b.js',
-              'providers/hindmoviez--aio--86b8c3a4dff3c98c.js',
-              'providers/purstream--published-baseline--8e14e434a2868d4f.js',
-          ]
-          missing = [path for path in canonical if not Path(path).is_file()]
-          assert not missing, missing
-          print('permanent surface validated: 4 workflows, 2 triggers, 8 canonical Desktop sources')
-          PY
-
-      - name: Revalidate Desktop compatibility on cleaned tree
-        run: python tests/desktop_runtime_compat_test.py
-
-      - name: Re-run full regression suite on cleaned tree
-        shell: bash
-        run: |
-          set -o pipefail
-          npm test 2>&1 | tee "$RUNNER_TEMP/post-deep-hygiene-regression.log"
-
-      - name: Regenerate and validate final release integrity
-        run: |
-          python scripts/generate_release_hashes.py
-          python scripts/validate_release_integrity.py
-          node scripts/validate_provider_semantics.cjs
-          python scripts/validate_activation_preservation.py
-          python scripts/validate_vf_projection.py
-
-      - name: Commit validated repository hygiene
-        shell: bash
-        run: |
-          set -euo pipefail
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A
-          if git diff --cached --quiet; then
-            echo "Repository hygiene already clean."
-            exit 0
-          fi
-          git commit -m "chore: consolidate repository automation"
-          for attempt in 1 2 3 4 5; do
-            git fetch origin main
-            if ! git rebase origin/main; then
-              git rebase --abort || true
-              sleep $((attempt * 2))
-              continue
-            fi
-            python scripts/sync_release_versions.py --manifest manifest.json
-            python scripts/generate_release_hashes.py
-            python scripts/validate_release_integrity.py
-            python scripts/validate_activation_preservation.py
-            python scripts/validate_vf_projection.py
-            python - <<'PY'
-          from pathlib import Path
-          workflows = sorted(path.name for path in Path('.github/workflows').glob('*.yml'))
-          assert workflows == sorted(['availability.yml','domain-refresh.yml','sync.yml','validate-desktop-runtime-compat.yml']), workflows
-          triggers = sorted(path.name for path in Path('.github/triggers').iterdir() if path.is_file())
-          assert triggers == sorted(['deep-provider-repair','domain-refresh']), triggers
-          PY
-            git add -A
-            if ! git diff --cached --quiet; then
-              git commit --amend --no-edit
-            fi
-            if git push origin HEAD:main; then
-              exit 0
-            fi
-            sleep $((attempt * 2))
-          done
-          exit 1
-
-      - name: Mark final hygiene completed
-        if: success()
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: gh issue comment 21 --repo "$GITHUB_REPOSITORY" --body "Final deep validation and repository hygiene completed successfully: 4 permanent workflows, 2 triggers, synchronized lockfile, Desktop regression and full repository suite passed."
-
-      - name: Mark final hygiene failed
-        if: failure()
-        shell: bash
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          report="$RUNNER_TEMP/post-deep-hygiene-failure.txt"
-          printf '%s\n\n' 'Post-deep repository hygiene failed. No hygiene commit was published.' > "$report"
-          if [ -f "$RUNNER_TEMP/post-deep-hygiene-regression.log" ]; then
-            printf '%s\n' 'Regression tail:' >> "$report"
-            printf '%s\n' '```text' >> "$report"
-            tail -n 60 "$RUNNER_TEMP/post-deep-hygiene-regression.log" >> "$report"
-            printf '%s\n' '```' >> "$report"
-          fi
-          gh issue comment 21 --repo "$GITHUB_REPOSITORY" --body-file "$report"
