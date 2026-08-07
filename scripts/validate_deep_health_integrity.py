@@ -22,6 +22,45 @@ def load(path: Path) -> dict[str, Any]:
     return value
 
 
+def _has_structured_detail(value: Any) -> bool:
+    if not isinstance(value, dict):
+        return False
+    return bool(
+        value.get("message")
+        or value.get("name")
+        or value.get("code")
+        or value.get("error_code")
+        or value.get("error")
+    )
+
+
+def _has_runtime_diagnostic(test: dict[str, Any]) -> bool:
+    """Return whether a runtime_error retained machine-readable diagnostics.
+
+    The worker can successfully finish overall while one invocation/settings
+    attempt is rejected locally. In that case the canonical error lives in the
+    invocation/runtime/network evidence rather than ``error_details``. Requiring
+    only the top-level field incorrectly rejects fully explained failures such
+    as a locally contained NUVIO_INVALID_REQUEST_ARGUMENT.
+    """
+    if _has_structured_detail(test.get("error_details")):
+        return True
+    if any(_has_structured_detail(item) for item in test.get("runtime_errors") or []):
+        return True
+    for diagnostic in test.get("invocation_diagnostics") or []:
+        if isinstance(diagnostic, dict) and _has_structured_detail(diagnostic.get("error")):
+            return True
+    for observation in test.get("network_observations") or []:
+        if not isinstance(observation, dict):
+            continue
+        # A network observation is useful structured runtime evidence when the
+        # harness retained an explicit code/message. HTTP status alone is not an
+        # exception diagnostic and must not satisfy this requirement.
+        if observation.get("error_code") or observation.get("error"):
+            return True
+    return False
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--health", type=Path, required=True)
@@ -38,8 +77,7 @@ def main() -> int:
             label = (test.get("fixture") or {}).get("label") or index
             status = str(test.get("status") or "")
             detail = test.get("error_details") or {}
-            if status == "runtime_error" and not (detail.get("message") or detail.get("name") or detail.get("code")):
-
+            if status == "runtime_error" and not _has_runtime_diagnostic(test):
                 errors.append(f"{key}:{label}: runtime_error without structured error details")
             if test.get("worker_ok") is False and not (detail.get("message") or test.get("error")):
                 errors.append(f"{key}:{label}: failed worker without diagnostic message")
