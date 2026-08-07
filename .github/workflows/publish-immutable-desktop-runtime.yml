@@ -69,6 +69,7 @@ jobs:
           done
 
       - name: Generate immutable Desktop bundles
+        id: generate
         run: |
           cp manifest.json "$RUNNER_TEMP/manifest.before.json"
           python scripts/publish_desktop_runtime_compat.py
@@ -99,6 +100,7 @@ jobs:
           PY
 
       - name: Restore legacy cache paths from main
+        id: restore
         shell: bash
         run: |
           set -euo pipefail
@@ -120,19 +122,42 @@ jobs:
             fi
           done
 
-      - name: Bump release and validate
+      - name: Bump and synchronize release version
+        id: version
         run: |
           python scripts/bump_release_patch_if_manifest_changed.py --previous "$RUNNER_TEMP/manifest.before.json" --manifest manifest.json
           python scripts/sync_release_versions.py --manifest manifest.json
-          python scripts/validate_vf_projection.py
-          python tests/desktop_runtime_compat_test.py
-          npm test
-          python scripts/generate_release_hashes.py
-          python scripts/validate_release_integrity.py
-          node scripts/validate_provider_semantics.cjs
-          python scripts/validate_activation_preservation.py
+
+      - name: Validate VF projection
+        id: vf
+        run: python scripts/validate_vf_projection.py
+
+      - name: Validate Desktop runtime compatibility
+        id: desktop
+        run: python tests/desktop_runtime_compat_test.py
+
+      - name: Run repository regression tests
+        id: regression
+        run: npm test
+
+      - name: Generate release hashes
+        id: hashes
+        run: python scripts/generate_release_hashes.py
+
+      - name: Validate release integrity
+        id: integrity
+        run: python scripts/validate_release_integrity.py
+
+      - name: Validate provider semantics
+        id: semantics
+        run: node scripts/validate_provider_semantics.cjs
+
+      - name: Validate activation preservation
+        id: activation
+        run: python scripts/validate_activation_preservation.py
 
       - name: Commit immutable runtime release
+        id: publish
         shell: bash
         run: |
           set -euo pipefail
@@ -160,8 +185,9 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: gh issue comment 21 --repo "$GITHUB_REPOSITORY" --body "Immutable Desktop runtime publication completed successfully."
 
-      - name: Mark publication failed
+      - name: Mark publication failed with stage
         if: failure()
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh issue comment 21 --repo "$GITHUB_REPOSITORY" --body "Immutable Desktop runtime publication failed. Check the workflow logs."
+        run: |
+          gh issue comment 21 --repo "$GITHUB_REPOSITORY" --body "Immutable Desktop runtime publication failed. generate=${{ steps.generate.outcome }} restore=${{ steps.restore.outcome }} version=${{ steps.version.outcome }} vf=${{ steps.vf.outcome }} desktop=${{ steps.desktop.outcome }} regression=${{ steps.regression.outcome }} hashes=${{ steps.hashes.outcome }} integrity=${{ steps.integrity.outcome }} semantics=${{ steps.semantics.outcome }} activation=${{ steps.activation.outcome }} publish=${{ steps.publish.outcome }}"
