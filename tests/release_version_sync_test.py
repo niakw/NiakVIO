@@ -15,7 +15,7 @@ assert "python scripts/validate_activation_preservation.py" in workflow
 assert "python scripts/validate_language_projection.py" in workflow
 assert workflow.index("python scripts/sync_release_versions.py --manifest manifest.json") < workflow.index("python scripts/validate_language_projection.py")
 assert workflow.index("python scripts/validate_language_projection.py") < workflow.index("python scripts/generate_release_hashes.py")
-assert "git add manifest.json vf/manifest.json package.json package-lock.json sources.json" in workflow
+assert "git add manifest.json vf/manifest.json package.json package-lock.json sources.json nuvio-client-id-state.json" in workflow
 assert "Verify exact published main after push" in workflow
 assert "final published release version synchronization passed" in workflow
 assert "git diff --exit-code" in workflow
