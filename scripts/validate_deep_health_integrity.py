@@ -3,8 +3,9 @@
 """Fail publication when the deep harness itself produced ambiguous evidence.
 
 Provider failures are allowed. Harness failures are not: malformed invocation
-arguments, missing structured exceptions, duplicate deterministic repair
-retests, or accepted source rewrites without improved playable-stream proof.
+arguments that escape local containment, missing structured exceptions,
+duplicate deterministic repair retests, or accepted source rewrites without
+improved playable-stream proof.
 """
 from __future__ import annotations
 
@@ -44,7 +45,24 @@ def main() -> int:
                 errors.append(f"{key}:{label}: failed worker without diagnostic message")
             for observation in test.get("network_observations") or []:
                 path_pattern = str(observation.get("path_pattern") or "").casefold()
-                if observation.get("error_code") == "NUVIO_INVALID_REQUEST_ARGUMENT" or "object%20object" in path_pattern or "object object" in path_pattern:
+                error_code = str(observation.get("error_code") or "")
+                malformed = (
+                    error_code == "NUVIO_INVALID_REQUEST_ARGUMENT"
+                    or "object%20object" in path_pattern
+                    or "object object" in path_pattern
+                )
+                # provider_worker.cjs rejects object-serialization mistakes before
+                # guardedFetch is called. Such an observation is evidence that the
+                # malformed invocation was contained locally, not that it escaped
+                # to a remote provider. A malformed path that has an HTTP status,
+                # reports success, or lacks the dedicated local-containment code
+                # remains fatal.
+                contained_locally = (
+                    error_code == "NUVIO_INVALID_REQUEST_ARGUMENT"
+                    and observation.get("status") is None
+                    and observation.get("ok") is not True
+                )
+                if malformed and not contained_locally:
                     errors.append(f"{key}:{label}: malformed invocation request was not contained")
             if status == "no_streams" and test.get("failure_class") != "content_lookup_completed_no_streams":
                 errors.append(f"{key}:{label}: no_streams lacks successful content-lookup proof")
