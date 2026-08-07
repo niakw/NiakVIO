@@ -270,6 +270,7 @@ def apply_overrides(
     """
     config = load_overrides()
     text = data.decode("utf-8")
+    original_text = text
     applied: list[dict[str, Any]] = []
     provider_id = provider_id.casefold()
     specific = (config.get("provider_patches") or {}).get(provider_id, {})
@@ -393,6 +394,15 @@ def apply_overrides(
     text, removed_guards = _strip_legacy_global_stream_guards(text)
     if removed_guards:
         applied.append({"type": "remove_legacy_global_stream_guard", "count": removed_guards, "phase": phase})
+
+    # Patch hooks form one transaction. A later hook may intentionally replace
+    # or remove a wrapper added by an earlier hook. If the final bytes are
+    # identical to the input, no effective patch happened and no mutation record
+    # may escape to staging metadata; otherwise the integrity validator would
+    # correctly reject an equal upstream/patched SHA pair with "effective"
+    # records attached to it.
+    if text == original_text:
+        return data, []
     return text.encode("utf-8"), applied
 
 
