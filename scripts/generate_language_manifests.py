@@ -7,7 +7,9 @@ Output:
 
 Classification comes from health-report.json, where observed runtime language
 modes take precedence over broad upstream descriptions. Provider filenames are
-rewritten relative to the nested manifest directories.
+rewritten relative to the nested manifest directories. Provider ids are matched
+case-insensitively because Nuvio client activation deliberately toggles id case
+when a provider transitions from disabled to enabled.
 """
 from __future__ import annotations
 
@@ -50,6 +52,10 @@ def build_manifest(
     accepted_groups: set[str],
     name_suffix: str,
 ) -> dict[str, Any]:
+    normalized_language_by_id = {
+        str(provider_id).casefold(): str(group)
+        for provider_id, group in language_by_id.items()
+    }
     entries: list[dict[str, Any]] = []
     for entry in source.get("scrapers", []):
         if not isinstance(entry, dict):
@@ -59,7 +65,7 @@ def build_manifest(
         if isinstance(declared, str):
             declared = [declared]
         declared_fr = any(str(value).casefold().startswith("fr") for value in declared)
-        observed_group = language_by_id.get(provider_id)
+        observed_group = normalized_language_by_id.get(provider_id.casefold())
         if observed_group not in accepted_groups and not declared_fr:
             continue
         entries.append(nested_entry(entry))
@@ -79,7 +85,7 @@ def main() -> int:
     manifest = load_json(args.manifest.resolve())
     report = load_json(args.report.resolve())
     language_by_id = {
-        str(item.get("id", "")): str(item.get("manifest_ordering", {}).get("language_group", "other"))
+        str(item.get("id", "")).casefold(): str(item.get("manifest_ordering", {}).get("language_group", "other"))
         for item in report.get("providers", [])
         if isinstance(item, dict)
     }
