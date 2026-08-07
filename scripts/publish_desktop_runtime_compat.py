@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """Publish runtime-compatible provider bundles for Nuvio Desktop.
 
-This pass is intentionally deterministic and idempotent.  It patches only the
-providers whose failures were reproduced in Desktop logs, creates immutable
-content-hashed bundles, synchronizes main/VF manifests, records provenance, and
-disables the obsolete 4KHDHUB row when 4KHDHUBNEW is active.
+This pass is deterministic and repeatable. It always starts from canonical,
+tracked provider artifacts, applies the Desktop compatibility patch once,
+creates immutable content-addressed bundles, synchronizes main/VF manifests,
+records provenance, and retires obsolete 4KHDHUB when 4KHDHUBNEW is active.
 """
 from __future__ import annotations
 
@@ -23,6 +23,17 @@ PATCH_PATH = ROOT / PATCH_REL
 REPORT_PATH = ROOT / "automation" / "desktop-runtime-compat-v1.json"
 SEMVER = re.compile(r"^(\d+)\.(\d+)\.(\d+)$")
 
+SOURCE_FILES: dict[str, str] = {
+    "coflix": "providers/coflix--nuvio--48239f7b107a98b2.js",
+    "frenchstream": "providers/frenchstream--nuvio--38cf074196379a8d.js",
+    "movix": "providers/movix--nuvio--b31ef87b05d3a4f3.js",
+    "streamzo": "providers/streamzo--nuvio--5ee8d74abe45cd42.js",
+    "flemmix": "providers/flemmix--nuvio--e0c40c452aca0d66.js",
+    "wookafr": "providers/wookafr--nuvio--4ce4c33e2fe1d23b.js",
+    "hindmoviez": "providers/hindmoviez--aio--86b8c3a4dff3c98c.js",
+    "purstream": "providers/purstream--published-baseline--8e14e434a2868d4f.js",
+}
+
 TARGETS: dict[str, dict[str, Any]] = {
     "coflix": {"normalize_missing_episodes": True},
     "frenchstream": {"normalize_missing_episodes": True},
@@ -37,9 +48,9 @@ TARGETS: dict[str, dict[str, Any]] = {
     },
     "purstream": {
         "normalize_missing_episodes": True,
-        "domain_replacements": {
-            "api.purstream.club": "api.purstream.art",
-            "purstream.club": "purstream.art",
+        "domain_failover": {
+            "host_prefixes": ["api.purstream", "purstream"],
+            "suffixes": ["club", "mx", "ch", "ac", "cx", "art", "co", "me", "to", "store"],
         },
     },
 }
@@ -97,6 +108,7 @@ def update_metadata(
     provenance: dict[str, Any],
     provider_id: str,
     filename: str,
+    source_filename: str,
     old_sha: str,
     new_sha: str,
     options: dict[str, Any],
@@ -118,12 +130,13 @@ def update_metadata(
         {
             "id": provider_id,
             "published_filename": filename,
+            "canonical_source_filename": source_filename,
             "sha256": new_sha,
             "patched_sha256": new_sha,
-            "upstream_sha256": current.get("upstream_sha256") or old_sha,
+            "upstream_sha256": old_sha,
             "local_patches": local_patches,
             "source": "desktop-runtime-compat-v1",
-            "source_name": "Nuvio Desktop QuickJS compatibility and bounded TV fallback",
+            "source_name": "Nuvio Desktop QuickJS compatibility, bounded TV fallback and domain failover",
             "checked_at": now,
             "check_mode": "static-runtime-contract-and-regression-suite",
             "check_status": "healthy",
@@ -200,46 +213,48 @@ def main() -> int:
             report["providers"][provider_id] = {"ok": False, "error": "manifest row missing"}
             report["preserved"].append(provider_id)
             continue
-        source_filename = str(row.get("filename") or "")
+
+        source_filename = SOURCE_FILES[provider_id]
         source_path = ROOT / source_filename
         if not source_path.is_file():
-            report["providers"][provider_id] = {"ok": False, "error": f"missing {source_filename}"}
-            report["preserved"].append(provider_id)
-            continue
-        source = source_path.read_text(encoding="utf-8", errors="replace")
-        patched = apply(source, options)
-        if patched == source:
-            report["providers"][provider_id] = {"ok": True, "changed": False, "filename": source_filename}
+            report["providers"][provider_id] = {"ok": False, "error": f"missing canonical source {source_filename}"}
             report["preserved"].append(provider_id)
             continue
 
+        source = source_path.read_text(encoding="utf-8", errors="replace")
+        patched = apply(source, options)
         old_sha = hashlib.sha256(source.encode("utf-8")).hexdigest()
         new_sha = hashlib.sha256(patched.encode("utf-8")).hexdigest()
         filename = f"providers/{provider_slug(provider_id)}--desktop-runtime-v1--{new_sha[:16]}.js"
-        (ROOT / filename).write_text(patched, encoding="utf-8")
-        new_provider_files.append(filename)
-        old_filename = source_filename
+        target_path = ROOT / filename
+        if not target_path.is_file() or target_path.read_text(encoding="utf-8", errors="replace") != patched:
+            target_path.write_text(patched, encoding="utf-8")
+            new_provider_files.append(filename)
+
+        old_filename = str(row.get("filename") or "")
+        row_changed = old_filename != filename
         row["filename"] = filename
-        row["version"] = bump(row.get("version"))
+        if row_changed:
+            row["version"] = bump(row.get("version"))
         row["enabled"] = True
         if provider_id == "streamzo":
-            # Preserve the repository policy: only the globally audited
-            # direct-media lineage may disable the external-player hint.
+            # Only a globally audited direct-media lineage may disable this hint.
             row["supportsExternalPlayer"] = "--nuvio-tv-global--" not in source_filename
         sync_existing_vf(vf_rows, row)
-        update_metadata(overrides, provenance, provider_id, filename, old_sha, new_sha, options)
+        update_metadata(overrides, provenance, provider_id, filename, source_filename, old_sha, new_sha, options)
         report["providers"][provider_id] = {
             "ok": True,
-            "changed": True,
+            "changed": row_changed,
             "old_filename": old_filename,
+            "source_filename": source_filename,
             "filename": filename,
-            "old_sha256": old_sha,
+            "upstream_sha256": old_sha,
             "sha256": new_sha,
             "options": options,
             "timer_shim_required": "setTimeout" in source or "clearTimeout" in source,
         }
         report["published"].append(provider_id)
-        changed = True
+        changed = changed or row_changed
 
     old_4k = main_rows.get("4khdhub")
     new_4k = main_rows.get("4khdhubnew")
@@ -249,10 +264,6 @@ def main() -> int:
         mark_disabled(overrides, provenance, "4khdhub", "superseded_by:4khdhubnew")
         report["disabled"].append("4khdhub")
         changed = True
-
-    # Nakios is intentionally preserved. The VF policy requires the provider
-    # row to remain enabled; a dead DNS observation is recorded by diagnostics
-    # rather than converted into a speculative domain migration or deactivation.
 
     provenance["generated_at"] = report["generated_at"]
     if changed:
