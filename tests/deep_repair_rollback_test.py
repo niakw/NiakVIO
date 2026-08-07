@@ -40,14 +40,20 @@ for provider_id, digest in EXPECTED.items():
     assert row['sha256'] == digest
     assert not any(item.get('profile') == 'metadata_context_recovery' for item in row.get('local_patches', []) if isinstance(item, dict))
 
-# Wookafr was manually validated in Nuvio on Interstellar and is intentionally
-# kept on its accepted adaptive bundle. Its filename must still be content
-# addressed and its provenance must match the bytes actually published.
+# WookaFR was manually validated in Nuvio and may move through a newer accepted
+# content-addressed lineage (upstream Nuvio, adaptive repair, or immutable
+# Desktop runtime compatibility). The invariant is the published bytes/hash and
+# provenance, not one historical lineage label.
 wookafr_relative = entries['wookafr']['filename']
 wookafr_target = ROOT / wookafr_relative
 assert wookafr_target.is_file(), wookafr_relative
 wookafr_digest = hashlib.sha256(wookafr_target.read_bytes()).hexdigest()
-assert wookafr_target.name == f'wookafr--adaptive-repair--{wookafr_digest[:16]}.js'
+wookafr_name = wookafr_target.name
+wookafr_prefix = 'wookafr--'
+wookafr_suffix = f'--{wookafr_digest[:16]}.js'
+assert wookafr_name.startswith(wookafr_prefix) and wookafr_name.endswith(wookafr_suffix), wookafr_name
+wookafr_source = wookafr_name[len(wookafr_prefix):-len(wookafr_suffix)]
+assert wookafr_source in {'nuvio', 'adaptive-repair', 'desktop-runtime-v1'}, wookafr_source
 assert MARKER not in wookafr_target.read_text(encoding='utf-8', errors='strict')
 assert entries['wookafr']['enabled'] is True
 assert provenance['wookafr']['published_filename'] == wookafr_relative
