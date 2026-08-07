@@ -15,7 +15,7 @@ import json
 from typing import Any
 
 MARKER_PREFIX = "NUVIO_DESKTOP_RUNTIME_COMPAT_V1"
-PATCH_REVISION = 2
+PATCH_REVISION = 3
 
 
 def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> str:
@@ -65,11 +65,12 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
   "use strict";
   if(!g)return;
 
-  // Install one shared fetch bridge. It supports exact evidence-backed host
-  // replacements and bounded suffix failover rules. A failover group shares
-  // the selected suffix across related hosts (for example api.site + site),
-  // and rewrites string-valued request headers such as Referer consistently.
-  if((config.domainReplacements||config.domainFailover)&&typeof g.fetch==="function"){
+  // Install the shared fetch bridge only when a provider actually declares a
+  // domain rule. Providers that only need timers/episode normalization retain
+  // their original fetch input byte-for-byte (no URL canonicalization).
+  var hasReplacements=!!(config.domainReplacements&&Object.keys(config.domainReplacements).length);
+  var hasFailover=!!(config.domainFailover&&Array.isArray(config.domainFailover.hostPrefixes)&&config.domainFailover.hostPrefixes.length&&Array.isArray(config.domainFailover.suffixes)&&config.domainFailover.suffixes.length);
+  if((hasReplacements||hasFailover)&&typeof g.fetch==="function"){
     var fetchKey="__nuvioDesktopFetchCompatV1",fetchState=g[fetchKey];
     if(!fetchState){
       fetchState={native:g.fetch.bind(g),rules:Object.create(null),failovers:Object.create(null)};
@@ -157,7 +158,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
     Object.keys(config.domainReplacements||{}).forEach(function(source){
       fetchState.rules[String(source).toLowerCase()]=String(config.domainReplacements[source]).toLowerCase();
     });
-    if(config.domainFailover&&Array.isArray(config.domainFailover.hostPrefixes)&&Array.isArray(config.domainFailover.suffixes)){
+    if(hasFailover){
       var group={prefixes:[],suffixes:[],selected:null};
       config.domainFailover.hostPrefixes.forEach(function(prefix){
         prefix=String(prefix||"").toLowerCase();
