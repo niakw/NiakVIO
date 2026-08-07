@@ -107,7 +107,7 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A \
             provider-overrides.json provider-domain-history.json provider-hub-report.json \
-            providers manifest.json vf/manifest.json package.json sources.json \
+            providers manifest.json vf/manifest.json package.json package-lock.json sources.json \
             FILE-HASHES.json PATCH-SHA256SUMS.txt PROVENANCE.json SHA256SUMS.json
 
           if git diff --cached --quiet; then
