@@ -26,7 +26,15 @@ valid_health={'schema_version':66,'results':[{'key':'source:sample','tests':[{'s
 valid_repairs={'schema_version':2,'accepted_repairs':1,'rounds':[{'round':1,'attempts':[{'status':'generated','parent_sha256':'a','profile':'dle','repair_sha256':'b'}],'accepted':[{'parent_key':'source:sample','streams_playable_before':0,'streams_playable_after':1,'runtime_errors_before':0,'runtime_errors_after':0,'reason':'strict_playable_stream_improvement'}],'rejected':[]}]}
 assert run(valid_health,valid_repairs).returncode==0
 
-bad_health={'schema_version':66,'results':[{'key':'source:bad','tests':[{'status':'runtime_error','worker_ok':False,'network_observations':[{'path_pattern':'/[object%20Object]/','error_code':'NUVIO_INVALID_REQUEST_ARGUMENT'}]}]}]}
+# The worker records locally rejected object serialization attempts so the
+# invocation diagnostics remain explainable. status=None plus the dedicated
+# error code proves guardedFetch was never reached and must therefore pass.
+contained_health={'schema_version':66,'results':[{'key':'source:contained','tests':[{'status':'no_streams','failure_class':'content_lookup_completed_no_streams','worker_ok':True,'network_observations':[{'path_pattern':'/[object%20Object]/','status':None,'ok':False,'error_code':'NUVIO_INVALID_REQUEST_ARGUMENT'}]}]}]}
+assert run(contained_health,{'schema_version':2,'rounds':[]}).returncode==0
+
+# A malformed path with an HTTP status did escape local containment and remains
+# a publication-blocking integrity failure.
+bad_health={'schema_version':66,'results':[{'key':'source:bad','tests':[{'status':'runtime_error','worker_ok':False,'network_observations':[{'path_pattern':'/[object%20Object]/','status':400,'ok':False,'error_code':None}]}]}]}
 bad_repairs={'schema_version':2,'rounds':[{'round':1,'attempts':[],'accepted':[{'parent_key':'source:bad','streams_playable_before':0,'streams_playable_after':0,'reason':'strict_runtime_improvement'}],'rejected':[{'parent_key':'source:bad','status':'runtime_error'}]}]}
 result=run(bad_health,bad_repairs)
 assert result.returncode==1
