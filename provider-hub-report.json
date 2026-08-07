@@ -1,8 +1,16 @@
 {
   "schema_version": 3,
-  "generated_at": "2026-08-07T05:08:01+00:00",
-  "mode": "quick",
+  "generated_at": "2026-08-07T12:42:05+00:00",
+  "mode": "deep",
   "providers": {
+    "animekai": {
+      "provider_id": "animekai",
+      "status": "inconclusive",
+      "sources": [],
+      "site_candidates": [],
+      "site_validations": [],
+      "reason": "no_runtime_validated_terminal_site"
+    },
     "allwish": {
       "provider_id": "allwish",
       "status": "inconclusive",
@@ -19,18 +27,25 @@
       "site_validations": [],
       "reason": "no_runtime_validated_terminal_site"
     },
-    "animekai": {
-      "provider_id": "animekai",
-      "status": "inconclusive",
-      "sources": [],
-      "site_candidates": [],
-      "site_validations": [],
-      "reason": "no_runtime_validated_terminal_site"
-    },
     "anidb": {
       "provider_id": "anidb",
       "status": "retained_last_known_good",
-      "sources": [],
+      "sources": [
+        {
+          "engine": "yandex",
+          "url": "https://yandex.com/search/?text=%22AniDB%22+official+domain",
+          "status": 200,
+          "final_url": "https://yandex.com/showcaptcha?cc=1&form-fb-hint=1.1&mt=B11A7448972E7DC5772C4BB43C004E38043025797BF1F489AE42E81359992BBA75BEBEA2467AADB9C8237C0A2274C96D5B42AB728885C3146756CEE7D911BF8A93D230FF1474052E115C2DF4A3E8C9A6E21034761B20424F9C32B0CABC1C60AF7DD6E27452F275963BF8570B180169C87D0A707F165235B48469AD6F49F204B0ED9225F277CF9BE285193CC791F6E027537CAE60EF549DC28F3CA9299CCC380E846F30C0D78A83E7C3E169204FC65F6AE7675B2656DEED86AA0FEB16D278219FE7B77506EC9753E6D4F60EA0D36EACA72837EE73BA740CA9693F67610D6F6F35425FF44629D40A99087CCE06170BC66B1614&retpath=aHR0cHM6Ly95YW5kZXguY29tL3NlYXJjaD90ZXh0PSUyMkFuaURCJTIyK29mZmljaWFsK2RvbWFpbg%2C%2C_04ad3dc01b6d6f8741b2b0866547efaf&t=2%252F1786106526%252Fc8aed0807ccdb8a7e775cdfdf191a2db&u=9183115512335217451&s=0a7ffcce297e61cc5874c5221ffc92bf",
+          "challenged": true
+        },
+        {
+          "engine": "duckduckgo",
+          "url": "https://html.duckduckgo.com/html/?q=%22AniDB%22+official+domain",
+          "status": 202,
+          "final_url": "https://html.duckduckgo.com/html/?q=%22AniDB%22+official+domain",
+          "challenged": false
+        }
+      ],
       "site_candidates": [
         {
           "url": "https://anidb.app",
@@ -56,71 +71,6 @@
       "official_site": "https://anidb.app",
       "reason": "no_new_candidate_validated"
     },
-    "animepahe": {
-      "provider_id": "animepahe",
-      "status": "retained_last_known_good",
-      "sources": [
-        {
-          "source_type": "hub",
-          "url": "https://theindex.moe/item/6128a375aa2f6e004d46d71d",
-          "status": 403,
-          "final_url": "https://theindex.moe/item/6128a375aa2f6e004d46d71d"
-        }
-      ],
-      "site_candidates": [
-        {
-          "url": "https://animepahe.pw",
-          "label": "last-known-good domain",
-          "score": 78,
-          "source_type": "history_lkg",
-          "source": "provider-domain-history.json"
-        }
-      ],
-      "site_validations": [
-        {
-          "url": "https://animepahe.pw",
-          "final_url": "https://animepahe.pw",
-          "status": 403,
-          "ok": false,
-          "content_type": "text/html; charset=UTF-8",
-          "brand_match": true,
-          "source_type": "history_lkg",
-          "source": "provider-domain-history.json",
-          "candidate_score": 78
-        }
-      ],
-      "official_site": "https://animepahe.pw",
-      "reason": "no_new_candidate_validated"
-    },
-    "animesultra": {
-      "provider_id": "animesultra",
-      "status": "retained_last_known_good",
-      "sources": [],
-      "site_candidates": [
-        {
-          "url": "https://ww.animesultra.org",
-          "label": "last-known-good domain",
-          "score": 78,
-          "source_type": "history_lkg",
-          "source": "provider-domain-history.json"
-        }
-      ],
-      "site_validations": [
-        {
-          "url": "https://ww.animesultra.org",
-          "final_url": "https://ww.animesultra.org",
-          "status": 403,
-          "ok": false,
-          "content_type": "text/html; charset=UTF-8",
-          "brand_match": true,
-          "source_type": "history_lkg",
-          "source": "provider-domain-history.json",
-          "candidate_score": 78
-        }
-      ],
-      "official_site": "https://ww.animesultra.org",
-      "reason": "no_new_candidate_validated"
-    },
     "anikototv": {
       "provider_id": "anikototv",
       "status": "site_validated",
@@ -130,6 +80,20 @@
           "url": "https://streamingsiteshub.com/",
           "status": 200,
           "final_url": "https://streamingsiteshub.com/"
+        },
+        {
+          "engine": "yandex",
+          "url": "https://yandex.com/search/?text=%22AnikotoTV%22+official+domain",
+          "status": 200,
+          "final_url": "https://yandex.com/showcaptcha?cc=1&form-fb-hint=1.1&mt=FC33C14ABE28E6824614A8635D28C85DE4A767688BB5CD240C2163628A59E75B61AC69BFA3028115A0AF5B5462ACB5381CB64125070C9045006E9790C16DEBA58C59CD1833863B3F44BEE671C41B1010AE32EB1E7272FDD3FC3199DC8394D453E86EEAC762434F8E02B341D7B17DFEC7ED1765128CC9C28415F8F70206A71AB6A34A5AA98E910B4B96A51CCEB1E5EA39A762D1D752DCEE656B64E66A6668D3B7DCA62C4D054443BCBED020CE01981ABAF507603FF634A9A70ECC1D40A9339C6B8AD6BE4095AC23C4635301F643A46C70F52E32EE724B29AA96505D105380178C3659BDE8357C11C09A0C73D415CA50054A2E&retpath=aHR0cHM6Ly95YW5kZXguY29tL3NlYXJjaD90ZXh0PSUyMkFuaWtvdG9UViUyMitvZmZpY2lhbCtkb21haW4%2C_c2a663c9868f7962c2db69893b87e24e&t=2%252F1786106526%252F624c9bb585646f48dc19630aa7b7006f&u=9183115520454222326&s=d16a960f00572e7b3c96f04c4675a847",
+          "challenged": true
+        },
+        {
+          "engine": "duckduckgo",
+          "url": "https://html.duckduckgo.com/html/?q=%22AnikotoTV%22+official+domain",
+          "status": 202,
+          "final_url": "https://html.duckduckgo.com/html/?q=%22AnikotoTV%22+official+domain",
+          "challenged": false
         }
       ],
       "site_candidates": [
@@ -179,6 +143,56 @@
       "reason": "terminal_site_runtime_validated",
       "applied_changes": []
     },
+    "animepahe": {
+      "provider_id": "animepahe",
+      "status": "retained_last_known_good",
+      "sources": [
+        {
+          "source_type": "hub",
+          "url": "https://theindex.moe/item/6128a375aa2f6e004d46d71d",
+          "status": 403,
+          "final_url": "https://theindex.moe/item/6128a375aa2f6e004d46d71d"
+        },
+        {
+          "engine": "yandex",
+          "url": "https://yandex.com/search/?text=%22AnimePahe%22+official+domain",
+          "status": 200,
+          "final_url": "https://yandex.com/showcaptcha?cc=1&form-fb-hint=1.1&mt=8774D487D69812E383F5898B1D0DAF006383651F3BB6BB2AFBE2A63332FCAF9C148CC11E73635B439EB159FC09407A6DA443016C4FE0A4F868A695D54AAD76467582A689D28675E31F66F93156D0583FFA1F18596A0582A68D106517D495F178AB38ED1097804FBB53BBA77B2729F1071B87F9DCDB58E56F71BF94AD1C7B5F6E46F34E9C42A058C370094D0C5BE927C685B03838CF1906A7F9EAC4CA107C8DD65E8A545BED7761E9865E475EEE10D48083DD8C9CEFB718FAB3B0ACE55523A4B4DE7CC4F75BDC5FBA1ED9818BEA681C9634CDA42DB6B6945B1FB19A665A80DEED5DF7B54CA723C6B9B62796CB03EC7E84B234&retpath=aHR0cHM6Ly95YW5kZXguY29tL3NlYXJjaD90ZXh0PSUyMkFuaW1lUGFoZSUyMitvZmZpY2lhbCtkb21haW4%2C_0266312bef50128afa7f3a2d158a7595&t=2%252F1786106526%252F91f2bb423009223954815bfb7137d572&u=9183115520722657542&s=dffc33b0b68c470a89e0a66d446cba08",
+          "challenged": true
+        },
+        {
+          "engine": "duckduckgo",
+          "url": "https://html.duckduckgo.com/html/?q=%22AnimePahe%22+official+domain",
+          "status": 202,
+          "final_url": "https://html.duckduckgo.com/html/?q=%22AnimePahe%22+official+domain",
+          "challenged": false
+        }
+      ],
+      "site_candidates": [
+        {
+          "url": "https://animepahe.pw",
+          "label": "last-known-good domain",
+          "score": 78,
+          "source_type": "history_lkg",
+          "source": "provider-domain-history.json"
+        }
+      ],
+      "site_validations": [
+        {
+          "url": "https://animepahe.pw",
+          "final_url": "https://animepahe.pw",
+          "status": 403,
+          "ok": false,
+          "content_type": "text/html; charset=UTF-8",
+          "brand_match": true,
+          "source_type": "history_lkg",
+          "source": "provider-domain-history.json",
+          "candidate_score": 78
+        }
+      ],
+      "official_site": "https://animepahe.pw",
+      "reason": "no_new_candidate_validated"
+    },
     "4khdhub": {
       "provider_id": "4khdhub",
       "status": "site_validated",
@@ -188,6 +202,20 @@
           "url": "https://hdhub4u.ec/",
           "status": 403,
           "final_url": "https://hdhub4u.ec/"
+        },
+        {
+          "engine": "yandex",
+          "url": "https://yandex.com/search/?text=%224KHDHub%22+official+domain",
+          "status": 200,
+          "final_url": "https://yandex.com/showcaptcha?cc=1&form-fb-hint=1.1&mt=3065ADED16F69FC9AEAC8051AD01AF1488C7ED73D4874E5AA0A0461E7E2D17D51C045D586A513806FAA863B5BB6279241E3A60D9EF56815709E217F786DFD561FAD27F75221117069F0621057C4CBFA4D207F3742F0E8910AACE79D45511D7C5FFAA3AAB7275AFB414D0DA2450ED39E4522D5E20EF445F6076EFB3EB55F8D59E4A37B4F9B3157F04BF51DD6BC3945A7E93FC92D94FFABF66423BB95AD929F96A07633DCA34C912A2ED0DB2127EA9814EC0F205D2C40F64A0719AB9435289B490735498B2876F49BF0032C06577E046949185B6B2C8050567DCD80BC89BE2FAE51E6EEA81CAB98D5D70C7F2CFF851E661C88B&retpath=aHR0cHM6Ly95YW5kZXguY29tL3NlYXJjaD90ZXh0PSUyMjRLSERIdWIlMjIrb2ZmaWNpYWwrZG9tYWlu_88c9f8d5ce60e9ab5831782e94252f8a&t=2%252F1786106526%252Fbb652694c4c0c8c38728df85f56d7378&u=9183115520387113456&s=942aacd4f7c22466e80b20247ca89d24",
+          "challenged": true
+        },
+        {
+          "engine": "duckduckgo",
+          "url": "https://html.duckduckgo.com/html/?q=%224KHDHub%22+official+domain",
+          "status": 202,
+          "final_url": "https://html.duckduckgo.com/html/?q=%224KHDHub%22+official+domain",
+          "challenged": false
         }
       ],
       "site_candidates": [
@@ -234,80 +262,25 @@
       "reason": "terminal_site_runtime_validated",
       "applied_changes": []
     },
-    "animeworld": {
-      "provider_id": "animeworld",
-      "status": "inconclusive",
-      "sources": [],
-      "site_candidates": [],
-      "site_validations": [],
-      "reason": "no_runtime_validated_terminal_site"
-    },
-    "animezey": {
-      "provider_id": "animezey",
-      "status": "inconclusive",
-      "sources": [],
-      "site_candidates": [],
-      "site_validations": [],
-      "reason": "no_runtime_validated_terminal_site"
-    },
-    "animoflix": {
-      "provider_id": "animoflix",
-      "status": "inconclusive",
-      "sources": [],
-      "site_candidates": [],
-      "site_validations": [],
-      "reason": "no_runtime_validated_terminal_site"
-    },
-    "anizone": {
-      "provider_id": "anizone",
-      "status": "retained_last_known_good",
-      "sources": [
-        {
-          "source_type": "hub",
-          "url": "https://everythingmoe.com/s/anizone",
-          "status": 200,
-          "final_url": "https://everythingmoe.com/s/anizone"
-        }
-      ],
-      "site_candidates": [
-        {
-          "url": "https://anizone.to",
-          "label": "curated direct fallback",
-          "score": 82,
-          "document_index": -1,
-          "fallback": true,
-          "source_type": "hub",
-          "source": "https://everythingmoe.com/s/anizone"
-        }
-      ],
-      "site_validations": [
-        {
-          "url": "https://anizone.to",
-          "final_url": "https://anizone.to",
-          "status": 403,
-          "ok": false,
-          "content_type": "text/html; charset=UTF-8",
-          "brand_match": true,
-          "source_type": "hub",
-          "source": "https://everythingmoe.com/s/anizone",
-          "candidate_score": 82
-        }
-      ],
-      "official_site": "https://anizone.to",
-      "reason": "no_new_candidate_validated"
-    },
-    "castle": {
-      "provider_id": "castle",
-      "status": "inconclusive",
-      "sources": [],
-      "site_candidates": [],
-      "site_validations": [],
-      "reason": "no_runtime_validated_terminal_site"
-    },
     "allmovieland": {
       "provider_id": "allmovieland",
       "status": "site_validated",
-      "sources": [],
+      "sources": [
+        {
+          "engine": "yandex",
+          "url": "https://yandex.com/search/?text=%22AllMovieLand%22+official+domain",
+          "status": 200,
+          "final_url": "https://yandex.com/showcaptcha?cc=1&form-fb-hint=1.1&mt=C614D2A06312809BF9708C024E87BB13B6B61C6A1B78D98787D67E4048A8DC752947D65C9BCECB93BBE22841A65E1F6E259218494CBEE84E25D832C7F3153FAB4D332B600376A2409B12E684F38A2A7DD8B931B8E8B2E570122E13B9917DEE43DB517D93D45A8F848F9FD7FF7B89E94F3CABA3694F63568B585ED42DAAE8F5689E1503EF8990129C3F3F34A10D53E9DEF39057FE3099D7036E9EA19C338BC2BBB2FF963F908ECD312680909BC3C9FCBC41789A1644F5C1446D263CC344361C6CA4DE97673B6C3F36CF26E314908B538A0B9DDCE6B187181424AF341CBCE69766F800015C6A8E8EDB715AFC27784ED0BD50DA&retpath=aHR0cHM6Ly95YW5kZXguY29tL3NlYXJjaD90ZXh0PSUyMkFsbE1vdmllTGFuZCUyMitvZmZpY2lhbCtkb21haW4%2C_aaf4659630b5e6b439825c9b71ec134c&t=2%252F1786106526%252Fce1d4262ddd08ea7cc7e3b70357a843c&u=9183115511060149197&s=2c4f4aedb2346bd32e7c310afd4f465a",
+          "challenged": true
+        },
+        {
+          "engine": "duckduckgo",
+          "url": "https://html.duckduckgo.com/html/?q=%22AllMovieLand%22+official+domain",
+          "status": 202,
+          "final_url": "https://html.duckduckgo.com/html/?q=%22AllMovieLand%22+official+domain",
+          "challenged": false
+        }
+      ],
       "site_candidates": [
         {
           "url": "https://allmovieland.art",
@@ -345,21 +318,52 @@
       "reason": "terminal_site_runtime_validated",
       "applied_changes": []
     },
-    "cinefreak": {
-      "provider_id": "cinefreak",
+    "animeworld": {
+      "provider_id": "animeworld",
       "status": "inconclusive",
       "sources": [],
       "site_candidates": [],
       "site_validations": [],
       "reason": "no_runtime_validated_terminal_site"
     },
-    "cinemacity": {
-      "provider_id": "cinemacity",
-      "status": "retained_last_known_good",
+    "animezey": {
+      "provider_id": "animezey",
+      "status": "inconclusive",
       "sources": [],
+      "site_candidates": [],
+      "site_validations": [],
+      "reason": "no_runtime_validated_terminal_site"
+    },
+    "animoflix": {
+      "provider_id": "animoflix",
+      "status": "inconclusive",
+      "sources": [],
+      "site_candidates": [],
+      "site_validations": [],
+      "reason": "no_runtime_validated_terminal_site"
+    },
+    "animesultra": {
+      "provider_id": "animesultra",
+      "status": "retained_last_known_good",
+      "sources": [
+        {
+          "engine": "yandex",
+          "url": "https://yandex.com/search/?text=www1.animesultra",
+          "status": 200,
+          "final_url": "https://yandex.com/showcaptcha?cc=1&form-fb-hint=1.1&mt=8C37B7D7CCC33B5235F93B9F8FF96007EF9AD200AB691C9743427C83B7B840453A83F0A0488E1C3A330ED9C31910BA8DDF25D0BFC97FCFAF1A3CB6F9F41CD4C0AA3AA028D47C1BBA33D6B179103EE3A453413C0916A78AFD229DB57E3072E7F08A06061B3E6C3BBB48F9D0478CD2F5381823CAC1B3719A392990E9815128B2349BA405361F065F6914C5918C7881AA2169B4B7B8136371BFCB8373A7A6F43F0059C14A90CED544B21A4DE35A7396CF498B4F2BA38CBBD9301FEE346824C76537ED93177926908AEBBA841557C6DD0F6AB28FCDF8FA6CB5FEBDB59505FBE3DBEE08D64064744CB6971D2BD9743541B2A6CA2D&retpath=aHR0cHM6Ly95YW5kZXguY29tL3NlYXJjaD90ZXh0PXd3dzEuYW5pbWVzdWx0cmE%2C_2334d6cda5862666cb90e06a391d1933&t=2%252F1786106527%252F99f4f4568d9573be99dfa1b33ba21530&u=9183115593133122017&s=470123dbada1491063adbc85426e7ebf",
+          "challenged": true
+        },
+        {
+          "engine": "duckduckgo",
+          "url": "https://html.duckduckgo.com/html/?q=www1.animesultra",
+          "status": 202,
+          "final_url": "https://html.duckduckgo.com/html/?q=www1.animesultra",
+          "challenged": false
+        }
+      ],
       "site_candidates": [
         {
-          "url": "https://cinemacity.cc",
+          "url": "https://ww.animesultra.org",
           "label": "last-known-good domain",
           "score": 78,
           "source_type": "history_lkg",
@@ -368,8 +372,8 @@
       ],
       "site_validations": [
         {
-          "url": "https://cinemacity.cc",
-          "final_url": "https://cinemacity.cc",
+          "url": "https://ww.animesultra.org",
+          "final_url": "https://ww.animesultra.org",
           "status": 403,
           "ok": false,
           "content_type": "text/html; charset=UTF-8",
@@ -379,218 +383,11 @@
           "candidate_score": 78
         }
       ],
-      "official_site": "https://cinemacity.cc",
+      "official_site": "https://ww.animesultra.org",
       "reason": "no_new_candidate_validated"
     },
-    "cinemm": {
-      "provider_id": "cinemm",
-      "status": "site_validated",
-      "sources": [],
-      "site_candidates": [
-        {
-          "url": "https://cinemm.com",
-          "label": "last-known-good domain",
-          "score": 78,
-          "source_type": "history_lkg",
-          "source": "provider-domain-history.json"
-        }
-      ],
-      "site_validations": [
-        {
-          "url": "https://cinemm.com",
-          "final_url": "https://cinemm.com",
-          "status": 200,
-          "ok": true,
-          "content_type": "text/html; charset=utf-8",
-          "brand_match": true,
-          "source_type": "history_lkg",
-          "source": "provider-domain-history.json",
-          "candidate_score": 78
-        }
-      ],
-      "confirmation": {
-        "required": 1,
-        "observed": 1
-      },
-      "official_site": "https://cinemm.com",
-      "selected_source_type": "history_lkg",
-      "selected_source": "provider-domain-history.json",
-      "site_status": 200,
-      "site_final_url": "https://cinemm.com",
-      "api_candidates": [],
-      "api_probes": [],
-      "validated_api": null,
-      "reason": "terminal_site_runtime_validated",
-      "applied_changes": []
-    },
-    "cinevibe": {
-      "provider_id": "cinevibe",
-      "status": "inconclusive",
-      "sources": [],
-      "site_candidates": [],
-      "site_validations": [],
-      "reason": "no_runtime_validated_terminal_site"
-    },
-    "animetsu": {
-      "provider_id": "animetsu",
-      "status": "inconclusive",
-      "sources": [
-        {
-          "source_type": "hub",
-          "url": "https://everythingmoe.com/s/animetsu",
-          "status": 200,
-          "final_url": "https://everythingmoe.com/s/animetsu"
-        }
-      ],
-      "site_candidates": [
-        {
-          "url": "https://animetsu.bz/#.cc",
-          "label": "dynamic terminal URL",
-          "score": 67,
-          "document_index": 11,
-          "source_type": "hub",
-          "source": "https://everythingmoe.com/s/animetsu"
-        },
-        {
-          "url": "https://animetsu.cc",
-          "label": "dynamic terminal URL",
-          "score": 67,
-          "document_index": 12,
-          "source_type": "hub",
-          "source": "https://everythingmoe.com/s/animetsu"
-        },
-        {
-          "url": "https://animetsu.live",
-          "label": "dynamic terminal URL",
-          "score": 67,
-          "document_index": 8,
-          "source_type": "hub",
-          "source": "https://everythingmoe.com/s/animetsu"
-        },
-        {
-          "url": "https://animetsu.net/#.bz",
-          "label": "dynamic terminal URL",
-          "score": 67,
-          "document_index": 10,
-          "source_type": "hub",
-          "source": "https://everythingmoe.com/s/animetsu"
-        },
-        {
-          "url": "https://animetsu.to/#.xyz",
-          "label": "dynamic terminal URL",
-          "score": 67,
-          "document_index": 14,
-          "source_type": "hub",
-          "source": "https://everythingmoe.com/s/animetsu"
-        }
-      ],
-      "site_validations": [
-        {
-          "url": "https://animetsu.bz/#.cc",
-          "final_url": "https://omg10.com/4/10829438",
-          "status": 200,
-          "ok": false,
-          "content_type": "text/html; charset=utf8",
-          "brand_match": false,
-          "source_type": "hub",
-          "source": "https://everythingmoe.com/s/animetsu",
-          "candidate_score": 67
-        },
-        {
-          "url": "https://animetsu.cc",
-          "final_url": "https://omg10.com/4/10829438",
-          "status": 200,
-          "ok": false,
-          "content_type": "text/html; charset=utf8",
-          "brand_match": false,
-          "source_type": "hub",
-          "source": "https://everythingmoe.com/s/animetsu",
-          "candidate_score": 67
-        },
-        {
-          "url": "https://animetsu.live",
-          "final_url": "https://omg10.com/4/10829438",
-          "status": 200,
-          "ok": false,
-          "content_type": "text/html; charset=utf8",
-          "brand_match": false,
-          "source_type": "hub",
-          "source": "https://everythingmoe.com/s/animetsu",
-          "candidate_score": 67
-        },
-        {
-          "url": "https://animetsu.net/#.bz",
-          "final_url": "https://omg10.com/4/10829438",
-          "status": 200,
-          "ok": false,
-          "content_type": "text/html; charset=utf8",
-          "brand_match": false,
-          "source_type": "hub",
-          "source": "https://everythingmoe.com/s/animetsu",
-          "candidate_score": 67
-        },
-        {
-          "url": "https://animetsu.to/#.xyz",
-          "ok": false,
-          "error": "URLError: <urlopen error [Errno -2] Name or service not known>",
-          "source_type": "hub",
-          "source": "https://everythingmoe.com/s/animetsu",
-          "candidate_score": 67
-        }
-      ],
-      "reason": "no_runtime_validated_terminal_site"
-    },
-    "ctgmovies": {
-      "provider_id": "ctgmovies",
-      "status": "inconclusive",
-      "sources": [],
-      "site_candidates": [],
-      "site_validations": [],
-      "reason": "no_runtime_validated_terminal_site"
-    },
-    "animevostfr": {
-      "provider_id": "animevostfr",
-      "status": "site_validated",
-      "sources": [],
-      "site_candidates": [
-        {
-          "url": "https://v2.animevostfr.org",
-          "label": "last-known-good domain",
-          "score": 78,
-          "source_type": "history_lkg",
-          "source": "provider-domain-history.json"
-        }
-      ],
-      "site_validations": [
-        {
-          "url": "https://v2.animevostfr.org",
-          "final_url": "https://v2.animevostfr.org",
-          "status": 200,
-          "ok": true,
-          "content_type": "text/html; charset=UTF-8",
-          "brand_match": true,
-          "source_type": "history_lkg",
-          "source": "provider-domain-history.json",
-          "candidate_score": 78
-        }
-      ],
-      "confirmation": {
-        "required": 1,
-        "observed": 1
-      },
-      "official_site": "https://v2.animevostfr.org",
-      "selected_source_type": "history_lkg",
-      "selected_source": "provider-domain-history.json",
-      "site_status": 200,
-      "site_final_url": "https://v2.animevostfr.org",
-      "api_candidates": [],
-      "api_probes": [],
-      "validated_api": null,
-      "reason": "terminal_site_runtime_validated",
-      "applied_changes": []
-    },
-    "dooflix": {
-      "provider_id": "dooflix",
+    "castle": {
+      "provider_id": "castle",
       "status": "inconclusive",
       "sources": [],
       "site_candidates": [],
@@ -606,6 +403,20 @@
           "url": "http://animesalt.ac/",
           "status": 200,
           "final_url": "https://animesalt.link/"
+        },
+        {
+          "engine": "yandex",
+          "url": "https://yandex.com/search/?text=%22AnimeSalt%22+official+domain",
+          "status": 200,
+          "final_url": "https://yandex.com/showcaptcha?cc=1&form-fb-hint=1.1&mt=F7ECB05A204CB3E3BBC1D1324672F471B1756ED4BC2DA1F8D46869B3DDC8177308EB39E76ABA9EB1D04D45467AD3F079FE5C85F30CE3C69554DAB80C95CA43B3CC16BDC36D16676E987DD28FE7090AAB2999D225966A392FD08FB97F71BCA50903A009FCB0515EAD9FA9287B5420E0F885C05AC98CA45C7D7744FFFDEB864DE45C5007D5106154B4E063F38C9955AB60912673500E55A1058B58E76BBC5DE1C3A0E088591779C4C50EADF9C48470038502370EBF170C630E9BD860F9862BD9907F18096845CAE8A2A3CE62BB7FF6954BBE71CCA668FA964E94E0548A103EFA375AEDFB34FCAE1B1D1276399297F8404386A8&retpath=aHR0cHM6Ly95YW5kZXguY29tL3NlYXJjaD90ZXh0PSUyMkFuaW1lU2FsdCUyMitvZmZpY2lhbCtkb21haW4%2C_2fb3e8336c4880e5e90392fbcfe4ae5c&t=2%252F1786106526%252F9b7004b98d3820179bd76d06e5638319&u=9183115554613801968&s=a384d62fd20788ad4020d30ca35065a1",
+          "challenged": true
+        },
+        {
+          "engine": "duckduckgo",
+          "url": "https://html.duckduckgo.com/html/?q=%22AnimeSalt%22+official+domain",
+          "status": 202,
+          "final_url": "https://html.duckduckgo.com/html/?q=%22AnimeSalt%22+official+domain",
+          "challenged": false
         }
       ],
       "site_candidates": [
@@ -2449,7 +2260,7 @@
           "source": "http://animesalt.ac/"
         },
         {
-          "url": "https://animesalt.link/wp-includes/css/dashicons.min.css?ver=7.0.2",
+          "url": "https://animesalt.link/wp-includes/css/dashicons.min.css?ver=7.0.3",
           "label": "dynamic terminal URL",
           "score": 67,
           "document_index": 222,
@@ -2501,302 +2312,112 @@
       "reason": "terminal_site_runtime_validated",
       "applied_changes": []
     },
-    "dvdplay": {
-      "provider_id": "dvdplay",
+    "cinefreak": {
+      "provider_id": "cinefreak",
       "status": "inconclusive",
       "sources": [],
       "site_candidates": [],
       "site_validations": [],
       "reason": "no_runtime_validated_terminal_site"
     },
-    "einthusan": {
-      "provider_id": "einthusan",
-      "status": "inconclusive",
-      "sources": [],
-      "site_candidates": [],
-      "site_validations": [],
-      "reason": "no_runtime_validated_terminal_site"
-    },
-    "fibwatch": {
-      "provider_id": "fibwatch",
-      "status": "inconclusive",
-      "sources": [],
-      "site_candidates": [],
-      "site_validations": [],
-      "reason": "no_runtime_validated_terminal_site"
-    },
-    "desiflix": {
-      "provider_id": "desiflix",
-      "status": "inconclusive",
+    "anizone": {
+      "provider_id": "anizone",
+      "status": "retained_last_known_good",
       "sources": [
         {
           "source_type": "hub",
-          "url": "http://desiflix.me/",
-          "status": 403,
-          "final_url": "https://desiflix.monster/"
+          "url": "https://everythingmoe.com/s/anizone",
+          "status": 200,
+          "final_url": "https://everythingmoe.com/s/anizone"
+        },
+        {
+          "engine": "yandex",
+          "url": "https://yandex.com/search/?text=%22AniZone%22+official+domain",
+          "status": 200,
+          "final_url": "https://yandex.com/showcaptcha?cc=1&form-fb-hint=1.1&mt=68620A43D44AC6812495BDF076D1FCFE135DA116FD63018ADE4EBF99C679762793462F272B04B0A4BB2E7548ACD74E159656727CACB84EDA60379A2030F3617A63E792C7AC74BAB53F477FBB00E35E0148F6A81BC7D80809694011C2469E2F5E520489CC6F27019384312669CA05A2C67963C393ACFA538348ABCA6632CB56A5B82A68EC11096620E0B59D8C571D0158E2B9BF19DD889C2D0474B85410F6AFA434B02575F6DA38885155E08A00994915ABC8BD7C29E39BFB29D5A86D2577180A05F2A22FA14F3D2320EA576237D27A41959E788D72A912BDD0F3637F953D98800ED2AD23796BA09A436EB5746353659024A2&retpath=aHR0cHM6Ly95YW5kZXguY29tL3NlYXJjaD90ZXh0PSUyMkFuaVpvbmUlMjIrb2ZmaWNpYWwrZG9tYWlu_9063ee83ffa3b2b2b70e49bddca6fe57&t=2%252F1786106527%252F435c1c848c17256bbdb8362094a36294&u=9183115619774664427&s=af6d2ad17322e2e5c5131aa310291e83",
+          "challenged": true
+        },
+        {
+          "engine": "duckduckgo",
+          "url": "https://html.duckduckgo.com/html/?q=%22AniZone%22+official+domain",
+          "status": 202,
+          "final_url": "https://html.duckduckgo.com/html/?q=%22AniZone%22+official+domain",
+          "challenged": false
         }
       ],
-      "site_candidates": [],
-      "site_validations": [],
-      "reason": "no_runtime_validated_terminal_site"
-    },
-    "dulourd": {
-      "provider_id": "dulourd",
-      "status": "retained_last_known_good",
-      "sources": [],
       "site_candidates": [
         {
-          "url": "https://www.dulourd.hair",
-          "label": "last-known-good domain",
-          "score": 78,
-          "source_type": "history_lkg",
-          "source": "provider-domain-history.json"
+          "url": "https://anizone.to",
+          "label": "curated direct fallback",
+          "score": 82,
+          "document_index": -1,
+          "fallback": true,
+          "source_type": "hub",
+          "source": "https://everythingmoe.com/s/anizone"
         }
       ],
       "site_validations": [
         {
-          "url": "https://www.dulourd.hair",
-          "final_url": "https://www.dulourd.hair",
+          "url": "https://anizone.to",
+          "final_url": "https://anizone.to",
           "status": 403,
           "ok": false,
           "content_type": "text/html; charset=UTF-8",
           "brand_match": true,
-          "source_type": "history_lkg",
-          "source": "provider-domain-history.json",
-          "candidate_score": 78
+          "source_type": "hub",
+          "source": "https://everythingmoe.com/s/anizone",
+          "candidate_score": 82
         }
       ],
-      "official_site": "https://www.dulourd.hair",
+      "official_site": "https://anizone.to",
       "reason": "no_new_candidate_validated"
     },
-    "animesama-co": {
-      "provider_id": "animesama-co",
-      "status": "site_validated",
+    "animevostfr": {
+      "provider_id": "animevostfr",
+      "status": "retained_last_known_good",
       "sources": [
         {
-          "source_type": "hub",
-          "url": "https://anime-sama.wiki/",
+          "engine": "yandex",
+          "url": "https://yandex.com/search/?text=animevostfr+lien",
           "status": 200,
-          "final_url": "https://anime-sama.wiki/"
+          "final_url": "https://yandex.com/showcaptcha?cc=1&form-fb-hint=1.1&mt=3EB96B5E89AA3238A441A8C6D1B8F729D0E45762916A0E10C67EF3A94F802FADA56800264817113DF6F37AA4E63F7B699DEFFCE8283164F6BBA295B21B71A7F3B1089697575D7F15AA09956F1ECEF29DF0A940BB15E055A52F9CC178A0E0125315838FE3B286868321807B0C83DDF83B22FAFB6A0DA874463198AF8AEA724A2A0627BB4DCCBBC60D62CD4C1DBD27007B8259E9DAD097DDB3CA3F115B71B3DE5834BD945AB5CF059B0BDEA45688C7B3D3E8E220229493C4F89D6C6C9A65A5A246D928473014C88BEAFFA52941AF4A08C02AB6832E6C88F280B434E53818BFFA785851778622472C15DF327DA6670FC2F9EDF0&retpath=aHR0cHM6Ly95YW5kZXguY29tL3NlYXJjaD90ZXh0PWFuaW1ldm9zdGZyK2xpZW4%2C_adc7db1f9a163466c56e957ce49aa215&t=2%252F1786106527%252Fc248dee75cda7019c5cfb6a0b289c677&u=9183115601119076696&s=a07b93429b394409d49d75cb436f1642",
+          "challenged": true
+        },
+        {
+          "engine": "duckduckgo",
+          "url": "https://html.duckduckgo.com/html/?q=animevostfr+lien",
+          "status": 202,
+          "final_url": "https://html.duckduckgo.com/html/?q=animevostfr+lien",
+          "challenged": false
         }
       ],
       "site_candidates": [
         {
-          "url": "https://anime-sama.store",
-          "label": "Backup Miroir Alpha Lien de secours à utiliser si la plateforme principale rencontre une indisponibilité temporaire. Secours Alternative rapide Disponibilité Accéder",
-          "score": 100,
-          "document_index": 3,
-          "source_type": "hub",
-          "source": "https://anime-sama.wiki/"
-        },
-        {
-          "url": "https://animes-sama.fr",
-          "label": "Principal Plateforme principale Accès prioritaire au site principal avec l’environnement le plus à jour et les serveurs recommandés. Recommandé Accès prioritaire Version principale Accéder",
-          "score": 100,
-          "document_index": 2,
-          "source_type": "hub",
-          "source": "https://anime-sama.wiki/"
-        },
-        {
-          "url": "https://animes-sama.fr/aide",
-          "label": "Support FAQ & support Aide technique, problèmes de lecture et réponses aux questions fréquentes. Consulter",
-          "score": 70,
-          "document_index": 6,
-          "source_type": "hub",
-          "source": "https://anime-sama.wiki/"
-        },
-        {
-          "url": "https://animes-sama.fr/profile/demande",
-          "label": "Outil Faire une demande Soumettre une demande d’ajout, de correction ou de référencement. Envoyer",
-          "score": 70,
-          "document_index": 5,
-          "source_type": "hub",
-          "source": "https://anime-sama.wiki/"
-        },
-        {
-          "url": "https://animz-sama.fr",
-          "label": "Backup Miroir Beta Deuxième accès de secours pour maintenir l’entrée au service. Accéder",
-          "score": 70,
-          "document_index": 4,
-          "source_type": "hub",
-          "source": "https://anime-sama.wiki/"
-        }
-      ],
-      "site_validations": [
-        {
-          "url": "https://anime-sama.store",
-          "final_url": "https://anime-sama.store",
-          "status": 200,
-          "ok": true,
-          "content_type": "text/html; charset=UTF-8",
-          "brand_match": true,
-          "source_type": "hub",
-          "source": "https://anime-sama.wiki/",
-          "candidate_score": 100
-        }
-      ],
-      "confirmation": {
-        "required": 1,
-        "observed": 1
-      },
-      "official_site": "https://anime-sama.store",
-      "selected_source_type": "hub",
-      "selected_source": "https://anime-sama.wiki/",
-      "site_status": 200,
-      "site_final_url": "https://anime-sama.store",
-      "api_candidates": [],
-      "api_probes": [],
-      "validated_api": null,
-      "reason": "terminal_site_runtime_validated",
-      "applied_changes": []
-    },
-    "goatapi": {
-      "provider_id": "goatapi",
-      "status": "inconclusive",
-      "sources": [],
-      "site_candidates": [],
-      "site_validations": [],
-      "reason": "no_runtime_validated_terminal_site"
-    },
-    "gramcinema": {
-      "provider_id": "gramcinema",
-      "status": "inconclusive",
-      "sources": [],
-      "site_candidates": [],
-      "site_validations": [],
-      "reason": "no_runtime_validated_terminal_site"
-    },
-    "anime-sama": {
-      "provider_id": "anime-sama",
-      "status": "site_validated",
-      "sources": [
-        {
-          "source_type": "hub",
-          "url": "https://anime-sama.wiki/",
-          "status": 200,
-          "final_url": "https://anime-sama.wiki/"
-        }
-      ],
-      "site_candidates": [
-        {
-          "url": "https://anime-sama.store",
-          "label": "Backup Miroir Alpha Lien de secours à utiliser si la plateforme principale rencontre une indisponibilité temporaire. Secours Alternative rapide Disponibilité Accéder",
-          "score": 100,
-          "document_index": 3,
-          "source_type": "hub",
-          "source": "https://anime-sama.wiki/"
-        },
-        {
-          "url": "https://animes-sama.fr",
-          "label": "Principal Plateforme principale Accès prioritaire au site principal avec l’environnement le plus à jour et les serveurs recommandés. Recommandé Accès prioritaire Version principale Accéder",
-          "score": 100,
-          "document_index": 2,
-          "source_type": "hub",
-          "source": "https://anime-sama.wiki/"
-        },
-        {
-          "url": "https://animes-sama.fr/aide",
-          "label": "Support FAQ & support Aide technique, problèmes de lecture et réponses aux questions fréquentes. Consulter",
-          "score": 70,
-          "document_index": 6,
-          "source_type": "hub",
-          "source": "https://anime-sama.wiki/"
-        },
-        {
-          "url": "https://animes-sama.fr/profile/demande",
-          "label": "Outil Faire une demande Soumettre une demande d’ajout, de correction ou de référencement. Envoyer",
-          "score": 70,
-          "document_index": 5,
-          "source_type": "hub",
-          "source": "https://anime-sama.wiki/"
-        },
-        {
-          "url": "https://animz-sama.fr",
-          "label": "Backup Miroir Beta Deuxième accès de secours pour maintenir l’entrée au service. Accéder",
-          "score": 70,
-          "document_index": 4,
-          "source_type": "hub",
-          "source": "https://anime-sama.wiki/"
-        }
-      ],
-      "site_validations": [
-        {
-          "url": "https://anime-sama.store",
-          "final_url": "https://anime-sama.store",
-          "status": 200,
-          "ok": true,
-          "content_type": "text/html; charset=UTF-8",
-          "brand_match": true,
-          "source_type": "hub",
-          "source": "https://anime-sama.wiki/",
-          "candidate_score": 100
-        }
-      ],
-      "confirmation": {
-        "required": 1,
-        "observed": 1
-      },
-      "official_site": "https://anime-sama.store",
-      "selected_source_type": "hub",
-      "selected_source": "https://anime-sama.wiki/",
-      "site_status": 200,
-      "site_final_url": "https://anime-sama.store",
-      "api_candidates": [],
-      "api_probes": [],
-      "validated_api": null,
-      "reason": "terminal_site_runtime_validated",
-      "applied_changes": []
-    },
-    "hdhub4u": {
-      "provider_id": "hdhub4u",
-      "status": "site_validated",
-      "sources": [],
-      "site_candidates": [
-        {
-          "url": "https://new4.hdhub4u.cl",
+          "url": "https://v2.animevostfr.org",
           "label": "last-known-good domain",
           "score": 78,
           "source_type": "history_lkg",
           "source": "provider-domain-history.json"
-        },
-        {
-          "url": "https://new3.hdhub4u.cl",
-          "label": "curated direct candidate",
-          "score": 72,
-          "source_type": "curated_direct",
-          "source": "provider-hubs.json"
         }
       ],
       "site_validations": [
         {
-          "url": "https://new4.hdhub4u.cl",
-          "final_url": "https://new4.hdhub4u.cl",
-          "status": 200,
-          "ok": true,
-          "content_type": "text/html; charset=UTF-8",
+          "url": "https://v2.animevostfr.org",
+          "final_url": "https://v2.animevostfr.org",
+          "status": 403,
+          "ok": false,
+          "content_type": "application/json",
           "brand_match": true,
           "source_type": "history_lkg",
           "source": "provider-domain-history.json",
           "candidate_score": 78
         }
       ],
-      "confirmation": {
-        "required": 1,
-        "observed": 1
-      },
-      "official_site": "https://new4.hdhub4u.cl",
-      "selected_source_type": "history_lkg",
-      "selected_source": "provider-domain-history.json",
-      "site_status": 200,
-      "site_final_url": "https://new4.hdhub4u.cl",
-      "api_candidates": [],
-      "api_probes": [],
-      "validated_api": null,
-      "reason": "terminal_site_runtime_validated",
-      "applied_changes": []
+      "official_site": "https://v2.animevostfr.org",
+      "reason": "no_new_candidate_validated"
     },
-    "hianime": {
-      "provider_id": "hianime",
+    "cinevibe": {
+      "provider_id": "cinevibe",
       "status": "inconclusive",
       "sources": [],
       "site_candidates": [],
@@ -2812,6 +2433,20 @@
           "url": "https://allanime.sa.com/",
           "status": 200,
           "final_url": "https://allanime.sa.com/"
+        },
+        {
+          "engine": "yandex",
+          "url": "https://yandex.com/search/?text=%22AllAnime%22+official+domain",
+          "status": 200,
+          "final_url": "https://yandex.com/showcaptcha?cc=1&form-fb-hint=1.1&mt=E669590314584EBD3C25468333B0DA7B57651D9CF52DAA4CAC4232966BA81D7B1B3B136261C3C2817C66A717F218DC37C364606DE8289E1EDD511CE69207BB54E799F6F686113460E7EE0F732189FDCF99D093D3A1C4A618A74ADEAC7EC94C30F8DDBE0AA05120DF5D475BBB3E10EA4834A090E4A5DD584DA2FCE5B1D5A04C77542C175BB9264E32CEE95F2D751E770A668860CBE82FB33619808E582A55CF8D92194D33C4D5259886B2DF68CC89F126E3E13AA657BC74FA4609FD5E667541CEBDC7F07AB1CBA3572A90D95B239F43FFCF203A3D1B84D9CEDE97D9B31A1D8C23AF2D5226556A54F69633AD3183F0D23A5AFB&retpath=aHR0cHM6Ly95YW5kZXguY29tL3NlYXJjaD90ZXh0PSUyMkFsbEFuaW1lJTIyK29mZmljaWFsK2RvbWFpbg%2C%2C_90cbb7cc4ecd046cf5c1db95e2784e7b&t=2%252F1786106526%252F02c9ec602b84783caa27c35bfe8fda41&u=9183115514816401062&s=ebcb69e1b853a2af9044fd169585dd3e",
+          "challenged": true
+        },
+        {
+          "engine": "duckduckgo",
+          "url": "https://html.duckduckgo.com/html/?q=%22AllAnime%22+official+domain",
+          "status": 202,
+          "final_url": "https://html.duckduckgo.com/html/?q=%22AllAnime%22+official+domain",
+          "challenged": false
         }
       ],
       "site_candidates": [
@@ -2877,6 +2512,560 @@
       "reason": "terminal_site_runtime_validated",
       "applied_changes": []
     },
+    "ctgmovies": {
+      "provider_id": "ctgmovies",
+      "status": "inconclusive",
+      "sources": [],
+      "site_candidates": [],
+      "site_validations": [],
+      "reason": "no_runtime_validated_terminal_site"
+    },
+    "animetsu": {
+      "provider_id": "animetsu",
+      "status": "inconclusive",
+      "sources": [
+        {
+          "source_type": "hub",
+          "url": "https://everythingmoe.com/s/animetsu",
+          "status": 200,
+          "final_url": "https://everythingmoe.com/s/animetsu"
+        },
+        {
+          "engine": "yandex",
+          "url": "https://yandex.com/search/?text=%22Animetsu%22+official+domain",
+          "status": 200,
+          "final_url": "https://yandex.com/showcaptcha?cc=1&form-fb-hint=1.1&mt=DC616F25608E7420BB5FE68264601FD3481A768BD62006EA2E93EF075A6E685C489FAE3FB940EAD115BE2F158060C6C7BB83525E713619453FAE4701781BBE89E0593B71D95EF6D936AC94574EEF07D57C097405783448BE9776607A96D84463C0199936A30B49EC615D19A33F76CBDF0793267082C175FE4CE6A5A27F3BE31903356C33E31EE0A32549A45D8FAF4A0B1934BC3A95B12E369C08EFA4B623625CFE3EE3509642DB900391BB7CA2D4B246073F908D12D56DB54668F391AECCEC9EAEE8116F8BD83F99B5366380FD8963C19F1B4F164737DF7B76936697C39D0F5DFA478D686F49C9810B354D06F2053A586F99&retpath=aHR0cHM6Ly95YW5kZXguY29tL3NlYXJjaD90ZXh0PSUyMkFuaW1ldHN1JTIyK29mZmljaWFsK2RvbWFpbg%2C%2C_60424ce76d3676406a2c34072f69d2bd&t=2%252F1786106527%252F31da234abb0bfbfd5a175b55bb1000d7&u=9183115610245882324&s=57e0641c96ed6afe70e4f7c87a2b7c35",
+          "challenged": true
+        },
+        {
+          "engine": "duckduckgo",
+          "url": "https://html.duckduckgo.com/html/?q=%22Animetsu%22+official+domain",
+          "status": 202,
+          "final_url": "https://html.duckduckgo.com/html/?q=%22Animetsu%22+official+domain",
+          "challenged": false
+        }
+      ],
+      "site_candidates": [
+        {
+          "url": "https://animetsu.bz/#.cc",
+          "label": "dynamic terminal URL",
+          "score": 67,
+          "document_index": 11,
+          "source_type": "hub",
+          "source": "https://everythingmoe.com/s/animetsu"
+        },
+        {
+          "url": "https://animetsu.cc",
+          "label": "dynamic terminal URL",
+          "score": 67,
+          "document_index": 12,
+          "source_type": "hub",
+          "source": "https://everythingmoe.com/s/animetsu"
+        },
+        {
+          "url": "https://animetsu.live",
+          "label": "dynamic terminal URL",
+          "score": 67,
+          "document_index": 8,
+          "source_type": "hub",
+          "source": "https://everythingmoe.com/s/animetsu"
+        },
+        {
+          "url": "https://animetsu.net/#.bz",
+          "label": "dynamic terminal URL",
+          "score": 67,
+          "document_index": 10,
+          "source_type": "hub",
+          "source": "https://everythingmoe.com/s/animetsu"
+        },
+        {
+          "url": "https://animetsu.to/#.xyz",
+          "label": "dynamic terminal URL",
+          "score": 67,
+          "document_index": 14,
+          "source_type": "hub",
+          "source": "https://everythingmoe.com/s/animetsu"
+        }
+      ],
+      "site_validations": [
+        {
+          "url": "https://animetsu.bz/#.cc",
+          "final_url": "https://omg10.com/4/10829438",
+          "status": 200,
+          "ok": false,
+          "content_type": "text/html; charset=utf8",
+          "brand_match": false,
+          "source_type": "hub",
+          "source": "https://everythingmoe.com/s/animetsu",
+          "candidate_score": 67
+        },
+        {
+          "url": "https://animetsu.cc",
+          "final_url": "https://omg10.com/4/10829438",
+          "status": 200,
+          "ok": false,
+          "content_type": "text/html; charset=utf8",
+          "brand_match": false,
+          "source_type": "hub",
+          "source": "https://everythingmoe.com/s/animetsu",
+          "candidate_score": 67
+        },
+        {
+          "url": "https://animetsu.live",
+          "final_url": "https://omg10.com/4/10829438",
+          "status": 200,
+          "ok": false,
+          "content_type": "text/html; charset=utf8",
+          "brand_match": false,
+          "source_type": "hub",
+          "source": "https://everythingmoe.com/s/animetsu",
+          "candidate_score": 67
+        },
+        {
+          "url": "https://animetsu.net/#.bz",
+          "final_url": "https://omg10.com/4/10829438",
+          "status": 200,
+          "ok": false,
+          "content_type": "text/html; charset=utf8",
+          "brand_match": false,
+          "source_type": "hub",
+          "source": "https://everythingmoe.com/s/animetsu",
+          "candidate_score": 67
+        },
+        {
+          "url": "https://animetsu.to/#.xyz",
+          "ok": false,
+          "error": "URLError: <urlopen error [Errno -2] Name or service not known>",
+          "source_type": "hub",
+          "source": "https://everythingmoe.com/s/animetsu",
+          "candidate_score": 67
+        }
+      ],
+      "reason": "no_runtime_validated_terminal_site"
+    },
+    "cinemacity": {
+      "provider_id": "cinemacity",
+      "status": "retained_last_known_good",
+      "sources": [
+        {
+          "engine": "yandex",
+          "url": "https://yandex.com/search/?text=%22CinemaCity%22+official+domain",
+          "status": 200,
+          "final_url": "https://yandex.com/showcaptcha?cc=1&form-fb-hint=1.1&mt=CA856DAEB8D349CB251F309A4655EE2F32804E8CB5A48AD66BED41C3AA9C469980F12E693325A88AD21EE1F46CB26D59514649A90B9E539442E72DDFC559089D25F258E39099BF8147565E24C5E539FBFBBEE1DB5B8620ED083D76AAF250D67266CC039D4D04265962CAB6AF8B0D2B7F95D03033F052161911CB11BEA6431C9C21E7BE3D8EA0A7689109680B20A032DDE44059ED09B02F960FCD7565FBA03E41D5D65584E6EF23333F24A8138A3E045255F231314DA22F500EA6EE63FF1227F1A7B6BF11C4E18F417099FA385FC647C26F0CB0F6A7E9DF10A6CDFD2F634619BACB82D9543A6BEDCF26428BB1930C526A79CC&retpath=aHR0cHM6Ly95YW5kZXguY29tL3NlYXJjaD90ZXh0PSUyMkNpbmVtYUNpdHklMjIrb2ZmaWNpYWwrZG9tYWlu_b82fb91c254ef72147da90808961e194&t=2%252F1786106528%252F086f91a6a72c8e82a62afcfaace45383&u=9183115672589340371&s=0a78465bd7921280fe88f07f6a334378",
+          "challenged": true
+        },
+        {
+          "engine": "duckduckgo",
+          "url": "https://html.duckduckgo.com/html/?q=%22CinemaCity%22+official+domain",
+          "status": 202,
+          "final_url": "https://html.duckduckgo.com/html/?q=%22CinemaCity%22+official+domain",
+          "challenged": false
+        }
+      ],
+      "site_candidates": [
+        {
+          "url": "https://cinemacity.cc",
+          "label": "last-known-good domain",
+          "score": 78,
+          "source_type": "history_lkg",
+          "source": "provider-domain-history.json"
+        }
+      ],
+      "site_validations": [
+        {
+          "url": "https://cinemacity.cc",
+          "final_url": "https://cinemacity.cc",
+          "status": 403,
+          "ok": false,
+          "content_type": "text/html; charset=UTF-8",
+          "brand_match": true,
+          "source_type": "history_lkg",
+          "source": "provider-domain-history.json",
+          "candidate_score": 78
+        }
+      ],
+      "official_site": "https://cinemacity.cc",
+      "reason": "no_new_candidate_validated"
+    },
+    "cineby": {
+      "provider_id": "cineby",
+      "status": "site_validated",
+      "sources": [
+        {
+          "source_type": "hub",
+          "url": "https://warflix.cv/",
+          "status": 200,
+          "final_url": "https://warflix.cv/"
+        },
+        {
+          "engine": "yandex",
+          "url": "https://yandex.com/search/?text=%22Cineby%22+official+domain",
+          "status": 200,
+          "final_url": "https://yandex.com/showcaptcha?cc=1&form-fb-hint=1.1&mt=2884F2847D518F6E193FBA9D9AC7C11DC41488ACB674F589412BE6F764BDA9F565557B30D57E5F69B30E268D33F9B25FDC3CBCA76E09A48D47C69CC7A83FCEB0BBAB524B29713C45F0081A0D14199635F2F5E6BB7B5F078BD4CA932287691B69B89B85B136DC6F9AE7EBB02E2E9D5A8F825DE50C0C74CF96ADB9715F6BEC768AD0BC4A28D4244EFB8813376EEEC7113DBEBE2006A04B0A736749E44A7FD1276178A760E038F30D36282D4FD50C738CE57A039278F662690FC60B2C12EBB7C6F85B8D09016C64C7E2B88AD7B8DC4BED64B8C417C8BE2E246B0EDB69077E7EA2C0113179A662F68DA663FA57374C5E1C9967AB&retpath=aHR0cHM6Ly95YW5kZXguY29tL3NlYXJjaD90ZXh0PSUyMkNpbmVieSUyMitvZmZpY2lhbCtkb21haW4%2C_a71eead915bf5fb91c2cb970cda08fc9&t=2%252F1786106528%252Fc5a026b6d1554ac63432385b0ff4c940&u=9183115692252914026&s=8f38912d79863d5fc3bfd3796f172775",
+          "challenged": true
+        },
+        {
+          "engine": "duckduckgo",
+          "url": "https://html.duckduckgo.com/html/?q=%22Cineby%22+official+domain",
+          "status": 202,
+          "final_url": "https://html.duckduckgo.com/html/?q=%22Cineby%22+official+domain",
+          "challenged": false
+        }
+      ],
+      "site_candidates": [
+        {
+          "url": "https://cineby.top",
+          "label": "curated direct fallback",
+          "score": 82,
+          "document_index": -1,
+          "fallback": true,
+          "source_type": "hub",
+          "source": "https://warflix.cv/"
+        },
+        {
+          "url": "https://warflix.im",
+          "label": "Domain - 3 Active https://warflix.im",
+          "score": 67,
+          "document_index": 5,
+          "source_type": "hub",
+          "source": "https://warflix.cv/"
+        },
+        {
+          "url": "https://warflix.nl",
+          "label": "Domain - 2 Active https://warflix.nl",
+          "score": 67,
+          "document_index": 4,
+          "source_type": "hub",
+          "source": "https://warflix.cv/"
+        }
+      ],
+      "site_validations": [
+        {
+          "url": "https://cineby.top",
+          "final_url": "https://cineby.top",
+          "status": 200,
+          "ok": true,
+          "content_type": "text/html; charset=UTF-8",
+          "brand_match": true,
+          "source_type": "hub",
+          "source": "https://warflix.cv/",
+          "candidate_score": 82
+        }
+      ],
+      "confirmation": {
+        "required": 1,
+        "observed": 1
+      },
+      "official_site": "https://cineby.top",
+      "selected_source_type": "hub",
+      "selected_source": "https://warflix.cv/",
+      "site_status": 200,
+      "site_final_url": "https://cineby.top",
+      "api_candidates": [],
+      "api_probes": [],
+      "validated_api": null,
+      "reason": "terminal_site_runtime_validated",
+      "applied_changes": []
+    },
+    "dvdplay": {
+      "provider_id": "dvdplay",
+      "status": "inconclusive",
+      "sources": [],
+      "site_candidates": [],
+      "site_validations": [],
+      "reason": "no_runtime_validated_terminal_site"
+    },
+    "einthusan": {
+      "provider_id": "einthusan",
+      "status": "inconclusive",
+      "sources": [],
+      "site_candidates": [],
+      "site_validations": [],
+      "reason": "no_runtime_validated_terminal_site"
+    },
+    "fibwatch": {
+      "provider_id": "fibwatch",
+      "status": "inconclusive",
+      "sources": [],
+      "site_candidates": [],
+      "site_validations": [],
+      "reason": "no_runtime_validated_terminal_site"
+    },
+    "desiflix": {
+      "provider_id": "desiflix",
+      "status": "inconclusive",
+      "sources": [
+        {
+          "source_type": "hub",
+          "url": "http://desiflix.me/",
+          "status": 403,
+          "final_url": "https://desiflix.monster/"
+        },
+        {
+          "engine": "yandex",
+          "url": "https://yandex.com/search/?text=%22DesiFlix%22+official+domain",
+          "status": 200,
+          "final_url": "https://yandex.com/showcaptcha?cc=1&form-fb-hint=1.1&mt=399E7FAB326A43B8FE1DC73E44863417DF2D8FEB0F06F3DF3E4439A97B544805AF1A2F01DCCE609952E8752DE56595329F55F35846C648BED07E5420BE23EC0FB749203E2C1B3EEEBF1FDCE149F3AE070894625FDB8AA63920915538F1FA84C761C516A57B29519A1A31F973DD9F3F0FFC8DE49882190F8A343E874740522DC5FA29AB2CB70F99DD8D0D08B5D485D4B1FF992060525E24ED30846298767D330E0DFE892B27E498F0B087653AFAC066E4FFA6A0233055BB99DC0FA2E2013E4890C41FF5E2584563AE5E48AB53BCFA71E1F82D94D68F94743C5887CCE7BEFF69046238484D7FB5BB397ACCE2B8E37F45EAF03C&retpath=aHR0cHM6Ly95YW5kZXguY29tL3NlYXJjaD90ZXh0PSUyMkRlc2lGbGl4JTIyK29mZmljaWFsK2RvbWFpbg%2C%2C_22085436908a9b39d7129febeb7a7fec&t=2%252F1786106529%252F3c5da9b8775c6d4e29caf5e93ab86839&u=9183115733054426777&s=ce95b08f94924b339344c69537eca4a1",
+          "challenged": true
+        },
+        {
+          "engine": "duckduckgo",
+          "url": "https://html.duckduckgo.com/html/?q=%22DesiFlix%22+official+domain",
+          "status": 202,
+          "final_url": "https://html.duckduckgo.com/html/?q=%22DesiFlix%22+official+domain",
+          "challenged": false
+        }
+      ],
+      "site_candidates": [],
+      "site_validations": [],
+      "reason": "no_runtime_validated_terminal_site"
+    },
+    "dooflix": {
+      "provider_id": "dooflix",
+      "status": "inconclusive",
+      "sources": [
+        {
+          "engine": "yandex",
+          "url": "https://yandex.com/search/?text=%22DooFlix%22+official+domain",
+          "status": 200,
+          "final_url": "https://yandex.com/showcaptcha?cc=1&form-fb-hint=1.1&mt=C7C9652E6C3C0C7E7FB258066564A40D0084E93ADE40042433299B6E8E235F8DB92C4A8201055312D456D5EB51F26354FBDB3CFEA64A1DEC1BA95D0040B7F7D7B717D42F4F1DAD3CDEDB816F2C71908772F11AC662B809E757468B9774E1C41C621C753FC221B9136B1205CD86733AC185D3FEBAA429F06675BF8221A8D488BFA712FC9E5B8AFF0CD83435B723C6DD80C9548F5379A893BEEF3F1B5783A9142B1CDC7E7A585FD6481B5B28709456B4E7548A6F3DC1C8E71E8022019B71F9F9B02F6CC9F7C3196815F61B9B945528F97CBD4261AECBE8C4ED4A382841EA2A0F324E1C0DB804C91675947CF1EC963CB4EDA58A&retpath=aHR0cHM6Ly95YW5kZXguY29tL3NlYXJjaD90ZXh0PSUyMkRvb0ZsaXglMjIrb2ZmaWNpYWwrZG9tYWlu_dcdb190ef36713568dcb99abb8fd61ac&t=2%252F1786106529%252F0799d2ebbfd8e5cbfb37d2c9f7773370&u=9183115741711470299&s=40898edded678bf77d681a7beabaac45",
+          "challenged": true
+        },
+        {
+          "engine": "duckduckgo",
+          "url": "https://html.duckduckgo.com/html/?q=%22DooFlix%22+official+domain",
+          "status": 202,
+          "final_url": "https://html.duckduckgo.com/html/?q=%22DooFlix%22+official+domain",
+          "challenged": false
+        }
+      ],
+      "site_candidates": [],
+      "site_validations": [],
+      "reason": "no_runtime_validated_terminal_site"
+    },
+    "dulourd": {
+      "provider_id": "dulourd",
+      "status": "retained_last_known_good",
+      "sources": [
+        {
+          "engine": "yandex",
+          "url": "https://yandex.com/search/?text=DuLourd%22+streaming",
+          "status": 200,
+          "final_url": "https://yandex.com/showcaptcha?cc=1&form-fb-hint=1.1&mt=D88D9C032D40602EBC5E1825B6741BF8E8C32BF0BA0AF95CFF6909F058B53A8D55D28B93F5E7B33E490A6637F4396B75201F6E08D30150C66AC72ECDB84C1F9B5807A94850FB130CD824AF1D4538223589C8E2080812D0EE4E22D345DD90AB52E886A412F08CBCF809DB06126F7E64BC2C7C6FCE087A0EC02BD803B16C477F1C67404E68CBDBC318430F155FCE74742B8CBBC10CC9280113BB07840175EF6FE51D0340E0B9A9A84F270DB5F0F4384EE0D21606D64CA7A098EEFCE9A8846E66D8370DC49472EEEDDFF6A8DAD6EA85B11AE7893F05940E2AD13C8E16E0D405F60B7B9FE2BEC5C0655FA96FDCB4EC7A5345A73F&retpath=aHR0cHM6Ly95YW5kZXguY29tL3NlYXJjaD90ZXh0PUR1TG91cmQlMjIrc3RyZWFtaW5n_6f355d894c4930726eaee1459e875d63&t=2%252F1786106529%252F59fd7132c652e2f7c5a827767d32122f&u=9183115746409767283&s=bc1164af92bb59c5109e0b4c9d5955fb",
+          "challenged": true
+        },
+        {
+          "engine": "duckduckgo",
+          "url": "https://html.duckduckgo.com/html/?q=DuLourd%22+streaming",
+          "status": 202,
+          "final_url": "https://html.duckduckgo.com/html/?q=DuLourd%22+streaming",
+          "challenged": false
+        }
+      ],
+      "site_candidates": [
+        {
+          "url": "https://www.dulourd.hair",
+          "label": "last-known-good domain",
+          "score": 78,
+          "source_type": "history_lkg",
+          "source": "provider-domain-history.json"
+        }
+      ],
+      "site_validations": [
+        {
+          "url": "https://www.dulourd.hair",
+          "final_url": "https://www.dulourd.hair",
+          "status": 403,
+          "ok": false,
+          "content_type": "text/html; charset=UTF-8",
+          "brand_match": true,
+          "source_type": "history_lkg",
+          "source": "provider-domain-history.json",
+          "candidate_score": 78
+        }
+      ],
+      "official_site": "https://www.dulourd.hair",
+      "reason": "no_new_candidate_validated"
+    },
+    "goatapi": {
+      "provider_id": "goatapi",
+      "status": "inconclusive",
+      "sources": [],
+      "site_candidates": [],
+      "site_validations": [],
+      "reason": "no_runtime_validated_terminal_site"
+    },
+    "gramcinema": {
+      "provider_id": "gramcinema",
+      "status": "inconclusive",
+      "sources": [],
+      "site_candidates": [],
+      "site_validations": [],
+      "reason": "no_runtime_validated_terminal_site"
+    },
+    "cinemm": {
+      "provider_id": "cinemm",
+      "status": "site_validated",
+      "sources": [
+        {
+          "engine": "yandex",
+          "url": "https://yandex.com/search/?text=%22CineMM%22+official+domain",
+          "status": 200,
+          "final_url": "https://yandex.com/showcaptcha?cc=1&form-fb-hint=1.1&mt=DF1859DA89277007775CA97CD36658B55742F1D23EDCF9E1933C5701AEA368BA8EB8A2EBD6D5DC2B5F7CE71A258DCFC82388172D708FCA940B461FC2EAE1F35E548C662D1DA60CFD46F4942E4D7F777B39404598583F674094CD6FA2B9B8761C505721582B9A5E5EEE6193C3E05C0FFF2BE8860B333577F0B3A2EBA9907F3D082B12CC51538841456379F76F8D8431D53A7B5C7BDC780AAA741D80DF35B1814D5104272CB248F8EEC2B89D422C684F40C0ABFFCE48420815F4B183F63C7CB6BAE886C9C7F5A544BD8FAE421A833BB51184A7390B403FF8866CF3BFCB1B07767E07862764724639C058E983E2E47A4F5B01E5&retpath=aHR0cHM6Ly95YW5kZXguY29tL3NlYXJjaD90ZXh0PSUyMkNpbmVNTSUyMitvZmZpY2lhbCtkb21haW4%2C_19f05d819903f9fca93cba60e64a80aa&t=2%252F1786106528%252F0fd5c90ec4efdce02622df2d499838d2&u=9183115691850260822&s=225155af95e8e14477d778e0ae103b8a",
+          "challenged": true
+        },
+        {
+          "engine": "duckduckgo",
+          "url": "https://html.duckduckgo.com/html/?q=%22CineMM%22+official+domain",
+          "status": 202,
+          "final_url": "https://html.duckduckgo.com/html/?q=%22CineMM%22+official+domain",
+          "challenged": false
+        }
+      ],
+      "site_candidates": [
+        {
+          "url": "https://cinemm.com",
+          "label": "last-known-good domain",
+          "score": 78,
+          "source_type": "history_lkg",
+          "source": "provider-domain-history.json"
+        }
+      ],
+      "site_validations": [
+        {
+          "url": "https://cinemm.com",
+          "final_url": "https://cinemm.com",
+          "status": 200,
+          "ok": true,
+          "content_type": "text/html; charset=utf-8",
+          "brand_match": true,
+          "source_type": "history_lkg",
+          "source": "provider-domain-history.json",
+          "candidate_score": 78
+        }
+      ],
+      "confirmation": {
+        "required": 1,
+        "observed": 1
+      },
+      "official_site": "https://cinemm.com",
+      "selected_source_type": "history_lkg",
+      "selected_source": "provider-domain-history.json",
+      "site_status": 200,
+      "site_final_url": "https://cinemm.com",
+      "api_candidates": [],
+      "api_probes": [],
+      "validated_api": null,
+      "reason": "terminal_site_runtime_validated",
+      "applied_changes": []
+    },
+    "flemmix": {
+      "provider_id": "flemmix",
+      "status": "retained_last_known_good",
+      "sources": [
+        {
+          "source_type": "hub",
+          "url": "https://ww1.wiflix-adresses.fun/",
+          "status": 403,
+          "final_url": "https://ww1.wiflix-adresses.fun/"
+        }
+      ],
+      "site_candidates": [
+        {
+          "url": "https://flemmix.men",
+          "label": "last-known-good domain",
+          "score": 78,
+          "source_type": "history_lkg",
+          "source": "provider-domain-history.json"
+        }
+      ],
+      "site_validations": [
+        {
+          "url": "https://flemmix.men",
+          "final_url": "https://flemmix.men",
+          "status": 403,
+          "ok": false,
+          "content_type": "text/html; charset=UTF-8",
+          "brand_match": true,
+          "source_type": "history_lkg",
+          "source": "provider-domain-history.json",
+          "candidate_score": 78
+        }
+      ],
+      "official_site": "https://flemmix.men",
+      "reason": "no_new_candidate_validated"
+    },
+    "hianime": {
+      "provider_id": "hianime",
+      "status": "inconclusive",
+      "sources": [],
+      "site_candidates": [],
+      "site_validations": [],
+      "reason": "no_runtime_validated_terminal_site"
+    },
+    "hdhub4u": {
+      "provider_id": "hdhub4u",
+      "status": "site_validated",
+      "sources": [
+        {
+          "engine": "yandex",
+          "url": "https://yandex.com/search/?text=HDHub4u.Tv+%7C+HDHub4u.ec",
+          "status": 200,
+          "final_url": "https://yandex.com/showcaptcha?cc=1&form-fb-hint=1.1&mt=18FC15CDB373DDB009FCECADC341234BF7AB5E0E0781607E181F4CBF2EF8C03C97CA8C8F5505C89B6DEE896251C546BE56C8A8E5787919F4C2E4D211C0B4551BE779E6F907312FC5373C4CD4E0CCE76AA578F9BDBCB4C5F2573DF9F6A77322A571089BEB1118DF7237AEC2961C44AE9C177B533B0E70C0000A3295C398A750E7368A8BDB443027E72973A4783D6E7E376066C633E73AAFCE8E6A228CF97AE3DE240FF82BADBBC8276E2B6ADD8F6B5CD8056A4DE9168115C2E2E24A1B01D96115354413380EE01F2BB67E1389E3A3592F9B2808BB0518BBCB5642D7851BB078325A8A69F417E0D7100FB2A72195031E254F64&retpath=aHR0cHM6Ly95YW5kZXguY29tL3NlYXJjaD90ZXh0PUhESHViNHUuVHYrJTdDK0hESHViNHUuZWM%2C_0740aba7d4082b46e91781ef05a71a95&t=2%252F1786106531%252F75b1b965853a50c03c88a287114ff629&u=9183115836737621656&s=b4b9e6a7d0da271ba94c5dadb986eaa3",
+          "challenged": true
+        },
+        {
+          "engine": "duckduckgo",
+          "url": "https://html.duckduckgo.com/html/?q=HDHub4u.Tv+%7C+HDHub4u.ec",
+          "status": 202,
+          "final_url": "https://html.duckduckgo.com/html/?q=HDHub4u.Tv+%7C+HDHub4u.ec",
+          "challenged": false
+        }
+      ],
+      "site_candidates": [
+        {
+          "url": "https://new4.hdhub4u.cl",
+          "label": "last-known-good domain",
+          "score": 78,
+          "source_type": "history_lkg",
+          "source": "provider-domain-history.json"
+        },
+        {
+          "url": "https://new3.hdhub4u.cl",
+          "label": "curated direct candidate",
+          "score": 72,
+          "source_type": "curated_direct",
+          "source": "provider-hubs.json"
+        }
+      ],
+      "site_validations": [
+        {
+          "url": "https://new4.hdhub4u.cl",
+          "final_url": "https://new4.hdhub4u.cl",
+          "status": 200,
+          "ok": true,
+          "content_type": "text/html; charset=UTF-8",
+          "brand_match": true,
+          "source_type": "history_lkg",
+          "source": "provider-domain-history.json",
+          "candidate_score": 78
+        }
+      ],
+      "confirmation": {
+        "required": 1,
+        "observed": 1
+      },
+      "official_site": "https://new4.hdhub4u.cl",
+      "selected_source_type": "history_lkg",
+      "selected_source": "provider-domain-history.json",
+      "site_status": 200,
+      "site_final_url": "https://new4.hdhub4u.cl",
+      "api_candidates": [],
+      "api_probes": [],
+      "validated_api": null,
+      "reason": "terminal_site_runtime_validated",
+      "applied_changes": []
+    },
     "kisskh": {
       "provider_id": "kisskh",
       "status": "inconclusive",
@@ -2888,7 +3077,22 @@
     "french-manga": {
       "provider_id": "french-manga",
       "status": "site_validated",
-      "sources": [],
+      "sources": [
+        {
+          "engine": "yandex",
+          "url": "https://yandex.com/search/?text=French-Manga%22+streaming",
+          "status": 200,
+          "final_url": "https://yandex.com/showcaptcha?cc=1&form-fb-hint=1.1&mt=63D71EFB796FFBB38940336009ACD7ACFA23B60139149A8CC8C62C395F9B7A0959C6DB5DEBD8C4E7D16134DE273686EC4BF9B3D4F3847EE69783D29CAA56D9AC9F2E9D9D18AFDDBEAFF8F83D90819692A21D58E7DF07483B835ADB80AD79C4DFEBF7C6EC5055B4DC188EB1A6FB749AFAE858DF7AF81009462A8A16FB00BE97D3CFA0BAFFC83D4961DBFA56D228C27E5B6089200E287800EB3B19FCDEEF53739F6CBE7B89C29F218329748AC1D28500AB2C1BB4C025146F176C09C396244365001756BB639C6D00AE0A59BEDC69AFD49510D7DDC71EBF496EC35B6C6ABA766487B080E296BED463FA651FEF693D86952A56FB&retpath=aHR0cHM6Ly95YW5kZXguY29tL3NlYXJjaD90ZXh0PUZyZW5jaC1NYW5nYSUyMitzdHJlYW1pbmc%2C_84edad95d73c5eec0f50418f38adb65f&t=2%252F1786106530%252Fa6805cb668fad472ac542a9845148ff9&u=9183115801438359188&s=39bdfb43d535495be5c46208245c18ca",
+          "challenged": true
+        },
+        {
+          "engine": "duckduckgo",
+          "url": "https://html.duckduckgo.com/html/?q=French-Manga%22+streaming",
+          "status": 202,
+          "final_url": "https://html.duckduckgo.com/html/?q=French-Manga%22+streaming",
+          "challenged": false
+        }
+      ],
       "site_candidates": [
         {
           "url": "https://w16.french-manga.net",
@@ -2942,61 +3146,69 @@
       "site_validations": [],
       "reason": "no_runtime_validated_terminal_site"
     },
-    "flemmix": {
-      "provider_id": "flemmix",
-      "status": "retained_last_known_good",
+    "hindmoviez": {
+      "provider_id": "hindmoviez",
+      "status": "site_validated",
       "sources": [
         {
-          "source_type": "hub",
-          "url": "https://ww1.wiflix-adresses.fun/",
+          "source_type": "telegram_public",
+          "url": "https://t.me/s/hindmoviez/1975",
           "status": 200,
-          "final_url": "https://ww1.wiflix-adresses.fun/"
+          "final_url": "https://t.me/s/hindmoviez/1975"
+        },
+        {
+          "engine": "yandex",
+          "url": "https://yandex.com/search/?text=%22HindMoviez%22+official+domain",
+          "status": 200,
+          "final_url": "https://yandex.com/showcaptcha?cc=1&form-fb-hint=1.1&mt=10E07781A516135BF4BA939C966099B0DEBE8D0278ECD03CF5F5F77374BEBEEDFE66959FE9CF7878A59B5EDF8355FF1924C6DF65D8C617FAFA40C0CB99F2302E2A54EAA25C46C8E08F370890CA4985F06857F8C1F3C7C1DC3DA5922134014EA1D9D1CB279F47DA335A04407D540B81CB7B526DBBF0BC3D50C0A7A4E1B6E2171381D6868723D60CDF672C1D89CE6DB3574EE329431451E2BB8AB1FD219B8D9B86037AD8FE6CAFD9D1382A83AA06C54D28A99FC4E07BE933F9D170EE9FD7836BC8DDB767967EAE73AF1ACBC55EC8CC3A3FA63BB7CAE8D9D7AF89B4C2A2D648F7815E9114A4F12D67CCD331B99A29F44879804B&retpath=aHR0cHM6Ly95YW5kZXguY29tL3NlYXJjaD90ZXh0PSUyMkhpbmRNb3ZpZXolMjIrb2ZmaWNpYWwrZG9tYWlu_68bddea98fede854449da5bc9a2d668a&t=2%252F1786106531%252Fa572d348437734790da5ff37c3ba9ac0&u=9183115867205045947&s=d0c9c7f40f540c0a8b37734b371e734f",
+          "challenged": true
+        },
+        {
+          "engine": "duckduckgo",
+          "url": "https://html.duckduckgo.com/html/?q=%22HindMoviez%22+official+domain",
+          "status": 202,
+          "final_url": "https://html.duckduckgo.com/html/?q=%22HindMoviez%22+official+domain",
+          "challenged": false
         }
       ],
       "site_candidates": [
         {
-          "url": "https://flemmix.men",
-          "label": "Lien principal : flemmix.men",
-          "score": 90,
-          "document_index": 5,
-          "source_type": "hub",
-          "source": "https://ww1.wiflix-adresses.fun/"
-        },
-        {
-          "url": "https://wiflix-adresses.fun",
-          "label": "dynamic terminal URL",
-          "score": 80,
-          "document_index": 11,
-          "source_type": "hub",
-          "source": "https://ww1.wiflix-adresses.fun/"
+          "url": "https://hindmovie.icu",
+          "label": "https://hindmovie.icu",
+          "score": 100,
+          "document_index": 22,
+          "message_id": 1999,
+          "source_type": "telegram_public",
+          "source": "https://t.me/s/hindmoviez/1975"
         }
       ],
       "site_validations": [
         {
-          "url": "https://flemmix.men",
-          "final_url": "https://flemmix.men",
-          "status": 403,
-          "ok": false,
-          "content_type": "text/html; charset=UTF-8",
-          "brand_match": true,
-          "source_type": "hub",
-          "source": "https://ww1.wiflix-adresses.fun/",
-          "candidate_score": 90
-        },
-        {
-          "url": "https://wiflix-adresses.fun",
-          "final_url": "https://ww1.wiflix-adresses.fun",
+          "url": "https://hindmovie.icu",
+          "final_url": "https://hindmovie.icu",
           "status": 200,
-          "ok": false,
+          "ok": true,
           "content_type": "text/html; charset=UTF-8",
           "brand_match": true,
-          "source_type": "hub",
-          "source": "https://ww1.wiflix-adresses.fun/",
-          "candidate_score": 80
+          "source_type": "telegram_public",
+          "source": "https://t.me/s/hindmoviez/1975",
+          "candidate_score": 100
         }
       ],
-      "official_site": "https://flemmix.men",
-      "reason": "no_new_candidate_validated"
+      "confirmation": {
+        "required": 1,
+        "observed": 1
+      },
+      "official_site": "https://hindmovie.icu",
+      "selected_source_type": "telegram_public",
+      "selected_source": "https://t.me/s/hindmoviez/1975",
+      "site_status": 200,
+      "site_final_url": "https://hindmovie.icu",
+      "api_candidates": [],
+      "api_probes": [],
+      "validated_api": null,
+      "reason": "terminal_site_runtime_validated",
+      "applied_changes": []
     },
     "hdghartv": {
       "provider_id": "hdghartv",
@@ -3007,6 +3219,20 @@
           "url": "https://hdghartv.com.pk/",
           "status": 200,
           "final_url": "https://hdghartv.com.pk/"
+        },
+        {
+          "engine": "yandex",
+          "url": "https://yandex.com/search/?text=%22HDGharTV%22+official+domain",
+          "status": 200,
+          "final_url": "https://yandex.com/showcaptcha?cc=1&form-fb-hint=1.1&mt=C4B5E673A8F979E3D266E80C7223FAA033A78A9AB984D84A557467EEB74192B527FA440D507BA50AC12F429DDCADD6E7F893E7B53507C35CDA4DCDC0263D53D4127B0DF8AC29FF8E12AE9622F9C4C1BF5CE30F7F1CFDD2A6101BC36AFECA1CB39B533C970BD4812C85EB37AD14551C1E01221905D3F7D91045B18C9EB22EE03D89BFB85F9A882C36C53BC7F054FCDDCDAA58558E06B0810E30B0E785C0E41DDF040D34FFDFDC3A684B899AD4DBCDD19BE5940F171054E4601188405777D9CBA43C6FBBE9304377172B6227DDBE318B5AB1B8C99DA62DBC2216CDE87DB2E7B6C73A2D891784D5D3CB7454F2FB109A416EB24E&retpath=aHR0cHM6Ly95YW5kZXguY29tL3NlYXJjaD90ZXh0PSUyMkhER2hhclRWJTIyK29mZmljaWFsK2RvbWFpbg%2C%2C_9de41c660a9fbbdf5521c8cfe614b134&t=2%252F1786106531%252Fe3d2f10aa88812b7b587715955e72fcf&u=9183115860427727222&s=28b01d5221716e5c153687a3f95dadac",
+          "challenged": true
+        },
+        {
+          "engine": "duckduckgo",
+          "url": "https://html.duckduckgo.com/html/?q=%22HDGharTV%22+official+domain",
+          "status": 202,
+          "final_url": "https://html.duckduckgo.com/html/?q=%22HDGharTV%22+official+domain",
+          "challenged": false
         }
       ],
       "site_candidates": [
@@ -3056,56 +3282,6 @@
       "reason": "terminal_site_runtime_validated",
       "applied_changes": []
     },
-    "hindmoviez": {
-      "provider_id": "hindmoviez",
-      "status": "site_validated",
-      "sources": [
-        {
-          "source_type": "telegram_public",
-          "url": "https://t.me/s/hindmoviez/1975",
-          "status": 200,
-          "final_url": "https://t.me/s/hindmoviez/1975"
-        }
-      ],
-      "site_candidates": [
-        {
-          "url": "https://hindmovie.icu",
-          "label": "https://hindmovie.icu",
-          "score": 100,
-          "document_index": 22,
-          "message_id": 1999,
-          "source_type": "telegram_public",
-          "source": "https://t.me/s/hindmoviez/1975"
-        }
-      ],
-      "site_validations": [
-        {
-          "url": "https://hindmovie.icu",
-          "final_url": "https://hindmovie.icu",
-          "status": 200,
-          "ok": true,
-          "content_type": "text/html; charset=UTF-8",
-          "brand_match": true,
-          "source_type": "telegram_public",
-          "source": "https://t.me/s/hindmoviez/1975",
-          "candidate_score": 100
-        }
-      ],
-      "confirmation": {
-        "required": 1,
-        "observed": 1
-      },
-      "official_site": "https://hindmovie.icu",
-      "selected_source_type": "telegram_public",
-      "selected_source": "https://t.me/s/hindmoviez/1975",
-      "site_status": 200,
-      "site_final_url": "https://hindmovie.icu",
-      "api_candidates": [],
-      "api_probes": [],
-      "validated_api": null,
-      "reason": "terminal_site_runtime_validated",
-      "applied_changes": []
-    },
     "frenchstream": {
       "provider_id": "frenchstream",
       "status": "site_validated",
@@ -3115,6 +3291,20 @@
           "url": "https://fstream.org/",
           "status": 200,
           "final_url": "https://fstream.org/"
+        },
+        {
+          "engine": "yandex",
+          "url": "https://yandex.com/search/?text=site%3Afstream.org+French+Stream+URL+%C3%A9ph%C3%A9m%C3%A8re+du+moment",
+          "status": 200,
+          "final_url": "https://yandex.com/showcaptcha?cc=1&form-fb-hint=1.1&mt=E06FD710FABB83F0BB976C27BB3410B97CE5C2273821F2D0F5B81E7890C30E9DD24B365270EBB36C8E2D9F4974466C6B2314F73F50E7477B506ECF57BCAD2F39DAE087F26015BEFF83BE3F41420DA9C026E67E7C9B3C5D9E2369B3888289D20A0913ECE31854A46E9E65767825391207CE62FFA2D243B61FACD4DC4DD11D4807A8C75DD9A074F3DB62B6331931CCE840EE5B0A5116025EB9E19191F39DE6EF8E73E917C80D00D1CDCA9E33BDCDDCE3A13F564139FE212CC64CE4E150AC847654887011E2F5B149E749D9C375E51AD496D94385EDD40383F3FCB19186D036FC03BFCBD95BE6A7989C1D272CB29CE6B3B0C2ED&retpath=aHR0cHM6Ly95YW5kZXguY29tL3NlYXJjaD90ZXh0PXNpdGUlM0Fmc3RyZWFtLm9yZytGcmVuY2grU3RyZWFtK1VSTCslQzMlQTlwaCVDMyVBOW0lQzMlQThyZStkdSttb21lbnQ%2C_72c0551b403b9677401cba7ca3c73882&t=2%252F1786106530%252F56d63ea8326f84bc710f00dfbd3b6437&u=9183115835127008813&s=7170749b914552348dc6618c1f91cb60",
+          "challenged": true
+        },
+        {
+          "engine": "duckduckgo",
+          "url": "https://html.duckduckgo.com/html/?q=site%3Afstream.org+French+Stream+URL+%C3%A9ph%C3%A9m%C3%A8re+du+moment",
+          "status": 202,
+          "final_url": "https://html.duckduckgo.com/html/?q=site%3Afstream.org+French+Stream+URL+%C3%A9ph%C3%A9m%C3%A8re+du+moment",
+          "challenged": false
         }
       ],
       "site_candidates": [
@@ -3187,6 +3377,20 @@
           "url": "https://movies4u.tube/",
           "status": 200,
           "final_url": "https://movies4u.tube/"
+        },
+        {
+          "engine": "yandex",
+          "url": "https://yandex.com/search/?text=%22Movies4u%22+official+domain",
+          "status": 200,
+          "final_url": "https://yandex.com/showcaptcha?cc=1&form-fb-hint=1.1&mt=F9E6430F3209EADF8ABD70D090E41216EE3241C6F68FFD70F6A21C634126EBF8D2FE262C28B6BB6B41CDBA651466345E00E2604455246E93610CEE2F84710C25C3982667C926FDA849FE4962044D305340F3A71C2984B3A1A5B4ACAF09FF7F8669AB0AB932BB70CF2708531BFD3774DB124EBDB517856DF95D38C2797BADCE0EDEAD8A901E452C6DB27A605AE17ECCA2CE90E39E05F4098392F5171D706CA5106005BD0F0A6FD3DF21F73D91FEF01629DE67A4FD514917AF798FBE13265FB2283CD638B62CF645336FDE3CD6D7A1AFF38450205D816807E40D025659462E50647FA60AFAAD2D1580BF9146361212C6BE6925&retpath=aHR0cHM6Ly95YW5kZXguY29tL3NlYXJjaD90ZXh0PSUyMk1vdmllczR1JTIyK29mZmljaWFsK2RvbWFpbg%2C%2C_1c983b08003daeb2aadc90a4f6af3d84&t=2%252F1786106532%252F977e6a6433cae15ba59a7257fe99c010&u=9183115955117657673&s=0e10fe3952b135b6f04242174f3ddf1b",
+          "challenged": true
+        },
+        {
+          "engine": "duckduckgo",
+          "url": "https://html.duckduckgo.com/html/?q=%22Movies4u%22+official+domain",
+          "status": 202,
+          "final_url": "https://html.duckduckgo.com/html/?q=%22Movies4u%22+official+domain",
+          "challenged": false
         }
       ],
       "site_candidates": [
@@ -3200,6 +3404,13 @@
           "source": "https://movies4u.tube/"
         },
         {
+          "url": "https://new3.movies4u.clinic",
+          "label": "last-known-good domain",
+          "score": 78,
+          "source_type": "history_lkg",
+          "source": "provider-domain-history.json"
+        },
+        {
           "url": "https://movies4u.review",
           "label": "Movies4u",
           "score": 77,
@@ -3211,97 +3422,18 @@
       "site_validations": [
         {
           "url": "https://new2.movies4u.clinic",
-          "final_url": "https://new3.movies4u.clinic",
+          "final_url": "https://www.google.com/search?q=movies4u.foo",
           "status": 200,
-          "ok": true,
-          "content_type": "text/html; charset=UTF-8",
-          "brand_match": true,
+          "ok": false,
+          "content_type": "text/html; charset=ISO-8859-1",
+          "brand_match": false,
           "source_type": "hub",
           "source": "https://movies4u.tube/",
           "candidate_score": 82
-        }
-      ],
-      "confirmation": {
-        "required": 1,
-        "observed": 1
-      },
-      "official_site": "https://new3.movies4u.clinic",
-      "selected_source_type": "hub",
-      "selected_source": "https://movies4u.tube/",
-      "site_status": 200,
-      "site_final_url": "https://new3.movies4u.clinic",
-      "api_candidates": [],
-      "api_probes": [],
-      "validated_api": null,
-      "reason": "terminal_site_runtime_validated",
-      "applied_changes": [
-        {
-          "from": "m4uplay.store",
-          "to": "new3.movies4u.clinic",
-          "kind": "site"
         },
         {
-          "from": "new2.movies4u.clinic",
-          "to": "new3.movies4u.clinic",
-          "kind": "site"
-        }
-      ]
-    },
-    "movix": {
-      "provider_id": "movix",
-      "status": "retained_last_known_good",
-      "sources": [
-        {
-          "source_type": "hub",
-          "url": "https://movix.online/",
-          "status": 200,
-          "final_url": "https://movix.online/"
-        }
-      ],
-      "site_candidates": [
-        {
-          "url": "https://movix.fun",
-          "label": "curated direct fallback",
-          "score": 85,
-          "document_index": -1,
-          "fallback": true,
-          "source_type": "hub",
-          "source": "https://movix.online/"
-        }
-      ],
-      "site_validations": [
-        {
-          "url": "https://movix.fun",
-          "final_url": "https://movix.fun",
-          "status": 403,
-          "ok": false,
-          "content_type": "text/html; charset=UTF-8",
-          "brand_match": true,
-          "source_type": "hub",
-          "source": "https://movix.online/",
-          "candidate_score": 85
-        }
-      ],
-      "official_site": "https://movix.fun",
-      "reason": "no_new_candidate_validated"
-    },
-    "moviesmod": {
-      "provider_id": "moviesmod",
-      "status": "site_validated",
-      "sources": [],
-      "site_candidates": [
-        {
-          "url": "https://moviesmod.zone",
-          "label": "last-known-good domain",
-          "score": 78,
-          "source_type": "history_lkg",
-          "source": "provider-domain-history.json"
-        }
-      ],
-      "site_validations": [
-        {
-          "url": "https://moviesmod.zone",
-          "final_url": "https://moviesmod.zone",
+          "url": "https://new3.movies4u.clinic",
+          "final_url": "https://new3.movies4u.clinic",
           "status": 200,
           "ok": true,
           "content_type": "text/html; charset=UTF-8",
@@ -3315,24 +3447,16 @@
         "required": 1,
         "observed": 1
       },
-      "official_site": "https://moviesmod.zone",
+      "official_site": "https://new3.movies4u.clinic",
       "selected_source_type": "history_lkg",
       "selected_source": "provider-domain-history.json",
       "site_status": 200,
-      "site_final_url": "https://moviesmod.zone",
+      "site_final_url": "https://new3.movies4u.clinic",
       "api_candidates": [],
       "api_probes": [],
       "validated_api": null,
       "reason": "terminal_site_runtime_validated",
       "applied_changes": []
-    },
-    "mycima": {
-      "provider_id": "mycima",
-      "status": "inconclusive",
-      "sources": [],
-      "site_candidates": [],
-      "site_validations": [],
-      "reason": "no_runtime_validated_terminal_site"
     },
     "moviebox": {
       "provider_id": "moviebox",
@@ -3343,6 +3467,20 @@
           "url": "https://moviiebox.lol/",
           "status": 200,
           "final_url": "https://moviiebox.lol/"
+        },
+        {
+          "engine": "yandex",
+          "url": "https://yandex.com/search/?text=%22MovieBox%22+official+domain",
+          "status": 200,
+          "final_url": "https://yandex.com/showcaptcha?cc=1&form-fb-hint=1.1&mt=1D24B7AAA67A24A06D22EF8BFF452E167406CE0A49B357B4BC96D9E2A1675E41A25199D6DE4CC6FFE28FDA0F85BFB68D553D5F28BC77D8B03E05BF98CBE7AD3AD3D37CCB432564D25513123EAC82376A8CD16369504F05D9E3A9C06661F9563868160B104F436454E5735FAA428D4488830A97C65085137D4573B412ADB7CE039CF05772A91FB17EF7F648C46354E72B7156E94C2444F36AB2760C96E8DA7E2D5F5D3FF195397B7C2501DAAD9B70593D0638C363AF1C753BB20D403B655177AECDA2C296861F3A79822128597CB7047E644E6F3613B749D71FE14C82A045EFB7CBF3323D95FA5AA046538690023A5D6F3529&retpath=aHR0cHM6Ly95YW5kZXguY29tL3NlYXJjaD90ZXh0PSUyMk1vdmllQm94JTIyK29mZmljaWFsK2RvbWFpbg%2C%2C_c073332ed9286e3cfd4db5873f930f13&t=2%252F1786106532%252F7a26253cbf220010c1c2f9b92ea659d8&u=9183115944717628263&s=6302dca6ec82d039350cfb79625c4e2c",
+          "challenged": true
+        },
+        {
+          "engine": "duckduckgo",
+          "url": "https://html.duckduckgo.com/html/?q=%22MovieBox%22+official+domain",
+          "status": 202,
+          "final_url": "https://html.duckduckgo.com/html/?q=%22MovieBox%22+official+domain",
+          "challenged": false
         }
       ],
       "site_candidates": [
@@ -3392,54 +3530,52 @@
       "reason": "terminal_site_runtime_validated",
       "applied_changes": []
     },
-    "cineby": {
-      "provider_id": "cineby",
+    "moviesdrive": {
+      "provider_id": "moviesdrive",
       "status": "site_validated",
       "sources": [
         {
           "source_type": "hub",
-          "url": "https://warflix.cv/",
+          "url": "https://moviesdrives.mov/",
           "status": 200,
-          "final_url": "https://warflix.cv/"
+          "final_url": "https://moviesdrives.mov/"
+        },
+        {
+          "engine": "yandex",
+          "url": "https://yandex.com/search/?text=%22MoviesDrive%22+official+domain",
+          "status": 200,
+          "final_url": "https://yandex.com/showcaptcha?cc=1&form-fb-hint=1.1&mt=05BC22F5B52B06BEB79640859011096E530261DB9A2A3B188201D3D69ADA7C6AD3A4743E7DFB1C15ED85152BEFCB04F529BE7F3753DFD21E0F1BDB4E93F8D40DB981502116A7C4ABB3408BE0077E074673016817736F39311F581C20EEAEE5517E4C75985E048EFC2743A0531C590D329CC66B2611C414CEF82BAB232301BDF0634935884223096ECFD921824914D0A6F84A4DAEF2060A6A8A754D50E87E8DDEDBFAD6CE9AE45DC53A7B84A70CA0F4F57D1523B019059A959FBBF231D0E0820C402880E69712CBB6E58964C5A6980703C7FEE6FD68DA1DCBD01BD60C60235A4E1CB718C8B84057B14A2B0906C480A8C2331C&retpath=aHR0cHM6Ly95YW5kZXguY29tL3NlYXJjaD90ZXh0PSUyMk1vdmllc0RyaXZlJTIyK29mZmljaWFsK2RvbWFpbg%2C%2C_af55d6394cd7310e2090260ee362e12f&t=2%252F1786106533%252Fae86e82b4a8a2ca5632f3decc92de91c&u=9183116012833125158&s=61db71b030ef4feafff0759317581123",
+          "challenged": true
+        },
+        {
+          "engine": "duckduckgo",
+          "url": "https://html.duckduckgo.com/html/?q=%22MoviesDrive%22+official+domain",
+          "status": 202,
+          "final_url": "https://html.duckduckgo.com/html/?q=%22MoviesDrive%22+official+domain",
+          "challenged": false
         }
       ],
       "site_candidates": [
         {
-          "url": "https://cineby.top",
+          "url": "https://new1.moviesdrive.christmas",
           "label": "curated direct fallback",
           "score": 82,
           "document_index": -1,
           "fallback": true,
           "source_type": "hub",
-          "source": "https://warflix.cv/"
-        },
-        {
-          "url": "https://warflix.im",
-          "label": "Domain - 3 Active https://warflix.im",
-          "score": 67,
-          "document_index": 5,
-          "source_type": "hub",
-          "source": "https://warflix.cv/"
-        },
-        {
-          "url": "https://warflix.nl",
-          "label": "Domain - 2 Active https://warflix.nl",
-          "score": 67,
-          "document_index": 4,
-          "source_type": "hub",
-          "source": "https://warflix.cv/"
+          "source": "https://moviesdrives.mov/"
         }
       ],
       "site_validations": [
         {
-          "url": "https://cineby.top",
-          "final_url": "https://cineby.top",
+          "url": "https://new1.moviesdrive.christmas",
+          "final_url": "https://new1.moviesdrive.christmas",
           "status": 200,
           "ok": true,
           "content_type": "text/html; charset=UTF-8",
           "brand_match": true,
           "source_type": "hub",
-          "source": "https://warflix.cv/",
+          "source": "https://moviesdrives.mov/",
           "candidate_score": 82
         }
       ],
@@ -3447,11 +3583,191 @@
         "required": 1,
         "observed": 1
       },
-      "official_site": "https://cineby.top",
+      "official_site": "https://new1.moviesdrive.christmas",
       "selected_source_type": "hub",
-      "selected_source": "https://warflix.cv/",
+      "selected_source": "https://moviesdrives.mov/",
       "site_status": 200,
-      "site_final_url": "https://cineby.top",
+      "site_final_url": "https://new1.moviesdrive.christmas",
+      "api_candidates": [],
+      "api_probes": [],
+      "validated_api": null,
+      "reason": "terminal_site_runtime_validated",
+      "applied_changes": []
+    },
+    "movix": {
+      "provider_id": "movix",
+      "status": "retained_last_known_good",
+      "sources": [
+        {
+          "source_type": "hub",
+          "url": "https://movix.online/",
+          "status": 200,
+          "final_url": "https://movix.online/"
+        },
+        {
+          "engine": "yandex",
+          "url": "https://yandex.com/search/?text=site%3Amovix.online+adresse+officielle+active+Movix",
+          "status": 200,
+          "final_url": "https://yandex.com/showcaptcha?cc=1&form-fb-hint=1.1&mt=8CFE561A80ACB536EE529ABB100475ADF517C84577ADC31F7BD73B092136DD05C562FBC69BDB5E06ED3421EEEE27C981A2B60C1D31DDD79365A3A07D99397A33A4A1AFE5ABD6B403A02F77988E54606CF937B49DA9412B7CD12EB46E0D7590988C68091D5AEA1102B8FD349B0D2329D0CB01F5D49C8F09BB7650793587F2212FF9A473969DE083F33BDFDA78A843EB5F64C376C90F0CBC1754733195E7F06B3A391EA76C72EE91F5D2C8403F90E12C3817BD48EA54A9DE39705DCD8B31D07AAA402D702438D9F674B665DEF2308D8E221E670E35AF86EA32A635961CB859C8448D466A3E529930E162A93C3AF2D82D96C7C5&retpath=aHR0cHM6Ly95YW5kZXguY29tL3NlYXJjaD90ZXh0PXNpdGUlM0Ftb3ZpeC5vbmxpbmUrYWRyZXNzZStvZmZpY2llbGxlK2FjdGl2ZStNb3ZpeA%2C%2C_94ac9587e74bbc0922acdda858417b8e&t=2%252F1786106535%252F95ffb03377003e8aed6f9fd5898c80cf&u=9183116133560803628&s=ab3cfd564a5d0e40723f8e786eb8a90a",
+          "challenged": true
+        },
+        {
+          "engine": "duckduckgo",
+          "url": "https://html.duckduckgo.com/html/?q=site%3Amovix.online+adresse+officielle+active+Movix",
+          "status": 202,
+          "final_url": "https://html.duckduckgo.com/html/?q=site%3Amovix.online+adresse+officielle+active+Movix",
+          "challenged": false
+        }
+      ],
+      "site_candidates": [
+        {
+          "url": "https://movix.fun",
+          "label": "curated direct fallback",
+          "score": 85,
+          "document_index": -1,
+          "fallback": true,
+          "source_type": "hub",
+          "source": "https://movix.online/"
+        }
+      ],
+      "site_validations": [
+        {
+          "url": "https://movix.fun",
+          "final_url": "https://movix.fun",
+          "status": 403,
+          "ok": false,
+          "content_type": "text/html; charset=UTF-8",
+          "brand_match": true,
+          "source_type": "hub",
+          "source": "https://movix.online/",
+          "candidate_score": 85
+        }
+      ],
+      "official_site": "https://movix.fun",
+      "reason": "no_new_candidate_validated"
+    },
+    "mycima": {
+      "provider_id": "mycima",
+      "status": "inconclusive",
+      "sources": [],
+      "site_candidates": [],
+      "site_validations": [],
+      "reason": "no_runtime_validated_terminal_site"
+    },
+    "moviesmod": {
+      "provider_id": "moviesmod",
+      "status": "site_validated",
+      "sources": [
+        {
+          "engine": "yandex",
+          "url": "https://yandex.com/search/?text=%22MoviesMod%22+official+domain",
+          "status": 200,
+          "final_url": "https://yandex.com/showcaptcha?cc=1&form-fb-hint=1.1&mt=6C89F95AC84BEE82CF37F17B6451DAB091109F37405329CBC90CE49BC0AC84DD7B3383061627E3FD00DC62C2542ACF4A9C5F8803739874564B989C000DF561FFB6326E10797EBCD5664CA628310DAEBE6840934C23D49050BB35AED336B7DE85700E246BCF0E01C0563387E282E7EA6C5FBDF644362A6E93FD524AE66F553A2FF19DBF7AE5395A22056DA687C5F87D4DF5CFA63BC3DE17A0C5DA2A4906639AB614E173A508F6F805D4AA84B8ACB1384D65B361491879227CF2338A84F25316C66CC9EF4047A27C7096247617AE975785715F401A7426D3F334C06CE5279BFCB70FF39F2104A6D1DE0836298FEEF6DBFD7CEC&retpath=aHR0cHM6Ly95YW5kZXguY29tL3NlYXJjaD90ZXh0PSUyMk1vdmllc01vZCUyMitvZmZpY2lhbCtkb21haW4%2C_9bd926ffe597e5924b3d0b1bd7cf24f1&t=2%252F1786106534%252F72691f318cd4922beebdc66eb1c466c7&u=9183116053298602381&s=be31fab02631073abac38a760683cecb",
+          "challenged": true
+        },
+        {
+          "engine": "duckduckgo",
+          "url": "https://html.duckduckgo.com/html/?q=%22MoviesMod%22+official+domain",
+          "status": 202,
+          "final_url": "https://html.duckduckgo.com/html/?q=%22MoviesMod%22+official+domain",
+          "challenged": false
+        }
+      ],
+      "site_candidates": [
+        {
+          "url": "https://moviesmod.zone",
+          "label": "last-known-good domain",
+          "score": 78,
+          "source_type": "history_lkg",
+          "source": "provider-domain-history.json"
+        }
+      ],
+      "site_validations": [
+        {
+          "url": "https://moviesmod.zone",
+          "final_url": "https://moviesmod.zone",
+          "status": 200,
+          "ok": true,
+          "content_type": "text/html; charset=UTF-8",
+          "brand_match": true,
+          "source_type": "history_lkg",
+          "source": "provider-domain-history.json",
+          "candidate_score": 78
+        }
+      ],
+      "confirmation": {
+        "required": 1,
+        "observed": 1
+      },
+      "official_site": "https://moviesmod.zone",
+      "selected_source_type": "history_lkg",
+      "selected_source": "provider-domain-history.json",
+      "site_status": 200,
+      "site_final_url": "https://moviesmod.zone",
+      "api_candidates": [],
+      "api_probes": [],
+      "validated_api": null,
+      "reason": "terminal_site_runtime_validated",
+      "applied_changes": []
+    },
+    "movieshunt": {
+      "provider_id": "movieshunt",
+      "status": "site_validated",
+      "sources": [
+        {
+          "source_type": "hub",
+          "url": "https://movieshunt.cc/",
+          "status": 200,
+          "final_url": "https://movieshunt.cc/"
+        },
+        {
+          "engine": "yandex",
+          "url": "https://yandex.com/search/?text=%22MoviesHunt%22+official+domain",
+          "status": 200,
+          "final_url": "https://yandex.com/showcaptcha?cc=1&form-fb-hint=1.1&mt=A8CEAC511584D914EA52CFBA628F19B1D2F570259EF6FAA124743C4AB104E7C9E387B1B3722F65D723154F15B72A53A40340A19468F0D9BCA4242C3ADB7B53965C6E596E7A9A287E8F3E15C29F0221DC264331C4D508096B8BFE6F9A4E03319997FB446845AEE352BDF97DE1C33945CAA63950BDC2444BF4F767A44165FA331B0B8DF3151AC9F333230C7061C0DA379A2F6B14C9F52C33C0E277D4B02C3560B1EE3E8087D46678944B8B2865E803A415B807C6AEEF33CD752527C5F5D592F4346682415AB055CFE5D360ADEE994F60709969E0C19B9C15BB9776B8216663FDB22EC972A4E7BE558DFAC9F0F8F10A69024609&retpath=aHR0cHM6Ly95YW5kZXguY29tL3NlYXJjaD90ZXh0PSUyMk1vdmllc0h1bnQlMjIrb2ZmaWNpYWwrZG9tYWlu_fab317cd9a47ddbcf2c71b908408be0f&t=2%252F1786106534%252F7b4933e7d2bd1580f8376fd67fc74fbd&u=9183116040010370646&s=7c0388bf73ca170827507d5a48d5532a",
+          "challenged": true
+        },
+        {
+          "engine": "duckduckgo",
+          "url": "https://html.duckduckgo.com/html/?q=%22MoviesHunt%22+official+domain",
+          "status": 202,
+          "final_url": "https://html.duckduckgo.com/html/?q=%22MoviesHunt%22+official+domain",
+          "challenged": false
+        }
+      ],
+      "site_candidates": [
+        {
+          "url": "https://movieshunt.work",
+          "label": "curated direct fallback",
+          "score": 82,
+          "document_index": -1,
+          "fallback": true,
+          "source_type": "hub",
+          "source": "https://movieshunt.cc/"
+        }
+      ],
+      "site_validations": [
+        {
+          "url": "https://movieshunt.work",
+          "final_url": "https://movieshunt.work",
+          "status": 200,
+          "ok": true,
+          "content_type": "text/html; charset=UTF-8",
+          "brand_match": true,
+          "source_type": "hub",
+          "source": "https://movieshunt.cc/",
+          "candidate_score": 82
+        }
+      ],
+      "confirmation": {
+        "required": 1,
+        "observed": 1
+      },
+      "official_site": "https://movieshunt.work",
+      "selected_source_type": "hub",
+      "selected_source": "https://movieshunt.cc/",
+      "site_status": 200,
+      "site_final_url": "https://movieshunt.work",
       "api_candidates": [],
       "api_probes": [],
       "validated_api": null,
@@ -3475,6 +3791,20 @@
           "url": "https://streaminganime.fr/site/10/mugiwara-no-streaming",
           "status": 403,
           "final_url": "https://streaminganime.fr/site/10/mugiwara-no-streaming"
+        },
+        {
+          "engine": "yandex",
+          "url": "https://yandex.com/search/?text=%22Mugiwara-no-Streaming%22+official+domain",
+          "status": 200,
+          "final_url": "https://yandex.com/showcaptcha?cc=1&form-fb-hint=1.1&mt=3EC1D4874CB91A0B5729C46B1CAD55C2E8A334C4B2636FEB527D992E6C09A31BE449B6A6A805287A18348B49A9581A69640697BF816ED98C7E19D26877715EF5A7B707D7014C632C1B3286CC707EAE33FB628899157FDEA72C2FD95F86F980E7DD43879E084A19A05FDA53B7F2B248336811DCF848D264C16EB67A5065DB2568EE9F26B2D6DE4984BE072F07AA21A6583C185BAC1EF0B8B7452A12373A440C085927104EC4A4B62349052E3CF5D48916062E289B40CEE130A40209E861BEA958537E7D5E854AFF717F8F307A38C51D131A5BBB3EDF88B6E30F76CF34D3F1B9E1368865F6A1CB794398FBD6EE08C2DA440F94&retpath=aHR0cHM6Ly95YW5kZXguY29tL3NlYXJjaD90ZXh0PSUyMk11Z2l3YXJhLW5vLVN0cmVhbWluZyUyMitvZmZpY2lhbCtkb21haW4%2C_373c2c1e66d41d2271ee7821f1579c7c&t=2%252F1786106536%252Fa57d634aa2d39ed225766c57782d8f6a&u=9183116198455075215&s=11e1bf2a71ffa5a3a5bde0b55dc2215c",
+          "challenged": true
+        },
+        {
+          "engine": "duckduckgo",
+          "url": "https://html.duckduckgo.com/html/?q=%22Mugiwara-no-Streaming%22+official+domain",
+          "status": 202,
+          "final_url": "https://html.duckduckgo.com/html/?q=%22Mugiwara-no-Streaming%22+official+domain",
+          "challenged": false
         }
       ],
       "site_candidates": [
@@ -3513,172 +3843,6 @@
       "validated_api": null,
       "reason": "terminal_site_runtime_validated",
       "applied_changes": []
-    },
-    "peachify": {
-      "provider_id": "peachify",
-      "status": "retained_last_known_good",
-      "sources": [],
-      "site_candidates": [
-        {
-          "url": "https://peachify.top",
-          "label": "last-known-good domain",
-          "score": 78,
-          "source_type": "history_lkg",
-          "source": "provider-domain-history.json"
-        }
-      ],
-      "site_validations": [
-        {
-          "url": "https://peachify.top",
-          "final_url": "https://peachify.top",
-          "status": 403,
-          "ok": false,
-          "content_type": "text/html; charset=UTF-8",
-          "brand_match": true,
-          "source_type": "history_lkg",
-          "source": "provider-domain-history.json",
-          "candidate_score": 78
-        }
-      ],
-      "official_site": "https://peachify.top",
-      "reason": "no_new_candidate_validated"
-    },
-    "persianstremio": {
-      "provider_id": "persianstremio",
-      "status": "inconclusive",
-      "sources": [],
-      "site_candidates": [],
-      "site_validations": [],
-      "reason": "no_runtime_validated_terminal_site"
-    },
-    "netmirror": {
-      "provider_id": "netmirror",
-      "status": "site_validated",
-      "sources": [
-        {
-          "source_type": "hub",
-          "url": "https://netmiror.com/",
-          "status": 200,
-          "final_url": "https://netmiror.com/"
-        }
-      ],
-      "site_candidates": [
-        {
-          "url": "https://net27.cc",
-          "label": "Watch Now",
-          "score": 97,
-          "document_index": 33,
-          "source_type": "hub",
-          "source": "https://netmiror.com/"
-        },
-        {
-          "url": "https://app.net27.cc/NetMirror-v2.0.0-android.apk",
-          "label": "Download APK (49 MB)",
-          "score": 67,
-          "document_index": 67,
-          "source_type": "hub",
-          "source": "https://netmiror.com/"
-        }
-      ],
-      "site_validations": [
-        {
-          "url": "https://net27.cc",
-          "final_url": "https://net27.cc",
-          "status": 200,
-          "ok": true,
-          "content_type": "text/html",
-          "brand_match": true,
-          "source_type": "hub",
-          "source": "https://netmiror.com/",
-          "candidate_score": 97
-        }
-      ],
-      "confirmation": {
-        "required": 1,
-        "observed": 1
-      },
-      "official_site": "https://net27.cc",
-      "selected_source_type": "hub",
-      "selected_source": "https://netmiror.com/",
-      "site_status": 200,
-      "site_final_url": "https://net27.cc",
-      "api_candidates": [],
-      "api_probes": [],
-      "validated_api": null,
-      "reason": "terminal_site_runtime_validated",
-      "applied_changes": []
-    },
-    "purstream": {
-      "provider_id": "purstream",
-      "status": "inconclusive",
-      "sources": [
-        {
-          "source_type": "hub",
-          "url": "https://purstream.wiki/",
-          "status": 200,
-          "final_url": "https://purstream.wiki/"
-        }
-      ],
-      "site_candidates": [],
-      "site_validations": [],
-      "reason": "no_runtime_validated_terminal_site"
-    },
-    "papadustream": {
-      "provider_id": "papadustream",
-      "status": "site_validated",
-      "sources": [
-        {
-          "source_type": "hub",
-          "url": "https://papadustream.info/acces/",
-          "status": 200,
-          "final_url": "https://papadustream.info/acces/"
-        }
-      ],
-      "site_candidates": [
-        {
-          "url": "https://papadustream-v2.watch",
-          "label": "Accéder ↗",
-          "score": 97,
-          "document_index": 6,
-          "source_type": "hub",
-          "source": "https://papadustream.info/acces/"
-        }
-      ],
-      "site_validations": [
-        {
-          "url": "https://papadustream-v2.watch",
-          "final_url": "https://papadustream-v2.watch",
-          "status": 200,
-          "ok": true,
-          "content_type": "text/html; charset=UTF-8",
-          "brand_match": true,
-          "source_type": "hub",
-          "source": "https://papadustream.info/acces/",
-          "candidate_score": 97
-        }
-      ],
-      "confirmation": {
-        "required": 1,
-        "observed": 1
-      },
-      "official_site": "https://papadustream-v2.watch",
-      "selected_source_type": "hub",
-      "selected_source": "https://papadustream.info/acces/",
-      "site_status": 200,
-      "site_final_url": "https://papadustream-v2.watch",
-      "api_candidates": [],
-      "api_probes": [],
-      "validated_api": null,
-      "reason": "terminal_site_runtime_validated",
-      "applied_changes": []
-    },
-    "showbox": {
-      "provider_id": "showbox",
-      "status": "inconclusive",
-      "sources": [],
-      "site_candidates": [],
-      "site_validations": [],
-      "reason": "no_runtime_validated_terminal_site"
     },
     "nakios": {
       "provider_id": "nakios",
@@ -3806,10 +3970,290 @@
       ],
       "reason": "api_not_runtime_validated"
     },
+    "netmirror": {
+      "provider_id": "netmirror",
+      "status": "site_validated",
+      "sources": [
+        {
+          "source_type": "hub",
+          "url": "https://netmiror.com/",
+          "status": 200,
+          "final_url": "https://netmiror.com/"
+        },
+        {
+          "engine": "yandex",
+          "url": "https://yandex.com/search/?text=%22NetMirror%22+official+domain",
+          "status": 200,
+          "final_url": "https://yandex.com/showcaptcha?cc=1&form-fb-hint=1.1&mt=C4610D22847691CE609EF890BEBCE7DDE74E664EBDAE0F416210FF23956B4F514133E36E7592CDD32D86FEFD96897F0924BE9B17DF052B913C237764F97AEA20D0A47BD1A90B7D7CD787F5944FDF0F1DFE241BEEEDE01B657CE5AD8817E2A47B384FF7AE55251CF5F7C9549EBDC4D70D3190F3B874D75273726FB9B2390440B226B516D41CF09B762498EA2E6B3CF73A7D0DC5F23B1B7CC1745BD6FCD6F627A85E43213E8D76AD68AF4F365BB7A21E63B86E4887309EC978C33E3CE4A7185105E358661294045948A6C9A4E507CAAF735F96386CC95823E77AF564D75557CEA6C86A1DBCB55AAF176959B29509395FC91C85&retpath=aHR0cHM6Ly95YW5kZXguY29tL3NlYXJjaD90ZXh0PSUyMk5ldE1pcnJvciUyMitvZmZpY2lhbCtkb21haW4%2C_66f6f61f21cab21b8f34b3b8fbf5628c&t=2%252F1786106537%252Fac14e1d71ddc147f35a54f5875251b54&u=9183116301265854763&s=ac04d6842dc8d7443c8e3a188f7039d5",
+          "challenged": true
+        },
+        {
+          "engine": "duckduckgo",
+          "url": "https://html.duckduckgo.com/html/?q=%22NetMirror%22+official+domain",
+          "status": 202,
+          "final_url": "https://html.duckduckgo.com/html/?q=%22NetMirror%22+official+domain",
+          "challenged": false
+        }
+      ],
+      "site_candidates": [
+        {
+          "url": "https://net27.cc",
+          "label": "Watch Now",
+          "score": 97,
+          "document_index": 33,
+          "source_type": "hub",
+          "source": "https://netmiror.com/"
+        },
+        {
+          "url": "https://app.net27.cc/NetMirror-v2.0.0-android.apk",
+          "label": "Download APK (49 MB)",
+          "score": 67,
+          "document_index": 67,
+          "source_type": "hub",
+          "source": "https://netmiror.com/"
+        }
+      ],
+      "site_validations": [
+        {
+          "url": "https://net27.cc",
+          "final_url": "https://net27.cc",
+          "status": 200,
+          "ok": true,
+          "content_type": "text/html",
+          "brand_match": true,
+          "source_type": "hub",
+          "source": "https://netmiror.com/",
+          "candidate_score": 97
+        }
+      ],
+      "confirmation": {
+        "required": 1,
+        "observed": 1
+      },
+      "official_site": "https://net27.cc",
+      "selected_source_type": "hub",
+      "selected_source": "https://netmiror.com/",
+      "site_status": 200,
+      "site_final_url": "https://net27.cc",
+      "api_candidates": [],
+      "api_probes": [],
+      "validated_api": null,
+      "reason": "terminal_site_runtime_validated",
+      "applied_changes": []
+    },
+    "peachify": {
+      "provider_id": "peachify",
+      "status": "retained_last_known_good",
+      "sources": [
+        {
+          "engine": "yandex",
+          "url": "https://yandex.com/search/?text=%22Peachify%22+official+domain",
+          "status": 200,
+          "final_url": "https://yandex.com/showcaptcha?cc=1&form-fb-hint=1.1&mt=DE8B9FDB9AE64999D6F3041AE4B79159E695F383A9EF9F14D5ECE0062364240B1511746153826CFFC0E2E3EF851A247FDA5D45D835FEB79AEC40F461991702FFBC151058D26EBAE439FAD993BB196C63E0D8FC93CD15A2A55293CC4B984C514DC9C67BD5D80F519497D033818D24F9CAD4F87F8290E4F216151B015B84B7AFE9E449784CD4F5D637C00A3022B5DD89A1F3D3F993EC3722CCBBC419E7AD434F5351D3A1978279B6DB4DAA88944E6A20FFBAC4BDB62B7E902594D427A2F28DE9F2DE3E025774F40A628A6C8F9339C606DCEEEF4B7B5C4FFEB73BF966C542590A3D11341C9D6CFFCB3544AA8001D55207D9BC00&retpath=aHR0cHM6Ly95YW5kZXguY29tL3NlYXJjaD90ZXh0PSUyMlBlYWNoaWZ5JTIyK29mZmljaWFsK2RvbWFpbg%2C%2C_b6440e63440c0511d0e0ab2c19c54008&t=2%252F1786106538%252Fa4a2cfafe6e13ca2652a014386dbbb46&u=9183116333880762723&s=ba17be453f3779bddddd500e7596e99b",
+          "challenged": true
+        },
+        {
+          "engine": "duckduckgo",
+          "url": "https://html.duckduckgo.com/html/?q=%22Peachify%22+official+domain",
+          "status": 202,
+          "final_url": "https://html.duckduckgo.com/html/?q=%22Peachify%22+official+domain",
+          "challenged": false
+        }
+      ],
+      "site_candidates": [
+        {
+          "url": "https://peachify.top",
+          "label": "last-known-good domain",
+          "score": 78,
+          "source_type": "history_lkg",
+          "source": "provider-domain-history.json"
+        }
+      ],
+      "site_validations": [
+        {
+          "url": "https://peachify.top",
+          "final_url": "https://peachify.top",
+          "status": 403,
+          "ok": false,
+          "content_type": "text/html; charset=UTF-8",
+          "brand_match": true,
+          "source_type": "history_lkg",
+          "source": "provider-domain-history.json",
+          "candidate_score": 78
+        }
+      ],
+      "official_site": "https://peachify.top",
+      "reason": "no_new_candidate_validated"
+    },
+    "purstream": {
+      "provider_id": "purstream",
+      "status": "inconclusive",
+      "sources": [
+        {
+          "source_type": "hub",
+          "url": "https://purstream.wiki/",
+          "status": 200,
+          "final_url": "https://purstream.wiki/"
+        }
+      ],
+      "site_candidates": [],
+      "site_validations": [],
+      "reason": "no_runtime_validated_terminal_site"
+    },
+    "persianstremio": {
+      "provider_id": "persianstremio",
+      "status": "inconclusive",
+      "sources": [
+        {
+          "engine": "yandex",
+          "url": "https://yandex.com/search/?text=%22PersianStremio%22+official+domain",
+          "status": 200,
+          "final_url": "https://yandex.com/showcaptcha?cc=1&form-fb-hint=1.1&mt=D389B66702CE01BB126EBACF64B43CC38E76E08A8783E9BB7C111367DBB6DF04187DF463F9AD8253776F64270E0FC314FBF2CC7F87F938F33C6BCF9D7839DC045102C6E9E99D8881EAF13C1EDE9D266F00C4211031A7E5258F4EE21E8D22BF19AA52471BA776CA36A17532C756248028598D27B9E387651B6BD87DCD1A6BDDE398593D381CFB72D3F84C026000D4EE318B18E32D62E7243FC9E34EB23B559505D997515496D8EE4D198213357C15813FF9317CF5AF035E5649400F7187FA54C11D63D13DA287A9BDEC37477186E6477D42500A95EEC46FC2421794D206743639450DB009E16EB2444C3C94CD8D7F1BDC2F8D&retpath=aHR0cHM6Ly95YW5kZXguY29tL3NlYXJjaD90ZXh0PSUyMlBlcnNpYW5TdHJlbWlvJTIyK29mZmljaWFsK2RvbWFpbg%2C%2C_67df4f3a3f82e4a74911bc53f54563f0&t=2%252F1786106538%252Fc0c80970ef0b49248c2d9692f99ccd06&u=9183116370320199343&s=62f651ecf358769ac1a053e05878f890",
+          "challenged": true
+        },
+        {
+          "engine": "duckduckgo",
+          "url": "https://html.duckduckgo.com/html/?q=%22PersianStremio%22+official+domain",
+          "status": 202,
+          "final_url": "https://html.duckduckgo.com/html/?q=%22PersianStremio%22+official+domain",
+          "challenged": false
+        }
+      ],
+      "site_candidates": [],
+      "site_validations": [],
+      "reason": "no_runtime_validated_terminal_site"
+    },
+    "showbox": {
+      "provider_id": "showbox",
+      "status": "inconclusive",
+      "sources": [],
+      "site_candidates": [],
+      "site_validations": [],
+      "reason": "no_runtime_validated_terminal_site"
+    },
+    "papadustream": {
+      "provider_id": "papadustream",
+      "status": "site_validated",
+      "sources": [
+        {
+          "source_type": "hub",
+          "url": "https://papadustream.info/acces/",
+          "status": 200,
+          "final_url": "https://papadustream.info/acces/"
+        },
+        {
+          "engine": "yandex",
+          "url": "https://yandex.com/search/?text=%22Papadustream%22+official+domain",
+          "status": 200,
+          "final_url": "https://yandex.com/showcaptcha?cc=1&form-fb-hint=1.1&mt=A792BB4989A02CE81AF104FD7B7A985BCE11A6BD8121C32362939CC0FB4CC9E0C90DB1AE4CA7E82D7E454042A6880E44ABC74477D08C4AA5A4B2B2F7A3B84F290B06468CFEFF074487FE8E69DD380B21A733CF44E6BC5AC0B066EC705B3F322538B3125068B4485AE8A3A5BE52B60B6CF3A9CD34A6CFBBFF87CB54E960044908D00D9F9DDC0424FDBD6A673BBAB35791FF6D7AD0DF23BC40D1E194A7A19DD337EB92EA5A134E5B5767DFA478AE9FAC1A2CB9E49DC1E9AA6F58A9D1B2E1460B4C7A27B0242DFF4D64856755C876AAD0BA59967A53170CF8CCC737B5BFE1DBA2C4E1110369CB02E60E3C816F1777FB6DD33702&retpath=aHR0cHM6Ly95YW5kZXguY29tL3NlYXJjaD90ZXh0PSUyMlBhcGFkdXN0cmVhbSUyMitvZmZpY2lhbCtkb21haW4%2C_0470ceaa6c91087f6456d5153e117494&t=2%252F1786106537%252F483f677409f025deb0717918bdd422bc&u=9183116289924456872&s=5a6ac45a06cae21942e1f310fc159894",
+          "challenged": true
+        },
+        {
+          "engine": "duckduckgo",
+          "url": "https://html.duckduckgo.com/html/?q=%22Papadustream%22+official+domain",
+          "status": 202,
+          "final_url": "https://html.duckduckgo.com/html/?q=%22Papadustream%22+official+domain",
+          "challenged": false
+        }
+      ],
+      "site_candidates": [
+        {
+          "url": "https://papadustream-v2.watch",
+          "label": "Accéder ↗",
+          "score": 97,
+          "document_index": 6,
+          "source_type": "hub",
+          "source": "https://papadustream.info/acces/"
+        }
+      ],
+      "site_validations": [
+        {
+          "url": "https://papadustream-v2.watch",
+          "final_url": "https://papadustream-v2.watch",
+          "status": 200,
+          "ok": true,
+          "content_type": "text/html; charset=UTF-8",
+          "brand_match": true,
+          "source_type": "hub",
+          "source": "https://papadustream.info/acces/",
+          "candidate_score": 97
+        }
+      ],
+      "confirmation": {
+        "required": 1,
+        "observed": 1
+      },
+      "official_site": "https://papadustream-v2.watch",
+      "selected_source_type": "hub",
+      "selected_source": "https://papadustream.info/acces/",
+      "site_status": 200,
+      "site_final_url": "https://papadustream-v2.watch",
+      "api_candidates": [],
+      "api_probes": [],
+      "validated_api": null,
+      "reason": "terminal_site_runtime_validated",
+      "applied_changes": []
+    },
+    "kurage": {
+      "provider_id": "kurage",
+      "status": "retained_last_known_good",
+      "sources": [
+        {
+          "engine": "yandex",
+          "url": "https://yandex.com/search/?text=%22Kurage%22+official+domain",
+          "status": 200,
+          "final_url": "https://yandex.com/showcaptcha?cc=1&form-fb-hint=1.1&mt=2A22D5BDFB9EBBD9BBE0C73DE48265A2C0232B046AE785CD217EDB6AD71653EE7F10775AEB7C5F55B426B3292EC0CFBC33D93C9F3FE29BE5F3F8080626EA0476FE46A37A165CC77AF6E0272EDB65DF60A91EC46579E4DFF9C752593E63C03BB63E97AAD3EDF6CD9FBB99016999799BADD47F6F452CF273DEE56E2D42A449E564716675C033BE93F5105726ED44BAEDA79E88D695EC653DC0AD8FCE54ADD3D2D4E9203B9492AE1E6B732D5A255ADBE52C18F845A782491C296017C572CEC32F73845970755078FC2D90038190B29F0BF4BAE4124ACCC951AD3D74D518AA9A76596240DE3767B99182D623874A1AC913A44D42&retpath=aHR0cHM6Ly95YW5kZXguY29tL3NlYXJjaD90ZXh0PSUyMkt1cmFnZSUyMitvZmZpY2lhbCtkb21haW4%2C_a0363ee09380226f8d0ec47a93852d3a&t=2%252F1786106532%252F2fd1190dcdc05cf97f19a87ab3e8e9f5&u=9183115908210406193&s=dc567517d80d4aa99f09cff70f58d532",
+          "challenged": true
+        },
+        {
+          "engine": "duckduckgo",
+          "url": "https://html.duckduckgo.com/html/?q=%22Kurage%22+official+domain",
+          "status": 202,
+          "final_url": "https://html.duckduckgo.com/html/?q=%22Kurage%22+official+domain",
+          "challenged": false
+        }
+      ],
+      "site_candidates": [
+        {
+          "url": "https://kurage.live",
+          "label": "last-known-good domain",
+          "score": 78,
+          "source_type": "history_lkg",
+          "source": "provider-domain-history.json"
+        }
+      ],
+      "site_validations": [
+        {
+          "url": "https://kurage.live",
+          "ok": false,
+          "error": "TimeoutError: The read operation timed out",
+          "source_type": "history_lkg",
+          "source": "provider-domain-history.json",
+          "candidate_score": 78
+        }
+      ],
+      "official_site": "https://kurage.live",
+      "reason": "no_new_candidate_validated"
+    },
     "streamflix": {
       "provider_id": "streamflix",
       "status": "site_validated",
-      "sources": [],
+      "sources": [
+        {
+          "engine": "yandex",
+          "url": "https://yandex.com/search/?text=%22StreamFlix%22+official+domain",
+          "status": 200,
+          "final_url": "https://yandex.com/showcaptcha?cc=1&form-fb-hint=1.1&mt=68745457E0107B72F824A02D31149C161BD9A66C553A632DA3C7553705600ABFD82F52C30AF0A464CE58D9BE4956FE2C39281A2D8BDE059DF6C957638D908238D0FE2BB5E64F4F413F58C202E00760D0CE39DF8D735B05162CD74FDBAF0CAC99300A015DB488D7CB911EA8CDDEEF18875F2293531F601EFEF6F09A8EA39C98D26C802C0B8D98016E1CE285461AB350F631E99F62DC2F00D9B93FF2B051CA2E8BA3A3D167155A39B92F46827413147608DE17CF82DCE4D42A0D62056DE2EFEBC0EBED2B9B2EF9608170C711DD4E45E1F805E8B5E8E85FC8BADAFF2C68B0D72AE182FA0A8C87CA00B0D3F2856753600B295BF4&retpath=aHR0cHM6Ly95YW5kZXguY29tL3NlYXJjaD90ZXh0PSUyMlN0cmVhbUZsaXglMjIrb2ZmaWNpYWwrZG9tYWlu_fb35db2c29c82e93f6b19b06b913eb13&t=2%252F1786106539%252Ffd911a7dceb64e940e96329d77556ff9&u=9183116432933445942&s=81522408d2822ed42bb852e8220931c0",
+          "challenged": true
+        },
+        {
+          "engine": "duckduckgo",
+          "url": "https://html.duckduckgo.com/html/?q=%22StreamFlix%22+official+domain",
+          "status": 202,
+          "final_url": "https://html.duckduckgo.com/html/?q=%22StreamFlix%22+official+domain",
+          "challenged": false
+        }
+      ],
       "site_candidates": [
         {
           "url": "https://streamflix.mom",
@@ -3847,6 +4291,14 @@
       "reason": "terminal_site_runtime_validated",
       "applied_changes": []
     },
+    "topcartoons": {
+      "provider_id": "topcartoons",
+      "status": "inconclusive",
+      "sources": [],
+      "site_candidates": [],
+      "site_validations": [],
+      "reason": "no_runtime_validated_terminal_site"
+    },
     "coflix": {
       "provider_id": "coflix",
       "status": "site_validated",
@@ -3856,6 +4308,20 @@
           "url": "https://coflix.domains/",
           "status": 200,
           "final_url": "https://coflix.domains/"
+        },
+        {
+          "engine": "yandex",
+          "url": "https://yandex.com/search/?text=site%3Acoflix.domains+adresse+officielle+active+Coflix",
+          "status": 200,
+          "final_url": "https://yandex.com/showcaptcha?cc=1&form-fb-hint=1.1&mt=07EB0E574D419C23CEF1152002E3E06B2159B167C233368B96120AFEC9575A286F7754CBD750DB3EAB2551622D7E6671FF1CD04712E0A022148E12FC57AAE69004A4A2C8F16AA9541D9D941FB591C80F9478B9308FC37226CCA3BE8256EB31CF2D4C67FBEB2941B8466116288AD259A674115F7F274A07933BEADE1744F5081FFE5D9227CDCB7ABAECCEE18759D47BC620E56E5CD9276B36C5B374786E990515A406CB8F822F3B50C88C3DE43B61D219CA18B38530FA434C54B2EB68EC67D5461EA9BAE685E0A0DEC12DEA048A8F307EB225E3F8275A66FAB851CE9DE0F15DF2D11BBD84A3D6A62B94C6C718AC42EBFD5982&retpath=aHR0cHM6Ly95YW5kZXguY29tL3NlYXJjaD90ZXh0PXNpdGUlM0Fjb2ZsaXguZG9tYWlucythZHJlc3NlK29mZmljaWVsbGUrYWN0aXZlK0NvZmxpeA%2C%2C_e85ec657750f96554725d09e7fcd379a&t=2%252F1786106529%252F60a1fe7edb5540331e937678ccb9d416&u=9183115761240149554&s=6c1e543e9eda4c26befd1984c5e3a03d",
+          "challenged": true
+        },
+        {
+          "engine": "duckduckgo",
+          "url": "https://html.duckduckgo.com/html/?q=site%3Acoflix.domains+adresse+officielle+active+Coflix",
+          "status": 202,
+          "final_url": "https://html.duckduckgo.com/html/?q=site%3Acoflix.domains+adresse+officielle+active+Coflix",
+          "challenged": false
         }
       ],
       "site_candidates": [
@@ -4032,18 +4498,25 @@
       "reason": "terminal_site_runtime_validated",
       "applied_changes": []
     },
-    "topcartoons": {
-      "provider_id": "topcartoons",
-      "status": "inconclusive",
-      "sources": [],
-      "site_candidates": [],
-      "site_validations": [],
-      "reason": "no_runtime_validated_terminal_site"
-    },
     "streamzo": {
       "provider_id": "streamzo",
       "status": "site_validated",
-      "sources": [],
+      "sources": [
+        {
+          "engine": "yandex",
+          "url": "https://yandex.com/search/?text=StreamZo%22+streaming",
+          "status": 200,
+          "final_url": "https://yandex.com/showcaptcha?cc=1&form-fb-hint=1.1&mt=638B13A913DE904ABBDAEEFC577B934A2D3CFFFF7BAC3FAB2FBA1E5748366674056CFB03287059970106E0CAFEB569E568FB225C6177573ADC363A84ECBE19004DC8FB1670E1690F662BE23758B0C8ACE30999E177AADAF7AA74600A44F495194486CC8B459C7A69A37C0D41D2476B1249ED8B2489F753F6FB859EA600317D5056226D44F6C96AA9E73BDED08FE170DA381056872FBA950381294241EC686810AE8EC6E537EC97D1B0E1172837E521BBE28551E62C482BD9774B9AC0F8A4B085BB29DDAE2221B825AD785BB259B63C91FF78E63AFB4318F0EDF64330DAC4A476606D25799B2AB055331684098FFBA8232249&retpath=aHR0cHM6Ly95YW5kZXguY29tL3NlYXJjaD90ZXh0PVN0cmVhbVpvJTIyK3N0cmVhbWluZw%2C%2C_0162f36d7687fb39d40c5c929df62028&t=2%252F1786106541%252F1d04dd20b2856bbb86a286317fc9ef48&u=9183116519505048563&s=55e12319da8965d5b7742faabd7dd0c3",
+          "challenged": true
+        },
+        {
+          "engine": "duckduckgo",
+          "url": "https://html.duckduckgo.com/html/?q=StreamZo%22+streaming",
+          "status": 202,
+          "final_url": "https://html.duckduckgo.com/html/?q=StreamZo%22+streaming",
+          "challenged": false
+        }
+      ],
       "site_candidates": [
         {
           "url": "https://streamzo.fr",
@@ -4081,32 +4554,6 @@
       "reason": "terminal_site_runtime_validated",
       "applied_changes": []
     },
-    "kurage": {
-      "provider_id": "kurage",
-      "status": "retained_last_known_good",
-      "sources": [],
-      "site_candidates": [
-        {
-          "url": "https://kurage.live",
-          "label": "last-known-good domain",
-          "score": 78,
-          "source_type": "history_lkg",
-          "source": "provider-domain-history.json"
-        }
-      ],
-      "site_validations": [
-        {
-          "url": "https://kurage.live",
-          "ok": false,
-          "error": "TimeoutError: The read operation timed out",
-          "source_type": "history_lkg",
-          "source": "provider-domain-history.json",
-          "candidate_score": 78
-        }
-      ],
-      "official_site": "https://kurage.live",
-      "reason": "no_new_candidate_validated"
-    },
     "vegamovies": {
       "provider_id": "vegamovies",
       "status": "site_validated",
@@ -4116,6 +4563,20 @@
           "url": "https://1vegamovies.tw/",
           "status": 200,
           "final_url": "https://1vegamovies.tw/"
+        },
+        {
+          "engine": "yandex",
+          "url": "https://yandex.com/search/?text=%22VegaMovies%22+official+domain",
+          "status": 200,
+          "final_url": "https://yandex.com/showcaptcha?cc=1&form-fb-hint=1.1&mt=54116047376DF6B96354A7A9BB7A0531565894E504511AE283C44CE634D2C2B257D0B01D35AAC1C2AD51DA4FD0090DD0D7EF0FC57C03885E892368A36E4F2E2522CA9723BDB3620A995A365FA7ED22E3CAA405B43ADCA40E4B18FBEBEAAC8BFBF2CCC2C83593BAACD4FAD80402EBF9B0B387A1B8942DBF212856835703590A7A055BF2FD322102429971557147461D0E7A426EDE70ADD16E96A54543D0BF04E7BB6C351FE1DF2DE5207B8B8CDAA7F3570250A8A5AE454F14756E94B0856A6DE2123CC3B068E8E62FEF58A959EBC3317AFD90B47F70DD7C99987684E61697AE29B2A8BB29C5C7EAC604207E52DE51C289DDE9&retpath=aHR0cHM6Ly95YW5kZXguY29tL3NlYXJjaD90ZXh0PSUyMlZlZ2FNb3ZpZXMlMjIrb2ZmaWNpYWwrZG9tYWlu_77742216b53fa83aee76b73a8405f2c7&t=2%252F1786106541%252F178f070397f06dc16019cf3d3f6b9da0&u=9183116558025536444&s=e5fd50a96a4c33a08590e92f9ca2894c",
+          "challenged": true
+        },
+        {
+          "engine": "duckduckgo",
+          "url": "https://html.duckduckgo.com/html/?q=%22VegaMovies%22+official+domain",
+          "status": 202,
+          "final_url": "https://html.duckduckgo.com/html/?q=%22VegaMovies%22+official+domain",
+          "challenged": false
         }
       ],
       "site_candidates": [
@@ -4157,130 +4618,19 @@
       "reason": "terminal_site_runtime_validated",
       "applied_changes": []
     },
-    "vidfast": {
-      "provider_id": "vidfast",
-      "status": "inconclusive",
+    "animesama-co": {
+      "provider_id": "animesama-co",
+      "status": "retained_last_known_good",
       "sources": [
         {
           "source_type": "hub",
-          "url": "https://vidfast.vc/",
-          "status": 200,
-          "final_url": "https://vidfast.vc/"
-        }
-      ],
-      "site_candidates": [],
-      "site_validations": [],
-      "reason": "no_runtime_validated_terminal_site"
-    },
-    "vidlink": {
-      "provider_id": "vidlink",
-      "status": "inconclusive",
-      "sources": [
-        {
-          "source_type": "hub",
-          "url": "https://streamindex.live/site/vidlink",
-          "status": 502,
-          "final_url": "https://streamindex.live/site/vidlink"
-        }
-      ],
-      "site_candidates": [],
-      "site_validations": [],
-      "reason": "no_runtime_validated_terminal_site"
-    },
-    "vidnest": {
-      "provider_id": "vidnest",
-      "status": "inconclusive",
-      "sources": [],
-      "site_candidates": [],
-      "site_validations": [],
-      "reason": "no_runtime_validated_terminal_site"
-    },
-    "vidnest-anime": {
-      "provider_id": "vidnest-anime",
-      "status": "inconclusive",
-      "sources": [],
-      "site_candidates": [],
-      "site_validations": [],
-      "reason": "no_runtime_validated_terminal_site"
-    },
-    "uhdmovies": {
-      "provider_id": "uhdmovies",
-      "status": "site_validated",
-      "sources": [
-        {
-          "source_type": "hub",
-          "url": "https://mmodlist.org/",
-          "status": 200,
-          "final_url": "https://mmodlist.org/"
-        }
-      ],
-      "site_candidates": [
-        {
-          "url": "https://uhdmovies.autos",
-          "label": "curated direct fallback",
-          "score": 82,
-          "document_index": -1,
-          "fallback": true,
-          "source_type": "hub",
-          "source": "https://mmodlist.org/"
-        }
-      ],
-      "site_validations": [
-        {
-          "url": "https://uhdmovies.autos",
-          "final_url": "https://uhdmovies.autos",
-          "status": 200,
-          "ok": true,
-          "content_type": "text/html; charset=UTF-8",
-          "brand_match": true,
-          "source_type": "hub",
-          "source": "https://mmodlist.org/",
-          "candidate_score": 82
-        }
-      ],
-      "confirmation": {
-        "required": 1,
-        "observed": 1
-      },
-      "official_site": "https://uhdmovies.autos",
-      "selected_source_type": "hub",
-      "selected_source": "https://mmodlist.org/",
-      "site_status": 200,
-      "site_final_url": "https://uhdmovies.autos",
-      "api_candidates": [],
-      "api_probes": [],
-      "validated_api": null,
-      "reason": "terminal_site_runtime_validated",
-      "applied_changes": []
-    },
-    "vidsrc": {
-      "provider_id": "vidsrc",
-      "status": "inconclusive",
-      "sources": [
-        {
-          "source_type": "hub",
-          "url": "https://vidsrc.to/",
-          "status": 403,
-          "final_url": "https://vidsrc.to/"
-        }
-      ],
-      "site_candidates": [],
-      "site_validations": [],
-      "reason": "no_runtime_validated_terminal_site"
-    },
-    "movieshunt": {
-      "provider_id": "movieshunt",
-      "status": "site_validated",
-      "sources": [
-        {
-          "source_type": "hub",
-          "url": "https://movieshunt.cc/",
+          "url": "https://anime-sama.wiki/",
           "error": "TimeoutError: The read operation timed out"
         }
       ],
       "site_candidates": [
         {
-          "url": "https://movieshunt.work",
+          "url": "https://anime-sama.store",
           "label": "last-known-good domain",
           "score": 78,
           "source_type": "history_lkg",
@@ -4289,31 +4639,16 @@
       ],
       "site_validations": [
         {
-          "url": "https://movieshunt.work",
-          "final_url": "https://movieshunt.work",
-          "status": 200,
-          "ok": true,
-          "content_type": "text/html; charset=UTF-8",
-          "brand_match": true,
+          "url": "https://anime-sama.store",
+          "ok": false,
+          "error": "TimeoutError: The read operation timed out",
           "source_type": "history_lkg",
           "source": "provider-domain-history.json",
           "candidate_score": 78
         }
       ],
-      "confirmation": {
-        "required": 1,
-        "observed": 1
-      },
-      "official_site": "https://movieshunt.work",
-      "selected_source_type": "history_lkg",
-      "selected_source": "provider-domain-history.json",
-      "site_status": 200,
-      "site_final_url": "https://movieshunt.work",
-      "api_candidates": [],
-      "api_probes": [],
-      "validated_api": null,
-      "reason": "terminal_site_runtime_validated",
-      "applied_changes": []
+      "official_site": "https://anime-sama.store",
+      "reason": "no_new_candidate_validated"
     },
     "toflix": {
       "provider_id": "toflix",
@@ -4324,6 +4659,20 @@
           "url": "https://toflix.wiki/",
           "status": 403,
           "final_url": "https://toflix.wiki/"
+        },
+        {
+          "engine": "yandex",
+          "url": "https://yandex.com/search/?text=site%3Atoflix.wiki+%22Acc%C3%A9der+%C3%A0+ToFlix%22",
+          "status": 200,
+          "final_url": "https://yandex.com/showcaptcha?cc=1&form-fb-hint=1.1&mt=4ECA95BFAB0C0ABF07C4FBC8DF0A450ADB1D96E813982D56C41057F6F8B34E0E68739740EB6F2AE911AE89E203F39C91BB0165CD55267A56C61149CC59C1393B44C08D6E425067002E586D05F3A97FDEB0B3044B0DB4E785364760926C7218F58195153AA5C6AA5A3B2B0B2E0D6A8E34E72CEA049A74D802D562C6EAB5A3AFF9869627E358A4828BA0984ADCBE91ACE2B41B3DEAA0C251E5E8F343B7E5889F68C846B974399CC035D9A6CFA119A786560CD20218ABE74DA57A8FA992918F1C03C56A5E854B7C1DDD6378CA8AD83F4C0FAA6E4DEB15021F2EF9477D4C96092AB974B8487F1C4EADAFE4ACF27EE49C9ED63016&retpath=aHR0cHM6Ly95YW5kZXguY29tL3NlYXJjaD90ZXh0PXNpdGUlM0F0b2ZsaXgud2lraSslMjJBY2MlQzMlQTlkZXIrJUMzJUEwK1RvRmxpeCUyMg%2C%2C_92b6558bb927951caebc909a67a4774d&t=2%252F1786106541%252Fe391da28e63b80a2e9548cfe044d3680&u=9183116538362639317&s=a356e818a85aeecfeaa7ffc1db96f33a",
+          "challenged": true
+        },
+        {
+          "engine": "duckduckgo",
+          "url": "https://html.duckduckgo.com/html/?q=site%3Atoflix.wiki+%22Acc%C3%A9der+%C3%A0+ToFlix%22",
+          "status": 202,
+          "final_url": "https://html.duckduckgo.com/html/?q=site%3Atoflix.wiki+%22Acc%C3%A9der+%C3%A0+ToFlix%22",
+          "challenged": false
         }
       ],
       "site_candidates": [
@@ -4399,84 +4748,76 @@
       "reason": "terminal_site_runtime_validated",
       "applied_changes": []
     },
-    "vixsrc": {
-      "provider_id": "vixsrc",
-      "status": "inconclusive",
-      "sources": [
-        {
-          "source_type": "hub",
-          "url": "https://vixsrc.to/",
-          "status": 200,
-          "final_url": "https://vixsrc.to/"
-        }
-      ],
-      "site_candidates": [],
-      "site_validations": [],
-      "reason": "no_runtime_validated_terminal_site"
-    },
-    "vidrock": {
-      "provider_id": "vidrock",
-      "status": "inconclusive",
-      "sources": [
-        {
-          "source_type": "hub",
-          "url": "https://vidrock.ru/",
-          "status": 200,
-          "final_url": "https://vidrock.ru/"
-        }
-      ],
-      "site_candidates": [],
-      "site_validations": [],
-      "reason": "no_runtime_validated_terminal_site"
-    },
-    "vostfree": {
-      "provider_id": "vostfree",
-      "status": "retained_last_known_good",
-      "sources": [
-        {
-          "source_type": "hub",
-          "url": "https://streaminganime.fr/site/6/vostfree",
-          "status": 403,
-          "final_url": "https://streaminganime.fr/site/6/vostfree"
-        }
-      ],
-      "site_candidates": [
-        {
-          "url": "https://ipv4.vostfree.ws",
-          "label": "last-known-good domain",
-          "score": 78,
-          "source_type": "history_lkg",
-          "source": "provider-domain-history.json"
-        }
-      ],
-      "site_validations": [
-        {
-          "url": "https://ipv4.vostfree.ws",
-          "final_url": "https://ipv4.vostfree.ws",
-          "status": 403,
-          "ok": false,
-          "content_type": "text/html; charset=UTF-8",
-          "brand_match": true,
-          "source_type": "history_lkg",
-          "source": "provider-domain-history.json",
-          "candidate_score": 78
-        }
-      ],
-      "official_site": "https://ipv4.vostfree.ws",
-      "reason": "no_new_candidate_validated"
-    },
-    "xpass": {
-      "provider_id": "xpass",
+    "vidnest": {
+      "provider_id": "vidnest",
       "status": "inconclusive",
       "sources": [],
       "site_candidates": [],
       "site_validations": [],
       "reason": "no_runtime_validated_terminal_site"
     },
-    "yflix": {
-      "provider_id": "yflix",
+    "vidnest-anime": {
+      "provider_id": "vidnest-anime",
       "status": "inconclusive",
       "sources": [],
+      "site_candidates": [],
+      "site_validations": [],
+      "reason": "no_runtime_validated_terminal_site"
+    },
+    "vidfast": {
+      "provider_id": "vidfast",
+      "status": "inconclusive",
+      "sources": [
+        {
+          "source_type": "hub",
+          "url": "https://vidfast.vc/",
+          "status": 403,
+          "final_url": "https://vidfast.vc/"
+        },
+        {
+          "engine": "yandex",
+          "url": "https://yandex.com/search/?text=%22VidFast%22+official+domain",
+          "status": 200,
+          "final_url": "https://yandex.com/showcaptcha?cc=1&form-fb-hint=1.1&mt=02E94FDAFFF09D998C17A797AE0D15A48BB26997253BE2151115823E227B96777B1ADBB2EF1728A6881BA82E8A264D1FEE086CEEEAE6FCD8582FEE92E3AE923AA77F0873A984BE62D744832EF6260E93B7DA4045EC8557582352799F6EFB6B50410855166937E1B1CCC8ECA716B27DC3738013173F419FBF3787C6715DDEF7BCF935A5A9EEDFBC484C2E4EC895DCCCEA9348B0753F126F3A8F8B0EF1245A0B78E62A6A66CBFD6E027901FE134B30B6003D0FD1998DC867324043D87E2595084A3490347C4EA5F3CBA7622F9ECDA61E55DD732187EB12DDB72540109E1A4099F14E8E904614E149D011E47390BC6470707993&retpath=aHR0cHM6Ly95YW5kZXguY29tL3NlYXJjaD90ZXh0PSUyMlZpZEZhc3QlMjIrb2ZmaWNpYWwrZG9tYWlu_96282166c90ca94a96ec56be4a203581&t=2%252F1786106543%252Ffca548e6d5155c863da53ed079d64afb&u=9183116655466438913&s=bbea13a8f12b764064ad8e794fcfbf5a",
+          "challenged": true
+        },
+        {
+          "engine": "duckduckgo",
+          "url": "https://html.duckduckgo.com/html/?q=%22VidFast%22+official+domain",
+          "status": 202,
+          "final_url": "https://html.duckduckgo.com/html/?q=%22VidFast%22+official+domain",
+          "challenged": false
+        }
+      ],
+      "site_candidates": [],
+      "site_validations": [],
+      "reason": "no_runtime_validated_terminal_site"
+    },
+    "vidlink": {
+      "provider_id": "vidlink",
+      "status": "inconclusive",
+      "sources": [
+        {
+          "source_type": "hub",
+          "url": "https://streamindex.live/site/vidlink",
+          "status": 502,
+          "final_url": "https://streamindex.live/site/vidlink"
+        },
+        {
+          "engine": "yandex",
+          "url": "https://yandex.com/search/?text=%22VidLink%22+official+domain",
+          "status": 200,
+          "final_url": "https://yandex.com/showcaptcha?cc=1&form-fb-hint=1.1&mt=0B291DE6EA3DDAC34F44FBB7C20834C00351A73F99089C3650882D7C29EAD3B1BFCC6BF548A61C43E51C5853CE8F79F5BE99D3AAB635399FACBC8F5872228B85B09B9C59BDA61AD47D83D925C494E68AB077F12C9CA441A1FD9600B0ECE4848FFAD8C3B1B5E873C591D2B7F541E001DA08B6D514E88AC7127901A838F07B4E1BD8ADC8979BCB57E453FFCD9624F2EFBCA2628DCE05C6284A7E9393336A857EA5924DCD5F3193829F90841FF76CC73C62CE410E4F9ACDCE39F8194651BBA03257CC44ECBAD269D186154976E63885662B4487106596768B6166949B671BE68D349B6B9F0FE6E8D4F28E496AA0C98E99C47A4E&retpath=aHR0cHM6Ly95YW5kZXguY29tL3NlYXJjaD90ZXh0PSUyMlZpZExpbmslMjIrb2ZmaWNpYWwrZG9tYWlu_41bbac2b3cf2080bfa39d23928e21ff4&t=2%252F1786106543%252Fe28f311e2323c73f9b05fba1865d2747&u=9183116672714585024&s=92d667c0d882d589fbbf9473a289e4b2",
+          "challenged": true
+        },
+        {
+          "engine": "duckduckgo",
+          "url": "https://html.duckduckgo.com/html/?q=%22VidLink%22+official+domain",
+          "status": 202,
+          "final_url": "https://html.duckduckgo.com/html/?q=%22VidLink%22+official+domain",
+          "challenged": false
+        }
+      ],
       "site_candidates": [],
       "site_validations": [],
       "reason": "no_runtime_validated_terminal_site"
@@ -4484,7 +4825,22 @@
     "sekai": {
       "provider_id": "sekai",
       "status": "site_validated",
-      "sources": [],
+      "sources": [
+        {
+          "engine": "yandex",
+          "url": "https://yandex.com/search/?text=Sekai%22+streaming",
+          "status": 200,
+          "final_url": "https://yandex.com/showcaptcha?cc=1&form-fb-hint=1.1&mt=4CB7DCAD01C56E1101A73057E8C547D4106EB52BDDC3B2441523693CED260D59B16218F1AA90765A944DF62D5BCAB6E4AA5BC062931CE27E41CA5DAC7ED65B60E08D5FAC1D8AE2B7D89A351B54410E0944D3314E748A9357C82F8A45B004077518E852CAC18EE35B07600828D962DD69A05C653F75042E70736F1480571A928EC5A3892A11DF658DB3779AE36AD254F813F00E90DA49EFD53D24CF3D5DC36E3FFB875F46908FB7CA46E047D5162636BD50A7EA93EBA22496460ED646DAD2AC35BA80FD9532202634D7F8C2FF889A359A60F5AFE45CB5CE56FA9A744845389FF13D75B27A684C942F03AE08EBAA2D4C7AE2D6&retpath=aHR0cHM6Ly95YW5kZXguY29tL3NlYXJjaD90ZXh0PVNla2FpJTIyK3N0cmVhbWluZw%2C%2C_9933b8363ac16244f8d19b87f3baa11d&t=2%252F1786106539%252Fba37b744e0686b934103214ddfe54f73&u=9183116418370822519&s=688bae3be4a801def00fb7ffb6da3b8d",
+          "challenged": true
+        },
+        {
+          "engine": "duckduckgo",
+          "url": "https://html.duckduckgo.com/html/?q=Sekai%22+streaming",
+          "status": 202,
+          "final_url": "https://html.duckduckgo.com/html/?q=Sekai%22+streaming",
+          "challenged": false
+        }
+      ],
       "site_candidates": [
         {
           "url": "https://sekai.one/?v=15",
@@ -4529,17 +4885,161 @@
       "reason": "terminal_site_runtime_validated",
       "applied_changes": []
     },
-    "zinkmovies": {
-      "provider_id": "zinkmovies",
+    "uhdmovies": {
+      "provider_id": "uhdmovies",
+      "status": "site_validated",
+      "sources": [
+        {
+          "source_type": "hub",
+          "url": "https://mmodlist.org/",
+          "status": 200,
+          "final_url": "https://mmodlist.org/"
+        },
+        {
+          "engine": "yandex",
+          "url": "https://yandex.com/search/?text=%22UHDMovies%22+official+domain",
+          "status": 200,
+          "final_url": "https://yandex.com/showcaptcha?cc=1&form-fb-hint=1.1&mt=18A222827963ADB8AF3BF9C14ADE9B07C2ABE76E31E8BD56F064AB1BC261C09E0424B001FE820E79713C801000C6045B6C110B8AA3C2A7AA2FEAB324C802F9E0AA6055760512BC631E103C7E57B2271A70F85FB0C6E3A6BA5F9115032F2C284A20A8B05B7788E1D6035BF49C104842F73FF1EFBD2F92378F185B936C6F0E1AA36E5662C04D4DCCB35C0DA99C8C65BCB2F589787E46A8E62356794B518F0D2024F53B7DBB509BF8C3E08156D4D0FA2637D8B46A1195D31B3491629E6C4D1DAAC293621EF26694CC076A2366C9BCE9C65F2E18541B8EF9B4FBB5DF04910FD14AC9F796FD9B1EE9DAE93B378510BDC5A2751DC9&retpath=aHR0cHM6Ly95YW5kZXguY29tL3NlYXJjaD90ZXh0PSUyMlVIRE1vdmllcyUyMitvZmZpY2lhbCtkb21haW4%2C_8bce0a12efbbe927479245311b67421a&t=2%252F1786106541%252Fd5ca217bf5ce837dc902c72f63119d7f&u=9183116550106690402&s=d58c80652719cc47381591d1fef93c06",
+          "challenged": true
+        },
+        {
+          "engine": "duckduckgo",
+          "url": "https://html.duckduckgo.com/html/?q=%22UHDMovies%22+official+domain",
+          "status": 202,
+          "final_url": "https://html.duckduckgo.com/html/?q=%22UHDMovies%22+official+domain",
+          "challenged": false
+        }
+      ],
+      "site_candidates": [
+        {
+          "url": "https://uhdmovies.autos",
+          "label": "curated direct fallback",
+          "score": 82,
+          "document_index": -1,
+          "fallback": true,
+          "source_type": "hub",
+          "source": "https://mmodlist.org/"
+        }
+      ],
+      "site_validations": [
+        {
+          "url": "https://uhdmovies.autos",
+          "final_url": "https://uhdmovies.autos",
+          "status": 200,
+          "ok": true,
+          "content_type": "text/html; charset=UTF-8",
+          "brand_match": true,
+          "source_type": "hub",
+          "source": "https://mmodlist.org/",
+          "candidate_score": 82
+        }
+      ],
+      "confirmation": {
+        "required": 1,
+        "observed": 1
+      },
+      "official_site": "https://uhdmovies.autos",
+      "selected_source_type": "hub",
+      "selected_source": "https://mmodlist.org/",
+      "site_status": 200,
+      "site_final_url": "https://uhdmovies.autos",
+      "api_candidates": [],
+      "api_probes": [],
+      "validated_api": null,
+      "reason": "terminal_site_runtime_validated",
+      "applied_changes": []
+    },
+    "vidsrc": {
+      "provider_id": "vidsrc",
       "status": "inconclusive",
       "sources": [
         {
           "source_type": "hub",
-          "url": "https://redirect.zinkmovies.org/",
+          "url": "https://vidsrc.to/",
+          "status": 403,
+          "final_url": "https://vidsrc.to/"
+        },
+        {
+          "engine": "yandex",
+          "url": "https://yandex.com/search/?text=%22VidSrc%22+official+domain",
           "status": 200,
-          "final_url": "https://redirect.zinkmovies.org/"
+          "final_url": "https://yandex.com/showcaptcha?cc=1&form-fb-hint=1.1&mt=E3FA21721B171AF7E6E8B93E97D927309A23ABC214D7907C26B4D095775F39E3275B4EAB870507DEA83193A63331A64C5904B41D232A6AC3085FEF64FF791D1646D3C72D59175CFD11BD46A468A6AEEC27837A21130045A568A7E77D9590140F628281C3889D922C3C25E6AB425340A3EA35831A091A0BB47DD8B42AEC02B55924A18F5BE0890C9EF2CB114654DA03D6BCE4880A13391DD97E46CC5D7FE2DC7296E6E07597DA6ED97D577575E6C8E03EE3810BB1EB1F597FBE7EDC2F9B5E663E48729FED790320F1DAB915179305F0FC4E519ABEC4EF0CB89AA8D9D1406C7126B82347EAA3F82AB8DDFB0FB4CA109F39E295&retpath=aHR0cHM6Ly95YW5kZXguY29tL3NlYXJjaD90ZXh0PSUyMlZpZFNyYyUyMitvZmZpY2lhbCtkb21haW4%2C_5ddb283492f84eb850009518cc1278d2&t=2%252F1786106544%252F40bba3cc4f87774a40feb3d1310878be&u=9183116724455519096&s=179b86bd9dbf106d7ad1bf0a9582331b",
+          "challenged": true
+        },
+        {
+          "engine": "duckduckgo",
+          "url": "https://html.duckduckgo.com/html/?q=%22VidSrc%22+official+domain",
+          "status": 202,
+          "final_url": "https://html.duckduckgo.com/html/?q=%22VidSrc%22+official+domain",
+          "challenged": false
         }
       ],
+      "site_candidates": [],
+      "site_validations": [],
+      "reason": "no_runtime_validated_terminal_site"
+    },
+    "vidrock": {
+      "provider_id": "vidrock",
+      "status": "inconclusive",
+      "sources": [
+        {
+          "source_type": "hub",
+          "url": "https://vidrock.ru/",
+          "status": 200,
+          "final_url": "https://vidrock.ru/"
+        },
+        {
+          "engine": "yandex",
+          "url": "https://yandex.com/search/?text=%22VidRock%22+official+domain",
+          "status": 200,
+          "final_url": "https://yandex.com/showcaptcha?cc=1&form-fb-hint=1.1&mt=3933573D4EC9F4F9EF8E749A0C179440978CE224C3A5FA5B862919B11CD7D2CED111C4DD3ABF2A0DD52DBB0C5EF74EF724CFBB88B58F77ABA9E7BA8378D3C0228EC1ED9C2D2EACA9798DA29CEFE478ABEDC4B25712DD3FFB35F446B568CF1C035B6D8B3B82263F28A65D217691BA45E0F7C296B88230E0FAFC01B9D72C959995D49AD2C643132F0349D7331F42D9A95705778F63BE69CF95CC07759156EB4773DE3AAD774D089352D92012BEFF9F74525F6030F6E21ADB77CE6D3DD6477A8040FE94857CE34A5A8C32823C1BAE765F9DF3C1E58F209D0A934ACA081BEFFA8D8F3E4663C92D19C7BBA7782DEC379E60CDA83D&retpath=aHR0cHM6Ly95YW5kZXguY29tL3NlYXJjaD90ZXh0PSUyMlZpZFJvY2slMjIrb2ZmaWNpYWwrZG9tYWlu_2110d9cd3d0e9140f5374c1e2ec8dbda&t=2%252F1786106544%252F31a2cbb7174a2c7246d3c1a68cb22514&u=9183116732306088211&s=51376fb061feaeae725f5c648287b803",
+          "challenged": true
+        },
+        {
+          "engine": "duckduckgo",
+          "url": "https://html.duckduckgo.com/html/?q=%22VidRock%22+official+domain",
+          "status": 202,
+          "final_url": "https://html.duckduckgo.com/html/?q=%22VidRock%22+official+domain",
+          "challenged": false
+        }
+      ],
+      "site_candidates": [],
+      "site_validations": [],
+      "reason": "no_runtime_validated_terminal_site"
+    },
+    "vixsrc": {
+      "provider_id": "vixsrc",
+      "status": "inconclusive",
+      "sources": [
+        {
+          "source_type": "hub",
+          "url": "https://vixsrc.to/",
+          "status": 200,
+          "final_url": "https://vixsrc.to/"
+        },
+        {
+          "engine": "yandex",
+          "url": "https://yandex.com/search/?text=%22VixSrc%22+official+domain",
+          "status": 200,
+          "final_url": "https://yandex.com/showcaptcha?cc=1&form-fb-hint=1.1&mt=0EB4379832373F8DCCCEA80EBD859A4FDE45A020D2F6ECAB7F15FC6B70B1C42A550DF09B4FB42B71361F98C0DEAB033566955A45C9AFDF209AB75AC9C9B6CD33854B29D7298F2415145D5769BAE0E8A5DAC3626B81AE8F14316A99B7A3D0A2DED9931E569AF8C3235EB8F9FC540C2DCC00B1F90BA51BF1D920788F69D2A96D68FE79D6E5F728342342D9D679BE15B688D6CF505FFB366D9343747B8256820363E0E3F9F369EB616FF90420A1AA33418921AE6AA3FAEBA2CB1240AF9DA5DF83A1E5E1E98C13634BE4163618EADB8DB6A8A6039F83CDBCDB3D77C4A01EACC3A0F507643BD3EAD722B753145DDF62EEB2BF1710&retpath=aHR0cHM6Ly95YW5kZXguY29tL3NlYXJjaD90ZXh0PSUyMlZpeFNyYyUyMitvZmZpY2lhbCtkb21haW4%2C_38d2246eb4f7199006a84c4e61cecaca&t=2%252F1786106544%252F0b94981f4b2a1317dd23a7c3aac6fdcb&u=9183116754115792527&s=08c050e44a05942944e384a3ed7d4aef",
+          "challenged": true
+        },
+        {
+          "engine": "duckduckgo",
+          "url": "https://html.duckduckgo.com/html/?q=%22VixSrc%22+official+domain",
+          "status": 202,
+          "final_url": "https://html.duckduckgo.com/html/?q=%22VixSrc%22+official+domain",
+          "challenged": false
+        }
+      ],
+      "site_candidates": [],
+      "site_validations": [],
+      "reason": "no_runtime_validated_terminal_site"
+    },
+    "xpass": {
+      "provider_id": "xpass",
+      "status": "inconclusive",
+      "sources": [],
       "site_candidates": [],
       "site_validations": [],
       "reason": "no_runtime_validated_terminal_site"
@@ -4673,41 +5173,36 @@
       "api_probes": [],
       "validated_api": null,
       "reason": "terminal_site_runtime_validated",
-      "applied_changes": [
-        {
-          "from": "wookafr.app",
-          "to": "wookafr.blog",
-          "kind": "site"
-        },
-        {
-          "from": "wookafr.center",
-          "to": "wookafr.blog",
-          "kind": "site"
-        },
-        {
-          "from": "wookafr.cymru",
-          "to": "wookafr.blog",
-          "kind": "site"
-        },
-        {
-          "from": "wookafr.fyi",
-          "to": "wookafr.blog",
-          "kind": "site"
-        },
-        {
-          "from": "wookafr.to",
-          "to": "wookafr.blog",
-          "kind": "site"
-        }
-      ]
+      "applied_changes": []
     },
-    "voiranime-rip": {
-      "provider_id": "voiranime-rip",
-      "status": "site_validated",
-      "sources": [],
+    "vostfree": {
+      "provider_id": "vostfree",
+      "status": "retained_last_known_good",
+      "sources": [
+        {
+          "source_type": "hub",
+          "url": "https://streaminganime.fr/site/6/vostfree",
+          "status": 403,
+          "final_url": "https://streaminganime.fr/site/6/vostfree"
+        },
+        {
+          "engine": "yandex",
+          "url": "https://yandex.com/search/?text=%22Vostfree%22+official+domain",
+          "status": 200,
+          "final_url": "https://yandex.com/showcaptcha?cc=1&form-fb-hint=1.1&mt=2C8B6915A2B88AFF74AEE4889AE8B3A5D5F2253F8B10448ADE1CA01FD9FAF51912F48B48436957F41FBB742AC774F58F79558011207A5A1A961AF66926A36DB7ED7322E8790DBC31D77560B951780CE6F6F521882A0081AD575271523144C53C186B2EB8EC54ED0132C8B5410D4A9756E17C5FEE0A3BCE5855AB0A13C8953AEE03F4C0F7C13A966940BF72A436CB8B05FB5DAEF22388255AE97814493EDBD1C61432F3F915D7B6120085E4541D67BBA2708CB4D9047615F4F030EDBBD6673125AE43B3FFC5A9E7BF59DBF27F78BD879BB47DEAC75722F4015F0184050C520B69F26E5882842A1F0BD538D40999B85058AB30&retpath=aHR0cHM6Ly95YW5kZXguY29tL3NlYXJjaD90ZXh0PSUyMlZvc3RmcmVlJTIyK29mZmljaWFsK2RvbWFpbg%2C%2C_a850ece7bca72e111d3bb143d336f0d6&t=2%252F1786106545%252Fec2cf12cc2ef967f0a5b1aff4bec1c0c&u=9183116786799653738&s=18bcfc68d4ce2161fe93d59e939c45f6",
+          "challenged": true
+        },
+        {
+          "engine": "duckduckgo",
+          "url": "https://html.duckduckgo.com/html/?q=%22Vostfree%22+official+domain",
+          "status": 202,
+          "final_url": "https://html.duckduckgo.com/html/?q=%22Vostfree%22+official+domain",
+          "challenged": false
+        }
+      ],
       "site_candidates": [
         {
-          "url": "https://voiranime.rip",
+          "url": "https://ipv4.vostfree.ws",
           "label": "last-known-good domain",
           "score": 78,
           "source_type": "history_lkg",
@@ -4716,10 +5211,10 @@
       ],
       "site_validations": [
         {
-          "url": "https://voiranime.rip",
-          "final_url": "https://voiranime.rip",
-          "status": 200,
-          "ok": true,
+          "url": "https://ipv4.vostfree.ws",
+          "final_url": "https://ipv4.vostfree.ws",
+          "status": 403,
+          "ok": false,
           "content_type": "text/html; charset=UTF-8",
           "brand_match": true,
           "source_type": "history_lkg",
@@ -4727,86 +5222,8 @@
           "candidate_score": 78
         }
       ],
-      "confirmation": {
-        "required": 1,
-        "observed": 1
-      },
-      "official_site": "https://voiranime.rip",
-      "selected_source_type": "history_lkg",
-      "selected_source": "provider-domain-history.json",
-      "site_status": 200,
-      "site_final_url": "https://voiranime.rip",
-      "api_candidates": [],
-      "api_probes": [],
-      "validated_api": null,
-      "reason": "terminal_site_runtime_validated",
-      "applied_changes": []
-    },
-    "voiranime": {
-      "provider_id": "voiranime",
-      "status": "site_validated",
-      "sources": [
-        {
-          "source_type": "hub",
-          "url": "https://voiranime.org.uk/",
-          "status": 200,
-          "final_url": "https://voiranime.org.uk/"
-        }
-      ],
-      "site_candidates": [
-        {
-          "url": "https://voiranime.homes",
-          "label": "curated direct fallback",
-          "score": 82,
-          "document_index": -1,
-          "fallback": true,
-          "source_type": "hub",
-          "source": "https://voiranime.org.uk/"
-        },
-        {
-          "url": "https://voiranime.diy",
-          "label": "VoirAnime",
-          "score": 67,
-          "document_index": 41,
-          "source_type": "hub",
-          "source": "https://voiranime.org.uk/"
-        },
-        {
-          "url": "https://voiranime.icu",
-          "label": "Voiranime.icu",
-          "score": 67,
-          "document_index": 42,
-          "source_type": "hub",
-          "source": "https://voiranime.org.uk/"
-        }
-      ],
-      "site_validations": [
-        {
-          "url": "https://voiranime.homes",
-          "final_url": "https://voiranime.homes",
-          "status": 200,
-          "ok": true,
-          "content_type": "text/html; charset=utf-8",
-          "brand_match": true,
-          "source_type": "hub",
-          "source": "https://voiranime.org.uk/",
-          "candidate_score": 82
-        }
-      ],
-      "confirmation": {
-        "required": 1,
-        "observed": 1
-      },
-      "official_site": "https://voiranime.homes",
-      "selected_source_type": "hub",
-      "selected_source": "https://voiranime.org.uk/",
-      "site_status": 200,
-      "site_final_url": "https://voiranime.homes",
-      "api_candidates": [],
-      "api_probes": [],
-      "validated_api": null,
-      "reason": "terminal_site_runtime_validated",
-      "applied_changes": []
+      "official_site": "https://ipv4.vostfree.ws",
+      "reason": "no_new_candidate_validated"
     },
     "videasy": {
       "provider_id": "videasy",
@@ -4817,6 +5234,20 @@
           "url": "https://www.videasy.to/docs",
           "status": 200,
           "final_url": "https://www.videasy.to/docs"
+        },
+        {
+          "engine": "yandex",
+          "url": "https://yandex.com/search/?text=%22VidEasy%22+official+domain",
+          "status": 200,
+          "final_url": "https://yandex.com/showcaptcha?cc=1&form-fb-hint=1.1&mt=1CBBAECA560FEE52781FBF286AD2B6D431C27041769D052E545FBBF35BBE9E839C83F0CE25063CE54E55A50F4ADDF8EDE475B638B95FA25FA3B168EDBF37A5AF950B07C066F75A2ACCF6D41419491C3CD3D869B517E19DBD80F0BFD7F85CFAA8EF29C3A801129E6DC46090FE24D982CAE4E8FB52D8366ABC11D7E56C7D82654C94A04D02D40150516AB61E6AD474B3DA02576EF7EB74E8B4B91100BBFD7F2D5F81390108B7702AD2D836216B4E6868E71041A0D6AA7366CE03A9BD3EAF3286E254C198F7C039094DE9581FF7CC91A6F292F8A51D8D31898C6ADA98ADF9039F7D8563C51B50274A62CF3C49055995F2A85DD9&retpath=aHR0cHM6Ly95YW5kZXguY29tL3NlYXJjaD90ZXh0PSUyMlZpZEVhc3klMjIrb2ZmaWNpYWwrZG9tYWlu_b323409aef7259474843609eb8e15379&t=2%252F1786106543%252Fc62d76416492e091cc262ad3e53c7fd5&u=9183116691772334364&s=985eb70ef26922a65a53c41ceba5b32c",
+          "challenged": true
+        },
+        {
+          "engine": "duckduckgo",
+          "url": "https://html.duckduckgo.com/html/?q=%22VidEasy%22+official+domain",
+          "status": 202,
+          "final_url": "https://html.duckduckgo.com/html/?q=%22VidEasy%22+official+domain",
+          "challenged": false
         }
       ],
       "site_candidates": [
@@ -4881,33 +5312,51 @@
       "reason": "terminal_site_runtime_validated",
       "applied_changes": []
     },
-    "playimdb": {
-      "provider_id": "playimdb",
+    "yflix": {
+      "provider_id": "yflix",
       "status": "inconclusive",
       "sources": [
         {
-          "source_type": "hub",
-          "url": "https://playimdb.domains/",
-          "error": "URLError: <urlopen error timed out>"
+          "engine": "yandex",
+          "url": "https://yandex.com/search/?text=%22YFlix%22+official+domain",
+          "status": 200,
+          "final_url": "https://yandex.com/showcaptcha?cc=1&form-fb-hint=1.1&mt=995B57A3125BEE28340A94F5EEDBA51F6A5B5929BB396721B7DE4691A5DAE1D45FB363BEBB412E9A6A0046372B4CC136BDC7047867C52500D422F3AFA8DF7FC530457B6C347E2A8DE11F5C73E89888E53E9CD417D64B04601E9FE7D638E9EDA1A8837BBDE20F74740CB267E2B13C0737740D86662CDC41F7CBE023D78926006405080FE50DEFE5E1CCDF418A80252A10E5688E5C0F8111A00A76949C4409C66BE0AC054A627A75C82C5226DC5E3BB49921DCAA8417B9B863C01E8663AB94857B035F7B84253C0E6423F1CC3FEA33113B3ECD3FA5A6D0529CBB3DB8B37C0E89CE439B57B8801F6AB3E3D0AF0E1AB6765EDAA7&retpath=aHR0cHM6Ly95YW5kZXguY29tL3NlYXJjaD90ZXh0PSUyMllGbGl4JTIyK29mZmljaWFsK2RvbWFpbg%2C%2C_54d3281db7cfae94d2abf936d94da421&t=2%252F1786106545%252Ff42f1c3afefa54934f211f25f6376905&u=9183116817334186894&s=b022cae78bee3e47205a07fcb466af28",
+          "challenged": true
+        },
+        {
+          "engine": "duckduckgo",
+          "url": "https://html.duckduckgo.com/html/?q=%22YFlix%22+official+domain",
+          "status": 202,
+          "final_url": "https://html.duckduckgo.com/html/?q=%22YFlix%22+official+domain",
+          "challenged": false
         }
       ],
       "site_candidates": [],
       "site_validations": [],
       "reason": "no_runtime_validated_terminal_site"
     },
-    "moviesdrive": {
-      "provider_id": "moviesdrive",
-      "status": "retained_last_known_good",
+    "voiranime-rip": {
+      "provider_id": "voiranime-rip",
+      "status": "site_validated",
       "sources": [
         {
-          "source_type": "hub",
-          "url": "https://moviesdrives.mov/",
-          "error": "TimeoutError: The read operation timed out"
+          "engine": "yandex",
+          "url": "https://yandex.com/search/?text=VoirAnime.rip+lien",
+          "status": 200,
+          "final_url": "https://yandex.com/showcaptcha?cc=1&form-fb-hint=1.1&mt=6EAEA818A842F50D043ABC3C38F8A55FFD4578EFF0BF1436328E31FF2A0207BCBDBE2E0416D133B6C0A2705C02742F49BE938C6E4A15639557431B724230E67892C65F7533A3E838BB74EA383875DF3F6658391537BC57779609E6B2CDD1A912F9646EC5F8DC0E9557931D3A04792A30F61FF0CC78B0DE2CC5C43D7FD2B2C8EE53B7A24B8FE4C70F88836E419E5A5D36C787BA419A0DD5DA3FEE3AD6C315A32C116DC4AAA44E6651A57DDA21EA8DB1D2E4FE15AA04F7A1D54B1191EFD2C6009264BB8BD2659F7E1E2B040348DBAA9F6B5B940DB650244B1A1BC3B8393E2BEB70DA40B440E9749DAFCB1CE0EF8073BCECC8B7&retpath=aHR0cHM6Ly95YW5kZXguY29tL3NlYXJjaD90ZXh0PVZvaXJBbmltZS5yaXArbGllbg%2C%2C_84f362d28407b49a4f39c18aaec765c1&t=2%252F1786106544%252Ffabab4a8104e6002d33afb4eb449f673&u=9183116752370962165&s=3437ab60b6460c8457b3f68b58da6d39",
+          "challenged": true
+        },
+        {
+          "engine": "duckduckgo",
+          "url": "https://html.duckduckgo.com/html/?q=VoirAnime.rip+lien",
+          "status": 202,
+          "final_url": "https://html.duckduckgo.com/html/?q=VoirAnime.rip+lien",
+          "challenged": false
         }
       ],
       "site_candidates": [
         {
-          "url": "https://new1.moviesdrive.christmas",
+          "url": "https://voiranime.rip",
           "label": "last-known-good domain",
           "score": 78,
           "source_type": "history_lkg",
@@ -4916,17 +5365,267 @@
       ],
       "site_validations": [
         {
-          "url": "https://new1.moviesdrive.christmas",
-          "ok": false,
-          "error": "TimeoutError: The read operation timed out",
+          "url": "https://voiranime.rip",
+          "final_url": "https://voiranime.rip",
+          "status": 200,
+          "ok": true,
+          "content_type": "text/html; charset=UTF-8",
+          "brand_match": true,
           "source_type": "history_lkg",
           "source": "provider-domain-history.json",
           "candidate_score": 78
         }
       ],
-      "official_site": "https://new1.moviesdrive.christmas",
+      "confirmation": {
+        "required": 1,
+        "observed": 1
+      },
+      "official_site": "https://voiranime.rip",
+      "selected_source_type": "history_lkg",
+      "selected_source": "provider-domain-history.json",
+      "site_status": 200,
+      "site_final_url": "https://voiranime.rip",
+      "api_candidates": [],
+      "api_probes": [],
+      "validated_api": null,
+      "reason": "terminal_site_runtime_validated",
+      "applied_changes": []
+    },
+    "voiranime": {
+      "provider_id": "voiranime",
+      "status": "site_validated",
+      "sources": [
+        {
+          "source_type": "hub",
+          "url": "https://voiranime.org.uk/",
+          "status": 200,
+          "final_url": "https://voiranime.org.uk/"
+        },
+        {
+          "engine": "yandex",
+          "url": "https://yandex.com/search/?text=%22VoirAnime%22+official+domain",
+          "status": 200,
+          "final_url": "https://yandex.com/showcaptcha?cc=1&form-fb-hint=1.1&mt=3B26F695219FDC970F356FCFB35B8040184CCD9ECF862E613E1B2D49DCEF2DDFCE52A51829DA27E3200F688CF5B9927593651C8F7F148912AA2B166F8CDB0559CA3AFAD887C3C9951319BB5DF9D59B1B4C1565CB9FD823D74BB1FF9702C78780006D18BDEE7C8C373A07F88D224C1DA2F11E08FB01D8929AABAFEC270BA3D8FD06FE7C717743A0BEADB2B5922FB3CE084A8A1555FFAEE3FB895E219E66075F7FA10EF537612CAAFBA154B46EF76528FAB42F10A94C4C98B6DDFA50A1048A0388DFD8AEF64DC536DC2ED745FE823B200C1A3CB8B198BF721A6CA2B068E569116E560AC5D6ACAA694398CAD5C7B8A10981F800&retpath=aHR0cHM6Ly95YW5kZXguY29tL3NlYXJjaD90ZXh0PSUyMlZvaXJBbmltZSUyMitvZmZpY2lhbCtkb21haW4%2C_6fac3e3ac808d912e9f10db31c710876&t=2%252F1786106544%252F32f98059c5607c5dcfb02631ef9e574d&u=9183116756332229622&s=4a15c17677601fca6d32e336f0dce3e0",
+          "challenged": true
+        },
+        {
+          "engine": "duckduckgo",
+          "url": "https://html.duckduckgo.com/html/?q=%22VoirAnime%22+official+domain",
+          "status": 202,
+          "final_url": "https://html.duckduckgo.com/html/?q=%22VoirAnime%22+official+domain",
+          "challenged": false
+        }
+      ],
+      "site_candidates": [
+        {
+          "url": "https://voiranime.homes",
+          "label": "curated direct fallback",
+          "score": 82,
+          "document_index": -1,
+          "fallback": true,
+          "source_type": "hub",
+          "source": "https://voiranime.org.uk/"
+        },
+        {
+          "url": "https://voiranime.diy",
+          "label": "VoirAnime",
+          "score": 67,
+          "document_index": 41,
+          "source_type": "hub",
+          "source": "https://voiranime.org.uk/"
+        },
+        {
+          "url": "https://voiranime.icu",
+          "label": "Voiranime.icu",
+          "score": 67,
+          "document_index": 42,
+          "source_type": "hub",
+          "source": "https://voiranime.org.uk/"
+        }
+      ],
+      "site_validations": [
+        {
+          "url": "https://voiranime.homes",
+          "final_url": "https://voiranime.homes",
+          "status": 200,
+          "ok": true,
+          "content_type": "text/html; charset=utf-8",
+          "brand_match": true,
+          "source_type": "hub",
+          "source": "https://voiranime.org.uk/",
+          "candidate_score": 82
+        }
+      ],
+      "confirmation": {
+        "required": 1,
+        "observed": 1
+      },
+      "official_site": "https://voiranime.homes",
+      "selected_source_type": "hub",
+      "selected_source": "https://voiranime.org.uk/",
+      "site_status": 200,
+      "site_final_url": "https://voiranime.homes",
+      "api_candidates": [],
+      "api_probes": [],
+      "validated_api": null,
+      "reason": "terminal_site_runtime_validated",
+      "applied_changes": []
+    },
+    "zinkmovies": {
+      "provider_id": "zinkmovies",
+      "status": "inconclusive",
+      "sources": [
+        {
+          "source_type": "hub",
+          "url": "https://redirect.zinkmovies.org/",
+          "status": 200,
+          "final_url": "https://redirect.zinkmovies.org/"
+        },
+        {
+          "engine": "yandex",
+          "url": "https://yandex.com/search/?text=%22ZinkMovies%22+official+domain",
+          "status": 200,
+          "final_url": "https://yandex.com/showcaptcha?cc=1&form-fb-hint=1.1&mt=073C4CB7F34713ABBB88F48B454B09D1A205A5D2BEE97B1BE272E644D01A74867408C91B166A71FB24890C9985B1BB0960F0DF70E270F7F11B87876FD5C6A9D1E74532700143496368DF68F0B550B199BCD572AD8C4CF0D487900B0C57063F9CFE13A78882015E333269F6F227A3DE1A8AF30AEA348D8D9835594E8F0E9F9E2C34D7F8343B4342067216713E25A4B5770E26BD15CE860294529A1EB48AEB1B3A25D6CA5C37526D5F8E209946C71CC163E83B7FA213953BEAB33DB393DCC43B7F7F1FB08B685C724AFE7680DBD40DD70BA7D4F2AA060A2509D491EEE482E937CBED6DA9329221D32E54237AFCFF502CC41882&retpath=aHR0cHM6Ly95YW5kZXguY29tL3NlYXJjaD90ZXh0PSUyMlppbmtNb3ZpZXMlMjIrb2ZmaWNpYWwrZG9tYWlu_9f234c2eb55a386bdfc076099a9fa91c&t=2%252F1786106546%252F700a30f4c1887397b0b223d45c6854a9&u=9183116889609265466&s=6ea9d7bedc919b4f8b63d411ed4b4472",
+          "challenged": true
+        },
+        {
+          "engine": "duckduckgo",
+          "url": "https://html.duckduckgo.com/html/?q=%22ZinkMovies%22+official+domain",
+          "status": 403,
+          "final_url": "https://html.duckduckgo.com/html/?q=%22ZinkMovies%22+official+domain",
+          "challenged": false
+        }
+      ],
+      "site_candidates": [],
+      "site_validations": [],
+      "reason": "no_runtime_validated_terminal_site"
+    },
+    "playimdb": {
+      "provider_id": "playimdb",
+      "status": "inconclusive",
+      "sources": [
+        {
+          "source_type": "hub",
+          "url": "https://playimdb.domains/",
+          "error": "URLError: <urlopen error timed out>"
+        },
+        {
+          "engine": "yandex",
+          "url": "https://yandex.com/search/?text=%22PlayIMDb%22+official+domain",
+          "status": 200,
+          "final_url": "https://yandex.com/showcaptcha?cc=1&form-fb-hint=1.1&mt=F2D5C59952ECC4A3E3B6BA6440AE53F01D388422D53E35B35690CFD61E5714CA8AE0DBD78BCCB270D5A7A2887566EE0F97210DCD508750FA2CD7C416B66B6621B24A854A85C2655FDE6BBF63062C5DF8C9DFBCBF18934386CA97843C9880A9A1445EAFDBB1C464D87A3DA0D9444C99A3A86F136A629B96648FF72A9AB4050FE2333620E3918D56060A25A31CA9266326B030DC6705AA8986513662E26748ED6F5B39E9876FD8FDC61BAA2A099210131DDE4BD0230D0C3699D825526106ED58F703A1F1DC16D9585FA8E61C287840B8DFF5387F22C3D00BA4BB391BD116FA38A985243566D5735CB78BBFFB19986DC57E8D72&retpath=aHR0cHM6Ly95YW5kZXguY29tL3NlYXJjaD90ZXh0PSUyMlBsYXlJTURiJTIyK29mZmljaWFsK2RvbWFpbg%2C%2C_d793f635358823d50c2df905a657f2c9&t=2%252F1786106547%252Fb4dd10433e53e5b99807bb07ae022a4c&u=9183116915445501530&s=28fdcad2ade853c9a3349b95b21b4a05",
+          "challenged": true
+        },
+        {
+          "engine": "duckduckgo",
+          "url": "https://html.duckduckgo.com/html/?q=%22PlayIMDb%22+official+domain",
+          "status": 403,
+          "final_url": "https://html.duckduckgo.com/html/?q=%22PlayIMDb%22+official+domain",
+          "challenged": false
+        }
+      ],
+      "site_candidates": [],
+      "site_validations": [],
+      "reason": "no_runtime_validated_terminal_site"
+    },
+    "anime-sama": {
+      "provider_id": "anime-sama",
+      "status": "retained_last_known_good",
+      "sources": [
+        {
+          "source_type": "hub",
+          "url": "https://anime-sama.wiki/",
+          "status": 200,
+          "final_url": "https://anime-sama.wiki/"
+        }
+      ],
+      "site_candidates": [
+        {
+          "url": "https://anime-sama.store",
+          "label": "Backup Miroir Alpha Lien de secours à utiliser si la plateforme principale rencontre une indisponibilité temporaire. Secours Alternative rapide Disponibilité Accéder",
+          "score": 100,
+          "document_index": 3,
+          "source_type": "hub",
+          "source": "https://anime-sama.wiki/"
+        },
+        {
+          "url": "https://animes-sama.fr",
+          "label": "Principal Plateforme principale Accès prioritaire au site principal avec l’environnement le plus à jour et les serveurs recommandés. Recommandé Accès prioritaire Version principale Accéder",
+          "score": 100,
+          "document_index": 2,
+          "source_type": "hub",
+          "source": "https://anime-sama.wiki/"
+        },
+        {
+          "url": "https://animes-sama.fr/aide",
+          "label": "Support FAQ & support Aide technique, problèmes de lecture et réponses aux questions fréquentes. Consulter",
+          "score": 70,
+          "document_index": 6,
+          "source_type": "hub",
+          "source": "https://anime-sama.wiki/"
+        },
+        {
+          "url": "https://animes-sama.fr/profile/demande",
+          "label": "Outil Faire une demande Soumettre une demande d’ajout, de correction ou de référencement. Envoyer",
+          "score": 70,
+          "document_index": 5,
+          "source_type": "hub",
+          "source": "https://anime-sama.wiki/"
+        },
+        {
+          "url": "https://animz-sama.fr",
+          "label": "Backup Miroir Beta Deuxième accès de secours pour maintenir l’entrée au service. Accéder",
+          "score": 70,
+          "document_index": 4,
+          "source_type": "hub",
+          "source": "https://anime-sama.wiki/"
+        }
+      ],
+      "site_validations": [
+        {
+          "url": "https://anime-sama.store",
+          "ok": false,
+          "error": "TimeoutError: The read operation timed out",
+          "source_type": "hub",
+          "source": "https://anime-sama.wiki/",
+          "candidate_score": 100
+        },
+        {
+          "url": "https://animes-sama.fr",
+          "ok": false,
+          "error": "TimeoutError: The read operation timed out",
+          "source_type": "hub",
+          "source": "https://anime-sama.wiki/",
+          "candidate_score": 100
+        },
+        {
+          "url": "https://animes-sama.fr/aide",
+          "ok": false,
+          "error": "TimeoutError: The read operation timed out",
+          "source_type": "hub",
+          "source": "https://anime-sama.wiki/",
+          "candidate_score": 70
+        },
+        {
+          "url": "https://animes-sama.fr/profile/demande",
+          "ok": false,
+          "error": "TimeoutError: The read operation timed out",
+          "source_type": "hub",
+          "source": "https://anime-sama.wiki/",
+          "candidate_score": 70
+        },
+        {
+          "url": "https://animz-sama.fr",
+          "ok": false,
+          "error": "TimeoutError: The read operation timed out",
+          "source_type": "hub",
+          "source": "https://anime-sama.wiki/",
+          "candidate_score": 70
+        }
+      ],
+      "official_site": "https://anime-sama.store",
       "reason": "no_new_candidate_validated"
     }
   },
-  "applied": 7
+  "applied": 0
 }
