@@ -11,12 +11,22 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 script_path = ROOT / "scripts" / "sync_release_versions.py"
 workflow = (ROOT / ".github/workflows/sync.yml").read_text(encoding="utf-8")
 assert "python scripts/sync_release_versions.py --manifest manifest.json" in workflow
-assert "git add manifest.json vf/manifest.json package.json sources.json" in workflow
+assert "git add manifest.json vf/manifest.json package.json package-lock.json sources.json" in workflow
 
 with tempfile.TemporaryDirectory() as tmp:
     root = pathlib.Path(tmp)
     (root / "vf").mkdir()
     (root / "package.json").write_text(json.dumps({"version": "1.0.0"}))
+    (root / "package-lock.json").write_text(
+        json.dumps(
+            {
+                "name": "nuvio-provider-health-check",
+                "version": "1.0.0",
+                "lockfileVersion": 3,
+                "packages": {"": {"name": "nuvio-provider-health-check", "version": "1.0.0"}},
+            }
+        )
+    )
     (root / "manifest.json").write_text(json.dumps({"version": "1.0.0", "scrapers": []}))
     (root / "vf/manifest.json").write_text(json.dumps({"version": "1.0.0", "scrapers": []}))
     (root / "sources.json").write_text(
@@ -36,6 +46,9 @@ with tempfile.TemporaryDirectory() as tmp:
     subprocess.run([sys.executable, str(test_script), "--version", "9.8.7"], check=True)
 
     assert json.loads((root / "package.json").read_text())["version"] == "9.8.7"
+    lock = json.loads((root / "package-lock.json").read_text())
+    assert lock["version"] == "9.8.7"
+    assert lock["packages"][""]["version"] == "9.8.7"
     assert json.loads((root / "manifest.json").read_text())["version"] == "9.8.7"
     assert json.loads((root / "vf/manifest.json").read_text())["version"] == "9.8.7"
     sources = json.loads((root / "sources.json").read_text())
