@@ -12,8 +12,8 @@ permissions:
   issues: write
 
 concurrency:
-  group: nuvio-provider-publish
-  cancel-in-progress: false
+  group: final-niakvio-repository-cleanup
+  cancel-in-progress: true
 
 jobs:
   cleanup:
@@ -199,7 +199,7 @@ jobs:
           print('final CI surface validated: 4 workflows, 2 triggers, 8 canonical sources')
           PY
 
-      - name: Commit validated cleanup
+      - name: Commit validated cleanup with race-safe rebase
         shell: bash
         run: |
           set -euo pipefail
@@ -209,10 +209,34 @@ jobs:
           git commit -m "chore: consolidate repository automation"
           for attempt in 1 2 3 4 5; do
             git fetch origin main
-            if git rebase origin/main && git push origin HEAD:main; then
+            if ! git rebase origin/main; then
+              git rebase --abort || true
+              sleep $((attempt * 2))
+              continue
+            fi
+
+            # A concurrent publisher may have bumped the manifest or reports.
+            # Recompute every derived release field after rebasing, then ensure
+            # the cleanup surface itself was not reintroduced by the new base.
+            python scripts/sync_release_versions.py --manifest manifest.json
+            python scripts/generate_release_hashes.py
+            python scripts/validate_release_integrity.py
+            python scripts/validate_activation_preservation.py
+            python scripts/validate_vf_projection.py
+            python - <<'PY'
+          from pathlib import Path
+          workflows = sorted(path.name for path in Path('.github/workflows').glob('*.yml'))
+          assert workflows == sorted(['availability.yml','domain-refresh.yml','sync.yml','validate-desktop-runtime-compat.yml']), workflows
+          triggers = sorted(path.name for path in Path('.github/triggers').iterdir() if path.is_file())
+          assert triggers == sorted(['deep-provider-repair','domain-refresh']), triggers
+          PY
+            git add -A
+            if ! git diff --cached --quiet; then
+              git commit --amend --no-edit
+            fi
+            if git push origin HEAD:main; then
               exit 0
             fi
-            git rebase --abort || true
             sleep $((attempt * 2))
           done
           exit 1
