@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
-"""Delete stale content-hashed provider bundles not referenced by the active manifest.
+"""Delete stale content-hashed provider bundles not referenced by published state.
 
 When manifest.next.json exists it is authoritative for the pending publication. Otherwise
-all published manifests are combined. Plain source files (for example providers/foo.js)
-are never removed; only generated bundles ending in ``--<16 hex>.js`` are eligible.
+all published manifests are combined. Content-addressed last-known-good artifacts and
+canonical provider sources recorded in provenance are retained as reproducible inputs.
+Plain source files (for example providers/foo.js) are never removed; only generated
+bundles ending in ``--<16 hex>.js`` are eligible.
 """
 from __future__ import annotations
 
@@ -71,6 +73,14 @@ def referenced_provider_paths(manifests: list[Path]) -> set[str]:
     return referenced
 
 
+def retain_recorded_provider_path(referenced: set[str], value: object) -> None:
+    if not isinstance(value, str):
+        return
+    normalized = normalize_provider_path(value)
+    if normalized:
+        referenced.add(normalized)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--dry-run", action="store_true")
@@ -84,19 +94,35 @@ def main() -> int:
         raise SystemExit("No manifest.next.json or published manifest.json found; refusing to prune.")
 
     referenced = referenced_provider_paths(manifests)
+
     lkg_path = root / "provider-lkg.json"
     if lkg_path.is_file():
         try:
             lkg = json.loads(lkg_path.read_text(encoding="utf-8"))
             for record in (lkg.get("providers", {}) if isinstance(lkg, dict) else {}).values():
-                if isinstance(record, dict) and isinstance(record.get("filename"), str):
-                    normalized = normalize_provider_path(record["filename"])
-                    if normalized:
-                        referenced.add(normalized)
+                if isinstance(record, dict):
+                    retain_recorded_provider_path(referenced, record.get("filename"))
         except json.JSONDecodeError as exc:
             raise SystemExit(f"Invalid provider-lkg.json; refusing to prune: {exc}")
+
+    provenance_path = root / "PROVENANCE.json"
+    if provenance_path.is_file():
+        try:
+            provenance = json.loads(provenance_path.read_text(encoding="utf-8"))
+            records = provenance.get("providers", {}) if isinstance(provenance, dict) else {}
+            for record in records.values():
+                if not isinstance(record, dict):
+                    continue
+                # published_filename is normally already covered by manifests,
+                # while canonical_source_filename intentionally preserves the
+                # clean immutable input used for repeatable Desktop publication.
+                retain_recorded_provider_path(referenced, record.get("published_filename"))
+                retain_recorded_provider_path(referenced, record.get("canonical_source_filename"))
+        except json.JSONDecodeError as exc:
+            raise SystemExit(f"Invalid PROVENANCE.json; refusing to prune: {exc}")
+
     if not referenced:
-        raise SystemExit("No provider JavaScript paths found in authoritative manifest; refusing to prune.")
+        raise SystemExit("No provider JavaScript paths found in authoritative published state; refusing to prune.")
 
     missing = sorted(path for path in referenced if not (root / path).is_file())
     if missing:
