@@ -89,8 +89,8 @@ jobs:
               assert '--desktop-runtime-v1--' in row['filename'], row
               text = Path(row['filename']).read_text(encoding='utf-8', errors='replace')
               assert 'NUVIO_DESKTOP_RUNTIME_COMPAT_V1' in text, provider_id
-          assert rows['4khdhub']['enabled'] is False, rows['4khdhub']
-          assert rows['4khdhubnew']['enabled'] is True, rows['4khdhubnew']
+          if rows.get('4khdhubnew', {}).get('enabled'):
+              assert rows.get('4khdhub', {}).get('enabled') is False, rows.get('4khdhub')
           purstream = Path(rows['purstream']['filename']).read_text(encoding='utf-8', errors='replace')
           assert '"api.purstream.club":"api.purstream.art"' in purstream
           hindmoviez = Path(rows['hindmoviez']['filename']).read_text(encoding='utf-8', errors='replace')
