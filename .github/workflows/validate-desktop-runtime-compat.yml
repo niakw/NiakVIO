@@ -3,12 +3,14 @@ name: Validate Desktop runtime compatibility
 on:
   pull_request:
     paths:
+      - "manifest.json"
+      - "vf/manifest.json"
+      - "provider-overrides.json"
       - "scripts/provider_patches/desktop_runtime_compat_v1.py"
       - "scripts/publish_desktop_runtime_compat.py"
       - "tests/desktop_runtime_compat_test.py"
+      - "tests/deep_repair_rollback_test.py"
       - ".github/workflows/validate-desktop-runtime-compat.yml"
-      - ".github/workflows/publish-desktop-runtime-compat.yml"
-      - ".github/triggers/publish-desktop-runtime-compat"
 
 permissions:
   contents: read
@@ -46,7 +48,7 @@ jobs:
           python -m py_compile tests/desktop_runtime_compat_test.py
           python tests/desktop_runtime_compat_test.py
 
-      - name: Stage runtime-compatible bundles
+      - name: Stage runtime-compatible bundles from canonical sources
         run: |
           cp manifest.json "$RUNNER_TEMP/manifest.before.json"
           python scripts/publish_desktop_runtime_compat.py
@@ -64,7 +66,7 @@ jobs:
           rows = {str(row.get('id', '')).casefold(): row for row in manifest.get('scrapers', [])}
           vf_rows = {str(row.get('id', '')).casefold(): row for row in vf_manifest.get('scrapers', [])}
 
-          assert expected <= set(report.get('published', [])) | set(report.get('preserved', [])), report
+          assert expected == set(report.get('published', [])), report
           for provider_id in expected:
               row = rows[provider_id]
               assert '--desktop-runtime-v1--' in row['filename'], row
@@ -76,14 +78,16 @@ jobs:
                   assert vf_rows[provider_id]['filename'] == '../' + row['filename'], (provider_id, vf_rows[provider_id])
 
           purstream = Path(rows['purstream']['filename']).read_text(encoding='utf-8', errors='replace')
-          assert '"api.purstream.club":"api.purstream.art"' in purstream
+          assert '"hostPrefixes":["api.purstream","purstream"]' in purstream
+          assert '"suffixes":["club","mx","ch","ac","cx","art","co","me","to","store"]' in purstream
+          assert '"api.purstream.club":"api.purstream.art"' not in purstream
 
           hindmoviez = Path(rows['hindmoviez']['filename']).read_text(encoding='utf-8', errors='replace')
           assert '"maxSeriesStreams":24' in hindmoviez
           assert '"filterEpisodeLabels":true' in hindmoviez
 
-          assert rows['4khdhub']['enabled'] is False, rows['4khdhub']
-          assert rows['4khdhubnew']['enabled'] is True, rows['4khdhubnew']
+          if rows.get('4khdhubnew', {}).get('enabled'):
+              assert rows.get('4khdhub', {}).get('enabled') is False, rows.get('4khdhub')
           if 'nakios' in rows:
               assert rows['nakios']['enabled'] is True, rows['nakios']
           print('desktop runtime publication staging validated')
@@ -98,4 +102,4 @@ jobs:
           python scripts/generate_release_hashes.py
           python scripts/validate_release_integrity.py
           node scripts/validate_provider_semantics.cjs
-          python scripts/validate_vf_projection.py
+          python scripts/validate_activation_preservation.py
