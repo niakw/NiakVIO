@@ -26,7 +26,12 @@ OVERRIDES = ROOT / "provider-overrides.json"
 PROVENANCE = ROOT / "PROVENANCE.json"
 PATCH_REL = "scripts/provider_patches/desktop_runtime_compat_v1.py"
 PATCH = ROOT / PATCH_REL
-PURSTREAM_SOURCE = ROOT / "providers" / "purstream--published-baseline--8e14e434a2868d4f.js"
+# The old baseline was legitimately pruned. Rebuild from the current published
+# Purstream lineage, first removing its rev-3 compatibility wrapper so rev-4
+# replaces it instead of stacking on top of it.
+PURSTREAM_SOURCE = ROOT / "providers" / "purstream--nuvio--56f5640cdb9dd4f6.js"
+RUNTIME_MARKER = "/* NUVIO_DESKTOP_RUNTIME_COMPAT_V1:"
+BRIDGE_MARKER = "/* NUVIO_PURSTREAM_BRIDGE_V1 */"
 SEMVER = re.compile(r"^(\d+)\.(\d+)\.(\d+)$")
 
 
@@ -65,6 +70,20 @@ def import_apply():
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module.apply
+
+
+def split_purstream_runtime_lineage(source: str) -> tuple[str, str]:
+    """Return provider core and bridge, dropping any existing compat wrapper."""
+    if RUNTIME_MARKER in source:
+        prefix, remainder = source.split(RUNTIME_MARKER, 1)
+        if BRIDGE_MARKER not in remainder:
+            raise RuntimeError("cannot safely locate the end of the existing Purstream runtime wrapper")
+        _old_runtime, bridge_tail = remainder.split(BRIDGE_MARKER, 1)
+        return prefix.rstrip() + "\n", BRIDGE_MARKER + bridge_tail
+    if BRIDGE_MARKER in source:
+        prefix, bridge_tail = source.split(BRIDGE_MARKER, 1)
+        return prefix.rstrip() + "\n", BRIDGE_MARKER + bridge_tail
+    return source.rstrip() + "\n", ""
 
 
 def platform_list(row: dict[str, Any]) -> list[str]:
@@ -112,15 +131,21 @@ def update_override_platform(overrides: dict[str, Any], provider_id: str, disabl
 
 def publish_purstream(main_row: dict[str, Any], vf_row: dict[str, Any] | None, overrides: dict[str, Any], provenance: dict[str, Any]) -> str:
     if not PURSTREAM_SOURCE.is_file():
-        raise RuntimeError(f"missing canonical Purstream source: {PURSTREAM_SOURCE.relative_to(ROOT)}")
+        raise RuntimeError(f"missing current Purstream source: {PURSTREAM_SOURCE.relative_to(ROOT)}")
     patch = overrides.get("provider_patches", {}).get("purstream", {})
     options = dict((patch.get("patch_script_options") or {}).get(PATCH_REL) or {})
     if not options.get("domain_failover"):
         raise RuntimeError("Purstream mobile-safe domain failover options are missing")
+
     source = PURSTREAM_SOURCE.read_text(encoding="utf-8", errors="replace")
-    patched = import_apply()(source, options)
-    if '"patchRevision":4' not in patched or "NUVIO_DESKTOP_RUNTIME_COMPAT_V1" not in patched:
-        raise RuntimeError("Purstream runtime bundle does not contain compatibility revision 4")
+    core, bridge = split_purstream_runtime_lineage(source)
+    patched_core = import_apply()(core, options)
+    patched = patched_core.rstrip() + ("\n" + bridge.lstrip() if bridge else "\n")
+    if patched.count("NUVIO_DESKTOP_RUNTIME_COMPAT_V1:") != 1:
+        raise RuntimeError("Purstream runtime bundle must contain exactly one compatibility wrapper")
+    if '"patchRevision":4' not in patched or '"patchRevision":3' in patched:
+        raise RuntimeError("Purstream runtime bundle did not replace revision 3 with revision 4")
+
     digest = hashlib.sha256(patched.encode("utf-8")).hexdigest()
     filename = f"providers/purstream--runtime-compat-v4--{digest[:16]}.js"
     target = ROOT / filename
@@ -136,9 +161,17 @@ def publish_purstream(main_row: dict[str, Any], vf_row: dict[str, Any] | None, o
     provider_rows = provenance.setdefault("providers", {})
     current = dict(provider_rows.get("purstream") or provider_rows.get("PURSTREAM") or {})
     patches = list(current.get("local_patches") or [])
-    record = {"type": "patch_script", "path": PATCH_REL, "phase": "runtime", "options": options}
-    if record not in patches:
-        patches.append(record)
+    # Remove stale records for the same compatibility layer before recording
+    # the exact rev-4 options that produced this immutable artifact.
+    patches = [
+        item for item in patches
+        if not (
+            isinstance(item, dict)
+            and (item.get("path") == PATCH_REL or item.get("profile") == "desktop_runtime_compat_v1")
+        )
+        and str(item) != PATCH_REL
+    ]
+    patches.append({"type": "patch_script", "path": PATCH_REL, "phase": "runtime", "options": options})
     current.update({
         "id": "purstream",
         "published_filename": filename,
