@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""Append a Nuvio Desktop runtime compatibility wrapper to provider bundles.
+"""Append a Nuvio runtime compatibility wrapper to provider bundles.
 
-The desktop QuickJS runtime currently does not expose browser timer globals,
-while several provider recovery layers and the stream sanitizer use setTimeout
-for cancellation. The wrapper installs safe no-op timer fallbacks before any
-getStreams call, normalizes missing TV episode arguments, can filter/cap
-oversized series results, and supports bounded evidence-backed domain failover
-without changing the public manifest URL.
+The wrapper remains compatible with the Desktop QuickJS runtime, but its URL
+rewrites deliberately avoid mutating ``URL.hostname``. Nuvio Mobile's current
+QuickJS URL polyfill exposes hostname as a plain field while ``toString()``
+returns the original ``href``; mutating hostname therefore does not rewrite the
+request URL on Android. Host replacement is performed on the URL string so the
+same bundle works on Desktop and Mobile.
 """
 from __future__ import annotations
 
@@ -15,7 +15,7 @@ import json
 from typing import Any
 
 MARKER_PREFIX = "NUVIO_DESKTOP_RUNTIME_COMPAT_V1"
-PATCH_REVISION = 3
+PATCH_REVISION = 4
 
 
 def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> str:
@@ -28,12 +28,12 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
     }
 
     raw_failover = dict(options.get("domain_failover") or {})
-    failover_prefixes = []
+    failover_prefixes: list[str] = []
     for value in raw_failover.get("host_prefixes") or []:
         item = str(value).strip().casefold().strip(".")
         if item and item not in failover_prefixes:
             failover_prefixes.append(item)
-    failover_suffixes = []
+    failover_suffixes: list[str] = []
     for value in raw_failover.get("suffixes") or []:
         item = str(value).strip().casefold().strip(".")
         if item and item not in failover_suffixes:
@@ -65,9 +65,6 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
   "use strict";
   if(!g)return;
 
-  // Install the shared fetch bridge only when a provider actually declares a
-  // domain rule. Providers that only need timers/episode normalization retain
-  // their original fetch input byte-for-byte (no URL canonicalization).
   var hasReplacements=!!(config.domainReplacements&&Object.keys(config.domainReplacements).length);
   var hasFailover=!!(config.domainFailover&&Array.isArray(config.domainFailover.hostPrefixes)&&config.domainFailover.hostPrefixes.length&&Array.isArray(config.domainFailover.suffixes)&&config.domainFailover.suffixes.length);
   if((hasReplacements||hasFailover)&&typeof g.fetch==="function"){
@@ -76,11 +73,35 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
       fetchState={native:g.fetch.bind(g),rules:Object.create(null),failovers:Object.create(null)};
       g[fetchKey]=fetchState;
 
+      // Do not mutate URL.hostname here. Nuvio Mobile's QuickJS URL polyfill
+      // stores href separately and its toString() returns that unchanged href.
+      // Rewrite the authority in the original string instead.
+      function rewriteHost(raw,newHost){
+        raw=String(raw||"");
+        newHost=String(newHost||"").toLowerCase();
+        if(!newHost)return raw;
+        return raw.replace(/^([a-z][a-z0-9+.-]*:\/\/)([^\/?#]+)/i,function(_all,scheme,authority){
+          var userinfo="",hostPort=authority,at=authority.lastIndexOf("@");
+          if(at>=0){userinfo=authority.slice(0,at+1);hostPort=authority.slice(at+1);}
+          var port="";
+          if(hostPort.charAt(0)==="["){
+            var close=hostPort.indexOf("]");
+            if(close>=0)port=hostPort.slice(close+1);
+          }else{
+            var colon=hostPort.lastIndexOf(":");
+            if(colon>0&&/^:\d+$/.test(hostPort.slice(colon)))port=hostPort.slice(colon);
+          }
+          return scheme+userinfo+newHost+port;
+        });
+      }
       function requestWithUrl(input,urlText){
         try{
           if(typeof Request!=="undefined"&&input instanceof Request)return new Request(urlText,input);
         }catch(_error){}
         return urlText;
+      }
+      function hostnameOf(raw){
+        try{return String(new URL(String(raw)).hostname||"").toLowerCase();}catch(_error){return "";}
       }
       function rewriteInitFailover(init,rule,oldSuffix,newSuffix){
         if(!init||typeof init!=="object"||!rule||!oldSuffix||!newSuffix||oldSuffix===newSuffix)return init;
@@ -119,29 +140,30 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
 
       g.fetch=async function(input,init){
         var raw;
-        try{raw=(typeof Request!=="undefined"&&input instanceof Request)?input.url:String(input);}catch(_error){raw=String(input);}
-        var url;
-        try{url=new URL(raw);}catch(_error){return fetchState.native(input,init);}
+        try{raw=(input&&typeof input==="object"&&typeof input.url==="string")?input.url:String(input);}catch(_error){raw=String(input);}
+        var hostname=hostnameOf(raw);
+        if(!hostname)return fetchState.native(input,init);
 
-        var replacement=fetchState.rules[String(url.hostname).toLowerCase()];
-        if(replacement)url.hostname=replacement;
+        var replacement=fetchState.rules[hostname];
+        if(replacement){
+          raw=rewriteHost(raw,replacement);
+          hostname=hostnameOf(raw)||replacement;
+        }
 
-        var hostname=String(url.hostname).toLowerCase();
         var prefix=failoverMatch(hostname);
         if(!prefix){
-          return fetchState.native(requestWithUrl(input,url.toString()),init);
+          return fetchState.native(requestWithUrl(input,raw),init);
         }
 
         var rule=fetchState.failovers[prefix],suffixes=orderedSuffixes(rule);
         var originalSuffix=hostname.slice(prefix.length+1);
         var lastResponse=null,lastError=null;
         for(var i=0;i<suffixes.length;i++){
-          var suffix=suffixes[i],candidate;
+          var suffix=suffixes[i];
+          var candidateRaw=rewriteHost(raw,prefix+"."+suffix);
           try{
-            candidate=new URL(url.toString());
-            candidate.hostname=prefix+"."+suffix;
             var response=await fetchState.native(
-              requestWithUrl(input,candidate.toString()),
+              requestWithUrl(input,candidateRaw),
               rewriteInitFailover(init,rule,originalSuffix,suffix)
             );
             lastResponse=response;
@@ -151,7 +173,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
           }
         }
         if(lastResponse)return lastResponse;
-        throw lastError||new Error("Nuvio Desktop domain failover exhausted for "+prefix);
+        throw lastError||new Error("Nuvio runtime domain failover exhausted for "+prefix);
       };
     }
 
@@ -172,9 +194,6 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
     }
   }
 
-  // QuickJS Desktop has no browser timers. Provider HTTP calls already have
-  // native client timeouts, so a non-firing fallback is safer than aborting
-  // every request immediately or throwing ReferenceError.
   if(typeof g.setTimeout!=="function"){
     g.setTimeout=function(callback,delay){
       if((Number(delay)||0)<=0&&typeof callback==="function"&&typeof Promise!=="undefined"){
