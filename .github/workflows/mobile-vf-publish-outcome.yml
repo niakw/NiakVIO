@@ -1,0 +1,54 @@
+name: Record Android VF publish outcome
+
+on:
+  workflow_run:
+    workflows:
+      - "Publish Android VF runtime fix"
+    types:
+      - requested
+      - in_progress
+      - completed
+
+permissions:
+  contents: write
+
+jobs:
+  record:
+    if: github.event.workflow_run.head_repository.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: ci-status
+          fetch-depth: 1
+      - name: Record run state on isolated branch
+        shell: bash
+        env:
+          RUN_ID: ${{ github.event.workflow_run.id }}
+          RUN_ATTEMPT: ${{ github.event.workflow_run.run_attempt }}
+          RUN_STATUS: ${{ github.event.workflow_run.status }}
+          RUN_CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+          RUN_HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+          RUN_URL: ${{ github.event.workflow_run.html_url }}
+        run: |
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          payload = {
+              "run_id": int(os.environ["RUN_ID"]),
+              "run_attempt": int(os.environ.get("RUN_ATTEMPT") or 1),
+              "status": os.environ.get("RUN_STATUS"),
+              "conclusion": os.environ.get("RUN_CONCLUSION"),
+              "head_sha": os.environ.get("RUN_HEAD_SHA"),
+              "url": os.environ.get("RUN_URL"),
+          }
+          target=Path('.github/mobile-vf-publish-run.json')
+          target.write_text(json.dumps(payload, indent=2, sort_keys=True)+'\n', encoding='utf-8')
+          PY
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .github/mobile-vf-publish-run.json
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "chore: record Android VF publish run"
+          git push origin HEAD:ci-status
