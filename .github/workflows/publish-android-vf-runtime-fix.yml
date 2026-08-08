@@ -1,0 +1,124 @@
+name: Publish Android VF runtime fix
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/triggers/publish-android-vf-runtime-fix"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: nuvio-provider-publish
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 28
+    steps:
+      - name: Checkout current main
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: "3.12"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: "24"
+          package-manager-cache: false
+
+      - name: Install pinned dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Apply evidence-backed Android runtime fix
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp manifest.json "$RUNNER_TEMP/manifest.before.json"
+          python scripts/publish_android_vf_runtime_fix.py
+          python scripts/bump_release_patch_if_manifest_changed.py \
+            --previous "$RUNNER_TEMP/manifest.before.json" \
+            --manifest manifest.json
+          python scripts/sync_release_versions.py --manifest manifest.json
+
+      - name: Remove finite diagnostic and publication instrumentation
+        shell: bash
+        run: |
+          rm -f .github/workflows/mobile-vf-runtime-diagnostic.yml
+          rm -f .github/triggers/mobile-vf-runtime-diagnostic
+          rm -f .github/workflows/publish-android-vf-runtime-fix.yml
+          rm -f .github/triggers/publish-android-vf-runtime-fix
+
+      - name: Validate exact final Android release tree
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/validate_mobile_runtime_policy.py
+          python scripts/validate_language_projection.py
+          python scripts/validate_activation_preservation.py
+          npm test
+          python scripts/generate_release_hashes.py
+          python scripts/validate_release_integrity.py
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          package=json.loads(Path('package.json').read_text())
+          lock=json.loads(Path('package-lock.json').read_text())
+          main=json.loads(Path('manifest.json').read_text())
+          vf=json.loads(Path('vf/manifest.json').read_text())
+          versions={
+              'package': package.get('version'),
+              'lock': lock.get('version'),
+              'lock_root': (lock.get('packages') or {}).get('',{}).get('version'),
+              'main': main.get('version'),
+              'vf': vf.get('version'),
+          }
+          if len({str(v) for v in versions.values()}) != 1:
+              raise SystemExit(f'version mismatch: {versions}')
+          if versions['main'] != '5.20.27':
+              raise SystemExit(f'unexpected Android fix release: {versions}')
+          print('Android VF release versions synchronized:', versions)
+          PY
+          git diff --check
+
+      - name: Commit Android VF runtime release
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "fix: publish Android VF runtime compatibility 5.20.27"
+          for attempt in 1 2 3 4 5; do
+            git fetch origin main
+            if git rebase origin/main && git push origin HEAD:main; then
+              exit 0
+            fi
+            git rebase --abort || true
+            sleep $((attempt * 2))
+          done
+          exit 1
+
+      - name: Verify exact published main
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin main
+          git reset --hard origin/main
+          npm ci --ignore-scripts --no-audit --no-fund
+          npm test
+          python scripts/validate_mobile_runtime_policy.py
+          python scripts/validate_language_projection.py
+          python scripts/validate_activation_preservation.py
+          python scripts/generate_release_hashes.py
+          python scripts/validate_release_integrity.py
+          git diff --exit-code
