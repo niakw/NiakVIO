@@ -91,7 +91,8 @@ def main() -> int:
             "provider.getStreams(String(fixture.tmdbId",
             "starts_extm3u",
             "binary_signature",
-            "application/dash+xml",
+            "<MPD",
+            "result.kind = 'dash'",
         )
         for marker in markers:
             if marker not in text:
