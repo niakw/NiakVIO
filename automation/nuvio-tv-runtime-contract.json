@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "client": "NuvioTV",
+  "platform": "android-tv",
+  "integration": "plugin-provider-repository",
+  "runtime_contract": "getStreams(tmdbId, mediaType, season, episode) plus global SCRAPER_SETTINGS",
+  "probe": "scripts/nuvio_tv_probe_v2.cjs",
+  "promoter": "scripts/promote_global_nuvio_tv_candidates.py",
+  "direct_media_patch": "scripts/provider_patches/nuvio_tv_direct_media_v2.py",
+  "promotion_report": "automation/nuvio-tv-global-promotion.json",
+  "media_gate": [
+    "hls-extm3u",
+    "dash-mpd",
+    "real-video-container-signature"
+  ],
+  "player_model": "direct-media-first",
+  "separate_live_tv_addon": {
+    "enabled": true,
+    "contract": "stremio-addon-manifest-catalog-meta-stream",
+    "purpose": "live TV catalog/meta/stream integration; independent from plugin provider runtime"
+  },
+  "notes": [
+    "NuvioTV provider compatibility is a distinct runtime family from Nuvio Mobile and Nuvio Desktop.",
+    "A zero-stream result is not by itself proof of incompatibility.",
+    "Promoted direct-media wrappers require strict HLS, DASH or real container evidence."
+  ]
+}
