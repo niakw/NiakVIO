@@ -3,12 +3,12 @@
 
 # Niakvio
 
-**Plugin communautaire pour Nuvio regroupant des providers VO, VF et VOSTFR dans des manifests unifiés, réparés, testés et publiés avec des contrôles de compatibilité, de sécurité et d’intégrité.**
+**Écosystème communautaire pour Nuvio regroupant des providers VO, VF et VOSTFR, ainsi qu’une intégration TV séparée, avec sélection, réparation, validation, compatibilité, sécurité et intégrité de publication.**
 
-[![Type](https://img.shields.io/badge/type-plugin%20Nuvio-1f6feb?style=for-the-badge)](#installation)
+[![Type](https://img.shields.io/badge/type-Nuvio%20providers%20%2B%20TV-1f6feb?style=for-the-badge)](#installation)
 [![Node](https://img.shields.io/badge/Node.js-%E2%89%A524-339933?style=for-the-badge&logo=node.js&logoColor=white)](package.json)
 [![Licence](https://img.shields.io/badge/licence-GPL--3.0-blue?style=for-the-badge)](LICENSE)
-[![Plateformes](https://img.shields.io/badge/Nuvio-Android%20%7C%20iOS%20%7C%20Desktop-7c3aed?style=for-the-badge)](#compatibilit%C3%A9-nuvio)
+[![Plateformes](https://img.shields.io/badge/Nuvio-Android%20%7C%20iOS%20%7C%20Desktop%20%7C%20Android%20TV-7c3aed?style=for-the-badge)](#compatibilit%C3%A9-nuvio)
 
 </div>
 
@@ -16,7 +16,7 @@
 
 ## Manifests Niakvio
 
-### Manifest général — recommandé
+### Manifest providers général — recommandé
 
 **VF + VOSTFR + VO + autres langues**
 
@@ -26,7 +26,7 @@ https://raw.githubusercontent.com/niakw/Niakvio/refs/heads/main/manifest.json
 
 [Ouvrir le manifest général](https://raw.githubusercontent.com/niakw/Niakvio/refs/heads/main/manifest.json)
 
-### Manifest francophone
+### Manifest providers francophone
 
 **Projection dédiée aux providers proposant du contenu français ou sous-titré français.**
 
@@ -36,13 +36,30 @@ https://raw.githubusercontent.com/niakw/Niakvio/refs/heads/main/vf/manifest.json
 
 [Ouvrir le manifest francophone](https://raw.githubusercontent.com/niakw/Niakvio/refs/heads/main/vf/manifest.json)
 
-> Les URL des manifests restent stables. Les versions, bundles, états d’activation, domaines et règles de compatibilité évoluent derrière ces URL.
+> Les URL des manifests providers restent stables. Les versions, bundles, états d’activation, domaines et règles de compatibilité évoluent derrière ces URL.
+
+### NuvioTV / Android TV
+
+La compatibilité **NuvioTV** fait également partie de l’écosystème Niakvio, mais elle ne repose pas sur les manifests de providers JavaScript ci-dessus.
+
+NuvioTV utilise l’écosystème d’addons de type Stremio. L’intégration TV Niakvio est donc maintenue sous la forme d’un **addon TV séparé** exposant les ressources standard :
+
+```text
+manifest
+catalog/tv
+meta/tv
+stream/tv
+```
+
+Cette séparation est volontaire : le runtime TV et le runtime des plugins QuickJS Mobile/Desktop sont deux contrats différents. La compatibilité NuvioTV ne doit donc pas être simulée par un simple token `android` ou `desktop` dans les manifests providers.
 
 ---
 
 ## Installation
 
-1. Copiez l’URL du manifest souhaité.
+### Nuvio Mobile / Desktop
+
+1. Copiez l’URL du manifest providers souhaité.
 2. Ouvrez **Nuvio**.
 3. Accédez à **Plugins / Providers**.
 4. Ajoutez ou importez l’URL.
@@ -50,11 +67,17 @@ https://raw.githubusercontent.com/niakw/Niakvio/refs/heads/main/vf/manifest.json
 
 Lorsqu’un provider est réactivé après une correction, Niakvio peut réviser son identifiant client interne afin d’éviter qu’un ancien état mis en cache par Nuvio conserve artificiellement le provider désactivé.
 
+### NuvioTV / Android TV
+
+L’intégration TV utilise son propre manifest d’addon et ses ressources `catalog`, `meta` et `stream`. Elle est maintenue séparément du manifest providers afin de respecter le contrat natif attendu par NuvioTV.
+
 ---
 
 ## Compatibilité Nuvio
 
-Niakvio tient maintenant compte explicitement des plateformes utilisées par les clients Nuvio.
+Niakvio couvre désormais **deux familles de compatibilité**.
+
+### Providers JavaScript
 
 | Plateforme | Famille runtime contrôlée | Filtrage manifest |
 |---|---|---|
@@ -72,7 +95,15 @@ getStreams(tmdbId, mediaType, season, episode)
 
 Niakvio reproduit ce contrat dans ses probes afin d’éviter qu’un fallback propre au banc de test rende artificiellement compatible un provider qui ne le serait pas dans Nuvio.
 
-### Politique de compatibilité
+### TV
+
+| Plateforme | Intégration Niakvio | Contrat |
+|---|---|---|
+| Android TV / NuvioTV | Addon TV Niakvio séparé | Manifest Stremio + `catalog/meta/stream` |
+
+NuvioTV est donc bien une plateforme prise en compte par le projet, mais sa compatibilité est **architecturalement séparée** de la matrice QuickJS utilisée pour Android mobile, iOS et Desktop.
+
+### Politique de compatibilité providers
 
 Depuis la branche de publication 5.20.28, un provider n’est **pas** déclaré incompatible simplement parce qu’un titre de test retourne zéro résultat.
 
@@ -86,13 +117,13 @@ Cette règle évite deux erreurs opposées : conserver des providers qui apparai
 
 Les règles finales sont contrôlées simultanément dans [`manifest.json`](manifest.json) et [`vf/manifest.json`](vf/manifest.json).
 
-> La matrice CI reproduit les contrats runtime et vérifie les payloads réseau. Elle ne prétend pas remplacer un test manuel sur chaque modèle physique de téléphone ou d’ordinateur.
+> La matrice CI reproduit les contrats runtime et vérifie les payloads réseau. Elle ne prétend pas remplacer un test manuel sur chaque appareil physique.
 
 ---
 
 ## À quoi sert Niakvio ?
 
-Niakvio n’est plus un simple agrégateur de fichiers JavaScript. Le dépôt ajoute une couche de sélection, réparation, validation, compatibilité et publication autour de plusieurs projets communautaires de providers Nuvio.
+Niakvio n’est plus un simple agrégateur de fichiers JavaScript. Le projet ajoute une couche de sélection, réparation, validation, compatibilité et publication autour de plusieurs sources communautaires, tout en conservant une branche TV adaptée au contrat NuvioTV.
 
 Le projet peut notamment :
 
@@ -109,35 +140,32 @@ Le projet peut notamment :
 - rejeter les faux HLS, previews courtes, pages HTML et lecteurs parasites ;
 - conserver séparément les preuves par catégorie, runtime et génération de bundle ;
 - synchroniser le manifest général avec sa projection francophone ;
+- publier une intégration TV selon le contrat addon attendu par NuvioTV ;
 - publier uniquement une release dont les versions et empreintes sont cohérentes.
 
 ```text
-Sources communautaires
-        ↓
-Collecte et déduplication des variantes
-        ↓
-DNS / hubs officiels / domaines terminaux
-        ↓
-Accès provider et routes réelles
-        ↓
-Diagnostic runtime
-        ↓
-Réparation bornée si nécessaire
-        ↓
-Validation des streams et payloads
-        ↓
-Compatibilité Android / iOS / Desktop
-        ↓
-Sélection et activation fondées sur les preuves
-        ↓
-Projection VF
-        ↓
-Synchronisation de version + hashes + intégrité
-        ↓
-Publication des manifests Niakvio
+                    Écosystème Niakvio
+                           │
+              ┌────────────┴────────────┐
+              │                         │
+        Providers JS                 TV / NuvioTV
+              │                         │
+ Sources communautaires          Inventaire TV filtré
+              │                         │
+ DNS / hubs / domaines           Manifest addon Stremio
+              │                         │
+ Diagnostic + réparation          catalog / meta / stream
+              │                         │
+ Validation des médias            Lecture côté NuvioTV
+              │
+ Android / iOS / Desktop
+              │
+ Manifest général + projection VF
+              │
+ Versions + hashes + intégrité
 ```
 
-**Niakvio ne stocke aucune vidéo.** Le dépôt publie uniquement des manifests, métadonnées, correctifs et bundles de providers exécutés côté client Nuvio.
+**Niakvio ne stocke aucune vidéo.** Le projet publie des manifests, métadonnées, correctifs, bundles de providers et structures d’addon consommés côté client.
 
 ---
 
@@ -169,7 +197,7 @@ Un provider peut donc fonctionner sur une catégorie et échouer sur une autre. 
 
 ### 3. Runtime réel
 
-Le worker reproduit les signatures d’appel utilisées par Nuvio et limite :
+Le worker reproduit les signatures d’appel utilisées par Nuvio Mobile/Desktop et limite :
 
 - le nombre de requêtes ;
 - les redirections ;
@@ -178,6 +206,8 @@ Le worker reproduit les signatures d’appel utilisées par Nuvio et limite :
 - la durée d’exécution.
 
 Les erreurs structurées sont conservées afin de distinguer une panne réseau, une erreur d’invocation, une route disparue, un catalogue vide ou une extraction cassée.
+
+Le chemin NuvioTV est validé séparément selon les ressources d’addon qu’il expose ; il n’est pas assimilé artificiellement au runtime QuickJS.
 
 ### 4. Stream réellement lisible
 
@@ -250,9 +280,11 @@ La validation vérifie notamment :
 
 Une divergence involontaire entre les deux publications fait échouer la validation.
 
+Le manifest NuvioTV est volontairement séparé : il appartient à la famille addon TV et n’est pas une projection de `manifest.json`.
+
 ---
 
-## Intégrité des releases
+## Intégrité des releases providers
 
 Une publication Niakvio ne se limite pas à modifier `manifest.json`.
 
@@ -277,17 +309,19 @@ Les GitHub Actions sensibles sont également référencées par SHA immuable. Le
 
 ---
 
-## Matrice de compatibilité runtime
+## Matrice de compatibilité runtime providers
 
-Les fichiers suivants rendent la logique de plateforme inspectable dans le dépôt :
+Les fichiers suivants rendent la logique de plateforme des **providers JavaScript** inspectable dans le dépôt :
 
 | Fichier | Description |
 |---|---|
 | [`automation/platform-runtime-contracts.json`](automation/platform-runtime-contracts.json) | Contrats et tokens des clients Android, iOS, Windows, macOS et Linux |
-| [`automation/platform-runtime-matrix.json`](automation/platform-runtime-matrix.json) | Résultats du dernier probe multi-runtime publié |
+| [`automation/platform-runtime-matrix.json`](automation/platform-runtime-matrix.json) | Résultats du dernier probe multi-runtime providers publié |
 | [`automation/platform-runtime-policy.json`](automation/platform-runtime-policy.json) | Décisions de visibilité par plateforme issues de la matrice |
 
-Ces fichiers font partie du périmètre d’intégrité de la release.
+Ces fichiers font partie du périmètre d’intégrité de la release providers.
+
+**NuvioTV n’apparaît volontairement pas dans ces trois fichiers**, car il consomme un addon Stremio et non un provider JavaScript QuickJS. Sa compatibilité est suivie dans la branche TV de l’écosystème Niakvio.
 
 ---
 
@@ -295,8 +329,8 @@ Ces fichiers font partie du périmètre d’intégrité de la release.
 
 | Ressource | Description |
 |---|---|
-| [`manifest.json`](manifest.json) | Manifest général Niakvio |
-| [`vf/manifest.json`](vf/manifest.json) | Manifest francophone |
+| [`manifest.json`](manifest.json) | Manifest général providers Niakvio |
+| [`vf/manifest.json`](vf/manifest.json) | Manifest providers francophone |
 | [`health-report.json`](health-report.json) | Résultat du dernier contrôle de santé |
 | [`availability-report.json`](availability-report.json) | État d’accessibilité observé |
 | [`repair-report.json`](repair-report.json) | Réparations testées et décisions associées |
@@ -306,7 +340,7 @@ Ces fichiers font partie du périmètre d’intégrité de la release.
 | [`SHA256SUMS.json`](SHA256SUMS.json) | Hashes cœur de release |
 | [`FILE-HASHES.json`](FILE-HASHES.json) | Hashes étendus de publication |
 
-Les nombres de providers, leur état et la version courante évoluent avec les publications. **Les manifests présents sur `main` constituent la source de vérité.**
+Les nombres de providers, leur état et la version courante évoluent avec les publications. **Les manifests présents sur `main` constituent la source de vérité de la branche providers.**
 
 ---
 
@@ -320,7 +354,8 @@ Niakvio suit quelques règles destinées à éviter les faux positifs et les dé
 4. **Une réparation n’est publiée que si elle améliore le runtime observé.**
 5. **Une incompatibilité plateforme doit être concluante avant de masquer un provider.**
 6. **Les preuves actuelles priment sur les états historiques.**
-7. **Une publication doit être reproductible et intègre jusque sur le `main` final.**
+7. **NuvioTV et les providers QuickJS doivent être validés selon leurs contrats respectifs.**
+8. **Une publication doit être reproductible et intègre jusque sur le `main` final.**
 
 ---
 
@@ -374,8 +409,8 @@ Documentation complémentaire :
 
 <div align="center">
 
-**Niakvio — Providers communautaires pour Nuvio**
+**Niakvio — Écosystème communautaire pour Nuvio**
 
-Agrégation • Réparation • Validation • Compatibilité • Intégrité
+Providers • TV • Réparation • Validation • Compatibilité • Intégrité
 
 </div>
