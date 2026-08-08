@@ -22,9 +22,6 @@ IGNORED_PARTS = {
     "checked-artifact",
     "__pycache__",
 }
-# These reports are runtime telemetry, not release inputs. They are updated by
-# the independent availability workflow between releases and therefore cannot
-# participate in an immutable release checksum inventory.
 IGNORED_FILES = {
     "availability-history.json",
     "availability-report.json",
@@ -35,11 +32,19 @@ CORE_FILES = [
     "manifest.json",
     "vf/manifest.json",
     "provider-overrides.json",
+    "automation/platform-runtime-contracts.json",
     "scripts/deep_repair_loop.py",
     "scripts/runtime_repair.py",
     "scripts/reapply_published_overrides.py",
     "scripts/provider_dns_preflight.mjs",
     "scripts/prune_unreferenced_providers.py",
+    "scripts/validate_platform_runtime_policy.py",
+]
+# These become mandatory release inputs once the cross-platform policy is
+# published, but are optional on the one transition release that creates them.
+OPTIONAL_CORE_FILES = [
+    "automation/platform-runtime-matrix.json",
+    "automation/platform-runtime-policy.json",
 ]
 
 
@@ -74,11 +79,12 @@ def inventory(*, include_file_hashes: bool) -> dict[str, str]:
 def main() -> int:
     version = json.loads((ROOT / "package.json").read_text(encoding="utf-8"))["version"]
 
-    core = {relative: digest(ROOT / relative) for relative in CORE_FILES}
+    core_paths = list(CORE_FILES) + [relative for relative in OPTIONAL_CORE_FILES if (ROOT / relative).is_file()]
+    core = {relative: digest(ROOT / relative) for relative in core_paths}
     (ROOT / "SHA256SUMS.json").write_text(
         json.dumps(
             {
-                "schema_version": 2,
+                "schema_version": 3,
                 "release": version,
                 "algorithm": "sha256",
                 "files": core,
@@ -94,7 +100,7 @@ def main() -> int:
     (ROOT / "FILE-HASHES.json").write_text(
         json.dumps(
             {
-                "schema_version": 72,
+                "schema_version": 73,
                 "release": version,
                 "algorithm": "sha256",
                 "excluded_generated_files": sorted(GENERATED),
