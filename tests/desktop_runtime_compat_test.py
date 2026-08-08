@@ -38,6 +38,7 @@ def main() -> int:
     assert "output.slice(0,config.maxSeriesStreams)" in patched
     assert '"hostPrefixes":["api.purstream","purstream"]' in patched
     assert '"suffixes":["club","art"]' in patched
+    assert "rewriteHost" in patched
     assert apply(patched, options) == patched
 
     with tempfile.TemporaryDirectory() as temp:
@@ -45,6 +46,12 @@ def main() -> int:
         runner = Path(temp) / "runner.cjs"
         bundle.write_text(patched, encoding="utf-8")
         runner.write_text(
+            # Model the important limitation in Nuvio Mobile's QuickJS URL
+            # polyfill: hostname is a mutable field, but toString() returns the
+            # original href and therefore ignores hostname mutations.
+            "const NativeURL=global.URL;\n"
+            "global.URL=function(raw){const parsed=new NativeURL(String(raw));this.href=String(raw);this.hostname=parsed.hostname;this.host=parsed.host;this.protocol=parsed.protocol;};\n"
+            "global.URL.prototype.toString=function(){return this.href;};\n"
             "delete global.setTimeout; delete global.clearTimeout;\n"
             "const attempts=[];\n"
             "global.fetch=async function(url,init){\n"
@@ -61,15 +68,15 @@ def main() -> int:
             "  if(!attempts[0].url.startsWith('https://api.purstream.club/')) throw new Error(JSON.stringify(attempts));\n"
             "  if(!attempts[1].url.startsWith('https://api.purstream.art/')) throw new Error(JSON.stringify(attempts));\n"
             "  if(attempts[1].referer!=='https://purstream.art/') throw new Error('referer not rewritten '+JSON.stringify(attempts));\n"
-            "  console.log('desktop runtime JS execution passed');\n"
+            "  console.log('runtime JS execution passed with mobile URL polyfill');\n"
             "}).catch(function(error){console.error(error);process.exit(1)});\n",
             encoding="utf-8",
         )
         process = subprocess.run(["node", str(runner)], capture_output=True, text=True, timeout=20)
         assert process.returncode == 0, process.stderr or process.stdout
-        assert "desktop runtime JS execution passed" in process.stdout
+        assert "runtime JS execution passed with mobile URL polyfill" in process.stdout
 
-    print("desktop runtime compatibility patch tests passed")
+    print("desktop/mobile runtime compatibility patch tests passed")
     return 0
 
 
