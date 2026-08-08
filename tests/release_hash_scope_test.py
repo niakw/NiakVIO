@@ -14,6 +14,10 @@ spec.loader.exec_module(module)
 
 assert "availability-history.json" in module.IGNORED_FILES
 assert "availability-report.json" in module.IGNORED_FILES
+assert "automation/platform-runtime-contracts.json" in module.CORE_FILES
+assert "scripts/validate_platform_runtime_policy.py" in module.CORE_FILES
+assert "automation/platform-runtime-matrix.json" in module.OPTIONAL_CORE_FILES
+assert "automation/platform-runtime-policy.json" in module.OPTIONAL_CORE_FILES
 
 with tempfile.TemporaryDirectory() as tmp:
     root = Path(tmp)
