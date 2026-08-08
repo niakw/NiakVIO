@@ -18,6 +18,7 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 REPORT = ROOT / "automation" / "mobile-vf-runtime.json"
+MOBILE_POLICY = ROOT / "automation" / "mobile-vf-runtime-policy.json"
 CONTRACTS = ROOT / "automation" / "platform-runtime-contracts.json"
 POLICY = ROOT / "automation" / "platform-runtime-policy.json"
 MAIN = ROOT / "manifest.json"
@@ -45,6 +46,13 @@ def rows(document: dict[str, Any]) -> dict[str, dict[str, Any]]:
         for row in document.get("scrapers") or []
         if isinstance(row, dict) and str(row.get("id") or "").strip()
     }
+
+
+def semver_tuple(value: object) -> tuple[int, int, int]:
+    parts = str(value or "").split(".")
+    if len(parts) != 3 or any(not part.isdigit() for part in parts):
+        raise ValueError(f"invalid semantic version: {value!r}")
+    return tuple(int(part) for part in parts)  # type: ignore[return-value]
 
 
 def normalized_platforms(row: dict[str, Any]) -> list[str]:
@@ -92,13 +100,20 @@ def set_override(overrides: dict[str, Any], provider_id: str, blocked: bool) -> 
 
 def main() -> int:
     report = load(REPORT)
+    inherited_mobile_policy = load(MOBILE_POLICY)
     contracts = load(CONTRACTS)
     main_doc = load(MAIN)
     vf_doc = load(VF)
     overrides = load(OVERRIDES)
 
-    if str(report.get("release") or "") != str(main_doc.get("version") or ""):
-        raise SystemExit("runtime evidence release does not match current manifest")
+    report_release = semver_tuple(report.get("release"))
+    current_release = semver_tuple(main_doc.get("version"))
+    if report_release > current_release:
+        raise SystemExit("runtime evidence is newer than the current manifest")
+    if inherited_mobile_policy.get("source_report") != str(REPORT.relative_to(ROOT)):
+        raise SystemExit("current Android policy is not derived from the recorded runtime evidence")
+    if str(inherited_mobile_policy.get("release_before_bump") or "") != str(report.get("release") or ""):
+        raise SystemExit("Android policy/evidence release lineage mismatch")
 
     clients = contracts.get("clients") or {}
     expected_clients = {"android", "ios", "windows", "macos", "linux"}
@@ -142,7 +157,8 @@ def main() -> int:
         "schema_version": 2,
         "generated_at": now,
         "source_report": str(REPORT.relative_to(ROOT)),
-        "source_release": main_doc.get("version"),
+        "source_evidence_release": report.get("release"),
+        "source_manifest_release": main_doc.get("version"),
         "contract_file": str(CONTRACTS.relative_to(ROOT)),
         "client_platforms": sorted(expected_clients),
         "runtime_family_contract": "quickjs-positional-getStreams",
