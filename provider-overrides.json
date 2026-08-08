@@ -95,9 +95,7 @@
       "manifest_overrides": {
         "supportsExternalPlayer": true,
         "logo": "https://movix.fun/favicon.ico",
-        "disabledPlatforms": [
-          "android"
-        ]
+        "disabledPlatforms": []
       },
       "published_types": [
         "movie",
@@ -122,9 +120,7 @@
       "manifest_overrides": {
         "logo": "https://fs16.lol/favicon.ico",
         "supportsExternalPlayer": false,
-        "disabledPlatforms": [
-          "android"
-        ]
+        "disabledPlatforms": []
       },
       "capability": "mixed_embed_resolver",
       "runtime_domain_replacements": {
@@ -263,9 +259,7 @@
       "manifest_overrides": {
         "supportsExternalPlayer": false,
         "logo": "https://streamzo.fr/favicon.ico",
-        "disabledPlatforms": [
-          "android"
-        ]
+        "disabledPlatforms": []
       },
       "patch_scripts": [
         "scripts/provider_patches/streamzo_data_embed.py",
@@ -295,7 +289,10 @@
         "Automatically migrated animepahe.org to animepahe.pw after DNS/HTTP preflight validation of a redirect or a reachable same-role provider endpoint."
       ],
       "capability": "html_scraper",
-      "profiles": []
+      "profiles": [],
+      "manifest_overrides": {
+        "disabledPlatforms": []
+      }
     },
     "allmovieland": {
       "replacements": {
@@ -315,7 +312,10 @@
       "official_hub": null,
       "official_site": "https://allmovieland.art",
       "patch_script_options": {},
-      "required_values": []
+      "required_values": [],
+      "manifest_overrides": {
+        "disabledPlatforms": []
+      }
     },
     "purstream": {
       "notes": [
@@ -386,7 +386,10 @@
         "Automatically migrated sub.wyzie.ru to sub.wyzie.io after French ISP DNS/HTTP preflight redirect validation."
       ],
       "capability": "direct_media",
-      "profiles": []
+      "profiles": [],
+      "manifest_overrides": {
+        "disabledPlatforms": []
+      }
     },
     "mallumv": {
       "replacements": {
@@ -419,7 +422,10 @@
       "official_hub": "https://moviesdrives.mov/",
       "official_site": "https://new1.moviesdrive.christmas",
       "patch_script_options": {},
-      "required_values": []
+      "required_values": [],
+      "manifest_overrides": {
+        "disabledPlatforms": []
+      }
     },
     "coflix": {
       "replacements": {
@@ -488,7 +494,9 @@
         "supportsExternalPlayer": true,
         "logo": "https://coflix.esq/favicon.ico",
         "disabledPlatforms": [
-          "android"
+          "android",
+          "ios",
+          "desktop"
         ]
       },
       "patch_scripts": [
@@ -517,7 +525,10 @@
       "official_hub": null,
       "official_site": "https://moviesmod.zone",
       "patch_script_options": {},
-      "required_values": []
+      "required_values": [],
+      "manifest_overrides": {
+        "disabledPlatforms": []
+      }
     },
     "uhdmovies": {
       "replacements": {
@@ -534,7 +545,10 @@
       "official_hub": "https://mmodlist.org/",
       "official_site": "https://uhdmovies.autos",
       "patch_script_options": {},
-      "required_values": []
+      "required_values": [],
+      "manifest_overrides": {
+        "disabledPlatforms": []
+      }
     },
     "videasy": {
       "replacements": {
@@ -567,13 +581,19 @@
       "profiles": []
     },
     "animesultra": {
-      "capability": "mixed_embed_resolver"
+      "capability": "mixed_embed_resolver",
+      "manifest_overrides": {
+        "disabledPlatforms": []
+      }
     },
     "dulourd": {
       "capability": "html_scraper"
     },
     "vostfree": {
-      "capability": "mixed_embed_resolver"
+      "capability": "mixed_embed_resolver",
+      "manifest_overrides": {
+        "disabledPlatforms": []
+      }
     },
     "flemmix": {
       "profiles": [],
@@ -655,9 +675,7 @@
       "manifest_overrides": {
         "supportsExternalPlayer": true,
         "logo": "https://flemmix.men/favicon.ico",
-        "disabledPlatforms": [
-          "android"
-        ]
+        "disabledPlatforms": []
       },
       "published_types": [
         "movie",
@@ -680,9 +698,7 @@
       "required_route_values": [],
       "manifest_overrides": {
         "logo": "https://nakios.live/favicon.ico",
-        "disabledPlatforms": [
-          "android"
-        ]
+        "disabledPlatforms": []
       },
       "notes": [
         "Use the catalogue/streaming service identified by nakios.org rather than the retired .store route."
@@ -710,9 +726,7 @@
         "tv"
       ],
       "manifest_overrides": {
-        "disabledPlatforms": [
-          "android"
-        ]
+        "disabledPlatforms": []
       }
     },
     "toflix": {
@@ -832,7 +846,10 @@
       "official_hub": "https://anime-sama.wiki/",
       "official_site": "https://anime-sama.store",
       "patch_script_options": {},
-      "required_values": []
+      "required_values": [],
+      "manifest_overrides": {
+        "disabledPlatforms": []
+      }
     },
     "animekai": {
       "capability": "mixed_embed_resolver",
@@ -845,7 +862,10 @@
       "official_hub": "http://animesalt.ac/",
       "official_site": "https://animesalt.link",
       "patch_script_options": {},
-      "required_values": []
+      "required_values": [],
+      "manifest_overrides": {
+        "disabledPlatforms": []
+      }
     },
     "animesama-co": {
       "capability": "mixed_embed_resolver",
@@ -855,7 +875,10 @@
       "official_hub": "https://anime-sama.wiki/",
       "official_site": "https://anime-sama.store",
       "patch_script_options": {},
-      "required_values": []
+      "required_values": [],
+      "manifest_overrides": {
+        "disabledPlatforms": []
+      }
     },
     "animetsu": {
       "capability": "direct_media",
@@ -869,7 +892,10 @@
       "official_hub": null,
       "official_site": "https://v2.animevostfr.org",
       "patch_script_options": {},
-      "required_values": []
+      "required_values": [],
+      "manifest_overrides": {
+        "disabledPlatforms": []
+      }
     },
     "animeworld": {
       "capability": "html_scraper"
@@ -883,13 +909,19 @@
       "profiles": []
     },
     "castle": {
-      "capability": "api_stream_resolver"
+      "capability": "api_stream_resolver",
+      "manifest_overrides": {
+        "disabledPlatforms": []
+      }
     },
     "cinefreak": {
       "capability": "html_scraper"
     },
     "cinemacity": {
-      "capability": "direct_media"
+      "capability": "direct_media",
+      "manifest_overrides": {
+        "disabledPlatforms": []
+      }
     },
     "cinemm": {
       "capability": "html_scraper",
@@ -899,7 +931,10 @@
       "official_hub": null,
       "official_site": "https://cinemm.com",
       "patch_script_options": {},
-      "required_values": []
+      "required_values": [],
+      "manifest_overrides": {
+        "disabledPlatforms": []
+      }
     },
     "cinevibe": {
       "capability": "direct_media"
@@ -929,7 +964,10 @@
       ]
     },
     "dooflix": {
-      "capability": "html_scraper"
+      "capability": "html_scraper",
+      "manifest_overrides": {
+        "disabledPlatforms": []
+      }
     },
     "dvdplay": {
       "capability": "html_scraper",
@@ -974,7 +1012,8 @@
       ],
       "manifest_overrides": {
         "supportsExternalPlayer": false,
-        "logo": "https://w16.french-manga.net/favicon.ico"
+        "logo": "https://w16.french-manga.net/favicon.ico",
+        "disabledPlatforms": []
       },
       "published_types": [
         "movie",
@@ -994,7 +1033,10 @@
       "official_hub": "https://hdghartv.com.pk/",
       "official_site": "https://hdghartv.cc",
       "patch_script_options": {},
-      "required_values": []
+      "required_values": [],
+      "manifest_overrides": {
+        "disabledPlatforms": []
+      }
     },
     "hdhub4u": {
       "capability": "html_scraper",
@@ -1007,7 +1049,10 @@
       "official_hub": null,
       "official_site": "https://new4.hdhub4u.cl",
       "patch_script_options": {},
-      "required_values": []
+      "required_values": [],
+      "manifest_overrides": {
+        "disabledPlatforms": []
+      }
     },
     "hianime": {
       "capability": "html_scraper"
@@ -1028,7 +1073,10 @@
       "required_values": [],
       "patch_scripts": [
         "scripts/provider_patches/desktop_runtime_compat_v1.py"
-      ]
+      ],
+      "manifest_overrides": {
+        "disabledPlatforms": []
+      }
     },
     "kisskh": {
       "capability": "direct_media",
@@ -1045,7 +1093,10 @@
       "required_values": []
     },
     "movieblast": {
-      "capability": "html_scraper"
+      "capability": "html_scraper",
+      "manifest_overrides": {
+        "disabledPlatforms": []
+      }
     },
     "moviebox": {
       "capability": "html_scraper",
@@ -1055,7 +1106,10 @@
       "official_hub": "https://moviiebox.lol/",
       "official_site": "https://moviebox.yachts",
       "patch_script_options": {},
-      "required_values": []
+      "required_values": [],
+      "manifest_overrides": {
+        "disabledPlatforms": []
+      }
     },
     "movies4u": {
       "capability": "html_scraper",
@@ -1085,7 +1139,10 @@
         "Use the current Movies4u terminal route and drop unresolved or non-media direct links before playback."
       ],
       "official_hub": "https://movies4u.tube/",
-      "official_site": "https://new3.movies4u.clinic"
+      "official_site": "https://new3.movies4u.clinic",
+      "manifest_overrides": {
+        "disabledPlatforms": []
+      }
     },
     "movieshunt": {
       "capability": "direct_media",
@@ -1105,7 +1162,10 @@
       "official_hub": "https://streaminganime.fr/site/10/mugiwara-no-streaming",
       "official_site": "https://www.mugiwara-no-streaming.com",
       "patch_script_options": {},
-      "required_values": []
+      "required_values": [],
+      "manifest_overrides": {
+        "disabledPlatforms": []
+      }
     },
     "netmirror": {
       "capability": "mixed_embed_resolver",
@@ -1114,14 +1174,20 @@
       "official_hub": "https://netmiror.com/",
       "official_site": "https://net27.cc",
       "patch_script_options": {},
-      "required_values": []
+      "required_values": [],
+      "manifest_overrides": {
+        "disabledPlatforms": []
+      }
     },
     "onlykdrama": {
       "capability": "html_scraper"
     },
     "peachify": {
       "capability": "mixed_embed_resolver",
-      "profiles": []
+      "profiles": [],
+      "manifest_overrides": {
+        "disabledPlatforms": []
+      }
     },
     "persianstremio": {
       "capability": "direct_media"
@@ -1150,7 +1216,10 @@
       "official_hub": null,
       "official_site": "https://streamflix.mom",
       "patch_script_options": {},
-      "required_values": []
+      "required_values": [],
+      "manifest_overrides": {
+        "disabledPlatforms": []
+      }
     },
     "topcartoons": {
       "capability": "html_scraper"
@@ -1162,10 +1231,16 @@
       "official_hub": "https://1vegamovies.tw/",
       "official_site": "https://vegamovies.catering",
       "patch_script_options": {},
-      "required_values": []
+      "required_values": [],
+      "manifest_overrides": {
+        "disabledPlatforms": []
+      }
     },
     "vidlink": {
-      "capability": "html_scraper"
+      "capability": "html_scraper",
+      "manifest_overrides": {
+        "disabledPlatforms": []
+      }
     },
     "vidnest": {
       "capability": "direct_media",
@@ -1176,7 +1251,10 @@
       "profiles": []
     },
     "vidrock": {
-      "capability": "html_scraper"
+      "capability": "html_scraper",
+      "manifest_overrides": {
+        "disabledPlatforms": []
+      }
     },
     "vidsrc": {
       "capability": "mixed_embed_resolver",
@@ -1190,7 +1268,10 @@
       "official_hub": "https://voiranime.org.uk/",
       "official_site": "https://voiranime.homes",
       "patch_script_options": {},
-      "required_values": []
+      "required_values": [],
+      "manifest_overrides": {
+        "disabledPlatforms": []
+      }
     },
     "voiranime-rip": {
       "capability": "mixed_embed_resolver",
@@ -1202,9 +1283,7 @@
       "patch_script_options": {},
       "required_values": [],
       "manifest_overrides": {
-        "disabledPlatforms": [
-          "android"
-        ]
+        "disabledPlatforms": []
       }
     },
     "wookafr": {
@@ -1244,9 +1323,7 @@
         "scripts/provider_patches/desktop_runtime_compat_v1.py"
       ],
       "manifest_overrides": {
-        "disabledPlatforms": [
-          "android"
-        ]
+        "disabledPlatforms": []
       }
     },
     "xpass": {
@@ -1254,11 +1331,17 @@
     },
     "yflix": {
       "capability": "mixed_embed_resolver",
-      "profiles": []
+      "profiles": [],
+      "manifest_overrides": {
+        "disabledPlatforms": []
+      }
     },
     "zinkmovies": {
       "capability": "direct_media",
-      "profiles": []
+      "profiles": [],
+      "manifest_overrides": {
+        "disabledPlatforms": []
+      }
     },
     "brandnew": {
       "capability": "mixed_embed_resolver",
