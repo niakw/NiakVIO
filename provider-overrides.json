@@ -94,7 +94,10 @@
       "official_api": "https://api.movix.fun",
       "manifest_overrides": {
         "supportsExternalPlayer": true,
-        "logo": "https://movix.fun/favicon.ico"
+        "logo": "https://movix.fun/favicon.ico",
+        "disabledPlatforms": [
+          "android"
+        ]
       },
       "published_types": [
         "movie",
@@ -118,7 +121,10 @@
       "required_route_values": [],
       "manifest_overrides": {
         "logo": "https://fs16.lol/favicon.ico",
-        "supportsExternalPlayer": false
+        "supportsExternalPlayer": false,
+        "disabledPlatforms": [
+          "android"
+        ]
       },
       "capability": "mixed_embed_resolver",
       "runtime_domain_replacements": {
@@ -256,7 +262,10 @@
       },
       "manifest_overrides": {
         "supportsExternalPlayer": false,
-        "logo": "https://streamzo.fr/favicon.ico"
+        "logo": "https://streamzo.fr/favicon.ico",
+        "disabledPlatforms": [
+          "android"
+        ]
       },
       "patch_scripts": [
         "scripts/provider_patches/streamzo_data_embed.py",
@@ -347,6 +356,9 @@
             ]
           }
         }
+      },
+      "manifest_overrides": {
+        "disabledPlatforms": []
       }
     },
     "vidfast": {
@@ -474,7 +486,10 @@
       "required_values": [],
       "manifest_overrides": {
         "supportsExternalPlayer": true,
-        "logo": "https://coflix.esq/favicon.ico"
+        "logo": "https://coflix.esq/favicon.ico",
+        "disabledPlatforms": [
+          "android"
+        ]
       },
       "patch_scripts": [
         "scripts/provider_patches/vf_catalogue_recovery.py",
@@ -639,7 +654,10 @@
       "official_site": "https://flemmix.men",
       "manifest_overrides": {
         "supportsExternalPlayer": true,
-        "logo": "https://flemmix.men/favicon.ico"
+        "logo": "https://flemmix.men/favicon.ico",
+        "disabledPlatforms": [
+          "android"
+        ]
       },
       "published_types": [
         "movie",
@@ -661,7 +679,10 @@
       "route_replacements": {},
       "required_route_values": [],
       "manifest_overrides": {
-        "logo": "https://nakios.live/favicon.ico"
+        "logo": "https://nakios.live/favicon.ico",
+        "disabledPlatforms": [
+          "android"
+        ]
       },
       "notes": [
         "Use the catalogue/streaming service identified by nakios.org rather than the retired .store route."
@@ -687,7 +708,12 @@
       "published_types": [
         "movie",
         "tv"
-      ]
+      ],
+      "manifest_overrides": {
+        "disabledPlatforms": [
+          "android"
+        ]
+      }
     },
     "toflix": {
       "profiles": [],
@@ -1174,7 +1200,12 @@
       "official_hub": null,
       "official_site": "https://voiranime.rip",
       "patch_script_options": {},
-      "required_values": []
+      "required_values": [],
+      "manifest_overrides": {
+        "disabledPlatforms": [
+          "android"
+        ]
+      }
     },
     "wookafr": {
       "capability": "mixed_embed_resolver",
@@ -1211,7 +1242,12 @@
       ],
       "patch_scripts": [
         "scripts/provider_patches/desktop_runtime_compat_v1.py"
-      ]
+      ],
+      "manifest_overrides": {
+        "disabledPlatforms": [
+          "android"
+        ]
+      }
     },
     "xpass": {
       "capability": "html_scraper"
@@ -1256,7 +1292,8 @@
         }
       },
       "manifest_overrides": {
-        "supportsExternalPlayer": false
+        "supportsExternalPlayer": false,
+        "disabledPlatforms": []
       },
       "published_types": [
         "movie",

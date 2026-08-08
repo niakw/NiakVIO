@@ -1,6 +1,6 @@
 {
-  "schema_version": 63,
-  "generated_at": "2026-08-07T21:23:48.773302+00:00",
+  "schema_version": 64,
+  "generated_at": "2026-08-08T17:20:32.123396+00:00",
   "notice": "Third-party files retain upstream authorship and licence. See THIRD_PARTY_NOTICES.md.",
   "providers": {
     "1shows": {
@@ -14265,20 +14265,41 @@
     },
     "purstream": {
       "id": "purstream",
-      "published_filename": "providers/purstream--nuvio--56f5640cdb9dd4f6.js",
-      "sha256": "56f5640cdb9dd4f6684af8b0eff67420cd07287efc2418cd1532c83136bd91ab",
-      "patched_sha256": "56f5640cdb9dd4f6684af8b0eff67420cd07287efc2418cd1532c83136bd91ab",
+      "published_filename": "providers/purstream--runtime-compat-v4--4ab78821b90b7102.js",
+      "sha256": "4ab78821b90b710281d1d7de6942ec54b623ba92937facd967f330416bb52536",
+      "patched_sha256": "4ab78821b90b710281d1d7de6942ec54b623ba92937facd967f330416bb52536",
       "upstream_sha256": "02173d75d873826f33e7bd45bb1c7973e557845548a8634b3ed1a5161c89abb8",
       "local_patches": [
         {
           "type": "patch_script",
-          "path": "scripts/provider_patches/desktop_runtime_compat_v1.py",
+          "path": "scripts/provider_patches/purstream_bridge.py",
           "phase": "discovery"
         },
         {
           "type": "patch_script",
-          "path": "scripts/provider_patches/purstream_bridge.py",
-          "phase": "discovery"
+          "path": "scripts/provider_patches/desktop_runtime_compat_v1.py",
+          "phase": "runtime",
+          "options": {
+            "normalize_missing_episodes": true,
+            "domain_failover": {
+              "host_prefixes": [
+                "api.purstream",
+                "purstream"
+              ],
+              "suffixes": [
+                "club",
+                "mx",
+                "ch",
+                "ac",
+                "cx",
+                "art",
+                "co",
+                "me",
+                "to",
+                "store"
+              ]
+            }
+          }
         }
       ],
       "source": "aio",
@@ -14288,8 +14309,8 @@
       "source_license_evidence": "https://github.com/NuvioPlugin/All-in-One-Nuvio#license",
       "upstream_id": "purstream",
       "upstream_filename": "providers/purstream.js",
-      "checked_at": "2026-08-07T21:23:48.773302+00:00",
-      "check_mode": "deep",
+      "checked_at": "2026-08-08T17:20:32.123364+00:00",
+      "check_mode": "android-targeted-runtime-contract",
       "check_status": "healthy",
       "health_score": 86,
       "activation_eligible": true,
@@ -14297,7 +14318,7 @@
       "strict_grace_eligible": false,
       "historical_quality_grace_eligible": false,
       "runtime_evidence_eligible": false,
-      "activation_mode": "strict_current",
+      "activation_mode": "android_direct_movie_proof",
       "activation_blockers": [],
       "activation_gates": {
         "01_policy_safe_no_p2p": {
@@ -14493,7 +14514,8 @@
         "reason": "disabled_by_current_proof_policy"
       },
       "strict_consecutive_deep_passes": 3,
-      "strict_total_deep_passes": 3
+      "strict_total_deep_passes": 3,
+      "android_direct_movie_proof": true
     },
     "sekai": {
       "id": "sekai",
