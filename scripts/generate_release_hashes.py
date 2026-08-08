@@ -33,12 +33,17 @@ CORE_FILES = [
     "vf/manifest.json",
     "provider-overrides.json",
     "automation/platform-runtime-contracts.json",
+    "automation/nuvio-tv-runtime-contract.json",
     "scripts/deep_repair_loop.py",
     "scripts/runtime_repair.py",
     "scripts/reapply_published_overrides.py",
     "scripts/provider_dns_preflight.mjs",
     "scripts/prune_unreferenced_providers.py",
     "scripts/validate_platform_runtime_policy.py",
+    "scripts/validate_nuvio_tv_runtime_policy.py",
+    "scripts/nuvio_tv_probe_v2.cjs",
+    "scripts/promote_global_nuvio_tv_candidates.py",
+    "scripts/provider_patches/nuvio_tv_direct_media_v2.py",
 ]
 # These become mandatory release inputs once the cross-platform policy is
 # published, but are optional on the one transition release that creates them.
@@ -100,7 +105,7 @@ def main() -> int:
     (ROOT / "FILE-HASHES.json").write_text(
         json.dumps(
             {
-                "schema_version": 73,
+                "schema_version": 74,
                 "release": version,
                 "algorithm": "sha256",
                 "excluded_generated_files": sorted(GENERATED),
