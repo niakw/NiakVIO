@@ -1,0 +1,136 @@
+name: Publish cross-platform runtime policy
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - .github/triggers/cross-platform-runtime-release
+
+permissions:
+  contents: write
+
+concurrency:
+  group: nuvio-cross-platform-runtime-release
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - name: Checkout current main
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: '3.12'
+
+      - name: Set up Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: '24'
+          package-manager-cache: false
+
+      - name: Install pinned dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Validate platform model before probing
+        run: |
+          python tests/platform_filter_semantics_test.py
+          python scripts/validate_platform_runtime_policy.py
+          python scripts/validate_mobile_runtime_policy.py
+
+      - name: Probe current general manifest on every runtime family
+        env:
+          NUVIO_PLATFORM_CONCURRENCY: '5'
+        run: node scripts/platform_runtime_probe.mjs
+
+      - name: Apply conservative platform policy
+        run: |
+          cp manifest.json "$RUNNER_TEMP/manifest.before.json"
+          python scripts/publish_cross_platform_runtime_policy.py
+          python scripts/bump_release_patch_if_manifest_changed.py \
+            --previous "$RUNNER_TEMP/manifest.before.json" \
+            --manifest manifest.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          before=json.loads(Path('${{ runner.temp }}/manifest.before.json').read_text())
+          current=json.loads(Path('manifest.json').read_text())
+          if current.get('version') == before.get('version'):
+              major,minor,patch=map(int,str(before['version']).split('.'))
+              current['version']=f'{major}.{minor}.{patch+1}'
+              Path('manifest.json').write_text(json.dumps(current,ensure_ascii=False,indent=2)+'\n')
+              print('platform policy changed without manifest payload diff; release bumped to',current['version'])
+          PY
+          python scripts/sync_release_versions.py --manifest manifest.json
+
+      - name: Remove one-shot release instrumentation
+        run: |
+          rm -f .github/workflows/cross-platform-runtime-release.yml
+          rm -f .github/triggers/cross-platform-runtime-release
+
+      - name: Validate exact release tree
+        run: |
+          python scripts/validate_platform_runtime_policy.py
+          python scripts/validate_mobile_runtime_policy.py
+          python scripts/validate_language_projection.py
+          python scripts/validate_activation_preservation.py
+          npm test
+          python scripts/generate_release_hashes.py
+          python scripts/validate_release_integrity.py
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          package=json.loads(Path('package.json').read_text())
+          lock=json.loads(Path('package-lock.json').read_text())
+          main=json.loads(Path('manifest.json').read_text())
+          vf=json.loads(Path('vf/manifest.json').read_text())
+          versions={
+              'package': package.get('version'),
+              'lock': lock.get('version'),
+              'lock_root': (lock.get('packages') or {}).get('',{}).get('version'),
+              'main': main.get('version'),
+              'vf': vf.get('version'),
+          }
+          if len({str(value) for value in versions.values()}) != 1:
+              raise SystemExit(f'version mismatch: {versions}')
+          if versions['main'] != '5.20.28':
+              raise SystemExit(f'unexpected platform release: {versions}')
+          print('cross-platform release versions synchronized:', versions)
+          PY
+          git diff --check
+
+      - name: Commit cross-platform runtime release
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "fix: publish cross-platform runtime compatibility 5.20.28"
+          for attempt in 1 2 3 4 5; do
+            git fetch origin main
+            if git rebase origin/main && git push origin HEAD:main; then
+              exit 0
+            fi
+            git rebase --abort || true
+            sleep $((attempt * 2))
+          done
+          exit 1
+
+      - name: Verify exact published main
+        run: |
+          set -euo pipefail
+          git fetch origin main
+          git reset --hard origin/main
+          npm ci --ignore-scripts --no-audit --no-fund
+          python scripts/validate_platform_runtime_policy.py
+          python scripts/validate_mobile_runtime_policy.py
+          npm test
+          python scripts/generate_release_hashes.py
+          python scripts/validate_release_integrity.py
+          git diff --exit-code
