@@ -1,5 +1,5 @@
 {
-  "schema_version": 2,
+  "schema_version": 3,
   "client": "NuvioTV",
   "platform": "android-tv",
   "integration": "plugin-provider-repository",
@@ -10,6 +10,8 @@
   "runtime_source": "app/src/full/java/com/nuvio/tv/core/plugin/PluginRuntime.kt",
   "settings_source": "app/src/main/java/com/nuvio/tv/data/local/PluginDataStore.kt",
   "stream_repository_source": "app/src/main/java/com/nuvio/tv/data/repository/StreamRepositoryImpl.kt",
+  "manifest_model_source": "app/src/main/java/com/nuvio/tv/domain/model/Plugin.kt",
+  "plugin_manager_source": "app/src/full/java/com/nuvio/tv/core/plugin/PluginManager.kt",
   "player_source_prefix": "app/src/main/java/com/nuvio/tv/ui/screens/player/",
   "probe": "scripts/nuvio_tv_probe_v2.cjs",
   "promoter": "scripts/promote_global_nuvio_tv_candidates.py",
@@ -21,6 +23,14 @@
     "real-video-container-signature"
   ],
   "player_model": "direct-media-first",
+  "manifest_platform_filtering": {
+    "fields_parsed": [
+      "supportedPlatforms",
+      "disabledPlatforms"
+    ],
+    "enforced_by_plugin_manager": false,
+    "consequence": "Do not rely on manifest platform fields to hide an unsafe provider from NuvioTV; the provider output itself must be strict-media safe or globally disabled."
+  },
   "separate_live_tv_addon": {
     "enabled": true,
     "contract": "stremio-addon-manifest-catalog-meta-stream",
@@ -29,7 +39,9 @@
   "notes": [
     "NuvioTV provider compatibility is a distinct runtime family from Nuvio Mobile and Nuvio Desktop.",
     "The source_ref is the exact official NuvioTV commit most recently audited against this contract.",
+    "NuvioTV currently parses supportedPlatforms/disabledPlatforms in the manifest model but its PluginManager does not apply those fields when building enabled scrapers.",
     "A zero-stream result is not by itself proof of incompatibility.",
+    "Providers blocked on every Mobile/Desktop runtime but still enabled in the shared manifest must sanitize all NuvioTV-returned URLs against real media payloads.",
     "Promoted direct-media wrappers require strict HLS, DASH or real container evidence."
   ]
 }
