@@ -2,6 +2,9 @@
 from __future__ import annotations
 
 import json
+import os
+import subprocess
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -64,6 +67,26 @@ def validate_platform_field(errors: list[str], provider_id: str, row: dict[str, 
         errors.append(f"{provider_id}: duplicate {key} entries")
     if any(item != str(raw[index]).strip() for index, item in enumerate(normalized)):
         errors.append(f"{provider_id}: {key} entries must be normalized lowercase")
+
+
+def run_client_upstream_guard() -> int:
+    if os.environ.get("GITHUB_ACTIONS") != "true":
+        return 0
+    if os.environ.get("NUVIO_SKIP_CLIENT_UPSTREAM_GUARD") == "1":
+        print("Nuvio client upstream drift guard skipped explicitly")
+        return 0
+    output = ROOT / "health-output" / "nuvio-client-upstream-status.json"
+    process = subprocess.run(
+        [
+            sys.executable,
+            str(ROOT / "scripts" / "check_nuvio_client_upstreams.py"),
+            "--output",
+            str(output),
+        ],
+        cwd=ROOT,
+        check=False,
+    )
+    return int(process.returncode)
 
 
 def main() -> int:
@@ -174,6 +197,11 @@ def main() -> int:
 
     if errors:
         raise SystemExit("platform runtime policy validation failed:\n- " + "\n- ".join(errors))
+
+    upstream_status = run_client_upstream_guard()
+    if upstream_status != 0:
+        raise SystemExit(upstream_status)
+
     print(
         "platform runtime policy validated: "
         f"release={main_doc.get('version')} general={len(main_rows)} vf={len(vf_rows)} "
