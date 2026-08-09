@@ -96,6 +96,8 @@ NuvioTV est également testé sur un appel à quatre arguments positionnels, mai
 
 ### Compatibilité média NuvioTV
 
+> **Particularité NuvioTV :** le client actuel parse les champs `supportedPlatforms` et `disabledPlatforms`, mais son `PluginManager` ne les applique pas lors de la construction des scrapers actifs. Niakvio ne s’appuie donc pas sur ces champs pour sécuriser NuvioTV : un provider à risque doit résoudre ses lecteurs puis filtrer ses propres sorties pour ne conserver que des payloads média réellement vérifiés.
+
 Le dépôt contient un chemin NuvioTV spécifique qui :
 
 - simule l’environnement Android TV attendu ;

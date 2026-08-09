@@ -443,7 +443,8 @@
         "coflix.fr": "coflix.esq"
       },
       "notes": [
-        "Automatically migrated coflix.cymru to coflix.blue after DNS/HTTP preflight validation of a redirect or a reachable same-role provider endpoint."
+        "Automatically migrated coflix.cymru to coflix.blue after DNS/HTTP preflight validation of a redirect or a reachable same-role provider endpoint.",
+        "NuvioTV currently does not enforce manifest platform filters; resolve Coflix embeds to direct media, reject WordPress infrastructure routes, and validate every final URL before exposing it."
       ],
       "capability": "html_scraper",
       "official_hub": "https://coflix.domains/",
@@ -472,21 +473,38 @@
           "blocked_hosts": [
             "fstream.top"
           ],
-          "blocked_path_patterns": [],
+          "blocked_path_patterns": [
+            "/wp-admin/",
+            "/wp-content/plugins/ajax-search-lite/",
+            "/wp-json/"
+          ],
           "max_players": 8
         },
         "scripts/provider_patches/stream_output_sanitizer_v5.py": {
           "blocked_hosts": [
             "fstream.top"
           ],
-          "blocked_path_patterns": [],
-          "probe_direct_media": false,
-          "probe_all_urls": false,
-          "max_probes": 0,
-          "min_vod_duration_seconds": 60
+          "blocked_path_patterns": [
+            "/wp-admin/",
+            "/wp-content/plugins/ajax-search-lite/",
+            "/wp-json/"
+          ],
+          "probe_direct_media": true,
+          "probe_all_urls": true,
+          "max_probes": 8,
+          "min_vod_duration_seconds": 60,
+          "probe_timeout_ms": 4500
         },
         "scripts/provider_patches/desktop_runtime_compat_v1.py": {
           "normalize_missing_episodes": true
+        },
+        "scripts/provider_patches/nuvio_tv_target_media_v4.py": {
+          "provider_name": "Coflix",
+          "max_candidates": 22,
+          "timeout_ms": 20000,
+          "blocked_hosts": [
+            "fstream.top"
+          ]
         }
       },
       "required_values": [],
@@ -501,8 +519,9 @@
       },
       "patch_scripts": [
         "scripts/provider_patches/vf_catalogue_recovery.py",
-        "scripts/provider_patches/stream_output_sanitizer_v5.py",
-        "scripts/provider_patches/desktop_runtime_compat_v1.py"
+        "scripts/provider_patches/desktop_runtime_compat_v1.py",
+        "scripts/provider_patches/nuvio_tv_target_media_v4.py",
+        "scripts/provider_patches/stream_output_sanitizer_v5.py"
       ],
       "published_types": [
         "movie",

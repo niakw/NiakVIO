@@ -1,3 +1,12 @@
+## 5.20.29 — NuvioTV media-output safety and bundle reconciliation
+
+- Fix Coflix on NuvioTV: WordPress infrastructure endpoints (`admin-ajax`, `wp-json`, Ajax Search Lite) can no longer escape as streams.
+- Resolve candidate Coflix embeds to direct media before applying the final strict all-URL HLS/DASH/container validator.
+- Keep the 60-second short-VOD floor; update the synthetic VF recovery fixture instead of weakening preview rejection.
+- Record that current NuvioTV parses `supportedPlatforms` / `disabledPlatforms` but does not enforce them in its PluginManager.
+- Reconcile Flemmix, Frenchstream, HindMoviez, Movix, StreamZo and WookaFR with their already configured runtime-compatibility revision.
+- Add a permanent published-override drift gate and include the complete NuvioTV target-media/sanitizer chain in release integrity hashes.
+
 ## 5.20.0
 
 - Rebuilt the VF movie path around full catalogue recovery instead of domain-only validation.

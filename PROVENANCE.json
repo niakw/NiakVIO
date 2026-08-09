@@ -1,6 +1,6 @@
 {
-  "schema_version": 64,
-  "generated_at": "2026-08-08T17:20:32.123396+00:00",
+  "schema_version": 65,
+  "generated_at": "2026-08-09T15:23:49.382375+00:00",
   "notice": "Third-party files retain upstream authorship and licence. See THIRD_PARTY_NOTICES.md.",
   "providers": {
     "1shows": {
@@ -6075,9 +6075,9 @@
     },
     "coflix": {
       "id": "coflix",
-      "published_filename": "providers/coflix--desktop-runtime-v1--ad6e927e5eb840f0.js",
-      "sha256": "ad6e927e5eb840f0e2a9ae1d832015ef8b3e72baac2b79129ad83b6eea1dd19d",
-      "patched_sha256": "ad6e927e5eb840f0e2a9ae1d832015ef8b3e72baac2b79129ad83b6eea1dd19d",
+      "published_filename": "providers/coflix--nuvio--23d970ff493b852e.js",
+      "sha256": "23d970ff493b852e952210eceabafda8c7388a6cef1301a1bd89c623033adecf",
+      "patched_sha256": "23d970ff493b852e952210eceabafda8c7388a6cef1301a1bd89c623033adecf",
       "upstream_sha256": "48239f7b107a98b295b0ddec8ed38805503a75975e1bee320543d856d0baa87c",
       "local_patches": [
         "{'type': 'patch_script', 'path': 'scripts/provider_patches/vf_catalogue_recovery.py', 'phase': 'discovery'}",
@@ -6300,7 +6300,60 @@
       "preserved_reason": "ci_uncertain_kept_last_published_artifact",
       "preserved_candidate_key": "published:coflix",
       "preserved_candidate_sha256": "ad6e927e5eb840f0e2a9ae1d832015ef8b3e72baac2b79129ad83b6eea1dd19d",
-      "canonical_source_filename": "providers/coflix--nuvio--48239f7b107a98b2.js"
+      "canonical_source_filename": "providers/coflix--nuvio--48239f7b107a98b2.js",
+      "last_release_reconciliation": {
+        "release": "5.20.29",
+        "reason": "durable published override reconciliation",
+        "previous_filename": "providers/coflix--desktop-runtime-v1--ad6e927e5eb840f0.js",
+        "effective_patch_records": [
+          {
+            "type": "patch_script",
+            "path": "scripts/provider_patches/vf_catalogue_recovery.py",
+            "phase": "discovery"
+          },
+          {
+            "type": "patch_script",
+            "path": "scripts/provider_patches/desktop_runtime_compat_v1.py",
+            "phase": "discovery"
+          },
+          {
+            "type": "patch_script",
+            "path": "scripts/provider_patches/nuvio_tv_target_media_v4.py",
+            "phase": "discovery"
+          },
+          {
+            "type": "patch_script",
+            "path": "scripts/provider_patches/stream_output_sanitizer_v5.py",
+            "phase": "discovery"
+          }
+        ]
+      },
+      "nuvio_tv_media_guard": {
+        "release": "5.20.29",
+        "fixture": {
+          "tmdb_id": "842675",
+          "title": "The Wandering Earth II",
+          "media_type": "movie"
+        },
+        "before": {
+          "raw_stream_count": 3,
+          "playable_stream_count": 0,
+          "rejected_payloads": [
+            "coflix.esq/wp-admin/admin-ajax.php -> text/html",
+            "coflix.esq/wp-content/plugins/ajax-search-lite/ -> text/html",
+            "coflix.esq/wp-json/ -> application/json"
+          ]
+        },
+        "policy": "resolve embeds to direct media, block WordPress infrastructure routes, then validate every final URL as strict HLS, DASH, or real video media",
+        "after": {
+          "provider_file": "providers/coflix--nuvio--23d970ff493b852e.js",
+          "exit_code": 2,
+          "runtime_error": null,
+          "raw_stream_count": 0,
+          "playable_stream_count": 0,
+          "media_kinds": []
+        }
+      }
     },
     "ctgmovies": {
       "id": "ctgmovies",
@@ -7829,9 +7882,9 @@
     },
     "flemmix": {
       "id": "flemmix",
-      "published_filename": "providers/flemmix--desktop-runtime-v1--2afeed1caf991421.js",
-      "sha256": "2afeed1caf9914218f2958f8a3282a9d48fcc7457dd73cdb8b3d0c64835d51da",
-      "patched_sha256": "2afeed1caf9914218f2958f8a3282a9d48fcc7457dd73cdb8b3d0c64835d51da",
+      "published_filename": "providers/flemmix--nuvio--83933a1b85ebec24.js",
+      "sha256": "83933a1b85ebec24acb3099a23d22ffcedf78e18d522f2646ce0a6c73b9f501a",
+      "patched_sha256": "83933a1b85ebec24acb3099a23d22ffcedf78e18d522f2646ce0a6c73b9f501a",
       "upstream_sha256": "e0c40c452aca0d6685426c739729bc7bca333a187f4dc2737295f7394ff3955f",
       "local_patches": [
         "{'type': 'patch_script', 'path': 'scripts/provider_patches/stream_output_sanitizer_v5.py', 'phase': 'discovery'}",
@@ -8048,7 +8101,19 @@
       "canonical_source_filename": "providers/flemmix--nuvio--e0c40c452aca0d66.js",
       "preserved_reason": "ci_uncertain_kept_last_published_artifact",
       "preserved_candidate_key": "published:flemmix",
-      "preserved_candidate_sha256": "2afeed1caf9914218f2958f8a3282a9d48fcc7457dd73cdb8b3d0c64835d51da"
+      "preserved_candidate_sha256": "2afeed1caf9914218f2958f8a3282a9d48fcc7457dd73cdb8b3d0c64835d51da",
+      "last_release_reconciliation": {
+        "release": "5.20.29",
+        "reason": "durable published override reconciliation",
+        "previous_filename": "providers/flemmix--desktop-runtime-v1--2afeed1caf991421.js",
+        "effective_patch_records": [
+          {
+            "type": "patch_script",
+            "path": "scripts/provider_patches/desktop_runtime_compat_v1.py",
+            "phase": "discovery"
+          }
+        ]
+      }
     },
     "french-manga": {
       "id": "french-manga",
@@ -8278,9 +8343,9 @@
     },
     "frenchstream": {
       "id": "frenchstream",
-      "published_filename": "providers/frenchstream--desktop-runtime-v1--68c1ad516983e0a1.js",
-      "sha256": "68c1ad516983e0a199a0d59759f0a0ed1bf1f11a91ee3ccf7d5b7330e065e3ff",
-      "patched_sha256": "68c1ad516983e0a199a0d59759f0a0ed1bf1f11a91ee3ccf7d5b7330e065e3ff",
+      "published_filename": "providers/frenchstream--nuvio--d92f64dfdff6db2c.js",
+      "sha256": "d92f64dfdff6db2c3923bd6532fb94fb76ee7b86d873abc96bdade09cde0a54c",
+      "patched_sha256": "d92f64dfdff6db2c3923bd6532fb94fb76ee7b86d873abc96bdade09cde0a54c",
       "upstream_sha256": "38cf074196379a8d88534366e9bf9b04c9c5f95c0f1d985c8a346ca3f67a85fd",
       "local_patches": [
         "{'type': 'patch_script', 'path': 'scripts/provider_patches/stream_output_sanitizer.py', 'phase': 'discovery'}",
@@ -8501,7 +8566,19 @@
       "preserved_reason": "ci_uncertain_kept_last_published_artifact",
       "preserved_candidate_key": "published:frenchstream",
       "preserved_candidate_sha256": "68c1ad516983e0a199a0d59759f0a0ed1bf1f11a91ee3ccf7d5b7330e065e3ff",
-      "canonical_source_filename": "providers/frenchstream--nuvio--38cf074196379a8d.js"
+      "canonical_source_filename": "providers/frenchstream--nuvio--38cf074196379a8d.js",
+      "last_release_reconciliation": {
+        "release": "5.20.29",
+        "reason": "durable published override reconciliation",
+        "previous_filename": "providers/frenchstream--desktop-runtime-v1--68c1ad516983e0a1.js",
+        "effective_patch_records": [
+          {
+            "type": "patch_script",
+            "path": "scripts/provider_patches/desktop_runtime_compat_v1.py",
+            "phase": "discovery"
+          }
+        ]
+      }
     },
     "goatapi": {
       "id": "goatapi",
@@ -9806,9 +9883,9 @@
     },
     "hindmoviez": {
       "id": "hindmoviez",
-      "published_filename": "providers/hindmoviez--nuvio--a4ca5188f597a72e.js",
-      "sha256": "a4ca5188f597a72e50221d031c0661b625522fd22594898b6fcdd33d89e821c5",
-      "patched_sha256": "a4ca5188f597a72e50221d031c0661b625522fd22594898b6fcdd33d89e821c5",
+      "published_filename": "providers/hindmoviez--nuvio--fb4095295be55ae2.js",
+      "sha256": "fb4095295be55ae29f8ebe5ee286074f5cc954d885205c252b9c817215e12005",
+      "patched_sha256": "fb4095295be55ae29f8ebe5ee286074f5cc954d885205c252b9c817215e12005",
       "upstream_sha256": "86b8c3a4dff3c98c05db88eb075936b2f4ec00d504b967f1150bdfbd6fa620ac",
       "local_patches": [
         {
@@ -10025,7 +10102,19 @@
         "reason": "disabled_by_current_proof_policy"
       },
       "strict_consecutive_deep_passes": 2,
-      "strict_total_deep_passes": 2
+      "strict_total_deep_passes": 2,
+      "last_release_reconciliation": {
+        "release": "5.20.29",
+        "reason": "durable published override reconciliation",
+        "previous_filename": "providers/hindmoviez--nuvio--a4ca5188f597a72e.js",
+        "effective_patch_records": [
+          {
+            "type": "patch_script",
+            "path": "scripts/provider_patches/desktop_runtime_compat_v1.py",
+            "phase": "discovery"
+          }
+        ]
+      }
     },
     "kisskh": {
       "id": "kisskh",
@@ -12080,9 +12169,9 @@
     },
     "movix": {
       "id": "movix",
-      "published_filename": "providers/movix--desktop-runtime-v1--1c3118519a12e8e0.js",
-      "sha256": "1c3118519a12e8e09c3ae843669337bb1222e89aef9236fda9d8c3868622d2e4",
-      "patched_sha256": "1c3118519a12e8e09c3ae843669337bb1222e89aef9236fda9d8c3868622d2e4",
+      "published_filename": "providers/movix--nuvio--e2cc1e4ba314ab42.js",
+      "sha256": "e2cc1e4ba314ab42d7d7b4878174a2812b27e81cb0a27156702f669563a67809",
+      "patched_sha256": "e2cc1e4ba314ab42d7d7b4878174a2812b27e81cb0a27156702f669563a67809",
       "upstream_sha256": "b31ef87b05d3a4f351d20872e33980b4de95d73461ce2c27327d64bde9653787",
       "local_patches": [
         "{'type': 'patch_script', 'path': 'scripts/provider_patches/stream_output_sanitizer_v5.py', 'phase': 'discovery'}",
@@ -12301,7 +12390,19 @@
       "preserved_reason": "ci_uncertain_kept_last_published_artifact",
       "preserved_candidate_key": "published:movix",
       "preserved_candidate_sha256": "1c3118519a12e8e09c3ae843669337bb1222e89aef9236fda9d8c3868622d2e4",
-      "canonical_source_filename": "providers/movix--nuvio--b31ef87b05d3a4f3.js"
+      "canonical_source_filename": "providers/movix--nuvio--b31ef87b05d3a4f3.js",
+      "last_release_reconciliation": {
+        "release": "5.20.29",
+        "reason": "durable published override reconciliation",
+        "previous_filename": "providers/movix--desktop-runtime-v1--1c3118519a12e8e0.js",
+        "effective_patch_records": [
+          {
+            "type": "patch_script",
+            "path": "scripts/provider_patches/desktop_runtime_compat_v1.py",
+            "phase": "discovery"
+          }
+        ]
+      }
     },
     "mugiwarastream": {
       "id": "mugiwarastream",
@@ -15230,9 +15331,9 @@
     },
     "streamzo": {
       "id": "streamzo",
-      "published_filename": "providers/streamzo--desktop-runtime-v1--493f4301f237d1a0.js",
-      "sha256": "493f4301f237d1a0ff0d1c5b18e5d366bd9af4fc8f0358cb3aa4c04483f101ee",
-      "patched_sha256": "493f4301f237d1a0ff0d1c5b18e5d366bd9af4fc8f0358cb3aa4c04483f101ee",
+      "published_filename": "providers/streamzo--nuvio--4f51c919bfdba1ff.js",
+      "sha256": "4f51c919bfdba1ff7548bf77529310cfb2c263ee0af5c98fe791b87c894200d7",
+      "patched_sha256": "4f51c919bfdba1ff7548bf77529310cfb2c263ee0af5c98fe791b87c894200d7",
       "upstream_sha256": "5ee8d74abe45cd42b5f0a7a79f8807355dd46fde04a1b00e9d134c511b776c12",
       "local_patches": [
         "{'type': 'patch_script', 'path': 'scripts/provider_patches/stream_output_sanitizer.py', 'phase': 'discovery'}",
@@ -15453,7 +15554,19 @@
       "preserved_reason": "ci_uncertain_kept_last_published_artifact",
       "preserved_candidate_key": "published:streamzo",
       "preserved_candidate_sha256": "493f4301f237d1a0ff0d1c5b18e5d366bd9af4fc8f0358cb3aa4c04483f101ee",
-      "canonical_source_filename": "providers/streamzo--nuvio--5ee8d74abe45cd42.js"
+      "canonical_source_filename": "providers/streamzo--nuvio--5ee8d74abe45cd42.js",
+      "last_release_reconciliation": {
+        "release": "5.20.29",
+        "reason": "durable published override reconciliation",
+        "previous_filename": "providers/streamzo--desktop-runtime-v1--493f4301f237d1a0.js",
+        "effective_patch_records": [
+          {
+            "type": "patch_script",
+            "path": "scripts/provider_patches/desktop_runtime_compat_v1.py",
+            "phase": "discovery"
+          }
+        ]
+      }
     },
     "toflix": {
       "id": "toflix",
@@ -19447,9 +19560,9 @@
     },
     "wookafr": {
       "id": "wookafr",
-      "published_filename": "providers/wookafr--desktop-runtime-v1--054b693c64c21f01.js",
-      "sha256": "054b693c64c21f01a2d209f6bfca0010b34fc9c5ee3e55e49bc59ce3403be71b",
-      "patched_sha256": "054b693c64c21f01a2d209f6bfca0010b34fc9c5ee3e55e49bc59ce3403be71b",
+      "published_filename": "providers/wookafr--nuvio--9eb3bd2d23ad0fb7.js",
+      "sha256": "9eb3bd2d23ad0fb7d82ce4e48df4b87c3cbc4fad622e0e7e1ca4d8bc3a1f8002",
+      "patched_sha256": "9eb3bd2d23ad0fb7d82ce4e48df4b87c3cbc4fad622e0e7e1ca4d8bc3a1f8002",
       "upstream_sha256": "4ce4c33e2fe1d23bea7263bf07d4b760ec50169aa0c7b925a7103efc15271b67",
       "local_patches": [
         "scripts/provider_patches/desktop_runtime_compat_v1.py"
@@ -19667,7 +19780,19 @@
       "canonical_source_filename": "providers/wookafr--nuvio--4ce4c33e2fe1d23b.js",
       "preserved_reason": "ci_uncertain_kept_last_published_artifact",
       "preserved_candidate_key": "published:wookafr",
-      "preserved_candidate_sha256": "054b693c64c21f01a2d209f6bfca0010b34fc9c5ee3e55e49bc59ce3403be71b"
+      "preserved_candidate_sha256": "054b693c64c21f01a2d209f6bfca0010b34fc9c5ee3e55e49bc59ce3403be71b",
+      "last_release_reconciliation": {
+        "release": "5.20.29",
+        "reason": "durable published override reconciliation",
+        "previous_filename": "providers/wookafr--desktop-runtime-v1--054b693c64c21f01.js",
+        "effective_patch_records": [
+          {
+            "type": "patch_script",
+            "path": "scripts/provider_patches/desktop_runtime_compat_v1.py",
+            "phase": "discovery"
+          }
+        ]
+      }
     },
     "xpass": {
       "id": "xpass",
