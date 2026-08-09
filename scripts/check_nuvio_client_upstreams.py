@@ -4,10 +4,9 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import subprocess
 import sys
-import urllib.error
-import urllib.parse
-import urllib.request
+import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -16,7 +15,6 @@ ROOT = Path(__file__).resolve().parents[1]
 CONFIG_PATH = ROOT / "automation" / "nuvio-client-upstreams.json"
 PLATFORM_CONTRACTS = ROOT / "automation" / "platform-runtime-contracts.json"
 TV_CONTRACT = ROOT / "automation" / "nuvio-tv-runtime-contract.json"
-API_ROOT = "https://api.github.com"
 
 
 def load(path: Path) -> dict[str, Any]:
@@ -26,27 +24,19 @@ def load(path: Path) -> dict[str, Any]:
     return value
 
 
-def github_json(path: str) -> dict[str, Any]:
-    headers = {
-        "Accept": "application/vnd.github+json",
-        "User-Agent": "Niakvio-client-runtime-drift-guard",
-        "X-GitHub-Api-Version": "2022-11-28",
-    }
-    token = os.environ.get("GITHUB_TOKEN", "").strip()
-    if token:
-        headers["Authorization"] = f"Bearer {token}"
-    request = urllib.request.Request(API_ROOT + path, headers=headers)
-    try:
-        with urllib.request.urlopen(request, timeout=25) as response:
-            payload = json.loads(response.read().decode("utf-8"))
-    except urllib.error.HTTPError as error:
-        body = error.read().decode("utf-8", errors="replace")[:600]
-        raise RuntimeError(f"GitHub API HTTP {error.code} for {path}: {body}") from error
-    except Exception as error:
-        raise RuntimeError(f"GitHub API failure for {path}: {type(error).__name__}: {error}") from error
-    if not isinstance(payload, dict):
-        raise RuntimeError(f"GitHub API returned non-object for {path}")
-    return payload
+def run_git(args: list[str], *, cwd: Path | None = None, timeout: int = 45) -> str:
+    process = subprocess.run(
+        ["git", *args],
+        cwd=cwd,
+        capture_output=True,
+        text=True,
+        timeout=timeout,
+        check=False,
+    )
+    if process.returncode != 0:
+        stderr = process.stderr.strip()[-1200:]
+        raise RuntimeError(f"git {' '.join(args)} failed ({process.returncode}): {stderr}")
+    return process.stdout
 
 
 def is_sensitive(filename: str, rules: list[str]) -> bool:
@@ -100,7 +90,8 @@ def validate_config(config: dict[str, Any]) -> list[str]:
             continue
 
         matching = [
-            value for value in platform_clients.values()
+            value
+            for value in platform_clients.values()
             if isinstance(value, dict) and value.get("source_repository") == repository
         ]
         if not matching:
@@ -112,21 +103,74 @@ def validate_config(config: dict[str, Any]) -> list[str]:
     return errors
 
 
+def repo_url(repository: str) -> str:
+    return f"https://github.com/{repository}.git"
+
+
 def current_head(repository: str, branch: str) -> str:
-    repo = urllib.parse.quote(repository, safe="/")
-    ref = urllib.parse.quote(branch, safe="")
-    payload = github_json(f"/repos/{repo}/commits/{ref}")
-    sha = str(payload.get("sha") or "")
+    output = run_git(
+        ["ls-remote", "--heads", repo_url(repository), f"refs/heads/{branch}"],
+        timeout=30,
+    )
+    line = next((line for line in output.splitlines() if line.strip()), "")
+    sha = line.split("\t", 1)[0].strip() if line else ""
     if len(sha) != 40:
-        raise RuntimeError(f"{repository}@{branch}: GitHub returned invalid head SHA {sha!r}")
+        raise RuntimeError(f"{repository}@{branch}: could not resolve a full branch HEAD")
     return sha
 
 
 def compare(repository: str, base: str, head: str) -> dict[str, Any]:
-    repo = urllib.parse.quote(repository, safe="/")
-    base_ref = urllib.parse.quote(base, safe="")
-    head_ref = urllib.parse.quote(head, safe="")
-    return github_json(f"/repos/{repo}/compare/{base_ref}...{head_ref}")
+    with tempfile.TemporaryDirectory(prefix="niakvio-client-drift-") as tmp:
+        work = Path(tmp)
+        run_git(["init", "--quiet"], cwd=work)
+        run_git(["remote", "add", "origin", repo_url(repository)], cwd=work)
+        run_git(
+            [
+                "-c",
+                "protocol.version=2",
+                "fetch",
+                "--quiet",
+                "--no-tags",
+                "--filter=blob:none",
+                "--depth=1",
+                "origin",
+                base,
+            ],
+            cwd=work,
+            timeout=60,
+        )
+        base_sha = run_git(["rev-parse", "FETCH_HEAD"], cwd=work).strip()
+        run_git(["update-ref", "refs/niakvio/base", base_sha], cwd=work)
+        run_git(
+            [
+                "-c",
+                "protocol.version=2",
+                "fetch",
+                "--quiet",
+                "--no-tags",
+                "--filter=blob:none",
+                "--depth=1",
+                "origin",
+                head,
+            ],
+            cwd=work,
+            timeout=60,
+        )
+        head_sha = run_git(["rev-parse", "FETCH_HEAD"], cwd=work).strip()
+        run_git(["update-ref", "refs/niakvio/head", head_sha], cwd=work)
+        names = run_git(
+            ["diff", "--name-only", "refs/niakvio/base", "refs/niakvio/head"],
+            cwd=work,
+            timeout=30,
+        )
+    files = [name.strip() for name in names.splitlines() if name.strip()]
+    return {
+        "status": "tree_changed",
+        "ahead_by": None,
+        "behind_by": None,
+        "total_commits": None,
+        "files": [{"filename": name} for name in files],
+    }
 
 
 def inspect_client(key: str, row: dict[str, Any]) -> dict[str, Any]:
@@ -143,8 +187,6 @@ def inspect_client(key: str, row: dict[str, Any]) -> dict[str, Any]:
         "current_head": head,
         "platforms": row.get("platforms") or [],
         "status": "verified",
-        "ahead_by": 0,
-        "behind_by": 0,
         "changed_file_count": 0,
         "sensitive_changed_files": [],
         "unrelated_changed_files": [],
@@ -162,23 +204,17 @@ def inspect_client(key: str, row: dict[str, Any]) -> dict[str, Any]:
     ]
     sensitive = [name for name in files if is_sensitive(name, rules)]
     unrelated = [name for name in files if name not in sensitive]
-    ahead_by = int(comparison.get("ahead_by") or 0)
-    behind_by = int(comparison.get("behind_by") or 0)
-    truncated_risk = len(files) >= 300 or int(comparison.get("total_commits") or 0) >= 250
 
     result.update(
         {
             "compare_status": status,
-            "ahead_by": ahead_by,
-            "behind_by": behind_by,
             "changed_file_count": len(files),
             "sensitive_changed_files": sensitive,
             "unrelated_changed_files": unrelated,
-            "compare_truncation_risk": truncated_risk,
         }
     )
 
-    if status == "ahead" and not sensitive and not truncated_risk:
+    if status in {"ahead", "tree_changed"} and not sensitive:
         result["status"] = "advanced_unrelated"
         return result
 
@@ -187,12 +223,8 @@ def inspect_client(key: str, row: dict[str, Any]) -> dict[str, Any]:
     reasons: list[str] = []
     if sensitive:
         reasons.append("contract-sensitive paths changed")
-    if truncated_risk:
-        reasons.append("GitHub compare result may be truncated")
-    if status != "ahead":
+    if status not in {"ahead", "tree_changed"}:
         reasons.append(f"history status is {status}")
-    if behind_by:
-        reasons.append(f"verified history is behind/diverged by {behind_by}")
     result["reasons"] = reasons or ["unclassified client repository drift"]
     return result
 
@@ -204,10 +236,19 @@ def annotation(kind: str, title: str, message: str) -> None:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Check official Nuvio client repositories for runtime-contract drift.")
+    parser = argparse.ArgumentParser(
+        description="Check official Nuvio client repositories for runtime-contract drift."
+    )
     parser.add_argument("--config", default=str(CONFIG_PATH))
-    parser.add_argument("--output", default=str(ROOT / "health-output" / "nuvio-client-upstream-status.json"))
-    parser.add_argument("--no-fail", action="store_true", help="Report sensitive drift without a non-zero exit code.")
+    parser.add_argument(
+        "--output",
+        default=str(ROOT / "health-output" / "nuvio-client-upstream-status.json"),
+    )
+    parser.add_argument(
+        "--no-fail",
+        action="store_true",
+        help="Report sensitive drift without a non-zero exit code.",
+    )
     args = parser.parse_args()
 
     config_path = Path(args.config)
@@ -218,11 +259,14 @@ def main() -> int:
     if config_errors:
         for error in config_errors:
             annotation("error", "Nuvio client upstream configuration", error)
-        raise SystemExit("Nuvio client upstream configuration invalid:\n- " + "\n- ".join(config_errors))
+        raise SystemExit(
+            "Nuvio client upstream configuration invalid:\n- " + "\n- ".join(config_errors)
+        )
 
     report: dict[str, Any] = {
-        "schema_version": 1,
+        "schema_version": 2,
         "generated_at": datetime.now(timezone.utc).isoformat(),
+        "transport": "git-ls-remote-plus-partial-tree-diff",
         "policy": config.get("policy") or {},
         "clients": {},
         "review_required": [],
@@ -252,8 +296,7 @@ def main() -> int:
         elif status == "advanced_unrelated":
             report["advanced_unrelated"].append(key)
             print(
-                f"{key}: repository advanced by {result.get('ahead_by')} commit(s), "
-                "but no tracked runtime/plugin/player path changed"
+                f"{key}: repository advanced, but no tracked runtime/plugin/player path changed"
             )
             annotation(
                 "notice",
@@ -276,7 +319,10 @@ def main() -> int:
     if not output.is_absolute():
         output = ROOT / output
     output.parent.mkdir(parents=True, exist_ok=True)
-    output.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    output.write_text(
+        json.dumps(report, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
 
     print(
         "Nuvio client upstream drift check: "
