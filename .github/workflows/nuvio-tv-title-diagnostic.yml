@@ -1,0 +1,91 @@
+name: NuvioTV title diagnostic
+
+on:
+  push:
+    paths:
+      - .github/triggers/nuvio-tv-title-diagnostic
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: main
+          fetch-depth: 1
+
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: '24'
+          package-manager-cache: false
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Probe every enabled French movie provider on NuvioTV
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p health-output
+          python - <<'PY'
+          import json, subprocess
+          from pathlib import Path
+
+          manifest = json.loads(Path('manifest.json').read_text(encoding='utf-8'))
+          fixture = json.dumps({
+              'tmdbId': '842675',
+              'mediaType': 'movie',
+              'title': 'The Wandering Earth II',
+              'year': 2023,
+          }, separators=(',', ':'))
+          results = []
+          for row in manifest.get('scrapers', []):
+              if not isinstance(row, dict) or not row.get('enabled'):
+                  continue
+              types = {str(v).lower() for v in row.get('supportedTypes') or []}
+              langs = {str(v).lower() for v in row.get('contentLanguage') or []}
+              if 'movie' not in types or 'fr' not in langs:
+                  continue
+              provider_id = str(row.get('id') or '')
+              filename = str(row.get('filename') or '').removeprefix('../')
+              cmd = ['node', 'scripts/nuvio_tv_probe_v2.cjs', filename, fixture, '{}']
+              proc = subprocess.run(cmd, capture_output=True, text=True, timeout=90)
+              parsed = None
+              try:
+                  parsed = json.loads(proc.stdout.strip().splitlines()[-1]) if proc.stdout.strip() else None
+              except Exception:
+                  pass
+              entry = {
+                  'id': provider_id,
+                  'name': row.get('name'),
+                  'filename': filename,
+                  'exit_code': proc.returncode,
+                  'probe': parsed,
+                  'stderr': proc.stderr[-3000:],
+              }
+              results.append(entry)
+              probe = parsed or {}
+              print(f"{provider_id}: raw={probe.get('raw_stream_count')} playable={probe.get('playable_stream_count')} runtime_error={probe.get('runtime_error')} exit={proc.returncode}")
+              for stream in probe.get('streams') or []:
+                  media = stream.get('media') or {}
+                  try:
+                      host = __import__('urllib.parse').parse.urlsplit(str(media.get('url') or '')).hostname
+                  except Exception:
+                      host = None
+                  print(f"  host={host} status={media.get('status')} type={media.get('content_type')} extm3u={media.get('starts_extm3u')} kind={media.get('kind')} error={media.get('error')}")
+          Path('health-output/nuvio-tv-wandering-earth-ii.json').write_text(
+              json.dumps({'fixture': json.loads(fixture), 'providers': results}, ensure_ascii=False, indent=2) + '\n',
+              encoding='utf-8'
+          )
+          PY
+
+      - name: Upload diagnostic
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: nuvio-tv-wandering-earth-ii
+          path: health-output/nuvio-tv-wandering-earth-ii.json
+          retention-days: 2
