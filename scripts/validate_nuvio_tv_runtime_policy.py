@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 from typing import Any
 
@@ -9,6 +10,7 @@ ROOT = Path(__file__).resolve().parents[1]
 CONTRACT_PATH = ROOT / "automation" / "nuvio-tv-runtime-contract.json"
 MAIN_PATH = ROOT / "manifest.json"
 VF_PATH = ROOT / "vf" / "manifest.json"
+ALL_NON_TV_RUNTIME_BLOCKS = {"android", "ios", "desktop"}
 
 
 def load(path: Path) -> dict[str, Any]:
@@ -47,6 +49,23 @@ def report_has_playable_evidence(report: dict[str, Any]) -> bool:
     return False
 
 
+def strict_all_url_media_guard(text: str) -> bool:
+    if "NUVIO_STREAM_OUTPUT_SANITIZER" not in text:
+        return False
+    if '"probeAllUrls":true' not in text:
+        return False
+    match = re.search(r'"maxProbes":(\d+)', text)
+    return bool(match and int(match.group(1)) > 0)
+
+
+def platform_values(row: dict[str, Any], key: str) -> set[str]:
+    return {
+        str(value).strip().casefold()
+        for value in row.get(key) or []
+        if str(value).strip()
+    }
+
+
 def main() -> int:
     errors: list[str] = []
     contract = load(CONTRACT_PATH)
@@ -65,6 +84,12 @@ def main() -> int:
     expected_gate = {"hls-extm3u", "dash-mpd", "real-video-container-signature"}
     if set(contract.get("media_gate") or []) != expected_gate:
         errors.append("NuvioTV media gate mismatch")
+
+    filtering = contract.get("manifest_platform_filtering") or {}
+    if set(filtering.get("fields_parsed") or []) != {"supportedPlatforms", "disabledPlatforms"}:
+        errors.append("NuvioTV manifest platform-field contract mismatch")
+    if filtering.get("enforced_by_plugin_manager") is not False:
+        errors.append("NuvioTV platform filters must not be assumed enforced by PluginManager")
 
     addon = contract.get("separate_live_tv_addon") or {}
     if addon.get("enabled") is not True or addon.get("contract") != "stremio-addon-manifest-catalog-meta-stream":
@@ -155,6 +180,27 @@ def main() -> int:
         if vf_row is not None and normalized_provider_path(vf_row.get("filename")) != relative:
             errors.append(f"{provider_id}: main/VF NuvioTV bundle mismatch")
 
+    strict_guarded: list[str] = []
+    for provider_id, row in sorted(main_rows.items()):
+        if row.get("enabled") is not True:
+            continue
+        disabled = platform_values(row, "disabledPlatforms")
+        if not ALL_NON_TV_RUNTIME_BLOCKS.issubset(disabled):
+            continue
+        relative = normalized_provider_path(row.get("filename"))
+        provider_path = ROOT / relative
+        if not provider_path.is_file():
+            errors.append(f"{provider_id}: client-blocked provider bundle missing: {relative}")
+            continue
+        text = provider_path.read_text(encoding="utf-8", errors="replace")
+        if not strict_all_url_media_guard(text):
+            errors.append(
+                f"{provider_id}: blocked on android+ios+desktop but still reachable by NuvioTV; "
+                "bundle must probe every returned URL and reject non-media payloads"
+            )
+            continue
+        strict_guarded.append(provider_id)
+
     package = load(ROOT / "package.json")
     test_command = str((package.get("scripts") or {}).get("test") or "")
     if "validate_nuvio_tv_runtime_policy.py" not in test_command:
@@ -166,6 +212,7 @@ def main() -> int:
     print(
         "NuvioTV runtime policy validated: "
         f"published_tv={','.join(sorted(published_tv))}; "
+        f"strict_tv_guard={','.join(strict_guarded) or '-'}; "
         "contract=positional+SCRAPER_SETTINGS; media=HLS/DASH/container"
     )
     return 0
