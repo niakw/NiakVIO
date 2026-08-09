@@ -1,0 +1,128 @@
+name: Finalize Nuvio client runtime drift guard
+
+on:
+  push:
+    paths:
+      - .github/triggers/finalize-client-runtime-drift-guard
+
+permissions:
+  contents: write
+
+jobs:
+  finalize:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout exact main
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: '3.12'
+
+      - name: Set up Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: '24'
+          package-manager-cache: false
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Integrate permanent client-runtime drift guard
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          sync = Path('.github/workflows/sync.yml')
+          text = sync.read_text(encoding='utf-8')
+          if 'Guard official Nuvio client runtime contracts' not in text:
+              marker = '''      # Phase 0: repository safety. This does not decide provider activation.\n      - name: Run repository regression tests\n        run: npm test\n'''
+              replacement = '''      # Phase 0: repository safety. This does not decide provider activation.\n      - name: Guard official Nuvio client runtime contracts\n        env:\n          GITHUB_TOKEN: ${{ github.token }}\n        run: python scripts/check_nuvio_client_upstreams.py --output health-output/nuvio-client-upstream-status.json\n\n      - name: Upload Nuvio client drift report if publication is blocked\n        if: failure()\n        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a\n        with:\n          name: nuvio-client-runtime-drift-${{ github.run_id }}\n          path: health-output/nuvio-client-upstream-status.json\n          retention-days: 7\n          if-no-files-found: warn\n\n      - name: Run repository regression tests\n        run: npm test\n'''
+              if marker not in text:
+                  raise SystemExit('sync.yml phase-0 marker not found')
+              text = text.replace(marker, replacement, 1)
+          artifact_marker = '''            health-output/repair-report.json\n            provider-overrides.json\n'''
+          if 'health-output/nuvio-client-upstream-status.json' not in text:
+              if artifact_marker not in text:
+                  raise SystemExit('sync.yml artifact marker not found')
+              text = text.replace(
+                  artifact_marker,
+                  '''            health-output/repair-report.json\n            health-output/nuvio-client-upstream-status.json\n            provider-overrides.json\n''',
+                  1,
+              )
+          sync.write_text(text, encoding='utf-8')
+
+          package_path = Path('package.json')
+          package = json.loads(package_path.read_text(encoding='utf-8'))
+          command = package['scripts']['test']
+          test = 'python3 tests/nuvio_client_upstream_drift_guard_test.py'
+          if test not in command:
+              anchor = 'python3 tests/platform_filter_semantics_test.py'
+              if anchor not in command:
+                  raise SystemExit('package.json test anchor not found')
+              command = command.replace(anchor, anchor + ' && ' + test, 1)
+              package['scripts']['test'] = command
+              package_path.write_text(json.dumps(package, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+
+          readme = Path('README.md')
+          rtext = readme.read_text(encoding='utf-8')
+          if '## Suivi des dépôts clients Nuvio' not in rtext:
+              marker = '---\n\n## Rapports et fichiers utiles\n'
+              section = '''---\n\n## Suivi des dépôts clients Nuvio\n\nLa compatibilité n’est pas supposée stable uniquement parce que les providers amont n’ont pas changé. Niakvio conserve aussi le commit officiel audité pour **NuvioMobile**, **NuvioDesktop** et **NuvioTV**.\n\nAvant les audits providers, le pipeline compare ces références avec les branches officielles courantes. Une évolution du dépôt sans impact sur les chemins runtime surveillés est signalée sans bloquer. Une modification touchant le runtime plugin, le parser de manifest, le repository de streams, les plateformes, le lecteur ou leurs dépendances sensibles bloque la publication jusqu’à réaudit du nouveau contrat.\n\n| Ressource | Rôle |\n|---|---|\n| [`automation/nuvio-client-upstreams.json`](automation/nuvio-client-upstreams.json) | Dépôts, branches, commits audités et chemins sensibles |\n| [`scripts/check_nuvio_client_upstreams.py`](scripts/check_nuvio_client_upstreams.py) | Comparaison avec les dépôts officiels et décision de drift |\n| [`tests/nuvio_client_upstream_drift_guard_test.py`](tests/nuvio_client_upstream_drift_guard_test.py) | Non-régression des décisions de blocage |\n\nLe commit audité reste volontairement épinglé tant que le nouveau runtime n’a pas été vérifié : un simple changement de HEAD ne devient jamais automatiquement une nouvelle preuve de compatibilité.\n\n---\n\n## Rapports et fichiers utiles\n'''
+              if marker not in rtext:
+                  raise SystemExit('README insertion marker not found')
+              rtext = rtext.replace(marker, section, 1)
+              readme.write_text(rtext, encoding='utf-8')
+          PY
+
+      - name: Remove finite instrumentation
+        run: |
+          rm -f .github/workflows/finalize-client-runtime-drift-guard.yml
+          rm -f .github/triggers/finalize-client-runtime-drift-guard
+
+      - name: Validate current official client baselines and complete repository
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          python tests/nuvio_client_upstream_drift_guard_test.py
+          python scripts/check_nuvio_client_upstreams.py --output health-output/nuvio-client-upstream-status.json
+          npm test
+          python scripts/generate_release_hashes.py
+          python scripts/validate_release_integrity.py
+          git diff --check
+
+      - name: Commit client-runtime drift guard
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "feat: guard Niakvio against Nuvio client runtime drift"
+          for attempt in 1 2 3 4 5; do
+            git fetch origin main
+            if git rebase origin/main && git push origin HEAD:main; then
+              exit 0
+            fi
+            git rebase --abort || true
+            sleep $((attempt * 2))
+          done
+          exit 1
+
+      - name: Verify exact published main
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          git fetch origin main
+          git reset --hard origin/main
+          npm ci --ignore-scripts --no-audit --no-fund
+          python scripts/check_nuvio_client_upstreams.py --output health-output/nuvio-client-upstream-status.json
+          npm test
+          python scripts/generate_release_hashes.py
+          python scripts/validate_release_integrity.py
+          git diff --exit-code
