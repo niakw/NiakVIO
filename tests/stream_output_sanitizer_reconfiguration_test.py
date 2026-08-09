@@ -15,23 +15,22 @@ spec.loader.exec_module(module)
 
 def main() -> int:
     source = "module.exports={getStreams:async function(){return [];}};\n"
-    first = module.apply(
-        source,
-        options={
-            "probe_direct_media": False,
-            "probe_all_urls": False,
-            "max_probes": 0,
-        },
-    )
-    second = module.apply(
-        first,
-        options={
-            "probe_direct_media": True,
-            "probe_all_urls": True,
-            "max_probes": 8,
-            "blocked_path_patterns": ["/wp-admin/", "/wp-json/"],
-        },
-    )
+    initial_options = {
+        "probe_direct_media": False,
+        "probe_all_urls": False,
+        "max_probes": 0,
+    }
+    first = module.apply(source, options=initial_options)
+    assert module.apply(first, options=initial_options) == first
+
+    strict_options = {
+        "probe_direct_media": True,
+        "probe_all_urls": True,
+        "max_probes": 8,
+        "blocked_path_patterns": ["/wp-admin/", "/wp-json/"],
+    }
+    second = module.apply(first, options=strict_options)
+    assert module.apply(second, options=strict_options) == second
 
     assert second.count("/* NUVIO_STREAM_OUTPUT_SANITIZER_V4:") == 1
     assert second.count("/* NUVIO_STREAM_OUTPUT_SANITIZER_UTF8_BOM_V5 */") == 1
