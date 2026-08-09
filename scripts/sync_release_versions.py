@@ -4,8 +4,11 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import pathlib
 import re
+import subprocess
+import sys
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 SEMVER = re.compile(r"^\d+\.\d+\.\d+$")
@@ -17,6 +20,44 @@ def load(path: pathlib.Path) -> dict:
 
 def dump(path: pathlib.Path, payload: dict) -> None:
     path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+
+def auto_accept_safe_nuvio_client_heads() -> None:
+    """Persist only client HEAD advances proven not to alter the tracked runtime contract.
+
+    The exact audited contract refs remain pinned in the contract registry. The
+    latest contract-safe official client HEAD is recorded separately in
+    sources.json so future checks are incremental. Real contract drift still
+    stops publication.
+    """
+    if os.environ.get("GITHUB_ACTIONS") != "true":
+        return
+    if os.environ.get("NUVIO_SKIP_CLIENT_UPSTREAM_GUARD") == "1":
+        print("Nuvio client safe auto-advance skipped explicitly")
+        return
+    guard = ROOT / "scripts" / "check_nuvio_client_upstreams.py"
+    config = ROOT / "automation" / "nuvio-client-upstreams.json"
+    sources = ROOT / "sources.json"
+    if not guard.is_file() or not config.is_file() or not sources.is_file():
+        return
+    output = ROOT / "health-output" / "nuvio-client-upstream-status.json"
+    process = subprocess.run(
+        [
+            sys.executable,
+            str(guard),
+            "--config",
+            str(config),
+            "--sources",
+            str(sources),
+            "--output",
+            str(output),
+            "--apply-safe-advance",
+        ],
+        cwd=ROOT,
+        check=False,
+    )
+    if process.returncode != 0:
+        raise SystemExit(process.returncode)
 
 
 def apply_client_activation_ids() -> None:
@@ -69,6 +110,11 @@ def main() -> int:
     package["version"] = version
     dump(package_path, package)
     sync_npm_lockfile(version)
+
+    # This is intentionally inside the write-enabled release synchronizer rather
+    # than the report-only CI guard. Safe client advances therefore become
+    # durable automatically on deep publication, while contract drift aborts.
+    auto_accept_safe_nuvio_client_heads()
 
     sources_path = ROOT / "sources.json"
     sources = load(sources_path)
