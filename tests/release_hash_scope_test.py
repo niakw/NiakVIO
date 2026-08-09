@@ -16,6 +16,9 @@ assert "availability-history.json" in module.IGNORED_FILES
 assert "availability-report.json" in module.IGNORED_FILES
 assert "automation/platform-runtime-contracts.json" in module.CORE_FILES
 assert "automation/nuvio-tv-runtime-contract.json" in module.CORE_FILES
+assert "automation/nuvio-client-upstreams.json" in module.CORE_FILES
+assert "scripts/check_nuvio_client_upstreams.py" in module.CORE_FILES
+assert "scripts/sync_release_versions.py" in module.CORE_FILES
 assert "scripts/validate_platform_runtime_policy.py" in module.CORE_FILES
 assert "scripts/validate_nuvio_tv_runtime_policy.py" in module.CORE_FILES
 assert "scripts/apply_provider_overrides.py" in module.CORE_FILES
