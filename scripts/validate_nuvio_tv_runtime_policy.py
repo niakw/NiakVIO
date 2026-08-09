@@ -11,6 +11,15 @@ CONTRACT_PATH = ROOT / "automation" / "nuvio-tv-runtime-contract.json"
 MAIN_PATH = ROOT / "manifest.json"
 VF_PATH = ROOT / "vf" / "manifest.json"
 ALL_NON_TV_RUNTIME_BLOCKS = {"android", "ios", "desktop"}
+COFLIX_REQUIRED_RUNTIME_MARKERS = {
+    "NUVIO_TV_TARGET_MEDIA_V3",
+    "NUVIO_TARGET_MEDIA_HOST_FILTER_V4",
+    "NUVIO_STREAM_OUTPUT_SANITIZER",
+    '"probeAllUrls":true',
+    "/wp-admin/",
+    "/wp-json/",
+    "/wp-content/plugins/ajax-search-lite/",
+}
 
 
 def load(path: Path) -> dict[str, Any]:
@@ -199,6 +208,13 @@ def main() -> int:
                 "bundle must probe every returned URL and reject non-media payloads"
             )
             continue
+        if provider_id == "coflix":
+            missing = sorted(marker for marker in COFLIX_REQUIRED_RUNTIME_MARKERS if marker not in text)
+            if missing:
+                errors.append(
+                    "coflix: NuvioTV safety chain incomplete; missing " + ", ".join(missing)
+                )
+                continue
         strict_guarded.append(provider_id)
 
     package = load(ROOT / "package.json")
