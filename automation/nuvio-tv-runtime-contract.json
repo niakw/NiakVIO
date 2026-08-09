@@ -1,9 +1,16 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "client": "NuvioTV",
   "platform": "android-tv",
   "integration": "plugin-provider-repository",
   "runtime_contract": "getStreams(tmdbId, mediaType, season, episode) plus global SCRAPER_SETTINGS",
+  "source_repository": "NuvioMedia/NuvioTV",
+  "source_branch": "dev",
+  "source_ref": "062b6e0306969d600be229fd89650443b2e23c55",
+  "runtime_source": "app/src/full/java/com/nuvio/tv/core/plugin/PluginRuntime.kt",
+  "settings_source": "app/src/main/java/com/nuvio/tv/data/local/PluginDataStore.kt",
+  "stream_repository_source": "app/src/main/java/com/nuvio/tv/data/repository/StreamRepositoryImpl.kt",
+  "player_source_prefix": "app/src/main/java/com/nuvio/tv/ui/screens/player/",
   "probe": "scripts/nuvio_tv_probe_v2.cjs",
   "promoter": "scripts/promote_global_nuvio_tv_candidates.py",
   "direct_media_patch": "scripts/provider_patches/nuvio_tv_direct_media_v2.py",
@@ -21,6 +28,7 @@
   },
   "notes": [
     "NuvioTV provider compatibility is a distinct runtime family from Nuvio Mobile and Nuvio Desktop.",
+    "The source_ref is the exact official NuvioTV commit most recently audited against this contract.",
     "A zero-stream result is not by itself proof of incompatibility.",
     "Promoted direct-media wrappers require strict HLS, DASH or real container evidence."
   ]
