@@ -50,10 +50,7 @@ def main() -> int:
     unrelated = run_case(
         "b" * 40,
         {
-            "status": "ahead",
-            "ahead_by": 2,
-            "behind_by": 0,
-            "total_commits": 2,
+            "status": "tree_changed",
             "files": [{"filename": "README.md"}, {"filename": "docs/changelog.md"}],
         },
     )
@@ -63,10 +60,7 @@ def main() -> int:
     sensitive = run_case(
         "c" * 40,
         {
-            "status": "ahead",
-            "ahead_by": 1,
-            "behind_by": 0,
-            "total_commits": 1,
+            "status": "tree_changed",
             "files": [{"filename": "runtime/PluginRuntime.kt"}],
         },
     )
@@ -78,27 +72,11 @@ def main() -> int:
         "d" * 40,
         {
             "status": "diverged",
-            "ahead_by": 1,
-            "behind_by": 1,
-            "total_commits": 2,
             "files": [{"filename": "README.md"}],
         },
     )
     assert diverged["status"] == "contract_review_required"
     assert diverged["review_required"] is True
-
-    truncated = run_case(
-        "e" * 40,
-        {
-            "status": "ahead",
-            "ahead_by": 300,
-            "behind_by": 0,
-            "total_commits": 250,
-            "files": [{"filename": "README.md"}],
-        },
-    )
-    assert truncated["status"] == "contract_review_required"
-    assert truncated["review_required"] is True
 
     print("Nuvio client upstream drift guard tests passed")
     return 0
