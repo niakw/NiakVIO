@@ -15,7 +15,13 @@ spec.loader.exec_module(module)
 assert "availability-history.json" in module.IGNORED_FILES
 assert "availability-report.json" in module.IGNORED_FILES
 assert "automation/platform-runtime-contracts.json" in module.CORE_FILES
+assert "automation/nuvio-tv-runtime-contract.json" in module.CORE_FILES
 assert "scripts/validate_platform_runtime_policy.py" in module.CORE_FILES
+assert "scripts/validate_nuvio_tv_runtime_policy.py" in module.CORE_FILES
+assert "scripts/apply_provider_overrides.py" in module.CORE_FILES
+assert "scripts/reapply_published_overrides.py" in module.CORE_FILES
+assert "scripts/provider_patches/vf_catalogue_recovery.py" in module.CORE_FILES
+assert "scripts/provider_patches/stream_output_sanitizer_v5.py" in module.CORE_FILES
 assert "automation/platform-runtime-matrix.json" in module.OPTIONAL_CORE_FILES
 assert "automation/platform-runtime-policy.json" in module.OPTIONAL_CORE_FILES
 
