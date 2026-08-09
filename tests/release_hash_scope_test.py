@@ -22,6 +22,10 @@ assert "scripts/apply_provider_overrides.py" in module.CORE_FILES
 assert "scripts/reapply_published_overrides.py" in module.CORE_FILES
 assert "scripts/provider_patches/vf_catalogue_recovery.py" in module.CORE_FILES
 assert "scripts/provider_patches/stream_output_sanitizer_v5.py" in module.CORE_FILES
+assert "scripts/provider_patches/nuvio_tv_target_media_v3.py" in module.CORE_FILES
+assert "scripts/provider_patches/nuvio_tv_target_media_v4.py" in module.CORE_FILES
+assert "scripts/provider_patches/expose_strict_wrapper_original.py" in module.CORE_FILES
+assert "scripts/provider_patches/target_media_host_filter_v4.py" in module.CORE_FILES
 assert "automation/platform-runtime-matrix.json" in module.OPTIONAL_CORE_FILES
 assert "automation/platform-runtime-policy.json" in module.OPTIONAL_CORE_FILES
 
