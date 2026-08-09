@@ -8,7 +8,8 @@ reader case where an UTF-8 BOM (EF BB BF) becomes the mojibake string ï»¿ bef
 
 Reapplication is deliberately supported: durable provider overrides may change
 probe policy later. A stale V5 marker must therefore never cause a newly
-regenerated V4 wrapper to skip the V5 normalization step.
+regenerated V4 wrapper to skip the V5 normalization step, while an unchanged
+configuration must remain byte-for-byte idempotent.
 """
 from __future__ import annotations
 
@@ -35,13 +36,18 @@ BASE_APPLY = _load_base_apply()
 
 
 def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> str:
-    # Remove an old standalone V5 marker before regenerating the configurable
-    # V4 body. Otherwise BASE_APPLY can replace the V4 wrapper while leaving
-    # this marker behind, making V5 incorrectly believe the new body is already
-    # BOM-normalized.
-    clean = text.replace(MARKER_COMMENT, "").rstrip()
-    patched = BASE_APPLY(clean, options=options, **kwargs)
+    # Let V4 decide first. If its content-addressed configuration marker already
+    # matches, it returns the original text untouched. In that common case an
+    # existing V5 marker proves this exact wrapper was already normalized, so
+    # preserve the bytes exactly instead of moving the marker to the file tail.
+    patched = BASE_APPLY(text, options=options, **kwargs)
+    if patched == text and MARKER_COMMENT in text:
+        return text
 
+    # When V4 really regenerated its wrapper, an older standalone V5 marker may
+    # survive outside the replaced V4 block. Remove only that marker, normalize
+    # the newly generated wrapper, then append one canonical V5 marker.
+    patched = patched.replace(MARKER_COMMENT, "").rstrip()
     source = 'replace(/^\\uFEFF/,"").trimStart()'
     target = 'replace(/^(?:\\uFEFF|\\u00EF\\u00BB\\u00BF)/,"").trimStart()'
     if target not in patched:
