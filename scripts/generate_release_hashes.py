@@ -44,6 +44,7 @@ CORE_FILES = [
     "scripts/validate_platform_runtime_policy.py",
     "scripts/validate_nuvio_tv_runtime_policy.py",
     "scripts/check_nuvio_client_upstreams.py",
+    "scripts/sync_release_versions.py",
     "scripts/nuvio_tv_probe_v2.cjs",
     "scripts/promote_global_nuvio_tv_candidates.py",
     "scripts/provider_patches/nuvio_tv_direct_media_v2.py",
@@ -114,7 +115,7 @@ def main() -> int:
     (ROOT / "FILE-HASHES.json").write_text(
         json.dumps(
             {
-                "schema_version": 77,
+                "schema_version": 78,
                 "release": version,
                 "algorithm": "sha256",
                 "excluded_generated_files": sorted(GENERATED),
