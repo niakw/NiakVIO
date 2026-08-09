@@ -1,0 +1,67 @@
+{
+  "schema_version": 1,
+  "policy": {
+    "unrelated_repo_advance": "allow",
+    "contract_sensitive_change": "block-publication-until-runtime-reaudit",
+    "history_divergence": "block-publication-until-runtime-reaudit",
+    "network_verification_failure": "block-publication"
+  },
+  "clients": {
+    "nuvio-mobile": {
+      "repository": "NuvioMedia/NuvioMobile",
+      "branch": "cmp-rewrite",
+      "verified_ref": "ca7e54a4cc33c05334bb55f9ca61aec7c43ce7e4",
+      "platforms": ["android", "ios"],
+      "contract": "automation/platform-runtime-contracts.json",
+      "sensitive_paths": [
+        "composeApp/src/fullCommonMain/kotlin/com/nuvio/app/features/plugins/",
+        "composeApp/src/commonMain/kotlin/com/nuvio/app/features/plugins/",
+        "composeApp/src/androidFull/kotlin/com/nuvio/app/features/plugins/",
+        "composeApp/src/iosFull/kotlin/com/nuvio/app/features/plugins/",
+        "composeApp/src/androidPlaystore/kotlin/com/nuvio/app/features/plugins/",
+        "composeApp/src/iosAppStore/kotlin/com/nuvio/app/features/plugins/",
+        "composeApp/src/commonMain/kotlin/com/nuvio/app/features/streams/",
+        "composeApp/src/commonMain/kotlin/com/nuvio/app/features/player/",
+        "composeApp/src/androidFull/kotlin/com/nuvio/app/features/player/",
+        "composeApp/src/iosFull/kotlin/com/nuvio/app/features/player/",
+        "composeApp/build.gradle.kts",
+        "gradle/libs.versions.toml"
+      ]
+    },
+    "nuvio-desktop": {
+      "repository": "NuvioMedia/NuvioDesktop",
+      "branch": "Dev",
+      "verified_ref": "d6ad8788b106ea5e8efc6dce2c4bdae01a88c036",
+      "platforms": ["windows", "macos", "linux"],
+      "contract": "automation/platform-runtime-contracts.json",
+      "sensitive_paths": [
+        "composeApp/src/fullCommonMain/kotlin/com/nuvio/app/features/plugins/",
+        "composeApp/src/commonMain/kotlin/com/nuvio/app/features/plugins/",
+        "composeApp/src/desktopMain/kotlin/com/nuvio/app/features/plugins/",
+        "composeApp/src/commonMain/kotlin/com/nuvio/app/features/streams/",
+        "composeApp/src/commonMain/kotlin/com/nuvio/app/features/player/",
+        "composeApp/src/desktopMain/kotlin/com/nuvio/app/features/player/",
+        "composeApp/build.gradle.kts",
+        "gradle/libs.versions.toml"
+      ]
+    },
+    "nuvio-tv": {
+      "repository": "NuvioMedia/NuvioTV",
+      "branch": "dev",
+      "verified_ref": "062b6e0306969d600be229fd89650443b2e23c55",
+      "platforms": ["android-tv"],
+      "contract": "automation/nuvio-tv-runtime-contract.json",
+      "sensitive_paths": [
+        "app/src/full/java/com/nuvio/tv/core/plugin/",
+        "app/src/main/java/com/nuvio/tv/data/local/PluginDataStore.kt",
+        "app/src/main/java/com/nuvio/tv/data/remote/api/AddonApi.kt",
+        "app/src/main/java/com/nuvio/tv/data/repository/StreamRepositoryImpl.kt",
+        "app/src/main/java/com/nuvio/tv/domain/repository/StreamRepository.kt",
+        "app/src/main/java/com/nuvio/tv/core/player/",
+        "app/src/main/java/com/nuvio/tv/ui/screens/player/",
+        "app/build.gradle.kts",
+        "gradle/libs.versions.toml"
+      ]
+    }
+  }
+}
