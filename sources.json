@@ -157,5 +157,48 @@
     "no_provider_specific_activation_exception": true,
     "manifest_version_bumps_when_payload_changes": true
   },
-  "manifest_version": "5.20.29"
+  "manifest_version": "5.20.29",
+  "nuvio_client_compatibility": {
+    "schema_version": 1,
+    "policy": "accepted_ref may advance automatically only when hard and semantic runtime contract checks remain unchanged",
+    "clients": {
+      "nuvio-mobile": {
+        "contract_ref": "ca7e54a4cc33c05334bb55f9ca61aec7c43ce7e4",
+        "accepted_ref": "a57f5e18729f55b79d448d85768816e20b4344ff",
+        "accepted_at": "2026-08-09T16:13:00.770637+00:00",
+        "acceptance": "automatic-contract-safe-advance",
+        "changed_file_count": 15,
+        "observed_sensitive_changed_files": [],
+        "unrelated_changed_files": [
+          "composeApp/src/commonMain/kotlin/com/nuvio/app/App.kt",
+          "composeApp/src/commonMain/kotlin/com/nuvio/app/features/trakt/TraktAuthRepository.kt",
+          "composeApp/src/commonMain/kotlin/com/nuvio/app/features/trakt/TraktProgressRepository.kt",
+          "composeApp/src/commonMain/kotlin/com/nuvio/app/features/trakt/TraktWatchedShowSnapshotRepository.kt",
+          "composeApp/src/commonMain/kotlin/com/nuvio/app/features/watched/StoredWatchedPayload.kt",
+          "composeApp/src/commonMain/kotlin/com/nuvio/app/features/watched/WatchedBadgeBulkResolver.kt",
+          "composeApp/src/commonMain/kotlin/com/nuvio/app/features/watched/WatchedItemsStore.kt",
+          "composeApp/src/commonMain/kotlin/com/nuvio/app/features/watched/WatchedRepository.kt",
+          "composeApp/src/commonMain/kotlin/com/nuvio/app/features/watching/sync/TraktWatchedSyncAdapter.kt",
+          "composeApp/src/commonTest/kotlin/com/nuvio/app/features/trakt/TraktWatchedShowSnapshotRepositoryTest.kt",
+          "composeApp/src/commonTest/kotlin/com/nuvio/app/features/watched/StoredWatchedPayloadTest.kt",
+          "composeApp/src/commonTest/kotlin/com/nuvio/app/features/watched/WatchedItemsStoreTest.kt",
+          "composeApp/src/commonTest/kotlin/com/nuvio/app/features/watched/WatchedRepositoryTest.kt",
+          "composeApp/src/commonTest/kotlin/com/nuvio/app/features/watching/sync/TraktWatchedSyncAdapterTest.kt",
+          "iosApp/Configuration/Version.xcconfig"
+        ]
+      },
+      "nuvio-desktop": {
+        "contract_ref": "7dd2adb0f326781f7f45ff2369f1ba2e958bb173",
+        "accepted_ref": "7dd2adb0f326781f7f45ff2369f1ba2e958bb173",
+        "accepted_at": "2026-08-09T16:13:00.770637+00:00",
+        "acceptance": "contract-audited-baseline"
+      },
+      "nuvio-tv": {
+        "contract_ref": "062b6e0306969d600be229fd89650443b2e23c55",
+        "accepted_ref": "062b6e0306969d600be229fd89650443b2e23c55",
+        "accepted_at": "2026-08-09T16:13:00.770637+00:00",
+        "acceptance": "contract-audited-baseline"
+      }
+    }
+  }
 }
