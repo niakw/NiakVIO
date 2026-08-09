@@ -44,7 +44,10 @@ function detailPage(fixture) {
   return `<!doctype html><h1>${fixture.title}</h1><section id="player" data-embed="${externalPlayer}/${fixture.id}"></section>`;
 }
 function hlsBody() {
-  return '\uFEFF  #EXTM3U\n#EXT-X-VERSION:3\n#EXT-X-TARGETDURATION:10\n#EXTINF:10.0,\nsegment-1.ts\n#EXTINF:10.0,\nsegment-2.ts\n#EXT-X-ENDLIST\n';
+  // Keep the synthetic VOD above the 60-second short-preview rejection floor.
+  return '\uFEFF  #EXTM3U\n#EXT-X-VERSION:3\n#EXT-X-TARGETDURATION:10\n' +
+    Array.from({ length: 7 }, (_, index) => `#EXTINF:10.0,\nsegment-${index + 1}.ts\n`).join('') +
+    '#EXT-X-ENDLIST\n';
 }
 
 global.fetch = async (input) => {
@@ -116,7 +119,7 @@ function assertSafeRows(id, fixtureId, rows, kind) {
     const tvRows = await provider.getStreams(tvFixture.id, 'tv', tvFixture.season, tvFixture.episode, {});
     assertSafeRows(id, tvFixture.id, tvRows, 'TV');
   }
-  console.log('VF catalogue recovery tests passed with content-proven HLS (Interstellar + Guardians Vol. 3 + Arcane S01E01)');
+  console.log('VF catalogue recovery tests passed with content-proven non-preview HLS (Interstellar + Guardians Vol. 3 + Arcane S01E01)');
 })().catch((error) => {
   console.error(error);
   process.exit(1);
