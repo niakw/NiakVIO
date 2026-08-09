@@ -10,6 +10,7 @@ import tempfile
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 script_path = ROOT / "scripts" / "sync_release_versions.py"
 workflow = (ROOT / ".github/workflows/sync.yml").read_text(encoding="utf-8")
+script_source = script_path.read_text(encoding="utf-8")
 assert "python scripts/sync_release_versions.py --manifest manifest.json" in workflow
 assert "python scripts/validate_activation_preservation.py" in workflow
 assert "python scripts/validate_language_projection.py" in workflow
@@ -19,6 +20,9 @@ assert "git add manifest.json vf/manifest.json package.json package-lock.json so
 assert "Verify exact published main after push" in workflow
 assert "final published release version synchronization passed" in workflow
 assert "git diff --exit-code" in workflow
+assert "auto_accept_safe_nuvio_client_heads()" in script_source
+assert 'os.environ.get("GITHUB_ACTIONS") != "true"' in script_source
+assert '"--apply-safe-advance"' in script_source
 
 with tempfile.TemporaryDirectory() as tmp:
     root = pathlib.Path(tmp)
@@ -44,7 +48,7 @@ with tempfile.TemporaryDirectory() as tmp:
             }
         )
     )
-    script = script_path.read_text(encoding="utf-8").replace(
+    script = script_source.replace(
         "ROOT = pathlib.Path(__file__).resolve().parents[1]",
         f"ROOT = pathlib.Path({str(root)!r})",
     )
@@ -62,5 +66,6 @@ with tempfile.TemporaryDirectory() as tmp:
     assert sources["manifest_version"] == "9.8.7"
     assert sources["repository"]["manifest_version"] == "9.8.7"
     assert sources["repository"]["version"] == "9.8.7"
+    assert "nuvio_client_compatibility" not in sources
 
 print("release version synchronization test passed")
