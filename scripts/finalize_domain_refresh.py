@@ -52,6 +52,27 @@ def payload_without_release_version(manifest: dict[str, Any]) -> dict[str, Any]:
     return value
 
 
+def sync_package_lock_version(release: str) -> None:
+    """Keep npm's root lock metadata on the exact published release.
+
+    Domain refreshes can bump the release without running the deep publication
+    synchronizer. npm therefore needs both package-lock.json version fields
+    updated in the same transaction as package.json; otherwise the next strict
+    release-version check sees a split-brain release.
+    """
+    lock_path = ROOT / "package-lock.json"
+    if not lock_path.exists():
+        return
+    lock = load(lock_path)
+    lock["version"] = release
+    packages = lock.get("packages")
+    if isinstance(packages, dict):
+        root_package = packages.get("")
+        if isinstance(root_package, dict):
+            root_package["version"] = release
+    dump(lock_path, lock)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--before-manifest", required=True, type=Path)
@@ -101,6 +122,7 @@ def main() -> int:
     package = load(package_path)
     package["version"] = release
     dump(package_path, package)
+    sync_package_lock_version(release)
 
     sources_path = ROOT / "sources.json"
     sources = load(sources_path)
