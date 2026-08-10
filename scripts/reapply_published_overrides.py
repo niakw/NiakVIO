@@ -79,10 +79,12 @@ def validate_artifact(data: bytes) -> None:
 
 
 def published_name(provider_id: str, old_path: Path, digest: str, changed: bool) -> str:
+    # Keep the artifact's source/lineage token stable when a local override is
+    # reapplied. Provenance records the local patch separately; rewriting the
+    # source token to generic ``nuvio`` erases meaningful identities such as
+    # ``nuvio-tv-global`` and makes platform promotion metadata brittle.
     parts = old_path.stem.split("--")
     source = parts[-2] if len(parts) >= 3 else "nuvio"
-    if changed:
-        source = "nuvio"
     return f"{safe_fragment(provider_id.casefold())}--{safe_fragment(source)}--{digest[:16]}.js"
 
 
@@ -176,7 +178,6 @@ def main() -> int:
                 continue
             row["published_filename"] = update["new"]
             row["sha256"] = update["sha256"]
-            # patched_sha256 describes the exact repository-published bytes.
             if "patched_sha256" in row or update["records"]:
                 row["patched_sha256"] = update["sha256"]
             if update["records"]:
@@ -218,10 +219,6 @@ def main() -> int:
     if provenance is not None:
         write_json(PROVENANCE, provenance)
 
-    # Do not unlink superseded files here. prune_unreferenced_providers.py is
-    # the single cleanup authority because it also retains canonical/published
-    # provenance and LKG dependencies. Deleting first can create a dangling
-    # provenance reference and makes the subsequent prune correctly abort.
     referenced = {new for _old, new in updates.values()}
     deferred = sum(
         1
