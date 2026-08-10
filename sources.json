@@ -164,24 +164,34 @@
     "clients": {
       "nuvio-mobile": {
         "contract_ref": "ca7e54a4cc33c05334bb55f9ca61aec7c43ce7e4",
-        "accepted_ref": "a57f5e18729f55b79d448d85768816e20b4344ff",
-        "accepted_at": "2026-08-09T16:13:00.770637+00:00",
+        "accepted_ref": "f9ad843b14cd3be7fa3ddb800b6961233e0e5b56",
+        "accepted_at": "2026-08-10T08:51:47.460181+00:00",
         "acceptance": "automatic-contract-safe-advance",
-        "changed_file_count": 15,
-        "observed_sensitive_changed_files": [],
+        "changed_file_count": 24,
+        "observed_sensitive_changed_files": [
+          "composeApp/src/androidMain/kotlin/com/nuvio/app/features/player/PlayerSettingsStorage.android.kt",
+          "composeApp/src/commonMain/kotlin/com/nuvio/app/features/player/PlayerNextEpisodeAutoPlay.kt",
+          "composeApp/src/commonMain/kotlin/com/nuvio/app/features/player/PlayerSettingsRepository.kt",
+          "composeApp/src/commonMain/kotlin/com/nuvio/app/features/player/PlayerSettingsStorage.kt",
+          "composeApp/src/iosMain/kotlin/com/nuvio/app/features/player/PlayerSettingsStorage.ios.kt"
+        ],
         "unrelated_changed_files": [
-          "composeApp/src/commonMain/kotlin/com/nuvio/app/App.kt",
-          "composeApp/src/commonMain/kotlin/com/nuvio/app/features/trakt/TraktAuthRepository.kt",
-          "composeApp/src/commonMain/kotlin/com/nuvio/app/features/trakt/TraktProgressRepository.kt",
-          "composeApp/src/commonMain/kotlin/com/nuvio/app/features/trakt/TraktWatchedShowSnapshotRepository.kt",
+          "README.md",
+          "composeApp/src/commonMain/composeResources/values-pl/strings.xml",
+          "composeApp/src/commonMain/composeResources/values/strings.xml",
+          "composeApp/src/commonMain/kotlin/com/nuvio/app/features/collection/CollectionEditorScreen.kt",
+          "composeApp/src/commonMain/kotlin/com/nuvio/app/features/collection/CollectionModels.kt",
+          "composeApp/src/commonMain/kotlin/com/nuvio/app/features/collection/TmdbCollectionSourceResolver.kt",
+          "composeApp/src/commonMain/kotlin/com/nuvio/app/features/details/MetaDetailsRepository.kt",
+          "composeApp/src/commonMain/kotlin/com/nuvio/app/features/notifications/EpisodeReleaseNotificationsRepository.kt",
+          "composeApp/src/commonMain/kotlin/com/nuvio/app/features/settings/PlaybackSettingsPage.kt",
+          "composeApp/src/commonMain/kotlin/com/nuvio/app/features/simkl/SimklApplicationAdapters.kt",
           "composeApp/src/commonMain/kotlin/com/nuvio/app/features/watched/StoredWatchedPayload.kt",
           "composeApp/src/commonMain/kotlin/com/nuvio/app/features/watched/WatchedBadgeBulkResolver.kt",
-          "composeApp/src/commonMain/kotlin/com/nuvio/app/features/watched/WatchedItemsStore.kt",
           "composeApp/src/commonMain/kotlin/com/nuvio/app/features/watched/WatchedRepository.kt",
-          "composeApp/src/commonMain/kotlin/com/nuvio/app/features/watching/sync/TraktWatchedSyncAdapter.kt",
-          "composeApp/src/commonTest/kotlin/com/nuvio/app/features/trakt/TraktWatchedShowSnapshotRepositoryTest.kt",
+          "composeApp/src/commonMain/kotlin/com/nuvio/app/features/watching/sync/TraktWatchedProjection.kt",
+          "composeApp/src/commonTest/kotlin/com/nuvio/app/features/collection/CollectionSourceSerializationTest.kt",
           "composeApp/src/commonTest/kotlin/com/nuvio/app/features/watched/StoredWatchedPayloadTest.kt",
-          "composeApp/src/commonTest/kotlin/com/nuvio/app/features/watched/WatchedItemsStoreTest.kt",
           "composeApp/src/commonTest/kotlin/com/nuvio/app/features/watched/WatchedRepositoryTest.kt",
           "composeApp/src/commonTest/kotlin/com/nuvio/app/features/watching/sync/TraktWatchedSyncAdapterTest.kt",
           "iosApp/Configuration/Version.xcconfig"
@@ -194,9 +204,9 @@
         "acceptance": "contract-audited-baseline"
       },
       "nuvio-tv": {
-        "contract_ref": "062b6e0306969d600be229fd89650443b2e23c55",
-        "accepted_ref": "062b6e0306969d600be229fd89650443b2e23c55",
-        "accepted_at": "2026-08-09T16:13:00.770637+00:00",
+        "contract_ref": "aa327f0e99645e1fc7094f56e3e827ff0925afae",
+        "accepted_ref": "aa327f0e99645e1fc7094f56e3e827ff0925afae",
+        "accepted_at": "2026-08-10T08:51:47.460181+00:00",
         "acceptance": "contract-audited-baseline"
       }
     }
