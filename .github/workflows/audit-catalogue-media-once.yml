@@ -1,0 +1,44 @@
+name: Audit catalogue identity and media once
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/triggers/catalogue-media-audit"
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 85
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: "24"
+          package-manager-cache: false
+      - name: Install dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Validate repository before network audit
+        run: npm test
+      - name: Audit all relevant providers on NuvioTV runtime
+        env:
+          NUVIO_CATALOGUE_AUDIT_WORKERS: "5"
+          NUVIO_CATALOGUE_AUDIT_TIMEOUT: "85"
+        run: python scripts/audit_catalogue_identity_media.py
+      - name: Upload sanitized audit report
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: catalogue-media-audit-${{ github.run_id }}
+          path: audit-output/catalogue-media-audit.json
+          retention-days: 2
+          if-no-files-found: warn
