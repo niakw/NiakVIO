@@ -36,6 +36,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
         raise ValueError("vf_catalogue_recovery: api_url is required")
 
     payload = {
+        "implementationVersion": 2,
         "strategy": strategy,
         "baseUrl": base_url,
         "apiUrl": api_url,
@@ -105,25 +106,42 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
   async function metadata(req){
     var title=clean(req.title||req.name||req.label||req.settings&&req.settings.title),year=Number(req.year||req.settings&&req.settings.year)||0,original="";
     if(title)title=title.replace(/\s*\(\d{4}\)\s*$/,"");
-    if(!title&&req.tmdbId){
+    if(req.tmdbId){
       var kind=req.mediaType==="tv"?"tv":"movie",data=await request("https://api.themoviedb.org/3/"+kind+"/"+encodeURIComponent(req.tmdbId)+"?api_key="+TMDB_KEY+"&language=fr-FR",true);
-      if(data){title=clean(data.title||data.name);original=clean(data.original_title||data.original_name);var date=clean(data.release_date||data.first_air_date);year=Number(date.slice(0,4))||year}
+      if(data){title=clean(data.title||data.name)||title;original=clean(data.original_title||data.original_name);var date=clean(data.release_date||data.first_air_date);year=Number(date.slice(0,4))||year}
     }
     return {title:title,original:original,year:year};
   }
+  function significant(v){
+    var noise={film:1,films:1,movie:1,movies:1,serie:1,series:1,streaming:1,watch:1,regarder:1,voir:1,vf:1,vff:1,vfq:1,vostfr:1,vo:1,hd:1,full:1,complet:1,complete:1,saison:1,season:1,episode:1,ep:1,french:1,francais:1};
+    return normalize(v).split(" ").filter(function(x){return x.length>1&&!noise[x]});
+  }
   function score(label,meta,url){
-    var a=normalize(label),wanted=normalize(meta.title),original=normalize(meta.original),s=0;
-    if(!a)return -100;
-    if(a===wanted||original&&a===original)s+=100;else if(a.indexOf(wanted)>=0||wanted.indexOf(a)>=0)s+=65;else{
-      var words=wanted.split(" ").filter(function(x){return x.length>2}),hit=words.filter(function(x){return a.indexOf(x)>=0}).length;s+=words.length?Math.round(hit/words.length*50):0;
+    var a=normalize(label),wanted=normalize(meta.title),original=normalize(meta.original),urlText=normalize(url);
+    if(!a||(!wanted&&!original))return -100;
+    if(meta.year){
+      var years=String(label||"").match(/\b(?:19|20)\d{2}\b/g)||[];
+      if(years.length&&years.indexOf(String(meta.year))<0)return -100;
     }
-    if(meta.year&&String(label+" "+url).indexOf(String(meta.year))>=0)s+=20;
-    if(/(?:film|movie|streaming|watch|voir)/i.test(url))s+=8;
+    function one(title){
+      if(!title)return -100;
+      if(a===title)return 120;
+      var wantedWords=significant(title),labelWords=significant(a),hay=significant(a+" "+urlText);
+      if(!wantedWords.length)return -100;
+      var all=wantedWords.every(function(x){return hay.indexOf(x)>=0});
+      if(!all)return -100;
+      var extras=labelWords.filter(function(x){return wantedWords.indexOf(x)<0});
+      if(extras.length>Math.max(4,wantedWords.length+2))return -100;
+      return extras.length<=2?92:84;
+    }
+    var s=Math.max(one(wanted),one(original));
+    if(s<0)return s;
+    if(meta.year&&String(label+" "+url).indexOf(String(meta.year))>=0)s+=15;
     return s;
   }
   function links(html,base,meta){
     var rows=[],seen=Object.create(null),re=/<a\b[^>]*href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi,m;
-    while((m=re.exec(String(html||"")))!==null){var url=absolute(m[1],base),label=stripHtml(m[2]);if(!url||seen[url])continue;seen[url]=1;var s=score(label,meta,url);if(s>=38)rows.push({url:url,label:label,score:s})}
+    while((m=re.exec(String(html||"")))!==null){var url=absolute(m[1],base),label=stripHtml(m[2]);if(!url||seen[url])continue;seen[url]=1;var s=score(label,meta,url);if(s>=80)rows.push({url:url,label:label,score:s})}
     return rows.sort(function(a,b){return b.score-a.score}).slice(0,8);
   }
   function players(html,base){
