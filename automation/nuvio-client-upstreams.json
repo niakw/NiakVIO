@@ -102,9 +102,10 @@
     "nuvio-tv": {
       "repository": "NuvioMedia/NuvioTV",
       "branch": "dev",
-      "verified_ref": "062b6e0306969d600be229fd89650443b2e23c55",
+      "verified_ref": "aa327f0e99645e1fc7094f56e3e827ff0925afae",
       "platforms": ["android-tv"],
       "contract": "automation/nuvio-tv-runtime-contract.json",
+      "audit_note": "2026-08-10: audited 31 commits from 062b6e030696 to aa327f0e9964. Plugin runtime, provider repository/model contract paths and positional getStreams invocation are unchanged; player-sensitive changes are subtitle rendering/selection, watched-write performance and next-episode fallback behavior and do not alter provider URL/header ingestion.",
       "contract_paths": [
         "app/src/full/java/com/nuvio/tv/core/plugin/",
         "app/src/main/java/com/nuvio/tv/data/local/PluginDataStore.kt",
