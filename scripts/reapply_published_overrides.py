@@ -5,6 +5,11 @@
 A new override must affect both newly discovered candidates and the exact JS
 artifacts already referenced by manifests. Changed provider files are validated,
 content-addressed again, and every manifest reference is updated atomically.
+
+Superseded bundles are deliberately not deleted here. They can still be
+retained by PROVENANCE.json as canonical or published reproducibility inputs.
+The authoritative prune step owns deletion after it has collected references
+from every published manifest, LKG state and provenance record.
 """
 from __future__ import annotations
 
@@ -167,19 +172,21 @@ def main() -> int:
     for path, payload in secondary_payloads:
         write_manifest(path, payload)
 
+    # Do not unlink superseded files here. prune_unreferenced_providers.py is
+    # the single cleanup authority because it also retains canonical/published
+    # provenance and LKG dependencies. Deleting first can create a dangling
+    # provenance reference and makes the subsequent prune correctly abort.
     referenced = {new for _old, new in updates.values()}
-    removed = 0
-    for old_relative in old_paths:
-        if old_relative not in referenced:
-            old_path = ROOT / old_relative
-            if old_path.exists():
-                old_path.unlink()
-                removed += 1
+    deferred = sum(
+        1
+        for old_relative in old_paths
+        if old_relative not in referenced and (ROOT / old_relative).is_file()
+    )
 
     changed_refs = sum(1 for old, new in updates.values() if old != new)
     print(
         f"published overrides reapplied: patched={applied_count}, "
-        f"manifest_refs={changed_refs}, superseded_removed={removed}"
+        f"manifest_refs={changed_refs}, superseded_deferred_to_prune={deferred}"
     )
     return 0
 
