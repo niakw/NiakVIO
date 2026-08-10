@@ -4,12 +4,12 @@
 
 A new override must affect both newly discovered candidates and the exact JS
 artifacts already referenced by manifests. Changed provider files are validated,
-content-addressed again, and every manifest reference is updated atomically.
+content-addressed again, and every manifest/provenance reference is updated
+atomically.
 
-Superseded bundles are deliberately not deleted here. They can still be
-retained by PROVENANCE.json as canonical or published reproducibility inputs.
-The authoritative prune step owns deletion after it has collected references
-from every published manifest, LKG state and provenance record.
+Superseded bundles are deliberately not deleted here. The authoritative prune
+step owns deletion after it has collected references from every published
+manifest, LKG state and provenance record.
 """
 from __future__ import annotations
 
@@ -27,6 +27,7 @@ from apply_provider_overrides import apply_overrides
 ROOT = Path(__file__).resolve().parents[1]
 PRIMARY = ROOT / "manifest.json"
 SECONDARY = (ROOT / "vf" / "manifest.json", ROOT / "vostfr" / "manifest.json")
+PROVENANCE = ROOT / "PROVENANCE.json"
 PROVIDERS = ROOT / "providers"
 
 
@@ -51,8 +52,12 @@ def load_manifest(path: Path) -> dict[str, Any] | None:
     return value
 
 
-def write_manifest(path: Path, value: dict[str, Any]) -> None:
+def write_json(path: Path, value: dict[str, Any]) -> None:
     path.write_text(json.dumps(value, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+
+def write_manifest(path: Path, value: dict[str, Any]) -> None:
+    write_json(path, value)
 
 
 def validate_artifact(data: bytes) -> None:
@@ -81,6 +86,15 @@ def published_name(provider_id: str, old_path: Path, digest: str, changed: bool)
     return f"{safe_fragment(provider_id.casefold())}--{safe_fragment(source)}--{digest[:16]}.js"
 
 
+def merge_patch_records(existing: Any, records: list[dict[str, Any]]) -> list[Any]:
+    """Preserve historical patch provenance while recording newly applied hooks."""
+    merged = list(existing) if isinstance(existing, list) else []
+    for record in records:
+        if record not in merged:
+            merged.append(record)
+    return merged
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--check", action="store_true")
@@ -90,9 +104,19 @@ def main() -> int:
     if primary is None:
         raise ValueError("manifest.json is missing")
 
+    provenance: dict[str, Any] | None = None
+    provenance_rows: dict[str, Any] = {}
+    if PROVENANCE.exists():
+        loaded = json.loads(PROVENANCE.read_text(encoding="utf-8"))
+        if not isinstance(loaded, dict) or not isinstance(loaded.get("providers"), dict):
+            raise ValueError("invalid PROVENANCE.json structure")
+        provenance = loaded
+        provenance_rows = loaded["providers"]
+
     updates: dict[str, tuple[str, str]] = {}
     outputs: dict[str, bytes] = {}
     old_paths: set[str] = set()
+    provenance_updates: dict[str, dict[str, Any]] = {}
     applied_count = 0
 
     for entry in primary["scrapers"]:
@@ -120,6 +144,12 @@ def main() -> int:
         entry["filename"] = new_relative
         if relative != new_relative:
             entry["version"] = bump_provider_version(str(entry.get("version") or "1.0.0"))
+        provenance_updates[provider_id] = {
+            "old": relative,
+            "new": new_relative,
+            "sha256": digest,
+            "records": records,
+        }
 
     secondary_payloads: list[tuple[Path, dict[str, Any]]] = []
     for path in SECONDARY:
@@ -139,6 +169,19 @@ def main() -> int:
                 entry["version"] = primary_entry["version"]
         secondary_payloads.append((path, payload))
 
+    if provenance is not None:
+        for provider_id, update in provenance_updates.items():
+            row = provenance_rows.get(provider_id)
+            if not isinstance(row, dict):
+                continue
+            row["published_filename"] = update["new"]
+            row["sha256"] = update["sha256"]
+            # patched_sha256 describes the exact repository-published bytes.
+            if "patched_sha256" in row or update["records"]:
+                row["patched_sha256"] = update["sha256"]
+            if update["records"]:
+                row["local_patches"] = merge_patch_records(row.get("local_patches"), update["records"])
+
     stale = False
     for new_relative, data in outputs.items():
         destination = ROOT / new_relative
@@ -151,14 +194,15 @@ def main() -> int:
                 stale = True
 
     if args.check:
-        # Compare serialized in-memory manifests to disk to detect stale references.
         if json.loads(PRIMARY.read_text(encoding="utf-8")) != primary:
             stale = True
         for path, payload in secondary_payloads:
             if json.loads(path.read_text(encoding="utf-8")) != payload:
                 stale = True
+        if provenance is not None and json.loads(PROVENANCE.read_text(encoding="utf-8")) != provenance:
+            stale = True
         if stale:
-            print("published provider overrides or manifest references are stale")
+            print("published provider overrides or manifest/provenance references are stale")
             return 1
         print("published provider overrides are current")
         return 0
@@ -171,6 +215,8 @@ def main() -> int:
     write_manifest(PRIMARY, primary)
     for path, payload in secondary_payloads:
         write_manifest(path, payload)
+    if provenance is not None:
+        write_json(PROVENANCE, provenance)
 
     # Do not unlink superseded files here. prune_unreferenced_providers.py is
     # the single cleanup authority because it also retains canonical/published
@@ -184,9 +230,13 @@ def main() -> int:
     )
 
     changed_refs = sum(1 for old, new in updates.values() if old != new)
+    provenance_refs = sum(
+        1 for update in provenance_updates.values() if update["old"] != update["new"]
+    ) if provenance is not None else 0
     print(
         f"published overrides reapplied: patched={applied_count}, "
-        f"manifest_refs={changed_refs}, superseded_deferred_to_prune={deferred}"
+        f"manifest_refs={changed_refs}, provenance_refs={provenance_refs}, "
+        f"superseded_deferred_to_prune={deferred}"
     )
     return 0
 
