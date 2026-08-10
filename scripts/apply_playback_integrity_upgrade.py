@@ -68,9 +68,6 @@ def upgrade_overrides() -> tuple[int, list[str]]:
             specific["patch_scripts"] = scripts
         if not isinstance(scripts, list):
             raise ValueError(f"provider_patches.{provider_id}.patch_scripts must be an array")
-        # These are deliberately appended: catalogue/player recovery runs first,
-        # then audio preservation transforms native HLS expansion, and finally
-        # every returned HLS URL (native or recovered) crosses the integrity gate.
         for patch in (AUDIO_PATCH, HLS_PATCH):
             if patch not in scripts:
                 scripts.append(patch)
@@ -109,9 +106,6 @@ def upgrade_vf_recovery() -> int:
             1,
         )
 
-    # Always enrich caller-provided title metadata with authoritative TMDb year
-    # and original title when a tmdb id exists. This also ensures a nonexistent
-    # id cannot silently reuse an arbitrary catalogue entry.
     text = text.replace('    if(!title&&req.tmdbId){', '    if(req.tmdbId){', 1)
     text = text.replace(
         'if(data){title=clean(data.title||data.name);original=clean(data.original_title||data.original_name);',
@@ -149,7 +143,7 @@ def upgrade_vf_recovery() -> int:
   function links'''
 
     pattern = re.compile(r"  function score\(label,meta,url\)\{[\s\S]*?\n  \}\n  function links")
-    text, count = pattern.subn(strict_score, text, count=1)
+    text, count = pattern.subn(lambda _match: strict_score, text, count=1)
     if count != 1 and "function significant(v)" not in text:
         raise ValueError("could not locate VF catalogue score function")
     text = text.replace("if(s>=38)rows.push", "if(s>=80)rows.push", 1)
