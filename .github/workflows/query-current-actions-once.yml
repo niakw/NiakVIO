@@ -1,0 +1,30 @@
+name: Query current Actions once
+on:
+  push:
+    branches: [main]
+    paths: [.github/triggers/query-current-actions-main]
+permissions:
+  actions: read
+  contents: write
+jobs:
+  query:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          fetch-depth: 0
+      - name: Query recent runs
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p .github/ci-status
+          gh run list --repo "$GITHUB_REPOSITORY" --limit 25 --json databaseId,name,displayTitle,event,status,conclusion,headSha,createdAt,updatedAt,url > .github/ci-status/current-runs.json
+      - name: Commit snapshot
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add .github/ci-status/current-runs.json
+          git commit -m "ci: snapshot current actions" || exit 0
+          git fetch origin main
+          git rebase origin/main
+          git push origin HEAD:main
