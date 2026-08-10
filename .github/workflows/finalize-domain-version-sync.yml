@@ -1,0 +1,77 @@
+name: Finalize domain version synchronization
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/triggers/finalize-domain-version-sync
+
+permissions:
+  contents: write
+
+concurrency:
+  group: finalize-domain-version-sync
+  cancel-in-progress: false
+
+jobs:
+  validate-and-finalize:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.1.0
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.2.0
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Install dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Synchronize current release metadata
+        run: python scripts/sync_release_versions.py --manifest manifest.json
+      - name: Run complete repository regression suite
+        run: npm test
+      - name: Remove finite finalizer and regenerate exact hashes
+        run: |
+          rm -f .github/workflows/finalize-domain-version-sync.yml
+          rm -f .github/triggers/finalize-domain-version-sync
+          python scripts/generate_release_hashes.py
+          python scripts/validate_release_integrity.py
+      - name: Commit finalized state
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A .github/workflows/finalize-domain-version-sync.yml .github/triggers/finalize-domain-version-sync
+          git add package.json package-lock.json manifest.json vf/manifest.json sources.json nuvio-client-id-state.json FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json
+          if git diff --cached --quiet; then
+            echo "No finalization changes required"
+          else
+            git commit -m "chore: finalize 5.20.30 release metadata"
+            git push origin HEAD:main
+          fi
+      - name: Verify exact published main is deterministic
+        run: |
+          set -euo pipefail
+          git fetch origin main
+          git reset --hard origin/main
+          python scripts/generate_release_hashes.py
+          python scripts/validate_release_integrity.py
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          values = {
+              'manifest': json.loads(Path('manifest.json').read_text())['version'],
+              'vf': json.loads(Path('vf/manifest.json').read_text())['version'],
+              'package': json.loads(Path('package.json').read_text())['version'],
+              'lock': json.loads(Path('package-lock.json').read_text())['version'],
+              'lock_root': json.loads(Path('package-lock.json').read_text())['packages']['']['version'],
+          }
+          if len(set(values.values())) != 1:
+              raise SystemExit(f'release version mismatch: {values}')
+          print('final published release version synchronization passed:', values)
+          PY
+          git diff --exit-code
