@@ -79,9 +79,79 @@ function binaryKind(buffer) {
   return null;
 }
 
+function parseHlsAttributes(value) {
+  const out = {};
+  for (const match of String(value || '').matchAll(/([A-Z0-9-]+)=("[^"]*"|[^,]*)/gi)) {
+    out[match[1].toUpperCase()] = String(match[2] || '').replace(/^"|"$/g, '');
+  }
+  return out;
+}
+
+function absoluteUrl(raw, base) {
+  try { return new URL(String(raw || '').trim(), base).toString(); }
+  catch { return null; }
+}
+
+function hlsGraph(text, baseUrl) {
+  const lines = String(text || '').split(/\r?\n/).map((line) => line.trim());
+  const variants = [];
+  const externalAudio = [];
+  let audioGroups = 0;
+  for (let index = 0; index < lines.length; index += 1) {
+    const line = lines[index];
+    if (/^#EXT-X-STREAM-INF\s*:/i.test(line)) {
+      for (let next = index + 1; next < lines.length; next += 1) {
+        const candidate = lines[next];
+        if (!candidate) continue;
+        if (candidate.startsWith('#')) continue;
+        const url = absoluteUrl(candidate, baseUrl);
+        if (url && !variants.includes(url)) variants.push(url);
+        break;
+      }
+    } else if (/^#EXT-X-MEDIA\s*:/i.test(line)) {
+      const attrs = parseHlsAttributes(line.slice(line.indexOf(':') + 1));
+      if (String(attrs.TYPE || '').toUpperCase() !== 'AUDIO') continue;
+      audioGroups += 1;
+      if (attrs.URI) {
+        const url = absoluteUrl(attrs.URI, baseUrl);
+        if (url && !externalAudio.includes(url)) externalAudio.push(url);
+      }
+    }
+  }
+  return { variants, externalAudio, audioGroups };
+}
+
+async function inspectHlsChild(url, headers) {
+  try {
+    const response = await fetch(url, { headers, redirect: 'follow', signal: AbortSignal.timeout(16000) });
+    if (!response.ok) return { playable: false, status: response.status, error: `http_${response.status}` };
+    const text = (await response.text()).replace(/^\uFEFF/, '').trimStart();
+    if (!text.startsWith('#EXTM3U')) return { playable: false, status: response.status, error: 'child_not_extm3u' };
+    const hasMedia = /#EXTINF\s*:/i.test(text) || /#EXT-X-PART\s*:/i.test(text) || /#EXT-X-STREAM-INF\s*:/i.test(text) || /#EXT-X-MAP\s*:/i.test(text);
+    return { playable: hasMedia, status: response.status, error: hasMedia ? null : 'child_header_only' };
+  } catch (error) {
+    return { playable: false, status: null, error: `${error?.name || 'Error'}: ${error?.message || error}` };
+  }
+}
+
 async function inspectStream(row) {
   const url = String(row?.url || '').trim();
-  const result = { url, playable: false, kind: null, status: null, content_type: null, starts_extm3u: false, binary_signature: null, error: null };
+  const result = {
+    url,
+    playable: false,
+    kind: null,
+    status: null,
+    content_type: null,
+    starts_extm3u: false,
+    binary_signature: null,
+    hls_master: false,
+    hls_variant_count: 0,
+    hls_audio_group_count: 0,
+    hls_external_audio_count: 0,
+    hls_variant_playable: null,
+    hls_external_audio_playable: null,
+    error: null,
+  };
   if (urlRejected(url)) { result.error = 'rejected_asset_or_demo'; return result; }
   const headers = headerObject(row.headers);
   if (!headers.Accept) headers.Accept = '*/*';
@@ -96,7 +166,35 @@ async function inspectStream(row) {
     result.starts_extm3u = text.startsWith('#EXTM3U');
     result.binary_signature = binaryKind(buffer);
     const type = result.content_type.toLowerCase();
-    if (result.starts_extm3u) { result.playable = true; result.kind = 'hls'; }
+    if (result.starts_extm3u) {
+      result.kind = 'hls';
+      const graph = hlsGraph(text, response.url || url);
+      result.hls_master = graph.variants.length > 0 || /#EXT-X-STREAM-INF\s*:/i.test(text);
+      result.hls_variant_count = graph.variants.length;
+      result.hls_audio_group_count = graph.audioGroups;
+      result.hls_external_audio_count = graph.externalAudio.length;
+      if (result.hls_master) {
+        if (!graph.variants.length) {
+          result.error = 'hls_master_without_variant';
+          return result;
+        }
+        const variant = await inspectHlsChild(graph.variants[0], headers);
+        result.hls_variant_playable = variant.playable;
+        if (!variant.playable) {
+          result.error = `hls_variant_${variant.error || 'invalid'}`;
+          return result;
+        }
+        if (graph.externalAudio.length) {
+          const audio = await inspectHlsChild(graph.externalAudio[0], headers);
+          result.hls_external_audio_playable = audio.playable;
+          if (!audio.playable) {
+            result.error = `hls_audio_${audio.error || 'invalid'}`;
+            return result;
+          }
+        }
+      }
+      result.playable = true;
+    }
     else if (/application\/dash\+xml/.test(type) || /<MPD[\s>]/i.test(text.slice(0, 4096))) { result.playable = true; result.kind = 'dash'; }
     else if (result.binary_signature) { result.playable = response.ok || response.status === 206; result.kind = result.binary_signature; }
     else if (/^video\//.test(type) && !/^text\//.test(type)) { result.playable = response.ok || response.status === 206; result.kind = type.split('/')[1] || 'video'; }
