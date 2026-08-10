@@ -6,7 +6,7 @@
   "runtime_contract": "getStreams(tmdbId, mediaType, season, episode) plus global SCRAPER_SETTINGS",
   "source_repository": "NuvioMedia/NuvioTV",
   "source_branch": "dev",
-  "source_ref": "062b6e0306969d600be229fd89650443b2e23c55",
+  "source_ref": "aa327f0e99645e1fc7094f56e3e827ff0925afae",
   "runtime_source": "app/src/full/java/com/nuvio/tv/core/plugin/PluginRuntime.kt",
   "settings_source": "app/src/main/java/com/nuvio/tv/data/local/PluginDataStore.kt",
   "stream_repository_source": "app/src/main/java/com/nuvio/tv/data/repository/StreamRepositoryImpl.kt",
@@ -36,9 +36,27 @@
     "contract": "stremio-addon-manifest-catalog-meta-stream",
     "purpose": "live TV catalog/meta/stream integration; independent from plugin provider runtime"
   },
+  "audit": {
+    "date": "2026-08-10",
+    "previous_ref": "062b6e0306969d600be229fd89650443b2e23c55",
+    "audited_ref": "aa327f0e99645e1fc7094f56e3e827ff0925afae",
+    "commits_reviewed": 31,
+    "hard_contract_paths_changed": false,
+    "plugin_runtime_positional_getstreams_unchanged": true,
+    "provider_stream_repository_contract_unchanged": true,
+    "provider_url_header_ingestion_unchanged": true,
+    "semantic_changes_reviewed": [
+      "sidecar and RTL subtitle rendering/selection",
+      "subtitle timing and preference behavior",
+      "watched-item write performance isolation",
+      "next-episode binge-group fallback behavior",
+      "player UI and version metadata"
+    ]
+  },
   "notes": [
     "NuvioTV provider compatibility is a distinct runtime family from Nuvio Mobile and Nuvio Desktop.",
     "The source_ref is the exact official NuvioTV commit most recently audited against this contract.",
+    "The 2026-08-10 audit found no changes under PluginRuntime/PluginManager/StreamRepository/plugin model contract paths between the previous baseline and source_ref.",
     "NuvioTV currently parses supportedPlatforms/disabledPlatforms in the manifest model but its PluginManager does not apply those fields when building enabled scrapers.",
     "A zero-stream result is not by itself proof of incompatibility.",
     "Providers blocked on every Mobile/Desktop runtime but still enabled in the shared manifest must sanitize all NuvioTV-returned URLs against real media payloads.",
