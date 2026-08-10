@@ -36,7 +36,16 @@ with tempfile.TemporaryDirectory() as td:
     dump(before_path, before)
     dump(root / 'manifest.json', current)
     dump(root / 'vf/manifest.json', {'version': '5.19.0', 'scrapers': [{'id': 'alpha', 'version': '1.2.3', 'filename': '../providers/alpha--new.js'}]})
-    dump(root / 'package.json', {'version': '5.19.0'})
+    dump(root / 'package.json', {'name': 'fixture', 'version': '5.19.0'})
+    dump(
+        root / 'package-lock.json',
+        {
+            'name': 'fixture',
+            'version': '5.19.0',
+            'lockfileVersion': 3,
+            'packages': {'': {'name': 'fixture', 'version': '5.19.0'}},
+        },
+    )
     dump(root / 'sources.json', {'manifest_version': '5.19.0', 'repository': {'manifest_version': '5.19.0'}})
 
     script = SCRIPT.read_text(encoding='utf-8').replace(
@@ -54,6 +63,9 @@ with tempfile.TemporaryDirectory() as td:
     assert entries['beta']['version'] == '2.0.0'
     assert json.loads((root / 'vf/manifest.json').read_text())['version'] == '5.19.1'
     assert json.loads((root / 'package.json').read_text())['version'] == '5.19.1'
+    lock = json.loads((root / 'package-lock.json').read_text())
+    assert lock['version'] == '5.19.1'
+    assert lock['packages']['']['version'] == '5.19.1'
     assert json.loads((root / 'sources.json').read_text())['manifest_version'] == '5.19.1'
 
 print('domain refresh finalizer test passed')
