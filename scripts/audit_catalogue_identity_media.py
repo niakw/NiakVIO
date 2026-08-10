@@ -19,7 +19,6 @@ import json
 import os
 import re
 import subprocess
-import sys
 import time
 from collections import Counter
 from pathlib import Path
@@ -205,7 +204,12 @@ def run_probe(task: dict[str, Any]) -> dict[str, Any]:
             **summary,
         }
         if task["fixture_name"] == "impossible_movie":
-            row["identity_false_positive"] = raw_count > 0
+            # Some generic embed providers can mechanically construct a URL for
+            # any numeric TMDb id. That is suspicious and remains visible in the
+            # report, but only a *playable* result proves an actual wrong-content
+            # mapping. Do not fail the audit on an embed that correctly resolves
+            # to no media.
+            row["identity_candidate_for_unknown_id"] = raw_count > 0
             row["playable_identity_false_positive"] = playable_count > 0
         return row
     except subprocess.TimeoutExpired:
@@ -300,7 +304,7 @@ def main() -> int:
             )
 
     rows.sort(key=lambda row: (row["provider_id"], row["fixture"]))
-    false_positive = [row for row in rows if row.get("identity_false_positive")]
+    unknown_candidates = [row for row in rows if row.get("identity_candidate_for_unknown_id")]
     playable_false_positive = [row for row in rows if row.get("playable_identity_false_positive")]
     hls_failures = [row for row in rows if int(row.get("hls_variant_failures") or 0) or int(row.get("hls_audio_failures") or 0)]
     suspect_rows = [row for row in rows if row.get("suspect")]
@@ -309,14 +313,15 @@ def main() -> int:
     kdrama = [row for row in rows if row["fixture"] == "kdrama_squid_game_s01e01"]
 
     report = {
-        "schema_version": 1,
+        "schema_version": 2,
         "generated_at_epoch": int(time.time()),
         "providers_total": len({row["provider_id"] for row in rows}),
         "vf_providers_total": len(vf_ids),
         "probe_tasks": len(rows),
         "policy": {
             "zero_valid_streams": "coverage_gap_not_disable_signal",
-            "impossible_fixture_any_return": "identity_false_positive",
+            "impossible_fixture_raw_return": "diagnostic_only_generic_embed_may_construct_url",
+            "impossible_fixture_playable_return": "proven_identity_false_positive",
             "hls_child_or_external_audio_failure": "broken_media_graph",
             "raw_endpoints_persisted": False,
         },
@@ -324,7 +329,7 @@ def main() -> int:
             "valid_fixture_playable_rows": sum(1 for row in valid_rows if int(row.get("playable_stream_count") or 0) > 0),
             "vf_valid_fixture_playable_rows": sum(1 for row in vf_valid if int(row.get("playable_stream_count") or 0) > 0),
             "kdrama_playable_providers": sum(1 for row in kdrama if int(row.get("playable_stream_count") or 0) > 0),
-            "identity_false_positive_providers": sorted({row["provider_id"] for row in false_positive}),
+            "unknown_id_candidate_providers": sorted({row["provider_id"] for row in unknown_candidates}),
             "playable_identity_false_positive_providers": sorted({row["provider_id"] for row in playable_false_positive}),
             "hls_graph_failure_providers": sorted({row["provider_id"] for row in hls_failures}),
         },
@@ -336,12 +341,12 @@ def main() -> int:
     print(
         "catalogue/media audit complete: "
         f"providers={report['providers_total']} tasks={len(rows)} "
-        f"identity_false_positive={len(report['summary']['identity_false_positive_providers'])} "
+        f"playable_identity_false_positive={len(report['summary']['playable_identity_false_positive_providers'])} "
         f"hls_graph_failures={len(report['summary']['hls_graph_failure_providers'])}"
     )
-    # The finite workflow should stop on proven identity corruption or a broken
-    # HLS child/audio graph, but never because a provider simply has no coverage.
-    return 1 if false_positive or hls_failures else 0
+    # Only conclusive failures stop the finite audit. A provider returning no
+    # stream is a coverage gap to repair, not a reason to disable it.
+    return 1 if playable_false_positive or hls_failures else 0
 
 
 if __name__ == "__main__":
