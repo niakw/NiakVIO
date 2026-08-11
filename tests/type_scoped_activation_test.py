@@ -10,8 +10,8 @@ source = (ROOT / 'scripts' / 'promote_candidates.py').read_text(encoding='utf-8'
 
 assert config['activation'].get('allow_type_scoped_activation') is True
 assert 'def independently_proven_categories(' in source
-assert 'height < minimum_height' in source
-assert 'bandwidth is not None and bandwidth < minimum_bandwidth' in source
+assert 'minimum_height > 0 and height > 0 and height < minimum_height' in source
+assert 'minimum_bandwidth > 0 and bandwidth is not None and bandwidth < minimum_bandwidth' in source
 assert 'if require_language and not (audio or subtitle_ok):' in source
 assert 'scoped_categories = required_categories & independently_proven' in source
 assert '"activation_supported_types": sorted(scoped_categories)' in source
@@ -20,10 +20,10 @@ assert 'promoted_entry["supportedTypes"] = activation_supported_types' in source
 assert 'tracked_fields = ("filename", "supportedTypes", "supportsExternalPlayer")' in source
 
 # A type cannot be published from metadata alone: the independently-proven set
-# explicitly requires a healthy current fixture plus verified media/quality.
+# explicitly requires a healthy current fixture plus verified media; optional quality/language thresholds apply only when configured.
 healthy_idx = source.index('if not isinstance(test, dict) or test.get("status") != "healthy":')
 payload_idx = source.index('if int(test.get("payload_verified_streams", 0)) < minimum_payload:')
-quality_idx = source.index('if height < minimum_height')
+quality_idx = source.index('if minimum_height > 0 and height > 0 and height < minimum_height')
 publish_idx = source.index('promoted_entry["supportedTypes"] = activation_supported_types')
 assert healthy_idx < payload_idx < quality_idx < publish_idx
 

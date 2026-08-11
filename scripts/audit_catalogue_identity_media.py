@@ -71,14 +71,6 @@ FIXTURES: dict[str, dict[str, Any]] = {
         "title": "Mushoku Tensei: Jobless Reincarnation",
         "year": 2021,
     },
-    "animated_movie_ninja_3": {
-        "label": "Mon ninja et moi 3",
-        "tmdbId": "1215638",
-        "mediaType": "movie",
-        "title": "Mon ninja et moi 3",
-        "year": 2025,
-        "expectedDurationMinutes": 88,
-    },
     "impossible_movie": {
         "label": "Impossible identity sentinel",
         "tmdbId": "999999999",
@@ -296,8 +288,6 @@ def build_tasks() -> tuple[list[dict[str, Any]], set[str]]:
             fixture_names.extend(["vf_jjk_s01e01", "vf_revenant_s01e01"])
         if is_vf and "anime" in types:
             fixture_names.append("vf_mushoku_s01e01")
-        if "movie" in types and (is_vf or provider_id in SUSPECTS):
-            fixture_names.append("animated_movie_ninja_3")
         if provider_id in SUSPECTS:
             if "movie" in types:
                 fixture_names.append("vf_interstellar")

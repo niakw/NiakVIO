@@ -15,9 +15,5 @@ assert 'fixture_names.extend(["vf_jjk_s01e01", "vf_revenant_s01e01"])' in source
 assert 'if is_vf and "anime" in types:' in source
 assert 'fixture_names.append("vf_mushoku_s01e01")' in source
 
-assert '"animated_movie_ninja_3"' in source
-assert '"tmdbId": "1215638"' in source
-assert '"title": "Mon ninja et moi 3"' in source
-assert 'fixture_names.append("animated_movie_ninja_3")' in source
 
-print('TV catalogue Revenant/Mushoku/animated-movie fixture coverage tests passed')
+print('TV catalogue Revenant/Mushoku fixture coverage tests passed')

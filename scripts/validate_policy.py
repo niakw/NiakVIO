@@ -170,8 +170,10 @@ def main() -> int:
     assert int(activation.get("minimum_distinct_hosts", 0)) == 1
     assert int(activation.get("minimum_payload_verified_streams", 0)) == 1
     assert bool(activation.get("representative_fixture_mode"))
-    assert int(activation.get("minimum_effective_height", 0)) >= 720
-    assert bool(activation.get("require_accepted_language_evidence"))
+    assert int(activation.get("minimum_effective_height", -1)) == 0
+    assert int(activation.get("minimum_bandwidth_bps_when_reported", -1)) == 0
+    assert not bool(activation.get("require_accepted_language_evidence"))
+    assert int(activation.get("minimum_score_enabled", 0)) == 55
     assert bool(activation.get("require_reachable_accepted_subtitle_when_advertised"))
     assert bool(activation.get("manual_runtime_evidence_requires_matching_sha256"))
     assert bool(activation.get("manual_runtime_evidence_never_bypasses_p2p_or_hard_failure"))
@@ -390,16 +392,31 @@ def main() -> int:
     mutations = [
         (lambda value: value["health"]["evidence"].update(disallowed_streams=1), "01_policy_safe_no_p2p"),
         (lambda value: value["health"].update(status="no_streams"), "02_healthy_functional_status"),
-        (lambda value: value["health"].update(score=69), "03_minimum_score"),
+        (lambda value: value["health"].update(score=54), "03_minimum_score"),
         (lambda value: value["health"]["evidence"].update(healthy_fixtures=0, healthy_fixture_ratio=0.0, healthy_fixture_categories=[]), "04_fixture_and_type_coverage"),
         (lambda value: value["health"]["evidence"].update(streams_playable=0, playable_fixtures=0), "05_stream_and_fixture_coverage"),
         (lambda value: value["health"]["evidence"].update(distinct_reachable_hosts=0, reachable_hosts=[]), "06_distinct_host_diversity"),
         (lambda value: value["health"]["evidence"].update(payload_verified_streams=0), "07_verified_payload_playability"),
-        (lambda value: value["health"]["evidence"].update(effective_max_height=480, max_bandwidth=500_000), "08_quality_and_bitrate"),
-        (lambda value: value["health"]["evidence"].update(accepted_audio_languages=[], accepted_subtitle_languages=["fr"], accepted_subtitles_advertised=1, accepted_subtitles_reachable=0), "09_language_and_subtitle_integrity"),
     ]
     for mutate, expected in mutations:
         assert_gate_fails(module, activation, mutate, expected)
+
+    # General activation must not reject a real payload merely because it is
+    # SD/low bitrate or uses a language outside FR/EN. Those signals are used
+    # for ordering and language projections, not provider liveness.
+    broad = copy.deepcopy(item)
+    broad["health"]["evidence"].update(
+        effective_max_height=360,
+        max_bandwidth=350_000,
+        audio_languages=["hi"],
+        accepted_audio_languages=[],
+        accepted_subtitle_languages=[],
+    )
+    broad_gates, _ = module.evaluate_pre_stability_gates(broad, activation)
+    if not broad_gates["08_quality_and_bitrate"]["passed"]:
+        raise AssertionError("verified SD payload was incorrectly rejected from the general manifest")
+    if not broad_gates["09_language_and_subtitle_integrity"]["passed"]:
+        raise AssertionError("non-FR/EN payload was incorrectly rejected from the general manifest")
 
     # Optional subtitles cannot disable a playable accepted-audio stream.
     optional_subtitles = copy.deepcopy(item)

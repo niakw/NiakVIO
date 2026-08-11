@@ -1621,12 +1621,19 @@ async function testCandidate(candidate) {
         && !rows.some((item) => item.status === 'excluded');
     }),
   );
-  const fallbackToRun = requestedMode === 'deep'
-    ? fallbackFixtures.filter((fixture) => categoriesNeedingFallback.has(fixture.category))
-    : [];
-  const useFallback = fallbackToRun.length > 0;
-  if (useFallback) {
-    for (const fixture of fallbackToRun) await executeFixture(fixture, 'fallback');
+  // Deep fallback is a bounded cascade per catalogue category. Stop as soon
+  // as one alternate work proves the category healthy. A catalogue miss is not
+  // evidence that the provider itself is dead.
+  if (requestedMode === 'deep') {
+    for (const category of categoriesNeedingFallback) {
+      const categoryFallbacks = fallbackFixtures.filter((fixture) => fixture.category === category);
+      for (const fixture of categoryFallbacks) {
+        await executeFixture(fixture, 'fallback');
+        const latest = fixtureResults[fixtureResults.length - 1];
+        if (latest?.fixture?.category === category && latest.status === 'healthy') break;
+        if (latest?.status === 'excluded') break;
+      }
+    }
   }
 
   const anyP2p = fixtureResults.some((item) => (item.disallowed_streams || 0) > 0 || item.status === 'excluded');
@@ -1642,7 +1649,10 @@ async function testCandidate(candidate) {
     const primary = fixtureResults.filter((item) => item.fixture_phase === 'primary' && item.fixture?.category === category);
     if (primary.some((item) => item.status === 'healthy')) return primary;
     const fallback = fixtureResults.filter((item) => item.fixture_phase === 'fallback' && item.fixture?.category === category);
-    return fallback.length ? fallback : primary;
+    const healthyFallback = fallback.find((item) => item.status === 'healthy');
+    // Once an alternate title proves current playback, earlier catalogue misses
+    // remain diagnostics and do not dilute the activation coverage ratio.
+    return healthyFallback ? [healthyFallback] : (fallback.length ? fallback : primary);
   });
   const healthyTests = fixtureResults.filter((item) => item.status === 'healthy');
   const activationHealthyTests = activationTests.filter((item) => item.status === 'healthy');

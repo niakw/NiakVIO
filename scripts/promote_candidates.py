@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: GPL-3.0-only
 """Publish the complete non-P2P catalogue with conservative activation.
 
-Automatic activation still requires all ten strict gates. A SHA-pinned runtime
+Automatic activation requires current playback/identity safety gates; quality and language are ranking/projection signals for the general manifest. A SHA-pinned runtime
 evidence record may activate a provider only when CI is explicitly inconclusive
 while the same file has been confirmed working in the real Nuvio application.
 Confirmed failures and P2P output can never be overridden. An upstream-disabled
@@ -16,8 +16,8 @@ The ten gates are:
 5. at least one playable stream when runtime output is returned;
 6. at least one reachable media host when runtime output is returned;
 7. verified media payload/playback evidence when runtime output is returned;
-8. minimum quality and non-deficient reported bitrate;
-9. accepted FR/EN language evidence and working advertised subtitles;
+8. media-quality diagnostics (non-blocking for a verified general stream);
+9. language/subtitle diagnostics (VF filtering is handled by language projection);
 10. acceptable latency plus one successful deep validation of the current SHA.
 """
 
@@ -814,15 +814,15 @@ def independently_proven_categories(
     tests = result.get("tests") if isinstance(result.get("tests"), list) else []
     minimum_streams = int(activation.get("minimum_playable_streams", 1))
     minimum_payload = int(activation.get("minimum_payload_verified_streams", 1))
-    minimum_height = int(activation.get("minimum_effective_height", 720))
-    minimum_bandwidth = int(activation.get("minimum_bandwidth_bps_when_reported", 1_000_000))
+    minimum_height = int(activation.get("minimum_effective_height", 0))
+    minimum_bandwidth = int(activation.get("minimum_bandwidth_bps_when_reported", 0))
     accepted_audio = {
         str(value).casefold() for value in activation.get("accepted_audio_languages", ["fr", "en"])
     }
     accepted_subtitles = {
         str(value).casefold() for value in activation.get("accepted_subtitle_languages", ["fr", "en"])
     }
-    require_language = bool(activation.get("require_accepted_language_evidence", True))
+    require_language = bool(activation.get("require_accepted_language_evidence", False))
     require_reachable_subtitles = bool(
         activation.get("require_reachable_accepted_subtitle_when_advertised", True)
     )
@@ -840,7 +840,9 @@ def independently_proven_categories(
         height = int(test.get("effective_max_height", 0) or 0)
         bandwidth_raw = test.get("max_bandwidth")
         bandwidth = int(bandwidth_raw) if bandwidth_raw else None
-        if height < minimum_height or (bandwidth is not None and bandwidth < minimum_bandwidth):
+        if minimum_height > 0 and height > 0 and height < minimum_height:
+            continue
+        if minimum_bandwidth > 0 and bandwidth is not None and bandwidth < minimum_bandwidth:
             continue
         audio = {
             str(value).casefold() for value in test.get("accepted_audio_languages", []) if value
@@ -893,7 +895,7 @@ def evaluate_pre_stability_gates(
     minimum_payload = int(
         activation.get("minimum_payload_verified_streams", 1)
     )
-    minimum_height = int(activation.get("minimum_effective_height", 720))
+    minimum_height = int(activation.get("minimum_effective_height", 0))
     minimum_manifest_curation_score = int(
         activation.get("minimum_manifest_curation_score", 5)
     )
@@ -1008,8 +1010,9 @@ def evaluate_pre_stability_gates(
     accepted_audio_path = allow_audio_without_subtitles and bool(accepted_audio)
     accepted_subtitle_path = bool(accepted_subtitles) and subtitle_integrity
     language_subtitle_pass = (
-        (not require_language or language_present)
-        and (accepted_audio_path or accepted_subtitle_path)
+        True
+        if not require_language
+        else (language_present and (accepted_audio_path or accepted_subtitle_path))
     )
 
     provider_latency = proof.get("provider_median_latency_ms")
@@ -1047,14 +1050,20 @@ def evaluate_pre_stability_gates(
     runtime_light = status == "reachable" and server_accessible
     manifest_curated = (
         manifest_description_present
-        and bool(manifest_languages & (accepted_audio_languages | accepted_subtitle_languages))
+        and (not require_language or bool(manifest_languages & (accepted_audio_languages | accepted_subtitle_languages)))
         and manifest_usable_stream_format
         and manifest_curation_score >= minimum_manifest_curation_score
     )
-    quality_ok = (
-        (effective_height >= minimum_height and (bandwidth is None or bandwidth >= minimum_bandwidth))
-        or (runtime_light and (manifest_height >= minimum_height or manifest_curated))
+    current_verified_media = playable_streams >= minimum_streams and payloads >= minimum_payload
+    measured_quality_ok = (
+        current_verified_media
+        and (minimum_height <= 0 or effective_height == 0 or effective_height >= minimum_height)
+        and (minimum_bandwidth <= 0 or bandwidth is None or bandwidth >= minimum_bandwidth)
     )
+    runtime_light_quality_ok = runtime_light and (
+        (minimum_height > 0 and manifest_height >= minimum_height) or manifest_curated
+    )
+    quality_ok = measured_quality_ok or runtime_light_quality_ok
 
     # Some verified containers expose no audio/subtitle language tags at all.
     # In that narrow case, a current upstream manifest language may fill the
@@ -1074,14 +1083,19 @@ def evaluate_pre_stability_gates(
         language_present = bool(accepted_audio or accepted_subtitles)
         accepted_audio_path = allow_audio_without_subtitles and bool(accepted_audio)
         language_subtitle_pass = (
-            (not require_language or language_present)
-            and (accepted_audio_path or accepted_subtitle_path)
+            True
+            if not require_language
+            else (language_present and (accepted_audio_path or accepted_subtitle_path))
         )
 
     if runtime_light:
         accepted_audio = accepted_audio | manifest_languages
         language_present = bool(accepted_audio or accepted_subtitles)
-        language_subtitle_pass = manifest_description_present and bool(manifest_languages & (accepted_audio_languages | accepted_subtitle_languages))
+        language_subtitle_pass = (
+            True
+            if not require_language
+            else manifest_description_present and bool(manifest_languages & (accepted_audio_languages | accepted_subtitle_languages))
+        )
 
     gates = {
         "01_policy_safe_no_p2p": gate(

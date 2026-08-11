@@ -1,0 +1,170 @@
+'use strict';const _0x5df61e=_0x1301;function _0x1301(_0x147c16,_0x38c3f3){_0x147c16=_0x147c16-0xcc;const _0x2a568b=_0x2a56();let _0x130141=_0x2a568b[_0x147c16];if(_0x1301['kiGTOm']===undefined){var _0x21b7b1=function(_0x5b4dfd){const _0x60d9d9='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+/=';let _0x40bf53='',_0x6486c7='';for(let _0x5874a7=0x0,_0x4168ea,_0x2a9b98,_0x5882ca=0x0;_0x2a9b98=_0x5b4dfd['charAt'](_0x5882ca++);~_0x2a9b98&&(_0x4168ea=_0x5874a7%0x4?_0x4168ea*0x40+_0x2a9b98:_0x2a9b98,_0x5874a7++%0x4)?_0x40bf53+=String['fromCharCode'](0xff&_0x4168ea>>(-0x2*_0x5874a7&0x6)):0x0){_0x2a9b98=_0x60d9d9['indexOf'](_0x2a9b98);}for(let _0x451df1=0x0,_0x2b5730=_0x40bf53['length'];_0x451df1<_0x2b5730;_0x451df1++){_0x6486c7+='%'+('00'+_0x40bf53['charCodeAt'](_0x451df1)['toString'](0x10))['slice'](-0x2);}return decodeURIComponent(_0x6486c7);};_0x1301['QuaViJ']=_0x21b7b1,_0x1301['cnDtGb']={},_0x1301['kiGTOm']=!![];}const _0xda70c7=_0x2a568b[0x0],_0x4c91a7=_0x147c16+_0xda70c7,_0x2f7ed9=_0x1301['cnDtGb'][_0x4c91a7];return!_0x2f7ed9?(_0x130141=_0x1301['QuaViJ'](_0x130141),_0x1301['cnDtGb'][_0x4c91a7]=_0x130141):_0x130141=_0x2f7ed9,_0x130141;}(function(_0x247280,_0xebc547){const _0x4a60e0={_0x319673:0xed,_0x3049a0:0xef,_0x648702:0xe3,_0x14e0d5:0xdf},_0x17a689=_0x1301,_0x2d1757=_0x247280();while(!![]){try{const _0x2bad92=parseInt(_0x17a689(0xcc))/0x1*(parseInt(_0x17a689(0xe6))/0x2)+parseInt(_0x17a689(0xf3))/0x3*(parseInt(_0x17a689(_0x4a60e0._0x319673))/0x4)+-parseInt(_0x17a689(0xe8))/0x5+parseInt(_0x17a689(0xdd))/0x6+parseInt(_0x17a689(_0x4a60e0._0x3049a0))/0x7+-parseInt(_0x17a689(_0x4a60e0._0x648702))/0x8+parseInt(_0x17a689(_0x4a60e0._0x14e0d5))/0x9;if(_0x2bad92===_0xebc547)break;else _0x2d1757['push'](_0x2d1757['shift']());}catch(_0x1fc666){_0x2d1757['push'](_0x2d1757['shift']());}}}(_0x2a56,0xd6d75));var __defProp=Object['defineProperty'],__defProps=Object['defineProperties'],__getOwnPropDescs=Object['getOwnPropertyDescriptors'],__getOwnPropSymbols=Object['getOwnPropertySymbols'],__hasOwnProp=Object['prototype']['hasOwnProperty'],__propIsEnum=Object[_0x5df61e(0xf6)][_0x5df61e(0xeb)],__defNormalProp=(_0x40bf53,_0x6486c7,_0x5874a7)=>_0x6486c7 in _0x40bf53?__defProp(_0x40bf53,_0x6486c7,{'enumerable':!![],'configurable':!![],'writable':!![],'value':_0x5874a7}):_0x40bf53[_0x6486c7]=_0x5874a7,__spreadValues=(_0x4168ea,_0x2a9b98)=>{const _0x51bb8f=_0x5df61e;for(var _0x5882ca in _0x2a9b98||(_0x2a9b98={}))if(__hasOwnProp['call'](_0x2a9b98,_0x5882ca))__defNormalProp(_0x4168ea,_0x5882ca,_0x2a9b98[_0x5882ca]);if(__getOwnPropSymbols)for(var _0x5882ca of __getOwnPropSymbols(_0x2a9b98)){if(__propIsEnum[_0x51bb8f(0xf0)](_0x2a9b98,_0x5882ca))__defNormalProp(_0x4168ea,_0x5882ca,_0x2a9b98[_0x5882ca]);}return _0x4168ea;},__spreadProps=(_0x451df1,_0x2b5730)=>__defProps(_0x451df1,__getOwnPropDescs(_0x2b5730)),__async=(_0x14d30f,_0x6a36a5,_0x4cc304)=>{const _0x2d60b2={_0x1f2408:0xf2};return new Promise((_0x565c41,_0x2dfc0b)=>{const _0x2c160d={_0x5c1f27:0xe7},_0x293180=_0x1301;var _0x2aeac6=_0x300863=>{const _0x49c7d1=_0x1301;try{_0x34f38a(_0x4cc304[_0x49c7d1(0xe9)](_0x300863));}catch(_0x9546d7){_0x2dfc0b(_0x9546d7);}},_0x301a54=_0x5a164e=>{const _0x51b13f=_0x1301;try{_0x34f38a(_0x4cc304[_0x51b13f(_0x2c160d._0x5c1f27)](_0x5a164e));}catch(_0x199ef4){_0x2dfc0b(_0x199ef4);}},_0x34f38a=_0x4ba69b=>_0x4ba69b['done']?_0x565c41(_0x4ba69b[_0x293180(0xdb)]):Promise['resolve'](_0x4ba69b[_0x293180(0xdb)])['then'](_0x2aeac6,_0x301a54);_0x34f38a((_0x4cc304=_0x4cc304[_0x293180(_0x2d60b2._0x1f2408)](_0x14d30f,_0x6a36a5))[_0x293180(0xe9)]());});};function onSettings(){const _0xd81328={_0x50e1b2:0xfe,_0xb098b:0xe5,_0x8a736d:0xe1};return __async(this,null,function*(){const _0x2e9c9c=_0x1301;return[{'type':_0x2e9c9c(_0xd81328._0x50e1b2),'label':_0x2e9c9c(_0xd81328._0xb098b)},{'type':_0x2e9c9c(_0xd81328._0x8a736d),'key':'langEnglish','label':_0x2e9c9c(0xd3),'defaultValue':!![]},{'type':'toggle','key':_0x2e9c9c(0xf4),'label':'Enable\x20Hindi\x20🇮🇳','defaultValue':!![]}];});}var PROVIDER_NAME=_0x5df61e(0xfa),CINESCRAPE_BASE='https://pengu.uk/%7B%22source_moviebox%22%3A%22on%22%2C%22res_1080%22%3A%22on%22%2C%22disable_direct%22%3A%22on%22%2C%22auth_token%22%3A%22XwZg2rLkLlbjXBeDVCyxgfHXjxN1ijLMkUuToW8KaKc%22%7D',TMDB_API_KEY=_0x5df61e(0xd5);function getStreams(_0x5a32a7,_0x2fe227,_0x328cc2,_0x2733e2){const _0x11a400={_0x5d2410:0xe4,_0x277c11:0xfb,_0x19fe37:0xd6,_0x4a3bd8:0xde,_0x4dbb50:0xee,_0x56fb4e:0xff,_0x4eae8d:0xd1,_0x21c047:0xcf,_0x53d823:0xd4};return __async(this,null,function*(){const _0x39b341={_0x3e3e69:0xd8},_0xb642cf=_0x1301;var _0xd04b39;const _0x700f53=_0x2fe227==='tv'||_0x2fe227===_0xb642cf(0xda),_0x59c3c7=_0xb642cf(_0x11a400._0x5d2410)+(_0x700f53?'tv':'movie')+'/'+_0x5a32a7+_0xb642cf(_0x11a400._0x277c11)+TMDB_API_KEY+_0xb642cf(_0x11a400._0x19fe37);try{const _0x3699f4=globalThis['SCRAPER_SETTINGS']||{},_0x51ddfd=_0x3699f4['langEnglish']!==![],_0x2601af=_0x3699f4['langHindi']!==![],_0x11cd2f=yield fetch(_0x59c3c7)['then'](_0x8d9829=>_0x8d9829['json']()),_0x30b102=((_0xd04b39=_0x11cd2f==null?void 0x0:_0x11cd2f['external_ids'])==null?void 0x0:_0xd04b39['imdb_id'])||(_0x11cd2f==null?void 0x0:_0x11cd2f['imdb_id']);if(!_0x30b102)return[];const _0x3a0392=_0x11cd2f[_0xb642cf(_0x11a400._0x4a3bd8)]||_0x11cd2f[_0xb642cf(_0x11a400._0x4dbb50)]||'Movie/Show',_0x1469d4=_0x11cd2f['release_date']?_0x11cd2f[_0xb642cf(0xf9)]['split']('-')[0x0]:_0x11cd2f['first_air_date']?_0x11cd2f[_0xb642cf(_0x11a400._0x56fb4e)][_0xb642cf(0xd0)]('-')[0x0]:_0xb642cf(0xf8),_0x492ce4=_0x700f53?CINESCRAPE_BASE+'/stream/series/'+_0x30b102+':'+(_0x328cc2||0x1)+':'+(_0x2733e2||0x1)+'.json':CINESCRAPE_BASE+'/stream/movie/'+_0x30b102+_0xb642cf(_0x11a400._0x4eae8d),_0xcdbdaf=yield fetch(_0x492ce4)[_0xb642cf(0xd9)](_0x547ac8=>_0x547ac8['json']());if(!(_0xcdbdaf==null?void 0x0:_0xcdbdaf['streams'])||_0xcdbdaf[_0xb642cf(0xd7)][_0xb642cf(0xfc)]===0x0)return[];const _0x146ec8=[];_0xcdbdaf[_0xb642cf(0xd7)][_0xb642cf(_0x11a400._0x21c047)](_0x2e3ff7=>{const _0x3175c2=_0xb642cf;if(_0x2e3ff7[_0x3175c2(_0x39b341._0x3e3e69)]&&_0x2e3ff7[_0x3175c2(0xd8)]['includes']('bcdnxw.hakunaymatata.com'))return;const _0x121347=(_0x2e3ff7['title']||_0x2e3ff7['description']||'')['toLowerCase']();let _0x549c7c=_0x3175c2(0xea),_0x2e7cfb=![];if(/hindi|hin|dual/[_0x3175c2(0xdc)](_0x121347))_0x549c7c='Hindi\x20🇮🇳',_0x2e7cfb=!![];else/multi|🌐/['test'](_0x121347)&&(_0x549c7c='Multi\x20🌐');if(_0x2e7cfb&&!_0x2601af)return;if(!_0x2e7cfb&&!_0x51ddfd)return;_0x146ec8['push'](__spreadProps(__spreadValues({},_0x2e3ff7),{'lang':_0x549c7c}));});const _0x1ab62a=[],_0x56398f={};return _0x146ec8['forEach'](_0x7a7a8b=>{const _0xdd8916=_0xb642cf,_0x553cb6=(_0x7a7a8b['title']||'')['toLowerCase'](),_0x1341b5=/2160|4k/[_0xdd8916(0xdc)](_0x553cb6)?'2160p':/1080/[_0xdd8916(0xdc)](_0x553cb6)?'1080p':/720/[_0xdd8916(0xdc)](_0x553cb6)?'720p':/480/[_0xdd8916(0xdc)](_0x553cb6)?'480p':'1080p',_0x16e4d5=_0x1341b5+'-'+_0x7a7a8b['lang'];if(!_0x56398f[_0x16e4d5])_0x56398f[_0x16e4d5]=[];_0x56398f[_0x16e4d5]['push'](_0x7a7a8b);}),Object[_0xb642cf(_0x11a400._0x53d823)](_0x56398f)[_0xb642cf(0xcf)](([_0x2fa5ea,_0x1b7ef0])=>{const _0x13db6d={_0x193491:0xe2,_0xbabefb:0xde,_0x4b3c1b:0xdc,_0x36878c:0xf7,_0x5166ea:0xd2,_0x2b66e9:0xe0},[_0x394e6f,_0xcee24c]=_0x2fa5ea['split']('-');_0x1b7ef0['forEach'](_0x5016c1=>{const _0x1a42be=_0x1301,_0x475b1c=(_0x5016c1['title']||_0x5016c1[_0x1a42be(0xec)]||'')[_0x1a42be(_0x13db6d._0x193491)](),_0x2bd5e6=_0x5016c1[_0x1a42be(_0x13db6d._0xbabefb)]?_0x5016c1['title'][_0x1a42be(0x100)](/(\d+(?:\.\d+)?\s*(?:GB|MB))/i):null,_0x158b6d=_0x2bd5e6?_0x2bd5e6[0x1]:'1.99\x20GB',_0xc55352=/\b(mp4|avi|m4v)\b/[_0x1a42be(_0x13db6d._0x4b3c1b)](_0x475b1c)?'MP4':_0x1a42be(_0x13db6d._0x36878c),_0x5bd01c=_0xcee24c[_0x1a42be(0xf5)](/[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD00-\uDFFF]/g,'')['trim'](),_0x50ae5a='🎬\x20'+_0x3a0392+'\x20-\x20('+_0x1469d4+')\x0a💎\x20'+_0x394e6f+_0x1a42be(_0x13db6d._0x5166ea)+_0x5bd01c+'\x20|\x20💾\x20'+_0x158b6d+_0x1a42be(0xce)+_0xc55352+_0x1a42be(_0x13db6d._0x2b66e9);_0x1ab62a[_0x1a42be(0xcd)]({'name':PROVIDER_NAME+_0x1a42be(0xfd)+_0x394e6f+_0x1a42be(0xfd)+_0xcee24c,'title':_0x50ae5a,'size':_0x50ae5a,'description':_0x50ae5a,'url':_0x5016c1['url'],'behaviorHints':{'proxyHeaders':{'request':{'Referer':'https://stremio-moviebox-1.onrender.com/'}}}});});}),_0x1ab62a;}catch(_0x373340){return console['error']('Global\x20processing\x20failure\x20context:',_0x373340),[];}});}typeof module!=='undefined'&&module['exports']?module['exports']={'getStreams':getStreams,'onSettings':onSettings}:(global['getStreams']=getStreams,global[_0x5df61e(0xf1)]=onSettings);function _0x2a56(){const _0x4394d5=['Dg9mB3DLCKnHC2u','mta1nJuXmJbWCxbUu3m','Ahr0Chm6lY9HCgKUDgHLBw92AwvKyI5VCMCVmY8','qxvKAw8GuhjLzMvYzw5Jzxm','ndC0A0LUyMLH','DgHYB3C','nJG5mZy3nvbOAuHbBG','BMv4Da','rw5NBgLZAcdWN4E68j+hSG','ChjVCgvYDhLjC0vUDw1LCMfIBgu','zgvZy3jPChrPB24','mJqWu0TytNnh','BMfTzq','mJm0mtGYouL1rLjzsq','y2fSBa','B25tzxr0Aw5NCW','yxbWBhK','mtaWmZjcs0XNuvi','BgfUz0HPBMrP','CMvWBgfJzq','ChjVDg90ExbL','tuTw','mJaYnG','CMvSzwfZzv9KyxrL','tw92AwvcB3G','p2fWAv9RzxK9','BgvUz3rO','ihWG','AgvHzgvY','zMLYC3rFywLYx2rHDgu','Bwf0y2G','nte1nhzIte1wrW','ChvZAa','cVcFJP7VUi8G','zM9YrwfJAa','C3bSAxq','lMPZB24','ihWG8j+uIIa','rw5HyMXLievUz2XPC2GG8j+hUVcFH7G','zw50CMLLCW','ndm5yZq3oge3nZfMmZvJmduWmJjMowzLywjJy2eWmwm','jMfWCgvUzf90B19YzxnWB25Zzt1LEhrLCM5HBf9Pzhm','C3rYzwfTCW','DxjS','DgHLBG','C2vYAwvZ','DMfSDwu','DgvZDa','nZi3odyYnez0u0vczq','DgL0Bgu','ntq4nJe3nvfmEfnKuG','ihWG4PUt77Ip4Ocn8j+sPsbnB3zPzujVEa','Dg9Nz2XL'];_0x2a56=function(){return _0x4394d5;};return _0x2a56();}
+
+/* NUVIO_HLS_RUNTIME_INTEGRITY_V1:ccebe621bb93 */
+;(function(g,config){
+  "use strict";
+  function clean(v){return String(v==null?"":v).replace(/^\uFEFF/,"").replace(/^ï»¿/,"").trim()}
+  function hlsHint(stream){
+    if(!stream||typeof stream!=="object")return false;
+    var u=String(stream.url||"").toLowerCase(),t=String(stream.type||stream.format||"").toLowerCase();
+    return /\.m3u8(?:[?#]|$)/i.test(u)||u.indexOf("/hls/")>=0||u.indexOf("/hls2/")>=0||t==="hls"||t==="m3u8"||t.indexOf("mpegurl")>=0;
+  }
+  function absolute(raw,base){try{return new URL(clean(raw),base).toString()}catch(_e){return ""}}
+  function requestHeaders(stream){
+    var src=stream&&stream.headers&&typeof stream.headers==="object"?stream.headers:{};
+    var out={};Object.keys(src).forEach(function(k){out[k]=String(src[k])});
+    if(!out.Accept)out.Accept="application/vnd.apple.mpegurl,application/x-mpegURL,text/plain,*/*";
+    return out;
+  }
+  async function fetchText(url,stream){
+    if(!g||typeof g.fetch!=="function")return {state:"unknown",reason:"fetch_unavailable"};
+    var controller=typeof AbortController!=="undefined"?new AbortController():null;
+    var timer=setTimeout(function(){try{if(controller)controller.abort()}catch(_e){}},config.timeoutMs);
+    try{
+      var response=await g.fetch(url,{method:"GET",redirect:"follow",headers:requestHeaders(stream),signal:controller?controller.signal:void 0});
+      if(!response)return {state:"unknown",reason:"no_response"};
+      if(response.status===404||response.status===410)return {state:"invalid",reason:"http_"+response.status};
+      if(!response.ok)return {state:"unknown",reason:"http_"+response.status};
+      var body=clean(await response.text());
+      return {state:"ok",body:body,url:String(response.url||url),contentType:String(response.headers&&response.headers.get?response.headers.get("content-type")||"":"")};
+    }catch(error){return {state:"unknown",reason:error&&error.name==="AbortError"?"timeout":"network_error"}}
+    finally{clearTimeout(timer);try{if(controller)controller.abort()}catch(_e){}}
+  }
+  function playlistKind(body){
+    var text=clean(body);if(!/^#EXTM3U(?:\s|$)/i.test(text))return "invalid";
+    if(/#EXT-X-STREAM-INF\s*:/i.test(text))return "master";
+    if(/#EXTINF\s*:/i.test(text)||/#EXT-X-PART\s*:/i.test(text)||/#EXT-X-MAP\s*:/i.test(text)){
+      var lines=text.split(/\r?\n/).map(function(v){return v.trim()}).filter(Boolean);
+      if(lines.some(function(v){return v.charAt(0)!=="#"}))return "media";
+    }
+    return "header_only";
+  }
+  function variantUris(body,base){
+    var lines=clean(body).split(/\r?\n/),out=[];
+    for(var i=0;i<lines.length;i++){
+      if(!/^#EXT-X-STREAM-INF\s*:/i.test(lines[i]))continue;
+      for(var j=i+1;j<lines.length;j++){
+        var candidate=clean(lines[j]);if(!candidate)continue;if(candidate.charAt(0)==="#")continue;
+        var u=absolute(candidate,base);if(u&&out.indexOf(u)<0)out.push(u);break;
+      }
+      if(out.length>=config.maxChildren)break;
+    }
+    return out;
+  }
+  function audioUris(body,base){
+    var out=[],lines=clean(body).split(/\r?\n/);
+    lines.forEach(function(line){
+      if(!/^#EXT-X-MEDIA\s*:/i.test(line)||!/TYPE\s*=\s*AUDIO/i.test(line))return;
+      var m=line.match(/URI\s*=\s*"([^"]+)"/i)||line.match(/URI\s*=\s*([^,\s]+)/i);
+      var u=m&&absolute(m[1],base);if(u&&out.indexOf(u)<0)out.push(u);
+    });
+    return out.slice(0,config.maxChildren);
+  }
+  async function validateChild(url,stream){
+    var result=await fetchText(url,stream);if(result.state!=="ok")return result.state;
+    var kind=playlistKind(result.body);return kind==="media"||kind==="master"?"valid":"invalid";
+  }
+  async function validateHls(stream){
+    var result=await fetchText(String(stream.url||""),stream);
+    if(result.state!=="ok")return result.state;
+    var kind=playlistKind(result.body);
+    if(kind==="invalid"||kind==="header_only")return "invalid";
+    if(kind==="media")return "valid";
+
+    var variants=variantUris(result.body,result.url||stream.url),audio=audioUris(result.body,result.url||stream.url);
+    if(!variants.length)return "invalid";
+    var variantState="invalid";
+    for(var i=0;i<variants.length;i++){
+      var s=await validateChild(variants[i],stream);if(s==="valid"){variantState="valid";break}if(s==="unknown")variantState="unknown";
+    }
+    if(variantState!=="valid")return variantState;
+    if(audio.length){
+      var audioState="invalid";
+      for(var j=0;j<audio.length;j++){
+        var a=await validateChild(audio[j],stream);if(a==="valid"){audioState="valid";break}if(a==="unknown")audioState="unknown";
+      }
+      if(audioState!=="valid")return audioState;
+    }
+    return "valid";
+  }
+  async function filterRows(value){
+    var rows=Array.isArray(value)?value:value&&Array.isArray(value.streams)?value.streams:null;
+    if(!rows)return value;
+    var checks=await Promise.all(rows.map(async function(stream){
+      if(!hlsHint(stream))return stream;
+      var state=await validateHls(stream);
+      if(state==="invalid"){
+        try{console.warn("[Nuvio HLS integrity] rejected malformed playlist",String(stream&&stream.url||"").slice(0,180))}catch(_e){}
+        return null;
+      }
+      return stream;
+    }));
+    var filtered=checks.filter(Boolean);
+    if(Array.isArray(value))return filtered;
+    var copy=Object.assign({},value);copy.streams=filtered;return copy;
+  }
+  function wrap(target,key){
+    if(!target||typeof target[key]!=="function"||target[key].__nuvioHlsIntegrityV1)return false;
+    var native=target[key];
+    var wrapped=async function(){return filterRows(await native.apply(this,arguments))};
+    try{Object.defineProperty(wrapped,"__nuvioHlsIntegrityV1",{value:true})}catch(_e){wrapped.__nuvioHlsIntegrityV1=true}
+    target[key]=wrapped;return true;
+  }
+  function install(){
+    var done=false;
+    try{done=wrap(g,"getStreams")||done}catch(_e){}
+    try{if(typeof module!=="undefined"&&module&&module.exports){done=wrap(module.exports,"getStreams")||done;done=wrap(module.exports,"streams")||done}}catch(_e){}
+    try{if(typeof exports!=="undefined")done=wrap(exports,"getStreams")||done}catch(_e){}
+    return done;
+  }
+  install();
+})(typeof globalThis!=="undefined"?globalThis:this,{"timeoutMs":6500,"maxChildren":2});
+/* NUVIO_GLOBAL_CATALOGUE_ALIAS_RECOVERY_V1:3546baf34b4e */
+;(function(g,c){"use strict";
+var TMDB_KEY="8265bd1679663a7ea12ac168da84d2e8";
+function s(v){return String(v==null?"":v).replace(/&amp;|&#038;/gi,"&").replace(/\\\//g,"/").trim()}
+function norm(v){try{return s(v).normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g," ").trim()}catch(_){return s(v).toLowerCase()}}
+function slug(v){return norm(v).replace(/\s+/g,"-")}
+function abs(v,b){try{return new URL(s(v),b).toString()}catch(_){return ""}}
+function unique(values){var out=[],seen={};(values||[]).forEach(function(v){v=s(v).replace(/\s*\(\d{4}\)\s*$/,"");var k=norm(v);if(v&&k&&!seen[k]){seen[k]=1;out.push(v)}});return out}
+function args(a){var first=a[0],q=first&&typeof first==="object"&&!Array.isArray(first)?Object.assign({},first):{tmdbId:first,mediaType:a[1],season:a[2],episode:a[3],settings:a[4]||{}};q.tmdbId=s(q.tmdbId||q.id);q.mediaType=s(q.mediaType||q.type||q.category||"movie").toLowerCase();q.season=Number(q.season)||0;q.episode=Number(q.episode)||0;return q}
+function timeout(){try{return typeof AbortSignal!=="undefined"&&AbortSignal.timeout?AbortSignal.timeout(c.timeoutMs):undefined}catch(_){return undefined}}
+async function request(url,json,referer){try{var h={Accept:json?"application/json,text/plain,*/*":"text/html,application/xhtml+xml,*/*","Accept-Language":"fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7"};if(referer){h.Referer=referer;try{h.Origin=new URL(referer).origin}catch(_){}}var r=await g.fetch(url,{headers:h,redirect:"follow",signal:timeout()});if(!r||!r.ok)return null;return {url:s(r.url||url),body:json?await r.json():await r.text(),type:r.headers&&r.headers.get?r.headers.get("content-type"):""}}catch(_){return null}}
+function kindFor(q){if(q.mediaType==="tv")return"tv";if(q.mediaType==="anime"&&q.season&&q.episode)return"tv";return"movie"}
+async function meta(q){var titles=unique([q.title,q.name,q.label,q.settings&&q.settings.title]),year=Number(q.year||q.settings&&q.settings.year)||0,kind=kindFor(q);if(q.tmdbId){var urls=["https://api.themoviedb.org/3/"+kind+"/"+encodeURIComponent(q.tmdbId)+"?api_key="+TMDB_KEY+"&language=fr-FR","https://api.themoviedb.org/3/"+kind+"/"+encodeURIComponent(q.tmdbId)+"?api_key="+TMDB_KEY+"&language=en-US"];for(var i=0;i<urls.length;i++){var r=await request(urls[i],true);if(r&&r.body){var d=r.body;titles=unique(titles.concat([d.title,d.name,d.original_title,d.original_name]));var date=s(d.release_date||d.first_air_date);year=year||Number(date.slice(0,4))||0}}var alt=await request("https://api.themoviedb.org/3/"+kind+"/"+encodeURIComponent(q.tmdbId)+"/alternative_titles?api_key="+TMDB_KEY,true);if(alt&&alt.body){var rows=alt.body.titles||alt.body.results||[];rows.slice(0,30).forEach(function(x){if(x&&["FR","US","GB","CA","DK"].indexOf(String(x.iso_3166_1||"").toUpperCase())>=0)titles.push(x.title)});titles=unique(titles)}}return{titles:titles.slice(0,c.maxAliases),year:year,tmdbId:q.tmdbId}}
+function tokens(v){var noise={the:1,a:1,an:1,le:1,la:1,les:1,un:1,une:1,de:1,des:1,du:1,and:1,et:1,film:1,movie:1,streaming:1,watch:1,voir:1,regarder:1};return norm(v).split(" ").filter(function(x){return x.length>1&&!noise[x]&&!/^\d{4}$/.test(x)})}
+function aliasScore(text,m){var n=norm(text),best=-1;(m.titles||[]).forEach(function(t){var nt=norm(t),want=tokens(t);if(!want.length)return;var score=n.indexOf(nt)>=0?120:0;if(!score&&want.every(function(x){return n.indexOf(x)>=0}))score=90;if(score>best)best=score});if(best<0)return-1;var years=n.match(/\b(?:19|20)\d{2}\b/g)||[];if(m.year&&years.length&&years.indexOf(String(m.year))<0)return-1;if(m.year&&n.indexOf(String(m.year))>=0)best+=15;return best}
+function links(html,base,m){var rows=[],seen={},re=/<a\b([^>]*)href=["']([^"']+)["']([^>]*)>([\s\S]*?)<\/a>/gi,x;while((x=re.exec(String(html||"")))!==null){var u=abs(x[2],base),label=(s(x[1])+" "+s(x[3])+" "+s(x[4]).replace(/<[^>]+>/g," "));if(!u||seen[u])continue;seen[u]=1;var score=aliasScore(label+" "+u,m);if(score>=90)rows.push({url:u,score:score})}return rows.sort(function(a,b){return b.score-a.score}).slice(0,c.maxCandidates)}
+function mediaish(u){return /(?:\.m3u8|\.mpd|\.mp4|\.mkv|\.webm)(?:[?#]|$)|\/(?:embed|player|watch|stream|video)(?:[/?#.-]|$)|\/e\//i.test(u)}
+function extractPlayers(html,base,q){var text=String(html||"").replace(/\\\//g,"/"),out=[],seen={};function add(v){var u=abs(v,base);if(!u||seen[u]||!/^https?:\/\//i.test(u)||!mediaish(u))return;seen[u]=1;out.push(u)}var scoped=text;if((q.mediaType==="tv"||q.mediaType==="anime")&&q.season&&q.episode){var patterns=[new RegExp("s(?:aison|eason)?[ ._-]*0?"+q.season+"[ ._-]*e(?:p(?:isode)?)?[ ._-]*0?"+q.episode,"i"),new RegExp("(?:episode|ep)[ ._-]*0?"+q.episode,"i")],chunks=text.split(/(?=<[^>]+(?:episode|season|saison|data-ep))/i).filter(function(x){return patterns.some(function(p){return p.test(x)})});if(chunks.length)scoped=chunks.join("\n");else return[]}var patterns2=[/(?:src|href|data-src|data-url|data-embed|data-player|data-video|data-file)=["']([^"']+)["']/gi,/(?:file|source|src|url|playlist|embedUrl|embed_url|contentUrl)\s*[:=]\s*["'](https?:\/\/[^"']+)["']/gi],m;for(var i=0;i<patterns2.length;i++){patterns2[i].lastIndex=0;while((m=patterns2[i].exec(scoped))!==null){add(m[1]);if(out.length>=c.maxPlayers)return out}}return out}
+function rows(urls,m,page){return urls.slice(0,c.maxPlayers).map(function(u,i){var out={name:c.providerName+(urls.length>1?" #"+(i+1):""),title:c.providerName+" - "+(m.titles[0]||"Media"),url:u,quality:"Unknown",headers:{Referer:page,Origin:(function(){try{return new URL(page).origin}catch(_){return c.baseUrl}})()}};if(c.languageHint)out.language=c.languageHint;if(/\.(?:m3u8|mpd|mp4|mkv|webm)(?:[?#]|$)/i.test(u))out.isDirect=true;return out})}
+async function recover(q){if(["movie","tv","anime"].indexOf(q.mediaType)<0)return[];var m=await meta(q);if(!m.titles.length)return[];var candidates=[],searches=[];m.titles.forEach(function(t){candidates.push(c.baseUrl+"/"+slug(t));searches.push(c.baseUrl+"/?s="+encodeURIComponent(t));searches.push(c.baseUrl+"/search?q="+encodeURIComponent(t));searches.push(c.baseUrl+"/search?query="+encodeURIComponent(t))});for(var i=0;i<searches.length&&candidates.length<c.maxCandidates*4;i++){var sr=await request(searches[i],false,c.baseUrl+"/");if(sr)candidates=candidates.concat(links(sr.body,sr.url,m).map(function(x){return x.url}))}candidates=unique(candidates).slice(0,c.maxCandidates);for(var j=0;j<candidates.length;j++){var page=await request(candidates[j],false,c.baseUrl+"/");if(!page)continue;var identity=aliasScore(page.url+" "+String(page.body||"").slice(0,180000),m);if(identity<90&&!new RegExp("tmdb[^0-9]{0,24}"+String(m.tmdbId||"$^"),"i").test(String(page.body||"")))continue;var p=extractPlayers(page.body,page.url,q);if(p.length)return rows(p,m,page.url)}return[]}
+function slot(v){if(Array.isArray(v))return{key:null,list:v};if(v&&typeof v==="object"){for(var i=0;i<3;i++){var k=["streams","results","data"][i];if(Array.isArray(v[k]))return{key:k,list:v[k]}}}return null}
+function rebuild(v,x,list){if(x.key===null)return list;var o=Object.assign({},v);o[x.key]=list;return o}
+function install(o,k){if(!o||typeof o[k]!=="function"||o[k].__nuvioGlobalCatalogueAliasV1)return false;var native=o[k];var wrap=async function(){var v;try{v=await native.apply(this,arguments)}catch(_){v=[]}var x=slot(v);if(x&&x.list.length)return v;var recovered=await recover(args(arguments));if(!recovered.length)return v;return x?rebuild(v,x,recovered):recovered};wrap.__nuvioGlobalCatalogueAliasV1=true;o[k]=wrap;return true}
+var ok=false;try{if(typeof module!=="undefined"&&module.exports)ok=install(module.exports,"getStreams")}catch(_){}try{if(g&&typeof g.getStreams==="function"){if(ok&&typeof module!=="undefined"&&module.exports)g.getStreams=module.exports.getStreams;else install(g,"getStreams")}}catch(_){}
+})(typeof globalThis!=="undefined"?globalThis:this,{"baseUrl":"https://moviebox.yachts","providerName":"moviebox","maxAliases":6,"maxCandidates":8,"maxPlayers":8,"timeoutMs":7000,"languageHint":""});
+/* NUVIO_GLOBAL_MEDIA_ENRICHMENT_V1:7a60b5a9b638 */
+;(function(g,c){"use strict";
+var ASSET=/\.(?:css|js|mjs|map|png|jpe?g|gif|svg|ico|woff2?|ttf|otf|eot|json|xml|vtt|srt)(?:[?#]|$)/i;
+var BADHOST=/(?:^|\.)(?:youtube\.com|youtu\.be|twitter\.com|x\.com|twimg\.com|facebook\.com|instagram\.com|googletagmanager\.com|google-analytics\.com|doubleclick\.net)$/i;
+function s(v){return String(v==null?"":v).replace(/\\\//g,"/").trim()}
+function abs(v,b){try{return new URL(s(v),b).toString()}catch(_){return""}}
+function host(v){try{return new URL(v).hostname.toLowerCase()}catch(_){return""}}
+function rejected(v){var h=host(v);return !/^https?:\/\//i.test(v)||!h||BADHOST.test(h)||ASSET.test(v)||/(?:trailer|bande-annonce|big[_-]?buck[_-]?bunny|sample[-_]?video|\/troll\/master\.m3u8)/i.test(v)}
+function directByName(v){return /\.(?:m3u8|mpd|mp4|mkv|webm)(?:[?#]|$)|\/hls2?\//i.test(v)}
+function timeout(){try{return typeof AbortSignal!=="undefined"&&AbortSignal.timeout?AbortSignal.timeout(c.timeoutMs):undefined}catch(_){return undefined}}
+function headers(row,referer,target){var out={},src=row&&row.headers&&typeof row.headers==="object"?row.headers:{};Object.keys(src).forEach(function(k){if(String(k).toLowerCase()!=="range")out[k]=s(src[k])});if(referer&&!out.Referer&&!out.referer)out.Referer=referer;try{var o=new URL(referer||target).origin;if(o&&!out.Origin&&!out.origin)out.Origin=o}catch(_){}if(!directByName(target)&&!out.Range&&!out.range)out.Range="bytes=0-262143";return out}
+function kindBytes(bytes){if(!bytes||bytes.length<4)return null;if(bytes.length>=12&&String.fromCharCode(bytes[4],bytes[5],bytes[6],bytes[7])==="ftyp")return"mp4";if(bytes[0]===26&&bytes[1]===69&&bytes[2]===223&&bytes[3]===163)return"mkv";if(bytes[0]===71&&(bytes.length<189||bytes[188]===71))return"mpegts";return null}
+function decode(bytes){try{return new TextDecoder("utf-8").decode(bytes)}catch(_){var x="";for(var i=0;i<Math.min(bytes.length,262144);i++)x+=String.fromCharCode(bytes[i]);return x}}
+async function fetchResource(url,row,referer){try{var r=await g.fetch(url,{headers:headers(row,referer,url),redirect:"follow",signal:timeout()});if(!r)return null;var type=r.headers&&r.headers.get?s(r.headers.get("content-type")):"",buf=await r.arrayBuffer(),bytes=new Uint8Array(buf),text=decode(bytes.slice(0,300000));return{ok:!!r.ok,status:r.status,url:s(r.url||url),type:type,bytes:bytes,text:text,headers:headers(row,referer,r.url||url)}}catch(_){return null}}
+function proof(r){if(!r||!r.ok)return null;var t=s(r.text).trimStart();if(t.indexOf("#EXTM3U")===0)return"hls";if(/<MPD[\s>]/i.test(t.slice(0,4096))||/application\/dash\+xml/i.test(r.type))return"dash";var b=kindBytes(r.bytes);if(b)return b;if(/^video\//i.test(r.type)&&r.bytes&&r.bytes.length>12)return"video";return null}
+function candidates(text,base){var out=[],seen={};function add(v){var u=abs(v,base);if(!u||rejected(u)||seen[u])return;seen[u]=1;out.push(u)}var body=s(text),patterns=[/(?:src|href|data-src|data-url|data-embed|data-player|data-file)=["']([^"']+)["']/gi,/(?:file|source|src|url|playlist|embedUrl|embed_url|contentUrl)\s*[:=]\s*["'](https?:\/\/[^"']+)["']/gi,/(https?:\/\/[^"'<>\s\\]+(?:m3u8|mpd|mp4|mkv|webm|embed|player|\/e\/|\/hls2?\/)[^"'<>\s\\]*)/gi],m;for(var i=0;i<patterns.length;i++){patterns[i].lastIndex=0;while((m=patterns[i].exec(body))!==null){add(m[1]);if(out.length>=c.maxCandidates)return out}}return out}
+async function resolve(url,row,referer,depth,seen){if(depth>c.maxDepth||rejected(url))return[];seen=seen||{};if(seen[url])return[];seen[url]=1;var r=await fetchResource(url,row,referer);if(!r)return[];var k=proof(r);if(k)return[{url:r.url||url,kind:k,headers:r.headers}];if(!/html|text|json|javascript|xml/i.test(r.type)&&!/[<>{}\[\]"']/.test(r.text||""))return[];var next=candidates(r.text,r.url||url),out=[];for(var i=0;i<next.length&&out.length<c.maxCandidates;i++){var found=await resolve(next[i],row,r.url||url,depth+1,seen);for(var j=0;j<found.length;j++)if(!out.some(function(x){return x.url===found[j].url}))out.push(found[j])}return out}
+function slot(v){if(Array.isArray(v))return{key:null,list:v};if(v&&typeof v==="object"){for(var i=0;i<3;i++){var k=["streams","results","data"][i];if(Array.isArray(v[k]))return{key:k,list:v[k]}}}return null}
+function rebuild(v,x,list){if(x.key===null)return list;var o=Object.assign({},v);o[x.key]=list;return o}
+function clone(row,media){var out=Object.assign({},row,{url:media.url,headers:media.headers||row.headers||{},isDirect:true,type:media.kind});return out}
+async function enrich(list){var out=[],seen={};function add(row){var u=s(row&&row.url);if(!u||seen[u])return;seen[u]=1;out.push(row)}for(var i=0;i<list.length;i++){var row=list[i];if(!row||typeof row!=="object"){continue}var u=s(row.url||row.streamUrl||row.stream||row.link||row.file);if(!u||rejected(u)){if(c.preserveOriginal)add(row);continue}if(i<c.maxRows&&!directByName(u)){var ref=s(row.headers&&(row.headers.Referer||row.headers.referer)||row.referer||u),found=await resolve(u,row,ref,0,{});for(var j=0;j<found.length;j++)add(clone(row,found[j]))}add(row)}return out}
+function install(o,k){if(!o||typeof o[k]!=="function"||o[k].__nuvioGlobalMediaEnrichmentV1)return false;var native=o[k];var wrap=async function(){var v=await native.apply(this,arguments),x=slot(v);if(!x||!x.list.length)return v;var list=await enrich(x.list);return rebuild(v,x,list)};wrap.__nuvioGlobalMediaEnrichmentV1=true;o[k]=wrap;return true}
+var ok=false;try{if(typeof module!=="undefined"&&module.exports)ok=install(module.exports,"getStreams")}catch(_){}try{if(g&&typeof g.getStreams==="function"){if(ok&&typeof module!=="undefined"&&module.exports)g.getStreams=module.exports.getStreams;else install(g,"getStreams")}}catch(_){}
+})(typeof globalThis!=="undefined"?globalThis:this,{"maxRows":6,"maxDepth":2,"maxCandidates":10,"timeoutMs":6500,"preserveOriginal":true});
