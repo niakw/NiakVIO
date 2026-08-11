@@ -26,6 +26,10 @@ IGNORED_FILES = {
     "availability-history.json",
     "availability-report.json",
 }
+IGNORED_PREFIXES = (
+    ".github/ci-status/",
+    ".github/triggers/",
+)
 CORE_FILES = [
     "package.json",
     "sources.json",
@@ -81,6 +85,8 @@ def inventory(*, include_file_hashes: bool) -> dict[str, str]:
             continue
         if relative in IGNORED_FILES:
             continue
+        if any(relative.startswith(prefix) for prefix in IGNORED_PREFIXES):
+            continue
         if relative == "PATCH-SHA256SUMS.txt":
             continue
         if relative == "FILE-HASHES.json" and not include_file_hashes:
@@ -115,11 +121,12 @@ def main() -> int:
     (ROOT / "FILE-HASHES.json").write_text(
         json.dumps(
             {
-                "schema_version": 78,
+                "schema_version": 79,
                 "release": version,
                 "algorithm": "sha256",
                 "excluded_generated_files": sorted(GENERATED),
                 "excluded_mutable_operational_files": sorted(IGNORED_FILES),
+                "excluded_mutable_operational_prefixes": sorted(IGNORED_PREFIXES),
                 "files": files,
             },
             ensure_ascii=False,

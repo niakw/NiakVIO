@@ -1,5 +1,5 @@
 {
-  "schema_version": 78,
+  "schema_version": 79,
   "release": "5.20.36",
   "algorithm": "sha256",
   "excluded_generated_files": [
@@ -10,19 +10,15 @@
     "availability-history.json",
     "availability-report.json"
   ],
+  "excluded_mutable_operational_prefixes": [
+    ".github/ci-status/",
+    ".github/triggers/"
+  ],
   "files": {
     ".github/ISSUE_TEMPLATE/bug_report.md": "0c8d64f29fb4536513653bf8c97da30f3340e2041b91c8952db1515d6b23a7b3",
     ".github/ISSUE_TEMPLATE/custom.md": "a062d66844de4e399924f13739309fcd6fa478edca7a6733ba2f9bdb85b9f45d",
     ".github/ISSUE_TEMPLATE/feature_request.md": "1f48c52f209a971b8e7eae4120144d28fcf8ee38a7778a7b4d8cf1ab356617d2",
-    ".github/ci-status/current-runs.json": "18a4dd71035911cf314062e1829fda00f309ce63947fde9f3bcdbf492e288038",
     ".github/dependabot.yml": "8fdbc18bc1b989206d41410251b7a95dc9acd0dae39ddef0b00f7cc844621808",
-    ".github/triggers/deep-provider-repair": "0e32fe89d5364fa9a952a748561716b4fb158d433547c661a1cf1e96eb05f874",
-    ".github/triggers/domain-refresh": "f00850cf2b8320efcfc27300f741abeee9c867868196c839ff207da573162b91",
-    ".github/triggers/finalize-source-integrity": "9c7cc4e011f5707016d26342f8471afe6d878d29f23ee848a95ebe6811b4b497",
-    ".github/triggers/make-sync-transactional": "db809525d320cbdce6089db7bad05c2f3905c9adfb07fe0d861367a294dfb6ce",
-    ".github/triggers/playback-integrity-upgrade": "1c9287e8e9a74fc809d378f68ddbdc1247f104bc2e5c97a6e1f1a45c369b9a43",
-    ".github/triggers/publish-playback-integrity-v2": "4317e6879515acdac35d3723d3aa748cd34455717847ef2acda49c067b2650c9",
-    ".github/triggers/query-current-actions-main": "94114f8671f2f187e566e7330daf0dc42835d71e7a1d827e948591e895171cd8",
     ".github/workflows/apply-playback-integrity-upgrade.yml": "c72b286be2ccdcaacd8ebcf9ca0f8517cc0649be86980647adbe15116ff96ea4",
     ".github/workflows/audit-catalogue-media-once.yml": "2e3a71c8ba124d22d370495bd72f839f58e505afeba0c0a9a6ca40dadea617d0",
     ".github/workflows/availability.yml": "4c7b60bb2b643e406e6d1b7a2013ba2c3dc58f6ef4c63b60221ff48d11626a00",
@@ -259,7 +255,7 @@
     "scripts/finalize_upstream_lkg.py": "e4d81701e5d98276717dfa35e044e039e4a35bd4d5fade5d64d5e14d9a09eb38",
     "scripts/generate_diagnostics.py": "c35d443403b38a0d079bf4d00477b009bfe62b5248856005752e631c24af1039",
     "scripts/generate_language_manifests.py": "a1921384ed302e4bae8a6ef40fce62510b7edf5177d6fffe8c457f9aac8da4cf",
-    "scripts/generate_release_hashes.py": "76cca3f437dee2c24c6c8df608e2593ef7c2ea5ee629b7d0214576934ee71338",
+    "scripts/generate_release_hashes.py": "b404096f9942a7bf36ebef63ff07503a764169fc8eea6c37701f52f11754d239",
     "scripts/health_check.mjs": "14ae4d6ad061c12df5afa23a11dcb7aa78b4524928d900d528ad7ecfe89b85a9",
     "scripts/interstellar_nuvio_matrix.py": "a908b8774e1eb8af0d7bea58edefd0b43891d06b82f779be7fa501e507efef0d",
     "scripts/local/test_adaptive_global_provider_repair.py": "094a5d0e0f75cbd213da3419cf7690109491961eff4aacaced08728877bc7639",
@@ -397,7 +393,7 @@
     "tests/published_overrides_test.py": "69c747ff5525a30508245824bcc78387b71266392f7b68fba0851fb53daa5422",
     "tests/reapply_provider_versioning_test.py": "2f1831d4c36829537579b392f5a5e70d29b69b74723d11d7a99b1b3954b46a55",
     "tests/release_auto_bump_test.py": "9f8692b78316f95f7479271eca3aaa3f5eb50640f924fed66d94ed9bc82c01b9",
-    "tests/release_hash_scope_test.py": "e8773d60297ef7e74594627df2eebdda9063fb096865f268677e8e4037a99a0b",
+    "tests/release_hash_scope_test.py": "e3db75cb83920386d9c7177365230c9951646872857e7f4c71bf2b6b94f59e38",
     "tests/release_version_sync_test.py": "2a4a3cb84094a57a328dd2c52ef28bbb38831afcc08ad73e37b040fb89d6d43c",
     "tests/removed_provider_regression_test.py": "ac46fa96eadd0f67bd4eafc612eae53481c39b8ea7b4090c58051bc53ca0a3e1",
     "tests/runtime_repair_test.py": "a2ee10c5ba032d8bf0fce3a08b27f6c39cfe0bff66457ebd53e792572939e0ae",
