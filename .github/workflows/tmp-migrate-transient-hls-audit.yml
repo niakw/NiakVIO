@@ -10,7 +10,6 @@ permissions:
 
 jobs:
   migrate:
-    if: github.event.head_commit.message == 'ci: run transient HLS audit migration'
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
@@ -36,6 +35,7 @@ jobs:
         run: |
           rm -f scripts/tmp_migrate_transient_hls_audit.py
           rm -f .github/workflows/tmp-migrate-transient-hls-audit.yml
+          rm -f .github/triggers/transient-hls-audit-migration
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add -A
