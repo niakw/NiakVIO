@@ -78,7 +78,10 @@
       "worker_memory_mb": 512,
       "minimum_vod_duration_seconds": 60,
       "probe_streams_adaptively": true,
-      "inspect_direct_dimensions": true
+      "inspect_direct_dimensions": true,
+      "verify_fixture_duration_identity": true,
+      "minimum_fixture_duration_ratio": 0.55,
+      "maximum_fixture_duration_ratio": 1.8
     }
   },
   "fixtures": {
@@ -88,7 +91,8 @@
         "tmdbId": "157336",
         "mediaType": "movie",
         "title": "Interstellar",
-        "year": 2014
+        "year": 2014,
+        "expectedDurationMinutes": 169
       },
       {
         "label": "Tenet",
@@ -148,7 +152,8 @@
         "season": 1,
         "episode": 1,
         "title": "Breaking Bad",
-        "year": 2008
+        "year": 2008,
+        "expectedDurationMinutes": 58
       },
       {
         "label": "Game of Thrones S01E01",
@@ -213,7 +218,8 @@
         "season": 1,
         "episode": 1,
         "title": "Jujutsu Kaisen",
-        "year": 2020
+        "year": 2020,
+        "expectedDurationMinutes": 24
       },
       {
         "label": "Attack on Titan S01E01",

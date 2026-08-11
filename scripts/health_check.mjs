@@ -385,6 +385,40 @@ function parseMp4TrackHeights(body) {
   return heights;
 }
 
+function readUInt64BEAsNumber(body, offset) {
+  if (!Buffer.isBuffer(body) || offset < 0 || offset + 8 > body.length) return null;
+  const high = body.readUInt32BE(offset);
+  const low = body.readUInt32BE(offset + 4);
+  const value = high * 4294967296 + low;
+  return Number.isSafeInteger(value) ? value : null;
+}
+
+function parseMp4MovieDurationSeconds(body) {
+  if (!Buffer.isBuffer(body) || body.length < 40) return null;
+  // Movie Header (mvhd) stores the media timescale and complete movie duration.
+  // Scan only the bounded head/tail samples already fetched by the probe.
+  for (let index = 4; index + 36 <= body.length; index += 1) {
+    if (body[index] !== 0x6d || body[index + 1] !== 0x76 || body[index + 2] !== 0x68 || body[index + 3] !== 0x64) continue;
+    const start = index - 4;
+    const size = body.readUInt32BE(start);
+    if (size < 32 || start + Math.min(size, 40) > body.length) continue;
+    const version = body[start + 8];
+    let timescale = null;
+    let duration = null;
+    if (version === 0 && start + 28 <= body.length) {
+      timescale = body.readUInt32BE(start + 20);
+      duration = body.readUInt32BE(start + 24);
+    } else if (version === 1 && start + 40 <= body.length) {
+      timescale = body.readUInt32BE(start + 28);
+      duration = readUInt64BEAsNumber(body, start + 32);
+    }
+    if (!Number.isFinite(timescale) || timescale <= 0 || !Number.isFinite(duration) || duration <= 0) continue;
+    const seconds = duration / timescale;
+    if (Number.isFinite(seconds) && seconds >= 1 && seconds <= 1_209_600) return seconds;
+  }
+  return null;
+}
+
 function contentRangeTotal(value) {
   const match = String(value || '').match(/bytes\s+\d+-\d+\/(\d+)/i);
   return match ? Number(match[1]) : null;
@@ -460,7 +494,7 @@ async function probeSubtitle(subtitle, streamHeaders, mode) {
   }
 }
 
-async function probeStream(stream, mode) {
+async function probeStream(stream, mode, fixture = null) {
   const audioLanguages = new Set();
   const subtitleLanguages = new Set();
   const reportedHeights = [];
@@ -643,7 +677,8 @@ async function probeStream(stream, mode) {
       playbackVerified = true;
       if (kind === 'mp4' && mode.inspect_direct_dimensions === true) {
         verifiedHeights.push(...parseMp4TrackHeights(result.body));
-        if (!verifiedHeights.length) {
+        mediaDurationSeconds = parseMp4MovieDurationSeconds(result.body);
+        if (!verifiedHeights.length || mediaDurationSeconds == null) {
           const total = contentRangeTotal(result.contentRange);
           if (Number.isFinite(total) && total > sampleBytes) {
             try {
@@ -654,7 +689,10 @@ async function probeStream(stream, mode) {
                 timeoutMs,
                 sampleBytes,
               );
-              if (tail.ok) verifiedHeights.push(...parseMp4TrackHeights(tail.body));
+              if (tail.ok) {
+                if (!verifiedHeights.length) verifiedHeights.push(...parseMp4TrackHeights(tail.body));
+                if (mediaDurationSeconds == null) mediaDurationSeconds = parseMp4MovieDurationSeconds(tail.body);
+              }
             } catch {}
           }
         }
@@ -662,6 +700,27 @@ async function probeStream(stream, mode) {
     } else {
       payloadVerified = false;
       playbackVerified = false;
+    }
+
+    let durationIdentityMismatch = false;
+    let durationIdentityRatio = null;
+    const expectedDurationMinutes = Number(fixture?.expectedDurationMinutes || 0);
+    const expectedDurationSeconds = expectedDurationMinutes > 0 ? expectedDurationMinutes * 60 : null;
+    if (
+      playbackVerified
+      && mode.verify_fixture_duration_identity === true
+      && expectedDurationSeconds
+      && Number.isFinite(mediaDurationSeconds)
+      && mediaDurationSeconds > 0
+    ) {
+      durationIdentityRatio = mediaDurationSeconds / expectedDurationSeconds;
+      const minimumRatio = Math.max(0.05, Number(mode.minimum_fixture_duration_ratio || 0.55));
+      const maximumRatio = Math.max(minimumRatio, Number(mode.maximum_fixture_duration_ratio || 1.8));
+      if (durationIdentityRatio < minimumRatio || durationIdentityRatio > maximumRatio) {
+        durationIdentityMismatch = true;
+        playbackVerified = false;
+        payloadVerified = false;
+      }
     }
 
     const acceptedSubtitleEntries = advertisedSubtitleEntries.filter((subtitle) => {
@@ -696,7 +755,7 @@ async function probeStream(stream, mode) {
       playback_verified: playbackVerified,
       payload_verified: payloadVerified,
       direct_signature_verified: directSignatureVerified,
-      category: playbackVerified ? 'playable' : (shortVodPreview ? 'short_vod_preview' : classification.category),
+      category: playbackVerified ? 'playable' : (durationIdentityMismatch ? 'duration_identity_mismatch' : (shortVodPreview ? 'short_vod_preview' : classification.category)),
       http_status: result.status,
       kind,
       bytes_sampled: result.body.length,
@@ -706,6 +765,9 @@ async function probeStream(stream, mode) {
       audio_manifest_reachable: audioManifestReachable,
       audio_segment_reachable: audioSegmentReachable,
       media_duration_seconds: mediaDurationSeconds,
+      expected_duration_seconds: expectedDurationSeconds,
+      duration_identity_ratio: durationIdentityRatio,
+      duration_identity_mismatch: durationIdentityMismatch,
       minimum_vod_duration_seconds: minimumVodDurationSeconds,
       short_vod_preview: shortVodPreview,
       reportedHeights,
@@ -1330,6 +1392,7 @@ async function testCandidate(candidate) {
       title: fixture.title || fixture.label || null,
       year: fixture.year ?? null,
       category: fixture.category || fixture.mediaType || 'unknown',
+      expectedDurationMinutes: fixture.expectedDurationMinutes ?? null,
     };
     const worker = await runWorker(candidate, normalizedFixture);
     const streams = Array.isArray(worker.streams) ? worker.streams : [];
@@ -1338,13 +1401,13 @@ async function testCandidate(candidate) {
     const adaptiveDeepSampling = requestedMode === 'deep' && modeConfig.probe_streams_adaptively === true;
     if (!adaptiveDeepSampling || maxStreamsToProbe <= 1 || streams.length <= 1) {
       for (const stream of streams.slice(0, maxStreamsToProbe)) {
-        probes.push(await probeStream(stream, modeConfig));
+        probes.push(await probeStream(stream, modeConfig, normalizedFixture));
       }
     } else {
       const minimumHeight = Math.max(1, Number(activationConfig.minimum_effective_height || 720));
       const candidates = rankedDeepStreamCandidates(streams, maxStreamsToProbe);
       for (const stream of candidates) {
-        const probe = await probeStream(stream, modeConfig);
+        const probe = await probeStream(stream, modeConfig, normalizedFixture);
         probes.push(probe);
         // Do not pay for extra mirrors once a current, playable media endpoint
         // has actually met the unchanged HD quality threshold.
