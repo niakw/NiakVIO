@@ -1,0 +1,150 @@
+name: Nuvio TV deep promotion proof v2
+
+on:
+  push:
+    branches:
+      - agent/tv-regression-5.20.38
+    paths:
+      - .github/triggers/tv-deep-proof-v2
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  stage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Repository regression suite
+        run: npm test
+      - name: Resolve hubs
+        run: python scripts/resolve_provider_hubs.py --apply --mode deep --include-disabled --workers 8 --timeout 8 --output health-output/provider-hub-report.json
+      - name: Discover candidates
+        run: python scripts/discover_candidates.py --require-all-upstreams
+      - name: DNS preflight
+        env:
+          GLOBALPING_API_TOKEN: ${{ secrets.GLOBALPING_API_TOKEN }}
+        run: |
+          node scripts/provider_dns_preflight.mjs --stage staging --output health-output/dns-preflight-report.json
+          python scripts/apply_dns_migration_overrides.py --stage staging --report health-output/dns-preflight-report.json
+      - name: Runtime profiles and overrides
+        run: |
+          python scripts/build_provider_runtime_profiles.py
+          python scripts/reapply_published_overrides.py
+          python scripts/build_provider_runtime_profiles.py --stage staging --apply-stage
+          python scripts/validate_override_pipeline.py --stage staging
+      - name: Deep provider access and repair
+        env:
+          NUVIO_DNS_PREFLIGHT_RESULTS: health-output/dns-preflight-report.json
+          NUVIO_WORKER_MEMORY_MB: '1024'
+        run: |
+          python scripts/run_adaptive_deep_repair.py --stage staging --output health-output --mode deep
+          python scripts/validate_override_pipeline.py --stage staging
+          python scripts/validate_deep_health_integrity.py --health health-output/health-results.json --repairs health-output/repair-report.json
+      - name: Print fresh target quality evidence
+        run: |
+          python - <<'PY'
+          import json
+          d=json.load(open('health-output/health-results.json'))
+          wanted={'frenchstream','streamzo','toflix','purstream','papadustream','4khdhubnew','animezey','vegamovies'}
+          for r in d.get('results',d.get('providers',[])):
+              k=str(r.get('canonical_id') or r.get('id') or '').casefold()
+              if k in wanted:
+                  e=r.get('evidence') or {}
+                  print(k, json.dumps({
+                      'status':r.get('status'),'score':r.get('score'),
+                      'effective_max_height':e.get('effective_max_height'),
+                      'max_bandwidth':e.get('max_bandwidth'),
+                      'streams_playable':e.get('streams_playable'),
+                      'accepted_audio_languages':e.get('accepted_audio_languages'),
+                      'accepted_subtitle_languages':e.get('accepted_subtitle_languages'),
+                      'settings_diagnostics':e.get('settings_diagnostics'),
+                  },ensure_ascii=False))
+          PY
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: tv-deep-proof-stage-${{ github.run_id }}
+          path: |
+            staging/
+            health-output/
+            provider-overrides.json
+            provider-domain-history.json
+          retention-days: 2
+
+  promote:
+    needs: stage
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          fetch-depth: 1
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          name: tv-deep-proof-stage-${{ github.run_id }}
+          path: checked-artifact
+      - name: Apply exact validated state and strict promotion locally
+        env:
+          NUVIO_STAGE: checked-artifact/staging
+          NUVIO_HEALTH_RESULTS: checked-artifact/health-output/health-results.json
+        run: |
+          cp checked-artifact/provider-overrides.json provider-overrides.json
+          cp checked-artifact/provider-domain-history.json provider-domain-history.json
+          python scripts/reapply_published_overrides.py
+          python scripts/promote_candidates.py
+      - name: Print activation decisions
+        run: |
+          python - <<'PY'
+          import json
+          wanted={'frenchstream','streamzo','toflix','purstream','papadustream','4khdhubnew','animezey','vegamovies'}
+          h=json.load(open('health-report.json'))
+          for r in h.get('providers',[]):
+              k=str(r.get('id') or '').casefold()
+              if k in wanted:
+                  print(k,json.dumps({
+                      'enabled':r.get('enabled'),'action':r.get('action'),
+                      'observed_status':r.get('observed_status'),'observed_score':r.get('observed_score'),
+                      'failed_gates':r.get('failed_gates'),'activation_blockers':r.get('activation_blockers'),
+                      'activation_gates':r.get('activation_gates'),'evidence':r.get('evidence'),
+                  },ensure_ascii=False))
+          m=json.load(open('manifest.next.json'))
+          rows={str(r.get('id') or '').casefold():r for r in m.get('scrapers',[])}
+          for k in sorted(wanted):
+              if k in rows: print('MANIFEST_NEXT',k,'enabled=',rows[k].get('enabled'),'id=',rows[k].get('id'),'version=',rows[k].get('version'))
+          PY
+      - name: Materialize transaction and run global content gate
+        run: |
+          mv manifest.next.json manifest.json
+          python scripts/generate_language_manifests.py
+          python scripts/validate_language_projection.py
+          NUVIO_CATALOGUE_AUDIT_OUTPUT=/tmp/tv-deep-catalogue-audit.json NUVIO_CATALOGUE_AUDIT_WORKERS=8 NUVIO_CATALOGUE_AUDIT_TIMEOUT=60 python scripts/audit_catalogue_identity_media.py
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: tv-deep-proof-final-${{ github.run_id }}
+          path: |
+            health-report.json
+            manifest.json
+            vf/manifest.json
+            /tmp/tv-deep-catalogue-audit.json
+          retention-days: 2
