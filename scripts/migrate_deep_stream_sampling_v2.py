@@ -28,6 +28,64 @@ def main() -> int:
             raise SystemExit('health_check.mjs reported-quality anchor not found')
         source = source.replace(old_quality, url_quality, 1)
 
+    old_helper = """function evenlySpacedSlice(items, count) {
+  if (!items.length || count <= 0) return [];
+  const wanted = Math.min(count, items.length);
+  if (wanted === items.length) return [...items];
+  if (wanted === 1) return [items[Math.floor(items.length / 2)]];
+  const indexes = Array.from({ length: wanted }, (_, index) => (
+    Math.round(index * (items.length - 1) / (wanted - 1))
+  ));
+  return indexes.map((index) => items[index]);
+}
+"""
+    new_helper = """function evenlySpacedSlice(items, count) {
+  if (!items.length || count <= 0) return [];
+  const wanted = Math.min(count, items.length);
+  if (wanted === items.length) return [...items];
+  if (wanted === 1) return [items[Math.floor(items.length / 2)]];
+  const indexes = Array.from({ length: wanted }, (_, index) => (
+    Math.round(index * (items.length - 1) / (wanted - 1))
+  ));
+  return indexes.map((index) => items[index]);
+}
+
+function rankedDeepStreamCandidates(items, count) {
+  if (!items.length || count <= 0) return [];
+  const wanted = Math.min(count, items.length);
+  const decorated = items.map((stream, index) => ({
+    stream,
+    index,
+    claimedHeight: qualityToHeight(`${stream?.quality || ''} ${stream?.title || ''} ${stream?.url || ''}`) || 0,
+  }));
+  // Keep the first mirror in the candidate set because it is often the upstream
+  // preferred choice, then spend the remaining bounded budget on the strongest
+  // declared HD/4K candidates. Declared quality only selects what to probe; it
+  // never passes activation until the media probe itself verifies playback.
+  const selected = [decorated[0]];
+  const rankedRest = decorated.slice(1).sort((left, right) => (
+    right.claimedHeight - left.claimedHeight || left.index - right.index
+  ));
+  for (const row of rankedRest) {
+    if (selected.length >= wanted) break;
+    selected.push(row);
+  }
+  if (selected.length < wanted) {
+    for (const stream of evenlySpacedSlice(items, wanted)) {
+      if (selected.length >= wanted) break;
+      if (!selected.some((row) => row.stream === stream)) {
+        selected.push({ stream, index: items.indexOf(stream), claimedHeight: 0 });
+      }
+    }
+  }
+  return selected.map((row) => row.stream);
+}
+"""
+    if 'function rankedDeepStreamCandidates(items, count)' not in source:
+        if old_helper not in source:
+            raise SystemExit('health_check.mjs sampling helper anchor not found')
+        source = source.replace(old_helper, new_helper, 1)
+
     baseline_loop = """    const probes = [];
     for (const stream of streams.slice(0, Number(modeConfig.max_streams_to_probe || 1))) {
       probes.push(await probeStream(stream, modeConfig));
@@ -45,7 +103,7 @@ def main() -> int:
       probes.push(await probeStream(stream, modeConfig));
     }
 """
-    adaptive_loop = """    const probes = [];
+    previous_adaptive_loop = """    const probes = [];
     const maxStreamsToProbe = Math.max(1, Number(modeConfig.max_streams_to_probe || 1));
     const adaptiveDeepSampling = requestedMode === 'deep' && modeConfig.probe_streams_adaptively === true;
     if (!adaptiveDeepSampling || maxStreamsToProbe <= 1 || streams.length <= 1) {
@@ -74,11 +132,30 @@ def main() -> int:
       }
     }
 """
+    adaptive_loop = """    const probes = [];
+    const maxStreamsToProbe = Math.max(1, Number(modeConfig.max_streams_to_probe || 1));
+    const adaptiveDeepSampling = requestedMode === 'deep' && modeConfig.probe_streams_adaptively === true;
+    if (!adaptiveDeepSampling || maxStreamsToProbe <= 1 || streams.length <= 1) {
+      for (const stream of streams.slice(0, maxStreamsToProbe)) {
+        probes.push(await probeStream(stream, modeConfig));
+      }
+    } else {
+      const minimumHeight = Math.max(1, Number(activationConfig.minimum_effective_height || 720));
+      const candidates = rankedDeepStreamCandidates(streams, maxStreamsToProbe);
+      for (const stream of candidates) {
+        const probe = await probeStream(stream, modeConfig);
+        probes.push(probe);
+        // Do not pay for extra mirrors once a current, playable media endpoint
+        // has actually met the unchanged HD quality threshold.
+        if (probe.playback_verified === true && Number(probe.effective_height || 0) >= minimumHeight) break;
+      }
+    }
+"""
     if adaptive_loop not in source:
-        if even_loop in source:
-            source = source.replace(even_loop, adaptive_loop, 1)
-        elif baseline_loop in source:
-            source = source.replace(baseline_loop, adaptive_loop, 1)
+        for old_loop in (previous_adaptive_loop, even_loop, baseline_loop):
+            if old_loop in source:
+                source = source.replace(old_loop, adaptive_loop, 1)
+                break
         else:
             raise SystemExit('health_check.mjs stream-probe loop anchor not found')
 
@@ -104,7 +181,7 @@ def main() -> int:
     package['scripts']['test'] = command
     dump(PACKAGE, package)
 
-    print('deep stream sampling fixed: adaptive first/middle/last fallback; verified URL quality participates in evidence')
+    print('deep stream sampling fixed: first + quality-ranked bounded adaptive probes; verified URL quality participates in evidence')
     return 0
 
 
