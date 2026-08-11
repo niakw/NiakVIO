@@ -151,7 +151,11 @@ function rankedDeepStreamCandidates(items, count) {
       }
     }
 """
-    if adaptive_loop not in source:
+    ranked_loop_already_applied = (
+        'const candidates = rankedDeepStreamCandidates(streams, maxStreamsToProbe);' in source
+        and "const adaptiveDeepSampling = requestedMode === 'deep' && modeConfig.probe_streams_adaptively === true;" in source
+    )
+    if not ranked_loop_already_applied:
         for old_loop in (previous_adaptive_loop, even_loop, baseline_loop):
             if old_loop in source:
                 source = source.replace(old_loop, adaptive_loop, 1)
