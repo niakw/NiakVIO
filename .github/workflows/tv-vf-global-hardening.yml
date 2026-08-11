@@ -9,6 +9,7 @@ on:
       - .github/triggers/tv-vf-global-hardening-v2
       - .github/triggers/tv-vf-global-hardening-v3
       - .github/triggers/tv-vf-global-hardening-v4
+      - .github/triggers/tv-vf-global-hardening-v5
 
 permissions:
   contents: write
@@ -45,6 +46,7 @@ jobs:
         run: |
           python scripts/migrate_deep_stream_sampling_v2.py
           python scripts/migrate_direct_media_dimensions_v1.py
+          python scripts/migrate_matroska_metadata_v1.py
           python scripts/migrate_media_duration_identity_v1.py
           python scripts/migrate_type_scoped_activation_v1.py
           python scripts/migrate_tv_catalogue_fixtures_v1.py
@@ -58,10 +60,10 @@ jobs:
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add scripts/health_check.mjs scripts/promote_candidates.py scripts/audit_catalogue_identity_media.py health-config.json package.json tests/deep_stream_sampling_test.py tests/direct_media_dimensions_test.py tests/media_duration_identity_test.py tests/type_scoped_activation_test.py tests/tv_catalogue_fixture_coverage_test.py
+          git add scripts/health_check.mjs scripts/promote_candidates.py scripts/audit_catalogue_identity_media.py health-config.json package.json tests/deep_stream_sampling_test.py tests/direct_media_dimensions_test.py tests/matroska_metadata_test.py tests/media_duration_identity_test.py tests/type_scoped_activation_test.py tests/tv_catalogue_fixture_coverage_test.py
           if git diff --cached --quiet; then
             echo 'No migration output to commit.'
             exit 0
           fi
-          git commit -m 'fix: harden global TV media identity and coverage'
+          git commit -m 'fix: verify Matroska media in global TV health checks'
           git push origin HEAD:agent/tv-regression-5.20.38
