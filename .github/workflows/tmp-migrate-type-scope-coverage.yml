@@ -26,7 +26,18 @@ jobs:
           package-manager-cache: false
       - run: npm ci --ignore-scripts --no-audit --no-fund
       - name: Apply type-scope coverage migration
-        run: python scripts/tmp_migrate_type_scope_coverage.py
+        run: |
+          python scripts/tmp_migrate_type_scope_coverage.py
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('tests/type_scoped_activation_test.py')
+          text = path.read_text(encoding='utf-8')
+          old = 'import importlib.util\nimport json\nspec = importlib.util.spec_from_file_location('
+          new = 'import importlib.util\nimport json\nimport sys\nsys.path.insert(0, str(ROOT / "scripts"))\nspec = importlib.util.spec_from_file_location('
+          if old in text:
+              text = text.replace(old, new, 1)
+          path.write_text(text, encoding='utf-8')
+          PY
       - name: Focused activation regression
         run: python tests/type_scoped_activation_test.py
       - name: Full repository regression suite
