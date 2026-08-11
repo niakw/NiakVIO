@@ -270,6 +270,14 @@
           ],
           "strip_legacy_direct_media_v2": true,
           "force_rewrap_target_media": true
+        },
+        "scripts/provider_patches/streamzo_source_identity_v2.py": {
+          "base_url": "https://streamzo.fr",
+          "timeout_ms": 6500
+        },
+        "scripts/provider_patches/nuvio_tv_playable_first_v1.py": {
+          "max_probes": 8,
+          "timeout_ms": 6500
         }
       },
       "manifest_overrides": {
@@ -282,7 +290,9 @@
         "scripts/provider_patches/streamzo_public_catalogue.py",
         "scripts/provider_patches/nuvio_tv_target_media_v4.py",
         "scripts/provider_patches/stream_output_sanitizer_v5.py",
-        "scripts/provider_patches/desktop_runtime_compat_v1.py"
+        "scripts/provider_patches/desktop_runtime_compat_v1.py",
+        "scripts/provider_patches/streamzo_source_identity_v2.py",
+        "scripts/provider_patches/nuvio_tv_playable_first_v1.py"
       ],
       "published_types": [
         "movie",
@@ -347,7 +357,8 @@
         "anime"
       ],
       "patch_scripts": [
-        "scripts/provider_patches/desktop_runtime_compat_v1.py"
+        "scripts/provider_patches/desktop_runtime_compat_v1.py",
+        "scripts/provider_patches/purstream_tv_identity_v3.py"
       ],
       "patch_script_options": {
         "scripts/provider_patches/desktop_runtime_compat_v1.py": {
@@ -370,6 +381,11 @@
               "store"
             ]
           }
+        },
+        "scripts/provider_patches/purstream_tv_identity_v3.py": {
+          "duration_tolerance": 0.35,
+          "timeout_ms": 7000,
+          "max_probes": 3
         }
       },
       "manifest_overrides": {
@@ -759,12 +775,18 @@
       "required_values": [],
       "published_types": [
         "movie",
-        "tv"
+        "tv",
+        "anime"
       ],
       "manifest_overrides": {
         "disabledPlatforms": []
       },
-      "patch_script_options": {}
+      "patch_script_options": {
+        "scripts/provider_patches/papadustream_anime_tv_v1.py": {}
+      },
+      "patch_scripts": [
+        "scripts/provider_patches/papadustream_anime_tv_v1.py"
+      ]
     },
     "toflix": {
       "profiles": [],
@@ -836,7 +858,16 @@
       }
     },
     "4khdhubnew": {
-      "capability": "html_scraper"
+      "capability": "html_scraper",
+      "patch_scripts": [
+        "scripts/provider_patches/nuvio_tv_playable_first_v1.py"
+      ],
+      "patch_script_options": {
+        "scripts/provider_patches/nuvio_tv_playable_first_v1.py": {
+          "max_probes": 6,
+          "timeout_ms": 6500
+        }
+      }
     },
     "Cineby": {
       "capability": "api_stream_resolver",
@@ -1269,6 +1300,15 @@
       "required_values": [],
       "manifest_overrides": {
         "disabledPlatforms": []
+      },
+      "patch_scripts": [
+        "scripts/provider_patches/nuvio_tv_playable_first_v1.py"
+      ],
+      "patch_script_options": {
+        "scripts/provider_patches/nuvio_tv_playable_first_v1.py": {
+          "max_probes": 6,
+          "timeout_ms": 6500
+        }
       }
     },
     "vidlink": {
@@ -1392,7 +1432,16 @@
       "patch_script_options": {}
     },
     "animezey": {
-      "capability": "direct_media"
+      "capability": "direct_media",
+      "patch_scripts": [
+        "scripts/provider_patches/nuvio_tv_playable_first_v1.py"
+      ],
+      "patch_script_options": {
+        "scripts/provider_patches/nuvio_tv_playable_first_v1.py": {
+          "max_probes": 6,
+          "timeout_ms": 6500
+        }
+      }
     },
     "anime-ultime": {
       "capability": "mixed_embed_resolver"

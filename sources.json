@@ -2,7 +2,7 @@
   "schema_version": 65,
   "repository": {
     "name": "Nuvio Curated Providers",
-    "manifest_version": "5.20.38",
+    "manifest_version": "5.20.39",
     "description": "Combined Nuvio manifest generated from every non-P2P entry declared by Gowaru, All-in-One-Nuvio and Yoru. Official address hubs, public Telegram announcements, curated candidates, consecutive search confirmation and persistent last-known-good history maintain provider routes. Each upstream keeps two content-addressed snapshots; current published bundles remain the final functional fallback. Curation merges descriptions, catalogue types, languages, formats and quality signals across the three upstream manifests. Enabled providers follow the explicit priority list, then French-language and quality ranking. P2P remains excluded."
   },
   "upstreams": {
@@ -157,7 +157,7 @@
     "no_provider_specific_activation_exception": true,
     "manifest_version_bumps_when_payload_changes": true
   },
-  "manifest_version": "5.20.38",
+  "manifest_version": "5.20.39",
   "nuvio_client_compatibility": {
     "schema_version": 1,
     "policy": "accepted_ref may advance automatically only when hard and semantic runtime contract checks remain unchanged",
@@ -280,18 +280,35 @@
       },
       "nuvio-tv": {
         "contract_ref": "aa327f0e99645e1fc7094f56e3e827ff0925afae",
-        "accepted_ref": "24323b2abea2dee834ccab618198d6a308aa20f0",
-        "accepted_at": "2026-08-11T11:14:55.671056+00:00",
+        "accepted_ref": "f6e504868765aa6e5657c383723bdd2a9e6ebf7b",
+        "accepted_at": "2026-08-11T14:56:29.198897+00:00",
         "acceptance": "automatic-contract-safe-advance",
-        "changed_file_count": 5,
+        "changed_file_count": 22,
         "observed_sensitive_changed_files": [
-          "app/src/main/java/com/nuvio/tv/ui/screens/player/PlayerScreen.kt",
-          "app/src/main/java/com/nuvio/tv/ui/screens/player/PlayerSubtitleRtlFix.kt"
+          "app/src/main/java/com/nuvio/tv/ui/screens/player/NuvioMpvSurfaceView.kt",
+          "app/src/main/java/com/nuvio/tv/ui/screens/player/PlayerRuntimeControllerMpv.kt",
+          "app/src/main/java/com/nuvio/tv/ui/screens/player/PlayerRuntimeControllerTracks.kt"
         ],
         "unrelated_changed_files": [
-          "app/src/main/java/com/nuvio/tv/core/tmdb/TmdbMetadataService.kt",
+          "app/src/main/java/com/nuvio/tv/NuvioApplication.kt",
+          "app/src/main/java/com/nuvio/tv/data/local/LayoutPreferenceDataStore.kt",
+          "app/src/main/java/com/nuvio/tv/data/local/TmdbSettingsDataStore.kt",
+          "app/src/main/java/com/nuvio/tv/data/repository/AddonRepositoryImpl.kt",
+          "app/src/main/java/com/nuvio/tv/data/repository/MetaRepositoryImpl.kt",
+          "app/src/main/java/com/nuvio/tv/data/repository/SkipIntroRepository.kt",
+          "app/src/main/java/com/nuvio/tv/domain/repository/MetaRepository.kt",
+          "app/src/main/java/com/nuvio/tv/ui/screens/detail/MetaDetailsViewModel.kt",
+          "app/src/main/java/com/nuvio/tv/ui/screens/home/ClassicHomeContent.kt",
+          "app/src/main/java/com/nuvio/tv/ui/screens/home/HomeViewModel.kt",
+          "app/src/main/java/com/nuvio/tv/ui/screens/home/HomeViewModelCatalogPipeline.kt",
           "app/src/main/java/com/nuvio/tv/ui/screens/home/HomeViewModelPresentationPipeline.kt",
-          "app/src/test/java/com/nuvio/tv/core/tmdb/TmdbMetadataServiceTest.kt"
+          "app/src/main/java/com/nuvio/tv/ui/screens/home/ModernHomeRowsList.kt",
+          "app/src/main/java/com/nuvio/tv/ui/screens/library/LibraryScreen.kt",
+          "app/src/main/java/com/nuvio/tv/ui/screens/library/LibraryViewModel.kt",
+          "app/src/main/java/com/nuvio/tv/ui/screens/search/DiscoverScreen.kt",
+          "app/src/main/java/com/nuvio/tv/ui/screens/search/SearchScreen.kt",
+          "app/src/main/java/com/nuvio/tv/ui/screens/search/SearchViewModel.kt",
+          "app/src/main/java/com/nuvio/tv/ui/screens/settings/LayoutSettingsViewModel.kt"
         ]
       }
     }

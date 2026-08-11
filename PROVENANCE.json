@@ -519,11 +519,17 @@
     },
     "4khdhubnew": {
       "id": "4khdhubnew",
-      "published_filename": "providers/4khdhubnew--published-baseline--81fc783ac7c0b53c.js",
-      "sha256": "81fc783ac7c0b53cf19dac07afc3dcea26d5e4a2deb7e2edaec803ad2554fb3e",
-      "patched_sha256": "81fc783ac7c0b53cf19dac07afc3dcea26d5e4a2deb7e2edaec803ad2554fb3e",
+      "published_filename": "providers/4khdhubnew--published-baseline--2c09f90dcb8a9c4c.js",
+      "sha256": "2c09f90dcb8a9c4c1735d45f192d30e7cfcee30e4b6d132c44b0d71bf900ba57",
+      "patched_sha256": "2c09f90dcb8a9c4c1735d45f192d30e7cfcee30e4b6d132c44b0d71bf900ba57",
       "upstream_sha256": "81fc783ac7c0b53cf19dac07afc3dcea26d5e4a2deb7e2edaec803ad2554fb3e",
-      "local_patches": [],
+      "local_patches": [
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/nuvio_tv_playable_first_v1.py",
+          "phase": "discovery"
+        }
+      ],
       "source": "published-baseline",
       "source_name": "Last published local artifact",
       "source_repository": "Nuvio Curated Providers",
@@ -4220,9 +4226,9 @@
     },
     "animezey": {
       "id": "animezey",
-      "published_filename": "providers/animezey--nuvio--54c2c000499aa635.js",
-      "sha256": "54c2c000499aa6355e7f056d13549f43d77423771cffeaeb043f03888c20f1b8",
-      "patched_sha256": "54c2c000499aa6355e7f056d13549f43d77423771cffeaeb043f03888c20f1b8",
+      "published_filename": "providers/animezey--nuvio--58b01e354b05dc6b.js",
+      "sha256": "58b01e354b05dc6b3801cc14e9319bb7d2971fbde31d86f9030e526171c01109",
+      "patched_sha256": "58b01e354b05dc6b3801cc14e9319bb7d2971fbde31d86f9030e526171c01109",
       "upstream_sha256": "46e83c8d710830679b7f17eacb03e014fc4195237cd423fe63254862549f24ff",
       "local_patches": [
         {
@@ -4230,6 +4236,11 @@
           "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
           "phase": "discovery",
           "scope": "global_playback_integrity"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/nuvio_tv_playable_first_v1.py",
+          "phase": "discovery"
         }
       ],
       "source": "aio",
@@ -14424,11 +14435,17 @@
     },
     "papadustream": {
       "id": "papadustream",
-      "published_filename": "providers/papadustream--published-baseline--e842dff705a94481.js",
-      "sha256": "e842dff705a94481b555ba7a2db4a032e306c8e3ce6e47bb0f9d81a34cad5d34",
-      "patched_sha256": "e842dff705a94481b555ba7a2db4a032e306c8e3ce6e47bb0f9d81a34cad5d34",
+      "published_filename": "providers/papadustream--published-baseline--aad354c82c93070a.js",
+      "sha256": "aad354c82c93070a5215bfd32f80b71d77558cb312b6fa2fb3ade24d24b823f6",
+      "patched_sha256": "aad354c82c93070a5215bfd32f80b71d77558cb312b6fa2fb3ade24d24b823f6",
       "upstream_sha256": "e842dff705a94481b555ba7a2db4a032e306c8e3ce6e47bb0f9d81a34cad5d34",
-      "local_patches": [],
+      "local_patches": [
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/papadustream_anime_tv_v1.py",
+          "phase": "discovery"
+        }
+      ],
       "source": "published-baseline",
       "source_name": "Last published local artifact",
       "source_repository": "Nuvio Curated Providers",
@@ -15328,9 +15345,9 @@
     },
     "purstream": {
       "id": "purstream",
-      "published_filename": "providers/purstream--nuvio--b6db4ba4066f1859.js",
-      "sha256": "b6db4ba4066f1859d34542d77977db88e428a9e82cd2de22576bb4f08b7568d8",
-      "patched_sha256": "b6db4ba4066f1859d34542d77977db88e428a9e82cd2de22576bb4f08b7568d8",
+      "published_filename": "providers/purstream--nuvio--6fb5ab691a6df30b.js",
+      "sha256": "6fb5ab691a6df30bcb0a47f9cb0173eccdf41f6631e38e8bac1bcab6eb9ca176",
+      "patched_sha256": "6fb5ab691a6df30bcb0a47f9cb0173eccdf41f6631e38e8bac1bcab6eb9ca176",
       "upstream_sha256": "02173d75d873826f33e7bd45bb1c7973e557845548a8634b3ed1a5161c89abb8",
       "local_patches": [
         {
@@ -15348,6 +15365,11 @@
           "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
           "phase": "discovery",
           "scope": "global_playback_integrity"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/purstream_tv_identity_v3.py",
+          "phase": "discovery"
         }
       ],
       "source": "aio",
@@ -16333,9 +16355,9 @@
     },
     "streamzo": {
       "id": "streamzo",
-      "published_filename": "providers/streamzo--nuvio--26cb7d419ba62ed4.js",
-      "sha256": "26cb7d419ba62ed4d98b4b80d8d5dda1daad98968a7d37a1f0462d20a06a728b",
-      "patched_sha256": "26cb7d419ba62ed4d98b4b80d8d5dda1daad98968a7d37a1f0462d20a06a728b",
+      "published_filename": "providers/streamzo--nuvio--1b24432fc2da9069.js",
+      "sha256": "1b24432fc2da9069cffa22c6d86de244c8b886f543f981b4a4e6f6c9335f3f45",
+      "patched_sha256": "1b24432fc2da9069cffa22c6d86de244c8b886f543f981b4a4e6f6c9335f3f45",
       "upstream_sha256": "18c3688c2dc26c877a9302916b19b0dad5537dbac06954496627907c59920b22",
       "local_patches": [
         {
@@ -16414,6 +16436,16 @@
               "/troll/"
             ]
           }
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/streamzo_source_identity_v2.py",
+          "phase": "discovery"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/nuvio_tv_playable_first_v1.py",
+          "phase": "discovery"
         }
       ],
       "source": "gowaru",
@@ -17094,9 +17126,9 @@
     },
     "vegamovies": {
       "id": "vegamovies",
-      "published_filename": "providers/vegamovies--published-baseline--690ecbf5c5aa1582.js",
-      "sha256": "690ecbf5c5aa1582e40be7404301932cdb02a38a5e7e06142487e4a6d82e73da",
-      "patched_sha256": "690ecbf5c5aa1582e40be7404301932cdb02a38a5e7e06142487e4a6d82e73da",
+      "published_filename": "providers/vegamovies--published-baseline--c09ca2958c6c6f11.js",
+      "sha256": "c09ca2958c6c6f117abd2bda86afe6472030e48d658b566b7ebbcf193acf92b7",
+      "patched_sha256": "c09ca2958c6c6f117abd2bda86afe6472030e48d658b566b7ebbcf193acf92b7",
       "upstream_sha256": "0641a31d6068d8d2f3e5ca5d734494b24f69b89d6a5d027ae1a7b5eee1953d1a",
       "local_patches": [
         {
@@ -17104,6 +17136,11 @@
           "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
           "phase": "discovery",
           "scope": "global_playback_integrity"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/nuvio_tv_playable_first_v1.py",
+          "phase": "discovery"
         }
       ],
       "source": "published-baseline",
