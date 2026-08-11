@@ -1,0 +1,46 @@
+name: Nuvio TV focused regression
+
+on:
+  push:
+    branches:
+      - agent/tv-regression-5.20.38
+    paths:
+      - .github/triggers/tv-regression-focused
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  focused:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      - name: Set up Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: '3.12'
+      - name: Set up Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Install pinned dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Run focused TV regression
+        env:
+          NUVIO_TV_MATRIX_OUTPUT: automation/tv-regression-focused.json
+          NUVIO_TV_MATRIX_WORKERS: '8'
+          NUVIO_TV_MATRIX_TIMEOUT: '75'
+          NUVIO_TV_MATRIX_PROVIDERS: purstream,vegamovies,hindmoviez,movieblast,animezey,4khdhubnew,4khdhub,papadustream,streamzo,frenchstream,movix,coflix,flemmix,nakios,toflix,wookafr
+        run: python scripts/tv_regression_matrix.py
+      - name: Print focused JSON
+        run: cat automation/tv-regression-focused.json
+      - name: Upload focused matrix
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: tv-regression-focused-${{ github.run_id }}
+          path: automation/tv-regression-focused.json
+          retention-days: 2
