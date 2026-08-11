@@ -18,6 +18,16 @@ PROBE = ROOT / "scripts" / "nuvio_tv_probe_v2.cjs"
 OUTPUT = Path(os.environ.get("NUVIO_TV_MATRIX_OUTPUT", ROOT / "automation" / "tv-regression-matrix.json"))
 WORKERS = max(1, min(int(os.environ.get("NUVIO_TV_MATRIX_WORKERS", "6")), 8))
 TIMEOUT = max(30, min(int(os.environ.get("NUVIO_TV_MATRIX_TIMEOUT", "85")), 120))
+PROVIDER_FILTER = {
+    value.strip().casefold()
+    for value in os.environ.get("NUVIO_TV_MATRIX_PROVIDERS", "").split(",")
+    if value.strip()
+}
+FIXTURE_FILTER = {
+    value.strip()
+    for value in os.environ.get("NUVIO_TV_MATRIX_FIXTURES", "").split(",")
+    if value.strip()
+}
 
 FIXTURES: dict[str, dict[str, Any]] = {
     "revenant_s01e01": {
@@ -176,12 +186,15 @@ def build_tasks() -> list[dict[str, Any]]:
         if not isinstance(row, dict):
             continue
         provider_id = str(row.get("id") or "").strip()
+        provider_key = provider_id.casefold()
         filename = str(row.get("filename") or "").strip()
         if not provider_id or not filename or not (ROOT / filename).is_file():
             continue
+        if PROVIDER_FILTER and provider_key not in PROVIDER_FILTER:
+            continue
         types = canonical_types(row)
         identity = {
-            "provider_id": provider_id.casefold(),
+            "provider_id": provider_key,
             "provider_name": str(row.get("name") or provider_id),
             "enabled": bool(row.get("enabled")),
             "disabled_platforms": row.get("disabledPlatforms") or [],
@@ -189,12 +202,12 @@ def build_tasks() -> list[dict[str, Any]]:
             "filename": filename,
         }
         for name, fixture in FIXTURES.items():
+            if FIXTURE_FILTER and name not in FIXTURE_FILTER:
+                continue
             if fixture["mediaType"] == "movie":
                 if "movie" not in types:
                     continue
             else:
-                # Mushoku is intentionally sent to TV-capable providers too: several
-                # upstream manifests expose anime series only through the TV contract.
                 if "tv" not in types and not (name == "mushoku_tensei_s01e01" and "anime" in types):
                     continue
             tasks.append({"identity": identity, "filename": filename, "fixture_name": name, "fixture": fixture})
@@ -203,6 +216,8 @@ def build_tasks() -> list[dict[str, Any]]:
 
 def main() -> int:
     tasks = build_tasks()
+    if not tasks:
+        raise SystemExit("TV matrix selected zero tasks")
     rows: list[dict[str, Any]] = []
     with concurrent.futures.ThreadPoolExecutor(max_workers=WORKERS) as pool:
         future_map = {pool.submit(run_task, task): task for task in tasks}
@@ -231,9 +246,11 @@ def main() -> int:
         }
 
     report = {
-        "schema_version": 1,
+        "schema_version": 2,
         "generated_at_epoch": int(time.time()),
         "platform": "Nuvio TV / Android TV runtime contract",
+        "provider_filter": sorted(PROVIDER_FILTER),
+        "fixture_filter": sorted(FIXTURE_FILTER),
         "fixtures": FIXTURES,
         "tasks": len(rows),
         "providers": len({r["provider_id"] for r in rows}),
