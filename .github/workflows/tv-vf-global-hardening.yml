@@ -8,6 +8,7 @@ on:
       - .github/triggers/tv-vf-global-hardening
       - .github/triggers/tv-vf-global-hardening-v2
       - .github/triggers/tv-vf-global-hardening-v3
+      - .github/triggers/tv-vf-global-hardening-v4
 
 permissions:
   contents: write
@@ -21,6 +22,17 @@ jobs:
         with:
           ref: agent/tv-regression-5.20.38
           fetch-depth: 1
+      - name: Record global hardening run id
+        run: |
+          mkdir -p .github/status
+          printf '%s\n' "$GITHUB_RUN_ID" > .github/status/tv-vf-global-hardening-run
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add .github/status/tv-vf-global-hardening-run
+          if ! git diff --cached --quiet; then
+            git commit -m 'ci: record global TV hardening run'
+            git push origin HEAD:agent/tv-regression-5.20.38
+          fi
       - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
         with:
           python-version: '3.12'
