@@ -128,4 +128,86 @@ result = run_validator(
 assert result.returncode == 1
 assert 'requires the current deep promotion report' in result.stderr
 
+
+# Verified manifest-language fallback regression tests.
+# A current, payload-verified stream may rely on current manifest language only
+# when the runtime exposes no language metadata at all. Explicit runtime
+# language evidence always wins, and a manifest alone never proves playability.
+import importlib.util
+
+sys.path.insert(0, str(ROOT / "scripts"))
+spec = importlib.util.spec_from_file_location(
+    "promote_candidates_language_gate_test",
+    ROOT / "scripts" / "promote_candidates.py",
+)
+assert spec is not None and spec.loader is not None
+promoter_module = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(promoter_module)
+
+
+def language_gate_item(*, streams=1, payloads=1, runtime_languages=None, manifest_languages=None):
+    runtime_languages = list(runtime_languages or [])
+    manifest_languages = list(manifest_languages or [])
+    return {
+        "health": {
+            "status": "healthy",
+            "score": 90,
+            "evidence": {
+                "fixtures_tested": 1,
+                "healthy_fixtures": 1,
+                "healthy_fixture_ratio": 1.0,
+                "playable_fixtures": 1 if streams else 0,
+                "required_fixture_categories": ["movie"],
+                "healthy_fixture_categories": ["movie"],
+                "streams_playable": streams,
+                "payload_verified_streams": payloads,
+                "distinct_reachable_hosts": 1 if streams else 0,
+                "reachable_hosts": ["media.example"] if streams else [],
+                "effective_max_height": 1080 if streams else None,
+                "max_bandwidth": 2_000_000 if streams else None,
+                "audio_languages": runtime_languages,
+                "subtitle_languages": [],
+                "accepted_audio_languages": [
+                    value for value in runtime_languages if value in {"fr", "en"}
+                ],
+                "accepted_subtitle_languages": [],
+                "accepted_subtitles_advertised": 0,
+                "accepted_subtitles_reachable": 0,
+                "provider_median_latency_ms": 100,
+                "stream_median_latency_ms": 100,
+                "disallowed_streams": 0,
+                "provider_server_accessible": True,
+                "provider_server_successful_response": True,
+                "manifest_description_present": True,
+                "manifest_supported_types": ["movie"],
+                "manifest_effective_height": 1080,
+                "manifest_accepted_languages": manifest_languages,
+                "manifest_formats": ["m3u8"],
+                "manifest_curation_score": 5,
+                "manifest_quality_signals": ["explicit_height:1080"],
+            },
+        }
+    }
+
+
+verified_no_tags = language_gate_item(manifest_languages=["en", "pe"])
+gates, _ = promoter_module.evaluate_pre_stability_gates(verified_no_tags, config)
+assert gates["09_language_and_subtitle_integrity"]["passed"] is True, gates["09_language_and_subtitle_integrity"]
+assert gates["09_language_and_subtitle_integrity"]["evidence"]["verified_manifest_audio_fallback"] is True
+assert gates["09_language_and_subtitle_integrity"]["evidence"]["accepted_audio_languages"] == ["en"]
+
+explicit_unaccepted_runtime = language_gate_item(
+    runtime_languages=["ru"], manifest_languages=["en"]
+)
+gates, _ = promoter_module.evaluate_pre_stability_gates(explicit_unaccepted_runtime, config)
+assert gates["09_language_and_subtitle_integrity"]["passed"] is False, gates["09_language_and_subtitle_integrity"]
+assert gates["09_language_and_subtitle_integrity"]["evidence"]["verified_manifest_audio_fallback"] is False
+
+manifest_without_media = language_gate_item(
+    streams=0, payloads=0, manifest_languages=["en"]
+)
+gates, _ = promoter_module.evaluate_pre_stability_gates(manifest_without_media, config)
+assert gates["09_language_and_subtitle_integrity"]["passed"] is False, gates["09_language_and_subtitle_integrity"]
+assert gates["09_language_and_subtitle_integrity"]["evidence"]["verified_manifest_audio_fallback"] is False
+
 print('CI uncertain last-known-good preservation tests passed')

@@ -891,6 +891,12 @@ def evaluate_pre_stability_gates(
         for value in proof.get("accepted_subtitle_languages", [])
         if value
     }
+    runtime_observed_languages = {
+        str(value).casefold()
+        for key in ("audio_languages", "subtitle_languages")
+        for value in proof.get(key, [])
+        if value
+    }
     advertised_subtitles = int(
         proof.get("accepted_subtitles_advertised", 0)
     )
@@ -968,6 +974,29 @@ def evaluate_pre_stability_gates(
         (effective_height >= minimum_height and (bandwidth is None or bandwidth >= minimum_bandwidth))
         or (runtime_light and (manifest_height >= minimum_height or manifest_curated))
     )
+
+    # Some verified containers expose no audio/subtitle language tags at all.
+    # In that narrow case, a current upstream manifest language may fill the
+    # metadata gap, but only after the same deep run has already proved playable
+    # media payloads. Any observed runtime language disables this fallback so a
+    # manifest claim can never override contradictory stream evidence.
+    manifest_audio_fallback_languages = manifest_languages & accepted_audio_languages
+    verified_manifest_audio_fallback = (
+        status == "healthy"
+        and playable_streams >= minimum_streams
+        and payloads >= minimum_payload
+        and not runtime_observed_languages
+        and bool(manifest_audio_fallback_languages)
+    )
+    if verified_manifest_audio_fallback:
+        accepted_audio = accepted_audio | manifest_audio_fallback_languages
+        language_present = bool(accepted_audio or accepted_subtitles)
+        accepted_audio_path = allow_audio_without_subtitles and bool(accepted_audio)
+        language_subtitle_pass = (
+            (not require_language or language_present)
+            and (accepted_audio_path or accepted_subtitle_path)
+        )
+
     if runtime_light:
         accepted_audio = accepted_audio | manifest_languages
         language_present = bool(accepted_audio or accepted_subtitles)
@@ -1068,6 +1097,9 @@ def evaluate_pre_stability_gates(
                 "accepted_subtitle_languages": sorted(accepted_subtitles),
                 "accepted_subtitles_advertised": advertised_subtitles,
                 "accepted_subtitles_reachable": reachable_subtitles,
+                "runtime_observed_languages": sorted(runtime_observed_languages),
+                "manifest_accepted_languages": sorted(manifest_languages),
+                "verified_manifest_audio_fallback": verified_manifest_audio_fallback,
             },
             {
                 "accepted_audio_languages": activation.get(
