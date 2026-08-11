@@ -44,6 +44,7 @@ SOURCES_PATH = ROOT / "sources.json"
 CONFIG_PATH = ROOT / "health-config.json"
 RUNTIME_EVIDENCE_PATH = ROOT / "runtime-evidence.json"
 LKG_PATH = ROOT / "provider-lkg.json"
+ACTIVATION_LKG_PATH = ROOT / "provider-activation-lkg.json"
 HEALTH_RESULTS_PATH = Path(
     os.environ.get("NUVIO_HEALTH_RESULTS", STAGE / "health-results.json")
 ).resolve()
@@ -1562,6 +1563,12 @@ def main() -> int:
     explicit = excluded_ids(sources)
     failed_ids = failed_declared_ids(registry)
     availability_states = availability.get("providers", {})
+    activation_lkg_payload = load_json(ACTIVATION_LKG_PATH, {}) or {}
+    activation_lkg_ids = {
+        canonical_id(str(value))
+        for value in activation_lkg_payload.get("active_ids", [])
+        if str(value).strip()
+    }
 
     entries: dict[str, dict[str, Any]] = {}
     provenance: dict[str, dict[str, Any]] = {}
@@ -1675,9 +1682,19 @@ def main() -> int:
                 and is_under(old_target, ROOT / "providers")
                 and old_target.exists()
             )
+            old_was_enabled = bool(old_entry.get("enabled", False))
+            current_ci_inconclusive = (
+                str(selected.get("health", {}).get("ci_classification") or "")
+                == "inconclusive"
+            )
+            restore_activation_lkg = bool(
+                cid in activation_lkg_ids
+                and current_ci_inconclusive
+                and gates.get("01_policy_safe_no_p2p", {}).get("passed", False)
+            )
             preserve_current = (
                 not enabled
-                and bool(old_entry.get("enabled", False))
+                and (old_was_enabled or restore_activation_lkg)
                 and not auto_disabled
                 and upstream_enabled
                 and old_artifact_available
@@ -1703,14 +1720,20 @@ def main() -> int:
                     "activation_mode": "preserved_current_ci_uncertain",
                     "activation_blockers": blockers,
                     "preserved_reason": "ci_uncertain_kept_last_published_artifact",
+                    "restored_from_activation_lkg": bool(restore_activation_lkg and not old_was_enabled),
                     "preserved_candidate_key": selected.get("key"),
                     "preserved_candidate_sha256": selected.get("sha256"),
                 }
                 report_items.append(
                     {
                         "id": cid,
-                        "action": "preserved-current-enabled-ci-uncertain",
+                        "action": (
+                            "restored-activation-lkg-enabled-ci-uncertain"
+                            if restore_activation_lkg and not old_was_enabled
+                            else "preserved-current-enabled-ci-uncertain"
+                        ),
                         "enabled": True,
+                        "restored_from_activation_lkg": bool(restore_activation_lkg and not old_was_enabled),
                         "activation_eligible": False,
                         "activation_mode": "preserved_current_ci_uncertain",
                         "failed_gates": [

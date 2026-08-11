@@ -19,6 +19,13 @@ promoter = (ROOT / 'scripts/promote_candidates.py').read_text()
 assert 'preserved-current-enabled-ci-uncertain' in promoter
 assert 'ci_uncertain_kept_last_published_artifact' in promoter
 assert 'old_artifact_available' in promoter
+assert 'ACTIVATION_LKG_PATH' in promoter
+assert 'activation_lkg_ids' in promoter
+assert 'current_ci_inconclusive' in promoter
+assert 'restore_activation_lkg' in promoter
+assert 'restored-activation-lkg-enabled-ci-uncertain' in promoter
+assert 'restored_from_activation_lkg' in promoter
+assert 'gates.get("01_policy_safe_no_p2p", {}).get("passed", False)' in promoter
 assert 'selected_is_published_baseline' not in promoter
 assert 'entries[cid] = retained' in promoter
 assert 'continue\n\n            try:\n                destination, digest = copy_candidate(selected)' in promoter
