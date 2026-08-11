@@ -14,7 +14,8 @@ patches = overrides['provider_patches']
 purstream_identity = 'scripts/provider_patches/purstream_tv_identity_v3.py'
 papa_anime = 'scripts/provider_patches/papadustream_anime_tv_v1.py'
 playable_first = 'scripts/provider_patches/nuvio_tv_playable_first_v1.py'
-streamzo_identity = 'scripts/provider_patches/streamzo_source_identity_v2.py'
+streamzo_identity = 'scripts/provider_patches/streamzo_source_identity_v3.py'
+streamzo_public = 'scripts/provider_patches/streamzo_public_catalogue_v2.py'
 toflix_vf_v1 = 'scripts/provider_patches/toflix_explicit_vf_v1.py'
 toflix_vf = 'scripts/provider_patches/toflix_explicit_vf_v2.py'
 
@@ -38,10 +39,15 @@ for provider_id in ('4khdhubnew', 'animezey', 'vegamovies'):
     assert 1 <= int(opts.get('max_probes') or 0) <= 8, provider_id
 
 streamzo_scripts = patches['streamzo'].get('patch_scripts', [])
+assert streamzo_public in streamzo_scripts
 assert streamzo_identity in streamzo_scripts
+assert streamzo_scripts.index(streamzo_public) < streamzo_scripts.index(streamzo_identity)
 assert playable_first in streamzo_scripts
 assert streamzo_scripts.index(streamzo_identity) < streamzo_scripts.index(playable_first)
+public_source = (ROOT / streamzo_public).read_text(encoding='utf-8')
+assert 'original_title' in public_source and 'maxAliases' in public_source
 identity_source = (ROOT / streamzo_identity).read_text(encoding='utf-8')
+assert 'original_title' in identity_source and 'aliases.some' in identity_source
 assert 'tokens' in identity_source and 'years' in identity_source
 assert 'backtrack-les-revenants-2015' not in identity_source.lower()
 assert '210702' not in identity_source

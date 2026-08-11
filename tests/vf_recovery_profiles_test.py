@@ -14,7 +14,7 @@ DESKTOP = "scripts/provider_patches/desktop_runtime_compat_v1.py"
 OLD_DIRECT = "scripts/provider_patches/nuvio_tv_direct_media_v2.py"
 FRENCHSTREAM_RAW_TV = "scripts/provider_patches/frenchstream_raw_tv_fallback.py"
 COFLIX_EXACT = "scripts/provider_patches/coflix_exact_catalogue.py"
-STREAMZO_IDENTITY = "scripts/provider_patches/streamzo_source_identity_v2.py"
+STREAMZO_IDENTITY = "scripts/provider_patches/streamzo_source_identity_v3.py"
 TV_PLAYABLE_FIRST = "scripts/provider_patches/nuvio_tv_playable_first_v1.py"
 COFLIX_BLOCKED_PATHS = {
     "/wp-admin/",

@@ -249,10 +249,6 @@
           "max_probes": 0,
           "min_vod_duration_seconds": 60
         },
-        "scripts/provider_patches/streamzo_public_catalogue.py": {
-          "base_url": "https://streamzo.fr",
-          "provider_name": "StreamZo"
-        },
         "scripts/provider_patches/nuvio_tv_direct_media_v2.py": {
           "provider_name": "StreamZo",
           "max_candidates": 14,
@@ -271,12 +267,17 @@
           "strip_legacy_direct_media_v2": true,
           "force_rewrap_target_media": true
         },
-        "scripts/provider_patches/streamzo_source_identity_v2.py": {
-          "base_url": "https://streamzo.fr",
-          "timeout_ms": 6500
-        },
         "scripts/provider_patches/nuvio_tv_playable_first_v1.py": {
           "max_probes": 8,
+          "timeout_ms": 6500
+        },
+        "scripts/provider_patches/streamzo_public_catalogue_v2.py": {
+          "base_url": "https://streamzo.fr",
+          "provider_name": "StreamZo",
+          "max_aliases": 4
+        },
+        "scripts/provider_patches/streamzo_source_identity_v3.py": {
+          "base_url": "https://streamzo.fr",
           "timeout_ms": 6500
         }
       },
@@ -287,11 +288,11 @@
       "patch_scripts": [
         "scripts/provider_patches/streamzo_data_embed.py",
         "scripts/provider_patches/vf_catalogue_recovery.py",
-        "scripts/provider_patches/streamzo_public_catalogue.py",
+        "scripts/provider_patches/streamzo_public_catalogue_v2.py",
         "scripts/provider_patches/nuvio_tv_target_media_v4.py",
         "scripts/provider_patches/stream_output_sanitizer_v5.py",
         "scripts/provider_patches/desktop_runtime_compat_v1.py",
-        "scripts/provider_patches/streamzo_source_identity_v2.py",
+        "scripts/provider_patches/streamzo_source_identity_v3.py",
         "scripts/provider_patches/nuvio_tv_playable_first_v1.py"
       ],
       "published_types": [
@@ -804,14 +805,14 @@
       "required_route_values": [],
       "patch_scripts": [
         "scripts/provider_patches/toflix_official_endpoint.py",
-        "scripts/provider_patches/toflix_explicit_vf_v1.py"
+        "scripts/provider_patches/toflix_explicit_vf_v2.py"
       ],
       "patch_script_options": {
         "scripts/provider_patches/toflix_official_endpoint.py": {
           "site": "https://tfx05.lol",
           "fallback_api": "https://api.tfx05.lol/toflix_api.php"
         },
-        "scripts/provider_patches/toflix_explicit_vf_v1.py": {
+        "scripts/provider_patches/toflix_explicit_vf_v2.py": {
           "require_french_host": true
         }
       },

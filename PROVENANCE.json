@@ -16355,9 +16355,9 @@
     },
     "streamzo": {
       "id": "streamzo",
-      "published_filename": "providers/streamzo--nuvio--1b24432fc2da9069.js",
-      "sha256": "1b24432fc2da9069cffa22c6d86de244c8b886f543f981b4a4e6f6c9335f3f45",
-      "patched_sha256": "1b24432fc2da9069cffa22c6d86de244c8b886f543f981b4a4e6f6c9335f3f45",
+      "published_filename": "providers/streamzo--nuvio--058212b7b08ef815.js",
+      "sha256": "058212b7b08ef8157fd93cdb724a41abc55ad147e5dc2bc9660cb326a485866d",
+      "patched_sha256": "058212b7b08ef8157fd93cdb724a41abc55ad147e5dc2bc9660cb326a485866d",
       "upstream_sha256": "18c3688c2dc26c877a9302916b19b0dad5537dbac06954496627907c59920b22",
       "local_patches": [
         {
@@ -16445,6 +16445,16 @@
         {
           "type": "patch_script",
           "path": "scripts/provider_patches/nuvio_tv_playable_first_v1.py",
+          "phase": "discovery"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/streamzo_public_catalogue_v2.py",
+          "phase": "discovery"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/streamzo_source_identity_v3.py",
           "phase": "discovery"
         }
       ],
@@ -16679,14 +16689,19 @@
     },
     "toflix": {
       "id": "toflix",
-      "published_filename": "providers/toflix--published-baseline--4b2c058febc96dcc.js",
-      "sha256": "4b2c058febc96dccbd2f17c0eb7723e92d2033a6a06a77f6905048b8ff74c2e1",
-      "patched_sha256": "4b2c058febc96dccbd2f17c0eb7723e92d2033a6a06a77f6905048b8ff74c2e1",
+      "published_filename": "providers/toflix--published-baseline--d71a4c1b9d718a0b.js",
+      "sha256": "d71a4c1b9d718a0b672c371c6cf8a16e57d59560dd892227aa71c805a201a1fc",
+      "patched_sha256": "d71a4c1b9d718a0b672c371c6cf8a16e57d59560dd892227aa71c805a201a1fc",
       "upstream_sha256": "80f0a5219b4685fdc8c21ca035a6098efc2c74f9aaa870d845484e6a24de3077",
       "local_patches": [
         {
           "type": "patch_script",
           "path": "scripts/provider_patches/toflix_explicit_vf_v1.py",
+          "phase": "discovery"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/toflix_explicit_vf_v2.py",
           "phase": "discovery"
         }
       ],
