@@ -296,15 +296,7 @@ jobs:
           fi
 
           if ! git diff --cached --quiet; then
-            git commit -m "chore: stage validated provider versions"
-            test -f manifest.next.json
-            cp manifest.next.json "$RUNNER_TEMP/manifest.next.json"
-            git reset --hard HEAD
-            git clean -fdx
-            git fetch origin main
-            git rebase origin/main
-            git push origin HEAD:main
-            cp "$RUNNER_TEMP/manifest.next.json" manifest.next.json
+            echo "Provider/report changes are staged locally and will be published atomically with the validated manifest."
           else
             echo "No provider file or validation report change."
           fi
@@ -334,7 +326,7 @@ jobs:
             exit 0
           fi
 
-          git commit -m "chore: publish Nuvio provider manifest"
+          git commit -m "chore: publish validated provider transaction"
           git reset --hard HEAD
           git clean -fdx
           git fetch origin main
