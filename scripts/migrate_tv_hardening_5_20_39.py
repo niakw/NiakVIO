@@ -10,7 +10,8 @@ PUR = 'scripts/provider_patches/purstream_tv_identity_v3.py'
 PAPA = 'scripts/provider_patches/papadustream_anime_tv_v1.py'
 PLAY = 'scripts/provider_patches/nuvio_tv_playable_first_v1.py'
 STREAMZO_ID = 'scripts/provider_patches/streamzo_source_identity_v2.py'
-TOFLIX_VF = 'scripts/provider_patches/toflix_explicit_vf_v1.py'
+TOFLIX_VF_V1 = 'scripts/provider_patches/toflix_explicit_vf_v1.py'
+TOFLIX_VF = 'scripts/provider_patches/toflix_explicit_vf_v2.py'
 
 
 def load(path: Path):
@@ -46,8 +47,6 @@ def main() -> int:
         append_patch(cfg, PLAY, {'max_probes': 6, 'timeout_ms': 6500})
 
     streamzo = patches.setdefault('streamzo', {})
-    # These two wrappers must be terminal and ordered: reject a mismatched
-    # catalogue source first, then remove/reorder dead direct media rows.
     scripts = streamzo.setdefault('patch_scripts', [])
     scripts[:] = [value for value in scripts if value not in {STREAMZO_ID, PLAY}]
     scripts.extend([STREAMZO_ID, PLAY])
@@ -55,12 +54,16 @@ def main() -> int:
     opts[STREAMZO_ID] = {'base_url': 'https://streamzo.fr', 'timeout_ms': 6500}
     opts[PLAY] = {'max_probes': 8, 'timeout_ms': 6500}
 
-    # ToFlix already carries an explicit VF marker in its source-derived stream
-    # title but omits the normalized language field.  Only propagate FR when
-    # both that explicit marker and its dedicated french.* delivery branch are
-    # present; never infer VOSTFR as French audio.
+    # Replace the earlier browser-URL-dependent ToFlix wrapper with V2.  V2 is
+    # QuickJS-safe and only propagates FR when the stream itself says VF and the
+    # resolved media URL is explicitly on the french.* delivery branch.
     toflix = patches.setdefault('toflix', {})
-    append_patch(toflix, TOFLIX_VF, {'require_french_host': True})
+    toflix_scripts = toflix.setdefault('patch_scripts', [])
+    toflix_scripts[:] = [value for value in toflix_scripts if value not in {TOFLIX_VF_V1, TOFLIX_VF}]
+    toflix_scripts.append(TOFLIX_VF)
+    toflix_opts = toflix.setdefault('patch_script_options', {})
+    toflix_opts.pop(TOFLIX_VF_V1, None)
+    toflix_opts[TOFLIX_VF] = {'require_french_host': True}
 
     dump(overrides_path, overrides)
 
@@ -98,7 +101,7 @@ def main() -> int:
     package['scripts']['test'] = command
     dump(package_path, package)
 
-    print('Nuvio TV hardening profiles wired: Purstream identity, Papa anime, playable-first, StreamZo source identity, ToFlix explicit VF')
+    print('Nuvio TV hardening profiles wired: Purstream identity, Papa anime, playable-first, StreamZo source identity, ToFlix explicit VF v2')
     return 0
 
 
