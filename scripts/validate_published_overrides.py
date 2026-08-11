@@ -13,6 +13,7 @@ CONFIG = ROOT / "provider-overrides.json"
 MANIFEST = ROOT / "manifest.next.json"
 PROVENANCE = ROOT / "PROVENANCE.json"
 PROVIDERS = ROOT / "providers"
+PROVIDER_LKG = ROOT / "provider-lkg.json"
 
 # Runtime-generated strategies are deliberately not static patch_profiles in
 # provider-overrides.json. They are created from live deep-health evidence and
@@ -46,6 +47,56 @@ def bare_host_marker(value: str) -> bool:
     return len(labels) >= 2 and all(label and all(ch.isalnum() or ch == "-" for ch in label) for label in labels)
 
 
+def add_provider_reference(protected: set[Path], value: object, base: Path = ROOT) -> None:
+    """Protect a provider path still referenced by any authoritative state."""
+    if not isinstance(value, str) or not value.strip():
+        return
+    target = (base / value).resolve()
+    try:
+        target.relative_to(PROVIDERS.resolve())
+    except ValueError:
+        return
+    protected.add(target)
+
+
+def transaction_protected_provider_paths(provenance: dict[str, Any]) -> set[Path]:
+    """Return the union of provider bundles that may still be live.
+
+    Validation runs before the two-phase manifest transaction is committed. A
+    bundle can therefore be absent from ``manifest.next.json`` and still be a
+    live dependency of the currently published manifest, a language projection,
+    LKG state or provenance. Destructive stale-alias cleanup must never delete
+    those files; ``prune_unreferenced_providers.py`` owns final garbage
+    collection once the transaction's authoritative references have converged.
+    """
+    protected: set[Path] = set()
+    manifest_paths: list[Path] = []
+    for path in (MANIFEST, ROOT / "manifest.json"):
+        if path.is_file() and path not in manifest_paths:
+            manifest_paths.append(path)
+    for path in sorted(ROOT.glob("*/manifest.json")):
+        if path.is_file() and path not in manifest_paths:
+            manifest_paths.append(path)
+
+    for path in manifest_paths:
+        payload = load(path, {})
+        for entry in payload.get("scrapers", []):
+            if isinstance(entry, dict):
+                add_provider_reference(protected, entry.get("filename"), path.parent)
+
+    lkg = load(PROVIDER_LKG, {})
+    for record in (lkg.get("providers", {}) if isinstance(lkg, dict) else {}).values():
+        if isinstance(record, dict):
+            add_provider_reference(protected, record.get("filename"))
+
+    for record in (provenance.get("providers", {}) if isinstance(provenance, dict) else {}).values():
+        if not isinstance(record, dict):
+            continue
+        add_provider_reference(protected, record.get("published_filename"))
+        add_provider_reference(protected, record.get("canonical_source_filename"))
+    return protected
+
+
 def main() -> int:
     config = load(CONFIG, {})
     manifest = load(MANIFEST, {})
@@ -67,6 +118,7 @@ def main() -> int:
         if cid and isinstance(filename, str):
             referenced[cid] = (ROOT / filename).resolve()
 
+    protected_paths = transaction_protected_provider_paths(provenance)
     errors: list[str] = []
     removed: list[str] = []
     normalized_provenance: list[str] = []
@@ -184,7 +236,10 @@ def main() -> int:
                 )
 
         # Remove stale aliases/old hashes only when they retain a forbidden value
-        # and are not the exact file selected by manifest.next.json.
+        # and are not referenced by *any* authoritative state in the two-phase
+        # transaction. This prevents validation from deleting a still-live
+        # current/provenance/LKG bundle immediately before manifest.next is
+        # promoted. Final garbage collection remains prune's responsibility.
         if replacements:
             # Match only bundles that belong to this exact provider id.
             # A broad prefix glob such as ``4khdhub*.js`` also matches the
@@ -195,7 +250,8 @@ def main() -> int:
                 candidate_name = candidate.name.casefold()
                 if candidate_name != exact_plain and not candidate_name.startswith(exact_prefix):
                     continue
-                if candidate.resolve() == target:
+                resolved_candidate = candidate.resolve()
+                if resolved_candidate == target or resolved_candidate in protected_paths:
                     continue
                 candidate_text = candidate.read_text(encoding="utf-8", errors="ignore")
                 if any(contains_literal(candidate_text, str(old)) for old in replacements):
