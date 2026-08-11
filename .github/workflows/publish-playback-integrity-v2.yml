@@ -28,6 +28,17 @@ jobs:
         with:
           node-version: "24"
           package-manager-cache: false
+      - name: Normalize failed deep transaction evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          LAST_CLEAN=eb010b714fb4b16a07dd1369d7325b8a40d570dd
+          # The failed deep run committed its report/provider staging phase but
+          # correctly did not publish a new manifest. The activation validator
+          # must therefore see the last committed deep report for this exact
+          # unchanged manifest, not the rejected staged promotion report.
+          git diff --exit-code "$LAST_CLEAN" -- manifest.json vf/manifest.json provider-activation-lkg.json
+          git show "$LAST_CLEAN:health-report.json" > health-report.json
       - name: Import only the branch-validated durable source
         shell: bash
         run: |
