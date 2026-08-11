@@ -1,0 +1,68 @@
+name: Make deep publication transactional once
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/triggers/make-sync-transactional"
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: "24"
+          package-manager-cache: false
+      - name: Patch deep publication to one commit
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          path=Path('.github/workflows/sync.yml')
+          text=path.read_text()
+          old='''          if ! git diff --cached --quiet; then\n            git commit -m "chore: stage validated provider versions"\n            test -f manifest.next.json\n            cp manifest.next.json "$RUNNER_TEMP/manifest.next.json"\n            git reset --hard HEAD\n            git clean -fdx\n            git fetch origin main\n            git rebase origin/main\n            git push origin HEAD:main\n            cp "$RUNNER_TEMP/manifest.next.json" manifest.next.json\n          else\n            echo "No provider file or validation report change."\n          fi\n'''
+          new='''          if ! git diff --cached --quiet; then\n            echo "Provider/report changes are staged locally and will be published atomically with the validated manifest."\n          else\n            echo "No provider file or validation report change."\n          fi\n'''
+          if text.count(old) != 1:
+              raise SystemExit(f'expected one legacy two-phase block, found {text.count(old)}')
+          text=text.replace(old,new,1)
+          text=text.replace('git commit -m "chore: publish Nuvio provider manifest"','git commit -m "chore: publish validated provider transaction"',1)
+          path.write_text(text)
+
+          package=Path('package.json')
+          data=json.loads(package.read_text())
+          cmd='python3 tests/sync_atomic_publication_test.py'
+          current=str(data['scripts']['test'])
+          if cmd not in current:
+              data['scripts']['test']=current+' && '+cmd
+          package.write_text(json.dumps(data,ensure_ascii=False,indent=2)+'\n')
+          PY
+          python tests/sync_atomic_publication_test.py
+          python -m py_compile tests/sync_atomic_publication_test.py
+      - name: Install and validate repository
+        run: |
+          npm ci --ignore-scripts --no-audit --no-fund
+          python scripts/sync_release_versions.py --manifest manifest.json
+          python scripts/generate_release_hashes.py
+          npm test
+          python scripts/generate_release_hashes.py
+          python scripts/validate_release_integrity.py
+      - name: Commit exact validated transaction hardening
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add .github/workflows/sync.yml package.json package-lock.json FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json tests/sync_atomic_publication_test.py
+          git commit -m "ci: make deep provider publication atomic"
+          git fetch origin main
+          git rebase origin/main
+          git push origin HEAD:main
