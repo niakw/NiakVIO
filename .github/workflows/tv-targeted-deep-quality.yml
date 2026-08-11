@@ -1,4 +1,4 @@
-name: Nuvio TV targeted deep quality proof
+name: Nuvio TV targeted VF recovery proof
 
 on:
   push:
@@ -9,14 +9,27 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   proof:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          fetch-depth: 1
+      - name: Record targeted proof run id
+        run: |
+          mkdir -p .github/status
+          printf '%s\n' "$GITHUB_RUN_ID" > .github/status/tv-targeted-vf-run
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add .github/status/tv-targeted-vf-run
+          if ! git diff --cached --quiet; then
+            git commit -m 'ci: record targeted TV VF run'
+            git push origin HEAD:agent/tv-regression-5.20.38
+          fi
       - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
         with:
           python-version: '3.12'
@@ -27,31 +40,32 @@ jobs:
       - run: npm ci --ignore-scripts --no-audit --no-fund
       - name: Discover current candidates
         run: python scripts/discover_candidates.py --require-all-upstreams
-      - name: Keep only Frenchstream and StreamZo candidate variants
+      - name: Keep only TV VF recovery candidates
         run: |
           python - <<'PY'
           import json
           from pathlib import Path
           p=Path('staging/candidates.json')
           d=json.loads(p.read_text())
-          wanted={'frenchstream','streamzo'}
+          wanted={'frenchstream','streamzo','1shows','vidsrc','toflix','allanime'}
           def keep(row):
               if not isinstance(row,dict): return False
               return str(row.get('canonical_id') or row.get('id') or row.get('upstream_id') or '').casefold() in wanted
           if isinstance(d,list):
-              out=[r for r in d if keep(r)]
+              out=[r for r in d if keep(r)]; rows=out
           elif isinstance(d,dict):
               key=next((k for k in ('candidates','providers','items') if isinstance(d.get(k),list)),None)
               if key is None: raise SystemExit(f'unsupported candidates schema keys={list(d)}')
-              out=dict(d); out[key]=[r for r in d[key] if keep(r)]
+              out=dict(d); out[key]=[r for r in d[key] if keep(r)]; rows=out[key]
           else:
               raise SystemExit('unsupported candidates schema')
-          rows=out if isinstance(out,list) else out[key]
           print('filtered candidates',[(r.get('source'),r.get('canonical_id'),r.get('key')) for r in rows])
           if not rows: raise SystemExit('target filter selected zero candidates')
           p.write_text(json.dumps(out,ensure_ascii=False,indent=2)+'\n')
           PY
       - name: DNS and exact overrides
+        env:
+          GLOBALPING_API_TOKEN: ${{ secrets.GLOBALPING_API_TOKEN }}
         run: |
           node scripts/provider_dns_preflight.mjs --stage staging --output health-output/dns-preflight-report.json
           python scripts/apply_dns_migration_overrides.py --stage staging --report health-output/dns-preflight-report.json
@@ -67,30 +81,44 @@ jobs:
           NUVIO_DNS_PREFLIGHT_RESULTS: health-output/dns-preflight-report.json
           NUVIO_WORKER_MEMORY_MB: '1024'
         run: node scripts/health_check.mjs --deep
-      - name: Assert quality gate evidence is now sufficient
+      - name: Assert strong French TV candidates
         run: |
           python - <<'PY'
           import json
           d=json.load(open('health-output/health-results.json'))
           rows=d.get('results') or d.get('providers') or []
+          wanted={'frenchstream','streamzo','1shows','vidsrc','toflix','allanime'}
           best={}
           for r in rows:
               k=str(r.get('canonical_id') or r.get('id') or '').casefold()
-              if k not in {'frenchstream','streamzo'}: continue
+              if k not in wanted: continue
               e=r.get('evidence') or {}
               h=int(e.get('effective_max_height') or 0)
-              if h > int((best.get(k) or {}).get('height') or 0):
-                  best[k]={'height':h,'status':r.get('status'),'score':r.get('score'),'evidence':e,'row':r}
+              score=(1 if r.get('status')=='healthy' else 0, int(e.get('streams_playable') or 0), h, int(r.get('score') or 0))
+              if k not in best or score > best[k]['rank']:
+                  best[k]={
+                    'rank':score,'height':h,'status':r.get('status'),'score':r.get('score'),
+                    'playable':int(e.get('streams_playable') or 0),
+                    'audio':sorted({str(x).casefold() for x in (e.get('accepted_audio_languages') or [])}),
+                    'subs':sorted({str(x).casefold() for x in (e.get('accepted_subtitle_languages') or [])}),
+                    'healthy_categories':e.get('healthy_fixture_categories') or [],
+                    'evidence':e,
+                  }
           print(json.dumps(best,ensure_ascii=False,indent=2))
-          for k in ('frenchstream','streamzo'):
-              if k not in best: raise SystemExit(f'{k}: no result')
-              if best[k]['status']!='healthy': raise SystemExit(f'{k}: not healthy: {best[k]["status"]}')
-              if best[k]['height'] < 720: raise SystemExit(f'{k}: quality still below 720: {best[k]["height"]}')
-              if int(best[k]['evidence'].get('streams_playable') or 0) < 1: raise SystemExit(f'{k}: no playable stream')
-          print('targeted deep quality proof passed')
+          strong=[]
+          for k in ('frenchstream','streamzo','1shows','vidsrc'):
+              row=best.get(k)
+              if not row: continue
+              french='fr' in row['audio'] or 'fr' in row['subs']
+              if row['status']=='healthy' and row['playable'] >= 1 and row['height'] >= 720 and french:
+                  strong.append(k)
+          print('STRONG_TV_VF=',','.join(strong))
+          if len(strong) < 3:
+              raise SystemExit(f'expected at least 3 strong French TV candidates, got {strong}')
+          print('targeted global TV VF proof passed')
           PY
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
-          name: tv-targeted-deep-quality-${{ github.run_id }}
+          name: tv-targeted-vf-${{ github.run_id }}
           path: health-output/
           retention-days: 2
