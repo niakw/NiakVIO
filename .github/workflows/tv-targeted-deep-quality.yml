@@ -1,0 +1,96 @@
+name: Nuvio TV targeted deep quality proof
+
+on:
+  push:
+    branches:
+      - agent/tv-regression-5.20.38
+    paths:
+      - .github/triggers/tv-targeted-deep-quality
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Discover current candidates
+        run: python scripts/discover_candidates.py --require-all-upstreams
+      - name: Keep only Frenchstream and StreamZo candidate variants
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path('staging/candidates.json')
+          d=json.loads(p.read_text())
+          wanted={'frenchstream','streamzo'}
+          def keep(row):
+              if not isinstance(row,dict): return False
+              return str(row.get('canonical_id') or row.get('id') or row.get('upstream_id') or '').casefold() in wanted
+          if isinstance(d,list):
+              out=[r for r in d if keep(r)]
+          elif isinstance(d,dict):
+              key=next((k for k in ('candidates','providers','items') if isinstance(d.get(k),list)),None)
+              if key is None: raise SystemExit(f'unsupported candidates schema keys={list(d)}')
+              out=dict(d); out[key]=[r for r in d[key] if keep(r)]
+          else:
+              raise SystemExit('unsupported candidates schema')
+          rows=out if isinstance(out,list) else out[key]
+          print('filtered candidates',[(r.get('source'),r.get('canonical_id'),r.get('key')) for r in rows])
+          if not rows: raise SystemExit('target filter selected zero candidates')
+          p.write_text(json.dumps(out,ensure_ascii=False,indent=2)+'\n')
+          PY
+      - name: DNS and exact overrides
+        run: |
+          node scripts/provider_dns_preflight.mjs --stage staging --output health-output/dns-preflight-report.json
+          python scripts/apply_dns_migration_overrides.py --stage staging --report health-output/dns-preflight-report.json
+          python scripts/build_provider_runtime_profiles.py
+          python scripts/reapply_published_overrides.py
+          python scripts/build_provider_runtime_profiles.py --stage staging --apply-stage
+          python scripts/validate_override_pipeline.py --stage staging
+      - name: Run exact deep health checker
+        env:
+          NUVIO_STAGE: staging
+          NUVIO_CANDIDATES_PATH: staging/candidates.json
+          NUVIO_HEALTH_OUTPUT: health-output
+          NUVIO_DNS_PREFLIGHT_RESULTS: health-output/dns-preflight-report.json
+          NUVIO_WORKER_MEMORY_MB: '1024'
+        run: node scripts/health_check.mjs --deep
+      - name: Assert quality gate evidence is now sufficient
+        run: |
+          python - <<'PY'
+          import json
+          d=json.load(open('health-output/health-results.json'))
+          rows=d.get('results') or d.get('providers') or []
+          best={}
+          for r in rows:
+              k=str(r.get('canonical_id') or r.get('id') or '').casefold()
+              if k not in {'frenchstream','streamzo'}: continue
+              e=r.get('evidence') or {}
+              h=int(e.get('effective_max_height') or 0)
+              if h > int((best.get(k) or {}).get('height') or 0):
+                  best[k]={'height':h,'status':r.get('status'),'score':r.get('score'),'evidence':e,'row':r}
+          print(json.dumps(best,ensure_ascii=False,indent=2))
+          for k in ('frenchstream','streamzo'):
+              if k not in best: raise SystemExit(f'{k}: no result')
+              if best[k]['status']!='healthy': raise SystemExit(f'{k}: not healthy: {best[k]["status"]}')
+              if best[k]['height'] < 720: raise SystemExit(f'{k}: quality still below 720: {best[k]["height"]}')
+              if int(best[k]['evidence'].get('streams_playable') or 0) < 1: raise SystemExit(f'{k}: no playable stream')
+          print('targeted deep quality proof passed')
+          PY
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: tv-targeted-deep-quality-${{ github.run_id }}
+          path: health-output/
+          retention-days: 2
