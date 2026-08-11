@@ -1,0 +1,175 @@
+name: Temporary global provider deep proof
+
+on:
+  push:
+    branches:
+      - agent/tv-regression-5.20.38
+    paths:
+      - .github/triggers/global-provider-deep-proof
+
+permissions:
+  contents: read
+
+jobs:
+  deep-proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: agent/tv-regression-5.20.38
+          fetch-depth: 1
+          persist-credentials: false
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Repository and global policy regression suite
+        run: npm test
+
+      - name: Resolve official hubs
+        run: |
+          python scripts/resolve_provider_hubs.py --apply --mode deep --include-disabled --workers 8 --timeout 8 --output health-output/provider-hub-report.json
+
+      - name: Discover all non-P2P candidates
+        run: python scripts/discover_candidates.py --require-all-upstreams
+
+      - name: DNS preflight and validated migrations
+        env:
+          GLOBALPING_API_TOKEN: ${{ secrets.GLOBALPING_API_TOKEN }}
+        run: |
+          node scripts/provider_dns_preflight.mjs --stage staging --output health-output/dns-preflight-report.json
+          python scripts/apply_dns_migration_overrides.py --stage staging --report health-output/dns-preflight-report.json
+
+      - name: Materialize global provider policies
+        run: |
+          python scripts/build_provider_runtime_profiles.py
+          python scripts/reapply_published_overrides.py
+          python scripts/build_provider_runtime_profiles.py --stage staging --apply-stage
+          python scripts/validate_override_pipeline.py --stage staging
+
+      - name: Deep access and adaptive repair
+        env:
+          NUVIO_DNS_PREFLIGHT_RESULTS: health-output/dns-preflight-report.json
+          NUVIO_WORKER_MEMORY_MB: '1024'
+        run: |
+          python scripts/run_adaptive_deep_repair.py --stage staging --output health-output --mode deep
+          python scripts/validate_override_pipeline.py --stage staging
+          python scripts/validate_deep_health_integrity.py --health health-output/health-results.json --repairs health-output/repair-report.json
+          python scripts/generate_diagnostics.py --results health-output/health-results.json --output health-output
+
+      - name: Simulate strict global promotion without publishing
+        env:
+          NUVIO_STAGE: staging
+          NUVIO_HEALTH_RESULTS: health-output/health-results.json
+        run: |
+          python scripts/promote_candidates.py
+          test -f manifest.next.json
+          python - <<'PY'
+          import json
+          from collections import Counter
+          from pathlib import Path
+
+          manifest = json.loads(Path('manifest.next.json').read_text(encoding='utf-8'))
+          report = json.loads(Path('health-report.json').read_text(encoding='utf-8'))
+          scrapers = [x for x in manifest.get('scrapers', []) if isinstance(x, dict)]
+          enabled = [x for x in scrapers if x.get('enabled')]
+          providers = [x for x in report.get('providers', []) if isinstance(x, dict)]
+          failures = Counter()
+          actions = Counter(str(x.get('action') or 'unknown') for x in providers)
+          for row in providers:
+              for gate in row.get('failed_gates', []) or []:
+                  failures[str(gate)] += 1
+          ids = {str(x.get('id') or '').casefold(): x for x in scrapers}
+          focus = {}
+          for pid in ['streamzo','frenchstream','coflix','purstream','papadustream','toflix','dvdplay','cineby','videasy','vidsrc','1shows']:
+              row = ids.get(pid)
+              focus[pid] = None if row is None else {
+                  'enabled': bool(row.get('enabled')),
+                  'types': row.get('supportedTypes'),
+                  'language': row.get('contentLanguage'),
+              }
+          summary = {
+              'general_total': len(scrapers),
+              'general_enabled': len(enabled),
+              'general_disabled': len(scrapers) - len(enabled),
+              'failed_gate_counts': dict(failures),
+              'action_counts': dict(actions),
+              'focus': focus,
+          }
+          Path('global-deep-summary.json').write_text(json.dumps(summary, indent=2, ensure_ascii=False)+'\n', encoding='utf-8')
+          print(json.dumps(summary, indent=2, ensure_ascii=False))
+          PY
+
+      - name: One-time ID-first animated-film regression matrix
+        env:
+          NUVIO_MATRIX_WORKERS: '10'
+        run: |
+          python - <<'PY'
+          from __future__ import annotations
+          import concurrent.futures, json, os, subprocess, time
+          from pathlib import Path
+
+          root = Path('.').resolve()
+          manifest = json.loads(Path('manifest.next.json').read_text(encoding='utf-8'))
+          rows = [x for x in manifest.get('scrapers', []) if isinstance(x, dict) and 'movie' in {str(v).casefold() for v in x.get('supportedTypes', [])}]
+          fixture = {'tmdbId':'1215638','mediaType':'movie','year':2025,'category':'movie','expectedDurationMinutes':88}
+          context = {'locale':'fr-FR','language':'fr','languages':['fr-FR','fr','en-US','en'],'platform':'android','settings':{},'storage':{}}
+
+          def parse(stdout):
+              for line in reversed(stdout.splitlines()):
+                  line=line.strip()
+                  if not line.startswith('{'): continue
+                  try: value=json.loads(line)
+                  except Exception: continue
+                  if isinstance(value,dict) and 'playable_stream_count' in value: return value
+              return None
+
+          def one(row):
+              start=time.monotonic()
+              try:
+                  p=subprocess.run(['node','scripts/nuvio_tv_probe_v2.cjs',str(root/row['filename']),json.dumps(fixture),json.dumps(context)],capture_output=True,text=True,timeout=55)
+                  data=parse(p.stdout) or {}
+                  return {'id':row.get('id'),'enabled':bool(row.get('enabled')),'playable':int(data.get('playable_stream_count') or 0),'raw':int(data.get('stream_count') or data.get('raw_stream_count') or 0),'ms':round((time.monotonic()-start)*1000)}
+              except subprocess.TimeoutExpired:
+                  return {'id':row.get('id'),'enabled':bool(row.get('enabled')),'playable':0,'raw':0,'timeout':True,'ms':round((time.monotonic()-start)*1000)}
+
+          with concurrent.futures.ThreadPoolExecutor(max_workers=int(os.environ.get('NUVIO_MATRIX_WORKERS','10'))) as ex:
+              results=list(ex.map(one,rows))
+          playable=[x for x in results if x['playable']>0]
+          enabled_playable=[x for x in playable if x['enabled']]
+          summary={'fixture_contract':'TMDB-ID-first movie request; title intentionally omitted','providers_tested':len(results),'playable_providers':len(playable),'enabled_playable_providers':len(enabled_playable),'playable_ids':[x['id'] for x in playable],'enabled_playable_ids':[x['id'] for x in enabled_playable],'rows':results}
+          Path('animated-id-first-matrix.json').write_text(json.dumps(summary,indent=2,ensure_ascii=False)+'\n',encoding='utf-8')
+          print(json.dumps({k:v for k,v in summary.items() if k!='rows'},indent=2,ensure_ascii=False))
+          PY
+
+      - name: Global wrong-content and media audit on simulated manifest
+        env:
+          NUVIO_CATALOGUE_AUDIT_OUTPUT: audit-output/catalogue-media-audit.json
+          NUVIO_CATALOGUE_AUDIT_WORKERS: '8'
+          NUVIO_CATALOGUE_AUDIT_TIMEOUT: '60'
+        run: |
+          cp manifest.json manifest.before-proof.json
+          cp manifest.next.json manifest.json
+          python scripts/audit_catalogue_identity_media.py
+
+      - name: Upload deep proof
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: global-provider-deep-proof-${{ github.run_id }}
+          path: |
+            global-deep-summary.json
+            animated-id-first-matrix.json
+            audit-output/catalogue-media-audit.json
+            health-output/health-results.json
+            health-output/repair-report.json
+            health-report.json
+            manifest.next.json
+          retention-days: 2
+          if-no-files-found: warn
