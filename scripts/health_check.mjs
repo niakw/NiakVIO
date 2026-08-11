@@ -726,6 +726,37 @@ function evenlySpacedSlice(items, count) {
   return indexes.map((index) => items[index]);
 }
 
+function rankedDeepStreamCandidates(items, count) {
+  if (!items.length || count <= 0) return [];
+  const wanted = Math.min(count, items.length);
+  const decorated = items.map((stream, index) => ({
+    stream,
+    index,
+    claimedHeight: qualityToHeight(`${stream?.quality || ''} ${stream?.title || ''} ${stream?.url || ''}`) || 0,
+  }));
+  // Keep the first mirror in the candidate set because it is often the upstream
+  // preferred choice, then spend the remaining bounded budget on the strongest
+  // declared HD/4K candidates. Declared quality only selects what to probe; it
+  // never passes activation until the media probe itself verifies playback.
+  const selected = [decorated[0]];
+  const rankedRest = decorated.slice(1).sort((left, right) => (
+    right.claimedHeight - left.claimedHeight || left.index - right.index
+  ));
+  for (const row of rankedRest) {
+    if (selected.length >= wanted) break;
+    selected.push(row);
+  }
+  if (selected.length < wanted) {
+    for (const stream of evenlySpacedSlice(items, wanted)) {
+      if (selected.length >= wanted) break;
+      if (!selected.some((row) => row.stream === stream)) {
+        selected.push({ stream, index: items.indexOf(stream), claimedHeight: 0 });
+      }
+    }
+  }
+  return selected.map((row) => row.stream);
+}
+
 function withCategory(items, category) {
   return (items || []).map((item) => ({ ...item, category }));
 }
@@ -1255,14 +1286,21 @@ async function testCandidate(candidate) {
     const streams = Array.isArray(worker.streams) ? worker.streams : [];
     const probes = [];
     const maxStreamsToProbe = Math.max(1, Number(modeConfig.max_streams_to_probe || 1));
-    // Deep activation must not grade a multi-mirror provider on whichever row
-    // happens to be first. Probe a bounded, evenly distributed sample so a
-    // later high-quality mirror can satisfy the unchanged quality gate.
-    const streamsToProbe = requestedMode === 'deep' && modeConfig.probe_streams_evenly === true
-      ? evenlySpacedSlice(streams, maxStreamsToProbe)
-      : streams.slice(0, maxStreamsToProbe);
-    for (const stream of streamsToProbe) {
-      probes.push(await probeStream(stream, modeConfig));
+    const adaptiveDeepSampling = requestedMode === 'deep' && modeConfig.probe_streams_adaptively === true;
+    if (!adaptiveDeepSampling || maxStreamsToProbe <= 1 || streams.length <= 1) {
+      for (const stream of streams.slice(0, maxStreamsToProbe)) {
+        probes.push(await probeStream(stream, modeConfig));
+      }
+    } else {
+      const minimumHeight = Math.max(1, Number(activationConfig.minimum_effective_height || 720));
+      const candidates = rankedDeepStreamCandidates(streams, maxStreamsToProbe);
+      for (const stream of candidates) {
+        const probe = await probeStream(stream, modeConfig);
+        probes.push(probe);
+        // Do not pay for extra mirrors once a current, playable media endpoint
+        // has actually met the unchanged HD quality threshold.
+        if (probe.playback_verified === true && Number(probe.effective_height || 0) >= minimumHeight) break;
+      }
     }
 
     const classification = statusFrom(worker, probes);

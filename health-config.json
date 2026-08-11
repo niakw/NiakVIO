@@ -77,7 +77,7 @@
       "max_settings_profiles": 4,
       "worker_memory_mb": 512,
       "minimum_vod_duration_seconds": 60,
-      "probe_streams_evenly": true
+      "probe_streams_adaptively": true
     }
   },
   "fixtures": {
@@ -338,7 +338,8 @@
       "no_streams",
       "reachable",
       "degraded"
-    ]
+    ],
+    "allow_type_scoped_activation": true
   },
   "availability": {
     "auto_disable": true,
