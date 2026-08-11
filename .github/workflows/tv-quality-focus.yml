@@ -1,0 +1,74 @@
+name: Nuvio TV focused quality proof
+
+on:
+  push:
+    branches:
+      - agent/tv-regression-5.20.38
+    paths:
+      - .github/triggers/tv-quality-focus
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Probe disabled-but-playable TV providers
+        shell: bash
+        run: |
+          set -u
+          python - <<'PY' > /tmp/providers.tsv
+          import json
+          m=json.load(open('manifest.json'))
+          wanted={'frenchstream','toflix','streamzo'}
+          for r in m['scrapers']:
+              k=str(r.get('id') or '').lower()
+              if k in wanted: print(k+'\t'+r['filename'])
+          PY
+          : > /tmp/quality-all.txt
+          while IFS=$'\t' read -r id file; do
+            case "$id" in
+              frenchstream)
+                fixtures=(
+                  '{"tmdbId":"1396","mediaType":"tv","season":1,"episode":1,"title":"Breaking Bad","year":2008}'
+                  '{"tmdbId":"210702","mediaType":"tv","season":1,"episode":1,"title":"Revenant","year":2023}'
+                ) ;;
+              toflix)
+                fixtures=(
+                  '{"tmdbId":"1396","mediaType":"tv","season":1,"episode":1,"title":"Breaking Bad","year":2008}'
+                  '{"tmdbId":"94664","mediaType":"tv","season":1,"episode":1,"title":"Mushoku Tensei: Jobless Reincarnation","year":2021}'
+                ) ;;
+              streamzo)
+                fixtures=(
+                  '{"tmdbId":"157336","mediaType":"movie","title":"Interstellar","year":2014}'
+                  '{"tmdbId":"1396","mediaType":"tv","season":1,"episode":1,"title":"Breaking Bad","year":2008}'
+                ) ;;
+            esac
+            for fixture in "${fixtures[@]}"; do
+              tmdb=$(python -c 'import json,sys; print(json.loads(sys.argv[1])["tmdbId"])' "$fixture")
+              out="/tmp/${id}-${tmdb}.json"
+              (node scripts/nuvio_tv_probe_v2.cjs "$file" "$fixture" '{}' || true) | tail -n 1 > "$out"
+              echo "=== $id $tmdb probe ===" | tee -a /tmp/quality-all.txt
+              cat "$out" | tee -a /tmp/quality-all.txt
+              echo "=== $id $tmdb quality ===" | tee -a /tmp/quality-all.txt
+              python scripts/tv_hls_master_quality.py "$out" | tee -a /tmp/quality-all.txt
+            done
+          done < /tmp/providers.tsv
+      - name: Upload quality proof
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: tv-quality-focus-${{ github.run_id }}
+          path: /tmp/quality-all.txt
+          retention-days: 2
