@@ -6175,9 +6175,9 @@
     },
     "coflix": {
       "id": "coflix",
-      "published_filename": "providers/coflix--nuvio--36751370b84d0ef4.js",
-      "sha256": "36751370b84d0ef48eda5038435458f967ed09adccc40e75a330d24859aa41ce",
-      "patched_sha256": "36751370b84d0ef48eda5038435458f967ed09adccc40e75a330d24859aa41ce",
+      "published_filename": "providers/coflix--nuvio--ea652bb68e17cda7.js",
+      "sha256": "ea652bb68e17cda7885466ea327a6781b0fd5c154caec37837736bcf00ef6893",
+      "patched_sha256": "ea652bb68e17cda7885466ea327a6781b0fd5c154caec37837736bcf00ef6893",
       "upstream_sha256": "48239f7b107a98b295b0ddec8ed38805503a75975e1bee320543d856d0baa87c",
       "local_patches": [
         "{'type': 'patch_script', 'path': 'scripts/provider_patches/vf_catalogue_recovery.py', 'phase': 'discovery'}",
@@ -6196,6 +6196,47 @@
         {
           "type": "patch_script",
           "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
+          "phase": "discovery"
+        },
+        {
+          "type": "replace",
+          "from": "coflix.boston",
+          "to": "coflix.esq",
+          "count": 1,
+          "phase": "discovery"
+        },
+        {
+          "type": "replace",
+          "from": "coflix.to",
+          "to": "coflix.esq",
+          "count": 1,
+          "phase": "discovery"
+        },
+        {
+          "type": "replace",
+          "from": "coflix.blog",
+          "to": "coflix.esq",
+          "count": 1,
+          "phase": "discovery"
+        },
+        {
+          "type": "runtime_domain_overrides",
+          "count": 8,
+          "phase": "discovery"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/coflix_exact_catalogue.py",
+          "phase": "discovery"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/nuvio_tv_target_media_v4.py",
+          "phase": "discovery"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/stream_output_sanitizer_v6.py",
           "phase": "discovery"
         }
       ],
@@ -8517,9 +8558,9 @@
     },
     "frenchstream": {
       "id": "frenchstream",
-      "published_filename": "providers/frenchstream--nuvio--7c0e177a22c9c1f1.js",
-      "sha256": "7c0e177a22c9c1f111f4af9ab51fe3ea68025a9c3cbf2fff340220907cc458d4",
-      "patched_sha256": "7c0e177a22c9c1f111f4af9ab51fe3ea68025a9c3cbf2fff340220907cc458d4",
+      "published_filename": "providers/frenchstream--nuvio--75c1d89036f5ea15.js",
+      "sha256": "75c1d89036f5ea1561e3668bf79ad073c7cede0edf03d14d35f1393dd935e9e6",
+      "patched_sha256": "75c1d89036f5ea1561e3668bf79ad073c7cede0edf03d14d35f1393dd935e9e6",
       "upstream_sha256": "38cf074196379a8d88534366e9bf9b04c9c5f95c0f1d985c8a346ca3f67a85fd",
       "local_patches": [
         "{'type': 'patch_script', 'path': 'scripts/provider_patches/stream_output_sanitizer.py', 'phase': 'discovery'}",
@@ -8539,6 +8580,16 @@
         {
           "type": "patch_script",
           "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
+          "phase": "discovery"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/frenchstream_raw_tv_fallback.py",
+          "phase": "discovery"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/nuvio_tv_target_media_v4.py",
           "phase": "discovery"
         }
       ],
@@ -15827,9 +15878,9 @@
     },
     "streamzo": {
       "id": "streamzo",
-      "published_filename": "providers/streamzo--nuvio--7aab60199eedace7.js",
-      "sha256": "7aab60199eedace716aed4046d79078e6f790b260fb5240bc2653ad2397f4c8c",
-      "patched_sha256": "7aab60199eedace716aed4046d79078e6f790b260fb5240bc2653ad2397f4c8c",
+      "published_filename": "providers/streamzo--nuvio--9cc4444628ca7e00.js",
+      "sha256": "9cc4444628ca7e00e5ceac31a7744409ae43c672211331f0c1a1ef6d94e35ac9",
+      "patched_sha256": "9cc4444628ca7e00e5ceac31a7744409ae43c672211331f0c1a1ef6d94e35ac9",
       "upstream_sha256": "5ee8d74abe45cd42b5f0a7a79f8807355dd46fde04a1b00e9d134c511b776c12",
       "local_patches": [
         "{'type': 'patch_script', 'path': 'scripts/provider_patches/stream_output_sanitizer.py', 'phase': 'discovery'}",
@@ -15849,6 +15900,11 @@
         {
           "type": "patch_script",
           "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
+          "phase": "discovery"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/nuvio_tv_target_media_v4.py",
           "phase": "discovery"
         }
       ],

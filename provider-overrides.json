@@ -106,7 +106,8 @@
     "frenchstream": {
       "notes": [
         "Resolve the current terminal site from fstream.org before applying the provider.",
-        "Reject known short preview/troll players independently from the Frenchstream site address."
+        "Reject known short preview/troll players independently from the Frenchstream site address.",
+        "Expose current episode mirrors before the legacy Frenchstream resolver, resolve Vidzy/FSVid/Uqload target media, then sanitize the final output instead of accepting the troll fallback."
       ],
       "replacements": {
         "french-stream.one": "fs16.lol",
@@ -132,9 +133,10 @@
       "patch_scripts": [
         "scripts/provider_patches/frenchstream_detail_players.py",
         "scripts/provider_patches/vf_catalogue_recovery.py",
-        "scripts/provider_patches/stream_output_sanitizer_v5.py",
         "scripts/provider_patches/frenchstream_dle_catalogue.py",
+        "scripts/provider_patches/frenchstream_raw_tv_fallback.py",
         "scripts/provider_patches/nuvio_tv_target_media_v4.py",
+        "scripts/provider_patches/stream_output_sanitizer_v5.py",
         "scripts/provider_patches/desktop_runtime_compat_v1.py"
       ],
       "patch_script_options": {
@@ -182,8 +184,11 @@
             "snap.com",
             "snapchat.com",
             "ctfassets.net",
-            "sc-cdn.net"
-          ]
+            "sc-cdn.net",
+            "fstream.top",
+            "s1.fsvid.lol"
+          ],
+          "force_rewrap_target_media": true
         },
         "scripts/provider_patches/desktop_runtime_compat_v1.py": {
           "normalize_missing_episodes": true
@@ -199,7 +204,8 @@
     },
     "streamzo": {
       "notes": [
-        "Keep the locally verified reachable StreamZo domain."
+        "Keep the locally verified reachable StreamZo domain.",
+        "Resolve recovered StreamZo embeds to strict target media before the terminal output sanitizer validates publication candidates."
       ],
       "replacements": {},
       "required_values": [],
@@ -254,6 +260,16 @@
         },
         "scripts/provider_patches/desktop_runtime_compat_v1.py": {
           "normalize_missing_episodes": true
+        },
+        "scripts/provider_patches/nuvio_tv_target_media_v4.py": {
+          "provider_name": "StreamZo",
+          "max_candidates": 22,
+          "timeout_ms": 20000,
+          "blocked_hosts": [
+            "fstream.top"
+          ],
+          "strip_legacy_direct_media_v2": true,
+          "force_rewrap_target_media": true
         }
       },
       "manifest_overrides": {
@@ -264,9 +280,9 @@
       "patch_scripts": [
         "scripts/provider_patches/streamzo_data_embed.py",
         "scripts/provider_patches/vf_catalogue_recovery.py",
-        "scripts/provider_patches/stream_output_sanitizer_v5.py",
         "scripts/provider_patches/streamzo_public_catalogue.py",
-        "scripts/provider_patches/nuvio_tv_direct_media_v2.py",
+        "scripts/provider_patches/nuvio_tv_target_media_v4.py",
+        "scripts/provider_patches/stream_output_sanitizer_v5.py",
         "scripts/provider_patches/desktop_runtime_compat_v1.py"
       ],
       "published_types": [
@@ -435,20 +451,29 @@
         "coflix.blue": "coflix.esq",
         "coflix.wiki": "coflix.esq",
         "coflix.life": "coflix.esq",
-        "coflix.fr": "coflix.esq"
+        "coflix.fr": "coflix.esq",
+        "coflix.boston": "coflix.esq",
+        "coflix.to": "coflix.esq",
+        "coflix.blog": "coflix.esq"
       },
       "runtime_domain_replacements": {
         "coflix.cymru": "coflix.esq",
         "coflix.blue": "coflix.esq",
         "coflix.wiki": "coflix.esq",
         "coflix.life": "coflix.esq",
-        "coflix.fr": "coflix.esq"
+        "coflix.fr": "coflix.esq",
+        "coflix.boston": "coflix.esq",
+        "coflix.to": "coflix.esq",
+        "coflix.blog": "coflix.esq"
       },
       "notes": [
         "Automatically migrated coflix.cymru to coflix.blue after DNS/HTTP preflight validation of a redirect or a reachable same-role provider endpoint.",
-        "NuvioTV currently does not enforce manifest platform filters; resolve Coflix embeds to direct media, reject WordPress infrastructure routes, and validate every final URL before exposing it."
+        "NuvioTV currently does not enforce manifest platform filters; resolve Coflix embeds to direct media, reject WordPress infrastructure routes, and validate every final URL before exposing it.",
+        "Use the currently reachable Coflix catalogue and strict title/year matching before following LecteurVideo players.",
+        "Decode current LecteurVideo base64 player routes, resolve target media, then publish only output that passes the terminal sanitizer; do not expose generic embed or telemetry URLs.",
+        "NuvioTV uses fail-closed all-URL probing for Coflix: any row without media proof, including rows beyond the bounded probe budget, is discarded."
       ],
-      "capability": "html_scraper",
+      "capability": "mixed_embed_resolver",
       "official_hub": "https://coflix.domains/",
       "official_site": "https://coflix.esq",
       "patch_script_options": {
@@ -462,68 +487,63 @@
             "anime"
           ],
           "search_paths": [
-            "/?s={query}",
-            "/index.php?do=search&subaction=search&story={query}",
-            "/?do=search&subaction=search&story={query}",
-            "/search?q={query}"
+            "/?s={query}"
           ],
           "direct_paths": [
-            "/{slug}",
-            "/film/{slug}",
-            "/films/{slug}"
+            "/film/{slug}/"
           ],
           "blocked_hosts": [
             "fstream.top"
           ],
           "blocked_path_patterns": [
             "/wp-admin/",
-            "/wp-content/plugins/ajax-search-lite/",
-            "/wp-json/"
+            "/wp-json/",
+            "/wp-content/plugins/ajax-search-lite/"
           ],
-          "max_players": 8
-        },
-        "scripts/provider_patches/stream_output_sanitizer_v5.py": {
-          "blocked_hosts": [
-            "fstream.top"
-          ],
-          "blocked_path_patterns": [
-            "/wp-admin/",
-            "/wp-content/plugins/ajax-search-lite/",
-            "/wp-json/"
-          ],
-          "probe_direct_media": true,
-          "probe_all_urls": true,
-          "max_probes": 8,
-          "min_vod_duration_seconds": 60,
-          "probe_timeout_ms": 4500
+          "max_players": 12,
+          "recovery_first": true
         },
         "scripts/provider_patches/desktop_runtime_compat_v1.py": {
           "normalize_missing_episodes": true
         },
         "scripts/provider_patches/nuvio_tv_target_media_v4.py": {
           "provider_name": "Coflix",
-          "max_candidates": 22,
-          "timeout_ms": 20000,
+          "max_candidates": 20,
+          "timeout_ms": 22000,
           "blocked_hosts": [
             "fstream.top"
-          ]
+          ],
+          "force_rewrap_target_media": true
+        },
+        "scripts/provider_patches/stream_output_sanitizer_v6.py": {
+          "blocked_hosts": [
+            "fstream.top"
+          ],
+          "blocked_path_patterns": [
+            "/wp-admin/",
+            "/wp-json/",
+            "/wp-content/plugins/ajax-search-lite/"
+          ],
+          "probe_direct_media": true,
+          "probe_all_urls": true,
+          "max_probes": 20,
+          "probe_timeout_ms": 6000,
+          "min_vod_duration_seconds": 60
         }
       },
-      "required_values": [],
+      "required_values": [
+        "coflix.esq"
+      ],
       "manifest_overrides": {
-        "supportsExternalPlayer": true,
         "logo": "https://coflix.esq/favicon.ico",
-        "disabledPlatforms": [
-          "android",
-          "ios",
-          "desktop"
-        ]
+        "supportsExternalPlayer": false
       },
       "patch_scripts": [
         "scripts/provider_patches/vf_catalogue_recovery.py",
-        "scripts/provider_patches/desktop_runtime_compat_v1.py",
+        "scripts/provider_patches/coflix_exact_catalogue.py",
         "scripts/provider_patches/nuvio_tv_target_media_v4.py",
-        "scripts/provider_patches/stream_output_sanitizer_v5.py"
+        "scripts/provider_patches/stream_output_sanitizer_v6.py",
+        "scripts/provider_patches/desktop_runtime_compat_v1.py"
       ],
       "published_types": [
         "movie",

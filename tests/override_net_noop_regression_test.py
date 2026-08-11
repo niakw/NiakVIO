@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import hashlib
 import sys
 from pathlib import Path
 
@@ -27,6 +28,31 @@ assert any(
 ), first_records
 
 second, second_records = apply_overrides("french-manga", first)
+if second != first:
+    markers = (
+        b"NUVIO_GLOBAL_STREAM_OUTPUT_GUARD",
+        b"NUVIO_STREAM_OUTPUT_SANITIZER",
+        b"NUVIO_TV_DIRECT_MEDIA_V2",
+        b"NUVIO_HLS_RUNTIME_INTEGRITY",
+        b"NUVIO_HLS_MASTER_AUDIO_PRESERVER",
+    )
+    print(
+        "french-manga net-noop drift:",
+        {
+            "first_sha": hashlib.sha256(first).hexdigest(),
+            "second_sha": hashlib.sha256(second).hexdigest(),
+            "first_len": len(first),
+            "second_len": len(second),
+            "records": second_records,
+            "markers_first": {m.decode(): first.count(m) for m in markers},
+            "markers_second": {m.decode(): second.count(m) for m in markers},
+        },
+    )
+    limit = min(len(first), len(second))
+    offset = next((i for i in range(limit) if first[i] != second[i]), limit)
+    print("first differing offset:", offset)
+    print("first tail around diff:", first[max(0, offset - 160): offset + 240].decode("utf-8", "replace"))
+    print("second tail around diff:", second[max(0, offset - 160): offset + 240].decode("utf-8", "replace"))
 assert second == first
 assert second_records == [], second_records
 

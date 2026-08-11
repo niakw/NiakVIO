@@ -23,7 +23,7 @@ def strip_unproven_wrappers(text: str, enabled: bool) -> str:
     if not enabled:
         return text
     indexes = [index for marker in STRIP_MARKERS if (index := text.find(marker)) >= 0]
-    return text[: min(indexes)].rstrip() if indexes else text
+    return text[: min(indexes)] if indexes else text
 
 
 def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> str:

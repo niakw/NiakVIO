@@ -10,7 +10,7 @@ const fixtures = [
 ];
 const entries = Object.fromEntries(manifest.scrapers.map((row) => [String(row.id).toLowerCase(), row]));
 const externalPlayer = 'https://player.example/embed/movie';
-const provenHls = 'https://s1.fsvid.lol/troll/master.m3u8';
+const provenHls = 'https://media.example/hls/fixture/master.m3u8';
 const tvFixture = { id: '94605', title: 'Arcane', year: 2021, slug: 'arcane', season: 1, episode: 1 };
 
 function fixtureForId(id) {
@@ -78,6 +78,9 @@ global.fetch = async (input) => {
       },
     }), { status: 200, headers: { 'content-type': 'application/json' } });
   }
+  if (url.hostname === 'media.example' && url.pathname === '/hls/fixture/master.m3u8') {
+    return new Response(hlsBody(), { status: 200, headers: { 'content-type': 'application/vnd.apple.mpegurl' } });
+  }
   if (url.hostname === 's1.fsvid.lol' && url.pathname === '/troll/master.m3u8') {
     return new Response(hlsBody(), { status: 200, headers: { 'content-type': 'text/plain; charset=utf-8' } });
   }
@@ -101,6 +104,7 @@ function assertSafeRows(id, fixtureId, rows, kind) {
   assert(Array.isArray(rows) && rows.length > 0, `${id}/${fixtureId}: ${kind} recovery produced no player`);
   assert(rows.every((row) => typeof row.url === 'string' && /^https?:\/\//.test(row.url)), `${id}/${fixtureId}: invalid ${kind} player URL`);
   assert(rows.every((row) => !/fstream\.top/i.test(row.url)), `${id}/${fixtureId}: known fake short player escaped filtering`);
+  assert(rows.every((row) => !/\/troll\/master\.m3u8(?:[?#]|$)/i.test(row.url)), `${id}/${fixtureId}: known troll fallback escaped filtering`);
   assert(rows.every((row) => !/(?:^|\.)(?:snap\.com|snapchat\.com|ctfassets\.net|sc-cdn\.net)$/i.test(new URL(row.url).hostname)), `${id}/${fixtureId}: unrelated advertising media escaped filtering`);
 }
 

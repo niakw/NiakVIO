@@ -102,10 +102,22 @@ for provider_id in ('purstream', 'movix', 'nakios'):
 
 recovery = 'scripts/provider_patches/vf_catalogue_recovery.py'
 sanitizer_v5 = 'scripts/provider_patches/stream_output_sanitizer_v5.py'
+sanitizer_v6 = 'scripts/provider_patches/stream_output_sanitizer_v6.py'
 for provider_id in ('frenchstream', 'streamzo', 'movix', 'coflix', 'flemmix'):
     patch = patches[provider_id]
-    assert recovery in patch.get('patch_scripts', []), provider_id
-    assert sanitizer_v5 in patch.get('patch_scripts', []), provider_id
+    scripts = patch.get('patch_scripts', [])
+    assert recovery in scripts, provider_id
+    if provider_id == 'coflix':
+        # Coflix is NuvioTV-reachable while desktop/mobile remain blocked, so it
+        # must use the explicit fail-closed successor. V6 embeds V5 and rejects
+        # any all-URL probe overflow instead of publishing an unproven row.
+        assert sanitizer_v6 in scripts, provider_id
+        assert sanitizer_v5 not in scripts, provider_id
+        strict = patch.get('patch_script_options', {}).get(sanitizer_v6, {})
+        assert strict.get('probe_all_urls') is True, provider_id
+        assert int(strict.get('max_probes') or 0) > 0, provider_id
+    else:
+        assert sanitizer_v5 in scripts, provider_id
     options = patch.get('patch_script_options', {}).get(recovery, {})
     expected_types = ['movie'] if provider_id == 'flemmix' else patch.get('published_types')
     assert options.get('types') == expected_types, provider_id

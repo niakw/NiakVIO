@@ -252,6 +252,8 @@ def _strip_legacy_global_stream_guards(text: str) -> tuple[str, int]:
         re.MULTILINE,
     )
     output, count = pattern.subn("", text)
+    if not count:
+        return text, 0
     return output.rstrip() + ("\n" if output else ""), count
 
 
@@ -305,6 +307,15 @@ def apply_overrides(
     text, runtime_rule_count = _inject_runtime_domain_overrides(text, runtime_replacements)
     if runtime_rule_count:
         applied.append({"type": "runtime_domain_overrides", "count": runtime_rule_count, "phase": phase})
+
+    # Remove obsolete terminal guards before applying any current structural
+    # profile or provider hook. The legacy guard remover intentionally drops
+    # the old terminal tail; running it after new hooks would erase those hooks
+    # and make the first and second durable reapply passes produce different
+    # content hashes.
+    text, removed_guards = _strip_legacy_global_stream_guards(text)
+    if removed_guards:
+        applied.append({"type": "remove_legacy_global_stream_guard", "count": removed_guards, "phase": phase})
 
     profiles = config.get("patch_profiles") or {}
     if not isinstance(profiles, dict):
@@ -390,10 +401,6 @@ def apply_overrides(
             applied.append(
                 {"type": "patch_script", "path": patch_script, "phase": phase}
             )
-
-    text, removed_guards = _strip_legacy_global_stream_guards(text)
-    if removed_guards:
-        applied.append({"type": "remove_legacy_global_stream_guard", "count": removed_guards, "phase": phase})
 
     # Playback integrity is a repository-wide discovery invariant, not a list
     # of currently-known providers. Run it last so every native, recovered or

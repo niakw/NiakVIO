@@ -210,7 +210,7 @@ jobs:
     needs: stage-and-test
     if: needs.stage-and-test.outputs.validation_mode == 'deep'
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 70
     permissions:
       contents: write
 
@@ -301,7 +301,7 @@ jobs:
             echo "No provider file or validation report change."
           fi
 
-      - name: Publish the validated manifest in a second phase
+      - name: Prepare validated manifest transaction
         shell: bash
         run: |
           test -f manifest.next.json
@@ -314,6 +314,29 @@ jobs:
           python scripts/sync_release_versions.py --manifest manifest.json
           python scripts/validate_activation_preservation.py
           python scripts/validate_language_projection.py
+
+      # This is intentionally a publication gate, not an activation gate. Zero
+      # streams remain a coverage gap, while only a playable wrong-content result
+      # or a broken HLS child/audio graph aborts the transaction.
+      - name: Block wrong-content and broken HLS publication
+        env:
+          NUVIO_CATALOGUE_AUDIT_OUTPUT: /tmp/catalogue-media-audit.json
+          NUVIO_CATALOGUE_AUDIT_WORKERS: "8"
+          NUVIO_CATALOGUE_AUDIT_TIMEOUT: "60"
+        run: python scripts/audit_catalogue_identity_media.py
+
+      - name: Upload global catalogue and media audit
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: catalogue-media-audit-${{ github.run_id }}
+          path: /tmp/catalogue-media-audit.json
+          retention-days: 2
+          if-no-files-found: warn
+
+      - name: Publish globally audited manifest transaction
+        shell: bash
+        run: |
           python scripts/generate_release_hashes.py
           python scripts/validate_release_integrity.py
           git add manifest.json vf/manifest.json package.json package-lock.json sources.json nuvio-client-id-state.json FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json

@@ -7,10 +7,10 @@ records only sanitized counts/diagnostics; raw stream endpoints are discarded.
 
 Coverage:
 - every TV-capable provider: a South-Korean series fixture (Squid Game S01E01),
-- every movie-capable provider: an impossible TMDb id to detect false matches,
-- every VF movie provider: Interstellar,
-- every VF anime provider: Jujutsu Kaisen S01E01,
-- named HLS regression providers receive all compatible representative fixtures.
+- every movie-capable provider: Interstellar plus an impossible TMDb identity sentinel,
+- every anime-capable provider: Jujutsu Kaisen S01E01,
+- VF membership is retained in the report for language-specific coverage metrics,
+- named HLS regression providers receive the same compatible representative fixtures.
 """
 from __future__ import annotations
 
@@ -259,16 +259,21 @@ def build_tasks() -> tuple[list[dict[str, Any]], set[str]]:
         if "tv" in types:
             fixture_names.append("kdrama_squid_game_s01e01")
         if "movie" in types:
-            fixture_names.append("impossible_movie")
-        if is_vf and "movie" in types:
-            fixture_names.append("vf_interstellar")
-        if is_vf and ("anime" in types or "tv" in types):
+            fixture_names.extend(["vf_interstellar", "impossible_movie"])
+        if "anime" in types:
+            fixture_names.append("vf_jjk_s01e01")
+        # Some providers declare anime content as TV rather than anime. Keep the
+        # JJK fixture for the VF projection so French anime regressions remain
+        # covered even when upstream metadata is imperfect.
+        if is_vf and "tv" in types:
             fixture_names.append("vf_jjk_s01e01")
         if provider_id in SUSPECTS:
             if "movie" in types:
                 fixture_names.append("vf_interstellar")
             if "tv" in types:
                 fixture_names.append("kdrama_squid_game_s01e01")
+            if "anime" in types:
+                fixture_names.append("vf_jjk_s01e01")
         identity = {
             "provider_id": provider_id,
             "provider_name": str(row.get("name") or row.get("id") or provider_id),
