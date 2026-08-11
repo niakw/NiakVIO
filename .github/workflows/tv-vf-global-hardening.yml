@@ -42,7 +42,7 @@ jobs:
           node-version: '24'
           package-manager-cache: false
       - run: npm ci --ignore-scripts --no-audit --no-fund
-      - name: Apply global TV coverage migrations
+      - name: Apply and materialize global TV coverage migrations
         run: |
           python scripts/migrate_tv_hardening_5_20_39.py
           python scripts/migrate_deep_stream_sampling_v2.py
@@ -51,6 +51,8 @@ jobs:
           python scripts/migrate_media_duration_identity_v1.py
           python scripts/migrate_type_scoped_activation_v1.py
           python scripts/migrate_tv_catalogue_fixtures_v1.py
+          python scripts/reapply_published_overrides.py
+          python scripts/validate_published_overrides.py
       - name: Repository regression suite
         run: npm test
       - name: Validate policy and provider semantics
@@ -61,24 +63,7 @@ jobs:
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add \
-            scripts/health_check.mjs \
-            scripts/promote_candidates.py \
-            scripts/audit_catalogue_identity_media.py \
-            provider-overrides.json \
-            provider-type-policy.json \
-            manifest.json \
-            vf/manifest.json \
-            health-config.json \
-            package.json \
-            tests/vf_movie_policy_test.py \
-            tests/deep_stream_sampling_test.py \
-            tests/direct_media_dimensions_test.py \
-            tests/matroska_metadata_test.py \
-            tests/media_duration_identity_test.py \
-            tests/type_scoped_activation_test.py \
-            tests/tv_catalogue_fixture_coverage_test.py \
-            tests/tv_provider_hardening_test.py
+          git add -A
           if git diff --cached --quiet; then
             echo 'No migration output to commit.'
             exit 0
