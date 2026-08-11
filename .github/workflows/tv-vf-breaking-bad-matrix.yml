@@ -1,0 +1,142 @@
+name: Nuvio TV exhaustive VF Breaking Bad matrix
+
+on:
+  push:
+    branches:
+      - agent/tv-regression-5.20.38
+    paths:
+      - .github/triggers/tv-vf-breaking-bad-matrix
+
+permissions:
+  contents: write
+
+jobs:
+  matrix:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          fetch-depth: 1
+      - name: Record matrix run id
+        run: |
+          mkdir -p .github/status
+          printf '%s\n' "$GITHUB_RUN_ID" > .github/status/tv-vf-breaking-bad-matrix-run
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add .github/status/tv-vf-breaking-bad-matrix-run
+          if ! git diff --cached --quiet; then
+            git commit -m 'ci: record VF TV matrix run'
+            git push origin HEAD:agent/tv-regression-5.20.38
+          fi
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Discover all current candidates
+        run: python scripts/discover_candidates.py --require-all-upstreams
+      - name: Restrict to every VF provider compatible with TV and one exact fixture
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          vf=json.load(open('vf/manifest.json'))
+          wanted={
+              str(r.get('id') or '').casefold()
+              for r in vf.get('scrapers',[])
+              if 'tv' in (r.get('supportedTypes') or [])
+              and 'tv' not in {str(x).casefold() for x in (r.get('disabledPlatforms') or [])}
+          }
+          print('VF_TV_IDS',','.join(sorted(wanted)))
+          p=Path('staging/candidates.json')
+          data=json.loads(p.read_text())
+          def keep(row):
+              return isinstance(row,dict) and str(row.get('canonical_id') or row.get('id') or row.get('upstream_id') or '').casefold() in wanted
+          if isinstance(data,list):
+              rows=[r for r in data if keep(r)]; out=rows
+          else:
+              key=next((k for k in ('candidates','providers','items') if isinstance(data.get(k),list)),None)
+              if key is None: raise SystemExit('unsupported candidates schema')
+              out=dict(data); out[key]=[r for r in data[key] if keep(r)]; rows=out[key]
+          found={str(r.get('canonical_id') or r.get('id') or r.get('upstream_id') or '').casefold() for r in rows}
+          print('VF_TV_DISCOVERED',','.join(sorted(found)))
+          print('VF_TV_MISSING_FROM_DISCOVERY',','.join(sorted(wanted-found)))
+          if not rows: raise SystemExit('no VF TV candidates discovered')
+          p.write_text(json.dumps(out,ensure_ascii=False,indent=2)+'\n')
+
+          cfg=json.load(open('health-config.json'))
+          bb=next(f for f in cfg['fixtures']['tv'] if str(f.get('tmdbId'))=='1396')
+          bb['expectedDurationMinutes']=58
+          cfg['fixtures']={'movie':[],'tv':[bb],'anime':[]}
+          cfg['fallback_fixtures']={'movie':[],'tv':[],'anime':[]}
+          cfg['fixture_limit']=1
+          cfg['fixture_limit_per_category']=True
+          Path('health-config-tv-vf-matrix.json').write_text(json.dumps(cfg,ensure_ascii=False,indent=2)+'\n')
+          PY
+      - name: DNS and runtime profiles
+        env:
+          GLOBALPING_API_TOKEN: ${{ secrets.GLOBALPING_API_TOKEN }}
+        run: |
+          node scripts/provider_dns_preflight.mjs --stage staging --output health-output/dns-preflight-report.json
+          python scripts/apply_dns_migration_overrides.py --stage staging --report health-output/dns-preflight-report.json
+          python scripts/build_provider_runtime_profiles.py
+          python scripts/reapply_published_overrides.py
+          python scripts/build_provider_runtime_profiles.py --stage staging --apply-stage
+          python scripts/validate_override_pipeline.py --stage staging
+      - name: Deep-test every VF TV candidate on Breaking Bad S01E01
+        env:
+          NUVIO_STAGE: staging
+          NUVIO_CANDIDATES_PATH: staging/candidates.json
+          NUVIO_HEALTH_OUTPUT: health-output
+          NUVIO_HEALTH_CONFIG: health-config-tv-vf-matrix.json
+          NUVIO_DNS_PREFLIGHT_RESULTS: health-output/dns-preflight-report.json
+          NUVIO_WORKER_MEMORY_MB: '1024'
+        run: node scripts/health_check.mjs --deep
+      - name: Build exact VF TV coverage report
+        run: |
+          python - <<'PY'
+          import json
+          d=json.load(open('health-output/health-results.json'))
+          rows=d.get('results') or d.get('providers') or []
+          grouped={}
+          for r in rows:
+              k=str(r.get('canonical_id') or r.get('id') or '').casefold()
+              test=next((t for t in r.get('tests',[]) if (t.get('fixture') or {}).get('label')=='Breaking Bad S01E01'),None)
+              if not test: continue
+              audio={str(x).casefold() for x in (test.get('accepted_audio_languages') or [])}
+              subs={str(x).casefold() for x in (test.get('accepted_subtitle_languages') or [])}
+              fr=bool({'fr'} & (audio|subs))
+              item={
+                'key':r.get('key'),'source':r.get('source'),'status':test.get('status'),
+                'streams_returned':test.get('streams_returned'),'playable':int(test.get('streams_playable') or 0),
+                'height':int(test.get('effective_max_height') or 0),
+                'verified_height':test.get('verified_max_height'),'reported_height':test.get('reported_max_height'),
+                'audio':sorted(audio),'subs':sorted(subs),'fr':fr,
+                'response_categories':test.get('response_categories') or [],
+                'probe_errors':test.get('probe_errors') or [],
+              }
+              rank=(item['playable']>0,item['height'],fr,int(r.get('score') or 0))
+              if k not in grouped or rank>grouped[k]['_rank']:
+                  item['_rank']=rank; grouped[k]=item
+          for item in grouped.values(): item.pop('_rank',None)
+          strong=sorted(k for k,v in grouped.items() if v['status']=='healthy' and v['playable']>=1 and v['height']>=720 and v['fr'])
+          playable_fr=sorted(k for k,v in grouped.items() if v['playable']>=1 and v['fr'])
+          playable_nonfr=sorted(k for k,v in grouped.items() if v['playable']>=1 and not v['fr'])
+          report={'strong_vf_hd':strong,'playable_fr_any_quality':playable_fr,'playable_without_fr_proof':playable_nonfr,'providers':dict(sorted(grouped.items()))}
+          json.dump(report,open('health-output/vf-tv-breaking-bad-report.json','w'),ensure_ascii=False,indent=2)
+          print(json.dumps(report,ensure_ascii=False,indent=2))
+          print('STRONG_VF_HD_COUNT',len(strong),'providers=',','.join(strong))
+          PY
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: tv-vf-breaking-bad-matrix-${{ github.run_id }}
+          if-no-files-found: warn
+          path: |
+            health-output/
+            health-config-tv-vf-matrix.json
+          retention-days: 2
