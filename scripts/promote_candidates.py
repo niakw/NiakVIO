@@ -1659,7 +1659,26 @@ def main() -> int:
             # availability failure, or another conclusive failure.
             old_entry = existing.get(cid, {})
             observed_status = str(selected.get("health", {}).get("status", "runtime_error"))
-            upstream_enabled = bool(selected.get("metadata", {}).get("enabled", True))
+            selected_upstream_enabled = bool(selected.get("metadata", {}).get("enabled", True))
+            # A published-baseline candidate reflects our previous local manifest,
+            # not the current upstream activation declaration. When baseline
+            # protection selects it because every live probe is inconclusive,
+            # derive the upstream veto from current non-baseline manifests.
+            live_upstream_variants = [
+                variant
+                for variant in variants
+                if str(variant.get("source") or "") != "published-baseline"
+            ]
+            upstream_enabled = (
+                any(
+                    bool((variant.get("metadata") or {}).get("enabled", True))
+                    for variant in live_upstream_variants
+                )
+                if live_upstream_variants
+                else selected_upstream_enabled
+            )
+            if upstream_enabled and "upstream_disabled" in blockers:
+                blockers = [value for value in blockers if value != "upstream_disabled"]
             preserve_statuses = {
                 str(value)
                 for value in activation.get(
@@ -1721,6 +1740,14 @@ def main() -> int:
                     "activation_blockers": blockers,
                     "preserved_reason": "ci_uncertain_kept_last_published_artifact",
                     "restored_from_activation_lkg": bool(restore_activation_lkg and not old_was_enabled),
+                    "preservation_upstream_enabled": upstream_enabled,
+                    "preservation_live_upstream_sources": sorted(
+                        {
+                            str(variant.get("source") or "")
+                            for variant in live_upstream_variants
+                            if str(variant.get("source") or "")
+                        }
+                    ),
                     "preserved_candidate_key": selected.get("key"),
                     "preserved_candidate_sha256": selected.get("sha256"),
                 }
@@ -1734,6 +1761,7 @@ def main() -> int:
                         ),
                         "enabled": True,
                         "restored_from_activation_lkg": bool(restore_activation_lkg and not old_was_enabled),
+                        "preservation_upstream_enabled": upstream_enabled,
                         "activation_eligible": False,
                         "activation_mode": "preserved_current_ci_uncertain",
                         "failed_gates": [

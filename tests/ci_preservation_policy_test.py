@@ -23,6 +23,12 @@ assert 'ACTIVATION_LKG_PATH' in promoter
 assert 'activation_lkg_ids' in promoter
 assert 'current_ci_inconclusive' in promoter
 assert 'restore_activation_lkg' in promoter
+assert 'live_upstream_variants' in promoter
+assert 'published-baseline' in promoter
+assert 'preservation_upstream_enabled' in promoter
+assert 'preservation_live_upstream_sources' in promoter
+assert 'if live_upstream_variants' in promoter
+assert 'if upstream_enabled and "upstream_disabled" in blockers' in promoter
 assert 'restored-activation-lkg-enabled-ci-uncertain' in promoter
 assert 'restored_from_activation_lkg' in promoter
 assert 'gates.get("01_policy_safe_no_p2p", {}).get("passed", False)' in promoter
