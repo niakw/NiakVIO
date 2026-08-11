@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   stage:
@@ -19,7 +19,17 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
           fetch-depth: 1
-          persist-credentials: false
+      - name: Record deep proof run id
+        run: |
+          mkdir -p .github/status
+          printf '%s\n' "$GITHUB_RUN_ID" > .github/status/tv-deep-proof-v2-run
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add .github/status/tv-deep-proof-v2-run
+          if ! git diff --cached --quiet; then
+            git commit -m 'ci: record TV deep proof run'
+            git push origin HEAD:agent/tv-regression-5.20.38
+          fi
       - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
         with:
           python-version: '3.12'
@@ -131,7 +141,10 @@ jobs:
           m=json.load(open('manifest.next.json'))
           rows={str(r.get('id') or '').casefold():r for r in m.get('scrapers',[])}
           for k in sorted(wanted):
-              if k in rows: print('MANIFEST_NEXT',k,'enabled=',rows[k].get('enabled'),'id=',rows[k].get('id'),'version=',rows[k].get('version'))
+              if k in rows: print('MANIFEST_NEXT',k,'enabled=',rows[k].get('enabled'),'id=',rows[k].get('id'),'version=',rows[k].get('version'),'types=',rows[k].get('supportedTypes'))
+          enabled=[r for r in m.get('scrapers',[]) if r.get('enabled')]
+          tv_enabled=[r for r in enabled if 'tv' in (r.get('supportedTypes') or [])]
+          print('MANIFEST_COUNTS total=',len(m.get('scrapers',[])),'enabled=',len(enabled),'tv_enabled=',len(tv_enabled))
           PY
       - name: Materialize transaction and run global content gate
         run: |
