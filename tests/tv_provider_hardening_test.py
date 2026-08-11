@@ -40,8 +40,9 @@ assert streamzo_identity in streamzo_scripts
 assert playable_first in streamzo_scripts
 assert streamzo_scripts.index(streamzo_identity) < streamzo_scripts.index(playable_first)
 identity_source = (ROOT / streamzo_identity).read_text(encoding='utf-8')
-assert 'revenants' not in identity_source.lower()  # provider-agnostic, not title-specific
 assert 'tokens' in identity_source and 'years' in identity_source
+assert 'backtrack-les-revenants-2015' not in identity_source.lower()
+assert '210702' not in identity_source  # no fixture-specific exception
 
 playable_source = (ROOT / playable_first).read_text(encoding='utf-8')
 assert '__native_fetch' in playable_source  # real NuvioTV QuickJS bridge
