@@ -1,0 +1,112 @@
+name: Finalize 5.20.38 source metadata once
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/triggers/finalize-52038-sources"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: finalize-52038-sources-once
+  cancel-in-progress: false
+
+jobs:
+  finalize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout current main
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: "3.12"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: "24"
+          package-manager-cache: false
+
+      - name: Install pinned dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Synchronize all 5.20.38 release metadata
+        run: |
+          python scripts/sync_release_versions.py --manifest manifest.json
+          python scripts/validate_release_integrity.py || true
+
+      - name: Validate synchronized release
+        run: npm test
+
+      - name: Remove one-shot harness
+        shell: bash
+        run: |
+          git rm .github/workflows/finalize-52038-sources-once.yml \
+            .github/triggers/finalize-52038-sources
+
+      - name: Regenerate integrity inventories after harness removal
+        run: |
+          python scripts/generate_release_hashes.py
+          python scripts/validate_release_integrity.py
+
+      - name: Commit exact synchronized release
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add sources.json manifest.json vf/manifest.json package.json package-lock.json \
+            nuvio-client-id-state.json FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json
+          git commit -m "fix: synchronize 5.20.38 source metadata"
+          git reset --hard HEAD
+          git clean -fdx
+          git fetch origin main
+          git rebase origin/main
+          git push origin HEAD:main
+
+      - name: Verify exact published main
+        shell: bash
+        run: |
+          git fetch origin main
+          git reset --hard origin/main
+          git clean -fdx
+          npm ci --ignore-scripts --no-audit --no-fund
+          npm test
+          python scripts/validate_activation_preservation.py
+          python scripts/validate_language_projection.py
+          python scripts/validate_release_integrity.py
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          def load(path): return json.loads(Path(path).read_text(encoding='utf-8'))
+          package = load('package.json')
+          lock = load('package-lock.json')
+          manifest = load('manifest.json')
+          vf = load('vf/manifest.json')
+          sources = load('sources.json')
+          expected = manifest.get('version')
+          values = {
+              'manifest': expected,
+              'vf': vf.get('version'),
+              'package': package.get('version'),
+              'lock': lock.get('version'),
+              'lock_root': (lock.get('packages') or {}).get('', {}).get('version'),
+              'sources': sources.get('manifest_version'),
+              'sources_repository': (sources.get('repository') or {}).get('manifest_version'),
+          }
+          if len({str(v) for v in values.values()}) != 1:
+              raise SystemExit(f'published version mismatch: {values}')
+          rows = {str(r.get('id') or '').casefold(): r for r in manifest.get('scrapers', [])}
+          streamzo = rows['streamzo']
+          expected_external = '--nuvio-tv-global--' not in str(streamzo.get('filename') or '')
+          if streamzo.get('supportsExternalPlayer') is not expected_external:
+              raise SystemExit(f'StreamZo metadata mismatch: {streamzo}')
+          print(f'exact published release verified: {expected}; StreamZo external-player={expected_external}')
+          PY
+          git diff --exit-code
