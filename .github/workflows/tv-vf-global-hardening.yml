@@ -1,0 +1,50 @@
+name: TV VF global hardening apply
+
+on:
+  push:
+    branches:
+      - agent/tv-regression-5.20.38
+    paths:
+      - .github/triggers/tv-vf-global-hardening
+
+permissions:
+  contents: write
+
+jobs:
+  apply-and-test:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: agent/tv-regression-5.20.38
+          fetch-depth: 1
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Apply adaptive mirror and type-scoped migrations
+        run: |
+          python scripts/migrate_deep_stream_sampling_v2.py
+          python scripts/migrate_type_scoped_activation_v1.py
+      - name: Repository regression suite
+        run: npm test
+      - name: Validate policy and provider semantics
+        run: |
+          python scripts/validate_policy.py
+          node scripts/validate_provider_semantics.cjs
+      - name: Commit proven migration output
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add scripts/health_check.mjs scripts/promote_candidates.py health-config.json package.json tests/deep_stream_sampling_test.py tests/type_scoped_activation_test.py
+          if git diff --cached --quiet; then
+            echo 'No migration output to commit.'
+            exit 0
+          fi
+          git commit -m 'fix: recover proven TV provider coverage'
+          git push origin HEAD:agent/tv-regression-5.20.38
