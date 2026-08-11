@@ -443,7 +443,7 @@ async function probeStream(stream, mode) {
   let mediaDurationSeconds = null;
   let shortVodPreview = false;
 
-  const reported = qualityToHeight(`${stream.quality || ''} ${stream.title || ''}`);
+  const reported = qualityToHeight(`${stream.quality || ''} ${stream.title || ''} ${stream.url || ''}`);
   if (reported) reportedHeights.push(reported);
   addLanguage(audioLanguages, stream.language);
   inferLanguagesFromText(`${stream.title || ''} ${stream.name || ''}`, audioLanguages, subtitleLanguages);
@@ -1254,7 +1254,14 @@ async function testCandidate(candidate) {
     const worker = await runWorker(candidate, normalizedFixture);
     const streams = Array.isArray(worker.streams) ? worker.streams : [];
     const probes = [];
-    for (const stream of streams.slice(0, Number(modeConfig.max_streams_to_probe || 1))) {
+    const maxStreamsToProbe = Math.max(1, Number(modeConfig.max_streams_to_probe || 1));
+    // Deep activation must not grade a multi-mirror provider on whichever row
+    // happens to be first. Probe a bounded, evenly distributed sample so a
+    // later high-quality mirror can satisfy the unchanged quality gate.
+    const streamsToProbe = requestedMode === 'deep' && modeConfig.probe_streams_evenly === true
+      ? evenlySpacedSlice(streams, maxStreamsToProbe)
+      : streams.slice(0, maxStreamsToProbe);
+    for (const stream of streamsToProbe) {
       probes.push(await probeStream(stream, modeConfig));
     }
 

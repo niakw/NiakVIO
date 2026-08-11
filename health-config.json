@@ -58,7 +58,7 @@
     },
     "deep": {
       "fixture_limit": 1,
-      "max_streams_to_probe": 1,
+      "max_streams_to_probe": 3,
       "provider_timeout_ms": 70000,
       "stream_probe_timeout_ms": 18000,
       "sample_bytes": 524288,
@@ -76,7 +76,8 @@
       "fallback_fixture_limit_per_category": 1,
       "max_settings_profiles": 4,
       "worker_memory_mb": 512,
-      "minimum_vod_duration_seconds": 60
+      "minimum_vod_duration_seconds": 60,
+      "probe_streams_evenly": true
     }
   },
   "fixtures": {
