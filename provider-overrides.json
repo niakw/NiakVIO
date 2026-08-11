@@ -1,5 +1,5 @@
 {
-  "schema_version": 6,
+  "schema_version": 7,
   "domain_replacements": {
     "api.movix.cash": "api.movix.fun",
     "api.movix.cloud": "api.movix.fun"
@@ -4682,7 +4682,7 @@
     "unknown_metadata_action": "return_no_recovery_match"
   },
   "catalogue_resolution_policy": {
-    "version": 1,
+    "version": 2,
     "enabled": true,
     "id_first": true,
     "provider_specific_titles_forbidden": true,
@@ -4691,13 +4691,14 @@
       "mixed_embed_resolver"
     ],
     "require_official_site": true,
-    "global_discovery_hook": "scripts/provider_patches/global_catalogue_alias_recovery_v1.py",
+    "global_discovery_hook": "scripts/provider_patches/global_catalogue_alias_recovery_v2.py",
     "options": {
-      "max_aliases": 6,
+      "max_aliases": 8,
       "max_candidates": 8,
       "max_players": 8,
       "timeout_ms": 7000
-    }
+    },
+    "tmdb_and_imdb_first": true
   },
   "media_enrichment_policy": {
     "version": 1,

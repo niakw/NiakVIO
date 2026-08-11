@@ -19,6 +19,8 @@ cfg = json.loads((ROOT / "provider-overrides.json").read_text(encoding="utf-8"))
 cat = cfg["catalogue_resolution_policy"]
 media = cfg["media_enrichment_policy"]
 assert cat["enabled"] is True and cat["id_first"] is True
+assert cat["tmdb_and_imdb_first"] is True
+assert cat["version"] == 2
 assert cat["provider_specific_titles_forbidden"] is True
 assert set(cat["capabilities"]) == {"html_scraper", "mixed_embed_resolver"}
 assert media["enabled"] is True and media["transcoding"] is False
@@ -29,6 +31,8 @@ media_source = (ROOT / media["global_discovery_hook"]).read_text(encoding="utf-8
 for token in (
     "alternative_titles",
     "original_title",
+    "external_source=imdb_id",
+    "/find/",
     "language=en-US",
     "if(x&&x.list.length)return v",
     "q.tmdbId",
@@ -43,7 +47,7 @@ for token in ("preserveOriginal", "m3u8|mpd|mp4|mkv|webm", "kindBytes", "add(row
 future = b"async function getStreams(){return []};module.exports={getStreams};"
 patched, records = module.apply_overrides("kurage", future, phase="discovery")
 text = patched.decode("utf-8")
-assert "NUVIO_GLOBAL_CATALOGUE_ALIAS_RECOVERY_V1" in text
+assert "NUVIO_GLOBAL_CATALOGUE_ALIAS_RECOVERY_V2" in text
 assert "NUVIO_GLOBAL_MEDIA_ENRICHMENT_V1" in text
 scopes = {row.get("scope") for row in records if isinstance(row, dict)}
 assert "global_catalogue_resolution" in scopes
@@ -52,7 +56,7 @@ assert "global_media_enrichment" in scopes
 # Direct-media providers remain ID-native; they may be inspected/protected but
 # are never rewritten into a title-search catalogue flow.
 direct, direct_records = module.apply_overrides("zinkmovies", future, phase="discovery")
-assert b"NUVIO_GLOBAL_CATALOGUE_ALIAS_RECOVERY_V1" not in direct
+assert b"NUVIO_GLOBAL_CATALOGUE_ALIAS_RECOVERY_V2" not in direct
 assert not any(
     row.get("scope") == "global_catalogue_resolution"
     for row in direct_records
