@@ -1,0 +1,91 @@
+name: Nuvio TV reactivation proof
+
+on:
+  push:
+    branches:
+      - agent/tv-regression-5.20.38
+    paths:
+      - .github/triggers/tv-reactivation-proof
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Print current strict activation gates
+        run: |
+          python - <<'PY'
+          import json
+          wanted={'frenchstream','streamzo','toflix'}
+          h=json.load(open('health-report.json'))
+          for row in h.get('providers',[]):
+              k=str(row.get('id') or '').casefold()
+              if k not in wanted: continue
+              print('=== HEALTH',k,'===')
+              print(json.dumps({
+                  'id':row.get('id'),'enabled':row.get('enabled'),'action':row.get('action'),
+                  'observed_status':row.get('observed_status'),'observed_score':row.get('observed_score'),
+                  'failed_gates':row.get('failed_gates'),'activation_blockers':row.get('activation_blockers'),
+                  'activation_gates':row.get('activation_gates'),'evidence':row.get('evidence'),
+              },ensure_ascii=False,indent=2))
+          try:
+              d=json.load(open('automation/provider-activation-diagnostic.json'))
+              print('=== ACTIVATION DIAGNOSTIC ===')
+              if isinstance(d,dict):
+                  for key,val in d.items():
+                      if isinstance(val,list):
+                          hits=[r for r in val if isinstance(r,dict) and str(r.get('id') or r.get('provider_id') or '').casefold() in wanted]
+                          if hits: print(key,json.dumps(hits,ensure_ascii=False,indent=2))
+          except Exception as exc:
+              print('diagnostic unavailable',exc)
+          PY
+      - name: Probe Toflix exact TV MP4s
+        shell: bash
+        run: |
+          set -u
+          FILE=$(python - <<'PY'
+          import json
+          m=json.load(open('manifest.json'))
+          print(next(r['filename'] for r in m['scrapers'] if str(r.get('id') or '').casefold()=='toflix'))
+          PY
+          )
+          for fixture in \
+            '{"tmdbId":"1396","mediaType":"tv","season":1,"episode":1,"title":"Breaking Bad","year":2008}' \
+            '{"tmdbId":"94664","mediaType":"tv","season":1,"episode":1,"title":"Mushoku Tensei: Jobless Reincarnation","year":2021}'
+          do
+            tmdb=$(python -c 'import json,sys;print(json.loads(sys.argv[1])["tmdbId"])' "$fixture")
+            out="/tmp/toflix-$tmdb.json"
+            (node scripts/nuvio_tv_probe_v2.cjs "$FILE" "$fixture" '{}' || true) | tail -n 1 > "$out"
+            echo "=== TOFLIX PROBE $tmdb ==="; cat "$out"
+            python - "$out" <<'PY'
+          import json,subprocess,sys
+          d=json.load(open(sys.argv[1]))
+          for i,item in enumerate(d.get('streams') or []):
+              row=item.get('row') or {}; media=item.get('media') or {}
+              if not media.get('playable'): continue
+              url=str(row.get('url') or '')
+              headers=row.get('headers') or {}
+              ua=str(headers.get('User-Agent') or 'Mozilla/5.0 (Linux; Android TV) NuvioTV')
+              referer=str(headers.get('Referer') or headers.get('referer') or '')
+              cmd=['ffprobe','-v','error','-user_agent',ua]
+              if referer: cmd += ['-referer',referer]
+              cmd += ['-select_streams','v:0','-show_entries','stream=width,height,codec_name','-of','json',url]
+              try:
+                  p=subprocess.run(cmd,capture_output=True,text=True,timeout=35)
+                  print('FFPROBE',i,'rc=',p.returncode,p.stdout.strip(),p.stderr.strip()[:300])
+              except Exception as exc: print('FFPROBE',i,'error',exc)
+          PY
+          done
