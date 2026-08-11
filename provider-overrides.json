@@ -803,12 +803,16 @@
       "route_replacements": {},
       "required_route_values": [],
       "patch_scripts": [
-        "scripts/provider_patches/toflix_official_endpoint.py"
+        "scripts/provider_patches/toflix_official_endpoint.py",
+        "scripts/provider_patches/toflix_explicit_vf_v1.py"
       ],
       "patch_script_options": {
         "scripts/provider_patches/toflix_official_endpoint.py": {
           "site": "https://tfx05.lol",
           "fallback_api": "https://api.tfx05.lol/toflix_api.php"
+        },
+        "scripts/provider_patches/toflix_explicit_vf_v1.py": {
+          "require_french_host": true
         }
       },
       "notes": [

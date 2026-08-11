@@ -16679,11 +16679,17 @@
     },
     "toflix": {
       "id": "toflix",
-      "published_filename": "providers/toflix--published-baseline--80f0a5219b4685fd.js",
-      "sha256": "80f0a5219b4685fdc8c21ca035a6098efc2c74f9aaa870d845484e6a24de3077",
-      "patched_sha256": "80f0a5219b4685fdc8c21ca035a6098efc2c74f9aaa870d845484e6a24de3077",
+      "published_filename": "providers/toflix--published-baseline--4b2c058febc96dcc.js",
+      "sha256": "4b2c058febc96dccbd2f17c0eb7723e92d2033a6a06a77f6905048b8ff74c2e1",
+      "patched_sha256": "4b2c058febc96dccbd2f17c0eb7723e92d2033a6a06a77f6905048b8ff74c2e1",
       "upstream_sha256": "80f0a5219b4685fdc8c21ca035a6098efc2c74f9aaa870d845484e6a24de3077",
-      "local_patches": [],
+      "local_patches": [
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/toflix_explicit_vf_v1.py",
+          "phase": "discovery"
+        }
+      ],
       "source": "published-baseline",
       "source_name": "Last published local artifact",
       "source_repository": "Nuvio Curated Providers",
