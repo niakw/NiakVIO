@@ -1610,6 +1610,12 @@
     },
     "moonflix": {
       "capability": "direct_media"
+    },
+    "ANIMEZEY": {
+      "capability": "direct_media"
+    },
+    "MOONFLIX": {
+      "capability": "direct_media"
     }
   },
   "route_override_defaults": {
@@ -4130,6 +4136,27 @@
       "generated_from_manifest_or_stage": true
     },
     "moonflix": {
+      "strategy": "direct_media",
+      "validation": "media_url",
+      "allow_html_url": false,
+      "requires_direct_media": true,
+      "observed_origins": [
+        "https://player.moonflix.website",
+        "https://confident-harmony-production-0578.up.railway.app",
+        "https://hvhyu-production.up.railway.app",
+        "https://series-production-5c1c.up.railway.app"
+      ],
+      "generated_from_manifest_or_stage": true
+    },
+    "ANIMEZEY": {
+      "strategy": "direct_media",
+      "validation": "media_url",
+      "allow_html_url": false,
+      "requires_direct_media": true,
+      "observed_origins": [],
+      "generated_from_manifest_or_stage": true
+    },
+    "MOONFLIX": {
       "strategy": "direct_media",
       "validation": "media_url",
       "allow_html_url": false,

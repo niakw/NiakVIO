@@ -1,6 +1,6 @@
 {
   "name": "Nuvio Curated Providers — VF uniquement",
-  "version": "5.20.33",
+  "version": "5.20.34",
   "scrapers": [
     {
       "id": "ANIME-SAMA",
@@ -52,6 +52,30 @@
       "disabledPlatforms": []
     },
     {
+      "id": "FLEMMIX",
+      "name": "Flemmix",
+      "description": "Films et séries en streaming VF/VOSTFR sur Flemmix.",
+      "version": "1.0.33",
+      "author": "Gowaru",
+      "supportedTypes": [
+        "movie",
+        "tv"
+      ],
+      "filename": "../providers/flemmix--nuvio--ac031571352efca6.js",
+      "enabled": true,
+      "logo": "https://flemmix.men/favicon.ico",
+      "contentLanguage": [
+        "fr"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "limited": false,
+      "disabledPlatforms": [],
+      "supportsExternalPlayer": true
+    },
+    {
       "id": "GOATED",
       "name": "🐐 Goated",
       "description": "4K • 1080p Movies & Series in Multi Language",
@@ -78,30 +102,6 @@
       ],
       "supportsExternalPlayer": false,
       "disabledPlatforms": []
-    },
-    {
-      "id": "FLEMMIX",
-      "name": "Flemmix",
-      "description": "Films et séries en streaming VF/VOSTFR sur Flemmix.",
-      "version": "1.0.33",
-      "author": "Gowaru",
-      "supportedTypes": [
-        "movie",
-        "tv"
-      ],
-      "filename": "../providers/flemmix--nuvio--ac031571352efca6.js",
-      "enabled": true,
-      "logo": "https://flemmix.men/favicon.ico",
-      "contentLanguage": [
-        "fr"
-      ],
-      "formats": [
-        "mp4",
-        "m3u8"
-      ],
-      "limited": false,
-      "disabledPlatforms": [],
-      "supportsExternalPlayer": true
     },
     {
       "id": "PAPADUSTREAM",
@@ -153,6 +153,30 @@
       "supportsExternalPlayer": false
     },
     {
+      "id": "ANIMEVOSTFR",
+      "name": "AnimeVOSTFR",
+      "description": "Animes VF et VOSTFR en streaming gratuit sur AnimeVOSTFR.",
+      "version": "1.1.53",
+      "author": "Gowaru",
+      "supportedTypes": [
+        "anime",
+        "movie"
+      ],
+      "filename": "../providers/animevostfr--published-baseline--58a0339f7ffc0402.js",
+      "enabled": true,
+      "logo": "https://animevostfr.org/wp-content/uploads/luffy-icon.jpg",
+      "contentLanguage": [
+        "fr"
+      ],
+      "formats": [
+        "mp4",
+        "mkv"
+      ],
+      "limited": false,
+      "disabledPlatforms": [],
+      "supportsExternalPlayer": false
+    },
+    {
       "id": "ANIMESAMA-CO",
       "name": "AnimeSama.co (DLE Mirror)",
       "description": "Animes VF et VOSTFR en streaming sur AnimeSama.co (miroir DLE).",
@@ -177,6 +201,30 @@
       "supportsExternalPlayer": false
     },
     {
+      "id": "VOIRANIME-RIP",
+      "name": "VoirAnime.rip",
+      "description": "Animes VF et VOSTFR en streaming sur VoirAnime.rip (site DLE).",
+      "version": "1.0.20",
+      "author": "Gowaru",
+      "supportedTypes": [
+        "anime",
+        "movie"
+      ],
+      "filename": "../providers/voiranime-rip--published-baseline--45b238cff4ef7815.js",
+      "enabled": true,
+      "logo": "https://voiranime.rip/img/icon.png",
+      "contentLanguage": [
+        "fr"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "limited": false,
+      "disabledPlatforms": [],
+      "supportsExternalPlayer": false
+    },
+    {
       "id": "ANIMESULTRA",
       "name": "AnimesUltra",
       "description": "Animes en streaming VOSTFR et VF.",
@@ -189,30 +237,6 @@
       "filename": "../providers/animesultra--published-baseline--837b87bfe4d21b55.js",
       "enabled": true,
       "logo": "https://animesultra.org/templates/animeultra/images/favicon.ico",
-      "contentLanguage": [
-        "fr"
-      ],
-      "formats": [
-        "mp4",
-        "mkv"
-      ],
-      "limited": false,
-      "disabledPlatforms": [],
-      "supportsExternalPlayer": false
-    },
-    {
-      "id": "ANIMEVOSTFR",
-      "name": "AnimeVOSTFR",
-      "description": "Animes VF et VOSTFR en streaming gratuit sur AnimeVOSTFR.",
-      "version": "1.1.53",
-      "author": "Gowaru",
-      "supportedTypes": [
-        "anime",
-        "movie"
-      ],
-      "filename": "../providers/animevostfr--published-baseline--58a0339f7ffc0402.js",
-      "enabled": true,
-      "logo": "https://animevostfr.org/wp-content/uploads/luffy-icon.jpg",
       "contentLanguage": [
         "fr"
       ],
@@ -421,30 +445,6 @@
       "formats": [
         "mp4",
         "mkv",
-        "m3u8"
-      ],
-      "limited": false,
-      "disabledPlatforms": [],
-      "supportsExternalPlayer": false
-    },
-    {
-      "id": "VOIRANIME-RIP",
-      "name": "VoirAnime.rip",
-      "description": "Animes VF et VOSTFR en streaming sur VoirAnime.rip (site DLE).",
-      "version": "1.0.20",
-      "author": "Gowaru",
-      "supportedTypes": [
-        "anime",
-        "movie"
-      ],
-      "filename": "../providers/voiranime-rip--published-baseline--45b238cff4ef7815.js",
-      "enabled": true,
-      "logo": "https://voiranime.rip/img/icon.png",
-      "contentLanguage": [
-        "fr"
-      ],
-      "formats": [
-        "mp4",
         "m3u8"
       ],
       "limited": false,
