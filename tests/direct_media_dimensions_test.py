@@ -20,10 +20,15 @@ assert 'const total = contentRangeTotal(result.contentRange);' in source
 assert 'Range: `bytes=${tailStart}-${total - 1}`' in source
 assert "if (kind === 'mp4' && mode.inspect_direct_dimensions === true)" in source
 
-# The tail request is bounded to the configured sample size and only happens
-# after the first sample failed to expose a tkhd dimension.
+# The tail request stays bounded to the configured sample size. With global
+# duration identity enabled it is needed whenever either dimensions or movie
+# duration are missing from the first Range sample.
 first_parse = source.index('verifiedHeights.push(...parseMp4TrackHeights(result.body));')
-tail_guard = source.index('if (!verifiedHeights.length) {', first_parse)
+legacy_guard = 'if (!verifiedHeights.length) {'
+extended_guard = 'if (!verifiedHeights.length || mediaDurationSeconds == null) {'
+assert legacy_guard in source or extended_guard in source
+guard = extended_guard if extended_guard in source else legacy_guard
+tail_guard = source.index(guard, first_parse)
 tail_fetch = source.index('Range: `bytes=${tailStart}-${total - 1}`', tail_guard)
 assert first_parse < tail_guard < tail_fetch
 
