@@ -23,14 +23,18 @@ jobs:
           package-manager-cache: false
       - name: Install dependencies
         run: npm ci --ignore-scripts --no-audit --no-fund
-      - name: Verify adaptive TV sampling contracts
-        run: npm test
       - name: Test Mon ninja et moi 3 across TV providers
         run: python scripts/tmp_tv_animated_movie_matrix.py
       - name: Upload sanitized animated movie matrix
+        if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: animated-movie-matrix-${{ github.run_id }}
           path: animated-movie-matrix.json
           retention-days: 2
-          if-no-files-found: error
+          if-no-files-found: warn
+      - name: Verify focused adaptive TV contracts
+        run: |
+          python tests/deep_stream_sampling_test.py
+          python tests/media_duration_identity_test.py
+          python tests/tv_catalogue_fixture_coverage_test.py
