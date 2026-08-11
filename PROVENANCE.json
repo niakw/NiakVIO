@@ -1,19 +1,20 @@
 {
   "schema_version": 63,
-  "generated_at": "2026-08-10T23:58:42.770213+00:00",
+  "generated_at": "2026-08-11T00:54:49.823810+00:00",
   "notice": "Third-party files retain upstream authorship and licence. See THIRD_PARTY_NOTICES.md.",
   "providers": {
     "1shows": {
       "id": "1shows",
-      "published_filename": "providers/1shows--nuvio--fd18f166be5a57ad.js",
-      "sha256": "fd18f166be5a57ad6943b0d08968022592f28926e1d0ea88934ee0aa8de091d4",
-      "patched_sha256": "fd18f166be5a57ad6943b0d08968022592f28926e1d0ea88934ee0aa8de091d4",
+      "published_filename": "providers/1shows--nuvio--7ca7b969590ced85.js",
+      "sha256": "7ca7b969590ced85e4f76a257868b7cd68d11905ed0fb29062a0e789a615b4b5",
+      "patched_sha256": "7ca7b969590ced85e4f76a257868b7cd68d11905ed0fb29062a0e789a615b4b5",
       "upstream_sha256": "9d8e329755b00a42b1c05cd06a764a2993e1874f67b3b4e2a96b25894d62ceba",
       "local_patches": [
         {
           "type": "patch_script",
           "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
-          "phase": "discovery"
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
         },
         {
           "type": "patch_profile",
@@ -68,7 +69,7 @@
       "source_license_evidence": "https://github.com/NuvioPlugin/All-in-One-Nuvio#license",
       "upstream_id": "1shows",
       "upstream_filename": "providers/1shows.js",
-      "checked_at": "2026-08-10T23:58:42.770213+00:00",
+      "checked_at": "2026-08-11T00:54:49.823810+00:00",
       "check_mode": "deep",
       "check_status": "healthy",
       "health_score": 82,
@@ -219,7 +220,6 @@
             "provider_server_hosts": [
               "api.viduki.net",
               "dash.cloudflare.com",
-              "developers.cloudflare.com",
               "docs.github.com",
               "github-cloud.s3.amazonaws.com",
               "github.blog",
@@ -237,8 +237,7 @@
               200,
               400,
               403,
-              404,
-              500
+              404
             ]
           },
           "threshold": {
@@ -303,7 +302,7 @@
       "source_license_evidence": "LICENSE",
       "upstream_id": "4KHDHUB",
       "upstream_filename": "providers/4khdhub--published-baseline--75b72af99cf8d6a1.js",
-      "checked_at": "2026-08-10T23:58:42.770213+00:00",
+      "checked_at": "2026-08-11T00:54:49.823810+00:00",
       "check_mode": "deep",
       "check_status": "unavailable",
       "health_score": 10,
@@ -520,10 +519,10 @@
       "source_license_evidence": "LICENSE",
       "upstream_id": "4KHDHUBNEW",
       "upstream_filename": "providers/4khdhubnew--published-baseline--81fc783ac7c0b53c.js",
-      "checked_at": "2026-08-10T23:58:42.770213+00:00",
+      "checked_at": "2026-08-11T00:54:49.823810+00:00",
       "check_mode": "deep",
       "check_status": "healthy",
-      "health_score": 72,
+      "health_score": 74,
       "activation_eligible": false,
       "strict_activation_eligible": false,
       "strict_grace_eligible": false,
@@ -550,7 +549,7 @@
         },
         "03_minimum_score": {
           "passed": true,
-          "evidence": 72,
+          "evidence": 74,
           "threshold": 70
         },
         "04_fixture_and_type_coverage": {
@@ -590,7 +589,7 @@
           "evidence": {
             "distinct_reachable_hosts": 1,
             "reachable_hosts": [
-              "index.videocontentscdn.workers.dev"
+              "api.netflixmovies.workers.dev"
             ]
           },
           "threshold": 1
@@ -609,7 +608,7 @@
         "08_quality_and_bitrate": {
           "passed": true,
           "evidence": {
-            "effective_max_height": 1080,
+            "effective_max_height": 2160,
             "max_bandwidth": null,
             "manifest_effective_height": null,
             "manifest_curation_score": 4,
@@ -680,7 +679,7 @@
             "status": "healthy",
             "streams_playable": 1,
             "healthy_fixtures": 1,
-            "effective_max_height": 1080
+            "effective_max_height": 2160
           },
           "threshold": {
             "required": "at least one currently playable stream"
@@ -690,16 +689,16 @@
       "manifest_ordering": {
         "language_group": "other",
         "language_tier": 3,
-        "quality_height": 1080,
-        "health_score": 72,
+        "quality_height": 2160,
+        "health_score": 74,
         "manifest_curation_score": 4,
         "provider_server_successful_response": true,
         "observed_language_modes": [],
         "manual_priority": 10000
       },
       "settings_validation": {
-        "settings_profiles_tested": 3,
-        "settings_profiles_producing_streams": 3,
+        "settings_profiles_tested": 4,
+        "settings_profiles_producing_streams": 4,
         "selected_settings_profiles": [
           "empty"
         ],
@@ -718,9 +717,9 @@
     },
     "allanime": {
       "id": "allanime",
-      "published_filename": "providers/allanime--nuvio--c2b3ff909e2d0f02.js",
-      "sha256": "c2b3ff909e2d0f021bee476bb387d8d776d0fb24f53edccf928b93f0538d5442",
-      "patched_sha256": "c2b3ff909e2d0f021bee476bb387d8d776d0fb24f53edccf928b93f0538d5442",
+      "published_filename": "providers/allanime--nuvio--6a848fc2b5084682.js",
+      "sha256": "6a848fc2b5084682eed82a9f9c79a9af691b4d180678c239b8f111078014e6a1",
+      "patched_sha256": "6a848fc2b5084682eed82a9f9c79a9af691b4d180678c239b8f111078014e6a1",
       "upstream_sha256": "25fb224e2ac0575055aca1dfce4263bc069780b99d86433692f770289971c3ce",
       "local_patches": [
         {
@@ -731,7 +730,8 @@
         {
           "type": "patch_script",
           "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
-          "phase": "discovery"
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
         },
         {
           "type": "patch_profile",
@@ -786,7 +786,7 @@
       "source_license_evidence": "https://github.com/NuvioPlugin/All-in-One-Nuvio#license",
       "upstream_id": "allanime",
       "upstream_filename": "providers/allanime.js",
-      "checked_at": "2026-08-10T23:58:42.770213+00:00",
+      "checked_at": "2026-08-11T00:54:49.823810+00:00",
       "check_mode": "deep",
       "check_status": "healthy",
       "health_score": 82,
@@ -1028,7 +1028,7 @@
       "source_license_evidence": "LICENSE",
       "upstream_id": "allmovieland",
       "upstream_filename": "providers/allmovieland--published-baseline--2217246fc678c994.js",
-      "checked_at": "2026-08-10T23:58:42.770213+00:00",
+      "checked_at": "2026-08-11T00:54:49.823810+00:00",
       "check_mode": "deep",
       "check_status": "blocked",
       "health_score": 10,
@@ -1246,7 +1246,7 @@
       "source_license_evidence": "LICENSE",
       "upstream_id": "allwish",
       "upstream_filename": "providers/allwish--published-baseline--ff2e91d8fbf90331.js",
-      "checked_at": "2026-08-10T23:58:42.770213+00:00",
+      "checked_at": "2026-08-11T00:54:49.823810+00:00",
       "check_mode": "deep",
       "check_status": "provider_unreachable",
       "health_score": 10,
@@ -1464,7 +1464,7 @@
       "source_license_evidence": "LICENSE",
       "upstream_id": "anidb",
       "upstream_filename": "providers/anidb--published-baseline--60ec5bba1e6d0052.js",
-      "checked_at": "2026-08-10T23:58:42.770213+00:00",
+      "checked_at": "2026-08-11T00:54:49.823810+00:00",
       "check_mode": "deep",
       "check_status": "blocked",
       "health_score": 10,
@@ -1670,7 +1670,7 @@
     },
     "anikototv": {
       "id": "anikototv",
-      "published_filename": "providers/anikototv--aio--da411102136eb121.js",
+      "published_filename": "providers/anikototv--nuvio--da411102136eb121.js",
       "sha256": "da411102136eb121bd8c579df7020c9631852ab6a1d7a386c817c781c1d9c80f",
       "patched_sha256": "da411102136eb121bd8c579df7020c9631852ab6a1d7a386c817c781c1d9c80f",
       "upstream_sha256": "4b75a13ad9f3a9e7c067e8cbd18a66830cce4ad0d7e75ed28eca66cf1ed32b5d",
@@ -1689,10 +1689,10 @@
       "source_license_evidence": "https://github.com/NuvioPlugin/All-in-One-Nuvio#license",
       "upstream_id": "anikototv",
       "upstream_filename": "providers/anikototv.js",
-      "checked_at": "2026-08-10T23:58:42.770213+00:00",
+      "checked_at": "2026-08-11T00:54:49.823810+00:00",
       "check_mode": "deep",
       "check_status": "healthy",
-      "health_score": 72,
+      "health_score": 80,
       "activation_eligible": false,
       "strict_activation_eligible": false,
       "strict_grace_eligible": false,
@@ -1718,7 +1718,7 @@
         },
         "03_minimum_score": {
           "passed": true,
-          "evidence": 72,
+          "evidence": 80,
           "threshold": 70
         },
         "04_fixture_and_type_coverage": {
@@ -1865,7 +1865,7 @@
         "language_group": "other",
         "language_tier": 3,
         "quality_height": 1080,
-        "health_score": 72,
+        "health_score": 80,
         "manifest_curation_score": 5,
         "provider_server_successful_response": true,
         "observed_language_modes": [],
@@ -1904,10 +1904,10 @@
       "source_license_evidence": "LICENSE",
       "upstream_id": "ANIME-SAMA",
       "upstream_filename": "providers/anime-sama--published-baseline--84b26a8649623566.js",
-      "checked_at": "2026-08-10T23:58:42.770213+00:00",
+      "checked_at": "2026-08-11T00:54:49.823810+00:00",
       "check_mode": "deep",
       "check_status": "healthy",
-      "health_score": 74,
+      "health_score": 82,
       "activation_eligible": true,
       "strict_activation_eligible": true,
       "strict_grace_eligible": false,
@@ -1931,7 +1931,7 @@
         },
         "03_minimum_score": {
           "passed": true,
-          "evidence": 74,
+          "evidence": 82,
           "threshold": 70
         },
         "04_fixture_and_type_coverage": {
@@ -1971,7 +1971,7 @@
           "evidence": {
             "distinct_reachable_hosts": 1,
             "reachable_hosts": [
-              "prx-1328-ant.vmpx.online"
+              "prx-1546-ant.vmpx.online"
             ]
           },
           "threshold": 1
@@ -2054,8 +2054,7 @@
               "ansembed.net",
               "arm.haglund.dev",
               "pfabiwmfmeza.dramiyos-cdn.com",
-              "prx-1328-ant.vmpx.online",
-              "prx-1559-ant.vmpx.online",
+              "prx-1546-ant.vmpx.online",
               "sendvid.com",
               "smoothpre.com",
               "v3-cinemeta.strem.io",
@@ -2090,7 +2089,7 @@
         "language_group": "vf",
         "language_tier": 0,
         "quality_height": 1080,
-        "health_score": 74,
+        "health_score": 82,
         "manifest_curation_score": 6,
         "provider_server_successful_response": true,
         "observed_language_modes": [
@@ -2114,8 +2113,8 @@
         "eligible": false,
         "reason": "disabled_by_current_proof_policy"
       },
-      "strict_consecutive_deep_passes": 1,
-      "strict_total_deep_passes": 1
+      "strict_consecutive_deep_passes": 2,
+      "strict_total_deep_passes": 2
     },
     "anime-ultime": {
       "id": "anime-ultime",
@@ -2131,7 +2130,7 @@
       "source_license_evidence": "LICENSE",
       "upstream_id": "anime-ultime",
       "upstream_filename": "providers/anime-ultime--published-baseline--ed4a313f9fef3352.js",
-      "checked_at": "2026-08-10T23:58:42.770213+00:00",
+      "checked_at": "2026-08-11T00:54:49.823810+00:00",
       "check_mode": "deep",
       "check_status": "blocked",
       "health_score": 10,
@@ -2349,7 +2348,7 @@
       "source_license_evidence": "LICENSE",
       "upstream_id": "animekai",
       "upstream_filename": "providers/animekai--published-baseline--9b597e20f8cd9721.js",
-      "checked_at": "2026-08-10T23:58:42.770213+00:00",
+      "checked_at": "2026-08-11T00:54:49.823810+00:00",
       "check_mode": "deep",
       "check_status": "no_streams",
       "health_score": 10,
@@ -2573,7 +2572,7 @@
       "source_license_evidence": "LICENSE",
       "upstream_id": "animepahe",
       "upstream_filename": "providers/animepahe--published-baseline--9e132e5efb037149.js",
-      "checked_at": "2026-08-10T23:58:42.770213+00:00",
+      "checked_at": "2026-08-11T00:54:49.823810+00:00",
       "check_mode": "deep",
       "check_status": "blocked",
       "health_score": 10,
@@ -2804,7 +2803,7 @@
       "source_license_evidence": "LICENSE",
       "upstream_id": "animesalt",
       "upstream_filename": "providers/animesalt--published-baseline--e221da6762e9c203.js",
-      "checked_at": "2026-08-10T23:58:42.770213+00:00",
+      "checked_at": "2026-08-11T00:54:49.823810+00:00",
       "check_mode": "deep",
       "check_status": "no_streams",
       "health_score": 10,
@@ -3033,7 +3032,7 @@
       "source_license_evidence": "LICENSE",
       "upstream_id": "ANIMESAMA-CO",
       "upstream_filename": "providers/animesama-co--published-baseline--1ab9fb1cec10acff.js",
-      "checked_at": "2026-08-10T23:58:42.770213+00:00",
+      "checked_at": "2026-08-11T00:54:49.823810+00:00",
       "check_mode": "deep",
       "check_status": "degraded",
       "health_score": 75,
@@ -3272,7 +3271,7 @@
       "source_license_evidence": "LICENSE",
       "upstream_id": "animesultra",
       "upstream_filename": "providers/animesultra--published-baseline--7704e3a452b17554.js",
-      "checked_at": "2026-08-10T23:58:42.770213+00:00",
+      "checked_at": "2026-08-11T00:54:49.823810+00:00",
       "check_mode": "deep",
       "check_status": "blocked",
       "health_score": 10,
@@ -3498,7 +3497,7 @@
       "source_license_evidence": "LICENSE",
       "upstream_id": "animetsu",
       "upstream_filename": "providers/animetsu--published-baseline--243edd8c76b0995a.js",
-      "checked_at": "2026-08-10T23:58:42.770213+00:00",
+      "checked_at": "2026-08-11T00:54:49.823810+00:00",
       "check_mode": "deep",
       "check_status": "no_streams",
       "health_score": 10,
@@ -3726,7 +3725,7 @@
       "source_license_evidence": "LICENSE",
       "upstream_id": "ANIMEVOSTFR",
       "upstream_filename": "providers/animevostfr--published-baseline--9db362a48297eabb.js",
-      "checked_at": "2026-08-10T23:58:42.770213+00:00",
+      "checked_at": "2026-08-11T00:54:49.823810+00:00",
       "check_mode": "deep",
       "check_status": "no_streams",
       "health_score": 79,
@@ -3956,7 +3955,7 @@
       "source_license_evidence": "LICENSE",
       "upstream_id": "animeworld",
       "upstream_filename": "providers/animeworld--published-baseline--2e2e6290407ba9e2.js",
-      "checked_at": "2026-08-10T23:58:42.770213+00:00",
+      "checked_at": "2026-08-11T00:54:49.823810+00:00",
       "check_mode": "deep",
       "check_status": "blocked",
       "health_score": 10,
@@ -4160,71 +4159,69 @@
     },
     "animezey": {
       "id": "animezey",
-      "published_filename": "providers/animezey--published-baseline--075ac96f7a7d2e20.js",
-      "sha256": "075ac96f7a7d2e205a40c970d42628cd497b6ab29f983e58ae393dcb700384d7",
-      "patched_sha256": "075ac96f7a7d2e205a40c970d42628cd497b6ab29f983e58ae393dcb700384d7",
-      "upstream_sha256": "075ac96f7a7d2e205a40c970d42628cd497b6ab29f983e58ae393dcb700384d7",
-      "local_patches": [],
-      "source": "published-baseline",
-      "source_name": "Last published local artifact",
-      "source_repository": "Nuvio Curated Providers",
-      "source_license": "GPL-3.0-only",
-      "source_license_evidence": "LICENSE",
+      "published_filename": "providers/animezey--nuvio--54c2c000499aa635.js",
+      "sha256": "54c2c000499aa6355e7f056d13549f43d77423771cffeaeb043f03888c20f1b8",
+      "patched_sha256": "54c2c000499aa6355e7f056d13549f43d77423771cffeaeb043f03888c20f1b8",
+      "upstream_sha256": "46e83c8d710830679b7f17eacb03e014fc4195237cd423fe63254862549f24ff",
+      "local_patches": [
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
+        }
+      ],
+      "source": "aio",
+      "source_name": "All-in-One-Nuvio",
+      "source_repository": "https://github.com/NuvioPlugin/All-in-One-Nuvio",
+      "source_license": "GPL-3.0",
+      "source_license_evidence": "https://github.com/NuvioPlugin/All-in-One-Nuvio#license",
       "upstream_id": "animezey",
-      "upstream_filename": "providers/animezey--published-baseline--075ac96f7a7d2e20.js",
-      "checked_at": "2026-08-10T23:58:42.770213+00:00",
+      "upstream_filename": "providers/animezey.js",
+      "checked_at": "2026-08-11T00:54:49.823810+00:00",
       "check_mode": "deep",
-      "check_status": "blocked",
-      "health_score": 10,
-      "activation_eligible": false,
-      "strict_activation_eligible": false,
+      "check_status": "healthy",
+      "health_score": 88,
+      "activation_eligible": true,
+      "strict_activation_eligible": true,
       "strict_grace_eligible": false,
       "historical_quality_grace_eligible": false,
       "runtime_evidence_eligible": false,
-      "activation_mode": "disabled",
-      "activation_blockers": [
-        "02_healthy_functional_status",
-        "03_minimum_score",
-        "04_fixture_and_type_coverage",
-        "05_stream_and_fixture_coverage",
-        "06_distinct_host_diversity",
-        "07_verified_payload_playability",
-        "08_quality_and_bitrate",
-        "09_language_and_subtitle_integrity",
-        "00_provider_specific_access",
-        "00_current_playable_stream",
-        "upstream_disabled"
-      ],
+      "activation_mode": "strict_current",
+      "activation_blockers": [],
       "activation_gates": {
         "01_policy_safe_no_p2p": {
           "passed": true,
           "evidence": {
-            "status": "blocked",
+            "status": "healthy",
             "disallowed_streams": 0
           },
           "threshold": "no disallowed P2P/torrent output"
         },
         "02_healthy_functional_status": {
-          "passed": false,
-          "evidence": "blocked",
+          "passed": true,
+          "evidence": "healthy",
           "threshold": "healthy or reachable server/API"
         },
         "03_minimum_score": {
-          "passed": false,
-          "evidence": 10,
+          "passed": true,
+          "evidence": 88,
           "threshold": 70
         },
         "04_fixture_and_type_coverage": {
-          "passed": false,
+          "passed": true,
           "evidence": {
-            "healthy_fixtures": 0,
+            "healthy_fixtures": 2,
             "fixtures_tested": 2,
-            "healthy_fixture_ratio": 0.0,
+            "healthy_fixture_ratio": 1.0,
             "required_categories": [
               "movie",
               "tv"
             ],
-            "healthy_categories": []
+            "healthy_categories": [
+              "movie",
+              "tv"
+            ]
           },
           "threshold": {
             "minimum_healthy_fixtures": 1,
@@ -4234,10 +4231,10 @@
           }
         },
         "05_stream_and_fixture_coverage": {
-          "passed": false,
+          "passed": true,
           "evidence": {
-            "playable_streams": 0,
-            "playable_fixtures": 0
+            "playable_streams": 2,
+            "playable_fixtures": 2
           },
           "threshold": {
             "minimum_playable_streams": 1,
@@ -4245,18 +4242,20 @@
           }
         },
         "06_distinct_host_diversity": {
-          "passed": false,
+          "passed": true,
           "evidence": {
-            "distinct_reachable_hosts": 0,
-            "reachable_hosts": []
+            "distinct_reachable_hosts": 1,
+            "reachable_hosts": [
+              "animezey16082023.animezey16082023.workers.dev"
+            ]
           },
           "threshold": 1
         },
         "07_verified_payload_playability": {
-          "passed": false,
+          "passed": true,
           "evidence": {
-            "payload_verified_streams": 0,
-            "playable_streams": 0
+            "payload_verified_streams": 2,
+            "playable_streams": 2
           },
           "threshold": {
             "minimum_payload_verified_streams": 1,
@@ -4264,9 +4263,9 @@
           }
         },
         "08_quality_and_bitrate": {
-          "passed": false,
+          "passed": true,
           "evidence": {
-            "effective_max_height": null,
+            "effective_max_height": 2160,
             "max_bandwidth": null,
             "manifest_effective_height": null,
             "manifest_curation_score": 5,
@@ -4290,9 +4289,11 @@
           }
         },
         "09_language_and_subtitle_integrity": {
-          "passed": false,
+          "passed": true,
           "evidence": {
-            "accepted_audio_languages": [],
+            "accepted_audio_languages": [
+              "en"
+            ],
             "accepted_subtitle_languages": [],
             "accepted_subtitles_advertised": 0,
             "accepted_subtitles_reachable": 0
@@ -4312,21 +4313,21 @@
         "00_dns_or_alternative_domain": {
           "passed": true,
           "evidence": {
-            "dns_status": "inconclusive"
+            "dns_status": "no_provider_domain_detected"
           },
           "threshold": {
             "required": "DNS resolution or validated alternative domain"
           }
         },
         "00_provider_specific_access": {
-          "passed": false,
+          "passed": true,
           "evidence": {
-            "provider_server_successful_response": false,
+            "provider_server_successful_response": true,
             "provider_server_hosts": [
               "1.animezey23112022.workers.dev"
             ],
             "provider_server_http_statuses": [
-              429
+              200
             ]
           },
           "threshold": {
@@ -4334,12 +4335,12 @@
           }
         },
         "00_current_playable_stream": {
-          "passed": false,
+          "passed": true,
           "evidence": {
-            "status": "blocked",
-            "streams_playable": 0,
-            "healthy_fixtures": 0,
-            "effective_max_height": null
+            "status": "healthy",
+            "streams_playable": 2,
+            "healthy_fixtures": 2,
+            "effective_max_height": 2160
           },
           "threshold": {
             "required": "at least one currently playable stream"
@@ -4349,16 +4350,16 @@
       "manifest_ordering": {
         "language_group": "other",
         "language_tier": 3,
-        "quality_height": 0,
-        "health_score": 10,
+        "quality_height": 2160,
+        "health_score": 88,
         "manifest_curation_score": 5,
-        "provider_server_successful_response": false,
+        "provider_server_successful_response": true,
         "observed_language_modes": [],
         "manual_priority": 10000
       },
       "settings_validation": {
-        "settings_profiles_tested": 4,
-        "settings_profiles_producing_streams": 0,
+        "settings_profiles_tested": 2,
+        "settings_profiles_producing_streams": 2,
         "selected_settings_profiles": [
           "empty"
         ],
@@ -4372,8 +4373,8 @@
         "eligible": false,
         "reason": "disabled_by_current_proof_policy"
       },
-      "strict_consecutive_deep_passes": 0,
-      "strict_total_deep_passes": 0
+      "strict_consecutive_deep_passes": 1,
+      "strict_total_deep_passes": 1
     },
     "animoflix": {
       "id": "animoflix",
@@ -4389,7 +4390,7 @@
       "source_license_evidence": "LICENSE",
       "upstream_id": "animoflix",
       "upstream_filename": "providers/animoflix--published-baseline--1dc3f3fe1c16de54.js",
-      "checked_at": "2026-08-10T23:58:42.770213+00:00",
+      "checked_at": "2026-08-11T00:54:49.823810+00:00",
       "check_mode": "deep",
       "check_status": "no_streams",
       "health_score": 10,
@@ -4617,7 +4618,7 @@
       "source_license_evidence": "LICENSE",
       "upstream_id": "anizone",
       "upstream_filename": "providers/anizone--published-baseline--0dbdc78b24804bab.js",
-      "checked_at": "2026-08-10T23:58:42.770213+00:00",
+      "checked_at": "2026-08-11T00:54:49.823810+00:00",
       "check_mode": "deep",
       "check_status": "blocked",
       "health_score": 10,
@@ -4824,7 +4825,7 @@
     },
     "castle": {
       "id": "castle",
-      "published_filename": "providers/castle--aio--d22a88ce915454a5.js",
+      "published_filename": "providers/castle--nuvio--d22a88ce915454a5.js",
       "sha256": "d22a88ce915454a5bf80ea893cd002ffdf6693e7773e4c3c52fa5f117ceb7845",
       "patched_sha256": "d22a88ce915454a5bf80ea893cd002ffdf6693e7773e4c3c52fa5f117ceb7845",
       "upstream_sha256": "1b23fb0b7740e707fb2e3c5f6f69ca51c4bb4fc6afc8f1ae851af22e3f66bb89",
@@ -4832,7 +4833,8 @@
         {
           "type": "patch_script",
           "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
-          "phase": "discovery"
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
         }
       ],
       "source": "aio",
@@ -4842,10 +4844,10 @@
       "source_license_evidence": "https://github.com/NuvioPlugin/All-in-One-Nuvio#license",
       "upstream_id": "castle",
       "upstream_filename": "providers/castle.js",
-      "checked_at": "2026-08-10T23:58:42.770213+00:00",
+      "checked_at": "2026-08-11T00:54:49.823810+00:00",
       "check_mode": "deep",
       "check_status": "healthy",
-      "health_score": 82,
+      "health_score": 90,
       "activation_eligible": true,
       "strict_activation_eligible": true,
       "strict_grace_eligible": false,
@@ -4869,7 +4871,7 @@
         },
         "03_minimum_score": {
           "passed": true,
-          "evidence": 82,
+          "evidence": 90,
           "threshold": 70
         },
         "04_fixture_and_type_coverage": {
@@ -4910,8 +4912,8 @@
           "evidence": {
             "distinct_reachable_hosts": 2,
             "reachable_hosts": [
-              "img1.flocw.com",
-              "img1.wnowe.com"
+              "img1.fvncw.com",
+              "img1.hvncw.com"
             ]
           },
           "threshold": 1
@@ -4992,8 +4994,9 @@
             "provider_server_successful_response": true,
             "provider_server_hosts": [
               "api.hlowb.com",
-              "img1.flocw.com",
-              "img1.wnowe.com"
+              "img1.fvncw.com",
+              "img1.hvncw.com",
+              "img1.kucwn.com"
             ],
             "provider_server_http_statuses": [
               200
@@ -5020,7 +5023,7 @@
         "language_group": "other",
         "language_tier": 3,
         "quality_height": 1080,
-        "health_score": 82,
+        "health_score": 90,
         "manifest_curation_score": 6,
         "provider_server_successful_response": true,
         "observed_language_modes": [],
@@ -5042,12 +5045,12 @@
         "eligible": false,
         "reason": "disabled_by_current_proof_policy"
       },
-      "strict_consecutive_deep_passes": 1,
-      "strict_total_deep_passes": 1
+      "strict_consecutive_deep_passes": 2,
+      "strict_total_deep_passes": 2
     },
     "cineby": {
       "id": "cineby",
-      "published_filename": "providers/cineby--aio--1da6c867d405e408.js",
+      "published_filename": "providers/cineby--nuvio--1da6c867d405e408.js",
       "sha256": "1da6c867d405e40883e33e1828d6a6b184ec662d17372cb2df6bff821f371875",
       "patched_sha256": "1da6c867d405e40883e33e1828d6a6b184ec662d17372cb2df6bff821f371875",
       "upstream_sha256": "06a14293c93a83d3060684e042e7087031463c775717f8b5f1dfeaa0ba30d429",
@@ -5055,7 +5058,8 @@
         {
           "type": "patch_script",
           "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
-          "phase": "discovery"
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
         }
       ],
       "source": "aio",
@@ -5065,10 +5069,10 @@
       "source_license_evidence": "https://github.com/NuvioPlugin/All-in-One-Nuvio#license",
       "upstream_id": "Cineby",
       "upstream_filename": "providers/cineby.js",
-      "checked_at": "2026-08-10T23:58:42.770213+00:00",
+      "checked_at": "2026-08-11T00:54:49.823810+00:00",
       "check_mode": "deep",
       "check_status": "healthy",
-      "health_score": 82,
+      "health_score": 90,
       "activation_eligible": false,
       "strict_activation_eligible": false,
       "strict_grace_eligible": false,
@@ -5094,7 +5098,7 @@
         },
         "03_minimum_score": {
           "passed": true,
-          "evidence": 82,
+          "evidence": 90,
           "threshold": 70
         },
         "04_fixture_and_type_coverage": {
@@ -5248,7 +5252,7 @@
         "language_group": "vostfr",
         "language_tier": 1,
         "quality_height": 2160,
-        "health_score": 82,
+        "health_score": 90,
         "manifest_curation_score": 11,
         "provider_server_successful_response": true,
         "observed_language_modes": [
@@ -5277,15 +5281,16 @@
     },
     "cinefreak": {
       "id": "cinefreak",
-      "published_filename": "providers/cinefreak--nuvio--a6c9f1d51b8d6b13.js",
-      "sha256": "a6c9f1d51b8d6b130607833c7293febb7e91ef38d66b8d73a16bd86942e9bb88",
-      "patched_sha256": "a6c9f1d51b8d6b130607833c7293febb7e91ef38d66b8d73a16bd86942e9bb88",
+      "published_filename": "providers/cinefreak--nuvio--985ef45e184fe15a.js",
+      "sha256": "985ef45e184fe15abca47aca5867826eb6f2d65d3d55649028f07986a3dc7cf5",
+      "patched_sha256": "985ef45e184fe15abca47aca5867826eb6f2d65d3d55649028f07986a3dc7cf5",
       "upstream_sha256": "422d7f2fc6c51ea3d4f77596382cd817b1d482997c46ff7509b6ce11b205404d",
       "local_patches": [
         {
           "type": "patch_script",
           "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
-          "phase": "discovery"
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
         },
         {
           "type": "patch_profile",
@@ -5340,7 +5345,7 @@
       "source_license_evidence": "https://github.com/NuvioPlugin/All-in-One-Nuvio#license",
       "upstream_id": "cinefreak",
       "upstream_filename": "providers/cinefreak.js",
-      "checked_at": "2026-08-10T23:58:42.770213+00:00",
+      "checked_at": "2026-08-11T00:54:49.823810+00:00",
       "check_mode": "deep",
       "check_status": "healthy",
       "health_score": 82,
@@ -5573,7 +5578,7 @@
       "source_license_evidence": "LICENSE",
       "upstream_id": "cinemacity",
       "upstream_filename": "providers/cinemacity--published-baseline--e97516075e2f0d47.js",
-      "checked_at": "2026-08-10T23:58:42.770213+00:00",
+      "checked_at": "2026-08-11T00:54:49.823810+00:00",
       "check_mode": "deep",
       "check_status": "blocked",
       "health_score": 10,
@@ -5797,7 +5802,7 @@
       "source_license_evidence": "LICENSE",
       "upstream_id": "cinemm",
       "upstream_filename": "providers/cinemm--published-baseline--a5b5565452b28f36.js",
-      "checked_at": "2026-08-10T23:58:42.770213+00:00",
+      "checked_at": "2026-08-11T00:54:49.823810+00:00",
       "check_mode": "deep",
       "check_status": "unavailable",
       "health_score": 10,
@@ -5999,7 +6004,7 @@
       "strict_total_deep_passes": 0,
       "preserved_reason": "ci_uncertain_kept_last_published_artifact",
       "preserved_candidate_key": "published:cinemm",
-      "preserved_candidate_sha256": "a5b5565452b28f36764f8119097309da115c5ab9f46703b8e58227c79972f441"
+      "preserved_candidate_sha256": "e9752719803c4dda0ef7fcba33f26deff3edd88d5339d35a589406e968bbabbf"
     },
     "cinevibe": {
       "id": "cinevibe",
@@ -6015,7 +6020,7 @@
       "source_license_evidence": "LICENSE",
       "upstream_id": "cinevibe",
       "upstream_filename": "providers/cinevibe--published-baseline--95e34c978b6bbf74.js",
-      "checked_at": "2026-08-10T23:58:42.770213+00:00",
+      "checked_at": "2026-08-11T00:54:49.823810+00:00",
       "check_mode": "deep",
       "check_status": "blocked",
       "health_score": 10,
@@ -6249,7 +6254,7 @@
       "source_license_evidence": "LICENSE",
       "upstream_id": "coflix",
       "upstream_filename": "providers/coflix--nuvio--0ade0a55c45fc407.js",
-      "checked_at": "2026-08-10T23:58:42.770213+00:00",
+      "checked_at": "2026-08-11T00:54:49.823810+00:00",
       "check_mode": "deep",
       "check_status": "degraded",
       "health_score": 20,
@@ -6527,7 +6532,7 @@
       "source_license_evidence": "LICENSE",
       "upstream_id": "ctgmovies",
       "upstream_filename": "providers/ctgmovies--published-baseline--5edc0eedd11d8479.js",
-      "checked_at": "2026-08-10T23:58:42.770213+00:00",
+      "checked_at": "2026-08-11T00:54:49.823810+00:00",
       "check_mode": "deep",
       "check_status": "degraded",
       "health_score": 20,
@@ -6733,31 +6738,41 @@
     },
     "desiflix": {
       "id": "desiflix",
-      "published_filename": "providers/desiflix--published-baseline--0bdb817098a03695.js",
+      "published_filename": "providers/desiflix--nuvio--0bdb817098a03695.js",
       "sha256": "0bdb817098a0369537239b2b9d799cf20fe48df677e66b9248b7e195e997b136",
       "patched_sha256": "0bdb817098a0369537239b2b9d799cf20fe48df677e66b9248b7e195e997b136",
-      "upstream_sha256": "0bdb817098a0369537239b2b9d799cf20fe48df677e66b9248b7e195e997b136",
-      "local_patches": [],
-      "source": "published-baseline",
-      "source_name": "Last published local artifact",
-      "source_repository": "Nuvio Curated Providers",
-      "source_license": "GPL-3.0-only",
-      "source_license_evidence": "LICENSE",
-      "upstream_id": "DESIFLIX",
-      "upstream_filename": "providers/desiflix--published-baseline--0bdb817098a03695.js",
-      "checked_at": "2026-08-10T23:58:42.770213+00:00",
+      "upstream_sha256": "89d80b0ac5aac7e946680f35f3fa7ba4859e2a9e9ab42ef8a811b51518e63cac",
+      "local_patches": [
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/nuvio_tv_direct_media_v2.py",
+          "phase": "discovery"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
+        }
+      ],
+      "source": "aio",
+      "source_name": "All-in-One-Nuvio",
+      "source_repository": "https://github.com/NuvioPlugin/All-in-One-Nuvio",
+      "source_license": "GPL-3.0",
+      "source_license_evidence": "https://github.com/NuvioPlugin/All-in-One-Nuvio#license",
+      "upstream_id": "desiflix",
+      "upstream_filename": "providers/desiflix.js",
+      "checked_at": "2026-08-11T00:54:49.823810+00:00",
       "check_mode": "deep",
       "check_status": "healthy",
-      "health_score": 85,
-      "activation_eligible": false,
-      "strict_activation_eligible": false,
+      "health_score": 89,
+      "activation_eligible": true,
+      "strict_activation_eligible": true,
       "strict_grace_eligible": false,
       "historical_quality_grace_eligible": false,
       "runtime_evidence_eligible": false,
-      "activation_mode": "disabled",
-      "activation_blockers": [
-        "upstream_disabled"
-      ],
+      "activation_mode": "strict_current",
+      "activation_blockers": [],
       "activation_gates": {
         "01_policy_safe_no_p2p": {
           "passed": true,
@@ -6774,7 +6789,7 @@
         },
         "03_minimum_score": {
           "passed": true,
-          "evidence": 85,
+          "evidence": 89,
           "threshold": 70
         },
         "04_fixture_and_type_coverage": {
@@ -6931,7 +6946,7 @@
         "language_group": "other",
         "language_tier": 3,
         "quality_height": 2160,
-        "health_score": 85,
+        "health_score": 89,
         "manifest_curation_score": 6,
         "provider_server_successful_response": true,
         "observed_language_modes": [],
@@ -6953,8 +6968,8 @@
         "eligible": false,
         "reason": "disabled_by_current_proof_policy"
       },
-      "strict_consecutive_deep_passes": 1,
-      "strict_total_deep_passes": 1
+      "strict_consecutive_deep_passes": 0,
+      "strict_total_deep_passes": 0
     },
     "dooflix": {
       "id": "dooflix",
@@ -6976,7 +6991,7 @@
       "source_license_evidence": "LICENSE",
       "upstream_id": "dooflix",
       "upstream_filename": "providers/dooflix--published-baseline--4f1fe2d96901c1b2.js",
-      "checked_at": "2026-08-10T23:58:42.770213+00:00",
+      "checked_at": "2026-08-11T00:54:49.823810+00:00",
       "check_mode": "deep",
       "check_status": "blocked",
       "health_score": 10,
@@ -7207,7 +7222,7 @@
       "source_license_evidence": "LICENSE",
       "upstream_id": "dulourd",
       "upstream_filename": "providers/dulourd--published-baseline--e62064b45a10a505.js",
-      "checked_at": "2026-08-10T23:58:42.770213+00:00",
+      "checked_at": "2026-08-11T00:54:49.823810+00:00",
       "check_mode": "deep",
       "check_status": "blocked",
       "health_score": 10,
@@ -7416,23 +7431,16 @@
       "published_filename": "providers/dvdplay--published-baseline--7dc7ac7240dafcd8.js",
       "sha256": "7dc7ac7240dafcd8f8e6caf3fde950e7bd7421ad5726527115914a55cb29132f",
       "patched_sha256": "7dc7ac7240dafcd8f8e6caf3fde950e7bd7421ad5726527115914a55cb29132f",
-      "upstream_sha256": "fe8f2d36918ae4d5cab2bd248b4baf51dd6dc6b68b20e2666006089ff100ec7e",
-      "local_patches": [
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
-          "phase": "discovery",
-          "scope": "global_playback_integrity"
-        }
-      ],
+      "upstream_sha256": "7dc7ac7240dafcd8f8e6caf3fde950e7bd7421ad5726527115914a55cb29132f",
+      "local_patches": [],
       "source": "published-baseline",
       "source_name": "Last published local artifact",
       "source_repository": "Nuvio Curated Providers",
       "source_license": "GPL-3.0-only",
       "source_license_evidence": "LICENSE",
       "upstream_id": "dvdplay",
-      "upstream_filename": "providers/dvdplay--published-baseline--fe8f2d36918ae4d5.js",
-      "checked_at": "2026-08-10T23:58:42.770213+00:00",
+      "upstream_filename": "providers/dvdplay--published-baseline--7dc7ac7240dafcd8.js",
+      "checked_at": "2026-08-11T00:54:49.823810+00:00",
       "check_mode": "deep",
       "check_status": "no_streams",
       "health_score": 10,
@@ -7650,7 +7658,7 @@
       "source_license_evidence": "LICENSE",
       "upstream_id": "einthusan",
       "upstream_filename": "providers/einthusan--published-baseline--9f1aa6907cfc9ff8.js",
-      "checked_at": "2026-08-10T23:58:42.770213+00:00",
+      "checked_at": "2026-08-11T00:54:49.823810+00:00",
       "check_mode": "deep",
       "check_status": "no_streams",
       "health_score": 10,
@@ -7836,7 +7844,7 @@
         "manual_priority": 10000
       },
       "settings_validation": {
-        "settings_profiles_tested": 2,
+        "settings_profiles_tested": 4,
         "settings_profiles_producing_streams": 0,
         "selected_settings_profiles": [
           "empty"
@@ -7868,7 +7876,7 @@
       "source_license_evidence": "LICENSE",
       "upstream_id": "fibwatch",
       "upstream_filename": "providers/fibwatch--published-baseline--9901e834223e144b.js",
-      "checked_at": "2026-08-10T23:58:42.770213+00:00",
+      "checked_at": "2026-08-11T00:54:49.823810+00:00",
       "check_mode": "deep",
       "check_status": "blocked",
       "health_score": 10,
@@ -8103,7 +8111,7 @@
       "source_license_evidence": "LICENSE",
       "upstream_id": "flemmix",
       "upstream_filename": "providers/flemmix--published-baseline--da649772e36a7327.js",
-      "checked_at": "2026-08-10T23:58:42.770213+00:00",
+      "checked_at": "2026-08-11T00:54:49.823810+00:00",
       "check_mode": "deep",
       "check_status": "blocked",
       "health_score": 10,
@@ -8357,7 +8365,7 @@
       "source_license_evidence": "LICENSE",
       "upstream_id": "french-manga",
       "upstream_filename": "providers/french-manga--nuvio--b1f91a943f7f805a.js",
-      "checked_at": "2026-08-10T23:58:42.770213+00:00",
+      "checked_at": "2026-08-11T00:54:49.823810+00:00",
       "check_mode": "deep",
       "check_status": "degraded",
       "health_score": 10,
@@ -8601,7 +8609,7 @@
       "source_license_evidence": "LICENSE",
       "upstream_id": "frenchstream",
       "upstream_filename": "providers/frenchstream--nuvio--6e811019fee20e34.js",
-      "checked_at": "2026-08-10T23:58:42.770213+00:00",
+      "checked_at": "2026-08-11T00:54:49.823810+00:00",
       "check_mode": "deep",
       "check_status": "degraded",
       "health_score": 80,
@@ -8835,7 +8843,7 @@
       "source_license_evidence": "LICENSE",
       "upstream_id": "goatapi",
       "upstream_filename": "providers/goatapi--published-baseline--cb0cb57d76a365ab.js",
-      "checked_at": "2026-08-10T23:58:42.770213+00:00",
+      "checked_at": "2026-08-11T00:54:49.823810+00:00",
       "check_mode": "deep",
       "check_status": "unavailable",
       "health_score": 10,
@@ -9049,7 +9057,8 @@
         {
           "type": "patch_script",
           "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
-          "phase": "discovery"
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
         }
       ],
       "source": "aio",
@@ -9059,10 +9068,10 @@
       "source_license_evidence": "https://github.com/NuvioPlugin/All-in-One-Nuvio#license",
       "upstream_id": "goated",
       "upstream_filename": "providers/goated.js",
-      "checked_at": "2026-08-10T23:58:42.770213+00:00",
+      "checked_at": "2026-08-11T00:54:49.823810+00:00",
       "check_mode": "deep",
       "check_status": "healthy",
-      "health_score": 88,
+      "health_score": 96,
       "activation_eligible": true,
       "strict_activation_eligible": true,
       "strict_grace_eligible": false,
@@ -9086,7 +9095,7 @@
         },
         "03_minimum_score": {
           "passed": true,
-          "evidence": 88,
+          "evidence": 96,
           "threshold": 70
         },
         "04_fixture_and_type_coverage": {
@@ -9235,7 +9244,7 @@
         "language_group": "vf",
         "language_tier": 0,
         "quality_height": 2160,
-        "health_score": 88,
+        "health_score": 96,
         "manifest_curation_score": 9,
         "provider_server_successful_response": true,
         "observed_language_modes": [
@@ -9259,8 +9268,8 @@
         "eligible": false,
         "reason": "disabled_by_current_proof_policy"
       },
-      "strict_consecutive_deep_passes": 1,
-      "strict_total_deep_passes": 1
+      "strict_consecutive_deep_passes": 2,
+      "strict_total_deep_passes": 2
     },
     "gramcinema": {
       "id": "gramcinema",
@@ -9276,7 +9285,7 @@
       "source_license_evidence": "LICENSE",
       "upstream_id": "gramcinema",
       "upstream_filename": "providers/gramcinema--published-baseline--19ccbc269b4b6e51.js",
-      "checked_at": "2026-08-10T23:58:42.770213+00:00",
+      "checked_at": "2026-08-11T00:54:49.823810+00:00",
       "check_mode": "deep",
       "check_status": "provider_unreachable",
       "health_score": 10,
@@ -9476,7 +9485,7 @@
     },
     "hdghartv": {
       "id": "hdghartv",
-      "published_filename": "providers/hdghartv--aio--51f1038c44f25a79.js",
+      "published_filename": "providers/hdghartv--nuvio--51f1038c44f25a79.js",
       "sha256": "51f1038c44f25a793d667259b9f2febc5df852f0fee5a7949bdb49e811df5c35",
       "patched_sha256": "51f1038c44f25a793d667259b9f2febc5df852f0fee5a7949bdb49e811df5c35",
       "upstream_sha256": "8f6931a418a437f64d697f6eafdc27b8c2408cefd9accc5c7e7d9810871ed81a",
@@ -9484,7 +9493,8 @@
         {
           "type": "patch_script",
           "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
-          "phase": "discovery"
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
         }
       ],
       "source": "aio",
@@ -9494,10 +9504,10 @@
       "source_license_evidence": "https://github.com/NuvioPlugin/All-in-One-Nuvio#license",
       "upstream_id": "hdghartv",
       "upstream_filename": "providers/hdghartv.js",
-      "checked_at": "2026-08-10T23:58:42.770213+00:00",
+      "checked_at": "2026-08-11T00:54:49.823810+00:00",
       "check_mode": "deep",
       "check_status": "healthy",
-      "health_score": 84,
+      "health_score": 92,
       "activation_eligible": true,
       "strict_activation_eligible": true,
       "strict_grace_eligible": false,
@@ -9521,7 +9531,7 @@
         },
         "03_minimum_score": {
           "passed": true,
-          "evidence": 84,
+          "evidence": 92,
           "threshold": 70
         },
         "04_fixture_and_type_coverage": {
@@ -9670,7 +9680,7 @@
         "language_group": "other",
         "language_tier": 3,
         "quality_height": 1080,
-        "health_score": 84,
+        "health_score": 92,
         "manifest_curation_score": 5,
         "provider_server_successful_response": true,
         "observed_language_modes": [],
@@ -9692,8 +9702,8 @@
         "eligible": false,
         "reason": "disabled_by_current_proof_policy"
       },
-      "strict_consecutive_deep_passes": 1,
-      "strict_total_deep_passes": 1
+      "strict_consecutive_deep_passes": 2,
+      "strict_total_deep_passes": 2
     },
     "hdhub4u": {
       "id": "hdhub4u",
@@ -9715,7 +9725,7 @@
       "source_license_evidence": "LICENSE",
       "upstream_id": "hdhub4u",
       "upstream_filename": "providers/hdhub4u--published-baseline--f6e1007a3cd2764b.js",
-      "checked_at": "2026-08-10T23:58:42.770213+00:00",
+      "checked_at": "2026-08-11T00:54:49.823810+00:00",
       "check_mode": "deep",
       "check_status": "blocked",
       "health_score": 10,
@@ -9924,7 +9934,7 @@
     },
     "hianime": {
       "id": "hianime",
-      "published_filename": "providers/hianime--aio--2f2a7c65e76c8ff3.js",
+      "published_filename": "providers/hianime--nuvio--2f2a7c65e76c8ff3.js",
       "sha256": "2f2a7c65e76c8ff3fddd33c78ed1c7ce1fa717a705fb8b57359ca31142cbcb8d",
       "patched_sha256": "2f2a7c65e76c8ff3fddd33c78ed1c7ce1fa717a705fb8b57359ca31142cbcb8d",
       "upstream_sha256": "11124b38985b9780ad49e040b5d30a7143bc9541e27c7e314e70d9778a227af9",
@@ -9932,7 +9942,8 @@
         {
           "type": "patch_script",
           "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
-          "phase": "discovery"
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
         }
       ],
       "source": "aio",
@@ -9942,10 +9953,10 @@
       "source_license_evidence": "https://github.com/NuvioPlugin/All-in-One-Nuvio#license",
       "upstream_id": "hianime",
       "upstream_filename": "providers/hianime.js",
-      "checked_at": "2026-08-10T23:58:42.770213+00:00",
+      "checked_at": "2026-08-11T00:54:49.823810+00:00",
       "check_mode": "deep",
       "check_status": "healthy",
-      "health_score": 72,
+      "health_score": 80,
       "activation_eligible": false,
       "strict_activation_eligible": false,
       "strict_grace_eligible": false,
@@ -9971,7 +9982,7 @@
         },
         "03_minimum_score": {
           "passed": true,
-          "evidence": 72,
+          "evidence": 80,
           "threshold": 70
         },
         "04_fixture_and_type_coverage": {
@@ -10123,7 +10134,7 @@
         "language_group": "vostfr",
         "language_tier": 1,
         "quality_height": 1080,
-        "health_score": 72,
+        "health_score": 80,
         "manifest_curation_score": 8,
         "provider_server_successful_response": true,
         "observed_language_modes": [
@@ -10152,9 +10163,9 @@
     },
     "hindmoviez": {
       "id": "hindmoviez",
-      "published_filename": "providers/hindmoviez--nuvio--171fa7faa90a4ea3.js",
-      "sha256": "171fa7faa90a4ea3db745cd4bb8d53e15ce86c9e209f4fb8a4258795b4af58ba",
-      "patched_sha256": "171fa7faa90a4ea3db745cd4bb8d53e15ce86c9e209f4fb8a4258795b4af58ba",
+      "published_filename": "providers/hindmoviez--nuvio--2795690d053802f9.js",
+      "sha256": "2795690d053802f9489fdea8c08cc5bd5da22612474ce3e605edb1a72445bf79",
+      "patched_sha256": "2795690d053802f9489fdea8c08cc5bd5da22612474ce3e605edb1a72445bf79",
       "upstream_sha256": "86b8c3a4dff3c98c05db88eb075936b2f4ec00d504b967f1150bdfbd6fa620ac",
       "local_patches": [
         {
@@ -10165,7 +10176,8 @@
         {
           "type": "patch_script",
           "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
-          "phase": "discovery"
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
         }
       ],
       "source": "aio",
@@ -10175,7 +10187,7 @@
       "source_license_evidence": "https://github.com/NuvioPlugin/All-in-One-Nuvio#license",
       "upstream_id": "hindmoviez",
       "upstream_filename": "providers/hindmoviez.js",
-      "checked_at": "2026-08-10T23:58:42.770213+00:00",
+      "checked_at": "2026-08-11T00:54:49.823810+00:00",
       "check_mode": "deep",
       "check_status": "healthy",
       "health_score": 92,
@@ -10243,8 +10255,8 @@
           "evidence": {
             "distinct_reachable_hosts": 2,
             "reachable_hosts": [
-              "abb.queilluxeferi-4297.workers.dev",
-              "abc.peunnessibreibu-2883.workers.dev"
+              "abc.heulettafreuyo-7517.workers.dev",
+              "abc.teissacraxeiquo-2004.workers.dev"
             ]
           },
           "threshold": 1
@@ -10375,12 +10387,12 @@
         "eligible": false,
         "reason": "disabled_by_current_proof_policy"
       },
-      "strict_consecutive_deep_passes": 1,
-      "strict_total_deep_passes": 1
+      "strict_consecutive_deep_passes": 2,
+      "strict_total_deep_passes": 2
     },
     "kisskh": {
       "id": "kisskh",
-      "published_filename": "providers/kisskh--aio--75638c6066246c87.js",
+      "published_filename": "providers/kisskh--nuvio--75638c6066246c87.js",
       "sha256": "75638c6066246c874d2fdda0058c52e26b9dcf6304947cd98326adc05ddd1621",
       "patched_sha256": "75638c6066246c874d2fdda0058c52e26b9dcf6304947cd98326adc05ddd1621",
       "upstream_sha256": "81b0afffb337390782cace12c5d657c6aa42765d05f5da986022284a99bafb98",
@@ -10388,7 +10400,8 @@
         {
           "type": "patch_script",
           "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
-          "phase": "discovery"
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
         }
       ],
       "source": "aio",
@@ -10398,10 +10411,10 @@
       "source_license_evidence": "https://github.com/NuvioPlugin/All-in-One-Nuvio#license",
       "upstream_id": "kisskh",
       "upstream_filename": "providers/kisskh.js",
-      "checked_at": "2026-08-10T23:58:42.770213+00:00",
+      "checked_at": "2026-08-11T00:54:49.823810+00:00",
       "check_mode": "deep",
       "check_status": "healthy",
-      "health_score": 70,
+      "health_score": 78,
       "activation_eligible": false,
       "strict_activation_eligible": false,
       "strict_grace_eligible": false,
@@ -10428,7 +10441,7 @@
         },
         "03_minimum_score": {
           "passed": true,
-          "evidence": 70,
+          "evidence": 78,
           "threshold": 70
         },
         "04_fixture_and_type_coverage": {
@@ -10574,7 +10587,7 @@
         "language_group": "other",
         "language_tier": 3,
         "quality_height": 0,
-        "health_score": 70,
+        "health_score": 78,
         "manifest_curation_score": 3,
         "provider_server_successful_response": true,
         "observed_language_modes": [],
@@ -10619,7 +10632,7 @@
       "source_license_evidence": "LICENSE",
       "upstream_id": "kurage",
       "upstream_filename": "providers/kurage--published-baseline--668797edb270c5fe.js",
-      "checked_at": "2026-08-10T23:58:42.770213+00:00",
+      "checked_at": "2026-08-11T00:54:49.823810+00:00",
       "check_mode": "deep",
       "check_status": "no_streams",
       "health_score": 10,
@@ -10831,23 +10844,16 @@
       "published_filename": "providers/mallumv--published-baseline--fa43d2db381e3812.js",
       "sha256": "fa43d2db381e38127c48e0ce35062ea42ac82cfd34a8e5ee94d8f783eadc4495",
       "patched_sha256": "fa43d2db381e38127c48e0ce35062ea42ac82cfd34a8e5ee94d8f783eadc4495",
-      "upstream_sha256": "a7062d44b6f08d034e295ebc4340b4a78a19d8ca2f9c9db18abc2aa443ad2b04",
-      "local_patches": [
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
-          "phase": "discovery",
-          "scope": "global_playback_integrity"
-        }
-      ],
+      "upstream_sha256": "fa43d2db381e38127c48e0ce35062ea42ac82cfd34a8e5ee94d8f783eadc4495",
+      "local_patches": [],
       "source": "published-baseline",
       "source_name": "Last published local artifact",
       "source_repository": "Nuvio Curated Providers",
       "source_license": "GPL-3.0-only",
       "source_license_evidence": "LICENSE",
       "upstream_id": "mallumv",
-      "upstream_filename": "providers/mallumv--published-baseline--a7062d44b6f08d03.js",
-      "checked_at": "2026-08-10T23:58:42.770213+00:00",
+      "upstream_filename": "providers/mallumv--published-baseline--fa43d2db381e3812.js",
+      "checked_at": "2026-08-11T00:54:49.823810+00:00",
       "check_mode": "deep",
       "check_status": "no_streams",
       "health_score": 10,
@@ -11050,11 +11056,18 @@
     },
     "moonflix": {
       "id": "moonflix",
-      "published_filename": "providers/moonflix--aio--e4928ad7affd0f9d.js",
-      "sha256": "e4928ad7affd0f9d417fee3c3f90bcaf0f37ed2c577ab52dd391a6cd1635f12f",
-      "patched_sha256": "e4928ad7affd0f9d417fee3c3f90bcaf0f37ed2c577ab52dd391a6cd1635f12f",
+      "published_filename": "providers/moonflix--nuvio--0e7900363260e28d.js",
+      "sha256": "0e7900363260e28d7b62654f28a037272b4840bd0bf3f6e0db1ba5e816254b2b",
+      "patched_sha256": "0e7900363260e28d7b62654f28a037272b4840bd0bf3f6e0db1ba5e816254b2b",
       "upstream_sha256": "e4928ad7affd0f9d417fee3c3f90bcaf0f37ed2c577ab52dd391a6cd1635f12f",
-      "local_patches": [],
+      "local_patches": [
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
+        }
+      ],
       "source": "aio",
       "source_name": "All-in-One-Nuvio",
       "source_repository": "https://github.com/NuvioPlugin/All-in-One-Nuvio",
@@ -11062,10 +11075,10 @@
       "source_license_evidence": "https://github.com/NuvioPlugin/All-in-One-Nuvio#license",
       "upstream_id": "moonflix",
       "upstream_filename": "providers/moonflix.js",
-      "checked_at": "2026-08-10T23:58:42.770213+00:00",
+      "checked_at": "2026-08-11T00:54:49.823810+00:00",
       "check_mode": "deep",
       "check_status": "healthy",
-      "health_score": 84,
+      "health_score": 92,
       "activation_eligible": true,
       "strict_activation_eligible": true,
       "strict_grace_eligible": false,
@@ -11089,7 +11102,7 @@
         },
         "03_minimum_score": {
           "passed": true,
-          "evidence": 84,
+          "evidence": 92,
           "threshold": 70
         },
         "04_fixture_and_type_coverage": {
@@ -11238,7 +11251,7 @@
         "language_group": "other",
         "language_tier": 3,
         "quality_height": 1080,
-        "health_score": 84,
+        "health_score": 92,
         "manifest_curation_score": 3,
         "provider_server_successful_response": true,
         "observed_language_modes": [],
@@ -11265,7 +11278,7 @@
     },
     "movieblast": {
       "id": "movieblast",
-      "published_filename": "providers/movieblast--aio--58d3566bb6f66c65.js",
+      "published_filename": "providers/movieblast--nuvio--58d3566bb6f66c65.js",
       "sha256": "58d3566bb6f66c65f6afd66aadebb1943ea6b3600f7b02be915160579c36fda4",
       "patched_sha256": "58d3566bb6f66c65f6afd66aadebb1943ea6b3600f7b02be915160579c36fda4",
       "upstream_sha256": "d3b04a5ee1a13fed77192b5226d46001508fe321fa747f0c519d0c23d5b1a974",
@@ -11273,7 +11286,8 @@
         {
           "type": "patch_script",
           "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
-          "phase": "discovery"
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
         }
       ],
       "source": "aio",
@@ -11283,7 +11297,7 @@
       "source_license_evidence": "https://github.com/NuvioPlugin/All-in-One-Nuvio#license",
       "upstream_id": "movieblast",
       "upstream_filename": "providers/movieblast.js",
-      "checked_at": "2026-08-10T23:58:42.770213+00:00",
+      "checked_at": "2026-08-11T00:54:49.823810+00:00",
       "check_mode": "deep",
       "check_status": "healthy",
       "health_score": 84,
@@ -11482,8 +11496,8 @@
         "eligible": false,
         "reason": "disabled_by_current_proof_policy"
       },
-      "strict_consecutive_deep_passes": 1,
-      "strict_total_deep_passes": 1
+      "strict_consecutive_deep_passes": 2,
+      "strict_total_deep_passes": 2
     },
     "moviebox": {
       "id": "moviebox",
@@ -11505,7 +11519,7 @@
       "source_license_evidence": "LICENSE",
       "upstream_id": "moviebox",
       "upstream_filename": "providers/moviebox--published-baseline--f19ec5a037e53220.js",
-      "checked_at": "2026-08-10T23:58:42.770213+00:00",
+      "checked_at": "2026-08-11T00:54:49.823810+00:00",
       "check_mode": "deep",
       "check_status": "blocked",
       "health_score": 10,
@@ -11732,7 +11746,7 @@
       "source_license_evidence": "LICENSE",
       "upstream_id": "MOVIES4U",
       "upstream_filename": "providers/movies4u--nuvio--d57854d4a39a0c4c.js",
-      "checked_at": "2026-08-10T23:58:42.770213+00:00",
+      "checked_at": "2026-08-11T00:54:49.823810+00:00",
       "check_mode": "deep",
       "check_status": "no_streams",
       "health_score": 82,
@@ -11988,7 +12002,7 @@
       "source_license_evidence": "LICENSE",
       "upstream_id": "moviesdrive",
       "upstream_filename": "providers/moviesdrive--published-baseline--675d0e30755fa971.js",
-      "checked_at": "2026-08-10T23:58:42.770213+00:00",
+      "checked_at": "2026-08-11T00:54:49.823810+00:00",
       "check_mode": "deep",
       "check_status": "unavailable",
       "health_score": 10,
@@ -12195,7 +12209,7 @@
     },
     "movieshunt": {
       "id": "movieshunt",
-      "published_filename": "providers/movieshunt--nuvio--7c9f8b996eec8462.js",
+      "published_filename": "providers/movieshunt--published-baseline--7c9f8b996eec8462.js",
       "sha256": "7c9f8b996eec84621ebc19e7ad2f8862398c961f716543a8d49885fe959374f5",
       "patched_sha256": "7c9f8b996eec84621ebc19e7ad2f8862398c961f716543a8d49885fe959374f5",
       "upstream_sha256": "7c9f8b996eec84621ebc19e7ad2f8862398c961f716543a8d49885fe959374f5",
@@ -12207,7 +12221,7 @@
       "source_license_evidence": "LICENSE",
       "upstream_id": "MOVIESHUNT",
       "upstream_filename": "providers/movieshunt--nuvio--7c9f8b996eec8462.js",
-      "checked_at": "2026-08-10T23:58:42.770213+00:00",
+      "checked_at": "2026-08-11T00:54:49.823810+00:00",
       "check_mode": "deep",
       "check_status": "degraded",
       "health_score": 20,
@@ -12436,7 +12450,7 @@
       "source_license_evidence": "LICENSE",
       "upstream_id": "moviesmod",
       "upstream_filename": "providers/moviesmod--published-baseline--c90890640a459844.js",
-      "checked_at": "2026-08-10T23:58:42.770213+00:00",
+      "checked_at": "2026-08-11T00:54:49.823810+00:00",
       "check_mode": "deep",
       "check_status": "blocked",
       "health_score": 10,
@@ -12675,7 +12689,7 @@
       "source_license_evidence": "LICENSE",
       "upstream_id": "movix",
       "upstream_filename": "providers/movix--nuvio--ba842c1f58b1db77.js",
-      "checked_at": "2026-08-10T23:58:42.770213+00:00",
+      "checked_at": "2026-08-11T00:54:49.823810+00:00",
       "check_mode": "deep",
       "check_status": "blocked",
       "health_score": 10,
@@ -12909,10 +12923,10 @@
       "source_license_evidence": "LICENSE",
       "upstream_id": "MUGIWARASTREAM",
       "upstream_filename": "providers/mugiwarastream--published-baseline--1840c3504d90c489.js",
-      "checked_at": "2026-08-10T23:58:42.770213+00:00",
+      "checked_at": "2026-08-11T00:54:49.823810+00:00",
       "check_mode": "deep",
       "check_status": "healthy",
-      "health_score": 70,
+      "health_score": 78,
       "activation_eligible": true,
       "strict_activation_eligible": true,
       "strict_grace_eligible": false,
@@ -12936,7 +12950,7 @@
         },
         "03_minimum_score": {
           "passed": true,
-          "evidence": 70,
+          "evidence": 78,
           "threshold": 70
         },
         "04_fixture_and_type_coverage": {
@@ -12976,7 +12990,7 @@
           "evidence": {
             "distinct_reachable_hosts": 1,
             "reachable_hosts": [
-              "prx-1353-ant-23.vmpx.online"
+              "prx-1328-ant.vmpx.online"
             ]
           },
           "threshold": 1
@@ -13055,7 +13069,7 @@
           "evidence": {
             "provider_server_successful_response": true,
             "provider_server_hosts": [
-              "prx-1353-ant-23.vmpx.online",
+              "prx-1328-ant.vmpx.online",
               "sendvid.com",
               "smoothpre.com",
               "video.sibnet.ru",
@@ -13093,7 +13107,7 @@
         "language_group": "vostfr",
         "language_tier": 1,
         "quality_height": 1080,
-        "health_score": 70,
+        "health_score": 78,
         "manifest_curation_score": 8,
         "provider_server_successful_response": true,
         "observed_language_modes": [
@@ -13117,8 +13131,8 @@
         "eligible": false,
         "reason": "disabled_by_current_proof_policy"
       },
-      "strict_consecutive_deep_passes": 1,
-      "strict_total_deep_passes": 1
+      "strict_consecutive_deep_passes": 2,
+      "strict_total_deep_passes": 2
     },
     "mycima": {
       "id": "mycima",
@@ -13134,7 +13148,7 @@
       "source_license_evidence": "LICENSE",
       "upstream_id": "mycima",
       "upstream_filename": "providers/mycima--published-baseline--5f93970d83ccf1df.js",
-      "checked_at": "2026-08-10T23:58:42.770213+00:00",
+      "checked_at": "2026-08-11T00:54:49.823810+00:00",
       "check_mode": "deep",
       "check_status": "blocked",
       "health_score": 10,
@@ -13362,7 +13376,7 @@
       "source_license_evidence": "LICENSE",
       "upstream_id": "nakios",
       "upstream_filename": "providers/nakios--published-baseline--9f244357f0b66ad2.js",
-      "checked_at": "2026-08-10T23:58:42.770213+00:00",
+      "checked_at": "2026-08-11T00:54:49.823810+00:00",
       "check_mode": "deep",
       "check_status": "unavailable",
       "health_score": 10,
@@ -13588,7 +13602,7 @@
       "source_license_evidence": "LICENSE",
       "upstream_id": "netmirror",
       "upstream_filename": "providers/netmirror--published-baseline--5cc8283a945c663e.js",
-      "checked_at": "2026-08-10T23:58:42.770213+00:00",
+      "checked_at": "2026-08-11T00:54:49.823810+00:00",
       "check_mode": "deep",
       "check_status": "degraded",
       "health_score": 20,
@@ -13810,7 +13824,7 @@
       "source_license_evidence": "LICENSE",
       "upstream_id": "onlykdrama",
       "upstream_filename": "providers/onlykdrama--published-baseline--935603d98d6dd99f.js",
-      "checked_at": "2026-08-10T23:58:42.770213+00:00",
+      "checked_at": "2026-08-11T00:54:49.823810+00:00",
       "check_mode": "deep",
       "check_status": "blocked",
       "health_score": 10,
@@ -14027,10 +14041,10 @@
       "source_license_evidence": "LICENSE",
       "upstream_id": "PAPADUSTREAM",
       "upstream_filename": "providers/papadustream--published-baseline--e842dff705a94481.js",
-      "checked_at": "2026-08-10T23:58:42.770213+00:00",
+      "checked_at": "2026-08-11T00:54:49.823810+00:00",
       "check_mode": "deep",
       "check_status": "healthy",
-      "health_score": 74,
+      "health_score": 82,
       "activation_eligible": true,
       "strict_activation_eligible": true,
       "strict_grace_eligible": false,
@@ -14054,7 +14068,7 @@
         },
         "03_minimum_score": {
           "passed": true,
-          "evidence": 74,
+          "evidence": 82,
           "threshold": 70
         },
         "04_fixture_and_type_coverage": {
@@ -14201,7 +14215,7 @@
         "language_group": "vf",
         "language_tier": 0,
         "quality_height": 1080,
-        "health_score": 74,
+        "health_score": 82,
         "manifest_curation_score": 9,
         "provider_server_successful_response": true,
         "observed_language_modes": [
@@ -14225,8 +14239,8 @@
         "eligible": false,
         "reason": "disabled_by_current_proof_policy"
       },
-      "strict_consecutive_deep_passes": 1,
-      "strict_total_deep_passes": 1
+      "strict_consecutive_deep_passes": 2,
+      "strict_total_deep_passes": 2
     },
     "peachify": {
       "id": "peachify",
@@ -14248,7 +14262,7 @@
       "source_license_evidence": "LICENSE",
       "upstream_id": "peachify",
       "upstream_filename": "providers/peachify--published-baseline--3abd719532e31536.js",
-      "checked_at": "2026-08-10T23:58:42.770213+00:00",
+      "checked_at": "2026-08-11T00:54:49.823810+00:00",
       "check_mode": "deep",
       "check_status": "unavailable",
       "health_score": 10,
@@ -14456,7 +14470,7 @@
     },
     "persianstremio": {
       "id": "persianstremio",
-      "published_filename": "providers/persianstremio--aio--0a732e24bfa1d1b2.js",
+      "published_filename": "providers/persianstremio--published-baseline--0a732e24bfa1d1b2.js",
       "sha256": "0a732e24bfa1d1b227bced53f661e87f48fd56e2febfd631057d2aaaf0da2bda",
       "patched_sha256": "0a732e24bfa1d1b227bced53f661e87f48fd56e2febfd631057d2aaaf0da2bda",
       "upstream_sha256": "0a732e24bfa1d1b227bced53f661e87f48fd56e2febfd631057d2aaaf0da2bda",
@@ -14468,7 +14482,7 @@
       "source_license_evidence": "LICENSE",
       "upstream_id": "PERSIANSTREMIO",
       "upstream_filename": "providers/persianstremio--aio--0a732e24bfa1d1b2.js",
-      "checked_at": "2026-08-10T23:58:42.770213+00:00",
+      "checked_at": "2026-08-11T00:54:49.823810+00:00",
       "check_mode": "deep",
       "check_status": "healthy",
       "health_score": 74,
@@ -14648,7 +14662,7 @@
         "manual_priority": 9
       },
       "settings_validation": {
-        "settings_profiles_tested": 3,
+        "settings_profiles_tested": 4,
         "settings_profiles_producing_streams": 1,
         "selected_settings_profiles": [
           "empty"
@@ -14668,28 +14682,22 @@
     },
     "playimdb": {
       "id": "playimdb",
-      "published_filename": "providers/playimdb--aio--a335d04478c95074.js",
+      "published_filename": "providers/playimdb--published-baseline--a335d04478c95074.js",
       "sha256": "a335d04478c9507458da19d9faebc97f783cf5f1bbd21aa572282eb78d63c311",
       "patched_sha256": "a335d04478c9507458da19d9faebc97f783cf5f1bbd21aa572282eb78d63c311",
-      "upstream_sha256": "e00e7b0d65b15622e0b6bcdce3ccc92d6226853197962348ced4af47343f07ab",
-      "local_patches": [
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
-          "phase": "discovery"
-        }
-      ],
-      "source": "aio",
-      "source_name": "All-in-One-Nuvio",
-      "source_repository": "https://github.com/NuvioPlugin/All-in-One-Nuvio",
-      "source_license": "GPL-3.0",
-      "source_license_evidence": "https://github.com/NuvioPlugin/All-in-One-Nuvio#license",
-      "upstream_id": "playimdb",
-      "upstream_filename": "providers/playimdb.js",
-      "checked_at": "2026-08-10T23:58:42.770213+00:00",
+      "upstream_sha256": "a335d04478c9507458da19d9faebc97f783cf5f1bbd21aa572282eb78d63c311",
+      "local_patches": [],
+      "source": "published-baseline",
+      "source_name": "Last published local artifact",
+      "source_repository": "Nuvio Curated Providers",
+      "source_license": "GPL-3.0-only",
+      "source_license_evidence": "LICENSE",
+      "upstream_id": "PLAYIMDB",
+      "upstream_filename": "providers/playimdb--aio--a335d04478c95074.js",
+      "checked_at": "2026-08-11T00:54:49.823810+00:00",
       "check_mode": "deep",
       "check_status": "healthy",
-      "health_score": 77,
+      "health_score": 83,
       "activation_eligible": false,
       "strict_activation_eligible": false,
       "strict_grace_eligible": false,
@@ -14697,7 +14705,8 @@
       "runtime_evidence_eligible": false,
       "activation_mode": "disabled",
       "activation_blockers": [
-        "09_language_and_subtitle_integrity"
+        "09_language_and_subtitle_integrity",
+        "upstream_disabled"
       ],
       "activation_gates": {
         "01_policy_safe_no_p2p": {
@@ -14715,7 +14724,7 @@
         },
         "03_minimum_score": {
           "passed": true,
-          "evidence": 77,
+          "evidence": 83,
           "threshold": 70
         },
         "04_fixture_and_type_coverage": {
@@ -14864,7 +14873,7 @@
         "language_group": "other",
         "language_tier": 3,
         "quality_height": 1080,
-        "health_score": 77,
+        "health_score": 83,
         "manifest_curation_score": 7,
         "provider_server_successful_response": true,
         "observed_language_modes": [],
@@ -14891,9 +14900,9 @@
     },
     "purstream": {
       "id": "purstream",
-      "published_filename": "providers/purstream--runtime-compat-v4--8e0dc3368ad20f14.js",
-      "sha256": "8e0dc3368ad20f14ea7136441eaee6ff9fdeb01bd25ac8e24c2ee241a58542c7",
-      "patched_sha256": "8e0dc3368ad20f14ea7136441eaee6ff9fdeb01bd25ac8e24c2ee241a58542c7",
+      "published_filename": "providers/purstream--nuvio--b6db4ba4066f1859.js",
+      "sha256": "b6db4ba4066f1859d34542d77977db88e428a9e82cd2de22576bb4f08b7568d8",
+      "patched_sha256": "b6db4ba4066f1859d34542d77977db88e428a9e82cd2de22576bb4f08b7568d8",
       "upstream_sha256": "02173d75d873826f33e7bd45bb1c7973e557845548a8634b3ed1a5161c89abb8",
       "local_patches": [
         {
@@ -14903,13 +14912,14 @@
         },
         {
           "type": "patch_script",
-          "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
+          "path": "scripts/provider_patches/purstream_bridge.py",
           "phase": "discovery"
         },
         {
           "type": "patch_script",
-          "path": "scripts/provider_patches/purstream_bridge.py",
-          "phase": "discovery"
+          "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
         }
       ],
       "source": "aio",
@@ -14919,10 +14929,10 @@
       "source_license_evidence": "https://github.com/NuvioPlugin/All-in-One-Nuvio#license",
       "upstream_id": "purstream",
       "upstream_filename": "providers/purstream.js",
-      "checked_at": "2026-08-10T23:58:42.770213+00:00",
+      "checked_at": "2026-08-11T00:54:49.823810+00:00",
       "check_mode": "deep",
       "check_status": "healthy",
-      "health_score": 86,
+      "health_score": 94,
       "activation_eligible": true,
       "strict_activation_eligible": true,
       "strict_grace_eligible": false,
@@ -14946,7 +14956,7 @@
         },
         "03_minimum_score": {
           "passed": true,
-          "evidence": 86,
+          "evidence": 94,
           "threshold": 70
         },
         "04_fixture_and_type_coverage": {
@@ -15100,7 +15110,7 @@
         "language_group": "vf",
         "language_tier": 0,
         "quality_height": 1080,
-        "health_score": 86,
+        "health_score": 94,
         "manifest_curation_score": 6,
         "provider_server_successful_response": true,
         "observed_language_modes": [
@@ -15129,20 +15139,22 @@
     },
     "sekai": {
       "id": "sekai",
-      "published_filename": "providers/sekai--nuvio--0dfa4b6d312806b5.js",
-      "sha256": "0dfa4b6d312806b5b0bc00d4e814df7099d4b2561640c1ecb03b2fc932478f28",
-      "patched_sha256": "0dfa4b6d312806b5b0bc00d4e814df7099d4b2561640c1ecb03b2fc932478f28",
+      "published_filename": "providers/sekai--nuvio--c64948af5e15e780.js",
+      "sha256": "c64948af5e15e7809a319b4de9da7d06fca781a73e5ee178963b6091070bf909",
+      "patched_sha256": "c64948af5e15e7809a319b4de9da7d06fca781a73e5ee178963b6091070bf909",
       "upstream_sha256": "0e28c37dfc872ff53b807b22053d3a58a5d0bd97f9a2dd6f1d15e8fd1d20c34f",
       "local_patches": [
         {
           "type": "patch_script",
           "path": "scripts/provider_patches/hls_master_audio_preserver_v1.py",
-          "phase": "discovery"
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
         },
         {
           "type": "patch_script",
           "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
-          "phase": "discovery"
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
         },
         {
           "type": "patch_profile",
@@ -15198,10 +15210,10 @@
       "source_license_evidence": "https://github.com/Gowaru/gowaru-nuvio-providers/blob/main/LICENSE",
       "upstream_id": "sekai",
       "upstream_filename": "providers/sekai.js",
-      "checked_at": "2026-08-10T23:58:42.770213+00:00",
+      "checked_at": "2026-08-11T00:54:49.823810+00:00",
       "check_mode": "deep",
       "check_status": "healthy",
-      "health_score": 76,
+      "health_score": 84,
       "activation_eligible": false,
       "strict_activation_eligible": false,
       "strict_grace_eligible": false,
@@ -15227,7 +15239,7 @@
         },
         "03_minimum_score": {
           "passed": true,
-          "evidence": 76,
+          "evidence": 84,
           "threshold": 70
         },
         "04_fixture_and_type_coverage": {
@@ -15390,7 +15402,7 @@
         "language_group": "vf",
         "language_tier": 0,
         "quality_height": 288,
-        "health_score": 76,
+        "health_score": 84,
         "manifest_curation_score": 7,
         "provider_server_successful_response": true,
         "observed_language_modes": [
@@ -15431,7 +15443,7 @@
       "source_license_evidence": "LICENSE",
       "upstream_id": "showbox",
       "upstream_filename": "providers/showbox--published-baseline--2b9d324858fd0ad3.js",
-      "checked_at": "2026-08-10T23:58:42.770213+00:00",
+      "checked_at": "2026-08-11T00:54:49.823810+00:00",
       "check_mode": "deep",
       "check_status": "provider_unreachable",
       "health_score": 10,
@@ -15653,7 +15665,7 @@
       "source_license_evidence": "LICENSE",
       "upstream_id": "streamflix",
       "upstream_filename": "providers/streamflix--published-baseline--a9e7deb56fd5b3c9.js",
-      "checked_at": "2026-08-10T23:58:42.770213+00:00",
+      "checked_at": "2026-08-11T00:54:49.823810+00:00",
       "check_mode": "deep",
       "check_status": "degraded",
       "health_score": 20,
@@ -15854,7 +15866,7 @@
       "strict_total_deep_passes": 0,
       "preserved_reason": "ci_uncertain_kept_last_published_artifact",
       "preserved_candidate_key": "published:streamflix",
-      "preserved_candidate_sha256": "a9e7deb56fd5b3c93458e01fe7d32a764ee1defe3e88759dcb68f448006ded31"
+      "preserved_candidate_sha256": "5f702a1ed80637507b983116d0cd23a9a8e0b3ef93428bb21a0d99fb66754ccc"
     },
     "streamzo": {
       "id": "streamzo",
@@ -15890,7 +15902,7 @@
       "source_license_evidence": "LICENSE",
       "upstream_id": "streamzo",
       "upstream_filename": "providers/streamzo--nuvio--cd90158022279da1.js",
-      "checked_at": "2026-08-10T23:58:42.770213+00:00",
+      "checked_at": "2026-08-11T00:54:49.823810+00:00",
       "check_mode": "deep",
       "check_status": "degraded",
       "health_score": 80,
@@ -16124,7 +16136,7 @@
       "source_license_evidence": "LICENSE",
       "upstream_id": "TOFLIX",
       "upstream_filename": "providers/toflix--published-baseline--80f0a5219b4685fd.js",
-      "checked_at": "2026-08-10T23:58:42.770213+00:00",
+      "checked_at": "2026-08-11T00:54:49.823810+00:00",
       "check_mode": "deep",
       "check_status": "healthy",
       "health_score": 65,
@@ -16326,7 +16338,7 @@
     },
     "topcartoons": {
       "id": "topcartoons",
-      "published_filename": "providers/topcartoons--aio--5d81365f0240ae63.js",
+      "published_filename": "providers/topcartoons--nuvio--5d81365f0240ae63.js",
       "sha256": "5d81365f0240ae638916da235c028b4e771146ef30170d2fb4f145f86a444bfe",
       "patched_sha256": "5d81365f0240ae638916da235c028b4e771146ef30170d2fb4f145f86a444bfe",
       "upstream_sha256": "df33f490a73779f40b29ad612863fd4b192768567338a2171289fe5316e40ef6",
@@ -16334,7 +16346,8 @@
         {
           "type": "patch_script",
           "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
-          "phase": "discovery"
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
         }
       ],
       "source": "aio",
@@ -16344,7 +16357,7 @@
       "source_license_evidence": "https://github.com/NuvioPlugin/All-in-One-Nuvio#license",
       "upstream_id": "topcartoons",
       "upstream_filename": "providers/topcartoons.js",
-      "checked_at": "2026-08-10T23:58:42.770213+00:00",
+      "checked_at": "2026-08-11T00:54:49.823810+00:00",
       "check_mode": "deep",
       "check_status": "healthy",
       "health_score": 72,
@@ -16563,7 +16576,7 @@
       "source_license_evidence": "LICENSE",
       "upstream_id": "VEGAMOVIES",
       "upstream_filename": "providers/vegamovies--aio--0641a31d6068d8d2.js",
-      "checked_at": "2026-08-10T23:58:42.770213+00:00",
+      "checked_at": "2026-08-11T00:54:49.823810+00:00",
       "check_mode": "deep",
       "check_status": "blocked",
       "health_score": 84,
@@ -16776,7 +16789,7 @@
       "strict_total_deep_passes": 11,
       "preserved_reason": "ci_uncertain_kept_last_published_artifact",
       "preserved_candidate_key": "published:vegamovies",
-      "preserved_candidate_sha256": "0641a31d6068d8d2f3e5ca5d734494b24f69b89d6a5d027ae1a7b5eee1953d1a"
+      "preserved_candidate_sha256": "690ecbf5c5aa1582e40be7404301932cdb02a38a5e7e06142487e4a6d82e73da"
     },
     "videasy": {
       "id": "videasy",
@@ -16793,7 +16806,8 @@
         {
           "type": "patch_script",
           "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
-          "phase": "discovery"
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
         }
       ],
       "source": "aio",
@@ -16803,10 +16817,10 @@
       "source_license_evidence": "https://github.com/NuvioPlugin/All-in-One-Nuvio#license",
       "upstream_id": "videasy",
       "upstream_filename": "providers/videasy.js",
-      "checked_at": "2026-08-10T23:58:42.770213+00:00",
+      "checked_at": "2026-08-11T00:54:49.823810+00:00",
       "check_mode": "deep",
       "check_status": "healthy",
-      "health_score": 82,
+      "health_score": 90,
       "activation_eligible": false,
       "strict_activation_eligible": false,
       "strict_grace_eligible": false,
@@ -16832,7 +16846,7 @@
         },
         "03_minimum_score": {
           "passed": true,
-          "evidence": 82,
+          "evidence": 90,
           "threshold": 70
         },
         "04_fixture_and_type_coverage": {
@@ -16988,7 +17002,7 @@
         "language_group": "vostfr",
         "language_tier": 1,
         "quality_height": 2160,
-        "health_score": 82,
+        "health_score": 90,
         "manifest_curation_score": 8,
         "provider_server_successful_response": true,
         "observed_language_modes": [
@@ -17030,7 +17044,8 @@
         {
           "type": "patch_script",
           "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
-          "phase": "discovery"
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
         }
       ],
       "source": "aio",
@@ -17040,10 +17055,10 @@
       "source_license_evidence": "https://github.com/NuvioPlugin/All-in-One-Nuvio#license",
       "upstream_id": "vidfast",
       "upstream_filename": "providers/vidfast.js",
-      "checked_at": "2026-08-10T23:58:42.770213+00:00",
+      "checked_at": "2026-08-11T00:54:49.823810+00:00",
       "check_mode": "deep",
       "check_status": "healthy",
-      "health_score": 75,
+      "health_score": 83,
       "activation_eligible": false,
       "strict_activation_eligible": false,
       "strict_grace_eligible": false,
@@ -17069,7 +17084,7 @@
         },
         "03_minimum_score": {
           "passed": true,
-          "evidence": 75,
+          "evidence": 83,
           "threshold": 70
         },
         "04_fixture_and_type_coverage": {
@@ -17191,8 +17206,7 @@
             ],
             "provider_server_http_statuses": [
               200,
-              404,
-              500
+              404
             ]
           },
           "threshold": {
@@ -17216,7 +17230,7 @@
         "language_group": "other",
         "language_tier": 3,
         "quality_height": 1600,
-        "health_score": 75,
+        "health_score": 83,
         "manifest_curation_score": 5,
         "provider_server_successful_response": true,
         "observed_language_modes": [],
@@ -17261,7 +17275,7 @@
       "source_license_evidence": "LICENSE",
       "upstream_id": "vidlink",
       "upstream_filename": "providers/vidlink--published-baseline--bedc41b8caf7e7cb.js",
-      "checked_at": "2026-08-10T23:58:42.770213+00:00",
+      "checked_at": "2026-08-11T00:54:49.823810+00:00",
       "check_mode": "deep",
       "check_status": "no_streams",
       "health_score": 10,
@@ -17468,15 +17482,16 @@
     },
     "vidlove": {
       "id": "vidlove",
-      "published_filename": "providers/vidlove--aio--9fe10e777f19cd2b.js",
-      "sha256": "9fe10e777f19cd2b5150468ae91c5b3e82fe786c7e22c5bf333f69de611f45bb",
-      "patched_sha256": "9fe10e777f19cd2b5150468ae91c5b3e82fe786c7e22c5bf333f69de611f45bb",
+      "published_filename": "providers/vidlove--nuvio--e85c7b4859093284.js",
+      "sha256": "e85c7b485909328442a102ab58d0d183c20626a5ec5e1cfadfa6276facf7e910",
+      "patched_sha256": "e85c7b485909328442a102ab58d0d183c20626a5ec5e1cfadfa6276facf7e910",
       "upstream_sha256": "a8516b7fcc81ce7013b51f3be9a905de9defe34d654e52c01d0a944dbb624a89",
       "local_patches": [
         {
           "type": "patch_script",
           "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
-          "phase": "discovery"
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
         }
       ],
       "source": "aio",
@@ -17486,10 +17501,10 @@
       "source_license_evidence": "https://github.com/NuvioPlugin/All-in-One-Nuvio#license",
       "upstream_id": "vidlove",
       "upstream_filename": "providers/vidlove.js",
-      "checked_at": "2026-08-10T23:58:42.770213+00:00",
+      "checked_at": "2026-08-11T00:54:49.823810+00:00",
       "check_mode": "deep",
       "check_status": "healthy",
-      "health_score": 78,
+      "health_score": 82,
       "activation_eligible": false,
       "strict_activation_eligible": false,
       "strict_grace_eligible": false,
@@ -17515,7 +17530,7 @@
         },
         "03_minimum_score": {
           "passed": true,
-          "evidence": 78,
+          "evidence": 82,
           "threshold": 70
         },
         "04_fixture_and_type_coverage": {
@@ -17659,7 +17674,7 @@
         "language_group": "other",
         "language_tier": 3,
         "quality_height": 1080,
-        "health_score": 78,
+        "health_score": 82,
         "manifest_curation_score": 5,
         "provider_server_successful_response": true,
         "observed_language_modes": [],
@@ -17698,7 +17713,7 @@
       "source_license_evidence": "LICENSE",
       "upstream_id": "vidnest",
       "upstream_filename": "providers/vidnest--published-baseline--08b6c5e9d18ba3c7.js",
-      "checked_at": "2026-08-10T23:58:42.770213+00:00",
+      "checked_at": "2026-08-11T00:54:49.823810+00:00",
       "check_mode": "deep",
       "check_status": "unavailable",
       "health_score": 10,
@@ -17914,7 +17929,7 @@
       "source_license_evidence": "LICENSE",
       "upstream_id": "vidnest-anime",
       "upstream_filename": "providers/vidnest-anime--published-baseline--c9e6c8085ab4e7b2.js",
-      "checked_at": "2026-08-10T23:58:42.770213+00:00",
+      "checked_at": "2026-08-11T00:54:49.823810+00:00",
       "check_mode": "deep",
       "check_status": "no_streams",
       "health_score": 10,
@@ -18135,7 +18150,7 @@
       "source_license_evidence": "LICENSE",
       "upstream_id": "vidrock",
       "upstream_filename": "providers/vidrock--published-baseline--f679614bf1f955dc.js",
-      "checked_at": "2026-08-10T23:58:42.770213+00:00",
+      "checked_at": "2026-08-11T00:54:49.823810+00:00",
       "check_mode": "deep",
       "check_status": "unavailable",
       "health_score": 10,
@@ -18343,15 +18358,16 @@
     },
     "vidsrc": {
       "id": "vidsrc",
-      "published_filename": "providers/vidsrc--nuvio--a337c2dd4fb3fe12.js",
-      "sha256": "a337c2dd4fb3fe12a591b2a880ab365902d1793e63601db6fd4fe68972cef46a",
-      "patched_sha256": "a337c2dd4fb3fe12a591b2a880ab365902d1793e63601db6fd4fe68972cef46a",
+      "published_filename": "providers/vidsrc--nuvio--0c46417dda89b5dd.js",
+      "sha256": "0c46417dda89b5dd823251ce934919ca8779ad6d553d242965aa5f194ed9222d",
+      "patched_sha256": "0c46417dda89b5dd823251ce934919ca8779ad6d553d242965aa5f194ed9222d",
       "upstream_sha256": "c83b23943f9783f2b57008fac62f5fd2a05fea0c826f4b1ca74d53198152b286",
       "local_patches": [
         {
           "type": "patch_script",
           "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
-          "phase": "discovery"
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
         },
         {
           "type": "patch_profile",
@@ -18406,7 +18422,7 @@
       "source_license_evidence": "https://github.com/NuvioPlugin/All-in-One-Nuvio#license",
       "upstream_id": "vidsrc",
       "upstream_filename": "providers/vidsrc.js",
-      "checked_at": "2026-08-10T23:58:42.770213+00:00",
+      "checked_at": "2026-08-11T00:54:49.823810+00:00",
       "check_mode": "deep",
       "check_status": "healthy",
       "health_score": 82,
@@ -18639,7 +18655,8 @@
         {
           "type": "patch_script",
           "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
-          "phase": "discovery"
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
         }
       ],
       "source": "aio",
@@ -18649,10 +18666,10 @@
       "source_license_evidence": "https://github.com/NuvioPlugin/All-in-One-Nuvio#license",
       "upstream_id": "vixsrc",
       "upstream_filename": "providers/vixsrc.js",
-      "checked_at": "2026-08-10T23:58:42.770213+00:00",
+      "checked_at": "2026-08-11T00:54:49.823810+00:00",
       "check_mode": "deep",
       "check_status": "healthy",
-      "health_score": 86,
+      "health_score": 94,
       "activation_eligible": true,
       "strict_activation_eligible": true,
       "strict_grace_eligible": false,
@@ -18676,7 +18693,7 @@
         },
         "03_minimum_score": {
           "passed": true,
-          "evidence": 86,
+          "evidence": 94,
           "threshold": 70
         },
         "04_fixture_and_type_coverage": {
@@ -18826,7 +18843,7 @@
         "language_group": "vostfr",
         "language_tier": 1,
         "quality_height": 1080,
-        "health_score": 86,
+        "health_score": 94,
         "manifest_curation_score": 8,
         "provider_server_successful_response": true,
         "observed_language_modes": [
@@ -18850,8 +18867,8 @@
         "eligible": false,
         "reason": "disabled_by_current_proof_policy"
       },
-      "strict_consecutive_deep_passes": 1,
-      "strict_total_deep_passes": 1
+      "strict_consecutive_deep_passes": 2,
+      "strict_total_deep_passes": 2
     },
     "voiranime": {
       "id": "voiranime",
@@ -18878,7 +18895,7 @@
       "source_license_evidence": "LICENSE",
       "upstream_id": "voiranime",
       "upstream_filename": "providers/voiranime--published-baseline--5968627d7b5aabbb.js",
-      "checked_at": "2026-08-10T23:58:42.770213+00:00",
+      "checked_at": "2026-08-11T00:54:49.823810+00:00",
       "check_mode": "deep",
       "check_status": "unavailable",
       "health_score": 10,
@@ -19104,7 +19121,7 @@
       "source_license_evidence": "LICENSE",
       "upstream_id": "voiranime-homes",
       "upstream_filename": "providers/voiranime-homes--published-baseline--59bd1142612315c6.js",
-      "checked_at": "2026-08-10T23:58:42.770213+00:00",
+      "checked_at": "2026-08-11T00:54:49.823810+00:00",
       "check_mode": "deep",
       "check_status": "no_streams",
       "health_score": 10,
@@ -19254,6 +19271,7 @@
             "provider_server_successful_response": true,
             "provider_server_hosts": [
               "arm.haglund.dev",
+              "luluvdo.com",
               "v3-cinemeta.strem.io",
               "vidhsareup.fun",
               "vidzy.live",
@@ -19261,7 +19279,7 @@
             ],
             "provider_server_http_statuses": [
               200,
-              429
+              403
             ]
           },
           "threshold": {
@@ -19335,7 +19353,7 @@
       "source_license_evidence": "LICENSE",
       "upstream_id": "VOIRANIME-RIP",
       "upstream_filename": "providers/voiranime-rip--published-baseline--cbf14d7c8fe2e76e.js",
-      "checked_at": "2026-08-10T23:58:42.770213+00:00",
+      "checked_at": "2026-08-11T00:54:49.823810+00:00",
       "check_mode": "deep",
       "check_status": "degraded",
       "health_score": 75,
@@ -19574,7 +19592,7 @@
       "source_license_evidence": "LICENSE",
       "upstream_id": "vostfree",
       "upstream_filename": "providers/vostfree--published-baseline--8e9b00d7aff4dd9a.js",
-      "checked_at": "2026-08-10T23:58:42.770213+00:00",
+      "checked_at": "2026-08-11T00:54:49.823810+00:00",
       "check_mode": "deep",
       "check_status": "blocked",
       "health_score": 10,
@@ -19794,7 +19812,7 @@
       "source_license_evidence": "LICENSE",
       "upstream_id": "waveanime",
       "upstream_filename": "providers/waveanime--published-baseline--a86be403232085ee.js",
-      "checked_at": "2026-08-10T23:58:42.770213+00:00",
+      "checked_at": "2026-08-11T00:54:49.823810+00:00",
       "check_mode": "deep",
       "check_status": "blocked",
       "health_score": 10,
@@ -20021,7 +20039,7 @@
       "source_license_evidence": "LICENSE",
       "upstream_id": "wookafr",
       "upstream_filename": "providers/wookafr--published-baseline--ccd4f619dc1f34dd.js",
-      "checked_at": "2026-08-10T23:58:42.770213+00:00",
+      "checked_at": "2026-08-11T00:54:49.823810+00:00",
       "check_mode": "deep",
       "check_status": "no_streams",
       "health_score": 20,
@@ -20255,7 +20273,7 @@
       "source_license_evidence": "LICENSE",
       "upstream_id": "xpass",
       "upstream_filename": "providers/xpass--published-baseline--1a52ff73a08b73fc.js",
-      "checked_at": "2026-08-10T23:58:42.770213+00:00",
+      "checked_at": "2026-08-11T00:54:49.823810+00:00",
       "check_mode": "deep",
       "check_status": "blocked",
       "health_score": 10,
@@ -20478,7 +20496,7 @@
       "source_license_evidence": "LICENSE",
       "upstream_id": "yflix",
       "upstream_filename": "providers/yflix--published-baseline--ca1223b5ee78c12b.js",
-      "checked_at": "2026-08-10T23:58:42.770213+00:00",
+      "checked_at": "2026-08-11T00:54:49.823810+00:00",
       "check_mode": "deep",
       "check_status": "no_streams",
       "health_score": 10,
@@ -20702,7 +20720,7 @@
       "source_license_evidence": "LICENSE",
       "upstream_id": "zinkmovies",
       "upstream_filename": "providers/zinkmovies--published-baseline--5989f97be6cce82a.js",
-      "checked_at": "2026-08-10T23:58:42.770213+00:00",
+      "checked_at": "2026-08-11T00:54:49.823810+00:00",
       "check_mode": "deep",
       "check_status": "no_streams",
       "health_score": 10,

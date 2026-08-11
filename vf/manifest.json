@@ -1,6 +1,6 @@
 {
   "name": "Nuvio Curated Providers — VF uniquement",
-  "version": "5.20.32",
+  "version": "5.20.33",
   "scrapers": [
     {
       "id": "ANIME-SAMA",
@@ -30,14 +30,14 @@
       "id": "PURSTREAM",
       "name": "Purstream",
       "description": "Films and series in French (VF) / subtitled French (VOSTFR) / multi-language (MULTI) from purstream.art.",
-      "version": "3.0.8",
+      "version": "3.0.9",
       "author": "wooodyhood",
       "supportedTypes": [
         "movie",
         "tv",
         "anime"
       ],
-      "filename": "../providers/purstream--runtime-compat-v4--8e0dc3368ad20f14.js",
+      "filename": "../providers/purstream--nuvio--b6db4ba4066f1859.js",
       "enabled": true,
       "hasSettings": true,
       "formats": [
@@ -50,6 +50,30 @@
         "fr"
       ],
       "disabledPlatforms": []
+    },
+    {
+      "id": "FLEMMIX",
+      "name": "Flemmix",
+      "description": "Films et séries en streaming VF/VOSTFR sur Flemmix.",
+      "version": "1.0.33",
+      "author": "Gowaru",
+      "supportedTypes": [
+        "movie",
+        "tv"
+      ],
+      "filename": "../providers/flemmix--nuvio--ac031571352efca6.js",
+      "enabled": true,
+      "logo": "https://flemmix.men/favicon.ico",
+      "contentLanguage": [
+        "fr"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "limited": false,
+      "disabledPlatforms": [],
+      "supportsExternalPlayer": true
     },
     {
       "id": "GOATED",
@@ -80,30 +104,6 @@
       "disabledPlatforms": []
     },
     {
-      "id": "FLEMMIX",
-      "name": "Flemmix",
-      "description": "Films et séries en streaming VF/VOSTFR sur Flemmix.",
-      "version": "1.0.33",
-      "author": "Gowaru",
-      "supportedTypes": [
-        "movie",
-        "tv"
-      ],
-      "filename": "../providers/flemmix--nuvio--ac031571352efca6.js",
-      "enabled": true,
-      "logo": "https://flemmix.men/favicon.ico",
-      "contentLanguage": [
-        "fr"
-      ],
-      "formats": [
-        "mp4",
-        "m3u8"
-      ],
-      "limited": false,
-      "disabledPlatforms": [],
-      "supportsExternalPlayer": true
-    },
-    {
       "id": "PAPADUSTREAM",
       "name": "Papadustream",
       "description": "Films et séries TV en streaming HLS via Papadustream.",
@@ -122,30 +122,6 @@
       ],
       "formats": [
         "m3u8"
-      ],
-      "limited": false,
-      "disabledPlatforms": [],
-      "supportsExternalPlayer": false
-    },
-    {
-      "id": "ANIMEVOSTFR",
-      "name": "AnimeVOSTFR",
-      "description": "Animes VF et VOSTFR en streaming gratuit sur AnimeVOSTFR.",
-      "version": "1.1.53",
-      "author": "Gowaru",
-      "supportedTypes": [
-        "anime",
-        "movie"
-      ],
-      "filename": "../providers/animevostfr--published-baseline--58a0339f7ffc0402.js",
-      "enabled": true,
-      "logo": "https://animevostfr.org/wp-content/uploads/luffy-icon.jpg",
-      "contentLanguage": [
-        "fr"
-      ],
-      "formats": [
-        "mp4",
-        "mkv"
       ],
       "limited": false,
       "disabledPlatforms": [],
@@ -201,30 +177,6 @@
       "supportsExternalPlayer": false
     },
     {
-      "id": "VOIRANIME-RIP",
-      "name": "VoirAnime.rip",
-      "description": "Animes VF et VOSTFR en streaming sur VoirAnime.rip (site DLE).",
-      "version": "1.0.20",
-      "author": "Gowaru",
-      "supportedTypes": [
-        "anime",
-        "movie"
-      ],
-      "filename": "../providers/voiranime-rip--published-baseline--45b238cff4ef7815.js",
-      "enabled": true,
-      "logo": "https://voiranime.rip/img/icon.png",
-      "contentLanguage": [
-        "fr"
-      ],
-      "formats": [
-        "mp4",
-        "m3u8"
-      ],
-      "limited": false,
-      "disabledPlatforms": [],
-      "supportsExternalPlayer": false
-    },
-    {
       "id": "ANIMESULTRA",
       "name": "AnimesUltra",
       "description": "Animes en streaming VOSTFR et VF.",
@@ -237,6 +189,30 @@
       "filename": "../providers/animesultra--published-baseline--837b87bfe4d21b55.js",
       "enabled": true,
       "logo": "https://animesultra.org/templates/animeultra/images/favicon.ico",
+      "contentLanguage": [
+        "fr"
+      ],
+      "formats": [
+        "mp4",
+        "mkv"
+      ],
+      "limited": false,
+      "disabledPlatforms": [],
+      "supportsExternalPlayer": false
+    },
+    {
+      "id": "ANIMEVOSTFR",
+      "name": "AnimeVOSTFR",
+      "description": "Animes VF et VOSTFR en streaming gratuit sur AnimeVOSTFR.",
+      "version": "1.1.53",
+      "author": "Gowaru",
+      "supportedTypes": [
+        "anime",
+        "movie"
+      ],
+      "filename": "../providers/animevostfr--published-baseline--58a0339f7ffc0402.js",
+      "enabled": true,
+      "logo": "https://animevostfr.org/wp-content/uploads/luffy-icon.jpg",
       "contentLanguage": [
         "fr"
       ],
@@ -452,6 +428,30 @@
       "supportsExternalPlayer": false
     },
     {
+      "id": "VOIRANIME-RIP",
+      "name": "VoirAnime.rip",
+      "description": "Animes VF et VOSTFR en streaming sur VoirAnime.rip (site DLE).",
+      "version": "1.0.20",
+      "author": "Gowaru",
+      "supportedTypes": [
+        "anime",
+        "movie"
+      ],
+      "filename": "../providers/voiranime-rip--published-baseline--45b238cff4ef7815.js",
+      "enabled": true,
+      "logo": "https://voiranime.rip/img/icon.png",
+      "contentLanguage": [
+        "fr"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "limited": false,
+      "disabledPlatforms": [],
+      "supportsExternalPlayer": false
+    },
+    {
       "id": "VOSTFREE",
       "name": "Vostfree",
       "description": "Animes VF et VOSTFR en streaming et téléchargement.",
@@ -500,37 +500,16 @@
       "supportsExternalPlayer": false
     },
     {
-      "id": "MOVIESHUNT",
-      "name": "🎬 MoviesHunt",
-      "description": "Hollywood & Bollywood Movies in Multi Language",
-      "version": "1.0.7",
-      "author": "piratezoro9",
-      "supportedTypes": [
-        "movie"
-      ],
-      "filename": "../providers/movieshunt--nuvio--7c9f8b996eec8462.js",
-      "enabled": false,
-      "hasSettings": false,
-      "formats": [
-        "m3u8"
-      ],
-      "logo": "https://i.postimg.cc/3Rc34LJj/movieshunt.png",
-      "contentLanguage": [
-        "hi",
-        "en"
-      ]
-    },
-    {
       "id": "1shows",
       "name": "1Shows",
       "description": "1Shows- Movies | Series in 4k, 1080p, 720p & 480p",
-      "version": "1.0.1",
+      "version": "1.0.2",
       "author": "A2R14N - Nuvio Team",
       "supportedTypes": [
         "movie",
         "tv"
       ],
-      "filename": "../providers/1shows--nuvio--fd18f166be5a57ad.js",
+      "filename": "../providers/1shows--nuvio--7ca7b969590ced85.js",
       "enabled": false,
       "hasSettings": false,
       "formats": [
@@ -548,13 +527,13 @@
       "id": "VIDSRC",
       "name": "VidSrc",
       "description": "Vidsrc - The best place to watch movies and TV shows online for free. Stream in 1080p HD",
-      "version": "1.0.5",
+      "version": "1.0.6",
       "author": "Nuvio Team",
       "supportedTypes": [
         "movie",
         "tv"
       ],
-      "filename": "../providers/vidsrc--nuvio--a337c2dd4fb3fe12.js",
+      "filename": "../providers/vidsrc--nuvio--0c46417dda89b5dd.js",
       "enabled": false,
       "hasSettings": true,
       "formats": [
@@ -567,40 +546,16 @@
       ]
     },
     {
-      "id": "animoflix",
-      "name": "AnimoFlix",
-      "description": "Regarder des animes VF et VOSTFR gratuitement sur AnimoFlix.",
-      "version": "1.0.17",
-      "author": "Gowaru",
-      "supportedTypes": [
-        "anime",
-        "movie"
-      ],
-      "filename": "../providers/animoflix--published-baseline--1dc3f3fe1c16de54.js",
-      "enabled": false,
-      "logo": "https://animoflix.to/img/logo.png",
-      "contentLanguage": [
-        "fr"
-      ],
-      "formats": [
-        "mp4",
-        "mkv"
-      ],
-      "limited": false,
-      "disabledPlatforms": [],
-      "supportsExternalPlayer": false
-    },
-    {
       "id": "SEKAI",
       "name": "Sekai",
       "description": "Fournisseur spécialisé sur les gros animes. Streams directs très rapides sans iFrames.",
-      "version": "1.0.28",
+      "version": "1.0.29",
       "author": "Gowaru",
       "supportedTypes": [
         "anime",
         "movie"
       ],
-      "filename": "../providers/sekai--nuvio--0dfa4b6d312806b5.js",
+      "filename": "../providers/sekai--nuvio--c64948af5e15e780.js",
       "enabled": false,
       "logo": "https://sekai.one/favicon.ico",
       "contentLanguage": [
@@ -620,12 +575,12 @@
       "id": "ALLANIME",
       "name": "AllAnime",
       "description": "AllAnime - Anime and Manga content streaming",
-      "version": "1.0.8",
+      "version": "1.0.9",
       "author": "",
       "supportedTypes": [
         "anime"
       ],
-      "filename": "../providers/allanime--nuvio--c2b3ff909e2d0f02.js",
+      "filename": "../providers/allanime--nuvio--6a848fc2b5084682.js",
       "enabled": false,
       "hasSettings": true,
       "formats": [
@@ -643,13 +598,13 @@
       "id": "cinefreak",
       "name": "CineFreak",
       "description": "Direct MKV streams from cinefreak.nl",
-      "version": "1.0.4",
+      "version": "1.0.5",
       "author": "piratezoro9",
       "supportedTypes": [
         "movie",
         "tv"
       ],
-      "filename": "../providers/cinefreak--nuvio--a6c9f1d51b8d6b13.js",
+      "filename": "../providers/cinefreak--nuvio--985ef45e184fe15a.js",
       "enabled": false,
       "hasSettings": true,
       "formats": [
@@ -681,6 +636,30 @@
       ],
       "formats": [
         "mp4"
+      ],
+      "limited": false,
+      "disabledPlatforms": [],
+      "supportsExternalPlayer": false
+    },
+    {
+      "id": "animoflix",
+      "name": "AnimoFlix",
+      "description": "Regarder des animes VF et VOSTFR gratuitement sur AnimoFlix.",
+      "version": "1.0.17",
+      "author": "Gowaru",
+      "supportedTypes": [
+        "anime",
+        "movie"
+      ],
+      "filename": "../providers/animoflix--published-baseline--1dc3f3fe1c16de54.js",
+      "enabled": false,
+      "logo": "https://animoflix.to/img/logo.png",
+      "contentLanguage": [
+        "fr"
+      ],
+      "formats": [
+        "mp4",
+        "mkv"
       ],
       "limited": false,
       "disabledPlatforms": [],

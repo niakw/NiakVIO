@@ -216,6 +216,7 @@ function _0x506c(){var _0x3aa6ed=['AxrLBxm','l3nLyxjJAc1IyxiVC2vHCMnOlW','jMXHBM
     }
   }catch(_error){}
 })(typeof globalThis!=="undefined"?globalThis:this,{"patchRevision":4,"normalizeMissingEpisodes":true,"fallbackSeason":1,"fallbackEpisode":1,"filterEpisodeLabels":false,"maxSeriesStreams":0,"domainReplacements":{},"domainFailover":{"hostPrefixes":["api.purstream","purstream"],"suffixes":["club","mx","ch","ac","cx","art","co","me","to","store"]}});
+
 /* NUVIO_PURSTREAM_BRIDGE_V1 */
 ;(function(g){
  function media(a){var o=a[0]&&typeof a[0]==="object"?a[0]:{},e=a[4]||{};return{id:o.tmdbId||o.id||a[0],type:(o.mediaType||o.type||a[1])==="tv"?"tv":"movie",season:Number(o.season||a[2])||1,episode:Number(o.episode||a[3])||1,title:o.title||o.label||e.title||e.label||""}}
