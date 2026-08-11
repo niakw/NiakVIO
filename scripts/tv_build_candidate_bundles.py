@@ -13,7 +13,7 @@ MANIFEST = ROOT / "manifest.json"
 
 PATCHES: dict[str, list[tuple[str, dict[str, Any]]]] = {
     "purstream": [
-        ("scripts/provider_patches/purstream_exact_tv_v2.py", {}),
+        ("scripts/provider_patches/purstream_tv_identity_v3.py", {"duration_tolerance": 0.35, "timeout_ms": 7000, "max_probes": 3}),
     ],
     "papadustream": [
         ("scripts/provider_patches/papadustream_anime_tv_v1.py", {}),
@@ -31,6 +31,7 @@ PATCHES: dict[str, list[tuple[str, dict[str, Any]]]] = {
         ("scripts/provider_patches/nuvio_tv_playable_first_v1.py", {"max_probes": 8, "timeout_ms": 6500}),
     ],
     "streamzo": [
+        ("scripts/provider_patches/streamzo_source_identity_v2.py", {"base_url": "https://streamzo.fr", "timeout_ms": 6500}),
         ("scripts/provider_patches/nuvio_tv_playable_first_v1.py", {"max_probes": 8, "timeout_ms": 6500}),
     ],
 }
