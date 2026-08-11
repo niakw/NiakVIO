@@ -5,6 +5,8 @@ a062d66844de4e399924f13739309fcd6fa478edca7a6733ba2f9bdb85b9f45d  ./.github/ISSU
 8fdbc18bc1b989206d41410251b7a95dc9acd0dae39ddef0b00f7cc844621808  ./.github/dependabot.yml
 143c6de52129d5e1e17c699213679a4c52f9254fbde76f31e418e4d36d3d4daf  ./.github/triggers/deep-provider-repair
 f00850cf2b8320efcfc27300f741abeee9c867868196c839ff207da573162b91  ./.github/triggers/domain-refresh
+9c7cc4e011f5707016d26342f8471afe6d878d29f23ee848a95ebe6811b4b497  ./.github/triggers/finalize-source-integrity
+db809525d320cbdce6089db7bad05c2f3905c9adfb07fe0d861367a294dfb6ce  ./.github/triggers/make-sync-transactional
 1c9287e8e9a74fc809d378f68ddbdc1247f104bc2e5c97a6e1f1a45c369b9a43  ./.github/triggers/playback-integrity-upgrade
 4317e6879515acdac35d3723d3aa748cd34455717847ef2acda49c067b2650c9  ./.github/triggers/publish-playback-integrity-v2
 213e429e93f660cb3e83f6f6002cd142b93478cf861854c85c4af4bc3ce91a52  ./.github/triggers/query-current-actions-main
@@ -12,16 +14,18 @@ c72b286be2ccdcaacd8ebcf9ca0f8517cc0649be86980647adbe15116ff96ea4  ./.github/work
 2e3a71c8ba124d22d370495bd72f839f58e505afeba0c0a9a6ca40dadea617d0  ./.github/workflows/audit-catalogue-media-once.yml
 4c7b60bb2b643e406e6d1b7a2013ba2c3dc58f6ef4c63b60221ff48d11626a00  ./.github/workflows/availability.yml
 77ae07213e4ab62f66d5fb2910a5bbd82a113225a10f4a150e7a33eda72ac349  ./.github/workflows/domain-refresh.yml
+3f1aff2243ea53f5e3395dc8bbc9bfc979b78ade4240fdcdf1e2221bef8cc6e3  ./.github/workflows/finalize-source-integrity-once.yml
+1b1d795ea0d04e154c26e3fe874cae823783f114133c32ab3f0166daeb53d298  ./.github/workflows/make-sync-transactional.yml
 11ca4389c495b60b64e175a42934af88493399a3df1b44a014c32732dc74bbd9  ./.github/workflows/publish-playback-integrity-v2.yml
 320dddfaf2874c090f42b3027f790f4f87313f1835f2cc20ad01c58cfb5dfbc8  ./.github/workflows/query-current-actions-once.yml
-02557a3490cb574993706caffb39095af3086a5a0f57b418353c7096d13d10ce  ./.github/workflows/sync.yml
+492fdf017bd4afc517871343839d70c07483a8ce31636bd5ce342157e1fa0b1f  ./.github/workflows/sync.yml
 67060e77500594c34e8e7b7519e747765cc4c9a507926de3e3dec35be975a66d  ./.github/workflows/validate-desktop-runtime-compat.yml
 84d97db07b65f280f02f2c58d1c199b921190f055ee43bb46d30ee8b445fc127  ./.gitignore
 80a5c44250fc75b2b6b27a82861befbd85f4900483f5ce1899700f5d5f9f0e54  ./CHANGELOG.md
 8bb1e4f0f8a8c1364d178e88fed64dedbf21b5fa93b39f1bc36d2241a05fc806  ./CODE_OF_CONDUCT.md
 58ca683b1a378bf0df7a03851bb3ccb807f6aa8e897491e5ae492d5debe11934  ./CONTRIBUTING.md
 956d54af42f7b1940d317ab5c6104e1f463aab04496ebe2514e6de3c86cf4adc  ./DISCLAIMER.md
-7234a349013783c5a3b8d43336414338f2d1f9f9a7871dd471b12941ca6cfb1e  ./FILE-HASHES.json
+a0bc91416e920ca0ca98974482a5942a519dec05479b69cd5952801aab17697c  ./FILE-HASHES.json
 e6e2c7c8cc5ae6304bf0ff13ea34d3c1d5b4916b1ffb146dc00a88b67e64162b  ./FILES-TO-UPLOAD.txt
 d2346459073bdd6996ec31b320737d2fb8fdada8b50ba9a91daa3d1c7e439ba3  ./FILES_INCLUDED.txt
 07aef56c3f28db476407e8cf273449f96b96847b7ea619dd87e3d32ec75a213f  ./FILES_TO_DELETE_AFTER_COPY.txt
@@ -40,7 +44,7 @@ c2b82ce22dc51ab3298f23dc8cb38ad38efd7f9d2beb398eb45d502a3b37e13b  ./RELEASE-5.20
 c27713e8f740c3e88f2003d8f4407288a323bc977d61202ae96e0e9652898424  ./RUN-LOCAL-GLOBAL-REPAIR.command
 7f825e11cf2ab9a89f43d9e13451117b5caebbba5b5b1ac08c530e5d12838836  ./SECURITY.md
 3d8e32a18c34de2abebca6a8aa1bba60d066e886982b8863c103a1c0c81157a4  ./SELECTION.md
-b1edec83abda05272d06bc61aa6072d36209a6e20bd8a1fbcb1118147334db90  ./SHA256SUMS.json
+422ff07f264a4866e882fa2d01b2cfe52fc2f3dd1cf9ec0dc499f617a77c8b65  ./SHA256SUMS.json
 a511c14b47c10b13367f878d7710f0e1d95bc5b615e63a3c9d14f5225f83f191  ./THIRD_PARTY_NOTICES.md
 f2f73277723038134a9bf00965774124053de8df438f6ba3f0f0752b03f7d607  ./UPSTREAMS.md
 73531e259816df4ca58330c672c6a1ecfb86fc11a332ade361d7a80bb5e07d12  ./VALIDATION.json
@@ -82,7 +86,7 @@ ec159025089c4d0961f8b92afe79df7338ee1c5dcb617558ebf0f80c2fb87805  ./health-histo
 5fa050376255376ba0a16b578fdafa66f31e28f5abd2f2977c074277a4945602  ./manifest.json
 32dfe955a95bd79b34b2e64554721b1f0907110cf87d295f28fc7470bedc70dc  ./nuvio-client-id-state.json
 b93ceb05c87327981671ffa4f1dcbaf04b1609700f66f56a315ecca9539a940f  ./package-lock.json
-1c7a7bbee38b91fc31135276069059857c522d63ebf5bfe680bbaa9b8b55188b  ./package.json
+d128576cdeebcae4ee87f4e5aa73e69dc2eb575c05eedf10aa47854c188df682  ./package.json
 0371751f2f0238fc106444bea7abe8c686d18a700c323de21938f02ea25712c8  ./provider-activation-lkg.json
 de4e0a3d5562e1dda3ebb5c25b562431f2dc0262f050bb7335fa5369204abf6d  ./provider-domain-history.json
 4dac3a7094c40ca8cf8dc43b537d5685a52fa69b96da19dd753c6e28e12fe065  ./provider-hub-report.json
@@ -384,6 +388,7 @@ ac46fa96eadd0f67bd4eafc612eae53481c39b8ea7b4090c58051bc53ca0a3e1  ./tests/remove
 a2ee10c5ba032d8bf0fce3a08b27f6c39cfe0bff66457ebd53e792572939e0ae  ./tests/runtime_repair_test.py
 9c52d6b523fb54af31a0a6db2161e224ae85488218bef4037d62a427a35885da  ./tests/short_hls_preview_guard_test.py
 4ebb4d1e34dc9001c7e55439dbc7868ac9c8a67c2e74e4d45bdfd827c13ccfb1  ./tests/stream_output_sanitizer_reconfiguration_test.py
+aa3647b72f8d68ad5f049cf860dba1fea44335540128d8990bf3c60ab5cccac7  ./tests/sync_atomic_publication_test.py
 69ac977a71fa10a901169ba4549f23d4722687dff98f6bb61b2ddccb4cb15887  ./tests/targeted_vf_catalogue_adapters_test.py
 e8cc98c497393b0945bb010944145997833d5726bef732a7613cffc1fdc9eab7  ./tests/targeted_vf_repair_config_test.py
 e033ae54b3d4a16c8771758478b3d2541711e8b7404b1fba0d08c34b8c2b2cac  ./tests/upstream_lkg_test.py
