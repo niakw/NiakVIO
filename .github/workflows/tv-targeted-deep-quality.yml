@@ -84,11 +84,12 @@ jobs:
       - name: Assert exact Breaking Bad VF and activation gates
         run: |
           python - <<'PY'
-          import importlib.util,json
+          import importlib.util,json,sys
           from pathlib import Path
           d=json.load(open('health-output/health-results.json'))
           rows=d.get('results') or d.get('providers') or []
           cfg=json.load(open('health-config.json'))
+          sys.path.insert(0,str(Path('scripts').resolve()))
           spec=importlib.util.spec_from_file_location('promote_candidates',Path('scripts/promote_candidates.py'))
           mod=importlib.util.module_from_spec(spec); spec.loader.exec_module(mod)
           wanted=('purstream','1shows','vidsrc')
