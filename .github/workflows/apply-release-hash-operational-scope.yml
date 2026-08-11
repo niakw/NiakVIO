@@ -1,0 +1,122 @@
+name: Apply release hash operational scope once
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/triggers/apply-release-hash-operational-scope"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-hash-operational-scope-once
+  cancel-in-progress: false
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout current main
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: "3.12"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: "24"
+          package-manager-cache: false
+
+      - name: Install pinned dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Apply deterministic release hash scope migration
+        run: python scripts/repair_release_hash_operational_scope.py
+
+      - name: Validate focused hash scope contract
+        run: python tests/release_hash_scope_test.py
+
+      - name: Remove one-shot harness before final inventory
+        shell: bash
+        run: |
+          git rm scripts/repair_release_hash_operational_scope.py \
+            .github/workflows/apply-release-hash-operational-scope.yml \
+            .github/triggers/apply-release-hash-operational-scope
+
+      - name: Run complete repository regression suite
+        run: npm test
+
+      - name: Prove mutable CI telemetry does not perturb release hashes
+        shell: bash
+        run: |
+          sha256sum FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json > /tmp/release-hashes-before.txt
+          cp .github/ci-status/current-runs.json /tmp/current-runs.json
+          cp .github/triggers/query-current-actions-main /tmp/query-current-actions-main
+          printf '\n{"synthetic_post_push_probe":true}\n' >> .github/ci-status/current-runs.json
+          printf '\nsynthetic-post-push-probe\n' >> .github/triggers/query-current-actions-main
+          python scripts/generate_release_hashes.py
+          sha256sum FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json > /tmp/release-hashes-after.txt
+          diff -u /tmp/release-hashes-before.txt /tmp/release-hashes-after.txt
+          cp /tmp/current-runs.json .github/ci-status/current-runs.json
+          cp /tmp/query-current-actions-main .github/triggers/query-current-actions-main
+          python scripts/validate_release_integrity.py
+
+      - name: Commit validated durable scope change
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add scripts/generate_release_hashes.py tests/release_hash_scope_test.py \
+            FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json
+          git add -u scripts/repair_release_hash_operational_scope.py \
+            .github/workflows/apply-release-hash-operational-scope.yml \
+            .github/triggers/apply-release-hash-operational-scope
+          git commit -m "fix: exclude mutable CI telemetry from release hashes"
+          git reset --hard HEAD
+          git clean -fdx
+          git fetch origin main
+          git rebase origin/main
+          git push origin HEAD:main
+
+      - name: Reproduce exact post-push verification on published main
+        shell: bash
+        run: |
+          git fetch origin main
+          git reset --hard origin/main
+          git clean -fdx
+          npm ci --ignore-scripts --no-audit --no-fund
+          npm test
+          python scripts/validate_activation_preservation.py
+          python scripts/validate_language_projection.py
+          python scripts/validate_release_integrity.py
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          def load(name):
+              return json.loads(Path(name).read_text(encoding="utf-8"))
+          package = load("package.json")
+          lock = load("package-lock.json")
+          manifest = load("manifest.json")
+          vf = load("vf/manifest.json")
+          versions = {
+              "package.json": package.get("version"),
+              "package-lock.json": lock.get("version"),
+              "package-lock.json packages['']": (lock.get("packages") or {}).get("", {}).get("version"),
+              "manifest.json": manifest.get("version"),
+              "vf/manifest.json": vf.get("version"),
+          }
+          unique = {str(value) for value in versions.values()}
+          if len(unique) != 1:
+              raise SystemExit(f"final published release version mismatch: {versions}")
+          print(f"exact post-push release version synchronization passed: {unique.pop()}")
+          PY
+          git diff --exit-code
+          echo "exact post-push verification passed"
