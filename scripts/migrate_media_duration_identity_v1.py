@@ -115,10 +115,16 @@ function parseMp4MovieDurationSeconds(body) {
         }
       }
 '''
-    if new_direct not in source:
-        if old_direct not in source:
-            raise SystemExit('health_check.mjs direct MP4 inspection anchor not found')
-        source = source.replace(old_direct, new_direct, 1)
+    direct_duration_already_applied = (
+        'function parseMp4MovieDurationSeconds(body)' in source
+        and 'mediaDurationSeconds = parseMp4MovieDurationSeconds(result.body);' in source
+        and 'mediaDurationSeconds == null' in source
+    )
+    if not direct_duration_already_applied:
+        if new_direct not in source:
+            if old_direct not in source:
+                raise SystemExit('health_check.mjs direct MP4 inspection anchor not found')
+            source = source.replace(old_direct, new_direct, 1)
 
     subtitle_anchor = '''    const acceptedSubtitleEntries = advertisedSubtitleEntries.filter((subtitle) => {
 '''
