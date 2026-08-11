@@ -34,6 +34,52 @@ with tempfile.TemporaryDirectory() as tmp:
     assert result.returncode == 0, result.stderr + result.stdout
     assert not (root/'providers/movix.js').exists()
 
+# During a two-phase publication transaction, a bundle can be absent from the
+# pending manifest while still being authoritative through the published
+# manifest, LKG or provenance. Validation must never delete such a bundle just
+# because it still contains an old domain; prune owns deletion after all
+# references converge. Regression: Coflix was deleted after strict validation,
+# then the manifest transaction failed because provenance/LKG still referenced
+# the deleted content-addressed bundle.
+with tempfile.TemporaryDirectory() as tmp:
+    root = Path(tmp)
+    (root/'providers').mkdir()
+    (root/'provider-overrides.json').write_text(json.dumps({
+        'domain_replacements': {},
+        'provider_patches': {
+            'coflix': {'replacements': {'old.example':'new.example'}}
+        },
+        'patch_profiles': {}
+    }))
+    pending = root/'providers/coflix--nuvio--pending.js'
+    pending.write_text('const x="new.example";')
+    protected = root/'providers/coflix--nuvio--48239f7b107a98b2.js'
+    protected.write_text('const x="old.example";')
+    (root/'manifest.next.json').write_text(json.dumps({'scrapers':[
+        {'id':'coflix','filename':'providers/coflix--nuvio--pending.js'}
+    ]}))
+    (root/'manifest.json').write_text(json.dumps({'scrapers':[
+        {'id':'coflix','filename':'providers/coflix--nuvio--48239f7b107a98b2.js'}
+    ]}))
+    (root/'PROVENANCE.json').write_text(json.dumps({'providers':{
+        'coflix': {
+            'published_filename':'providers/coflix--nuvio--48239f7b107a98b2.js',
+            'canonical_source_filename':'providers/coflix--nuvio--48239f7b107a98b2.js',
+            'local_patches':[]
+        }
+    }}))
+    (root/'provider-lkg.json').write_text(json.dumps({'providers':{
+        'coflix': {'filename':'providers/coflix--nuvio--48239f7b107a98b2.js'}
+    }}))
+    script=(ROOT/'scripts/validate_published_overrides.py').read_text().replace(
+        'ROOT = Path(__file__).resolve().parents[1]', f'ROOT = Path({str(root)!r})')
+    test_script=root/'validate.py'; test_script.write_text(script)
+    (root/'override_text_utils.py').write_text((ROOT/'scripts/override_text_utils.py').read_text())
+    result=subprocess.run([sys.executable,str(test_script)],capture_output=True,text=True)
+    assert result.returncode == 0, result.stderr + result.stdout
+    assert protected.exists(), 'validator deleted a bundle still protected by the publication transaction'
+    assert pending.exists()
+
 # A provider id must not match a longer sibling id while removing stale files.
 # Regression: validating 4khdhub previously deleted 4khdhubnew because the
 # cleanup used the broad glob ``4khdhub*.js``.
