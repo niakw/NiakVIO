@@ -69,7 +69,7 @@ jobs:
           python - <<'PY'
           import json
           d=json.load(open('health-output/health-results.json'))
-          wanted={'frenchstream','streamzo','toflix','purstream','papadustream','4khdhubnew','animezey','vegamovies'}
+          wanted={'frenchstream','streamzo','toflix','purstream','papadustream','4khdhubnew','animezey','vegamovies','1shows','vidsrc'}
           for r in d.get('results',d.get('providers',[])):
               k=str(r.get('canonical_id') or r.get('id') or '').casefold()
               if k in wanted:
@@ -127,7 +127,7 @@ jobs:
         run: |
           python - <<'PY'
           import json
-          wanted={'frenchstream','streamzo','toflix','purstream','papadustream','4khdhubnew','animezey','vegamovies'}
+          wanted={'frenchstream','streamzo','toflix','purstream','papadustream','4khdhubnew','animezey','vegamovies','1shows','vidsrc'}
           h=json.load(open('health-report.json'))
           for r in h.get('providers',[]):
               k=str(r.get('id') or '').casefold()
@@ -153,8 +153,10 @@ jobs:
           python scripts/validate_language_projection.py
           NUVIO_CATALOGUE_AUDIT_OUTPUT=/tmp/tv-deep-catalogue-audit.json NUVIO_CATALOGUE_AUDIT_WORKERS=8 NUVIO_CATALOGUE_AUDIT_TIMEOUT=60 python scripts/audit_catalogue_identity_media.py
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
         with:
           name: tv-deep-proof-final-${{ github.run_id }}
+          if-no-files-found: warn
           path: |
             health-report.json
             manifest.json
