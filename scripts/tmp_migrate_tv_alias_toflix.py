@@ -7,6 +7,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 OVERRIDES = ROOT / "provider-overrides.json"
 TV_TEST = ROOT / "tests" / "tv_provider_hardening_test.py"
+VF_RECOVERY_TEST = ROOT / "tests" / "vf_recovery_profiles_test.py"
 AUDIT = ROOT / "scripts" / "audit_catalogue_identity_media.py"
 FIXTURE_TEST = ROOT / "tests" / "tv_catalogue_fixture_coverage_test.py"
 
@@ -72,6 +73,10 @@ def main() -> int:
         )
     TV_TEST.write_text(source, encoding="utf-8")
 
+    vf_test = VF_RECOVERY_TEST.read_text(encoding="utf-8")
+    vf_test = vf_test.replace(OLD_IDENTITY, NEW_IDENTITY)
+    VF_RECOVERY_TEST.write_text(vf_test, encoding="utf-8")
+
     audit = AUDIT.read_text(encoding="utf-8")
     if '"animated_movie_ninja_3"' not in audit:
         anchor = '    "impossible_movie": {\n'
@@ -79,9 +84,6 @@ def main() -> int:
         if anchor not in audit:
             raise SystemExit("audit fixture anchor missing")
         audit = audit.replace(anchor, fixture + anchor, 1)
-        # Keep the global audit bounded: exercise the animated/localized title on
-        # VF and known identity-sensitive providers, rather than adding another
-        # network probe to every movie provider on every deep publication.
         anchor2 = '        if is_vf and "anime" in types:\n            fixture_names.append("vf_mushoku_s01e01")\n'
         replacement2 = anchor2 + '        if "movie" in types and (is_vf or provider_id in SUSPECTS):\n            fixture_names.append("animated_movie_ninja_3")\n'
         if anchor2 not in audit:
