@@ -432,6 +432,21 @@ def main() -> int:
     if not strict["enabled"] or strict["activation_mode"] != "strict_current":
         raise AssertionError("a provider passing all ten gates was not strictly enabled")
 
+    # A current exact end-to-end strict pass is stronger evidence than an
+    # upstream manifest's editorial enabled=false flag. This prevents a healthy
+    # provider from disappearing without any failed Niakvio activation gate.
+    upstream_disabled_strict = copy.deepcopy(item)
+    upstream_disabled_strict["metadata"]["enabled"] = False
+    upstream_disabled_strict_result = decide(
+        module, activation, upstream_disabled_strict, strict_history(upstream_disabled_strict)
+    )
+    if not upstream_disabled_strict_result["enabled"]:
+        raise AssertionError("strict current proof did not override advisory upstream disabled state")
+    if not upstream_disabled_strict_result.get("upstream_disabled_overridden_by_current_strict_proof"):
+        raise AssertionError("upstream-disabled strict override was not explicitly reported")
+    if "upstream_disabled" in upstream_disabled_strict_result.get("activation_blockers", []):
+        raise AssertionError("proven provider retained a contradictory upstream_disabled blocker")
+
     no_deep_validation = decide(
         module,
         activation,

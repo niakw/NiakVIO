@@ -43,9 +43,7 @@
         "scripts/provider_patches/movix_multi_source.py",
         "scripts/provider_patches/vf_catalogue_recovery.py",
         "scripts/provider_patches/stream_output_sanitizer_v5.py",
-        "scripts/provider_patches/desktop_runtime_compat_v1.py",
-        "scripts/provider_patches/hls_master_audio_preserver_v1.py",
-        "scripts/provider_patches/hls_runtime_integrity_v1.py"
+        "scripts/provider_patches/desktop_runtime_compat_v1.py"
       ],
       "patch_script_options": {
         "scripts/provider_patches/stream_output_sanitizer_v5.py": {
@@ -89,10 +87,6 @@
         },
         "scripts/provider_patches/desktop_runtime_compat_v1.py": {
           "normalize_missing_episodes": true
-        },
-        "scripts/provider_patches/hls_runtime_integrity_v1.py": {
-          "timeout_ms": 6500,
-          "max_children": 2
         }
       },
       "official_hub": "https://movix.online/",
@@ -141,9 +135,7 @@
         "scripts/provider_patches/stream_output_sanitizer_v5.py",
         "scripts/provider_patches/frenchstream_dle_catalogue.py",
         "scripts/provider_patches/nuvio_tv_target_media_v4.py",
-        "scripts/provider_patches/desktop_runtime_compat_v1.py",
-        "scripts/provider_patches/hls_master_audio_preserver_v1.py",
-        "scripts/provider_patches/hls_runtime_integrity_v1.py"
+        "scripts/provider_patches/desktop_runtime_compat_v1.py"
       ],
       "patch_script_options": {
         "scripts/provider_patches/stream_output_sanitizer_v5.py": {
@@ -195,10 +187,6 @@
         },
         "scripts/provider_patches/desktop_runtime_compat_v1.py": {
           "normalize_missing_episodes": true
-        },
-        "scripts/provider_patches/hls_runtime_integrity_v1.py": {
-          "timeout_ms": 6500,
-          "max_children": 2
         }
       },
       "official_hub": "https://fstream.org/",
@@ -266,10 +254,6 @@
         },
         "scripts/provider_patches/desktop_runtime_compat_v1.py": {
           "normalize_missing_episodes": true
-        },
-        "scripts/provider_patches/hls_runtime_integrity_v1.py": {
-          "timeout_ms": 6500,
-          "max_children": 2
         }
       },
       "manifest_overrides": {
@@ -283,9 +267,7 @@
         "scripts/provider_patches/stream_output_sanitizer_v5.py",
         "scripts/provider_patches/streamzo_public_catalogue.py",
         "scripts/provider_patches/nuvio_tv_direct_media_v2.py",
-        "scripts/provider_patches/desktop_runtime_compat_v1.py",
-        "scripts/provider_patches/hls_master_audio_preserver_v1.py",
-        "scripts/provider_patches/hls_runtime_integrity_v1.py"
+        "scripts/provider_patches/desktop_runtime_compat_v1.py"
       ],
       "published_types": [
         "movie",
@@ -310,16 +292,6 @@
       "profiles": [],
       "manifest_overrides": {
         "disabledPlatforms": []
-      },
-      "patch_scripts": [
-        "scripts/provider_patches/hls_master_audio_preserver_v1.py",
-        "scripts/provider_patches/hls_runtime_integrity_v1.py"
-      ],
-      "patch_script_options": {
-        "scripts/provider_patches/hls_runtime_integrity_v1.py": {
-          "timeout_ms": 6500,
-          "max_children": 2
-        }
       }
     },
     "allmovieland": {
@@ -339,20 +311,10 @@
       "profiles": [],
       "official_hub": null,
       "official_site": "https://allmovieland.art",
-      "patch_script_options": {
-        "scripts/provider_patches/hls_runtime_integrity_v1.py": {
-          "timeout_ms": 6500,
-          "max_children": 2
-        }
-      },
       "required_values": [],
       "manifest_overrides": {
         "disabledPlatforms": []
-      },
-      "patch_scripts": [
-        "scripts/provider_patches/hls_master_audio_preserver_v1.py",
-        "scripts/provider_patches/hls_runtime_integrity_v1.py"
-      ]
+      }
     },
     "purstream": {
       "notes": [
@@ -369,9 +331,7 @@
         "anime"
       ],
       "patch_scripts": [
-        "scripts/provider_patches/desktop_runtime_compat_v1.py",
-        "scripts/provider_patches/hls_master_audio_preserver_v1.py",
-        "scripts/provider_patches/hls_runtime_integrity_v1.py"
+        "scripts/provider_patches/desktop_runtime_compat_v1.py"
       ],
       "patch_script_options": {
         "scripts/provider_patches/desktop_runtime_compat_v1.py": {
@@ -394,10 +354,6 @@
               "store"
             ]
           }
-        },
-        "scripts/provider_patches/hls_runtime_integrity_v1.py": {
-          "timeout_ms": 6500,
-          "max_children": 2
         }
       },
       "manifest_overrides": {
@@ -416,17 +372,7 @@
       ],
       "capability": "iframe_player",
       "preserve_embed_urls": true,
-      "profiles": [],
-      "patch_scripts": [
-        "scripts/provider_patches/hls_master_audio_preserver_v1.py",
-        "scripts/provider_patches/hls_runtime_integrity_v1.py"
-      ],
-      "patch_script_options": {
-        "scripts/provider_patches/hls_runtime_integrity_v1.py": {
-          "timeout_ms": 6500,
-          "max_children": 2
-        }
-      }
+      "profiles": []
     },
     "vixsrc": {
       "replacements": {
@@ -442,16 +388,6 @@
       "profiles": [],
       "manifest_overrides": {
         "disabledPlatforms": []
-      },
-      "patch_scripts": [
-        "scripts/provider_patches/hls_master_audio_preserver_v1.py",
-        "scripts/provider_patches/hls_runtime_integrity_v1.py"
-      ],
-      "patch_script_options": {
-        "scripts/provider_patches/hls_runtime_integrity_v1.py": {
-          "timeout_ms": 6500,
-          "max_children": 2
-        }
       }
     },
     "mallumv": {
@@ -486,20 +422,10 @@
       "profiles": [],
       "official_hub": "https://moviesdrives.mov/",
       "official_site": "https://new2.moviesdrive.christmas",
-      "patch_script_options": {
-        "scripts/provider_patches/hls_runtime_integrity_v1.py": {
-          "timeout_ms": 6500,
-          "max_children": 2
-        }
-      },
       "required_values": [],
       "manifest_overrides": {
         "disabledPlatforms": []
-      },
-      "patch_scripts": [
-        "scripts/provider_patches/hls_master_audio_preserver_v1.py",
-        "scripts/provider_patches/hls_runtime_integrity_v1.py"
-      ]
+      }
     },
     "coflix": {
       "replacements": {
@@ -579,10 +505,6 @@
           "blocked_hosts": [
             "fstream.top"
           ]
-        },
-        "scripts/provider_patches/hls_runtime_integrity_v1.py": {
-          "timeout_ms": 6500,
-          "max_children": 2
         }
       },
       "required_values": [],
@@ -599,9 +521,7 @@
         "scripts/provider_patches/vf_catalogue_recovery.py",
         "scripts/provider_patches/desktop_runtime_compat_v1.py",
         "scripts/provider_patches/nuvio_tv_target_media_v4.py",
-        "scripts/provider_patches/stream_output_sanitizer_v5.py",
-        "scripts/provider_patches/hls_master_audio_preserver_v1.py",
-        "scripts/provider_patches/hls_runtime_integrity_v1.py"
+        "scripts/provider_patches/stream_output_sanitizer_v5.py"
       ],
       "published_types": [
         "movie",
@@ -623,20 +543,10 @@
       "profiles": [],
       "official_hub": null,
       "official_site": "https://moviesmod.zone",
-      "patch_script_options": {
-        "scripts/provider_patches/hls_runtime_integrity_v1.py": {
-          "timeout_ms": 6500,
-          "max_children": 2
-        }
-      },
       "required_values": [],
       "manifest_overrides": {
         "disabledPlatforms": []
-      },
-      "patch_scripts": [
-        "scripts/provider_patches/hls_master_audio_preserver_v1.py",
-        "scripts/provider_patches/hls_runtime_integrity_v1.py"
-      ]
+      }
     },
     "uhdmovies": {
       "replacements": {
@@ -652,20 +562,10 @@
       "profiles": [],
       "official_hub": "https://mmodlist.org/",
       "official_site": "https://uhdmovies.autos",
-      "patch_script_options": {
-        "scripts/provider_patches/hls_runtime_integrity_v1.py": {
-          "timeout_ms": 6500,
-          "max_children": 2
-        }
-      },
       "required_values": [],
       "manifest_overrides": {
         "disabledPlatforms": []
-      },
-      "patch_scripts": [
-        "scripts/provider_patches/hls_master_audio_preserver_v1.py",
-        "scripts/provider_patches/hls_runtime_integrity_v1.py"
-      ]
+      }
     },
     "videasy": {
       "replacements": {
@@ -681,17 +581,7 @@
       "profiles": [],
       "official_hub": "https://www.videasy.to/docs",
       "official_site": "https://player.videasy.to/fr",
-      "patch_script_options": {
-        "scripts/provider_patches/hls_runtime_integrity_v1.py": {
-          "timeout_ms": 6500,
-          "max_children": 2
-        }
-      },
-      "required_values": [],
-      "patch_scripts": [
-        "scripts/provider_patches/hls_master_audio_preserver_v1.py",
-        "scripts/provider_patches/hls_runtime_integrity_v1.py"
-      ]
+      "required_values": []
     },
     "mycima": {
       "replacements": {
@@ -704,61 +594,21 @@
         "Automatically migrated mycima.red to mycima.camp after DNS/HTTP preflight validation of a redirect or a reachable same-role provider endpoint."
       ],
       "capability": "mixed_embed_resolver",
-      "profiles": [],
-      "patch_scripts": [
-        "scripts/provider_patches/hls_master_audio_preserver_v1.py",
-        "scripts/provider_patches/hls_runtime_integrity_v1.py"
-      ],
-      "patch_script_options": {
-        "scripts/provider_patches/hls_runtime_integrity_v1.py": {
-          "timeout_ms": 6500,
-          "max_children": 2
-        }
-      }
+      "profiles": []
     },
     "animesultra": {
       "capability": "mixed_embed_resolver",
       "manifest_overrides": {
         "disabledPlatforms": []
-      },
-      "patch_scripts": [
-        "scripts/provider_patches/hls_master_audio_preserver_v1.py",
-        "scripts/provider_patches/hls_runtime_integrity_v1.py"
-      ],
-      "patch_script_options": {
-        "scripts/provider_patches/hls_runtime_integrity_v1.py": {
-          "timeout_ms": 6500,
-          "max_children": 2
-        }
       }
     },
     "dulourd": {
-      "capability": "html_scraper",
-      "patch_scripts": [
-        "scripts/provider_patches/hls_master_audio_preserver_v1.py",
-        "scripts/provider_patches/hls_runtime_integrity_v1.py"
-      ],
-      "patch_script_options": {
-        "scripts/provider_patches/hls_runtime_integrity_v1.py": {
-          "timeout_ms": 6500,
-          "max_children": 2
-        }
-      }
+      "capability": "html_scraper"
     },
     "vostfree": {
       "capability": "mixed_embed_resolver",
       "manifest_overrides": {
         "disabledPlatforms": []
-      },
-      "patch_scripts": [
-        "scripts/provider_patches/hls_master_audio_preserver_v1.py",
-        "scripts/provider_patches/hls_runtime_integrity_v1.py"
-      ],
-      "patch_script_options": {
-        "scripts/provider_patches/hls_runtime_integrity_v1.py": {
-          "timeout_ms": 6500,
-          "max_children": 2
-        }
       }
     },
     "flemmix": {
@@ -792,9 +642,7 @@
       "patch_scripts": [
         "scripts/provider_patches/vf_catalogue_recovery.py",
         "scripts/provider_patches/stream_output_sanitizer_v5.py",
-        "scripts/provider_patches/desktop_runtime_compat_v1.py",
-        "scripts/provider_patches/hls_master_audio_preserver_v1.py",
-        "scripts/provider_patches/hls_runtime_integrity_v1.py"
+        "scripts/provider_patches/desktop_runtime_compat_v1.py"
       ],
       "patch_script_options": {
         "scripts/provider_patches/stream_output_sanitizer_v5.py": {
@@ -833,10 +681,6 @@
         },
         "scripts/provider_patches/desktop_runtime_compat_v1.py": {
           "normalize_missing_episodes": true
-        },
-        "scripts/provider_patches/hls_runtime_integrity_v1.py": {
-          "timeout_ms": 6500,
-          "max_children": 2
         }
       },
       "notes": [
@@ -877,20 +721,10 @@
       ],
       "official_hub": "https://nakios.org/",
       "official_site": "https://nakios.live",
-      "patch_script_options": {
-        "scripts/provider_patches/hls_runtime_integrity_v1.py": {
-          "timeout_ms": 6500,
-          "max_children": 2
-        }
-      },
       "published_types": [
         "movie",
         "tv",
         "anime"
-      ],
-      "patch_scripts": [
-        "scripts/provider_patches/hls_master_audio_preserver_v1.py",
-        "scripts/provider_patches/hls_runtime_integrity_v1.py"
       ]
     },
     "papadustream": {
@@ -900,12 +734,6 @@
       "runtime_domain_replacements": {},
       "official_hub": "https://papadustream.info/acces/",
       "official_site": "https://papadustream-v2.watch",
-      "patch_script_options": {
-        "scripts/provider_patches/hls_runtime_integrity_v1.py": {
-          "timeout_ms": 6500,
-          "max_children": 2
-        }
-      },
       "required_values": [],
       "published_types": [
         "movie",
@@ -913,11 +741,7 @@
       ],
       "manifest_overrides": {
         "disabledPlatforms": []
-      },
-      "patch_scripts": [
-        "scripts/provider_patches/hls_master_audio_preserver_v1.py",
-        "scripts/provider_patches/hls_runtime_integrity_v1.py"
-      ]
+      }
     },
     "toflix": {
       "profiles": [],
@@ -934,18 +758,12 @@
       "route_replacements": {},
       "required_route_values": [],
       "patch_scripts": [
-        "scripts/provider_patches/toflix_official_endpoint.py",
-        "scripts/provider_patches/hls_master_audio_preserver_v1.py",
-        "scripts/provider_patches/hls_runtime_integrity_v1.py"
+        "scripts/provider_patches/toflix_official_endpoint.py"
       ],
       "patch_script_options": {
         "scripts/provider_patches/toflix_official_endpoint.py": {
           "site": "https://tfx05.lol",
           "fallback_api": "https://api.tfx05.lol/toflix_api.php"
-        },
-        "scripts/provider_patches/hls_runtime_integrity_v1.py": {
-          "timeout_ms": 6500,
-          "max_children": 2
         }
       },
       "notes": [
@@ -976,19 +794,13 @@
       "route_replacements": {},
       "required_route_values": [],
       "patch_scripts": [
-        "scripts/provider_patches/stream_output_sanitizer_v5.py",
-        "scripts/provider_patches/hls_master_audio_preserver_v1.py",
-        "scripts/provider_patches/hls_runtime_integrity_v1.py"
+        "scripts/provider_patches/stream_output_sanitizer_v5.py"
       ],
       "patch_script_options": {
         "scripts/provider_patches/stream_output_sanitizer_v5.py": {
           "probe_direct_media": true,
           "max_probes": 6,
           "probe_all_urls": true
-        },
-        "scripts/provider_patches/hls_runtime_integrity_v1.py": {
-          "timeout_ms": 6500,
-          "max_children": 2
         }
       },
       "notes": [
@@ -1001,17 +813,7 @@
       }
     },
     "4khdhubnew": {
-      "capability": "html_scraper",
-      "patch_scripts": [
-        "scripts/provider_patches/hls_master_audio_preserver_v1.py",
-        "scripts/provider_patches/hls_runtime_integrity_v1.py"
-      ],
-      "patch_script_options": {
-        "scripts/provider_patches/hls_runtime_integrity_v1.py": {
-          "timeout_ms": 6500,
-          "max_children": 2
-        }
-      }
+      "capability": "html_scraper"
     },
     "Cineby": {
       "capability": "api_stream_resolver",
@@ -1028,43 +830,13 @@
       },
       "official_hub": "https://allanime.sa.com/",
       "official_site": "https://ww2.aniwatch.fit",
-      "patch_script_options": {
-        "scripts/provider_patches/hls_runtime_integrity_v1.py": {
-          "timeout_ms": 6500,
-          "max_children": 2
-        }
-      },
-      "required_values": [],
-      "patch_scripts": [
-        "scripts/provider_patches/hls_master_audio_preserver_v1.py",
-        "scripts/provider_patches/hls_runtime_integrity_v1.py"
-      ]
+      "required_values": []
     },
     "allwish": {
-      "capability": "html_scraper",
-      "patch_scripts": [
-        "scripts/provider_patches/hls_master_audio_preserver_v1.py",
-        "scripts/provider_patches/hls_runtime_integrity_v1.py"
-      ],
-      "patch_script_options": {
-        "scripts/provider_patches/hls_runtime_integrity_v1.py": {
-          "timeout_ms": 6500,
-          "max_children": 2
-        }
-      }
+      "capability": "html_scraper"
     },
     "anidb": {
-      "capability": "html_scraper",
-      "patch_scripts": [
-        "scripts/provider_patches/hls_master_audio_preserver_v1.py",
-        "scripts/provider_patches/hls_runtime_integrity_v1.py"
-      ],
-      "patch_script_options": {
-        "scripts/provider_patches/hls_runtime_integrity_v1.py": {
-          "timeout_ms": 6500,
-          "max_children": 2
-        }
-      }
+      "capability": "html_scraper"
     },
     "anikototv": {
       "capability": "mixed_embed_resolver",
@@ -1072,7 +844,6 @@
       "runtime_domain_replacements": {},
       "official_hub": "https://streamingsiteshub.com/",
       "official_site": "https://anikototv.to",
-      "patch_script_options": {},
       "required_values": []
     },
     "anime-sama": {
@@ -1086,34 +857,14 @@
       },
       "official_hub": "https://anime-sama.wiki/",
       "official_site": "https://anime-sama.store",
-      "patch_script_options": {
-        "scripts/provider_patches/hls_runtime_integrity_v1.py": {
-          "timeout_ms": 6500,
-          "max_children": 2
-        }
-      },
       "required_values": [],
       "manifest_overrides": {
         "disabledPlatforms": []
-      },
-      "patch_scripts": [
-        "scripts/provider_patches/hls_master_audio_preserver_v1.py",
-        "scripts/provider_patches/hls_runtime_integrity_v1.py"
-      ]
+      }
     },
     "animekai": {
       "capability": "mixed_embed_resolver",
-      "profiles": [],
-      "patch_scripts": [
-        "scripts/provider_patches/hls_master_audio_preserver_v1.py",
-        "scripts/provider_patches/hls_runtime_integrity_v1.py"
-      ],
-      "patch_script_options": {
-        "scripts/provider_patches/hls_runtime_integrity_v1.py": {
-          "timeout_ms": 6500,
-          "max_children": 2
-        }
-      }
+      "profiles": []
     },
     "animesalt": {
       "capability": "html_scraper",
@@ -1121,20 +872,10 @@
       "runtime_domain_replacements": {},
       "official_hub": "http://animesalt.ac/",
       "official_site": "https://animesalt.link",
-      "patch_script_options": {
-        "scripts/provider_patches/hls_runtime_integrity_v1.py": {
-          "timeout_ms": 6500,
-          "max_children": 2
-        }
-      },
       "required_values": [],
       "manifest_overrides": {
         "disabledPlatforms": []
-      },
-      "patch_scripts": [
-        "scripts/provider_patches/hls_master_audio_preserver_v1.py",
-        "scripts/provider_patches/hls_runtime_integrity_v1.py"
-      ]
+      }
     },
     "animesama-co": {
       "capability": "mixed_embed_resolver",
@@ -1143,34 +884,14 @@
       "runtime_domain_replacements": {},
       "official_hub": "https://anime-sama.wiki/",
       "official_site": "https://anime-sama.store",
-      "patch_script_options": {
-        "scripts/provider_patches/hls_runtime_integrity_v1.py": {
-          "timeout_ms": 6500,
-          "max_children": 2
-        }
-      },
       "required_values": [],
       "manifest_overrides": {
         "disabledPlatforms": []
-      },
-      "patch_scripts": [
-        "scripts/provider_patches/hls_master_audio_preserver_v1.py",
-        "scripts/provider_patches/hls_runtime_integrity_v1.py"
-      ]
+      }
     },
     "animetsu": {
       "capability": "direct_media",
-      "profiles": [],
-      "patch_scripts": [
-        "scripts/provider_patches/hls_master_audio_preserver_v1.py",
-        "scripts/provider_patches/hls_runtime_integrity_v1.py"
-      ],
-      "patch_script_options": {
-        "scripts/provider_patches/hls_runtime_integrity_v1.py": {
-          "timeout_ms": 6500,
-          "max_children": 2
-        }
-      }
+      "profiles": []
     },
     "animevostfr": {
       "capability": "mixed_embed_resolver",
@@ -1179,105 +900,35 @@
       "runtime_domain_replacements": {},
       "official_hub": null,
       "official_site": "https://v2.animevostfr.org",
-      "patch_script_options": {
-        "scripts/provider_patches/hls_runtime_integrity_v1.py": {
-          "timeout_ms": 6500,
-          "max_children": 2
-        }
-      },
       "required_values": [],
       "manifest_overrides": {
         "disabledPlatforms": []
-      },
-      "patch_scripts": [
-        "scripts/provider_patches/hls_master_audio_preserver_v1.py",
-        "scripts/provider_patches/hls_runtime_integrity_v1.py"
-      ]
+      }
     },
     "animeworld": {
-      "capability": "html_scraper",
-      "patch_scripts": [
-        "scripts/provider_patches/hls_master_audio_preserver_v1.py",
-        "scripts/provider_patches/hls_runtime_integrity_v1.py"
-      ],
-      "patch_script_options": {
-        "scripts/provider_patches/hls_runtime_integrity_v1.py": {
-          "timeout_ms": 6500,
-          "max_children": 2
-        }
-      }
+      "capability": "html_scraper"
     },
     "animoflix": {
       "capability": "mixed_embed_resolver",
-      "profiles": [],
-      "patch_scripts": [
-        "scripts/provider_patches/hls_master_audio_preserver_v1.py",
-        "scripts/provider_patches/hls_runtime_integrity_v1.py"
-      ],
-      "patch_script_options": {
-        "scripts/provider_patches/hls_runtime_integrity_v1.py": {
-          "timeout_ms": 6500,
-          "max_children": 2
-        }
-      }
+      "profiles": []
     },
     "anizone": {
       "capability": "api_stream_resolver",
-      "profiles": [],
-      "patch_scripts": [
-        "scripts/provider_patches/hls_master_audio_preserver_v1.py",
-        "scripts/provider_patches/hls_runtime_integrity_v1.py"
-      ],
-      "patch_script_options": {
-        "scripts/provider_patches/hls_runtime_integrity_v1.py": {
-          "timeout_ms": 6500,
-          "max_children": 2
-        }
-      }
+      "profiles": []
     },
     "castle": {
       "capability": "api_stream_resolver",
       "manifest_overrides": {
         "disabledPlatforms": []
-      },
-      "patch_scripts": [
-        "scripts/provider_patches/hls_master_audio_preserver_v1.py",
-        "scripts/provider_patches/hls_runtime_integrity_v1.py"
-      ],
-      "patch_script_options": {
-        "scripts/provider_patches/hls_runtime_integrity_v1.py": {
-          "timeout_ms": 6500,
-          "max_children": 2
-        }
       }
     },
     "cinefreak": {
-      "capability": "html_scraper",
-      "patch_scripts": [
-        "scripts/provider_patches/hls_master_audio_preserver_v1.py",
-        "scripts/provider_patches/hls_runtime_integrity_v1.py"
-      ],
-      "patch_script_options": {
-        "scripts/provider_patches/hls_runtime_integrity_v1.py": {
-          "timeout_ms": 6500,
-          "max_children": 2
-        }
-      }
+      "capability": "html_scraper"
     },
     "cinemacity": {
       "capability": "direct_media",
       "manifest_overrides": {
         "disabledPlatforms": []
-      },
-      "patch_scripts": [
-        "scripts/provider_patches/hls_master_audio_preserver_v1.py",
-        "scripts/provider_patches/hls_runtime_integrity_v1.py"
-      ],
-      "patch_script_options": {
-        "scripts/provider_patches/hls_runtime_integrity_v1.py": {
-          "timeout_ms": 6500,
-          "max_children": 2
-        }
       }
     },
     "cinemm": {
@@ -1287,55 +938,28 @@
       "runtime_domain_replacements": {},
       "official_hub": null,
       "official_site": "https://cinemm.com",
-      "patch_script_options": {},
       "required_values": [],
       "manifest_overrides": {
         "disabledPlatforms": []
       }
     },
     "cinevibe": {
-      "capability": "direct_media",
-      "patch_scripts": [
-        "scripts/provider_patches/hls_master_audio_preserver_v1.py",
-        "scripts/provider_patches/hls_runtime_integrity_v1.py"
-      ],
-      "patch_script_options": {
-        "scripts/provider_patches/hls_runtime_integrity_v1.py": {
-          "timeout_ms": 6500,
-          "max_children": 2
-        }
-      }
+      "capability": "direct_media"
     },
     "ctgmovies": {
       "capability": "direct_media",
-      "profiles": [],
-      "patch_scripts": [
-        "scripts/provider_patches/hls_master_audio_preserver_v1.py",
-        "scripts/provider_patches/hls_runtime_integrity_v1.py"
-      ],
-      "patch_script_options": {
-        "scripts/provider_patches/hls_runtime_integrity_v1.py": {
-          "timeout_ms": 6500,
-          "max_children": 2
-        }
-      }
+      "profiles": []
     },
     "desiflix": {
       "capability": "html_scraper",
       "patch_scripts": [
-        "scripts/provider_patches/nuvio_tv_direct_media_v2.py",
-        "scripts/provider_patches/hls_master_audio_preserver_v1.py",
-        "scripts/provider_patches/hls_runtime_integrity_v1.py"
+        "scripts/provider_patches/nuvio_tv_direct_media_v2.py"
       ],
       "patch_script_options": {
         "scripts/provider_patches/nuvio_tv_direct_media_v2.py": {
           "provider_name": "DesiFlix",
           "max_candidates": 14,
           "timeout_ms": 14000
-        },
-        "scripts/provider_patches/hls_runtime_integrity_v1.py": {
-          "timeout_ms": 6500,
-          "max_children": 2
         }
       },
       "manifest_overrides": {
@@ -1350,16 +974,6 @@
       "capability": "html_scraper",
       "manifest_overrides": {
         "disabledPlatforms": []
-      },
-      "patch_scripts": [
-        "scripts/provider_patches/hls_master_audio_preserver_v1.py",
-        "scripts/provider_patches/hls_runtime_integrity_v1.py"
-      ],
-      "patch_script_options": {
-        "scripts/provider_patches/hls_runtime_integrity_v1.py": {
-          "timeout_ms": 6500,
-          "max_children": 2
-        }
       }
     },
     "dvdplay": {
@@ -1368,30 +982,10 @@
     },
     "einthusan": {
       "capability": "direct_media",
-      "profiles": [],
-      "patch_scripts": [
-        "scripts/provider_patches/hls_master_audio_preserver_v1.py",
-        "scripts/provider_patches/hls_runtime_integrity_v1.py"
-      ],
-      "patch_script_options": {
-        "scripts/provider_patches/hls_runtime_integrity_v1.py": {
-          "timeout_ms": 6500,
-          "max_children": 2
-        }
-      }
+      "profiles": []
     },
     "fibwatch": {
-      "capability": "html_scraper",
-      "patch_scripts": [
-        "scripts/provider_patches/hls_master_audio_preserver_v1.py",
-        "scripts/provider_patches/hls_runtime_integrity_v1.py"
-      ],
-      "patch_script_options": {
-        "scripts/provider_patches/hls_runtime_integrity_v1.py": {
-          "timeout_ms": 6500,
-          "max_children": 2
-        }
-      }
+      "capability": "html_scraper"
     },
     "french-manga": {
       "capability": "mixed_embed_resolver",
@@ -1416,18 +1010,12 @@
           "max_candidates": 14,
           "timeout_ms": 14000,
           "strip_unproven_wrappers": true
-        },
-        "scripts/provider_patches/hls_runtime_integrity_v1.py": {
-          "timeout_ms": 6500,
-          "max_children": 2
         }
       },
       "required_values": [],
       "patch_scripts": [
         "scripts/provider_patches/stream_output_sanitizer_v5.py",
-        "scripts/provider_patches/nuvio_tv_direct_media_v2.py",
-        "scripts/provider_patches/hls_master_audio_preserver_v1.py",
-        "scripts/provider_patches/hls_runtime_integrity_v1.py"
+        "scripts/provider_patches/nuvio_tv_direct_media_v2.py"
       ],
       "manifest_overrides": {
         "supportsExternalPlayer": false,
@@ -1440,30 +1028,10 @@
       ]
     },
     "goatapi": {
-      "capability": "html_scraper",
-      "patch_scripts": [
-        "scripts/provider_patches/hls_master_audio_preserver_v1.py",
-        "scripts/provider_patches/hls_runtime_integrity_v1.py"
-      ],
-      "patch_script_options": {
-        "scripts/provider_patches/hls_runtime_integrity_v1.py": {
-          "timeout_ms": 6500,
-          "max_children": 2
-        }
-      }
+      "capability": "html_scraper"
     },
     "gramcinema": {
-      "capability": "html_scraper",
-      "patch_scripts": [
-        "scripts/provider_patches/hls_master_audio_preserver_v1.py",
-        "scripts/provider_patches/hls_runtime_integrity_v1.py"
-      ],
-      "patch_script_options": {
-        "scripts/provider_patches/hls_runtime_integrity_v1.py": {
-          "timeout_ms": 6500,
-          "max_children": 2
-        }
-      }
+      "capability": "html_scraper"
     },
     "hdghartv": {
       "capability": "html_scraper",
@@ -1471,20 +1039,10 @@
       "runtime_domain_replacements": {},
       "official_hub": "https://hdghartv.com.pk/",
       "official_site": "https://hdghartv.cc",
-      "patch_script_options": {
-        "scripts/provider_patches/hls_runtime_integrity_v1.py": {
-          "timeout_ms": 6500,
-          "max_children": 2
-        }
-      },
       "required_values": [],
       "manifest_overrides": {
         "disabledPlatforms": []
-      },
-      "patch_scripts": [
-        "scripts/provider_patches/hls_master_audio_preserver_v1.py",
-        "scripts/provider_patches/hls_runtime_integrity_v1.py"
-      ]
+      }
     },
     "hdhub4u": {
       "capability": "html_scraper",
@@ -1496,33 +1054,13 @@
       },
       "official_hub": null,
       "official_site": "https://new4.hdhub4u.cl",
-      "patch_script_options": {
-        "scripts/provider_patches/hls_runtime_integrity_v1.py": {
-          "timeout_ms": 6500,
-          "max_children": 2
-        }
-      },
       "required_values": [],
       "manifest_overrides": {
         "disabledPlatforms": []
-      },
-      "patch_scripts": [
-        "scripts/provider_patches/hls_master_audio_preserver_v1.py",
-        "scripts/provider_patches/hls_runtime_integrity_v1.py"
-      ]
+      }
     },
     "hianime": {
-      "capability": "html_scraper",
-      "patch_scripts": [
-        "scripts/provider_patches/hls_master_audio_preserver_v1.py",
-        "scripts/provider_patches/hls_runtime_integrity_v1.py"
-      ],
-      "patch_script_options": {
-        "scripts/provider_patches/hls_runtime_integrity_v1.py": {
-          "timeout_ms": 6500,
-          "max_children": 2
-        }
-      }
+      "capability": "html_scraper"
     },
     "hindmoviez": {
       "capability": "direct_media",
@@ -1535,17 +1073,11 @@
           "normalize_missing_episodes": true,
           "filter_episode_labels": true,
           "max_series_streams": 24
-        },
-        "scripts/provider_patches/hls_runtime_integrity_v1.py": {
-          "timeout_ms": 6500,
-          "max_children": 2
         }
       },
       "required_values": [],
       "patch_scripts": [
-        "scripts/provider_patches/desktop_runtime_compat_v1.py",
-        "scripts/provider_patches/hls_master_audio_preserver_v1.py",
-        "scripts/provider_patches/hls_runtime_integrity_v1.py"
+        "scripts/provider_patches/desktop_runtime_compat_v1.py"
       ],
       "manifest_overrides": {
         "disabledPlatforms": []
@@ -1553,17 +1085,7 @@
     },
     "kisskh": {
       "capability": "direct_media",
-      "profiles": [],
-      "patch_scripts": [
-        "scripts/provider_patches/hls_master_audio_preserver_v1.py",
-        "scripts/provider_patches/hls_runtime_integrity_v1.py"
-      ],
-      "patch_script_options": {
-        "scripts/provider_patches/hls_runtime_integrity_v1.py": {
-          "timeout_ms": 6500,
-          "max_children": 2
-        }
-      }
+      "profiles": []
     },
     "kurage": {
       "capability": "html_scraper",
@@ -1572,32 +1094,12 @@
       "runtime_domain_replacements": {},
       "official_hub": null,
       "official_site": "https://kurage.live",
-      "patch_script_options": {
-        "scripts/provider_patches/hls_runtime_integrity_v1.py": {
-          "timeout_ms": 6500,
-          "max_children": 2
-        }
-      },
-      "required_values": [],
-      "patch_scripts": [
-        "scripts/provider_patches/hls_master_audio_preserver_v1.py",
-        "scripts/provider_patches/hls_runtime_integrity_v1.py"
-      ]
+      "required_values": []
     },
     "movieblast": {
       "capability": "html_scraper",
       "manifest_overrides": {
         "disabledPlatforms": []
-      },
-      "patch_scripts": [
-        "scripts/provider_patches/hls_master_audio_preserver_v1.py",
-        "scripts/provider_patches/hls_runtime_integrity_v1.py"
-      ],
-      "patch_script_options": {
-        "scripts/provider_patches/hls_runtime_integrity_v1.py": {
-          "timeout_ms": 6500,
-          "max_children": 2
-        }
       }
     },
     "moviebox": {
@@ -1607,20 +1109,10 @@
       "runtime_domain_replacements": {},
       "official_hub": "https://moviiebox.lol/",
       "official_site": "https://moviebox.yachts",
-      "patch_script_options": {
-        "scripts/provider_patches/hls_runtime_integrity_v1.py": {
-          "timeout_ms": 6500,
-          "max_children": 2
-        }
-      },
       "required_values": [],
       "manifest_overrides": {
         "disabledPlatforms": []
-      },
-      "patch_scripts": [
-        "scripts/provider_patches/hls_master_audio_preserver_v1.py",
-        "scripts/provider_patches/hls_runtime_integrity_v1.py"
-      ]
+      }
     },
     "movies4u": {
       "capability": "html_scraper",
@@ -1637,19 +1129,13 @@
       "route_replacements": {},
       "required_route_values": [],
       "patch_scripts": [
-        "scripts/provider_patches/stream_output_sanitizer_v5.py",
-        "scripts/provider_patches/hls_master_audio_preserver_v1.py",
-        "scripts/provider_patches/hls_runtime_integrity_v1.py"
+        "scripts/provider_patches/stream_output_sanitizer_v5.py"
       ],
       "patch_script_options": {
         "scripts/provider_patches/stream_output_sanitizer_v5.py": {
           "probe_direct_media": true,
           "max_probes": 6,
           "probe_all_urls": true
-        },
-        "scripts/provider_patches/hls_runtime_integrity_v1.py": {
-          "timeout_ms": 6500,
-          "max_children": 2
         }
       },
       "notes": [
@@ -1668,17 +1154,7 @@
       "runtime_domain_replacements": {},
       "official_hub": "https://movieshunt.cc/",
       "official_site": "https://movieshunt.work",
-      "patch_script_options": {
-        "scripts/provider_patches/hls_runtime_integrity_v1.py": {
-          "timeout_ms": 6500,
-          "max_children": 2
-        }
-      },
-      "required_values": [],
-      "patch_scripts": [
-        "scripts/provider_patches/hls_master_audio_preserver_v1.py",
-        "scripts/provider_patches/hls_runtime_integrity_v1.py"
-      ]
+      "required_values": []
     },
     "mugiwarastream": {
       "capability": "mixed_embed_resolver",
@@ -1687,20 +1163,10 @@
       "runtime_domain_replacements": {},
       "official_hub": "https://streaminganime.fr/site/10/mugiwara-no-streaming",
       "official_site": "https://www.mugiwara-no-streaming.com",
-      "patch_script_options": {
-        "scripts/provider_patches/hls_runtime_integrity_v1.py": {
-          "timeout_ms": 6500,
-          "max_children": 2
-        }
-      },
       "required_values": [],
       "manifest_overrides": {
         "disabledPlatforms": []
-      },
-      "patch_scripts": [
-        "scripts/provider_patches/hls_master_audio_preserver_v1.py",
-        "scripts/provider_patches/hls_runtime_integrity_v1.py"
-      ]
+      }
     },
     "netmirror": {
       "capability": "mixed_embed_resolver",
@@ -1708,77 +1174,27 @@
       "runtime_domain_replacements": {},
       "official_hub": "https://netmiror.com/",
       "official_site": "https://net27.cc",
-      "patch_script_options": {
-        "scripts/provider_patches/hls_runtime_integrity_v1.py": {
-          "timeout_ms": 6500,
-          "max_children": 2
-        }
-      },
       "required_values": [],
       "manifest_overrides": {
         "disabledPlatforms": []
-      },
-      "patch_scripts": [
-        "scripts/provider_patches/hls_master_audio_preserver_v1.py",
-        "scripts/provider_patches/hls_runtime_integrity_v1.py"
-      ]
+      }
     },
     "onlykdrama": {
-      "capability": "html_scraper",
-      "patch_scripts": [
-        "scripts/provider_patches/hls_master_audio_preserver_v1.py",
-        "scripts/provider_patches/hls_runtime_integrity_v1.py"
-      ],
-      "patch_script_options": {
-        "scripts/provider_patches/hls_runtime_integrity_v1.py": {
-          "timeout_ms": 6500,
-          "max_children": 2
-        }
-      }
+      "capability": "html_scraper"
     },
     "peachify": {
       "capability": "mixed_embed_resolver",
       "profiles": [],
       "manifest_overrides": {
         "disabledPlatforms": []
-      },
-      "patch_scripts": [
-        "scripts/provider_patches/hls_master_audio_preserver_v1.py",
-        "scripts/provider_patches/hls_runtime_integrity_v1.py"
-      ],
-      "patch_script_options": {
-        "scripts/provider_patches/hls_runtime_integrity_v1.py": {
-          "timeout_ms": 6500,
-          "max_children": 2
-        }
       }
     },
     "persianstremio": {
-      "capability": "direct_media",
-      "patch_scripts": [
-        "scripts/provider_patches/hls_master_audio_preserver_v1.py",
-        "scripts/provider_patches/hls_runtime_integrity_v1.py"
-      ],
-      "patch_script_options": {
-        "scripts/provider_patches/hls_runtime_integrity_v1.py": {
-          "timeout_ms": 6500,
-          "max_children": 2
-        }
-      }
+      "capability": "direct_media"
     },
     "playimdb": {
       "capability": "direct_media",
-      "profiles": [],
-      "patch_scripts": [
-        "scripts/provider_patches/hls_master_audio_preserver_v1.py",
-        "scripts/provider_patches/hls_runtime_integrity_v1.py"
-      ],
-      "patch_script_options": {
-        "scripts/provider_patches/hls_runtime_integrity_v1.py": {
-          "timeout_ms": 6500,
-          "max_children": 2
-        }
-      }
+      "profiles": []
     },
     "sekai": {
       "capability": "html_scraper",
@@ -1787,30 +1203,10 @@
       "runtime_domain_replacements": {},
       "official_hub": null,
       "official_site": "https://sekai.one/?v=15",
-      "patch_script_options": {
-        "scripts/provider_patches/hls_runtime_integrity_v1.py": {
-          "timeout_ms": 6500,
-          "max_children": 2
-        }
-      },
-      "required_values": [],
-      "patch_scripts": [
-        "scripts/provider_patches/hls_master_audio_preserver_v1.py",
-        "scripts/provider_patches/hls_runtime_integrity_v1.py"
-      ]
+      "required_values": []
     },
     "showbox": {
-      "capability": "html_scraper",
-      "patch_scripts": [
-        "scripts/provider_patches/hls_master_audio_preserver_v1.py",
-        "scripts/provider_patches/hls_runtime_integrity_v1.py"
-      ],
-      "patch_script_options": {
-        "scripts/provider_patches/hls_runtime_integrity_v1.py": {
-          "timeout_ms": 6500,
-          "max_children": 2
-        }
-      }
+      "capability": "html_scraper"
     },
     "streamflix": {
       "capability": "api_stream_resolver",
@@ -1818,24 +1214,13 @@
       "runtime_domain_replacements": {},
       "official_hub": null,
       "official_site": "https://streamflix.mom",
-      "patch_script_options": {},
       "required_values": [],
       "manifest_overrides": {
         "disabledPlatforms": []
       }
     },
     "topcartoons": {
-      "capability": "html_scraper",
-      "patch_scripts": [
-        "scripts/provider_patches/hls_master_audio_preserver_v1.py",
-        "scripts/provider_patches/hls_runtime_integrity_v1.py"
-      ],
-      "patch_script_options": {
-        "scripts/provider_patches/hls_runtime_integrity_v1.py": {
-          "timeout_ms": 6500,
-          "max_children": 2
-        }
-      }
+      "capability": "html_scraper"
     },
     "vegamovies": {
       "capability": "html_scraper",
@@ -1843,7 +1228,6 @@
       "runtime_domain_replacements": {},
       "official_hub": "https://1vegamovies.tw/",
       "official_site": "https://vegamovies.catering",
-      "patch_script_options": {},
       "required_values": [],
       "manifest_overrides": {
         "disabledPlatforms": []
@@ -1853,75 +1237,25 @@
       "capability": "html_scraper",
       "manifest_overrides": {
         "disabledPlatforms": []
-      },
-      "patch_scripts": [
-        "scripts/provider_patches/hls_master_audio_preserver_v1.py",
-        "scripts/provider_patches/hls_runtime_integrity_v1.py"
-      ],
-      "patch_script_options": {
-        "scripts/provider_patches/hls_runtime_integrity_v1.py": {
-          "timeout_ms": 6500,
-          "max_children": 2
-        }
       }
     },
     "vidnest": {
       "capability": "direct_media",
-      "profiles": [],
-      "patch_scripts": [
-        "scripts/provider_patches/hls_master_audio_preserver_v1.py",
-        "scripts/provider_patches/hls_runtime_integrity_v1.py"
-      ],
-      "patch_script_options": {
-        "scripts/provider_patches/hls_runtime_integrity_v1.py": {
-          "timeout_ms": 6500,
-          "max_children": 2
-        }
-      }
+      "profiles": []
     },
     "vidnest-anime": {
       "capability": "api_stream_resolver",
-      "profiles": [],
-      "patch_scripts": [
-        "scripts/provider_patches/hls_master_audio_preserver_v1.py",
-        "scripts/provider_patches/hls_runtime_integrity_v1.py"
-      ],
-      "patch_script_options": {
-        "scripts/provider_patches/hls_runtime_integrity_v1.py": {
-          "timeout_ms": 6500,
-          "max_children": 2
-        }
-      }
+      "profiles": []
     },
     "vidrock": {
       "capability": "html_scraper",
       "manifest_overrides": {
         "disabledPlatforms": []
-      },
-      "patch_scripts": [
-        "scripts/provider_patches/hls_master_audio_preserver_v1.py",
-        "scripts/provider_patches/hls_runtime_integrity_v1.py"
-      ],
-      "patch_script_options": {
-        "scripts/provider_patches/hls_runtime_integrity_v1.py": {
-          "timeout_ms": 6500,
-          "max_children": 2
-        }
       }
     },
     "vidsrc": {
       "capability": "mixed_embed_resolver",
-      "profiles": [],
-      "patch_scripts": [
-        "scripts/provider_patches/hls_master_audio_preserver_v1.py",
-        "scripts/provider_patches/hls_runtime_integrity_v1.py"
-      ],
-      "patch_script_options": {
-        "scripts/provider_patches/hls_runtime_integrity_v1.py": {
-          "timeout_ms": 6500,
-          "max_children": 2
-        }
-      }
+      "profiles": []
     },
     "voiranime": {
       "capability": "mixed_embed_resolver",
@@ -1930,20 +1264,10 @@
       "runtime_domain_replacements": {},
       "official_hub": "https://voiranime.org.uk/",
       "official_site": "https://voiranime.homes",
-      "patch_script_options": {
-        "scripts/provider_patches/hls_runtime_integrity_v1.py": {
-          "timeout_ms": 6500,
-          "max_children": 2
-        }
-      },
       "required_values": [],
       "manifest_overrides": {
         "disabledPlatforms": []
-      },
-      "patch_scripts": [
-        "scripts/provider_patches/hls_master_audio_preserver_v1.py",
-        "scripts/provider_patches/hls_runtime_integrity_v1.py"
-      ]
+      }
     },
     "voiranime-rip": {
       "capability": "mixed_embed_resolver",
@@ -1952,20 +1276,10 @@
       "runtime_domain_replacements": {},
       "official_hub": null,
       "official_site": "https://voiranime.rip",
-      "patch_script_options": {
-        "scripts/provider_patches/hls_runtime_integrity_v1.py": {
-          "timeout_ms": 6500,
-          "max_children": 2
-        }
-      },
       "required_values": [],
       "manifest_overrides": {
         "disabledPlatforms": []
-      },
-      "patch_scripts": [
-        "scripts/provider_patches/hls_master_audio_preserver_v1.py",
-        "scripts/provider_patches/hls_runtime_integrity_v1.py"
-      ]
+      }
     },
     "wookafr": {
       "capability": "mixed_embed_resolver",
@@ -1994,10 +1308,6 @@
       "patch_script_options": {
         "scripts/provider_patches/desktop_runtime_compat_v1.py": {
           "normalize_missing_episodes": true
-        },
-        "scripts/provider_patches/hls_runtime_integrity_v1.py": {
-          "timeout_ms": 6500,
-          "max_children": 2
         }
       },
       "published_types": [
@@ -2005,42 +1315,20 @@
         "tv"
       ],
       "patch_scripts": [
-        "scripts/provider_patches/desktop_runtime_compat_v1.py",
-        "scripts/provider_patches/hls_master_audio_preserver_v1.py",
-        "scripts/provider_patches/hls_runtime_integrity_v1.py"
+        "scripts/provider_patches/desktop_runtime_compat_v1.py"
       ],
       "manifest_overrides": {
         "disabledPlatforms": []
       }
     },
     "xpass": {
-      "capability": "html_scraper",
-      "patch_scripts": [
-        "scripts/provider_patches/hls_master_audio_preserver_v1.py",
-        "scripts/provider_patches/hls_runtime_integrity_v1.py"
-      ],
-      "patch_script_options": {
-        "scripts/provider_patches/hls_runtime_integrity_v1.py": {
-          "timeout_ms": 6500,
-          "max_children": 2
-        }
-      }
+      "capability": "html_scraper"
     },
     "yflix": {
       "capability": "mixed_embed_resolver",
       "profiles": [],
       "manifest_overrides": {
         "disabledPlatforms": []
-      },
-      "patch_scripts": [
-        "scripts/provider_patches/hls_master_audio_preserver_v1.py",
-        "scripts/provider_patches/hls_runtime_integrity_v1.py"
-      ],
-      "patch_script_options": {
-        "scripts/provider_patches/hls_runtime_integrity_v1.py": {
-          "timeout_ms": 6500,
-          "max_children": 2
-        }
       }
     },
     "zinkmovies": {
@@ -2048,16 +1336,6 @@
       "profiles": [],
       "manifest_overrides": {
         "disabledPlatforms": []
-      },
-      "patch_scripts": [
-        "scripts/provider_patches/hls_master_audio_preserver_v1.py",
-        "scripts/provider_patches/hls_runtime_integrity_v1.py"
-      ],
-      "patch_script_options": {
-        "scripts/provider_patches/hls_runtime_integrity_v1.py": {
-          "timeout_ms": 6500,
-          "max_children": 2
-        }
       }
     },
     "brandnew": {
@@ -2070,60 +1348,24 @@
       "runtime_domain_replacements": {},
       "official_hub": "https://warflix.cv/",
       "official_site": "https://cineby.top",
-      "patch_script_options": {
-        "scripts/provider_patches/hls_runtime_integrity_v1.py": {
-          "timeout_ms": 6500,
-          "max_children": 2
-        }
-      },
-      "required_values": [],
-      "patch_scripts": [
-        "scripts/provider_patches/hls_master_audio_preserver_v1.py",
-        "scripts/provider_patches/hls_runtime_integrity_v1.py"
-      ]
+      "required_values": []
     },
     "animezey": {
-      "capability": "direct_media",
-      "patch_scripts": [
-        "scripts/provider_patches/hls_master_audio_preserver_v1.py",
-        "scripts/provider_patches/hls_runtime_integrity_v1.py"
-      ],
-      "patch_script_options": {
-        "scripts/provider_patches/hls_runtime_integrity_v1.py": {
-          "timeout_ms": 6500,
-          "max_children": 2
-        }
-      }
+      "capability": "direct_media"
     },
     "anime-ultime": {
-      "capability": "mixed_embed_resolver",
-      "patch_scripts": [
-        "scripts/provider_patches/hls_master_audio_preserver_v1.py",
-        "scripts/provider_patches/hls_runtime_integrity_v1.py"
-      ],
-      "patch_script_options": {
-        "scripts/provider_patches/hls_runtime_integrity_v1.py": {
-          "timeout_ms": 6500,
-          "max_children": 2
-        }
-      }
+      "capability": "mixed_embed_resolver"
     },
     "goated": {
       "capability": "api_stream_resolver",
       "patch_scripts": [
-        "scripts/provider_patches/nuvio_tv_direct_media_v2.py",
-        "scripts/provider_patches/hls_master_audio_preserver_v1.py",
-        "scripts/provider_patches/hls_runtime_integrity_v1.py"
+        "scripts/provider_patches/nuvio_tv_direct_media_v2.py"
       ],
       "patch_script_options": {
         "scripts/provider_patches/nuvio_tv_direct_media_v2.py": {
           "provider_name": "Goated",
           "max_candidates": 10,
           "timeout_ms": 12000
-        },
-        "scripts/provider_patches/hls_runtime_integrity_v1.py": {
-          "timeout_ms": 6500,
-          "max_children": 2
         }
       },
       "manifest_overrides": {
@@ -2136,30 +1378,10 @@
       ]
     },
     "voiranime-homes": {
-      "capability": "mixed_embed_resolver",
-      "patch_scripts": [
-        "scripts/provider_patches/hls_master_audio_preserver_v1.py",
-        "scripts/provider_patches/hls_runtime_integrity_v1.py"
-      ],
-      "patch_script_options": {
-        "scripts/provider_patches/hls_runtime_integrity_v1.py": {
-          "timeout_ms": 6500,
-          "max_children": 2
-        }
-      }
+      "capability": "mixed_embed_resolver"
     },
     "waveanime": {
-      "capability": "html_scraper",
-      "patch_scripts": [
-        "scripts/provider_patches/hls_master_audio_preserver_v1.py",
-        "scripts/provider_patches/hls_runtime_integrity_v1.py"
-      ],
-      "patch_script_options": {
-        "scripts/provider_patches/hls_runtime_integrity_v1.py": {
-          "timeout_ms": 6500,
-          "max_children": 2
-        }
-      }
+      "capability": "html_scraper"
     },
     "4KHDHUB": {
       "capability": "mixed_embed_resolver"
@@ -2357,32 +1579,9 @@
       "capability": "direct_media"
     },
     "1shows": {
-      "capability": "mixed_embed_resolver",
-      "patch_scripts": [
-        "scripts/provider_patches/hls_master_audio_preserver_v1.py",
-        "scripts/provider_patches/hls_runtime_integrity_v1.py"
-      ],
-      "patch_script_options": {
-        "scripts/provider_patches/hls_runtime_integrity_v1.py": {
-          "timeout_ms": 6500,
-          "max_children": 2
-        }
-      }
+      "capability": "mixed_embed_resolver"
     },
     "vidlove": {
-      "capability": "html_scraper",
-      "patch_scripts": [
-        "scripts/provider_patches/hls_master_audio_preserver_v1.py",
-        "scripts/provider_patches/hls_runtime_integrity_v1.py"
-      ],
-      "patch_script_options": {
-        "scripts/provider_patches/hls_runtime_integrity_v1.py": {
-          "timeout_ms": 6500,
-          "max_children": 2
-        }
-      }
-    },
-    "moonflix": {
       "capability": "html_scraper"
     }
   },
@@ -2645,7 +1844,9 @@
       "allow_html_url": true,
       "requires_direct_media": false,
       "observed_origins": [
-        "https://www3.anikai.cc"
+        "https://graphql.anilist.co",
+        "https://enc-dec.app",
+        "https://v3-cinemeta.strem.io"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
@@ -2668,7 +1869,7 @@
       "allow_html_url": true,
       "requires_direct_media": false,
       "observed_origins": [
-        "https://animesalt.link"
+        "https://as-cdn21.top"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
@@ -2805,8 +2006,6 @@
       "observed_origins": [
         "https://video.sibnet.ru",
         "https://vidmoly.me",
-        "https://fsvid.lol",
-        "https://vidzy.live",
         "https://streamtape.com",
         "https://sendvid.com",
         "https://www.myvi.ru",
@@ -2860,7 +2059,8 @@
       "allow_html_url": true,
       "requires_direct_media": false,
       "observed_origins": [
-        "https://cinefreak.nl"
+        "https://cinefreak.nl",
+        "https://www.dailymotion.com"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
@@ -3259,7 +2459,7 @@
       "allow_html_url": true,
       "requires_direct_media": false,
       "observed_origins": [
-        "https://new2.moviesdrive.christmas"
+        "https://new1.moviesdrive.christmas"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
@@ -3846,7 +3046,9 @@
       "validation": "media_url",
       "allow_html_url": false,
       "requires_direct_media": true,
-      "observed_origins": [],
+      "observed_origins": [
+        "https://1.animezey23112022.workers.dev"
+      ],
       "generated_from_manifest_or_stage": true
     },
     "anime-ultime": {
@@ -4888,7 +4090,8 @@
       "requires_direct_media": false,
       "observed_origins": [
         "https://www.1shows.org",
-        "https://streamtape.com"
+        "https://streamtape.com",
+        "https://www.dailymotion.com"
       ],
       "generated_from_manifest_or_stage": true
     },
@@ -4898,21 +4101,7 @@
       "allow_html_url": true,
       "requires_direct_media": false,
       "observed_origins": [
-        "https://ballerinacappuccinalovestungtungtungsahur.com",
-        "https://player.vidlove.cc"
-      ],
-      "generated_from_manifest_or_stage": true
-    },
-    "moonflix": {
-      "strategy": "html_scraper",
-      "validation": "provider_native",
-      "allow_html_url": true,
-      "requires_direct_media": false,
-      "observed_origins": [
-        "https://player.moonflix.website",
-        "https://confident-harmony-production-0578.up.railway.app",
-        "https://hvhyu-production.up.railway.app",
-        "https://series-production-5c1c.up.railway.app"
+        "https://ballerinacappuccinalovestungtungtungsahur.com"
       ],
       "generated_from_manifest_or_stage": true
     }
@@ -5332,104 +4521,26 @@
   },
   "provider_profile_generation": {
     "schema_version": 3,
-    "provider_count": 157,
-    "staged_provider_count": 92,
+    "provider_count": 91,
+    "staged_provider_count": 0,
     "source": "manifest_published_bundles_and_current_staging",
     "same_deep_new_provider_support": true,
     "automatic_bundle_rewrite": false
   },
   "playback_integrity_policy": {
-    "version": 1,
+    "version": 2,
+    "enabled": true,
     "provider_disabling_is_not_a_repair": true,
-    "hls_targets": [
-      "1shows",
-      "4khdhub",
-      "4khdhubnew",
-      "allanime",
-      "allmovieland",
-      "allwish",
-      "anidb",
-      "anime-sama",
-      "anime-ultime",
-      "animekai",
-      "animepahe",
-      "animesalt",
-      "animesama-co",
-      "animesultra",
-      "animetsu",
-      "animevostfr",
-      "animeworld",
-      "animezey",
-      "animoflix",
-      "anizone",
-      "castle",
-      "cineby",
-      "cinefreak",
-      "cinemacity",
-      "cinevibe",
-      "coflix",
-      "ctgmovies",
-      "desiflix",
-      "dooflix",
-      "dulourd",
-      "einthusan",
-      "fibwatch",
-      "flemmix",
-      "french-manga",
-      "frenchstream",
-      "goatapi",
-      "goated",
-      "gramcinema",
-      "hdghartv",
-      "hdhub4u",
-      "hianime",
-      "hindmoviez",
-      "kisskh",
-      "kurage",
-      "movieblast",
-      "moviebox",
-      "movies4u",
-      "moviesdrive",
-      "movieshunt",
-      "moviesmod",
-      "movix",
-      "mugiwarastream",
-      "mycima",
-      "nakios",
-      "netmirror",
-      "onlykdrama",
-      "papadustream",
-      "peachify",
-      "persianstremio",
-      "playimdb",
-      "purstream",
-      "sekai",
-      "showbox",
-      "streamzo",
-      "toflix",
-      "topcartoons",
-      "uhdmovies",
-      "videasy",
-      "vidfast",
-      "vidlink",
-      "vidlove",
-      "vidnest",
-      "vidnest-anime",
-      "vidrock",
-      "vidsrc",
-      "vixsrc",
-      "voiranime",
-      "voiranime-homes",
-      "voiranime-rip",
-      "vostfree",
-      "waveanime",
-      "wookafr",
-      "xpass",
-      "yflix",
-      "zinkmovies"
+    "global_discovery_hooks": [
+      "scripts/provider_patches/hls_master_audio_preserver_v1.py",
+      "scripts/provider_patches/hls_runtime_integrity_v1.py"
     ],
+    "hls_runtime_options": {
+      "timeout_ms": 6500,
+      "max_children": 2
+    },
     "hls_master_external_audio": "preserve_master_playlist",
-    "hls_payload_validation": "top_level_plus_bounded_child_and_audio_playlist",
+    "hls_payload_validation": "top_level_plus_bounded_child_audio_and_segment_health",
     "conclusive_invalid_stream_action": "drop_stream_not_provider",
     "inconclusive_network_action": "preserve_stream",
     "vf_catalogue_identity": "tmdb_metadata_plus_strict_title_year_match",

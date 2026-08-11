@@ -167,6 +167,7 @@ function parseHls(text, baseUrl) {
   const audioLanguages = new Set();
   const subtitleLanguages = new Set();
   const subtitleTracks = [];
+  const audioTracks = [];
   const codecs = new Set();
   const hdrFormats = new Set();
   const variants = [];
@@ -175,7 +176,7 @@ function parseHls(text, baseUrl) {
   let totalDurationSeconds = 0;
   let durationEntryCount = 0;
   const lines = String(text || '').split(/\r?\n/);
-  const valid = lines.some((line) => line.trim() === '#EXTM3U');
+  const hasHeader = lines.some((line) => line.trim() === '#EXTM3U');
   const isVod = lines.some((line) => line.trim() === '#EXT-X-ENDLIST');
 
   for (let index = 0; index < lines.length; index += 1) {
@@ -209,7 +210,19 @@ function parseHls(text, baseUrl) {
     } else if (line.startsWith('#EXT-X-MEDIA:')) {
       const attrs = parseAttributeList(line.slice('#EXT-X-MEDIA:'.length));
       const type = String(attrs.TYPE || '').toUpperCase();
-      if (type === 'AUDIO') addLanguage(audioLanguages, attrs.LANGUAGE || attrs.NAME);
+      if (type === 'AUDIO') {
+        const language = normalizeLanguage(attrs.LANGUAGE || attrs.NAME);
+        addLanguage(audioLanguages, language);
+        if (attrs.URI) {
+          try {
+            audioTracks.push({
+              language,
+              name: attrs.NAME || null,
+              url: new URL(attrs.URI, baseUrl).href,
+            });
+          } catch {}
+        }
+      }
       if (type === 'SUBTITLES') {
         const language = normalizeLanguage(attrs.LANGUAGE || attrs.NAME);
         addLanguage(subtitleLanguages, language);
@@ -229,12 +242,17 @@ function parseHls(text, baseUrl) {
   }
 
   variants.sort((a, b) => (b.height || 0) - (a.height || 0) || b.bandwidth - a.bandwidth);
+  const structurallyPlayable = variants.length > 0
+    || durationEntryCount > 0
+    || lines.some((line) => /^#EXT-X-(?:PART|MAP):/i.test(line.trim()));
+  const valid = hasHeader && structurallyPlayable;
   return {
     valid,
     verifiedHeights,
     audioLanguages,
     subtitleLanguages,
     subtitleTracks,
+    audioTracks,
     codecs,
     hdrFormats,
     maxBandwidth,
@@ -475,6 +493,8 @@ async function probeStream(stream, mode) {
     let kind = classification.kind === 'unknown' ? 'direct' : classification.kind;
     let variantReachable = null;
     let segmentReachable = null;
+    let audioManifestReachable = null;
+    let audioSegmentReachable = null;
     let payloadVerified = false;
     let playbackVerified = false;
     let directSignatureVerified = false;
@@ -492,6 +512,38 @@ async function probeStream(stream, mode) {
       master.codecs.forEach((value) => codecs.add(value));
       master.hdrFormats.forEach((value) => hdrFormats.add(value));
       maxBandwidth = master.maxBandwidth;
+
+      if (master.audioTracks.length && mode.probe_best_variant) {
+        const preferredAudio = master.audioTracks.find((track) => track.language && ACCEPTED_AUDIO.has(track.language))
+          || master.audioTracks[0];
+        try {
+          const audioManifest = await fetchProbe(preferredAudio.url, stream.headers || {}, timeoutMs, 131072);
+          const audioClass = classifyHttp(audioManifest);
+          const parsedAudio = parseHls(audioManifest.body.toString('utf8'), audioManifest.finalUrl);
+          audioManifestReachable = audioClass.endpointReachable && parsedAudio.valid;
+          if (audioManifestReachable && mode.probe_first_segment) {
+            if (parsedAudio.firstSegment) {
+              try {
+                const audioSegment = await fetchProbe(parsedAudio.firstSegment, stream.headers || {}, timeoutMs, 65536);
+                const audioSegmentClass = classifyHttp(audioSegment);
+                audioSegmentReachable = audioSegmentClass.endpointReachable
+                  && !['html', 'json', 'empty', 'subtitle'].includes(audioSegmentClass.kind);
+              } catch {
+                audioSegmentReachable = false;
+              }
+            } else {
+              audioSegmentReachable = false;
+            }
+          }
+        } catch {
+          audioManifestReachable = false;
+          if (mode.probe_first_segment) audioSegmentReachable = false;
+        }
+      } else if (master.audioTracks.length) {
+        audioManifestReachable = null;
+      } else {
+        audioManifestReachable = true;
+      }
 
       let mediaPlaylist = master;
       if (master.bestVariant && mode.probe_best_variant) {
@@ -540,7 +592,9 @@ async function probeStream(stream, mode) {
       playbackVerified = payloadVerified
         && !shortVodPreview
         && variantReachable !== false
-        && (mode.probe_first_segment ? segmentReachable === true : true);
+        && audioManifestReachable !== false
+        && (mode.probe_first_segment ? segmentReachable === true : true)
+        && (mode.probe_first_segment && master.audioTracks.length ? audioSegmentReachable === true : true);
     } else if (classification.endpointReachable && (lowerPath.includes('.mpd') || kind === 'dash')) {
       kind = 'dash';
       const mpd = parseMpd(text);
@@ -600,6 +654,8 @@ async function probeStream(stream, mode) {
       latency_ms: result.latencyMs,
       variant_reachable: variantReachable,
       segment_reachable: segmentReachable,
+      audio_manifest_reachable: audioManifestReachable,
+      audio_segment_reachable: audioSegmentReachable,
       media_duration_seconds: mediaDurationSeconds,
       minimum_vod_duration_seconds: minimumVodDurationSeconds,
       short_vod_preview: shortVodPreview,

@@ -24,6 +24,7 @@ import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
 const { guardedFetch } = require('./network_guard.cjs');
+const { probeDirectMedia } = require('./direct_media_probe.cjs');
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const WORKER = path.join(ROOT, 'scripts', 'provider_worker.cjs');
@@ -189,6 +190,7 @@ function classifyFixture(parsed, execution, direct) {
   let classification = 'inconclusive_empty';
   if (!parsed || parsed.ok !== true) classification = 'runtime_error';
   else if (directCount > 0) classification = 'direct_playable';
+  else if (direct.some((item) => item.inconclusive === true)) classification = 'inconclusive_network';
   else if (streamCount > 0) classification = 'non_playable_payload';
   return {
     worker_ok: parsed?.ok === true,
@@ -228,7 +230,7 @@ async function probeProvider(row, profile, tempDir) {
     const parsed = execution.parsed;
     const streams = Array.isArray(parsed?.streams) ? parsed.streams : [];
     const direct = [];
-    for (const stream of streams.slice(0, 4)) direct.push(await probeDirectStream(stream));
+    for (const stream of streams.slice(0, 4)) direct.push(await probeDirectMedia(stream, { guardedFetch, fetchImpl: fetch, timeoutMs: 18000, maxRedirects: 5 }));
     results.push({ fixture: fixture.title, ...classifyFixture(parsed, execution, direct) });
   }
   return { id, profile, classification: classifyProfile(results), fixtures: results };

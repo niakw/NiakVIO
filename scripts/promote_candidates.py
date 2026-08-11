@@ -5,8 +5,8 @@
 Automatic activation still requires all ten strict gates. A SHA-pinned runtime
 evidence record may activate a provider only when CI is explicitly inconclusive
 while the same file has been confirmed working in the real Nuvio application.
-Confirmed failures, P2P output, upstream-disabled entries and SHA mismatches can
-never be overridden. Duplicate variants are resolved after every check.
+Confirmed failures and P2P output can never be overridden. An upstream-disabled
+flag is advisory only when the exact current JS passes the complete strict deep proof. Duplicate variants are resolved after every check.
 
 The ten gates are:
 1. no P2P/torrent evidence;
@@ -1354,10 +1354,18 @@ def activation_decision(
     )
 
     current_pass = dns_pass and access_pass and stream_pass and all_gates_pass(gates)
-    eligible = current_pass and (upstream_enabled or not respect_upstream)
+    # ``enabled:false`` in an upstream manifest is advisory when this exact JS
+    # has just passed Niakvio's own strict current deep proof. Treating the flag
+    # as a hard veto caused proven-working providers (for example Desiflix) to
+    # disappear with no failed activation gate. Hard P2P evidence and every
+    # current DNS/access/media/quality gate above remain authoritative.
+    upstream_disabled_overridden_by_current_strict_proof = bool(
+        respect_upstream and not upstream_enabled and current_pass
+    )
+    eligible = current_pass
     enabled = eligible and not auto_disabled
     blockers = [name for name, value in gates.items() if not value.get("passed")]
-    if respect_upstream and not upstream_enabled:
+    if respect_upstream and not upstream_enabled and not current_pass:
         blockers.append("upstream_disabled")
     if eligible and auto_disabled:
         blockers.append("availability_auto_disabled")
@@ -1386,6 +1394,7 @@ def activation_decision(
         "historical_quality_grace": {"eligible": False, "reason": "disabled_by_current_proof_policy"},
         "runtime_evidence": {"eligible": False, "reason": "disabled_by_current_proof_policy"},
         "disabled_reason": disabled_reason,
+        "upstream_disabled_overridden_by_current_strict_proof": upstream_disabled_overridden_by_current_strict_proof,
     }
 
 def failed_declared_ids(registry: dict[str, Any]) -> set[str]:

@@ -23,6 +23,7 @@ import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
 const { guardedFetch } = require('./network_guard.cjs');
+const { probeDirectMedia } = require('./direct_media_probe.cjs');
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const WORKER = path.join(ROOT, 'scripts', 'provider_worker.cjs');
@@ -210,7 +211,7 @@ async function probeProvider(row, tempDir) {
     const parsed = execution.parsed;
     const streams = Array.isArray(parsed?.streams) ? parsed.streams : [];
     const direct = [];
-    for (const stream of streams.slice(0, 4)) direct.push(await probeDirectStream(stream));
+    for (const stream of streams.slice(0, 4)) direct.push(await probeDirectMedia(stream, { guardedFetch, fetchImpl: fetch, timeoutMs: 18000, maxRedirects: 5 }));
     fixtureResults.push({
       fixture: fixture.title,
       worker_ok: parsed?.ok === true,

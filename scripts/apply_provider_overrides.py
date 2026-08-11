@@ -395,6 +395,33 @@ def apply_overrides(
     if removed_guards:
         applied.append({"type": "remove_legacy_global_stream_guard", "count": removed_guards, "phase": phase})
 
+    # Playback integrity is a repository-wide discovery invariant, not a list
+    # of currently-known providers. Run it last so every native, recovered or
+    # provider-specific stream result crosses the same HLS gate. The patch
+    # scripts are idempotent, so already-published bundles remain byte-stable.
+    if phase == "discovery":
+        playback_policy = config.get("playback_integrity_policy") or {}
+        if not isinstance(playback_policy, dict):
+            raise ValueError("playback_integrity_policy must be an object")
+        if playback_policy.get("enabled", True):
+            global_hooks = playback_policy.get("global_discovery_hooks") or []
+            if not isinstance(global_hooks, list):
+                raise ValueError("playback_integrity_policy.global_discovery_hooks must be an array")
+            global_options = playback_policy.get("hls_runtime_options") or {}
+            if not isinstance(global_options, dict):
+                raise ValueError("playback_integrity_policy.hls_runtime_options must be an object")
+            for patch_script in [str(value) for value in global_hooks if str(value).strip()]:
+                options = dict(global_options) if patch_script.endswith("hls_runtime_integrity_v1.py") else {}
+                before = text
+                text = _apply_patch_script(text, provider_id, patch_script, options, None)
+                if text != before:
+                    applied.append({
+                        "type": "patch_script",
+                        "path": patch_script,
+                        "phase": phase,
+                        "scope": "global_playback_integrity",
+                    })
+
     # Patch hooks form one transaction. A later hook may intentionally replace
     # or remove a wrapper added by an earlier hook. If the final bytes are
     # identical to the input, no effective patch happened and no mutation record
