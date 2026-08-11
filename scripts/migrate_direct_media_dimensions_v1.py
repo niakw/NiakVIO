@@ -73,7 +73,7 @@ def main() -> int:
 }
 
 function contentRangeTotal(value) {
-  const match = String(value || '').match(/bytes\s+\d+-\d+\/(\d+)/i);
+  const match = String(value || '').match(/bytes\\s+\\d+-\\d+\\/(\\d+)/i);
   return match ? Number(match[1]) : null;
 }
 
@@ -113,10 +113,17 @@ function contentRangeTotal(value) {
       }
     } else {
 '''
-    if new_direct not in source:
-        if old_direct not in source:
-            raise SystemExit('health_check.mjs direct media branch anchor not found')
-        source = source.replace(old_direct, new_direct, 1)
+    already_applied = (
+        'function parseMp4TrackHeights(body)' in source
+        and "kind === 'mp4' && mode.inspect_direct_dimensions === true" in source
+        and "contentRange: response.headers.get('content-range') || null" in source
+        and 'verifiedHeights.push(...parseMp4TrackHeights(result.body))' in source
+    )
+    if not already_applied:
+        if new_direct not in source:
+            if old_direct not in source:
+                raise SystemExit('health_check.mjs direct media branch anchor not found')
+            source = source.replace(old_direct, new_direct, 1)
 
     HEALTH.write_text(source, encoding='utf-8')
 
