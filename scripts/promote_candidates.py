@@ -943,11 +943,17 @@ def evaluate_pre_stability_gates(
         if isinstance(item, dict)
         and str((item.get("fixture") or {}).get("category") or "") in scoped_categories
     ]
-    scoped_healthy = [item for item in scoped_tests if item.get("status") == "healthy"]
-    coverage_healthy_fixtures = len(scoped_healthy) if scoped_categories else healthy_fixtures
+    # Type-scoped activation measures proven catalogue capabilities, not how many
+    # arbitrary titles happened to be absent. Once a category has a current
+    # verified payload, earlier primary/fallback catalogue misses remain
+    # diagnostics and cannot dilute that category's activation ratio.
+    scoped_healthy_categories = scoped_categories & healthy_categories
+    coverage_healthy_fixtures = (
+        len(scoped_healthy_categories) if scoped_categories else healthy_fixtures
+    )
     coverage_ratio = (
-        len(scoped_healthy) / len(scoped_tests)
-        if scoped_categories and scoped_tests
+        len(scoped_healthy_categories) / len(scoped_categories)
+        if scoped_categories
         else healthy_ratio
     )
     playable_streams = int(proof.get("streams_playable", 0))
@@ -1124,7 +1130,7 @@ def evaluate_pre_stability_gates(
             and category_coverage) or (runtime_light and manifest_description_present),
             {
                 "healthy_fixtures": coverage_healthy_fixtures,
-                "fixtures_tested": len(scoped_tests) if scoped_categories else int(proof.get("fixtures_tested", 0)),
+                "fixtures_tested": len(scoped_categories) if scoped_categories else int(proof.get("fixtures_tested", 0)),
                 "healthy_fixture_ratio": coverage_ratio,
                 "required_categories": sorted(effective_required_categories),
                 "original_required_categories": sorted(required_categories),
