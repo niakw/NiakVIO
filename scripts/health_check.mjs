@@ -1621,6 +1621,7 @@ async function testCandidate(candidate) {
         && !rows.some((item) => item.status === 'excluded');
     }),
   );
+  let fallbackExecuted = false;
   // Deep fallback is a bounded cascade per catalogue category. Stop as soon
   // as one alternate work proves the category healthy. A catalogue miss is not
   // evidence that the provider itself is dead.
@@ -1628,6 +1629,7 @@ async function testCandidate(candidate) {
     for (const category of categoriesNeedingFallback) {
       const categoryFallbacks = fallbackFixtures.filter((fixture) => fixture.category === category);
       for (const fixture of categoryFallbacks) {
+        fallbackExecuted = true;
         await executeFixture(fixture, 'fallback');
         const latest = fixtureResults[fixtureResults.length - 1];
         if (latest?.fixture?.category === category && latest.status === 'healthy') break;
@@ -1746,14 +1748,14 @@ async function testCandidate(candidate) {
     evidence: {
       primary_fixtures_tested: fixtureResults.filter((item) => item.fixture_phase === 'primary').length,
       fallback_fixtures_tested: fixtureResults.filter((item) => item.fixture_phase === 'fallback').length,
-      fallback_triggered: useFallback,
+      fallback_triggered: fallbackExecuted,
       fixtures_tested: activationTests.length,
       total_fixtures_executed: fixtureResults.length,
       fixture_status_counts: fixtureStatusCounts,
       failure_classes: failureClasses,
       runtime_error_fixtures: runtimeErrorFixtures,
       malformed_request_count: malformedRequestCount,
-      activation_fixture_phase: useFallback ? 'fallback' : 'primary',
+      activation_fixture_phase: fallbackExecuted ? 'fallback' : 'primary',
       healthy_fixtures: activationHealthyTests.length,
       healthy_fixture_ratio: coverageRatio,
       playable_fixtures: playableFixtures,

@@ -71,4 +71,9 @@ audit = (ROOT / "scripts" / "audit_catalogue_identity_media.py").read_text(encod
 assert "Mon ninja et moi 3" not in audit
 assert "1215638" not in audit
 
+health_source = (ROOT / "scripts" / "health_check.mjs").read_text(encoding="utf-8")
+assert "let fallbackExecuted = false;" in health_source
+assert "fallbackExecuted = true;" in health_source
+assert "useFallback" not in health_source
+
 print("global ID-first catalogue/media and broad activation policy tests passed")
