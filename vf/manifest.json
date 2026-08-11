@@ -1,6 +1,6 @@
 {
   "name": "Nuvio Curated Providers — VF uniquement",
-  "version": "5.20.36",
+  "version": "5.20.37",
   "scrapers": [
     {
       "id": "ANIME-SAMA",
@@ -128,6 +128,30 @@
       "supportsExternalPlayer": false
     },
     {
+      "id": "ANIMOFLIX",
+      "name": "AnimoFlix",
+      "description": "Regarder des animes VF et VOSTFR gratuitement sur AnimoFlix.",
+      "version": "1.0.18",
+      "author": "Gowaru",
+      "supportedTypes": [
+        "anime",
+        "movie"
+      ],
+      "filename": "../providers/animoflix--published-baseline--1dc3f3fe1c16de54.js",
+      "enabled": true,
+      "logo": "https://animoflix.to/img/logo.png",
+      "contentLanguage": [
+        "fr"
+      ],
+      "formats": [
+        "mp4",
+        "mkv"
+      ],
+      "limited": false,
+      "disabledPlatforms": [],
+      "supportsExternalPlayer": false
+    },
+    {
       "id": "MUGIWARASTREAM",
       "name": "Mugiwara-no-Streaming",
       "description": "Streaming gratuit d'animes et scans en bonne qualite via API Next.js.",
@@ -147,6 +171,30 @@
         "mp4",
         "mkv",
         "m3u8"
+      ],
+      "limited": false,
+      "disabledPlatforms": [],
+      "supportsExternalPlayer": false
+    },
+    {
+      "id": "ANIMEVOSTFR",
+      "name": "AnimeVOSTFR",
+      "description": "Animes VF et VOSTFR en streaming gratuit sur AnimeVOSTFR.",
+      "version": "1.1.53",
+      "author": "Gowaru",
+      "supportedTypes": [
+        "anime",
+        "movie"
+      ],
+      "filename": "../providers/animevostfr--published-baseline--58a0339f7ffc0402.js",
+      "enabled": true,
+      "logo": "https://animevostfr.org/wp-content/uploads/luffy-icon.jpg",
+      "contentLanguage": [
+        "fr"
+      ],
+      "formats": [
+        "mp4",
+        "mkv"
       ],
       "limited": false,
       "disabledPlatforms": [],
@@ -213,30 +261,6 @@
       "filename": "../providers/animesultra--published-baseline--837b87bfe4d21b55.js",
       "enabled": true,
       "logo": "https://animesultra.org/templates/animeultra/images/favicon.ico",
-      "contentLanguage": [
-        "fr"
-      ],
-      "formats": [
-        "mp4",
-        "mkv"
-      ],
-      "limited": false,
-      "disabledPlatforms": [],
-      "supportsExternalPlayer": false
-    },
-    {
-      "id": "ANIMEVOSTFR",
-      "name": "AnimeVOSTFR",
-      "description": "Animes VF et VOSTFR en streaming gratuit sur AnimeVOSTFR.",
-      "version": "1.1.53",
-      "author": "Gowaru",
-      "supportedTypes": [
-        "anime",
-        "movie"
-      ],
-      "filename": "../providers/animevostfr--published-baseline--58a0339f7ffc0402.js",
-      "enabled": true,
-      "logo": "https://animevostfr.org/wp-content/uploads/luffy-icon.jpg",
       "contentLanguage": [
         "fr"
       ],
@@ -377,28 +401,30 @@
       "supportsExternalPlayer": false
     },
     {
-      "id": "STREAMZO",
-      "name": "StreamZo",
-      "description": "Films et séries en streaming VF/VOSTFR sur Streamzo.fr (SPA, iframe injecté, multi-serveurs).",
-      "version": "1.0.22",
+      "id": "sekai",
+      "name": "Sekai",
+      "description": "Fournisseur spécialisé sur les gros animes. Streams directs très rapides sans iFrames.",
+      "version": "1.0.30",
       "author": "Gowaru",
       "supportedTypes": [
-        "movie",
-        "tv",
-        "anime"
+        "anime",
+        "movie"
       ],
-      "filename": "../providers/streamzo--nuvio--9cc4444628ca7e00.js",
+      "filename": "../providers/sekai--nuvio--c64948af5e15e780.js",
       "enabled": true,
-      "logo": "https://streamzo.fr/favicon.ico",
+      "logo": "https://sekai.one/favicon.ico",
       "contentLanguage": [
         "fr"
       ],
       "formats": [
-        "m3u8"
+        "mp4",
+        "mkv"
       ],
       "limited": false,
-      "disabledPlatforms": [],
-      "supportsExternalPlayer": true
+      "disabledPlatforms": [
+        "tv"
+      ],
+      "supportsExternalPlayer": false
     },
     {
       "id": "VOIRANIME",
@@ -520,6 +546,30 @@
       ]
     },
     {
+      "id": "STREAMZO",
+      "name": "StreamZo",
+      "description": "Films et séries en streaming VF/VOSTFR sur Streamzo.fr (SPA, iframe injecté, multi-serveurs).",
+      "version": "1.0.23",
+      "author": "Gowaru",
+      "supportedTypes": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "filename": "../providers/streamzo--nuvio--26cb7d419ba62ed4.js",
+      "enabled": false,
+      "logo": "https://streamzo.fr/favicon.ico",
+      "contentLanguage": [
+        "fr"
+      ],
+      "formats": [
+        "m3u8"
+      ],
+      "limited": false,
+      "disabledPlatforms": [],
+      "supportsExternalPlayer": false
+    },
+    {
       "id": "FRENCHSTREAM",
       "name": "Frenchstream",
       "description": "Films, séries et animes en VF et VOSTFR, avec récupération des lecteurs depuis la fiche lorsque l’ancienne API est indisponible.",
@@ -543,32 +593,6 @@
       ],
       "limited": false,
       "disabledPlatforms": [],
-      "supportsExternalPlayer": false
-    },
-    {
-      "id": "SEKAI",
-      "name": "Sekai",
-      "description": "Fournisseur spécialisé sur les gros animes. Streams directs très rapides sans iFrames.",
-      "version": "1.0.29",
-      "author": "Gowaru",
-      "supportedTypes": [
-        "anime",
-        "movie"
-      ],
-      "filename": "../providers/sekai--nuvio--c64948af5e15e780.js",
-      "enabled": false,
-      "logo": "https://sekai.one/favicon.ico",
-      "contentLanguage": [
-        "fr"
-      ],
-      "formats": [
-        "mp4",
-        "mkv"
-      ],
-      "limited": false,
-      "disabledPlatforms": [
-        "tv"
-      ],
       "supportsExternalPlayer": false
     },
     {
@@ -636,30 +660,6 @@
       ],
       "formats": [
         "mp4"
-      ],
-      "limited": false,
-      "disabledPlatforms": [],
-      "supportsExternalPlayer": false
-    },
-    {
-      "id": "animoflix",
-      "name": "AnimoFlix",
-      "description": "Regarder des animes VF et VOSTFR gratuitement sur AnimoFlix.",
-      "version": "1.0.17",
-      "author": "Gowaru",
-      "supportedTypes": [
-        "anime",
-        "movie"
-      ],
-      "filename": "../providers/animoflix--published-baseline--1dc3f3fe1c16de54.js",
-      "enabled": false,
-      "logo": "https://animoflix.to/img/logo.png",
-      "contentLanguage": [
-        "fr"
-      ],
-      "formats": [
-        "mp4",
-        "mkv"
       ],
       "limited": false,
       "disabledPlatforms": [],
