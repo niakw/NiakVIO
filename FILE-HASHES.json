@@ -1,6 +1,6 @@
 {
   "schema_version": 79,
-  "release": "5.20.37",
+  "release": "5.20.38",
   "algorithm": "sha256",
   "excluded_generated_files": [
     "FILE-HASHES.json",
@@ -52,7 +52,7 @@
     "RUN-LOCAL-GLOBAL-REPAIR.command": "c27713e8f740c3e88f2003d8f4407288a323bc977d61202ae96e0e9652898424",
     "SECURITY.md": "7f825e11cf2ab9a89f43d9e13451117b5caebbba5b5b1ac08c530e5d12838836",
     "SELECTION.md": "3d8e32a18c34de2abebca6a8aa1bba60d066e886982b8863c103a1c0c81157a4",
-    "SHA256SUMS.json": "4b6fb6300c315d712b97e6fe81a0e776704a797e4d2a69a80449a1bd22d32377",
+    "SHA256SUMS.json": "0579e3ac50da105d7662f1ff7f1ae4f85fd12c6e274e7e14df820dbf92386c36",
     "THIRD_PARTY_NOTICES.md": "a511c14b47c10b13367f878d7710f0e1d95bc5b615e63a3c9d14f5225f83f191",
     "UPSTREAMS.md": "f2f73277723038134a9bf00965774124053de8df438f6ba3f0f0752b03f7d607",
     "VALIDATION.json": "73531e259816df4ca58330c672c6a1ecfb86fc11a332ade361d7a80bb5e07d12",
@@ -91,16 +91,16 @@
     "health-config.json": "35f3b03396dae5993ed5bf411ca30c42a1b36575af0b9ce97a3dfe55accc0e78",
     "health-history.json": "fa90b3d427575727d5f2682848360eeac91ea38c8e2ac311d02e6ed11c5c64b5",
     "health-report.json": "4d716a1c372616d000f34f60e23f40fb81800eb5e19bb254f2acdd7096275123",
-    "manifest.json": "efcba46d12a32a45a5aa32c6f945fb55a64f52b201556ecee0fb0c9f2925afea",
+    "manifest.json": "0394f288790637b39f8bda2615e162567cec95f2ed69200282ba7c42e68895a6",
     "nuvio-client-id-state.json": "7a8f050be437d7b81e6626aff4ffed33da50df74933869b29048175a8187081e",
-    "package-lock.json": "7f565238805d96ffd219becdc4820ad64fb6ad2457fe7955cf294f8224fbd1a8",
-    "package.json": "b120bae412aac8c8441e5b96fb0cc8b098c5415d20aceab769fad8b46fa4ea1b",
+    "package-lock.json": "a7ca160c4c8776ffaae677d0777fb5a9f4abc3c662f51329444c8d2f1d9295aa",
+    "package.json": "60907ed5d60fa92f1803f524bd70d019f89111a1cc9b8d39390a9bd8f78ffa8a",
     "provider-activation-lkg.json": "0371751f2f0238fc106444bea7abe8c686d18a700c323de21938f02ea25712c8",
     "provider-domain-history.json": "2200a290d310fd5000714cd5fa462efde210ab09648ef71ff488ed236fcc773f",
     "provider-hub-report.json": "bcbf3315dd8f853b015ed14e1340d360740bda2b2e3d09ff13ad76b637c1e13c",
     "provider-hubs.json": "e9c77e87d1465bafc1749ceb9607eb7f4ab96683c06ffeefcd5bfd2307a7d7f9",
     "provider-lkg.json": "4a5e95b0d00e9723ea6cbe1dbdde97b94729af24144a90b804ea76448d528c47",
-    "provider-overrides.json": "593ad84b8ad43b591e825db0e3476978f927b664c065053c3dbe9c13a84be568",
+    "provider-overrides.json": "ee9703db0d17c139fd6571b4b1c13be132c09a11b45500c510814091de98f6da",
     "provider-type-policy.json": "a1c4af90fc06e7fdbc3ad446ac72f2fe60d9ea5ae81f9bd8731bc2f0fb3befbf",
     "providers/1shows--nuvio--7ca7b969590ced85.js": "7ca7b969590ced85e4f76a257868b7cd68d11905ed0fb29062a0e789a615b4b5",
     "providers/4khdhub--published-baseline--75b72af99cf8d6a1.js": "75b72af99cf8d6a1a7e9c977c813b25b3284276a65690da0cb0be8aad407fc61",
@@ -270,7 +270,7 @@
     "scripts/override_text_utils.py": "8f54c04f7996ffafc5f9989ed52d41c750f8224ad8e71ea3150ea1769986b745",
     "scripts/platform_runtime_probe.mjs": "789267fe00db8eb944f48d224b5bc47d5f3b5cabf8dce13339121be4a3e24400",
     "scripts/prepare_retry_targets.py": "2e5de3f3fea2b8413d08ffe0169de324314eac4d50cdd25c9bd7cae97612c1f1",
-    "scripts/promote_candidates.py": "2d74d6f8512d4e4d287498bef24f5b02354365fb795771a3188e19728df2ff42",
+    "scripts/promote_candidates.py": "9a0edb257f4329fcfe70d599d898e552f64a6906e294f1604432fac9bcd2e9a8",
     "scripts/promote_global_nuvio_tv_candidates.py": "cc4f6024d463ecf1bd1db022f1e8e38e960ae9d9e10009907c139cc7bd4770d9",
     "scripts/promote_target_media_v3.py": "928c477bfe40dc3fd99b1eaaf7038ffc2fd4ffb34c81075081b542db614186fd",
     "scripts/promote_target_media_v4.py": "0e18635cbb329fc8271d80f4d45fd6bf8f8dc3354ba3704882a678130796b965",
@@ -346,7 +346,7 @@
     "scripts/validate_route_overrides.py": "f0e8a0a92a833d9f160fe653ac5ab9da1a85dcf7536b50958a9170feb5469851",
     "scripts/validate_settings_pipeline.py": "a8c39889531a2cf0c1bf8bcec3771fa58d30bfb76f321edd5c920469ebd17f02",
     "scripts/validate_vf_projection.py": "3b0dbf3b33349d4524e1b2ea06831e16806fa64af21f129445f733493c30f005",
-    "sources.json": "1db58ba778d21fee5579c1042946c28dddbe1e1f21da245ac5722bc1c4f90220",
+    "sources.json": "d263318011f472434d95318ecfddd0bbd24091dd8fc76c5686f55312538fef8c",
     "sync-report.json": "4a9c7117858dc806ddea3183721f9978485144d7d65f939d7a384d997a42a583",
     "tests/adaptive_domain_recovery_test.py": "a62ffdc8f85fe54833f6ced467528aab1530c5d2efe4b8ec3cfcb053543cdfcd",
     "tests/adaptive_runtime_repair_test.py": "1f5fd15d12bef5d9aef85245fdcd8e3f025f99b52a5d4144517f556754e65654",
@@ -528,6 +528,6 @@
     "upstream-lkg/providers/f679614bf1f955dcfea633d527e9ce40b56768ec3ff32648a651f565c121b70c.js": "f679614bf1f955dcfea633d527e9ce40b56768ec3ff32648a651f565c121b70c",
     "upstream-lkg/providers/f96d16c8b4e067394dd41f41a7fbc1a5bb1c3179c5198d35faaaa627e3cac02e.js": "f96d16c8b4e067394dd41f41a7fbc1a5bb1c3179c5198d35faaaa627e3cac02e",
     "upstream-lkg.json": "f8f58094840b18bb7f61bc017cd0668729ef5aa14c5cce6f57ec3b23e21f9715",
-    "vf/manifest.json": "7c56fb63bb612e6c679328a1d55b540e2dbd9740e041fc5c42d18646e5c5d316"
+    "vf/manifest.json": "e3fe708273161aee98686dec87025f9807d13dc49956fb6fb3e5f5cbc5fa17ce"
   }
 }

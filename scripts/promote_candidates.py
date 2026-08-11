@@ -282,6 +282,10 @@ def build_entry(
         # current bundle does not implement (for example Papadustream movies).
         entry["supportedTypes"] = published_types
     entry["filename"] = destination.relative_to(ROOT).as_posix()
+    # StreamZo needs an external player for ordinary embed/recovery bundles.
+    # Only the globally audited direct-media bundle can safely advertise native playback.
+    if canonical == "streamzo":
+        entry["supportsExternalPlayer"] = "--nuvio-tv-global--" not in entry["filename"]
     entry["enabled"] = bool(enabled)
     if not isinstance(entry.get("id"), str) or not entry["id"].strip():
         entry["id"] = candidate.get("upstream_id") or candidate["canonical_id"]
