@@ -1,0 +1,56 @@
+name: Nuvio TV regression matrix
+
+on:
+  push:
+    branches:
+      - agent/tv-regression-5.20.38
+    paths:
+      - .github/triggers/tv-regression-matrix
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          fetch-depth: 1
+      - name: Set up Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: '3.12'
+      - name: Set up Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Install pinned dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Run exhaustive TV matrix
+        env:
+          NUVIO_TV_MATRIX_WORKERS: '6'
+          NUVIO_TV_MATRIX_TIMEOUT: '85'
+        run: python scripts/tv_regression_matrix.py
+      - name: Print focused findings
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          d=json.loads(Path('automation/tv-regression-matrix.json').read_text())
+          print(json.dumps(d['summary'], ensure_ascii=False, indent=2))
+          focus={'purstream','vegamovies','hindmoviez','movieblast','animezey','4khdhubnew','4khdhub','papadustream','streamzo','frenchstream','movix','coflix','flemmix','nakios','toflix','wookafr'}
+          for row in d['rows']:
+              if row['provider_id'] in focus:
+                  print(json.dumps({k:row.get(k) for k in ('provider_id','fixture','enabled','status','raw','playable','vf_playable','first_playable_index','dead_before_playable','runtime_error','streams')}, ensure_ascii=False))
+          PY
+      - name: Upload TV matrix
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: tv-regression-matrix-${{ github.run_id }}
+          path: automation/tv-regression-matrix.json
+          retention-days: 2
