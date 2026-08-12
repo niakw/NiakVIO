@@ -16,7 +16,9 @@ assert 'if require_language and not (audio or subtitle_ok):' in source
 assert 'scoped_categories = required_categories & independently_proven' in source
 assert '"activation_supported_types": sorted(scoped_categories)' in source
 assert 'authoritative_published_types = [' in source
-assert 'and not authoritative_published_types' in source
+assert 'curated_capability_types = [' in source
+assert 'authoritative_catalogue_types = authoritative_published_types or curated_capability_types' in source
+assert 'and not authoritative_catalogue_types' in source
 assert 'promoted_entry["supportedTypes"] = activation_supported_types' in source
 assert 'tracked_fields = ("filename", "supportedTypes", "supportsExternalPlayer")' in source
 

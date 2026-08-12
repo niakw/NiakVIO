@@ -1994,15 +1994,21 @@ def main() -> int:
             ]
             override_policy = load_overrides()
             provider_policy = (override_policy.get("provider_patches") or {}).get(cid, {})
+            capability_policy = (override_policy.get("provider_capabilities") or {}).get(cid, {})
             authoritative_published_types = [
                 str(value) for value in (provider_policy.get("published_types") or [])
                 if str(value) in {"movie", "tv", "anime"}
             ] if isinstance(provider_policy, dict) else []
+            curated_capability_types = [
+                str(value) for value in (capability_policy.get("catalogue_types") or [])
+                if str(value) in {"movie", "tv", "anime"}
+            ] if isinstance(capability_policy, dict) else []
+            authoritative_catalogue_types = authoritative_published_types or curated_capability_types
             if (
                 enabled
                 and activation_mode == "strict_current"
                 and activation_supported_types
-                and not authoritative_published_types
+                and not authoritative_catalogue_types
             ):
                 promoted_entry["supportedTypes"] = activation_supported_types
             promoted_entry["version"] = provider_entry_version(promoted_entry, existing.get(cid))

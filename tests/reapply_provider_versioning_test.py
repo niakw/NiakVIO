@@ -9,11 +9,19 @@ mod=module_from_spec(spec); spec.loader.exec_module(mod)
 assert mod.bump_provider_version('1.0.0')=='1.0.1'
 assert mod.bump_provider_version('2.9.99')=='2.9.100'
 assert mod.bump_provider_version('bad')=='1.0.1'
-assert mod.configured_published_types({
+assert mod.configured_authoritative_types({
     'provider_patches': {
         'demo': {'published_types': ['movie', 'tv', 'bogus', 'anime']}
+    },
+    'provider_capabilities': {
+        'demo': {'catalogue_types': ['anime']}
     }
 }, 'DEMO') == ['movie', 'tv', 'anime']
+assert mod.configured_authoritative_types({
+    'provider_capabilities': {
+        'anime-demo': {'catalogue_types': ['movie', 'anime', 'bogus']}
+    }
+}, 'ANIME-DEMO') == ['movie', 'anime']
 
 # Only the generated adaptive wrapper's historical hard-coded French claim may
 # be removed. Genuine/native language metadata outside that wrapper must stay.

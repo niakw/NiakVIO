@@ -45,14 +45,22 @@ def bump_provider_version(value: str) -> str:
     return f"{major}.{minor}.{patch + 1}"
 
 
-def configured_published_types(config: dict[str, Any], provider_id: str) -> list[str]:
+def configured_authoritative_types(config: dict[str, Any], provider_id: str) -> list[str]:
+    provider_key = str(provider_id or "").strip().casefold()
     patches = config.get("provider_patches") if isinstance(config, dict) else {}
-    row = (patches or {}).get(str(provider_id or "").strip().casefold(), {})
-    if not isinstance(row, dict):
-        return []
+    patch_row = (patches or {}).get(provider_key, {})
+    published = [
+        str(value)
+        for value in ((patch_row.get("published_types") or []) if isinstance(patch_row, dict) else [])
+        if str(value) in {"movie", "tv", "anime"}
+    ]
+    if published:
+        return published
+    capabilities = config.get("provider_capabilities") if isinstance(config, dict) else {}
+    capability_row = (capabilities or {}).get(provider_key, {})
     return [
         str(value)
-        for value in (row.get("published_types") or [])
+        for value in ((capability_row.get("catalogue_types") or []) if isinstance(capability_row, dict) else [])
         if str(value) in {"movie", "tv", "anime"}
     ]
 
@@ -180,7 +188,7 @@ def main() -> int:
         if PROVIDERS.resolve() not in path.parents or not path.is_file():
             raise ValueError(f"missing or unsafe published provider: {relative}")
 
-        authoritative_types = configured_published_types(override_config, provider_id)
+        authoritative_types = configured_authoritative_types(override_config, provider_id)
         types_changed = bool(authoritative_types and entry.get("supportedTypes") != authoritative_types)
         if types_changed:
             entry["supportedTypes"] = authoritative_types
