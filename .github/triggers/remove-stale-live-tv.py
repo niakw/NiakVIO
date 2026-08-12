@@ -40,6 +40,9 @@ for block in exact_blocks:
 
 text = text.replace('- maintenir en parallèle une intégration TV live au format addon ;\n', '')
 text = text.replace('Le manifest de l’addon TV live est volontairement séparé : il appartient à une autre famille d’intégration.\n\n', '')
+text = text.replace('8. **La TV live addon ne doit pas être confondue avec la compatibilité provider NuvioTV.**\n', '')
+text = text.replace('9. **Une publication doit être reproductible et intègre jusque sur le `main` final.**', '8. **Une publication doit être reproductible et intègre jusque sur le `main` final.**')
+text = text.replace('Providers • NuvioTV • TV live • Réparation • Validation • Compatibilité • Intégrité', 'Providers • NuvioTV • Réparation • Validation • Compatibilité • Intégrité')
 text = text.replace(
     '**Niakvio ne stocke aucune vidéo.** Le projet publie des manifests, métadonnées, correctifs, bundles de providers et structures d’addon consommés côté client.',
     '**Niakvio ne stocke aucune vidéo.** Le projet publie des manifests, métadonnées, correctifs et bundles de providers consommés côté client.'
