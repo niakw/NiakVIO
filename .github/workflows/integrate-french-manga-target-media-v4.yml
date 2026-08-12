@@ -1,0 +1,169 @@
+name: Integrate French-Manga target media v4
+
+on:
+  push:
+    branches:
+      - fix/french-manga-target-media-v4
+    paths:
+      - .github/triggers/integrate-french-manga-target-media-v4
+
+permissions:
+  contents: write
+
+jobs:
+  integrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: "24"
+          package-manager-cache: false
+      - name: Install pinned dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Replace French-Manga legacy direct resolver with target-media v4
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          path=Path('provider-overrides.json');data=json.loads(path.read_text(encoding='utf-8'))
+          cfg=data.setdefault('provider_patches',{}).setdefault('french-manga',{})
+          target='scripts/provider_patches/nuvio_tv_target_media_v4.py'
+          legacy='scripts/provider_patches/nuvio_tv_direct_media_v2.py'
+          sanitizer='scripts/provider_patches/stream_output_sanitizer_v5.py'
+          scripts=[x for x in list(cfg.get('patch_scripts') or []) if x not in (target,legacy)]
+          if sanitizer in scripts:
+              scripts.insert(scripts.index(sanitizer),target)
+          else:
+              scripts.insert(0,target)
+          cfg['patch_scripts']=scripts
+          opts=cfg.setdefault('patch_script_options',{})
+          opts.pop(legacy,None)
+          opts[target]={
+              'provider_name':'French-Manga',
+              'max_candidates':24,
+              'timeout_ms':20000,
+              'blocked_hosts':['fstream.top'],
+              'strip_legacy_direct_media_v2':True,
+              'force_rewrap_target_media':True,
+          }
+          required=[x for x in list(cfg.get('required_values') or []) if x!='NUVIO_TV_DIRECT_MEDIA_V2']
+          if 'NUVIO_TV_TARGET_MEDIA_V4' not in required:required.append('NUVIO_TV_TARGET_MEDIA_V4')
+          cfg['required_values']=required
+          notes=list(cfg.get('notes') or [])
+          note='Resolve Vidzy/FSVid/Lulu episode players to proven target media and reject the 18-second /troll/master.m3u8 preview before publication.'
+          if note not in notes:notes.append(note)
+          cfg['notes']=notes
+          path.write_text(json.dumps(data,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+
+          test=Path('tests/french_manga_target_media_profile_test.py')
+          test.write_text('''#!/usr/bin/env python3\nimport json\nfrom pathlib import Path\nROOT=Path(__file__).resolve().parents[1]\nd=json.loads((ROOT/'provider-overrides.json').read_text())\ncfg=d['provider_patches']['french-manga']\nscripts=cfg.get('patch_scripts') or []\nassert 'scripts/provider_patches/nuvio_tv_target_media_v4.py' in scripts\nassert 'scripts/provider_patches/nuvio_tv_direct_media_v2.py' not in scripts\nassert scripts.index('scripts/provider_patches/nuvio_tv_target_media_v4.py') < scripts.index('scripts/provider_patches/stream_output_sanitizer_v5.py')\no=cfg['patch_script_options']['scripts/provider_patches/nuvio_tv_target_media_v4.py']\nassert o['force_rewrap_target_media'] is True and o['strip_legacy_direct_media_v2'] is True\nassert 'NUVIO_TV_TARGET_MEDIA_V4' in cfg.get('required_values',[])\nprint('French-Manga target media profile test passed')\n''',encoding='utf-8')
+          package=Path('package.json');pkg=json.loads(package.read_text());extra='python tests/french_manga_target_media_profile_test.py'
+          if extra not in pkg['scripts']['test']:pkg['scripts']['test']+=' && '+extra
+          package.write_text(json.dumps(pkg,ensure_ascii=False,indent=2)+'\n')
+          PY
+
+      - name: Reapply French-Manga override and prepare candidate release
+        run: |
+          PREVIOUS_MANIFEST="$(mktemp)"; cp manifest.json "$PREVIOUS_MANIFEST"
+          python scripts/reapply_published_overrides.py
+          python scripts/prune_unreferenced_providers.py
+          python scripts/bump_release_patch_if_manifest_changed.py --previous "$PREVIOUS_MANIFEST" --manifest manifest.json
+          python scripts/generate_language_manifests.py
+          python scripts/prune_unreferenced_providers.py
+          python scripts/sync_release_versions.py --manifest manifest.json
+          python scripts/validate_published_overrides.py
+          python scripts/validate_activation_preservation.py
+          python scripts/validate_language_projection.py
+
+      - name: Prove French-Manga JJK and AoT return non-preview target media
+        env:
+          NUVIO_NETWORK_MAX_REQUESTS: "180"
+          NUVIO_WORKER_MEMORY_MB: "512"
+        run: |
+          python - <<'PY'
+          import json,re,subprocess,urllib.request
+          from pathlib import Path
+          manifest=json.loads(Path('manifest.json').read_text())
+          row=next(x for x in manifest['scrapers'] if str(x.get('id') or '').casefold()=='french-manga')
+          provider=Path(row['filename'])
+          ctx={'locale':'fr-FR','language':'fr','languages':['fr-FR','fr'],'platform':'android','settings':{},'storage':{}}
+          fixtures=[
+              {'tmdbId':'95479','mediaType':'tv','season':1,'episode':1,'title':'Jujutsu Kaisen','year':2020,'category':'anime','label':'Jujutsu Kaisen S01E01'},
+              {'tmdbId':'1429','mediaType':'tv','season':1,'episode':1,'title':'Attack on Titan','year':2013,'category':'anime','label':'Attack on Titan S01E01'},
+          ]
+          def parse(out):
+              for line in reversed(out.splitlines()):
+                  line=line.strip();line=line.split('=',1)[1] if line.startswith('NUVIO_HEALTH_RESULT=') else line
+                  try:return json.loads(line)
+                  except Exception:pass
+          def streams(v):
+              if isinstance(v,list):return v
+              if isinstance(v,dict):
+                  for k in ('streams','results','data'):
+                      if isinstance(v.get(k),list):return v[k]
+              return []
+          def prove(r):
+              u=str(r.get('url') or '')
+              if '/troll/master.m3u8' in u:return False,'troll-url'
+              h={'User-Agent':'Mozilla/5.0','Accept':'application/vnd.apple.mpegurl,application/dash+xml,video/*,application/octet-stream,*/*','Range':'bytes=0-262143'}
+              h.update({str(k):str(v) for k,v in (r.get('headers') or {}).items()})
+              try:
+                  with urllib.request.urlopen(urllib.request.Request(u,headers=h),timeout=22) as res:
+                      raw=res.read(262144);ct=(res.headers.get('content-type') or '').lower();st=getattr(res,'status',None)
+                      text=raw.decode('utf-8',errors='ignore').lstrip('\ufeff \r\n\t')
+                      if text.startswith('#EXTM3U'):
+                          vals=[float(x) for x in re.findall(r'#EXTINF:([0-9.]+)',text)]
+                          duration=sum(vals)
+                          if '#EXT-X-STREAM-INF' in text:return True,f'hls-master status={st}'
+                          return duration>=60,f'hls duration={duration:.1f}s status={st}'
+                      if len(raw)>=8 and raw[4:8]==b'ftyp':return True,f'mp4 status={st}'
+                      if raw[:4]==bytes([0x1a,0x45,0xdf,0xa3]):return True,f'ebml status={st}'
+                      if (st in (200,206)) and ct.startswith('video/'):return True,f'video mime={ct} status={st}'
+                      return False,f'unproven status={st} mime={ct}'
+              except Exception as e:return False,f'{type(e).__name__}: {e}'
+          for f in fixtures:
+              cp=subprocess.run(['node','scripts/provider_worker.cjs',str(provider),json.dumps(f),json.dumps(ctx),'2'],capture_output=True,text=True,timeout=120)
+              assert cp.returncode==0,(f,cp.stderr[-5000:])
+              rows=streams(parse(cp.stdout));assert rows,(f,cp.stdout[-8000:])
+              assert all('/troll/master.m3u8' not in str(x.get('url') or '') for x in rows),rows
+              proofs=[prove(x) for x in rows[:8]]
+              good=sum(1 for ok,_ in proofs if ok)
+              assert good>=1,(f,rows,proofs)
+              print(f"French-Manga live proof passed: {f['label']} playable={good}/{len(rows)} proofs={proofs}")
+          PY
+
+      - name: Remove integration-only CI files
+        run: |
+          rm -f .github/workflows/integrate-french-manga-target-media-v4.yml
+          rm -f .github/triggers/integrate-french-manga-target-media-v4
+
+      - name: Hash and create candidate commit
+        run: |
+          python scripts/generate_release_hashes.py
+          python scripts/validate_release_integrity.py
+          git config user.name "github-actions[bot]";git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A;git diff --cached --check;git commit -m "fix: resolve French-Manga target media"
+
+      - name: Validate candidate in isolated worktree
+        run: |
+          git worktree add --detach /tmp/niakvio-french-manga HEAD
+          cd /tmp/niakvio-french-manga
+          npm ci --ignore-scripts --no-audit --no-fund
+          python scripts/validate_release_integrity.py
+          python scripts/validate_activation_preservation.py
+          python scripts/validate_language_projection.py
+          npm test
+
+      - name: Publish only after targeted validation
+        run: |
+          git fetch origin main
+          git rebase origin/main
+          git push origin HEAD:main
