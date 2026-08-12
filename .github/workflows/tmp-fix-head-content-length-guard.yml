@@ -1,0 +1,61 @@
+name: Temporary fix HEAD content-length guard
+
+on:
+  push:
+    branches:
+      - agent/tv-regression-5.20.38
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: agent/tv-regression-5.20.38
+          fetch-depth: 1
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Apply and regression-test HEAD guard
+        run: |
+          python scripts/tmp_fix_head_content_length_guard.py
+          node tests/provider_worker_security.test.cjs
+      - name: Replay real Nuvio worker contract on an existing large-file provider
+        run: |
+          python - <<'PY'
+          import json, subprocess
+          from pathlib import Path
+          root=Path('.').resolve()
+          manifest=json.loads(Path('manifest.json').read_text(encoding='utf-8'))
+          row=next(x for x in manifest.get('scrapers',[]) if str(x.get('id','')).casefold()=='dvdplay')
+          fixture={'tmdbId':'157336','mediaType':'movie','title':'Interstellar','year':2014,'category':'movie'}
+          context={'locale':'fr-FR','language':'fr','languages':['fr-FR','fr','en-US','en'],'platform':'android','settings':{},'storage':{},'fixtureMetadata':fixture,'networkLimits':{'maxFetches':30,'maxRedirects':5,'maxResponseBytes':5242880,'maxTotalResponseBytes':20971520,'maxDistinctHosts':20},'maxSettingsProfiles':1}
+          proc=subprocess.run(['node','scripts/provider_worker.cjs',str(root/row['filename']),json.dumps(fixture),json.dumps(context)],cwd=root,capture_output=True,text=True,timeout=70)
+          markers=[line for line in proc.stdout.splitlines() if line.startswith('NUVIO_HEALTH_RESULT=')]
+          if not markers:
+              raise SystemExit('missing worker result')
+          result=json.loads(markers[-1].split('=',1)[1])
+          print(json.dumps({'ok':result.get('ok'),'stream_count':result.get('stream_count'),'provider_server_successful_response':result.get('provider_server_successful_response')},indent=2))
+          if int(result.get('stream_count') or 0) < 1:
+              raise SystemExit('real worker replay still returned zero streams')
+          PY
+      - name: Full repository regression suite
+        run: npm test
+      - name: Commit proven global worker fix
+        run: |
+          rm -f scripts/tmp_fix_head_content_length_guard.py
+          rm -f .github/workflows/tmp-fix-head-content-length-guard.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'fix: allow metadata-only HEAD probes for large media'
+          git push origin HEAD:agent/tv-regression-5.20.38
