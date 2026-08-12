@@ -1,4 +1,4 @@
-name: Temporary migrate sync deep CI profile
+name: Temporary migrate bounded deep runtime
 
 on:
   push:
@@ -11,13 +11,13 @@ permissions:
   contents: write
 
 concurrency:
-  group: temporary-sync-deep-ci-profile-migration
+  group: temporary-bounded-deep-runtime-migration
   cancel-in-progress: true
 
 jobs:
   migrate:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
@@ -28,30 +28,40 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Apply bounded deep CI profile to sync workflow
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: '24'
+          package-manager-cache: false
+
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Apply bounded concurrency in the deep runtime engine
         run: |
           python scripts/tmp_migrate_sync_deep_ci_profile.py
-          grep -F -- "- name: Prepare bounded CI health profile" .github/workflows/sync.yml
-          grep -F -- "NUVIO_HEALTH_CONFIG: health-output/ci-health-config.json" .github/workflows/sync.yml
-          grep -F -- "config['concurrency'] = 6" .github/workflows/sync.yml
+          node --check scripts/health_check.mjs
+          python -m py_compile scripts/deep_repair_loop.py
+          grep -F -- 'process.env.NUVIO_HEALTH_CONCURRENCY' scripts/health_check.mjs
+          grep -F -- 'env.setdefault("NUVIO_HEALTH_CONCURRENCY", "6")' scripts/deep_repair_loop.py
 
-      - name: Remove one-shot migration harness and refresh integrity hashes
+      - name: Regression suite after runtime migration
+        run: npm test
+
+      - name: Remove one-shot source migration inputs and refresh integrity hashes
         run: |
           rm -f scripts/tmp_migrate_sync_deep_ci_profile.py
-          rm -f .github/workflows/tmp-migrate-sync-deep-ci-profile.yml
           rm -f .github/triggers/migrate-sync-deep-ci-profile
           python scripts/generate_release_hashes.py
           python scripts/validate_release_integrity.py
 
-      - name: Commit verified workflow optimization
+      - name: Commit proven runtime optimization
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add -A
           git diff --cached --check
           if git diff --cached --quiet; then
-            echo 'No workflow migration change to commit.'
+            echo 'No runtime migration change to commit.'
             exit 0
           fi
-          git commit -m 'ci: accelerate bounded deep validation'
+          git commit -m 'perf: bound deep validation concurrency'
           git push origin HEAD:agent/tv-regression-5.20.38
