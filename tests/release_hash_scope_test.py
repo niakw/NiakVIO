@@ -16,6 +16,7 @@ assert "availability-history.json" in module.IGNORED_FILES
 assert "availability-report.json" in module.IGNORED_FILES
 assert ".github/ci-status/" in module.IGNORED_PREFIXES
 assert ".github/triggers/" in module.IGNORED_PREFIXES
+assert ".github/workflows/tmp-" in module.IGNORED_PREFIXES
 assert "automation/platform-runtime-contracts.json" in module.CORE_FILES
 assert "automation/nuvio-tv-runtime-contract.json" in module.CORE_FILES
 assert "automation/nuvio-client-upstreams.json" in module.CORE_FILES
@@ -45,6 +46,7 @@ with tempfile.TemporaryDirectory() as tmp:
     (root / ".github/ci-status/current-runs.json").write_text('{"run":1}\n', encoding="utf-8")
     (root / ".github/triggers/query-current-actions-main").write_text("probe-1\n", encoding="utf-8")
     (root / ".github/workflows/release.yml").write_text("name: durable\n", encoding="utf-8")
+    (root / ".github/workflows/tmp-diagnostic.yml").write_text("name: temporary\n", encoding="utf-8")
     module.ROOT = root
 
     before = module.inventory(include_file_hashes=False)
@@ -54,13 +56,15 @@ with tempfile.TemporaryDirectory() as tmp:
     assert ".github/ci-status/current-runs.json" not in before
     assert ".github/triggers/query-current-actions-main" not in before
     assert ".github/workflows/release.yml" in before
+    assert ".github/workflows/tmp-diagnostic.yml" not in before
 
-    # Independent operational telemetry may change without changing the release
-    # checksum inventory. A durable release input still changes its hash.
+    # Independent operational telemetry and disposable tmp workflows may change
+    # without changing the release checksum inventory. Durable inputs still do.
     (root / "availability-history.json").write_text('{"value":2}\n', encoding="utf-8")
     (root / "availability-report.json").write_text('{"value":2}\n', encoding="utf-8")
     (root / ".github/ci-status/current-runs.json").write_text('{"run":2}\n', encoding="utf-8")
     (root / ".github/triggers/query-current-actions-main").write_text("probe-2\n", encoding="utf-8")
+    (root / ".github/workflows/tmp-diagnostic.yml").write_text("name: temporary-v2\n", encoding="utf-8")
     assert module.inventory(include_file_hashes=False) == before
 
     (root / "durable.txt").write_text("changed-release-input\n", encoding="utf-8")
