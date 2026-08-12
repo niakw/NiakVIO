@@ -10,6 +10,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: temporary-global-provider-deep-proof-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   deep-proof:
     runs-on: ubuntu-latest
@@ -53,9 +57,26 @@ jobs:
           python scripts/build_provider_runtime_profiles.py --stage staging --apply-stage
           python scripts/validate_override_pipeline.py --stage staging
 
+      - name: Prepare bounded CI deep profile
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          source = Path('health-config.json')
+          target = Path('health-output/ci-health-config.json')
+          config = json.loads(source.read_text(encoding='utf-8'))
+          before = int(config.get('concurrency') or 4)
+          config['concurrency'] = 6
+          target.parent.mkdir(parents=True, exist_ok=True)
+          target.write_text(json.dumps(config, indent=2, ensure_ascii=False) + '\n', encoding='utf-8')
+          print(f'CI deep concurrency: {before} -> {config["concurrency"]}; validation policy/timeouts unchanged')
+          PY
+
       - name: Deep access and adaptive repair
         env:
           NUVIO_DNS_PREFLIGHT_RESULTS: health-output/dns-preflight-report.json
+          NUVIO_HEALTH_CONFIG: health-output/ci-health-config.json
           NUVIO_WORKER_MEMORY_MB: '1024'
         run: |
           python scripts/run_adaptive_deep_repair.py --stage staging --output health-output --mode deep
