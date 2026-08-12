@@ -1,0 +1,59 @@
+name: Verify published main only
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/triggers/verify-main-postpublish
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: "24"
+          package-manager-cache: false
+      - name: Install pinned dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Verify exact published tree
+        run: |
+          npm test
+          python scripts/validate_activation_preservation.py
+          python scripts/validate_language_projection.py
+          python scripts/validate_release_integrity.py
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          def load(name):
+              return json.loads(Path(name).read_text(encoding='utf-8'))
+
+          package = load('package.json')
+          lock = load('package-lock.json')
+          manifest = load('manifest.json')
+          vf = load('vf/manifest.json')
+          versions = {
+              'package.json': package.get('version'),
+              'package-lock.json': lock.get('version'),
+              "package-lock.json packages['']": (lock.get('packages') or {}).get('', {}).get('version'),
+              'manifest.json': manifest.get('version'),
+              'vf/manifest.json': vf.get('version'),
+          }
+          unique = {str(value) for value in versions.values()}
+          if len(unique) != 1:
+              raise SystemExit(f'final published release version mismatch: {versions}')
+          print(f'final published release version synchronization passed: {unique.pop()}')
+          PY
+          git diff --exit-code
