@@ -1,0 +1,153 @@
+name: Integrate V4 binary hardening v2
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/triggers/integrate-v4-binary-hardening-v2
+
+permissions:
+  contents: write
+
+jobs:
+  integrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: "24"
+          package-manager-cache: false
+
+      - name: Import validated bounded binary runtime
+        run: |
+          git fetch origin fix/v4-bounded-binary-probe
+          git show origin/fix/v4-bounded-binary-probe:scripts/provider_patches/adaptive_runtime_recovery_v4.py > scripts/provider_patches/adaptive_runtime_recovery_v4.py
+          git show origin/fix/v4-bounded-binary-probe:tests/adaptive_binary_probe_test.py > tests/adaptive_binary_probe_test.py
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          runtime=Path('scripts/provider_patches/adaptive_runtime_recovery_v4.py')
+          text=runtime.read_text(encoding='utf-8')
+          anchor='        "baseUrl": str(cfg.get("base_url") or "").rstrip("/"),\n'
+          if anchor not in text:
+              raise SystemExit('runtime payload anchor missing')
+          if '"runtimeRevision": "bounded-binary-v1"' not in text:
+              text=text.replace(anchor,anchor+'        "runtimeRevision": "bounded-binary-v1",\n',1)
+          runtime.write_text(text,encoding='utf-8')
+          package=Path('package.json')
+          data=json.loads(package.read_text(encoding='utf-8'))
+          for extra in ('python tests/adaptive_binary_probe_test.py','python tests/reapply_adaptive_runtime_revision_test.py'):
+              if extra not in data['scripts']['test']:
+                  data['scripts']['test'] += ' && ' + extra
+          package.write_text(json.dumps(data,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+          PY
+
+      - name: Make durable reapply upgrade only accepted adaptive wrappers
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path=Path('scripts/reapply_published_overrides.py')
+          text=path.read_text(encoding='utf-8')
+          if 'import importlib.util\n' not in text:
+              anchor='import hashlib\n'
+              if anchor not in text: raise SystemExit('import anchor missing')
+              text=text.replace(anchor,anchor+'import importlib.util\n',1)
+          anchor="ADAPTIVE_CALL = '})(typeof globalThis!==\"undefined\"?globalThis:this,'\n"
+          if anchor not in text: raise SystemExit('adaptive call anchor missing')
+          if 'ADAPTIVE_SCRIPT = ROOT / "scripts" / "provider_patches" / "adaptive_runtime_recovery_v4.py"' not in text:
+              text=text.replace(anchor,anchor+'ADAPTIVE_SCRIPT = ROOT / "scripts" / "provider_patches" / "adaptive_runtime_recovery_v4.py"\n',1)
+          helper='''\n\ndef reapply_adaptive_runtime_revision(data: bytes, provenance_row: dict[str, Any] | None) -> tuple[bytes, list[dict[str, Any]]]:\n    """Upgrade an already-accepted adaptive wrapper to the current implementation."""\n    if ADAPTIVE_MARKER.encode("utf-8") not in data or not isinstance(provenance_row, dict):\n        return data, []\n    accepted = [\n        record for record in (provenance_row.get("local_patches") or [])\n        if isinstance(record, dict)\n        and record.get("type") == "patch_profile"\n        and record.get("profile") == "adaptive_runtime_recovery"\n        and record.get("phase") == "runtime"\n        and isinstance(record.get("options"), dict)\n    ]\n    if not accepted:\n        return data, []\n    options = dict(accepted[-1]["options"])\n    spec = importlib.util.spec_from_file_location("nuvio_reapply_adaptive_runtime", ADAPTIVE_SCRIPT)\n    if spec is None or spec.loader is None:\n        raise RuntimeError(f"cannot load adaptive runtime patcher: {ADAPTIVE_SCRIPT}")\n    module = importlib.util.module_from_spec(spec)\n    spec.loader.exec_module(module)\n    patched = module.apply(data.decode("utf-8", errors="strict"), options=options).encode("utf-8")\n    if patched == data:\n        return data, []\n    return patched, [{\n        "type": "migration",\n        "name": "adaptive_runtime_implementation_revision",\n        "phase": "runtime",\n        "profile": "adaptive_runtime_recovery",\n        "runtime_revision": "bounded-binary-v1",\n    }]\n'''
+          insert='\ndef load_manifest(path: Path) -> dict[str, Any] | None:\n'
+          if insert not in text: raise SystemExit('helper anchor missing')
+          if 'def reapply_adaptive_runtime_revision(' not in text:
+              text=text.replace(insert,helper+insert,1)
+          old='''        patched, records = apply_overrides(provider_id, migrated, phase="discovery")\n        if adaptive_language_repairs:\n'''
+          new='''        patched, records = apply_overrides(provider_id, migrated, phase="discovery")\n        provider_provenance = provenance_rows.get(provider_id) if provenance_rows else None\n        patched, runtime_revision_records = reapply_adaptive_runtime_revision(patched, provider_provenance)\n        if runtime_revision_records:\n            records = list(records) + runtime_revision_records\n        if adaptive_language_repairs:\n'''
+          if old not in text: raise SystemExit('reapply call anchor missing')
+          if 'runtime_revision_records = reapply_adaptive_runtime_revision' not in text:
+              text=text.replace(old,new,1)
+          path.write_text(text,encoding='utf-8')
+          PY
+
+      - name: Add runtime revision regression test
+        run: |
+          cat > tests/reapply_adaptive_runtime_revision_test.py <<'PY'
+          #!/usr/bin/env python3
+          from __future__ import annotations
+          import importlib.util
+          from pathlib import Path
+          ROOT=Path(__file__).resolve().parents[1]
+          def load(name,path):
+              spec=importlib.util.spec_from_file_location(name,path); module=importlib.util.module_from_spec(spec)
+              assert spec.loader is not None; spec.loader.exec_module(module); return module
+          adaptive=load('adaptive_v4',ROOT/'scripts/provider_patches/adaptive_runtime_recovery_v4.py')
+          reapply=load('reapply_overrides',ROOT/'scripts/reapply_published_overrides.py')
+          options={'provider_name':'Demo','base_url':'https://demo.example','types':['movie'],'search_paths':['/?s={query}'],'direct_paths':['/{slug}']}
+          base='module.exports={getStreams:async()=>[]};\n'
+          expected=adaptive.apply(base,options=options)
+          marker=next(line for line in expected.splitlines() if 'NUVIO_ADAPTIVE_RUNTIME_RECOVERY_V4:' in line)
+          legacy=expected.replace(marker,'/* NUVIO_ADAPTIVE_RUNTIME_RECOVERY_V4:legacy00000000 */',1)
+          provenance={'local_patches':[{'type':'patch_profile','profile':'adaptive_runtime_recovery','phase':'runtime','options':options}]}
+          upgraded,records=reapply.reapply_adaptive_runtime_revision(legacy.encode(),provenance)
+          assert upgraded.decode()==expected
+          assert records and records[0]['runtime_revision']=='bounded-binary-v1'
+          unchanged,records=reapply.reapply_adaptive_runtime_revision(base.encode(),provenance)
+          assert unchanged.decode()==base and records==[]
+          unchanged,records=reapply.reapply_adaptive_runtime_revision(legacy.encode(),{'local_patches':[]})
+          assert unchanged.decode()==legacy and records==[]
+          print('adaptive runtime revision reapply test passed')
+          PY
+
+      - name: Reapply accepted wrappers and prepare candidate release
+        run: |
+          PREVIOUS_MANIFEST="$(mktemp)"
+          cp manifest.json "$PREVIOUS_MANIFEST"
+          python scripts/reapply_published_overrides.py
+          python scripts/prune_unreferenced_providers.py
+          python scripts/bump_release_patch_if_manifest_changed.py --previous "$PREVIOUS_MANIFEST" --manifest manifest.json
+          python scripts/generate_language_manifests.py
+          python scripts/prune_unreferenced_providers.py
+          python scripts/sync_release_versions.py --manifest manifest.json
+          python scripts/validate_activation_preservation.py
+          python scripts/validate_language_projection.py
+
+      - name: Remove all integration-only CI files
+        run: |
+          rm -f .github/workflows/integrate-v4-binary-hardening.yml
+          rm -f .github/triggers/integrate-v4-binary-hardening
+          rm -f .github/workflows/integrate-v4-binary-hardening-v2.yml
+          rm -f .github/triggers/integrate-v4-binary-hardening-v2
+
+      - name: Generate hashes and create candidate commit
+        run: |
+          python scripts/generate_release_hashes.py
+          python scripts/validate_release_integrity.py
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --check
+          git commit -m "fix: harden adaptive opaque media recovery"
+
+      - name: Validate candidate in isolated worktree
+        run: |
+          git worktree add --detach /tmp/niakvio-v4 HEAD
+          cd /tmp/niakvio-v4
+          npm ci --ignore-scripts --no-audit --no-fund
+          python scripts/validate_release_integrity.py
+          python scripts/validate_activation_preservation.py
+          python scripts/validate_language_projection.py
+          npm test
+
+      - name: Publish only after targeted validation
+        run: |
+          git fetch origin main
+          git rebase origin/main
+          git push origin HEAD:main
