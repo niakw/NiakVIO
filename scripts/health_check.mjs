@@ -53,7 +53,14 @@ const workerMemoryMb = configuredWorkerMemoryMb();
 const activationConfig = config.activation || {};
 const executionConfig = config.execution_context || {};
 const dnsPreflightConfig = config.dns_preflight || {};
-const concurrency = Math.max(1, Number(config.concurrency || 4));
+function configuredConcurrency() {
+  const fallback = Number(config.concurrency || 4);
+  const requested = Number(process.env.NUVIO_HEALTH_CONCURRENCY || fallback);
+  if (!Number.isFinite(requested)) return Math.max(1, Math.min(8, Math.round(fallback || 4)));
+  return Math.max(1, Math.min(8, Math.round(requested)));
+}
+
+const concurrency = configuredConcurrency();
 let dnsPreflightReport = null;
 try {
   dnsPreflightReport = JSON.parse(await fs.readFile(DNS_PREFLIGHT_PATH, 'utf8'));
