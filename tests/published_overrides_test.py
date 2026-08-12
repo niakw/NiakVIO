@@ -121,7 +121,7 @@ with tempfile.TemporaryDirectory() as tmp:
         'patch_profiles': {}
     }))
     provider = root/'providers/demo--nuvio--good.js'
-    provider.write_text('/* NUVIO_ADAPTIVE_RUNTIME_RECOVERY_V3 */\nmodule.exports={};\n')
+    provider.write_text('/* NUVIO_ADAPTIVE_RUNTIME_RECOVERY_V4 */\nmodule.exports={};\n')
     (root/'manifest.next.json').write_text(json.dumps({'scrapers':[
         {'id':'demo','filename':'providers/demo--nuvio--good.js'}
     ]}))
@@ -149,9 +149,9 @@ with tempfile.TemporaryDirectory() as tmp:
     provider.write_text('module.exports={};\n')
     result=subprocess.run([sys.executable,str(test_script)],capture_output=True,text=True)
     assert result.returncode == 1
-    assert 'NUVIO_ADAPTIVE_RUNTIME_RECOVERY_V3' in result.stderr + result.stdout
+    assert 'NUVIO_ADAPTIVE_RUNTIME_RECOVERY_V4' in result.stderr + result.stdout
 
-    provider.write_text('/* NUVIO_ADAPTIVE_RUNTIME_RECOVERY_V3 */\nmodule.exports={};\n')
+    provider.write_text('/* NUVIO_ADAPTIVE_RUNTIME_RECOVERY_V4 */\nmodule.exports={};\n')
     provenance['providers']['demo']['local_patches'][0]['profile'] = 'unknown_runtime_strategy'
     (root/'PROVENANCE.json').write_text(json.dumps(provenance))
     result=subprocess.run([sys.executable,str(test_script)],capture_output=True,text=True)
