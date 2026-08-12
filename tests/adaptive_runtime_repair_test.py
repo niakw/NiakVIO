@@ -78,6 +78,7 @@ with tempfile.TemporaryDirectory() as directory:
     assert target.is_file()
     generated = target.read_text(encoding="utf-8")
     assert "NUVIO_ADAPTIVE_RUNTIME_RECOVERY_V3" in generated
+    assert 'language:"fr"' not in generated
     assert repaired["runtime_repair"]["profile"] == ""
     assert repaired["runtime_repair"]["strategy"] == "adaptive_runtime_recovery"
 
@@ -149,6 +150,7 @@ sandbox.module.exports.getStreams({tmdbId:'1',mediaType:'movie',title:'Fixture M
     rows = payload["rows"]
     calls = payload["calls"]
     assert len(rows) == 2, rows
+    assert all("language" not in row for row in rows), rows
     by_url = {row["url"]: row for row in rows}
     first = by_url["https://cdn.example/redirected/master"]
     second = by_url["https://cdn2.example/b/video.mp4"]
