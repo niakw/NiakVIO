@@ -22,6 +22,8 @@ jobs:
       - name: Inspect real merge conflicts
         shell: bash
         run: |
+          git config user.name niakw
+          git config user.email foissy.tommy@gmail.com
           git fetch origin agent/tv-regression-5.20.38
           set +e
           git merge --no-commit --no-ff origin/agent/tv-regression-5.20.38
