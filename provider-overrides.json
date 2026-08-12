@@ -1262,14 +1262,19 @@
     },
     "vegamovies": {
       "capability": "html_scraper",
-      "replacements": {},
-      "runtime_domain_replacements": {},
+      "replacements": {
+        "vegamovies.catering": "1vegamovies.cc"
+      },
+      "runtime_domain_replacements": {
+        "vegamovies.catering": "1vegamovies.cc"
+      },
       "official_hub": "https://1vegamovies.tw/",
-      "official_site": "https://vegamovies.catering",
+      "official_site": "https://1vegamovies.cc",
       "required_values": [],
       "manifest_overrides": {
         "disabledPlatforms": []
-      }
+      },
+      "patch_script_options": {}
     },
     "vidlink": {
       "capability": "html_scraper",

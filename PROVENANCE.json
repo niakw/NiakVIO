@@ -17094,9 +17094,9 @@
     },
     "vegamovies": {
       "id": "vegamovies",
-      "published_filename": "providers/vegamovies--published-baseline--690ecbf5c5aa1582.js",
-      "sha256": "690ecbf5c5aa1582e40be7404301932cdb02a38a5e7e06142487e4a6d82e73da",
-      "patched_sha256": "690ecbf5c5aa1582e40be7404301932cdb02a38a5e7e06142487e4a6d82e73da",
+      "published_filename": "providers/vegamovies--published-baseline--cede40142c163981.js",
+      "sha256": "cede40142c1639812d098c509a9990d79570c91a11aab9c08454847978241b4a",
+      "patched_sha256": "cede40142c1639812d098c509a9990d79570c91a11aab9c08454847978241b4a",
       "upstream_sha256": "0641a31d6068d8d2f3e5ca5d734494b24f69b89d6a5d027ae1a7b5eee1953d1a",
       "local_patches": [
         {
@@ -17104,6 +17104,11 @@
           "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
           "phase": "discovery",
           "scope": "global_playback_integrity"
+        },
+        {
+          "type": "runtime_domain_overrides",
+          "count": 1,
+          "phase": "discovery"
         }
       ],
       "source": "published-baseline",
