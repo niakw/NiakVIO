@@ -15,6 +15,21 @@ from typing import Any
 
 MARKER = "NUVIO_GLOBAL_CATALOGUE_ALIAS_RECOVERY_V2"
 
+# Before 5.20.41, guessed /title-slugs were inserted before real catalogue
+# search hits. With max_aliases == max_candidates (the default), those guesses
+# could consume the whole candidate budget and silently discard the real search
+# result. Keep this exact upgrader so already-patched/LKG provider sources are
+# repaired too instead of being skipped merely because they already carry V2.
+_OLD_CANDIDATE_PLAN = r'''var candidates=[],searches=[];m.titles.forEach(function(t){candidates.push(c.baseUrl+"/"+slug(t));searches.push(c.baseUrl+"/?s="+encodeURIComponent(t));searches.push(c.baseUrl+"/search?q="+encodeURIComponent(t));searches.push(c.baseUrl+"/search?query="+encodeURIComponent(t))});for(var i=0;i<searches.length&&candidates.length<c.maxCandidates*4;i++){var sr=await request(searches[i],false,c.baseUrl+"/");if(sr)candidates=candidates.concat(links(sr.body,sr.url,m).map(function(x){return x.url}))}candidates=unique(candidates).slice(0,c.maxCandidates);'''
+_NEW_CANDIDATE_PLAN = r'''var guessed=[],found=[],searches=[];m.titles.forEach(function(t){guessed.push(c.baseUrl+"/"+slug(t));searches.push(c.baseUrl+"/?s="+encodeURIComponent(t));searches.push(c.baseUrl+"/search?q="+encodeURIComponent(t));searches.push(c.baseUrl+"/search?query="+encodeURIComponent(t))});for(var i=0;i<searches.length&&found.length<c.maxCandidates*4;i++){var sr=await request(searches[i],false,c.baseUrl+"/");if(sr)found=found.concat(links(sr.body,sr.url,m).map(function(x){return x.url}))}var candidates=unique(found.concat(guessed)).slice(0,c.maxCandidates);'''
+
+
+def _upgrade_existing_search_priority(text: str) -> str:
+    """Upgrade already-injected V2 runtimes without stacking another wrapper."""
+    if _OLD_CANDIDATE_PLAN in text:
+        return text.replace(_OLD_CANDIDATE_PLAN, _NEW_CANDIDATE_PLAN)
+    return text
+
 
 def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> str:
     cfg = dict(options or {})
@@ -33,7 +48,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
     serialized = json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
     marker = f"{MARKER}:{hashlib.sha256(serialized.encode()).hexdigest()[:12]}"
     if marker in text:
-        return text
+        return _upgrade_existing_search_priority(text)
 
     js = r'''
 /* MARKER_PLACEHOLDER */
@@ -57,11 +72,11 @@ function mediaish(u){return/(?:\.m3u8|\.mpd|\.mp4|\.mkv|\.webm)(?:[?#]|$)|\/(?:e
 function extractPlayers(html,base,q){var text=String(html||"").replace(/\\\//g,"/"),out=[],seen={};function add(v){var u=abs(v,base);if(!u||seen[u]||!/^https?:\/\//i.test(u)||!mediaish(u))return;seen[u]=1;out.push(u)}var scoped=text;if((q.mediaType==="tv"||q.mediaType==="anime")&&q.season&&q.episode){var patterns=[new RegExp("s(?:aison|eason)?[ ._-]*0?"+q.season+"[ ._-]*e(?:p(?:isode)?)?[ ._-]*0?"+q.episode,"i"),new RegExp("(?:episode|ep)[ ._-]*0?"+q.episode,"i")],chunks=text.split(/(?=<[^>]+(?:episode|season|saison|data-ep))/i).filter(function(x){return patterns.some(function(p){return p.test(x)})});if(chunks.length)scoped=chunks.join("\n");else return[]}var patterns2=[/(?:src|href|data-src|data-url|data-embed|data-player|data-video|data-file)=["']([^"']+)["']/gi,/(?:file|source|src|url|playlist|embedUrl|embed_url|contentUrl)\s*[:=]\s*["'](https?:\/\/[^"']+)["']/gi],m;for(var i=0;i<patterns2.length;i++){patterns2[i].lastIndex=0;while((m=patterns2[i].exec(scoped))!==null){add(m[1]);if(out.length>=c.maxPlayers)return out}}return out}
 function rows(urls,m,page){return urls.slice(0,c.maxPlayers).map(function(u,i){var out={name:c.providerName+(urls.length>1?" #"+(i+1):""),title:c.providerName+" - "+(m.titles[0]||"Media"),url:u,quality:"Unknown",headers:{Referer:page,Origin:(function(){try{return new URL(page).origin}catch(_){return c.baseUrl}})()}};if(c.languageHint)out.language=c.languageHint;if(/\.(?:m3u8|mpd|mp4|mkv|webm)(?:[?#]|$)/i.test(u))out.isDirect=true;return out})}
 function idEvidence(body,m){var text=String(body||"");if(m.tmdbId&&new RegExp("tmdb[^0-9]{0,24}"+String(m.tmdbId),"i").test(text))return true;if(m.imdbId&&new RegExp("imdb[^a-z0-9]{0,24}"+String(m.imdbId),"i").test(text))return true;return false}
-async function recover(q){if(["movie","tv","anime"].indexOf(q.mediaType)<0)return[];var m=await meta(q);if(!m.titles.length)return[];var candidates=[],searches=[];m.titles.forEach(function(t){candidates.push(c.baseUrl+"/"+slug(t));searches.push(c.baseUrl+"/?s="+encodeURIComponent(t));searches.push(c.baseUrl+"/search?q="+encodeURIComponent(t));searches.push(c.baseUrl+"/search?query="+encodeURIComponent(t))});for(var i=0;i<searches.length&&candidates.length<c.maxCandidates*4;i++){var sr=await request(searches[i],false,c.baseUrl+"/");if(sr)candidates=candidates.concat(links(sr.body,sr.url,m).map(function(x){return x.url}))}candidates=unique(candidates).slice(0,c.maxCandidates);for(var j=0;j<candidates.length;j++){var page=await request(candidates[j],false,c.baseUrl+"/");if(!page)continue;var identity=aliasScore(page.url+" "+String(page.body||"").slice(0,180000),m);if(identity<90&&!idEvidence(page.body,m))continue;var p=extractPlayers(page.body,page.url,q);if(p.length)return rows(p,m,page.url)}return[]}
+async function recover(q){if(["movie","tv","anime"].indexOf(q.mediaType)<0)return[];var m=await meta(q);if(!m.titles.length)return[];var guessed=[],found=[],searches=[];m.titles.forEach(function(t){guessed.push(c.baseUrl+"/"+slug(t));searches.push(c.baseUrl+"/?s="+encodeURIComponent(t));searches.push(c.baseUrl+"/search?q="+encodeURIComponent(t));searches.push(c.baseUrl+"/search?query="+encodeURIComponent(t))});for(var i=0;i<searches.length&&found.length<c.maxCandidates*4;i++){var sr=await request(searches[i],false,c.baseUrl+"/");if(sr)found=found.concat(links(sr.body,sr.url,m).map(function(x){return x.url}))}var candidates=unique(found.concat(guessed)).slice(0,c.maxCandidates);for(var j=0;j<candidates.length;j++){var page=await request(candidates[j],false,c.baseUrl+"/");if(!page)continue;var identity=aliasScore(page.url+" "+String(page.body||"").slice(0,180000),m);if(identity<90&&!idEvidence(page.body,m))continue;var p=extractPlayers(page.body,page.url,q);if(p.length)return rows(p,m,page.url)}return[]}
 function slot(v){if(Array.isArray(v))return{key:null,list:v};if(v&&typeof v==="object"){for(var i=0;i<3;i++){var k=["streams","results","data"][i];if(Array.isArray(v[k]))return{key:k,list:v[k]}}}return null}
 function rebuild(v,x,list){if(x.key===null)return list;var o=Object.assign({},v);o[x.key]=list;return o}
 function install(o,k){if(!o||typeof o[k]!=="function"||o[k].__nuvioGlobalCatalogueAliasV2)return false;var native=o[k];var wrap=async function(){var v;try{v=await native.apply(this,arguments)}catch(_){v=[]}var x=slot(v);if(x&&x.list.length)return v;var recovered=await recover(args(arguments));if(!recovered.length)return v;return x?rebuild(v,x,recovered):recovered};wrap.__nuvioGlobalCatalogueAliasV2=true;o[k]=wrap;return true}
 var ok=false;try{if(typeof module!=="undefined"&&module.exports)ok=install(module.exports,"getStreams")}catch(_){}try{if(g&&typeof g.getStreams==="function"){if(ok&&typeof module!=="undefined"&&module.exports)g.getStreams=module.exports.getStreams;else install(g,"getStreams")}}catch(_){}
 })(typeof globalThis!=="undefined"?globalThis:this,CONFIG_PLACEHOLDER);
 '''.replace("MARKER_PLACEHOLDER", marker).replace("CONFIG_PLACEHOLDER", serialized)
-    return text.rstrip() + "\n" + js.lstrip()
+    return _upgrade_existing_search_priority(text.rstrip() + "\n" + js.lstrip())
