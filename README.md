@@ -3,9 +3,9 @@
 
 # Niakvio
 
-**Écosystème communautaire pour Nuvio regroupant des providers VO, VF et VOSTFR, avec compatibilité Nuvio Mobile, Desktop et NuvioTV, ainsi qu’une intégration TV live séparée.**
+**Écosystème communautaire pour Nuvio regroupant des providers VO, VF et VOSTFR, avec compatibilité Nuvio Mobile, Desktop et NuvioTV.**
 
-[![Type](https://img.shields.io/badge/type-Nuvio%20providers%20%2B%20TV-1f6feb?style=for-the-badge)](#installation)
+[![Type](https://img.shields.io/badge/type-Nuvio%20providers-1f6feb?style=for-the-badge)](#installation)
 [![Node](https://img.shields.io/badge/Node.js-%E2%89%A524-339933?style=for-the-badge&logo=node.js&logoColor=white)](package.json)
 [![Licence](https://img.shields.io/badge/licence-GPL--3.0-blue?style=for-the-badge)](LICENSE)
 [![Plateformes](https://img.shields.io/badge/Nuvio-Android%20%7C%20iOS%20%7C%20Desktop%20%7C%20NuvioTV-7c3aed?style=for-the-badge)](#compatibilit%C3%A9-nuvio)
@@ -38,18 +38,6 @@ https://raw.githubusercontent.com/niakw/Niakvio/refs/heads/main/vf/manifest.json
 
 > Les URL des manifests providers restent stables. Les versions, bundles, états d’activation, domaines et règles de compatibilité évoluent derrière ces URL.
 
-### TV live
-
-Niakvio possède également une branche TV live séparée, basée sur un addon de type Stremio exposant :
-
-```text
-manifest
-catalog/tv
-meta/tv
-stream/tv
-```
-
-Cette branche TV live est distincte de la **compatibilité NuvioTV des providers du manifest principal**. Les deux existent et répondent à deux usages différents.
 
 ---
 
@@ -65,9 +53,6 @@ Cette branche TV live est distincte de la **compatibilité NuvioTV des providers
 
 Lorsqu’un provider est réactivé après une correction, Niakvio peut réviser son identifiant client interne afin d’éviter qu’un ancien état mis en cache conserve artificiellement le provider désactivé.
 
-### TV live
-
-L’intégration TV live utilise son propre manifest d’addon et ses ressources `catalog`, `meta` et `stream`. Elle n’est pas une projection de `manifest.json`.
 
 ---
 
@@ -120,19 +105,6 @@ Les principaux fichiers de cette famille sont :
 | [`automation/nuvio-tv-global-promotion.json`](automation/nuvio-tv-global-promotion.json) | Dernier rapport de promotion strict enregistré |
 | [`scripts/validate_nuvio_tv_runtime_policy.py`](scripts/validate_nuvio_tv_runtime_policy.py) | Validation permanente du contrat et des bundles publiés |
 
-### TV live / addon
-
-En parallèle, l’écosystème Niakvio contient une intégration **TV live** indépendante des providers de films/séries/animes. Elle utilise le contrat addon Stremio `manifest + catalog + meta + stream` pour les chaînes TV.
-
-Il faut donc distinguer :
-
-```text
-NuvioTV + providers Niakvio
-        = compatibilité runtime des providers JS
-
-NuvioTV + TV live Niakvio
-        = addon TV séparé catalog/meta/stream
-```
 
 ### Politique de compatibilité providers
 
@@ -170,37 +142,34 @@ Le projet peut notamment :
 - conserver séparément les preuves par catégorie, runtime et génération de bundle ;
 - adapter certains providers au runtime NuvioTV lorsqu’une amélioration stricte est démontrée ;
 - synchroniser le manifest général avec sa projection francophone ;
-- maintenir en parallèle une intégration TV live au format addon ;
 - publier uniquement une release dont les versions et empreintes sont cohérentes.
 
 ```text
                          Écosystème Niakvio
                                 │
-             ┌──────────────────┴──────────────────┐
-             │                                     │
-        Providers JS                           TV live
-             │                                     │
- Sources communautaires                    Inventaire TV filtré
-             │                                     │
- DNS / hubs / domaines                     Manifest addon Stremio
-             │                                     │
- Diagnostic + réparation                   catalog / meta / stream
-             │                                     │
- Validation des médias                     Lecture côté NuvioTV
-             │
-   ┌─────────┴──────────┐
-   │                    │
-Mobile / Desktop     NuvioTV
-QuickJS              Android TV runtime
-   │                    │
-   └─────────┬──────────┘
-             │
- Manifest général + projection VF
-             │
- Versions + hashes + intégrité
+                         Providers JS
+                                │
+                    Sources communautaires
+                                │
+                       DNS / hubs / domaines
+                                │
+                    Diagnostic + réparation
+                                │
+                     Validation des médias
+                                │
+                    ┌───────────┴───────────┐
+                    │                       │
+             Mobile / Desktop           NuvioTV
+                  QuickJS            Android TV runtime
+                    │                       │
+                    └───────────┬───────────┘
+                                │
+                  Manifest général + projection VF
+                                │
+                    Versions + hashes + intégrité
 ```
 
-**Niakvio ne stocke aucune vidéo.** Le projet publie des manifests, métadonnées, correctifs, bundles de providers et structures d’addon consommés côté client.
+**Niakvio ne stocke aucune vidéo.** Le projet publie des manifests, métadonnées, correctifs et bundles de providers consommés côté client.
 
 ---
 
@@ -313,8 +282,6 @@ La validation vérifie notamment :
 
 Les bundles NuvioTV promus font eux aussi partie de cette cohérence : lorsqu’un provider francophone NuvioTV est publié dans le général et projeté dans le VF, les deux manifests doivent référencer le même bundle réel.
 
-Le manifest de l’addon TV live est volontairement séparé : il appartient à une autre famille d’intégration.
-
 ---
 
 ## Intégrité des releases providers
@@ -395,8 +362,7 @@ Niakvio suit quelques règles destinées à éviter les faux positifs et les dé
 5. **Une incompatibilité plateforme doit être concluante avant de masquer un provider.**
 6. **Les preuves actuelles priment sur les états historiques.**
 7. **NuvioTV, Mobile et Desktop doivent être validés selon leurs contrats propres.**
-8. **La TV live addon ne doit pas être confondue avec la compatibilité provider NuvioTV.**
-9. **Une publication doit être reproductible et intègre jusque sur le `main` final.**
+8. **Une publication doit être reproductible et intègre jusque sur le `main` final.**
 
 ---
 
@@ -452,6 +418,6 @@ Documentation complémentaire :
 
 **Niakvio — Écosystème communautaire pour Nuvio**
 
-Providers • NuvioTV • TV live • Réparation • Validation • Compatibilité • Intégrité
+Providers • NuvioTV • Réparation • Validation • Compatibilité • Intégrité
 
 </div>
