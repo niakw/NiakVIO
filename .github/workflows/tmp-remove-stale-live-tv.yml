@@ -1,0 +1,153 @@
+name: Temporary remove stale live TV references
+
+on:
+  push:
+    branches:
+      - agent/tv-regression-5.20.38
+    paths:
+      - .github/triggers/remove-stale-live-tv
+
+permissions:
+  contents: write
+
+jobs:
+  clean:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: agent/tv-regression-5.20.38
+          fetch-depth: 0
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Remove stale live-TV documentation and contract
+        run: |
+          python - <<'PY'
+          import json, re
+          from pathlib import Path
+
+          # Runtime contract: NuvioTV means Android TV provider runtime only.
+          p = Path('automation/nuvio-tv-runtime-contract.json')
+          data = json.loads(p.read_text(encoding='utf-8'))
+          data.pop('separate_live_tv_addon', None)
+          p.write_text(json.dumps(data, indent=2, ensure_ascii=False) + '\n', encoding='utf-8')
+
+          # Validator: remove the obsolete assertion that a separate live-TV addon must exist.
+          p = Path('scripts/validate_nuvio_tv_runtime_policy.py')
+          text = p.read_text(encoding='utf-8')
+          text = re.sub(
+              r'\n    addon = contract\.get\("separate_live_tv_addon"\) or \{\}\n'
+              r'    if addon\.get\("enabled"\) is not True or addon\.get\("contract"\) != "stremio-addon-manifest-catalog-meta-stream":\n'
+              r'        errors\.append\("separate live-TV addon contract missing"\)\n',
+              '\n', text
+          )
+          p.write_text(text, encoding='utf-8')
+
+          # README: remove claims about a separate live-TV addon that is not implemented in this repository.
+          p = Path('README.md')
+          text = p.read_text(encoding='utf-8')
+          text = text.replace(
+              '**Écosystème communautaire pour Nuvio regroupant des providers VO, VF et VOSTFR, avec compatibilité Nuvio Mobile, Desktop et NuvioTV, ainsi qu’une intégration TV live séparée.**',
+              '**Écosystème communautaire pour Nuvio regroupant des providers VO, VF et VOSTFR, avec compatibilité Nuvio Mobile, Desktop et NuvioTV.**'
+          )
+          text = text.replace(
+              '[![Type](https://img.shields.io/badge/type-Nuvio%20providers%20%2B%20TV-1f6feb?style=for-the-badge)](#installation)',
+              '[![Type](https://img.shields.io/badge/type-Nuvio%20providers-1f6feb?style=for-the-badge)](#installation)'
+          )
+          blocks = [
+              r'\n### TV live\n\nNiakvio possède également une branche TV live séparée, basée sur un addon de type Stremio exposant :\n\n```text\nmanifest\ncatalog/tv\nmeta/tv\nstream/tv\n```\n\nCette branche TV live est distincte de la \*\*compatibilité NuvioTV des providers du manifest principal\*\*\. Les deux existent et répondent à deux usages différents\.\n',
+              r'\n### TV live\n\nL’intégration TV live utilise son propre manifest d’addon et ses ressources `catalog`, `meta` et `stream`\. Elle n’est pas une projection de `manifest\.json`\.\n',
+              r'\n### TV live / addon\n\nEn parallèle, l’écosystème Niakvio contient une intégration \*\*TV live\*\* indépendante des providers de films/séries/animes\. Elle utilise le contrat addon Stremio `manifest \+ catalog \+ meta \+ stream` pour les chaînes TV\.\n\nIl faut donc distinguer :\n\n```text\nNuvioTV \+ providers Niakvio\n        = compatibilité runtime des providers JS\n\nNuvioTV \+ TV live Niakvio\n        = addon TV séparé catalog/meta/stream\n```\n',
+          ]
+          for pattern in blocks:
+              text, n = re.subn(pattern, '\n', text)
+              if n != 1:
+                  raise SystemExit(f'expected one README live-TV block match, got {n}: {pattern[:50]}')
+          text = text.replace('- maintenir en parallèle une intégration TV live au format addon ;\n', '')
+          text = text.replace('Le manifest de l’addon TV live est volontairement séparé : il appartient à une autre famille d’intégration.\n\n', '')
+          text = text.replace('**Niakvio ne stocke aucune vidéo.** Le projet publie des manifests, métadonnées, correctifs, bundles de providers et structures d’addon consommés côté client.', '**Niakvio ne stocke aucune vidéo.** Le projet publie des manifests, métadonnées, correctifs et bundles de providers consommés côté client.')
+
+          # Replace the old two-column ecosystem diagram with the provider-only architecture.
+          old = '''```text
+                         Écosystème Niakvio
+                                │
+             ┌──────────────────┴──────────────────┐
+             │                                     │
+        Providers JS                           TV live
+             │                                     │
+ Sources communautaires                    Inventaire TV filtré
+             │                                     │
+ DNS / hubs / domaines                     Manifest addon Stremio
+             │                                     │
+ Diagnostic + réparation                   catalog / meta / stream
+             │                                     │
+ Validation des médias                     Lecture côté NuvioTV
+             │
+   ┌─────────┴──────────┐
+   │                    │
+Mobile / Desktop     NuvioTV
+QuickJS              Android TV runtime
+   │                    │
+   └─────────┬──────────┘
+             │
+ Manifest général + projection VF
+             │
+ Versions + hashes + intégrité
+```'''
+          new = '''```text
+                         Écosystème Niakvio
+                                │
+                         Providers JS
+                                │
+                    Sources communautaires
+                                │
+                       DNS / hubs / domaines
+                                │
+                    Diagnostic + réparation
+                                │
+                     Validation des médias
+                                │
+                    ┌───────────┴───────────┐
+                    │                       │
+             Mobile / Desktop           NuvioTV
+                  QuickJS            Android TV runtime
+                    │                       │
+                    └───────────┬───────────┘
+                                │
+                  Manifest général + projection VF
+                                │
+                    Versions + hashes + intégrité
+```'''
+          if old not in text:
+              raise SystemExit('README ecosystem diagram not found')
+          text = text.replace(old, new)
+          if re.search(r'(?i)tv live|live[- ]tv|stremio-addon-manifest-catalog-meta-stream|catalog/tv|stream/tv', text):
+              raise SystemExit('stale live-TV wording still present in README')
+          p.write_text(text, encoding='utf-8')
+          PY
+      - name: Verify no stale live-TV contract remains
+        run: |
+          ! grep -RniE 'separate_live_tv_addon|stremio-addon-manifest-catalog-meta-stream|TV live|live-TV|catalog/tv|stream/tv' README.md automation/nuvio-tv-runtime-contract.json scripts/validate_nuvio_tv_runtime_policy.py
+      - name: Full regression and release integrity
+        run: |
+          npm test
+          python scripts/generate_release_hashes.py
+          python scripts/validate_release_integrity.py
+      - name: Commit cleanup
+        run: |
+          git config user.name 'niakw'
+          git config user.email 'foissy.tommy@gmail.com'
+          git add README.md automation/nuvio-tv-runtime-contract.json scripts/validate_nuvio_tv_runtime_policy.py FILE-HASHES.json PATCH-SHA256SUMS.txt
+          git diff --cached --quiet && exit 0
+          git commit -m 'chore: remove stale live TV addon references'
+          git push origin HEAD:agent/tv-regression-5.20.38
+      - name: Delete obsolete live-check branch
+        run: |
+          git push origin --delete agent/replay-live-upstream-publish-check || true
