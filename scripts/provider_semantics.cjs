@@ -24,6 +24,35 @@ function descriptionTypeSignals(textValue) {
   return { movie, tv, anime };
 }
 
+function semanticText(candidate) {
+  const metadata = candidate?.metadata || {};
+  const canonicalMetadata = candidate?.canonical_metadata || {};
+  return [
+    candidate?.canonical_id,
+    metadata.id,
+    metadata.name,
+    metadata.description,
+    ...(Array.isArray(canonicalMetadata.descriptions) ? canonicalMetadata.descriptions : []),
+  ].filter(Boolean).join(' ');
+}
+
+/**
+ * Return true when the provider's ``movie`` request shape represents anime
+ * films rather than evidence of a general live-action movie catalogue.
+ *
+ * We deliberately require an anime/manga signal and no TV/series signal. If a
+ * provider also describes generic movies, its identity (id/name) must itself
+ * be anime/manga-specific before we narrow validation to anime-film fixtures.
+ * This keeps mixed catalogues such as Movix on general movie/TV/anime tests.
+ */
+function isAnimeFocusedCatalogue(candidate) {
+  const metadata = candidate?.metadata || {};
+  const identity = [candidate?.canonical_id, metadata.id, metadata.name].filter(Boolean).join(' ');
+  const identitySignals = descriptionTypeSignals(identity);
+  const signals = descriptionTypeSignals(semanticText(candidate));
+  return signals.anime && !signals.tv && (identitySignals.anime || !signals.movie);
+}
+
 /**
  * Infer the catalogue coverage of one manifest entry.
  *
@@ -42,14 +71,7 @@ function inferSupportedTypes(candidate) {
   const declared = new Set(
     declaredValues.map(normalizeSupportedType).filter(Boolean),
   );
-  const haystack = [
-    candidate?.canonical_id,
-    metadata.id,
-    metadata.name,
-    metadata.description,
-    ...(Array.isArray(canonicalMetadata.descriptions) ? canonicalMetadata.descriptions : []),
-  ].filter(Boolean).join(' ');
-  const signals = descriptionTypeSignals(haystack);
+  const signals = descriptionTypeSignals(semanticText(candidate));
   const inferred = new Set();
   if (signals.movie) inferred.add('movie');
   if (signals.tv) inferred.add('tv');
@@ -79,6 +101,7 @@ function roundRobin(groups) {
 module.exports = {
   descriptionTypeSignals,
   inferSupportedTypes,
+  isAnimeFocusedCatalogue,
   normalizeSupportedType,
   normalizedText,
   roundRobin,

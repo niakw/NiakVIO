@@ -3,7 +3,7 @@
 'use strict';
 
 const assert = require('node:assert/strict');
-const { inferSupportedTypes, roundRobin } = require('./provider_semantics.cjs');
+const { inferSupportedTypes, isAnimeFocusedCatalogue, roundRobin } = require('./provider_semantics.cjs');
 
 const movix = {
   canonical_id: 'movix',
@@ -18,6 +18,11 @@ assert.deepEqual(
   inferSupportedTypes(movix),
   ['movie', 'tv', 'anime'],
   'Movix must remain available for films, series and anime',
+);
+assert.equal(
+  isAnimeFocusedCatalogue(movix),
+  false,
+  'mixed movie/TV/anime catalogues must keep general movie fixtures',
 );
 
 const incompleteMovixVariant = {
@@ -37,6 +42,11 @@ assert.deepEqual(
   ['movie', 'tv', 'anime'],
   'canonical descriptions from the other manifests must restore Movix movie/TV coverage',
 );
+assert.equal(
+  isAnimeFocusedCatalogue(incompleteMovixVariant),
+  false,
+  'canonical mixed-catalogue evidence must prevent anime-only validation narrowing',
+);
 
 const animeOnly = {
   canonical_id: 'anime-only',
@@ -50,6 +60,25 @@ assert.deepEqual(
   ['movie', 'anime'],
   'anime catalogues must expose anime films without being presented as general TV catalogues',
 );
+assert.equal(
+  isAnimeFocusedCatalogue(animeOnly),
+  true,
+  'anime-only catalogues must validate movie requests against anime-film fixtures',
+);
+
+const genericMoviesAndAnime = {
+  canonical_id: 'mixed-cinema',
+  metadata: {
+    name: 'Mixed Cinema',
+    description: 'Movies and Anime',
+    supportedTypes: ['movie', 'anime'],
+  },
+};
+assert.equal(
+  isAnimeFocusedCatalogue(genericMoviesAndAnime),
+  false,
+  'generic movie + anime catalogues must not be narrowed without anime identity evidence',
+);
 
 const pool = roundRobin([
   [{ category: 'movie', id: 1 }],
@@ -62,4 +91,4 @@ assert.deepEqual(
   'multi-catalogue representative tests must begin with a movie, then TV, then anime',
 );
 
-console.log('Provider semantics self-test passed: Movix movie/TV/anime coverage and representative fixture order are preserved.');
+console.log('Provider semantics self-test passed: mixed catalogues and anime-film validation scopes are preserved.');

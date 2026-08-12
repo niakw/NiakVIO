@@ -16,7 +16,7 @@ import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
-const { inferSupportedTypes, roundRobin } = require('./provider_semantics.cjs');
+const { inferSupportedTypes, isAnimeFocusedCatalogue, roundRobin } = require('./provider_semantics.cjs');
 const { guardedFetch } = require('./network_guard.cjs');
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -973,7 +973,11 @@ function withCategory(items, category) {
 
 function candidateProfile(candidate) {
   const types = inferSupportedTypes(candidate);
-  const movieFixtures = withCategory(config.fixtures.movie, 'movie');
+  const animeMovieScope = isAnimeFocusedCatalogue(candidate);
+  const movieFixtures = withCategory(
+    animeMovieScope ? (config.fixtures.anime_movie || config.fixtures.movie) : config.fixtures.movie,
+    'movie',
+  );
   const tvFixtures = withCategory(config.fixtures.tv, 'tv');
   const animeFixtures = withCategory(config.fixtures.anime, 'anime');
   const fixtureGroups = {

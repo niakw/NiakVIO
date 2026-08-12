@@ -15,7 +15,8 @@ assert 'minimum_bandwidth > 0 and bandwidth is not None and bandwidth < minimum_
 assert 'if require_language and not (audio or subtitle_ok):' in source
 assert 'scoped_categories = required_categories & independently_proven' in source
 assert '"activation_supported_types": sorted(scoped_categories)' in source
-assert 'if enabled and activation_mode == "strict_current" and activation_supported_types:' in source
+assert 'authoritative_published_types = [' in source
+assert 'and not authoritative_published_types' in source
 assert 'promoted_entry["supportedTypes"] = activation_supported_types' in source
 assert 'tracked_fields = ("filename", "supportedTypes", "supportsExternalPlayer")' in source
 

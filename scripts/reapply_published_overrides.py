@@ -22,7 +22,7 @@ import tempfile
 from pathlib import Path
 from typing import Any
 
-from apply_provider_overrides import apply_overrides
+from apply_provider_overrides import apply_overrides, load_overrides
 
 ROOT = Path(__file__).resolve().parents[1]
 PRIMARY = ROOT / "manifest.json"
@@ -43,6 +43,18 @@ def bump_provider_version(value: str) -> str:
         return "1.0.1"
     major, minor, patch = (int(part) for part in match.groups())
     return f"{major}.{minor}.{patch + 1}"
+
+
+def configured_published_types(config: dict[str, Any], provider_id: str) -> list[str]:
+    patches = config.get("provider_patches") if isinstance(config, dict) else {}
+    row = (patches or {}).get(str(provider_id or "").strip().casefold(), {})
+    if not isinstance(row, dict):
+        return []
+    return [
+        str(value)
+        for value in (row.get("published_types") or [])
+        if str(value) in {"movie", "tv", "anime"}
+    ]
 
 
 def strip_unproven_adaptive_language(data: bytes) -> tuple[bytes, int]:
@@ -155,6 +167,7 @@ def main() -> int:
     old_paths: set[str] = set()
     provenance_updates: dict[str, dict[str, Any]] = {}
     applied_count = 0
+    override_config = load_overrides()
 
     for entry in primary["scrapers"]:
         if not isinstance(entry, dict):
@@ -166,6 +179,11 @@ def main() -> int:
         path = (ROOT / relative).resolve()
         if PROVIDERS.resolve() not in path.parents or not path.is_file():
             raise ValueError(f"missing or unsafe published provider: {relative}")
+
+        authoritative_types = configured_published_types(override_config, provider_id)
+        types_changed = bool(authoritative_types and entry.get("supportedTypes") != authoritative_types)
+        if types_changed:
+            entry["supportedTypes"] = authoritative_types
 
         original = path.read_bytes()
         migrated, adaptive_language_repairs = strip_unproven_adaptive_language(original)
@@ -190,7 +208,7 @@ def main() -> int:
         outputs[new_relative] = patched
         old_paths.add(relative)
         entry["filename"] = new_relative
-        if relative != new_relative:
+        if relative != new_relative or types_changed:
             entry["version"] = bump_provider_version(str(entry.get("version") or "1.0.0"))
         provenance_updates[provider_id] = {
             "old": relative,
@@ -215,6 +233,8 @@ def main() -> int:
             primary_entry = next((row for row in primary["scrapers"] if isinstance(row, dict) and str(row.get("id") or "").strip().casefold() == provider_id), None)
             if isinstance(primary_entry, dict) and primary_entry.get("version"):
                 entry["version"] = primary_entry["version"]
+                if isinstance(primary_entry.get("supportedTypes"), list):
+                    entry["supportedTypes"] = list(primary_entry["supportedTypes"])
         secondary_payloads.append((path, payload))
 
     if provenance is not None:

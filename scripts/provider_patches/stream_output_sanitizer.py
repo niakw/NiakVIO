@@ -68,7 +68,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
             "timeoutMs": timeout_ms,
             "minVodDurationSeconds": min_vod_duration,
             "blockedPathPatterns": blocked_paths,
-            "implementationVersion": 5,
+            "implementationVersion": 6,
         },
         separators=(",", ":"),
     )
@@ -109,9 +109,15 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
     return false;
   }
   function urlOf(stream){return stream&&typeof stream.url==="string"?stream.url.trim():""}
+  function directExtension(url){return /(?:\.m3u8?|\.mpd|\.mp4|\.m4v|\.mov|\.mkv|\.webm|\.mpeg|\.mpg|\.ogv)(?:[?#]|$)/i.test(String(url||""))}
   function isDirect(stream,url){
     var hint=String((stream&&(stream.type||stream.format||stream.mimeType||stream.contentType))||"").toLowerCase();
-    return /(?:\.m3u8|\.mp4|\.mkv|\.webm|\.mpd)(?:[?#]|$)/i.test(url)||/(?:hls|mpegurl|dash|mp4|video\/)/.test(hint);
+    return directExtension(url)||/(?:hls|mpegurl|dash|mp4|matroska|webm|video\/)/.test(hint);
+  }
+  function markDirect(stream,url){
+    if(!stream||typeof stream!=="object")return;
+    if(url&&!blocked(url))stream.url=String(url);
+    stream.isDirect=true;
   }
   function rank(stream,url){
     if(isDirect(stream,url))return 0;
@@ -123,7 +129,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
     return 3;
   }
   function headersFor(stream){
-    var output={"Accept":"application/vnd.apple.mpegurl,application/x-mpegURL,video/*,*/*;q=0.8","Range":"bytes=0-4095"};
+    var output={"Accept":"application/vnd.apple.mpegurl,application/x-mpegURL,application/dash+xml,video/*,*/*;q=0.8","Range":"bytes=0-4095"};
     var source=stream&&stream.headers;
     if(source&&typeof source==="object"){
       try{Object.keys(source).forEach(function(key){if(source[key]!=null)output[key]=String(source[key])})}catch(_e){}
@@ -157,18 +163,51 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
     }
     return true;
   }
+  function validDash(text){
+    var value=String(text||"").trimStart();
+    return /<MPD[\s>]/i.test(value)&&/<(?:Representation|AdaptationSet)\b/i.test(value);
+  }
+  function dispositionMedia(value){
+    return /filename\*?=(?:UTF-8''|["']?)[^;\r\n]*\.(?:m3u8?|mpd|mp4|m4v|mov|mkv|webm|mpeg|mpg|ogv)(?:["';\r\n]|$)/i.test(String(value||""));
+  }
+  function isEbml(bytes){return bytes.length>=4&&bytes[0]===0x1a&&bytes[1]===0x45&&bytes[2]===0xdf&&bytes[3]===0xa3}
   async function probe(stream,url){
     if(typeof g.fetch!=="function")return true;
     var controller=typeof AbortController!=="undefined"?new AbortController():{signal:void 0,abort:function(){}};
     var timer=setTimeout(function(){try{controller.abort()}catch(_e){}},config.timeoutMs);
     try{
       var response=await g.fetch(url,{method:"GET",headers:headersFor(stream),redirect:"follow",signal:controller.signal});
-      if(!response||!response.ok||blocked(response.url||url))return false;
+      var finalUrl=response&&response.url?String(response.url):url;
+      if(!response||!response.ok||blocked(finalUrl))return false;
       var contentType=String(response.headers&&response.headers.get?response.headers.get("content-type")||"":"").toLowerCase();
+      var disposition=String(response.headers&&response.headers.get?response.headers.get("content-disposition")||"":"");
       var bytes=await prefixBytes(response,controller),text=ascii(bytes);
-      if(/(?:\.m3u8)(?:[?#]|$)/i.test(url)||/(?:mpegurl|vnd\.apple)/.test(contentType))return validHls(text);
+      if(/(?:\.m3u8?)(?:[?#]|$)/i.test(url)||/(?:\.m3u8?)(?:[?#]|$)/i.test(finalUrl)||/(?:mpegurl|vnd\.apple)/.test(contentType)||/^\s*#EXTM3U/i.test(text)){
+        if(!validHls(text))return false;
+        markDirect(stream,finalUrl);
+        return true;
+      }
       if(/(?:text\/html|application\/json|text\/plain)/.test(contentType)||/^\s*(?:<!doctype|<html|<body|\{|\[)/i.test(text))return false;
-      if(/(?:\.mp4)(?:[?#]|$)/i.test(url)||/video\/mp4/.test(contentType))return /video\/mp4/.test(contentType)||(bytes.length>=8&&ascii(bytes.slice(4,8))==="ftyp");
+      if(/(?:\.mpd)(?:[?#]|$)/i.test(url)||/(?:\.mpd)(?:[?#]|$)/i.test(finalUrl)||/application\/dash\+xml/.test(contentType)||/^\s*(?:<\?xml[\s\S]{0,300})?<MPD[\s>]/i.test(text)){
+        if(!validDash(text))return false;
+        markDirect(stream,finalUrl);
+        return true;
+      }
+      var hasFtyp=bytes.length>=8&&ascii(bytes.slice(4,8))==="ftyp";
+      if(/(?:\.mp4|\.m4v|\.mov)(?:[?#]|$)/i.test(url)||/(?:\.mp4|\.m4v|\.mov)(?:[?#]|$)/i.test(finalUrl)||/video\/mp4/.test(contentType)||hasFtyp){
+        if(!(/video\/mp4/.test(contentType)||hasFtyp||bytes.length>0))return false;
+        markDirect(stream,finalUrl);
+        return true;
+      }
+      if(/(?:video\/(?:webm|x-matroska|mpeg|ogg)|application\/(?:x-matroska|ogg))/.test(contentType)||isEbml(bytes)||dispositionMedia(disposition)){
+        if(!bytes.length)return false;
+        markDirect(stream,finalUrl);
+        return true;
+      }
+      if(/^video\//.test(contentType)&&bytes.length){
+        markDirect(stream,finalUrl);
+        return true;
+      }
       return bytes.length>0;
     }catch(_error){return false}
     finally{clearTimeout(timer);try{controller.abort()}catch(_e){}}

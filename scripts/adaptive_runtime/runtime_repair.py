@@ -178,10 +178,13 @@ def matching_profiles(candidate: dict[str, Any], result: dict[str, Any], source_
     config = config or load_overrides()
     matches = list(_base.matching_profiles(candidate, result, source_text, config))
     name = "adaptive_runtime_recovery"
+    # Adaptive wrappers are configuration-hashed and their patcher already
+    # replaces a stale wrapper when routing options change. Do not permanently
+    # suppress reevaluation merely because an older repair was accepted or its
+    # marker is present. On identical configuration apply() is a no-op and
+    # create_repair_candidate() safely returns structural_profile_made_no_change.
     if (
-        name not in _base.applied_profiles(candidate)
-        and "NUVIO_ADAPTIVE_RUNTIME_RECOVERY_" not in source_text
-        and _adaptive_failure(result)
+        _adaptive_failure(result)
         and _adaptive_runtime_options(candidate, config) is not None
         and name not in matches
     ):
@@ -193,7 +196,7 @@ def _apply_adaptive(parent_data: bytes, candidate: dict[str, Any]) -> tuple[byte
     options = _adaptive_runtime_options(candidate, load_overrides())
     if options is None:
         return parent_data, []
-    script = ROOT / "scripts" / "provider_patches" / "adaptive_runtime_recovery.py"
+    script = ROOT / "scripts" / "provider_patches" / "adaptive_runtime_recovery_v4.py"
     spec = importlib.util.spec_from_file_location("nuvio_adaptive_runtime_recovery", script)
     if spec is None or spec.loader is None:
         raise RuntimeError(f"cannot load {script}")

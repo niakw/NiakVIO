@@ -1992,7 +1992,18 @@ def main() -> int:
                 str(value) for value in (proof.get("activation_supported_types") or [])
                 if str(value) in {"movie", "tv", "anime"}
             ]
-            if enabled and activation_mode == "strict_current" and activation_supported_types:
+            override_policy = load_overrides()
+            provider_policy = (override_policy.get("provider_patches") or {}).get(cid, {})
+            authoritative_published_types = [
+                str(value) for value in (provider_policy.get("published_types") or [])
+                if str(value) in {"movie", "tv", "anime"}
+            ] if isinstance(provider_policy, dict) else []
+            if (
+                enabled
+                and activation_mode == "strict_current"
+                and activation_supported_types
+                and not authoritative_published_types
+            ):
                 promoted_entry["supportedTypes"] = activation_supported_types
             promoted_entry["version"] = provider_entry_version(promoted_entry, existing.get(cid))
             entries[cid] = promoted_entry
