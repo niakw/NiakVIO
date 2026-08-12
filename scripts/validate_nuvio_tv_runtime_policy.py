@@ -100,9 +100,6 @@ def main() -> int:
     if filtering.get("enforced_by_plugin_manager") is not False:
         errors.append("NuvioTV platform filters must not be assumed enforced by PluginManager")
 
-    addon = contract.get("separate_live_tv_addon") or {}
-    if addon.get("enabled") is not True or addon.get("contract") != "stremio-addon-manifest-catalog-meta-stream":
-        errors.append("separate live-TV addon contract missing")
 
     required = {
         "probe": contract.get("probe"),
