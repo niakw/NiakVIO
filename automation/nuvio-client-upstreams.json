@@ -13,9 +13,10 @@
     "nuvio-mobile": {
       "repository": "NuvioMedia/NuvioMobile",
       "branch": "cmp-rewrite",
-      "verified_ref": "ca7e54a4cc33c05334bb55f9ca61aec7c43ce7e4",
+      "verified_ref": "0d6e30e4566e6f9f2051d5f80a1e3f1e0fcb1f18",
       "platforms": ["android", "ios"],
       "contract": "automation/platform-runtime-contracts.json",
+      "audit_note": "2026-08-12: audited 5 commits from f9ad843b14cd to 0d6e30e4566e. StreamsRepository and PlayerStreamsRepository only route HTTP through fetchAddonResponseText so forceRefresh adds Cache-Control: no-cache; normal GET, resource URL construction, StreamParser, plugin runtime, positional getStreams and provider URL/header ingestion remain unchanged.",
       "contract_paths": [
         "composeApp/src/fullCommonMain/kotlin/com/nuvio/app/features/plugins/",
         "composeApp/src/commonMain/kotlin/com/nuvio/app/features/plugins/",
@@ -37,24 +38,7 @@
         "gradle/libs.versions.toml"
       ],
       "semantic_review_tokens": [
-        "getStreams",
-        "PluginRuntimeResult",
-        "StreamItem",
-        "behaviorHints",
-        "proxyHeaders",
-        "MediaItem",
-        "setMedia",
-        "videoUrl",
-        "playbackUrl",
-        "httpHeaders",
-        "dataSource",
-        "sourceFactory",
-        "externalPlayer",
-        "quickjs",
-        "media3",
-        "exoplayer",
-        "ktor",
-        "okhttp"
+        "getStreams", "PluginRuntimeResult", "StreamItem", "behaviorHints", "proxyHeaders", "MediaItem", "setMedia", "videoUrl", "playbackUrl", "httpHeaders", "dataSource", "sourceFactory", "externalPlayer", "quickjs", "media3", "exoplayer", "ktor", "okhttp"
       ]
     },
     "nuvio-desktop": {
@@ -78,25 +62,7 @@
         "gradle/libs.versions.toml"
       ],
       "semantic_review_tokens": [
-        "getStreams",
-        "PluginRuntimeResult",
-        "StreamItem",
-        "behaviorHints",
-        "proxyHeaders",
-        "MediaItem",
-        "setMedia",
-        "videoUrl",
-        "playbackUrl",
-        "httpHeaders",
-        "dataSource",
-        "sourceFactory",
-        "externalPlayer",
-        "quickjs",
-        "media3",
-        "exoplayer",
-        "ktor",
-        "okhttp",
-        "vlc"
+        "getStreams", "PluginRuntimeResult", "StreamItem", "behaviorHints", "proxyHeaders", "MediaItem", "setMedia", "videoUrl", "playbackUrl", "httpHeaders", "dataSource", "sourceFactory", "externalPlayer", "quickjs", "media3", "exoplayer", "ktor", "okhttp", "vlc"
       ]
     },
     "nuvio-tv": {
@@ -121,24 +87,7 @@
         "gradle/libs.versions.toml"
       ],
       "semantic_review_tokens": [
-        "getStreams",
-        "StreamItem",
-        "behaviorHints",
-        "proxyHeaders",
-        "MediaItem",
-        "setMedia",
-        "videoUrl",
-        "playbackUrl",
-        "httpHeaders",
-        "dataSource",
-        "sourceFactory",
-        "externalPlayer",
-        "SCRAPER_SETTINGS",
-        "quickjs",
-        "media3",
-        "exoplayer",
-        "ktor",
-        "okhttp"
+        "getStreams", "StreamItem", "behaviorHints", "proxyHeaders", "MediaItem", "setMedia", "videoUrl", "playbackUrl", "httpHeaders", "dataSource", "sourceFactory", "externalPlayer", "SCRAPER_SETTINGS", "quickjs", "media3", "exoplayer", "ktor", "okhttp"
       ]
     }
   }
