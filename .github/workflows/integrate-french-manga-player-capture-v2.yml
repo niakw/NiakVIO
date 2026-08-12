@@ -1,0 +1,189 @@
+name: Integrate French-Manga player capture v2
+
+on:
+  push:
+    branches:
+      - fix/french-manga-target-media-v4
+    paths:
+      - .github/triggers/integrate-french-manga-player-capture-v2
+
+permissions:
+  contents: write
+
+jobs:
+  integrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: "24"
+          package-manager-cache: false
+      - name: Install pinned dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Add French-Manga player-capture adapter
+        run: |
+          cat > scripts/provider_patches/french_manga_player_capture_v1.py <<'PY'
+          """Preserve player embed URLs visited by French-Manga before native fallback resolution."""
+          from __future__ import annotations
+          import json
+          from typing import Any
+
+          MARKER = "NUVIO_FRENCH_MANGA_PLAYER_CAPTURE_V1"
+
+          def apply(source: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> str:
+              if MARKER in source:
+                  return source
+              cfg=dict(options or {})
+              payload=json.dumps({
+                  "providerName":str(cfg.get("provider_name") or "French-Manga"),
+                  "baseUrl":str(cfg.get("base_url") or "https://w16.french-manga.net").rstrip("/"),
+              },ensure_ascii=False,separators=(",",":"))
+              shim=r'''
+          /* NUVIO_FRENCH_MANGA_PLAYER_CAPTURE_V1 */
+          ;(function(g,c){"use strict";
+          function s(v){return String(v==null?"":v).trim()}
+          function urlOf(input){try{return typeof input==="string"?input:s(input&&input.url)}catch(_){return""}}
+          function host(u){try{return new URL(u).hostname.toLowerCase()}catch(_){return""}}
+          function player(u){var h=host(u);if(!h)return false;if(/\/troll\/master\.m3u8(?:[?#]|$)/i.test(u))return false;if(/(?:^|\.)(?:vidzy\.(?:live|org|cc)|luluvdo\.com|lulustream\.com|vidmoly\.(?:me|biz)|lecteurvideo\.com|uqload\.(?:is|co|cx)|veev\.to|waaw\.to|megaup\.net|vidhsareup\.fun)$/i.test(h))return /(?:\/embed(?:[-./?]|$)|\/e\/|\/f\/|\/player|\/video\.php|download\.megaup)/i.test(u);return false}
+          function slot(v){if(Array.isArray(v))return{key:null,list:v};if(v&&typeof v==="object"){for(var i=0;i<3;i++){var k=["streams","results","data"][i];if(Array.isArray(v[k]))return{key:k,list:v[k]}}}return null}
+          function rebuild(v,sl,list){if(sl.key===null)return list;var out=Object.assign({},v);out[sl.key]=list;return out}
+          function headersFor(u){var out={Referer:c.baseUrl+"/",Accept:"*/*"};try{out.Origin=new URL(c.baseUrl).origin}catch(_){}return out}
+          function install(obj,key){if(!obj||typeof obj[key]!=="function"||obj[key].__nuvioFrenchMangaCaptureV1)return false;var native=obj[key];var wrap=async function(){var original=g.fetch,captured=[],seen={};if(typeof original!=="function")return native.apply(this,arguments);g.fetch=async function(input,init){var u=urlOf(input);if(player(u)&&!seen[u]){seen[u]=1;captured.push(u)}return original.apply(this,arguments)};var value;try{value=await native.apply(this,arguments)}finally{g.fetch=original}var sl=slot(value),rows=sl?sl.list.slice():[];for(var i=0;i<captured.length;i++)rows.push({name:c.providerName+" Player",title:c.providerName+" Player",url:captured[i],quality:"HD",headers:headersFor(captured[i]),isDirect:false});return sl?rebuild(value,sl,rows):rows};wrap.__nuvioFrenchMangaCaptureV1=true;obj[key]=wrap;return true}
+          var ok=false;try{if(typeof module!=="undefined"&&module.exports)ok=install(module.exports,"getStreams")}catch(_){}try{if(g&&typeof g.getStreams==="function"){if(ok&&typeof module!=="undefined"&&module.exports)g.getStreams=module.exports.getStreams;else install(g,"getStreams")}}catch(_){}
+          })(typeof globalThis!=="undefined"?globalThis:this,CONFIG_PLACEHOLDER);
+          '''.replace("CONFIG_PLACEHOLDER",payload)
+              return source.rstrip()+"\n"+shim.lstrip()+"\n"
+          PY
+
+          cat > tests/french_manga_player_capture_v1_test.py <<'PY'
+          #!/usr/bin/env python3
+          import importlib.util,json,subprocess,tempfile
+          from pathlib import Path
+          ROOT=Path(__file__).resolve().parents[1];p=ROOT/'scripts/provider_patches/french_manga_player_capture_v1.py'
+          s=importlib.util.spec_from_file_location('capture',p);m=importlib.util.module_from_spec(s);assert s.loader;s.loader.exec_module(m)
+          base='module.exports={getStreams:async()=>{await fetch("https://vidzy.live/embed-fixture.html");return [{url:"https://s1.fsvid.lol/troll/master.m3u8"}]}};'
+          src=m.apply(base,options={'provider_name':'French-Manga','base_url':'https://w16.french-manga.net'})
+          runner=r'''const vm=require('vm');const src=process.argv[2];const calls=[];const b={module:{exports:{}},exports:{},URL,fetch:async u=>{calls.push(String(u));return{ok:true,status:200,url:String(u),headers:{get:()=>"text/html"},text:async()=>"",arrayBuffer:async()=>new ArrayBuffer(0)}}};b.globalThis=b;vm.runInNewContext(src,b);b.module.exports.getStreams('1','tv',1,1).then(v=>console.log(JSON.stringify({v,calls})));'''
+          with tempfile.TemporaryDirectory() as d:
+              q=Path(d)/'r.cjs';q.write_text(runner);cp=subprocess.run(['node',str(q),src],capture_output=True,text=True,timeout=10);assert cp.returncode==0,cp.stderr
+              out=json.loads(cp.stdout);rows=out['v'];assert any(r.get('url')=='https://vidzy.live/embed-fixture.html' for r in rows),rows;assert any('/troll/master.m3u8' in r.get('url','') for r in rows),rows
+          print('French-Manga player capture test passed')
+          PY
+
+      - name: Register capture plus target-media v4
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          path=Path('provider-overrides.json');data=json.loads(path.read_text(encoding='utf-8'))
+          cfg=data.setdefault('provider_patches',{}).setdefault('french-manga',{})
+          capture='scripts/provider_patches/french_manga_player_capture_v1.py';target='scripts/provider_patches/nuvio_tv_target_media_v4.py';legacy='scripts/provider_patches/nuvio_tv_direct_media_v2.py';san='scripts/provider_patches/stream_output_sanitizer_v5.py'
+          scripts=[x for x in list(cfg.get('patch_scripts') or []) if x not in (capture,target,legacy)]
+          pos=scripts.index(san) if san in scripts else len(scripts)
+          scripts[pos:pos]=[capture,target]
+          cfg['patch_scripts']=scripts
+          opts=cfg.setdefault('patch_script_options',{});opts.pop(legacy,None)
+          opts[capture]={'provider_name':'French-Manga','base_url':'https://w16.french-manga.net'}
+          opts[target]={'provider_name':'French-Manga','max_candidates':24,'timeout_ms':20000,'blocked_hosts':['fstream.top'],'strip_legacy_direct_media_v2':True,'force_rewrap_target_media':True}
+          req=[x for x in list(cfg.get('required_values') or []) if x!='NUVIO_TV_DIRECT_MEDIA_V2']
+          for marker in ('NUVIO_FRENCH_MANGA_PLAYER_CAPTURE_V1','NUVIO_TV_TARGET_MEDIA_V4'):
+              if marker not in req:req.append(marker)
+          cfg['required_values']=req
+          notes=list(cfg.get('notes') or []);note='Preserve the current French-Manga player embed before native fallback resolution, then resolve Vidzy/FSVid target media and reject the short troll HLS.'
+          if note not in notes:notes.append(note)
+          cfg['notes']=notes
+          path.write_text(json.dumps(data,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+          package=Path('package.json');pkg=json.loads(package.read_text());
+          for extra in ('python tests/french_manga_player_capture_v1_test.py','python tests/french_manga_target_media_profile_test.py'):
+              if extra not in pkg['scripts']['test']:pkg['scripts']['test']+=' && '+extra
+          package.write_text(json.dumps(pkg,ensure_ascii=False,indent=2)+'\n')
+          Path('tests/french_manga_target_media_profile_test.py').write_text('''#!/usr/bin/env python3\nimport json\nfrom pathlib import Path\nROOT=Path(__file__).resolve().parents[1];d=json.loads((ROOT/'provider-overrides.json').read_text());c=d['provider_patches']['french-manga'];s=c['patch_scripts'];assert 'scripts/provider_patches/nuvio_tv_direct_media_v2.py' not in s;assert s.index('scripts/provider_patches/french_manga_player_capture_v1.py')<s.index('scripts/provider_patches/nuvio_tv_target_media_v4.py')<s.index('scripts/provider_patches/stream_output_sanitizer_v5.py');print('French-Manga capture/target profile test passed')\n''')
+          PY
+
+      - name: Reapply and prepare candidate release
+        run: |
+          PREVIOUS_MANIFEST="$(mktemp)";cp manifest.json "$PREVIOUS_MANIFEST"
+          python scripts/reapply_published_overrides.py
+          python scripts/prune_unreferenced_providers.py
+          python scripts/bump_release_patch_if_manifest_changed.py --previous "$PREVIOUS_MANIFEST" --manifest manifest.json
+          python scripts/generate_language_manifests.py
+          python scripts/prune_unreferenced_providers.py
+          python scripts/sync_release_versions.py --manifest manifest.json
+          python scripts/validate_published_overrides.py
+          python scripts/validate_activation_preservation.py
+          python scripts/validate_language_projection.py
+
+      - name: Prove JJK and AoT resolve past troll to real HLS
+        env:
+          NUVIO_NETWORK_MAX_REQUESTS: "220"
+          NUVIO_WORKER_MEMORY_MB: "512"
+        run: |
+          python - <<'PY'
+          import json,re,subprocess,urllib.request
+          from pathlib import Path
+          m=json.loads(Path('manifest.json').read_text());row=next(x for x in m['scrapers'] if str(x.get('id') or '').casefold()=='french-manga');provider=Path(row['filename']);ctx={'locale':'fr-FR','language':'fr','languages':['fr-FR','fr'],'platform':'android','settings':{},'storage':{}}
+          fixtures=[{'tmdbId':'95479','mediaType':'tv','season':1,'episode':1,'title':'Jujutsu Kaisen','year':2020,'category':'anime','label':'JJK'},{'tmdbId':'1429','mediaType':'tv','season':1,'episode':1,'title':'Attack on Titan','year':2013,'category':'anime','label':'AoT'}]
+          def parse(out):
+              for line in reversed(out.splitlines()):
+                  line=line.strip();line=line.split('=',1)[1] if line.startswith('NUVIO_HEALTH_RESULT=') else line
+                  try:return json.loads(line)
+                  except:pass
+          def rows(v):
+              if isinstance(v,list):return v
+              if isinstance(v,dict):
+                  for k in ('streams','results','data'):
+                      if isinstance(v.get(k),list):return v[k]
+              return []
+          def prove(r):
+              u=str(r.get('url') or '');
+              if '/troll/master.m3u8' in u:return False,'troll'
+              h={'User-Agent':'Mozilla/5.0','Accept':'application/vnd.apple.mpegurl,video/*,*/*','Range':'bytes=0-262143'};h.update({str(k):str(v) for k,v in (r.get('headers') or {}).items()})
+              try:
+                  with urllib.request.urlopen(urllib.request.Request(u,headers=h),timeout=22) as res:
+                      raw=res.read(262144);text=raw.decode('utf-8',errors='ignore').lstrip('\ufeff \r\n\t');ct=(res.headers.get('content-type') or '').lower();st=getattr(res,'status',None)
+                      if text.startswith('#EXTM3U'):
+                          vals=[float(x) for x in re.findall(r'#EXTINF:([0-9.]+)',text)];dur=sum(vals)
+                          if '#EXT-X-STREAM-INF' in text:return True,f'master {st}'
+                          return dur>=60,f'hls {dur:.1f}s {st}'
+                      if raw[:4]==bytes([0x1a,0x45,0xdf,0xa3]) or (len(raw)>=8 and raw[4:8]==b'ftyp') or ((st in (200,206)) and ct.startswith('video/')):return True,f'binary {ct} {st}'
+                      return False,f'unproven {ct} {st}'
+              except Exception as e:return False,f'{type(e).__name__}:{e}'
+          for f in fixtures:
+              cp=subprocess.run(['node','scripts/provider_worker.cjs',str(provider),json.dumps(f),json.dumps(ctx),'2'],capture_output=True,text=True,timeout=130);assert cp.returncode==0,(f,cp.stderr[-5000:]);r=rows(parse(cp.stdout));assert r,(f,cp.stdout[-10000:]);assert all('/troll/master.m3u8' not in str(x.get('url') or '') for x in r),r;proofs=[prove(x) for x in r[:8]];good=sum(ok for ok,_ in proofs);assert good>=1,(f,r,proofs);print(f"French-Manga live proof passed {f['label']}: {proofs}")
+          PY
+
+      - name: Remove all French-Manga integration-only CI files
+        run: |
+          rm -f .github/workflows/integrate-french-manga-target-media-v4.yml .github/triggers/integrate-french-manga-target-media-v4
+          rm -f .github/workflows/integrate-french-manga-player-capture-v2.yml .github/triggers/integrate-french-manga-player-capture-v2
+
+      - name: Hash and create candidate commit
+        run: |
+          python scripts/generate_release_hashes.py
+          python scripts/validate_release_integrity.py
+          git config user.name "github-actions[bot]";git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A;git diff --cached --check;git commit -m "fix: preserve French-Manga target players"
+
+      - name: Validate candidate in isolated worktree
+        run: |
+          git worktree add --detach /tmp/niakvio-fm HEAD
+          cd /tmp/niakvio-fm
+          npm ci --ignore-scripts --no-audit --no-fund
+          python scripts/validate_release_integrity.py
+          python scripts/validate_activation_preservation.py
+          python scripts/validate_language_projection.py
+          npm test
+
+      - name: Publish only after targeted validation
+        run: |
+          git fetch origin main
+          git rebase origin/main
+          git push origin HEAD:main
