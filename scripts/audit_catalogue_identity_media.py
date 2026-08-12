@@ -120,7 +120,7 @@ def is_transient_media_error(value: Any) -> bool:
         "timeout", "timed out", "operation was aborted", "aborterror",
         "econnreset", "econnrefused", "enotfound", "eai_again",
         "network", "fetch failed", "socket", "temporary failure",
-        "429", "too many requests", "502", "503", "504",
+        "429", "too many requests", "500", "502", "503", "504",
     )
     return any(token in text for token in transient_tokens)
 

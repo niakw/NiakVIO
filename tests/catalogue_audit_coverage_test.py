@@ -19,6 +19,21 @@ def load_module():
 
 def main() -> int:
     module = load_module()
+    # Upstream/network failures are per-stream availability signals, not proof
+    # that the provider emitted a structurally invalid HLS graph.
+    for error in (
+        "hls_variant_http_500",
+        "hls_variant_http_502",
+        "hls_audio_timeout",
+        "hls_variant_fetch failed",
+    ):
+        assert module.is_transient_media_error(error), error
+    for error in (
+        "hls_variant_http_404",
+        "hls_variant_invalid_manifest",
+        "hls_audio_invalid_manifest",
+    ):
+        assert not module.is_transient_media_error(error), error
     tasks, _vf_ids = module.build_tasks()
     by_provider: dict[str, set[str]] = {}
     for task in tasks:
