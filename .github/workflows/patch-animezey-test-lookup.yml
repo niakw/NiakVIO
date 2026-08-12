@@ -1,0 +1,39 @@
+name: Patch AnimeZey targeted harness lookup
+
+on:
+  push:
+    branches:
+      - fix/animezey-stream-host-v1
+    paths:
+      - .github/triggers/patch-animezey-test-lookup
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          fetch-depth: 0
+      - name: Make manifest id lookup case-insensitive and self-clean
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path=Path('.github/workflows/integrate-animezey-stream-host.yml')
+          text=path.read_text(encoding='utf-8')
+          old="row=next(x for x in manifest['scrapers'] if x.get('id')=='animezey')"
+          new="row=next(x for x in manifest['scrapers'] if str(x.get('id') or '').casefold()=='animezey')"
+          if old not in text:
+              raise SystemExit('AnimeZey harness lookup anchor missing')
+          path.write_text(text.replace(old,new,1),encoding='utf-8')
+          PY
+          rm -f .github/workflows/patch-animezey-test-lookup.yml
+          rm -f .github/triggers/patch-animezey-test-lookup
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --check
+          git commit -m "ci: fix AnimeZey targeted manifest lookup"
+          git push origin HEAD:fix/animezey-stream-host-v1
