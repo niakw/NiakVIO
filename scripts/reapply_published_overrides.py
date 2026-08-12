@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import importlib.util
 import json
 import re
 import subprocess
@@ -31,6 +32,7 @@ PROVENANCE = ROOT / "PROVENANCE.json"
 PROVIDERS = ROOT / "providers"
 ADAPTIVE_MARKER = "/* NUVIO_ADAPTIVE_RUNTIME_RECOVERY_V"
 ADAPTIVE_CALL = '})(typeof globalThis!=="undefined"?globalThis:this,'
+ADAPTIVE_SCRIPT = ROOT / "scripts" / "provider_patches" / "adaptive_runtime_recovery_v4.py"
 
 
 def safe_fragment(value: str) -> str:
@@ -97,6 +99,38 @@ def strip_unproven_adaptive_language(data: bytes) -> tuple[bytes, int]:
         return data, 0
     return "".join(parts).encode("utf-8"), changed
 
+
+
+def reapply_adaptive_runtime_revision(data: bytes, provenance_row: dict[str, Any] | None) -> tuple[bytes, list[dict[str, Any]]]:
+    """Upgrade an already-accepted adaptive wrapper to the current implementation."""
+    if ADAPTIVE_MARKER.encode("utf-8") not in data or not isinstance(provenance_row, dict):
+        return data, []
+    accepted = [
+        record for record in (provenance_row.get("local_patches") or [])
+        if isinstance(record, dict)
+        and record.get("type") == "patch_profile"
+        and record.get("profile") == "adaptive_runtime_recovery"
+        and record.get("phase") == "runtime"
+        and isinstance(record.get("options"), dict)
+    ]
+    if not accepted:
+        return data, []
+    options = dict(accepted[-1]["options"])
+    spec = importlib.util.spec_from_file_location("nuvio_reapply_adaptive_runtime", ADAPTIVE_SCRIPT)
+    if spec is None or spec.loader is None:
+        raise RuntimeError(f"cannot load adaptive runtime patcher: {ADAPTIVE_SCRIPT}")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    patched = module.apply(data.decode("utf-8", errors="strict"), options=options).encode("utf-8")
+    if patched == data:
+        return data, []
+    return patched, [{
+        "type": "migration",
+        "name": "adaptive_runtime_implementation_revision",
+        "phase": "runtime",
+        "profile": "adaptive_runtime_recovery",
+        "runtime_revision": "bounded-binary-v1",
+    }]
 
 def load_manifest(path: Path) -> dict[str, Any] | None:
     if not path.exists():
@@ -196,6 +230,10 @@ def main() -> int:
         original = path.read_bytes()
         migrated, adaptive_language_repairs = strip_unproven_adaptive_language(original)
         patched, records = apply_overrides(provider_id, migrated, phase="discovery")
+        provider_provenance = provenance_rows.get(provider_id) if provenance_rows else None
+        patched, runtime_revision_records = reapply_adaptive_runtime_revision(patched, provider_provenance)
+        if runtime_revision_records:
+            records = list(records) + runtime_revision_records
         if adaptive_language_repairs:
             records = [
                 {
