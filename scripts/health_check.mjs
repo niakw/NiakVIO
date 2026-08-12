@@ -53,7 +53,14 @@ const workerMemoryMb = configuredWorkerMemoryMb();
 const activationConfig = config.activation || {};
 const executionConfig = config.execution_context || {};
 const dnsPreflightConfig = config.dns_preflight || {};
-const concurrency = Math.max(1, Number(config.concurrency || 4));
+function configuredConcurrency() {
+  const fallback = Number(config.concurrency || 4);
+  const requested = Number(process.env.NUVIO_HEALTH_CONCURRENCY || fallback);
+  if (!Number.isFinite(requested)) return Math.max(1, Math.min(8, Math.round(fallback || 4)));
+  return Math.max(1, Math.min(8, Math.round(requested)));
+}
+
+const concurrency = configuredConcurrency();
 let dnsPreflightReport = null;
 try {
   dnsPreflightReport = JSON.parse(await fs.readFile(DNS_PREFLIGHT_PATH, 'utf8'));
@@ -335,6 +342,8 @@ async function fetchProbe(url, headers, timeoutMs, byteLimit) {
     ok: response.ok || response.status === 206,
     status: response.status,
     contentType: response.headers.get('content-type') || '',
+    contentLength: response.headers.get('content-length') || null,
+    contentRange: response.headers.get('content-range') || null,
     finalUrl: response.url || url,
     body,
     latencyMs: Date.now() - started,
@@ -357,6 +366,138 @@ function bodyKind(body, contentType) {
   if (type.includes('text/html') || /^<!doctype html|^<html/i.test(text)) return 'html';
   if (type.includes('json') || /^[{[]/.test(text)) return 'json';
   return body.length ? 'unknown' : 'empty';
+}
+
+function readEbmlSize(body, offset) {
+  if (!Buffer.isBuffer(body) || offset < 0 || offset >= body.length) return null;
+  const first = body[offset];
+  if (!first) return null;
+  let length = 1;
+  let marker = 0x80;
+  while (length <= 8 && !(first & marker)) { marker >>= 1; length += 1; }
+  if (length > 8 || offset + length > body.length) return null;
+  let value = first & (marker - 1);
+  for (let index = 1; index < length; index += 1) value = value * 256 + body[offset + index];
+  return { length, value };
+}
+
+function readUnsignedBe(body, offset, length) {
+  if (!Buffer.isBuffer(body) || length < 1 || length > 6 || offset < 0 || offset + length > body.length) return null;
+  let value = 0;
+  for (let index = 0; index < length; index += 1) value = value * 256 + body[offset + index];
+  return Number.isSafeInteger(value) ? value : null;
+}
+
+function readFloatBe(body, offset, length) {
+  if (!Buffer.isBuffer(body) || offset < 0 || offset + length > body.length) return null;
+  if (length === 4) return body.readFloatBE(offset);
+  if (length === 8) return body.readDoubleBE(offset);
+  return null;
+}
+
+function findEbmlValues(body, idBytes, decoder, limit = 24) {
+  const values = [];
+  if (!Buffer.isBuffer(body) || !Array.isArray(idBytes) || !idBytes.length) return values;
+  outer: for (let offset = 0; offset + idBytes.length + 1 < body.length; offset += 1) {
+    for (let index = 0; index < idBytes.length; index += 1) {
+      if (body[offset + index] !== idBytes[index]) continue outer;
+    }
+    const size = readEbmlSize(body, offset + idBytes.length);
+    if (!size || size.value < 1 || size.value > 8) continue;
+    const valueOffset = offset + idBytes.length + size.length;
+    if (valueOffset + size.value > body.length) continue;
+    const value = decoder(body, valueOffset, size.value, offset);
+    if (value != null && Number.isFinite(value)) values.push({ value, offset });
+    if (values.length >= limit) break;
+  }
+  return values;
+}
+
+function parseMatroskaMetadata(body) {
+  if (!Buffer.isBuffer(body) || body.length < 64) return { heights: [], durationSeconds: null };
+  const widths = findEbmlValues(body, [0xb0], (buffer, offset, length) => readUnsignedBe(buffer, offset, length))
+    .filter((row) => row.value >= 64 && row.value <= 16384);
+  const heightsRaw = findEbmlValues(body, [0xba], (buffer, offset, length) => readUnsignedBe(buffer, offset, length))
+    .filter((row) => row.value >= 64 && row.value <= 16384);
+  // PixelWidth (B0) and PixelHeight (BA) live close together inside the same
+  // Matroska Video TrackEntry. Requiring a plausible nearby width avoids
+  // treating an arbitrary BA byte in media payload as a video dimension.
+  const heights = heightsRaw
+    .filter((height) => widths.some((width) => Math.abs(width.offset - height.offset) <= 192))
+    .map((row) => Math.round(row.value));
+
+  const scales = findEbmlValues(body, [0x2a, 0xd7, 0xb1], (buffer, offset, length) => readUnsignedBe(buffer, offset, length));
+  const durations = findEbmlValues(body, [0x44, 0x89], (buffer, offset, length) => readFloatBe(buffer, offset, length))
+    .filter((row) => row.value > 0 && row.value < 1e12);
+  const timecodeScale = scales.length ? scales[0].value : 1_000_000;
+  const durationSeconds = durations.length ? durations[0].value * timecodeScale / 1_000_000_000 : null;
+  return {
+    heights: [...new Set(heights)].filter((value) => value >= 64 && value <= 16384),
+    durationSeconds: Number.isFinite(durationSeconds) && durationSeconds >= 1 && durationSeconds <= 1_209_600 ? durationSeconds : null,
+  };
+}
+
+function parseMp4TrackHeights(body) {
+  const heights = [];
+  if (!Buffer.isBuffer(body) || body.length < 96) return heights;
+  // Track Header boxes carry width/height as unsigned 16.16 fixed-point
+  // values. Searching a bounded Range sample avoids needing a full MP4 parser
+  // or downloading the media payload.
+  for (let index = 4; index + 100 <= body.length; index += 1) {
+    if (body[index] !== 0x74 || body[index + 1] !== 0x6b || body[index + 2] !== 0x68 || body[index + 3] !== 0x64) continue;
+    const start = index - 4;
+    const size = body.readUInt32BE(start);
+    if (size < 92 || start + Math.min(size, 104) > body.length) continue;
+    const version = body[start + 8];
+    const widthOffset = version === 1 ? start + 96 : start + 84;
+    const heightOffset = version === 1 ? start + 100 : start + 88;
+    if (heightOffset + 4 > body.length) continue;
+    const width = body.readUInt32BE(widthOffset) / 65536;
+    const height = body.readUInt32BE(heightOffset) / 65536;
+    if (width >= 64 && width <= 16384 && height >= 64 && height <= 16384) {
+      heights.push(Math.round(height));
+    }
+  }
+  return heights;
+}
+
+function readUInt64BEAsNumber(body, offset) {
+  if (!Buffer.isBuffer(body) || offset < 0 || offset + 8 > body.length) return null;
+  const high = body.readUInt32BE(offset);
+  const low = body.readUInt32BE(offset + 4);
+  const value = high * 4294967296 + low;
+  return Number.isSafeInteger(value) ? value : null;
+}
+
+function parseMp4MovieDurationSeconds(body) {
+  if (!Buffer.isBuffer(body) || body.length < 40) return null;
+  // Movie Header (mvhd) stores the media timescale and complete movie duration.
+  // Scan only the bounded head/tail samples already fetched by the probe.
+  for (let index = 4; index + 36 <= body.length; index += 1) {
+    if (body[index] !== 0x6d || body[index + 1] !== 0x76 || body[index + 2] !== 0x68 || body[index + 3] !== 0x64) continue;
+    const start = index - 4;
+    const size = body.readUInt32BE(start);
+    if (size < 32 || start + Math.min(size, 40) > body.length) continue;
+    const version = body[start + 8];
+    let timescale = null;
+    let duration = null;
+    if (version === 0 && start + 28 <= body.length) {
+      timescale = body.readUInt32BE(start + 20);
+      duration = body.readUInt32BE(start + 24);
+    } else if (version === 1 && start + 40 <= body.length) {
+      timescale = body.readUInt32BE(start + 28);
+      duration = readUInt64BEAsNumber(body, start + 32);
+    }
+    if (!Number.isFinite(timescale) || timescale <= 0 || !Number.isFinite(duration) || duration <= 0) continue;
+    const seconds = duration / timescale;
+    if (Number.isFinite(seconds) && seconds >= 1 && seconds <= 1_209_600) return seconds;
+  }
+  return null;
+}
+
+function contentRangeTotal(value) {
+  const match = String(value || '').match(/bytes\s+\d+-\d+\/(\d+)/i);
+  return match ? Number(match[1]) : null;
 }
 
 function looksLikeChallenge(text) {
@@ -429,7 +570,7 @@ async function probeSubtitle(subtitle, streamHeaders, mode) {
   }
 }
 
-async function probeStream(stream, mode) {
+async function probeStream(stream, mode, fixture = null) {
   const audioLanguages = new Set();
   const subtitleLanguages = new Set();
   const reportedHeights = [];
@@ -443,7 +584,7 @@ async function probeStream(stream, mode) {
   let mediaDurationSeconds = null;
   let shortVodPreview = false;
 
-  const reported = qualityToHeight(`${stream.quality || ''} ${stream.title || ''}`);
+  const reported = qualityToHeight(`${stream.quality || ''} ${stream.title || ''} ${stream.url || ''}`);
   if (reported) reportedHeights.push(reported);
   addLanguage(audioLanguages, stream.language);
   inferLanguagesFromText(`${stream.title || ''} ${stream.name || ''}`, audioLanguages, subtitleLanguages);
@@ -610,9 +751,75 @@ async function probeStream(stream, mode) {
       directSignatureVerified = true;
       payloadVerified = true;
       playbackVerified = true;
+      if (kind === 'mp4' && mode.inspect_direct_dimensions === true) {
+        verifiedHeights.push(...parseMp4TrackHeights(result.body));
+        mediaDurationSeconds = parseMp4MovieDurationSeconds(result.body);
+        if (!verifiedHeights.length || mediaDurationSeconds == null) {
+          const total = contentRangeTotal(result.contentRange);
+          if (Number.isFinite(total) && total > sampleBytes) {
+            try {
+              const tailStart = Math.max(0, total - sampleBytes);
+              const tail = await fetchProbe(
+                result.finalUrl,
+                { ...(stream.headers || {}), Range: `bytes=${tailStart}-${total - 1}` },
+                timeoutMs,
+                sampleBytes,
+              );
+              if (tail.ok) {
+                if (!verifiedHeights.length) verifiedHeights.push(...parseMp4TrackHeights(tail.body));
+                if (mediaDurationSeconds == null) mediaDurationSeconds = parseMp4MovieDurationSeconds(tail.body);
+              }
+            } catch {}
+          }
+        }
+      } else if (kind === 'matroska' && mode.inspect_direct_dimensions === true) {
+        let metadata = parseMatroskaMetadata(result.body);
+        verifiedHeights.push(...metadata.heights);
+        mediaDurationSeconds = metadata.durationSeconds;
+        if (!verifiedHeights.length || mediaDurationSeconds == null) {
+          const total = contentRangeTotal(result.contentRange);
+          if (Number.isFinite(total) && total > sampleBytes) {
+            try {
+              const tailStart = Math.max(0, total - sampleBytes);
+              const tail = await fetchProbe(
+                result.finalUrl,
+                { ...(stream.headers || {}), Range: `bytes=${tailStart}-${total - 1}` },
+                timeoutMs,
+                sampleBytes,
+              );
+              if (tail.ok) {
+                metadata = parseMatroskaMetadata(tail.body);
+                if (!verifiedHeights.length) verifiedHeights.push(...metadata.heights);
+                if (mediaDurationSeconds == null) mediaDurationSeconds = metadata.durationSeconds;
+              }
+            } catch {}
+          }
+        }
+      }
     } else {
       payloadVerified = false;
       playbackVerified = false;
+    }
+
+    let durationIdentityMismatch = false;
+    let durationIdentityRatio = null;
+    const expectedDurationMinutes = Number(fixture?.expectedDurationMinutes || 0);
+    const expectedDurationSeconds = expectedDurationMinutes > 0 ? expectedDurationMinutes * 60 : null;
+    if (
+      playbackVerified
+      && mode.verify_fixture_duration_identity === true
+      && expectedDurationSeconds
+      && Number.isFinite(mediaDurationSeconds)
+      && mediaDurationSeconds > 0
+    ) {
+      durationIdentityRatio = mediaDurationSeconds / expectedDurationSeconds;
+      const minimumRatio = Math.max(0.05, Number(mode.minimum_fixture_duration_ratio || 0.55));
+      const maximumRatio = Math.max(minimumRatio, Number(mode.maximum_fixture_duration_ratio || 1.8));
+      if (durationIdentityRatio < minimumRatio || durationIdentityRatio > maximumRatio) {
+        durationIdentityMismatch = true;
+        playbackVerified = false;
+        payloadVerified = false;
+      }
     }
 
     const acceptedSubtitleEntries = advertisedSubtitleEntries.filter((subtitle) => {
@@ -647,7 +854,7 @@ async function probeStream(stream, mode) {
       playback_verified: playbackVerified,
       payload_verified: payloadVerified,
       direct_signature_verified: directSignatureVerified,
-      category: playbackVerified ? 'playable' : (shortVodPreview ? 'short_vod_preview' : classification.category),
+      category: playbackVerified ? 'playable' : (durationIdentityMismatch ? 'duration_identity_mismatch' : (shortVodPreview ? 'short_vod_preview' : classification.category)),
       http_status: result.status,
       kind,
       bytes_sampled: result.body.length,
@@ -657,6 +864,9 @@ async function probeStream(stream, mode) {
       audio_manifest_reachable: audioManifestReachable,
       audio_segment_reachable: audioSegmentReachable,
       media_duration_seconds: mediaDurationSeconds,
+      expected_duration_seconds: expectedDurationSeconds,
+      duration_identity_ratio: durationIdentityRatio,
+      duration_identity_mismatch: durationIdentityMismatch,
       minimum_vod_duration_seconds: minimumVodDurationSeconds,
       short_vod_preview: shortVodPreview,
       reportedHeights,
@@ -724,6 +934,37 @@ function evenlySpacedSlice(items, count) {
     Math.round(index * (items.length - 1) / (wanted - 1))
   ));
   return indexes.map((index) => items[index]);
+}
+
+function rankedDeepStreamCandidates(items, count) {
+  if (!items.length || count <= 0) return [];
+  const wanted = Math.min(count, items.length);
+  const decorated = items.map((stream, index) => ({
+    stream,
+    index,
+    claimedHeight: qualityToHeight(`${stream?.quality || ''} ${stream?.title || ''} ${stream?.url || ''}`) || 0,
+  }));
+  // Keep the first mirror in the candidate set because it is often the upstream
+  // preferred choice, then spend the remaining bounded budget on the strongest
+  // declared HD/4K candidates. Declared quality only selects what to probe; it
+  // never passes activation until the media probe itself verifies playback.
+  const selected = [decorated[0]];
+  const rankedRest = decorated.slice(1).sort((left, right) => (
+    right.claimedHeight - left.claimedHeight || left.index - right.index
+  ));
+  for (const row of rankedRest) {
+    if (selected.length >= wanted) break;
+    selected.push(row);
+  }
+  if (selected.length < wanted) {
+    for (const stream of evenlySpacedSlice(items, wanted)) {
+      if (selected.length >= wanted) break;
+      if (!selected.some((row) => row.stream === stream)) {
+        selected.push({ stream, index: items.indexOf(stream), claimedHeight: 0 });
+      }
+    }
+  }
+  return selected.map((row) => row.stream);
 }
 
 function withCategory(items, category) {
@@ -1250,12 +1491,27 @@ async function testCandidate(candidate) {
       title: fixture.title || fixture.label || null,
       year: fixture.year ?? null,
       category: fixture.category || fixture.mediaType || 'unknown',
+      expectedDurationMinutes: fixture.expectedDurationMinutes ?? null,
     };
     const worker = await runWorker(candidate, normalizedFixture);
     const streams = Array.isArray(worker.streams) ? worker.streams : [];
     const probes = [];
-    for (const stream of streams.slice(0, Number(modeConfig.max_streams_to_probe || 1))) {
-      probes.push(await probeStream(stream, modeConfig));
+    const maxStreamsToProbe = Math.max(1, Number(modeConfig.max_streams_to_probe || 1));
+    const adaptiveDeepSampling = requestedMode === 'deep' && modeConfig.probe_streams_adaptively === true;
+    if (!adaptiveDeepSampling || maxStreamsToProbe <= 1 || streams.length <= 1) {
+      for (const stream of streams.slice(0, maxStreamsToProbe)) {
+        probes.push(await probeStream(stream, modeConfig, normalizedFixture));
+      }
+    } else {
+      const minimumHeight = Math.max(1, Number(activationConfig.minimum_effective_height || 720));
+      const candidates = rankedDeepStreamCandidates(streams, maxStreamsToProbe);
+      for (const stream of candidates) {
+        const probe = await probeStream(stream, modeConfig, normalizedFixture);
+        probes.push(probe);
+        // Do not pay for extra mirrors once a current, playable media endpoint
+        // has actually met the unchanged HD quality threshold.
+        if (probe.playback_verified === true && Number(probe.effective_height || 0) >= minimumHeight) break;
+      }
     }
 
     const classification = statusFrom(worker, probes);
@@ -1372,12 +1628,21 @@ async function testCandidate(candidate) {
         && !rows.some((item) => item.status === 'excluded');
     }),
   );
-  const fallbackToRun = requestedMode === 'deep'
-    ? fallbackFixtures.filter((fixture) => categoriesNeedingFallback.has(fixture.category))
-    : [];
-  const useFallback = fallbackToRun.length > 0;
-  if (useFallback) {
-    for (const fixture of fallbackToRun) await executeFixture(fixture, 'fallback');
+  let fallbackExecuted = false;
+  // Deep fallback is a bounded cascade per catalogue category. Stop as soon
+  // as one alternate work proves the category healthy. A catalogue miss is not
+  // evidence that the provider itself is dead.
+  if (requestedMode === 'deep') {
+    for (const category of categoriesNeedingFallback) {
+      const categoryFallbacks = fallbackFixtures.filter((fixture) => fixture.category === category);
+      for (const fixture of categoryFallbacks) {
+        fallbackExecuted = true;
+        await executeFixture(fixture, 'fallback');
+        const latest = fixtureResults[fixtureResults.length - 1];
+        if (latest?.fixture?.category === category && latest.status === 'healthy') break;
+        if (latest?.status === 'excluded') break;
+      }
+    }
   }
 
   const anyP2p = fixtureResults.some((item) => (item.disallowed_streams || 0) > 0 || item.status === 'excluded');
@@ -1393,7 +1658,10 @@ async function testCandidate(candidate) {
     const primary = fixtureResults.filter((item) => item.fixture_phase === 'primary' && item.fixture?.category === category);
     if (primary.some((item) => item.status === 'healthy')) return primary;
     const fallback = fixtureResults.filter((item) => item.fixture_phase === 'fallback' && item.fixture?.category === category);
-    return fallback.length ? fallback : primary;
+    const healthyFallback = fallback.find((item) => item.status === 'healthy');
+    // Once an alternate title proves current playback, earlier catalogue misses
+    // remain diagnostics and do not dilute the activation coverage ratio.
+    return healthyFallback ? [healthyFallback] : (fallback.length ? fallback : primary);
   });
   const healthyTests = fixtureResults.filter((item) => item.status === 'healthy');
   const activationHealthyTests = activationTests.filter((item) => item.status === 'healthy');
@@ -1487,14 +1755,14 @@ async function testCandidate(candidate) {
     evidence: {
       primary_fixtures_tested: fixtureResults.filter((item) => item.fixture_phase === 'primary').length,
       fallback_fixtures_tested: fixtureResults.filter((item) => item.fixture_phase === 'fallback').length,
-      fallback_triggered: useFallback,
+      fallback_triggered: fallbackExecuted,
       fixtures_tested: activationTests.length,
       total_fixtures_executed: fixtureResults.length,
       fixture_status_counts: fixtureStatusCounts,
       failure_classes: failureClasses,
       runtime_error_fixtures: runtimeErrorFixtures,
       malformed_request_count: malformedRequestCount,
-      activation_fixture_phase: useFallback ? 'fallback' : 'primary',
+      activation_fixture_phase: fallbackExecuted ? 'fallback' : 'primary',
       healthy_fixtures: activationHealthyTests.length,
       healthy_fixture_ratio: coverageRatio,
       playable_fixtures: playableFixtures,

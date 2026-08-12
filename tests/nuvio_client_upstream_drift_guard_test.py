@@ -151,6 +151,40 @@ def main() -> int:
     assert incremental["accepted_ref"] == "b" * 40
     assert incremental["contract_ref"] == "a" * 40
 
+    assert module.is_infrastructure_transport_error(
+        RuntimeError("fatal: unable to access https://github.com/x/y: server certificate verification failed")
+    )
+    assert module.is_infrastructure_transport_error(
+        RuntimeError("fatal: unable to access https://github.com/x/y: Could not resolve host: github.com")
+    )
+    assert not module.is_infrastructure_transport_error(RuntimeError("history status is history_divergence"))
+
+    old_head = module.current_head
+    try:
+        module.current_head = lambda repository, branch: (_ for _ in ()).throw(
+            RuntimeError("server certificate verification failed")
+        )
+        inconclusive = module.resilient_inspect_client("client", sample(), sources("b" * 40))
+    finally:
+        module.current_head = old_head
+    assert inconclusive["status"] == "verification_inconclusive", inconclusive
+    assert inconclusive["review_required"] is False
+    assert inconclusive["auto_advance_safe"] is False
+    assert inconclusive["accepted_ref"] == "b" * 40
+    assert inconclusive["contract_ref"] == "a" * 40
+
+    old_head = module.current_head
+    try:
+        module.current_head = lambda repository, branch: (_ for _ in ()).throw(RuntimeError("logic exploded"))
+        try:
+            module.resilient_inspect_client("client", sample(), {})
+        except RuntimeError as error:
+            assert "logic exploded" in str(error)
+        else:
+            raise AssertionError("non-infrastructure verification error was incorrectly suppressed")
+    finally:
+        module.current_head = old_head
+
     payload: dict = {}
     result = {
         "client": {

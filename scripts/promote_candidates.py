@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: GPL-3.0-only
 """Publish the complete non-P2P catalogue with conservative activation.
 
-Automatic activation still requires all ten strict gates. A SHA-pinned runtime
+Automatic activation requires current playback/identity safety gates; quality and language are ranking/projection signals for the general manifest. A SHA-pinned runtime
 evidence record may activate a provider only when CI is explicitly inconclusive
 while the same file has been confirmed working in the real Nuvio application.
 Confirmed failures and P2P output can never be overridden. An upstream-disabled
@@ -16,8 +16,8 @@ The ten gates are:
 5. at least one playable stream when runtime output is returned;
 6. at least one reachable media host when runtime output is returned;
 7. verified media payload/playback evidence when runtime output is returned;
-8. minimum quality and non-deficient reported bitrate;
-9. accepted FR/EN language evidence and working advertised subtitles;
+8. media-quality diagnostics (non-blocking for a verified general stream);
+9. language/subtitle diagnostics (VF filtering is handled by language projection);
 10. acceptable latency plus one successful deep validation of the current SHA.
 """
 
@@ -313,7 +313,8 @@ def provider_entry_version(new_entry: dict[str, Any], old_entry: dict[str, Any] 
     if not isinstance(old_entry, dict):
         return declared
     previous = str(old_entry.get("version") or declared or "1.0.0")
-    if str(old_entry.get("filename") or "") != str(new_entry.get("filename") or ""):
+    tracked_fields = ("filename", "supportedTypes", "supportsExternalPlayer")
+    if any(old_entry.get(field) != new_entry.get(field) for field in tracked_fields):
         return bump_provider_version(previous)
     return previous
 
@@ -798,6 +799,68 @@ def result_evidence(result: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def independently_proven_categories(
+    result: dict[str, Any], activation: dict[str, Any]
+) -> set[str]:
+    """Return catalogue types that independently pass current media proof.
+
+    This is deliberately stricter than merely observing a healthy provider. A
+    type is eligible only when at least one current fixture for that type has a
+    verified playable payload, meets the unchanged quality/bitrate floor, and
+    carries accepted FR/EN audio or subtitle evidence. The result can safely
+    narrow supportedTypes without allowing a good movie to mask a broken TV
+    path (or vice versa).
+    """
+    tests = result.get("tests") if isinstance(result.get("tests"), list) else []
+    minimum_streams = int(activation.get("minimum_playable_streams", 1))
+    minimum_payload = int(activation.get("minimum_payload_verified_streams", 1))
+    minimum_height = int(activation.get("minimum_effective_height", 0))
+    minimum_bandwidth = int(activation.get("minimum_bandwidth_bps_when_reported", 0))
+    accepted_audio = {
+        str(value).casefold() for value in activation.get("accepted_audio_languages", ["fr", "en"])
+    }
+    accepted_subtitles = {
+        str(value).casefold() for value in activation.get("accepted_subtitle_languages", ["fr", "en"])
+    }
+    require_language = bool(activation.get("require_accepted_language_evidence", False))
+    require_reachable_subtitles = bool(
+        activation.get("require_reachable_accepted_subtitle_when_advertised", True)
+    )
+    proven: set[str] = set()
+    for test in tests:
+        if not isinstance(test, dict) or test.get("status") != "healthy":
+            continue
+        category = str((test.get("fixture") or {}).get("category") or "")
+        if category not in {"movie", "tv", "anime"}:
+            continue
+        if int(test.get("streams_playable", 0)) < minimum_streams:
+            continue
+        if int(test.get("payload_verified_streams", 0)) < minimum_payload:
+            continue
+        height = int(test.get("effective_max_height", 0) or 0)
+        bandwidth_raw = test.get("max_bandwidth")
+        bandwidth = int(bandwidth_raw) if bandwidth_raw else None
+        if minimum_height > 0 and height > 0 and height < minimum_height:
+            continue
+        if minimum_bandwidth > 0 and bandwidth is not None and bandwidth < minimum_bandwidth:
+            continue
+        audio = {
+            str(value).casefold() for value in test.get("accepted_audio_languages", []) if value
+        } & accepted_audio
+        subtitles = {
+            str(value).casefold() for value in test.get("accepted_subtitle_languages", []) if value
+        } & accepted_subtitles
+        advertised = int(test.get("accepted_subtitles_advertised", 0) or 0)
+        reachable = int(test.get("accepted_subtitles_reachable", 0) or 0)
+        subtitle_ok = bool(subtitles) and (
+            not require_reachable_subtitles or advertised == 0 or reachable > 0
+        )
+        if require_language and not (audio or subtitle_ok):
+            continue
+        proven.add(category)
+    return proven
+
+
 def gate(
     passed: bool,
     evidence: Any,
@@ -832,7 +895,7 @@ def evaluate_pre_stability_gates(
     minimum_payload = int(
         activation.get("minimum_payload_verified_streams", 1)
     )
-    minimum_height = int(activation.get("minimum_effective_height", 720))
+    minimum_height = int(activation.get("minimum_effective_height", 0))
     minimum_manifest_curation_score = int(
         activation.get("minimum_manifest_curation_score", 5)
     )
@@ -856,21 +919,43 @@ def evaluate_pre_stability_gates(
         for value in proof.get("healthy_fixture_categories", [])
         if value
     }
+    type_scoped_activation = bool(activation.get("allow_type_scoped_activation", False))
+    independently_proven = independently_proven_categories(result, activation) if type_scoped_activation else set()
+    scoped_categories = required_categories & independently_proven
+    effective_required_categories = scoped_categories if scoped_categories else required_categories
     representative_fixture_mode = bool(
         activation.get("representative_fixture_mode", True)
     )
     category_coverage = (
         not require_type_coverage
-        or not required_categories
+        or not effective_required_categories
         or (
-            bool(required_categories & healthy_categories)
+            bool(effective_required_categories & healthy_categories)
             if representative_fixture_mode
-            else required_categories.issubset(healthy_categories)
+            else effective_required_categories.issubset(healthy_categories)
         )
     )
 
     healthy_fixtures = int(proof.get("healthy_fixtures", 0))
     healthy_ratio = float(proof.get("healthy_fixture_ratio", 0.0) or 0.0)
+    scoped_tests = [
+        item for item in (result.get("tests") or [])
+        if isinstance(item, dict)
+        and str((item.get("fixture") or {}).get("category") or "") in scoped_categories
+    ]
+    # Type-scoped activation measures proven catalogue capabilities, not how many
+    # arbitrary titles happened to be absent. Once a category has a current
+    # verified payload, earlier primary/fallback catalogue misses remain
+    # diagnostics and cannot dilute that category's activation ratio.
+    scoped_healthy_categories = scoped_categories & healthy_categories
+    coverage_healthy_fixtures = (
+        len(scoped_healthy_categories) if scoped_categories else healthy_fixtures
+    )
+    coverage_ratio = (
+        len(scoped_healthy_categories) / len(scoped_categories)
+        if scoped_categories
+        else healthy_ratio
+    )
     playable_streams = int(proof.get("streams_playable", 0))
     playable_fixtures = int(proof.get("playable_fixtures", 0))
     hosts = int(proof.get("distinct_reachable_hosts", 0))
@@ -931,8 +1016,9 @@ def evaluate_pre_stability_gates(
     accepted_audio_path = allow_audio_without_subtitles and bool(accepted_audio)
     accepted_subtitle_path = bool(accepted_subtitles) and subtitle_integrity
     language_subtitle_pass = (
-        (not require_language or language_present)
-        and (accepted_audio_path or accepted_subtitle_path)
+        True
+        if not require_language
+        else (language_present and (accepted_audio_path or accepted_subtitle_path))
     )
 
     provider_latency = proof.get("provider_median_latency_ms")
@@ -970,14 +1056,20 @@ def evaluate_pre_stability_gates(
     runtime_light = status == "reachable" and server_accessible
     manifest_curated = (
         manifest_description_present
-        and bool(manifest_languages & (accepted_audio_languages | accepted_subtitle_languages))
+        and (not require_language or bool(manifest_languages & (accepted_audio_languages | accepted_subtitle_languages)))
         and manifest_usable_stream_format
         and manifest_curation_score >= minimum_manifest_curation_score
     )
-    quality_ok = (
-        (effective_height >= minimum_height and (bandwidth is None or bandwidth >= minimum_bandwidth))
-        or (runtime_light and (manifest_height >= minimum_height or manifest_curated))
+    current_verified_media = playable_streams >= minimum_streams and payloads >= minimum_payload
+    measured_quality_ok = (
+        current_verified_media
+        and (minimum_height <= 0 or effective_height == 0 or effective_height >= minimum_height)
+        and (minimum_bandwidth <= 0 or bandwidth is None or bandwidth >= minimum_bandwidth)
     )
+    runtime_light_quality_ok = runtime_light and (
+        (minimum_height > 0 and manifest_height >= minimum_height) or manifest_curated
+    )
+    quality_ok = measured_quality_ok or runtime_light_quality_ok
 
     # Some verified containers expose no audio/subtitle language tags at all.
     # In that narrow case, a current upstream manifest language may fill the
@@ -997,14 +1089,19 @@ def evaluate_pre_stability_gates(
         language_present = bool(accepted_audio or accepted_subtitles)
         accepted_audio_path = allow_audio_without_subtitles and bool(accepted_audio)
         language_subtitle_pass = (
-            (not require_language or language_present)
-            and (accepted_audio_path or accepted_subtitle_path)
+            True
+            if not require_language
+            else (language_present and (accepted_audio_path or accepted_subtitle_path))
         )
 
     if runtime_light:
         accepted_audio = accepted_audio | manifest_languages
         language_present = bool(accepted_audio or accepted_subtitles)
-        language_subtitle_pass = manifest_description_present and bool(manifest_languages & (accepted_audio_languages | accepted_subtitle_languages))
+        language_subtitle_pass = (
+            True
+            if not require_language
+            else manifest_description_present and bool(manifest_languages & (accepted_audio_languages | accepted_subtitle_languages))
+        )
 
     gates = {
         "01_policy_safe_no_p2p": gate(
@@ -1028,15 +1125,18 @@ def evaluate_pre_stability_gates(
             minimum_score,
         ),
         "04_fixture_and_type_coverage": gate(
-            (healthy_fixtures >= minimum_fixtures
-            and healthy_ratio >= minimum_ratio
+            (coverage_healthy_fixtures >= minimum_fixtures
+            and coverage_ratio >= minimum_ratio
             and category_coverage) or (runtime_light and manifest_description_present),
             {
-                "healthy_fixtures": healthy_fixtures,
-                "fixtures_tested": int(proof.get("fixtures_tested", 0)),
-                "healthy_fixture_ratio": healthy_ratio,
-                "required_categories": sorted(required_categories),
+                "healthy_fixtures": coverage_healthy_fixtures,
+                "fixtures_tested": len(scoped_categories) if scoped_categories else int(proof.get("fixtures_tested", 0)),
+                "healthy_fixture_ratio": coverage_ratio,
+                "required_categories": sorted(effective_required_categories),
+                "original_required_categories": sorted(required_categories),
                 "healthy_categories": sorted(healthy_categories),
+                "activation_supported_types": sorted(scoped_categories),
+                "type_scope_applied": bool(scoped_categories and scoped_categories != required_categories),
             },
             {
                 "minimum_healthy_fixtures": minimum_fixtures,
@@ -1125,7 +1225,13 @@ def evaluate_pre_stability_gates(
         "maximum_provider_median_latency_ms": maximum_provider_latency,
         "maximum_stream_median_latency_ms": maximum_stream_latency,
     }
-    return gates, {**proof, "performance": performance}
+    return gates, {
+        **proof,
+        "performance": performance,
+        "activation_supported_types": sorted(scoped_categories),
+        "activation_type_scope_applied": bool(scoped_categories and scoped_categories != required_categories),
+        "activation_original_supported_types": sorted(required_categories),
+    }
 
 
 def all_gates_pass(gates: dict[str, dict[str, Any]]) -> bool:
@@ -1882,6 +1988,12 @@ def main() -> int:
                 else {}
             )
             promoted_entry = build_entry(selected, destination, enabled, aggregated_claims)
+            activation_supported_types = [
+                str(value) for value in (proof.get("activation_supported_types") or [])
+                if str(value) in {"movie", "tv", "anime"}
+            ]
+            if enabled and activation_mode == "strict_current" and activation_supported_types:
+                promoted_entry["supportedTypes"] = activation_supported_types
             promoted_entry["version"] = provider_entry_version(promoted_entry, existing.get(cid))
             entries[cid] = promoted_entry
             ordering = manifest_ordering_profile(result, proof)

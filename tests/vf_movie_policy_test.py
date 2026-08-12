@@ -51,9 +51,9 @@ for provider_id in sorted(expected_vf_movie):
 # User-confirmed mappings are exact and must survive future sync/repair jobs.
 assert by_id['toflix']['supportedTypes'] == ['movie', 'tv', 'anime']
 assert type_policy['toflix']['supportedTypes'] == ['movie', 'tv', 'anime']
-assert by_id['papadustream']['supportedTypes'] == ['movie', 'tv']
-assert patches['papadustream']['published_types'] == ['movie', 'tv']
-assert type_policy['papadustream']['supportedTypes'] == ['movie', 'tv']
+assert by_id['papadustream']['supportedTypes'] == ['movie', 'tv', 'anime']
+assert patches['papadustream']['published_types'] == ['movie', 'tv', 'anime']
+assert type_policy['papadustream']['supportedTypes'] == ['movie', 'tv', 'anime']
 
 for provider_id in ('purstream', 'coflix', 'frenchstream', 'movix', 'nakios', 'streamzo'):
     assert by_id[provider_id]['supportedTypes'] == ['movie', 'tv', 'anime'], provider_id

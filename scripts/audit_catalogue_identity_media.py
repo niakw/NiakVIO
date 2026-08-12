@@ -7,8 +7,9 @@ records only sanitized counts/diagnostics; raw stream endpoints are discarded.
 
 Coverage:
 - every TV-capable provider: a South-Korean series fixture (Squid Game S01E01),
+- VF TV providers: Revenant S01E01 to catch title/year collision and wrong-episode regressions,
 - every movie-capable provider: Interstellar plus an impossible TMDb identity sentinel,
-- every anime-capable provider: Jujutsu Kaisen S01E01,
+- every anime-capable provider: Jujutsu Kaisen S01E01 plus Mushoku Tensei S01E01 for VF members,
 - VF membership is retained in the report for language-specific coverage metrics,
 - named HLS regression providers receive the same compatible representative fixtures.
 """
@@ -50,6 +51,24 @@ FIXTURES: dict[str, dict[str, Any]] = {
         "season": 1,
         "episode": 1,
         "title": "Squid Game",
+        "year": 2021,
+    },
+    "vf_revenant_s01e01": {
+        "label": "Revenant S01E01",
+        "tmdbId": "126485",
+        "mediaType": "tv",
+        "season": 1,
+        "episode": 1,
+        "title": "Revenant",
+        "year": 2023,
+    },
+    "vf_mushoku_s01e01": {
+        "label": "Mushoku Tensei S01E01",
+        "tmdbId": "94664",
+        "mediaType": "anime",
+        "season": 1,
+        "episode": 1,
+        "title": "Mushoku Tensei: Jobless Reincarnation",
         "year": 2021,
     },
     "impossible_movie": {
@@ -94,6 +113,18 @@ def load_json(path: Path) -> dict[str, Any]:
     return value
 
 
+def is_transient_media_error(value: Any) -> bool:
+    """Network/timing failures are inconclusive, not structural media-graph corruption."""
+    text = str(value or "").casefold()
+    transient_tokens = (
+        "timeout", "timed out", "operation was aborted", "aborterror",
+        "econnreset", "econnrefused", "enotfound", "eai_again",
+        "network", "fetch failed", "socket", "temporary failure",
+        "429", "too many requests", "500", "502", "503", "504",
+    )
+    return any(token in text for token in transient_tokens)
+
+
 def canonical_types(row: dict[str, Any]) -> set[str]:
     values = row.get("supportedTypes") or []
     if isinstance(values, str):
@@ -125,6 +156,7 @@ def summarize_media(probe: dict[str, Any]) -> dict[str, Any]:
     hls_external_audio_playable = 0
     hls_variant_failures = 0
     hls_audio_failures = 0
+    hls_transient_failures = 0
     for item in rows:
         if not isinstance(item, dict) or not isinstance(item.get("media"), dict):
             continue
@@ -134,9 +166,13 @@ def summarize_media(probe: dict[str, Any]) -> dict[str, Any]:
         if media.get("error"):
             error = sanitize(media.get("error"), 220) or "unknown"
             errors[error] += 1
-            if str(error).startswith("hls_variant_"):
+            hls_error = str(error).startswith("hls_variant_") or str(error).startswith("hls_audio_")
+            transient = hls_error and is_transient_media_error(error)
+            if transient:
+                hls_transient_failures += 1
+            elif str(error).startswith("hls_variant_"):
                 hls_variant_failures += 1
-            if str(error).startswith("hls_audio_"):
+            elif str(error).startswith("hls_audio_"):
                 hls_audio_failures += 1
         if media.get("hls_master"):
             hls_masters += 1
@@ -153,6 +189,7 @@ def summarize_media(probe: dict[str, Any]) -> dict[str, Any]:
         "hls_external_audio_playable": hls_external_audio_playable,
         "hls_variant_failures": hls_variant_failures,
         "hls_audio_failures": hls_audio_failures,
+        "hls_transient_failures": hls_transient_failures,
     }
 
 
@@ -266,14 +303,16 @@ def build_tasks() -> tuple[list[dict[str, Any]], set[str]]:
         # JJK fixture for the VF projection so French anime regressions remain
         # covered even when upstream metadata is imperfect.
         if is_vf and "tv" in types:
-            fixture_names.append("vf_jjk_s01e01")
+            fixture_names.extend(["vf_jjk_s01e01", "vf_revenant_s01e01"])
+        if is_vf and "anime" in types:
+            fixture_names.append("vf_mushoku_s01e01")
         if provider_id in SUSPECTS:
             if "movie" in types:
                 fixture_names.append("vf_interstellar")
             if "tv" in types:
-                fixture_names.append("kdrama_squid_game_s01e01")
+                fixture_names.extend(["kdrama_squid_game_s01e01", "vf_revenant_s01e01"])
             if "anime" in types:
-                fixture_names.append("vf_jjk_s01e01")
+                fixture_names.extend(["vf_jjk_s01e01", "vf_mushoku_s01e01"])
         identity = {
             "provider_id": provider_id,
             "provider_name": str(row.get("name") or row.get("id") or provider_id),
@@ -318,7 +357,7 @@ def main() -> int:
     kdrama = [row for row in rows if row["fixture"] == "kdrama_squid_game_s01e01"]
 
     report = {
-        "schema_version": 2,
+        "schema_version": 3,
         "generated_at_epoch": int(time.time()),
         "providers_total": len({row["provider_id"] for row in rows}),
         "vf_providers_total": len(vf_ids),
@@ -327,7 +366,8 @@ def main() -> int:
             "zero_valid_streams": "coverage_gap_not_disable_signal",
             "impossible_fixture_raw_return": "diagnostic_only_generic_embed_may_construct_url",
             "impossible_fixture_playable_return": "proven_identity_false_positive",
-            "hls_child_or_external_audio_failure": "broken_media_graph",
+            "hls_structural_child_or_external_audio_failure": "broken_media_graph",
+            "hls_timeout_or_network_failure": "inconclusive_media_probe_not_publish_blocker",
             "raw_endpoints_persisted": False,
         },
         "summary": {

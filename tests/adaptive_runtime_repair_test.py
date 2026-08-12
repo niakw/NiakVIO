@@ -45,12 +45,28 @@ with tempfile.TemporaryDirectory() as directory:
         "tests": [],
         "evidence": {"streams_returned": 1, "streams_playable": 1},
     }
+    healthy_with_secondary_gap = {
+        "status": "healthy",
+        "tests": [{"failure_class": "content_lookup_completed_no_streams", "streams_playable": 0}],
+        "evidence": {"streams_returned": 1, "streams_playable": 1},
+    }
+    healthy_without_playable_proof = {
+        "status": "healthy",
+        "tests": [{"failure_class": "content_lookup_completed_no_streams", "streams_playable": 0}],
+        "evidence": {"streams_returned": 0, "streams_playable": 0},
+    }
     source = provider.read_text(encoding="utf-8")
     assert "adaptive_runtime_recovery" in runtime_repair.matching_profiles(
         candidate, failing, source
     )
     assert "adaptive_runtime_recovery" not in runtime_repair.matching_profiles(
         candidate, healthy, source
+    )
+    assert "adaptive_runtime_recovery" not in runtime_repair.matching_profiles(
+        candidate, healthy_with_secondary_gap, source
+    )
+    assert "adaptive_runtime_recovery" in runtime_repair.matching_profiles(
+        candidate, healthy_without_playable_proof, source
     )
 
     repaired, error = runtime_repair.create_repair_candidate(

@@ -402,6 +402,70 @@ def apply_overrides(
                 {"type": "patch_script", "path": patch_script, "phase": phase}
             )
 
+    # Catalogue recovery is capability-based and ID-first. It is intentionally
+    # global: provider-specific title aliases are forbidden. Providers with a
+    # public HTML catalogue receive the same bounded TMDB localized/original
+    # alias fallback whenever their native resolver returns no stream.
+    if phase == "discovery":
+        capability = str(specific.get("capability") or "").strip().casefold()
+        catalogue_policy = config.get("catalogue_resolution_policy") or {}
+        if not isinstance(catalogue_policy, dict):
+            raise ValueError("catalogue_resolution_policy must be an object")
+        catalogue_capabilities = {
+            str(value).strip().casefold()
+            for value in catalogue_policy.get("capabilities", [])
+            if str(value).strip()
+        }
+        official_site = str(specific.get("official_site") or "").strip()
+        if (
+            catalogue_policy.get("enabled", False)
+            and capability in catalogue_capabilities
+            and official_site
+        ):
+            patch_script = str(catalogue_policy.get("global_discovery_hook") or "").strip()
+            if not patch_script:
+                raise ValueError("catalogue_resolution_policy.global_discovery_hook is required")
+            options = dict(catalogue_policy.get("options") or {})
+            options.update({
+                "base_url": official_site,
+                "provider_name": provider_id,
+            })
+            before = text
+            text = _apply_patch_script(text, provider_id, patch_script, options, None)
+            if text != before:
+                applied.append({
+                    "type": "patch_script",
+                    "path": patch_script,
+                    "phase": phase,
+                    "scope": "global_catalogue_resolution",
+                })
+
+        # HTML/embed/API rows are enriched globally with direct HLS/DASH/container
+        # media when it can be proven. The original row is always retained, so
+        # this never turns an iframe-capable provider into a direct-media-only one.
+        media_policy = config.get("media_enrichment_policy") or {}
+        if not isinstance(media_policy, dict):
+            raise ValueError("media_enrichment_policy must be an object")
+        media_capabilities = {
+            str(value).strip().casefold()
+            for value in media_policy.get("capabilities", [])
+            if str(value).strip()
+        }
+        if media_policy.get("enabled", False) and capability in media_capabilities:
+            patch_script = str(media_policy.get("global_discovery_hook") or "").strip()
+            if not patch_script:
+                raise ValueError("media_enrichment_policy.global_discovery_hook is required")
+            options = dict(media_policy.get("options") or {})
+            before = text
+            text = _apply_patch_script(text, provider_id, patch_script, options, None)
+            if text != before:
+                applied.append({
+                    "type": "patch_script",
+                    "path": patch_script,
+                    "phase": phase,
+                    "scope": "global_media_enrichment",
+                })
+
     # Playback integrity is a repository-wide discovery invariant, not a list
     # of currently-known providers. Run it last so every native, recovered or
     # provider-specific stream result crosses the same HLS gate. The patch

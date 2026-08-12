@@ -136,6 +136,63 @@ def repo_url(repository: str) -> str:
     return f"https://github.com/{repository}.git"
 
 
+def is_infrastructure_transport_error(error: Exception | str) -> bool:
+    """Classify transient transport failures without weakening drift review.
+
+    Only explicit network/TLS/DNS signatures are treated as inconclusive. Git
+    history divergence, missing contract refs, malformed configuration and any
+    other unexpected failure remain blocking verification errors.
+    """
+    text = str(error).casefold()
+    signatures = (
+        "server certificate verification failed",
+        "ssl certificate problem",
+        "certificate verify failed",
+        "tls handshake",
+        "temporary failure in name resolution",
+        "could not resolve host",
+        "couldn't resolve host",
+        "could not resolve hostname",
+        "network is unreachable",
+        "failed to connect",
+        "connection timed out",
+        "operation timed out",
+        "connection reset by peer",
+        "connection reset",
+        "remote end hung up unexpectedly",
+        "http 502",
+        "http 503",
+        "http 504",
+    )
+    return any(signature in text for signature in signatures)
+
+
+def resilient_inspect_client(
+    key: str, row: dict[str, Any], sources: dict[str, Any] | None = None
+) -> dict[str, Any]:
+    sources = sources or {}
+    try:
+        return inspect_client(key, row, sources)
+    except Exception as error:
+        if not is_infrastructure_transport_error(error):
+            raise
+        contract_ref = str(row.get("verified_ref") or "")
+        return {
+            "id": key,
+            "repository": row.get("repository"),
+            "branch": row.get("branch"),
+            "verified_ref": contract_ref,
+            "contract_ref": contract_ref,
+            "accepted_ref": accepted_ref_for(sources, key, contract_ref),
+            "current_head": None,
+            "status": "verification_inconclusive",
+            "review_required": False,
+            "auto_advance_safe": False,
+            "infrastructure_error": True,
+            "error": f"{type(error).__name__}: {error}",
+        }
+
+
 def current_head(repository: str, branch: str) -> str:
     output = run_git(
         ["ls-remote", "--heads", repo_url(repository), f"refs/heads/{branch}"],
@@ -414,12 +471,13 @@ def main() -> int:
         "safe_advance_available": [],
         "auto_advanced": [],
         "verified": [],
+        "inconclusive": [],
     }
 
     failures: list[str] = []
     for key, row in (config.get("clients") or {}).items():
         try:
-            result = inspect_client(str(key), row, sources)
+            result = resilient_inspect_client(str(key), row, sources)
         except Exception as error:
             result = {
                 "id": key,
@@ -449,6 +507,11 @@ def main() -> int:
                 "Nuvio client safe advance",
                 f"{key} advanced without hard/semantic contract drift; eligible for automatic accepted_ref update.",
             )
+        elif status == "verification_inconclusive":
+            report["inconclusive"].append(key)
+            message = f"{key}: upstream transport verification inconclusive; preserving accepted_ref"
+            annotation("warning", "Nuvio client upstream check inconclusive", message)
+            print(message)
         else:
             report["review_required"].append(key)
             hard = result.get("contract_changed_files") or []
@@ -464,7 +527,7 @@ def main() -> int:
             annotation("error", "Nuvio client runtime re-audit required", message)
             print(message, file=sys.stderr)
 
-    if args.apply_safe_advance and not failures:
+    if args.apply_safe_advance and not failures and not report["inconclusive"]:
         advanced = apply_safe_state(sources, config, report["clients"], now)
         if advanced or "nuvio_client_compatibility" not in load(sources_path):
             dump(sources_path, sources)
@@ -495,6 +558,7 @@ def main() -> int:
         f"verified={','.join(report['verified']) or '-'}; "
         f"safe={','.join(report['safe_advance_available']) or '-'}; "
         f"auto_advanced={','.join(report['auto_advanced']) or '-'}; "
+        f"inconclusive={','.join(report['inconclusive']) or '-'}; "
         f"review_required={','.join(report['review_required']) or '-'}"
     )
     if failures and not args.no_fail:

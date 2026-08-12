@@ -89,6 +89,11 @@ def run_health(
 ) -> dict[str, Any]:
     output_dir.mkdir(parents=True, exist_ok=True)
     env = os.environ.copy()
+    # Deep validation is network-bound. Six workers materially reduce wall time
+    # while remaining bounded; callers can lower/raise it explicitly (health
+    # check itself clamps the value to 1..8). Quick/availability modes are not
+    # routed through this loop and retain the repository default concurrency.
+    env.setdefault("NUVIO_HEALTH_CONCURRENCY", "6")
     env.update(
         {
             "NUVIO_STAGE": str(stage),

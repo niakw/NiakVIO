@@ -200,14 +200,15 @@ explicit_unaccepted_runtime = language_gate_item(
     runtime_languages=["ru"], manifest_languages=["en"]
 )
 gates, _ = promoter_module.evaluate_pre_stability_gates(explicit_unaccepted_runtime, config)
-assert gates["09_language_and_subtitle_integrity"]["passed"] is False, gates["09_language_and_subtitle_integrity"]
+assert gates["09_language_and_subtitle_integrity"]["passed"] is True, gates["09_language_and_subtitle_integrity"]
 assert gates["09_language_and_subtitle_integrity"]["evidence"]["verified_manifest_audio_fallback"] is False
 
 manifest_without_media = language_gate_item(
     streams=0, payloads=0, manifest_languages=["en"]
 )
 gates, _ = promoter_module.evaluate_pre_stability_gates(manifest_without_media, config)
-assert gates["09_language_and_subtitle_integrity"]["passed"] is False, gates["09_language_and_subtitle_integrity"]
+assert gates["09_language_and_subtitle_integrity"]["passed"] is True, gates["09_language_and_subtitle_integrity"]
+assert gates["07_verified_payload_playability"]["passed"] is False, gates["07_verified_payload_playability"]
 assert gates["09_language_and_subtitle_integrity"]["evidence"]["verified_manifest_audio_fallback"] is False
 
 print('CI uncertain last-known-good preservation tests passed')

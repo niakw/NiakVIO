@@ -1,5 +1,5 @@
 {
-  "schema_version": 5,
+  "schema_version": 7,
   "domain_replacements": {
     "api.movix.cash": "api.movix.fun",
     "api.movix.cloud": "api.movix.fun"
@@ -249,10 +249,6 @@
           "max_probes": 0,
           "min_vod_duration_seconds": 60
         },
-        "scripts/provider_patches/streamzo_public_catalogue.py": {
-          "base_url": "https://streamzo.fr",
-          "provider_name": "StreamZo"
-        },
         "scripts/provider_patches/nuvio_tv_direct_media_v2.py": {
           "provider_name": "StreamZo",
           "max_candidates": 14,
@@ -270,6 +266,19 @@
           ],
           "strip_legacy_direct_media_v2": true,
           "force_rewrap_target_media": true
+        },
+        "scripts/provider_patches/nuvio_tv_playable_first_v1.py": {
+          "max_probes": 8,
+          "timeout_ms": 6500
+        },
+        "scripts/provider_patches/streamzo_public_catalogue_v2.py": {
+          "base_url": "https://streamzo.fr",
+          "provider_name": "StreamZo",
+          "max_aliases": 4
+        },
+        "scripts/provider_patches/streamzo_source_identity_v3.py": {
+          "base_url": "https://streamzo.fr",
+          "timeout_ms": 6500
         }
       },
       "manifest_overrides": {
@@ -279,10 +288,12 @@
       "patch_scripts": [
         "scripts/provider_patches/streamzo_data_embed.py",
         "scripts/provider_patches/vf_catalogue_recovery.py",
-        "scripts/provider_patches/streamzo_public_catalogue.py",
+        "scripts/provider_patches/streamzo_public_catalogue_v2.py",
         "scripts/provider_patches/nuvio_tv_target_media_v4.py",
         "scripts/provider_patches/stream_output_sanitizer_v5.py",
-        "scripts/provider_patches/desktop_runtime_compat_v1.py"
+        "scripts/provider_patches/desktop_runtime_compat_v1.py",
+        "scripts/provider_patches/streamzo_source_identity_v3.py",
+        "scripts/provider_patches/nuvio_tv_playable_first_v1.py"
       ],
       "published_types": [
         "movie",
@@ -347,7 +358,8 @@
         "anime"
       ],
       "patch_scripts": [
-        "scripts/provider_patches/desktop_runtime_compat_v1.py"
+        "scripts/provider_patches/desktop_runtime_compat_v1.py",
+        "scripts/provider_patches/purstream_tv_identity_v3.py"
       ],
       "patch_script_options": {
         "scripts/provider_patches/desktop_runtime_compat_v1.py": {
@@ -370,6 +382,11 @@
               "store"
             ]
           }
+        },
+        "scripts/provider_patches/purstream_tv_identity_v3.py": {
+          "duration_tolerance": 0.35,
+          "timeout_ms": 7000,
+          "max_probes": 3
         }
       },
       "manifest_overrides": {
@@ -759,12 +776,18 @@
       "required_values": [],
       "published_types": [
         "movie",
-        "tv"
+        "tv",
+        "anime"
       ],
       "manifest_overrides": {
         "disabledPlatforms": []
       },
-      "patch_script_options": {}
+      "patch_script_options": {
+        "scripts/provider_patches/papadustream_anime_tv_v1.py": {}
+      },
+      "patch_scripts": [
+        "scripts/provider_patches/papadustream_anime_tv_v1.py"
+      ]
     },
     "toflix": {
       "profiles": [],
@@ -781,12 +804,16 @@
       "route_replacements": {},
       "required_route_values": [],
       "patch_scripts": [
-        "scripts/provider_patches/toflix_official_endpoint.py"
+        "scripts/provider_patches/toflix_official_endpoint.py",
+        "scripts/provider_patches/toflix_explicit_vf_v2.py"
       ],
       "patch_script_options": {
         "scripts/provider_patches/toflix_official_endpoint.py": {
           "site": "https://tfx05.lol",
           "fallback_api": "https://api.tfx05.lol/toflix_api.php"
+        },
+        "scripts/provider_patches/toflix_explicit_vf_v2.py": {
+          "require_french_host": true
         }
       },
       "notes": [
@@ -836,7 +863,16 @@
       }
     },
     "4khdhubnew": {
-      "capability": "html_scraper"
+      "capability": "html_scraper",
+      "patch_scripts": [
+        "scripts/provider_patches/nuvio_tv_playable_first_v1.py"
+      ],
+      "patch_script_options": {
+        "scripts/provider_patches/nuvio_tv_playable_first_v1.py": {
+          "max_probes": 6,
+          "timeout_ms": 6500
+        }
+      }
     },
     "Cineby": {
       "capability": "api_stream_resolver",
@@ -1262,19 +1298,23 @@
     },
     "vegamovies": {
       "capability": "html_scraper",
-      "replacements": {
-        "vegamovies.catering": "1vegamovies.cc"
-      },
-      "runtime_domain_replacements": {
-        "vegamovies.catering": "1vegamovies.cc"
-      },
+      "replacements": {},
+      "runtime_domain_replacements": {},
       "official_hub": "https://1vegamovies.tw/",
-      "official_site": "https://1vegamovies.cc",
+      "official_site": "https://vegamovies.catering",
       "required_values": [],
       "manifest_overrides": {
         "disabledPlatforms": []
       },
-      "patch_script_options": {}
+      "patch_scripts": [
+        "scripts/provider_patches/nuvio_tv_playable_first_v1.py"
+      ],
+      "patch_script_options": {
+        "scripts/provider_patches/nuvio_tv_playable_first_v1.py": {
+          "max_probes": 6,
+          "timeout_ms": 6500
+        }
+      }
     },
     "vidlink": {
       "capability": "html_scraper",
@@ -1397,7 +1437,16 @@
       "patch_script_options": {}
     },
     "animezey": {
-      "capability": "direct_media"
+      "capability": "direct_media",
+      "patch_scripts": [
+        "scripts/provider_patches/nuvio_tv_playable_first_v1.py"
+      ],
+      "patch_script_options": {
+        "scripts/provider_patches/nuvio_tv_playable_first_v1.py": {
+          "max_probes": 6,
+          "timeout_ms": 6500
+        }
+      }
     },
     "anime-ultime": {
       "capability": "mixed_embed_resolver"
@@ -4631,5 +4680,43 @@
     "inconclusive_network_action": "preserve_stream",
     "vf_catalogue_identity": "tmdb_metadata_plus_strict_title_year_match",
     "unknown_metadata_action": "return_no_recovery_match"
+  },
+  "catalogue_resolution_policy": {
+    "version": 2,
+    "enabled": true,
+    "id_first": true,
+    "provider_specific_titles_forbidden": true,
+    "capabilities": [
+      "html_scraper",
+      "mixed_embed_resolver"
+    ],
+    "require_official_site": true,
+    "global_discovery_hook": "scripts/provider_patches/global_catalogue_alias_recovery_v2.py",
+    "options": {
+      "max_aliases": 8,
+      "max_candidates": 8,
+      "max_players": 8,
+      "timeout_ms": 7000
+    },
+    "tmdb_and_imdb_first": true
+  },
+  "media_enrichment_policy": {
+    "version": 1,
+    "enabled": true,
+    "transcoding": false,
+    "preserve_original": true,
+    "capabilities": [
+      "html_scraper",
+      "mixed_embed_resolver",
+      "api_stream_resolver"
+    ],
+    "global_discovery_hook": "scripts/provider_patches/global_media_enrichment_v1.py",
+    "options": {
+      "max_rows": 6,
+      "max_depth": 2,
+      "max_candidates": 10,
+      "timeout_ms": 6500,
+      "preserve_original": true
+    }
   }
 }

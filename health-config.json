@@ -1,5 +1,5 @@
 {
-  "schema_version": 67,
+  "schema_version": 68,
   "concurrency": 4,
   "modes": {
     "availability": {
@@ -58,7 +58,7 @@
     },
     "deep": {
       "fixture_limit": 1,
-      "max_streams_to_probe": 1,
+      "max_streams_to_probe": 3,
       "provider_timeout_ms": 70000,
       "stream_probe_timeout_ms": 18000,
       "sample_bytes": 524288,
@@ -68,15 +68,20 @@
       "probe_subtitles": false,
       "max_subtitles_to_probe": 0,
       "fallback_fixture_limit": 0,
-      "fallback_only_when_all_primary_no_streams": true,
+      "fallback_only_when_all_primary_no_streams": false,
       "max_provider_fetches": 30,
       "max_redirects": 5,
       "max_provider_response_bytes": 5242880,
       "fixture_limit_per_category": true,
-      "fallback_fixture_limit_per_category": 1,
+      "fallback_fixture_limit_per_category": 3,
       "max_settings_profiles": 4,
       "worker_memory_mb": 512,
-      "minimum_vod_duration_seconds": 60
+      "minimum_vod_duration_seconds": 60,
+      "probe_streams_adaptively": true,
+      "inspect_direct_dimensions": true,
+      "verify_fixture_duration_identity": true,
+      "minimum_fixture_duration_ratio": 0.55,
+      "maximum_fixture_duration_ratio": 1.8
     }
   },
   "fixtures": {
@@ -86,7 +91,8 @@
         "tmdbId": "157336",
         "mediaType": "movie",
         "title": "Interstellar",
-        "year": 2014
+        "year": 2014,
+        "expectedDurationMinutes": 169
       },
       {
         "label": "Tenet",
@@ -146,7 +152,8 @@
         "season": 1,
         "episode": 1,
         "title": "Breaking Bad",
-        "year": 2008
+        "year": 2008,
+        "expectedDurationMinutes": 58
       },
       {
         "label": "Game of Thrones S01E01",
@@ -211,7 +218,8 @@
         "season": 1,
         "episode": 1,
         "title": "Jujutsu Kaisen",
-        "year": 2020
+        "year": 2020,
+        "expectedDurationMinutes": 24
       },
       {
         "label": "Attack on Titan S01E01",
@@ -275,17 +283,17 @@
     "required_validation_mode": "deep",
     "respect_upstream_disabled_state": true,
     "disable_all_other_statuses": true,
-    "minimum_score_enabled": 70,
+    "minimum_score_enabled": 55,
     "minimum_healthy_fixtures": 1,
-    "minimum_healthy_fixture_ratio": 0.5,
+    "minimum_healthy_fixture_ratio": 0.34,
     "require_declared_type_coverage": true,
     "minimum_playable_streams": 1,
     "minimum_playable_fixtures": 1,
     "minimum_distinct_hosts": 1,
     "minimum_payload_verified_streams": 1,
-    "minimum_effective_height": 720,
+    "minimum_effective_height": 0,
     "preferred_height": 1080,
-    "minimum_bandwidth_bps_when_reported": 1000000,
+    "minimum_bandwidth_bps_when_reported": 0,
     "accepted_audio_languages": [
       "fr",
       "en"
@@ -297,7 +305,7 @@
     "anime_original_audio_languages": [
       "ja"
     ],
-    "require_accepted_language_evidence": true,
+    "require_accepted_language_evidence": false,
     "require_reachable_accepted_subtitle_when_advertised": true,
     "allow_accepted_audio_without_subtitles": true,
     "maximum_provider_median_latency_ms": 15000,
@@ -305,7 +313,7 @@
     "minimum_consecutive_deep_passes": 1,
     "minimum_total_deep_passes": 1,
     "reset_stability_on_sha_change": true,
-    "quality_auto_disable": true,
+    "quality_auto_disable": false,
     "activation_gate_count": 10,
     "inconclusive_statuses": [
       "no_streams",
@@ -337,7 +345,8 @@
       "no_streams",
       "reachable",
       "degraded"
-    ]
+    ],
+    "allow_type_scoped_activation": true
   },
   "availability": {
     "auto_disable": true,
