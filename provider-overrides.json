@@ -1697,6 +1697,15 @@
     },
     "VIDLOVE": {
       "capability": "direct_media"
+    },
+    "1SHOWS": {
+      "capability": "mixed_embed_resolver"
+    },
+    "DVDPLAY": {
+      "capability": "mixed_embed_resolver"
+    },
+    "TOPCARTOONS": {
+      "capability": "html_scraper"
     }
   },
   "route_override_defaults": {
@@ -4317,6 +4326,38 @@
         "https://player.vidlove.cc"
       ],
       "generated_from_manifest_or_stage": true
+    },
+    "1SHOWS": {
+      "strategy": "mixed_embed_resolver",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://www.1shows.org",
+        "https://streamtape.com",
+        "https://www.dailymotion.com"
+      ],
+      "generated_from_manifest_or_stage": true
+    },
+    "DVDPLAY": {
+      "strategy": "mixed_embed_resolver",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://dvdplay.cv",
+        "https://pixeldrain.net",
+        "https://www.dailymotion.com"
+      ],
+      "generated_from_manifest_or_stage": true
+    },
+    "TOPCARTOONS": {
+      "strategy": "html_scraper",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [],
+      "generated_from_manifest_or_stage": true
     }
   },
   "official_domain_hubs": {
@@ -4734,7 +4775,7 @@
   },
   "provider_profile_generation": {
     "schema_version": 3,
-    "provider_count": 155,
+    "provider_count": 147,
     "staged_provider_count": 92,
     "source": "manifest_published_bundles_and_current_staging",
     "same_deep_new_provider_support": true,
