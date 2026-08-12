@@ -4,33 +4,41 @@ from __future__ import annotations
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-workflow = ROOT / ".github" / "workflows" / "sync.yml"
-text = workflow.read_text(encoding="utf-8")
+health_check = ROOT / "scripts" / "health_check.mjs"
+deep_loop = ROOT / "scripts" / "deep_repair_loop.py"
 
-step_anchor = """      # Phase 3: execute provider access, generate provider-agnostic adaptive\n      # candidates for failures, then retest the exact generated JavaScript.\n      - name: Test provider access and repair failed routes\n"""
-step_replacement = """      # Phase 3: execute provider access, generate provider-agnostic adaptive\n      # candidates for failures, then retest the exact generated JavaScript.\n      # CI gets bounded extra parallelism in deep mode only; repository defaults\n      # and all validation gates/timeouts remain unchanged.\n      - name: Prepare bounded CI health profile\n        env:\n          NUVIO_VALIDATION_MODE: ${{ steps.resolve-mode.outputs.validation_mode }}\n        run: |\n          python - <<'PY'\n          import json\n          import os\n          from pathlib import Path\n\n          source = Path('health-config.json')\n          target = Path('health-output/ci-health-config.json')\n          config = json.loads(source.read_text(encoding='utf-8'))\n          before = int(config.get('concurrency') or 4)\n          if os.environ.get('NUVIO_VALIDATION_MODE') == 'deep':\n              config['concurrency'] = 6\n          target.parent.mkdir(parents=True, exist_ok=True)\n          target.write_text(json.dumps(config, indent=2, ensure_ascii=False) + '\\n', encoding='utf-8')\n          print(\n              f\"CI health concurrency: {before} -> {config.get('concurrency')} \"\n              f\"for mode={os.environ.get('NUVIO_VALIDATION_MODE')}; policy/timeouts unchanged\"\n          )\n          PY\n\n      - name: Test provider access and repair failed routes\n"""
+health_text = health_check.read_text(encoding="utf-8")
+health_old = "const concurrency = Math.max(1, Number(config.concurrency || 4));"
+health_new = """function configuredConcurrency() {
+  const fallback = Number(config.concurrency || 4);
+  const requested = Number(process.env.NUVIO_HEALTH_CONCURRENCY || fallback);
+  if (!Number.isFinite(requested)) return Math.max(1, Math.min(8, Math.round(fallback || 4)));
+  return Math.max(1, Math.min(8, Math.round(requested)));
+}
 
-if "- name: Prepare bounded CI health profile" not in text:
-    if step_anchor not in text:
-        raise SystemExit("sync deep profile step anchor missing")
-    text = text.replace(step_anchor, step_replacement, 1)
+const concurrency = configuredConcurrency();"""
+if health_new not in health_text:
+    if health_old not in health_text:
+        raise SystemExit("health_check concurrency anchor missing")
+    health_text = health_text.replace(health_old, health_new, 1)
+health_check.write_text(health_text, encoding="utf-8")
 
-env_anchor = """          NUVIO_DNS_PREFLIGHT_RESULTS: health-output/dns-preflight-report.json\n          NUVIO_WORKER_MEMORY_MB: \"1024\"\n"""
-env_replacement = """          NUVIO_DNS_PREFLIGHT_RESULTS: health-output/dns-preflight-report.json\n          NUVIO_HEALTH_CONFIG: health-output/ci-health-config.json\n          NUVIO_WORKER_MEMORY_MB: \"1024\"\n"""
-if "NUVIO_HEALTH_CONFIG: health-output/ci-health-config.json" not in text:
-    if env_anchor not in text:
-        raise SystemExit("sync health config env anchor missing")
-    text = text.replace(env_anchor, env_replacement, 1)
+deep_text = deep_loop.read_text(encoding="utf-8")
+deep_old = """    env = os.environ.copy()\n    env.update(\n"""
+deep_new = """    env = os.environ.copy()\n    # Deep validation is network-bound. Six workers materially reduce wall time\n    # while remaining bounded; callers can lower/raise it explicitly (health\n    # check itself clamps the value to 1..8). Quick/availability modes are not\n    # routed through this loop and retain the repository default concurrency.\n    env.setdefault(\"NUVIO_HEALTH_CONCURRENCY\", \"6\")\n    env.update(\n"""
+if 'env.setdefault("NUVIO_HEALTH_CONCURRENCY", "6")' not in deep_text:
+    if deep_old not in deep_text:
+        raise SystemExit("deep repair environment anchor missing")
+    deep_text = deep_text.replace(deep_old, deep_new, 1)
+deep_loop.write_text(deep_text, encoding="utf-8")
 
-required = (
-    "- name: Prepare bounded CI health profile",
-    "config['concurrency'] = 6",
-    "NUVIO_HEALTH_CONFIG: health-output/ci-health-config.json",
-    "NUVIO_WORKER_MEMORY_MB: \"1024\"",
-)
-for token in required:
-    if token not in text:
-        raise SystemExit(f"sync migration verification failed: {token}")
+checks = {
+    "health env override": "process.env.NUVIO_HEALTH_CONCURRENCY" in health_text,
+    "health bounded max": "Math.min(8" in health_text,
+    "deep default six": 'env.setdefault("NUVIO_HEALTH_CONCURRENCY", "6")' in deep_text,
+}
+failed = [name for name, ok in checks.items() if not ok]
+if failed:
+    raise SystemExit("deep concurrency migration verification failed: " + ", ".join(failed))
 
-workflow.write_text(text, encoding="utf-8")
-print("sync deep CI profile migration applied: deep=6 workers, quick/default unchanged")
+print("bounded deep concurrency migration applied: deep default=6, explicit override=1..8, quick/default unchanged")
