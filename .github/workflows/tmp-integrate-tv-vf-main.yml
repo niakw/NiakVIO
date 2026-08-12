@@ -1,0 +1,35 @@
+name: Temporary integrate validated TV VF branch
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/triggers/integrate-tv-vf-main
+
+permissions:
+  contents: write
+
+jobs:
+  inspect-merge:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Inspect real merge conflicts
+        shell: bash
+        run: |
+          git fetch origin agent/tv-regression-5.20.38
+          set +e
+          git merge --no-commit --no-ff origin/agent/tv-regression-5.20.38
+          rc=$?
+          set -e
+          echo "merge_rc=$rc"
+          echo "--- CONFLICTS ---"
+          git diff --name-only --diff-filter=U | sort
+          echo "--- STATUS ---"
+          git status --short
+          git merge --abort || true
