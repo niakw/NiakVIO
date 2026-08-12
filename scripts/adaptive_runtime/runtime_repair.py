@@ -159,6 +159,13 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
 
 def _adaptive_failure(result: dict[str, Any]) -> bool:
     status = str(result.get("status") or "runtime_error")
+    playable = _base.playable_stream_count(result)
+    # Runtime recovery is an expensive network fallback. A provider that is
+    # already healthy *and* has current playable proof does not need to be
+    # rewritten merely because a secondary fixture missed. Keep inconsistent
+    # "healthy" rows with zero playable proof eligible so the guard fails safe.
+    if status == "healthy" and playable > 0:
+        return False
     failures = {str(test.get("failure_class") or "") for test in _base._tests(result)}
     return status in {"no_streams", "degraded", "blocked", "provider_unreachable", "unavailable"} or bool(failures & {
         "content_lookup_completed_no_streams", "stream_not_playback_verified",
