@@ -1,21 +1,21 @@
-name: Temporary migrate bounded deep runtime
+name: Temporary optimize adaptive repair scope
 
 on:
   push:
     branches:
       - agent/tv-regression-5.20.38
     paths:
-      - .github/triggers/migrate-sync-deep-ci-profile
+      - .github/triggers/migrate-adaptive-repair-scope
 
 permissions:
   contents: write
 
 concurrency:
-  group: temporary-bounded-deep-runtime-migration
+  group: temporary-adaptive-repair-scope-optimization
   cancel-in-progress: true
 
 jobs:
-  migrate:
+  optimize:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -35,33 +35,31 @@ jobs:
 
       - run: npm ci --ignore-scripts --no-audit --no-fund
 
-      - name: Apply bounded concurrency in the deep runtime engine
+      - name: Stop opportunistic repair of proven-healthy providers
         run: |
-          python scripts/tmp_migrate_sync_deep_ci_profile.py
-          node --check scripts/health_check.mjs
-          python -m py_compile scripts/deep_repair_loop.py
-          grep -F -- 'process.env.NUVIO_HEALTH_CONCURRENCY' scripts/health_check.mjs
-          grep -F -- 'env.setdefault("NUVIO_HEALTH_CONCURRENCY", "6")' scripts/deep_repair_loop.py
+          python scripts/tmp_optimize_adaptive_repair_scope.py
+          python -m py_compile scripts/adaptive_runtime/runtime_repair.py tests/adaptive_runtime_repair_test.py
+          python tests/adaptive_runtime_repair_test.py
 
-      - name: Regression suite after runtime migration
+      - name: Full repository regression suite
         run: npm test
 
-      - name: Remove one-shot source migration inputs and refresh integrity hashes
+      - name: Remove one-shot inputs and refresh integrity hashes
         run: |
-          rm -f scripts/tmp_migrate_sync_deep_ci_profile.py
-          rm -f .github/triggers/migrate-sync-deep-ci-profile
+          rm -f scripts/tmp_optimize_adaptive_repair_scope.py
+          rm -f .github/triggers/migrate-adaptive-repair-scope
           python scripts/generate_release_hashes.py
           python scripts/validate_release_integrity.py
 
-      - name: Commit proven runtime optimization
+      - name: Commit proven repair-scope optimization
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add -A
           git diff --cached --check
           if git diff --cached --quiet; then
-            echo 'No runtime migration change to commit.'
+            echo 'No repair-scope change to commit.'
             exit 0
           fi
-          git commit -m 'perf: bound deep validation concurrency'
+          git commit -m 'perf: skip adaptive repair for proven-healthy providers'
           git push origin HEAD:agent/tv-regression-5.20.38
