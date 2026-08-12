@@ -1,0 +1,164 @@
+name: Integrate AnimeZey stream host repair v2
+
+on:
+  push:
+    branches:
+      - fix/animezey-stream-host-v1
+    paths:
+      - .github/triggers/integrate-animezey-stream-host-v2
+
+permissions:
+  contents: write
+
+jobs:
+  integrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: "24"
+          package-manager-cache: false
+      - name: Install pinned dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Add narrow AnimeZey stream-host wrapper and unit test
+        run: |
+          cat > scripts/provider_patches/animezey_stream_host_v1.py <<'PY'
+          """Rewrite only stale AnimeZey download-stream hosts after native extraction."""
+          from __future__ import annotations
+          import json
+          MARKER="NUVIO_ANIMEZEY_STREAM_HOST_V1"
+          def apply(source: str, options: dict | None=None, **_kwargs) -> str:
+              if MARKER in source:return source
+              cfg=dict(options or {})
+              old=str(cfg.get("from_host") or "animezey16082023.animezey16082023.workers.dev").strip().lower()
+              new=str(cfg.get("to_host") or "1.animezeydl.workers.dev").strip().lower()
+              if not old or not new:raise ValueError("animezey_stream_host_v1 requires from_host and to_host")
+              payload=json.dumps({"fromHost":old,"toHost":new},separators=(",",":"))
+              shim=r'''
+          /* NUVIO_ANIMEZEY_STREAM_HOST_V1 */
+          ;(function(g,c){"use strict";
+          function slot(v){if(Array.isArray(v))return{key:null,list:v};if(v&&typeof v==="object"){for(var i=0;i<3;i++){var k=["streams","results","data"][i];if(Array.isArray(v[k]))return{key:k,list:v[k]}}}return null}
+          function rebuild(v,s,list){if(s.key===null)return list;var o=Object.assign({},v);o[s.key]=list;return o}
+          function rewrite(raw){var value=String(raw==null?"":raw).trim();if(!/^https?:\/\//i.test(value))return value;try{var u=new URL(value);if(u.hostname.toLowerCase()!==c.fromHost)return value;u.hostname=c.toHost;return u.toString()}catch(_e){return value}}
+          function row(r){if(!r||typeof r!=="object")return r;var u=String(r.url||""),n=rewrite(u);return n===u?r:Object.assign({},r,{url:n})}
+          function install(t){if(!t||typeof t.getStreams!=="function"||t.getStreams.__nuvioAnimeZeyStreamHostV1)return false;var native=t.getStreams;var w=async function(){var v=await native.apply(this,arguments),s=slot(v);return s?rebuild(v,s,s.list.map(row)):v};w.__nuvioAnimeZeyStreamHostV1=true;t.getStreams=w;return true}
+          var ok=false;try{if(typeof module!=="undefined"&&module.exports)ok=install(module.exports)}catch(_e){}try{if(g&&typeof g.getStreams==="function"){if(ok&&typeof module!=="undefined"&&module.exports)g.getStreams=module.exports.getStreams;else{var b={getStreams:g.getStreams};install(b);g.getStreams=b.getStreams}}}catch(_e){}
+          })(typeof globalThis!=="undefined"?globalThis:this,CONFIG_PLACEHOLDER);
+          '''.replace("CONFIG_PLACEHOLDER",payload)
+              return source.rstrip()+"\n"+shim.lstrip()+"\n"
+          PY
+
+          cat > tests/animezey_stream_host_v1_test.py <<'PY'
+          #!/usr/bin/env python3
+          import importlib.util,json,subprocess,tempfile
+          from pathlib import Path
+          ROOT=Path(__file__).resolve().parents[1];p=ROOT/'scripts/provider_patches/animezey_stream_host_v1.py'
+          s=importlib.util.spec_from_file_location('patch',p);m=importlib.util.module_from_spec(s);assert s.loader;s.loader.exec_module(m)
+          src=m.apply('module.exports={getStreams:async()=>({streams:[{url:"https://animezey16082023.animezey16082023.workers.dev/download.aspx?id=1&token=x"},{url:"https://other.example/a.mkv"}]})};',options={'from_host':'animezey16082023.animezey16082023.workers.dev','to_host':'1.animezeydl.workers.dev'})
+          runner='const vm=require("vm");const x=process.argv[2],b={module:{exports:{}},exports:{},URL};b.globalThis=b;vm.runInNewContext(x,b);b.module.exports.getStreams({}).then(v=>console.log(JSON.stringify(v)));'
+          with tempfile.TemporaryDirectory() as d:
+              q=Path(d)/'r.cjs';q.write_text(runner);cp=subprocess.run(['node',str(q),src],capture_output=True,text=True,timeout=10);assert cp.returncode==0,cp.stderr
+              rows=json.loads(cp.stdout)['streams'];assert rows[0]['url'].startswith('https://1.animezeydl.workers.dev/download.aspx?');assert 'token=x' in rows[0]['url'];assert rows[1]['url']=='https://other.example/a.mkv'
+          print('AnimeZey stream host wrapper test passed')
+          PY
+
+      - name: Register AnimeZey patch
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path('provider-overrides.json');d=json.loads(p.read_text())
+          c=d.setdefault('provider_patches',{}).setdefault('animezey',{});patch='scripts/provider_patches/animezey_stream_host_v1.py'
+          scripts=list(c.get('patch_scripts') or []);scripts=[x for x in scripts if x!=patch];scripts.insert(0,patch);c['patch_scripts']=scripts
+          c.setdefault('patch_script_options',{})[patch]={'from_host':'animezey16082023.animezey16082023.workers.dev','to_host':'1.animezeydl.workers.dev'}
+          req=list(c.get('required_values') or []);req+=[] if 'NUVIO_ANIMEZEY_STREAM_HOST_V1' in req else ['NUVIO_ANIMEZEY_STREAM_HOST_V1'];c['required_values']=req
+          notes=list(c.get('notes') or []);note='Rewrite only stale AnimeZey download URLs to the currently byte-range-capable stream Worker; keep listing/search endpoints unchanged.';notes+=[] if note in notes else [note];c['notes']=notes
+          p.write_text(json.dumps(d,ensure_ascii=False,indent=2)+'\n')
+          q=Path('package.json');pkg=json.loads(q.read_text());extra='python tests/animezey_stream_host_v1_test.py';pkg['scripts']['test']+=('' if extra in pkg['scripts']['test'] else ' && '+extra);q.write_text(json.dumps(pkg,ensure_ascii=False,indent=2)+'\n')
+          PY
+
+      - name: Reapply override and prepare candidate release
+        run: |
+          PREVIOUS_MANIFEST="$(mktemp)"; cp manifest.json "$PREVIOUS_MANIFEST"
+          python scripts/reapply_published_overrides.py
+          python scripts/prune_unreferenced_providers.py
+          python scripts/bump_release_patch_if_manifest_changed.py --previous "$PREVIOUS_MANIFEST" --manifest manifest.json
+          python scripts/generate_language_manifests.py
+          python scripts/prune_unreferenced_providers.py
+          python scripts/sync_release_versions.py --manifest manifest.json
+          python scripts/validate_published_overrides.py
+          python scripts/validate_activation_preservation.py
+          python scripts/validate_language_projection.py
+
+      - name: Prove AnimeZey film and episode on live Matroska Worker
+        env:
+          NUVIO_NETWORK_MAX_REQUESTS: "120"
+          NUVIO_WORKER_MEMORY_MB: "384"
+        run: |
+          python - <<'PY'
+          import json,subprocess,urllib.request
+          from pathlib import Path
+          m=json.loads(Path('manifest.json').read_text());row=next(x for x in m['scrapers'] if str(x.get('id') or '').casefold()=='animezey');provider=Path(row['filename'])
+          ctx={'locale':'fr-FR','language':'fr','languages':['fr-FR','fr'],'platform':'android','settings':{},'storage':{}}
+          fixtures=[{'tmdbId':'157336','mediaType':'movie','title':'Interstellar','year':2014,'label':'Interstellar'},{'tmdbId':'1396','mediaType':'tv','season':1,'episode':1,'title':'Breaking Bad','year':2008,'label':'Breaking Bad S01E01'}]
+          def parse(out):
+              for line in reversed(out.splitlines()):
+                  line=line.strip();line=line.split('=',1)[1] if line.startswith('NUVIO_HEALTH_RESULT=') else line
+                  try:return json.loads(line)
+                  except Exception:pass
+          def rows(v):
+              if isinstance(v,list):return v
+              if isinstance(v,dict):
+                  for k in ('streams','results','data'):
+                      if isinstance(v.get(k),list):return v[k]
+              return []
+          for f in fixtures:
+              cp=subprocess.run(['node','scripts/provider_worker.cjs',str(provider),json.dumps(f),json.dumps(ctx),'2'],capture_output=True,text=True,timeout=100);assert cp.returncode==0,(f,cp.stderr[-3000:])
+              r=rows(parse(cp.stdout));assert r,(f,cp.stdout[-5000:]);assert all('animezey16082023.animezey16082023.workers.dev' not in str(x.get('url','')) for x in r),r
+              good=[x for x in r if '1.animezeydl.workers.dev' in str(x.get('url',''))];assert good,(f,r);playable=0
+              for x in good[:5]:
+                  h={'User-Agent':'Mozilla/5.0','Accept':'video/*,application/octet-stream,*/*','Range':'bytes=0-16383'};h.update({str(k):str(v) for k,v in (x.get('headers') or {}).items()})
+                  try:
+                      with urllib.request.urlopen(urllib.request.Request(str(x['url']),headers=h),timeout=20) as res:
+                          prefix=res.read(16);ct=(res.headers.get('content-type') or '').lower();st=getattr(res,'status',None)
+                          if st==206 and (prefix[:4]==bytes([0x1a,0x45,0xdf,0xa3]) or 'matroska' in ct or ct.startswith('video/')):playable+=1
+                  except Exception:pass
+              assert playable>=1,(f,good);print(f"AnimeZey live proof passed: {f['label']} playable={playable} streams={len(r)}")
+          PY
+
+      - name: Remove all AnimeZey integration-only CI files
+        run: |
+          rm -f .github/workflows/integrate-animezey-stream-host.yml .github/triggers/integrate-animezey-stream-host
+          rm -f .github/workflows/integrate-animezey-stream-host-v2.yml .github/triggers/integrate-animezey-stream-host-v2
+          rm -f .github/workflows/patch-animezey-test-lookup.yml .github/triggers/patch-animezey-test-lookup
+
+      - name: Hash and create candidate commit
+        run: |
+          python scripts/generate_release_hashes.py
+          python scripts/validate_release_integrity.py
+          git config user.name "github-actions[bot]";git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A;git diff --cached --check;git commit -m "fix: route AnimeZey streams through live worker"
+
+      - name: Validate candidate in isolated worktree
+        run: |
+          git worktree add --detach /tmp/niakvio-animezey HEAD
+          cd /tmp/niakvio-animezey
+          npm ci --ignore-scripts --no-audit --no-fund
+          python scripts/validate_release_integrity.py
+          python scripts/validate_activation_preservation.py
+          python scripts/validate_language_projection.py
+          npm test
+
+      - name: Publish only after targeted validation
+        run: |
+          git fetch origin main
+          git rebase origin/main
+          git push origin HEAD:main
