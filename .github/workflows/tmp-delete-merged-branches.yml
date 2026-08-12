@@ -1,0 +1,41 @@
+name: Temporary delete fully merged branches
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/triggers/delete-merged-branches
+
+permissions:
+  contents: write
+
+jobs:
+  delete:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          fetch-depth: 1
+
+      - name: Delete only branches proven to have zero unique commits
+        shell: bash
+        run: |
+          set -euo pipefail
+          branches=(
+            'agent/cleanup-tree-probe'
+            'agent/cleanup-tree-probe2'
+            'agent/final-repository-cleanup'
+            'agent/nuvio-official-tv-addon'
+            'agent/provider-recovery-integration-5.20.35'
+            'agent/run-desktop-publication'
+          )
+          for branch in "${branches[@]}"; do
+            if git ls-remote --exit-code --heads origin "refs/heads/${branch}" >/dev/null 2>&1; then
+              echo "Deleting fully merged branch: ${branch}"
+              git push origin --delete "${branch}"
+            else
+              echo "Already absent: ${branch}"
+            fi
+          done
