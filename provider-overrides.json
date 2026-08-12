@@ -1443,14 +1443,25 @@
     "animezey": {
       "capability": "direct_media",
       "patch_scripts": [
+        "scripts/provider_patches/animezey_stream_host_v1.py",
         "scripts/provider_patches/nuvio_tv_playable_first_v1.py"
       ],
       "patch_script_options": {
         "scripts/provider_patches/nuvio_tv_playable_first_v1.py": {
           "max_probes": 6,
           "timeout_ms": 6500
+        },
+        "scripts/provider_patches/animezey_stream_host_v1.py": {
+          "from_host": "animezey16082023.animezey16082023.workers.dev",
+          "to_host": "1.animezeydl.workers.dev"
         }
-      }
+      },
+      "required_values": [
+        "NUVIO_ANIMEZEY_STREAM_HOST_V1"
+      ],
+      "notes": [
+        "Rewrite only stale AnimeZey download URLs to the currently byte-range-capable stream Worker; keep listing/search endpoints unchanged."
+      ]
     },
     "anime-ultime": {
       "capability": "mixed_embed_resolver"

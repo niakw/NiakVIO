@@ -4377,9 +4377,9 @@
     },
     "animezey": {
       "id": "animezey",
-      "published_filename": "providers/animezey--nuvio--58b01e354b05dc6b.js",
-      "sha256": "58b01e354b05dc6b3801cc14e9319bb7d2971fbde31d86f9030e526171c01109",
-      "patched_sha256": "58b01e354b05dc6b3801cc14e9319bb7d2971fbde31d86f9030e526171c01109",
+      "published_filename": "providers/animezey--nuvio--1ac73aeae05c0534.js",
+      "sha256": "1ac73aeae05c0534d06680eff29b672534f8e640a05d9f3f6e3b26e653ab754f",
+      "patched_sha256": "1ac73aeae05c0534d06680eff29b672534f8e640a05d9f3f6e3b26e653ab754f",
       "upstream_sha256": "46e83c8d710830679b7f17eacb03e014fc4195237cd423fe63254862549f24ff",
       "local_patches": [
         {
@@ -4391,6 +4391,11 @@
         {
           "type": "patch_script",
           "path": "scripts/provider_patches/nuvio_tv_playable_first_v1.py",
+          "phase": "discovery"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/animezey_stream_host_v1.py",
           "phase": "discovery"
         }
       ],
