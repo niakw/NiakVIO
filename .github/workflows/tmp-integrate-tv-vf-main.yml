@@ -11,27 +11,77 @@ permissions:
   contents: write
 
 jobs:
-  inspect-merge:
+  integrate:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
           ref: main
           fetch-depth: 0
-      - name: Inspect real merge conflicts
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Merge validated branch and resolve known conflicts
         shell: bash
         run: |
+          set -euo pipefail
           git config user.name niakw
           git config user.email foissy.tommy@gmail.com
+          cp manifest.json /tmp/main-manifest-before-tv-merge.json
           git fetch origin agent/tv-regression-5.20.38
           set +e
           git merge --no-commit --no-ff origin/agent/tv-regression-5.20.38
-          rc=$?
+          merge_rc=$?
           set -e
-          echo "merge_rc=$rc"
-          echo "--- CONFLICTS ---"
-          git diff --name-only --diff-filter=U | sort
-          echo "--- STATUS ---"
-          git status --short
-          git merge --abort || true
+          if [ "$merge_rc" -ne 0 ]; then
+            mapfile -t conflicts < <(git diff --name-only --diff-filter=U | sort)
+            printf '%s\n' "${conflicts[@]}" > /tmp/actual-conflicts.txt
+            cat > /tmp/expected-conflicts.txt <<'EOF'
+          FILE-HASHES.json
+          PATCH-SHA256SUMS.txt
+          PROVENANCE.json
+          SHA256SUMS.json
+          manifest.json
+          provider-overrides.json
+          vf/manifest.json
+          EOF
+            if ! diff -u /tmp/expected-conflicts.txt /tmp/actual-conflicts.txt; then
+              echo 'Unexpected merge conflict set; refusing to publish.'
+              exit 1
+            fi
+            git checkout --theirs -- FILE-HASHES.json PATCH-SHA256SUMS.txt PROVENANCE.json SHA256SUMS.json manifest.json provider-overrides.json vf/manifest.json
+            git add FILE-HASHES.json PATCH-SHA256SUMS.txt PROVENANCE.json SHA256SUMS.json manifest.json provider-overrides.json vf/manifest.json
+          fi
+          test -z "$(git diff --name-only --diff-filter=U)"
+          rm -f .github/status/tv-deep-proof-v2-run \
+                .github/status/tv-direct-identity-run \
+                .github/status/tv-targeted-vf-run \
+                .github/status/tv-vf-breaking-bad-matrix-run \
+                .github/status/tv-vf-global-hardening-run \
+                scripts/tmp_migrate_hls_500_transient.py
+          git add -A
+      - name: Publish as release 5.20.40
+        shell: bash
+        run: |
+          python scripts/sync_release_versions.py --version 5.20.40
+          python scripts/validate_language_projection.py
+      - name: Full regression and integrity
+        shell: bash
+        run: |
+          npm test
+          python scripts/generate_release_hashes.py
+          python scripts/validate_release_integrity.py
+          python scripts/validate_language_projection.py
+          test -z "$(git diff --name-only --diff-filter=U)"
+      - name: Commit merge and push main
+        shell: bash
+        run: |
+          git add -A
+          git commit -m "merge: publish validated TV and VF provider hardening 5.20.40"
+          git push origin HEAD:main
