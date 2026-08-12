@@ -15,22 +15,33 @@ module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(module)
 
 base = "module.exports={getStreams:async function(){return [];}};"
-patched = module.apply(base, {
+options = {
     "base_url": "https://catalog.example",
     "provider_name": "Example",
     "max_aliases": 8,
     "max_candidates": 8,
     "max_players": 8,
     "timeout_ms": 5000,
-})
+}
+patched = module.apply(base, options)
 
 assert "NUVIO_GLOBAL_CATALOGUE_ALIAS_RECOVERY_V2" in patched
 assert "external_source=imdb_id" in patched
 assert "/find/" in patched
 assert "original_title" in patched
 assert "alternative_titles" in patched
+assert "var guessed=[],found=[],searches=[]" in patched
+assert "var candidates=[],searches=[]" not in patched
 for forbidden in ("Mon ninja et moi 3", "Ternet Ninja 3", "Interstellar"):
     assert forbidden not in patched
+
+# An already-patched/LKG source must be upgraded too. The marker must not make
+# apply() skip the search-priority repair.
+old_runtime = patched.replace(module._NEW_CANDIDATE_PLAN, module._OLD_CANDIDATE_PLAN)
+assert module._OLD_CANDIDATE_PLAN in old_runtime
+upgraded_runtime = module.apply(old_runtime, options)
+assert module._OLD_CANDIDATE_PLAN not in upgraded_runtime
+assert module._NEW_CANDIDATE_PLAN in upgraded_runtime
 
 runner = r'''
 const assert = require('assert');
@@ -58,7 +69,15 @@ global.fetch = async function(url) {
     return response(JSON.stringify({id:424242,title:'Example Feature',original_title:'Original Feature',release_date:'2024-05-01'}), 200, 'application/json', url);
   }
   if (url.includes('/movie/424242/alternative_titles?')) {
-    return response(JSON.stringify({titles:[{iso_3166_1:'FR',title:'Titre Alternatif'},{iso_3166_1:'DE',title:'Alternativtitel'}]}), 200, 'application/json', url);
+    // Eight unique aliases are intentional. Before the search-priority fix,
+    // eight guessed slugs consumed maxCandidates=8 and the real search result
+    // below was silently discarded.
+    return response(JSON.stringify({titles:[
+      {iso_3166_1:'FR',title:'Titre Alternatif'},
+      {iso_3166_1:'US',title:'Feature Alternate'},
+      {iso_3166_1:'GB',title:'Example Alternate'},
+      {iso_3166_1:'CA',title:'Another Feature'}
+    ]}), 200, 'application/json', url);
   }
   if (url.startsWith('https://catalog.example/?s=') || url.startsWith('https://catalog.example/search?')) {
     return response('<a href="/original-feature-2024">Original Feature (2024)</a>', 200, 'text/html', url);
@@ -79,6 +98,7 @@ PATCHED_SOURCE
   assert(calls.some(x => x.includes('/find/tt1234567?') && x.includes('external_source=imdb_id')), calls.join('\n'));
   assert(calls.some(x => x.includes('/movie/424242?') && x.includes('language=fr-FR')), calls.join('\n'));
   assert(calls.some(x => x.includes('/movie/424242/alternative_titles?')), calls.join('\n'));
+  assert(calls.includes('https://catalog.example/original-feature-2024'), calls.join('\n'));
 
   calls.length = 0;
   const rows2 = await module.exports.getStreams({id:'tmdb:424242', mediaType:'movie'});
