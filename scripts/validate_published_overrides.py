@@ -21,7 +21,7 @@ PROVIDER_LKG = ROOT / "provider-lkg.json"
 # to be verifiable in the final published artifact, so keep an explicit marker
 # registry here rather than treating every unknown profile as valid.
 GENERATED_RUNTIME_PROFILE_MARKERS = {
-    "adaptive_runtime_recovery": "NUVIO_ADAPTIVE_RUNTIME_RECOVERY_V3",
+    "adaptive_runtime_recovery": "NUVIO_ADAPTIVE_RUNTIME_RECOVERY_V4",
 }
 
 
@@ -146,8 +146,6 @@ def main() -> int:
             old, new = str(old), str(new)
             if contains_literal(text, old):
                 errors.append(f"{cid}: forbidden value remains in {target.relative_to(ROOT)}: {old}")
-            # A destination is required only when this provider's provenance says
-            # the corresponding replacement was actually applied.
             applied = any(
                 isinstance(record, dict)
                 and record.get("type") == "replace"
@@ -171,10 +169,6 @@ def main() -> int:
                 effective_records.append(record)
                 continue
 
-            # Adaptive runtime repairs are generated from live deep evidence and
-            # intentionally do not live in provider-overrides.patch_profiles.
-            # Accept only a known generated strategy, only in runtime phase, and
-            # require its immutable code marker in the exact published bundle.
             generated_marker = GENERATED_RUNTIME_PROFILE_MARKERS.get(profile_name)
             if generated_marker and str(record.get("phase") or "") == "runtime":
                 if generated_marker in text:
@@ -182,16 +176,6 @@ def main() -> int:
                     effective_records.append(record)
                     continue
 
-                # A preserved-current publication deliberately keeps the exact
-                # previously published artifact when the fresh deep result is
-                # inconclusive. Older provenance may still describe a runtime
-                # repair candidate that was later rejected/replaced. Such a
-                # record cannot describe this preserved artifact when its
-                # immutable marker is absent, so remove the stale provenance
-                # instead of requiring code that was never published. This is
-                # intentionally limited to the explicit preservation path;
-                # missing markers on newly promoted/repaired artifacts remain
-                # fatal below.
                 preserved = (
                     str(provider_provenance.get("activation_mode") or "")
                     == "preserved_current_ci_uncertain"
@@ -226,8 +210,6 @@ def main() -> int:
             provenance_changed = True
 
         for required in dict.fromkeys(required_values):
-            # Bare domains written by older resolver revisions are routing
-            # metadata. They are not guaranteed to be literals in provider code.
             if bare_host_marker(required):
                 continue
             if required not in text:
@@ -235,15 +217,7 @@ def main() -> int:
                     f"{cid}: required value missing from {target.relative_to(ROOT)}: {required}"
                 )
 
-        # Remove stale aliases/old hashes only when they retain a forbidden value
-        # and are not referenced by *any* authoritative state in the two-phase
-        # transaction. This prevents validation from deleting a still-live
-        # current/provenance/LKG bundle immediately before manifest.next is
-        # promoted. Final garbage collection remains prune's responsibility.
         if replacements:
-            # Match only bundles that belong to this exact provider id.
-            # A broad prefix glob such as ``4khdhub*.js`` also matches the
-            # distinct provider ``4khdhubnew`` and can delete its live bundle.
             exact_prefix = f"{cid}--"
             exact_plain = f"{cid}.js"
             for candidate in PROVIDERS.glob("*.js"):
