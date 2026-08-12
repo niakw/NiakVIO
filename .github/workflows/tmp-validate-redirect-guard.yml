@@ -1,0 +1,50 @@
+name: Temporary validate redirect guard
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/triggers/validate-redirect-guard
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: agent/global-provider-v2-integration
+          fetch-depth: 1
+          persist-credentials: false
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Redirect semantics regression
+        run: node tests/network_guard.test.cjs
+      - name: Real worker replay after redirect fix
+        run: |
+          python - <<'PY'
+          import json, subprocess
+          from pathlib import Path
+          root=Path('.').resolve()
+          manifest=json.loads(Path('manifest.json').read_text(encoding='utf-8'))
+          row=next(x for x in manifest.get('scrapers',[]) if str(x.get('id','')).casefold()=='dvdplay')
+          fixture={'tmdbId':'157336','mediaType':'movie','title':'Interstellar','year':2014,'category':'movie'}
+          context={'locale':'fr-FR','language':'fr','languages':['fr-FR','fr','en-US','en'],'platform':'android','settings':{},'storage':{},'fixtureMetadata':fixture,'networkLimits':{'maxFetches':60,'maxRedirects':5,'maxResponseBytes':5242880,'maxTotalResponseBytes':31457280,'maxDistinctHosts':30},'maxSettingsProfiles':2}
+          proc=subprocess.run(['node','scripts/provider_worker.cjs',str(root/row['filename']),json.dumps(fixture),json.dumps(context)],cwd=root,capture_output=True,text=True,timeout=100)
+          markers=[line for line in proc.stdout.splitlines() if line.startswith('NUVIO_HEALTH_RESULT=')]
+          if not markers:
+              print(proc.stdout[-4000:]); print(proc.stderr[-4000:]); raise SystemExit('missing worker result')
+          result=json.loads(markers[-1].split('=',1)[1])
+          print(json.dumps({'ok':result.get('ok'),'stream_count':result.get('stream_count'),'disallowed':result.get('disallowed_stream_count'),'hosts':result.get('provider_server_hosts'),'statuses':result.get('provider_server_http_statuses')},indent=2))
+          if not result.get('ok') or int(result.get('stream_count') or 0) < 1:
+              raise SystemExit('real worker replay still returned zero streams')
+          PY
+      - name: Full repository regression suite
+        run: npm test
