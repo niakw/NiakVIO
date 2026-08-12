@@ -1,21 +1,21 @@
-name: Temporary optimize adaptive repair scope
+name: Temporary finalize CI cleanup
 
 on:
   push:
     branches:
       - agent/tv-regression-5.20.38
     paths:
-      - .github/triggers/migrate-adaptive-repair-scope
+      - .github/triggers/finalize-ci-cleanup
 
 permissions:
   contents: write
 
 concurrency:
-  group: temporary-adaptive-repair-scope-optimization
+  group: temporary-finalize-ci-cleanup
   cancel-in-progress: true
 
 jobs:
-  optimize:
+  finalize:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -35,31 +35,44 @@ jobs:
 
       - run: npm ci --ignore-scripts --no-audit --no-fund
 
-      - name: Stop opportunistic repair of proven-healthy providers
+      - name: Verify cleaned workflow surface
         run: |
-          python scripts/tmp_optimize_adaptive_repair_scope.py
-          python -m py_compile scripts/adaptive_runtime/runtime_repair.py tests/adaptive_runtime_repair_test.py
-          python tests/adaptive_runtime_repair_test.py
+          python - <<'PY'
+          from pathlib import Path
+          expected = {
+              'availability.yml',
+              'domain-refresh.yml',
+              'sync.yml',
+              'validate-desktop-runtime-compat.yml',
+              'tmp-global-provider-deep-proof.yml',
+              'tmp-migrate-sync-deep-ci-profile.yml',
+          }
+          actual = {p.name for p in Path('.github/workflows').glob('*.yml')}
+          if actual != expected:
+              raise SystemExit(f'unexpected workflow set: extra={sorted(actual-expected)} missing={sorted(expected-actual)}')
+          print('workflow cleanup surface verified:', ', '.join(sorted(actual)))
+          PY
+
+      - name: Validate release hash scope
+        run: python tests/release_hash_scope_test.py
 
       - name: Full repository regression suite
         run: npm test
 
-      - name: Remove one-shot inputs and refresh integrity hashes
+      - name: Regenerate exact release integrity
         run: |
-          rm -f scripts/tmp_optimize_adaptive_repair_scope.py
-          rm -f .github/triggers/migrate-adaptive-repair-scope
           python scripts/generate_release_hashes.py
           python scripts/validate_release_integrity.py
 
-      - name: Commit proven repair-scope optimization
+      - name: Commit regenerated integrity only
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -A
+          git add FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json
           git diff --cached --check
           if git diff --cached --quiet; then
-            echo 'No repair-scope change to commit.'
+            echo 'Release integrity already current.'
             exit 0
           fi
-          git commit -m 'perf: skip adaptive repair for proven-healthy providers'
+          git commit -m 'chore: refresh release integrity after CI cleanup'
           git push origin HEAD:agent/tv-regression-5.20.38
