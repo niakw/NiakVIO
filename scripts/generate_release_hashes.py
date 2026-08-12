@@ -2,9 +2,9 @@
 """Generate deterministic release checksum inventories without circular hashes.
 
 Release inventories cover code, manifests, provider artifacts and durable
-configuration. Mutable operational telemetry that is intentionally updated by
-an independent diagnostics workflow is excluded; otherwise a harmless
-availability refresh would invalidate an otherwise immutable published release.
+configuration. Mutable operational telemetry and explicitly temporary CI
+harnesses are excluded; otherwise a disposable diagnostic/proof workflow would
+invalidate an otherwise immutable published release.
 """
 from __future__ import annotations
 
@@ -29,6 +29,7 @@ IGNORED_FILES = {
 IGNORED_PREFIXES = (
     ".github/ci-status/",
     ".github/triggers/",
+    ".github/workflows/tmp-",
 )
 CORE_FILES = [
     "package.json",
