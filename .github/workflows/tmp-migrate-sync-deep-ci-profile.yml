@@ -1,0 +1,57 @@
+name: Temporary migrate sync deep CI profile
+
+on:
+  push:
+    branches:
+      - agent/tv-regression-5.20.38
+    paths:
+      - .github/triggers/migrate-sync-deep-ci-profile
+
+permissions:
+  contents: write
+
+concurrency:
+  group: temporary-sync-deep-ci-profile-migration
+  cancel-in-progress: true
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: agent/tv-regression-5.20.38
+          fetch-depth: 1
+
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: '3.12'
+
+      - name: Apply bounded deep CI profile to sync workflow
+        run: |
+          python scripts/tmp_migrate_sync_deep_ci_profile.py
+          grep -F -- "- name: Prepare bounded CI health profile" .github/workflows/sync.yml
+          grep -F -- "NUVIO_HEALTH_CONFIG: health-output/ci-health-config.json" .github/workflows/sync.yml
+          grep -F -- "config['concurrency'] = 6" .github/workflows/sync.yml
+
+      - name: Remove one-shot migration harness and refresh integrity hashes
+        run: |
+          rm -f scripts/tmp_migrate_sync_deep_ci_profile.py
+          rm -f .github/workflows/tmp-migrate-sync-deep-ci-profile.yml
+          rm -f .github/triggers/migrate-sync-deep-ci-profile
+          python scripts/generate_release_hashes.py
+          python scripts/validate_release_integrity.py
+
+      - name: Commit verified workflow optimization
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git diff --cached --check
+          if git diff --cached --quiet; then
+            echo 'No workflow migration change to commit.'
+            exit 0
+          fi
+          git commit -m 'ci: accelerate bounded deep validation'
+          git push origin HEAD:agent/tv-regression-5.20.38
