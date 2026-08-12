@@ -29,6 +29,8 @@ PRIMARY = ROOT / "manifest.json"
 SECONDARY = (ROOT / "vf" / "manifest.json", ROOT / "vostfr" / "manifest.json")
 PROVENANCE = ROOT / "PROVENANCE.json"
 PROVIDERS = ROOT / "providers"
+ADAPTIVE_MARKER = "/* NUVIO_ADAPTIVE_RUNTIME_RECOVERY_V"
+ADAPTIVE_CALL = '})(typeof globalThis!=="undefined"?globalThis:this,'
 
 
 def safe_fragment(value: str) -> str:
@@ -41,6 +43,39 @@ def bump_provider_version(value: str) -> str:
         return "1.0.1"
     major, minor, patch = (int(part) for part in match.groups())
     return f"{major}.{minor}.{patch + 1}"
+
+
+def strip_unproven_adaptive_language(data: bytes) -> tuple[bytes, int]:
+    """Remove only the historical adaptive wrapper's hard-coded French claim.
+
+    Adaptive recovery used to emit ``language:\"fr\"`` for every recovered
+    stream, regardless of provider or media evidence. Native provider language
+    metadata must remain untouched, so the replacement is scoped strictly to
+    generated NUVIO_ADAPTIVE_RUNTIME_RECOVERY wrapper blocks.
+    """
+    text = data.decode("utf-8", errors="strict")
+    cursor = 0
+    changed = 0
+    parts: list[str] = []
+    while True:
+        start = text.find(ADAPTIVE_MARKER, cursor)
+        if start < 0:
+            parts.append(text[cursor:])
+            break
+        parts.append(text[cursor:start])
+        call = text.find(ADAPTIVE_CALL, start)
+        end = text.find(");", call) if call >= 0 else -1
+        if call < 0 or end < 0:
+            raise ValueError("unterminated adaptive runtime recovery wrapper")
+        segment = text[start : end + 2]
+        cleaned = segment.replace('language:"fr",headers:', 'headers:')
+        if cleaned != segment:
+            changed += 1
+        parts.append(cleaned)
+        cursor = end + 2
+    if not changed:
+        return data, 0
+    return "".join(parts).encode("utf-8"), changed
 
 
 def load_manifest(path: Path) -> dict[str, Any] | None:
@@ -133,7 +168,18 @@ def main() -> int:
             raise ValueError(f"missing or unsafe published provider: {relative}")
 
         original = path.read_bytes()
-        patched, records = apply_overrides(provider_id, original, phase="discovery")
+        migrated, adaptive_language_repairs = strip_unproven_adaptive_language(original)
+        patched, records = apply_overrides(provider_id, migrated, phase="discovery")
+        if adaptive_language_repairs:
+            records = [
+                {
+                    "type": "migration",
+                    "name": "adaptive_language_integrity_v1",
+                    "count": adaptive_language_repairs,
+                    "phase": "discovery",
+                    "scope": "language_integrity",
+                }
+            ] + list(records)
         changed = patched != original
         if changed:
             validate_artifact(patched)
