@@ -1071,17 +1071,29 @@
           "max_probes": 0,
           "min_vod_duration_seconds": 60
         },
-        "scripts/provider_patches/nuvio_tv_direct_media_v2.py": {
+        "scripts/provider_patches/french_manga_player_capture_v1.py": {
           "provider_name": "French-Manga",
-          "max_candidates": 14,
-          "timeout_ms": 14000,
-          "strip_unproven_wrappers": true
+          "base_url": "https://w16.french-manga.net"
+        },
+        "scripts/provider_patches/nuvio_tv_target_media_v4.py": {
+          "provider_name": "French-Manga",
+          "max_candidates": 24,
+          "timeout_ms": 20000,
+          "blocked_hosts": [
+            "fstream.top"
+          ],
+          "strip_legacy_direct_media_v2": true,
+          "force_rewrap_target_media": true
         }
       },
-      "required_values": [],
+      "required_values": [
+        "NUVIO_FRENCH_MANGA_PLAYER_CAPTURE_V1",
+        "NUVIO_TV_TARGET_MEDIA_V4"
+      ],
       "patch_scripts": [
-        "scripts/provider_patches/stream_output_sanitizer_v5.py",
-        "scripts/provider_patches/nuvio_tv_direct_media_v2.py"
+        "scripts/provider_patches/french_manga_player_capture_v1.py",
+        "scripts/provider_patches/nuvio_tv_target_media_v4.py",
+        "scripts/provider_patches/stream_output_sanitizer_v5.py"
       ],
       "manifest_overrides": {
         "supportsExternalPlayer": false,
@@ -1091,6 +1103,9 @@
       "published_types": [
         "movie",
         "anime"
+      ],
+      "notes": [
+        "Preserve the current French-Manga player embed before native fallback resolution, then resolve Vidzy/FSVid target media and reject the short troll HLS."
       ]
     },
     "goatapi": {

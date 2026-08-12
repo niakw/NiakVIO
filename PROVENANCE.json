@@ -8914,9 +8914,9 @@
     },
     "french-manga": {
       "id": "french-manga",
-      "published_filename": "providers/french-manga--nuvio-tv-global--6beb7e3d74986b2b.js",
-      "sha256": "6beb7e3d74986b2b3b2bbfaafbdad3903cb703cd0c370a493968db7e7079300d",
-      "patched_sha256": "6beb7e3d74986b2b3b2bbfaafbdad3903cb703cd0c370a493968db7e7079300d",
+      "published_filename": "providers/french-manga--nuvio-tv-global--48ed67df9c334e2e.js",
+      "sha256": "48ed67df9c334e2e36d77d1d5fd22077fe5426daefcabc1313f57cd276708700",
+      "patched_sha256": "48ed67df9c334e2e36d77d1d5fd22077fe5426daefcabc1313f57cd276708700",
       "upstream_sha256": "b1f91a943f7f805a86ec04c189e806c6ba4bf3d324a20f67f3857c22d62874b1",
       "local_patches": [
         "scripts/provider_patches/nuvio_tv_direct_media_v2.py",
@@ -8957,6 +8957,16 @@
           "path": "scripts/provider_patches/global_catalogue_alias_recovery_v2.py",
           "phase": "discovery",
           "scope": "global_catalogue_resolution"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/french_manga_player_capture_v1.py",
+          "phase": "discovery"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/nuvio_tv_target_media_v4.py",
+          "phase": "discovery"
         }
       ],
       "source": "global-nuvio-tv-audit-v2",
