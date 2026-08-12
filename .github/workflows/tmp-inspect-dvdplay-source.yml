@@ -1,0 +1,45 @@
+name: Temporary inspect provider response usage
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/triggers/inspect-dvdplay-source
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: agent/global-provider-v2-integration
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Print exact bundle and response-dependent lines
+        run: |
+          python - <<'PY'
+          import json, re
+          from pathlib import Path
+          manifest=json.loads(Path('manifest.json').read_text(encoding='utf-8'))
+          row=next(x for x in manifest.get('scrapers',[]) if str(x.get('id','')).casefold()=='dvdplay')
+          path=Path(row['filename'])
+          print('DVDPLAY_FILENAME='+str(path))
+          source=path.read_text(encoding='utf-8',errors='replace')
+          patterns=(r'HEAD',r'headers?',r'content-length',r'content-disposition',r'location',r'response\.url',r'redirect')
+          needles=re.compile('|'.join(patterns),re.I)
+          lines=source.splitlines()
+          hits=[i for i,line in enumerate(lines) if needles.search(line)]
+          seen=set()
+          for hit in hits:
+              for i in range(max(0,hit-2),min(len(lines),hit+3)):
+                  if i in seen: continue
+                  seen.add(i)
+                  text=lines[i]
+                  if len(text)>1800: text=text[:1800]+' ...[truncated]'
+                  print(f'SRC {i+1}: {text}')
+          PY
