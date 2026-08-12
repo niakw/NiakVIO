@@ -1,4 +1,4 @@
-name: Temporary run clean V2 integration
+name: Temporary diagnose clean V2 worker
 
 on:
   push:
@@ -8,78 +8,48 @@ on:
       - .github/triggers/run-clean-v2-integration
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  integrate:
+  diagnose:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
           ref: agent/global-provider-v2-integration
           fetch-depth: 1
-      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
-        with:
-          python-version: '3.12'
+          persist-credentials: false
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
         with:
           node-version: '24'
           package-manager-cache: false
       - run: npm ci --ignore-scripts --no-audit --no-fund
-      - name: Fetch research reference only
-        run: git fetch --depth=1 origin agent/tv-regression-5.20.38
-      - name: Prepare global-only integration
+      - name: Compare worker evidence on a known large-media provider
         run: |
-          sed -i "/provider-type-policy.json/d" scripts/tmp_import_global_provider_v2.py
-          sed -i "/tv_provider_hardening_test.py/d" scripts/tmp_import_global_provider_v2.py
-          sed -i "/tv_catalogue_fixture_coverage_test.py/d" scripts/tmp_import_global_provider_v2.py
-          python scripts/tmp_import_global_provider_v2.py
-          python scripts/reapply_published_overrides.py
-          python -m py_compile scripts/apply_provider_overrides.py scripts/audit_catalogue_identity_media.py scripts/promote_candidates.py scripts/validate_policy.py
-          node --check scripts/provider_worker.cjs
-          node --check scripts/health_check.mjs
-          python tests/global_provider_policy_test.py
-          python tests/global_catalogue_alias_recovery_test.py
-          python tests/catalogue_audit_transient_hls_test.py
-          node tests/provider_worker_security.test.cjs
-      - name: Full repository regression suite
-        run: npm test
-      - name: Commit durable sources to clean branch
-        run: |
-          rm -f scripts/tmp_import_global_provider_v2.py
-          rm -f .github/workflows/tmp-import-global-provider-v2.yml
-          rm -f .github/workflows/tmp-import-global-provider-v2-final.yml
-          rm -f .github/triggers/import-global-provider-v2
-          rm -f .github/triggers/import-global-provider-v2-final
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add health-config.json provider-overrides.json package.json \
-            scripts/apply_provider_overrides.py \
-            scripts/audit_catalogue_identity_media.py \
-            scripts/check_nuvio_client_upstreams.py \
-            scripts/direct_media_probe.cjs \
-            scripts/health_check.mjs \
-            scripts/promote_candidates.py \
-            scripts/provider_worker.cjs \
-            scripts/validate_policy.py \
-            scripts/provider_patches/global_catalogue_alias_recovery_v2.py \
-            scripts/provider_patches/global_media_enrichment_v1.py \
-            tests/catalogue_audit_coverage_test.py \
-            tests/catalogue_audit_transient_hls_test.py \
-            tests/ci_preservation_policy_test.py \
-            tests/deep_stream_sampling_test.py \
-            tests/direct_media_dimensions_test.py \
-            tests/direct_media_probe.test.cjs \
-            tests/global_catalogue_alias_recovery_test.py \
-            tests/global_provider_policy_test.py \
-            tests/matroska_metadata_test.py \
-            tests/media_duration_identity_test.py \
-            tests/nuvio_client_upstream_drift_guard_test.py \
-            tests/provider_worker_security.test.cjs \
-            tests/type_scoped_activation_test.py
-          git add -u .github scripts/tmp_import_global_provider_v2.py
-          git commit -m 'fix: integrate global ID-first provider recovery V2'
-          git reset --hard HEAD
-          git clean -fdx
-          git push origin HEAD:agent/global-provider-v2-integration
+          python - <<'PY'
+          import json, subprocess
+          from pathlib import Path
+
+          root = Path('.').resolve()
+          manifest = json.loads(Path('manifest.json').read_text(encoding='utf-8'))
+          row = next(x for x in manifest.get('scrapers', []) if str(x.get('id', '')).casefold() == 'dvdplay')
+          fixture = {'tmdbId':'157336','mediaType':'movie','title':'Interstellar','year':2014,'category':'movie'}
+          context = {
+              'locale':'fr-FR','language':'fr','languages':['fr-FR','fr','en-US','en'],'platform':'android',
+              'settings':{},'storage':{},'fixtureMetadata':fixture,
+              'networkLimits':{'maxFetches':50,'maxRedirects':5,'maxResponseBytes':5242880,'maxTotalResponseBytes':31457280,'maxDistinctHosts':30},
+              'maxSettingsProfiles':2,
+          }
+          proc = subprocess.run(['node','scripts/provider_worker.cjs',str(root / row['filename']),json.dumps(fixture),json.dumps(context)],cwd=root,capture_output=True,text=True,timeout=90)
+          markers = [line for line in proc.stdout.splitlines() if line.startswith('NUVIO_HEALTH_RESULT=')]
+          if not markers:
+              print(proc.stdout[-4000:]); print(proc.stderr[-4000:]); raise SystemExit('missing worker result')
+          result = json.loads(markers[-1].split('=',1)[1])
+          observations=[]
+          for item in result.get('network_observations') or []:
+              observations.append({k:item.get(k) for k in ('method','host','status','error_code','error','response_bytes','declared_content_length','redirects')})
+          safe={k:result.get(k) for k in ('ok','stream_count','error','error_details','provider_server_successful_response','provider_server_hosts','provider_server_http_statuses','settings_diagnostics','invocation_diagnostics')}
+          safe['network_observations']=observations
+          print(json.dumps(safe,indent=2,ensure_ascii=False))
+          PY
