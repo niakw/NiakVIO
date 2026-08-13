@@ -111,10 +111,9 @@ jobs:
     timeout-minutes: 45
     strategy:
       fail-fast: false
-      # HTML catalogues rate-limit bursts aggressively. Running works one at a
-      # time keeps the proof representative of a real client instead of a
-      # synthetic twelve-worker spike against the same provider.
-      max-parallel: 1
+      # Keep the aggregate provider load below the former twelve-worker burst:
+      # three works x two providers per work = six concurrent providers.
+      max-parallel: 3
       matrix: ${{ fromJson(needs.prepare.outputs.matrix) }}
 
     steps:
