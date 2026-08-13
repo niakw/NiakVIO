@@ -50,7 +50,10 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
-          git diff --cached --check
+          # Generated provider bundles retain upstream formatting and are already
+          # syntax/runtime validated. Keep whitespace enforcement strict for the
+          # repository-owned source/tests/manifests without rewriting upstream JS.
+          git diff --cached --check -- . ':(exclude)providers/**'
           git commit -m "fix: refresh adaptive domain runtime wrappers"
       - name: Re-test clean committed candidate
         run: |
