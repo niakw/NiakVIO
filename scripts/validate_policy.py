@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: GPL-3.0-only
 """Deterministic self-test for strict and runtime-evidence activation policy.
 
-No network endpoint is contacted. The test proves that all ten gates remain
+No network endpoint is contacted. The test proves that all eleven gates remain
 mandatory for automatic activation and that a SHA-pinned Nuvio observation can
 only resolve a CI-inconclusive result for the exact confirmed provider file.
 """
@@ -161,7 +161,7 @@ def main() -> int:
     module = load_promote_module()
 
     assert activation.get("required_validation_mode") == "deep"
-    assert int(activation.get("activation_gate_count", 0)) == 10
+    assert int(activation.get("activation_gate_count", 0)) == 11
     assert int(activation.get("minimum_consecutive_deep_passes", 0)) == 1
     assert int(activation.get("minimum_total_deep_passes", 0)) == 1
     assert int(activation.get("minimum_healthy_fixtures", 0)) == 1
@@ -383,9 +383,10 @@ def main() -> int:
         "07_verified_payload_playability",
         "08_quality_and_bitrate",
         "09_language_and_subtitle_integrity",
+        "10_content_identity_integrity",
     }
     if set(gates) != expected_pre_gates or not module.all_gates_pass(gates):
-        raise AssertionError("the nine pre-stability gates are incomplete or permissive")
+        raise AssertionError("the ten pre-stability gates are incomplete or permissive")
     if not proof.get("performance", {}).get("passed"):
         raise AssertionError("valid latency evidence did not pass")
 
@@ -397,6 +398,7 @@ def main() -> int:
         (lambda value: value["health"]["evidence"].update(streams_playable=0, playable_fixtures=0), "05_stream_and_fixture_coverage"),
         (lambda value: value["health"]["evidence"].update(distinct_reachable_hosts=0, reachable_hosts=[]), "06_distinct_host_diversity"),
         (lambda value: value["health"]["evidence"].update(payload_verified_streams=0), "07_verified_payload_playability"),
+        (lambda value: value["health"]["evidence"].update(identity_contradiction_count=1), "10_content_identity_integrity"),
     ]
     for mutate, expected in mutations:
         assert_gate_fails(module, activation, mutate, expected)
@@ -447,7 +449,7 @@ def main() -> int:
 
     strict = decide(module, activation, item, strict_history(item))
     if not strict["enabled"] or strict["activation_mode"] != "strict_current":
-        raise AssertionError("a provider passing all ten gates was not strictly enabled")
+        raise AssertionError("a provider passing all eleven gates was not strictly enabled")
 
     # A current exact end-to-end strict pass is stronger evidence than an
     # upstream manifest's editorial enabled=false flag. This prevents a healthy
@@ -525,6 +527,7 @@ def main() -> int:
             "04_fixture_and_type_coverage", "05_stream_and_fixture_coverage",
             "06_distinct_host_diversity", "07_verified_payload_playability",
             "08_quality_and_bitrate", "09_language_and_subtitle_integrity",
+            "10_content_identity_integrity",
         )},
     }
     historical = decide(module, activation, inconclusive, previous_record=prior)

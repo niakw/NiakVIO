@@ -490,6 +490,13 @@ def apply_overrides(
                 raise ValueError("playback_integrity_policy.hls_runtime_options must be an object")
             for patch_script in [str(value) for value in global_hooks if str(value).strip()]:
                 options = dict(global_options) if patch_script.endswith("hls_runtime_integrity_v1.py") else {}
+                provider_options = script_options.get(patch_script)
+                if provider_options is not None:
+                    if not isinstance(provider_options, dict):
+                        raise ValueError(
+                            f"provider_patches.{provider_id}.patch_script_options[{patch_script!r}] must be an object"
+                        )
+                    options.update(provider_options)
                 before = text
                 text = _apply_patch_script(text, provider_id, patch_script, options, None)
                 if text != before:

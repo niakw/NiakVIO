@@ -25,6 +25,6 @@ bundles et états d'activation évoluent derrière elles.
 6. Laisser les workflows de publication et le lab multi-œuvres valider `main`.
 
 Le workflow **Check all manifests and publish Nuvio providers** reste l'entrée de la
-validation distante complète. Le workflow **Nuvio client playback lab** vérifie une
+validation distante complète. Le workflow **Nuvio client media transport lab** vérifie une
 matrice réelle sur NuvioTV, Desktop et Mobile ; sa cible 10 providers dont 3 VF est un
 objectif de couverture non bloquant pour les œuvres récentes ou rares.

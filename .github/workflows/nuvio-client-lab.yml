@@ -1,4 +1,4 @@
-name: Nuvio client playback lab
+name: Nuvio client media transport lab
 
 on:
   workflow_dispatch:
@@ -102,7 +102,7 @@ jobs:
                       },
                   }],
                   "clients": ["tv", "desktop", "mobile"],
-                  "policy": {"target_total": 10, "minimum_vf": 3, "require_identity_match": False, "blocking": False},
+                  "policy": {"target_total": 10, "minimum_vf": 3, "require_identity_match": True, "blocking": False},
                   "enforce_policy": False,
               }
 
@@ -122,7 +122,7 @@ jobs:
           PY
 
   lab:
-    name: ${{ matrix.slug }} — prove playback
+    name: ${{ matrix.slug }} — probe media transport
     needs: prepare
     runs-on: ubuntu-latest
     timeout-minutes: 45

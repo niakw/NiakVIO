@@ -279,6 +279,14 @@
         "scripts/provider_patches/streamzo_source_identity_v3.py": {
           "base_url": "https://streamzo.fr",
           "timeout_ms": 6500
+        },
+        "scripts/provider_patches/hls_runtime_integrity_v1.py": {
+          "timeout_ms": 9000,
+          "max_children": 3,
+          "max_recovery_pages": 6,
+          "max_recovery_candidates": 18,
+          "probe_all_urls": true,
+          "fail_closed_unknown": true
         }
       },
       "manifest_overrides": {
@@ -990,7 +998,10 @@
     },
     "animoflix": {
       "capability": "mixed_embed_resolver",
-      "profiles": []
+      "profiles": [],
+      "manifest_overrides": {
+        "enabled": false
+      }
     },
     "anizone": {
       "capability": "api_stream_resolver",
@@ -1059,7 +1070,10 @@
     },
     "dvdplay": {
       "capability": "html_scraper",
-      "profiles": []
+      "profiles": [],
+      "manifest_overrides": {
+        "enabled": false
+      }
     },
     "einthusan": {
       "capability": "direct_media",
@@ -1157,7 +1171,10 @@
       }
     },
     "hianime": {
-      "capability": "html_scraper"
+      "capability": "html_scraper",
+      "manifest_overrides": {
+        "enabled": false
+      }
     },
     "hindmoviez": {
       "capability": "direct_media",
@@ -1182,7 +1199,10 @@
     },
     "kisskh": {
       "capability": "direct_media",
-      "profiles": []
+      "profiles": [],
+      "manifest_overrides": {
+        "enabled": false
+      }
     },
     "kurage": {
       "capability": "html_scraper",
@@ -1324,7 +1344,21 @@
       "patch_script_options": {}
     },
     "topcartoons": {
-      "capability": "html_scraper"
+      "capability": "quarantined",
+      "manifest_overrides": {
+        "enabled": false
+      },
+      "patch_scripts": [
+        "scripts/provider_patches/quarantine_provider_v1.py"
+      ],
+      "patch_script_options": {
+        "scripts/provider_patches/quarantine_provider_v1.py": {
+          "reason": "cross_title_content_mismatch"
+        }
+      },
+      "notes": [
+        "Quarantined after reproducible cross-title playback: unrelated cartoons were returned for Breaking Bad and Revenant. The published bundle is inert as well as disabled because Nuvio clients may preserve an older local activation state."
+      ]
     },
     "vegamovies": {
       "capability": "html_scraper",
@@ -1491,7 +1525,10 @@
       ],
       "notes": [
         "Rewrite only stale AnimeZey download URLs to the currently byte-range-capable stream Worker; keep listing/search endpoints unchanged."
-      ]
+      ],
+      "manifest_overrides": {
+        "enabled": false
+      }
     },
     "anime-ultime": {
       "capability": "mixed_embed_resolver"
@@ -1719,13 +1756,22 @@
       "capability": "direct_media"
     },
     "1shows": {
-      "capability": "mixed_embed_resolver"
+      "capability": "mixed_embed_resolver",
+      "manifest_overrides": {
+        "enabled": false
+      }
     },
     "vidlove": {
-      "capability": "html_scraper"
+      "capability": "html_scraper",
+      "manifest_overrides": {
+        "enabled": false
+      }
     },
     "moonflix": {
-      "capability": "direct_media"
+      "capability": "direct_media",
+      "manifest_overrides": {
+        "enabled": false
+      }
     },
     "ANIMEZEY": {
       "capability": "direct_media"
@@ -2866,9 +2912,9 @@
     },
     "streamzo": {
       "strategy": "mixed_embed_resolver",
-      "validation": "provider_native",
-      "allow_html_url": true,
-      "requires_direct_media": false,
+      "validation": "provider_native_and_final_direct_media",
+      "allow_html_url": false,
+      "requires_direct_media": true,
       "observed_origins": [
         "https://video.sibnet.ru",
         "https://vidmoly.me",
@@ -2910,10 +2956,10 @@
       "generated_from_manifest_or_stage": true
     },
     "topcartoons": {
-      "strategy": "html_scraper",
-      "validation": "provider_native",
-      "allow_html_url": true,
-      "requires_direct_media": false,
+      "strategy": "quarantined",
+      "validation": "blocked_cross_title_content_mismatch",
+      "allow_html_url": false,
+      "requires_direct_media": true,
       "observed_origins": [],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true

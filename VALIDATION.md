@@ -20,7 +20,7 @@ La suite couvre notamment :
 
 ## Lab de lecture multi-œuvres
 
-Le workflow [`Nuvio client playback lab`](.github/workflows/nuvio-client-lab.yml)
+Le workflow [`Nuvio client media transport lab`](.github/workflows/nuvio-client-lab.yml)
 exécute six fixtures : deux films, deux séries et deux anime, avec une œuvre récente
 à faible couverture. Il charge les bundles publiés avec les contrats NuvioTV, Desktop
 et Mobile, vérifie le média final et refuse les contradictions d'identité, de saison

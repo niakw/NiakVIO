@@ -18,6 +18,7 @@ import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
 const { inferSupportedTypes, isAnimeFocusedCatalogue, roundRobin } = require('./provider_semantics.cjs');
 const { guardedFetch } = require('./network_guard.cjs');
+const { streamIdentity } = require('./nuvio_client_lab.cjs');
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const STAGE = path.resolve(process.env.NUVIO_STAGE || path.join(ROOT, 'staging'));
@@ -583,6 +584,7 @@ async function probeStream(stream, mode, fixture = null) {
   let maxBandwidth = null;
   let mediaDurationSeconds = null;
   let shortVodPreview = false;
+  let contentIdentity = streamIdentity(stream, fixture || {});
 
   const reported = qualityToHeight(`${stream.quality || ''} ${stream.title || ''} ${stream.url || ''}`);
   if (reported) reportedHeights.push(reported);
@@ -620,6 +622,8 @@ async function probeStream(stream, mode, fixture = null) {
       accepted_subtitles_reachable: 0,
       subtitles_advertised: advertisedSubtitleEntries.length,
       subtitles_reachable: 0,
+      content_identity_status: contentIdentity.status,
+      content_identity_reason: contentIdentity.reason,
       codecs: [],
       hdrFormats: [],
       host: null,
@@ -822,6 +826,14 @@ async function probeStream(stream, mode, fixture = null) {
       }
     }
 
+    if (contentIdentity.status === 'unknown' && durationIdentityRatio != null && !durationIdentityMismatch) {
+      contentIdentity = { status: 'match', reason: 'fixture_duration_match' };
+    }
+    if (contentIdentity.status === 'contradiction') {
+      playbackVerified = false;
+      payloadVerified = false;
+    }
+
     const acceptedSubtitleEntries = advertisedSubtitleEntries.filter((subtitle) => {
       const language = normalizeLanguage(subtitle?.language);
       return language && ACCEPTED_SUBTITLES.has(language);
@@ -854,7 +866,7 @@ async function probeStream(stream, mode, fixture = null) {
       playback_verified: playbackVerified,
       payload_verified: payloadVerified,
       direct_signature_verified: directSignatureVerified,
-      category: playbackVerified ? 'playable' : (durationIdentityMismatch ? 'duration_identity_mismatch' : (shortVodPreview ? 'short_vod_preview' : classification.category)),
+      category: playbackVerified ? 'playable' : (contentIdentity.status === 'contradiction' ? 'content_identity_mismatch' : (durationIdentityMismatch ? 'duration_identity_mismatch' : (shortVodPreview ? 'short_vod_preview' : classification.category))),
       http_status: result.status,
       kind,
       bytes_sampled: result.body.length,
@@ -867,6 +879,8 @@ async function probeStream(stream, mode, fixture = null) {
       expected_duration_seconds: expectedDurationSeconds,
       duration_identity_ratio: durationIdentityRatio,
       duration_identity_mismatch: durationIdentityMismatch,
+      content_identity_status: contentIdentity.status,
+      content_identity_reason: contentIdentity.reason,
       minimum_vod_duration_seconds: minimumVodDurationSeconds,
       short_vod_preview: shortVodPreview,
       reportedHeights,
@@ -910,6 +924,8 @@ async function probeStream(stream, mode, fixture = null) {
       accepted_subtitles_reachable: 0,
       subtitles_advertised: advertisedSubtitleEntries.length,
       subtitles_reachable: 0,
+      content_identity_status: contentIdentity.status,
+      content_identity_reason: contentIdentity.reason,
       host: parsedUrl.hostname,
     };
   }
@@ -1578,6 +1594,10 @@ async function testCandidate(candidate) {
       streams_reachable: playable.length,
       streams_playable: playable.length,
       payload_verified_streams: playable.filter((probe) => probe.payload_verified).length,
+      identity_verified_streams: probes.filter((probe) => probe.content_identity_status === 'match').length,
+      identity_unverified_streams: probes.filter((probe) => probe.content_identity_status === 'unknown').length,
+      identity_contradiction_count: probes.filter((probe) => probe.content_identity_status === 'contradiction').length,
+      duration_identity_mismatch_count: probes.filter((probe) => probe.duration_identity_mismatch === true).length,
       segment_or_direct_verified_streams: playable.filter(
         (probe) => probe.segment_reachable === true || probe.direct_signature_verified || probe.kind === 'dash',
       ).length,
@@ -1610,6 +1630,9 @@ async function testCandidate(candidate) {
           kind: probe.kind || null,
           payload_verified: Boolean(probe.payload_verified),
           playback_verified: Boolean(probe.playback_verified),
+          content_identity_status: probe.content_identity_status || 'unknown',
+          content_identity_reason: probe.content_identity_reason || null,
+          duration_identity_mismatch: Boolean(probe.duration_identity_mismatch),
         })),
       response_categories: [...new Set(probes.map((probe) => probe.category).filter(Boolean))].sort(),
       median_probe_latency_ms: median(playable.map((probe) => probe.latency_ms)),
@@ -1688,6 +1711,10 @@ async function testCandidate(candidate) {
   const healthyCategories = [...new Set(activationHealthyTests.map((item) => item.fixture.category).filter(Boolean))].sort();
   const playableStreams = fixtureResults.reduce((sum, item) => sum + Number(item.streams_playable || 0), 0);
   const payloadVerifiedStreams = fixtureResults.reduce((sum, item) => sum + Number(item.payload_verified_streams || 0), 0);
+  const identityVerifiedStreams = fixtureResults.reduce((sum, item) => sum + Number(item.identity_verified_streams || 0), 0);
+  const identityUnverifiedStreams = fixtureResults.reduce((sum, item) => sum + Number(item.identity_unverified_streams || 0), 0);
+  const identityContradictionCount = fixtureResults.reduce((sum, item) => sum + Number(item.identity_contradiction_count || 0), 0);
+  const durationIdentityMismatchCount = fixtureResults.reduce((sum, item) => sum + Number(item.duration_identity_mismatch_count || 0), 0);
   const playableFixtures = fixtureResults.filter((item) => Number(item.streams_playable || 0) > 0).length;
   const reachableHosts = [...new Set(healthyTests.flatMap((item) => item.reachable_hosts || []))].sort();
   const acceptedAudio = [...new Set(healthyTests.flatMap((item) => item.accepted_audio_languages || []))].sort();
@@ -1774,6 +1801,10 @@ async function testCandidate(candidate) {
       healthy_fixture_categories: healthyCategories,
       streams_playable: playableStreams,
       payload_verified_streams: payloadVerifiedStreams,
+      identity_verified_streams: identityVerifiedStreams,
+      identity_unverified_streams: identityUnverifiedStreams,
+      identity_contradiction_count: identityContradictionCount,
+      duration_identity_mismatch_count: durationIdentityMismatchCount,
       distinct_reachable_hosts: reachableHosts.length,
       reachable_hosts: reachableHosts,
       verified_max_height: Math.max(0, ...healthyTests.map((item) => item.verified_max_height || 0)) || null,

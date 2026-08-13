@@ -1,3 +1,14 @@
+## 5.20.48 — Identité d’œuvre, durée et quarantaine fail-safe
+
+- Corrige le faux positif qui classait un média HTTP lisible comme succès lorsque l’identité de l’œuvre restait inconnue.
+- Ajoute un gate global bloquant pour les contradictions de titre, saison, épisode, nom de fichier média et durée ; l’absence de durée reste inconclusive et ne pénalise pas une œuvre récente.
+- Distingue explicitement l’identité d’un contenu de la qualité UI `Unknown` / `Inconnue`, afin de préserver les sources valides telles que Purstream.
+- Place le validateur direct-media StreamZo après toutes les récupérations catalogue : un proxy/iframe HTML est désormais résolu en HLS/DASH/conteneur ou rejeté, jamais envoyé brut à NuvioTV/Desktop.
+- Enregistre la preuve live StreamZo pour `Mon ninja et moi 3` : titre du lecteur concordant, HLS final présent et durée de 5 262,615 s pour 88 minutes attendues.
+- Met TopCartoons en quarantaine : manifest désactivé et bundle publié rendu inerte après les contenus croisés observés sur Breaking Bad et Revenant.
+- Ramène l’activation générale de 69 à 61 providers selon la baseline d’activation validée ; les huit ajouts hors baseline restent publiés mais désactivés jusqu’à une nouvelle preuve avec les onze gates.
+- Fait du seuil 10 providers / 3 VF un objectif strictement indicatif tout en excluant systématiquement des décomptes les contenus contradictoires, durées incohérentes et médias non vérifiés.
+
 ## 5.20.47 — Lab multi-œuvres et récupération catalogue globale
 
 - Ajoute un lab reproductible couvrant films, séries et anime sur les contrats NuvioTV, Desktop et Mobile, avec rapports nettoyés par œuvre.

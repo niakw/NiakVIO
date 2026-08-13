@@ -14,6 +14,7 @@ sont répartis en plusieurs familles :
 | Disponibilité réseau | DNS, connexion refusée, délai, HTTP 4xx/5xx, redirections, anti-robot, débit limité |
 | Cohérence de charge utile | HLS, DASH, MP4, Matroska, MPEG-TS, sous-titre, HTML ou réponse vide inattendue |
 | Lecture HLS/DASH | playlist principale, meilleure variante, premier segment, MPD |
+| Identité d’œuvre | titre/alias, saison, épisode, nom de fichier média et cohérence de durée |
 | Qualité | résolution annoncée et vérifiée, débit maximal, codecs, HDR/Dolby Vision |
 | Langues | pistes audio et sous-titres exposés, vérification limitée d'une piste de sous-titres |
 | Performance | latence du provider et des points sondés |
@@ -76,13 +77,17 @@ Utilise jusqu'à trois titres et quatre endpoints par candidat. Il peut inspecte
 - langues audio et sous-titres ;
 - accessibilité d'une piste de sous-titres ;
 - latence et catégorie de panne.
+- durée mesurée du média comparée à la durée attendue lorsqu’elle est connue ;
+- contradictions explicites entre l’œuvre demandée et le titre, l’épisode ou le nom du fichier média retourné.
 
 ### 5. Lab de lecture multi-œuvres — à chaque changement pertinent
 
 Le lab exécute une matrice de films, séries et anime, dont une œuvre récente à faible
 couverture, avec les contrats NuvioTV, Desktop et Mobile. Il vérifie le média final,
 les playlists et les premiers segments, puis rejette les contradictions de titre,
-saison ou épisode. Un timeout isolé peut être retenté une fois avec un profil réduit.
+saison, épisode, nom de fichier média ou durée. Un timeout isolé peut être retenté
+une fois avec un profil réduit. La qualité UI `Unknown` / `Inconnue` reste indépendante
+de l’identité de l’œuvre et n’est jamais un motif de rejet à elle seule.
 
 La cible de **10 providers jouables dont 3 VF par œuvre** est un objectif de couverture
 indicatif. Elle ne bloque pas une publication lorsque le catalogue d'une œuvre récente

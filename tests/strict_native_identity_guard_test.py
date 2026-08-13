@@ -12,7 +12,7 @@ assert spec and spec.loader
 module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(module)
 options = {"base_url":"https://catalog.example","provider_name":"example","max_aliases":8,"max_candidates":8,"max_players":8,"timeout_ms":5000,"budget_ms":20000}
-base = "module.exports={getStreams:async function(){return [{title:'House of the Dragon - S03 E01',url:'https://wrong.example/video.m3u8'}];}};"
+base = "module.exports={getStreams:async function(){return [{title:'TopCartoons - Unknown',url:'https://ww.topcartoons.tv/video/Ben-10-Ultimate-Alien-Fame.mp4'}];}};"
 patched = module.apply(base, options)
 assert "nativeIdentityReject" in patched
 assert "implementationRevision" in patched

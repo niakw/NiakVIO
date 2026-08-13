@@ -71,6 +71,18 @@ def configured_authoritative_types(config: dict[str, Any], provider_id: str) -> 
     ]
 
 
+def configured_manifest_overrides(config: dict[str, Any], provider_id: str) -> dict[str, Any]:
+    patches = config.get("provider_patches") if isinstance(config, dict) else {}
+    patch_row = (patches or {}).get(str(provider_id or "").strip().casefold(), {})
+    overrides = patch_row.get("manifest_overrides") if isinstance(patch_row, dict) else {}
+    if not isinstance(overrides, dict):
+        return {}
+    # Reapplication only persists fail-safe activation decisions. Other
+    # metadata is promotion-owned and may intentionally differ until a new
+    # audited bundle is promoted (for example external-player capability).
+    return {"enabled": False} if overrides.get("enabled") is False else {}
+
+
 def strip_unproven_adaptive_language(data: bytes) -> tuple[bytes, int]:
     """Remove only the historical adaptive wrapper's hard-coded French claim.
 
@@ -276,6 +288,10 @@ def main() -> int:
         types_changed = bool(authoritative_types and entry.get("supportedTypes") != authoritative_types)
         if types_changed:
             entry["supportedTypes"] = authoritative_types
+        manifest_overrides = configured_manifest_overrides(override_config, provider_id)
+        manifest_changed = any(entry.get(key) != value for key, value in manifest_overrides.items())
+        if manifest_overrides:
+            entry.update(manifest_overrides)
 
         original = path.read_bytes()
         migrated, adaptive_language_repairs = strip_unproven_adaptive_language(original)
@@ -307,7 +323,7 @@ def main() -> int:
         outputs[new_relative] = patched
         old_paths.add(relative)
         entry["filename"] = new_relative
-        if relative != new_relative or types_changed:
+        if relative != new_relative or types_changed or manifest_changed:
             entry["version"] = bump_provider_version(str(entry.get("version") or "1.0.0"))
         provenance_updates[provider_id] = {
             "old": relative,
@@ -334,6 +350,8 @@ def main() -> int:
                 entry["version"] = primary_entry["version"]
                 if isinstance(primary_entry.get("supportedTypes"), list):
                     entry["supportedTypes"] = list(primary_entry["supportedTypes"])
+                for key, value in configured_manifest_overrides(override_config, provider_id).items():
+                    entry[key] = value
         secondary_payloads.append((path, payload))
 
     if provenance is not None:
@@ -347,6 +365,19 @@ def main() -> int:
                 row["patched_sha256"] = update["sha256"]
             if update["records"]:
                 row["local_patches"] = merge_patch_records(row.get("local_patches"), update["records"])
+            manifest_overrides = configured_manifest_overrides(override_config, provider_id)
+            if manifest_overrides.get("enabled") is False:
+                row["activation_eligible"] = False
+                row["strict_activation_eligible"] = False
+                row["strict_grace_eligible"] = False
+                row["historical_quality_grace_eligible"] = False
+                row["runtime_evidence_eligible"] = False
+                row["activation_mode"] = "configured_safety_quarantine"
+                blockers = [
+                    str(value) for value in (row.get("activation_blockers") or [])
+                    if str(value) and str(value) != "configured_safety_quarantine"
+                ]
+                row["activation_blockers"] = blockers + ["configured_safety_quarantine"]
 
     stale = False
     for new_relative, data in outputs.items():

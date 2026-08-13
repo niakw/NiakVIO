@@ -8,6 +8,7 @@ const path = require('node:path');
 const { spawn } = require('node:child_process');
 
 const WINDOWS_UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36';
+const MACOS_UA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36';
 const HEALTH_PREFIX = 'NUVIO_HEALTH_RESULT=';
 const DEFAULT_TIMEOUT_MS = 70_000;
 const DEFAULT_PLAYBACK_TIMEOUT_MS = 18_000;
@@ -27,7 +28,8 @@ const CLIENTS = Object.freeze({
     repository: 'NuvioMedia/NuvioDesktop',
     branch: 'Dev',
     runtimeGroup: 'compose',
-    platform: 'windows',
+    platform: 'macos',
+    userAgent: MACOS_UA,
     runtimeFile: 'composeApp/src/fullCommonMain/kotlin/com/nuvio/app/features/plugins/runtime/PluginRuntime.kt',
     supportFiles: ['composeApp/src/fullCommonMain/kotlin/com/nuvio/app/features/plugins/runtime/network/FetchBridge.kt'],
   },
@@ -143,8 +145,19 @@ function normalizeIdentity(value) {
 }
 
 function identityTokens(value) {
-  const noise = new Set(['the', 'a', 'an', 'le', 'la', 'les', 'un', 'une', 'de', 'des', 'du', 'of', 'and', 'et', 'film', 'movie', 'stream', 'streaming', 'watch', 'play', 'player', 'server', 'serveur', 'source', 'mirror', 'direct', 'download', 'telecharger', 'file', 'video', 'quality', 'web', 'ep', 'episode', 'season', 'saison', 'sibnet', 'vidmoly', 'sendvid', 'uqload', 'streamzo', 'anime', 'sama', 'mugiwara', 'toflix', 'french', 'manga', 'vf', 'vff', 'vostfr', 'vo', 'english', 'truefrench', 'hd', 'uhd', 'fhd', 'sd']);
-  return normalizeIdentity(value).split(/\s+/).filter((token) => token.length > 1 && !noise.has(token) && !/^\d{3,4}p$/.test(token) && !/^\d{4}$/.test(token));
+  const noise = new Set(['the', 'a', 'an', 'le', 'la', 'les', 'un', 'une', 'de', 'des', 'du', 'of', 'and', 'et', 'film', 'movie', 'stream', 'streaming', 'watch', 'play', 'player', 'server', 'serveur', 'source', 'mirror', 'direct', 'download', 'telecharger', 'file', 'video', 'quality', 'web', 'ep', 'episode', 'season', 'saison', 'sibnet', 'vidmoly', 'sendvid', 'uqload', 'streamzo', 'anime', 'sama', 'mugiwara', 'toflix', 'french', 'manga', 'vf', 'vff', 'vostfr', 'vo', 'english', 'truefrench', 'hd', 'uhd', 'fhd', 'sd', 'index', 'master', 'playlist', 'manifest', 'chunk', 'segment', 'audio', 'dual', 'multi', 'unknown', 'inconnue', 'inconnu']);
+  return normalizeIdentity(value).split(/\s+/).filter((token) => token.length > 1 && !noise.has(token) && !/^\d+$/.test(token) && !/^\d{3,4}p$/.test(token));
+}
+
+function humanMediaFilename(rawUrl) {
+  try {
+    const basename = decodeURIComponent(new URL(String(rawUrl || '')).pathname.split('/').filter(Boolean).pop() || '')
+      .replace(/\.(?:m3u8|mpd|mp4|mkv|webm|m4v|ts)$/i, '');
+    const words = identityTokens(basename).filter((token) => /^[a-z]{3,}$/i.test(token));
+    return words.length >= 2 ? basename : '';
+  } catch {
+    return '';
+  }
 }
 
 function streamIdentity(stream, fixture) {
@@ -152,7 +165,9 @@ function streamIdentity(stream, fixture) {
   const forbiddenAliases = (Array.isArray(fixture?.forbiddenAliases) ? fixture.forbiddenAliases : []).map(normalizeIdentity).filter(Boolean);
   const expected = aliases.map(normalizeIdentity).filter(Boolean);
   const expectedTokens = new Set(aliases.flatMap(identityTokens));
-  const label = String(stream?.title || stream?.description || stream?.filename || stream?.name || '').trim();
+  const metadataLabel = String(stream?.title || stream?.description || stream?.filename || stream?.name || '').trim();
+  const mediaFilename = humanMediaFilename(stream?.url);
+  const label = [metadataLabel, mediaFilename].filter(Boolean).join(' ');
   const normalized = normalizeIdentity(label);
   const mediaType = String(fixture?.mediaType || fixture?.type || 'movie').toLowerCase();
   const wantedSeason = Number(fixture?.season || 0);
@@ -179,7 +194,7 @@ function streamIdentity(stream, fixture) {
   const rowTokens = identityTokens(label);
   if (rowTokens.length >= 2 && expectedTokens.size) {
     const overlap = rowTokens.filter((token) => expectedTokens.has(token));
-    if (overlap.length === 0) return { status: 'contradiction', reason: 'strong_title_mismatch' };
+    if (overlap.length === 0) return { status: 'contradiction', reason: mediaFilename ? 'media_filename_title_mismatch' : 'strong_title_mismatch' };
   }
   return { status: 'unknown', reason: 'insufficient_identity_metadata' };
 }
@@ -237,7 +252,7 @@ function buildWorkerContext(runtimeGroup, fixture, config) {
     locale: config.locale || 'fr-FR',
     languages: config.languages || ['fr-FR', 'fr'],
     platform: client.platform,
-    userAgent: WINDOWS_UA,
+    userAgent: client.userAgent || WINDOWS_UA,
     injectAcceptLanguage: false,
     maxSettingsProfiles: Math.max(1, Math.min(Number(config.max_settings_profiles || 4), 8)),
     fixtureMetadata: fixture,
@@ -331,10 +346,23 @@ async function probeStreams(root, streams, fixture, config) {
     } catch (error) {
       probe = { playable: false, inconclusive: true, kind: sanitizeText(error?.name || error?.message || error, 100), status: null, host: safeHost(stream?.url) };
     }
+    let identity = streamIdentity(stream, fixture);
+    const expectedDurationSeconds = Number(fixture?.expectedDurationMinutes || 0) * 60 || null;
+    const mediaDurationSeconds = Number(probe?.media_duration_seconds || 0) || null;
+    const durationRatio = expectedDurationSeconds && mediaDurationSeconds
+      ? mediaDurationSeconds / expectedDurationSeconds
+      : null;
+    const minimumDurationRatio = Math.max(0.05, Number(config.policy?.minimum_duration_ratio || 0.55));
+    const maximumDurationRatio = Math.max(minimumDurationRatio, Number(config.policy?.maximum_duration_ratio || 1.8));
+    const durationMismatch = durationRatio != null && (durationRatio < minimumDurationRatio || durationRatio > maximumDurationRatio);
+    if (durationMismatch) identity = { status: 'contradiction', reason: 'fixture_duration_mismatch' };
+    else if (identity.status === 'unknown' && durationRatio != null) identity = { status: 'match', reason: 'fixture_duration_match' };
+    const transportPlayable = Boolean(probe?.playable);
     results.push({
       ...summarizeStream(stream, index),
-      identity: streamIdentity(stream, fixture),
-      playable: Boolean(probe?.playable),
+      identity,
+      transport_playable: transportPlayable,
+      playable: transportPlayable && identity.status !== 'contradiction',
       inconclusive: Boolean(probe?.inconclusive),
       kind: sanitizeText(probe?.kind, 120) || null,
       status: Number.isInteger(probe?.status) ? probe.status : null,
@@ -343,6 +371,10 @@ async function probeStreams(root, streams, fixture, config) {
       hls_variant_playable: probe?.hls_variant_playable ?? null,
       hls_segment_playable: probe?.hls_segment_playable ?? null,
       hls_audio_playable: probe?.hls_audio_playable ?? null,
+      media_duration_seconds: mediaDurationSeconds,
+      expected_duration_seconds: expectedDurationSeconds,
+      duration_ratio: durationRatio,
+      duration_identity_mismatch: durationMismatch,
     });
   }
   return results;
@@ -352,8 +384,9 @@ function classify(runtime, probes) {
   if (runtime?.timed_out) return 'runtime_timeout';
   if (!runtime?.ok) return 'runtime_error';
   if (!Number(runtime.stream_count || 0)) return 'runtime_empty';
-  if (probes.some((row) => row.playable && row.identity?.status === 'contradiction')) return 'wrong_content';
-  if (probes.some((row) => row.playable)) return 'playable';
+  if (probes.some((row) => (row.transport_playable ?? row.playable) && row.identity?.status === 'contradiction')) return 'wrong_content';
+  if (probes.some((row) => row.playable && row.identity?.status === 'match')) return 'playable';
+  if (probes.some((row) => row.playable)) return 'identity_unverified';
   if (probes.some((row) => row.inconclusive)) return 'playback_inconclusive';
   return 'media_unplayable';
 }
@@ -362,7 +395,7 @@ function summarizePolicy(providers, clients, config = {}) {
   const requestedClients = Array.from(clients || []);
   const targetTotal = Math.max(1, Number(config.policy?.target_total || 10));
   const minimumVf = Math.max(1, Number(config.policy?.minimum_vf || 3));
-  const requireIdentityMatch = config.policy?.require_identity_match === true;
+  const requireIdentityMatch = config.policy?.require_identity_match !== false;
   const qualified = (providers || []).filter((provider) => (
     provider.manifest_enabled
     && requestedClients.length > 0
@@ -459,6 +492,7 @@ async function runLab(root, config, options = {}) {
     category: config.fixture?.category || config.fixture?.mediaType || config.mediaType || 'movie',
     season: config.fixture?.season ?? config.season ?? null,
     episode: config.fixture?.episode ?? config.episode ?? null,
+    expectedDurationMinutes: config.fixture?.expectedDurationMinutes ?? config.expectedDurationMinutes ?? null,
   };
   if (!fixture.tmdbId) throw new Error('fixture.tmdbId is required');
 
@@ -561,8 +595,8 @@ async function runLab(root, config, options = {}) {
           playable_probe_count: probes.filter((row) => row.playable).length,
           inconclusive_probe_count: probes.filter((row) => row.inconclusive).length,
           identity_match_count: probes.filter((row) => row.playable && row.identity?.status === 'match').length,
-          identity_contradiction_count: probes.filter((row) => row.playable && row.identity?.status === 'contradiction').length,
-          identity_status: probes.some((row) => row.playable && row.identity?.status === 'contradiction')
+          identity_contradiction_count: probes.filter((row) => row.transport_playable && row.identity?.status === 'contradiction').length,
+          identity_status: probes.some((row) => row.transport_playable && row.identity?.status === 'contradiction')
             ? 'contradiction'
             : (probes.some((row) => row.playable && row.identity?.status === 'match') ? 'verified' : 'unknown'),
           verdict: classify(runtime, probes),
@@ -624,6 +658,7 @@ async function main() {
 module.exports = {
   CLIENTS,
   WINDOWS_UA,
+  MACOS_UA,
   buildWorkerContext,
   classify,
   executionGroups,

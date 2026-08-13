@@ -134,13 +134,15 @@ Cette règle évite deux erreurs opposées : conserver des providers qui apparai
 
 > Les probes CI reproduisent les contrats runtime et vérifient les payloads réseau. Ils ne prétendent pas remplacer un test manuel sur chaque modèle physique de téléphone, ordinateur ou box Android TV.
 
-### Lab de lecture multi-œuvres
+### Lab de transport média multi-œuvres
 
-Le workflow [`Nuvio client playback lab`](.github/workflows/nuvio-client-lab.yml) exécute une matrice reproductible de films, séries et anime, dont une œuvre récente à faible couverture. Chaque provider sélectionné est exécuté avec les contrats NuvioTV, Desktop et Mobile, puis les playlists et premiers segments sont vérifiés jusqu'au média final. Les contradictions de titre, saison ou épisode sont rejetées.
+Le workflow [`Nuvio client media transport lab`](.github/workflows/nuvio-client-lab.yml) exécute une matrice reproductible de films, séries et anime, dont une œuvre récente à faible couverture. Chaque provider sélectionné est exécuté avec les contrats NuvioTV, Desktop macOS et Mobile, puis les playlists et premiers segments sont vérifiés jusqu'au média final. Les contradictions de titre, saison, épisode, nom de fichier média ou durée sont rejetées.
+
+Une durée connue est comparée au média réellement mesuré avec une tolérance configurée. Si la durée n’est pas disponible, le résultat reste `identity_unverified` au lieu d’être déclaré faux. De même, `Unknown` / `Inconnue` dans la qualité affichée par Nuvio ne signifie pas que l’identité de l’œuvre est inconnue et ne provoque aucune désactivation à lui seul.
 
 Seuls les providers activés et jouables sur tous les clients demandés entrent dans le décompte. Un timeout isolé est retenté une fois avec un profil réduit, et les rapports JSON/Markdown publiés comme artefacts sont nettoyés des URL complètes, jetons et valeurs d'en-têtes.
 
-La cible de couverture est **10 providers jouables par œuvre, dont au moins 3 VF**. C'est un objectif indicatif, pas un verrou de publication : une œuvre récente ou rare peut légitimement rester sous 10. En revanche, une erreur d'exécution, un contenu contradictoire ou un média non lisible ne compte jamais comme un succès.
+La cible de couverture est **10 providers jouables par œuvre, dont au moins 3 VF**. C'est un objectif indicatif, pas un verrou de publication : une œuvre récente ou rare peut légitimement rester sous 10. En revanche, une erreur d'exécution, une identité non vérifiée, un contenu contradictoire, une durée incohérente ou un média non lisible ne compte jamais comme un succès.
 
 Configuration et tests : [`nuvio-client-lab.json`](.github/triggers/nuvio-client-lab.json), [`nuvio_client_lab.cjs`](scripts/nuvio_client_lab.cjs) et [`nuvio_client_lab.test.cjs`](tests/nuvio_client_lab.test.cjs).
 
@@ -168,7 +170,7 @@ Le projet peut notamment :
 - garantir que la réapplication des correctifs converge en une passe et reste idempotente ;
 - restaurer un dernier bundle connu comme sain lorsqu’un upstream est incomplet ou corrompu ;
 - exécuter les providers dans des workers/probes bornés ;
-- tester une matrice multi-œuvres sur les contrats NuvioTV, Desktop et Mobile avec un objectif indicatif de couverture 10/3 ;
+- tester une matrice multi-œuvres sur les contrats NuvioTV, Desktop macOS et Mobile avec un objectif indicatif de couverture 10/3 ;
 - conserver séparément les preuves par catégorie, runtime et génération de bundle ;
 - adapter certains providers au runtime NuvioTV lorsqu’une amélioration stricte est démontrée ;
 - synchroniser le manifest général avec sa projection francophone ;

@@ -7,6 +7,7 @@ const os = require('node:os');
 const path = require('node:path');
 const {
   WINDOWS_UA,
+  MACOS_UA,
   buildWorkerContext,
   classify,
   executionGroups,
@@ -60,6 +61,9 @@ const context = buildWorkerContext('tv', { tmdbId: '157336', mediaType: 'movie' 
 assert.equal(context.userAgent, WINDOWS_UA);
 assert.equal(context.injectAcceptLanguage, false);
 assert.equal(context.clientRuntimeLab.invocationContract, 'positional-compatible');
+const desktopContext = buildWorkerContext('compose', { tmdbId: '1215638', mediaType: 'movie' }, {});
+assert.equal(desktopContext.platform, 'macos');
+assert.equal(desktopContext.userAgent, MACOS_UA);
 
 const parsed = parseWorkerOutput('noise\nNUVIO_HEALTH_RESULT={"ok":true,"stream_count":1,"streams":[]}\n');
 assert.equal(parsed.ok, true);
@@ -81,14 +85,16 @@ assert.equal(JSON.stringify(summary).includes('Authorization":"secret'), false);
 assert.equal(classify({ ok: false, stream_count: 0 }, []), 'runtime_error');
 assert.equal(classify({ ok: false, timed_out: true, stream_count: 0 }, []), 'runtime_timeout');
 assert.equal(classify({ ok: true, stream_count: 0 }, []), 'runtime_empty');
-assert.equal(classify({ ok: true, stream_count: 1 }, [{ playable: true }]), 'playable');
+assert.equal(classify({ ok: true, stream_count: 1 }, [{ playable: true }]), 'identity_unverified');
+assert.equal(classify({ ok: true, stream_count: 1 }, [{ playable: true, identity: { status: 'match' } }]), 'playable');
 assert.equal(classify({ ok: true, stream_count: 1 }, [{ playable: true, identity: { status: 'contradiction' } }]), 'wrong_content');
+assert.equal(classify({ ok: true, stream_count: 1 }, [{ playable: false, transport_playable: true, identity: { status: 'contradiction', reason: 'fixture_duration_mismatch' } }]), 'wrong_content');
 assert.equal(classify({ ok: true, stream_count: 1 }, [{ playable: false, inconclusive: true }]), 'playback_inconclusive');
 assert.equal(classify({ ok: true, stream_count: 1 }, [{ playable: false, inconclusive: false }]), 'media_unplayable');
 
 const policyProviders = [
-  { id: 'vf-good', manifest_enabled: true, is_vf: true, clients: { tv: { verdict: 'playable' }, desktop: { verdict: 'playable' } } },
-  { id: 'non-vf-good', manifest_enabled: true, is_vf: false, clients: { tv: { verdict: 'playable' }, desktop: { verdict: 'playable' } } },
+  { id: 'vf-good', manifest_enabled: true, is_vf: true, clients: { tv: { verdict: 'playable', identity_status: 'verified' }, desktop: { verdict: 'playable', identity_status: 'verified' } } },
+  { id: 'non-vf-good', manifest_enabled: true, is_vf: false, clients: { tv: { verdict: 'playable', identity_status: 'verified' }, desktop: { verdict: 'playable', identity_status: 'verified' } } },
   { id: 'partial', manifest_enabled: true, is_vf: true, clients: { tv: { verdict: 'playable' }, desktop: { verdict: 'runtime_empty' } } },
   { id: 'disabled', manifest_enabled: false, is_vf: true, clients: { tv: { verdict: 'playable' }, desktop: { verdict: 'playable' } } },
 ];
@@ -111,6 +117,8 @@ assert.equal(recentWorkPolicy.blocking_pass, true);
 
 assert.deepEqual(streamIdentity({ title: 'Interstellar - 2014 - 1080p' }, { title: 'Interstellar', mediaType: 'movie' }), { status: 'match', reason: 'expected_title_alias' });
 assert.deepEqual(streamIdentity({ title: 'Enola Holmes 2 - 1080p' }, { title: 'Mon ninja et moi 3', aliases: ['Checkered Ninja 3'], mediaType: 'movie' }), { status: 'contradiction', reason: 'strong_title_mismatch' });
+assert.deepEqual(streamIdentity({ name: 'TopCartoons', url: 'https://ww.topcartoons.tv/video/Ben-10-Ultimate-Alien-Fame.mp4' }, { title: 'Breaking Bad', mediaType: 'tv', season: 1, episode: 1 }), { status: 'contradiction', reason: 'media_filename_title_mismatch' });
+assert.deepEqual(streamIdentity({ name: 'Purstream 1080p Dual Audio - Inconnue', url: 'https://cdn.example/hls2/03/00026/master.m3u8' }, { title: 'Revenant', mediaType: 'tv', season: 1, episode: 1 }), { status: 'unknown', reason: 'insufficient_identity_metadata' });
 assert.deepEqual(streamIdentity({ title: 'S02E04 1080p' }, { title: 'Revenant', mediaType: 'tv', season: 1, episode: 1 }), { status: 'contradiction', reason: 'wrong_season_episode' });
 assert.deepEqual(streamIdentity({ title: 'Player - Ep 1 - VF [1080p]', name: 'Anime-Sama (VF)' }, { title: 'Jujutsu Kaisen', mediaType: 'tv', season: 1, episode: 1 }), { status: 'match', reason: 'episode_match' });
 assert.deepEqual(streamIdentity({ title: 'S1E1 - Ryomen Sukuna', name: 'ToFlix' }, { title: 'Jujutsu Kaisen', mediaType: 'tv', season: 1, episode: 1 }), { status: 'match', reason: 'season_episode_match' });

@@ -53,6 +53,8 @@ function parseHls(text, baseUrl) {
   const audio = [];
   const segments = [];
   let mediaTags = 0;
+  let durationSeconds = 0;
+  let durationEntries = 0;
   for (let index = 0; index < lines.length; index += 1) {
     const line = lines[index];
     if (/^#EXT-X-STREAM-INF\s*:/i.test(line)) {
@@ -73,7 +75,14 @@ function parseHls(text, baseUrl) {
       }
       continue;
     }
-    if (/^#EXTINF\s*:/i.test(line) || /^#EXT-X-(?:PART|MAP)\s*:/i.test(line)) mediaTags += 1;
+    if (/^#EXTINF\s*:/i.test(line)) {
+      mediaTags += 1;
+      const duration = Number(line.slice(line.indexOf(':') + 1).split(',')[0]);
+      if (Number.isFinite(duration) && duration >= 0) {
+        durationSeconds += duration;
+        durationEntries += 1;
+      }
+    } else if (/^#EXT-X-(?:PART|MAP)\s*:/i.test(line)) mediaTags += 1;
     if (line && !line.startsWith('#') && index > 0 && /^#EXTINF\s*:/i.test(lines[index - 1])) {
       const url = absolute(line, baseUrl);
       if (url && !segments.includes(url)) segments.push(url);
@@ -94,6 +103,7 @@ function parseHls(text, baseUrl) {
     variants,
     audio,
     segments,
+    durationSeconds: durationEntries ? durationSeconds : null,
   };
 }
 
@@ -147,6 +157,7 @@ async function probeHlsText(text, baseUrl, headers, options, depth = 0) {
   if (depth > 2) return { playable: false, inconclusive: false, kind: 'hls_nested_too_deep', hls_master: parsed.master };
 
   let videoSegment = null;
+  let mediaDurationSeconds = parsed.durationSeconds;
   if (parsed.master) {
     const variantUrl = parsed.variants[0];
     try {
@@ -157,6 +168,7 @@ async function probeHlsText(text, baseUrl, headers, options, depth = 0) {
       const childProbe = await probeHlsText(child.text, child.response.url || variantUrl, headers, options, depth + 1);
       if (!childProbe.playable) return { ...childProbe, hls_master: true, hls_variant_playable: false };
       videoSegment = true;
+      mediaDurationSeconds = childProbe.media_duration_seconds ?? null;
     } catch (error) {
       return { playable: false, inconclusive: inconclusiveError(error), kind: sanitize(error?.name || error?.code || 'hls_variant_error'), hls_master: true, hls_variant_playable: false };
     }
@@ -199,6 +211,7 @@ async function probeHlsText(text, baseUrl, headers, options, depth = 0) {
     hls_segment_playable: videoSegment,
     hls_external_audio_count: parsed.audio.length,
     hls_audio_playable: parsed.audio.length ? true : null,
+    media_duration_seconds: mediaDurationSeconds,
   };
 }
 

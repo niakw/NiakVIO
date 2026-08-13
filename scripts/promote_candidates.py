@@ -8,7 +8,7 @@ while the same file has been confirmed working in the real Nuvio application.
 Confirmed failures and P2P output can never be overridden. An upstream-disabled
 flag is advisory only when the exact current JS passes the complete strict deep proof. Duplicate variants are resolved after every check.
 
-The ten gates are:
+The eleven gates are:
 1. no P2P/torrent evidence;
 2. healthy functional status;
 3. minimum aggregate score;
@@ -18,7 +18,8 @@ The ten gates are:
 7. verified media payload/playback evidence when runtime output is returned;
 8. media-quality diagnostics (non-blocking for a verified general stream);
 9. language/subtitle diagnostics (VF filtering is handled by language projection);
-10. acceptable latency plus one successful deep validation of the current SHA.
+10. no title/episode/duration identity contradiction;
+11. acceptable latency plus one successful deep validation of the current SHA.
 """
 
 from __future__ import annotations
@@ -142,6 +143,7 @@ def historical_inconclusive_decision(
         "07_verified_payload_playability",
         "08_quality_and_bitrate",
         "09_language_and_subtitle_integrity",
+        "10_content_identity_integrity",
     ]
     checks = {
         "current_status_inconclusive": status in inconclusive_statuses(activation),
@@ -286,7 +288,8 @@ def build_entry(
     # Only the globally audited direct-media bundle can safely advertise native playback.
     if canonical == "streamzo":
         entry["supportsExternalPlayer"] = "--nuvio-tv-global--" not in entry["filename"]
-    entry["enabled"] = bool(enabled)
+    force_disabled = isinstance(manifest_overrides, dict) and manifest_overrides.get("enabled") is False
+    entry["enabled"] = bool(enabled) and not force_disabled
     if not isinstance(entry.get("id"), str) or not entry["id"].strip():
         entry["id"] = candidate.get("upstream_id") or candidate["canonical_id"]
     return entry
@@ -760,6 +763,18 @@ def result_evidence(result: dict[str, Any]) -> dict[str, Any]:
         "payload_verified_streams": sum(
             int(item.get("payload_verified_streams", 0)) for item in healthy
         ),
+        "identity_verified_streams": sum(
+            int(item.get("identity_verified_streams", 0)) for item in tests
+        ),
+        "identity_unverified_streams": sum(
+            int(item.get("identity_unverified_streams", 0)) for item in tests
+        ),
+        "identity_contradiction_count": sum(
+            int(item.get("identity_contradiction_count", 0)) for item in tests
+        ),
+        "duration_identity_mismatch_count": sum(
+            int(item.get("duration_identity_mismatch_count", 0)) for item in tests
+        ),
         "distinct_reachable_hosts": len(hosts),
         "reachable_hosts": sorted(hosts),
         "effective_max_height": max(
@@ -963,6 +978,10 @@ def evaluate_pre_stability_gates(
     effective_height = int(proof.get("effective_max_height", 0) or 0)
     bandwidth_raw = proof.get("max_bandwidth")
     bandwidth = int(bandwidth_raw) if bandwidth_raw else None
+    identity_verified_streams = int(proof.get("identity_verified_streams", 0) or 0)
+    identity_unverified_streams = int(proof.get("identity_unverified_streams", 0) or 0)
+    identity_contradictions = int(proof.get("identity_contradiction_count", 0) or 0)
+    duration_identity_mismatches = int(proof.get("duration_identity_mismatch_count", 0) or 0)
 
     accepted_audio_languages = {
         str(value).casefold() for value in activation.get("accepted_audio_languages", ["fr", "en"])
@@ -1217,6 +1236,20 @@ def evaluate_pre_stability_gates(
                 ),
             },
         ),
+        "10_content_identity_integrity": gate(
+            identity_contradictions == 0 and duration_identity_mismatches == 0,
+            {
+                "identity_verified_streams": identity_verified_streams,
+                "identity_unverified_streams": identity_unverified_streams,
+                "identity_contradiction_count": identity_contradictions,
+                "duration_identity_mismatch_count": duration_identity_mismatches,
+            },
+            {
+                "maximum_identity_contradictions": 0,
+                "maximum_duration_identity_mismatches": 0,
+                "unknown_identity_is_not_ui_unknown_quality": True,
+            },
+        ),
     }
     performance = {
         "passed": provider_latency_ok and stream_latency_ok,
@@ -1265,6 +1298,8 @@ def update_strict_history(
 
     variants = dict(previous.get("variants", {}))
     now = datetime.now(timezone.utc).isoformat()
+    override_policy = load_overrides()
+    configured_provider_patches = override_policy.get("provider_patches") or {}
     present = {candidate["key"] for candidate in candidates}
     inconclusive = inconclusive_statuses(activation)
     preserve_inconclusive = bool(
@@ -1760,6 +1795,17 @@ def main() -> int:
                 runtime_evidence,
                 previous_provenance.get("providers", {}).get(variant["canonical_id"], {}),
             )
+            provider_policy = configured_provider_patches.get(cid, {})
+            manifest_overrides = provider_policy.get("manifest_overrides", {}) if isinstance(provider_policy, dict) else {}
+            if isinstance(manifest_overrides, dict) and manifest_overrides.get("enabled") is False:
+                decision = decisions[variant["key"]]
+                decision["enabled"] = False
+                decision["activation_eligible"] = False
+                decision["strict_activation_eligible"] = False
+                decision["activation_mode"] = "disabled"
+                if "configured_safety_quarantine" not in decision["activation_blockers"]:
+                    decision["activation_blockers"].append("configured_safety_quarantine")
+                decision["disabled_reason"] = "configured_safety_quarantine"
 
         def rank(variant: dict[str, Any]) -> tuple[int, int, int, int, int, int, int]:
             decision = decisions[variant["key"]]
@@ -1992,7 +2038,6 @@ def main() -> int:
                 str(value) for value in (proof.get("activation_supported_types") or [])
                 if str(value) in {"movie", "tv", "anime"}
             ]
-            override_policy = load_overrides()
             provider_policy = (override_policy.get("provider_patches") or {}).get(cid, {})
             capability_policy = (override_policy.get("provider_capabilities") or {}).get(cid, {})
             authoritative_published_types = [
@@ -2032,7 +2077,7 @@ def main() -> int:
                 action = "enabled-sha-pinned-nuvio-runtime-evidence"
             elif eligible and auto_disabled:
                 action = "disabled-sustained-outage"
-            elif failed_gate_names == ["10_performance_and_stability"]:
+            elif failed_gate_names == ["11_performance_and_stability"]:
                 action = "published-disabled-probation-or-performance"
             elif str(result.get("status")) in inconclusive_statuses(activation):
                 action = "published-disabled-ci-inconclusive-no-valid-runtime-evidence"
@@ -2287,7 +2332,7 @@ def main() -> int:
         "runtime_evidence_enabled_providers": runtime_evidence_enabled_count,
         "ci_inconclusive_disabled_providers": inconclusive_disabled_count,
         "status_counts": health.get("counts", {}),
-        "activation_gate_count": 10,
+        "activation_gate_count": 11,
         "activation_thresholds": thresholds,
         "activation_gate_names": [
             "01_policy_safe_no_p2p",
@@ -2299,7 +2344,8 @@ def main() -> int:
             "07_verified_payload_playability",
             "08_quality_and_bitrate",
             "09_language_and_subtitle_integrity",
-            "10_performance_and_stability",
+            "10_content_identity_integrity",
+            "11_performance_and_stability",
         ],
         "policy": {
             "no_static_provider_preselection": True,
@@ -2307,7 +2353,7 @@ def main() -> int:
             "all_candidates_checked_before_publication": True,
             "deduplication_after_checks": True,
             "upstream_metadata_preserved_with_canonical_supported_types_union": True,
-            "all_ten_activation_gates_are_mandatory_for_automatic_activation": True,
+            "all_eleven_activation_gates_are_mandatory_for_automatic_activation": True,
             "sha_pinned_runtime_evidence_only_resolves_ci_inconclusive_results": True,
             "runtime_evidence_never_overrides_p2p_hard_failure_or_sha_change": True,
             "previous_strict_validation_has_finite_inconclusive_grace": True,

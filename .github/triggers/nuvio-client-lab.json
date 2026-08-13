@@ -24,6 +24,7 @@
         "title": "Mon ninja et moi 3",
         "year": 2025,
         "category": "movie",
+        "expectedDurationMinutes": 88,
         "aliases": ["Mon ninja et moi 3", "Checkered Ninja 3", "Ternet Ninja 3"],
         "forbiddenAliases": ["Enola Holmes 2"]
       }
@@ -31,7 +32,7 @@
     {
       "slug": "breaking-bad-s01e01",
       "providers": [
-        "1SHOWS", "CASTLE", "GOATED", "HINDMOVIEZ", "kisskh", "MOVIX", "PAPADUSTREAM", "persianstremio", "streamzo", "videasy", "VIDLOVE", "VIXSRC", "PURSTREAM", "FLEMMIX", "frenchstream", "toflix", "COFLIX", "DULOURD", "NAKIOS", "WOOKAFR", "DESIFLIX", "cineby", "HDGHARTV", "playimdb", "4khdhubnew", "vidsrc", "TOPCARTOONS"
+        "1SHOWS", "CASTLE", "GOATED", "HINDMOVIEZ", "kisskh", "MOVIX", "PAPADUSTREAM", "persianstremio", "streamzo", "videasy", "VIDLOVE", "VIXSRC", "PURSTREAM", "FLEMMIX", "frenchstream", "toflix", "COFLIX", "DULOURD", "NAKIOS", "WOOKAFR", "DESIFLIX", "cineby", "HDGHARTV", "playimdb", "4khdhubnew", "vidsrc"
       ],
       "fixture": {
         "tmdbId": "1396",
@@ -46,7 +47,7 @@
     {
       "slug": "revenant-s01e01",
       "providers": [
-        "CASTLE", "cineby", "DVDPLAY", "GOATED", "HINDMOVIEZ", "kisskh", "MOVIEBOX", "PAPADUSTREAM", "playimdb", "streamzo", "TOPCARTOONS", "VIXSRC", "PURSTREAM", "FLEMMIX", "frenchstream", "toflix", "COFLIX", "DULOURD", "MOVIX", "NAKIOS", "WOOKAFR", "DESIFLIX", "videasy", "HDGHARTV", "4khdhubnew", "1SHOWS", "vidsrc", "VIDLOVE"
+        "CASTLE", "cineby", "DVDPLAY", "GOATED", "HINDMOVIEZ", "kisskh", "MOVIEBOX", "PAPADUSTREAM", "playimdb", "streamzo", "VIXSRC", "PURSTREAM", "FLEMMIX", "frenchstream", "toflix", "COFLIX", "DULOURD", "MOVIX", "NAKIOS", "WOOKAFR", "DESIFLIX", "videasy", "HDGHARTV", "4khdhubnew", "1SHOWS", "vidsrc", "VIDLOVE"
       ],
       "fixture": {
         "tmdbId": "210702",
@@ -96,7 +97,9 @@
   "policy": {
     "target_total": 10,
     "minimum_vf": 3,
-    "require_identity_match": false,
+    "require_identity_match": true,
+    "minimum_duration_ratio": 0.55,
+    "maximum_duration_ratio": 1.8,
     "blocking": false
   },
   "enforce_policy": false,

@@ -86,13 +86,15 @@
       "check_mode": "deep",
       "check_status": "healthy",
       "health_score": 82,
-      "activation_eligible": true,
-      "strict_activation_eligible": true,
+      "activation_eligible": false,
+      "strict_activation_eligible": false,
       "strict_grace_eligible": false,
       "historical_quality_grace_eligible": false,
       "runtime_evidence_eligible": false,
-      "activation_mode": "strict_current",
-      "activation_blockers": [],
+      "activation_mode": "configured_safety_quarantine",
+      "activation_blockers": [
+        "configured_safety_quarantine"
+      ],
       "activation_gates": {
         "01_policy_safe_no_p2p": {
           "passed": true,
@@ -313,9 +315,9 @@
     },
     "4khdhub": {
       "id": "4khdhub",
-      "published_filename": "providers/4khdhub--published-baseline--b129586c22b6e480.js",
-      "sha256": "b129586c22b6e4803abbde3d449e19f329c0dc4dbfbd6302a5a4f298a854316c",
-      "patched_sha256": "b129586c22b6e4803abbde3d449e19f329c0dc4dbfbd6302a5a4f298a854316c",
+      "published_filename": "providers/4khdhub--published-baseline--21846b72bde865cb.js",
+      "sha256": "21846b72bde865cbf4a542e033c891a64f0f063572da26717568911238dc241a",
+      "patched_sha256": "21846b72bde865cbf4a542e033c891a64f0f063572da26717568911238dc241a",
       "upstream_sha256": "90c45836533bb88fbac769681dec754ab7e8799c0fe4da6351b1685a783c10a5",
       "local_patches": [
         {
@@ -364,7 +366,7 @@
       "strict_grace_eligible": false,
       "historical_quality_grace_eligible": false,
       "runtime_evidence_eligible": false,
-      "activation_mode": "disabled",
+      "activation_mode": "configured_safety_quarantine",
       "activation_blockers": [
         "02_healthy_functional_status",
         "03_minimum_score",
@@ -374,7 +376,8 @@
         "07_verified_payload_playability",
         "08_quality_and_bitrate",
         "00_provider_specific_access",
-        "00_current_playable_stream"
+        "00_current_playable_stream",
+        "configured_safety_quarantine"
       ],
       "activation_gates": {
         "01_policy_safe_no_p2p": {
@@ -1058,9 +1061,9 @@
     },
     "allmovieland": {
       "id": "allmovieland",
-      "published_filename": "providers/allmovieland--published-baseline--d03f33a1ec541f98.js",
-      "sha256": "d03f33a1ec541f98d290b51af7ea8e6c1a160b32db54d4de8134c20f7af83f33",
-      "patched_sha256": "d03f33a1ec541f98d290b51af7ea8e6c1a160b32db54d4de8134c20f7af83f33",
+      "published_filename": "providers/allmovieland--published-baseline--7c12fa9a47f7f2dd.js",
+      "sha256": "7c12fa9a47f7f2dde35ff9ed934b2cb211aa0abda20b9bf6faa792203113bbe5",
+      "patched_sha256": "7c12fa9a47f7f2dde35ff9ed934b2cb211aa0abda20b9bf6faa792203113bbe5",
       "upstream_sha256": "2217246fc678c9944a374bf227414e640ffa9e6a46775fd0fc62eea6e98eaf81",
       "local_patches": [
         {
@@ -1792,9 +1795,9 @@
     },
     "anikototv": {
       "id": "anikototv",
-      "published_filename": "providers/anikototv--nuvio--33418a7325e86646.js",
-      "sha256": "33418a7325e866460b93723c10e09d0b582a3e3762a686baf2429e9aeb48a60d",
-      "patched_sha256": "33418a7325e866460b93723c10e09d0b582a3e3762a686baf2429e9aeb48a60d",
+      "published_filename": "providers/anikototv--nuvio--20ae635ee32ee071.js",
+      "sha256": "20ae635ee32ee071c285103939da1457a9d4f25414a18e5c8f5c5ed6c5abaa14",
+      "patched_sha256": "20ae635ee32ee071c285103939da1457a9d4f25414a18e5c8f5c5ed6c5abaa14",
       "upstream_sha256": "4b75a13ad9f3a9e7c067e8cbd18a66830cce4ad0d7e75ed28eca66cf1ed32b5d",
       "local_patches": [
         {
@@ -2041,9 +2044,9 @@
     },
     "anime-sama": {
       "id": "anime-sama",
-      "published_filename": "providers/anime-sama--published-baseline--8a441daa6bb09d2b.js",
-      "sha256": "8a441daa6bb09d2b6a0bd171146904efc98d222b8054d7d0ce7fce9ea318a093",
-      "patched_sha256": "8a441daa6bb09d2b6a0bd171146904efc98d222b8054d7d0ce7fce9ea318a093",
+      "published_filename": "providers/anime-sama--published-baseline--9d20be4ec7f6be39.js",
+      "sha256": "9d20be4ec7f6be39fa27055d7b611a95931b5c49ea8241a789fce25fb3cf6057",
+      "patched_sha256": "9d20be4ec7f6be39fa27055d7b611a95931b5c49ea8241a789fce25fb3cf6057",
       "upstream_sha256": "bea944bbfe40b9d5dd5fcac02737e141bdcc94abb7cb8dd3ae5ab86bdf895244",
       "local_patches": [
         {
@@ -3027,9 +3030,9 @@
     },
     "animesalt": {
       "id": "animesalt",
-      "published_filename": "providers/animesalt--published-baseline--3e951c634dda8c40.js",
-      "sha256": "3e951c634dda8c40957593ded3f947e31f7ad382c9a0ea59f255f47c8383a146",
-      "patched_sha256": "3e951c634dda8c40957593ded3f947e31f7ad382c9a0ea59f255f47c8383a146",
+      "published_filename": "providers/animesalt--published-baseline--82e4ad1761d6fc00.js",
+      "sha256": "82e4ad1761d6fc00c0790922ddc05081a779db258d392b037f57156567d58353",
+      "patched_sha256": "82e4ad1761d6fc00c0790922ddc05081a779db258d392b037f57156567d58353",
       "upstream_sha256": "e221da6762e9c2033ca367d50ebc415a91a6ba4ecf716118d048956ec7df6c2d",
       "local_patches": [
         {
@@ -3279,9 +3282,9 @@
     },
     "animesama-co": {
       "id": "animesama-co",
-      "published_filename": "providers/animesama-co--nuvio--e1b8373829884bed.js",
-      "sha256": "e1b8373829884bed51b22d9da9bf2381a5a89f9c055650c8d5943de9b60abb45",
-      "patched_sha256": "e1b8373829884bed51b22d9da9bf2381a5a89f9c055650c8d5943de9b60abb45",
+      "published_filename": "providers/animesama-co--nuvio--2652d8ca212b0b30.js",
+      "sha256": "2652d8ca212b0b30b467723df97af543679f175ca5c7ab498bdf3d57097c6cc5",
+      "patched_sha256": "2652d8ca212b0b30b467723df97af543679f175ca5c7ab498bdf3d57097c6cc5",
       "upstream_sha256": "1ab9fb1cec10acffb9d1e4a59f04ed1b18e20c5cef7632d63e0336c24a89eabe",
       "local_patches": [
         {
@@ -4036,9 +4039,9 @@
     },
     "animevostfr": {
       "id": "animevostfr",
-      "published_filename": "providers/animevostfr--published-baseline--3bafe269e2396b2e.js",
-      "sha256": "3bafe269e2396b2e3af9bc3e9a285bec6758dd363fcd70277f9f00956334f9ec",
-      "patched_sha256": "3bafe269e2396b2e3af9bc3e9a285bec6758dd363fcd70277f9f00956334f9ec",
+      "published_filename": "providers/animevostfr--published-baseline--752985ae606f3ad2.js",
+      "sha256": "752985ae606f3ad29e0d56a76213f8f564e3f2a8808b0699d9cf6959048b557b",
+      "patched_sha256": "752985ae606f3ad29e0d56a76213f8f564e3f2a8808b0699d9cf6959048b557b",
       "upstream_sha256": "73c8d338a28059e8dcab49f6e82a4085d4ead0a74625ca8585c69b51583a4d71",
       "local_patches": [
         {
@@ -4569,11 +4572,11 @@
       "check_status": "degraded",
       "health_score": 88,
       "activation_eligible": false,
-      "strict_activation_eligible": true,
+      "strict_activation_eligible": false,
       "strict_grace_eligible": false,
       "historical_quality_grace_eligible": false,
       "runtime_evidence_eligible": false,
-      "activation_mode": "preserved_current_ci_uncertain",
+      "activation_mode": "configured_safety_quarantine",
       "activation_blockers": [
         "02_healthy_functional_status",
         "03_minimum_score",
@@ -4582,7 +4585,8 @@
         "06_distinct_host_diversity",
         "07_verified_payload_playability",
         "08_quality_and_bitrate",
-        "00_current_playable_stream"
+        "00_current_playable_stream",
+        "configured_safety_quarantine"
       ],
       "activation_gates": {
         "01_policy_safe_no_p2p": {
@@ -4819,11 +4823,11 @@
       "check_status": "no_streams",
       "health_score": 79,
       "activation_eligible": false,
-      "strict_activation_eligible": true,
+      "strict_activation_eligible": false,
       "strict_grace_eligible": false,
       "historical_quality_grace_eligible": false,
       "runtime_evidence_eligible": false,
-      "activation_mode": "preserved_current_ci_uncertain",
+      "activation_mode": "configured_safety_quarantine",
       "activation_blockers": [
         "02_healthy_functional_status",
         "03_minimum_score",
@@ -4832,7 +4836,8 @@
         "06_distinct_host_diversity",
         "07_verified_payload_playability",
         "08_quality_and_bitrate",
-        "00_current_playable_stream"
+        "00_current_playable_stream",
+        "configured_safety_quarantine"
       ],
       "activation_gates": {
         "01_policy_safe_no_p2p": {
@@ -6290,9 +6295,9 @@
     },
     "cinemm": {
       "id": "cinemm",
-      "published_filename": "providers/cinemm--published-baseline--fe2b6777d660db8f.js",
-      "sha256": "fe2b6777d660db8f8898d6d41d6475450d5782b7c5a8375363b19d020d241118",
-      "patched_sha256": "fe2b6777d660db8f8898d6d41d6475450d5782b7c5a8375363b19d020d241118",
+      "published_filename": "providers/cinemm--published-baseline--c1e67cff37952ec4.js",
+      "sha256": "c1e67cff37952ec4b2a736427bbde057ee7a1e610fb794c646cb5e1df8dc55ba",
+      "patched_sha256": "c1e67cff37952ec4b2a736427bbde057ee7a1e610fb794c646cb5e1df8dc55ba",
       "upstream_sha256": "a5b5565452b28f36764f8119097309da115c5ab9f46703b8e58227c79972f441",
       "local_patches": [
         {
@@ -6764,9 +6769,9 @@
     },
     "coflix": {
       "id": "coflix",
-      "published_filename": "providers/coflix--nuvio--d8baf2b47861a9cb.js",
-      "sha256": "d8baf2b47861a9cb8dbf446ddc73693a9f4c5c11cb71429d7c30115c2177641b",
-      "patched_sha256": "d8baf2b47861a9cb8dbf446ddc73693a9f4c5c11cb71429d7c30115c2177641b",
+      "published_filename": "providers/coflix--nuvio--0c00e044fac5cf99.js",
+      "sha256": "0c00e044fac5cf997b4fc4ca3b00eee8b76ebf232b7e514987139beb6efb2816",
+      "patched_sha256": "0c00e044fac5cf997b4fc4ca3b00eee8b76ebf232b7e514987139beb6efb2816",
       "upstream_sha256": "48239f7b107a98b295b0ddec8ed38805503a75975e1bee320543d856d0baa87c",
       "local_patches": [
         "{'type': 'patch_script', 'path': 'scripts/provider_patches/vf_catalogue_recovery.py', 'phase': 'discovery'}",
@@ -8181,13 +8186,15 @@
       "check_mode": "deep",
       "check_status": "healthy",
       "health_score": 78,
-      "activation_eligible": true,
-      "strict_activation_eligible": true,
+      "activation_eligible": false,
+      "strict_activation_eligible": false,
       "strict_grace_eligible": false,
       "historical_quality_grace_eligible": false,
       "runtime_evidence_eligible": false,
-      "activation_mode": "strict_current",
-      "activation_blockers": [],
+      "activation_mode": "configured_safety_quarantine",
+      "activation_blockers": [
+        "configured_safety_quarantine"
+      ],
       "activation_gates": {
         "01_policy_safe_no_p2p": {
           "passed": true,
@@ -8880,9 +8887,9 @@
     },
     "flemmix": {
       "id": "flemmix",
-      "published_filename": "providers/flemmix--nuvio--79e7eef549f80138.js",
-      "sha256": "79e7eef549f801388b5230565b090d87ddd57d60c9d35693dcdb5982e79c3472",
-      "patched_sha256": "79e7eef549f801388b5230565b090d87ddd57d60c9d35693dcdb5982e79c3472",
+      "published_filename": "providers/flemmix--nuvio--f1806e40db9ce17b.js",
+      "sha256": "f1806e40db9ce17be4fbe9389d9756f9e63de140611567e7e95b6e4ca6e96095",
+      "patched_sha256": "f1806e40db9ce17be4fbe9389d9756f9e63de140611567e7e95b6e4ca6e96095",
       "upstream_sha256": "e0c40c452aca0d6685426c739729bc7bca333a187f4dc2737295f7394ff3955f",
       "local_patches": [
         "{'type': 'patch_script', 'path': 'scripts/provider_patches/stream_output_sanitizer_v5.py', 'phase': 'discovery'}",
@@ -9175,9 +9182,9 @@
     },
     "french-manga": {
       "id": "french-manga",
-      "published_filename": "providers/french-manga--nuvio-tv-global--d20f157b9a909953.js",
-      "sha256": "d20f157b9a909953eb536206f34337ddb1b3532c0324b5849608b20e6cac416a",
-      "patched_sha256": "d20f157b9a909953eb536206f34337ddb1b3532c0324b5849608b20e6cac416a",
+      "published_filename": "providers/french-manga--nuvio-tv-global--eca40e1a7692c223.js",
+      "sha256": "eca40e1a7692c2239e245583eec405ed16622d020f84b1cdc8a20223d00cab9c",
+      "patched_sha256": "eca40e1a7692c2239e245583eec405ed16622d020f84b1cdc8a20223d00cab9c",
       "upstream_sha256": "b1f91a943f7f805a86ec04c189e806c6ba4bf3d324a20f67f3857c22d62874b1",
       "local_patches": [
         "scripts/provider_patches/nuvio_tv_direct_media_v2.py",
@@ -9459,9 +9466,9 @@
     },
     "frenchstream": {
       "id": "frenchstream",
-      "published_filename": "providers/frenchstream--published-baseline--899276d9319b63b5.js",
-      "sha256": "899276d9319b63b5b4df1017237723864e23f75aefefb6857c22bc00f6d122d6",
-      "patched_sha256": "899276d9319b63b5b4df1017237723864e23f75aefefb6857c22bc00f6d122d6",
+      "published_filename": "providers/frenchstream--published-baseline--58b4b7e36817b5f2.js",
+      "sha256": "58b4b7e36817b5f2ba610658b2681cc5c72cefb42a7b9fa025bf99cc93e43492",
+      "patched_sha256": "58b4b7e36817b5f2ba610658b2681cc5c72cefb42a7b9fa025bf99cc93e43492",
       "upstream_sha256": "b91c0d32785411f1c788166d8dcc91a8fd9c17348b20abeac96ead20506044b1",
       "local_patches": [
         {
@@ -10464,9 +10471,9 @@
     },
     "hdghartv": {
       "id": "hdghartv",
-      "published_filename": "providers/hdghartv--nuvio--b271d057d59a3fbf.js",
-      "sha256": "b271d057d59a3fbfa412e5b2a579bd169a44d5c2ef9fea4015c9a68c49924c06",
-      "patched_sha256": "b271d057d59a3fbfa412e5b2a579bd169a44d5c2ef9fea4015c9a68c49924c06",
+      "published_filename": "providers/hdghartv--nuvio--336ca61bfe9ebd9b.js",
+      "sha256": "336ca61bfe9ebd9b1d04adbf967da95e26d8b1c5f50c62cce7136960a321dbda",
+      "patched_sha256": "336ca61bfe9ebd9b1d04adbf967da95e26d8b1c5f50c62cce7136960a321dbda",
       "upstream_sha256": "8f6931a418a437f64d697f6eafdc27b8c2408cefd9accc5c7e7d9810871ed81a",
       "local_patches": [
         {
@@ -10716,9 +10723,9 @@
     },
     "hdhub4u": {
       "id": "hdhub4u",
-      "published_filename": "providers/hdhub4u--published-baseline--cb2d2a4199c2e9e3.js",
-      "sha256": "cb2d2a4199c2e9e3e7a5df6eda950951a5dc3953d53f68d9f73749a9cf986f24",
-      "patched_sha256": "cb2d2a4199c2e9e3e7a5df6eda950951a5dc3953d53f68d9f73749a9cf986f24",
+      "published_filename": "providers/hdhub4u--published-baseline--ed823d0dca91cc20.js",
+      "sha256": "ed823d0dca91cc20c222eb2880a5b041539c543e1cd2289322c312858ec5d753",
+      "patched_sha256": "ed823d0dca91cc20c222eb2880a5b041539c543e1cd2289322c312858ec5d753",
       "upstream_sha256": "f6e1007a3cd2764bb6fba94531bf634cb91019e62b08c8308217f151fb0a68ce",
       "local_patches": [
         {
@@ -11001,13 +11008,15 @@
       "check_mode": "deep",
       "check_status": "healthy",
       "health_score": 75,
-      "activation_eligible": true,
-      "strict_activation_eligible": true,
+      "activation_eligible": false,
+      "strict_activation_eligible": false,
       "strict_grace_eligible": false,
       "historical_quality_grace_eligible": false,
       "runtime_evidence_eligible": false,
-      "activation_mode": "strict_current",
-      "activation_blockers": [],
+      "activation_mode": "configured_safety_quarantine",
+      "activation_blockers": [
+        "configured_safety_quarantine"
+      ],
       "activation_gates": {
         "01_policy_safe_no_p2p": {
           "passed": true,
@@ -11491,13 +11500,15 @@
       "check_mode": "deep",
       "check_status": "healthy",
       "health_score": 78,
-      "activation_eligible": true,
-      "strict_activation_eligible": true,
+      "activation_eligible": false,
+      "strict_activation_eligible": false,
       "strict_grace_eligible": false,
       "historical_quality_grace_eligible": false,
       "runtime_evidence_eligible": false,
-      "activation_mode": "strict_current",
-      "activation_blockers": [],
+      "activation_mode": "configured_safety_quarantine",
+      "activation_blockers": [
+        "configured_safety_quarantine"
+      ],
       "activation_gates": {
         "01_policy_safe_no_p2p": {
           "passed": true,
@@ -11708,9 +11719,9 @@
     },
     "kurage": {
       "id": "kurage",
-      "published_filename": "providers/kurage--nuvio--ce0b817c0169d580.js",
-      "sha256": "ce0b817c0169d5801023db77b03b59de44ba9e6a93e8e1caed30ae1cf030bdd7",
-      "patched_sha256": "ce0b817c0169d5801023db77b03b59de44ba9e6a93e8e1caed30ae1cf030bdd7",
+      "published_filename": "providers/kurage--nuvio--1bc7cddfd0b4d160.js",
+      "sha256": "1bc7cddfd0b4d160273f6d864d10867d0db7ada835525b618111efb7fd0946c9",
+      "patched_sha256": "1bc7cddfd0b4d160273f6d864d10867d0db7ada835525b618111efb7fd0946c9",
       "upstream_sha256": "668797edb270c5fed931b08e0c92ca6693420041838f3b8ef49e28ddb1e7e463",
       "local_patches": [
         {
@@ -11955,9 +11966,9 @@
     },
     "mallumv": {
       "id": "mallumv",
-      "published_filename": "providers/mallumv--published-baseline--ba68a9e3e4ecf68f.js",
-      "sha256": "ba68a9e3e4ecf68f57eb00cdffb5af983de781cbe40639ebf3ddb26151af007f",
-      "patched_sha256": "ba68a9e3e4ecf68f57eb00cdffb5af983de781cbe40639ebf3ddb26151af007f",
+      "published_filename": "providers/mallumv--published-baseline--bf77cc95ecd339d0.js",
+      "sha256": "bf77cc95ecd339d087456abd5b4969fc05902bca80a1dea23eee56399b632428",
+      "patched_sha256": "bf77cc95ecd339d087456abd5b4969fc05902bca80a1dea23eee56399b632428",
       "upstream_sha256": "13011bc6a99673814ce13d15ab4ad41203ff6a9e1cc245549ac9e671f122234e",
       "local_patches": [
         {
@@ -12231,11 +12242,11 @@
       "check_status": "unavailable",
       "health_score": 92,
       "activation_eligible": false,
-      "strict_activation_eligible": true,
+      "strict_activation_eligible": false,
       "strict_grace_eligible": false,
       "historical_quality_grace_eligible": false,
       "runtime_evidence_eligible": false,
-      "activation_mode": "preserved_current_ci_uncertain",
+      "activation_mode": "configured_safety_quarantine",
       "activation_blockers": [
         "02_healthy_functional_status",
         "03_minimum_score",
@@ -12245,7 +12256,8 @@
         "07_verified_payload_playability",
         "08_quality_and_bitrate",
         "00_provider_specific_access",
-        "00_current_playable_stream"
+        "00_current_playable_stream",
+        "configured_safety_quarantine"
       ],
       "activation_gates": {
         "01_policy_safe_no_p2p": {
@@ -12709,9 +12721,9 @@
     },
     "moviebox": {
       "id": "moviebox",
-      "published_filename": "providers/moviebox--published-baseline--a70392a23ba3b453.js",
-      "sha256": "a70392a23ba3b453fb70bab6dac24f8454af3f6aebf371c74bbdcde03d421f36",
-      "patched_sha256": "a70392a23ba3b453fb70bab6dac24f8454af3f6aebf371c74bbdcde03d421f36",
+      "published_filename": "providers/moviebox--published-baseline--89189ee0aa194657.js",
+      "sha256": "89189ee0aa19465736443ea5a7982dcb949944eb0221c8b4eefd8641ae0918da",
+      "patched_sha256": "89189ee0aa19465736443ea5a7982dcb949944eb0221c8b4eefd8641ae0918da",
       "upstream_sha256": "f19ec5a037e53220e1457e6db0cb9abee1d2f9f299c594dddefb14df7822c847",
       "local_patches": [
         {
@@ -12964,9 +12976,9 @@
     },
     "movies4u": {
       "id": "movies4u",
-      "published_filename": "providers/movies4u--nuvio--0da74891279e4999.js",
-      "sha256": "0da74891279e4999cf6436a928daad862db00af0f97d7768ce77a4fda4c881fb",
-      "patched_sha256": "0da74891279e4999cf6436a928daad862db00af0f97d7768ce77a4fda4c881fb",
+      "published_filename": "providers/movies4u--nuvio--636ffab5945a15fd.js",
+      "sha256": "636ffab5945a15fd08f3453e159dba21efc1b9cee4874a7f135ba846fd5c9f29",
+      "patched_sha256": "636ffab5945a15fd08f3453e159dba21efc1b9cee4874a7f135ba846fd5c9f29",
       "upstream_sha256": "d57854d4a39a0c4c36af6ba3ab2bda4c00aa4bd5037e395e786f6a2b79f15ecd",
       "local_patches": [
         {
@@ -13253,9 +13265,9 @@
     },
     "moviesdrive": {
       "id": "moviesdrive",
-      "published_filename": "providers/moviesdrive--nuvio--0ffde9373e8771c9.js",
-      "sha256": "0ffde9373e8771c96ca1978ef65fa88a3a29dee46158d7932f6fc65c34635b70",
-      "patched_sha256": "0ffde9373e8771c96ca1978ef65fa88a3a29dee46158d7932f6fc65c34635b70",
+      "published_filename": "providers/moviesdrive--nuvio--5675c114294ab592.js",
+      "sha256": "5675c114294ab592f20e1a68acb2bc7cf67e50244e6a14479b02e684432d6c4e",
+      "patched_sha256": "5675c114294ab592f20e1a68acb2bc7cf67e50244e6a14479b02e684432d6c4e",
       "upstream_sha256": "675d0e30755fa97131010ddbe3a3ed8733043e9635a672f5845d087d3a924ea1",
       "local_patches": [
         {
@@ -13750,9 +13762,9 @@
     },
     "moviesmod": {
       "id": "moviesmod",
-      "published_filename": "providers/moviesmod--published-baseline--a6ef983cb77a215f.js",
-      "sha256": "a6ef983cb77a215fc647e13e6727a1eb6d03da447df257092ccbe18593bbf606",
-      "patched_sha256": "a6ef983cb77a215fc647e13e6727a1eb6d03da447df257092ccbe18593bbf606",
+      "published_filename": "providers/moviesmod--published-baseline--16d7ce43b7e3cd7c.js",
+      "sha256": "16d7ce43b7e3cd7cdb08056e16d4cd075e16d6e114e16e16fdeda5a93e925fd7",
+      "patched_sha256": "16d7ce43b7e3cd7cdb08056e16d4cd075e16d6e114e16e16fdeda5a93e925fd7",
       "upstream_sha256": "c90890640a4598443ae4a264547b9ce1d089952f5d19ac9ab74e6cf1e28e0a9f",
       "local_patches": [
         {
@@ -14016,9 +14028,9 @@
     },
     "movix": {
       "id": "movix",
-      "published_filename": "providers/movix--nuvio--8f2c0913626e3807.js",
-      "sha256": "8f2c0913626e38078df0a0f3da9fa2f75861f73d050058d1a45576d0592b39a1",
-      "patched_sha256": "8f2c0913626e38078df0a0f3da9fa2f75861f73d050058d1a45576d0592b39a1",
+      "published_filename": "providers/movix--nuvio--88657431bbc20add.js",
+      "sha256": "88657431bbc20add85c84fff08169f29dd2969232d8d114e1cb61837cf68c26e",
+      "patched_sha256": "88657431bbc20add85c84fff08169f29dd2969232d8d114e1cb61837cf68c26e",
       "upstream_sha256": "b31ef87b05d3a4f351d20872e33980b4de95d73461ce2c27327d64bde9653787",
       "local_patches": [
         "{'type': 'patch_script', 'path': 'scripts/provider_patches/stream_output_sanitizer_v5.py', 'phase': 'discovery'}",
@@ -14302,9 +14314,9 @@
     },
     "mugiwarastream": {
       "id": "mugiwarastream",
-      "published_filename": "providers/mugiwarastream--published-baseline--e3a6ab99aab7ea21.js",
-      "sha256": "e3a6ab99aab7ea2140da569987bb43949d0940af1759a44b542f73d9636865ff",
-      "patched_sha256": "e3a6ab99aab7ea2140da569987bb43949d0940af1759a44b542f73d9636865ff",
+      "published_filename": "providers/mugiwarastream--published-baseline--9d11ff986711795e.js",
+      "sha256": "9d11ff986711795e7c6a5421e94bc98ab31640bde6f0c65f75a8cfb627dfa1ac",
+      "patched_sha256": "9d11ff986711795e7c6a5421e94bc98ab31640bde6f0c65f75a8cfb627dfa1ac",
       "upstream_sha256": "28c58230d6542407c4f043eb884691678505697d707dcf0ae23fda6ecb444de8",
       "local_patches": [
         {
@@ -15049,9 +15061,9 @@
     },
     "netmirror": {
       "id": "netmirror",
-      "published_filename": "providers/netmirror--published-baseline--6e6a7a065884a4ed.js",
-      "sha256": "6e6a7a065884a4ed25b21870a1f0f1c275728dfc3b332372b5720c4a06d6f78c",
-      "patched_sha256": "6e6a7a065884a4ed25b21870a1f0f1c275728dfc3b332372b5720c4a06d6f78c",
+      "published_filename": "providers/netmirror--published-baseline--ac8fba646d11c45b.js",
+      "sha256": "ac8fba646d11c45b601493c273d2ba340495bd731b777a965f9f569bc9b4fe8f",
+      "patched_sha256": "ac8fba646d11c45b601493c273d2ba340495bd731b777a965f9f569bc9b4fe8f",
       "upstream_sha256": "5cc8283a945c663ea55e049931f22c3f9afdeb3ff38e564899dc5359d40600c1",
       "local_patches": [
         {
@@ -15539,9 +15551,9 @@
     },
     "papadustream": {
       "id": "papadustream",
-      "published_filename": "providers/papadustream--published-baseline--d621d10e29ffc07f.js",
-      "sha256": "d621d10e29ffc07f2b45b42fd32e3310a525603b2085db36ef40ee7fcbc1f6ab",
-      "patched_sha256": "d621d10e29ffc07f2b45b42fd32e3310a525603b2085db36ef40ee7fcbc1f6ab",
+      "published_filename": "providers/papadustream--published-baseline--a3e9aa082effd786.js",
+      "sha256": "a3e9aa082effd78666108d0bebb592308cd953f4560e7e81de7ce43db2cad935",
+      "patched_sha256": "a3e9aa082effd78666108d0bebb592308cd953f4560e7e81de7ce43db2cad935",
       "upstream_sha256": "3b5e48fd2a1089b614594fef1788c7870f5b3d85979662e3f0ae419729398782",
       "local_patches": [
         {
@@ -16788,9 +16800,9 @@
     },
     "sekai": {
       "id": "sekai",
-      "published_filename": "providers/sekai--published-baseline--244c4bf4865f1b2b.js",
-      "sha256": "244c4bf4865f1b2bc8664ab7ee6ec5f5a1ef49d8733bcbc9301a7aa88a4121d0",
-      "patched_sha256": "244c4bf4865f1b2bc8664ab7ee6ec5f5a1ef49d8733bcbc9301a7aa88a4121d0",
+      "published_filename": "providers/sekai--published-baseline--e85fff4bdce1aca7.js",
+      "sha256": "e85fff4bdce1aca71ee95c81822481b07942ce9857d3644e2ef36eacf382b148",
+      "patched_sha256": "e85fff4bdce1aca71ee95c81822481b07942ce9857d3644e2ef36eacf382b148",
       "upstream_sha256": "4b5a7938635d93110b638a8ffde8ff1701b27c711ac2d4c42196cc0c443b13eb",
       "local_patches": [
         {
@@ -17508,9 +17520,9 @@
     },
     "streamzo": {
       "id": "streamzo",
-      "published_filename": "providers/streamzo--published-baseline--6429a8fce11a5684.js",
-      "sha256": "6429a8fce11a568435133b12a2c0ab037793d93bb6cbf0fbeccce71dee3f1a60",
-      "patched_sha256": "6429a8fce11a568435133b12a2c0ab037793d93bb6cbf0fbeccce71dee3f1a60",
+      "published_filename": "providers/streamzo--published-baseline--d45a5488e4c07a7e.js",
+      "sha256": "d45a5488e4c07a7ee1c93f9d783b0aa6e30e9dc436edc0f66e85e1b39f12186b",
+      "patched_sha256": "d45a5488e4c07a7ee1c93f9d783b0aa6e30e9dc436edc0f66e85e1b39f12186b",
       "upstream_sha256": "c20bdca7585cacf12f4819669ac8a5fabc2ec3e6be1b0b34609f6ac4cf23e285",
       "local_patches": [
         {
@@ -18005,9 +18017,9 @@
     },
     "topcartoons": {
       "id": "topcartoons",
-      "published_filename": "providers/topcartoons--nuvio--3c7054d79b39c4fb.js",
-      "sha256": "3c7054d79b39c4fb0da355dfad35a2977c3f2473dcc30cb8afec6cf277b9f588",
-      "patched_sha256": "3c7054d79b39c4fb0da355dfad35a2977c3f2473dcc30cb8afec6cf277b9f588",
+      "published_filename": "providers/topcartoons--nuvio--5bceb7e156448e73.js",
+      "sha256": "5bceb7e156448e73174e7ca9b386fb8401afa0ec1e2233004f77ddf9ffaf8e81",
+      "patched_sha256": "5bceb7e156448e73174e7ca9b386fb8401afa0ec1e2233004f77ddf9ffaf8e81",
       "upstream_sha256": "df33f490a73779f40b29ad612863fd4b192768567338a2171289fe5316e40ef6",
       "local_patches": [
         {
@@ -18021,6 +18033,11 @@
           "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
           "phase": "discovery",
           "scope": "global_playback_integrity"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/quarantine_provider_v1.py",
+          "phase": "discovery"
         }
       ],
       "source": "aio",
@@ -18034,13 +18051,15 @@
       "check_mode": "deep",
       "check_status": "healthy",
       "health_score": 57,
-      "activation_eligible": true,
-      "strict_activation_eligible": true,
+      "activation_eligible": false,
+      "strict_activation_eligible": false,
       "strict_grace_eligible": false,
       "historical_quality_grace_eligible": false,
       "runtime_evidence_eligible": false,
-      "activation_mode": "strict_current",
-      "activation_blockers": [],
+      "activation_mode": "configured_safety_quarantine",
+      "activation_blockers": [
+        "configured_safety_quarantine"
+      ],
       "activation_gates": {
         "01_policy_safe_no_p2p": {
           "passed": true,
@@ -18240,9 +18259,9 @@
     },
     "vegamovies": {
       "id": "vegamovies",
-      "published_filename": "providers/vegamovies--published-baseline--c478862d5d755f1f.js",
-      "sha256": "c478862d5d755f1f4bc962113001196e62debcd3266b020ed0a904c8c7f782f2",
-      "patched_sha256": "c478862d5d755f1f4bc962113001196e62debcd3266b020ed0a904c8c7f782f2",
+      "published_filename": "providers/vegamovies--published-baseline--faa4d89651981290.js",
+      "sha256": "faa4d8965198129034082a8c6ceb3e28b4e24c678355678b7fe6f39e271ab022",
+      "patched_sha256": "faa4d8965198129034082a8c6ceb3e28b4e24c678355678b7fe6f39e271ab022",
       "upstream_sha256": "0641a31d6068d8d2f3e5ca5d734494b24f69b89d6a5d027ae1a7b5eee1953d1a",
       "local_patches": [
         {
@@ -19314,13 +19333,15 @@
       "check_mode": "deep",
       "check_status": "healthy",
       "health_score": 82,
-      "activation_eligible": true,
-      "strict_activation_eligible": true,
+      "activation_eligible": false,
+      "strict_activation_eligible": false,
       "strict_grace_eligible": false,
       "historical_quality_grace_eligible": false,
       "runtime_evidence_eligible": false,
-      "activation_mode": "strict_current",
-      "activation_blockers": [],
+      "activation_mode": "configured_safety_quarantine",
+      "activation_blockers": [
+        "configured_safety_quarantine"
+      ],
       "activation_gates": {
         "01_policy_safe_no_p2p": {
           "passed": true,
@@ -20811,9 +20832,9 @@
     },
     "voiranime": {
       "id": "voiranime",
-      "published_filename": "providers/voiranime--published-baseline--c2434ae434643b17.js",
-      "sha256": "c2434ae434643b17d5653b737c4c86f5fdb5950d53f88162e4206a57af40401f",
-      "patched_sha256": "c2434ae434643b17d5653b737c4c86f5fdb5950d53f88162e4206a57af40401f",
+      "published_filename": "providers/voiranime--published-baseline--b1db1306228f0271.js",
+      "sha256": "b1db1306228f0271d456f6afd04051d8251d2079bbc62b677faa2c06a6aacfdb",
+      "patched_sha256": "b1db1306228f0271d456f6afd04051d8251d2079bbc62b677faa2c06a6aacfdb",
       "upstream_sha256": "4906567ce7b5271b0b92d1bf4efea869192040f0cce8df3c00289c5e6b296ff8",
       "local_patches": [
         {
@@ -21300,9 +21321,9 @@
     },
     "voiranime-rip": {
       "id": "voiranime-rip",
-      "published_filename": "providers/voiranime-rip--published-baseline--b6d144e72be8973b.js",
-      "sha256": "b6d144e72be8973b6b6bbcfdd9d92d055261e54beb4efc66d96f0cabd4c5deba",
-      "patched_sha256": "b6d144e72be8973b6b6bbcfdd9d92d055261e54beb4efc66d96f0cabd4c5deba",
+      "published_filename": "providers/voiranime-rip--published-baseline--4624db724922e74b.js",
+      "sha256": "4624db724922e74bba70094e292abedab7b490e6759622b1c3518ba9cd8cd12c",
+      "patched_sha256": "4624db724922e74bba70094e292abedab7b490e6759622b1c3518ba9cd8cd12c",
       "upstream_sha256": "4652f6fdf031721f5d4da09b3671e6dcc5f455366fc95514991c47996d93f724",
       "local_patches": [
         {
@@ -22038,9 +22059,9 @@
     },
     "wookafr": {
       "id": "wookafr",
-      "published_filename": "providers/wookafr--nuvio--14492b5c36bec311.js",
-      "sha256": "14492b5c36bec31198aadf56601180a2e7c61ae14d288fe899a689c9b35b074b",
-      "patched_sha256": "14492b5c36bec31198aadf56601180a2e7c61ae14d288fe899a689c9b35b074b",
+      "published_filename": "providers/wookafr--nuvio--c3a404732e239ea9.js",
+      "sha256": "c3a404732e239ea92622d633d8cda3a23a15a5ac244f5e06c66ad6cc20712668",
+      "patched_sha256": "c3a404732e239ea92622d633d8cda3a23a15a5ac244f5e06c66ad6cc20712668",
       "upstream_sha256": "4ce4c33e2fe1d23bea7263bf07d4b760ec50169aa0c7b925a7103efc15271b67",
       "local_patches": [
         "scripts/provider_patches/desktop_runtime_compat_v1.py",

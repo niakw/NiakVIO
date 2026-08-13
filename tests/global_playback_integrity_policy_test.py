@@ -28,8 +28,9 @@ assert policy.get("global_discovery_hooks") == [
     "scripts/provider_patches/hls_runtime_integrity_v1.py",
 ]
 
-# The global policy must not be duplicated into today's provider list. A newly
-# discovered provider has to receive the exact same protection automatically.
+# The global hooks must not be duplicated into today's provider script lists. A
+# provider may only tighten their global options; newly discovered providers
+# still receive the common protection automatically.
 for provider_id, row in (cfg.get("provider_patches") or {}).items():
     if not isinstance(row, dict):
         continue
@@ -37,7 +38,15 @@ for provider_id, row in (cfg.get("provider_patches") or {}).items():
     assert "scripts/provider_patches/hls_master_audio_preserver_v1.py" not in scripts, provider_id
     assert "scripts/provider_patches/hls_runtime_integrity_v1.py" not in scripts, provider_id
     options = row.get("patch_script_options") or {}
-    assert "scripts/provider_patches/hls_runtime_integrity_v1.py" not in options, provider_id
+    hls_options = options.get("scripts/provider_patches/hls_runtime_integrity_v1.py")
+    if hls_options is not None:
+        assert isinstance(hls_options, dict), provider_id
+
+streamzo_hls_options = cfg["provider_patches"]["streamzo"]["patch_script_options"][
+    "scripts/provider_patches/hls_runtime_integrity_v1.py"
+]
+assert streamzo_hls_options["probe_all_urls"] is True
+assert streamzo_hls_options["fail_closed_unknown"] is True
 
 future = b'''\nasync function helper(t){let x=await fetch(t.url).then(r=>r.text());if(!/#EXT-X-STREAM-INF/i.test(x))return [{url:t.url,type:"hls"}];return []}\nglobalThis.getStreams=async function(){return [{url:"https://media.example/master.m3u8",type:"hls"}]};\n'''
 patched, records = module.apply_overrides("future-provider-never-seen-before", future, phase="discovery")

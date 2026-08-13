@@ -31,6 +31,7 @@ function fakeGuard(map) {
   assert.equal(parsed.valid, true);
   assert.deepEqual(parsed.variants, [videoUrl]);
   assert.deepEqual(parsed.audio, [audioUrl]);
+  assert.equal(parseHls(video, videoUrl).durationSeconds, 6);
 
   const guard = fakeGuard({
     [masterUrl]: { body: master },
@@ -45,6 +46,7 @@ function fakeGuard(map) {
   assert.equal(ok.hls_external_audio_count, 1);
   assert.equal(ok.hls_audio_playable, true);
   assert.equal(ok.hls_variant_playable, true);
+  assert.equal(ok.media_duration_seconds, 6);
 
   const headerOnly = await probeDirectMedia(
     { url: masterUrl, headers: {} },

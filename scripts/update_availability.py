@@ -6,7 +6,7 @@ Only hard availability failures count toward automatic disabling. Datacenter
 blocks, rate limits and empty search results are recorded but do not disable a
 provider. Providers disabled by this script can be re-enabled after repeated
 successful checks only when the last publication audit marked them eligible,
-either through all ten strict gates, finite strict grace, or exact SHA-pinned Nuvio
+either through all eleven strict gates, finite strict grace, or exact SHA-pinned Nuvio
 runtime evidence. Manually disabled entries are never force-enabled.
 """
 

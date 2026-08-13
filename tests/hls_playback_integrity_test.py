@@ -103,6 +103,37 @@ globalThis.fetch=async function(url){return {ok:true,status:200,url:String(url),
 (async function(){var rows=await globalThis.getStreams("1","movie");if(!Array.isArray(rows)||rows.length!==0)throw new Error("malformed HLS was not rejected after recovery")})().catch(function(e){console.error(e);process.exit(1)});
 ''')
 
+# Ordering regression: a catalogue wrapper can create an embed row after the
+# ordinary HLS guard was installed. The final gate must replace that earlier
+# guard, run last, resolve the embed and expose only the direct HLS media URL.
+ordered = integrity.apply(
+    r'''globalThis.getStreams=async function(){return []};''',
+    {"timeout_ms": 2000},
+)
+ordered += r'''
+;(function(){var native=globalThis.getStreams;globalThis.getStreams=async function(){await native.apply(this,arguments);return [{url:"https://catalog.example/embed/player",name:"streamzo #1",quality:"Unknown",headers:{Referer:"https://catalog.example/title"}}]}})();
+'''
+ordered = integrity.apply(ordered, {
+    "timeout_ms": 2000,
+    "max_recovery_pages": 4,
+    "max_recovery_candidates": 12,
+    "probe_all_urls": True,
+    "fail_closed_unknown": True,
+})
+assert ordered.count("NUVIO_HLS_RUNTIME_INTEGRITY_V1:") == 1
+assert ordered.rfind("NUVIO_HLS_RUNTIME_INTEGRITY_V1:") > ordered.rfind("streamzo #1")
+assert "final-output-order-v4" in ordered
+run_node(r'''
+const media="#EXTM3U\n#EXT-X-TARGETDURATION:6\n#EXTINF:6,\nseg.ts\n#EXT-X-ENDLIST\n";
+globalThis.fetch=async function(url){var u=String(url);
+ if(u==="https://catalog.example/embed/player")return {ok:true,status:200,url:u,headers:{get:function(){return "text/html"}},text:async function(){return '<script>const source="https://cdn.example/final.m3u8";</script>'}};
+ if(u==="https://cdn.example/final.m3u8")return {ok:true,status:200,url:u,headers:{get:function(){return "application/vnd.apple.mpegurl"}},text:async function(){return media}};
+ return {ok:false,status:404,url:u,headers:{get:function(){return "text/plain"}},text:async function(){return ""}};
+};
+''' + ordered + r'''
+(async function(){var rows=await globalThis.getStreams("1","movie");if(rows.length!==1||rows[0].url!=="https://cdn.example/final.m3u8"||rows[0].type!=="hls")throw new Error("post-recovery embed was not resolved by the final gate: "+JSON.stringify(rows))})().catch(function(e){console.error(e);process.exit(1)});
+''')
+
 # A complete master with a video child and an external audio child is valid and
 # the original master URL must survive, preserving selectable audio renditions.
 master = "#EXTM3U\n#EXT-X-MEDIA:TYPE=AUDIO,GROUP-ID=\"aud\",LANGUAGE=\"fr\",NAME=\"Français\",DEFAULT=YES,AUTOSELECT=YES,URI=\"audio.m3u8\"\n#EXT-X-STREAM-INF:BANDWIDTH=3000000,AUDIO=\"aud\"\nvideo.m3u8\n"

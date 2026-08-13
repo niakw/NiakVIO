@@ -33,7 +33,7 @@ assert "original_title" in patched
 assert "alternative_titles" in patched
 assert "var guessed=[],found=[],searches=[]" in patched
 assert "var candidates=[],searches=[]" not in patched
-assert '"implementationRevision":"native-identity-budget-v2"' in patched
+assert '"implementationRevision":"native-media-filename-identity-v3"' in patched
 assert 'Date.now()<deadline' in patched
 for forbidden in ("Mon ninja et moi 3", "Ternet Ninja 3", "Interstellar"):
     assert forbidden not in patched

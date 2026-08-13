@@ -22,16 +22,27 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
     max_children = max(1, min(int(cfg.get("max_children", 2)), 4))
     max_recovery_pages = max(1, min(int(cfg.get("max_recovery_pages", 4)), 8))
     max_recovery_candidates = max(2, min(int(cfg.get("max_recovery_candidates", 12)), 24))
-    payload = json.dumps(
-        {
-            "timeoutMs": timeout_ms,
-            "maxChildren": max_children,
-            "maxRecoveryPages": max_recovery_pages,
-            "maxRecoveryCandidates": max_recovery_candidates,
-            "implementationRevision": "recovery-first-v3",
-        },
-        separators=(",", ":"),
-    )
+    probe_all_urls = bool(cfg.get("probe_all_urls", False))
+    fail_closed_unknown = bool(cfg.get("fail_closed_unknown", False))
+    payload_config = {
+        "timeoutMs": timeout_ms,
+        "maxChildren": max_children,
+        "maxRecoveryPages": max_recovery_pages,
+        "maxRecoveryCandidates": max_recovery_candidates,
+        "implementationRevision": "recovery-first-v3",
+    }
+    # Preserve byte-for-byte idempotence for the repository-wide default. Only
+    # providers which explicitly require a strict final-output gate receive the
+    # v4 payload and its two additional flags.
+    if probe_all_urls or fail_closed_unknown:
+        payload_config.update(
+            {
+                "probeAllUrls": probe_all_urls,
+                "failClosedUnknown": fail_closed_unknown,
+                "implementationRevision": "final-output-order-v4",
+            }
+        )
+    payload = json.dumps(payload_config, separators=(",", ":"))
     marker = f"{MARKER}:{hashlib.sha256(payload.encode()).hexdigest()[:12]}"
     if marker in text:
         return text
@@ -235,7 +246,8 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
   }
   async function validateOrRecover(stream){
     var inspection=await inspectHls(String(stream.url||""),stream,headerValue(stream,"referer"));
-    if(inspection.state==="valid"||inspection.state==="unknown")return stream;
+    if(inspection.state==="valid")return stream;
+    if(inspection.state==="unknown"&&!config.failClosedUnknown)return stream;
     if(inspection.state==="direct")return cloneRecovered(stream,inspection.url||String(stream.url||""),inspection.format||"mp4",headerValue(stream,"referer"));
     var recovered=await recover(stream,inspection);if(recovered)return recovered;
     return null;
@@ -244,7 +256,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
     var rows=Array.isArray(value)?value:value&&Array.isArray(value.streams)?value.streams:null;
     if(!rows)return value;
     var checks=await Promise.all(rows.map(async function(stream){
-      if(!hlsHint(stream))return stream;
+      if(!config.probeAllUrls&&!hlsHint(stream))return stream;
       var output=await validateOrRecover(stream);
       if(!output){
         try{console.warn("[Nuvio HLS integrity] rejected malformed playlist after bounded recovery",String(stream&&stream.url||"").slice(0,180))}catch(_e){}
