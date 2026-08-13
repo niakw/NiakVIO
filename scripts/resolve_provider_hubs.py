@@ -146,6 +146,8 @@ def exact_allowed_hosts(cfg: dict[str, Any]) -> set[str]:
     values.extend(str(item) for item in cfg.get("known_hosts") or [])
     for url in cfg.get("direct_candidates") or []:
         values.append(host(str(url)))
+    for url in cfg.get("historical_terminal_candidates") or []:
+        values.append(host(str(url)))
     fallback = cfg.get("direct_fallback")
     if fallback:
         values.append(host(str(fallback)))
@@ -439,6 +441,34 @@ def merge_hub_registry(config: dict[str, Any]) -> dict[str, dict[str, Any]]:
         allowed = set(target.get("allowed_terminal_hosts") or [])
         allowed.update(host(url) for url in target["direct_candidates"] if host(url))
         target["allowed_terminal_hosts"] = sorted(allowed)
+
+        # Previous domains and replacement sources are trusted peer candidates,
+        # but they still have to pass the same runtime terminal validation as a
+        # newly discovered address. This lets the resolver recover automatically
+        # when the current/LKG domain starts returning 403/5xx while an older
+        # same-provider terminal becomes live again.
+        patches = config.get("provider_patches") or {}
+        patch = patches.get(provider_id) if isinstance(patches, dict) else None
+        if not isinstance(patch, dict) and isinstance(patches, dict):
+            patch = next((value for key, value in patches.items() if canonical_provider_id(key) == provider_id and isinstance(value, dict)), {})
+        patch = patch if isinstance(patch, dict) else {}
+        historical_hosts = {str(item).lower().strip(".") for item in target.get("old_site_hosts") or [] if item}
+        for mapping_name in ("replacements", "runtime_domain_replacements"):
+            mapping = patch.get(mapping_name)
+            if isinstance(mapping, dict):
+                historical_hosts.update(str(key).lower().strip(".") for key in mapping if key)
+        previous_site = patch.get("official_site")
+        if previous_site and host(str(previous_site)):
+            historical_hosts.add(host(str(previous_site)))
+        blocked = {str(item).lower().strip(".") for item in target.get("blocked_hosts") or [] if item}
+        historical = []
+        for peer_host in sorted(historical_hosts):
+            if not peer_host or peer_host in blocked or peer_host in SOCIAL_HOST_SUFFIXES + SEARCH_HOST_SUFFIXES + INFRASTRUCTURE_HOST_SUFFIXES:
+                continue
+            candidate = f"https://{peer_host}"
+            if candidate.rstrip("/") not in {url.rstrip("/") for url in target["direct_candidates"]}:
+                historical.append(candidate)
+        target["historical_terminal_candidates"] = historical
         target.setdefault("sources", [])
     return merged
 
@@ -672,6 +702,12 @@ def gather_candidates(provider_id: str, cfg: dict[str, Any], history_row: dict[s
                 "url": str(url).rstrip("/"), "label": "curated direct candidate",
                 "score": 72 - min(index, 10), "source_type": "curated_direct", "source": "provider-hubs.json",
             })
+    for index, url in enumerate(cfg.get("historical_terminal_candidates") or []):
+        if is_http_url(url):
+            candidates.append({
+                "url": str(url).rstrip("/"), "label": "validated historical peer candidate",
+                "score": 66 - min(index, 12), "source_type": "historical_peer", "source": "provider routing history",
+            })
     current = history_row.get("current") if isinstance(history_row, dict) else None
     if isinstance(current, dict) and is_http_url(current.get("url")):
         candidates.append({
@@ -752,6 +788,11 @@ def update_provider_patch(config: dict[str, Any], provider_id: str, hub_cfg: dic
             changes.append({"from": new_site_host, "to": new_site_host, "kind": "cycle_removed"})
 
     old_hosts = {str(item).lower().strip(".") for item in hub_cfg.get("old_site_hosts") or [] if item}
+    old_hosts.update(str(item).lower().strip(".") for item in replacements if item)
+    old_hosts.update(str(item).lower().strip(".") for item in runtime if item)
+    for candidate in hub_cfg.get("historical_terminal_candidates") or []:
+        if host(str(candidate)):
+            old_hosts.add(host(str(candidate)))
     previous_site = patch.get("official_site")
     if previous_site and host(str(previous_site)):
         old_hosts.add(host(str(previous_site)))

@@ -143,9 +143,21 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
     blocked_paths = {"/gtag/js", "/cdn-cgi/rum", "/beacon.min.js", "/troll/"}
     blocked_paths.update(str(v).casefold() for v in recovery_options.get("blocked_path_patterns") or [] if str(v).strip())
 
+    endpoint_origins: list[str] = []
+    for raw in observed:
+        peer = _origin(raw)
+        if not peer:
+            continue
+        peer_host = (urlparse(peer).hostname or "").casefold()
+        if peer_host in INFRASTRUCTURE_HOSTS or any(peer_host.endswith("." + item) for item in INFRASTRUCTURE_HOSTS):
+            continue
+        if peer not in endpoint_origins:
+            endpoint_origins.append(peer)
+
     return {
         "provider_name": str(metadata.get("name") or provider_id or "Provider"),
         "base_url": base_url,
+        "endpoint_origins": endpoint_origins[:32],
         "types": types,
         "search_paths": search_paths,
         "direct_paths": direct_paths,
@@ -192,17 +204,40 @@ def matching_profiles(candidate: dict[str, Any], result: dict[str, Any], source_
     return matches
 
 
+def _source_endpoint_origins(source_text: str) -> list[str]:
+    output: list[str] = []
+    for raw in re.findall(r"https?://[A-Za-z0-9.-]+(?::\d+)?", source_text):
+        peer = _origin(raw)
+        if not peer:
+            continue
+        peer_host = (urlparse(peer).hostname or "").casefold()
+        if peer_host in INFRASTRUCTURE_HOSTS or any(peer_host.endswith("." + item) for item in INFRASTRUCTURE_HOSTS):
+            continue
+        if peer not in output:
+            output.append(peer)
+        if len(output) >= 32:
+            break
+    return output
+
+
 def _apply_adaptive(parent_data: bytes, candidate: dict[str, Any]) -> tuple[bytes, list[dict[str, Any]]]:
     options = _adaptive_runtime_options(candidate, load_overrides())
     if options is None:
         return parent_data, []
+    source_text = parent_data.decode("utf-8", errors="strict")
+    options = dict(options)
+    peers = list(options.get("endpoint_origins") or [])
+    for peer in _source_endpoint_origins(source_text):
+        if peer not in peers:
+            peers.append(peer)
+    options["endpoint_origins"] = peers[:32]
     script = ROOT / "scripts" / "provider_patches" / "adaptive_runtime_recovery_v4.py"
     spec = importlib.util.spec_from_file_location("nuvio_adaptive_runtime_recovery", script)
     if spec is None or spec.loader is None:
         raise RuntimeError(f"cannot load {script}")
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
-    patched = module.apply(parent_data.decode("utf-8", errors="strict"), options=options).encode("utf-8")
+    patched = module.apply(source_text, options=options).encode("utf-8")
     if patched == parent_data:
         return parent_data, []
     return patched, [{"type": "patch_profile", "profile": "adaptive_runtime_recovery", "phase": "runtime", "options": options}]

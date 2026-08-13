@@ -66,7 +66,7 @@ def apply(text: str, *, options=None, context=None) -> str:
   var nativeFetch=g.fetch.bind(g), groups=[];
   try{groups=JSON.parse(typeof atob==="function"?atob(encoded):Buffer.from(encoded,"base64").toString("utf8"));}catch(_e){return;}
   var cache=Object.create(null);
-  function obsolete(status){return status===404||status===410||status===451||status===521||status===522||status===523;}
+  function obsolete(status){return status===403||status===404||status===408||status===410||status===425||status===429||status===451||status===500||status===502||status===503||status===504||(status>=520&&status<=524);}
   function groupFor(host){
     host=String(host||"").toLowerCase();
     for(var i=0;i<groups.length;i++)if(groups[i].hosts.indexOf(host)!==-1)return groups[i];
