@@ -48,8 +48,8 @@ runner = r'''
 const vm=require("vm");
 const src=process.argv[2], calls=[];
 function response(url,status){return {url,status,ok:status>=200&&status<300,headers:{get:()=>"application/json"},text:async()=>"{}",json:async()=>({})};}
-const box={module:{exports:{}},exports:{},URL,fetch:async function(u){u=String(u);calls.push(u);return response(u,u.includes("old.example")?403:200)}};
-box.globalThis=box; vm.runInNewContext(src,box);
+const box={module:{exports:{}},exports:{},Buffer,URL,fetch:async function(u){u=String(u);calls.push(u);return response(u,u.includes("old.example")?403:200)}};
+vm.runInNewContext(src,box);
 box.module.exports.getStreams().then(v=>console.log(JSON.stringify({calls,v}))).catch(e=>{console.error(e);process.exit(1)});
 '''
 with tempfile.TemporaryDirectory() as td:
@@ -86,8 +86,17 @@ runner2 = r'''
 const vm=require("vm"); const src=process.argv[2], calls=[];
 function headers(type){return {get:(k)=>String(k).toLowerCase()==="content-type"?type:null,getSetCookie:()=>[]};}
 function res(url,status,type){return {url,status,ok:status>=200&&status<300,headers:headers(type),body:null,text:async()=>"",json:async()=>({}),arrayBuffer:async()=>new ArrayBuffer(0)};}
-const box={module:{exports:{}},exports:{},URL,AbortController,fetch:async function(input){let u=typeof input==="string"?input:String(input&&input.url||input);calls.push(u);if(u.includes("demoendpointold.workers.dev"))return res(u,500,"text/plain");if(u.includes("demoendpointnew.workers.dev"))return res(u,200,"video/mp4");if(u.includes("api.themoviedb.org"))return res(u,404,"application/json");return res(u,404,"text/plain")}};
-box.globalThis=box; vm.runInNewContext(src,box);
+const box={
+  module:{exports:{}},exports:{},Buffer,URL,AbortController,ArrayBuffer,Uint8Array,setTimeout,clearTimeout,
+  fetch:async function(input){
+    let u=typeof input==="string"?input:String(input&&input.url||input);calls.push(u);
+    if(u.includes("demoendpointold.workers.dev"))return res(u,500,"text/plain");
+    if(u.includes("demoendpointnew.workers.dev"))return res(u,200,"video/mp4");
+    if(u.includes("api.themoviedb.org"))return res(u,404,"application/json");
+    return res(u,404,"text/plain");
+  }
+};
+vm.runInNewContext(src,box);
 box.module.exports.getStreams({tmdbId:"157336",mediaType:"movie",title:"Demo",year:2024}).then(v=>console.log(JSON.stringify({calls,v}))).catch(e=>{console.error(e);process.exit(1)});
 '''
 with tempfile.TemporaryDirectory() as td:
