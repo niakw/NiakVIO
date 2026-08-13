@@ -39,10 +39,19 @@ jobs:
           block=t[start:end]
           block=block.replace("insert = r'''", 'insert = r"""', 1)
           last=block.rfind("'''")
-          if last < 0: raise SystemExit('closing quote not found')
+          if last < 0: raise SystemExit('HLS fixture closing quote not found')
           block=block[:last]+'"""'+block[last+3:]
-          p.write_text(t[:start]+block+t[end:], encoding='utf-8')
+          t=t[:start]+block+t[end:]
+
+          start=t.index("identity_test.write_text(r'''#!/usr/bin/env python3")
+          closing="\n''', encoding=\"utf-8\")"
+          end=t.index(closing, start)
+          block=t[start:end]
+          block=block.replace("identity_test.write_text(r'''", 'identity_test.write_text(r"""', 1)
+          t=t[:start]+block+'\n""", encoding="utf-8")'+t[end+len(closing):]
+          p.write_text(t, encoding='utf-8')
           PY
+          python3 -m py_compile .github/scripts/strict_identity_hls_upgrade_20260813.py
       - name: Apply generic HLS and identity upgrade
         run: python3 .github/scripts/strict_identity_hls_upgrade_20260813.py
       - name: Remove one-shot migration files
