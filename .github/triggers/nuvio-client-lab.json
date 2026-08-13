@@ -10,7 +10,8 @@
         "mediaType": "movie",
         "title": "Interstellar",
         "year": 2014,
-        "category": "movie"
+        "category": "movie",
+        "expectedDurationMinutes": 169
       }
     },
     {
@@ -41,7 +42,8 @@
         "year": 2008,
         "season": 1,
         "episode": 1,
-        "category": "tv"
+        "category": "tv",
+        "expectedDurationMinutes": 58
       }
     },
     {
@@ -57,6 +59,7 @@
         "season": 1,
         "episode": 1,
         "category": "tv",
+        "expectedDurationMinutes": 77,
         "aliases": ["Revenant", "The Devil", "악귀"]
       }
     },
@@ -72,7 +75,8 @@
         "year": 2020,
         "season": 1,
         "episode": 1,
-        "category": "anime"
+        "category": "anime",
+        "expectedDurationMinutes": 24
       }
     },
     {
@@ -88,16 +92,18 @@
         "season": 1,
         "episode": 1,
         "category": "anime",
+        "expectedDurationMinutes": 24,
         "aliases": ["Mushoku Tensei", "Mushoku Tensei: Jobless Reincarnation"]
       }
     }
   ],
   "clients": ["tv", "desktop", "mobile"],
-  "run_revision": "bounded-global-recovery-v7",
+  "run_revision": "identity-safety-blocking-v8",
   "policy": {
     "target_total": 10,
     "minimum_vf": 3,
     "require_identity_match": true,
+    "block_identity_contradictions": true,
     "minimum_duration_ratio": 0.55,
     "maximum_duration_ratio": 1.8,
     "blocking": false

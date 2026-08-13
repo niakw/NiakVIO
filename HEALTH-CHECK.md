@@ -95,6 +95,10 @@ ou rare ne permet pas de l'atteindre. Les erreurs runtime, contenus contradictoi
 médias non lisibles ne sont toutefois jamais comptés comme succès. Les rapports JSON
 et Markdown sont nettoyés avant leur publication comme artefacts CI.
 
+Une contradiction d’identité lisible est un échec de sécurité bloquant, même lorsque
+le provider concerné est déjà désactivé dans le manifest : son bundle doit aussi être
+rendu inerte pour couvrir les activations locales conservées par les clients.
+
 
 ## Boucle générique de réparation pendant le deep
 

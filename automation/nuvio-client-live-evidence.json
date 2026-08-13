@@ -1,5 +1,5 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "observed_at": "2026-08-13T20:00:00Z",
   "provider": "streamzo",
   "fixture": {
@@ -23,5 +23,28 @@
     "desktop_macos_stream_count": 0,
     "classification": "network_inconclusive",
     "reason": "EAI_AGAIN streamzo.fr in isolated runner"
+  },
+  "github_client_lab": {
+    "generated_at": "2026-08-13T18:16:54.224Z",
+    "workflow_run_id": 31729451620,
+    "commit_sha": "03e535e6ca931c894ebb31acf3cfaea29cdc227b",
+    "bundle": "providers/streamzo--published-baseline--d45a5488e4c07a7e.js",
+    "clients": {
+      "tv": "playable_identity_verified",
+      "desktop_macos": "playable_identity_verified",
+      "mobile": "playable_identity_verified"
+    },
+    "stream_count_per_client": 1,
+    "media_kind": "hls",
+    "media_duration_seconds": 5262.583334,
+    "expected_duration_seconds": 5280,
+    "duration_ratio": 0.996701389,
+    "coverage": {
+      "verified_total": 7,
+      "verified_vf": 1,
+      "target_total": 10,
+      "minimum_vf": 3,
+      "advisory_only": true
+    }
   }
 }

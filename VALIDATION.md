@@ -32,6 +32,10 @@ ne bloque pas une release lorsqu'une œuvre récente ou rare reste sous la cible
 timeout isolé est retenté une fois avec un profil réduit. Les artefacts JSON et Markdown
 ne conservent ni URL complète, ni jeton, ni valeur d'en-tête sensible.
 
+Cette tolérance porte uniquement sur le nombre de résultats. Une contradiction
+d’identité sur un média lisible bloque le job, y compris si le manifest marque déjà
+le provider désactivé, jusqu’à publication d’un bundle inerte cache-safe.
+
 ## Cycle de réparation et publication
 
 Une réparation n'est conservée que si le bundle exact progresse lors d'une nouvelle

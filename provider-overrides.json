@@ -1069,11 +1069,22 @@
       }
     },
     "dvdplay": {
-      "capability": "html_scraper",
+      "capability": "quarantined",
       "profiles": [],
       "manifest_overrides": {
         "enabled": false
-      }
+      },
+      "patch_scripts": [
+        "scripts/provider_patches/quarantine_provider_v1.py"
+      ],
+      "patch_script_options": {
+        "scripts/provider_patches/quarantine_provider_v1.py": {
+          "reason": "cross_title_media_filename_mismatch"
+        }
+      },
+      "notes": [
+        "Quarantined after the client lab returned playable media filenames contradicting Revenant S01E01. The bundle is inert because clients may preserve an older local activation state."
+      ]
     },
     "einthusan": {
       "capability": "direct_media",

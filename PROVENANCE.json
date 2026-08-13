@@ -8105,9 +8105,9 @@
     },
     "dvdplay": {
       "id": "dvdplay",
-      "published_filename": "providers/dvdplay--nuvio--8a52e863fe38f9d4.js",
-      "sha256": "8a52e863fe38f9d4457aa36a38a37da638373234287eeaf413c7b209b5640a88",
-      "patched_sha256": "8a52e863fe38f9d4457aa36a38a37da638373234287eeaf413c7b209b5640a88",
+      "published_filename": "providers/dvdplay--nuvio--8403775717c0c21b.js",
+      "sha256": "8403775717c0c21bb62fefdec5fcbceda03759f49ef83a455c8c287db3983863",
+      "patched_sha256": "8403775717c0c21bb62fefdec5fcbceda03759f49ef83a455c8c287db3983863",
       "upstream_sha256": "d67399b8f3d221dea530132cbaafc95777469e1f12fed665b7c2d90f5823e195",
       "local_patches": [
         {
@@ -8173,6 +8173,11 @@
           "phase": "runtime",
           "profile": "adaptive_runtime_recovery",
           "runtime_revision": "bounded-binary-v1"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/quarantine_provider_v1.py",
+          "phase": "discovery"
         }
       ],
       "source": "yoru",

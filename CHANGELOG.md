@@ -1,3 +1,10 @@
+## 5.20.49 — Contradictions bloquantes et quarantaine cache-safe
+
+- Rend toute contradiction d’identité lisible bloquante dans le lab distant, indépendamment de l’objectif consultatif 10 providers / 3 VF et même si le provider est désactivé dans le manifest.
+- Met DVDPlay en quarantaine avec un bundle inerte après les noms de fichiers incompatibles avec Revenant S01E01, afin de neutraliser aussi les anciennes activations conservées localement par Nuvio.
+- Évite le faux positif MovieBlast en retirant le nom du provider et les marqueurs techniques de langue, qualité et codec avant de comparer un libellé à l’œuvre demandée.
+- Ajoute une durée attendue aux six œuvres du lab : 169 min, 88 min, 58 min, 77 min, 24 min et 24 min ; une durée absente reste inconclusive, une durée manifestement incompatible est rejetée.
+
 ## 5.20.48 — Identité d’œuvre, durée et quarantaine fail-safe
 
 - Corrige le faux positif qui classait un média HTTP lisible comme succès lorsque l’identité de l’œuvre restait inconnue.

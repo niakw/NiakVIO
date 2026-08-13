@@ -28,3 +28,5 @@ Le workflow **Check all manifests and publish Nuvio providers** reste l'entrée 
 validation distante complète. Le workflow **Nuvio client media transport lab** vérifie une
 matrice réelle sur NuvioTV, Desktop et Mobile ; sa cible 10 providers dont 3 VF est un
 objectif de couverture non bloquant pour les œuvres récentes ou rares.
+Les contradictions d’identité restent, elles, bloquantes et exigent un bundle inerte
+lorsqu’un ancien état d’activation client pourrait encore exécuter le provider.

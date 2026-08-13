@@ -145,7 +145,7 @@ function normalizeIdentity(value) {
 }
 
 function identityTokens(value) {
-  const noise = new Set(['the', 'a', 'an', 'le', 'la', 'les', 'un', 'une', 'de', 'des', 'du', 'of', 'and', 'et', 'film', 'movie', 'stream', 'streaming', 'watch', 'play', 'player', 'server', 'serveur', 'source', 'mirror', 'direct', 'download', 'telecharger', 'file', 'video', 'quality', 'web', 'ep', 'episode', 'season', 'saison', 'sibnet', 'vidmoly', 'sendvid', 'uqload', 'streamzo', 'anime', 'sama', 'mugiwara', 'toflix', 'french', 'manga', 'vf', 'vff', 'vostfr', 'vo', 'english', 'truefrench', 'hd', 'uhd', 'fhd', 'sd', 'index', 'master', 'playlist', 'manifest', 'chunk', 'segment', 'audio', 'dual', 'multi', 'unknown', 'inconnue', 'inconnu']);
+  const noise = new Set(['the', 'a', 'an', 'le', 'la', 'les', 'un', 'une', 'de', 'des', 'du', 'of', 'and', 'et', 'film', 'movie', 'stream', 'streaming', 'watch', 'play', 'player', 'server', 'serveur', 'source', 'mirror', 'direct', 'download', 'telecharger', 'file', 'video', 'quality', 'web', 'ep', 'episode', 'season', 'saison', 'sibnet', 'vidmoly', 'sendvid', 'uqload', 'streamzo', 'anime', 'sama', 'mugiwara', 'toflix', 'french', 'francais', 'manga', 'vf', 'vff', 'vostfr', 'vo', 'english', 'anglais', 'hindi', 'tamil', 'telugu', 'malayalam', 'korean', 'japanese', 'arabic', 'spanish', 'german', 'italian', 'truefrench', 'dub', 'dubbed', 'sub', 'subbed', 'hd', 'uhd', 'fhd', 'sd', 'cam', 'webrip', 'webdl', 'bluray', 'hdrip', 'dvdrip', 'x264', 'x265', 'hevc', 'avc', 'index', 'master', 'playlist', 'manifest', 'chunk', 'segment', 'audio', 'dual', 'multi', 'unknown', 'inconnue', 'inconnu']);
   return normalizeIdentity(value).split(/\s+/).filter((token) => token.length > 1 && !noise.has(token) && !/^\d+$/.test(token) && !/^\d{3,4}p$/.test(token));
 }
 
@@ -191,7 +191,8 @@ function streamIdentity(stream, fixture) {
   }
   if (normalized && forbiddenAliases.some((alias) => normalized.includes(alias))) return { status: 'contradiction', reason: 'forbidden_title_alias' };
   if (normalized && expected.some((alias) => normalized.includes(alias))) return { status: 'match', reason: 'expected_title_alias' };
-  const rowTokens = identityTokens(label);
+  const providerTokens = new Set(identityTokens(stream?.name || stream?.provider || ''));
+  const rowTokens = identityTokens(label).filter((token) => !providerTokens.has(token));
   if (rowTokens.length >= 2 && expectedTokens.size) {
     const overlap = rowTokens.filter((token) => expectedTokens.has(token));
     if (overlap.length === 0) return { status: 'contradiction', reason: mediaFilename ? 'media_filename_title_mismatch' : 'strong_title_mismatch' };
@@ -408,6 +409,12 @@ function summarizePolicy(providers, clients, config = {}) {
   const totalTargetMet = verifiedTotal >= targetTotal;
   const vfMinimumMet = verifiedVf >= minimumVf;
   const objectiveMet = totalTargetMet && vfMinimumMet;
+  const identityContradictionProviderIds = (providers || [])
+    .filter((provider) => requestedClients.some((clientName) => Number(provider.clients?.[clientName]?.identity_contradiction_count || 0) > 0))
+    .map((provider) => provider.id);
+  const blockIdentityContradictions = config.policy?.block_identity_contradictions !== false;
+  const safetyBlockingPass = !blockIdentityContradictions || identityContradictionProviderIds.length === 0;
+  const coverageBlockingPass = config.policy?.blocking !== true || objectiveMet;
   return {
     target_total: targetTotal,
     minimum_vf: minimumVf,
@@ -419,7 +426,12 @@ function summarizePolicy(providers, clients, config = {}) {
     vf_minimum_met: vfMinimumMet,
     objective_met: objectiveMet,
     advisory_only: config.policy?.blocking !== true,
-    blocking_pass: config.policy?.blocking !== true || objectiveMet,
+    coverage_blocking_pass: coverageBlockingPass,
+    safety_blocking_pass: safetyBlockingPass,
+    blocking_pass: coverageBlockingPass && safetyBlockingPass,
+    block_identity_contradictions: blockIdentityContradictions,
+    identity_contradiction_provider_ids: identityContradictionProviderIds,
+    safety_status: safetyBlockingPass ? 'clear' : 'wrong_content',
     require_identity_match: requireIdentityMatch,
     status: !vfMinimumMet ? 'vf_shortfall' : (totalTargetMet ? 'target_met' : 'vf_met_total_shortfall'),
     qualified_provider_ids: qualified.map((provider) => provider.id),
@@ -652,7 +664,7 @@ async function main() {
   fs.writeFileSync(outPath, `${JSON.stringify(report, null, 2)}\n`);
   fs.writeFileSync(mdPath, markdown(report));
   process.stdout.write(markdown(report));
-  if (config.enforce_policy && !report.policy.blocking_pass) process.exitCode = 2;
+  if (!report.policy.safety_blocking_pass || (config.enforce_policy && !report.policy.coverage_blocking_pass)) process.exitCode = 2;
 }
 
 module.exports = {

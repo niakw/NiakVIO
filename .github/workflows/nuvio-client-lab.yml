@@ -238,9 +238,9 @@ jobs:
           retention-days: 7
           if-no-files-found: error
 
-      - name: Fail only on lab execution errors
+      - name: Fail on lab execution or content safety errors
         if: always() && steps.lab.outcome == 'failure'
         shell: bash
         run: |
-          echo "The lab itself failed before producing a valid coverage result."
+          echo "The lab failed or found a playable content-identity contradiction. Coverage targets remain advisory."
           exit 1

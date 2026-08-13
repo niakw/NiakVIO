@@ -144,6 +144,8 @@ Seuls les providers activés et jouables sur tous les clients demandés entrent 
 
 La cible de couverture est **10 providers jouables par œuvre, dont au moins 3 VF**. C'est un objectif indicatif, pas un verrou de publication : une œuvre récente ou rare peut légitimement rester sous 10. En revanche, une erreur d'exécution, une identité non vérifiée, un contenu contradictoire, une durée incohérente ou un média non lisible ne compte jamais comme un succès.
 
+La souplesse ne concerne que la quantité. Toute contradiction d’identité sur un média lisible bloque le job, y compris pour un provider désactivé, car Nuvio peut conserver une ancienne activation locale. Un provider ainsi confirmé dangereux doit être publié avec un bundle inerte avant que le lab puisse repasser.
+
 Configuration et tests : [`nuvio-client-lab.json`](.github/triggers/nuvio-client-lab.json), [`nuvio_client_lab.cjs`](scripts/nuvio_client_lab.cjs) et [`nuvio_client_lab.test.cjs`](tests/nuvio_client_lab.test.cjs).
 
 ---

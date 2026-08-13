@@ -24,6 +24,7 @@ const {
 const repositoryRoot = path.resolve(__dirname, '..');
 const packageJson = JSON.parse(fs.readFileSync(path.join(repositoryRoot, 'package.json'), 'utf8'));
 const labWorkflow = fs.readFileSync(path.join(repositoryRoot, '.github/workflows/nuvio-client-lab.yml'), 'utf8');
+const labTrigger = JSON.parse(fs.readFileSync(path.join(repositoryRoot, '.github/triggers/nuvio-client-lab.json'), 'utf8'));
 const npmTestLifecycle = `${packageJson.scripts.pretest || ''} ${packageJson.scripts.test || ''}`;
 assert.match(npmTestLifecycle, /node tests\/nuvio_client_lab\.test\.cjs/);
 assert.match(packageJson.scripts.posttest || '', /python3 scripts\/validate_release_integrity\.py/);
@@ -41,6 +42,11 @@ for (const requiredPath of [
 }
 assert.match(labWorkflow, /python3 scripts\/validate_release_integrity\.py/);
 assert.doesNotMatch(labWorkflow, /lab\/nuvio-client-matrix/);
+assert.equal(labTrigger.policy.blocking, false);
+assert.equal(labTrigger.policy.require_identity_match, true);
+assert.equal(labTrigger.policy.block_identity_contradictions, true);
+assert.equal(labTrigger.fixtures.length, 6);
+assert.equal(labTrigger.fixtures.every((row) => Number(row.fixture.expectedDurationMinutes) > 0), true);
 
 const manifest = {
   scrapers: [
@@ -103,6 +109,7 @@ assert.equal(policy.verified_total, 2);
 assert.equal(policy.verified_vf, 1);
 assert.equal(policy.status, 'vf_met_total_shortfall');
 assert.equal(policy.blocking_pass, true);
+assert.equal(policy.safety_blocking_pass, true);
 assert.deepEqual(policy.qualified_provider_ids, ['vf-good', 'non-vf-good']);
 const strictIdentityPolicy = summarizePolicy([
   { id: 'verified', manifest_enabled: true, is_vf: true, clients: { tv: { verdict: 'playable', identity_status: 'verified' } } },
@@ -119,11 +126,20 @@ assert.deepEqual(streamIdentity({ title: 'Interstellar - 2014 - 1080p' }, { titl
 assert.deepEqual(streamIdentity({ title: 'Enola Holmes 2 - 1080p' }, { title: 'Mon ninja et moi 3', aliases: ['Checkered Ninja 3'], mediaType: 'movie' }), { status: 'contradiction', reason: 'strong_title_mismatch' });
 assert.deepEqual(streamIdentity({ name: 'TopCartoons', url: 'https://ww.topcartoons.tv/video/Ben-10-Ultimate-Alien-Fame.mp4' }, { title: 'Breaking Bad', mediaType: 'tv', season: 1, episode: 1 }), { status: 'contradiction', reason: 'media_filename_title_mismatch' });
 assert.deepEqual(streamIdentity({ name: 'Purstream 1080p Dual Audio - Inconnue', url: 'https://cdn.example/hls2/03/00026/master.m3u8' }, { title: 'Revenant', mediaType: 'tv', season: 1, episode: 1 }), { status: 'unknown', reason: 'insufficient_identity_metadata' });
+assert.deepEqual(streamIdentity({ name: 'MovieBlast', title: 'MovieBlast - 720P (Telugu)', url: 'https://cdn.example/fp44sc004rev' }, { title: 'Interstellar', mediaType: 'movie' }), { status: 'unknown', reason: 'insufficient_identity_metadata' });
 assert.deepEqual(streamIdentity({ title: 'S02E04 1080p' }, { title: 'Revenant', mediaType: 'tv', season: 1, episode: 1 }), { status: 'contradiction', reason: 'wrong_season_episode' });
 assert.deepEqual(streamIdentity({ title: 'Player - Ep 1 - VF [1080p]', name: 'Anime-Sama (VF)' }, { title: 'Jujutsu Kaisen', mediaType: 'tv', season: 1, episode: 1 }), { status: 'match', reason: 'episode_match' });
 assert.deepEqual(streamIdentity({ title: 'S1E1 - Ryomen Sukuna', name: 'ToFlix' }, { title: 'Jujutsu Kaisen', mediaType: 'tv', season: 1, episode: 1 }), { status: 'match', reason: 'season_episode_match' });
 assert.deepEqual(streamIdentity({ title: 'Saison 1 - Vidmoly', name: 'Mugiwara (VOSTFR)' }, { title: 'Mushoku Tensei', mediaType: 'tv', season: 1, episode: 1 }), { status: 'unknown', reason: 'insufficient_identity_metadata' });
 assert.deepEqual(streamIdentity({ title: 'Enola Holmes 2 - 1080p' }, { title: 'Mon ninja et moi 3', forbiddenAliases: ['Enola Holmes 2'], mediaType: 'movie' }), { status: 'contradiction', reason: 'forbidden_title_alias' });
+
+const unsafePolicy = summarizePolicy([
+  { id: 'disabled-but-cacheable', manifest_enabled: false, is_vf: false, clients: { tv: { verdict: 'wrong_content', identity_status: 'contradiction', identity_contradiction_count: 1 } } },
+], ['tv'], { policy: { target_total: 10, minimum_vf: 3, blocking: false } });
+assert.equal(unsafePolicy.coverage_blocking_pass, true);
+assert.equal(unsafePolicy.safety_blocking_pass, false);
+assert.equal(unsafePolicy.blocking_pass, false);
+assert.deepEqual(unsafePolicy.identity_contradiction_provider_ids, ['disabled-but-cacheable']);
 
 (async () => {
   let running = 0;
