@@ -80,6 +80,10 @@ const strictIdentityPolicy = summarizePolicy([
 ], ['tv'], { policy: { target_total: 1, minimum_vf: 1, require_identity_match: true } });
 assert.deepEqual(strictIdentityPolicy.qualified_provider_ids, ['verified']);
 assert.equal(strictIdentityPolicy.status, 'target_met');
+const recentWorkPolicy = summarizePolicy([], ['tv'], { policy: { target_total: 10, minimum_vf: 3 } });
+assert.equal(recentWorkPolicy.objective_met, false);
+assert.equal(recentWorkPolicy.advisory_only, true);
+assert.equal(recentWorkPolicy.blocking_pass, true);
 
 assert.deepEqual(streamIdentity({ title: 'Interstellar - 2014 - 1080p' }, { title: 'Interstellar', mediaType: 'movie' }), { status: 'match', reason: 'expected_title_alias' });
 assert.deepEqual(streamIdentity({ title: 'Enola Holmes 2 - 1080p' }, { title: 'Mon ninja et moi 3', aliases: ['Checkered Ninja 3'], mediaType: 'movie' }), { status: 'contradiction', reason: 'strong_title_mismatch' });
