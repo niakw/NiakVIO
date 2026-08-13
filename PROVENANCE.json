@@ -5,9 +5,9 @@
   "providers": {
     "1shows": {
       "id": "1shows",
-      "published_filename": "providers/1shows--nuvio--ee91f1a0be8c0b34.js",
-      "sha256": "ee91f1a0be8c0b344d35174ab3248a46355f26819bb8d5a6f1fe433684354d28",
-      "patched_sha256": "ee91f1a0be8c0b344d35174ab3248a46355f26819bb8d5a6f1fe433684354d28",
+      "published_filename": "providers/1shows--nuvio--e919e87f61d7d0f4.js",
+      "sha256": "e919e87f61d7d0f44ddb2115790b1e66601dc5de3a299ca5a0bf0fb86081ecdd",
+      "patched_sha256": "e919e87f61d7d0f44ddb2115790b1e66601dc5de3a299ca5a0bf0fb86081ecdd",
       "upstream_sha256": "9d8e329755b00a42b1c05cd06a764a2993e1874f67b3b4e2a96b25894d62ceba",
       "local_patches": [
         {
@@ -313,9 +313,9 @@
     },
     "4khdhub": {
       "id": "4khdhub",
-      "published_filename": "providers/4khdhub--published-baseline--bf46d1882d4b18c2.js",
-      "sha256": "bf46d1882d4b18c2b12007fdacaf7c42925b23b5b38273e8a189904efad94c90",
-      "patched_sha256": "bf46d1882d4b18c2b12007fdacaf7c42925b23b5b38273e8a189904efad94c90",
+      "published_filename": "providers/4khdhub--published-baseline--0f0bd749e7775035.js",
+      "sha256": "0f0bd749e7775035a744d3b5ebc240c67e0ef1dcf4e14f5cadc7d8b56f6ff656",
+      "patched_sha256": "0f0bd749e7775035a744d3b5ebc240c67e0ef1dcf4e14f5cadc7d8b56f6ff656",
       "upstream_sha256": "90c45836533bb88fbac769681dec754ab7e8799c0fe4da6351b1685a783c10a5",
       "local_patches": [
         {
@@ -335,6 +335,17 @@
           "path": "scripts/provider_patches/global_catalogue_alias_recovery_v2.py",
           "phase": "discovery",
           "scope": "global_catalogue_resolution"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/stream_output_sanitizer_v5.py",
+          "phase": "discovery"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
         }
       ],
       "source": "published-baseline",
@@ -558,11 +569,18 @@
     },
     "4khdhubnew": {
       "id": "4khdhubnew",
-      "published_filename": "providers/4khdhubnew--published-baseline--1438515594eba9f9.js",
-      "sha256": "1438515594eba9f9f3a3e08d764c5e4a59f9973b2fa5f293ed17b4c2a6e2212a",
-      "patched_sha256": "1438515594eba9f9f3a3e08d764c5e4a59f9973b2fa5f293ed17b4c2a6e2212a",
+      "published_filename": "providers/4khdhubnew--published-baseline--2579d53eab14de7d.js",
+      "sha256": "2579d53eab14de7da15057f2c5b171d62e49ee4dd8ee101420f9e2200ec76754",
+      "patched_sha256": "2579d53eab14de7da15057f2c5b171d62e49ee4dd8ee101420f9e2200ec76754",
       "upstream_sha256": "1438515594eba9f9f3a3e08d764c5e4a59f9973b2fa5f293ed17b4c2a6e2212a",
-      "local_patches": [],
+      "local_patches": [
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
+        }
+      ],
       "source": "published-baseline",
       "source_name": "Last published local artifact",
       "source_repository": "Nuvio Curated Providers",
@@ -785,11 +803,18 @@
     },
     "allanime": {
       "id": "allanime",
-      "published_filename": "providers/allanime--published-baseline--5a089229ffcdeb36.js",
-      "sha256": "5a089229ffcdeb36928361ba25a4f8e5f952a736266d6b2559b0e69f6188bc43",
-      "patched_sha256": "5a089229ffcdeb36928361ba25a4f8e5f952a736266d6b2559b0e69f6188bc43",
+      "published_filename": "providers/allanime--published-baseline--4be514bf51ee3290.js",
+      "sha256": "4be514bf51ee32906b14af0e3e5349540e2c5bc00fc22a81a333d9e213563e2f",
+      "patched_sha256": "4be514bf51ee32906b14af0e3e5349540e2c5bc00fc22a81a333d9e213563e2f",
       "upstream_sha256": "5a089229ffcdeb36928361ba25a4f8e5f952a736266d6b2559b0e69f6188bc43",
-      "local_patches": [],
+      "local_patches": [
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
+        }
+      ],
       "source": "published-baseline",
       "source_name": "Last published local artifact",
       "source_repository": "Nuvio Curated Providers",
@@ -1033,9 +1058,9 @@
     },
     "allmovieland": {
       "id": "allmovieland",
-      "published_filename": "providers/allmovieland--published-baseline--bb5ce5545611921a.js",
-      "sha256": "bb5ce5545611921a9504fbf17038fa6804936f8c199dfdd9c71f28b98fa895dd",
-      "patched_sha256": "bb5ce5545611921a9504fbf17038fa6804936f8c199dfdd9c71f28b98fa895dd",
+      "published_filename": "providers/allmovieland--published-baseline--e9af2e36d03c4b1d.js",
+      "sha256": "e9af2e36d03c4b1de75726c5b25309a2cad795d5b327f21e81574cd5da6d3521",
+      "patched_sha256": "e9af2e36d03c4b1de75726c5b25309a2cad795d5b327f21e81574cd5da6d3521",
       "upstream_sha256": "2217246fc678c9944a374bf227414e640ffa9e6a46775fd0fc62eea6e98eaf81",
       "local_patches": [
         {
@@ -1072,6 +1097,12 @@
           "phase": "runtime",
           "profile": "adaptive_domain_recovery",
           "runtime_revision": "retry-transient-v2"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
         }
       ],
       "source": "published-baseline",
@@ -1292,11 +1323,18 @@
     },
     "allwish": {
       "id": "allwish",
-      "published_filename": "providers/allwish--published-baseline--c20ae0a310b1c0bf.js",
-      "sha256": "c20ae0a310b1c0bf3333b61d71dcf82567fd1f25e7d44fd900f83fd0116104f7",
-      "patched_sha256": "c20ae0a310b1c0bf3333b61d71dcf82567fd1f25e7d44fd900f83fd0116104f7",
+      "published_filename": "providers/allwish--published-baseline--b62a046dbcc35409.js",
+      "sha256": "b62a046dbcc354099c07902852e641bfd105fc9fef4c498c9dc3caea75394394",
+      "patched_sha256": "b62a046dbcc354099c07902852e641bfd105fc9fef4c498c9dc3caea75394394",
       "upstream_sha256": "c20ae0a310b1c0bf3333b61d71dcf82567fd1f25e7d44fd900f83fd0116104f7",
-      "local_patches": [],
+      "local_patches": [
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
+        }
+      ],
       "source": "published-baseline",
       "source_name": "Last published local artifact",
       "source_repository": "Nuvio Curated Providers",
@@ -1514,9 +1552,9 @@
     },
     "anidb": {
       "id": "anidb",
-      "published_filename": "providers/anidb--published-baseline--db43e4118f2728d4.js",
-      "sha256": "db43e4118f2728d48bafc728a555e551e4200124952007c3a0d298f30a39d9d6",
-      "patched_sha256": "db43e4118f2728d48bafc728a555e551e4200124952007c3a0d298f30a39d9d6",
+      "published_filename": "providers/anidb--published-baseline--c00cb22b8eb4959f.js",
+      "sha256": "c00cb22b8eb4959f0be0f8b580f4bbd79bc54b71eff7148dca17a229688c1d02",
+      "patched_sha256": "c00cb22b8eb4959f0be0f8b580f4bbd79bc54b71eff7148dca17a229688c1d02",
       "upstream_sha256": "60ec5bba1e6d0052b9fa495ddaeec23841a43dcaee18158db5f222e055c0c209",
       "local_patches": [
         {
@@ -1529,6 +1567,12 @@
           "path": "scripts/provider_patches/global_media_enrichment_v1.py",
           "phase": "discovery",
           "scope": "global_media_enrichment"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
         }
       ],
       "source": "published-baseline",
@@ -1748,9 +1792,9 @@
     },
     "anikototv": {
       "id": "anikototv",
-      "published_filename": "providers/anikototv--nuvio--173ae17d8e2efbe8.js",
-      "sha256": "173ae17d8e2efbe8d5cdbe42bd23710c1c10583426ff3ea1991b35f926a08952",
-      "patched_sha256": "173ae17d8e2efbe8d5cdbe42bd23710c1c10583426ff3ea1991b35f926a08952",
+      "published_filename": "providers/anikototv--nuvio--9cc375a0f635e835.js",
+      "sha256": "9cc375a0f635e835312bb9e909d68ffba27a282442dfd60ef4910da1671311ba",
+      "patched_sha256": "9cc375a0f635e835312bb9e909d68ffba27a282442dfd60ef4910da1671311ba",
       "upstream_sha256": "4b75a13ad9f3a9e7c067e8cbd18a66830cce4ad0d7e75ed28eca66cf1ed32b5d",
       "local_patches": [
         {
@@ -1997,11 +2041,24 @@
     },
     "anime-sama": {
       "id": "anime-sama",
-      "published_filename": "providers/anime-sama--published-baseline--bea944bbfe40b9d5.js",
-      "sha256": "bea944bbfe40b9d5dd5fcac02737e141bdcc94abb7cb8dd3ae5ab86bdf895244",
-      "patched_sha256": "bea944bbfe40b9d5dd5fcac02737e141bdcc94abb7cb8dd3ae5ab86bdf895244",
+      "published_filename": "providers/anime-sama--published-baseline--061acb5ebd2b111d.js",
+      "sha256": "061acb5ebd2b111d9aacc2f3bf5c15b298d548562e9eee15b183e7cdbe7cef7d",
+      "patched_sha256": "061acb5ebd2b111d9aacc2f3bf5c15b298d548562e9eee15b183e7cdbe7cef7d",
       "upstream_sha256": "bea944bbfe40b9d5dd5fcac02737e141bdcc94abb7cb8dd3ae5ab86bdf895244",
-      "local_patches": [],
+      "local_patches": [
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_catalogue_alias_recovery_v2.py",
+          "phase": "discovery",
+          "scope": "global_catalogue_resolution"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
+        }
+      ],
       "source": "published-baseline",
       "source_name": "Last published local artifact",
       "source_repository": "Nuvio Curated Providers",
@@ -2240,11 +2297,18 @@
     },
     "anime-ultime": {
       "id": "anime-ultime",
-      "published_filename": "providers/anime-ultime--published-baseline--998b29075e6b1306.js",
-      "sha256": "998b29075e6b1306da78b14e043b3b8c375931ac5e7062dd947e8174853c33e8",
-      "patched_sha256": "998b29075e6b1306da78b14e043b3b8c375931ac5e7062dd947e8174853c33e8",
+      "published_filename": "providers/anime-ultime--published-baseline--f161406405481130.js",
+      "sha256": "f161406405481130559ca45bec67e7f6ed8d9b799a060a9b8b3be12a72d186e5",
+      "patched_sha256": "f161406405481130559ca45bec67e7f6ed8d9b799a060a9b8b3be12a72d186e5",
       "upstream_sha256": "998b29075e6b1306da78b14e043b3b8c375931ac5e7062dd947e8174853c33e8",
-      "local_patches": [],
+      "local_patches": [
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
+        }
+      ],
       "source": "published-baseline",
       "source_name": "Last published local artifact",
       "source_repository": "Nuvio Curated Providers",
@@ -2468,11 +2532,18 @@
     },
     "animekai": {
       "id": "animekai",
-      "published_filename": "providers/animekai--published-baseline--e5f09cade28ebe99.js",
-      "sha256": "e5f09cade28ebe99fe38a68c49b911a37c9906f272a20fd6f372a6daaebe3423",
-      "patched_sha256": "e5f09cade28ebe99fe38a68c49b911a37c9906f272a20fd6f372a6daaebe3423",
+      "published_filename": "providers/animekai--published-baseline--8ff1f55b3701777e.js",
+      "sha256": "8ff1f55b3701777ece86f89d22206d73b320196cd1ad13c4f4c6dc3851b2e44c",
+      "patched_sha256": "8ff1f55b3701777ece86f89d22206d73b320196cd1ad13c4f4c6dc3851b2e44c",
       "upstream_sha256": "e5f09cade28ebe99fe38a68c49b911a37c9906f272a20fd6f372a6daaebe3423",
-      "local_patches": [],
+      "local_patches": [
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
+        }
+      ],
       "source": "published-baseline",
       "source_name": "Last published local artifact",
       "source_repository": "Nuvio Curated Providers",
@@ -2696,9 +2767,9 @@
     },
     "animepahe": {
       "id": "animepahe",
-      "published_filename": "providers/animepahe--published-baseline--711236f7b6b1cdd0.js",
-      "sha256": "711236f7b6b1cdd03a3b423d6358f94d4524fbe614a10c892cc6014049c96742",
-      "patched_sha256": "711236f7b6b1cdd03a3b423d6358f94d4524fbe614a10c892cc6014049c96742",
+      "published_filename": "providers/animepahe--published-baseline--e1cdb2d0df1bd7f4.js",
+      "sha256": "e1cdb2d0df1bd7f4082e41ecc29564e3821e7c36833f8a3f9adb07ca98e89519",
+      "patched_sha256": "e1cdb2d0df1bd7f4082e41ecc29564e3821e7c36833f8a3f9adb07ca98e89519",
       "upstream_sha256": "9e132e5efb0371493041ba7e321e2fc714f8a3177c7549e30b85e98528a263b9",
       "local_patches": [
         {
@@ -2723,6 +2794,12 @@
           "phase": "runtime",
           "profile": "adaptive_domain_recovery",
           "runtime_revision": "retry-transient-v2"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
         }
       ],
       "source": "published-baseline",
@@ -2950,9 +3027,9 @@
     },
     "animesalt": {
       "id": "animesalt",
-      "published_filename": "providers/animesalt--published-baseline--8ac56c986f56ff2e.js",
-      "sha256": "8ac56c986f56ff2eec146e77bf8f4a6161f3c9147a8597322fc88515ce62b0f4",
-      "patched_sha256": "8ac56c986f56ff2eec146e77bf8f4a6161f3c9147a8597322fc88515ce62b0f4",
+      "published_filename": "providers/animesalt--published-baseline--058e31754586e890.js",
+      "sha256": "058e31754586e890b0ca87653c196f492e2f2ab0e12cd289b4698d8bd4434495",
+      "patched_sha256": "058e31754586e890b0ca87653c196f492e2f2ab0e12cd289b4698d8bd4434495",
       "upstream_sha256": "e221da6762e9c2033ca367d50ebc415a91a6ba4ecf716118d048956ec7df6c2d",
       "local_patches": [
         {
@@ -2977,6 +3054,12 @@
           "path": "scripts/provider_patches/global_catalogue_alias_recovery_v2.py",
           "phase": "discovery",
           "scope": "global_catalogue_resolution"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
         }
       ],
       "source": "published-baseline",
@@ -3196,9 +3279,9 @@
     },
     "animesama-co": {
       "id": "animesama-co",
-      "published_filename": "providers/animesama-co--nuvio--4758648082b0967c.js",
-      "sha256": "4758648082b0967c9359e9cfe5fcdebba30adf129d530e3b7a1cb383f726ea79",
-      "patched_sha256": "4758648082b0967c9359e9cfe5fcdebba30adf129d530e3b7a1cb383f726ea79",
+      "published_filename": "providers/animesama-co--nuvio--287f355d002c8cc7.js",
+      "sha256": "287f355d002c8cc78d40534a260e17e89a6d6721305faaa6d965aadf58ac975f",
+      "patched_sha256": "287f355d002c8cc78d40534a260e17e89a6d6721305faaa6d965aadf58ac975f",
       "upstream_sha256": "1ab9fb1cec10acffb9d1e4a59f04ed1b18e20c5cef7632d63e0336c24a89eabe",
       "local_patches": [
         {
@@ -3473,9 +3556,9 @@
     },
     "animesultra": {
       "id": "animesultra",
-      "published_filename": "providers/animesultra--published-baseline--4cbaea1e28f2dd90.js",
-      "sha256": "4cbaea1e28f2dd909e6737181c89d285407536d2172bd5441c4c2a728a0c6884",
-      "patched_sha256": "4cbaea1e28f2dd909e6737181c89d285407536d2172bd5441c4c2a728a0c6884",
+      "published_filename": "providers/animesultra--published-baseline--6017a4fb321d0ef4.js",
+      "sha256": "6017a4fb321d0ef441e0d8d3bc87cb0a8c7a4e99c51c93f3f73258c6410ee15c",
+      "patched_sha256": "6017a4fb321d0ef441e0d8d3bc87cb0a8c7a4e99c51c93f3f73258c6410ee15c",
       "upstream_sha256": "7704e3a452b175545251a1d24b1882406335dcc3efe49890847334ef58c645bc",
       "local_patches": [
         {
@@ -3493,6 +3576,12 @@
           "path": "scripts/provider_patches/global_media_enrichment_v1.py",
           "phase": "discovery",
           "scope": "global_media_enrichment"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
         }
       ],
       "source": "published-baseline",
@@ -3714,15 +3803,21 @@
     },
     "animetsu": {
       "id": "animetsu",
-      "published_filename": "providers/animetsu--published-baseline--749e0fd5716165b4.js",
-      "sha256": "749e0fd5716165b447a06fa117696811aa9ae6635b720e80bcdfd1eaae79dffc",
-      "patched_sha256": "749e0fd5716165b447a06fa117696811aa9ae6635b720e80bcdfd1eaae79dffc",
+      "published_filename": "providers/animetsu--published-baseline--2e5b86610c0107f3.js",
+      "sha256": "2e5b86610c0107f389e2d0639e76bb92b6710440ad01d477bd8fec7643377597",
+      "patched_sha256": "2e5b86610c0107f389e2d0639e76bb92b6710440ad01d477bd8fec7643377597",
       "upstream_sha256": "243edd8c76b0995a72e02ba6ff7ca47add6063b1d471ebe378d3d6842bd8cadb",
       "local_patches": [
         {
           "type": "patch_script",
           "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
           "phase": "discovery"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
         }
       ],
       "source": "published-baseline",
@@ -3941,11 +4036,24 @@
     },
     "animevostfr": {
       "id": "animevostfr",
-      "published_filename": "providers/animevostfr--published-baseline--73c8d338a28059e8.js",
-      "sha256": "73c8d338a28059e8dcab49f6e82a4085d4ead0a74625ca8585c69b51583a4d71",
-      "patched_sha256": "73c8d338a28059e8dcab49f6e82a4085d4ead0a74625ca8585c69b51583a4d71",
+      "published_filename": "providers/animevostfr--published-baseline--eb3a3abd198c3950.js",
+      "sha256": "eb3a3abd198c3950cc4b86f59614ac41c7abf732a19e663ab387f19148a54b95",
+      "patched_sha256": "eb3a3abd198c3950cc4b86f59614ac41c7abf732a19e663ab387f19148a54b95",
       "upstream_sha256": "73c8d338a28059e8dcab49f6e82a4085d4ead0a74625ca8585c69b51583a4d71",
-      "local_patches": [],
+      "local_patches": [
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_catalogue_alias_recovery_v2.py",
+          "phase": "discovery",
+          "scope": "global_catalogue_resolution"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
+        }
+      ],
       "source": "published-baseline",
       "source_name": "Last published local artifact",
       "source_repository": "Nuvio Curated Providers",
@@ -4192,11 +4300,18 @@
     },
     "animeworld": {
       "id": "animeworld",
-      "published_filename": "providers/animeworld--published-baseline--08bac75d34738ab1.js",
-      "sha256": "08bac75d34738ab194ee8efb96ba2011a351b816809751ec79d738c20e4508b0",
-      "patched_sha256": "08bac75d34738ab194ee8efb96ba2011a351b816809751ec79d738c20e4508b0",
+      "published_filename": "providers/animeworld--published-baseline--3b3021d64442a199.js",
+      "sha256": "3b3021d64442a199b48c0c37c85f239f090328d4a3047119b1376a71d4cc7c96",
+      "patched_sha256": "3b3021d64442a199b48c0c37c85f239f090328d4a3047119b1376a71d4cc7c96",
       "upstream_sha256": "08bac75d34738ab194ee8efb96ba2011a351b816809751ec79d738c20e4508b0",
-      "local_patches": [],
+      "local_patches": [
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
+        }
+      ],
       "source": "published-baseline",
       "source_name": "Last published local artifact",
       "source_repository": "Nuvio Curated Providers",
@@ -4420,9 +4535,9 @@
     },
     "animezey": {
       "id": "animezey",
-      "published_filename": "providers/animezey--nuvio--1ac73aeae05c0534.js",
-      "sha256": "1ac73aeae05c0534d06680eff29b672534f8e640a05d9f3f6e3b26e653ab754f",
-      "patched_sha256": "1ac73aeae05c0534d06680eff29b672534f8e640a05d9f3f6e3b26e653ab754f",
+      "published_filename": "providers/animezey--nuvio--cf2b4f0da5a91410.js",
+      "sha256": "cf2b4f0da5a9141059fea6f4e25dd0dffbc0a5143ccea0b94352a2462720eddd",
+      "patched_sha256": "cf2b4f0da5a9141059fea6f4e25dd0dffbc0a5143ccea0b94352a2462720eddd",
       "upstream_sha256": "46e83c8d710830679b7f17eacb03e014fc4195237cd423fe63254862549f24ff",
       "local_patches": [
         {
@@ -4674,9 +4789,9 @@
     },
     "animoflix": {
       "id": "animoflix",
-      "published_filename": "providers/animoflix--published-baseline--0d99a34f3a7226fc.js",
-      "sha256": "0d99a34f3a7226fc76247814e40fb369b3110dfcb5971fc94c801319813e3917",
-      "patched_sha256": "0d99a34f3a7226fc76247814e40fb369b3110dfcb5971fc94c801319813e3917",
+      "published_filename": "providers/animoflix--published-baseline--f6fb70a8aaf62c23.js",
+      "sha256": "f6fb70a8aaf62c2345c53be5129b553cff0b2fa908825715f3e958559a174bc2",
+      "patched_sha256": "f6fb70a8aaf62c2345c53be5129b553cff0b2fa908825715f3e958559a174bc2",
       "upstream_sha256": "1dc3f3fe1c16de542a9aa6cb9d1bea1503e5db609823cb9cb657d4d2c6625877",
       "local_patches": [
         {
@@ -4684,6 +4799,12 @@
           "path": "scripts/provider_patches/global_media_enrichment_v1.py",
           "phase": "discovery",
           "scope": "global_media_enrichment"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
         }
       ],
       "source": "published-baseline",
@@ -4923,9 +5044,9 @@
     },
     "anizone": {
       "id": "anizone",
-      "published_filename": "providers/anizone--published-baseline--d731385183dae625.js",
-      "sha256": "d731385183dae62552a846158d3123e42fbc9fd72bfb4dc494b8223c82480edd",
-      "patched_sha256": "d731385183dae62552a846158d3123e42fbc9fd72bfb4dc494b8223c82480edd",
+      "published_filename": "providers/anizone--published-baseline--9dc804f1dc1966a0.js",
+      "sha256": "9dc804f1dc1966a03091f496cf89f019f00b7dc29dacd3b3750cedf9488d4c4d",
+      "patched_sha256": "9dc804f1dc1966a03091f496cf89f019f00b7dc29dacd3b3750cedf9488d4c4d",
       "upstream_sha256": "0dbdc78b24804babc29f0674da00a46e7b7915ebb5278d58790439d4ba03690b",
       "local_patches": [
         {
@@ -4938,6 +5059,12 @@
           "path": "scripts/provider_patches/global_media_enrichment_v1.py",
           "phase": "discovery",
           "scope": "global_media_enrichment"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
         }
       ],
       "source": "published-baseline",
@@ -5158,9 +5285,9 @@
     },
     "castle": {
       "id": "castle",
-      "published_filename": "providers/castle--nuvio--18c83270c4c2fe72.js",
-      "sha256": "18c83270c4c2fe72adbe6d7b4211876c383e0c066da70309836ecf14b9ce0fca",
-      "patched_sha256": "18c83270c4c2fe72adbe6d7b4211876c383e0c066da70309836ecf14b9ce0fca",
+      "published_filename": "providers/castle--nuvio--bf63cb5df2f7f7fb.js",
+      "sha256": "bf63cb5df2f7f7fbeec7bb25a7ebfe32f4ef86dd68fb5747875e94a7e7d0f5f0",
+      "patched_sha256": "bf63cb5df2f7f7fbeec7bb25a7ebfe32f4ef86dd68fb5747875e94a7e7d0f5f0",
       "upstream_sha256": "1b23fb0b7740e707fb2e3c5f6f69ca51c4bb4fc6afc8f1ae851af22e3f66bb89",
       "local_patches": [
         {
@@ -5410,9 +5537,9 @@
     },
     "cineby": {
       "id": "cineby",
-      "published_filename": "providers/cineby--nuvio--16fbe5cdfd0167ff.js",
-      "sha256": "16fbe5cdfd0167ff0a06e3726da85cebcbbeeedb2504a2c80d9e5c935287c8ea",
-      "patched_sha256": "16fbe5cdfd0167ff0a06e3726da85cebcbbeeedb2504a2c80d9e5c935287c8ea",
+      "published_filename": "providers/cineby--nuvio--d98f20d7cfacea91.js",
+      "sha256": "d98f20d7cfacea91ca841a9538e2283efd23f3c6db1126b65a9241c2d4286d29",
+      "patched_sha256": "d98f20d7cfacea91ca841a9538e2283efd23f3c6db1126b65a9241c2d4286d29",
       "upstream_sha256": "06a14293c93a83d3060684e042e7087031463c775717f8b5f1dfeaa0ba30d429",
       "local_patches": [
         {
@@ -5679,11 +5806,18 @@
     },
     "cinefreak": {
       "id": "cinefreak",
-      "published_filename": "providers/cinefreak--published-baseline--7ed8b03fd595c44a.js",
-      "sha256": "7ed8b03fd595c44af79b5f9d46919b163eb3f88d930d113b1fe0707d0ad38ca9",
-      "patched_sha256": "7ed8b03fd595c44af79b5f9d46919b163eb3f88d930d113b1fe0707d0ad38ca9",
+      "published_filename": "providers/cinefreak--published-baseline--51dc77fbea9e879d.js",
+      "sha256": "51dc77fbea9e879d256bcdd53b6c9418463e5c0c75e4a03e11151adcd02bd3f0",
+      "patched_sha256": "51dc77fbea9e879d256bcdd53b6c9418463e5c0c75e4a03e11151adcd02bd3f0",
       "upstream_sha256": "7ed8b03fd595c44af79b5f9d46919b163eb3f88d930d113b1fe0707d0ad38ca9",
-      "local_patches": [],
+      "local_patches": [
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
+        }
+      ],
       "source": "published-baseline",
       "source_name": "Last published local artifact",
       "source_repository": "Nuvio Curated Providers",
@@ -5922,15 +6056,21 @@
     },
     "cinemacity": {
       "id": "cinemacity",
-      "published_filename": "providers/cinemacity--published-baseline--be1607fa9e8d58fb.js",
-      "sha256": "be1607fa9e8d58fb197df6342483f90f28f613370fa11a63e98a84da33b87f7d",
-      "patched_sha256": "be1607fa9e8d58fb197df6342483f90f28f613370fa11a63e98a84da33b87f7d",
+      "published_filename": "providers/cinemacity--published-baseline--eead6bb730c30af8.js",
+      "sha256": "eead6bb730c30af8081f5378f09d541229e9463b6de9cbfebb56ae60447a12c0",
+      "patched_sha256": "eead6bb730c30af8081f5378f09d541229e9463b6de9cbfebb56ae60447a12c0",
       "upstream_sha256": "e97516075e2f0d47042ab2cfef717d615a79ff6a4f44ff4667c75b027fc1a0fc",
       "local_patches": [
         {
           "type": "patch_script",
           "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
           "phase": "discovery"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
         }
       ],
       "source": "published-baseline",
@@ -6150,9 +6290,9 @@
     },
     "cinemm": {
       "id": "cinemm",
-      "published_filename": "providers/cinemm--published-baseline--ac7f54790006f643.js",
-      "sha256": "ac7f54790006f643f657de3b74c8bee4e829a5f7802c5a5215703a7497915a13",
-      "patched_sha256": "ac7f54790006f643f657de3b74c8bee4e829a5f7802c5a5215703a7497915a13",
+      "published_filename": "providers/cinemm--published-baseline--a855e55a759406af.js",
+      "sha256": "a855e55a759406afdc715622b21fd4b334c00c757d7f90290ba1b19f79f0fb93",
+      "patched_sha256": "a855e55a759406afdc715622b21fd4b334c00c757d7f90290ba1b19f79f0fb93",
       "upstream_sha256": "a5b5565452b28f36764f8119097309da115c5ab9f46703b8e58227c79972f441",
       "local_patches": [
         {
@@ -6394,11 +6534,18 @@
     },
     "cinevibe": {
       "id": "cinevibe",
-      "published_filename": "providers/cinevibe--published-baseline--95e34c978b6bbf74.js",
-      "sha256": "95e34c978b6bbf746178f61699633d87584eff456fb01bd4d84d66520f901e68",
-      "patched_sha256": "95e34c978b6bbf746178f61699633d87584eff456fb01bd4d84d66520f901e68",
+      "published_filename": "providers/cinevibe--published-baseline--ae66fee00ce7044f.js",
+      "sha256": "ae66fee00ce7044f98726cc4bfab3b796a7588c1ab421d10ca66158f3a872e4f",
+      "patched_sha256": "ae66fee00ce7044f98726cc4bfab3b796a7588c1ab421d10ca66158f3a872e4f",
       "upstream_sha256": "95e34c978b6bbf746178f61699633d87584eff456fb01bd4d84d66520f901e68",
-      "local_patches": [],
+      "local_patches": [
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
+        }
+      ],
       "source": "published-baseline",
       "source_name": "Last published local artifact",
       "source_repository": "Nuvio Curated Providers",
@@ -6617,9 +6764,9 @@
     },
     "coflix": {
       "id": "coflix",
-      "published_filename": "providers/coflix--nuvio--e5004613d2c261c3.js",
-      "sha256": "e5004613d2c261c3dbc367cd8dd1043e5350e26d97f787a0a7fb88a93777aa85",
-      "patched_sha256": "e5004613d2c261c3dbc367cd8dd1043e5350e26d97f787a0a7fb88a93777aa85",
+      "published_filename": "providers/coflix--nuvio--1d9f9d3d8287db9d.js",
+      "sha256": "1d9f9d3d8287db9d7a991f1b77197cbd8aa65ed0f9ab33c287132ddf137bb4b8",
+      "patched_sha256": "1d9f9d3d8287db9d7a991f1b77197cbd8aa65ed0f9ab33c287132ddf137bb4b8",
       "upstream_sha256": "48239f7b107a98b295b0ddec8ed38805503a75975e1bee320543d856d0baa87c",
       "local_patches": [
         "{'type': 'patch_script', 'path': 'scripts/provider_patches/vf_catalogue_recovery.py', 'phase': 'discovery'}",
@@ -6698,6 +6845,12 @@
           "path": "scripts/provider_patches/global_catalogue_alias_recovery_v2.py",
           "phase": "discovery",
           "scope": "global_catalogue_resolution"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
         }
       ],
       "source": "desktop-runtime-compat-v1",
@@ -6977,11 +7130,18 @@
     },
     "ctgmovies": {
       "id": "ctgmovies",
-      "published_filename": "providers/ctgmovies--published-baseline--5edc0eedd11d8479.js",
-      "sha256": "5edc0eedd11d8479619cba606b7b70574f37b578d19731ff6be037e9059ea62f",
-      "patched_sha256": "5edc0eedd11d8479619cba606b7b70574f37b578d19731ff6be037e9059ea62f",
+      "published_filename": "providers/ctgmovies--published-baseline--487cb2b0b01518aa.js",
+      "sha256": "487cb2b0b01518aa2e92a29c290c7b7f4fd9194cd81d5543ddc96a6553fe3380",
+      "patched_sha256": "487cb2b0b01518aa2e92a29c290c7b7f4fd9194cd81d5543ddc96a6553fe3380",
       "upstream_sha256": "5edc0eedd11d8479619cba606b7b70574f37b578d19731ff6be037e9059ea62f",
-      "local_patches": [],
+      "local_patches": [
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
+        }
+      ],
       "source": "published-baseline",
       "source_name": "Last published local artifact",
       "source_repository": "Nuvio Curated Providers",
@@ -7203,11 +7363,18 @@
     },
     "desiflix": {
       "id": "desiflix",
-      "published_filename": "providers/desiflix--published-baseline--b94cd450b283832e.js",
-      "sha256": "b94cd450b283832e8558c70ecf24ecc1c87f2f16ba01541978f3e9f7e3f93c8c",
-      "patched_sha256": "b94cd450b283832e8558c70ecf24ecc1c87f2f16ba01541978f3e9f7e3f93c8c",
+      "published_filename": "providers/desiflix--published-baseline--e051598b8f2eed57.js",
+      "sha256": "e051598b8f2eed57401a3ecbf351cad83ed2ca6f6c91f8cc12b8c02153be96f0",
+      "patched_sha256": "e051598b8f2eed57401a3ecbf351cad83ed2ca6f6c91f8cc12b8c02153be96f0",
       "upstream_sha256": "b94cd450b283832e8558c70ecf24ecc1c87f2f16ba01541978f3e9f7e3f93c8c",
-      "local_patches": [],
+      "local_patches": [
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
+        }
+      ],
       "source": "published-baseline",
       "source_name": "Last published local artifact",
       "source_repository": "Nuvio Curated Providers",
@@ -7445,9 +7612,9 @@
     },
     "dooflix": {
       "id": "dooflix",
-      "published_filename": "providers/dooflix--published-baseline--d72b7275d2e81a60.js",
-      "sha256": "d72b7275d2e81a6035aa0b6a4bdb7fcd59be82348aeaa70403d32b6b22bb4d1d",
-      "patched_sha256": "d72b7275d2e81a6035aa0b6a4bdb7fcd59be82348aeaa70403d32b6b22bb4d1d",
+      "published_filename": "providers/dooflix--published-baseline--2608762a34dc4fc6.js",
+      "sha256": "2608762a34dc4fc66bfe3d1e2c61b5858355eb2d19e455da5de365206319199d",
+      "patched_sha256": "2608762a34dc4fc66bfe3d1e2c61b5858355eb2d19e455da5de365206319199d",
       "upstream_sha256": "4f1fe2d96901c1b2abb7d7f93dbac551d4129bb0ceff5017d7439a5ffb7695e8",
       "local_patches": [
         {
@@ -7460,6 +7627,12 @@
           "path": "scripts/provider_patches/global_media_enrichment_v1.py",
           "phase": "discovery",
           "scope": "global_media_enrichment"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
         }
       ],
       "source": "published-baseline",
@@ -7682,9 +7855,9 @@
     },
     "dulourd": {
       "id": "dulourd",
-      "published_filename": "providers/dulourd--published-baseline--04fcdb16defdb041.js",
-      "sha256": "04fcdb16defdb0418be53468fa0786c9e69729ebaa0c046af3b6f29f0ba98c98",
-      "patched_sha256": "04fcdb16defdb0418be53468fa0786c9e69729ebaa0c046af3b6f29f0ba98c98",
+      "published_filename": "providers/dulourd--published-baseline--5a18b0b9b9bf1741.js",
+      "sha256": "5a18b0b9b9bf1741e3a06fa4aa1978e08ea9a7b4d48ccb1e1033e424195c9653",
+      "patched_sha256": "5a18b0b9b9bf1741e3a06fa4aa1978e08ea9a7b4d48ccb1e1033e424195c9653",
       "upstream_sha256": "e62064b45a10a505612be560f20cbd39ad34be7fa69c4fcafe51d9714f72aa05",
       "local_patches": [
         {
@@ -7702,6 +7875,12 @@
           "path": "scripts/provider_patches/global_media_enrichment_v1.py",
           "phase": "discovery",
           "scope": "global_media_enrichment"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
         }
       ],
       "source": "published-baseline",
@@ -7921,9 +8100,9 @@
     },
     "dvdplay": {
       "id": "dvdplay",
-      "published_filename": "providers/dvdplay--nuvio--df83eaff51a7587a.js",
-      "sha256": "df83eaff51a7587a5da8d2c841a63e3ca2bfa165887d4a30a8bb4c2cd110fcf7",
-      "patched_sha256": "df83eaff51a7587a5da8d2c841a63e3ca2bfa165887d4a30a8bb4c2cd110fcf7",
+      "published_filename": "providers/dvdplay--nuvio--9283f9a10e05f671.js",
+      "sha256": "9283f9a10e05f67157f81add57ae413b54d632c99ba5b34f844e82df6aca2492",
+      "patched_sha256": "9283f9a10e05f67157f81add57ae413b54d632c99ba5b34f844e82df6aca2492",
       "upstream_sha256": "d67399b8f3d221dea530132cbaafc95777469e1f12fed665b7c2d90f5823e195",
       "local_patches": [
         {
@@ -8224,9 +8403,9 @@
     },
     "einthusan": {
       "id": "einthusan",
-      "published_filename": "providers/einthusan--published-baseline--449b03fa0e58615d.js",
-      "sha256": "449b03fa0e58615db662b90c094fced52ac715571428f05b01274d44f5bf4fa7",
-      "patched_sha256": "449b03fa0e58615db662b90c094fced52ac715571428f05b01274d44f5bf4fa7",
+      "published_filename": "providers/einthusan--published-baseline--0bcfd3f4ef51e29a.js",
+      "sha256": "0bcfd3f4ef51e29a9e4d771e0e003f8c95555347330879bc8d8adbfff0603b51",
+      "patched_sha256": "0bcfd3f4ef51e29a9e4d771e0e003f8c95555347330879bc8d8adbfff0603b51",
       "upstream_sha256": "9f1aa6907cfc9ff8425a38c05bb38f6c0e21ce9dd741a3dd806c391a34ea0977",
       "local_patches": [
         {
@@ -8235,6 +8414,12 @@
           "phase": "runtime",
           "profile": "adaptive_domain_recovery",
           "runtime_revision": "retry-transient-v2"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
         }
       ],
       "source": "published-baseline",
@@ -8460,11 +8645,18 @@
     },
     "fibwatch": {
       "id": "fibwatch",
-      "published_filename": "providers/fibwatch--published-baseline--0f2cee671f504ebe.js",
-      "sha256": "0f2cee671f504ebe7c07f8f06f292593f1f273148e4e0d640468ccc0d9148665",
-      "patched_sha256": "0f2cee671f504ebe7c07f8f06f292593f1f273148e4e0d640468ccc0d9148665",
+      "published_filename": "providers/fibwatch--published-baseline--3aad96860d607532.js",
+      "sha256": "3aad96860d6075329b6129c659333a675b7a168e8c5353e8c70c66094427639b",
+      "patched_sha256": "3aad96860d6075329b6129c659333a675b7a168e8c5353e8c70c66094427639b",
       "upstream_sha256": "0f2cee671f504ebe7c07f8f06f292593f1f273148e4e0d640468ccc0d9148665",
-      "local_patches": [],
+      "local_patches": [
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
+        }
+      ],
       "source": "published-baseline",
       "source_name": "Last published local artifact",
       "source_repository": "Nuvio Curated Providers",
@@ -8688,9 +8880,9 @@
     },
     "flemmix": {
       "id": "flemmix",
-      "published_filename": "providers/flemmix--nuvio--d43fc8596feb7992.js",
-      "sha256": "d43fc8596feb79929f156fe5156c72bd94680e29df04a58c76d2331423d7f3ac",
-      "patched_sha256": "d43fc8596feb79929f156fe5156c72bd94680e29df04a58c76d2331423d7f3ac",
+      "published_filename": "providers/flemmix--nuvio--57d024a899d8ff52.js",
+      "sha256": "57d024a899d8ff52e877685e1e83f15ff32442bfa4aca0615399a79c28b38f32",
+      "patched_sha256": "57d024a899d8ff52e877685e1e83f15ff32442bfa4aca0615399a79c28b38f32",
       "upstream_sha256": "e0c40c452aca0d6685426c739729bc7bca333a187f4dc2737295f7394ff3955f",
       "local_patches": [
         "{'type': 'patch_script', 'path': 'scripts/provider_patches/stream_output_sanitizer_v5.py', 'phase': 'discovery'}",
@@ -8744,6 +8936,12 @@
           "type": "runtime_domain_overrides",
           "count": 10,
           "phase": "discovery"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
         }
       ],
       "source": "desktop-runtime-compat-v1",
@@ -8977,9 +9175,9 @@
     },
     "french-manga": {
       "id": "french-manga",
-      "published_filename": "providers/french-manga--nuvio-tv-global--48ed67df9c334e2e.js",
-      "sha256": "48ed67df9c334e2e36d77d1d5fd22077fe5426daefcabc1313f57cd276708700",
-      "patched_sha256": "48ed67df9c334e2e36d77d1d5fd22077fe5426daefcabc1313f57cd276708700",
+      "published_filename": "providers/french-manga--nuvio-tv-global--bcf781f51a2745e9.js",
+      "sha256": "bcf781f51a2745e969c711fdba885335c42dcc285b3b6e294927dea9e7fe030e",
+      "patched_sha256": "bcf781f51a2745e969c711fdba885335c42dcc285b3b6e294927dea9e7fe030e",
       "upstream_sha256": "b1f91a943f7f805a86ec04c189e806c6ba4bf3d324a20f67f3857c22d62874b1",
       "local_patches": [
         "scripts/provider_patches/nuvio_tv_direct_media_v2.py",
@@ -9030,6 +9228,12 @@
           "type": "patch_script",
           "path": "scripts/provider_patches/nuvio_tv_target_media_v4.py",
           "phase": "discovery"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
         }
       ],
       "source": "global-nuvio-tv-audit-v2",
@@ -9255,11 +9459,29 @@
     },
     "frenchstream": {
       "id": "frenchstream",
-      "published_filename": "providers/frenchstream--published-baseline--b91c0d32785411f1.js",
-      "sha256": "b91c0d32785411f1c788166d8dcc91a8fd9c17348b20abeac96ead20506044b1",
-      "patched_sha256": "b91c0d32785411f1c788166d8dcc91a8fd9c17348b20abeac96ead20506044b1",
+      "published_filename": "providers/frenchstream--published-baseline--0a6243377a7c0eaf.js",
+      "sha256": "0a6243377a7c0eaf430178a269f9c48b0a00c01d8a1cecb62cad60c2ae1e2b28",
+      "patched_sha256": "0a6243377a7c0eaf430178a269f9c48b0a00c01d8a1cecb62cad60c2ae1e2b28",
       "upstream_sha256": "b91c0d32785411f1c788166d8dcc91a8fd9c17348b20abeac96ead20506044b1",
-      "local_patches": [],
+      "local_patches": [
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/stream_output_sanitizer_v5.py",
+          "phase": "discovery"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_catalogue_alias_recovery_v2.py",
+          "phase": "discovery",
+          "scope": "global_catalogue_resolution"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
+        }
+      ],
       "source": "published-baseline",
       "source_name": "Last published local artifact",
       "source_repository": "Nuvio Curated Providers",
@@ -9510,11 +9732,18 @@
     },
     "goatapi": {
       "id": "goatapi",
-      "published_filename": "providers/goatapi--published-baseline--d04636ca24f04e0d.js",
-      "sha256": "d04636ca24f04e0d4ad0185c8f9507f3f389a80ef603c4d61052cf92c93bf9a5",
-      "patched_sha256": "d04636ca24f04e0d4ad0185c8f9507f3f389a80ef603c4d61052cf92c93bf9a5",
+      "published_filename": "providers/goatapi--published-baseline--38fa625c1096ab80.js",
+      "sha256": "38fa625c1096ab80ba7f3391d6a7454c3fec1a37573267bdceeb963bb8b95839",
+      "patched_sha256": "38fa625c1096ab80ba7f3391d6a7454c3fec1a37573267bdceeb963bb8b95839",
       "upstream_sha256": "d04636ca24f04e0d4ad0185c8f9507f3f389a80ef603c4d61052cf92c93bf9a5",
-      "local_patches": [],
+      "local_patches": [
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
+        }
+      ],
       "source": "published-baseline",
       "source_name": "Last published local artifact",
       "source_repository": "Nuvio Curated Providers",
@@ -9732,9 +9961,9 @@
     },
     "goated": {
       "id": "goated",
-      "published_filename": "providers/goated--nuvio--d7a01c3be8f1af82.js",
-      "sha256": "d7a01c3be8f1af82dc41cf41342dab6731094614d02651b38c0440c9617dd8be",
-      "patched_sha256": "d7a01c3be8f1af82dc41cf41342dab6731094614d02651b38c0440c9617dd8be",
+      "published_filename": "providers/goated--nuvio--ef25789224cf2405.js",
+      "sha256": "ef25789224cf2405d38dfbbd10f292471d4cf9a0b469602f4e728c91de9f74d5",
+      "patched_sha256": "ef25789224cf2405d38dfbbd10f292471d4cf9a0b469602f4e728c91de9f74d5",
       "upstream_sha256": "b4966c7fd78842d59085fe197bc89ddbbc6c23c9a0f9c5ba6b114eedb7673f00",
       "local_patches": [
         {
@@ -10004,11 +10233,18 @@
     },
     "gramcinema": {
       "id": "gramcinema",
-      "published_filename": "providers/gramcinema--published-baseline--5f152a978c2fe523.js",
-      "sha256": "5f152a978c2fe5234bbfc747e92bc4c80997f4226f38db585ab4c446ef3a5632",
-      "patched_sha256": "5f152a978c2fe5234bbfc747e92bc4c80997f4226f38db585ab4c446ef3a5632",
+      "published_filename": "providers/gramcinema--published-baseline--337798b74bf5413b.js",
+      "sha256": "337798b74bf5413b15d050da264e2e1ba66ee3388992b978721c3d6407767d1f",
+      "patched_sha256": "337798b74bf5413b15d050da264e2e1ba66ee3388992b978721c3d6407767d1f",
       "upstream_sha256": "5f152a978c2fe5234bbfc747e92bc4c80997f4226f38db585ab4c446ef3a5632",
-      "local_patches": [],
+      "local_patches": [
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
+        }
+      ],
       "source": "published-baseline",
       "source_name": "Last published local artifact",
       "source_repository": "Nuvio Curated Providers",
@@ -10228,9 +10464,9 @@
     },
     "hdghartv": {
       "id": "hdghartv",
-      "published_filename": "providers/hdghartv--nuvio--ebfc1fa77008c4c0.js",
-      "sha256": "ebfc1fa77008c4c08954f0598fa1db3c4330074c908ed71528cedef6fbca57e0",
-      "patched_sha256": "ebfc1fa77008c4c08954f0598fa1db3c4330074c908ed71528cedef6fbca57e0",
+      "published_filename": "providers/hdghartv--nuvio--3e7286e87a48c1a0.js",
+      "sha256": "3e7286e87a48c1a06d3ac9b4b305d8f915f4d874e3066a7edf3e38fe7d3bacf8",
+      "patched_sha256": "3e7286e87a48c1a06d3ac9b4b305d8f915f4d874e3066a7edf3e38fe7d3bacf8",
       "upstream_sha256": "8f6931a418a437f64d697f6eafdc27b8c2408cefd9accc5c7e7d9810871ed81a",
       "local_patches": [
         {
@@ -10480,9 +10716,9 @@
     },
     "hdhub4u": {
       "id": "hdhub4u",
-      "published_filename": "providers/hdhub4u--published-baseline--f52d144a91fb4b9c.js",
-      "sha256": "f52d144a91fb4b9ce41d1548d4d418d94c66e0b3cb661b24708a460707faf85c",
-      "patched_sha256": "f52d144a91fb4b9ce41d1548d4d418d94c66e0b3cb661b24708a460707faf85c",
+      "published_filename": "providers/hdhub4u--published-baseline--c6bb497b93982c20.js",
+      "sha256": "c6bb497b93982c20bd837fd66a9bd170094809e8b3e52575fd68808af4994eed",
+      "patched_sha256": "c6bb497b93982c20bd837fd66a9bd170094809e8b3e52575fd68808af4994eed",
       "upstream_sha256": "f6e1007a3cd2764bb6fba94531bf634cb91019e62b08c8308217f151fb0a68ce",
       "local_patches": [
         {
@@ -10507,6 +10743,12 @@
           "path": "scripts/provider_patches/global_catalogue_alias_recovery_v2.py",
           "phase": "discovery",
           "scope": "global_catalogue_resolution"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
         }
       ],
       "source": "published-baseline",
@@ -10730,9 +10972,9 @@
     },
     "hianime": {
       "id": "hianime",
-      "published_filename": "providers/hianime--nuvio--87feeba97a4c5775.js",
-      "sha256": "87feeba97a4c577547a7915747dcc075afe4bfe0acff2a9107d4d9486395e47b",
-      "patched_sha256": "87feeba97a4c577547a7915747dcc075afe4bfe0acff2a9107d4d9486395e47b",
+      "published_filename": "providers/hianime--nuvio--d42e33cbb2212b58.js",
+      "sha256": "d42e33cbb2212b586dddf163350277695e9a6ce4d22347e69435d33ac7784409",
+      "patched_sha256": "d42e33cbb2212b586dddf163350277695e9a6ce4d22347e69435d33ac7784409",
       "upstream_sha256": "11124b38985b9780ad49e040b5d30a7143bc9541e27c7e314e70d9778a227af9",
       "local_patches": [
         {
@@ -10985,11 +11227,18 @@
     },
     "hindmoviez": {
       "id": "hindmoviez",
-      "published_filename": "providers/hindmoviez--published-baseline--2795690d053802f9.js",
-      "sha256": "2795690d053802f9489fdea8c08cc5bd5da22612474ce3e605edb1a72445bf79",
-      "patched_sha256": "2795690d053802f9489fdea8c08cc5bd5da22612474ce3e605edb1a72445bf79",
+      "published_filename": "providers/hindmoviez--published-baseline--73c6b651134f3301.js",
+      "sha256": "73c6b651134f3301701c464905239e7e606cf710ee70aacef589e16ac514943b",
+      "patched_sha256": "73c6b651134f3301701c464905239e7e606cf710ee70aacef589e16ac514943b",
       "upstream_sha256": "2795690d053802f9489fdea8c08cc5bd5da22612474ce3e605edb1a72445bf79",
-      "local_patches": [],
+      "local_patches": [
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
+        }
+      ],
       "source": "published-baseline",
       "source_name": "Last published local artifact",
       "source_repository": "Nuvio Curated Providers",
@@ -11219,9 +11468,9 @@
     },
     "kisskh": {
       "id": "kisskh",
-      "published_filename": "providers/kisskh--nuvio--75638c6066246c87.js",
-      "sha256": "75638c6066246c874d2fdda0058c52e26b9dcf6304947cd98326adc05ddd1621",
-      "patched_sha256": "75638c6066246c874d2fdda0058c52e26b9dcf6304947cd98326adc05ddd1621",
+      "published_filename": "providers/kisskh--nuvio--d95a877ed20589c9.js",
+      "sha256": "d95a877ed20589c901c56e9ffcf69876d004b5055a5b01b1d2f3fb8e7678d484",
+      "patched_sha256": "d95a877ed20589c901c56e9ffcf69876d004b5055a5b01b1d2f3fb8e7678d484",
       "upstream_sha256": "81b0afffb337390782cace12c5d657c6aa42765d05f5da986022284a99bafb98",
       "local_patches": [
         {
@@ -11459,9 +11708,9 @@
     },
     "kurage": {
       "id": "kurage",
-      "published_filename": "providers/kurage--nuvio--258bfc4ddbe46554.js",
-      "sha256": "258bfc4ddbe46554b98e132e6bf9f7ca6cde9d1a4331411b15ca989f4a0729a9",
-      "patched_sha256": "258bfc4ddbe46554b98e132e6bf9f7ca6cde9d1a4331411b15ca989f4a0729a9",
+      "published_filename": "providers/kurage--nuvio--62ab4489eb755e75.js",
+      "sha256": "62ab4489eb755e75a3894bb76d8bdef2e898beb888754eae7ef9d484fe8b9722",
+      "patched_sha256": "62ab4489eb755e75a3894bb76d8bdef2e898beb888754eae7ef9d484fe8b9722",
       "upstream_sha256": "668797edb270c5fed931b08e0c92ca6693420041838f3b8ef49e28ddb1e7e463",
       "local_patches": [
         {
@@ -11706,9 +11955,9 @@
     },
     "mallumv": {
       "id": "mallumv",
-      "published_filename": "providers/mallumv--published-baseline--86f9d72b1eff2141.js",
-      "sha256": "86f9d72b1eff2141134de9db8fbd0498fd88a7ef8c097db57b13a9b5fbf4d7b5",
-      "patched_sha256": "86f9d72b1eff2141134de9db8fbd0498fd88a7ef8c097db57b13a9b5fbf4d7b5",
+      "published_filename": "providers/mallumv--published-baseline--1258f8a124df26a4.js",
+      "sha256": "1258f8a124df26a4cdbea92c0e191161ad2e6d211fa43dc36f0ced3838afa30c",
+      "patched_sha256": "1258f8a124df26a4cdbea92c0e191161ad2e6d211fa43dc36f0ced3838afa30c",
       "upstream_sha256": "13011bc6a99673814ce13d15ab4ad41203ff6a9e1cc245549ac9e671f122234e",
       "local_patches": [
         {
@@ -11728,6 +11977,12 @@
           "phase": "runtime",
           "profile": "adaptive_domain_recovery",
           "runtime_revision": "retry-transient-v2"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
         }
       ],
       "source": "published-baseline",
@@ -11952,9 +12207,9 @@
     },
     "moonflix": {
       "id": "moonflix",
-      "published_filename": "providers/moonflix--nuvio--0e7900363260e28d.js",
-      "sha256": "0e7900363260e28d7b62654f28a037272b4840bd0bf3f6e0db1ba5e816254b2b",
-      "patched_sha256": "0e7900363260e28d7b62654f28a037272b4840bd0bf3f6e0db1ba5e816254b2b",
+      "published_filename": "providers/moonflix--nuvio--41c1794cba4ddbc0.js",
+      "sha256": "41c1794cba4ddbc0fd618ebe2fd4ef92135b41dd0448b00826a52d7e51a410ea",
+      "patched_sha256": "41c1794cba4ddbc0fd618ebe2fd4ef92135b41dd0448b00826a52d7e51a410ea",
       "upstream_sha256": "e4928ad7affd0f9d417fee3c3f90bcaf0f37ed2c577ab52dd391a6cd1635f12f",
       "local_patches": [
         {
@@ -12204,9 +12459,9 @@
     },
     "movieblast": {
       "id": "movieblast",
-      "published_filename": "providers/movieblast--nuvio--3c3313548db1f536.js",
-      "sha256": "3c3313548db1f53616cb90a77e2117ef24e6f4d561897e3ddb69e26d09d072f0",
-      "patched_sha256": "3c3313548db1f53616cb90a77e2117ef24e6f4d561897e3ddb69e26d09d072f0",
+      "published_filename": "providers/movieblast--nuvio--bdc671d7316b185f.js",
+      "sha256": "bdc671d7316b185ffd410cd2f91343d7996cfa5e59fd55b18e15c5f02f76bec5",
+      "patched_sha256": "bdc671d7316b185ffd410cd2f91343d7996cfa5e59fd55b18e15c5f02f76bec5",
       "upstream_sha256": "d3b04a5ee1a13fed77192b5226d46001508fe321fa747f0c519d0c23d5b1a974",
       "local_patches": [
         {
@@ -12454,9 +12709,9 @@
     },
     "moviebox": {
       "id": "moviebox",
-      "published_filename": "providers/moviebox--published-baseline--581aa24c345aa880.js",
-      "sha256": "581aa24c345aa8809f5029ab5172414d1dfb1bd4635925a9670fd8e6be6e76c9",
-      "patched_sha256": "581aa24c345aa8809f5029ab5172414d1dfb1bd4635925a9670fd8e6be6e76c9",
+      "published_filename": "providers/moviebox--published-baseline--35b1b242f8ed3b86.js",
+      "sha256": "35b1b242f8ed3b86767d64dc4d14320837e6b6d8001103d33466da40ca28fa9e",
+      "patched_sha256": "35b1b242f8ed3b86767d64dc4d14320837e6b6d8001103d33466da40ca28fa9e",
       "upstream_sha256": "f19ec5a037e53220e1457e6db0cb9abee1d2f9f299c594dddefb14df7822c847",
       "local_patches": [
         {
@@ -12481,6 +12736,12 @@
           "path": "scripts/provider_patches/global_catalogue_alias_recovery_v2.py",
           "phase": "discovery",
           "scope": "global_catalogue_resolution"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
         }
       ],
       "source": "published-baseline",
@@ -12703,9 +12964,9 @@
     },
     "movies4u": {
       "id": "movies4u",
-      "published_filename": "providers/movies4u--nuvio--df35076090732314.js",
-      "sha256": "df3507609073231405adda5eff43caebe92f86d1ff74ba4380fd20e28daf8491",
-      "patched_sha256": "df3507609073231405adda5eff43caebe92f86d1ff74ba4380fd20e28daf8491",
+      "published_filename": "providers/movies4u--nuvio--e05c821dfa616bbe.js",
+      "sha256": "e05c821dfa616bbeb26cee0f1c28a99ea5dbd17d8fb14418aed088200ae0a90b",
+      "patched_sha256": "e05c821dfa616bbeb26cee0f1c28a99ea5dbd17d8fb14418aed088200ae0a90b",
       "upstream_sha256": "d57854d4a39a0c4c36af6ba3ab2bda4c00aa4bd5037e395e786f6a2b79f15ecd",
       "local_patches": [
         {
@@ -12735,6 +12996,12 @@
           "type": "patch_script",
           "path": "scripts/provider_patches/stream_output_sanitizer_v5.py",
           "phase": "discovery"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
         }
       ],
       "source": "published-baseline",
@@ -12986,9 +13253,9 @@
     },
     "moviesdrive": {
       "id": "moviesdrive",
-      "published_filename": "providers/moviesdrive--nuvio--de118c44fa24f1c5.js",
-      "sha256": "de118c44fa24f1c5d1b782eb43f8fe0e1eb00080a9968730e5703f3009a1baaf",
-      "patched_sha256": "de118c44fa24f1c5d1b782eb43f8fe0e1eb00080a9968730e5703f3009a1baaf",
+      "published_filename": "providers/moviesdrive--nuvio--082a0b9ac15845ad.js",
+      "sha256": "082a0b9ac15845ad1fd729e5c374b9a68a0fc2613b5f8ebd863b996c9ec61ebc",
+      "patched_sha256": "082a0b9ac15845ad1fd729e5c374b9a68a0fc2613b5f8ebd863b996c9ec61ebc",
       "upstream_sha256": "675d0e30755fa97131010ddbe3a3ed8733043e9635a672f5845d087d3a924ea1",
       "local_patches": [
         {
@@ -13025,6 +13292,12 @@
           "phase": "runtime",
           "profile": "adaptive_domain_recovery",
           "runtime_revision": "retry-transient-v2"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
         }
       ],
       "source": "published-baseline",
@@ -13245,9 +13518,9 @@
     },
     "movieshunt": {
       "id": "movieshunt",
-      "published_filename": "providers/movieshunt--nuvio--94d25cf7ee552c54.js",
-      "sha256": "94d25cf7ee552c5405c51f30da3fb948c100c3e00051c7553acef9db8d9a0b5b",
-      "patched_sha256": "94d25cf7ee552c5405c51f30da3fb948c100c3e00051c7553acef9db8d9a0b5b",
+      "published_filename": "providers/movieshunt--nuvio--d956b161cf1ee7a1.js",
+      "sha256": "d956b161cf1ee7a114b02ca2fec17d5bb1b5b1e0bb0e4168d35c1e5848cd6d07",
+      "patched_sha256": "d956b161cf1ee7a114b02ca2fec17d5bb1b5b1e0bb0e4168d35c1e5848cd6d07",
       "upstream_sha256": "6796beaa02d57e69cb033eec47a14a3b74782a0d08bcfd260421f10d4041392e",
       "local_patches": [
         {
@@ -13477,9 +13750,9 @@
     },
     "moviesmod": {
       "id": "moviesmod",
-      "published_filename": "providers/moviesmod--published-baseline--01a1294b9e3b49d9.js",
-      "sha256": "01a1294b9e3b49d91fcb8d5807129a943b39a0710ed679cf08fc928a18af9e49",
-      "patched_sha256": "01a1294b9e3b49d91fcb8d5807129a943b39a0710ed679cf08fc928a18af9e49",
+      "published_filename": "providers/moviesmod--published-baseline--cf09691fc82172d7.js",
+      "sha256": "cf09691fc82172d72d8959244bf7a2c621acaa242c5df3db3fcb3037162f3820",
+      "patched_sha256": "cf09691fc82172d72d8959244bf7a2c621acaa242c5df3db3fcb3037162f3820",
       "upstream_sha256": "c90890640a4598443ae4a264547b9ce1d089952f5d19ac9ab74e6cf1e28e0a9f",
       "local_patches": [
         {
@@ -13516,6 +13789,12 @@
           "phase": "runtime",
           "profile": "adaptive_domain_recovery",
           "runtime_revision": "retry-transient-v2"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
         }
       ],
       "source": "published-baseline",
@@ -13737,9 +14016,9 @@
     },
     "movix": {
       "id": "movix",
-      "published_filename": "providers/movix--nuvio--953805febedb866c.js",
-      "sha256": "953805febedb866c6430563af7e92480745e6c1b4c63faa99d369333a2f56109",
-      "patched_sha256": "953805febedb866c6430563af7e92480745e6c1b4c63faa99d369333a2f56109",
+      "published_filename": "providers/movix--nuvio--9bfa908137efb2c4.js",
+      "sha256": "9bfa908137efb2c4279bc8d007537cfafd03be011caf3c01002af0eb2aa46847",
+      "patched_sha256": "9bfa908137efb2c4279bc8d007537cfafd03be011caf3c01002af0eb2aa46847",
       "upstream_sha256": "b31ef87b05d3a4f351d20872e33980b4de95d73461ce2c27327d64bde9653787",
       "local_patches": [
         "{'type': 'patch_script', 'path': 'scripts/provider_patches/stream_output_sanitizer_v5.py', 'phase': 'discovery'}",
@@ -13781,6 +14060,12 @@
           "type": "patch_script",
           "path": "scripts/provider_patches/stream_output_sanitizer_v5.py",
           "phase": "discovery"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
         }
       ],
       "source": "desktop-runtime-compat-v1",
@@ -14017,11 +14302,24 @@
     },
     "mugiwarastream": {
       "id": "mugiwarastream",
-      "published_filename": "providers/mugiwarastream--published-baseline--28c58230d6542407.js",
-      "sha256": "28c58230d6542407c4f043eb884691678505697d707dcf0ae23fda6ecb444de8",
-      "patched_sha256": "28c58230d6542407c4f043eb884691678505697d707dcf0ae23fda6ecb444de8",
+      "published_filename": "providers/mugiwarastream--published-baseline--ac946309de070ab5.js",
+      "sha256": "ac946309de070ab5b87eb9a1a275260fc01ebe3b2ba2a2c52f63f83751186d82",
+      "patched_sha256": "ac946309de070ab5b87eb9a1a275260fc01ebe3b2ba2a2c52f63f83751186d82",
       "upstream_sha256": "28c58230d6542407c4f043eb884691678505697d707dcf0ae23fda6ecb444de8",
-      "local_patches": [],
+      "local_patches": [
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_catalogue_alias_recovery_v2.py",
+          "phase": "discovery",
+          "scope": "global_catalogue_resolution"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
+        }
+      ],
       "source": "published-baseline",
       "source_name": "Last published local artifact",
       "source_repository": "Nuvio Curated Providers",
@@ -14257,9 +14555,9 @@
     },
     "mycima": {
       "id": "mycima",
-      "published_filename": "providers/mycima--published-baseline--e6b7307c13557b75.js",
-      "sha256": "e6b7307c13557b75d51b1639e1dc55f2b824f98a6b347f03d3f5ca3ad77bda74",
-      "patched_sha256": "e6b7307c13557b75d51b1639e1dc55f2b824f98a6b347f03d3f5ca3ad77bda74",
+      "published_filename": "providers/mycima--published-baseline--1d4e5c8965a6031c.js",
+      "sha256": "1d4e5c8965a6031c9b632cac6ffe0e572bf3ef2708b7f5f67c99f7e26de6d22b",
+      "patched_sha256": "1d4e5c8965a6031c9b632cac6ffe0e572bf3ef2708b7f5f67c99f7e26de6d22b",
       "upstream_sha256": "cbb2054c47c30a8de3784cae682dbe3d4eaf319332b59637671a06b26e70e24e",
       "local_patches": [
         {
@@ -14273,6 +14571,12 @@
           "phase": "runtime",
           "profile": "adaptive_domain_recovery",
           "runtime_revision": "retry-transient-v2"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
         }
       ],
       "source": "published-baseline",
@@ -14497,9 +14801,9 @@
     },
     "nakios": {
       "id": "nakios",
-      "published_filename": "providers/nakios--published-baseline--0808ee85d56b5e82.js",
-      "sha256": "0808ee85d56b5e82617ac9d8705d3db27f036ce278f4db2a0dc532613410d71e",
-      "patched_sha256": "0808ee85d56b5e82617ac9d8705d3db27f036ce278f4db2a0dc532613410d71e",
+      "published_filename": "providers/nakios--published-baseline--ad56a557afc82ec8.js",
+      "sha256": "ad56a557afc82ec844b47b390e0b23cd47e510312a7e561f56d2601d12f7dd80",
+      "patched_sha256": "ad56a557afc82ec844b47b390e0b23cd47e510312a7e561f56d2601d12f7dd80",
       "upstream_sha256": "9f244357f0b66ad28e2fa1ad578c7627da71b38bf0ebfd00fb79a45e60b9d019",
       "local_patches": [
         {
@@ -14517,6 +14821,12 @@
           "path": "scripts/provider_patches/global_media_enrichment_v1.py",
           "phase": "discovery",
           "scope": "global_media_enrichment"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
         }
       ],
       "source": "published-baseline",
@@ -14739,9 +15049,9 @@
     },
     "netmirror": {
       "id": "netmirror",
-      "published_filename": "providers/netmirror--published-baseline--46f44f1d500777ab.js",
-      "sha256": "46f44f1d500777ab06fc26e31d57a7fabfc7f026b9d3fe7f74622385c2172264",
-      "patched_sha256": "46f44f1d500777ab06fc26e31d57a7fabfc7f026b9d3fe7f74622385c2172264",
+      "published_filename": "providers/netmirror--published-baseline--dd0e3b8598263dea.js",
+      "sha256": "dd0e3b8598263deaee9d8a5ea9af8a4510b40520af85e878843ec2928a420455",
+      "patched_sha256": "dd0e3b8598263deaee9d8a5ea9af8a4510b40520af85e878843ec2928a420455",
       "upstream_sha256": "5cc8283a945c663ea55e049931f22c3f9afdeb3ff38e564899dc5359d40600c1",
       "local_patches": [
         {
@@ -14766,6 +15076,12 @@
           "path": "scripts/provider_patches/global_catalogue_alias_recovery_v2.py",
           "phase": "discovery",
           "scope": "global_catalogue_resolution"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
         }
       ],
       "source": "published-baseline",
@@ -14990,11 +15306,18 @@
     },
     "onlykdrama": {
       "id": "onlykdrama",
-      "published_filename": "providers/onlykdrama--published-baseline--fca5e51ab5b4f0e0.js",
-      "sha256": "fca5e51ab5b4f0e0288356e734ce169f653de5f3ddad08472c99afa3586dd909",
-      "patched_sha256": "fca5e51ab5b4f0e0288356e734ce169f653de5f3ddad08472c99afa3586dd909",
+      "published_filename": "providers/onlykdrama--published-baseline--90e3ba242b982624.js",
+      "sha256": "90e3ba242b98262403814f1869da86b02f079fa0dcb1d804f13fab3b5a210656",
+      "patched_sha256": "90e3ba242b98262403814f1869da86b02f079fa0dcb1d804f13fab3b5a210656",
       "upstream_sha256": "fca5e51ab5b4f0e0288356e734ce169f653de5f3ddad08472c99afa3586dd909",
-      "local_patches": [],
+      "local_patches": [
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
+        }
+      ],
       "source": "published-baseline",
       "source_name": "Last published local artifact",
       "source_repository": "Nuvio Curated Providers",
@@ -15216,11 +15539,24 @@
     },
     "papadustream": {
       "id": "papadustream",
-      "published_filename": "providers/papadustream--published-baseline--3b5e48fd2a1089b6.js",
-      "sha256": "3b5e48fd2a1089b614594fef1788c7870f5b3d85979662e3f0ae419729398782",
-      "patched_sha256": "3b5e48fd2a1089b614594fef1788c7870f5b3d85979662e3f0ae419729398782",
+      "published_filename": "providers/papadustream--published-baseline--16c2b901207475c8.js",
+      "sha256": "16c2b901207475c8bcc3e58a43c29331e25cf17d21febe7c043344d5be15d6ea",
+      "patched_sha256": "16c2b901207475c8bcc3e58a43c29331e25cf17d21febe7c043344d5be15d6ea",
       "upstream_sha256": "3b5e48fd2a1089b614594fef1788c7870f5b3d85979662e3f0ae419729398782",
-      "local_patches": [],
+      "local_patches": [
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_catalogue_alias_recovery_v2.py",
+          "phase": "discovery",
+          "scope": "global_catalogue_resolution"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
+        }
+      ],
       "source": "published-baseline",
       "source_name": "Last published local artifact",
       "source_repository": "Nuvio Curated Providers",
@@ -15458,9 +15794,9 @@
     },
     "peachify": {
       "id": "peachify",
-      "published_filename": "providers/peachify--published-baseline--8de9bcf27a5f5654.js",
-      "sha256": "8de9bcf27a5f5654be448173bb215c3c7718ba4a82d8f388d060157c824a7b71",
-      "patched_sha256": "8de9bcf27a5f5654be448173bb215c3c7718ba4a82d8f388d060157c824a7b71",
+      "published_filename": "providers/peachify--published-baseline--e122f25742dd31c4.js",
+      "sha256": "e122f25742dd31c4513d7fcc73554346dbd6e6b3a98807f9802601a2aa9c7ce1",
+      "patched_sha256": "e122f25742dd31c4513d7fcc73554346dbd6e6b3a98807f9802601a2aa9c7ce1",
       "upstream_sha256": "3abd719532e31536f5ef1a5b98802779d66b3b84b37fc084d83908b6ff57c217",
       "local_patches": [
         {
@@ -15473,6 +15809,12 @@
           "path": "scripts/provider_patches/global_media_enrichment_v1.py",
           "phase": "discovery",
           "scope": "global_media_enrichment"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
         }
       ],
       "source": "published-baseline",
@@ -15694,11 +16036,18 @@
     },
     "persianstremio": {
       "id": "persianstremio",
-      "published_filename": "providers/persianstremio--published-baseline--0a732e24bfa1d1b2.js",
-      "sha256": "0a732e24bfa1d1b227bced53f661e87f48fd56e2febfd631057d2aaaf0da2bda",
-      "patched_sha256": "0a732e24bfa1d1b227bced53f661e87f48fd56e2febfd631057d2aaaf0da2bda",
+      "published_filename": "providers/persianstremio--published-baseline--cb67ea48896a7f52.js",
+      "sha256": "cb67ea48896a7f5275f9e1856e8357f1accb5574e397e0fb01ef800787a0f9bb",
+      "patched_sha256": "cb67ea48896a7f5275f9e1856e8357f1accb5574e397e0fb01ef800787a0f9bb",
       "upstream_sha256": "0a732e24bfa1d1b227bced53f661e87f48fd56e2febfd631057d2aaaf0da2bda",
-      "local_patches": [],
+      "local_patches": [
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
+        }
+      ],
       "source": "published-baseline",
       "source_name": "Last published local artifact",
       "source_repository": "Nuvio Curated Providers",
@@ -15929,9 +16278,9 @@
     },
     "playimdb": {
       "id": "playimdb",
-      "published_filename": "providers/playimdb--nuvio--a335d04478c95074.js",
-      "sha256": "a335d04478c9507458da19d9faebc97f783cf5f1bbd21aa572282eb78d63c311",
-      "patched_sha256": "a335d04478c9507458da19d9faebc97f783cf5f1bbd21aa572282eb78d63c311",
+      "published_filename": "providers/playimdb--nuvio--760399e7d0f30f52.js",
+      "sha256": "760399e7d0f30f52c016c923f1729090d69c4f8200cbca3af710a380c767c87b",
+      "patched_sha256": "760399e7d0f30f52c016c923f1729090d69c4f8200cbca3af710a380c767c87b",
       "upstream_sha256": "e00e7b0d65b15622e0b6bcdce3ccc92d6226853197962348ced4af47343f07ab",
       "local_patches": [
         {
@@ -16169,9 +16518,9 @@
     },
     "purstream": {
       "id": "purstream",
-      "published_filename": "providers/purstream--nuvio--11cb6bc72f54a9ee.js",
-      "sha256": "11cb6bc72f54a9ee2f41709acc3e07a20cbbb50592f91a76376906dab0778f96",
-      "patched_sha256": "11cb6bc72f54a9ee2f41709acc3e07a20cbbb50592f91a76376906dab0778f96",
+      "published_filename": "providers/purstream--nuvio--9f1ee56912490387.js",
+      "sha256": "9f1ee56912490387f7d26437445378ad85d3ae6a1d16f2f5243ba290dc1c9c93",
+      "patched_sha256": "9f1ee56912490387f7d26437445378ad85d3ae6a1d16f2f5243ba290dc1c9c93",
       "upstream_sha256": "02173d75d873826f33e7bd45bb1c7973e557845548a8634b3ed1a5161c89abb8",
       "local_patches": [
         {
@@ -16434,11 +16783,24 @@
     },
     "sekai": {
       "id": "sekai",
-      "published_filename": "providers/sekai--published-baseline--4b5a7938635d9311.js",
-      "sha256": "4b5a7938635d93110b638a8ffde8ff1701b27c711ac2d4c42196cc0c443b13eb",
-      "patched_sha256": "4b5a7938635d93110b638a8ffde8ff1701b27c711ac2d4c42196cc0c443b13eb",
+      "published_filename": "providers/sekai--published-baseline--89389334859f7d2c.js",
+      "sha256": "89389334859f7d2c1f57154ed613fdd17707d4a7badfd78cd49da90066e1b60e",
+      "patched_sha256": "89389334859f7d2c1f57154ed613fdd17707d4a7badfd78cd49da90066e1b60e",
       "upstream_sha256": "4b5a7938635d93110b638a8ffde8ff1701b27c711ac2d4c42196cc0c443b13eb",
-      "local_patches": [],
+      "local_patches": [
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_catalogue_alias_recovery_v2.py",
+          "phase": "discovery",
+          "scope": "global_catalogue_resolution"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
+        }
+      ],
       "source": "published-baseline",
       "source_name": "Last published local artifact",
       "source_repository": "Nuvio Curated Providers",
@@ -16676,11 +17038,18 @@
     },
     "showbox": {
       "id": "showbox",
-      "published_filename": "providers/showbox--published-baseline--4ebb5aadaea8b9ea.js",
-      "sha256": "4ebb5aadaea8b9eaaafe704eaf08b52dde4e2f28cab73da499af2fb5945396a3",
-      "patched_sha256": "4ebb5aadaea8b9eaaafe704eaf08b52dde4e2f28cab73da499af2fb5945396a3",
+      "published_filename": "providers/showbox--published-baseline--31627d650ee12b60.js",
+      "sha256": "31627d650ee12b60f93e7eb85fdc29c11ab4bc5ae5afe534edb692173ddf3f63",
+      "patched_sha256": "31627d650ee12b60f93e7eb85fdc29c11ab4bc5ae5afe534edb692173ddf3f63",
       "upstream_sha256": "4ebb5aadaea8b9eaaafe704eaf08b52dde4e2f28cab73da499af2fb5945396a3",
-      "local_patches": [],
+      "local_patches": [
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
+        }
+      ],
       "source": "published-baseline",
       "source_name": "Last published local artifact",
       "source_repository": "Nuvio Curated Providers",
@@ -16900,9 +17269,9 @@
     },
     "streamflix": {
       "id": "streamflix",
-      "published_filename": "providers/streamflix--published-baseline--d4aad73fbd3542b9.js",
-      "sha256": "d4aad73fbd3542b957e1aa0ac64cb8a392e349826052778a20da6efe4f761571",
-      "patched_sha256": "d4aad73fbd3542b957e1aa0ac64cb8a392e349826052778a20da6efe4f761571",
+      "published_filename": "providers/streamflix--published-baseline--ab96e088208a3740.js",
+      "sha256": "ab96e088208a3740c65e40fdfabebe08485aa0e6a06773f43c34b641686f3f93",
+      "patched_sha256": "ab96e088208a3740c65e40fdfabebe08485aa0e6a06773f43c34b641686f3f93",
       "upstream_sha256": "a9e7deb56fd5b3c93458e01fe7d32a764ee1defe3e88759dcb68f448006ded31",
       "local_patches": [
         {
@@ -17134,11 +17503,29 @@
     },
     "streamzo": {
       "id": "streamzo",
-      "published_filename": "providers/streamzo--published-baseline--c20bdca7585cacf1.js",
-      "sha256": "c20bdca7585cacf12f4819669ac8a5fabc2ec3e6be1b0b34609f6ac4cf23e285",
-      "patched_sha256": "c20bdca7585cacf12f4819669ac8a5fabc2ec3e6be1b0b34609f6ac4cf23e285",
+      "published_filename": "providers/streamzo--published-baseline--b10398fc3b295012.js",
+      "sha256": "b10398fc3b295012ab6faf3787cf3e7c986b5aea5401c1f8d628c91416402c6e",
+      "patched_sha256": "b10398fc3b295012ab6faf3787cf3e7c986b5aea5401c1f8d628c91416402c6e",
       "upstream_sha256": "c20bdca7585cacf12f4819669ac8a5fabc2ec3e6be1b0b34609f6ac4cf23e285",
-      "local_patches": [],
+      "local_patches": [
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/stream_output_sanitizer_v5.py",
+          "phase": "discovery"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_catalogue_alias_recovery_v2.py",
+          "phase": "discovery",
+          "scope": "global_catalogue_resolution"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
+        }
+      ],
       "source": "published-baseline",
       "source_name": "Last published local artifact",
       "source_repository": "Nuvio Curated Providers",
@@ -17374,11 +17761,18 @@
     },
     "toflix": {
       "id": "toflix",
-      "published_filename": "providers/toflix--published-baseline--d71a4c1b9d718a0b.js",
-      "sha256": "d71a4c1b9d718a0b672c371c6cf8a16e57d59560dd892227aa71c805a201a1fc",
-      "patched_sha256": "d71a4c1b9d718a0b672c371c6cf8a16e57d59560dd892227aa71c805a201a1fc",
+      "published_filename": "providers/toflix--published-baseline--95562147886bf8ef.js",
+      "sha256": "95562147886bf8ef7e15029c12e12b64261a419d4c259e9767b7f2cba9bcf7c1",
+      "patched_sha256": "95562147886bf8ef7e15029c12e12b64261a419d4c259e9767b7f2cba9bcf7c1",
       "upstream_sha256": "d71a4c1b9d718a0b672c371c6cf8a16e57d59560dd892227aa71c805a201a1fc",
-      "local_patches": [],
+      "local_patches": [
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
+        }
+      ],
       "source": "published-baseline",
       "source_name": "Last published local artifact",
       "source_repository": "Nuvio Curated Providers",
@@ -17601,9 +17995,9 @@
     },
     "topcartoons": {
       "id": "topcartoons",
-      "published_filename": "providers/topcartoons--nuvio--af8ec36989fe0456.js",
-      "sha256": "af8ec36989fe0456b8cc20dba1690396a3ae0fd4139a3f26504e221b0b61baef",
-      "patched_sha256": "af8ec36989fe0456b8cc20dba1690396a3ae0fd4139a3f26504e221b0b61baef",
+      "published_filename": "providers/topcartoons--nuvio--115b93647bccae74.js",
+      "sha256": "115b93647bccae744573d3ce848f395d5009d99d4cc57712293db5306c7a7fb6",
+      "patched_sha256": "115b93647bccae744573d3ce848f395d5009d99d4cc57712293db5306c7a7fb6",
       "upstream_sha256": "df33f490a73779f40b29ad612863fd4b192768567338a2171289fe5316e40ef6",
       "local_patches": [
         {
@@ -17836,9 +18230,9 @@
     },
     "vegamovies": {
       "id": "vegamovies",
-      "published_filename": "providers/vegamovies--published-baseline--112f5756b8461f40.js",
-      "sha256": "112f5756b8461f4012cff84d641e7dc2df3c546a5ab88bf77689003167adf538",
-      "patched_sha256": "112f5756b8461f4012cff84d641e7dc2df3c546a5ab88bf77689003167adf538",
+      "published_filename": "providers/vegamovies--published-baseline--31d9c2b93a127029.js",
+      "sha256": "31d9c2b93a127029a82acff50d1ef00a13c9194de9349105264a2ae7096029cb",
+      "patched_sha256": "31d9c2b93a127029a82acff50d1ef00a13c9194de9349105264a2ae7096029cb",
       "upstream_sha256": "0641a31d6068d8d2f3e5ca5d734494b24f69b89d6a5d027ae1a7b5eee1953d1a",
       "local_patches": [
         {
@@ -18110,9 +18504,9 @@
     },
     "videasy": {
       "id": "videasy",
-      "published_filename": "providers/videasy--nuvio--195ac9ece376202f.js",
-      "sha256": "195ac9ece376202f2d77de6751653c6cbd140e23c79e0a7fa0f2b2e760a99382",
-      "patched_sha256": "195ac9ece376202f2d77de6751653c6cbd140e23c79e0a7fa0f2b2e760a99382",
+      "published_filename": "providers/videasy--nuvio--664d8f779120b452.js",
+      "sha256": "664d8f779120b452e6ed794c3b05a6e4823a14fe0dd60e4b03fe0fcb2d21fe8c",
+      "patched_sha256": "664d8f779120b452e6ed794c3b05a6e4823a14fe0dd60e4b03fe0fcb2d21fe8c",
       "upstream_sha256": "8fb7fbc12e23d28185927a5a7f47fa65874ff0d1b1f3e01f4dbf9813c4fc7862",
       "local_patches": [
         {
@@ -18391,9 +18785,9 @@
     },
     "vidfast": {
       "id": "vidfast",
-      "published_filename": "providers/vidfast--nuvio--3f8138fe1c3bba26.js",
-      "sha256": "3f8138fe1c3bba261e8c9c67e7f744e0e787f482224baa17582579fb025f5bce",
-      "patched_sha256": "3f8138fe1c3bba261e8c9c67e7f744e0e787f482224baa17582579fb025f5bce",
+      "published_filename": "providers/vidfast--nuvio--b5f6feed5a501f30.js",
+      "sha256": "b5f6feed5a501f3088a97725ae747f3932ef7cdb010141e0866dadcdb8b412f7",
+      "patched_sha256": "b5f6feed5a501f3088a97725ae747f3932ef7cdb010141e0866dadcdb8b412f7",
       "upstream_sha256": "9750c41a72fe7978d81eabd1b3704529cac0c13a7830a1d608afec5c892271cd",
       "local_patches": [
         {
@@ -18639,9 +19033,9 @@
     },
     "vidlink": {
       "id": "vidlink",
-      "published_filename": "providers/vidlink--published-baseline--97a2be0195dd6130.js",
-      "sha256": "97a2be0195dd613037509560e37e78283f8cc931b25e2605f2153e6780f7a8c6",
-      "patched_sha256": "97a2be0195dd613037509560e37e78283f8cc931b25e2605f2153e6780f7a8c6",
+      "published_filename": "providers/vidlink--published-baseline--bd381132cdbddff9.js",
+      "sha256": "bd381132cdbddff9994019e50c3e51480c5bf5276b4122fc7abd9ee145f32c7d",
+      "patched_sha256": "bd381132cdbddff9994019e50c3e51480c5bf5276b4122fc7abd9ee145f32c7d",
       "upstream_sha256": "bedc41b8caf7e7cb371b5b96bb949970278c8a51b83847eaa64f46ca0317c521",
       "local_patches": [
         {
@@ -18654,6 +19048,12 @@
           "path": "scripts/provider_patches/global_media_enrichment_v1.py",
           "phase": "discovery",
           "scope": "global_media_enrichment"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
         }
       ],
       "source": "published-baseline",
@@ -18875,9 +19275,9 @@
     },
     "vidlove": {
       "id": "vidlove",
-      "published_filename": "providers/vidlove--nuvio--8ad389789861c539.js",
-      "sha256": "8ad389789861c53962dbc437110d9c3895ad0f1c12f6ecd3717c1a87bd038bea",
-      "patched_sha256": "8ad389789861c53962dbc437110d9c3895ad0f1c12f6ecd3717c1a87bd038bea",
+      "published_filename": "providers/vidlove--nuvio--2c961ac7e0a4673b.js",
+      "sha256": "2c961ac7e0a4673b451a113707aad13ca013c81b1afd0b789c860af5d5817f75",
+      "patched_sha256": "2c961ac7e0a4673b451a113707aad13ca013c81b1afd0b789c860af5d5817f75",
       "upstream_sha256": "a8516b7fcc81ce7013b51f3be9a905de9defe34d654e52c01d0a944dbb624a89",
       "local_patches": [
         {
@@ -19117,9 +19517,9 @@
     },
     "vidnest": {
       "id": "vidnest",
-      "published_filename": "providers/vidnest--published-baseline--331cfd9a49150874.js",
-      "sha256": "331cfd9a491508746f82042d45fa61ee03a886df1c91e1f240754fb69b1d6ec6",
-      "patched_sha256": "331cfd9a491508746f82042d45fa61ee03a886df1c91e1f240754fb69b1d6ec6",
+      "published_filename": "providers/vidnest--published-baseline--2dc225797ebe988e.js",
+      "sha256": "2dc225797ebe988e8707afa097a30cbc2afae0aecc4c9b0c5dbbaf904529b58c",
+      "patched_sha256": "2dc225797ebe988e8707afa097a30cbc2afae0aecc4c9b0c5dbbaf904529b58c",
       "upstream_sha256": "08b6c5e9d18ba3c757853e4e9a86c4037bdd16fea9c6b6cc55f465a8e678a09e",
       "local_patches": [
         {
@@ -19128,6 +19528,12 @@
           "phase": "runtime",
           "profile": "adaptive_domain_recovery",
           "runtime_revision": "retry-transient-v2"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
         }
       ],
       "source": "published-baseline",
@@ -19350,11 +19756,18 @@
     },
     "vidnest-anime": {
       "id": "vidnest-anime",
-      "published_filename": "providers/vidnest-anime--published-baseline--ce460890c4da6f5a.js",
-      "sha256": "ce460890c4da6f5acef3ac7dc584c6cc3d18474abd48f6aa1da28d5b957fedea",
-      "patched_sha256": "ce460890c4da6f5acef3ac7dc584c6cc3d18474abd48f6aa1da28d5b957fedea",
+      "published_filename": "providers/vidnest-anime--published-baseline--ac942db06a13a820.js",
+      "sha256": "ac942db06a13a82042d5d48f30a0eb96b64f5cfb808d1bfc45a2b77121fb09d3",
+      "patched_sha256": "ac942db06a13a82042d5d48f30a0eb96b64f5cfb808d1bfc45a2b77121fb09d3",
       "upstream_sha256": "ce460890c4da6f5acef3ac7dc584c6cc3d18474abd48f6aa1da28d5b957fedea",
-      "local_patches": [],
+      "local_patches": [
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
+        }
+      ],
       "source": "published-baseline",
       "source_name": "Last published local artifact",
       "source_repository": "Nuvio Curated Providers",
@@ -19576,9 +19989,9 @@
     },
     "vidrock": {
       "id": "vidrock",
-      "published_filename": "providers/vidrock--published-baseline--7b47b1d17545be8a.js",
-      "sha256": "7b47b1d17545be8a1d0f8dccc54634eb83cd39cccf7ce7664e7097707dbf38ea",
-      "patched_sha256": "7b47b1d17545be8a1d0f8dccc54634eb83cd39cccf7ce7664e7097707dbf38ea",
+      "published_filename": "providers/vidrock--published-baseline--e2f8f33b31a984be.js",
+      "sha256": "e2f8f33b31a984be3427b21d82230615c0d1a74b32ade5585d2710c358fff18a",
+      "patched_sha256": "e2f8f33b31a984be3427b21d82230615c0d1a74b32ade5585d2710c358fff18a",
       "upstream_sha256": "f679614bf1f955dcfea633d527e9ce40b56768ec3ff32648a651f565c121b70c",
       "local_patches": [
         {
@@ -19591,6 +20004,12 @@
           "path": "scripts/provider_patches/global_media_enrichment_v1.py",
           "phase": "discovery",
           "scope": "global_media_enrichment"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
         }
       ],
       "source": "published-baseline",
@@ -19812,9 +20231,9 @@
     },
     "vidsrc": {
       "id": "vidsrc",
-      "published_filename": "providers/vidsrc--nuvio--e3b39cee6284fb3e.js",
-      "sha256": "e3b39cee6284fb3e4bbf3be423430d62a92c69df2d72e19f6b9165c0d2604393",
-      "patched_sha256": "e3b39cee6284fb3e4bbf3be423430d62a92c69df2d72e19f6b9165c0d2604393",
+      "published_filename": "providers/vidsrc--nuvio--9e29b76b026409db.js",
+      "sha256": "9e29b76b026409dbea2d7ba2346be58159171cc618ff3f3faec29ebfba7a89b6",
+      "patched_sha256": "9e29b76b026409dbea2d7ba2346be58159171cc618ff3f3faec29ebfba7a89b6",
       "upstream_sha256": "c83b23943f9783f2b57008fac62f5fd2a05fea0c826f4b1ca74d53198152b286",
       "local_patches": [
         {
@@ -20118,9 +20537,9 @@
     },
     "vixsrc": {
       "id": "vixsrc",
-      "published_filename": "providers/vixsrc--nuvio--424ba70e2d2cd00f.js",
-      "sha256": "424ba70e2d2cd00fa1b21fd5369fb61d7e52c77f69dff881f8283cbadf957a28",
-      "patched_sha256": "424ba70e2d2cd00fa1b21fd5369fb61d7e52c77f69dff881f8283cbadf957a28",
+      "published_filename": "providers/vixsrc--nuvio--6f8059583df199d1.js",
+      "sha256": "6f8059583df199d184b943ee73e1d8aa2b65268c78f388f805da3e5bc0b0658c",
+      "patched_sha256": "6f8059583df199d184b943ee73e1d8aa2b65268c78f388f805da3e5bc0b0658c",
       "upstream_sha256": "b38a464f826f7ea87fee2c4e483ccbe9d5925e8a89a678a816b77873245611eb",
       "local_patches": [
         {
@@ -20382,11 +20801,24 @@
     },
     "voiranime": {
       "id": "voiranime",
-      "published_filename": "providers/voiranime--published-baseline--4906567ce7b5271b.js",
-      "sha256": "4906567ce7b5271b0b92d1bf4efea869192040f0cce8df3c00289c5e6b296ff8",
-      "patched_sha256": "4906567ce7b5271b0b92d1bf4efea869192040f0cce8df3c00289c5e6b296ff8",
+      "published_filename": "providers/voiranime--published-baseline--58fb6977161bd14c.js",
+      "sha256": "58fb6977161bd14c6231409bee9eedb4c0fef30ed4c95acef13f764f7769a181",
+      "patched_sha256": "58fb6977161bd14c6231409bee9eedb4c0fef30ed4c95acef13f764f7769a181",
       "upstream_sha256": "4906567ce7b5271b0b92d1bf4efea869192040f0cce8df3c00289c5e6b296ff8",
-      "local_patches": [],
+      "local_patches": [
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_catalogue_alias_recovery_v2.py",
+          "phase": "discovery",
+          "scope": "global_catalogue_resolution"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
+        }
+      ],
       "source": "published-baseline",
       "source_name": "Last published local artifact",
       "source_repository": "Nuvio Curated Providers",
@@ -20620,11 +21052,18 @@
     },
     "voiranime-homes": {
       "id": "voiranime-homes",
-      "published_filename": "providers/voiranime-homes--published-baseline--9b72eed29fc1a03b.js",
-      "sha256": "9b72eed29fc1a03bd1eb8c4f0703cef61b1665ca3b2d94416070ed995ee65a6b",
-      "patched_sha256": "9b72eed29fc1a03bd1eb8c4f0703cef61b1665ca3b2d94416070ed995ee65a6b",
+      "published_filename": "providers/voiranime-homes--published-baseline--3ae7d9b29e67e2c8.js",
+      "sha256": "3ae7d9b29e67e2c888eb17a4709b8a6bdef880763bf4b4af1ac8466ddfbc3ab4",
+      "patched_sha256": "3ae7d9b29e67e2c888eb17a4709b8a6bdef880763bf4b4af1ac8466ddfbc3ab4",
       "upstream_sha256": "9b72eed29fc1a03bd1eb8c4f0703cef61b1665ca3b2d94416070ed995ee65a6b",
-      "local_patches": [],
+      "local_patches": [
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
+        }
+      ],
       "source": "published-baseline",
       "source_name": "Last published local artifact",
       "source_repository": "Nuvio Curated Providers",
@@ -20851,11 +21290,24 @@
     },
     "voiranime-rip": {
       "id": "voiranime-rip",
-      "published_filename": "providers/voiranime-rip--published-baseline--4652f6fdf031721f.js",
-      "sha256": "4652f6fdf031721f5d4da09b3671e6dcc5f455366fc95514991c47996d93f724",
-      "patched_sha256": "4652f6fdf031721f5d4da09b3671e6dcc5f455366fc95514991c47996d93f724",
+      "published_filename": "providers/voiranime-rip--published-baseline--8b87d335681b0f86.js",
+      "sha256": "8b87d335681b0f86b4f99f541e9d7f76fdfc01563334b714a18ce5ac4411d304",
+      "patched_sha256": "8b87d335681b0f86b4f99f541e9d7f76fdfc01563334b714a18ce5ac4411d304",
       "upstream_sha256": "4652f6fdf031721f5d4da09b3671e6dcc5f455366fc95514991c47996d93f724",
-      "local_patches": [],
+      "local_patches": [
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_catalogue_alias_recovery_v2.py",
+          "phase": "discovery",
+          "scope": "global_catalogue_resolution"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
+        }
+      ],
       "source": "published-baseline",
       "source_name": "Last published local artifact",
       "source_repository": "Nuvio Curated Providers",
@@ -21098,9 +21550,9 @@
     },
     "vostfree": {
       "id": "vostfree",
-      "published_filename": "providers/vostfree--published-baseline--0b5beeb9341f83a9.js",
-      "sha256": "0b5beeb9341f83a9ec5d21f7e63df73a8a1d12b717fb1b64ac92f4144e385597",
-      "patched_sha256": "0b5beeb9341f83a9ec5d21f7e63df73a8a1d12b717fb1b64ac92f4144e385597",
+      "published_filename": "providers/vostfree--published-baseline--bb2a5e528ec662cc.js",
+      "sha256": "bb2a5e528ec662cc64d3a50b5744db17d4d8bfafbc60c6768c1073fc39fe6620",
+      "patched_sha256": "bb2a5e528ec662cc64d3a50b5744db17d4d8bfafbc60c6768c1073fc39fe6620",
       "upstream_sha256": "8e9b00d7aff4dd9a06f259b4a61d2a6a5b0cfd82d7210e70b6b14e71f0e911b7",
       "local_patches": [
         {
@@ -21118,6 +21570,12 @@
           "path": "scripts/provider_patches/global_media_enrichment_v1.py",
           "phase": "discovery",
           "scope": "global_media_enrichment"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
         }
       ],
       "source": "published-baseline",
@@ -21339,11 +21797,18 @@
     },
     "waveanime": {
       "id": "waveanime",
-      "published_filename": "providers/waveanime--published-baseline--4a28f9cf93ccb104.js",
-      "sha256": "4a28f9cf93ccb104a600fb11ac5361e7b25c697eaa995967d4cb5ff6ccf044d6",
-      "patched_sha256": "4a28f9cf93ccb104a600fb11ac5361e7b25c697eaa995967d4cb5ff6ccf044d6",
+      "published_filename": "providers/waveanime--published-baseline--85033a5fb29fb421.js",
+      "sha256": "85033a5fb29fb421114f9100efdb89ce1d8c2fc9a807f3501988b0a7ba01cde6",
+      "patched_sha256": "85033a5fb29fb421114f9100efdb89ce1d8c2fc9a807f3501988b0a7ba01cde6",
       "upstream_sha256": "4a28f9cf93ccb104a600fb11ac5361e7b25c697eaa995967d4cb5ff6ccf044d6",
-      "local_patches": [],
+      "local_patches": [
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
+        }
+      ],
       "source": "published-baseline",
       "source_name": "Last published local artifact",
       "source_repository": "Nuvio Curated Providers",
@@ -21563,9 +22028,9 @@
     },
     "wookafr": {
       "id": "wookafr",
-      "published_filename": "providers/wookafr--nuvio--cd58cf5208459a05.js",
-      "sha256": "cd58cf5208459a0522af9d46c354cd57f5b1572f204e5c9410353f08231ac93b",
-      "patched_sha256": "cd58cf5208459a0522af9d46c354cd57f5b1572f204e5c9410353f08231ac93b",
+      "published_filename": "providers/wookafr--nuvio--fa25fb508b52cc86.js",
+      "sha256": "fa25fb508b52cc860101ef0e239eb0c3850001dd8927af478cbc93e009c72490",
+      "patched_sha256": "fa25fb508b52cc860101ef0e239eb0c3850001dd8927af478cbc93e009c72490",
       "upstream_sha256": "4ce4c33e2fe1d23bea7263bf07d4b760ec50169aa0c7b925a7103efc15271b67",
       "local_patches": [
         "scripts/provider_patches/desktop_runtime_compat_v1.py",
@@ -21603,6 +22068,12 @@
           "count": 1,
           "phase": "discovery",
           "scope": "language_integrity"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
         }
       ],
       "source": "desktop-runtime-compat-v1",
@@ -21838,11 +22309,18 @@
     },
     "xpass": {
       "id": "xpass",
-      "published_filename": "providers/xpass--published-baseline--f64fa5c4f5857e63.js",
-      "sha256": "f64fa5c4f5857e630d8a2e3b3527344b24fb9e94e6f1811fa20933ecaa16d4f4",
-      "patched_sha256": "f64fa5c4f5857e630d8a2e3b3527344b24fb9e94e6f1811fa20933ecaa16d4f4",
+      "published_filename": "providers/xpass--published-baseline--dbc5a55180c26d49.js",
+      "sha256": "dbc5a55180c26d49b79a240fa7714567ba38bd98dca93dc2e97e564791ccb998",
+      "patched_sha256": "dbc5a55180c26d49b79a240fa7714567ba38bd98dca93dc2e97e564791ccb998",
       "upstream_sha256": "f64fa5c4f5857e630d8a2e3b3527344b24fb9e94e6f1811fa20933ecaa16d4f4",
-      "local_patches": [],
+      "local_patches": [
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
+        }
+      ],
       "source": "published-baseline",
       "source_name": "Last published local artifact",
       "source_repository": "Nuvio Curated Providers",
@@ -22065,9 +22543,9 @@
     },
     "yflix": {
       "id": "yflix",
-      "published_filename": "providers/yflix--published-baseline--f2ac8adeb78e99ab.js",
-      "sha256": "f2ac8adeb78e99ab9deaddd3c8ef1cb045c838236f28227c649a5450090842a6",
-      "patched_sha256": "f2ac8adeb78e99ab9deaddd3c8ef1cb045c838236f28227c649a5450090842a6",
+      "published_filename": "providers/yflix--published-baseline--f4a87430e90440aa.js",
+      "sha256": "f4a87430e90440aa2fd2e4aeaddca3c2cc9dd6e503c39f01f7e83551b7b32a64",
+      "patched_sha256": "f4a87430e90440aa2fd2e4aeaddca3c2cc9dd6e503c39f01f7e83551b7b32a64",
       "upstream_sha256": "ca1223b5ee78c12b0cbca6f208e977a14ab78d699893f6225aac04f8b60f8a94",
       "local_patches": [
         {
@@ -22080,6 +22558,12 @@
           "path": "scripts/provider_patches/global_media_enrichment_v1.py",
           "phase": "discovery",
           "scope": "global_media_enrichment"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
         }
       ],
       "source": "published-baseline",
@@ -22299,15 +22783,21 @@
     },
     "zinkmovies": {
       "id": "zinkmovies",
-      "published_filename": "providers/zinkmovies--published-baseline--2a52d8a86d5e3a15.js",
-      "sha256": "2a52d8a86d5e3a159ab7dec6db98825a1315ecb24603eca4b8c3c2c3ac3838c6",
-      "patched_sha256": "2a52d8a86d5e3a159ab7dec6db98825a1315ecb24603eca4b8c3c2c3ac3838c6",
+      "published_filename": "providers/zinkmovies--published-baseline--835783b635515b1c.js",
+      "sha256": "835783b635515b1c13c0a6df2eaf9262107eb5d1eb94d27e1dcd550efead85ed",
+      "patched_sha256": "835783b635515b1c13c0a6df2eaf9262107eb5d1eb94d27e1dcd550efead85ed",
       "upstream_sha256": "5989f97be6cce82a382e7dc29b8bc8e4c0441146fb994cf1950607fe5cae8bce",
       "local_patches": [
         {
           "type": "patch_script",
           "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
           "phase": "discovery"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
         }
       ],
       "source": "published-baseline",

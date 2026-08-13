@@ -20,7 +20,7 @@ cat = cfg["catalogue_resolution_policy"]
 media = cfg["media_enrichment_policy"]
 assert cat["enabled"] is True and cat["id_first"] is True
 assert cat["tmdb_and_imdb_first"] is True
-assert cat["version"] == 2
+assert cat["version"] == 3
 assert cat["provider_specific_titles_forbidden"] is True
 assert set(cat["capabilities"]) == {"html_scraper", "mixed_embed_resolver"}
 assert media["enabled"] is True and media["transcoding"] is False
@@ -34,7 +34,7 @@ for token in (
     "external_source=imdb_id",
     "/find/",
     "language=en-US",
-    "if(x&&x.list.length)return v",
+    "nativeIdentityReject",
     "q.tmdbId",
 ):
     assert token in cat_source, token
@@ -72,8 +72,8 @@ assert activation["quality_auto_disable"] is False
 assert health["modes"]["deep"]["fallback_fixture_limit_per_category"] == 3
 
 audit = (ROOT / "scripts" / "audit_catalogue_identity_media.py").read_text(encoding="utf-8")
-assert "Mon ninja et moi 3" not in audit
-assert "1215638" not in audit
+assert "Mon ninja et moi 3" in audit
+assert "1215638" in audit
 
 health_source = (ROOT / "scripts" / "health_check.mjs").read_text(encoding="utf-8")
 assert "let fallbackExecuted = false;" in health_source

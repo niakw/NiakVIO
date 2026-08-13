@@ -49,7 +49,7 @@ def main() -> int:
         types = module.canonical_types(row)
         fixtures = by_provider.get(provider_id, set())
         if "movie" in types:
-            assert "vf_interstellar" in fixtures, (provider_id, fixtures)
+            assert "strict_movie_identity" in fixtures, (provider_id, fixtures)
             assert "impossible_movie" in fixtures, (provider_id, fixtures)
         if "tv" in types:
             assert "kdrama_squid_game_s01e01" in fixtures, (provider_id, fixtures)

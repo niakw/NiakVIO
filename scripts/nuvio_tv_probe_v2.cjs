@@ -134,6 +134,44 @@ async function inspectHlsChild(url, headers) {
   }
 }
 
+function normIdentity(value) {
+  try { return String(value ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim(); }
+  catch { return String(value ?? '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim(); }
+}
+
+function identityTokens(value) {
+  const noise = new Set(['the','a','an','le','la','les','un','une','de','des','du','of','and','et','film','movie','stream','streaming','watch','play','server','serveur','source','mirror','direct','download','telecharger','vcloud','hubcloud','file','video','quality','web','dl','webrip','webdl','bluray','blu','ray','remux','hdr','dv','dolby','atmos','aac','ac3','eac3','ddp','x264','x265','h264','h265','hevc','av1','multi','vf','vff','vostfr','vo','french','english','truefrench','hd','uhd','fhd','sd']);
+  return normIdentity(value).split(/\s+/).filter((token) => token.length > 1 && !noise.has(token) && !/^\d{3,4}p$/.test(token) && !/^\d{4}$/.test(token));
+}
+
+function streamIdentity(row, fixture) {
+  const aliases = [fixture?.title, fixture?.label, ...(Array.isArray(fixture?.aliases) ? fixture.aliases : [])].filter(Boolean);
+  const expected = aliases.map(normIdentity).filter(Boolean);
+  const expectedTokens = new Set(aliases.flatMap(identityTokens));
+  const label = String(row?.title || row?.description || row?.filename || row?.name || '').trim();
+  const normalized = normIdentity(label);
+  const mediaType = String(fixture?.mediaType || fixture?.type || 'movie').toLowerCase();
+  const wantedSeason = Number(fixture?.season || 0);
+  const wantedEpisode = Number(fixture?.episode || 0);
+  const seasonEpisode = /(?:^|\D)s(?:eason|aison)?\s*0*(\d{1,3})\s*[-_. ]*e(?:p(?:isode)?)?\s*0*(\d{1,4})(?:\D|$)/i.exec(label)
+    || /(?:season|saison)\s*0*(\d{1,3})[^\d]{0,12}(?:episode|ep)\s*0*(\d{1,4})/i.exec(label);
+  if (mediaType === 'movie' && seasonEpisode) return { status: 'contradiction', reason: 'movie_row_is_episode' };
+  if (seasonEpisode && (mediaType === 'tv' || mediaType === 'anime')) {
+    const season = Number(seasonEpisode[1] || 0), episode = Number(seasonEpisode[2] || 0);
+    if ((wantedSeason && season && season !== wantedSeason) || (wantedEpisode && episode && episode !== wantedEpisode)) {
+      return { status: 'contradiction', reason: 'wrong_season_episode' };
+    }
+  }
+  if (normalized && expected.some((alias) => normalized.includes(alias))) return { status: 'match', reason: 'expected_title_alias' };
+  const rowTokens = identityTokens(label);
+  if (rowTokens.length >= 2 && expectedTokens.size) {
+    const overlap = rowTokens.filter((token) => expectedTokens.has(token));
+    if (overlap.length === 0) return { status: 'contradiction', reason: 'strong_title_mismatch' };
+  }
+  if (seasonEpisode && (mediaType === 'tv' || mediaType === 'anime')) return { status: 'match', reason: 'season_episode_match' };
+  return { status: 'unknown', reason: 'insufficient_identity_metadata' };
+}
+
 async function inspectStream(row) {
   const url = String(row?.url || '').trim();
   const result = {
@@ -173,6 +211,11 @@ async function inspectStream(row) {
       result.hls_variant_count = graph.variants.length;
       result.hls_audio_group_count = graph.audioGroups;
       result.hls_external_audio_count = graph.externalAudio.length;
+      const hlsHasMedia = /#EXTINF\s*:/i.test(text) || /#EXT-X-PART\s*:/i.test(text) || /#EXT-X-MAP\s*:/i.test(text);
+      if (!result.hls_master && !hlsHasMedia) {
+        result.error = 'hls_header_only';
+        return result;
+      }
       if (result.hls_master) {
         if (!graph.variants.length) {
           result.error = 'hls_master_without_variant';
@@ -229,17 +272,21 @@ async function main() {
   }
   const rows = rowsFrom(raw).filter((row) => row && typeof row === 'object' && row.url && !urlRejected(row.url)).slice(0, 16);
   const media = await Promise.all(rows.map((row) => inspectStream(row)));
-  const inspected = rows.map((row, index) => ({ row, media: media[index] }));
+  const inspected = rows.map((row, index) => ({ row, media: media[index], identity: streamIdentity(row, fixture) }));
   const playable = inspected.filter((item) => item.media.playable);
+  const identityContradictions = playable.filter((item) => item.identity.status === 'contradiction');
+  const identityVerified = playable.filter((item) => item.identity.status === 'match');
   process.stdout.write(JSON.stringify({
-    ok: !runtimeError && playable.length > 0,
+    ok: !runtimeError && playable.length > 0 && identityContradictions.length === 0,
     duration_ms: Date.now() - started,
     runtime_error: runtimeError,
     raw_stream_count: rows.length,
     playable_stream_count: playable.length,
+    identity_verified_count: identityVerified.length,
+    identity_contradiction_count: identityContradictions.length,
     streams: inspected,
   }) + '\n');
-  process.exitCode = playable.length ? 0 : 2;
+  process.exitCode = playable.length && identityContradictions.length === 0 ? 0 : 2;
 }
 
 main().catch((error) => {

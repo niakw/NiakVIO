@@ -1,0 +1,1419 @@
+/* NUVIO_RUNTIME_DOMAIN_OVERRIDES_V1 */
+;(function(g,rules){
+  if(!g||typeof g.fetch!=="function")return;
+  var key="__nuvioDomainOverrideV1";
+  var state=g[key];
+  if(!state){
+    state={native:g.fetch.bind(g),rules:Object.create(null)};
+    g[key]=state;
+    g.fetch=function(input,init){
+      var next=input;
+      try{
+        var raw=(typeof Request!=="undefined"&&input instanceof Request)?input.url:String(input);
+        var url=new URL(raw);
+        var replacement=state.rules[String(url.hostname).toLowerCase()];
+        if(replacement){
+          url.hostname=replacement;
+          next=(typeof Request!=="undefined"&&input instanceof Request)?new Request(url.toString(),input):url.toString();
+        }
+      }catch(_error){}
+      return state.native(next,init);
+    };
+  }
+  for(var i=0;i<rules.length;i++){
+    try{state.rules[atob(rules[i][0])]=rules[i][1];}catch(_error){}
+  }
+})(typeof globalThis!=="undefined"?globalThis:this,[["bWFsbHVtdi5jeW91","mallumv.space"],["bWFsbHVtdi5nYXk=","mallumv.space"]]);
+/* NUVIO_ADAPTIVE_DOMAIN_RECOVERY_V1:BEGIN */
+;(function(g,encoded){
+  if(!g||typeof g.fetch!=="function"||g.__nuvioAdaptiveDomainRecoveryV1)return;
+  var nativeFetch=g.fetch.bind(g), groups=[];
+  try{
+    var decoded=JSON.parse(typeof atob==="function"?atob(encoded):Buffer.from(encoded,"base64").toString("utf8"));
+    groups=Array.isArray(decoded)?decoded:(decoded&&Array.isArray(decoded.groups)?decoded.groups:[]);
+  }catch(_e){return;}
+  var cache=Object.create(null);
+  function obsolete(status){return status===403||status===404||status===408||status===410||status===425||status===429||status===451||status===500||status===502||status===503||status===504||(status>=520&&status<=524);}
+  function groupFor(host){
+    host=String(host||"").toLowerCase();
+    for(var i=0;i<groups.length;i++)if(groups[i].hosts.indexOf(host)!==-1)return groups[i];
+    return null;
+  }
+  function rebuild(raw,origin){
+    var source=new URL(raw), target=new URL(origin);
+    target.pathname=source.pathname; target.search=source.search; target.hash=source.hash;
+    return target.toString();
+  }
+  function cloneInput(input,url){
+    try{return typeof Request!=="undefined"&&input instanceof Request?new Request(url,input):url;}catch(_e){return url;}
+  }
+  function attempt(input,init,raw,group,index){
+    if(index>=group.candidates.length)return nativeFetch(input,init);
+    var origin=group.candidates[index], url;
+    try{url=rebuild(raw,origin);}catch(_e){return attempt(input,init,raw,group,index+1);}
+    return nativeFetch(cloneInput(input,url),init).then(function(response){
+      if(response&&!obsolete(response.status)){
+        try{cache[new URL(raw).hostname.toLowerCase()]=origin;}catch(_e){}
+        return response;
+      }
+      return attempt(input,init,raw,group,index+1);
+    },function(){return attempt(input,init,raw,group,index+1);});
+  }
+  g.fetch=function(input,init){
+    var raw;
+    try{raw=typeof Request!=="undefined"&&input instanceof Request?input.url:String(input);}catch(_e){return nativeFetch(input,init);}
+    var parsed, group;
+    try{parsed=new URL(raw);group=groupFor(parsed.hostname);}catch(_e){return nativeFetch(input,init);}
+    if(!group)return nativeFetch(input,init);
+    var remembered=cache[parsed.hostname.toLowerCase()];
+    if(remembered){
+      var preferred=[remembered], rest=[];
+      for(var i=0;i<group.candidates.length;i++)if(group.candidates[i]!==remembered)rest.push(group.candidates[i]);
+      group={hosts:group.hosts,candidates:preferred.concat(rest)};
+    }
+    return attempt(input,init,raw,group,0);
+  };
+  g.__nuvioAdaptiveDomainRecoveryV1=true;
+})(typeof globalThis!=="undefined"?globalThis:this,"eyJncm91cHMiOlt7ImNhbmRpZGF0ZXMiOlsiaHR0cHM6Ly9tYWxsdW12Lndpa2kiXSwiaG9zdHMiOlsibWFsbHVtdi5nYXkiXX0seyJjYW5kaWRhdGVzIjpbImh0dHBzOi8vbWFsbHVtdi53aWtpIl0sImhvc3RzIjpbIm1hbGx1bXYuY3lvdSJdfV0sInJldmlzaW9uIjoicmV0cnktdHJhbnNpZW50LXYyIn0=");
+/* NUVIO_ADAPTIVE_DOMAIN_RECOVERY_V1:END */
+// MalluMV scraper for Nuvio
+// Scrapes content from mallumv.fit with multi-step download link extraction
+
+// Constants
+const TMDB_API_KEY = "439c478a771f35c05022f9feabcca01c"; // This will be replaced by Nuvio
+const BASE_URL = 'https://mallumv.wiki';
+
+// Temporarily disable URL validation for faster results
+global.URL_VALIDATION_ENABLED = true;
+
+// Required headers for playback (following README format)
+const WORKING_HEADERS = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+    'Accept': 'video/webm,video/ogg,video/*;q=0.9,application/ogg;q=0.7,audio/*;q=0.6,*/*;q=0.5',
+    'Accept-Language': 'en-US,en;q=0.9',
+    'Accept-Encoding': 'identity',
+    'Origin': 'https://mallumv.wiki',
+    'Referer': 'https://mallumv.wiki/',
+    'Sec-Fetch-Dest': 'video',
+    'Sec-Fetch-Mode': 'no-cors',
+    'Sec-Fetch-Site': 'cross-site',
+    'DNT': '1'
+};
+
+// === HubCloud Extractor Functions (from DVDPlay) ===
+
+// Utility functions for HubCloud
+function getBaseUrl(url) {
+    try {
+        const urlObj = new URL(url);
+        return `${urlObj.protocol}//${urlObj.host}`;
+    } catch (e) {
+        return '';
+    }
+}
+
+// Base64 and encoding utilities
+function base64Decode(str) {
+    try {
+        return decodeURIComponent(escape(atob(str)));
+    } catch (e) {
+        return '';
+    }
+}
+
+function base64Encode(str) {
+    try {
+        return btoa(unescape(encodeURIComponent(str)));
+    } catch (e) {
+        return '';
+    }
+}
+
+function rot13(str) {
+    return (str || '').replace(/[A-Za-z]/g, function (char) {
+        var start = char <= 'Z' ? 65 : 97;
+        return String.fromCharCode(((char.charCodeAt(0) - start + 13) % 26) + start);
+    });
+}
+
+function getIndexQuality(str) {
+    const match = (str || '').match(/(\d{3,4})[pP]/);
+    return match ? parseInt(match[1]) : null;
+}
+
+function cleanTitle(title) {
+    const decodedTitle = decodeFilename(title);
+    const parts = decodedTitle.split(/[.\-_]/);
+
+    const qualityTags = ['WEBRip', 'WEB-DL', 'WEB', 'BluRay', 'HDRip', 'DVDRip', 'HDTV', 'CAM', 'TS', 'R5', 'DVDScr', 'BRRip', 'BDRip', 'DVD', 'PDTV', 'HD'];
+    const audioTags = ['AAC', 'AC3', 'DTS', 'MP3', 'FLAC', 'DD5', 'EAC3', 'Atmos'];
+    const subTags = ['ESub', 'ESubs', 'Subs', 'MultiSub', 'NoSub', 'EnglishSub', 'HindiSub'];
+    const codecTags = ['x264', 'x265', 'H264', 'HEVC', 'AVC'];
+
+    const startIndex = parts.findIndex(part =>
+        qualityTags.some(tag => part.toLowerCase().includes(tag.toLowerCase()))
+    );
+
+    const endIndex = parts.map((part, index) => {
+        const hasTag = [...subTags, ...audioTags, ...codecTags].some(tag =>
+            part.toLowerCase().includes(tag.toLowerCase())
+        );
+        return hasTag ? index : -1;
+    }).filter(index => index !== -1).pop() || -1;
+
+    if (startIndex !== -1 && endIndex !== -1 && endIndex >= startIndex) {
+        return parts.slice(startIndex, endIndex + 1).join('.');
+    } else if (startIndex !== -1) {
+        return parts.slice(startIndex).join('.');
+    } else {
+        return parts.slice(-3).join('.');
+    }
+}
+
+function decodeFilename(filename) {
+    if (!filename) return filename;
+
+    try {
+        let decoded = filename;
+
+        if (decoded.startsWith('UTF-8')) {
+            decoded = decoded.substring(5);
+        }
+
+        decoded = decodeURIComponent(decoded);
+
+        return decoded;
+    } catch (error) {
+        return filename;
+    }
+}
+
+function getFilenameFromUrl(url) {
+    return new Promise((resolve) => {
+        try {
+            fetch(url, { method: 'HEAD', timeout: 10000 })
+                .then(response => {
+                    const contentDisposition = response.headers.get('content-disposition');
+                    let filename = null;
+
+                    if (contentDisposition) {
+                        const filenameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/i);
+                        if (filenameMatch && filenameMatch[1]) {
+                            filename = filenameMatch[1].replace(/["']/g, '');
+                        }
+                    }
+
+                    if (!filename) {
+                        const urlObj = new URL(url);
+                        const pathParts = urlObj.pathname.split('/');
+                        filename = pathParts[pathParts.length - 1];
+                        if (filename && filename.includes('.')) {
+                            filename = filename.replace(/\.[^.]+$/, '');
+                        }
+                    }
+
+                    const decodedFilename = decodeFilename(filename);
+                    resolve(decodedFilename || null);
+                })
+                .catch(() => resolve(null));
+        } catch (error) {
+            resolve(null);
+        }
+    });
+}
+
+// Main HubCloud extraction function (from DVDPlay)
+function extractHubCloudLinks(url, referer = 'HubCloud') {
+    var origin;
+    try { origin = new URL(url).origin; } catch (e) { origin = ''; }
+
+    // Helper function for absolute URL resolution
+    function toAbsolute(href, base) {
+        try {
+            return new URL(href, base).href;
+        } catch (e) {
+            return href;
+        }
+    }
+
+    return makeHTTPRequest(url, { parseHTML: true })
+        .then(response => {
+            const $ = response.$;
+
+            var href;
+            if (url.indexOf('hubcloud.php') !== -1) {
+                href = url;
+            } else {
+                // Check for token-based HubCloud URLs (newer format)
+                var tokenMatch = url.match(/\/video\/([^\/\?]+)(\?token=([^&\s]+))?/);
+                if (tokenMatch) {
+                    var videoId = tokenMatch[1];
+                    var token = tokenMatch[3];
+                    if (token) {
+                        // Use the token-based URL format
+                        href = origin + '/video/' + videoId + '?token=' + token;
+                    } else {
+                        // Try to find token in the page
+                        var tokenFromPage = $.html().match(/token=([^"'\s&]+)/);
+                        if (tokenFromPage) {
+                            href = origin + '/video/' + videoId + '?token=' + tokenFromPage[1];
+                        } else {
+                            href = url; // Use original URL as fallback
+                        }
+                    }
+                } else {
+                    // Traditional approach for older HubCloud formats
+                    var rawHref = $('#download').attr('href') || $('a[href*="hubcloud.php"]').attr('href') || $('.download-btn').attr('href') || $('a[href*="download"]').attr('href');
+                    if (!rawHref) throw new Error('Download element not found');
+                    href = toAbsolute(rawHref, origin);
+                }
+            }
+
+            return makeHTTPRequest(href, { parseHTML: true }).then(function (secondResponse) {
+                return { firstResponse: response, secondResponse: secondResponse, href: href };
+            });
+        })
+        .then(response => {
+            const $$ = response.secondResponse.$; // Use $$ for the second cheerio instance like 4KHDHub
+            const href = response.href;
+
+            // Helper function to resolve intermediate HubCloud URLs (.fans/?id= and .workers.dev/?id=)
+            function resolveHubCloudUrl(url) {
+                console.log(`[MalluMV] Resolving HubCloud URL: ${url.substring(0, 50)}...`);
+
+                // If it's already an R2 Cloudflare URL, it's already resolved
+                if (url.includes('r2.cloudflarestorage.com')) {
+                    console.log(`[MalluMV] URL already resolved (R2): ${url.substring(0, 50)}...`);
+                    return Promise.resolve(url);
+                }
+
+                // Extract the actual download URL from 360news4u.net/dl.php?link= URLs FIRST
+                if (url.includes('360news4u.net/dl.php?link=')) {
+                    console.log(`[MalluMV] 🔍 Processing 360news4u.net URL: ${url.substring(0, 100)}...`);
+                    const linkMatch = url.match(/360news4u\.net\/dl\.php\?link=([^&\s]+)/);
+                    console.log(`[MalluMV] 🔍 Regex match result:`, linkMatch);
+
+                    if (linkMatch && linkMatch[1]) {
+                        const actualUrl = decodeURIComponent(linkMatch[1]);
+                        console.log(`[MalluMV] ✅ Extracted Google Drive URL from 360news4u.net: ${actualUrl.substring(0, 80)}...`);
+                        return Promise.resolve(actualUrl);
+                    } else {
+                        console.log(`[MalluMV] ❌ Failed to extract URL from 360news4u.net link`);
+                        console.log(`[MalluMV] ❌ Full URL for debugging: ${url}`);
+                    }
+                }
+
+                // Extract the actual download URL from gamerxyt.com/dl.php?link= URLs
+                if (url.includes('gamerxyt.com/dl.php?link=')) {
+                    console.log(`[MalluMV] 🔍 Processing gamerxyt.com URL: ${url.substring(0, 100)}...`);
+                    const linkMatch = url.match(/gamerxyt\.com\/dl\.php\?link=([^&\s]+)/);
+
+                    if (linkMatch && linkMatch[1]) {
+                        const actualUrl = decodeURIComponent(linkMatch[1]);
+                        console.log(`[MalluMV] ✅ Extracted URL from gamerxyt.com: ${actualUrl.substring(0, 80)}...`);
+                        // Recursively resolve the extracted URL to ensure it's fully resolved
+                        return resolveHubCloudUrl(actualUrl);
+                    } else {
+                        console.log(`[MalluMV] ❌ Failed to extract URL from gamerxyt.com link`);
+                    }
+                }
+
+                // If it's a direct Google Drive download URL, it might be final
+                if (url.includes('video-downloads.googleusercontent.com')) {
+                    console.log(`[MalluMV] Google Drive download URL found: ${url.substring(0, 50)}...`);
+                    return Promise.resolve(url);
+                }
+
+                return fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
+                    },
+                    redirect: 'manual' // Don't follow redirects automatically
+                }).then(response => {
+                    if (response.status >= 300 && response.status < 400) {
+                        // Follow redirect manually
+                        const location = response.headers.get('location');
+                        if (location) {
+                            console.log(`[MalluMV] Following redirect to: ${location.substring(0, 50)}...`);
+                            // Recursively resolve the redirect URL
+                            return resolveHubCloudUrl(location);
+                        }
+                    }
+
+                    // If no redirect, check if this is already a direct file URL
+                    if (response.status === 200 && response.headers.get('content-type')?.includes('video/')) {
+                        console.log(`[MalluMV] Direct file URL found: ${url.substring(0, 50)}...`);
+                        return url;
+                    }
+
+                    // Check if it's a direct S3/R2 URL in the response
+                    if (response.status === 200) {
+                        console.log(`[MalluMV] Checking for direct URL in response...`);
+                        return response.text().then(text => {
+                            // Look for "Download Here" button/link (common in .fans/?id= pages)
+                            // Try multiple patterns to catch different HTML structures
+                            const downloadHerePatterns = [
+                                /<a[^>]*href=["']([^"']+)["'][^>]*>[^<]*Download Here/i,
+                                /<a[^>]*>Download Here[^<]*<\/a>/i,
+                                /href=["']([^"']+)["'][^>]*>[^<]*Download Here/i,
+                                /<a[^>]*href=["']([^"']+)["'][^>]*class[^>]*download/i,
+                                /<a[^>]*class[^>]*download[^>]*href=["']([^"']+)["']/i
+                            ];
+
+                            for (const pattern of downloadHerePatterns) {
+                                const downloadHereMatch = text.match(pattern);
+                                if (downloadHereMatch) {
+                                    // Extract href from the matched link
+                                    let downloadUrl = null;
+                                    if (downloadHereMatch[1]) {
+                                        downloadUrl = downloadHereMatch[1];
+                                    } else {
+                                        // Try to extract from the full match
+                                        const hrefMatch = downloadHereMatch[0].match(/href=["']([^"']+)["']/i);
+                                        if (hrefMatch && hrefMatch[1]) {
+                                            downloadUrl = hrefMatch[1];
+                                        }
+                                    }
+
+                                    if (downloadUrl && !downloadUrl.startsWith('#') && downloadUrl !== url) {
+                                        console.log(`[MalluMV] Found "Download Here" link: ${downloadUrl.substring(0, 50)}...`);
+                                        // Resolve relative URLs to absolute
+                                        try {
+                                            const absoluteUrl = new URL(downloadUrl, url).href;
+                                            return resolveHubCloudUrl(absoluteUrl);
+                                        } catch (e) {
+                                            return resolveHubCloudUrl(downloadUrl);
+                                        }
+                                    }
+                                }
+                            }
+
+                            // Look for any download button/link with href
+                            const downloadLinkMatch = text.match(/<a[^>]*href=["']([^"']+)["'][^>]*>.*?[Dd]ownload/i);
+                            if (downloadLinkMatch && downloadLinkMatch[1]) {
+                                const downloadUrl = downloadLinkMatch[1];
+                                // Skip if it's a fragment, relative path without extension, or the same URL
+                                if (!downloadUrl.startsWith('#') &&
+                                    (downloadUrl.startsWith('http') || downloadUrl.includes('/') || downloadUrl.includes('.'))) {
+                                    console.log(`[MalluMV] Found download link: ${downloadUrl.substring(0, 50)}...`);
+                                    try {
+                                        const absoluteUrl = new URL(downloadUrl, url).href;
+                                        return resolveHubCloudUrl(absoluteUrl);
+                                    } catch (e) {
+                                        return resolveHubCloudUrl(downloadUrl);
+                                    }
+                                }
+                            }
+
+                            // Look for meta refresh redirects
+                            const metaRefreshMatch = text.match(/<meta[^>]*http-equiv=["']refresh["'][^>]*content=["'][^"']*url=([^"';]+)/i);
+                            if (metaRefreshMatch && metaRefreshMatch[1]) {
+                                const redirectUrl = metaRefreshMatch[1].trim();
+                                console.log(`[MalluMV] Found meta refresh redirect: ${redirectUrl.substring(0, 50)}...`);
+                                try {
+                                    const absoluteUrl = new URL(redirectUrl, url).href;
+                                    return resolveHubCloudUrl(absoluteUrl);
+                                } catch (e) {
+                                    return resolveHubCloudUrl(redirectUrl);
+                                }
+                            }
+
+                            // Look for JavaScript redirects (window.location, location.href, etc.)
+                            const jsRedirectMatch = text.match(/(?:window\.location|location\.href|location\.replace)\s*[=:]\s*["']([^"']+)["']/i);
+                            if (jsRedirectMatch && jsRedirectMatch[1]) {
+                                const redirectUrl = jsRedirectMatch[1];
+                                console.log(`[MalluMV] Found JavaScript redirect: ${redirectUrl.substring(0, 50)}...`);
+                                try {
+                                    const absoluteUrl = new URL(redirectUrl, url).href;
+                                    return resolveHubCloudUrl(absoluteUrl);
+                                } catch (e) {
+                                    return resolveHubCloudUrl(redirectUrl);
+                                }
+                            }
+
+                            // Look for direct download URLs in the response (R2 Cloudflare)
+                            const directUrlMatch = text.match(/(https?:\/\/[^"'\s]+\.r2\.cloudflarestorage\.com[^"'\s]*)/);
+                            if (directUrlMatch) {
+                                console.log(`[MalluMV] Found direct R2 URL in response: ${directUrlMatch[1].substring(0, 50)}...`);
+                                return directUrlMatch[1];
+                            }
+
+                            // Look for other direct download patterns (video files)
+                            const otherDirectMatch = text.match(/(https?:\/\/[^"'\s]+\/[^"'\s]*\.(mkv|mp4|avi|m4v)[^"'\s]*)/i);
+                            if (otherDirectMatch) {
+                                console.log(`[MalluMV] Found direct file URL: ${otherDirectMatch[1].substring(0, 50)}...`);
+                                return otherDirectMatch[1];
+                            }
+
+                            // Look for Google Drive, Pixeldrain, or other cloud storage URLs
+                            const cloudStorageMatch = text.match(/(https?:\/\/[^"'\s]*(?:video-downloads\.googleusercontent\.com|pixeldrain\.(?:net|dev)|sharepoint\.com|onedrive\.live\.com)[^"'\s]*)/i);
+                            if (cloudStorageMatch) {
+                                console.log(`[MalluMV] Found cloud storage URL: ${cloudStorageMatch[1].substring(0, 50)}...`);
+                                return resolveHubCloudUrl(cloudStorageMatch[1]);
+                            }
+
+                            // Return original URL if we can't find a direct URL
+                            console.log(`[MalluMV] No direct URL found, returning original`);
+                            return url;
+                        });
+                    }
+
+                    // Return original URL if we can't resolve it
+                    console.log(`[MalluMV] Could not resolve URL, returning original`);
+                    return url;
+                }).catch(error => {
+                    console.log(`[MalluMV] Error resolving URL: ${error.message}`);
+                    return url;
+                });
+            }
+
+            function buildTask(buttonText, buttonLink, headerDetails, size, quality) {
+                const qualityLabel = quality ? (' - ' + quality + 'p') : ' - Unknown';
+
+                // Pixeldrain normalization (from 4KHDHub)
+                const pd = buttonLink.match(/pixeldrain\.(?:net|dev)\/u\/([a-zA-Z0-9]+)/);
+                if (pd && pd[1]) buttonLink = 'https://pixeldrain.net/api/file/' + pd[1];
+
+                // Handle intermediate HubCloud URLs (.fans/?id=, .workers.dev/?id=, and redirect URLs)
+                if (buttonLink.includes('.fans/?id=') || buttonLink.includes('.workers.dev/?id=') ||
+                    buttonLink.includes('360news4u.net/dl.php') || buttonLink.includes('gamerxyt.com/dl.php')) {
+                    return resolveHubCloudUrl(buttonLink)
+                        .then(resolvedUrl => {
+                            // If resolution failed and we still have an intermediate URL, try one more time
+                            if (resolvedUrl.includes('.workers.dev/?id=') &&
+                                !resolvedUrl.includes('r2.cloudflarestorage.com') &&
+                                !resolvedUrl.includes('video-downloads.googleusercontent.com') &&
+                                !resolvedUrl.includes('360news4u.net/dl.php') &&
+                                !resolvedUrl.includes('gamerxyt.com/dl.php')) {
+                                console.log(`[MalluMV] Second attempt to resolve: ${resolvedUrl.substring(0, 50)}...`);
+                                return resolveHubCloudUrl(resolvedUrl);
+                            }
+                            return resolvedUrl;
+                        })
+                        .then(resolvedUrl => {
+                            return getFilenameFromUrl(resolvedUrl)
+                                .then(actualFilename => {
+                                    const displayFilename = actualFilename || headerDetails || 'Unknown';
+                                    const titleParts = [];
+                                    if (displayFilename) titleParts.push(displayFilename);
+                                    if (size) titleParts.push(size);
+                                    const finalTitle = titleParts.join('\n');
+
+                                    let name;
+                                    if (buttonText.includes('FSL Server')) name = 'MalluMV - FSL Server' + qualityLabel;
+                                    else if (buttonText.includes('S3 Server')) name = 'MalluMV - S3 Server' + qualityLabel;
+                                    else if (/pixeldra/i.test(buttonText) || /pixeldra/i.test(buttonLink)) name = 'MalluMV - Pixeldrain' + qualityLabel;
+                                    else if (buttonText.includes('Download File')) name = 'MalluMV - HubCloud' + qualityLabel;
+                                    else name = 'MalluMV - HubCloud' + qualityLabel;
+
+                                    return {
+                                        name: name,
+                                        title: finalTitle,
+                                        url: resolvedUrl,
+                                        quality: quality ? quality + 'p' : 'Unknown',
+                                        size: size || 'Unknown',
+                                        headers: WORKING_HEADERS,
+                                        provider: 'mallumv'
+                                    };
+                                })
+                                .catch(() => {
+                                    const displayFilename = headerDetails || 'Unknown';
+                                    const titleParts = [];
+                                    if (displayFilename) titleParts.push(displayFilename);
+                                    if (size) titleParts.push(size);
+                                    const finalTitle = titleParts.join('\n');
+
+                                    const name = 'MalluMV - HubCloud' + qualityLabel;
+                                    return {
+                                        name: name,
+                                        title: finalTitle,
+                                        url: resolvedUrl,
+                                        quality: quality ? quality + 'p' : 'Unknown',
+                                        size: size || 'Unknown',
+                                        headers: WORKING_HEADERS,
+                                        provider: 'mallumv'
+                                    };
+                                });
+                        });
+                }
+
+                return getFilenameFromUrl(buttonLink)
+                    .then(actualFilename => {
+                        const displayFilename = actualFilename || headerDetails || 'Unknown';
+                        const titleParts = [];
+                        if (displayFilename) titleParts.push(displayFilename);
+                        if (size) titleParts.push(size);
+                        const finalTitle = titleParts.join('\n');
+
+                        let name;
+                        if (buttonText.includes('FSL Server')) name = 'MalluMV - FSL Server' + qualityLabel;
+                        else if (buttonText.includes('S3 Server')) name = 'MalluMV - S3 Server' + qualityLabel;
+                        else if (/pixeldra/i.test(buttonText) || /pixeldra/i.test(buttonLink)) name = 'MalluMV - Pixeldrain' + qualityLabel;
+                        else if (buttonText.includes('Download File')) name = 'MalluMV - HubCloud' + qualityLabel;
+                        else name = 'MalluMV - HubCloud' + qualityLabel;
+
+                        return {
+                            name: name,
+                            title: finalTitle,
+                            url: buttonLink,
+                            quality: quality ? quality + 'p' : 'Unknown',
+                            size: size || 'Unknown',
+                            headers: WORKING_HEADERS,
+                            provider: 'mallumv'
+                        };
+                    })
+                    .catch(() => {
+                        const displayFilename = headerDetails || 'Unknown';
+                        const titleParts = [];
+                        if (displayFilename) titleParts.push(displayFilename);
+                        if (size) titleParts.push(size);
+                        const finalTitle = titleParts.join('\n');
+
+                        const name = 'MalluMV - HubCloud' + qualityLabel;
+                        return {
+                            name: name,
+                            title: finalTitle,
+                            url: buttonLink,
+                            quality: quality ? quality + 'p' : 'Unknown',
+                            size: size || 'Unknown',
+                            headers: WORKING_HEADERS,
+                            provider: 'mallumv'
+                        };
+                    });
+            }
+
+            // Iterate per card to capture per-quality sections (from 4KHDHub)
+            const tasks = [];
+            const cards = $$('.card');
+            if (cards.length > 0) {
+                cards.each(function (ci, card) {
+                    const $card = $$(card);
+                    const header = $card.find('div.card-header').text() || $$('div.card-header').first().text() || '';
+                    const size = $card.find('i#size').text() || $$('i#size').first().text() || '';
+                    const quality = getIndexQuality(header);
+                    const headerDetails = cleanTitle(header);
+
+                    let localBtns = $card.find('div.card-body h2 a.btn');
+                    if (localBtns.length === 0) localBtns = $card.find('a.btn, .btn, a[href]');
+
+                    localBtns.each(function (i, el) {
+                        const $btn = $$(el);
+                        const text = ($btn.text() || '').trim();
+                        let link = $btn.attr('href');
+
+                        if (!link) return;
+                        link = toAbsolute(link, href);
+
+                        // Only consider plausible buttons (from 4KHDHub)
+                        const isPlausible = /(hubcloud|hubdrive|pixeldrain|buzz|10gbps|workers\.dev|r2\.dev|download|api\/file)/i.test(link) ||
+                            text.toLowerCase().includes('download');
+
+                        if (!isPlausible) return;
+
+                        tasks.push(buildTask(text, link, headerDetails, size, quality));
+                    });
+                });
+            }
+
+            // Fallback: whole page buttons (from 4KHDHub)
+            if (tasks.length === 0) {
+                let buttons = $$.root().find('div.card-body h2 a.btn');
+                if (buttons.length === 0) {
+                    const altSelectors = ['a.btn', '.btn', 'a[href]'];
+                    for (const selector of altSelectors) {
+                        buttons = $$.root().find(selector);
+                        if (buttons.length > 0) break;
+                    }
+                }
+
+                const size = $$('i#size').first().text() || '';
+                const header = $$('div.card-header').first().text() || '';
+                const quality = getIndexQuality(header);
+                const headerDetails = cleanTitle(header);
+
+                buttons.each(function (i, el) {
+                    const $btn = $$(el);
+                    const text = ($btn.text() || '').trim();
+                    let link = $btn.attr('href');
+
+                    if (!link) return;
+                    link = toAbsolute(link, href);
+
+                    tasks.push(buildTask(text, link, headerDetails, size, quality));
+                });
+            }
+
+            if (tasks.length === 0) return [];
+            return Promise.all(tasks).then(arr => (arr || []).filter(x => !!x));
+        })
+        .catch(error => {
+            console.error(`[MalluMV] HubCloud extraction error for ${url}:`, error.message);
+            return [];
+        });
+}
+
+// Utility functions (reused from DVDPlay)
+function normalizeTitle(title) {
+    return (title || '')
+        .toLowerCase()
+        .replace(/[^a-z0-9\s]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+}
+
+function calculateSimilarity(str1, str2) {
+    var s1 = normalizeTitle(str1);
+    var s2 = normalizeTitle(str2);
+    if (s1 === s2) return 1.0;
+    var len1 = s1.length;
+    var len2 = s2.length;
+    if (len1 === 0) return len2 === 0 ? 1.0 : 0.0;
+    if (len2 === 0) return 0.0;
+    var matrix = Array(len1 + 1).fill(null).map(function () { return Array(len2 + 1).fill(0); });
+    for (var i = 0; i <= len1; i++) matrix[i][0] = i;
+    for (var j = 0; j <= len2; j++) matrix[0][j] = j;
+    for (i = 1; i <= len1; i++) {
+        for (j = 1; j <= len2; j++) {
+            var cost = s1[i - 1] === s2[j - 1] ? 0 : 1;
+            matrix[i][j] = Math.min(matrix[i - 1][j] + 1, matrix[i][j - 1] + 1, matrix[i - 1][j - 1] + cost);
+        }
+    }
+    var maxLen = Math.max(len1, len2);
+    return (maxLen - matrix[len1][len2]) / maxLen;
+}
+
+function findBestMatch(results, query) {
+    if (!results || results.length === 0) return null;
+    if (results.length === 1) return results[0];
+
+    var scored = results.map(function (r) {
+        var score = 0;
+        if (normalizeTitle(r.title) === normalizeTitle(query)) score += 100;
+        var sim = calculateSimilarity(r.title, query); score += sim * 50;
+        if (normalizeTitle(r.title).indexOf(normalizeTitle(query)) !== -1) score += 15; // quick containment bonus
+        var lengthDiff = Math.abs(r.title.length - query.length);
+        score += Math.max(0, 10 - lengthDiff / 5);
+        if (/(19|20)\d{2}/.test(r.title)) score += 5;
+        return { item: r, score: score };
+    });
+    scored.sort(function (a, b) { return b.score - a.score; });
+
+    // Only return the best match if it has a reasonable similarity score
+    // Require at least 30% similarity or exact match to avoid wrong movies
+    const bestMatch = scored[0];
+    const similarity = calculateSimilarity(bestMatch.item.title, query);
+
+    if (similarity < 0.3 && normalizeTitle(bestMatch.item.title) !== normalizeTitle(query)) {
+        console.log(`[MalluMV] Best match "${bestMatch.item.title}" has low similarity (${(similarity * 100).toFixed(1)}%) with "${query}" - rejecting`);
+        return null;
+    }
+
+    return bestMatch.item;
+}
+
+function parseQualityForSort(qualityString) {
+    const match = (qualityString || '').match(/(\d{3,4})p/i);
+    return match ? parseInt(match[1], 10) : 0;
+}
+
+function parseSizeForSort(sizeString) {
+    if (!sizeString) return 0;
+
+    const match = sizeString.match(/(\d+(?:\.\d+)?)\s*(GB|MB)/i);
+    if (!match) return 0;
+
+    const value = parseFloat(match[1]);
+    const unit = match[2].toUpperCase();
+
+    // Convert everything to MB for comparison
+    if (unit === 'GB') {
+        return value * 1024; // Convert GB to MB
+    } else if (unit === 'MB') {
+        return value;
+    }
+
+    return 0;
+}
+
+// Extract quality from text - improved to handle numeric values and normalize labels
+// Extract quality from text - improved to handle numeric values and normalize labels
+function extractQuality(text) {
+    if (!text) return 'Unknown';
+
+    // First, look for specific resolution values (prioritize these)
+    const resolutionMatch = text.match(/(4K|2160p|1080p|720p|480p|360p)/i);
+    if (resolutionMatch) {
+        const quality = resolutionMatch[1].toUpperCase();
+        // Normalize 4K to standard format
+        if (quality === '4K') return '4K';
+        return quality;
+    }
+
+    // Look for numeric quality values followed by 'p' (e.g., 2160p, 1080p) - stricter check
+    const strictNumericMatch = text.match(/(\d{3,4})[pP]/);
+    if (strictNumericMatch) {
+        const numericValue = parseInt(strictNumericMatch[1], 10);
+        if (numericValue >= 2160) return '4K';
+        else if (numericValue >= 1440) return '1440p';
+        else if (numericValue >= 1080) return '1080p';
+        else if (numericValue >= 720) return '720p';
+        else if (numericValue >= 480) return '480p';
+        else if (numericValue >= 360) return '360p';
+        else if (numericValue >= 240) return '240p';
+    }
+
+    // If no specific resolution found, look for quality indicators
+    const qualityMatch = text.match(/(WEB-DL|BluRay|HDRip|DVDRip|HDTV|CAM|TS|R5|DVDScr|BRRip|BDRip|DVD|PDTV|HD)/i);
+    if (qualityMatch) {
+        return qualityMatch[1];
+    }
+
+    return 'Unknown';
+}
+
+// Extract size from text
+function extractSize(text) {
+    const sizeMatch = (text || '').match(/(\d+(?:\.\d+)?)\s*(GB|MB)/i);
+    return sizeMatch ? sizeMatch[1] + sizeMatch[2] : null;
+}
+
+// Get service name from URL
+function getServiceName(url) {
+    try {
+        const urlObj = new URL(url);
+        const hostname = urlObj.hostname.toLowerCase();
+
+        if (hostname.includes('sharepoint')) return 'OneDrive';
+        if (hostname.includes('hubcloud')) return 'HubCloud';
+        if (hostname.includes('pixeldrain')) return 'Pixeldrain';
+        if (hostname.includes('gofile')) return 'GoFile';
+
+        // Extract domain name for unknown services
+        const parts = hostname.split('.');
+        if (parts.length >= 2) {
+            return parts[parts.length - 2].charAt(0).toUpperCase() + parts[parts.length - 2].slice(1);
+        }
+
+        return 'Unknown Service';
+    } catch (error) {
+        return 'Unknown Service';
+    }
+}
+
+// Helper function for HTTP requests with HTML parsing support
+function makeHTTPRequest(url, options = {}) {
+    return new Promise((resolve, reject) => {
+        const defaultHeaders = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+            'Accept-Language': 'en-US,en;q=0.5',
+            'Accept-Encoding': 'gzip, deflate, br',
+            'Connection': 'keep-alive',
+            'Upgrade-Insecure-Requests': '1',
+            'Sec-Fetch-Dest': 'document',
+            'Sec-Fetch-Mode': 'navigate',
+            'Sec-Fetch-Site': 'none'
+        };
+
+        const fetchOptions = {
+            method: options.method || 'GET',
+            headers: {
+                ...defaultHeaders,
+                ...options.headers
+            },
+            redirect: 'follow'
+        };
+
+        fetch(url, fetchOptions)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                return response.text().then(data => {
+                    if (options.parseHTML && data) {
+                        const cheerio = require('cheerio-without-node-native');
+                        const $ = cheerio.load(data);
+                        resolve({ $: $, body: data, statusCode: response.status, headers: Object.fromEntries(response.headers) });
+                    } else {
+                        resolve({ body: data, statusCode: response.status, headers: Object.fromEntries(response.headers) });
+                    }
+                });
+            })
+            .catch(error => {
+                console.error(`[MalluMV] Request failed for ${url}: ${error.message}`);
+                reject(error);
+            });
+    });
+}
+
+// Search for content on MalluMV
+function searchContent(title, year, mediaType) {
+    const searchQuery = title.trim();
+    const encodedQuery = encodeURIComponent(searchQuery);
+    const searchUrl = `${BASE_URL}/search.php?q=${encodedQuery}`;
+
+    console.log(`[MalluMV] Searching for: "${searchQuery}" at ${searchUrl}`);
+
+    return makeHTTPRequest(searchUrl)
+        .then(response => response.body)
+        .then(html => {
+            // Check if search returned "No Result Found" - if so, return empty results
+            if (html.includes('No Result Found. Showing Recent Movies:')) {
+                console.log(`[MalluMV] No exact results found for "${title}" - returning empty results`);
+                return [];
+            }
+
+            // Look for movie page links (without leading slash)
+            const moviePageRegex = /<a href="(movie\/\d+\/[^"]+\.xhtml)">/g;
+            const results = [];
+            let match;
+
+            while ((match = moviePageRegex.exec(html)) !== null) {
+                const movieUrl = new URL('/' + match[1], BASE_URL).href;
+
+                // Extract title from the link text (look for the text between <a> tags)
+                const linkTextMatch = html.substring(match.index).match(/<a href="[^"]+">\s*<p class="home">\s*<font[^>]*>\s*<b>\s*»\s*([^<]+)/);
+                const extractedTitle = linkTextMatch ? linkTextMatch[1].trim() : title;
+
+                results.push({
+                    title: extractedTitle,
+                    url: movieUrl
+                });
+            }
+
+            console.log(`[MalluMV] Found ${results.length} search results`);
+            return results;
+        })
+        .catch(error => {
+            console.log(`[MalluMV] Search failed: ${error.message}`);
+            return [];
+        });
+}
+
+// Extract download links from movie page
+function extractDownloadLinks(pageUrl) {
+    console.log(`[MalluMV] Extracting download links from: ${pageUrl}`);
+
+    return makeHTTPRequest(pageUrl)
+        .then(response => response.body)
+        .then(html => {
+            const downloadLinks = [];
+
+            // Look for confirm page links with full titles
+            // Pattern matches: [» Title with details](confirm/url)
+            const confirmRegex = /\[»\s*([^\]]+)\]\((\/confirm\/\d+\/\d+\/[^)]+\.xhtml)\)/g;
+            let match;
+
+            while ((match = confirmRegex.exec(html)) !== null) {
+                const confirmUrl = new URL(match[2], BASE_URL).href;
+                const fullTitle = match[1].trim()
+                    .replace(/&raquo;/g, '»')
+                    .replace(/&amp;/g, '&')
+                    .replace(/&lt;/g, '<')
+                    .replace(/&gt;/g, '>')
+                    .replace(/&quot;/g, '"')
+                    .replace(/&#39;/g, "'");
+
+                // Extract quality and size from full title
+                const quality = extractQuality(fullTitle);
+                const size = extractSize(fullTitle);
+
+                downloadLinks.push({
+                    url: confirmUrl,
+                    text: fullTitle,
+                    quality: quality,
+                    size: size,
+                    fullTitle: fullTitle
+                });
+            }
+
+            // Fallback: if no matches found with the new pattern, try the old pattern
+            if (downloadLinks.length === 0) {
+                const fallbackRegex = /<a class="touh" href="(\/confirm\/\d+\/\d+\/[^"]+\.xhtml)">([^<]+)<\/a>/g;
+                let fallbackMatch;
+
+                while ((fallbackMatch = fallbackRegex.exec(html)) !== null) {
+                    const confirmUrl = new URL(fallbackMatch[1], BASE_URL).href;
+                    const linkText = fallbackMatch[2].trim()
+                        .replace(/&raquo;/g, '»')
+                        .replace(/&amp;/g, '&')
+                        .replace(/&lt;/g, '<')
+                        .replace(/&gt;/g, '>')
+                        .replace(/&quot;/g, '"')
+                        .replace(/&#39;/g, "'");
+
+                    // Extract quality and size from link text
+                    const quality = extractQuality(linkText);
+                    const size = extractSize(linkText);
+
+                    downloadLinks.push({
+                        url: confirmUrl,
+                        text: linkText,
+                        quality: quality,
+                        size: size,
+                        fullTitle: linkText
+                    });
+                }
+            }
+
+            console.log(`[MalluMV] Found ${downloadLinks.length} download links`);
+            return downloadLinks;
+        })
+        .catch(error => {
+            console.error(`[MalluMV] Error extracting download links from ${pageUrl}: ${error.message}`);
+            return [];
+        });
+}
+
+// Process confirm page to get internal page URL
+function processConfirmLink(confirmPageUrl) {
+    console.log(`[MalluMV] Processing confirm page: ${confirmPageUrl}`);
+
+    return makeHTTPRequest(confirmPageUrl)
+        .then(response => response.body)
+        .then(html => {
+            // Look for the "Confirm Download" link that leads to internal page
+            const internalMatch = html.match(/<a class="touch" href="(\/internal\/\d+\/\d+\/[^"]+\.xhtml)">/);
+
+            if (internalMatch) {
+                const internalUrl = new URL(internalMatch[1], BASE_URL).href;
+                console.log(`[MalluMV] Found internal page URL: ${internalUrl}`);
+                return internalUrl;
+            } else {
+                console.log(`[MalluMV] No internal page URL found in confirm page`);
+                return null;
+            }
+        })
+        .catch(error => {
+            console.error(`[MalluMV] Error processing confirm link ${confirmPageUrl}: ${error.message}`);
+            return null;
+        });
+}
+
+// Process internal page to get final download URL
+function processInternalLink(internalPageUrl, quality, size, fullTitle) {
+    console.log(`[MalluMV] Processing internal page: ${internalPageUrl}`);
+
+    return makeHTTPRequest(internalPageUrl)
+        .then(response => response.body)
+        .then(html => {
+            // Check for HubCloud links FIRST
+            const hubCloudMatch = html.match(/<a href=["'](https:\/\/[^"']*hubcloud\.[^"']*)["']/);
+            if (hubCloudMatch) {
+                const hubCloudUrl = hubCloudMatch[1];
+                console.log(`[MalluMV] Found HubCloud URL, extracting streams...`);
+
+                // Use DVDPlay's HubCloud extractor
+                return extractHubCloudLinks(hubCloudUrl, 'MalluMV')
+                    .then(streams => {
+                        // Update stream names and metadata
+                        return streams.map(stream => {
+                            const finalQuality = quality || stream.quality;
+                            let newName = stream.name.replace('DVDPlay', 'MalluMV');
+
+                            // If quality is improved/available and name has 'Unknown', update it
+                            if (finalQuality && finalQuality !== 'Unknown') {
+                                if (newName.includes(' - Unknown')) {
+                                    newName = newName.replace(' - Unknown', ' - ' + finalQuality);
+                                    // Add 'p' if missing
+                                    if (!newName.endsWith('p') && /^\d+$/.test(finalQuality)) {
+                                        newName += 'p';
+                                    }
+                                }
+                            }
+
+                            return {
+                                ...stream,
+                                name: newName,
+                                size: size || stream.size,
+                                quality: finalQuality
+                            };
+                        });
+                    });
+            }
+
+            // Fall back to direct download patterns
+            const downloadPatterns = [
+                // OneDrive/SharePoint pattern
+                /<a href=["'](https:\/\/[^"']*sharepoint\.com[^"']*download\.aspx[^"']*)["']/,
+                // Pixeldrain pattern
+                /<a href=["'](https:\/\/[^"']*pixeldrain\.[^"']*)["']/,
+                // Generic download link
+                /<a href=["'](https:\/\/[^"']*)["'][^>]*>Download/
+            ];
+
+            for (const pattern of downloadPatterns) {
+                const match = html.match(pattern);
+                if (match) {
+                    const downloadUrl = match[1];
+                    const serviceName = getServiceName(downloadUrl);
+                    const qualityLabel = quality ? (' - ' + quality) : '';
+
+                    console.log(`[MalluMV] Found download URL: ${downloadUrl.substring(0, 80)}...`);
+
+                    return [{
+                        name: `MalluMV - ${serviceName}${qualityLabel}`,
+                        title: fullTitle || `${quality || 'Unknown'} Quality`,
+                        url: downloadUrl,
+                        quality: quality || 'Unknown',
+                        size: size || 'Unknown',
+                        headers: WORKING_HEADERS,
+                        provider: 'mallumv'
+                    }];
+                }
+            }
+
+            console.log(`[MalluMV] No download URL found in internal page`);
+            return [];
+        })
+        .catch(error => {
+            console.error(`[MalluMV] Error processing internal link ${internalPageUrl}: ${error.message}`);
+            return [];
+        });
+}
+
+// TMDB helper
+function getTMDBDetails(tmdbId, mediaType) {
+    var url = 'https://api.themoviedb.org/3/' + mediaType + '/' + tmdbId + '?api_key=' + TMDB_API_KEY;
+    return makeHTTPRequest(url).then(function (res) { return JSON.parse(res.body); }).then(function (data) {
+        if (mediaType === 'movie') {
+            return { title: data.title, original_title: data.original_title, year: data.release_date ? data.release_date.split('-')[0] : null };
+        } else {
+            return { title: data.name, original_title: data.original_name, year: data.first_air_date ? data.first_air_date.split('-')[0] : null };
+        }
+    }).catch(function () { return null; });
+}
+
+// Filter and deduplicate streams (match hdhub4u.js quality standards)
+function filterAndDeduplicateStreams(streams) {
+    // Filter suspicious URLs
+    const suspicious = ['www-google-com.cdn.ampproject.org', 'bloggingvector.shop', 'cdn.ampproject.org'];
+    const filtered = streams.filter(stream => {
+        const url = (stream.url || '').toLowerCase();
+
+        // Filter ZIP files
+        if (url.includes('.zip') || (stream.title && stream.title.toLowerCase().includes('.zip'))) {
+            return false;
+        }
+
+        // Filter suspicious AMP/redirect URLs
+        if (suspicious.some(pattern => url.includes(pattern))) {
+            return false;
+        }
+
+        // Filter base64 encoded URLs (likely intermediate redirects)
+        if (url.includes('/aHR0cHM6') || url.includes('/foo/aHR0')) {
+            return false;
+        }
+
+        return true;
+    });
+
+    // Resolve gamerxyt.com/dl.php?link= URLs to extract actual Google Drive URLs
+    const resolvedStreams = filtered.map(stream => {
+        const url = stream.url;
+
+        // Check if it's a gamerxyt.com/dl.php?link= URL
+        if (url.includes('gamerxyt.com/dl.php?link=')) {
+            try {
+                // Extract the actual Google Drive URL from the link parameter
+                const linkMatch = url.match(/gamerxyt\.com\/dl\.php\?link=([^&\s]+)/);
+                if (linkMatch && linkMatch[1]) {
+                    const actualUrl = decodeURIComponent(linkMatch[1]);
+                    console.log(`[MalluMV] Resolved gamerxyt URL: ${url.substring(0, 80)}... -> ${actualUrl.substring(0, 80)}...`);
+
+                    return {
+                        ...stream,
+                        url: actualUrl
+                    };
+                }
+            } catch (error) {
+                console.log(`[MalluMV] Failed to resolve gamerxyt URL: ${error.message}`);
+            }
+        }
+
+        return stream;
+    });
+
+    // Deduplicate by URL
+    const seenUrls = new Set();
+    const unique = resolvedStreams.filter(stream => {
+        if (seenUrls.has(stream.url)) return false;
+        seenUrls.add(stream.url);
+        return true;
+    });
+
+    return unique;
+}
+
+// Main function that Nuvio will call
+function getStreams(tmdbId, mediaType = 'movie', seasonNum = null, episodeNum = null) {
+    console.log(`[MalluMV] Fetching streams for TMDB ID: ${tmdbId}, Type: ${mediaType}`);
+
+    var tmdbType = (mediaType === 'series' ? 'tv' : mediaType);
+    return getTMDBDetails(tmdbId, tmdbType).then(function (tmdb) {
+        if (!tmdb || !tmdb.title) return [];
+
+        console.log(`[MalluMV] TMDB Info: "${tmdb.title}" (${tmdb.year})`);
+
+        // Search for content
+        return searchContent(tmdb.title, tmdb.year, mediaType).then(searchResults => {
+            if (searchResults.length === 0) {
+                console.log(`[MalluMV] No search results found`);
+                return [];
+            }
+
+            // Find best match
+            const selectedResult = findBestMatch(searchResults, tmdb.title);
+            if (!selectedResult) {
+                console.log(`[MalluMV] No suitable match found for "${tmdb.title}"`);
+                return [];
+            }
+            console.log(`[MalluMV] Selected result: "${selectedResult.title}"`);
+
+            // Extract download links from movie page
+            return extractDownloadLinks(selectedResult.url).then(downloadLinks => {
+                if (downloadLinks.length === 0) {
+                    console.log(`[MalluMV] No download links found`);
+                    return [];
+                }
+
+                // Process each download link: confirm → internal → final
+                const streamPromises = downloadLinks.map(downloadLink => {
+                    return processConfirmLink(downloadLink.url)
+                        .then(internalUrl => {
+                            if (!internalUrl) return [];
+                            return processInternalLink(internalUrl, downloadLink.quality, downloadLink.size, downloadLink.fullTitle);
+                        })
+                        .catch(error => {
+                            console.error(`[MalluMV] Error processing download link: ${error.message}`);
+                            return [];
+                        });
+                });
+
+                return Promise.all(streamPromises).then(nestedStreams => {
+                    // Flatten array of arrays
+                    let allStreams = nestedStreams.flat();
+
+                    // Filter out empty results
+                    let validStreams = allStreams.filter(stream => stream !== null && stream.url);
+
+                    // Remove duplicates based on URL
+                    const uniqueStreams = Array.from(new Map(validStreams.map(stream => [stream.url, stream])).values());
+
+                    // Sort by size first (largest first), then by quality (highest first)
+                    uniqueStreams.sort((a, b) => {
+                        // Parse sizes to numbers for comparison
+                        const sizeA = parseSizeForSort(a.size);
+                        const sizeB = parseSizeForSort(b.size);
+
+                        // If sizes are different, sort by size (largest first)
+                        if (sizeA !== sizeB) {
+                            return sizeB - sizeA;
+                        }
+
+                        // If sizes are equal, sort by quality (highest first)
+                        const qualityA = parseQualityForSort(a.quality);
+                        const qualityB = parseQualityForSort(b.quality);
+                        return qualityB - qualityA;
+                    });
+
+                    // Filter and deduplicate streams (match hdhub4u.js quality)
+                    const filteredStreams = filterAndDeduplicateStreams(uniqueStreams);
+
+                    console.log(`[MalluMV] Successfully processed ${uniqueStreams.length} streams`);
+                    console.log(`[MalluMV] After filtering: ${filteredStreams.length} quality streams`);
+                    return filteredStreams;
+                });
+            });
+        });
+    }).catch(function (error) {
+        console.error(`[MalluMV] Error in getStreams: ${error.message}`);
+        return [];
+    });
+}
+
+// Export for React Native
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = { getStreams };
+} else {
+    global.getStreams = getStreams;
+}
+
+
+/* NUVIO_GLOBAL_MEDIA_ENRICHMENT_V1:7a60b5a9b638 */
+;(function(g,c){"use strict";
+var ASSET=/\.(?:css|js|mjs|map|png|jpe?g|gif|svg|ico|woff2?|ttf|otf|eot|json|xml|vtt|srt)(?:[?#]|$)/i;
+var BADHOST=/(?:^|\.)(?:youtube\.com|youtu\.be|twitter\.com|x\.com|twimg\.com|facebook\.com|instagram\.com|googletagmanager\.com|google-analytics\.com|doubleclick\.net)$/i;
+function s(v){return String(v==null?"":v).replace(/\\\//g,"/").trim()}
+function abs(v,b){try{return new URL(s(v),b).toString()}catch(_){return""}}
+function host(v){try{return new URL(v).hostname.toLowerCase()}catch(_){return""}}
+function rejected(v){var h=host(v);return !/^https?:\/\//i.test(v)||!h||BADHOST.test(h)||ASSET.test(v)||/(?:trailer|bande-annonce|big[_-]?buck[_-]?bunny|sample[-_]?video|\/troll\/master\.m3u8)/i.test(v)}
+function directByName(v){return /\.(?:m3u8|mpd|mp4|mkv|webm)(?:[?#]|$)|\/hls2?\//i.test(v)}
+function timeout(){try{return typeof AbortSignal!=="undefined"&&AbortSignal.timeout?AbortSignal.timeout(c.timeoutMs):undefined}catch(_){return undefined}}
+function headers(row,referer,target){var out={},src=row&&row.headers&&typeof row.headers==="object"?row.headers:{};Object.keys(src).forEach(function(k){if(String(k).toLowerCase()!=="range")out[k]=s(src[k])});if(referer&&!out.Referer&&!out.referer)out.Referer=referer;try{var o=new URL(referer||target).origin;if(o&&!out.Origin&&!out.origin)out.Origin=o}catch(_){}if(!directByName(target)&&!out.Range&&!out.range)out.Range="bytes=0-262143";return out}
+function kindBytes(bytes){if(!bytes||bytes.length<4)return null;if(bytes.length>=12&&String.fromCharCode(bytes[4],bytes[5],bytes[6],bytes[7])==="ftyp")return"mp4";if(bytes[0]===26&&bytes[1]===69&&bytes[2]===223&&bytes[3]===163)return"mkv";if(bytes[0]===71&&(bytes.length<189||bytes[188]===71))return"mpegts";return null}
+function decode(bytes){try{return new TextDecoder("utf-8").decode(bytes)}catch(_){var x="";for(var i=0;i<Math.min(bytes.length,262144);i++)x+=String.fromCharCode(bytes[i]);return x}}
+async function fetchResource(url,row,referer){try{var r=await g.fetch(url,{headers:headers(row,referer,url),redirect:"follow",signal:timeout()});if(!r)return null;var type=r.headers&&r.headers.get?s(r.headers.get("content-type")):"",buf=await r.arrayBuffer(),bytes=new Uint8Array(buf),text=decode(bytes.slice(0,300000));return{ok:!!r.ok,status:r.status,url:s(r.url||url),type:type,bytes:bytes,text:text,headers:headers(row,referer,r.url||url)}}catch(_){return null}}
+function proof(r){if(!r||!r.ok)return null;var t=s(r.text).trimStart();if(t.indexOf("#EXTM3U")===0)return"hls";if(/<MPD[\s>]/i.test(t.slice(0,4096))||/application\/dash\+xml/i.test(r.type))return"dash";var b=kindBytes(r.bytes);if(b)return b;if(/^video\//i.test(r.type)&&r.bytes&&r.bytes.length>12)return"video";return null}
+function candidates(text,base){var out=[],seen={};function add(v){var u=abs(v,base);if(!u||rejected(u)||seen[u])return;seen[u]=1;out.push(u)}var body=s(text),patterns=[/(?:src|href|data-src|data-url|data-embed|data-player|data-file)=["']([^"']+)["']/gi,/(?:file|source|src|url|playlist|embedUrl|embed_url|contentUrl)\s*[:=]\s*["'](https?:\/\/[^"']+)["']/gi,/(https?:\/\/[^"'<>\s\\]+(?:m3u8|mpd|mp4|mkv|webm|embed|player|\/e\/|\/hls2?\/)[^"'<>\s\\]*)/gi],m;for(var i=0;i<patterns.length;i++){patterns[i].lastIndex=0;while((m=patterns[i].exec(body))!==null){add(m[1]);if(out.length>=c.maxCandidates)return out}}return out}
+async function resolve(url,row,referer,depth,seen){if(depth>c.maxDepth||rejected(url))return[];seen=seen||{};if(seen[url])return[];seen[url]=1;var r=await fetchResource(url,row,referer);if(!r)return[];var k=proof(r);if(k)return[{url:r.url||url,kind:k,headers:r.headers}];if(!/html|text|json|javascript|xml/i.test(r.type)&&!/[<>{}\[\]"']/.test(r.text||""))return[];var next=candidates(r.text,r.url||url),out=[];for(var i=0;i<next.length&&out.length<c.maxCandidates;i++){var found=await resolve(next[i],row,r.url||url,depth+1,seen);for(var j=0;j<found.length;j++)if(!out.some(function(x){return x.url===found[j].url}))out.push(found[j])}return out}
+function slot(v){if(Array.isArray(v))return{key:null,list:v};if(v&&typeof v==="object"){for(var i=0;i<3;i++){var k=["streams","results","data"][i];if(Array.isArray(v[k]))return{key:k,list:v[k]}}}return null}
+function rebuild(v,x,list){if(x.key===null)return list;var o=Object.assign({},v);o[x.key]=list;return o}
+function clone(row,media){var out=Object.assign({},row,{url:media.url,headers:media.headers||row.headers||{},isDirect:true,type:media.kind});return out}
+async function enrich(list){var out=[],seen={};function add(row){var u=s(row&&row.url);if(!u||seen[u])return;seen[u]=1;out.push(row)}for(var i=0;i<list.length;i++){var row=list[i];if(!row||typeof row!=="object"){continue}var u=s(row.url||row.streamUrl||row.stream||row.link||row.file);if(!u||rejected(u)){if(c.preserveOriginal)add(row);continue}if(i<c.maxRows&&!directByName(u)){var ref=s(row.headers&&(row.headers.Referer||row.headers.referer)||row.referer||u),found=await resolve(u,row,ref,0,{});for(var j=0;j<found.length;j++)add(clone(row,found[j]))}add(row)}return out}
+function install(o,k){if(!o||typeof o[k]!=="function"||o[k].__nuvioGlobalMediaEnrichmentV1)return false;var native=o[k];var wrap=async function(){var v=await native.apply(this,arguments),x=slot(v);if(!x||!x.list.length)return v;var list=await enrich(x.list);return rebuild(v,x,list)};wrap.__nuvioGlobalMediaEnrichmentV1=true;o[k]=wrap;return true}
+var ok=false;try{if(typeof module!=="undefined"&&module.exports)ok=install(module.exports,"getStreams")}catch(_){}try{if(g&&typeof g.getStreams==="function"){if(ok&&typeof module!=="undefined"&&module.exports)g.getStreams=module.exports.getStreams;else install(g,"getStreams")}}catch(_){}
+})(typeof globalThis!=="undefined"?globalThis:this,{"maxRows":6,"maxDepth":2,"maxCandidates":10,"timeoutMs":6500,"preserveOriginal":true});
+/* NUVIO_GLOBAL_CATALOGUE_ALIAS_RECOVERY_V2:cc4b210603f2 */
+;(function(g,c){"use strict";
+var TMDB_KEY="8265bd1679663a7ea12ac168da84d2e8";
+function s(v){return String(v==null?"":v).replace(/&amp;|&#038;/gi,"&").replace(/\\\//g,"/").trim()}
+function norm(v){try{return s(v).normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g," ").trim()}catch(_){return s(v).toLowerCase()}}
+function slug(v){return norm(v).replace(/\s+/g,"-")}
+function abs(v,b){try{return new URL(s(v),b).toString()}catch(_){return""}}
+function unique(values){var out=[],seen={};(values||[]).forEach(function(v){v=s(v).replace(/\s*\(\d{4}\)\s*$/,"");var k=norm(v);if(v&&k&&!seen[k]){seen[k]=1;out.push(v)}});return out}
+function args(a){var first=a[0],q=first&&typeof first==="object"&&!Array.isArray(first)?Object.assign({},first):{id:first,mediaType:a[1],season:a[2],episode:a[3],settings:a[4]||{}};var raw=s(q.tmdbId||q.tmdb_id||q.imdbId||q.imdb_id||q.id||first),m;q.mediaType=s(q.mediaType||q.type||q.category||"movie").toLowerCase();q.season=Number(q.season)||0;q.episode=Number(q.episode)||0;q.tmdbId="";q.imdbId="";m=/^(?:imdb:)?(tt\d+)(?::(\d+):(?:(\d+)))?$/i.exec(raw);if(m){q.imdbId=m[1].toLowerCase();if(!q.season&&m[2])q.season=Number(m[2])||0;if(!q.episode&&m[3])q.episode=Number(m[3])||0}else{raw=raw.replace(/^tmdb:/i,"");m=/^(\d+)(?::(\d+):(?:(\d+)))?$/.exec(raw);if(m){q.tmdbId=m[1];if(!q.season&&m[2])q.season=Number(m[2])||0;if(!q.episode&&m[3])q.episode=Number(m[3])||0}}return q}
+function timeout(){try{return typeof AbortSignal!=="undefined"&&AbortSignal.timeout?AbortSignal.timeout(c.timeoutMs):undefined}catch(_){return undefined}}
+async function request(url,json,referer){try{var h={Accept:json?"application/json,text/plain,*/*":"text/html,application/xhtml+xml,*/*","Accept-Language":"fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7"};if(referer){h.Referer=referer;try{h.Origin=new URL(referer).origin}catch(_){}}var r=await g.fetch(url,{headers:h,redirect:"follow",signal:timeout()});if(!r||!r.ok)return null;return{url:s(r.url||url),body:json?await r.json():await r.text(),type:r.headers&&r.headers.get?r.headers.get("content-type"):""}}catch(_){return null}}
+function kindFor(q){if(q.mediaType==="tv")return"tv";if(q.mediaType==="anime"&&q.season&&q.episode)return"tv";return"movie"}
+async function resolveIdentity(q,kind){if(/^\d+$/.test(q.tmdbId||""))return{tmdbId:q.tmdbId,imdbId:q.imdbId||"",seed:null};if(!/^tt\d+$/i.test(q.imdbId||""))return{tmdbId:"",imdbId:q.imdbId||"",seed:null};var r=await request("https://api.themoviedb.org/3/find/"+encodeURIComponent(q.imdbId)+"?api_key="+TMDB_KEY+"&external_source=imdb_id",true);if(!r||!r.body)return{tmdbId:"",imdbId:q.imdbId,seed:null};var preferred=kind==="tv"?(r.body.tv_results||[]):(r.body.movie_results||[]),other=kind==="tv"?(r.body.movie_results||[]):(r.body.tv_results||[]),seed=(preferred[0]||other[0]||null);return{tmdbId:seed&&seed.id?String(seed.id):"",imdbId:q.imdbId,seed:seed}}
+async function meta(q){var titles=unique([q.title,q.name,q.label,q.settings&&q.settings.title]),year=Number(q.year||q.settings&&q.settings.year)||0,kind=kindFor(q),identity=await resolveIdentity(q,kind);if(identity.seed){var sd=identity.seed;titles=unique(titles.concat([sd.title,sd.name,sd.original_title,sd.original_name]));var seedDate=s(sd.release_date||sd.first_air_date);year=year||Number(seedDate.slice(0,4))||0}if(identity.tmdbId){var urls=["https://api.themoviedb.org/3/"+kind+"/"+encodeURIComponent(identity.tmdbId)+"?api_key="+TMDB_KEY+"&language=fr-FR","https://api.themoviedb.org/3/"+kind+"/"+encodeURIComponent(identity.tmdbId)+"?api_key="+TMDB_KEY+"&language=en-US"];for(var i=0;i<urls.length;i++){var r=await request(urls[i],true);if(r&&r.body){var d=r.body;titles=unique(titles.concat([d.title,d.name,d.original_title,d.original_name]));var date=s(d.release_date||d.first_air_date);year=year||Number(date.slice(0,4))||0}}var alt=await request("https://api.themoviedb.org/3/"+kind+"/"+encodeURIComponent(identity.tmdbId)+"/alternative_titles?api_key="+TMDB_KEY,true);if(alt&&alt.body){var rows=alt.body.titles||alt.body.results||[],priority={FR:100,US:90,GB:80,CA:70,DK:60};rows=rows.slice().sort(function(a,b){return(priority[String(b&&b.iso_3166_1||"").toUpperCase()]||0)-(priority[String(a&&a.iso_3166_1||"").toUpperCase()]||0)});rows.slice(0,50).forEach(function(x){if(x&&x.title)titles.push(x.title)});titles=unique(titles)}}return{titles:titles.slice(0,c.maxAliases),year:year,tmdbId:identity.tmdbId,imdbId:identity.imdbId}}
+function tokens(v){var noise={the:1,a:1,an:1,le:1,la:1,les:1,un:1,une:1,de:1,des:1,du:1,and:1,et:1,film:1,movie:1,streaming:1,watch:1,voir:1,regarder:1};return norm(v).split(" ").filter(function(x){return x.length>1&&!noise[x]&&!/^\d{4}$/.test(x)})}
+function aliasScore(text,m){var n=norm(text),best=-1;(m.titles||[]).forEach(function(t){var nt=norm(t),want=tokens(t);if(!want.length)return;var score=n.indexOf(nt)>=0?120:0;if(!score&&want.every(function(x){return n.indexOf(x)>=0}))score=90;if(score>best)best=score});if(best<0)return-1;var years=n.match(/\b(?:19|20)\d{2}\b/g)||[];if(m.year&&years.length&&years.indexOf(String(m.year))<0)return-1;if(m.year&&n.indexOf(String(m.year))>=0)best+=15;return best}
+function links(html,base,m){var rows=[],seen={},re=/<a\b([^>]*)href=["']([^"']+)["']([^>]*)>([\s\S]*?)<\/a>/gi,x;while((x=re.exec(String(html||"")))!==null){var u=abs(x[2],base),label=s(x[1])+" "+s(x[3])+" "+s(x[4]).replace(/<[^>]+>/g," ");if(!u||seen[u])continue;seen[u]=1;var score=aliasScore(label+" "+u,m);if(score>=90)rows.push({url:u,score:score})}return rows.sort(function(a,b){return b.score-a.score}).slice(0,c.maxCandidates)}
+function mediaish(u){return/(?:\.m3u8|\.mpd|\.mp4|\.mkv|\.webm)(?:[?#]|$)|\/(?:embed|player|watch|stream|video)(?:[/?#.-]|$)|\/e\//i.test(u)}
+function extractPlayers(html,base,q){var text=String(html||"").replace(/\\\//g,"/"),out=[],seen={};function add(v){var u=abs(v,base);if(!u||seen[u]||!/^https?:\/\//i.test(u)||!mediaish(u))return;seen[u]=1;out.push(u)}var scoped=text;if((q.mediaType==="tv"||q.mediaType==="anime")&&q.season&&q.episode){var patterns=[new RegExp("s(?:aison|eason)?[ ._-]*0?"+q.season+"[ ._-]*e(?:p(?:isode)?)?[ ._-]*0?"+q.episode,"i"),new RegExp("(?:episode|ep)[ ._-]*0?"+q.episode,"i")],chunks=text.split(/(?=<[^>]+(?:episode|season|saison|data-ep))/i).filter(function(x){return patterns.some(function(p){return p.test(x)})});if(chunks.length)scoped=chunks.join("\n");else return[]}var patterns2=[/(?:src|href|data-src|data-url|data-embed|data-player|data-video|data-file)=["']([^"']+)["']/gi,/(?:file|source|src|url|playlist|embedUrl|embed_url|contentUrl)\s*[:=]\s*["'](https?:\/\/[^"']+)["']/gi],m;for(var i=0;i<patterns2.length;i++){patterns2[i].lastIndex=0;while((m=patterns2[i].exec(scoped))!==null){add(m[1]);if(out.length>=c.maxPlayers)return out}}return out}
+function rows(urls,m,page){return urls.slice(0,c.maxPlayers).map(function(u,i){var out={name:c.providerName+(urls.length>1?" #"+(i+1):""),title:c.providerName+" - "+(m.titles[0]||"Media"),url:u,quality:"Unknown",headers:{Referer:page,Origin:(function(){try{return new URL(page).origin}catch(_){return c.baseUrl}})()}};if(c.languageHint)out.language=c.languageHint;if(/\.(?:m3u8|mpd|mp4|mkv|webm)(?:[?#]|$)/i.test(u))out.isDirect=true;return out})}
+function idEvidence(body,m){var text=String(body||"");if(m.tmdbId&&new RegExp("tmdb[^0-9]{0,24}"+String(m.tmdbId),"i").test(text))return true;if(m.imdbId&&new RegExp("imdb[^a-z0-9]{0,24}"+String(m.imdbId),"i").test(text))return true;return false}
+async function recover(q,knownMeta){if(["movie","tv","anime"].indexOf(q.mediaType)<0)return[];var m=knownMeta||await meta(q);if(!m.titles.length)return[];var guessed=[],found=[],searches=[];m.titles.forEach(function(t){guessed.push(c.baseUrl+"/"+slug(t));searches.push(c.baseUrl+"/?s="+encodeURIComponent(t));searches.push(c.baseUrl+"/search?q="+encodeURIComponent(t));searches.push(c.baseUrl+"/search?query="+encodeURIComponent(t))});for(var i=0;i<searches.length&&found.length<c.maxCandidates*4;i++){var sr=await request(searches[i],false,c.baseUrl+"/");if(sr)found=found.concat(links(sr.body,sr.url,m).map(function(x){return x.url}))}var candidates=unique(found.concat(guessed)).slice(0,c.maxCandidates);for(var j=0;j<candidates.length;j++){var page=await request(candidates[j],false,c.baseUrl+"/");if(!page)continue;var identity=aliasScore(page.url+" "+String(page.body||"").slice(0,180000),m);if(identity<90&&!idEvidence(page.body,m))continue;var p=extractPlayers(page.body,page.url,q);if(p.length)return rows(p,m,page.url)}return[]}
+function slot(v){if(Array.isArray(v))return{key:null,list:v};if(v&&typeof v==="object"){for(var i=0;i<3;i++){var k=["streams","results","data"][i];if(Array.isArray(v[k]))return{key:k,list:v[k]}}}return null}
+function rebuild(v,x,list){if(x.key===null)return list;var o=Object.assign({},v);o[x.key]=list;return o}
+function identityLabel(row){return s(row&&((row.title||row.description||row.filename||row.name)||""))}
+function nativeIdentityReject(row,q,m){var label=identityLabel(row);if(!label)return false;var se=/(?:^|\D)s(?:eason|aison)?\s*0*(\d{1,3})\s*[-_. ]*e(?:p(?:isode)?)?\s*0*(\d{1,4})(?:\D|$)/i.exec(label)||/(?:season|saison)\s*0*(\d{1,3})[^\d]{0,12}(?:episode|ep)\s*0*(\d{1,4})/i.exec(label);if(q.mediaType==="movie"&&se)return true;if(se&&(q.mediaType==="tv"||q.mediaType==="anime")){var ss=Number(se[1])||0,ee=Number(se[2])||0;if((q.season&&ss&&ss!==q.season)||(q.episode&&ee&&ee!==q.episode))return true}if(aliasScore(label,m)>=90)return false;var tech={server:1,serveur:1,stream:1,streaming:1,source:1,mirror:1,direct:1,download:1,telecharger:1,play:1,player:1,vcloud:1,hubcloud:1,file:1,video:1,quality:1,web:1,dl:1,webrip:1,webdl:1,bluray:1,remux:1,hdr:1,dv:1,dolby:1,atmos:1,aac:1,ac3:1,eac3:1,ddp:1,x264:1,x265:1,h264:1,h265:1,hevc:1,av1:1,multi:1,vf:1,vff:1,vostfr:1,vo:1,french:1,english:1,truefrench:1,hd:1,uhd:1,fhd:1,sd:1};var providerTokens=tokens(c.providerName),expected={};(m.titles||[]).forEach(function(t){tokens(t).forEach(function(x){expected[x]=1})});var words=tokens(label).filter(function(x){return !tech[x]&&providerTokens.indexOf(x)<0&&!/^\d{3,4}p$/.test(x)});if(words.length<2)return false;for(var i=0;i<words.length;i++)if(expected[words[i]])return false;return true}
+function install(o,k){if(!o||typeof o[k]!=="function"||o[k].__nuvioGlobalCatalogueAliasV2)return false;var native=o[k];var wrap=async function(){var q=args(arguments),v;try{v=await native.apply(this,arguments)}catch(_){v=[]}var x=slot(v),m=null;if(x&&x.list.length){try{m=await meta(q)}catch(_){m=null}if(!m||!m.titles||!m.titles.length)return v;var kept=x.list.filter(function(row){return !nativeIdentityReject(row,q,m)});if(kept.length)return rebuild(v,x,kept)}var recovered=await recover(q,m);if(!recovered.length)return x?rebuild(v,x,[]):v;return x?rebuild(v,x,recovered):recovered};wrap.__nuvioGlobalCatalogueAliasV2=true;o[k]=wrap;return true}
+var ok=false;try{if(typeof module!=="undefined"&&module.exports)ok=install(module.exports,"getStreams")}catch(_){}try{if(g&&typeof g.getStreams==="function"){if(ok&&typeof module!=="undefined"&&module.exports)g.getStreams=module.exports.getStreams;else install(g,"getStreams")}}catch(_){}
+})(typeof globalThis!=="undefined"?globalThis:this,{"baseUrl":"https://mallumv.Space","providerName":"mallumv","maxAliases":8,"maxCandidates":8,"maxPlayers":8,"timeoutMs":7000,"languageHint":"","implementationRevision":"native-identity-v1"});
+
+/* NUVIO_HLS_RUNTIME_INTEGRITY_V1:8596e369b6f8 */
+;(function(g,config){
+  "use strict";
+  function clean(v){return String(v==null?"":v).replace(/^\uFEFF/,"").replace(/^ï»¿/,"").trim()}
+  function hlsHint(stream){
+    if(!stream||typeof stream!=="object")return false;
+    var u=String(stream.url||"").toLowerCase(),t=String(stream.type||stream.format||"").toLowerCase();
+    return /\.m3u8(?:[?#]|$)/i.test(u)||u.indexOf("/hls/")>=0||u.indexOf("/hls2/")>=0||t==="hls"||t==="m3u8"||t.indexOf("mpegurl")>=0;
+  }
+  function absolute(raw,base){try{return new URL(clean(raw),base).toString()}catch(_e){return ""}}
+  function requestHeaders(stream){
+    var src=stream&&stream.headers&&typeof stream.headers==="object"?stream.headers:{};
+    var out={};Object.keys(src).forEach(function(k){out[k]=String(src[k])});
+    if(!out.Accept)out.Accept="application/vnd.apple.mpegurl,application/x-mpegURL,text/plain,*/*";
+    return out;
+  }
+  async function fetchText(url,stream){
+    if(!g||typeof g.fetch!=="function")return {state:"unknown",reason:"fetch_unavailable"};
+    var controller=typeof AbortController!=="undefined"?new AbortController():null;
+    var timer=setTimeout(function(){try{if(controller)controller.abort()}catch(_e){}},config.timeoutMs);
+    try{
+      var response=await g.fetch(url,{method:"GET",redirect:"follow",headers:requestHeaders(stream),signal:controller?controller.signal:void 0});
+      if(!response)return {state:"unknown",reason:"no_response"};
+      if(response.status===404||response.status===410)return {state:"invalid",reason:"http_"+response.status};
+      if(!response.ok)return {state:"unknown",reason:"http_"+response.status};
+      var body=clean(await response.text());
+      return {state:"ok",body:body,url:String(response.url||url),contentType:String(response.headers&&response.headers.get?response.headers.get("content-type")||"":"")};
+    }catch(error){return {state:"unknown",reason:error&&error.name==="AbortError"?"timeout":"network_error"}}
+    finally{clearTimeout(timer);try{if(controller)controller.abort()}catch(_e){}}
+  }
+  function playlistKind(body){
+    var text=clean(body);if(!/^#EXTM3U(?:\s|$)/i.test(text))return "invalid";
+    if(/#EXT-X-STREAM-INF\s*:/i.test(text))return "master";
+    if(/#EXTINF\s*:/i.test(text)||/#EXT-X-PART\s*:/i.test(text)||/#EXT-X-MAP\s*:/i.test(text)){
+      var lines=text.split(/\r?\n/).map(function(v){return v.trim()}).filter(Boolean);
+      if(lines.some(function(v){return v.charAt(0)!=="#"}))return "media";
+    }
+    return "header_only";
+  }
+  function variantUris(body,base){
+    var lines=clean(body).split(/\r?\n/),out=[];
+    for(var i=0;i<lines.length;i++){
+      if(!/^#EXT-X-STREAM-INF\s*:/i.test(lines[i]))continue;
+      for(var j=i+1;j<lines.length;j++){
+        var candidate=clean(lines[j]);if(!candidate)continue;if(candidate.charAt(0)==="#")continue;
+        var u=absolute(candidate,base);if(u&&out.indexOf(u)<0)out.push(u);break;
+      }
+      if(out.length>=config.maxChildren)break;
+    }
+    return out;
+  }
+  function audioUris(body,base){
+    var out=[],lines=clean(body).split(/\r?\n/);
+    lines.forEach(function(line){
+      if(!/^#EXT-X-MEDIA\s*:/i.test(line)||!/TYPE\s*=\s*AUDIO/i.test(line))return;
+      var m=line.match(/URI\s*=\s*"([^"]+)"/i)||line.match(/URI\s*=\s*([^,\s]+)/i);
+      var u=m&&absolute(m[1],base);if(u&&out.indexOf(u)<0)out.push(u);
+    });
+    return out.slice(0,config.maxChildren);
+  }
+  async function validateChild(url,stream){
+    var result=await fetchText(url,stream);if(result.state!=="ok")return result.state;
+    var kind=playlistKind(result.body);return kind==="media"||kind==="master"?"valid":"invalid";
+  }
+  async function validateHls(stream){
+    var result=await fetchText(String(stream.url||""),stream);
+    if(result.state!=="ok")return result.state;
+    var kind=playlistKind(result.body);
+    if(kind==="invalid"||kind==="header_only")return "invalid";
+    if(kind==="media")return "valid";
+
+    var variants=variantUris(result.body,result.url||stream.url),audio=audioUris(result.body,result.url||stream.url);
+    if(!variants.length)return "invalid";
+    var variantState="invalid";
+    for(var i=0;i<variants.length;i++){
+      var s=await validateChild(variants[i],stream);if(s==="valid"){variantState="valid";break}if(s==="unknown")variantState="unknown";
+    }
+    if(variantState!=="valid")return variantState;
+    if(audio.length){
+      var audioState="invalid";
+      for(var j=0;j<audio.length;j++){
+        var a=await validateChild(audio[j],stream);if(a==="valid"){audioState="valid";break}if(a==="unknown")audioState="unknown";
+      }
+      if(audioState!=="valid")return audioState;
+    }
+    return "valid";
+  }
+  async function filterRows(value){
+    var rows=Array.isArray(value)?value:value&&Array.isArray(value.streams)?value.streams:null;
+    if(!rows)return value;
+    var checks=await Promise.all(rows.map(async function(stream){
+      if(!hlsHint(stream))return stream;
+      var state=await validateHls(stream);
+      if(state==="invalid"){
+        try{console.warn("[Nuvio HLS integrity] rejected malformed playlist",String(stream&&stream.url||"").slice(0,180))}catch(_e){}
+        return null;
+      }
+      return stream;
+    }));
+    var filtered=checks.filter(Boolean);
+    if(Array.isArray(value))return filtered;
+    var copy=Object.assign({},value);copy.streams=filtered;return copy;
+  }
+  function wrap(target,key){
+    if(!target||typeof target[key]!=="function"||target[key].__nuvioHlsIntegrityV1)return false;
+    var native=target[key];
+    var wrapped=async function(){return filterRows(await native.apply(this,arguments))};
+    try{Object.defineProperty(wrapped,"__nuvioHlsIntegrityV1",{value:true})}catch(_e){wrapped.__nuvioHlsIntegrityV1=true}
+    target[key]=wrapped;return true;
+  }
+  function install(){
+    var done=false;
+    try{done=wrap(g,"getStreams")||done}catch(_e){}
+    try{if(typeof module!=="undefined"&&module&&module.exports){done=wrap(module.exports,"getStreams")||done;done=wrap(module.exports,"streams")||done}}catch(_e){}
+    try{if(typeof exports!=="undefined")done=wrap(exports,"getStreams")||done}catch(_e){}
+    return done;
+  }
+  install();
+})(typeof globalThis!=="undefined"?globalThis:this,{"timeoutMs":6500,"maxChildren":2,"implementationRevision":"structural-media-v2"});

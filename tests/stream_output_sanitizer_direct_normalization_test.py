@@ -35,7 +35,7 @@ module.exports={getStreams:async function(){return [
             "min_vod_duration_seconds": 0,
         },
     )
-    assert '"implementationVersion":6' in patched
+    assert '"implementationVersion":7' in patched
 
     runner = r'''
 const vm=require('vm');
