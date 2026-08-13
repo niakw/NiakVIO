@@ -1,0 +1,104 @@
+name: Validate provider rebuild offline
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - "scripts/provider_compiler.py"
+      - "scripts/provider_rebuild.py"
+      - "scripts/provider_engine_normalizer.py"
+      - ".github/workflows/provider-rebuild-offline.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: provider-rebuild-offline
+  cancel-in-progress: true
+
+jobs:
+  rebuild:
+    name: Compile and verify provider generation
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact repository generation
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: "3.12"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: "24"
+          package-manager-cache: false
+
+      - name: Compile engine modules
+        run: |
+          python -m py_compile scripts/provider_engine_normalizer.py
+          python -m py_compile scripts/provider_compiler.py
+          python -m py_compile scripts/provider_rebuild.py
+
+      - name: Rebuild exact provider generation without network access
+        run: |
+          python scripts/provider_rebuild.py \
+            --manifest manifest.json \
+            --overrides provider-overrides.json \
+            --output staging/provider-rebuild \
+            --clean
+
+      - name: Validate every compiled JavaScript artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          count=0
+          while IFS= read -r -d '' file; do
+            node --check "$file"
+            count=$((count + 1))
+          done < <(find staging/provider-rebuild/providers -type f -name '*.js' -print0 | sort -z)
+          test "$count" -gt 0
+          echo "Validated JavaScript syntax for $count compiled providers."
+
+      - name: Verify immutable rebuild evidence
+        run: |
+          python - <<'PY'
+          import hashlib
+          import json
+          from pathlib import Path
+
+          root = Path('staging/provider-rebuild')
+          registry = json.loads((root / 'contracts.json').read_text(encoding='utf-8'))
+          generation = json.loads((root / 'generation.json').read_text(encoding='utf-8'))
+          rebuilt = json.loads((root / 'manifest.json').read_text(encoding='utf-8'))
+          source = json.loads(Path('manifest.json').read_text(encoding='utf-8'))
+
+          compiled = [row for row in registry.get('providers') or [] if isinstance(row, dict) and row.get('status') == 'compiled']
+          source_ids = {str(row.get('id') or '').casefold() for row in source.get('scrapers') or [] if isinstance(row, dict) and row.get('id')}
+          rebuilt_ids = {str(row.get('id') or '').casefold() for row in rebuilt.get('scrapers') or [] if isinstance(row, dict) and row.get('id')}
+          compiled_ids = {str(row.get('provider_id') or '').casefold() for row in compiled}
+
+          assert registry.get('compiler') == 'provider_compiler_v2'
+          assert registry.get('network_access') is False
+          assert registry.get('publication') is False
+          assert registry.get('residual_cross_provider_backends_allowed') is False
+          assert int(registry.get('compiled_count') or 0) == len(compiled)
+          assert source_ids == rebuilt_ids == compiled_ids
+          assert len(generation.get('providers') or []) == len(compiled)
+          assert rebuilt.get('providerRebuild', {}).get('publication_authorized') is False
+          assert rebuilt.get('providerRebuild', {}).get('backend_isolation') == 'provider_owned_backend_only'
+
+          payload = dict(generation)
+          expected = payload.pop('generation_sha256')
+          canonical = json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(',', ':')).encode('utf-8')
+          actual = hashlib.sha256(canonical).hexdigest()
+          assert actual == expected, (actual, expected)
+          print(f"offline rebuild evidence verified: providers={len(compiled)} generation={expected}")
+          PY
