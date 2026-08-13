@@ -73,16 +73,16 @@ jobs:
           rm -f .github/triggers/strict-media-identity
       - name: Reapply published wrappers once
         run: python3 scripts/reapply_published_overrides.py
-      - name: Require one-pass convergence
+      - name: Require one-pass convergence before tests
         run: python3 scripts/reapply_published_overrides.py --check
-      - name: Refresh release hashes
+      - name: Run complete regression suite
+        run: npm test
+      - name: Require post-test wrapper convergence
+        run: python3 scripts/reapply_published_overrides.py --check
+      - name: Refresh final release hashes
         run: |
           python3 scripts/generate_release_hashes.py
           python3 scripts/validate_release_integrity.py
-      - name: Run complete regression suite
-        run: npm test
-      - name: Require clean post-test tree
-        run: git diff --exit-code
       - name: Commit exact candidate locally
         run: |
           git config user.name "github-actions[bot]"
@@ -97,6 +97,8 @@ jobs:
           cd ../candidate
           npm ci --ignore-scripts --no-audit --no-fund
           npm test
+          python3 scripts/reapply_published_overrides.py --check
+          python3 scripts/validate_release_integrity.py
           git diff --exit-code
       - name: Push validated branch
         run: git push origin HEAD:fix/strict-media-identity-20260813
