@@ -20,7 +20,7 @@ spec.loader.exec_module(module)
 
 cfg = json.loads((ROOT / "provider-overrides.json").read_text(encoding="utf-8"))
 policy = cfg.get("playback_integrity_policy") or {}
-assert policy.get("version") == 2
+assert policy.get("version") == 3
 assert policy.get("enabled") is True
 assert policy.get("provider_disabling_is_not_a_repair") is True
 assert policy.get("global_discovery_hooks") == [

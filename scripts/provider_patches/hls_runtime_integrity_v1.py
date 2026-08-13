@@ -22,7 +22,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
     timeout_ms = max(1500, min(int(cfg.get("timeout_ms", 6500)), 12000))
     max_children = max(1, min(int(cfg.get("max_children", 2)), 4))
     payload = json.dumps(
-        {"timeoutMs": timeout_ms, "maxChildren": max_children},
+        {"timeoutMs": timeout_ms, "maxChildren": max_children, "implementationRevision": "structural-media-v2"},
         separators=(",", ":"),
     )
     marker = f"{MARKER}:{hashlib.sha256(payload.encode()).hexdigest()[:12]}"

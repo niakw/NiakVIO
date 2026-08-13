@@ -68,7 +68,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
             "timeoutMs": timeout_ms,
             "minVodDurationSeconds": min_vod_duration,
             "blockedPathPatterns": blocked_paths,
-            "implementationVersion": 6,
+            "implementationVersion": 7,
         },
         separators=(",", ":"),
     )
@@ -154,6 +154,21 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
   function validHls(text){
     var value=String(text||"").replace(/^\uFEFF/,"").trimStart();
     if(value.indexOf("#EXTM3U")!==0)return false;
+    var lines=value.split(/\r?\n/),hasVariantTag=false,hasVariantUri=false;
+    for(var i=0;i<lines.length;i++){
+      if(!/^#EXT-X-STREAM-INF\s*:/i.test(lines[i].trim()))continue;
+      hasVariantTag=true;
+      for(var j=i+1;j<lines.length;j++){
+        var child=String(lines[j]||"").trim();
+        if(!child)continue;
+        if(child.charAt(0)==="#")continue;
+        hasVariantUri=true;break;
+      }
+      if(hasVariantUri)break;
+    }
+    if(hasVariantTag&&!hasVariantUri)return false;
+    var hasMedia=/#EXTINF\s*:/i.test(value)||/#EXT-X-PART\s*:/i.test(value)||/#EXT-X-MAP\s*:/i.test(value);
+    if(!hasMedia&&!hasVariantUri)return false;
     var isVod=/#EXT-X-ENDLIST(?:\r?\n|$)/i.test(value);
     var durations=[],match,re=/#EXTINF:([0-9]+(?:\.[0-9]+)?)/gi;
     while((match=re.exec(value))!==null)durations.push(Number(match[1])||0);

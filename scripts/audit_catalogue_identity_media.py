@@ -8,7 +8,7 @@ records only sanitized counts/diagnostics; raw stream endpoints are discarded.
 Coverage:
 - every TV-capable provider: a South-Korean series fixture (Squid Game S01E01),
 - VF TV providers: Revenant S01E01 to catch title/year collision and wrong-episode regressions,
-- every movie-capable provider: Interstellar plus an impossible TMDb identity sentinel,
+- every movie-capable provider: one strict representative movie plus an impossible TMDb identity sentinel,
 - every anime-capable provider: Jujutsu Kaisen S01E01 plus Mushoku Tensei S01E01 for VF members,
 - VF membership is retained in the report for language-specific coverage metrics,
 - named HLS regression providers receive the same compatible representative fixtures.
@@ -78,12 +78,14 @@ FIXTURES: dict[str, dict[str, Any]] = {
         "title": "Nuvio Impossible Fixture QZXV",
         "year": 2099,
     },
-    "vf_interstellar": {
-        "label": "Interstellar",
-        "tmdbId": "157336",
+    "strict_movie_identity": {
+        "label": "Mon ninja et moi 3",
+        "tmdbId": "1215638",
         "mediaType": "movie",
-        "title": "Interstellar",
-        "year": 2014,
+        "title": "Mon ninja et moi 3",
+        "aliases": ["Ternet Ninja 3", "Checkered Ninja 3"],
+        "year": 2025,
+        "expectedDurationMinutes": 88,
     },
     "vf_jjk_s01e01": {
         "label": "Jujutsu Kaisen S01E01",
@@ -225,8 +227,10 @@ def run_probe(task: dict[str, Any]) -> dict[str, Any]:
             }
         raw_count = int(probe.get("raw_stream_count") or 0)
         playable_count = int(probe.get("playable_stream_count") or 0)
+        identity_verified_count = int(probe.get("identity_verified_count") or 0)
+        identity_contradiction_count = int(probe.get("identity_contradiction_count") or 0)
         summary = summarize_media(probe)
-        status = "playable" if playable_count > 0 else ("returned_unplayable" if raw_count > 0 else "no_streams")
+        status = "wrong_content" if identity_contradiction_count > 0 else ("playable" if playable_count > 0 else ("returned_unplayable" if raw_count > 0 else "no_streams"))
         if probe.get("runtime_error"):
             status = "runtime_error"
         row = {
@@ -237,6 +241,8 @@ def run_probe(task: dict[str, Any]) -> dict[str, Any]:
             "duration_ms": int(probe.get("duration_ms") or round((time.monotonic() - started) * 1000)),
             "raw_stream_count": raw_count,
             "playable_stream_count": playable_count,
+            "identity_verified_count": identity_verified_count,
+            "identity_contradiction_count": identity_contradiction_count,
             "runtime_error": sanitize(probe.get("runtime_error")),
             **summary,
         }
@@ -296,7 +302,7 @@ def build_tasks() -> tuple[list[dict[str, Any]], set[str]]:
         if "tv" in types:
             fixture_names.append("kdrama_squid_game_s01e01")
         if "movie" in types:
-            fixture_names.extend(["vf_interstellar", "impossible_movie"])
+            fixture_names.extend(["strict_movie_identity", "impossible_movie"])
         if "anime" in types:
             fixture_names.append("vf_jjk_s01e01")
         # Some providers declare anime content as TV rather than anime. Keep the
@@ -308,7 +314,7 @@ def build_tasks() -> tuple[list[dict[str, Any]], set[str]]:
             fixture_names.append("vf_mushoku_s01e01")
         if provider_id in SUSPECTS:
             if "movie" in types:
-                fixture_names.append("vf_interstellar")
+                fixture_names.append("strict_movie_identity")
             if "tv" in types:
                 fixture_names.extend(["kdrama_squid_game_s01e01", "vf_revenant_s01e01"])
             if "anime" in types:
@@ -350,6 +356,7 @@ def main() -> int:
     rows.sort(key=lambda row: (row["provider_id"], row["fixture"]))
     unknown_candidates = [row for row in rows if row.get("identity_candidate_for_unknown_id")]
     playable_false_positive = [row for row in rows if row.get("playable_identity_false_positive")]
+    wrong_content = [row for row in rows if int(row.get("identity_contradiction_count") or 0) > 0]
     hls_failures = [row for row in rows if int(row.get("hls_variant_failures") or 0) or int(row.get("hls_audio_failures") or 0)]
     suspect_rows = [row for row in rows if row.get("suspect")]
     valid_rows = [row for row in rows if row["fixture"] != "impossible_movie"]
@@ -367,6 +374,7 @@ def main() -> int:
             "impossible_fixture_raw_return": "diagnostic_only_generic_embed_may_construct_url",
             "impossible_fixture_playable_return": "proven_identity_false_positive",
             "hls_structural_child_or_external_audio_failure": "broken_media_graph",
+            "playable_identity_contradiction": "wrong_content_publish_blocker",
             "hls_timeout_or_network_failure": "inconclusive_media_probe_not_publish_blocker",
             "raw_endpoints_persisted": False,
         },
@@ -376,6 +384,7 @@ def main() -> int:
             "kdrama_playable_providers": sum(1 for row in kdrama if int(row.get("playable_stream_count") or 0) > 0),
             "unknown_id_candidate_providers": sorted({row["provider_id"] for row in unknown_candidates}),
             "playable_identity_false_positive_providers": sorted({row["provider_id"] for row in playable_false_positive}),
+            "wrong_content_providers": sorted({row["provider_id"] for row in wrong_content}),
             "hls_graph_failure_providers": sorted({row["provider_id"] for row in hls_failures}),
         },
         "suspects": suspect_rows,
@@ -387,11 +396,12 @@ def main() -> int:
         "catalogue/media audit complete: "
         f"providers={report['providers_total']} tasks={len(rows)} "
         f"playable_identity_false_positive={len(report['summary']['playable_identity_false_positive_providers'])} "
+        f"wrong_content={len(report['summary']['wrong_content_providers'])} "
         f"hls_graph_failures={len(report['summary']['hls_graph_failure_providers'])}"
     )
     # Only conclusive failures stop the finite audit. A provider returning no
     # stream is a coverage gap to repair, not a reason to disable it.
-    return 1 if playable_false_positive or hls_failures else 0
+    return 1 if playable_false_positive or wrong_content or hls_failures else 0
 
 
 if __name__ == "__main__":

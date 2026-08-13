@@ -46,6 +46,15 @@ wrapped = integrity.apply(base_provider, {"timeout_ms": 2000, "max_children": 2}
 assert "NUVIO_HLS_RUNTIME_INTEGRITY_V1" in wrapped
 assert integrity.apply(wrapped, {"timeout_ms": 2000, "max_children": 2}) == wrapped
 
+# A syntactically valid HLS header without any variant/media structure is not
+# a stream. This is the exact class of false positive that otherwise reaches
+# Nuvio and fails at the player with an "EXTM3U header" error.
+run_node(r'''
+globalThis.fetch=async function(url){return {ok:true,status:200,url:String(url),headers:{get:function(){return "application/vnd.apple.mpegurl"}},text:async function(){return "#EXTM3U\n#EXT-X-VERSION:3\n"}}};
+''' + wrapped + r'''
+(async function(){var rows=await globalThis.getStreams("1","movie");if(!Array.isArray(rows)||rows.length!==0)throw new Error("header-only HLS was not rejected")})().catch(function(e){console.error(e);process.exit(1)});
+''')
+
 # A 200 HTML response behind a .m3u8 URL is a conclusive invalid stream and
 # must be removed rather than sent to Nuvio's HLS parser.
 run_node(r'''
