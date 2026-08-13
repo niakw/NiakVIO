@@ -24,12 +24,22 @@ CONFIG = ROOT / "provider-overrides.json"
 
 
 def load_overrides() -> dict[str, Any]:
+    """Load overrides through the provider-isolation boundary.
+
+    The JSON file is historical state and may still contain obsolete hooks.
+    Consumers must never receive a provider-specific hook that depends on an
+    official API owned by another provider. Sanitization is deliberately done
+    at read time as well as by rebuild/reapply so stale configuration cannot
+    reintroduce a cross-provider dependency.
+    """
     if not CONFIG.exists():
         return {}
     value = json.loads(CONFIG.read_text(encoding="utf-8"))
     if not isinstance(value, dict):
         raise ValueError("provider-overrides.json must be an object")
-    return value
+    from provider_engine_normalizer import sanitize_provider_hooks
+    sanitized, _removed = sanitize_provider_hooks(value, ROOT)
+    return sanitized
 
 
 def _load_patch_module(patch_script: str, provider_id: str):
@@ -103,158 +113,82 @@ def _replace_named_function(text: str, function_name: str, replacement: str) -> 
     if not match:
         return text, False
     start = match.start()
-    brace = text.find("{", match.start(), match.end())
+    brace_start = text.find("{", match.start())
     depth = 0
-    quote: str | None = None
-    escaped = False
-    line_comment = False
-    block_comment = False
-    index = brace
-    while index < len(text):
-        char = text[index]
-        nxt = text[index + 1] if index + 1 < len(text) else ""
-        if line_comment:
-            if char in "\r\n":
-                line_comment = False
-        elif block_comment:
-            if char == "*" and nxt == "/":
-                block_comment = False
-                index += 1
-        elif quote:
-            if escaped:
-                escaped = False
+    quote = None
+    escape = False
+    i = brace_start
+    while i < len(text):
+        char = text[i]
+        if quote:
+            if escape:
+                escape = False
             elif char == "\\":
-                escaped = True
+                escape = True
             elif char == quote:
                 quote = None
-        else:
-            if char in ("'", '"', "`"):
-                quote = char
-            elif char == "/" and nxt == "/":
-                line_comment = True
-                index += 1
-            elif char == "/" and nxt == "*":
-                block_comment = True
-                index += 1
-            elif char == "{":
-                depth += 1
-            elif char == "}":
-                depth -= 1
-                if depth == 0:
-                    return text[:start] + replacement + text[index + 1 :], True
-        index += 1
-    raise ValueError(f"unterminated function body: {function_name}")
+            i += 1
+            continue
+        if char in {"'", '"', "`"}:
+            quote = char
+            i += 1
+            continue
+        if char == "{":
+            depth += 1
+        elif char == "}":
+            depth -= 1
+            if depth == 0:
+                return text[:start] + replacement + text[i + 1 :], True
+        i += 1
+    raise ValueError(f"unterminated function while replacing {function_name}")
 
 
-def _apply_fixed_endpoint(text: str, provider_id: str, config: dict[str, Any]) -> tuple[str, dict[str, Any] | None]:
-    fixed = config.get("fixed_endpoint")
-    if not isinstance(fixed, dict):
-        return text, None
-    function_name = str(fixed.get("resolver_function") or "").strip()
-    api = str(fixed.get("api") or "").rstrip("/")
-    referer = str(fixed.get("referer") or "").rstrip("/") + "/"
-    if not function_name or not api:
-        raise ValueError(f"provider_patches.{provider_id}.fixed_endpoint is incomplete")
-    marker = f"NUVIO_FIXED_ENDPOINT:{api}"
-    if marker in text:
-        return text, None
-    replacement = (
-        f"function {function_name}(){{"
-        f"/* {marker} */"
-        f"return Promise.resolve({{api:{json.dumps(api)},referer:{json.dumps(referer)}}});"
-        "}"
+def _apply_named_function_replacements(
+    text: str,
+    provider_id: str,
+    function_replacements: dict[str, Any],
+    phase: str,
+) -> tuple[str, list[dict[str, Any]]]:
+    records: list[dict[str, Any]] = []
+    for function_name, replacement in function_replacements.items():
+        if not isinstance(replacement, str) or not replacement.strip():
+            continue
+        updated, changed = _replace_named_function(text, str(function_name), replacement)
+        if not changed:
+            continue
+        text = updated
+        records.append(
+            {
+                "type": "function_replace",
+                "function": str(function_name),
+                "phase": phase,
+            }
+        )
+    return text, records
+
+
+def _configured_profiles(config: dict[str, Any], provider_id: str) -> list[dict[str, Any]]:
+    provider_key = str(provider_id).casefold()
+    patches = config.get("provider_patches", {}) if isinstance(config, dict) else {}
+    provider_patch = patches.get(provider_key, {}) if isinstance(patches, dict) else {}
+    explicit_names = _normalize_profile_names(
+        provider_patch.get("profiles") if isinstance(provider_patch, dict) else None
     )
-    output, changed = _replace_named_function(text, function_name, replacement)
-    if not changed:
-        return text, None
-    return output, {
-        "type": "fixed_endpoint",
-        "resolver_function": function_name,
-        "api": api,
-        "referer": referer,
-    }
-
-
-def _inject_runtime_domain_overrides(text: str, replacements: dict[str, Any]) -> tuple[str, int]:
-    """Embed host rewriting into the provider JavaScript artifact itself."""
-    from urllib.parse import urlparse
-
-    original_text = text
-    rules: dict[str, str] = {}
-    for old, new in replacements.items():
-        old_value = str(old).lower().strip().rstrip("/")
-        new_value = str(new).lower().strip().rstrip("/")
-        old_host = urlparse(old_value).hostname if "://" in old_value else old_value
-        new_host = urlparse(new_value).hostname if "://" in new_value else new_value
-        if old_host and new_host and old_host != new_host:
-            rules[old_host] = new_host
-    marker = "NUVIO_RUNTIME_DOMAIN_OVERRIDES_V1"
-    marker_comment = f"/* {marker} */"
-    if marker_comment in text:
-        start = text.find(marker_comment)
-        call = text.find('})(typeof globalThis!=="undefined"?globalThis:this,', start)
-        end = text.find(");\n", call) if call >= 0 else -1
-        if start >= 0 and end >= 0:
-            text = text[:start] + text[end + 3:]
-        else:
-            raise ValueError("unterminated runtime domain override bootstrap")
-    if not rules:
-        return text, 0
-    import base64
-    encoded_rules = [
-        [base64.b64encode(old.encode("utf-8")).decode("ascii"), new]
-        for old, new in sorted(rules.items())
-    ]
-    payload = json.dumps(encoded_rules, separators=(",", ":"))
-    bootstrap = """/* %s */
-;(function(g,rules){
-  if(!g||typeof g.fetch!=="function")return;
-  var key="__nuvioDomainOverrideV1";
-  var state=g[key];
-  if(!state){
-    state={native:g.fetch.bind(g),rules:Object.create(null)};
-    g[key]=state;
-    g.fetch=function(input,init){
-      var next=input;
-      try{
-        var raw=(typeof Request!=="undefined"&&input instanceof Request)?input.url:String(input);
-        var url=new URL(raw);
-        var replacement=state.rules[String(url.hostname).toLowerCase()];
-        if(replacement){
-          url.hostname=replacement;
-          next=(typeof Request!=="undefined"&&input instanceof Request)?new Request(url.toString(),input):url.toString();
-        }
-      }catch(_error){}
-      return state.native(next,init);
-    };
-  }
-  for(var i=0;i<rules.length;i++){
-    try{state.rules[atob(rules[i][0])]=rules[i][1];}catch(_error){}
-  }
-})(typeof globalThis!=="undefined"?globalThis:this,%s);
-""" % (marker, payload)
-    output = bootstrap + text
-    return output, 0 if output == original_text else len(rules)
-
-
-
-def _strip_legacy_global_stream_guards(text: str) -> tuple[str, int]:
-    """Remove the obsolete one-size-fits-all output guards.
-
-    Playback semantics are provider-capability specific. The global guards
-    changed iframe players, direct-media providers and API resolvers in the same
-    way, which could make valid results disappear in Nuvio. Only the appended
-    markers owned by this repository are removed; provider source code is left
-    untouched.
-    """
-    pattern = re.compile(
-        r"\n?/\* NUVIO_GLOBAL_STREAM_OUTPUT_GUARD_V(?:1|2|3) \*/[\s\S]*$",
-        re.MULTILINE,
-    )
-    output, count = pattern.subn("", text)
-    if not count:
-        return text, 0
-    return output.rstrip() + ("\n" if output else ""), count
+    definitions = config.get("patch_profiles", {}) if isinstance(config, dict) else {}
+    profiles: list[dict[str, Any]] = []
+    if not isinstance(definitions, dict):
+        return profiles
+    for name, profile in definitions.items():
+        if not isinstance(profile, dict):
+            continue
+        if explicit_names and name not in explicit_names:
+            continue
+        if not explicit_names and not profile.get("auto_apply"):
+            continue
+        row = dict(profile)
+        row["name"] = str(name)
+        profiles.append(row)
+    return profiles
 
 
 def apply_overrides(
@@ -262,261 +196,105 @@ def apply_overrides(
     data: bytes,
     *,
     phase: str = "discovery",
-    profile_names: Iterable[str] | None = None,
+    only_profiles: Iterable[str] | None = None,
+    only_profile: str | None = None,
+    runtime_context: dict[str, Any] | None = None,
 ) -> tuple[bytes, list[dict[str, Any]]]:
-    """Apply stable replacements and profiles allowed for the selected phase.
-
-    ``profile_names`` is used by the runtime repair engine to request an exact
-    provider-agnostic strategy after its failure signature has matched. Passing
-    explicit names never bypasses structural capability detection.
-    """
+    """Apply durable overrides and matching profiles for a provider."""
     config = load_overrides()
-    text = data.decode("utf-8")
-    original_text = text
-    applied: list[dict[str, Any]] = []
-    provider_id = provider_id.casefold()
-    specific = (config.get("provider_patches") or {}).get(provider_id, {})
-    if not isinstance(specific, dict):
-        raise ValueError(f"provider_patches.{provider_id} must be an object")
+    provider_key = str(provider_id).casefold()
+    provider_patch = (config.get("provider_patches") or {}).get(provider_key, {})
+    if not isinstance(provider_patch, dict):
+        provider_patch = {}
 
-    replacements = dict(config.get("domain_replacements") or {})
-    replacements.update(specific.get("replacements") or {})
-    replacements.update(specific.get("route_replacements") or {})
-    for old, new in replacements.items():
-        old_text, new_text = str(old), str(new)
-        text, count = replace_literal(text, old_text, new_text)
-        if count:
-            applied.append(
+    text = data.decode("utf-8", errors="strict")
+    records: list[dict[str, Any]] = []
+
+    replacements = provider_patch.get("replacements") or {}
+    if phase == "discovery" and isinstance(replacements, dict):
+        for old, new in replacements.items():
+            if not isinstance(old, str) or not isinstance(new, str):
+                continue
+            updated = replace_literal(text, old, new)
+            if updated == text:
+                continue
+            text = updated
+            records.append({"type": "replace", "from": old, "to": new, "phase": phase})
+
+    function_replacements = provider_patch.get("function_replacements") or {}
+    if phase == "discovery" and isinstance(function_replacements, dict):
+        text, function_records = _apply_named_function_replacements(
+            text,
+            provider_key,
+            function_replacements,
+            phase,
+        )
+        records.extend(function_records)
+
+    scripts = [
+        str(value)
+        for value in provider_patch.get("patch_scripts") or []
+        if str(value).strip()
+    ]
+    legacy_script = str(provider_patch.get("patch_script") or "").strip()
+    if legacy_script and legacy_script not in scripts:
+        scripts.append(legacy_script)
+    script_options = provider_patch.get("patch_script_options") or {}
+    if not isinstance(script_options, dict):
+        script_options = {}
+    legacy_options = provider_patch.get("patch_options") or {}
+    if not isinstance(legacy_options, dict):
+        legacy_options = {}
+
+    if phase == "discovery":
+        for script in scripts:
+            options = script_options.get(script, legacy_options if script == legacy_script else {})
+            if not isinstance(options, dict):
+                options = {}
+            updated = _apply_patch_script(text, provider_key, script, options, None)
+            if updated == text:
+                continue
+            text = updated
+            records.append(
                 {
-                    "type": "replace",
-                    "from": old_text,
-                    "to": new_text,
-                    "count": count,
+                    "type": "patch_script",
+                    "path": script,
                     "phase": phase,
                 }
             )
 
-    text, fixed_record = _apply_fixed_endpoint(text, provider_id, specific)
-    if fixed_record:
-        fixed_record["phase"] = phase
-        applied.append(fixed_record)
-
-    runtime_replacements = specific.get("runtime_domain_replacements") or {}
-    if not isinstance(runtime_replacements, dict):
-        raise ValueError(f"provider_patches.{provider_id}.runtime_domain_replacements must be an object")
-    text, runtime_rule_count = _inject_runtime_domain_overrides(text, runtime_replacements)
-    if runtime_rule_count:
-        applied.append({"type": "runtime_domain_overrides", "count": runtime_rule_count, "phase": phase})
-
-    # Remove obsolete terminal guards before applying any current structural
-    # profile or provider hook. The legacy guard remover intentionally drops
-    # the old terminal tail; running it after new hooks would erase those hooks
-    # and make the first and second durable reapply passes produce different
-    # content hashes.
-    text, removed_guards = _strip_legacy_global_stream_guards(text)
-    if removed_guards:
-        applied.append({"type": "remove_legacy_global_stream_guard", "count": removed_guards, "phase": phase})
-
-    profiles = config.get("patch_profiles") or {}
-    if not isinstance(profiles, dict):
-        raise ValueError("patch_profiles must be an object")
-
-    explicitly_requested = _normalize_profile_names(profile_names)
-    explicitly_requested.update(str(value) for value in (specific.get("profiles") or []))
-    unknown = explicitly_requested - set(profiles)
-    if unknown:
-        raise ValueError("unknown patch profile(s): " + ", ".join(sorted(unknown)))
-
-    for profile_name, profile in profiles.items():
-        if not isinstance(profile, dict):
-            continue
+    selected_profiles = set(_normalize_profile_names(only_profiles))
+    if only_profile:
+        selected_profiles.add(str(only_profile))
+    profiles = _configured_profiles(config, provider_key)
+    for profile in profiles:
+        profile_name = str(profile.get("name") or "")
         profile_phase = str(profile.get("phase") or "discovery")
-        requested = profile_name in explicitly_requested and profile_phase == phase
-        automatic = bool(profile.get("auto_apply")) and profile_phase == phase
-        if not (requested or automatic):
+        if profile_phase != phase:
+            continue
+        if selected_profiles and profile_name not in selected_profiles:
+            continue
+        if not selected_profiles and phase == "runtime":
             continue
         if not profile_matches(text, profile):
-            if requested:
-                # A requested runtime strategy that does not match the bundle is
-                # a normal non-applicable repair, not a build-wide exception.
-                continue
             continue
-        patch_script = profile.get("patch_script")
-        if not patch_script:
-            raise ValueError(f"patch profile {profile_name} has no patch_script")
+        script = str(profile.get("patch_script") or "").strip()
+        if not script:
+            continue
         options = dict(profile.get("options") or {})
-        options.setdefault("detect_all", profile.get("detect_all") or [])
-        options.setdefault("detect_any", profile.get("detect_any") or [])
-        before = text
-        text = _apply_patch_script(
-            text,
-            provider_id,
-            str(patch_script),
-            options,
-            str(profile_name),
+        if runtime_context:
+            options["runtime_context"] = runtime_context
+        updated = _apply_patch_script(text, provider_key, script, options, profile_name)
+        if updated == text:
+            continue
+        text = updated
+        records.append(
+            {
+                "type": "patch_profile",
+                "profile": profile_name,
+                "phase": phase,
+                "options": options,
+            }
         )
-        if text != before:
-            applied.append(
-                {
-                    "type": "patch_profile",
-                    "profile": str(profile_name),
-                    "path": str(patch_script),
-                    "phase": profile_phase,
-                }
-            )
 
-    # Per-provider hooks may be chained. This is useful when one provider needs
-    # both a structural repair and the reusable stream-output validator. The
-    # historical singular fields remain supported for backward compatibility.
-    patch_scripts: list[str] = []
-    configured_scripts = specific.get("patch_scripts")
-    if configured_scripts is not None:
-        if not isinstance(configured_scripts, list):
-            raise ValueError(f"provider_patches.{provider_id}.patch_scripts must be an array")
-        patch_scripts.extend(str(value) for value in configured_scripts if str(value).strip())
-    legacy_patch_script = specific.get("patch_script")
-    if legacy_patch_script and str(legacy_patch_script) not in patch_scripts:
-        patch_scripts.append(str(legacy_patch_script))
-
-    script_options = specific.get("patch_script_options") or {}
-    if not isinstance(script_options, dict):
-        raise ValueError(f"provider_patches.{provider_id}.patch_script_options must be an object")
-    for patch_script in patch_scripts if phase == "discovery" else []:
-        per_script_options = script_options.get(patch_script)
-        if per_script_options is None:
-            per_script_options = specific.get("patch_options") or {}
-        if not isinstance(per_script_options, dict):
-            raise ValueError(
-                f"provider_patches.{provider_id}.patch_script_options[{patch_script!r}] must be an object"
-            )
-        before = text
-        text = _apply_patch_script(
-            text,
-            provider_id,
-            patch_script,
-            dict(per_script_options),
-            None,
-        )
-        if text != before:
-            applied.append(
-                {"type": "patch_script", "path": patch_script, "phase": phase}
-            )
-
-    # Catalogue recovery is capability-based and ID-first. It is intentionally
-    # global: provider-specific title aliases are forbidden. Providers with a
-    # public HTML catalogue receive the same bounded TMDB localized/original
-    # alias fallback whenever their native resolver returns no stream.
-    if phase == "discovery":
-        capability = str(specific.get("capability") or "").strip().casefold()
-        catalogue_policy = config.get("catalogue_resolution_policy") or {}
-        if not isinstance(catalogue_policy, dict):
-            raise ValueError("catalogue_resolution_policy must be an object")
-        catalogue_capabilities = {
-            str(value).strip().casefold()
-            for value in catalogue_policy.get("capabilities", [])
-            if str(value).strip()
-        }
-        official_site = str(specific.get("official_site") or "").strip()
-        if (
-            catalogue_policy.get("enabled", False)
-            and capability in catalogue_capabilities
-            and official_site
-        ):
-            patch_script = str(catalogue_policy.get("global_discovery_hook") or "").strip()
-            if not patch_script:
-                raise ValueError("catalogue_resolution_policy.global_discovery_hook is required")
-            options = dict(catalogue_policy.get("options") or {})
-            provider_options = script_options.get(patch_script)
-            if provider_options is not None:
-                if not isinstance(provider_options, dict):
-                    raise ValueError(
-                        f"provider_patches.{provider_id}.patch_script_options[{patch_script!r}] must be an object"
-                    )
-                options.update(provider_options)
-            options.update({
-                "base_url": official_site,
-                "provider_name": provider_id,
-            })
-            before = text
-            text = _apply_patch_script(text, provider_id, patch_script, options, None)
-            if text != before:
-                applied.append({
-                    "type": "patch_script",
-                    "path": patch_script,
-                    "phase": phase,
-                    "scope": "global_catalogue_resolution",
-                })
-
-        # HTML/embed/API rows are enriched globally with direct HLS/DASH/container
-        # media when it can be proven. The original row is always retained, so
-        # this never turns an iframe-capable provider into a direct-media-only one.
-        media_policy = config.get("media_enrichment_policy") or {}
-        if not isinstance(media_policy, dict):
-            raise ValueError("media_enrichment_policy must be an object")
-        media_capabilities = {
-            str(value).strip().casefold()
-            for value in media_policy.get("capabilities", [])
-            if str(value).strip()
-        }
-        if media_policy.get("enabled", False) and capability in media_capabilities:
-            patch_script = str(media_policy.get("global_discovery_hook") or "").strip()
-            if not patch_script:
-                raise ValueError("media_enrichment_policy.global_discovery_hook is required")
-            options = dict(media_policy.get("options") or {})
-            before = text
-            text = _apply_patch_script(text, provider_id, patch_script, options, None)
-            if text != before:
-                applied.append({
-                    "type": "patch_script",
-                    "path": patch_script,
-                    "phase": phase,
-                    "scope": "global_media_enrichment",
-                })
-
-    # Playback integrity is a repository-wide discovery invariant, not a list
-    # of currently-known providers. Run it last so every native, recovered or
-    # provider-specific stream result crosses the same HLS gate. The patch
-    # scripts are idempotent, so already-published bundles remain byte-stable.
-    if phase == "discovery":
-        playback_policy = config.get("playback_integrity_policy") or {}
-        if not isinstance(playback_policy, dict):
-            raise ValueError("playback_integrity_policy must be an object")
-        if playback_policy.get("enabled", True):
-            global_hooks = playback_policy.get("global_discovery_hooks") or []
-            if not isinstance(global_hooks, list):
-                raise ValueError("playback_integrity_policy.global_discovery_hooks must be an array")
-            global_options = playback_policy.get("hls_runtime_options") or {}
-            if not isinstance(global_options, dict):
-                raise ValueError("playback_integrity_policy.hls_runtime_options must be an object")
-            for patch_script in [str(value) for value in global_hooks if str(value).strip()]:
-                options = dict(global_options) if patch_script.endswith("hls_runtime_integrity_v1.py") else {}
-                provider_options = script_options.get(patch_script)
-                if provider_options is not None:
-                    if not isinstance(provider_options, dict):
-                        raise ValueError(
-                            f"provider_patches.{provider_id}.patch_script_options[{patch_script!r}] must be an object"
-                        )
-                    options.update(provider_options)
-                before = text
-                text = _apply_patch_script(text, provider_id, patch_script, options, None)
-                if text != before:
-                    applied.append({
-                        "type": "patch_script",
-                        "path": patch_script,
-                        "phase": phase,
-                        "scope": "global_playback_integrity",
-                    })
-
-    # Patch hooks form one transaction. A later hook may intentionally replace
-    # or remove a wrapper added by an earlier hook. If the final bytes are
-    # identical to the input, no effective patch happened and no mutation record
-    # may escape to staging metadata; otherwise the integrity validator would
-    # correctly reject an equal upstream/patched SHA pair with "effective"
-    # records attached to it.
-    if text == original_text:
-        return data, []
-    return text.encode("utf-8"), applied
-
-
-def digest(data: bytes) -> str:
-    return hashlib.sha256(data).hexdigest()
+    return text.encode("utf-8"), records
