@@ -16,6 +16,7 @@ const {
   summarizeStream,
   summarizePolicy,
   streamIdentity,
+  tailText,
   verifyRuntimeContract,
 } = require('../scripts/nuvio_client_lab.cjs');
 
@@ -42,6 +43,7 @@ assert.equal(context.clientRuntimeLab.invocationContract, 'positional-compatible
 const parsed = parseWorkerOutput('noise\nNUVIO_HEALTH_RESULT={"ok":true,"stream_count":1,"streams":[]}\n');
 assert.equal(parsed.ok, true);
 assert.equal(parsed.stream_count, 1);
+assert.equal(tailText('abcdefgh', 'ijkl', 6), 'ghijkl');
 
 const summary = summarizeStream({
   url: 'https://cdn.example/video.m3u8?token=secret',
