@@ -53,6 +53,14 @@ scopes = {row.get("scope") for row in records if isinstance(row, dict)}
 assert "global_catalogue_resolution" in scopes
 assert "global_media_enrichment" in scopes
 
+# A slow HTML catalogue may lower the shared bounds without replacing the
+# global ID-first engine or hard-coding work-specific titles.
+papa, _papa_records = module.apply_overrides("papadustream", future, phase="discovery")
+papa_text = papa.decode("utf-8")
+assert '"timeoutMs":4000' in papa_text
+assert '"budgetMs":25000' in papa_text
+assert papa_text.count("NUVIO_GLOBAL_CATALOGUE_ALIAS_RECOVERY_V2:") == 1
+
 # Direct-media providers remain ID-native; they may be inspected/protected but
 # are never rewritten into a title-search catalogue flow.
 direct, direct_records = module.apply_overrides("zinkmovies", future, phase="discovery")

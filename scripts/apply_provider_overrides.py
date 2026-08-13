@@ -426,6 +426,13 @@ def apply_overrides(
             if not patch_script:
                 raise ValueError("catalogue_resolution_policy.global_discovery_hook is required")
             options = dict(catalogue_policy.get("options") or {})
+            provider_options = script_options.get(patch_script)
+            if provider_options is not None:
+                if not isinstance(provider_options, dict):
+                    raise ValueError(
+                        f"provider_patches.{provider_id}.patch_script_options[{patch_script!r}] must be an object"
+                    )
+                options.update(provider_options)
             options.update({
                 "base_url": official_site,
                 "provider_name": provider_id,
