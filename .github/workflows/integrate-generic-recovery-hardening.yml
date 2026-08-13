@@ -39,7 +39,13 @@ jobs:
           p.write_text(text)
           PY
           python .github/scripts/apply_generic_recovery_hardening.py
-          sed -i 's/box\.globalThis=box; //g' tests/generic_recovery_hardening_test.py
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('tests/generic_recovery_hardening_test.py')
+          text=p.read_text().replace('box.globalThis=box; ','')
+          text=text.replace('const box={module:{exports:{}},exports:{},URL,fetch:', 'const box={module:{exports:{}},exports:{},Buffer,URL,fetch:', 1)
+          p.write_text(text)
+          PY
           python - <<'PY'
           import json
           from pathlib import Path
