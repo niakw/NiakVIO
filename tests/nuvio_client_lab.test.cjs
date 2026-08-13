@@ -20,6 +20,25 @@ const {
   verifyRuntimeContract,
 } = require('../scripts/nuvio_client_lab.cjs');
 
+const repositoryRoot = path.resolve(__dirname, '..');
+const packageJson = JSON.parse(fs.readFileSync(path.join(repositoryRoot, 'package.json'), 'utf8'));
+const labWorkflow = fs.readFileSync(path.join(repositoryRoot, '.github/workflows/nuvio-client-lab.yml'), 'utf8');
+const npmTestLifecycle = `${packageJson.scripts.pretest || ''} ${packageJson.scripts.test || ''}`;
+assert.match(npmTestLifecycle, /node tests\/nuvio_client_lab\.test\.cjs/);
+for (const requiredPath of [
+  'manifest.json',
+  'vf/manifest.json',
+  'provider-overrides.json',
+  'providers/**',
+  'scripts/nuvio_client_lab.cjs',
+  'scripts/provider_worker.cjs',
+  'scripts/provider_patches/**',
+  'tests/nuvio_client_lab.test.cjs',
+]) {
+  assert.equal(labWorkflow.includes(`- "${requiredPath}"`), true, `lab workflow must watch ${requiredPath}`);
+}
+assert.match(labWorkflow, /python3 scripts\/validate_release_integrity\.py/);
+
 const manifest = {
   scrapers: [
     { id: 'FLEMMIX', name: 'Flemmix', filename: 'providers/flemmix.js' },

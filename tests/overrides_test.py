@@ -152,7 +152,7 @@ def test_obfuscated_runtime_endpoint_override() -> None:
     second, second_records = apply_overrides("movix", output)
     assert second == output
     assert not any(row.get("type") in {"fixed_endpoint", "runtime_domain_overrides"} for row in second_records)
-    with tempfile.TemporaryDirectory(dir=ROOT) as tmp:
+    with tempfile.TemporaryDirectory(prefix="niakvio-overrides-") as tmp:
         target = Path(tmp) / "provider.js"
         target.write_bytes(output)
         subprocess.run(["node", "--check", str(target)], check=True)
@@ -266,7 +266,7 @@ def test_chained_provider_patch_scripts_and_output_guard() -> None:
     assert b"NUVIO_STREAM_OUTPUT_SANITIZER_UTF8_BOM_V5" in second
     assert b"NUVIO_VF_CATALOGUE_RECOVERY_V1" in second
     assert not any(row.get("path") == sanitizer for row in second_records)
-    with tempfile.TemporaryDirectory(dir=ROOT) as tmp:
+    with tempfile.TemporaryDirectory(prefix="niakvio-overrides-") as tmp:
         target = Path(tmp) / "provider.js"
         target.write_bytes(output)
         harness = r'''

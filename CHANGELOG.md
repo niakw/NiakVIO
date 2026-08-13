@@ -1,3 +1,13 @@
+## 5.20.47 — Lab multi-œuvres et récupération catalogue globale
+
+- Ajoute un lab reproductible couvrant films, séries et anime sur les contrats NuvioTV, Desktop et Mobile, avec rapports nettoyés par œuvre.
+- Définit 10 providers jouables dont 3 VF comme objectif indicatif : le manque de couverture d'une œuvre récente ou rare reste non bloquant, contrairement aux erreurs runtime, contenus contradictoires et médias illisibles.
+- Répare la récupération StreamZo et confirme sa lecture pour `Mon ninja et moi 3` sur les trois familles de clients.
+- Applique la récupération catalogue bornée globalement et retire les correctifs V1 lorsqu'un correctif V2 équivalent est déjà publié.
+- Isole les exécutions lentes, retente une fois les timeouts avec un profil réduit et borne la recherche PapaDuStream.
+- Intègre le test unitaire du lab à `npm test`, élargit ses déclencheurs CI et vérifie l'intégrité de release avant la matrice distante.
+- Restaure une provenance JSON valide, régénère les empreintes et élague les anciens bundles hachés devenus non référencés.
+
 ## 5.20.29 — NuvioTV media-output safety and bundle reconciliation
 
 - Fix Coflix on NuvioTV: WordPress infrastructure endpoints (`admin-ajax`, `wp-json`, Ajax Search Lite) can no longer escape as streams.

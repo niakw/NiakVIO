@@ -34,7 +34,7 @@ global.fetch=async function(url){url=String(url);
 PATCHED
 (async()=>{const rows=await module.exports.getStreams({id:'tmdb:424242',mediaType:'movie',title:'Mon ninja et moi 3',year:2025});assert.strictEqual(rows.length,1,JSON.stringify(rows));assert.strictEqual(rows[0].url,'https://player.example/e/correct');console.log('strict native identity guard runtime test passed')})().catch(e=>{console.error(e);process.exit(1)});
 '''.replace('PATCHED', patched)
-with tempfile.NamedTemporaryFile('w', suffix='.cjs', dir=ROOT, delete=False, encoding='utf-8') as handle:
+with tempfile.NamedTemporaryFile('w', prefix='niakvio-identity-', suffix='.cjs', delete=False, encoding='utf-8') as handle:
     handle.write(runner); path=Path(handle.name)
 try:
     proc=subprocess.run(['node',str(path)],cwd=ROOT,capture_output=True,text=True,timeout=30)

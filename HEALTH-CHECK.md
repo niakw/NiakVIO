@@ -1,4 +1,4 @@
-# Provider health and compatibility checks v3
+# Contrôles de santé, de compatibilité et de lecture
 
 ## Matrice des critères
 
@@ -25,7 +25,7 @@ sont répartis en plusieurs familles :
 Cette matrice reste une validation par échantillonnage : elle ne peut pas prouver que
 tous les titres, épisodes, langues ou appareils fonctionneront.
 
-## Quatre niveaux indépendants
+## Cinq niveaux indépendants
 
 ### 1. Disponibilité générale — toutes les quatre heures
 
@@ -76,6 +76,19 @@ Utilise jusqu'à trois titres et quatre endpoints par candidat. Il peut inspecte
 - langues audio et sous-titres ;
 - accessibilité d'une piste de sous-titres ;
 - latence et catégorie de panne.
+
+### 5. Lab de lecture multi-œuvres — à chaque changement pertinent
+
+Le lab exécute une matrice de films, séries et anime, dont une œuvre récente à faible
+couverture, avec les contrats NuvioTV, Desktop et Mobile. Il vérifie le média final,
+les playlists et les premiers segments, puis rejette les contradictions de titre,
+saison ou épisode. Un timeout isolé peut être retenté une fois avec un profil réduit.
+
+La cible de **10 providers jouables dont 3 VF par œuvre** est un objectif de couverture
+indicatif. Elle ne bloque pas une publication lorsque le catalogue d'une œuvre récente
+ou rare ne permet pas de l'atteindre. Les erreurs runtime, contenus contradictoires et
+médias non lisibles ne sont toutefois jamais comptés comme succès. Les rapports JSON
+et Markdown sont nettoyés avant leur publication comme artefacts CI.
 
 
 ## Boucle générique de réparation pendant le deep
@@ -128,8 +141,10 @@ un échec.
 4. Les fichiers, rapports et `PROVENANCE.json` sont publiés en premier.
 5. `manifest.json` est remplacé dans un second commit.
 
-Si une phase échoue, l'ancien manifest public demeure utilisable. Les anciennes versions
-ne sont pas supprimées automatiquement.
+Si une phase échoue, l'ancien manifest public demeure utilisable. Une fois la promotion
+terminée, les bundles hachés qui ne sont plus référencés par les manifests, le
+last-known-good ou la provenance sont élagués. Ils restent récupérables dans l'historique
+Git.
 
 ## Exclusion torrent/P2P
 
@@ -155,4 +170,3 @@ L'exclusion est appliquée à quatre endroits :
 The worker records requests made by provider code itself. It does not probe selected provider homepages separately and does not assign provider-specific blocking rules.
 
 When a provider depends on TMDb only to obtain title metadata, a failed or rejected TMDb lookup can be replaced with a synthetic response derived from the active fixture. This fallback is restricted to the matching TMDb media type and identifier, is marked with `synthetic_fixture_fallback: true`, and exists only to let the provider continue to its real search/content routes. It does not create or validate a stream.
-

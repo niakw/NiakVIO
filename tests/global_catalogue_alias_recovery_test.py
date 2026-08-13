@@ -118,7 +118,7 @@ PATCHED_SOURCE
 })().catch(err => { console.error(err); process.exit(1); });
 '''.replace("PATCHED_SOURCE", patched)
 
-with tempfile.NamedTemporaryFile("w", suffix=".cjs", dir=ROOT, delete=False, encoding="utf-8") as handle:
+with tempfile.NamedTemporaryFile("w", prefix="niakvio-alias-", suffix=".cjs", delete=False, encoding="utf-8") as handle:
     handle.write(runner)
     temp = Path(handle.name)
 try:

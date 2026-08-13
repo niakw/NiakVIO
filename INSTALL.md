@@ -1,26 +1,30 @@
-# Installation — v5.13.1
+# Installation
 
-1. Remplace les fichiers du dépôt par ceux de cette archive en conservant le dossier `.github`.
-2. Commit et pousse sur `main`.
-3. Lance **Check all manifests and publish Nuvio providers** en mode `deep`.
-4. Le nouveau rapport doit afficher `"schema_version": 63`.
+## Utilisateurs Nuvio
 
-## Résultat attendu
+Choisissez l'un des manifests stables :
 
-- une seule requête représentative par provider ;
-- un résultat sain unique suffit aux gates runtime correspondants et active immédiatement un nouveau SHA ;
-- les descriptions et types des trois manifests sont fusionnés avant le choix de la fixture ;
-- une description comme `Films, Séries et Animes en VF et VOSTFR` publie `movie`, `tv` et `anime`, même si une variante amont ne déclare que `anime` ;
-- les providers VF sont placés en premier, par résolution puis score ;
-- les providers VOSTFR arrivent ensuite ; le runtime prime sur une description générale mentionnant à la fois VF et VOSTFR ;
-- les autres providers francophones suivent ;
-- les providers VO/autres langues sont classés d’abord par score de santé/qualité, puis par résolution ;
-- toute réponse HTTP réelle d’un serveur provider compte comme accès serveur, tandis que DNS, connexion, TLS et timeout restent des échecs ;
-- un serveur accessible ne suffit pas : le score éditorial agrégé doit atteindre 5 ;
-- des sous-titres optionnels injoignables ne bloquent pas un stream principal avec audio accepté ;
-- aucun torrent, magnet ou P2P n’est publié.
+- général (VF, VOSTFR, VO et autres langues) : `https://raw.githubusercontent.com/niakw/Niakvio/refs/heads/main/manifest.json` ;
+- francophone : `https://raw.githubusercontent.com/niakw/Niakvio/refs/heads/main/vf/manifest.json`.
 
-### Variantes linguistiques
+Dans un client Nuvio compatible, ouvrez la gestion des plugins/providers, ajoutez
+l'URL voulue, puis actualisez le repository. Les URLs restent stables : les versions,
+bundles et états d'activation évoluent derrière elles.
 
-- Manifest général : `/manifest.json`
-- VF uniquement : `/vf/manifest.json`
+## Mainteneurs
+
+1. Installer exactement le graphe verrouillé avec
+   `npm ci --ignore-scripts --no-audit --no-fund`.
+2. Exécuter `npm test` avant toute publication.
+3. Pour une modification du manifest visible par les clients, incrémenter la release
+   avec `python3 scripts/sync_release_versions.py --version X.Y.Z`.
+4. Élaguer les anciens bundles hachés non référencés avec
+   `python3 scripts/prune_unreferenced_providers.py`.
+5. Régénérer les empreintes avec `python3 scripts/generate_release_hashes.py`, puis
+   confirmer l'ensemble avec `python3 scripts/validate_release_integrity.py`.
+6. Laisser les workflows de publication et le lab multi-œuvres valider `main`.
+
+Le workflow **Check all manifests and publish Nuvio providers** reste l'entrée de la
+validation distante complète. Le workflow **Nuvio client playback lab** vérifie une
+matrice réelle sur NuvioTV, Desktop et Mobile ; sa cible 10 providers dont 3 VF est un
+objectif de couverture non bloquant pour les œuvres récentes ou rares.

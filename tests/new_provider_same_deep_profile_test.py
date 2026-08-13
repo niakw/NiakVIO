@@ -8,7 +8,7 @@ OVR=ROOT/'provider-overrides.json'
 
 def main():
     original=OVR.read_bytes()
-    tmp=Path(tempfile.mkdtemp(prefix='nuvio-new-provider-', dir=ROOT))
+    tmp=Path(tempfile.mkdtemp(prefix='nuvio-new-provider-'))
     try:
         providers=tmp/'providers'/'synthetic'
         providers.mkdir(parents=True)

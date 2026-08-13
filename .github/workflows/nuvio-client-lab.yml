@@ -29,6 +29,21 @@ on:
       - lab/nuvio-client-matrix
     paths:
       - ".github/triggers/nuvio-client-lab.json"
+      - ".github/workflows/nuvio-client-lab.yml"
+      - "manifest.json"
+      - "vf/manifest.json"
+      - "provider-overrides.json"
+      - "providers/**"
+      - "scripts/nuvio_client_lab.cjs"
+      - "scripts/provider_worker.cjs"
+      - "scripts/provider_patches/**"
+      - "tests/nuvio_client_lab.test.cjs"
+      - "package.json"
+      - "package-lock.json"
+      - "PROVENANCE.json"
+      - "FILE-HASHES.json"
+      - "PATCH-SHA256SUMS.txt"
+      - "SHA256SUMS.json"
 
 permissions:
   contents: read
@@ -51,6 +66,9 @@ jobs:
         with:
           fetch-depth: 1
           persist-credentials: false
+
+      - name: Validate repository release integrity
+        run: python3 scripts/validate_release_integrity.py
 
       - name: Build matrix configuration
         id: matrix

@@ -6,4 +6,4 @@ This is defense in depth, not a claim of perfect OS isolation. A future hardenin
 
 Deep publication is blocked for configured providers when a reachable origin exhibits a high-confidence obsolete-route signature. Route diagnostics are retained and published as `route-regressions.json`.
 
-Dependency lifecycle scripts are disabled. A lockfile should be generated and committed from a trusted network before replacing the current pinned-direct-dependency fallback with mandatory `npm ci`.
+Dependency lifecycle scripts are disabled during CI installation. The committed `package-lock.json` pins the resolved dependency graph, and workflows install it with `npm ci --ignore-scripts --no-audit --no-fund` before running repository checks.

@@ -40,7 +40,9 @@ def run_provider_test(apply, *, embed_url: str, media_url: str, html: str, optio
     assert "function genericUrls(text,base)" in patched
     assert "PLAYER_HOST" in patched
 
-    with tempfile.TemporaryDirectory(dir=ROOT) as tmp:
+    # Keep runtime fixtures outside the repository so an interrupted test cannot
+    # leave a generated provider that is later staged as release content.
+    with tempfile.TemporaryDirectory(prefix="niakvio-vidzy-") as tmp:
         target = Path(tmp) / "provider.cjs"
         target.write_text(patched, encoding="utf-8")
         subprocess.run(["node", "--check", str(target)], check=True)

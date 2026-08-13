@@ -1,5 +1,7 @@
 # Sélection
 
+Ce tableau documente l'orientation éditoriale et les rôles historiques. Pour l'état courant, la version, les catégories et l'activation de chaque provider, les seules sources de vérité sont [`manifest.json`](manifest.json), [`vf/manifest.json`](vf/manifest.json) et les rapports de validation publiés.
+
 | État | Provider | Groupe | Source principale | Replis | Motif |
 |---|---|---|---|---|---|
 | Activé | `moviebox` | VO films/séries | aio | yoru:moviebox | Généraliste VO, plusieurs langues et qualités. |
