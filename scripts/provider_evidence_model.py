@@ -20,7 +20,7 @@ def classify_probe(probe: dict[str, Any]) -> str:
     duration_mismatch = bool(probe.get("duration_identity_mismatch"))
     if identity_status == "contradiction" or duration_mismatch or not playable:
         return ROW_REJECTED
-    if identity_status == "match":
+    if identity_status in {"match", "verified"}:
         return ROW_VERIFIED
     return ROW_UNKNOWN
 
