@@ -138,12 +138,13 @@ function normalizeIdentity(value) {
 }
 
 function identityTokens(value) {
-  const noise = new Set(['the', 'a', 'an', 'le', 'la', 'les', 'un', 'une', 'de', 'des', 'du', 'of', 'and', 'et', 'film', 'movie', 'stream', 'streaming', 'watch', 'play', 'server', 'serveur', 'source', 'mirror', 'direct', 'download', 'telecharger', 'file', 'video', 'quality', 'web', 'vf', 'vff', 'vostfr', 'vo', 'french', 'english', 'truefrench', 'hd', 'uhd', 'fhd', 'sd']);
+  const noise = new Set(['the', 'a', 'an', 'le', 'la', 'les', 'un', 'une', 'de', 'des', 'du', 'of', 'and', 'et', 'film', 'movie', 'stream', 'streaming', 'watch', 'play', 'player', 'server', 'serveur', 'source', 'mirror', 'direct', 'download', 'telecharger', 'file', 'video', 'quality', 'web', 'ep', 'episode', 'season', 'saison', 'sibnet', 'vidmoly', 'sendvid', 'uqload', 'streamzo', 'anime', 'sama', 'mugiwara', 'toflix', 'french', 'manga', 'vf', 'vff', 'vostfr', 'vo', 'english', 'truefrench', 'hd', 'uhd', 'fhd', 'sd']);
   return normalizeIdentity(value).split(/\s+/).filter((token) => token.length > 1 && !noise.has(token) && !/^\d{3,4}p$/.test(token) && !/^\d{4}$/.test(token));
 }
 
 function streamIdentity(stream, fixture) {
   const aliases = [fixture?.title, fixture?.label, ...(Array.isArray(fixture?.aliases) ? fixture.aliases : [])].filter(Boolean);
+  const forbiddenAliases = (Array.isArray(fixture?.forbiddenAliases) ? fixture.forbiddenAliases : []).map(normalizeIdentity).filter(Boolean);
   const expected = aliases.map(normalizeIdentity).filter(Boolean);
   const expectedTokens = new Set(aliases.flatMap(identityTokens));
   const label = String(stream?.title || stream?.description || stream?.filename || stream?.name || '').trim();
@@ -153,6 +154,7 @@ function streamIdentity(stream, fixture) {
   const wantedEpisode = Number(fixture?.episode || 0);
   const seasonEpisode = /(?:^|\D)s(?:eason|aison)?\s*0*(\d{1,3})\s*[-_. ]*e(?:p(?:isode)?)?\s*0*(\d{1,4})(?:\D|$)/i.exec(label)
     || /(?:season|saison)\s*0*(\d{1,3})[^\d]{0,12}(?:episode|ep)\s*0*(\d{1,4})/i.exec(label);
+  const episodeOnly = /(?:^|\D)(?:episode|ep)\s*0*(\d{1,4})(?:\D|$)/i.exec(label);
   if (mediaType === 'movie' && seasonEpisode) return { status: 'contradiction', reason: 'movie_row_is_episode' };
   if (seasonEpisode && (mediaType === 'tv' || mediaType === 'anime')) {
     const season = Number(seasonEpisode[1] || 0);
@@ -160,14 +162,20 @@ function streamIdentity(stream, fixture) {
     if ((wantedSeason && season && season !== wantedSeason) || (wantedEpisode && episode && episode !== wantedEpisode)) {
       return { status: 'contradiction', reason: 'wrong_season_episode' };
     }
+    return { status: 'match', reason: 'season_episode_match' };
   }
+  if (episodeOnly && (mediaType === 'tv' || mediaType === 'anime')) {
+    const episode = Number(episodeOnly[1] || 0);
+    if (wantedEpisode && episode && episode !== wantedEpisode) return { status: 'contradiction', reason: 'wrong_episode' };
+    if (wantedEpisode && episode === wantedEpisode) return { status: 'match', reason: 'episode_match' };
+  }
+  if (normalized && forbiddenAliases.some((alias) => normalized.includes(alias))) return { status: 'contradiction', reason: 'forbidden_title_alias' };
   if (normalized && expected.some((alias) => normalized.includes(alias))) return { status: 'match', reason: 'expected_title_alias' };
   const rowTokens = identityTokens(label);
   if (rowTokens.length >= 2 && expectedTokens.size) {
     const overlap = rowTokens.filter((token) => expectedTokens.has(token));
     if (overlap.length === 0) return { status: 'contradiction', reason: 'strong_title_mismatch' };
   }
-  if (seasonEpisode && (mediaType === 'tv' || mediaType === 'anime')) return { status: 'match', reason: 'season_episode_match' };
   return { status: 'unknown', reason: 'insufficient_identity_metadata' };
 }
 
@@ -346,6 +354,7 @@ function summarizePolicy(providers, clients, config = {}) {
   ));
   const verifiedTotal = qualified.length;
   const verifiedVf = qualified.filter((provider) => provider.is_vf).length;
+  const identityVerified = qualified.filter((provider) => requestedClients.every((clientName) => provider.clients?.[clientName]?.identity_status === 'verified'));
   const totalTargetMet = verifiedTotal >= targetTotal;
   const vfMinimumMet = verifiedVf >= minimumVf;
   const objectiveMet = totalTargetMet && vfMinimumMet;
@@ -354,6 +363,8 @@ function summarizePolicy(providers, clients, config = {}) {
     minimum_vf: minimumVf,
     verified_total: verifiedTotal,
     verified_vf: verifiedVf,
+    identity_verified_total: identityVerified.length,
+    identity_verified_provider_ids: identityVerified.map((provider) => provider.id),
     total_target_met: totalTargetMet,
     vf_minimum_met: vfMinimumMet,
     objective_met: objectiveMet,
@@ -394,6 +405,7 @@ function markdown(report) {
     '|---|---:|---:|---|',
     `| Total providers | ${report.policy.verified_total} | target ${report.policy.target_total} | ${report.policy.total_target_met ? 'yes' : 'no'} |`,
     `| VF providers | ${report.policy.verified_vf} | minimum ${report.policy.minimum_vf} | ${report.policy.vf_minimum_met ? 'yes' : 'no'} |`,
+    `| Explicit work identity | ${report.policy.identity_verified_total} | diagnostic only | n/a |`,
     '',
     `Coverage status: **${report.policy.status}**. Both thresholds are advisory objectives; a shortfall never invalidates the work or the lab run.`,
     '',
