@@ -21,6 +21,8 @@ on:
       - "scripts/build_provider_runtime_profiles.py"
       - "scripts/provider_evidence_model.py"
       - "scripts/release_evidence_fence.py"
+      - "scripts/adaptive_runtime/runtime_repair.py"
+      - "tests/general_manifest_runtime_profiles_test.py"
   schedule:
     - cron: "17 5 * * 0,1,3,4,6"
     - cron: "47 4 * * 2,5"
