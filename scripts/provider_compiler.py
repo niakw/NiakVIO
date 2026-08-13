@@ -75,6 +75,26 @@ def provider_token(provider_id: str) -> str:
     return re.sub(r"[^a-z0-9]", "", provider_id.casefold())
 
 
+FAMILY_SUFFIXES = ("official", "homes", "home", "new", "rip", "co", "tv", "app", "web")
+
+
+def provider_family_token(provider_id: str) -> str:
+    token = provider_token(provider_id)
+    changed = True
+    while changed:
+        changed = False
+        for suffix in FAMILY_SUFFIXES:
+            if token.endswith(suffix) and len(token) - len(suffix) >= 4:
+                token = token[:-len(suffix)]
+                changed = True
+                break
+    return token
+
+
+def same_provider_family(left: str, right: str) -> bool:
+    return provider_family_token(left) == provider_family_token(right)
+
+
 def looks_provider_owned(candidate: str, provider_id: str, strong: set[str]) -> bool:
     if any(belongs(candidate, base) or belongs(base, candidate) for base in strong):
         return True
@@ -137,7 +157,7 @@ def foreign_hits(text: str, provider_id: str, ownership: dict[str, set[str]]) ->
         if current_provider_owns(value, provider_id, ownership):
             continue
         for owner, hosts in ownership.items():
-            if owner == provider_id:
+            if owner == provider_id or same_provider_family(provider_id, owner):
                 continue
             if any(belongs(value, owner_host) for owner_host in hosts):
                 hits.append((value, owner))
@@ -211,7 +231,9 @@ def sanitize_observed_origins(
             if value and not current_provider_owns(value, provider_id, ownership):
                 owners = sorted(
                     owner for owner, hosts in ownership.items()
-                    if owner != provider_id and any(belongs(value, own) for own in hosts)
+                    if owner != provider_id
+                    and not same_provider_family(provider_id, owner)
+                    and any(belongs(value, own) for own in hosts)
                 )
             if owners:
                 removed.append({
@@ -265,7 +287,9 @@ def clean_origins(values: Any, provider_id: str, ownership: dict[str, set[str]])
         foreign = False
         if not current_provider_owns(parsed_host, provider_id, ownership):
             foreign = any(
-                owner != provider_id and any(belongs(parsed_host, own) for own in hosts)
+                owner != provider_id
+                and not same_provider_family(provider_id, owner)
+                and any(belongs(parsed_host, own) for own in hosts)
                 for owner, hosts in ownership.items()
             )
         if foreign:
