@@ -107,6 +107,11 @@ function sanitizeText(value, limit = 200) {
     .slice(0, limit);
 }
 
+function tailText(previous, chunk, limit) {
+  const combined = String(previous || '') + String(chunk || '');
+  return combined.length > limit ? combined.slice(combined.length - limit) : combined;
+}
+
 function safeHost(rawUrl) {
   try { return new URL(String(rawUrl || '')).hostname.toLowerCase(); } catch { return null; }
 }
@@ -275,8 +280,8 @@ function runProviderWorker(root, providerPath, fixture, context, timeoutMs = DEF
     let stdout = '';
     let stderr = '';
     const timer = setTimeout(() => child.kill('SIGKILL'), timeoutMs);
-    child.stdout.on('data', (chunk) => { if (stdout.length < 8 * 1024 * 1024) stdout += chunk.toString(); });
-    child.stderr.on('data', (chunk) => { if (stderr.length < 512 * 1024) stderr += chunk.toString(); });
+    child.stdout.on('data', (chunk) => { stdout = tailText(stdout, chunk.toString(), 8 * 1024 * 1024); });
+    child.stderr.on('data', (chunk) => { stderr = tailText(stderr, chunk.toString(), 512 * 1024); });
     child.on('close', (code, signal) => {
       clearTimeout(timer);
       try {
@@ -490,6 +495,8 @@ async function runLab(root, config, options = {}) {
       const probes = await probeStreams(root, runtime.streams || [], fixture, config);
       providerRecord.runtime_groups[group.runtimeGroup] = {
         ok: Boolean(runtime.ok),
+        worker_exit_code: worker.code ?? null,
+        worker_signal: worker.signal ?? null,
         duration_ms: Number(runtime.duration_ms || 0),
         stream_count: Number(runtime.stream_count || 0),
         provider_server_accessible: Boolean(runtime.provider_server_accessible),
@@ -587,6 +594,7 @@ module.exports = {
   streamIdentity,
   summarizePolicy,
   summarizeStream,
+  tailText,
   verifyRuntimeContract,
 };
 
