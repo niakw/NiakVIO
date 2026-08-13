@@ -25,12 +25,20 @@ from pathlib import Path
 from typing import Any
 
 from apply_provider_overrides import apply_overrides, load_overrides
+from provider_engine_normalizer import (
+    _host,
+    _host_belongs,
+    _provider_api_hosts,
+    sanitize_provider_hooks,
+    strip_foreign_provider_wrappers,
+)
 
 ROOT = Path(__file__).resolve().parents[1]
 PRIMARY = ROOT / "manifest.json"
 SECONDARY = (ROOT / "vf" / "manifest.json", ROOT / "vostfr" / "manifest.json")
 PROVENANCE = ROOT / "PROVENANCE.json"
 PROVIDERS = ROOT / "providers"
+OVERRIDES = ROOT / "provider-overrides.json"
 ADAPTIVE_MARKER = "/* NUVIO_ADAPTIVE_RUNTIME_RECOVERY_V"
 ADAPTIVE_CALL = '})(typeof globalThis!=="undefined"?globalThis:this,'
 ADAPTIVE_SCRIPT = ROOT / "scripts" / "provider_patches" / "adaptive_runtime_recovery_v4.py"
@@ -77,20 +85,10 @@ def configured_manifest_overrides(config: dict[str, Any], provider_id: str) -> d
     overrides = patch_row.get("manifest_overrides") if isinstance(patch_row, dict) else {}
     if not isinstance(overrides, dict):
         return {}
-    # Reapplication only persists fail-safe activation decisions. Other
-    # metadata is promotion-owned and may intentionally differ until a new
-    # audited bundle is promoted (for example external-player capability).
     return {"enabled": False} if overrides.get("enabled") is False else {}
 
 
 def strip_unproven_adaptive_language(data: bytes) -> tuple[bytes, int]:
-    """Remove only the historical adaptive wrapper's hard-coded French claim.
-
-    Adaptive recovery used to emit ``language:\"fr\"`` for every recovered
-    stream, regardless of provider or media evidence. Native provider language
-    metadata must remain untouched, so the replacement is scoped strictly to
-    generated NUVIO_ADAPTIVE_RUNTIME_RECOVERY wrapper blocks.
-    """
     text = data.decode("utf-8", errors="strict")
     cursor = 0
     changed = 0
@@ -116,9 +114,7 @@ def strip_unproven_adaptive_language(data: bytes) -> tuple[bytes, int]:
     return "".join(parts).encode("utf-8"), changed
 
 
-
 def reapply_adaptive_runtime_revision(data: bytes, provenance_row: dict[str, Any] | None) -> tuple[bytes, list[dict[str, Any]]]:
-    """Upgrade an already-accepted adaptive wrapper to the current implementation."""
     if ADAPTIVE_MARKER.encode("utf-8") not in data or not isinstance(provenance_row, dict):
         return data, []
     accepted = [
@@ -150,7 +146,6 @@ def reapply_adaptive_runtime_revision(data: bytes, provenance_row: dict[str, Any
 
 
 def reapply_adaptive_domain_revision(data: bytes) -> tuple[bytes, list[dict[str, Any]]]:
-    """Refresh an owned adaptive-domain wrapper from its embedded peer groups."""
     text = data.decode("utf-8", errors="strict")
     start = text.find(ADAPTIVE_DOMAIN_BEGIN)
     if start < 0:
@@ -165,20 +160,12 @@ def reapply_adaptive_domain_revision(data: bytes) -> tuple[bytes, list[dict[str,
             decoded = json.loads(base64.b64decode(encoded).decode("utf-8"))
         except Exception:
             continue
-        candidate = (
-            decoded
-            if isinstance(decoded, list)
-            else decoded.get("groups")
-            if isinstance(decoded, dict)
-            else None
-        )
+        candidate = decoded if isinstance(decoded, list) else decoded.get("groups") if isinstance(decoded, dict) else None
         if isinstance(candidate, list) and all(isinstance(row, dict) for row in candidate):
             groups = candidate
     if not groups:
         return data, []
-    spec = importlib.util.spec_from_file_location(
-        "nuvio_reapply_adaptive_domain", ADAPTIVE_DOMAIN_SCRIPT
-    )
+    spec = importlib.util.spec_from_file_location("nuvio_reapply_adaptive_domain", ADAPTIVE_DOMAIN_SCRIPT)
     if spec is None or spec.loader is None:
         raise RuntimeError(f"cannot load adaptive domain patcher: {ADAPTIVE_DOMAIN_SCRIPT}")
     module = importlib.util.module_from_spec(spec)
@@ -193,6 +180,7 @@ def reapply_adaptive_domain_revision(data: bytes) -> tuple[bytes, list[dict[str,
         "profile": "adaptive_domain_recovery",
         "runtime_revision": str(getattr(module, "IMPLEMENTATION_REVISION", "current")),
     }]
+
 
 def load_manifest(path: Path) -> dict[str, Any] | None:
     if not path.exists():
@@ -209,6 +197,37 @@ def write_json(path: Path, value: dict[str, Any]) -> None:
 
 def write_manifest(path: Path, value: dict[str, Any]) -> None:
     write_json(path, value)
+
+
+def sanitize_capability_origins(config: dict[str, Any]) -> tuple[dict[str, Any], int]:
+    """Drop API origins owned by another provider from generated capability metadata."""
+    patches = config.get("provider_patches") if isinstance(config.get("provider_patches"), dict) else {}
+    api_hosts = _provider_api_hosts(patches)
+    capabilities = config.get("provider_capabilities") if isinstance(config.get("provider_capabilities"), dict) else {}
+    removed = 0
+    for provider_id, row in capabilities.items():
+        if not isinstance(row, dict) or not isinstance(row.get("observed_origins"), list):
+            continue
+        kept: list[Any] = []
+        for value in row["observed_origins"]:
+            host = _host(value)
+            foreign = False
+            if host:
+                for owner, hosts in api_hosts.items():
+                    if owner == str(provider_id).casefold():
+                        continue
+                    if any(_host_belongs(host, owner_host) for owner_host in hosts):
+                        foreign = True
+                        break
+            if foreign:
+                removed += 1
+            else:
+                kept.append(value)
+        row["observed_origins"] = kept
+    meta = config.setdefault("provider_engine_normalization", {})
+    if isinstance(meta, dict):
+        meta["removed_cross_provider_capability_origins"] = removed
+    return config, removed
 
 
 def validate_artifact(data: bytes) -> None:
@@ -230,17 +249,12 @@ def validate_artifact(data: bytes) -> None:
 
 
 def published_name(provider_id: str, old_path: Path, digest: str, changed: bool) -> str:
-    # Keep the artifact's source/lineage token stable when a local override is
-    # reapplied. Provenance records the local patch separately; rewriting the
-    # source token to generic ``nuvio`` erases meaningful identities such as
-    # ``nuvio-tv-global`` and makes platform promotion metadata brittle.
     parts = old_path.stem.split("--")
     source = parts[-2] if len(parts) >= 3 else "nuvio"
     return f"{safe_fragment(provider_id.casefold())}--{safe_fragment(source)}--{digest[:16]}.js"
 
 
 def merge_patch_records(existing: Any, records: list[dict[str, Any]]) -> list[Any]:
-    """Preserve historical patch provenance while recording newly applied hooks."""
     merged = list(existing) if isinstance(existing, list) else []
     for record in records:
         if record not in merged:
@@ -271,8 +285,13 @@ def main() -> int:
     old_paths: set[str] = set()
     provenance_updates: dict[str, dict[str, Any]] = {}
     applied_count = 0
-    override_config = load_overrides()
 
+    override_config, removed_hooks = sanitize_provider_hooks(load_overrides(), ROOT)
+    override_config, removed_origins = sanitize_capability_origins(override_config)
+    if not args.check:
+        write_json(OVERRIDES, override_config)
+
+    removed_wrappers_total = 0
     for entry in primary["scrapers"]:
         if not isinstance(entry, dict):
             continue
@@ -294,9 +313,22 @@ def main() -> int:
             entry.update(manifest_overrides)
 
         original = path.read_bytes()
-        migrated, adaptive_language_repairs = strip_unproven_adaptive_language(original)
+        isolated_text, removed_wrappers = strip_foreign_provider_wrappers(
+            original.decode("utf-8", errors="strict"), provider_id, override_config
+        )
+        removed_wrappers_total += len(removed_wrappers)
+        isolated = isolated_text.encode("utf-8")
+        migrated, adaptive_language_repairs = strip_unproven_adaptive_language(isolated)
         migrated, domain_revision_records = reapply_adaptive_domain_revision(migrated)
         patched, records = apply_overrides(provider_id, migrated, phase="discovery")
+        if removed_wrappers:
+            records = [{
+                "type": "migration",
+                "name": "cross_provider_wrapper_isolation",
+                "count": len(removed_wrappers),
+                "phase": "discovery",
+                "scope": "provider_isolation",
+            }] + list(records)
         if domain_revision_records:
             records = list(records) + domain_revision_records
         provider_provenance = provenance_rows.get(provider_id) if provenance_rows else None
@@ -304,15 +336,13 @@ def main() -> int:
         if runtime_revision_records:
             records = list(records) + runtime_revision_records
         if adaptive_language_repairs:
-            records = [
-                {
-                    "type": "migration",
-                    "name": "adaptive_language_integrity_v1",
-                    "count": adaptive_language_repairs,
-                    "phase": "discovery",
-                    "scope": "language_integrity",
-                }
-            ] + list(records)
+            records = [{
+                "type": "migration",
+                "name": "adaptive_language_integrity_v1",
+                "count": adaptive_language_repairs,
+                "phase": "discovery",
+                "scope": "language_integrity",
+            }] + list(records)
         changed = patched != original
         if changed:
             validate_artifact(patched)
@@ -398,7 +428,7 @@ def main() -> int:
                 stale = True
         if provenance is not None and json.loads(PROVENANCE.read_text(encoding="utf-8")) != provenance:
             stale = True
-        if stale:
+        if stale or removed_hooks or removed_origins or removed_wrappers_total:
             print("published provider overrides or manifest/provenance references are stale")
             return 1
         print("published provider overrides are current")
@@ -429,7 +459,8 @@ def main() -> int:
     print(
         f"published overrides reapplied: patched={applied_count}, "
         f"manifest_refs={changed_refs}, provenance_refs={provenance_refs}, "
-        f"superseded_deferred_to_prune={deferred}"
+        f"superseded_deferred_to_prune={deferred}, isolated_hooks={len(removed_hooks)}, "
+        f"isolated_wrappers={removed_wrappers_total}, isolated_origins={removed_origins}"
     )
     return 0
 
