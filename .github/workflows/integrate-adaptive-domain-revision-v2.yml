@@ -1,0 +1,55 @@
+name: Integrate adaptive domain revision v2
+
+on:
+  push:
+    branches:
+      - fix/adaptive-domain-revision-v2
+    paths:
+      - .github/triggers/integrate-adaptive-domain-revision-v2
+
+permissions:
+  contents: write
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: "24"
+          package-manager-cache: false
+      - name: Install pinned dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Remove one-shot CI files from candidate
+        run: |
+          rm -f .github/workflows/integrate-adaptive-domain-revision-v2.yml
+          rm -f .github/triggers/integrate-adaptive-domain-revision-v2
+      - name: Prove revision migration first
+        run: python3 tests/adaptive_domain_recovery_test.py
+      - name: Reapply published wrappers and run full repository regression
+        run: npm test
+      - name: Commit exact candidate locally
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --check
+          git commit -m "fix: refresh adaptive domain runtime wrappers"
+      - name: Re-test clean committed candidate
+        run: |
+          candidate=$(git rev-parse HEAD)
+          git worktree add --detach ../candidate "$candidate"
+          cd ../candidate
+          npm ci --ignore-scripts --no-audit --no-fund
+          npm test
+          git diff --exit-code
+      - name: Push validated branch only
+        run: git push origin HEAD:fix/adaptive-domain-revision-v2
