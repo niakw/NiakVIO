@@ -58,6 +58,7 @@ assert.equal(JSON.stringify(summary).includes('token=secret'), false);
 assert.equal(JSON.stringify(summary).includes('Authorization":"secret'), false);
 
 assert.equal(classify({ ok: false, stream_count: 0 }, []), 'runtime_error');
+assert.equal(classify({ ok: false, timed_out: true, stream_count: 0 }, []), 'runtime_timeout');
 assert.equal(classify({ ok: true, stream_count: 0 }, []), 'runtime_empty');
 assert.equal(classify({ ok: true, stream_count: 1 }, [{ playable: true }]), 'playable');
 assert.equal(classify({ ok: true, stream_count: 1 }, [{ playable: true, identity: { status: 'contradiction' } }]), 'wrong_content');

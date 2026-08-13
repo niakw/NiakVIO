@@ -288,8 +288,19 @@ function runProviderWorker(root, providerPath, fixture, context, timeoutMs = DEF
         const result = parseWorkerOutput(stdout);
         resolve({ result, code, signal, stderr: sanitizeText(stderr, 1000) || null });
       } catch (error) {
+        const timedOut = signal === 'SIGKILL';
         resolve({
-          result: { ok: false, error: sanitizeText(error.message, 500), stream_count: 0, streams: [], network_observations: [] },
+          result: {
+            ok: false,
+            timed_out: timedOut,
+            error_code: timedOut ? 'NUVIO_PROVIDER_TIMEOUT' : null,
+            error: timedOut
+              ? `provider worker exceeded ${timeoutMs} ms`
+              : sanitizeText(error.message, 500),
+            stream_count: 0,
+            streams: [],
+            network_observations: [],
+          },
           code,
           signal,
           stderr: sanitizeText(stderr, 1000) || null,
@@ -338,6 +349,7 @@ async function probeStreams(root, streams, fixture, config) {
 }
 
 function classify(runtime, probes) {
+  if (runtime?.timed_out) return 'runtime_timeout';
   if (!runtime?.ok) return 'runtime_error';
   if (!Number(runtime.stream_count || 0)) return 'runtime_empty';
   if (probes.some((row) => row.playable && row.identity?.status === 'contradiction')) return 'wrong_content';
@@ -490,13 +502,46 @@ async function runLab(root, config, options = {}) {
 
     for (const group of runtimeGroups) {
       const context = buildWorkerContext(group.runtimeGroup, fixture, config);
-      const worker = await runProviderWorker(root, providerPath, fixture, context, Number(config.provider_timeout_ms || DEFAULT_TIMEOUT_MS));
+      const timeoutMs = Number(config.provider_timeout_ms || DEFAULT_TIMEOUT_MS);
+      let worker = await runProviderWorker(root, providerPath, fixture, context, timeoutMs);
+      const workerAttempts = [{
+        attempt: 'primary',
+        exit_code: worker.code ?? null,
+        signal: worker.signal ?? null,
+        timed_out: Boolean(worker.result?.timed_out),
+      }];
+      if (worker.result?.timed_out && config.retry_provider_timeouts !== false) {
+        const retryContext = {
+          ...context,
+          maxSettingsProfiles: 1,
+          clientRuntimeLab: {
+            ...context.clientRuntimeLab,
+            attempt: 'timeout-retry',
+          },
+        };
+        worker = await runProviderWorker(
+          root,
+          providerPath,
+          fixture,
+          retryContext,
+          Number(config.retry_provider_timeout_ms || timeoutMs),
+        );
+        workerAttempts.push({
+          attempt: 'timeout-retry',
+          exit_code: worker.code ?? null,
+          signal: worker.signal ?? null,
+          timed_out: Boolean(worker.result?.timed_out),
+        });
+      }
       const runtime = worker.result || {};
       const probes = await probeStreams(root, runtime.streams || [], fixture, config);
       providerRecord.runtime_groups[group.runtimeGroup] = {
         ok: Boolean(runtime.ok),
+        timed_out: Boolean(runtime.timed_out),
+        error_code: sanitizeText(runtime.error_code, 120) || null,
         worker_exit_code: worker.code ?? null,
         worker_signal: worker.signal ?? null,
+        worker_attempts: workerAttempts,
         duration_ms: Number(runtime.duration_ms || 0),
         stream_count: Number(runtime.stream_count || 0),
         provider_server_accessible: Boolean(runtime.provider_server_accessible),

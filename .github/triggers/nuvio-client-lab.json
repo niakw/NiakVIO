@@ -92,7 +92,7 @@
     }
   ],
   "clients": ["tv", "desktop", "mobile"],
-  "run_revision": "identity-and-worker-tail-v2",
+  "run_revision": "provider-timeout-retry-v3",
   "policy": {
     "target_total": 10,
     "minimum_vf": 3,
@@ -100,9 +100,11 @@
     "blocking": false
   },
   "enforce_policy": false,
-  "provider_concurrency": 4,
+  "provider_concurrency": 2,
   "max_settings_profiles": 4,
   "max_streams_per_runtime": 3,
   "provider_timeout_ms": 70000,
+  "retry_provider_timeouts": true,
+  "retry_provider_timeout_ms": 70000,
   "playback_timeout_ms": 18000
 }
