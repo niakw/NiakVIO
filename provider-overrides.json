@@ -789,10 +789,20 @@
         "disabledPlatforms": []
       },
       "patch_script_options": {
-        "scripts/provider_patches/papadustream_anime_tv_v1.py": {}
+        "scripts/provider_patches/papadustream_anime_tv_v1.py": {},
+        "scripts/provider_patches/global_catalogue_alias_recovery_v2.py": {
+          "base_url": "https://papadustream-v2.watch",
+          "provider_name": "papadustream",
+          "max_aliases": 4,
+          "max_candidates": 4,
+          "max_players": 4,
+          "timeout_ms": 4000,
+          "budget_ms": 25000
+        }
       },
       "patch_scripts": [
-        "scripts/provider_patches/papadustream_anime_tv_v1.py"
+        "scripts/provider_patches/papadustream_anime_tv_v1.py",
+        "scripts/provider_patches/global_catalogue_alias_recovery_v2.py"
       ]
     },
     "toflix": {
