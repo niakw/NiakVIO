@@ -142,6 +142,59 @@ jobs:
           python scripts/build_provider_runtime_profiles.py
           python scripts/reapply_published_overrides.py
           python scripts/build_provider_runtime_profiles.py --stage staging --apply-stage
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          root = Path('.')
+          cfg_path = root / 'provider-overrides.json'
+          reg_path = root / 'staging' / 'candidates.json'
+          cfg = json.loads(cfg_path.read_text(encoding='utf-8'))
+          reg = json.loads(reg_path.read_text(encoding='utf-8'))
+          patches = cfg.get('provider_patches') if isinstance(cfg.get('provider_patches'), dict) else {}
+          terminal = set()
+          rows_by_provider = {}
+          for row in reg.get('candidates') or []:
+              if not isinstance(row, dict):
+                  continue
+              pid = str(row.get('canonical_id') or row.get('upstream_id') or '').strip().casefold()
+              rel = str(row.get('local_path') or '')
+              path = (root / 'staging' / rel).resolve()
+              if not pid or not path.is_file():
+                  continue
+              text = path.read_text(encoding='utf-8', errors='ignore')
+              rows_by_provider.setdefault(pid, []).append((row, text))
+          for pid, rows in rows_by_provider.items():
+              if rows and all('NUVIO_PROVIDER_QUARANTINE_V1' in text for _, text in rows):
+                  terminal.add(pid)
+          removed_maps = 0
+          removed_records = 0
+          for pid in terminal:
+              patch = patches.get(pid)
+              if not isinstance(patch, dict):
+                  continue
+              for key in ('replacements', 'route_replacements', 'runtime_domain_replacements'):
+                  value = patch.get(key)
+                  if isinstance(value, dict):
+                      removed_maps += len(value)
+                      patch[key] = {}
+              for row, _text in rows_by_provider.get(pid, []):
+                  records = row.get('local_patches') if isinstance(row.get('local_patches'), list) else []
+                  kept = []
+                  for record in records:
+                      if isinstance(record, dict) and record.get('type') == 'replace':
+                          removed_records += 1
+                          continue
+                      kept.append(record)
+                  row['local_patches'] = kept
+          meta = cfg.setdefault('provider_engine_normalization', {})
+          meta['terminal_quarantine_routing_contracts_pruned'] = len(terminal)
+          meta['terminal_quarantine_mapping_entries_removed'] = removed_maps
+          meta['terminal_quarantine_replace_records_removed'] = removed_records
+          cfg_path.write_text(json.dumps(cfg, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+          reg_path.write_text(json.dumps(reg, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+          print(f'terminal quarantine normalization: providers={len(terminal)} mappings={removed_maps} records={removed_records}')
+          PY
           python scripts/validate_override_pipeline.py --stage staging
 
       - name: Test provider access and repair failed routes
