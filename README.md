@@ -60,6 +60,20 @@ Lorsqu’un provider est réactivé après une correction, Niakvio peut réviser
 
 Niakvio couvre plusieurs familles de runtime Nuvio et ne suppose pas qu’un provider fonctionnant dans l’une fonctionnera automatiquement dans toutes les autres.
 
+### Dépôts clients de référence
+
+La compatibilité n’est pas déduite d’un contrat théorique figé : Niakvio suit les dépôts clients Nuvio et audite les parties susceptibles de modifier l’exécution des providers ou la lecture des streams.
+
+| Client | Dépôt de référence | Plateformes | Branche suivie |
+|---|---|---|---|
+| Nuvio Mobile | [NuvioMedia/NuvioMobile](https://github.com/NuvioMedia/NuvioMobile) | Android, iOS | `cmp-rewrite` |
+| Nuvio Desktop | [NuvioMedia/NuvioDesktop](https://github.com/NuvioMedia/NuvioDesktop) | Windows, macOS, Linux | `Dev` |
+| NuvioTV | [NuvioMedia/NuvioTV](https://github.com/NuvioMedia/NuvioTV) | Android TV | `dev` |
+
+Les commits acceptés, chemins sensibles et règles de détection de dérive sont suivis dans [`automation/nuvio-client-upstreams.json`](automation/nuvio-client-upstreams.json). Un changement de contrat ou de sémantique provider peut bloquer la publication jusqu’à réaudit, au lieu d’être accepté silencieusement.
+
+Niakvio ne reprend pas le code de ces clients et reste un projet communautaire indépendant ; ces dépôts servent de **références runtime** pour reproduire au mieux le comportement attendu côté Nuvio.
+
 ### Providers JavaScript
 
 | Plateforme | Famille runtime contrôlée | Contrat / filtrage |
@@ -108,7 +122,7 @@ Les principaux fichiers de cette famille sont :
 
 ### Politique de compatibilité providers
 
-Depuis la branche de publication 5.20.28, un provider n’est **pas** déclaré incompatible simplement parce qu’un titre de test retourne zéro résultat.
+Un provider n’est **pas** déclaré incompatible simplement parce qu’un titre de test retourne zéro résultat.
 
 La décision distingue :
 
@@ -131,14 +145,19 @@ Le projet peut notamment :
 - collecter plusieurs variantes d’un même provider ;
 - éliminer les doublons et variantes obsolètes ;
 - exclure les protocoles torrent, magnet, Acestream et autres chemins P2P ;
-- résoudre les changements de domaine depuis des hubs ou adresses officielles ;
+- résoudre les changements de domaine depuis des hubs, redirections publiques et domaines historiquement validés ;
+- retester des **peers historiques** lorsque le domaine courant devient inutilisable, puis promouvoir uniquement un terminal dont l’identité est cohérente ;
 - distinguer un hub d’information d’un véritable domaine terminal utilisable ;
 - détecter des routes API, recherche ou catalogue devenues obsolètes ;
-- appliquer des correctifs partagés et versionnés aux bundles ;
+- poursuivre une récupération générique depuis le provider natif vers le site/API, la recherche catalogue, la fiche, l’iframe/lecteur, les endpoints JS/XHR/JSON puis le média final ;
+- capturer les URLs de player/API réellement visitées pendant l’exécution native et les réutiliser comme points de reprise lorsque le résultat initial est vide ou invalide ;
+- essayer des origines sœurs cohérentes lorsqu’un service répartit listing et playback entre plusieurs endpoints de la même famille ;
+- reconnaître un média même lorsque son URL n’a pas d’extension exploitable, grâce aux redirections, en-têtes, manifests et signatures binaires sondées de façon bornée ;
+- rejeter les URLs opaques non vérifiables, faux HLS, previews courtes, pages HTML/JSON et lecteurs parasites, puis continuer la résolution au lieu de les publier comme streams ;
+- appliquer des correctifs partagés et versionnés aux bundles et migrer automatiquement les wrappers déjà publiés lorsqu’une implémentation générique évolue ;
+- garantir que la réapplication des correctifs converge en une passe et reste idempotente ;
 - restaurer un dernier bundle connu comme sain lorsqu’un upstream est incomplet ou corrompu ;
 - exécuter les providers dans des workers/probes bornés ;
-- vérifier que les résultats retournés correspondent réellement à du média ;
-- rejeter les faux HLS, previews courtes, pages HTML et lecteurs parasites ;
 - conserver séparément les preuves par catégorie, runtime et génération de bundle ;
 - adapter certains providers au runtime NuvioTV lorsqu’une amélioration stricte est démontrée ;
 - synchroniser le manifest général avec sa projection francophone ;
@@ -147,15 +166,17 @@ Le projet peut notamment :
 ```text
                          Écosystème Niakvio
                                 │
-                         Providers JS
+                       Sources communautaires
                                 │
-                    Sources communautaires
+                 Discovery + sélection des variantes
                                 │
-                       DNS / hubs / domaines
+            DNS / hubs / redirections / peers historiques
                                 │
-                    Diagnostic + réparation
+              Provider natif ── API / recherche catalogue
                                 │
-                     Validation des médias
+                   Fiche ── iframe / lecteur / XHR
+                                │
+             Validation du média final (URL ou payload)
                                 │
                     ┌───────────┴───────────┐
                     │                       │
@@ -185,9 +206,10 @@ La récupération peut s’appuyer sur :
 - les redirections publiques ;
 - des pages officielles d’adresses ;
 - l’historique de domaines précédemment validés ;
+- les anciens terminaux connus, retestés comme **peers historiques** lorsque la route courante échoue ;
 - des candidats de récupération strictement bornés.
 
-Une nouvelle adresse n’est pas promue uniquement parce qu’elle répond en HTTP : son rôle et sa compatibilité avec le provider doivent être cohérents.
+Les erreurs d’accès structurantes (par exemple `403`, `404`, `408`, `410`, `425`, `429` ou `5xx`) peuvent déclencher un essai sur un peer cohérent. Une nouvelle adresse n’est toutefois jamais promue uniquement parce qu’elle répond en HTTP : son identité, son rôle et sa compatibilité avec le provider doivent rester cohérents. Les règles inverses devenues obsolètes sont supprimées afin d’éviter de réécrire ensuite le nouveau domaine sain vers l’ancien domaine cassé.
 
 ### 2. Accès et catégorie
 
@@ -211,20 +233,25 @@ Les workers reproduisent les signatures d’appel utilisées par les différente
 
 Mobile/Desktop et NuvioTV disposent de contrats explicitement séparés. Les erreurs structurées permettent de distinguer une panne réseau, une erreur d’invocation, une route disparue, un catalogue vide ou une extraction cassée.
 
+Le moteur de récupération peut également mémoriser les URLs de pages, players et endpoints observées pendant l’appel natif. Si le provider ne produit finalement aucun média valide, ces URLs deviennent des points de reprise bornés. Pour des services répartis sur plusieurs origines sœurs, Niakvio peut rejouer la même route ou le même token sur une origine équivalente détectée dans le bundle, sans coder le nom d’un provider dans le moteur générique.
+
 ### 4. Stream réellement lisible
 
 Une URL retournée ne suffit pas.
 
 Niakvio inspecte notamment :
 
-- le statut HTTP ;
-- le type de contenu ;
+- le statut HTTP et les redirections jusqu’à l’URL finale ;
+- le `Content-Type` et, lorsqu’il est utile, le `Content-Disposition` ;
 - la présence d’un véritable manifest `#EXTM3U` pour HLS ;
 - les manifests DASH ;
 - les signatures de conteneurs MP4 / Matroska / WebM / MPEG-TS ;
+- des préfixes binaires sondés avec une requête bornée lorsque l’URL et le MIME sont opaques ;
 - les pages HTML ou JSON présentées à tort comme un média ;
 - les previews anormalement courtes ;
 - les hôtes ou routes explicitement bloqués.
+
+**L’extension de l’URL n’est donc pas une condition de lecture.** Une URL telle que `/stream/token/abc` peut être normalisée comme média direct si la réponse réseau le prouve réellement. À l’inverse, une URL opaque qui ne peut pas être vérifiée est rejetée plutôt que rendue aveuglément au client.
 
 ### 5. Réparation et comparaison
 
@@ -234,10 +261,13 @@ Le pipeline peut :
 
 1. exécuter le bundle d’origine ;
 2. identifier une classe de panne ;
-3. appliquer un correctif borné ;
-4. retester exactement le bundle modifié ;
-5. comparer le résultat avec le parent ;
-6. rejeter les réparations neutres, régressives ou purement cosmétiques.
+3. essayer les stratégies génériques applicables : domaine, endpoint, catalogue, fiche, player, API/XHR ou média ;
+4. appliquer un correctif borné lorsqu’une amélioration est démontrée ;
+5. retester exactement le bundle modifié ;
+6. comparer le résultat avec le parent ;
+7. rejeter les réparations neutres, régressives ou purement cosmétiques.
+
+Les wrappers génériques portent une révision d’implémentation lorsqu’elle est nécessaire. Un bundle déjà publié peut ainsi être migré vers une nouvelle logique même si sa configuration n’a pas changé, puis la réapplication suivante doit être un **no-op byte-for-byte**. Cela évite qu’un ancien correctif reste figé indéfiniment ou que les hashes/versions dérivent à chaque passage.
 
 Le promoteur NuvioTV applique la même philosophie : un wrapper TV n’est publié que si le résultat candidat est strictement meilleur et conserve des sorties média strictes.
 
@@ -318,6 +348,7 @@ Les contrats et scripts NuvioTV font désormais partie du périmètre cœur de l
 | [`automation/platform-runtime-contracts.json`](automation/platform-runtime-contracts.json) | Contrats et tokens Android, iOS, Windows, macOS et Linux |
 | [`automation/platform-runtime-matrix.json`](automation/platform-runtime-matrix.json) | Résultats du dernier probe multi-runtime Mobile/Desktop |
 | [`automation/platform-runtime-policy.json`](automation/platform-runtime-policy.json) | Décisions de visibilité issues de cette matrice |
+| [`automation/nuvio-client-upstreams.json`](automation/nuvio-client-upstreams.json) | Dépôts clients Nuvio suivis, branches/commits acceptés et politique de dérive runtime |
 
 ### NuvioTV
 
@@ -356,13 +387,14 @@ Les nombres de providers, leur état et la version courante évoluent avec les p
 Niakvio suit quelques règles destinées à éviter les faux positifs et les désactivations arbitraires :
 
 1. **Un domaine accessible n’est pas une preuve de fonctionnement.**
-2. **Une URL retournée n’est pas une preuve de média.**
-3. **Zéro résultat sur une œuvre n’est pas une preuve d’incompatibilité.**
-4. **Une réparation n’est publiée que si elle améliore le runtime observé.**
-5. **Une incompatibilité plateforme doit être concluante avant de masquer un provider.**
-6. **Les preuves actuelles priment sur les états historiques.**
-7. **NuvioTV, Mobile et Desktop doivent être validés selon leurs contrats propres.**
-8. **Une publication doit être reproductible et intègre jusque sur le `main` final.**
+2. **L’extension d’une URL n’est ni une preuve de média, ni une condition nécessaire : le payload réseau décide.**
+3. **Une URL retournée n’est pas une preuve de média.**
+4. **Zéro résultat sur une œuvre n’est pas une preuve d’incompatibilité.**
+5. **Une réparation n’est publiée que si elle améliore le runtime observé.**
+6. **Une incompatibilité plateforme doit être concluante avant de masquer un provider.**
+7. **Les preuves actuelles priment sur les états historiques, qui restent toutefois des candidats de récupération utiles.**
+8. **NuvioTV, Mobile et Desktop doivent être validés selon leurs contrats propres et leurs dépôts clients de référence.**
+9. **Une publication doit être reproductible, idempotente et intègre jusque sur le `main` final.**
 
 ---
 
@@ -375,6 +407,16 @@ Niakvio ajoute une couche de regroupement, validation et maintenance autour de p
 - [NuvioPlugin — All-in-One-Nuvio](https://github.com/NuvioPlugin/All-in-One-Nuvio)
 
 Les crédits détaillés sont disponibles dans [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md), [`NOTICE`](NOTICE) et [`UPSTREAMS.md`](UPSTREAMS.md).
+
+### Dépôts Nuvio utilisés comme références runtime
+
+Niakvio vérifie également sa compatibilité contre les implémentations clientes de l’écosystème Nuvio :
+
+- [NuvioMedia/NuvioMobile](https://github.com/NuvioMedia/NuvioMobile) — Android et iOS ;
+- [NuvioMedia/NuvioDesktop](https://github.com/NuvioMedia/NuvioDesktop) — Windows, macOS et Linux ;
+- [NuvioMedia/NuvioTV](https://github.com/NuvioMedia/NuvioTV) — Android TV.
+
+Ces dépôts ne sont pas des sources de providers pour Niakvio : ils servent à auditer les **contrats d’exécution et de lecture côté client**. Les références exactes acceptées sont versionnées dans [`automation/nuvio-client-upstreams.json`](automation/nuvio-client-upstreams.json).
 
 > Niakvio est un projet communautaire indépendant. Il n’est affilié ni à Nuvio, ni aux mainteneurs des dépôts amont.
 
