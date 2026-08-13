@@ -52,7 +52,7 @@ def provider_owned_origins(provider_id: str, origins: list[str]) -> list[str]:
 
 
 def classify(item: dict, text: str, origins: list[str]) -> str:
-    provider_id = str(item.get("id") or item.get("canonical_id") or "").lower()
+    provider_id = str(item.get("id") or item.get("canonical_id") or "").casefold()
     if provider_id == "vidfast":
         return "iframe_player"
     lowered = text.lower()
@@ -88,7 +88,7 @@ def collect_published() -> dict[str, tuple[dict, Path]]:
         for item in manifest.get("scrapers") or []:
             if not isinstance(item, dict):
                 continue
-            provider_id = str(item.get("id") or "").strip()
+            provider_id = str(item.get("id") or "").strip().casefold()
             filename = item.get("filename")
             if not provider_id or not isinstance(filename, str) or not filename:
                 continue
@@ -108,7 +108,7 @@ def collect_staged(stage: Path) -> tuple[dict[str, tuple[dict, Path]], dict | No
     for candidate in registry.get("candidates") or []:
         if not isinstance(candidate, dict):
             continue
-        provider_id = str(candidate.get("canonical_id") or "").strip()
+        provider_id = str(candidate.get("canonical_id") or "").strip().casefold()
         local_path = candidate.get("local_path")
         if not provider_id or not isinstance(local_path, str):
             continue
@@ -136,7 +136,6 @@ def validate_provider_file(path: Path) -> None:
 
 
 def isolate_provider_bundles(data: dict, providers: dict[str, tuple[dict, Path]]) -> list[dict[str, str]]:
-    """Remove only repository-owned wrappers that cross provider API ownership."""
     removed: list[dict[str, str]] = []
     seen_paths: set[Path] = set()
     for provider_id, (_item, path) in sorted(providers.items()):
@@ -157,7 +156,6 @@ def build_profiles(data: dict, providers: dict[str, tuple[dict, Path]]) -> int:
     patches = data.setdefault("provider_patches", {})
     caps = data.setdefault("provider_capabilities", {})
     profiles = data.setdefault("patch_profiles", {})
-
     generated_names = {
         name for name in profiles
         if isinstance(name, str) and name.startswith("adaptive_domain_")
@@ -172,13 +170,13 @@ def build_profiles(data: dict, providers: dict[str, tuple[dict, Path]]) -> int:
             patch["profiles"] = [name for name in selected if name not in generated_names]
 
     for provider_id, (item, path) in sorted(providers.items()):
+        provider_id = provider_id.casefold()
         text = path.read_text(encoding="utf-8", errors="ignore")
         origins: list[str] = []
         for url in URL_RE.findall(text):
             candidate = origin(url)
             if candidate and candidate not in origins:
                 origins.append(candidate)
-
         existing = caps.get(provider_id) if isinstance(caps.get(provider_id), dict) else {}
         strategy = existing.get("strategy") or classify(item, text, origins)
         capability = dict(existing)
@@ -195,7 +193,6 @@ def build_profiles(data: dict, providers: dict[str, tuple[dict, Path]]) -> int:
         capability["observed_origins"] = origins[:24]
         capability["generated_from_manifest_or_stage"] = True
         caps[provider_id] = capability
-
         patch = patches.setdefault(provider_id, {})
         patch.setdefault("capability", strategy)
         selected = patch.get("profiles")
@@ -206,12 +203,11 @@ def build_profiles(data: dict, providers: dict[str, tuple[dict, Path]]) -> int:
 
 def reapply_stage(stage: Path, registry: dict) -> int:
     from apply_provider_overrides import apply_overrides
-
     changed = 0
     for candidate in registry.get("candidates") or []:
         if not isinstance(candidate, dict):
             continue
-        provider_id = str(candidate.get("canonical_id") or "").strip()
+        provider_id = str(candidate.get("canonical_id") or "").strip().casefold()
         local_path = candidate.get("local_path")
         if not provider_id or not isinstance(local_path, str):
             continue
