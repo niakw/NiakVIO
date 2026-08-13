@@ -1,0 +1,60 @@
+name: Validate provider engine regressions offline
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - "scripts/apply_provider_overrides.py"
+      - "scripts/reapply_published_overrides.py"
+      - "scripts/run_adaptive_deep_repair.py"
+      - "scripts/provider_engine_normalizer.py"
+      - "scripts/provider_compiler.py"
+      - "scripts/provider_rebuild.py"
+      - ".github/workflows/engine-regression-offline.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: provider-engine-regression-offline
+  cancel-in-progress: true
+
+jobs:
+  regressions:
+    name: Run repository engine regressions
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout exact main generation
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: "3.12"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: "24"
+          package-manager-cache: false
+
+      - name: Install pinned dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Compile engine boundaries
+        run: |
+          python -m py_compile scripts/apply_provider_overrides.py
+          python -m py_compile scripts/reapply_published_overrides.py
+          python -m py_compile scripts/run_adaptive_deep_repair.py
+          python -m py_compile scripts/provider_engine_normalizer.py
+          python -m py_compile scripts/provider_compiler.py
+          python -m py_compile scripts/provider_rebuild.py
+
+      - name: Run complete repository regression suite
+        run: npm test
