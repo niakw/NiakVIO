@@ -54,6 +54,18 @@ jobs:
           python3 -m py_compile .github/scripts/strict_identity_hls_upgrade_20260813.py
       - name: Apply generic HLS and identity upgrade
         run: python3 .github/scripts/strict_identity_hls_upgrade_20260813.py
+      - name: Update sanitizer revision regression fixture
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('tests/stream_output_sanitizer_direct_normalization_test.py')
+          t=p.read_text(encoding='utf-8')
+          old='\"implementationVersion\":6'
+          new='\"implementationVersion\":7'
+          if t.count(old) != 1:
+              raise SystemExit(f'expected one sanitizer revision fixture, found {t.count(old)}')
+          p.write_text(t.replace(old,new,1), encoding='utf-8')
+          PY
       - name: Remove one-shot migration files
         run: |
           rm -f .github/scripts/strict_identity_hls_upgrade_20260813.py
