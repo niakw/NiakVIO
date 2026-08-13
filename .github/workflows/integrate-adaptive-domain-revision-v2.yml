@@ -39,7 +39,17 @@ jobs:
         run: |
           python3 tests/adaptive_domain_recovery_test.py
           python3 tests/reapply_adaptive_domain_revision_test.py
-      - name: Reapply published wrappers and run full repository regression
+      - name: Diagnose published reapply convergence
+        run: |
+          python3 scripts/reapply_published_overrides.py
+          git diff --no-ext-diff > /tmp/reapply-first.diff
+          git status --short
+          python3 scripts/reapply_published_overrides.py
+          git diff --no-ext-diff > /tmp/reapply-second.diff
+          echo '--- second-pass delta ---'
+          diff -u /tmp/reapply-first.diff /tmp/reapply-second.diff || true
+          python3 scripts/reapply_published_overrides.py --check
+      - name: Run full repository regression after convergence proof
         run: npm test
       - name: Commit exact candidate locally
         run: |
