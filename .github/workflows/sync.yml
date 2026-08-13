@@ -21,7 +21,9 @@ on:
       - "scripts/build_provider_runtime_profiles.py"
       - "scripts/provider_evidence_model.py"
       - "scripts/release_evidence_fence.py"
+      - "scripts/runtime_repair.py"
       - "scripts/adaptive_runtime/runtime_repair.py"
+      - "tests/runtime_repair_test.py"
       - "tests/general_manifest_runtime_profiles_test.py"
   schedule:
     - cron: "17 5 * * 0,1,3,4,6"
@@ -89,6 +91,7 @@ jobs:
 
       - name: Validate adaptive runtime modules
         run: |
+          python -m py_compile scripts/runtime_repair.py
           python -m py_compile scripts/adaptive_runtime/runtime_repair.py
           python -m py_compile scripts/provider_patches/adaptive_runtime_recovery.py
           python -m py_compile scripts/provider_patches/stream_output_sanitizer.py
@@ -205,6 +208,74 @@ jobs:
         run: |
           if [ "${{ steps.resolve-mode.outputs.validation_mode }}" = "deep" ]; then
             python scripts/run_adaptive_deep_repair.py --stage staging --output health-output --mode deep
+            python - <<'PY'
+          import json
+          from pathlib import Path
+
+          registry = json.loads(Path('staging/candidates.json').read_text(encoding='utf-8'))
+          health = json.loads(Path('health-output/health-results.json').read_text(encoding='utf-8'))
+          repair = json.loads(Path('health-output/repair-report.json').read_text(encoding='utf-8'))
+          results = {
+              str(row.get('key')): row
+              for row in health.get('results') or []
+              if isinstance(row, dict) and row.get('key')
+          }
+          repaired_candidates = [
+              row for row in registry.get('candidates') or []
+              if isinstance(row, dict) and row.get('repair_history')
+          ]
+          failures = []
+          accepted_events = 0
+          for candidate in repaired_candidates:
+              key = str(candidate.get('key') or '')
+              history = [event for event in candidate.get('repair_history') or [] if isinstance(event, dict) and event.get('accepted')]
+              accepted_events += len(history)
+              result = results.get(key)
+              if result is None:
+                  failures.append(f'{key}: accepted repair has no final health result')
+                  continue
+              evidence = result.get('evidence') if isinstance(result.get('evidence'), dict) else {}
+              playable = int(evidence.get('streams_playable') or 0)
+              contradictions = int(evidence.get('identity_contradiction_count') or 0)
+              duration_mismatches = int(evidence.get('duration_identity_mismatch_count') or 0)
+              verified = int(evidence.get('identity_verified_streams') or 0)
+              unknown = int(evidence.get('identity_unverified_streams') or 0)
+              if playable <= 0:
+                  failures.append(f'{key}: accepted repair has no playable proof')
+              if contradictions > 0:
+                  failures.append(f'{key}: accepted repair has content identity contradiction')
+              if duration_mismatches > 0:
+                  failures.append(f'{key}: accepted repair has duration identity mismatch')
+              if verified <= 0:
+                  failures.append(f'{key}: accepted repair has no positive content identity proof')
+              playable_tests = [
+                  test for test in result.get('tests') or []
+                  if isinstance(test, dict) and int(test.get('streams_playable') or 0) > 0
+              ]
+              if not playable_tests:
+                  if unknown > 0 or verified < playable:
+                      failures.append(f'{key}: accepted repair playable identity is unresolved')
+              for test in playable_tests:
+                  count = int(test.get('streams_playable') or 0)
+                  test_verified = int(test.get('identity_verified_streams') or 0)
+                  test_unknown = int(test.get('identity_unverified_streams') or 0)
+                  test_contradictions = int(test.get('identity_contradiction_count') or 0)
+                  test_duration = int(test.get('duration_identity_mismatch_count') or 0)
+                  fixture = (test.get('fixture') or {}).get('label') or (test.get('fixture') or {}).get('tmdbId') or 'fixture'
+                  if test_contradictions > 0:
+                      failures.append(f'{key}/{fixture}: playable repair sample has identity contradiction')
+                  if test_duration > 0:
+                      failures.append(f'{key}/{fixture}: playable repair sample has duration mismatch')
+                  if test_verified < count or test_unknown > 0:
+                      failures.append(f'{key}/{fixture}: playable repair sample is not fully identity-verified')
+
+          reported = int(repair.get('accepted_repairs') or 0)
+          if reported != accepted_events:
+              failures.append(f'repair accounting mismatch: report={reported} candidate_history={accepted_events}')
+          if failures:
+              raise SystemExit('automatic repair identity gate failed:\n- ' + '\n- '.join(failures))
+          print(f'automatic repair identity gate passed: accepted_repairs={reported}')
+          PY
             python scripts/validate_override_pipeline.py --stage staging
           else
             NUVIO_HEALTH_OUTPUT=health-output node scripts/health_check.mjs
