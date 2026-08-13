@@ -25,6 +25,7 @@ const packageJson = JSON.parse(fs.readFileSync(path.join(repositoryRoot, 'packag
 const labWorkflow = fs.readFileSync(path.join(repositoryRoot, '.github/workflows/nuvio-client-lab.yml'), 'utf8');
 const npmTestLifecycle = `${packageJson.scripts.pretest || ''} ${packageJson.scripts.test || ''}`;
 assert.match(npmTestLifecycle, /node tests\/nuvio_client_lab\.test\.cjs/);
+assert.match(packageJson.scripts.posttest || '', /python3 scripts\/validate_release_integrity\.py/);
 for (const requiredPath of [
   'manifest.json',
   'vf/manifest.json',
@@ -38,6 +39,7 @@ for (const requiredPath of [
   assert.equal(labWorkflow.includes(`- "${requiredPath}"`), true, `lab workflow must watch ${requiredPath}`);
 }
 assert.match(labWorkflow, /python3 scripts\/validate_release_integrity\.py/);
+assert.doesNotMatch(labWorkflow, /lab\/nuvio-client-matrix/);
 
 const manifest = {
   scrapers: [

@@ -5,8 +5,9 @@
 - Répare la récupération StreamZo et confirme sa lecture pour `Mon ninja et moi 3` sur les trois familles de clients.
 - Applique la récupération catalogue bornée globalement et retire les correctifs V1 lorsqu'un correctif V2 équivalent est déjà publié.
 - Isole les exécutions lentes, retente une fois les timeouts avec un profil réduit et borne la recherche PapaDuStream.
-- Intègre le test unitaire du lab à `npm test`, élargit ses déclencheurs CI et vérifie l'intégrité de release avant la matrice distante.
+- Intègre le test unitaire du lab à `npm test`, élargit ses déclencheurs CI et vérifie l'intégrité de release après la suite locale puis avant la matrice distante.
 - Restaure une provenance JSON valide, régénère les empreintes et élague les anciens bundles hachés devenus non référencés.
+- Retire le déclencheur de branche temporaire du lab et place ses fixtures de test hors du dépôt pour éviter tout artefact résiduel après une interruption.
 
 ## 5.20.29 — NuvioTV media-output safety and bundle reconciliation
 
