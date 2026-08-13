@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
-"""Append an alias-aware exact StreamZo public catalogue/player adapter.
+"""Install an alias-aware exact StreamZo public catalogue/player adapter.
 
-V2 always enriches an incoming TMDB request with the localized and original
+V3 always enriches an incoming TMDB request with the localized and original
 TMDB titles, even when Nuvio already supplied a title/year.  This keeps the
 normal movie route for animated feature films whose French title differs from
-StreamZo's catalogue slug (for example a catalogue indexed by original title).
+StreamZo's catalogue slug.  It also refuses to treat a non-media native page as
+a successful result, so the public mirror API still gets a chance to resolve
+the actual player.
 """
 from __future__ import annotations
 
@@ -12,7 +14,8 @@ import hashlib
 import json
 from typing import Any
 
-MARKER = "NUVIO_STREAMZO_PUBLIC_CATALOGUE_V2"
+MARKER = "NUVIO_STREAMZO_PUBLIC_CATALOGUE_V3"
+PREVIOUS_MARKER = "NUVIO_STREAMZO_PUBLIC_CATALOGUE_V2:"
 
 
 def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> str:
@@ -35,6 +38,9 @@ function s(v){return String(v==null?"":v).replace(/&amp;/gi,"&").replace(/\\\//g
 function norm(v){try{return s(v).normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g," ").trim()}catch(_){return s(v).toLowerCase()}}
 function slug(v){return norm(v).replace(/\s+/g,"-")}
 function abs(v,b){try{return new URL(s(v),b).toString()}catch(_){return ""}}
+function host(v){try{return new URL(v).hostname.toLowerCase()}catch(_){return ""}}
+var SOCIAL=/(?:^|\.)(?:youtube\.com|youtu\.be|twitter\.com|x\.com|facebook\.com|instagram\.com)$/i;
+function mediaCandidate(v,base,page){var u=abs(v,base),h=host(u);if(!u||!h||SOCIAL.test(h)||u===page)return "";return /(?:embed|player|watch|stream|video|\.m3u8|\.mpd|\.mp4|\.mkv|\.webm|\/e\/|\/v\/)/i.test(u)?u:""}
 function unique(values){var out=[],seen={};(values||[]).forEach(function(v){v=s(v);var k=norm(v);if(v&&k&&!seen[k]){seen[k]=1;out.push(v)}});return out}
 function args(a){var q=a[0]&&typeof a[0]==="object"?Object.assign({},a[0]):{tmdbId:a[0],mediaType:a[1],season:a[2],episode:a[3],settings:a[4]||{}};q.tmdbId=s(q.tmdbId||q.id);q.mediaType=s(q.mediaType||q.type||"movie").toLowerCase();return q}
 async function request(url,kind,referer,extra){var headers=Object.assign({Accept:kind==="json"?"application/json,text/plain,*/*":"text/html,application/xhtml+xml,application/json,*/*","Accept-Language":"fr-FR,fr;q=0.9,en;q=0.5"},extra||{});if(referer){headers.Referer=referer;try{headers.Origin=new URL(referer).origin}catch(_){}}try{var r=await g.fetch(url,{headers:headers,redirect:"follow"});if(!r||!r.ok)return null;return {url:s(r.url||url),body:kind==="json"?await r.json():await r.text(),type:r.headers&&r.headers.get?r.headers.get("content-type"):""}}catch(_){return null}}
@@ -43,12 +49,20 @@ return {title:titles[0]||"",titles:titles.slice(0,c.maxAliases),year:year}}
 function scoreOne(text,title){var n=norm(text),t=norm(title),score=0;if(t&&n.indexOf(t)>=0)score+=100;t.split(" ").filter(function(x){return x.length>2}).forEach(function(x){if(n.indexOf(x)>=0)score+=8});return score}
 function scoreText(text,m){var best=0;(m.titles||[m.title]).forEach(function(t){best=Math.max(best,scoreOne(text,t))});var n=norm(text);if(m.year&&n.indexOf(String(m.year))>=0)best+=20;return best}
 function detailLinks(html,base,m){var rows=[],re=/<a\b([^>]*)href=["']([^"']+)["']([^>]*)>([\s\S]*?)<\/a>/gi,x;while((x=re.exec(s(html)))!==null){var attrs=s(x[1])+" "+s(x[3]),inner=s(x[4]).replace(/<[^>]+>/g," "),label=attrs+" "+inner,u=abs(x[2],base),score=scoreText(label,m);if(u&&score>20)rows.push({url:u,score:score})}return rows.sort(function(a,b){return b.score-a.score}).map(function(x){return x.url})}
-function pageData(html,base){var text=s(html),id="",embed="",m;m=/\bdata-film-id=["'](\d+)["']/i.exec(text);if(m)id=m[1];m=/\bdata-embed=["']([^"']+)["']/i.exec(text);if(m)embed=abs(m[1],base);var urls=[],seen={};function add(v){var u=abs(v,base);if(!u||seen[u])return;seen[u]=1;urls.push(u)}if(embed)add(embed);var re=/(?:data-embed|data-src|data-url|src|href)=["']([^"']+)["']/gi;while((m=re.exec(text))!==null){if(/(?:\/embed\/|player|watch|stream|\.m3u8|\.mp4)/i.test(m[1]))add(m[1])}return {id:id,urls:urls}}
-function mirrorUrls(value,base,out){out=out||[];if(value==null)return out;if(typeof value==="string"){if(/^(?:https?:\/\/|\/)/i.test(value)&&/(?:embed|player|watch|stream|video|\.m3u8|\.mp4|\/e\/|\/v\/)/i.test(value))out.push(abs(value,base));return out}if(Array.isArray(value)){value.forEach(function(v){mirrorUrls(v,base,out)});return out}if(typeof value==="object"){Object.keys(value).forEach(function(k){mirrorUrls(value[k],base,out)})}return out}
+function pageData(html,base){var text=s(html),id="",embed="",m;m=/\bdata-film-id=["'](\d+)["']/i.exec(text)||/["']film(?:_|-)?id["']\s*:\s*["']?(\d+)/i.exec(text)||/\/api\/mirrors\/film\/(\d+)/i.exec(text);if(m)id=m[1];m=/\bdata-embed=["']([^"']+)["']/i.exec(text);if(m)embed=mediaCandidate(m[1],base,base);var urls=[],seen={};function add(v){var u=mediaCandidate(v,base,base);if(!u||seen[u])return;seen[u]=1;urls.push(u)}if(embed)add(embed);var re=/(?:data-embed|data-src|data-url|src|href)=["']([^"']+)["']/gi;while((m=re.exec(text))!==null)add(m[1]);return {id:id,urls:urls}}
+function mirrorUrls(value,base,out){out=out||[];if(value==null)return out;if(typeof value==="string"){var u=mediaCandidate(value,base,"");if(u)out.push(u);return out}if(Array.isArray(value)){value.forEach(function(v){mirrorUrls(v,base,out)});return out}if(typeof value==="object"){Object.keys(value).forEach(function(k){mirrorUrls(value[k],base,out)})}return out}
 function uniqueUrls(values){var out=[],seen={};values.forEach(function(v){v=s(v);if(v&&!seen[v]){seen[v]=1;out.push(v)}});return out}
 async function recover(q){if(["movie","tv","anime"].indexOf(q.mediaType)<0)return [];var m=await meta(q);if(!m.title)return [];var aliases=(m.titles||[m.title]).slice(0,c.maxAliases),candidates=[],searches=[];aliases.forEach(function(t){candidates.push(c.baseUrl+"/"+slug(t));searches.push(c.baseUrl+"/?s="+encodeURIComponent(t));searches.push(c.baseUrl+"/search?q="+encodeURIComponent(t))});for(var i=0;i<searches.length;i++){var sr=await request(searches[i],"text",c.baseUrl+"/");if(sr)candidates=candidates.concat(detailLinks(sr.body,sr.url,m).slice(0,5))}candidates=uniqueUrls(candidates);var streams=[];for(var j=0;j<candidates.length&&streams.length<12;j++){var page=await request(candidates[j],"text",c.baseUrl+"/");if(!page)continue;var data=pageData(page.body,page.url);if(scoreText(page.body,m)<20&&!data.id&&!data.urls.length)continue;var urls=data.urls.slice();if(data.id){var mirrors=await request(c.baseUrl+"/api/mirrors/film/"+encodeURIComponent(data.id),"json",page.url);if(mirrors)urls=urls.concat(mirrorUrls(mirrors.body,c.baseUrl+"/",[]))}urls=uniqueUrls(urls);for(var k=0;k<urls.length;k++){var u=urls[k];streams.push({name:c.providerName+(streams.length?" #"+(streams.length+1):""),title:c.providerName+" - "+m.title,url:u,quality:"HD",language:"fr",isDirect:/\.(?:m3u8|mp4|mpd)(?:[?#]|$)/i.test(u),headers:{Referer:page.url,Origin:c.baseUrl}})}if(streams.length)break}return streams}
-function install(o,k){if(!o||typeof o[k]!=="function"||o[k].__streamzoPublicV2)return false;var old=o[k];var wrap=async function(){var native=[];try{native=await old.apply(this,arguments)}catch(_){}if(Array.isArray(native)&&native.length)return native;var recovered=await recover(args(arguments));return recovered.length?recovered:(Array.isArray(native)?native:[])};wrap.__streamzoPublicV2=true;o[k]=wrap;return true}
+function direct(row){var u=s(row&&row.url),t=s(row&&(row.type||row.format)).toLowerCase();return /\.(?:m3u8|mpd|mp4|mkv|webm)(?:[?#]|$)|\/hls2?\//i.test(u)||/(?:hls|mpegurl|dash|mp4|matroska|webm|video\/)/i.test(t)}
+function install(o,k){if(!o||typeof o[k]!=="function"||o[k].__streamzoPublicV3)return false;var old=o[k];var wrap=async function(){var native=[];try{native=await old.apply(this,arguments)}catch(_){}if(Array.isArray(native)&&native.some(direct))return native;var recovered=await recover(args(arguments));return recovered.length?recovered:(Array.isArray(native)?native:[])};wrap.__streamzoPublicV3=true;o[k]=wrap;return true}
 var ok=false;try{if(typeof module!=="undefined"&&module.exports)ok=install(module.exports,"getStreams")}catch(_){}try{if(g&&typeof g.getStreams==="function"){if(ok&&typeof module!=="undefined"&&module.exports)g.getStreams=module.exports.getStreams;else install(g,"getStreams")}}catch(_){}
 })(typeof globalThis!=="undefined"?globalThis:this,CONFIG_PLACEHOLDER);
 '''.replace("MARKER_PLACEHOLDER", marker).replace("CONFIG_PLACEHOLDER", serialized)
-    return text.rstrip() + "\n" + javascript.lstrip()
+    rendered = javascript.lstrip()
+    previous = text.find(f"/* {PREVIOUS_MARKER}")
+    if previous >= 0:
+        following = text.find("\n/* NUVIO_", previous + 3)
+        if following < 0:
+            following = len(text)
+        return text[:previous].rstrip() + "\n" + rendered.rstrip() + "\n" + text[following:].lstrip()
+    return text.rstrip() + "\n" + rendered

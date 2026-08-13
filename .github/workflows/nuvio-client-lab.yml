@@ -1,0 +1,229 @@
+name: Nuvio client playback lab
+
+on:
+  workflow_dispatch:
+    inputs:
+      provider_ids:
+        description: Comma-separated provider IDs from manifest.json
+        required: true
+        default: "PURSTREAM,GOATED,MOVIX"
+      tmdb_id:
+        description: TMDb ID
+        required: true
+        default: "157336"
+      media_type:
+        description: Nuvio media type
+        required: true
+        default: "movie"
+      title:
+        description: Fixture title used only as provider metadata fallback
+        required: false
+        default: "Interstellar"
+      year:
+        description: Fixture year
+        required: false
+        default: "2014"
+  push:
+    branches:
+      - main
+      - lab/nuvio-client-matrix
+    paths:
+      - ".github/triggers/nuvio-client-lab.json"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nuvio-client-playback-lab-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  prepare:
+    name: Build work matrix
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      matrix: ${{ steps.matrix.outputs.matrix }}
+
+    steps:
+      - name: Checkout Niakvio without credentials
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Build matrix configuration
+        id: matrix
+        shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          INPUT_PROVIDER_IDS: ${{ github.event.inputs.provider_ids }}
+          INPUT_TMDB_ID: ${{ github.event.inputs.tmdb_id }}
+          INPUT_MEDIA_TYPE: ${{ github.event.inputs.media_type }}
+          INPUT_TITLE: ${{ github.event.inputs.title }}
+          INPUT_YEAR: ${{ github.event.inputs.year }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY' >> "$GITHUB_OUTPUT"
+          import json, os, re
+
+          if os.environ.get("EVENT_NAME") == "push":
+              with open(".github/triggers/nuvio-client-lab.json", encoding="utf-8") as handle:
+                  source = json.load(handle)
+          else:
+              title = os.environ.get("INPUT_TITLE", "").strip() or "manual-fixture"
+              year = os.environ.get("INPUT_YEAR", "").strip()
+              source = {
+                  "fixtures": [{
+                      "slug": re.sub(r"[^a-z0-9]+", "-", title.lower()).strip("-") or "manual-fixture",
+                      "providers": [x.strip() for x in os.environ.get("INPUT_PROVIDER_IDS", "").split(",") if x.strip()],
+                      "fixture": {
+                          "tmdbId": os.environ.get("INPUT_TMDB_ID", "").strip(),
+                          "mediaType": os.environ.get("INPUT_MEDIA_TYPE", "movie").strip() or "movie",
+                          "title": title,
+                          "year": int(year) if year.isdigit() else None,
+                      },
+                  }],
+                  "clients": ["tv", "desktop", "mobile"],
+                  "policy": {"target_total": 10, "minimum_vf": 3, "require_identity_match": False, "blocking": False},
+                  "enforce_policy": False,
+              }
+
+          fixtures = source.get("fixtures") or []
+          if not fixtures:
+              raise SystemExit("at least one fixture is required")
+          common = {key: value for key, value in source.items() if key != "fixtures"}
+          cases = []
+          for index, fixture in enumerate(fixtures):
+              case = dict(common)
+              case.update(fixture)
+              case.setdefault("slug", f"fixture-{index + 1}")
+              if not case.get("providers"):
+                  raise SystemExit(f"fixture {case['slug']} has no providers")
+              cases.append(case)
+          print("matrix=" + json.dumps({"include": cases}, separators=(",", ":"), ensure_ascii=True))
+          PY
+
+  lab:
+    name: ${{ matrix.slug }} — prove playback
+    needs: prepare
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      # Keep the aggregate provider load below the former twelve-worker burst:
+      # three works x two providers per work = six concurrent providers.
+      max-parallel: 3
+      matrix: ${{ fromJson(needs.prepare.outputs.matrix) }}
+
+    steps:
+      - name: Checkout Niakvio without credentials
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: "24"
+          package-manager-cache: false
+
+      - name: Install pinned provider runtime dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Run lab unit tests
+        run: node tests/nuvio_client_lab.test.cjs
+
+      - name: Materialize fixture configuration
+        id: config
+        shell: bash
+        env:
+          MATRIX_CASE_JSON: ${{ toJson(matrix) }}
+        run: |
+          set -euo pipefail
+          LAB_ROOT="$RUNNER_TEMP/nuvio-client-lab/${{ matrix.slug }}"
+          mkdir -p "$LAB_ROOT"
+          python3 - "$LAB_ROOT/config.json" <<'PY'
+          import json, os, sys
+          data = json.loads(os.environ["MATRIX_CASE_JSON"])
+          data.pop("slug", None)
+          with open(sys.argv[1], "w", encoding="utf-8") as handle:
+              json.dump(data, handle, ensure_ascii=False, indent=2)
+              handle.write("\n")
+          PY
+          echo "lab_root=$LAB_ROOT" >> "$GITHUB_OUTPUT"
+
+      - name: Sparse checkout official Nuvio client runtimes
+        shell: bash
+        env:
+          LAB_ROOT: ${{ steps.config.outputs.lab_root }}
+        run: |
+          set -euo pipefail
+          CLIENTS="$LAB_ROOT/clients"
+          mkdir -p "$CLIENTS"
+
+          clone_runtime() {
+            local repo="$1" branch="$2" dest="$3"; shift 3
+            git clone --quiet --depth 1 --filter=blob:none --sparse --branch "$branch" "https://github.com/$repo.git" "$dest"
+            git -C "$dest" sparse-checkout set "$@"
+            git -C "$dest" rev-parse HEAD > "$dest/.nuvio-lab-head"
+          }
+
+          clone_runtime NuvioMedia/NuvioTV dev "$CLIENTS/tv" \
+            app/src/full/java/com/nuvio/tv/core/plugin \
+            app/src/main/java/com/nuvio/tv/core/player \
+            app/src/main/java/com/nuvio/tv/ui/screens/player
+
+          clone_runtime NuvioMedia/NuvioDesktop Dev "$CLIENTS/desktop" \
+            composeApp/src/fullCommonMain/kotlin/com/nuvio/app/features/plugins/runtime \
+            composeApp/src/commonMain/kotlin/com/nuvio/app/features/player \
+            composeApp/src/desktopMain/kotlin/com/nuvio/app/features/player
+
+          clone_runtime NuvioMedia/NuvioMobile cmp-rewrite "$CLIENTS/mobile" \
+            composeApp/src/fullCommonMain/kotlin/com/nuvio/app/features/plugins/runtime \
+            composeApp/src/commonMain/kotlin/com/nuvio/app/features/player \
+            composeApp/src/androidMain/kotlin/com/nuvio/app/features/player \
+            composeApp/src/iosMain/kotlin/com/nuvio/app/features/player
+
+          printf 'TV      %s\n' "$(cat "$CLIENTS/tv/.nuvio-lab-head")"
+          printf 'Desktop %s\n' "$(cat "$CLIENTS/desktop/.nuvio-lab-head")"
+          printf 'Mobile  %s\n' "$(cat "$CLIENTS/mobile/.nuvio-lab-head")"
+
+      - name: Run client playback lab
+        id: lab
+        continue-on-error: true
+        shell: bash
+        env:
+          LAB_ROOT: ${{ steps.config.outputs.lab_root }}
+        run: |
+          set +e
+          node scripts/nuvio_client_lab.cjs \
+            --config "$LAB_ROOT/config.json" \
+            --clients-root "$LAB_ROOT/clients" \
+            --require-client-sources \
+            --out "$LAB_ROOT/report.json" \
+            --markdown "$LAB_ROOT/report.md"
+          status=$?
+          if [ -f "$LAB_ROOT/report.md" ]; then
+            cat "$LAB_ROOT/report.md" >> "$GITHUB_STEP_SUMMARY"
+          fi
+          exit "$status"
+
+      - name: Upload sanitized fixture report
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: nuvio-client-lab-${{ matrix.slug }}-${{ github.run_id }}
+          path: |
+            ${{ steps.config.outputs.lab_root }}/report.json
+            ${{ steps.config.outputs.lab_root }}/report.md
+          retention-days: 7
+          if-no-files-found: error
+
+      - name: Fail only on lab execution errors
+        if: always() && steps.lab.outcome == 'failure'
+        shell: bash
+        run: |
+          echo "The lab itself failed before producing a valid coverage result."
+          exit 1

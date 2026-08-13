@@ -22,6 +22,7 @@ options = {
     "max_candidates": 8,
     "max_players": 8,
     "timeout_ms": 5000,
+    "budget_ms": 20000,
 }
 patched = module.apply(base, options)
 
@@ -32,6 +33,8 @@ assert "original_title" in patched
 assert "alternative_titles" in patched
 assert "var guessed=[],found=[],searches=[]" in patched
 assert "var candidates=[],searches=[]" not in patched
+assert '"implementationRevision":"native-identity-budget-v2"' in patched
+assert 'Date.now()<deadline' in patched
 for forbidden in ("Mon ninja et moi 3", "Ternet Ninja 3", "Interstellar"):
     assert forbidden not in patched
 
@@ -42,6 +45,12 @@ assert module._OLD_CANDIDATE_PLAN in old_runtime
 upgraded_runtime = module.apply(old_runtime, options)
 assert module._OLD_CANDIDATE_PLAN not in upgraded_runtime
 assert module._NEW_CANDIDATE_PLAN in upgraded_runtime
+
+legacy_runtime = '''/* NUVIO_GLOBAL_CATALOGUE_ALIAS_RECOVERY_V1:legacy */
+;(function(g,c){})(typeof globalThis!=="undefined"?globalThis:this,{});\n''' + base
+without_legacy = module.apply(legacy_runtime, options)
+assert "NUVIO_GLOBAL_CATALOGUE_ALIAS_RECOVERY_V1" not in without_legacy
+assert without_legacy.count("NUVIO_GLOBAL_CATALOGUE_ALIAS_RECOVERY_V2:") == 1
 
 runner = r'''
 const assert = require('assert');

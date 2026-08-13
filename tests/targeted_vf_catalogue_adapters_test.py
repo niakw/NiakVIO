@@ -10,7 +10,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from scripts.provider_patches import frenchstream_dle_catalogue, streamzo_public_catalogue
+from scripts.provider_patches import frenchstream_dle_catalogue, streamzo_public_catalogue, streamzo_public_catalogue_v2
 
 BASE_PROVIDER = "module.exports={getStreams:async function(){return []}};\n"
 
@@ -94,5 +94,29 @@ assert len(french["rows"]) == 1, french
 assert french["rows"][0]["url"] == "https://vidzy.example/embed-123.html"
 post = next(call for call in french["calls"] if call["method"] == "POST")
 assert post["body"] == "query=Interstellar&page=1"
+
+BAD_NATIVE_PROVIDER = """module.exports={getStreams:async function(){return [
+  {url:'https://www.youtube.com/watch?v=trailer',title:'StreamZo - Interstellar'},
+  {url:'https://streamzo.fr/interstellar',title:'StreamZo - Interstellar'}
+]}};\n"""
+streamzo_v3_source = streamzo_public_catalogue_v2.apply(
+    BAD_NATIVE_PROVIDER,
+    {"base_url": "https://streamzo.fr"},
+)
+assert "NUVIO_STREAMZO_PUBLIC_CATALOGUE_V3" in streamzo_v3_source
+streamzo_v3 = run_node(
+    streamzo_v3_source,
+    {
+        "https://streamzo.fr/interstellar": {
+            "body": '<article class="detail" data-film-id="23254"><a href="https://www.youtube.com/watch?v=trailer">Trailer</a></article>'
+        },
+        "https://streamzo.fr/api/mirrors/film/23254": {
+            "type": "application/json",
+            "body": {"mirrors": [{"url": "/embed/vidzy/23254"}]},
+        },
+    },
+    "streamzo-v3",
+)
+assert [row["url"] for row in streamzo_v3["rows"]] == ["https://streamzo.fr/embed/vidzy/23254"], streamzo_v3
 
 print("targeted VF catalogue adapter tests passed")
