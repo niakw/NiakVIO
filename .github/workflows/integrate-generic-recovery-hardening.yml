@@ -39,6 +39,7 @@ jobs:
           p.write_text(text)
           PY
           python .github/scripts/apply_generic_recovery_hardening.py
+          sed -i 's/box\.globalThis=box; //g' tests/generic_recovery_hardening_test.py
           python - <<'PY'
           import json
           from pathlib import Path
