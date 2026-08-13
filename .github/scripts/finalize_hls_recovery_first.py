@@ -11,6 +11,11 @@ replacements = [
         'do not abort response body before bounded reader consumes it',
     ),
     (
+        '''  async function responseText(result){\n    try{return clean(await result.response.text())}catch(_e){return ""}\n  }''',
+        '''  async function responseText(result){\n    var response=result&&result.response;if(!response)return "";\n    try{if(typeof response.text==="function")return clean(await response.text())}catch(_e){}\n    try{if(typeof response.arrayBuffer==="function"){var ab=await response.arrayBuffer();return clean(new TextDecoder("utf-8").decode(ab))}}catch(_e){}\n    try{if(response.body&&typeof response.body.getReader==="function"){var reader=response.body.getReader(),chunks=[],total=0;while(total<131072){var part=await reader.read();if(part&&part.value){chunks.push(part.value);total+=part.value.byteLength||part.value.length||0}if(!part||part.done)break}try{if(typeof reader.cancel==="function")await reader.cancel()}catch(_e){}var merged=new Uint8Array(total),offset=0;for(var i=0;i<chunks.length;i++){var value=chunks[i],take=Math.min(value.byteLength||value.length||0,total-offset);merged.set(value.subarray?value.subarray(0,take):value,offset);offset+=take;if(offset>=total)break}return clean(new TextDecoder("utf-8").decode(merged))}}catch(_e){}\n    return "";\n  }''',
+        'support providers/test runtimes exposing arrayBuffer or stream reader instead of response.text()',
+    ),
+    (
         '''    if(referer&&!Object.keys(out).some(function(k){return k.toLowerCase()==="referer"}))out.Referer=referer;\n    if(referer&&!Object.keys(out).some(function(k){return k.toLowerCase()==="origin"})){\n      try{out.Origin=new URL(referer).origin}catch(_e){}\n    }''',
         '''    if(referer){\n      var refKey=Object.keys(out).find(function(k){return k.toLowerCase()==="referer"}),currentRef=refKey?clean(out[refKey]):"";\n      if(!currentRef||currentRef!==clean(referer)){\n        Object.keys(out).forEach(function(k){var lower=k.toLowerCase();if(lower==="referer"||lower==="origin")delete out[k]});\n        out.Referer=referer;try{out.Origin=new URL(referer).origin}catch(_e){}\n      }\n    }''',
         'adapt request context when traversing from catalogue page to player to media',
