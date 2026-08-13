@@ -1,0 +1,66 @@
+name: Validate strict media identity upgrade
+
+on:
+  push:
+    branches:
+      - fix/strict-media-identity-20260813
+    paths:
+      - .github/triggers/strict-media-identity
+
+permissions:
+  contents: write
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: "24"
+          package-manager-cache: false
+      - name: Install dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Apply generic HLS and identity upgrade
+        run: python3 .github/scripts/strict_identity_hls_upgrade_20260813.py
+      - name: Remove one-shot migration files
+        run: |
+          rm -f .github/scripts/strict_identity_hls_upgrade_20260813.py
+          rm -f .github/workflows/tmp-strict-media-identity.yml
+          rm -f .github/triggers/strict-media-identity
+      - name: Reapply published wrappers once
+        run: python3 scripts/reapply_published_overrides.py
+      - name: Require one-pass convergence
+        run: python3 scripts/reapply_published_overrides.py --check
+      - name: Refresh release hashes
+        run: |
+          python3 scripts/generate_release_hashes.py
+          python3 scripts/validate_release_integrity.py
+      - name: Run complete regression suite
+        run: npm test
+      - name: Require clean post-test tree
+        run: git diff --exit-code
+      - name: Commit exact candidate locally
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --check -- . ':(exclude)providers/**'
+          git commit -m "fix: enforce strict HLS and media identity"
+      - name: Re-test committed candidate
+        run: |
+          candidate=$(git rev-parse HEAD)
+          git worktree add --detach ../candidate "$candidate"
+          cd ../candidate
+          npm ci --ignore-scripts --no-audit --no-fund
+          npm test
+          git diff --exit-code
+      - name: Push validated branch
+        run: git push origin HEAD:fix/strict-media-identity-20260813
