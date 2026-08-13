@@ -39,7 +39,7 @@ assert any(
 
 # Runtime domain failover must retry a configured peer on HTTP 403.
 domain = load("domain", ROOT / "scripts" / "provider_patches" / "adaptive_domain_recovery.py")
-source = 'module.exports={getStreams:async()=>{var r=await fetch("https://old.example/api/x");return [{url:r.url,status:r.status}]}};'
+source = 'module.exports={getStreams:async()=>{var r=await globalThis.fetch("https://old.example/api/x");return [{url:r.url,status:r.status}]}};'
 patched = domain.apply(
     source,
     options={"groups": [{"hosts": ["old.example"], "candidates": ["https://new.example"]}]},
@@ -64,7 +64,7 @@ assert data["v"][0]["status"] == 200, data
 # exact route across a sibling endpoint family, and never fall back to a blocked
 # fake-media URL.
 v4 = load("v4", ROOT / "scripts" / "provider_patches" / "adaptive_runtime_recovery_v4.py")
-base = '''module.exports={getStreams:async function(q){await fetch("https://demoendpointold.workers.dev/api/stream/token/abc");return [{url:"https://cdn.invalid/troll/master.m3u8"}]}};'''
+base = '''module.exports={getStreams:async function(q){await globalThis.fetch("https://demoendpointold.workers.dev/api/stream/token/abc");return [{url:"https://cdn.invalid/troll/master.m3u8"}]}};'''
 out = v4.apply(
     base,
     options={
