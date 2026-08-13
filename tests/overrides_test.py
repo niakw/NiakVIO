@@ -272,7 +272,7 @@ def test_chained_provider_patch_scripts_and_output_guard() -> None:
         harness = r'''
 const provider = require(process.argv[1]);
 global.fetch = async function(url) {
-  const payload = new TextEncoder().encode(String(url).includes("malformed") ? "<html>blocked</html>" : "#EXTM3U\n#EXT-X-VERSION:3\n");
+  const payload = new TextEncoder().encode(String(url).includes("malformed") ? "<html>blocked</html>" : "#EXTM3U\n#EXT-X-TARGETDURATION:6\n#EXTINF:6,\nseg.ts\n#EXT-X-ENDLIST\n");
   return {
     ok: true,
     status: 200,
