@@ -16,6 +16,22 @@ MARKER = "NUVIO_ADAPTIVE_DOMAIN_RECOVERY_V1"
 IMPLEMENTATION_REVISION = "retry-transient-v2"
 
 
+def _strip_owned_separator(suffix: str) -> str:
+    """Remove only the legacy separator newlines owned by this wrapper."""
+    # Historical output used ``bootstrap + "\n" + text`` while the bootstrap
+    # itself already ended with a newline. Consume at most those two separators
+    # so a revision migration canonicalizes the bytes without stripping
+    # arbitrary whitespace from the provider source itself.
+    for _ in range(2):
+        if suffix.startswith("\r\n"):
+            suffix = suffix[2:]
+        elif suffix.startswith("\n") or suffix.startswith("\r"):
+            suffix = suffix[1:]
+        else:
+            break
+    return suffix
+
+
 def apply(text: str, *, options=None, context=None) -> str:
     options = options or {}
     groups = options.get("groups") or []
@@ -54,20 +70,12 @@ def apply(text: str, *, options=None, context=None) -> str:
         existing = text[a:b]
         if f'"{payload}"' in existing:
             return text
-        suffix = text[b:]
-        if suffix.startswith("\r\n"):
-            suffix = suffix[2:]
-        elif suffix.startswith("\n") or suffix.startswith("\r"):
-            suffix = suffix[1:]
+        suffix = _strip_owned_separator(text[b:])
         text = text[:a] + suffix
         while begin in text and end in text:
             a = text.index(begin)
             b = text.index(end, a) + len(end)
-            suffix = text[b:]
-            if suffix.startswith("\r\n"):
-                suffix = suffix[2:]
-            elif suffix.startswith("\n") or suffix.startswith("\r"):
-                suffix = suffix[1:]
+            suffix = _strip_owned_separator(text[b:])
             text = text[:a] + suffix
 
     bootstrap = r'''/* NUVIO_ADAPTIVE_DOMAIN_RECOVERY_V1:BEGIN */
@@ -123,4 +131,4 @@ def apply(text: str, *, options=None, context=None) -> str:
 })(typeof globalThis!=="undefined"?globalThis:this,"'''+payload+r'''");
 /* NUVIO_ADAPTIVE_DOMAIN_RECOVERY_V1:END */
 '''
-    return bootstrap + "\n" + text
+    return bootstrap + text
