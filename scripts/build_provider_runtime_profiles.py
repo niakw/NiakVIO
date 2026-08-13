@@ -9,6 +9,8 @@ import subprocess
 from pathlib import Path
 from urllib.parse import urlparse
 
+from provider_engine_normalizer import sanitize_provider_hooks, strip_foreign_provider_wrappers
+
 ROOT = Path(__file__).resolve().parents[1]
 OVR = ROOT / "provider-overrides.json"
 MANIFESTS = [ROOT / "manifest.json"] + sorted(ROOT.glob("*/manifest.json"))
@@ -36,9 +38,7 @@ def origin(url: str) -> str | None:
         return None
 
 
-
 def provider_owned_origins(provider_id: str, origins: list[str]) -> list[str]:
-    """Keep only origins plausibly owned by the provider, not bundled dependency/docs hosts."""
     key = re.sub(r"[^a-z0-9]", "", provider_id.lower())
     if len(key) < 4:
         return []
@@ -49,6 +49,7 @@ def provider_owned_origins(provider_id: str, origins: list[str]) -> list[str]:
         if key in normalized or normalized.split("www", 1)[-1].startswith(key):
             owned.append(value)
     return owned
+
 
 def classify(item: dict, text: str, origins: list[str]) -> str:
     provider_id = str(item.get("id") or item.get("canonical_id") or "").lower()
@@ -66,11 +67,13 @@ def classify(item: dict, text: str, origins: list[str]) -> str:
     return "html_scraper"
 
 
-def load_data() -> dict:
+def load_data() -> tuple[dict, list[dict[str, str]]]:
     if not OVR.exists():
-        return {}
+        return {}, []
     loaded = json.loads(OVR.read_text(encoding="utf-8"))
-    return loaded if isinstance(loaded, dict) else {}
+    if not isinstance(loaded, dict):
+        return {}, []
+    return sanitize_provider_hooks(loaded, ROOT)
 
 
 def collect_published() -> dict[str, tuple[dict, Path]]:
@@ -120,13 +123,41 @@ def collect_staged(stage: Path) -> tuple[dict[str, tuple[dict, Path]], dict | No
     return seen, registry
 
 
+def validate_provider_file(path: Path) -> None:
+    result = subprocess.run(
+        ["node", str(ROOT / "scripts" / "validate_provider_artifact.cjs"), str(path)],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode:
+        detail = "\n".join(value.strip() for value in (result.stdout, result.stderr) if value.strip())
+        raise ValueError(f"provider isolation migration produced invalid artifact {path}:\n{detail}")
+
+
+def isolate_provider_bundles(data: dict, providers: dict[str, tuple[dict, Path]]) -> list[dict[str, str]]:
+    """Remove only repository-owned wrappers that cross provider API ownership."""
+    removed: list[dict[str, str]] = []
+    seen_paths: set[Path] = set()
+    for provider_id, (_item, path) in sorted(providers.items()):
+        if path in seen_paths:
+            continue
+        seen_paths.add(path)
+        source = path.read_text(encoding="utf-8", errors="strict")
+        cleaned, records = strip_foreign_provider_wrappers(source, provider_id, data)
+        if cleaned == source:
+            continue
+        path.write_text(cleaned, encoding="utf-8")
+        validate_provider_file(path)
+        removed.extend({**record, "bundle": path.relative_to(ROOT).as_posix() if ROOT in path.parents else str(path)} for record in records)
+    return removed
+
+
 def build_profiles(data: dict, providers: dict[str, tuple[dict, Path]]) -> int:
     patches = data.setdefault("provider_patches", {})
     caps = data.setdefault("provider_capabilities", {})
     profiles = data.setdefault("patch_profiles", {})
 
-    # Generated adaptive-domain profiles are derived artifacts. Rebuild them from
-    # scratch so stale hosts extracted by an older generator can never survive.
     generated_names = {
         name for name in profiles
         if isinstance(name, str) and name.startswith("adaptive_domain_")
@@ -167,23 +198,13 @@ def build_profiles(data: dict, providers: dict[str, tuple[dict, Path]]) -> int:
 
         patch = patches.setdefault(provider_id, {})
         patch.setdefault("capability", strategy)
-
-        # Runtime profiles generated only from URL strings are diagnostic. They
-        # must never rewrite a provider bundle automatically: frontend, API and
-        # player hosts often have different route contracts. Stable migrations
-        # stay in explicit provider_patches replacements/patch scripts and are
-        # still applied to new staged providers in the same deep run.
         selected = patch.get("profiles")
         if isinstance(selected, list):
-            patch["profiles"] = [
-                name for name in selected
-                if not str(name).startswith("adaptive_domain_")
-            ]
+            patch["profiles"] = [name for name in selected if not str(name).startswith("adaptive_domain_")]
     return len(providers)
 
 
 def reapply_stage(stage: Path, registry: dict) -> int:
-    # Import only after profile generation so apply_overrides sees the just-written configuration.
     from apply_provider_overrides import apply_overrides
 
     changed = 0
@@ -201,12 +222,7 @@ def reapply_stage(stage: Path, registry: dict) -> int:
         patched, applied = apply_overrides(provider_id, original)
         if patched != original:
             path.write_bytes(patched)
-            subprocess.run(
-                ["node", str(ROOT / "scripts" / "validate_provider_artifact.cjs"), str(path)],
-                check=True,
-                capture_output=True,
-                text=True,
-            )
+            validate_provider_file(path)
             changed += 1
         candidate["sha256"] = hashlib.sha256(patched).hexdigest()
         current = candidate.get("local_patches") if isinstance(candidate.get("local_patches"), list) else []
@@ -220,8 +236,7 @@ def reapply_stage(stage: Path, registry: dict) -> int:
             merged.append(value)
         candidate["local_patches"] = merged
     (stage / "candidates.json").write_text(
-        json.dumps(registry, ensure_ascii=False, indent=2) + "\n",
-        encoding="utf-8",
+        json.dumps(registry, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
     )
     return changed
 
@@ -229,10 +244,10 @@ def reapply_stage(stage: Path, registry: dict) -> int:
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--stage", default=None, help="Also profile candidates in this staging directory.")
-    parser.add_argument("--apply-stage", action="store_true", help="Reapply the generated profiles to staged candidates immediately.")
+    parser.add_argument("--apply-stage", action="store_true", help="Reapply generated profiles to staged candidates immediately.")
     args = parser.parse_args()
 
-    data = load_data()
+    data, removed_hooks = load_data()
     providers = collect_published()
     stage_path: Path | None = None
     registry = None
@@ -243,14 +258,22 @@ def main() -> int:
         staged_count = len(staged)
         providers.update(staged)
 
+    removed_wrappers = isolate_provider_bundles(data, providers)
     count = build_profiles(data, providers)
+    normalization = data.setdefault("provider_engine_normalization", {})
+    normalization.update({
+        "removed_cross_provider_hooks": len(removed_hooks),
+        "removed_cross_provider_wrappers": len(removed_wrappers),
+        "isolation_applied_before_profiles": True,
+    })
     data["provider_profile_generation"] = {
-        "schema_version": 3,
+        "schema_version": 4,
         "provider_count": count,
         "staged_provider_count": staged_count,
         "source": "manifest_published_bundles_and_current_staging",
         "same_deep_new_provider_support": True,
         "automatic_bundle_rewrite": False,
+        "provider_backend_isolation": True,
     }
     OVR.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
@@ -260,7 +283,10 @@ def main() -> int:
             raise SystemExit("--apply-stage requires --stage with candidates.json")
         repatched = reapply_stage(stage_path, registry)
 
-    print(f"provider runtime profiles generated: {count} (staged={staged_count}, repatched={repatched})")
+    print(
+        f"provider runtime profiles generated: {count} (staged={staged_count}, repatched={repatched}, "
+        f"isolated_hooks={len(removed_hooks)}, isolated_wrappers={len(removed_wrappers)})"
+    )
     return 0
 
 
