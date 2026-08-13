@@ -34,11 +34,25 @@ jobs:
           from pathlib import Path
           p=Path('.github/scripts/apply_generic_recovery_hardening.py')
           text=p.read_text()
-          text=text.replace('old.demo123.workers.dev','demoendpointold.workers.dev')
-          text=text.replace('new.demo123.workers.dev','demoendpointnew.workers.dev')
+          text=text.split('# Permanent provider-agnostic regression test.',1)[0]
+          text += '\nprint("generic recovery hardening migration applied")\n'
           p.write_text(text)
           PY
           python .github/scripts/apply_generic_recovery_hardening.py
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path('package.json')
+          data=json.loads(p.read_text())
+          script=data['scripts']['test']
+          anchor='python3 tests/adaptive_domain_recovery_test.py'
+          addition=anchor+' && python3 tests/generic_recovery_hardening_test.py'
+          if 'generic_recovery_hardening_test.py' not in script:
+              if anchor not in script:
+                  raise SystemExit('adaptive domain test anchor missing')
+              data['scripts']['test']=script.replace(anchor,addition,1)
+          p.write_text(json.dumps(data,ensure_ascii=False,indent=2)+'\n')
+          PY
       - name: Remove one-shot integration files before validation
         run: |
           rm -f .github/scripts/apply_generic_recovery_hardening.py
