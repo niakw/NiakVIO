@@ -13,6 +13,7 @@ import base64
 import json
 
 MARKER = "NUVIO_ADAPTIVE_DOMAIN_RECOVERY_V1"
+IMPLEMENTATION_REVISION = "retry-transient-v2"
 
 
 def apply(text: str, *, options=None, context=None) -> str:
@@ -28,15 +29,23 @@ def apply(text: str, *, options=None, context=None) -> str:
             normalized.append({"hosts": hosts, "candidates": candidates})
     if not normalized:
         return text
+
+    # The implementation revision is part of the deterministic payload so a
+    # behaviour-only runtime change refreshes already published wrappers even
+    # when their provider configuration did not change.
     payload = base64.b64encode(
-        json.dumps(normalized, separators=(",", ":"), sort_keys=True).encode()
+        json.dumps(
+            {"revision": IMPLEMENTATION_REVISION, "groups": normalized},
+            separators=(",", ":"),
+            sort_keys=True,
+        ).encode()
     ).decode()
 
     # Idempotency is essential because the deep pipeline can apply build
     # profiles more than once to the same staged/published artifact. If the
     # existing block already carries the exact deterministic payload, preserve
-    # the bytes unchanged. When the configuration evolved, remove the old block
-    # together with only its owned separator before injecting the new one.
+    # the bytes unchanged. When the configuration or implementation evolved,
+    # remove the old owned block before injecting the new one.
     begin = f"/* {MARKER}:BEGIN */"
     end = f"/* {MARKER}:END */"
     if begin in text and end in text:
@@ -60,11 +69,15 @@ def apply(text: str, *, options=None, context=None) -> str:
             elif suffix.startswith("\n") or suffix.startswith("\r"):
                 suffix = suffix[1:]
             text = text[:a] + suffix
+
     bootstrap = r'''/* NUVIO_ADAPTIVE_DOMAIN_RECOVERY_V1:BEGIN */
 ;(function(g,encoded){
   if(!g||typeof g.fetch!=="function"||g.__nuvioAdaptiveDomainRecoveryV1)return;
   var nativeFetch=g.fetch.bind(g), groups=[];
-  try{groups=JSON.parse(typeof atob==="function"?atob(encoded):Buffer.from(encoded,"base64").toString("utf8"));}catch(_e){return;}
+  try{
+    var decoded=JSON.parse(typeof atob==="function"?atob(encoded):Buffer.from(encoded,"base64").toString("utf8"));
+    groups=Array.isArray(decoded)?decoded:(decoded&&Array.isArray(decoded.groups)?decoded.groups:[]);
+  }catch(_e){return;}
   var cache=Object.create(null);
   function obsolete(status){return status===403||status===404||status===408||status===410||status===425||status===429||status===451||status===500||status===502||status===503||status===504||(status>=520&&status<=524);}
   function groupFor(host){
