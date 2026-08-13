@@ -2,6 +2,7 @@
 const assert = require('node:assert/strict');
 const path = require('node:path');
 const manifest = require('../manifest.json');
+const overrides = require('../provider-overrides.json');
 
 const targets = ['streamzo', 'movix', 'frenchstream', 'coflix', 'flemmix'];
 const fixtures = [
@@ -12,6 +13,22 @@ const entries = Object.fromEntries(manifest.scrapers.map((row) => [String(row.id
 const externalPlayer = 'https://player.example/embed/movie';
 const provenHls = 'https://media.example/hls/fixture/master.m3u8';
 const tvFixture = { id: '94605', title: 'Arcane', year: 2021, slug: 'arcane', season: 1, episode: 1 };
+
+function configuredSite(id, fallback) {
+  const patch = overrides?.provider_patches?.[id] || {};
+  const raw = patch.official_site || fallback;
+  try {
+    return new URL(raw);
+  } catch {
+    return new URL(fallback);
+  }
+}
+const streamzoHost = configuredSite('streamzo', 'https://streamzo.fr').hostname;
+const catalogueHosts = new Set([
+  configuredSite('frenchstream', 'https://fs16.lol').hostname,
+  configuredSite('coflix', 'https://coflix.esq').hostname,
+  configuredSite('flemmix', 'https://flemmix.men').hostname,
+]);
 
 function fixtureForId(id) {
   if (String(id) === tvFixture.id) return tvFixture;
@@ -88,10 +105,10 @@ global.fetch = async (input) => {
     return new Response(`<html><script>const file=${JSON.stringify(provenHls)};</script></html>`, { status: 200, headers: { 'content-type': 'text/html' } });
   }
   const fixture = fixtureForUrl(url);
-  if (url.hostname === 'streamzo.fr') {
+  if (url.hostname === streamzoHost) {
     return new Response(detailPage(fixture), { status: 200, headers: { 'content-type': 'text/html' } });
   }
-  if (['fs16.lol', 'coflix.esq', 'flemmix.men'].includes(url.hostname)) {
+  if (catalogueHosts.has(url.hostname)) {
     if (/\/films?\/|interstellar|gardiens|arcane/.test(url.pathname) && !/index\.php/.test(url.pathname)) {
       return new Response(detailPage(fixture), { status: 200, headers: { 'content-type': 'text/html' } });
     }
@@ -123,7 +140,7 @@ function assertSafeRows(id, fixtureId, rows, kind) {
     const tvRows = await provider.getStreams(tvFixture.id, 'tv', tvFixture.season, tvFixture.episode, {});
     assertSafeRows(id, tvFixture.id, tvRows, 'TV');
   }
-  console.log('VF catalogue recovery tests passed with content-proven non-preview HLS (Interstellar + Guardians Vol. 3 + Arcane S01E01)');
+  console.log('VF catalogue recovery tests passed with current configured provider routes and content-proven non-preview HLS (Interstellar + Guardians Vol. 3 + Arcane S01E01)');
 })().catch((error) => {
   console.error(error);
   process.exit(1);
