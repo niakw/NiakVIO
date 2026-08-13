@@ -39,4 +39,13 @@ for old, new, label in replacements:
     text = text.replace(old, new, 1)
 
 path.write_text(text, encoding='utf-8')
-print('HLS recovery-first implementation finalized')
+
+test_path = Path('tests/overrides_test.py')
+test_text = test_path.read_text(encoding='utf-8')
+old_fixture = 'const payload = new TextEncoder().encode(String(url).includes("malformed") ? "<html>blocked</html>" : "#EXTM3U\\n#EXT-X-VERSION:3\\n");'
+new_fixture = 'const payload = new TextEncoder().encode(String(url).includes("malformed") ? "<html>blocked</html>" : "#EXTM3U\\n#EXT-X-TARGETDURATION:6\\n#EXTINF:6,\\nseg.ts\\n#EXT-X-ENDLIST\\n");'
+if test_text.count(old_fixture) != 1:
+    raise SystemExit('legacy override fixture: expected exactly one header-only pseudo-good HLS')
+test_path.write_text(test_text.replace(old_fixture, new_fixture, 1), encoding='utf-8')
+
+print('HLS recovery-first implementation and strict regression fixture finalized')
