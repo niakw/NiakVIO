@@ -121,8 +121,15 @@ def test_domain_prefix_collision_is_idempotent() -> None:
     # flemmix.me is a prefix of flemmix.men. A raw str.replace would turn an
     # already migrated target into flemmix.menn on the next reapply.
     source = b'const BASE="https://flemmix.me/";'
+    config = json.loads((ROOT / "provider-overrides.json").read_text())
+    patch = config["provider_patches"]["flemmix"]
+    target_host = (
+        (patch.get("runtime_domain_replacements") or patch.get("replacements") or {})
+        .get("flemmix.me")
+    )
+    assert target_host, patch
     first, records = apply_overrides("flemmix", source)
-    assert b"https://flemmix.men/" in first
+    assert ("https://" + target_host + "/").encode() in first
     assert b"flemmix.menn" not in first
     assert any(row.get("from") == "flemmix.me" for row in records)
     second, second_records = apply_overrides("flemmix", first)

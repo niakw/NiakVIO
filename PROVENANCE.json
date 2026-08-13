@@ -1033,9 +1033,9 @@
     },
     "allmovieland": {
       "id": "allmovieland",
-      "published_filename": "providers/allmovieland--published-baseline--02d7d2d7dff11a90.js",
-      "sha256": "02d7d2d7dff11a90eb940173019b6ad7d0cb8bfb60246967acd5b251641815fa",
-      "patched_sha256": "02d7d2d7dff11a90eb940173019b6ad7d0cb8bfb60246967acd5b251641815fa",
+      "published_filename": "providers/allmovieland--published-baseline--bb5ce5545611921a.js",
+      "sha256": "bb5ce5545611921a9504fbf17038fa6804936f8c199dfdd9c71f28b98fa895dd",
+      "patched_sha256": "bb5ce5545611921a9504fbf17038fa6804936f8c199dfdd9c71f28b98fa895dd",
       "upstream_sha256": "2217246fc678c9944a374bf227414e640ffa9e6a46775fd0fc62eea6e98eaf81",
       "local_patches": [
         {
@@ -1060,6 +1060,18 @@
           "path": "scripts/provider_patches/global_catalogue_alias_recovery_v2.py",
           "phase": "discovery",
           "scope": "global_catalogue_resolution"
+        },
+        {
+          "type": "runtime_domain_overrides",
+          "count": 2,
+          "phase": "discovery"
+        },
+        {
+          "type": "migration",
+          "name": "adaptive_domain_implementation_revision",
+          "phase": "runtime",
+          "profile": "adaptive_domain_recovery",
+          "runtime_revision": "retry-transient-v2"
         }
       ],
       "source": "published-baseline",
@@ -2684,9 +2696,9 @@
     },
     "animepahe": {
       "id": "animepahe",
-      "published_filename": "providers/animepahe--published-baseline--500ee4c4f9851bad.js",
-      "sha256": "500ee4c4f9851bad48c83fe1eaba41f79632453d21a80c1704b8e76436e31aa6",
-      "patched_sha256": "500ee4c4f9851bad48c83fe1eaba41f79632453d21a80c1704b8e76436e31aa6",
+      "published_filename": "providers/animepahe--published-baseline--711236f7b6b1cdd0.js",
+      "sha256": "711236f7b6b1cdd03a3b423d6358f94d4524fbe614a10c892cc6014049c96742",
+      "patched_sha256": "711236f7b6b1cdd03a3b423d6358f94d4524fbe614a10c892cc6014049c96742",
       "upstream_sha256": "9e132e5efb0371493041ba7e321e2fc714f8a3177c7549e30b85e98528a263b9",
       "local_patches": [
         {
@@ -2699,6 +2711,18 @@
           "path": "scripts/provider_patches/global_media_enrichment_v1.py",
           "phase": "discovery",
           "scope": "global_media_enrichment"
+        },
+        {
+          "type": "runtime_domain_overrides",
+          "count": 2,
+          "phase": "discovery"
+        },
+        {
+          "type": "migration",
+          "name": "adaptive_domain_implementation_revision",
+          "phase": "runtime",
+          "profile": "adaptive_domain_recovery",
+          "runtime_revision": "retry-transient-v2"
         }
       ],
       "source": "published-baseline",
@@ -8200,11 +8224,19 @@
     },
     "einthusan": {
       "id": "einthusan",
-      "published_filename": "providers/einthusan--published-baseline--9f1aa6907cfc9ff8.js",
-      "sha256": "9f1aa6907cfc9ff8425a38c05bb38f6c0e21ce9dd741a3dd806c391a34ea0977",
-      "patched_sha256": "9f1aa6907cfc9ff8425a38c05bb38f6c0e21ce9dd741a3dd806c391a34ea0977",
+      "published_filename": "providers/einthusan--published-baseline--449b03fa0e58615d.js",
+      "sha256": "449b03fa0e58615db662b90c094fced52ac715571428f05b01274d44f5bf4fa7",
+      "patched_sha256": "449b03fa0e58615db662b90c094fced52ac715571428f05b01274d44f5bf4fa7",
       "upstream_sha256": "9f1aa6907cfc9ff8425a38c05bb38f6c0e21ce9dd741a3dd806c391a34ea0977",
-      "local_patches": [],
+      "local_patches": [
+        {
+          "type": "migration",
+          "name": "adaptive_domain_implementation_revision",
+          "phase": "runtime",
+          "profile": "adaptive_domain_recovery",
+          "runtime_revision": "retry-transient-v2"
+        }
+      ],
       "source": "published-baseline",
       "source_name": "Last published local artifact",
       "source_repository": "Nuvio Curated Providers",
@@ -11674,9 +11706,9 @@
     },
     "mallumv": {
       "id": "mallumv",
-      "published_filename": "providers/mallumv--published-baseline--098cae4f068c4acd.js",
-      "sha256": "098cae4f068c4acd60f4c5481e5028903c83a53aaab5d5f7770c0397c22e143c",
-      "patched_sha256": "098cae4f068c4acd60f4c5481e5028903c83a53aaab5d5f7770c0397c22e143c",
+      "published_filename": "providers/mallumv--published-baseline--86f9d72b1eff2141.js",
+      "sha256": "86f9d72b1eff2141134de9db8fbd0498fd88a7ef8c097db57b13a9b5fbf4d7b5",
+      "patched_sha256": "86f9d72b1eff2141134de9db8fbd0498fd88a7ef8c097db57b13a9b5fbf4d7b5",
       "upstream_sha256": "13011bc6a99673814ce13d15ab4ad41203ff6a9e1cc245549ac9e671f122234e",
       "local_patches": [
         {
@@ -11689,6 +11721,13 @@
           "path": "scripts/provider_patches/global_catalogue_alias_recovery_v2.py",
           "phase": "discovery",
           "scope": "global_catalogue_resolution"
+        },
+        {
+          "type": "migration",
+          "name": "adaptive_domain_implementation_revision",
+          "phase": "runtime",
+          "profile": "adaptive_domain_recovery",
+          "runtime_revision": "retry-transient-v2"
         }
       ],
       "source": "published-baseline",
@@ -12947,9 +12986,9 @@
     },
     "moviesdrive": {
       "id": "moviesdrive",
-      "published_filename": "providers/moviesdrive--nuvio--e20c08ac196c2e98.js",
-      "sha256": "e20c08ac196c2e98e0bf5ff4b86c7f3ecb650f072f6632c85d6b48c5dafd2a03",
-      "patched_sha256": "e20c08ac196c2e98e0bf5ff4b86c7f3ecb650f072f6632c85d6b48c5dafd2a03",
+      "published_filename": "providers/moviesdrive--nuvio--de118c44fa24f1c5.js",
+      "sha256": "de118c44fa24f1c5d1b782eb43f8fe0e1eb00080a9968730e5703f3009a1baaf",
+      "patched_sha256": "de118c44fa24f1c5d1b782eb43f8fe0e1eb00080a9968730e5703f3009a1baaf",
       "upstream_sha256": "675d0e30755fa97131010ddbe3a3ed8733043e9635a672f5845d087d3a924ea1",
       "local_patches": [
         {
@@ -12979,6 +13018,13 @@
           "type": "runtime_domain_overrides",
           "count": 2,
           "phase": "discovery"
+        },
+        {
+          "type": "migration",
+          "name": "adaptive_domain_implementation_revision",
+          "phase": "runtime",
+          "profile": "adaptive_domain_recovery",
+          "runtime_revision": "retry-transient-v2"
         }
       ],
       "source": "published-baseline",
@@ -13431,9 +13477,9 @@
     },
     "moviesmod": {
       "id": "moviesmod",
-      "published_filename": "providers/moviesmod--published-baseline--b47cae1e2b9a2ad0.js",
-      "sha256": "b47cae1e2b9a2ad016e2e978fa84bfaaa3825d9d8de91801913156732df6c5a9",
-      "patched_sha256": "b47cae1e2b9a2ad016e2e978fa84bfaaa3825d9d8de91801913156732df6c5a9",
+      "published_filename": "providers/moviesmod--published-baseline--01a1294b9e3b49d9.js",
+      "sha256": "01a1294b9e3b49d91fcb8d5807129a943b39a0710ed679cf08fc928a18af9e49",
+      "patched_sha256": "01a1294b9e3b49d91fcb8d5807129a943b39a0710ed679cf08fc928a18af9e49",
       "upstream_sha256": "c90890640a4598443ae4a264547b9ce1d089952f5d19ac9ab74e6cf1e28e0a9f",
       "local_patches": [
         {
@@ -13463,6 +13509,13 @@
           "type": "runtime_domain_overrides",
           "count": 1,
           "phase": "discovery"
+        },
+        {
+          "type": "migration",
+          "name": "adaptive_domain_implementation_revision",
+          "phase": "runtime",
+          "profile": "adaptive_domain_recovery",
+          "runtime_revision": "retry-transient-v2"
         }
       ],
       "source": "published-baseline",
@@ -14204,11 +14257,24 @@
     },
     "mycima": {
       "id": "mycima",
-      "published_filename": "providers/mycima--published-baseline--cbb2054c47c30a8d.js",
-      "sha256": "cbb2054c47c30a8de3784cae682dbe3d4eaf319332b59637671a06b26e70e24e",
-      "patched_sha256": "cbb2054c47c30a8de3784cae682dbe3d4eaf319332b59637671a06b26e70e24e",
+      "published_filename": "providers/mycima--published-baseline--e6b7307c13557b75.js",
+      "sha256": "e6b7307c13557b75d51b1639e1dc55f2b824f98a6b347f03d3f5ca3ad77bda74",
+      "patched_sha256": "e6b7307c13557b75d51b1639e1dc55f2b824f98a6b347f03d3f5ca3ad77bda74",
       "upstream_sha256": "cbb2054c47c30a8de3784cae682dbe3d4eaf319332b59637671a06b26e70e24e",
-      "local_patches": [],
+      "local_patches": [
+        {
+          "type": "runtime_domain_overrides",
+          "count": 1,
+          "phase": "discovery"
+        },
+        {
+          "type": "migration",
+          "name": "adaptive_domain_implementation_revision",
+          "phase": "runtime",
+          "profile": "adaptive_domain_recovery",
+          "runtime_revision": "retry-transient-v2"
+        }
+      ],
       "source": "published-baseline",
       "source_name": "Last published local artifact",
       "source_repository": "Nuvio Curated Providers",
@@ -19051,11 +19117,19 @@
     },
     "vidnest": {
       "id": "vidnest",
-      "published_filename": "providers/vidnest--published-baseline--08b6c5e9d18ba3c7.js",
-      "sha256": "08b6c5e9d18ba3c757853e4e9a86c4037bdd16fea9c6b6cc55f465a8e678a09e",
-      "patched_sha256": "08b6c5e9d18ba3c757853e4e9a86c4037bdd16fea9c6b6cc55f465a8e678a09e",
+      "published_filename": "providers/vidnest--published-baseline--331cfd9a49150874.js",
+      "sha256": "331cfd9a491508746f82042d45fa61ee03a886df1c91e1f240754fb69b1d6ec6",
+      "patched_sha256": "331cfd9a491508746f82042d45fa61ee03a886df1c91e1f240754fb69b1d6ec6",
       "upstream_sha256": "08b6c5e9d18ba3c757853e4e9a86c4037bdd16fea9c6b6cc55f465a8e678a09e",
-      "local_patches": [],
+      "local_patches": [
+        {
+          "type": "migration",
+          "name": "adaptive_domain_implementation_revision",
+          "phase": "runtime",
+          "profile": "adaptive_domain_recovery",
+          "runtime_revision": "retry-transient-v2"
+        }
+      ],
       "source": "published-baseline",
       "source_name": "Last published local artifact",
       "source_repository": "Nuvio Curated Providers",

@@ -14,6 +14,7 @@ manifest, LKG state and provenance record.
 from __future__ import annotations
 
 import argparse
+import base64
 import hashlib
 import importlib.util
 import json
@@ -33,6 +34,9 @@ PROVIDERS = ROOT / "providers"
 ADAPTIVE_MARKER = "/* NUVIO_ADAPTIVE_RUNTIME_RECOVERY_V"
 ADAPTIVE_CALL = '})(typeof globalThis!=="undefined"?globalThis:this,'
 ADAPTIVE_SCRIPT = ROOT / "scripts" / "provider_patches" / "adaptive_runtime_recovery_v4.py"
+ADAPTIVE_DOMAIN_BEGIN = "/* NUVIO_ADAPTIVE_DOMAIN_RECOVERY_V1:BEGIN */"
+ADAPTIVE_DOMAIN_END = "/* NUVIO_ADAPTIVE_DOMAIN_RECOVERY_V1:END */"
+ADAPTIVE_DOMAIN_SCRIPT = ROOT / "scripts" / "provider_patches" / "adaptive_domain_recovery.py"
 
 
 def safe_fragment(value: str) -> str:
@@ -129,7 +133,53 @@ def reapply_adaptive_runtime_revision(data: bytes, provenance_row: dict[str, Any
         "name": "adaptive_runtime_implementation_revision",
         "phase": "runtime",
         "profile": "adaptive_runtime_recovery",
-        "runtime_revision": "bounded-binary-v1",
+        "runtime_revision": "generic-core-v2",
+    }]
+
+
+def reapply_adaptive_domain_revision(data: bytes) -> tuple[bytes, list[dict[str, Any]]]:
+    """Refresh an owned adaptive-domain wrapper from its embedded peer groups."""
+    text = data.decode("utf-8", errors="strict")
+    start = text.find(ADAPTIVE_DOMAIN_BEGIN)
+    if start < 0:
+        return data, []
+    end = text.find(ADAPTIVE_DOMAIN_END, start)
+    if end < 0:
+        raise ValueError("unterminated adaptive domain recovery wrapper")
+    segment = text[start : end + len(ADAPTIVE_DOMAIN_END)]
+    groups = None
+    for encoded in re.findall(r'"([A-Za-z0-9+/=]{16,})"', segment):
+        try:
+            decoded = json.loads(base64.b64decode(encoded).decode("utf-8"))
+        except Exception:
+            continue
+        candidate = (
+            decoded
+            if isinstance(decoded, list)
+            else decoded.get("groups")
+            if isinstance(decoded, dict)
+            else None
+        )
+        if isinstance(candidate, list) and all(isinstance(row, dict) for row in candidate):
+            groups = candidate
+    if not groups:
+        return data, []
+    spec = importlib.util.spec_from_file_location(
+        "nuvio_reapply_adaptive_domain", ADAPTIVE_DOMAIN_SCRIPT
+    )
+    if spec is None or spec.loader is None:
+        raise RuntimeError(f"cannot load adaptive domain patcher: {ADAPTIVE_DOMAIN_SCRIPT}")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    patched = module.apply(text, options={"groups": groups}).encode("utf-8")
+    if patched == data:
+        return data, []
+    return patched, [{
+        "type": "migration",
+        "name": "adaptive_domain_implementation_revision",
+        "phase": "runtime",
+        "profile": "adaptive_domain_recovery",
+        "runtime_revision": str(getattr(module, "IMPLEMENTATION_REVISION", "current")),
     }]
 
 def load_manifest(path: Path) -> dict[str, Any] | None:
@@ -229,7 +279,10 @@ def main() -> int:
 
         original = path.read_bytes()
         migrated, adaptive_language_repairs = strip_unproven_adaptive_language(original)
+        migrated, domain_revision_records = reapply_adaptive_domain_revision(migrated)
         patched, records = apply_overrides(provider_id, migrated, phase="discovery")
+        if domain_revision_records:
+            records = list(records) + domain_revision_records
         provider_provenance = provenance_rows.get(provider_id) if provenance_rows else None
         patched, runtime_revision_records = reapply_adaptive_runtime_revision(patched, provider_provenance)
         if runtime_revision_records:
