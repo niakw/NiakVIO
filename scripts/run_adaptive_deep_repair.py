@@ -20,5 +20,11 @@ expected = (ADAPTIVE / "runtime_repair.py").resolve()
 if loaded != expected:
     raise SystemExit(f"adaptive runtime layer not loaded: {loaded} != {expected}")
 
+# Automatic repair mutation is temporarily fail-closed. The baseline deep
+# health check still runs in full, but no generated mutation may replace its
+# parent until positive content-identity gating is integrated in compare_results.
+if "--max-rounds" not in sys.argv:
+    sys.argv.extend(["--max-rounds", "0"])
+
 sys.argv[0] = str(SCRIPTS / "deep_repair_loop.py")
 runpy.run_path(sys.argv[0], run_name="__main__")
