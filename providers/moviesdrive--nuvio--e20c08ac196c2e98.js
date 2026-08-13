@@ -23,7 +23,7 @@
   for(var i=0;i<rules.length;i++){
     try{state.rules[atob(rules[i][0])]=rules[i][1];}catch(_error){}
   }
-})(typeof globalThis!=="undefined"?globalThis:this,[["bmV3MS5tb3ZpZXNkcml2ZS5jaHJpc3RtYXM=","new2.moviesdrive.christmas"],["bmV3My5tb3ZpZXNkcml2ZXMubXk=","new7.moviesdrives.my"]]);
+})(typeof globalThis!=="undefined"?globalThis:this,[["bmV3MS5tb3ZpZXNkcml2ZS5jaHJpc3RtYXM=","new2.moviesdrive.christmas"],["bmV3My5tb3ZpZXNkcml2ZXMubXk=","new2.moviesdrive.christmas"]]);
 /* NUVIO_ADAPTIVE_DOMAIN_RECOVERY_V1:BEGIN */
 ;(function(g,encoded){
   if(!g||typeof g.fetch!=="function"||g.__nuvioAdaptiveDomainRecoveryV1)return;

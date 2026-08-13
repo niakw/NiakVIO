@@ -23,7 +23,7 @@
   for(var i=0;i<rules.length;i++){
     try{state.rules[atob(rules[i][0])]=rules[i][1];}catch(_error){}
   }
-})(typeof globalThis!=="undefined"?globalThis:this,[["bW92aWVzbW9kLm1vbmV5","moviesmod.army"]]);
+})(typeof globalThis!=="undefined"?globalThis:this,[["bW92aWVzbW9kLm1vbmV5","moviesmod.zone"]]);
 /* NUVIO_ADAPTIVE_DOMAIN_RECOVERY_V1:BEGIN */
 ;(function(g,encoded){
   if(!g||typeof g.fetch!=="function"||g.__nuvioAdaptiveDomainRecoveryV1)return;

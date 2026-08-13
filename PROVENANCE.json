@@ -313,11 +313,30 @@
     },
     "4khdhub": {
       "id": "4khdhub",
-      "published_filename": "providers/4khdhub--published-baseline--90c45836533bb88f.js",
-      "sha256": "90c45836533bb88fbac769681dec754ab7e8799c0fe4da6351b1685a783c10a5",
-      "patched_sha256": "90c45836533bb88fbac769681dec754ab7e8799c0fe4da6351b1685a783c10a5",
+      "published_filename": "providers/4khdhub--published-baseline--bf46d1882d4b18c2.js",
+      "sha256": "bf46d1882d4b18c2b12007fdacaf7c42925b23b5b38273e8a189904efad94c90",
+      "patched_sha256": "bf46d1882d4b18c2b12007fdacaf7c42925b23b5b38273e8a189904efad94c90",
       "upstream_sha256": "90c45836533bb88fbac769681dec754ab7e8799c0fe4da6351b1685a783c10a5",
-      "local_patches": [],
+      "local_patches": [
+        {
+          "type": "replace",
+          "from": "new4.hdhub4u.cl",
+          "to": "4khdhub.one",
+          "count": 6,
+          "phase": "discovery"
+        },
+        {
+          "type": "runtime_domain_overrides",
+          "count": 3,
+          "phase": "discovery"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_catalogue_alias_recovery_v2.py",
+          "phase": "discovery",
+          "scope": "global_catalogue_resolution"
+        }
+      ],
       "source": "published-baseline",
       "source_name": "Last published local artifact",
       "source_repository": "Nuvio Curated Providers",
@@ -8637,9 +8656,9 @@
     },
     "flemmix": {
       "id": "flemmix",
-      "published_filename": "providers/flemmix--nuvio--051514e3aae2e0e6.js",
-      "sha256": "051514e3aae2e0e6accaf01b6bf87fcc0b078c6e549b0787ddb58e6900656ccb",
-      "patched_sha256": "051514e3aae2e0e6accaf01b6bf87fcc0b078c6e549b0787ddb58e6900656ccb",
+      "published_filename": "providers/flemmix--nuvio--d43fc8596feb7992.js",
+      "sha256": "d43fc8596feb79929f156fe5156c72bd94680e29df04a58c76d2331423d7f3ac",
+      "patched_sha256": "d43fc8596feb79929f156fe5156c72bd94680e29df04a58c76d2331423d7f3ac",
       "upstream_sha256": "e0c40c452aca0d6685426c739729bc7bca333a187f4dc2737295f7394ff3955f",
       "local_patches": [
         "{'type': 'patch_script', 'path': 'scripts/provider_patches/stream_output_sanitizer_v5.py', 'phase': 'discovery'}",
@@ -8680,6 +8699,18 @@
         {
           "type": "patch_script",
           "path": "scripts/provider_patches/stream_output_sanitizer_v5.py",
+          "phase": "discovery"
+        },
+        {
+          "type": "replace",
+          "from": "flemmix.men",
+          "to": "ww547.wiflix-hd.vip",
+          "count": 14,
+          "phase": "discovery"
+        },
+        {
+          "type": "runtime_domain_overrides",
+          "count": 10,
           "phase": "discovery"
         }
       ],
@@ -11643,11 +11674,23 @@
     },
     "mallumv": {
       "id": "mallumv",
-      "published_filename": "providers/mallumv--published-baseline--13011bc6a9967381.js",
-      "sha256": "13011bc6a99673814ce13d15ab4ad41203ff6a9e1cc245549ac9e671f122234e",
-      "patched_sha256": "13011bc6a99673814ce13d15ab4ad41203ff6a9e1cc245549ac9e671f122234e",
+      "published_filename": "providers/mallumv--published-baseline--098cae4f068c4acd.js",
+      "sha256": "098cae4f068c4acd60f4c5481e5028903c83a53aaab5d5f7770c0397c22e143c",
+      "patched_sha256": "098cae4f068c4acd60f4c5481e5028903c83a53aaab5d5f7770c0397c22e143c",
       "upstream_sha256": "13011bc6a99673814ce13d15ab4ad41203ff6a9e1cc245549ac9e671f122234e",
-      "local_patches": [],
+      "local_patches": [
+        {
+          "type": "runtime_domain_overrides",
+          "count": 2,
+          "phase": "discovery"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_catalogue_alias_recovery_v2.py",
+          "phase": "discovery",
+          "scope": "global_catalogue_resolution"
+        }
+      ],
       "source": "published-baseline",
       "source_name": "Last published local artifact",
       "source_repository": "Nuvio Curated Providers",
@@ -12904,9 +12947,9 @@
     },
     "moviesdrive": {
       "id": "moviesdrive",
-      "published_filename": "providers/moviesdrive--nuvio--e4005150ac6a89b1.js",
-      "sha256": "e4005150ac6a89b1707542d2e5ba561717f3acecc6a636799ec36dd2a6cf5842",
-      "patched_sha256": "e4005150ac6a89b1707542d2e5ba561717f3acecc6a636799ec36dd2a6cf5842",
+      "published_filename": "providers/moviesdrive--nuvio--e20c08ac196c2e98.js",
+      "sha256": "e20c08ac196c2e98e0bf5ff4b86c7f3ecb650f072f6632c85d6b48c5dafd2a03",
+      "patched_sha256": "e20c08ac196c2e98e0bf5ff4b86c7f3ecb650f072f6632c85d6b48c5dafd2a03",
       "upstream_sha256": "675d0e30755fa97131010ddbe3a3ed8733043e9635a672f5845d087d3a924ea1",
       "local_patches": [
         {
@@ -12931,6 +12974,11 @@
           "path": "scripts/provider_patches/global_catalogue_alias_recovery_v2.py",
           "phase": "discovery",
           "scope": "global_catalogue_resolution"
+        },
+        {
+          "type": "runtime_domain_overrides",
+          "count": 2,
+          "phase": "discovery"
         }
       ],
       "source": "published-baseline",
@@ -13383,9 +13431,9 @@
     },
     "moviesmod": {
       "id": "moviesmod",
-      "published_filename": "providers/moviesmod--published-baseline--aa17991cd2612aff.js",
-      "sha256": "aa17991cd2612affdb9560a1d98f7b0818a8dbac18c459779d4d7ea1155c4687",
-      "patched_sha256": "aa17991cd2612affdb9560a1d98f7b0818a8dbac18c459779d4d7ea1155c4687",
+      "published_filename": "providers/moviesmod--published-baseline--b47cae1e2b9a2ad0.js",
+      "sha256": "b47cae1e2b9a2ad016e2e978fa84bfaaa3825d9d8de91801913156732df6c5a9",
+      "patched_sha256": "b47cae1e2b9a2ad016e2e978fa84bfaaa3825d9d8de91801913156732df6c5a9",
       "upstream_sha256": "c90890640a4598443ae4a264547b9ce1d089952f5d19ac9ab74e6cf1e28e0a9f",
       "local_patches": [
         {
@@ -13410,6 +13458,11 @@
           "path": "scripts/provider_patches/global_catalogue_alias_recovery_v2.py",
           "phase": "discovery",
           "scope": "global_catalogue_resolution"
+        },
+        {
+          "type": "runtime_domain_overrides",
+          "count": 1,
+          "phase": "discovery"
         }
       ],
       "source": "published-baseline",

@@ -425,27 +425,31 @@
     },
     "mallumv": {
       "replacements": {
-        "mallumv.gay": "mallumv.wiki",
-        "mallumv.cyou": "mallumv.wiki"
+        "mallumv.gay": "mallumv.space",
+        "mallumv.cyou": "mallumv.space"
       },
       "runtime_domain_replacements": {
-        "mallumv.gay": "mallumv.wiki",
-        "mallumv.cyou": "mallumv.wiki"
+        "mallumv.gay": "mallumv.space",
+        "mallumv.cyou": "mallumv.space"
       },
       "notes": [
         "Automatically migrated mallumv.gay to mallumv.cyou after French ISP DNS/HTTP preflight redirect validation.",
         "Automatically migrated mallumv.cyou to mallumv.wiki after French ISP DNS/HTTP preflight redirect validation."
       ],
       "capability": "html_scraper",
-      "profiles": []
+      "profiles": [],
+      "official_hub": null,
+      "official_site": "https://mallumv.Space",
+      "patch_script_options": {},
+      "required_values": []
     },
     "moviesdrive": {
       "replacements": {
-        "new3.moviesdrives.my": "new7.moviesdrives.my",
+        "new3.moviesdrives.my": "new2.moviesdrive.christmas",
         "new1.moviesdrive.christmas": "new2.moviesdrive.christmas"
       },
       "runtime_domain_replacements": {
-        "new3.moviesdrives.my": "new7.moviesdrives.my",
+        "new3.moviesdrives.my": "new2.moviesdrive.christmas",
         "new1.moviesdrive.christmas": "new2.moviesdrive.christmas"
       },
       "notes": [
@@ -567,10 +571,10 @@
     },
     "moviesmod": {
       "replacements": {
-        "moviesmod.money": "moviesmod.army"
+        "moviesmod.money": "moviesmod.zone"
       },
       "runtime_domain_replacements": {
-        "moviesmod.money": "moviesmod.army"
+        "moviesmod.money": "moviesmod.zone"
       },
       "notes": [
         "Automatically migrated moviesmod.money to moviesmod.army after DNS/HTTP preflight validation of a redirect or a reachable same-role provider endpoint."
@@ -587,10 +591,10 @@
     },
     "uhdmovies": {
       "replacements": {
-        "uhdmovies.pink": "uhdmovies.casa"
+        "uhdmovies.pink": "uhdmovies.autos"
       },
       "runtime_domain_replacements": {
-        "uhdmovies.pink": "uhdmovies.casa"
+        "uhdmovies.pink": "uhdmovies.autos"
       },
       "notes": [
         "Automatically migrated uhdmovies.pink to uhdmovies.casa after DNS/HTTP preflight validation of a redirect or a reachable same-role provider endpoint."
@@ -654,26 +658,28 @@
       "profiles": [],
       "capability": "mixed_embed_resolver",
       "replacements": {
-        "flemmix.me": "flemmix.men",
-        "flemmix.casa": "flemmix.men",
-        "flemmix.gold": "flemmix.men",
-        "flemmix.voto": "flemmix.men",
-        "flemmix.garden": "flemmix.men",
-        "wiflix.name": "flemmix.men",
-        "wiflix-hd.vip": "flemmix.men",
-        "ww1.wiflix-adresses.fun": "flemmix.men",
-        "flemmix.menn": "flemmix.men"
+        "flemmix.me": "ww547.wiflix-hd.vip",
+        "flemmix.casa": "ww547.wiflix-hd.vip",
+        "flemmix.gold": "ww547.wiflix-hd.vip",
+        "flemmix.voto": "ww547.wiflix-hd.vip",
+        "flemmix.garden": "ww547.wiflix-hd.vip",
+        "wiflix.name": "ww547.wiflix-hd.vip",
+        "wiflix-hd.vip": "ww547.wiflix-hd.vip",
+        "ww1.wiflix-adresses.fun": "ww547.wiflix-hd.vip",
+        "flemmix.menn": "ww547.wiflix-hd.vip",
+        "flemmix.men": "ww547.wiflix-hd.vip"
       },
       "runtime_domain_replacements": {
-        "flemmix.me": "flemmix.men",
-        "flemmix.casa": "flemmix.men",
-        "flemmix.gold": "flemmix.men",
-        "flemmix.voto": "flemmix.men",
-        "flemmix.garden": "flemmix.men",
-        "wiflix.name": "flemmix.men",
-        "wiflix-hd.vip": "flemmix.men",
-        "ww1.wiflix-adresses.fun": "flemmix.men",
-        "flemmix.menn": "flemmix.men"
+        "flemmix.me": "ww547.wiflix-hd.vip",
+        "flemmix.casa": "ww547.wiflix-hd.vip",
+        "flemmix.gold": "ww547.wiflix-hd.vip",
+        "flemmix.voto": "ww547.wiflix-hd.vip",
+        "flemmix.garden": "ww547.wiflix-hd.vip",
+        "wiflix.name": "ww547.wiflix-hd.vip",
+        "wiflix-hd.vip": "ww547.wiflix-hd.vip",
+        "ww1.wiflix-adresses.fun": "ww547.wiflix-hd.vip",
+        "flemmix.menn": "ww547.wiflix-hd.vip",
+        "flemmix.men": "ww547.wiflix-hd.vip"
       },
       "required_values": [],
       "route_replacements": {},
@@ -697,7 +703,7 @@
         "scripts/provider_patches/vf_catalogue_recovery.py": {
           "strategy": "html",
           "provider_name": "Flemmix",
-          "base_url": "https://flemmix.men",
+          "base_url": "http://ww547.wiflix-hd.vip",
           "types": [
             "movie"
           ],
@@ -726,10 +732,10 @@
         "Resolve the current Flemmix route from the Wiflix address hub and reject malformed direct-media responses before playback."
       ],
       "official_hub": "https://ww1.wiflix-adresses.fun/",
-      "official_site": "https://flemmix.men",
+      "official_site": "http://ww547.wiflix-hd.vip",
       "manifest_overrides": {
         "supportsExternalPlayer": true,
-        "logo": "https://flemmix.men/favicon.ico",
+        "logo": "https://ww547.wiflix-hd.vip/favicon.ico",
         "disabledPlatforms": []
       },
       "published_types": [
@@ -831,14 +837,14 @@
     "4khdhub": {
       "capability": "html_scraper",
       "replacements": {
-        "4khdhub.one": "new4.hdhub4u.cl",
-        "4khdhub.click": "new4.hdhub4u.cl",
-        "new3.hdhub4u.cl": "new4.hdhub4u.cl"
+        "4khdhub.click": "4khdhub.one",
+        "new3.hdhub4u.cl": "4khdhub.one",
+        "new4.hdhub4u.cl": "4khdhub.one"
       },
       "runtime_domain_replacements": {
-        "4khdhub.one": "new4.hdhub4u.cl",
-        "4khdhub.click": "new4.hdhub4u.cl",
-        "new3.hdhub4u.cl": "new4.hdhub4u.cl"
+        "4khdhub.click": "4khdhub.one",
+        "new3.hdhub4u.cl": "4khdhub.one",
+        "new4.hdhub4u.cl": "4khdhub.one"
       },
       "required_values": [],
       "route_replacements": {},
@@ -857,7 +863,7 @@
         "Use the current HDHub4u terminal route and reject HTML/error bodies returned as HLS media."
       ],
       "official_hub": "https://hdhub4u.ec/",
-      "official_site": "https://new4.hdhub4u.cl",
+      "official_site": "https://4khdhub.one",
       "manifest_overrides": {
         "enabled": false
       }
