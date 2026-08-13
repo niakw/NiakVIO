@@ -19,8 +19,9 @@ try:
     )
     d = json.loads(OVERRIDES.read_text())
     m = json.loads((ROOT / 'manifest.json').read_text())
-    ids = {str(x.get('id')) for x in m.get('scrapers', []) if x.get('id')}
-    caps = d.get('provider_capabilities', {})
+    ids = {str(x.get('id')).casefold() for x in m.get('scrapers', []) if x.get('id')}
+    caps_raw = d.get('provider_capabilities', {})
+    caps = {str(key).casefold(): value for key, value in caps_raw.items() if isinstance(value, dict)}
     missing = sorted(ids - set(caps))
     assert not missing, f'missing capability profiles: {missing}'
     valid = {
@@ -38,7 +39,11 @@ try:
         if caps[provider_id].get('strategy') not in valid
     )
     assert not bad, bad
-    by_id = {str(row.get('id')): row for row in m.get('scrapers', []) if row.get('id')}
+    by_id = {
+        str(row.get('id')).casefold(): row
+        for row in m.get('scrapers', [])
+        if row.get('id')
+    }
     for provider_id in ids:
         if caps[provider_id].get('strategy') != 'quarantined':
             continue
