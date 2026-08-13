@@ -348,6 +348,7 @@ function summarizePolicy(providers, clients, config = {}) {
   const verifiedVf = qualified.filter((provider) => provider.is_vf).length;
   const totalTargetMet = verifiedTotal >= targetTotal;
   const vfMinimumMet = verifiedVf >= minimumVf;
+  const objectiveMet = totalTargetMet && vfMinimumMet;
   return {
     target_total: targetTotal,
     minimum_vf: minimumVf,
@@ -355,7 +356,9 @@ function summarizePolicy(providers, clients, config = {}) {
     verified_vf: verifiedVf,
     total_target_met: totalTargetMet,
     vf_minimum_met: vfMinimumMet,
-    blocking_pass: vfMinimumMet,
+    objective_met: objectiveMet,
+    advisory_only: config.policy?.blocking !== true,
+    blocking_pass: config.policy?.blocking !== true || objectiveMet,
     require_identity_match: requireIdentityMatch,
     status: !vfMinimumMet ? 'vf_shortfall' : (totalTargetMet ? 'target_met' : 'vf_met_total_shortfall'),
     qualified_provider_ids: qualified.map((provider) => provider.id),
@@ -392,7 +395,7 @@ function markdown(report) {
     `| Total providers | ${report.policy.verified_total} | target ${report.policy.target_total} | ${report.policy.total_target_met ? 'yes' : 'no'} |`,
     `| VF providers | ${report.policy.verified_vf} | minimum ${report.policy.minimum_vf} | ${report.policy.vf_minimum_met ? 'yes' : 'no'} |`,
     '',
-    `Policy status: **${report.policy.status}**. The VF minimum is blocking; a total shortfall is reported but tolerated.`,
+    `Coverage status: **${report.policy.status}**. Both thresholds are advisory objectives; a shortfall never invalidates the work or the lab run.`,
     '',
     `A provider is counted only when it is ${report.policy.qualification}.`,
     '',
