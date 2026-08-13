@@ -18,7 +18,7 @@ legacy=expected.replace(marker,'/* NUVIO_ADAPTIVE_RUNTIME_RECOVERY_V4:legacy0000
 provenance={'local_patches':[{'type':'patch_profile','profile':'adaptive_runtime_recovery','phase':'runtime','options':options}]}
 upgraded,records=reapply.reapply_adaptive_runtime_revision(legacy.encode(),provenance)
 assert upgraded.decode()==expected
-assert records and records[0]['runtime_revision']=='bounded-binary-v1'
+assert records and records[0]['runtime_revision']=='generic-core-v2'
 unchanged,records=reapply.reapply_adaptive_runtime_revision(base.encode(),provenance)
 assert unchanged.decode()==base and records==[]
 unchanged,records=reapply.reapply_adaptive_runtime_revision(legacy.encode(),{'local_patches':[]})
