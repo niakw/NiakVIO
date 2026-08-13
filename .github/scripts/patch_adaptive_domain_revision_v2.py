@@ -7,14 +7,6 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 
 
-def replace_once(path: str, old: str, new: str) -> None:
-    target = ROOT / path
-    text = target.read_text(encoding="utf-8")
-    if text.count(old) != 1:
-        raise SystemExit(f"{path}: expected exactly one migration anchor: {old[:100]!r}")
-    target.write_text(text.replace(old, new, 1), encoding="utf-8")
-
-
 # Teach the central published-provider reapply transaction to migrate the
 # adaptive-domain wrapper from the configuration embedded in its owned block.
 path = ROOT / "scripts" / "reapply_published_overrides.py"
@@ -84,11 +76,20 @@ def reapply_adaptive_domain_revision(data: bytes) -> tuple[bytes, list[dict[str,
         raise SystemExit("reapply: load_manifest anchor missing")
     text = text.replace(fn_anchor, fn + fn_anchor, 1)
 
-    call_anchor = '''        patched, records = apply_overrides(provider_id, migrated, phase="discovery")
+    # Canonical transaction order matters. Migrate the adaptive-domain wrapper
+    # first, then let apply_overrides() rebuild its runtime-domain bootstrap at
+    # the front exactly once. Doing this in the opposite order makes pass one
+    # produce [adaptive-domain][runtime-domain] and pass two reorder it to
+    # [runtime-domain][adaptive-domain], changing hashes and versions twice.
+    call_anchor = '''        original = path.read_bytes()
+        migrated, adaptive_language_repairs = strip_unproven_adaptive_language(original)
+        patched, records = apply_overrides(provider_id, migrated, phase="discovery")
         provider_provenance = provenance_rows.get(provider_id) if provenance_rows else None
 '''
-    call = '''        patched, records = apply_overrides(provider_id, migrated, phase="discovery")
-        patched, domain_revision_records = reapply_adaptive_domain_revision(patched)
+    call = '''        original = path.read_bytes()
+        migrated, adaptive_language_repairs = strip_unproven_adaptive_language(original)
+        migrated, domain_revision_records = reapply_adaptive_domain_revision(migrated)
+        patched, records = apply_overrides(provider_id, migrated, phase="discovery")
         if domain_revision_records:
             records = list(records) + domain_revision_records
         provider_provenance = provenance_rows.get(provider_id) if provenance_rows else None
@@ -96,6 +97,7 @@ def reapply_adaptive_domain_revision(data: bytes) -> tuple[bytes, list[dict[str,
     if call_anchor not in text:
         raise SystemExit("reapply: provider transaction anchor missing")
     text = text.replace(call_anchor, call, 1)
+
     text = text.replace(
         '"runtime_revision": "bounded-binary-v1",',
         '"runtime_revision": "generic-core-v2",',
