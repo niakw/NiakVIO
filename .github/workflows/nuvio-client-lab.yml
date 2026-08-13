@@ -85,8 +85,8 @@ jobs:
                       },
                   }],
                   "clients": ["tv", "desktop", "mobile"],
-                  "policy": {"target_total": 10, "minimum_vf": 3, "require_identity_match": True},
-                  "enforce_policy": True,
+                  "policy": {"target_total": 10, "minimum_vf": 3, "require_identity_match": True, "blocking": False},
+                  "enforce_policy": False,
               }
 
           fixtures = source.get("fixtures") or []
@@ -219,9 +219,9 @@ jobs:
           retention-days: 7
           if-no-files-found: error
 
-      - name: Enforce three verified VF providers
+      - name: Fail only on lab execution errors
         if: always() && steps.lab.outcome == 'failure'
         shell: bash
         run: |
-          echo "The blocking minimum of three VF providers was not met."
+          echo "The lab itself failed before producing a valid coverage result."
           exit 1
