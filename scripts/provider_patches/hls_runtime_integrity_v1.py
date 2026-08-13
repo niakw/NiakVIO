@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
-"""Append bounded HLS structural validation to provider stream output.
+"""Append bounded HLS validation and recovery to provider stream output.
 
-The guard is intentionally playback-oriented rather than an activation switch:
-it never disables a provider globally. It only removes an individual HLS result
-when the fetched payload conclusively proves that it is not a usable playlist
-(HTML/JSON masquerading as m3u8, header-only playlist, dead child playlist,
-etc.). Network/CORS/time-out uncertainty preserves the stream instead of
-turning transient reachability into a false negative.
+The guard is playback-oriented rather than an activation switch. A malformed
+HLS row is not treated as a dead provider: Niakvio first tries to normalize the
+response, follow public player/embed context and recover a real HLS/DASH/direct
+media source while preserving ordinary request headers. Only a conclusively
+invalid row with no bounded recovery path is removed.
 """
 from __future__ import annotations
 
@@ -21,8 +20,16 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
     cfg = dict(options or {})
     timeout_ms = max(1500, min(int(cfg.get("timeout_ms", 6500)), 12000))
     max_children = max(1, min(int(cfg.get("max_children", 2)), 4))
+    max_recovery_pages = max(1, min(int(cfg.get("max_recovery_pages", 4)), 8))
+    max_recovery_candidates = max(2, min(int(cfg.get("max_recovery_candidates", 12)), 24))
     payload = json.dumps(
-        {"timeoutMs": timeout_ms, "maxChildren": max_children, "implementationRevision": "structural-media-v2"},
+        {
+            "timeoutMs": timeout_ms,
+            "maxChildren": max_children,
+            "maxRecoveryPages": max_recovery_pages,
+            "maxRecoveryCandidates": max_recovery_candidates,
+            "implementationRevision": "recovery-first-v3",
+        },
         separators=(",", ":"),
     )
     marker = f"{MARKER}:{hashlib.sha256(payload.encode()).hexdigest()[:12]}"
@@ -48,25 +55,39 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
     return /\.m3u8(?:[?#]|$)/i.test(u)||u.indexOf("/hls/")>=0||u.indexOf("/hls2/")>=0||t==="hls"||t==="m3u8"||t.indexOf("mpegurl")>=0;
   }
   function absolute(raw,base){try{return new URL(clean(raw),base).toString()}catch(_e){return ""}}
-  function requestHeaders(stream){
+  function headerValue(stream,name){
+    var src=stream&&stream.headers&&typeof stream.headers==="object"?stream.headers:{};
+    var wanted=String(name||"").toLowerCase(),keys=Object.keys(src);
+    for(var i=0;i<keys.length;i++)if(String(keys[i]).toLowerCase()===wanted)return clean(src[keys[i]]);
+    return "";
+  }
+  function requestHeaders(stream,referer,range){
     var src=stream&&stream.headers&&typeof stream.headers==="object"?stream.headers:{};
     var out={};Object.keys(src).forEach(function(k){out[k]=String(src[k])});
-    if(!out.Accept)out.Accept="application/vnd.apple.mpegurl,application/x-mpegURL,text/plain,*/*";
+    if(referer&&!Object.keys(out).some(function(k){return k.toLowerCase()==="referer"}))out.Referer=referer;
+    if(referer&&!Object.keys(out).some(function(k){return k.toLowerCase()==="origin"})){
+      try{out.Origin=new URL(referer).origin}catch(_e){}
+    }
+    if(range&&!Object.keys(out).some(function(k){return k.toLowerCase()==="range"}))out.Range="bytes=0-4095";
+    if(!out.Accept)out.Accept="application/vnd.apple.mpegurl,application/x-mpegURL,application/dash+xml,video/*,text/plain,*/*";
     return out;
   }
-  async function fetchText(url,stream){
+  async function fetchBounded(url,stream,referer,range){
     if(!g||typeof g.fetch!=="function")return {state:"unknown",reason:"fetch_unavailable"};
     var controller=typeof AbortController!=="undefined"?new AbortController():null;
     var timer=setTimeout(function(){try{if(controller)controller.abort()}catch(_e){}},config.timeoutMs);
     try{
-      var response=await g.fetch(url,{method:"GET",redirect:"follow",headers:requestHeaders(stream),signal:controller?controller.signal:void 0});
+      var response=await g.fetch(url,{method:"GET",redirect:"follow",headers:requestHeaders(stream,referer,range),signal:controller?controller.signal:void 0});
       if(!response)return {state:"unknown",reason:"no_response"};
       if(response.status===404||response.status===410)return {state:"invalid",reason:"http_"+response.status};
       if(!response.ok)return {state:"unknown",reason:"http_"+response.status};
-      var body=clean(await response.text());
-      return {state:"ok",body:body,url:String(response.url||url),contentType:String(response.headers&&response.headers.get?response.headers.get("content-type")||"":"")};
+      var contentType=String(response.headers&&response.headers.get?response.headers.get("content-type")||"":"").toLowerCase();
+      return {state:"ok",response:response,url:String(response.url||url),contentType:contentType};
     }catch(error){return {state:"unknown",reason:error&&error.name==="AbortError"?"timeout":"network_error"}}
     finally{clearTimeout(timer);try{if(controller)controller.abort()}catch(_e){}}
+  }
+  async function responseText(result){
+    try{return clean(await result.response.text())}catch(_e){return ""}
   }
   function playlistKind(body){
     var text=clean(body);if(!/^#EXTM3U(?:\s|$)/i.test(text))return "invalid";
@@ -98,44 +119,123 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
     });
     return out.slice(0,config.maxChildren);
   }
-  async function validateChild(url,stream){
-    var result=await fetchText(url,stream);if(result.state!=="ok")return result.state;
-    var kind=playlistKind(result.body);return kind==="media"||kind==="master"?"valid":"invalid";
+  async function validateChild(url,stream,referer){
+    var result=await fetchBounded(url,stream,referer,false);if(result.state!=="ok")return result.state;
+    var body=await responseText(result),kind=playlistKind(body);return kind==="media"||kind==="master"?"valid":"invalid";
   }
-  async function validateHls(stream){
-    var result=await fetchText(String(stream.url||""),stream);
-    if(result.state!=="ok")return result.state;
-    var kind=playlistKind(result.body);
-    if(kind==="invalid"||kind==="header_only")return "invalid";
-    if(kind==="media")return "valid";
+  async function inspectHls(url,stream,referer){
+    var result=await fetchBounded(url,stream,referer,false);
+    if(result.state!=="ok")return {state:result.state,reason:result.reason||"fetch_failed",result:result};
+    var ct=result.contentType||"";
+    if(/^video\//i.test(ct))return {state:"direct",format:ct.indexOf("webm")>=0?"webm":"mp4",url:result.url,result:result};
+    var body=await responseText(result),kind=playlistKind(body);
+    if(kind==="invalid"||kind==="header_only")return {state:"invalid",kind:kind,body:body,result:result};
+    if(kind==="media")return {state:"valid",kind:kind,url:result.url,body:body,result:result};
 
-    var variants=variantUris(result.body,result.url||stream.url),audio=audioUris(result.body,result.url||stream.url);
-    if(!variants.length)return "invalid";
+    var variants=variantUris(body,result.url||url),audio=audioUris(body,result.url||url);
+    if(!variants.length)return {state:"invalid",kind:"master_without_variants",body:body,result:result};
     var variantState="invalid";
     for(var i=0;i<variants.length;i++){
-      var s=await validateChild(variants[i],stream);if(s==="valid"){variantState="valid";break}if(s==="unknown")variantState="unknown";
+      var s=await validateChild(variants[i],stream,result.url||referer);if(s==="valid"){variantState="valid";break}if(s==="unknown")variantState="unknown";
     }
-    if(variantState!=="valid")return variantState;
+    if(variantState!=="valid")return {state:variantState,kind:"master_child_"+variantState,body:body,result:result};
     if(audio.length){
       var audioState="invalid";
       for(var j=0;j<audio.length;j++){
-        var a=await validateChild(audio[j],stream);if(a==="valid"){audioState="valid";break}if(a==="unknown")audioState="unknown";
+        var a=await validateChild(audio[j],stream,result.url||referer);if(a==="valid"){audioState="valid";break}if(a==="unknown")audioState="unknown";
       }
-      if(audioState!=="valid")return audioState;
+      if(audioState!=="valid")return {state:audioState,kind:"audio_child_"+audioState,body:body,result:result};
     }
-    return "valid";
+    return {state:"valid",kind:"master",url:result.url,body:body,result:result};
+  }
+  function normalizedText(text){
+    return clean(text).replace(/\\u002[fF]/g,"/").replace(/\\\//g,"/").replace(/&amp;/g,"&");
+  }
+  function candidateUrls(text,base){
+    var body=normalizedText(text),out=[],seen={};
+    function add(raw){
+      var value=clean(raw).replace(/^['"]|['"]$/g,"");if(!value||/^javascript:|^data:/i.test(value))return;
+      var u=absolute(value,base);if(!/^https?:\/\//i.test(u)||seen[u])return;seen[u]=1;out.push(u);
+    }
+    var patterns=[
+      /(?:src|href|data-src|data-url|data-file|data-player|data-embed|file|source|url|playlist|hls|stream|embedUrl|embed_url)\s*[:=]\s*["']([^"']+)["']/gi,
+      /(https?:\/\/[^"'<>\s\\]+)/gi,
+      /["']([^"']+\.(?:m3u8|mpd|mp4|mkv|webm)(?:[?#][^"']*)?)["']/gi
+    ],m;
+    for(var i=0;i<patterns.length&&out.length<config.maxRecoveryCandidates;i++){
+      patterns[i].lastIndex=0;while((m=patterns[i].exec(body))!==null&&out.length<config.maxRecoveryCandidates)add(m[1]);
+    }
+    return out;
+  }
+  function mediaHint(url){return /\.m3u8(?:[?#]|$)|\/hls2?\//i.test(url)?"hls":/\.mpd(?:[?#]|$)/i.test(url)?"dash":/\.(?:mp4|mkv|webm)(?:[?#]|$)/i.test(url)?"direct":"page"}
+  function cloneRecovered(stream,url,format,referer){
+    var row=Object.assign({},stream,{url:url}),headers={};
+    var src=stream&&stream.headers&&typeof stream.headers==="object"?stream.headers:{};Object.keys(src).forEach(function(k){headers[k]=String(src[k])});
+    if(referer&&!Object.keys(headers).some(function(k){return k.toLowerCase()==="referer"}))headers.Referer=referer;
+    if(referer&&!Object.keys(headers).some(function(k){return k.toLowerCase()==="origin"}))try{headers.Origin=new URL(referer).origin}catch(_e){}
+    if(Object.keys(headers).length)row.headers=headers;
+    if(format==="hls"){row.type="hls";if("format" in row)row.format="m3u8"}
+    else if(format==="dash"){row.type="dash";if("format" in row)row.format="mpd"}
+    else if(format){row.type=format;if("format" in row)row.format=format}
+    return row;
+  }
+  async function probeDirect(url,stream,referer){
+    var result=await fetchBounded(url,stream,referer,true);if(result.state!=="ok")return null;
+    var ct=result.contentType||"";
+    if(/^video\//i.test(ct))return cloneRecovered(stream,result.url,ct.indexOf("webm")>=0?"webm":"mp4",referer);
+    if(/(?:application\/dash\+xml|application\/xml|text\/xml)/i.test(ct)||/\.mpd(?:[?#]|$)/i.test(result.url)){
+      var dash=await responseText(result);if(/<MPD(?:\s|>)/i.test(dash))return cloneRecovered(stream,result.url,"dash",referer);
+    }
+    if(/mpegurl/i.test(ct)||/\.m3u8(?:[?#]|$)/i.test(result.url)){
+      var hls=await inspectHls(result.url,stream,referer);if(hls.state==="valid")return cloneRecovered(stream,hls.url||result.url,"hls",referer);
+    }
+    return null;
+  }
+  async function recover(stream,inspection){
+    var queue=[],seen={},pages=0;
+    function enqueue(url,referer){var u=absolute(url,referer||String(stream.url||""));if(!/^https?:\/\//i.test(u)||seen[u]||u===String(stream.url||""))return;seen[u]=1;queue.push({url:u,referer:referer||""})}
+    var base=inspection&&inspection.result&&inspection.result.url||String(stream.url||"");
+    candidateUrls(inspection&&inspection.body||"",base).forEach(function(u){enqueue(u,base)});
+    [stream&&stream.playerUrl,stream&&stream.embedUrl,stream&&stream.pageUrl,stream&&stream.sourceUrl,stream&&stream.referrer,stream&&stream.referer,headerValue(stream,"referer")].forEach(function(u){if(u)enqueue(u,base)});
+    while(queue.length&&pages<config.maxRecoveryPages){
+      var item=queue.shift(),kind=mediaHint(item.url);
+      if(kind==="hls"){
+        var hls=await inspectHls(item.url,stream,item.referer);if(hls.state==="valid")return cloneRecovered(stream,hls.url||item.url,"hls",item.referer);if(hls.state==="direct")return cloneRecovered(stream,hls.url||item.url,hls.format||"mp4",item.referer);
+        candidateUrls(hls.body||"",hls.result&&hls.result.url||item.url).forEach(function(u){enqueue(u,hls.result&&hls.result.url||item.url)});continue;
+      }
+      if(kind==="direct"||kind==="dash"){
+        var direct=await probeDirect(item.url,stream,item.referer);if(direct)return direct;continue;
+      }
+      pages++;
+      var page=await fetchBounded(item.url,stream,item.referer,false);if(page.state!=="ok")continue;
+      var ct=page.contentType||"";
+      if(/^video\//i.test(ct))return cloneRecovered(stream,page.url,ct.indexOf("webm")>=0?"webm":"mp4",item.referer);
+      var body=await responseText(page);
+      if(/^#EXTM3U(?:\s|$)/i.test(body)){
+        var pageHls=await inspectHls(page.url,stream,item.referer);if(pageHls.state==="valid")return cloneRecovered(stream,pageHls.url||page.url,"hls",item.referer);
+      }
+      if(/<MPD(?:\s|>)/i.test(body))return cloneRecovered(stream,page.url,"dash",item.referer);
+      candidateUrls(body,page.url||item.url).forEach(function(u){enqueue(u,page.url||item.url)});
+    }
+    return null;
+  }
+  async function validateOrRecover(stream){
+    var inspection=await inspectHls(String(stream.url||""),stream,headerValue(stream,"referer"));
+    if(inspection.state==="valid"||inspection.state==="unknown")return stream;
+    if(inspection.state==="direct")return cloneRecovered(stream,inspection.url||String(stream.url||""),inspection.format||"mp4",headerValue(stream,"referer"));
+    var recovered=await recover(stream,inspection);if(recovered)return recovered;
+    return null;
   }
   async function filterRows(value){
     var rows=Array.isArray(value)?value:value&&Array.isArray(value.streams)?value.streams:null;
     if(!rows)return value;
     var checks=await Promise.all(rows.map(async function(stream){
       if(!hlsHint(stream))return stream;
-      var state=await validateHls(stream);
-      if(state==="invalid"){
-        try{console.warn("[Nuvio HLS integrity] rejected malformed playlist",String(stream&&stream.url||"").slice(0,180))}catch(_e){}
-        return null;
+      var output=await validateOrRecover(stream);
+      if(!output){
+        try{console.warn("[Nuvio HLS integrity] rejected malformed playlist after bounded recovery",String(stream&&stream.url||"").slice(0,180))}catch(_e){}
       }
-      return stream;
+      return output;
     }));
     var filtered=checks.filter(Boolean);
     if(Array.isArray(value))return filtered;
