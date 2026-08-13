@@ -18,8 +18,6 @@ if _spec is None or _spec.loader is None:
     raise RuntimeError(f"cannot load base runtime repair engine: {BASE_PATH}")
 _base = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(_base)
-
-# Re-export the stable engine API. Only candidate discovery/generation is extended.
 for _name in dir(_base):
     if not _name.startswith("__"):
         globals()[_name] = getattr(_base, _name)
@@ -29,6 +27,8 @@ INFRASTRUCTURE_HOSTS = {
     "arm.haglund.dev", "v3-cinemeta.strem.io", "raw.githubusercontent.com",
     "github.com", "npms.io", "lodash.com", "openjsf.org", "underscorejs.org",
 }
+ADAPTIVE_MARKER = "/* NUVIO_ADAPTIVE_RUNTIME_RECOVERY_V"
+ADAPTIVE_CALL = '})(typeof globalThis!=="undefined"?globalThis:this,'
 
 
 def _mapping_entry(mapping: Any, provider_id: str) -> dict[str, Any]:
@@ -75,7 +75,6 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
     capability = _mapping_entry(config.get("provider_capabilities"), provider_id)
     metadata = _provider_metadata(candidate)
     canonical = candidate.get("canonical") if isinstance(candidate.get("canonical"), dict) else {}
-
     if str(capability.get("strategy") or patch.get("capability") or "") == "official_domain_hub" and not patch.get("official_site"):
         return None
 
@@ -172,10 +171,6 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
 def _adaptive_failure(result: dict[str, Any]) -> bool:
     status = str(result.get("status") or "runtime_error")
     playable = _base.playable_stream_count(result)
-    # Runtime recovery is an expensive network fallback. A provider that is
-    # already healthy *and* has current playable proof does not need to be
-    # rewritten merely because a secondary fixture missed. Keep inconsistent
-    # "healthy" rows with zero playable proof eligible so the guard fails safe.
     if status == "healthy" and playable > 0:
         return False
     failures = {str(test.get("failure_class") or "") for test in _base._tests(result)}
@@ -190,18 +185,27 @@ def matching_profiles(candidate: dict[str, Any], result: dict[str, Any], source_
     config = config or load_overrides()
     matches = list(_base.matching_profiles(candidate, result, source_text, config))
     name = "adaptive_runtime_recovery"
-    # Adaptive wrappers are configuration-hashed and their patcher already
-    # replaces a stale wrapper when routing options change. Do not permanently
-    # suppress reevaluation merely because an older repair was accepted or its
-    # marker is present. On identical configuration apply() is a no-op and
-    # create_repair_candidate() safely returns structural_profile_made_no_change.
-    if (
-        _adaptive_failure(result)
-        and _adaptive_runtime_options(candidate, config) is not None
-        and name not in matches
-    ):
+    if _adaptive_failure(result) and _adaptive_runtime_options(candidate, config) is not None and name not in matches:
         matches.append(name)
     return matches
+
+
+def _strip_generated_adaptive_wrapper(source_text: str) -> str:
+    """Remove repository-generated adaptive wrappers before inferring native peers."""
+    cursor = 0
+    parts: list[str] = []
+    while True:
+        start = source_text.find(ADAPTIVE_MARKER, cursor)
+        if start < 0:
+            parts.append(source_text[cursor:])
+            break
+        parts.append(source_text[cursor:start])
+        call = source_text.find(ADAPTIVE_CALL, start)
+        end = source_text.find(");", call) if call >= 0 else -1
+        if call < 0 or end < 0:
+            raise ValueError("unterminated adaptive runtime recovery wrapper")
+        cursor = end + 2
+    return "".join(parts)
 
 
 def _source_endpoint_origins(source_text: str) -> list[str]:
@@ -225,9 +229,10 @@ def _apply_adaptive(parent_data: bytes, candidate: dict[str, Any]) -> tuple[byte
     if options is None:
         return parent_data, []
     source_text = parent_data.decode("utf-8", errors="strict")
+    native_source = _strip_generated_adaptive_wrapper(source_text)
     options = dict(options)
     peers = list(options.get("endpoint_origins") or [])
-    for peer in _source_endpoint_origins(source_text):
+    for peer in _source_endpoint_origins(native_source):
         if peer not in peers:
             peers.append(peer)
     options["endpoint_origins"] = peers[:32]
@@ -284,8 +289,6 @@ def create_repair_candidate(stage: Path, candidate: dict[str, Any], profile_name
     repaired["sha256"] = digest
     repaired["bytes"] = len(patched)
     repaired["local_patches"] = list(candidate.get("local_patches") or []) + records
-    # The strategy is generated from runtime evidence and per-candidate metadata.
-    # It must not be persisted as a static provider profile by deep_repair_loop.
     repaired["runtime_repair"] = {
         "parent_key": parent_key,
         "parent_sha256": parent_digest,
