@@ -40,6 +40,7 @@ CORE_FILES = [
     "automation/platform-runtime-contracts.json",
     "automation/nuvio-tv-runtime-contract.json",
     "automation/nuvio-client-upstreams.json",
+    "automation/nuvio-client-safety-findings.json",
     "scripts/deep_repair_loop.py",
     "scripts/runtime_repair.py",
     "scripts/apply_provider_overrides.py",

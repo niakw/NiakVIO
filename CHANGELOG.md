@@ -1,3 +1,11 @@
+## 5.20.50 — Quarantaine des durées contradictoires observées
+
+- Met VIXSRC en quarantaine cache-safe après un HLS Interstellar annoncé à 169 min mais mesuré à 4 765,75 s (~79 min, ratio 0,470).
+- Met Frenchstream en quarantaine cache-safe après un HLS Revenant S01E01 mesuré à 2 144,07 s (~35,7 min) contre 4 620 s attendues (ratio 0,464) sur TV, macOS et mobile.
+- Conserve DVDPlay et TopCartoons inertes ; ces quatre providers ne peuvent plus renvoyer de média même si un client garde une ancienne activation locale.
+- Lie toute baisse d’activation pour raison de sécurité au rapport distant, aux hashes des bundles testés et publiés, à la durée mesurée et au marqueur du bundle inerte ; un résultat CI inconclusif ou une qualité `Unknown` ne suffit pas.
+- Ramène l’activation publiée à 59/91 providers généraux et 21/26 VF, en privilégiant l’absence de résultat à un contenu tronqué ou contradictoire.
+
 ## 5.20.49 — Contradictions bloquantes et quarantaine cache-safe
 
 - Rend toute contradiction d’identité lisible bloquante dans le lab distant, indépendamment de l’objectif consultatif 10 providers / 3 VF et même si le provider est désactivé dans le manifest.

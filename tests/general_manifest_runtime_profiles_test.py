@@ -30,6 +30,7 @@ try:
         'direct_media',
         'html_scraper',
         'official_domain_hub',
+        'quarantined',
     }
     bad = sorted(
         (provider_id, caps[provider_id].get('strategy'))
@@ -37,6 +38,14 @@ try:
         if caps[provider_id].get('strategy') not in valid
     )
     assert not bad, bad
+    by_id = {str(row.get('id')): row for row in m.get('scrapers', []) if row.get('id')}
+    for provider_id in ids:
+        if caps[provider_id].get('strategy') != 'quarantined':
+            continue
+        row = by_id[provider_id]
+        assert row.get('enabled') is False, provider_id
+        bundle = (ROOT / str(row.get('filename') or '')).read_text(encoding='utf-8')
+        assert 'NUVIO_PROVIDER_QUARANTINE_V1' in bundle, provider_id
     assert d.get('provider_profile_generation', {}).get('provider_count') >= len(ids)
     print(f'general manifest runtime profiles test passed ({len(ids)} providers covered)')
 finally:

@@ -129,18 +129,28 @@ function assertSafeRows(id, fixtureId, rows, kind) {
   for (const id of targets) {
     const entry = entries[id];
     assert(entry, `missing manifest entry: ${id}`);
+    const patch = overrides?.provider_patches?.[id] || {};
+    const quarantined = patch.capability === 'quarantined' && patch?.manifest_overrides?.enabled === false;
     const providerPath = path.resolve(__dirname, '..', entry.filename);
     delete require.cache[require.resolve(providerPath)];
     const provider = require(providerPath);
     for (const fixture of fixtures) {
       const rows = await provider.getStreams(fixture.id, 'movie', null, null, {});
+      if (quarantined) {
+        assert.deepEqual(rows, [], `${id}/${fixture.id}: quarantined movie provider returned content`);
+        continue;
+      }
       assertSafeRows(id, fixture.id, rows, 'movie');
     }
     if (id === 'flemmix') continue;
     const tvRows = await provider.getStreams(tvFixture.id, 'tv', tvFixture.season, tvFixture.episode, {});
+    if (quarantined) {
+      assert.deepEqual(tvRows, [], `${id}/${tvFixture.id}: quarantined TV provider returned content`);
+      continue;
+    }
     assertSafeRows(id, tvFixture.id, tvRows, 'TV');
   }
-  console.log('VF catalogue recovery tests passed with current configured provider routes and content-proven non-preview HLS (Interstellar + Guardians Vol. 3 + Arcane S01E01)');
+  console.log('VF catalogue recovery tests passed with current routes, content-proven HLS, and inert safety quarantines (Interstellar + Guardians Vol. 3 + Arcane S01E01)');
 })().catch((error) => {
   console.error(error);
   process.exit(1);

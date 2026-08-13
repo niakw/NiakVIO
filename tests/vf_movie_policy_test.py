@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import json
+import importlib.util
 import re
 from pathlib import Path
 
@@ -10,6 +11,20 @@ manifest = json.loads((ROOT / 'manifest.json').read_text())['scrapers']
 activation = json.loads((ROOT / 'provider-activation-lkg.json').read_text())
 health_report = json.loads((ROOT / 'health-report.json').read_text())
 type_policy = json.loads((ROOT / 'provider-type-policy.json').read_text())['providers']
+validator_spec = importlib.util.spec_from_file_location(
+    'activation_validator_for_vf_policy',
+    ROOT / 'scripts' / 'validate_activation_preservation.py',
+)
+assert validator_spec is not None and validator_spec.loader is not None
+activation_validator = importlib.util.module_from_spec(validator_spec)
+validator_spec.loader.exec_module(activation_validator)
+patch_rows = activation_validator.provider_patch_rows(overrides)
+provenance_rows = activation_validator.provenance_rows(
+    json.loads((ROOT / 'PROVENANCE.json').read_text())
+)
+safety_rows = activation_validator.safety_finding_rows(
+    json.loads((ROOT / 'automation' / 'nuvio-client-safety-findings.json').read_text())
+)
 by_id = {str(row['id']).lower(): row for row in manifest}
 promotion_by_id = {
     str(row.get('id') or '').lower(): row
@@ -22,9 +37,10 @@ official = overrides['official_domain_hubs']
 # Mainstream VF movie providers must remain represented as movie-capable
 # providers. Activation follows the current deep proof policy: a provider may
 # stay enabled, or this exact deep run must record a conclusive failed-gate
-# decision. CI-inconclusive/network-only evidence may never silently shrink the
-# catalogue. This mirrors validate_activation_preservation.py rather than
-# hard-coding stale activation forever.
+# decision, or a complete wrong-content client-lab finding must match the
+# currently inert quarantine bundle. CI-inconclusive/network-only evidence may
+# never silently shrink the catalogue. This mirrors
+# validate_activation_preservation.py rather than hard-coding stale activation.
 expected_vf_movie = {
     'purstream', 'frenchstream', 'streamzo', 'movix', 'coflix', 'wookafr',
     'flemmix', 'nakios', 'toflix', 'papadustream',
@@ -39,6 +55,15 @@ for provider_id in sorted(expected_vf_movie):
     assert 'movie' in row['supportedTypes'], provider_id
     if row['enabled'] is True:
         assert provider_id in activation['active_ids'], provider_id
+        continue
+    safety_accepted, _ = activation_validator.configured_safety_quarantine(
+        provider_id,
+        row,
+        patch_rows.get(provider_id),
+        provenance_rows.get(provider_id),
+        safety_rows.get(provider_id),
+    )
+    if safety_accepted:
         continue
     report = promotion_by_id[provider_id]
     action = str(report.get('action') or '')

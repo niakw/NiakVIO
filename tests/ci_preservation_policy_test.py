@@ -39,9 +39,10 @@ assert 'continue\n\n            try:\n                destination, digest = copy
 validator_source = (ROOT / 'scripts/validate_activation_preservation.py').read_text(encoding='utf-8')
 assert 'ci_inconclusive_is_not_disablement_proof' in validator_source
 assert 'removed-disallowed-p2p' in validator_source
+assert 'configured_safety_quarantine' in validator_source
 
 
-def run_validator(*, manifest_rows, report_rows, mode='deep'):
+def run_validator(*, manifest_rows, report_rows, mode='deep', safety=None):
     with tempfile.TemporaryDirectory() as tmp:
         root = Path(tmp)
         (root / 'vf').mkdir()
@@ -59,6 +60,20 @@ def run_validator(*, manifest_rows, report_rows, mode='deep'):
             'test_mode': mode,
             'providers': report_rows,
         }), encoding='utf-8')
+        (root / 'provider-overrides.json').write_text(json.dumps(
+            (safety or {}).get('overrides', {})
+        ), encoding='utf-8')
+        (root / 'PROVENANCE.json').write_text(json.dumps(
+            (safety or {}).get('provenance', {})
+        ), encoding='utf-8')
+        (root / 'automation').mkdir()
+        (root / 'automation' / 'nuvio-client-safety-findings.json').write_text(json.dumps(
+            (safety or {}).get('findings', {})
+        ), encoding='utf-8')
+        for relative, content in (safety or {}).get('files', {}).items():
+            path = root / relative
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(content, encoding='utf-8')
         script = validator_source.replace(
             'ROOT = Path(__file__).resolve().parents[1]',
             f'ROOT = Path({str(root)!r})',
@@ -127,6 +142,83 @@ result = run_validator(
 )
 assert result.returncode == 1
 assert 'requires the current deep promotion report' in result.stderr
+
+
+# A playable wrong-content duration contradiction may disable an old provider
+# only when the finding, override, provenance and current inert bundle all agree.
+import hashlib
+
+quarantine_reason = 'fixture_duration_mismatch'
+quarantine_bundle = (
+    '/* NUVIO_PROVIDER_QUARANTINE_V1 reason=fixture_duration_mismatch */\n'
+    'module.exports={getStreams:async()=>[]};\n'
+)
+quarantine_sha = hashlib.sha256(quarantine_bundle.encode()).hexdigest()
+safety = {
+    'overrides': {'provider_patches': {'b': {
+        'capability': 'quarantined',
+        'manifest_overrides': {'enabled': False},
+        'patch_scripts': ['scripts/provider_patches/quarantine_provider_v1.py'],
+        'patch_script_options': {'scripts/provider_patches/quarantine_provider_v1.py': {
+            'reason': quarantine_reason,
+        }},
+    }}},
+    'provenance': {'providers': {'b': {
+        'activation_mode': 'configured_safety_quarantine',
+        'activation_eligible': False,
+        'activation_blockers': ['configured_safety_quarantine'],
+        'published_filename': 'providers/b--quarantined.js',
+        'patched_sha256': quarantine_sha,
+    }}},
+    'findings': {'findings': [{
+        'provider_id': 'b',
+        'evidence_type': 'duration_identity_mismatch',
+        'quarantine_reason': quarantine_reason,
+        'workflow_run_id': 123,
+        'tested_commit_sha': '1' * 40,
+        'tested_bundle_sha256': '2' * 64,
+        'transport_playable': True,
+        'expected_duration_seconds': 6000,
+        'measured_duration_seconds': 2400,
+        'duration_ratio': 0.4,
+        'minimum_duration_ratio': 0.55,
+        'maximum_duration_ratio': 1.8,
+        'clients_with_contradiction': ['tv'],
+        'quarantined_bundle': 'providers/b--quarantined.js',
+        'quarantined_bundle_sha256': quarantine_sha,
+    }]},
+    'files': {'providers/b--quarantined.js': quarantine_bundle},
+}
+result = run_validator(
+    manifest_rows=[
+        {'id': 'a', 'enabled': True},
+        {'id': 'b', 'enabled': False, 'filename': 'providers/b--quarantined.js'},
+    ],
+    report_rows=[
+        {'id': 'a', 'enabled': True, 'action': 'enabled-current-dns-access-stream-quality-passed', 'failed_gates': []},
+        {'id': 'b', 'enabled': True, 'action': 'enabled-current-dns-access-stream-quality-passed', 'failed_gates': []},
+    ],
+    safety=safety,
+)
+assert result.returncode == 0, result.stdout + result.stderr
+
+# A label or an incomplete finding cannot masquerade as proof: the same disabled
+# provider is rejected when the measured duration is within the accepted range.
+safety['findings']['findings'][0]['measured_duration_seconds'] = 6000
+safety['findings']['findings'][0]['duration_ratio'] = 1.0
+result = run_validator(
+    manifest_rows=[
+        {'id': 'a', 'enabled': True},
+        {'id': 'b', 'enabled': False, 'filename': 'providers/b--quarantined.js'},
+    ],
+    report_rows=[
+        {'id': 'a', 'enabled': True, 'action': 'enabled-current-dns-access-stream-quality-passed', 'failed_gates': []},
+        {'id': 'b', 'enabled': True, 'action': 'enabled-current-dns-access-stream-quality-passed', 'failed_gates': []},
+    ],
+    safety=safety,
+)
+assert result.returncode == 1
+assert 'promotion_report_still_marks_provider_enabled' in result.stderr
 
 
 # Verified manifest-language fallback regression tests.

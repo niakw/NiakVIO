@@ -9471,9 +9471,9 @@
     },
     "frenchstream": {
       "id": "frenchstream",
-      "published_filename": "providers/frenchstream--published-baseline--58b4b7e36817b5f2.js",
-      "sha256": "58b4b7e36817b5f2ba610658b2681cc5c72cefb42a7b9fa025bf99cc93e43492",
-      "patched_sha256": "58b4b7e36817b5f2ba610658b2681cc5c72cefb42a7b9fa025bf99cc93e43492",
+      "published_filename": "providers/frenchstream--published-baseline--7c38e3cc9648578e.js",
+      "sha256": "7c38e3cc9648578eb5c563a1cb377e1e075debd659dfa0e2288a04e209ee1d4f",
+      "patched_sha256": "7c38e3cc9648578eb5c563a1cb377e1e075debd659dfa0e2288a04e209ee1d4f",
       "upstream_sha256": "b91c0d32785411f1c788166d8dcc91a8fd9c17348b20abeac96ead20506044b1",
       "local_patches": [
         {
@@ -9492,6 +9492,11 @@
           "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
           "phase": "discovery",
           "scope": "global_playback_integrity"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/quarantine_provider_v1.py",
+          "phase": "discovery"
         }
       ],
       "source": "published-baseline",
@@ -9505,13 +9510,15 @@
       "check_mode": "deep",
       "check_status": "healthy",
       "health_score": 80,
-      "activation_eligible": true,
-      "strict_activation_eligible": true,
+      "activation_eligible": false,
+      "strict_activation_eligible": false,
       "strict_grace_eligible": false,
       "historical_quality_grace_eligible": false,
       "runtime_evidence_eligible": false,
-      "activation_mode": "strict_current",
-      "activation_blockers": [],
+      "activation_mode": "configured_safety_quarantine",
+      "activation_blockers": [
+        "configured_safety_quarantine"
+      ],
       "activation_gates": {
         "01_policy_safe_no_p2p": {
           "passed": true,
@@ -20573,9 +20580,9 @@
     },
     "vixsrc": {
       "id": "vixsrc",
-      "published_filename": "providers/vixsrc--nuvio--1c312fefefae3260.js",
-      "sha256": "1c312fefefae3260a39ab14f2aa2f59d6c0ef7ec583bb89a8161fb46e517aab0",
-      "patched_sha256": "1c312fefefae3260a39ab14f2aa2f59d6c0ef7ec583bb89a8161fb46e517aab0",
+      "published_filename": "providers/vixsrc--nuvio--e9d9fa337bda6d08.js",
+      "sha256": "e9d9fa337bda6d0832926f551de6873e5e15685ea2f4502472d5207b240eaf4f",
+      "patched_sha256": "e9d9fa337bda6d0832926f551de6873e5e15685ea2f4502472d5207b240eaf4f",
       "upstream_sha256": "b38a464f826f7ea87fee2c4e483ccbe9d5925e8a89a678a816b77873245611eb",
       "local_patches": [
         {
@@ -20588,6 +20595,11 @@
           "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
           "phase": "discovery",
           "scope": "global_playback_integrity"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/quarantine_provider_v1.py",
+          "phase": "discovery"
         }
       ],
       "source": "aio",
@@ -20601,13 +20613,15 @@
       "check_mode": "deep",
       "check_status": "healthy",
       "health_score": 94,
-      "activation_eligible": true,
-      "strict_activation_eligible": true,
+      "activation_eligible": false,
+      "strict_activation_eligible": false,
       "strict_grace_eligible": false,
       "historical_quality_grace_eligible": false,
       "runtime_evidence_eligible": false,
-      "activation_mode": "strict_current",
-      "activation_blockers": [],
+      "activation_mode": "configured_safety_quarantine",
+      "activation_blockers": [
+        "configured_safety_quarantine"
+      ],
       "activation_gates": {
         "01_policy_safe_no_p2p": {
           "passed": true,

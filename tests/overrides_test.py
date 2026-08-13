@@ -57,7 +57,10 @@ def test_staged_artifact_contract() -> None:
 def test_domain_overrides() -> None:
     source = b"const BASE='https://french-stream.one';"
     output, patch_records = apply_overrides("frenchstream", source)
-    assert b"fs16.lol" in output
+    # The stable domain migration is still recorded during discovery, but the
+    # terminal safety patch deliberately replaces the whole artifact with an
+    # inert provider while Frenchstream is quarantined.
+    assert b"NUVIO_PROVIDER_QUARANTINE_V1" in output
     assert b"french-stream.one" not in output
     assert any(
         row.get("from") == "french-stream.one"
@@ -251,7 +254,9 @@ test_idempotent_override_validation()
 def test_chained_provider_patch_scripts_and_output_guard() -> None:
     sanitizer = "scripts/provider_patches/stream_output_sanitizer_v5.py"
     source = b'''async function getStreams(){return [{url:"http://fstream.top/bad.m3u8"},{url:"https://media.example/malformed.m3u8"},{url:"https://media.example/good.m3u8"}]};module.exports={getStreams};'''
-    output, records = apply_overrides("frenchstream", source)
+    # StreamZo remains active and exercises the complete recovery/sanitizer
+    # chain. Frenchstream now terminates in the quarantine patch by design.
+    output, records = apply_overrides("streamzo", source)
     assert b"NUVIO_STREAM_OUTPUT_SANITIZER_V4" in output
     assert b"NUVIO_STREAM_OUTPUT_SANITIZER_UTF8_BOM_V5" in output
     assert b"NUVIO_VF_CATALOGUE_RECOVERY_V1" in output
@@ -260,7 +265,7 @@ def test_chained_provider_patch_scripts_and_output_guard() -> None:
         and row.get("path") == sanitizer
         for row in records
     )
-    second, second_records = apply_overrides("frenchstream", output)
+    second, second_records = apply_overrides("streamzo", output)
     assert second == output
     assert b"NUVIO_STREAM_OUTPUT_SANITIZER_V4" in second
     assert b"NUVIO_STREAM_OUTPUT_SANITIZER_UTF8_BOM_V5" in second

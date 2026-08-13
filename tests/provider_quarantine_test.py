@@ -17,6 +17,8 @@ config = json.loads((ROOT / "provider-overrides.json").read_text(encoding="utf-8
 for provider_id, reason in (
     ("topcartoons", "cross_title_content_mismatch"),
     ("dvdplay", "cross_title_media_filename_mismatch"),
+    ("frenchstream", "revenant_episode_duration_mismatch"),
+    ("vixsrc", "interstellar_duration_mismatch"),
 ):
     policy = config["provider_patches"][provider_id]
     assert policy["manifest_overrides"]["enabled"] is False

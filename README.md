@@ -146,7 +146,7 @@ La cible de couverture est **10 providers jouables par œuvre, dont au moins 3 V
 
 La souplesse ne concerne que la quantité. Toute contradiction d’identité sur un média lisible bloque le job, y compris pour un provider désactivé, car Nuvio peut conserver une ancienne activation locale. Un provider ainsi confirmé dangereux doit être publié avec un bundle inerte avant que le lab puisse repasser.
 
-Configuration et tests : [`nuvio-client-lab.json`](.github/triggers/nuvio-client-lab.json), [`nuvio_client_lab.cjs`](scripts/nuvio_client_lab.cjs) et [`nuvio_client_lab.test.cjs`](tests/nuvio_client_lab.test.cjs).
+Configuration, preuves et tests : [`nuvio-client-lab.json`](.github/triggers/nuvio-client-lab.json), [`nuvio-client-safety-findings.json`](automation/nuvio-client-safety-findings.json), [`nuvio_client_lab.cjs`](scripts/nuvio_client_lab.cjs) et [`nuvio_client_lab.test.cjs`](tests/nuvio_client_lab.test.cjs).
 
 ---
 

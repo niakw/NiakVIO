@@ -1,0 +1,71 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-08-13T18:40:00Z",
+  "policy": {
+    "evidence_required": "transport-playable media with an identity contradiction",
+    "duration_ratio_range": {
+      "minimum": 0.55,
+      "maximum": 1.8
+    },
+    "coverage_objectives_are_advisory": true,
+    "identity_contradictions_are_blocking": true
+  },
+  "findings": [
+    {
+      "provider_id": "VIXSRC",
+      "evidence_type": "duration_identity_mismatch",
+      "quarantine_reason": "interstellar_duration_mismatch",
+      "workflow_run_id": 31730973711,
+      "tested_commit_sha": "1931233134eca12d5e3407abe395840fad823aaa",
+      "tested_bundle": "providers/vixsrc--nuvio--1c312fefefae3260.js",
+      "tested_bundle_sha256": "1c312fefefae3260a39ab14f2aa2f59d6c0ef7ec583bb89a8161fb46e517aab0",
+      "fixture": {
+        "tmdbId": "157336",
+        "mediaType": "movie",
+        "title": "Interstellar",
+        "year": 2014
+      },
+      "transport_playable": true,
+      "expected_duration_seconds": 10140,
+      "measured_duration_seconds": 4765.75,
+      "duration_ratio": 0.46999506903353055,
+      "minimum_duration_ratio": 0.55,
+      "maximum_duration_ratio": 1.8,
+      "clients_with_contradiction": [
+        "tv"
+      ],
+      "quarantined_bundle": "providers/vixsrc--nuvio--e9d9fa337bda6d08.js",
+      "quarantined_bundle_sha256": "e9d9fa337bda6d0832926f551de6873e5e15685ea2f4502472d5207b240eaf4f"
+    },
+    {
+      "provider_id": "frenchstream",
+      "evidence_type": "duration_identity_mismatch",
+      "quarantine_reason": "revenant_episode_duration_mismatch",
+      "workflow_run_id": 31730973711,
+      "tested_commit_sha": "1931233134eca12d5e3407abe395840fad823aaa",
+      "tested_bundle": "providers/frenchstream--published-baseline--58b4b7e36817b5f2.js",
+      "tested_bundle_sha256": "58b4b7e36817b5f2ba610658b2681cc5c72cefb42a7b9fa025bf99cc93e43492",
+      "fixture": {
+        "tmdbId": "210702",
+        "mediaType": "tv",
+        "title": "Revenant",
+        "year": 2023,
+        "season": 1,
+        "episode": 1
+      },
+      "transport_playable": true,
+      "expected_duration_seconds": 4620,
+      "measured_duration_seconds": 2144.0710000000013,
+      "duration_ratio": 0.4640846320346323,
+      "minimum_duration_ratio": 0.55,
+      "maximum_duration_ratio": 1.8,
+      "clients_with_contradiction": [
+        "tv",
+        "desktop_macos",
+        "mobile"
+      ],
+      "quarantined_bundle": "providers/frenchstream--published-baseline--7c38e3cc9648578e.js",
+      "quarantined_bundle_sha256": "7c38e3cc9648578eb5c563a1cb377e1e075debd659dfa0e2288a04e209ee1d4f"
+    }
+  ]
+}

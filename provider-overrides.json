@@ -107,7 +107,8 @@
       "notes": [
         "Resolve the current terminal site from fstream.org before applying the provider.",
         "Reject known short preview/troll players independently from the Frenchstream site address.",
-        "Expose current episode mirrors before the legacy Frenchstream resolver, resolve Vidzy/FSVid/Uqload target media, then sanitize the final output instead of accepting the troll fallback."
+        "Expose current episode mirrors before the legacy Frenchstream resolver, resolve Vidzy/FSVid/Uqload target media, then sanitize the final output instead of accepting the troll fallback.",
+        "Quarantined after playable media returned for Revenant S01E01 measured 2144 seconds versus 4620 expected (ratio 0.464) on TV, macOS and mobile; publish an inert bundle for cache-safe client behavior."
       ],
       "replacements": {
         "french-stream.one": "fs16.lol",
@@ -121,9 +122,10 @@
       "manifest_overrides": {
         "logo": "https://fs16.lol/favicon.ico",
         "supportsExternalPlayer": false,
-        "disabledPlatforms": []
+        "disabledPlatforms": [],
+        "enabled": false
       },
-      "capability": "mixed_embed_resolver",
+      "capability": "quarantined",
       "runtime_domain_replacements": {
         "french-stream.one": "fs16.lol",
         "frenchstream.food": "fs16.lol",
@@ -137,7 +139,8 @@
         "scripts/provider_patches/frenchstream_raw_tv_fallback.py",
         "scripts/provider_patches/nuvio_tv_target_media_v4.py",
         "scripts/provider_patches/stream_output_sanitizer_v5.py",
-        "scripts/provider_patches/desktop_runtime_compat_v1.py"
+        "scripts/provider_patches/desktop_runtime_compat_v1.py",
+        "scripts/provider_patches/quarantine_provider_v1.py"
       ],
       "patch_script_options": {
         "scripts/provider_patches/stream_output_sanitizer_v5.py": {
@@ -192,6 +195,9 @@
         },
         "scripts/provider_patches/desktop_runtime_compat_v1.py": {
           "normalize_missing_episodes": true
+        },
+        "scripts/provider_patches/quarantine_provider_v1.py": {
+          "reason": "revenant_episode_duration_mismatch"
         }
       },
       "official_hub": "https://fstream.org/",
@@ -423,12 +429,22 @@
         "sub.wyzie.ru": "sub.wyzie.io"
       },
       "notes": [
-        "Automatically migrated sub.wyzie.ru to sub.wyzie.io after French ISP DNS/HTTP preflight redirect validation."
+        "Automatically migrated sub.wyzie.ru to sub.wyzie.io after French ISP DNS/HTTP preflight redirect validation.",
+        "Quarantined after a playable HLS advertised as the 169-minute Interstellar measured only 4765.75 seconds (ratio 0.470). The bundle is inert for cache-safe client behavior."
       ],
-      "capability": "direct_media",
+      "capability": "quarantined",
       "profiles": [],
       "manifest_overrides": {
-        "disabledPlatforms": []
+        "disabledPlatforms": [],
+        "enabled": false
+      },
+      "patch_scripts": [
+        "scripts/provider_patches/quarantine_provider_v1.py"
+      ],
+      "patch_script_options": {
+        "scripts/provider_patches/quarantine_provider_v1.py": {
+          "reason": "interstellar_duration_mismatch"
+        }
       }
     },
     "mallumv": {
@@ -2515,10 +2531,10 @@
       ]
     },
     "frenchstream": {
-      "strategy": "mixed_embed_resolver",
-      "validation": "provider_native",
-      "allow_html_url": true,
-      "requires_direct_media": false,
+      "strategy": "quarantined",
+      "validation": "blocked_revenant_episode_duration_mismatch",
+      "allow_html_url": false,
+      "requires_direct_media": true,
       "observed_origins": [
         "https://npms.io",
         "https://video.sibnet.ru",
@@ -3075,8 +3091,8 @@
       "generated_from_manifest_or_stage": true
     },
     "vixsrc": {
-      "strategy": "direct_media",
-      "validation": "media_url",
+      "strategy": "quarantined",
+      "validation": "blocked_interstellar_duration_mismatch",
       "allow_html_url": false,
       "requires_direct_media": true,
       "observed_origins": [
