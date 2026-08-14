@@ -37,10 +37,11 @@ official = overrides['official_domain_hubs']
 # Mainstream VF movie providers must remain represented as movie-capable
 # providers. Activation follows the current deep proof policy: a provider may
 # stay enabled, or this exact deep run must record a conclusive failed-gate
-# decision, or a complete wrong-content client-lab finding must match the
-# currently inert quarantine bundle. CI-inconclusive/network-only evidence may
-# never silently shrink the catalogue. This mirrors
-# validate_activation_preservation.py rather than hard-coding stale activation.
+# decision, or a complete client-lab/configured quarantine or publication-scoped
+# catalogue-audit quarantine must match the currently inert bundle.
+# CI-inconclusive/network-only evidence may never silently shrink the catalogue.
+# This mirrors validate_activation_preservation.py rather than hard-coding stale
+# pre-audit promotion state.
 expected_vf_movie = {
     'purstream', 'frenchstream', 'streamzo', 'movix', 'coflix', 'wookafr',
     'flemmix', 'nakios', 'toflix', 'papadustream',
@@ -64,6 +65,12 @@ for provider_id in sorted(expected_vf_movie):
         safety_rows.get(provider_id),
     )
     if safety_accepted:
+        continue
+    audit_accepted, _ = activation_validator.catalogue_audit_safety_quarantine(
+        row,
+        provenance_rows.get(provider_id),
+    )
+    if audit_accepted:
         continue
     report = promotion_by_id[provider_id]
     action = str(report.get('action') or '')
