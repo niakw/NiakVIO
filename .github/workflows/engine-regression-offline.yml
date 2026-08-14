@@ -1,4 +1,4 @@
-# Read-only validation after VF quarantine policy alignment.
+# Read-only validation of the exact published provider generation.
 name: Validate provider engine regressions offline
 
 on:
@@ -8,10 +8,17 @@ on:
       - main
     paths:
       - ".github/triggers/offline-engine-regression"
+      - "manifest.json"
+      - "vf/manifest.json"
+      - "PROVENANCE.json"
+      - "FILE-HASHES.json"
+      - "PATCH-SHA256SUMS.txt"
+      - "SHA256SUMS.json"
       - "scripts/apply_provider_overrides.py"
       - "scripts/reapply_published_overrides.py"
       - "scripts/validate_published_overrides.py"
       - "scripts/validate_activation_preservation.py"
+      - "scripts/validate_nuvio_tv_runtime_policy.py"
       - "scripts/audit_catalogue_identity_media.py"
       - "scripts/quarantine_catalogue_audit_failures.py"
       - "scripts/run_adaptive_deep_repair.py"
@@ -20,7 +27,6 @@ on:
       - "scripts/provider_compiler.py"
       - "scripts/provider_rebuild.py"
       - "tests/repair_identity_gate_test.py"
-      - ".github/workflows/engine-regression-offline.yml"
 
 permissions:
   contents: read
@@ -61,6 +67,7 @@ jobs:
           python -m py_compile scripts/reapply_published_overrides.py
           python -m py_compile scripts/validate_published_overrides.py
           python -m py_compile scripts/validate_activation_preservation.py
+          python -m py_compile scripts/validate_nuvio_tv_runtime_policy.py
           python -m py_compile scripts/audit_catalogue_identity_media.py
           python -m py_compile scripts/quarantine_catalogue_audit_failures.py
           python -m py_compile scripts/run_adaptive_deep_repair.py
@@ -79,37 +86,6 @@ jobs:
           git status --short
           echo "--- reconstructed diff stat ---"
           git diff --stat
-          echo "--- quarantine security state ---"
-          python - <<'PY'
-          import hashlib, json
-          from pathlib import Path
-          root = Path('.')
-          manifest = json.loads(Path('manifest.json').read_text())
-          provenance = json.loads(Path('PROVENANCE.json').read_text()).get('providers', {})
-          overrides = json.loads(Path('provider-overrides.json').read_text()).get('provider_patches', {})
-          for row in manifest.get('scrapers', []):
-              pid = str(row.get('id') or '')
-              filename = str(row.get('filename') or '')
-              patch = overrides.get(pid.lower()) or overrides.get(pid) or {}
-              configured = isinstance(patch, dict) and (patch.get('manifest_overrides') or {}).get('enabled') is False
-              audit = '--nuvio-audit-quarantine--' in filename
-              if not (configured or audit):
-                  continue
-              prov = provenance.get(pid) or provenance.get(pid.lower()) or {}
-              path = root / filename
-              digest = hashlib.sha256(path.read_bytes()).hexdigest() if path.is_file() else None
-              print(json.dumps({
-                  'id': pid,
-                  'configured': configured,
-                  'audit': audit,
-                  'enabled': row.get('enabled'),
-                  'filename': filename,
-                  'provenance_sha_match': bool(digest and (prov.get('patched_sha256') or prov.get('sha256')) == digest),
-                  'activation_eligible': prov.get('activation_eligible'),
-                  'activation_mode': prov.get('activation_mode'),
-                  'activation_blockers': prov.get('activation_blockers'),
-              }, sort_keys=True))
-          PY
 
       - name: Validate reconstructed published generation
         run: |
@@ -121,7 +97,7 @@ jobs:
       - name: Run complete repository regression suite without mutating lifecycle hooks
         run: npm test --ignore-scripts
 
-      - name: Validate final release and expose persistence delta
+      - name: Validate final release and require zero drift
         run: |
           python scripts/reapply_published_overrides.py --check
           python scripts/validate_published_overrides.py
@@ -131,3 +107,4 @@ jobs:
           echo "--- final workspace delta ---"
           git status --short
           git diff --stat
+          test -z "$(git status --porcelain)"
