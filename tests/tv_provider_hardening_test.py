@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import importlib.util
 import json
+import subprocess
+import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -70,7 +73,109 @@ playable_source = (ROOT / playable_first).read_text(encoding='utf-8')
 assert '__native_fetch' in playable_source
 assert '.text()' in playable_source
 assert 'arrayBuffer' not in playable_source
+assert 'followRedirects' in playable_source
+assert '__NUVIO_TV_RUNTIME__' in playable_source
+assert 'fourArgNative' in playable_source
 for status in ('401', '403', '404', '410'):
     assert status in playable_source
+
+# Runtime-contract regression: Desktop/Mobile also expose __native_fetch, so that
+# symbol alone must never activate the TV probe. The official Desktop/Mobile
+# fetch bridge forwards a fifth followRedirects argument; NuvioTV uses the
+# four-argument native bridge and wraps it with options.signal handling.
+spec = importlib.util.spec_from_file_location(
+    'nuvio_tv_playable_first_test_module', ROOT / playable_first
+)
+assert spec is not None and spec.loader is not None
+playable_module = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(playable_module)
+
+base_provider = """
+globalThis.__native_fetch=function(){return JSON.stringify({ok:true,status:200,statusText:'OK',url:'https://media.example/test.m3u8',headers:{'content-type':'application/vnd.apple.mpegurl'},body:'#EXTM3U\\n#EXT-X-ENDLIST'});};
+let probeCount=0;
+__FETCH_IMPL__
+module.exports={getStreams:async()=>[{title:'Runtime scope control',url:'https://media.example/test.m3u8'}]};
+"""
+
+desktop_fetch = """
+globalThis.fetch=async function(url,options){
+  options=options||{};
+  var method=(options.method||'GET').toUpperCase();
+  var headers=options.headers||{};
+  var body=options.body||'';
+  var followRedirects=options.redirect!=='manual';
+  probeCount++;
+  var result=__native_fetch(url,method,JSON.stringify(headers),body,followRedirects);
+  var parsed=JSON.parse(result);
+  return {status:parsed.status,headers:{get:function(name){return parsed.headers[name.toLowerCase()]||null;}},text:function(){return Promise.resolve(parsed.body);}};
+};
+"""
+
+tv_fetch = """
+globalThis.fetch=async function(url,options){
+  options=options||{};
+  var method=(options.method||'GET').toUpperCase();
+  var headers=options.headers||{};
+  var body=options.body||'';
+  var signal=options.signal||null;
+  if(signal&&signal.aborted)throw new Error('aborted');
+  probeCount++;
+  var result=__native_fetch(url,method,JSON.stringify(headers),body);
+  var parsed=JSON.parse(result);
+  return {status:parsed.status,headers:{get:function(name){return parsed.headers[name.toLowerCase()]||null;}},text:function(){return Promise.resolve(parsed.body);}};
+};
+"""
+
+
+def execute_runtime_case(fetch_impl: str) -> dict:
+    provider_source = base_provider.replace('__FETCH_IMPL__', fetch_impl)
+    patched = playable_module.apply(
+        provider_source,
+        options={'max_probes': 1, 'timeout_ms': 1500},
+    )
+    program = patched + """
+;(async function(){
+  const rows=await module.exports.getStreams();
+  console.log(JSON.stringify({count:rows.length,probeCount:probeCount}));
+})().catch(function(error){console.error(error&&error.stack||error);process.exitCode=1;});
+"""
+    with tempfile.NamedTemporaryFile(
+        mode='w', suffix='.cjs', encoding='utf-8', delete=False
+    ) as handle:
+        handle.write(program)
+        path = Path(handle.name)
+    try:
+        completed = subprocess.run(
+            ['node', str(path)],
+            text=True,
+            capture_output=True,
+            timeout=10,
+            check=False,
+        )
+    finally:
+        path.unlink(missing_ok=True)
+    assert completed.returncode == 0, completed.stdout + completed.stderr
+    lines = [line.strip() for line in completed.stdout.splitlines() if line.strip()]
+    assert lines, completed.stdout + completed.stderr
+    return json.loads(lines[-1])
+
+
+desktop_result = execute_runtime_case(desktop_fetch)
+assert desktop_result == {'count': 1, 'probeCount': 0}, desktop_result
+
+tv_result = execute_runtime_case(tv_fetch)
+assert tv_result == {'count': 1, 'probeCount': 1}, tv_result
+
+# Existing bundles already carrying the original V1 marker must be upgraded in
+# place. Appending another wrapper would leave the unsafe first wrapper active.
+legacy_wrapped = (
+    '/* NUVIO_TV_PLAYABLE_FIRST_V1 */\n'
+    + playable_module.LEGACY_TV_PREDICATE
+    + '\nmodule.exports={getStreams:async()=>[]};\n'
+)
+upgraded = playable_module.apply(legacy_wrapped)
+assert playable_module.LEGACY_TV_PREDICATE not in upgraded
+assert playable_module.TV_PREDICATE in upgraded
+assert upgraded.count('NUVIO_TV_PLAYABLE_FIRST_V1') == 1
 
 print('Nuvio TV provider hardening policy tests passed')
