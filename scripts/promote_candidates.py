@@ -1648,6 +1648,7 @@ def main() -> int:
         if isinstance(override_config, dict)
         else {}
     )
+    override_policy = override_config
     registry = load_json(STAGE / "candidates.json")
     health = load_json(HEALTH_RESULTS_PATH)
     current_manifest = load_json(MANIFEST_PATH, {"scrapers": []})
