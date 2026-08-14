@@ -85,8 +85,11 @@ jobs:
           assert patch == 'scripts/provider_patches/runtime_capability_media_safety_v4.py', patch
 
           catalogue_budget = cfg.get('native_catalogue_recovery_budget') or {}
-          assert catalogue_budget.get('version') == 1, catalogue_budget
+          assert catalogue_budget.get('version') == 2, catalogue_budget
           assert set(catalogue_budget.get('native_platforms') or []) == {'desktop', 'mobile_android', 'tv_android'}, catalogue_budget
+          assert catalogue_budget.get('native_max_search_requests') == 4, catalogue_budget
+          assert catalogue_budget.get('native_max_candidate_pages') == 3, catalogue_budget
+          assert catalogue_budget.get('native_search_selection') == 'round_robin_across_title_aliases_and_search_routes', catalogue_budget
           assert catalogue_budget.get('targets'), catalogue_budget
 
           hls_budget = cfg.get('native_hls_integrity_budget') or {}
@@ -101,7 +104,8 @@ jobs:
           assert rows['streamzo'].get('enabled') is True
           payload = Path(rows['streamzo']['filename']).read_text(encoding='utf-8')
           assert payload.count('NUVIO_GLOBAL_RUNTIME_MEDIA_SAFETY_V1:') == 1
-          assert 'NUVIO_NATIVE_CATALOGUE_RECOVERY_BUDGET_V1' in payload
+          assert 'NUVIO_NATIVE_CATALOGUE_RECOVERY_BUDGET_V2' in payload
+          assert 'NUVIO_NATIVE_CATALOGUE_RECOVERY_BUDGET_V1 */' not in payload
           assert 'NUVIO_NATIVE_HLS_INTEGRITY_BUDGET_V1' in payload
           assert '"implementationRevision":"field-safety-v4-runtime-capability"' in payload
           print('native-safe engine-v4 promotion invariants passed')
