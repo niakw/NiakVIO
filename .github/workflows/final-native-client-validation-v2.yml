@@ -12,6 +12,7 @@ on:
       - "providers/**"
       - "scripts/provider_patches/**"
       - "scripts/prepare_native_client_validation.py"
+      - "scripts/harden_nuvio_mobile_device_test.py"
       - "scripts/run_final_native_android_lab.sh"
 
 permissions:
@@ -88,46 +89,7 @@ jobs:
           git -C nuvio-tv checkout "$NUVIO_TV_SHA"
           touch nuvio-tv/local.properties nuvio-tv/local.dev.properties
           python niakvio/scripts/prepare_native_client_validation.py android --workspace "$GITHUB_WORKSPACE"
-
-      - name: Harden NuvioMobile instrumentation environment
-        shell: bash
-        run: |
-          python3 - <<'PY'
-          from pathlib import Path
-
-          build = Path('nuvio-mobile/composeApp/build.gradle.kts')
-          text = build.read_text(encoding='utf-8')
-          needle = '''        withDeviceTest {
-              instrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-              execution = "HOST"
-          }
-
-          compilerOptions {'''
-          replacement = '''        withDeviceTest {
-              instrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-              execution = "HOST"
-          }
-          packaging {
-              jniLibs {
-                  pickFirsts.add("lib/*/libc++_shared.so")
-              }
-          }
-
-          compilerOptions {'''
-          if text.count(needle) != 1:
-              raise SystemExit(f'expected one prepared Android device-test block, found {text.count(needle)}')
-          build.write_text(text.replace(needle, replacement, 1), encoding='utf-8')
-
-          test_manifest = Path('nuvio-mobile/composeApp/src/androidDeviceTest/AndroidManifest.xml')
-          test_manifest.parent.mkdir(parents=True, exist_ok=True)
-          test_manifest.write_text('''<?xml version="1.0" encoding="utf-8"?>
-          <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-              <application>
-                  <meta-data android:name="io.sentry.auto-init" android:value="false" />
-              </application>
-          </manifest>
-          ''', encoding='utf-8')
-          PY
+          python niakvio/scripts/harden_nuvio_mobile_device_test.py "$GITHUB_WORKSPACE/nuvio-mobile"
 
       - name: Enable Linux KVM for Android emulator when available
         shell: bash
