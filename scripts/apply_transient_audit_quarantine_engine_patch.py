@@ -37,8 +37,6 @@ def patch_reapply() -> None:
             + provenance_line
             + "        audit_terminal_quarantine = (\n"
             + '            AUDIT_QUARANTINE_MARKER.encode("utf-8") in original\n'
-            + "            and isinstance(provider_provenance, dict)\n"
-            + '            and str(provider_provenance.get("activation_mode") or "") == AUDIT_QUARANTINE_MODE\n'
             + "        )\n"
             + "        if audit_terminal_quarantine:\n"
             + "            patched = original\n"
@@ -47,6 +45,11 @@ def patch_reapply() -> None:
             + indented
         )
         text = text[:start] + replacement + text[end:]
+
+    legacy = '''        audit_terminal_quarantine = (\n            AUDIT_QUARANTINE_MARKER.encode("utf-8") in original\n            and isinstance(provider_provenance, dict)\n            and str(provider_provenance.get("activation_mode") or "") == AUDIT_QUARANTINE_MODE\n        )\n'''
+    marker_only = '''        audit_terminal_quarantine = (\n            AUDIT_QUARANTINE_MARKER.encode("utf-8") in original\n        )\n'''
+    if legacy in text:
+        text = text.replace(legacy, marker_only, 1)
     path.write_text(text, encoding="utf-8")
 
 
@@ -88,6 +91,72 @@ def patch_validator() -> None:
         if anchor not in text:
             raise SystemExit("published validator anchor missing")
         text = text.replace(anchor, insertion + anchor, 1)
+    path.write_text(text, encoding="utf-8")
+
+
+def patch_activation_preservation() -> None:
+    path = ROOT / "scripts" / "validate_activation_preservation.py"
+    text = path.read_text(encoding="utf-8")
+    start = text.index("def catalogue_audit_safety_quarantine(\n")
+    end = text.index("\n\ndef conclusive_disablement(", start)
+    replacement = '''def catalogue_audit_safety_quarantine(
+    manifest_row: dict[str, Any] | None,
+    provenance: dict[str, Any] | None,
+) -> tuple[bool, str]:
+    """Accept a content-addressed inert catalogue-audit quarantine.
+
+    Older publication transactions could lose the verbose local audit record
+    while retaining the exact inert bundle, its catalogue-audit blocker and
+    matching provenance SHA/path. Those cryptographic/structural facts are the
+    durable evidence boundary; a future deep may still replace the quarantine
+    after proving a healthy candidate.
+    """
+    if not isinstance(manifest_row, dict) or not isinstance(provenance, dict):
+        return False, "missing_catalogue_audit_quarantine_evidence"
+    if manifest_row.get("enabled") is not False:
+        return False, "catalogue_audit_quarantine_manifest_not_disabled"
+
+    published_filename = str(manifest_row.get("filename") or "")
+    if "--nuvio-audit-quarantine--" not in published_filename:
+        return False, "catalogue_audit_quarantine_filename_marker_missing"
+    published_path = ROOT / published_filename
+    if not published_filename.startswith("providers/") or not published_path.is_file():
+        return False, "catalogue_audit_quarantine_bundle_missing"
+    published = published_path.read_text(encoding="utf-8")
+    if QUARANTINE_MARKER not in published or CATALOGUE_AUDIT_BLOCKER not in published:
+        return False, "catalogue_audit_quarantine_bundle_not_inert"
+    published_sha = file_sha256(published_path)
+    expected_suffix = published_filename.rsplit("--", 1)[-1].removesuffix(".js")
+    if expected_suffix != published_sha[:16]:
+        return False, "catalogue_audit_quarantine_content_address_mismatch"
+
+    if provenance.get("activation_eligible") is not False:
+        return False, "catalogue_audit_quarantine_provenance_still_eligible"
+    blockers = {str(value) for value in provenance.get("activation_blockers") or []}
+    if CATALOGUE_AUDIT_BLOCKER not in blockers:
+        return False, "catalogue_audit_quarantine_provenance_blocker_missing"
+    if str(provenance.get("published_filename") or "") != published_filename:
+        return False, "catalogue_audit_quarantine_provenance_path_mismatch"
+    if str(provenance.get("patched_sha256") or provenance.get("sha256") or "") != published_sha:
+        return False, "catalogue_audit_quarantine_provenance_sha_mismatch"
+
+    records = [
+        row for row in provenance.get("local_patches") or []
+        if isinstance(row, dict)
+        and row.get("type") == "safety_quarantine"
+        and row.get("source") == CATALOGUE_AUDIT_SOURCE
+    ]
+    if records:
+        record = records[-1]
+        if str(record.get("reason") or "") != CATALOGUE_AUDIT_BLOCKER:
+            return False, "catalogue_audit_quarantine_reason_mismatch"
+        contradictions = int(record.get("identity_contradictions") or 0)
+        playable = int(record.get("playable_streams") or 0)
+        if contradictions <= 0 or playable <= 0:
+            return False, "catalogue_audit_quarantine_record_not_conclusive"
+    return True, f"catalogue_audit_safety_quarantine:{CATALOGUE_AUDIT_BLOCKER}"
+'''
+    text = text[:start] + replacement + text[end:]
     path.write_text(text, encoding="utf-8")
 
 
@@ -137,6 +206,9 @@ def validate_markers() -> None:
         ROOT / "scripts" / "validate_published_overrides.py": [
             "audit safety quarantine provenance SHA mismatch",
         ],
+        ROOT / "scripts" / "validate_activation_preservation.py": [
+            "catalogue_audit_quarantine_content_address_mismatch",
+        ],
         ROOT / "scripts" / "audit_catalogue_identity_media.py": [
             "NUVIO_CATALOGUE_AUDIT_QUARANTINE_DONE",
             "quarantine_catalogue_audit_failures.py",
@@ -152,6 +224,7 @@ def validate_markers() -> None:
 def main() -> int:
     patch_reapply()
     patch_validator()
+    patch_activation_preservation()
     patch_audit()
     validate_markers()
     print("transient audit quarantine boundaries patched")
