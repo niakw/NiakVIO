@@ -1,4 +1,4 @@
-name: Permanent Mobile Android real-client lab v3
+name: Permanent Mobile Android real-client lab v4
 
 on:
   workflow_dispatch:
@@ -11,7 +11,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: permanent-mobile-android-real-client-v3
+  group: permanent-mobile-android-real-client-v4
   cancel-in-progress: false
 
 env:
@@ -45,18 +45,21 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Build exact engine-v3 lab candidate from published manifest
+      - name: Install locked provider validator dependencies
+        working-directory: niakvio
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Build exact engine-v4 lab candidate from published manifest
         working-directory: niakvio
         shell: bash
         run: |
           set -euxo pipefail
           python3 tests/runtime_media_safety_guard_test.py
-          python3 tests/runtime_media_safety_migration_test.py
-          python3 scripts/apply_runtime_capability_upgrade_v3.py
+          python3 tests/runtime_capability_media_safety_v4_test.py
+          python3 scripts/apply_runtime_capability_upgrade_v4.py
           python3 scripts/reapply_published_overrides.py
           python3 scripts/reapply_published_overrides.py --check
-          python3 tests/runtime_media_safety_guard_test.py
-          python3 tests/runtime_media_safety_migration_test.py
+          python3 tests/runtime_capability_media_safety_v4_test.py
           python3 scripts/validate_published_overrides.py
           python3 - <<'PY'
           import json
@@ -67,8 +70,7 @@ jobs:
           assert streamzo.get('enabled') is True
           payload = Path(streamzo['filename']).read_text(encoding='utf-8')
           assert payload.count('NUVIO_GLOBAL_RUNTIME_MEDIA_SAFETY_V1:') == 1
-          assert '"implementationRevision":"field-safety-v3-native-aware"' in payload
-          assert 'NUVIO_RUNTIME_MEDIA_SAFETY_MIGRATION_V1' in payload
+          assert '"implementationRevision":"field-safety-v4-runtime-capability"' in payload
           assert '"implementationRevision":"field-safety-v2"' not in payload
           for provider_id in ('moviebox', 'netmirror'):
               assert rows[provider_id].get('enabled') is False
