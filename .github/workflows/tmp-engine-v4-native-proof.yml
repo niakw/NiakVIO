@@ -43,18 +43,36 @@ jobs:
           distribution: temurin
           java-version: "17"
 
-      - name: Build exact engine-v4 candidate
+      - name: Build exact native-safe engine-v4 candidate
         working-directory: niakvio
         shell: bash
         run: |
           set -euxo pipefail
           npm ci --ignore-scripts --no-audit --no-fund
+          python3 tests/native_catalogue_recovery_budget_test.py
+          python3 tests/native_hls_integrity_budget_test.py
           python3 tests/runtime_capability_media_safety_v4_test.py
+          python3 scripts/apply_native_catalogue_recovery_budget_upgrade_v1.py
+          python3 scripts/apply_native_hls_integrity_budget_upgrade_v1.py
           python3 scripts/apply_runtime_capability_upgrade_v4.py
           python3 scripts/reapply_published_overrides.py
           python3 scripts/reapply_published_overrides.py --check
+          python3 tests/native_catalogue_recovery_budget_test.py
+          python3 tests/native_hls_integrity_budget_test.py
           python3 tests/runtime_capability_media_safety_v4_test.py
           python3 scripts/validate_published_overrides.py
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          manifest = json.loads(Path('manifest.json').read_text(encoding='utf-8'))
+          rows = {str(r.get('id') or '').casefold(): r for r in manifest.get('scrapers', []) if isinstance(r, dict)}
+          streamzo = rows['streamzo']
+          payload = Path(streamzo['filename']).read_text(encoding='utf-8')
+          assert 'NUVIO_NATIVE_CATALOGUE_RECOVERY_BUDGET_V1' in payload
+          assert 'NUVIO_NATIVE_HLS_INTEGRITY_BUDGET_V1' in payload
+          assert '"implementationRevision":"field-safety-v4-runtime-capability"' in payload
+          print('complete native-safe engine-v4 candidate markers verified')
+          PY
 
       - name: Install official Desktop player dependencies
         run: |
@@ -105,18 +123,36 @@ jobs:
           distribution: temurin
           java-version: "17"
 
-      - name: Build exact engine-v4 candidate
+      - name: Build exact native-safe engine-v4 candidate
         working-directory: niakvio
         shell: bash
         run: |
           set -euxo pipefail
           npm ci --ignore-scripts --no-audit --no-fund
+          python3 tests/native_catalogue_recovery_budget_test.py
+          python3 tests/native_hls_integrity_budget_test.py
           python3 tests/runtime_capability_media_safety_v4_test.py
+          python3 scripts/apply_native_catalogue_recovery_budget_upgrade_v1.py
+          python3 scripts/apply_native_hls_integrity_budget_upgrade_v1.py
           python3 scripts/apply_runtime_capability_upgrade_v4.py
           python3 scripts/reapply_published_overrides.py
           python3 scripts/reapply_published_overrides.py --check
+          python3 tests/native_catalogue_recovery_budget_test.py
+          python3 tests/native_hls_integrity_budget_test.py
           python3 tests/runtime_capability_media_safety_v4_test.py
           python3 scripts/validate_published_overrides.py
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          manifest = json.loads(Path('manifest.json').read_text(encoding='utf-8'))
+          rows = {str(r.get('id') or '').casefold(): r for r in manifest.get('scrapers', []) if isinstance(r, dict)}
+          streamzo = rows['streamzo']
+          payload = Path(streamzo['filename']).read_text(encoding='utf-8')
+          assert 'NUVIO_NATIVE_CATALOGUE_RECOVERY_BUDGET_V1' in payload
+          assert 'NUVIO_NATIVE_HLS_INTEGRITY_BUDGET_V1' in payload
+          assert '"implementationRevision":"field-safety-v4-runtime-capability"' in payload
+          print('complete native-safe engine-v4 candidate markers verified')
+          PY
 
       - name: Checkout official NuvioMobile and NuvioTV and inject engine-v4 candidate
         shell: bash
