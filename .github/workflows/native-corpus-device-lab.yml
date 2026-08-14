@@ -1,0 +1,140 @@
+name: Native corpus device lab
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - ".github/triggers/native-corpus-device-lab"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: native-corpus-device-lab
+  cancel-in-progress: true
+
+env:
+  NUVIO_DESKTOP_SHA: "8977fda639f5791947e6d8b36025635a77aed5da"
+  NUVIO_MOBILE_SHA: "0d6e30e4566e6f9f2051d5f80a1e3f1e0fcb1f18"
+  NUVIO_TV_SHA: "d95f3fb837b6ddfbf9ff445cdcba2413b576f0d4"
+
+jobs:
+  desktop-native-corpus:
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        fixture:
+          - interstellar
+          - mon-ninja-et-moi-3
+          - breaking-bad-s01e01
+          - revenant-s01e01
+          - jujutsu-kaisen-s01e01
+          - mushoku-tensei-s01e01
+    runs-on: ubuntu-latest
+    timeout-minutes: 100
+    steps:
+      - name: Checkout current Niakvio main
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: main
+          path: niakvio
+
+      - name: Set up JDK
+        uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Install official Desktop player dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev
+
+      - name: Checkout pinned official NuvioDesktop and inject full provider corpus
+        shell: bash
+        run: |
+          set -euxo pipefail
+          git clone --filter=blob:none --no-checkout https://github.com/NuvioMedia/NuvioDesktop.git nuvio-desktop
+          git -C nuvio-desktop checkout "$NUVIO_DESKTOP_SHA"
+          touch nuvio-desktop/local.properties
+          python3 niakvio/scripts/prepare_native_corpus_validation.py desktop \
+            --fixture "${{ matrix.fixture }}" \
+            --workspace "$GITHUB_WORKSPACE"
+
+      - name: Execute every provider in official Desktop PluginRuntime
+        working-directory: nuvio-desktop
+        shell: bash
+        run: |
+          set +e
+          ./gradlew :composeApp:desktopTest \
+            --tests 'com.nuvio.app.features.plugins.NiakvioNativeCorpusDesktopTest' \
+            --no-daemon --console=plain
+          STATUS=$?
+          set -e
+          echo "===== EXACT DESKTOP NATIVE CORPUS RESULTS: ${{ matrix.fixture }} ====="
+          cat "$GITHUB_WORKSPACE/desktop-native-corpus-${{ matrix.fixture }}.log" || true
+          exit "$STATUS"
+
+  android-mobile-tv-native-corpus:
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        fixture:
+          - interstellar
+          - mon-ninja-et-moi-3
+          - breaking-bad-s01e01
+          - revenant-s01e01
+          - jujutsu-kaisen-s01e01
+          - mushoku-tensei-s01e01
+    runs-on: ubuntu-latest
+    timeout-minutes: 160
+    steps:
+      - name: Checkout current Niakvio main
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: main
+          path: niakvio
+
+      - name: Set up JDK
+        uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Checkout pinned official Mobile and TV runtimes and inject full provider corpus
+        shell: bash
+        run: |
+          set -euxo pipefail
+          git clone --filter=blob:none --no-checkout https://github.com/NuvioMedia/NuvioMobile.git nuvio-mobile
+          git -C nuvio-mobile checkout "$NUVIO_MOBILE_SHA"
+          touch nuvio-mobile/local.properties
+          git clone --filter=blob:none --no-checkout https://github.com/NuvioMedia/NuvioTV.git nuvio-tv
+          git -C nuvio-tv checkout "$NUVIO_TV_SHA"
+          touch nuvio-tv/local.properties nuvio-tv/local.dev.properties
+          python3 niakvio/scripts/prepare_native_corpus_validation.py android \
+            --fixture "${{ matrix.fixture }}" \
+            --workspace "$GITHUB_WORKSPACE"
+          python3 niakvio/scripts/harden_nuvio_mobile_device_test.py "$GITHUB_WORKSPACE/nuvio-mobile"
+
+      - name: Enable Linux KVM when available
+        shell: bash
+        run: |
+          if [ -e /dev/kvm ]; then
+            sudo chmod 666 /dev/kvm || true
+            ls -l /dev/kvm || true
+          fi
+
+      - name: Execute every provider in official Mobile then TV PluginRuntime
+        uses: ReactiveCircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_2
+          cores: 2
+          ram-size: 2048M
+          emulator-boot-timeout: 600
+          script: bash "$GITHUB_WORKSPACE/niakvio/scripts/run_native_corpus_android_lab.sh" "${{ matrix.fixture }}"
