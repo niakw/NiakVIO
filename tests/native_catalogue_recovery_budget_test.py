@@ -27,16 +27,39 @@ function install(o,k){if(!o||typeof o[k]!=="function")return false;var native=o[
 '''
 
 patched = module.apply(fixture)
-assert "NUVIO_NATIVE_CATALOGUE_RECOVERY_BUDGET_V1" in patched
+assert "NUVIO_NATIVE_CATALOGUE_RECOVERY_BUDGET_V2" in patched
+assert "NUVIO_NATIVE_CATALOGUE_RECOVERY_BUDGET_V1" not in patched
 assert patched.count('function nativeRecoveryHost(){try{return typeof g.__native_fetch==="function"}') == 1
-assert "searchCap=nativeRuntime?2:2147483647" in patched
-assert "candidateCap=nativeRuntime?2:c.maxCandidates" in patched
+assert patched.count("function nativeRecoverySearchPlan(values,cap)") == 1
+assert patched.count("function nativeRecoveryCandidatePlan(found,guessed,cap)") == 1
+assert "searchCap=nativeRuntime?4:2147483647" in patched
+assert "candidateCap=nativeRuntime?3:c.maxCandidates" in patched
+assert "searches=nativeRecoverySearchPlan(searches,searchCap)" in patched
+assert "nativeRecoveryCandidatePlan(found,guessed,candidateCap)" in patched
 assert "i<searchCap" in patched
-assert "slice(0,candidateCap)" in patched
-assert "nativeRecoveryHost()?Math.min(c.budgetMs,12000):c.budgetMs" in patched
+assert "nativeRecoveryHost()?Math.min(c.budgetMs,30000):c.budgetMs" in patched
 # The two unrelated helpers plus the catalogue helper itself remain present.
 assert patched.count('var TMDB_KEY="8265bd1679663a7ea12ac168da84d2e8";') == 3
 assert module.apply(patched) == patched
+
+# A provider produced by the previous V1 budget revision must upgrade in place,
+# rather than keeping the overly narrow first-two-search policy forever.
+legacy = r'''/* NUVIO_GLOBAL_CATALOGUE_ALIAS_RECOVERY_V2:abc */
+;(function(g,c){"use strict";
+var TMDB_KEY="8265bd1679663a7ea12ac168da84d2e8";function nativeRecoveryHost(){try{return typeof g.__native_fetch==="function"}catch(_){return false}}
+async function recover(q,knownMeta,deadline){var nativeRuntime=nativeRecoveryHost(),searchCap=nativeRuntime?2:2147483647,candidateCap=nativeRuntime?2:c.maxCandidates;if(["movie","tv","anime"].indexOf(q.mediaType)<0||Date.now()>=deadline)return[];var m=knownMeta||await meta(q);if(!m.titles.length||Date.now()>=deadline)return[];var guessed=[],found=[],searches=[];m.titles.forEach(function(t){guessed.push(c.baseUrl+"/"+slug(t));searches.push(c.baseUrl+"/?s="+encodeURIComponent(t));searches.push(c.baseUrl+"/search?q="+encodeURIComponent(t));searches.push(c.baseUrl+"/search?query="+encodeURIComponent(t))});for(var i=0;i<searches.length&&i<searchCap&&found.length<c.maxCandidates*4&&Date.now()<deadline;i++){var sr=await request(searches[i],false,c.baseUrl+"/");if(sr)found=found.concat([])}var candidates=unique(found.concat(guessed)).slice(0,candidateCap);return candidates}
+function install(o,k){if(!o||typeof o[k]!=="function")return false;var native=o[k];var wrap=async function(){var q=args(arguments),v,deadline=Date.now()+(nativeRecoveryHost()?Math.min(c.budgetMs,12000):c.budgetMs);try{v=await native.apply(this,arguments)}catch(_){v=[]}return recover(q,null,deadline)};o[k]=wrap;return true}
+})(typeof globalThis!=="undefined"?globalThis:this,{"budgetMs":45000,"maxCandidates":8});
+/* NUVIO_NATIVE_CATALOGUE_RECOVERY_BUDGET_V1 */
+'''
+migrated = module.apply(legacy)
+assert "NUVIO_NATIVE_CATALOGUE_RECOVERY_BUDGET_V2" in migrated
+assert "NUVIO_NATIVE_CATALOGUE_RECOVERY_BUDGET_V1 */" not in migrated
+assert "searchCap=nativeRuntime?2:2147483647" not in migrated
+assert "candidateCap=nativeRuntime?2:c.maxCandidates" not in migrated
+assert "Math.min(c.budgetMs,12000)" not in migrated
+assert "searchCap=nativeRuntime?4:2147483647" in migrated
+assert module.apply(migrated) == migrated
 
 # Providers without the catalogue fallback are untouched.
 plain = "module.exports={getStreams:async()=>[]};\n"
