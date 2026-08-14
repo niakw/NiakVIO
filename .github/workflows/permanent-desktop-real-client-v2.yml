@@ -102,8 +102,16 @@ jobs:
         shell: bash
         run: |
           rm -f "$GITHUB_WORKSPACE/desktop-real-client-results.log"
+          set +e
           ./gradlew :composeApp:desktopTest \
             --tests 'com.nuvio.app.features.plugins.NiakvioRealProviderDesktopTest' \
             --no-daemon --console=plain
+          STATUS=$?
+          set -e
           echo "===== EXACT DESKTOP PROVIDER RESULTS ====="
-          cat "$GITHUB_WORKSPACE/desktop-real-client-results.log"
+          if [ -f "$GITHUB_WORKSPACE/desktop-real-client-results.log" ]; then
+            cat "$GITHUB_WORKSPACE/desktop-real-client-results.log"
+          else
+            echo "desktop provider result log was not created"
+          fi
+          exit "$STATUS"
