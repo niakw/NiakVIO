@@ -318,8 +318,6 @@ def main() -> int:
         provider_provenance = provenance_rows.get(provider_id) if provenance_rows else None
         audit_terminal_quarantine = (
             AUDIT_QUARANTINE_MARKER.encode("utf-8") in original
-            and isinstance(provider_provenance, dict)
-            and str(provider_provenance.get("activation_mode") or "") == AUDIT_QUARANTINE_MODE
         )
         if audit_terminal_quarantine:
             patched = original
