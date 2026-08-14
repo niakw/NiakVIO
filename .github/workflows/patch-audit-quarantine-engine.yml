@@ -23,6 +23,7 @@ jobs:
       - name: Patch and compile quarantine boundaries
         run: |
           python scripts/apply_transient_audit_quarantine_engine_patch.py
+          python scripts/patch_reapply_audit_provenance.py
           python -m py_compile \
             scripts/quarantine_catalogue_audit_failures.py \
             scripts/reapply_published_overrides.py \
@@ -44,5 +45,5 @@ jobs:
             echo 'quarantine boundaries already patched'
             exit 0
           fi
-          git commit -m 'safety: preserve verifiable transient audit quarantine evidence'
+          git commit -m 'safety: synchronize audit quarantine provenance'
           git push origin HEAD:main
