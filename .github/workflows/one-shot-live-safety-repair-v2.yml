@@ -1,0 +1,379 @@
+name: One-shot live safety repair v2
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/one-shot-live-safety-repair-v2.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: nuvio-provider-publish
+  cancel-in-progress: false
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: "3.12"
+
+      - name: Prepare fail-closed repair
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import hashlib
+          import json
+
+          def file_sha(path):
+              h = hashlib.sha256()
+              h.update(Path(path).read_bytes())
+              return h.hexdigest()
+
+          manifest = json.loads(Path('manifest.json').read_text(encoding='utf-8'))
+          rows = {str(r.get('id') or '').casefold(): r for r in manifest.get('scrapers', []) if isinstance(r, dict)}
+          prestate = {}
+          for provider_id in ('moviebox', 'netmirror'):
+              row = rows.get(provider_id)
+              if not isinstance(row, dict):
+                  raise SystemExit(f'missing provider: {provider_id}')
+              filename = str(row.get('filename') or '')
+              if row.get('enabled') is True:
+                  prestate[provider_id] = {'filename': filename, 'sha256': file_sha(filename)}
+          Path('/tmp/niakvio-live-safety-prestate.json').write_text(json.dumps(prestate, indent=2) + '\n')
+
+          # Publication preservation must apply only to genuinely inconclusive
+          # current CI states. Degraded/unavailable are conclusive failures.
+          promoter_path = Path('scripts/promote_candidates.py')
+          text = promoter_path.read_text(encoding='utf-8')
+          old = '''                    [
+                        "blocked",
+                        "provider_unreachable",
+                        "runtime_error",
+                        "unavailable",
+                        "no_streams",
+                        "reachable",
+                        "degraded",
+                    ],'''
+          new = '''                    [
+                        "blocked",
+                        "provider_unreachable",
+                        "runtime_error",
+                        "no_streams",
+                        "reachable",
+                    ],'''
+          if old in text:
+              text = text.replace(old, new, 1)
+          elif new not in text:
+              raise SystemExit('promoter fallback anchor missing')
+          old = '''            preserve_current = (
+                not enabled
+                and (old_was_enabled or restore_activation_lkg)'''
+          new = '''            preserve_current = (
+                not enabled
+                and current_ci_inconclusive
+                and (old_was_enabled or restore_activation_lkg)'''
+          if old in text:
+              text = text.replace(old, new, 1)
+          elif new not in text:
+              raise SystemExit('promoter preservation guard anchor missing')
+          promoter_path.write_text(text, encoding='utf-8')
+
+          # Fail closed at bundle level, not just manifest enabled state, because
+          # Nuvio clients may retain a historical local activation flag.
+          overrides_path = Path('provider-overrides.json')
+          overrides = json.loads(overrides_path.read_text(encoding='utf-8'))
+          patches = overrides.setdefault('provider_patches', {})
+          quarantine = 'scripts/provider_patches/quarantine_provider_v1.py'
+          reasons = {
+              'moviebox': 'non_playable_html_output',
+              'netmirror': 'cross_title_search_identity_mismatch',
+          }
+          for provider_id, reason in reasons.items():
+              row = patches.get(provider_id)
+              if not isinstance(row, dict):
+                  raise SystemExit(f'missing override: {provider_id}')
+              row['capability'] = 'quarantined'
+              row['profiles'] = []
+              mo = row.get('manifest_overrides') if isinstance(row.get('manifest_overrides'), dict) else {}
+              mo['enabled'] = False
+              row['manifest_overrides'] = mo
+              row['patch_scripts'] = [quarantine]
+              row['patch_script_options'] = {quarantine: {'reason': reason}}
+              row['notes'] = (
+                  f'Fail-closed safety quarantine: {reason}. Published bundle is inert; '
+                  're-enable only after fresh strict identity and direct-media proof.'
+              )
+          overrides_path.write_text(json.dumps(overrides, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+
+          # Permanent provider-quarantine regression.
+          qtest_path = Path('tests/provider_quarantine_test.py')
+          qtest = qtest_path.read_text(encoding='utf-8')
+          anchor = '    ("vixsrc", "interstellar_duration_mismatch"),\n):'
+          replacement = (
+              '    ("vixsrc", "interstellar_duration_mismatch"),\n'
+              '    ("moviebox", "non_playable_html_output"),\n'
+              '    ("netmirror", "cross_title_search_identity_mismatch"),\n'
+              '):'
+          )
+          if replacement not in qtest:
+              if anchor not in qtest:
+                  raise SystemExit('quarantine test anchor missing')
+              qtest_path.write_text(qtest.replace(anchor, replacement, 1), encoding='utf-8')
+
+          # Extend the existing evidence validator without weakening the current
+          # cryptographic quarantine checks: manual live evidence is accepted
+          # only after bundle SHA/path, quarantine bundle/provenance and operator
+          # confirmation all match.
+          validator_path = Path('scripts/validate_activation_preservation.py')
+          validator = validator_path.read_text(encoding='utf-8')
+          marker = '    if finding.get("evidence_type") != "duration_identity_mismatch":\n'
+          if 'manual_live_wrong_content' not in validator:
+              if marker not in validator:
+                  raise SystemExit('safety evidence validator anchor missing')
+              block = '''    evidence_type = str(finding.get("evidence_type") or "")
+    if evidence_type in {"manual_live_wrong_content", "manual_live_non_playable"}:
+        if finding.get("evidence_source") != "operator_live_client_report":
+            return False, "manual_safety_finding_source_invalid"
+        if finding.get("operator_confirmed") is not True:
+            return False, "manual_safety_finding_not_confirmed"
+        if not COMMIT_RE.fullmatch(str(finding.get("tested_commit_sha") or "")):
+            return False, "manual_safety_finding_commit_invalid"
+        tested_sha = str(finding.get("tested_bundle_sha256") or "")
+        tested_bundle = str(finding.get("tested_bundle") or "")
+        if not SHA256_RE.fullmatch(tested_sha):
+            return False, "manual_safety_finding_bundle_sha_invalid"
+        if not tested_bundle.startswith("providers/") or not tested_bundle.endswith(f"--{tested_sha[:16]}.js"):
+            return False, "manual_safety_finding_bundle_path_invalid"
+        fixture = finding.get("fixture")
+        if not isinstance(fixture, dict) or not str(fixture.get("tmdbId") or "") or not str(fixture.get("title") or ""):
+            return False, "manual_safety_finding_fixture_invalid"
+        if evidence_type == "manual_live_wrong_content":
+            if finding.get("transport_playable") is not True:
+                return False, "manual_wrong_content_not_transport_playable"
+            if not str(finding.get("observed_content") or "").strip():
+                return False, "manual_wrong_content_observation_missing"
+            if not finding.get("clients_with_contradiction"):
+                return False, "manual_wrong_content_client_missing"
+        else:
+            if finding.get("transport_playable") is not False:
+                return False, "manual_non_playable_transport_flag_invalid"
+            if str(finding.get("observed_failure") or "") not in {"infinite_loading", "non_media_html", "timeout"}:
+                return False, "manual_non_playable_observation_invalid"
+            if not finding.get("clients_with_failure"):
+                return False, "manual_non_playable_client_missing"
+        return True, f"configured_safety_quarantine:{reason}:{evidence_type}"
+
+'''
+              validator_path.write_text(validator.replace(marker, block + marker, 1), encoding='utf-8')
+
+          # Focused synthetic regression for the new evidence types.
+          Path('tests/manual_negative_safety_evidence_test.py').write_text(r'''#!/usr/bin/env python3
+from __future__ import annotations
+import hashlib
+import importlib.util
+import tempfile
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+spec = importlib.util.spec_from_file_location('activation_guard_manual_test', ROOT / 'scripts' / 'validate_activation_preservation.py')
+assert spec and spec.loader
+mod = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(mod)
+
+reason = 'synthetic_wrong_content'
+bundle = f'/* NUVIO_PROVIDER_QUARANTINE_V1 reason={reason} */\nmodule.exports={{getStreams:async()=>[]}};\n'
+with tempfile.TemporaryDirectory() as tmp:
+    root = Path(tmp)
+    (root / 'providers').mkdir()
+    digest = hashlib.sha256(bundle.encode()).hexdigest()
+    filename = f'providers/test--quarantine--{digest[:16]}.js'
+    (root / filename).write_text(bundle)
+    mod.ROOT = root
+    manifest = {'enabled': False, 'filename': filename}
+    patch = {
+        'capability': 'quarantined',
+        'manifest_overrides': {'enabled': False},
+        'patch_scripts': [mod.QUARANTINE_PATCH],
+        'patch_script_options': {mod.QUARANTINE_PATCH: {'reason': reason}},
+    }
+    provenance = {
+        'activation_mode': 'configured_safety_quarantine',
+        'activation_eligible': False,
+        'activation_blockers': ['configured_safety_quarantine'],
+        'published_filename': filename,
+        'patched_sha256': digest,
+    }
+    tested_sha = 'a' * 64
+    base = {
+        'evidence_source': 'operator_live_client_report',
+        'operator_confirmed': True,
+        'quarantine_reason': reason,
+        'tested_commit_sha': 'b' * 40,
+        'tested_bundle': f'providers/test--published-baseline--{tested_sha[:16]}.js',
+        'tested_bundle_sha256': tested_sha,
+        'fixture': {'tmdbId': '1215638', 'title': 'Mon ninja et moi 3'},
+        'quarantined_bundle': filename,
+        'quarantined_bundle_sha256': digest,
+    }
+    wrong = dict(base, evidence_type='manual_live_wrong_content', transport_playable=True, observed_content='unrelated event', clients_with_contradiction=['tv'])
+    ok, why = mod.configured_safety_quarantine('test', manifest, patch, provenance, wrong)
+    assert ok, why
+    bad = dict(wrong, operator_confirmed=False)
+    ok, _ = mod.configured_safety_quarantine('test', manifest, patch, provenance, bad)
+    assert not ok
+    nonplay = dict(base, evidence_type='manual_live_non_playable', transport_playable=False, observed_failure='infinite_loading', clients_with_failure=['desktop_macos'])
+    ok, why = mod.configured_safety_quarantine('test', manifest, patch, provenance, nonplay)
+    assert ok, why
+print('manual negative safety evidence tests passed')
+''', encoding='utf-8')
+          PY
+          python -m py_compile scripts/promote_candidates.py scripts/validate_activation_preservation.py tests/manual_negative_safety_evidence_test.py
+
+      - name: Materialize exact inert bundles
+        run: |
+          python scripts/reapply_published_overrides.py
+          python scripts/reapply_published_overrides.py --check
+
+      - name: Bind live evidence to exact tested and quarantine SHAs
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from datetime import datetime, timezone
+          import hashlib, json, os
+
+          def file_sha(path):
+              return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+
+          pre = json.loads(Path('/tmp/niakvio-live-safety-prestate.json').read_text())
+          manifest = json.loads(Path('manifest.json').read_text())
+          rows = {str(r.get('id') or '').casefold(): r for r in manifest.get('scrapers', []) if isinstance(r, dict)}
+          path = Path('automation/nuvio-client-safety-findings.json')
+          data = json.loads(path.read_text())
+          data['schema_version'] = max(2, int(data.get('schema_version') or 1))
+          data['generated_at'] = datetime.now(timezone.utc).isoformat()
+          policy = data.setdefault('policy', {})
+          policy['manual_negative_evidence_requires_exact_tested_bundle_sha'] = True
+          policy['manual_negative_evidence_requires_operator_confirmation'] = True
+          findings = [f for f in data.get('findings', []) if isinstance(f, dict) and str(f.get('provider_id') or '').casefold() not in {'moviebox', 'netmirror'}]
+          commit_sha = os.environ['GITHUB_SHA']
+
+          def common(provider_id, reason):
+              current = rows[provider_id]
+              qfile = str(current.get('filename') or '')
+              return {
+                  'provider_id': provider_id,
+                  'evidence_source': 'operator_live_client_report',
+                  'operator_confirmed': True,
+                  'quarantine_reason': reason,
+                  'tested_commit_sha': commit_sha,
+                  'tested_bundle': pre[provider_id]['filename'],
+                  'tested_bundle_sha256': pre[provider_id]['sha256'],
+                  'fixture': {'tmdbId': '1215638', 'mediaType': 'movie', 'title': 'Mon ninja et moi 3'},
+                  'quarantined_bundle': qfile,
+                  'quarantined_bundle_sha256': file_sha(qfile),
+              }
+
+          if 'netmirror' in pre:
+              row = common('netmirror', 'cross_title_search_identity_mismatch')
+              row.update({
+                  'evidence_type': 'manual_live_wrong_content',
+                  'transport_playable': True,
+                  'observed_content': 'unrelated athletics event',
+                  'observed_duration_seconds': 11820,
+                  'clients_with_contradiction': ['desktop_macos', 'tv'],
+              })
+              findings.append(row)
+          if 'moviebox' in pre:
+              row = common('moviebox', 'non_playable_html_output')
+              row.update({
+                  'evidence_type': 'manual_live_non_playable',
+                  'transport_playable': False,
+                  'observed_failure': 'infinite_loading',
+                  'clients_with_failure': ['desktop_macos'],
+              })
+              findings.append(row)
+          data['findings'] = findings
+          path.write_text(json.dumps(data, ensure_ascii=False, indent=2) + '\n')
+          PY
+
+      - name: Focused safety validation
+        run: |
+          python tests/ci_preservation_policy_test.py
+          python tests/provider_quarantine_test.py
+          python tests/manual_negative_safety_evidence_test.py
+          python tests/runtime_media_safety_guard_test.py
+          python scripts/validate_policy.py
+          python scripts/validate_published_overrides.py
+          python scripts/validate_activation_preservation.py
+          python scripts/validate_language_projection.py
+
+      - name: Regenerate and validate release hashes
+        run: |
+          python scripts/generate_release_hashes.py
+          python scripts/validate_release_integrity.py
+
+      - name: Assert exact published result
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import json
+          rows = {str(r.get('id') or '').casefold(): r for r in json.loads(Path('manifest.json').read_text()).get('scrapers', []) if isinstance(r, dict)}
+          for provider_id, reason in {
+              'moviebox': 'non_playable_html_output',
+              'netmirror': 'cross_title_search_identity_mismatch',
+          }.items():
+              row = rows[provider_id]
+              assert row.get('enabled') is False, provider_id
+              payload = Path(row['filename']).read_text()
+              assert 'NUVIO_PROVIDER_QUARANTINE_V1' in payload and reason in payload, provider_id
+              print(f"FIELD_SAFETY_QUARANTINE provider={provider_id} enabled=false file={row['filename']} reason={reason}")
+          assert rows['streamzo'].get('enabled') is True
+          print(f"FIELD_STREAMZO_UNCHANGED enabled=true file={rows['streamzo']['filename']}")
+          PY
+
+      - name: Enforce repair scope
+        run: |
+          python - <<'PY'
+          import subprocess
+          allowed = {
+              'scripts/promote_candidates.py',
+              'scripts/validate_activation_preservation.py',
+              'provider-overrides.json',
+              'tests/provider_quarantine_test.py',
+              'tests/manual_negative_safety_evidence_test.py',
+              'automation/nuvio-client-safety-findings.json',
+              'manifest.json', 'vf/manifest.json', 'vostfr/manifest.json',
+              'PROVENANCE.json', 'FILE-HASHES.json', 'PATCH-SHA256SUMS.txt', 'SHA256SUMS.json',
+          }
+          changed = []
+          for raw in subprocess.check_output(['git', 'status', '--porcelain'], text=True).splitlines():
+              p = raw[3:].strip()
+              if ' -> ' in p: p = p.split(' -> ', 1)[1]
+              changed.append(p)
+          unexpected = sorted(p for p in changed if p not in allowed and not p.startswith('providers/'))
+          if unexpected:
+              raise SystemExit('unexpected repair changes: ' + ', '.join(unexpected))
+          print('repair scope passed: ' + ', '.join(sorted(changed)))
+          PY
+
+      - name: Commit tested repair
+        run: |
+          git config user.name 'niakvio-ci'
+          git config user.email 'actions@users.noreply.github.com'
+          git add -A
+          git commit -m 'fix: fail closed on conclusive provider safety failures'
+          git fetch origin main
+          git rebase origin/main
+          git push origin HEAD:main
