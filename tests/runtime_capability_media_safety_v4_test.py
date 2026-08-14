@@ -4,11 +4,27 @@ from __future__ import annotations
 import importlib.util
 import json
 import subprocess
+import sys
 import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 PATCH = ROOT / "scripts/provider_patches/runtime_capability_media_safety_v4.py"
+
+# The native budget layers and the final runtime-capability guard form one engine
+# stack. Keep their focused regression tests mandatory anywhere the v4 regression
+# test is run (including the permanent npm test suite).
+for companion in (
+    "tests/native_catalogue_recovery_budget_test.py",
+    "tests/native_hls_integrity_budget_test.py",
+):
+    result = subprocess.run(
+        [sys.executable, str(ROOT / companion)],
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
 
 spec = importlib.util.spec_from_file_location("runtime_capability_media_safety_v4", PATCH)
 assert spec is not None and spec.loader is not None
