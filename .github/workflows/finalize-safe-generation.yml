@@ -1,0 +1,105 @@
+name: Finalize validated provider generation
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/triggers/finalize-safe-generation"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: nuvio-provider-publish
+  cancel-in-progress: false
+
+jobs:
+  finalize:
+    name: Rebuild, validate and publish exact safe generation
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout current main
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: "3.12"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: "24"
+          package-manager-cache: false
+
+      - name: Install pinned dependencies without lifecycle scripts
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Reconstruct exact safe generation
+        run: |
+          python scripts/reapply_published_overrides.py
+          python scripts/reapply_published_overrides.py --check
+          python scripts/validate_published_overrides.py
+          python scripts/validate_activation_preservation.py
+          python scripts/validate_language_projection.py
+          python tests/repair_identity_gate_test.py
+
+      - name: Run complete repository regression suite
+        run: npm test --ignore-scripts
+
+      - name: Validate exact release after tests
+        run: |
+          python scripts/reapply_published_overrides.py --check
+          python scripts/validate_published_overrides.py
+          python scripts/validate_activation_preservation.py
+          python scripts/validate_language_projection.py
+          python scripts/validate_release_integrity.py
+
+      - name: Enforce publication allowlist
+        run: |
+          python - <<'PY'
+          import subprocess
+
+          allowed = {
+              'FILE-HASHES.json',
+              'PATCH-SHA256SUMS.txt',
+              'PROVENANCE.json',
+              'SHA256SUMS.json',
+              'manifest.json',
+              'vf/manifest.json',
+          }
+          rows = subprocess.check_output(['git', 'status', '--porcelain'], text=True).splitlines()
+          changed = set()
+          for row in rows:
+              path = row[3:].strip()
+              if ' -> ' in path:
+                  path = path.split(' -> ', 1)[1]
+              changed.add(path)
+          unexpected = sorted(changed - allowed)
+          if unexpected:
+              raise SystemExit('unexpected finalizer changes: ' + ', '.join(unexpected))
+          print('finalizer allowlist passed: ' + ', '.join(sorted(changed)))
+          PY
+
+      - name: Commit exact tested generation
+        run: |
+          git config user.name 'niakvio-ci'
+          git config user.email 'actions@users.noreply.github.com'
+          git add \
+            FILE-HASHES.json \
+            PATCH-SHA256SUMS.txt \
+            PROVENANCE.json \
+            SHA256SUMS.json \
+            manifest.json \
+            vf/manifest.json
+          if git diff --cached --quiet; then
+            echo 'safe generation already current'
+            exit 0
+          fi
+          git commit -m 'chore: finalize safe provider generation'
+          git push origin HEAD:main
