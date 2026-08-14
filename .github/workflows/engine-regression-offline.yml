@@ -9,9 +9,11 @@ on:
       - "scripts/apply_provider_overrides.py"
       - "scripts/reapply_published_overrides.py"
       - "scripts/run_adaptive_deep_repair.py"
+      - "scripts/repair_identity_gate.py"
       - "scripts/provider_engine_normalizer.py"
       - "scripts/provider_compiler.py"
       - "scripts/provider_rebuild.py"
+      - "tests/repair_identity_gate_test.py"
       - ".github/workflows/engine-regression-offline.yml"
 
 permissions:
@@ -52,9 +54,13 @@ jobs:
           python -m py_compile scripts/apply_provider_overrides.py
           python -m py_compile scripts/reapply_published_overrides.py
           python -m py_compile scripts/run_adaptive_deep_repair.py
+          python -m py_compile scripts/repair_identity_gate.py
           python -m py_compile scripts/provider_engine_normalizer.py
           python -m py_compile scripts/provider_compiler.py
           python -m py_compile scripts/provider_rebuild.py
+
+      - name: Validate automatic repair identity promotion gate
+        run: python tests/repair_identity_gate_test.py
 
       - name: Reconstruct published generation offline
         run: |
