@@ -112,7 +112,18 @@ def apply_overrides(provider_id:str,data:bytes,*,phase:str="discovery",profile_n
             if updated!=text:text=updated;records.append({"type":"patch_script","path":script,"phase":phase})
     selected=_normalize_profile_names(profile_names)|_normalize_profile_names(only_profiles)
     if only_profile:selected.add(str(only_profile))
-    for profile in _configured_profiles(config,provider_key):
+    definitions=config.get("patch_profiles") or {}
+    if not isinstance(definitions,dict):definitions={}
+    unknown=selected-set(definitions)
+    if unknown:raise ValueError("unknown patch profile(s): "+", ".join(sorted(unknown)))
+    profiles=_configured_profiles(config,provider_key)
+    existing={str(row.get("name") or "") for row in profiles}
+    for name in sorted(selected):
+        if name in existing:continue
+        profile=definitions.get(name)
+        if isinstance(profile,dict):
+            row=dict(profile);row["name"]=name;profiles.append(row);existing.add(name)
+    for profile in profiles:
         name=str(profile.get("name") or "");profile_phase=str(profile.get("phase") or "discovery")
         if profile_phase!=phase:continue
         if selected and name not in selected:continue
@@ -121,8 +132,10 @@ def apply_overrides(provider_id:str,data:bytes,*,phase:str="discovery",profile_n
         script=str(profile.get("patch_script") or "").strip()
         if not script:continue
         options=dict(profile.get("options") or {})
+        options.setdefault("detect_all",profile.get("detect_all") or [])
+        options.setdefault("detect_any",profile.get("detect_any") or [])
         if runtime_context:options["runtime_context"]=runtime_context
         updated=_apply_patch_script(text,provider_key,script,options,name)
-        if updated!=text:text=updated;records.append({"type":"patch_profile","profile":name,"phase":phase,"options":options})
+        if updated!=text:text=updated;records.append({"type":"patch_profile","profile":name,"path":script,"phase":phase,"options":options})
     if text==original_text:return data,[]
     return text.encode("utf-8"),records
