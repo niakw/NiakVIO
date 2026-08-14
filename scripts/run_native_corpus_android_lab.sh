@@ -6,9 +6,12 @@ MOBILE_ROOT="${GITHUB_WORKSPACE}/nuvio-mobile"
 TV_ROOT="${GITHUB_WORKSPACE}/nuvio-tv"
 MOBILE_LOG="${GITHUB_WORKSPACE}/mobile-native-corpus-${FIXTURE}.log"
 TV_LOG="${GITHUB_WORKSPACE}/tv-native-corpus-${FIXTURE}.log"
+ANALYZER="${GITHUB_WORKSPACE}/niakvio/scripts/analyze_native_corpus_results.cjs"
 
 MOBILE_STATUS=0
 TV_STATUS=0
+MOBILE_ANALYSIS=0
+TV_ANALYSIS=0
 
 adb logcat -c || true
 
@@ -35,6 +38,7 @@ fi
 adb logcat -d -s NiakvioCorpus:I '*:S' > "$MOBILE_LOG" || true
 echo "===== MOBILE NATIVE CORPUS: $FIXTURE ====="
 cat "$MOBILE_LOG" || true
+node "$ANALYZER" "$FIXTURE" "$MOBILE_LOG" || MOBILE_ANALYSIS=$?
 
 adb logcat -c || true
 
@@ -48,8 +52,9 @@ fi
 adb logcat -d -s NiakvioCorpus:I '*:S' > "$TV_LOG" || true
 echo "===== TV NATIVE CORPUS: $FIXTURE ====="
 cat "$TV_LOG" || true
+node "$ANALYZER" "$FIXTURE" "$TV_LOG" || TV_ANALYSIS=$?
 
-echo "FIELD_NATIVE_CORPUS_ANDROID_STATUS fixture=$FIXTURE mobile=$MOBILE_STATUS tv=$TV_STATUS"
-if [[ "$MOBILE_STATUS" -ne 0 || "$TV_STATUS" -ne 0 ]]; then
+echo "FIELD_NATIVE_CORPUS_ANDROID_STATUS fixture=$FIXTURE mobile=$MOBILE_STATUS mobile_analysis=$MOBILE_ANALYSIS tv=$TV_STATUS tv_analysis=$TV_ANALYSIS"
+if [[ "$MOBILE_STATUS" -ne 0 || "$TV_STATUS" -ne 0 || "$MOBILE_ANALYSIS" -ne 0 || "$TV_ANALYSIS" -ne 0 ]]; then
   exit 1
 fi
