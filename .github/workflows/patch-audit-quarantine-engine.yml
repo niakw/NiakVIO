@@ -26,20 +26,85 @@ jobs:
           python - <<'PY'
           from pathlib import Path
 
-          path = Path('scripts/reapply_published_overrides.py')
-          text = path.read_text(encoding='utf-8')
+          reapply = Path('scripts/reapply_published_overrides.py')
+          text = reapply.read_text(encoding='utf-8')
           old = '''        audit_terminal_quarantine = (\n            AUDIT_QUARANTINE_MARKER.encode("utf-8") in original\n            and isinstance(provider_provenance, dict)\n            and str(provider_provenance.get("activation_mode") or "") == AUDIT_QUARANTINE_MODE\n        )\n'''
           new = '''        audit_terminal_quarantine = (\n            AUDIT_QUARANTINE_MARKER.encode("utf-8") in original\n        )\n'''
           if old in text:
               text = text.replace(old, new, 1)
           elif new not in text:
               raise SystemExit('terminal quarantine condition not found')
-          path.write_text(text, encoding='utf-8')
+          reapply.write_text(text, encoding='utf-8')
+
+          validator = Path('scripts/validate_activation_preservation.py')
+          text = validator.read_text(encoding='utf-8')
+          start = text.index('def catalogue_audit_safety_quarantine(\n')
+          end = text.index('\n\ndef conclusive_disablement(', start)
+          replacement = '''def catalogue_audit_safety_quarantine(
+    manifest_row: dict[str, Any] | None,
+    provenance: dict[str, Any] | None,
+) -> tuple[bool, str]:
+    """Accept a content-addressed inert catalogue-audit quarantine.
+
+    Older publication transactions could lose the verbose local audit record
+    while retaining the exact inert bundle, its catalogue-audit blocker and
+    matching provenance SHA/path. Those cryptographic/structural facts are the
+    durable evidence boundary; a future deep may still replace the quarantine
+    after proving a healthy candidate.
+    """
+    if not isinstance(manifest_row, dict) or not isinstance(provenance, dict):
+        return False, "missing_catalogue_audit_quarantine_evidence"
+    if manifest_row.get("enabled") is not False:
+        return False, "catalogue_audit_quarantine_manifest_not_disabled"
+
+    published_filename = str(manifest_row.get("filename") or "")
+    if "--nuvio-audit-quarantine--" not in published_filename:
+        return False, "catalogue_audit_quarantine_filename_marker_missing"
+    published_path = ROOT / published_filename
+    if not published_filename.startswith("providers/") or not published_path.is_file():
+        return False, "catalogue_audit_quarantine_bundle_missing"
+    published = published_path.read_text(encoding="utf-8")
+    if QUARANTINE_MARKER not in published or CATALOGUE_AUDIT_BLOCKER not in published:
+        return False, "catalogue_audit_quarantine_bundle_not_inert"
+    published_sha = file_sha256(published_path)
+    expected_suffix = published_filename.rsplit("--", 1)[-1].removesuffix(".js")
+    if expected_suffix != published_sha[:16]:
+        return False, "catalogue_audit_quarantine_content_address_mismatch"
+
+    if provenance.get("activation_eligible") is not False:
+        return False, "catalogue_audit_quarantine_provenance_still_eligible"
+    blockers = {str(value) for value in provenance.get("activation_blockers") or []}
+    if CATALOGUE_AUDIT_BLOCKER not in blockers:
+        return False, "catalogue_audit_quarantine_provenance_blocker_missing"
+    if str(provenance.get("published_filename") or "") != published_filename:
+        return False, "catalogue_audit_quarantine_provenance_path_mismatch"
+    if str(provenance.get("patched_sha256") or provenance.get("sha256") or "") != published_sha:
+        return False, "catalogue_audit_quarantine_provenance_sha_mismatch"
+
+    records = [
+        row for row in provenance.get("local_patches") or []
+        if isinstance(row, dict)
+        and row.get("type") == "safety_quarantine"
+        and row.get("source") == CATALOGUE_AUDIT_SOURCE
+    ]
+    if records:
+        record = records[-1]
+        if str(record.get("reason") or "") != CATALOGUE_AUDIT_BLOCKER:
+            return False, "catalogue_audit_quarantine_reason_mismatch"
+        contradictions = int(record.get("identity_contradictions") or 0)
+        playable = int(record.get("playable_streams") or 0)
+        if contradictions <= 0 or playable <= 0:
+            return False, "catalogue_audit_quarantine_record_not_conclusive"
+    return True, f"catalogue_audit_safety_quarantine:{CATALOGUE_AUDIT_BLOCKER}"
+'''
+          text = text[:start] + replacement + text[end:]
+          validator.write_text(text, encoding='utf-8')
           PY
           python -m py_compile \
             scripts/quarantine_catalogue_audit_failures.py \
             scripts/reapply_published_overrides.py \
             scripts/validate_published_overrides.py \
+            scripts/validate_activation_preservation.py \
             scripts/audit_catalogue_identity_media.py
 
       - name: Commit exact engine changes
@@ -50,10 +115,11 @@ jobs:
           git add \
             scripts/reapply_published_overrides.py \
             scripts/validate_published_overrides.py \
+            scripts/validate_activation_preservation.py \
             scripts/audit_catalogue_identity_media.py
           if git diff --cached --quiet; then
             echo 'quarantine boundaries already patched'
             exit 0
           fi
-          git commit -m 'safety: make quarantine marker terminal for reapply'
+          git commit -m 'safety: preserve verifiable transient audit quarantine evidence'
           git push origin HEAD:main
