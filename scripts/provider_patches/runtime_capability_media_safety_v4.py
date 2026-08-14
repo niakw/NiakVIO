@@ -6,11 +6,13 @@ published implementation with the same stable marker before appending the curren
 one, so engine upgrades propagate to already-published providers.
 
 Runtime policy:
-- Desktop/web-like fetch: bounded media preflight is allowed.
-- Mobile Android / TV Android native QuickJS: never add a media fetch from the
-  safety layer because the host bridge is synchronous and JS AbortSignal cannot
-  reliably interrupt it.
-- Every runtime: deterministic rejection of obvious web/embed/non-media URLs.
+- Official Nuvio native QuickJS runtimes (Desktop, Mobile Android, TV Android)
+  expose ``__native_fetch`` through a synchronous host bridge. The safety layer
+  must never add a media fetch there because JS AbortSignal cannot reliably
+  interrupt that native call.
+- Non-native/web-like runtimes may use bounded media preflight when fetch is
+  genuinely asynchronous/abortable.
+- Every runtime deterministically rejects obvious web/embed/non-media URLs.
 """
 from __future__ import annotations
 
@@ -122,7 +124,7 @@ WRAPPER = r'''
   async function directPlayable(row,url){var r=await fetchText(url,row,true);if(r.state!=="ok")return r;if(/text\/html|application\/xhtml/i.test(r.contentType)||/^<!doctype html|^<html/i.test(r.text||""))return {state:"dead",reason:"html_payload"};return {state:"ok"}}
   async function check(row,expected,tv,nativeRuntime){
     if(!row||typeof row!=="object")return {keep:false,reason:"invalid_row"};var obvious=obviousNonMedia(row);if(obvious)return {keep:false,reason:obvious};
-    if(nativeRuntime)return {keep:true,reason:tv?"tv_android_native_no_extra_probe":"mobile_or_desktop_native_no_extra_probe"};
+    if(nativeRuntime)return {keep:true,reason:tv?"tv_native_no_extra_probe":"nuvio_native_no_extra_probe"};
     var kind=mediaKind(row),result;if(kind==="hls")result=await inspectHls(row,s(row.url));else if(kind==="direct")result=await directPlayable(row,s(row.url));else return {keep:true};
     if(result.state==="dead")return {keep:false,reason:result.reason||("http_"+result.status)};
     if(result.state==="unknown"){if(c.strictPlayback||tv)return {keep:false,reason:result.reason||"unverified_media"};return {keep:true}}
