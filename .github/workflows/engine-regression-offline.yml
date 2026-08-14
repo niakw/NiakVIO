@@ -8,6 +8,9 @@ on:
     paths:
       - "scripts/apply_provider_overrides.py"
       - "scripts/reapply_published_overrides.py"
+      - "scripts/validate_published_overrides.py"
+      - "scripts/audit_catalogue_identity_media.py"
+      - "scripts/quarantine_catalogue_audit_failures.py"
       - "scripts/run_adaptive_deep_repair.py"
       - "scripts/repair_identity_gate.py"
       - "scripts/provider_engine_normalizer.py"
@@ -27,7 +30,7 @@ jobs:
   regressions:
     name: Run repository engine regressions
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - name: Checkout exact main generation
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
@@ -46,13 +49,16 @@ jobs:
           node-version: "24"
           package-manager-cache: false
 
-      - name: Install pinned dependencies
+      - name: Install pinned dependencies without lifecycle scripts
         run: npm ci --ignore-scripts --no-audit --no-fund
 
       - name: Compile engine boundaries
         run: |
           python -m py_compile scripts/apply_provider_overrides.py
           python -m py_compile scripts/reapply_published_overrides.py
+          python -m py_compile scripts/validate_published_overrides.py
+          python -m py_compile scripts/audit_catalogue_identity_media.py
+          python -m py_compile scripts/quarantine_catalogue_audit_failures.py
           python -m py_compile scripts/run_adaptive_deep_repair.py
           python -m py_compile scripts/repair_identity_gate.py
           python -m py_compile scripts/provider_engine_normalizer.py
@@ -62,27 +68,23 @@ jobs:
       - name: Validate automatic repair identity promotion gate
         run: python tests/repair_identity_gate_test.py
 
-      - name: Reconstruct published generation offline
+      - name: Verify published generation is override-idempotent
         run: |
-          python scripts/reapply_published_overrides.py
-          echo "--- reconstructed files ---"
-          git status --short
-          echo "--- reconstructed diff stat ---"
-          git diff --stat
-          mkdir -p reconstructed/providers reconstructed/vf
-          cp PROVENANCE.json reconstructed/PROVENANCE.json
-          cp manifest.json reconstructed/manifest.json
-          cp provider-overrides.json reconstructed/provider-overrides.json
-          cp vf/manifest.json reconstructed/vf/manifest.json
-          cp providers/purstream--nuvio--40c9e6a91441db06.js reconstructed/providers/purstream--nuvio--40c9e6a91441db06.js
+          python scripts/reapply_published_overrides.py --check
+          python scripts/validate_published_overrides.py
+          python scripts/validate_activation_preservation.py
+          python scripts/validate_language_projection.py
 
-      - name: Run complete repository regression suite on reconstructed generation
+      - name: Run complete repository regression suite without mutating lifecycle hooks
         run: npm test --ignore-scripts
 
-      - name: Archive validated reconstructed generation
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
-        with:
-          name: provider-engine-reconstructed-generation
-          path: reconstructed
-          if-no-files-found: error
-          retention-days: 1
+      - name: Validate final release and clean working tree
+        run: |
+          python scripts/reapply_published_overrides.py --check
+          python scripts/validate_published_overrides.py
+          python scripts/validate_activation_preservation.py
+          python scripts/validate_language_projection.py
+          python scripts/validate_release_integrity.py
+          echo "--- unexpected working-tree changes ---"
+          git status --short
+          git diff --exit-code
