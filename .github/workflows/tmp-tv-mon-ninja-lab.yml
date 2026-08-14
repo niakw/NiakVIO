@@ -44,13 +44,74 @@ jobs:
           run_probe moviebox providers/moviebox--published-baseline--1c0c9c423a094e0d.js
           run_probe netmirror providers/netmirror--published-baseline--ccbd35984c20fc8b.js
           run_probe streamzo providers/streamzo--published-baseline--bc19a7586f9f3bb8.js
-          echo '===== SUMMARY ====='
-          node - <<'NODE'
-          const fs=require('fs');
-          for(const name of ['moviebox','netmirror','streamzo']){
-            try{
-              const v=JSON.parse(fs.readFileSync('/tmp/'+name+'.json','utf8'));
-              console.log(JSON.stringify({provider:name,ok:v.ok,duration_ms:v.duration_ms,runtime_error:v.runtime_error,raw_stream_count:v.raw_stream_count,playable_stream_count:v.playable_stream_count,identity_verified_count:v.identity_verified_count,identity_contradiction_count:v.identity_contradiction_count,streams:(v.streams||[]).map(x=>({title:x.row?.title,description:x.row?.description,url:x.row?.url,identity:x.identity,media:{playable:x.media?.playable,kind:x.media?.kind,status:x.media?.status,content_type:x.media?.content_type,error:x.media?.error}}))},null,2));
-            }catch(e){ console.log(JSON.stringify({provider:name,parse_error:String(e)})); }
+
+  official-quickjs-runtime:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout Niakvio
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: main
+          path: niakvio
+      - name: Set up JDK
+        uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Checkout exact official NuvioTV runtime
+        shell: bash
+        run: |
+          git clone --filter=blob:none --no-checkout https://github.com/NuvioMedia/NuvioTV.git nuviotv
+          cd nuviotv
+          git checkout d95f3fb837b6ddfbf9ff445cdcba2413b576f0d4
+      - name: Inject exact provider runtime test
+        shell: bash
+        run: |
+          mkdir -p nuviotv/app/src/test/java/com/nuvio/tv/core/plugin
+          cat > nuviotv/app/src/test/java/com/nuvio/tv/core/plugin/FieldProviderRuntimeTest.kt <<'KOTLIN'
+          package com.nuvio.tv.core.plugin
+
+          import java.io.File
+          import kotlinx.coroutines.runBlocking
+          import org.junit.Test
+
+          class FieldProviderRuntimeTest {
+              @Test
+              fun exactMonNinjaProviders() = runBlocking {
+                  val runtime = PluginRuntime()
+                  val root = File(System.getenv("GITHUB_WORKSPACE"), "niakvio")
+                  val providers = listOf(
+                      "moviebox" to "providers/moviebox--published-baseline--1c0c9c423a094e0d.js",
+                      "netmirror" to "providers/netmirror--published-baseline--ccbd35984c20fc8b.js",
+                      "streamzo" to "providers/streamzo--published-baseline--bc19a7586f9f3bb8.js",
+                  )
+                  providers.forEach { (id, relative) ->
+                      val code = File(root, relative).readText()
+                      val started = System.currentTimeMillis()
+                      try {
+                          val rows = runtime.executePlugin(
+                              code = code,
+                              tmdbId = "1215638",
+                              mediaType = "movie",
+                              season = null,
+                              episode = null,
+                              scraperId = id,
+                              scraperSettings = emptyMap()
+                          )
+                          println("FIELD_QUICKJS_RESULT provider=$id duration_ms=${System.currentTimeMillis()-started} count=${rows.size}")
+                          rows.forEachIndexed { index, row ->
+                              println("FIELD_QUICKJS_ROW provider=$id index=$index title=${row.title} name=${row.name} quality=${row.quality} language=${row.language} url=${row.url} headers=${row.headers}")
+                          }
+                      } catch (t: Throwable) {
+                          println("FIELD_QUICKJS_ERROR provider=$id duration_ms=${System.currentTimeMillis()-started} type=${t::class.java.name} message=${t.message}")
+                      }
+                  }
+              }
           }
-          NODE
+          KOTLIN
+      - name: Execute official NuvioTV QuickJS test
+        working-directory: nuviotv
+        shell: bash
+        run: |
+          ./gradlew :app:testFullDebugUnitTest --tests 'com.nuvio.tv.core.plugin.FieldProviderRuntimeTest' --no-daemon --console=plain
