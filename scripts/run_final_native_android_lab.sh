@@ -3,6 +3,8 @@ set -u
 
 MOBILE_ROOT="${GITHUB_WORKSPACE}/nuvio-mobile"
 TV_ROOT="${GITHUB_WORKSPACE}/nuvio-tv"
+MOBILE_LOG="${GITHUB_WORKSPACE}/mobile-final-native-results.log"
+TV_LOG="${GITHUB_WORKSPACE}/tv-final-native-results.log"
 
 MOBILE_STATUS=0
 TV_STATUS=0
@@ -30,7 +32,8 @@ else
 fi
 
 echo "===== EXACT MOBILE NATIVE RESULTS ====="
-adb logcat -d -s NiakvioRealLab:I '*:S' || true
+adb logcat -d -s NiakvioRealLab:I '*:S' > "$MOBILE_LOG" || true
+cat "$MOBILE_LOG" || true
 
 adb logcat -c || true
 
@@ -42,7 +45,25 @@ else
 fi
 
 echo "===== EXACT TV NATIVE RESULTS ====="
-adb logcat -d -s NiakvioRealLab:I '*:S' || true
+adb logcat -d -s NiakvioRealLab:I '*:S' > "$TV_LOG" || true
+cat "$TV_LOG" || true
+
+# Android TV is a publication target, not a diagnostic-only compatibility tier.
+# StreamZo's positive sentinel must traverse the real site -> player/embed ->
+# final-media path and end in a direct HLS result. A catalogue page or iframe is
+# not sufficient, and an empty result blocks promotion.
+TV_STREAMZO_COUNT=$(grep 'FIELD_TV_NATIVE provider=streamzo ' "$TV_LOG" | tail -n 1 | sed -n 's/.* count=\([0-9][0-9]*\).*/\1/p')
+TV_STREAMZO_HLS=0
+if grep -Eq 'FIELD_TV_NATIVE_ROW provider=streamzo .* type=hls([[:space:]]|$)' "$TV_LOG"; then
+  TV_STREAMZO_HLS=1
+fi
+if [[ -z "$TV_STREAMZO_COUNT" || "$TV_STREAMZO_COUNT" -le 0 || "$TV_STREAMZO_HLS" -ne 1 ]]; then
+  echo "FIELD_TV_STREAMZO_SENTINEL status=failed expected=resolved path=site_player_media count=${TV_STREAMZO_COUNT:-missing} hls=$TV_STREAMZO_HLS" >&2
+  echo "StreamZo must resolve Mon ninja et moi 3 through site -> player -> media on Android TV" >&2
+  TV_STATUS=96
+else
+  echo "FIELD_TV_STREAMZO_SENTINEL status=resolved expected=resolved path=site_player_media count=$TV_STREAMZO_COUNT hls=$TV_STREAMZO_HLS"
+fi
 
 echo "FIELD_ANDROID_NATIVE_STATUS mobile=$MOBILE_STATUS tv=$TV_STATUS"
 if [[ "$MOBILE_STATUS" -ne 0 || "$TV_STATUS" -ne 0 ]]; then
