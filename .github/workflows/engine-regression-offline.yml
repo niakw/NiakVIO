@@ -63,6 +63,20 @@ jobs:
           git status --short
           echo "--- reconstructed diff stat ---"
           git diff --stat
+          mkdir -p reconstructed/providers reconstructed/vf
+          cp PROVENANCE.json reconstructed/PROVENANCE.json
+          cp manifest.json reconstructed/manifest.json
+          cp provider-overrides.json reconstructed/provider-overrides.json
+          cp vf/manifest.json reconstructed/vf/manifest.json
+          cp providers/purstream--nuvio--40c9e6a91441db06.js reconstructed/providers/purstream--nuvio--40c9e6a91441db06.js
 
       - name: Run complete repository regression suite on reconstructed generation
         run: npm test --ignore-scripts
+
+      - name: Archive validated reconstructed generation
+        uses: actions/upload-artifact@6027e3aa3634a9c1456c2f390a1a4d92f8ae7c8b
+        with:
+          name: provider-engine-reconstructed-generation
+          path: reconstructed
+          if-no-files-found: error
+          retention-days: 1
