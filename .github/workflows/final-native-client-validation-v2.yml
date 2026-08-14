@@ -1,0 +1,124 @@
+name: Final native Nuvio client validation v2
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/final-native-client-validation-v2.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: final-native-client-validation-v2
+  cancel-in-progress: true
+
+env:
+  NUVIO_DESKTOP_SHA: "8977fda639f5791947e6d8b36025635a77aed5da"
+  NUVIO_MOBILE_SHA: "0d6e30e4566e6f9f2051d5f80a1e3f1e0fcb1f18"
+  NUVIO_TV_SHA: "d95f3fb837b6ddfbf9ff445cdcba2413b576f0d4"
+
+jobs:
+  desktop-native-runtime:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: main
+          path: niakvio
+
+      - uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Install official Linux player dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev
+
+      - name: Checkout pinned NuvioDesktop and inject current generation
+        run: |
+          git clone --filter=blob:none --no-checkout https://github.com/NuvioMedia/NuvioDesktop.git nuvio-desktop
+          git -C nuvio-desktop checkout "$NUVIO_DESKTOP_SHA"
+          touch nuvio-desktop/local.properties
+          python niakvio/scripts/prepare_native_client_validation.py desktop --workspace "$GITHUB_WORKSPACE"
+
+      - name: Execute official Desktop PluginRuntime
+        working-directory: nuvio-desktop
+        run: |
+          rm -f "$GITHUB_WORKSPACE/desktop-native-results.log"
+          set +e
+          ./gradlew :composeApp:desktopTest --tests 'com.nuvio.app.features.plugins.NiakvioFinalNativeDesktopTest' --no-daemon --console=plain
+          STATUS=$?
+          set -e
+          echo "===== EXACT DESKTOP NATIVE RESULTS ====="
+          test -f "$GITHUB_WORKSPACE/desktop-native-results.log" && cat "$GITHUB_WORKSPACE/desktop-native-results.log" || true
+          exit "$STATUS"
+
+  android-mobile-and-tv-native-runtime:
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: main
+          path: niakvio
+
+      - uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Checkout pinned NuvioMobile and NuvioTV
+        run: |
+          git clone --filter=blob:none --no-checkout https://github.com/NuvioMedia/NuvioMobile.git nuvio-mobile
+          git -C nuvio-mobile checkout "$NUVIO_MOBILE_SHA"
+          touch nuvio-mobile/local.properties
+          git clone --filter=blob:none --no-checkout https://github.com/NuvioMedia/NuvioTV.git nuvio-tv
+          git -C nuvio-tv checkout "$NUVIO_TV_SHA"
+          touch nuvio-tv/local.properties nuvio-tv/local.dev.properties
+          python niakvio/scripts/prepare_native_client_validation.py android --workspace "$GITHUB_WORKSPACE"
+
+      - name: Execute official Mobile then TV PluginRuntime on one Android emulator
+        uses: ReactiveCircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_2
+          cores: 2
+          ram-size: 2048M
+          emulator-boot-timeout: 600
+          script: |
+            set +e
+            adb logcat -c
+            cd "$GITHUB_WORKSPACE/nuvio-mobile"
+            TASKS=$(./gradlew :composeApp:tasks --all -Pnuvio.android.distribution=full --console=plain)
+            MOBILE_TASK=$(printf '%s\n' "$TASKS" | awk 'tolower($1) ~ /connected.*device.*test/ {print $1; exit}')
+            if [ -z "$MOBILE_TASK" ]; then
+              MOBILE_TASK=$(printf '%s\n' "$TASKS" | awk 'tolower($1) ~ /device.*test/ && tolower($0) ~ /connected/ {print $1; exit}')
+            fi
+            if [ -z "$MOBILE_TASK" ]; then
+              echo "Unable to resolve NuvioMobile connected device-test task" >&2
+              MOBILE_STATUS=97
+            else
+              echo "Resolved NuvioMobile task: $MOBILE_TASK"
+              ./gradlew ":composeApp:$MOBILE_TASK" -Pnuvio.android.distribution=full --no-daemon --console=plain
+              MOBILE_STATUS=$?
+            fi
+            echo "===== EXACT MOBILE NATIVE RESULTS ====="
+            adb logcat -d -s NiakvioRealLab:I '*:S' || true
+
+            adb logcat -c
+            cd "$GITHUB_WORKSPACE/nuvio-tv"
+            ./gradlew :app:connectedFullDebugAndroidTest --no-daemon --console=plain
+            TV_STATUS=$?
+            echo "===== EXACT TV NATIVE RESULTS ====="
+            adb logcat -d -s NiakvioRealLab:I '*:S' || true
+            echo "FIELD_ANDROID_NATIVE_STATUS mobile=$MOBILE_STATUS tv=$TV_STATUS"
+            if [ "$MOBILE_STATUS" -ne 0 ] || [ "$TV_STATUS" -ne 0 ]; then
+              exit 1
+            fi
+            exit 0
