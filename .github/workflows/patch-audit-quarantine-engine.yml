@@ -23,6 +23,19 @@ jobs:
       - name: Patch and compile quarantine boundaries
         run: |
           python scripts/apply_transient_audit_quarantine_engine_patch.py
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path('scripts/reapply_published_overrides.py')
+          text = path.read_text(encoding='utf-8')
+          old = '''        audit_terminal_quarantine = (\n            AUDIT_QUARANTINE_MARKER.encode("utf-8") in original\n            and isinstance(provider_provenance, dict)\n            and str(provider_provenance.get("activation_mode") or "") == AUDIT_QUARANTINE_MODE\n        )\n'''
+          new = '''        audit_terminal_quarantine = (\n            AUDIT_QUARANTINE_MARKER.encode("utf-8") in original\n        )\n'''
+          if old in text:
+              text = text.replace(old, new, 1)
+          elif new not in text:
+              raise SystemExit('terminal quarantine condition not found')
+          path.write_text(text, encoding='utf-8')
+          PY
           python -m py_compile \
             scripts/quarantine_catalogue_audit_failures.py \
             scripts/reapply_published_overrides.py \
@@ -42,5 +55,5 @@ jobs:
             echo 'quarantine boundaries already patched'
             exit 0
           fi
-          git commit -m 'safety: make catalogue audit quarantine transient and recoverable'
+          git commit -m 'safety: make quarantine marker terminal for reapply'
           git push origin HEAD:main
