@@ -39,14 +39,20 @@ jobs:
       - name: Install locked validator dependencies
         run: npm ci --ignore-scripts --no-audit --no-fund
 
-      - name: Apply engine v4 and rebuild published generation
+      - name: Apply native-safe engine v4 and rebuild published generation
         shell: bash
         run: |
           set -euxo pipefail
+          python3 tests/native_catalogue_recovery_budget_test.py
+          python3 tests/native_hls_integrity_budget_test.py
           python3 tests/runtime_capability_media_safety_v4_test.py
+          python3 scripts/apply_native_catalogue_recovery_budget_upgrade_v1.py
+          python3 scripts/apply_native_hls_integrity_budget_upgrade_v1.py
           python3 scripts/apply_runtime_capability_upgrade_v4.py
           python3 scripts/reapply_published_overrides.py
           python3 scripts/reapply_published_overrides.py --check
+          python3 tests/native_catalogue_recovery_budget_test.py
+          python3 tests/native_hls_integrity_budget_test.py
           python3 tests/runtime_capability_media_safety_v4_test.py
           python3 scripts/validate_published_overrides.py
           python3 scripts/generate_release_hashes.py
@@ -57,6 +63,8 @@ jobs:
         run: |
           set -euxo pipefail
           npm test
+          python3 tests/native_catalogue_recovery_budget_test.py
+          python3 tests/native_hls_integrity_budget_test.py
           python3 scripts/generate_release_hashes.py
           python3 scripts/validate_release_integrity.py
           python3 scripts/reapply_published_overrides.py --check
@@ -76,6 +84,16 @@ jobs:
           patch = engine.get('final_patch')
           assert patch == 'scripts/provider_patches/runtime_capability_media_safety_v4.py', patch
 
+          catalogue_budget = cfg.get('native_catalogue_recovery_budget') or {}
+          assert catalogue_budget.get('version') == 1, catalogue_budget
+          assert set(catalogue_budget.get('native_platforms') or []) == {'desktop', 'mobile_android', 'tv_android'}, catalogue_budget
+          assert catalogue_budget.get('targets'), catalogue_budget
+
+          hls_budget = cfg.get('native_hls_integrity_budget') or {}
+          assert hls_budget.get('version') == 1, hls_budget
+          assert set(hls_budget.get('native_platforms') or []) == {'desktop', 'mobile_android', 'tv_android'}, hls_budget
+          assert hls_budget.get('targets'), hls_budget
+
           manifest = json.loads(Path('manifest.json').read_text(encoding='utf-8'))
           rows = {str(row.get('id') or '').casefold(): row for row in manifest.get('scrapers', []) if isinstance(row, dict)}
           assert rows['moviebox'].get('enabled') is False
@@ -83,8 +101,10 @@ jobs:
           assert rows['streamzo'].get('enabled') is True
           payload = Path(rows['streamzo']['filename']).read_text(encoding='utf-8')
           assert payload.count('NUVIO_GLOBAL_RUNTIME_MEDIA_SAFETY_V1:') == 1
+          assert 'NUVIO_NATIVE_CATALOGUE_RECOVERY_BUDGET_V1' in payload
+          assert 'NUVIO_NATIVE_HLS_INTEGRITY_BUDGET_V1' in payload
           assert '"implementationRevision":"field-safety-v4-runtime-capability"' in payload
-          print('engine-v4 promotion invariants passed')
+          print('native-safe engine-v4 promotion invariants passed')
           PY
 
       - name: Commit atomic promotion
@@ -95,8 +115,8 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
           if git diff --cached --quiet; then
-            echo "Engine v4 is already fully promoted."
+            echo "Native-safe engine v4 is already fully promoted."
             exit 0
           fi
-          git commit -m "engine: promote runtime capability media safety v4"
+          git commit -m "engine: promote native-safe runtime capability v4"
           git push origin HEAD:main
