@@ -1,4 +1,4 @@
-name: Permanent NuvioTV real-client lab v2
+name: Permanent TV Android real-client lab v4
 
 on:
   workflow_dispatch:
@@ -11,28 +11,70 @@ permissions:
   contents: read
 
 concurrency:
-  group: permanent-tv-real-client-v2
+  group: permanent-tv-android-real-client-v4
   cancel-in-progress: false
 
 env:
   NUVIO_TV_SHA: "d95f3fb837b6ddfbf9ff445cdcba2413b576f0d4"
 
 jobs:
-  tv-real-runtime:
+  tv-android-real-runtime:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      - name: Checkout permanent TV lab
+      - name: Checkout permanent TV Android lab
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
           ref: lab/tv-real
           path: niakvio
+
+      - name: Set up Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: "3.12"
+
+      - name: Set up Node
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: "24"
+          package-manager-cache: false
 
       - name: Set up JDK
         uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165
         with:
           distribution: temurin
           java-version: '17'
+
+      - name: Install locked provider validator dependencies
+        working-directory: niakvio
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Build exact engine-v4 lab candidate from published manifest
+        working-directory: niakvio
+        shell: bash
+        run: |
+          set -euxo pipefail
+          python3 tests/runtime_capability_media_safety_v4_test.py
+          python3 scripts/apply_runtime_capability_upgrade_v4.py
+          python3 scripts/reapply_published_overrides.py
+          python3 scripts/reapply_published_overrides.py --check
+          python3 tests/runtime_capability_media_safety_v4_test.py
+          python3 scripts/validate_published_overrides.py
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          manifest = json.loads(Path('manifest.json').read_text(encoding='utf-8'))
+          rows = {str(row.get('id') or '').casefold(): row for row in manifest.get('scrapers', []) if isinstance(row, dict)}
+          streamzo = rows['streamzo']
+          assert streamzo.get('enabled') is True
+          payload = Path(streamzo['filename']).read_text(encoding='utf-8')
+          assert payload.count('NUVIO_GLOBAL_RUNTIME_MEDIA_SAFETY_V1:') == 1
+          assert '"implementationRevision":"field-safety-v4-runtime-capability"' in payload
+          assert '"implementationRevision":"field-safety-v2"' not in payload
+          for provider_id in ('moviebox', 'netmirror'):
+              assert rows[provider_id].get('enabled') is False
+          print(f"FIELD_TV_ANDROID_CANDIDATE streamzo={streamzo['filename']} version={streamzo.get('version')}")
+          PY
 
       - name: Checkout exact official NuvioTV runtime
         shell: bash
@@ -42,17 +84,17 @@ jobs:
           git checkout "$NUVIO_TV_SHA"
           touch local.properties local.dev.properties
 
-      - name: Prepare exact TV instrumentation test
+      - name: Prepare exact TV Android instrumentation test
         shell: bash
         run: |
           python3 niakvio/lab/real-client/tv/prepare_nuvio_tv.py nuvio-tv niakvio
 
-      - name: Start real Android TV emulator
+      - name: Start real TV Android emulator
         shell: bash
         run: |
           bash niakvio/lab/real-client/tv/start_tv_emulator.sh
 
-      - name: Execute official NuvioTV Full provider runtime
+      - name: Execute official NuvioTV provider runtime
         working-directory: nuvio-tv
         shell: bash
         run: |
@@ -61,10 +103,10 @@ jobs:
           ./gradlew :app:connectedFullDebugAndroidTest --no-daemon --console=plain
           STATUS=$?
           set -e
-          echo "===== EXACT NUVIO TV PROVIDER RESULTS ====="
+          echo "===== EXACT TV ANDROID PROVIDER RESULTS ====="
           "${ANDROID_HOME}/platform-tools/adb" -s "$ANDROID_SERIAL" logcat -d -s NiakvioTvRealLab:I '*:S' || true
           if [ "$STATUS" -ne 0 ]; then
-            echo "===== TV EMULATOR LOG TAIL ====="
+            echo "===== TV ANDROID EMULATOR LOG TAIL ====="
             tail -n 200 /tmp/niakvio-tv-emulator.log || true
           fi
           exit "$STATUS"
