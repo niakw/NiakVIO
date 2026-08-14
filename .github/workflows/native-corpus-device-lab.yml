@@ -63,7 +63,7 @@ jobs:
             --fixture "${{ matrix.fixture }}" \
             --workspace "$GITHUB_WORKSPACE"
 
-      - name: Execute every provider in official Desktop PluginRuntime
+      - name: Execute and analyze every provider in official Desktop PluginRuntime
         working-directory: nuvio-desktop
         shell: bash
         run: |
@@ -71,11 +71,18 @@ jobs:
           ./gradlew :composeApp:desktopTest \
             --tests 'com.nuvio.app.features.plugins.NiakvioNativeCorpusDesktopTest' \
             --no-daemon --console=plain
-          STATUS=$?
+          RUNTIME_STATUS=$?
           set -e
+          LOG="$GITHUB_WORKSPACE/desktop-native-corpus-${{ matrix.fixture }}.log"
           echo "===== EXACT DESKTOP NATIVE CORPUS RESULTS: ${{ matrix.fixture }} ====="
-          cat "$GITHUB_WORKSPACE/desktop-native-corpus-${{ matrix.fixture }}.log" || true
-          exit "$STATUS"
+          cat "$LOG" || true
+          ANALYSIS_STATUS=0
+          node "$GITHUB_WORKSPACE/niakvio/scripts/analyze_native_corpus_results.cjs" \
+            "${{ matrix.fixture }}" "$LOG" || ANALYSIS_STATUS=$?
+          echo "FIELD_NATIVE_CORPUS_DESKTOP_STATUS fixture=${{ matrix.fixture }} runtime=$RUNTIME_STATUS analysis=$ANALYSIS_STATUS"
+          if [ "$RUNTIME_STATUS" -ne 0 ] || [ "$ANALYSIS_STATUS" -ne 0 ]; then
+            exit 1
+          fi
 
   android-mobile-tv-native-corpus:
     strategy:
@@ -127,7 +134,7 @@ jobs:
             ls -l /dev/kvm || true
           fi
 
-      - name: Execute every provider in official Mobile then TV PluginRuntime
+      - name: Execute and analyze every provider in official Mobile then TV PluginRuntime
         uses: ReactiveCircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d
         with:
           api-level: 35
