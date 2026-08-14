@@ -65,6 +65,8 @@ jobs:
           npm test
           python3 tests/native_catalogue_recovery_budget_test.py
           python3 tests/native_hls_integrity_budget_test.py
+          python3 tests/streamzo_native_platform_contract_test.py
+          python3 tests/provider_hub_registry_test.py
           python3 scripts/generate_release_hashes.py
           python3 scripts/validate_release_integrity.py
           python3 scripts/reapply_published_overrides.py --check
@@ -104,12 +106,21 @@ jobs:
           assert rows['streamzo'].get('enabled') is True
           payload = Path(rows['streamzo']['filename']).read_text(encoding='utf-8')
           assert payload.count('NUVIO_GLOBAL_RUNTIME_MEDIA_SAFETY_V1:') == 1
+          assert 'NUVIO_STREAMZO_DATA_EMBED_V2' in payload
+          assert 'NUVIO_STREAMZO_PUBLIC_CATALOGUE_V3:' in payload
           assert 'NUVIO_NATIVE_CATALOGUE_RECOVERY_BUDGET_V2' in payload
           assert 'NUVIO_NATIVE_CATALOGUE_RECOVERY_BUDGET_V1 */' not in payload
           assert 'NUVIO_NATIVE_HLS_INTEGRITY_BUDGET_V1' in payload
           assert '"implementationRevision":"field-safety-v4-runtime-capability"' in payload
           print('native-safe engine-v4 promotion invariants passed')
           PY
+
+      - name: Arm full native corpus lab for the promoted generation
+        shell: bash
+        run: |
+          set -euxo pipefail
+          mkdir -p .github/triggers
+          printf 'promoted-engine-v4 %s\n' "$(git rev-parse HEAD)" > .github/triggers/native-corpus-device-lab
 
       - name: Commit atomic promotion
         shell: bash
