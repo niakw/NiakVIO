@@ -17,6 +17,8 @@ from typing import Any
 
 MARKER = "NUVIO_NATIVE_HLS_INTEGRITY_BUDGET_V1"
 HLS_MARKER = "NUVIO_HLS_RUNTIME_INTEGRITY_V1"
+WRAPPER_START = ";(function(g,config){"
+WRAPPER_CALL = '})(typeof globalThis!=="undefined"?globalThis:this,'
 USE_STRICT = '  "use strict";'
 USE_NATIVE = USE_STRICT + '\n  function nativeHlsHost(){try{return typeof g.__native_fetch==="function"}catch(_e){return false}}'
 FILTER_OLD = "  async function filterRows(value){\n    var rows=Array.isArray(value)?value:value&&Array.isArray(value.streams)?value.streams:null;"
@@ -30,9 +32,29 @@ def _replace_once(text: str, old: str, new: str, label: str) -> str:
     return text.replace(old, new, 1)
 
 
+def _wrapper_bounds(text: str) -> tuple[int, int]:
+    marker_start = text.find(f"/* {HLS_MARKER}:")
+    if marker_start < 0:
+        raise ValueError("HLS runtime integrity marker exists but canonical wrapper marker was not found")
+    wrapper_start = text.find(WRAPPER_START, marker_start)
+    if wrapper_start < 0:
+        raise ValueError("HLS runtime integrity wrapper start not found")
+    wrapper_call = text.find(WRAPPER_CALL, wrapper_start)
+    if wrapper_call < 0:
+        raise ValueError("HLS runtime integrity wrapper call not found")
+    wrapper_end = text.find(");", wrapper_call)
+    if wrapper_end < 0:
+        raise ValueError("HLS runtime integrity wrapper end not found")
+    return marker_start, wrapper_end + 2
+
+
 def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> str:
     if HLS_MARKER not in text or MARKER in text:
         return text
-    out = _replace_once(text, USE_STRICT, USE_NATIVE, "strict-mode anchor")
-    out = _replace_once(out, FILTER_OLD, FILTER_NEW, "filterRows entry")
+
+    start, end = _wrapper_bounds(text)
+    wrapper = text[start:end]
+    wrapper = _replace_once(wrapper, USE_STRICT, USE_NATIVE, "strict-mode anchor")
+    wrapper = _replace_once(wrapper, FILTER_OLD, FILTER_NEW, "filterRows entry")
+    out = text[:start] + wrapper + text[end:]
     return out.rstrip() + f"\n/* {MARKER} */\n"
