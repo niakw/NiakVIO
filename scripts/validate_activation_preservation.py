@@ -181,6 +181,39 @@ def configured_safety_quarantine(
     if str(provenance.get("patched_sha256") or "") != published_sha:
         return False, "safety_quarantine_provenance_sha_mismatch"
 
+    evidence_type = str(finding.get("evidence_type") or "")
+    if evidence_type in {"manual_live_wrong_content", "manual_live_non_playable"}:
+        if finding.get("evidence_source") != "operator_live_client_report":
+            return False, "manual_safety_finding_source_invalid"
+        if finding.get("operator_confirmed") is not True:
+            return False, "manual_safety_finding_not_confirmed"
+        if not COMMIT_RE.fullmatch(str(finding.get("tested_commit_sha") or "")):
+            return False, "manual_safety_finding_commit_invalid"
+        tested_sha = str(finding.get("tested_bundle_sha256") or "")
+        tested_bundle = str(finding.get("tested_bundle") or "")
+        if not SHA256_RE.fullmatch(tested_sha):
+            return False, "manual_safety_finding_bundle_sha_invalid"
+        if not tested_bundle.startswith("providers/") or not tested_bundle.endswith(f"--{tested_sha[:16]}.js"):
+            return False, "manual_safety_finding_bundle_path_invalid"
+        fixture = finding.get("fixture")
+        if not isinstance(fixture, dict) or not str(fixture.get("tmdbId") or "") or not str(fixture.get("title") or ""):
+            return False, "manual_safety_finding_fixture_invalid"
+        if evidence_type == "manual_live_wrong_content":
+            if finding.get("transport_playable") is not True:
+                return False, "manual_wrong_content_not_transport_playable"
+            if not str(finding.get("observed_content") or "").strip():
+                return False, "manual_wrong_content_observation_missing"
+            if not finding.get("clients_with_contradiction"):
+                return False, "manual_wrong_content_client_missing"
+        else:
+            if finding.get("transport_playable") is not False:
+                return False, "manual_non_playable_transport_flag_invalid"
+            if str(finding.get("observed_failure") or "") not in {"infinite_loading", "non_media_html", "timeout"}:
+                return False, "manual_non_playable_observation_invalid"
+            if not finding.get("clients_with_failure"):
+                return False, "manual_non_playable_client_missing"
+        return True, f"configured_safety_quarantine:{reason}:{evidence_type}"
+
     if finding.get("evidence_type") != "duration_identity_mismatch":
         return False, "unsupported_safety_finding_type"
     if finding.get("transport_playable") is not True:

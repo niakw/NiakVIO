@@ -1232,7 +1232,7 @@
       }
     },
     "moviebox": {
-      "capability": "html_scraper",
+      "capability": "quarantined",
       "profiles": [],
       "replacements": {},
       "runtime_domain_replacements": {},
@@ -1240,9 +1240,18 @@
       "official_site": "https://moviebox.yachts",
       "required_values": [],
       "manifest_overrides": {
-        "disabledPlatforms": []
+        "disabledPlatforms": [],
+        "enabled": false
       },
-      "patch_script_options": {}
+      "patch_script_options": {
+        "scripts/provider_patches/quarantine_provider_v1.py": {
+          "reason": "non_playable_html_output"
+        }
+      },
+      "patch_scripts": [
+        "scripts/provider_patches/quarantine_provider_v1.py"
+      ],
+      "notes": "Fail-closed safety quarantine: non_playable_html_output. Published bundle is inert; re-enable only after fresh strict identity and direct-media proof."
     },
     "movies4u": {
       "capability": "html_scraper",
@@ -1301,16 +1310,26 @@
       "patch_script_options": {}
     },
     "netmirror": {
-      "capability": "mixed_embed_resolver",
+      "capability": "quarantined",
       "replacements": {},
       "runtime_domain_replacements": {},
       "official_hub": "https://netmiror.com/",
       "official_site": "https://net27.cc",
       "required_values": [],
       "manifest_overrides": {
-        "disabledPlatforms": []
+        "disabledPlatforms": [],
+        "enabled": false
       },
-      "patch_script_options": {}
+      "patch_script_options": {
+        "scripts/provider_patches/quarantine_provider_v1.py": {
+          "reason": "cross_title_search_identity_mismatch"
+        }
+      },
+      "profiles": [],
+      "patch_scripts": [
+        "scripts/provider_patches/quarantine_provider_v1.py"
+      ],
+      "notes": "Fail-closed safety quarantine: cross_title_search_identity_mismatch. Published bundle is inert; re-enable only after fresh strict identity and direct-media proof."
     },
     "onlykdrama": {
       "capability": "html_scraper"

@@ -1882,10 +1882,8 @@ def main() -> int:
                         "blocked",
                         "provider_unreachable",
                         "runtime_error",
-                        "unavailable",
                         "no_streams",
                         "reachable",
-                        "degraded",
                     ],
                 )
             }
@@ -1908,6 +1906,7 @@ def main() -> int:
             )
             preserve_current = (
                 not enabled
+                and current_ci_inconclusive
                 and (old_was_enabled or restore_activation_lkg)
                 and not auto_disabled
                 and upstream_enabled

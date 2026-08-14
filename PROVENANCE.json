@@ -13137,9 +13137,9 @@
     },
     "moviebox": {
       "id": "moviebox",
-      "published_filename": "providers/moviebox--published-baseline--1c0c9c423a094e0d.js",
-      "sha256": "1c0c9c423a094e0d33773c17464c2a634f4ff15a49af8d6261cc6bd12c44a818",
-      "patched_sha256": "1c0c9c423a094e0d33773c17464c2a634f4ff15a49af8d6261cc6bd12c44a818",
+      "published_filename": "providers/moviebox--published-baseline--896063e9c9f1c111.js",
+      "sha256": "896063e9c9f1c111a4c0b3b8f085e8e80cbf1b7d043c4929e07a036424d61a04",
+      "patched_sha256": "896063e9c9f1c111a4c0b3b8f085e8e80cbf1b7d043c4929e07a036424d61a04",
       "upstream_sha256": "f19ec5a037e53220e1457e6db0cb9abee1d2f9f299c594dddefb14df7822c847",
       "local_patches": [
         {
@@ -13176,6 +13176,11 @@
           "path": "scripts/provider_patches/hls_master_audio_preserver_v1.py",
           "phase": "discovery",
           "scope": "global_playback_integrity"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/quarantine_provider_v1.py",
+          "phase": "discovery"
         }
       ],
       "source": "published-baseline",
@@ -13194,7 +13199,7 @@
       "strict_grace_eligible": false,
       "historical_quality_grace_eligible": false,
       "runtime_evidence_eligible": false,
-      "activation_mode": "preserved_current_ci_uncertain",
+      "activation_mode": "configured_safety_quarantine",
       "activation_blockers": [
         "02_healthy_functional_status",
         "03_minimum_score",
@@ -13203,7 +13208,8 @@
         "06_distinct_host_diversity",
         "07_verified_payload_playability",
         "08_quality_and_bitrate",
-        "00_current_playable_stream"
+        "00_current_playable_stream",
+        "configured_safety_quarantine"
       ],
       "activation_gates": {
         "01_policy_safe_no_p2p": {
@@ -15543,9 +15549,9 @@
     },
     "netmirror": {
       "id": "netmirror",
-      "published_filename": "providers/netmirror--published-baseline--ccbd35984c20fc8b.js",
-      "sha256": "ccbd35984c20fc8b01cdb297fcc0648f3177aedeedcfed25bb276a417c094746",
-      "patched_sha256": "ccbd35984c20fc8b01cdb297fcc0648f3177aedeedcfed25bb276a417c094746",
+      "published_filename": "providers/netmirror--published-baseline--96b2b201025b02ca.js",
+      "sha256": "96b2b201025b02cad919a4a035babb40d626ebf973383dd9212928ccf4413129",
+      "patched_sha256": "96b2b201025b02cad919a4a035babb40d626ebf973383dd9212928ccf4413129",
       "upstream_sha256": "5cc8283a945c663ea55e049931f22c3f9afdeb3ff38e564899dc5359d40600c1",
       "local_patches": [
         {
@@ -15582,6 +15588,11 @@
           "path": "scripts/provider_patches/hls_master_audio_preserver_v1.py",
           "phase": "discovery",
           "scope": "global_playback_integrity"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/quarantine_provider_v1.py",
+          "phase": "discovery"
         }
       ],
       "source": "published-baseline",
@@ -15600,7 +15611,7 @@
       "strict_grace_eligible": false,
       "historical_quality_grace_eligible": false,
       "runtime_evidence_eligible": false,
-      "activation_mode": "preserved_current_ci_uncertain",
+      "activation_mode": "configured_safety_quarantine",
       "activation_blockers": [
         "02_healthy_functional_status",
         "03_minimum_score",
@@ -15609,7 +15620,8 @@
         "06_distinct_host_diversity",
         "07_verified_payload_playability",
         "08_quality_and_bitrate",
-        "00_current_playable_stream"
+        "00_current_playable_stream",
+        "configured_safety_quarantine"
       ],
       "activation_gates": {
         "01_policy_safe_no_p2p": {
