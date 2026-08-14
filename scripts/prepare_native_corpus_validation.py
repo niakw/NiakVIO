@@ -3,7 +3,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import re
 import shutil
 from pathlib import Path
 
@@ -100,6 +99,122 @@ def common_fixture_values(fixture: dict) -> dict[str, str]:
     }
 
 
+TRANSPORT_HELPERS = r'''
+    data class TransportProbe(
+        val state: String,
+        val kind: String,
+        val status: Int,
+        val contentType: String,
+        val extm3u: Boolean,
+        val durationSeconds: Double?,
+        val host: String,
+        val mediaHint: String,
+    )
+
+    private fun humanMediaHint(raw: String): String {
+        return try {
+            val path = java.net.URI(raw).path ?: return ""
+            val leaf = java.net.URLDecoder.decode(path.substringAfterLast('/'), "UTF-8")
+                .replace(Regex("\\.(?:m3u8|mpd|mp4|mkv|webm|m4v|ts)$", RegexOption.IGNORE_CASE), "")
+            val words = leaf.split(Regex("[^A-Za-zÀ-ÿ]+"))
+                .filter { it.length >= 3 && it.all { ch -> ch.isLetter() } }
+            if (words.size >= 2) leaf.take(180) else ""
+        } catch (_: Throwable) { "" }
+    }
+
+    private fun hostOnly(raw: String): String = try { java.net.URI(raw).host.orEmpty().lowercase() } catch (_: Throwable) { "" }
+
+    private fun requestText(url: String, headers: Map<String, String>?, range: Boolean = false): Triple<Int, String, String> {
+        val connection = java.net.URL(url).openConnection() as java.net.HttpURLConnection
+        connection.instanceFollowRedirects = true
+        connection.connectTimeout = 8_000
+        connection.readTimeout = 12_000
+        connection.setRequestProperty("Accept", "application/vnd.apple.mpegurl,application/x-mpegURL,video/*,*/*")
+        if (range) connection.setRequestProperty("Range", "bytes=0-65535")
+        headers.orEmpty().forEach { (key, value) -> connection.setRequestProperty(key, value) }
+        return try {
+            val status = connection.responseCode
+            val contentType = connection.contentType.orEmpty()
+            val input = if (status in 200..299) connection.inputStream else connection.errorStream
+            val body = if (input == null) "" else input.bufferedReader().use { reader ->
+                val out = StringBuilder()
+                val buffer = CharArray(8192)
+                while (out.length < 262144) {
+                    val count = reader.read(buffer, 0, minOf(buffer.size, 262144 - out.length))
+                    if (count <= 0) break
+                    out.append(buffer, 0, count)
+                }
+                out.toString()
+            }
+            Triple(status, contentType, body)
+        } finally {
+            connection.disconnect()
+        }
+    }
+
+    private fun firstVariant(body: String, base: String): String {
+        val lines = body.lineSequence().map { it.trim() }.toList()
+        for (i in lines.indices) {
+            if (!lines[i].startsWith("#EXT-X-STREAM-INF", ignoreCase = true)) continue
+            for (j in i + 1 until lines.size) {
+                val candidate = lines[j]
+                if (candidate.isBlank() || candidate.startsWith("#")) continue
+                return try { java.net.URI(base).resolve(candidate).toString() } catch (_: Throwable) { "" }
+            }
+        }
+        return ""
+    }
+
+    private fun hlsDuration(body: String): Double? {
+        var total = 0.0
+        var count = 0
+        Regex("#EXTINF\\s*:\\s*([0-9]+(?:\\.[0-9]+)?)", RegexOption.IGNORE_CASE)
+            .findAll(body).forEach { match ->
+                match.groupValues.getOrNull(1)?.toDoubleOrNull()?.let { value ->
+                    if (value > 0) { total += value; count += 1 }
+                }
+            }
+        return if (count >= 2 && total >= 60.0) total else null
+    }
+
+    private fun probeTransport(url: String, headers: Map<String, String>?): TransportProbe {
+        val host = hostOnly(url)
+        val hint = humanMediaHint(url)
+        return try {
+            val lower = url.lowercase()
+            val hlsHint = lower.contains(".m3u8") || lower.contains("/hls/") || lower.contains("/hls2/")
+            val directHint = Regex("\\.(?:mp4|mkv|webm|m4v)(?:[?#]|$)", RegexOption.IGNORE_CASE).containsMatchIn(url)
+            val (status, contentType, body) = requestText(url, headers, range = directHint)
+            if (status !in 200..299) {
+                TransportProbe("dead", if (hlsHint) "hls" else if (directHint) "direct" else "unknown", status, contentType, false, null, host, hint)
+            } else if (hlsHint || contentType.contains("mpegurl", ignoreCase = true) || body.trimStart().startsWith("#EXTM3U", ignoreCase = true)) {
+                val extm3u = body.trimStart().startsWith("#EXTM3U", ignoreCase = true)
+                if (!extm3u) TransportProbe("dead", "hls", status, contentType, false, null, host, hint)
+                else {
+                    var duration = hlsDuration(body)
+                    if (duration == null && body.contains("#EXT-X-STREAM-INF", ignoreCase = true)) {
+                        val child = firstVariant(body, url)
+                        if (child.isNotBlank()) {
+                            val (childStatus, _, childBody) = requestText(child, headers)
+                            if (childStatus in 200..299 && childBody.trimStart().startsWith("#EXTM3U", ignoreCase = true)) duration = hlsDuration(childBody)
+                        }
+                    }
+                    TransportProbe("ok", "hls", status, contentType, true, duration, host, hint)
+                }
+            } else if (contentType.contains("text/html", ignoreCase = true) || body.trimStart().startsWith("<!doctype html", ignoreCase = true) || body.trimStart().startsWith("<html", ignoreCase = true)) {
+                TransportProbe("dead", "html", status, contentType, false, null, host, hint)
+            } else if (directHint || contentType.startsWith("video/", ignoreCase = true) || status == 206) {
+                TransportProbe("ok", "direct", status, contentType, false, null, host, hint)
+            } else {
+                TransportProbe("unknown", "unknown", status, contentType, false, null, host, hint)
+            }
+        } catch (error: Throwable) {
+            TransportProbe("error", "unknown", 0, error::class.simpleName.orEmpty(), false, null, host, hint)
+        }
+    }
+'''
+
+
 def desktop_test(fixture: dict, providers: list[dict]) -> str:
     f = common_fixture_values(fixture)
     return f'''package com.nuvio.app.features.plugins
@@ -128,7 +243,7 @@ class NiakvioNativeCorpusDesktopTest {{
         println(message)
         resultFile.appendText(message + "\\n")
     }}
-
+{TRANSPORT_HELPERS}
     @Test
     fun selectedFixtureAcrossEveryProvider() = runBlocking {{
         val fixtureSlug = {f['slug']}
@@ -152,7 +267,12 @@ class NiakvioNativeCorpusDesktopTest {{
                 )
                 emit("FIELD_NATIVE_RESULT client=desktop fixture=$fixtureSlug provider64=${{b64(provider.id)}} enabled=${{provider.enabled}} duration_ms=${{System.currentTimeMillis()-started}} count=${{rows.size}}")
                 rows.take(3).forEachIndexed {{ index, row ->
-                    emit("FIELD_NATIVE_ROW client=desktop fixture=$fixtureSlug provider64=${{b64(provider.id)}} index=$index title64=${{b64(row.title)}} name64=${{b64(row.name)}} quality64=${{b64(row.quality)}} language64=${{b64(row.language)}} type64=${{b64(row.type)}} url64=${{b64(row.url)}}")
+                    val hint = humanMediaHint(row.url)
+                    emit("FIELD_NATIVE_ROW client=desktop fixture=$fixtureSlug provider64=${{b64(provider.id)}} index=$index title64=${{b64(row.title)}} name64=${{b64(row.name)}} quality64=${{b64(row.quality)}} language64=${{b64(row.language)}} type64=${{b64(row.type)}} host64=${{b64(hostOnly(row.url))}} media_hint64=${{b64(hint)}}")
+                }}
+                rows.firstOrNull()?.let {{ row ->
+                    val probe = probeTransport(row.url, row.headers)
+                    emit("FIELD_NATIVE_TRANSPORT client=desktop fixture=$fixtureSlug provider64=${{b64(provider.id)}} state=${{probe.state}} kind=${{probe.kind}} status=${{probe.status}} content_type64=${{b64(probe.contentType)}} extm3u=${{probe.extm3u}} duration_seconds=${{probe.durationSeconds ?: 0.0}} host64=${{b64(probe.host)}} media_hint64=${{b64(probe.mediaHint)}}")
                 }}
             }} catch (error: Throwable) {{
                 errors += provider.id + ":" + (error.message ?: error::class.simpleName.orEmpty())
@@ -207,7 +327,7 @@ class {klass} {{
         println(message)
         Log.i("NiakvioCorpus", message)
     }}
-
+{TRANSPORT_HELPERS}
     @Test
     fun selectedFixtureAcrossEveryProvider() = runBlocking {{
         val fixtureSlug = {f['slug']}
@@ -231,7 +351,12 @@ class {klass} {{
                 )
                 emit("FIELD_NATIVE_RESULT client={client} fixture=$fixtureSlug provider64=${{b64(provider.id)}} enabled=${{provider.enabled}} duration_ms=${{System.currentTimeMillis()-started}} count=${{rows.size}}")
                 rows.take(3).forEachIndexed {{ index, row ->
-                    emit("FIELD_NATIVE_ROW client={client} fixture=$fixtureSlug provider64=${{b64(provider.id)}} index=$index title64=${{b64(row.title)}} name64=${{b64(row.name)}} quality64=${{b64(row.quality)}} language64=${{b64(row.language)}} type64=${{b64(row.type)}} url64=${{b64(row.url)}}")
+                    val hint = humanMediaHint(row.url)
+                    emit("FIELD_NATIVE_ROW client={client} fixture=$fixtureSlug provider64=${{b64(provider.id)}} index=$index title64=${{b64(row.title)}} name64=${{b64(row.name)}} quality64=${{b64(row.quality)}} language64=${{b64(row.language)}} type64=${{b64(row.type)}} host64=${{b64(hostOnly(row.url))}} media_hint64=${{b64(hint)}}")
+                }}
+                rows.firstOrNull()?.let {{ row ->
+                    val probe = probeTransport(row.url, row.headers)
+                    emit("FIELD_NATIVE_TRANSPORT client={client} fixture=$fixtureSlug provider64=${{b64(provider.id)}} state=${{probe.state}} kind=${{probe.kind}} status=${{probe.status}} content_type64=${{b64(probe.contentType)}} extm3u=${{probe.extm3u}} duration_seconds=${{probe.durationSeconds ?: 0.0}} host64=${{b64(probe.host)}} media_hint64=${{b64(probe.mediaHint)}}")
                 }}
             }} catch (error: Throwable) {{
                 errors += provider.id + ":" + (error.message ?: error::class.simpleName.orEmpty())
