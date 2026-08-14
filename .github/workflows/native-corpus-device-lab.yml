@@ -90,6 +90,15 @@ jobs:
           echo "FIELD_NATIVE_CORPUS_DESKTOP_SUITE_STATUS status=$STATUS fixtures=${#FIXTURES[@]} clients=1"
           exit "$STATUS"
 
+      - name: Upload sanitized Desktop native corpus logs
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: native-corpus-desktop-${{ github.run_id }}
+          path: desktop-native-corpus-*.log
+          retention-days: 7
+          if-no-files-found: warn
+
   android-mobile-tv-native-corpus:
     runs-on: ubuntu-latest
     timeout-minutes: 300
@@ -146,3 +155,81 @@ jobs:
           ram-size: 2048M
           emulator-boot-timeout: 600
           script: bash "$GITHUB_WORKSPACE/niakvio/scripts/run_native_corpus_android_suite.sh"
+
+      - name: Upload sanitized Mobile and TV native corpus logs
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: native-corpus-android-${{ github.run_id }}
+          path: |
+            mobile-native-corpus-*.log
+            tv-native-corpus-*.log
+          retention-days: 7
+          if-no-files-found: warn
+
+  native-corpus-engine-summary:
+    if: always()
+    needs:
+      - desktop-native-corpus
+      - android-mobile-tv-native-corpus
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Checkout current Niakvio main
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: main
+          path: niakvio
+
+      - name: Set up Node
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: "24"
+          package-manager-cache: false
+
+      - name: Download Desktop corpus logs
+        continue-on-error: true
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          name: native-corpus-desktop-${{ github.run_id }}
+          path: corpus-logs/desktop
+
+      - name: Download Mobile and TV corpus logs
+        continue-on-error: true
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          name: native-corpus-android-${{ github.run_id }}
+          path: corpus-logs/android
+
+      - name: Build cross-device engine feedback summary
+        shell: bash
+        run: |
+          set -euo pipefail
+          node niakvio/scripts/summarize_native_corpus_suite.cjs \
+            --dir corpus-logs \
+            --output native-corpus-summary.json
+          python3 - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import json
+          from pathlib import Path
+          p = Path('native-corpus-summary.json')
+          data = json.loads(p.read_text(encoding='utf-8'))
+          print('## Native corpus engine feedback')
+          print()
+          print(f"- Providers observed: **{data.get('providersObserved', 0)}**")
+          print(f"- Executions: **{data.get('executions', 0)}**")
+          print(f"- Identity contradictions: **{data.get('contradictions', 0)}**")
+          print(f"- Transport failures: **{data.get('transportFailures', 0)}**")
+          print(f"- Runtime errors: **{data.get('runtimeErrors', 0)}**")
+          signals = data.get('engineSignals') or {}
+          print(f"- Repeated platform gaps: **{len(signals.get('repeatedPlatformGaps') or [])}**")
+          print(f"- Systemically empty enabled providers: **{len(signals.get('systemicEmpty') or [])}**")
+          PY
+
+      - name: Upload cross-device engine feedback
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: native-corpus-engine-summary-${{ github.run_id }}
+          path: native-corpus-summary.json
+          retention-days: 14
+          if-no-files-found: warn
