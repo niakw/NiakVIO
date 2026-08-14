@@ -1,0 +1,56 @@
+name: Temporary Mon Ninja 3 NuvioTV runtime lab
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/triggers/tmp-tv-mon-ninja-lab"
+
+permissions:
+  contents: read
+
+jobs:
+  tv-runtime:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: main
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Exact NuvioTV probes - Mon Ninja et moi 3
+        shell: bash
+        run: |
+          set +e
+          FIXTURE='{"tmdbId":"1215638","mediaType":"movie","title":"Mon ninja et moi 3","label":"Mon ninja et moi 3 (2025)","year":2025,"aliases":["Ternet Ninja 3","Checkered Ninja 3"]}'
+          run_probe() {
+            NAME="$1"
+            FILE="$2"
+            echo "===== ${NAME} ====="
+            node scripts/nuvio_tv_probe_v2.cjs "$FILE" "$FIXTURE" '{}' > "/tmp/${NAME}.json" 2> "/tmp/${NAME}.err"
+            CODE=$?
+            echo "exit_code=${CODE}"
+            cat "/tmp/${NAME}.json"
+            if [ -s "/tmp/${NAME}.err" ]; then
+              echo "--- stderr ---"
+              cat "/tmp/${NAME}.err"
+            fi
+            echo
+          }
+          run_probe moviebox providers/moviebox--published-baseline--1c0c9c423a094e0d.js
+          run_probe netmirror providers/netmirror--published-baseline--ccbd35984c20fc8b.js
+          run_probe streamzo providers/streamzo--published-baseline--bc19a7586f9f3bb8.js
+          echo '===== SUMMARY ====='
+          node - <<'NODE'
+          const fs=require('fs');
+          for(const name of ['moviebox','netmirror','streamzo']){
+            try{
+              const v=JSON.parse(fs.readFileSync('/tmp/'+name+'.json','utf8'));
+              console.log(JSON.stringify({provider:name,ok:v.ok,duration_ms:v.duration_ms,runtime_error:v.runtime_error,raw_stream_count:v.raw_stream_count,playable_stream_count:v.playable_stream_count,identity_verified_count:v.identity_verified_count,identity_contradiction_count:v.identity_contradiction_count,streams:(v.streams||[]).map(x=>({title:x.row?.title,description:x.row?.description,url:x.row?.url,identity:x.identity,media:{playable:x.media?.playable,kind:x.media?.kind,status:x.media?.status,content_type:x.media?.content_type,error:x.media?.error}}))},null,2));
+            }catch(e){ console.log(JSON.stringify({provider:name,parse_error:String(e)})); }
+          }
+          NODE
