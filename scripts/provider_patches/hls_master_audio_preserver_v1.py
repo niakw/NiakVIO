@@ -1,13 +1,12 @@
 #!/usr/bin/env python3
-"""Preserve HLS master audio and append a bounded runtime media safety guard.
+"""Preserve HLS master audio and append a capability-aware media safety guard.
 
-The original audio-preserver keeps HLS masters intact when audio renditions are
-external. The runtime guard is deliberately conservative: it removes only rows
-that are conclusively non-media/dead for the current client. NetMirror also gets
-a duration identity check because its upstream catalogue can return the first
-search result while relabelling it with the requested TMDB title. MovieBox uses
-strict playback probing because field tests and CI both observed returned rows
-that are not actually playable.
+Native QuickJS clients expose a synchronous ``__native_fetch`` bridge. Their JS
+``AbortSignal`` cannot reliably interrupt an HTTP call already executing in the
+host, so doing extra playback probes from provider JS can turn a nominal 6.5 s
+probe into a 30-60 s stall. The guard therefore performs only deterministic,
+network-free rejection on native runtimes and reserves remote preflight for
+runtimes whose regular fetch can actually be bounded by AbortSignal.
 """
 from __future__ import annotations
 
@@ -49,12 +48,32 @@ SAFETY_WRAPPER = r"""
     q.episode=Number(q.episode||a[3]||0)||0;
     return q;
   }
+  function nativeHost(){
+    try{return typeof g.__native_fetch==="function"}catch(_e){return false}
+  }
   function isTv(){
     try{
-      if(typeof g.__native_fetch==="function")return true;
       var ua=s(g.navigator&&g.navigator.userAgent);
-      return /NuvioTV|Android TV/i.test(ua);
+      if(/NuvioTV|Android TV/i.test(ua))return true;
+      if(g&&g.__NUVIO_TV_RUNTIME__===true)return true;
+      if(typeof g.__native_fetch!=="function"||typeof g.fetch!=="function")return false;
+      var src="";try{src=Function.prototype.toString.call(g.fetch)}catch(_e){src=String(g.fetch||"")}
+      if(/followRedirects/.test(src))return false;
+      var signalAware=/options\.signal|var\s+signal\s*=/.test(src);
+      var fourArgNative=/__native_fetch\s*\(\s*url\s*,\s*method\s*,\s*JSON\.stringify\(headers\)\s*,\s*body\s*\)/.test(src);
+      return signalAware&&fourArgNative;
     }catch(_e){return false}
+  }
+  function obviousNonMedia(row){
+    var u=s(row&&row.url);
+    if(!u)return "missing_url";
+    if(!/^https?:\/\//i.test(u))return "invalid_url";
+    var lower=u.toLowerCase();
+    if(/(?:youtube\.com|youtube-nocookie\.com)\/(?:embed|watch)(?:\/|\?|$)/i.test(lower))return "video_page_url";
+    if(/\/embed(?:\/|\?|#|$)/i.test(lower))return "embed_page_url";
+    if(/\.(?:html?|php)(?:[?#]|$)/i.test(lower))return "html_page_url";
+    if(/^https?:\/\/[^/]+\/\/www\./i.test(u))return "malformed_nested_url";
+    return "";
   }
   function headers(row,range){
     var out={},src=row&&row.headers&&typeof row.headers==="object"?row.headers:{};
@@ -191,8 +210,14 @@ SAFETY_WRAPPER = r"""
     if(/text\/html|application\/xhtml/i.test(r.contentType)||/^<!doctype html|^<html/i.test(r.text||""))return {state:"dead",reason:"html_payload"};
     return {state:"ok"};
   }
-  async function check(row,expected,tv){
-    if(!row||typeof row!=="object"||!/^https?:\/\//i.test(s(row.url)))return {keep:true};
+  async function check(row,expected,tv,nativeRuntime){
+    if(!row||typeof row!=="object")return {keep:false,reason:"invalid_row"};
+    var obvious=obviousNonMedia(row);
+    if(obvious)return {keep:false,reason:obvious};
+    /* Native QuickJS fetch is a blocking host call. JS AbortSignal is not a
+       trustworthy deadline there, so never add a second media request from the
+       safety layer. Provider-specific identity checks still run before this. */
+    if(nativeRuntime)return {keep:true,reason:tv?"native_tv_no_extra_probe":"native_client_no_extra_probe"};
     var kind=mediaKind(row),result;
     if(kind==="hls")result=await inspectHls(row,s(row.url));
     else if(kind==="direct")result=await directPlayable(row,s(row.url));
@@ -214,9 +239,10 @@ SAFETY_WRAPPER = r"""
     var wrap=async function(){
       var v=await native.apply(this,arguments),x=slot(v);
       if(!x||!x.list.length)return v;
-      var q=req(arguments),tv=isTv(),expected=await expectedSeconds(q);
+      var q=req(arguments),tv=isTv(),nativeRuntime=nativeHost();
+      var expected=nativeRuntime?null:await expectedSeconds(q);
       var head=x.list.slice(0,c.maxRows),tail=x.list.slice(c.maxRows);
-      var checks=await Promise.all(head.map(function(row){return check(row,expected,tv)}));
+      var checks=await Promise.all(head.map(function(row){return check(row,expected,tv,nativeRuntime)}));
       var kept=head.filter(function(_row,i){return checks[i]&&checks[i].keep}).concat(tail);
       return rebuild(v,x,kept);
     };
@@ -268,7 +294,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> st
         "durationIdentity": provider_id == "netmirror",
         "strictPlayback": provider_id == "moviebox",
         "tmdbKey": "1865f43a0549ca50d341dd9ab8b29f49",
-        "implementationRevision": "field-safety-v2",
+        "implementationRevision": "field-safety-v3-native-aware",
     }
     payload = json.dumps(cfg, separators=(",", ":"))
     marker = f"{SAFETY_MARKER}:{hashlib.sha256(payload.encode()).hexdigest()[:12]}"
