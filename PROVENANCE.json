@@ -4691,9 +4691,9 @@
     },
     "animezey": {
       "id": "animezey",
-      "published_filename": "providers/animezey--published-baseline--57ae6b3672faf74d.js",
-      "sha256": "57ae6b3672faf74d364e1ac8e328bbde3f0c688be35314fda66bdabbbe672497",
-      "patched_sha256": "57ae6b3672faf74d364e1ac8e328bbde3f0c688be35314fda66bdabbbe672497",
+      "published_filename": "providers/animezey--published-baseline--21089041caa16cb7.js",
+      "sha256": "21089041caa16cb7d39043aaf12a26e569c3b85bf548a838f6bea9b729f4d602",
+      "patched_sha256": "21089041caa16cb7d39043aaf12a26e569c3b85bf548a838f6bea9b729f4d602",
       "upstream_sha256": "098006e561616b96c12932ae5aca859eb776f9f4edf87679611f1408633885f8",
       "local_patches": [
         {
@@ -4701,6 +4701,11 @@
           "path": "scripts/provider_patches/hls_master_audio_preserver_v1.py",
           "phase": "discovery",
           "scope": "global_playback_integrity"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/nuvio_tv_playable_first_v1.py",
+          "phase": "discovery"
         }
       ],
       "source": "published-baseline",
@@ -18138,9 +18143,9 @@
     },
     "streamzo": {
       "id": "streamzo",
-      "published_filename": "providers/streamzo--published-baseline--bc19a7586f9f3bb8.js",
-      "sha256": "bc19a7586f9f3bb88c1dd6f66c0dfb4da68a3f06b2c3c99a2d2cf68044a0de6d",
-      "patched_sha256": "bc19a7586f9f3bb88c1dd6f66c0dfb4da68a3f06b2c3c99a2d2cf68044a0de6d",
+      "published_filename": "providers/streamzo--published-baseline--c923b842c9554275.js",
+      "sha256": "c923b842c95542757ab66f3ead9352fcc8015b0e2f85b70dff8205983b992dba",
+      "patched_sha256": "c923b842c95542757ab66f3ead9352fcc8015b0e2f85b70dff8205983b992dba",
       "upstream_sha256": "c20bdca7585cacf12f4819669ac8a5fabc2ec3e6be1b0b34609f6ac4cf23e285",
       "local_patches": [
         {
@@ -18170,6 +18175,11 @@
           "path": "scripts/provider_patches/hls_master_audio_preserver_v1.py",
           "phase": "discovery",
           "scope": "global_playback_integrity"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/nuvio_tv_playable_first_v1.py",
+          "phase": "discovery"
         }
       ],
       "source": "published-baseline",
