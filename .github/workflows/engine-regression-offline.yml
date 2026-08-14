@@ -15,7 +15,7 @@ on:
       - ".github/workflows/engine-regression-offline.yml"
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: provider-engine-regression-offline
@@ -31,7 +31,7 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
           fetch-depth: 1
-          persist-credentials: false
+          persist-credentials: true
 
       - name: Set up Python
         uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
@@ -80,3 +80,17 @@ jobs:
           path: reconstructed
           if-no-files-found: error
           retention-days: 1
+
+      - name: Publish validated ownership metadata only
+        run: |
+          CHANGED="$(git status --porcelain | awk '{$1=$1};1')"
+          if [ "$CHANGED" != "M provider-overrides.json" ]; then
+            echo "Unexpected reconstructed delta; refusing metadata publication:"
+            git status --short
+            exit 1
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- provider-overrides.json
+          git commit -m "fix: persist provider backend ownership metadata"
+          git push origin HEAD:main
