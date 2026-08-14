@@ -15,12 +15,21 @@ if (!fixtureSlug || !logPaths.length) usage();
 
 const root = path.resolve(__dirname, '..');
 const config = JSON.parse(fs.readFileSync(path.join(root, '.github/triggers/nuvio-client-lab.json'), 'utf8'));
+const manifest = JSON.parse(fs.readFileSync(path.join(root, 'manifest.json'), 'utf8'));
+const overrides = JSON.parse(fs.readFileSync(path.join(root, 'provider-overrides.json'), 'utf8'));
 const fixtureRow = (config.fixtures || []).find((row) => row && row.slug === fixtureSlug);
 if (!fixtureRow || !fixtureRow.fixture) throw new Error(`unknown corpus fixture: ${fixtureSlug}`);
 const fixture = fixtureRow.fixture;
 const minimumDurationRatio = Number(config.policy?.minimum_duration_ratio || 0.55);
 const maximumDurationRatio = Number(config.policy?.maximum_duration_ratio || 1.8);
 const expectedDurationSeconds = Number(fixture.expectedDurationMinutes || 0) * 60 || null;
+const manifestMap = new Map(
+  (manifest.scrapers || [])
+    .filter((row) => row && typeof row === 'object')
+    .map((row) => [String(row.id || '').toLowerCase(), row]),
+);
+const providerPatches = overrides.provider_patches || {};
+const configuredCapabilities = overrides.provider_capabilities || {};
 
 function decode(value) {
   if (!value) return '';
@@ -42,6 +51,35 @@ function safeSyntheticUrl(host, mediaHint) {
   return `https://${host}/${encodeURIComponent(mediaHint)}`;
 }
 
+function providerPolicy(provider) {
+  const id = String(provider || '').toLowerCase();
+  const manifestRow = manifestMap.get(id) || {};
+  const patch = providerPatches[id] || {};
+  const configured = configuredCapabilities[id] || {};
+  const strategy = String(
+    patch.capability ||
+    (typeof configured === 'object' ? configured.strategy : configured) ||
+    manifestRow.capability ||
+    'unknown'
+  );
+  // HTML is a legitimate terminal output only for recovery models whose public
+  // contract is explicitly an external/embed player. A normal html_scraper still
+  // has to traverse its detail/player chain to a usable output (StreamZo is the
+  // canonical sentinel), so generated allow_html_url on a generic scraper is not
+  // enough to waive transport validation.
+  const allowEmbed = strategy === 'iframe_player' || (
+    strategy === 'mixed_embed_resolver' && (
+      manifestRow.supportsExternalPlayer === true || patch.preserve_embed_urls === true
+    )
+  );
+  return { strategy, allowEmbed };
+}
+
+function withPolicy(row) {
+  const policy = providerPolicy(row.provider);
+  return { ...row, capability: policy.strategy, allowEmbed: policy.allowEmbed };
+}
+
 const results = new Map();
 const rows = [];
 const transports = new Map();
@@ -57,17 +95,17 @@ for (const input of logPaths) {
     if (line.startsWith('FIELD_NATIVE_RESULT ')) {
       const provider = decode(f.provider64);
       const client = f.client || 'unknown';
-      results.set(`${client}\u0000${provider}`, {
+      results.set(`${client}\u0000${provider}`, withPolicy({
         client,
         provider,
         enabled: f.enabled === 'true',
         durationMs: Number(f.duration_ms || 0),
         count: Number(f.count || 0),
-      });
+      }));
     } else if (line.startsWith('FIELD_NATIVE_ROW ')) {
       const host = decode(f.host64);
       const mediaHint = decode(f.media_hint64);
-      rows.push({
+      rows.push(withPolicy({
         client: f.client || 'unknown',
         provider: decode(f.provider64),
         index: Number(f.index || 0),
@@ -83,11 +121,11 @@ for (const input of logPaths) {
           // query string, path token or header value.
           url: safeSyntheticUrl(host, mediaHint),
         },
-      });
+      }));
     } else if (line.startsWith('FIELD_NATIVE_TRANSPORT ')) {
       const provider = decode(f.provider64);
       const client = f.client || 'unknown';
-      transports.set(`${client}\u0000${provider}`, {
+      transports.set(`${client}\u0000${provider}`, withPolicy({
         client,
         provider,
         state: f.state || 'unknown',
@@ -98,14 +136,14 @@ for (const input of logPaths) {
         durationSeconds: Number(f.duration_seconds || 0) || null,
         host: decode(f.host64),
         mediaHint: decode(f.media_hint64),
-      });
+      }));
     } else if (line.startsWith('FIELD_NATIVE_ERROR ')) {
-      runtimeErrors.push({
+      runtimeErrors.push(withPolicy({
         client: f.client || 'unknown',
         provider: decode(f.provider64),
         durationMs: Number(f.duration_ms || 0),
         error: decode(f.error64),
-      });
+      }));
     }
   }
 }
@@ -127,6 +165,7 @@ for (const row of rows) {
   const record = {
     client: row.client,
     provider: row.provider,
+    capability: row.capability,
     index: row.index,
     status: identity.status,
     reason: identity.reason,
@@ -141,11 +180,25 @@ for (const row of rows) {
   else unknown.push(record);
 }
 
-const transportFailures = [...transports.values()]
-  .filter((row) => row.state === 'dead' || row.state === 'error')
+const expectedEmbeds = [...transports.values()]
+  .filter((row) => row.state === 'dead' && row.kind === 'html' && row.allowEmbed)
   .map((row) => ({
     client: row.client,
     provider: row.provider,
+    capability: row.capability,
+    state: 'embed',
+    kind: row.kind,
+    status: row.status,
+    contentType: row.contentType,
+    host: row.host || null,
+    mediaHint: row.mediaHint || null,
+  }));
+const transportFailures = [...transports.values()]
+  .filter((row) => (row.state === 'dead' || row.state === 'error') && !(row.state === 'dead' && row.kind === 'html' && row.allowEmbed))
+  .map((row) => ({
+    client: row.client,
+    provider: row.provider,
+    capability: row.capability,
     state: row.state,
     kind: row.kind,
     status: row.status,
@@ -175,6 +228,7 @@ const summary = {
   identityUnknown: unknown.length,
   identityContradictions: contradictions.length,
   transportOk: transportOk.length,
+  transportExpectedEmbeds: expectedEmbeds.length,
   transportUnknown: transportUnknown.length,
   transportFailures: transportFailures.length,
   durationEvidence: [...transports.values()].filter((row) => row.durationSeconds != null).length,
@@ -183,6 +237,7 @@ const summary = {
 
 console.log(`FIELD_NATIVE_CORPUS_ANALYSIS ${JSON.stringify(summary)}`);
 for (const row of contradictions.slice(0, 80)) console.log(`FIELD_NATIVE_CONTRADICTION ${JSON.stringify(row)}`);
+for (const row of expectedEmbeds.slice(0, 80)) console.log(`FIELD_NATIVE_EXPECTED_EMBED ${JSON.stringify(row)}`);
 for (const row of transportFailures.slice(0, 80)) console.log(`FIELD_NATIVE_TRANSPORT_FAILURE ${JSON.stringify(row)}`);
 for (const row of runtimeErrors.slice(0, 80)) console.log(`FIELD_NATIVE_RUNTIME_ERROR ${JSON.stringify(row)}`);
 for (const row of slow.slice(0, 80)) console.log(`FIELD_NATIVE_SLOW ${JSON.stringify(row)}`);
