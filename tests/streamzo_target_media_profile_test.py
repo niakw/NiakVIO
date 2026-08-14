@@ -13,6 +13,7 @@ TARGET = "scripts/provider_patches/nuvio_tv_target_media_v4.py"
 SANITIZER = "scripts/provider_patches/stream_output_sanitizer_v5.py"
 DESKTOP = "scripts/provider_patches/desktop_runtime_compat_v1.py"
 V4_MARKER = "/* NUVIO_TV_TARGET_MEDIA_V4 */"
+FETCH_COMPAT_MARKER = "/* NUVIO_TV_TEXT_ONLY_FETCH_COMPAT_V1 */"
 
 
 def load_module(path: Path):
@@ -56,15 +57,34 @@ def main() -> int:
     assert "NUVIO_VF_CATALOGUE_RECOVERY_V1:feedface" in stripped
     assert stripped.endswith("catalogue-recovery-tail\n")
 
-    # Regression for the durable reapply pipeline: once v4 has been
-    # materialized, a second discovery pass must be byte-for-byte identical.
+    # NuvioTV's pinned QuickJS fetch Response exposes text()/json() but no
+    # arrayBuffer(). The global target-media resolver must therefore keep a
+    # text-only HLS proof path instead of silently returning no media.
     source = 'module.exports={getStreams:async function(){return []}};\n'
     first = module.apply(source, options=options)
+    assert FETCH_COMPAT_MARKER in first
+    assert 'typeof r.arrayBuffer==="function"' in first
+    assert 'typeof r.text==="function"' in first
+    assert 'text=String(await r.text()||"").slice(0,300000)' in first
+
+    # Regression for the durable reapply pipeline: once v4 plus the bridge
+    # compatibility fix have been materialized, a second discovery pass must be
+    # byte-for-byte identical.
     second = module.apply(first, options=options)
     assert first == second, "target-media v4 is not byte-idempotent"
     assert first.count(V4_MARKER) == 1, "target-media v4 marker must be unique"
+    assert first.count(FETCH_COMPAT_MARKER) == 1, "TV fetch compatibility marker must be unique"
 
-    print("StreamZo target-media ordering, bounded legacy removal and byte-idempotence tests passed")
+    # Existing v4 bundles from before this fix must upgrade in place instead of
+    # requiring a fresh provider base. This is important for durable overrides.
+    old_v4 = module.TARGET(source, options=options).rstrip() + "\n" + V4_MARKER + "\n"
+    assert FETCH_COMPAT_MARKER not in old_v4
+    upgraded = module.apply(old_v4, options=options)
+    assert FETCH_COMPAT_MARKER in upgraded
+    assert upgraded.count(V4_MARKER) == 1
+    assert 'typeof r.text==="function"' in upgraded
+
+    print("StreamZo target-media ordering, TV text-fetch compatibility and byte-idempotence tests passed")
     return 0
 
 
