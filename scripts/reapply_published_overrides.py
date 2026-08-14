@@ -47,6 +47,7 @@ ADAPTIVE_DOMAIN_END = "/* NUVIO_ADAPTIVE_DOMAIN_RECOVERY_V1:END */"
 ADAPTIVE_DOMAIN_SCRIPT = ROOT / "scripts" / "provider_patches" / "adaptive_domain_recovery.py"
 AUDIT_QUARANTINE_MARKER = "NUVIO_PROVIDER_QUARANTINE_V1"
 AUDIT_QUARANTINE_MODE = "catalogue_audit_safety_quarantine"
+AUDIT_QUARANTINE_BLOCKER = "catalogue_audit_playable_identity_contradiction"
 
 
 def safe_fragment(value: str) -> str:
@@ -369,6 +370,7 @@ def main() -> int:
             "new": new_relative,
             "sha256": digest,
             "records": records,
+            "audit_terminal_quarantine": audit_terminal_quarantine,
         }
 
     secondary_payloads: list[tuple[Path, dict[str, Any]]] = []
@@ -400,12 +402,24 @@ def main() -> int:
                 continue
             row["published_filename"] = update["new"]
             row["sha256"] = update["sha256"]
-            if "patched_sha256" in row or update["records"]:
+            if update.get("audit_terminal_quarantine") or "patched_sha256" in row or update["records"]:
                 row["patched_sha256"] = update["sha256"]
             if update["records"]:
                 row["local_patches"] = merge_patch_records(row.get("local_patches"), update["records"])
             manifest_overrides = configured_manifest_overrides(override_config, provider_id)
-            if manifest_overrides.get("enabled") is False:
+            if update.get("audit_terminal_quarantine"):
+                row["activation_eligible"] = False
+                row["strict_activation_eligible"] = False
+                row["strict_grace_eligible"] = False
+                row["historical_quality_grace_eligible"] = False
+                row["runtime_evidence_eligible"] = False
+                row["activation_mode"] = AUDIT_QUARANTINE_MODE
+                blockers = [
+                    str(value) for value in (row.get("activation_blockers") or [])
+                    if str(value) and str(value) not in {AUDIT_QUARANTINE_BLOCKER, "configured_safety_quarantine"}
+                ]
+                row["activation_blockers"] = blockers + [AUDIT_QUARANTINE_BLOCKER]
+            elif manifest_overrides.get("enabled") is False:
                 row["activation_eligible"] = False
                 row["strict_activation_eligible"] = False
                 row["strict_grace_eligible"] = False
