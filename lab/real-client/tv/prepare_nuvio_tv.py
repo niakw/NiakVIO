@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 from pathlib import Path
+import json
 import shutil
 import sys
 
@@ -44,7 +45,7 @@ text = text[:debug_start] + debug_block + text[release_start:]
 build.write_text(text)
 
 # Keep Sentry out of the target/test process. This is only a lab mutation.
-manifest = '''<?xml version="1.0" encoding="utf-8"?>
+test_manifest = '''<?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application>
         <meta-data android:name="io.sentry.auto-init" android:value="false" />
@@ -54,20 +55,48 @@ manifest = '''<?xml version="1.0" encoding="utf-8"?>
 for source_set in ("debug", "androidTest"):
     path = tv / f"app/src/{source_set}/AndroidManifest.xml"
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(manifest)
+    path.write_text(test_manifest)
 
 test_root = tv / "app/src/androidTest"
 (test_root / "java/com/nuvio/tv/core/plugin").mkdir(parents=True, exist_ok=True)
-(test_root / "assets/niakvio").mkdir(parents=True, exist_ok=True)
+assets = test_root / "assets/niakvio"
+assets.mkdir(parents=True, exist_ok=True)
 shutil.copy2(
     niakvio / "lab/real-client/tv/NiakvioTvRealProviderTest.kt",
     test_root / "java/com/nuvio/tv/core/plugin/NiakvioTvRealProviderTest.kt",
 )
-for filename in (
-    "moviebox--published-baseline--1c0c9c423a094e0d.js",
-    "netmirror--published-baseline--ccbd35984c20fc8b.js",
-    "streamzo--published-baseline--bc19a7586f9f3bb8.js",
-):
-    shutil.copy2(niakvio / "providers" / filename, test_root / "assets/niakvio" / filename)
 
-print("NuvioTV real-client instrumentation prepared")
+manifest = json.loads((niakvio / "manifest.json").read_text(encoding="utf-8"))
+rows = {
+    str(row.get("id") or "").casefold(): row
+    for row in manifest.get("scrapers", [])
+    if isinstance(row, dict)
+}
+selection = []
+for provider_id in ("moviebox", "netmirror", "streamzo"):
+    row = rows.get(provider_id)
+    if not isinstance(row, dict):
+        raise SystemExit(f"missing provider in tested manifest: {provider_id}")
+    filename = str(row.get("filename") or "")
+    source = niakvio / filename
+    if not filename.startswith("providers/") or not source.is_file():
+        raise SystemExit(f"invalid published provider filename for {provider_id}: {filename}")
+    asset_name = f"{provider_id}.js"
+    shutil.copy2(source, assets / asset_name)
+    selection.append({
+        "id": provider_id,
+        "enabled": row.get("enabled") is True,
+        "version": str(row.get("version") or ""),
+        "filename": filename,
+        "asset": f"niakvio/{asset_name}",
+    })
+    print(
+        f"FIELD_TV_SELECTION provider={provider_id} enabled={row.get('enabled') is True} "
+        f"version={row.get('version')} filename={filename}"
+    )
+(assets / "selection.json").write_text(
+    json.dumps(selection, ensure_ascii=False, indent=2) + "\n",
+    encoding="utf-8",
+)
+
+print("NuvioTV real-client instrumentation prepared from tested manifest")
