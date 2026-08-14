@@ -62,12 +62,19 @@ jobs:
           import kotlin.test.assertTrue
 
           class NiakvioRealProviderDesktopTest {
-              private val root = File(System.getenv("GITHUB_WORKSPACE"), "niakvio")
+              private val workspace = File(System.getenv("GITHUB_WORKSPACE"))
+              private val root = File(workspace, "niakvio")
+              private val resultFile = File(workspace, "desktop-real-client-results.log")
               private val providers = listOf(
                   "moviebox" to "providers/moviebox--published-baseline--1c0c9c423a094e0d.js",
                   "netmirror" to "providers/netmirror--published-baseline--ccbd35984c20fc8b.js",
                   "streamzo" to "providers/streamzo--published-baseline--bc19a7586f9f3bb8.js",
               )
+
+              private fun emit(message: String) {
+                  println(message)
+                  resultFile.appendText(message + "\n")
+              }
 
               @Test
               fun exactMonNinjaProviders() = runBlocking {
@@ -81,9 +88,9 @@ jobs:
                           episode = null,
                           scraperId = id,
                       )
-                      println("FIELD_DESKTOP_RESULT provider=$id duration_ms=${System.currentTimeMillis()-started} count=${rows.size}")
+                      emit("FIELD_DESKTOP_RESULT provider=$id duration_ms=${System.currentTimeMillis()-started} count=${rows.size}")
                       rows.forEachIndexed { index, row ->
-                          println("FIELD_DESKTOP_ROW provider=$id index=$index title=${row.title} name=${row.name} quality=${row.quality} language=${row.language} type=${row.type} url=${row.url} headers=${row.headers}")
+                          emit("FIELD_DESKTOP_ROW provider=$id index=$index title=${row.title} name=${row.name} quality=${row.quality} language=${row.language} type=${row.type} url=${row.url} headers=${row.headers}")
                       }
                       if (id == "streamzo") {
                           assertTrue(rows.isNotEmpty(), "StreamZo must resolve Mon Ninja 3 in official desktop runtime")
@@ -105,7 +112,7 @@ jobs:
                   assertEquals(1, rows.size)
                   assertEquals(null, rows.single().quality)
                   assertEquals(null, rows.single().language)
-                  println("FIELD_DESKTOP_METADATA_NULL_ACCEPTED=true")
+                  emit("FIELD_DESKTOP_METADATA_NULL_ACCEPTED=true")
               }
           }
           KOTLIN
@@ -113,11 +120,14 @@ jobs:
         working-directory: nuvio-desktop
         shell: bash
         run: |
+          rm -f "$GITHUB_WORKSPACE/desktop-real-client-results.log"
           ./gradlew :composeApp:desktopTest --tests 'com.nuvio.app.features.plugins.NiakvioRealProviderDesktopTest' --no-daemon --console=plain
+          echo "===== EXACT DESKTOP PROVIDER RESULTS ====="
+          cat "$GITHUB_WORKSPACE/desktop-real-client-results.log"
 
   mobile-real-runtime:
     runs-on: ubuntu-latest
-    timeout-minutes: 35
+    timeout-minutes: 40
     steps:
       - name: Checkout Niakvio
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
@@ -143,39 +153,32 @@ jobs:
           from pathlib import Path
           path = Path('nuvio-mobile/composeApp/build.gradle.kts')
           text = path.read_text()
-          needle = '        withHostTest {}\n\n        compilerOptions {'
-          replacement = '''        withHostTest {}
+
+          compilation_needle = '        withHostTest {}\n\n        compilerOptions {'
+          compilation_replacement = '''        withHostTest {}
           withDeviceTest {
               instrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
               execution = "HOST"
           }
 
           compilerOptions {'''
-          if needle not in text:
-              raise SystemExit('Unable to locate Android test compilation block')
-          text = text.replace(needle, replacement, 1)
-          needle = '''        val androidHostTest by getting {
-              if (androidDistribution == "full") {
-                  kotlin.srcDir(project.file("src/androidFullHostTest/kotlin"))
-              }
-          }
-          commonMain.dependencies {'''
-          replacement = '''        val androidHostTest by getting {
-              if (androidDistribution == "full") {
-                  kotlin.srcDir(project.file("src/androidFullHostTest/kotlin"))
-              }
-          }
-          val androidDeviceTest by getting {
+          if text.count(compilation_needle) != 1:
+              raise SystemExit(f'Expected one Android host-test compilation block, found {text.count(compilation_needle)}')
+          text = text.replace(compilation_needle, compilation_replacement, 1)
+
+          source_needle = '        commonMain.dependencies {'
+          source_replacement = '''        val androidDeviceTest by getting {
               dependencies {
-                  implementation(libs.junit)
-                  implementation(libs.androidx.testExt.junit)
+                  implementation("junit:junit:4.13.2")
+                  implementation("androidx.test.ext:junit:1.3.0")
                   implementation("androidx.test:runner:1.7.0")
               }
           }
           commonMain.dependencies {'''
-          if needle not in text:
-              raise SystemExit('Unable to locate Android test source-set block')
-          path.write_text(text.replace(needle, replacement, 1))
+          if text.count(source_needle) != 1:
+              raise SystemExit(f'Expected one commonMain dependency block, found {text.count(source_needle)}')
+          text = text.replace(source_needle, source_replacement, 1)
+          path.write_text(text)
           PY
           cat > nuvio-mobile/composeApp/src/androidMain/AndroidManifest.xml <<'XML'
           <?xml version="1.0" encoding="utf-8"?>
@@ -194,6 +197,7 @@ jobs:
           cat > "$TEST_ROOT/kotlin/com/nuvio/app/features/plugins/NiakvioRealProviderMobileTest.kt" <<'KOTLIN'
           package com.nuvio.app.features.plugins
 
+          import android.util.Log
           import androidx.test.platform.app.InstrumentationRegistry
           import com.nuvio.app.features.plugins.runtime.PluginRuntime
           import kotlinx.coroutines.runBlocking
@@ -207,6 +211,11 @@ jobs:
                   "netmirror" to "niakvio/netmirror--published-baseline--ccbd35984c20fc8b.js",
                   "streamzo" to "niakvio/streamzo--published-baseline--bc19a7586f9f3bb8.js",
               )
+
+              private fun emit(message: String) {
+                  println(message)
+                  Log.i("NiakvioRealLab", message)
+              }
 
               private fun providerCode(relative: String): String =
                   InstrumentationRegistry.getInstrumentation().context.assets.open(relative)
@@ -224,9 +233,9 @@ jobs:
                           episode = null,
                           scraperId = id,
                       )
-                      println("FIELD_MOBILE_RESULT provider=$id duration_ms=${System.currentTimeMillis()-started} count=${rows.size}")
+                      emit("FIELD_MOBILE_RESULT provider=$id duration_ms=${System.currentTimeMillis()-started} count=${rows.size}")
                       rows.forEachIndexed { index, row ->
-                          println("FIELD_MOBILE_ROW provider=$id index=$index title=${row.title} name=${row.name} quality=${row.quality} language=${row.language} type=${row.type} url=${row.url} headers=${row.headers}")
+                          emit("FIELD_MOBILE_ROW provider=$id index=$index title=${row.title} name=${row.name} quality=${row.quality} language=${row.language} type=${row.type} url=${row.url} headers=${row.headers}")
                       }
                       if (id == "streamzo") {
                           assertTrue("StreamZo must resolve Mon Ninja 3 in official Android runtime", rows.isNotEmpty())
@@ -248,7 +257,7 @@ jobs:
                   assertEquals(1, rows.size)
                   assertEquals(null, rows.single().quality)
                   assertEquals(null, rows.single().language)
-                  println("FIELD_MOBILE_METADATA_NULL_ACCEPTED=true")
+                  emit("FIELD_MOBILE_METADATA_NULL_ACCEPTED=true")
               }
           }
           KOTLIN
@@ -274,6 +283,7 @@ jobs:
           adb shell settings put global window_animation_scale 0
           adb shell settings put global transition_animation_scale 0
           adb shell settings put global animator_duration_scale 0
+          adb logcat -c
           adb devices -l
       - name: Execute official NuvioMobile Android Full device runtime test
         working-directory: nuvio-mobile
@@ -291,4 +301,10 @@ jobs:
             exit 1
           fi
           echo "Resolved mobile device test task: $TASK"
+          set +e
           ./gradlew ":composeApp:$TASK" -Pnuvio.android.distribution=full --no-daemon --console=plain
+          STATUS=$?
+          set -e
+          echo "===== EXACT MOBILE PROVIDER RESULTS ====="
+          adb logcat -d -s NiakvioRealLab:I '*:S' || true
+          exit "$STATUS"
