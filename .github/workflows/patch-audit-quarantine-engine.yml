@@ -1,3 +1,4 @@
+# Apply generic quarantine boundary migrations; no provider-specific logic.
 name: Wire transient audit quarantine into publication
 
 on:
@@ -45,5 +46,5 @@ jobs:
             echo 'quarantine boundaries already patched'
             exit 0
           fi
-          git commit -m 'safety: synchronize audit quarantine provenance'
+          git commit -m 'safety: separate configured and catalogue audit quarantines'
           git push origin HEAD:main
