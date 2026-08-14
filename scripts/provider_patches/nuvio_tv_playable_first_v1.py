@@ -2,18 +2,35 @@
 
 For providers returning several direct media candidates, a stale first link can
 make TV users hit a 403/5xx even though a later candidate is valid. The wrapper
-probes a small bounded prefix only under the real NuvioTV QuickJS bridge (or the
-TV regression harness), removes conclusively dead rows and moves proven HLS or
-video responses ahead of unverified rows. Other platforms are untouched.
+probes a small bounded prefix only under the real NuvioTV QuickJS bridge (or an
+explicit TV regression harness), removes conclusively dead rows and moves proven
+HLS or video responses ahead of unverified rows. Other platforms are untouched.
+
+Nuvio Desktop and Nuvio Mobile also expose ``__native_fetch``. Therefore its
+mere presence is not a TV signal. At the pinned official client revisions their
+fetch polyfill forwards a fifth ``followRedirects`` argument; NuvioTV uses a
+four-argument native call and handles ``options.signal`` around it. The runtime
+fingerprint below deliberately distinguishes those contracts.
 """
 from __future__ import annotations
 
 MARKER = "NUVIO_TV_PLAYABLE_FIRST_V1"
 
+LEGACY_TV_PREDICATE = r'''function isTv(){try{if(typeof g.__native_fetch==="function")return true;var ua=String((g.navigator&&g.navigator.userAgent)||"");return /NuvioTV|Android TV/i.test(ua);}catch(_e){return false}}'''
+
+TV_PREDICATE = r'''function isTv(){try{var ua=String((g.navigator&&g.navigator.userAgent)||"");if(/NuvioTV|Android TV/i.test(ua))return true;if(g&&g.__NUVIO_TV_RUNTIME__===true)return true;if(typeof g.__native_fetch!=="function"||typeof g.fetch!=="function")return false;var src="";try{src=Function.prototype.toString.call(g.fetch)}catch(_e){src=String(g.fetch||"")}if(/followRedirects/.test(src))return false;var signalAware=/options\.signal|var\s+signal\s*=/.test(src);var fourArgNative=/__native_fetch\s*\(\s*url\s*,\s*method\s*,\s*JSON\.stringify\(headers\)\s*,\s*body\s*\)/.test(src);return signalAware&&fourArgNative;}catch(_e){return false}}'''
+
 
 def apply(source: str, options: dict | None = None, **_kwargs) -> str:
+    # Existing published providers may already contain the original V1 wrapper.
+    # Upgrade its predicate in place instead of appending a second wrapper; this
+    # keeps generation idempotent and removes the cross-platform probing bug from
+    # content-addressed bundles on the next durable reapply.
     if MARKER in source:
+        if LEGACY_TV_PREDICATE in source:
+            return source.replace(LEGACY_TV_PREDICATE, TV_PREDICATE, 1)
         return source
+
     cfg = dict(options or {})
     max_probes = max(1, min(int(cfg.get("max_probes", 6)), 8))
     timeout_ms = max(1500, min(int(cfg.get("timeout_ms", 6500)), 12000))
@@ -21,7 +38,7 @@ def apply(source: str, options: dict | None = None, **_kwargs) -> str:
 /* NUVIO_TV_PLAYABLE_FIRST_V1 */
 ;(function(g){
  const MAX=__MAX__, TIMEOUT=__TIMEOUT__;
- function isTv(){try{if(typeof g.__native_fetch==="function")return true;var ua=String((g.navigator&&g.navigator.userAgent)||"");return /NuvioTV|Android TV/i.test(ua);}catch(_e){return false}}
+ __TV_PREDICATE__
  function slot(v){if(Array.isArray(v))return {key:null,list:v};if(v&&typeof v==="object"){for(const k of ["streams","results","data"]){if(Array.isArray(v[k]))return {key:k,list:v[k]}}}return null}
  function rebuild(v,s,list){if(s.key===null)return list;return Object.assign({},v,{[s.key]:list})}
  function direct(u){return /^https?:\/\//i.test(u)&&!/\.(?:html?|php)(?:[?#]|$)/i.test(u)}
@@ -51,5 +68,5 @@ def apply(source: str, options: dict | None = None, **_kwargs) -> str:
  try{if(typeof module!=="undefined"&&module.exports)install(module.exports)}catch(_e){}
  try{if(g&&typeof g.getStreams==="function"){const o={getStreams:g.getStreams};install(o);g.getStreams=o.getStreams}}catch(_e){}
 })(typeof globalThis!=="undefined"?globalThis:this);
-'''.replace("__MAX__", str(max_probes)).replace("__TIMEOUT__", str(timeout_ms))
+'''.replace("__MAX__", str(max_probes)).replace("__TIMEOUT__", str(timeout_ms)).replace("__TV_PREDICATE__", TV_PREDICATE)
     return source.rstrip() + "\n" + shim + "\n"
