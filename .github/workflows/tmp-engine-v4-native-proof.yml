@@ -1,0 +1,151 @@
+name: Temporary engine-v4 native proof
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - ".github/triggers/tmp-engine-v4-native-proof"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tmp-engine-v4-native-proof
+  cancel-in-progress: false
+
+env:
+  NUVIO_DESKTOP_SHA: "8977fda639f5791947e6d8b36025635a77aed5da"
+  NUVIO_MOBILE_SHA: "0d6e30e4566e6f9f2051d5f80a1e3f1e0fcb1f18"
+  NUVIO_TV_SHA: "d95f3fb837b6ddfbf9ff445cdcba2413b576f0d4"
+
+jobs:
+  desktop-engine-v4:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: main
+          path: niakvio
+
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: "3.12"
+
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: "24"
+          package-manager-cache: false
+
+      - uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Build exact engine-v4 candidate
+        working-directory: niakvio
+        shell: bash
+        run: |
+          set -euxo pipefail
+          npm ci --ignore-scripts --no-audit --no-fund
+          python3 tests/runtime_capability_media_safety_v4_test.py
+          python3 scripts/apply_runtime_capability_upgrade_v4.py
+          python3 scripts/reapply_published_overrides.py
+          python3 scripts/reapply_published_overrides.py --check
+          python3 tests/runtime_capability_media_safety_v4_test.py
+          python3 scripts/validate_published_overrides.py
+
+      - name: Install official Desktop player dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev
+
+      - name: Checkout official NuvioDesktop and inject engine-v4 candidate
+        shell: bash
+        run: |
+          git clone --filter=blob:none --no-checkout https://github.com/NuvioMedia/NuvioDesktop.git nuvio-desktop
+          git -C nuvio-desktop checkout "$NUVIO_DESKTOP_SHA"
+          touch nuvio-desktop/local.properties
+          python niakvio/scripts/prepare_native_client_validation.py desktop --workspace "$GITHUB_WORKSPACE"
+
+      - name: Execute official Desktop PluginRuntime with engine-v4
+        working-directory: nuvio-desktop
+        shell: bash
+        run: |
+          rm -f "$GITHUB_WORKSPACE/desktop-native-results.log"
+          set +e
+          ./gradlew :composeApp:desktopTest --tests 'com.nuvio.app.features.plugins.NiakvioFinalNativeDesktopTest' --no-daemon --console=plain
+          STATUS=$?
+          set -e
+          echo "===== EXACT ENGINE-V4 DESKTOP RESULTS ====="
+          test -f "$GITHUB_WORKSPACE/desktop-native-results.log" && cat "$GITHUB_WORKSPACE/desktop-native-results.log" || true
+          exit "$STATUS"
+
+  android-tv-engine-v4:
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: main
+          path: niakvio
+
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: "3.12"
+
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: "24"
+          package-manager-cache: false
+
+      - uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Build exact engine-v4 candidate
+        working-directory: niakvio
+        shell: bash
+        run: |
+          set -euxo pipefail
+          npm ci --ignore-scripts --no-audit --no-fund
+          python3 tests/runtime_capability_media_safety_v4_test.py
+          python3 scripts/apply_runtime_capability_upgrade_v4.py
+          python3 scripts/reapply_published_overrides.py
+          python3 scripts/reapply_published_overrides.py --check
+          python3 tests/runtime_capability_media_safety_v4_test.py
+          python3 scripts/validate_published_overrides.py
+
+      - name: Checkout official NuvioMobile and NuvioTV and inject engine-v4 candidate
+        shell: bash
+        run: |
+          git clone --filter=blob:none --no-checkout https://github.com/NuvioMedia/NuvioMobile.git nuvio-mobile
+          git -C nuvio-mobile checkout "$NUVIO_MOBILE_SHA"
+          touch nuvio-mobile/local.properties
+          git clone --filter=blob:none --no-checkout https://github.com/NuvioMedia/NuvioTV.git nuvio-tv
+          git -C nuvio-tv checkout "$NUVIO_TV_SHA"
+          touch nuvio-tv/local.properties nuvio-tv/local.dev.properties
+          python niakvio/scripts/prepare_native_client_validation.py android --workspace "$GITHUB_WORKSPACE"
+          python niakvio/scripts/harden_nuvio_mobile_device_test.py "$GITHUB_WORKSPACE/nuvio-mobile"
+
+      - name: Enable Linux KVM
+        shell: bash
+        run: |
+          if [ -e /dev/kvm ]; then
+            sudo chmod 666 /dev/kvm || true
+            ls -l /dev/kvm || true
+          fi
+
+      - name: Execute official Mobile and TV PluginRuntime with engine-v4
+        uses: ReactiveCircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_2
+          cores: 2
+          ram-size: 2048M
+          emulator-boot-timeout: 600
+          script: bash "$GITHUB_WORKSPACE/niakvio/scripts/run_final_native_android_lab.sh"
