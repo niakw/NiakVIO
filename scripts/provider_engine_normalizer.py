@@ -129,39 +129,73 @@ def normalize_provider_engine(data: dict[str, Any]) -> dict[str, Any]:
 def sanitize_provider_hooks(
     data: dict[str, Any], root: Path = ROOT
 ) -> tuple[dict[str, Any], list[dict[str, str]]]:
-    """Remove configured hooks that call another provider's configured API."""
-    output = normalize_provider_engine(data)
-    patches = output.get("provider_patches") or {}
-    api_hosts = _provider_api_hosts(patches)
+    """Remove only configured hooks that call another provider's configured API.
+
+    This sanitizer deliberately preserves the original JSON structure and key
+    casing. Full casefold normalization belongs to the offline compiler/rebuild,
+    not to the read/reapply safety boundary.
+    """
+    output = copy.deepcopy(data)
+    raw_patches = output.get("provider_patches")
+    if not isinstance(raw_patches, dict):
+        return output, []
+
+    ownership_view = normalize_mapping_keys(raw_patches)
+    api_hosts = _provider_api_hosts(ownership_view)
     removed: list[dict[str, str]] = []
-    for provider_id, patch in patches.items():
+
+    for raw_provider_id, patch in raw_patches.items():
         if not isinstance(patch, dict):
             continue
+        provider_id = str(raw_provider_id).casefold()
         unsafe: set[str] = set()
         for script in _script_paths(patch):
             path = (root / script).resolve()
             if root not in path.parents or not path.is_file():
                 continue
-            hits = _foreign_hits(path.read_text(encoding="utf-8", errors="ignore"), provider_id, api_hosts)
+            hits = _foreign_hits(
+                path.read_text(encoding="utf-8", errors="ignore"),
+                provider_id,
+                api_hosts,
+            )
             if hits:
                 unsafe.add(script)
                 removed.append({
                     "provider_id": provider_id,
                     "script": script,
-                    "foreign_apis": ",".join(f"{host}:{owner}" for host, owner in hits),
+                    "foreign_apis": ",".join(
+                        f"{host}:{owner}" for host, owner in hits
+                    ),
                 })
-        if unsafe:
-            configured = patch.get("patch_scripts")
-            if isinstance(configured, list):
-                patch["patch_scripts"] = [str(v) for v in configured if str(v) not in unsafe]
-            if str(patch.get("patch_script") or "") in unsafe:
-                patch.pop("patch_script", None)
-                patch.pop("patch_options", None)
-            options = patch.get("patch_script_options")
-            if isinstance(options, dict):
-                for script in unsafe:
-                    options.pop(script, None)
-    output["provider_engine_normalization"]["removed_cross_provider_hooks"] = len(removed)
+
+        if not unsafe:
+            continue
+
+        configured = patch.get("patch_scripts")
+        if isinstance(configured, list):
+            patch["patch_scripts"] = [
+                value for value in configured if str(value) not in unsafe
+            ]
+        if str(patch.get("patch_script") or "") in unsafe:
+            patch.pop("patch_script", None)
+            patch.pop("patch_options", None)
+        options = patch.get("patch_script_options")
+        if isinstance(options, dict):
+            for script in unsafe:
+                options.pop(script, None)
+
+    meta = output.get("provider_engine_normalization")
+    if not isinstance(meta, dict):
+        meta = {}
+        output["provider_engine_normalization"] = meta
+    meta.update({
+        "schema_version": max(int(meta.get("schema_version") or 0), 2),
+        "activation_state_unchanged": True,
+        "route_state_unchanged": True,
+        "safety_quarantines_unchanged": True,
+        "cross_provider_api_hooks_forbidden": True,
+        "removed_cross_provider_hooks": len(removed),
+    })
     return output, removed
 
 
