@@ -44,48 +44,50 @@ jobs:
           from pathlib import Path
           import json
 
-          # 1. Historical enabled state may survive only a genuinely inconclusive
-          # current CI classification. A conclusive degraded/unavailable result
-          # can no longer be mislabeled as preservation uncertainty.
           promoter_path = Path('scripts/promote_candidates.py')
           text = promoter_path.read_text(encoding='utf-8')
-          old_fallback = '''                    [
-                        "blocked",
-                        "provider_unreachable",
-                        "runtime_error",
-                        "unavailable",
-                        "no_streams",
-                        "reachable",
-                        "degraded",
-                    ],'''
-          new_fallback = '''                    [
-                        "blocked",
-                        "provider_unreachable",
-                        "runtime_error",
-                        "no_streams",
-                        "reachable",
-                    ],'''
+          old_fallback = "\n".join([
+              '                    [',
+              '                        "blocked",',
+              '                        "provider_unreachable",',
+              '                        "runtime_error",',
+              '                        "unavailable",',
+              '                        "no_streams",',
+              '                        "reachable",',
+              '                        "degraded",',
+              '                    ],',
+          ])
+          new_fallback = "\n".join([
+              '                    [',
+              '                        "blocked",',
+              '                        "provider_unreachable",',
+              '                        "runtime_error",',
+              '                        "no_streams",',
+              '                        "reachable",',
+              '                    ],',
+          ])
           if old_fallback in text:
               text = text.replace(old_fallback, new_fallback, 1)
           elif new_fallback not in text:
               raise SystemExit('promotion preservation fallback anchor not found')
 
-          old_guard = '''            preserve_current = (
-                not enabled
-                and (old_was_enabled or restore_activation_lkg)'''
-          new_guard = '''            preserve_current = (
-                not enabled
-                and current_ci_inconclusive
-                and (old_was_enabled or restore_activation_lkg)'''
+          old_guard = "\n".join([
+              '            preserve_current = (',
+              '                not enabled',
+              '                and (old_was_enabled or restore_activation_lkg)',
+          ])
+          new_guard = "\n".join([
+              '            preserve_current = (',
+              '                not enabled',
+              '                and current_ci_inconclusive',
+              '                and (old_was_enabled or restore_activation_lkg)',
+          ])
           if old_guard in text:
               text = text.replace(old_guard, new_guard, 1)
           elif new_guard not in text:
               raise SystemExit('promotion preservation guard anchor not found')
           promoter_path.write_text(text, encoding='utf-8')
 
-          # 2. These two providers currently have conclusive live safety failures:
-          # NetMirror can select unrelated search content; MovieBox can expose a
-          # non-media HTML/player target. Make both published bundles inert now.
           overrides_path = Path('provider-overrides.json')
           config = json.loads(overrides_path.read_text(encoding='utf-8'))
           patches = config.setdefault('provider_patches', {})
@@ -106,9 +108,7 @@ jobs:
               manifest_overrides['enabled'] = False
               row['manifest_overrides'] = manifest_overrides
               row['patch_scripts'] = [quarantine_script]
-              row['patch_script_options'] = {
-                  quarantine_script: {'reason': reason}
-              }
+              row['patch_script_options'] = {quarantine_script: {'reason': reason}}
               row['notes'] = (
                   f'Fail-closed safety quarantine: {reason}. The published bundle is inert '
                   'because Nuvio clients may retain historical local activation state. '
@@ -120,37 +120,35 @@ jobs:
               encoding='utf-8',
           )
 
-          # 3. Extend the permanent quarantine regression to the two live failures.
           test_path = Path('tests/provider_quarantine_test.py')
           test = test_path.read_text(encoding='utf-8')
-          anchor = '''    ("vixsrc", "interstellar_duration_mismatch"),
-):'''
-          replacement = '''    ("vixsrc", "interstellar_duration_mismatch"),
-    ("moviebox", "non_playable_html_output"),
-    ("netmirror", "cross_title_search_identity_mismatch"),
-):'''
+          anchor = '    ("vixsrc", "interstellar_duration_mismatch"),\n):'
+          replacement = (
+              '    ("vixsrc", "interstellar_duration_mismatch"),\n'
+              '    ("moviebox", "non_playable_html_output"),\n'
+              '    ("netmirror", "cross_title_search_identity_mismatch"),\n'
+              '):'
+          )
           if replacement not in test:
               if anchor not in test:
                   raise SystemExit('provider quarantine regression anchor not found')
-              test = test.replace(anchor, replacement, 1)
-              test_path.write_text(test, encoding='utf-8')
+              test_path.write_text(test.replace(anchor, replacement, 1), encoding='utf-8')
 
-          # Strengthen the existing CI preservation source-level regression too.
           ci_test_path = Path('tests/ci_preservation_policy_test.py')
           ci_test = ci_test_path.read_text(encoding='utf-8')
-          source_assert = "assert 'and current_ci_inconclusive' in promoter\n"
           source_anchor = "assert 'current_ci_inconclusive' in promoter\n"
+          source_assert = "assert 'and current_ci_inconclusive' in promoter\n"
           if source_assert not in ci_test:
               if source_anchor not in ci_test:
                   raise SystemExit('CI preservation source assertion anchor not found')
-              ci_test = ci_test.replace(source_anchor, source_anchor + source_assert, 1)
-              ci_test_path.write_text(ci_test, encoding='utf-8')
+              ci_test_path.write_text(
+                  ci_test.replace(source_anchor, source_anchor + source_assert, 1),
+                  encoding='utf-8',
+              )
           PY
-
           python -m py_compile scripts/promote_candidates.py
 
       - name: Rebuild exact current published bundles fail-closed
-        shell: bash
         run: |
           python scripts/reapply_published_overrides.py
           python scripts/prune_unreferenced_providers.py
@@ -159,7 +157,6 @@ jobs:
           python scripts/reapply_published_overrides.py --check
 
       - name: Run focused safety regressions
-        shell: bash
         run: |
           python tests/ci_preservation_policy_test.py
           python tests/provider_quarantine_test.py
@@ -170,13 +167,11 @@ jobs:
           python scripts/validate_language_projection.py
 
       - name: Regenerate and validate exact release hashes
-        shell: bash
         run: |
           python scripts/generate_release_hashes.py
           python scripts/validate_release_integrity.py
 
       - name: Assert exact safety result
-        shell: bash
         run: |
           python - <<'PY'
           from pathlib import Path
@@ -209,7 +204,6 @@ jobs:
           PY
 
       - name: Enforce one-shot change scope
-        shell: bash
         run: |
           python - <<'PY'
           import subprocess
@@ -245,7 +239,6 @@ jobs:
           PY
 
       - name: Commit exact tested safety repair
-        shell: bash
         run: |
           if git diff --quiet && test -z "$(git status --porcelain)"; then
             echo 'safety repair already current'
@@ -253,15 +246,7 @@ jobs:
           fi
           git config user.name 'niakvio-ci'
           git config user.email 'actions@users.noreply.github.com'
-          git add -A \
-            scripts/promote_candidates.py \
-            provider-overrides.json \
-            tests/provider_quarantine_test.py \
-            tests/ci_preservation_policy_test.py \
-            manifest.json vf/manifest.json vostfr/manifest.json \
-            PROVENANCE.json package.json package-lock.json \
-            FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json \
-            providers
+          git add -A
           git commit -m 'fix: fail closed on conclusive provider safety failures'
           git fetch origin main
           git rebase origin/main
