@@ -68,9 +68,23 @@ jobs:
       - name: Validate automatic repair identity promotion gate
         run: python tests/repair_identity_gate_test.py
 
-      - name: Verify published generation is override-idempotent
+      - name: Reconstruct published generation in workspace and expose delta
+        shell: bash
         run: |
-          python scripts/reapply_published_overrides.py --check
+          python scripts/reapply_published_overrides.py
+          echo "--- reconstructed files ---"
+          git status --short
+          echo "--- reconstructed diff stat ---"
+          git diff --stat
+          echo "--- manifest/provenance/config delta ---"
+          git diff -- manifest.json vf/manifest.json PROVENANCE.json provider-overrides.json
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "::error::published generation is not override-idempotent"
+            exit 1
+          fi
+
+      - name: Validate published generation
+        run: |
           python scripts/validate_published_overrides.py
           python scripts/validate_activation_preservation.py
           python scripts/validate_language_projection.py
@@ -85,6 +99,5 @@ jobs:
           python scripts/validate_activation_preservation.py
           python scripts/validate_language_projection.py
           python scripts/validate_release_integrity.py
-          echo "--- unexpected working-tree changes ---"
           git status --short
           git diff --exit-code
