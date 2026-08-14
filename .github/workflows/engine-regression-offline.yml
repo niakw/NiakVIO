@@ -78,6 +78,33 @@ jobs:
           git status --short
           echo "--- reconstructed diff stat ---"
           git diff --stat
+          echo "--- audit quarantine security state ---"
+          python - <<'PY'
+          import hashlib, json
+          from pathlib import Path
+          root = Path('.')
+          manifest = json.loads(Path('manifest.json').read_text())
+          provenance = json.loads(Path('PROVENANCE.json').read_text()).get('providers', {})
+          for row in manifest.get('scrapers', []):
+              filename = str(row.get('filename') or '')
+              if '--nuvio-audit-quarantine--' not in filename:
+                  continue
+              pid = str(row.get('id') or '')
+              prov = provenance.get(pid) or provenance.get(pid.lower()) or {}
+              path = root / filename
+              digest = hashlib.sha256(path.read_bytes()).hexdigest() if path.is_file() else None
+              print(json.dumps({
+                  'id': pid,
+                  'enabled': row.get('enabled'),
+                  'filename': filename,
+                  'sha_prefix_ok': bool(digest and filename.endswith(digest[:16] + '.js')),
+                  'provenance_filename': prov.get('published_filename'),
+                  'provenance_sha_match': bool(digest and (prov.get('patched_sha256') or prov.get('sha256')) == digest),
+                  'activation_eligible': prov.get('activation_eligible'),
+                  'activation_mode': prov.get('activation_mode'),
+                  'activation_blockers': prov.get('activation_blockers'),
+              }, sort_keys=True))
+          PY
 
       - name: Validate reconstructed published generation
         run: |
