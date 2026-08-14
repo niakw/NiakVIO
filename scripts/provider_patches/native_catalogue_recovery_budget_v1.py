@@ -17,6 +17,7 @@ from typing import Any
 
 MARKER = "NUVIO_NATIVE_CATALOGUE_RECOVERY_BUDGET_V1"
 CATALOGUE_MARKER = "NUVIO_GLOBAL_CATALOGUE_ALIAS_RECOVERY_V2"
+WRAPPER_CALL = '})(typeof globalThis!=="undefined"?globalThis:this,'
 
 RECOVER_OLD = "async function recover(q,knownMeta,deadline){if([\"movie\",\"tv\",\"anime\"].indexOf(q.mediaType)<0||Date.now()>=deadline)return[];"
 RECOVER_NEW = "async function recover(q,knownMeta,deadline){var nativeRuntime=nativeRecoveryHost(),searchCap=nativeRuntime?2:2147483647,candidateCap=nativeRuntime?2:c.maxCandidates;if([\"movie\",\"tv\",\"anime\"].indexOf(q.mediaType)<0||Date.now()>=deadline)return[];"
@@ -37,12 +38,29 @@ def _replace_once(text: str, old: str, new: str, label: str) -> str:
     return text.replace(old, new, 1)
 
 
+def _wrapper_bounds(text: str) -> tuple[int, int]:
+    start = text.find(f"/* {CATALOGUE_MARKER}:")
+    if start < 0:
+        raise ValueError("catalogue recovery marker exists but canonical wrapper marker was not found")
+    call = text.find(WRAPPER_CALL, start)
+    if call < 0:
+        raise ValueError("global catalogue recovery wrapper call not found")
+    end = text.find(");", call + len(WRAPPER_CALL))
+    if end < 0:
+        raise ValueError("global catalogue recovery wrapper end not found")
+    return start, end + 2
+
+
 def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> str:
     if CATALOGUE_MARKER not in text or MARKER in text:
         return text
-    out = _replace_once(text, HELPER_ANCHOR, HELPER, "native helper anchor")
-    out = _replace_once(out, RECOVER_OLD, RECOVER_NEW, "recover function")
-    out = _replace_once(out, SEARCH_OLD, SEARCH_NEW, "catalogue search loop")
-    out = _replace_once(out, CANDIDATE_OLD, CANDIDATE_NEW, "candidate slice")
-    out = _replace_once(out, INSTALL_OLD, INSTALL_NEW, "catalogue wrapper deadline")
+
+    start, end = _wrapper_bounds(text)
+    wrapper = text[start:end]
+    wrapper = _replace_once(wrapper, HELPER_ANCHOR, HELPER, "native helper anchor")
+    wrapper = _replace_once(wrapper, RECOVER_OLD, RECOVER_NEW, "recover function")
+    wrapper = _replace_once(wrapper, SEARCH_OLD, SEARCH_NEW, "catalogue search loop")
+    wrapper = _replace_once(wrapper, CANDIDATE_OLD, CANDIDATE_NEW, "candidate slice")
+    wrapper = _replace_once(wrapper, INSTALL_OLD, INSTALL_NEW, "catalogue wrapper deadline")
+    out = text[:start] + wrapper + text[end:]
     return out.rstrip() + f"\n/* {MARKER} */\n"
