@@ -45,6 +45,8 @@ ADAPTIVE_SCRIPT = ROOT / "scripts" / "provider_patches" / "adaptive_runtime_reco
 ADAPTIVE_DOMAIN_BEGIN = "/* NUVIO_ADAPTIVE_DOMAIN_RECOVERY_V1:BEGIN */"
 ADAPTIVE_DOMAIN_END = "/* NUVIO_ADAPTIVE_DOMAIN_RECOVERY_V1:END */"
 ADAPTIVE_DOMAIN_SCRIPT = ROOT / "scripts" / "provider_patches" / "adaptive_domain_recovery.py"
+AUDIT_QUARANTINE_MARKER = "NUVIO_PROVIDER_QUARANTINE_V1"
+AUDIT_QUARANTINE_MODE = "catalogue_audit_safety_quarantine"
 
 
 def safe_fragment(value: str) -> str:
@@ -313,36 +315,45 @@ def main() -> int:
             entry.update(manifest_overrides)
 
         original = path.read_bytes()
-        isolated_text, removed_wrappers = strip_foreign_provider_wrappers(
-            original.decode("utf-8", errors="strict"), provider_id, override_config
-        )
-        removed_wrappers_total += len(removed_wrappers)
-        isolated = isolated_text.encode("utf-8")
-        migrated, adaptive_language_repairs = strip_unproven_adaptive_language(isolated)
-        migrated, domain_revision_records = reapply_adaptive_domain_revision(migrated)
-        patched, records = apply_overrides(provider_id, migrated, phase="discovery")
-        if removed_wrappers:
-            records = [{
-                "type": "migration",
-                "name": "cross_provider_wrapper_isolation",
-                "count": len(removed_wrappers),
-                "phase": "discovery",
-                "scope": "provider_isolation",
-            }] + list(records)
-        if domain_revision_records:
-            records = list(records) + domain_revision_records
         provider_provenance = provenance_rows.get(provider_id) if provenance_rows else None
-        patched, runtime_revision_records = reapply_adaptive_runtime_revision(patched, provider_provenance)
-        if runtime_revision_records:
-            records = list(records) + runtime_revision_records
-        if adaptive_language_repairs:
-            records = [{
-                "type": "migration",
-                "name": "adaptive_language_integrity_v1",
-                "count": adaptive_language_repairs,
-                "phase": "discovery",
-                "scope": "language_integrity",
-            }] + list(records)
+        audit_terminal_quarantine = (
+            AUDIT_QUARANTINE_MARKER.encode("utf-8") in original
+            and isinstance(provider_provenance, dict)
+            and str(provider_provenance.get("activation_mode") or "") == AUDIT_QUARANTINE_MODE
+        )
+        if audit_terminal_quarantine:
+            patched = original
+            records = []
+        else:
+            isolated_text, removed_wrappers = strip_foreign_provider_wrappers(
+                original.decode("utf-8", errors="strict"), provider_id, override_config
+            )
+            removed_wrappers_total += len(removed_wrappers)
+            isolated = isolated_text.encode("utf-8")
+            migrated, adaptive_language_repairs = strip_unproven_adaptive_language(isolated)
+            migrated, domain_revision_records = reapply_adaptive_domain_revision(migrated)
+            patched, records = apply_overrides(provider_id, migrated, phase="discovery")
+            if removed_wrappers:
+                records = [{
+                    "type": "migration",
+                    "name": "cross_provider_wrapper_isolation",
+                    "count": len(removed_wrappers),
+                    "phase": "discovery",
+                    "scope": "provider_isolation",
+                }] + list(records)
+            if domain_revision_records:
+                records = list(records) + domain_revision_records
+            patched, runtime_revision_records = reapply_adaptive_runtime_revision(patched, provider_provenance)
+            if runtime_revision_records:
+                records = list(records) + runtime_revision_records
+            if adaptive_language_repairs:
+                records = [{
+                    "type": "migration",
+                    "name": "adaptive_language_integrity_v1",
+                    "count": adaptive_language_repairs,
+                    "phase": "discovery",
+                    "scope": "language_integrity",
+                }] + list(records)
         changed = patched != original
         if changed:
             validate_artifact(patched)

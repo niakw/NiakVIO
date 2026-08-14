@@ -20,6 +20,7 @@ import json
 import os
 import re
 import subprocess
+import sys
 import time
 from collections import Counter
 from pathlib import Path
@@ -401,7 +402,29 @@ def main() -> int:
     )
     # Only conclusive failures stop the finite audit. A provider returning no
     # stream is a coverage gap to repair, not a reason to disable it.
-    return 1 if playable_false_positive or wrong_content or hls_failures else 0
+    conclusive_failure = bool(playable_false_positive or wrong_content or hls_failures)
+    evidence_path = Path("/tmp/release-generation.json")
+    if (
+        conclusive_failure
+        and evidence_path.is_file()
+        and os.environ.get("NUVIO_CATALOGUE_AUDIT_QUARANTINE_DONE") != "1"
+    ):
+        pre_quarantine = OUTPUT.with_name(OUTPUT.stem + ".pre-quarantine" + OUTPUT.suffix)
+        pre_quarantine.write_text(OUTPUT.read_text(encoding="utf-8"), encoding="utf-8")
+        subprocess.run([
+            sys.executable,
+            str(ROOT / "scripts" / "quarantine_catalogue_audit_failures.py"),
+            "--audit", str(OUTPUT),
+            "--evidence", str(evidence_path),
+            "--workflow-run-id", str(os.environ.get("GITHUB_RUN_ID") or "0"),
+            "--tested-commit-sha", str(os.environ.get("GITHUB_SHA") or ""),
+        ], cwd=ROOT, check=True)
+        rerun_env = dict(os.environ)
+        rerun_env["NUVIO_CATALOGUE_AUDIT_QUARANTINE_DONE"] = "1"
+        print("catalogue/media audit: conclusive offenders quarantined; rerunning exact audit")
+        rerun = subprocess.run([sys.executable, str(Path(__file__).resolve())], cwd=ROOT, env=rerun_env, check=False)
+        return int(rerun.returncode)
+    return 1 if conclusive_failure else 0
 
 
 if __name__ == "__main__":

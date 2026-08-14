@@ -3,6 +3,7 @@
 """Validate stable overrides and accepted runtime profiles in published files."""
 from __future__ import annotations
 
+import hashlib
 import json
 from pathlib import Path
 from override_text_utils import contains_literal
@@ -20,6 +21,9 @@ PROVIDER_LKG = ROOT / "provider-lkg.json"
 # accepted only after a strict before/after retest. Their provenance still has
 # to be verifiable in the final published artifact, so keep an explicit marker
 # registry here rather than treating every unknown profile as valid.
+AUDIT_QUARANTINE_MARKER = "NUVIO_PROVIDER_QUARANTINE_V1"
+AUDIT_QUARANTINE_MODE = "catalogue_audit_safety_quarantine"
+
 GENERATED_RUNTIME_PROFILE_MARKERS = {
     "adaptive_runtime_recovery": "NUVIO_ADAPTIVE_RUNTIME_RECOVERY_V4",
 }
@@ -138,6 +142,20 @@ def main() -> int:
         text = target.read_text(encoding="utf-8", errors="strict")
         cfg = patches.get(cid) if isinstance(patches.get(cid), dict) else {}
         provider_provenance = provenance_by_id.get(cid) or {}
+        audit_quarantine = str(provider_provenance.get("activation_mode") or "") == AUDIT_QUARANTINE_MODE
+        if audit_quarantine:
+            digest = hashlib.sha256(target.read_bytes()).hexdigest()
+            if entry.get("enabled") is not False:
+                errors.append(f"{cid}: audit safety quarantine is not disabled")
+            if AUDIT_QUARANTINE_MARKER not in text:
+                errors.append(f"{cid}: audit safety quarantine marker is missing")
+            if provider_provenance.get("activation_eligible") is not False:
+                errors.append(f"{cid}: audit safety quarantine remains activation eligible")
+            if str(provider_provenance.get("published_filename") or "") != target.relative_to(ROOT).as_posix():
+                errors.append(f"{cid}: audit safety quarantine provenance path mismatch")
+            if str(provider_provenance.get("patched_sha256") or "") != digest:
+                errors.append(f"{cid}: audit safety quarantine provenance SHA mismatch")
+            continue
         records = provider_provenance.get("local_patches") or []
         replacements = dict(global_replacements)
         replacements.update(cfg.get("replacements") or {})
