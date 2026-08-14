@@ -1,4 +1,4 @@
-name: Permanent Desktop real-client lab v2
+name: Permanent Desktop real-client lab v4
 
 on:
   workflow_dispatch:
@@ -11,7 +11,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: permanent-desktop-real-client-v2
+  group: permanent-desktop-real-client-v4
   cancel-in-progress: false
 
 env:
@@ -22,17 +22,59 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
-      - name: Checkout permanent desktop/mobile lab
+      - name: Checkout permanent Desktop and Mobile Android lab
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
           ref: lab/desktop-mobile-real
           path: niakvio
+
+      - name: Set up Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: "3.12"
+
+      - name: Set up Node
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: "24"
+          package-manager-cache: false
 
       - name: Set up JDK
         uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165
         with:
           distribution: temurin
           java-version: '17'
+
+      - name: Install locked provider validator dependencies
+        working-directory: niakvio
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Build exact engine-v4 lab candidate from published manifest
+        working-directory: niakvio
+        shell: bash
+        run: |
+          set -euxo pipefail
+          python3 tests/runtime_capability_media_safety_v4_test.py
+          python3 scripts/apply_runtime_capability_upgrade_v4.py
+          python3 scripts/reapply_published_overrides.py
+          python3 scripts/reapply_published_overrides.py --check
+          python3 tests/runtime_capability_media_safety_v4_test.py
+          python3 scripts/validate_published_overrides.py
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          manifest = json.loads(Path('manifest.json').read_text(encoding='utf-8'))
+          rows = {str(row.get('id') or '').casefold(): row for row in manifest.get('scrapers', []) if isinstance(row, dict)}
+          streamzo = rows['streamzo']
+          assert streamzo.get('enabled') is True
+          payload = Path(streamzo['filename']).read_text(encoding='utf-8')
+          assert payload.count('NUVIO_GLOBAL_RUNTIME_MEDIA_SAFETY_V1:') == 1
+          assert '"implementationRevision":"field-safety-v4-runtime-capability"' in payload
+          assert '"implementationRevision":"field-safety-v2"' not in payload
+          for provider_id in ('moviebox', 'netmirror'):
+              assert rows[provider_id].get('enabled') is False
+          print(f"FIELD_DESKTOP_CANDIDATE streamzo={streamzo['filename']} version={streamzo.get('version')}")
+          PY
 
       - name: Install official Linux player dependencies
         shell: bash
@@ -50,7 +92,7 @@ jobs:
           git checkout "$NUVIO_DESKTOP_SHA"
           touch local.properties
 
-      - name: Prepare manifest-selected provider test
+      - name: Prepare manifest-selected Desktop provider test
         shell: bash
         run: |
           python3 niakvio/lab/real-client/desktop/prepare_nuvio_desktop.py nuvio-desktop niakvio
