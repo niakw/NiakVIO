@@ -14,6 +14,8 @@ const outputPath = path.resolve(outputIndex >= 0 ? args[outputIndex + 1] : path.
 
 const corpus = JSON.parse(fs.readFileSync(path.join(root, '.github/triggers/nuvio-client-lab.json'), 'utf8'));
 const manifest = JSON.parse(fs.readFileSync(path.join(root, 'manifest.json'), 'utf8'));
+const overridesPath = path.join(root, 'provider-overrides.json');
+const overrides = fs.existsSync(overridesPath) ? JSON.parse(fs.readFileSync(overridesPath, 'utf8')) : {};
 const fixtureMap = new Map((corpus.fixtures || []).map((row) => [row.slug, row.fixture || {}]));
 const minRatio = Number(corpus.policy?.minimum_duration_ratio || 0.55);
 const maxRatio = Number(corpus.policy?.maximum_duration_ratio || 1.8);
@@ -22,6 +24,8 @@ const manifestMap = new Map(
     .filter((row) => row && typeof row === 'object')
     .map((row) => [String(row.id || '').toLowerCase(), row]),
 );
+const configuredCapabilities = overrides.provider_capabilities || {};
+const providerPatches = overrides.provider_patches || {};
 
 function decode(value) {
   if (!value) return '';
@@ -41,6 +45,21 @@ function fields(line) {
 function syntheticUrl(host, hint) {
   if (!host || !hint) return '';
   return `https://${host}/${encodeURIComponent(hint)}`;
+}
+
+function capabilityFor(provider) {
+  const id = String(provider || '').toLowerCase();
+  const explicit = providerPatches[id]?.capability;
+  if (explicit) return String(explicit);
+  const configured = configuredCapabilities[id];
+  if (typeof configured === 'string' && configured) return configured;
+  if (configured && typeof configured === 'object' && configured.strategy) return String(configured.strategy);
+  const manifestCapability = manifestMap.get(id)?.capability;
+  return manifestCapability ? String(manifestCapability) : 'unknown';
+}
+
+function withCapability(row) {
+  return { ...row, capability: capabilityFor(row.provider) };
 }
 
 function relevant(provider, fixture) {
@@ -78,37 +97,37 @@ for (const file of listFiles(inputDir)) {
     if (line.startsWith('FIELD_NATIVE_RESULT ')) {
       const provider = decode(f.provider64);
       const key = `${f.client}\u0000${f.fixture}\u0000${provider}`;
-      executions.set(key, {
+      executions.set(key, withCapability({
         client: f.client || 'unknown', fixture: f.fixture || 'unknown', provider,
         enabled: f.enabled === 'true', durationMs: Number(f.duration_ms || 0), count: Number(f.count || 0),
-      });
+      }));
     } else if (line.startsWith('FIELD_NATIVE_ROW ')) {
       const provider = decode(f.provider64);
       const host = decode(f.host64);
       const mediaHint = decode(f.media_hint64);
-      rows.push({
+      rows.push(withCapability({
         client: f.client || 'unknown', fixture: f.fixture || 'unknown', provider,
         index: Number(f.index || 0), host, mediaHint,
         stream: {
           title: decode(f.title64), name: decode(f.name64), quality: decode(f.quality64),
           language: decode(f.language64), type: decode(f.type64), url: syntheticUrl(host, mediaHint),
         },
-      });
+      }));
     } else if (line.startsWith('FIELD_NATIVE_TRANSPORT ')) {
       const provider = decode(f.provider64);
       const key = `${f.client}\u0000${f.fixture}\u0000${provider}`;
-      transports.set(key, {
+      transports.set(key, withCapability({
         client: f.client || 'unknown', fixture: f.fixture || 'unknown', provider,
         state: f.state || 'unknown', kind: f.kind || 'unknown', status: Number(f.status || 0),
         contentType: decode(f.content_type64), extm3u: f.extm3u === 'true',
         durationSeconds: Number(f.duration_seconds || 0) || null,
         host: decode(f.host64), mediaHint: decode(f.media_hint64),
-      });
+      }));
     } else if (line.startsWith('FIELD_NATIVE_ERROR ')) {
-      errors.push({
+      errors.push(withCapability({
         client: f.client || 'unknown', fixture: f.fixture || 'unknown', provider: decode(f.provider64),
         durationMs: Number(f.duration_ms || 0), error: decode(f.error64),
-      });
+      }));
     }
   }
 }
@@ -125,7 +144,7 @@ for (const row of rows) {
   }
   if (identity.status === 'contradiction') {
     contradictions.push({
-      client: row.client, fixture: row.fixture, provider: row.provider,
+      client: row.client, fixture: row.fixture, provider: row.provider, capability: row.capability,
       reason: identity.reason, title: row.stream.title, name: row.stream.name,
       host: row.host || null, mediaHint: row.mediaHint || null, durationRatio: ratio,
     });
@@ -145,20 +164,34 @@ function groupBy(items, fn) {
   return map;
 }
 
+function groupedCapabilitySignals(items, keyFn, minOccurrences = 2) {
+  return [...groupBy(items, keyFn).entries()]
+    .filter(([, values]) => values.length >= minOccurrences)
+    .map(([key, values]) => ({
+      capability: values[0].capability || String(key).split('\u0000')[0] || 'unknown',
+      occurrences: values.length,
+      providers: [...new Set(values.map((row) => row.provider))].sort(),
+      clients: [...new Set(values.map((row) => row.client).filter(Boolean))].sort(),
+      fixtures: [...new Set(values.map((row) => row.fixture).filter(Boolean))].sort(),
+      contexts: values.slice(0, 16),
+    }))
+    .sort((a, b) => b.occurrences - a.occurrences || b.providers.length - a.providers.length);
+}
+
 const repeatedContradictions = [...groupBy(contradictions, (row) => row.provider.toLowerCase()).entries()]
   .filter(([, values]) => values.length >= 2)
-  .map(([provider, values]) => ({ provider, occurrences: values.length, contexts: values.slice(0, 12) }))
+  .map(([provider, values]) => ({ provider, capability: values[0].capability, occurrences: values.length, contexts: values.slice(0, 12) }))
   .sort((a, b) => b.occurrences - a.occurrences);
 
 const repeatedTransportFailures = [...groupBy(transportFailures, (row) => row.provider.toLowerCase()).entries()]
   .filter(([, values]) => values.length >= 2)
-  .map(([provider, values]) => ({ provider, occurrences: values.length, contexts: values.slice(0, 12) }))
+  .map(([provider, values]) => ({ provider, capability: values[0].capability, occurrences: values.length, contexts: values.slice(0, 12) }))
   .sort((a, b) => b.occurrences - a.occurrences);
 
 const repeatedSlow = [...groupBy(slowExecutions, (row) => row.provider.toLowerCase()).entries()]
   .filter(([, values]) => values.length >= 2)
   .map(([provider, values]) => ({
-    provider, occurrences: values.length,
+    provider, capability: values[0].capability, occurrences: values.length,
     maxDurationMs: Math.max(...values.map((row) => row.durationMs)),
     contexts: values.slice(0, 12),
   }))
@@ -172,21 +205,22 @@ for (const values of byFixtureProvider.values()) {
   const mobile = byClient.get('mobile');
   const tv = byClient.get('tv');
   if (!desktop || desktop.count <= 0) continue;
-  if (mobile && mobile.count === 0) platformGaps.push({ provider: desktop.provider, fixture: desktop.fixture, from: 'desktop', to: 'mobile' });
-  if (tv && tv.count === 0) platformGaps.push({ provider: desktop.provider, fixture: desktop.fixture, from: 'desktop', to: 'tv' });
+  if (mobile && mobile.count === 0) platformGaps.push({ provider: desktop.provider, capability: desktop.capability, fixture: desktop.fixture, from: 'desktop', to: 'mobile', client: 'mobile' });
+  if (tv && tv.count === 0) platformGaps.push({ provider: desktop.provider, capability: desktop.capability, fixture: desktop.fixture, from: 'desktop', to: 'tv', client: 'tv' });
 }
 const repeatedPlatformGaps = [...groupBy(platformGaps, (row) => `${row.provider.toLowerCase()}\u0000${row.to}`).entries()]
   .filter(([, values]) => values.length >= 2)
-  .map(([, values]) => ({ provider: values[0].provider, targetClient: values[0].to, occurrences: values.length, fixtures: values.map((v) => v.fixture) }))
+  .map(([, values]) => ({ provider: values[0].provider, capability: values[0].capability, targetClient: values[0].to, occurrences: values.length, fixtures: values.map((v) => v.fixture) }))
   .sort((a, b) => b.occurrences - a.occurrences);
 
 const systemicEmpty = [];
 const byProvider = groupBy([...executions.values()], (row) => row.provider.toLowerCase());
-for (const [providerKey, values] of byProvider.entries()) {
+for (const values of byProvider.values()) {
   const relevantValues = values.filter((row) => row.enabled && relevant(row.provider, fixtureMap.get(row.fixture) || {}));
   if (relevantValues.length >= 3 && relevantValues.every((row) => row.count === 0)) {
     systemicEmpty.push({
       provider: relevantValues[0].provider,
+      capability: relevantValues[0].capability,
       executions: relevantValues.length,
       clients: [...new Set(relevantValues.map((row) => row.client))].sort(),
       fixtures: [...new Set(relevantValues.map((row) => row.fixture))].sort(),
@@ -196,11 +230,38 @@ for (const [providerKey, values] of byProvider.entries()) {
 systemicEmpty.sort((a, b) => b.executions - a.executions);
 
 const providerRuntimeErrors = [...groupBy(errors, (row) => row.provider.toLowerCase()).entries()]
-  .map(([provider, values]) => ({ provider, occurrences: values.length, contexts: values.slice(0, 12) }))
+  .map(([provider, values]) => ({ provider, capability: values[0].capability, occurrences: values.length, contexts: values.slice(0, 12) }))
   .sort((a, b) => b.occurrences - a.occurrences);
 
+const capabilityInventory = [...groupBy([...executions.values()], (row) => row.capability).entries()]
+  .map(([capability, values]) => ({
+    capability,
+    providers: [...new Set(values.map((row) => row.provider))].sort(),
+    executions: values.length,
+    nonEmptyExecutions: values.filter((row) => row.count > 0).length,
+  }))
+  .sort((a, b) => b.executions - a.executions);
+
+const capabilitySignals = {
+  contradictions: groupedCapabilitySignals(contradictions, (row) => row.capability),
+  transportFailures: groupedCapabilitySignals(transportFailures, (row) => row.capability),
+  slowExecutions: groupedCapabilitySignals(slowExecutions, (row) => row.capability),
+  platformGaps: groupedCapabilitySignals(platformGaps, (row) => `${row.capability}\u0000${row.to}`),
+  runtimeErrors: groupedCapabilitySignals(errors, (row) => row.capability),
+  systemicEmpty: [...groupBy(systemicEmpty, (row) => row.capability).entries()]
+    .filter(([, values]) => values.length >= 1)
+    .map(([capability, values]) => ({
+      capability,
+      providers: values.map((row) => row.provider).sort(),
+      providerCount: values.length,
+      executions: values.reduce((sum, row) => sum + row.executions, 0),
+      contexts: values.slice(0, 16),
+    }))
+    .sort((a, b) => b.providerCount - a.providerCount || b.executions - a.executions),
+};
+
 const summary = {
-  schemaVersion: 1,
+  schemaVersion: 2,
   generatedAt: new Date().toISOString(),
   fixtures: [...fixtureMap.keys()],
   clients: [...new Set([...executions.values()].map((row) => row.client))].sort(),
@@ -211,6 +272,7 @@ const summary = {
   contradictions: contradictions.length,
   transportFailures: transportFailures.length,
   slowExecutions: slowExecutions.length,
+  capabilityInventory,
   engineSignals: {
     repeatedContradictions,
     repeatedTransportFailures,
@@ -219,6 +281,7 @@ const summary = {
     systemicEmpty,
     providerRuntimeErrors,
   },
+  capabilitySignals,
 };
 
 fs.mkdirSync(path.dirname(outputPath), { recursive: true });
@@ -231,7 +294,11 @@ console.log(`FIELD_NATIVE_CORPUS_SUITE_SUMMARY ${JSON.stringify({
   runtimeErrors: summary.runtimeErrors,
   repeatedPlatformGaps: repeatedPlatformGaps.length,
   systemicEmpty: systemicEmpty.length,
+  capabilitiesObserved: capabilityInventory.length,
 })}`);
 for (const [name, values] of Object.entries(summary.engineSignals)) {
   for (const row of values.slice(0, 30)) console.log(`FIELD_NATIVE_ENGINE_SIGNAL type=${name} data=${JSON.stringify(row)}`);
+}
+for (const [name, values] of Object.entries(summary.capabilitySignals)) {
+  for (const row of values.slice(0, 30)) console.log(`FIELD_NATIVE_CAPABILITY_SIGNAL type=${name} data=${JSON.stringify(row)}`);
 }
