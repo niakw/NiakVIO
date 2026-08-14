@@ -1,4 +1,4 @@
-name: One-shot promotion config repair
+name: One-shot promotion and provider safety repair
 
 on:
   push:
@@ -9,52 +9,260 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: nuvio-provider-publish
+  cancel-in-progress: false
+
 jobs:
   repair:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
           ref: main
           fetch-depth: 0
-      - name: Restore promotion override configuration bindings
+
+      - name: Set up Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: "3.12"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: "24"
+          package-manager-cache: false
+
+      - name: Install pinned dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Harden activation preservation and quarantine proven unsafe providers
         shell: bash
         run: |
           python - <<'PY'
           from pathlib import Path
-          path = Path('scripts/promote_candidates.py')
-          text = path.read_text(encoding='utf-8')
-          registry = '    registry = load_json(STAGE / "candidates.json")\n'
-          if '    override_policy = override_config\n' not in text:
-              if registry not in text:
-                  raise SystemExit('expected promotion registry anchor not found')
-              text = text.replace(registry, '    override_policy = override_config\n' + registry, 1)
-              path.write_text(text, encoding='utf-8')
+          import json
+
+          # 1. Historical enabled state may survive only a genuinely inconclusive
+          # current CI classification. A conclusive degraded/unavailable result
+          # can no longer be mislabeled as preservation uncertainty.
+          promoter_path = Path('scripts/promote_candidates.py')
+          text = promoter_path.read_text(encoding='utf-8')
+          old_fallback = '''                    [
+                        "blocked",
+                        "provider_unreachable",
+                        "runtime_error",
+                        "unavailable",
+                        "no_streams",
+                        "reachable",
+                        "degraded",
+                    ],'''
+          new_fallback = '''                    [
+                        "blocked",
+                        "provider_unreachable",
+                        "runtime_error",
+                        "no_streams",
+                        "reachable",
+                    ],'''
+          if old_fallback in text:
+              text = text.replace(old_fallback, new_fallback, 1)
+          elif new_fallback not in text:
+              raise SystemExit('promotion preservation fallback anchor not found')
+
+          old_guard = '''            preserve_current = (
+                not enabled
+                and (old_was_enabled or restore_activation_lkg)'''
+          new_guard = '''            preserve_current = (
+                not enabled
+                and current_ci_inconclusive
+                and (old_was_enabled or restore_activation_lkg)'''
+          if old_guard in text:
+              text = text.replace(old_guard, new_guard, 1)
+          elif new_guard not in text:
+              raise SystemExit('promotion preservation guard anchor not found')
+          promoter_path.write_text(text, encoding='utf-8')
+
+          # 2. These two providers currently have conclusive live safety failures:
+          # NetMirror can select unrelated search content; MovieBox can expose a
+          # non-media HTML/player target. Make both published bundles inert now.
+          overrides_path = Path('provider-overrides.json')
+          config = json.loads(overrides_path.read_text(encoding='utf-8'))
+          patches = config.setdefault('provider_patches', {})
+          quarantine_script = 'scripts/provider_patches/quarantine_provider_v1.py'
+          quarantines = {
+              'netmirror': 'cross_title_search_identity_mismatch',
+              'moviebox': 'non_playable_html_output',
+          }
+          for provider_id, reason in quarantines.items():
+              row = patches.get(provider_id)
+              if not isinstance(row, dict):
+                  raise SystemExit(f'missing provider override row: {provider_id}')
+              row['capability'] = 'quarantined'
+              row['profiles'] = []
+              manifest_overrides = row.get('manifest_overrides')
+              if not isinstance(manifest_overrides, dict):
+                  manifest_overrides = {}
+              manifest_overrides['enabled'] = False
+              row['manifest_overrides'] = manifest_overrides
+              row['patch_scripts'] = [quarantine_script]
+              row['patch_script_options'] = {
+                  quarantine_script: {'reason': reason}
+              }
+              row['notes'] = (
+                  f'Fail-closed safety quarantine: {reason}. The published bundle is inert '
+                  'because Nuvio clients may retain historical local activation state. '
+                  'A future upstream candidate may be re-enabled only after current strict identity '
+                  'and direct-media proof succeeds.'
+              )
+          overrides_path.write_text(
+              json.dumps(config, ensure_ascii=False, indent=2) + '\n',
+              encoding='utf-8',
+          )
+
+          # 3. Extend the permanent quarantine regression to the two live failures.
+          test_path = Path('tests/provider_quarantine_test.py')
+          test = test_path.read_text(encoding='utf-8')
+          anchor = '''    ("vixsrc", "interstellar_duration_mismatch"),
+):'''
+          replacement = '''    ("vixsrc", "interstellar_duration_mismatch"),
+    ("moviebox", "non_playable_html_output"),
+    ("netmirror", "cross_title_search_identity_mismatch"),
+):'''
+          if replacement not in test:
+              if anchor not in test:
+                  raise SystemExit('provider quarantine regression anchor not found')
+              test = test.replace(anchor, replacement, 1)
+              test_path.write_text(test, encoding='utf-8')
+
+          # Strengthen the existing CI preservation source-level regression too.
+          ci_test_path = Path('tests/ci_preservation_policy_test.py')
+          ci_test = ci_test_path.read_text(encoding='utf-8')
+          source_assert = "assert 'and current_ci_inconclusive' in promoter\n"
+          source_anchor = "assert 'current_ci_inconclusive' in promoter\n"
+          if source_assert not in ci_test:
+              if source_anchor not in ci_test:
+                  raise SystemExit('CI preservation source assertion anchor not found')
+              ci_test = ci_test.replace(source_anchor, source_anchor + source_assert, 1)
+              ci_test_path.write_text(ci_test, encoding='utf-8')
           PY
+
           python -m py_compile scripts/promote_candidates.py
-          python - <<'PY'
-          import ast
-          from pathlib import Path
-          tree = ast.parse(Path('scripts/promote_candidates.py').read_text(encoding='utf-8'))
-          main = next(node for node in tree.body if isinstance(node, ast.FunctionDef) and node.name == 'main')
-          names = {node.id for node in ast.walk(main) if isinstance(node, ast.Name) and isinstance(node.ctx, ast.Store)}
-          required = {'override_config', 'override_policy', 'configured_provider_patches'}
-          missing = sorted(required - names)
-          if missing:
-              raise SystemExit(f'missing promotion config bindings: {missing}')
-          print('all promotion override configuration bindings validated')
-          PY
-      - name: Commit exact repair if needed
+
+      - name: Rebuild exact current published bundles fail-closed
         shell: bash
         run: |
-          if git diff --quiet -- scripts/promote_candidates.py; then
-            echo 'promotion bindings already present'
+          python scripts/reapply_published_overrides.py
+          python scripts/prune_unreferenced_providers.py
+          python scripts/generate_language_manifests.py
+          python scripts/sync_release_versions.py --manifest manifest.json
+          python scripts/reapply_published_overrides.py --check
+
+      - name: Run focused safety regressions
+        shell: bash
+        run: |
+          python tests/ci_preservation_policy_test.py
+          python tests/provider_quarantine_test.py
+          python tests/runtime_media_safety_guard_test.py
+          python scripts/validate_policy.py
+          python scripts/validate_published_overrides.py
+          python scripts/validate_activation_preservation.py
+          python scripts/validate_language_projection.py
+
+      - name: Regenerate and validate exact release hashes
+        shell: bash
+        run: |
+          python scripts/generate_release_hashes.py
+          python scripts/validate_release_integrity.py
+
+      - name: Assert exact safety result
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import json
+
+          manifest = json.loads(Path('manifest.json').read_text(encoding='utf-8'))
+          rows = {
+              str(row.get('id') or '').casefold(): row
+              for row in manifest.get('scrapers', [])
+              if isinstance(row, dict)
+          }
+          expected = {
+              'netmirror': 'cross_title_search_identity_mismatch',
+              'moviebox': 'non_playable_html_output',
+          }
+          for provider_id, reason in expected.items():
+              row = rows[provider_id]
+              if row.get('enabled') is not False:
+                  raise SystemExit(f'{provider_id}: manifest is not disabled')
+              filename = str(row.get('filename') or '')
+              payload = Path(filename).read_text(encoding='utf-8')
+              if 'NUVIO_PROVIDER_QUARANTINE_V1' not in payload or reason not in payload:
+                  raise SystemExit(f'{provider_id}: published bundle is not the expected inert quarantine')
+              print(f'FIELD_SAFETY_QUARANTINE provider={provider_id} enabled=false file={filename} reason={reason}')
+
+          streamzo = rows['streamzo']
+          if streamzo.get('enabled') is not True:
+              raise SystemExit('streamzo: this safety repair must not globally disable StreamZo')
+          print(f"FIELD_STREAMZO_UNCHANGED enabled=true file={streamzo.get('filename')}")
+          PY
+
+      - name: Enforce one-shot change scope
+        shell: bash
+        run: |
+          python - <<'PY'
+          import subprocess
+          allowed_exact = {
+              'scripts/promote_candidates.py',
+              'provider-overrides.json',
+              'tests/provider_quarantine_test.py',
+              'tests/ci_preservation_policy_test.py',
+              'manifest.json',
+              'vf/manifest.json',
+              'vostfr/manifest.json',
+              'PROVENANCE.json',
+              'package.json',
+              'package-lock.json',
+              'FILE-HASHES.json',
+              'PATCH-SHA256SUMS.txt',
+              'SHA256SUMS.json',
+          }
+          rows = subprocess.check_output(['git', 'status', '--porcelain'], text=True).splitlines()
+          changed = []
+          for raw in rows:
+              path = raw[3:].strip()
+              if ' -> ' in path:
+                  path = path.split(' -> ', 1)[1]
+              changed.append(path)
+          unexpected = sorted(
+              p for p in changed
+              if p not in allowed_exact and not p.startswith('providers/')
+          )
+          if unexpected:
+              raise SystemExit('unexpected one-shot changes: ' + ', '.join(unexpected))
+          print('one-shot safety scope passed: ' + ', '.join(sorted(changed)))
+          PY
+
+      - name: Commit exact tested safety repair
+        shell: bash
+        run: |
+          if git diff --quiet && test -z "$(git status --porcelain)"; then
+            echo 'safety repair already current'
             exit 0
           fi
-          test "$(git status --short | wc -l | tr -d ' ')" = "1"
-          git status --short | grep -Fx ' M scripts/promote_candidates.py'
           git config user.name 'niakvio-ci'
           git config user.email 'actions@users.noreply.github.com'
-          git add scripts/promote_candidates.py
-          git commit -m 'fix: complete promotion override config bindings'
+          git add -A \
+            scripts/promote_candidates.py \
+            provider-overrides.json \
+            tests/provider_quarantine_test.py \
+            tests/ci_preservation_policy_test.py \
+            manifest.json vf/manifest.json vostfr/manifest.json \
+            PROVENANCE.json package.json package-lock.json \
+            FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json \
+            providers
+          git commit -m 'fix: fail closed on conclusive provider safety failures'
+          git fetch origin main
+          git rebase origin/main
           git push origin HEAD:main
