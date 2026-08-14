@@ -7,6 +7,7 @@ import java.net.URL
 import kotlinx.coroutines.runBlocking
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import org.json.JSONArray
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
@@ -14,21 +15,38 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class NiakvioRealProviderMobileTest {
-    private val http = OkHttpClient()
-    private val providers = listOf(
-        "moviebox" to "niakvio/moviebox--published-baseline--1c0c9c423a094e0d.js",
-        "netmirror" to "niakvio/netmirror--published-baseline--ccbd35984c20fc8b.js",
-        "streamzo" to "niakvio/streamzo--published-baseline--bc19a7586f9f3bb8.js",
+    private data class ProviderCase(
+        val id: String,
+        val enabled: Boolean,
+        val version: String,
+        val filename: String,
+        val asset: String,
     )
+
+    private val http = OkHttpClient()
 
     private fun emit(message: String) {
         println(message)
         Log.i("NiakvioRealLab", message)
     }
 
-    private fun providerCode(relative: String): String =
+    private fun assetText(relative: String): String =
         InstrumentationRegistry.getInstrumentation().context.assets.open(relative)
             .bufferedReader().use { it.readText() }
+
+    private fun providers(): List<ProviderCase> {
+        val rows = JSONArray(assetText("niakvio/selection.json"))
+        return (0 until rows.length()).map { index ->
+            val row = rows.getJSONObject(index)
+            ProviderCase(
+                id = row.getString("id"),
+                enabled = row.getBoolean("enabled"),
+                version = row.getString("version"),
+                filename = row.getString("filename"),
+                asset = row.getString("asset"),
+            )
+        }
+    }
 
     private fun requestText(url: String, headers: Map<String, String>?): Pair<String, String> {
         val builder = Request.Builder().url(url)
@@ -56,23 +74,37 @@ class NiakvioRealProviderMobileTest {
 
     @Test
     fun exactMonNinjaProviders() = runBlocking {
-        providers.forEach { (id, relative) ->
+        val cases = providers()
+        assertEquals(setOf("moviebox", "netmirror", "streamzo"), cases.map { it.id }.toSet())
+        cases.forEach { provider ->
+            emit(
+                "FIELD_ANDROID_SELECTED provider=${provider.id} enabled=${provider.enabled} " +
+                    "version=${provider.version} filename=${provider.filename}"
+            )
             val started = System.currentTimeMillis()
             val rows = PluginRuntime.executePlugin(
-                code = providerCode(relative),
+                code = assetText(provider.asset),
                 tmdbId = "1215638",
                 mediaType = "movie",
                 season = null,
                 episode = null,
-                scraperId = id,
+                scraperId = provider.id,
             )
-            emit("FIELD_ANDROID_RESULT provider=$id duration_ms=${System.currentTimeMillis()-started} count=${rows.size}")
+            emit(
+                "FIELD_ANDROID_RESULT provider=${provider.id} enabled=${provider.enabled} " +
+                    "duration_ms=${System.currentTimeMillis()-started} count=${rows.size}"
+            )
             rows.forEachIndexed { index, row ->
-                emit("FIELD_ANDROID_ROW provider=$id index=$index title=${row.title} name=${row.name} quality=${row.quality} language=${row.language} type=${row.type} url=${row.url} headers=${row.headers}")
+                emit("FIELD_ANDROID_ROW provider=${provider.id} index=$index title=${row.title} name=${row.name} quality=${row.quality} language=${row.language} type=${row.type} url=${row.url} headers=${row.headers}")
                 assertFalse("HTML YouTube embed must never reach Android player", row.url.contains("youtube.com/embed", ignoreCase = true))
             }
 
-            if (id == "netmirror" && rows.isNotEmpty()) {
+            if (!provider.enabled) {
+                assertTrue("Disabled/quarantined provider ${provider.id} must be inert", rows.isEmpty())
+                return@forEach
+            }
+
+            if (provider.id == "netmirror" && rows.isNotEmpty()) {
                 rows.filter { it.url.contains(".m3u8", ignoreCase = true) }.forEach { row ->
                     val seconds = hlsDurationSeconds(row.url, row.headers)
                     if (seconds != null) {
@@ -83,11 +115,11 @@ class NiakvioRealProviderMobileTest {
                 }
             }
 
-            if (id == "streamzo") {
+            if (provider.id == "streamzo") {
                 assertTrue("StreamZo must resolve Mon Ninja 3 in official Android runtime", rows.isNotEmpty())
-                val hls = rows.firstOrNull { it.url.contains(".m3u8", ignoreCase = true) }
-                assertTrue("StreamZo must expose HLS on Android", hls != null)
-                val hlsRow = requireNotNull(hls)
+                val hlsRow = requireNotNull(rows.firstOrNull { it.url.contains(".m3u8", ignoreCase = true) }) {
+                    "StreamZo must expose HLS on Android"
+                }
                 val (contentType, body) = requestText(hlsRow.url, hlsRow.headers)
                 emit("FIELD_ANDROID_STREAMZO_TRANSPORT contentType=$contentType extm3u=${body.contains("#EXTM3U")}")
                 assertTrue("StreamZo Android transport must be HLS", body.contains("#EXTM3U"))
