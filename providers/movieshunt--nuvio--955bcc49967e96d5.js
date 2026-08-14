@@ -190,7 +190,8 @@ var _0x310f1c=_0x2f28;(function(_0x37811,_0x15a88d){var _0x56f970={_0x3d81d5:0x1
   }
   async function validateOrRecover(stream){
     var inspection=await inspectHls(String(stream.url||""),stream,headerValue(stream,"referer"));
-    if(inspection.state==="valid"||inspection.state==="unknown")return stream;
+    if(inspection.state==="valid")return stream;
+    if(inspection.state==="unknown"&&!config.failClosedUnknown)return stream;
     if(inspection.state==="direct")return cloneRecovered(stream,inspection.url||String(stream.url||""),inspection.format||"mp4",headerValue(stream,"referer"));
     var recovered=await recover(stream,inspection);if(recovered)return recovered;
     return null;
@@ -199,7 +200,7 @@ var _0x310f1c=_0x2f28;(function(_0x37811,_0x15a88d){var _0x56f970={_0x3d81d5:0x1
     var rows=Array.isArray(value)?value:value&&Array.isArray(value.streams)?value.streams:null;
     if(!rows)return value;
     var checks=await Promise.all(rows.map(async function(stream){
-      if(!hlsHint(stream))return stream;
+      if(!config.probeAllUrls&&!hlsHint(stream))return stream;
       var output=await validateOrRecover(stream);
       if(!output){
         try{console.warn("[Nuvio HLS integrity] rejected malformed playlist after bounded recovery",String(stream&&stream.url||"").slice(0,180))}catch(_e){}

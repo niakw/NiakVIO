@@ -110,12 +110,7 @@
         "Expose current episode mirrors before the legacy Frenchstream resolver, resolve Vidzy/FSVid/Uqload target media, then sanitize the final output instead of accepting the troll fallback.",
         "Quarantined after playable media returned for Revenant S01E01 measured 2144 seconds versus 4620 expected (ratio 0.464) on TV, macOS and mobile; publish an inert bundle for cache-safe client behavior."
       ],
-      "replacements": {
-        "french-stream.one": "fs16.lol",
-        "frenchstream.food": "fs16.lol",
-        "fs03.lol": "fs16.lol",
-        "fs09.lol": "fs16.lol"
-      },
+      "replacements": {},
       "required_values": [],
       "route_replacements": {},
       "required_route_values": [],
@@ -126,12 +121,7 @@
         "enabled": false
       },
       "capability": "quarantined",
-      "runtime_domain_replacements": {
-        "french-stream.one": "fs16.lol",
-        "frenchstream.food": "fs16.lol",
-        "fs03.lol": "fs16.lol",
-        "fs09.lol": "fs16.lol"
-      },
+      "runtime_domain_replacements": {},
       "patch_scripts": [
         "scripts/provider_patches/frenchstream_detail_players.py",
         "scripts/provider_patches/vf_catalogue_recovery.py",
@@ -420,12 +410,8 @@
       "profiles": []
     },
     "vixsrc": {
-      "replacements": {
-        "sub.wyzie.ru": "sub.wyzie.io"
-      },
-      "runtime_domain_replacements": {
-        "sub.wyzie.ru": "sub.wyzie.io"
-      },
+      "replacements": {},
+      "runtime_domain_replacements": {},
       "notes": [
         "Automatically migrated sub.wyzie.ru to sub.wyzie.io after French ISP DNS/HTTP preflight redirect validation.",
         "Quarantined after a playable HLS advertised as the 169-minute Interstellar measured only 4765.75 seconds (ratio 0.470). The bundle is inert for cache-safe client behavior."
@@ -1957,7 +1943,7 @@
       "allow_html_url": true,
       "requires_direct_media": false,
       "observed_origins": [
-        "https://new4.hdhub4u.cl"
+        "https://4khdhub.one"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
@@ -1991,7 +1977,9 @@
       "requires_direct_media": true,
       "observed_origins": [
         "https://graphql.anilist.co",
-        "https://allanime.day"
+        "https://allanime.day",
+        "https://www.dailymotion.com",
+        "https://ww2.aniwatch.fit"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
@@ -2079,7 +2067,9 @@
       "allow_html_url": true,
       "requires_direct_media": false,
       "observed_origins": [
-        "https://www3.anikai.cc"
+        "https://graphql.anilist.co",
+        "https://enc-dec.app",
+        "https://v3-cinemeta.strem.io"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
@@ -2102,6 +2092,7 @@
       "allow_html_url": true,
       "requires_direct_media": false,
       "observed_origins": [
+        "https://as-cdn21.top",
         "https://animesalt.link"
       ],
       "generated_from_manifest": true,
@@ -2150,8 +2141,6 @@
         "https://npms.io",
         "https://video.sibnet.ru",
         "https://vidmoly.me",
-        "https://fsvid.lol",
-        "https://vidzy.live",
         "https://streamtape.com",
         "https://sendvid.com",
         "https://www.myvi.ru",
@@ -2240,8 +2229,6 @@
       "observed_origins": [
         "https://video.sibnet.ru",
         "https://vidmoly.me",
-        "https://fsvid.lol",
-        "https://vidzy.live",
         "https://streamtape.com",
         "https://sendvid.com",
         "https://www.myvi.ru",
@@ -2295,7 +2282,8 @@
       "allow_html_url": true,
       "requires_direct_media": false,
       "observed_origins": [
-        "https://cinefreak.nl"
+        "https://cinefreak.nl",
+        "https://www.dailymotion.com"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
@@ -2343,8 +2331,6 @@
         "https://npms.io",
         "https://video.sibnet.ru",
         "https://vidmoly.me",
-        "https://fsvid.lol",
-        "https://vidzy.live",
         "https://streamtape.com",
         "https://sendvid.com",
         "https://www.myvi.ru",
@@ -2433,10 +2419,7 @@
       "validation": "provider_native",
       "allow_html_url": true,
       "requires_direct_media": false,
-      "observed_origins": [
-        "https://dvdplay.cv",
-        "https://pixeldrain.net"
-      ],
+      "observed_origins": [],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
     },
@@ -2472,8 +2455,6 @@
       "observed_origins": [
         "https://video.sibnet.ru",
         "https://vidmoly.me",
-        "https://fsvid.lol",
-        "https://vidzy.live",
         "https://streamtape.com",
         "https://sendvid.com",
         "https://www.myvi.ru",
@@ -2481,14 +2462,15 @@
         "https://vidoza.net",
         "https://lecteurvideo.com",
         "https://up4fun.top",
-        "https://flemmix.men",
+        "https://ww547.wiflix-hd.vip",
         "https://npms.io",
         "https://kitsu.io",
         "https://arm.haglund.dev",
         "https://v3-cinemeta.strem.io",
         "https://lodash.com",
         "https://openjsf.org",
-        "http://underscorejs.org"
+        "http://underscorejs.org",
+        "http://ww547.wiflix-hd.vip"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
@@ -2502,8 +2484,6 @@
         "https://npms.io",
         "https://video.sibnet.ru",
         "https://vidmoly.me",
-        "https://fsvid.lol",
-        "https://vidzy.live",
         "https://streamtape.com",
         "https://sendvid.com",
         "https://www.myvi.ru",
@@ -2531,28 +2511,7 @@
       "validation": "blocked_revenant_episode_duration_mismatch",
       "allow_html_url": false,
       "requires_direct_media": true,
-      "observed_origins": [
-        "https://npms.io",
-        "https://video.sibnet.ru",
-        "https://vidmoly.me",
-        "https://fsvid.lol",
-        "https://vidzy.live",
-        "https://streamtape.com",
-        "https://sendvid.com",
-        "https://www.myvi.ru",
-        "https://younetu.org",
-        "https://vidoza.net",
-        "https://lecteurvideo.com",
-        "https://up4fun.top",
-        "https://arm.haglund.dev",
-        "https://v3-cinemeta.strem.io",
-        "https://kitsu.io",
-        "https://fs16.lol",
-        "https://lodash.com",
-        "https://openjsf.org",
-        "http://underscorejs.org",
-        "https://www.fstream.org"
-      ],
+      "observed_origins": [],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
     },
@@ -2652,7 +2611,8 @@
       "requires_direct_media": false,
       "observed_origins": [
         "https://mallumv.wiki",
-        "https://pixeldrain.net"
+        "https://pixeldrain.net",
+        "https://mallumv.space"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
@@ -2687,7 +2647,7 @@
       "allow_html_url": true,
       "requires_direct_media": false,
       "observed_origins": [
-        "https://lucky-star-3059.salman-sohail93.workers.dev",
+        "https://hc-zf3c.vercel.app",
         "https://new3.movies4u.clinic"
       ],
       "generated_from_manifest": true,
@@ -2699,6 +2659,7 @@
       "allow_html_url": true,
       "requires_direct_media": false,
       "observed_origins": [
+        "https://mdrive.lol",
         "https://new2.moviesdrive.christmas"
       ],
       "generated_from_manifest": true,
@@ -2722,7 +2683,9 @@
       "allow_html_url": true,
       "requires_direct_media": false,
       "observed_origins": [
-        "https://moviesmod.cc",
+        "https://moviesmod.army",
+        "https://links.modpro.blog",
+        "https://driveseed.org",
         "https://moviesmod.zone"
       ],
       "generated_from_manifest": true,
@@ -2736,8 +2699,6 @@
       "observed_origins": [
         "https://video.sibnet.ru",
         "https://vidmoly.me",
-        "https://fsvid.lol",
-        "https://vidzy.live",
         "https://streamtape.com",
         "https://sendvid.com",
         "https://www.myvi.ru",
@@ -2763,8 +2724,6 @@
       "observed_origins": [
         "https://video.sibnet.ru",
         "https://vidmoly.me",
-        "https://fsvid.lol",
-        "https://vidzy.live",
         "https://streamtape.com",
         "https://sendvid.com",
         "https://www.myvi.ru",
@@ -2902,7 +2861,8 @@
         "https://sekai.one",
         "https://lodash.com",
         "https://openjsf.org",
-        "http://underscorejs.org"
+        "http://underscorejs.org",
+        "https://www.dailymotion.com"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true,
@@ -3069,7 +3029,7 @@
       "allow_html_url": true,
       "requires_direct_media": false,
       "observed_origins": [
-        "https://vidrock.net"
+        "https://vidrock.ru"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
@@ -3081,7 +3041,8 @@
       "requires_direct_media": false,
       "observed_origins": [
         "https://whisperingauroras.com",
-        "https://vidsrc.me"
+        "https://vidsrc.me",
+        "https://www.dailymotion.com"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
@@ -3091,9 +3052,7 @@
       "validation": "blocked_interstellar_duration_mismatch",
       "allow_html_url": false,
       "requires_direct_media": true,
-      "observed_origins": [
-        "https://komiknostalgia.id"
-      ],
+      "observed_origins": [],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
     },
@@ -3105,8 +3064,6 @@
       "observed_origins": [
         "https://video.sibnet.ru",
         "https://vidmoly.me",
-        "https://fsvid.lol",
-        "https://vidzy.live",
         "https://streamtape.com",
         "https://sendvid.com",
         "https://www.myvi.ru",
@@ -3172,8 +3129,6 @@
       "observed_origins": [
         "https://video.sibnet.ru",
         "https://vidmoly.me",
-        "https://fsvid.lol",
-        "https://vidzy.live",
         "https://streamtape.com",
         "https://sendvid.com",
         "https://www.myvi.ru",
@@ -3225,7 +3180,8 @@
         "https://v3-cinemeta.strem.io",
         "https://lodash.com",
         "https://openjsf.org",
-        "http://underscorejs.org"
+        "http://underscorejs.org",
+        "https://www.dailymotion.com"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
@@ -4349,7 +4305,8 @@
       "requires_direct_media": false,
       "observed_origins": [
         "https://www.1shows.org",
-        "https://streamtape.com"
+        "https://streamtape.com",
+        "https://www.dailymotion.com"
       ],
       "generated_from_manifest_or_stage": true
     },
@@ -4882,12 +4839,13 @@
     }
   },
   "provider_profile_generation": {
-    "schema_version": 3,
-    "provider_count": 147,
-    "staged_provider_count": 92,
+    "schema_version": 4,
+    "provider_count": 91,
+    "staged_provider_count": 0,
     "source": "manifest_published_bundles_and_current_staging",
     "same_deep_new_provider_support": true,
-    "automatic_bundle_rewrite": false
+    "automatic_bundle_rewrite": false,
+    "provider_backend_isolation": true
   },
   "playback_integrity_policy": {
     "version": 3,
@@ -4954,6 +4912,11 @@
     "cross_provider_api_hooks_forbidden": true,
     "removed_cross_provider_hooks": 0,
     "removed_cross_provider_capability_origins": 0,
-    "cross_provider_backends_forbidden": true
+    "cross_provider_backends_forbidden": true,
+    "removed_cross_provider_wrappers": 0,
+    "isolation_applied_before_profiles": true,
+    "terminal_quarantine_routing_contracts_pruned": 4,
+    "terminal_quarantine_mapping_entries_removed": 10,
+    "terminal_quarantine_replace_records_removed": 2
   }
 }

@@ -1,19 +1,19 @@
 {
   "name": "Nuvio Curated Providers — VF uniquement",
-  "version": "5.20.50",
+  "version": "5.20.51",
   "scrapers": [
     {
       "id": "ANIME-SAMA",
       "name": "Anime-Sama",
       "description": "Un des plus gros catalogues français, très actif, sorties du jour.",
-      "version": "1.1.68",
+      "version": "1.1.70",
       "author": "Gowaru",
       "supportedTypes": [
-        "movie",
-        "anime"
+        "anime",
+        "movie"
       ],
-      "filename": "../providers/anime-sama--published-baseline--9d20be4ec7f6be39.js",
-      "enabled": true,
+      "filename": "../providers/anime-sama--nuvio-audit-quarantine--f7e932753c0be691.js",
+      "enabled": false,
       "logo": "https://raw.githubusercontent.com/Anime-Sama/IMG/img/autres/logo.png",
       "contentLanguage": [
         "fr"
@@ -30,14 +30,14 @@
       "id": "PURSTREAM",
       "name": "Purstream",
       "description": "Films and series in French (VF) / subtitled French (VOSTFR) / multi-language (MULTI) from purstream.art.",
-      "version": "3.0.15",
+      "version": "3.0.16",
       "author": "wooodyhood",
       "supportedTypes": [
         "movie",
         "tv",
         "anime"
       ],
-      "filename": "../providers/purstream--nuvio--40c9e6a91441db06.js",
+      "filename": "../providers/purstream--nuvio--2977b1f6a2f860bb.js",
       "enabled": true,
       "hasSettings": true,
       "formats": [
@@ -49,34 +49,6 @@
         "en",
         "fr"
       ],
-      "disabledPlatforms": []
-    },
-    {
-      "id": "GOATED",
-      "name": "🐐 Goated",
-      "description": "4K • 1080p Movies & Series in Multi Language",
-      "version": "1.0.9",
-      "author": "Nuvio Team",
-      "supportedTypes": [
-        "movie",
-        "tv"
-      ],
-      "filename": "../providers/goated--nuvio--fa7a4fa0cf24418d.js",
-      "enabled": true,
-      "hasSettings": true,
-      "formats": [
-        "mkv",
-        "mp4",
-        "m3u8"
-      ],
-      "logo": "https://i.postimg.cc/qqsfgS0F/goated.png",
-      "contentLanguage": [
-        "en",
-        "hi",
-        "ru",
-        "es"
-      ],
-      "supportsExternalPlayer": false,
       "disabledPlatforms": []
     },
     {
@@ -104,89 +76,91 @@
       "supportsExternalPlayer": true
     },
     {
-      "id": "PAPADUSTREAM",
-      "name": "Papadustream",
-      "description": "Films et séries TV en streaming HLS via Papadustream.",
-      "version": "1.0.20",
-      "author": "Gowaru",
+      "id": "DESIFLIX",
+      "name": "DesiFlix",
+      "description": "Bollywood, Hollywood, and South Indian movies, in Dual Language",
+      "version": "1.0.17",
+      "author": "Nuvio Team",
       "supportedTypes": [
         "movie",
-        "tv",
-        "anime"
+        "tv"
       ],
-      "filename": "../providers/papadustream--published-baseline--a3e9aa082effd786.js",
+      "filename": "../providers/desiflix--published-baseline--cf1fa4801158c182.js",
       "enabled": true,
-      "logo": "https://raw.githubusercontent.com/Gowaru/gowaru-nuvio-providers/main/assets/papadustream.png",
-      "contentLanguage": [
-        "fr",
-        "en"
-      ],
-      "formats": [
-        "m3u8"
-      ],
-      "limited": false,
-      "disabledPlatforms": [],
-      "supportsExternalPlayer": false
-    },
-    {
-      "id": "frenchstream",
-      "name": "Frenchstream",
-      "description": "Films, séries et animes en VF et VOSTFR, avec récupération des lecteurs depuis la fiche lorsque l’ancienne API est indisponible.",
-      "version": "2.0.47",
-      "author": "Gowaru",
-      "supportedTypes": [
-        "movie",
-        "tv",
-        "anime"
-      ],
-      "filename": "../providers/frenchstream--published-baseline--7c38e3cc9648578e.js",
-      "enabled": false,
-      "logo": "https://fs16.lol/favicon.ico",
-      "contentLanguage": [
-        "fr"
-      ],
+      "hasSettings": false,
       "formats": [
         "mp4",
         "mkv",
         "m3u8"
       ],
+      "logo": "https://i.postimg.cc/Vvs4fmwM/desiflix.png",
+      "contentLanguage": [
+        "en",
+        "hi"
+      ],
+      "supportsExternalPlayer": false
+    },
+    {
+      "id": "GOATED",
+      "name": "🐐 Goated",
+      "description": "4K • 1080p Movies & Series in Multi Language",
+      "version": "1.0.10",
+      "author": "Nuvio Team",
+      "supportedTypes": [
+        "movie",
+        "tv"
+      ],
+      "filename": "../providers/goated--nuvio--c822bd4aa0befee4.js",
+      "enabled": true,
+      "hasSettings": true,
+      "formats": [
+        "mkv",
+        "mp4",
+        "m3u8"
+      ],
+      "logo": "https://i.postimg.cc/qqsfgS0F/goated.png",
+      "contentLanguage": [
+        "en",
+        "hi",
+        "ru",
+        "es"
+      ],
+      "supportsExternalPlayer": false,
+      "disabledPlatforms": []
+    },
+    {
+      "id": "FRENCH-MANGA",
+      "name": "French-Manga",
+      "description": "Animes VF et VOSTFR en streaming sur French-Manga.net",
+      "version": "1.0.32",
+      "author": "Gowaru",
+      "supportedTypes": [
+        "movie",
+        "anime"
+      ],
+      "filename": "../providers/french-manga--nuvio-audit-quarantine--f7e932753c0be691.js",
+      "enabled": false,
+      "logo": "https://w16.french-manga.net/favicon.ico",
+      "contentLanguage": [
+        "fr"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
       "limited": false,
       "disabledPlatforms": [],
       "supportsExternalPlayer": false
     },
     {
-      "id": "streamzo",
-      "name": "StreamZo",
-      "description": "Films et séries en streaming VF/VOSTFR sur Streamzo.fr (SPA, iframe injecté, multi-serveurs).",
-      "version": "1.0.37",
-      "author": "Gowaru",
-      "supportedTypes": [
-        "movie",
-        "tv",
-        "anime"
-      ],
-      "filename": "../providers/streamzo--published-baseline--d45a5488e4c07a7e.js",
-      "enabled": true,
-      "logo": "https://streamzo.fr/favicon.ico",
-      "contentLanguage": [
-        "fr"
-      ],
-      "formats": [
-        "m3u8"
-      ],
-      "limited": false,
-      "disabledPlatforms": [],
-      "supportsExternalPlayer": true
-    },
-    {
       "id": "MUGIWARASTREAM",
       "name": "Mugiwara-no-Streaming",
       "description": "Streaming gratuit d'animes et scans en bonne qualite via API Next.js.",
-      "version": "1.0.30",
+      "version": "1.0.31",
       "author": "Gowaru",
       "supportedTypes": [
-        "movie",
-        "anime"
+        "anime",
+        "movie"
       ],
       "filename": "../providers/mugiwarastream--published-baseline--9d11ff986711795e.js",
       "enabled": true,
@@ -204,63 +178,14 @@
       "supportsExternalPlayer": false
     },
     {
-      "id": "VOIRANIME",
-      "name": "VoirAnime",
-      "description": "Un des plus gros catalogues français d'animes.",
-      "version": "1.2.36",
-      "author": "Gowaru",
-      "supportedTypes": [
-        "movie",
-        "anime"
-      ],
-      "filename": "../providers/voiranime--published-baseline--b1db1306228f0271.js",
-      "enabled": true,
-      "logo": "https://lh3.googleusercontent.com/728eE_dzDC7HWN9Cs2eGkQg4Vlk1CqCJj3T8aAQs50srttRUl6pVmmD0O4t1Zxn4fdiVpPzcoPAzNS2EuUre29Dulw=s60",
-      "contentLanguage": [
-        "fr"
-      ],
-      "formats": [
-        "mp4",
-        "mkv",
-        "m3u8"
-      ],
-      "limited": false,
-      "disabledPlatforms": [],
-      "supportsExternalPlayer": false
-    },
-    {
-      "id": "toflix",
-      "name": "ToFlix",
-      "description": "Films, séries et animes en anglais et en français.",
-      "version": "1.0.14",
-      "author": "wooodyhood",
-      "supportedTypes": [
-        "movie",
-        "tv",
-        "anime"
-      ],
-      "filename": "../providers/toflix--published-baseline--968b1077305cf775.js",
-      "enabled": true,
-      "hasSettings": true,
-      "formats": [
-        "mp4",
-        "m3u8"
-      ],
-      "logo": "https://i.postimg.cc/yNxJYqkv/toflix.png",
-      "contentLanguage": [
-        "en",
-        "fr"
-      ]
-    },
-    {
       "id": "sekai",
       "name": "Sekai",
       "description": "Fournisseur spécialisé sur les gros animes. Streams directs très rapides sans iFrames.",
-      "version": "1.0.41",
+      "version": "1.0.42",
       "author": "Gowaru",
       "supportedTypes": [
-        "movie",
-        "anime"
+        "anime",
+        "movie"
       ],
       "filename": "../providers/sekai--published-baseline--e85fff4bdce1aca7.js",
       "enabled": true,
@@ -277,6 +202,30 @@
         "tv"
       ],
       "supportsExternalPlayer": false
+    },
+    {
+      "id": "toflix",
+      "name": "ToFlix",
+      "description": "Films, séries et animes en anglais et en français.",
+      "version": "1.0.15",
+      "author": "wooodyhood",
+      "supportedTypes": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "filename": "../providers/toflix--nuvio-audit-quarantine--f7e932753c0be691.js",
+      "enabled": false,
+      "hasSettings": true,
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "logo": "https://i.postimg.cc/yNxJYqkv/toflix.png",
+      "contentLanguage": [
+        "en",
+        "fr"
+      ]
     },
     {
       "id": "ANIMESAMA-CO",
@@ -351,30 +300,6 @@
       "supportsExternalPlayer": false
     },
     {
-      "id": "ANIMOFLIX",
-      "name": "AnimoFlix",
-      "description": "Regarder des animes VF et VOSTFR gratuitement sur AnimoFlix.",
-      "version": "1.0.23",
-      "author": "Gowaru",
-      "supportedTypes": [
-        "movie",
-        "anime"
-      ],
-      "filename": "../providers/animoflix--published-baseline--b70d06d146e85fa6.js",
-      "enabled": false,
-      "logo": "https://animoflix.to/img/logo.png",
-      "contentLanguage": [
-        "fr"
-      ],
-      "formats": [
-        "mp4",
-        "mkv"
-      ],
-      "limited": false,
-      "disabledPlatforms": [],
-      "supportsExternalPlayer": false
-    },
-    {
       "id": "COFLIX",
       "name": "Coflix",
       "description": "Films et séries en streaming VF/VOSTFR sur Coflix.wiki.",
@@ -428,23 +353,25 @@
       "supportsExternalPlayer": false
     },
     {
-      "id": "FRENCH-MANGA",
-      "name": "French-Manga",
-      "description": "Animes VF et VOSTFR en streaming sur French-Manga.net",
-      "version": "1.0.30",
+      "id": "frenchstream",
+      "name": "Frenchstream",
+      "description": "Films, séries et animes en VF et VOSTFR, avec récupération des lecteurs depuis la fiche lorsque l’ancienne API est indisponible.",
+      "version": "2.0.47",
       "author": "Gowaru",
       "supportedTypes": [
         "movie",
+        "tv",
         "anime"
       ],
-      "filename": "../providers/french-manga--nuvio-tv-global--eca40e1a7692c223.js",
+      "filename": "../providers/frenchstream--published-baseline--7c38e3cc9648578e.js",
       "enabled": true,
-      "logo": "https://w16.french-manga.net/favicon.ico",
+      "logo": "https://fs16.lol/favicon.ico",
       "contentLanguage": [
         "fr"
       ],
       "formats": [
         "mp4",
+        "mkv",
         "m3u8"
       ],
       "limited": false,
@@ -497,6 +424,80 @@
       ],
       "formats": [
         "mp4"
+      ],
+      "limited": false,
+      "disabledPlatforms": [],
+      "supportsExternalPlayer": false
+    },
+    {
+      "id": "PAPADUSTREAM",
+      "name": "Papadustream",
+      "description": "Films et séries TV en streaming HLS via Papadustream.",
+      "version": "1.0.20",
+      "author": "Gowaru",
+      "supportedTypes": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "filename": "../providers/papadustream--published-baseline--a3e9aa082effd786.js",
+      "enabled": true,
+      "logo": "https://raw.githubusercontent.com/Gowaru/gowaru-nuvio-providers/main/assets/papadustream.png",
+      "contentLanguage": [
+        "fr",
+        "en"
+      ],
+      "formats": [
+        "m3u8"
+      ],
+      "limited": false,
+      "disabledPlatforms": [],
+      "supportsExternalPlayer": false
+    },
+    {
+      "id": "streamzo",
+      "name": "StreamZo",
+      "description": "Films et séries en streaming VF/VOSTFR sur Streamzo.fr (SPA, iframe injecté, multi-serveurs).",
+      "version": "1.0.37",
+      "author": "Gowaru",
+      "supportedTypes": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "filename": "../providers/streamzo--published-baseline--d45a5488e4c07a7e.js",
+      "enabled": true,
+      "logo": "https://streamzo.fr/favicon.ico",
+      "contentLanguage": [
+        "fr"
+      ],
+      "formats": [
+        "m3u8"
+      ],
+      "limited": false,
+      "disabledPlatforms": [],
+      "supportsExternalPlayer": true
+    },
+    {
+      "id": "VOIRANIME",
+      "name": "VoirAnime",
+      "description": "Un des plus gros catalogues français d'animes.",
+      "version": "1.2.36",
+      "author": "Gowaru",
+      "supportedTypes": [
+        "movie",
+        "anime"
+      ],
+      "filename": "../providers/voiranime--published-baseline--b1db1306228f0271.js",
+      "enabled": true,
+      "logo": "https://lh3.googleusercontent.com/728eE_dzDC7HWN9Cs2eGkQg4Vlk1CqCJj3T8aAQs50srttRUl6pVmmD0O4t1Zxn4fdiVpPzcoPAzNS2EuUre29Dulw=s60",
+      "contentLanguage": [
+        "fr"
+      ],
+      "formats": [
+        "mp4",
+        "mkv",
+        "m3u8"
       ],
       "limited": false,
       "disabledPlatforms": [],
@@ -593,6 +594,30 @@
       ],
       "formats": [
         "mp4"
+      ],
+      "limited": false,
+      "disabledPlatforms": [],
+      "supportsExternalPlayer": false
+    },
+    {
+      "id": "ANIMOFLIX",
+      "name": "AnimoFlix",
+      "description": "Regarder des animes VF et VOSTFR gratuitement sur AnimoFlix.",
+      "version": "1.0.24",
+      "author": "Gowaru",
+      "supportedTypes": [
+        "anime",
+        "movie"
+      ],
+      "filename": "../providers/animoflix--published-baseline--b70d06d146e85fa6.js",
+      "enabled": false,
+      "logo": "https://animoflix.to/img/logo.png",
+      "contentLanguage": [
+        "fr"
+      ],
+      "formats": [
+        "mp4",
+        "mkv"
       ],
       "limited": false,
       "disabledPlatforms": [],
