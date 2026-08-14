@@ -26,7 +26,7 @@
       "strict_grace_eligible": false,
       "historical_quality_grace_eligible": false,
       "runtime_evidence_eligible": false,
-      "activation_mode": "disabled",
+      "activation_mode": "configured_safety_quarantine",
       "activation_blockers": [
         "10_content_identity_integrity",
         "configured_safety_quarantine"
@@ -317,7 +317,7 @@
       "strict_grace_eligible": false,
       "historical_quality_grace_eligible": false,
       "runtime_evidence_eligible": false,
-      "activation_mode": "disabled",
+      "activation_mode": "configured_safety_quarantine",
       "activation_blockers": [
         "configured_safety_quarantine"
       ],
@@ -566,9 +566,9 @@
     },
     "4khdhubnew": {
       "id": "4khdhubnew",
-      "published_filename": "providers/4khdhubnew--published-baseline--25849fa56a119619.js",
-      "sha256": "25849fa56a1196198b118ec6ffe4434b05e6717adc3b1b447f4a09c106295589",
-      "patched_sha256": "25849fa56a1196198b118ec6ffe4434b05e6717adc3b1b447f4a09c106295589",
+      "published_filename": "providers/4khdhubnew--nuvio-audit-quarantine--f7e932753c0be691.js",
+      "sha256": "f7e932753c0be691853a80ff2e73f5d564034ddb2c44fcbb11f5254b581f9277",
+      "patched_sha256": "f7e932753c0be691853a80ff2e73f5d564034ddb2c44fcbb11f5254b581f9277",
       "upstream_sha256": "25849fa56a1196198b118ec6ffe4434b05e6717adc3b1b447f4a09c106295589",
       "local_patches": [],
       "source": "published-baseline",
@@ -582,13 +582,15 @@
       "check_mode": "deep",
       "check_status": "healthy",
       "health_score": 84,
-      "activation_eligible": true,
-      "strict_activation_eligible": true,
+      "activation_eligible": false,
+      "strict_activation_eligible": false,
       "strict_grace_eligible": false,
       "historical_quality_grace_eligible": false,
       "runtime_evidence_eligible": false,
-      "activation_mode": "strict_current",
-      "activation_blockers": [],
+      "activation_mode": "catalogue_audit_safety_quarantine",
+      "activation_blockers": [
+        "catalogue_audit_playable_identity_contradiction"
+      ],
       "activation_gates": {
         "01_policy_safe_no_p2p": {
           "passed": true,
@@ -2076,9 +2078,9 @@
     },
     "anime-sama": {
       "id": "anime-sama",
-      "published_filename": "providers/anime-sama--published-baseline--9d20be4ec7f6be39.js",
-      "sha256": "9d20be4ec7f6be39fa27055d7b611a95931b5c49ea8241a789fce25fb3cf6057",
-      "patched_sha256": "9d20be4ec7f6be39fa27055d7b611a95931b5c49ea8241a789fce25fb3cf6057",
+      "published_filename": "providers/anime-sama--nuvio-audit-quarantine--f7e932753c0be691.js",
+      "sha256": "f7e932753c0be691853a80ff2e73f5d564034ddb2c44fcbb11f5254b581f9277",
+      "patched_sha256": "f7e932753c0be691853a80ff2e73f5d564034ddb2c44fcbb11f5254b581f9277",
       "upstream_sha256": "9d20be4ec7f6be39fa27055d7b611a95931b5c49ea8241a789fce25fb3cf6057",
       "local_patches": [],
       "source": "published-baseline",
@@ -2092,13 +2094,15 @@
       "check_mode": "deep",
       "check_status": "healthy",
       "health_score": 77,
-      "activation_eligible": true,
-      "strict_activation_eligible": true,
+      "activation_eligible": false,
+      "strict_activation_eligible": false,
       "strict_grace_eligible": false,
       "historical_quality_grace_eligible": false,
       "runtime_evidence_eligible": false,
-      "activation_mode": "strict_current",
-      "activation_blockers": [],
+      "activation_mode": "catalogue_audit_safety_quarantine",
+      "activation_blockers": [
+        "catalogue_audit_playable_identity_contradiction"
+      ],
       "activation_gates": {
         "01_policy_safe_no_p2p": {
           "passed": true,
@@ -4612,7 +4616,7 @@
       "strict_grace_eligible": false,
       "historical_quality_grace_eligible": false,
       "runtime_evidence_eligible": false,
-      "activation_mode": "disabled",
+      "activation_mode": "configured_safety_quarantine",
       "activation_blockers": [
         "02_healthy_functional_status",
         "03_minimum_score",
@@ -4853,7 +4857,7 @@
       "strict_grace_eligible": false,
       "historical_quality_grace_eligible": false,
       "runtime_evidence_eligible": false,
-      "activation_mode": "disabled",
+      "activation_mode": "configured_safety_quarantine",
       "activation_blockers": [
         "02_healthy_functional_status",
         "03_minimum_score",
@@ -8225,7 +8229,7 @@
       "strict_grace_eligible": false,
       "historical_quality_grace_eligible": false,
       "runtime_evidence_eligible": false,
-      "activation_mode": "disabled",
+      "activation_mode": "configured_safety_quarantine",
       "activation_blockers": [
         "02_healthy_functional_status",
         "03_minimum_score",
@@ -9220,9 +9224,9 @@
     },
     "french-manga": {
       "id": "french-manga",
-      "published_filename": "providers/french-manga--published-baseline--eca40e1a7692c223.js",
-      "sha256": "eca40e1a7692c2239e245583eec405ed16622d020f84b1cdc8a20223d00cab9c",
-      "patched_sha256": "eca40e1a7692c2239e245583eec405ed16622d020f84b1cdc8a20223d00cab9c",
+      "published_filename": "providers/french-manga--nuvio-audit-quarantine--f7e932753c0be691.js",
+      "sha256": "f7e932753c0be691853a80ff2e73f5d564034ddb2c44fcbb11f5254b581f9277",
+      "patched_sha256": "f7e932753c0be691853a80ff2e73f5d564034ddb2c44fcbb11f5254b581f9277",
       "upstream_sha256": "eca40e1a7692c2239e245583eec405ed16622d020f84b1cdc8a20223d00cab9c",
       "local_patches": [],
       "source": "published-baseline",
@@ -9236,13 +9240,15 @@
       "check_mode": "deep",
       "check_status": "healthy",
       "health_score": 77,
-      "activation_eligible": true,
-      "strict_activation_eligible": true,
+      "activation_eligible": false,
+      "strict_activation_eligible": false,
       "strict_grace_eligible": false,
       "historical_quality_grace_eligible": false,
       "runtime_evidence_eligible": false,
-      "activation_mode": "strict_current",
-      "activation_blockers": [],
+      "activation_mode": "catalogue_audit_safety_quarantine",
+      "activation_blockers": [
+        "catalogue_audit_playable_identity_contradiction"
+      ],
       "activation_gates": {
         "01_policy_safe_no_p2p": {
           "passed": true,
@@ -9515,7 +9521,7 @@
       "strict_grace_eligible": false,
       "historical_quality_grace_eligible": false,
       "runtime_evidence_eligible": false,
-      "activation_mode": "preserved_current_ci_uncertain",
+      "activation_mode": "configured_safety_quarantine",
       "activation_blockers": [
         "02_healthy_functional_status",
         "03_minimum_score",
@@ -11084,7 +11090,7 @@
       "strict_grace_eligible": false,
       "historical_quality_grace_eligible": false,
       "runtime_evidence_eligible": false,
-      "activation_mode": "disabled",
+      "activation_mode": "configured_safety_quarantine",
       "activation_blockers": [
         "configured_safety_quarantine"
       ],
@@ -11610,7 +11616,7 @@
       "strict_grace_eligible": false,
       "historical_quality_grace_eligible": false,
       "runtime_evidence_eligible": false,
-      "activation_mode": "disabled",
+      "activation_mode": "configured_safety_quarantine",
       "activation_blockers": [
         "configured_safety_quarantine"
       ],
@@ -12367,7 +12373,7 @@
       "strict_grace_eligible": false,
       "historical_quality_grace_eligible": false,
       "runtime_evidence_eligible": false,
-      "activation_mode": "disabled",
+      "activation_mode": "configured_safety_quarantine",
       "activation_blockers": [
         "02_healthy_functional_status",
         "03_minimum_score",
@@ -12589,9 +12595,9 @@
     },
     "movieblast": {
       "id": "movieblast",
-      "published_filename": "providers/movieblast--nuvio--bc034200240fd126.js",
-      "sha256": "bc034200240fd126e02f23913f5ba0c090c57c3c6f47a059af27fa87e661940f",
-      "patched_sha256": "bc034200240fd126e02f23913f5ba0c090c57c3c6f47a059af27fa87e661940f",
+      "published_filename": "providers/movieblast--nuvio-audit-quarantine--f7e932753c0be691.js",
+      "sha256": "f7e932753c0be691853a80ff2e73f5d564034ddb2c44fcbb11f5254b581f9277",
+      "patched_sha256": "f7e932753c0be691853a80ff2e73f5d564034ddb2c44fcbb11f5254b581f9277",
       "upstream_sha256": "d3b04a5ee1a13fed77192b5226d46001508fe321fa747f0c519d0c23d5b1a974",
       "local_patches": [
         {
@@ -12618,13 +12624,15 @@
       "check_mode": "deep",
       "check_status": "healthy",
       "health_score": 84,
-      "activation_eligible": true,
-      "strict_activation_eligible": true,
+      "activation_eligible": false,
+      "strict_activation_eligible": false,
       "strict_grace_eligible": false,
       "historical_quality_grace_eligible": false,
       "runtime_evidence_eligible": false,
-      "activation_mode": "strict_current",
-      "activation_blockers": [],
+      "activation_mode": "catalogue_audit_safety_quarantine",
+      "activation_blockers": [
+        "catalogue_audit_playable_identity_contradiction"
+      ],
       "activation_gates": {
         "01_policy_safe_no_p2p": {
           "passed": true,
@@ -18003,9 +18011,9 @@
     },
     "toflix": {
       "id": "toflix",
-      "published_filename": "providers/toflix--published-baseline--968b1077305cf775.js",
-      "sha256": "968b1077305cf775c6f8278249b537c2798033b6699a6580584956ca795693a5",
-      "patched_sha256": "968b1077305cf775c6f8278249b537c2798033b6699a6580584956ca795693a5",
+      "published_filename": "providers/toflix--nuvio-audit-quarantine--f7e932753c0be691.js",
+      "sha256": "f7e932753c0be691853a80ff2e73f5d564034ddb2c44fcbb11f5254b581f9277",
+      "patched_sha256": "f7e932753c0be691853a80ff2e73f5d564034ddb2c44fcbb11f5254b581f9277",
       "upstream_sha256": "968b1077305cf775c6f8278249b537c2798033b6699a6580584956ca795693a5",
       "local_patches": [],
       "source": "published-baseline",
@@ -18019,13 +18027,15 @@
       "check_mode": "deep",
       "check_status": "healthy",
       "health_score": 70,
-      "activation_eligible": true,
-      "strict_activation_eligible": true,
+      "activation_eligible": false,
+      "strict_activation_eligible": false,
       "strict_grace_eligible": false,
       "historical_quality_grace_eligible": false,
       "runtime_evidence_eligible": false,
-      "activation_mode": "strict_current",
-      "activation_blockers": [],
+      "activation_mode": "catalogue_audit_safety_quarantine",
+      "activation_blockers": [
+        "catalogue_audit_playable_identity_contradiction"
+      ],
       "activation_gates": {
         "01_policy_safe_no_p2p": {
           "passed": true,
@@ -18265,7 +18275,7 @@
       "strict_grace_eligible": false,
       "historical_quality_grace_eligible": false,
       "runtime_evidence_eligible": false,
-      "activation_mode": "disabled",
+      "activation_mode": "configured_safety_quarantine",
       "activation_blockers": [
         "02_healthy_functional_status",
         "03_minimum_score",
@@ -18480,9 +18490,9 @@
     },
     "vegamovies": {
       "id": "vegamovies",
-      "published_filename": "providers/vegamovies--nuvio--37af80958ffd2ae3.js",
-      "sha256": "37af80958ffd2ae33f8048b9273069e44818d1a4785953cce5d3c2d441c61f1d",
-      "patched_sha256": "37af80958ffd2ae33f8048b9273069e44818d1a4785953cce5d3c2d441c61f1d",
+      "published_filename": "providers/vegamovies--nuvio-audit-quarantine--f7e932753c0be691.js",
+      "sha256": "f7e932753c0be691853a80ff2e73f5d564034ddb2c44fcbb11f5254b581f9277",
+      "patched_sha256": "f7e932753c0be691853a80ff2e73f5d564034ddb2c44fcbb11f5254b581f9277",
       "upstream_sha256": "0641a31d6068d8d2f3e5ca5d734494b24f69b89d6a5d027ae1a7b5eee1953d1a",
       "local_patches": [
         {
@@ -18525,13 +18535,15 @@
       "check_mode": "deep",
       "check_status": "healthy",
       "health_score": 93,
-      "activation_eligible": true,
-      "strict_activation_eligible": true,
+      "activation_eligible": false,
+      "strict_activation_eligible": false,
       "strict_grace_eligible": false,
       "historical_quality_grace_eligible": false,
       "runtime_evidence_eligible": false,
-      "activation_mode": "strict_current",
-      "activation_blockers": [],
+      "activation_mode": "catalogue_audit_safety_quarantine",
+      "activation_blockers": [
+        "catalogue_audit_playable_identity_contradiction"
+      ],
       "activation_gates": {
         "01_policy_safe_no_p2p": {
           "passed": true,
@@ -19563,7 +19575,7 @@
       "strict_grace_eligible": false,
       "historical_quality_grace_eligible": false,
       "runtime_evidence_eligible": false,
-      "activation_mode": "disabled",
+      "activation_mode": "configured_safety_quarantine",
       "activation_blockers": [
         "10_content_identity_integrity",
         "configured_safety_quarantine"
@@ -20511,9 +20523,9 @@
     },
     "vidsrc": {
       "id": "vidsrc",
-      "published_filename": "providers/vidsrc--nuvio--a8cd118588209c4a.js",
-      "sha256": "a8cd118588209c4acd8f1067dd8f425c9042680a59254bab791c3a559c1dc784",
-      "patched_sha256": "a8cd118588209c4acd8f1067dd8f425c9042680a59254bab791c3a559c1dc784",
+      "published_filename": "providers/vidsrc--nuvio-audit-quarantine--f7e932753c0be691.js",
+      "sha256": "f7e932753c0be691853a80ff2e73f5d564034ddb2c44fcbb11f5254b581f9277",
+      "patched_sha256": "f7e932753c0be691853a80ff2e73f5d564034ddb2c44fcbb11f5254b581f9277",
       "upstream_sha256": "c83b23943f9783f2b57008fac62f5fd2a05fea0c826f4b1ca74d53198152b286",
       "local_patches": [
         {
@@ -20593,11 +20605,11 @@
       "check_status": "degraded",
       "health_score": 82,
       "activation_eligible": false,
-      "strict_activation_eligible": true,
+      "strict_activation_eligible": false,
       "strict_grace_eligible": false,
       "historical_quality_grace_eligible": false,
       "runtime_evidence_eligible": false,
-      "activation_mode": "preserved_current_ci_uncertain",
+      "activation_mode": "catalogue_audit_safety_quarantine",
       "activation_blockers": [
         "02_healthy_functional_status",
         "03_minimum_score",
@@ -20607,7 +20619,8 @@
         "07_verified_payload_playability",
         "08_quality_and_bitrate",
         "10_content_identity_integrity",
-        "00_current_playable_stream"
+        "00_current_playable_stream",
+        "catalogue_audit_playable_identity_contradiction"
       ],
       "activation_gates": {
         "01_policy_safe_no_p2p": {
@@ -20873,7 +20886,7 @@
       "strict_grace_eligible": false,
       "historical_quality_grace_eligible": false,
       "runtime_evidence_eligible": false,
-      "activation_mode": "preserved_current_ci_uncertain",
+      "activation_mode": "configured_safety_quarantine",
       "activation_blockers": [
         "02_healthy_functional_status",
         "03_minimum_score",
