@@ -1,0 +1,67 @@
+name: Permanent Desktop real-client lab v2
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["lab/desktop-mobile-real"]
+    paths:
+      - ".github/triggers/permanent-desktop-real-client-v2"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: permanent-desktop-real-client-v2
+  cancel-in-progress: false
+
+env:
+  NUVIO_DESKTOP_SHA: "8977fda639f5791947e6d8b36025635a77aed5da"
+
+jobs:
+  desktop-real-runtime:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout permanent desktop/mobile lab
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: lab/desktop-mobile-real
+          path: niakvio
+
+      - name: Set up JDK
+        uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Install official Linux player dependencies
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libgstreamer1.0-dev \
+            libgstreamer-plugins-base1.0-dev
+
+      - name: Checkout exact official NuvioDesktop runtime
+        shell: bash
+        run: |
+          git clone --filter=blob:none --no-checkout https://github.com/NuvioMedia/NuvioDesktop.git nuvio-desktop
+          cd nuvio-desktop
+          git checkout "$NUVIO_DESKTOP_SHA"
+          touch local.properties
+
+      - name: Prepare manifest-selected provider test
+        shell: bash
+        run: |
+          python3 niakvio/lab/real-client/desktop/prepare_nuvio_desktop.py nuvio-desktop niakvio
+
+      - name: Execute official NuvioDesktop provider runtime
+        working-directory: nuvio-desktop
+        shell: bash
+        run: |
+          rm -f "$GITHUB_WORKSPACE/desktop-real-client-results.log"
+          ./gradlew :composeApp:desktopTest \
+            --tests 'com.nuvio.app.features.plugins.NiakvioRealProviderDesktopTest' \
+            --no-daemon --console=plain
+          echo "===== EXACT DESKTOP PROVIDER RESULTS ====="
+          cat "$GITHUB_WORKSPACE/desktop-real-client-results.log"
