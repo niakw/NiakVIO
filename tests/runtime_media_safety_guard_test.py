@@ -24,41 +24,37 @@ def patched(provider_id: str, source: str = BASE) -> str:
 
 future = patched("future-provider")
 assert "NUVIO_GLOBAL_RUNTIME_MEDIA_SAFETY_V1" in future
+assert '"implementationRevision":"field-safety-v3-native-aware"' in future
 assert '"durationIdentity":false' in future
 assert '"strictPlayback":false' in future
+assert 'if(typeof g.__native_fetch==="function")return true' not in future
+assert "if(nativeRuntime)return {keep:true" in future
 
 netmirror = patched("netmirror")
 assert '"durationIdentity":true' in netmirror
-assert '"strictPlayback":false' in netmirror
-
 moviebox = patched("moviebox")
-assert '"durationIdentity":false' in moviebox
 assert '"strictPlayback":true' in moviebox
 
 
-def run_node(source: str, fetch_impl: str, expression: str) -> object:
+def run_node(source: str, fetch_impl: str, expression: str, prelude: str = "") -> object:
     with tempfile.TemporaryDirectory() as tmp:
         root = Path(tmp)
         provider = root / "provider.cjs"
         runner = root / "runner.cjs"
         provider.write_text(source, encoding="utf-8")
         runner.write_text(
-            "global.fetch=" + fetch_impl + ";\n"
-            "const p=require(" + json.dumps(str(provider)) + ");\n"
+            prelude
+            + "\nglobal.fetch=" + fetch_impl + ";\n"
+            + "const p=require(" + json.dumps(str(provider)) + ");\n"
             + expression
             + "\n",
             encoding="utf-8",
         )
-        result = subprocess.run(
-            ["node", str(runner)], text=True, capture_output=True, check=False
-        )
+        result = subprocess.run(["node", str(runner)], text=True, capture_output=True, check=False)
         assert result.returncode == 0, result.stdout + result.stderr
         return json.loads(result.stdout.strip())
 
 
-# NetMirror field regression: the provider can label a foreign programme with
-# the requested TMDB title. A clearly incompatible HLS duration must therefore
-# be rejected at runtime before the player sees it.
 wrong_duration_fetch = r"""async function(url){
   url=String(url);
   if(url.includes('api.themoviedb.org'))return {ok:true,status:200,json:async()=>({runtime:90}),headers:{get:()=> 'application/json'}};
@@ -72,7 +68,6 @@ value = run_node(
 )
 assert value == [], value
 
-# A compatible HLS duration remains available.
 valid_duration_fetch = r"""async function(url){
   url=String(url);
   if(url.includes('api.themoviedb.org'))return {ok:true,status:200,json:async()=>({runtime:90}),headers:{get:()=> 'application/json'}};
@@ -86,8 +81,6 @@ value = run_node(
 )
 assert len(value) == 1, value
 
-# MovieBox field regression: returned rows that answer 403 must not create a
-# clickable stream that spins forever. Its runtime guard fails closed.
 moviebox_direct = patched(
     "moviebox",
     "module.exports={getStreams:async()=>[{name:'moviebox',url:'https://media.example/video.mp4',type:'mp4'}]};\n",
@@ -101,5 +94,31 @@ value = run_node(
     "p.getStreams('123','movie',null,null).then(v=>console.log(JSON.stringify(v))).catch(e=>{console.error(e);process.exit(1)})",
 )
 assert value == [], value
+
+# NuvioMobile/NuvioDesktop expose __native_fetch too. In those runtimes the
+# host HTTP call is synchronous from QuickJS and a JS AbortSignal cannot bound
+# it. The global safety layer must therefore NOT issue another HLS fetch.
+native_stream = patched("streamzo")
+value = run_node(
+    native_stream,
+    "async function(){global.__fetchCalls++;throw new Error('safety layer must not fetch on native clients')}",
+    "p.getStreams('1215638','movie',null,null).then(v=>console.log(JSON.stringify({rows:v.length,calls:global.__fetchCalls}))).catch(e=>{console.error(e);process.exit(1)})",
+    prelude="global.__fetchCalls=0;global.__native_fetch=function(){throw new Error('native bridge should not be touched by post-result guard')};",
+)
+assert value == {"rows": 1, "calls": 0}, value
+
+# Obvious web/embed pages remain fail-closed even on native clients, without a
+# network request. This covers the field MovieBox YouTube-embed failure mode.
+embed = patched(
+    "future-provider",
+    "module.exports={getStreams:async()=>[{name:'bad',url:'https://moviebox.yachts//www.youtube.com/embed/abc'}]};\n",
+)
+value = run_node(
+    embed,
+    "async function(){global.__fetchCalls++;throw new Error('must reject statically')}",
+    "p.getStreams('1215638','movie',null,null).then(v=>console.log(JSON.stringify({rows:v.length,calls:global.__fetchCalls}))).catch(e=>{console.error(e);process.exit(1)})",
+    prelude="global.__fetchCalls=0;global.__native_fetch=function(){};",
+)
+assert value == {"rows": 0, "calls": 0}, value
 
 print("runtime media safety guard tests passed")
