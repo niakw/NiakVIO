@@ -1,0 +1,70 @@
+name: Permanent NuvioTV real-client lab v2
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["lab/tv-real"]
+    paths:
+      - ".github/triggers/permanent-tv-real-client-v2"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: permanent-tv-real-client-v2
+  cancel-in-progress: false
+
+env:
+  NUVIO_TV_SHA: "d95f3fb837b6ddfbf9ff445cdcba2413b576f0d4"
+
+jobs:
+  tv-real-runtime:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout permanent TV lab
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: lab/tv-real
+          path: niakvio
+
+      - name: Set up JDK
+        uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Checkout exact official NuvioTV runtime
+        shell: bash
+        run: |
+          git clone --filter=blob:none --no-checkout https://github.com/NuvioMedia/NuvioTV.git nuvio-tv
+          cd nuvio-tv
+          git checkout "$NUVIO_TV_SHA"
+          touch local.properties local.dev.properties
+
+      - name: Prepare exact TV instrumentation test
+        shell: bash
+        run: |
+          python3 niakvio/lab/real-client/tv/prepare_nuvio_tv.py nuvio-tv niakvio
+
+      - name: Start real Android TV emulator
+        shell: bash
+        run: |
+          bash niakvio/lab/real-client/tv/start_tv_emulator.sh
+
+      - name: Execute official NuvioTV Full provider runtime
+        working-directory: nuvio-tv
+        shell: bash
+        run: |
+          set -o pipefail
+          set +e
+          ./gradlew :app:connectedFullDebugAndroidTest --no-daemon --console=plain
+          STATUS=$?
+          set -e
+          echo "===== EXACT NUVIO TV PROVIDER RESULTS ====="
+          "${ANDROID_HOME}/platform-tools/adb" -s "$ANDROID_SERIAL" logcat -d -s NiakvioTvRealLab:I '*:S' || true
+          if [ "$STATUS" -ne 0 ]; then
+            echo "===== TV EMULATOR LOG TAIL ====="
+            tail -n 200 /tmp/niakvio-tv-emulator.log || true
+          fi
+          exit "$STATUS"
