@@ -75,14 +75,35 @@ for row in manifest.get("scrapers", []):
     stageable.append(provider_id)
 assert len(stageable) >= 80, len(stageable)
 
+# The broad lab performs real transport checks inside each official native runtime.
+for required in (
+    "java.net.HttpURLConnection",
+    "probeTransport(row.url, row.headers)",
+    "#EXTM3U",
+    "hlsDuration",
+    "FIELD_NATIVE_TRANSPORT",
+    "media_hint64",
+    "host64",
+):
+    assert required in prepare, required
+
+# Never persist the complete provider URL or header values in public Actions output.
+assert "url64=" not in prepare
+assert "headers64=" not in prepare
+assert "row.headers}" not in prepare
+
 # Native rows are evaluated with the same identity engine used by the existing
-# Nuvio client lab, so false-positive logic cannot silently diverge.
+# Nuvio client lab. HLS duration and transport evidence feed that same verdict path.
 assert "streamIdentity" in analyzer
+assert "fixture_duration_mismatch" in analyzer
 assert "FIELD_NATIVE_CONTRADICTION" in analyzer
+assert "FIELD_NATIVE_TRANSPORT_FAILURE" in analyzer
 assert "FIELD_NATIVE_RUNTIME_ERROR" in analyzer
 assert "FIELD_NATIVE_SLOW" in analyzer
+assert "decode(f.url64)" not in analyzer
+assert "safeSyntheticUrl" in analyzer
 
 print(
     "native corpus device lab coverage tests passed: "
-    f"fixtures={len(expected_slugs)} stageable_providers={len(stageable)} devices=3"
+    f"fixtures={len(expected_slugs)} stageable_providers={len(stageable)} devices=3 sanitized_transport=true"
 )
