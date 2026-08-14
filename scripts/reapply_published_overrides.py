@@ -317,10 +317,14 @@ def main() -> int:
 
         original = path.read_bytes()
         provider_provenance = provenance_rows.get(provider_id) if provenance_rows else None
-        audit_terminal_quarantine = (
+        terminal_quarantine = (
             AUDIT_QUARANTINE_MARKER.encode("utf-8") in original
         )
-        if audit_terminal_quarantine:
+        audit_terminal_quarantine = (
+            terminal_quarantine
+            and "--nuvio-audit-quarantine--" in relative
+        )
+        if terminal_quarantine:
             patched = original
             records = []
         else:
@@ -370,6 +374,7 @@ def main() -> int:
             "new": new_relative,
             "sha256": digest,
             "records": records,
+            "terminal_quarantine": terminal_quarantine,
             "audit_terminal_quarantine": audit_terminal_quarantine,
         }
 
@@ -402,7 +407,7 @@ def main() -> int:
                 continue
             row["published_filename"] = update["new"]
             row["sha256"] = update["sha256"]
-            if update.get("audit_terminal_quarantine") or "patched_sha256" in row or update["records"]:
+            if update.get("terminal_quarantine") or "patched_sha256" in row or update["records"]:
                 row["patched_sha256"] = update["sha256"]
             if update["records"]:
                 row["local_patches"] = merge_patch_records(row.get("local_patches"), update["records"])
@@ -428,7 +433,7 @@ def main() -> int:
                 row["activation_mode"] = "configured_safety_quarantine"
                 blockers = [
                     str(value) for value in (row.get("activation_blockers") or [])
-                    if str(value) and str(value) != "configured_safety_quarantine"
+                    if str(value) and str(value) not in {"configured_safety_quarantine", AUDIT_QUARANTINE_BLOCKER}
                 ]
                 row["activation_blockers"] = blockers + ["configured_safety_quarantine"]
 
