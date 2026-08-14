@@ -54,19 +54,21 @@ def main() -> int:
             row["patch_scripts"] = scripts
             changed += 1
     config["native_catalogue_recovery_budget"] = {
-        "version": 1,
+        "version": 2,
         "scope": "providers_with_global_catalogue_alias_recovery",
         "native_detection": "presence_of___native_fetch_host_bridge",
         "native_platforms": ["desktop", "mobile_android", "tv_android"],
-        "native_max_search_requests": 2,
-        "native_max_candidate_pages": 2,
-        "native_soft_budget_ms": 12000,
+        "native_max_search_requests": 4,
+        "native_search_selection": "round_robin_across_title_aliases_and_search_routes",
+        "native_max_candidate_pages": 3,
+        "native_candidate_selection": "interleave_discovered_and_guessed_pages",
+        "native_soft_budget_ms": 30000,
         "non_native_behavior": "unchanged_broad_recovery",
-        "reason": "native_host_fetch_is_synchronous_and_not_reliably_abortable_from_js",
+        "reason": "native_host_fetch_is_synchronous_so_bound_call_count_without_collapsing_alias_or_route_diversity",
         "targets": sorted(set(targets)),
     }
     dump(OVERRIDES, config)
-    print(f"native catalogue recovery budget configured: targets={len(set(targets))} changed={changed}")
+    print(f"native catalogue recovery budget v2 configured: targets={len(set(targets))} changed={changed}")
     return 0
 
 
