@@ -1,4 +1,4 @@
-# Apply generic quarantine boundary migrations; no provider-specific logic.
+# Apply generic quarantine boundary/test migrations; no provider-specific logic.
 name: Wire transient audit quarantine into publication
 
 on:
@@ -25,14 +25,16 @@ jobs:
         run: |
           python scripts/apply_transient_audit_quarantine_engine_patch.py
           python scripts/patch_reapply_audit_provenance.py
+          python scripts/patch_terminal_quarantine_tests.py
           python -m py_compile \
             scripts/quarantine_catalogue_audit_failures.py \
             scripts/reapply_published_overrides.py \
             scripts/validate_published_overrides.py \
             scripts/validate_activation_preservation.py \
-            scripts/audit_catalogue_identity_media.py
+            scripts/audit_catalogue_identity_media.py \
+            tests/overrides_test.py
 
-      - name: Commit exact engine changes
+      - name: Commit exact engine/test changes
         run: |
           git status --short
           git config user.name 'niakvio-ci'
@@ -41,10 +43,11 @@ jobs:
             scripts/reapply_published_overrides.py \
             scripts/validate_published_overrides.py \
             scripts/validate_activation_preservation.py \
-            scripts/audit_catalogue_identity_media.py
+            scripts/audit_catalogue_identity_media.py \
+            tests/overrides_test.py
           if git diff --cached --quiet; then
             echo 'quarantine boundaries already patched'
             exit 0
           fi
-          git commit -m 'safety: separate configured and catalogue audit quarantines'
+          git commit -m 'test: align terminal quarantine override contract'
           git push origin HEAD:main
