@@ -55,6 +55,11 @@ jobs:
               instrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
               execution = "HOST"
           }
+          packaging {
+              jniLibs {
+                  pickFirsts.add("lib/*/libc++_shared.so")
+              }
+          }
 
           compilerOptions {'''
           if text.count(compilation_needle) != 1:
@@ -169,6 +174,7 @@ jobs:
           SDKMANAGER="$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager"
           AVDMANAGER="$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/avdmanager"
           export PATH="$ANDROID_SDK_ROOT/platform-tools:$ANDROID_SDK_ROOT/emulator:$(dirname "$SDKMANAGER"):$PATH"
+          echo "$ANDROID_SDK_ROOT/platform-tools" >> "$GITHUB_PATH"
 
           yes | "$SDKMANAGER" --licenses >/dev/null || true
           "$SDKMANAGER" "platform-tools" "emulator" "system-images;android-35;google_apis;x86_64"
@@ -179,12 +185,7 @@ jobs:
             --device "pixel_2" \
             --path "$ANDROID_AVD_HOME/niakvio-ci.avd"
 
-          echo "ANDROID_USER_HOME=$ANDROID_USER_HOME"
-          echo "ANDROID_AVD_HOME=$ANDROID_AVD_HOME"
-          find "$ANDROID_USER_HOME" -maxdepth 3 -type f -print || true
-          "$ANDROID_SDK_ROOT/emulator/emulator" -list-avds
           "$ANDROID_SDK_ROOT/emulator/emulator" -list-avds | grep -Fx niakvio-ci
-
           sudo chmod 666 /dev/kvm
           "$ANDROID_SDK_ROOT/emulator/emulator" -accel-check
           adb kill-server || true
@@ -268,7 +269,7 @@ jobs:
           STATUS=$?
           set -e
           echo "===== EXACT ANDROID PROVIDER RESULTS ====="
-          adb -s "$ANDROID_SERIAL" logcat -d -s NiakvioRealLab:I '*:S' || true
+          "${ANDROID_HOME}/platform-tools/adb" -s "$ANDROID_SERIAL" logcat -d -s NiakvioRealLab:I '*:S' || true
           if [ "$STATUS" -ne 0 ]; then
             echo "===== EMULATOR LOG TAIL ====="
             tail -n 200 /tmp/niakvio-emulator.log || true
