@@ -56,5 +56,5 @@ jobs:
           python -m py_compile scripts/provider_compiler.py
           python -m py_compile scripts/provider_rebuild.py
 
-      - name: Run complete repository regression suite
-        run: npm test
+      - name: Run complete repository regression suite without mutating lifecycle hooks
+        run: npm test --ignore-scripts
