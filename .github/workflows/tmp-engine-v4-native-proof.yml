@@ -52,6 +52,8 @@ jobs:
           python3 tests/native_catalogue_recovery_budget_test.py
           python3 tests/native_hls_integrity_budget_test.py
           python3 tests/runtime_capability_media_safety_v4_test.py
+          python3 tests/streamzo_target_media_profile_test.py
+          python3 tests/streamzo_native_platform_contract_test.py
           python3 scripts/apply_native_catalogue_recovery_budget_upgrade_v1.py
           python3 scripts/apply_native_hls_integrity_budget_upgrade_v1.py
           python3 scripts/apply_runtime_capability_upgrade_v4.py
@@ -60,6 +62,8 @@ jobs:
           python3 tests/native_catalogue_recovery_budget_test.py
           python3 tests/native_hls_integrity_budget_test.py
           python3 tests/runtime_capability_media_safety_v4_test.py
+          python3 tests/streamzo_target_media_profile_test.py
+          python3 tests/streamzo_native_platform_contract_test.py
           python3 scripts/validate_published_overrides.py
           python3 - <<'PY'
           import json
@@ -71,6 +75,7 @@ jobs:
           assert 'NUVIO_NATIVE_CATALOGUE_RECOVERY_BUDGET_V2' in payload
           assert 'NUVIO_NATIVE_CATALOGUE_RECOVERY_BUDGET_V1 */' not in payload
           assert 'NUVIO_NATIVE_HLS_INTEGRITY_BUDGET_V1' in payload
+          assert 'NUVIO_TV_TEXT_ONLY_FETCH_COMPAT_V1' in payload
           assert '"implementationRevision":"field-safety-v4-runtime-capability"' in payload
           print('complete native-safe engine-v4 candidate markers verified')
           PY
@@ -133,6 +138,8 @@ jobs:
           python3 tests/native_catalogue_recovery_budget_test.py
           python3 tests/native_hls_integrity_budget_test.py
           python3 tests/runtime_capability_media_safety_v4_test.py
+          python3 tests/streamzo_target_media_profile_test.py
+          python3 tests/streamzo_native_platform_contract_test.py
           python3 scripts/apply_native_catalogue_recovery_budget_upgrade_v1.py
           python3 scripts/apply_native_hls_integrity_budget_upgrade_v1.py
           python3 scripts/apply_runtime_capability_upgrade_v4.py
@@ -141,6 +148,8 @@ jobs:
           python3 tests/native_catalogue_recovery_budget_test.py
           python3 tests/native_hls_integrity_budget_test.py
           python3 tests/runtime_capability_media_safety_v4_test.py
+          python3 tests/streamzo_target_media_profile_test.py
+          python3 tests/streamzo_native_platform_contract_test.py
           python3 scripts/validate_published_overrides.py
           python3 - <<'PY'
           import json
@@ -152,6 +161,7 @@ jobs:
           assert 'NUVIO_NATIVE_CATALOGUE_RECOVERY_BUDGET_V2' in payload
           assert 'NUVIO_NATIVE_CATALOGUE_RECOVERY_BUDGET_V1 */' not in payload
           assert 'NUVIO_NATIVE_HLS_INTEGRITY_BUDGET_V1' in payload
+          assert 'NUVIO_TV_TEXT_ONLY_FETCH_COMPAT_V1' in payload
           assert '"implementationRevision":"field-safety-v4-runtime-capability"' in payload
           print('complete native-safe engine-v4 candidate markers verified')
           PY
