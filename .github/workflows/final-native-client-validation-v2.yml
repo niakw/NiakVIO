@@ -12,6 +12,7 @@ on:
       - "providers/**"
       - "scripts/provider_patches/**"
       - "scripts/prepare_native_client_validation.py"
+      - "scripts/run_final_native_android_lab.sh"
 
 permissions:
   contents: read
@@ -128,6 +129,14 @@ jobs:
           ''', encoding='utf-8')
           PY
 
+      - name: Enable Linux KVM for Android emulator when available
+        shell: bash
+        run: |
+          if [ -e /dev/kvm ]; then
+            sudo chmod 666 /dev/kvm || true
+            ls -l /dev/kvm || true
+          fi
+
       - name: Execute official Mobile then TV PluginRuntime on one Android emulator
         uses: ReactiveCircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d
         with:
@@ -138,34 +147,4 @@ jobs:
           cores: 2
           ram-size: 2048M
           emulator-boot-timeout: 600
-          script: |
-            set +e
-            adb logcat -c
-            cd "$GITHUB_WORKSPACE/nuvio-mobile"
-            TASKS=$(./gradlew :composeApp:tasks --all -Pnuvio.android.distribution=full --console=plain)
-            MOBILE_TASK=$(printf '%s\n' "$TASKS" | awk 'tolower($1) ~ /connected.*device.*test/ {print $1; exit}')
-            if [ -z "$MOBILE_TASK" ]; then
-              MOBILE_TASK=$(printf '%s\n' "$TASKS" | awk 'tolower($1) ~ /device.*test/ && tolower($0) ~ /connected/ {print $1; exit}')
-            fi
-            if [ -z "$MOBILE_TASK" ]; then
-              echo "Unable to resolve NuvioMobile connected device-test task" >&2
-              MOBILE_STATUS=97
-            else
-              echo "Resolved NuvioMobile task: $MOBILE_TASK"
-              ./gradlew ":composeApp:$MOBILE_TASK" -Pnuvio.android.distribution=full --no-daemon --console=plain
-              MOBILE_STATUS=$?
-            fi
-            echo "===== EXACT MOBILE NATIVE RESULTS ====="
-            adb logcat -d -s NiakvioRealLab:I '*:S' || true
-
-            adb logcat -c
-            cd "$GITHUB_WORKSPACE/nuvio-tv"
-            ./gradlew :app:connectedFullDebugAndroidTest --no-daemon --console=plain
-            TV_STATUS=$?
-            echo "===== EXACT TV NATIVE RESULTS ====="
-            adb logcat -d -s NiakvioRealLab:I '*:S' || true
-            echo "FIELD_ANDROID_NATIVE_STATUS mobile=$MOBILE_STATUS tv=$TV_STATUS"
-            if [ "$MOBILE_STATUS" -ne 0 ] || [ "$TV_STATUS" -ne 0 ]; then
-              exit 1
-            fi
-            exit 0
+          script: bash "$GITHUB_WORKSPACE/niakvio/scripts/run_final_native_android_lab.sh"
