@@ -61,10 +61,12 @@ def main() -> int:
         "scope": "all_hls_capable_providers",
         "final_patch": RUNTIME_PATCH,
         "platforms": {
-            "desktop": "bounded_media_preflight_when_fetch_is_abortable",
+            "desktop_native": "native_quickjs_static_validation_without_extra_media_fetch",
             "mobile_android": "native_quickjs_static_validation_without_extra_media_fetch",
             "tv_android": "native_quickjs_static_validation_without_extra_media_fetch_plus_existing_tv_identity_guards",
+            "non_native_web_like": "bounded_media_preflight_when_fetch_is_abortable",
         },
+        "native_detection": "presence_of___native_fetch_host_bridge",
         "static_fail_closed": [
             "missing_or_invalid_media_url",
             "youtube_or_embed_page_url",
