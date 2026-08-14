@@ -23,6 +23,7 @@ INFRASTRUCTURE_HOSTS = {
 URL_RE = re.compile(r"https?://[^\s\"'`<>\\)]+", re.I)
 OWNED_WRAPPER_MARKER_RE = re.compile(r"/\*\s*(NUVIO_[A-Z0-9_:.-]+)\s*\*/", re.I)
 FAMILY_SUFFIXES = ("official", "homes", "home", "new", "rip", "co", "tv", "app", "web")
+GENERIC_HOST_LABELS = {"www", "api", "app", "web", "new", "new1", "new2", "new3", "new4", "cdn", "stream", "media"}
 
 
 def _merge_missing(target: Any, incoming: Any) -> Any:
@@ -66,6 +67,22 @@ def _host_belongs(host: str, owner_host: str) -> bool:
     return host == owner_host or host.endswith("." + owner_host)
 
 
+def _significant_host_labels(host: str) -> set[str]:
+    labels: set[str] = set()
+    raw_labels = [part for part in str(host or "").casefold().split(".") if part]
+    for raw in raw_labels[:-1]:
+        token = re.sub(r"[^a-z0-9]", "", raw)
+        if len(token) >= 5 and token not in GENERIC_HOST_LABELS:
+            labels.add(token)
+    return labels
+
+
+def _hosts_related(left: str, right: str) -> bool:
+    if _host_belongs(left, right) or _host_belongs(right, left):
+        return True
+    return bool(_significant_host_labels(left) & _significant_host_labels(right))
+
+
 def _provider_token(provider_id: str) -> str:
     return re.sub(r"[^a-z0-9]", "", str(provider_id).casefold())
 
@@ -88,20 +105,15 @@ def _same_provider_family(left: str, right: str) -> bool:
 
 
 def _looks_provider_owned(candidate: str, provider_id: str, strong: set[str]) -> bool:
-    if any(_host_belongs(candidate, base) or _host_belongs(base, candidate) for base in strong):
+    if any(_hosts_related(candidate, base) for base in strong):
         return True
     token = _provider_token(provider_id)
     normalized = re.sub(r"[^a-z0-9]", "", candidate.casefold())
     return len(token) >= 4 and token in normalized
 
 
-def _provider_api_hosts(patches: dict[str, Any]) -> dict[str, set[str]]:
-    """Return complete provider-owned backend hosts.
-
-    The historical function name is retained for compatibility, but ownership
-    now covers official API, site and hub hosts plus strongly provider-related
-    fixed/replacement endpoints. Shared players/CDNs are intentionally ignored.
-    """
+def _provider_backend_hosts(patches: dict[str, Any]) -> dict[str, set[str]]:
+    """Return complete provider-owned backend hosts for strict isolation."""
     output: dict[str, set[str]] = {}
     for raw_provider_id, patch in patches.items():
         if not isinstance(patch, dict):
@@ -133,10 +145,47 @@ def _provider_api_hosts(patches: dict[str, Any]) -> dict[str, set[str]]:
     return output
 
 
+def _provider_api_hosts(patches: dict[str, Any]) -> dict[str, set[str]]:
+    """Compatibility ownership view for the legacy capability-origin sanitizer.
+
+    The old caller cannot express shared/alias provider ownership and treats the
+    first matching owner as foreign. Return only exclusive backend hosts there.
+    Strict hook/wrapper enforcement uses ``_provider_backend_hosts`` instead.
+    """
+    complete = _provider_backend_hosts(patches)
+    provider_ids = {str(value).casefold() for value in patches}
+    output: dict[str, set[str]] = {}
+    for owner, hosts in complete.items():
+        exclusive: set[str] = set()
+        for candidate in hosts:
+            shared = False
+            for other in provider_ids:
+                if other == owner:
+                    continue
+                if _same_provider_family(owner, other):
+                    shared = True
+                    break
+                if any(
+                    _hosts_related(candidate, other_host)
+                    for other_host in complete.get(other, set())
+                ):
+                    shared = True
+                    break
+            if not shared:
+                exclusive.add(candidate)
+        if exclusive:
+            output[owner] = exclusive
+    return output
+
+
 def _current_provider_owns(host: str, provider_id: str, ownership: dict[str, set[str]]) -> bool:
     provider_id = str(provider_id).casefold()
-    if any(_host_belongs(host, own) for own in ownership.get(provider_id, set())):
+    if any(_hosts_related(host, own) for own in ownership.get(provider_id, set())):
         return True
+    for owner, hosts in ownership.items():
+        if owner != provider_id and _same_provider_family(provider_id, owner):
+            if any(_hosts_related(host, own) for own in hosts):
+                return True
     token = _provider_token(provider_id)
     normalized = re.sub(r"[^a-z0-9]", "", host.casefold())
     return len(token) >= 4 and token in normalized
@@ -230,7 +279,7 @@ def sanitize_provider_hooks(
         return output, []
 
     ownership_view = normalize_mapping_keys(raw_patches)
-    ownership = _provider_api_hosts(ownership_view)
+    ownership = _provider_backend_hosts(ownership_view)
     removed: list[dict[str, str]] = []
 
     for raw_provider_id, patch in raw_patches.items():
@@ -294,7 +343,7 @@ def strip_foreign_provider_wrappers(
 ) -> tuple[str, list[dict[str, str]]]:
     """Strip only repository-owned NUVIO wrapper blocks that call another provider backend."""
     patches = normalize_mapping_keys(data.get("provider_patches"))
-    ownership = _provider_api_hosts(patches)
+    ownership = _provider_backend_hosts(patches)
     markers = list(OWNED_WRAPPER_MARKER_RE.finditer(text))
     if not markers:
         return text, []
@@ -322,7 +371,7 @@ def strip_foreign_provider_wrappers(
 
 def validate_provider_isolation(data: dict[str, Any], root: Path = ROOT) -> list[str]:
     patches = normalize_mapping_keys(data.get("provider_patches"))
-    ownership = _provider_api_hosts(patches)
+    ownership = _provider_backend_hosts(patches)
     violations: list[str] = []
     for provider_id, patch in patches.items():
         if not isinstance(patch, dict):
@@ -344,7 +393,7 @@ def validate_published_provider_isolation(
     data: dict[str, Any], manifest: dict[str, Any], root: Path = ROOT
 ) -> list[str]:
     patches = normalize_mapping_keys(data.get("provider_patches"))
-    ownership = _provider_api_hosts(patches)
+    ownership = _provider_backend_hosts(patches)
     rows = manifest.get("scrapers") if isinstance(manifest, dict) else []
     violations: list[str] = []
     for row in rows if isinstance(rows, list) else []:
