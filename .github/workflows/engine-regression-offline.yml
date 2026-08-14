@@ -15,7 +15,7 @@ on:
       - ".github/workflows/engine-regression-offline.yml"
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: provider-engine-regression-offline
@@ -31,7 +31,7 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
           fetch-depth: 1
-          persist-credentials: false
+          persist-credentials: true
 
       - name: Set up Python
         uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
@@ -80,3 +80,15 @@ jobs:
           path: reconstructed
           if-no-files-found: error
           retention-days: 1
+
+      - name: Publish exact validated isolation rebuild
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- PROVENANCE.json manifest.json provider-overrides.json vf/manifest.json providers/purstream--nuvio--40c9e6a91441db06.js
+          if git diff --cached --quiet; then
+            echo "validated published generation already current"
+            exit 0
+          fi
+          git commit -m "fix: publish isolated provider generation"
+          git push origin HEAD:main
