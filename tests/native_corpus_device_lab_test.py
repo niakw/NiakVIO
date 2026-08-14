@@ -10,6 +10,7 @@ PREPARE = ROOT / "scripts/prepare_native_corpus_validation.py"
 RESTAGE = ROOT / "scripts/restage_native_corpus_fixture.py"
 ANDROID_SUITE = ROOT / "scripts/run_native_corpus_android_suite.sh"
 ANALYZER = ROOT / "scripts/analyze_native_corpus_results.cjs"
+SUMMARIZER = ROOT / "scripts/summarize_native_corpus_suite.cjs"
 CORPUS = ROOT / ".github/triggers/nuvio-client-lab.json"
 MANIFEST = ROOT / "manifest.json"
 
@@ -18,6 +19,7 @@ prepare = PREPARE.read_text(encoding="utf-8")
 restage = RESTAGE.read_text(encoding="utf-8")
 android_suite = ANDROID_SUITE.read_text(encoding="utf-8")
 analyzer = ANALYZER.read_text(encoding="utf-8")
+summarizer = SUMMARIZER.read_text(encoding="utf-8")
 corpus = json.loads(CORPUS.read_text(encoding="utf-8"))
 manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
 
@@ -36,12 +38,12 @@ actual_slugs = {
 }
 assert actual_slugs == expected_slugs, (actual_slugs, expected_slugs)
 
-# Desktop loops all six fixtures in one runner, while the Android suite loops the
-# same six fixtures on one emulator for Mobile then TV.
+# Two expensive runtime jobs are reused: Desktop once and one Android emulator for
+# Mobile+TV. A third lightweight job only aggregates their sanitized artifacts.
 for slug in sorted(expected_slugs):
     assert slug in workflow, (slug, "desktop workflow")
     assert slug in android_suite, (slug, "android suite")
-assert workflow.count("runs-on: ubuntu-latest") == 2, workflow.count("runs-on: ubuntu-latest")
+assert workflow.count("runs-on: ubuntu-latest") == 3, workflow.count("runs-on: ubuntu-latest")
 assert "matrix:" not in workflow
 assert "strategy:" not in workflow
 
@@ -53,7 +55,10 @@ for required in (
     "restage_native_corpus_fixture.py",
     "run_native_corpus_android_suite.sh",
     "analyze_native_corpus_results.cjs",
+    "summarize_native_corpus_suite.cjs",
     "ReactiveCircus/android-emulator-runner@",
+    "actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a",
+    "actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c",
 ):
     assert required in workflow, required
 
@@ -125,7 +130,21 @@ assert "FIELD_NATIVE_CORPUS_MOBILE_STATUS" in android_suite
 assert "FIELD_NATIVE_CORPUS_TV_STATUS" in android_suite
 assert "FIELD_NATIVE_CORPUS_ANDROID_SUITE_STATUS" in android_suite
 
+# Cross-device aggregation must surface patterns that are candidates for global
+# engine rules rather than leaving us to inspect provider logs one by one.
+for required in (
+    "repeatedContradictions",
+    "repeatedTransportFailures",
+    "repeatedSlow",
+    "repeatedPlatformGaps",
+    "systemicEmpty",
+    "providerRuntimeErrors",
+    "FIELD_NATIVE_ENGINE_SIGNAL",
+):
+    assert required in summarizer, required
+assert "native-corpus-engine-summary" in workflow
+
 print(
     "native corpus device lab coverage tests passed: "
-    f"fixtures={len(expected_slugs)} stageable_providers={len(stageable)} devices=3 runners=2 sanitized_transport=true"
+    f"fixtures={len(expected_slugs)} stageable_providers={len(stageable)} devices=3 heavy_runners=2 summary_runner=1 sanitized_transport=true"
 )
