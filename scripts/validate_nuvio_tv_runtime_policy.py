@@ -100,7 +100,6 @@ def main() -> int:
     if filtering.get("enforced_by_plugin_manager") is not False:
         errors.append("NuvioTV platform filters must not be assumed enforced by PluginManager")
 
-
     required = {
         "probe": contract.get("probe"),
         "promoter": contract.get("promoter"),
@@ -173,9 +172,11 @@ def main() -> int:
         for provider_id, row in main_rows.items()
         if "--nuvio-tv-global--" in str(row.get("filename") or "")
     }
-    if not published_tv:
-        errors.append("no NuvioTV-promoted provider remains in the published main manifest")
-
+    # A TV-specific promotion is an optimization, not an availability quota.
+    # After a conclusive safety quarantine there may legitimately be zero
+    # currently published --nuvio-tv-global-- bundles. Requiring at least one
+    # would pressure the publisher to resurrect stale bytes without current
+    # proof. When promoted bundles do exist, all strict checks below still apply.
     for provider_id, row in sorted(published_tv.items()):
         relative = normalized_provider_path(row.get("filename"))
         if not (ROOT / relative).is_file():
@@ -224,7 +225,7 @@ def main() -> int:
 
     print(
         "NuvioTV runtime policy validated: "
-        f"published_tv={','.join(sorted(published_tv))}; "
+        f"published_tv={','.join(sorted(published_tv)) or '-'}; "
         f"strict_tv_guard={','.join(strict_guarded) or '-'}; "
         "contract=positional+SCRAPER_SETTINGS; media=HLS/DASH/container"
     )
