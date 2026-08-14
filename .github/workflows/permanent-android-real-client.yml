@@ -1,0 +1,276 @@
+name: Permanent Android real-client lab
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - ".github/triggers/permanent-android-real-client"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: permanent-android-real-client
+  cancel-in-progress: false
+
+env:
+  NIAKVIO_MOBILE_SHA: "0d6e30e4566e6f9f2051d5f80a1e3f1e0fcb1f18"
+
+jobs:
+  android-real-runtime:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout Niakvio
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: main
+          path: niakvio
+
+      - name: Set up JDK
+        uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Checkout exact official NuvioMobile runtime
+        shell: bash
+        run: |
+          git clone --filter=blob:none --no-checkout https://github.com/NuvioMedia/NuvioMobile.git nuvio-mobile
+          cd nuvio-mobile
+          git checkout "$NIAKVIO_MOBILE_SHA"
+          touch local.properties
+
+      - name: Enable Android device-test compilation
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('nuvio-mobile/composeApp/build.gradle.kts')
+          text = path.read_text()
+          compilation_needle = '        withHostTest {}\n\n        compilerOptions {'
+          compilation_replacement = '''        withHostTest {}
+          withDeviceTest {
+              instrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+              execution = "HOST"
+          }
+
+          compilerOptions {'''
+          if text.count(compilation_needle) != 1:
+              raise SystemExit(f'Expected one Android host-test compilation block, found {text.count(compilation_needle)}')
+          text = text.replace(compilation_needle, compilation_replacement, 1)
+          source_needle = '        commonMain.dependencies {'
+          source_replacement = '''        val androidDeviceTest by getting {
+              dependencies {
+                  implementation("junit:junit:4.13.2")
+                  implementation("androidx.test.ext:junit:1.3.0")
+                  implementation("androidx.test:runner:1.7.0")
+              }
+          }
+          commonMain.dependencies {'''
+          if text.count(source_needle) != 1:
+              raise SystemExit(f'Expected one commonMain dependency block, found {text.count(source_needle)}')
+          path.write_text(text.replace(source_needle, source_replacement, 1))
+          PY
+          cat > nuvio-mobile/composeApp/src/androidMain/AndroidManifest.xml <<'XML'
+          <?xml version="1.0" encoding="utf-8"?>
+          <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+              <uses-permission android:name="android.permission.INTERNET" />
+          </manifest>
+          XML
+
+      - name: Inject Mon Ninja 3 provider tests
+        shell: bash
+        run: |
+          TEST_ROOT=nuvio-mobile/composeApp/src/androidDeviceTest
+          mkdir -p "$TEST_ROOT/kotlin/com/nuvio/app/features/plugins" "$TEST_ROOT/assets/niakvio"
+          cp niakvio/providers/moviebox--published-baseline--1c0c9c423a094e0d.js "$TEST_ROOT/assets/niakvio/"
+          cp niakvio/providers/netmirror--published-baseline--ccbd35984c20fc8b.js "$TEST_ROOT/assets/niakvio/"
+          cp niakvio/providers/streamzo--published-baseline--bc19a7586f9f3bb8.js "$TEST_ROOT/assets/niakvio/"
+          cat > "$TEST_ROOT/kotlin/com/nuvio/app/features/plugins/NiakvioRealProviderMobileTest.kt" <<'KOTLIN'
+          package com.nuvio.app.features.plugins
+
+          import android.util.Log
+          import androidx.test.platform.app.InstrumentationRegistry
+          import com.nuvio.app.features.plugins.runtime.PluginRuntime
+          import kotlinx.coroutines.runBlocking
+          import org.junit.Assert.assertEquals
+          import org.junit.Assert.assertTrue
+          import org.junit.Test
+
+          class NiakvioRealProviderMobileTest {
+              private val providers = listOf(
+                  "moviebox" to "niakvio/moviebox--published-baseline--1c0c9c423a094e0d.js",
+                  "netmirror" to "niakvio/netmirror--published-baseline--ccbd35984c20fc8b.js",
+                  "streamzo" to "niakvio/streamzo--published-baseline--bc19a7586f9f3bb8.js",
+              )
+
+              private fun emit(message: String) {
+                  println(message)
+                  Log.i("NiakvioRealLab", message)
+              }
+
+              private fun providerCode(relative: String): String =
+                  InstrumentationRegistry.getInstrumentation().context.assets.open(relative)
+                      .bufferedReader().use { it.readText() }
+
+              @Test
+              fun exactMonNinjaProviders() = runBlocking {
+                  providers.forEach { (id, relative) ->
+                      val started = System.currentTimeMillis()
+                      val rows = PluginRuntime.executePlugin(
+                          code = providerCode(relative),
+                          tmdbId = "1215638",
+                          mediaType = "movie",
+                          season = null,
+                          episode = null,
+                          scraperId = id,
+                      )
+                      emit("FIELD_ANDROID_RESULT provider=$id duration_ms=${System.currentTimeMillis()-started} count=${rows.size}")
+                      rows.forEachIndexed { index, row ->
+                          emit("FIELD_ANDROID_ROW provider=$id index=$index title=${row.title} name=${row.name} quality=${row.quality} language=${row.language} type=${row.type} url=${row.url} headers=${row.headers}")
+                      }
+                      if (id == "streamzo") {
+                          assertTrue("StreamZo must resolve Mon Ninja 3 in official Android runtime", rows.isNotEmpty())
+                          assertTrue("StreamZo must expose HLS on Android", rows.any { it.url.contains(".m3u8") })
+                      }
+                  }
+              }
+
+              @Test
+              fun missingOptionalMetadataIsAccepted() = runBlocking {
+                  val rows = PluginRuntime.executePlugin(
+                      code = "module.exports.getStreams=async()=>[{title:'Metadata control',url:'https://example.test/video.mp4'}];",
+                      tmdbId = "1215638",
+                      mediaType = "movie",
+                      season = null,
+                      episode = null,
+                      scraperId = "metadata-control",
+                  )
+                  assertEquals(1, rows.size)
+                  assertEquals(null, rows.single().quality)
+                  assertEquals(null, rows.single().language)
+                  emit("FIELD_ANDROID_METADATA_NULL_ACCEPTED=true")
+              }
+          }
+          KOTLIN
+
+      - name: Start Android emulator
+        shell: bash
+        run: |
+          set -euxo pipefail
+          export ANDROID_SDK_ROOT="${ANDROID_SDK_ROOT:-$ANDROID_HOME}"
+          export ANDROID_USER_HOME="$HOME/.android"
+          export ANDROID_AVD_HOME="$ANDROID_USER_HOME/avd"
+          unset ANDROID_SDK_HOME || true
+          mkdir -p "$ANDROID_AVD_HOME"
+
+          SDKMANAGER="$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager"
+          AVDMANAGER="$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/avdmanager"
+          export PATH="$ANDROID_SDK_ROOT/platform-tools:$ANDROID_SDK_ROOT/emulator:$(dirname "$SDKMANAGER"):$PATH"
+
+          yes | "$SDKMANAGER" --licenses >/dev/null || true
+          "$SDKMANAGER" "platform-tools" "emulator" "system-images;android-35;google_apis;x86_64"
+          echo no | "$AVDMANAGER" create avd \
+            --force \
+            --name niakvio-ci \
+            --package "system-images;android-35;google_apis;x86_64" \
+            --device "pixel_2" \
+            --path "$ANDROID_AVD_HOME/niakvio-ci.avd"
+
+          echo "ANDROID_USER_HOME=$ANDROID_USER_HOME"
+          echo "ANDROID_AVD_HOME=$ANDROID_AVD_HOME"
+          find "$ANDROID_USER_HOME" -maxdepth 3 -type f -print || true
+          "$ANDROID_SDK_ROOT/emulator/emulator" -list-avds
+          "$ANDROID_SDK_ROOT/emulator/emulator" -list-avds | grep -Fx niakvio-ci
+
+          sudo chmod 666 /dev/kvm
+          "$ANDROID_SDK_ROOT/emulator/emulator" -accel-check
+          adb kill-server || true
+          adb start-server
+
+          rm -f /tmp/niakvio-emulator.log
+          nohup "$ANDROID_SDK_ROOT/emulator/emulator" \
+            -avd niakvio-ci \
+            -port 5554 \
+            -no-window \
+            -no-audio \
+            -no-boot-anim \
+            -no-snapshot \
+            -wipe-data \
+            -gpu swiftshader_indirect \
+            -accel on \
+            -cores 2 \
+            -memory 2048 \
+            >/tmp/niakvio-emulator.log 2>&1 &
+          EMU_PID=$!
+
+          SERIAL=""
+          for attempt in $(seq 1 90); do
+            if ! kill -0 "$EMU_PID" 2>/dev/null; then
+              echo "Emulator exited before adb registration" >&2
+              cat /tmp/niakvio-emulator.log >&2 || true
+              exit 1
+            fi
+            SERIAL=$(adb devices | awk '$1 ~ /^emulator-/ && ($2 == "device" || $2 == "offline") {print $1; exit}')
+            if [ -n "$SERIAL" ]; then break; fi
+            sleep 2
+          done
+          if [ -z "$SERIAL" ]; then
+            echo "Emulator did not register with adb" >&2
+            cat /tmp/niakvio-emulator.log >&2 || true
+            exit 1
+          fi
+
+          for attempt in $(seq 1 90); do
+            if ! kill -0 "$EMU_PID" 2>/dev/null; then
+              echo "Emulator exited during boot" >&2
+              cat /tmp/niakvio-emulator.log >&2 || true
+              exit 1
+            fi
+            STATE=$(adb -s "$SERIAL" get-state 2>/dev/null || true)
+            BOOT=$(adb -s "$SERIAL" shell getprop sys.boot_completed 2>/dev/null | tr -d '\r' || true)
+            echo "boot attempt=$attempt state=$STATE completed=$BOOT"
+            if [ "$STATE" = "device" ] && [ "$BOOT" = "1" ]; then break; fi
+            sleep 2
+          done
+
+          STATE=$(adb -s "$SERIAL" get-state 2>/dev/null || true)
+          BOOT=$(adb -s "$SERIAL" shell getprop sys.boot_completed 2>/dev/null | tr -d '\r' || true)
+          if [ "$STATE" != "device" ] || [ "$BOOT" != "1" ]; then
+            echo "Emulator failed to boot" >&2
+            cat /tmp/niakvio-emulator.log >&2 || true
+            exit 1
+          fi
+          echo "ANDROID_SERIAL=$SERIAL" >> "$GITHUB_ENV"
+          adb -s "$SERIAL" logcat -c
+          adb devices -l
+
+      - name: Execute official Android Full runtime test
+        working-directory: nuvio-mobile
+        shell: bash
+        run: |
+          set -o pipefail
+          TASKS=$(./gradlew :composeApp:tasks --all -Pnuvio.android.distribution=full --console=plain)
+          TASK=$(printf '%s\n' "$TASKS" | awk 'tolower($1) ~ /connected.*device.*test/ {print $1; exit}')
+          if [ -z "$TASK" ]; then
+            TASK=$(printf '%s\n' "$TASKS" | awk 'tolower($1) ~ /device.*test/ && tolower($0) ~ /connected/ {print $1; exit}')
+          fi
+          if [ -z "$TASK" ]; then
+            printf '%s\n' "$TASKS" | grep -i 'deviceTest' || true
+            echo "Unable to resolve connected Android device-test task" >&2
+            exit 1
+          fi
+          echo "Resolved Android device test task: $TASK"
+          set +e
+          ./gradlew ":composeApp:$TASK" -Pnuvio.android.distribution=full --no-daemon --console=plain
+          STATUS=$?
+          set -e
+          echo "===== EXACT ANDROID PROVIDER RESULTS ====="
+          adb -s "$ANDROID_SERIAL" logcat -d -s NiakvioRealLab:I '*:S' || true
+          if [ "$STATUS" -ne 0 ]; then
+            echo "===== EMULATOR LOG TAIL ====="
+            tail -n 200 /tmp/niakvio-emulator.log || true
+          fi
+          exit "$STATUS"
