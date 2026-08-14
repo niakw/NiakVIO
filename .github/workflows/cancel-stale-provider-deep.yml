@@ -1,0 +1,22 @@
+name: Cancel stale provider deep run
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/cancel-stale-provider-deep.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nuvio-provider-publish
+  cancel-in-progress: true
+
+jobs:
+  cancel-stale-run:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Supersede stale scheduled deep run
+        run: echo "Superseded stale scheduled provider deep run from the pre-identity-gate generation."
