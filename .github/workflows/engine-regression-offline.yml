@@ -74,7 +74,7 @@ jobs:
         run: npm test --ignore-scripts
 
       - name: Archive validated reconstructed generation
-        uses: actions/upload-artifact@6027e3aa3634a9c1456c2f390a1a4d92f8ae7c8b
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: provider-engine-reconstructed-generation
           path: reconstructed
