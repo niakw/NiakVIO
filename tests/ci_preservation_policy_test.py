@@ -10,10 +10,14 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 config = json.loads((ROOT / 'health-config.json').read_text())['activation']
 expected = {
-    'blocked', 'provider_unreachable', 'runtime_error', 'unavailable',
-    'no_streams', 'reachable', 'degraded',
+    'blocked', 'provider_unreachable', 'runtime_error',
+    'no_streams', 'reachable',
 }
-assert expected <= set(config.get('preserve_enabled_on_ci_uncertain_statuses', []))
+preserve_statuses = set(config.get('preserve_enabled_on_ci_uncertain_statuses', []))
+inconclusive_statuses = set(config.get('inconclusive_statuses', []))
+assert expected <= preserve_statuses
+assert preserve_statuses <= inconclusive_statuses
+assert {'degraded', 'unavailable'}.isdisjoint(preserve_statuses)
 
 promoter = (ROOT / 'scripts/promote_candidates.py').read_text()
 assert 'preserved-current-enabled-ci-uncertain' in promoter
