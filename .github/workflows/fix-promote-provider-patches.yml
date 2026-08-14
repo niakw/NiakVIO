@@ -1,0 +1,68 @@
+name: One-shot promotion config repair
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/fix-promote-provider-patches.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    if: github.event.head_commit.message == 'ci: add one-shot promotion config repair'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          fetch-depth: 0
+      - name: Restore provider patch configuration binding
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('scripts/promote_candidates.py')
+          text = path.read_text(encoding='utf-8')
+          needle = '    config = load_json(CONFIG_PATH, {})\n    registry = load_json(STAGE / "candidates.json")\n'
+          replacement = '''    config = load_json(CONFIG_PATH, {})
+    override_config = load_overrides()
+    configured_provider_patches = (
+        override_config.get("provider_patches", {})
+        if isinstance(override_config, dict)
+        else {}
+    )
+    registry = load_json(STAGE / "candidates.json")
+'''
+          if needle not in text:
+              raise SystemExit('expected promotion config anchor not found')
+          if 'configured_provider_patches = (' in text:
+              raise SystemExit('promotion config binding already exists')
+          path.write_text(text.replace(needle, replacement, 1), encoding='utf-8')
+          PY
+          python -m py_compile scripts/promote_candidates.py
+          python - <<'PY'
+          import ast
+          from pathlib import Path
+          tree = ast.parse(Path('scripts/promote_candidates.py').read_text(encoding='utf-8'))
+          main = next(node for node in tree.body if isinstance(node, ast.FunctionDef) and node.name == 'main')
+          assigned = {
+              target.id
+              for node in ast.walk(main)
+              if isinstance(node, (ast.Assign, ast.AnnAssign))
+              for target in ([node.target] if isinstance(node, ast.AnnAssign) else node.targets)
+              if isinstance(target, ast.Name)
+          }
+          assert 'configured_provider_patches' in assigned
+          print('promotion provider patch binding validated')
+          PY
+      - name: Commit exact repair
+        shell: bash
+        run: |
+          test "$(git status --short | wc -l | tr -d ' ')" = "1"
+          git status --short | grep -Fx ' M scripts/promote_candidates.py'
+          git config user.name 'niakvio-ci'
+          git config user.email 'actions@users.noreply.github.com'
+          git add scripts/promote_candidates.py
+          git commit -m 'fix: restore promotion provider patch config'
+          git push origin HEAD:main
