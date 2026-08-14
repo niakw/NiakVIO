@@ -10,7 +10,10 @@ outcomes in a deep publication:
   disabling/removing them (for example P2P evidence or a failed strict quality
   gate); or
 * an immutable client-lab finding records playable wrong-content evidence and
-  the currently published artifact is a matching, inert safety quarantine.
+  the currently published artifact is a matching, inert safety quarantine; or
+* the publication-scoped catalogue/media audit records a playable identity
+  contradiction and the currently published artifact is its matching inert
+  quarantine bundle.
 
 CI-inconclusive results are deliberately not accepted as disablement proof. In
 that case the promoter must preserve the last published active artifact, and
@@ -35,6 +38,9 @@ PROVENANCE = ROOT / "PROVENANCE.json"
 SAFETY_FINDINGS = ROOT / "automation" / "nuvio-client-safety-findings.json"
 QUARANTINE_PATCH = "scripts/provider_patches/quarantine_provider_v1.py"
 QUARANTINE_MARKER = "NUVIO_PROVIDER_QUARANTINE_V1"
+CATALOGUE_AUDIT_MODE = "catalogue_audit_safety_quarantine"
+CATALOGUE_AUDIT_SOURCE = "catalogue_media_audit"
+CATALOGUE_AUDIT_BLOCKER = "catalogue_audit_playable_identity_contradiction"
 SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 COMMIT_RE = re.compile(r"^[0-9a-f]{40}$")
 
@@ -204,6 +210,64 @@ def configured_safety_quarantine(
     return True, f"configured_safety_quarantine:{reason}"
 
 
+def catalogue_audit_safety_quarantine(
+    manifest_row: dict[str, Any] | None,
+    provenance: dict[str, Any] | None,
+) -> tuple[bool, str]:
+    """Accept an inert transient quarantine backed by this publication's audit record."""
+    if not isinstance(manifest_row, dict) or not isinstance(provenance, dict):
+        return False, "missing_catalogue_audit_quarantine_evidence"
+    if manifest_row.get("enabled") is not False:
+        return False, "catalogue_audit_quarantine_manifest_not_disabled"
+
+    published_filename = str(manifest_row.get("filename") or "")
+    published_path = ROOT / published_filename
+    if not published_filename.startswith("providers/") or not published_path.is_file():
+        return False, "catalogue_audit_quarantine_bundle_missing"
+    published = published_path.read_text(encoding="utf-8")
+    if QUARANTINE_MARKER not in published or CATALOGUE_AUDIT_BLOCKER not in published:
+        return False, "catalogue_audit_quarantine_bundle_not_inert"
+    published_sha = file_sha256(published_path)
+
+    if provenance.get("activation_mode") != CATALOGUE_AUDIT_MODE:
+        return False, "catalogue_audit_quarantine_provenance_mode_missing"
+    if provenance.get("activation_eligible") is not False:
+        return False, "catalogue_audit_quarantine_provenance_still_eligible"
+    blockers = {str(value) for value in provenance.get("activation_blockers") or []}
+    if CATALOGUE_AUDIT_BLOCKER not in blockers:
+        return False, "catalogue_audit_quarantine_provenance_blocker_missing"
+    if str(provenance.get("published_filename") or "") != published_filename:
+        return False, "catalogue_audit_quarantine_provenance_path_mismatch"
+    if str(provenance.get("patched_sha256") or "") != published_sha:
+        return False, "catalogue_audit_quarantine_provenance_sha_mismatch"
+
+    records = [
+        row for row in provenance.get("local_patches") or []
+        if isinstance(row, dict)
+        and row.get("type") == "safety_quarantine"
+        and row.get("source") == CATALOGUE_AUDIT_SOURCE
+    ]
+    if not records:
+        return False, "catalogue_audit_quarantine_record_missing"
+    record = records[-1]
+    if str(record.get("reason") or "") != CATALOGUE_AUDIT_BLOCKER:
+        return False, "catalogue_audit_quarantine_reason_mismatch"
+    if not isinstance(record.get("workflow_run_id"), int) or int(record.get("workflow_run_id") or 0) <= 0:
+        return False, "catalogue_audit_quarantine_workflow_run_missing"
+    if not COMMIT_RE.fullmatch(str(record.get("tested_commit_sha") or "")):
+        return False, "catalogue_audit_quarantine_tested_commit_invalid"
+    if not SHA256_RE.fullmatch(str(record.get("tested_sha256") or "")):
+        return False, "catalogue_audit_quarantine_tested_sha_invalid"
+    if int(record.get("identity_contradictions") or 0) <= 0:
+        return False, "catalogue_audit_quarantine_identity_contradiction_missing"
+    if int(record.get("playable_streams") or 0) <= 0:
+        return False, "catalogue_audit_quarantine_playable_evidence_missing"
+    fixtures = [str(value) for value in record.get("fixtures") or [] if str(value)]
+    if not fixtures:
+        return False, "catalogue_audit_quarantine_fixture_evidence_missing"
+    return True, f"catalogue_audit_safety_quarantine:{CATALOGUE_AUDIT_BLOCKER}"
+
+
 def conclusive_disablement(record: dict[str, Any] | None, *, missing: bool) -> tuple[bool, str]:
     """Return whether one deep report row explicitly justifies losing activation."""
     if not isinstance(record, dict):
@@ -261,6 +325,13 @@ def validate() -> list[str]:
                 patches_by_id.get(provider_id),
                 provenance_by_id.get(provider_id),
                 safety_by_id.get(provider_id),
+            )
+            if accepted:
+                justified[provider_id] = reason
+                continue
+            accepted, reason = catalogue_audit_safety_quarantine(
+                manifest_row,
+                provenance_by_id.get(provider_id),
             )
             if accepted:
                 justified[provider_id] = reason
