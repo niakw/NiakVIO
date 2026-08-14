@@ -84,11 +84,14 @@ fi
 
 CHARACTERISTICS=$(adb -s "$SERIAL" shell getprop ro.build.characteristics | tr -d '\r')
 DEVICE_NAME=$(adb -s "$SERIAL" shell getprop ro.product.device | tr -d '\r')
+FEATURES=$(adb -s "$SERIAL" shell pm list features | tr -d '\r')
 echo "TV characteristics=$CHARACTERISTICS device=$DEVICE_NAME serial=$SERIAL"
-case "$CHARACTERISTICS" in
-  *tv*) ;;
-  *) echo "Emulator is not reporting TV characteristics" >&2; exit 1;;
-esac
+printf '%s\n' "$FEATURES" | grep -E 'android\.software\.leanback|android\.hardware\.type\.television' || true
+if ! printf '%s\n' "$FEATURES" | grep -Eq 'android\.software\.leanback|android\.hardware\.type\.television'; then
+  echo "Android image lacks Leanback/television system feature" >&2
+  printf '%s\n' "$FEATURES" >&2
+  exit 1
+fi
 
 echo "ANDROID_SERIAL=$SERIAL" >> "$GITHUB_ENV"
 adb -s "$SERIAL" logcat -c
