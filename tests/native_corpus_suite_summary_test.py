@@ -77,12 +77,26 @@ with tempfile.TemporaryDirectory() as tmp:
     if proc.returncode != 0:
         raise AssertionError(proc.stdout + "\n" + proc.stderr)
     data = json.loads(output.read_text())
+    assert data["schemaVersion"] >= 2, data
     signals = data["engineSignals"]
     streamzo_gap = next(
         row for row in signals["repeatedPlatformGaps"]
         if row["provider"].casefold() == "streamzo" and row["targetClient"] == "tv"
     )
     assert streamzo_gap["occurrences"] == 2, streamzo_gap
+    assert streamzo_gap["capability"] == "html_scraper", streamzo_gap
+
+    capability_gap = next(
+        row for row in data["capabilitySignals"]["platformGaps"]
+        if row["capability"] == "html_scraper"
+    )
+    assert capability_gap["occurrences"] >= 2, capability_gap
+    assert "streamzo" in [p.casefold() for p in capability_gap["providers"]], capability_gap
+
+    inventory = {row["capability"]: row for row in data["capabilityInventory"]}
+    assert "html_scraper" in inventory, inventory
+    assert "streamzo" in [p.casefold() for p in inventory["html_scraper"]["providers"]], inventory
+
     topcartoons = next(
         row for row in signals["repeatedContradictions"]
         if row["provider"].casefold() == "topcartoons"
@@ -90,5 +104,6 @@ with tempfile.TemporaryDirectory() as tmp:
     assert topcartoons["occurrences"] >= 2, topcartoons
     assert data["contradictions"] >= 2, data
     assert "FIELD_NATIVE_ENGINE_SIGNAL" in proc.stdout, proc.stdout
+    assert "FIELD_NATIVE_CAPABILITY_SIGNAL" in proc.stdout, proc.stdout
 
 print("native corpus suite summary tests passed")
