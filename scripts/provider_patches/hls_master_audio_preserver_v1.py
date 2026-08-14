@@ -73,6 +73,41 @@ SAFETY_WRAPPER = r"""
     }catch(_e){}
     return void 0;
   }
+  async function responseText(r){
+    if(!r)return "";
+    try{if(typeof r.text==="function")return s(await r.text())}catch(_e){}
+    try{
+      if(typeof r.arrayBuffer==="function"){
+        var ab=await r.arrayBuffer();
+        if(ab){
+          if(typeof TextDecoder!=="undefined")return s(new TextDecoder("utf-8").decode(new Uint8Array(ab)));
+          if(typeof Buffer!=="undefined")return s(Buffer.from(ab).toString("utf8"));
+        }
+      }
+    }catch(_e){}
+    try{
+      if(r.body&&typeof r.body.getReader==="function"){
+        var reader=r.body.getReader(),chunks=[],total=0;
+        while(total<262144){
+          var part=await reader.read();
+          if(part&&part.value){chunks.push(part.value);total+=part.value.byteLength||part.value.length||0}
+          if(!part||part.done)break;
+          if(total>0)break;
+        }
+        try{if(typeof reader.cancel==="function")await reader.cancel()}catch(_e){}
+        if(total){
+          var merged=new Uint8Array(total),offset=0;
+          for(var i=0;i<chunks.length;i++){
+            var value=chunks[i],take=Math.min(value.byteLength||value.length||0,total-offset);
+            merged.set(value.subarray?value.subarray(0,take):value,offset);offset+=take;if(offset>=total)break;
+          }
+          if(typeof TextDecoder!=="undefined")return s(new TextDecoder("utf-8").decode(merged));
+          if(typeof Buffer!=="undefined")return s(Buffer.from(merged).toString("utf8"));
+        }
+      }
+    }catch(_e){}
+    return "";
+  }
   async function fetchText(url,row,range){
     try{
       var r=await g.fetch(url,{method:"GET",redirect:"follow",headers:headers(row,range),signal:timeoutSignal(c.timeoutMs)});
@@ -80,8 +115,7 @@ SAFETY_WRAPPER = r"""
       var st=Number(r.status||0),ct=s(r.headers&&r.headers.get?r.headers.get("content-type"):"").toLowerCase();
       if(st===401||st===403||st===404||st===410||st>=500)return {state:"dead",status:st,contentType:ct};
       if(!r.ok)return {state:"unknown",status:st,contentType:ct};
-      var text="";
-      try{text=s(await r.text())}catch(_e){}
+      var text=await responseText(r);
       return {state:"ok",status:st,url:s(r.url||url),contentType:ct,text:text};
     }catch(e){
       return {state:"unknown",reason:e&&e.name==="AbortError"?"timeout":"network_error"};
@@ -234,7 +268,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> st
         "durationIdentity": provider_id == "netmirror",
         "strictPlayback": provider_id == "moviebox",
         "tmdbKey": "1865f43a0549ca50d341dd9ab8b29f49",
-        "implementationRevision": "field-safety-v1",
+        "implementationRevision": "field-safety-v2",
     }
     payload = json.dumps(cfg, separators=(",", ":"))
     marker = f"{SAFETY_MARKER}:{hashlib.sha256(payload.encode()).hexdigest()[:12]}"
