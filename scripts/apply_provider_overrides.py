@@ -183,11 +183,11 @@ def apply_overrides(provider_id: str, data: bytes, *, phase: str = "discovery", 
         for old, new in replacements.items():
             if not isinstance(old, str) or not isinstance(new, str):
                 continue
-            updated, _count = replace_literal(text, old, new)
+            updated, count = replace_literal(text, old, new)
             if updated == text:
                 continue
             text = updated
-            records.append({"type": "replace", "from": old, "to": new, "phase": phase})
+            records.append({"type": "replace", "from": old, "to": new, "count": count, "phase": phase})
 
     text, removed_guards = _strip_legacy_global_stream_guards(text)
     if removed_guards:
