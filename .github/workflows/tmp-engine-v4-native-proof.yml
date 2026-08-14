@@ -68,7 +68,8 @@ jobs:
           rows = {str(r.get('id') or '').casefold(): r for r in manifest.get('scrapers', []) if isinstance(r, dict)}
           streamzo = rows['streamzo']
           payload = Path(streamzo['filename']).read_text(encoding='utf-8')
-          assert 'NUVIO_NATIVE_CATALOGUE_RECOVERY_BUDGET_V1' in payload
+          assert 'NUVIO_NATIVE_CATALOGUE_RECOVERY_BUDGET_V2' in payload
+          assert 'NUVIO_NATIVE_CATALOGUE_RECOVERY_BUDGET_V1 */' not in payload
           assert 'NUVIO_NATIVE_HLS_INTEGRITY_BUDGET_V1' in payload
           assert '"implementationRevision":"field-safety-v4-runtime-capability"' in payload
           print('complete native-safe engine-v4 candidate markers verified')
@@ -148,7 +149,8 @@ jobs:
           rows = {str(r.get('id') or '').casefold(): r for r in manifest.get('scrapers', []) if isinstance(r, dict)}
           streamzo = rows['streamzo']
           payload = Path(streamzo['filename']).read_text(encoding='utf-8')
-          assert 'NUVIO_NATIVE_CATALOGUE_RECOVERY_BUDGET_V1' in payload
+          assert 'NUVIO_NATIVE_CATALOGUE_RECOVERY_BUDGET_V2' in payload
+          assert 'NUVIO_NATIVE_CATALOGUE_RECOVERY_BUDGET_V1 */' not in payload
           assert 'NUVIO_NATIVE_HLS_INTEGRITY_BUDGET_V1' in payload
           assert '"implementationRevision":"field-safety-v4-runtime-capability"' in payload
           print('complete native-safe engine-v4 candidate markers verified')
