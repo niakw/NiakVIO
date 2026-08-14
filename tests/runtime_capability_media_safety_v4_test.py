@@ -50,16 +50,19 @@ assert '"implementationRevision":"field-safety-v4-runtime-capability"' in upgrad
 assert '"implementationRevision":"field-safety-v2"' not in upgraded
 assert patched("streamzo", upgraded) == upgraded
 
-# Mobile Android / native QuickJS: no post-result media probe.
-value = run_node(
-    streamzo,
-    "async function(){global.__fetchCalls++;throw new Error('must not probe from native safety layer')}",
-    "p.getStreams('1215638','movie',null,null).then(v=>console.log(JSON.stringify({rows:v.length,calls:global.__fetchCalls}))).catch(e=>{console.error(e);process.exit(1)})",
-    "global.__fetchCalls=0;global.__native_fetch=function(){};global.navigator={userAgent:'NuvioMobile Android'};",
-)
-assert value == {"rows": 1, "calls": 0}, value
+# Every official Nuvio native QuickJS host exposes __native_fetch. Because that
+# bridge is synchronous in Desktop, Mobile and TV, the safety layer must not add
+# a post-result media probe on any of those clients.
+for user_agent in ("NuvioDesktop macOS", "NuvioMobile Android", "NuvioTV Android TV"):
+    value = run_node(
+        streamzo,
+        "async function(){global.__fetchCalls++;throw new Error('must not probe from native safety layer')}",
+        "p.getStreams('1215638','movie',null,null).then(v=>console.log(JSON.stringify({rows:v.length,calls:global.__fetchCalls}))).catch(e=>{console.error(e);process.exit(1)})",
+        "global.__fetchCalls=0;global.__native_fetch=function(){};global.navigator={userAgent:" + json.dumps(user_agent) + "};",
+    )
+    assert value == {"rows": 1, "calls": 0}, (user_agent, value)
 
-# TV Android is also native/no-extra-probe, but obvious embeds are rejected statically.
+# Native TV still rejects obvious embeds statically without touching fetch.
 tv_bad = patched("streamzo", "module.exports={getStreams:async()=>[{url:'https://host.test/embed/player'}]};\n")
 value = run_node(
     tv_bad,
@@ -69,13 +72,13 @@ value = run_node(
 )
 assert value == {"rows": 0, "calls": 0}, value
 
-# Desktop/web-like runtime keeps bounded remote validation.
+# Non-native/web-like runtime keeps bounded remote validation.
 forbidden = r"""async function(url){global.__fetchCalls++;return {ok:false,status:403,url:String(url),text:async()=>'',headers:{get:()=> 'text/plain'}}}"""
 value = run_node(
     patched("moviebox", "module.exports={getStreams:async()=>[{url:'https://media.example/video.mp4',type:'mp4'}]};\n"),
     forbidden,
     "p.getStreams('1215638','movie',null,null).then(v=>console.log(JSON.stringify({rows:v.length,calls:global.__fetchCalls}))).catch(e=>{console.error(e);process.exit(1)})",
-    "global.__fetchCalls=0;global.navigator={userAgent:'NuvioDesktop macOS'};",
+    "global.__fetchCalls=0;global.navigator={userAgent:'web-like-test'};",
 )
 assert value["rows"] == 0 and value["calls"] >= 1, value
 
