@@ -90,6 +90,19 @@ jobs:
         run: |
           TEST_ROOT=nuvio-mobile/composeApp/src/androidDeviceTest
           mkdir -p "$TEST_ROOT/kotlin/com/nuvio/app/features/plugins" "$TEST_ROOT/assets/niakvio"
+          cat > "$TEST_ROOT/AndroidManifest.xml" <<'XML'
+          <?xml version="1.0" encoding="utf-8"?>
+          <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:tools="http://schemas.android.com/tools">
+              <uses-permission android:name="android.permission.INTERNET" />
+              <application>
+                  <meta-data
+                      android:name="io.sentry.auto-init"
+                      android:value="false"
+                      tools:replace="android:value" />
+              </application>
+          </manifest>
+          XML
           cp niakvio/providers/moviebox--published-baseline--1c0c9c423a094e0d.js "$TEST_ROOT/assets/niakvio/"
           cp niakvio/providers/netmirror--published-baseline--ccbd35984c20fc8b.js "$TEST_ROOT/assets/niakvio/"
           cp niakvio/providers/streamzo--published-baseline--bc19a7586f9f3bb8.js "$TEST_ROOT/assets/niakvio/"
