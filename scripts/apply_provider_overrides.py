@@ -104,11 +104,8 @@ def _normalize_profile_names(values: Iterable[str] | None) -> set[str]:
     return {str(value) for value in (values or []) if str(value).strip()}
 
 
-
 def _replace_named_function(text: str, function_name: str, replacement: str) -> tuple[str, bool]:
     """Replace a classic named JavaScript function using balanced braces."""
-    import re
-
     match = re.search(rf"function\s+{re.escape(function_name)}\s*\([^)]*\)\s*\{{", text)
     if not match:
         return text, False
@@ -215,7 +212,7 @@ def apply_overrides(
         for old, new in replacements.items():
             if not isinstance(old, str) or not isinstance(new, str):
                 continue
-            updated = replace_literal(text, old, new)
+            updated, _count = replace_literal(text, old, new)
             if updated == text:
                 continue
             text = updated
