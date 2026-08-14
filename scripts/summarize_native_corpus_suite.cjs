@@ -47,19 +47,28 @@ function syntheticUrl(host, hint) {
   return `https://${host}/${encodeURIComponent(hint)}`;
 }
 
-function capabilityFor(provider) {
+function providerPolicy(provider) {
   const id = String(provider || '').toLowerCase();
-  const explicit = providerPatches[id]?.capability;
-  if (explicit) return String(explicit);
-  const configured = configuredCapabilities[id];
-  if (typeof configured === 'string' && configured) return configured;
-  if (configured && typeof configured === 'object' && configured.strategy) return String(configured.strategy);
-  const manifestCapability = manifestMap.get(id)?.capability;
-  return manifestCapability ? String(manifestCapability) : 'unknown';
+  const manifestRow = manifestMap.get(id) || {};
+  const patch = providerPatches[id] || {};
+  const configured = configuredCapabilities[id] || {};
+  const strategy = String(
+    patch.capability ||
+    (typeof configured === 'object' ? configured.strategy : configured) ||
+    manifestRow.capability ||
+    'unknown'
+  );
+  const allowEmbed = strategy === 'iframe_player' || (
+    strategy === 'mixed_embed_resolver' && (
+      manifestRow.supportsExternalPlayer === true || patch.preserve_embed_urls === true
+    )
+  );
+  return { strategy, allowEmbed };
 }
 
 function withCapability(row) {
-  return { ...row, capability: capabilityFor(row.provider) };
+  const policy = providerPolicy(row.provider);
+  return { ...row, capability: policy.strategy, allowEmbed: policy.allowEmbed };
 }
 
 function relevant(provider, fixture) {
@@ -151,7 +160,10 @@ for (const row of rows) {
   }
 }
 
-const transportFailures = [...transports.values()].filter((row) => row.state === 'dead' || row.state === 'error');
+const expectedEmbeds = [...transports.values()]
+  .filter((row) => row.state === 'dead' && row.kind === 'html' && row.allowEmbed);
+const transportFailures = [...transports.values()]
+  .filter((row) => (row.state === 'dead' || row.state === 'error') && !(row.state === 'dead' && row.kind === 'html' && row.allowEmbed));
 const slowExecutions = [...executions.values()].filter((row) => row.durationMs >= 30000);
 
 function groupBy(items, fn) {
@@ -270,6 +282,7 @@ const summary = {
   nonEmptyExecutions: [...executions.values()].filter((row) => row.count > 0).length,
   runtimeErrors: errors.length,
   contradictions: contradictions.length,
+  transportExpectedEmbeds: expectedEmbeds.length,
   transportFailures: transportFailures.length,
   slowExecutions: slowExecutions.length,
   capabilityInventory,
@@ -290,6 +303,7 @@ console.log(`FIELD_NATIVE_CORPUS_SUITE_SUMMARY ${JSON.stringify({
   providersObserved: summary.providersObserved,
   executions: summary.executions,
   contradictions: summary.contradictions,
+  transportExpectedEmbeds: summary.transportExpectedEmbeds,
   transportFailures: summary.transportFailures,
   runtimeErrors: summary.runtimeErrors,
   repeatedPlatformGaps: repeatedPlatformGaps.length,
