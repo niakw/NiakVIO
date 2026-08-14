@@ -129,7 +129,7 @@ jobs:
   mobile-real-runtime:
     if: ${{ !contains(github.event.head_commit.message, '[desktop-only]') }}
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 30
     steps:
       - name: Checkout Niakvio
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
@@ -263,7 +263,7 @@ jobs:
               }
           }
           KOTLIN
-      - name: Start Android emulator
+      - name: Start Android emulator fail-fast
         shell: bash
         run: |
           set -euxo pipefail
@@ -279,24 +279,89 @@ jobs:
           test -x "$SDKMANAGER"
           test -x "$AVDMANAGER"
           export PATH="$ANDROID_SDK_ROOT/platform-tools:$ANDROID_SDK_ROOT/emulator:$(dirname "$SDKMANAGER"):$PATH"
+
           yes | "$SDKMANAGER" --licenses >/dev/null || true
           "$SDKMANAGER" "platform-tools" "emulator" "system-images;android-35;google_apis;x86_64"
           echo no | "$AVDMANAGER" create avd --force --name niakvio-ci --package "system-images;android-35;google_apis;x86_64" --device "pixel_2"
-          sudo chmod 666 /dev/kvm || true
+
+          ACCEL=off
+          if [ -e /dev/kvm ]; then
+            sudo chmod 666 /dev/kvm || true
+            if "$ANDROID_SDK_ROOT/emulator/emulator" -accel-check >/tmp/niakvio-accel.log 2>&1; then
+              ACCEL=on
+            fi
+          fi
+          echo "Android emulator acceleration: $ACCEL"
+          cat /tmp/niakvio-accel.log 2>/dev/null || true
+
+          adb kill-server || true
+          adb start-server
+          rm -f /tmp/niakvio-emulator.log
           nohup "$ANDROID_SDK_ROOT/emulator/emulator" \
             -avd niakvio-ci \
+            -port 5554 \
             -no-window \
             -no-audio \
             -no-boot-anim \
             -no-snapshot \
+            -wipe-data \
             -gpu swiftshader_indirect \
+            -accel "$ACCEL" \
+            -cores 2 \
+            -memory 2048 \
             >/tmp/niakvio-emulator.log 2>&1 &
-          adb wait-for-device
-          timeout 240 bash -c 'until [ "$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d "\r")" = "1" ]; do sleep 5; done'
-          adb shell settings put global window_animation_scale 0
-          adb shell settings put global transition_animation_scale 0
-          adb shell settings put global animator_duration_scale 0
-          adb logcat -c
+          EMU_PID=$!
+          echo "Android emulator pid: $EMU_PID"
+
+          SERIAL=""
+          for attempt in $(seq 1 90); do
+            if ! kill -0 "$EMU_PID" 2>/dev/null; then
+              echo "Android emulator exited before adb registration" >&2
+              cat /tmp/niakvio-emulator.log >&2 || true
+              exit 1
+            fi
+            adb devices || true
+            SERIAL=$(adb devices | awk '$1 ~ /^emulator-/ && ($2 == "device" || $2 == "offline") {print $1; exit}')
+            if [ -n "$SERIAL" ]; then
+              echo "Android emulator registered as $SERIAL"
+              break
+            fi
+            sleep 2
+          done
+          if [ -z "$SERIAL" ]; then
+            echo "Android emulator did not register with adb within 180 seconds" >&2
+            cat /tmp/niakvio-emulator.log >&2 || true
+            exit 1
+          fi
+
+          for attempt in $(seq 1 90); do
+            if ! kill -0 "$EMU_PID" 2>/dev/null; then
+              echo "Android emulator exited during boot" >&2
+              cat /tmp/niakvio-emulator.log >&2 || true
+              exit 1
+            fi
+            STATE=$(adb -s "$SERIAL" get-state 2>/dev/null || true)
+            BOOT=$(adb -s "$SERIAL" shell getprop sys.boot_completed 2>/dev/null | tr -d '\r' || true)
+            echo "boot attempt=$attempt state=$STATE sys.boot_completed=$BOOT"
+            if [ "$STATE" = "device" ] && [ "$BOOT" = "1" ]; then
+              break
+            fi
+            sleep 2
+          done
+          STATE=$(adb -s "$SERIAL" get-state 2>/dev/null || true)
+          BOOT=$(adb -s "$SERIAL" shell getprop sys.boot_completed 2>/dev/null | tr -d '\r' || true)
+          if [ "$STATE" != "device" ] || [ "$BOOT" != "1" ]; then
+            echo "Android emulator failed to finish boot within 180 seconds" >&2
+            cat /tmp/niakvio-emulator.log >&2 || true
+            adb -s "$SERIAL" shell getprop >&2 || true
+            exit 1
+          fi
+
+          echo "ANDROID_SERIAL=$SERIAL" >> "$GITHUB_ENV"
+          adb -s "$SERIAL" shell settings put global window_animation_scale 0
+          adb -s "$SERIAL" shell settings put global transition_animation_scale 0
+          adb -s "$SERIAL" shell settings put global animator_duration_scale 0
+          adb -s "$SERIAL" logcat -c
           adb devices -l
       - name: Execute official NuvioMobile Android Full device runtime test
         working-directory: nuvio-mobile
@@ -319,5 +384,9 @@ jobs:
           STATUS=$?
           set -e
           echo "===== EXACT MOBILE PROVIDER RESULTS ====="
-          adb logcat -d -s NiakvioRealLab:I '*:S' || true
+          adb -s "$ANDROID_SERIAL" logcat -d -s NiakvioRealLab:I '*:S' || true
+          if [ "$STATUS" -ne 0 ]; then
+            echo "===== EMULATOR LOG TAIL ====="
+            tail -n 200 /tmp/niakvio-emulator.log || true
+          fi
           exit "$STATUS"
