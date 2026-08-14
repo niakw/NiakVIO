@@ -5,22 +5,25 @@ ROOT = Path(__file__).resolve().parents[1]
 source = (ROOT / "scripts/prepare_native_client_validation.py").read_text(encoding="utf-8")
 
 # Historical contract: the StreamZo repair follows the site page into the player
-# and extracts the final media stream. Mon Ninja et moi 3 is the Desktop/PC
-# positive sentinel. Losing it on Desktop is a regression.
-assert "FIELD_DESKTOP_STREAMZO_SENTINEL status=resolved expected=resolved" in source
+# and extracts the final media stream. Mon Ninja et moi 3 is the positive sentinel.
+# Losing that site -> player -> media chain on any required native platform is a
+# regression, not a diagnostic curiosity.
+assert "FIELD_DESKTOP_STREAMZO_SENTINEL status=resolved expected=resolved path=site_player_media" in source
 assert "StreamZo must keep resolving Mon ninja et moi 3 on Desktop" in source
-assert "StreamZo Desktop must expose HLS" in source
+assert "StreamZo Desktop must expose final HLS media" in source
 
-# Android TV is a known compatibility gap for that same repaired path. The test
-# must observe it independently, never reinterpret an empty TV result as proof
-# that the global engine or provider repair is broken everywhere.
-assert "FIELD_TV_STREAMZO_COMPATIBILITY status=empty expected=known_gap" in source
-assert "FIELD_TV_STREAMZO_COMPATIBILITY status=resolved expected=known_gap_improved" in source
-assert "StreamZo must resolve Mon ninja et moi 3\", rows.isNotEmpty()" not in source
+# Android TV is a first-class publication target. The repaired provider must walk
+# the same real chain as Desktop: streaming site -> selected player/embed -> final
+# media URL. An empty TV result is therefore promotion-blocking.
+assert "FIELD_TV_STREAMZO_SENTINEL status=resolved expected=resolved path=site_player_media" in source
+assert "StreamZo must resolve Mon ninja et moi 3 through site -> player -> media on Android TV" in source
+assert "StreamZo TV must expose final HLS media" in source
+assert "known_gap" not in source
+assert "FIELD_TV_STREAMZO_COMPATIBILITY" not in source
 
-# Mobile is also classified independently from Desktop; its result remains a
-# device observation rather than being folded into the PC sentinel.
+# Mobile stays measured independently for now, but any returned result must still
+# be final playable HLS rather than a catalogue or embed URL.
 assert "FIELD_MOBILE_STREAMZO_COMPATIBILITY status=empty expected=diagnostic" in source
-assert "FIELD_MOBILE_STREAMZO_COMPATIBILITY status=resolved expected=diagnostic" in source
+assert "Any StreamZo Mobile result must expose final HLS media" in source
 
 print("StreamZo native platform contract tests passed")
