@@ -1,0 +1,81 @@
+name: Permanent Android real-client lab v2
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["lab/desktop-mobile-real"]
+    paths:
+      - ".github/triggers/permanent-android-real-client-v2"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: permanent-android-real-client-v2
+  cancel-in-progress: false
+
+env:
+  NUVIO_MOBILE_SHA: "0d6e30e4566e6f9f2051d5f80a1e3f1e0fcb1f18"
+
+jobs:
+  android-real-runtime:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout permanent desktop/mobile lab
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: lab/desktop-mobile-real
+          path: niakvio
+
+      - name: Set up JDK
+        uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Checkout exact official NuvioMobile runtime
+        shell: bash
+        run: |
+          git clone --filter=blob:none --no-checkout https://github.com/NuvioMedia/NuvioMobile.git nuvio-mobile
+          cd nuvio-mobile
+          git checkout "$NUVIO_MOBILE_SHA"
+          touch local.properties
+
+      - name: Prepare exact instrumentation test
+        shell: bash
+        run: |
+          python3 niakvio/lab/real-client/android/prepare_nuvio_mobile.py nuvio-mobile niakvio
+
+      - name: Start real Android emulator
+        shell: bash
+        run: |
+          bash niakvio/lab/real-client/android/start_emulator.sh
+
+      - name: Execute official Android Full provider runtime
+        working-directory: nuvio-mobile
+        shell: bash
+        run: |
+          set -o pipefail
+          TASKS=$(./gradlew :composeApp:tasks --all -Pnuvio.android.distribution=full --console=plain)
+          TASK=$(printf '%s\n' "$TASKS" | awk 'tolower($1) ~ /connected.*device.*test/ {print $1; exit}')
+          if [ -z "$TASK" ]; then
+            TASK=$(printf '%s\n' "$TASKS" | awk 'tolower($1) ~ /device.*test/ && tolower($0) ~ /connected/ {print $1; exit}')
+          fi
+          if [ -z "$TASK" ]; then
+            printf '%s\n' "$TASKS" | grep -i 'deviceTest' || true
+            echo "Unable to resolve connected Android device-test task" >&2
+            exit 1
+          fi
+          echo "Resolved Android device test task: $TASK"
+          set +e
+          ./gradlew ":composeApp:$TASK" -Pnuvio.android.distribution=full --no-daemon --console=plain
+          STATUS=$?
+          set -e
+          echo "===== EXACT ANDROID PROVIDER RESULTS ====="
+          "${ANDROID_HOME}/platform-tools/adb" -s "$ANDROID_SERIAL" logcat -d -s NiakvioRealLab:I '*:S' || true
+          if [ "$STATUS" -ne 0 ]; then
+            echo "===== EMULATOR LOG TAIL ====="
+            tail -n 200 /tmp/niakvio-emulator.log || true
+          fi
+          exit "$STATUS"
