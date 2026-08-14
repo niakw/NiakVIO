@@ -1642,6 +1642,12 @@ def choose_variant_with_baseline_protection(
 def main() -> int:
     sources = load_json(SOURCES_PATH, {})
     config = load_json(CONFIG_PATH, {})
+    override_config = load_overrides()
+    configured_provider_patches = (
+        override_config.get("provider_patches", {})
+        if isinstance(override_config, dict)
+        else {}
+    )
     registry = load_json(STAGE / "candidates.json")
     health = load_json(HEALTH_RESULTS_PATH)
     current_manifest = load_json(MANIFEST_PATH, {"scrapers": []})
