@@ -20,6 +20,7 @@ env:
 
 jobs:
   desktop-real-runtime:
+    if: ${{ !contains(github.event.head_commit.message, '[mobile-only]') }}
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
@@ -126,6 +127,7 @@ jobs:
           cat "$GITHUB_WORKSPACE/desktop-real-client-results.log"
 
   mobile-real-runtime:
+    if: ${{ !contains(github.event.head_commit.message, '[desktop-only]') }}
     runs-on: ubuntu-latest
     timeout-minutes: 40
     steps:
@@ -266,9 +268,20 @@ jobs:
         run: |
           set -euxo pipefail
           export ANDROID_SDK_ROOT="${ANDROID_SDK_ROOT:-$ANDROID_HOME}"
-          yes | sdkmanager --licenses >/dev/null || true
-          sdkmanager "platform-tools" "emulator" "system-images;android-35;google_apis;x86_64"
-          echo no | avdmanager create avd --force --name niakvio-ci --package "system-images;android-35;google_apis;x86_64" --device "pixel_2"
+          SDKMANAGER="$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager"
+          AVDMANAGER="$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/avdmanager"
+          if [ ! -x "$SDKMANAGER" ]; then
+            SDKMANAGER=$(find "$ANDROID_SDK_ROOT/cmdline-tools" -type f -name sdkmanager -perm -u+x | head -n1)
+          fi
+          if [ ! -x "$AVDMANAGER" ]; then
+            AVDMANAGER=$(find "$ANDROID_SDK_ROOT/cmdline-tools" -type f -name avdmanager -perm -u+x | head -n1)
+          fi
+          test -x "$SDKMANAGER"
+          test -x "$AVDMANAGER"
+          export PATH="$ANDROID_SDK_ROOT/platform-tools:$ANDROID_SDK_ROOT/emulator:$(dirname "$SDKMANAGER"):$PATH"
+          yes | "$SDKMANAGER" --licenses >/dev/null || true
+          "$SDKMANAGER" "platform-tools" "emulator" "system-images;android-35;google_apis;x86_64"
+          echo no | "$AVDMANAGER" create avd --force --name niakvio-ci --package "system-images;android-35;google_apis;x86_64" --device "pixel_2"
           sudo chmod 666 /dev/kvm || true
           nohup "$ANDROID_SDK_ROOT/emulator/emulator" \
             -avd niakvio-ci \
