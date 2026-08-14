@@ -1,5 +1,4 @@
 name: Validate provider engine regressions offline
-# One-shot retry after cancelling the stale deep run; publication remains metadata-only.
 
 on:
   workflow_dispatch:
@@ -84,12 +83,20 @@ jobs:
 
       - name: Publish validated ownership metadata only
         run: |
-          CHANGED="$(git status --porcelain | awk '{$1=$1};1')"
-          if [ "$CHANGED" != "M provider-overrides.json" ]; then
-            echo "Unexpected reconstructed delta; refusing metadata publication:"
-            git status --short
+          git status --porcelain > /tmp/provider-engine-status
+          while IFS= read -r line; do
+            case "$line" in
+              " M FILE-HASHES.json"|" M PATCH-SHA256SUMS.txt"|" M SHA256SUMS.json"|" M provider-overrides.json"|"?? reconstructed/"*) ;;
+              *)
+                echo "Unexpected reconstructed delta: $line"
+                exit 1
+                ;;
+            esac
+          done < /tmp/provider-engine-status
+          grep -Fxq " M provider-overrides.json" /tmp/provider-engine-status || {
+            echo "provider-overrides.json was not reconstructed; refusing publication"
             exit 1
-          fi
+          }
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -- provider-overrides.json
