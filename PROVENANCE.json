@@ -16547,9 +16547,9 @@
     },
     "purstream": {
       "id": "purstream",
-      "published_filename": "providers/purstream--nuvio--1895ed2fdc3f9ccf.js",
-      "sha256": "1895ed2fdc3f9ccffafc597b3c87a60c05f5a58d3f295843de4b908fa31aee9f",
-      "patched_sha256": "1895ed2fdc3f9ccffafc597b3c87a60c05f5a58d3f295843de4b908fa31aee9f",
+      "published_filename": "providers/purstream--nuvio--40c9e6a91441db06.js",
+      "sha256": "40c9e6a91441db06f8fa9944b8510bc0a349b32a28d145a22189dd1b64bf0d79",
+      "patched_sha256": "40c9e6a91441db06f8fa9944b8510bc0a349b32a28d145a22189dd1b64bf0d79",
       "upstream_sha256": "02173d75d873826f33e7bd45bb1c7973e557845548a8634b3ed1a5161c89abb8",
       "local_patches": [
         {
@@ -16572,6 +16572,13 @@
           "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
           "phase": "discovery",
           "scope": "global_playback_integrity"
+        },
+        {
+          "type": "migration",
+          "name": "cross_provider_wrapper_isolation",
+          "count": 1,
+          "phase": "discovery",
+          "scope": "provider_isolation"
         }
       ],
       "source": "aio",

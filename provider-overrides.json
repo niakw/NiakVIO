@@ -363,8 +363,6 @@
       ],
       "capability": "official_domain_hub",
       "official_hub": "https://purstream.wiki",
-      "patch_script": "scripts/provider_patches/purstream_bridge.py",
-      "patch_options": {},
       "profiles": [],
       "published_types": [
         "movie",
@@ -1944,7 +1942,6 @@
       "allow_html_url": false,
       "observed_origins": [
         "https://api.purstream",
-        "https://api.movix.fun",
         "https://movix.fun"
       ],
       "generated_from_manifest": true,
@@ -4029,7 +4026,6 @@
       "requires_direct_media": false,
       "observed_origins": [
         "https://api.purstream",
-        "https://api.movix.fun",
         "https://movix.fun"
       ],
       "generated_from_manifest_or_stage": true
@@ -4951,5 +4947,14 @@
       "timeout_ms": 6500,
       "preserve_original": true
     }
+  },
+  "provider_engine_normalization": {
+    "schema_version": 2,
+    "activation_state_unchanged": true,
+    "route_state_unchanged": true,
+    "safety_quarantines_unchanged": true,
+    "cross_provider_api_hooks_forbidden": true,
+    "removed_cross_provider_hooks": 0,
+    "removed_cross_provider_capability_origins": 2
   }
 }
