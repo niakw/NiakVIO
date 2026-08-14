@@ -9,6 +9,7 @@ on:
       - "scripts/apply_provider_overrides.py"
       - "scripts/reapply_published_overrides.py"
       - "scripts/validate_published_overrides.py"
+      - "scripts/validate_activation_preservation.py"
       - "scripts/audit_catalogue_identity_media.py"
       - "scripts/quarantine_catalogue_audit_failures.py"
       - "scripts/run_adaptive_deep_repair.py"
@@ -57,6 +58,7 @@ jobs:
           python -m py_compile scripts/apply_provider_overrides.py
           python -m py_compile scripts/reapply_published_overrides.py
           python -m py_compile scripts/validate_published_overrides.py
+          python -m py_compile scripts/validate_activation_preservation.py
           python -m py_compile scripts/audit_catalogue_identity_media.py
           python -m py_compile scripts/quarantine_catalogue_audit_failures.py
           python -m py_compile scripts/run_adaptive_deep_repair.py
