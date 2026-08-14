@@ -21,19 +21,8 @@ env:
 
 jobs:
   desktop-native-corpus:
-    strategy:
-      fail-fast: false
-      max-parallel: 2
-      matrix:
-        fixture:
-          - interstellar
-          - mon-ninja-et-moi-3
-          - breaking-bad-s01e01
-          - revenant-s01e01
-          - jujutsu-kaisen-s01e01
-          - mushoku-tensei-s01e01
     runs-on: ubuntu-latest
-    timeout-minutes: 100
+    timeout-minutes: 220
     steps:
       - name: Checkout current Niakvio main
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
@@ -47,12 +36,18 @@ jobs:
           distribution: temurin
           java-version: "17"
 
+      - name: Set up Node
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: "24"
+          package-manager-cache: false
+
       - name: Install official Desktop player dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev
 
-      - name: Checkout pinned official NuvioDesktop and inject full provider corpus
+      - name: Checkout pinned official NuvioDesktop and stage all manifest providers once
         shell: bash
         run: |
           set -euxo pipefail
@@ -60,44 +55,44 @@ jobs:
           git -C nuvio-desktop checkout "$NUVIO_DESKTOP_SHA"
           touch nuvio-desktop/local.properties
           python3 niakvio/scripts/prepare_native_corpus_validation.py desktop \
-            --fixture "${{ matrix.fixture }}" \
+            --fixture interstellar \
             --workspace "$GITHUB_WORKSPACE"
 
-      - name: Execute and analyze every provider in official Desktop PluginRuntime
-        working-directory: nuvio-desktop
+      - name: Execute six works across every provider in one official Desktop runtime
         shell: bash
         run: |
-          set +e
-          ./gradlew :composeApp:desktopTest \
-            --tests 'com.nuvio.app.features.plugins.NiakvioNativeCorpusDesktopTest' \
-            --no-daemon --console=plain
-          RUNTIME_STATUS=$?
-          set -e
-          LOG="$GITHUB_WORKSPACE/desktop-native-corpus-${{ matrix.fixture }}.log"
-          echo "===== EXACT DESKTOP NATIVE CORPUS RESULTS: ${{ matrix.fixture }} ====="
-          cat "$LOG" || true
-          ANALYSIS_STATUS=0
-          node "$GITHUB_WORKSPACE/niakvio/scripts/analyze_native_corpus_results.cjs" \
-            "${{ matrix.fixture }}" "$LOG" || ANALYSIS_STATUS=$?
-          echo "FIELD_NATIVE_CORPUS_DESKTOP_STATUS fixture=${{ matrix.fixture }} runtime=$RUNTIME_STATUS analysis=$ANALYSIS_STATUS"
-          if [ "$RUNTIME_STATUS" -ne 0 ] || [ "$ANALYSIS_STATUS" -ne 0 ]; then
-            exit 1
-          fi
+          set -u
+          FIXTURES=(
+            interstellar
+            mon-ninja-et-moi-3
+            breaking-bad-s01e01
+            revenant-s01e01
+            jujutsu-kaisen-s01e01
+            mushoku-tensei-s01e01
+          )
+          STATUS=0
+          for fixture in "${FIXTURES[@]}"; do
+            echo "===== DESKTOP CORPUS FIXTURE: $fixture ====="
+            python3 niakvio/scripts/restage_native_corpus_fixture.py desktop \
+              --fixture "$fixture" --workspace "$GITHUB_WORKSPACE" || { STATUS=1; continue; }
+            LOG="$GITHUB_WORKSPACE/desktop-native-corpus-${fixture}.log"
+            rm -f "$LOG"
+            RUNTIME_STATUS=0
+            ./nuvio-desktop/gradlew -p nuvio-desktop :composeApp:desktopTest \
+              --tests 'com.nuvio.app.features.plugins.NiakvioNativeCorpusDesktopTest' \
+              --no-daemon --console=plain || RUNTIME_STATUS=$?
+            cat "$LOG" || true
+            ANALYSIS_STATUS=0
+            node niakvio/scripts/analyze_native_corpus_results.cjs "$fixture" "$LOG" || ANALYSIS_STATUS=$?
+            echo "FIELD_NATIVE_CORPUS_DESKTOP_STATUS fixture=$fixture runtime=$RUNTIME_STATUS analysis=$ANALYSIS_STATUS"
+            if [ "$RUNTIME_STATUS" -ne 0 ] || [ "$ANALYSIS_STATUS" -ne 0 ]; then STATUS=1; fi
+          done
+          echo "FIELD_NATIVE_CORPUS_DESKTOP_SUITE_STATUS status=$STATUS fixtures=${#FIXTURES[@]} clients=1"
+          exit "$STATUS"
 
   android-mobile-tv-native-corpus:
-    strategy:
-      fail-fast: false
-      max-parallel: 2
-      matrix:
-        fixture:
-          - interstellar
-          - mon-ninja-et-moi-3
-          - breaking-bad-s01e01
-          - revenant-s01e01
-          - jujutsu-kaisen-s01e01
-          - mushoku-tensei-s01e01
     runs-on: ubuntu-latest
-    timeout-minutes: 160
+    timeout-minutes: 300
     steps:
       - name: Checkout current Niakvio main
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
@@ -111,7 +106,13 @@ jobs:
           distribution: temurin
           java-version: "17"
 
-      - name: Checkout pinned official Mobile and TV runtimes and inject full provider corpus
+      - name: Set up Node
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: "24"
+          package-manager-cache: false
+
+      - name: Checkout pinned official Mobile and TV runtimes and stage all manifest providers once
         shell: bash
         run: |
           set -euxo pipefail
@@ -122,7 +123,7 @@ jobs:
           git -C nuvio-tv checkout "$NUVIO_TV_SHA"
           touch nuvio-tv/local.properties nuvio-tv/local.dev.properties
           python3 niakvio/scripts/prepare_native_corpus_validation.py android \
-            --fixture "${{ matrix.fixture }}" \
+            --fixture interstellar \
             --workspace "$GITHUB_WORKSPACE"
           python3 niakvio/scripts/harden_nuvio_mobile_device_test.py "$GITHUB_WORKSPACE/nuvio-mobile"
 
@@ -134,7 +135,7 @@ jobs:
             ls -l /dev/kvm || true
           fi
 
-      - name: Execute and analyze every provider in official Mobile then TV PluginRuntime
+      - name: Execute six works across every provider in one official Mobile and TV emulator
         uses: ReactiveCircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d
         with:
           api-level: 35
@@ -144,4 +145,4 @@ jobs:
           cores: 2
           ram-size: 2048M
           emulator-boot-timeout: 600
-          script: bash "$GITHUB_WORKSPACE/niakvio/scripts/run_native_corpus_android_lab.sh" "${{ matrix.fixture }}"
+          script: bash "$GITHUB_WORKSPACE/niakvio/scripts/run_native_corpus_android_suite.sh"
