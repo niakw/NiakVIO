@@ -21,7 +21,7 @@ env:
 jobs:
   desktop-real-runtime:
     runs-on: ubuntu-latest
-    timeout-minutes: 18
+    timeout-minutes: 25
     steps:
       - name: Checkout Niakvio
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
@@ -33,6 +33,13 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
+      - name: Install official Linux player dependencies
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libgstreamer1.0-dev \
+            libgstreamer-plugins-base1.0-dev
       - name: Checkout exact official NuvioDesktop runtime
         shell: bash
         run: |
@@ -110,7 +117,7 @@ jobs:
 
   mobile-real-runtime:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 35
     steps:
       - name: Checkout Niakvio
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
@@ -129,34 +136,88 @@ jobs:
           cd nuvio-mobile
           git checkout "$NIAKVIO_MOBILE_SHA"
           touch local.properties
-      - name: Inject exact Android Full host runtime test
+      - name: Enable official Android device-test compilation
         shell: bash
         run: |
-          mkdir -p nuvio-mobile/composeApp/src/androidFullHostTest/kotlin/com/nuvio/app/features/plugins
-          cat > nuvio-mobile/composeApp/src/androidFullHostTest/kotlin/com/nuvio/app/features/plugins/NiakvioRealProviderMobileTest.kt <<'KOTLIN'
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('nuvio-mobile/composeApp/build.gradle.kts')
+          text = path.read_text()
+          needle = '        withHostTest {}\n\n        compilerOptions {'
+          replacement = '''        withHostTest {}
+          withDeviceTest {
+              instrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+              execution = "HOST"
+          }
+
+          compilerOptions {'''
+          if needle not in text:
+              raise SystemExit('Unable to locate Android test compilation block')
+          text = text.replace(needle, replacement, 1)
+          needle = '''        val androidHostTest by getting {
+              if (androidDistribution == "full") {
+                  kotlin.srcDir(project.file("src/androidFullHostTest/kotlin"))
+              }
+          }
+          commonMain.dependencies {'''
+          replacement = '''        val androidHostTest by getting {
+              if (androidDistribution == "full") {
+                  kotlin.srcDir(project.file("src/androidFullHostTest/kotlin"))
+              }
+          }
+          val androidDeviceTest by getting {
+              dependencies {
+                  implementation(libs.junit)
+                  implementation(libs.androidx.testExt.junit)
+                  implementation("androidx.test:runner:1.7.0")
+              }
+          }
+          commonMain.dependencies {'''
+          if needle not in text:
+              raise SystemExit('Unable to locate Android test source-set block')
+          path.write_text(text.replace(needle, replacement, 1))
+          PY
+          cat > nuvio-mobile/composeApp/src/androidMain/AndroidManifest.xml <<'XML'
+          <?xml version="1.0" encoding="utf-8"?>
+          <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+              <uses-permission android:name="android.permission.INTERNET" />
+          </manifest>
+          XML
+      - name: Inject exact Mon Ninja Android device test
+        shell: bash
+        run: |
+          TEST_ROOT=nuvio-mobile/composeApp/src/androidDeviceTest
+          mkdir -p "$TEST_ROOT/kotlin/com/nuvio/app/features/plugins" "$TEST_ROOT/assets/niakvio"
+          cp niakvio/providers/moviebox--published-baseline--1c0c9c423a094e0d.js "$TEST_ROOT/assets/niakvio/"
+          cp niakvio/providers/netmirror--published-baseline--ccbd35984c20fc8b.js "$TEST_ROOT/assets/niakvio/"
+          cp niakvio/providers/streamzo--published-baseline--bc19a7586f9f3bb8.js "$TEST_ROOT/assets/niakvio/"
+          cat > "$TEST_ROOT/kotlin/com/nuvio/app/features/plugins/NiakvioRealProviderMobileTest.kt" <<'KOTLIN'
           package com.nuvio.app.features.plugins
 
+          import androidx.test.platform.app.InstrumentationRegistry
           import com.nuvio.app.features.plugins.runtime.PluginRuntime
-          import java.io.File
           import kotlinx.coroutines.runBlocking
-          import kotlin.test.Test
-          import kotlin.test.assertEquals
-          import kotlin.test.assertTrue
+          import org.junit.Assert.assertEquals
+          import org.junit.Assert.assertTrue
+          import org.junit.Test
 
           class NiakvioRealProviderMobileTest {
-              private val root = File(System.getenv("GITHUB_WORKSPACE"), "niakvio")
               private val providers = listOf(
-                  "moviebox" to "providers/moviebox--published-baseline--1c0c9c423a094e0d.js",
-                  "netmirror" to "providers/netmirror--published-baseline--ccbd35984c20fc8b.js",
-                  "streamzo" to "providers/streamzo--published-baseline--bc19a7586f9f3bb8.js",
+                  "moviebox" to "niakvio/moviebox--published-baseline--1c0c9c423a094e0d.js",
+                  "netmirror" to "niakvio/netmirror--published-baseline--ccbd35984c20fc8b.js",
+                  "streamzo" to "niakvio/streamzo--published-baseline--bc19a7586f9f3bb8.js",
               )
+
+              private fun providerCode(relative: String): String =
+                  InstrumentationRegistry.getInstrumentation().context.assets.open(relative)
+                      .bufferedReader().use { it.readText() }
 
               @Test
               fun exactMonNinjaProviders() = runBlocking {
                   providers.forEach { (id, relative) ->
                       val started = System.currentTimeMillis()
                       val rows = PluginRuntime.executePlugin(
-                          code = File(root, relative).readText(),
+                          code = providerCode(relative),
                           tmdbId = "1215638",
                           mediaType = "movie",
                           season = null,
@@ -168,8 +229,8 @@ jobs:
                           println("FIELD_MOBILE_ROW provider=$id index=$index title=${row.title} name=${row.name} quality=${row.quality} language=${row.language} type=${row.type} url=${row.url} headers=${row.headers}")
                       }
                       if (id == "streamzo") {
-                          assertTrue(rows.isNotEmpty(), "StreamZo must resolve Mon Ninja 3 in official mobile Full runtime")
-                          assertTrue(rows.any { it.url.contains(".m3u8") }, "StreamZo must expose HLS on mobile")
+                          assertTrue("StreamZo must resolve Mon Ninja 3 in official Android runtime", rows.isNotEmpty())
+                          assertTrue("StreamZo must expose HLS on Android", rows.any { it.url.contains(".m3u8") })
                       }
                   }
               }
@@ -191,17 +252,43 @@ jobs:
               }
           }
           KOTLIN
-      - name: Execute official NuvioMobile Android Full host runtime test
+      - name: Start Android emulator
+        shell: bash
+        run: |
+          set -euxo pipefail
+          export ANDROID_SDK_ROOT="${ANDROID_SDK_ROOT:-$ANDROID_HOME}"
+          yes | sdkmanager --licenses >/dev/null || true
+          sdkmanager "platform-tools" "emulator" "system-images;android-35;google_apis;x86_64"
+          echo no | avdmanager create avd --force --name niakvio-ci --package "system-images;android-35;google_apis;x86_64" --device "pixel_2"
+          sudo chmod 666 /dev/kvm || true
+          nohup "$ANDROID_SDK_ROOT/emulator/emulator" \
+            -avd niakvio-ci \
+            -no-window \
+            -no-audio \
+            -no-boot-anim \
+            -no-snapshot \
+            -gpu swiftshader_indirect \
+            >/tmp/niakvio-emulator.log 2>&1 &
+          adb wait-for-device
+          timeout 240 bash -c 'until [ "$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d "\r")" = "1" ]; do sleep 5; done'
+          adb shell settings put global window_animation_scale 0
+          adb shell settings put global transition_animation_scale 0
+          adb shell settings put global animator_duration_scale 0
+          adb devices -l
+      - name: Execute official NuvioMobile Android Full device runtime test
         working-directory: nuvio-mobile
         shell: bash
         run: |
-          TASK=$(./gradlew :composeApp:tasks --all -Pnuvio.android.distribution=full --console=plain | sed -n 's/^\([^ ]*[Aa]ndroid[^ ]*[Hh]ost[Tt]est[^ ]*\) .*/\1/p' | head -n1)
+          set -o pipefail
+          TASKS=$(./gradlew :composeApp:tasks --all -Pnuvio.android.distribution=full --console=plain)
+          TASK=$(printf '%s\n' "$TASKS" | awk 'tolower($1) ~ /connected.*device.*test/ {print $1; exit}')
           if [ -z "$TASK" ]; then
-            TASK=$(./gradlew :composeApp:tasks --all -Pnuvio.android.distribution=full --console=plain | awk '/androidHostTest/ {print $1; exit}')
+            TASK=$(printf '%s\n' "$TASKS" | awk 'tolower($1) ~ /device.*test/ && tolower($0) ~ /connected/ {print $1; exit}')
           fi
           if [ -z "$TASK" ]; then
-            echo "Unable to resolve Android host test task" >&2
+            printf '%s\n' "$TASKS" | grep -i 'deviceTest' || true
+            echo "Unable to resolve connected Android device-test task" >&2
             exit 1
           fi
-          echo "Resolved mobile test task: $TASK"
+          echo "Resolved mobile device test task: $TASK"
           ./gradlew ":composeApp:$TASK" -Pnuvio.android.distribution=full --no-daemon --console=plain
