@@ -39,6 +39,7 @@ jobs:
           git clone --filter=blob:none --no-checkout https://github.com/NuvioMedia/NuvioDesktop.git nuvio-desktop
           cd nuvio-desktop
           git checkout "$NIAKVIO_DESKTOP_SHA"
+          touch local.properties
       - name: Inject exact Mon Ninja provider test
         shell: bash
         run: |
@@ -127,6 +128,7 @@ jobs:
           git clone --filter=blob:none --no-checkout https://github.com/NuvioMedia/NuvioMobile.git nuvio-mobile
           cd nuvio-mobile
           git checkout "$NIAKVIO_MOBILE_SHA"
+          touch local.properties
       - name: Inject exact Android Full host runtime test
         shell: bash
         run: |
