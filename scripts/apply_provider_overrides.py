@@ -59,7 +59,6 @@ def _load_patch_module(patch_script: str, provider_id: str):
 
 
 def profile_matches(text: str, profile: dict[str, Any]) -> bool:
-    """Return whether a profile's structural capability markers match a bundle."""
     all_markers = [str(v) for v in profile.get("detect_all") or []]
     any_markers = [str(v) for v in profile.get("detect_any") or []]
     none_markers = [str(v) for v in profile.get("detect_none") or []]
@@ -72,26 +71,14 @@ def profile_matches(text: str, profile: dict[str, Any]) -> bool:
     return bool(all_markers or any_markers or profile.get("auto_apply"))
 
 
-def _apply_patch_script(
-    text: str,
-    provider_id: str,
-    patch_script: str,
-    options: dict[str, Any],
-    profile_name: str | None,
-) -> str:
+def _apply_patch_script(text: str, provider_id: str, patch_script: str, options: dict[str, Any], profile_name: str | None) -> str:
     module = _load_patch_module(patch_script, provider_id)
     apply_fn = getattr(module, "apply", None)
     if not callable(apply_fn):
         raise ValueError(f"provider patch {patch_script} has no callable apply()")
-    kwargs = {
-        "options": options,
-        "context": {"provider_id": provider_id, "profile": profile_name},
-    }
+    kwargs = {"options": options, "context": {"provider_id": provider_id, "profile": profile_name}}
     signature = inspect.signature(apply_fn)
-    if "options" in signature.parameters or any(
-        parameter.kind == parameter.VAR_KEYWORD
-        for parameter in signature.parameters.values()
-    ):
+    if "options" in signature.parameters or any(parameter.kind == parameter.VAR_KEYWORD for parameter in signature.parameters.values()):
         result = apply_fn(text, **kwargs)
     else:
         result = apply_fn(text)
@@ -105,7 +92,6 @@ def _normalize_profile_names(values: Iterable[str] | None) -> set[str]:
 
 
 def _replace_named_function(text: str, function_name: str, replacement: str) -> tuple[str, bool]:
-    """Replace a classic named JavaScript function using balanced braces."""
     match = re.search(rf"function\s+{re.escape(function_name)}\s*\([^)]*\)\s*\{{", text)
     if not match:
         return text, False
@@ -140,12 +126,7 @@ def _replace_named_function(text: str, function_name: str, replacement: str) -> 
     raise ValueError(f"unterminated function while replacing {function_name}")
 
 
-def _apply_named_function_replacements(
-    text: str,
-    provider_id: str,
-    function_replacements: dict[str, Any],
-    phase: str,
-) -> tuple[str, list[dict[str, Any]]]:
+def _apply_named_function_replacements(text: str, provider_id: str, function_replacements: dict[str, Any], phase: str) -> tuple[str, list[dict[str, Any]]]:
     records: list[dict[str, Any]] = []
     for function_name, replacement in function_replacements.items():
         if not isinstance(replacement, str) or not replacement.strip():
@@ -154,23 +135,23 @@ def _apply_named_function_replacements(
         if not changed:
             continue
         text = updated
-        records.append(
-            {
-                "type": "function_replace",
-                "function": str(function_name),
-                "phase": phase,
-            }
-        )
+        records.append({"type": "function_replace", "function": str(function_name), "phase": phase})
     return text, records
+
+
+def _strip_legacy_global_stream_guards(text: str) -> tuple[str, int]:
+    pattern = re.compile(r"\n?/\* NUVIO_GLOBAL_STREAM_OUTPUT_GUARD_V(?:1|2|3) \*/[\s\S]*$", re.MULTILINE)
+    output, count = pattern.subn("", text)
+    if not count:
+        return text, 0
+    return output.rstrip() + ("\n" if output else ""), count
 
 
 def _configured_profiles(config: dict[str, Any], provider_id: str) -> list[dict[str, Any]]:
     provider_key = str(provider_id).casefold()
     patches = config.get("provider_patches", {}) if isinstance(config, dict) else {}
     provider_patch = patches.get(provider_key, {}) if isinstance(patches, dict) else {}
-    explicit_names = _normalize_profile_names(
-        provider_patch.get("profiles") if isinstance(provider_patch, dict) else None
-    )
+    explicit_names = _normalize_profile_names(provider_patch.get("profiles") if isinstance(provider_patch, dict) else None)
     definitions = config.get("patch_profiles", {}) if isinstance(config, dict) else {}
     profiles: list[dict[str, Any]] = []
     if not isinstance(definitions, dict):
@@ -188,22 +169,12 @@ def _configured_profiles(config: dict[str, Any], provider_id: str) -> list[dict[
     return profiles
 
 
-def apply_overrides(
-    provider_id: str,
-    data: bytes,
-    *,
-    phase: str = "discovery",
-    only_profiles: Iterable[str] | None = None,
-    only_profile: str | None = None,
-    runtime_context: dict[str, Any] | None = None,
-) -> tuple[bytes, list[dict[str, Any]]]:
-    """Apply durable overrides and matching profiles for a provider."""
+def apply_overrides(provider_id: str, data: bytes, *, phase: str = "discovery", only_profiles: Iterable[str] | None = None, only_profile: str | None = None, runtime_context: dict[str, Any] | None = None) -> tuple[bytes, list[dict[str, Any]]]:
     config = load_overrides()
     provider_key = str(provider_id).casefold()
     provider_patch = (config.get("provider_patches") or {}).get(provider_key, {})
     if not isinstance(provider_patch, dict):
         provider_patch = {}
-
     text = data.decode("utf-8", errors="strict")
     records: list[dict[str, Any]] = []
 
@@ -218,21 +189,16 @@ def apply_overrides(
             text = updated
             records.append({"type": "replace", "from": old, "to": new, "phase": phase})
 
+    text, removed_guards = _strip_legacy_global_stream_guards(text)
+    if removed_guards:
+        records.append({"type": "remove_legacy_global_stream_guard", "count": removed_guards, "phase": phase})
+
     function_replacements = provider_patch.get("function_replacements") or {}
     if phase == "discovery" and isinstance(function_replacements, dict):
-        text, function_records = _apply_named_function_replacements(
-            text,
-            provider_key,
-            function_replacements,
-            phase,
-        )
+        text, function_records = _apply_named_function_replacements(text, provider_key, function_replacements, phase)
         records.extend(function_records)
 
-    scripts = [
-        str(value)
-        for value in provider_patch.get("patch_scripts") or []
-        if str(value).strip()
-    ]
+    scripts = [str(value) for value in provider_patch.get("patch_scripts") or [] if str(value).strip()]
     legacy_script = str(provider_patch.get("patch_script") or "").strip()
     if legacy_script and legacy_script not in scripts:
         scripts.append(legacy_script)
@@ -252,13 +218,7 @@ def apply_overrides(
             if updated == text:
                 continue
             text = updated
-            records.append(
-                {
-                    "type": "patch_script",
-                    "path": script,
-                    "phase": phase,
-                }
-            )
+            records.append({"type": "patch_script", "path": script, "phase": phase})
 
     selected_profiles = set(_normalize_profile_names(only_profiles))
     if only_profile:
@@ -285,13 +245,6 @@ def apply_overrides(
         if updated == text:
             continue
         text = updated
-        records.append(
-            {
-                "type": "patch_profile",
-                "profile": profile_name,
-                "phase": phase,
-                "options": options,
-            }
-        )
+        records.append({"type": "patch_profile", "profile": profile_name, "phase": phase, "options": options})
 
     return text.encode("utf-8"), records
