@@ -1,0 +1,91 @@
+name: Temporary PR36 final clean
+
+on:
+  push:
+    branches:
+      - fix/main-native-proof-and-isolation
+    paths:
+      - ".github/triggers/tmp-pr36-final-clean"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: tmp-pr36-final-clean
+  cancel-in-progress: true
+
+jobs:
+  finalize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: fix/main-native-proof-and-isolation
+          fetch-depth: 0
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: "24"
+          package-manager-cache: false
+      - name: Install pinned dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Remove this temporary finalizer from the final tree
+        run: |
+          rm -f .github/workflows/tmp-pr36-final-clean.yml
+          rm -f .github/triggers/tmp-pr36-final-clean
+          test ! -e scripts/tmp_pr36_canonicalize_playback_transaction.py
+          test ! -e .github/workflows/tmp-pr36-rematerialize-wrapper-order.yml
+          test ! -e .github/workflows/tmp-pr36-fixed-point-diagnostic.yml
+      - name: Validate zero-drift provider generation
+        run: |
+          python scripts/reapply_published_overrides.py --check
+          python scripts/validate_published_overrides.py
+          python scripts/validate_activation_preservation.py
+          python scripts/validate_language_projection.py
+      - name: Regenerate hashes for the final clean tree
+        run: python scripts/generate_release_hashes.py
+      - name: Run complete repository regression suite
+        run: npm test --ignore-scripts
+      - name: Validate final release integrity
+        run: |
+          python scripts/reapply_published_overrides.py --check
+          python scripts/validate_published_overrides.py
+          python scripts/validate_activation_preservation.py
+          python scripts/validate_language_projection.py
+          python scripts/validate_release_integrity.py
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          package=json.loads(Path('package.json').read_text())
+          manifest=json.loads(Path('manifest.json').read_text())
+          vf=json.loads(Path('vf/manifest.json').read_text())
+          assert package['version']==manifest['version']==vf['version']=='5.20.56'
+          row=next(r for r in manifest['scrapers'] if str(r.get('id','')).casefold()=='streamzo')
+          assert row['version']=='1.0.46', row
+          text=Path(row['filename']).read_text()
+          h=text.index('NUVIO_HLS_RUNTIME_INTEGRITY_V1')
+          m=text.index('NUVIO_GLOBAL_MEDIA_ENRICHMENT_V1')
+          s=text.index('NUVIO_GLOBAL_RUNTIME_MEDIA_SAFETY_V1')
+          assert h<m<s,(h,m,s)
+          print('final clean release contract passed', package['version'], row['filename'])
+          PY
+      - name: Commit clean final tree
+        run: |
+          git config user.name 'niakvio-ci'
+          git config user.email 'actions@users.noreply.github.com'
+          git add -A .github/workflows/tmp-pr36-final-clean.yml .github/triggers/tmp-pr36-final-clean
+          git add FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json
+          if ! git diff --cached --quiet; then
+            git commit -m 'chore: finalize clean 5.20.56 release tree'
+            git push origin HEAD:fix/main-native-proof-and-isolation
+          fi
+      - name: Verify pushed branch
+        run: |
+          git fetch origin fix/main-native-proof-and-isolation
+          git reset --hard origin/fix/main-native-proof-and-isolation
+          python scripts/reapply_published_overrides.py --check
+          python scripts/validate_release_integrity.py
+          test -z "$(git status --porcelain)"
