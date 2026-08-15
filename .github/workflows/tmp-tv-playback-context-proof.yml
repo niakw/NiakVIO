@@ -6,7 +6,7 @@ on:
       - fix/tv-playback-context-runtime
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   proof:
@@ -33,22 +33,7 @@ jobs:
         run: python3 tests/runtime_media_safety_guard_test.py
       - name: TV provider hardening regression
         run: python3 tests/tv_provider_hardening_test.py
-      - name: Materialize durable provider outputs
-        run: |
-          python3 scripts/reapply_published_overrides.py
-          python3 scripts/prune_unreferenced_providers.py
-          python3 scripts/generate_release_hashes.py
-          python3 scripts/validate_release_integrity.py
-          python3 scripts/reapply_published_overrides.py --check
-      - name: Commit generated provider transaction
-        shell: bash
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A providers manifest.json vf/manifest.json PROVENANCE.json FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json package.json package-lock.json sources.json nuvio-client-id-state.json 2>/dev/null || true
-          if git diff --cached --quiet; then
-            echo "Durable provider outputs already current."
-            exit 0
-          fi
-          git commit -m "build: materialize TV playback-context providers"
-          git push origin HEAD:fix/tv-playback-context-runtime
+      - name: Durable provider outputs are current
+        run: python3 scripts/reapply_published_overrides.py --check
+      - name: Release integrity
+        run: python3 scripts/validate_release_integrity.py
