@@ -68,8 +68,10 @@ jobs:
               assert '"runtime_evidence_eligible": True' not in text, path
           print('publisher activation preservation tests passed')
           PY
-      - name: Full repository regression and integrity
+      - name: Refresh published state and run full regression
         run: |
+          python scripts/reapply_published_overrides.py
+          python scripts/reapply_published_overrides.py --check
           python scripts/generate_release_hashes.py
           npm test --ignore-scripts
           python scripts/validate_release_integrity.py
