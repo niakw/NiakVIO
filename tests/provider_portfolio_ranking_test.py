@@ -99,5 +99,17 @@ with tempfile.TemporaryDirectory() as tmp:
     assert hard_max >= normal_max
     assert POLICY["coverage_preservation"]["allow_active_above_normal_max_when_needed"] is True
     assert POLICY["coverage_preservation"]["never_delete_for_redundancy_without_coverage_evidence"] is True
+    assert POLICY["coverage_preservation"]["repair_before_retire_when_unique_or_vf"] is True
+
+    # The six-work native corpus is a strong regression/runtime gate, not enough
+    # evidence by itself to retire a provider with potentially unique catalogue.
+    retirement = POLICY["retirement_guard"]
+    assert retirement["portfolio_ranking_is_advisory"] is True
+    assert retirement["automatic_deactivation_from_portfolio"] is False
+    assert retirement["require_broad_catalogue_evidence_before_redundancy_deactivation"] is True
+    assert int(retirement["minimum_breadth_fixtures_before_redundancy_deactivation"]) >= 20
+    assert retirement["require_no_unique_fixture_coverage"] is True
+    assert retirement["require_no_unique_vf_fixture_coverage"] is True
+    assert retirement["runtime_or_transport_failure_means_repair_not_unsafe"] is True
 
 print("provider portfolio quality-first ranking tests passed")
