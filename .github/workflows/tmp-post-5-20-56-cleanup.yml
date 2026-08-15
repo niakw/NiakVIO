@@ -1,0 +1,90 @@
+name: Temporary post-5.20.56 cleanup validation
+
+on:
+  push:
+    branches:
+      - chore/post-5.20.56-cleanup
+    paths:
+      - ".github/triggers/tmp-post-5-20-56-cleanup"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: tmp-post-5-20-56-cleanup
+  cancel-in-progress: true
+
+jobs:
+  validate-cleanup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: chore/post-5.20.56-cleanup
+          fetch-depth: 0
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: "24"
+          package-manager-cache: false
+      - name: Install pinned dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Remove temporary validator from final tree
+        run: |
+          rm -f .github/workflows/tmp-post-5-20-56-cleanup.yml
+          rm -f .github/triggers/tmp-post-5-20-56-cleanup
+          test ! -e .github/triggers/tmp-engine-v4-native-proof
+          test ! -e .github/triggers/tmp-refresh-release-hashes
+          test ! -e .github/triggers/tmp-tv-mon-ninja-lab
+      - name: Validate zero-drift provider generation
+        run: |
+          python scripts/reapply_published_overrides.py --check
+          python scripts/validate_published_overrides.py
+          python scripts/validate_activation_preservation.py
+          python scripts/validate_language_projection.py
+      - name: Regenerate hashes for clean tree
+        run: python scripts/generate_release_hashes.py
+      - name: Run complete regression suite
+        run: npm test --ignore-scripts
+      - name: Validate final integrity and release version
+        run: |
+          python scripts/reapply_published_overrides.py --check
+          python scripts/generate_release_hashes.py
+          python scripts/validate_release_integrity.py
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          package = json.loads(Path('package.json').read_text())
+          manifest = json.loads(Path('manifest.json').read_text())
+          vf = json.loads(Path('vf/manifest.json').read_text())
+          assert package['version'] == manifest['version'] == vf['version'] == '5.20.56'
+          assert not any(Path('.github/triggers').glob('tmp-*'))
+          assert not any(Path('.github/workflows').glob('tmp-*'))
+          assert not Path('README.tmp').exists()
+          print('post-release cleanup contract passed: 5.20.56')
+          PY
+      - name: Commit clean hash state
+        run: |
+          git config user.name 'niakvio-ci'
+          git config user.email 'actions@users.noreply.github.com'
+          git add -A .github/workflows/tmp-post-5-20-56-cleanup.yml .github/triggers/tmp-post-5-20-56-cleanup
+          git add FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json
+          if ! git diff --cached --quiet; then
+            git commit -m 'chore: finalize post-5.20.56 repository cleanup'
+            git push origin HEAD:chore/post-5.20.56-cleanup
+          fi
+      - name: Verify pushed branch is clean
+        run: |
+          git fetch origin chore/post-5.20.56-cleanup
+          git reset --hard origin/chore/post-5.20.56-cleanup
+          python scripts/reapply_published_overrides.py --check
+          python scripts/validate_release_integrity.py
+          test ! -e .github/workflows/tmp-post-5-20-56-cleanup.yml
+          test ! -e .github/triggers/tmp-post-5-20-56-cleanup
+          test ! -e .github/triggers/tmp-engine-v4-native-proof
+          test ! -e .github/triggers/tmp-refresh-release-hashes
+          test ! -e .github/triggers/tmp-tv-mon-ninja-lab
+          test -z "$(git status --porcelain)"
