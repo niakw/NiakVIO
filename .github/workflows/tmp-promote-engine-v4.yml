@@ -116,6 +116,7 @@ jobs:
           assert 'NUVIO_NATIVE_HLS_INTEGRITY_BUDGET_V1' in payload
           assert 'NUVIO_TV_TARGET_MEDIA_V4' in payload
           assert 'NUVIO_TV_TEXT_ONLY_FETCH_COMPAT_V1' in payload
+          assert 'NUVIO_TV_PROTOCOL_RELATIVE_URL_COMPAT_V1' in payload
           assert '"implementationRevision":"field-safety-v4-runtime-capability"' in payload
           print('native-safe engine-v4 promotion invariants passed')
           PY
