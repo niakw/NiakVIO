@@ -39,24 +39,41 @@ function listFiles(dir) {
   }
   return out.sort();
 }
+function normalize(value) {
+  return String(value || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+}
+function frenchAudioEvidence(f) {
+  const language = normalize(decode(f.language64));
+  const labels = normalize(`${decode(f.title64)} ${decode(f.name64)} ${language}`);
+  if (/\bvostfr\b|\bvost\b|\bsub(?:bed|title|titles)?\b|sous[- ]?titr/.test(labels)) return false;
+  if (/^(?:fr|fr-fr|fra|fre|french|francais|vf|truefrench)$/.test(language)) return true;
+  return /\b(?:truefrench|vf|french audio|audio fr|audio francais|francais)\b/.test(labels);
+}
 
 const hits = new Map();
-function hit(provider, fixture, client) {
+const vfHits = new Map();
+function hitInto(store, provider, fixture, client) {
   const id = String(provider || '').toLowerCase();
   if (!id || !fixture || !client) return;
-  if (!hits.has(id)) hits.set(id, new Map());
-  const byFixture = hits.get(id);
+  if (!store.has(id)) store.set(id, new Map());
+  const byFixture = store.get(id);
   if (!byFixture.has(fixture)) byFixture.set(fixture, new Set());
   byFixture.get(fixture).add(client);
 }
 
 for (const file of listFiles(inputDir)) {
   for (const raw of fs.readFileSync(file, 'utf8').split(/\r?\n/)) {
-    const marker = raw.indexOf('FIELD_NATIVE_RESULT ');
-    if (marker < 0) continue;
-    const f = fields(raw.slice(marker).trim());
-    if (Number(f.count || 0) <= 0) continue;
-    hit(decode(f.provider64), f.fixture || '', f.client || '');
+    const resultMarker = raw.indexOf('FIELD_NATIVE_RESULT ');
+    if (resultMarker >= 0) {
+      const f = fields(raw.slice(resultMarker).trim());
+      if (Number(f.count || 0) > 0) hitInto(hits, decode(f.provider64), f.fixture || '', f.client || '');
+      continue;
+    }
+    const rowMarker = raw.indexOf('FIELD_NATIVE_ROW ');
+    if (rowMarker >= 0) {
+      const f = fields(raw.slice(rowMarker).trim());
+      if (frenchAudioEvidence(f)) hitInto(vfHits, decode(f.provider64), f.fixture || '', f.client || '');
+    }
   }
 }
 
@@ -65,6 +82,7 @@ const rowById = new Map(rows.map((row) => [String(row.provider || '').toLowerCas
 const selected = new Set((portfolio.selected || []).map((v) => String(v).toLowerCase()));
 const baseSelected = new Set(selected);
 const protectedByCoverage = new Map();
+const protectedByVfCoverage = new Map();
 const repairPriority = new Map();
 const minimumClientsActive = Number(cfg.minimum_clients_for_active_guard || 3);
 const minimumClientsRepair = Number(cfg.minimum_clients_for_repair_priority || 1);
@@ -76,6 +94,9 @@ const rareVf = Number(cfg.rare_vf_fixture_provider_threshold || 2);
 function clientsFor(provider, fixture) {
   return hits.get(provider)?.get(fixture) || new Set();
 }
+function vfClientsFor(provider, fixture) {
+  return vfHits.get(provider)?.get(fixture) || new Set();
+}
 function fixturesFor(provider) {
   return [...(hits.get(provider)?.keys() || [])];
 }
@@ -85,19 +106,25 @@ function isSafe(row) {
 function fullHit(provider, fixture) {
   return clientsFor(provider, fixture).size >= minimumClientsActive;
 }
+function fullVfHit(provider, fixture) {
+  return vfClientsFor(provider, fixture).size >= minimumClientsActive;
+}
 function candidatesFor(fixture, vfOnly, fullOnly) {
   return rows
     .filter((row) => isSafe(row))
-    .filter((row) => !vfOnly || row.vf === true)
-    .filter((row) => fullOnly ? fullHit(String(row.provider).toLowerCase(), fixture) : clientsFor(String(row.provider).toLowerCase(), fixture).size >= minimumClientsRepair)
+    .filter((row) => {
+      const id = String(row.provider || '').toLowerCase();
+      const clients = vfOnly ? vfClientsFor(id, fixture) : clientsFor(id, fixture);
+      return fullOnly ? clients.size >= minimumClientsActive : clients.size >= minimumClientsRepair;
+    })
     .sort((a, b) => Number(b.score || 0) - Number(a.score || 0) || Number(b.catalogueCoverageRate || 0) - Number(a.catalogueCoverageRate || 0) || String(a.provider).localeCompare(String(b.provider)));
 }
 function selectedCount(fixture, vfOnly) {
   let count = 0;
   for (const id of selected) {
     const row = rowById.get(id);
-    if (!row || !isSafe(row) || (vfOnly && row.vf !== true)) continue;
-    if (fullHit(id, fixture)) count++;
+    if (!row || !isSafe(row)) continue;
+    if (vfOnly ? fullVfHit(id, fixture) : fullHit(id, fixture)) count++;
   }
   return count;
 }
@@ -106,6 +133,10 @@ function protect(row, fixture, reason) {
   selected.add(id);
   if (!protectedByCoverage.has(id)) protectedByCoverage.set(id, new Set());
   protectedByCoverage.get(id).add(`${fixture}:${reason}`);
+  if (reason === 'vf_redundancy') {
+    if (!protectedByVfCoverage.has(id)) protectedByVfCoverage.set(id, new Set());
+    protectedByVfCoverage.get(id).add(fixture);
+  }
 }
 
 const fixtures = new Set();
@@ -134,8 +165,15 @@ for (const row of rows) {
     const clients = clientsFor(id, fixture).size;
     if (clients < minimumClientsRepair || clients >= minimumClientsActive) continue;
     const safeProviders = candidatesFor(fixture, false, false).length;
-    const safeVfProviders = row.vf === true ? candidatesFor(fixture, true, false).length : 999;
-    if (safeProviders <= rareGeneral || safeVfProviders <= rareVf || selectedCount(fixture, false) < minGeneral || (row.vf === true && selectedCount(fixture, true) < minVf)) {
+    const vfClients = vfClientsFor(id, fixture).size;
+    const hasPartialVf = vfClients >= minimumClientsRepair;
+    const safeVfProviders = hasPartialVf ? candidatesFor(fixture, true, false).length : 999;
+    if (
+      safeProviders <= rareGeneral ||
+      (hasPartialVf && safeVfProviders <= rareVf) ||
+      selectedCount(fixture, false) < minGeneral ||
+      (hasPartialVf && selectedCount(fixture, true) < minVf)
+    ) {
       if (!repairPriority.has(id)) repairPriority.set(id, new Set());
       repairPriority.get(id).add(fixture);
     }
@@ -145,21 +183,26 @@ for (const row of rows) {
 for (const row of rows) {
   const id = String(row.provider || '').toLowerCase();
   row.coverageProtectionFixtures = [...(protectedByCoverage.get(id) || [])];
+  row.vfCoverageProtectionFixtures = [...(protectedByVfCoverage.get(id) || [])];
   row.repairPriorityFixtures = [...(repairPriority.get(id) || [])];
+  row.observedVfFixtures = fixturesFor(id).filter((fixture) => vfClientsFor(id, fixture).size >= minimumClientsRepair);
+  row.fullCrossPlatformVfFixtures = fixturesFor(id).filter((fixture) => fullVfHit(id, fixture));
   if (protectedByCoverage.has(id) && !baseSelected.has(id)) row.recommendation = 'active_coverage_guard';
   else if (repairPriority.has(id) && !selected.has(id)) row.recommendation = 'repair_priority_unique_coverage';
 }
 
 const orderedSelected = rows.filter((row) => selected.has(String(row.provider || '').toLowerCase())).map((row) => String(row.provider).toLowerCase());
-portfolio.schemaVersion = Math.max(Number(portfolio.schemaVersion || 1), 2);
+portfolio.schemaVersion = Math.max(Number(portfolio.schemaVersion || 1), 3);
 portfolio.selected = orderedSelected;
 portfolio.recommendedActive = orderedSelected.length;
 portfolio.recommendedReductionObserved = Math.max(0, Number(portfolio.currentlyActiveObserved || 0) - orderedSelected.length);
-portfolio.recommendedVf = rows.filter((row) => selected.has(String(row.provider || '').toLowerCase()) && row.vf === true).length;
+portfolio.recommendedVf = rows.filter((row) => selected.has(String(row.provider || '').toLowerCase()) && (row.fullCrossPlatformVfFixtures || []).length > 0).length;
 portfolio.protectedCoverageProviders = [...protectedByCoverage.keys()].sort();
+portfolio.protectedVfCoverageProviders = [...protectedByVfCoverage.keys()].sort();
 portfolio.repairPriorityProviders = [...repairPriority.keys()].sort();
 portfolio.normalPortfolioMax = Number(policy.portfolio?.normal_max_unique_active || policy.portfolio?.target_unique_active || 45);
 portfolio.coverageOverrideAboveNormalMax = orderedSelected.length > portfolio.normalPortfolioMax;
+portfolio.vfCoverageEvidence = 'FIELD_NATIVE_ROW language/title evidence per fixture and client; VOSTFR/subtitle-only rows do not count as VF';
 portfolio.coveragePolicy = cfg;
 fs.writeFileSync(portfolioPath, JSON.stringify(portfolio, null, 2) + '\n');
-console.log(`FIELD_PROVIDER_COVERAGE_GUARD ${JSON.stringify({ recommendedActive: portfolio.recommendedActive, protectedCoverageProviders: portfolio.protectedCoverageProviders, repairPriorityProviders: portfolio.repairPriorityProviders, coverageOverrideAboveNormalMax: portfolio.coverageOverrideAboveNormalMax })}`);
+console.log(`FIELD_PROVIDER_COVERAGE_GUARD ${JSON.stringify({ recommendedActive: portfolio.recommendedActive, recommendedVf: portfolio.recommendedVf, protectedCoverageProviders: portfolio.protectedCoverageProviders, protectedVfCoverageProviders: portfolio.protectedVfCoverageProviders, repairPriorityProviders: portfolio.repairPriorityProviders, coverageOverrideAboveNormalMax: portfolio.coverageOverrideAboveNormalMax })}`);
