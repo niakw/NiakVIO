@@ -66,6 +66,37 @@ else
 fi
 
 echo "FIELD_ANDROID_NATIVE_STATUS mobile=$MOBILE_STATUS tv=$TV_STATUS"
+
+# Keep the exact failure evidence visible through the GitHub Checks API even
+# when the emulator action exits non-zero. The raw job log is not always
+# retained/accessible by automation, so a failed native proof must remain
+# diagnosable without weakening any publication gate.
+if [[ -n "${GITHUB_STEP_SUMMARY:-}" ]]; then
+  {
+    echo "## Niakvio native Android proof"
+    echo
+    echo "- Mobile status: \`$MOBILE_STATUS\`"
+    echo "- TV status: \`$TV_STATUS\`"
+    echo "- StreamZo TV count: \`${TV_STREAMZO_COUNT:-missing}\`"
+    echo "- StreamZo TV HLS: \`$TV_STREAMZO_HLS\`"
+    echo
+    echo "### StreamZo / TV evidence"
+    echo '```text'
+    grep -E 'FIELD_TV_(NATIVE|NATIVE_ROW|STREAMZO_SENTINEL)|FIELD_ANDROID_NATIVE_STATUS' "$TV_LOG" 2>/dev/null | tail -n 80 || true
+    echo '```'
+    echo
+    echo "### Last TV native observations"
+    echo '```text'
+    tail -n 80 "$TV_LOG" 2>/dev/null || true
+    echo '```'
+    echo
+    echo "### Last Mobile native observations"
+    echo '```text'
+    tail -n 40 "$MOBILE_LOG" 2>/dev/null || true
+    echo '```'
+  } >> "$GITHUB_STEP_SUMMARY"
+fi
+
 if [[ "$MOBILE_STATUS" -ne 0 || "$TV_STATUS" -ne 0 ]]; then
   exit 1
 fi
