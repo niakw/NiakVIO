@@ -1,10 +1,11 @@
 {
-  "schema_version": 1,
-  "mode": "quality_first",
-  "purpose": "Keep a small high-coverage provider core; quarantine weak or unsafe providers while retaining them for lab re-evaluation.",
+  "schema_version": 2,
+  "mode": "quality_and_coverage_first",
+  "purpose": "Keep a compact high-quality provider core without sacrificing unique catalogue coverage. Unsafe providers are quarantined; safe rare providers are preserved, and rare providers with incomplete native support become repair priorities rather than deletion candidates.",
   "portfolio": {
     "target_unique_active": 36,
-    "hard_max_unique_active": 45,
+    "normal_max_unique_active": 45,
+    "hard_max_unique_active": 60,
     "minimum_vf_unique": 10,
     "minimum_anime_specialists": 5,
     "minimum_movie_tv_core": 10
@@ -19,6 +20,16 @@
     "maximum_slow_execution_rate": 0.25,
     "slow_execution_ms": 30000
   },
+  "coverage_preservation": {
+    "minimum_provider_redundancy_per_fixture": 2,
+    "minimum_vf_provider_redundancy_per_fixture": 2,
+    "minimum_clients_for_active_guard": 3,
+    "minimum_clients_for_repair_priority": 1,
+    "rare_fixture_provider_threshold": 2,
+    "rare_vf_fixture_provider_threshold": 2,
+    "allow_active_above_normal_max_when_needed": true,
+    "never_delete_for_redundancy_without_coverage_evidence": true
+  },
   "score_weights": {
     "catalogue_coverage": 50,
     "cross_platform_consistency": 25,
@@ -29,8 +40,10 @@
   },
   "selection": {
     "unsafe_never_active": true,
-    "insufficient_evidence_stays_lab_only": true,
+    "insufficient_evidence_stays_lab_only_unless_rare_coverage_requires_repair": true,
     "prefer_unique_catalogue_coverage_over_duplicate_sources": true,
+    "rare_cross_platform_coverage_overrides_normal_portfolio_cap": true,
+    "rare_partial_platform_coverage_becomes_repair_priority": true,
     "disabled_providers_remain_testable": true,
     "policy_target_10_sources_3_vf_remains_non_blocking": true
   }
