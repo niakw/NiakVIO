@@ -1,0 +1,444 @@
+name: Apply strict content promotion fix
+
+on:
+  push:
+    branches:
+      - fix/strict-content-promotion-gate
+
+permissions:
+  contents: write
+
+concurrency:
+  group: strict-content-promotion-fix
+  cancel-in-progress: false
+
+jobs:
+  patch-test-commit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: fix/strict-content-promotion-gate
+          fetch-depth: 0
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Install dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Apply strict identity and duration gate
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          def replace_once(path, old, new):
+              p = Path(path)
+              text = p.read_text(encoding='utf-8')
+              if old not in text:
+                  raise SystemExit(f'anchor missing in {path}: {old[:120]!r}')
+              p.write_text(text.replace(old, new, 1), encoding='utf-8')
+
+          # Use every useful metadata field. A generic title such as "Inconnue"
+          # must not hide a correct description/filename, while provider-only
+          # labels remain insufficient on their own.
+          old_meta = """  const metadataLabel = String(stream?.title || stream?.description || stream?.filename || stream?.name || '').trim();
+          const mediaFilename = humanMediaFilename(stream?.url);
+          const label = [metadataLabel, mediaFilename].filter(Boolean).join(' ');
+          """
+          new_meta = """  const metadataParts = [stream?.title, stream?.description, stream?.filename]
+            .map((value) => String(value || '').trim())
+            .filter(Boolean);
+          if (!metadataParts.length && stream?.name) metadataParts.push(String(stream.name).trim());
+          const metadataLabel = metadataParts.join(' ');
+          const mediaFilename = humanMediaFilename(stream?.url);
+          const label = [metadataLabel, mediaFilename].filter(Boolean).join(' ');
+          """
+          replace_once('scripts/nuvio_client_lab.cjs', old_meta, new_meta)
+          replace_once('scripts/nuvio_tv_probe_v2.cjs', old_meta, new_meta)
+
+          # Teach the native/TV probe to measure bounded HLS VOD duration.
+          replace_once(
+              'scripts/nuvio_tv_probe_v2.cjs',
+              """  const variants = [];
+            const externalAudio = [];
+            let audioGroups = 0;
+            for (let index = 0; index < lines.length; index += 1) {
+              const line = lines[index];
+              if (/^#EXT-X-STREAM-INF\\s*:/i.test(line)) {
+          """,
+              """  const variants = [];
+            const externalAudio = [];
+            let audioGroups = 0;
+            let durationSeconds = 0;
+            let durationEntryCount = 0;
+            let isVod = false;
+            for (let index = 0; index < lines.length; index += 1) {
+              const line = lines[index];
+              if (/^#EXTINF\\s*:/i.test(line)) {
+                const duration = Number(line.slice(line.indexOf(':') + 1).split(',')[0]);
+                if (Number.isFinite(duration) && duration >= 0) {
+                  durationSeconds += duration;
+                  durationEntryCount += 1;
+                }
+              } else if (/^#EXT-X-ENDLIST\\s*$/i.test(line)) {
+                isVod = true;
+              } else if (/^#EXT-X-STREAM-INF\\s*:/i.test(line)) {
+          """,
+          )
+          replace_once(
+              'scripts/nuvio_tv_probe_v2.cjs',
+              '  return { variants, externalAudio, audioGroups };\n',
+              '  return { variants, externalAudio, audioGroups, durationSeconds: durationEntryCount ? durationSeconds : null, isVod };\n',
+          )
+          replace_once(
+              'scripts/nuvio_tv_probe_v2.cjs',
+              """    const hasMedia = /#EXTINF\\s*:/i.test(text) || /#EXT-X-PART\\s*:/i.test(text) || /#EXT-X-STREAM-INF\\s*:/i.test(text) || /#EXT-X-MAP\\s*:/i.test(text);
+              return { playable: hasMedia, status: response.status, error: hasMedia ? null : 'child_header_only' };
+          """,
+              """    const hasMedia = /#EXTINF\\s*:/i.test(text) || /#EXT-X-PART\\s*:/i.test(text) || /#EXT-X-STREAM-INF\\s*:/i.test(text) || /#EXT-X-MAP\\s*:/i.test(text);
+              const graph = hlsGraph(text, response.url || url);
+              return {
+                playable: hasMedia,
+                status: response.status,
+                error: hasMedia ? null : 'child_header_only',
+                media_duration_seconds: graph.durationSeconds,
+                is_vod: graph.isVod,
+              };
+          """,
+          )
+          replace_once(
+              'scripts/nuvio_tv_probe_v2.cjs',
+              """    hls_external_audio_playable: null,
+              error: null,
+          """,
+              """    hls_external_audio_playable: null,
+              media_duration_seconds: null,
+              error: null,
+          """,
+          )
+          replace_once(
+              'scripts/nuvio_tv_probe_v2.cjs',
+              """      const graph = hlsGraph(text, response.url || url);
+              result.hls_master = graph.variants.length > 0 || /#EXT-X-STREAM-INF\\s*:/i.test(text);
+          """,
+              """      const graph = hlsGraph(text, response.url || url);
+              result.media_duration_seconds = graph.durationSeconds;
+              result.hls_master = graph.variants.length > 0 || /#EXT-X-STREAM-INF\\s*:/i.test(text);
+          """,
+          )
+          replace_once(
+              'scripts/nuvio_tv_probe_v2.cjs',
+              """        const variant = await inspectHlsChild(graph.variants[0], headers);
+                result.hls_variant_playable = variant.playable;
+          """,
+              """        const variant = await inspectHlsChild(graph.variants[0], headers);
+                result.hls_variant_playable = variant.playable;
+                if (Number.isFinite(variant.media_duration_seconds) && variant.media_duration_seconds > 0) {
+                  result.media_duration_seconds = variant.media_duration_seconds;
+                }
+          """,
+          )
+
+          old_main = """  const inspected = rows.map((row, index) => ({ row, media: media[index], identity: streamIdentity(row, fixture) }));
+            const playable = inspected.filter((item) => item.media.playable);
+            const identityContradictions = playable.filter((item) => item.identity.status === 'contradiction');
+            const identityVerified = playable.filter((item) => item.identity.status === 'match');
+            process.stdout.write(JSON.stringify({
+              ok: !runtimeError && playable.length > 0 && identityContradictions.length === 0,
+              duration_ms: Date.now() - started,
+              runtime_error: runtimeError,
+              raw_stream_count: rows.length,
+              playable_stream_count: playable.length,
+              identity_verified_count: identityVerified.length,
+              identity_contradiction_count: identityContradictions.length,
+              streams: inspected,
+            }) + '\\n');
+            process.exitCode = playable.length && identityContradictions.length === 0 ? 0 : 2;
+          """
+          new_main = """  const inspected = rows.map((row, index) => {
+              const metadataIdentity = streamIdentity(row, fixture);
+              const mediaResult = media[index];
+              const expectedMinutes = Number(fixture?.expectedDurationMinutes || 0);
+              const expectedSeconds = expectedMinutes > 0 ? expectedMinutes * 60 : null;
+              const measuredSeconds = Number(mediaResult?.media_duration_seconds || 0);
+              let durationIdentity = { status: 'unknown', reason: 'duration_unavailable', ratio: null };
+              if (expectedSeconds && Number.isFinite(measuredSeconds) && measuredSeconds > 0) {
+                const ratio = measuredSeconds / expectedSeconds;
+                durationIdentity = (ratio < 0.55 || ratio > 1.8)
+                  ? { status: 'contradiction', reason: 'fixture_duration_mismatch', ratio }
+                  : { status: 'match', reason: 'fixture_duration_match', ratio };
+              }
+              let identity = metadataIdentity;
+              if (metadataIdentity.status !== 'contradiction' && durationIdentity.status === 'contradiction') {
+                identity = durationIdentity;
+              } else if (metadataIdentity.status === 'unknown' && durationIdentity.status === 'match') {
+                identity = durationIdentity;
+              }
+              return {
+                row,
+                media: mediaResult,
+                identity,
+                metadata_identity: metadataIdentity,
+                duration_identity: durationIdentity,
+              };
+            });
+            const playable = inspected.filter((item) => item.media.playable);
+            const identityContradictions = playable.filter((item) => item.identity.status === 'contradiction');
+            const identityVerified = playable.filter((item) => item.identity.status === 'match');
+            const identityUnknown = playable.filter((item) => item.identity.status === 'unknown');
+            const strictComplete = playable.length > 0
+              && identityVerified.length === playable.length
+              && identityContradictions.length === 0
+              && identityUnknown.length === 0;
+            process.stdout.write(JSON.stringify({
+              ok: !runtimeError && strictComplete,
+              duration_ms: Date.now() - started,
+              runtime_error: runtimeError,
+              raw_stream_count: rows.length,
+              playable_stream_count: playable.length,
+              content_verified_count: identityVerified.length,
+              identity_verified_count: identityVerified.length,
+              identity_unverified_count: identityUnknown.length,
+              identity_contradiction_count: identityContradictions.length,
+              streams: inspected,
+            }) + '\\n');
+            process.exitCode = !runtimeError && strictComplete ? 0 : 2;
+          """
+          replace_once('scripts/nuvio_tv_probe_v2.cjs', old_main, new_main)
+
+          strict_probe_old = '"ok": bool(parsed and int(parsed.get("playable_stream_count") or 0) > 0),'
+          strict_probe_new = '"ok": bool(parsed and parsed.get("ok") and int(parsed.get("content_verified_count") or 0) > 0 and int(parsed.get("content_verified_count") or 0) == int(parsed.get("playable_stream_count") or 0) and int(parsed.get("identity_contradiction_count") or 0) == 0),'
+          for path in (
+              'scripts/promote_global_nuvio_tv_candidates.py',
+              'scripts/promote_target_media_v3.py',
+              'scripts/reactivate_strict_main_providers.py',
+          ):
+              replace_once(path, strict_probe_old, strict_probe_new)
+
+          for path in ('scripts/promote_global_nuvio_tv_candidates.py', 'scripts/promote_target_media_v3.py'):
+              replace_once(
+                  path,
+                  """    count = int(value.get("playable_stream_count") or 0)
+              return (1 if count else 0, count)
+          """,
+                  """    playable = int(value.get("playable_stream_count") or 0)
+              verified = int(value.get("content_verified_count") or value.get("identity_verified_count") or 0)
+              contradictions = int(value.get("identity_contradiction_count") or 0)
+              strict = playable > 0 and verified == playable and contradictions == 0
+              return (1 if strict else 0, verified if strict else 0)
+          """,
+              )
+
+          # Compatibility/transformation publishers must never turn a disabled
+          # provider on by themselves. Activation belongs to the identity-safe
+          # repair/native evidence gate.
+          for path in (
+              'scripts/promote_global_nuvio_tv_candidates.py',
+              'scripts/promote_target_media_v3.py',
+              'scripts/publish_nuvio_tv_compat_v2.py',
+              'scripts/publish_desktop_runtime_compat.py',
+          ):
+              replace_once(path, '        row["enabled"] = True\n', '        row["enabled"] = row.get("enabled") is True\n')
+
+          # v2 compatibility proof gets the same duration sentinel as deep health.
+          replace_once(
+              'scripts/publish_nuvio_tv_compat_v2.py',
+              '    "category": "movie",\n}',
+              '    "category": "movie",\n    "expectedDurationMinutes": 169,\n}',
+          )
+
+          # Explicit reactivation is allowed only when the strict probe itself passed.
+          replace_once(
+              'scripts/reactivate_strict_main_providers.py',
+              """    parsed = result.get("result") or {}
+              playable = [item for item in parsed.get("streams") or [] if strict_media(item.get("media") or {})]
+          """,
+              """    parsed = result.get("result") or {}
+              if not result.get("ok"):
+                  return False, ["strict content identity/duration probe failed"]
+              playable = [item for item in parsed.get("streams") or [] if strict_media(item.get("media") or {})]
+          """,
+          )
+
+          # Report identity-unverified playable media as inconclusive, not healthy.
+          replace_once(
+              'scripts/audit_catalogue_identity_media.py',
+              """        identity_verified_count = int(probe.get("identity_verified_count") or 0)
+              identity_contradiction_count = int(probe.get("identity_contradiction_count") or 0)
+              summary = summarize_media(probe)
+              status = "wrong_content" if identity_contradiction_count > 0 else ("playable" if playable_count > 0 else ("returned_unplayable" if raw_count > 0 else "no_streams"))
+          """,
+              """        identity_verified_count = int(probe.get("identity_verified_count") or 0)
+              content_verified_count = int(probe.get("content_verified_count") or identity_verified_count)
+              identity_contradiction_count = int(probe.get("identity_contradiction_count") or 0)
+              summary = summarize_media(probe)
+              status = "wrong_content" if identity_contradiction_count > 0 else ("playable" if playable_count > 0 and content_verified_count == playable_count else ("identity_unverified" if playable_count > 0 else ("returned_unplayable" if raw_count > 0 else "no_streams")))
+          """,
+          )
+          replace_once(
+              'scripts/audit_catalogue_identity_media.py',
+              '            "identity_verified_count": identity_verified_count,\n            "identity_contradiction_count": identity_contradiction_count,',
+              '            "identity_verified_count": identity_verified_count,\n            "content_verified_count": content_verified_count,\n            "identity_contradiction_count": identity_contradiction_count,',
+          )
+
+          # Regression: an "Inconnue" display title may still be valid when the
+          # description carries the requested identity.
+          test_path = Path('tests/nuvio_client_lab.test.cjs')
+          test_text = test_path.read_text(encoding='utf-8')
+          anchor = """assert.deepEqual(streamIdentity({ name: 'Purstream 1080p Dual Audio - Inconnue', url: 'https://cdn.example/hls2/03/00026/master.m3u8' }, { title: 'Revenant', mediaType: 'tv', season: 1, episode: 1 }), { status: 'unknown', reason: 'insufficient_identity_metadata' });
+          """
+          extra = anchor + """assert.deepEqual(streamIdentity({ title: 'Purstream 1080p Dual Audio - Inconnue', description: 'Revenant S01E01', url: 'https://cdn.example/hls2/03/00026/master.m3u8' }, { title: 'Revenant', mediaType: 'tv', season: 1, episode: 1 }), { status: 'match', reason: 'expected_title_alias' });
+          """
+          if anchor not in test_text:
+              raise SystemExit('Purstream identity regression anchor missing')
+          test_path.write_text(test_text.replace(anchor, extra, 1), encoding='utf-8')
+
+          # Keep a durable integration regression for the historical 7-minute
+          # wrong-cartoon family and for valid generic labels.
+          media_test = Path('tests/media_duration_identity_test.py')
+          text = media_test.read_text(encoding='utf-8')
+          print_anchor = "print('global media duration identity tests passed')\n"
+          block = r'''
+          # The NuvioTV probe used by promotion scripts must enforce the same
+          # identity+duration contract as deep health.
+          import http.server
+          import subprocess
+          import tempfile
+          import threading
+
+          class _ProbeHandler(http.server.BaseHTTPRequestHandler):
+              def do_GET(self):
+                  duration = 420 if self.path.startswith('/wrong') else 3480
+                  body = f"#EXTM3U\n#EXT-X-VERSION:3\n#EXTINF:{duration},\nsegment.ts\n#EXT-X-ENDLIST\n".encode()
+                  self.send_response(200)
+                  self.send_header('Content-Type', 'application/vnd.apple.mpegurl')
+                  self.send_header('Content-Length', str(len(body)))
+                  self.end_headers()
+                  self.wfile.write(body)
+              def log_message(self, *_args):
+                  pass
+
+          server = http.server.ThreadingHTTPServer(('127.0.0.1', 0), _ProbeHandler)
+          thread = threading.Thread(target=server.serve_forever, daemon=True)
+          thread.start()
+          fixture = {
+              'tmdbId': '1396', 'mediaType': 'tv', 'season': 1, 'episode': 1,
+              'title': 'Breaking Bad', 'year': 2008, 'expectedDurationMinutes': 58,
+          }
+          try:
+              with tempfile.TemporaryDirectory() as tmp:
+                  tmp = Path(tmp)
+                  def run_provider(name, stream):
+                      provider = tmp / f'{name}.cjs'
+                      provider.write_text('module.exports={getStreams:async()=>[' + json.dumps(stream) + ']};\n', encoding='utf-8')
+                      proc = subprocess.run(
+                          ['node', str(ROOT / 'scripts/nuvio_tv_probe_v2.cjs'), str(provider), json.dumps(fixture), '{}'],
+                          cwd=ROOT, text=True, capture_output=True, timeout=25,
+                      )
+                      parsed = None
+                      for line in reversed(proc.stdout.splitlines()):
+                          try:
+                              candidate = json.loads(line)
+                          except Exception:
+                              continue
+                          if isinstance(candidate, dict) and 'playable_stream_count' in candidate:
+                              parsed = candidate
+                              break
+                      assert parsed is not None, (proc.returncode, proc.stdout, proc.stderr)
+                      return proc, parsed
+
+                  base = f'http://127.0.0.1:{server.server_port}'
+                  bad_proc, bad = run_provider('wrong_cartoon', {
+                      'url': base + '/wrong.m3u8',
+                      'title': 'TopCartoons - Unknown',
+                      'description': 'Ben 10 Ultimate Alien',
+                  })
+                  assert bad_proc.returncode != 0, bad
+                  assert bad['identity_contradiction_count'] == 1, bad
+                  assert bad['content_verified_count'] == 0, bad
+
+                  good_proc, good = run_provider('generic_but_described', {
+                      'url': base + '/good.m3u8',
+                      'title': 'Purstream 1080p Dual Audio - Inconnue',
+                      'description': 'Breaking Bad S01E01',
+                  })
+                  assert good_proc.returncode == 0, (good, good_proc.stderr)
+                  assert good['content_verified_count'] == 1, good
+                  assert good['identity_contradiction_count'] == 0, good
+
+                  duration_proc, duration_only = run_provider('duration_only', {
+                      'url': base + '/good.m3u8',
+                      'title': 'Purstream 1080p Dual Audio - Inconnue',
+                  })
+                  assert duration_proc.returncode == 0, (duration_only, duration_proc.stderr)
+                  assert duration_only['content_verified_count'] == 1, duration_only
+                  assert duration_only['streams'][0]['identity']['reason'] == 'fixture_duration_match', duration_only
+          finally:
+              server.shutdown()
+              server.server_close()
+              thread.join(timeout=2)
+
+          probe_source = (ROOT / 'scripts' / 'nuvio_tv_probe_v2.cjs').read_text(encoding='utf-8')
+          assert 'content_verified_count' in probe_source
+          assert 'fixture_duration_mismatch' in probe_source
+          for publisher in (
+              'scripts/promote_global_nuvio_tv_candidates.py',
+              'scripts/promote_target_media_v3.py',
+              'scripts/publish_nuvio_tv_compat_v2.py',
+              'scripts/reactivate_strict_main_providers.py',
+          ):
+              publisher_source = (ROOT / publisher).read_text(encoding='utf-8')
+              assert 'content_verified_count' in publisher_source or 'parsed.get("ok")' in publisher_source, publisher
+
+          print('global media duration identity tests passed')
+          '''
+          if print_anchor not in text:
+              raise SystemExit('media duration test print anchor missing')
+          media_test.write_text(text.replace(print_anchor, block, 1), encoding='utf-8')
+
+          # Remove obsolete unreferenced v1 publisher/probe; v2 is the only TV
+          # probe path retained.
+          for obsolete in ('scripts/publish_nuvio_tv_compat.py', 'scripts/nuvio_tv_probe.cjs'):
+              p = Path(obsolete)
+              if p.exists():
+                  p.unlink()
+
+          # This temporary workflow must not survive in the resulting branch.
+          Path('.github/workflows/tmp-apply-strict-content-promotion-fix.yml').unlink()
+          PY
+
+      - name: Syntax and targeted regression tests
+        run: |
+          node --check scripts/nuvio_tv_probe_v2.cjs
+          node --check scripts/nuvio_client_lab.cjs
+          python -m py_compile \
+            scripts/promote_global_nuvio_tv_candidates.py \
+            scripts/promote_target_media_v3.py \
+            scripts/publish_nuvio_tv_compat_v2.py \
+            scripts/reactivate_strict_main_providers.py \
+            scripts/audit_catalogue_identity_media.py \
+            scripts/publish_desktop_runtime_compat.py \
+            tests/media_duration_identity_test.py
+          node tests/nuvio_client_lab.test.cjs
+          python tests/media_duration_identity_test.py
+          python tests/repair_identity_gate_test.py
+
+      - name: Refresh integrity metadata and run full tests
+        run: |
+          python scripts/generate_release_hashes.py
+          npm test --ignore-scripts
+          python scripts/validate_release_integrity.py
+
+      - name: Commit tested fix to branch
+        run: |
+          git config user.name 'niakvio-ci'
+          git config user.email 'actions@users.noreply.github.com'
+          git add -A
+          git status --short
+          git commit -m 'fix: enforce strict content proof before provider promotion'
+          git push origin HEAD:fix/strict-content-promotion-gate
