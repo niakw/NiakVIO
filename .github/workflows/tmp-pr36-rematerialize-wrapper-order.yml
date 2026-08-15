@@ -1,4 +1,4 @@
-name: Temporary PR36 rematerialize wrapper order
+name: Temporary PR36 canonical playback transaction
 
 on:
   push:
@@ -39,179 +39,32 @@ jobs:
       - name: Install pinned dependencies
         run: npm ci --ignore-scripts --no-audit --no-fund
 
-      - name: Canonicalize global playback wrapper ordering in source
+      - name: Prepare canonical global playback order
         run: |
-          python - <<'PY'
-          from pathlib import Path
-
-          safety_path = Path('scripts/provider_patches/hls_master_audio_preserver_v1.py')
-          safety = safety_path.read_text(encoding='utf-8')
-          old = '''    marker = f"{SAFETY_MARKER}:{hashlib.sha256(payload.encode()).hexdigest()[:12]}"
-              if f"/* {marker} */" in output:
-                  return output
-
-              output = _strip_existing_safety_wrapper(output)
-          '''.replace('              ', '    ')
-          new = '''    marker = f"{SAFETY_MARKER}:{hashlib.sha256(payload.encode()).hexdigest()[:12]}"
-              marker_comment = f"/* {marker} */"
-              current = output.find(marker_comment)
-              if current >= 0:
-                  later_global_layers = (
-                      output.find("/* NUVIO_HLS_RUNTIME_INTEGRITY_V1:", current + 1),
-                      output.find("/* NUVIO_GLOBAL_MEDIA_ENRICHMENT_V1:", current + 1),
-                  )
-                  if not any(position >= 0 for position in later_global_layers):
-                      return output
-
-              output = _strip_existing_safety_wrapper(output)
-          '''.replace('              ', '    ')
-          if old not in safety:
-              raise SystemExit('expected safety marker block not found')
-          safety = safety.replace(old, new, 1)
-          safety_path.write_text(safety, encoding='utf-8')
-
-          integrity_path = Path('scripts/provider_patches/hls_runtime_integrity_v1.py')
-          integrity = integrity_path.read_text(encoding='utf-8')
-          old = '''    marker = f"{MARKER}:{hashlib.sha256(payload.encode()).hexdigest()[:12]}"
-              if marker in text:
-                  return text
-
-              old = text.find(f"/* {MARKER}:")
-          '''.replace('              ', '    ')
-          new = '''    marker = f"{MARKER}:{hashlib.sha256(payload.encode()).hexdigest()[:12]}"
-              marker_comment = f"/* {marker} */"
-              current = text.find(marker_comment)
-              final_layers = [
-                  position
-                  for position in (
-                      text.find("/* NUVIO_GLOBAL_MEDIA_ENRICHMENT_V1:"),
-                      text.find("/* NUVIO_GLOBAL_RUNTIME_MEDIA_SAFETY_V1:"),
-                  )
-                  if position >= 0
-              ]
-              if current >= 0 and (not final_layers or current < min(final_layers)):
-                  return text
-
-              old = text.find(f"/* {MARKER}:")
-          '''.replace('              ', '    ')
-          if old not in integrity:
-              raise SystemExit('expected HLS integrity marker block not found')
-          integrity = integrity.replace(old, new, 1)
-          old_tail = '''    return text.rstrip() + "\\n" + wrapper
-          '''.replace('          ', '    ')
-          new_tail = '''    final_layers = [
-                  position
-                  for position in (
-                      text.find("/* NUVIO_GLOBAL_MEDIA_ENRICHMENT_V1:"),
-                      text.find("/* NUVIO_GLOBAL_RUNTIME_MEDIA_SAFETY_V1:"),
-                  )
-                  if position >= 0
-              ]
-              if final_layers:
-                  insertion = min(final_layers)
-                  return text[:insertion].rstrip() + "\\n" + wrapper.rstrip() + "\\n" + text[insertion:].lstrip()
-              return text.rstrip() + "\\n" + wrapper
-          '''.replace('              ', '    ')
-          if old_tail not in integrity:
-              raise SystemExit('expected HLS integrity append block not found')
-          integrity = integrity.replace(old_tail, new_tail, 1)
-          integrity_path.write_text(integrity, encoding='utf-8')
-
-          test_path = Path('tests/scoped_playback_context_regression_test.py')
-          test = test_path.read_text(encoding='utf-8')
-          load_needle = 'media_apply = load_apply("scripts/provider_patches/global_media_enrichment_v1.py")\n'
-          if 'hls_runtime_apply = load_apply(' not in test:
-              if load_needle not in test:
-                  raise SystemExit('test loader insertion point missing')
-              test = test.replace(
-                  load_needle,
-                  load_needle + 'hls_runtime_apply = load_apply("scripts/provider_patches/hls_runtime_integrity_v1.py")\n',
-                  1,
-              )
-          anchor = 'assert \'"defaultUserAgent":"UA-STREAMZO-2"\' in changed_context\n'
-          block = '''
-
-# Canonical global playback order is HLS integrity -> enrichment -> final
-# safety. Applying the normal discovery/playback sequence must reach that order
-# in one transaction and remain byte-for-byte stable on the next application.
-canonical = media_apply(base, options={"default_user_agent":"UA-STREAMZO"})
-canonical = hls_apply(canonical, options={"default_user_agent":"UA-STREAMZO"}, context={"provider_id":"streamzo"})
-canonical = hls_runtime_apply(canonical, options={"probe_all_urls": True, "fail_closed_unknown": False})
-hls_pos = canonical.index("NUVIO_HLS_RUNTIME_INTEGRITY_V1")
-media_pos = canonical.index("NUVIO_GLOBAL_MEDIA_ENRICHMENT_V1")
-safety_pos = canonical.index("NUVIO_GLOBAL_RUNTIME_MEDIA_SAFETY_V1")
-assert hls_pos < media_pos < safety_pos, (hls_pos, media_pos, safety_pos)
-canonical_again = media_apply(canonical, options={"default_user_agent":"UA-STREAMZO"})
-canonical_again = hls_apply(canonical_again, options={"default_user_agent":"UA-STREAMZO"}, context={"provider_id":"streamzo"})
-canonical_again = hls_runtime_apply(canonical_again, options={"probe_all_urls": True, "fail_closed_unknown": False})
-assert canonical_again == canonical
-'''
-          if 'Canonical global playback order is HLS integrity' not in test:
-              if anchor not in test:
-                  raise SystemExit('test canonical-order insertion point missing')
-              test = test.replace(anchor, anchor + block, 1)
-          test_path.write_text(test, encoding='utf-8')
-          PY
-
-      - name: Validate canonical generic wrapper order
-        run: |
+          python scripts/tmp_pr36_canonicalize_playback_transaction.py prepare
           python -m py_compile scripts/provider_patches/global_media_enrichment_v1.py
           python -m py_compile scripts/provider_patches/hls_master_audio_preserver_v1.py
           python -m py_compile scripts/provider_patches/hls_runtime_integrity_v1.py
           python tests/scoped_playback_context_regression_test.py
           python tests/global_playback_integrity_policy_test.py
 
-      - name: Normalize StreamZo version to one logical bump baseline
-        run: |
-          python - <<'PY'
-          import json
-          from pathlib import Path
-          for relative in ('manifest.json', 'vf/manifest.json'):
-              path = Path(relative)
-              data = json.loads(path.read_text(encoding='utf-8'))
-              for row in data.get('scrapers') or []:
-                  if str(row.get('id') or '').casefold() == 'streamzo':
-                      row['version'] = '1.0.45'
-              path.write_text(json.dumps(data, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
-          PY
-
-      - name: Rematerialize once and require immediate zero drift
+      - name: Rematerialize exactly once and require zero drift
         run: |
           git show origin/main:manifest.json > /tmp/main-manifest-before-pr36.json
           python scripts/reapply_published_overrides.py
           python scripts/reapply_published_overrides.py --check
-          python - <<'PY'
-          import json
-          from pathlib import Path
-          data=json.loads(Path('manifest.json').read_text(encoding='utf-8'))
-          row=next(row for row in data['scrapers'] if str(row.get('id') or '').casefold()=='streamzo')
-          assert row['version']=='1.0.46', row
-          assert '37a7acf1cb409c20' not in row['filename'], row
-          print(f"canonical StreamZo generation: version={row['version']} file={row['filename']}")
-          PY
+          python scripts/tmp_pr36_canonicalize_playback_transaction.py verify-rematerialized
           python scripts/validate_published_overrides.py
           python scripts/validate_activation_preservation.py
 
-      - name: Apply normal global release bump and language projection
+      - name: Apply normal release bump and language projection
         env:
           NUVIO_SKIP_CLIENT_UPSTREAM_GUARD: "1"
         run: |
           python scripts/bump_release_patch_if_manifest_changed.py --previous /tmp/main-manifest-before-pr36.json --manifest manifest.json
           python scripts/generate_language_manifests.py
           python scripts/sync_release_versions.py --manifest manifest.json
-          python - <<'PY'
-          import json
-          from pathlib import Path
-          package=json.loads(Path('package.json').read_text(encoding='utf-8'))
-          manifest=json.loads(Path('manifest.json').read_text(encoding='utf-8'))
-          vf=json.loads(Path('vf/manifest.json').read_text(encoding='utf-8'))
-          assert package['version']=='5.20.57', package['version']
-          assert manifest['version']=='5.20.57', manifest['version']
-          assert vf['version']=='5.20.57', vf['version']
-          streamzo=next(row for row in manifest['scrapers'] if str(row.get('id') or '').casefold()=='streamzo')
-          assert streamzo['version']=='1.0.46', streamzo
-          print('release target validated: global=5.20.57 streamzo=1.0.46')
-          PY
+          python scripts/tmp_pr36_canonicalize_playback_transaction.py verify-release
           python scripts/validate_language_projection.py
 
       - name: Prune superseded content-addressed provider bundles
@@ -232,6 +85,7 @@ assert canonical_again == canonical
           python scripts/validate_activation_preservation.py
           python scripts/validate_language_projection.py
           python scripts/validate_release_integrity.py
+          python scripts/tmp_pr36_canonicalize_playback_transaction.py verify-release
 
       - name: Show deterministic generation delta
         run: |
@@ -262,12 +116,4 @@ assert canonical_again == canonical
           python scripts/validate_activation_preservation.py
           python scripts/validate_language_projection.py
           python scripts/validate_release_integrity.py
-          python - <<'PY'
-          import json
-          from pathlib import Path
-          manifest=json.loads(Path('manifest.json').read_text(encoding='utf-8'))
-          row=next(row for row in manifest['scrapers'] if str(row.get('id') or '').casefold()=='streamzo')
-          assert manifest['version']=='5.20.57'
-          assert row['version']=='1.0.46'
-          print(f"final branch generation verified: global={manifest['version']} streamzo={row['version']} file={row['filename']}")
-          PY
+          python scripts/tmp_pr36_canonicalize_playback_transaction.py verify-release
