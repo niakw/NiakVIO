@@ -51,3 +51,32 @@ Path(filename).unlink(missing_ok=True)
 assert result.returncode == 0, result.stderr
 assert "COUNT=1" in result.stdout, result.stdout
 print("scoped playback context regression tests passed")
+
+
+# Integration contract: global media enrichment must receive provider-scoped
+# options. This is what lets StreamZo retain its proven browser context without
+# synthesizing the same headers for unrelated providers.
+import sys
+sys.path.insert(0, str(ROOT / 'scripts'))
+spec = importlib.util.spec_from_file_location('apply_provider_overrides_scoped_test', ROOT/'scripts/apply_provider_overrides.py')
+assert spec and spec.loader
+apply_mod = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(apply_mod)
+
+captured = []
+def capture_patch(text, provider_id, patch_script, options, profile_name):
+    captured.append((provider_id, patch_script, dict(options)))
+    return text + f"\n/* capture:{provider_id}:{patch_script} */\n"
+apply_mod._apply_patch_script = capture_patch
+
+apply_mod.apply_overrides('streamzo', b'module.exports={getStreams:async()=>[]};\n', phase='discovery')
+streamzo_media = [opts for pid,path,opts in captured if pid == 'streamzo' and path.endswith('global_media_enrichment_v1.py')]
+assert streamzo_media, captured
+assert streamzo_media[-1].get('default_user_agent','').startswith('Mozilla/5.0'), streamzo_media[-1]
+
+captured.clear()
+apply_mod.apply_overrides('cineby', b'module.exports={getStreams:async()=>[]};\n', phase='discovery')
+ordinary_media = [opts for pid,path,opts in captured if pid == 'cineby' and path.endswith('global_media_enrichment_v1.py')]
+assert ordinary_media, captured
+assert not ordinary_media[-1].get('default_user_agent'), ordinary_media[-1]
+# media policy must propagate provider-scoped options
