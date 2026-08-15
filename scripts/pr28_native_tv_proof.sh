@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-SDKMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
-test -x "$SDKMANAGER"
-yes | "$SDKMANAGER" --licenses > /dev/null || true
-"$SDKMANAGER" --install 'platforms;android-36' 'build-tools;36.0.0'
+# Use the SDK environment provisioned by android-emulator-runner. If this
+# pinned NuvioTV revision needs another compile platform, Gradle must be the
+# component that reports the exact missing package; do not fail earlier on a
+# guessed SDK version.
+echo "ANDROID_HOME=${ANDROID_HOME:-missing}"
+ls -1 "${ANDROID_HOME:-/nonexistent}/platforms" 2>/dev/null || true
 
 adb logcat -c
 TV_REPORT_DIR="$GITHUB_WORKSPACE/nuvio-tv/app/build/reports/androidTests/niakvio"
