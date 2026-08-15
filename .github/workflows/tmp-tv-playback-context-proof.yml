@@ -20,6 +20,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
+      - name: Install validator dependencies
+        run: npm ci --ignore-scripts
       - name: Target-media V4/V5 profile regression
         run: python3 tests/streamzo_target_media_profile_test.py
       - name: TV site-player-media playback context
