@@ -148,15 +148,17 @@ with tempfile.TemporaryDirectory() as tmp:
 
     provider.write_text('module.exports={};\n')
     result=subprocess.run([sys.executable,str(test_script)],capture_output=True,text=True)
-    assert result.returncode == 1
-    assert 'NUVIO_ADAPTIVE_RUNTIME_RECOVERY_V4' in result.stderr + result.stdout
+    adaptive_output = result.stderr + result.stdout
+    assert result.returncode == 1, adaptive_output
+    assert 'NUVIO_ADAPTIVE_RUNTIME_RECOVERY_V4' in adaptive_output, adaptive_output
 
     provider.write_text('/* NUVIO_ADAPTIVE_RUNTIME_RECOVERY_V4 */\nmodule.exports={};\n')
     provenance['providers']['demo']['local_patches'][0]['profile'] = 'unknown_runtime_strategy'
     (root/'PROVENANCE.json').write_text(json.dumps(provenance))
     result=subprocess.run([sys.executable,str(test_script)],capture_output=True,text=True)
-    assert result.returncode == 1
-    assert 'unknown profile unknown_runtime_strategy' in result.stderr + result.stdout
+    unknown_output = result.stderr + result.stdout
+    assert result.returncode == 1, unknown_output
+    assert 'unknown profile unknown_runtime_strategy' in unknown_output, unknown_output
 
 # A runtime repair rejected by the deep loop must not poison a preserved
 # previously-published artifact. The preservation path is explicit in
