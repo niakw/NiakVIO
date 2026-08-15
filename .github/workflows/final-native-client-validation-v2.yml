@@ -2,24 +2,42 @@ name: Final native Nuvio client validation v2
 
 on:
   workflow_dispatch:
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/final-native-client-validation-v2.yml"
+      - "scripts/isolate_native_android_tests.py"
+      - "scripts/native_mobile_playback_proof.sh"
+      - "scripts/native_tv_playback_proof.sh"
+      - "scripts/prepare_native_client_validation.py"
+      - "scripts/harden_nuvio_mobile_device_test.py"
+      - "scripts/provider_patches/**"
+      - "tests/**native**"
+      - "providers/**"
+      - "manifest.json"
+      - "vf/manifest.json"
+      - "PROVENANCE.json"
   push:
     branches: [main]
     paths:
       - ".github/triggers/final-native-client-validation-v2"
       - ".github/workflows/final-native-client-validation-v2.yml"
-      - "manifest.json"
-      - "provider-overrides.json"
-      - "providers/**"
-      - "scripts/provider_patches/**"
+      - "scripts/isolate_native_android_tests.py"
+      - "scripts/native_mobile_playback_proof.sh"
+      - "scripts/native_tv_playback_proof.sh"
       - "scripts/prepare_native_client_validation.py"
       - "scripts/harden_nuvio_mobile_device_test.py"
-      - "scripts/run_final_native_android_lab.sh"
+      - "scripts/provider_patches/**"
+      - "providers/**"
+      - "manifest.json"
+      - "vf/manifest.json"
+      - "PROVENANCE.json"
 
 permissions:
   contents: read
 
 concurrency:
-  group: final-native-client-validation-v2
+  group: final-native-client-validation-v2-${{ github.ref }}
   cancel-in-progress: true
 
 env:
@@ -30,11 +48,10 @@ env:
 jobs:
   desktop-native-runtime:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
-          ref: main
           path: niakvio
 
       - uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165
@@ -54,25 +71,34 @@ jobs:
           touch nuvio-desktop/local.properties
           python niakvio/scripts/prepare_native_client_validation.py desktop --workspace "$GITHUB_WORKSPACE"
 
-      - name: Execute official Desktop PluginRuntime
+      - name: Require real Desktop StreamZo HLS
         working-directory: nuvio-desktop
         run: |
           rm -f "$GITHUB_WORKSPACE/desktop-native-results.log"
-          set +e
           ./gradlew :composeApp:desktopTest --tests 'com.nuvio.app.features.plugins.NiakvioFinalNativeDesktopTest' --no-daemon --console=plain
-          STATUS=$?
-          set -e
-          echo "===== EXACT DESKTOP NATIVE RESULTS ====="
-          test -f "$GITHUB_WORKSPACE/desktop-native-results.log" && cat "$GITHUB_WORKSPACE/desktop-native-results.log" || true
-          exit "$STATUS"
+          cat "$GITHUB_WORKSPACE/desktop-native-results.log"
+          grep -Eq 'FIELD_DESKTOP_NATIVE provider=streamzo .* count=[1-9][0-9]*' "$GITHUB_WORKSPACE/desktop-native-results.log"
+          grep -Eq 'FIELD_DESKTOP_NATIVE_ROW provider=streamzo .* type=hls([[:space:]]|$)' "$GITHUB_WORKSPACE/desktop-native-results.log"
+          grep -Fq 'FIELD_DESKTOP_STREAMZO_SENTINEL status=resolved expected=resolved' "$GITHUB_WORKSPACE/desktop-native-results.log"
 
-  android-mobile-and-tv-native-runtime:
+      - name: Upload Desktop proof
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: final-native-desktop-${{ github.run_id }}
+          path: |
+            desktop-native-results.log
+            nuvio-desktop/composeApp/build/reports/tests/**
+            nuvio-desktop/composeApp/build/test-results/**
+          retention-days: 7
+          if-no-files-found: warn
+
+  mobile-native-runtime:
     runs-on: ubuntu-latest
-    timeout-minutes: 55
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
-          ref: main
           path: niakvio
 
       - uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165
@@ -80,7 +106,7 @@ jobs:
           distribution: temurin
           java-version: "17"
 
-      - name: Checkout pinned NuvioMobile and NuvioTV
+      - name: Checkout pinned NuvioMobile and NuvioTV and inject current generation
         run: |
           git clone --filter=blob:none --no-checkout https://github.com/NuvioMedia/NuvioMobile.git nuvio-mobile
           git -C nuvio-mobile checkout "$NUVIO_MOBILE_SHA"
@@ -90,16 +116,13 @@ jobs:
           touch nuvio-tv/local.properties nuvio-tv/local.dev.properties
           python niakvio/scripts/prepare_native_client_validation.py android --workspace "$GITHUB_WORKSPACE"
           python niakvio/scripts/harden_nuvio_mobile_device_test.py "$GITHUB_WORKSPACE/nuvio-mobile"
+          python niakvio/scripts/isolate_native_android_tests.py mobile "$GITHUB_WORKSPACE/nuvio-mobile"
 
-      - name: Enable Linux KVM for Android emulator when available
-        shell: bash
+      - name: Enable KVM
         run: |
-          if [ -e /dev/kvm ]; then
-            sudo chmod 666 /dev/kvm || true
-            ls -l /dev/kvm || true
-          fi
+          if [ -e /dev/kvm ]; then sudo chmod 666 /dev/kvm || true; fi
 
-      - name: Execute official Mobile then TV PluginRuntime on one Android emulator
+      - name: Execute official Mobile PluginRuntime on phone AVD
         uses: ReactiveCircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d
         with:
           api-level: 35
@@ -109,4 +132,68 @@ jobs:
           cores: 2
           ram-size: 2048M
           emulator-boot-timeout: 600
-          script: bash "$GITHUB_WORKSPACE/niakvio/scripts/run_final_native_android_lab.sh"
+          script: bash "$GITHUB_WORKSPACE/niakvio/scripts/native_mobile_playback_proof.sh"
+
+      - name: Upload Mobile proof
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: final-native-mobile-${{ github.run_id }}
+          path: |
+            mobile-final-native-results.log
+            nuvio-mobile/composeApp/build/reports/androidTests/**
+            nuvio-mobile/composeApp/build/outputs/androidTest-results/**
+          retention-days: 7
+          if-no-files-found: warn
+
+  tv-native-runtime:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          path: niakvio
+
+      - uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Checkout pinned NuvioMobile and NuvioTV and inject current generation
+        run: |
+          git clone --filter=blob:none --no-checkout https://github.com/NuvioMedia/NuvioMobile.git nuvio-mobile
+          git -C nuvio-mobile checkout "$NUVIO_MOBILE_SHA"
+          touch nuvio-mobile/local.properties
+          git clone --filter=blob:none --no-checkout https://github.com/NuvioMedia/NuvioTV.git nuvio-tv
+          git -C nuvio-tv checkout "$NUVIO_TV_SHA"
+          touch nuvio-tv/local.properties nuvio-tv/local.dev.properties
+          python niakvio/scripts/prepare_native_client_validation.py android --workspace "$GITHUB_WORKSPACE"
+          python niakvio/scripts/isolate_native_android_tests.py tv "$GITHUB_WORKSPACE/nuvio-tv"
+
+      - name: Enable KVM
+        run: |
+          if [ -e /dev/kvm ]; then sudo chmod 666 /dev/kvm || true; fi
+
+      - name: Execute official NuvioTV PluginRuntime on Android TV AVD
+        uses: ReactiveCircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d
+        with:
+          api-level: 31
+          target: android-tv
+          arch: x86
+          profile: tv_1080p
+          cores: 2
+          ram-size: 2048M
+          emulator-boot-timeout: 600
+          script: bash "$GITHUB_WORKSPACE/niakvio/scripts/native_tv_playback_proof.sh"
+
+      - name: Upload TV proof
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: final-native-tv-${{ github.run_id }}
+          path: |
+            tv-final-native-results.log
+            nuvio-tv/app/build/reports/androidTests/**
+            nuvio-tv/app/build/outputs/androidTest-results/**
+          retention-days: 7
+          if-no-files-found: warn
