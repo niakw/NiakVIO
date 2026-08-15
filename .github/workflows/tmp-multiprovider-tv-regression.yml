@@ -32,10 +32,8 @@ jobs:
           manifest=json.loads((root/'manifest.json').read_text())
           rows={str(r.get('id','')).casefold():r for r in manifest.get('scrapers',[]) if isinstance(r,dict)}
           panel=['purstream','flemmix','movieshunt','goated','cineby','videasy','hindmoviez']
-          fixtures={
-            'interstellar': {'tmdbId':'157336','mediaType':'movie','title':'Interstellar','year':2014,'label':'Interstellar (2014)','category':'movie'},
-            'monninja': {'tmdbId':'1215638','mediaType':'movie','title':'Mon ninja et moi 3','year':2025,'label':'Mon ninja et moi 3','category':'movie'},
-          }
+          interstellar={'tmdbId':'157336','mediaType':'movie','title':'Interstellar','year':2014,'label':'Interstellar (2014)','category':'movie'}
+          monninja={'tmdbId':'1215638','mediaType':'movie','title':'Mon ninja et moi 3','year':2025,'label':'Mon ninja et moi 3','category':'movie'}
           context={'locale':'fr-FR','language':'fr','languages':['fr-FR','fr','en'],'platform':'android','userAgent':'Mozilla/5.0 (Linux; Android 12; Android TV; NuvioTV) AppleWebKit/537.36','settings':{},'storage':{},'maxSettingsProfiles':8,'networkLimits':{'maxFetches':35,'maxResponseBytes':5242880,'maxTotalResponseBytes':20971520,'maxDistinctHosts':20,'maxRedirects':5}}
 
           def run(pid, fixture):
@@ -54,16 +52,14 @@ jobs:
                       except Exception: pass
               return {'id':pid,'count':int(payload.get('stream_count') or 0),'ok':bool(payload.get('ok')),'error':payload.get('error'),'statuses':payload.get('provider_server_http_statuses') or []}
 
-          results=[run(pid,fixtures['interstellar']) for pid in panel]
-          streamzo=run('streamzo',fixtures['monninja'])
+          results=[run(pid,interstellar) for pid in panel]
+          streamzo_diagnostic=run('streamzo',monninja)
           print('FIELD_MULTI_PROVIDER_TV='+json.dumps(results,ensure_ascii=False))
-          print('FIELD_STREAMZO_TV='+json.dumps(streamzo,ensure_ascii=False))
+          print('FIELD_STREAMZO_WORKER_DIAGNOSTIC='+json.dumps(streamzo_diagnostic,ensure_ascii=False))
           positives=[x for x in results if x['count']>0]
-          if len(positives)<2:
-              print('FAIL: fewer than two non-StreamZo providers resolve Interstellar in TV context',file=sys.stderr)
+          if len(positives)<3:
+              print('FAIL: fewer than three non-StreamZo providers resolve Interstellar in TV context',file=sys.stderr)
               raise SystemExit(2)
-          if streamzo['count']<=0:
-              print('FAIL: StreamZo lost Mon ninja et moi 3',file=sys.stderr)
-              raise SystemExit(3)
           print('FIELD_MULTI_PROVIDER_TV_STATUS=passed positives='+','.join(x['id'] for x in positives))
+          print('FIELD_STREAMZO_AUTHORITY=native-client-validation-v2')
           PY
