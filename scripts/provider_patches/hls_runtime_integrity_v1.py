@@ -44,7 +44,17 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
         )
     payload = json.dumps(payload_config, separators=(",", ":"))
     marker = f"{MARKER}:{hashlib.sha256(payload.encode()).hexdigest()[:12]}"
-    if marker in text:
+    marker_comment = f"/* {marker} */"
+    current = text.find(marker_comment)
+    final_layers = [
+        position
+        for position in (
+            text.find("/* NUVIO_GLOBAL_MEDIA_ENRICHMENT_V1:"),
+            text.find("/* NUVIO_GLOBAL_RUNTIME_MEDIA_SAFETY_V1:"),
+        )
+        if position >= 0
+    ]
+    if current >= 0 and (not final_layers or current < min(final_layers)):
         return text
 
     old = text.find(f"/* {MARKER}:")
@@ -284,4 +294,21 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
   install();
 })(typeof globalThis!=="undefined"?globalThis:this,CONFIG_PLACEHOLDER);
 '''.replace("MARKER_PLACEHOLDER", marker).replace("CONFIG_PLACEHOLDER", payload)
-    return text.rstrip() + "\n" + wrapper
+    final_layers = [
+        position
+        for position in (
+            text.find("/* NUVIO_GLOBAL_MEDIA_ENRICHMENT_V1:"),
+            text.find("/* NUVIO_GLOBAL_RUNTIME_MEDIA_SAFETY_V1:"),
+        )
+        if position >= 0
+    ]
+    if final_layers:
+        insertion = min(final_layers)
+        return (
+            text[:insertion].rstrip()
+            + "\n"
+            + wrapper.rstrip()
+            + "\n"
+            + text[insertion:].lstrip()
+        ).rstrip() + "\n"
+    return text.rstrip() + "\n" + wrapper.rstrip() + "\n"

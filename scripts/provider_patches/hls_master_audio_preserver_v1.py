@@ -312,8 +312,15 @@ def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> st
     }
     payload = json.dumps(cfg, separators=(",", ":"))
     marker = f"{SAFETY_MARKER}:{hashlib.sha256(payload.encode()).hexdigest()[:12]}"
-    if f"/* {marker} */" in output:
-        return output
+    marker_comment = f"/* {marker} */"
+    current = output.find(marker_comment)
+    if current >= 0:
+        later_global_layers = (
+            output.find("/* NUVIO_HLS_RUNTIME_INTEGRITY_V1:", current + 1),
+            output.find("/* NUVIO_GLOBAL_MEDIA_ENRICHMENT_V1:", current + 1),
+        )
+        if not any(position >= 0 for position in later_global_layers):
+            return output
 
     output = _strip_existing_safety_wrapper(output)
     wrapper = (

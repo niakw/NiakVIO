@@ -18,6 +18,7 @@ def load_apply(rel):
 
 hls_apply = load_apply("scripts/provider_patches/hls_master_audio_preserver_v1.py")
 media_apply = load_apply("scripts/provider_patches/global_media_enrichment_v1.py")
+hls_runtime_apply = load_apply("scripts/provider_patches/hls_runtime_integrity_v1.py")
 base = 'globalThis.getStreams=async function(){return [{url:"https://media.invalid/master.m3u8",type:"hls"}]};\n'
 ordinary = hls_apply(base, options={}, context={"provider_id":"ordinary"})
 assert "c.strictPlayback||c.failClosedUnknown" in ordinary
@@ -47,6 +48,21 @@ assert media_apply(ordered, options={"default_user_agent":"UA-STREAMZO"}) == ord
 changed_context = media_apply(ordered, options={"default_user_agent":"UA-STREAMZO-2"})
 assert changed_context.index("NUVIO_GLOBAL_MEDIA_ENRICHMENT_V1") < changed_context.index("NUVIO_GLOBAL_RUNTIME_MEDIA_SAFETY_V1")
 assert '"defaultUserAgent":"UA-STREAMZO-2"' in changed_context
+
+
+# Canonical global playback order is HLS integrity -> enrichment -> final
+# safety. Reapplication must repair stale ordering once and remain stable.
+canonical = media_apply(base, options={"default_user_agent":"UA-STREAMZO"})
+canonical = hls_apply(canonical, options={"default_user_agent":"UA-STREAMZO"}, context={"provider_id":"streamzo"})
+canonical = hls_runtime_apply(canonical, options={"probe_all_urls": True, "fail_closed_unknown": False})
+hls_pos = canonical.index("NUVIO_HLS_RUNTIME_INTEGRITY_V1")
+media_pos = canonical.index("NUVIO_GLOBAL_MEDIA_ENRICHMENT_V1")
+safety_pos = canonical.index("NUVIO_GLOBAL_RUNTIME_MEDIA_SAFETY_V1")
+assert hls_pos < media_pos < safety_pos, (hls_pos, media_pos, safety_pos)
+canonical_again = hls_runtime_apply(canonical, options={"probe_all_urls": True, "fail_closed_unknown": False})
+canonical_again = media_apply(canonical_again, options={"default_user_agent":"UA-STREAMZO"})
+canonical_again = hls_apply(canonical_again, options={"default_user_agent":"UA-STREAMZO"}, context={"provider_id":"streamzo"})
+assert canonical_again == canonical
 
 cfg = json.loads((ROOT / "provider-overrides.json").read_text(encoding="utf-8"))
 sopts = cfg["provider_patches"]["streamzo"]["patch_script_options"]

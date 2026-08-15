@@ -359,6 +359,44 @@ def apply_overrides(
             applied.append({"type": "patch_script", "path": patch_script, "phase": phase})
 
     if phase == "discovery":
+        playback_policy = config.get("playback_integrity_policy") or {}
+        if not isinstance(playback_policy, dict):
+            raise ValueError("playback_integrity_policy must be an object")
+        global_hooks = playback_policy.get("global_discovery_hooks") or []
+        if not isinstance(global_hooks, list):
+            raise ValueError("playback_integrity_policy.global_discovery_hooks must be an array")
+        pre_media_hooks = playback_policy.get("pre_media_discovery_hooks") or []
+        post_media_hooks = playback_policy.get("post_media_discovery_hooks") or []
+        if not isinstance(pre_media_hooks, list) or not isinstance(post_media_hooks, list):
+            raise ValueError("playback integrity staged hook lists must be arrays")
+        global_options = playback_policy.get("hls_runtime_options") or {}
+        if not isinstance(global_options, dict):
+            raise ValueError("playback_integrity_policy.hls_runtime_options must be an object")
+
+        def _apply_playback_stage(hooks: list[str]) -> None:
+            nonlocal text
+            if not playback_policy.get("enabled", True):
+                return
+            for patch_script in [str(value) for value in hooks if str(value).strip()]:
+                options = dict(global_options) if patch_script.endswith("hls_runtime_integrity_v1.py") else {}
+                provider_options = script_options.get(patch_script)
+                if provider_options is not None:
+                    if not isinstance(provider_options, dict):
+                        raise ValueError(
+                            f"provider_patches.{provider_id}.patch_script_options[{patch_script!r}] must be an object"
+                        )
+                    options.update(provider_options)
+                before = text
+                text = _apply_patch_script(text, provider_id, patch_script, options, None)
+                if text != before:
+                    applied.append({
+                        "type": "patch_script",
+                        "path": patch_script,
+                        "phase": phase,
+                        "scope": "global_playback_integrity",
+                    })
+
+        _apply_playback_stage(pre_media_hooks)
         capability = str(specific.get("capability") or "").strip().casefold()
         catalogue_policy = config.get("catalogue_resolution_policy") or {}
         if not isinstance(catalogue_policy, dict):
@@ -422,36 +460,14 @@ def apply_overrides(
                     "scope": "global_media_enrichment",
                 })
 
-    if phase == "discovery":
-        playback_policy = config.get("playback_integrity_policy") or {}
-        if not isinstance(playback_policy, dict):
-            raise ValueError("playback_integrity_policy must be an object")
-        if playback_policy.get("enabled", True):
-            global_hooks = playback_policy.get("global_discovery_hooks") or []
-            if not isinstance(global_hooks, list):
-                raise ValueError("playback_integrity_policy.global_discovery_hooks must be an array")
-            global_options = playback_policy.get("hls_runtime_options") or {}
-            if not isinstance(global_options, dict):
-                raise ValueError("playback_integrity_policy.hls_runtime_options must be an object")
-            for patch_script in [str(value) for value in global_hooks if str(value).strip()]:
-                options = dict(global_options) if patch_script.endswith("hls_runtime_integrity_v1.py") else {}
-                provider_options = script_options.get(patch_script)
-                if provider_options is not None:
-                    if not isinstance(provider_options, dict):
-                        raise ValueError(
-                            f"provider_patches.{provider_id}.patch_script_options[{patch_script!r}] must be an object"
-                        )
-                    options.update(provider_options)
-                before = text
-                text = _apply_patch_script(text, provider_id, patch_script, options, None)
-                if text != before:
-                    applied.append({
-                        "type": "patch_script",
-                        "path": patch_script,
-                        "phase": phase,
-                        "scope": "global_playback_integrity",
-                    })
 
+        _apply_playback_stage(post_media_hooks)
+        staged_hooks = {str(value) for value in pre_media_hooks + post_media_hooks if str(value).strip()}
+        legacy_tail_hooks = [
+            str(value) for value in global_hooks
+            if str(value).strip() and str(value) not in staged_hooks
+        ]
+        _apply_playback_stage(legacy_tail_hooks)
     if text == original_text:
         return data, []
     return text.encode("utf-8"), applied
