@@ -7006,9 +7006,9 @@
     },
     "coflix": {
       "id": "coflix",
-      "published_filename": "providers/coflix--nuvio--c75716e2497ba1be.js",
-      "sha256": "c75716e2497ba1be4988de2627900c7e9d292a2876559ddf36d639da9693b519",
-      "patched_sha256": "c75716e2497ba1be4988de2627900c7e9d292a2876559ddf36d639da9693b519",
+      "published_filename": "providers/coflix--nuvio--a7afd04be6468970.js",
+      "sha256": "a7afd04be6468970eb9eae2fc2a1da546a3a93e1602f713736dbd5db39c66f1d",
+      "patched_sha256": "a7afd04be6468970eb9eae2fc2a1da546a3a93e1602f713736dbd5db39c66f1d",
       "upstream_sha256": "48239f7b107a98b295b0ddec8ed38805503a75975e1bee320543d856d0baa87c",
       "local_patches": [
         "{'type': 'patch_script', 'path': 'scripts/provider_patches/vf_catalogue_recovery.py', 'phase': 'discovery'}",
@@ -18143,9 +18143,9 @@
     },
     "streamzo": {
       "id": "streamzo",
-      "published_filename": "providers/streamzo--published-baseline--c923b842c9554275.js",
-      "sha256": "c923b842c95542757ab66f3ead9352fcc8015b0e2f85b70dff8205983b992dba",
-      "patched_sha256": "c923b842c95542757ab66f3ead9352fcc8015b0e2f85b70dff8205983b992dba",
+      "published_filename": "providers/streamzo--published-baseline--8429f03f62e3c478.js",
+      "sha256": "8429f03f62e3c47804ad21fbd2a6f7523849368ec561ec4798708b52e2d02ace",
+      "patched_sha256": "8429f03f62e3c47804ad21fbd2a6f7523849368ec561ec4798708b52e2d02ace",
       "upstream_sha256": "c20bdca7585cacf12f4819669ac8a5fabc2ec3e6be1b0b34609f6ac4cf23e285",
       "local_patches": [
         {
@@ -18179,6 +18179,11 @@
         {
           "type": "patch_script",
           "path": "scripts/provider_patches/nuvio_tv_playable_first_v1.py",
+          "phase": "discovery"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/nuvio_tv_target_media_v4.py",
           "phase": "discovery"
         }
       ],

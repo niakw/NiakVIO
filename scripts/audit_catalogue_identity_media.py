@@ -229,9 +229,10 @@ def run_probe(task: dict[str, Any]) -> dict[str, Any]:
         raw_count = int(probe.get("raw_stream_count") or 0)
         playable_count = int(probe.get("playable_stream_count") or 0)
         identity_verified_count = int(probe.get("identity_verified_count") or 0)
+        content_verified_count = int(probe.get("content_verified_count") or identity_verified_count)
         identity_contradiction_count = int(probe.get("identity_contradiction_count") or 0)
         summary = summarize_media(probe)
-        status = "wrong_content" if identity_contradiction_count > 0 else ("playable" if playable_count > 0 else ("returned_unplayable" if raw_count > 0 else "no_streams"))
+        status = "wrong_content" if identity_contradiction_count > 0 else ("playable" if playable_count > 0 and content_verified_count == playable_count else ("identity_unverified" if playable_count > 0 else ("returned_unplayable" if raw_count > 0 else "no_streams")))
         if probe.get("runtime_error"):
             status = "runtime_error"
         row = {
@@ -243,6 +244,7 @@ def run_probe(task: dict[str, Any]) -> dict[str, Any]:
             "raw_stream_count": raw_count,
             "playable_stream_count": playable_count,
             "identity_verified_count": identity_verified_count,
+            "content_verified_count": content_verified_count,
             "identity_contradiction_count": identity_contradiction_count,
             "runtime_error": sanitize(probe.get("runtime_error")),
             **summary,

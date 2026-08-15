@@ -104,7 +104,7 @@ def probe(path: Path, fixture: dict[str, Any], timeout_seconds: int = 210) -> di
         return {"ok": False, "returncode": 1, "result": None, "error": f"{type(error).__name__}: {error}"}
     parsed = parse_probe(process.stdout)
     return {
-        "ok": bool(parsed and int(parsed.get("playable_stream_count") or 0) > 0),
+        "ok": bool(parsed and parsed.get("ok") and int(parsed.get("content_verified_count") or 0) > 0 and int(parsed.get("content_verified_count") or 0) == int(parsed.get("playable_stream_count") or 0) and int(parsed.get("identity_contradiction_count") or 0) == 0),
         "returncode": process.returncode,
         "result": parsed,
         "stdout_tail": process.stdout[-6000:],
@@ -114,8 +114,11 @@ def probe(path: Path, fixture: dict[str, Any], timeout_seconds: int = 210) -> di
 
 def score(value: dict[str, Any]) -> tuple[int, int]:
     result = value.get("result") or {}
-    count = int(result.get("playable_stream_count") or 0)
-    return (1 if count else 0, count)
+    playable = int(result.get("playable_stream_count") or 0)
+    verified = int(result.get("content_verified_count") or result.get("identity_verified_count") or 0)
+    contradictions = int(result.get("identity_contradiction_count") or 0)
+    strict = playable > 0 and verified == playable and contradictions == 0
+    return (1 if strict else 0, verified if strict else 0)
 
 
 def strict_item(item: dict[str, Any]) -> bool:
@@ -194,11 +197,11 @@ def update_provenance(
             "checked_at": now,
             "check_mode": "nuvio-tv-target-player-chain",
             "check_status": "healthy",
-            "activation_eligible": True,
-            "strict_activation_eligible": True,
-            "runtime_evidence_eligible": True,
+            "activation_eligible": bool(current.get("activation_eligible", False)),
+            "strict_activation_eligible": bool(current.get("strict_activation_eligible", False)),
+            "runtime_evidence_eligible": bool(current.get("runtime_evidence_eligible", False)),
             "activation_mode": "target_media_v3",
-            "activation_blockers": [],
+            "activation_blockers": list(current.get("activation_blockers") or []),
         }
     )
     rows[provider_id] = current
@@ -258,7 +261,7 @@ def main() -> int:
         old_filename = str(row.get("filename") or "")
         row["filename"] = filename
         row["version"] = bump(row.get("version"))
-        row["enabled"] = True
+        row["enabled"] = row.get("enabled") is True
         row["supportsExternalPlayer"] = False
         sync_vf(vf_rows, row)
 

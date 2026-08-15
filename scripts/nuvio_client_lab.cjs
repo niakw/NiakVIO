@@ -165,7 +165,11 @@ function streamIdentity(stream, fixture) {
   const forbiddenAliases = (Array.isArray(fixture?.forbiddenAliases) ? fixture.forbiddenAliases : []).map(normalizeIdentity).filter(Boolean);
   const expected = aliases.map(normalizeIdentity).filter(Boolean);
   const expectedTokens = new Set(aliases.flatMap(identityTokens));
-  const metadataLabel = String(stream?.title || stream?.description || stream?.filename || stream?.name || '').trim();
+  const metadataParts = [stream?.title, stream?.description, stream?.filename]
+    .map((value) => String(value || '').trim())
+    .filter(Boolean);
+  if (!metadataParts.length && stream?.name) metadataParts.push(String(stream.name).trim());
+  const metadataLabel = metadataParts.join(' ');
   const mediaFilename = humanMediaFilename(stream?.url);
   const label = [metadataLabel, mediaFilename].filter(Boolean).join(' ');
   const normalized = normalizeIdentity(label);
@@ -175,6 +179,28 @@ function streamIdentity(stream, fixture) {
   const seasonEpisode = /(?:^|\D)s(?:eason|aison)?\s*0*(\d{1,3})\s*[-_. ]*e(?:p(?:isode)?)?\s*0*(\d{1,4})(?:\D|$)/i.exec(label)
     || /(?:season|saison)\s*0*(\d{1,3})[^\d]{0,12}(?:episode|ep)\s*0*(\d{1,4})/i.exec(label);
   const episodeOnly = /(?:^|\D)(?:episode|ep)\s*0*(\d{1,4})(?:\D|$)/i.exec(label);
+  const providerTokens = new Set(identityTokens(stream?.name || stream?.provider || ''));
+  const genericIdentityTokens = new Set([
+    'unknown', 'inconnue', 'inconnu', 'source', 'stream', 'streaming', 'player', 'lecteur',
+    'audio', 'dual', 'multi', 'truefrench', 'french', 'vostfr', 'vf', 'vo', 'fr', 'en',
+    'hd', 'fullhd', 'uhd', '4k', '2160p', '1440p', '1080p', '720p', '480p', '360p',
+    'hls', 'dash', 'm3u8', 'mp4', 'web', 'webrip', 'webdl', 'bluray', 'brrip', 'hdr', 'dv',
+  ]);
+  const contentTokens = (value) => identityTokens(value).filter((token) => !providerTokens.has(token) && !genericIdentityTokens.has(token));
+  const strongIdentityLabels = [stream?.title, stream?.filename, mediaFilename]
+    .map((value) => String(value || '').trim())
+    .filter(Boolean);
+  if (normalized && forbiddenAliases.some((alias) => normalized.includes(alias))) return { status: 'contradiction', reason: 'forbidden_title_alias' };
+  for (const strongLabel of strongIdentityLabels) {
+    const carriesEpisodeIdentity = /(?:^|\D)s(?:eason|aison)?\s*0*\d{1,3}\s*[-_. ]*e(?:p(?:isode)?)?\s*0*\d{1,4}(?:\D|$)/i.test(strongLabel)
+      || /(?:season|saison)\s*0*\d{1,3}/i.test(strongLabel)
+      || /(?:^|\D)(?:episode|ep)\s*0*\d{1,4}(?:\D|$)/i.test(strongLabel);
+    if (carriesEpisodeIdentity) continue;
+    const strongTokens = contentTokens(strongLabel);
+    if (strongTokens.length >= 2 && expectedTokens.size && !strongTokens.some((token) => expectedTokens.has(token))) {
+      return { status: 'contradiction', reason: mediaFilename && strongLabel === mediaFilename ? 'media_filename_title_mismatch' : 'strong_title_mismatch' };
+    }
+  }
   if (mediaType === 'movie' && seasonEpisode) return { status: 'contradiction', reason: 'movie_row_is_episode' };
   if (seasonEpisode && (mediaType === 'tv' || mediaType === 'anime')) {
     const season = Number(seasonEpisode[1] || 0);
@@ -189,10 +215,8 @@ function streamIdentity(stream, fixture) {
     if (wantedEpisode && episode && episode !== wantedEpisode) return { status: 'contradiction', reason: 'wrong_episode' };
     if (wantedEpisode && episode === wantedEpisode) return { status: 'match', reason: 'episode_match' };
   }
-  if (normalized && forbiddenAliases.some((alias) => normalized.includes(alias))) return { status: 'contradiction', reason: 'forbidden_title_alias' };
   if (normalized && expected.some((alias) => normalized.includes(alias))) return { status: 'match', reason: 'expected_title_alias' };
-  const providerTokens = new Set(identityTokens(stream?.name || stream?.provider || ''));
-  const rowTokens = identityTokens(label).filter((token) => !providerTokens.has(token));
+  const rowTokens = contentTokens(label);
   if (rowTokens.length >= 2 && expectedTokens.size) {
     const overlap = rowTokens.filter((token) => expectedTokens.has(token));
     if (overlap.length === 0) return { status: 'contradiction', reason: mediaFilename ? 'media_filename_title_mismatch' : 'strong_title_mismatch' };
