@@ -1,0 +1,101 @@
+name: Provider catalogue breadth lab
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - ".github/triggers/provider-catalogue-breadth-lab"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: provider-catalogue-breadth-lab
+  cancel-in-progress: true
+
+jobs:
+  catalogue-breadth:
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    steps:
+      - name: Checkout current main
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: main
+
+      - name: Set up Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: "3.12"
+
+      - name: Set up Node
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: "24"
+          package-manager-cache: false
+
+      - name: Install locked provider dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Validate broad census plan
+        shell: bash
+        run: |
+          set -euxo pipefail
+          python3 tests/provider_catalogue_breadth_test.py
+          python3 scripts/audit_provider_catalogue_breadth.py \
+            --plan-only \
+            --output provider-catalogue-breadth-plan.json
+
+      - name: Run report-only catalogue breadth census
+        shell: bash
+        env:
+          NUVIO_BREADTH_WORKERS: "8"
+          NUVIO_BREADTH_TIMEOUT: "80"
+        run: |
+          set -euxo pipefail
+          python3 scripts/audit_provider_catalogue_breadth.py \
+            --output provider-catalogue-breadth.json
+
+      - name: Publish census summary
+        if: always()
+        shell: bash
+        run: |
+          python3 - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import json
+          from pathlib import Path
+          path = Path('provider-catalogue-breadth.json')
+          print('## Provider catalogue breadth')
+          print()
+          if not path.is_file():
+              print('- Full report was not produced.')
+              raise SystemExit(0)
+          data = json.loads(path.read_text(encoding='utf-8'))
+          rows = data.get('providers') or []
+          preserve = [r for r in rows if r.get('disposition') == 'preserve_unique_coverage']
+          repair = [r for r in rows if r.get('disposition') == 'repair_before_redundancy_review']
+          unsafe = [r for r in rows if r.get('disposition') == 'quarantine_wrong_content']
+          review = [r for r in rows if r.get('disposition') == 'redundancy_review_allowed_not_automatic']
+          print(f"- Corpus fixtures: **{data.get('corpus_fixture_count', 0)}**")
+          print(f"- Providers measured: **{data.get('provider_count', 0)}**")
+          print(f"- Executions: **{data.get('execution_count', 0)}**")
+          print(f"- Unique/VF coverage preserved: **{len(preserve)}**")
+          print(f"- Repair before review: **{len(repair)}**")
+          print(f"- Wrong-content quarantine evidence: **{len(unsafe)}**")
+          print(f"- Redundancy review candidates (never auto-disabled): **{len(review)}**")
+          if preserve:
+              print('- Preserved providers: `' + ', '.join(r['provider_id'] for r in preserve) + '`')
+          if repair:
+              print('- Repair priorities: `' + ', '.join(r['provider_id'] for r in repair) + '`')
+          PY
+
+      - name: Upload sanitized catalogue breadth evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: provider-catalogue-breadth-${{ github.run_id }}
+          path: |
+            provider-catalogue-breadth-plan.json
+            provider-catalogue-breadth.json
+          retention-days: 14
+          if-no-files-found: warn
