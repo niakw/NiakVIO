@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "mode": "quality_first",
+  "purpose": "Keep a small high-coverage provider core; quarantine weak or unsafe providers while retaining them for lab re-evaluation.",
+  "portfolio": {
+    "target_unique_active": 36,
+    "hard_max_unique_active": 45,
+    "minimum_vf_unique": 10,
+    "minimum_anime_specialists": 5,
+    "minimum_movie_tv_core": 10
+  },
+  "eligibility": {
+    "minimum_relevant_executions": 6,
+    "minimum_catalogue_coverage_rate": 0.5,
+    "minimum_cross_platform_fixture_rate": 0.5,
+    "maximum_identity_contradictions": 0,
+    "maximum_transport_failures": 0,
+    "maximum_runtime_errors": 0,
+    "maximum_slow_execution_rate": 0.25,
+    "slow_execution_ms": 30000
+  },
+  "score_weights": {
+    "catalogue_coverage": 50,
+    "cross_platform_consistency": 25,
+    "transport_success": 12,
+    "latency": 8,
+    "vf_value": 3,
+    "specialist_value": 2
+  },
+  "selection": {
+    "unsafe_never_active": true,
+    "insufficient_evidence_stays_lab_only": true,
+    "prefer_unique_catalogue_coverage_over_duplicate_sources": true,
+    "disabled_providers_remain_testable": true,
+    "policy_target_10_sources_3_vf_remains_non_blocking": true
+  }
+}
