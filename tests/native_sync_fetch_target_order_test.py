@@ -66,6 +66,7 @@ with tempfile.TemporaryDirectory() as tmp:
     provider.write_text(patched, encoding="utf-8")
     runner.write_text(
         "global.navigator={userAgent:'NuvioTV Android TV'};\n"
+        "global.__NUVIO_TV_RUNTIME__=true;\n"
         "global.__native_fetch=function(){};\n"
         "global.__calls=[];\n"
         "global.fetch=async function(url){\n"
