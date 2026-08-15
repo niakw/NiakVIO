@@ -282,7 +282,7 @@
           "max_recovery_pages": 6,
           "max_recovery_candidates": 18,
           "probe_all_urls": true,
-          "fail_closed_unknown": true
+          "fail_closed_unknown": false
         },
         "scripts/provider_patches/hls_master_audio_preserver_v1.py": {
           "default_user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
@@ -4808,7 +4808,13 @@
     "conclusive_invalid_stream_action": "drop_stream_not_provider",
     "inconclusive_network_action": "preserve_stream",
     "vf_catalogue_identity": "tmdb_metadata_plus_strict_title_year_match",
-    "unknown_metadata_action": "return_no_recovery_match"
+    "unknown_metadata_action": "return_no_recovery_match",
+    "pre_media_discovery_hooks": [
+      "scripts/provider_patches/hls_runtime_integrity_v1.py"
+    ],
+    "post_media_discovery_hooks": [
+      "scripts/provider_patches/hls_master_audio_preserver_v1.py"
+    ]
   },
   "catalogue_resolution_policy": {
     "version": 3,

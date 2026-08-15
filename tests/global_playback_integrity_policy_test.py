@@ -27,6 +27,12 @@ assert policy.get("global_discovery_hooks") == [
     "scripts/provider_patches/hls_master_audio_preserver_v1.py",
     "scripts/provider_patches/hls_runtime_integrity_v1.py",
 ]
+assert policy.get("pre_media_discovery_hooks") == [
+    "scripts/provider_patches/hls_runtime_integrity_v1.py",
+]
+assert policy.get("post_media_discovery_hooks") == [
+    "scripts/provider_patches/hls_master_audio_preserver_v1.py",
+]
 
 # The global hooks must not be duplicated into today's provider script lists. A
 # provider may only tighten their global options; newly discovered providers
@@ -46,7 +52,33 @@ streamzo_hls_options = cfg["provider_patches"]["streamzo"]["patch_script_options
     "scripts/provider_patches/hls_runtime_integrity_v1.py"
 ]
 assert streamzo_hls_options["probe_all_urls"] is True
-assert streamzo_hls_options["fail_closed_unknown"] is True
+assert streamzo_hls_options["fail_closed_unknown"] is False
+
+
+# Staged scheduler contract: HLS integrity runs before enrichment and final safety.
+original_apply_patch_script = module._apply_patch_script
+captured_scheduler_paths = []
+def capture_scheduler(text, provider_id, patch_script, options, profile_name):
+    captured_scheduler_paths.append(patch_script)
+    return text
+module._apply_patch_script = capture_scheduler
+try:
+    module.apply_overrides("streamzo", b"globalThis.getStreams=async function(){return []};\n", phase="discovery")
+finally:
+    module._apply_patch_script = original_apply_patch_script
+wanted = [
+    path for path in captured_scheduler_paths
+    if path in {
+        "scripts/provider_patches/hls_runtime_integrity_v1.py",
+        "scripts/provider_patches/global_media_enrichment_v1.py",
+        "scripts/provider_patches/hls_master_audio_preserver_v1.py",
+    }
+]
+assert wanted == [
+    "scripts/provider_patches/hls_runtime_integrity_v1.py",
+    "scripts/provider_patches/global_media_enrichment_v1.py",
+    "scripts/provider_patches/hls_master_audio_preserver_v1.py",
+], wanted
 
 future = b'''\nasync function helper(t){let x=await fetch(t.url).then(r=>r.text());if(!/#EXT-X-STREAM-INF/i.test(x))return [{url:t.url,type:"hls"}];return []}\nglobalThis.getStreams=async function(){return [{url:"https://media.example/master.m3u8",type:"hls"}]};\n'''
 patched, records = module.apply_overrides("future-provider-never-seen-before", future, phase="discovery")

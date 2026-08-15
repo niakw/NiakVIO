@@ -18,6 +18,7 @@ import json
 from typing import Any
 
 MARKER = "NUVIO_GLOBAL_MEDIA_ENRICHMENT_V1"
+SAFETY_MARKER = "NUVIO_GLOBAL_RUNTIME_MEDIA_SAFETY_V1"
 
 
 def _strip_existing_wrapper(text: str) -> str:
@@ -29,6 +30,23 @@ def _strip_existing_wrapper(text: str) -> str:
     if call < 0 or end < 0:
         raise ValueError("unterminated global media enrichment wrapper")
     return (text[:old] + text[end + 2 :]).rstrip()
+
+
+def _insert_before_runtime_safety(text: str, wrapper: str) -> str:
+    """Keep recovery/enrichment inside the final runtime safety wrapper.
+
+    Patch reapplication must not silently reorder wrappers.  The final media
+    safety guard validates the rows produced by enrichment, so enrichment must
+    be installed before that guard when it is already present in a published
+    bundle.  If no safety guard exists yet, normal append semantics are kept.
+    """
+    safety = text.find(f"/* {SAFETY_MARKER}:")
+    clean_wrapper = wrapper.lstrip().rstrip()
+    if safety < 0:
+        return text.rstrip() + "\n" + clean_wrapper + "\n"
+    before = text[:safety].rstrip()
+    after = text[safety:].lstrip()
+    return before + "\n" + clean_wrapper + "\n" + after
 
 
 def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> str:
@@ -44,7 +62,9 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
     }
     serialized = json.dumps(payload, separators=(",", ":"))
     marker = f"{MARKER}:{hashlib.sha256(serialized.encode()).hexdigest()[:12]}"
-    if f"/* {marker} */" in text:
+    current = text.find(f"/* {marker} */")
+    safety = text.find(f"/* {SAFETY_MARKER}:")
+    if current >= 0 and (safety < 0 or current < safety):
         return text
     text = _strip_existing_wrapper(text)
 
@@ -136,4 +156,4 @@ function install(o,k){if(!o||typeof o[k]!=="function"||o[k].__nuvioGlobalMediaEn
 var ok=false;try{if(typeof module!=="undefined"&&module.exports)ok=install(module.exports,"getStreams")}catch(_){}try{if(g&&typeof g.getStreams==="function"){if(ok&&typeof module!=="undefined"&&module.exports)g.getStreams=module.exports.getStreams;else install(g,"getStreams")}}catch(_){}
 })(typeof globalThis!=="undefined"?globalThis:this,CONFIG_PLACEHOLDER);
 '''.replace("MARKER_PLACEHOLDER", marker).replace("CONFIG_PLACEHOLDER", serialized)
-    return text.rstrip() + "\n" + js.lstrip()
+    return _insert_before_runtime_safety(text, js)
