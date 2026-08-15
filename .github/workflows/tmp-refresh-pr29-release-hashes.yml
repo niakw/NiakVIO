@@ -1,0 +1,40 @@
+name: Temporary PR29 release hash refresh
+
+on:
+  push:
+    branches: [ci/native-playback-proof]
+    paths:
+      - ".github/workflows/tmp-refresh-pr29-release-hashes.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: tmp-refresh-pr29-release-hashes
+  cancel-in-progress: true
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: ci/native-playback-proof
+          fetch-depth: 0
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: "3.12"
+      - name: Regenerate exact release inventories
+        run: |
+          python3 scripts/generate_release_hashes.py
+          python3 scripts/validate_release_integrity.py
+      - name: Commit hashes and remove this temporary workflow
+        shell: bash
+        run: |
+          set -euxo pipefail
+          rm .github/workflows/tmp-refresh-pr29-release-hashes.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json .github/workflows/tmp-refresh-pr29-release-hashes.yml
+          git commit -m "chore: refresh native proof release hashes"
+          git push origin HEAD:ci/native-playback-proof
