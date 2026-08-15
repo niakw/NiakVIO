@@ -6,9 +6,12 @@ import json
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+SCHEDULER = ROOT / "scripts/apply_provider_overrides.py"
 SAFETY = ROOT / "scripts/provider_patches/hls_master_audio_preserver_v1.py"
 INTEGRITY = ROOT / "scripts/provider_patches/hls_runtime_integrity_v1.py"
 REGRESSION = ROOT / "tests/scoped_playback_context_regression_test.py"
+POLICY_TEST = ROOT / "tests/global_playback_integrity_policy_test.py"
+POLICY = ROOT / "provider-overrides.json"
 
 
 def replace_once(text: str, old: str, new: str, label: str) -> str:
@@ -17,6 +20,86 @@ def replace_once(text: str, old: str, new: str, label: str) -> str:
             return text
         raise SystemExit(f"{label}: expected source block not found")
     return text.replace(old, new, 1)
+
+
+def patch_scheduler() -> None:
+    text = SCHEDULER.read_text(encoding="utf-8")
+    if "pre_media_discovery_hooks" not in text:
+        needle = '''    if phase == "discovery":
+        capability = str(specific.get("capability") or "").strip().casefold()
+'''
+        replacement = '''    if phase == "discovery":
+        playback_policy = config.get("playback_integrity_policy") or {}
+        if not isinstance(playback_policy, dict):
+            raise ValueError("playback_integrity_policy must be an object")
+        global_hooks = playback_policy.get("global_discovery_hooks") or []
+        if not isinstance(global_hooks, list):
+            raise ValueError("playback_integrity_policy.global_discovery_hooks must be an array")
+        pre_media_hooks = playback_policy.get("pre_media_discovery_hooks") or []
+        post_media_hooks = playback_policy.get("post_media_discovery_hooks") or []
+        if not isinstance(pre_media_hooks, list) or not isinstance(post_media_hooks, list):
+            raise ValueError("playback integrity staged hook lists must be arrays")
+        global_options = playback_policy.get("hls_runtime_options") or {}
+        if not isinstance(global_options, dict):
+            raise ValueError("playback_integrity_policy.hls_runtime_options must be an object")
+
+        def _apply_playback_stage(hooks: list[str]) -> None:
+            nonlocal text
+            if not playback_policy.get("enabled", True):
+                return
+            for patch_script in [str(value) for value in hooks if str(value).strip()]:
+                options = dict(global_options) if patch_script.endswith("hls_runtime_integrity_v1.py") else {}
+                provider_options = script_options.get(patch_script)
+                if provider_options is not None:
+                    if not isinstance(provider_options, dict):
+                        raise ValueError(
+                            f"provider_patches.{provider_id}.patch_script_options[{patch_script!r}] must be an object"
+                        )
+                    options.update(provider_options)
+                before = text
+                text = _apply_patch_script(text, provider_id, patch_script, options, None)
+                if text != before:
+                    applied.append({
+                        "type": "patch_script",
+                        "path": patch_script,
+                        "phase": phase,
+                        "scope": "global_playback_integrity",
+                    })
+
+        _apply_playback_stage(pre_media_hooks)
+        capability = str(specific.get("capability") or "").strip().casefold()
+'''
+        text = replace_once(text, needle, replacement, "playback scheduler pre-media stage")
+
+        start = text.find('\n    if phase == "discovery":\n        playback_policy = config.get("playback_integrity_policy") or {}\n', text.find("media_policy ="))
+        end = text.find("\n    if text == original_text:", start)
+        if start < 0 or end < 0:
+            raise SystemExit("playback scheduler legacy tail block not found")
+        replacement_tail = '''
+        _apply_playback_stage(post_media_hooks)
+        staged_hooks = {str(value) for value in pre_media_hooks + post_media_hooks if str(value).strip()}
+        legacy_tail_hooks = [
+            str(value) for value in global_hooks
+            if str(value).strip() and str(value) not in staged_hooks
+        ]
+        _apply_playback_stage(legacy_tail_hooks)
+'''
+        text = text[:start] + "\n" + replacement_tail.rstrip() + text[end:]
+    SCHEDULER.write_text(text, encoding="utf-8")
+
+
+def patch_policy() -> None:
+    data = json.loads(POLICY.read_text(encoding="utf-8"))
+    policy = data.get("playback_integrity_policy")
+    if not isinstance(policy, dict):
+        raise SystemExit("playback_integrity_policy missing")
+    policy["pre_media_discovery_hooks"] = [
+        "scripts/provider_patches/hls_runtime_integrity_v1.py"
+    ]
+    policy["post_media_discovery_hooks"] = [
+        "scripts/provider_patches/hls_master_audio_preserver_v1.py"
+    ]
+    POLICY.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 
 def patch_safety() -> None:
@@ -110,8 +193,7 @@ def patch_regression() -> None:
         block = r'''
 
 # Canonical global playback order is HLS integrity -> enrichment -> final
-# safety. Applying the normal discovery/playback sequence must reach that order
-# in one transaction and remain byte-for-byte stable on the next application.
+# safety. Reapplication must repair stale ordering once and remain stable.
 canonical = media_apply(base, options={"default_user_agent":"UA-STREAMZO"})
 canonical = hls_apply(canonical, options={"default_user_agent":"UA-STREAMZO"}, context={"provider_id":"streamzo"})
 canonical = hls_runtime_apply(canonical, options={"probe_all_urls": True, "fail_closed_unknown": False})
@@ -119,13 +201,68 @@ hls_pos = canonical.index("NUVIO_HLS_RUNTIME_INTEGRITY_V1")
 media_pos = canonical.index("NUVIO_GLOBAL_MEDIA_ENRICHMENT_V1")
 safety_pos = canonical.index("NUVIO_GLOBAL_RUNTIME_MEDIA_SAFETY_V1")
 assert hls_pos < media_pos < safety_pos, (hls_pos, media_pos, safety_pos)
-canonical_again = media_apply(canonical, options={"default_user_agent":"UA-STREAMZO"})
+canonical_again = hls_runtime_apply(canonical, options={"probe_all_urls": True, "fail_closed_unknown": False})
+canonical_again = media_apply(canonical_again, options={"default_user_agent":"UA-STREAMZO"})
 canonical_again = hls_apply(canonical_again, options={"default_user_agent":"UA-STREAMZO"}, context={"provider_id":"streamzo"})
-canonical_again = hls_runtime_apply(canonical_again, options={"probe_all_urls": True, "fail_closed_unknown": False})
 assert canonical_again == canonical
 '''
         text = text.replace(anchor, anchor + block, 1)
     REGRESSION.write_text(text, encoding="utf-8")
+
+
+def patch_policy_test() -> None:
+    text = POLICY_TEST.read_text(encoding="utf-8")
+    anchor = '''assert policy.get("global_discovery_hooks") == [
+    "scripts/provider_patches/hls_master_audio_preserver_v1.py",
+    "scripts/provider_patches/hls_runtime_integrity_v1.py",
+]
+'''
+    block = '''assert policy.get("pre_media_discovery_hooks") == [
+    "scripts/provider_patches/hls_runtime_integrity_v1.py",
+]
+assert policy.get("post_media_discovery_hooks") == [
+    "scripts/provider_patches/hls_master_audio_preserver_v1.py",
+]
+'''
+    if block not in text:
+        if anchor not in text:
+            raise SystemExit("playback policy staged-hook assertion anchor missing")
+        text = text.replace(anchor, anchor + block, 1)
+
+    scheduler_marker = "# Staged scheduler contract: HLS integrity runs before enrichment and final safety."
+    if scheduler_marker not in text:
+        anchor2 = 'assert streamzo_hls_options["fail_closed_unknown"] is False\n'
+        if anchor2 not in text:
+            raise SystemExit("playback policy scheduler test anchor missing")
+        scheduler_test = r'''
+
+# Staged scheduler contract: HLS integrity runs before enrichment and final safety.
+original_apply_patch_script = module._apply_patch_script
+captured_scheduler_paths = []
+def capture_scheduler(text, provider_id, patch_script, options, profile_name):
+    captured_scheduler_paths.append(patch_script)
+    return text
+module._apply_patch_script = capture_scheduler
+try:
+    module.apply_overrides("streamzo", b"globalThis.getStreams=async function(){return []};\n", phase="discovery")
+finally:
+    module._apply_patch_script = original_apply_patch_script
+wanted = [
+    path for path in captured_scheduler_paths
+    if path in {
+        "scripts/provider_patches/hls_runtime_integrity_v1.py",
+        "scripts/provider_patches/global_media_enrichment_v1.py",
+        "scripts/provider_patches/hls_master_audio_preserver_v1.py",
+    }
+]
+assert wanted == [
+    "scripts/provider_patches/hls_runtime_integrity_v1.py",
+    "scripts/provider_patches/global_media_enrichment_v1.py",
+    "scripts/provider_patches/hls_master_audio_preserver_v1.py",
+], wanted
+'''
+        text = text.replace(anchor2, anchor2 + scheduler_test, 1)
+    POLICY_TEST.write_text(text, encoding="utf-8")
 
 
 def set_streamzo_version(version: str) -> None:
@@ -158,11 +295,14 @@ def assert_bundle_order(filename: str) -> None:
 
 
 def prepare() -> None:
+    patch_scheduler()
+    patch_policy()
     patch_safety()
     patch_integrity()
     patch_regression()
+    patch_policy_test()
     set_streamzo_version("1.0.45")
-    print("PR36 source canonicalization prepared; StreamZo baseline normalized to 1.0.45")
+    print("PR36 global scheduler canonicalization prepared; StreamZo baseline normalized to 1.0.45")
 
 
 def verify_rematerialized() -> None:
