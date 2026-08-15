@@ -32,6 +32,22 @@ assert '"defaultUserAgent":""' in enriched
 assert 'c.defaultUserAgent&&!keyOf(out,"User-Agent")' in enriched
 assert '"defaultUserAgent":"UA-STREAMZO"' in media_apply(base, options={"default_user_agent":"UA-STREAMZO"})
 
+# Recovery/enrichment must stay inside the final runtime safety guard even when
+# patches are reapplied in a different transaction. Otherwise a deterministic
+# rematerialization can silently change runtime behavior without changing the
+# provider implementation itself.
+safety_first = hls_apply(
+    base,
+    options={"default_user_agent":"UA-STREAMZO"},
+    context={"provider_id":"streamzo"},
+)
+ordered = media_apply(safety_first, options={"default_user_agent":"UA-STREAMZO"})
+assert ordered.index("NUVIO_GLOBAL_MEDIA_ENRICHMENT_V1") < ordered.index("NUVIO_GLOBAL_RUNTIME_MEDIA_SAFETY_V1")
+assert media_apply(ordered, options={"default_user_agent":"UA-STREAMZO"}) == ordered
+changed_context = media_apply(ordered, options={"default_user_agent":"UA-STREAMZO-2"})
+assert changed_context.index("NUVIO_GLOBAL_MEDIA_ENRICHMENT_V1") < changed_context.index("NUVIO_GLOBAL_RUNTIME_MEDIA_SAFETY_V1")
+assert '"defaultUserAgent":"UA-STREAMZO-2"' in changed_context
+
 cfg = json.loads((ROOT / "provider-overrides.json").read_text(encoding="utf-8"))
 sopts = cfg["provider_patches"]["streamzo"]["patch_script_options"]
 assert sopts["scripts/provider_patches/hls_master_audio_preserver_v1.py"]["default_user_agent"]
