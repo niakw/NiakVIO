@@ -36,6 +36,8 @@ jobs:
           npm ci --ignore-scripts --no-audit --no-fund
           python3 tests/provider_portfolio_ranking_test.py
           python3 tests/provider_coverage_preservation_test.py
+          python3 tests/provider_catalogue_breadth_test.py
+          python3 scripts/audit_provider_catalogue_breadth.py --plan-only --output /tmp/provider-catalogue-breadth-plan.json
       - name: Regenerate and validate release hashes
         shell: bash
         run: |
