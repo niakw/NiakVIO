@@ -1,0 +1,102 @@
+name: Temporary PR36 rematerialize wrapper order
+
+on:
+  push:
+    branches:
+      - fix/main-native-proof-and-isolation
+    paths:
+      - ".github/triggers/tmp-pr36-rematerialize-wrapper-order"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: tmp-pr36-rematerialize-wrapper-order
+  cancel-in-progress: true
+
+jobs:
+  rematerialize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout PR36 branch
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: fix/main-native-proof-and-isolation
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: "3.12"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: "24"
+          package-manager-cache: false
+
+      - name: Install pinned dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Validate generic wrapper-order fix
+        run: |
+          python -m py_compile scripts/provider_patches/global_media_enrichment_v1.py
+          python tests/scoped_playback_context_regression_test.py
+          python tests/global_playback_integrity_policy_test.py
+
+      - name: Rematerialize published providers
+        run: |
+          python scripts/reapply_published_overrides.py
+          python scripts/reapply_published_overrides.py --check
+          python scripts/validate_published_overrides.py
+          python scripts/validate_activation_preservation.py
+          python scripts/validate_language_projection.py
+
+      - name: Prune only unreferenced content-addressed provider bundles
+        run: |
+          python scripts/prune_unreferenced_providers.py --dry-run
+          python scripts/prune_unreferenced_providers.py
+
+      - name: Regenerate deterministic release hashes
+        run: python scripts/generate_release_hashes.py
+
+      - name: Run complete repository regression suite
+        run: npm test --ignore-scripts
+
+      - name: Validate exact generated release
+        run: |
+          python scripts/reapply_published_overrides.py --check
+          python scripts/validate_published_overrides.py
+          python scripts/validate_activation_preservation.py
+          python scripts/validate_language_projection.py
+          python scripts/validate_release_integrity.py
+
+      - name: Show deterministic generation delta
+        run: |
+          git status --short
+          git diff --stat
+
+      - name: Commit tested rematerialized generation
+        run: |
+          git config user.name 'niakvio-ci'
+          git config user.email 'actions@users.noreply.github.com'
+          git add -A providers
+          git add manifest.json vf/manifest.json PROVENANCE.json provider-overrides.json FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json
+          if [ -f vostfr/manifest.json ]; then git add vostfr/manifest.json; fi
+          if ! git diff --cached --quiet; then
+            git commit -m 'fix: rematerialize providers with stable wrapper order'
+            git push origin HEAD:fix/main-native-proof-and-isolation
+          else
+            echo 'rematerialized generation already current'
+          fi
+
+      - name: Verify pushed branch is zero-drift
+        run: |
+          git fetch origin fix/main-native-proof-and-isolation
+          git reset --hard origin/fix/main-native-proof-and-isolation
+          python scripts/reapply_published_overrides.py --check
+          python scripts/validate_published_overrides.py
+          python scripts/validate_activation_preservation.py
+          python scripts/validate_language_projection.py
+          python scripts/validate_release_integrity.py
