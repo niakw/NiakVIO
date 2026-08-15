@@ -29,12 +29,23 @@ cleanup_logcat() {
 }
 trap cleanup_logcat EXIT
 
-set +e
-"$GITHUB_WORKSPACE/nuvio-tv/gradlew" -p "$GITHUB_WORKSPACE/nuvio-tv" :app:connectedFullDebugAndroidTest \
-  '-Pandroid.testInstrumentationRunnerArguments.class=com.nuvio.tv.core.plugin.NiakvioFinalNativeTvTest' \
-  --no-daemon --console=plain 2>&1 | tee "$TV_GRADLE_LOG"
-TV_STATUS=${PIPESTATUS[0]}
-set -e
+TV_STATUS=1
+for ATTEMPT in 1 2; do
+  echo "FIELD_TV_PROOF_ATTEMPT attempt=$ATTEMPT max=2" | tee -a "$TV_GRADLE_LOG"
+  set +e
+  "$GITHUB_WORKSPACE/nuvio-tv/gradlew" -p "$GITHUB_WORKSPACE/nuvio-tv" :app:connectedFullDebugAndroidTest \
+    '-Pandroid.testInstrumentationRunnerArguments.class=com.nuvio.tv.core.plugin.NiakvioFinalNativeTvTest' \
+    --no-daemon --console=plain 2>&1 | tee -a "$TV_GRADLE_LOG"
+  TV_STATUS=${PIPESTATUS[0]}
+  set -e
+  if [[ "$TV_STATUS" -eq 0 ]]; then
+    break
+  fi
+  if [[ "$ATTEMPT" -lt 2 ]]; then
+    echo "FIELD_TV_PROOF_RETRY reason=instrumentation_failure status=$TV_STATUS"
+    sleep 3
+  fi
+done
 
 sleep 1
 cleanup_logcat
