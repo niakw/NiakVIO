@@ -76,6 +76,7 @@ jobs:
           assert 'NUVIO_NATIVE_CATALOGUE_RECOVERY_BUDGET_V1 */' not in payload
           assert 'NUVIO_NATIVE_HLS_INTEGRITY_BUDGET_V1' in payload
           assert 'NUVIO_TV_TEXT_ONLY_FETCH_COMPAT_V1' in payload
+          assert 'NUVIO_TV_PROTOCOL_RELATIVE_URL_COMPAT_V1' in payload
           assert '"implementationRevision":"field-safety-v4-runtime-capability"' in payload
           print('complete native-safe engine-v4 candidate markers verified')
           PY
@@ -105,6 +106,18 @@ jobs:
           echo "===== EXACT ENGINE-V4 DESKTOP RESULTS ====="
           test -f "$GITHUB_WORKSPACE/desktop-native-results.log" && cat "$GITHUB_WORKSPACE/desktop-native-results.log" || true
           exit "$STATUS"
+
+      - name: Upload Desktop native proof evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: engine-v4-native-desktop-${{ github.run_id }}
+          path: |
+            desktop-native-results.log
+            nuvio-desktop/composeApp/build/reports/tests/**
+            nuvio-desktop/composeApp/build/test-results/**
+          retention-days: 7
+          if-no-files-found: warn
 
   android-tv-engine-v4:
     runs-on: ubuntu-latest
@@ -162,6 +175,7 @@ jobs:
           assert 'NUVIO_NATIVE_CATALOGUE_RECOVERY_BUDGET_V1 */' not in payload
           assert 'NUVIO_NATIVE_HLS_INTEGRITY_BUDGET_V1' in payload
           assert 'NUVIO_TV_TEXT_ONLY_FETCH_COMPAT_V1' in payload
+          assert 'NUVIO_TV_PROTOCOL_RELATIVE_URL_COMPAT_V1' in payload
           assert '"implementationRevision":"field-safety-v4-runtime-capability"' in payload
           print('complete native-safe engine-v4 candidate markers verified')
           PY
@@ -197,3 +211,18 @@ jobs:
           ram-size: 2048M
           emulator-boot-timeout: 600
           script: bash "$GITHUB_WORKSPACE/niakvio/scripts/run_final_native_android_lab.sh"
+
+      - name: Upload Mobile and TV native proof evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: engine-v4-native-android-${{ github.run_id }}
+          path: |
+            mobile-final-native-results.log
+            tv-final-native-results.log
+            nuvio-mobile/composeApp/build/reports/androidTests/**
+            nuvio-mobile/composeApp/build/outputs/androidTest-results/**
+            nuvio-tv/app/build/reports/androidTests/**
+            nuvio-tv/app/build/outputs/androidTest-results/**
+          retention-days: 7
+          if-no-files-found: warn
