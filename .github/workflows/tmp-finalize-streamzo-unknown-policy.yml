@@ -1,0 +1,90 @@
+name: TEMP finalize StreamZo inconclusive policy
+
+on:
+  push:
+    branches: [fix/main-native-proof-and-isolation]
+    paths:
+      - ".github/workflows/tmp-finalize-streamzo-unknown-policy.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: tmp-finalize-streamzo-unknown-policy
+  cancel-in-progress: false
+
+jobs:
+  finalize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: fix/main-native-proof-and-isolation
+          fetch-depth: 0
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: "24"
+          package-manager-cache: false
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Remove obsolete fail-closed inconclusive exception
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path('provider-overrides.json')
+          doc=json.loads(p.read_text(encoding='utf-8'))
+          opts=doc['provider_patches']['streamzo']['patch_script_options']['scripts/provider_patches/hls_runtime_integrity_v1.py']
+          before=opts.get('fail_closed_unknown')
+          opts['fail_closed_unknown']=False
+          p.write_text(json.dumps(doc,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+          print(f'FIELD_STREAMZO_FAIL_CLOSED_UNKNOWN before={before} after={opts["fail_closed_unknown"]}')
+
+          t=Path('tests/scoped_playback_context_regression_test.py')
+          text=t.read_text(encoding='utf-8')
+          old='assert sopts["scripts/provider_patches/hls_runtime_integrity_v1.py"]["fail_closed_unknown"] is True'
+          new='assert sopts["scripts/provider_patches/hls_runtime_integrity_v1.py"]["fail_closed_unknown"] is False'
+          if text.count(old)!=1:
+              raise SystemExit(f'expected one old assertion, got {text.count(old)}')
+          text=text.replace(old,new)
+          t.write_text(text,encoding='utf-8')
+          PY
+          python tests/scoped_playback_context_regression_test.py
+          python tests/hls_playback_integrity_test.py
+      - name: Rematerialize exact provider generation and bump release
+        env:
+          NUVIO_SKIP_CLIENT_UPSTREAM_GUARD: "1"
+        run: |
+          python scripts/reapply_published_overrides.py
+          python scripts/reapply_published_overrides.py --check
+          python scripts/sync_release_versions.py --version 5.20.56
+          python scripts/generate_release_hashes.py
+          python scripts/validate_release_integrity.py
+          echo '--- changed files after targeted rematerialization ---'
+          git status --short
+          git diff --stat
+      - name: Run complete repository regression suite
+        run: npm test --ignore-scripts
+      - name: Final integrity and zero reapply drift
+        run: |
+          python scripts/reapply_published_overrides.py --check
+          python scripts/validate_published_overrides.py
+          python scripts/validate_activation_preservation.py
+          python scripts/validate_language_projection.py
+          python scripts/generate_release_hashes.py
+          python scripts/validate_release_integrity.py
+      - name: Commit exact tested 5.20.56 generation and remove temp workflows
+        run: |
+          rm -f .github/workflows/tmp-streamzo-generation-diff.yml
+          rm -f .github/workflows/tmp-finalize-streamzo-unknown-policy.yml
+          python scripts/generate_release_hashes.py
+          python scripts/validate_release_integrity.py
+          git config user.name niakvio-ci
+          git config user.email actions@users.noreply.github.com
+          git add -A
+          git status --short
+          git commit -m 'fix: preserve inconclusive provider media and publish 5.20.56'
+          git push origin HEAD:fix/main-native-proof-and-isolation
