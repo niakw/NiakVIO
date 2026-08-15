@@ -12,6 +12,11 @@ re-materialization legitimately changes their hashes and prunes superseded
 bundles. Resolving the current manifest artifact guarantees this staging pass
 inherits every repair already selected by the shared engine before adding its
 Desktop/Mobile compatibility wrapper.
+
+This publication/staging pass must never rewrite provider health, quarantine or
+activation decisions. Those fields belong to deep validation. Runtime
+compatibility provenance is recorded additively while the existing safety
+provenance remains authoritative.
 """
 from __future__ import annotations
 
@@ -100,12 +105,7 @@ def local_manifest_filename(value: object) -> str:
 
 
 def resolve_source_filename(row: dict[str, Any], provenance: dict[str, Any], provider_id: str) -> str:
-    """Resolve the freshest tracked provider artifact without hash pinning.
-
-    The manifest row is authoritative because durable repair/reapply updates it
-    transactionally. A provenance canonical source is only a fallback for a
-    legacy manifest row that already points at a Desktop staging artifact.
-    """
+    """Resolve the freshest tracked provider artifact without hash pinning."""
     current = local_manifest_filename(row.get("filename"))
     current_path = ROOT / current if current else None
     if current_path is not None and current_path.is_file() and "--desktop-runtime-v1--" not in current:
@@ -117,10 +117,6 @@ def resolve_source_filename(row: dict[str, Any], provenance: dict[str, Any], pro
     if fallback_path is not None and fallback_path.is_file():
         return fallback
 
-    # A committed Desktop staging artifact is still a safe last resort because
-    # desktop_runtime_compat_v1.apply() is marker-idempotent. This avoids
-    # disabling/preserving a healthy provider merely because old provenance did
-    # not yet record canonical_source_filename.
     if current_path is not None and current_path.is_file():
         return current
     return ""
@@ -134,6 +130,15 @@ def sync_existing_vf(rows: list[dict[str, Any]], source: dict[str, Any]) -> None
     target.clear()
     target.update(deepcopy(source))
     target["filename"] = vf_filename(source.get("filename"))
+
+
+def _has_patch_record(items: list[Any], path: str) -> bool:
+    for item in items:
+        if isinstance(item, dict) and str(item.get("path") or "") == path:
+            return True
+        if isinstance(item, str) and item == path:
+            return True
+    return False
 
 
 def update_metadata(
@@ -156,9 +161,21 @@ def update_metadata(
     now = datetime.now(timezone.utc).isoformat()
     rows = provenance.setdefault("providers", {})
     current = dict(rows.get(provider_id) or rows.get(provider_id.upper()) or {})
-    local_patches = [str(value) for value in current.get("local_patches") or []]
-    if PATCH_REL not in local_patches:
-        local_patches.append(PATCH_REL)
+    local_patches = deepcopy(list(current.get("local_patches") or []))
+    if not _has_patch_record(local_patches, PATCH_REL):
+        local_patches.append(
+            {
+                "type": "patch_script",
+                "path": PATCH_REL,
+                "phase": "publication",
+                "scope": "desktop_runtime_compat",
+            }
+        )
+
+    # Publication metadata is additive. In particular, do not overwrite
+    # check_status/activation_mode/activation_* or the original source lineage:
+    # those values are safety decisions produced by deep validation and are
+    # consumed by activation-preservation/VF policy checks.
     current.update(
         {
             "id": provider_id,
@@ -166,18 +183,15 @@ def update_metadata(
             "canonical_source_filename": source_filename,
             "sha256": new_sha,
             "patched_sha256": new_sha,
-            "upstream_sha256": old_sha,
             "local_patches": local_patches,
-            "source": "desktop-runtime-compat-v1",
-            "source_name": "Nuvio Desktop QuickJS compatibility, bounded TV fallback and domain failover",
-            "checked_at": now,
-            "check_mode": "static-runtime-contract-and-regression-suite",
-            "check_status": "healthy",
-            "activation_eligible": bool(current.get("activation_eligible", False)),
-            "strict_activation_eligible": bool(current.get("strict_activation_eligible", False)),
-            "runtime_evidence_eligible": bool(current.get("runtime_evidence_eligible", False)),
-            "activation_mode": "desktop_runtime_compat_v1",
-            "activation_blockers": list(current.get("activation_blockers") or []),
+            "desktop_runtime_compat": {
+                "source_filename": source_filename,
+                "source_sha256": old_sha,
+                "published_sha256": new_sha,
+                "patch": PATCH_REL,
+                "options": deepcopy(options),
+                "checked_at": now,
+            },
         }
     )
     rows[provider_id] = current
@@ -274,7 +288,6 @@ def main() -> int:
             row["version"] = bump(row.get("version"))
         row["enabled"] = row.get("enabled") is True
         if provider_id == "streamzo":
-            # Only a globally audited direct-media lineage may disable this hint.
             row["supportsExternalPlayer"] = "--nuvio-tv-global--" not in source_filename
         sync_existing_vf(vf_rows, row)
         update_metadata(overrides, provenance, provider_id, filename, source_filename, old_sha, new_sha, options)
