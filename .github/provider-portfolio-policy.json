@@ -1,5 +1,5 @@
 {
-  "schema_version": 2,
+  "schema_version": 3,
   "mode": "quality_and_coverage_first",
   "purpose": "Keep a compact high-quality provider core without sacrificing unique catalogue coverage. Unsafe providers are quarantined; safe rare providers are preserved, and rare providers with incomplete native support become repair priorities rather than deletion candidates.",
   "portfolio": {
@@ -28,7 +28,18 @@
     "rare_fixture_provider_threshold": 2,
     "rare_vf_fixture_provider_threshold": 2,
     "allow_active_above_normal_max_when_needed": true,
-    "never_delete_for_redundancy_without_coverage_evidence": true
+    "never_delete_for_redundancy_without_coverage_evidence": true,
+    "repair_before_retire_when_unique_or_vf": true
+  },
+  "retirement_guard": {
+    "portfolio_ranking_is_advisory": true,
+    "automatic_deactivation_from_portfolio": false,
+    "require_broad_catalogue_evidence_before_redundancy_deactivation": true,
+    "minimum_breadth_fixtures_before_redundancy_deactivation": 20,
+    "require_no_unique_fixture_coverage": true,
+    "require_no_unique_vf_fixture_coverage": true,
+    "runtime_or_transport_failure_means_repair_not_unsafe": true,
+    "confirmed_identity_contradiction_can_quarantine_immediately": true
   },
   "score_weights": {
     "catalogue_coverage": 50,
