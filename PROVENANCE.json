@@ -5,9 +5,9 @@
   "providers": {
     "1shows": {
       "id": "1shows",
-      "published_filename": "providers/1shows--published-baseline--4eb0e16e82991e76.js",
-      "sha256": "4eb0e16e82991e764ff575982914b40507be1f0dfd6a1f39dca7967f242b2471",
-      "patched_sha256": "4eb0e16e82991e764ff575982914b40507be1f0dfd6a1f39dca7967f242b2471",
+      "published_filename": "providers/1shows--published-baseline--384b31f2c32d5d60.js",
+      "sha256": "384b31f2c32d5d60ff70cc0edb4a23d0e63a5583d6d03f711c0a36e574361d16",
+      "patched_sha256": "384b31f2c32d5d60ff70cc0edb4a23d0e63a5583d6d03f711c0a36e574361d16",
       "upstream_sha256": "d7937a697432dc34f14cb9e47d749fedf3c15ba6b5baeef1664608f1952f8600",
       "local_patches": [
         {
@@ -15,6 +15,12 @@
           "path": "scripts/provider_patches/hls_master_audio_preserver_v1.py",
           "phase": "discovery",
           "scope": "global_playback_integrity"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_enrichment_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_enrichment"
         }
       ],
       "source": "published-baseline",
@@ -267,9 +273,9 @@
     },
     "4khdhub": {
       "id": "4khdhub",
-      "published_filename": "providers/4khdhub--nuvio--8e97bf5825ba18ea.js",
-      "sha256": "8e97bf5825ba18ea510cb392f4b3ab4e563352a2c1643eba05b145aa33bc6ce7",
-      "patched_sha256": "8e97bf5825ba18ea510cb392f4b3ab4e563352a2c1643eba05b145aa33bc6ce7",
+      "published_filename": "providers/4khdhub--nuvio--7f9d720974fa8310.js",
+      "sha256": "7f9d720974fa8310759846d5b2a12f1657899655ddadca413513c7a243b44fa1",
+      "patched_sha256": "7f9d720974fa8310759846d5b2a12f1657899655ddadca413513c7a243b44fa1",
       "upstream_sha256": "65e7dabe9629f1185c046e156941f6cf05312e9c52996c70c24a6b6ddc075a9c",
       "local_patches": [
         {
@@ -822,9 +828,9 @@
     },
     "allanime": {
       "id": "allanime",
-      "published_filename": "providers/allanime--published-baseline--79fc493b186e413c.js",
-      "sha256": "79fc493b186e413ce973b63fa97f1a88f99010d92733ddd8baf8eed6ba69d23a",
-      "patched_sha256": "79fc493b186e413ce973b63fa97f1a88f99010d92733ddd8baf8eed6ba69d23a",
+      "published_filename": "providers/allanime--published-baseline--0ecbfdeae207c4c3.js",
+      "sha256": "0ecbfdeae207c4c367a4d9bfee531805136ebd085a43efa24cfcf51657444e70",
+      "patched_sha256": "0ecbfdeae207c4c367a4d9bfee531805136ebd085a43efa24cfcf51657444e70",
       "upstream_sha256": "7b6ee4d5c6b6dbc35b10d98003324126c313ce7e33d90e28fd378545590aee40",
       "local_patches": [
         {
@@ -1093,9 +1099,9 @@
     },
     "allmovieland": {
       "id": "allmovieland",
-      "published_filename": "providers/allmovieland--published-baseline--bca74b5b784db7fc.js",
-      "sha256": "bca74b5b784db7fcd6b9585c8a7e40e28622c0dabd5af8b14bb945690ef78b9b",
-      "patched_sha256": "bca74b5b784db7fcd6b9585c8a7e40e28622c0dabd5af8b14bb945690ef78b9b",
+      "published_filename": "providers/allmovieland--published-baseline--8f034d7ae0fd2cc0.js",
+      "sha256": "8f034d7ae0fd2cc03b524c6b4908e223bb93bd39d7d571bc154faf2128e618c1",
+      "patched_sha256": "8f034d7ae0fd2cc03b524c6b4908e223bb93bd39d7d571bc154faf2128e618c1",
       "upstream_sha256": "2217246fc678c9944a374bf227414e640ffa9e6a46775fd0fc62eea6e98eaf81",
       "local_patches": [
         {
@@ -1364,9 +1370,9 @@
     },
     "allwish": {
       "id": "allwish",
-      "published_filename": "providers/allwish--published-baseline--5b8ccf305e5988dd.js",
-      "sha256": "5b8ccf305e5988dd0e570c261188b918a0cf20673124a797b96893470bbf4f1c",
-      "patched_sha256": "5b8ccf305e5988dd0e570c261188b918a0cf20673124a797b96893470bbf4f1c",
+      "published_filename": "providers/allwish--published-baseline--684441d084259130.js",
+      "sha256": "684441d084259130924d1b55665e340252cb3fde38240bd1748374209d7c8c57",
+      "patched_sha256": "684441d084259130924d1b55665e340252cb3fde38240bd1748374209d7c8c57",
       "upstream_sha256": "f3645b9b9900204edef2f63c32ba43d789f75717d08e488e6de850533f48e1d7",
       "local_patches": [
         {
@@ -1374,6 +1380,12 @@
           "path": "scripts/provider_patches/hls_master_audio_preserver_v1.py",
           "phase": "discovery",
           "scope": "global_playback_integrity"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_enrichment_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_enrichment"
         }
       ],
       "source": "published-baseline",
@@ -1607,9 +1619,9 @@
     },
     "anidb": {
       "id": "anidb",
-      "published_filename": "providers/anidb--published-baseline--ebaeb78a1d7545c2.js",
-      "sha256": "ebaeb78a1d7545c22d58f1e03636748d554f46963dffbff825b6c31bdc484024",
-      "patched_sha256": "ebaeb78a1d7545c22d58f1e03636748d554f46963dffbff825b6c31bdc484024",
+      "published_filename": "providers/anidb--published-baseline--4e72160ff713e70f.js",
+      "sha256": "4e72160ff713e70f947aac15b0ab7f91544fd89f4e41ac8906aae5662c5ca9fe",
+      "patched_sha256": "4e72160ff713e70f947aac15b0ab7f91544fd89f4e41ac8906aae5662c5ca9fe",
       "upstream_sha256": "60ec5bba1e6d0052b9fa495ddaeec23841a43dcaee18158db5f222e055c0c209",
       "local_patches": [
         {
@@ -1853,9 +1865,9 @@
     },
     "anikototv": {
       "id": "anikototv",
-      "published_filename": "providers/anikototv--nuvio--7ce2a226cf34f801.js",
-      "sha256": "7ce2a226cf34f801753577fc9e8118e1f07edf548a8d9a02ded907be3247b1e5",
-      "patched_sha256": "7ce2a226cf34f801753577fc9e8118e1f07edf548a8d9a02ded907be3247b1e5",
+      "published_filename": "providers/anikototv--nuvio--2bbce0242ae008fb.js",
+      "sha256": "2bbce0242ae008fbafdb6bf11ee09c61e58c03355f6211f660e2687685e1bffa",
+      "patched_sha256": "2bbce0242ae008fbafdb6bf11ee09c61e58c03355f6211f660e2687685e1bffa",
       "upstream_sha256": "4b75a13ad9f3a9e7c067e8cbd18a66830cce4ad0d7e75ed28eca66cf1ed32b5d",
       "local_patches": [
         {
@@ -2381,9 +2393,9 @@
     },
     "anime-ultime": {
       "id": "anime-ultime",
-      "published_filename": "providers/anime-ultime--published-baseline--2e07d74b685d4201.js",
-      "sha256": "2e07d74b685d4201070ce65b891a9218d27e4341a5c131c6c41b1b6dfaf36b35",
-      "patched_sha256": "2e07d74b685d4201070ce65b891a9218d27e4341a5c131c6c41b1b6dfaf36b35",
+      "published_filename": "providers/anime-ultime--published-baseline--bedf9ad51fdb0cf8.js",
+      "sha256": "bedf9ad51fdb0cf83950ef9a2c51cf48f783eb7bb2943187719bbd6a054cc155",
+      "patched_sha256": "bedf9ad51fdb0cf83950ef9a2c51cf48f783eb7bb2943187719bbd6a054cc155",
       "upstream_sha256": "1a619e7393223b735c3de8a8acc79e0b758016b1e18b68e21cdc42c31eef1c1d",
       "local_patches": [
         {
@@ -2391,6 +2403,12 @@
           "path": "scripts/provider_patches/hls_master_audio_preserver_v1.py",
           "phase": "discovery",
           "scope": "global_playback_integrity"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_enrichment_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_enrichment"
         }
       ],
       "source": "published-baseline",
@@ -2630,9 +2648,9 @@
     },
     "animekai": {
       "id": "animekai",
-      "published_filename": "providers/animekai--published-baseline--99c74e976727490b.js",
-      "sha256": "99c74e976727490bedc1f445bb17f6c597d8250e687222b780e5a3eea9e13ef0",
-      "patched_sha256": "99c74e976727490bedc1f445bb17f6c597d8250e687222b780e5a3eea9e13ef0",
+      "published_filename": "providers/animekai--published-baseline--5111cc82cbe457aa.js",
+      "sha256": "5111cc82cbe457aafcb31f106a069dfab688601eb57bf58b344448fff8ca7834",
+      "patched_sha256": "5111cc82cbe457aafcb31f106a069dfab688601eb57bf58b344448fff8ca7834",
       "upstream_sha256": "21e5d2f8d89a188ac516172ab810732a983e8e44a1a500d8205f6888ade1f646",
       "local_patches": [
         {
@@ -2640,6 +2658,12 @@
           "path": "scripts/provider_patches/hls_master_audio_preserver_v1.py",
           "phase": "discovery",
           "scope": "global_playback_integrity"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_enrichment_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_enrichment"
         }
       ],
       "source": "published-baseline",
@@ -2879,9 +2903,9 @@
     },
     "animepahe": {
       "id": "animepahe",
-      "published_filename": "providers/animepahe--published-baseline--4bbd78c79977e069.js",
-      "sha256": "4bbd78c79977e06935b02b6aa8ede1d79245729d6e3868322b558fe404a48945",
-      "patched_sha256": "4bbd78c79977e06935b02b6aa8ede1d79245729d6e3868322b558fe404a48945",
+      "published_filename": "providers/animepahe--published-baseline--04c2f3ae46597940.js",
+      "sha256": "04c2f3ae4659794053913eb26fb12018da40c72bafd16597b0299b0af155ce00",
+      "patched_sha256": "04c2f3ae4659794053913eb26fb12018da40c72bafd16597b0299b0af155ce00",
       "upstream_sha256": "9e132e5efb0371493041ba7e321e2fc714f8a3177c7549e30b85e98528a263b9",
       "local_patches": [
         {
@@ -3145,9 +3169,9 @@
     },
     "animesalt": {
       "id": "animesalt",
-      "published_filename": "providers/animesalt--published-baseline--748e6208044cf63d.js",
-      "sha256": "748e6208044cf63d818cc771d7db32bf8df30d637c6ce44a5423d01fb2152fff",
-      "patched_sha256": "748e6208044cf63d818cc771d7db32bf8df30d637c6ce44a5423d01fb2152fff",
+      "published_filename": "providers/animesalt--published-baseline--5edb847e8dc1deae.js",
+      "sha256": "5edb847e8dc1deaec084c3aed8b423350f1aae7ff75270c72ed6e403d2da9f86",
+      "patched_sha256": "5edb847e8dc1deaec084c3aed8b423350f1aae7ff75270c72ed6e403d2da9f86",
       "upstream_sha256": "e221da6762e9c2033ca367d50ebc415a91a6ba4ecf716118d048956ec7df6c2d",
       "local_patches": [
         {
@@ -3403,9 +3427,9 @@
     },
     "animesama-co": {
       "id": "animesama-co",
-      "published_filename": "providers/animesama-co--nuvio--a027fdc06cb4be53.js",
-      "sha256": "a027fdc06cb4be535592e35540a780534796d85421d6676893c032c9d555d606",
-      "patched_sha256": "a027fdc06cb4be535592e35540a780534796d85421d6676893c032c9d555d606",
+      "published_filename": "providers/animesama-co--nuvio--15bd30c2ffed9037.js",
+      "sha256": "15bd30c2ffed90378de58be7513d273ec38c977a29233f8140c253eca2d23c5c",
+      "patched_sha256": "15bd30c2ffed90378de58be7513d273ec38c977a29233f8140c253eca2d23c5c",
       "upstream_sha256": "1ab9fb1cec10acffb9d1e4a59f04ed1b18e20c5cef7632d63e0336c24a89eabe",
       "local_patches": [
         {
@@ -3680,9 +3704,9 @@
     },
     "animesultra": {
       "id": "animesultra",
-      "published_filename": "providers/animesultra--published-baseline--73df9c9ce362f502.js",
-      "sha256": "73df9c9ce362f502ca65e4e6c810c52e77a869dc6f0c4488388349845a30dee0",
-      "patched_sha256": "73df9c9ce362f502ca65e4e6c810c52e77a869dc6f0c4488388349845a30dee0",
+      "published_filename": "providers/animesultra--published-baseline--dd0fd2b40f203b18.js",
+      "sha256": "dd0fd2b40f203b182bb4d1ade30350f1bf7c9131e74ea1e12e3ef58a5696f332",
+      "patched_sha256": "dd0fd2b40f203b182bb4d1ade30350f1bf7c9131e74ea1e12e3ef58a5696f332",
       "upstream_sha256": "7704e3a452b175545251a1d24b1882406335dcc3efe49890847334ef58c645bc",
       "local_patches": [
         {
@@ -3933,9 +3957,9 @@
     },
     "animetsu": {
       "id": "animetsu",
-      "published_filename": "providers/animetsu--published-baseline--428ee2b1628f2e78.js",
-      "sha256": "428ee2b1628f2e78b4f162891fc1719f1242e8cdb7718fe4e23871a305cea9ab",
-      "patched_sha256": "428ee2b1628f2e78b4f162891fc1719f1242e8cdb7718fe4e23871a305cea9ab",
+      "published_filename": "providers/animetsu--published-baseline--008e76a8696854d1.js",
+      "sha256": "008e76a8696854d18c93ff1edb18485519aad4e78b573e18150f9358e726cc84",
+      "patched_sha256": "008e76a8696854d18c93ff1edb18485519aad4e78b573e18150f9358e726cc84",
       "upstream_sha256": "243edd8c76b0995a72e02ba6ff7ca47add6063b1d471ebe378d3d6842bd8cadb",
       "local_patches": [
         {
@@ -4172,9 +4196,9 @@
     },
     "animevostfr": {
       "id": "animevostfr",
-      "published_filename": "providers/animevostfr--published-baseline--fc163503b9f6d6cb.js",
-      "sha256": "fc163503b9f6d6cbc148488c223e90d9ee0647e93870f83b3d91d42f1c4491ce",
-      "patched_sha256": "fc163503b9f6d6cbc148488c223e90d9ee0647e93870f83b3d91d42f1c4491ce",
+      "published_filename": "providers/animevostfr--published-baseline--eb089daaf18018ed.js",
+      "sha256": "eb089daaf18018ed423aed3d4b54e125b5a601e9327d322d0338c63c609baae7",
+      "patched_sha256": "eb089daaf18018ed423aed3d4b54e125b5a601e9327d322d0338c63c609baae7",
       "upstream_sha256": "73c8d338a28059e8dcab49f6e82a4085d4ead0a74625ca8585c69b51583a4d71",
       "local_patches": [
         {
@@ -4194,6 +4218,12 @@
           "path": "scripts/provider_patches/hls_master_audio_preserver_v1.py",
           "phase": "discovery",
           "scope": "global_playback_integrity"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_enrichment_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_enrichment"
         }
       ],
       "source": "published-baseline",
@@ -4442,9 +4472,9 @@
     },
     "animeworld": {
       "id": "animeworld",
-      "published_filename": "providers/animeworld--published-baseline--0164b07b82fa061d.js",
-      "sha256": "0164b07b82fa061dc5b44d8695c386527344e10606cf64bc63755073716f43ed",
-      "patched_sha256": "0164b07b82fa061dc5b44d8695c386527344e10606cf64bc63755073716f43ed",
+      "published_filename": "providers/animeworld--published-baseline--d4faeaee6f55585c.js",
+      "sha256": "d4faeaee6f55585c364769128de65b8e8b201f81dd518a2a8906d072d2d38bde",
+      "patched_sha256": "d4faeaee6f55585c364769128de65b8e8b201f81dd518a2a8906d072d2d38bde",
       "upstream_sha256": "0508f37ff03dd6f0f5ca2c3c6a90ec734725164385d557d93c4ade8f721b068b",
       "local_patches": [
         {
@@ -4452,6 +4482,12 @@
           "path": "scripts/provider_patches/hls_master_audio_preserver_v1.py",
           "phase": "discovery",
           "scope": "global_playback_integrity"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_enrichment_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_enrichment"
         }
       ],
       "source": "published-baseline",
@@ -4691,9 +4727,9 @@
     },
     "animezey": {
       "id": "animezey",
-      "published_filename": "providers/animezey--published-baseline--21089041caa16cb7.js",
-      "sha256": "21089041caa16cb7d39043aaf12a26e569c3b85bf548a838f6bea9b729f4d602",
-      "patched_sha256": "21089041caa16cb7d39043aaf12a26e569c3b85bf548a838f6bea9b729f4d602",
+      "published_filename": "providers/animezey--published-baseline--95d18ffff2732b0d.js",
+      "sha256": "95d18ffff2732b0d28b742783e07c0fece175b41fd2af80f2553ec93a2535543",
+      "patched_sha256": "95d18ffff2732b0d28b742783e07c0fece175b41fd2af80f2553ec93a2535543",
       "upstream_sha256": "098006e561616b96c12932ae5aca859eb776f9f4edf87679611f1408633885f8",
       "local_patches": [
         {
@@ -4944,9 +4980,9 @@
     },
     "animoflix": {
       "id": "animoflix",
-      "published_filename": "providers/animoflix--published-baseline--76d93373cffa3207.js",
-      "sha256": "76d93373cffa32076a36b8086450c93ab849eb91732ab83e04c1b6689eb127a0",
-      "patched_sha256": "76d93373cffa32076a36b8086450c93ab849eb91732ab83e04c1b6689eb127a0",
+      "published_filename": "providers/animoflix--published-baseline--3775dee7ef5deb18.js",
+      "sha256": "3775dee7ef5deb182e12715b272d418a0af3d45f036d7bdd7ca1689f262392c0",
+      "patched_sha256": "3775dee7ef5deb182e12715b272d418a0af3d45f036d7bdd7ca1689f262392c0",
       "upstream_sha256": "b70d06d146e85fa6a1356df4127e48966f54fac741e6b6417aeb21f8d596ba28",
       "local_patches": [
         {
@@ -4954,6 +4990,12 @@
           "path": "scripts/provider_patches/hls_master_audio_preserver_v1.py",
           "phase": "discovery",
           "scope": "global_playback_integrity"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_enrichment_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_enrichment"
         }
       ],
       "source": "published-baseline",
@@ -5193,9 +5235,9 @@
     },
     "anizone": {
       "id": "anizone",
-      "published_filename": "providers/anizone--published-baseline--407615d4b464b237.js",
-      "sha256": "407615d4b464b2370cddbd1a6d10ee8e542c338de9c4b3289a2d248f85bf56e3",
-      "patched_sha256": "407615d4b464b2370cddbd1a6d10ee8e542c338de9c4b3289a2d248f85bf56e3",
+      "published_filename": "providers/anizone--published-baseline--f6ff0bcf9a2f3cb1.js",
+      "sha256": "f6ff0bcf9a2f3cb10ba1f1cab04198167d16d03b9e8db43cb49c8572283d9784",
+      "patched_sha256": "f6ff0bcf9a2f3cb10ba1f1cab04198167d16d03b9e8db43cb49c8572283d9784",
       "upstream_sha256": "0dbdc78b24804babc29f0674da00a46e7b7915ebb5278d58790439d4ba03690b",
       "local_patches": [
         {
@@ -5440,9 +5482,9 @@
     },
     "castle": {
       "id": "castle",
-      "published_filename": "providers/castle--nuvio--3937687295368621.js",
-      "sha256": "393768729536862197376c1f8d60d77e679353e7878079a440f27d7960289b0c",
-      "patched_sha256": "393768729536862197376c1f8d60d77e679353e7878079a440f27d7960289b0c",
+      "published_filename": "providers/castle--nuvio--6d8922375dec69dd.js",
+      "sha256": "6d8922375dec69dd0aca373e6fbfd97611429d8e102fe91f41b24811efada0ff",
+      "patched_sha256": "6d8922375dec69dd0aca373e6fbfd97611429d8e102fe91f41b24811efada0ff",
       "upstream_sha256": "1b23fb0b7740e707fb2e3c5f6f69ca51c4bb4fc6afc8f1ae851af22e3f66bb89",
       "local_patches": [
         {
@@ -5712,9 +5754,9 @@
     },
     "cineby": {
       "id": "cineby",
-      "published_filename": "providers/cineby--nuvio--5247bc622cb36be1.js",
-      "sha256": "5247bc622cb36be15d9f89ac8a258e7758504d10172818509d514c66d674f7a2",
-      "patched_sha256": "5247bc622cb36be15d9f89ac8a258e7758504d10172818509d514c66d674f7a2",
+      "published_filename": "providers/cineby--nuvio--5e38e0aea61512a4.js",
+      "sha256": "5e38e0aea61512a4443b582f5ac7f300c55ec6a814fb04b99600c0592c041e47",
+      "patched_sha256": "5e38e0aea61512a4443b582f5ac7f300c55ec6a814fb04b99600c0592c041e47",
       "upstream_sha256": "06a14293c93a83d3060684e042e7087031463c775717f8b5f1dfeaa0ba30d429",
       "local_patches": [
         {
@@ -6001,9 +6043,9 @@
     },
     "cinefreak": {
       "id": "cinefreak",
-      "published_filename": "providers/cinefreak--published-baseline--b8e07bd40978c620.js",
-      "sha256": "b8e07bd40978c620dad5ba3ca5bcf25f35de573a8fd98f31d379ba20ce23571c",
-      "patched_sha256": "b8e07bd40978c620dad5ba3ca5bcf25f35de573a8fd98f31d379ba20ce23571c",
+      "published_filename": "providers/cinefreak--published-baseline--98ec12a84153734f.js",
+      "sha256": "98ec12a84153734ffe700ee8ee82d7bc3d1f238a887e1180733e14e7710941c9",
+      "patched_sha256": "98ec12a84153734ffe700ee8ee82d7bc3d1f238a887e1180733e14e7710941c9",
       "upstream_sha256": "73555aa3f30324903c30618a6a290085184a9937e8890c0e6bea0a2752c32007",
       "local_patches": [
         {
@@ -6011,6 +6053,12 @@
           "path": "scripts/provider_patches/hls_master_audio_preserver_v1.py",
           "phase": "discovery",
           "scope": "global_playback_integrity"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_enrichment_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_enrichment"
         }
       ],
       "source": "published-baseline",
@@ -6272,9 +6320,9 @@
     },
     "cinemacity": {
       "id": "cinemacity",
-      "published_filename": "providers/cinemacity--published-baseline--d5483c32c282f413.js",
-      "sha256": "d5483c32c282f4135c0440e4c8cab3abe01f6b65fc3af72539d8af4d62979a53",
-      "patched_sha256": "d5483c32c282f4135c0440e4c8cab3abe01f6b65fc3af72539d8af4d62979a53",
+      "published_filename": "providers/cinemacity--published-baseline--4adf9f7a5325d779.js",
+      "sha256": "4adf9f7a5325d7796c2c68dedc8bf7c5b995baf5578d8fb116e38801cc2a62b6",
+      "patched_sha256": "4adf9f7a5325d7796c2c68dedc8bf7c5b995baf5578d8fb116e38801cc2a62b6",
       "upstream_sha256": "e97516075e2f0d47042ab2cfef717d615a79ff6a4f44ff4667c75b027fc1a0fc",
       "local_patches": [
         {
@@ -6512,9 +6560,9 @@
     },
     "cinemm": {
       "id": "cinemm",
-      "published_filename": "providers/cinemm--published-baseline--d7a06e77e0a85a4f.js",
-      "sha256": "d7a06e77e0a85a4fa8814dd36f08c3196cb33e5b2500c853b5689faab24098c0",
-      "patched_sha256": "d7a06e77e0a85a4fa8814dd36f08c3196cb33e5b2500c853b5689faab24098c0",
+      "published_filename": "providers/cinemm--published-baseline--0d19e82e62102281.js",
+      "sha256": "0d19e82e62102281878feefff2cab7c824d36620b149d5a13265798fd1a74076",
+      "patched_sha256": "0d19e82e62102281878feefff2cab7c824d36620b149d5a13265798fd1a74076",
       "upstream_sha256": "a5b5565452b28f36764f8119097309da115c5ab9f46703b8e58227c79972f441",
       "local_patches": [
         {
@@ -6762,9 +6810,9 @@
     },
     "cinevibe": {
       "id": "cinevibe",
-      "published_filename": "providers/cinevibe--published-baseline--cf36b3eb74f72fad.js",
-      "sha256": "cf36b3eb74f72fada6e00ae1e723a2d96c059baecf6f3a9b22862246ba39ff4f",
-      "patched_sha256": "cf36b3eb74f72fada6e00ae1e723a2d96c059baecf6f3a9b22862246ba39ff4f",
+      "published_filename": "providers/cinevibe--published-baseline--93b93a82783aa715.js",
+      "sha256": "93b93a82783aa715b33008e573beedfda566d7e475407364b899adf57f85f7fd",
+      "patched_sha256": "93b93a82783aa715b33008e573beedfda566d7e475407364b899adf57f85f7fd",
       "upstream_sha256": "2bdbc9f2b63c91108c23a26f6a742a381228a51ff34cfa2591665f688f5cd1a1",
       "local_patches": [
         {
@@ -7006,9 +7054,9 @@
     },
     "coflix": {
       "id": "coflix",
-      "published_filename": "providers/coflix--nuvio--a7afd04be6468970.js",
-      "sha256": "a7afd04be6468970eb9eae2fc2a1da546a3a93e1602f713736dbd5db39c66f1d",
-      "patched_sha256": "a7afd04be6468970eb9eae2fc2a1da546a3a93e1602f713736dbd5db39c66f1d",
+      "published_filename": "providers/coflix--nuvio--c499cba04d4d171a.js",
+      "sha256": "c499cba04d4d171a06771c47f2d210ba550846debab9caccc3f8a5801aed92b4",
+      "patched_sha256": "c499cba04d4d171a06771c47f2d210ba550846debab9caccc3f8a5801aed92b4",
       "upstream_sha256": "48239f7b107a98b295b0ddec8ed38805503a75975e1bee320543d856d0baa87c",
       "local_patches": [
         "{'type': 'patch_script', 'path': 'scripts/provider_patches/vf_catalogue_recovery.py', 'phase': 'discovery'}",
@@ -7378,9 +7426,9 @@
     },
     "ctgmovies": {
       "id": "ctgmovies",
-      "published_filename": "providers/ctgmovies--published-baseline--4006ad601a47e70b.js",
-      "sha256": "4006ad601a47e70ba0d8f82324b4a07b0af801349598b0504a669341a1ee426c",
-      "patched_sha256": "4006ad601a47e70ba0d8f82324b4a07b0af801349598b0504a669341a1ee426c",
+      "published_filename": "providers/ctgmovies--published-baseline--07eb7a47d4c29d14.js",
+      "sha256": "07eb7a47d4c29d14f7695c58048f99476a36d21206b7b39be761d4754e330a37",
+      "patched_sha256": "07eb7a47d4c29d14f7695c58048f99476a36d21206b7b39be761d4754e330a37",
       "upstream_sha256": "0ff38923643238210957269ee056bc9280273a02fd37e8d00ff2447f68e02fef",
       "local_patches": [
         {
@@ -7625,9 +7673,9 @@
     },
     "desiflix": {
       "id": "desiflix",
-      "published_filename": "providers/desiflix--published-baseline--bbdf645cfde14143.js",
-      "sha256": "bbdf645cfde141439f20631e08db85285b464b2598eec7e183a8d83bdd1001bf",
-      "patched_sha256": "bbdf645cfde141439f20631e08db85285b464b2598eec7e183a8d83bdd1001bf",
+      "published_filename": "providers/desiflix--published-baseline--48292086d2c14131.js",
+      "sha256": "48292086d2c141310bec098d1d311914d13fafe50fc9e07bfcf4e236783b0c3d",
+      "patched_sha256": "48292086d2c141310bec098d1d311914d13fafe50fc9e07bfcf4e236783b0c3d",
       "upstream_sha256": "cf1fa4801158c1822b0eaf2f1a10acb7e89ab85e47947bcb1219f48ceeda4f43",
       "local_patches": [
         {
@@ -7635,6 +7683,12 @@
           "path": "scripts/provider_patches/hls_master_audio_preserver_v1.py",
           "phase": "discovery",
           "scope": "global_playback_integrity"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_enrichment_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_enrichment"
         }
       ],
       "source": "published-baseline",
@@ -7899,9 +7953,9 @@
     },
     "dooflix": {
       "id": "dooflix",
-      "published_filename": "providers/dooflix--published-baseline--e8634d00ded05b5b.js",
-      "sha256": "e8634d00ded05b5b9d4f75d122e6ce1631341cc28c2d72d3f74ac1fe9b091fbb",
-      "patched_sha256": "e8634d00ded05b5b9d4f75d122e6ce1631341cc28c2d72d3f74ac1fe9b091fbb",
+      "published_filename": "providers/dooflix--published-baseline--9af3b7f9193798ed.js",
+      "sha256": "9af3b7f9193798ed1f5a89e86208ae4e1e4fe09022da059903a99d32c5c8562d",
+      "patched_sha256": "9af3b7f9193798ed1f5a89e86208ae4e1e4fe09022da059903a99d32c5c8562d",
       "upstream_sha256": "4f1fe2d96901c1b2abb7d7f93dbac551d4129bb0ceff5017d7439a5ffb7695e8",
       "local_patches": [
         {
@@ -8148,9 +8202,9 @@
     },
     "dulourd": {
       "id": "dulourd",
-      "published_filename": "providers/dulourd--published-baseline--984a2eb9c382d8e6.js",
-      "sha256": "984a2eb9c382d8e6111f77488df9e31b5a4285f59f27591c3c1fa8d2e2b8a415",
-      "patched_sha256": "984a2eb9c382d8e6111f77488df9e31b5a4285f59f27591c3c1fa8d2e2b8a415",
+      "published_filename": "providers/dulourd--published-baseline--b6900ede3712d971.js",
+      "sha256": "b6900ede3712d97139c3116025f1c4f13045138486905ac12e9ff3f79793371d",
+      "patched_sha256": "b6900ede3712d97139c3116025f1c4f13045138486905ac12e9ff3f79793371d",
       "upstream_sha256": "e62064b45a10a505612be560f20cbd39ad34be7fa69c4fcafe51d9714f72aa05",
       "local_patches": [
         {
@@ -8636,9 +8690,9 @@
     },
     "einthusan": {
       "id": "einthusan",
-      "published_filename": "providers/einthusan--published-baseline--57ad66553efb76f9.js",
-      "sha256": "57ad66553efb76f9e562abbb5da97800d09a48aeeded235601f660d878c6f0a3",
-      "patched_sha256": "57ad66553efb76f9e562abbb5da97800d09a48aeeded235601f660d878c6f0a3",
+      "published_filename": "providers/einthusan--published-baseline--b55a4cf82d01cb18.js",
+      "sha256": "b55a4cf82d01cb18fa756d9132a7d81618553da7625a3e4d9cf12a1af00f6db0",
+      "patched_sha256": "b55a4cf82d01cb18fa756d9132a7d81618553da7625a3e4d9cf12a1af00f6db0",
       "upstream_sha256": "824e7cf3e182d9ceb38db015d22f313e5920ffef4ae44e2f53452d44cbd5198f",
       "local_patches": [
         {
@@ -8885,9 +8939,9 @@
     },
     "fibwatch": {
       "id": "fibwatch",
-      "published_filename": "providers/fibwatch--published-baseline--410a11668a4cc8bc.js",
-      "sha256": "410a11668a4cc8bc9670886a520c17b6c731f7e60a1a6e0cb145527ca4f2cd72",
-      "patched_sha256": "410a11668a4cc8bc9670886a520c17b6c731f7e60a1a6e0cb145527ca4f2cd72",
+      "published_filename": "providers/fibwatch--published-baseline--85feab81f233c1ae.js",
+      "sha256": "85feab81f233c1aea46c3c9c8396c32deef0c9c2255311b3d3f1232406fda204",
+      "patched_sha256": "85feab81f233c1aea46c3c9c8396c32deef0c9c2255311b3d3f1232406fda204",
       "upstream_sha256": "99516d7657d560ce91ab86336e315929bfbbccaadbb38f997e210178e4f18d86",
       "local_patches": [
         {
@@ -8895,6 +8949,12 @@
           "path": "scripts/provider_patches/hls_master_audio_preserver_v1.py",
           "phase": "discovery",
           "scope": "global_playback_integrity"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_enrichment_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_enrichment"
         }
       ],
       "source": "published-baseline",
@@ -9134,9 +9194,9 @@
     },
     "flemmix": {
       "id": "flemmix",
-      "published_filename": "providers/flemmix--nuvio--5303f9cca1ecc9c0.js",
-      "sha256": "5303f9cca1ecc9c096b5ca571cdb14a40f19a5e417db92d7f061a474e8242c1f",
-      "patched_sha256": "5303f9cca1ecc9c096b5ca571cdb14a40f19a5e417db92d7f061a474e8242c1f",
+      "published_filename": "providers/flemmix--nuvio--1258c848fae0b901.js",
+      "sha256": "1258c848fae0b9019326a0b7dc8fd12e1a2150dc3045d8fbfe353789a386f77e",
+      "patched_sha256": "1258c848fae0b9019326a0b7dc8fd12e1a2150dc3045d8fbfe353789a386f77e",
       "upstream_sha256": "e0c40c452aca0d6685426c739729bc7bca333a187f4dc2737295f7394ff3955f",
       "local_patches": [
         "{'type': 'patch_script', 'path': 'scripts/provider_patches/stream_output_sanitizer_v5.py', 'phase': 'discovery'}",
@@ -9985,9 +10045,9 @@
     },
     "goatapi": {
       "id": "goatapi",
-      "published_filename": "providers/goatapi--published-baseline--6f4c60c896db6557.js",
-      "sha256": "6f4c60c896db6557cdfade7a053260a687147614123488285ba540bb75d5c114",
-      "patched_sha256": "6f4c60c896db6557cdfade7a053260a687147614123488285ba540bb75d5c114",
+      "published_filename": "providers/goatapi--published-baseline--804771b93ca5325f.js",
+      "sha256": "804771b93ca5325f140f7bbcd77806daae88d89defefcdc07bba6ef3ae2d8900",
+      "patched_sha256": "804771b93ca5325f140f7bbcd77806daae88d89defefcdc07bba6ef3ae2d8900",
       "upstream_sha256": "8cd898c7d855c99419bbdf3b9f0244de70311734c3b6f60319c31e2296b51e29",
       "local_patches": [
         {
@@ -9995,6 +10055,12 @@
           "path": "scripts/provider_patches/hls_master_audio_preserver_v1.py",
           "phase": "discovery",
           "scope": "global_playback_integrity"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_enrichment_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_enrichment"
         }
       ],
       "source": "published-baseline",
@@ -10228,9 +10294,9 @@
     },
     "goated": {
       "id": "goated",
-      "published_filename": "providers/goated--nuvio--b3028641912e3313.js",
-      "sha256": "b3028641912e331327939c63bc9e32528fd47857f0f2d77df753358a19bc7bd3",
-      "patched_sha256": "b3028641912e331327939c63bc9e32528fd47857f0f2d77df753358a19bc7bd3",
+      "published_filename": "providers/goated--nuvio--52c17103b5fc8c42.js",
+      "sha256": "52c17103b5fc8c4278e92c7a86ad52211437b0512c870c9e162e4f3d17e43759",
+      "patched_sha256": "52c17103b5fc8c4278e92c7a86ad52211437b0512c870c9e162e4f3d17e43759",
       "upstream_sha256": "b4966c7fd78842d59085fe197bc89ddbbc6c23c9a0f9c5ba6b114eedb7673f00",
       "local_patches": [
         {
@@ -10520,9 +10586,9 @@
     },
     "gramcinema": {
       "id": "gramcinema",
-      "published_filename": "providers/gramcinema--published-baseline--c6808a9791ea2818.js",
-      "sha256": "c6808a9791ea281885c3f26f025c7acac1d35675c26320a335844108edf34965",
-      "patched_sha256": "c6808a9791ea281885c3f26f025c7acac1d35675c26320a335844108edf34965",
+      "published_filename": "providers/gramcinema--published-baseline--652d6db65aa76af3.js",
+      "sha256": "652d6db65aa76af3b2d1fc2526ceb23897e8d0a251c2fce8558f1a383dec666c",
+      "patched_sha256": "652d6db65aa76af3b2d1fc2526ceb23897e8d0a251c2fce8558f1a383dec666c",
       "upstream_sha256": "27274575ee2d29a5c2451fd317012dd99fb9a1230dc7025ab576c577ed97972c",
       "local_patches": [
         {
@@ -10530,6 +10596,12 @@
           "path": "scripts/provider_patches/hls_master_audio_preserver_v1.py",
           "phase": "discovery",
           "scope": "global_playback_integrity"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_enrichment_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_enrichment"
         }
       ],
       "source": "published-baseline",
@@ -10765,9 +10837,9 @@
     },
     "hdghartv": {
       "id": "hdghartv",
-      "published_filename": "providers/hdghartv--nuvio--a77b080bf5a5657e.js",
-      "sha256": "a77b080bf5a5657e3515f100995de85e332e703a2596feef84172fdd10f92af8",
-      "patched_sha256": "a77b080bf5a5657e3515f100995de85e332e703a2596feef84172fdd10f92af8",
+      "published_filename": "providers/hdghartv--nuvio--ec3a6b45e9fa12ff.js",
+      "sha256": "ec3a6b45e9fa12ff34f4c1d17dd82059e4213a94491a96a1a1afa50989a3ddbe",
+      "patched_sha256": "ec3a6b45e9fa12ff34f4c1d17dd82059e4213a94491a96a1a1afa50989a3ddbe",
       "upstream_sha256": "8f6931a418a437f64d697f6eafdc27b8c2408cefd9accc5c7e7d9810871ed81a",
       "local_patches": [
         {
@@ -11037,9 +11109,9 @@
     },
     "hdhub4u": {
       "id": "hdhub4u",
-      "published_filename": "providers/hdhub4u--published-baseline--60c3f8278c0f4224.js",
-      "sha256": "60c3f8278c0f4224160875a8eb41a32a2c142551e8852659be99c2314bd89496",
-      "patched_sha256": "60c3f8278c0f4224160875a8eb41a32a2c142551e8852659be99c2314bd89496",
+      "published_filename": "providers/hdhub4u--published-baseline--f05c9f4ed18d0ed1.js",
+      "sha256": "f05c9f4ed18d0ed12d213b8aaad6483f455f5e575972b06368e59b25636f3702",
+      "patched_sha256": "f05c9f4ed18d0ed12d213b8aaad6483f455f5e575972b06368e59b25636f3702",
       "upstream_sha256": "f6e1007a3cd2764bb6fba94531bf634cb91019e62b08c8308217f151fb0a68ce",
       "local_patches": [
         {
@@ -11299,9 +11371,9 @@
     },
     "hianime": {
       "id": "hianime",
-      "published_filename": "providers/hianime--nuvio--5c94183622a5daaa.js",
-      "sha256": "5c94183622a5daaa2711bd13fc73a12bd34339126df82efe9e1915d58e1610f4",
-      "patched_sha256": "5c94183622a5daaa2711bd13fc73a12bd34339126df82efe9e1915d58e1610f4",
+      "published_filename": "providers/hianime--nuvio--f90799c1b8507d59.js",
+      "sha256": "f90799c1b8507d59a569ff5c95018400a824766ae52de153f1da9e073edb1799",
+      "patched_sha256": "f90799c1b8507d59a569ff5c95018400a824766ae52de153f1da9e073edb1799",
       "upstream_sha256": "11124b38985b9780ad49e040b5d30a7143bc9541e27c7e314e70d9778a227af9",
       "local_patches": [
         {
@@ -11577,9 +11649,9 @@
     },
     "hindmoviez": {
       "id": "hindmoviez",
-      "published_filename": "providers/hindmoviez--nuvio--49a34790982daa6d.js",
-      "sha256": "49a34790982daa6dfbf558f1f9b5c804ebd96a645325779a49f5491351c6bd7d",
-      "patched_sha256": "49a34790982daa6dfbf558f1f9b5c804ebd96a645325779a49f5491351c6bd7d",
+      "published_filename": "providers/hindmoviez--nuvio--48318d909161e1b4.js",
+      "sha256": "48318d909161e1b456f275d350ac6939ec5d76c7d2acce7d5bc761e52d4881a2",
+      "patched_sha256": "48318d909161e1b456f275d350ac6939ec5d76c7d2acce7d5bc761e52d4881a2",
       "upstream_sha256": "86b8c3a4dff3c98c05db88eb075936b2f4ec00d504b967f1150bdfbd6fa620ac",
       "local_patches": [
         {
@@ -11843,9 +11915,9 @@
     },
     "kisskh": {
       "id": "kisskh",
-      "published_filename": "providers/kisskh--nuvio--21a427ef739c4a18.js",
-      "sha256": "21a427ef739c4a18a351f16401908972a4064a8a1f993c85f29d3b1d5265127b",
-      "patched_sha256": "21a427ef739c4a18a351f16401908972a4064a8a1f993c85f29d3b1d5265127b",
+      "published_filename": "providers/kisskh--nuvio--65d3636c05132594.js",
+      "sha256": "65d3636c05132594427b4bfb806f29146d97115874064b26d9c8c030006dd8bf",
+      "patched_sha256": "65d3636c05132594427b4bfb806f29146d97115874064b26d9c8c030006dd8bf",
       "upstream_sha256": "81b0afffb337390782cace12c5d657c6aa42765d05f5da986022284a99bafb98",
       "local_patches": [
         {
@@ -12105,9 +12177,9 @@
     },
     "kurage": {
       "id": "kurage",
-      "published_filename": "providers/kurage--nuvio--831c10e5390eaba0.js",
-      "sha256": "831c10e5390eaba0f2b78c3ce9b6f735f06b61cc261e3b9d1c41eaa046fa9bdd",
-      "patched_sha256": "831c10e5390eaba0f2b78c3ce9b6f735f06b61cc261e3b9d1c41eaa046fa9bdd",
+      "published_filename": "providers/kurage--nuvio--68ddee5426e2719f.js",
+      "sha256": "68ddee5426e2719f780ce4b4ddd1509ac3ef10c4dd88f6032621f097238e3cbb",
+      "patched_sha256": "68ddee5426e2719f780ce4b4ddd1509ac3ef10c4dd88f6032621f097238e3cbb",
       "upstream_sha256": "668797edb270c5fed931b08e0c92ca6693420041838f3b8ef49e28ddb1e7e463",
       "local_patches": [
         {
@@ -12376,9 +12448,9 @@
     },
     "mallumv": {
       "id": "mallumv",
-      "published_filename": "providers/mallumv--published-baseline--92a094769ce36358.js",
-      "sha256": "92a094769ce363584cf596f0637dd5aacf7afcf7f07fc0baab159045972773e9",
-      "patched_sha256": "92a094769ce363584cf596f0637dd5aacf7afcf7f07fc0baab159045972773e9",
+      "published_filename": "providers/mallumv--published-baseline--7a48167ecdd888d1.js",
+      "sha256": "7a48167ecdd888d15bca5f95948204b82fda29c978d74317240ad8e8378bcc58",
+      "patched_sha256": "7a48167ecdd888d15bca5f95948204b82fda29c978d74317240ad8e8378bcc58",
       "upstream_sha256": "bf77cc95ecd339d087456abd5b4969fc05902bca80a1dea23eee56399b632428",
       "local_patches": [
         {
@@ -12386,6 +12458,12 @@
           "path": "scripts/provider_patches/hls_master_audio_preserver_v1.py",
           "phase": "discovery",
           "scope": "global_playback_integrity"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_enrichment_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_enrichment"
         }
       ],
       "source": "published-baseline",
@@ -12626,9 +12704,9 @@
     },
     "moonflix": {
       "id": "moonflix",
-      "published_filename": "providers/moonflix--published-baseline--ee2c12b2431d8429.js",
-      "sha256": "ee2c12b2431d8429d50dfed59e499443b9fc447bdb4de832ceab6fec1315f4eb",
-      "patched_sha256": "ee2c12b2431d8429d50dfed59e499443b9fc447bdb4de832ceab6fec1315f4eb",
+      "published_filename": "providers/moonflix--published-baseline--327143bc00dd7fbe.js",
+      "sha256": "327143bc00dd7fbeeaf06a655f55a804c6a6bccf2986aa2975dbb48994bd8d0b",
+      "patched_sha256": "327143bc00dd7fbeeaf06a655f55a804c6a6bccf2986aa2975dbb48994bd8d0b",
       "upstream_sha256": "23255d2a866ac28eed940e304bf4d15e91b18c3151aa55d819a6d6fdfe1036c5",
       "local_patches": [
         {
@@ -13409,9 +13487,9 @@
     },
     "movies4u": {
       "id": "movies4u",
-      "published_filename": "providers/movies4u--nuvio--e3449a9d41e6f900.js",
-      "sha256": "e3449a9d41e6f900833444bd9d78a8e849f9245c2eef6747fd08b1bcc06727d4",
-      "patched_sha256": "e3449a9d41e6f900833444bd9d78a8e849f9245c2eef6747fd08b1bcc06727d4",
+      "published_filename": "providers/movies4u--nuvio--96b9fdba7157bf14.js",
+      "sha256": "96b9fdba7157bf14097fe25b84c728195df97cc22b84e8ab854f44efa4b7746a",
+      "patched_sha256": "96b9fdba7157bf14097fe25b84c728195df97cc22b84e8ab854f44efa4b7746a",
       "upstream_sha256": "d57854d4a39a0c4c36af6ba3ab2bda4c00aa4bd5037e395e786f6a2b79f15ecd",
       "local_patches": [
         {
@@ -13704,9 +13782,9 @@
     },
     "moviesdrive": {
       "id": "moviesdrive",
-      "published_filename": "providers/moviesdrive--nuvio--d47e0f922cde905b.js",
-      "sha256": "d47e0f922cde905b9bdf77fbaccab80ea96b7b31af14eedf32f1b0de307efb35",
-      "patched_sha256": "d47e0f922cde905b9bdf77fbaccab80ea96b7b31af14eedf32f1b0de307efb35",
+      "published_filename": "providers/moviesdrive--nuvio--5e61ff3255868545.js",
+      "sha256": "5e61ff3255868545ef09362f55c230da878f886500a486d8b9b66f3735ce755a",
+      "patched_sha256": "5e61ff3255868545ef09362f55c230da878f886500a486d8b9b66f3735ce755a",
       "upstream_sha256": "675d0e30755fa97131010ddbe3a3ed8733043e9635a672f5845d087d3a924ea1",
       "local_patches": [
         {
@@ -13975,9 +14053,9 @@
     },
     "movieshunt": {
       "id": "movieshunt",
-      "published_filename": "providers/movieshunt--nuvio--ffd717253bd2b100.js",
-      "sha256": "ffd717253bd2b100389c7d3ee05b3b74b8e2227ff57507968604e8a6fe5491aa",
-      "patched_sha256": "ffd717253bd2b100389c7d3ee05b3b74b8e2227ff57507968604e8a6fe5491aa",
+      "published_filename": "providers/movieshunt--nuvio--323e21dbc8c11718.js",
+      "sha256": "323e21dbc8c117186bdceabf8ed14c0cc18b018d774474cde176348b196800a3",
+      "patched_sha256": "323e21dbc8c117186bdceabf8ed14c0cc18b018d774474cde176348b196800a3",
       "upstream_sha256": "6796beaa02d57e69cb033eec47a14a3b74782a0d08bcfd260421f10d4041392e",
       "local_patches": [
         {
@@ -14227,9 +14305,9 @@
     },
     "moviesmod": {
       "id": "moviesmod",
-      "published_filename": "providers/moviesmod--published-baseline--7d245e3a3fd2b5a6.js",
-      "sha256": "7d245e3a3fd2b5a6d6cd278bac7825da356b9d416b9a03ae31acc71c9d6b0ebc",
-      "patched_sha256": "7d245e3a3fd2b5a6d6cd278bac7825da356b9d416b9a03ae31acc71c9d6b0ebc",
+      "published_filename": "providers/moviesmod--published-baseline--c1aac78db8e76469.js",
+      "sha256": "c1aac78db8e7646932bb84bc41e16e160ce42e4964cfd7154be37207379d82d9",
+      "patched_sha256": "c1aac78db8e7646932bb84bc41e16e160ce42e4964cfd7154be37207379d82d9",
       "upstream_sha256": "c90890640a4598443ae4a264547b9ce1d089952f5d19ac9ab74e6cf1e28e0a9f",
       "local_patches": [
         {
@@ -14499,9 +14577,9 @@
     },
     "movix": {
       "id": "movix",
-      "published_filename": "providers/movix--nuvio--45dc67a0f586d6e4.js",
-      "sha256": "45dc67a0f586d6e4ef536f932577987d7a43d2592c8fc033ee4822cdd96f9fdd",
-      "patched_sha256": "45dc67a0f586d6e4ef536f932577987d7a43d2592c8fc033ee4822cdd96f9fdd",
+      "published_filename": "providers/movix--nuvio--8dbdac25132af6db.js",
+      "sha256": "8dbdac25132af6db08c44e1b35cc8365d6951d9f9fa5a216bb2952e32506fb26",
+      "patched_sha256": "8dbdac25132af6db08c44e1b35cc8365d6951d9f9fa5a216bb2952e32506fb26",
       "upstream_sha256": "b31ef87b05d3a4f351d20872e33980b4de95d73461ce2c27327d64bde9653787",
       "local_patches": [
         "{'type': 'patch_script', 'path': 'scripts/provider_patches/stream_output_sanitizer_v5.py', 'phase': 'discovery'}",
@@ -14791,9 +14869,9 @@
     },
     "mugiwarastream": {
       "id": "mugiwarastream",
-      "published_filename": "providers/mugiwarastream--published-baseline--69820681aa6de01f.js",
-      "sha256": "69820681aa6de01ff5c10e8653848db77591dfaccf0fabcee4e12fe941f184ee",
-      "patched_sha256": "69820681aa6de01ff5c10e8653848db77591dfaccf0fabcee4e12fe941f184ee",
+      "published_filename": "providers/mugiwarastream--published-baseline--3b1cdb915475afd9.js",
+      "sha256": "3b1cdb915475afd97cd167540cb77bf93551f0fec6d1be3b71fb48b6a26adb8d",
+      "patched_sha256": "3b1cdb915475afd97cd167540cb77bf93551f0fec6d1be3b71fb48b6a26adb8d",
       "upstream_sha256": "9d11ff986711795e7c6a5421e94bc98ab31640bde6f0c65f75a8cfb627dfa1ac",
       "local_patches": [
         {
@@ -14801,6 +14879,12 @@
           "path": "scripts/provider_patches/hls_master_audio_preserver_v1.py",
           "phase": "discovery",
           "scope": "global_playback_integrity"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_enrichment_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_enrichment"
         }
       ],
       "source": "published-baseline",
@@ -15052,9 +15136,9 @@
     },
     "mycima": {
       "id": "mycima",
-      "published_filename": "providers/mycima--published-baseline--82be2ecf80b7a47f.js",
-      "sha256": "82be2ecf80b7a47f2480081b467f1194d0f77012d48e17672ae846731e5a38f3",
-      "patched_sha256": "82be2ecf80b7a47f2480081b467f1194d0f77012d48e17672ae846731e5a38f3",
+      "published_filename": "providers/mycima--published-baseline--47e9aa83fa492cd5.js",
+      "sha256": "47e9aa83fa492cd5062343461d8fbafd941ed4b0b0a7217ecd8c663285564e98",
+      "patched_sha256": "47e9aa83fa492cd5062343461d8fbafd941ed4b0b0a7217ecd8c663285564e98",
       "upstream_sha256": "7810fbabdcd922b4c584d4353a1f038f5f099bb5a4b20f982b364f9d64fdc366",
       "local_patches": [
         {
@@ -15062,6 +15146,12 @@
           "path": "scripts/provider_patches/hls_master_audio_preserver_v1.py",
           "phase": "discovery",
           "scope": "global_playback_integrity"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_enrichment_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_enrichment"
         }
       ],
       "source": "published-baseline",
@@ -15300,9 +15390,9 @@
     },
     "nakios": {
       "id": "nakios",
-      "published_filename": "providers/nakios--published-baseline--c147ed934fdde287.js",
-      "sha256": "c147ed934fdde2872a345919fb13d1fd461cdbfcb3089607a4002b9d00b04eae",
-      "patched_sha256": "c147ed934fdde2872a345919fb13d1fd461cdbfcb3089607a4002b9d00b04eae",
+      "published_filename": "providers/nakios--published-baseline--0eb2fed4892f0158.js",
+      "sha256": "0eb2fed4892f015830eb07cec8b029032c40e51ab8087bb67dc9491e0e18e2d3",
+      "patched_sha256": "0eb2fed4892f015830eb07cec8b029032c40e51ab8087bb67dc9491e0e18e2d3",
       "upstream_sha256": "9f244357f0b66ad28e2fa1ad578c7627da71b38bf0ebfd00fb79a45e60b9d019",
       "local_patches": [
         {
@@ -15823,9 +15913,9 @@
     },
     "onlykdrama": {
       "id": "onlykdrama",
-      "published_filename": "providers/onlykdrama--published-baseline--6d87b0db59d9ea74.js",
-      "sha256": "6d87b0db59d9ea748cec2a38674e3f9475f1dd08124ad45838133be5c62c74e4",
-      "patched_sha256": "6d87b0db59d9ea748cec2a38674e3f9475f1dd08124ad45838133be5c62c74e4",
+      "published_filename": "providers/onlykdrama--published-baseline--b75f17af0eb53e97.js",
+      "sha256": "b75f17af0eb53e974e2aed952a712ce0774bab9ca5d1e38919948482f8712539",
+      "patched_sha256": "b75f17af0eb53e974e2aed952a712ce0774bab9ca5d1e38919948482f8712539",
       "upstream_sha256": "2a59cdbdd6524e1bd707638fb7871f988d0c5ed0e3acc1dc666dc10c5bc499a8",
       "local_patches": [
         {
@@ -15833,6 +15923,12 @@
           "path": "scripts/provider_patches/hls_master_audio_preserver_v1.py",
           "phase": "discovery",
           "scope": "global_playback_integrity"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_enrichment_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_enrichment"
         }
       ],
       "source": "published-baseline",
@@ -16070,9 +16166,9 @@
     },
     "papadustream": {
       "id": "papadustream",
-      "published_filename": "providers/papadustream--published-baseline--703a8e2f565ed78a.js",
-      "sha256": "703a8e2f565ed78aa34e17d1fabbfb1556b88a7f3d4fb0ffdb0256618f431b89",
-      "patched_sha256": "703a8e2f565ed78aa34e17d1fabbfb1556b88a7f3d4fb0ffdb0256618f431b89",
+      "published_filename": "providers/papadustream--published-baseline--6526ecf7c06b44a2.js",
+      "sha256": "6526ecf7c06b44a20c17c038470329a75ffc9189caafbdd8b32c80070a32a6ee",
+      "patched_sha256": "6526ecf7c06b44a20c17c038470329a75ffc9189caafbdd8b32c80070a32a6ee",
       "upstream_sha256": "3b5e48fd2a1089b614594fef1788c7870f5b3d85979662e3f0ae419729398782",
       "local_patches": [
         {
@@ -16097,6 +16193,12 @@
           "path": "scripts/provider_patches/hls_master_audio_preserver_v1.py",
           "phase": "discovery",
           "scope": "global_playback_integrity"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_enrichment_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_enrichment"
         }
       ],
       "source": "published-baseline",
@@ -16353,9 +16455,9 @@
     },
     "peachify": {
       "id": "peachify",
-      "published_filename": "providers/peachify--published-baseline--dc0a2573589bea3e.js",
-      "sha256": "dc0a2573589bea3e8b8f82e246a51f1c5e46845f99bff499ece86846eedb1faa",
-      "patched_sha256": "dc0a2573589bea3e8b8f82e246a51f1c5e46845f99bff499ece86846eedb1faa",
+      "published_filename": "providers/peachify--published-baseline--ba13be2d9d6e2147.js",
+      "sha256": "ba13be2d9d6e2147d0753db64cb98cb7c2566b73c4debcd9382656fa7bece619",
+      "patched_sha256": "ba13be2d9d6e2147d0753db64cb98cb7c2566b73c4debcd9382656fa7bece619",
       "upstream_sha256": "3abd719532e31536f5ef1a5b98802779d66b3b84b37fc084d83908b6ff57c217",
       "local_patches": [
         {
@@ -16601,9 +16703,9 @@
     },
     "persianstremio": {
       "id": "persianstremio",
-      "published_filename": "providers/persianstremio--published-baseline--acc767f899d002b2.js",
-      "sha256": "acc767f899d002b2402b633701df874ca2a78cbc513affefd66d864e5e914a0f",
-      "patched_sha256": "acc767f899d002b2402b633701df874ca2a78cbc513affefd66d864e5e914a0f",
+      "published_filename": "providers/persianstremio--published-baseline--5865f0b1c0e064ee.js",
+      "sha256": "5865f0b1c0e064eee9bc2410b35f6d964a94bc08462def580635851b52d49ddd",
+      "patched_sha256": "5865f0b1c0e064eee9bc2410b35f6d964a94bc08462def580635851b52d49ddd",
       "upstream_sha256": "0a732e24bfa1d1b227bced53f661e87f48fd56e2febfd631057d2aaaf0da2bda",
       "local_patches": [
         {
@@ -16849,9 +16951,9 @@
     },
     "playimdb": {
       "id": "playimdb",
-      "published_filename": "providers/playimdb--nuvio--7990b2f612b22083.js",
-      "sha256": "7990b2f612b2208370c5ba308c78bfa8fde98bbf45d03afd4a2f19cb6116edda",
-      "patched_sha256": "7990b2f612b2208370c5ba308c78bfa8fde98bbf45d03afd4a2f19cb6116edda",
+      "published_filename": "providers/playimdb--nuvio--31cddf787d925a69.js",
+      "sha256": "31cddf787d925a69dd4f63251f358f313a4e2165103d2d658f248b1cafa25b69",
+      "patched_sha256": "31cddf787d925a69dd4f63251f358f313a4e2165103d2d658f248b1cafa25b69",
       "upstream_sha256": "e00e7b0d65b15622e0b6bcdce3ccc92d6226853197962348ced4af47343f07ab",
       "local_patches": [
         {
@@ -17113,9 +17215,9 @@
     },
     "purstream": {
       "id": "purstream",
-      "published_filename": "providers/purstream--nuvio--5b4e87d28c999db1.js",
-      "sha256": "5b4e87d28c999db1abee653c4af8df5ab10078ddd2266523c88a250a0e78cdfd",
-      "patched_sha256": "5b4e87d28c999db1abee653c4af8df5ab10078ddd2266523c88a250a0e78cdfd",
+      "published_filename": "providers/purstream--nuvio--10a76addff2e5af4.js",
+      "sha256": "10a76addff2e5af4e252fbd962727c96fa9f507c315f89494fac9a7c60717385",
+      "patched_sha256": "10a76addff2e5af4e252fbd962727c96fa9f507c315f89494fac9a7c60717385",
       "upstream_sha256": "02173d75d873826f33e7bd45bb1c7973e557845548a8634b3ed1a5161c89abb8",
       "local_patches": [
         {
@@ -17393,9 +17495,9 @@
     },
     "sekai": {
       "id": "sekai",
-      "published_filename": "providers/sekai--published-baseline--d48a71e24ef1e5b6.js",
-      "sha256": "d48a71e24ef1e5b68010482ae4b597f08c5d723e0f655acc8c4fc3105c0360ba",
-      "patched_sha256": "d48a71e24ef1e5b68010482ae4b597f08c5d723e0f655acc8c4fc3105c0360ba",
+      "published_filename": "providers/sekai--published-baseline--52aa05f1e9c04083.js",
+      "sha256": "52aa05f1e9c0408317b9bd07585dbaf173e754104d650b3ec286442db678de3e",
+      "patched_sha256": "52aa05f1e9c0408317b9bd07585dbaf173e754104d650b3ec286442db678de3e",
       "upstream_sha256": "e85fff4bdce1aca71ee95c81822481b07942ce9857d3644e2ef36eacf382b148",
       "local_patches": [
         {
@@ -17403,6 +17505,12 @@
           "path": "scripts/provider_patches/hls_master_audio_preserver_v1.py",
           "phase": "discovery",
           "scope": "global_playback_integrity"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_enrichment_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_enrichment"
         }
       ],
       "source": "published-baseline",
@@ -17658,9 +17766,9 @@
     },
     "showbox": {
       "id": "showbox",
-      "published_filename": "providers/showbox--published-baseline--0cbb9d8dccae669d.js",
-      "sha256": "0cbb9d8dccae669d02b2053c9b9c151eb1233de6534958eaab52a4db55baf9fd",
-      "patched_sha256": "0cbb9d8dccae669d02b2053c9b9c151eb1233de6534958eaab52a4db55baf9fd",
+      "published_filename": "providers/showbox--published-baseline--cb6b20ad544672ec.js",
+      "sha256": "cb6b20ad544672ecc34950f6c4f8138ea724092e664f814474aeef17ed847750",
+      "patched_sha256": "cb6b20ad544672ecc34950f6c4f8138ea724092e664f814474aeef17ed847750",
       "upstream_sha256": "8b3192efec66c98e5824024bdf5928f571925e5a7e515b0045e3307fe0361619",
       "local_patches": [
         {
@@ -17668,6 +17776,12 @@
           "path": "scripts/provider_patches/hls_master_audio_preserver_v1.py",
           "phase": "discovery",
           "scope": "global_playback_integrity"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_enrichment_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_enrichment"
         }
       ],
       "source": "published-baseline",
@@ -17903,9 +18017,9 @@
     },
     "streamflix": {
       "id": "streamflix",
-      "published_filename": "providers/streamflix--published-baseline--7d527dfca786917b.js",
-      "sha256": "7d527dfca786917b3891e42233eccc38a8ddd1b88835a18dc98d0c47f8d0dacf",
-      "patched_sha256": "7d527dfca786917b3891e42233eccc38a8ddd1b88835a18dc98d0c47f8d0dacf",
+      "published_filename": "providers/streamflix--published-baseline--d150178128c65e03.js",
+      "sha256": "d150178128c65e035229cda7c22a70f1e3b31d17732b0153d678de11ab6d281d",
+      "patched_sha256": "d150178128c65e035229cda7c22a70f1e3b31d17732b0153d678de11ab6d281d",
       "upstream_sha256": "a9e7deb56fd5b3c93458e01fe7d32a764ee1defe3e88759dcb68f448006ded31",
       "local_patches": [
         {
@@ -18143,9 +18257,9 @@
     },
     "streamzo": {
       "id": "streamzo",
-      "published_filename": "providers/streamzo--published-baseline--8429f03f62e3c478.js",
-      "sha256": "8429f03f62e3c47804ad21fbd2a6f7523849368ec561ec4798708b52e2d02ace",
-      "patched_sha256": "8429f03f62e3c47804ad21fbd2a6f7523849368ec561ec4798708b52e2d02ace",
+      "published_filename": "providers/streamzo--published-baseline--ff43562adb008930.js",
+      "sha256": "ff43562adb00893068ce01dbe15ad4f73fd045bad4c7b6f448566210bb08a064",
+      "patched_sha256": "ff43562adb00893068ce01dbe15ad4f73fd045bad4c7b6f448566210bb08a064",
       "upstream_sha256": "c20bdca7585cacf12f4819669ac8a5fabc2ec3e6be1b0b34609f6ac4cf23e285",
       "local_patches": [
         {
@@ -18185,6 +18299,12 @@
           "type": "patch_script",
           "path": "scripts/provider_patches/nuvio_tv_target_media_v4.py",
           "phase": "discovery"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_enrichment_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_enrichment"
         }
       ],
       "source": "published-baseline",
@@ -19200,9 +19320,9 @@
     },
     "videasy": {
       "id": "videasy",
-      "published_filename": "providers/videasy--nuvio--d9d64cca8ec5f89f.js",
-      "sha256": "d9d64cca8ec5f89f71e12665517be9075752657cd1884fed86f5d66988c88467",
-      "patched_sha256": "d9d64cca8ec5f89f71e12665517be9075752657cd1884fed86f5d66988c88467",
+      "published_filename": "providers/videasy--nuvio--c44e5269c644bd46.js",
+      "sha256": "c44e5269c644bd46a34820bcd1b31308f42019e575ea8f1cbcdac0a52b5cbd73",
+      "patched_sha256": "c44e5269c644bd46a34820bcd1b31308f42019e575ea8f1cbcdac0a52b5cbd73",
       "upstream_sha256": "8fb7fbc12e23d28185927a5a7f47fa65874ff0d1b1f3e01f4dbf9813c4fc7862",
       "local_patches": [
         {
@@ -19498,9 +19618,9 @@
     },
     "vidfast": {
       "id": "vidfast",
-      "published_filename": "providers/vidfast--nuvio--23e22f50fbb7610c.js",
-      "sha256": "23e22f50fbb7610cb102be0a30c539b28865931a3235e101a396b748cc29e140",
-      "patched_sha256": "23e22f50fbb7610cb102be0a30c539b28865931a3235e101a396b748cc29e140",
+      "published_filename": "providers/vidfast--nuvio--64a2786f81d5b41b.js",
+      "sha256": "64a2786f81d5b41bf225c14dc57bed98d7f81f4579ce58ac624cf93bf717bd39",
+      "patched_sha256": "64a2786f81d5b41bf225c14dc57bed98d7f81f4579ce58ac624cf93bf717bd39",
       "upstream_sha256": "9750c41a72fe7978d81eabd1b3704529cac0c13a7830a1d608afec5c892271cd",
       "local_patches": [
         {
@@ -19752,9 +19872,9 @@
     },
     "vidlink": {
       "id": "vidlink",
-      "published_filename": "providers/vidlink--published-baseline--316a45642c6de7a9.js",
-      "sha256": "316a45642c6de7a9f3482197c3eb5a4412a8e6459de718d28b444640e93b3d5a",
-      "patched_sha256": "316a45642c6de7a9f3482197c3eb5a4412a8e6459de718d28b444640e93b3d5a",
+      "published_filename": "providers/vidlink--published-baseline--241fe2ffcaa8bcbd.js",
+      "sha256": "241fe2ffcaa8bcbd871660759fdb28c9ac5fd4dd4215338a075f086677c4a16d",
+      "patched_sha256": "241fe2ffcaa8bcbd871660759fdb28c9ac5fd4dd4215338a075f086677c4a16d",
       "upstream_sha256": "bedc41b8caf7e7cb371b5b96bb949970278c8a51b83847eaa64f46ca0317c521",
       "local_patches": [
         {
@@ -20000,9 +20120,9 @@
     },
     "vidlove": {
       "id": "vidlove",
-      "published_filename": "providers/vidlove--published-baseline--24b584f315e33675.js",
-      "sha256": "24b584f315e33675e3071099257a554181b8ef582e6290b9019c24af7ddcdb32",
-      "patched_sha256": "24b584f315e33675e3071099257a554181b8ef582e6290b9019c24af7ddcdb32",
+      "published_filename": "providers/vidlove--published-baseline--5fc788f5bbd3a3c0.js",
+      "sha256": "5fc788f5bbd3a3c0f017157e08313ff8ae86b25cf40e3f353d2a121cafb134e1",
+      "patched_sha256": "5fc788f5bbd3a3c0f017157e08313ff8ae86b25cf40e3f353d2a121cafb134e1",
       "upstream_sha256": "492153ff4207ac17f80b9321d185280eae661d22ee3a7b7233fb490d548cd3a9",
       "local_patches": [
         {
@@ -20010,6 +20130,12 @@
           "path": "scripts/provider_patches/hls_master_audio_preserver_v1.py",
           "phase": "discovery",
           "scope": "global_playback_integrity"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_enrichment_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_enrichment"
         }
       ],
       "source": "published-baseline",
@@ -20255,9 +20381,9 @@
     },
     "vidnest": {
       "id": "vidnest",
-      "published_filename": "providers/vidnest--published-baseline--abd21bbc445b925c.js",
-      "sha256": "abd21bbc445b925ce5af180260d92ada51cc141a9d5b2c3fdeacdde4ac9cb38d",
-      "patched_sha256": "abd21bbc445b925ce5af180260d92ada51cc141a9d5b2c3fdeacdde4ac9cb38d",
+      "published_filename": "providers/vidnest--published-baseline--88fef6062d0f1fda.js",
+      "sha256": "88fef6062d0f1fdae7c3610157fdc46de7341bca33d8d7df7b053713af3f0182",
+      "patched_sha256": "88fef6062d0f1fdae7c3610157fdc46de7341bca33d8d7df7b053713af3f0182",
       "upstream_sha256": "765e700db7116b07208509834269a0574f509b6068a2dfb72e23d1bbff68032f",
       "local_patches": [
         {
@@ -20501,9 +20627,9 @@
     },
     "vidnest-anime": {
       "id": "vidnest-anime",
-      "published_filename": "providers/vidnest-anime--published-baseline--c80884e2f1730fa2.js",
-      "sha256": "c80884e2f1730fa2c59a3d24a0ab416ad8cb6811521de12ccc59da3d3e8ab526",
-      "patched_sha256": "c80884e2f1730fa2c59a3d24a0ab416ad8cb6811521de12ccc59da3d3e8ab526",
+      "published_filename": "providers/vidnest-anime--published-baseline--ffce2f2a1c9568a2.js",
+      "sha256": "ffce2f2a1c9568a293be981fcf2df98e9d951b5c8da4aba4cf5540ba4203312c",
+      "patched_sha256": "ffce2f2a1c9568a293be981fcf2df98e9d951b5c8da4aba4cf5540ba4203312c",
       "upstream_sha256": "16d0f84505f29f3f4caf9f6f8779d726f17a7489f9790400925e2aba30b62044",
       "local_patches": [
         {
@@ -20511,6 +20637,12 @@
           "path": "scripts/provider_patches/hls_master_audio_preserver_v1.py",
           "phase": "discovery",
           "scope": "global_playback_integrity"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_enrichment_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_enrichment"
         }
       ],
       "source": "published-baseline",
@@ -20748,9 +20880,9 @@
     },
     "vidrock": {
       "id": "vidrock",
-      "published_filename": "providers/vidrock--published-baseline--fb613670ff551f6c.js",
-      "sha256": "fb613670ff551f6c91e1c537e101f21a1f120baea572c704d6232d53359366d3",
-      "patched_sha256": "fb613670ff551f6c91e1c537e101f21a1f120baea572c704d6232d53359366d3",
+      "published_filename": "providers/vidrock--published-baseline--bc1520eb69af9487.js",
+      "sha256": "bc1520eb69af9487fe2b2f2af9805270728f67e7628d503add1b5e57ee858c47",
+      "patched_sha256": "bc1520eb69af9487fe2b2f2af9805270728f67e7628d503add1b5e57ee858c47",
       "upstream_sha256": "f679614bf1f955dcfea633d527e9ce40b56768ec3ff32648a651f565c121b70c",
       "local_patches": [
         {
@@ -21610,9 +21742,9 @@
     },
     "voiranime": {
       "id": "voiranime",
-      "published_filename": "providers/voiranime--published-baseline--11e3c038dd2b470f.js",
-      "sha256": "11e3c038dd2b470f4b352bef54867443994b7b3a76cc9724f42c28f337f9d432",
-      "patched_sha256": "11e3c038dd2b470f4b352bef54867443994b7b3a76cc9724f42c28f337f9d432",
+      "published_filename": "providers/voiranime--published-baseline--70cbb913ffd2be03.js",
+      "sha256": "70cbb913ffd2be03bafa658f30ddf566218bffca6c989c856b5c5bd1fc3cb623",
+      "patched_sha256": "70cbb913ffd2be03bafa658f30ddf566218bffca6c989c856b5c5bd1fc3cb623",
       "upstream_sha256": "4906567ce7b5271b0b92d1bf4efea869192040f0cce8df3c00289c5e6b296ff8",
       "local_patches": [
         {
@@ -21632,6 +21764,12 @@
           "path": "scripts/provider_patches/hls_master_audio_preserver_v1.py",
           "phase": "discovery",
           "scope": "global_playback_integrity"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_enrichment_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_enrichment"
         }
       ],
       "source": "published-baseline",
@@ -21885,9 +22023,9 @@
     },
     "voiranime-homes": {
       "id": "voiranime-homes",
-      "published_filename": "providers/voiranime-homes--published-baseline--212ba81984f7fd30.js",
-      "sha256": "212ba81984f7fd30c6a3615c3045a7e63b921405efa5bf4d5ed185cecf7bfd46",
-      "patched_sha256": "212ba81984f7fd30c6a3615c3045a7e63b921405efa5bf4d5ed185cecf7bfd46",
+      "published_filename": "providers/voiranime-homes--published-baseline--c24b01956ca110d7.js",
+      "sha256": "c24b01956ca110d7175b2a5df7ae7aefdce996109d2efee58637330ce95c33f9",
+      "patched_sha256": "c24b01956ca110d7175b2a5df7ae7aefdce996109d2efee58637330ce95c33f9",
       "upstream_sha256": "75264449f5711cc46e98c554dcd4a0430badbf0dbdf536ba65c40031f0f423e4",
       "local_patches": [
         {
@@ -21895,6 +22033,12 @@
           "path": "scripts/provider_patches/hls_master_audio_preserver_v1.py",
           "phase": "discovery",
           "scope": "global_playback_integrity"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_enrichment_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_enrichment"
         }
       ],
       "source": "published-baseline",
@@ -22136,9 +22280,9 @@
     },
     "voiranime-rip": {
       "id": "voiranime-rip",
-      "published_filename": "providers/voiranime-rip--published-baseline--44477753dd0092da.js",
-      "sha256": "44477753dd0092dafc4bba9c8f5fdd488e1289f56012590ad1e9241ba2c6a23c",
-      "patched_sha256": "44477753dd0092dafc4bba9c8f5fdd488e1289f56012590ad1e9241ba2c6a23c",
+      "published_filename": "providers/voiranime-rip--published-baseline--19b825c4c095d1be.js",
+      "sha256": "19b825c4c095d1be4b0314b59227721012ef7782c35c4a2889147b9aa30d1ac8",
+      "patched_sha256": "19b825c4c095d1be4b0314b59227721012ef7782c35c4a2889147b9aa30d1ac8",
       "upstream_sha256": "4652f6fdf031721f5d4da09b3671e6dcc5f455366fc95514991c47996d93f724",
       "local_patches": [
         {
@@ -22158,6 +22302,12 @@
           "path": "scripts/provider_patches/hls_master_audio_preserver_v1.py",
           "phase": "discovery",
           "scope": "global_playback_integrity"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_enrichment_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_enrichment"
         }
       ],
       "source": "published-baseline",
@@ -22402,9 +22552,9 @@
     },
     "vostfree": {
       "id": "vostfree",
-      "published_filename": "providers/vostfree--published-baseline--257438f33c316e6e.js",
-      "sha256": "257438f33c316e6ea87cc80d5d03fd0ea853f2630ad3371b875f6e6989ac6717",
-      "patched_sha256": "257438f33c316e6ea87cc80d5d03fd0ea853f2630ad3371b875f6e6989ac6717",
+      "published_filename": "providers/vostfree--published-baseline--f7f5b1c9925fdee6.js",
+      "sha256": "f7f5b1c9925fdee62badb1f9041386b355a96d623410921060d18189e3384d23",
+      "patched_sha256": "f7f5b1c9925fdee62badb1f9041386b355a96d623410921060d18189e3384d23",
       "upstream_sha256": "8e9b00d7aff4dd9a06f259b4a61d2a6a5b0cfd82d7210e70b6b14e71f0e911b7",
       "local_patches": [
         {
@@ -22655,9 +22805,9 @@
     },
     "waveanime": {
       "id": "waveanime",
-      "published_filename": "providers/waveanime--published-baseline--db0c93cea60aeb5d.js",
-      "sha256": "db0c93cea60aeb5df8688b13441db706c53bef8ec7a859878eb33499e214cd05",
-      "patched_sha256": "db0c93cea60aeb5df8688b13441db706c53bef8ec7a859878eb33499e214cd05",
+      "published_filename": "providers/waveanime--published-baseline--f4523bab5cc8b058.js",
+      "sha256": "f4523bab5cc8b0583b4bc53016bd277a7c6e2a77176ebbe259bc557a0af35507",
+      "patched_sha256": "f4523bab5cc8b0583b4bc53016bd277a7c6e2a77176ebbe259bc557a0af35507",
       "upstream_sha256": "7343e23a432da2a4f05be6e103a2211091b935039a8a6d2a0c9818e6233a2942",
       "local_patches": [
         {
@@ -22665,6 +22815,12 @@
           "path": "scripts/provider_patches/hls_master_audio_preserver_v1.py",
           "phase": "discovery",
           "scope": "global_playback_integrity"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_enrichment_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_enrichment"
         }
       ],
       "source": "published-baseline",
@@ -22900,9 +23056,9 @@
     },
     "wookafr": {
       "id": "wookafr",
-      "published_filename": "providers/wookafr--nuvio--51b78de62414dd89.js",
-      "sha256": "51b78de62414dd89c33789fa1a3554c82b93d0a4b45bd169592e0fdbede8dd38",
-      "patched_sha256": "51b78de62414dd89c33789fa1a3554c82b93d0a4b45bd169592e0fdbede8dd38",
+      "published_filename": "providers/wookafr--nuvio--c3f53952ce314bd5.js",
+      "sha256": "c3f53952ce314bd5da71abfd443a46e26c6e088817bbdaf719159b56b48d5c31",
+      "patched_sha256": "c3f53952ce314bd5da71abfd443a46e26c6e088817bbdaf719159b56b48d5c31",
       "upstream_sha256": "4ce4c33e2fe1d23bea7263bf07d4b760ec50169aa0c7b925a7103efc15271b67",
       "local_patches": [
         "scripts/provider_patches/desktop_runtime_compat_v1.py",
@@ -23187,9 +23343,9 @@
     },
     "xpass": {
       "id": "xpass",
-      "published_filename": "providers/xpass--published-baseline--741dc2492e9b71db.js",
-      "sha256": "741dc2492e9b71db8f8c7dc755df5f2652758753c9b586688238fd3fcd2e1080",
-      "patched_sha256": "741dc2492e9b71db8f8c7dc755df5f2652758753c9b586688238fd3fcd2e1080",
+      "published_filename": "providers/xpass--published-baseline--b292e9745282b5b8.js",
+      "sha256": "b292e9745282b5b8ccaf340c43409fbfdc2fb145abe305c7904c69e6bc410c4f",
+      "patched_sha256": "b292e9745282b5b8ccaf340c43409fbfdc2fb145abe305c7904c69e6bc410c4f",
       "upstream_sha256": "1050b28f5d045a2fb1c406fce14d762b7725731edde4e2ad36b203407cbbbe47",
       "local_patches": [
         {
@@ -23197,6 +23353,12 @@
           "path": "scripts/provider_patches/hls_master_audio_preserver_v1.py",
           "phase": "discovery",
           "scope": "global_playback_integrity"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_enrichment_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_enrichment"
         }
       ],
       "source": "published-baseline",
@@ -23435,9 +23597,9 @@
     },
     "yflix": {
       "id": "yflix",
-      "published_filename": "providers/yflix--published-baseline--726edb1762b69b14.js",
-      "sha256": "726edb1762b69b14299a0d9ce6bbfeee82d17fa4e54ba9369f3e5d9fc423c320",
-      "patched_sha256": "726edb1762b69b14299a0d9ce6bbfeee82d17fa4e54ba9369f3e5d9fc423c320",
+      "published_filename": "providers/yflix--published-baseline--38beb9f24388ae78.js",
+      "sha256": "38beb9f24388ae786147984297938192d56a5d6c3e53077532d8bf898460f0e4",
+      "patched_sha256": "38beb9f24388ae786147984297938192d56a5d6c3e53077532d8bf898460f0e4",
       "upstream_sha256": "ca1223b5ee78c12b0cbca6f208e977a14ab78d699893f6225aac04f8b60f8a94",
       "local_patches": [
         {
@@ -23681,9 +23843,9 @@
     },
     "zinkmovies": {
       "id": "zinkmovies",
-      "published_filename": "providers/zinkmovies--published-baseline--8325dfe8d1105480.js",
-      "sha256": "8325dfe8d110548092b109a24e6564cbd18dfb6082fdcf9dede7a2d78d5c7e66",
-      "patched_sha256": "8325dfe8d110548092b109a24e6564cbd18dfb6082fdcf9dede7a2d78d5c7e66",
+      "published_filename": "providers/zinkmovies--published-baseline--49d9bf3c39b6258a.js",
+      "sha256": "49d9bf3c39b6258aa4cef12d137e6ccd98893f8a1401e3d6a845ca5f9a8837c4",
+      "patched_sha256": "49d9bf3c39b6258aa4cef12d137e6ccd98893f8a1401e3d6a845ca5f9a8837c4",
       "upstream_sha256": "5989f97be6cce82a382e7dc29b8bc8e4c0441146fb994cf1950607fe5cae8bce",
       "local_patches": [
         {
