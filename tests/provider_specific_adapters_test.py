@@ -42,7 +42,10 @@ violations = validate_provider_isolation(cfg, Path('.').resolve())
 assert violations == [], '\n'.join(violations)
 
 with tempfile.TemporaryDirectory() as tmp:
-    root = Path(tmp)
+    # macOS exposes /var as a symlink to /private/var. Resolve the synthetic
+    # root just like validate_provider_isolation resolves each script path so
+    # the containment check is platform-independent.
+    root = Path(tmp).resolve()
     scripts = root / 'scripts' / 'provider_patches'
     scripts.mkdir(parents=True)
     (scripts / 'a.py').write_text('TARGET = "https://api.provider-b.example/v1/data"\n', encoding='utf-8')
