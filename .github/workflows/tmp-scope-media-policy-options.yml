@@ -1,0 +1,64 @@
+name: Temporary scoped media-policy repair
+
+on:
+  push:
+    branches: [fix/scoped-playback-context-regression]
+    paths:
+      - ".github/workflows/tmp-scope-media-policy-options.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: fix/scoped-playback-context-regression
+          fetch-depth: 1
+          persist-credentials: true
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: "24"
+      - name: Install pinned runtime dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Apply scoped option propagation
+        run: python scripts/tmp_scope_media_policy_options.py
+      - name: Run focused contracts
+        run: |
+          set -euo pipefail
+          python tests/scoped_playback_context_regression_test.py
+          python tests/global_playback_integrity_policy_test.py
+          python tests/playback_context_compat_test.py
+          python tests/streamzo_native_platform_contract_test.py
+      - name: Rematerialize and validate
+        run: |
+          set -euo pipefail
+          python scripts/reapply_published_overrides.py
+          python scripts/generate_release_hashes.py
+          python scripts/validate_release_integrity.py
+          python scripts/reapply_published_overrides.py --check
+          python tests/scoped_playback_context_regression_test.py
+          python tests/global_playback_integrity_policy_test.py
+          python tests/playback_context_compat_test.py
+          python tests/streamzo_native_platform_contract_test.py
+          python tests/published_overrides_test.py
+      - name: Commit repair and self-clean
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f .github/workflows/tmp-scope-media-policy-options.yml
+          rm -f scripts/tmp_scope_media_policy_options.py
+          python scripts/generate_release_hashes.py
+          python scripts/validate_release_integrity.py
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --stat
+          git commit -m "fix: propagate provider-scoped media context options"
+          git push origin HEAD:fix/scoped-playback-context-regression
