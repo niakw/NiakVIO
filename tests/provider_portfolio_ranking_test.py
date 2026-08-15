@@ -47,6 +47,13 @@ with tempfile.TemporaryDirectory() as tmp:
             # A high-response provider that serves unrelated content must never
             # survive the portfolio selector just because its catalogue looks big.
             emit(lines, client, row["slug"], "1shows", "Ben 10 Ultimate Alien", duration)
+            # A provider with correct content but a native runtime defect is a
+            # repair target, not an unsafe-content quarantine candidate.
+            emit(lines, client, row["slug"], "runtime-flaky", fixture["title"], duration)
+    lines.append(
+        "FIELD_NATIVE_ERROR "
+        f"client=tv fixture=mon-ninja-et-moi-3 provider64={b64('runtime-flaky')} error64={b64('native bridge timeout')}"
+    )
     (tmp_path / "desktop-native-corpus-synthetic.log").write_text("\n".join(lines) + "\n", encoding="utf-8")
     output = tmp_path / "portfolio.json"
     result = subprocess.run(
@@ -59,14 +66,27 @@ with tempfile.TemporaryDirectory() as tmp:
     assert result.returncode == 0, result.stdout + result.stderr
     data = json.loads(output.read_text(encoding="utf-8"))
     providers = {row["provider"]: row for row in data["providers"]}
+
     assert providers["streamzo"]["qualityEligible"] is True, providers["streamzo"]
     assert providers["streamzo"]["recommendation"] == "active_core", providers["streamzo"]
     assert providers["streamzo"]["catalogueCoverageRate"] == 1, providers["streamzo"]
     assert providers["streamzo"]["crossPlatformFixtureRate"] == 1, providers["streamzo"]
+
     assert providers["1shows"]["identityContradictions"] > 0, providers["1shows"]
+    assert providers["1shows"]["contentSafetyEligible"] is False, providers["1shows"]
     assert providers["1shows"]["safetyEligible"] is False, providers["1shows"]
     assert providers["1shows"]["recommendation"] == "quarantine_unsafe", providers["1shows"]
     assert "1shows" not in data["selected"], data["selected"]
+
+    flaky = providers["runtime-flaky"]
+    assert flaky["identityContradictions"] == 0, flaky
+    assert flaky["contentSafetyEligible"] is True, flaky
+    assert flaky["safetyEligible"] is True, flaky
+    assert flaky["nativeReliabilityEligible"] is False, flaky
+    assert flaky["runtimeErrors"] == 1, flaky
+    assert flaky["qualityEligible"] is False, flaky
+    assert flaky["recommendation"] == "repair_runtime_or_transport", flaky
+    assert "runtime-flaky" not in data["selected"], data["selected"]
 
     # 36/45 remains the normal compact portfolio target. The larger emergency
     # ceiling is only available to the coverage-preservation layer when a safe
