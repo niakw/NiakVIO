@@ -85,15 +85,20 @@ def test_embed_cookie_and_header_inheritance(root: Path) -> None:
     base = 'module.exports={getStreams:async()=>[{title:"x",url:"https://player.example.com/watch"}]};\n'
     patched = enrichment.apply(base)
     assert patched == enrichment.apply(patched)
-    assert "playback-context-v2" in patched
+    assert "playback-context-v3" in patched
+    assert 'typeof r.arrayBuffer==="function"' in patched
+    assert 'typeof r.text==="function"' in patched
 
+    # Deliberately expose text() but no arrayBuffer(): this matches the pinned
+    # NuvioTV QuickJS fetch Response and prevents a Desktop-only assumption from
+    # creeping back into the common site -> player -> media enrichment layer.
     harness = r'''
 const fs=require('fs'),vm=require('vm');
-const code=fs.readFileSync('provider.js','utf8'),enc=new TextEncoder();
-function resp(url,status,ct,body,setCookie){return {ok:status>=200&&status<300,status,url,headers:{get:(n)=>{n=n.toLowerCase();if(n==='content-type')return ct;if(n==='set-cookie')return setCookie||null;return null;}},arrayBuffer:async()=>enc.encode(body).buffer};}
+const code=fs.readFileSync('provider.js','utf8');
+function resp(url,status,ct,body,setCookie){return {ok:status>=200&&status<300,status,url,headers:{get:(n)=>{n=n.toLowerCase();if(n==='content-type')return ct;if(n==='set-cookie')return setCookie||null;return null;}},text:async()=>body};}
 (async()=>{
  let requests=[];
- const ctx={console,URL,TextDecoder,TextEncoder,Uint8Array,ArrayBuffer,setTimeout,clearTimeout,module:{exports:{}},exports:{}};ctx.globalThis=ctx;
+ const ctx={console,URL,TextDecoder,Uint8Array,ArrayBuffer,setTimeout,clearTimeout,module:{exports:{}},exports:{}};ctx.globalThis=ctx;
  ctx.fetch=async (url,opt={})=>{
    requests.push({url,headers:Object.assign({},opt.headers||{})});
    if(url==='https://player.example.com/watch') return resp(url,200,'text/html','<script>var file="https://cdn.example.com/master.m3u8"</script>','token=abc; Domain=.example.com; Path=/; Secure');
@@ -127,9 +132,9 @@ def test_cookie_scope_does_not_leak(root: Path) -> None:
         'module.exports={getStreams:async()=>[{title:"x",url:"https://player.example.com/watch"}]};\n'
     )
     harness = r'''
-const fs=require('fs'),vm=require('vm');const code=fs.readFileSync('provider.js','utf8'),enc=new TextEncoder();
-function resp(url,status,ct,body,setCookie){return{ok:status>=200&&status<300,status,url,headers:{get:n=>n.toLowerCase()==='content-type'?ct:n.toLowerCase()==='set-cookie'?(setCookie||null):null},arrayBuffer:async()=>enc.encode(body).buffer}}
-(async()=>{let childHeaders={};const ctx={console,URL,TextDecoder,TextEncoder,Uint8Array,ArrayBuffer,setTimeout,clearTimeout,module:{exports:{}},exports:{}};ctx.globalThis=ctx;ctx.fetch=async(url,opt={})=>{if(url.includes('player.example.com'))return resp(url,200,'text/html','<a href="https://cdn.other.net/master.m3u8">x</a>','hostonly=secret; Path=/; Secure');if(url.includes('cdn.other.net')){childHeaders=opt.headers||{};return resp(url,200,'application/vnd.apple.mpegurl','#EXTM3U\n#EXTINF:600,\na.ts\n#EXTINF:600,\nb.ts\n')}return resp(url,404,'text/plain','')};vm.createContext(ctx);vm.runInContext(code,ctx);const rows=await ctx.module.exports.getStreams();const direct=rows.find(r=>String(r.url).includes('cdn.other.net'));console.log(JSON.stringify({direct,childHeaders}));})();
+const fs=require('fs'),vm=require('vm');const code=fs.readFileSync('provider.js','utf8');
+function resp(url,status,ct,body,setCookie){return{ok:status>=200&&status<300,status,url,headers:{get:n=>n.toLowerCase()==='content-type'?ct:n.toLowerCase()==='set-cookie'?(setCookie||null):null},text:async()=>body}}
+(async()=>{let childHeaders={};const ctx={console,URL,TextDecoder,Uint8Array,ArrayBuffer,setTimeout,clearTimeout,module:{exports:{}},exports:{}};ctx.globalThis=ctx;ctx.fetch=async(url,opt={})=>{if(url.includes('player.example.com'))return resp(url,200,'text/html','<a href="https://cdn.other.net/master.m3u8">x</a>','hostonly=secret; Path=/; Secure');if(url.includes('cdn.other.net')){childHeaders=opt.headers||{};return resp(url,200,'application/vnd.apple.mpegurl','#EXTM3U\n#EXTINF:600,\na.ts\n#EXTINF:600,\nb.ts\n')}return resp(url,404,'text/plain','')};vm.createContext(ctx);vm.runInContext(code,ctx);const rows=await ctx.module.exports.getStreams();const direct=rows.find(r=>String(r.url).includes('cdn.other.net'));console.log(JSON.stringify({direct,childHeaders}));})();
 '''
     result = run_node(patched, harness)
     assert "Cookie" not in (result["direct"].get("headers") or {}), result
