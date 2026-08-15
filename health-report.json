@@ -20521,7 +20521,8 @@
         "reason": "disabled_by_current_proof_policy"
       },
       "failed_gates": [
-        "10_content_identity_integrity"
+        "10_content_identity_integrity",
+        "catalogue_audit_playable_identity_contradiction"
       ],
       "activation_blockers": [
         "10_content_identity_integrity",
@@ -20947,7 +20948,19 @@
         ]
       },
       "variant_count": 2,
-      "manifest_position": 68
+      "manifest_position": 68,
+      "catalogue_audit_quarantine": {
+        "reason": "catalogue_audit_playable_identity_contradiction",
+        "tested_filename": "providers/1shows--published-baseline--71b235cdec12e88b.js",
+        "tested_sha256": "71b235cdec12e88bf5fe8e7e89ca4d653c517a88c264ad442fe470d5fb891d36",
+        "quarantined_filename": "providers/1shows--nuvio-audit-quarantine--f7e932753c0be691.js",
+        "quarantined_sha256": "f7e932753c0be691853a80ff2e73f5d564034ddb2c44fcbb11f5254b581f9277",
+        "fixtures": [
+          "strict_movie_identity"
+        ],
+        "identity_contradictions": 2,
+        "playable_streams": 2
+      }
     },
     {
       "id": "allanime",
@@ -20967,7 +20980,8 @@
         "reason": "disabled_by_current_proof_policy"
       },
       "failed_gates": [
-        "10_content_identity_integrity"
+        "10_content_identity_integrity",
+        "catalogue_audit_playable_identity_contradiction"
       ],
       "activation_blockers": [
         "10_content_identity_integrity"
@@ -21428,7 +21442,19 @@
         ]
       },
       "variant_count": 2,
-      "manifest_position": 69
+      "manifest_position": 69,
+      "catalogue_audit_quarantine": {
+        "reason": "catalogue_audit_playable_identity_contradiction",
+        "tested_filename": "providers/allanime--published-baseline--83cab5a0e9e4deb1.js",
+        "tested_sha256": "83cab5a0e9e4deb12f3e891dc7f92cf4459bea056a383a9fe6284e7df62f0896",
+        "quarantined_filename": "providers/allanime--nuvio-audit-quarantine--f7e932753c0be691.js",
+        "quarantined_sha256": "f7e932753c0be691853a80ff2e73f5d564034ddb2c44fcbb11f5254b581f9277",
+        "fixtures": [
+          "vf_jjk_s01e01"
+        ],
+        "identity_contradictions": 1,
+        "playable_streams": 3
+      }
     },
     {
       "id": "kisskh",

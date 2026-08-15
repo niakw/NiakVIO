@@ -5,9 +5,9 @@
   "providers": {
     "1shows": {
       "id": "1shows",
-      "published_filename": "providers/1shows--published-baseline--71b235cdec12e88b.js",
-      "sha256": "71b235cdec12e88bf5fe8e7e89ca4d653c517a88c264ad442fe470d5fb891d36",
-      "patched_sha256": "71b235cdec12e88bf5fe8e7e89ca4d653c517a88c264ad442fe470d5fb891d36",
+      "published_filename": "providers/1shows--nuvio-audit-quarantine--f7e932753c0be691.js",
+      "sha256": "f7e932753c0be691853a80ff2e73f5d564034ddb2c44fcbb11f5254b581f9277",
+      "patched_sha256": "f7e932753c0be691853a80ff2e73f5d564034ddb2c44fcbb11f5254b581f9277",
       "upstream_sha256": "d7937a697432dc34f14cb9e47d749fedf3c15ba6b5baeef1664608f1952f8600",
       "local_patches": [
         {
@@ -21,6 +21,21 @@
           "path": "scripts/provider_patches/global_media_enrichment_v1.py",
           "phase": "discovery",
           "scope": "global_media_enrichment"
+        },
+        {
+          "type": "safety_quarantine",
+          "phase": "publication",
+          "source": "catalogue_media_audit",
+          "reason": "catalogue_audit_playable_identity_contradiction",
+          "workflow_run_id": 31901550427,
+          "tested_commit_sha": "dc564df39b6a3c25b16c99c476ea22bee69721af",
+          "tested_filename": "providers/1shows--published-baseline--71b235cdec12e88b.js",
+          "tested_sha256": "71b235cdec12e88bf5fe8e7e89ca4d653c517a88c264ad442fe470d5fb891d36",
+          "fixtures": [
+            "strict_movie_identity"
+          ],
+          "identity_contradictions": 2,
+          "playable_streams": 2
         }
       ],
       "source": "published-baseline",
@@ -39,10 +54,10 @@
       "strict_grace_eligible": false,
       "historical_quality_grace_eligible": false,
       "runtime_evidence_eligible": false,
-      "activation_mode": "configured_safety_quarantine",
+      "activation_mode": "catalogue_audit_safety_quarantine",
       "activation_blockers": [
         "10_content_identity_integrity",
-        "configured_safety_quarantine"
+        "catalogue_audit_playable_identity_contradiction"
       ],
       "activation_gates": {
         "01_policy_safe_no_p2p": {
@@ -828,9 +843,9 @@
     },
     "allanime": {
       "id": "allanime",
-      "published_filename": "providers/allanime--published-baseline--83cab5a0e9e4deb1.js",
-      "sha256": "83cab5a0e9e4deb12f3e891dc7f92cf4459bea056a383a9fe6284e7df62f0896",
-      "patched_sha256": "83cab5a0e9e4deb12f3e891dc7f92cf4459bea056a383a9fe6284e7df62f0896",
+      "published_filename": "providers/allanime--nuvio-audit-quarantine--f7e932753c0be691.js",
+      "sha256": "f7e932753c0be691853a80ff2e73f5d564034ddb2c44fcbb11f5254b581f9277",
+      "patched_sha256": "f7e932753c0be691853a80ff2e73f5d564034ddb2c44fcbb11f5254b581f9277",
       "upstream_sha256": "7b6ee4d5c6b6dbc35b10d98003324126c313ce7e33d90e28fd378545590aee40",
       "local_patches": [
         {
@@ -838,6 +853,21 @@
           "path": "scripts/provider_patches/hls_master_audio_preserver_v1.py",
           "phase": "discovery",
           "scope": "global_playback_integrity"
+        },
+        {
+          "type": "safety_quarantine",
+          "phase": "publication",
+          "source": "catalogue_media_audit",
+          "reason": "catalogue_audit_playable_identity_contradiction",
+          "workflow_run_id": 31901550427,
+          "tested_commit_sha": "dc564df39b6a3c25b16c99c476ea22bee69721af",
+          "tested_filename": "providers/allanime--published-baseline--83cab5a0e9e4deb1.js",
+          "tested_sha256": "83cab5a0e9e4deb12f3e891dc7f92cf4459bea056a383a9fe6284e7df62f0896",
+          "fixtures": [
+            "vf_jjk_s01e01"
+          ],
+          "identity_contradictions": 1,
+          "playable_streams": 3
         }
       ],
       "source": "published-baseline",
@@ -856,9 +886,10 @@
       "strict_grace_eligible": false,
       "historical_quality_grace_eligible": false,
       "runtime_evidence_eligible": false,
-      "activation_mode": "disabled",
+      "activation_mode": "catalogue_audit_safety_quarantine",
       "activation_blockers": [
-        "10_content_identity_integrity"
+        "10_content_identity_integrity",
+        "catalogue_audit_playable_identity_contradiction"
       ],
       "activation_gates": {
         "01_policy_safe_no_p2p": {
