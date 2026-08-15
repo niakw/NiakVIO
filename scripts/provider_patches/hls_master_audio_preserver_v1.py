@@ -65,7 +65,7 @@ SAFETY_WRAPPER = r"""
       var bh=row&&row.behaviorHints&&row.behaviorHints.proxyHeaders&&row.behaviorHints.proxyHeaders.request;
       if(bh&&typeof bh==="object")Object.keys(bh).forEach(function(k){if(!(k in out))out[k]=s(bh[k])});
     }catch(_e){}
-    if(!Object.keys(out).some(function(k){return k.toLowerCase()==="user-agent"}))out["User-Agent"]=DEFAULT_UA;
+    if(c.defaultUserAgent&&!Object.keys(out).some(function(k){return k.toLowerCase()==="user-agent"}))out["User-Agent"]=c.defaultUserAgent;
     if(range&&!Object.keys(out).some(function(k){return k.toLowerCase()==="range"}))out.Range="bytes=0-65535";
     if(!Object.keys(out).some(function(k){return k.toLowerCase()==="accept"}))out.Accept="application/vnd.apple.mpegurl,application/x-mpegURL,video/*,*/*";
     return out;
@@ -182,7 +182,7 @@ SAFETY_WRAPPER = r"""
     if(!row||typeof row!=="object"||mediaKind(row)==="other")return row;
     var out=Object.assign({},row),h={},has=false;
     try{var src=row.headers&&typeof row.headers==="object"?row.headers:{};Object.keys(src).forEach(function(k){if(s(src[k])){h[k]=String(src[k]);has=true}})}catch(_e){}
-    if(!Object.keys(h).some(function(k){return k.toLowerCase()==="user-agent"})){h["User-Agent"]=DEFAULT_UA;has=true}
+    if(c.defaultUserAgent&&!Object.keys(h).some(function(k){return k.toLowerCase()==="user-agent"})){h["User-Agent"]=c.defaultUserAgent;has=true}
     if(has)out.headers=h;
     return out;
   }
@@ -227,7 +227,7 @@ SAFETY_WRAPPER = r"""
     else return {keep:true};
     if(result.state==="dead")return {keep:false,reason:result.reason||("http_"+result.status)};
     if(result.state==="unknown"){
-      if(c.strictPlayback||tv)return {keep:false,reason:result.reason||"unverified_media"};
+      if(c.strictPlayback||c.failClosedUnknown)return {keep:false,reason:result.reason||"unverified_media"};
       return {keep:true};
     }
     if(kind==="hls"&&expected&&result.duration){
@@ -277,6 +277,7 @@ def _strip_existing_safety_wrapper(text: str) -> str:
 def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> str:
     context = kwargs.get("context") if isinstance(kwargs.get("context"), dict) else {}
     provider_id = str(context.get("provider_id") or "").strip().casefold()
+    cfg = dict(options or {})
 
     output = text
     if AUDIO_MARKER not in output:
@@ -304,8 +305,10 @@ def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> st
         "maxDurationRatio": 1.8,
         "durationIdentity": provider_id == "netmirror",
         "strictPlayback": provider_id == "moviebox",
+        "failClosedUnknown": bool(cfg.get("fail_closed_unknown", False)),
+        "defaultUserAgent": str(cfg.get("default_user_agent") or ""),
         "tmdbKey": "1865f43a0549ca50d341dd9ab8b29f49",
-        "implementationRevision": "platform-playback-context-v3",
+        "implementationRevision": "scoped-playback-context-v4",
     }
     payload = json.dumps(cfg, separators=(",", ":"))
     marker = f"{SAFETY_MARKER}:{hashlib.sha256(payload.encode()).hexdigest()[:12]}"

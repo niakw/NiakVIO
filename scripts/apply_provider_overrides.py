@@ -405,6 +405,13 @@ def apply_overrides(
             if not patch_script:
                 raise ValueError("media_enrichment_policy.global_discovery_hook is required")
             options = dict(media_policy.get("options") or {})
+            provider_options = script_options.get(patch_script)
+            if provider_options is not None:
+                if not isinstance(provider_options, dict):
+                    raise ValueError(
+                        f"provider_patches.{provider_id}.patch_script_options[{patch_script!r}] must be an object"
+                    )
+                options.update(provider_options)
             before = text
             text = _apply_patch_script(text, provider_id, patch_script, options, None)
             if text != before:

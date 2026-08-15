@@ -73,8 +73,8 @@ async function run(kind){
     desktop, tv = result["desktop"], result["tv"]
     assert not desktop.get("size"), desktop
     assert tv.get("size") == "fr • HLS", tv
-    assert desktop["headers"]["User-Agent"].startswith("Mozilla/5.0")
-    assert tv["headers"]["User-Agent"].startswith("Mozilla/5.0")
+    assert not desktop.get("headers"), desktop
+    assert not tv.get("headers"), tv
 
 
 def test_embed_cookie_and_header_inheritance(root: Path) -> None:
@@ -85,7 +85,7 @@ def test_embed_cookie_and_header_inheritance(root: Path) -> None:
     base = 'module.exports={getStreams:async()=>[{title:"x",url:"https://player.example.com/watch"}]};\n'
     patched = enrichment.apply(base)
     assert patched == enrichment.apply(patched)
-    assert "playback-context-v3" in patched
+    assert "scoped-playback-context-v4" in patched
     assert 'typeof r.arrayBuffer==="function"' in patched
     assert 'typeof r.text==="function"' in patched
 
@@ -118,7 +118,7 @@ function resp(url,status,ct,body,setCookie){return {ok:status>=200&&status<300,s
     assert headers["Cookie"] == "token=abc", headers
     assert headers["Referer"] == "https://player.example.com/watch", headers
     assert headers["Origin"] == "https://player.example.com", headers
-    assert headers["User-Agent"].startswith("Mozilla/5.0"), headers
+    assert "User-Agent" not in headers, headers
     child = next(x for x in result["requests"] if x["url"] == "https://cdn.example.com/master.m3u8")
     assert child["headers"].get("Cookie") == "token=abc", child
 
