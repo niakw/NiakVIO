@@ -1,0 +1,52 @@
+name: Temporary live identity safety audit
+
+on:
+  push:
+    branches: [fix/quarantine-aware-client-lab]
+    paths:
+      - ".github/workflows/tmp-live-identity-audit.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      NUVIO_CATALOGUE_AUDIT_WORKERS: "4"
+      NUVIO_CATALOGUE_AUDIT_TIMEOUT: "90"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: "24"
+          package-manager-cache: false
+      - name: Install pinned dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Run official catalogue identity/media audit
+        run: python3 scripts/audit_catalogue_identity_media.py
+      - name: Print conclusive safety failures
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path('audit-output/catalogue-media-audit.json')
+          d=json.loads(p.read_text())
+          bad=[]
+          for r in d.get('rows',[]):
+              if not isinstance(r,dict): continue
+              if int(r.get('identity_contradiction_count') or 0)>0 or r.get('playable_identity_false_positive') is True or int(r.get('hls_variant_failures') or 0)>0 or int(r.get('hls_audio_failures') or 0)>0:
+                  bad.append({k:r.get(k) for k in ('provider_id','fixture','status','playable_stream_count','identity_contradiction_count','playable_identity_false_positive','hls_variant_failures','hls_audio_failures')})
+          print('FIELD_CONCLUSIVE_CATALOGUE_FAILURES='+json.dumps(bad,ensure_ascii=False,sort_keys=True))
+          print('FIELD_CONCLUSIVE_PROVIDER_IDS='+','.join(sorted({str(x.get('provider_id') or '').casefold() for x in bad if x.get('provider_id')})))
+          PY
+      - name: Upload audit
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: live-identity-audit-${{ github.run_id }}
+          path: audit-output/catalogue-media-audit.json
+          retention-days: 7
+          if-no-files-found: error
