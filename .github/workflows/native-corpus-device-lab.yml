@@ -201,18 +201,24 @@ jobs:
           name: native-corpus-android-${{ github.run_id }}
           path: corpus-logs/android
 
-      - name: Build cross-device engine feedback summary
+      - name: Build cross-device engine feedback and provider portfolio
         shell: bash
         run: |
           set -euo pipefail
           node niakvio/scripts/summarize_native_corpus_suite.cjs \
             --dir corpus-logs \
             --output native-corpus-summary.json
+          node niakvio/scripts/rank_provider_portfolio.cjs \
+            --dir corpus-logs \
+            --output provider-portfolio.json
+          node niakvio/scripts/protect_provider_coverage.cjs \
+            --dir corpus-logs \
+            --portfolio provider-portfolio.json
           python3 - <<'PY' >> "$GITHUB_STEP_SUMMARY"
           import json
           from pathlib import Path
-          p = Path('native-corpus-summary.json')
-          data = json.loads(p.read_text(encoding='utf-8'))
+          data = json.loads(Path('native-corpus-summary.json').read_text(encoding='utf-8'))
+          portfolio = json.loads(Path('provider-portfolio.json').read_text(encoding='utf-8'))
           print('## Native corpus engine feedback')
           print()
           print(f"- Providers observed: **{data.get('providersObserved', 0)}**")
@@ -223,13 +229,28 @@ jobs:
           signals = data.get('engineSignals') or {}
           print(f"- Repeated platform gaps: **{len(signals.get('repeatedPlatformGaps') or [])}**")
           print(f"- Systemically empty enabled providers: **{len(signals.get('systemicEmpty') or [])}**")
+          print()
+          print('## Quality + catalogue coverage portfolio')
+          print()
+          print(f"- Recommended active providers: **{portfolio.get('recommendedActive', 0)}**")
+          print(f"- Recommended VF providers: **{portfolio.get('recommendedVf', 0)}**")
+          print(f"- Coverage-guard providers: **{len(portfolio.get('protectedCoverageProviders') or [])}**")
+          print(f"- Rare providers needing cross-device repair: **{len(portfolio.get('repairPriorityProviders') or [])}**")
+          protected = portfolio.get('protectedCoverageProviders') or []
+          repair = portfolio.get('repairPriorityProviders') or []
+          if protected:
+              print(f"- Protected for rare coverage: `{', '.join(protected)}`")
+          if repair:
+              print(f"- Repair priority: `{', '.join(repair)}`")
           PY
 
-      - name: Upload cross-device engine feedback
+      - name: Upload cross-device engine feedback and provider portfolio
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: native-corpus-engine-summary-${{ github.run_id }}
-          path: native-corpus-summary.json
+          path: |
+            native-corpus-summary.json
+            provider-portfolio.json
           retention-days: 14
           if-no-files-found: warn
