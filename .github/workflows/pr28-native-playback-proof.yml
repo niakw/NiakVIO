@@ -106,22 +106,7 @@ jobs:
           cores: 2
           ram-size: 2048M
           emulator-boot-timeout: 600
-          script: |
-            set -eu
-            SDKMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
-            test -x "$SDKMANAGER"
-            yes | "$SDKMANAGER" --licenses > /dev/null || true
-            "$SDKMANAGER" --install 'platforms;android-37' 'build-tools;37.0.0'
-            adb logcat -c
-            TASKS=$(./nuvio-mobile/gradlew -p ./nuvio-mobile :composeApp:tasks --all -Pnuvio.android.distribution=full --console=plain)
-            TASK=$(printf '%s\n' "$TASKS" | awk 'tolower($1) ~ /connected.*device.*test/ {print $1; exit}')
-            if [ -z "$TASK" ]; then TASK=$(printf '%s\n' "$TASKS" | awk 'tolower($1) ~ /device.*test/ && tolower($0) ~ /connected/ {print $1; exit}'); fi
-            test -n "$TASK"
-            ./nuvio-mobile/gradlew -p ./nuvio-mobile ":composeApp:$TASK" -Pnuvio.android.distribution=full --no-daemon --console=plain
-            adb logcat -d -s NiakvioRealLab:I '*:S' > "$GITHUB_WORKSPACE/mobile-final-native-results.log"
-            cat "$GITHUB_WORKSPACE/mobile-final-native-results.log"
-            grep -Eq 'FIELD_MOBILE_NATIVE provider=streamzo .* count=[1-9][0-9]*' "$GITHUB_WORKSPACE/mobile-final-native-results.log"
-            grep -Eq 'FIELD_MOBILE_NATIVE_ROW provider=streamzo .* type=hls([[:space:]]|$)' "$GITHUB_WORKSPACE/mobile-final-native-results.log"
+          script: bash "$GITHUB_WORKSPACE/niakvio/scripts/pr28_native_mobile_proof.sh"
 
       - name: Upload Mobile proof
         if: always()
@@ -173,27 +158,7 @@ jobs:
           cores: 2
           ram-size: 2048M
           emulator-boot-timeout: 600
-          script: |
-            set -eu
-            SDKMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
-            test -x "$SDKMANAGER"
-            yes | "$SDKMANAGER" --licenses > /dev/null || true
-            "$SDKMANAGER" --install 'platforms;android-36' 'build-tools;36.0.0'
-            adb logcat -c
-            TV_REPORT_DIR="$GITHUB_WORKSPACE/nuvio-tv/app/build/reports/androidTests/niakvio"
-            TV_GRADLE_LOG="$TV_REPORT_DIR/tv-gradle.log"
-            mkdir -p "$TV_REPORT_DIR"
-            adb shell getprop ro.build.characteristics | tee "$TV_REPORT_DIR/tv-build-characteristics.log"
-            grep -Eq 'tv|television' "$TV_REPORT_DIR/tv-build-characteristics.log"
-            if ! ./nuvio-tv/gradlew -p ./nuvio-tv :app:connectedFullDebugAndroidTest '-Pandroid.testInstrumentationRunnerArguments.class=com.nuvio.tv.core.plugin.NiakvioFinalNativeTvTest' --no-daemon --console=plain > "$TV_GRADLE_LOG" 2>&1; then
-              cat "$TV_GRADLE_LOG"
-              exit 1
-            fi
-            cat "$TV_GRADLE_LOG"
-            adb logcat -d -s NiakvioRealLab:I '*:S' > "$GITHUB_WORKSPACE/tv-final-native-results.log"
-            cat "$GITHUB_WORKSPACE/tv-final-native-results.log"
-            grep -Eq 'FIELD_TV_NATIVE provider=streamzo .* count=[1-9][0-9]*' "$GITHUB_WORKSPACE/tv-final-native-results.log"
-            grep -Eq 'FIELD_TV_NATIVE_ROW provider=streamzo .* type=hls([[:space:]]|$)' "$GITHUB_WORKSPACE/tv-final-native-results.log"
+          script: bash "$GITHUB_WORKSPACE/niakvio/scripts/pr28_native_tv_proof.sh"
 
       - name: Upload TV proof
         if: always()
