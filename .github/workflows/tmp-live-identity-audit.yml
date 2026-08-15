@@ -1,4 +1,4 @@
-name: Temporary live identity safety audit
+name: Temporary finalize proven wrong-content quarantine
 
 on:
   push:
@@ -7,65 +7,102 @@ on:
       - ".github/workflows/tmp-live-identity-audit.yml"
 
 permissions:
-  contents: read
+  contents: write
+  actions: read
 
 jobs:
-  audit:
+  finalize:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
-    env:
-      NUVIO_CATALOGUE_AUDIT_WORKERS: "3"
-      NUVIO_CATALOGUE_AUDIT_TIMEOUT: "90"
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: fix/quarantine-aware-client-lab
+          fetch-depth: 1
+          persist-credentials: true
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: "3.12"
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
         with:
           node-version: "24"
           package-manager-cache: false
       - name: Install pinned dependencies
         run: npm ci --ignore-scripts --no-audit --no-fund
-      - name: Restrict report-only audit to known offenders
+      - name: Download and verify exact conclusive audit evidence
         shell: bash
-        run: |
-          python3 - <<'PY'
-          import json
-          from pathlib import Path
-          wanted={'1shows','allanime','sekai'}
-          for rel in ('manifest.json','vf/manifest.json'):
-              p=Path(rel)
-              d=json.loads(p.read_text())
-              d['scrapers']=[r for r in d.get('scrapers',[]) if str(r.get('id','')).casefold() in wanted]
-              p.write_text(json.dumps(d,ensure_ascii=False,indent=2)+'\n')
-          PY
-      - name: Run official catalogue identity/media audit
-        id: audit
-        continue-on-error: true
-        run: python3 scripts/audit_catalogue_identity_media.py
-      - name: Print conclusive safety failures
-        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
+          mkdir -p /tmp/live-audit
+          curl --fail-with-body -sS -L \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/artifacts/9251244709/zip" \
+            -o /tmp/live-audit.zip
+          echo "$(sha256sum /tmp/live-audit.zip | awk '{print $1}')  downloaded-audit.zip"
+          unzip -q /tmp/live-audit.zip -d /tmp/live-audit
+          AUDIT="$(find /tmp/live-audit -name 'catalogue-media-audit.json' -type f -print -quit)"
+          test -n "$AUDIT"
+          cp "$AUDIT" /tmp/catalogue-media-audit.json
           python3 - <<'PY'
           import json
           from pathlib import Path
-          p=Path('audit-output/catalogue-media-audit.json')
-          d=json.loads(p.read_text())
+          d=json.loads(Path('/tmp/catalogue-media-audit.json').read_text())
           bad=[]
           for r in d.get('rows',[]):
               if not isinstance(r,dict): continue
               if int(r.get('identity_contradiction_count') or 0)>0 or r.get('playable_identity_false_positive') is True or int(r.get('hls_variant_failures') or 0)>0 or int(r.get('hls_audio_failures') or 0)>0:
-                  bad.append({k:r.get(k) for k in ('provider_id','fixture','status','playable_stream_count','identity_contradiction_count','playable_identity_false_positive','hls_variant_failures','hls_audio_failures')})
-          ids=sorted({str(x.get('provider_id') or '').casefold() for x in bad if x.get('provider_id')})
-          print('FIELD_CONCLUSIVE_CATALOGUE_FAILURES='+json.dumps(bad,ensure_ascii=False,sort_keys=True))
-          print('FIELD_CONCLUSIVE_PROVIDER_IDS='+','.join(ids))
-          if not bad:
-              raise SystemExit('FAIL: official audit did not reproduce any conclusive offender')
+                  bad.append(r)
+          ids={str(r.get('provider_id') or '').casefold() for r in bad}
+          assert ids == {'1shows','allanime'}, (ids,bad)
+          assert all(int(r.get('playable_stream_count') or 0)>0 for r in bad), bad
+          print('verified conclusive audit offenders:', ','.join(sorted(ids)))
           PY
-      - name: Upload audit
-        if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
-        with:
-          name: live-identity-audit-${{ github.run_id }}
-          path: audit-output/catalogue-media-audit.json
-          retention-days: 7
-          if-no-files-found: error
+      - name: Apply publication-scoped inert quarantines
+        run: |
+          set -euo pipefail
+          python3 scripts/quarantine_catalogue_audit_failures.py \
+            --audit /tmp/catalogue-media-audit.json \
+            --workflow-run-id 31901550427 \
+            --tested-commit-sha dc564df39b6a3c25b16c99c476ea22bee69721af
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          manifest=json.loads(Path('manifest.json').read_text())
+          rows={str(r.get('id','')).casefold():r for r in manifest.get('scrapers',[])}
+          for pid in ('1shows','allanime'):
+              row=rows[pid]
+              assert row.get('enabled') is False, row
+              fn=str(row.get('filename') or '')
+              assert '--nuvio-audit-quarantine--' in fn, fn
+              text=Path(fn).read_text()
+              assert 'NUVIO_PROVIDER_QUARANTINE_V1' in text
+              assert 'catalogue_audit_playable_identity_contradiction' in text
+              print(pid, fn)
+          PY
+      - name: Publish release 5.20.55 and validate complete suite
+        run: |
+          set -euo pipefail
+          python3 scripts/sync_release_versions.py --version 5.20.55
+          python3 scripts/generate_release_hashes.py
+          python3 scripts/validate_release_integrity.py
+          python3 scripts/reapply_published_overrides.py --check
+          python3 scripts/validate_activation_preservation.py
+          npm test
+      - name: Self-clean, regenerate final hashes and commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          git rm .github/workflows/tmp-live-identity-audit.yml
+          python3 scripts/generate_release_hashes.py
+          python3 scripts/validate_release_integrity.py
+          python3 scripts/reapply_published_overrides.py --check
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git status --short
+          git commit -m "fix: quarantine proven wrong-content providers 5.20.55"
+          git push origin HEAD:fix/quarantine-aware-client-lab
