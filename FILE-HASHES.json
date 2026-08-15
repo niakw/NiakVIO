@@ -1,6 +1,6 @@
 {
   "schema_version": 79,
-  "release": "5.20.53",
+  "release": "5.20.54",
   "algorithm": "sha256",
   "excluded_generated_files": [
     "FILE-HASHES.json",
@@ -26,6 +26,7 @@
     ".github/workflows/engine-regression-offline.yml": "49f1968986dc2d091f0e12173e0ada495f5df33d16e5fb72211e99462689bf94",
     ".github/workflows/final-native-client-validation-v2.yml": "b063206aac98cafe9a23fdb8abc7cf4bc70f79e951914ed3c7179ff898ca1077",
     ".github/workflows/finalize-safe-generation.yml": "544674b6f3aaa2fa0f6f6a5f1af00577944408c88cd2ee67e9866ea4def6a63a",
+    ".github/workflows/multiprovider-runtime-regression.yml": "38ebd99c7e246c10a40aca29d7ff79a57f1a81df6adb3c662f933ae28a9f55b5",
     ".github/workflows/native-corpus-device-lab.yml": "f7bed9ec5d57889cc38783e8ae9a78ef48ce88842a7abd940126b243f044ddde",
     ".github/workflows/nuvio-client-lab.yml": "37324efe48842ebe31f0c0ed063c1e485b6e1b4bbbbbca6019f2fe5226c7ba94",
     ".github/workflows/permanent-android-real-client.yml": "541666cb66f7750fae99c2ce94403e150ada1a7864ef0eaba01d23664a777b3d",
@@ -54,7 +55,7 @@
     "RUN-LOCAL-GLOBAL-REPAIR.command": "c27713e8f740c3e88f2003d8f4407288a323bc977d61202ae96e0e9652898424",
     "SECURITY.md": "4291c7e975abe7088dfb746da6708c94ad2dbac071e46bc7156a2e1a458e64e1",
     "SELECTION.md": "97d82e4246420cc1ec782d6235f4ca8cad30dc54c37d634c0be69a716b534632",
-    "SHA256SUMS.json": "b5ff04d611e4e12ce310ae463dee40be417d2c2475d7edcbe7ea57864dceb50d",
+    "SHA256SUMS.json": "8e9a38c073e2c6a77206279de98d59d8421ad6d927d6c65462da4bb7531d2d0a",
     "THIRD_PARTY_NOTICES.md": "a511c14b47c10b13367f878d7710f0e1d95bc5b615e63a3c9d14f5225f83f191",
     "UPSTREAMS.md": "f2f73277723038134a9bf00965774124053de8df438f6ba3f0f0752b03f7d607",
     "VALIDATION.json": "73531e259816df4ca58330c672c6a1ecfb86fc11a332ade361d7a80bb5e07d12",
@@ -97,16 +98,16 @@
     "health-config.json": "d784e954ebd6138ac53128824c598602af8e8370a181c0d9a6064345a37fce2e",
     "health-history.json": "ae7666b9e305e8b617470e3ba728d91e0fb01eebb8c46bb9e4ce711d61c69973",
     "health-report.json": "9239c559d2dfb5f430508bef5f3545f6af7ee9bbc7dee8f0233d87ca38467e8c",
-    "manifest.json": "074c224cc70d2ae80d58503b2759a8080256024d834a392935d88eaeec237b3d",
+    "manifest.json": "9c97fc7a9bbab3e2e352816ca1e393b6451c785329884b36ff26c3e140c76da0",
     "nuvio-client-id-state.json": "ffc1a71c00f1bddc5b9811cc85f41d43f7931f2d91e8085b31eaa712ee2434d6",
-    "package-lock.json": "ca0005ab5e932138fe328d08ba37183f7ac0a5c390ace79175e529e4675a2ccd",
-    "package.json": "668fc4e082de73c7b813710a4f03e37bed2fd20ee25715af0ddbdf0e51a92acb",
+    "package-lock.json": "9f40543edb9cdabb34d1d846b5b2c173bc19cffc0857c59f1cc48e2504306c8a",
+    "package.json": "3ccfd130a8cb0a2bb8f1c861d3f82a0ff5fa8efde216c625427f13ca0914abd6",
     "provider-activation-lkg.json": "0371751f2f0238fc106444bea7abe8c686d18a700c323de21938f02ea25712c8",
     "provider-domain-history.json": "34b1b4238a3b0217ae22c0d091243c842e9299c8730b115373303128aedfad7b",
     "provider-hub-report.json": "fc2b930ecccb1ef807fa96cb6eb7df0ed76add1efe19b50d1c1040d835bd1b33",
     "provider-hubs.json": "e9c77e87d1465bafc1749ceb9607eb7f4ab96683c06ffeefcd5bfd2307a7d7f9",
     "provider-lkg.json": "4a5e95b0d00e9723ea6cbe1dbdde97b94729af24144a90b804ea76448d528c47",
-    "provider-overrides.json": "cefb47d70c9e6857d9dd919da2e1a25fabdf3e14fca8123e5f91294d6f6ef3e0",
+    "provider-overrides.json": "33987e93ae6547c57a0edd9088bee55c51559b0cbfd841df46ad74a58e0785ba",
     "provider-type-policy.json": "247e7cdf8548029dec9dec763a22cac30c9a5ba90873c896aa4fb655415c9952",
     "providers/1shows--published-baseline--384b31f2c32d5d60.js": "384b31f2c32d5d60ff70cc0edb4a23d0e63a5583d6d03f711c0a36e574361d16",
     "providers/1shows--published-baseline--71b235cdec12e88b.js": "71b235cdec12e88bf5fe8e7e89ca4d653c517a88c264ad442fe470d5fb891d36",
@@ -484,7 +485,7 @@
     "scripts/validate_route_overrides.py": "f0e8a0a92a833d9f160fe653ac5ab9da1a85dcf7536b50958a9170feb5469851",
     "scripts/validate_settings_pipeline.py": "a8c39889531a2cf0c1bf8bcec3771fa58d30bfb76f321edd5c920469ebd17f02",
     "scripts/validate_vf_projection.py": "3b0dbf3b33349d4524e1b2ea06831e16806fa64af21f129445f733493c30f005",
-    "sources.json": "2deff3423bd327e0d89bc91838f3ec44994dd1e0c80afc6f81479e12cbe577b4",
+    "sources.json": "25383cdf41de296fe65e634a76bc9ce8131a2598e3071c17b87bc861302c998d",
     "sync-report.json": "4a9c7117858dc806ddea3183721f9978485144d7d65f939d7a384d997a42a583",
     "tests/adaptive_binary_probe_test.py": "9219ac82893c3c6b3bed21f792564312b75e577ee916a9c00d981fe78602fa3e",
     "tests/adaptive_domain_recovery_test.py": "45f0290edb569500bc7dcdad342cd15f895841863c0461a8da816133bb76fe00",
@@ -707,6 +708,6 @@
     "upstream-lkg/providers/faccc37938836b50acc6a8862e14b818a086289b63ba9c6d18d654ca933d8aac.js": "faccc37938836b50acc6a8862e14b818a086289b63ba9c6d18d654ca933d8aac",
     "upstream-lkg/providers/fcb661e3daad58a862e0a4d17811604a212f5c3c44c0df3756ddfbcfed272527.js": "fcb661e3daad58a862e0a4d17811604a212f5c3c44c0df3756ddfbcfed272527",
     "upstream-lkg.json": "2ebb42eadd4dc3d37656d6e0a78f6931479380510cb3494fab61381fce98c100",
-    "vf/manifest.json": "3eaf1047cf1bd51ea1d2fc0de8ce4d6e69d03582a7db0a36d520650b5af0a72d"
+    "vf/manifest.json": "d6a0a131bc12a54abcaa74438d46ceeb07f29ba23d7f1fe197e73fe398ef14ca"
   }
 }
