@@ -24,6 +24,7 @@ FILTER = load_apply(ROOT / "target_media_host_filter_v4.py")
 
 V4_MARKER = "/* NUVIO_TV_TARGET_MEDIA_V4 */"
 FETCH_COMPAT_MARKER = "/* NUVIO_TV_TEXT_ONLY_FETCH_COMPAT_V1 */"
+PROTOCOL_RELATIVE_MARKER = "/* NUVIO_TV_PROTOCOL_RELATIVE_URL_COMPAT_V1 */"
 VIDZY_DECODER_START = "function decodeVidzy(text){"
 VIDZY_DECODER_END = "function genericUrls(text,base){"
 GENERIC_URLS_START = "function genericUrls(text,base){"
@@ -33,6 +34,8 @@ LEGACY_DIRECT_MEDIA_CALL = '})(typeof globalThis!=="undefined"?globalThis:this,'
 TARGET_MEDIA_MARKER = "/* NUVIO_TV_TARGET_MEDIA_V3:"
 TARGET_MEDIA_CALL = '})(typeof globalThis!=="undefined"?globalThis:this,'
 REJECTED_V3 = r'''function rejected(u){var h=hostname(u);return !h||ASSET.test(u)||SOCIAL.test(h)||DEMO.test(u)||/\$\{|encodeURIComponent\(|credentials:/i.test(u)}'''
+ABS_V3 = r'''function abs(v,b){try{return new URL(clean(v),b).toString()}catch(_){return ""}}'''
+ABS_V4 = r'''function abs(v,b){try{var raw=clean(v);if(/^\/\//.test(raw)){var scheme=/^https:/i.test(String(b||""))?"https:":"http:";return scheme+raw}return new URL(raw,b).toString()}catch(_){return ""}}'''
 RESOURCE_V3 = r'''async function resource(u,base,ref){try{var h=probeHeaders(base,ref,u),r=await g.fetch(u,{headers:h,redirect:"follow",signal:timeout()});if(!r)return null;var type=r.headers&&r.headers.get?s(r.headers.get("content-type")):"",buffer=await r.arrayBuffer(),bytes=new Uint8Array(buffer),text=decode(bytes.slice(0,300000));return{ok:!!r.ok,status:r.status,url:s(r.url||u),type:type,bytes:bytes,text:text,headers:outputHeaders(base,ref,u)}}catch(_){return null}}'''
 RESOURCE_V4 = r'''async function resource(u,base,ref){try{var h=probeHeaders(base,ref,u),r=await g.fetch(u,{headers:h,redirect:"follow",signal:timeout()});if(!r)return null;var type=r.headers&&r.headers.get?s(r.headers.get("content-type")):"",bytes=null,text="";if(typeof r.arrayBuffer==="function"){var buffer=await r.arrayBuffer();bytes=new Uint8Array(buffer);text=decode(bytes.slice(0,300000))}else if(typeof r.text==="function"){text=String(await r.text()||"").slice(0,300000)}return{ok:!!r.ok,status:r.status,url:s(r.url||u),type:type,bytes:bytes,text:text,headers:outputHeaders(base,ref,u)}}catch(_){return null}}'''
 STRICT_BLOCKED_HOSTS = {
@@ -116,11 +119,33 @@ def upgrade_fetch_capability(text: str) -> str:
     """
     if FETCH_COMPAT_MARKER in text:
         return text
+    if RESOURCE_V4 in text:
+        return text.rstrip() + "\n" + FETCH_COMPAT_MARKER + "\n"
     count = text.count(RESOURCE_V3)
     if count != 1:
         raise RuntimeError(f"target media resource() capability anchor count={count}")
     patched = text.replace(RESOURCE_V3, RESOURCE_V4, 1)
     return patched.rstrip() + "\n" + FETCH_COMPAT_MARKER + "\n"
+
+
+def upgrade_protocol_relative_urls(text: str) -> str:
+    """Bypass broken protocol-relative resolution in the pinned NuvioTV URL polyfill.
+
+    Standard URL('//player.example/x', base) switches host while retaining the
+    base scheme. The pinned TV polyfill instead prefixes the base origin, turning
+    player/embed URLs into paths on the catalogue host. Normalize this standard
+    URL form before invoking the host URL implementation so site -> player ->
+    media traversal behaves identically across Desktop, Mobile and TV.
+    """
+    if PROTOCOL_RELATIVE_MARKER in text:
+        return text
+    if ABS_V4 in text:
+        return text.rstrip() + "\n" + PROTOCOL_RELATIVE_MARKER + "\n"
+    count = text.count(ABS_V3)
+    if count != 1:
+        raise RuntimeError(f"target media abs() capability anchor count={count}")
+    patched = text.replace(ABS_V3, ABS_V4, 1)
+    return patched.rstrip() + "\n" + PROTOCOL_RELATIVE_MARKER + "\n"
 
 
 def upgrade_player_decoders(text: str, blocked_hosts: list[str]) -> str:
@@ -148,12 +173,13 @@ def upgrade_player_decoders(text: str, blocked_hosts: list[str]) -> str:
 
 
 def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> str:
-    # Existing v4 bundles predating the text-only bridge fix are upgraded in
-    # place. Once both markers are present, reapplying is byte-for-byte a no-op.
+    # Existing v4 bundles are upgraded in place when a runtime capability fix is
+    # added. Once all markers are present, reapplying is byte-for-byte a no-op.
     if V4_MARKER in text:
-        if FETCH_COMPAT_MARKER in text:
-            return text
-        return upgrade_fetch_capability(text)
+        patched = text
+        patched = upgrade_fetch_capability(patched)
+        patched = upgrade_protocol_relative_urls(patched)
+        return patched
 
     cfg = dict(options or {})
     blocked_hosts = sorted(
@@ -165,6 +191,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> st
     text = strip_target_media_wrappers(text, bool(cfg.get("force_rewrap_target_media", False)))
     patched = TARGET(text, options=cfg, **kwargs)
     patched = upgrade_fetch_capability(patched)
+    patched = upgrade_protocol_relative_urls(patched)
     patched = upgrade_player_decoders(patched, blocked_hosts)
     patched = EXPOSE(patched)
     patched = FILTER(patched, options=cfg)
