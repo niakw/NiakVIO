@@ -24,21 +24,41 @@ def result_line(client: str, fixture: str, provider: str, count: int) -> str:
     )
 
 
+def row_line(client: str, fixture: str, provider: str, language: str, title: str = "Mon ninja et moi 3") -> str:
+    return (
+        "FIELD_NATIVE_ROW "
+        f"client={client} fixture={fixture} provider64={b64(provider)} index=0 "
+        f"host64={b64('media.example')} media_hint64={b64('master.m3u8')} "
+        f"title64={b64(title)} name64={b64(provider)} quality64={b64('1080p')} "
+        f"language64={b64(language)} type64={b64('hls')}"
+    )
+
+
 with tempfile.TemporaryDirectory() as tmp:
     root = Path(tmp)
     lines: list[str] = []
     for client in ("desktop", "mobile", "tv"):
         lines.append(result_line(client, "interstellar", "broad", 1))
+        lines.append(row_line(client, "interstellar", "broad", "en", "Interstellar"))
+
+        lines.append(result_line(client, "mon-ninja-et-moi-3", "subtitle-only", 1))
+        lines.append(row_line(client, "mon-ninja-et-moi-3", "subtitle-only", "vostfr", "Mon ninja et moi 3 VOSTFR"))
+
         lines.append(result_line(client, "mon-ninja-et-moi-3", "rare-vf", 1))
+        lines.append(row_line(client, "mon-ninja-et-moi-3", "rare-vf", "fr"))
+
         lines.append(result_line(client, "mon-ninja-et-moi-3", "unsafe-vf", 1))
+        lines.append(row_line(client, "mon-ninja-et-moi-3", "unsafe-vf", "fr"))
+
     lines.append(result_line("desktop", "mon-ninja-et-moi-3", "broken-vf", 1))
+    lines.append(row_line("desktop", "mon-ninja-et-moi-3", "broken-vf", "fr"))
     lines.append(result_line("mobile", "mon-ninja-et-moi-3", "broken-vf", 0))
     lines.append(result_line("tv", "mon-ninja-et-moi-3", "broken-vf", 0))
     (root / "desktop-native-corpus-synthetic.log").write_text("\n".join(lines) + "\n", encoding="utf-8")
 
     portfolio = {
         "schemaVersion": 1,
-        "currentlyActiveObserved": 4,
+        "currentlyActiveObserved": 5,
         "recommendedActive": 1,
         "selected": ["broad"],
         "providers": [
@@ -50,6 +70,15 @@ with tempfile.TemporaryDirectory() as tmp:
                 "score": 100,
                 "catalogueCoverageRate": 1,
                 "recommendation": "active_core",
+            },
+            {
+                "provider": "subtitle-only",
+                "vf": True,
+                "safetyEligible": True,
+                "evidenceEnough": True,
+                "score": 80,
+                "catalogueCoverageRate": 0.5,
+                "recommendation": "lab_only_redundant",
             },
             {
                 "provider": "rare-vf",
@@ -94,12 +123,24 @@ with tempfile.TemporaryDirectory() as tmp:
     data = json.loads(portfolio_path.read_text(encoding="utf-8"))
     rows = {row["provider"]: row for row in data["providers"]}
 
+    # The VOSTFR provider can help general catalogue redundancy, but it must not
+    # satisfy the French-audio redundancy objective merely because it lives in a VF manifest.
+    assert "subtitle-only" in data["selected"], data
+    assert rows["subtitle-only"]["fullCrossPlatformVfFixtures"] == [], rows["subtitle-only"]
+
+    # A genuinely French rare provider remains protected even with weak global coverage.
     assert "rare-vf" in data["selected"], data
     assert rows["rare-vf"]["recommendation"] == "active_coverage_guard", rows["rare-vf"]
-    assert "mon-ninja-et-moi-3:general_redundancy" in rows["rare-vf"]["coverageProtectionFixtures"], rows["rare-vf"]
+    assert "mon-ninja-et-moi-3" in rows["rare-vf"]["fullCrossPlatformVfFixtures"], rows["rare-vf"]
+    assert "mon-ninja-et-moi-3" in rows["rare-vf"]["vfCoverageProtectionFixtures"], rows["rare-vf"]
+    assert data["protectedVfCoverageProviders"] == ["rare-vf"], data
+
+    # A rare French provider that only works on one native client is a repair target, not deletion fodder.
     assert "broken-vf" not in data["selected"], data
     assert rows["broken-vf"]["recommendation"] == "repair_priority_unique_coverage", rows["broken-vf"]
     assert "mon-ninja-et-moi-3" in rows["broken-vf"]["repairPriorityFixtures"], rows["broken-vf"]
+
+    # Safety remains absolute: wrong/unsafe content never receives a coverage exception.
     assert "unsafe-vf" not in data["selected"], data
     assert rows["unsafe-vf"]["recommendation"] == "quarantine_unsafe", rows["unsafe-vf"]
 
