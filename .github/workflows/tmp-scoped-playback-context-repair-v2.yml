@@ -43,11 +43,7 @@ jobs:
               p.write_text(text.replace(old, new, 1), encoding='utf-8')
 
           hls = 'scripts/provider_patches/hls_master_audio_preserver_v1.py'
-          replace_once(
-              hls,
-              'provider_id = str(context.get("provider_id") or "").strip().casefold()\n\n    output = text',
-              'provider_id = str(context.get("provider_id") or "").strip().casefold()\n    cfg = dict(options or {})\n\n    output = text'
-          )
+          replace_once(hls, 'provider_id = str(context.get("provider_id") or "").strip().casefold()\n\n    output = text', 'provider_id = str(context.get("provider_id") or "").strip().casefold()\n    cfg = dict(options or {})\n\n    output = text')
           replace_once(hls, 'if(!Object.keys(out).some(function(k){return k.toLowerCase()==="user-agent"}))out["User-Agent"]=DEFAULT_UA;', 'if(c.defaultUserAgent&&!Object.keys(out).some(function(k){return k.toLowerCase()==="user-agent"}))out["User-Agent"]=c.defaultUserAgent;')
           replace_once(hls, 'if(!Object.keys(h).some(function(k){return k.toLowerCase()==="user-agent"})){h["User-Agent"]=DEFAULT_UA;has=true}', 'if(c.defaultUserAgent&&!Object.keys(h).some(function(k){return k.toLowerCase()==="user-agent"})){h["User-Agent"]=c.defaultUserAgent;has=true}')
           replace_once(hls, 'if(c.strictPlayback||tv)return {keep:false,reason:result.reason||"unverified_media"};', 'if(c.strictPlayback||c.failClosedUnknown)return {keep:false,reason:result.reason||"unverified_media"};')
@@ -65,6 +61,11 @@ jobs:
           options.setdefault('scripts/provider_patches/hls_master_audio_preserver_v1.py', {})['default_user_agent'] = ua
           options.setdefault('scripts/provider_patches/global_media_enrichment_v1.py', {})['default_user_agent'] = ua
           override_path.write_text(json.dumps(config, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+
+          compat = 'tests/playback_context_compat_test.py'
+          replace_once(compat, 'assert desktop["headers"]["User-Agent"].startswith("Mozilla/5.0")\n    assert tv["headers"]["User-Agent"].startswith("Mozilla/5.0")', 'assert not desktop.get("headers"), desktop\n    assert not tv.get("headers"), tv')
+          replace_once(compat, 'assert "playback-context-v3" in patched', 'assert "scoped-playback-context-v4" in patched')
+          replace_once(compat, 'assert headers["User-Agent"].startswith("Mozilla/5.0"), headers', 'assert "User-Agent" not in headers, headers')
           PY
 
       - name: Add regression contract
@@ -81,7 +82,6 @@ jobs:
           from pathlib import Path
 
           ROOT = Path(__file__).resolve().parents[1]
-
           def load_apply(rel):
               path = ROOT / rel
               spec = importlib.util.spec_from_file_location(path.stem, path)
@@ -93,23 +93,18 @@ jobs:
           hls_apply = load_apply('scripts/provider_patches/hls_master_audio_preserver_v1.py')
           media_apply = load_apply('scripts/provider_patches/global_media_enrichment_v1.py')
           base = 'globalThis.getStreams=async function(){return [{url:"https://media.invalid/master.m3u8",type:"hls"}]};\n'
-
           ordinary = hls_apply(base, options={}, context={'provider_id':'ordinary'})
           assert 'c.strictPlayback||c.failClosedUnknown' in ordinary
           assert 'c.strictPlayback||tv' not in ordinary
           assert 'c.defaultUserAgent&&' in ordinary
           assert '"defaultUserAgent":""' in ordinary
           assert '"failClosedUnknown":false' in ordinary
-          strict = hls_apply(base, options={}, context={'provider_id':'moviebox'})
-          assert '"strictPlayback":true' in strict
-          streamzo = hls_apply(base, options={'default_user_agent':'UA-STREAMZO'}, context={'provider_id':'streamzo'})
-          assert '"defaultUserAgent":"UA-STREAMZO"' in streamzo
-
+          assert '"strictPlayback":true' in hls_apply(base, options={}, context={'provider_id':'moviebox'})
+          assert '"defaultUserAgent":"UA-STREAMZO"' in hls_apply(base, options={'default_user_agent':'UA-STREAMZO'}, context={'provider_id':'streamzo'})
           enriched = media_apply(base, options={})
           assert '"defaultUserAgent":""' in enriched
           assert 'c.defaultUserAgent&&!keyOf(out,"User-Agent")' in enriched
-          enriched_streamzo = media_apply(base, options={'default_user_agent':'UA-STREAMZO'})
-          assert '"defaultUserAgent":"UA-STREAMZO"' in enriched_streamzo
+          assert '"defaultUserAgent":"UA-STREAMZO"' in media_apply(base, options={'default_user_agent':'UA-STREAMZO'})
 
           cfg = json.loads((ROOT/'provider-overrides.json').read_text(encoding='utf-8'))
           sopts = cfg['provider_patches']['streamzo']['patch_script_options']
@@ -117,13 +112,12 @@ jobs:
           assert sopts['scripts/provider_patches/global_media_enrichment_v1.py']['default_user_agent']
           assert sopts['scripts/provider_patches/hls_runtime_integrity_v1.py']['fail_closed_unknown'] is True
 
-          runtime = ordinary + '''\n          globalThis.__NUVIO_TV_RUNTIME__=true;
-          globalThis.fetch=async function(){throw new Error("bridge cannot reprobe")};
-          (async()=>{var rows=await globalThis.getStreams({tmdbId:"1",mediaType:"movie"});console.log("COUNT="+rows.length)})().catch(e=>{console.error(e);process.exit(2)});
-          '''
+          runtime = ordinary + '''\nglobalThis.__NUVIO_TV_RUNTIME__=true;
+globalThis.fetch=async function(){throw new Error("bridge cannot reprobe")};
+(async()=>{var rows=await globalThis.getStreams({tmdbId:"1",mediaType:"movie"});console.log("COUNT="+rows.length)})().catch(e=>{console.error(e);process.exit(2)});
+'''
           with tempfile.NamedTemporaryFile('w', suffix='.cjs', delete=False, encoding='utf-8') as handle:
-              handle.write(runtime)
-              filename = handle.name
+              handle.write(runtime); filename = handle.name
           result = subprocess.run(['node', filename], capture_output=True, text=True, timeout=20)
           Path(filename).unlink(missing_ok=True)
           assert result.returncode == 0, result.stderr
