@@ -42,7 +42,7 @@ jobs:
             -H "X-GitHub-Api-Version: 2022-11-28" \
             "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/artifacts/9251244709/zip" \
             -o /tmp/live-audit.zip
-          echo "$(sha256sum /tmp/live-audit.zip | awk '{print $1}')  downloaded-audit.zip"
+          test "$(sha256sum /tmp/live-audit.zip | awk '{print $1}')" = "b61a1f1f69120cde45964641154b9c391505c3191a59e1ed33eb832088361101"
           unzip -q /tmp/live-audit.zip -d /tmp/live-audit
           AUDIT="$(find /tmp/live-audit -name 'catalogue-media-audit.json' -type f -print -quit)"
           test -n "$AUDIT"
@@ -83,10 +83,11 @@ jobs:
               assert 'catalogue_audit_playable_identity_contradiction' in text
               print(pid, fn)
           PY
-      - name: Publish release 5.20.55 and validate complete suite
+      - name: Materialize release 5.20.55 and validate complete suite
         run: |
           set -euo pipefail
           python3 scripts/sync_release_versions.py --version 5.20.55
+          python3 scripts/reapply_published_overrides.py
           python3 scripts/generate_release_hashes.py
           python3 scripts/validate_release_integrity.py
           python3 scripts/reapply_published_overrides.py --check
