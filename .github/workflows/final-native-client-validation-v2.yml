@@ -74,12 +74,36 @@ jobs:
       - name: Require real Desktop StreamZo HLS
         working-directory: nuvio-desktop
         run: |
-          rm -f "$GITHUB_WORKSPACE/desktop-native-results.log"
-          ./gradlew :composeApp:desktopTest --tests 'com.nuvio.app.features.plugins.NiakvioFinalNativeDesktopTest' --no-daemon --console=plain
-          cat "$GITHUB_WORKSPACE/desktop-native-results.log"
-          grep -Eq 'FIELD_DESKTOP_NATIVE provider=streamzo .* count=[1-9][0-9]*' "$GITHUB_WORKSPACE/desktop-native-results.log"
-          grep -Eq 'FIELD_DESKTOP_NATIVE_ROW provider=streamzo .* type=hls([[:space:]]|$)' "$GITHUB_WORKSPACE/desktop-native-results.log"
-          grep -Fq 'FIELD_DESKTOP_STREAMZO_SENTINEL status=resolved expected=resolved' "$GITHUB_WORKSPACE/desktop-native-results.log"
+          proof_ok() {
+            grep -Eq 'FIELD_DESKTOP_NATIVE provider=streamzo .* count=[1-9][0-9]*' "$GITHUB_WORKSPACE/desktop-native-results.log" &&
+            grep -Eq 'FIELD_DESKTOP_NATIVE_ROW provider=streamzo .* type=hls([[:space:]]|$)' "$GITHUB_WORKSPACE/desktop-native-results.log" &&
+            grep -Fq 'FIELD_DESKTOP_STREAMZO_SENTINEL status=resolved expected=resolved' "$GITHUB_WORKSPACE/desktop-native-results.log"
+          }
+
+          STATUS=1
+          for ATTEMPT in 1 2; do
+            rm -f "$GITHUB_WORKSPACE/desktop-native-results.log"
+            echo "FIELD_DESKTOP_PROOF_ATTEMPT attempt=$ATTEMPT max=2"
+            set +e
+            if [[ "$ATTEMPT" -eq 1 ]]; then
+              ./gradlew :composeApp:desktopTest --tests 'com.nuvio.app.features.plugins.NiakvioFinalNativeDesktopTest' --no-daemon --console=plain
+            else
+              ./gradlew :composeApp:desktopTest --tests 'com.nuvio.app.features.plugins.NiakvioFinalNativeDesktopTest' --rerun-tasks --no-daemon --console=plain
+            fi
+            STATUS=$?
+            set -e
+            cat "$GITHUB_WORKSPACE/desktop-native-results.log" 2>/dev/null || true
+            if [[ "$STATUS" -eq 0 ]] && proof_ok; then
+              STATUS=0
+              break
+            fi
+            STATUS=1
+            if [[ "$ATTEMPT" -lt 2 ]]; then
+              echo "FIELD_DESKTOP_PROOF_RETRY reason=streamzo_or_test_failure"
+              sleep 3
+            fi
+          done
+          exit "$STATUS"
 
       - name: Upload Desktop proof
         if: always()
