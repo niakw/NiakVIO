@@ -1,0 +1,73 @@
+name: Repair strict fix runner
+
+on:
+  push:
+    branches:
+      - fix/strict-content-promotion-gate
+
+permissions:
+  contents: write
+
+jobs:
+  repair-runner:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: fix/strict-content-promotion-gate
+      - name: Make patch anchors indentation-safe
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path('.github/workflows/tmp-apply-strict-content-promotion-fix.yml')
+          text = path.read_text(encoding='utf-8')
+          old = '''          def replace_once(path, old, new):
+              p = Path(path)
+              text = p.read_text(encoding='utf-8')
+              if old not in text:
+                  raise SystemExit(f'anchor missing in {path}: {old[:120]!r}')
+              p.write_text(text.replace(old, new, 1), encoding='utf-8')
+'''
+          new = '''          def replace_once(path, old, new):
+              p = Path(path)
+              text = p.read_text(encoding='utf-8')
+              if old in text:
+                  p.write_text(text.replace(old, new, 1), encoding='utf-8')
+                  return
+              source_lines = text.splitlines(keepends=True)
+              wanted = old.splitlines()
+              for start in range(0, len(source_lines) - len(wanted) + 1):
+                  window = source_lines[start:start + len(wanted)]
+                  if all(window[index].strip() == wanted[index].strip() for index in range(len(wanted))):
+                      target_indent = len(window[0]) - len(window[0].lstrip(' '))
+                      replacement_lines = new.splitlines(keepends=True)
+                      first = next((line for line in replacement_lines if line.strip()), '')
+                      replacement_base = len(first) - len(first.lstrip(' '))
+                      adjusted = []
+                      for line in replacement_lines:
+                          if not line.strip():
+                              adjusted.append(line)
+                              continue
+                          newline = '\\n' if line.endswith('\\n') else ''
+                          body = line[:-1] if newline else line
+                          indent = len(body) - len(body.lstrip(' '))
+                          relative = max(0, indent - replacement_base)
+                          adjusted.append(' ' * (target_indent + relative) + body.lstrip(' ') + newline)
+                      source_lines[start:start + len(wanted)] = [''.join(adjusted)]
+                      p.write_text(''.join(source_lines), encoding='utf-8')
+                      return
+              raise SystemExit(f'anchor missing in {path}: {old[:120]!r}')
+'''
+          if old not in text:
+              raise SystemExit('original replace_once helper not found')
+          path.write_text(text.replace(old, new, 1), encoding='utf-8')
+          Path('.github/workflows/tmp-repair-strict-fix-runner.yml').unlink()
+          PY
+      - name: Commit repaired runner
+        run: |
+          git config user.name 'niakvio-ci'
+          git config user.email 'actions@users.noreply.github.com'
+          git add -A
+          git commit -m 'ci: make strict fix patcher indentation-safe'
+          git push origin HEAD:fix/strict-content-promotion-gate
