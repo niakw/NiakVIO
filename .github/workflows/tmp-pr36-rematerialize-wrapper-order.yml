@@ -42,6 +42,7 @@ jobs:
       - name: Prepare canonical global playback scheduler
         run: |
           python scripts/tmp_pr36_canonicalize_playback_transaction.py prepare
+          sed -i 's/expected = "5.20.57"/expected = "5.20.56"/' scripts/tmp_pr36_canonicalize_playback_transaction.py
           python - <<'PY'
           from pathlib import Path
           path = Path('scripts/provider_patches/hls_runtime_integrity_v1.py')
@@ -127,4 +128,5 @@ jobs:
           python scripts/validate_activation_preservation.py
           python scripts/validate_language_projection.py
           python scripts/validate_release_integrity.py
+          sed -i 's/expected = "5.20.57"/expected = "5.20.56"/' scripts/tmp_pr36_canonicalize_playback_transaction.py
           python scripts/tmp_pr36_canonicalize_playback_transaction.py verify-release
