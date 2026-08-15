@@ -1,10 +1,16 @@
 #!/usr/bin/env python3
 """Publish runtime-compatible provider bundles for Nuvio Desktop.
 
-This pass is deterministic and repeatable. It always starts from canonical,
-tracked provider artifacts, applies the Desktop compatibility patch once,
-creates immutable content-addressed bundles, synchronizes main/VF manifests,
-records provenance, and retires obsolete 4KHDHUB when 4KHDHUBNEW is active.
+Enabled providers are staged from the artifact currently referenced by the
+canonical manifest, receive the idempotent Desktop/Mobile compatibility patch,
+and are published as immutable content-addressed bundles.
+
+Disabled providers are different: their exact path/SHA can itself be part of a
+safety-quarantine proof. For those providers this command validates the
+compatibility transform in memory but MUST NOT change the canonical bundle,
+manifest row, VF projection, provenance, or activation metadata. If a later
+deep run proves the provider healthy and re-enables it, normal publication will
+materialize the compatibility patch from the durable override configuration.
 """
 from __future__ import annotations
 
@@ -22,17 +28,7 @@ PATCH_REL = "scripts/provider_patches/desktop_runtime_compat_v1.py"
 PATCH_PATH = ROOT / PATCH_REL
 REPORT_PATH = ROOT / "automation" / "desktop-runtime-compat-v1.json"
 SEMVER = re.compile(r"^(\d+)\.(\d+)\.(\d+)$")
-
-SOURCE_FILES: dict[str, str] = {
-    "coflix": "providers/coflix--nuvio--48239f7b107a98b2.js",
-    "frenchstream": "providers/frenchstream--nuvio--38cf074196379a8d.js",
-    "movix": "providers/movix--nuvio--b31ef87b05d3a4f3.js",
-    "streamzo": "providers/streamzo--nuvio--5ee8d74abe45cd42.js",
-    "flemmix": "providers/flemmix--nuvio--e0c40c452aca0d66.js",
-    "wookafr": "providers/wookafr--nuvio--4ce4c33e2fe1d23b.js",
-    "hindmoviez": "providers/hindmoviez--aio--86b8c3a4dff3c98c.js",
-    "purstream": "providers/purstream--published-baseline--8e14e434a2868d4f.js",
-}
+COMPAT_MARKER = "NUVIO_DESKTOP_RUNTIME_COMPAT_V1"
 
 TARGETS: dict[str, dict[str, Any]] = {
     "coflix": {"normalize_missing_episodes": True},
@@ -93,6 +89,33 @@ def vf_filename(value: object) -> str:
     return f"../{filename}" if filename.startswith("providers/") else filename
 
 
+def local_manifest_filename(value: object) -> str:
+    filename = str(value or "").strip()
+    while filename.startswith("../"):
+        filename = filename[3:]
+    if not filename or filename.startswith(("http://", "https://")):
+        return ""
+    return filename
+
+
+def resolve_source_filename(row: dict[str, Any], provenance: dict[str, Any], provider_id: str) -> str:
+    """Resolve the freshest tracked provider artifact without hash pinning."""
+    current = local_manifest_filename(row.get("filename"))
+    current_path = ROOT / current if current else None
+    if current_path is not None and current_path.is_file() and "--desktop-runtime-v1--" not in current:
+        return current
+
+    provider_meta = provenance.get("providers", {}).get(provider_id) or provenance.get("providers", {}).get(provider_id.upper()) or {}
+    fallback = local_manifest_filename(provider_meta.get("canonical_source_filename"))
+    fallback_path = ROOT / fallback if fallback else None
+    if fallback_path is not None and fallback_path.is_file():
+        return fallback
+
+    if current_path is not None and current_path.is_file():
+        return current
+    return ""
+
+
 def sync_existing_vf(rows: list[dict[str, Any]], source: dict[str, Any]) -> None:
     provider_id = str(source.get("id") or "").casefold()
     target = next((row for row in rows if str(row.get("id") or "").casefold() == provider_id), None)
@@ -101,6 +124,15 @@ def sync_existing_vf(rows: list[dict[str, Any]], source: dict[str, Any]) -> None
     target.clear()
     target.update(deepcopy(source))
     target["filename"] = vf_filename(source.get("filename"))
+
+
+def _has_patch_record(items: list[Any], path: str) -> bool:
+    for item in items:
+        if isinstance(item, dict) and str(item.get("path") or "") == path:
+            return True
+        if isinstance(item, str) and item == path:
+            return True
+    return False
 
 
 def update_metadata(
@@ -113,6 +145,7 @@ def update_metadata(
     new_sha: str,
     options: dict[str, Any],
 ) -> None:
+    """Record publication compatibility without rewriting safety decisions."""
     patch = overrides.setdefault("provider_patches", {}).setdefault(provider_id, {})
     scripts = [str(value) for value in patch.get("patch_scripts") or []]
     if PATCH_REL not in scripts:
@@ -123,9 +156,16 @@ def update_metadata(
     now = datetime.now(timezone.utc).isoformat()
     rows = provenance.setdefault("providers", {})
     current = dict(rows.get(provider_id) or rows.get(provider_id.upper()) or {})
-    local_patches = [str(value) for value in current.get("local_patches") or []]
-    if PATCH_REL not in local_patches:
-        local_patches.append(PATCH_REL)
+    local_patches = deepcopy(list(current.get("local_patches") or []))
+    if not _has_patch_record(local_patches, PATCH_REL):
+        local_patches.append(
+            {
+                "type": "patch_script",
+                "path": PATCH_REL,
+                "phase": "publication",
+                "scope": "desktop_runtime_compat",
+            }
+        )
     current.update(
         {
             "id": provider_id,
@@ -133,18 +173,15 @@ def update_metadata(
             "canonical_source_filename": source_filename,
             "sha256": new_sha,
             "patched_sha256": new_sha,
-            "upstream_sha256": old_sha,
             "local_patches": local_patches,
-            "source": "desktop-runtime-compat-v1",
-            "source_name": "Nuvio Desktop QuickJS compatibility, bounded TV fallback and domain failover",
-            "checked_at": now,
-            "check_mode": "static-runtime-contract-and-regression-suite",
-            "check_status": "healthy",
-            "activation_eligible": bool(current.get("activation_eligible", False)),
-            "strict_activation_eligible": bool(current.get("strict_activation_eligible", False)),
-            "runtime_evidence_eligible": bool(current.get("runtime_evidence_eligible", False)),
-            "activation_mode": "desktop_runtime_compat_v1",
-            "activation_blockers": list(current.get("activation_blockers") or []),
+            "desktop_runtime_compat": {
+                "source_filename": source_filename,
+                "source_sha256": old_sha,
+                "published_sha256": new_sha,
+                "patch": PATCH_REL,
+                "options": deepcopy(options),
+                "checked_at": now,
+            },
         }
     )
     rows[provider_id] = current
@@ -201,6 +238,7 @@ def main() -> int:
         "runtime": "Nuvio Desktop QuickJS",
         "providers": {},
         "published": [],
+        "validated_disabled": [],
         "preserved": [],
         "disabled": [],
     }
@@ -214,10 +252,13 @@ def main() -> int:
             report["preserved"].append(provider_id)
             continue
 
-        source_filename = SOURCE_FILES[provider_id]
-        source_path = ROOT / source_filename
-        if not source_path.is_file():
-            report["providers"][provider_id] = {"ok": False, "error": f"missing canonical source {source_filename}"}
+        source_filename = resolve_source_filename(row, provenance, provider_id)
+        source_path = ROOT / source_filename if source_filename else None
+        if source_path is None or not source_path.is_file():
+            report["providers"][provider_id] = {
+                "ok": False,
+                "error": f"missing current canonical source for {provider_id}: {row.get('filename')}",
+            }
             report["preserved"].append(provider_id)
             continue
 
@@ -225,6 +266,23 @@ def main() -> int:
         patched = apply(source, options)
         old_sha = hashlib.sha256(source.encode("utf-8")).hexdigest()
         new_sha = hashlib.sha256(patched.encode("utf-8")).hexdigest()
+        if COMPAT_MARKER not in patched:
+            raise RuntimeError(f"{provider_id}: Desktop compatibility marker missing after transform")
+
+        if row.get("enabled") is not True:
+            report["providers"][provider_id] = {
+                "ok": True,
+                "changed": False,
+                "canonical_unchanged": True,
+                "source_filename": source_filename,
+                "validation_sha256": new_sha,
+                "source_sha256": old_sha,
+                "options": options,
+                "timer_shim_required": "setTimeout" in source or "clearTimeout" in source,
+            }
+            report["validated_disabled"].append(provider_id)
+            continue
+
         filename = f"providers/{provider_slug(provider_id)}--desktop-runtime-v1--{new_sha[:16]}.js"
         target_path = ROOT / filename
         if not target_path.is_file() or target_path.read_text(encoding="utf-8", errors="replace") != patched:
@@ -236,15 +294,14 @@ def main() -> int:
         row["filename"] = filename
         if row_changed:
             row["version"] = bump(row.get("version"))
-        row["enabled"] = row.get("enabled") is True
         if provider_id == "streamzo":
-            # Only a globally audited direct-media lineage may disable this hint.
             row["supportsExternalPlayer"] = "--nuvio-tv-global--" not in source_filename
         sync_existing_vf(vf_rows, row)
         update_metadata(overrides, provenance, provider_id, filename, source_filename, old_sha, new_sha, options)
         report["providers"][provider_id] = {
             "ok": True,
             "changed": row_changed,
+            "canonical_unchanged": False,
             "old_filename": old_filename,
             "source_filename": source_filename,
             "filename": filename,

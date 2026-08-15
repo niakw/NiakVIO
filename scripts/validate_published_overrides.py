@@ -15,6 +15,8 @@ MANIFEST = ROOT / "manifest.next.json"
 PROVENANCE = ROOT / "PROVENANCE.json"
 PROVIDERS = ROOT / "providers"
 PROVIDER_LKG = ROOT / "provider-lkg.json"
+ROOT_RESOLVED = ROOT.resolve()
+PROVIDERS_RESOLVED = PROVIDERS.resolve()
 
 # Runtime-generated strategies are deliberately not static patch_profiles in
 # provider-overrides.json. They are created from live deep-health evidence and
@@ -42,6 +44,21 @@ def load(path: Path, default: Any = None) -> Any:
     return value
 
 
+def root_relative(path: Path) -> Path:
+    """Return a stable repo-relative path across macOS /var -> /private/var.
+
+    ``Path.resolve()`` canonicalizes the macOS temporary directory through the
+    ``/private`` prefix. Tests and callers can still provide ROOT through the
+    public ``/var`` alias, so relative_to(ROOT) is not safe even when the file
+    is genuinely inside the repository. Compare canonical paths instead.
+    """
+    resolved = path.resolve()
+    try:
+        return resolved.relative_to(ROOT_RESOLVED)
+    except ValueError:
+        return path
+
+
 def bare_host_marker(value: str) -> bool:
     """Return True for host-only routing metadata, not code markers/URLs."""
     value = str(value or "").strip().lower().rstrip(".")
@@ -57,7 +74,7 @@ def add_provider_reference(protected: set[Path], value: object, base: Path = ROO
         return
     target = (base / value).resolve()
     try:
-        target.relative_to(PROVIDERS.resolve())
+        target.relative_to(PROVIDERS_RESOLVED)
     except ValueError:
         return
     protected.add(target)
@@ -113,14 +130,17 @@ def main() -> int:
     if not isinstance(profiles, dict):
         raise SystemExit("patch_profiles must be an object")
 
-    referenced: dict[str, Path] = {}
+    # Keep the manifest row paired with its resolved artifact. The quarantine
+    # validator must inspect the row belonging to the current provider rather
+    # than the final ``entry`` left over from the collection loop.
+    referenced: dict[str, tuple[Path, dict[str, Any]]] = {}
     for entry in manifest.get("scrapers", []):
         if not isinstance(entry, dict):
             continue
         cid = canonical_id(str(entry.get("id") or ""))
         filename = entry.get("filename")
         if cid and isinstance(filename, str):
-            referenced[cid] = (ROOT / filename).resolve()
+            referenced[cid] = ((ROOT / filename).resolve(), entry)
 
     protected_paths = transaction_protected_provider_paths(provenance)
     errors: list[str] = []
@@ -129,33 +149,35 @@ def main() -> int:
     provenance_changed = False
     provenance_by_id = provenance.get("providers") or {}
 
-    for cid, target in referenced.items():
+    for cid, (target, manifest_entry) in referenced.items():
         if not target.exists():
             errors.append(f"{cid}: final manifest provider file is missing")
             continue
         try:
-            target.relative_to(PROVIDERS.resolve())
+            target.relative_to(PROVIDERS_RESOLVED)
         except ValueError:
             errors.append(f"{cid}: published provider path escapes providers/: {target}")
             continue
 
+        target_label = root_relative(target)
         text = target.read_text(encoding="utf-8", errors="strict")
         cfg = patches.get(cid) if isinstance(patches.get(cid), dict) else {}
         provider_provenance = provenance_by_id.get(cid) or {}
         audit_quarantine = str(provider_provenance.get("activation_mode") or "") == AUDIT_QUARANTINE_MODE
         if audit_quarantine:
             digest = hashlib.sha256(target.read_bytes()).hexdigest()
-            if entry.get("enabled") is not False:
+            if manifest_entry.get("enabled") is not False:
                 errors.append(f"{cid}: audit safety quarantine is not disabled")
             if AUDIT_QUARANTINE_MARKER not in text:
                 errors.append(f"{cid}: audit safety quarantine marker is missing")
             if provider_provenance.get("activation_eligible") is not False:
                 errors.append(f"{cid}: audit safety quarantine remains activation eligible")
-            if str(provider_provenance.get("published_filename") or "") != target.relative_to(ROOT).as_posix():
+            if str(provider_provenance.get("published_filename") or "") != target_label.as_posix():
                 errors.append(f"{cid}: audit safety quarantine provenance path mismatch")
             if str(provider_provenance.get("patched_sha256") or "") != digest:
                 errors.append(f"{cid}: audit safety quarantine provenance SHA mismatch")
             continue
+
         records = provider_provenance.get("local_patches") or []
         replacements = dict(global_replacements)
         replacements.update(cfg.get("replacements") or {})
@@ -163,7 +185,7 @@ def main() -> int:
         for old, new in replacements.items():
             old, new = str(old), str(new)
             if contains_literal(text, old):
-                errors.append(f"{cid}: forbidden value remains in {target.relative_to(ROOT)}: {old}")
+                errors.append(f"{cid}: forbidden value remains in {target_label}: {old}")
             applied = any(
                 isinstance(record, dict)
                 and record.get("type") == "replace"
@@ -231,9 +253,7 @@ def main() -> int:
             if bare_host_marker(required):
                 continue
             if required not in text:
-                errors.append(
-                    f"{cid}: required value missing from {target.relative_to(ROOT)}: {required}"
-                )
+                errors.append(f"{cid}: required value missing from {target_label}: {required}")
 
         if replacements:
             exact_prefix = f"{cid}--"
@@ -248,7 +268,7 @@ def main() -> int:
                 candidate_text = candidate.read_text(encoding="utf-8", errors="ignore")
                 if any(contains_literal(candidate_text, str(old)) for old in replacements):
                     candidate.unlink()
-                    removed.append(candidate.relative_to(ROOT).as_posix())
+                    removed.append(root_relative(candidate).as_posix())
 
     if errors:
         raise SystemExit("published override validation failed:\n- " + "\n- ".join(errors))

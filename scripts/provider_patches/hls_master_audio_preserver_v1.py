@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
-"""Preserve HLS master audio and append a bounded runtime media safety guard.
+"""Preserve HLS master audio and append the global runtime media safety guard.
 
-The original audio-preserver keeps HLS masters intact when audio renditions are
-external. The runtime guard is deliberately conservative: it removes only rows
-that are conclusively non-media/dead for the current client. NetMirror also gets
-a duration identity check because its upstream catalogue can return the first
-search result while relabelling it with the requested TMDB title. MovieBox uses
-strict playback probing because field tests and CI both observed returned rows
-that are not actually playable.
+The audio rewrite keeps HLS masters with external audio renditions intact.  The
+runtime guard rejects only conclusively dead/non-media rows, keeps the existing
+NetMirror duration identity check and MovieBox strict playback gate, and now
+uses the real NuvioTV bridge fingerprint instead of treating every native
+QuickJS client as TV.  It also normalizes final playback context so libmpv and
+Media3 receive the same browser user-agent used by the provider fetch bridges,
+while TV-only display compatibility fills NuvioTV's ``size``/description slot
+without polluting Desktop/Mobile metadata.
 """
 from __future__ import annotations
 
@@ -23,10 +24,17 @@ GUARD = re.compile(
     r"if\s*\(\s*!\s*/#EXT-X-STREAM-INF/i\.test\((?P<var>[A-Za-z_$][A-Za-z0-9_$]*)\)\s*\)\s*return"
 )
 
+# Nuvio Desktop/Mobile also expose __native_fetch.  Their fetch polyfill passes
+# a fifth followRedirects argument; NuvioTV uses a four-argument bridge and
+# wraps options.signal around it.  Keep the exact same fingerprint as the
+# dedicated TV ordering patch so all platform-specific behavior agrees.
+TV_PREDICATE = r'''function isTv(){try{var ua=String((g.navigator&&g.navigator.userAgent)||"");if(/NuvioTV|Android TV/i.test(ua))return true;if(g&&g.__NUVIO_TV_RUNTIME__===true)return true;if(typeof g.__native_fetch!=="function"||typeof g.fetch!=="function")return false;var src="";try{src=Function.prototype.toString.call(g.fetch)}catch(_e){src=String(g.fetch||"")}if(/followRedirects/.test(src))return false;var signalAware=/options\.signal|var\s+signal\s*=/.test(src);var fourArgNative=/__native_fetch\s*\(\s*url\s*,\s*method\s*,\s*JSON\.stringify\(headers\)\s*,\s*body\s*\)/.test(src);return signalAware&&fourArgNative;}catch(_e){return false}}'''
+
 SAFETY_WRAPPER = r"""
 /* SAFETY_MARKER_PLACEHOLDER */
 ;(function(g,c){
   "use strict";
+  var DEFAULT_UA="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36";
   function s(v){return String(v==null?"":v).trim()}
   function slot(v){
     if(Array.isArray(v))return {key:null,list:v};
@@ -49,13 +57,7 @@ SAFETY_WRAPPER = r"""
     q.episode=Number(q.episode||a[3]||0)||0;
     return q;
   }
-  function isTv(){
-    try{
-      if(typeof g.__native_fetch==="function")return true;
-      var ua=s(g.navigator&&g.navigator.userAgent);
-      return /NuvioTV|Android TV/i.test(ua);
-    }catch(_e){return false}
-  }
+  TV_PREDICATE_PLACEHOLDER
   function headers(row,range){
     var out={},src=row&&row.headers&&typeof row.headers==="object"?row.headers:{};
     Object.keys(src).forEach(function(k){out[k]=s(src[k])});
@@ -63,14 +65,13 @@ SAFETY_WRAPPER = r"""
       var bh=row&&row.behaviorHints&&row.behaviorHints.proxyHeaders&&row.behaviorHints.proxyHeaders.request;
       if(bh&&typeof bh==="object")Object.keys(bh).forEach(function(k){if(!(k in out))out[k]=s(bh[k])});
     }catch(_e){}
+    if(!Object.keys(out).some(function(k){return k.toLowerCase()==="user-agent"}))out["User-Agent"]=DEFAULT_UA;
     if(range&&!Object.keys(out).some(function(k){return k.toLowerCase()==="range"}))out.Range="bytes=0-65535";
     if(!Object.keys(out).some(function(k){return k.toLowerCase()==="accept"}))out.Accept="application/vnd.apple.mpegurl,application/x-mpegURL,video/*,*/*";
     return out;
   }
   function timeoutSignal(ms){
-    try{
-      if(typeof AbortSignal!=="undefined"&&AbortSignal.timeout)return AbortSignal.timeout(ms);
-    }catch(_e){}
+    try{if(typeof AbortSignal!=="undefined"&&AbortSignal.timeout)return AbortSignal.timeout(ms)}catch(_e){}
     return void 0;
   }
   async function responseText(r){
@@ -117,9 +118,7 @@ SAFETY_WRAPPER = r"""
       if(!r.ok)return {state:"unknown",status:st,contentType:ct};
       var text=await responseText(r);
       return {state:"ok",status:st,url:s(r.url||url),contentType:ct,text:text};
-    }catch(e){
-      return {state:"unknown",reason:e&&e.name==="AbortError"?"timeout":"network_error"};
-    }
+    }catch(e){return {state:"unknown",reason:e&&e.name==="AbortError"?"timeout":"network_error"}}
   }
   function playlistKind(text){
     var body=s(text).replace(/^\uFEFF/,"");
@@ -168,15 +167,44 @@ SAFETY_WRAPPER = r"""
     if(/\.(?:mp4|mkv|webm)(?:[?#]|$)/i.test(u)||/mp4|matroska|webm|video\//.test(t))return "direct";
     return "other";
   }
+  function meaningful(v){var x=s(v);return x&&!/^(?:unknown|inconnue?|n\/?a|null|undefined|-+)$/i.test(x)}
+  function compactLanguage(row){
+    var l=s(row&&row.language);if(meaningful(l))return l;
+    var text=(s(row&&row.name)+" "+s(row&&row.title)).toUpperCase();
+    if(/\bDUAL(?:\s+AUDIO)?\b/.test(text))return "Dual Audio";
+    if(/\bVOSTFR\b/.test(text))return "VOSTFR";
+    if(/\bVFQ\b/.test(text))return "VFQ";
+    if(/\bVFF\b/.test(text))return "VFF";
+    if(/\bVF\b/.test(text))return "VF";
+    return "";
+  }
+  function ensurePlaybackContext(row){
+    if(!row||typeof row!=="object"||mediaKind(row)==="other")return row;
+    var out=Object.assign({},row),h={},has=false;
+    try{var src=row.headers&&typeof row.headers==="object"?row.headers:{};Object.keys(src).forEach(function(k){if(s(src[k])){h[k]=String(src[k]);has=true}})}catch(_e){}
+    if(!Object.keys(h).some(function(k){return k.toLowerCase()==="user-agent"})){h["User-Agent"]=DEFAULT_UA;has=true}
+    if(has)out.headers=h;
+    return out;
+  }
+  function tvDisplayCompat(row,tv){
+    if(!tv||!row||typeof row!=="object"||meaningful(row.size))return row;
+    var label=meaningful(row.description)?s(row.description):"";
+    if(!label){
+      var parts=[],lang=compactLanguage(row),kind=mediaKind(row);
+      if(lang)parts.push(lang);
+      if(kind==="hls")parts.push("HLS");else if(kind==="direct")parts.push("Direct");
+      if(!parts.length&&meaningful(row.quality))parts.push(s(row.quality));
+      label=parts.join(" • ");
+    }
+    if(!label)return row;
+    var out=Object.assign({},row);out.size=label;return out;
+  }
   async function expectedSeconds(q){
     if(!c.durationIdentity||!q||!/^\d+$/.test(q.tmdbId||""))return null;
-    var kind=(q.mediaType==="tv"||q.mediaType==="anime"||q.mediaType==="series")?"tv":"movie";
-    var url;
+    var kind=(q.mediaType==="tv"||q.mediaType==="anime"||q.mediaType==="series")?"tv":"movie",url;
     if(kind==="tv"&&q.season>0&&q.episode>0){
       url="https://api.themoviedb.org/3/tv/"+encodeURIComponent(q.tmdbId)+"/season/"+q.season+"/episode/"+q.episode+"?api_key="+c.tmdbKey;
-    }else{
-      url="https://api.themoviedb.org/3/"+kind+"/"+encodeURIComponent(q.tmdbId)+"?api_key="+c.tmdbKey;
-    }
+    }else url="https://api.themoviedb.org/3/"+kind+"/"+encodeURIComponent(q.tmdbId)+"?api_key="+c.tmdbKey;
     try{
       var r=await g.fetch(url,{headers:{Accept:"application/json"},signal:timeoutSignal(c.tmdbTimeoutMs)});
       if(!r||!r.ok)return null;
@@ -218,6 +246,7 @@ SAFETY_WRAPPER = r"""
       var head=x.list.slice(0,c.maxRows),tail=x.list.slice(c.maxRows);
       var checks=await Promise.all(head.map(function(row){return check(row,expected,tv)}));
       var kept=head.filter(function(_row,i){return checks[i]&&checks[i].keep}).concat(tail);
+      kept=kept.map(function(row){return tvDisplayCompat(ensurePlaybackContext(row),tv)});
       return rebuild(v,x,kept);
     };
     wrap.__nuvioRuntimeMediaSafetyV1=true;o[k]=wrap;return true;
@@ -232,6 +261,17 @@ SAFETY_WRAPPER = r"""
   }catch(_e){}
 })(typeof globalThis!=="undefined"?globalThis:this,CONFIG_PLACEHOLDER);
 """
+
+
+def _strip_existing_safety_wrapper(text: str) -> str:
+    old = text.find(f"/* {SAFETY_MARKER}:")
+    if old < 0:
+        return text
+    call = text.find('})(typeof globalThis!=="undefined"?globalThis:this,', old)
+    end = text.find(");", call) if call >= 0 else -1
+    if call < 0 or end < 0:
+        raise ValueError("unterminated global runtime media safety wrapper")
+    return (text[:old] + text[end + 2 :]).rstrip()
 
 
 def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> str:
@@ -255,9 +295,6 @@ def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> st
         if changed:
             output = output.rstrip() + f"\n/* {AUDIO_MARKER} */\n"
 
-    if SAFETY_MARKER in output:
-        return output
-
     cfg = {
         "providerId": provider_id,
         "timeoutMs": 6500,
@@ -268,11 +305,17 @@ def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> st
         "durationIdentity": provider_id == "netmirror",
         "strictPlayback": provider_id == "moviebox",
         "tmdbKey": "1865f43a0549ca50d341dd9ab8b29f49",
-        "implementationRevision": "field-safety-v2",
+        "implementationRevision": "platform-playback-context-v3",
     }
     payload = json.dumps(cfg, separators=(",", ":"))
     marker = f"{SAFETY_MARKER}:{hashlib.sha256(payload.encode()).hexdigest()[:12]}"
-    wrapper = SAFETY_WRAPPER.replace("SAFETY_MARKER_PLACEHOLDER", marker).replace(
-        "CONFIG_PLACEHOLDER", payload
+    if f"/* {marker} */" in output:
+        return output
+
+    output = _strip_existing_safety_wrapper(output)
+    wrapper = (
+        SAFETY_WRAPPER.replace("SAFETY_MARKER_PLACEHOLDER", marker)
+        .replace("TV_PREDICATE_PLACEHOLDER", TV_PREDICATE)
+        .replace("CONFIG_PLACEHOLDER", payload)
     )
     return output.rstrip() + "\n" + wrapper.lstrip()
