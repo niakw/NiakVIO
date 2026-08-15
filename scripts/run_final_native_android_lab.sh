@@ -5,6 +5,12 @@ MOBILE_ROOT="${GITHUB_WORKSPACE}/nuvio-mobile"
 TV_ROOT="${GITHUB_WORKSPACE}/nuvio-tv"
 MOBILE_LOG="${GITHUB_WORKSPACE}/mobile-final-native-results.log"
 TV_LOG="${GITHUB_WORKSPACE}/tv-final-native-results.log"
+TV_REPORT_DIR="${TV_ROOT}/app/build/reports/androidTests/niakvio"
+TV_GRADLE_LOG="${TV_REPORT_DIR}/tv-gradle.log"
+TV_ADB_DEVICES_LOG="${TV_REPORT_DIR}/tv-adb-devices.log"
+TV_INSTRUMENTATION_LOG="${TV_REPORT_DIR}/tv-instrumentation.log"
+TV_FULL_LOGCAT="${TV_REPORT_DIR}/tv-logcat-full.log"
+TV_TEST_CLASS="com.nuvio.tv.core.plugin.NiakvioFinalNativeTvTest"
 
 MOBILE_STATUS=0
 TV_STATUS=0
@@ -36,13 +42,24 @@ adb logcat -d -s NiakvioRealLab:I '*:S' > "$MOBILE_LOG" || true
 cat "$MOBILE_LOG" || true
 
 adb logcat -c || true
+mkdir -p "$TV_REPORT_DIR"
+adb devices -l > "$TV_ADB_DEVICES_LOG" 2>&1 || true
+adb shell pm list instrumentation > "$TV_INSTRUMENTATION_LOG" 2>&1 || true
 
 if [[ ! -x "$TV_ROOT/gradlew" ]]; then
   echo "NuvioTV gradlew missing: $TV_ROOT/gradlew" >&2
   TV_STATUS=98
 else
-  "$TV_ROOT/gradlew" -p "$TV_ROOT" :app:connectedFullDebugAndroidTest --no-daemon --console=plain || TV_STATUS=$?
+  echo "Running only Niakvio TV proof class: $TV_TEST_CLASS"
+  "$TV_ROOT/gradlew" -p "$TV_ROOT" :app:connectedFullDebugAndroidTest \
+    "-Pandroid.testInstrumentationRunnerArguments.class=$TV_TEST_CLASS" \
+    --no-daemon --console=plain 2>&1 | tee "$TV_GRADLE_LOG"
+  TV_STATUS=${PIPESTATUS[0]}
 fi
+
+adb devices -l >> "$TV_ADB_DEVICES_LOG" 2>&1 || true
+adb shell pm list instrumentation >> "$TV_INSTRUMENTATION_LOG" 2>&1 || true
+adb logcat -d > "$TV_FULL_LOGCAT" 2>&1 || true
 
 echo "===== EXACT TV NATIVE RESULTS ====="
 adb logcat -d -s NiakvioRealLab:I '*:S' > "$TV_LOG" || true
@@ -88,6 +105,11 @@ if [[ -n "${GITHUB_STEP_SUMMARY:-}" ]]; then
     echo "### Last TV native observations"
     echo '```text'
     tail -n 80 "$TV_LOG" 2>/dev/null || true
+    echo '```'
+    echo
+    echo "### Last TV Gradle observations"
+    echo '```text'
+    tail -n 80 "$TV_GRADLE_LOG" 2>/dev/null || true
     echo '```'
     echo
     echo "### Last Mobile native observations"
