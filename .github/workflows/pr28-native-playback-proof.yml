@@ -92,11 +92,6 @@ jobs:
           python niakvio/scripts/prepare_native_client_validation.py android --workspace "$GITHUB_WORKSPACE"
           python niakvio/scripts/harden_nuvio_mobile_device_test.py "$GITHUB_WORKSPACE/nuvio-mobile"
 
-      - name: Install Android client compile SDKs
-        run: |
-          yes | sdkmanager --licenses > /dev/null || true
-          sdkmanager --install 'platforms;android-36' 'platforms;android-37' 'build-tools;37.0.0'
-
       - name: Enable KVM
         run: |
           if [ -e /dev/kvm ]; then sudo chmod 666 /dev/kvm || true; fi
@@ -113,6 +108,10 @@ jobs:
           emulator-boot-timeout: 600
           script: |
             set -eu
+            SDKMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+            test -x "$SDKMANAGER"
+            yes | "$SDKMANAGER" --licenses > /dev/null || true
+            "$SDKMANAGER" --install 'platforms;android-37' 'build-tools;37.0.0'
             adb logcat -c
             TASKS=$(./nuvio-mobile/gradlew -p ./nuvio-mobile :composeApp:tasks --all -Pnuvio.android.distribution=full --console=plain)
             TASK=$(printf '%s\n' "$TASKS" | awk 'tolower($1) ~ /connected.*device.*test/ {print $1; exit}')
@@ -160,11 +159,6 @@ jobs:
           python niakvio/scripts/prepare_native_client_validation.py android --workspace "$GITHUB_WORKSPACE"
           python niakvio/scripts/harden_nuvio_mobile_device_test.py "$GITHUB_WORKSPACE/nuvio-mobile"
 
-      - name: Install Android client compile SDKs
-        run: |
-          yes | sdkmanager --licenses > /dev/null || true
-          sdkmanager --install 'platforms;android-36' 'platforms;android-37' 'build-tools;37.0.0'
-
       - name: Enable KVM
         run: |
           if [ -e /dev/kvm ]; then sudo chmod 666 /dev/kvm || true; fi
@@ -181,6 +175,10 @@ jobs:
           emulator-boot-timeout: 600
           script: |
             set -eu
+            SDKMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+            test -x "$SDKMANAGER"
+            yes | "$SDKMANAGER" --licenses > /dev/null || true
+            "$SDKMANAGER" --install 'platforms;android-36' 'build-tools;36.0.0'
             adb logcat -c
             TV_REPORT_DIR="$GITHUB_WORKSPACE/nuvio-tv/app/build/reports/androidTests/niakvio"
             TV_GRADLE_LOG="$TV_REPORT_DIR/tv-gradle.log"
