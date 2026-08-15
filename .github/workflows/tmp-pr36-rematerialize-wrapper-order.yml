@@ -46,32 +46,11 @@ jobs:
           from pathlib import Path
           path = Path('scripts/provider_patches/hls_runtime_integrity_v1.py')
           text = path.read_text(encoding='utf-8')
-          old = '''    if final_layers:
-              insertion = min(final_layers)
-              return (
-                  text[:insertion].rstrip()
-                  + "\\n"
-                  + wrapper.rstrip()
-                  + "\\n"
-                  + text[insertion:].lstrip()
-              )
-          return text.rstrip() + "\\n" + wrapper
-          '''
-          new = '''    if final_layers:
-              insertion = min(final_layers)
-              result = (
-                  text[:insertion].rstrip()
-                  + "\\n"
-                  + wrapper.rstrip()
-                  + "\\n"
-                  + text[insertion:].lstrip()
-              )
-              return result.rstrip() + "\\n"
-          return text.rstrip() + "\\n" + wrapper.rstrip() + "\\n"
-          '''
-          if old not in text:
-              raise SystemExit('canonical HLS insertion block not found')
-          path.write_text(text.replace(old, new, 1), encoding='utf-8')
+          needle = '            + text[insertion:].lstrip()\n        )\n    return text.rstrip() + "\\n" + wrapper\n'
+          replacement = '            + text[insertion:].lstrip()\n        ).rstrip() + "\\n"\n    return text.rstrip() + "\\n" + wrapper.rstrip() + "\\n"\n'
+          if needle not in text:
+              raise SystemExit('canonical HLS EOF insertion point not found')
+          path.write_text(text.replace(needle, replacement, 1), encoding='utf-8')
           PY
           python -m py_compile scripts/apply_provider_overrides.py
           python -m py_compile scripts/provider_patches/global_media_enrichment_v1.py
