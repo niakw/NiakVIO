@@ -8,6 +8,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = ROOT / "manifest.json"
 OVERRIDES = ROOT / "provider-overrides.json"
+TARGET_ORDER_PATCH = "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
 RUNTIME_PATCH = "scripts/provider_patches/runtime_capability_media_safety_v4.py"
 
 
@@ -50,7 +51,8 @@ def main() -> int:
         if not isinstance(scripts, list):
             raise ValueError(f"provider_patches.{provider_id}.patch_scripts must be an array")
         original = list(scripts)
-        scripts = [script for script in scripts if script != RUNTIME_PATCH]
+        scripts = [script for script in scripts if script not in {TARGET_ORDER_PATCH, RUNTIME_PATCH}]
+        scripts.append(TARGET_ORDER_PATCH)
         scripts.append(RUNTIME_PATCH)
         if scripts != original:
             row["patch_scripts"] = scripts
@@ -59,11 +61,12 @@ def main() -> int:
     config["runtime_capability_media_safety"] = {
         "version": 4,
         "scope": "all_hls_capable_providers",
+        "target_order_patch": TARGET_ORDER_PATCH,
         "final_patch": RUNTIME_PATCH,
         "platforms": {
             "desktop_native": "native_quickjs_static_validation_without_extra_media_fetch",
             "mobile_android": "native_quickjs_static_validation_without_extra_media_fetch",
-            "tv_android": "native_quickjs_static_validation_without_extra_media_fetch_plus_existing_tv_identity_guards",
+            "tv_android": "prioritized_target_media_traversal_on_synchronous_native_fetch_plus_existing_tv_identity_guards",
             "non_native_web_like": "bounded_media_preflight_when_fetch_is_abortable",
         },
         "native_detection": "presence_of___native_fetch_host_bridge",
@@ -73,7 +76,7 @@ def main() -> int:
             "obvious_html_or_php_page_url",
             "malformed_nested_url",
         ],
-        "wrapper_upgrade": "final_patch_strips_any_previous_global_media_safety_wrapper_before_install",
+        "wrapper_upgrade": "target traversal ordering precedes final safety wrapper; final patch strips any previous global media safety wrapper before install",
         "targets": sorted(set(targets)),
     }
     dump(OVERRIDES, config)
