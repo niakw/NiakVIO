@@ -12,9 +12,9 @@ permissions:
 jobs:
   audit:
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 20
     env:
-      NUVIO_CATALOGUE_AUDIT_WORKERS: "4"
+      NUVIO_CATALOGUE_AUDIT_WORKERS: "3"
       NUVIO_CATALOGUE_AUDIT_TIMEOUT: "90"
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
@@ -24,11 +24,27 @@ jobs:
           package-manager-cache: false
       - name: Install pinned dependencies
         run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Restrict report-only audit to known offenders
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          wanted={'1shows','allanime','sekai'}
+          for rel in ('manifest.json','vf/manifest.json'):
+              p=Path(rel)
+              d=json.loads(p.read_text())
+              d['scrapers']=[r for r in d.get('scrapers',[]) if str(r.get('id','')).casefold() in wanted]
+              p.write_text(json.dumps(d,ensure_ascii=False,indent=2)+'\n')
+          PY
       - name: Run official catalogue identity/media audit
+        id: audit
+        continue-on-error: true
         run: python3 scripts/audit_catalogue_identity_media.py
       - name: Print conclusive safety failures
         shell: bash
         run: |
+          set -euo pipefail
           python3 - <<'PY'
           import json
           from pathlib import Path
@@ -39,8 +55,11 @@ jobs:
               if not isinstance(r,dict): continue
               if int(r.get('identity_contradiction_count') or 0)>0 or r.get('playable_identity_false_positive') is True or int(r.get('hls_variant_failures') or 0)>0 or int(r.get('hls_audio_failures') or 0)>0:
                   bad.append({k:r.get(k) for k in ('provider_id','fixture','status','playable_stream_count','identity_contradiction_count','playable_identity_false_positive','hls_variant_failures','hls_audio_failures')})
+          ids=sorted({str(x.get('provider_id') or '').casefold() for x in bad if x.get('provider_id')})
           print('FIELD_CONCLUSIVE_CATALOGUE_FAILURES='+json.dumps(bad,ensure_ascii=False,sort_keys=True))
-          print('FIELD_CONCLUSIVE_PROVIDER_IDS='+','.join(sorted({str(x.get('provider_id') or '').casefold() for x in bad if x.get('provider_id')})))
+          print('FIELD_CONCLUSIVE_PROVIDER_IDS='+','.join(ids))
+          if not bad:
+              raise SystemExit('FAIL: official audit did not reproduce any conclusive offender')
           PY
       - name: Upload audit
         if: always()
