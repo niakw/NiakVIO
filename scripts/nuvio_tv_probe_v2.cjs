@@ -3,6 +3,7 @@
 
 const path = require('node:path');
 const { webcrypto } = require('node:crypto');
+const { streamIdentity } = require('./nuvio_client_lab.cjs');
 
 const ASSET_EXT = /\.(?:woff2?|ttf|otf|eot|css|js|mjs|map|png|jpe?g|gif|svg|ico|webmanifest|json|xml|vtt|srt)(?:[?#]|$)/i;
 const REJECT_HOSTS = /(?:^|\.)(?:twitter\.com|x\.com|twimg\.com|google\.com|googleusercontent\.com|gitlab\.com|github\.com|facebook\.com|instagram\.com)$/i;
@@ -97,9 +98,20 @@ function hlsGraph(text, baseUrl) {
   const variants = [];
   const externalAudio = [];
   let audioGroups = 0;
+  let durationSeconds = 0;
+  let durationEntryCount = 0;
+  let isVod = false;
   for (let index = 0; index < lines.length; index += 1) {
     const line = lines[index];
-    if (/^#EXT-X-STREAM-INF\s*:/i.test(line)) {
+    if (/^#EXTINF\s*:/i.test(line)) {
+      const duration = Number(line.slice(line.indexOf(':') + 1).split(',')[0]);
+      if (Number.isFinite(duration) && duration >= 0) {
+        durationSeconds += duration;
+        durationEntryCount += 1;
+      }
+    } else if (/^#EXT-X-ENDLIST\s*$/i.test(line)) {
+      isVod = true;
+    } else if (/^#EXT-X-STREAM-INF\s*:/i.test(line)) {
       for (let next = index + 1; next < lines.length; next += 1) {
         const candidate = lines[next];
         if (!candidate) continue;
@@ -118,7 +130,7 @@ function hlsGraph(text, baseUrl) {
       }
     }
   }
-  return { variants, externalAudio, audioGroups };
+  return { variants, externalAudio, audioGroups, durationSeconds: durationEntryCount ? durationSeconds : null, isVod };
 }
 
 async function inspectHlsChild(url, headers) {
@@ -128,48 +140,17 @@ async function inspectHlsChild(url, headers) {
     const text = (await response.text()).replace(/^\uFEFF/, '').trimStart();
     if (!text.startsWith('#EXTM3U')) return { playable: false, status: response.status, error: 'child_not_extm3u' };
     const hasMedia = /#EXTINF\s*:/i.test(text) || /#EXT-X-PART\s*:/i.test(text) || /#EXT-X-STREAM-INF\s*:/i.test(text) || /#EXT-X-MAP\s*:/i.test(text);
-    return { playable: hasMedia, status: response.status, error: hasMedia ? null : 'child_header_only' };
+    const graph = hlsGraph(text, response.url || url);
+    return {
+      playable: hasMedia,
+      status: response.status,
+      error: hasMedia ? null : 'child_header_only',
+      media_duration_seconds: graph.durationSeconds,
+      is_vod: graph.isVod,
+    };
   } catch (error) {
     return { playable: false, status: null, error: `${error?.name || 'Error'}: ${error?.message || error}` };
   }
-}
-
-function normIdentity(value) {
-  try { return String(value ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim(); }
-  catch { return String(value ?? '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim(); }
-}
-
-function identityTokens(value) {
-  const noise = new Set(['the','a','an','le','la','les','un','une','de','des','du','of','and','et','film','movie','stream','streaming','watch','play','server','serveur','source','mirror','direct','download','telecharger','vcloud','hubcloud','file','video','quality','web','dl','webrip','webdl','bluray','blu','ray','remux','hdr','dv','dolby','atmos','aac','ac3','eac3','ddp','x264','x265','h264','h265','hevc','av1','multi','vf','vff','vostfr','vo','french','english','truefrench','hd','uhd','fhd','sd']);
-  return normIdentity(value).split(/\s+/).filter((token) => token.length > 1 && !noise.has(token) && !/^\d{3,4}p$/.test(token) && !/^\d{4}$/.test(token));
-}
-
-function streamIdentity(row, fixture) {
-  const aliases = [fixture?.title, fixture?.label, ...(Array.isArray(fixture?.aliases) ? fixture.aliases : [])].filter(Boolean);
-  const expected = aliases.map(normIdentity).filter(Boolean);
-  const expectedTokens = new Set(aliases.flatMap(identityTokens));
-  const label = String(row?.title || row?.description || row?.filename || row?.name || '').trim();
-  const normalized = normIdentity(label);
-  const mediaType = String(fixture?.mediaType || fixture?.type || 'movie').toLowerCase();
-  const wantedSeason = Number(fixture?.season || 0);
-  const wantedEpisode = Number(fixture?.episode || 0);
-  const seasonEpisode = /(?:^|\D)s(?:eason|aison)?\s*0*(\d{1,3})\s*[-_. ]*e(?:p(?:isode)?)?\s*0*(\d{1,4})(?:\D|$)/i.exec(label)
-    || /(?:season|saison)\s*0*(\d{1,3})[^\d]{0,12}(?:episode|ep)\s*0*(\d{1,4})/i.exec(label);
-  if (mediaType === 'movie' && seasonEpisode) return { status: 'contradiction', reason: 'movie_row_is_episode' };
-  if (seasonEpisode && (mediaType === 'tv' || mediaType === 'anime')) {
-    const season = Number(seasonEpisode[1] || 0), episode = Number(seasonEpisode[2] || 0);
-    if ((wantedSeason && season && season !== wantedSeason) || (wantedEpisode && episode && episode !== wantedEpisode)) {
-      return { status: 'contradiction', reason: 'wrong_season_episode' };
-    }
-  }
-  if (normalized && expected.some((alias) => normalized.includes(alias))) return { status: 'match', reason: 'expected_title_alias' };
-  const rowTokens = identityTokens(label);
-  if (rowTokens.length >= 2 && expectedTokens.size) {
-    const overlap = rowTokens.filter((token) => expectedTokens.has(token));
-    if (overlap.length === 0) return { status: 'contradiction', reason: 'strong_title_mismatch' };
-  }
-  if (seasonEpisode && (mediaType === 'tv' || mediaType === 'anime')) return { status: 'match', reason: 'season_episode_match' };
-  return { status: 'unknown', reason: 'insufficient_identity_metadata' };
 }
 
 async function inspectStream(row) {
@@ -188,6 +169,7 @@ async function inspectStream(row) {
     hls_external_audio_count: 0,
     hls_variant_playable: null,
     hls_external_audio_playable: null,
+    media_duration_seconds: null,
     error: null,
   };
   if (urlRejected(url)) { result.error = 'rejected_asset_or_demo'; return result; }
@@ -207,6 +189,7 @@ async function inspectStream(row) {
     if (result.starts_extm3u) {
       result.kind = 'hls';
       const graph = hlsGraph(text, response.url || url);
+      result.media_duration_seconds = graph.durationSeconds;
       result.hls_master = graph.variants.length > 0 || /#EXT-X-STREAM-INF\s*:/i.test(text);
       result.hls_variant_count = graph.variants.length;
       result.hls_audio_group_count = graph.audioGroups;
@@ -223,6 +206,9 @@ async function inspectStream(row) {
         }
         const variant = await inspectHlsChild(graph.variants[0], headers);
         result.hls_variant_playable = variant.playable;
+        if (Number.isFinite(variant.media_duration_seconds) && variant.media_duration_seconds > 0) {
+          result.media_duration_seconds = variant.media_duration_seconds;
+        }
         if (!variant.playable) {
           result.error = `hls_variant_${variant.error || 'invalid'}`;
           return result;
@@ -272,21 +258,48 @@ async function main() {
   }
   const rows = rowsFrom(raw).filter((row) => row && typeof row === 'object' && row.url && !urlRejected(row.url)).slice(0, 16);
   const media = await Promise.all(rows.map((row) => inspectStream(row)));
-  const inspected = rows.map((row, index) => ({ row, media: media[index], identity: streamIdentity(row, fixture) }));
+  const inspected = rows.map((row, index) => {
+    const metadataIdentity = streamIdentity(row, fixture);
+    const mediaResult = media[index];
+    const expectedMinutes = Number(fixture?.expectedDurationMinutes || 0);
+    const expectedSeconds = expectedMinutes > 0 ? expectedMinutes * 60 : null;
+    const measuredSeconds = Number(mediaResult?.media_duration_seconds || 0);
+    let durationIdentity = { status: 'unknown', reason: 'duration_unavailable', ratio: null };
+    if (expectedSeconds && Number.isFinite(measuredSeconds) && measuredSeconds > 0) {
+      const ratio = measuredSeconds / expectedSeconds;
+      durationIdentity = (ratio < 0.55 || ratio > 1.8)
+        ? { status: 'contradiction', reason: 'fixture_duration_mismatch', ratio }
+        : { status: 'match', reason: 'fixture_duration_match', ratio };
+    }
+    let identity = metadataIdentity;
+    if (metadataIdentity.status !== 'contradiction' && durationIdentity.status === 'contradiction') {
+      identity = durationIdentity;
+    } else if (metadataIdentity.status === 'unknown' && durationIdentity.status === 'match') {
+      identity = durationIdentity;
+    }
+    return { row, media: mediaResult, identity, metadata_identity: metadataIdentity, duration_identity: durationIdentity };
+  });
   const playable = inspected.filter((item) => item.media.playable);
   const identityContradictions = playable.filter((item) => item.identity.status === 'contradiction');
   const identityVerified = playable.filter((item) => item.identity.status === 'match');
+  const identityUnknown = playable.filter((item) => item.identity.status === 'unknown');
+  const strictComplete = playable.length > 0
+    && identityVerified.length === playable.length
+    && identityContradictions.length === 0
+    && identityUnknown.length === 0;
   process.stdout.write(JSON.stringify({
-    ok: !runtimeError && playable.length > 0 && identityContradictions.length === 0,
+    ok: !runtimeError && strictComplete,
     duration_ms: Date.now() - started,
     runtime_error: runtimeError,
     raw_stream_count: rows.length,
     playable_stream_count: playable.length,
+    content_verified_count: identityVerified.length,
     identity_verified_count: identityVerified.length,
+    identity_unverified_count: identityUnknown.length,
     identity_contradiction_count: identityContradictions.length,
     streams: inspected,
   }) + '\n');
-  process.exitCode = playable.length && identityContradictions.length === 0 ? 0 : 2;
+  process.exitCode = !runtimeError && strictComplete ? 0 : 2;
 }
 
 main().catch((error) => {

@@ -140,11 +140,11 @@ def update_metadata(
             "checked_at": now,
             "check_mode": "static-runtime-contract-and-regression-suite",
             "check_status": "healthy",
-            "activation_eligible": True,
-            "strict_activation_eligible": bool(current.get("strict_activation_eligible", True)),
-            "runtime_evidence_eligible": True,
+            "activation_eligible": bool(current.get("activation_eligible", False)),
+            "strict_activation_eligible": bool(current.get("strict_activation_eligible", False)),
+            "runtime_evidence_eligible": bool(current.get("runtime_evidence_eligible", False)),
             "activation_mode": "desktop_runtime_compat_v1",
-            "activation_blockers": [],
+            "activation_blockers": list(current.get("activation_blockers") or []),
         }
     )
     rows[provider_id] = current
@@ -236,7 +236,7 @@ def main() -> int:
         row["filename"] = filename
         if row_changed:
             row["version"] = bump(row.get("version"))
-        row["enabled"] = True
+        row["enabled"] = row.get("enabled") is True
         if provider_id == "streamzo":
             # Only a globally audited direct-media lineage may disable this hint.
             row["supportsExternalPlayer"] = "--nuvio-tv-global--" not in source_filename

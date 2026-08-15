@@ -22,6 +22,7 @@ FIXTURE = {
     "year": 2014,
     "label": "Interstellar (2014)",
     "category": "movie",
+    "expectedDurationMinutes": 169,
 }
 TARGETS: dict[str, dict[str, Any]] = {
     "goated": {"provider_name": "Goated", "max_candidates": 10, "timeout_ms": 12000},
@@ -98,7 +99,7 @@ def probe(candidate: Path) -> dict[str, Any]:
             parsed = value
             break
     return {
-        "ok": bool(parsed and parsed.get("ok") and int(parsed.get("playable_stream_count") or 0) > 0),
+        "ok": bool(parsed and parsed.get("ok") and int(parsed.get("content_verified_count") or 0) > 0 and int(parsed.get("content_verified_count") or 0) == int(parsed.get("playable_stream_count") or 0) and int(parsed.get("identity_contradiction_count") or 0) == 0),
         "returncode": process.returncode,
         "result": parsed,
         "stdout_tail": process.stdout[-5000:],
@@ -147,11 +148,11 @@ def provenance_update(
             "checked_at": now,
             "check_mode": "nuvio-tv-four-args-binary-strict",
             "check_status": "healthy",
-            "activation_eligible": True,
-            "strict_activation_eligible": True,
-            "runtime_evidence_eligible": True,
+            "activation_eligible": bool(row.get("activation_eligible", False)),
+            "strict_activation_eligible": bool(row.get("strict_activation_eligible", False)),
+            "runtime_evidence_eligible": bool(row.get("runtime_evidence_eligible", False)),
             "activation_mode": "nuvio_tv_interstellar_binary_proof",
-            "activation_blockers": [],
+            "activation_blockers": list(row.get("activation_blockers") or []),
         }
     )
     rows[provider_id] = row
@@ -210,7 +211,7 @@ def main() -> int:
         old_sha = hashlib.sha256(source.encode("utf-8")).hexdigest()
         row["filename"] = filename
         row["version"] = bump(row.get("version"))
-        row["enabled"] = True
+        row["enabled"] = row.get("enabled") is True
         row["supportsExternalPlayer"] = False
         sync_vf(vf_rows, row)
 
