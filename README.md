@@ -37,6 +37,8 @@ Les URL restent stables. Les bundles, versions, hashes, domaines, règles de com
 
 Niakvio n'est plus une collection de providers corrigés au cas par cas. Le cœur du projet est un **moteur partagé**. Les Labs détectent les défaillances réelles ; les corrections génériques sont ensuite intégrées au moteur commun, testées contre les providers et enfin vérifiées sur les runtimes clients.
 
+La référence détaillée de cette architecture et du moteur provider-agnostic est documentée dans [`ARCHITECTURE.md`](ARCHITECTURE.md).
+
 ```text
 Sources / upstreams
        │
@@ -136,15 +138,27 @@ La publication est fail-closed : manifests, bundles, versions, provenance et emp
 
 Les dépôts clients officiels de référence et leurs commits épinglés sont suivis via [`automation/nuvio-client-upstreams.json`](automation/nuvio-client-upstreams.json).
 
-| Client | Référence | Validation |
+| Client | Dépôt officiel | Validation |
 |---|---|---|
-| Nuvio Mobile | `NuvioMedia/NuvioMobile` | runtime officiel sur AVD téléphone |
-| Nuvio Desktop | `NuvioMedia/NuvioDesktop` | runtime/tests Desktop officiels |
-| NuvioTV | `NuvioMedia/NuvioTV` | runtime officiel sur AVD Android TV |
+| Nuvio Mobile | [`NuvioMedia/NuvioMobile`](https://github.com/NuvioMedia/NuvioMobile) | runtime officiel sur AVD téléphone |
+| Nuvio Desktop | [`NuvioMedia/NuvioDesktop`](https://github.com/NuvioMedia/NuvioDesktop) | runtime/tests Desktop officiels |
+| NuvioTV | [`NuvioMedia/NuvioTV`](https://github.com/NuvioMedia/NuvioTV) | runtime officiel sur AVD Android TV |
 
 [`final-native-client-validation-v2.yml`](.github/workflows/final-native-client-validation-v2.yml) sépare volontairement les trois preuves. Une réussite Desktop ne vaut pas preuve TV et un émulateur téléphone ne sert pas de faux substitut Android TV.
 
-Pour le sentinel StreamZo, la validation permanente exige un résultat réel, `count > 0`, un flux `type=hls` et une résolution média effective.
+Pour le sentinel StreamZo, la validation permanente exige un résultat réel, `count > 0`, un flux `type=hls` et une résolution média effective. StreamZo est ici un provider sentinel de régression, pas une technologie constitutive de Niakvio.
+
+---
+
+## Sources upstream des providers
+
+Niakvio agrège, compare, répare et republie des providers issus de plusieurs projets communautaires. Les trois dépôts amont principaux utilisés pour constituer les listes de providers restent explicitement référencés :
+
+- [`Gowaru/gowaru-nuvio-providers`](https://github.com/Gowaru/gowaru-nuvio-providers) — providers notamment francophones ;
+- [`yoruix/nuvio-providers`](https://github.com/yoruix/nuvio-providers) — providers, structure source et documentation développeur ;
+- [`NuvioPlugin/All-in-One-Nuvio`](https://github.com/NuvioPlugin/All-in-One-Nuvio) — collection internationale de providers.
+
+Les auteurs, licences et responsabilités des projets amont restent détaillés dans [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md). La provenance effective de chaque bundle publié est suivie dans [`PROVENANCE.json`](PROVENANCE.json).
 
 ---
 
