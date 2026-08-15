@@ -14,8 +14,11 @@ TV_GRADLE_LOG="$TV_REPORT_DIR/tv-gradle.log"
 RESULT="$GITHUB_WORKSPACE/tv-final-native-results.log"
 mkdir -p "$TV_REPORT_DIR"
 
+# Android TV emulator images may report ro.build.characteristics=emulator.
+# Validate the platform by Android's declared TV/Leanback features instead.
 adb shell getprop ro.build.characteristics | tee "$TV_REPORT_DIR/tv-build-characteristics.log"
-grep -Eq 'tv|television' "$TV_REPORT_DIR/tv-build-characteristics.log"
+adb shell pm list features | tee "$TV_REPORT_DIR/tv-platform-features.log"
+grep -Eq 'feature:android\.software\.leanback|feature:android\.hardware\.type\.television' "$TV_REPORT_DIR/tv-platform-features.log"
 adb devices -l | tee "$TV_REPORT_DIR/tv-adb-devices.log"
 
 set +e
