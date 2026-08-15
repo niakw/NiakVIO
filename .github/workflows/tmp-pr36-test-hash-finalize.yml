@@ -1,0 +1,52 @@
+name: Temporary PR36 test hash finalize
+
+on:
+  push:
+    branches:
+      - fix/main-native-proof-and-isolation
+    paths:
+      - ".github/triggers/tmp-pr36-test-hash-finalize"
+
+permissions:
+  contents: write
+
+jobs:
+  finalize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: fix/main-native-proof-and-isolation
+          fetch-depth: 0
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: "3.12"
+      - name: Remove temporary finalizer from final tree
+        run: |
+          rm -f .github/workflows/tmp-pr36-test-hash-finalize.yml
+          rm -f .github/triggers/tmp-pr36-test-hash-finalize
+      - name: Validate isolation test and zero drift
+        run: |
+          python tests/provider_specific_adapters_test.py
+          python scripts/reapply_published_overrides.py --check
+      - name: Regenerate and validate final hashes
+        run: |
+          python scripts/generate_release_hashes.py
+          python scripts/validate_release_integrity.py
+      - name: Commit clean final hashes
+        run: |
+          git config user.name 'niakvio-ci'
+          git config user.email 'actions@users.noreply.github.com'
+          git add -A .github/workflows/tmp-pr36-test-hash-finalize.yml .github/triggers/tmp-pr36-test-hash-finalize
+          git add FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json
+          git commit -m 'chore: finalize portable isolation test hashes'
+          git push origin HEAD:fix/main-native-proof-and-isolation
+      - name: Verify pushed branch
+        run: |
+          git fetch origin fix/main-native-proof-and-isolation
+          git reset --hard origin/fix/main-native-proof-and-isolation
+          python tests/provider_specific_adapters_test.py
+          python scripts/reapply_published_overrides.py --check
+          python scripts/validate_release_integrity.py
+          test -z "$(git status --porcelain)"
