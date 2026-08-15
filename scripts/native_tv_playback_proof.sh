@@ -29,7 +29,24 @@ cleanup_logcat() {
 }
 trap cleanup_logcat EXIT
 
+tv_streamzo_proof_present() {
+  local combined
+  combined=$(mktemp)
+  {
+    cat "$TV_LOGCAT" 2>/dev/null || true
+    grep -E 'FIELD_TV_' "$TV_GRADLE_LOG" 2>/dev/null || true
+  } > "$combined"
+  if grep -Eq 'FIELD_TV_NATIVE provider=streamzo .* count=[1-9][0-9]*' "$combined" \
+    && grep -Eq 'FIELD_TV_NATIVE_ROW provider=streamzo .* type=hls([[:space:]]|$)' "$combined"; then
+    rm -f "$combined"
+    return 0
+  fi
+  rm -f "$combined"
+  return 1
+}
+
 TV_STATUS=1
+TV_PROOF_OK=0
 for ATTEMPT in 1 2; do
   echo "FIELD_TV_PROOF_ATTEMPT attempt=$ATTEMPT max=2" | tee -a "$TV_GRADLE_LOG"
   set +e
@@ -38,11 +55,19 @@ for ATTEMPT in 1 2; do
     --no-daemon --console=plain 2>&1 | tee -a "$TV_GRADLE_LOG"
   TV_STATUS=${PIPESTATUS[0]}
   set -e
-  if [[ "$TV_STATUS" -eq 0 ]]; then
+
+  sleep 1
+  if [[ "$TV_STATUS" -eq 0 ]] && tv_streamzo_proof_present; then
+    TV_PROOF_OK=1
     break
   fi
+
   if [[ "$ATTEMPT" -lt 2 ]]; then
-    echo "FIELD_TV_PROOF_RETRY reason=instrumentation_failure status=$TV_STATUS"
+    if [[ "$TV_STATUS" -ne 0 ]]; then
+      echo "FIELD_TV_PROOF_RETRY reason=instrumentation_failure status=$TV_STATUS" | tee -a "$TV_GRADLE_LOG"
+    else
+      echo "FIELD_TV_PROOF_RETRY reason=streamzo_proof_missing status=0" | tee -a "$TV_GRADLE_LOG"
+    fi
     sleep 3
   fi
 done
@@ -59,6 +84,10 @@ cat "$RESULT"
 
 if [[ "$TV_STATUS" -ne 0 ]]; then
   exit "$TV_STATUS"
+fi
+if [[ "$TV_PROOF_OK" -ne 1 ]]; then
+  echo "StreamZo TV native proof missing after 2 bounded attempts" >&2
+  exit 1
 fi
 
 grep -Eq 'FIELD_TV_NATIVE provider=streamzo .* count=[1-9][0-9]*' "$RESULT"
