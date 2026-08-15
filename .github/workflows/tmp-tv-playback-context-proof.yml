@@ -1,0 +1,34 @@
+name: Temporary TV playback context proof
+
+on:
+  push:
+    branches:
+      - fix/tv-playback-context-runtime
+
+permissions:
+  contents: read
+
+jobs:
+  proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Target-media V4/V5 profile regression
+        run: python3 tests/streamzo_target_media_profile_test.py
+      - name: TV site-player-media playback context
+        run: python3 tests/nuvio_tv_target_media_playback_context_test.py
+      - name: Cross-platform playback context compatibility
+        run: python3 tests/playback_context_compat_test.py
+      - name: Runtime media safety regression
+        run: python3 tests/runtime_media_safety_guard_test.py
+      - name: TV provider hardening regression
+        run: python3 tests/tv_provider_hardening_test.py
+      - name: Durable override reapply
+        run: python3 scripts/reapply_published_overrides.py --check
