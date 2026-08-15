@@ -4622,8 +4622,8 @@
     },
     {
       "id": "videasy",
-      "action": "enabled-current-dns-access-stream-quality-passed",
-      "enabled": true,
+      "action": "published-disabled-failed-gates",
+      "enabled": false,
       "activation_eligible": true,
       "strict_activation_eligible": true,
       "strict_grace_eligible": false,
@@ -4637,7 +4637,9 @@
         "eligible": false,
         "reason": "disabled_by_current_proof_policy"
       },
-      "failed_gates": [],
+      "failed_gates": [
+        "catalogue_audit_playable_identity_contradiction"
+      ],
       "activation_blockers": [],
       "activation_gates": {
         "01_policy_safe_no_p2p": {
@@ -5071,7 +5073,19 @@
         ]
       },
       "variant_count": 3,
-      "manifest_position": 13
+      "manifest_position": 13,
+      "catalogue_audit_quarantine": {
+        "reason": "catalogue_audit_playable_identity_contradiction",
+        "tested_filename": "providers/videasy--nuvio--4827302f0db903a5.js",
+        "tested_sha256": "4827302f0db903a573c2b3253714d25908368ed86735c45e5537add924133b5f",
+        "quarantined_filename": "providers/videasy--nuvio-audit-quarantine--f7e932753c0be691.js",
+        "quarantined_sha256": "f7e932753c0be691853a80ff2e73f5d564034ddb2c44fcbb11f5254b581f9277",
+        "fixtures": [
+          "breaking-bad-s01e01"
+        ],
+        "identity_contradictions": 1,
+        "playable_streams": 5
+      }
     },
     {
       "id": "mugiwarastream",
@@ -5540,8 +5554,8 @@
     },
     {
       "id": "sekai",
-      "action": "enabled-current-dns-access-stream-quality-passed",
-      "enabled": true,
+      "action": "published-disabled-failed-gates",
+      "enabled": false,
       "activation_eligible": true,
       "strict_activation_eligible": true,
       "strict_grace_eligible": false,
@@ -5555,7 +5569,9 @@
         "eligible": false,
         "reason": "disabled_by_current_proof_policy"
       },
-      "failed_gates": [],
+      "failed_gates": [
+        "catalogue_audit_playable_identity_contradiction"
+      ],
       "activation_blockers": [],
       "activation_gates": {
         "01_policy_safe_no_p2p": {
@@ -6040,7 +6056,20 @@
         ]
       },
       "variant_count": 2,
-      "manifest_position": 15
+      "manifest_position": 15,
+      "catalogue_audit_quarantine": {
+        "reason": "catalogue_audit_playable_identity_contradiction",
+        "tested_filename": "providers/sekai--published-baseline--fa7694ad53790b75.js",
+        "tested_sha256": "fa7694ad53790b756cd9f200861f81e78b4be7b2486ca90dcf32d8730cdef807",
+        "quarantined_filename": "providers/sekai--nuvio-audit-quarantine--f7e932753c0be691.js",
+        "quarantined_sha256": "f7e932753c0be691853a80ff2e73f5d564034ddb2c44fcbb11f5254b581f9277",
+        "fixtures": [
+          "interstellar",
+          "jujutsu-kaisen-s01e01"
+        ],
+        "identity_contradictions": 2,
+        "playable_streams": 2
+      }
     },
     {
       "id": "toflix",
