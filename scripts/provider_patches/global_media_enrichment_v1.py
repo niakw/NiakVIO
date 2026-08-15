@@ -39,7 +39,8 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
         "maxCandidates": max(2, min(int(cfg.get("max_candidates", 10)), 20)),
         "timeoutMs": max(2500, min(int(cfg.get("timeout_ms", 6500)), 12000)),
         "preserveOriginal": bool(cfg.get("preserve_original", True)),
-        "implementationRevision": "playback-context-v3",
+        "defaultUserAgent": str(cfg.get("default_user_agent") or ""),
+        "implementationRevision": "scoped-playback-context-v4",
     }
     serialized = json.dumps(payload, separators=(",", ":"))
     marker = f"{MARKER}:{hashlib.sha256(serialized.encode()).hexdigest()[:12]}"
@@ -108,7 +109,7 @@ function mergeCookies(a,b){
 function headers(row,referer,target,jar){
   var out=baseHeaders(row);
   if(referer){setHeader(out,"Referer",referer);try{setHeader(out,"Origin",new URL(referer).origin)}catch(_e){}}
-  if(!keyOf(out,"User-Agent"))setHeader(out,"User-Agent",DEFAULT_UA);
+  if(c.defaultUserAgent&&!keyOf(out,"User-Agent"))setHeader(out,"User-Agent",c.defaultUserAgent);
   var scoped=cookieHeader(jar,target),existing=keyOf(out,"Cookie");if(scoped)setHeader(out,"Cookie",mergeCookies(existing?out[existing]:"",scoped));
   if(!directByName(target)&&!keyOf(out,"Range"))out.Range="bytes=0-262143";
   return out;
