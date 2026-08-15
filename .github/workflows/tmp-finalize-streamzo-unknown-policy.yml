@@ -43,16 +43,25 @@ jobs:
           p.write_text(json.dumps(doc,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
           print(f'FIELD_STREAMZO_FAIL_CLOSED_UNKNOWN before={before} after={opts["fail_closed_unknown"]}')
 
-          t=Path('tests/scoped_playback_context_regression_test.py')
-          text=t.read_text(encoding='utf-8')
-          old='assert sopts["scripts/provider_patches/hls_runtime_integrity_v1.py"]["fail_closed_unknown"] is True'
-          new='assert sopts["scripts/provider_patches/hls_runtime_integrity_v1.py"]["fail_closed_unknown"] is False'
-          if text.count(old)!=1:
-              raise SystemExit(f'expected one old assertion, got {text.count(old)}')
-          text=text.replace(old,new)
-          t.write_text(text,encoding='utf-8')
+          replacements = {
+              'tests/scoped_playback_context_regression_test.py': (
+                  'assert sopts["scripts/provider_patches/hls_runtime_integrity_v1.py"]["fail_closed_unknown"] is True',
+                  'assert sopts["scripts/provider_patches/hls_runtime_integrity_v1.py"]["fail_closed_unknown"] is False',
+              ),
+              'tests/global_playback_integrity_policy_test.py': (
+                  'assert streamzo_hls_options["fail_closed_unknown"] is True',
+                  'assert streamzo_hls_options["fail_closed_unknown"] is False',
+              ),
+          }
+          for rel,(old,new) in replacements.items():
+              t=Path(rel)
+              text=t.read_text(encoding='utf-8')
+              if text.count(old)!=1:
+                  raise SystemExit(f'{rel}: expected one old assertion, got {text.count(old)}')
+              t.write_text(text.replace(old,new),encoding='utf-8')
           PY
           python tests/scoped_playback_context_regression_test.py
+          python tests/global_playback_integrity_policy_test.py
           python tests/hls_playback_integrity_test.py
       - name: Rematerialize exact provider generation and bump release
         env:
