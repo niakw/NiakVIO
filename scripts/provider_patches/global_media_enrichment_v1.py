@@ -4,11 +4,12 @@
 The enrichment is intentionally bounded and does not transcode or proxy media.
 When a provider returns a public player/embed page, Niakvio follows only a small
 candidate graph, proves direct HLS/DASH/container media, and emits an additional
-direct row.  The direct row now carries the same browser request context used to
+direct row. The direct row carries the same browser request context used to
 resolve it (Referer, Origin, User-Agent and domain/path-scoped session cookies),
 so native players do not lose information that was implicitly present inside
-the web player.  Cookies are ephemeral per source row and never shared between
-providers or unrelated domains.
+the web player. Cookies are ephemeral per source row and never shared between
+providers or unrelated domains. Textual HLS/DASH proof also works on NuvioTV's
+text-only QuickJS fetch Response; binary proof still requires arrayBuffer().
 """
 from __future__ import annotations
 
@@ -38,7 +39,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
         "maxCandidates": max(2, min(int(cfg.get("max_candidates", 10)), 20)),
         "timeoutMs": max(2500, min(int(cfg.get("timeout_ms", 6500)), 12000)),
         "preserveOriginal": bool(cfg.get("preserve_original", True)),
-        "implementationRevision": "playback-context-v2",
+        "implementationRevision": "playback-context-v3",
     }
     serialized = json.dumps(payload, separators=(",", ":"))
     marker = f"{MARKER}:{hashlib.sha256(serialized.encode()).hexdigest()[:12]}"
@@ -117,7 +118,9 @@ function decode(bytes){try{return new TextDecoder("utf-8").decode(bytes)}catch(_
 async function fetchResource(url,row,referer,jar){try{
   var requestHeaders=headers(row,referer,url,jar),r=await g.fetch(url,{headers:requestHeaders,redirect:"follow",signal:timeout()});if(!r)return null;
   captureCookies(jar,r,s(r.url||url));
-  var type=r.headers&&r.headers.get?s(r.headers.get("content-type")):"",buf=await r.arrayBuffer(),bytes=new Uint8Array(buf),text=decode(bytes.slice(0,300000));
+  var type=r.headers&&r.headers.get?s(r.headers.get("content-type")):"",bytes=null,text="";
+  if(typeof r.arrayBuffer==="function"){var buf=await r.arrayBuffer();bytes=new Uint8Array(buf);text=decode(bytes.slice(0,300000))}
+  else if(typeof r.text==="function"){text=String(await r.text()||"").slice(0,300000)}
   return{ok:!!r.ok,status:r.status,url:s(r.url||url),type:type,bytes:bytes,text:text,headers:headers(row,referer,r.url||url,jar)}
 }catch(_){return null}}
 function proof(r){if(!r||!r.ok)return null;var t=s(r.text).trimStart();if(t.indexOf("#EXTM3U")===0)return"hls";if(/<MPD[\s>]/i.test(t.slice(0,4096))||/application\/dash\+xml/i.test(r.type))return"dash";var b=kindBytes(r.bytes);if(b)return b;if(/^video\//i.test(r.type)&&r.bytes&&r.bytes.length>12)return"video";return null}
