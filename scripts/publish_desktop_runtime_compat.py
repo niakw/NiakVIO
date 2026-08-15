@@ -1,10 +1,17 @@
 #!/usr/bin/env python3
 """Publish runtime-compatible provider bundles for Nuvio Desktop.
 
-This pass is deterministic and repeatable. It always starts from canonical,
-tracked provider artifacts, applies the Desktop compatibility patch once,
-creates immutable content-addressed bundles, synchronizes main/VF manifests,
-records provenance, and retires obsolete 4KHDHUB when 4KHDHUBNEW is active.
+This pass is deterministic and repeatable. It starts from the provider artifact
+currently referenced by the canonical manifest, applies the Desktop
+compatibility patch idempotently, creates immutable content-addressed bundles,
+synchronizes main/VF manifests, records provenance, and retires obsolete
+4KHDHUB when 4KHDHUBNEW is active.
+
+Do not pin content-addressed source filenames here. Global/provider repair
+re-materialization legitimately changes their hashes and prunes superseded
+bundles. Resolving the current manifest artifact guarantees this staging pass
+inherits every repair already selected by the shared engine before adding its
+Desktop/Mobile compatibility wrapper.
 """
 from __future__ import annotations
 
@@ -22,17 +29,6 @@ PATCH_REL = "scripts/provider_patches/desktop_runtime_compat_v1.py"
 PATCH_PATH = ROOT / PATCH_REL
 REPORT_PATH = ROOT / "automation" / "desktop-runtime-compat-v1.json"
 SEMVER = re.compile(r"^(\d+)\.(\d+)\.(\d+)$")
-
-SOURCE_FILES: dict[str, str] = {
-    "coflix": "providers/coflix--nuvio--48239f7b107a98b2.js",
-    "frenchstream": "providers/frenchstream--nuvio--38cf074196379a8d.js",
-    "movix": "providers/movix--nuvio--b31ef87b05d3a4f3.js",
-    "streamzo": "providers/streamzo--nuvio--5ee8d74abe45cd42.js",
-    "flemmix": "providers/flemmix--nuvio--e0c40c452aca0d66.js",
-    "wookafr": "providers/wookafr--nuvio--4ce4c33e2fe1d23b.js",
-    "hindmoviez": "providers/hindmoviez--aio--86b8c3a4dff3c98c.js",
-    "purstream": "providers/purstream--published-baseline--8e14e434a2868d4f.js",
-}
 
 TARGETS: dict[str, dict[str, Any]] = {
     "coflix": {"normalize_missing_episodes": True},
@@ -91,6 +87,43 @@ def vf_filename(value: object) -> str:
     if filename.startswith(("../", "http://", "https://")):
         return filename
     return f"../{filename}" if filename.startswith("providers/") else filename
+
+
+def local_manifest_filename(value: object) -> str:
+    """Normalize a manifest filename to a repository-relative local path."""
+    filename = str(value or "").strip()
+    while filename.startswith("../"):
+        filename = filename[3:]
+    if not filename or filename.startswith(("http://", "https://")):
+        return ""
+    return filename
+
+
+def resolve_source_filename(row: dict[str, Any], provenance: dict[str, Any], provider_id: str) -> str:
+    """Resolve the freshest tracked provider artifact without hash pinning.
+
+    The manifest row is authoritative because durable repair/reapply updates it
+    transactionally. A provenance canonical source is only a fallback for a
+    legacy manifest row that already points at a Desktop staging artifact.
+    """
+    current = local_manifest_filename(row.get("filename"))
+    current_path = ROOT / current if current else None
+    if current_path is not None and current_path.is_file() and "--desktop-runtime-v1--" not in current:
+        return current
+
+    provider_meta = provenance.get("providers", {}).get(provider_id) or provenance.get("providers", {}).get(provider_id.upper()) or {}
+    fallback = local_manifest_filename(provider_meta.get("canonical_source_filename"))
+    fallback_path = ROOT / fallback if fallback else None
+    if fallback_path is not None and fallback_path.is_file():
+        return fallback
+
+    # A committed Desktop staging artifact is still a safe last resort because
+    # desktop_runtime_compat_v1.apply() is marker-idempotent. This avoids
+    # disabling/preserving a healthy provider merely because old provenance did
+    # not yet record canonical_source_filename.
+    if current_path is not None and current_path.is_file():
+        return current
+    return ""
 
 
 def sync_existing_vf(rows: list[dict[str, Any]], source: dict[str, Any]) -> None:
@@ -214,10 +247,13 @@ def main() -> int:
             report["preserved"].append(provider_id)
             continue
 
-        source_filename = SOURCE_FILES[provider_id]
-        source_path = ROOT / source_filename
-        if not source_path.is_file():
-            report["providers"][provider_id] = {"ok": False, "error": f"missing canonical source {source_filename}"}
+        source_filename = resolve_source_filename(row, provenance, provider_id)
+        source_path = ROOT / source_filename if source_filename else None
+        if source_path is None or not source_path.is_file():
+            report["providers"][provider_id] = {
+                "ok": False,
+                "error": f"missing current canonical source for {provider_id}: {row.get('filename')}",
+            }
             report["preserved"].append(provider_id)
             continue
 
