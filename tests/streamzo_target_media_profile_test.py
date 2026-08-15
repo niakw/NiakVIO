@@ -14,6 +14,7 @@ SANITIZER = "scripts/provider_patches/stream_output_sanitizer_v5.py"
 DESKTOP = "scripts/provider_patches/desktop_runtime_compat_v1.py"
 V4_MARKER = "/* NUVIO_TV_TARGET_MEDIA_V4 */"
 FETCH_COMPAT_MARKER = "/* NUVIO_TV_TEXT_ONLY_FETCH_COMPAT_V1 */"
+PROTOCOL_RELATIVE_MARKER = "/* NUVIO_TV_PROTOCOL_RELATIVE_URL_COMPAT_V1 */"
 
 
 def load_module(path: Path):
@@ -67,24 +68,38 @@ def main() -> int:
     assert 'typeof r.text==="function"' in first
     assert 'text=String(await r.text()||"").slice(0,300000)' in first
 
-    # Regression for the durable reapply pipeline: once v4 plus the bridge
-    # compatibility fix have been materialized, a second discovery pass must be
-    # byte-for-byte identical.
+    # The pinned NuvioTV URL polyfill mishandles protocol-relative URLs such as
+    # //lecteurvideo.com/embed/... by keeping the catalogue host. The resolver
+    # must normalize this standard URL form itself before invoking new URL().
+    assert PROTOCOL_RELATIVE_MARKER in first
+    assert 'if(/^\\/\\//.test(raw))' in first
+    assert 'return scheme+raw' in first
+    assert module.ABS_V3 not in first
+    assert module.ABS_V4 in first
+
+    # Regression for the durable reapply pipeline: once v4 plus all native
+    # compatibility fixes have been materialized, a second discovery pass must
+    # be byte-for-byte identical.
     second = module.apply(first, options=options)
     assert first == second, "target-media v4 is not byte-idempotent"
     assert first.count(V4_MARKER) == 1, "target-media v4 marker must be unique"
     assert first.count(FETCH_COMPAT_MARKER) == 1, "TV fetch compatibility marker must be unique"
+    assert first.count(PROTOCOL_RELATIVE_MARKER) == 1, "TV URL compatibility marker must be unique"
 
-    # Existing v4 bundles from before this fix must upgrade in place instead of
-    # requiring a fresh provider base. This is important for durable overrides.
+    # Existing v4 bundles from before these fixes must upgrade in place instead
+    # of requiring a fresh provider base. This is important for durable overrides.
     old_v4 = module.TARGET(source, options=options).rstrip() + "\n" + V4_MARKER + "\n"
     assert FETCH_COMPAT_MARKER not in old_v4
+    assert PROTOCOL_RELATIVE_MARKER not in old_v4
     upgraded = module.apply(old_v4, options=options)
     assert FETCH_COMPAT_MARKER in upgraded
+    assert PROTOCOL_RELATIVE_MARKER in upgraded
     assert upgraded.count(V4_MARKER) == 1
     assert 'typeof r.text==="function"' in upgraded
+    assert module.ABS_V4 in upgraded
+    assert module.apply(upgraded, options=options) == upgraded
 
-    print("StreamZo target-media ordering, TV text-fetch compatibility and byte-idempotence tests passed")
+    print("StreamZo target-media ordering, native TV fetch/URL compatibility and byte-idempotence tests passed")
     return 0
 
 
