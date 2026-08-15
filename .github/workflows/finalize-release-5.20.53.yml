@@ -1,0 +1,78 @@
+name: Finalize release 5.20.53
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/finalize-release-5.20.53.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: finalize-release-5-20-53
+  cancel-in-progress: false
+
+jobs:
+  finalize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      NUVIO_SKIP_CLIENT_UPSTREAM_GUARD: "1"
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          fetch-depth: 1
+          persist-credentials: true
+
+      - name: Set up Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: "3.12"
+
+      - name: Synchronize final release version and self-clean
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/sync_release_versions.py --version 5.20.53
+          rm -f .github/workflows/finalize-release-5.20.53.yml
+          python scripts/generate_release_hashes.py
+          python scripts/validate_release_integrity.py
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          def load(path):
+              return json.loads(Path(path).read_text(encoding="utf-8"))
+
+          expected = "5.20.53"
+          package = load("package.json")
+          lock = load("package-lock.json")
+          sources = load("sources.json")
+          manifest = load("manifest.json")
+          vf = load("vf/manifest.json")
+          actual = {
+              "package.json": package.get("version"),
+              "package-lock.json": lock.get("version"),
+              "package-lock root": (lock.get("packages") or {}).get("", {}).get("version"),
+              "sources manifest_version": sources.get("manifest_version"),
+              "sources repository.manifest_version": (sources.get("repository") or {}).get("manifest_version"),
+              "manifest.json": manifest.get("version"),
+              "vf/manifest.json": vf.get("version"),
+          }
+          if any(value != expected for value in actual.values()):
+              raise SystemExit(f"release version mismatch: {actual}")
+          print(f"final release version synchronized: {expected}")
+          PY
+
+      - name: Publish synchronized release and remove this workflow
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --stat
+          git commit -m "chore: finalize release 5.20.53"
+          git push origin HEAD:main
