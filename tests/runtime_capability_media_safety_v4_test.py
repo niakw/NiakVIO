@@ -11,12 +11,13 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 PATCH = ROOT / "scripts/provider_patches/runtime_capability_media_safety_v4.py"
 
-# The native budget layers and the final runtime-capability guard form one engine
-# stack. Keep their focused regression tests mandatory anywhere the v4 regression
-# test is run (including the permanent npm test suite).
+# The native budget layers, synchronous-target traversal and final runtime
+# capability guard form one engine stack. Keep their focused regression tests
+# mandatory anywhere the v4 regression test is run (including permanent npm CI).
 for companion in (
     "tests/native_catalogue_recovery_budget_test.py",
     "tests/native_hls_integrity_budget_test.py",
+    "tests/native_sync_fetch_target_order_test.py",
 ):
     result = subprocess.run(
         [sys.executable, str(ROOT / companion)],
