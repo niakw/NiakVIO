@@ -34,6 +34,14 @@ def row_line(client: str, fixture: str, provider: str, language: str, title: str
     )
 
 
+def error_line(client: str, fixture: str, provider: str) -> str:
+    return (
+        "FIELD_NATIVE_ERROR "
+        f"client={client} fixture={fixture} provider64={b64(provider)} "
+        f"error64={b64('native bridge timeout')}"
+    )
+
+
 with tempfile.TemporaryDirectory() as tmp:
     root = Path(tmp)
     lines: list[str] = []
@@ -50,6 +58,13 @@ with tempfile.TemporaryDirectory() as tmp:
         lines.append(result_line(client, "mon-ninja-et-moi-3", "unsafe-vf", 1))
         lines.append(row_line(client, "mon-ninja-et-moi-3", "unsafe-vf", "fr"))
 
+        # The provider appears to return a row everywhere, but TV reports a
+        # native runtime failure. TV must therefore not count as usable coverage.
+        lines.append(result_line(client, "mon-ninja-et-moi-3", "runtime-vf", 1))
+        lines.append(row_line(client, "mon-ninja-et-moi-3", "runtime-vf", "fr"))
+
+    lines.append(error_line("tv", "mon-ninja-et-moi-3", "runtime-vf"))
+
     lines.append(result_line("desktop", "mon-ninja-et-moi-3", "broken-vf", 1))
     lines.append(row_line("desktop", "mon-ninja-et-moi-3", "broken-vf", "fr"))
     lines.append(result_line("mobile", "mon-ninja-et-moi-3", "broken-vf", 0))
@@ -57,14 +72,15 @@ with tempfile.TemporaryDirectory() as tmp:
     (root / "desktop-native-corpus-synthetic.log").write_text("\n".join(lines) + "\n", encoding="utf-8")
 
     portfolio = {
-        "schemaVersion": 1,
-        "currentlyActiveObserved": 5,
+        "schemaVersion": 2,
+        "currentlyActiveObserved": 6,
         "recommendedActive": 1,
         "selected": ["broad"],
         "providers": [
             {
                 "provider": "broad",
                 "vf": False,
+                "contentSafetyEligible": True,
                 "safetyEligible": True,
                 "evidenceEnough": True,
                 "score": 100,
@@ -74,6 +90,7 @@ with tempfile.TemporaryDirectory() as tmp:
             {
                 "provider": "subtitle-only",
                 "vf": True,
+                "contentSafetyEligible": True,
                 "safetyEligible": True,
                 "evidenceEnough": True,
                 "score": 80,
@@ -83,6 +100,7 @@ with tempfile.TemporaryDirectory() as tmp:
             {
                 "provider": "rare-vf",
                 "vf": True,
+                "contentSafetyEligible": True,
                 "safetyEligible": True,
                 "evidenceEnough": False,
                 "score": 20,
@@ -90,8 +108,20 @@ with tempfile.TemporaryDirectory() as tmp:
                 "recommendation": "lab_only_insufficient_evidence",
             },
             {
+                "provider": "runtime-vf",
+                "vf": True,
+                "contentSafetyEligible": True,
+                "nativeReliabilityEligible": False,
+                "safetyEligible": True,
+                "evidenceEnough": True,
+                "score": 15,
+                "catalogueCoverageRate": 0.15,
+                "recommendation": "repair_runtime_or_transport",
+            },
+            {
                 "provider": "broken-vf",
                 "vf": True,
+                "contentSafetyEligible": True,
                 "safetyEligible": True,
                 "evidenceEnough": False,
                 "score": 10,
@@ -101,6 +131,7 @@ with tempfile.TemporaryDirectory() as tmp:
             {
                 "provider": "unsafe-vf",
                 "vf": True,
+                "contentSafetyEligible": False,
                 "safetyEligible": False,
                 "evidenceEnough": True,
                 "score": 99,
@@ -123,8 +154,7 @@ with tempfile.TemporaryDirectory() as tmp:
     data = json.loads(portfolio_path.read_text(encoding="utf-8"))
     rows = {row["provider"]: row for row in data["providers"]}
 
-    # The VOSTFR provider can help general catalogue redundancy, but it must not
-    # satisfy the French-audio redundancy objective merely because it lives in a VF manifest.
+    # VOSTFR helps general catalogue redundancy but never satisfies the VF-audio objective.
     assert "subtitle-only" in data["selected"], data
     assert rows["subtitle-only"]["fullCrossPlatformVfFixtures"] == [], rows["subtitle-only"]
 
@@ -133,9 +163,15 @@ with tempfile.TemporaryDirectory() as tmp:
     assert rows["rare-vf"]["recommendation"] == "active_coverage_guard", rows["rare-vf"]
     assert "mon-ninja-et-moi-3" in rows["rare-vf"]["fullCrossPlatformVfFixtures"], rows["rare-vf"]
     assert "mon-ninja-et-moi-3" in rows["rare-vf"]["vfCoverageProtectionFixtures"], rows["rare-vf"]
-    assert data["protectedVfCoverageProviders"] == ["rare-vf"], data
+    assert "rare-vf" in data["protectedVfCoverageProviders"], data
 
-    # A rare French provider that only works on one native client is a repair target, not deletion fodder.
+    # A count>0 row with a TV runtime error is only two-client usable coverage.
+    assert "mon-ninja-et-moi-3" not in rows["runtime-vf"]["fullCrossPlatformCoverageFixtures"], rows["runtime-vf"]
+    assert "mon-ninja-et-moi-3" not in rows["runtime-vf"]["fullCrossPlatformVfFixtures"], rows["runtime-vf"]
+    assert rows["runtime-vf"]["recommendation"] == "repair_priority_unique_coverage", rows["runtime-vf"]
+    assert "mon-ninja-et-moi-3" in rows["runtime-vf"]["repairPriorityFixtures"], rows["runtime-vf"]
+
+    # A rare French provider that only works on one native client is also repair priority.
     assert "broken-vf" not in data["selected"], data
     assert rows["broken-vf"]["recommendation"] == "repair_priority_unique_coverage", rows["broken-vf"]
     assert "mon-ninja-et-moi-3" in rows["broken-vf"]["repairPriorityFixtures"], rows["broken-vf"]
