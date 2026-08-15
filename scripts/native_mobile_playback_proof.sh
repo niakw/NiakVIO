@@ -30,7 +30,24 @@ fi
 test -n "$TASK"
 echo "Resolved NuvioMobile task: $TASK"
 
+mobile_streamzo_proof_present() {
+  local combined
+  combined=$(mktemp)
+  {
+    cat "$MOBILE_LOGCAT" 2>/dev/null || true
+    grep -E 'FIELD_MOBILE_' "$MOBILE_GRADLE_LOG" 2>/dev/null || true
+  } > "$combined"
+  if grep -Eq 'FIELD_MOBILE_NATIVE provider=streamzo .* count=[1-9][0-9]*' "$combined" \
+    && grep -Eq 'FIELD_MOBILE_NATIVE_ROW provider=streamzo .* type=hls([[:space:]]|$)' "$combined"; then
+    rm -f "$combined"
+    return 0
+  fi
+  rm -f "$combined"
+  return 1
+}
+
 MOBILE_STATUS=1
+MOBILE_PROOF_OK=0
 for ATTEMPT in 1 2; do
   echo "FIELD_MOBILE_PROOF_ATTEMPT attempt=$ATTEMPT max=2" | tee -a "$MOBILE_GRADLE_LOG"
   set +e
@@ -40,11 +57,19 @@ for ATTEMPT in 1 2; do
     --no-daemon --console=plain 2>&1 | tee -a "$MOBILE_GRADLE_LOG"
   MOBILE_STATUS=${PIPESTATUS[0]}
   set -e
-  if [[ "$MOBILE_STATUS" -eq 0 ]]; then
+
+  sleep 1
+  if [[ "$MOBILE_STATUS" -eq 0 ]] && mobile_streamzo_proof_present; then
+    MOBILE_PROOF_OK=1
     break
   fi
+
   if [[ "$ATTEMPT" -lt 2 ]]; then
-    echo "FIELD_MOBILE_PROOF_RETRY reason=instrumentation_failure status=$MOBILE_STATUS"
+    if [[ "$MOBILE_STATUS" -ne 0 ]]; then
+      echo "FIELD_MOBILE_PROOF_RETRY reason=instrumentation_failure status=$MOBILE_STATUS" | tee -a "$MOBILE_GRADLE_LOG"
+    else
+      echo "FIELD_MOBILE_PROOF_RETRY reason=streamzo_proof_missing status=0" | tee -a "$MOBILE_GRADLE_LOG"
+    fi
     sleep 3
   fi
 done
@@ -61,6 +86,10 @@ cat "$RESULT"
 
 if [[ "$MOBILE_STATUS" -ne 0 ]]; then
   exit "$MOBILE_STATUS"
+fi
+if [[ "$MOBILE_PROOF_OK" -ne 1 ]]; then
+  echo "StreamZo Mobile native proof missing after 2 bounded attempts" >&2
+  exit 1
 fi
 
 grep -Eq 'FIELD_MOBILE_NATIVE provider=streamzo .* count=[1-9][0-9]*' "$RESULT"
