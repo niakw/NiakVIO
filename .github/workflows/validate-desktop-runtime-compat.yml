@@ -51,23 +51,39 @@ jobs:
       - name: Stage runtime-compatible bundles from canonical sources
         run: |
           cp manifest.json "$RUNNER_TEMP/manifest.before.json"
+          cp vf/manifest.json "$RUNNER_TEMP/vf-manifest.before.json"
+          cp PROVENANCE.json "$RUNNER_TEMP/provenance.before.json"
           python scripts/publish_desktop_runtime_compat.py
           python - <<'PY'
           import json
+          import os
           from pathlib import Path
 
           expected = {
               'coflix', 'frenchstream', 'movix', 'streamzo',
               'flemmix', 'wookafr', 'hindmoviez', 'purstream',
           }
+          runner_temp = Path(os.environ['RUNNER_TEMP'])
           report = json.loads(Path('automation/desktop-runtime-compat-v1.json').read_text(encoding='utf-8'))
           manifest = json.loads(Path('manifest.json').read_text(encoding='utf-8'))
+          before = json.loads((runner_temp / 'manifest.before.json').read_text(encoding='utf-8'))
           vf_manifest = json.loads(Path('vf/manifest.json').read_text(encoding='utf-8'))
-          rows = {str(row.get('id', '')).casefold(): row for row in manifest.get('scrapers', [])}
-          vf_rows = {str(row.get('id', '')).casefold(): row for row in vf_manifest.get('scrapers', [])}
+          vf_before = json.loads((runner_temp / 'vf-manifest.before.json').read_text(encoding='utf-8'))
+          provenance = json.loads(Path('PROVENANCE.json').read_text(encoding='utf-8'))
+          provenance_before = json.loads((runner_temp / 'provenance.before.json').read_text(encoding='utf-8'))
 
-          assert expected == set(report.get('published', [])), report
-          for provider_id in expected:
+          rows = {str(row.get('id', '')).casefold(): row for row in manifest.get('scrapers', [])}
+          before_rows = {str(row.get('id', '')).casefold(): row for row in before.get('scrapers', [])}
+          vf_rows = {str(row.get('id', '')).casefold(): row for row in vf_manifest.get('scrapers', [])}
+          vf_before_rows = {str(row.get('id', '')).casefold(): row for row in vf_before.get('scrapers', [])}
+          enabled_targets = {pid for pid in expected if before_rows[pid].get('enabled') is True}
+          disabled_targets = expected - enabled_targets
+
+          assert enabled_targets == set(report.get('published', [])), report
+          assert disabled_targets == set(report.get('validated_disabled', [])), report
+          assert not report.get('preserved'), report
+
+          for provider_id in enabled_targets:
               row = rows[provider_id]
               assert '--desktop-runtime-v1--' in row['filename'], row
               bundle = Path(row['filename'])
@@ -76,6 +92,20 @@ jobs:
               assert 'NUVIO_DESKTOP_RUNTIME_COMPAT_V1' in text, provider_id
               if provider_id in vf_rows:
                   assert vf_rows[provider_id]['filename'] == '../' + row['filename'], (provider_id, vf_rows[provider_id])
+
+          # Disabled providers may be bound to an exact content-addressed safety
+          # finding. Compatibility is validated in memory only; staging must not
+          # alter their publication/quarantine identity anywhere.
+          before_providers = {str(k).casefold(): v for k, v in (provenance_before.get('providers') or {}).items()}
+          after_providers = {str(k).casefold(): v for k, v in (provenance.get('providers') or {}).items()}
+          for provider_id in disabled_targets:
+              assert rows[provider_id] == before_rows[provider_id], (provider_id, rows[provider_id], before_rows[provider_id])
+              if provider_id in vf_before_rows:
+                  assert vf_rows.get(provider_id) == vf_before_rows[provider_id], (provider_id, vf_rows.get(provider_id), vf_before_rows[provider_id])
+              assert after_providers.get(provider_id) == before_providers.get(provider_id), provider_id
+              detail = report['providers'][provider_id]
+              assert detail.get('ok') is True and detail.get('canonical_unchanged') is True, detail
+              assert len(str(detail.get('validation_sha256') or '')) == 64, detail
 
           purstream = Path(rows['purstream']['filename']).read_text(encoding='utf-8', errors='replace')
           assert '"hostPrefixes":["api.purstream","purstream"]' in purstream
