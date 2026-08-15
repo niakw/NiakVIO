@@ -46,7 +46,7 @@ streamzo_hls_options = cfg["provider_patches"]["streamzo"]["patch_script_options
     "scripts/provider_patches/hls_runtime_integrity_v1.py"
 ]
 assert streamzo_hls_options["probe_all_urls"] is True
-assert streamzo_hls_options["fail_closed_unknown"] is True
+assert streamzo_hls_options["fail_closed_unknown"] is False
 
 future = b'''\nasync function helper(t){let x=await fetch(t.url).then(r=>r.text());if(!/#EXT-X-STREAM-INF/i.test(x))return [{url:t.url,type:"hls"}];return []}\nglobalThis.getStreams=async function(){return [{url:"https://media.example/master.m3u8",type:"hls"}]};\n'''
 patched, records = module.apply_overrides("future-provider-never-seen-before", future, phase="discovery")

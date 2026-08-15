@@ -36,7 +36,7 @@ cfg = json.loads((ROOT / "provider-overrides.json").read_text(encoding="utf-8"))
 sopts = cfg["provider_patches"]["streamzo"]["patch_script_options"]
 assert sopts["scripts/provider_patches/hls_master_audio_preserver_v1.py"]["default_user_agent"]
 assert sopts["scripts/provider_patches/global_media_enrichment_v1.py"]["default_user_agent"]
-assert sopts["scripts/provider_patches/hls_runtime_integrity_v1.py"]["fail_closed_unknown"] is True
+assert sopts["scripts/provider_patches/hls_runtime_integrity_v1.py"]["fail_closed_unknown"] is False
 
 runtime = ordinary + (
     "\nglobalThis.__NUVIO_TV_RUNTIME__=true;\n"
