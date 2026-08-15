@@ -25,6 +25,17 @@ jobs:
       - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
         with:
           python-version: "3.12"
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: "24"
+          package-manager-cache: false
+      - name: Validate provider portfolio preservation
+        shell: bash
+        run: |
+          set -euxo pipefail
+          npm ci --ignore-scripts --no-audit --no-fund
+          python3 tests/provider_portfolio_ranking_test.py
+          python3 tests/provider_coverage_preservation_test.py
       - name: Regenerate and validate release hashes
         shell: bash
         run: |
