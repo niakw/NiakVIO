@@ -128,15 +128,21 @@ function selectedCount(fixture, vfOnly) {
   }
   return count;
 }
-function protect(row, fixture, reason) {
+function markCoverage(row, fixture, reason) {
   const id = String(row.provider || '').toLowerCase();
-  selected.add(id);
   if (!protectedByCoverage.has(id)) protectedByCoverage.set(id, new Set());
   protectedByCoverage.get(id).add(`${fixture}:${reason}`);
-  if (reason === 'vf_redundancy') {
-    if (!protectedByVfCoverage.has(id)) protectedByVfCoverage.set(id, new Set());
-    protectedByVfCoverage.get(id).add(fixture);
-  }
+}
+function markVfCoverage(row, fixture, reason) {
+  const id = String(row.provider || '').toLowerCase();
+  markCoverage(row, fixture, reason);
+  if (!protectedByVfCoverage.has(id)) protectedByVfCoverage.set(id, new Set());
+  protectedByVfCoverage.get(id).add(fixture);
+}
+function protect(row, fixture, reason) {
+  selected.add(String(row.provider || '').toLowerCase());
+  if (reason === 'vf_redundancy') markVfCoverage(row, fixture, reason);
+  else markCoverage(row, fixture, reason);
 }
 
 const fixtures = new Set();
@@ -154,6 +160,14 @@ for (const fixture of [...fixtures].sort()) {
       const next = vfCandidates.find((row) => !selected.has(String(row.provider).toLowerCase()));
       if (!next) break;
       protect(next, fixture, 'vf_redundancy');
+    }
+    // If the whole safe cross-platform VF supply is already at or below the
+    // desired redundancy, every one of those providers is essential VF coverage,
+    // even when it entered the selection earlier for general catalogue reasons.
+    if (vfCandidates.length <= minVf) {
+      for (const row of vfCandidates) {
+        if (selected.has(String(row.provider || '').toLowerCase())) markVfCoverage(row, fixture, 'vf_scarcity');
+      }
     }
   }
 }
