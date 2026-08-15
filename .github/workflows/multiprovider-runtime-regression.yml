@@ -1,0 +1,87 @@
+name: Multi-provider runtime regression
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "providers/**"
+      - "manifest.json"
+      - "vf/manifest.json"
+      - "provider-overrides.json"
+      - "scripts/provider_worker.cjs"
+      - "scripts/apply_provider_overrides.py"
+      - "scripts/provider_patches/**"
+      - ".github/workflows/multiprovider-runtime-regression.yml"
+  push:
+    branches: [main]
+    paths:
+      - "providers/**"
+      - "manifest.json"
+      - "vf/manifest.json"
+      - "provider-overrides.json"
+      - "scripts/provider_worker.cjs"
+      - "scripts/apply_provider_overrides.py"
+      - "scripts/provider_patches/**"
+      - ".github/workflows/multiprovider-runtime-regression.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: multiprovider-runtime-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  tv-context-corpus:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: "24"
+      - name: Install pinned dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Require a healthy non-sentinel provider portfolio in TV context
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, subprocess, sys
+          from pathlib import Path
+
+          root=Path('.').resolve()
+          manifest=json.loads((root/'manifest.json').read_text())
+          rows={str(r.get('id','')).casefold():r for r in manifest.get('scrapers',[]) if isinstance(r,dict)}
+          panel=['purstream','flemmix','movieshunt','goated','cineby','videasy','hindmoviez']
+          interstellar={'tmdbId':'157336','mediaType':'movie','title':'Interstellar','year':2014,'label':'Interstellar (2014)','category':'movie'}
+          monninja={'tmdbId':'1215638','mediaType':'movie','title':'Mon ninja et moi 3','year':2025,'label':'Mon ninja et moi 3','category':'movie'}
+          context={'locale':'fr-FR','language':'fr','languages':['fr-FR','fr','en'],'platform':'android','userAgent':'Mozilla/5.0 (Linux; Android 12; Android TV; NuvioTV) AppleWebKit/537.36','settings':{},'storage':{},'maxSettingsProfiles':8,'networkLimits':{'maxFetches':35,'maxResponseBytes':5242880,'maxTotalResponseBytes':20971520,'maxDistinctHosts':20,'maxRedirects':5}}
+
+          def run(pid, fixture):
+              row=rows.get(pid)
+              if not row or not row.get('enabled'):
+                  return {'id':pid,'count':0,'ok':False,'error':'not_enabled'}
+              cmd=['node','--max-old-space-size=1024',str(root/'scripts/provider_worker.cjs'),str(root/row['filename']),json.dumps(fixture),json.dumps(context)]
+              try:
+                  p=subprocess.run(cmd,capture_output=True,text=True,timeout=110)
+              except subprocess.TimeoutExpired:
+                  return {'id':pid,'count':0,'ok':False,'error':'timeout'}
+              payload={}
+              for line in p.stdout.splitlines():
+                  if line.startswith('NUVIO_HEALTH_RESULT='):
+                      try: payload=json.loads(line.split('=',1)[1])
+                      except Exception: pass
+              return {'id':pid,'count':int(payload.get('stream_count') or 0),'ok':bool(payload.get('ok')),'error':payload.get('error'),'statuses':payload.get('provider_server_http_statuses') or []}
+
+          results=[run(pid,interstellar) for pid in panel]
+          streamzo=run('streamzo',monninja)
+          print('FIELD_MULTI_PROVIDER_TV='+json.dumps(results,ensure_ascii=False))
+          print('FIELD_STREAMZO_WORKER_DIAGNOSTIC='+json.dumps(streamzo,ensure_ascii=False))
+          positives=[x for x in results if x['count']>0]
+          if len(positives)<3:
+              print('FAIL: fewer than three non-StreamZo providers resolve the stable movie corpus in TV context',file=sys.stderr)
+              raise SystemExit(2)
+          print('FIELD_MULTI_PROVIDER_TV_STATUS=passed positives='+','.join(x['id'] for x in positives))
+          print('FIELD_STREAMZO_AUTHORITY=final-native-client-validation-v2')
+          PY
