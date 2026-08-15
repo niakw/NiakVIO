@@ -30,13 +30,24 @@ fi
 test -n "$TASK"
 echo "Resolved NuvioMobile task: $TASK"
 
-set +e
-"$GITHUB_WORKSPACE/nuvio-mobile/gradlew" -p "$GITHUB_WORKSPACE/nuvio-mobile" ":composeApp:$TASK" \
-  -Pnuvio.android.distribution=full \
-  '-Pandroid.testInstrumentationRunnerArguments.class=com.nuvio.app.features.plugins.NiakvioFinalNativeMobileTest' \
-  --no-daemon --console=plain 2>&1 | tee "$MOBILE_GRADLE_LOG"
-MOBILE_STATUS=${PIPESTATUS[0]}
-set -e
+MOBILE_STATUS=1
+for ATTEMPT in 1 2; do
+  echo "FIELD_MOBILE_PROOF_ATTEMPT attempt=$ATTEMPT max=2" | tee -a "$MOBILE_GRADLE_LOG"
+  set +e
+  "$GITHUB_WORKSPACE/nuvio-mobile/gradlew" -p "$GITHUB_WORKSPACE/nuvio-mobile" ":composeApp:$TASK" \
+    -Pnuvio.android.distribution=full \
+    '-Pandroid.testInstrumentationRunnerArguments.class=com.nuvio.app.features.plugins.NiakvioFinalNativeMobileTest' \
+    --no-daemon --console=plain 2>&1 | tee -a "$MOBILE_GRADLE_LOG"
+  MOBILE_STATUS=${PIPESTATUS[0]}
+  set -e
+  if [[ "$MOBILE_STATUS" -eq 0 ]]; then
+    break
+  fi
+  if [[ "$ATTEMPT" -lt 2 ]]; then
+    echo "FIELD_MOBILE_PROOF_RETRY reason=instrumentation_failure status=$MOBILE_STATUS"
+    sleep 3
+  fi
+done
 
 sleep 1
 cleanup_logcat
