@@ -42,7 +42,7 @@ jobs:
           node-version: "24"
       - name: Install pinned dependencies
         run: npm ci --ignore-scripts --no-audit --no-fund
-      - name: Require a healthy non-sentinel provider portfolio in TV context
+      - name: Require healthy movie and TV provider portfolios in TV context
         shell: bash
         run: |
           set -euo pipefail
@@ -53,8 +53,10 @@ jobs:
           root=Path('.').resolve()
           manifest=json.loads((root/'manifest.json').read_text())
           rows={str(r.get('id','')).casefold():r for r in manifest.get('scrapers',[]) if isinstance(r,dict)}
-          panel=['purstream','flemmix','movieshunt','goated','cineby','videasy','hindmoviez']
+          movie_panel=['purstream','flemmix','movieshunt','goated','cineby','videasy','hindmoviez']
+          tv_panel=['purstream','flemmix','movieshunt','goated','cineby','hindmoviez']
           interstellar={'tmdbId':'157336','mediaType':'movie','title':'Interstellar','year':2014,'label':'Interstellar (2014)','category':'movie'}
+          breaking_bad={'tmdbId':'1396','mediaType':'tv','title':'Breaking Bad','year':2008,'season':1,'episode':1,'label':'Breaking Bad S01E01','category':'tv'}
           monninja={'tmdbId':'1215638','mediaType':'movie','title':'Mon ninja et moi 3','year':2025,'label':'Mon ninja et moi 3','category':'movie'}
           context={'locale':'fr-FR','language':'fr','languages':['fr-FR','fr','en'],'platform':'android','userAgent':'Mozilla/5.0 (Linux; Android 12; Android TV; NuvioTV) AppleWebKit/537.36','settings':{},'storage':{},'maxSettingsProfiles':8,'networkLimits':{'maxFetches':35,'maxResponseBytes':5242880,'maxTotalResponseBytes':20971520,'maxDistinctHosts':20,'maxRedirects':5}}
 
@@ -74,14 +76,21 @@ jobs:
                       except Exception: pass
               return {'id':pid,'count':int(payload.get('stream_count') or 0),'ok':bool(payload.get('ok')),'error':payload.get('error'),'statuses':payload.get('provider_server_http_statuses') or []}
 
-          results=[run(pid,interstellar) for pid in panel]
+          movie_results=[run(pid,interstellar) for pid in movie_panel]
+          tv_results=[run(pid,breaking_bad) for pid in tv_panel]
           streamzo=run('streamzo',monninja)
-          print('FIELD_MULTI_PROVIDER_TV='+json.dumps(results,ensure_ascii=False))
+          print('FIELD_MULTI_PROVIDER_MOVIE_TV='+json.dumps(movie_results,ensure_ascii=False))
+          print('FIELD_MULTI_PROVIDER_BREAKING_BAD_TV='+json.dumps(tv_results,ensure_ascii=False))
           print('FIELD_STREAMZO_WORKER_DIAGNOSTIC='+json.dumps(streamzo,ensure_ascii=False))
-          positives=[x for x in results if x['count']>0]
-          if len(positives)<3:
-              print('FAIL: fewer than three non-StreamZo providers resolve the stable movie corpus in TV context',file=sys.stderr)
+          movie_positives=[x for x in movie_results if x['count']>0]
+          tv_positives=[x for x in tv_results if x['count']>0]
+          if len(movie_positives)<3:
+              print('FAIL: fewer than three non-StreamZo providers resolve Interstellar in TV context',file=sys.stderr)
               raise SystemExit(2)
-          print('FIELD_MULTI_PROVIDER_TV_STATUS=passed positives='+','.join(x['id'] for x in positives))
+          if len(tv_positives)<2:
+              print('FAIL: fewer than two non-StreamZo providers resolve Breaking Bad S01E01 in TV context',file=sys.stderr)
+              raise SystemExit(3)
+          print('FIELD_MULTI_PROVIDER_MOVIE_STATUS=passed positives='+','.join(x['id'] for x in movie_positives))
+          print('FIELD_MULTI_PROVIDER_TV_SERIES_STATUS=passed positives='+','.join(x['id'] for x in tv_positives))
           print('FIELD_STREAMZO_AUTHORITY=final-native-client-validation-v2')
           PY
