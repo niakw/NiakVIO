@@ -14,7 +14,13 @@ const inputDir = path.resolve(arg('--dir', process.cwd()));
 const portfolioPath = path.resolve(arg('--portfolio', path.join(inputDir, 'provider-portfolio.json')));
 const policy = JSON.parse(fs.readFileSync(path.join(root, '.github/provider-portfolio-policy.json'), 'utf8'));
 const portfolio = JSON.parse(fs.readFileSync(portfolioPath, 'utf8'));
+const manifest = JSON.parse(fs.readFileSync(path.join(root, 'manifest.json'), 'utf8'));
+const overridesPath = path.join(root, 'provider-overrides.json');
+const overrides = fs.existsSync(overridesPath) ? JSON.parse(fs.readFileSync(overridesPath, 'utf8')) : {};
 const cfg = policy.coverage_preservation || {};
+const manifestMap = new Map((manifest.scrapers || []).filter(Boolean).map((row) => [String(row.id || '').toLowerCase(), row]));
+const providerPatches = overrides.provider_patches || {};
+const configuredCapabilities = overrides.provider_capabilities || {};
 
 function decode(value) {
   if (!value) return '';
@@ -49,9 +55,74 @@ function frenchAudioEvidence(f) {
   if (/^(?:fr|fr-fr|fra|fre|french|francais|vf|truefrench)$/.test(language)) return true;
   return /\b(?:truefrench|vf|french audio|audio fr|audio francais|francais)\b/.test(labels);
 }
+function key(client, fixture, provider) {
+  return `${client}\u0000${fixture}\u0000${String(provider || '').toLowerCase()}`;
+}
+function providerAllowsEmbed(provider) {
+  const id = String(provider || '').toLowerCase();
+  const manifestRow = manifestMap.get(id) || {};
+  const patch = providerPatches[id] || {};
+  const configured = configuredCapabilities[id] || {};
+  const strategy = String(patch.capability || (typeof configured === 'object' ? configured.strategy : configured) || manifestRow.capability || 'unknown');
+  return strategy === 'iframe_player' || (strategy === 'mixed_embed_resolver' && (manifestRow.supportsExternalPlayer === true || patch.preserve_embed_urls === true));
+}
+
+const rawResults = new Map();
+const rowVfEvidence = new Set();
+const runtimeErrors = new Set();
+const transports = new Map();
+for (const file of listFiles(inputDir)) {
+  for (const raw of fs.readFileSync(file, 'utf8').split(/\r?\n/)) {
+    const resultMarker = raw.indexOf('FIELD_NATIVE_RESULT ');
+    if (resultMarker >= 0) {
+      const f = fields(raw.slice(resultMarker).trim());
+      const provider = decode(f.provider64);
+      rawResults.set(key(f.client || '', f.fixture || '', provider), {
+        client: f.client || '', fixture: f.fixture || '', provider,
+        count: Number(f.count || 0),
+      });
+      continue;
+    }
+    const rowMarker = raw.indexOf('FIELD_NATIVE_ROW ');
+    if (rowMarker >= 0) {
+      const f = fields(raw.slice(rowMarker).trim());
+      const provider = decode(f.provider64);
+      if (frenchAudioEvidence(f)) rowVfEvidence.add(key(f.client || '', f.fixture || '', provider));
+      continue;
+    }
+    const transportMarker = raw.indexOf('FIELD_NATIVE_TRANSPORT ');
+    if (transportMarker >= 0) {
+      const f = fields(raw.slice(transportMarker).trim());
+      const provider = decode(f.provider64);
+      transports.set(key(f.client || '', f.fixture || '', provider), {
+        state: String(f.state || 'unknown').toLowerCase(),
+        kind: String(f.kind || 'unknown').toLowerCase(),
+        provider,
+      });
+      continue;
+    }
+    const errorMarker = raw.indexOf('FIELD_NATIVE_ERROR ');
+    if (errorMarker >= 0) {
+      const f = fields(raw.slice(errorMarker).trim());
+      runtimeErrors.add(key(f.client || '', f.fixture || '', decode(f.provider64)));
+    }
+  }
+}
+
+function transportUsable(k, provider) {
+  const transport = transports.get(k);
+  if (!transport) return true;
+  if (transport.state === 'ok') return true;
+  if (transport.state === 'dead' && transport.kind === 'html' && providerAllowsEmbed(provider)) return true;
+  return transport.state !== 'dead' && transport.state !== 'error';
+}
+function executionUsable(k, result) {
+  return !!result && result.count > 0 && !runtimeErrors.has(k) && transportUsable(k, result.provider);
+}
 
 const hits = new Map();
 const vfHits = new Map();
+const observedAttempts = new Map();
 function hitInto(store, provider, fixture, client) {
   const id = String(provider || '').toLowerCase();
   if (!id || !fixture || !client) return;
@@ -60,21 +131,11 @@ function hitInto(store, provider, fixture, client) {
   if (!byFixture.has(fixture)) byFixture.set(fixture, new Set());
   byFixture.get(fixture).add(client);
 }
-
-for (const file of listFiles(inputDir)) {
-  for (const raw of fs.readFileSync(file, 'utf8').split(/\r?\n/)) {
-    const resultMarker = raw.indexOf('FIELD_NATIVE_RESULT ');
-    if (resultMarker >= 0) {
-      const f = fields(raw.slice(resultMarker).trim());
-      if (Number(f.count || 0) > 0) hitInto(hits, decode(f.provider64), f.fixture || '', f.client || '');
-      continue;
-    }
-    const rowMarker = raw.indexOf('FIELD_NATIVE_ROW ');
-    if (rowMarker >= 0) {
-      const f = fields(raw.slice(rowMarker).trim());
-      if (frenchAudioEvidence(f)) hitInto(vfHits, decode(f.provider64), f.fixture || '', f.client || '');
-    }
-  }
+for (const [k, result] of rawResults) {
+  hitInto(observedAttempts, result.provider, result.fixture, result.client);
+  if (!executionUsable(k, result)) continue;
+  hitInto(hits, result.provider, result.fixture, result.client);
+  if (rowVfEvidence.has(k)) hitInto(vfHits, result.provider, result.fixture, result.client);
 }
 
 const rows = Array.isArray(portfolio.providers) ? portfolio.providers : [];
@@ -94,14 +155,18 @@ const rareVf = Number(cfg.rare_vf_fixture_provider_threshold || 2);
 function clientsFor(provider, fixture) {
   return hits.get(provider)?.get(fixture) || new Set();
 }
+function attemptedClientsFor(provider, fixture) {
+  return observedAttempts.get(provider)?.get(fixture) || new Set();
+}
 function vfClientsFor(provider, fixture) {
   return vfHits.get(provider)?.get(fixture) || new Set();
 }
 function fixturesFor(provider) {
-  return [...(hits.get(provider)?.keys() || [])];
+  const all = new Set([...(hits.get(provider)?.keys() || []), ...(observedAttempts.get(provider)?.keys() || [])]);
+  return [...all];
 }
 function isSafe(row) {
-  return !!row && row.safetyEligible === true;
+  return !!row && (row.contentSafetyEligible === true || (row.contentSafetyEligible == null && row.safetyEligible === true));
 }
 function fullHit(provider, fixture) {
   return clientsFor(provider, fixture).size >= minimumClientsActive;
@@ -146,7 +211,7 @@ function protect(row, fixture, reason) {
 }
 
 const fixtures = new Set();
-for (const byFixture of hits.values()) for (const fixture of byFixture.keys()) fixtures.add(fixture);
+for (const byFixture of observedAttempts.values()) for (const fixture of byFixture.keys()) fixtures.add(fixture);
 
 for (const fixture of [...fixtures].sort()) {
   while (selectedCount(fixture, false) < minGeneral) {
@@ -161,9 +226,6 @@ for (const fixture of [...fixtures].sort()) {
       if (!next) break;
       protect(next, fixture, 'vf_redundancy');
     }
-    // If the whole safe cross-platform VF supply is already at or below the
-    // desired redundancy, every one of those providers is essential VF coverage,
-    // even when it entered the selection earlier for general catalogue reasons.
     if (vfCandidates.length <= minVf) {
       for (const row of vfCandidates) {
         if (selected.has(String(row.provider || '').toLowerCase())) markVfCoverage(row, fixture, 'vf_scarcity');
@@ -174,18 +236,26 @@ for (const fixture of [...fixtures].sort()) {
 
 for (const row of rows) {
   const id = String(row.provider || '').toLowerCase();
-  if (!id || !isSafe(row) || selected.has(id)) continue;
+  if (!id || !isSafe(row)) continue;
   for (const fixture of fixturesFor(id)) {
-    const clients = clientsFor(id, fixture).size;
-    if (clients < minimumClientsRepair || clients >= minimumClientsActive) continue;
+    const workingClients = clientsFor(id, fixture).size;
+    const attemptedClients = attemptedClientsFor(id, fixture).size;
+    if (attemptedClients < minimumClientsRepair || workingClients >= minimumClientsActive) continue;
+    const hasAnyWorking = workingClients >= minimumClientsRepair;
+    const partialVfClients = vfClientsFor(id, fixture).size;
+    const hasPartialVf = partialVfClients >= minimumClientsRepair;
     const safeProviders = candidatesFor(fixture, false, false).length;
-    const vfClients = vfClientsFor(id, fixture).size;
-    const hasPartialVf = vfClients >= minimumClientsRepair;
     const safeVfProviders = hasPartialVf ? candidatesFor(fixture, true, false).length : 999;
+    const runtimeOrTransportBroken = [...attemptedClientsFor(id, fixture)].some((client) => {
+      const k = key(client, fixture, id);
+      const result = rawResults.get(k);
+      return !!result && result.count > 0 && !executionUsable(k, result);
+    });
     if (
-      safeProviders <= rareGeneral ||
+      runtimeOrTransportBroken ||
+      (hasAnyWorking && safeProviders <= rareGeneral) ||
       (hasPartialVf && safeVfProviders <= rareVf) ||
-      selectedCount(fixture, false) < minGeneral ||
+      (hasAnyWorking && selectedCount(fixture, false) < minGeneral) ||
       (hasPartialVf && selectedCount(fixture, true) < minVf)
     ) {
       if (!repairPriority.has(id)) repairPriority.set(id, new Set());
@@ -201,12 +271,14 @@ for (const row of rows) {
   row.repairPriorityFixtures = [...(repairPriority.get(id) || [])];
   row.observedVfFixtures = fixturesFor(id).filter((fixture) => vfClientsFor(id, fixture).size >= minimumClientsRepair);
   row.fullCrossPlatformVfFixtures = fixturesFor(id).filter((fixture) => fullVfHit(id, fixture));
+  row.fullCrossPlatformCoverageFixtures = fixturesFor(id).filter((fixture) => fullHit(id, fixture));
   if (protectedByCoverage.has(id) && !baseSelected.has(id)) row.recommendation = 'active_coverage_guard';
   else if (repairPriority.has(id) && !selected.has(id)) row.recommendation = 'repair_priority_unique_coverage';
+  else if (repairPriority.has(id) && selected.has(id)) row.repairPriority = true;
 }
 
 const orderedSelected = rows.filter((row) => selected.has(String(row.provider || '').toLowerCase())).map((row) => String(row.provider).toLowerCase());
-portfolio.schemaVersion = Math.max(Number(portfolio.schemaVersion || 1), 3);
+portfolio.schemaVersion = Math.max(Number(portfolio.schemaVersion || 1), 4);
 portfolio.selected = orderedSelected;
 portfolio.recommendedActive = orderedSelected.length;
 portfolio.recommendedReductionObserved = Math.max(0, Number(portfolio.currentlyActiveObserved || 0) - orderedSelected.length);
@@ -216,7 +288,8 @@ portfolio.protectedVfCoverageProviders = [...protectedByVfCoverage.keys()].sort(
 portfolio.repairPriorityProviders = [...repairPriority.keys()].sort();
 portfolio.normalPortfolioMax = Number(policy.portfolio?.normal_max_unique_active || policy.portfolio?.target_unique_active || 45);
 portfolio.coverageOverrideAboveNormalMax = orderedSelected.length > portfolio.normalPortfolioMax;
-portfolio.vfCoverageEvidence = 'FIELD_NATIVE_ROW language/title evidence per fixture and client; VOSTFR/subtitle-only rows do not count as VF';
+portfolio.coverageEvidence = 'FIELD_NATIVE_RESULT count plus usable transport/runtime evidence per fixture and client; broken executions do not count as successful coverage';
+portfolio.vfCoverageEvidence = 'usable FIELD_NATIVE_ROW language/title evidence per fixture and client; VOSTFR/subtitle-only or broken executions do not count as VF';
 portfolio.coveragePolicy = cfg;
 fs.writeFileSync(portfolioPath, JSON.stringify(portfolio, null, 2) + '\n');
 console.log(`FIELD_PROVIDER_COVERAGE_GUARD ${JSON.stringify({ recommendedActive: portfolio.recommendedActive, recommendedVf: portfolio.recommendedVf, protectedCoverageProviders: portfolio.protectedCoverageProviders, protectedVfCoverageProviders: portfolio.protectedVfCoverageProviders, repairPriorityProviders: portfolio.repairPriorityProviders, coverageOverrideAboveNormalMax: portfolio.coverageOverrideAboveNormalMax })}`);
