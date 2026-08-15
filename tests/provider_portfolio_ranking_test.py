@@ -67,7 +67,17 @@ with tempfile.TemporaryDirectory() as tmp:
     assert providers["1shows"]["safetyEligible"] is False, providers["1shows"]
     assert providers["1shows"]["recommendation"] == "quarantine_unsafe", providers["1shows"]
     assert "1shows" not in data["selected"], data["selected"]
-    assert int(POLICY["portfolio"]["target_unique_active"]) < 50
-    assert int(POLICY["portfolio"]["hard_max_unique_active"]) <= 45
+
+    # 36/45 remains the normal compact portfolio target. The larger emergency
+    # ceiling is only available to the coverage-preservation layer when a safe
+    # provider carries catalogue/VF value the normal core cannot replace.
+    target = int(POLICY["portfolio"]["target_unique_active"])
+    normal_max = int(POLICY["portfolio"]["normal_max_unique_active"])
+    hard_max = int(POLICY["portfolio"]["hard_max_unique_active"])
+    assert target < 50
+    assert normal_max <= 45
+    assert hard_max >= normal_max
+    assert POLICY["coverage_preservation"]["allow_active_above_normal_max_when_needed"] is True
+    assert POLICY["coverage_preservation"]["never_delete_for_redundancy_without_coverage_evidence"] is True
 
 print("provider portfolio quality-first ranking tests passed")
