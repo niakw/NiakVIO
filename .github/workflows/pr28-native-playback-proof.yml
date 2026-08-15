@@ -92,6 +92,11 @@ jobs:
           python niakvio/scripts/prepare_native_client_validation.py android --workspace "$GITHUB_WORKSPACE"
           python niakvio/scripts/harden_nuvio_mobile_device_test.py "$GITHUB_WORKSPACE/nuvio-mobile"
 
+      - name: Install Android client compile SDKs
+        run: |
+          yes | sdkmanager --licenses > /dev/null || true
+          sdkmanager --install 'platforms;android-36' 'platforms;android-37' 'build-tools;37.0.0'
+
       - name: Enable KVM
         run: |
           if [ -e /dev/kvm ]; then sudo chmod 666 /dev/kvm || true; fi
@@ -107,7 +112,7 @@ jobs:
           ram-size: 2048M
           emulator-boot-timeout: 600
           script: |
-            set -euo pipefail
+            set -eu
             adb logcat -c
             TASKS=$(./nuvio-mobile/gradlew -p ./nuvio-mobile :composeApp:tasks --all -Pnuvio.android.distribution=full --console=plain)
             TASK=$(printf '%s\n' "$TASKS" | awk 'tolower($1) ~ /connected.*device.*test/ {print $1; exit}')
@@ -155,6 +160,11 @@ jobs:
           python niakvio/scripts/prepare_native_client_validation.py android --workspace "$GITHUB_WORKSPACE"
           python niakvio/scripts/harden_nuvio_mobile_device_test.py "$GITHUB_WORKSPACE/nuvio-mobile"
 
+      - name: Install Android client compile SDKs
+        run: |
+          yes | sdkmanager --licenses > /dev/null || true
+          sdkmanager --install 'platforms;android-36' 'platforms;android-37' 'build-tools;37.0.0'
+
       - name: Enable KVM
         run: |
           if [ -e /dev/kvm ]; then sudo chmod 666 /dev/kvm || true; fi
@@ -162,20 +172,26 @@ jobs:
       - name: Execute official NuvioTV PluginRuntime on Android TV AVD
         uses: ReactiveCircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d
         with:
-          api-level: 35
+          api-level: 31
           target: android-tv
-          arch: x86_64
+          arch: x86
           profile: tv_1080p
           cores: 2
           ram-size: 2048M
           emulator-boot-timeout: 600
           script: |
-            set -euo pipefail
+            set -eu
             adb logcat -c
-            mkdir -p "$GITHUB_WORKSPACE/nuvio-tv/app/build/reports/androidTests/niakvio"
-            adb shell getprop ro.build.characteristics | tee "$GITHUB_WORKSPACE/nuvio-tv/app/build/reports/androidTests/niakvio/tv-build-characteristics.log"
-            grep -Eq 'tv|television' "$GITHUB_WORKSPACE/nuvio-tv/app/build/reports/androidTests/niakvio/tv-build-characteristics.log"
-            ./nuvio-tv/gradlew -p ./nuvio-tv :app:connectedFullDebugAndroidTest '-Pandroid.testInstrumentationRunnerArguments.class=com.nuvio.tv.core.plugin.NiakvioFinalNativeTvTest' --no-daemon --console=plain | tee "$GITHUB_WORKSPACE/nuvio-tv/app/build/reports/androidTests/niakvio/tv-gradle.log"
+            TV_REPORT_DIR="$GITHUB_WORKSPACE/nuvio-tv/app/build/reports/androidTests/niakvio"
+            TV_GRADLE_LOG="$TV_REPORT_DIR/tv-gradle.log"
+            mkdir -p "$TV_REPORT_DIR"
+            adb shell getprop ro.build.characteristics | tee "$TV_REPORT_DIR/tv-build-characteristics.log"
+            grep -Eq 'tv|television' "$TV_REPORT_DIR/tv-build-characteristics.log"
+            if ! ./nuvio-tv/gradlew -p ./nuvio-tv :app:connectedFullDebugAndroidTest '-Pandroid.testInstrumentationRunnerArguments.class=com.nuvio.tv.core.plugin.NiakvioFinalNativeTvTest' --no-daemon --console=plain > "$TV_GRADLE_LOG" 2>&1; then
+              cat "$TV_GRADLE_LOG"
+              exit 1
+            fi
+            cat "$TV_GRADLE_LOG"
             adb logcat -d -s NiakvioRealLab:I '*:S' > "$GITHUB_WORKSPACE/tv-final-native-results.log"
             cat "$GITHUB_WORKSPACE/tv-final-native-results.log"
             grep -Eq 'FIELD_TV_NATIVE provider=streamzo .* count=[1-9][0-9]*' "$GITHUB_WORKSPACE/tv-final-native-results.log"
