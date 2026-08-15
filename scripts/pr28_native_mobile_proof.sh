@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-SDKMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
-test -x "$SDKMANAGER"
-yes | "$SDKMANAGER" --licenses > /dev/null || true
-"$SDKMANAGER" --install 'platforms;android-37' 'build-tools;37.0.0'
+# The historical native lab already compiled and ran this pinned NuvioMobile
+# revision on the emulator-runner SDK environment. Do not guess/install future
+# Android platforms here: doing so can fail before Gradle or the provider runs.
+echo "ANDROID_HOME=${ANDROID_HOME:-missing}"
+ls -1 "${ANDROID_HOME:-/nonexistent}/platforms" 2>/dev/null || true
 
 adb logcat -c
 TASKS=$("$GITHUB_WORKSPACE/nuvio-mobile/gradlew" -p "$GITHUB_WORKSPACE/nuvio-mobile" :composeApp:tasks --all -Pnuvio.android.distribution=full --console=plain)
