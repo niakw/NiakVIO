@@ -4,7 +4,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 prepare = (ROOT / "scripts/prepare_native_client_validation.py").read_text(encoding="utf-8")
 runner = (ROOT / "scripts/run_final_native_android_lab.sh").read_text(encoding="utf-8")
-target_media = (ROOT / "scripts/provider_patches/nuvio_tv_target_media_v4.py").read_text(encoding="utf-8")
+target_media_entry = (ROOT / "scripts/provider_patches/nuvio_tv_target_media_v4.py").read_text(encoding="utf-8")
+target_media = (ROOT / "scripts/provider_patches/nuvio_tv_target_media_v5.py").read_text(encoding="utf-8")
 
 # Historical positive sentinel: StreamZo must continue resolving Mon Ninja et
 # moi 3 through the real site -> player/embed -> final-media chain on Desktop.
@@ -21,6 +22,12 @@ assert "FIELD_TV_STREAMZO_SENTINEL status=resolved expected=resolved path=site_p
 assert "StreamZo must resolve Mon ninja et moi 3 through site -> player -> media on Android TV" in runner
 assert "TV_STATUS=96" in runner
 
+# Provider overrides intentionally retain the stable V4 patch path, but V4 is
+# now a compatibility facade over V5. Static contract validation must inspect
+# the effective implementation instead of mistaking delegation for capability
+# loss.
+assert 'nuvio_tv_target_media_v5.py' in target_media_entry
+
 # Root compatibility fix: the pinned NuvioTV fetch bridge exposes text/json but
 # no arrayBuffer. Target-media traversal must therefore prove textual HLS via
 # Response.text() while keeping binary proof strict on richer runtimes.
@@ -28,6 +35,14 @@ assert "NUVIO_TV_TEXT_ONLY_FETCH_COMPAT_V1" in target_media
 assert 'typeof r.arrayBuffer==="function"' in target_media
 assert 'typeof r.text==="function"' in target_media
 assert 'text=String(await r.text()||"").slice(0,300000)' in target_media
+
+# V5 additionally owns the site -> player -> media request context required by
+# Media3/OkHttp TV playback.
+assert "NUVIO_TV_TARGET_MEDIA_V5_PLAYBACK_CONTEXT" in target_media
+assert "captureCookies" in target_media
+assert "cookieHeader" in target_media
+assert 'setHeader(out,"Referer",ref)' in target_media
+assert 'setHeader(out,"Origin",o)' in target_media
 
 # Mobile remains independently observed; this TV gate must not silently make
 # Mobile failures equivalent to TV compatibility failures.
