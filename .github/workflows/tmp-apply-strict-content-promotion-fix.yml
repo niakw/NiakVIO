@@ -32,9 +32,10 @@ jobs:
         run: npm ci --ignore-scripts --no-audit --no-fund
       - name: Apply strict identity and duration gate
         run: |
-          python scripts/tmp_apply_strict_content_fix_v2.py
+          python scripts/tmp_apply_strict_content_fix_v3.py
           rm scripts/tmp_apply_strict_content_fix.py
           rm scripts/tmp_apply_strict_content_fix_v2.py
+          rm scripts/tmp_apply_strict_content_fix_v3.py
           rm .github/workflows/tmp-apply-strict-content-promotion-fix.yml
       - name: Syntax and targeted regressions
         run: |
