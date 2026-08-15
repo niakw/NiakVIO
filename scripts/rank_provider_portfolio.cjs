@@ -179,9 +179,16 @@ for (const [id, values] of byProvider) {
     latencyRate * Number(weights.latency || 8) +
     (vf ? Number(weights.vf_value || 3) : 0) +
     (animeSpecialist ? Number(weights.specialist_value || 2) : 0);
-  const safetyEligible = contradictionCount <= Number(cfg.maximum_identity_contradictions || 0) && transportFailureCount <= Number(cfg.maximum_transport_failures || 0) && runtimeErrorCount <= Number(cfg.maximum_runtime_errors || 0);
+
+  // Content safety is absolute: a provider that serves the wrong work must be
+  // quarantined. Native transport/runtime failures are different: they are
+  // reliability defects to repair, especially when the provider carries rare
+  // catalogue/VF coverage, and must not be mislabeled as unsafe content.
+  const contentSafetyEligible = contradictionCount <= Number(cfg.maximum_identity_contradictions || 0);
+  const nativeReliabilityEligible = transportFailureCount <= Number(cfg.maximum_transport_failures || 0) && runtimeErrorCount <= Number(cfg.maximum_runtime_errors || 0);
+  const safetyEligible = contentSafetyEligible;
   const evidenceEnough = opportunities >= Number(cfg.minimum_relevant_executions || 6);
-  const qualityEligible = safetyEligible && evidenceEnough && coverageRate >= Number(cfg.minimum_catalogue_coverage_rate || 0.5) && crossRate >= Number(cfg.minimum_cross_platform_fixture_rate || 0.5) && slowRate <= Number(cfg.maximum_slow_execution_rate || 0.25);
+  const qualityEligible = contentSafetyEligible && nativeReliabilityEligible && evidenceEnough && coverageRate >= Number(cfg.minimum_catalogue_coverage_rate || 0.5) && crossRate >= Number(cfg.minimum_cross_platform_fixture_rate || 0.5) && slowRate <= Number(cfg.maximum_slow_execution_rate || 0.25);
   rows.push({
     provider: id,
     currentlyActive: manifestRow.enabled !== false,
@@ -201,6 +208,8 @@ for (const [id, values] of byProvider) {
     identityContradictions: contradictionCount,
     transportFailures: transportFailureCount,
     runtimeErrors: runtimeErrorCount,
+    contentSafetyEligible,
+    nativeReliabilityEligible,
     safetyEligible,
     evidenceEnough,
     qualityEligible,
@@ -236,14 +245,15 @@ ensure((r) => r.movieTvCore, minMovieTv);
 
 for (const row of rows) {
   row.recommendation = selectedIds.has(row.provider) ? 'active_core'
-    : !row.safetyEligible ? 'quarantine_unsafe'
+    : !row.contentSafetyEligible ? 'quarantine_unsafe'
+    : !row.nativeReliabilityEligible ? 'repair_runtime_or_transport'
     : !row.evidenceEnough ? 'lab_only_insufficient_evidence'
     : !row.qualityEligible ? 'lab_only_low_coverage_or_stability'
     : 'lab_only_redundant';
 }
 const currentActive = rows.filter((r) => r.currentlyActive).length;
 const output = {
-  schemaVersion: 1,
+  schemaVersion: 2,
   generatedAt: new Date().toISOString(),
   policy,
   observedProviders: rows.length,
