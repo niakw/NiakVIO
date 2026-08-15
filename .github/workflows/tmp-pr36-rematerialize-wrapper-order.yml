@@ -45,9 +45,15 @@ jobs:
           python tests/scoped_playback_context_regression_test.py
           python tests/global_playback_integrity_policy_test.py
 
-      - name: Rematerialize published providers
+      - name: Rematerialize published providers to a fixed point
         run: |
+          echo '--- pass 1 ---'
           python scripts/reapply_published_overrides.py
+          git status --short
+          echo '--- pass 2 ---'
+          python scripts/reapply_published_overrides.py
+          git status --short
+          echo '--- fixed-point check ---'
           python scripts/reapply_published_overrides.py --check
           python scripts/validate_published_overrides.py
           python scripts/validate_activation_preservation.py
