@@ -13,9 +13,11 @@ Two different decisions deliberately use two different gates:
   playable sample used to justify replacement is positively tied to the
   requested work.
 
-The gate consumes already-probed media evidence. Adaptive recovery therefore
-must resolve and positively verify media-looking URLs before they reach this
-policy layer; filename extensions alone never turn a repair into playable proof.
+The gate consumes already-probed media evidence. Quick health classification
+first uses a bounded alternate catalogue fixture per category so an absent title
+is not mislabeled as structural failure. Adaptive recovery must then resolve and
+positively verify media-looking URLs before they reach this policy layer;
+filename extensions alone never turn a repair into playable proof.
 
 Keeping these decisions separate prevents the quick loop from repairing a
 provider and immediately throwing the candidate away merely because the bounded
