@@ -8,6 +8,12 @@ regression or positive wrong-content evidence. Identity may remain unknown at
 this bounded stage; the complete catalogue/media audit still runs before any
 publication.
 
+A primary title returning no streams is not enough to call a provider broken.
+Quick repair therefore spends one bounded alternate fixture per required
+catalogue category before structural repair. This separates ordinary catalogue
+misses from real route/runtime failures without turning routine refresh into the
+full deep corpus.
+
 Deep remains stricter and authoritative for broad catalogue proof, durable
 profile learning, new activation, and quarantine exit.
 """
@@ -99,7 +105,7 @@ def _quick_compare_results(parent: dict[str, Any], repaired: dict[str, Any]) -> 
 
 
 def _quick_run_health(*, stage: Path, registry_path: Path, output_dir: Path, mode: str, health_check: Path = loop.HEALTH_CHECK) -> dict[str, Any]:
-    # health_check.mjs currently enables its one-fixture-per-required-category
+    # health_check.mjs currently enables its per-category primary/fallback
     # selector only for requestedMode=deep. Execute that selector with a
     # temporary deep config cloned from our bounded quick profile, then rewrite
     # the evidence to truthful mode=quick before publication.
@@ -113,7 +119,7 @@ def _quick_run_health(*, stage: Path, registry_path: Path, output_dir: Path, mod
 
 
 def _ensure_representative_fixture_categories(config: dict[str, Any], quick: dict[str, Any]) -> None:
-    """Give routine repair one bounded fixture for movie, TV and anime."""
+    """Keep compatibility with tests/configs that embed fixtures in mode slots."""
     quick_fixtures = [
         copy.deepcopy(row)
         for row in quick.get("fixtures") or []
@@ -149,7 +155,10 @@ def _strengthen_quick_probe(config: dict[str, Any]) -> None:
     quick["probe_first_segment"] = True
     quick["probe_streams_adaptively"] = True
     quick["fixture_limit_per_category"] = True
-    quick["fallback_fixture_limit_per_category"] = 0
+    # One alternate title per required category is enough to avoid treating a
+    # single catalogue miss as structural breakage. Deep retains the broader
+    # three-fallback authority for activation/learning decisions.
+    quick["fallback_fixture_limit_per_category"] = 1
     quick["verify_fixture_duration_identity"] = True
     quick["minimum_fixture_duration_ratio"] = float(
         quick.get("minimum_fixture_duration_ratio")
@@ -161,10 +170,10 @@ def _strengthen_quick_probe(config: dict[str, Any]) -> None:
         or original_deep.get("maximum_fixture_duration_ratio")
         or 1.8
     )
-    # The health harness gates per-category fixture selection on requestedMode
-    # rather than solely on the mode config. Clone the bounded profile into the
-    # temporary deep slot so calling --deep does not silently consume deep-sized
-    # budgets or fallback fixtures.
+    # The health harness gates per-category fixture selection and fallback on
+    # requestedMode=deep rather than solely on mode config. Clone the bounded
+    # quick profile into that temporary slot so routine repair gets exactly one
+    # fallback instead of silently consuming the ordinary deep-sized budget.
     modes["deep"] = copy.deepcopy(quick)
 
 
@@ -176,6 +185,7 @@ def _rewrite_mode_metadata(stage: Path, output: Path) -> None:
         runtime["validation_mode"] = "quick"
         runtime["profile_persistence"] = "deep_only"
         runtime["acceptance_policy"] = "repair_first_no_contradiction"
+        runtime["catalogue_fallbacks_per_category"] = 1
         registry_path.write_text(json.dumps(registry, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
     health_path = output / "health-results.json"
@@ -186,6 +196,7 @@ def _rewrite_mode_metadata(stage: Path, output: Path) -> None:
         runtime["validation_mode"] = "quick"
         runtime["profile_persistence"] = "deep_only"
         runtime["acceptance_policy"] = "repair_first_no_contradiction"
+        runtime["catalogue_fallbacks_per_category"] = 1
         health_path.write_text(json.dumps(health, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
     report_path = output / "repair-report.json"
@@ -195,6 +206,7 @@ def _rewrite_mode_metadata(stage: Path, output: Path) -> None:
         report["profile_persistence"] = "deep_only"
         report["bounded_refresh_pass"] = True
         report["acceptance_policy"] = "repair_first_no_contradiction"
+        report["catalogue_fallbacks_per_category"] = 1
         report_path.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 
