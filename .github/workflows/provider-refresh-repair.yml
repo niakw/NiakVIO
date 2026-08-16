@@ -10,7 +10,9 @@ on:
       - "scripts/run_adaptive_quick_repair.py"
       - "scripts/promote_refresh_candidates.py"
       - "scripts/validate_automatic_repair_results.py"
+      - "scripts/normalize_terminal_quarantine_stage.py"
       - "tests/quick_refresh_policy_test.py"
+      - "tests/terminal_quarantine_stage_normalization_test.py"
   schedule:
     - cron: "7 6 * * 0,1,3,4,6"
   push:
@@ -21,6 +23,7 @@ on:
       - "scripts/run_adaptive_quick_repair.py"
       - "scripts/promote_refresh_candidates.py"
       - "scripts/validate_automatic_repair_results.py"
+      - "scripts/normalize_terminal_quarantine_stage.py"
       - "scripts/runtime_repair.py"
       - "scripts/adaptive_runtime/runtime_repair.py"
       - "scripts/provider_engine_normalizer.py"
@@ -68,7 +71,9 @@ jobs:
           python -m py_compile scripts/run_adaptive_quick_repair.py
           python -m py_compile scripts/promote_refresh_candidates.py
           python -m py_compile scripts/validate_automatic_repair_results.py
+          python -m py_compile scripts/normalize_terminal_quarantine_stage.py
           python tests/quick_refresh_policy_test.py
+          python tests/terminal_quarantine_stage_normalization_test.py
           python tests/adaptive_runtime_repair_test.py
           npm test
 
@@ -101,6 +106,7 @@ jobs:
           python scripts/build_provider_runtime_profiles.py
           python scripts/reapply_published_overrides.py
           python scripts/build_provider_runtime_profiles.py --stage staging --apply-stage
+          python scripts/normalize_terminal_quarantine_stage.py --stage staging
           python scripts/validate_override_pipeline.py --stage staging
 
       - name: Repair failed structures before final classification
@@ -116,6 +122,7 @@ jobs:
             --stage staging \
             --health health-output/health-results.json \
             --repairs health-output/repair-report.json
+          python scripts/normalize_terminal_quarantine_stage.py --stage staging
           python scripts/validate_override_pipeline.py --stage staging
 
       - name: Generate diagnostics after repair
@@ -142,7 +149,7 @@ jobs:
   publish:
     name: Publish only positively proven refresh repairs
     needs: stage
-    if: github.event_name != 'pull_request'
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 70
     permissions:
