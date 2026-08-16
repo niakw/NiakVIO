@@ -64,6 +64,9 @@ CORE_FILES = [
     "scripts/provider_patches/target_media_host_filter_v4.py",
     "scripts/provider_patches/vf_catalogue_recovery.py",
     "scripts/provider_patches/stream_output_sanitizer_v5.py",
+    "scripts/provider_patches/global_media_enrichment_v1.py",
+    "scripts/provider_patches/hls_master_audio_preserver_v1.py",
+    "scripts/provider_patches/hls_runtime_integrity_v1.py",
 ]
 OPTIONAL_CORE_FILES = [
     "automation/platform-runtime-matrix.json",
