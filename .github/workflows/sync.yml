@@ -260,8 +260,6 @@ jobs:
     timeout-minutes: 90
     permissions:
       contents: write
-    env:
-      NUVIO_PUBLISHED_MANIFEST_BASELINE: ${{ runner.temp }}/published-manifest.json
 
     steps:
       - name: Checkout current published repository
@@ -271,7 +269,10 @@ jobs:
 
       - name: Capture published manifest baseline
         shell: bash
-        run: git show HEAD:manifest.json > "$NUVIO_PUBLISHED_MANIFEST_BASELINE"
+        run: |
+          NUVIO_PUBLISHED_MANIFEST_BASELINE="$RUNNER_TEMP/published-manifest.json"
+          echo "NUVIO_PUBLISHED_MANIFEST_BASELINE=$NUVIO_PUBLISHED_MANIFEST_BASELINE" >> "$GITHUB_ENV"
+          git show HEAD:manifest.json > "$NUVIO_PUBLISHED_MANIFEST_BASELINE"
 
       - name: Set up Python
         uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
