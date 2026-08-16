@@ -2,13 +2,14 @@
 # SPDX-License-Identifier: GPL-3.0-only
 """Run one bounded adaptive repair pass during routine provider refreshes.
 
-This reuses the same provider-agnostic repair engine and strict content-identity
-comparator as the deep harness. Internally the health checker is invoked through
-its multi-category selector, but with a temporary quick-sized budget: one
-representative fixture per required catalogue type and at most two streams per
-fixture. Results are rewritten as ``quick`` and newly learned profiles are not
-persisted. Deep remains authoritative for broad catalogue proof, durable profile
-learning, new activation, and quarantine exit.
+Routine refresh is deliberately repair-first: a generated candidate may survive
+when it restores playable coverage without introducing a runtime/category
+regression or positive wrong-content evidence. Identity may remain unknown at
+this bounded stage; the complete catalogue/media audit still runs before any
+publication.
+
+Deep remains stricter and authoritative for broad catalogue proof, durable
+profile learning, new activation, and quarantine exit.
 """
 from __future__ import annotations
 
@@ -29,32 +30,79 @@ sys.path.insert(1, str(SCRIPTS))
 
 import runtime_repair  # noqa: E402
 import deep_repair_loop as loop  # noqa: E402
-from repair_identity_gate import automatic_repair_identity_gate  # noqa: E402
+from repair_identity_gate import automatic_repair_safety_gate  # noqa: E402
 
 _loaded = Path(runtime_repair.__file__).resolve()
 _expected = (ADAPTIVE / "runtime_repair.py").resolve()
 if _loaded != _expected:
     raise SystemExit(f"adaptive runtime layer not loaded: {_loaded} != {_expected}")
 
-_base_compare_results = runtime_repair.compare_results
 _base_run_health = loop.run_health
 
 
-def _identity_safe_compare_results(parent: dict[str, Any], repaired: dict[str, Any]) -> tuple[bool, str]:
-    accepted, reason = _base_compare_results(parent, repaired)
-    if not accepted:
-        return accepted, reason
-    identity_ok, identity_reason = automatic_repair_identity_gate(repaired)
-    if not identity_ok:
-        return False, identity_reason
-    return True, reason
+def _category_playable_totals(result: dict[str, Any]) -> dict[str, int]:
+    """Return bounded playable evidence per catalogue category."""
+    totals: dict[str, int] = {}
+    for row in result.get("tests") or []:
+        if not isinstance(row, dict):
+            continue
+        fixture = row.get("fixture") if isinstance(row.get("fixture"), dict) else {}
+        category = str(fixture.get("category") or fixture.get("mediaType") or "").casefold().strip()
+        if category not in {"movie", "tv", "anime"}:
+            continue
+        playable = int(row.get("streams_playable") or 0)
+        totals[category] = max(totals.get(category, 0), playable)
+    return totals
+
+
+def _quick_compare_results(parent: dict[str, Any], repaired: dict[str, Any]) -> tuple[bool, str]:
+    """Keep safe incremental coverage gains for final catalogue classification.
+
+    Unlike deep profile learning, quick repair does not require every supported
+    category to become healthy in one pass. It requires:
+      * no hard/runtime/malformed regression;
+      * no positive wrong-content or duration contradiction;
+      * no loss of a category that was already playable;
+      * a strict coverage/runtime improvement.
+    """
+    repaired_status = str(repaired.get("status") or "runtime_error")
+    if repaired_status in runtime_repair.HARD_FAILURES:
+        return False, f"hard_failure:{repaired_status}"
+    if runtime_repair.runtime_error_count(repaired) > runtime_repair.runtime_error_count(parent):
+        return False, "introduced_runtime_error"
+    if runtime_repair.malformed_request_count(repaired) > runtime_repair.malformed_request_count(parent):
+        return False, "introduced_malformed_request"
+
+    safety_ok, safety_reason = automatic_repair_safety_gate(repaired)
+    if not safety_ok:
+        return False, safety_reason
+
+    parent_categories = _category_playable_totals(parent)
+    repaired_categories = _category_playable_totals(repaired)
+    parent_playable_categories = {name for name, count in parent_categories.items() if count > 0}
+    repaired_playable_categories = {name for name, count in repaired_categories.items() if count > 0}
+    lost_categories = sorted(parent_playable_categories - repaired_playable_categories)
+    if lost_categories:
+        return False, "quick_category_regression:" + ",".join(lost_categories)
+
+    parent_total = sum(parent_categories.values())
+    repaired_total = sum(repaired_categories.values())
+    parent_playable = runtime_repair.playable_stream_count(parent)
+    repaired_playable = runtime_repair.playable_stream_count(repaired)
+
+    category_gain = repaired_playable_categories > parent_playable_categories
+    stream_gain = repaired_total > parent_total or repaired_playable > parent_playable
+    runtime_gain = runtime_repair.quality_vector(repaired) > runtime_repair.quality_vector(parent)
+    if category_gain or stream_gain or runtime_gain:
+        return True, "provisional_quick_runtime_improvement"
+    return False, "no_quick_runtime_improvement"
 
 
 def _quick_run_health(*, stage: Path, registry_path: Path, output_dir: Path, mode: str, health_check: Path = loop.HEALTH_CHECK) -> dict[str, Any]:
     # health_check.mjs currently enables its one-fixture-per-required-category
-    # selector only for requestedMode=deep. We therefore execute that selector
-    # with a temporary deep config cloned from our bounded quick profile, then
-    # rewrite the produced evidence to truthful mode=quick before publication.
+    # selector only for requestedMode=deep. Execute that selector with a
+    # temporary deep config cloned from our bounded quick profile, then rewrite
+    # the evidence to truthful mode=quick before publication.
     return _base_run_health(
         stage=stage,
         registry_path=registry_path,
@@ -127,6 +175,7 @@ def _rewrite_mode_metadata(stage: Path, output: Path) -> None:
         runtime = registry.setdefault("runtime_repair", {})
         runtime["validation_mode"] = "quick"
         runtime["profile_persistence"] = "deep_only"
+        runtime["acceptance_policy"] = "repair_first_no_contradiction"
         registry_path.write_text(json.dumps(registry, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
     health_path = output / "health-results.json"
@@ -136,6 +185,7 @@ def _rewrite_mode_metadata(stage: Path, output: Path) -> None:
         runtime = health.setdefault("runtime_repair", {})
         runtime["validation_mode"] = "quick"
         runtime["profile_persistence"] = "deep_only"
+        runtime["acceptance_policy"] = "repair_first_no_contradiction"
         health_path.write_text(json.dumps(health, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
     report_path = output / "repair-report.json"
@@ -144,6 +194,7 @@ def _rewrite_mode_metadata(stage: Path, output: Path) -> None:
         report["mode"] = "quick"
         report["profile_persistence"] = "deep_only"
         report["bounded_refresh_pass"] = True
+        report["acceptance_policy"] = "repair_first_no_contradiction"
         report_path.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 
@@ -169,7 +220,7 @@ def main() -> int:
         _strengthen_quick_probe(config)
         HEALTH_CONFIG.write_text(json.dumps(config, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
-        loop.compare_results = _identity_safe_compare_results
+        loop.compare_results = _quick_compare_results
         loop.run_health = _quick_run_health
         loop.persist_runtime_profiles = lambda _config, _assignments: []
 
