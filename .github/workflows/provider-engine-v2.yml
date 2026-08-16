@@ -1,0 +1,52 @@
+name: Provider Engine V2
+
+on:
+  push:
+    branches:
+      - refactor/provider-engine-v2
+    paths:
+      - 'engine_v2/**'
+      - '.github/workflows/provider-engine-v2.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  architecture:
+    name: Validate V2 core
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout V2 branch
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Canonical contract tests
+        run: node engine_v2/tests/contracts.test.mjs
+
+      - name: Repair brain tests
+        run: node engine_v2/tests/repair-brain.test.mjs
+
+      - name: Evidence matrix tests
+        run: node engine_v2/tests/evidence.test.mjs
+
+      - name: Contract watcher unit tests
+        run: node engine_v2/tests/contract-watcher.test.mjs
+
+      - name: Observe current Nuvio contract drift
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node engine_v2/scripts/check-nuvio-contracts.mjs --output engine_v2/reports/nuvio-contract-drift.json
+
+      - name: Upload Nuvio contract report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: provider-engine-v2-contract-report
+          path: engine_v2/reports/nuvio-contract-drift.json
+          if-no-files-found: warn
