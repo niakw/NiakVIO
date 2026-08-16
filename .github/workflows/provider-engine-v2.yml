@@ -1,0 +1,109 @@
+name: Provider Engine V2
+
+on:
+  push:
+    branches:
+      - refactor/provider-engine-v2
+    paths:
+      - 'engine_v2/**'
+      - '.github/workflows/provider-engine-v2.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  architecture:
+    name: Validate V2 core
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout V2 branch
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Canonical contract tests
+        run: node engine_v2/tests/contracts.test.mjs
+
+      - name: Runtime adapter tests
+        run: node engine_v2/tests/runtime-adapters.test.mjs
+
+      - name: Strict media validator tests
+        run: node engine_v2/tests/media-validator.test.mjs
+
+      - name: Resolver core tests
+        run: node engine_v2/tests/resolver-core.test.mjs
+
+      - name: Repair brain tests
+        run: node engine_v2/tests/repair-brain.test.mjs
+
+      - name: Repair recipe memory tests
+        run: node engine_v2/tests/recipe-memory.test.mjs
+
+      - name: Provider decision tests
+        run: node engine_v2/tests/decision-engine.test.mjs
+
+      - name: Evidence matrix tests
+        run: node engine_v2/tests/evidence.test.mjs
+
+      - name: Contract watcher unit tests
+        run: node engine_v2/tests/contract-watcher.test.mjs
+
+      - name: Provider ingestion unit tests
+        run: node engine_v2/tests/provider-ingest.test.mjs
+
+      - name: Provider JS analysis unit tests
+        run: node engine_v2/tests/provider-analysis.test.mjs
+
+      - name: Domain discovery unit tests
+        run: node engine_v2/tests/domain-discovery.test.mjs
+
+      - name: Provider spec builder tests
+        run: node engine_v2/tests/provider-spec-builder.test.mjs
+
+      - name: Purstream clean adapter tests
+        run: node engine_v2/tests/purstream-adapter.test.mjs
+
+      - name: Observe current Nuvio contract drift
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node engine_v2/scripts/check-nuvio-contracts.mjs --output engine_v2/reports/nuvio-contract-drift.json
+
+      - name: Build live three-upstream provider inventory
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node engine_v2/scripts/ingest-provider-upstreams.mjs --output engine_v2/reports/provider-upstream-inventory.json
+
+      - name: Analyze original provider JS variants
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node engine_v2/scripts/build-provider-knowledge.mjs --inventory engine_v2/reports/provider-upstream-inventory.json --output engine_v2/reports/provider-knowledge-seed.json
+
+      - name: Probe provider hubs and domain candidates
+        continue-on-error: true
+        run: node engine_v2/scripts/probe-provider-domains.mjs --knowledge engine_v2/reports/provider-knowledge-seed.json --output engine_v2/reports/provider-domain-observations.json --max-candidates 4 --concurrency 12 --timeout-ms 4500
+
+      - name: Build canonical unverified ProviderSpecs
+        run: node engine_v2/scripts/build-provider-specs.mjs --inventory engine_v2/reports/provider-upstream-inventory.json --knowledge engine_v2/reports/provider-knowledge-seed.json --domains engine_v2/reports/provider-domain-observations.json --output engine_v2/reports/provider-specs-v2.json
+
+      - name: Purstream V2 live movie and series proof
+        continue-on-error: true
+        run: node engine_v2/scripts/live-purstream-v2.mjs --domains engine_v2/reports/provider-domain-observations.json --output engine_v2/reports/purstream-live-v2.json
+
+      - name: Upload V2 discovery reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: provider-engine-v2-discovery-reports
+          path: |
+            engine_v2/reports/nuvio-contract-drift.json
+            engine_v2/reports/provider-upstream-inventory.json
+            engine_v2/reports/provider-knowledge-seed.json
+            engine_v2/reports/provider-domain-observations.json
+            engine_v2/reports/provider-specs-v2.json
+            engine_v2/reports/purstream-live-v2.json
+          if-no-files-found: warn
