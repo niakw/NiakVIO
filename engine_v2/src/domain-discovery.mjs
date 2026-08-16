@@ -6,32 +6,74 @@ const INFRA_HOSTS = [
   "themoviedb.org", "npms.io", "lodash.com", "openjsf.org", "underscorejs.org", "strem.io", "kitsu.io", "haglund.dev",
 ];
 
-export function buildDomainCandidates(provider, legacyHub = null, legacyHistory = null, registryCandidates = []) {
+export function buildDomainCandidates(provider, legacyHub = null, legacyHistory = null, discoveredCandidates = []) {
   const rows = [];
-  const add = (url, source, trust) => {
+  const add = (url, source, trust, role = "terminal") => {
     const normalized = normalizeHttpUrl(url);
     if (!normalized) return;
     const host = new URL(normalized).hostname.toLowerCase();
-    if (isInfrastructureHost(host)) return;
-    rows.push({ url: normalized, host, source, trust });
+    if (isInfrastructureHost(host) && role !== "registry") return;
+    rows.push({ url: normalized, host, source, trust, role });
   };
 
-  if (legacyHub?.hub) add(legacyHub.hub, "legacy-official-hub", 100);
+  if (legacyHub?.hub) add(legacyHub.hub, "legacy-official-hub", 100, "hub");
   for (const source of legacyHub?.sources ?? []) {
-    if (source.type === "hub" && source.url) add(source.url, "legacy-official-hub", Number(source.priority ?? 95));
+    if (source.type === "hub" && source.url) add(source.url, "legacy-official-hub", Number(source.priority ?? 95), "hub");
   }
-  if (legacyHistory?.current?.url) add(legacyHistory.current.url, "lkg-history", 90);
-  for (const candidate of registryCandidates ?? []) add(candidate.url ?? candidate, "original-js-domain-registry", Number(candidate.trust ?? 85));
-  if (legacyHub?.direct) add(legacyHub.direct, "legacy-direct", 80);
-  for (const url of legacyHub?.direct_candidates ?? []) add(url, "legacy-direct-candidate", 75);
-  for (const host of provider?.providerCandidateHosts ?? provider?.hosts ?? []) add(`https://${host}/`, "original-js-host", 60);
+  if (legacyHistory?.current?.url) add(legacyHistory.current.url, "lkg-history", 90, "terminal");
+  for (const candidate of discoveredCandidates ?? []) add(candidate.url ?? candidate, candidate.source ?? "discovered", Number(candidate.trust ?? 85), candidate.role ?? "terminal");
+  if (legacyHub?.direct) add(legacyHub.direct, "legacy-direct", 80, "terminal");
+  for (const url of legacyHub?.direct_candidates ?? []) add(url, "legacy-direct-candidate", 75, "terminal");
+  for (const host of provider?.providerCandidateHosts ?? provider?.hosts ?? []) add(`https://${host}/`, "original-js-host", 60, "terminal");
 
-  const bestByHost = new Map();
+  const bestByRoleHost = new Map();
   for (const candidate of rows) {
-    const previous = bestByHost.get(candidate.host);
-    if (!previous || candidate.trust > previous.trust) bestByHost.set(candidate.host, candidate);
+    const key = `${candidate.role}:${candidate.host}`;
+    const previous = bestByRoleHost.get(key);
+    if (!previous || candidate.trust > previous.trust) bestByRoleHost.set(key, candidate);
   }
-  return [...bestByHost.values()].sort((a, b) => b.trust - a.trust || a.host.localeCompare(b.host));
+  return [...bestByRoleHost.values()].sort((a, b) => b.trust - a.trust || a.host.localeCompare(b.host));
+}
+
+export async function fetchHubOutboundCandidates(hubUrl, provider, legacyHub = {}, options = {}) {
+  const normalized = normalizeHttpUrl(hubUrl);
+  if (!normalized) return [];
+  const timeoutMs = Math.max(1000, Math.min(10000, Number(options.timeoutMs ?? 5000)));
+  try {
+    const response = await fetch(normalized, {
+      signal: AbortSignal.timeout(timeoutMs),
+      redirect: "follow",
+      headers: {
+        "User-Agent": "Mozilla/5.0 (NiakVIO Provider Engine V2 hub discovery)",
+        Accept: "text/html,application/xhtml+xml,text/plain;q=0.8,*/*;q=0.2",
+      },
+    });
+    const text = await response.text();
+    if (text.length > 2_000_000) return [];
+    const finalUrl = normalizeHttpUrl(response.url || normalized) ?? normalized;
+    const hubHost = new URL(normalized).hostname.toLowerCase();
+    const finalHost = new URL(finalUrl).hostname.toLowerCase();
+    const found = [];
+    if (finalHost !== hubHost && terminalHostAllowed(finalHost, provider, legacyHub)) {
+      found.push({ url: finalUrl, trust: 97, source: "official-hub-redirect", role: "terminal" });
+    }
+    const hrefRe = /\bhref\s*=\s*["']([^"']+)["']/gi;
+    let match;
+    while ((match = hrefRe.exec(text))) {
+      let resolved;
+      try { resolved = new URL(match[1], finalUrl).href; } catch { continue; }
+      const candidate = normalizeHttpUrl(resolved);
+      if (!candidate) continue;
+      const candidateHost = new URL(candidate).hostname.toLowerCase();
+      if (candidateHost === hubHost || candidateHost === finalHost && finalHost === hubHost) continue;
+      if (isInfrastructureHost(candidateHost)) continue;
+      if (!terminalHostAllowed(candidateHost, provider, legacyHub)) continue;
+      found.push({ url: candidate, trust: 96, source: "official-hub-outbound", role: "terminal" });
+    }
+    return dedupeByHost(found);
+  } catch {
+    return [];
+  }
 }
 
 export async function fetchDomainRegistryCandidates(registryUrl, provider, options = {}) {
@@ -66,21 +108,20 @@ export function extractDomainCandidatesFromRegistry(payload, provider = {}) {
       const host = new URL(normalized).hostname.toLowerCase();
       const hostText = host.replace(/[^a-z0-9]/g, "");
       const relevant = aliases.length === 0 || aliases.some((alias) => pathText.includes(alias) || hostText.includes(alias));
-      if (relevant) candidates.push({ url: normalized, trust: pathText && aliases.some((alias) => pathText.includes(alias)) ? 88 : 84, registryPath: path.join(".") });
+      if (relevant) candidates.push({
+        url: normalized,
+        trust: pathText && aliases.some((alias) => pathText.includes(alias)) ? 88 : 84,
+        registryPath: path.join("."),
+        source: "original-js-domain-registry",
+        role: "terminal",
+      });
       return;
     }
     if (Array.isArray(value)) return value.forEach((item, index) => visit(item, [...path, String(index)]));
     if (value && typeof value === "object") return Object.entries(value).forEach(([key, item]) => visit(item, [...path, key]));
   };
   visit(payload);
-  const byHost = new Map();
-  for (const candidate of candidates) {
-    const host = new URL(candidate.url).hostname.toLowerCase();
-    if (isInfrastructureHost(host)) continue;
-    const previous = byHost.get(host);
-    if (!previous || candidate.trust > previous.trust) byHost.set(host, candidate);
-  }
-  return [...byHost.values()].sort((a, b) => b.trust - a.trust);
+  return dedupeByHost(candidates.filter((candidate) => !isInfrastructureHost(new URL(candidate.url).hostname.toLowerCase())));
 }
 
 export async function probeDomainCandidate(candidate, options = {}) {
@@ -128,7 +169,7 @@ export async function probeDomainCandidate(candidate, options = {}) {
 }
 
 export function chooseBestObservedDomain(probes = []) {
-  const viable = probes.filter((probe) => probe.dns?.ok && probe.reachable);
+  const viable = probes.filter((probe) => probe.role !== "hub" && probe.dns?.ok && probe.reachable);
   viable.sort((a, b) => {
     const aUseful = usefulHttpRank(a.http?.status);
     const bUseful = usefulHttpRank(b.http?.status);
@@ -137,10 +178,35 @@ export function chooseBestObservedDomain(probes = []) {
   return viable[0] ?? null;
 }
 
+function terminalHostAllowed(host, provider, legacyHub) {
+  const exact = new Set((legacyHub.allowed_terminal_hosts ?? []).map((value) => String(value).toLowerCase().replace(/^www\./, "")));
+  const normalizedHost = host.replace(/^www\./, "");
+  if (exact.has(normalizedHost)) return true;
+  for (const raw of legacyHub.allowed_terminal_host_patterns ?? []) {
+    try { if (new RegExp(raw, "i").test(host)) return true; } catch {}
+  }
+  const aliases = providerAliases({ ...provider, names: [...(provider.names ?? []), ...(legacyHub.aliases ?? [])] });
+  const compactHost = host.replace(/[^a-z0-9]/g, "");
+  return aliases.some((alias) => compactHost.includes(alias) || alias.includes(compactHost));
+}
+
 function providerAliases(provider) {
   return [...new Set([provider.id, ...(provider.names ?? [])]
     .map((value) => String(value ?? "").toLowerCase().replace(/[^a-z0-9]/g, ""))
     .filter((value) => value.length >= 3))];
+}
+
+function dedupeByHost(candidates) {
+  const map = new Map();
+  for (const candidate of candidates) {
+    const normalized = normalizeHttpUrl(candidate.url);
+    if (!normalized) continue;
+    const host = new URL(normalized).hostname.toLowerCase();
+    const next = { ...candidate, url: normalized, host };
+    const previous = map.get(host);
+    if (!previous || Number(next.trust ?? 0) > Number(previous.trust ?? 0)) map.set(host, next);
+  }
+  return [...map.values()].sort((a, b) => Number(b.trust ?? 0) - Number(a.trust ?? 0));
 }
 
 function normalizeDomainishString(value) {
