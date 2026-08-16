@@ -31,7 +31,8 @@ recordStage(record, "identity", { matched: true });
 recordStage(record, "detail", { found: true });
 recordStage(record, "episode", { found: true, season: 1, episode: 1 });
 recordStage(record, "player", { found: true });
-recordStage(record, "media", { found: true, status: 206, playable: true });
+recordStage(record, "media", { found: true, streamCount: 1 });
+recordStage(record, "validation", { playable: true, playableCount: 1, statuses: [206] });
 recordStage(record, "runtime", { accepted: true });
 record.playableStreams = 1;
 
