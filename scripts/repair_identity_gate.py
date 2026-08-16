@@ -7,7 +7,8 @@ Two different decisions deliberately use two different gates:
 * routine quick repair is *repair first, classify later*: a generated candidate
   may survive staging when it has playable media and no positive evidence of
   wrong content or duration mismatch. Identity may still be unknown; the full
-  catalogue/media audit remains mandatory before publication.
+  catalogue/media audit remains mandatory before publication and may quarantine
+  conclusive offenders before rerunning the exact final audit.
 * deep repair is allowed to teach/persist a structural profile only when every
   playable sample used to justify replacement is positively tied to the
   requested work.
