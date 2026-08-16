@@ -27,7 +27,10 @@ INFRASTRUCTURE_HOSTS = {
     "arm.haglund.dev", "v3-cinemeta.strem.io", "raw.githubusercontent.com",
     "github.com", "npms.io", "lodash.com", "openjsf.org", "underscorejs.org",
 }
-ADAPTIVE_MARKER = "/* NUVIO_ADAPTIVE_RUNTIME_RECOVERY_V"
+ADAPTIVE_MARKERS = (
+    "/* NUVIO_ADAPTIVE_RUNTIME_RECOVERY_V",
+    "/* NUVIO_VERIFIED_MEDIA_RUNTIME_RECOVERY_V5",
+)
 ADAPTIVE_CALL = '})(typeof globalThis!=="undefined"?globalThis:this,'
 
 
@@ -191,14 +194,16 @@ def matching_profiles(candidate: dict[str, Any], result: dict[str, Any], source_
 
 
 def _strip_generated_adaptive_wrapper(source_text: str) -> str:
-    """Remove repository-generated adaptive wrappers before inferring native peers."""
+    """Remove repository-generated V1-V5 adaptive wrappers before peer inference."""
     cursor = 0
     parts: list[str] = []
     while True:
-        start = source_text.find(ADAPTIVE_MARKER, cursor)
-        if start < 0:
+        starts = [source_text.find(marker, cursor) for marker in ADAPTIVE_MARKERS]
+        starts = [value for value in starts if value >= 0]
+        if not starts:
             parts.append(source_text[cursor:])
             break
+        start = min(starts)
         parts.append(source_text[cursor:start])
         call = source_text.find(ADAPTIVE_CALL, start)
         end = source_text.find(");", call) if call >= 0 else -1
