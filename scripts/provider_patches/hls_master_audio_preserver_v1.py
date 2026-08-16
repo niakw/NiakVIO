@@ -19,6 +19,7 @@ from typing import Any
 
 AUDIO_MARKER = "NUVIO_HLS_MASTER_AUDIO_PRESERVER_V1"
 SAFETY_MARKER = "NUVIO_GLOBAL_RUNTIME_MEDIA_SAFETY_V1"
+HLS_INTEGRITY_MARKER = "NUVIO_HLS_RUNTIME_INTEGRITY_V1"
 
 GUARD = re.compile(
     r"if\s*\(\s*!\s*/#EXT-X-STREAM-INF/i\.test\((?P<var>[A-Za-z_$][A-Za-z0-9_$]*)\)\s*\)\s*return"
@@ -274,6 +275,32 @@ def _strip_existing_safety_wrapper(text: str) -> str:
     return (text[:old] + text[end + 2 :]).rstrip()
 
 
+def _move_hls_integrity_to_tail(text: str) -> str:
+    """Keep HLS validation as the final outer wrapper.
+
+    Catalogue and media recovery may need to resolve an embed/player first and
+    attach scoped Referer/Origin/Cookie/User-Agent context.  The HLS validator
+    must inspect those final rows, not run inside the recovery graph where it
+    can only see the provider's intermediate output.
+    """
+    start = text.find(f"/* {HLS_INTEGRITY_MARKER}:")
+    if start < 0:
+        return text
+    call = text.find('})(typeof globalThis!=="undefined"?globalThis:this,', start)
+    end = text.find(");", call) if call >= 0 else -1
+    if call < 0 or end < 0:
+        raise ValueError("unterminated HLS runtime integrity wrapper")
+    if not text[end + 2 :].strip():
+        return text
+    segment = text[start : end + 2].strip()
+    before = text[:start].rstrip()
+    after = text[end + 2 :].strip()
+    body = before
+    if after:
+        body = (body + "\n" + after) if body else after
+    return body.rstrip() + "\n" + segment + "\n"
+
+
 def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> str:
     context = kwargs.get("context") if isinstance(kwargs.get("context"), dict) else {}
     provider_id = str(context.get("provider_id") or "").strip().casefold()
@@ -315,12 +342,9 @@ def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> st
     marker_comment = f"/* {marker} */"
     current = output.find(marker_comment)
     if current >= 0:
-        later_global_layers = (
-            output.find("/* NUVIO_HLS_RUNTIME_INTEGRITY_V1:", current + 1),
-            output.find("/* NUVIO_GLOBAL_MEDIA_ENRICHMENT_V1:", current + 1),
-        )
-        if not any(position >= 0 for position in later_global_layers):
-            return output
+        later_media = output.find("/* NUVIO_GLOBAL_MEDIA_ENRICHMENT_V1:", current + 1)
+        if later_media < 0:
+            return _move_hls_integrity_to_tail(output)
 
     output = _strip_existing_safety_wrapper(output)
     wrapper = (
@@ -328,4 +352,5 @@ def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> st
         .replace("TV_PREDICATE_PLACEHOLDER", TV_PREDICATE)
         .replace("CONFIG_PLACEHOLDER", payload)
     )
-    return output.rstrip() + "\n" + wrapper.lstrip()
+    output = output.rstrip() + "\n" + wrapper.lstrip()
+    return _move_hls_integrity_to_tail(output)
