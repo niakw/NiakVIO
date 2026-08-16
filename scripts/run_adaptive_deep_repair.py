@@ -17,6 +17,7 @@ sys.path.insert(1, str(SCRIPTS))
 
 import runtime_repair  # noqa: E402
 from repair_identity_gate import automatic_repair_identity_gate  # noqa: E402
+from repair_profile_persistence import ensure_repair_profile  # noqa: E402
 
 loaded = Path(runtime_repair.__file__).resolve()
 expected = (ADAPTIVE / "runtime_repair.py").resolve()
@@ -39,6 +40,7 @@ HEALTH_CONFIG.write_text(json.dumps(health_config, ensure_ascii=False, indent=2)
 # replace their parent only when every playable fixture is positively tied to
 # the requested work and has no duration/content contradiction.
 _base_compare_results = runtime_repair.compare_results
+_base_create_repair_candidate = runtime_repair.create_repair_candidate
 
 
 def _identity_safe_compare_results(parent: dict, repaired: dict) -> tuple[bool, str]:
@@ -51,7 +53,15 @@ def _identity_safe_compare_results(parent: dict, repaired: dict) -> tuple[bool, 
     return True, reason
 
 
+def _profiled_create_repair_candidate(stage, candidate, profile_name, round_number):
+    repaired, error = _base_create_repair_candidate(
+        stage, candidate, profile_name, round_number
+    )
+    return ensure_repair_profile(repaired, profile_name), error
+
+
 runtime_repair.compare_results = _identity_safe_compare_results
+runtime_repair.create_repair_candidate = _profiled_create_repair_candidate
 
 # Do not force --max-rounds=0 anymore. deep_repair_loop now uses the configured
 # bounded round count, while promotion is protected by the identity gate above.
