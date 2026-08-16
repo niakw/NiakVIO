@@ -17,6 +17,7 @@ sys.path.insert(1, str(SCRIPTS))
 
 import runtime_repair  # noqa: E402
 from repair_identity_gate import automatic_repair_identity_gate  # noqa: E402
+from repair_profile_persistence import ensure_repair_profile  # noqa: E402
 
 loaded = Path(runtime_repair.__file__).resolve()
 expected = (ADAPTIVE / "runtime_repair.py").resolve()
@@ -56,18 +57,7 @@ def _profiled_create_repair_candidate(stage, candidate, profile_name, round_numb
     repaired, error = _base_create_repair_candidate(
         stage, candidate, profile_name, round_number
     )
-    if isinstance(repaired, dict):
-        event = repaired.get("runtime_repair")
-        if isinstance(event, dict) and not str(event.get("profile") or "").strip():
-            # Adaptive recovery historically stored its structural name in
-            # ``strategy`` and left ``profile`` blank. Deep persistence reads
-            # ``profile``; filling it here makes an accepted repair durable on
-            # future routine updates without changing the candidate schema used
-            # by existing runtime tests.
-            inferred = str(event.get("strategy") or profile_name or "").strip()
-            if inferred:
-                event["profile"] = inferred
-    return repaired, error
+    return ensure_repair_profile(repaired, profile_name), error
 
 
 runtime_repair.compare_results = _identity_safe_compare_results
