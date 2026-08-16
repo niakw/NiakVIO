@@ -32,6 +32,12 @@ ADAPTIVE_MARKERS = (
     "/* NUVIO_VERIFIED_MEDIA_RUNTIME_RECOVERY_V5",
 )
 ADAPTIVE_CALL = '})(typeof globalThis!=="undefined"?globalThis:this,'
+# `excluded` is not an availability/runtime failure. It represents a deliberate
+# policy/safety exclusion and therefore must not be turned into an unattended
+# network-repair attempt. Every other non-healthy/non-playable observation is a
+# repair input; the repair loop remains bounded and still requires strict
+# before/after playable evidence before accepting a generated candidate.
+NON_REPAIRABLE_POLICY_STATUSES = {"excluded"}
 
 
 def _mapping_entry(mapping: Any, provider_id: str) -> dict[str, Any]:
@@ -172,16 +178,19 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
 
 
 def _adaptive_failure(result: dict[str, Any]) -> bool:
+    """Return whether a runtime observation must enter bounded repair.
+
+    Availability labels are observations, not terminal decisions. Anything that
+    is not both healthy and backed by at least one playable stream is repairable
+    unless it was deliberately excluded by a separate safety/policy decision.
+    This covers legacy labels such as no_streams, blocked, unavailable and
+    provider_unreachable as well as runtime_error and future diagnostic labels.
+    """
     status = str(result.get("status") or "runtime_error")
-    playable = _base.playable_stream_count(result)
-    if status == "healthy" and playable > 0:
+    if status in NON_REPAIRABLE_POLICY_STATUSES:
         return False
-    failures = {str(test.get("failure_class") or "") for test in _base._tests(result)}
-    return status in {"no_streams", "degraded", "blocked", "provider_unreachable", "unavailable"} or bool(failures & {
-        "content_lookup_completed_no_streams", "stream_not_playback_verified",
-        "stream_http_blocked", "provider_http_blocked", "provider_http_error",
-        "worker_memory_exhausted",
-    })
+    playable = _base.playable_stream_count(result)
+    return not (status == "healthy" and playable > 0)
 
 
 def matching_profiles(candidate: dict[str, Any], result: dict[str, Any], source_text: str, config: dict[str, Any] | None = None) -> list[str]:
