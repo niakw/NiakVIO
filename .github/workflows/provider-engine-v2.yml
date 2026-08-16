@@ -16,7 +16,7 @@ jobs:
   architecture:
     name: Validate V2 core
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - name: Checkout V2 branch
         uses: actions/checkout@v4
@@ -41,6 +41,9 @@ jobs:
       - name: Provider ingestion unit tests
         run: node engine_v2/tests/provider-ingest.test.mjs
 
+      - name: Provider JS analysis unit tests
+        run: node engine_v2/tests/provider-analysis.test.mjs
+
       - name: Observe current Nuvio contract drift
         env:
           GITHUB_TOKEN: ${{ github.token }}
@@ -51,6 +54,11 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         run: node engine_v2/scripts/ingest-provider-upstreams.mjs --output engine_v2/reports/provider-upstream-inventory.json
 
+      - name: Analyze original provider JS variants
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node engine_v2/scripts/build-provider-knowledge.mjs --inventory engine_v2/reports/provider-upstream-inventory.json --output engine_v2/reports/provider-knowledge-seed.json
+
       - name: Upload V2 discovery reports
         if: always()
         uses: actions/upload-artifact@v4
@@ -59,4 +67,5 @@ jobs:
           path: |
             engine_v2/reports/nuvio-contract-drift.json
             engine_v2/reports/provider-upstream-inventory.json
+            engine_v2/reports/provider-knowledge-seed.json
           if-no-files-found: warn
