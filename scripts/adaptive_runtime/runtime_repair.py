@@ -240,7 +240,7 @@ def _apply_adaptive(parent_data: bytes, candidate: dict[str, Any]) -> tuple[byte
     spec = importlib.util.spec_from_file_location("nuvio_adaptive_runtime_recovery", script)
     if spec is None or spec.loader is None:
         raise RuntimeError(f"cannot load {script}")
-    module = importlib.util.module_from_spec(spec)
+    module = importlib.util.module_from_spec(_spec)
     spec.loader.exec_module(module)
     patched = module.apply(source_text, options=options).encode("utf-8")
     if patched == parent_data:
@@ -293,7 +293,7 @@ def create_repair_candidate(stage: Path, candidate: dict[str, Any], profile_name
         "parent_key": parent_key,
         "parent_sha256": parent_digest,
         "round": round_number,
-        "profile": "adaptive_runtime_recovery",
+        "profile": "",
         "strategy": "adaptive_runtime_recovery",
     }
     return repaired, None
