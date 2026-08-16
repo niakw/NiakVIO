@@ -9,10 +9,13 @@ gates:
 * current quick evidence must still satisfy the canonical strict gates;
 * quick may replace bytes for an already-enabled provider only when the
   canonical promoter keeps that candidate enabled; otherwise the exact current
-  published row is restored as LKG;
+  published provider is retained as LKG;
 * quick never changes the current activation set, never reactivates historical
   providers, never activates new providers, and never exits a quarantine;
 * safety-quarantined rows are restored byte-for-byte at manifest level;
+* manifest metadata already normalized by the durable override engine stays
+  canonical, so a published quick transaction is byte-idempotent on the next
+  repository pretest;
 * the canonical deep promotion report is preserved. Quick publication evidence
   is written separately to ``refresh-health-report.json``;
 * quick runs never advance deep-validation history.
@@ -25,6 +28,7 @@ from __future__ import annotations
 import copy
 import json
 import os
+import re
 import sys
 from pathlib import Path
 from typing import Any
@@ -36,6 +40,12 @@ sys.path.insert(0, str(SCRIPTS))
 
 import promote_candidates as pc  # noqa: E402
 from apply_provider_overrides import load_overrides as load_real_overrides  # noqa: E402
+from reapply_published_overrides import (  # noqa: E402
+    bump_provider_version,
+    configured_authoritative_types,
+)
+
+SEMVER_RE = re.compile(r"^(\d+)\.(\d+)\.(\d+)$")
 
 
 def _canonical(value: Any) -> str:
@@ -120,19 +130,79 @@ def _filtered_activation_lkg(payload: dict[str, Any], preserve_ids: set[str]) ->
     return output
 
 
+def _semver_key(value: Any) -> tuple[int, int, int]:
+    match = SEMVER_RE.fullmatch(str(value or "").strip())
+    if not match:
+        return (-1, -1, -1)
+    return tuple(int(part) for part in match.groups())
+
+
+def _max_semver(*values: Any) -> str:
+    candidates = [str(value).strip() for value in values if str(value or "").strip()]
+    if not candidates:
+        return "1.0.0"
+    return max(candidates, key=_semver_key)
+
+
+def _normalize_quick_manifest_row(
+    row: dict[str, Any],
+    previous: dict[str, Any] | None,
+    policy: dict[str, Any],
+) -> dict[str, Any]:
+    """Apply the same durable manifest metadata contract as reapply pretest.
+
+    The publish workflow intentionally runs ``reapply_published_overrides.py``
+    before the quick promoter. Canonical promotion can nevertheless rebuild a
+    row from upstream metadata and reintroduce a different ``supportedTypes``
+    ordering or an older provider version. The next npm pretest then normalizes
+    that row again, which dirties manifests and release hashes after publication.
+
+    Keep authoritative catalogue types and enforce a monotonic version floor.
+    A provider byte change gets at least one patch bump relative to the current
+    row; a metadata-only upstream regression may never roll the version back.
+    """
+    output = copy.deepcopy(row)
+    cid = _canonical(output.get("id"))
+    authoritative_types = configured_authoritative_types(policy, cid)
+    if authoritative_types:
+        output["supportedTypes"] = list(authoritative_types)
+
+    if previous is None:
+        original_types = row.get("supportedTypes")
+        if authoritative_types and original_types != authoritative_types:
+            output["version"] = bump_provider_version(str(output.get("version") or "1.0.0"))
+        return output
+
+    previous_version = str(previous.get("version") or "1.0.0")
+    artifact_changed = str(output.get("filename") or "") != str(previous.get("filename") or "")
+    metadata_changed = output.get("supportedTypes") != previous.get("supportedTypes")
+    minimum_version = (
+        bump_provider_version(previous_version)
+        if artifact_changed or metadata_changed
+        else previous_version
+    )
+    output["version"] = _max_semver(output.get("version"), minimum_version)
+    return output
+
+
 def _preserve_quick_manifest(
     generated: dict[str, Any],
     current: dict[str, Any],
     quarantined_ids: set[str],
+    policy: dict[str, Any],
 ) -> dict[str, Any]:
     """Allow byte refreshes while making activation changes impossible.
 
     For an existing enabled provider, a generated row is accepted only when the
     canonical promoter itself kept it enabled. A generated disabled row falls
-    back to the exact current row instead of re-enabling newly failed bytes.
-    Existing disabled providers stay disabled. Quarantines are copied from the
-    current manifest verbatim. Missing current rows are appended unchanged.
-    Brand-new rows may be discovered/published, but stay disabled until deep.
+    back to the current LKG row. Existing disabled providers stay disabled.
+    Quarantines are copied from the current manifest verbatim. Missing current
+    rows are appended unchanged. Brand-new rows may be discovered/published,
+    but stay disabled until deep.
+
+    Non-quarantine rows are then normalized through the same authoritative type
+    and monotonic-version contract used by ``reapply_published_overrides.py`` so
+    the exact published main remains clean when npm pretest runs again.
     """
     output = copy.deepcopy(generated)
     current_rows = _manifest_rows(current)
@@ -150,22 +220,28 @@ def _preserve_quick_manifest(
         if previous is None:
             row = copy.deepcopy(raw)
             row["enabled"] = False
+            row = _normalize_quick_manifest_row(row, None, policy)
         elif cid in quarantined_ids:
             row = copy.deepcopy(previous)
         elif previous.get("enabled") is True:
             if raw.get("enabled") is True:
                 row = copy.deepcopy(raw)
                 row["enabled"] = True
+                row = _normalize_quick_manifest_row(row, previous, policy)
             else:
-                row = copy.deepcopy(previous)
+                row = _normalize_quick_manifest_row(previous, previous, policy)
         else:
             row = copy.deepcopy(raw)
             row["enabled"] = False
+            row = _normalize_quick_manifest_row(row, previous, policy)
         result.append(row)
 
     for cid, row in current_rows.items():
         if cid not in seen:
-            result.append(copy.deepcopy(row))
+            if cid in quarantined_ids:
+                result.append(copy.deepcopy(row))
+            else:
+                result.append(_normalize_quick_manifest_row(row, row, policy))
 
     output["scrapers"] = result
     return output
@@ -203,6 +279,7 @@ def _postprocess_refresh_outputs(
             policy["quick_refresh_publication_is_restricted"] = True
             policy["quick_refresh_requires_current_positive_proof"] = True
             policy["quick_refresh_preserves_activation_set"] = True
+            policy["quick_refresh_preserves_normalized_manifest_metadata"] = True
             policy["deep_required_for_activation_change_or_quarantine_exit"] = True
         _write_json(REFRESH_REPORT_PATH, quick_report)
 
@@ -282,7 +359,6 @@ def main() -> int:
 
     # Routine refresh has no activation authority. Its positive activation set
     # is exactly the providers that are already enabled on current main.
-    positive_activation_ids = set(current_enabled)
     preserve_ids = set(current_enabled)
 
     overlay = _refresh_policy_overlay(
@@ -341,7 +417,7 @@ def main() -> int:
         pc.update_strict_history = original_update_history
 
     generated_manifest = pc.load_json(pc.NEXT_MANIFEST_PATH, {"scrapers": []}) or {"scrapers": []}
-    next_manifest = _preserve_quick_manifest(generated_manifest, manifest, quarantined)
+    next_manifest = _preserve_quick_manifest(generated_manifest, manifest, quarantined, policy)
     _write_json(pc.NEXT_MANIFEST_PATH, next_manifest)
 
     _postprocess_refresh_outputs(
@@ -375,7 +451,7 @@ def main() -> int:
         f"historical_active={len(historical_active)} "
         f"quarantined={len(quarantined)} "
         f"candidate_ids={len(candidate_ids)} "
-        f"activation_delta=0"
+        f"activation_delta=0 manifest_metadata=idempotent"
     )
     return int(rc)
 
