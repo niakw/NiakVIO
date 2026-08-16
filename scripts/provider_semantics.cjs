@@ -24,15 +24,42 @@ function descriptionTypeSignals(textValue) {
   return { movie, tv, anime };
 }
 
+/**
+ * Canonical metadata may aggregate several variants of the same provider. A
+ * live upstream variant may be enriched by another live upstream declaration,
+ * but the last published local baseline must never be the sole reason to widen
+ * current catalogue coverage. Otherwise stale local metadata can force a
+ * current TV-only source, for example, to prove obsolete movie/anime routes.
+ *
+ * Older/synthetic fixtures that do not expose canonical source provenance keep
+ * the historical aggregation behaviour for backwards compatibility.
+ */
+function canonicalMetadataCanExpand(candidate) {
+  const canonicalMetadata = candidate?.canonical_metadata || {};
+  const sources = Array.isArray(canonicalMetadata.sources)
+    ? canonicalMetadata.sources.map((value) => String(value || '').trim()).filter(Boolean)
+    : [];
+  if (!sources.length) return true;
+
+  const candidateSource = String(candidate?.source || '').trim();
+  return sources.some((source) => (
+    source !== 'published-baseline'
+    && (!candidateSource || source !== candidateSource)
+  ));
+}
+
 function semanticText(candidate) {
   const metadata = candidate?.metadata || {};
   const canonicalMetadata = candidate?.canonical_metadata || {};
+  const canonicalDescriptions = canonicalMetadataCanExpand(candidate)
+    ? (Array.isArray(canonicalMetadata.descriptions) ? canonicalMetadata.descriptions : [])
+    : [];
   return [
     candidate?.canonical_id,
     metadata.id,
     metadata.name,
     metadata.description,
-    ...(Array.isArray(canonicalMetadata.descriptions) ? canonicalMetadata.descriptions : []),
+    ...canonicalDescriptions,
   ].filter(Boolean).join(' ');
 }
 
@@ -60,13 +87,19 @@ function isAnimeFocusedCatalogue(candidate) {
  * anime-only description maps to the anime and movie request types, but never
  * to general TV unless series/TV coverage is explicitly declared. Mixed
  * catalogues such as Movix preserve all three categories.
+ *
+ * Canonical claims from other *live upstreams* may enrich an incomplete
+ * variant. A published-baseline-only claim cannot expand a current upstream.
  */
 function inferSupportedTypes(candidate) {
   const metadata = candidate?.metadata || {};
   const canonicalMetadata = candidate?.canonical_metadata || {};
+  const canonicalMayExpand = canonicalMetadataCanExpand(candidate);
   const declaredValues = [
     ...(Array.isArray(metadata.supportedTypes) ? metadata.supportedTypes : []),
-    ...(Array.isArray(canonicalMetadata.supportedTypes) ? canonicalMetadata.supportedTypes : []),
+    ...(canonicalMayExpand && Array.isArray(canonicalMetadata.supportedTypes)
+      ? canonicalMetadata.supportedTypes
+      : []),
   ];
   const declared = new Set(
     declaredValues.map(normalizeSupportedType).filter(Boolean),
@@ -99,6 +132,7 @@ function roundRobin(groups) {
 }
 
 module.exports = {
+  canonicalMetadataCanExpand,
   descriptionTypeSignals,
   inferSupportedTypes,
   isAnimeFocusedCatalogue,
