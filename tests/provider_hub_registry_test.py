@@ -136,8 +136,11 @@ sync = (ROOT / '.github' / 'workflows' / 'sync.yml').read_text()
 domain_refresh = (ROOT / '.github' / 'workflows' / 'domain-refresh.yml').read_text()
 assert sync.index('resolve_provider_hubs.py') < sync.index('discover_candidates.py')
 assert 'finalize_upstream_lkg.py' in sync
-assert '--apply' in domain_refresh
-assert 'finalize_domain_refresh.py' in domain_refresh
+assert '--apply' in sync, 'only the canonical ARCHI2 pipeline may apply hub/domain changes'
+assert '--apply' not in domain_refresh
+assert 'git push' not in domain_refresh and 'git commit' not in domain_refresh
 assert 'provider-domain-history.json' in domain_refresh
+assert 'git diff --exit-code' in domain_refresh
+assert 'upload-artifact' in domain_refresh
 
 print('provider hub registry tests passed')
