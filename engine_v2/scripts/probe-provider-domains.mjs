@@ -5,6 +5,7 @@ import {
   buildDomainCandidates,
   chooseBestObservedDomain,
   fetchDomainRegistryCandidates,
+  fetchHubOutboundCandidates,
   probeDomainCandidate,
 } from "../src/domain-discovery.mjs";
 
@@ -12,7 +13,7 @@ const root = path.resolve(path.dirname(new URL(import.meta.url).pathname), "..")
 const repoRoot = path.resolve(root, "..");
 const knowledgePath = argValue("--knowledge") ?? path.join(root, "reports", "provider-knowledge-seed.json");
 const outputPath = argValue("--output") ?? path.join(root, "reports", "provider-domain-observations.json");
-const maxCandidates = Math.max(1, Math.min(5, Number(argValue("--max-candidates") ?? 3)));
+const maxCandidates = Math.max(1, Math.min(6, Number(argValue("--max-candidates") ?? 4)));
 const concurrency = Math.max(1, Math.min(16, Number(argValue("--concurrency") ?? 10)));
 const timeoutMs = Math.max(1000, Math.min(10000, Number(argValue("--timeout-ms") ?? 5000)));
 
@@ -23,16 +24,32 @@ const [knowledge, hubs, history] = await Promise.all([
 ]);
 
 const providers = await mapLimit(knowledge.providers ?? [], concurrency, async (provider) => {
+  const hubCfg = hubs.providers?.[provider.id] ?? null;
+  const discoveredCandidates = [];
   const registryCandidates = [];
+  const hubCandidates = [];
+
   for (const registryUrl of provider.domainRegistries ?? []) {
     const found = await fetchDomainRegistryCandidates(registryUrl, provider, { timeoutMs });
     registryCandidates.push(...found.map((candidate) => ({ ...candidate, registryUrl })));
   }
+  discoveredCandidates.push(...registryCandidates);
+
+  const hubUrls = new Set([
+    hubCfg?.hub,
+    ...(hubCfg?.sources ?? []).filter((source) => source.type === "hub").map((source) => source.url),
+  ].filter(Boolean));
+  for (const hubUrl of hubUrls) {
+    const found = await fetchHubOutboundCandidates(hubUrl, provider, hubCfg ?? {}, { timeoutMs });
+    hubCandidates.push(...found.map((candidate) => ({ ...candidate, hubUrl })));
+  }
+  discoveredCandidates.push(...hubCandidates);
+
   const candidates = buildDomainCandidates(
     provider,
-    hubs.providers?.[provider.id],
+    hubCfg,
     history.providers?.[provider.id],
-    registryCandidates,
+    discoveredCandidates,
   ).slice(0, maxCandidates);
   const probes = [];
   for (const candidate of candidates) probes.push(await probeDomainCandidate(candidate, { timeoutMs }));
@@ -40,7 +57,9 @@ const providers = await mapLimit(knowledge.providers ?? [], concurrency, async (
   return {
     id: provider.id,
     registries: provider.domainRegistries ?? [],
+    hubUrls: [...hubUrls],
     registryCandidateCount: registryCandidates.length,
+    hubTerminalCandidateCount: hubCandidates.length,
     candidateCount: candidates.length,
     selected: selected ? {
       url: selected.http.finalUrl ?? selected.url,
@@ -54,13 +73,15 @@ const providers = await mapLimit(knowledge.providers ?? [], concurrency, async (
 });
 
 const report = {
-  schema_version: 2,
+  schema_version: 3,
   generated_at: new Date().toISOString(),
-  policy: "report-only; observations feed evidence and never publish a domain by themselves",
+  policy: "report-only; hubs are discovery sources and are never selected as terminal provider domains",
   stats: {
     providers: providers.length,
     withDomainRegistries: providers.filter((p) => p.registries.length > 0).length,
     registryCandidatesFound: providers.reduce((sum, p) => sum + p.registryCandidateCount, 0),
+    withOfficialHubs: providers.filter((p) => p.hubUrls.length > 0).length,
+    hubTerminalCandidatesFound: providers.reduce((sum, p) => sum + p.hubTerminalCandidateCount, 0),
     withCandidates: providers.filter((p) => p.candidateCount > 0).length,
     withReachableDomain: providers.filter((p) => p.selected).length,
     withoutCandidates: providers.filter((p) => p.candidateCount === 0).length,
