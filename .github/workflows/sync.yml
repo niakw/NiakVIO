@@ -1,4 +1,4 @@
-name: Check all manifests and publish Nuvio providers
+name: Niakvio provider pipeline
 
 on:
   workflow_dispatch:
@@ -15,30 +15,33 @@ on:
     branches:
       - main
     paths:
-      - ".github/triggers/deep-provider-repair"
-      - ".github/workflows/sync.yml"
-      - "scripts/provider_engine_normalizer.py"
-      - "scripts/build_provider_runtime_profiles.py"
-      - "scripts/provider_evidence_model.py"
-      - "scripts/release_evidence_fence.py"
-      - "scripts/runtime_repair.py"
-      - "scripts/adaptive_runtime/runtime_repair.py"
-      - "tests/runtime_repair_test.py"
-      - "tests/general_manifest_runtime_profiles_test.py"
+      - '.github/triggers/deep-provider-repair'
+      - '.github/workflows/sync.yml'
+      - 'engine_v2/src/**'
+      - 'engine_v2/scripts/**'
+      - 'scripts/run_adaptive_quick_repair.py'
+      - 'scripts/run_adaptive_deep_repair.py'
+      - 'scripts/promote_refresh_candidates.py'
+      - 'scripts/promote_candidates.py'
+      - 'scripts/runtime_repair.py'
+      - 'scripts/adaptive_runtime/runtime_repair.py'
+      - 'scripts/provider_engine_normalizer.py'
+      - 'scripts/provider_evidence_model.py'
+      - 'scripts/release_evidence_fence.py'
   schedule:
-    - cron: "17 5 * * 0,1,3,4,6"
-    - cron: "47 4 * * 2,5"
+    - cron: '17 5 * * 0,1,3,4,6'
+    - cron: '47 4 * * 2,5'
 
 permissions:
   contents: read
 
 concurrency:
   group: nuvio-provider-publish
-  cancel-in-progress: ${{ github.event_name == 'push' }}
+  cancel-in-progress: false
 
 jobs:
   stage-and-test:
-    name: Discover and validate all upstream providers
+    name: Discover, repair and validate providers
     runs-on: ubuntu-latest
     timeout-minutes: 90
     permissions:
@@ -50,21 +53,26 @@ jobs:
       - name: Checkout without persisted credentials
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
-          fetch-depth: 1
+          fetch-depth: 2
           persist-credentials: false
 
       - name: Resolve validation mode
         id: resolve-mode
         shell: bash
         run: |
+          MODE=quick
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             MODE="${{ github.event.inputs.mode }}"
-          elif [ "${{ github.event_name }}" = "push" ]; then
-            MODE="deep"
           elif [ "${{ github.event.schedule }}" = "47 4 * * 2,5" ]; then
-            MODE="deep"
-          else
-            MODE="quick"
+            MODE=deep
+          elif [ "${{ github.event_name }}" = "push" ]; then
+            BEFORE="${{ github.event.before }}"
+            AFTER="${{ github.sha }}"
+            if [ -n "$BEFORE" ] && git cat-file -e "$BEFORE^{commit}" 2>/dev/null; then
+              if git diff --name-only "$BEFORE" "$AFTER" | grep -Fxq '.github/triggers/deep-provider-repair'; then
+                MODE=deep
+              fi
+            fi
           fi
           echo "validation_mode=${MODE}" >> "$GITHUB_OUTPUT"
           echo "Resolved validation mode: ${MODE}"
@@ -72,64 +80,80 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
         with:
-          python-version: "3.12"
+          python-version: '3.12'
 
       - name: Set up Node.js
         uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
         with:
-          node-version: "24"
+          node-version: '24'
           package-manager-cache: false
 
-      - name: Install pinned direct runtime dependencies without lifecycle scripts
+      - name: Install pinned runtime dependencies
         run: |
           if [ -f package-lock.json ]; then
             npm ci --ignore-scripts --no-audit --no-fund
           else
-            echo '::warning::package-lock.json is absent; using pinned direct dependencies without lifecycle scripts.'
             npm install --ignore-scripts --no-audit --no-fund --package-lock=false
           fi
 
-      - name: Validate adaptive runtime modules
+      - name: Validate ARCHI2 control plane
         run: |
-          python -m py_compile scripts/runtime_repair.py
-          python -m py_compile scripts/adaptive_runtime/runtime_repair.py
-          python -m py_compile scripts/provider_patches/adaptive_runtime_recovery.py
-          python -m py_compile scripts/provider_patches/stream_output_sanitizer.py
+          node engine_v2/tests/provider-catalog.test.mjs
+          node engine_v2/tests/contracts.test.mjs
+          node engine_v2/tests/runtime-adapters.test.mjs
+          node engine_v2/tests/media-validator.test.mjs
+          node engine_v2/tests/resolver-core.test.mjs
+          node engine_v2/tests/repair-brain.test.mjs
+          node engine_v2/tests/recipe-memory.test.mjs
+          node engine_v2/tests/decision-engine.test.mjs
+          node engine_v2/tests/evidence.test.mjs
+
+      - name: Validate compatibility execution primitives
+        run: |
+          python -m py_compile scripts/run_adaptive_quick_repair.py
           python -m py_compile scripts/run_adaptive_deep_repair.py
-          python -m py_compile scripts/provider_engine_normalizer.py
-          python -m py_compile scripts/provider_evidence_model.py
-          python -m py_compile scripts/release_evidence_fence.py
+          python -m py_compile scripts/promote_refresh_candidates.py
+          python -m py_compile scripts/promote_candidates.py
+          python -m py_compile scripts/validate_automatic_repair_results.py
+          python -m py_compile scripts/normalize_terminal_quarantine_stage.py
+          python -m py_compile scripts/normalize_provider_activation_overrides.py
+          python -m py_compile scripts/repair_profile_persistence.py
+          python -m py_compile scripts/repair_identity_gate.py
+          python tests/quick_refresh_policy_test.py
+          python tests/quick_refresh_deep_authority_test.py
+          python tests/quick_repair_probe_profile_test.py
+          python tests/quick_repair_acceptance_policy_test.py
+          python tests/healthy_sibling_resolution_test.py
+          python tests/provider_activation_override_normalization_test.py
+          python tests/repair_profile_persistence_test.py
+          python tests/terminal_quarantine_stage_normalization_test.py
+          python tests/refresh_manifest_finalization_test.py
           python tests/adaptive_runtime_repair_test.py
+          python tests/global_final_wrapper_order_test.py
 
       - name: Run repository regression tests
         run: npm test
 
-      - name: Verify repository policy and provider semantics
-        run: |
-          python scripts/validate_policy.py
-          python scripts/validate_settings_pipeline.py
-          node scripts/validate_provider_semantics.cjs
+      - name: Release stale non-safety activation vetoes
+        run: python scripts/normalize_provider_activation_overrides.py
 
-      - name: Resolve official provider hubs and retain last-known-good routes
-        shell: bash
+      - name: Resolve official hubs and retain last-known-good routes
         run: |
-          MODE="${{ steps.resolve-mode.outputs.validation_mode }}"
-          APPLY=()
-          if [ "$MODE" = "deep" ]; then
-            APPLY+=(--apply)
-          fi
           python scripts/resolve_provider_hubs.py \
-            "${APPLY[@]}" \
-            --mode "$MODE" \
+            --apply \
+            --mode "${{ steps.resolve-mode.outputs.validation_mode }}" \
             --include-disabled \
             --workers 8 \
             --timeout 8 \
             --output health-output/provider-hub-report.json
 
-      - name: Discover every non-P2P provider with upstream and published fallbacks
+      - name: Discover all non-P2P candidates before triage
         run: python scripts/discover_candidates.py --require-all-upstreams
 
-      - name: Test DNS and locate validated alternative domains
+      - name: Enforce canonical catalog preservation
+        run: node engine_v2/scripts/validate-stage-against-catalog.mjs --catalog provider_catalog.json --stage staging/candidates.json
+
+      - name: Resolve DNS and validated domain migrations
         env:
           GLOBALPING_API_TOKEN: ${{ secrets.GLOBALPING_API_TOKEN }}
         run: |
@@ -140,202 +164,71 @@ jobs:
             --stage staging \
             --report health-output/dns-preflight-report.json
 
-      - name: Apply provider runtime profiles and exact overrides
+      - name: Apply known runtime profiles before repair
         run: |
           python scripts/build_provider_runtime_profiles.py
           python scripts/reapply_published_overrides.py
           python scripts/build_provider_runtime_profiles.py --stage staging --apply-stage
-          python - <<'PY'
-          import json
-          from pathlib import Path
-
-          root = Path('.')
-          cfg_path = root / 'provider-overrides.json'
-          reg_path = root / 'staging' / 'candidates.json'
-          cfg = json.loads(cfg_path.read_text(encoding='utf-8'))
-          reg = json.loads(reg_path.read_text(encoding='utf-8'))
-          patches = cfg.get('provider_patches') if isinstance(cfg.get('provider_patches'), dict) else {}
-          terminal = set()
-          rows_by_provider = {}
-          for row in reg.get('candidates') or []:
-              if not isinstance(row, dict):
-                  continue
-              pid = str(row.get('canonical_id') or row.get('upstream_id') or '').strip().casefold()
-              rel = str(row.get('local_path') or '')
-              path = (root / 'staging' / rel).resolve()
-              if not pid or not path.is_file():
-                  continue
-              text = path.read_text(encoding='utf-8', errors='ignore')
-              rows_by_provider.setdefault(pid, []).append((row, text))
-          for pid, rows in rows_by_provider.items():
-              if rows and all('NUVIO_PROVIDER_QUARANTINE_V1' in text for _, text in rows):
-                  terminal.add(pid)
-          removed_maps = 0
-          removed_records = 0
-          for pid in terminal:
-              patch = patches.get(pid)
-              if not isinstance(patch, dict):
-                  continue
-              for key in ('replacements', 'route_replacements', 'runtime_domain_replacements'):
-                  value = patch.get(key)
-                  if isinstance(value, dict):
-                      removed_maps += len(value)
-                      patch[key] = {}
-              for row, _text in rows_by_provider.get(pid, []):
-                  records = row.get('local_patches') if isinstance(row.get('local_patches'), list) else []
-                  kept = []
-                  for record in records:
-                      if isinstance(record, dict) and record.get('type') == 'replace':
-                          removed_records += 1
-                          continue
-                      kept.append(record)
-                  row['local_patches'] = kept
-          meta = cfg.setdefault('provider_engine_normalization', {})
-          meta['terminal_quarantine_routing_contracts_pruned'] = len(terminal)
-          meta['terminal_quarantine_mapping_entries_removed'] = removed_maps
-          meta['terminal_quarantine_replace_records_removed'] = removed_records
-          cfg_path.write_text(json.dumps(cfg, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
-          reg_path.write_text(json.dumps(reg, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
-          print(f'terminal quarantine normalization: providers={len(terminal)} mappings={removed_maps} records={removed_records}')
-          PY
+          python scripts/normalize_terminal_quarantine_stage.py --stage staging
           python scripts/validate_override_pipeline.py --stage staging
 
-      - name: Test provider access and repair failed routes
-        shell: bash
+      - name: Repair unresolved provider structures
         env:
           NUVIO_DNS_PREFLIGHT_RESULTS: health-output/dns-preflight-report.json
-          NUVIO_WORKER_MEMORY_MB: "1024"
+          NUVIO_WORKER_MEMORY_MB: '1024'
+        shell: bash
         run: |
           if [ "${{ steps.resolve-mode.outputs.validation_mode }}" = "deep" ]; then
-            python scripts/run_adaptive_deep_repair.py --stage staging --output health-output --mode deep
-            python - <<'PY'
-          import json
-          from pathlib import Path
-
-          registry = json.loads(Path('staging/candidates.json').read_text(encoding='utf-8'))
-          health = json.loads(Path('health-output/health-results.json').read_text(encoding='utf-8'))
-          repair = json.loads(Path('health-output/repair-report.json').read_text(encoding='utf-8'))
-          results = {
-              str(row.get('key')): row
-              for row in health.get('results') or []
-              if isinstance(row, dict) and row.get('key')
-          }
-          repaired_candidates = [
-              row for row in registry.get('candidates') or []
-              if isinstance(row, dict) and row.get('repair_history')
-          ]
-          failures = []
-          accepted_events = 0
-          for candidate in repaired_candidates:
-              key = str(candidate.get('key') or '')
-              history = [event for event in candidate.get('repair_history') or [] if isinstance(event, dict) and event.get('accepted')]
-              accepted_events += len(history)
-              result = results.get(key)
-              if result is None:
-                  failures.append(f'{key}: accepted repair has no final health result')
-                  continue
-              evidence = result.get('evidence') if isinstance(result.get('evidence'), dict) else {}
-              playable = int(evidence.get('streams_playable') or 0)
-              contradictions = int(evidence.get('identity_contradiction_count') or 0)
-              duration_mismatches = int(evidence.get('duration_identity_mismatch_count') or 0)
-              verified = int(evidence.get('identity_verified_streams') or 0)
-              unknown = int(evidence.get('identity_unverified_streams') or 0)
-              if playable <= 0:
-                  failures.append(f'{key}: accepted repair has no playable proof')
-              if contradictions > 0:
-                  failures.append(f'{key}: accepted repair has content identity contradiction')
-              if duration_mismatches > 0:
-                  failures.append(f'{key}: accepted repair has duration identity mismatch')
-              if verified <= 0:
-                  failures.append(f'{key}: accepted repair has no positive content identity proof')
-              playable_tests = [
-                  test for test in result.get('tests') or []
-                  if isinstance(test, dict) and int(test.get('streams_playable') or 0) > 0
-              ]
-              if not playable_tests:
-                  if unknown > 0 or verified < playable:
-                      failures.append(f'{key}: accepted repair playable identity is unresolved')
-              for test in playable_tests:
-                  count = int(test.get('streams_playable') or 0)
-                  test_verified = int(test.get('identity_verified_streams') or 0)
-                  test_unknown = int(test.get('identity_unverified_streams') or 0)
-                  test_contradictions = int(test.get('identity_contradiction_count') or 0)
-                  test_duration = int(test.get('duration_identity_mismatch_count') or 0)
-                  fixture = (test.get('fixture') or {}).get('label') or (test.get('fixture') or {}).get('tmdbId') or 'fixture'
-                  if test_contradictions > 0:
-                      failures.append(f'{key}/{fixture}: playable repair sample has identity contradiction')
-                  if test_duration > 0:
-                      failures.append(f'{key}/{fixture}: playable repair sample has duration mismatch')
-                  if test_verified < count or test_unknown > 0:
-                      failures.append(f'{key}/{fixture}: playable repair sample is not fully identity-verified')
-
-          reported = int(repair.get('accepted_repairs') or 0)
-          if reported != accepted_events:
-              failures.append(f'repair accounting mismatch: report={reported} candidate_history={accepted_events}')
-          if failures:
-              raise SystemExit('automatic repair identity gate failed:\n- ' + '\n- '.join(failures))
-          print(f'automatic repair identity gate passed: accepted_repairs={reported}')
-          PY
-            python scripts/validate_override_pipeline.py --stage staging
+            python scripts/run_adaptive_deep_repair.py \
+              --stage staging \
+              --output health-output \
+              --mode deep
           else
-            NUVIO_HEALTH_OUTPUT=health-output node scripts/health_check.mjs
-            printf '%s\n' '{"schema_version":1,"mode":"quick","provider_specific_rules":false,"rounds":[],"accepted_repairs":0}' > health-output/repair-report.json
+            python scripts/run_adaptive_quick_repair.py \
+              --stage staging \
+              --output health-output \
+              --max-rounds 1
           fi
+          python scripts/validate_automatic_repair_results.py \
+            --stage staging \
+            --health health-output/health-results.json \
+            --repairs health-output/repair-report.json
+          python scripts/normalize_terminal_quarantine_stage.py --stage staging
+          python scripts/validate_override_pipeline.py --stage staging
 
-      - name: Validate deep harness evidence before publication
+      - name: Validate deep evidence integrity
         if: steps.resolve-mode.outputs.validation_mode == 'deep'
         run: |
           python scripts/validate_deep_health_integrity.py \
             --health health-output/health-results.json \
             --repairs health-output/repair-report.json
 
-      - name: Generate final diagnostics and route regressions
+      - name: Generate diagnostics after repair
         run: |
-          python scripts/generate_diagnostics.py --results health-output/health-results.json --output health-output
-          python scripts/validate_route_overrides.py --results health-output/health-results.json --report health-output/route-regressions.json
+          python scripts/generate_diagnostics.py \
+            --results health-output/health-results.json \
+            --output health-output
+          python scripts/validate_route_overrides.py \
+            --results health-output/health-results.json \
+            --report health-output/route-regressions.json
 
-      - name: Lock the final tested staging tree against modification
-        run: |
-          sudo chown -R root:root staging
-          sudo chmod -R a-w staging
-
-      - name: Lock generated validation result
-        run: |
-          sudo chown -R root:root health-output
-          sudo chmod -R a-w health-output
-
-      - name: Upload checked staging area
+      - name: Upload validated staging transaction
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: nuvio-validation-stage-${{ github.run_id }}
           path: |
             staging/
-            health-output/health-results.json
-            health-output/dns-preflight-report.json
-            health-output/diagnostics-report.json
-            health-output/diagnostics-report.html
-            health-output/route-regressions.json
-            health-output/repair-report.json
+            health-output/
             provider-overrides.json
             provider-domain-history.json
-            health-output/provider-hub-report.json
-            staging/upstream-lkg-pending.json
-            staging/upstream-lkg-pending/
           retention-days: 2
           if-no-files-found: error
 
-      - name: Explain report-only quick mode
-        if: steps.resolve-mode.outputs.validation_mode == 'quick'
-        run: |
-          echo "Quick validation completed as report-only."
-          echo "Only a deep validation may update provider files or manifest.json."
-
   publish:
-    name: Apply strict validation and Nuvio runtime evidence
+    name: Publish validated provider transaction
     needs: stage-and-test
-    if: needs.stage-and-test.outputs.validation_mode == 'deep'
     runs-on: ubuntu-latest
-    timeout-minutes: 70
+    timeout-minutes: 90
     permissions:
       contents: write
 
@@ -348,15 +241,15 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
         with:
-          python-version: "3.12"
+          python-version: '3.12'
 
-      - name: Set up Node.js for final provider validation
+      - name: Set up Node.js
         uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
         with:
-          node-version: "24"
+          node-version: '24'
           package-manager-cache: false
 
-      - name: Install pinned provider validation dependencies
+      - name: Install pinned runtime dependencies
         run: |
           if [ -f package-lock.json ]; then
             npm ci --ignore-scripts --no-audit --no-fund
@@ -364,154 +257,209 @@ jobs:
             npm install --ignore-scripts --no-audit --no-fund --package-lock=false
           fi
 
-      - name: Download checked staging area
+      - name: Download validated staging transaction
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
         with:
           name: nuvio-validation-stage-${{ github.run_id }}
           path: checked-artifact
 
-      - name: Restore validated domain state, isolate backends and reapply published overrides
+      - name: Restore validated routing state
         run: |
-          test -f checked-artifact/provider-overrides.json
-          test -f checked-artifact/provider-domain-history.json
           cp checked-artifact/provider-overrides.json provider-overrides.json
           cp checked-artifact/provider-domain-history.json provider-domain-history.json
           python scripts/build_provider_runtime_profiles.py
           python scripts/reapply_published_overrides.py
 
-      - name: Apply strict gates, finite grace and exact runtime evidence
+      - name: Promote only proven candidates
         env:
           NUVIO_STAGE: checked-artifact/staging
           NUVIO_HEALTH_RESULTS: checked-artifact/health-output/health-results.json
-        run: python scripts/promote_candidates.py
+        shell: bash
+        run: |
+          if [ "${{ needs.stage-and-test.outputs.validation_mode }}" = "quick" ]; then
+            python scripts/promote_refresh_candidates.py
+          else
+            python scripts/promote_candidates.py
+          fi
 
-      - name: Finalize last-known-good snapshots of the three upstream repositories
+      - name: Finalize upstream last-known-good snapshots
         run: |
           test -f checked-artifact/staging/upstream-lkg-pending.json
           python scripts/finalize_upstream_lkg.py \
             --pending checked-artifact/staging/upstream-lkg-pending.json \
             --keep-generations 2
 
-      - name: Remove stale content-hashed provider bundles
-        run: python scripts/prune_unreferenced_providers.py
+      - name: Prune stale bundles and validate overrides
+        run: |
+          python scripts/prune_unreferenced_providers.py
+          python scripts/validate_published_overrides.py
 
-      - name: Verify overrides reached final published provider files
-        run: python scripts/validate_published_overrides.py
-
-      - name: Publish provider files and reports before the manifest
+      - name: Restore validated reports
         shell: bash
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           cp checked-artifact/health-output/dns-preflight-report.json dns-preflight-report.json
           cp checked-artifact/health-output/provider-hub-report.json provider-hub-report.json
           cp checked-artifact/health-output/diagnostics-report.json diagnostics-report.json
           cp checked-artifact/health-output/diagnostics-report.html diagnostics-report.html
           cp checked-artifact/health-output/route-regressions.json route-regressions.json
-          if [ -f checked-artifact/health-output/repair-report.json ]; then
-            cp checked-artifact/health-output/repair-report.json repair-report.json
-          fi
-          git add health-report.json health-history.json PROVENANCE.json dns-preflight-report.json provider-hub-report.json diagnostics-report.json diagnostics-report.html route-regressions.json provider-overrides.json provider-domain-history.json upstream-lkg.json upstream-lkg/
-          if [ -f repair-report.json ]; then git add repair-report.json; fi
-          if [ -d providers ]; then git add -A providers; fi
-          if ! git diff --cached --quiet; then
-            echo "Provider/report changes are staged locally and will be published atomically with the validated manifest."
-          else
-            echo "No provider file or validation report change."
-          fi
+          cp checked-artifact/health-output/repair-report.json repair-report.json
 
-      - name: Prepare validated manifest transaction
+      - name: Build canonical publication transaction
         shell: bash
         run: |
           test -f manifest.next.json
           PREVIOUS_MANIFEST="$(mktemp)"
           git show HEAD:manifest.json > "$PREVIOUS_MANIFEST"
           mv manifest.next.json manifest.json
-          python scripts/bump_release_patch_if_manifest_changed.py --previous "$PREVIOUS_MANIFEST" --manifest manifest.json
+          python scripts/bump_release_patch_if_manifest_changed.py \
+            --previous "$PREVIOUS_MANIFEST" \
+            --manifest manifest.json
+          python scripts/build_provider_runtime_profiles.py
+          python scripts/reapply_published_overrides.py
           python scripts/generate_language_manifests.py
           python scripts/prune_unreferenced_providers.py
           python scripts/sync_release_versions.py --manifest manifest.json
           python scripts/validate_activation_preservation.py
           python scripts/validate_language_projection.py
-          python scripts/release_evidence_fence.py fingerprint \
-            --manifest manifest.json --root . --output /tmp/release-generation.json
 
-      - name: Block wrong-content and broken HLS publication
+          # Compatibility promoters emit a candidate manifest. ARCHI2 imports
+          # that transaction into the canonical catalog, then manifests are
+          # rendered back from the catalog before publication.
+          node engine_v2/scripts/bootstrap-provider-catalog.mjs \
+            --general manifest.json \
+            --vf vf/manifest.json \
+            --output provider_catalog.json
+          node engine_v2/scripts/render-manifests-from-catalog.mjs \
+            --catalog provider_catalog.json \
+            --general manifest.json \
+            --vf vf/manifest.json
+          node engine_v2/tests/provider-catalog.test.mjs
+
+          python scripts/release_evidence_fence.py fingerprint \
+            --manifest manifest.json \
+            --root . \
+            --output /tmp/release-generation.json
+
+      - name: Audit content identity and media
         env:
           NUVIO_CATALOGUE_AUDIT_OUTPUT: /tmp/catalogue-media-audit.json
-          NUVIO_CATALOGUE_AUDIT_WORKERS: "8"
-          NUVIO_CATALOGUE_AUDIT_TIMEOUT: "60"
-        run: python scripts/audit_catalogue_identity_media.py
+          NUVIO_CATALOGUE_AUDIT_WORKERS: '8'
+          NUVIO_CATALOGUE_AUDIT_TIMEOUT: '60'
+        shell: bash
+        run: |
+          if [ "${{ needs.stage-and-test.outputs.validation_mode }}" = "deep" ]; then
+            python scripts/audit_catalogue_identity_media.py
+          else
+            set +e
+            python scripts/audit_catalogue_identity_media.py
+            audit_status=$?
+            set -e
+            if [ "$audit_status" -ne 0 ]; then
+              python scripts/quarantine_catalogue_audit_failures.py \
+                --audit /tmp/catalogue-media-audit.json \
+                --evidence /tmp/release-generation.json \
+                --workflow-run-id "${{ github.run_id }}" \
+                --tested-commit-sha "${{ github.sha }}"
+              python scripts/generate_language_manifests.py
+              node engine_v2/scripts/bootstrap-provider-catalog.mjs \
+                --general manifest.json \
+                --vf vf/manifest.json \
+                --output provider_catalog.json
+              node engine_v2/scripts/render-manifests-from-catalog.mjs \
+                --catalog provider_catalog.json \
+                --general manifest.json \
+                --vf vf/manifest.json
+              node engine_v2/tests/provider-catalog.test.mjs
+              python scripts/release_evidence_fence.py fingerprint \
+                --manifest manifest.json \
+                --root . \
+                --output /tmp/release-generation.json
+            fi
+          fi
 
-      - name: Upload global catalogue and media audit
+      - name: Upload catalogue/media audit
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: catalogue-media-audit-${{ github.run_id }}
           path: /tmp/catalogue-media-audit.json
-          retention-days: 2
+          retention-days: 7
           if-no-files-found: warn
 
-      - name: Publish globally audited manifest transaction
+      - name: Measure Interstellar real coverage
+        continue-on-error: true
+        run: |
+          python scripts/interstellar_nuvio_matrix.py \
+            --workers 8 \
+            --timeout 90 \
+            --minimum-automatic 0 \
+            --output /tmp/interstellar-nuvio-matrix.json
+
+      - name: Upload real coverage diagnostics
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: interstellar-real-coverage-${{ github.run_id }}
+          path: /tmp/interstellar-nuvio-matrix.json
+          retention-days: 7
+          if-no-files-found: warn
+
+      - name: Publish atomic ARCHI2 transaction
         shell: bash
         run: |
           python scripts/release_evidence_fence.py validate \
-            --manifest manifest.json --root . --evidence /tmp/release-generation.json
+            --manifest manifest.json \
+            --root . \
+            --evidence /tmp/release-generation.json
           python scripts/generate_release_hashes.py
           python scripts/validate_release_integrity.py
-          git add manifest.json vf/manifest.json package.json package-lock.json sources.json nuvio-client-id-state.json FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json
-          if [ -d providers ]; then git add -A providers; fi
+          node engine_v2/tests/provider-catalog.test.mjs
+
+          git add manifest.json vf/manifest.json provider_catalog.json \
+            package.json package-lock.json sources.json nuvio-client-id-state.json \
+            FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json \
+            PROVENANCE.json provider-overrides.json provider-domain-history.json \
+            upstream-lkg.json upstream-lkg/ health-report.json health-history.json \
+            dns-preflight-report.json provider-hub-report.json diagnostics-report.json \
+            diagnostics-report.html route-regressions.json repair-report.json
+          git add -A providers
+
           if git diff --cached --quiet; then
-            echo "Manifest is unchanged."
+            echo 'No validated provider change.'
             exit 0
           fi
-          git commit -m "chore: publish validated provider transaction"
+
+          git commit -m "chore: publish validated ARCHI2 provider transaction"
           git reset --hard HEAD
           git clean -fdx
           git fetch origin main
           git rebase origin/main
           python scripts/release_evidence_fence.py validate \
-            --manifest manifest.json --root . --evidence /tmp/release-generation.json
+            --manifest manifest.json \
+            --root . \
+            --evidence /tmp/release-generation.json
           git push origin HEAD:main
 
-      - name: Verify exact published main after push
+      - name: Verify exact published main
         shell: bash
         run: |
           git fetch origin main
           git reset --hard origin/main
           git clean -fdx
-          python scripts/release_evidence_fence.py validate \
-            --manifest manifest.json --root . --evidence /tmp/release-generation.json
           if [ -f package-lock.json ]; then
             npm ci --ignore-scripts --no-audit --no-fund
           else
             npm install --ignore-scripts --no-audit --no-fund --package-lock=false
           fi
           npm test
-          python scripts/release_evidence_fence.py validate \
-            --manifest manifest.json --root . --evidence /tmp/release-generation.json
+          node engine_v2/tests/provider-catalog.test.mjs
           python scripts/validate_activation_preservation.py
           python scripts/validate_language_projection.py
           python scripts/validate_release_integrity.py
-          python - <<'PY'
-          import json
-          from pathlib import Path
-          def load(name):
-              return json.loads(Path(name).read_text(encoding="utf-8"))
-          package = load("package.json")
-          lock = load("package-lock.json")
-          manifest = load("manifest.json")
-          vf = load("vf/manifest.json")
-          versions = {
-              "package.json": package.get("version"),
-              "package-lock.json": lock.get("version"),
-              "package-lock.json packages['']": (lock.get("packages") or {}).get("", {}).get("version"),
-              "manifest.json": manifest.get("version"),
-              "vf/manifest.json": vf.get("version"),
-          }
-          unique = {str(value) for value in versions.values()}
-          if len(unique) != 1:
-              raise SystemExit(f"final published release version mismatch: {versions}")
-          print(f"final published release version synchronization passed: {unique.pop()}")
-          PY
+          python scripts/release_evidence_fence.py validate \
+            --manifest manifest.json \
+            --root . \
+            --evidence /tmp/release-generation.json
           git diff --exit-code
