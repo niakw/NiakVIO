@@ -56,7 +56,9 @@ assert quick["maximum_fixture_duration_ratio"] == 1.8
 # The health harness currently activates per-category fixture selection only for
 # requestedMode=deep. Routine repair therefore executes that selector through a
 # temporary deep slot which must be exactly the bounded quick profile, not the
-# ordinary expensive deep configuration.
+# ordinary expensive deep configuration. Provider semantics are validated by
+# the repository npm test in the same workflow, so stale published-baseline
+# type claims cannot silently widen the categories selected here.
 assert deep_runtime_slot == quick
 assert deep_runtime_slot["max_streams_to_probe"] == 2
 assert deep_runtime_slot["fallback_fixture_limit_per_category"] == 0
