@@ -1,6 +1,6 @@
 {
   "schema_version": 63,
-  "updated_at": "2026-08-16T10:53:13.617642+00:00",
+  "updated_at": "2026-08-16T11:34:12.189180+00:00",
   "variants": {
     "gowaru:anime-sama": {
       "source": "gowaru",
@@ -8,9 +8,9 @@
       "canonical_id": "anime-sama",
       "sha256": "148b3249856a7dbb63433f13d41e61cbbb8a66a28a9d8b9dc108a3427a2fec6a",
       "last_status": "healthy",
-      "last_score": 85,
+      "last_score": 82,
       "last_mode": "quick",
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_success_at": "2026-07-26T03:32:36.205204+00:00",
       "total_checks": 4,
       "total_successes": 4,
@@ -38,7 +38,7 @@
         },
         "03_minimum_score": {
           "passed": true,
-          "evidence": 85,
+          "evidence": 82,
           "threshold": 55
         },
         "04_fixture_and_type_coverage": {
@@ -85,7 +85,7 @@
           "evidence": {
             "distinct_reachable_hosts": 1,
             "reachable_hosts": [
-              "prx-1476-ant.vmpx.online"
+              "prx-1546-ant.vmpx.online"
             ]
           },
           "threshold": 1
@@ -105,7 +105,7 @@
           "passed": true,
           "evidence": {
             "effective_max_height": 1080,
-            "max_bandwidth": 2514907,
+            "max_bandwidth": null,
             "manifest_effective_height": null,
             "manifest_curation_score": 6,
             "manifest_quality_signals": [
@@ -175,8 +175,8 @@
       },
       "last_performance_result": {
         "passed": true,
-        "provider_median_latency_ms": 12995,
-        "stream_median_latency_ms": 645,
+        "provider_median_latency_ms": 3132,
+        "stream_median_latency_ms": 757,
         "maximum_provider_median_latency_ms": 15000,
         "maximum_stream_median_latency_ms": 12000
       },
@@ -190,10 +190,10 @@
       "upstream_id": "animesama-co",
       "canonical_id": "animesama-co",
       "sha256": "bf14f5caa359c5ead96379d7fef117d8b866de2017795353ca44aed1582b0579",
-      "last_status": "no_streams",
-      "last_score": 10,
+      "last_status": "healthy",
+      "last_score": 75,
       "last_mode": "quick",
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_success_at": "2026-07-26T03:32:36.205204+00:00",
       "total_checks": 4,
       "total_successes": 2,
@@ -209,38 +209,41 @@
         "01_policy_safe_no_p2p": {
           "passed": true,
           "evidence": {
-            "status": "no_streams",
+            "status": "healthy",
             "disallowed_streams": 0
           },
           "threshold": "no disallowed P2P/torrent output"
         },
         "02_healthy_functional_status": {
-          "passed": false,
-          "evidence": "no_streams",
+          "passed": true,
+          "evidence": "healthy",
           "threshold": "healthy or reachable server/API"
         },
         "03_minimum_score": {
-          "passed": false,
-          "evidence": 10,
+          "passed": true,
+          "evidence": 75,
           "threshold": 55
         },
         "04_fixture_and_type_coverage": {
-          "passed": false,
+          "passed": true,
           "evidence": {
-            "healthy_fixtures": 0,
-            "fixtures_tested": 2,
-            "healthy_fixture_ratio": 0.0,
+            "healthy_fixtures": 1,
+            "fixtures_tested": 1,
+            "healthy_fixture_ratio": 1.0,
             "required_categories": [
-              "anime",
-              "movie"
+              "anime"
             ],
             "original_required_categories": [
               "anime",
               "movie"
             ],
-            "healthy_categories": [],
-            "activation_supported_types": [],
-            "type_scope_applied": false
+            "healthy_categories": [
+              "anime"
+            ],
+            "activation_supported_types": [
+              "anime"
+            ],
+            "type_scope_applied": true
           },
           "threshold": {
             "minimum_healthy_fixtures": 1,
@@ -250,10 +253,10 @@
           }
         },
         "05_stream_and_fixture_coverage": {
-          "passed": false,
+          "passed": true,
           "evidence": {
-            "playable_streams": 0,
-            "playable_fixtures": 0
+            "playable_streams": 1,
+            "playable_fixtures": 1
           },
           "threshold": {
             "minimum_playable_streams": 1,
@@ -261,18 +264,20 @@
           }
         },
         "06_distinct_host_diversity": {
-          "passed": false,
+          "passed": true,
           "evidence": {
-            "distinct_reachable_hosts": 0,
-            "reachable_hosts": []
+            "distinct_reachable_hosts": 1,
+            "reachable_hosts": [
+              "video.sibnet.ru"
+            ]
           },
           "threshold": 1
         },
         "07_verified_payload_playability": {
-          "passed": false,
+          "passed": true,
           "evidence": {
-            "payload_verified_streams": 0,
-            "playable_streams": 0
+            "payload_verified_streams": 1,
+            "playable_streams": 1
           },
           "threshold": {
             "minimum_payload_verified_streams": 1,
@@ -280,9 +285,9 @@
           }
         },
         "08_quality_and_bitrate": {
-          "passed": false,
+          "passed": true,
           "evidence": {
-            "effective_max_height": null,
+            "effective_max_height": 720,
             "max_bandwidth": null,
             "manifest_effective_height": null,
             "manifest_curation_score": 6,
@@ -308,10 +313,15 @@
           "passed": true,
           "evidence": {
             "accepted_audio_languages": [],
-            "accepted_subtitle_languages": [],
+            "accepted_subtitle_languages": [
+              "fr"
+            ],
             "accepted_subtitles_advertised": 0,
             "accepted_subtitles_reachable": 0,
-            "runtime_observed_languages": [],
+            "runtime_observed_languages": [
+              "fr",
+              "vostfr"
+            ],
             "manifest_accepted_languages": [
               "fr"
             ],
@@ -333,7 +343,7 @@
           "passed": true,
           "evidence": {
             "identity_verified_streams": 0,
-            "identity_unverified_streams": 0,
+            "identity_unverified_streams": 1,
             "identity_contradiction_count": 0,
             "duration_identity_mismatch_count": 0
           },
@@ -345,13 +355,13 @@
         }
       },
       "last_performance_result": {
-        "passed": false,
-        "provider_median_latency_ms": null,
-        "stream_median_latency_ms": null,
+        "passed": true,
+        "provider_median_latency_ms": 5077,
+        "stream_median_latency_ms": 4533,
         "maximum_provider_median_latency_ms": 15000,
         "maximum_stream_median_latency_ms": 12000
       },
-      "last_ci_classification": "inconclusive",
+      "last_ci_classification": "conclusive_success",
       "consecutive_inconclusive_deep_checks": 0,
       "strict_validated_sha256": null,
       "strict_last_success_at": null
@@ -364,7 +374,7 @@
       "last_status": "blocked",
       "last_score": 10,
       "last_mode": "quick",
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -535,7 +545,7 @@
       "last_status": "no_streams",
       "last_score": 10,
       "last_mode": "quick",
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_success_at": "2026-07-26T03:32:36.205204+00:00",
       "total_checks": 4,
       "total_successes": 2,
@@ -703,10 +713,10 @@
       "upstream_id": "animoflix",
       "canonical_id": "animoflix",
       "sha256": "a09cea0e0450fa9386142597c1f5298a52eaafb65845db6e629f813d25e6e77e",
-      "last_status": "no_streams",
+      "last_status": "runtime_error",
       "last_score": 10,
       "last_mode": "quick",
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -722,14 +732,14 @@
         "01_policy_safe_no_p2p": {
           "passed": true,
           "evidence": {
-            "status": "no_streams",
+            "status": "runtime_error",
             "disallowed_streams": 0
           },
           "threshold": "no disallowed P2P/torrent output"
         },
         "02_healthy_functional_status": {
           "passed": false,
-          "evidence": "no_streams",
+          "evidence": "runtime_error",
           "threshold": "healthy or reachable server/API"
         },
         "03_minimum_score": {
@@ -877,7 +887,7 @@
       "last_status": "no_streams",
       "last_score": 10,
       "last_mode": "quick",
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -1048,7 +1058,7 @@
       "last_status": "blocked",
       "last_score": 10,
       "last_mode": "quick",
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -1219,7 +1229,7 @@
       "last_status": "no_streams",
       "last_score": 10,
       "last_mode": "quick",
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -1390,7 +1400,7 @@
       "last_status": "healthy",
       "last_score": 74,
       "last_mode": "quick",
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_success_at": "2026-07-26T03:32:36.205204+00:00",
       "total_checks": 4,
       "total_successes": 4,
@@ -1553,8 +1563,8 @@
       },
       "last_performance_result": {
         "passed": true,
-        "provider_median_latency_ms": 3348,
-        "stream_median_latency_ms": 742,
+        "provider_median_latency_ms": 2356,
+        "stream_median_latency_ms": 566,
         "maximum_provider_median_latency_ms": 15000,
         "maximum_stream_median_latency_ms": 12000
       },
@@ -1571,7 +1581,7 @@
       "last_status": "provider_unreachable",
       "last_score": 10,
       "last_mode": "quick",
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_success_at": "2026-07-26T03:32:36.205204+00:00",
       "total_checks": 4,
       "total_successes": 3,
@@ -1745,7 +1755,7 @@
       "last_status": "blocked",
       "last_score": 10,
       "last_mode": "quick",
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_success_at": "2026-07-26T03:32:36.205204+00:00",
       "total_checks": 4,
       "total_successes": 3,
@@ -1921,7 +1931,7 @@
       "last_status": "healthy",
       "last_score": 81,
       "last_mode": "quick",
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_success_at": "2026-07-26T03:32:36.205204+00:00",
       "total_checks": 4,
       "total_successes": 4,
@@ -1996,7 +2006,7 @@
           "evidence": {
             "distinct_reachable_hosts": 1,
             "reachable_hosts": [
-              "prx-1353-ant-23.vmpx.online"
+              "prx-1546-ant.vmpx.online"
             ]
           },
           "threshold": 1
@@ -2086,8 +2096,8 @@
       },
       "last_performance_result": {
         "passed": true,
-        "provider_median_latency_ms": 9919,
-        "stream_median_latency_ms": 547,
+        "provider_median_latency_ms": 3764,
+        "stream_median_latency_ms": 501,
         "maximum_provider_median_latency_ms": 15000,
         "maximum_stream_median_latency_ms": 12000
       },
@@ -2104,7 +2114,7 @@
       "last_status": "no_streams",
       "last_score": 10,
       "last_mode": "quick",
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_success_at": "2026-07-26T03:32:36.205204+00:00",
       "total_checks": 4,
       "total_successes": 3,
@@ -2276,7 +2286,7 @@
       "last_status": "unavailable",
       "last_score": 10,
       "last_mode": "quick",
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_success_at": "2026-07-26T03:32:36.205204+00:00",
       "total_checks": 4,
       "total_successes": 4,
@@ -2445,10 +2455,10 @@
       "upstream_id": "voiranime-rip",
       "canonical_id": "voiranime-rip",
       "sha256": "4b2cfe8cb8461b45dced934cdf80c333650e0bb78c596d7b328709d39809a8ed",
-      "last_status": "no_streams",
-      "last_score": 10,
+      "last_status": "healthy",
+      "last_score": 75,
       "last_mode": "quick",
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_success_at": "2026-07-26T03:32:36.205204+00:00",
       "total_checks": 4,
       "total_successes": 2,
@@ -2464,38 +2474,41 @@
         "01_policy_safe_no_p2p": {
           "passed": true,
           "evidence": {
-            "status": "no_streams",
+            "status": "healthy",
             "disallowed_streams": 0
           },
           "threshold": "no disallowed P2P/torrent output"
         },
         "02_healthy_functional_status": {
-          "passed": false,
-          "evidence": "no_streams",
+          "passed": true,
+          "evidence": "healthy",
           "threshold": "healthy or reachable server/API"
         },
         "03_minimum_score": {
-          "passed": false,
-          "evidence": 10,
+          "passed": true,
+          "evidence": 75,
           "threshold": 55
         },
         "04_fixture_and_type_coverage": {
-          "passed": false,
+          "passed": true,
           "evidence": {
-            "healthy_fixtures": 0,
-            "fixtures_tested": 2,
-            "healthy_fixture_ratio": 0.0,
+            "healthy_fixtures": 1,
+            "fixtures_tested": 1,
+            "healthy_fixture_ratio": 1.0,
             "required_categories": [
-              "anime",
-              "movie"
+              "anime"
             ],
             "original_required_categories": [
               "anime",
               "movie"
             ],
-            "healthy_categories": [],
-            "activation_supported_types": [],
-            "type_scope_applied": false
+            "healthy_categories": [
+              "anime"
+            ],
+            "activation_supported_types": [
+              "anime"
+            ],
+            "type_scope_applied": true
           },
           "threshold": {
             "minimum_healthy_fixtures": 1,
@@ -2505,10 +2518,10 @@
           }
         },
         "05_stream_and_fixture_coverage": {
-          "passed": false,
+          "passed": true,
           "evidence": {
-            "playable_streams": 0,
-            "playable_fixtures": 0
+            "playable_streams": 1,
+            "playable_fixtures": 1
           },
           "threshold": {
             "minimum_playable_streams": 1,
@@ -2516,18 +2529,20 @@
           }
         },
         "06_distinct_host_diversity": {
-          "passed": false,
+          "passed": true,
           "evidence": {
-            "distinct_reachable_hosts": 0,
-            "reachable_hosts": []
+            "distinct_reachable_hosts": 1,
+            "reachable_hosts": [
+              "video.sibnet.ru"
+            ]
           },
           "threshold": 1
         },
         "07_verified_payload_playability": {
-          "passed": false,
+          "passed": true,
           "evidence": {
-            "payload_verified_streams": 0,
-            "playable_streams": 0
+            "payload_verified_streams": 1,
+            "playable_streams": 1
           },
           "threshold": {
             "minimum_payload_verified_streams": 1,
@@ -2535,9 +2550,9 @@
           }
         },
         "08_quality_and_bitrate": {
-          "passed": false,
+          "passed": true,
           "evidence": {
-            "effective_max_height": null,
+            "effective_max_height": 720,
             "max_bandwidth": null,
             "manifest_effective_height": null,
             "manifest_curation_score": 6,
@@ -2563,10 +2578,15 @@
           "passed": true,
           "evidence": {
             "accepted_audio_languages": [],
-            "accepted_subtitle_languages": [],
+            "accepted_subtitle_languages": [
+              "fr"
+            ],
             "accepted_subtitles_advertised": 0,
             "accepted_subtitles_reachable": 0,
-            "runtime_observed_languages": [],
+            "runtime_observed_languages": [
+              "fr",
+              "vostfr"
+            ],
             "manifest_accepted_languages": [
               "fr"
             ],
@@ -2588,7 +2608,7 @@
           "passed": true,
           "evidence": {
             "identity_verified_streams": 0,
-            "identity_unverified_streams": 0,
+            "identity_unverified_streams": 1,
             "identity_contradiction_count": 0,
             "duration_identity_mismatch_count": 0
           },
@@ -2600,13 +2620,13 @@
         }
       },
       "last_performance_result": {
-        "passed": false,
-        "provider_median_latency_ms": null,
-        "stream_median_latency_ms": null,
+        "passed": true,
+        "provider_median_latency_ms": 4450,
+        "stream_median_latency_ms": 3841,
         "maximum_provider_median_latency_ms": 15000,
         "maximum_stream_median_latency_ms": 12000
       },
-      "last_ci_classification": "inconclusive",
+      "last_ci_classification": "conclusive_success",
       "consecutive_inconclusive_deep_checks": 0,
       "strict_validated_sha256": null,
       "strict_last_success_at": null
@@ -2619,7 +2639,7 @@
       "last_status": "blocked",
       "last_score": 10,
       "last_mode": "quick",
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -2790,7 +2810,7 @@
       "last_status": "unavailable",
       "last_score": 10,
       "last_mode": "quick",
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -2963,11 +2983,11 @@
       "source": "gowaru",
       "upstream_id": "papadustream",
       "canonical_id": "papadustream",
-      "sha256": "45d7da3ca41adc240b5ce2af5781de81488512c772bf6357b8ba834ddb103cbc",
-      "last_status": "healthy",
-      "last_score": 92,
+      "sha256": "4cfcd5cac1abc72bba41d8c6d303b4a6dac6e777eeed9d26e28232d1a6b142fe",
+      "last_status": "no_streams",
+      "last_score": 10,
       "last_mode": "quick",
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_success_at": "2026-07-26T03:32:36.205204+00:00",
       "total_checks": 4,
       "total_successes": 3,
@@ -2983,39 +3003,35 @@
         "01_policy_safe_no_p2p": {
           "passed": true,
           "evidence": {
-            "status": "healthy",
+            "status": "no_streams",
             "disallowed_streams": 0
           },
           "threshold": "no disallowed P2P/torrent output"
         },
         "02_healthy_functional_status": {
-          "passed": true,
-          "evidence": "healthy",
+          "passed": false,
+          "evidence": "no_streams",
           "threshold": "healthy or reachable server/API"
         },
         "03_minimum_score": {
-          "passed": true,
-          "evidence": 92,
+          "passed": false,
+          "evidence": 10,
           "threshold": 55
         },
         "04_fixture_and_type_coverage": {
-          "passed": true,
+          "passed": false,
           "evidence": {
-            "healthy_fixtures": 1,
+            "healthy_fixtures": 0,
             "fixtures_tested": 1,
-            "healthy_fixture_ratio": 1.0,
+            "healthy_fixture_ratio": 0.0,
             "required_categories": [
               "tv"
             ],
             "original_required_categories": [
               "tv"
             ],
-            "healthy_categories": [
-              "tv"
-            ],
-            "activation_supported_types": [
-              "tv"
-            ],
+            "healthy_categories": [],
+            "activation_supported_types": [],
             "type_scope_applied": false
           },
           "threshold": {
@@ -3026,10 +3042,10 @@
           }
         },
         "05_stream_and_fixture_coverage": {
-          "passed": true,
+          "passed": false,
           "evidence": {
-            "playable_streams": 1,
-            "playable_fixtures": 1
+            "playable_streams": 0,
+            "playable_fixtures": 0
           },
           "threshold": {
             "minimum_playable_streams": 1,
@@ -3037,20 +3053,18 @@
           }
         },
         "06_distinct_host_diversity": {
-          "passed": true,
+          "passed": false,
           "evidence": {
-            "distinct_reachable_hosts": 1,
-            "reachable_hosts": [
-              "papadustream.club"
-            ]
+            "distinct_reachable_hosts": 0,
+            "reachable_hosts": []
           },
           "threshold": 1
         },
         "07_verified_payload_playability": {
-          "passed": true,
+          "passed": false,
           "evidence": {
-            "payload_verified_streams": 1,
-            "playable_streams": 1
+            "payload_verified_streams": 0,
+            "playable_streams": 0
           },
           "threshold": {
             "minimum_payload_verified_streams": 1,
@@ -3058,10 +3072,10 @@
           }
         },
         "08_quality_and_bitrate": {
-          "passed": true,
+          "passed": false,
           "evidence": {
-            "effective_max_height": 1080,
-            "max_bandwidth": 6000000,
+            "effective_max_height": null,
+            "max_bandwidth": null,
             "manifest_effective_height": 1080,
             "manifest_curation_score": 9,
             "manifest_quality_signals": [
@@ -3085,17 +3099,11 @@
         "09_language_and_subtitle_integrity": {
           "passed": true,
           "evidence": {
-            "accepted_audio_languages": [
-              "en",
-              "fr"
-            ],
+            "accepted_audio_languages": [],
             "accepted_subtitle_languages": [],
             "accepted_subtitles_advertised": 0,
             "accepted_subtitles_reachable": 0,
-            "runtime_observed_languages": [
-              "en",
-              "fr"
-            ],
+            "runtime_observed_languages": [],
             "manifest_accepted_languages": [
               "en",
               "fr"
@@ -3117,7 +3125,7 @@
         "10_content_identity_integrity": {
           "passed": true,
           "evidence": {
-            "identity_verified_streams": 1,
+            "identity_verified_streams": 0,
             "identity_unverified_streams": 0,
             "identity_contradiction_count": 0,
             "duration_identity_mismatch_count": 0
@@ -3130,13 +3138,13 @@
         }
       },
       "last_performance_result": {
-        "passed": true,
-        "provider_median_latency_ms": 12335,
-        "stream_median_latency_ms": 696,
+        "passed": false,
+        "provider_median_latency_ms": null,
+        "stream_median_latency_ms": null,
         "maximum_provider_median_latency_ms": 15000,
         "maximum_stream_median_latency_ms": 12000
       },
-      "last_ci_classification": "conclusive_success",
+      "last_ci_classification": "inconclusive",
       "consecutive_inconclusive_deep_checks": 0,
       "strict_validated_sha256": null,
       "strict_last_success_at": null
@@ -3149,7 +3157,7 @@
       "last_status": "no_streams",
       "last_score": 10,
       "last_mode": "quick",
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -3316,11 +3324,11 @@
       "source": "gowaru",
       "upstream_id": "streamzo",
       "canonical_id": "streamzo",
-      "sha256": "9d9de98e68ebd0a2154609cc1a6a37e5466334964becd8f1334ef943a97e2b6a",
-      "last_status": "healthy",
-      "last_score": 74,
+      "sha256": "7aa26f790dfef4a5b50194a3782e32251d0193aecb41db49e6188c53f04d8fa2",
+      "last_status": "no_streams",
+      "last_score": 10,
       "last_mode": "quick",
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -3336,41 +3344,38 @@
         "01_policy_safe_no_p2p": {
           "passed": true,
           "evidence": {
-            "status": "healthy",
+            "status": "no_streams",
             "disallowed_streams": 0
           },
           "threshold": "no disallowed P2P/torrent output"
         },
         "02_healthy_functional_status": {
-          "passed": true,
-          "evidence": "healthy",
+          "passed": false,
+          "evidence": "no_streams",
           "threshold": "healthy or reachable server/API"
         },
         "03_minimum_score": {
-          "passed": true,
-          "evidence": 74,
+          "passed": false,
+          "evidence": 10,
           "threshold": 55
         },
         "04_fixture_and_type_coverage": {
-          "passed": true,
+          "passed": false,
           "evidence": {
-            "healthy_fixtures": 1,
-            "fixtures_tested": 1,
-            "healthy_fixture_ratio": 1.0,
+            "healthy_fixtures": 0,
+            "fixtures_tested": 2,
+            "healthy_fixture_ratio": 0.0,
             "required_categories": [
-              "movie"
+              "movie",
+              "tv"
             ],
             "original_required_categories": [
               "movie",
               "tv"
             ],
-            "healthy_categories": [
-              "movie"
-            ],
-            "activation_supported_types": [
-              "movie"
-            ],
-            "type_scope_applied": true
+            "healthy_categories": [],
+            "activation_supported_types": [],
+            "type_scope_applied": false
           },
           "threshold": {
             "minimum_healthy_fixtures": 1,
@@ -3380,10 +3385,10 @@
           }
         },
         "05_stream_and_fixture_coverage": {
-          "passed": true,
+          "passed": false,
           "evidence": {
-            "playable_streams": 1,
-            "playable_fixtures": 1
+            "playable_streams": 0,
+            "playable_fixtures": 0
           },
           "threshold": {
             "minimum_playable_streams": 1,
@@ -3391,20 +3396,18 @@
           }
         },
         "06_distinct_host_diversity": {
-          "passed": true,
+          "passed": false,
           "evidence": {
-            "distinct_reachable_hosts": 1,
-            "reachable_hosts": [
-              "moon.peakstorm.top"
-            ]
+            "distinct_reachable_hosts": 0,
+            "reachable_hosts": []
           },
           "threshold": 1
         },
         "07_verified_payload_playability": {
-          "passed": true,
+          "passed": false,
           "evidence": {
-            "payload_verified_streams": 1,
-            "playable_streams": 1
+            "payload_verified_streams": 0,
+            "playable_streams": 0
           },
           "threshold": {
             "minimum_payload_verified_streams": 1,
@@ -3412,9 +3415,9 @@
           }
         },
         "08_quality_and_bitrate": {
-          "passed": true,
+          "passed": false,
           "evidence": {
-            "effective_max_height": 2160,
+            "effective_max_height": null,
             "max_bandwidth": null,
             "manifest_effective_height": null,
             "manifest_curation_score": 6,
@@ -3438,9 +3441,7 @@
         "09_language_and_subtitle_integrity": {
           "passed": true,
           "evidence": {
-            "accepted_audio_languages": [
-              "fr"
-            ],
+            "accepted_audio_languages": [],
             "accepted_subtitle_languages": [],
             "accepted_subtitles_advertised": 0,
             "accepted_subtitles_reachable": 0,
@@ -3448,7 +3449,7 @@
             "manifest_accepted_languages": [
               "fr"
             ],
-            "verified_manifest_audio_fallback": true
+            "verified_manifest_audio_fallback": false
           },
           "threshold": {
             "accepted_audio_languages": [
@@ -3465,7 +3466,7 @@
         "10_content_identity_integrity": {
           "passed": true,
           "evidence": {
-            "identity_verified_streams": 1,
+            "identity_verified_streams": 0,
             "identity_unverified_streams": 0,
             "identity_contradiction_count": 0,
             "duration_identity_mismatch_count": 0
@@ -3478,13 +3479,13 @@
         }
       },
       "last_performance_result": {
-        "passed": true,
-        "provider_median_latency_ms": 4486,
-        "stream_median_latency_ms": 241,
+        "passed": false,
+        "provider_median_latency_ms": null,
+        "stream_median_latency_ms": null,
         "maximum_provider_median_latency_ms": 15000,
         "maximum_stream_median_latency_ms": 12000
       },
-      "last_ci_classification": "conclusive_success",
+      "last_ci_classification": "inconclusive",
       "consecutive_inconclusive_deep_checks": 0,
       "strict_validated_sha256": null,
       "strict_last_success_at": null
@@ -3497,7 +3498,7 @@
       "last_status": "no_streams",
       "last_score": 10,
       "last_mode": "quick",
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -3668,9 +3669,9 @@
       "canonical_id": "4khdhub",
       "sha256": "a301aca45ab8cb3ff130ffb89ae5a1c908548b19e90fe0a2ba4e6a72084bffe1",
       "last_status": "healthy",
-      "last_score": 72,
+      "last_score": 83,
       "last_mode": "quick",
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -3698,16 +3699,17 @@
         },
         "03_minimum_score": {
           "passed": true,
-          "evidence": 72,
+          "evidence": 83,
           "threshold": 55
         },
         "04_fixture_and_type_coverage": {
           "passed": true,
           "evidence": {
-            "healthy_fixtures": 1,
-            "fixtures_tested": 1,
+            "healthy_fixtures": 2,
+            "fixtures_tested": 2,
             "healthy_fixture_ratio": 1.0,
             "required_categories": [
+              "movie",
               "tv"
             ],
             "original_required_categories": [
@@ -3715,12 +3717,14 @@
               "tv"
             ],
             "healthy_categories": [
+              "movie",
               "tv"
             ],
             "activation_supported_types": [
+              "movie",
               "tv"
             ],
-            "type_scope_applied": true
+            "type_scope_applied": false
           },
           "threshold": {
             "minimum_healthy_fixtures": 1,
@@ -3732,8 +3736,8 @@
         "05_stream_and_fixture_coverage": {
           "passed": true,
           "evidence": {
-            "playable_streams": 1,
-            "playable_fixtures": 1
+            "playable_streams": 2,
+            "playable_fixtures": 2
           },
           "threshold": {
             "minimum_playable_streams": 1,
@@ -3743,9 +3747,10 @@
         "06_distinct_host_diversity": {
           "passed": true,
           "evidence": {
-            "distinct_reachable_hosts": 1,
+            "distinct_reachable_hosts": 2,
             "reachable_hosts": [
-              "still-recipe-8ec8.pibigoj4497600.workers.dev"
+              "hubcloud-dl.sumitbotdl1.workers.dev",
+              "jolly-queen-8c7b.gatenoy5615269.workers.dev"
             ]
           },
           "threshold": 1
@@ -3753,8 +3758,8 @@
         "07_verified_payload_playability": {
           "passed": true,
           "evidence": {
-            "payload_verified_streams": 1,
-            "playable_streams": 1
+            "payload_verified_streams": 2,
+            "playable_streams": 2
           },
           "threshold": {
             "minimum_payload_verified_streams": 1,
@@ -3764,7 +3769,7 @@
         "08_quality_and_bitrate": {
           "passed": true,
           "evidence": {
-            "effective_max_height": 1080,
+            "effective_max_height": 2160,
             "max_bandwidth": null,
             "manifest_effective_height": null,
             "manifest_curation_score": 7,
@@ -3833,8 +3838,8 @@
       },
       "last_performance_result": {
         "passed": true,
-        "provider_median_latency_ms": 3928,
-        "stream_median_latency_ms": 832,
+        "provider_median_latency_ms": 3227,
+        "stream_median_latency_ms": 769,
         "maximum_provider_median_latency_ms": 15000,
         "maximum_stream_median_latency_ms": 12000
       },
@@ -4001,7 +4006,7 @@
       "last_status": "provider_unreachable",
       "last_score": 10,
       "last_mode": "quick",
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -4173,7 +4178,7 @@
       "last_status": "degraded",
       "last_score": 20,
       "last_mode": "quick",
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -4315,7 +4320,7 @@
             "identity_verified_streams": 2,
             "identity_unverified_streams": 0,
             "identity_contradiction_count": 0,
-            "duration_identity_mismatch_count": 1
+            "duration_identity_mismatch_count": 2
           },
           "threshold": {
             "maximum_identity_contradictions": 0,
@@ -4344,7 +4349,7 @@
       "last_status": "healthy",
       "last_score": 80,
       "last_mode": "quick",
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_success_at": "2026-07-26T03:32:36.205204+00:00",
       "total_checks": 4,
       "total_successes": 4,
@@ -4507,8 +4512,8 @@
       },
       "last_performance_result": {
         "passed": true,
-        "provider_median_latency_ms": 949,
-        "stream_median_latency_ms": 46,
+        "provider_median_latency_ms": 669,
+        "stream_median_latency_ms": 47,
         "maximum_provider_median_latency_ms": 15000,
         "maximum_stream_median_latency_ms": 12000
       },
@@ -4525,7 +4530,7 @@
       "last_status": "blocked",
       "last_score": 10,
       "last_mode": "quick",
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -4698,7 +4703,7 @@
       "last_status": "blocked",
       "last_score": 10,
       "last_mode": "quick",
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -4876,7 +4881,7 @@
       "last_status": "healthy",
       "last_score": 84,
       "last_mode": "quick",
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -5046,8 +5051,8 @@
       },
       "last_performance_result": {
         "passed": true,
-        "provider_median_latency_ms": 3914,
-        "stream_median_latency_ms": 288,
+        "provider_median_latency_ms": 3356,
+        "stream_median_latency_ms": 251,
         "maximum_provider_median_latency_ms": 15000,
         "maximum_stream_median_latency_ms": 12000
       },
@@ -5064,7 +5069,7 @@
       "last_status": "no_streams",
       "last_score": 10,
       "last_mode": "quick",
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -5236,7 +5241,7 @@
       "last_status": "degraded",
       "last_score": 20,
       "last_mode": "quick",
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -5408,7 +5413,7 @@
       "last_status": "healthy",
       "last_score": 82,
       "last_mode": "quick",
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_success_at": "2026-07-26T03:32:36.205204+00:00",
       "total_checks": 4,
       "total_successes": 4,
@@ -5573,8 +5578,8 @@
       },
       "last_performance_result": {
         "passed": true,
-        "provider_median_latency_ms": 12404,
-        "stream_median_latency_ms": 708,
+        "provider_median_latency_ms": 3472,
+        "stream_median_latency_ms": 666,
         "maximum_provider_median_latency_ms": 15000,
         "maximum_stream_median_latency_ms": 12000
       },
@@ -5591,7 +5596,7 @@
       "last_status": "blocked",
       "last_score": 10,
       "last_mode": "quick",
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -5765,7 +5770,7 @@
       "last_status": "healthy",
       "last_score": 74,
       "last_mode": "quick",
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_success_at": "2026-07-26T03:32:36.205204+00:00",
       "total_checks": 4,
       "total_successes": 4,
@@ -5803,17 +5808,17 @@
             "fixtures_tested": 1,
             "healthy_fixture_ratio": 1.0,
             "required_categories": [
-              "movie"
+              "tv"
             ],
             "original_required_categories": [
               "movie",
               "tv"
             ],
             "healthy_categories": [
-              "movie"
+              "tv"
             ],
             "activation_supported_types": [
-              "movie"
+              "tv"
             ],
             "type_scope_applied": true
           },
@@ -5926,9 +5931,9 @@
         }
       },
       "last_performance_result": {
-        "passed": false,
-        "provider_median_latency_ms": 16844,
-        "stream_median_latency_ms": 820,
+        "passed": true,
+        "provider_median_latency_ms": 4254,
+        "stream_median_latency_ms": 1186,
         "maximum_provider_median_latency_ms": 15000,
         "maximum_stream_median_latency_ms": 12000
       },
@@ -5945,7 +5950,7 @@
       "last_status": "healthy",
       "last_score": 90,
       "last_mode": "quick",
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_success_at": "2026-07-26T03:32:36.205204+00:00",
       "total_checks": 4,
       "total_successes": 4,
@@ -6021,9 +6026,10 @@
         "06_distinct_host_diversity": {
           "passed": true,
           "evidence": {
-            "distinct_reachable_hosts": 1,
+            "distinct_reachable_hosts": 2,
             "reachable_hosts": [
-              "img1.hvncw.com"
+              "img1.bxncw.com",
+              "img1.kucwn.com"
             ]
           },
           "threshold": 1
@@ -6118,8 +6124,8 @@
       },
       "last_performance_result": {
         "passed": true,
-        "provider_median_latency_ms": 2126,
-        "stream_median_latency_ms": 53,
+        "provider_median_latency_ms": 1975,
+        "stream_median_latency_ms": 73,
         "maximum_provider_median_latency_ms": 15000,
         "maximum_stream_median_latency_ms": 12000
       },
@@ -6136,7 +6142,7 @@
       "last_status": "healthy",
       "last_score": 90,
       "last_mode": "quick",
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -6321,8 +6327,8 @@
       },
       "last_performance_result": {
         "passed": true,
-        "provider_median_latency_ms": 1310,
-        "stream_median_latency_ms": 41,
+        "provider_median_latency_ms": 3097,
+        "stream_median_latency_ms": 47,
         "maximum_provider_median_latency_ms": 15000,
         "maximum_stream_median_latency_ms": 12000
       },
@@ -6339,7 +6345,7 @@
       "last_status": "no_streams",
       "last_score": 10,
       "last_mode": "quick",
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -6657,7 +6663,7 @@
       "last_status": "blocked",
       "last_score": 10,
       "last_mode": "quick",
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -6835,7 +6841,7 @@
       "last_status": "unavailable",
       "last_score": 10,
       "last_mode": "quick",
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_success_at": "2026-07-26T03:32:36.205204+00:00",
       "total_checks": 4,
       "total_successes": 4,
@@ -7304,7 +7310,7 @@
       "last_status": "blocked",
       "last_score": 10,
       "last_mode": "quick",
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -7476,10 +7482,10 @@
       "upstream_id": "einthusan",
       "canonical_id": "einthusan",
       "sha256": "cfecf61bd6b90e96b08860da0c909ca2136f09b13f74da13ad6e0967251a7c91",
-      "last_status": "no_streams",
+      "last_status": "unavailable",
       "last_score": 10,
       "last_mode": "quick",
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -7495,14 +7501,14 @@
         "01_policy_safe_no_p2p": {
           "passed": true,
           "evidence": {
-            "status": "no_streams",
+            "status": "unavailable",
             "disallowed_streams": 0
           },
           "threshold": "no disallowed P2P/torrent output"
         },
         "02_healthy_functional_status": {
           "passed": false,
-          "evidence": "no_streams",
+          "evidence": "unavailable",
           "threshold": "healthy or reachable server/API"
         },
         "03_minimum_score": {
@@ -7641,7 +7647,7 @@
         "maximum_provider_median_latency_ms": 15000,
         "maximum_stream_median_latency_ms": 12000
       },
-      "last_ci_classification": "inconclusive",
+      "last_ci_classification": "conclusive_failure",
       "consecutive_inconclusive_deep_checks": 0,
       "strict_validated_sha256": null,
       "strict_last_success_at": null
@@ -7654,7 +7660,7 @@
       "last_status": "blocked",
       "last_score": 10,
       "last_mode": "quick",
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -7974,7 +7980,7 @@
       "last_status": "provider_unreachable",
       "last_score": 10,
       "last_mode": "quick",
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -8148,7 +8154,7 @@
       "last_status": "healthy",
       "last_score": 92,
       "last_mode": "quick",
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_success_at": "2026-07-26T03:32:36.205204+00:00",
       "total_checks": 4,
       "total_successes": 4,
@@ -8317,8 +8323,8 @@
       },
       "last_performance_result": {
         "passed": true,
-        "provider_median_latency_ms": 1989,
-        "stream_median_latency_ms": 107,
+        "provider_median_latency_ms": 2173,
+        "stream_median_latency_ms": 130,
         "maximum_provider_median_latency_ms": 15000,
         "maximum_stream_median_latency_ms": 12000
       },
@@ -8332,10 +8338,10 @@
       "upstream_id": "hdhub4u",
       "canonical_id": "hdhub4u",
       "sha256": "d38ea2394636e9791e13ae37e209f3269221d60e6dbcaabf19e7de40d917732f",
-      "last_status": "provider_unreachable",
-      "last_score": 0,
+      "last_status": "blocked",
+      "last_score": 10,
       "last_mode": "quick",
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -8351,19 +8357,19 @@
         "01_policy_safe_no_p2p": {
           "passed": true,
           "evidence": {
-            "status": "provider_unreachable",
+            "status": "blocked",
             "disallowed_streams": 0
           },
           "threshold": "no disallowed P2P/torrent output"
         },
         "02_healthy_functional_status": {
           "passed": false,
-          "evidence": "provider_unreachable",
+          "evidence": "blocked",
           "threshold": "healthy or reachable server/API"
         },
         "03_minimum_score": {
           "passed": false,
-          "evidence": 0,
+          "evidence": 10,
           "threshold": 55
         },
         "04_fixture_and_type_coverage": {
@@ -8510,7 +8516,7 @@
       "last_status": "healthy",
       "last_score": 80,
       "last_mode": "quick",
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_success_at": "2026-07-26T03:32:36.205204+00:00",
       "total_checks": 4,
       "total_successes": 4,
@@ -8682,8 +8688,8 @@
       },
       "last_performance_result": {
         "passed": true,
-        "provider_median_latency_ms": 1302,
-        "stream_median_latency_ms": 42,
+        "provider_median_latency_ms": 956,
+        "stream_median_latency_ms": 31,
         "maximum_provider_median_latency_ms": 15000,
         "maximum_stream_median_latency_ms": 12000
       },
@@ -8700,7 +8706,7 @@
       "last_status": "healthy",
       "last_score": 92,
       "last_mode": "quick",
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_success_at": "2026-07-26T03:32:36.205204+00:00",
       "total_checks": 4,
       "total_successes": 3,
@@ -8778,8 +8784,8 @@
           "evidence": {
             "distinct_reachable_hosts": 2,
             "reachable_hosts": [
-              "late-bar-08ba.raunauneudoiceu-1679.workers.dev",
-              "share.licraupekoupo-1855.workers.dev"
+              "abc.heulettafreuyo-7517.workers.dev",
+              "abc.jounoiyeiboqui-8508.workers.dev"
             ]
           },
           "threshold": 1
@@ -8855,7 +8861,7 @@
         "10_content_identity_integrity": {
           "passed": true,
           "evidence": {
-            "identity_verified_streams": 3,
+            "identity_verified_streams": 2,
             "identity_unverified_streams": 0,
             "identity_contradiction_count": 0,
             "duration_identity_mismatch_count": 0
@@ -8869,8 +8875,8 @@
       },
       "last_performance_result": {
         "passed": true,
-        "provider_median_latency_ms": 11865,
-        "stream_median_latency_ms": 3551,
+        "provider_median_latency_ms": 12501,
+        "stream_median_latency_ms": 5823,
         "maximum_provider_median_latency_ms": 15000,
         "maximum_stream_median_latency_ms": 12000
       },
@@ -8887,7 +8893,7 @@
       "last_status": "no_streams",
       "last_score": 10,
       "last_mode": "quick",
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_success_at": "2026-07-26T03:32:36.205204+00:00",
       "total_checks": 4,
       "total_successes": 1,
@@ -9062,7 +9068,7 @@
       "last_status": "provider_unreachable",
       "last_score": 10,
       "last_mode": "quick",
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -9237,9 +9243,9 @@
       "canonical_id": "movieblast",
       "sha256": "a14cf179573371edcc49dba383f983689661a946dd471c23edd54745e5b9e4d3",
       "last_status": "healthy",
-      "last_score": 68,
+      "last_score": 84,
       "last_mode": "quick",
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_success_at": "2026-07-26T03:32:36.205204+00:00",
       "total_checks": 4,
       "total_successes": 4,
@@ -9267,29 +9273,32 @@
         },
         "03_minimum_score": {
           "passed": true,
-          "evidence": 68,
+          "evidence": 84,
           "threshold": 55
         },
         "04_fixture_and_type_coverage": {
           "passed": true,
           "evidence": {
-            "healthy_fixtures": 1,
-            "fixtures_tested": 1,
+            "healthy_fixtures": 2,
+            "fixtures_tested": 2,
             "healthy_fixture_ratio": 1.0,
             "required_categories": [
-              "movie"
+              "movie",
+              "tv"
             ],
             "original_required_categories": [
               "movie",
               "tv"
             ],
             "healthy_categories": [
-              "movie"
+              "movie",
+              "tv"
             ],
             "activation_supported_types": [
-              "movie"
+              "movie",
+              "tv"
             ],
-            "type_scope_applied": true
+            "type_scope_applied": false
           },
           "threshold": {
             "minimum_healthy_fixtures": 1,
@@ -9301,8 +9310,8 @@
         "05_stream_and_fixture_coverage": {
           "passed": true,
           "evidence": {
-            "playable_streams": 1,
-            "playable_fixtures": 1
+            "playable_streams": 2,
+            "playable_fixtures": 2
           },
           "threshold": {
             "minimum_playable_streams": 1,
@@ -9312,9 +9321,10 @@
         "06_distinct_host_diversity": {
           "passed": true,
           "evidence": {
-            "distinct_reachable_hosts": 1,
+            "distinct_reachable_hosts": 2,
             "reachable_hosts": [
-              "mblinkmove.mycdn-mb.xyz"
+              "mblinkmove.mycdn-mb.xyz",
+              "mbserie26.mycdn-mb.xyz"
             ]
           },
           "threshold": 1
@@ -9322,8 +9332,8 @@
         "07_verified_payload_playability": {
           "passed": true,
           "evidence": {
-            "payload_verified_streams": 1,
-            "playable_streams": 1
+            "payload_verified_streams": 2,
+            "playable_streams": 2
           },
           "threshold": {
             "minimum_payload_verified_streams": 1,
@@ -9368,14 +9378,16 @@
             "accepted_subtitle_languages": [],
             "accepted_subtitles_advertised": 0,
             "accepted_subtitles_reachable": 0,
-            "runtime_observed_languages": [],
+            "runtime_observed_languages": [
+              "en"
+            ],
             "manifest_accepted_languages": [
               "en",
               "hi",
               "ta",
               "te"
             ],
-            "verified_manifest_audio_fallback": true
+            "verified_manifest_audio_fallback": false
           },
           "threshold": {
             "accepted_audio_languages": [
@@ -9392,7 +9404,7 @@
         "10_content_identity_integrity": {
           "passed": true,
           "evidence": {
-            "identity_verified_streams": 0,
+            "identity_verified_streams": 1,
             "identity_unverified_streams": 1,
             "identity_contradiction_count": 0,
             "duration_identity_mismatch_count": 0
@@ -9406,8 +9418,8 @@
       },
       "last_performance_result": {
         "passed": true,
-        "provider_median_latency_ms": 671,
-        "stream_median_latency_ms": 285,
+        "provider_median_latency_ms": 1001,
+        "stream_median_latency_ms": 376,
         "maximum_provider_median_latency_ms": 15000,
         "maximum_stream_median_latency_ms": 12000
       },
@@ -9424,7 +9436,7 @@
       "last_status": "no_streams",
       "last_score": 10,
       "last_mode": "quick",
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -9599,7 +9611,7 @@
       "last_status": "healthy",
       "last_score": 82,
       "last_mode": "quick",
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_success_at": "2026-07-26T03:32:36.205204+00:00",
       "total_checks": 4,
       "total_successes": 4,
@@ -9758,8 +9770,8 @@
       },
       "last_performance_result": {
         "passed": true,
-        "provider_median_latency_ms": 4639,
-        "stream_median_latency_ms": 296,
+        "provider_median_latency_ms": 3003,
+        "stream_median_latency_ms": 337,
         "maximum_provider_median_latency_ms": 15000,
         "maximum_stream_median_latency_ms": 12000
       },
@@ -9925,7 +9937,7 @@
       "last_status": "no_streams",
       "last_score": 10,
       "last_mode": "quick",
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -10099,7 +10111,7 @@
       "last_status": "blocked",
       "last_score": 10,
       "last_mode": "quick",
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_success_at": "2026-07-26T03:32:36.205204+00:00",
       "total_checks": 4,
       "total_successes": 4,
@@ -10275,7 +10287,7 @@
       "last_status": "unavailable",
       "last_score": 10,
       "last_mode": "quick",
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -10452,7 +10464,7 @@
       "last_status": "provider_unreachable",
       "last_score": 10,
       "last_mode": "quick",
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_success_at": "2026-07-26T01:52:47.450358+00:00",
       "total_checks": 4,
       "total_successes": 1,
@@ -10626,9 +10638,9 @@
       "canonical_id": "persianstremio",
       "sha256": "53cceebab0cb19e17b50bb23cbe889ec9726d6aa36f77039682ca8bfd05e6489",
       "last_status": "healthy",
-      "last_score": 74,
+      "last_score": 83,
       "last_mode": "quick",
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_success_at": "2026-07-26T03:01:03.588479+00:00",
       "total_checks": 4,
       "total_successes": 1,
@@ -10656,29 +10668,32 @@
         },
         "03_minimum_score": {
           "passed": true,
-          "evidence": 74,
+          "evidence": 83,
           "threshold": 55
         },
         "04_fixture_and_type_coverage": {
           "passed": true,
           "evidence": {
-            "healthy_fixtures": 1,
-            "fixtures_tested": 1,
+            "healthy_fixtures": 2,
+            "fixtures_tested": 2,
             "healthy_fixture_ratio": 1.0,
             "required_categories": [
-              "movie"
+              "movie",
+              "tv"
             ],
             "original_required_categories": [
               "movie",
               "tv"
             ],
             "healthy_categories": [
-              "movie"
+              "movie",
+              "tv"
             ],
             "activation_supported_types": [
-              "movie"
+              "movie",
+              "tv"
             ],
-            "type_scope_applied": true
+            "type_scope_applied": false
           },
           "threshold": {
             "minimum_healthy_fixtures": 1,
@@ -10690,8 +10705,8 @@
         "05_stream_and_fixture_coverage": {
           "passed": true,
           "evidence": {
-            "playable_streams": 1,
-            "playable_fixtures": 1
+            "playable_streams": 2,
+            "playable_fixtures": 2
           },
           "threshold": {
             "minimum_playable_streams": 1,
@@ -10701,8 +10716,9 @@
         "06_distinct_host_diversity": {
           "passed": true,
           "evidence": {
-            "distinct_reachable_hosts": 1,
+            "distinct_reachable_hosts": 2,
             "reachable_hosts": [
+              "bnrhd3fvb374s4bkwzxm54xf.abrtech.top",
               "bvxbbajdhgxd9g87jwb463wx.abrtech.top"
             ]
           },
@@ -10711,8 +10727,8 @@
         "07_verified_payload_playability": {
           "passed": true,
           "evidence": {
-            "payload_verified_streams": 1,
-            "playable_streams": 1
+            "payload_verified_streams": 2,
+            "playable_streams": 2
           },
           "threshold": {
             "minimum_payload_verified_streams": 1,
@@ -10775,7 +10791,7 @@
         "10_content_identity_integrity": {
           "passed": true,
           "evidence": {
-            "identity_verified_streams": 1,
+            "identity_verified_streams": 2,
             "identity_unverified_streams": 0,
             "identity_contradiction_count": 0,
             "duration_identity_mismatch_count": 0
@@ -10789,8 +10805,8 @@
       },
       "last_performance_result": {
         "passed": true,
-        "provider_median_latency_ms": 11095,
-        "stream_median_latency_ms": 5115,
+        "provider_median_latency_ms": 12205,
+        "stream_median_latency_ms": 4495,
         "maximum_provider_median_latency_ms": 15000,
         "maximum_stream_median_latency_ms": 12000
       },
@@ -10807,7 +10823,7 @@
       "last_status": "unavailable",
       "last_score": 10,
       "last_mode": "quick",
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -10980,10 +10996,10 @@
       "upstream_id": "playimdb",
       "canonical_id": "playimdb",
       "sha256": "76282978a3666ef46b0818ba7b478120765d49dbce18000422ecf222fcc0035a",
-      "last_status": "degraded",
-      "last_score": 20,
+      "last_status": "healthy",
+      "last_score": 85,
       "last_mode": "quick",
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_success_at": "2026-07-26T03:32:36.205204+00:00",
       "total_checks": 4,
       "total_successes": 4,
@@ -10999,27 +11015,27 @@
         "01_policy_safe_no_p2p": {
           "passed": true,
           "evidence": {
-            "status": "degraded",
+            "status": "healthy",
             "disallowed_streams": 0
           },
           "threshold": "no disallowed P2P/torrent output"
         },
         "02_healthy_functional_status": {
-          "passed": false,
-          "evidence": "degraded",
+          "passed": true,
+          "evidence": "healthy",
           "threshold": "healthy or reachable server/API"
         },
         "03_minimum_score": {
-          "passed": false,
-          "evidence": 20,
+          "passed": true,
+          "evidence": 85,
           "threshold": 55
         },
         "04_fixture_and_type_coverage": {
-          "passed": false,
+          "passed": true,
           "evidence": {
-            "healthy_fixtures": 0,
+            "healthy_fixtures": 2,
             "fixtures_tested": 2,
-            "healthy_fixture_ratio": 0.0,
+            "healthy_fixture_ratio": 1.0,
             "required_categories": [
               "movie",
               "tv"
@@ -11028,8 +11044,14 @@
               "movie",
               "tv"
             ],
-            "healthy_categories": [],
-            "activation_supported_types": [],
+            "healthy_categories": [
+              "movie",
+              "tv"
+            ],
+            "activation_supported_types": [
+              "movie",
+              "tv"
+            ],
             "type_scope_applied": false
           },
           "threshold": {
@@ -11040,10 +11062,10 @@
           }
         },
         "05_stream_and_fixture_coverage": {
-          "passed": false,
+          "passed": true,
           "evidence": {
-            "playable_streams": 0,
-            "playable_fixtures": 0
+            "playable_streams": 2,
+            "playable_fixtures": 2
           },
           "threshold": {
             "minimum_playable_streams": 1,
@@ -11051,18 +11073,21 @@
           }
         },
         "06_distinct_host_diversity": {
-          "passed": false,
+          "passed": true,
           "evidence": {
-            "distinct_reachable_hosts": 0,
-            "reachable_hosts": []
+            "distinct_reachable_hosts": 2,
+            "reachable_hosts": [
+              "highperformancebrands.site",
+              "profitableaffiliatehub.site"
+            ]
           },
           "threshold": 1
         },
         "07_verified_payload_playability": {
-          "passed": false,
+          "passed": true,
           "evidence": {
-            "payload_verified_streams": 0,
-            "playable_streams": 0
+            "payload_verified_streams": 2,
+            "playable_streams": 2
           },
           "threshold": {
             "minimum_payload_verified_streams": 1,
@@ -11070,10 +11095,10 @@
           }
         },
         "08_quality_and_bitrate": {
-          "passed": false,
+          "passed": true,
           "evidence": {
-            "effective_max_height": null,
-            "max_bandwidth": null,
+            "effective_max_height": 1080,
+            "max_bandwidth": 5823438,
             "manifest_effective_height": null,
             "manifest_curation_score": 7,
             "manifest_quality_signals": [
@@ -11099,7 +11124,9 @@
         "09_language_and_subtitle_integrity": {
           "passed": true,
           "evidence": {
-            "accepted_audio_languages": [],
+            "accepted_audio_languages": [
+              "en"
+            ],
             "accepted_subtitle_languages": [],
             "accepted_subtitles_advertised": 0,
             "accepted_subtitles_reachable": 0,
@@ -11108,7 +11135,7 @@
               "en",
               "hi"
             ],
-            "verified_manifest_audio_fallback": false
+            "verified_manifest_audio_fallback": true
           },
           "threshold": {
             "accepted_audio_languages": [
@@ -11125,10 +11152,10 @@
         "10_content_identity_integrity": {
           "passed": false,
           "evidence": {
-            "identity_verified_streams": 4,
+            "identity_verified_streams": 7,
             "identity_unverified_streams": 0,
             "identity_contradiction_count": 0,
-            "duration_identity_mismatch_count": 1
+            "duration_identity_mismatch_count": 2
           },
           "threshold": {
             "maximum_identity_contradictions": 0,
@@ -11138,13 +11165,13 @@
         }
       },
       "last_performance_result": {
-        "passed": false,
-        "provider_median_latency_ms": null,
-        "stream_median_latency_ms": null,
+        "passed": true,
+        "provider_median_latency_ms": 8796,
+        "stream_median_latency_ms": 209,
         "maximum_provider_median_latency_ms": 15000,
         "maximum_stream_median_latency_ms": 12000
       },
-      "last_ci_classification": "conclusive_failure",
+      "last_ci_classification": "conclusive_success",
       "consecutive_inconclusive_deep_checks": 0,
       "strict_validated_sha256": null,
       "strict_last_success_at": null
@@ -11157,7 +11184,7 @@
       "last_status": "healthy",
       "last_score": 94,
       "last_mode": "quick",
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -11328,8 +11355,8 @@
       },
       "last_performance_result": {
         "passed": true,
-        "provider_median_latency_ms": 1578,
-        "stream_median_latency_ms": 189,
+        "provider_median_latency_ms": 1099,
+        "stream_median_latency_ms": 32,
         "maximum_provider_median_latency_ms": 15000,
         "maximum_stream_median_latency_ms": 12000
       },
@@ -11346,7 +11373,7 @@
       "last_status": "provider_unreachable",
       "last_score": 10,
       "last_mode": "quick",
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -11666,7 +11693,7 @@
       "last_status": "provider_unreachable",
       "last_score": 10,
       "last_mode": "quick",
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_success_at": "2026-07-26T03:32:36.205204+00:00",
       "total_checks": 4,
       "total_successes": 4,
@@ -11837,7 +11864,7 @@
       "last_status": "blocked",
       "last_score": 10,
       "last_mode": "quick",
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -12009,7 +12036,7 @@
       "last_status": "no_streams",
       "last_score": 10,
       "last_mode": "quick",
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_success_at": "2026-07-26T03:32:36.205204+00:00",
       "total_checks": 4,
       "total_successes": 4,
@@ -12114,6 +12141,7 @@
             ],
             "manifest_sources": [
               "aio",
+              "published-baseline",
               "yoru"
             ]
           },
@@ -12183,7 +12211,7 @@
       "last_status": "healthy",
       "last_score": 93,
       "last_mode": "quick",
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_success_at": "2026-07-26T03:32:36.205204+00:00",
       "total_checks": 4,
       "total_successes": 3,
@@ -12261,8 +12289,8 @@
           "evidence": {
             "distinct_reachable_hosts": 2,
             "reachable_hosts": [
-              "shiny-silence-7f3c.gajada79403000.workers.dev",
-              "weathered-field-2613.lexira78992326.workers.dev"
+              "ancient-union-7b28.nofagaj3092633.workers.dev",
+              "green-sun-d16f.tevedat9124199.workers.dev"
             ]
           },
           "threshold": 1
@@ -12352,8 +12380,8 @@
       },
       "last_performance_result": {
         "passed": true,
-        "provider_median_latency_ms": 5267,
-        "stream_median_latency_ms": 1033,
+        "provider_median_latency_ms": 2062,
+        "stream_median_latency_ms": 1072,
         "maximum_provider_median_latency_ms": 15000,
         "maximum_stream_median_latency_ms": 12000
       },
@@ -12370,7 +12398,7 @@
       "last_status": "no_streams",
       "last_score": 10,
       "last_mode": "quick",
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -12542,7 +12570,7 @@
       "last_status": "healthy",
       "last_score": 90,
       "last_mode": "quick",
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -12732,7 +12760,7 @@
       },
       "last_performance_result": {
         "passed": true,
-        "provider_median_latency_ms": 11872,
+        "provider_median_latency_ms": 11686,
         "stream_median_latency_ms": 57,
         "maximum_provider_median_latency_ms": 15000,
         "maximum_stream_median_latency_ms": 12000
@@ -12750,7 +12778,7 @@
       "last_status": "no_streams",
       "last_score": 10,
       "last_mode": "quick",
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_success_at": "2026-07-26T03:32:36.205204+00:00",
       "total_checks": 4,
       "total_successes": 3,
@@ -12922,7 +12950,7 @@
       "last_status": "provider_unreachable",
       "last_score": 10,
       "last_mode": "quick",
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_success_at": "2026-07-26T03:32:36.205204+00:00",
       "total_checks": 4,
       "total_successes": 4,
@@ -13096,7 +13124,7 @@
       "last_status": "no_streams",
       "last_score": 10,
       "last_mode": "quick",
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -13267,7 +13295,7 @@
       "last_status": "blocked",
       "last_score": 10,
       "last_mode": "quick",
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -13440,7 +13468,7 @@
       "last_status": "blocked",
       "last_score": 10,
       "last_mode": "quick",
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -13616,7 +13644,7 @@
       "last_status": "blocked",
       "last_score": 10,
       "last_mode": "quick",
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -13788,7 +13816,7 @@
       "last_status": "healthy",
       "last_score": 78,
       "last_mode": "quick",
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_success_at": "2026-07-26T03:32:36.205204+00:00",
       "total_checks": 4,
       "total_successes": 4,
@@ -13958,8 +13986,8 @@
       },
       "last_performance_result": {
         "passed": true,
-        "provider_median_latency_ms": 4082,
-        "stream_median_latency_ms": 1426,
+        "provider_median_latency_ms": 3946,
+        "stream_median_latency_ms": 1326,
         "maximum_provider_median_latency_ms": 15000,
         "maximum_stream_median_latency_ms": 12000
       },
@@ -13973,10 +14001,10 @@
       "upstream_id": "4khdhub",
       "canonical_id": "4khdhub",
       "sha256": "44408e37b81dd56744fb1f7e168270ec523eb46af1085d61097149b2c1a90103",
-      "last_status": "degraded",
-      "last_score": 20,
+      "last_status": "healthy",
+      "last_score": 93,
       "last_mode": "quick",
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_success_at": "2026-07-26T03:32:36.205204+00:00",
       "total_checks": 4,
       "total_successes": 4,
@@ -13992,27 +14020,27 @@
         "01_policy_safe_no_p2p": {
           "passed": true,
           "evidence": {
-            "status": "degraded",
+            "status": "healthy",
             "disallowed_streams": 0
           },
           "threshold": "no disallowed P2P/torrent output"
         },
         "02_healthy_functional_status": {
-          "passed": false,
-          "evidence": "degraded",
+          "passed": true,
+          "evidence": "healthy",
           "threshold": "healthy or reachable server/API"
         },
         "03_minimum_score": {
-          "passed": false,
-          "evidence": 20,
+          "passed": true,
+          "evidence": 93,
           "threshold": 55
         },
         "04_fixture_and_type_coverage": {
-          "passed": false,
+          "passed": true,
           "evidence": {
-            "healthy_fixtures": 0,
+            "healthy_fixtures": 2,
             "fixtures_tested": 2,
-            "healthy_fixture_ratio": 0.0,
+            "healthy_fixture_ratio": 1.0,
             "required_categories": [
               "movie",
               "tv"
@@ -14021,8 +14049,14 @@
               "movie",
               "tv"
             ],
-            "healthy_categories": [],
-            "activation_supported_types": [],
+            "healthy_categories": [
+              "movie",
+              "tv"
+            ],
+            "activation_supported_types": [
+              "movie",
+              "tv"
+            ],
             "type_scope_applied": false
           },
           "threshold": {
@@ -14033,10 +14067,10 @@
           }
         },
         "05_stream_and_fixture_coverage": {
-          "passed": false,
+          "passed": true,
           "evidence": {
-            "playable_streams": 0,
-            "playable_fixtures": 0
+            "playable_streams": 2,
+            "playable_fixtures": 2
           },
           "threshold": {
             "minimum_playable_streams": 1,
@@ -14044,18 +14078,21 @@
           }
         },
         "06_distinct_host_diversity": {
-          "passed": false,
+          "passed": true,
           "evidence": {
-            "distinct_reachable_hosts": 0,
-            "reachable_hosts": []
+            "distinct_reachable_hosts": 2,
+            "reachable_hosts": [
+              "hubcloud-dl.sumitbotdl1.workers.dev",
+              "jolly-queen-8c7b.gatenoy5615269.workers.dev"
+            ]
           },
           "threshold": 1
         },
         "07_verified_payload_playability": {
-          "passed": false,
+          "passed": true,
           "evidence": {
-            "payload_verified_streams": 0,
-            "playable_streams": 0
+            "payload_verified_streams": 2,
+            "playable_streams": 2
           },
           "threshold": {
             "minimum_payload_verified_streams": 1,
@@ -14063,9 +14100,9 @@
           }
         },
         "08_quality_and_bitrate": {
-          "passed": false,
+          "passed": true,
           "evidence": {
-            "effective_max_height": null,
+            "effective_max_height": 2160,
             "max_bandwidth": null,
             "manifest_effective_height": null,
             "manifest_curation_score": 7,
@@ -14093,11 +14130,15 @@
         "09_language_and_subtitle_integrity": {
           "passed": true,
           "evidence": {
-            "accepted_audio_languages": [],
+            "accepted_audio_languages": [
+              "en"
+            ],
             "accepted_subtitle_languages": [],
             "accepted_subtitles_advertised": 0,
             "accepted_subtitles_reachable": 0,
-            "runtime_observed_languages": [],
+            "runtime_observed_languages": [
+              "en"
+            ],
             "manifest_accepted_languages": [
               "en"
             ],
@@ -14131,13 +14172,13 @@
         }
       },
       "last_performance_result": {
-        "passed": false,
-        "provider_median_latency_ms": null,
-        "stream_median_latency_ms": null,
+        "passed": true,
+        "provider_median_latency_ms": 2175,
+        "stream_median_latency_ms": 760,
         "maximum_provider_median_latency_ms": 15000,
         "maximum_stream_median_latency_ms": 12000
       },
-      "last_ci_classification": "conclusive_failure",
+      "last_ci_classification": "conclusive_success",
       "consecutive_inconclusive_deep_checks": 0,
       "strict_validated_sha256": "44408e37b81dd56744fb1f7e168270ec523eb46af1085d61097149b2c1a90103",
       "strict_last_success_at": "2026-08-16T08:21:12.360268+00:00"
@@ -14150,7 +14191,7 @@
       "last_status": "blocked",
       "last_score": 10,
       "last_mode": "quick",
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -14325,10 +14366,10 @@
       "upstream_id": "uhdmovies",
       "canonical_id": "uhdmovies",
       "sha256": "7492e58a2e89974a21b8edbc0a9ceee5e90f20949baaeec23b5d3b9ca1a48244",
-      "last_status": "degraded",
+      "last_status": "excluded",
       "last_score": 20,
       "last_mode": "quick",
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_success_at": "2026-07-26T03:32:36.205204+00:00",
       "total_checks": 4,
       "total_successes": 4,
@@ -14342,16 +14383,16 @@
       "strict_total_deep_passes": 0,
       "last_gate_results": {
         "01_policy_safe_no_p2p": {
-          "passed": true,
+          "passed": false,
           "evidence": {
-            "status": "degraded",
-            "disallowed_streams": 0
+            "status": "excluded",
+            "disallowed_streams": 2
           },
           "threshold": "no disallowed P2P/torrent output"
         },
         "02_healthy_functional_status": {
           "passed": false,
-          "evidence": "degraded",
+          "evidence": "excluded",
           "threshold": "healthy or reachable server/API"
         },
         "03_minimum_score": {
@@ -14433,6 +14474,7 @@
             ],
             "manifest_sources": [
               "aio",
+              "published-baseline",
               "yoru"
             ]
           },
@@ -14471,8 +14513,8 @@
           "passed": false,
           "evidence": {
             "identity_verified_streams": 0,
-            "identity_unverified_streams": 1,
-            "identity_contradiction_count": 3,
+            "identity_unverified_streams": 0,
+            "identity_contradiction_count": 4,
             "duration_identity_mismatch_count": 0
           },
           "threshold": {
@@ -14502,7 +14544,7 @@
       "last_status": "no_streams",
       "last_score": 10,
       "last_mode": "quick",
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -14824,7 +14866,7 @@
       "last_status": "provider_unreachable",
       "last_score": 10,
       "last_mode": "quick",
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -15000,7 +15042,7 @@
       "last_status": "degraded",
       "last_score": 20,
       "last_mode": "quick",
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -15140,7 +15182,7 @@
         "10_content_identity_integrity": {
           "passed": true,
           "evidence": {
-            "identity_verified_streams": 2,
+            "identity_verified_streams": 4,
             "identity_unverified_streams": 0,
             "identity_contradiction_count": 0,
             "duration_identity_mismatch_count": 0
@@ -15172,7 +15214,7 @@
       "last_status": "provider_unreachable",
       "last_score": 10,
       "last_mode": "quick",
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -15349,7 +15391,7 @@
       "last_status": "provider_unreachable",
       "last_score": 10,
       "last_mode": "quick",
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -15523,7 +15565,7 @@
       "last_status": "provider_unreachable",
       "last_score": 10,
       "last_mode": "quick",
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_success_at": "2026-07-26T03:32:36.205204+00:00",
       "total_checks": 4,
       "total_successes": 4,
@@ -15695,7 +15737,7 @@
       "last_status": "no_streams",
       "last_score": 10,
       "last_mode": "quick",
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -15866,7 +15908,7 @@
       "last_status": "provider_unreachable",
       "last_score": 0,
       "last_mode": "quick",
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -16046,7 +16088,7 @@
       "last_status": "no_streams",
       "last_score": 10,
       "last_mode": "quick",
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -16220,7 +16262,7 @@
       "last_status": "degraded",
       "last_score": 20,
       "last_mode": "quick",
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -16360,7 +16402,7 @@
         "10_content_identity_integrity": {
           "passed": true,
           "evidence": {
-            "identity_verified_streams": 1,
+            "identity_verified_streams": 4,
             "identity_unverified_streams": 0,
             "identity_contradiction_count": 0,
             "duration_identity_mismatch_count": 0
@@ -16392,7 +16434,7 @@
       "last_status": "unavailable",
       "last_score": 10,
       "last_mode": "quick",
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -16563,7 +16605,7 @@
       "last_status": "no_streams",
       "last_score": 10,
       "last_mode": "quick",
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -16735,7 +16777,7 @@
       "last_status": "blocked",
       "last_score": 10,
       "last_mode": "quick",
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -16904,7 +16946,7 @@
       "last_status": "blocked",
       "last_score": 10,
       "last_mode": "quick",
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -17082,7 +17124,7 @@
       "last_status": "healthy",
       "last_score": 90,
       "last_mode": "quick",
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_success_at": "2026-07-26T03:32:36.205204+00:00",
       "total_checks": 4,
       "total_successes": 4,
@@ -17160,8 +17202,8 @@
           "evidence": {
             "distinct_reachable_hosts": 2,
             "reachable_hosts": [
-              "img1.flocw.com",
-              "img1.klcxm.com"
+              "img1.fvncw.com",
+              "img1.nxocw.com"
             ]
           },
           "threshold": 1
@@ -17256,8 +17298,8 @@
       },
       "last_performance_result": {
         "passed": true,
-        "provider_median_latency_ms": 1718,
-        "stream_median_latency_ms": 72,
+        "provider_median_latency_ms": 2433,
+        "stream_median_latency_ms": 56,
         "maximum_provider_median_latency_ms": 15000,
         "maximum_stream_median_latency_ms": 12000
       },
@@ -17274,7 +17316,7 @@
       "last_status": "provider_unreachable",
       "last_score": 10,
       "last_mode": "quick",
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -17448,7 +17490,7 @@
       "last_status": "blocked",
       "last_score": 10,
       "last_mode": "quick",
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -17623,7 +17665,7 @@
       "last_status": "blocked",
       "last_score": 10,
       "last_mode": "quick",
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -17797,7 +17839,7 @@
       "last_status": "blocked",
       "last_score": 10,
       "last_mode": "quick",
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -17970,9 +18012,9 @@
       "canonical_id": "movieblast",
       "sha256": "40b660c62eb19153babb558b3f607aaca3a22310f50afc28b2fbf0246b26afe3",
       "last_status": "healthy",
-      "last_score": 68,
+      "last_score": 84,
       "last_mode": "quick",
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_success_at": "2026-07-26T03:32:36.205204+00:00",
       "total_checks": 4,
       "total_successes": 4,
@@ -18000,29 +18042,32 @@
         },
         "03_minimum_score": {
           "passed": true,
-          "evidence": 68,
+          "evidence": 84,
           "threshold": 55
         },
         "04_fixture_and_type_coverage": {
           "passed": true,
           "evidence": {
-            "healthy_fixtures": 1,
-            "fixtures_tested": 1,
+            "healthy_fixtures": 2,
+            "fixtures_tested": 2,
             "healthy_fixture_ratio": 1.0,
             "required_categories": [
-              "movie"
+              "movie",
+              "tv"
             ],
             "original_required_categories": [
               "movie",
               "tv"
             ],
             "healthy_categories": [
-              "movie"
+              "movie",
+              "tv"
             ],
             "activation_supported_types": [
-              "movie"
+              "movie",
+              "tv"
             ],
-            "type_scope_applied": true
+            "type_scope_applied": false
           },
           "threshold": {
             "minimum_healthy_fixtures": 1,
@@ -18034,8 +18079,8 @@
         "05_stream_and_fixture_coverage": {
           "passed": true,
           "evidence": {
-            "playable_streams": 1,
-            "playable_fixtures": 1
+            "playable_streams": 2,
+            "playable_fixtures": 2
           },
           "threshold": {
             "minimum_playable_streams": 1,
@@ -18045,9 +18090,10 @@
         "06_distinct_host_diversity": {
           "passed": true,
           "evidence": {
-            "distinct_reachable_hosts": 1,
+            "distinct_reachable_hosts": 2,
             "reachable_hosts": [
-              "mblinkmove.mycdn-mb.xyz"
+              "mblinkmove.mycdn-mb.xyz",
+              "mbserie26.mycdn-mb.xyz"
             ]
           },
           "threshold": 1
@@ -18055,8 +18101,8 @@
         "07_verified_payload_playability": {
           "passed": true,
           "evidence": {
-            "payload_verified_streams": 1,
-            "playable_streams": 1
+            "payload_verified_streams": 2,
+            "playable_streams": 2
           },
           "threshold": {
             "minimum_payload_verified_streams": 1,
@@ -18101,14 +18147,16 @@
             "accepted_subtitle_languages": [],
             "accepted_subtitles_advertised": 0,
             "accepted_subtitles_reachable": 0,
-            "runtime_observed_languages": [],
+            "runtime_observed_languages": [
+              "en"
+            ],
             "manifest_accepted_languages": [
               "en",
               "hi",
               "ta",
               "te"
             ],
-            "verified_manifest_audio_fallback": true
+            "verified_manifest_audio_fallback": false
           },
           "threshold": {
             "accepted_audio_languages": [
@@ -18125,7 +18173,7 @@
         "10_content_identity_integrity": {
           "passed": true,
           "evidence": {
-            "identity_verified_streams": 0,
+            "identity_verified_streams": 1,
             "identity_unverified_streams": 1,
             "identity_contradiction_count": 0,
             "duration_identity_mismatch_count": 0
@@ -18139,8 +18187,8 @@
       },
       "last_performance_result": {
         "passed": true,
-        "provider_median_latency_ms": 464,
-        "stream_median_latency_ms": 355,
+        "provider_median_latency_ms": 502,
+        "stream_median_latency_ms": 362,
         "maximum_provider_median_latency_ms": 15000,
         "maximum_stream_median_latency_ms": 12000
       },
@@ -18157,7 +18205,7 @@
       "last_status": "blocked",
       "last_score": 10,
       "last_mode": "quick",
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -18330,7 +18378,7 @@
       "last_status": "no_streams",
       "last_score": 10,
       "last_mode": "quick",
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -18505,7 +18553,7 @@
       "last_status": "healthy",
       "last_score": 80,
       "last_mode": "quick",
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_success_at": "2026-07-26T03:32:36.205204+00:00",
       "total_checks": 4,
       "total_successes": 4,
@@ -18677,8 +18725,8 @@
       },
       "last_performance_result": {
         "passed": true,
-        "provider_median_latency_ms": 958,
-        "stream_median_latency_ms": 40,
+        "provider_median_latency_ms": 957,
+        "stream_median_latency_ms": 39,
         "maximum_provider_median_latency_ms": 15000,
         "maximum_stream_median_latency_ms": 12000
       },
@@ -18695,7 +18743,7 @@
       "last_status": "no_streams",
       "last_score": 10,
       "last_mode": "quick",
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -18870,7 +18918,7 @@
       "last_status": "blocked",
       "last_score": 10,
       "last_mode": "quick",
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_success_at": null,
       "total_checks": 4,
       "total_successes": 0,
@@ -19041,7 +19089,7 @@
       "last_status": "blocked",
       "last_ci_classification": "inconclusive",
       "last_score": 10,
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_mode": "quick",
       "last_deep_pre_stability_pass": false,
       "strict_consecutive_deep_passes": 0,
@@ -19205,7 +19253,7 @@
       "last_status": "no_streams",
       "last_ci_classification": "inconclusive",
       "last_score": 10,
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_mode": "quick",
       "last_deep_pre_stability_pass": false,
       "strict_consecutive_deep_passes": 0,
@@ -19371,7 +19419,7 @@
       "last_status": "provider_unreachable",
       "last_ci_classification": "inconclusive",
       "last_score": 10,
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_mode": "quick",
       "last_deep_pre_stability_pass": false,
       "strict_consecutive_deep_passes": 0,
@@ -19538,7 +19586,7 @@
       "last_status": "blocked",
       "last_ci_classification": "inconclusive",
       "last_score": 10,
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_mode": "quick",
       "last_deep_pre_stability_pass": false,
       "strict_consecutive_deep_passes": 0,
@@ -19702,7 +19750,7 @@
       "last_status": "blocked",
       "last_ci_classification": "inconclusive",
       "last_score": 10,
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_mode": "quick",
       "last_deep_pre_stability_pass": false,
       "strict_consecutive_deep_passes": 0,
@@ -19868,10 +19916,10 @@
       "upstream_id": "ANIMESAMA-CO",
       "canonical_id": "animesama-co",
       "sha256": "2d8b1f7879a5d297daaa4e1ada1c7706af453aaec4b4fea7edb6f9caf5e3994d",
-      "last_status": "no_streams",
-      "last_ci_classification": "inconclusive",
-      "last_score": 10,
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_status": "healthy",
+      "last_ci_classification": "conclusive_success",
+      "last_score": 75,
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_mode": "quick",
       "last_deep_pre_stability_pass": false,
       "strict_consecutive_deep_passes": 0,
@@ -19883,38 +19931,41 @@
         "01_policy_safe_no_p2p": {
           "passed": true,
           "evidence": {
-            "status": "no_streams",
+            "status": "healthy",
             "disallowed_streams": 0
           },
           "threshold": "no disallowed P2P/torrent output"
         },
         "02_healthy_functional_status": {
-          "passed": false,
-          "evidence": "no_streams",
+          "passed": true,
+          "evidence": "healthy",
           "threshold": "healthy or reachable server/API"
         },
         "03_minimum_score": {
-          "passed": false,
-          "evidence": 10,
+          "passed": true,
+          "evidence": 75,
           "threshold": 55
         },
         "04_fixture_and_type_coverage": {
-          "passed": false,
+          "passed": true,
           "evidence": {
-            "healthy_fixtures": 0,
-            "fixtures_tested": 2,
-            "healthy_fixture_ratio": 0.0,
+            "healthy_fixtures": 1,
+            "fixtures_tested": 1,
+            "healthy_fixture_ratio": 1.0,
             "required_categories": [
-              "anime",
-              "movie"
+              "anime"
             ],
             "original_required_categories": [
               "anime",
               "movie"
             ],
-            "healthy_categories": [],
-            "activation_supported_types": [],
-            "type_scope_applied": false
+            "healthy_categories": [
+              "anime"
+            ],
+            "activation_supported_types": [
+              "anime"
+            ],
+            "type_scope_applied": true
           },
           "threshold": {
             "minimum_healthy_fixtures": 1,
@@ -19924,10 +19975,10 @@
           }
         },
         "05_stream_and_fixture_coverage": {
-          "passed": false,
+          "passed": true,
           "evidence": {
-            "playable_streams": 0,
-            "playable_fixtures": 0
+            "playable_streams": 1,
+            "playable_fixtures": 1
           },
           "threshold": {
             "minimum_playable_streams": 1,
@@ -19935,18 +19986,20 @@
           }
         },
         "06_distinct_host_diversity": {
-          "passed": false,
+          "passed": true,
           "evidence": {
-            "distinct_reachable_hosts": 0,
-            "reachable_hosts": []
+            "distinct_reachable_hosts": 1,
+            "reachable_hosts": [
+              "video.sibnet.ru"
+            ]
           },
           "threshold": 1
         },
         "07_verified_payload_playability": {
-          "passed": false,
+          "passed": true,
           "evidence": {
-            "payload_verified_streams": 0,
-            "playable_streams": 0
+            "payload_verified_streams": 1,
+            "playable_streams": 1
           },
           "threshold": {
             "minimum_payload_verified_streams": 1,
@@ -19954,9 +20007,9 @@
           }
         },
         "08_quality_and_bitrate": {
-          "passed": false,
+          "passed": true,
           "evidence": {
-            "effective_max_height": null,
+            "effective_max_height": 720,
             "max_bandwidth": null,
             "manifest_effective_height": null,
             "manifest_curation_score": 6,
@@ -19982,10 +20035,15 @@
           "passed": true,
           "evidence": {
             "accepted_audio_languages": [],
-            "accepted_subtitle_languages": [],
+            "accepted_subtitle_languages": [
+              "fr"
+            ],
             "accepted_subtitles_advertised": 0,
             "accepted_subtitles_reachable": 0,
-            "runtime_observed_languages": [],
+            "runtime_observed_languages": [
+              "fr",
+              "vostfr"
+            ],
             "manifest_accepted_languages": [
               "fr"
             ],
@@ -20007,7 +20065,7 @@
           "passed": true,
           "evidence": {
             "identity_verified_streams": 0,
-            "identity_unverified_streams": 0,
+            "identity_unverified_streams": 1,
             "identity_contradiction_count": 0,
             "duration_identity_mismatch_count": 0
           },
@@ -20019,9 +20077,9 @@
         }
       },
       "last_performance_result": {
-        "passed": false,
-        "provider_median_latency_ms": null,
-        "stream_median_latency_ms": null,
+        "passed": true,
+        "provider_median_latency_ms": 5955,
+        "stream_median_latency_ms": 4807,
         "maximum_provider_median_latency_ms": 15000,
         "maximum_stream_median_latency_ms": 12000
       },
@@ -20035,7 +20093,7 @@
       "last_status": "no_streams",
       "last_ci_classification": "inconclusive",
       "last_score": 10,
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_mode": "quick",
       "last_deep_pre_stability_pass": false,
       "strict_consecutive_deep_passes": 0,
@@ -20199,7 +20257,7 @@
       "last_status": "blocked",
       "last_ci_classification": "inconclusive",
       "last_score": 10,
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_mode": "quick",
       "last_deep_pre_stability_pass": false,
       "strict_consecutive_deep_passes": 0,
@@ -20363,7 +20421,7 @@
       "last_status": "runtime_error",
       "last_ci_classification": "inconclusive",
       "last_score": 10,
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_mode": "quick",
       "last_deep_pre_stability_pass": false,
       "strict_consecutive_deep_passes": 0,
@@ -20527,7 +20585,7 @@
       "last_status": "healthy",
       "last_ci_classification": "conclusive_success",
       "last_score": 94,
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_mode": "quick",
       "last_deep_pre_stability_pass": true,
       "strict_consecutive_deep_passes": 1,
@@ -20699,8 +20757,8 @@
       },
       "last_performance_result": {
         "passed": true,
-        "provider_median_latency_ms": 1172,
-        "stream_median_latency_ms": 44,
+        "provider_median_latency_ms": 895,
+        "stream_median_latency_ms": 22,
         "maximum_provider_median_latency_ms": 15000,
         "maximum_stream_median_latency_ms": 12000
       },
@@ -20714,7 +20772,7 @@
       "last_status": "no_streams",
       "last_ci_classification": "inconclusive",
       "last_score": 10,
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_mode": "quick",
       "last_deep_pre_stability_pass": false,
       "strict_consecutive_deep_passes": 0,
@@ -20876,10 +20934,10 @@
       "upstream_id": "VOIRANIME-RIP",
       "canonical_id": "voiranime-rip",
       "sha256": "6e74fe6279a3033f7de1b07a3cc86c3c0741b465c14595f09ffded4569098452",
-      "last_status": "no_streams",
-      "last_ci_classification": "inconclusive",
-      "last_score": 10,
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_status": "healthy",
+      "last_ci_classification": "conclusive_success",
+      "last_score": 75,
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_mode": "quick",
       "last_deep_pre_stability_pass": false,
       "strict_consecutive_deep_passes": 0,
@@ -20891,38 +20949,41 @@
         "01_policy_safe_no_p2p": {
           "passed": true,
           "evidence": {
-            "status": "no_streams",
+            "status": "healthy",
             "disallowed_streams": 0
           },
           "threshold": "no disallowed P2P/torrent output"
         },
         "02_healthy_functional_status": {
-          "passed": false,
-          "evidence": "no_streams",
+          "passed": true,
+          "evidence": "healthy",
           "threshold": "healthy or reachable server/API"
         },
         "03_minimum_score": {
-          "passed": false,
-          "evidence": 10,
+          "passed": true,
+          "evidence": 75,
           "threshold": 55
         },
         "04_fixture_and_type_coverage": {
-          "passed": false,
+          "passed": true,
           "evidence": {
-            "healthy_fixtures": 0,
-            "fixtures_tested": 2,
-            "healthy_fixture_ratio": 0.0,
+            "healthy_fixtures": 1,
+            "fixtures_tested": 1,
+            "healthy_fixture_ratio": 1.0,
             "required_categories": [
-              "anime",
-              "movie"
+              "anime"
             ],
             "original_required_categories": [
               "anime",
               "movie"
             ],
-            "healthy_categories": [],
-            "activation_supported_types": [],
-            "type_scope_applied": false
+            "healthy_categories": [
+              "anime"
+            ],
+            "activation_supported_types": [
+              "anime"
+            ],
+            "type_scope_applied": true
           },
           "threshold": {
             "minimum_healthy_fixtures": 1,
@@ -20932,10 +20993,10 @@
           }
         },
         "05_stream_and_fixture_coverage": {
-          "passed": false,
+          "passed": true,
           "evidence": {
-            "playable_streams": 0,
-            "playable_fixtures": 0
+            "playable_streams": 1,
+            "playable_fixtures": 1
           },
           "threshold": {
             "minimum_playable_streams": 1,
@@ -20943,18 +21004,20 @@
           }
         },
         "06_distinct_host_diversity": {
-          "passed": false,
+          "passed": true,
           "evidence": {
-            "distinct_reachable_hosts": 0,
-            "reachable_hosts": []
+            "distinct_reachable_hosts": 1,
+            "reachable_hosts": [
+              "video.sibnet.ru"
+            ]
           },
           "threshold": 1
         },
         "07_verified_payload_playability": {
-          "passed": false,
+          "passed": true,
           "evidence": {
-            "payload_verified_streams": 0,
-            "playable_streams": 0
+            "payload_verified_streams": 1,
+            "playable_streams": 1
           },
           "threshold": {
             "minimum_payload_verified_streams": 1,
@@ -20962,9 +21025,9 @@
           }
         },
         "08_quality_and_bitrate": {
-          "passed": false,
+          "passed": true,
           "evidence": {
-            "effective_max_height": null,
+            "effective_max_height": 720,
             "max_bandwidth": null,
             "manifest_effective_height": null,
             "manifest_curation_score": 6,
@@ -20990,10 +21053,15 @@
           "passed": true,
           "evidence": {
             "accepted_audio_languages": [],
-            "accepted_subtitle_languages": [],
+            "accepted_subtitle_languages": [
+              "fr"
+            ],
             "accepted_subtitles_advertised": 0,
             "accepted_subtitles_reachable": 0,
-            "runtime_observed_languages": [],
+            "runtime_observed_languages": [
+              "fr",
+              "vostfr"
+            ],
             "manifest_accepted_languages": [
               "fr"
             ],
@@ -21015,7 +21083,7 @@
           "passed": true,
           "evidence": {
             "identity_verified_streams": 0,
-            "identity_unverified_streams": 0,
+            "identity_unverified_streams": 1,
             "identity_contradiction_count": 0,
             "duration_identity_mismatch_count": 0
           },
@@ -21027,9 +21095,9 @@
         }
       },
       "last_performance_result": {
-        "passed": false,
-        "provider_median_latency_ms": null,
-        "stream_median_latency_ms": null,
+        "passed": true,
+        "provider_median_latency_ms": 4756,
+        "stream_median_latency_ms": 5553,
         "maximum_provider_median_latency_ms": 15000,
         "maximum_stream_median_latency_ms": 12000
       },
@@ -21043,7 +21111,7 @@
       "last_status": "unavailable",
       "last_ci_classification": "conclusive_failure",
       "last_score": 10,
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_mode": "quick",
       "last_deep_pre_stability_pass": false,
       "strict_consecutive_deep_passes": 0,
@@ -21213,7 +21281,7 @@
       "last_status": "healthy",
       "last_ci_classification": "conclusive_success",
       "last_score": 85,
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_mode": "quick",
       "last_deep_pre_stability_pass": false,
       "strict_consecutive_deep_passes": 0,
@@ -21381,8 +21449,8 @@
       },
       "last_performance_result": {
         "passed": true,
-        "provider_median_latency_ms": 11542,
-        "stream_median_latency_ms": 532,
+        "provider_median_latency_ms": 9552,
+        "stream_median_latency_ms": 345,
         "maximum_provider_median_latency_ms": 15000,
         "maximum_stream_median_latency_ms": 12000
       },
@@ -21396,7 +21464,7 @@
       "last_status": "healthy",
       "last_ci_classification": "conclusive_success",
       "last_score": 81,
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_mode": "quick",
       "last_deep_pre_stability_pass": false,
       "strict_consecutive_deep_passes": 0,
@@ -21557,8 +21625,8 @@
       },
       "last_performance_result": {
         "passed": true,
-        "provider_median_latency_ms": 10574,
-        "stream_median_latency_ms": 540,
+        "provider_median_latency_ms": 4233,
+        "stream_median_latency_ms": 517,
         "maximum_provider_median_latency_ms": 15000,
         "maximum_stream_median_latency_ms": 12000
       },
@@ -21572,7 +21640,7 @@
       "last_status": "no_streams",
       "last_ci_classification": "inconclusive",
       "last_score": 10,
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_mode": "quick",
       "last_deep_pre_stability_pass": true,
       "strict_consecutive_deep_passes": 1,
@@ -21738,7 +21806,7 @@
       "last_status": "no_streams",
       "last_ci_classification": "inconclusive",
       "last_score": 10,
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_mode": "quick",
       "last_deep_pre_stability_pass": true,
       "strict_consecutive_deep_passes": 1,
@@ -21903,7 +21971,7 @@
       "last_status": "provider_unreachable",
       "last_ci_classification": "inconclusive",
       "last_score": 10,
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_mode": "quick",
       "last_deep_pre_stability_pass": true,
       "strict_consecutive_deep_passes": 1,
@@ -22061,14 +22129,14 @@
     },
     "published:uhdmovies": {
       "source": "published-baseline",
-      "upstream_id": "UHDMOVIES",
+      "upstream_id": "uhdmovies",
       "canonical_id": "uhdmovies",
-      "sha256": "8e3f90030e76aa2d117c8b0cb7637ead99fac3d12e317eb18707f3286eb328eb",
-      "last_status": "unavailable",
-      "last_ci_classification": "conclusive_failure",
+      "sha256": "d879af8e4188d285e4a0256eb12d2113149cfb58c0ce4c6ada6ccb785057c8b5",
+      "last_status": "no_streams",
+      "last_ci_classification": "inconclusive",
       "last_score": 10,
-      "last_checked_at": "2026-08-11T00:54:49.821886+00:00",
-      "last_mode": "deep",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
+      "last_mode": "quick",
       "last_deep_pre_stability_pass": false,
       "strict_consecutive_deep_passes": 0,
       "strict_total_deep_passes": 0,
@@ -22079,20 +22147,20 @@
         "01_policy_safe_no_p2p": {
           "passed": true,
           "evidence": {
-            "status": "unavailable",
+            "status": "no_streams",
             "disallowed_streams": 0
           },
           "threshold": "no disallowed P2P/torrent output"
         },
         "02_healthy_functional_status": {
           "passed": false,
-          "evidence": "unavailable",
+          "evidence": "no_streams",
           "threshold": "healthy or reachable server/API"
         },
         "03_minimum_score": {
           "passed": false,
           "evidence": 10,
-          "threshold": 70
+          "threshold": 55
         },
         "04_fixture_and_type_coverage": {
           "passed": false,
@@ -22104,11 +22172,17 @@
               "movie",
               "tv"
             ],
-            "healthy_categories": []
+            "original_required_categories": [
+              "movie",
+              "tv"
+            ],
+            "healthy_categories": [],
+            "activation_supported_types": [],
+            "type_scope_applied": false
           },
           "threshold": {
             "minimum_healthy_fixtures": 1,
-            "minimum_healthy_fixture_ratio": 0.5,
+            "minimum_healthy_fixture_ratio": 0.34,
             "require_declared_type_coverage": true,
             "representative_fixture_mode": true
           }
@@ -22167,18 +22241,23 @@
             ]
           },
           "threshold": {
-            "minimum_effective_height": 720,
-            "minimum_bandwidth_bps_when_reported": 1000000,
+            "minimum_effective_height": 0,
+            "minimum_bandwidth_bps_when_reported": 0,
             "minimum_manifest_curation_score_when_stream_is_not_returned": 5
           }
         },
         "09_language_and_subtitle_integrity": {
-          "passed": false,
+          "passed": true,
           "evidence": {
             "accepted_audio_languages": [],
             "accepted_subtitle_languages": [],
             "accepted_subtitles_advertised": 0,
-            "accepted_subtitles_reachable": 0
+            "accepted_subtitles_reachable": 0,
+            "runtime_observed_languages": [],
+            "manifest_accepted_languages": [
+              "en"
+            ],
+            "verified_manifest_audio_fallback": false
           },
           "threshold": {
             "accepted_audio_languages": [
@@ -22191,6 +22270,20 @@
             ],
             "reachable_advertised_subtitle_required": true
           }
+        },
+        "10_content_identity_integrity": {
+          "passed": true,
+          "evidence": {
+            "identity_verified_streams": 0,
+            "identity_unverified_streams": 0,
+            "identity_contradiction_count": 0,
+            "duration_identity_mismatch_count": 0
+          },
+          "threshold": {
+            "maximum_identity_contradictions": 0,
+            "maximum_duration_identity_mismatches": 0,
+            "unknown_identity_is_not_ui_unknown_quality": true
+          }
         }
       },
       "last_performance_result": {
@@ -22200,7 +22293,7 @@
         "maximum_provider_median_latency_ms": 15000,
         "maximum_stream_median_latency_ms": 12000
       },
-      "present_in_latest_discovery": false
+      "present_in_latest_discovery": true
     },
     "published:hindmoviez": {
       "source": "published-baseline",
@@ -22210,7 +22303,7 @@
       "last_status": "healthy",
       "last_ci_classification": "conclusive_success",
       "last_score": 92,
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_mode": "quick",
       "last_deep_pre_stability_pass": true,
       "strict_consecutive_deep_passes": 1,
@@ -22284,8 +22377,8 @@
           "evidence": {
             "distinct_reachable_hosts": 2,
             "reachable_hosts": [
-              "abc.favegraddeufru-1750.workers.dev",
-              "abc.jounoiyeiboqui-8508.workers.dev"
+              "india.zaquannobowe-2124.workers.dev",
+              "shareme.brituyeirefroi-2166.workers.dev"
             ]
           },
           "threshold": 1
@@ -22361,7 +22454,7 @@
         "10_content_identity_integrity": {
           "passed": true,
           "evidence": {
-            "identity_verified_streams": 2,
+            "identity_verified_streams": 3,
             "identity_unverified_streams": 0,
             "identity_contradiction_count": 0,
             "duration_identity_mismatch_count": 0
@@ -22375,8 +22468,8 @@
       },
       "last_performance_result": {
         "passed": true,
-        "provider_median_latency_ms": 10901,
-        "stream_median_latency_ms": 1727,
+        "provider_median_latency_ms": 11342,
+        "stream_median_latency_ms": 1007,
         "maximum_provider_median_latency_ms": 15000,
         "maximum_stream_median_latency_ms": 12000
       },
@@ -22390,7 +22483,7 @@
       "last_status": "provider_unreachable",
       "last_ci_classification": "inconclusive",
       "last_score": 10,
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_mode": "quick",
       "last_deep_pre_stability_pass": false,
       "strict_consecutive_deep_passes": 0,
@@ -22557,7 +22650,7 @@
       "last_status": "provider_unreachable",
       "last_ci_classification": "inconclusive",
       "last_score": 10,
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_mode": "quick",
       "last_deep_pre_stability_pass": false,
       "strict_consecutive_deep_passes": 0,
@@ -22722,7 +22815,7 @@
       "last_status": "no_streams",
       "last_ci_classification": "inconclusive",
       "last_score": 10,
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_mode": "quick",
       "last_deep_pre_stability_pass": false,
       "strict_consecutive_deep_passes": 0,
@@ -22888,8 +22981,8 @@
       "sha256": "fe2cfaabdec389850a8cec9d079e1b2906a3926051033d381a03d19085849e82",
       "last_status": "healthy",
       "last_ci_classification": "conclusive_success",
-      "last_score": 82,
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_score": 93,
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_mode": "quick",
       "last_deep_pre_stability_pass": true,
       "strict_consecutive_deep_passes": 1,
@@ -22913,16 +23006,17 @@
         },
         "03_minimum_score": {
           "passed": true,
-          "evidence": 82,
+          "evidence": 93,
           "threshold": 55
         },
         "04_fixture_and_type_coverage": {
           "passed": true,
           "evidence": {
-            "healthy_fixtures": 1,
-            "fixtures_tested": 1,
+            "healthy_fixtures": 2,
+            "fixtures_tested": 2,
             "healthy_fixture_ratio": 1.0,
             "required_categories": [
+              "movie",
               "tv"
             ],
             "original_required_categories": [
@@ -22930,12 +23024,14 @@
               "tv"
             ],
             "healthy_categories": [
+              "movie",
               "tv"
             ],
             "activation_supported_types": [
+              "movie",
               "tv"
             ],
-            "type_scope_applied": true
+            "type_scope_applied": false
           },
           "threshold": {
             "minimum_healthy_fixtures": 1,
@@ -22947,8 +23043,8 @@
         "05_stream_and_fixture_coverage": {
           "passed": true,
           "evidence": {
-            "playable_streams": 1,
-            "playable_fixtures": 1
+            "playable_streams": 2,
+            "playable_fixtures": 2
           },
           "threshold": {
             "minimum_playable_streams": 1,
@@ -22958,9 +23054,10 @@
         "06_distinct_host_diversity": {
           "passed": true,
           "evidence": {
-            "distinct_reachable_hosts": 1,
+            "distinct_reachable_hosts": 2,
             "reachable_hosts": [
-              "files.g0ldmine.workers.dev"
+              "hubcloud-dl.sumitbotdl1.workers.dev",
+              "jolly-queen-8c7b.gatenoy5615269.workers.dev"
             ]
           },
           "threshold": 1
@@ -22968,8 +23065,8 @@
         "07_verified_payload_playability": {
           "passed": true,
           "evidence": {
-            "payload_verified_streams": 1,
-            "playable_streams": 1
+            "payload_verified_streams": 2,
+            "playable_streams": 2
           },
           "threshold": {
             "minimum_payload_verified_streams": 1,
@@ -22979,7 +23076,7 @@
         "08_quality_and_bitrate": {
           "passed": true,
           "evidence": {
-            "effective_max_height": 1080,
+            "effective_max_height": 2160,
             "max_bandwidth": null,
             "manifest_effective_height": null,
             "manifest_curation_score": 7,
@@ -23036,7 +23133,7 @@
         "10_content_identity_integrity": {
           "passed": true,
           "evidence": {
-            "identity_verified_streams": 3,
+            "identity_verified_streams": 4,
             "identity_unverified_streams": 0,
             "identity_contradiction_count": 0,
             "duration_identity_mismatch_count": 0
@@ -23050,8 +23147,8 @@
       },
       "last_performance_result": {
         "passed": true,
-        "provider_median_latency_ms": 1825,
-        "stream_median_latency_ms": 753,
+        "provider_median_latency_ms": 2078,
+        "stream_median_latency_ms": 773,
         "maximum_provider_median_latency_ms": 15000,
         "maximum_stream_median_latency_ms": 12000
       },
@@ -23064,8 +23161,8 @@
       "sha256": "76282978a3666ef46b0818ba7b478120765d49dbce18000422ecf222fcc0035a",
       "last_status": "healthy",
       "last_ci_classification": "conclusive_success",
-      "last_score": 75,
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_score": 85,
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_mode": "quick",
       "last_deep_pre_stability_pass": false,
       "strict_consecutive_deep_passes": 0,
@@ -23089,16 +23186,17 @@
         },
         "03_minimum_score": {
           "passed": true,
-          "evidence": 75,
+          "evidence": 85,
           "threshold": 55
         },
         "04_fixture_and_type_coverage": {
           "passed": true,
           "evidence": {
-            "healthy_fixtures": 1,
-            "fixtures_tested": 1,
+            "healthy_fixtures": 2,
+            "fixtures_tested": 2,
             "healthy_fixture_ratio": 1.0,
             "required_categories": [
+              "movie",
               "tv"
             ],
             "original_required_categories": [
@@ -23106,12 +23204,14 @@
               "tv"
             ],
             "healthy_categories": [
+              "movie",
               "tv"
             ],
             "activation_supported_types": [
+              "movie",
               "tv"
             ],
-            "type_scope_applied": true
+            "type_scope_applied": false
           },
           "threshold": {
             "minimum_healthy_fixtures": 1,
@@ -23123,8 +23223,8 @@
         "05_stream_and_fixture_coverage": {
           "passed": true,
           "evidence": {
-            "playable_streams": 1,
-            "playable_fixtures": 1
+            "playable_streams": 2,
+            "playable_fixtures": 2
           },
           "threshold": {
             "minimum_playable_streams": 1,
@@ -23134,8 +23234,9 @@
         "06_distinct_host_diversity": {
           "passed": true,
           "evidence": {
-            "distinct_reachable_hosts": 1,
+            "distinct_reachable_hosts": 2,
             "reachable_hosts": [
+              "profitableaffiliatehub.site",
               "quietmidnightgardeningideas.site"
             ]
           },
@@ -23144,8 +23245,8 @@
         "07_verified_payload_playability": {
           "passed": true,
           "evidence": {
-            "payload_verified_streams": 1,
-            "playable_streams": 1
+            "payload_verified_streams": 2,
+            "playable_streams": 2
           },
           "threshold": {
             "minimum_payload_verified_streams": 1,
@@ -23156,7 +23257,7 @@
           "passed": true,
           "evidence": {
             "effective_max_height": 1080,
-            "max_bandwidth": 2892338,
+            "max_bandwidth": 5823438,
             "manifest_effective_height": null,
             "manifest_curation_score": 7,
             "manifest_quality_signals": [
@@ -23210,7 +23311,7 @@
         "10_content_identity_integrity": {
           "passed": false,
           "evidence": {
-            "identity_verified_streams": 3,
+            "identity_verified_streams": 5,
             "identity_unverified_streams": 0,
             "identity_contradiction_count": 0,
             "duration_identity_mismatch_count": 2
@@ -23223,9 +23324,9 @@
         }
       },
       "last_performance_result": {
-        "passed": true,
-        "provider_median_latency_ms": 12735,
-        "stream_median_latency_ms": 3488,
+        "passed": false,
+        "provider_median_latency_ms": 17239,
+        "stream_median_latency_ms": 3465,
         "maximum_provider_median_latency_ms": 15000,
         "maximum_stream_median_latency_ms": 12000
       },
@@ -23236,10 +23337,10 @@
       "upstream_id": "DESIFLIX",
       "canonical_id": "desiflix",
       "sha256": "27dcbeb427ed525afce3e23cafb2147b45bd0ce09371a8a80b9ce49cd2250437",
-      "last_status": "healthy",
-      "last_ci_classification": "conclusive_success",
-      "last_score": 84,
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_status": "runtime_error",
+      "last_ci_classification": "inconclusive",
+      "last_score": 10,
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_mode": "quick",
       "last_deep_pre_stability_pass": false,
       "strict_consecutive_deep_passes": 0,
@@ -23251,27 +23352,27 @@
         "01_policy_safe_no_p2p": {
           "passed": true,
           "evidence": {
-            "status": "healthy",
+            "status": "runtime_error",
             "disallowed_streams": 0
           },
           "threshold": "no disallowed P2P/torrent output"
         },
         "02_healthy_functional_status": {
-          "passed": true,
-          "evidence": "healthy",
+          "passed": false,
+          "evidence": "runtime_error",
           "threshold": "healthy or reachable server/API"
         },
         "03_minimum_score": {
-          "passed": true,
-          "evidence": 84,
+          "passed": false,
+          "evidence": 10,
           "threshold": 55
         },
         "04_fixture_and_type_coverage": {
-          "passed": true,
+          "passed": false,
           "evidence": {
-            "healthy_fixtures": 2,
+            "healthy_fixtures": 0,
             "fixtures_tested": 2,
-            "healthy_fixture_ratio": 1.0,
+            "healthy_fixture_ratio": 0.0,
             "required_categories": [
               "movie",
               "tv"
@@ -23280,14 +23381,8 @@
               "movie",
               "tv"
             ],
-            "healthy_categories": [
-              "movie",
-              "tv"
-            ],
-            "activation_supported_types": [
-              "movie",
-              "tv"
-            ],
+            "healthy_categories": [],
+            "activation_supported_types": [],
             "type_scope_applied": false
           },
           "threshold": {
@@ -23298,10 +23393,10 @@
           }
         },
         "05_stream_and_fixture_coverage": {
-          "passed": true,
+          "passed": false,
           "evidence": {
-            "playable_streams": 2,
-            "playable_fixtures": 2
+            "playable_streams": 0,
+            "playable_fixtures": 0
           },
           "threshold": {
             "minimum_playable_streams": 1,
@@ -23309,20 +23404,18 @@
           }
         },
         "06_distinct_host_diversity": {
-          "passed": true,
+          "passed": false,
           "evidence": {
-            "distinct_reachable_hosts": 1,
-            "reachable_hosts": [
-              "desiflix-app.redgrass-e8268bc5.eastus2.azurecontainerapps.io"
-            ]
+            "distinct_reachable_hosts": 0,
+            "reachable_hosts": []
           },
           "threshold": 1
         },
         "07_verified_payload_playability": {
-          "passed": true,
+          "passed": false,
           "evidence": {
-            "payload_verified_streams": 2,
-            "playable_streams": 2
+            "payload_verified_streams": 0,
+            "playable_streams": 0
           },
           "threshold": {
             "minimum_payload_verified_streams": 1,
@@ -23330,9 +23423,9 @@
           }
         },
         "08_quality_and_bitrate": {
-          "passed": true,
+          "passed": false,
           "evidence": {
-            "effective_max_height": 2160,
+            "effective_max_height": null,
             "max_bandwidth": null,
             "manifest_effective_height": null,
             "manifest_curation_score": 6,
@@ -23358,9 +23451,7 @@
         "09_language_and_subtitle_integrity": {
           "passed": true,
           "evidence": {
-            "accepted_audio_languages": [
-              "en"
-            ],
+            "accepted_audio_languages": [],
             "accepted_subtitle_languages": [],
             "accepted_subtitles_advertised": 0,
             "accepted_subtitles_reachable": 0,
@@ -23369,7 +23460,7 @@
               "en",
               "hi"
             ],
-            "verified_manifest_audio_fallback": true
+            "verified_manifest_audio_fallback": false
           },
           "threshold": {
             "accepted_audio_languages": [
@@ -23386,7 +23477,7 @@
         "10_content_identity_integrity": {
           "passed": true,
           "evidence": {
-            "identity_verified_streams": 2,
+            "identity_verified_streams": 0,
             "identity_unverified_streams": 0,
             "identity_contradiction_count": 0,
             "duration_identity_mismatch_count": 0
@@ -23399,9 +23490,9 @@
         }
       },
       "last_performance_result": {
-        "passed": true,
-        "provider_median_latency_ms": 8873,
-        "stream_median_latency_ms": 737,
+        "passed": false,
+        "provider_median_latency_ms": null,
+        "stream_median_latency_ms": null,
         "maximum_provider_median_latency_ms": 15000,
         "maximum_stream_median_latency_ms": 12000
       },
@@ -23415,7 +23506,7 @@
       "last_status": "provider_unreachable",
       "last_ci_classification": "inconclusive",
       "last_score": 10,
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_mode": "quick",
       "last_deep_pre_stability_pass": false,
       "strict_consecutive_deep_passes": 0,
@@ -23584,7 +23675,7 @@
       "last_status": "no_streams",
       "last_ci_classification": "inconclusive",
       "last_score": 10,
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_mode": "quick",
       "last_deep_pre_stability_pass": false,
       "strict_consecutive_deep_passes": 0,
@@ -23749,7 +23840,7 @@
       "last_status": "healthy",
       "last_ci_classification": "conclusive_success",
       "last_score": 90,
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_mode": "quick",
       "last_deep_pre_stability_pass": true,
       "strict_consecutive_deep_passes": 1,
@@ -23930,8 +24021,8 @@
       },
       "last_performance_result": {
         "passed": true,
-        "provider_median_latency_ms": 1056,
-        "stream_median_latency_ms": 38,
+        "provider_median_latency_ms": 1528,
+        "stream_median_latency_ms": 32,
         "maximum_provider_median_latency_ms": 15000,
         "maximum_stream_median_latency_ms": 12000
       },
@@ -24087,7 +24178,7 @@
       "last_status": "unavailable",
       "last_ci_classification": "conclusive_failure",
       "last_score": 10,
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_mode": "quick",
       "last_deep_pre_stability_pass": false,
       "strict_consecutive_deep_passes": 0,
@@ -24252,7 +24343,7 @@
       "last_status": "blocked",
       "last_ci_classification": "inconclusive",
       "last_score": 10,
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_mode": "quick",
       "last_deep_pre_stability_pass": false,
       "strict_consecutive_deep_passes": 0,
@@ -24423,7 +24514,7 @@
       "last_status": "no_streams",
       "last_ci_classification": "inconclusive",
       "last_score": 10,
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_mode": "quick",
       "last_deep_pre_stability_pass": true,
       "strict_consecutive_deep_passes": 1,
@@ -24590,7 +24681,7 @@
       "last_status": "blocked",
       "last_ci_classification": "inconclusive",
       "last_score": 10,
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_mode": "quick",
       "last_deep_pre_stability_pass": false,
       "strict_consecutive_deep_passes": 0,
@@ -24754,7 +24845,7 @@
       "last_status": "provider_unreachable",
       "last_ci_classification": "inconclusive",
       "last_score": 10,
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_mode": "quick",
       "last_deep_pre_stability_pass": false,
       "strict_consecutive_deep_passes": 0,
@@ -24924,7 +25015,7 @@
       "last_status": "no_streams",
       "last_ci_classification": "inconclusive",
       "last_score": 10,
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_mode": "quick",
       "last_deep_pre_stability_pass": false,
       "strict_consecutive_deep_passes": 0,
@@ -25092,7 +25183,7 @@
       "last_status": "no_streams",
       "last_ci_classification": "inconclusive",
       "last_score": 10,
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_mode": "quick",
       "last_deep_pre_stability_pass": false,
       "strict_consecutive_deep_passes": 0,
@@ -25258,7 +25349,7 @@
       "last_status": "blocked",
       "last_ci_classification": "inconclusive",
       "last_score": 10,
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_mode": "quick",
       "last_deep_pre_stability_pass": false,
       "strict_consecutive_deep_passes": 0,
@@ -25423,10 +25514,10 @@
       "upstream_id": "HDHUB4U",
       "canonical_id": "hdhub4u",
       "sha256": "7204b3f17dbba01e06e75fabcbea3866d1d4bb7dc04580d4e016b33accc803d3",
-      "last_status": "provider_unreachable",
+      "last_status": "blocked",
       "last_ci_classification": "inconclusive",
-      "last_score": 0,
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_score": 10,
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_mode": "quick",
       "last_deep_pre_stability_pass": false,
       "strict_consecutive_deep_passes": 0,
@@ -25438,19 +25529,19 @@
         "01_policy_safe_no_p2p": {
           "passed": true,
           "evidence": {
-            "status": "provider_unreachable",
+            "status": "blocked",
             "disallowed_streams": 0
           },
           "threshold": "no disallowed P2P/torrent output"
         },
         "02_healthy_functional_status": {
           "passed": false,
-          "evidence": "provider_unreachable",
+          "evidence": "blocked",
           "threshold": "healthy or reachable server/API"
         },
         "03_minimum_score": {
           "passed": false,
-          "evidence": 0,
+          "evidence": 10,
           "threshold": 55
         },
         "04_fixture_and_type_coverage": {
@@ -25594,7 +25685,7 @@
       "last_status": "no_streams",
       "last_ci_classification": "inconclusive",
       "last_score": 10,
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_mode": "quick",
       "last_deep_pre_stability_pass": false,
       "strict_consecutive_deep_passes": 0,
@@ -25762,7 +25853,7 @@
       "last_status": "blocked",
       "last_ci_classification": "inconclusive",
       "last_score": 10,
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_mode": "quick",
       "last_deep_pre_stability_pass": false,
       "strict_consecutive_deep_passes": 0,
@@ -25929,7 +26020,7 @@
       "last_status": "no_streams",
       "last_ci_classification": "inconclusive",
       "last_score": 10,
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_mode": "quick",
       "last_deep_pre_stability_pass": false,
       "strict_consecutive_deep_passes": 0,
@@ -26094,7 +26185,7 @@
       "last_status": "blocked",
       "last_ci_classification": "inconclusive",
       "last_score": 10,
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_mode": "quick",
       "last_deep_pre_stability_pass": false,
       "strict_consecutive_deep_passes": 0,
@@ -26265,7 +26356,7 @@
       "last_status": "degraded",
       "last_ci_classification": "conclusive_failure",
       "last_score": 20,
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_mode": "quick",
       "last_deep_pre_stability_pass": false,
       "strict_consecutive_deep_passes": 0,
@@ -26401,7 +26492,7 @@
         "10_content_identity_integrity": {
           "passed": true,
           "evidence": {
-            "identity_verified_streams": 2,
+            "identity_verified_streams": 4,
             "identity_unverified_streams": 0,
             "identity_contradiction_count": 0,
             "duration_identity_mismatch_count": 0
@@ -26430,7 +26521,7 @@
       "last_status": "blocked",
       "last_ci_classification": "inconclusive",
       "last_score": 10,
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_mode": "quick",
       "last_deep_pre_stability_pass": false,
       "strict_consecutive_deep_passes": 0,
@@ -26599,7 +26690,7 @@
       "last_status": "blocked",
       "last_ci_classification": "inconclusive",
       "last_score": 10,
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_mode": "quick",
       "last_deep_pre_stability_pass": false,
       "strict_consecutive_deep_passes": 0,
@@ -26765,7 +26856,7 @@
       "last_status": "no_streams",
       "last_ci_classification": "inconclusive",
       "last_score": 10,
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_mode": "quick",
       "last_deep_pre_stability_pass": false,
       "strict_consecutive_deep_passes": 0,
@@ -26926,7 +27017,7 @@
       "last_status": "healthy",
       "last_ci_classification": "conclusive_success",
       "last_score": 82,
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_mode": "quick",
       "last_deep_pre_stability_pass": true,
       "strict_consecutive_deep_passes": 1,
@@ -27081,8 +27172,8 @@
       },
       "last_performance_result": {
         "passed": true,
-        "provider_median_latency_ms": 2024,
-        "stream_median_latency_ms": 288,
+        "provider_median_latency_ms": 1751,
+        "stream_median_latency_ms": 318,
         "maximum_provider_median_latency_ms": 15000,
         "maximum_stream_median_latency_ms": 12000
       },
@@ -27096,7 +27187,7 @@
       "last_status": "unavailable",
       "last_ci_classification": "conclusive_failure",
       "last_score": 10,
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_mode": "quick",
       "last_deep_pre_stability_pass": false,
       "strict_consecutive_deep_passes": 0,
@@ -27264,8 +27355,8 @@
       "sha256": "77c92d33f1ad830f9eb93e30208e7f35557aa4cf65275e681a61987c3ee5a567",
       "last_status": "runtime_error",
       "last_ci_classification": "inconclusive",
-      "last_score": 0,
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_score": 10,
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_mode": "quick",
       "last_deep_pre_stability_pass": false,
       "strict_consecutive_deep_passes": 0,
@@ -27289,7 +27380,7 @@
         },
         "03_minimum_score": {
           "passed": false,
-          "evidence": 0,
+          "evidence": 10,
           "threshold": 55
         },
         "04_fixture_and_type_coverage": {
@@ -27429,7 +27520,7 @@
       "last_status": "no_streams",
       "last_ci_classification": "inconclusive",
       "last_score": 10,
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_mode": "quick",
       "last_deep_pre_stability_pass": true,
       "strict_consecutive_deep_passes": 1,
@@ -27593,7 +27684,7 @@
       "last_status": "no_streams",
       "last_ci_classification": "inconclusive",
       "last_score": 10,
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_mode": "quick",
       "last_deep_pre_stability_pass": false,
       "strict_consecutive_deep_passes": 0,
@@ -27757,7 +27848,7 @@
       "last_status": "provider_unreachable",
       "last_ci_classification": "inconclusive",
       "last_score": 10,
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_mode": "quick",
       "last_deep_pre_stability_pass": true,
       "strict_consecutive_deep_passes": 1,
@@ -27930,7 +28021,7 @@
       "last_status": "no_streams",
       "last_ci_classification": "inconclusive",
       "last_score": 10,
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_mode": "quick",
       "last_deep_pre_stability_pass": false,
       "strict_consecutive_deep_passes": 0,
@@ -28095,7 +28186,7 @@
       "last_status": "provider_unreachable",
       "last_ci_classification": "inconclusive",
       "last_score": 10,
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_mode": "quick",
       "last_deep_pre_stability_pass": false,
       "strict_consecutive_deep_passes": 0,
@@ -28261,7 +28352,7 @@
       "last_status": "healthy",
       "last_ci_classification": "conclusive_success",
       "last_score": 80,
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_mode": "quick",
       "last_deep_pre_stability_pass": true,
       "strict_consecutive_deep_passes": 1,
@@ -28420,8 +28511,8 @@
       },
       "last_performance_result": {
         "passed": true,
-        "provider_median_latency_ms": 724,
-        "stream_median_latency_ms": 40,
+        "provider_median_latency_ms": 542,
+        "stream_median_latency_ms": 41,
         "maximum_provider_median_latency_ms": 15000,
         "maximum_stream_median_latency_ms": 12000
       },
@@ -28435,7 +28526,7 @@
       "last_status": "no_streams",
       "last_ci_classification": "inconclusive",
       "last_score": 10,
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_mode": "quick",
       "last_deep_pre_stability_pass": false,
       "strict_consecutive_deep_passes": 0,
@@ -28601,7 +28692,7 @@
       "last_status": "healthy",
       "last_ci_classification": "conclusive_success",
       "last_score": 92,
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_mode": "quick",
       "last_deep_pre_stability_pass": true,
       "strict_consecutive_deep_passes": 1,
@@ -28766,8 +28857,8 @@
       },
       "last_performance_result": {
         "passed": true,
-        "provider_median_latency_ms": 552,
-        "stream_median_latency_ms": 208,
+        "provider_median_latency_ms": 883,
+        "stream_median_latency_ms": 95,
         "maximum_provider_median_latency_ms": 15000,
         "maximum_stream_median_latency_ms": 12000
       },
@@ -28778,10 +28869,10 @@
       "upstream_id": "persianstremio",
       "canonical_id": "persianstremio",
       "sha256": "53cceebab0cb19e17b50bb23cbe889ec9726d6aa36f77039682ca8bfd05e6489",
-      "last_status": "no_streams",
-      "last_ci_classification": "inconclusive",
-      "last_score": 10,
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_status": "healthy",
+      "last_ci_classification": "conclusive_success",
+      "last_score": 74,
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_mode": "quick",
       "last_deep_pre_stability_pass": false,
       "strict_consecutive_deep_passes": 0,
@@ -28793,38 +28884,41 @@
         "01_policy_safe_no_p2p": {
           "passed": true,
           "evidence": {
-            "status": "no_streams",
+            "status": "healthy",
             "disallowed_streams": 0
           },
           "threshold": "no disallowed P2P/torrent output"
         },
         "02_healthy_functional_status": {
-          "passed": false,
-          "evidence": "no_streams",
+          "passed": true,
+          "evidence": "healthy",
           "threshold": "healthy or reachable server/API"
         },
         "03_minimum_score": {
-          "passed": false,
-          "evidence": 10,
+          "passed": true,
+          "evidence": 74,
           "threshold": 55
         },
         "04_fixture_and_type_coverage": {
-          "passed": false,
+          "passed": true,
           "evidence": {
-            "healthy_fixtures": 0,
-            "fixtures_tested": 2,
-            "healthy_fixture_ratio": 0.0,
+            "healthy_fixtures": 1,
+            "fixtures_tested": 1,
+            "healthy_fixture_ratio": 1.0,
             "required_categories": [
-              "movie",
-              "tv"
+              "movie"
             ],
             "original_required_categories": [
               "movie",
               "tv"
             ],
-            "healthy_categories": [],
-            "activation_supported_types": [],
-            "type_scope_applied": false
+            "healthy_categories": [
+              "movie"
+            ],
+            "activation_supported_types": [
+              "movie"
+            ],
+            "type_scope_applied": true
           },
           "threshold": {
             "minimum_healthy_fixtures": 1,
@@ -28834,10 +28928,10 @@
           }
         },
         "05_stream_and_fixture_coverage": {
-          "passed": false,
+          "passed": true,
           "evidence": {
-            "playable_streams": 0,
-            "playable_fixtures": 0
+            "playable_streams": 1,
+            "playable_fixtures": 1
           },
           "threshold": {
             "minimum_playable_streams": 1,
@@ -28845,18 +28939,20 @@
           }
         },
         "06_distinct_host_diversity": {
-          "passed": false,
+          "passed": true,
           "evidence": {
-            "distinct_reachable_hosts": 0,
-            "reachable_hosts": []
+            "distinct_reachable_hosts": 1,
+            "reachable_hosts": [
+              "bvxbbajdhgxd9g87jwb463wx.abrtech.top"
+            ]
           },
           "threshold": 1
         },
         "07_verified_payload_playability": {
-          "passed": false,
+          "passed": true,
           "evidence": {
-            "payload_verified_streams": 0,
-            "playable_streams": 0
+            "payload_verified_streams": 1,
+            "playable_streams": 1
           },
           "threshold": {
             "minimum_payload_verified_streams": 1,
@@ -28864,9 +28960,9 @@
           }
         },
         "08_quality_and_bitrate": {
-          "passed": false,
+          "passed": true,
           "evidence": {
-            "effective_max_height": null,
+            "effective_max_height": 2160,
             "max_bandwidth": null,
             "manifest_effective_height": null,
             "manifest_curation_score": 5,
@@ -28891,7 +28987,9 @@
         "09_language_and_subtitle_integrity": {
           "passed": true,
           "evidence": {
-            "accepted_audio_languages": [],
+            "accepted_audio_languages": [
+              "en"
+            ],
             "accepted_subtitle_languages": [],
             "accepted_subtitles_advertised": 0,
             "accepted_subtitles_reachable": 0,
@@ -28900,7 +28998,7 @@
               "en",
               "pe"
             ],
-            "verified_manifest_audio_fallback": false
+            "verified_manifest_audio_fallback": true
           },
           "threshold": {
             "accepted_audio_languages": [
@@ -28917,7 +29015,7 @@
         "10_content_identity_integrity": {
           "passed": true,
           "evidence": {
-            "identity_verified_streams": 0,
+            "identity_verified_streams": 1,
             "identity_unverified_streams": 0,
             "identity_contradiction_count": 0,
             "duration_identity_mismatch_count": 0
@@ -28930,9 +29028,9 @@
         }
       },
       "last_performance_result": {
-        "passed": false,
-        "provider_median_latency_ms": null,
-        "stream_median_latency_ms": null,
+        "passed": true,
+        "provider_median_latency_ms": 10419,
+        "stream_median_latency_ms": 5694,
         "maximum_provider_median_latency_ms": 15000,
         "maximum_stream_median_latency_ms": 12000
       },
@@ -28946,7 +29044,7 @@
       "last_status": "provider_unreachable",
       "last_ci_classification": "inconclusive",
       "last_score": 10,
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_mode": "quick",
       "last_deep_pre_stability_pass": false,
       "strict_consecutive_deep_passes": 0,
@@ -29110,7 +29208,7 @@
       "last_status": "no_streams",
       "last_ci_classification": "inconclusive",
       "last_score": 10,
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_mode": "quick",
       "last_deep_pre_stability_pass": false,
       "strict_consecutive_deep_passes": 0,
@@ -29274,7 +29372,7 @@
       "last_status": "no_streams",
       "last_ci_classification": "inconclusive",
       "last_score": 10,
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_mode": "quick",
       "last_deep_pre_stability_pass": false,
       "strict_consecutive_deep_passes": 0,
@@ -29438,7 +29536,7 @@
       "last_status": "no_streams",
       "last_ci_classification": "inconclusive",
       "last_score": 10,
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_mode": "quick",
       "last_deep_pre_stability_pass": false,
       "strict_consecutive_deep_passes": 0,
@@ -29606,7 +29704,7 @@
       "last_status": "provider_unreachable",
       "last_ci_classification": "inconclusive",
       "last_score": 10,
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_mode": "quick",
       "last_deep_pre_stability_pass": true,
       "strict_consecutive_deep_passes": 1,
@@ -29777,7 +29875,7 @@
       "last_status": "healthy",
       "last_ci_classification": "conclusive_success",
       "last_score": 80,
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_mode": "quick",
       "last_deep_pre_stability_pass": true,
       "strict_consecutive_deep_passes": 1,
@@ -29945,8 +30043,8 @@
       },
       "last_performance_result": {
         "passed": true,
-        "provider_median_latency_ms": 1239,
-        "stream_median_latency_ms": 48,
+        "provider_median_latency_ms": 1380,
+        "stream_median_latency_ms": 51,
         "maximum_provider_median_latency_ms": 15000,
         "maximum_stream_median_latency_ms": 12000
       },
@@ -29960,7 +30058,7 @@
       "last_status": "provider_unreachable",
       "last_ci_classification": "inconclusive",
       "last_score": 10,
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_mode": "quick",
       "last_deep_pre_stability_pass": false,
       "strict_consecutive_deep_passes": 0,
@@ -30123,11 +30221,11 @@
       "source": "published-baseline",
       "upstream_id": "CASTLE",
       "canonical_id": "castle",
-      "sha256": "4949370d03070467fb1b2fe500fd369a8252f3621fd7b169ea6a64449ce40a11",
+      "sha256": "ee83d19b1cca3d3e7dee498098f48f4a3e2182f3e30ab7c25b9a586f12582233",
       "last_status": "healthy",
       "last_ci_classification": "conclusive_success",
       "last_score": 90,
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_mode": "quick",
       "last_deep_pre_stability_pass": true,
       "strict_consecutive_deep_passes": 1,
@@ -30201,8 +30299,8 @@
           "evidence": {
             "distinct_reachable_hosts": 2,
             "reachable_hosts": [
-              "img1.fvncw.com",
-              "img1.nxocw.com"
+              "img1.flocw.com",
+              "img1.kucwn.com"
             ]
           },
           "threshold": 1
@@ -30297,8 +30395,8 @@
       },
       "last_performance_result": {
         "passed": true,
-        "provider_median_latency_ms": 1621,
-        "stream_median_latency_ms": 68,
+        "provider_median_latency_ms": 1927,
+        "stream_median_latency_ms": 97,
         "maximum_provider_median_latency_ms": 15000,
         "maximum_stream_median_latency_ms": 12000
       },
@@ -30312,7 +30410,7 @@
       "last_status": "provider_unreachable",
       "last_ci_classification": "inconclusive",
       "last_score": 10,
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_mode": "quick",
       "last_deep_pre_stability_pass": false,
       "strict_consecutive_deep_passes": 0,
@@ -30479,7 +30577,7 @@
       "last_status": "provider_unreachable",
       "last_ci_classification": "inconclusive",
       "last_score": 10,
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_mode": "quick",
       "last_deep_pre_stability_pass": true,
       "strict_consecutive_deep_passes": 1,
@@ -30640,7 +30738,7 @@
       "last_status": "provider_unreachable",
       "last_ci_classification": "inconclusive",
       "last_score": 10,
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_mode": "quick",
       "last_deep_pre_stability_pass": false,
       "strict_consecutive_deep_passes": 0,
@@ -30805,7 +30903,7 @@
       "last_status": "no_streams",
       "last_ci_classification": "inconclusive",
       "last_score": 10,
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_mode": "quick",
       "last_deep_pre_stability_pass": false,
       "strict_consecutive_deep_passes": 0,
@@ -30971,7 +31069,7 @@
       "last_status": "blocked",
       "last_ci_classification": "inconclusive",
       "last_score": 10,
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_mode": "quick",
       "last_deep_pre_stability_pass": false,
       "strict_consecutive_deep_passes": 0,
@@ -31138,7 +31236,7 @@
       "last_status": "no_streams",
       "last_ci_classification": "inconclusive",
       "last_score": 10,
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_mode": "quick",
       "last_deep_pre_stability_pass": false,
       "strict_consecutive_deep_passes": 0,
@@ -31303,7 +31401,7 @@
       "last_status": "blocked",
       "last_ci_classification": "inconclusive",
       "last_score": 10,
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_mode": "quick",
       "last_deep_pre_stability_pass": false,
       "strict_consecutive_deep_passes": 0,
@@ -31465,7 +31563,7 @@
       "last_status": "unavailable",
       "last_ci_classification": "conclusive_failure",
       "last_score": 10,
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_mode": "quick",
       "last_deep_pre_stability_pass": false,
       "strict_consecutive_deep_passes": 0,
@@ -31771,7 +31869,7 @@
       "last_status": "blocked",
       "last_ci_classification": "inconclusive",
       "last_score": 10,
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_mode": "quick",
       "last_deep_pre_stability_pass": false,
       "strict_consecutive_deep_passes": 0,
@@ -31938,7 +32036,7 @@
       "last_status": "unavailable",
       "last_ci_classification": "conclusive_failure",
       "last_score": 10,
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_mode": "quick",
       "last_deep_pre_stability_pass": false,
       "strict_consecutive_deep_passes": 0,
@@ -32098,7 +32196,7 @@
       "last_status": "no_streams",
       "last_ci_classification": "inconclusive",
       "last_score": 10,
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_mode": "quick",
       "last_deep_pre_stability_pass": false,
       "strict_consecutive_deep_passes": 0,
@@ -32265,7 +32363,7 @@
       "last_status": "unavailable",
       "last_ci_classification": "conclusive_failure",
       "last_score": 10,
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_mode": "quick",
       "last_deep_pre_stability_pass": false,
       "strict_consecutive_deep_passes": 0,
@@ -32429,7 +32527,7 @@
       "last_status": "no_streams",
       "last_ci_classification": "inconclusive",
       "last_score": 10,
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_mode": "quick",
       "last_deep_pre_stability_pass": false,
       "strict_consecutive_deep_passes": 0,
@@ -32594,7 +32692,7 @@
       "last_status": "blocked",
       "last_ci_classification": "inconclusive",
       "last_score": 10,
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_mode": "quick",
       "last_deep_pre_stability_pass": false,
       "strict_consecutive_deep_passes": 0,
@@ -32760,7 +32858,7 @@
       "last_status": "provider_unreachable",
       "last_ci_classification": "inconclusive",
       "last_score": 10,
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_mode": "quick",
       "last_deep_pre_stability_pass": false,
       "strict_consecutive_deep_passes": 0,
@@ -32925,7 +33023,7 @@
       "last_status": "healthy",
       "last_ci_classification": "conclusive_success",
       "last_score": 78,
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_mode": "quick",
       "last_deep_pre_stability_pass": true,
       "strict_consecutive_deep_passes": 1,
@@ -33091,8 +33189,8 @@
       },
       "last_performance_result": {
         "passed": true,
-        "provider_median_latency_ms": 3894,
-        "stream_median_latency_ms": 1348,
+        "provider_median_latency_ms": 3690,
+        "stream_median_latency_ms": 1321,
         "maximum_provider_median_latency_ms": 15000,
         "maximum_stream_median_latency_ms": 12000
       },
@@ -33106,7 +33204,7 @@
       "last_status": "blocked",
       "last_ci_classification": "inconclusive",
       "last_score": 10,
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_mode": "quick",
       "last_deep_pre_stability_pass": false,
       "strict_consecutive_deep_passes": 0,
@@ -33272,7 +33370,7 @@
       "last_status": "blocked",
       "last_ci_classification": "inconclusive",
       "last_score": 10,
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_mode": "quick",
       "last_deep_pre_stability_pass": false,
       "strict_consecutive_deep_passes": 0,
@@ -33434,10 +33532,10 @@
       "upstream_id": "animezey",
       "canonical_id": "animezey",
       "sha256": "cb59b2acd14ae0328238037d1bc5ce2cc24cf9593bec0b825d1b211d46a220f8",
-      "last_status": "degraded",
-      "last_ci_classification": "conclusive_failure",
-      "last_score": 20,
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_status": "healthy",
+      "last_ci_classification": "conclusive_success",
+      "last_score": 88,
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_mode": "quick",
       "last_deep_pre_stability_pass": false,
       "strict_consecutive_deep_passes": 0,
@@ -33449,27 +33547,27 @@
         "01_policy_safe_no_p2p": {
           "passed": true,
           "evidence": {
-            "status": "degraded",
+            "status": "healthy",
             "disallowed_streams": 0
           },
           "threshold": "no disallowed P2P/torrent output"
         },
         "02_healthy_functional_status": {
-          "passed": false,
-          "evidence": "degraded",
+          "passed": true,
+          "evidence": "healthy",
           "threshold": "healthy or reachable server/API"
         },
         "03_minimum_score": {
-          "passed": false,
-          "evidence": 20,
+          "passed": true,
+          "evidence": 88,
           "threshold": 55
         },
         "04_fixture_and_type_coverage": {
-          "passed": false,
+          "passed": true,
           "evidence": {
-            "healthy_fixtures": 0,
+            "healthy_fixtures": 2,
             "fixtures_tested": 2,
-            "healthy_fixture_ratio": 0.0,
+            "healthy_fixture_ratio": 1.0,
             "required_categories": [
               "movie",
               "tv"
@@ -33478,8 +33576,14 @@
               "movie",
               "tv"
             ],
-            "healthy_categories": [],
-            "activation_supported_types": [],
+            "healthy_categories": [
+              "movie",
+              "tv"
+            ],
+            "activation_supported_types": [
+              "movie",
+              "tv"
+            ],
             "type_scope_applied": false
           },
           "threshold": {
@@ -33490,10 +33594,10 @@
           }
         },
         "05_stream_and_fixture_coverage": {
-          "passed": false,
+          "passed": true,
           "evidence": {
-            "playable_streams": 0,
-            "playable_fixtures": 0
+            "playable_streams": 2,
+            "playable_fixtures": 2
           },
           "threshold": {
             "minimum_playable_streams": 1,
@@ -33501,18 +33605,20 @@
           }
         },
         "06_distinct_host_diversity": {
-          "passed": false,
+          "passed": true,
           "evidence": {
-            "distinct_reachable_hosts": 0,
-            "reachable_hosts": []
+            "distinct_reachable_hosts": 1,
+            "reachable_hosts": [
+              "1.animezeydl.workers.dev"
+            ]
           },
           "threshold": 1
         },
         "07_verified_payload_playability": {
-          "passed": false,
+          "passed": true,
           "evidence": {
-            "payload_verified_streams": 0,
-            "playable_streams": 0
+            "payload_verified_streams": 2,
+            "playable_streams": 2
           },
           "threshold": {
             "minimum_payload_verified_streams": 1,
@@ -33520,9 +33626,9 @@
           }
         },
         "08_quality_and_bitrate": {
-          "passed": false,
+          "passed": true,
           "evidence": {
-            "effective_max_height": null,
+            "effective_max_height": 2160,
             "max_bandwidth": null,
             "manifest_effective_height": null,
             "manifest_curation_score": 5,
@@ -33548,11 +33654,15 @@
         "09_language_and_subtitle_integrity": {
           "passed": true,
           "evidence": {
-            "accepted_audio_languages": [],
+            "accepted_audio_languages": [
+              "en"
+            ],
             "accepted_subtitle_languages": [],
             "accepted_subtitles_advertised": 0,
             "accepted_subtitles_reachable": 0,
-            "runtime_observed_languages": [],
+            "runtime_observed_languages": [
+              "en"
+            ],
             "manifest_accepted_languages": [
               "en",
               "pt"
@@ -33574,7 +33684,7 @@
         "10_content_identity_integrity": {
           "passed": true,
           "evidence": {
-            "identity_verified_streams": 3,
+            "identity_verified_streams": 2,
             "identity_unverified_streams": 0,
             "identity_contradiction_count": 0,
             "duration_identity_mismatch_count": 0
@@ -33587,9 +33697,9 @@
         }
       },
       "last_performance_result": {
-        "passed": false,
-        "provider_median_latency_ms": null,
-        "stream_median_latency_ms": null,
+        "passed": true,
+        "provider_median_latency_ms": 1362,
+        "stream_median_latency_ms": 812,
         "maximum_provider_median_latency_ms": 15000,
         "maximum_stream_median_latency_ms": 12000
       },
@@ -33603,7 +33713,7 @@
       "last_status": "blocked",
       "last_ci_classification": "inconclusive",
       "last_score": 10,
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_mode": "quick",
       "last_deep_pre_stability_pass": false,
       "strict_consecutive_deep_passes": 0,
@@ -33768,7 +33878,7 @@
       "last_status": "no_streams",
       "last_ci_classification": "inconclusive",
       "last_score": 10,
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_mode": "quick",
       "last_deep_pre_stability_pass": false,
       "strict_consecutive_deep_passes": 0,
@@ -33932,7 +34042,7 @@
       "last_status": "blocked",
       "last_ci_classification": "inconclusive",
       "last_score": 10,
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_mode": "quick",
       "last_deep_pre_stability_pass": false,
       "strict_consecutive_deep_passes": 0,
@@ -34095,7 +34205,7 @@
       "last_status": "healthy",
       "last_ci_classification": "conclusive_success",
       "last_score": 83,
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_mode": "quick",
       "last_deep_pre_stability_pass": true,
       "strict_consecutive_deep_passes": 1,
@@ -34284,8 +34394,8 @@
       },
       "last_performance_result": {
         "passed": true,
-        "provider_median_latency_ms": 6072,
-        "stream_median_latency_ms": 194,
+        "provider_median_latency_ms": 4352,
+        "stream_median_latency_ms": 153,
         "maximum_provider_median_latency_ms": 15000,
         "maximum_stream_median_latency_ms": 12000
       },
@@ -34296,10 +34406,10 @@
       "upstream_id": "ANIMEZEY",
       "canonical_id": "animezey",
       "sha256": "2414917b1d7e102ba22c64f3cc6748aa7afbe7797b4a75c15de5a07c9682fa14",
-      "last_status": "degraded",
-      "last_ci_classification": "conclusive_failure",
-      "last_score": 20,
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_status": "healthy",
+      "last_ci_classification": "conclusive_success",
+      "last_score": 88,
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_mode": "quick",
       "last_deep_pre_stability_pass": false,
       "strict_consecutive_deep_passes": 0,
@@ -34311,27 +34421,27 @@
         "01_policy_safe_no_p2p": {
           "passed": true,
           "evidence": {
-            "status": "degraded",
+            "status": "healthy",
             "disallowed_streams": 0
           },
           "threshold": "no disallowed P2P/torrent output"
         },
         "02_healthy_functional_status": {
-          "passed": false,
-          "evidence": "degraded",
+          "passed": true,
+          "evidence": "healthy",
           "threshold": "healthy or reachable server/API"
         },
         "03_minimum_score": {
-          "passed": false,
-          "evidence": 20,
+          "passed": true,
+          "evidence": 88,
           "threshold": 55
         },
         "04_fixture_and_type_coverage": {
-          "passed": false,
+          "passed": true,
           "evidence": {
-            "healthy_fixtures": 0,
+            "healthy_fixtures": 2,
             "fixtures_tested": 2,
-            "healthy_fixture_ratio": 0.0,
+            "healthy_fixture_ratio": 1.0,
             "required_categories": [
               "movie",
               "tv"
@@ -34340,8 +34450,14 @@
               "movie",
               "tv"
             ],
-            "healthy_categories": [],
-            "activation_supported_types": [],
+            "healthy_categories": [
+              "movie",
+              "tv"
+            ],
+            "activation_supported_types": [
+              "movie",
+              "tv"
+            ],
             "type_scope_applied": false
           },
           "threshold": {
@@ -34352,10 +34468,10 @@
           }
         },
         "05_stream_and_fixture_coverage": {
-          "passed": false,
+          "passed": true,
           "evidence": {
-            "playable_streams": 0,
-            "playable_fixtures": 0
+            "playable_streams": 2,
+            "playable_fixtures": 2
           },
           "threshold": {
             "minimum_playable_streams": 1,
@@ -34363,18 +34479,20 @@
           }
         },
         "06_distinct_host_diversity": {
-          "passed": false,
+          "passed": true,
           "evidence": {
-            "distinct_reachable_hosts": 0,
-            "reachable_hosts": []
+            "distinct_reachable_hosts": 1,
+            "reachable_hosts": [
+              "1.animezeydl.workers.dev"
+            ]
           },
           "threshold": 1
         },
         "07_verified_payload_playability": {
-          "passed": false,
+          "passed": true,
           "evidence": {
-            "payload_verified_streams": 0,
-            "playable_streams": 0
+            "payload_verified_streams": 2,
+            "playable_streams": 2
           },
           "threshold": {
             "minimum_payload_verified_streams": 1,
@@ -34382,9 +34500,9 @@
           }
         },
         "08_quality_and_bitrate": {
-          "passed": false,
+          "passed": true,
           "evidence": {
-            "effective_max_height": null,
+            "effective_max_height": 2160,
             "max_bandwidth": null,
             "manifest_effective_height": null,
             "manifest_curation_score": 5,
@@ -34410,11 +34528,15 @@
         "09_language_and_subtitle_integrity": {
           "passed": true,
           "evidence": {
-            "accepted_audio_languages": [],
+            "accepted_audio_languages": [
+              "en"
+            ],
             "accepted_subtitle_languages": [],
             "accepted_subtitles_advertised": 0,
             "accepted_subtitles_reachable": 0,
-            "runtime_observed_languages": [],
+            "runtime_observed_languages": [
+              "en"
+            ],
             "manifest_accepted_languages": [
               "en",
               "pt"
@@ -34436,7 +34558,7 @@
         "10_content_identity_integrity": {
           "passed": true,
           "evidence": {
-            "identity_verified_streams": 3,
+            "identity_verified_streams": 2,
             "identity_unverified_streams": 0,
             "identity_contradiction_count": 0,
             "duration_identity_mismatch_count": 0
@@ -34449,9 +34571,9 @@
         }
       },
       "last_performance_result": {
-        "passed": false,
-        "provider_median_latency_ms": null,
-        "stream_median_latency_ms": null,
+        "passed": true,
+        "provider_median_latency_ms": 1374,
+        "stream_median_latency_ms": 787,
         "maximum_provider_median_latency_ms": 15000,
         "maximum_stream_median_latency_ms": 12000
       },
@@ -34465,7 +34587,7 @@
       "last_status": "blocked",
       "last_ci_classification": "inconclusive",
       "last_score": 10,
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_mode": "quick",
       "last_deep_pre_stability_pass": false,
       "strict_consecutive_deep_passes": 0,
@@ -34630,7 +34752,7 @@
       "last_status": "no_streams",
       "last_ci_classification": "inconclusive",
       "last_score": 10,
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_mode": "quick",
       "last_deep_pre_stability_pass": false,
       "strict_consecutive_deep_passes": 0,
@@ -34794,7 +34916,7 @@
       "last_status": "blocked",
       "last_ci_classification": "inconclusive",
       "last_score": 10,
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_mode": "quick",
       "last_deep_pre_stability_pass": false,
       "strict_consecutive_deep_passes": 0,
@@ -34957,7 +35079,7 @@
       "last_status": "healthy",
       "last_ci_classification": "conclusive_success",
       "last_score": 83,
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_mode": "quick",
       "last_deep_pre_stability_pass": true,
       "strict_consecutive_deep_passes": 1,
@@ -35146,8 +35268,8 @@
       },
       "last_performance_result": {
         "passed": true,
-        "provider_median_latency_ms": 6316,
-        "stream_median_latency_ms": 290,
+        "provider_median_latency_ms": 3863,
+        "stream_median_latency_ms": 149,
         "maximum_provider_median_latency_ms": 15000,
         "maximum_stream_median_latency_ms": 12000
       },
@@ -35161,7 +35283,7 @@
       "last_status": "no_streams",
       "last_ci_classification": "inconclusive",
       "last_score": 10,
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_mode": "quick",
       "last_deep_pre_stability_pass": false,
       "strict_consecutive_deep_passes": 0,
@@ -35328,7 +35450,7 @@
       "last_status": "blocked",
       "last_ci_classification": "inconclusive",
       "last_score": 10,
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_mode": "quick",
       "last_deep_pre_stability_pass": false,
       "strict_consecutive_deep_passes": 0,
@@ -35493,7 +35615,7 @@
       "last_status": "unavailable",
       "last_ci_classification": "conclusive_failure",
       "last_score": 10,
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_mode": "quick",
       "last_deep_pre_stability_pass": false,
       "strict_consecutive_deep_passes": 0,
@@ -35658,7 +35780,7 @@
       "last_status": "provider_unreachable",
       "last_ci_classification": "inconclusive",
       "last_score": 10,
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_mode": "quick",
       "last_deep_pre_stability_pass": false,
       "strict_consecutive_deep_passes": 0,
@@ -35825,7 +35947,7 @@
       "last_status": "blocked",
       "last_ci_classification": "inconclusive",
       "last_score": 10,
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_mode": "quick",
       "last_deep_pre_stability_pass": false,
       "strict_consecutive_deep_passes": 0,
@@ -35990,7 +36112,7 @@
       "last_status": "unavailable",
       "last_ci_classification": "conclusive_failure",
       "last_score": 10,
-      "last_checked_at": "2026-08-16T10:53:13.617642+00:00",
+      "last_checked_at": "2026-08-16T11:34:12.189180+00:00",
       "last_mode": "quick",
       "last_deep_pre_stability_pass": false,
       "strict_consecutive_deep_passes": 0,

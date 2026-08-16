@@ -127,13 +127,13 @@
       "id": "persianstremio",
       "name": "🌸 PersianStremio",
       "description": "Persian Stremio plugin for movies, series,and Persian media content in Iranian & English.",
-      "version": "1.4.21",
+      "version": "1.4.22",
       "author": "Nuvio Team",
       "supportedTypes": [
         "movie",
         "tv"
       ],
-      "filename": "providers/persianstremio--published-baseline--53cceebab0cb19e1.js",
+      "filename": "providers/persianstremio--nuvio--53cceebab0cb19e1.js",
       "enabled": true,
       "hasSettings": false,
       "formats": [
@@ -222,7 +222,7 @@
       "id": "MUGIWARASTREAM",
       "name": "Mugiwara-no-Streaming",
       "description": "Streaming gratuit d'animes et scans en bonne qualite via API Next.js.",
-      "version": "1.0.39",
+      "version": "1.0.40",
       "author": "Gowaru",
       "supportedTypes": [
         "movie",
@@ -237,6 +237,54 @@
       "formats": [
         "mp4",
         "mkv",
+        "m3u8"
+      ],
+      "limited": false,
+      "disabledPlatforms": [],
+      "supportsExternalPlayer": false
+    },
+    {
+      "id": "ANIMESAMA-CO",
+      "name": "AnimeSama.co (DLE Mirror)",
+      "description": "Animes VF et VOSTFR en streaming sur AnimeSama.co (miroir DLE).",
+      "version": "1.0.28",
+      "author": "Gowaru",
+      "supportedTypes": [
+        "movie",
+        "anime"
+      ],
+      "filename": "providers/animesama-co--published-baseline--2d8b1f7879a5d297.js",
+      "enabled": true,
+      "logo": "https://raw.githubusercontent.com/Anime-Sama/IMG/img/autres/logo.png",
+      "contentLanguage": [
+        "fr"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "limited": false,
+      "disabledPlatforms": [],
+      "supportsExternalPlayer": false
+    },
+    {
+      "id": "VOIRANIME-RIP",
+      "name": "VoirAnime.rip",
+      "description": "Animes VF et VOSTFR en streaming sur VoirAnime.rip (site DLE).",
+      "version": "1.0.33",
+      "author": "Gowaru",
+      "supportedTypes": [
+        "movie",
+        "anime"
+      ],
+      "filename": "providers/voiranime-rip--published-baseline--6e74fe6279a3033f.js",
+      "enabled": true,
+      "logo": "https://voiranime.rip/img/icon.png",
+      "contentLanguage": [
+        "fr"
+      ],
+      "formats": [
+        "mp4",
         "m3u8"
       ],
       "limited": false,
@@ -269,28 +317,24 @@
     },
     {
       "id": "CASTLE",
-      "name": "Castle",
+      "name": "🏰 Castle",
       "description": "Multi Lang provider",
-      "version": "2.0.18",
+      "version": "2.0.19",
       "author": "Nuvio Team",
       "supportedTypes": [
         "movie",
         "tv"
       ],
-      "filename": "providers/castle--nuvio--ee83d19b1cca3d3e.js",
+      "filename": "providers/castle--nuvio--4949370d03070467.js",
       "enabled": true,
+      "hasSettings": true,
       "formats": [
         "mp4",
         "m3u8"
       ],
-      "logo": "https://static.hbayy.com/simple-blog-13/prod/_nuxt/big-logo.DESZ4mBj.png",
+      "logo": "https://i.postimg.cc/0NvGzFyK/castle.png",
       "contentLanguage": [
-        "en",
-        "hi",
-        "ta",
-        "te",
-        "ml",
-        "kn"
+        "en"
       ],
       "disabledPlatforms": []
     },
@@ -441,30 +485,6 @@
         "ja"
       ],
       "disabledPlatforms": []
-    },
-    {
-      "id": "ANIMESAMA-CO",
-      "name": "AnimeSama.co (DLE Mirror)",
-      "description": "Animes VF et VOSTFR en streaming sur AnimeSama.co (miroir DLE).",
-      "version": "1.0.27",
-      "author": "Gowaru",
-      "supportedTypes": [
-        "movie",
-        "anime"
-      ],
-      "filename": "providers/animesama-co--nuvio--2d8b1f7879a5d297.js",
-      "enabled": true,
-      "logo": "https://raw.githubusercontent.com/Anime-Sama/IMG/img/autres/logo.png",
-      "contentLanguage": [
-        "fr"
-      ],
-      "formats": [
-        "mp4",
-        "m3u8"
-      ],
-      "limited": false,
-      "disabledPlatforms": [],
-      "supportsExternalPlayer": false
     },
     {
       "id": "ANIMESULTRA",
@@ -922,30 +942,6 @@
       "supportsExternalPlayer": false
     },
     {
-      "id": "VOIRANIME-RIP",
-      "name": "VoirAnime.rip",
-      "description": "Animes VF et VOSTFR en streaming sur VoirAnime.rip (site DLE).",
-      "version": "1.0.32",
-      "author": "Gowaru",
-      "supportedTypes": [
-        "movie",
-        "anime"
-      ],
-      "filename": "providers/voiranime-rip--published-baseline--6e74fe6279a3033f.js",
-      "enabled": true,
-      "logo": "https://voiranime.rip/img/icon.png",
-      "contentLanguage": [
-        "fr"
-      ],
-      "formats": [
-        "mp4",
-        "m3u8"
-      ],
-      "limited": false,
-      "disabledPlatforms": [],
-      "supportsExternalPlayer": false
-    },
-    {
       "id": "VOSTFREE",
       "name": "Vostfree",
       "description": "Animes VF et VOSTFR en streaming et téléchargement.",
@@ -1041,29 +1037,6 @@
       "supportsExternalPlayer": false
     },
     {
-      "id": "uhdmovies",
-      "name": "UHDMovies",
-      "description": "UHD Movies streaming with multiple resolution",
-      "version": "1.0.0",
-      "author": "Nuvio Team",
-      "supportedTypes": [
-        "movie",
-        "tv"
-      ],
-      "filename": "providers/uhdmovies--nuvio--d879af8e4188d285.js",
-      "enabled": false,
-      "hasSettings": true,
-      "formats": [
-        "mp4",
-        "m3u8"
-      ],
-      "logo": "https://i.postimg.cc/KzDBBdbK/uhdmovies.png",
-      "contentLanguage": [
-        "en"
-      ],
-      "disabledPlatforms": []
-    },
-    {
       "id": "VEGAMOVIES",
       "name": "VegaMovies",
       "description": "VegaMovies streaming with high-quality direct links",
@@ -1126,6 +1099,30 @@
       ],
       "formats": [
         "mp4"
+      ],
+      "limited": false,
+      "disabledPlatforms": [],
+      "supportsExternalPlayer": false
+    },
+    {
+      "id": "ANIMOFLIX",
+      "name": "AnimoFlix",
+      "description": "Regarder des animes VF et VOSTFR gratuitement sur AnimoFlix.",
+      "version": "1.0.28",
+      "author": "Gowaru",
+      "supportedTypes": [
+        "movie",
+        "anime"
+      ],
+      "filename": "providers/animoflix--published-baseline--77c92d33f1ad830f.js",
+      "enabled": false,
+      "logo": "https://animoflix.to/img/logo.png",
+      "contentLanguage": [
+        "fr"
+      ],
+      "formats": [
+        "mp4",
+        "mkv"
       ],
       "limited": false,
       "disabledPlatforms": [],
@@ -1199,30 +1196,6 @@
         "mp4",
         "mkv",
         "m3u8"
-      ],
-      "limited": false,
-      "disabledPlatforms": [],
-      "supportsExternalPlayer": false
-    },
-    {
-      "id": "ANIMOFLIX",
-      "name": "AnimoFlix",
-      "description": "Regarder des animes VF et VOSTFR gratuitement sur AnimoFlix.",
-      "version": "1.0.28",
-      "author": "Gowaru",
-      "supportedTypes": [
-        "movie",
-        "anime"
-      ],
-      "filename": "providers/animoflix--published-baseline--77c92d33f1ad830f.js",
-      "enabled": false,
-      "logo": "https://animoflix.to/img/logo.png",
-      "contentLanguage": [
-        "fr"
-      ],
-      "formats": [
-        "mp4",
-        "mkv"
       ],
       "limited": false,
       "disabledPlatforms": [],
@@ -1369,6 +1342,81 @@
       "supportsExternalPlayer": false
     },
     {
+      "id": "ANIMEZEY",
+      "name": "AnimeZeY",
+      "description": "Movies via AnimeZeY, indexed by TMDB",
+      "version": "1.0.14",
+      "author": "Nuvio Team",
+      "supportedTypes": [
+        "movie",
+        "tv"
+      ],
+      "filename": "providers/animezey--published-baseline--2414917b1d7e102b.js",
+      "enabled": false,
+      "hasSettings": true,
+      "formats": [
+        "mp4",
+        "mkv",
+        "m3u8"
+      ],
+      "logo": "https://i.postimg.cc/RVTy2djk/ainimezey.png",
+      "contentLanguage": [
+        "en",
+        "pt"
+      ]
+    },
+    {
+      "id": "playimdb",
+      "name": "PlayIMDb",
+      "description": "High-Speed Direct Streaming for Movies (IMDb ID Extract)",
+      "version": "2.0.19",
+      "author": "PirateZoro9",
+      "supportedTypes": [
+        "movie",
+        "tv"
+      ],
+      "filename": "providers/playimdb--nuvio--76282978a3666ef4.js",
+      "enabled": false,
+      "hasSettings": true,
+      "formats": [
+        "mp4",
+        "mkv",
+        "m3u8"
+      ],
+      "logo": "https://i.postimg.cc/KzjPtYWY/imdb.png",
+      "contentLanguage": [
+        "en",
+        "hi"
+      ]
+    },
+    {
+      "id": "MOVIEBLAST",
+      "name": "MovieBlast",
+      "description": "MovieBlast - Hindi, Tamil, Telugu & English Movies/Series with multi-quality streams",
+      "version": "1.0.13",
+      "author": "Nuvio Team",
+      "supportedTypes": [
+        "movie",
+        "tv"
+      ],
+      "filename": "providers/movieblast--nuvio-audit-quarantine--f7e932753c0be691.js",
+      "enabled": false,
+      "hasSettings": true,
+      "formats": [
+        "mp4",
+        "mkv",
+        "m3u8"
+      ],
+      "logo": "https://i.postimg.cc/qqkLSyhN/movieblast.png",
+      "contentLanguage": [
+        "en",
+        "hi",
+        "ta",
+        "te"
+      ],
+      "disabledPlatforms": []
+    },
+    {
       "id": "kisskh",
       "name": "💋 Kisskh",
       "description": "Streams Korean dramas and movies from onlykdrama.top",
@@ -1394,30 +1442,6 @@
       ]
     },
     {
-      "id": "playimdb",
-      "name": "PlayIMDb",
-      "description": "High-Speed Direct Streaming for Movies (IMDb ID Extract)",
-      "version": "2.0.18",
-      "author": "PirateZoro9",
-      "supportedTypes": [
-        "movie",
-        "tv"
-      ],
-      "filename": "providers/playimdb--published-baseline--76282978a3666ef4.js",
-      "enabled": false,
-      "hasSettings": true,
-      "formats": [
-        "mp4",
-        "mkv",
-        "m3u8"
-      ],
-      "logo": "https://i.postimg.cc/KzjPtYWY/imdb.png",
-      "contentLanguage": [
-        "en",
-        "hi"
-      ]
-    },
-    {
       "id": "STREAMFLIX",
       "name": "StreamFlix",
       "description": "Direct links via StreamFlix API",
@@ -1438,30 +1462,6 @@
         "hin"
       ],
       "disabledPlatforms": []
-    },
-    {
-      "id": "ANIMEZEY",
-      "name": "AnimeZeY",
-      "description": "Movies via AnimeZeY, indexed by TMDB",
-      "version": "1.0.14",
-      "author": "Nuvio Team",
-      "supportedTypes": [
-        "movie",
-        "tv"
-      ],
-      "filename": "providers/animezey--published-baseline--2414917b1d7e102b.js",
-      "enabled": false,
-      "hasSettings": true,
-      "formats": [
-        "mp4",
-        "mkv",
-        "m3u8"
-      ],
-      "logo": "https://i.postimg.cc/RVTy2djk/ainimezey.png",
-      "contentLanguage": [
-        "en",
-        "pt"
-      ]
     },
     {
       "id": "1SHOWS",
@@ -1580,33 +1580,6 @@
         "te",
         "ba"
       ]
-    },
-    {
-      "id": "MOVIEBLAST",
-      "name": "MovieBlast",
-      "description": "MovieBlast - Hindi, Tamil, Telugu & English Movies/Series with multi-quality streams",
-      "version": "1.0.13",
-      "author": "Nuvio Team",
-      "supportedTypes": [
-        "movie",
-        "tv"
-      ],
-      "filename": "providers/movieblast--nuvio-audit-quarantine--f7e932753c0be691.js",
-      "enabled": false,
-      "hasSettings": true,
-      "formats": [
-        "mp4",
-        "mkv",
-        "m3u8"
-      ],
-      "logo": "https://i.postimg.cc/qqkLSyhN/movieblast.png",
-      "contentLanguage": [
-        "en",
-        "hi",
-        "ta",
-        "te"
-      ],
-      "disabledPlatforms": []
     },
     {
       "id": "MOVIEBOX",
@@ -2192,7 +2165,30 @@
       "contentLanguage": [
         "ko"
       ]
+    },
+    {
+      "id": "uhdmovies",
+      "name": "UHDMovies",
+      "description": "UHD Movies streaming with multiple resolution",
+      "version": "1.0.0",
+      "author": "Nuvio Team",
+      "supportedTypes": [
+        "movie",
+        "tv"
+      ],
+      "filename": "providers/uhdmovies--nuvio--d879af8e4188d285.js",
+      "enabled": false,
+      "hasSettings": true,
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "logo": "https://i.postimg.cc/KzDBBdbK/uhdmovies.png",
+      "contentLanguage": [
+        "en"
+      ],
+      "disabledPlatforms": []
     }
   ],
-  "version": "5.20.59"
+  "version": "5.20.60"
 }

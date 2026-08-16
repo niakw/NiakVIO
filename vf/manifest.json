@@ -1,6 +1,6 @@
 {
   "name": "Nuvio Curated Providers — VF uniquement",
-  "version": "5.20.59",
+  "version": "5.20.60",
   "scrapers": [
     {
       "id": "PURSTREAM",
@@ -105,7 +105,7 @@
       "id": "MUGIWARASTREAM",
       "name": "Mugiwara-no-Streaming",
       "description": "Streaming gratuit d'animes et scans en bonne qualite via API Next.js.",
-      "version": "1.0.39",
+      "version": "1.0.40",
       "author": "Gowaru",
       "supportedTypes": [
         "movie",
@@ -120,6 +120,54 @@
       "formats": [
         "mp4",
         "mkv",
+        "m3u8"
+      ],
+      "limited": false,
+      "disabledPlatforms": [],
+      "supportsExternalPlayer": false
+    },
+    {
+      "id": "ANIMESAMA-CO",
+      "name": "AnimeSama.co (DLE Mirror)",
+      "description": "Animes VF et VOSTFR en streaming sur AnimeSama.co (miroir DLE).",
+      "version": "1.0.28",
+      "author": "Gowaru",
+      "supportedTypes": [
+        "movie",
+        "anime"
+      ],
+      "filename": "../providers/animesama-co--published-baseline--2d8b1f7879a5d297.js",
+      "enabled": true,
+      "logo": "https://raw.githubusercontent.com/Anime-Sama/IMG/img/autres/logo.png",
+      "contentLanguage": [
+        "fr"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "limited": false,
+      "disabledPlatforms": [],
+      "supportsExternalPlayer": false
+    },
+    {
+      "id": "VOIRANIME-RIP",
+      "name": "VoirAnime.rip",
+      "description": "Animes VF et VOSTFR en streaming sur VoirAnime.rip (site DLE).",
+      "version": "1.0.33",
+      "author": "Gowaru",
+      "supportedTypes": [
+        "movie",
+        "anime"
+      ],
+      "filename": "../providers/voiranime-rip--published-baseline--6e74fe6279a3033f.js",
+      "enabled": true,
+      "logo": "https://voiranime.rip/img/icon.png",
+      "contentLanguage": [
+        "fr"
+      ],
+      "formats": [
+        "mp4",
         "m3u8"
       ],
       "limited": false,
@@ -153,30 +201,6 @@
       ],
       "supportsExternalPlayer": false,
       "disabledPlatforms": []
-    },
-    {
-      "id": "ANIMESAMA-CO",
-      "name": "AnimeSama.co (DLE Mirror)",
-      "description": "Animes VF et VOSTFR en streaming sur AnimeSama.co (miroir DLE).",
-      "version": "1.0.27",
-      "author": "Gowaru",
-      "supportedTypes": [
-        "movie",
-        "anime"
-      ],
-      "filename": "../providers/animesama-co--nuvio--2d8b1f7879a5d297.js",
-      "enabled": true,
-      "logo": "https://raw.githubusercontent.com/Anime-Sama/IMG/img/autres/logo.png",
-      "contentLanguage": [
-        "fr"
-      ],
-      "formats": [
-        "mp4",
-        "m3u8"
-      ],
-      "limited": false,
-      "disabledPlatforms": [],
-      "supportsExternalPlayer": false
     },
     {
       "id": "ANIMESULTRA",
@@ -355,30 +379,6 @@
       "supportsExternalPlayer": false
     },
     {
-      "id": "VOIRANIME-RIP",
-      "name": "VoirAnime.rip",
-      "description": "Animes VF et VOSTFR en streaming sur VoirAnime.rip (site DLE).",
-      "version": "1.0.32",
-      "author": "Gowaru",
-      "supportedTypes": [
-        "movie",
-        "anime"
-      ],
-      "filename": "../providers/voiranime-rip--published-baseline--6e74fe6279a3033f.js",
-      "enabled": true,
-      "logo": "https://voiranime.rip/img/icon.png",
-      "contentLanguage": [
-        "fr"
-      ],
-      "formats": [
-        "mp4",
-        "m3u8"
-      ],
-      "limited": false,
-      "disabledPlatforms": [],
-      "supportsExternalPlayer": false
-    },
-    {
       "id": "VOSTFREE",
       "name": "Vostfree",
       "description": "Animes VF et VOSTFR en streaming et téléchargement.",
@@ -475,6 +475,30 @@
       "supportsExternalPlayer": false
     },
     {
+      "id": "ANIMOFLIX",
+      "name": "AnimoFlix",
+      "description": "Regarder des animes VF et VOSTFR gratuitement sur AnimoFlix.",
+      "version": "1.0.28",
+      "author": "Gowaru",
+      "supportedTypes": [
+        "movie",
+        "anime"
+      ],
+      "filename": "../providers/animoflix--published-baseline--77c92d33f1ad830f.js",
+      "enabled": false,
+      "logo": "https://animoflix.to/img/logo.png",
+      "contentLanguage": [
+        "fr"
+      ],
+      "formats": [
+        "mp4",
+        "mkv"
+      ],
+      "limited": false,
+      "disabledPlatforms": [],
+      "supportsExternalPlayer": false
+    },
+    {
       "id": "FRENCH-MANGA",
       "name": "French-Manga",
       "description": "Animes VF et VOSTFR en streaming sur French-Manga.net",
@@ -542,30 +566,6 @@
         "mp4",
         "mkv",
         "m3u8"
-      ],
-      "limited": false,
-      "disabledPlatforms": [],
-      "supportsExternalPlayer": false
-    },
-    {
-      "id": "ANIMOFLIX",
-      "name": "AnimoFlix",
-      "description": "Regarder des animes VF et VOSTFR gratuitement sur AnimoFlix.",
-      "version": "1.0.28",
-      "author": "Gowaru",
-      "supportedTypes": [
-        "movie",
-        "anime"
-      ],
-      "filename": "../providers/animoflix--published-baseline--77c92d33f1ad830f.js",
-      "enabled": false,
-      "logo": "https://animoflix.to/img/logo.png",
-      "contentLanguage": [
-        "fr"
-      ],
-      "formats": [
-        "mp4",
-        "mkv"
       ],
       "limited": false,
       "disabledPlatforms": [],
