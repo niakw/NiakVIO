@@ -1,0 +1,240 @@
+name: ARCHI2 pre/post native client audit
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/archi2-ab-audit.yml'
+      - 'manifest.json'
+      - 'vf/manifest.json'
+      - 'providers/**'
+      - 'provider_catalog.json'
+      - 'engine_v2/**'
+      - 'scripts/provider_worker.cjs'
+      - 'scripts/nuvio_client_lab.cjs'
+      - 'scripts/direct_media_probe.cjs'
+      - 'scripts/network_guard.cjs'
+      - 'scripts/build_nuvio_client_lab_matrix.py'
+      - 'scripts/build_archi2_ab_case.py'
+      - 'scripts/compare_archi2_ab_reports.py'
+      - 'scripts/aggregate_archi2_ab_reports.py'
+      - '.github/triggers/nuvio-client-lab.json'
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/archi2-ab-audit.yml'
+      - 'manifest.json'
+      - 'vf/manifest.json'
+      - 'providers/**'
+      - 'provider_catalog.json'
+      - 'engine_v2/**'
+      - 'scripts/provider_worker.cjs'
+      - 'scripts/nuvio_client_lab.cjs'
+      - 'scripts/direct_media_probe.cjs'
+      - 'scripts/network_guard.cjs'
+      - 'scripts/build_nuvio_client_lab_matrix.py'
+      - 'scripts/build_archi2_ab_case.py'
+      - 'scripts/compare_archi2_ab_reports.py'
+      - 'scripts/aggregate_archi2_ab_reports.py'
+      - '.github/triggers/nuvio-client-lab.json'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: archi2-ab-audit-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Last published main immediately before the ARCHI2 production cutover PR.
+  ARCHI2_BASELINE_SHA: c2468537ec4b96bf2ede7111261574a0304391d1
+
+jobs:
+  compare:
+    name: ${{ matrix.fixture }} — pre/post ARCHI2
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        fixture:
+          - interstellar
+          - mon-ninja-et-moi-3
+          - breaking-bad-s01e01
+          - revenant-s01e01
+          - jujutsu-kaisen-s01e01
+          - mushoku-tensei-s01e01
+
+    steps:
+      - name: Checkout ARCHI2 candidate
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          path: candidate
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Checkout pre-ARCHI2 production baseline
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: ${{ env.ARCHI2_BASELINE_SHA }}
+          path: baseline
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: '24'
+          package-manager-cache: false
+
+      - name: Install both exact provider runtimes
+        shell: bash
+        run: |
+          set -euo pipefail
+          (cd candidate && npm ci --ignore-scripts --no-audit --no-fund)
+          (cd baseline && npm ci --ignore-scripts --no-audit --no-fund)
+          python3 -m py_compile candidate/scripts/build_archi2_ab_case.py
+          python3 -m py_compile candidate/scripts/compare_archi2_ab_reports.py
+
+      - name: Build identical fixture selection
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/archi2-ab/${{ matrix.fixture }}"
+          python3 candidate/scripts/build_archi2_ab_case.py \
+            --source candidate/.github/triggers/nuvio-client-lab.json \
+            --slug "${{ matrix.fixture }}" \
+            --baseline-manifest baseline/manifest.json \
+            --candidate-manifest candidate/manifest.json \
+            --output-dir "$RUNNER_TEMP/archi2-ab/${{ matrix.fixture }}"
+
+      - name: Checkout one shared set of official Nuvio client runtimes
+        shell: bash
+        run: |
+          set -euo pipefail
+          CLIENTS="$RUNNER_TEMP/archi2-ab/clients"
+          mkdir -p "$CLIENTS"
+
+          clone_runtime() {
+            local repo="$1" branch="$2" dest="$3"; shift 3
+            git clone --quiet --depth 1 --filter=blob:none --sparse --branch "$branch" "https://github.com/$repo.git" "$dest"
+            git -C "$dest" sparse-checkout set "$@"
+            git -C "$dest" rev-parse HEAD > "$dest/.nuvio-lab-head"
+          }
+
+          clone_runtime NuvioMedia/NuvioTV dev "$CLIENTS/tv" \
+            app/src/full/java/com/nuvio/tv/core/plugin \
+            app/src/main/java/com/nuvio/tv/core/player \
+            app/src/main/java/com/nuvio/tv/ui/screens/player
+
+          clone_runtime NuvioMedia/NuvioDesktop Dev "$CLIENTS/desktop" \
+            composeApp/src/fullCommonMain/kotlin/com/nuvio/app/features/plugins/runtime \
+            composeApp/src/commonMain/kotlin/com/nuvio/app/features/player \
+            composeApp/src/desktopMain/kotlin/com/nuvio/app/features/player
+
+          clone_runtime NuvioMedia/NuvioMobile cmp-rewrite "$CLIENTS/mobile" \
+            composeApp/src/fullCommonMain/kotlin/com/nuvio/app/features/plugins/runtime \
+            composeApp/src/commonMain/kotlin/com/nuvio/app/features/player \
+            composeApp/src/androidMain/kotlin/com/nuvio/app/features/player \
+            composeApp/src/iosMain/kotlin/com/nuvio/app/features/player
+
+      - name: Run the same native-client harness against A and B
+        shell: bash
+        run: |
+          set -uo pipefail
+          CASE="$RUNNER_TEMP/archi2-ab/${{ matrix.fixture }}"
+          CLIENTS="$RUNNER_TEMP/archi2-ab/clients"
+          ROOT="$GITHUB_WORKSPACE"
+
+          set +e
+          node candidate/scripts/nuvio_client_lab.cjs \
+            --root "$ROOT/baseline" \
+            --config "$CASE/baseline-config.json" \
+            --clients-root "$CLIENTS" \
+            --require-client-sources \
+            --out "$CASE/baseline-report.json" \
+            --markdown "$CASE/baseline-report.md"
+          baseline_exit=$?
+
+          node candidate/scripts/nuvio_client_lab.cjs \
+            --root "$ROOT/candidate" \
+            --config "$CASE/candidate-config.json" \
+            --clients-root "$CLIENTS" \
+            --require-client-sources \
+            --out "$CASE/candidate-report.json" \
+            --markdown "$CASE/candidate-report.md"
+          candidate_exit=$?
+          set -e
+
+          printf 'baseline_exit=%s\ncandidate_exit=%s\n' "$baseline_exit" "$candidate_exit" > "$CASE/exits.txt"
+          test -s "$CASE/baseline-report.json"
+          test -s "$CASE/candidate-report.json"
+
+          python3 candidate/scripts/compare_archi2_ab_reports.py \
+            --baseline "$CASE/baseline-report.json" \
+            --candidate "$CASE/candidate-report.json" \
+            --selection "$CASE/selection.json" \
+            --output "$CASE/comparison.json" \
+            --markdown "$CASE/comparison.md"
+          cat "$CASE/comparison.md" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload sanitized A/B evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: archi2-ab-${{ matrix.fixture }}-${{ github.run_id }}
+          path: |
+            ${{ runner.temp }}/archi2-ab/${{ matrix.fixture }}/selection.json
+            ${{ runner.temp }}/archi2-ab/${{ matrix.fixture }}/baseline-report.json
+            ${{ runner.temp }}/archi2-ab/${{ matrix.fixture }}/baseline-report.md
+            ${{ runner.temp }}/archi2-ab/${{ matrix.fixture }}/candidate-report.json
+            ${{ runner.temp }}/archi2-ab/${{ matrix.fixture }}/candidate-report.md
+            ${{ runner.temp }}/archi2-ab/${{ matrix.fixture }}/comparison.json
+            ${{ runner.temp }}/archi2-ab/${{ matrix.fixture }}/comparison.md
+            ${{ runner.temp }}/archi2-ab/${{ matrix.fixture }}/exits.txt
+          retention-days: 7
+          if-no-files-found: error
+
+  aggregate:
+    name: Aggregate ARCHI2 A/B corpus
+    needs: compare
+    if: always() && !cancelled()
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout comparison tooling
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Download all fixture comparisons
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          pattern: archi2-ab-*-${{ github.run_id }}
+          path: ab-results
+
+      - name: Aggregate corpus deltas
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/aggregate_archi2_ab_reports.py \
+            --input ab-results \
+            --output archi2-ab-summary.json \
+            --markdown archi2-ab-summary.md
+          cat archi2-ab-summary.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload aggregate audit
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: archi2-ab-summary-${{ github.run_id }}
+          path: |
+            archi2-ab-summary.json
+            archi2-ab-summary.md
+          retention-days: 14
+          if-no-files-found: error
