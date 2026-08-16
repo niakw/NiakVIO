@@ -293,7 +293,7 @@ def create_repair_candidate(stage: Path, candidate: dict[str, Any], profile_name
         "parent_key": parent_key,
         "parent_sha256": parent_digest,
         "round": round_number,
-        "profile": "",
+        "profile": "adaptive_runtime_recovery",
         "strategy": "adaptive_runtime_recovery",
     }
     return repaired, None
