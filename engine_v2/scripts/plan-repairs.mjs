@@ -1,88 +1,157 @@
 #!/usr/bin/env node
 import fs from "node:fs";
 import process from "node:process";
-import { classifyFailure, planRepair } from "../src/repair-brain.mjs";
+import { BRAIN_CONTROL_PLANE_VERSION, classifyFailure, planRepair } from "../src/repair-brain.mjs";
 import { evidenceSignature } from "../src/recipe-memory.mjs";
 
-const input = JSON.parse(fs.readFileSync(0, "utf8") || "{}");
-const policy = input.policy ?? {};
-const production = policy.production ?? {};
-const maturity = policy.skillMaturity ?? {};
-const learnedSkills = normalizeLearnedSkills(input.learnedSkills ?? []);
-const output = { schemaVersion: 1, mode: input.mode ?? "quick", plans: {} };
+let input;
+try {
+  input = JSON.parse(fs.readFileSync(0, "utf8") || "{}");
+} catch (_error) {
+  process.stderr.write("brain_planner_input_invalid\n");
+  process.exit(2);
+}
 
-for (const item of input.items ?? []) {
-  if (!item?.key) continue;
-  const evidence = deriveEvidence(item.candidate ?? {}, item.result ?? {});
-  evidence.failureClass = classifyFailure(evidence);
-  const signature = evidenceSignature(evidence);
-  const providerId = String(item.candidate?.canonical_id ?? item.candidate?.upstream_id ?? "").toLowerCase();
-  const reusable = learnedSkills
-    .filter((skill) => !skill.failureClass || skill.failureClass === evidence.failureClass || skill.failure_class === evidence.failureClass)
-    .filter((skill) => skill.autoApply === true || (skill.providers ?? skill.provenOnProviders ?? []).map((x) => String(x).toLowerCase()).includes(providerId))
-    .map((skill) => ({
-      id: skill.id,
-      failureClass: skill.failureClass ?? skill.failure_class ?? null,
-      capabilities: skill.capabilities ?? [],
-      actions: skill.actions ?? [`apply learned profile ${skill.profile ?? ""}`],
-      profile: skill.profile ?? null,
-      learned: true,
-      maturity: skill.maturity ?? "experimental",
-    }));
+const policy = asRecord(input.policy);
+const production = asRecord(policy.production);
+const maturity = asRecord(policy.skillMaturity);
+const learnedSkills = normalizeLearnedSkills(input.learnedSkills);
+const output = {
+  schemaVersion: 2,
+  brainVersion: BRAIN_CONTROL_PLANE_VERSION,
+  mode: stringValue(input.mode, "quick"),
+  plannerErrors: 0,
+  plans: {},
+};
 
-  const plan = planRepair(evidence, {
-    signature,
-    learnedSkills: reusable,
-    maxHypotheses: production.maxHypotheses ?? 3,
-    budget: {
-      maxHypotheses: production.maxHypotheses ?? 3,
-      maxMutations: production.maxMutationsPerProvider ?? 2,
-      maxRepeatedSignature: production.maxRepeatedSignature ?? 2,
-      maxGeneratedBytes: production.maxGeneratedBytesPerProvider ?? 180000,
-      maxElapsedMs: production.maxElapsedMsPerProvider ?? 45000,
-      mutationCount: Number(item.state?.mutationCount ?? 0),
-      repeatedSignatureCount: Number(item.state?.repeatedSignatureCount ?? 0),
-      generatedBytes: Number(item.state?.generatedBytes ?? 0),
-      elapsedMs: Number(item.state?.elapsedMs ?? 0),
-    },
-    learningLab: input.mode === "learning",
-    coreMutationRequested: item.state?.coreMutationRequested === true,
-  });
-  const allowedProfiles = profilesForPlan(plan, reusable);
-  output.plans[item.key] = {
-    providerId,
-    failureClass: plan.failureClass,
-    signature,
-    action: plan.action,
-    exitReason: plan.exitReason ?? null,
-    hypotheses: plan.hypotheses.map((row) => ({
-      id: row.id,
-      capabilities: row.capabilities ?? [],
-      actions: row.actions ?? [],
-      learned: row.learned === true,
-      maturity: row.maturity ?? null,
-    })),
-    allowedProfiles,
-    budget: plan.budget,
-    fallbackPolicy: plan.fallbackPolicy,
-    coreMutationPolicy: plan.coreMutationPolicy,
-    skillPolicy: maturity,
-  };
+for (const rawItem of asArray(input.items)) {
+  const item = asRecord(rawItem);
+  const key = stringValue(item.key);
+  if (!key) continue;
+  try {
+    output.plans[key] = buildPlan(item);
+  } catch (error) {
+    output.plannerErrors += 1;
+    output.plans[key] = deferredPlannerError(item, error);
+  }
 }
 
 process.stdout.write(JSON.stringify(output));
 
+function buildPlan(item) {
+  const candidate = asRecord(item.candidate);
+  const result = asRecord(item.result);
+  const state = asRecord(item.state);
+  const evidence = deriveEvidence(candidate, result);
+  evidence.failureClass = classifyFailure(evidence);
+  const signature = evidenceSignature(evidence);
+  const providerId = stringValue(candidate.canonical_id ?? candidate.upstream_id).toLowerCase();
+  const reusable = learnedSkills
+    .filter((skill) => !skill.failureClass || skill.failureClass === evidence.failureClass || skill.failure_class === evidence.failureClass)
+    .filter((skill) => {
+      const providers = stringArray(skill.providers ?? skill.provenOnProviders);
+      return skill.autoApply === true || providers.map((value) => value.toLowerCase()).includes(providerId);
+    })
+    .map((skill) => ({
+      id: stringValue(skill.id),
+      failureClass: skill.failureClass ?? skill.failure_class ?? null,
+      capabilities: stringArray(skill.capabilities),
+      actions: stringArray(skill.actions).length ? stringArray(skill.actions) : [`apply learned profile ${stringValue(skill.profile)}`],
+      profile: stringValue(skill.profile) || null,
+      learned: true,
+      maturity: stringValue(skill.maturity, "experimental"),
+    }))
+    .filter((skill) => skill.id);
+
+  const signatureCounts = asRecord(state.signatureCounts);
+  const repeatedSignatureCount = finiteNumber(
+    signatureCounts[signature],
+    finiteNumber(state.repeatedSignatureCount, 0),
+  );
+  const plan = planRepair(evidence, {
+    signature,
+    learnedSkills: reusable,
+    maxHypotheses: finiteNumber(production.maxHypotheses, 3),
+    budget: {
+      maxHypotheses: finiteNumber(production.maxHypotheses, 3),
+      maxMutations: finiteNumber(production.maxMutationsPerProvider, 2),
+      maxRepeatedSignature: finiteNumber(production.maxRepeatedSignature, 2),
+      maxGeneratedBytes: finiteNumber(production.maxGeneratedBytesPerProvider, 180000),
+      maxElapsedMs: finiteNumber(production.maxElapsedMsPerProvider, 45000),
+      mutationCount: finiteNumber(state.mutationCount, 0),
+      repeatedSignatureCount,
+      generatedBytes: finiteNumber(state.generatedBytes, 0),
+      elapsedMs: finiteNumber(state.elapsedMs, 0),
+    },
+    learningLab: stringValue(input.mode) === "learning",
+    coreMutationRequested: state.coreMutationRequested === true,
+  });
+  const hypotheses = asArray(plan.hypotheses).filter(isRecord);
+  return {
+    brainVersion: finiteNumber(plan.brainVersion, BRAIN_CONTROL_PLANE_VERSION),
+    providerId,
+    failureClass: stringValue(plan.failureClass, "unknown_failure"),
+    signature,
+    action: stringValue(plan.action, "deferred_retry"),
+    exitReason: plan.exitReason ?? null,
+    hypotheses: hypotheses.map((row) => ({
+      id: stringValue(row.id),
+      capabilities: stringArray(row.capabilities),
+      actions: stringArray(row.actions),
+      learned: row.learned === true,
+      maturity: row.maturity ?? null,
+    })).filter((row) => row.id),
+    allowedProfiles: profilesForPlan({ ...plan, hypotheses }, reusable),
+    budget: asRecord(plan.budget),
+    fallbackPolicy: stringValue(plan.fallbackPolicy, "lkg_only_after_repair_budget"),
+    coreMutationPolicy: stringValue(plan.coreMutationPolicy, "proposal_only"),
+    skillPolicy: maturity,
+  };
+}
+
+function deferredPlannerError(item, error) {
+  const candidate = asRecord(item.candidate);
+  return {
+    brainVersion: BRAIN_CONTROL_PLANE_VERSION,
+    providerId: stringValue(candidate.canonical_id ?? candidate.upstream_id).toLowerCase(),
+    failureClass: "unknown_failure",
+    signature: null,
+    action: "deferred_retry",
+    exitReason: "planner_item_error",
+    hypotheses: [],
+    allowedProfiles: [],
+    budget: policyBudget(),
+    fallbackPolicy: "lkg_only_after_repair_budget",
+    coreMutationPolicy: "proposal_only",
+    skillPolicy: maturity,
+    plannerErrorClass: safeErrorClass(error),
+  };
+}
+
+function policyBudget() {
+  return {
+    maxHypotheses: finiteNumber(production.maxHypotheses, 3),
+    maxMutations: finiteNumber(production.maxMutationsPerProvider, 2),
+    maxRepeatedSignature: finiteNumber(production.maxRepeatedSignature, 2),
+    maxGeneratedBytes: finiteNumber(production.maxGeneratedBytesPerProvider, 180000),
+    maxElapsedMs: finiteNumber(production.maxElapsedMsPerProvider, 45000),
+  };
+}
+
 function normalizeLearnedSkills(value) {
-  if (Array.isArray(value)) return value;
-  if (value && typeof value === "object") return Object.values(value);
+  if (Array.isArray(value)) return value.filter(isRecord);
+  if (isRecord(value)) return Object.values(value).filter(isRecord);
   return [];
 }
 
 function profilesForPlan(plan, learned) {
-  if (!["probe-targeted-repair"].includes(plan.action)) return [];
+  if (stringValue(plan.action) !== "probe-targeted-repair") return [];
+  const hypotheses = asArray(plan.hypotheses).filter(isRecord);
+  const hypothesisIds = new Set(hypotheses.map((row) => stringValue(row.id)).filter(Boolean));
   const profiles = [];
   for (const skill of learned) {
-    if (skill.profile && plan.hypotheses.some((row) => row.id === skill.id)) profiles.push(skill.profile);
+    const profile = stringValue(skill.profile);
+    if (profile && hypothesisIds.has(stringValue(skill.id))) profiles.push(profile);
   }
   const map = {
     "rediscover-search-route": ["adaptive_runtime_recovery"],
@@ -99,26 +168,32 @@ function profilesForPlan(plan, learned) {
     "bootstrap-session": ["adaptive_runtime_recovery"],
     "alternate-official-route": ["adaptive_runtime_recovery"],
   };
-  for (const hypothesis of plan.hypotheses) {
-    for (const profile of map[hypothesis.id] ?? []) profiles.push(profile);
+  for (const hypothesis of hypotheses) {
+    for (const profile of map[stringValue(hypothesis.id)] ?? []) profiles.push(profile);
   }
   return [...new Set(profiles)];
 }
 
 function deriveEvidence(candidate, result) {
-  const status = String(result.status ?? "runtime_error");
-  const tests = Array.isArray(result.tests) ? result.tests : [];
-  const evidence = result.evidence ?? {};
-  const playable = Number(evidence.streams_playable ?? Math.max(0, ...tests.map((row) => Number(row.streams_playable ?? 0))));
-  const returned = Number(evidence.streams_returned ?? Math.max(0, ...tests.map((row) => Number(row.stream_count ?? row.streams_returned ?? 0))));
-  const failureText = tests.map((row) => `${row.failure_class ?? ""} ${row.status ?? ""} ${row.error_details?.code ?? ""} ${row.error_details?.message ?? ""}`).join(" ").toLowerCase();
-  const observations = tests.flatMap((row) => Array.isArray(row.network_observations) ? row.network_observations : []);
+  const status = stringValue(result.status, "runtime_error");
+  const tests = asArray(result.tests).filter(isRecord);
+  const evidence = asRecord(result.evidence);
+  const playable = finiteNumber(evidence.streams_playable, maxNumber(tests.map((row) => row.streams_playable)));
+  const returned = finiteNumber(evidence.streams_returned, maxNumber(tests.map((row) => row.stream_count ?? row.streams_returned)));
+  const failureText = tests.map((row) => {
+    const details = asRecord(row.error_details);
+    return `${stringValue(row.failure_class)} ${stringValue(row.status)} ${stringValue(details.code)} ${stringValue(details.message)}`;
+  }).join(" ").toLowerCase();
+  const observations = tests.flatMap((row) => asArray(row.network_observations).filter(isRecord));
   const statuses = observations.map((row) => Number(row.status)).filter(Number.isFinite);
-  const providerStatuses = observations.filter((row) => !row.infrastructure).map((row) => Number(row.status)).filter(Number.isFinite);
+  const providerStatuses = observations.filter((row) => row.infrastructure !== true).map((row) => Number(row.status)).filter(Number.isFinite);
   const blocked = providerStatuses.find((code) => [401, 403, 407, 429, 451].includes(code));
   const gone = providerStatuses.find((code) => [404, 410].includes(code));
-  const mediaType = String(tests[0]?.fixture?.category ?? tests[0]?.fixture?.mediaType ?? candidate.metadata?.supportedTypes?.[0] ?? "movie").toLowerCase();
-  const identityContradiction = Number(evidence.identity_contradiction_count ?? 0) > 0 || Number(evidence.duration_identity_mismatch_count ?? 0) > 0 || /identity|duration.*mismatch/.test(failureText);
+  const fixture = asRecord(tests[0]?.fixture);
+  const metadata = asRecord(candidate.metadata);
+  const supportedTypes = stringArray(metadata.supportedTypes);
+  const mediaType = stringValue(fixture.category ?? fixture.mediaType ?? supportedTypes[0], "movie").toLowerCase();
+  const identityContradiction = finiteNumber(evidence.identity_contradiction_count, 0) > 0 || finiteNumber(evidence.duration_identity_mismatch_count, 0) > 0 || /identity|duration.*mismatch/.test(failureText);
   const invoked = !/not[_ -]?invoked|invalid[_ -]?request[_ -]?argument|object%20object|object object/.test(failureText);
   const contractDrift = status === "runtime_error" && /invalid[_ -]?request[_ -]?argument|object%20object|object object|signature|argument/.test(failureText);
 
@@ -155,4 +230,36 @@ function deriveEvidence(candidate, result) {
     return { invoked, request: { mediaType }, stages: { search: { attempted: true, status: gone || 200, matches: 0 } } };
   }
   return { invoked, contractDrift, request: { mediaType }, playableStreams: 0 };
+}
+
+function asRecord(value) {
+  return isRecord(value) ? value : {};
+}
+function isRecord(value) {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+}
+function asArray(value) {
+  return Array.isArray(value) ? value : [];
+}
+function stringArray(value) {
+  if (Array.isArray(value)) return value.map((item) => stringValue(item)).filter(Boolean);
+  const scalar = stringValue(value);
+  return scalar ? [scalar] : [];
+}
+function stringValue(value, fallback = "") {
+  if (typeof value === "string") return value;
+  if (typeof value === "number" || typeof value === "boolean") return String(value);
+  return fallback;
+}
+function finiteNumber(value, fallback = 0) {
+  const number = Number(value);
+  return Number.isFinite(number) ? number : Number(fallback) || 0;
+}
+function maxNumber(values) {
+  const numbers = values.map(Number).filter(Number.isFinite);
+  return numbers.length ? Math.max(0, ...numbers) : 0;
+}
+function safeErrorClass(error) {
+  const name = stringValue(error?.name, "Error");
+  return /^[A-Za-z0-9_.-]{1,64}$/.test(name) ? name : "Error";
 }

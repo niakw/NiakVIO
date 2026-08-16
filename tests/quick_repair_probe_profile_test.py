@@ -55,4 +55,37 @@ source = path.read_text(encoding="utf-8")
 assert 'mode="quick"' in source
 assert 'modes["deep"] = copy.deepcopy(quick)' not in source
 
+# Brain mutation/loop budgets are executable and shared by canonical family,
+# not reset for every upstream sibling.
+brain = module.brain
+brain.reset_runtime_state()
+brain.PLANS.update({
+    "source:one": {"action": "probe-targeted-repair", "signature": "same-signature", "failureClass": "search_gap", "providerId": "budget-provider"},
+    "source:two": {"action": "probe-targeted-repair", "signature": "same-signature", "failureClass": "search_gap", "providerId": "budget-provider"},
+})
+calls = []
+
+def fake_create(stage, candidate, profile_name, round_number):
+    calls.append((candidate["key"], profile_name, round_number))
+    repaired = dict(candidate)
+    repaired["bytes"] = int(candidate.get("bytes") or 0) + 50
+    return repaired, None
+
+bounded_create = brain.wrap_create_repair_candidate(fake_create)
+candidate_one = {"key": "source:one", "canonical_id": "budget-provider", "bytes": 100}
+candidate_two = {"key": "source:two", "canonical_id": "budget-provider", "bytes": 100}
+first, first_error = bounded_create(ROOT, candidate_one, "adaptive_runtime_recovery", 1)
+second, second_error = bounded_create(ROOT, candidate_two, "adaptive_runtime_recovery", 1)
+third, third_error = bounded_create(ROOT, candidate_one, "adaptive_runtime_recovery", 2)
+assert first is not None and first_error is None
+assert second is not None and second_error is None
+assert third is None
+assert third_error == "brain_mutation_budget_exhausted"
+assert len(calls) == 2
+budget = brain.runtime_state_snapshot()["budget-provider"]
+assert budget["mutationCount"] == 2
+assert budget["generatedBytes"] == 100
+assert budget["signatureCounts"]["same-signature"] == 2
+brain.reset_runtime_state()
+
 print("quick repair probe profile test passed")

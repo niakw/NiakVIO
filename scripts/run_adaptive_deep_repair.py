@@ -66,7 +66,7 @@ def main() -> int:
     original_config = HEALTH_CONFIG.read_bytes()
     original_argv = list(sys.argv)
     try:
-        brain.PLANS.clear()
+        brain.reset_runtime_state()
         health_config = json.loads(original_config.decode("utf-8"))
         deep_config = health_config.setdefault("modes", {}).setdefault("deep", {})
         deep_config["max_streams_to_probe"] = max(10, int(deep_config.get("max_streams_to_probe") or 1))
@@ -74,7 +74,7 @@ def main() -> int:
         HEALTH_CONFIG.write_text(json.dumps(health_config, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
         loop.compare_results = _identity_safe_compare
-        loop.create_repair_candidate = _profiled_create
+        loop.create_repair_candidate = brain.wrap_create_repair_candidate(_profiled_create)
         loop.run_health = _brain_run_health
         loop.matching_profiles = _brain_matching
         sys.argv[0] = str(SCRIPTS / "deep_repair_loop.py")

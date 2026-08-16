@@ -39,6 +39,7 @@ if _loaded != _expected:
 
 _base_run_health = loop.run_health
 _base_matching_profiles = loop.matching_profiles
+_base_create_repair_candidate = loop.create_repair_candidate
 _sibling_resolutions: dict[str, str] = {}
 
 
@@ -236,8 +237,9 @@ def main() -> int:
     original_run_health = loop.run_health
     original_persist = loop.persist_runtime_profiles
     original_matching = loop.matching_profiles
+    original_create = loop.create_repair_candidate
     try:
-        brain.PLANS.clear()
+        brain.reset_runtime_state()
         _sibling_resolutions.clear()
         config = json.loads(original_health_config.decode("utf-8"))
         _strengthen_quick_probe(config)
@@ -247,6 +249,7 @@ def main() -> int:
         loop.compare_results = _quick_compare_results
         loop.run_health = _quick_run_health
         loop.matching_profiles = _brain_matching_profiles
+        loop.create_repair_candidate = brain.wrap_create_repair_candidate(_base_create_repair_candidate)
         loop.persist_runtime_profiles = lambda _config, _assignments: []
         sys.argv = [
             str(SCRIPTS / "deep_repair_loop.py"), "--stage", str(stage), "--output", str(output),
@@ -269,6 +272,7 @@ def main() -> int:
         loop.compare_results = original_compare
         loop.run_health = original_run_health
         loop.matching_profiles = original_matching
+        loop.create_repair_candidate = original_create
         loop.persist_runtime_profiles = original_persist
 
 
