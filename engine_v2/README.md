@@ -1,70 +1,95 @@
-# NiakVIO Provider Engine V2
+# NiakVIO Provider Engine V2 — ARCHI 2
 
-This directory is the clean-room provider-engine refactor. It is intentionally isolated from the current publication pipeline: **nothing in `engine_v2/` is consumed by `main` manifests or provider publication yet**.
+`engine_v2/` est le **plan de contrôle canonique** de NiakVIO. Il ne s'agit plus d'une refonte isolée : le catalogue provider, les contrats, les décisions de réparation, les preuves et les projections de manifests sont les invariants de la production.
 
-## Goal
+Les scripts historiques encore appelés depuis `scripts/` sont des **primitives d'exécution de compatibilité** derrière ce plan de contrôle. Ils ne constituent plus une seconde architecture et ne doivent pas recréer leur propre source de vérité, leur propre cadence de publication ou leur propre politique d'activation.
 
-Build providers from verified knowledge instead of stacking historical patches.
+## Source de vérité
+
+`provider_catalog.json` est le registre canonique publié. Il contient une seule définition de chaque provider et ses projections :
+
+- manifest général ;
+- projection VF/VOSTFR ;
+- ordre de publication ;
+- politiques quick/deep et LKG.
+
+`manifest.json` et `vf/manifest.json` sont rendus depuis ce catalogue. Pendant la migration des anciennes primitives de promotion, leur `manifest.next.json` est traité comme **transaction candidate** : il est importé dans le catalogue puis les manifests sont immédiatement régénérés depuis le catalogue avant toute publication.
+
+Ce pont est volontairement borné et testable ; il n'autorise pas deux états de production concurrents.
+
+## Flux de production
 
 ```text
-Nuvio client repos -> contract discovery/version watcher
-                         |
-3 provider upstreams -> provider knowledge/specs
-                         |
-                         v
-                  Resolver Core V2
- discovery -> search -> identity -> detail -> episode -> player -> media
-                         |
-                evidence at every stage
-                         |
-                   Repair Brain V2
-                         |
-               learned/versioned recipes
-                         |
-                normalized candidates
-                         |
-              runtime/device adapters
-             mobile / desktop / TV
+3 upstreams + bundles publiés/LKG
+          │
+          ▼
+Discovery multi-variantes
+          │
+          ▼
+Hubs / DNS / domaines / peers historiques
+          │
+          ▼
+provider_catalog.json ───────────────┐
+          │                          │
+          ▼                          │
+ProviderSpec + connaissance          │
+          │                          │
+          ▼                          │
+Resolver Core V2                     │
+search → detail → episode → player → media
+          │
+          ▼
+Evidence Matrix
+          │
+          ▼
+Repair Brain V2
+          │
+          ▼
+validation média + identité + langue + contexte
+          │
+          ▼
+Mobile / Desktop / TV adapters
+          │
+          ▼
+transaction validée → catalogue ─────┘
+          │
+          ├── manifest.json
+          └── vf/manifest.json
 ```
 
-## Non-negotiable rules
+## Quick et Deep
 
-1. `main` stays the LKG reference during the V2 rebuild.
-2. The three provider repositories are sources of knowledge, not trusted final bundles.
-3. Hub/DNS/domain discovery precedes provider reconstruction.
-4. A broken provider is **repairable/disabled**, not quarantined by default.
-5. Quarantine is reserved for suspicious provenance, identity mismatch, unsafe output, hijacked domains or other strong safety evidence.
-6. Healthy-sibling knowledge remains useful, but V2 reconstructs a canonical adapter rather than layering another patch on a sibling bundle.
-7. Every stage emits evidence. `no_streams` is not a root cause.
-8. Repair is bounded: classify -> select a targeted strategy -> probe -> validate. No blind infinite retries.
-9. Repair recipes are version-aware. A Nuvio runtime contract change can invalidate a recipe without invalidating the provider itself.
-10. Desktop, Mobile and TV are adapters around one canonical request/result contract.
-11. Movie, TV/series and anime are first-class corpus dimensions. Breaking Bad is a mandatory TV regression fixture.
-12. Diagnostics and scores guide repair; they are not coverage blockers.
+Il n'existe qu'un orchestrateur de production durable : `.github/workflows/sync.yml`.
 
-## Phase 0 — Nuvio contract discovery
+### Quick
 
-Before rebuilding providers, V2 watches the official Nuvio client repositories and records:
+Le quick est une vraie maintenance, pas un rapport passif :
 
-- plugin invocation signature;
-- media-type aliases;
-- scraper settings injection;
-- manifest fields;
-- result fields;
-- fetch/redirect/header/cookie semantics;
-- QuickJS/runtime differences;
-- player transport/header handling;
-- device-specific capabilities.
+1. résout hubs/domaines ;
+2. collecte toutes les variantes ;
+3. protège le catalogue publié et ses LKG ;
+4. choisit d'abord un sibling déjà sain ;
+5. tente une réparation structurelle bornée uniquement pour les familles non résolues ;
+6. conserve un LKG lorsqu'une observation reste inconclusive ;
+7. peut publier une amélioration prouvée sans attendre un deep.
 
-The checked-in baseline lives in `config/nuvio-clients.json`. `scripts/check-nuvio-contracts.mjs` compares the baseline to current upstream heads and classifies drift as contract, semantic or unrelated. It is report-only by default.
+Un provider nouveau découvert en quick n'est pas activé aveuglément.
 
-## Provider knowledge
+### Deep
 
-`config/provider-upstreams.json` declares the three canonical upstreams. A future ingestion step will normalize each upstream implementation into a `ProviderSpec` containing identity, domains/hubs, search/detail/episode/player/media strategies, language capabilities, session requirements and provenance.
+Le deep reconstruit la connaissance plus largement, autorise davantage de profondeur de preuve et reste l'autorité pour :
 
-## Canonical runtime contract
+- apprentissage/persistance des profils de réparation ;
+- validation stricte de l'identité de contenu ;
+- corpus plus large ;
+- nouvelles intégrations provider ;
+- modifications structurelles importantes.
 
-Providers are reconstructed against one internal request:
+Le deep n'est **pas** relancé automatiquement à chaque petite mise à jour. Les exécutions planifiées et le trigger explicite `.github/triggers/deep-provider-repair` assurent cette séparation.
+
+## Contrat runtime canonique
+
+Le moteur raisonne sur une requête interne unique :
 
 ```js
 {
@@ -80,11 +105,26 @@ Providers are reconstructed against one internal request:
 }
 ```
 
-The core returns normalized stream candidates plus evidence. Device adapters then translate that contract to the native Nuvio runtime. Providers should not contain Desktop/Mobile/TV branching unless a real provider behavior requires it.
+Les adapters traduisent ensuite ce contrat vers Mobile, Desktop et NuvioTV. Une divergence spécifique à une plateforme n'est admise que si le client impose réellement un contrat différent.
+
+## Chaîne de récupération
+
+L'upstream JavaScript est une stratégie initiale, pas une autorité finale. Une récupération peut progresser de façon bornée :
+
+```text
+provider natif
+  → API / recherche / catalogue
+  → fiche exacte
+  → iframe / player / embed
+  → JavaScript / XHR / JSON
+  → playlist / média final
+```
+
+À chaque étape, l'origine, les redirects, headers, cookies, `Referer`, `Origin` et `User-Agent` nécessaires peuvent être conservés dans un contexte scoped. Les budgets de pages, embeds, hosts, fetches et temps empêchent l'exploration infinie.
 
 ## Repair Brain V2
 
-The first implementation is deterministic and explainable. It distinguishes at least:
+Les familles de panne incluent notamment :
 
 - `not_invoked`
 - `dns_unreachable`
@@ -100,19 +140,65 @@ The first implementation is deterministic and explainable. It distinguishes at l
 - `runtime_contract_drift`
 - `healthy`
 
-Each class maps to a small set of targeted, reusable repair strategies. Successful strategies become versioned recipes with evidence and runtime compatibility metadata.
+`no_streams` est une observation, jamais une cause racine suffisante.
 
-## Evidence matrix
+Le Repair Brain est déterministe : classification → stratégie ciblée → probe → validation → recette versionnée. Une réparation n'est conservée que si elle améliore le résultat sans introduire de contradiction de contenu, de durée ou de runtime.
 
-State is tracked by provider × work × media type × language × device × client contract version. A provider can therefore be proven on one fixture/device while remaining unresolved on another without collapsing to a misleading global status.
+## Validation
 
-## Migration order
+Une URL n'est pas une preuve de stream. Les gates peuvent vérifier :
 
-1. Establish and continuously watch Nuvio contracts.
-2. Ingest the three upstream provider repositories.
-3. Build normalized ProviderSpecs and provenance.
-4. Reconstruct a small representative set of providers from zero.
-5. Validate the six-fixture corpus on worker + Mobile + Desktop + TV.
-6. Expand provider-by-provider, using evidence and learned recipes.
-7. Compare V2 against frozen `main` without changing `main`.
-8. Only after V2 is demonstrably better, design the publication cutover.
+- HLS réel (`#EXTM3U`) ;
+- DASH/MPD ;
+- signature de conteneur vidéo ;
+- première playlist/segment ;
+- rejet HTML/JSON déguisé ;
+- previews et médias anormalement courts ;
+- titre/alias/année ;
+- saison/épisode ;
+- durée attendue ou mesurée ;
+- langue et pistes lorsque disponibles ;
+- provenance et isolation entre providers.
+
+Un média lisible correspondant à la mauvaise œuvre est un échec bloquant. `Unknown`/`Inconnue` dans un label de qualité Nuvio n'est pas une preuve d'identité inconnue.
+
+## LKG, quarantine et activation
+
+Un échec temporaire ou un catalogue vide ne doit pas effacer une preuve saine déjà publiée.
+
+- **LKG** : conserve le dernier bundle prouvé lorsqu'une nouvelle observation est inconclusive.
+- **Repairable/disabled** : état normal d'un provider cassé mais non dangereux.
+- **Quarantine** : réservée aux preuves fortes de contenu incohérent, provenance suspecte, domaine détourné, sortie dangereuse ou autre violation de sécurité.
+
+La logique est donc **repair before triage**.
+
+## Evidence Matrix
+
+La preuve est suivie par provider × œuvre × type de média × langue × device × version de contrat client. Une réussite sur un film Desktop ne transforme pas automatiquement le provider en réussite globale.
+
+Movie, TV/series et anime sont des dimensions de corpus de premier rang ; Breaking Bad S01E01 reste une fixture TV obligatoire.
+
+## Tests et preuves natives
+
+`provider-engine-v2.yml` couvre les contrats, adapters, validation média, resolver, Repair Brain, recipes, décisions, evidence, ingestion, analyse JS, domaine, ProviderSpecs et catalogue.
+
+Les preuves clients finales restent séparées :
+
+- Nuvio Mobile ;
+- Nuvio Desktop ;
+- NuvioTV / Android TV.
+
+Une réussite d'un runtime ne vaut jamais preuve pour les deux autres.
+
+## Règles non négociables
+
+1. Un seul catalogue et un seul orchestrateur de production.
+2. Les trois upstreams sont des sources de connaissance, jamais des bundles de confiance par défaut.
+3. Discovery domaine/hub précède la reconstruction.
+4. Réparer avant de désactiver ; quarantiner seulement sur preuve forte.
+5. Préférer un sibling sain avant de modifier du code.
+6. Toute exploration est bornée.
+7. Toute promotion exige une amélioration prouvée.
+8. Quick peut réparer/publier sans Deep ; Deep conserve son autorité d'apprentissage large.
+9. Les manifests sont des projections du catalogue, pas une seconde source de vérité.
+10. Mobile, Desktop et TV restent des preuves indépendantes.

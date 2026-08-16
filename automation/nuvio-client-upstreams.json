@@ -44,10 +44,10 @@
     "nuvio-desktop": {
       "repository": "NuvioMedia/NuvioDesktop",
       "branch": "Dev",
-      "verified_ref": "89017269cd68600b9e0ad44e06d12357860a8ceb",
+      "verified_ref": "463cd0b72a8f08e2529efcbacfff2e7da8d4453a",
       "platforms": ["windows", "macos", "linux"],
       "contract": "automation/platform-runtime-contracts.json",
-      "audit_note": "2026-08-16: audited 53 commits from 7dd2adb0f326 to 89017269cd68. The only hard provider-runtime changes are JsBindings awaiting __native_fetch and FetchBridge switching from a synchronous runBlocking binding to QuickJS asyncFunction with a suspend httpRequestRaw call and explicit CancellationException propagation. HTTP request inputs, default User-Agent, redirects, response JSON shape/body/headers, positional getStreams, PluginRuntime/PluginRepository and provider URL/header ingestion remain compatible. Player-sensitive changes are skip, trailer, fullscreen/startup and playback-setting work and do not change provider stream/header transport.",
+      "audit_note": "2026-08-16: audited 3 commits from 89017269cd68 to 463cd0b72a8f. No plugin/stream contract path changed. Player changes only enrich source-list presentation with addon logos, badges and formatted file size and serialize those UI fields; source URL/header ingestion, selectability, positional getStreams, QuickJS bridge and playback transport are unchanged. Accepted for exact native-client reproof on this commit.",
       "contract_paths": [
         "composeApp/src/fullCommonMain/kotlin/com/nuvio/app/features/plugins/",
         "composeApp/src/commonMain/kotlin/com/nuvio/app/features/plugins/",
@@ -68,10 +68,10 @@
     "nuvio-tv": {
       "repository": "NuvioMedia/NuvioTV",
       "branch": "dev",
-      "verified_ref": "aa327f0e99645e1fc7094f56e3e827ff0925afae",
+      "verified_ref": "6103a144485277f06ebc31456f1949c65b304e8e",
       "platforms": ["android-tv"],
       "contract": "automation/nuvio-tv-runtime-contract.json",
-      "audit_note": "2026-08-10: audited 31 commits from 062b6e030696 to aa327f0e9964. Plugin runtime, provider repository/model contract paths and positional getStreams invocation are unchanged; player-sensitive changes are subtitle rendering/selection, watched-write performance and next-episode fallback behavior and do not alter provider URL/header ingestion.",
+      "audit_note": "2026-08-16: audited 52 commits from aa327f0e9964 to 6103a1444852. No full/plugin getStreams contract path, AddonApi, StreamRepositoryImpl/StreamRepository or Plugin model contract changed. Semantic player work includes subtitle/SDH handling and a parsing-error fallback that now probes the actual network MIME using the selected stream URL plus sanitized current playback headers instead of blindly forcing HLS; it preserves Referer/Origin/User-Agent headers and retries with the detected type. The bundled player library also changed, so this ref is accepted only together with the exact TV native-client/runtime proof executed by Niakvio on this generation.",
       "contract_paths": [
         "app/src/full/java/com/nuvio/tv/core/plugin/",
         "app/src/main/java/com/nuvio/tv/data/local/PluginDataStore.kt",

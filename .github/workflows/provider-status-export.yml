@@ -3,7 +3,7 @@ name: Export provider status snapshot
 on:
   workflow_dispatch:
   workflow_run:
-    workflows: ["Repair providers on routine refresh"]
+    workflows: ['Niakvio provider pipeline']
     types: [completed]
 
 permissions:
@@ -19,31 +19,24 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
           ref: main
-          fetch-depth: 0
+          fetch-depth: 1
 
-      - name: Build provider status snapshot
-        env:
-          BASELINE_SHA: a1bcc5c62502472290024c742893468d10e1bcb3
+      - name: Build canonical provider status snapshot
         run: |
           python3 - <<'PY'
           from __future__ import annotations
-          import csv, json, os, subprocess
-          from collections import Counter, defaultdict
+          import csv
+          import json
+          from collections import defaultdict
           from datetime import datetime, timezone
           from pathlib import Path
 
-          ROOT = Path('.').resolve()
-          OUT = ROOT / 'provider-status-export'
-          OUT.mkdir(exist_ok=True)
-          BASELINE = os.environ['BASELINE_SHA']
-          STATUS_RANK = {
-              'excluded': 0, 'unavailable': 1, 'runtime_error': 2,
-              'provider_unreachable': 3, 'no_streams': 4, 'blocked': 5,
-              'degraded': 6, 'reachable': 7, 'healthy': 8,
-          }
+          root = Path('.')
+          out = root / 'provider-status-export'
+          out.mkdir(exist_ok=True)
 
           def load(path, default):
-              p = ROOT / path
+              p = root / path
               if not p.exists():
                   return default
               try:
@@ -51,354 +44,89 @@ jobs:
               except Exception:
                   return default
 
-          def git_json(sha, path, default):
-              p = subprocess.run(['git', 'show', f'{sha}:{path}'], capture_output=True, text=True)
-              if p.returncode:
-                  return default
-              try:
-                  return json.loads(p.stdout)
-              except Exception:
-                  return default
+          def canonical_map(value):
+              if not isinstance(value, dict):
+                  return {}
+              return {str(key).strip().casefold(): row for key, row in value.items()}
 
-          def compact(value, limit=30000):
-              if value in (None, '', [], {}):
+          def csv_values(value):
+              if value is None:
                   return ''
               if isinstance(value, str):
-                  text = value
-              else:
-                  text = json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(',', ':'))
-              return text if len(text) <= limit else text[:limit-14] + '…[truncated]'
+                  return value
+              if isinstance(value, (list, tuple, set)):
+                  return ','.join(str(item) for item in value if item is not None)
+              return str(value)
 
-          def uniq(values):
-              return sorted({str(v) for v in values if v not in (None, '')})
-
-          def manifest_map(payload):
-              return {
-                  str(r.get('id') or '').strip().casefold(): r
-                  for r in payload.get('scrapers', [])
-                  if isinstance(r, dict) and str(r.get('id') or '').strip()
-              }
-
-          def provenance_map(payload):
-              src = payload.get('providers', {}) if isinstance(payload, dict) else {}
-              return {str(k).casefold(): v for k, v in src.items() if isinstance(v, dict)}
-
-          def diag_aggregate(payload):
-              grouped = defaultdict(list)
-              key_to_id = {}
-              for row in payload.get('providers', []) if isinstance(payload, dict) else []:
-                  if not isinstance(row, dict):
-                      continue
-                  pid = str(row.get('id') or '').strip().casefold()
-                  if not pid:
-                      continue
-                  grouped[pid].append(row)
-                  if row.get('key'):
-                      key_to_id[str(row['key'])] = pid
-              out = {}
-              for pid, rows in grouped.items():
-                  statuses = Counter(str(r.get('status') or '') for r in rows)
-                  best = max(rows, key=lambda r: (STATUS_RANK.get(str(r.get('status') or ''), -1), int(r.get('streams_playable') or 0), int(r.get('streams_returned') or 0), int(r.get('score') or 0)))
-                  failures, errors, sources, dns_statuses, migrations, http_statuses, route_hosts = set(), [], set(), set(), set(), set(), set()
-                  fixture_counts = Counter()
-                  for r in rows:
-                      sources.add(str(r.get('source') or ''))
-                      failures.update(str(x) for x in (r.get('failure_classes') or []) if x)
-                      errors.extend(x for x in (r.get('errors') or []) if x)
-                      if r.get('dns_preflight_status'):
-                          dns_statuses.add(str(r['dns_preflight_status']))
-                      if r.get('dns_migration_candidate'):
-                          migrations.add(str(r['dns_migration_candidate']))
-                      for k, v in (r.get('fixture_status_counts') or {}).items():
-                          fixture_counts[str(k)] += int(v or 0)
-                      for group in (r.get('route_observations') or []):
-                          for obs in group if isinstance(group, list) else []:
-                              if not isinstance(obs, dict):
-                                  continue
-                              if isinstance(obs.get('status'), int):
-                                  http_statuses.add(int(obs['status']))
-                              if obs.get('host'):
-                                  route_hosts.add(str(obs['host']))
-                  out[pid] = {
-                      'variant_count': len(rows),
-                      'sources': uniq(sources),
-                      'best_status': str(best.get('status') or ''),
-                      'status_counts': dict(statuses),
-                      'max_score': max(int(r.get('score') or 0) for r in rows),
-                      'streams_returned': max(int(r.get('streams_returned') or 0) for r in rows),
-                      'streams_playable': max(int(r.get('streams_playable') or 0) for r in rows),
-                      'failure_classes': uniq(failures),
-                      'errors': errors,
-                      'runtime_error_count': max(int(r.get('runtime_error_count') or 0) for r in rows),
-                      'malformed_request_count': max(int(r.get('malformed_request_count') or 0) for r in rows),
-                      'dns_statuses': uniq(dns_statuses),
-                      'dns_migration_candidates': uniq(migrations),
-                      'http_statuses': sorted(http_statuses),
-                      'route_hosts': uniq(route_hosts),
-                      'fixture_status_counts': dict(fixture_counts),
-                      'last_checked': max((str(r.get('last_checked') or '') for r in rows), default=''),
-                  }
-              return out, key_to_id
-
-          def dns_aggregate(payload):
-              grouped = defaultdict(list)
-              for r in payload.get('providers', []) if isinstance(payload, dict) else []:
-                  if not isinstance(r, dict):
-                      continue
-                  pid = str(r.get('canonical_id') or '').strip().casefold()
-                  if pid:
-                      grouped[pid].append(r)
-              out = {}
-              for pid, rows in grouped.items():
-                  out[pid] = {
-                      'variant_count': len(rows),
-                      'decisions': uniq((r.get('decision') or {}).get('status') for r in rows),
-                      'reasons': uniq((r.get('decision') or {}).get('reason') for r in rows),
-                      'domains': uniq(d for r in rows for d in (r.get('domain_hints') or r.get('domains') or [])),
-                      'migration_candidates': uniq(c for r in rows for c in ((r.get('decision') or {}).get('migration_candidates') or [])),
-                  }
-              return out
-
-          current_manifest = load('manifest.json', {'scrapers': []})
-          baseline_manifest = git_json(BASELINE, 'manifest.json', {'scrapers': []})
-          current = manifest_map(current_manifest)
-          baseline = manifest_map(baseline_manifest)
-          vf_ids = set(manifest_map(load('vf/manifest.json', {'scrapers': []})))
-          vostfr_ids = set(manifest_map(load('vostfr/manifest.json', {'scrapers': []})))
-          prov = provenance_map(load('PROVENANCE.json', {}))
-          base_prov = provenance_map(git_json(BASELINE, 'PROVENANCE.json', {}))
-          diag, key_to_id = diag_aggregate(load('diagnostics-report.json', {}))
-          base_diag, _ = diag_aggregate(git_json(BASELINE, 'diagnostics-report.json', {}))
+          catalog = load('provider_catalog.json', {'providers': []})
+          provenance = canonical_map(load('PROVENANCE.json', {}).get('providers', {}))
+          diagnostics = load('diagnostics-report.json', {})
           repair = load('repair-report.json', {})
-          overrides = load('provider-overrides.json', {})
-          hubs = {str(k).casefold(): v for k, v in (load('provider-hub-report.json', {}).get('providers', {}) or {}).items() if isinstance(v, dict)}
-          dns = dns_aggregate(load('dns-preflight-report.json', {}))
-          route_report = load('route-regressions.json', {})
-          routes = defaultdict(list)
-          for r in route_report.get('regressions', []) if isinstance(route_report, dict) else []:
-              if isinstance(r, dict) and r.get('provider'):
-                  routes[str(r['provider']).casefold()].append(r)
+          lkg = canonical_map(load('provider-lkg.json', {}).get('providers', {}))
 
-          sibling = {str(x).casefold() for x in (repair.get('sibling_resolved_provider_ids') or [])}
-          repair_stats = defaultdict(lambda: {'attempts': 0, 'accepted': 0, 'rejected': 0, 'profiles': set(), 'rejection_reasons': set()})
-          for rnd in repair.get('rounds', []) if isinstance(repair, dict) else []:
-              if not isinstance(rnd, dict):
+          diag_by_id = defaultdict(list)
+          for row in diagnostics.get('providers', []) if isinstance(diagnostics, dict) else []:
+              if not isinstance(row, dict):
                   continue
-              for kind in ('attempts', 'accepted', 'rejected'):
-                  for rr in rnd.get(kind, []) or []:
-                      if not isinstance(rr, dict):
-                          continue
-                      parent = str(rr.get('parent_key') or '').split('::', 1)[0]
-                      pid = key_to_id.get(parent)
-                      if not pid and ':' in parent:
-                          pid = parent.split(':', 1)[1].casefold()
-                      if not pid:
-                          continue
-                      repair_stats[pid][kind] += 1
-                      if rr.get('profile'):
-                          repair_stats[pid]['profiles'].add(str(rr['profile']))
-                      if kind == 'rejected' and rr.get('reason'):
-                          repair_stats[pid]['rejection_reasons'].add(str(rr['reason']))
+              pid = str(row.get('id') or row.get('canonical_id') or '').strip().casefold()
+              if pid:
+                  diag_by_id[pid].append(row)
 
-          patches = {str(k).casefold(): v for k, v in (overrides.get('provider_patches', {}) or {}).items() if isinstance(v, dict)}
-          caps = {str(k).casefold(): v for k, v in (overrides.get('provider_capabilities', {}) or {}).items() if isinstance(v, dict)}
-          package = load('package.json', {})
-          head_sha = subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip()
-
+          sibling_resolved = {str(x).strip().casefold() for x in repair.get('sibling_resolved_provider_ids', [])}
           rows = []
-          for pid in sorted(current):
-              m = current[pid]
-              bm = baseline.get(pid, {})
-              p = prov.get(pid, {})
-              bp = base_prov.get(pid, {})
-              d = diag.get(pid, {})
-              bd = base_diag.get(pid, {})
-              patch = patches.get(pid, {})
-              cap = caps.get(pid, {})
-              hub = hubs.get(pid, {})
-              dn = dns.get(pid, {})
-              rs = repair_stats.get(pid, {})
-              blockers = [str(x) for x in (p.get('activation_blockers') or []) if x]
-              manifest_override = patch.get('manifest_overrides') if isinstance(patch.get('manifest_overrides'), dict) else {}
-              enabled = bool(m.get('enabled'))
-              before_enabled = bool(bm.get('enabled')) if bm else False
-              activation_mode = str(p.get('activation_mode') or '')
-              capability = str(patch.get('capability') or cap.get('strategy') or '')
-              quarantine = (
-                  not enabled and (
-                      manifest_override.get('enabled') is False
-                      or 'quarantine' in activation_mode.casefold()
-                      or 'quarantine' in capability.casefold()
-                      or any('quarantine' in x.casefold() or 'safety' in x.casefold() for x in blockers)
-                  )
-              )
-              cur_rank = STATUS_RANK.get(str(d.get('best_status') or ''), -1)
-              old_rank = STATUS_RANK.get(str(bd.get('best_status') or ''), -1)
-              recovered = enabled and (
-                  (bm and not before_enabled)
-                  or pid in sibling
-                  or int(rs.get('accepted') or 0) > 0
-                  or (int(d.get('streams_returned') or 0) > 0 and int(bd.get('streams_returned') or 0) == 0)
-                  or (cur_rank > old_rank and int(d.get('streams_returned') or 0) > 0)
-              )
-              if quarantine:
-                  outcome = 'QUARANTAINE'
-              elif enabled and recovered:
-                  outcome = 'RÉCUPÉRÉ / ACTIF'
-              elif enabled and int(d.get('streams_returned') or 0) > 0:
-                  outcome = 'ACTIF / FLUX OBSERVÉ'
-              elif enabled and any(x in activation_mode.casefold() for x in ('lkg', 'grace', 'historical')):
-                  outcome = 'ACTIF LKG / GRACE'
-              elif enabled:
-                  outcome = 'ACTIF À INVESTIGUER'
-              else:
-                  outcome = 'DÉSACTIVÉ'
-
-              reason_parts = []
-              if blockers:
-                  reason_parts.append('activation: ' + ', '.join(blockers))
-              if d.get('failure_classes') and int(d.get('streams_returned') or 0) == 0:
-                  reason_parts.append('runtime: ' + ', '.join(d['failure_classes']))
-              if hub.get('reason') and hub.get('status') not in ('site_validated', 'api_validated'):
-                  reason_parts.append('hub: ' + str(hub.get('reason')))
-              if rs.get('rejection_reasons'):
-                  reason_parts.append('repair: ' + ', '.join(sorted(rs['rejection_reasons'])))
-              if not reason_parts and not enabled:
-                  reason_parts.append('disabled_without_current_strict_activation_proof')
-              if not reason_parts and enabled:
-                  reason_parts.append('enabled_in_final_manifest')
-
-              row = {
+          for item in catalog.get('providers', []):
+              if not isinstance(item, dict):
+                  continue
+              pid = str(item.get('canonicalId') or '').strip().casefold()
+              scraper = item.get('scraper') if isinstance(item.get('scraper'), dict) else {}
+              variants = diag_by_id.get(pid, [])
+              statuses = sorted({str(x.get('status') or '') for x in variants if x.get('status')})
+              streams_playable = max((int(x.get('streams_playable') or 0) for x in variants), default=0)
+              streams_returned = max((int(x.get('streams_returned') or 0) for x in variants), default=0)
+              failures = sorted({str(v) for x in variants for v in (x.get('failure_classes') or []) if v})
+              prov = provenance.get(pid, {}) if isinstance(provenance.get(pid, {}), dict) else {}
+              lkg_row = lkg.get(pid, {}) if isinstance(lkg.get(pid, {}), dict) else {}
+              rows.append({
                   'provider_id': pid,
-                  'name': m.get('name') or '',
-                  'outcome': outcome,
-                  'enabled_final': enabled,
-                  'enabled_before_fix': before_enabled,
-                  'activation_change': ('ACTIVATED' if enabled and not before_enabled else 'DEACTIVATED' if before_enabled and not enabled else 'UNCHANGED'),
-                  'recovered_flag': recovered,
-                  'quarantine_flag': quarantine,
-                  'reason_primary': ' | '.join(reason_parts),
-                  'version_final': m.get('version') or '',
-                  'version_before_fix': bm.get('version') or '',
-                  'supported_types': ', '.join(m.get('supportedTypes') or []),
-                  'content_languages': ', '.join(m.get('contentLanguage') or []),
-                  'formats': ', '.join(m.get('formats') or []),
-                  'in_vf_manifest': pid in vf_ids,
-                  'in_vostfr_manifest': pid in vostfr_ids,
-                  'limited': bool(m.get('limited')),
-                  'disabled_platforms': ', '.join(m.get('disabledPlatforms') or []),
-                  'supports_external_player': bool(m.get('supportsExternalPlayer')),
-                  'author': m.get('author') or '',
-                  'description': m.get('description') or '',
-                  'filename_final': m.get('filename') or '',
-                  'filename_before_fix': bm.get('filename') or '',
-                  'activation_mode': activation_mode,
-                  'activation_eligible': p.get('activation_eligible'),
-                  'strict_activation_eligible': p.get('strict_activation_eligible'),
-                  'runtime_evidence_eligible': p.get('runtime_evidence_eligible'),
-                  'activation_blockers': ', '.join(blockers),
-                  'provenance_sha256': p.get('sha256') or '',
-                  'provenance_source': p.get('source') or p.get('selected_source') or '',
-                  'diagnostic_best_status': d.get('best_status') or '',
-                  'diagnostic_before_status': bd.get('best_status') or '',
-                  'diagnostic_status_counts': compact(d.get('status_counts')),
-                  'diagnostic_variant_count': int(d.get('variant_count') or 0),
-                  'diagnostic_sources': ', '.join(d.get('sources') or []),
-                  'max_score': int(d.get('max_score') or 0),
-                  'streams_returned': int(d.get('streams_returned') or 0),
-                  'streams_before_fix': int(bd.get('streams_returned') or 0),
-                  'streams_playable': int(d.get('streams_playable') or 0),
-                  'failure_classes': ', '.join(d.get('failure_classes') or []),
-                  'runtime_error_count': int(d.get('runtime_error_count') or 0),
-                  'malformed_request_count': int(d.get('malformed_request_count') or 0),
-                  'http_statuses': ', '.join(map(str, d.get('http_statuses') or [])),
-                  'route_hosts': ', '.join(d.get('route_hosts') or []),
-                  'fixture_status_counts': compact(d.get('fixture_status_counts')),
-                  'last_checked': d.get('last_checked') or '',
-                  'dns_statuses': ', '.join(d.get('dns_statuses') or dn.get('decisions') or []),
-                  'dns_reasons': ', '.join(dn.get('reasons') or []),
-                  'dns_domains': ', '.join(dn.get('domains') or []),
-                  'dns_migration_candidates': ', '.join(uniq((d.get('dns_migration_candidates') or []) + (dn.get('migration_candidates') or []))),
-                  'hub_status': hub.get('status') or '',
-                  'hub_official_site': hub.get('official_site') or '',
-                  'hub_site_status': hub.get('site_status') or '',
-                  'hub_final_url': hub.get('site_final_url') or '',
-                  'hub_validated_api': compact(hub.get('validated_api')),
-                  'hub_reason': hub.get('reason') or '',
-                  'sibling_resolved': pid in sibling,
-                  'repair_attempts': int(rs.get('attempts') or 0),
-                  'repair_accepted': int(rs.get('accepted') or 0),
-                  'repair_rejected': int(rs.get('rejected') or 0),
-                  'repair_profiles': ', '.join(sorted(rs.get('profiles') or [])),
-                  'repair_rejection_reasons': ', '.join(sorted(rs.get('rejection_reasons') or [])),
-                  'route_regressions': compact(routes.get(pid, [])),
-                  'capability': capability,
-                  'capability_strategy': cap.get('strategy') or '',
-                  'capability_validation': cap.get('validation') or '',
-                  'requires_direct_media': cap.get('requires_direct_media'),
-                  'allow_html_url': cap.get('allow_html_url'),
-                  'catalogue_types': ', '.join(cap.get('catalogue_types') or []),
-                  'observed_origins': ', '.join(cap.get('observed_origins') or []),
-                  'official_hub': patch.get('official_hub') or '',
-                  'official_site': patch.get('official_site') or '',
-                  'official_api': patch.get('official_api') or '',
-                  'patch_scripts': ', '.join(patch.get('patch_scripts') or []),
-                  'patch_notes': ' | '.join(patch.get('notes') or []),
-                  'manifest_overrides': compact(manifest_override),
-                  'route_replacements': compact(patch.get('route_replacements')),
-                  'runtime_domain_replacements': compact(patch.get('runtime_domain_replacements')),
-                  'required_values': ', '.join(patch.get('required_values') or []),
-                  'errors_json': compact(d.get('errors')),
-                  'provenance_json': compact(p),
-                  'patch_config_json': compact(patch),
-                  'capability_json': compact(cap),
-                  'hub_json': compact(hub),
-                  'dns_json': compact(dn),
-              }
-              rows.append(row)
+                  'name': scraper.get('name') or '',
+                  'enabled': bool(scraper.get('enabled')),
+                  'general': bool((item.get('projections') or {}).get('general')),
+                  'vf': bool((item.get('projections') or {}).get('vf')),
+                  'version': scraper.get('version') or '',
+                  'supported_types': csv_values(scraper.get('supportedTypes')),
+                  'languages': csv_values(scraper.get('contentLanguage')),
+                  'filename': scraper.get('filename') or '',
+                  'diagnostic_statuses': ','.join(statuses),
+                  'streams_returned': streams_returned,
+                  'streams_playable': streams_playable,
+                  'failure_classes': ','.join(failures),
+                  'healthy_sibling_resolved': pid in sibling_resolved,
+                  'provenance_source': prov.get('source') or prov.get('selected_source') or '',
+                  'provenance_sha256': prov.get('sha256') or '',
+                  'lkg_sha256': lkg_row.get('sha256') or '',
+              })
 
-          summary = {
-              'provider_count': len(rows),
-              'enabled': sum(1 for r in rows if r['enabled_final']),
-              'disabled': sum(1 for r in rows if not r['enabled_final']),
-              'recovered': sum(1 for r in rows if r['recovered_flag']),
-              'quarantined': sum(1 for r in rows if r['quarantine_flag']),
-              'active_with_observed_streams': sum(1 for r in rows if r['enabled_final'] and r['streams_returned'] > 0),
-              'active_without_current_stream_evidence': sum(1 for r in rows if r['enabled_final'] and r['streams_returned'] == 0),
-              'outcomes': dict(Counter(r['outcome'] for r in rows)),
-              'diagnostic_statuses': dict(Counter(r['diagnostic_best_status'] for r in rows)),
-          }
-          snapshot = {
-              'schema_version': 1,
-              'generated_at': datetime.now(timezone.utc).isoformat(),
-              'head_sha': head_sha,
-              'baseline_sha': BASELINE,
-              'release': package.get('version'),
-              'summary': summary,
+          payload = {
+              'schemaVersion': 2,
+              'generatedAt': datetime.now(timezone.utc).isoformat(),
+              'catalogSchemaVersion': catalog.get('schemaVersion'),
+              'providerCount': len(rows),
+              'vfProviderCount': sum(1 for row in rows if row['vf']),
+              'enabledCount': sum(1 for row in rows if row['enabled']),
               'providers': rows,
           }
-          (OUT / 'provider-status-snapshot.json').write_text(json.dumps(snapshot, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
-          if rows:
-              with (OUT / 'provider-status-snapshot.csv').open('w', encoding='utf-8-sig', newline='') as handle:
-                  writer = csv.DictWriter(handle, fieldnames=list(rows[0].keys()), extrasaction='ignore')
-                  writer.writeheader(); writer.writerows(rows)
-          (OUT / 'summary.json').write_text(json.dumps(summary, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
-          print('FIELD_PROVIDER_STATUS_EXPORT=' + json.dumps(summary, ensure_ascii=False, sort_keys=True))
-          print('FIELD_PROVIDER_STATUS_HEAD=' + head_sha)
-          print('FIELD_PROVIDER_STATUS_BASELINE=' + BASELINE)
+          (out / 'providers.json').write_text(json.dumps(payload, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+          with (out / 'providers.csv').open('w', newline='', encoding='utf-8') as handle:
+              writer = csv.DictWriter(handle, fieldnames=list(rows[0]) if rows else ['provider_id'])
+              writer.writeheader()
+              writer.writerows(rows)
+          print(json.dumps({k: payload[k] for k in ('providerCount', 'vfProviderCount', 'enabledCount')}, indent=2))
           PY
-
-      - name: Collect raw diagnostic sources
-        run: |
-          mkdir -p provider-status-export/raw
-          for f in manifest.json vf/manifest.json vostfr/manifest.json PROVENANCE.json health-report.json diagnostics-report.json repair-report.json provider-overrides.json provider-hub-report.json dns-preflight-report.json route-regressions.json upstream-lkg.json package.json sources.json; do
-            if [ -f "$f" ]; then cp "$f" provider-status-export/raw/; fi
-          done
 
       - name: Upload provider status snapshot
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
-          name: provider-status-snapshot-${{ github.run_id }}
+          name: provider-status-${{ github.run_id }}
           path: provider-status-export/
           retention-days: 14
           if-no-files-found: error

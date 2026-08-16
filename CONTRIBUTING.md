@@ -8,11 +8,12 @@ This project aggregates, tests, repairs, and publishes Nuvio providers while try
 
 Please make sure that:
 
-- your change is related to a provider, manifest, test, workflow, documentation, or repository tooling;
+- your change is related to a provider, catalog, manifest projection, test, workflow, documentation, or repository tooling;
 - you have tested the affected provider locally;
 - you do not include credentials, private tokens, cookies, personal data, or copyrighted media files;
 - you do not weaken existing security checks;
-- you do not activate a provider without a reproducible runtime proof.
+- you do not activate a provider without a reproducible runtime proof;
+- you do not create a second provider publication pipeline or a second source of truth outside ARCHI 2.
 
 ## Types of contributions
 
@@ -98,13 +99,15 @@ Do not hardcode a new domain without checking whether the provider has an offici
 
 When a hub exists:
 
-- use the hub as the primary source of truth;
+- use the hub as the primary discovery signal;
 - validate the resolved domain;
 - reject unrelated redirects and known parasite domains;
 - keep a safe fallback only when necessary;
 - avoid replacing a working domain with an unverified candidate.
 
 A domain resolving correctly does not prove that the provider works. The complete stream extraction path must still be tested.
+
+`domain-refresh.yml` is observation-only. Validated domain migrations are applied and published only by the canonical `sync.yml` transaction.
 
 ## Local testing
 
@@ -132,6 +135,7 @@ Run the repository test suite:
 
 ```bash
 npm test
+node engine_v2/tests/provider-catalog.test.mjs
 ```
 
 Run any targeted provider or pipeline test added by the repository when relevant.
@@ -157,18 +161,24 @@ Tests should verify, when applicable:
 
 Regression tests are strongly encouraged.
 
-## Manifest changes
+## Catalog, manifests and versions
 
-Do not edit a manifest version or provider version without a corresponding functional change.
+`provider_catalog.json` is the canonical published provider registry. `manifest.json` and `vf/manifest.json` are projections, not independent sources of truth.
 
-When a provider bundle changes:
+Do **not** manually maintain a provider change by independently editing both manifests or by inventing a cache-bump sequence. The publication pipeline owns finalization.
 
-- update the provider version;
-- update every manifest that references it;
-- verify that every referenced bundle exists;
-- remove obsolete bundles only when they are no longer referenced;
-- regenerate integrity and checksum files when required by the repository;
-- keep the general and VF manifests synchronized where appropriate.
+When a provider transaction is accepted, `sync.yml` automatically:
+
+- imports the promoted candidate into the canonical catalog;
+- renders the general and VF projections;
+- bumps the provider patch when its client-visible row changed;
+- rotates the case-only client ID for a genuine `disabled → enabled` recovery when needed to escape Nuvio's persisted local state;
+- bumps the global release when the client-visible generation changed;
+- synchronizes the release across the manifests, `package.json`, `package-lock.json` and `sources.json`;
+- regenerates release hashes and validates integrity;
+- remains idempotent when a rerun contains no client-visible change.
+
+A contribution may update provider logic or canonical metadata, but it must not bypass this version/cache finalizer or add a competing bump helper.
 
 Do not manually activate a provider that failed real runtime validation.
 
@@ -204,7 +214,7 @@ Avoid mixing unrelated provider repairs in the same pull request unless the chan
 
 Please:
 
-- preserve the existing repository structure;
+- preserve the ARCHI 2 control-plane invariants;
 - keep provider logic isolated when possible;
 - reuse shared helpers instead of duplicating logic;
 - add timeouts and clear error handling;
@@ -213,7 +223,8 @@ Please:
 - never log secrets or full private cookies;
 - keep runtime behavior deterministic;
 - return an empty result instead of a misleading or unsafe stream;
-- document non-obvious parsing or fallback logic.
+- document non-obvious parsing or fallback logic;
+- keep historical scripts as compatibility primitives only while they provide a function not yet replaced by V2.
 
 ## Security
 
@@ -250,28 +261,10 @@ Please avoid describing a provider as permanently fixed unless it has passed cur
 
 ## Language and labels
 
-For the VF manifest:
+For the VF projection:
 
 - prefer confirmed VF streams;
 - keep VOSTFR distinct from VF;
 - do not guess the language only from the provider name;
 - use domain or homepage language only as a fallback signal;
 - preserve unknown language when no reliable evidence exists.
-
-Incorrect language labels are worse than missing labels.
-
-## Legal notice
-
-This repository does not host video files.
-
-Contributors are responsible for complying with applicable laws, platform rules, and repository policies. Do not submit copyrighted media, private access credentials, or mechanisms intended to bypass paid access controls.
-
-## Code of conduct
-
-Be respectful and constructive.
-
-Technical disagreements should focus on reproducible behavior, logs, tests, and code. Harassment, insults, spam, or intentionally misleading reports are not accepted.
-
-## Need help?
-
-Open an issue with the `question` or `provider-help` label and include the smallest reproducible example possible.

@@ -1,4 +1,4 @@
-name: Refresh official provider domains
+name: Observe official provider domains
 
 on:
   workflow_dispatch:
@@ -17,29 +17,29 @@ on:
     paths:
       - ".github/triggers/domain-refresh"
   schedule:
-    # Lightweight daily address refresh. The strict provider deep test remains
-    # limited to Tuesday and Friday in sync.yml.
     - cron: "23 3 * * *"
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
-  group: nuvio-provider-publish
-  cancel-in-progress: false
+  group: nuvio-provider-domain-observation
+  cancel-in-progress: true
 
 jobs:
-  refresh:
+  observe:
+    name: Observe hubs and domain candidates
     runs-on: ubuntu-latest
     timeout-minutes: 25
     permissions:
-      contents: write
+      contents: read
 
     steps:
-      - name: Checkout current published repository
+      - name: Checkout published main without credentials
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
-          fetch-depth: 0
+          fetch-depth: 1
+          persist-credentials: false
 
       - name: Set up Python
         uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
@@ -53,69 +53,34 @@ jobs:
           package-manager-cache: false
 
       - name: Install pinned runtime dependencies
-        run: |
-          if [ -f package-lock.json ]; then
-            npm ci --ignore-scripts --no-audit --no-fund
-          else
-            npm install --ignore-scripts --no-audit --no-fund --package-lock=false
-          fi
+        run: npm ci --ignore-scripts --no-audit --no-fund
 
-      - name: Save pre-refresh manifest
-        run: cp manifest.json "$RUNNER_TEMP/manifest.before.json"
-
-      - name: Resolve official hubs, Telegram announcements and retained routes
+      - name: Observe official hubs and domain candidates without publishing
         shell: bash
         run: |
           MODE="${{ github.event.inputs.mode || 'quick' }}"
+          mkdir -p health-output
           python scripts/resolve_provider_hubs.py \
-            --apply \
             --mode "$MODE" \
             --include-disabled \
             --workers 8 \
             --timeout 8 \
             --output health-output/provider-hub-report.json
 
-      - name: Rebuild only published artifacts affected by domain changes
-        run: |
-          python scripts/reapply_published_overrides.py
-          python scripts/finalize_domain_refresh.py \
-            --before-manifest "$RUNNER_TEMP/manifest.before.json" \
-            --report health-output/domain-refresh-finalize.json
-          python scripts/enforce_provider_priority.py
-          python scripts/prune_unreferenced_providers.py
-
-      - name: Run focused non-network publication gates
-        run: |
-          python tests/provider_hub_registry_test.py
-          python tests/provider_specific_adapters_test.py
-          python tests/upstream_lkg_test.py
-          python scripts/stage_published.py --stage staging
-          test -s staging/candidates.json
-          python scripts/validate_override_pipeline.py --stage staging
-          python scripts/validate_published_overrides.py
-          python tests/domain_refresh_workflow_test.py
-          python tests/provider_priority_test.py
-          node tests/patched_provider_runtime_smoke.test.cjs
-          python scripts/generate_release_hashes.py
-          python scripts/validate_release_integrity.py
-
-      - name: Publish only validated address changes
+      - name: Validate observation did not mutate publication state
         shell: bash
         run: |
-          cp health-output/provider-hub-report.json provider-hub-report.json
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A \
-            provider-overrides.json provider-domain-history.json provider-hub-report.json \
-            providers manifest.json vf/manifest.json package.json package-lock.json sources.json \
-            FILE-HASHES.json PATCH-SHA256SUMS.txt PROVENANCE.json SHA256SUMS.json
+          git diff --exit-code -- \
+            manifest.json vf/manifest.json provider_catalog.json providers/ \
+            provider-overrides.json provider-domain-history.json
+          test -s health-output/provider-hub-report.json
+          python tests/provider_hub_registry_test.py
+          python tests/domain_refresh_workflow_test.py
 
-          if git diff --cached --quiet; then
-            echo "No validated provider-domain change."
-            exit 0
-          fi
-
-          git commit -m "chore: refresh validated provider domains"
-          git fetch origin main
-          git rebase origin/main
-          git push origin HEAD:main
+      - name: Upload domain observation
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.0
+        with:
+          name: provider-domain-observation-${{ github.run_id }}
+          path: health-output/provider-hub-report.json
+          retention-days: 7
+          if-no-files-found: error

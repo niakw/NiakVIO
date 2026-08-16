@@ -1,99 +1,208 @@
-# Architecture NiakVIO
+# Architecture NiakVIO — ARCHI 2
 
-Ce document est la **référence d’architecture** du projet. Il décrit le système réellement présent dans le dépôt après la refonte : un moteur partagé, adaptatif et provider-agnostic qui observe les défaillances, choisit des stratégies de réparation réutilisables, génère des candidats, les valide puis ne promeut que les sorties prouvées.
+Ce document décrit **l'architecture réellement attendue en production** : un seul catalogue provider, un seul orchestrateur quick/deep, un moteur de décision partagé et des preuves runtime séparées.
 
-> NiakVIO n’est pas un serveur vidéo, ne transcode pas les médias et n’héberge aucun flux. Les sites/providers tiers restent les sources. NiakVIO construit, répare, contrôle et publie les providers consommés par Nuvio.
+> NiakVIO n'héberge ni ne transcode les médias. Les providers/sites tiers restent les sources ; NiakVIO collecte leurs implémentations publiques, construit des candidats, répare les structures cassées, valide les résultats et publie des bundles Nuvio.
 
-## Vue d’ensemble
+## 1. Invariant principal : une seule vérité
+
+`provider_catalog.json` est la source de vérité publiée.
+
+Il contient :
+
+- l'identité canonique des providers ;
+- la metadata Nuvio publiée ;
+- l'appartenance aux projections général/VF ;
+- l'ordre de publication ;
+- les politiques de maintenance (`repairBeforeTriage`, LKG, quick/deep).
+
+`manifest.json` et `vf/manifest.json` sont des **projections rendues depuis ce catalogue**.
+
+Pendant la transition des anciennes primitives de promotion, `manifest.next.json` est uniquement une transaction candidate :
+
+```text
+promoter de compatibilité
+        │
+        ▼
+manifest.next.json
+        │
+        ▼
+import transactionnel
+        │
+        ▼
+provider_catalog.json
+        │
+        ├── render → manifest.json
+        └── render → vf/manifest.json
+```
+
+La transaction est rejetée si le round-trip catalogue → manifests n'est pas cohérent.
+
+## 2. Vue d'ensemble
 
 ```mermaid
 flowchart LR
-    U[Providers upstream<br/>JS / manifests / hubs / domaines]
-    D[Discovery & provenance<br/>variants • canonical source • LKG]
-    N[Domain intelligence<br/>DNS • hubs • redirects • observed peers]
+    U[3 upstreams providers]
+    PUB[Bundles publiés / LKG]
+    D[Discovery multi-variantes]
+    DOM[Hubs / DNS / redirects / peers historiques]
+    CAT[provider_catalog.json]
+    SPEC[ProviderSpec / connaissance]
 
-    subgraph B["CERVEAU PARTAGÉ NIAKVIO"]
-      O[Observation runtime<br/>status • errors • HTTP • network • streams]
-      C[Classification de panne<br/>no_streams • obsolete route • 403<br/>runtime error • invalid request • blocked media]
-      S[Sélection de stratégie<br/>profils structurels + capabilities]
-      R[Repair / Recovery borné<br/>API • catalogue • search • detail<br/>iframe/player • JS/XHR/JSON • media]
-      X[Normalisation transport<br/>URL • HLS/DASH • headers • cookies<br/>Referer • Origin • User-Agent]
-      V[Preuves strictes<br/>média • identité • saison/épisode<br/>durée • langue • provenance]
-      G[Candidate gate<br/>statique + deep test + comparaison]
-
-      O --> C --> S --> R --> X --> V --> G
-      G -. échec / preuve insuffisante .-> O
+    subgraph V2["PROVIDER ENGINE V2 — ARCHI 2"]
+      O[Observation]
+      C[Classification]
+      R[Resolver Core]
+      B[Repair Brain]
+      E[Evidence Matrix]
+      V[Validation média / identité / langue]
+      O --> C --> R --> B --> E --> V
     end
 
-    P[Provider bundles immuables<br/>patches + hashes + provenance]
-    M[Publication fail-closed<br/>manifest.json + vf/manifest.json]
-
-    U --> D --> N --> O
-    G -->|meilleur et prouvé| P --> M
-
-    subgraph CLIENTS["PREUVES CLIENTS INDÉPENDANTES"]
-      DESK[Nuvio Desktop]
-      MOB[Nuvio Mobile]
-      TV[NuvioTV / Android TV]
+    subgraph ADAPTERS["ADAPTERS CLIENTS"]
+      M[Mobile]
+      DSK[Desktop]
+      TV[TV / Android TV]
     end
 
-    M --> DESK
-    M --> MOB
-    M --> TV
+    TX[Transaction de publication]
+    MG[manifest.json]
+    MV[vf/manifest.json]
 
-    subgraph LABS["LABS PERMANENTS"]
-      LD[lab/desktop-mobile-real]
-      LT[lab/tv-real]
-      CORPUS[Corpus / multi-œuvres / catalogue]
-    end
-
-    DESK --> LABS
-    MOB --> LABS
-    TV --> LABS
-    LABS -->|preuves réelles / nouvelles signatures| O
+    U --> D
+    PUB --> D
+    D --> DOM --> CAT --> SPEC --> O
+    V --> M
+    V --> DSK
+    V --> TV
+    M --> TX
+    DSK --> TX
+    TV --> TX
+    TX --> CAT
+    CAT --> MG
+    CAT --> MV
 ```
 
-## Le « cerveau »
+## 3. Orchestration : un seul pipeline
 
-Le cœur n’est pas une collection de rustines par provider. Il fonctionne comme un **moteur décisionnel de réparation** :
+`.github/workflows/sync.yml` est le seul workflow autorisé à orchestrer la production complète :
 
-1. il collecte des observations issues de l’exécution réelle du provider ;
-2. il classe la famille de panne à partir de signatures reproductibles ;
-3. il choisit un profil de réparation compatible avec la structure observée ;
-4. il génère un nouveau candidat sans modifier aveuglément le provider publié ;
-5. il valide l’artefact généré ;
-6. il le deep-teste ;
-7. il ne remplace le parent que si le candidat apporte une amélioration prouvée et respecte les gates de sécurité.
+```text
+resolve mode
+  → validate ARCHI2
+  → hubs/domaines
+  → discovery
+  → catalog preservation gate
+  → DNS migrations
+  → runtime profiles / compat primitives
+  → healthy sibling selection
+  → repair unresolved
+  → evidence gates
+  → promotion
+  → audit contenu/média
+  → update canonical catalog
+  → render manifests
+  → hashes / integrity
+  → atomic publish
+```
 
-La couche `scripts/runtime_repair.py` est explicitement **provider-agnostic**. La couche `scripts/adaptive_runtime/runtime_repair.py` l’étend avec une récupération adaptative fondée sur les capabilities, domaines, origines observées et métadonnées disponibles, sans coder un provider particulier dans le moteur de décision.
+Aucun autre workflow durable ne doit dupliquer cette boucle de publication.
 
-## Familles de pannes comprises par le moteur
+## 4. Quick vs Deep
 
-Le moteur sait notamment distinguer des classes telles que :
+### Quick
 
-- provider sans origine exploitable malgré une infrastructure accessible ;
-- recherche accessible mais routes historiques devenues obsolètes ;
-- route provider obsolète (`404` / `410`) ;
-- provider bloqué (`401` / `403`) ;
-- média final bloqué alors que le provider retourne des streams ;
-- erreur runtime après modification locale ;
-- recherche/catalogue aboutissant sans flux ;
-- flux retourné mais non vérifié en lecture ;
-- provider inaccessible ou dégradé ;
-- requête malformée / incompatibilité runtime.
+Quick est une maintenance **réparatrice et publiable** :
 
-Ces signatures doivent mener à des **stratégies réutilisables**, pas à la désactivation arbitraire d’un provider.
+1. recharge les hubs/domaines ;
+2. redécouvre toutes les variantes ;
+3. garde les bundles publiés/LKG comme siblings de secours ;
+4. préfère un sibling déjà sain ;
+5. ne répare structurellement que les familles non résolues ;
+6. accepte uniquement une amélioration sans régression runtime/identité ;
+7. peut publier sans attendre Deep.
 
-## Chaîne de récupération
+Un résultat inconclusif ne détruit pas le LKG.
 
-Une réparation peut progresser de manière bornée à travers plusieurs niveaux :
+### Deep
+
+Deep utilise une profondeur/corpus plus large et reste l'autorité pour :
+
+- nouvelles intégrations provider ;
+- apprentissage/persistance de recipes ;
+- changements structurels importants ;
+- preuve stricte de contenu ;
+- reconstruction globale de connaissance.
+
+Deep est planifié séparément et déclenchable explicitement. Une simple mise à jour de code ou de domaine ne doit pas automatiquement provoquer un rebuild Deep complet.
+
+## 5. Discovery et provenance
+
+NiakVIO collecte les providers depuis plusieurs upstreams et ajoute le dernier état publié/LKG comme fallback de faible priorité.
+
+La discovery :
+
+- normalise l'identifiant canonique ;
+- exclut torrent, magnet, Acestream et autres chemins P2P ;
+- valide que l'artefact est bien JavaScript ;
+- conserve source, repository, licence, manifest URL et SHA ;
+- applique uniquement les transformations locales connues avant probe ;
+- conserve toutes les variantes exploitables avant triage ;
+- agrège les metadata des siblings par provider canonique.
+
+La provenance finale reste inscrite dans `PROVENANCE.json`.
+
+## 6. Intelligence de domaine
+
+Avant de conclure qu'un provider est cassé, le système distingue :
+
+- hub officiel ;
+- domaine terminal ;
+- redirection ;
+- ancien domaine ;
+- peer historique encore valide ;
+- domaine détourné ou appartenant à une autre famille.
+
+Une réponse HTTP seule ne suffit jamais pour promouvoir une adresse. Le domaine doit rester cohérent avec l'identité du provider et avec la route attendue.
+
+Les snapshots upstream LKG permettent de continuer lorsque :
+
+- un manifest amont devient temporairement inaccessible ;
+- un manifest amont est corrompu/incomplet ;
+- un fichier provider disparaît alors qu'un snapshot validé existe.
+
+## 7. Contrat provider canonique
+
+ARCHI 2 raisonne sur une requête interne :
+
+```js
+{
+  tmdbId,
+  mediaType: "movie" | "tv" | "anime",
+  title,
+  year,
+  season,
+  episode,
+  languages,
+  device,
+  settings
+}
+```
+
+Le core produit des candidats normalisés + preuves. Les adapters traduisent ensuite vers le contrat client réel.
+
+Les branches spécifiques Desktop/Mobile/TV dans les providers sont un dernier recours : une différence ne doit exister que lorsqu'un runtime impose réellement une sémantique différente.
+
+## 8. Resolver Core
+
+La résolution est progressive et bornée :
 
 ```text
 provider natif
   ↓
-recherche / API / catalogue
+API / recherche / catalogue
   ↓
-fiche exacte de l’œuvre
+fiche exacte
   ↓
 iframe / player / embed
   ↓
@@ -101,160 +210,328 @@ JavaScript / XHR / JSON
   ↓
 playlist / média final
   ↓
-normalisation du contexte de lecture
+contexte playback normalisé
 ```
 
-La récupération adaptative possède des budgets (`max_pages`, `max_embeds`, timeout), des listes d’hôtes/chemins bloqués et des contrôles d’origine afin d’éviter une exploration non bornée.
+Chaque étape produit des observations. Les limites incluent notamment :
 
-## Intelligence domaine / provenance
+- timeout ;
+- nombre maximum de fetches ;
+- pages/embeds ;
+- hosts distincts ;
+- redirects ;
+- taille réponse et volume total ;
+- domaines/chemins bloqués.
 
-Avant la récupération média, NiakVIO conserve la provenance des variantes et raisonne sur les domaines :
+Le moteur ne doit jamais devenir un crawler ouvert non borné.
 
-- domaine officiel ou terminal ;
-- hub officiel ;
-- redirection ;
-- pair observé ;
-- domaine historique/LKG encore vérifiable ;
-- route ancienne ou contaminée par un autre provider.
+## 9. Repair Brain
 
-Une réponse HTTP seule ne constitue jamais une preuve suffisante de validité.
+`no_streams` est un symptôme, pas une cause racine.
 
-## Gates de contenu et de lecture
+Les classes V2 incluent :
 
-Le cerveau ne considère pas « une URL trouvée » comme un succès.
+- `not_invoked` ;
+- `dns_unreachable` ;
+- `transport_blocked` ;
+- `search_gap` ;
+- `identity_mismatch` ;
+- `detail_gap` ;
+- `episode_gap` ;
+- `player_gap` ;
+- `media_extraction_gap` ;
+- `playback_context_gap` ;
+- `media_validation_gap` ;
+- `runtime_contract_drift` ;
+- `healthy`.
 
-### Intégrité média
+Le Repair Brain suit une boucle déterministe :
 
-Sont contrôlés notamment :
+```text
+classify
+  → choose bounded strategy
+  → generate candidate
+  → probe
+  → validate
+  → compare to parent/sibling
+  → accept or reject
+```
 
-- HLS réel (`#EXTM3U`) et structure de playlist ;
+Les recettes réussies sont versionnées et liées au contexte/runtime qui les prouve.
+
+## 10. Healthy sibling first
+
+Avant une transformation, les variantes du même provider sont testées.
+
+Si un sibling couvre déjà les catégories déclarées avec des médias vérifiés, il devient le candidat privilégié. Les siblings cassés ne consomment pas inutilement des rounds de repair.
+
+Cette règle réduit :
+
+- les patches inutiles ;
+- les régressions ;
+- le temps quick ;
+- la dépendance à une variante upstream arbitraire.
+
+## 11. LKG et activation
+
+Trois états doivent être distingués :
+
+- **healthy/proven** : publication/activation possible ;
+- **repairable/inconclusive** : réparation ou conservation du LKG ;
+- **quarantine** : sortie dangereuse, mauvaise identité, provenance suspecte, domaine détourné ou autre preuve forte.
+
+Un zéro résultat sur une fixture n'est pas une preuve suffisante d'incompatibilité globale.
+
+Quick ne peut pas activer aveuglément un provider totalement nouveau : il peut réparer/réactiver les providers déjà connus sous les gates existantes ; Deep porte l'autorité d'intégration large.
+
+## 12. Validation média
+
+Une URL trouvée ne compte jamais comme preuve.
+
+Le système peut confirmer :
+
+- HLS avec structure `#EXTM3U` ;
 - DASH/MPD ;
-- conteneurs vidéo reconnus ;
-- faux médias HTML/JSON ;
-- assets, publicités, previews et vidéos anormalement courtes ;
-- redirections et payloads incohérents.
+- signature de conteneur ;
+- playlist et/ou premier segment ;
+- redirects compatibles.
 
-### Identité de l’œuvre
+Il rejette notamment :
 
-Un média lisible mais correspondant à la mauvaise œuvre est un **échec bloquant**. La preuve peut combiner :
+- HTML/JSON déguisé ;
+- page de player non résolue ;
+- publicité/assets/démos ;
+- previews anormalement courtes ;
+- média illisible ;
+- URL opaque non vérifiable lorsqu'aucune preuve payload n'existe.
+
+## 13. Identité de l'œuvre
+
+Un média jouable mais faux est plus dangereux qu'un `no_streams`.
+
+La validation peut combiner :
 
 - titre et alias ;
 - année ;
-- type (`movie`, `tv`, `anime`) ;
-- saison / épisode ;
-- métadonnées découvertes ;
-- durée attendue ou mesurée ;
-- contradictions fortes issues du catalogue ou du média.
+- type ;
+- saison/épisode ;
+- chemin/nom du média ;
+- metadata catalogue/player ;
+- durée attendue/mesurée.
 
-`Unknown` / `Inconnue` dans une qualité ou un label Nuvio n’est pas une preuve d’identité inconnue et ne doit pas rejeter un flux valide à lui seul.
+Une contradiction positive bloque la promotion.
 
-### Langue
+`Unknown` ou `Inconnue` dans un label de qualité Nuvio ne constitue pas une contradiction d'identité.
 
-VF/VOSTFR est déterminée par combinaison de preuves lorsque disponibles : métadonnées provider, catalogue, domaine, player, pistes audio, sous-titres et observations réelles. Aucun indice isolé ne doit suffire à inventer une langue.
+## 14. Langue
 
-### Contexte de playback
+La langue peut provenir de plusieurs preuves :
 
-Le flux final conserve, lorsqu’ils sont nécessaires :
+- metadata provider ;
+- catalogue ;
+- domaine ;
+- player ;
+- audio tracks ;
+- subtitles ;
+- observations connues de la source.
+
+Une projection VF/VOSTFR doit rester cohérente avec la metadata canonique du provider. Seul le chemin relatif vers les bundles diffère naturellement entre le manifest racine et `vf/manifest.json`.
+
+## 15. Contexte de playback
+
+Les éléments nécessaires à la lecture peuvent être conservés lorsqu'ils ont été observés dans la même chaîne :
 
 - `Referer` ;
 - `Origin` ;
 - `User-Agent` ;
-- cookies de session bornés et scoped au domaine/chemin.
+- cookies scoped ;
+- headers provider/player/média.
 
-Ce contexte est rafraîchi le long de la chaîne site → player → média et reste isolé entre sources.
+Ils ne doivent pas fuiter entre providers ou entre origines sans preuve.
 
-## Adaptation aux runtimes
+## 16. Runtimes Nuvio
 
-La règle est : **partagé par défaut, spécifique seulement quand le contrat client l’impose**.
+Les dépôts clients officiels servent de référence de comportement :
 
-```mermaid
-flowchart TB
-    CORE[Moteur partagé<br/>repair + recovery + validation]
-    CORE --> D[Desktop adapter<br/>compatibilité QuickJS / contrat Desktop]
-    CORE --> M[Mobile adapter<br/>contrat NuvioMobile]
-    CORE --> T[TV adapter<br/>fingerprint NuvioTV / metadata TV]
+- Nuvio Mobile ;
+- Nuvio Desktop ;
+- NuvioTV.
 
-    D --> PD[Preuve native Desktop]
-    M --> PM[Preuve native Mobile]
-    T --> PT[Preuve native Android TV]
+Les versions/commits suivis sont décrits dans `automation/nuvio-client-upstreams.json` et les baselines V2.
 
-    PD --> RELEASE[Release gate]
-    PM --> RELEASE
-    PT --> RELEASE
+Une preuve est **runtime-scoped** :
+
+```text
+même ProviderSpec
+    ├── Mobile adapter  → preuve Mobile
+    ├── Desktop adapter → preuve Desktop
+    └── TV adapter      → preuve Android TV
 ```
 
-Une preuve Desktop ne vaut pas preuve Mobile ou TV. La validation permanente exécute les runtimes officiels séparément. StreamZo peut servir de **provider sentinel** dans cette régression native ; ce n’est pas une technologie de l’architecture NiakVIO.
+Aucune réussite n'est transférée artificiellement d'un runtime à l'autre.
 
-## Publication
+## 17. Evidence Matrix
 
-La sortie validée comprend :
+L'état n'est pas un booléen global par provider. Il est indexé au minimum par :
 
+```text
+provider × œuvre × media type × langue × device × client contract version
+```
+
+Un provider peut être :
+
+- prouvé sur movie mais non résolu sur TV ;
+- fonctionnel Desktop mais cassé TV ;
+- VF prouvé sur une source et VO seulement sur une autre ;
+- sain sur une fixture et inconclusif sur une œuvre absente du catalogue.
+
+Movie, TV/series et anime restent trois dimensions obligatoires. Breaking Bad S01E01 constitue une fixture TV de régression.
+
+## 18. Largeur de catalogue
+
+La cible opérationnelle reste **10 providers jouables par œuvre dont au moins 3 VF**.
+
+C'est une cible de couverture, pas un relâchement des gates :
+
+- mauvais contenu ;
+- mauvais épisode ;
+- durée contradictoire ;
+- faux HLS ;
+- média illisible ;
+- identité non suffisamment prouvée
+
+ne comptent pas comme succès.
+
+## 19. Publication
+
+Une transaction publiée contient au minimum :
+
+- `provider_catalog.json` ;
 - bundles providers ;
-- patches appliqués ;
+- manifests rendus ;
 - provenance ;
+- overrides/domain history nécessaires ;
+- LKG upstream/provider ;
 - versions ;
-- hashes / sommes de contrôle ;
-- règles d’activation ;
-- `manifest.json` ;
-- `vf/manifest.json`.
+- hashes.
 
-La publication est **fail-closed** : un candidat incomplet ou non prouvé ne doit pas écraser le dernier état connu comme sain.
+Avant push :
 
-## Labs permanents et boucle de feedback
+1. promotion candidate ;
+2. génération des projections ;
+3. import dans le catalogue canonique ;
+4. re-render des manifests ;
+5. test de round-trip ;
+6. audit contenu/média ;
+7. release evidence fingerprint ;
+8. génération hashes ;
+9. intégrité finale ;
+10. commit atomique.
 
-Les Labs sont une partie structurelle du système :
+Le pipeline se termine par un checkout exact de `main` et rejoue les invariants de release.
+
+## 20. Couche de compatibilité
+
+La présence de fichiers historiques dans `scripts/` ne signifie pas qu'il existe deux moteurs.
+
+Ils sont classés en primitives de compatibilité lorsque leur fonctionnalité est encore nécessaire, notamment :
+
+- ingestion des anciens formats upstream ;
+- application de certains overrides publiés ;
+- wrappers runtime spécifiques déjà prouvés ;
+- promotion des anciens bundles ;
+- maintenance LKG ;
+- probes historiques encore uniques.
+
+Règle de migration :
+
+```text
+fonction utile historique
+  → invariant V2 explicite
+  → test V2
+  → remplacement ou encapsulation
+  → suppression de l'ancien doublon
+```
+
+Aucun nouveau comportement architectural ne doit être ajouté dans cette couche sans équivalent/invariant V2.
+
+## 21. Workflows durables
+
+- `sync.yml` : unique pipeline publication quick/deep ;
+- `provider-engine-v2.yml` : tests et connaissance V2 ;
+- Labs et preuves natives : reproduction/runtime ;
+- offline regression/rebuild : tests reproductibles ;
+- disponibilité/domain refresh : observabilité ;
+- provider status export : reporting uniquement.
+
+Les workflows temporaires, one-shot et anciens orchestrateurs de refresh doivent disparaître après leur absorption dans `sync.yml`.
+
+## 22. Labs permanents
+
+Les branches suivantes sont structurelles :
 
 - `lab/desktop-mobile-real` ;
 - `lab/tv-real`.
 
-Ils servent à reproduire les défauts dans les vrais clients, à élargir le corpus et à produire des preuves permettant au moteur partagé d’acquérir de **nouvelles règles explicites de diagnostic/réparation**. Il ne s’agit pas d’apprentissage automatique : l’évolution du « cerveau » reste déterministe, versionnée, testée et auditable.
+Elles ne sont pas supprimées lors d'un nettoyage des branches de travail.
 
-Boucle de maintenance :
+Les Labs servent à transformer un bug réel en non-régression durable :
 
 ```text
 bug réel
-  → reproduction Lab
-  → signature de panne
+  → reproduction
+  → observation
   → famille de cause
-  → stratégie générique
-  → candidat réparé
-  → tests / identité / playback
-  → Desktop + Mobile + TV si chemin partagé
+  → règle/recipe générique
+  → validation
+  → preuve runtime concernée
   → publication
-  → nouvelle non-régression permanente
+  → test permanent
 ```
 
-## Structure logique du dépôt
+## 23. Structure logique
 
 ```text
 Niakvio/
-├── providers/                       bundles publiés
-├── scripts/
-│   ├── runtime_repair.py            moteur de diagnostic/réparation générique
-│   ├── adaptive_runtime/            extension adaptative provider-agnostic
-│   ├── provider_patches/            stratégies/versioned repair profiles
-│   ├── audit_*                      preuves contenu/catalogue/runtime
-│   └── ...                          génération, validation, publication
-├── automation/                      capabilities, upstreams, politiques, état
-├── tests/                           non-régressions et safety gates
-├── .github/workflows/               CI durable + Labs + preuve native
+├── provider_catalog.json            source de vérité
 ├── manifest.json                    projection générale
-├── vf/manifest.json                 projection francophone
-├── PROVENANCE.json                  provenance de release
-├── FILE-HASHES.json                 intégrité des fichiers
-├── SHA256SUMS.json                  intégrité de release
-└── PATCH-SHA256SUMS.txt              intégrité des patches
+├── vf/manifest.json                 projection VF/VOSTFR
+├── engine_v2/
+│   ├── config/                      upstreams / adapters / evidence
+│   ├── src/
+│   │   ├── core/                    resolver / repair / decision / recipe
+│   │   ├── runtime/                 adapters
+│   │   └── provider-catalog.mjs     catalogue canonique
+│   ├── scripts/                     ingestion / observation / génération
+│   └── tests/                       invariants ARCHI 2
+├── providers/                       bundles publiés
+├── scripts/                         primitives de compatibilité nécessaires
+├── automation/                      état/runtime/LKG/politiques
+├── tests/                           non-régressions de release
+├── .github/workflows/               production + preuves
+├── PROVENANCE.json
+├── FILE-HASHES.json
+├── SHA256SUMS.json
+└── PATCH-SHA256SUMS.txt
 ```
 
-## Invariants
+## 24. Invariants non négociables
 
-1. Ne jamais promouvoir un stream sans preuve de contenu et de lecture suffisante.
-2. Ne jamais considérer un mauvais contenu comme un succès parce qu’il joue correctement.
-3. Préférer une règle générique à une rustine provider lorsque la cause est commune.
-4. Conserver des budgets bornés, des patches idempotents et une provenance auditable.
-5. Ne jamais faire passer un provider en utilisant la route d’un autre provider.
-6. Ne jamais confondre `Unknown/Inconnue` de présentation avec une identité inconnue.
-7. Ne jamais utiliser un test Desktop comme preuve TV.
-8. Ne jamais supprimer les Labs permanents lors d’un nettoyage ordinaire.
-9. Une publication ne doit pas dégrader silencieusement le dernier état sain.
-10. Pour une modification d’un chemin de playback partagé, Desktop + Mobile + TV doivent être prouvés indépendamment avant validation finale.
+1. Une seule source de vérité provider : `provider_catalog.json`.
+2. Un seul orchestrateur de publication : `sync.yml`.
+3. Réparer avant de trier/désactiver.
+4. Préférer un sibling sain avant une transformation.
+5. Conserver le LKG sur preuve inconclusive.
+6. Quarantine uniquement sur preuve forte.
+7. Exploration et repair toujours bornés.
+8. Une URL ne vaut pas preuve média.
+9. Un média jouable avec mauvaise identité est un échec bloquant.
+10. Aucun provider ne peut réussir grâce à la route ou au résultat d'un autre.
+11. `Unknown/Inconnue` de présentation n'est pas une contradiction d'identité.
+12. Les preuves Mobile/Desktop/TV sont indépendantes.
+13. Quick peut réparer/publier sans attendre Deep.
+14. Deep ne doit pas être relancé inutilement à chaque modification.
+15. Les manifests sont rendus depuis le catalogue avant publication.
+16. Toute publication est atomique, hashée et fail-closed.
+17. Les Labs permanents ne sont pas supprimés par le nettoyage ordinaire.
+18. Une primitive historique n'est conservée que tant qu'elle apporte une fonction réellement non remplacée.

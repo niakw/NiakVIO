@@ -1,181 +1,194 @@
-# Contrôles de santé, de compatibilité et de lecture
+# Santé, preuve et décision — ARCHI 2
 
-## Matrice des critères
+Ce document décrit les contrôles qui alimentent **Provider Engine V2 / ARCHI 2**. Ils ne forment pas une architecture parallèle : la décision finale reste portée par le catalogue canonique, l'Evidence Matrix, le Repair Brain et l'unique pipeline `sync.yml`.
 
-Le système ne réduit pas la santé d'un provider à un simple code HTTP. Les contrôles
-sont répartis en plusieurs familles :
+## Principe
 
-| Famille | Exemples contrôlés |
+La santé d'un provider n'est jamais réduite à un code HTTP, à un score global ou à `no_streams`.
+
+La chaîne de preuve distingue notamment :
+
+| Famille | Preuves / observations |
 |---|---|
-| Intégrité de découverte | manifest lisible, ID unique, chemin sûr, fichier JavaScript non vide, empreinte SHA-256 |
-| Politique | exclusion par ID, métadonnées, code et sortie pour torrent, magnet, P2P et debrid |
-| Exécution | chargement CommonJS/ESM, présence de `getStreams`, délai, mémoire, erreur d'exécution |
-| Correspondance technique | type film/série/anime, saison et épisode transmis, nombre de réponses |
-| Disponibilité réseau | DNS, connexion refusée, délai, HTTP 4xx/5xx, redirections, anti-robot, débit limité |
-| Cohérence de charge utile | HLS, DASH, MP4, Matroska, MPEG-TS, sous-titre, HTML ou réponse vide inattendue |
-| Lecture HLS/DASH | playlist principale, meilleure variante, premier segment, MPD |
-| Identité d’œuvre | titre/alias, saison, épisode, nom de fichier média et cohérence de durée |
-| Qualité | résolution annoncée et vérifiée, débit maximal, codecs, HDR/Dolby Vision |
-| Langues | pistes audio et sous-titres exposés, vérification limitée d'une piste de sous-titres |
-| Performance | latence du provider et des points sondés |
-| Stabilité | succès/échecs consécutifs, durée minimale de panne, dernière version fonctionnelle connue |
-| Publication | fichiers nommés par empreinte, publication des fichiers avant le manifest, conservation des anciennes versions |
-| Provenance | dépôt, auteur/projet, ID amont, licence, nom d'origine et SHA-256 |
-| Confidentialité | aucune URL complète dans les rapports, aucun secret transmis au code tiers |
+| Discovery | manifest lisible, ID canonique, provenance, JS exploitable, SHA-256, exclusion P2P |
+| Domaine | hub, terminal, redirect, peer historique, DNS, cohérence d'identité |
+| Runtime | chargement, contrat `getStreams`, timeout, mémoire, exception |
+| Catalogue | recherche, type movie/tv/anime, titre, saison, épisode |
+| Player | detail, iframe/embed, JS/XHR/JSON, contexte Referer/Origin/cookies |
+| Média | HLS, DASH, conteneur, playlist/segment, payload réel |
+| Identité | titre/alias, année, saison/épisode, fichier média, durée |
+| Langue | metadata, catalogue, pistes audio/sous-titres, indices cohérents |
+| Compatibilité | Mobile, Desktop et TV prouvés séparément |
+| Stabilité | preuve courante, LKG, failures répétées, récupération |
+| Publication | catalogue, manifests, provenance, versions, hashes, intégrité |
 
-Cette matrice reste une validation par échantillonnage : elle ne peut pas prouver que
-tous les titres, épisodes, langues ou appareils fonctionneront.
+Une validation par corpus reste un échantillonnage : elle ne prétend pas prouver chaque titre, épisode, langue ou appareil.
 
-## Cinq niveaux indépendants
+## Quick
 
-### 1. Disponibilité générale — toutes les quatre heures
+Quick est une **maintenance réparatrice et publiable**.
 
-Cible tous les providers actuellement publiés. Le contrôle utilise un titre tournant,
-un seul endpoint et un petit échantillon d'octets. Son objectif est de détecter les
-pannes, pas de mesurer la qualité d'image.
+Il :
 
-Les pannes franches comprennent les erreurs DNS, connexions refusées, délais dépassés,
-erreurs serveur et erreurs d'exécution. Les HTTP 403/429, pages anti-robot et recherches
-sans résultat sont suivis séparément et ne comptent pas comme panne franche.
+1. actualise hubs/domaines ;
+2. redécouvre les variantes upstream ;
+3. conserve les versions publiées/LKG comme siblings de secours ;
+4. préfère un sibling déjà sain ;
+5. répare de façon bornée les familles encore non résolues ;
+6. valide les résultats ;
+7. conserve le LKG si la nouvelle observation reste inconclusive ;
+8. peut publier immédiatement une amélioration prouvée.
 
-### 2. Relance ciblée — chaque heure en cas de panne
+Quick ne crée donc pas un simple rapport passif et n'attend pas systématiquement un Deep.
 
-Les providers dont le dernier état est `unavailable` ou `failed`, ainsi que ceux dont
-un hôte individuel reste en panne, sont retestés. Jusqu'à trois endpoints sont sondés
-pour voir si un hôte a récupéré ou si le provider l'a remplacé. Les providers sains,
-bloqués par une IP de datacenter ou simplement sans résultat ne sont pas relancés chaque
-heure.
+Un provider totalement nouveau n'est pas activé aveuglément par Quick.
 
-Politique par défaut :
+## Deep
 
-- au moins six échecs francs ;
-- panne observée pendant au moins huit heures ;
-- puis désactivation automatique ;
-- deux succès consécutifs après une désactivation automatique : réactivation ;
-- une désactivation manuelle est toujours préservée.
+Deep est la reconstruction/validation large. Il est utilisé notamment pour :
 
-La double condition **nombre + durée** évite qu'une série rapide d'échecs transitoires
-ne désactive immédiatement un provider.
+- nouveaux providers ;
+- nouvelles variantes ou structures ;
+- persistance/apprentissage de recipes ;
+- corpus et profondeur de probe supérieurs ;
+- modifications importantes du moteur ;
+- preuve stricte d'identité et de playback.
 
-### 3. Validation rapide — cinq jours chaque semaine
+Deep n'est pas exécuté à chaque mise à jour. Il dispose d'une cadence séparée et du trigger explicite `.github/triggers/deep-provider-repair`.
 
-Télécharge chaque candidat de chaque manifest amont, hors P2P/torrent. Elle exécute un
-titre tournant et vérifie la cohérence de base, mais reste strictement **report-only** :
-elle ne réécrit, ne promeut et ne désactive aucun provider.
+## Classification
 
-### 4. Audit approfondi — mardi et vendredi
+`no_streams` est un symptôme. Les familles de cause V2 incluent notamment :
 
-Utilise jusqu'à trois titres et quatre endpoints par candidat. Il peut inspecter :
+- `not_invoked` ;
+- `dns_unreachable` ;
+- `transport_blocked` ;
+- `search_gap` ;
+- `identity_mismatch` ;
+- `detail_gap` ;
+- `episode_gap` ;
+- `player_gap` ;
+- `media_extraction_gap` ;
+- `playback_context_gap` ;
+- `media_validation_gap` ;
+- `runtime_contract_drift` ;
+- `healthy`.
 
-- playlist principale HLS ;
-- meilleure variante HLS ;
-- premier segment média ;
-- manifest DASH ;
-- signatures directes MP4, Matroska et MPEG-TS ;
-- hauteur annoncée et vérifiée ;
-- débit, codecs et indicateurs HDR ;
-- langues audio et sous-titres ;
-- accessibilité d'une piste de sous-titres ;
-- latence et catégorie de panne.
-- durée mesurée du média comparée à la durée attendue lorsqu’elle est connue ;
-- contradictions explicites entre l’œuvre demandée et le titre, l’épisode ou le nom du fichier média retourné.
+Le Repair Brain sélectionne ensuite une stratégie ciblée et bornée. Une disparition de 404 sans amélioration réelle du résultat ne suffit pas à accepter une réparation.
 
-### 5. Lab de lecture multi-œuvres — à chaque changement pertinent
+## Validation média
 
-Le lab exécute une matrice de films, séries et anime, dont une œuvre récente à faible
-couverture, avec les contrats NuvioTV, Desktop et Mobile. Il vérifie le média final,
-les playlists et les premiers segments, puis rejette les contradictions de titre,
-saison, épisode, nom de fichier média ou durée. Un timeout isolé peut être retenté
-une fois avec un profil réduit. La qualité UI `Unknown` / `Inconnue` reste indépendante
-de l’identité de l’œuvre et n’est jamais un motif de rejet à elle seule.
+Une URL n'est pas un stream prouvé.
 
-La cible de **10 providers jouables dont 3 VF par œuvre** est un objectif de couverture
-indicatif. Elle ne bloque pas une publication lorsque le catalogue d'une œuvre récente
-ou rare ne permet pas de l'atteindre. Les erreurs runtime, contenus contradictoires et
-médias non lisibles ne sont toutefois jamais comptés comme succès. Les rapports JSON
-et Markdown sont nettoyés avant leur publication comme artefacts CI.
+Le système peut confirmer :
 
-Une contradiction d’identité lisible est un échec de sécurité bloquant, même lorsque
-le provider concerné est déjà désactivé dans le manifest : son bundle doit aussi être
-rendu inerte pour couvrir les activations locales conservées par les clients.
+- HLS réel (`#EXTM3U`) ;
+- DASH/MPD ;
+- signature de conteneur ;
+- playlist et/ou premier segment ;
+- redirects cohérents ;
+- contexte de lecture requis.
 
+Il rejette notamment :
 
-## Boucle générique de réparation pendant le deep
+- HTML/JSON déguisé ;
+- player non résolu ;
+- asset, publicité ou démo ;
+- preview anormalement courte ;
+- média illisible ;
+- payload ou redirect incohérent.
 
-Le deep n'applique plus préventivement une réécriture à tous les bundles. Il suit une
-boucle bornée et vérifiable :
+## Identité
 
-1. exécution du candidat après les seuls remplacements durables ;
-2. classification d'un schéma d'échec à partir des observations réseau nettoyées ;
-3. sélection des profils structurels compatibles, sans condition sur l'ID du provider ;
-4. création d'un nouveau fichier JavaScript et validation syntaxe/chargement ;
-5. nouvelle exécution deep du fichier exact ;
-6. comparaison stricte avant/après ;
-7. conservation du nouveau fichier uniquement si le résultat progresse réellement.
+Un média lisible correspondant à la mauvaise œuvre est un **échec bloquant**.
 
-Une simple disparition de routes 404 sans amélioration du statut, du score, de l'accès
-au serveur ou des streams ne suffit pas. Les erreurs runtime, résultats identiques et
-régressions sont rejetés ; le fichier parent reste la source publiée. Plusieurs profils
-peuvent s'enchaîner sur des rounds successifs, avec une limite globale configurée dans
-`provider-overrides.json`. Le détail est écrit dans `repair-report.json`.
+Les contrôles peuvent croiser :
 
-## Signification des statuts
+- titre/alias ;
+- année ;
+- movie/tv/anime ;
+- saison/épisode ;
+- metadata catalogue/player ;
+- nom ou chemin du média ;
+- durée attendue/mesurée.
 
-- `healthy` : au moins un endpoint cohérent a été atteint ;
-- `blocked` : blocage probable de l'IP GitHub, contrôle anti-robot ou HTTP 403/429 ;
-- `degraded` : le module retourne des endpoints, mais aucun n'a pu être entièrement confirmé ;
-- `no_streams` : aucun résultat pour l'échantillon tournant ;
-- `unavailable` : panne réseau ou endpoint répétée ;
-- `failed` : erreur de chargement ou d'exécution du module ;
-- `excluded` : provider ou sortie P2P/torrent interdite par la politique du dépôt.
+Lorsque l'identité ne peut pas être suffisamment prouvée sans contradiction, le résultat reste inconclusif ; il n'est pas transformé artificiellement en succès.
 
-## Champs de qualité
+`Unknown` / `Inconnue` dans un label de qualité Nuvio n'est pas une preuve d'identité inconnue et ne provoque jamais un rejet à lui seul.
 
-- `reported_max_height` : résolution écrite par le provider ;
-- `verified_max_height` : résolution lue dans une playlist HLS ou un manifest DASH ;
-- `max_bandwidth` : débit maximal déclaré ;
-- `codecs` : identifiants de codecs exposés ;
-- `hdr_formats` : indicateurs HDR/Dolby Vision exposés ;
-- `audio_languages` et `subtitle_languages` : codes de langues détectés.
+## Langue
 
-Un endpoint MP4/MKV peut être accessible sans exposer assez de métadonnées pour vérifier
-sa résolution exacte. L'absence de `verified_max_height` n'est donc pas automatiquement
-un échec.
+VF/VOSTFR/VO peut être établie à partir de plusieurs signaux cohérents : metadata provider, domaine, catalogue, player, pistes audio et sous-titres.
 
-## Publication atomique et provenance
+Une seule heuristique faible ne doit pas inventer une langue.
 
-1. Les candidats sont copiés sous `staging/`.
-2. Un job en lecture seule les teste.
-3. Les versions acceptées sont copiées vers des noms fondés sur leur SHA-256.
-4. Les fichiers, rapports et `PROVENANCE.json` sont publiés en premier.
-5. `manifest.json` est remplacé dans un second commit.
+## LKG, réparation et quarantine
 
-Si une phase échoue, l'ancien manifest public demeure utilisable. Une fois la promotion
-terminée, les bundles hachés qui ne sont plus référencés par les manifests, le
-last-known-good ou la provenance sont élagués. Ils restent récupérables dans l'historique
-Git.
+Les états sont volontairement séparés :
 
-## Exclusion torrent/P2P
+- **healthy/proven** : promotion possible ;
+- **repairable/inconclusive** : réparation ou conservation du LKG ;
+- **quarantine** : identité contradictoire, provenance suspecte, domaine détourné, sortie dangereuse ou autre preuve forte.
 
-L'exclusion est appliquée à quatre endroits :
+Un zéro résultat isolé n'est pas une raison suffisante pour quarantiner ou supprimer un provider.
 
-1. ID et métadonnées du manifest ;
-2. marqueurs forts dans le code téléchargé ;
-3. protocoles et champs des objets retournés ;
-4. validation finale du manifest, y compris suppression des anciennes entrées héritées.
+La règle est **repair before triage**.
 
-## Limites connues
+## Evidence Matrix
 
-- Une IP GitHub peut être bloquée alors qu'une connexion résidentielle fonctionne.
-- Node.js n'est pas identique à tous les moteurs Nuvio et appareils TV.
-- Un échantillon limité ne prouve pas que chaque titre ou épisode fonctionne.
-- Une validation technique ne détermine pas le statut juridique d'une source tierce.
-- Les métadonnées de qualité peuvent être absentes ou inexactes.
-- L'analyse ne télécharge pas un média complet et ne vérifie pas visuellement son contenu.
+Une preuve est scoped :
+
+```text
+provider × œuvre × type × langue × device × version du contrat client
+```
+
+Un provider sain sur un film Desktop peut rester non prouvé sur une série TV ou sur Android TV.
+
+Les preuves Mobile, Desktop et TV sont indépendantes.
+
+## Corpus et largeur
+
+Movie, série et anime sont des dimensions obligatoires. Breaking Bad S01E01 reste une fixture TV de régression.
+
+La cible de largeur est **10 providers jouables par œuvre, dont au moins 3 VF**.
+
+Elle est non bloquante lorsqu'un catalogue ne permet objectivement pas de l'atteindre. En revanche, ne comptent jamais :
+
+- mauvais contenu ;
+- mauvais épisode ;
+- durée contradictoire ;
+- faux HLS ;
+- média illisible ;
+- preuve runtime attribuée à un autre provider.
+
+## Publication atomique
+
+La production n'utilise plus deux publications concurrentes.
+
+`sync.yml` construit une transaction validée qui comprend :
+
+1. staging + preuves ;
+2. promotion candidate ;
+3. import dans `provider_catalog.json` ;
+4. rendu de `manifest.json` et `vf/manifest.json` ;
+5. audit contenu/média ;
+6. provenance/LKG/versions ;
+7. hashes et intégrité ;
+8. **un commit atomique** de la génération acceptée ;
+9. vérification du `main` exact publié.
+
+Une étape en échec bloque la nouvelle transaction et laisse le dernier état sain dans l'historique/publication.
+
+## P2P
+
+Torrent, magnet, Acestream et autres chemins P2P interdits sont filtrés à plusieurs niveaux : metadata/ID, code source, protocoles retournés et validation finale.
+
+## Limites
+
+- Une IP GitHub peut être bloquée alors qu'une IP résidentielle fonctionne.
+- Un échantillon ne représente pas l'intégralité d'un catalogue.
+- Une preuve technique ne détermine pas le statut juridique d'une source tierce.
+- Certaines metadata de qualité/langue peuvent être absentes.
 - Un succès à un instant donné ne garantit pas la disponibilité future.
 
-## Global provider-request diagnostics
-
-The worker records requests made by provider code itself. It does not probe selected provider homepages separately and does not assign provider-specific blocking rules.
-
-When a provider depends on TMDb only to obtain title metadata, a failed or rejected TMDb lookup can be replaced with a synthetic response derived from the active fixture. This fallback is restricted to the matching TMDb media type and identifier, is marked with `synthetic_fixture_fallback: true`, and exists only to let the provider continue to its real search/content routes. It does not create or validate a stream.
+Ces limites produisent de l'**inconclusif**, pas des conclusions arbitraires.

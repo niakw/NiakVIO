@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import importlib.util
+import json
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -10,6 +11,12 @@ spec = importlib.util.spec_from_file_location("promote_refresh_candidates", path
 module = importlib.util.module_from_spec(spec)
 assert spec and spec.loader
 spec.loader.exec_module(module)
+
+catalog = json.loads((ROOT / "provider_catalog.json").read_text(encoding="utf-8"))
+assert catalog.get("sourceOfTruth") is True
+assert catalog.get("policy", {}).get("repairBeforeTriage") is True
+assert catalog.get("policy", {}).get("retainLastKnownGoodOnInconclusive") is True
+assert catalog.get("policy", {}).get("quickRefreshMayRepairAndPublish") is True
 
 manifest = {
     "scrapers": [

@@ -7,30 +7,45 @@ import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-workflow = (ROOT / ".github" / "workflows" / "provider-refresh-repair.yml").read_text(encoding="utf-8")
+workflow = (ROOT / ".github" / "workflows" / "sync.yml").read_text(encoding="utf-8")
 
+# ARCHI2 owns the complete quick/deep publication transaction. The old
+# provider-refresh-repair workflow is intentionally gone; its finalization
+# invariants now belong to sync.yml.
 prepare_anchor = "mv manifest.next.json manifest.json"
 build = "python scripts/build_provider_runtime_profiles.py"
 normalize = "python scripts/reapply_published_overrides.py"
 language = "python scripts/generate_language_manifests.py"
+catalog = "node engine_v2/scripts/bootstrap-provider-catalog.mjs"
+render = "node engine_v2/scripts/render-manifests-from-catalog.mjs"
+catalog_test = "node engine_v2/tests/provider-catalog.test.mjs"
 fingerprint = "python scripts/release_evidence_fence.py fingerprint"
-hashes = "python scripts/generate_release_hashes.py"
+audit = "python scripts/audit_catalogue_identity_media.py"
 coverage = "python scripts/interstellar_nuvio_matrix.py"
+hashes = "python scripts/generate_release_hashes.py"
+verify = "Verify exact published main"
 
 prepare_pos = workflow.index(prepare_anchor)
 build_pos = workflow.index(build, prepare_pos)
 normalize_pos = workflow.index(normalize, build_pos)
 language_pos = workflow.index(language, normalize_pos)
-fingerprint_pos = workflow.index(fingerprint, language_pos)
-coverage_pos = workflow.index(coverage, fingerprint_pos)
-publish_build_pos = workflow.index(build, coverage_pos)
-hashes_pos = workflow.index(hashes, publish_build_pos)
+catalog_pos = workflow.index(catalog, language_pos)
+render_pos = workflow.index(render, catalog_pos)
+catalog_test_pos = workflow.index(catalog_test, render_pos)
+fingerprint_pos = workflow.index(fingerprint, catalog_test_pos)
+audit_pos = workflow.index(audit, fingerprint_pos)
+coverage_pos = workflow.index(coverage, audit_pos)
+hashes_pos = workflow.index(hashes, coverage_pos)
+verify_pos = workflow.index(verify, hashes_pos)
 
-assert prepare_pos < build_pos < normalize_pos < language_pos < fingerprint_pos, (
-    "promoted manifest must be normalized once before language projection/evidence"
+assert prepare_pos < build_pos < normalize_pos < language_pos, (
+    "promoted manifest must be normalized before language projection"
 )
-assert fingerprint_pos < coverage_pos < publish_build_pos < hashes_pos, (
-    "coverage stays diagnostic, then one final normalization precedes release hashes"
+assert language_pos < catalog_pos < render_pos < catalog_test_pos < fingerprint_pos, (
+    "candidate manifests must enter the canonical catalog and be re-rendered/tested before evidence"
+)
+assert fingerprint_pos < audit_pos < coverage_pos < hashes_pos < verify_pos, (
+    "content audit and diagnostic coverage must precede release hashes and exact-main verification"
 )
 assert "--minimum-automatic 10" not in workflow, (
     "coverage diagnostics must not block routine publication"
@@ -38,11 +53,14 @@ assert "--minimum-automatic 10" not in workflow, (
 assert "--minimum-automatic 0" in workflow and "continue-on-error: true" in workflow, (
     "Interstellar coverage must be measured without becoming a publication gate"
 )
-assert "Verify exact published main" not in workflow, (
-    "push-triggered validation owns post-publish checks; routine refresh must not duplicate them"
+assert "if: github.event_name != 'pull_request'" in workflow, (
+    "PR validation must execute the real staging pipeline without publication permission"
 )
 assert "python scripts/normalize_provider_activation_overrides.py\n" in workflow
 assert "python scripts/normalize_provider_activation_overrides.py --check" not in workflow
+assert not (ROOT / ".github" / "workflows" / "provider-refresh-repair.yml").exists(), (
+    "ARCHI2 must not keep a second refresh/publish orchestrator"
+)
 
 # Nuvio Desktop/Mobile/TV preserve a scraper's previous local enabled state when
 # the client-visible scraper id is unchanged. A manifest-disabled -> enabled
@@ -157,4 +175,4 @@ with tempfile.TemporaryDirectory(prefix="niakvio-client-id-test-") as temp_dir:
     assert third_recovered["id"] == "RECOVERED"
     assert third_recovered["version"] == "1.2.5"
 
-print("refresh manifest lean finalization + Nuvio client reactivation test passed")
+print("ARCHI2 manifest finalization + Nuvio client reactivation test passed")

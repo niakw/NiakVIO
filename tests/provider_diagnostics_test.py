@@ -24,7 +24,19 @@ assert preflight.get('fallback_french_isps') == ['orange', 'free']
 assert preflight.get('skip_runtime_on_confirmed_french_block') is True
 assert 'dnsPreflightForCandidate' in health
 assert 'runtime_skipped_by_dns_preflight' in health
-assert workflow.index('Test DNS and locate validated alternative domains') < workflow.index('Test provider access and repair failed routes')
+
+# ARCHI2 keeps DNS/domain evidence before runtime repair. Assert semantic
+# stage ordering rather than obsolete human-facing step names.
+dns_stage = 'Resolve DNS and validated domain migrations'
+profile_stage = 'Apply known runtime profiles before repair'
+repair_stage = 'Repair unresolved provider structures'
+diagnostics_stage = 'Generate diagnostics after repair'
+assert dns_stage in workflow and profile_stage in workflow and repair_stage in workflow and diagnostics_stage in workflow
+assert workflow.index(dns_stage) < workflow.index(profile_stage) < workflow.index(repair_stage) < workflow.index(diagnostics_stage)
+assert 'provider_dns_preflight.mjs' in workflow
+assert 'apply_dns_migration_overrides.py' in workflow
+assert 'run_adaptive_quick_repair.py' in workflow
+assert 'run_adaptive_deep_repair.py' in workflow
 
 assert 'fixture_status_counts' in health
 assert 'failure_class' in health
