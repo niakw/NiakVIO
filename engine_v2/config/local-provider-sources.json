@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "policy": {
+    "role": "reconciled-local-historical-sources",
+    "never_override_live_upstreams_silently": true,
+    "require_explicit_provenance": true,
+    "publishable_by_default": false
+  },
+  "providers": [
+    {
+      "id": "streamzo",
+      "name": "StreamZo",
+      "description": "Films et séries en streaming VF/VOSTFR sur Streamzo.fr (SPA, iframe injecté, multi-serveurs).",
+      "version": "1.0.47",
+      "author": "Gowaru",
+      "repository": "niakw/Niakvio",
+      "ref": "a1fefd31c66dd94c61d84d6f8dde207a8ad2b81d",
+      "filename": "providers/streamzo--published-baseline--6b360acb31963ed5.js",
+      "supportedTypes": ["movie", "tv", "anime"],
+      "contentLanguage": ["fr"],
+      "enabled": true,
+      "supportsExternalPlayer": true,
+      "sourceReason": "present in frozen NiakVIO main but absent from the three current canonical upstream manifests",
+      "historicalSentinel": {
+        "title": "Mon ninja et moi 3",
+        "mediaType": "movie",
+        "expected": "at least one strictly validated media candidate",
+        "previousProof": "1 stream, HTTP 200/206 on frozen main runtime regression"
+      }
+    }
+  ]
+}
