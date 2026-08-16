@@ -6,6 +6,9 @@ on:
       - main
     paths:
       - 'engine_v2/**'
+      - 'provider_catalog.json'
+      - 'manifest.json'
+      - 'vf/manifest.json'
       - '.github/workflows/provider-engine-v2.yml'
   workflow_dispatch:
 
@@ -26,6 +29,9 @@ jobs:
         with:
           node-version: '24'
           package-manager-cache: false
+
+      - name: Canonical catalog and manifest projection tests
+        run: node engine_v2/tests/provider-catalog.test.mjs
 
       - name: Canonical contract tests
         run: node engine_v2/tests/contracts.test.mjs
