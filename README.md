@@ -253,7 +253,7 @@ La cible de largeur est **10 providers jouables par œuvre, dont au moins 3 VF**
 
 ---
 
-## Publication et intégrité
+## Publication, versions et intégrité
 
 La publication est atomique et fail-closed. La transaction finale comprend :
 
@@ -270,6 +270,19 @@ La publication est atomique et fail-closed. La transaction finale comprend :
 
 Le catalogue est revalidé avant publication, puis les manifests sont régénérés depuis lui. Une génération incohérente ne remplace pas silencieusement le dernier état publié.
 
+### Invalidation automatique des caches Nuvio
+
+La version n'est jamais laissée à une mise à jour manuelle séparée. Pour chaque transaction réellement publiée, `sync_release_versions.py` compare le candidat au manifest actuellement publié et finalise automatiquement toutes les couches client visibles :
+
+- le **patch du provider** augmente lorsqu'une ligne provider existante change réellement ;
+- une réactivation `disabled → enabled` conserve en plus la rotation case-only de l'**ID client** afin d'éviter autant que possible un ancien état local `enabled=false` ;
+- les `id` et versions de la projection VF sont resynchronisés depuis la projection générale ;
+- la **release globale** augmente lorsqu'une génération client-visible change ;
+- cette release est propagée à `manifest.json`, `vf/manifest.json`, `package.json`, `package-lock.json` et `sources.json` ;
+- un rerun sans changement est **idempotent** : il ne rebump ni la release ni les providers.
+
+Le bump global, le bump provider, la rotation d'ID de réactivation, le catalogue et les hashes font donc partie de la **même transaction atomique**.
+
 ---
 
 ## Workflows durables
@@ -281,10 +294,9 @@ Le dépôt vise un petit nombre de workflows ayant chacun un rôle unique :
 | `sync.yml` | **seul pipeline de discovery → repair → publication quick/deep** |
 | `provider-engine-v2.yml` | tests/observation du moteur ARCHI 2 |
 | `availability.yml` | disponibilité des providers publiés |
-| `domain-refresh.yml` | observations de domaines hors publication principale |
+| `domain-refresh.yml` | observations de domaines, sans publication |
 | `engine-regression-offline.yml` | régressions moteur hors réseau |
 | `provider-rebuild-offline.yml` | reconstruction hors réseau |
-| `finalize-safe-generation.yml` | finalisation contrôlée d'une génération |
 | `final-native-client-validation-v2.yml` | preuves natives Mobile/Desktop/TV |
 | `validate-desktop-runtime-compat.yml` | contrat Desktop |
 | `nuvio-client-lab.yml` | matrice multi-œuvres / transport |
