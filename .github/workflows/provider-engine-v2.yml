@@ -38,15 +38,25 @@ jobs:
       - name: Contract watcher unit tests
         run: node engine_v2/tests/contract-watcher.test.mjs
 
+      - name: Provider ingestion unit tests
+        run: node engine_v2/tests/provider-ingest.test.mjs
+
       - name: Observe current Nuvio contract drift
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: node engine_v2/scripts/check-nuvio-contracts.mjs --output engine_v2/reports/nuvio-contract-drift.json
 
-      - name: Upload Nuvio contract report
+      - name: Build live three-upstream provider inventory
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node engine_v2/scripts/ingest-provider-upstreams.mjs --output engine_v2/reports/provider-upstream-inventory.json
+
+      - name: Upload V2 discovery reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: provider-engine-v2-contract-report
-          path: engine_v2/reports/nuvio-contract-drift.json
+          name: provider-engine-v2-discovery-reports
+          path: |
+            engine_v2/reports/nuvio-contract-drift.json
+            engine_v2/reports/provider-upstream-inventory.json
           if-no-files-found: warn
