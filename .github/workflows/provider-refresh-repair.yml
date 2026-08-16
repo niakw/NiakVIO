@@ -41,7 +41,7 @@ on:
       - "scripts/provider_engine_normalizer.py"
 
 concurrency:
-  group: nuvio-provider-publish
+  group: ${{ github.event_name == 'pull_request' && format('nuvio-provider-refresh-pr-{0}', github.event.pull_request.number) || 'nuvio-provider-publish-main' }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
