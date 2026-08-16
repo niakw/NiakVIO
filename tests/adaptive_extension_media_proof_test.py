@@ -14,18 +14,21 @@ module = importlib.util.module_from_spec(spec)
 assert spec and spec.loader
 spec.loader.exec_module(module)
 
+options = {
+    "provider_name": "Demo",
+    "base_url": "https://site.example",
+    "types": ["movie"],
+    "max_embeds": 6,
+    "max_depth": 4,
+}
 source = module.apply(
     'module.exports={getStreams:async function(){return [{name:"fake-mp4",url:"https://files.example/Interstellar_2014.mp4",headers:{Referer:"https://site.example/watch/interstellar"}}]}};\n',
-    options={
-        "provider_name": "Demo",
-        "base_url": "https://site.example",
-        "types": ["movie"],
-        "max_embeds": 6,
-        "max_depth": 4,
-    },
+    options=options,
 )
-assert "NUVIO_ADAPTIVE_RUNTIME_RECOVERY_V5" in source
+assert "NUVIO_VERIFIED_MEDIA_RUNTIME_RECOVERY_V5" in source
+assert "NUVIO_ADAPTIVE_RUNTIME_RECOVERY_V4" not in source
 assert '"runtimeRevision":"generic-core-v3"' in source
+assert module.apply(source, options=options) == source
 
 runner = r"""
 const vm=require('vm');
@@ -68,7 +71,7 @@ assert rows[0]["isDirect"] is True, data
 assert rows[0]["url"] != "https://files.example/Interstellar_2014.mp4"
 
 fake_calls = [row for row in data["calls"] if row["url"] == "https://files.example/Interstellar_2014.mp4"]
-assert len(fake_calls) >= 2, data  # bounded media probe, then HTML traversal
+assert len(fake_calls) >= 2, data
 assert fake_calls[0]["range"] == "bytes=0-16383", data
 assert any(row["url"] == "https://player.example/embed/abc" for row in data["calls"]), data
 assert any(row["url"] == "https://cdn.example/master.m3u8" for row in data["calls"]), data
