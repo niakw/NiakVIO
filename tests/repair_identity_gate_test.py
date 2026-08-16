@@ -65,6 +65,9 @@ assert not ok and reason == "identity_gate:no_fixture_level_playable_identity_pr
 runner = (ROOT / "scripts" / "run_adaptive_deep_repair.py").read_text(encoding="utf-8")
 assert "automatic_repair_identity_gate" in runner
 assert 'sys.argv.extend(["--max-rounds", "0"])' not in runner
-assert "runtime_repair.compare_results = _identity_safe_compare_results" in runner
+# ARCHI2 owns comparison through the shared repair loop. Requiring the old
+# runtime_repair monkeypatch would reintroduce the pre-cutover architecture.
+assert "loop.compare_results = _identity_safe_compare" in runner
+assert "brain.wrap_create_repair_candidate(_profiled_create)" in runner
 
 print("automatic repair identity promotion gate tests passed")
