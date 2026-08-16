@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-"""Compare Nuvio-like empty-settings invocation with diagnostic profile discovery."""
+"""Measure every active movie provider with Nuvio-like Interstellar invocation."""
 from __future__ import annotations
 
+import argparse
 import json
 import subprocess
-import sys
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -12,7 +13,7 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = ROOT / "manifest.json"
 WORKER = ROOT / "scripts" / "provider_worker.cjs"
-OUTPUT = ROOT / "automation" / "interstellar-nuvio-matrix.json"
+DEFAULT_OUTPUT = ROOT / "automation" / "interstellar-nuvio-matrix.json"
 
 FIXTURE = {
     "tmdbId": "157336",
@@ -41,7 +42,7 @@ BASE_CONTEXT = {
 }
 
 
-def run_provider(filename: str, max_profiles: int) -> dict[str, Any]:
+def run_provider(filename: str, max_profiles: int, timeout: int) -> dict[str, Any]:
     context = {**BASE_CONTEXT, "maxSettingsProfiles": max_profiles}
     command = [
         "node",
@@ -57,7 +58,7 @@ def run_provider(filename: str, max_profiles: int) -> dict[str, Any]:
             cwd=ROOT,
             capture_output=True,
             text=True,
-            timeout=120,
+            timeout=timeout,
             check=False,
         )
     except subprocess.TimeoutExpired:
@@ -101,7 +102,38 @@ def run_provider(filename: str, max_profiles: int) -> dict[str, Any]:
     }
 
 
+def probe_row(row: dict[str, Any], timeout: int) -> dict[str, Any]:
+    provider_id = str(row.get("id") or "").casefold()
+    filename = str(row.get("filename") or "")
+    strict = run_provider(filename, 1, timeout)
+    diagnostic = strict if strict.get("stream_count", 0) > 0 else run_provider(filename, 8, timeout)
+    classification = (
+        "automatic_streams"
+        if strict.get("stream_count", 0) > 0
+        else "settings_or_profile_gap"
+        if diagnostic.get("stream_count", 0) > 0
+        else "no_streams"
+    )
+    return {
+        "id": provider_id,
+        "version": row.get("version"),
+        "filename": filename,
+        "contentLanguage": row.get("contentLanguage") or [],
+        "hasSettings": bool(row.get("hasSettings")),
+        "nuvio_empty_settings": strict,
+        "diagnostic_profiles": diagnostic,
+        "classification": classification,
+    }
+
+
 def main() -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
+    parser.add_argument("--workers", type=int, default=8)
+    parser.add_argument("--timeout", type=int, default=90)
+    parser.add_argument("--minimum-automatic", type=int, default=0)
+    args = parser.parse_args()
+
     manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
     rows = [
         row
@@ -110,47 +142,78 @@ def main() -> int:
         and row.get("enabled") is True
         and "movie" in {str(value).casefold() for value in row.get("supportedTypes") or []}
     ]
+    rows.sort(key=lambda row: str(row.get("id") or "").casefold())
+    workers = max(1, min(12, int(args.workers)))
+    timeout = max(10, min(180, int(args.timeout)))
+
     results: list[dict[str, Any]] = []
-    for index, row in enumerate(rows, 1):
-        provider_id = str(row.get("id") or "").casefold()
-        filename = str(row.get("filename") or "")
-        print(f"[{index}/{len(rows)}] {provider_id}", flush=True)
-        strict = run_provider(filename, 1)
-        diagnostic = strict if strict.get("stream_count", 0) > 0 else run_provider(filename, 8)
-        results.append({
-            "id": provider_id,
-            "version": row.get("version"),
-            "filename": filename,
-            "contentLanguage": row.get("contentLanguage") or [],
-            "hasSettings": bool(row.get("hasSettings")),
-            "nuvio_empty_settings": strict,
-            "diagnostic_profiles": diagnostic,
-            "classification": (
-                "automatic_streams"
-                if strict.get("stream_count", 0) > 0
-                else "settings_or_profile_gap"
-                if diagnostic.get("stream_count", 0) > 0
-                else "no_streams"
-            ),
-        })
+    with ThreadPoolExecutor(max_workers=workers) as executor:
+        futures = {executor.submit(probe_row, row, timeout): row for row in rows}
+        completed = 0
+        for future in as_completed(futures):
+            completed += 1
+            row = futures[future]
+            provider_id = str(row.get("id") or "").casefold()
+            try:
+                result = future.result()
+            except Exception as exc:
+                result = {
+                    "id": provider_id,
+                    "version": row.get("version"),
+                    "filename": row.get("filename"),
+                    "contentLanguage": row.get("contentLanguage") or [],
+                    "hasSettings": bool(row.get("hasSettings")),
+                    "nuvio_empty_settings": {"ok": False, "stream_count": 0, "error": f"probe_exception:{type(exc).__name__}:{exc}"},
+                    "diagnostic_profiles": {"ok": False, "stream_count": 0, "error": f"probe_exception:{type(exc).__name__}:{exc}"},
+                    "classification": "no_streams",
+                }
+            results.append(result)
+            print(f"[{completed}/{len(rows)}] {provider_id}: {result['classification']}", flush=True)
+    results.sort(key=lambda row: row["id"])
+
+    automatic = [r["id"] for r in results if r["classification"] == "automatic_streams"]
+    settings_gap = [r["id"] for r in results if r["classification"] == "settings_or_profile_gap"]
+    no_stream = [r["id"] for r in results if r["classification"] == "no_streams"]
+    automatic_vf = [
+        r["id"]
+        for r in results
+        if r["classification"] == "automatic_streams"
+        and "fr" in {str(value).casefold() for value in r.get("contentLanguage") or []}
+    ]
 
     report = {
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "manifest_version": manifest.get("version"),
         "fixture": FIXTURE,
         "enabled_movie_providers_tested": len(results),
-        "automatic_stream_provider_ids": [r["id"] for r in results if r["classification"] == "automatic_streams"],
-        "settings_or_profile_gap_ids": [r["id"] for r in results if r["classification"] == "settings_or_profile_gap"],
-        "no_stream_ids": [r["id"] for r in results if r["classification"] == "no_streams"],
+        "automatic_stream_provider_count": len(automatic),
+        "automatic_stream_provider_ids": automatic,
+        "automatic_vf_provider_count": len(automatic_vf),
+        "automatic_vf_provider_ids": automatic_vf,
+        "settings_or_profile_gap_ids": settings_gap,
+        "no_stream_ids": no_stream,
         "providers": results,
     }
-    OUTPUT.parent.mkdir(parents=True, exist_ok=True)
-    OUTPUT.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    output = args.output.resolve()
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
     print(json.dumps({
-        "automatic": report["automatic_stream_provider_ids"],
-        "settings_gap": report["settings_or_profile_gap_ids"],
-        "no_stream_count": len(report["no_stream_ids"]),
+        "tested": len(results),
+        "automatic_count": len(automatic),
+        "automatic": automatic,
+        "automatic_vf_count": len(automatic_vf),
+        "automatic_vf": automatic_vf,
+        "settings_gap": settings_gap,
+        "no_stream_count": len(no_stream),
     }, ensure_ascii=False, indent=2))
+
+    minimum = max(0, int(args.minimum_automatic))
+    if len(automatic) < minimum:
+        raise SystemExit(
+            f"Interstellar coverage regression: automatic={len(automatic)} minimum={minimum}; "
+            f"tested={len(results)}"
+        )
     return 0
 
 
