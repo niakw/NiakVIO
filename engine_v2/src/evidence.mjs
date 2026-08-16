@@ -1,4 +1,4 @@
-const STAGES = Object.freeze(["dns", "homepage", "search", "identity", "detail", "episode", "player", "media", "runtime"]);
+const STAGES = Object.freeze(["dns", "homepage", "search", "identity", "detail", "episode", "player", "media", "validation", "runtime"]);
 
 export function makeEvidenceKey({ providerId, fixtureId, mediaType, language = "und", device, clientRef = "unknown" }) {
   for (const [name, value] of Object.entries({ providerId, fixtureId, mediaType, device })) {
@@ -73,7 +73,7 @@ export function aggregateProviderEvidence(records = []) {
     byDevice[device] ??= { proofs: 0, playable: 0, fixtures: new Set() };
     byDevice[device].proofs += 1;
     byDevice[device].fixtures.add(record.fixtureId);
-    const playable = Number(record.playableStreams ?? 0) > 0 || record.stages?.media?.playable === true;
+    const playable = Number(record.playableStreams ?? 0) > 0 || record.stages?.validation?.playable === true;
     if (playable) {
       playableProofs += 1;
       byDevice[device].playable += 1;
