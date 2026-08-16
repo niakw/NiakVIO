@@ -1,0 +1,279 @@
+name: Repair providers on routine refresh
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "7 6 * * 0,1,3,4,6"
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/provider-refresh-repair.yml"
+      - "scripts/run_adaptive_quick_repair.py"
+      - "scripts/promote_refresh_candidates.py"
+      - "scripts/validate_automatic_repair_results.py"
+      - "scripts/runtime_repair.py"
+      - "scripts/adaptive_runtime/runtime_repair.py"
+      - "scripts/provider_engine_normalizer.py"
+
+concurrency:
+  group: nuvio-provider-publish
+  cancel-in-progress: false
+
+jobs:
+  stage:
+    name: Discover, repair first, then validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: "3.12"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: "24"
+          package-manager-cache: false
+
+      - name: Install pinned dependencies
+        run: |
+          if [ -f package-lock.json ]; then
+            npm ci --ignore-scripts --no-audit --no-fund
+          else
+            npm install --ignore-scripts --no-audit --no-fund --package-lock=false
+          fi
+
+      - name: Validate refresh repair modules
+        run: |
+          python -m py_compile scripts/run_adaptive_quick_repair.py
+          python -m py_compile scripts/promote_refresh_candidates.py
+          python -m py_compile scripts/validate_automatic_repair_results.py
+          python tests/quick_refresh_policy_test.py
+          python tests/adaptive_runtime_repair_test.py
+          npm test
+
+      - name: Refresh official hubs
+        run: |
+          python scripts/resolve_provider_hubs.py \
+            --apply \
+            --mode quick \
+            --include-disabled \
+            --workers 8 \
+            --timeout 8 \
+            --output health-output/provider-hub-report.json
+
+      - name: Discover all candidates before filtering
+        run: python scripts/discover_candidates.py --require-all-upstreams
+
+      - name: Resolve DNS and validated domain migrations
+        env:
+          GLOBALPING_API_TOKEN: ${{ secrets.GLOBALPING_API_TOKEN }}
+        run: |
+          node scripts/provider_dns_preflight.mjs \
+            --stage staging \
+            --output health-output/dns-preflight-report.json
+          python scripts/apply_dns_migration_overrides.py \
+            --stage staging \
+            --report health-output/dns-preflight-report.json
+
+      - name: Apply known runtime profiles before repair
+        run: |
+          python scripts/build_provider_runtime_profiles.py
+          python scripts/reapply_published_overrides.py
+          python scripts/build_provider_runtime_profiles.py --stage staging --apply-stage
+          python scripts/validate_override_pipeline.py --stage staging
+
+      - name: Repair failed structures before final classification
+        env:
+          NUVIO_DNS_PREFLIGHT_RESULTS: health-output/dns-preflight-report.json
+          NUVIO_WORKER_MEMORY_MB: "768"
+        run: |
+          python scripts/run_adaptive_quick_repair.py \
+            --stage staging \
+            --output health-output \
+            --max-rounds 1
+          python scripts/validate_automatic_repair_results.py \
+            --stage staging \
+            --health health-output/health-results.json \
+            --repairs health-output/repair-report.json
+          python scripts/validate_override_pipeline.py --stage staging
+
+      - name: Generate diagnostics after repair
+        run: |
+          python scripts/generate_diagnostics.py \
+            --results health-output/health-results.json \
+            --output health-output
+          python scripts/validate_route_overrides.py \
+            --results health-output/health-results.json \
+            --report health-output/route-regressions.json
+
+      - name: Upload repaired validation transaction
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: nuvio-refresh-repair-${{ github.run_id }}
+          path: |
+            staging/
+            health-output/
+            provider-overrides.json
+            provider-domain-history.json
+          retention-days: 2
+          if-no-files-found: error
+
+  publish:
+    name: Publish only positively proven refresh repairs
+    needs: stage
+    runs-on: ubuntu-latest
+    timeout-minutes: 70
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout current main
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: "3.12"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: "24"
+          package-manager-cache: false
+
+      - name: Install pinned dependencies
+        run: |
+          if [ -f package-lock.json ]; then
+            npm ci --ignore-scripts --no-audit --no-fund
+          else
+            npm install --ignore-scripts --no-audit --no-fund --package-lock=false
+          fi
+
+      - name: Download repaired transaction
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          name: nuvio-refresh-repair-${{ github.run_id }}
+          path: checked-artifact
+
+      - name: Restore validated routing state
+        run: |
+          cp checked-artifact/provider-overrides.json provider-overrides.json
+          cp checked-artifact/provider-domain-history.json provider-domain-history.json
+          python scripts/build_provider_runtime_profiles.py
+          python scripts/reapply_published_overrides.py
+
+      - name: Promote quick repairs with refresh-only policy
+        env:
+          NUVIO_STAGE: checked-artifact/staging
+          NUVIO_HEALTH_RESULTS: checked-artifact/health-output/health-results.json
+        run: python scripts/promote_refresh_candidates.py
+
+      - name: Finalize upstream LKG snapshots
+        run: |
+          test -f checked-artifact/staging/upstream-lkg-pending.json
+          python scripts/finalize_upstream_lkg.py \
+            --pending checked-artifact/staging/upstream-lkg-pending.json \
+            --keep-generations 2
+
+      - name: Verify overrides and prune stale bundles
+        run: |
+          python scripts/prune_unreferenced_providers.py
+          python scripts/validate_published_overrides.py
+
+      - name: Stage provider and diagnostic changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          cp checked-artifact/health-output/dns-preflight-report.json dns-preflight-report.json
+          cp checked-artifact/health-output/provider-hub-report.json provider-hub-report.json
+          cp checked-artifact/health-output/diagnostics-report.json diagnostics-report.json
+          cp checked-artifact/health-output/diagnostics-report.html diagnostics-report.html
+          cp checked-artifact/health-output/route-regressions.json route-regressions.json
+          cp checked-artifact/health-output/repair-report.json repair-report.json
+          git add health-report.json health-history.json PROVENANCE.json \
+            dns-preflight-report.json provider-hub-report.json diagnostics-report.json \
+            diagnostics-report.html route-regressions.json repair-report.json \
+            provider-overrides.json provider-domain-history.json upstream-lkg.json upstream-lkg/
+          git add -A providers
+
+      - name: Prepare manifest transaction
+        run: |
+          test -f manifest.next.json
+          PREVIOUS_MANIFEST="$(mktemp)"
+          git show HEAD:manifest.json > "$PREVIOUS_MANIFEST"
+          mv manifest.next.json manifest.json
+          python scripts/bump_release_patch_if_manifest_changed.py \
+            --previous "$PREVIOUS_MANIFEST" \
+            --manifest manifest.json
+          python scripts/generate_language_manifests.py
+          python scripts/prune_unreferenced_providers.py
+          python scripts/sync_release_versions.py --manifest manifest.json
+          python scripts/validate_activation_preservation.py
+          python scripts/validate_language_projection.py
+          python scripts/release_evidence_fence.py fingerprint \
+            --manifest manifest.json \
+            --root . \
+            --output /tmp/refresh-release-generation.json
+
+      - name: Re-audit complete published catalogue
+        env:
+          NUVIO_CATALOGUE_AUDIT_OUTPUT: /tmp/catalogue-media-audit.json
+          NUVIO_CATALOGUE_AUDIT_WORKERS: "8"
+          NUVIO_CATALOGUE_AUDIT_TIMEOUT: "60"
+        run: python scripts/audit_catalogue_identity_media.py
+
+      - name: Publish atomic refresh transaction
+        run: |
+          python scripts/release_evidence_fence.py validate \
+            --manifest manifest.json \
+            --root . \
+            --evidence /tmp/refresh-release-generation.json
+          python scripts/generate_release_hashes.py
+          python scripts/validate_release_integrity.py
+          git add manifest.json vf/manifest.json package.json package-lock.json sources.json \
+            nuvio-client-id-state.json FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json
+          git add -A providers
+          if git diff --cached --quiet; then
+            echo "No validated refresh change."
+            exit 0
+          fi
+          git commit -m "chore: publish routine provider repair refresh"
+          git reset --hard HEAD
+          git clean -fdx
+          git fetch origin main
+          git rebase origin/main
+          python scripts/release_evidence_fence.py validate \
+            --manifest manifest.json \
+            --root . \
+            --evidence /tmp/refresh-release-generation.json
+          git push origin HEAD:main
+
+      - name: Verify exact published main
+        run: |
+          git fetch origin main
+          git reset --hard origin/main
+          git clean -fdx
+          if [ -f package-lock.json ]; then
+            npm ci --ignore-scripts --no-audit --no-fund
+          else
+            npm install --ignore-scripts --no-audit --no-fund --package-lock=false
+          fi
+          npm test
+          python scripts/validate_activation_preservation.py
+          python scripts/validate_language_projection.py
+          python scripts/validate_release_integrity.py
+          git diff --exit-code
