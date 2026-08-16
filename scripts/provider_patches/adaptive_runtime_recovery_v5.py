@@ -11,7 +11,8 @@ V5 reuses the audited V4 resolver and applies narrow, guarded source rewrites:
 - MIME/body/disposition/binary signatures remain positive media proof;
 - an extension-only candidate is probed before it can be returned;
 - HTML reached through a media-looking URL is parsed recursively as a player;
-- nested media-looking links are recursively verified rather than trusted.
+- nested media-looking links are recursively verified rather than trusted;
+- unverified native rows are never re-emitted as a last-resort "success".
 
 Its marker is intentionally outside the legacy V4 migration prefix. Older
 ``reapply_published_overrides`` logic can therefore maintain historical V4
@@ -130,6 +131,17 @@ def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> st
         'if(directProof){var directRow=Object.assign({},row,{isDirect:true});resolved.push(directRow);continue}var mediaRows=await resolve(url,ref,0,{});',
         'if(directProof&&directProof!=="extension"){var directRow=Object.assign({},row,{isDirect:true});resolved.push(directRow);continue}var mediaRows=await resolve(url,ref,0,{});',
         "native_extension_probe",
+    )
+
+    # V4 preserved any original native row as a final fallback, even if the
+    # adaptive probe had just proved that its media-looking URL was HTML. In V5
+    # only an already-strong provider-supplied MIME/body-style proof may bypass
+    # recovery; unresolved/extension-only native rows fail closed.
+    patched = _replace_once(
+        patched,
+        'var safeNative=Array.isArray(native)?native.filter(function(row){var u=row&&s(row.url);return !!u&&!U[u]&&!bad(u)}):[];return r.length?r:safeNative',
+        'var safeNative=Array.isArray(native)?native.filter(function(row){var u=row&&s(row.url),p=mediaProof(u,s(row&&(?:row.mimeType||row.contentType||row.type||row.format)),"","");return !!u&&!!p&&p!=="extension"&&!U[u]&&!bad(u)}):[];return r.length?r:safeNative',
+        "unverified_native_fallback",
     )
 
     if MARKER_V5 not in patched:
