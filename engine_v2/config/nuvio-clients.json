@@ -1,0 +1,142 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-08-16T17:20:00Z",
+  "policy": {
+    "contract_drift": "runtime-reaudit",
+    "semantic_drift": "targeted-review",
+    "unrelated_drift": "safe-advance-candidate",
+    "watcher_mode": "report-only",
+    "recipe_compatibility": "version-and-capability-aware"
+  },
+  "canonical_contract": {
+    "invocation": "getStreams(tmdbId, mediaType, season, episode)",
+    "canonical_media_types": ["movie", "tv", "anime"],
+    "series_aliases": ["series", "show", "other"],
+    "series_alias_target": "tv",
+    "settings": "injected-by-runtime-outside-positional-call",
+    "stream_fields": [
+      "title",
+      "name",
+      "url",
+      "quality",
+      "size",
+      "language",
+      "provider",
+      "type",
+      "headers",
+      "subtitles"
+    ]
+  },
+  "clients": {
+    "mobile": {
+      "repository": "NuvioMedia/NuvioMobile",
+      "branch": "cmp-rewrite",
+      "audited_ref": "0d6e30e4566e6f9f2051d5f80a1e3f1e0fcb1f18",
+      "accepted_ref": "d2db97a9a971be3aad2bd3e9528b3a17e43766ae",
+      "observed_head": "d2db97a9a971be3aad2bd3e9528b3a17e43766ae",
+      "platforms": ["android", "ios"],
+      "invocation": "positional-4",
+      "type_normalization": {
+        "series": "tv",
+        "show": "tv",
+        "other": "tv"
+      },
+      "supports_subtitles_in_plugin_result": true,
+      "contract_paths": [
+        "composeApp/src/fullCommonMain/kotlin/com/nuvio/app/features/plugins/",
+        "composeApp/src/commonMain/kotlin/com/nuvio/app/features/plugins/",
+        "composeApp/src/androidFull/kotlin/com/nuvio/app/features/plugins/",
+        "composeApp/src/iosFull/kotlin/com/nuvio/app/features/plugins/",
+        "composeApp/src/commonMain/kotlin/com/nuvio/app/features/streams/",
+        "composeApp/src/androidFull/kotlin/com/nuvio/app/features/streams/",
+        "composeApp/src/iosFull/kotlin/com/nuvio/app/features/streams/"
+      ],
+      "semantic_paths": [
+        "composeApp/src/commonMain/kotlin/com/nuvio/app/features/player/",
+        "composeApp/src/androidMain/kotlin/com/nuvio/app/features/player/",
+        "composeApp/src/iosMain/kotlin/com/nuvio/app/features/player/",
+        "composeApp/src/androidFull/kotlin/com/nuvio/app/features/player/",
+        "composeApp/src/iosFull/kotlin/com/nuvio/app/features/player/",
+        "composeApp/build.gradle.kts",
+        "gradle/libs.versions.toml"
+      ]
+    },
+    "desktop": {
+      "repository": "NuvioMedia/NuvioDesktop",
+      "branch": "Dev",
+      "audited_ref": "89017269cd68600b9e0ad44e06d12357860a8ceb",
+      "accepted_ref": "89017269cd68600b9e0ad44e06d12357860a8ceb",
+      "observed_head": "89017269cd68600b9e0ad44e06d12357860a8ceb",
+      "platforms": ["windows", "macos", "linux"],
+      "invocation": "positional-4",
+      "type_normalization": {
+        "series": "tv",
+        "show": "tv",
+        "other": "tv"
+      },
+      "supports_subtitles_in_plugin_result": true,
+      "contract_paths": [
+        "composeApp/src/fullCommonMain/kotlin/com/nuvio/app/features/plugins/",
+        "composeApp/src/commonMain/kotlin/com/nuvio/app/features/plugins/",
+        "composeApp/src/desktopMain/kotlin/com/nuvio/app/features/plugins/",
+        "composeApp/src/commonMain/kotlin/com/nuvio/app/features/streams/",
+        "composeApp/src/desktopMain/kotlin/com/nuvio/app/features/streams/"
+      ],
+      "semantic_paths": [
+        "composeApp/src/commonMain/kotlin/com/nuvio/app/features/player/",
+        "composeApp/src/desktopMain/kotlin/com/nuvio/app/features/player/",
+        "composeApp/build.gradle.kts",
+        "gradle/libs.versions.toml"
+      ]
+    },
+    "tv": {
+      "repository": "NuvioMedia/NuvioTV",
+      "branch": "dev",
+      "audited_ref": "aa327f0e99645e1fc7094f56e3e827ff0925afae",
+      "accepted_ref": "cd864c6988ff0d9a682dfa8035be3ea5307cc9b2",
+      "observed_head": "3bced69c8c32c7ec7bcd69821c8bc21510d8fa39",
+      "platforms": ["android-tv"],
+      "invocation": "positional-4",
+      "type_support_aliases": {
+        "series": ["series", "tv", "anime"],
+        "other": ["other", "tv"]
+      },
+      "supports_subtitles_in_plugin_result": false,
+      "head_delta_note": "5 commits ahead of accepted_ref; no provider contract path changed in the observed compare. Player/UI semantic files changed and remain watcher-visible.",
+      "contract_paths": [
+        "app/src/full/java/com/nuvio/tv/core/plugin/",
+        "app/src/main/java/com/nuvio/tv/data/local/PluginDataStore.kt",
+        "app/src/main/java/com/nuvio/tv/data/remote/api/AddonApi.kt",
+        "app/src/main/java/com/nuvio/tv/data/repository/StreamRepositoryImpl.kt",
+        "app/src/main/java/com/nuvio/tv/domain/repository/StreamRepository.kt",
+        "app/src/main/java/com/nuvio/tv/domain/model/Plugin.kt"
+      ],
+      "semantic_paths": [
+        "app/src/main/java/com/nuvio/tv/core/player/",
+        "app/src/main/java/com/nuvio/tv/ui/screens/player/",
+        "app/build.gradle.kts",
+        "gradle/libs.versions.toml"
+      ]
+    }
+  },
+  "semantic_tokens": [
+    "getStreams",
+    "PluginRuntimeResult",
+    "LocalScraperResult",
+    "StreamItem",
+    "behaviorHints",
+    "proxyHeaders",
+    "MediaItem",
+    "videoUrl",
+    "playbackUrl",
+    "httpHeaders",
+    "externalPlayer",
+    "SCRAPER_SETTINGS",
+    "quickjs",
+    "media3",
+    "exoplayer",
+    "ktor",
+    "okhttp",
+    "vlc"
+  ]
+}
