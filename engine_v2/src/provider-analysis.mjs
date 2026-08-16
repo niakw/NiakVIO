@@ -1,7 +1,18 @@
+const AUXILIARY_HOST_SUFFIXES = [
+  "github.com", "githubusercontent.com", "npms.io", "lodash.com", "openjsf.org", "underscorejs.org",
+  "themoviedb.org", "strem.io", "kitsu.io", "haglund.dev", "postimg.cc", "jsdelivr.net",
+];
+const COMMON_PLAYER_HOST_SUFFIXES = [
+  "sibnet.ru", "vidmoly.me", "fsvid.lol", "vidzy.live", "streamtape.com", "sendvid.com",
+  "myvi.ru", "younetu.org", "vidoza.net", "lecteurvideo.com", "up4fun.top", "vcloud.zip",
+];
+
 export function analyzeProviderCode(code = "") {
   const text = String(code);
   const urls = extractUrls(text);
-  const hosts = unique(urls.map(hostFromUrl).filter(Boolean));
+  const hosts = unique(urls.map(hostFromUrl).filter(validHost));
+  const hostRoles = classifyHosts(hosts);
+  const domainRegistries = urls.filter(isDomainRegistryUrl);
   const routeHints = extractRouteHints(text);
   const requestMethods = new Set();
   if (/\bfetch\s*\(/.test(text)) requestMethods.add("GET/default-fetch");
@@ -55,6 +66,8 @@ export function analyzeProviderCode(code = "") {
     },
     urls,
     hosts,
+    hostRoles,
+    domainRegistries,
     routeHints,
     requestMethods: [...requestMethods],
     headers,
@@ -77,10 +90,15 @@ export function analyzeProviderCode(code = "") {
 export function mergeProviderKnowledge(provider, analyzedVariants) {
   return {
     id: provider.id,
+    names: provider.names ?? [],
     supportedTypes: provider.supportedTypes,
     languages: provider.languages,
     formats: unique([...provider.formats, ...analyzedVariants.flatMap((v) => v.analysis.mediaFormats)]),
     hosts: unique(analyzedVariants.flatMap((v) => v.analysis.hosts)),
+    providerCandidateHosts: unique(analyzedVariants.flatMap((v) => v.analysis.hostRoles.providerCandidate)),
+    playerHosts: unique(analyzedVariants.flatMap((v) => v.analysis.hostRoles.player)),
+    auxiliaryHosts: unique(analyzedVariants.flatMap((v) => v.analysis.hostRoles.auxiliary)),
+    domainRegistries: unique(analyzedVariants.flatMap((v) => v.analysis.domainRegistries)),
     routeHints: unique(analyzedVariants.flatMap((v) => v.analysis.routeHints)),
     strategyKinds: unique(analyzedVariants.map((v) => v.analysis.strategyKind)),
     requiresSettings: provider.hasSettings || analyzedVariants.some((v) => v.analysis.settings.readsScraperSettings),
@@ -91,9 +109,19 @@ export function mergeProviderKnowledge(provider, analyzedVariants) {
   };
 }
 
+export function classifyHosts(hosts = []) {
+  const result = { providerCandidate: [], player: [], auxiliary: [] };
+  for (const host of hosts) {
+    if (matchesSuffix(host, AUXILIARY_HOST_SUFFIXES)) result.auxiliary.push(host);
+    else if (matchesSuffix(host, COMMON_PLAYER_HOST_SUFFIXES)) result.player.push(host);
+    else result.providerCandidate.push(host);
+  }
+  return result;
+}
+
 function extractUrls(text) {
   const matches = text.match(/https?:\/\/[^\s"'`<>\\)\]}]+/gi) ?? [];
-  return unique(matches.map((value) => value.replace(/[.,;:]+$/, ""))).slice(0, 200);
+  return unique(matches.map((value) => value.replace(/[.,;:]+$/, "")).filter((value) => !value.includes("${"))).slice(0, 250);
 }
 
 function extractRouteHints(text) {
@@ -106,11 +134,27 @@ function extractRouteHints(text) {
       literals.push(value);
     }
   }
-  return unique(literals).slice(0, 100);
+  return unique(literals).slice(0, 120);
 }
 
 function hostFromUrl(value) {
   try { return new URL(value).hostname.toLowerCase(); } catch { return null; }
+}
+
+function validHost(host) {
+  if (!host || host.includes("$") || !host.includes(".")) return false;
+  return /^[a-z0-9.-]+$/i.test(host);
+}
+
+function isDomainRegistryUrl(value) {
+  try {
+    const url = new URL(value);
+    return /(?:^|\/)(domains?|mirrors?|hosts?)(?:[-_.][a-z0-9]+)?\.json$/i.test(url.pathname);
+  } catch { return false; }
+}
+
+function matchesSuffix(host, suffixes) {
+  return suffixes.some((suffix) => host === suffix || host.endsWith(`.${suffix}`));
 }
 
 function detectTokens(text, map) {
