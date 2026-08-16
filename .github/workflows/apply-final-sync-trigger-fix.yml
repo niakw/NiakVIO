@@ -1,0 +1,70 @@
+name: Apply final ARCHI2 sync trigger fix
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/apply-final-sync-trigger-fix.yml'
+
+permissions:
+  contents: write
+  actions: write
+
+jobs:
+  patch-and-dispatch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: main
+          fetch-depth: 2
+
+      - name: Make canonical sync cover every Brain change
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path('.github/workflows/sync.yml')
+          text = path.read_text(encoding='utf-8')
+          old = "      - 'engine_v2/src/**'\n      - 'engine_v2/scripts/**'\n"
+          new = "      - 'engine_v2/**'\n"
+          if old not in text and new not in text:
+              raise SystemExit('engine_v2 push trigger anchor not found')
+          if old in text:
+              text = text.replace(old, new, 1)
+
+          language_path = "      - 'scripts/generate_language_manifests.py'\n"
+          if language_path not in text:
+              anchor = "      - 'scripts/sync_release_versions.py'\n"
+              if anchor not in text:
+                  raise SystemExit('language trigger anchor not found')
+              text = text.replace(anchor, anchor + language_path, 1)
+
+          package_paths = "      - 'package.json'\n      - 'package-lock.json'\n"
+          if "      - 'package.json'\n" not in text:
+              anchor = "      - 'provider_catalog.json'\n"
+              if anchor not in text:
+                  raise SystemExit('package trigger anchor not found')
+              text = text.replace(anchor, anchor + package_paths, 1)
+
+          path.write_text(text, encoding='utf-8')
+          Path('.github/workflows/apply-final-sync-trigger-fix.yml').unlink()
+          PY
+
+      - name: Commit durable trigger fix and remove one-shot workflow
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add .github/workflows/sync.yml .github/workflows/apply-final-sync-trigger-fix.yml
+          git commit -m 'ci: trigger ARCHI2 Quick for every Brain change'
+          git push origin HEAD:main
+
+      - name: Dispatch one final Quick on the patched HEAD
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: gh workflow run sync.yml --ref main -f mode=quick
