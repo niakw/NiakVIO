@@ -13,13 +13,16 @@ workflow = (ROOT / ".github" / "workflows" / "sync.yml").read_text(encoding="utf
 script_source = script_path.read_text(encoding="utf-8")
 
 version_call = "python scripts/sync_release_versions.py"
-assert version_call in workflow
+baseline_arg = '--previous "$NUVIO_PUBLISHED_MANIFEST_BASELINE"'
+assert workflow.count(version_call) >= 2
 assert "--manifest manifest.json" in workflow
-assert '--previous "$PREVIOUS_MANIFEST"' in workflow
+assert workflow.count(baseline_arg) >= 2
+assert "Capture published manifest baseline" in workflow
+assert 'git show HEAD:manifest.json > "$NUVIO_PUBLISHED_MANIFEST_BASELINE"' in workflow
 assert "python scripts/validate_activation_preservation.py" in workflow
 assert "python scripts/validate_language_projection.py" in workflow
 assert workflow.index(version_call) < workflow.index("python scripts/validate_language_projection.py")
-assert workflow.index("python scripts/validate_language_projection.py") < workflow.index("python scripts/generate_release_hashes.py")
+assert workflow.rindex(version_call) < workflow.index("python scripts/generate_release_hashes.py")
 assert "git add manifest.json vf/manifest.json provider_catalog.json" in workflow
 assert "package.json package-lock.json sources.json nuvio-client-id-state.json" in workflow
 assert "Verify exact published main" in workflow
