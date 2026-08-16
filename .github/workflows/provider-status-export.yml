@@ -44,11 +44,25 @@ jobs:
               except Exception:
                   return default
 
+          def canonical_map(value):
+              if not isinstance(value, dict):
+                  return {}
+              return {str(key).strip().casefold(): row for key, row in value.items()}
+
+          def csv_values(value):
+              if value is None:
+                  return ''
+              if isinstance(value, str):
+                  return value
+              if isinstance(value, (list, tuple, set)):
+                  return ','.join(str(item) for item in value if item is not None)
+              return str(value)
+
           catalog = load('provider_catalog.json', {'providers': []})
-          provenance = load('PROVENANCE.json', {}).get('providers', {})
+          provenance = canonical_map(load('PROVENANCE.json', {}).get('providers', {}))
           diagnostics = load('diagnostics-report.json', {})
           repair = load('repair-report.json', {})
-          lkg = load('provider-lkg.json', {}).get('providers', {})
+          lkg = canonical_map(load('provider-lkg.json', {}).get('providers', {}))
 
           diag_by_id = defaultdict(list)
           for row in diagnostics.get('providers', []) if isinstance(diagnostics, dict) else []:
@@ -58,7 +72,7 @@ jobs:
               if pid:
                   diag_by_id[pid].append(row)
 
-          sibling_resolved = {str(x).casefold() for x in repair.get('sibling_resolved_provider_ids', [])}
+          sibling_resolved = {str(x).strip().casefold() for x in repair.get('sibling_resolved_provider_ids', [])}
           rows = []
           for item in catalog.get('providers', []):
               if not isinstance(item, dict):
@@ -70,8 +84,8 @@ jobs:
               streams_playable = max((int(x.get('streams_playable') or 0) for x in variants), default=0)
               streams_returned = max((int(x.get('streams_returned') or 0) for x in variants), default=0)
               failures = sorted({str(v) for x in variants for v in (x.get('failure_classes') or []) if v})
-              prov = provenance.get(pid, {}) if isinstance(provenance, dict) else {}
-              lkg_row = lkg.get(pid, {}) if isinstance(lkg, dict) else {}
+              prov = provenance.get(pid, {}) if isinstance(provenance.get(pid, {}), dict) else {}
+              lkg_row = lkg.get(pid, {}) if isinstance(lkg.get(pid, {}), dict) else {}
               rows.append({
                   'provider_id': pid,
                   'name': scraper.get('name') or '',
@@ -79,8 +93,8 @@ jobs:
                   'general': bool((item.get('projections') or {}).get('general')),
                   'vf': bool((item.get('projections') or {}).get('vf')),
                   'version': scraper.get('version') or '',
-                  'supported_types': ','.join(scraper.get('supportedTypes') or []),
-                  'languages': ','.join(scraper.get('contentLanguage') or []),
+                  'supported_types': csv_values(scraper.get('supportedTypes')),
+                  'languages': csv_values(scraper.get('contentLanguage')),
                   'filename': scraper.get('filename') or '',
                   'diagnostic_statuses': ','.join(statuses),
                   'streams_returned': streams_returned,
