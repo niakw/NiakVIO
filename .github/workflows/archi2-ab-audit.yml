@@ -20,6 +20,9 @@ on:
       - 'scripts/build_archi2_ab_case.py'
       - 'scripts/compare_archi2_ab_reports.py'
       - 'scripts/aggregate_archi2_ab_reports.py'
+      - 'automation/nuvio-client-upstreams.json'
+      - 'automation/platform-runtime-contracts.json'
+      - 'automation/nuvio-tv-runtime-contract.json'
       - '.github/triggers/nuvio-client-lab.json'
   push:
     branches:
@@ -39,6 +42,9 @@ on:
       - 'scripts/build_archi2_ab_case.py'
       - 'scripts/compare_archi2_ab_reports.py'
       - 'scripts/aggregate_archi2_ab_reports.py'
+      - 'automation/nuvio-client-upstreams.json'
+      - 'automation/platform-runtime-contracts.json'
+      - 'automation/nuvio-tv-runtime-contract.json'
       - '.github/triggers/nuvio-client-lab.json'
 
 permissions:
@@ -51,6 +57,11 @@ concurrency:
 env:
   # Last published main immediately before the ARCHI2 production cutover PR.
   ARCHI2_BASELINE_SHA: c2468537ec4b96bf2ede7111261574a0304391d1
+  # Exact official-client generations audited for this comparison. Keep A and B
+  # on the same client runtime so only the Niakvio generation changes.
+  NUVIO_TV_AUDIT_REF: 6103a144485277f06ebc31456f1949c65b304e8e
+  NUVIO_DESKTOP_AUDIT_REF: 463cd0b72a8f08e2529efcbacfff2e7da8d4453a
+  NUVIO_MOBILE_AUDIT_REF: d2db97a9a971be3aad2bd3e9528b3a17e43766ae
 
 jobs:
   compare:
@@ -112,7 +123,7 @@ jobs:
             --candidate-manifest candidate/manifest.json \
             --output-dir "$RUNNER_TEMP/archi2-ab/${{ matrix.fixture }}"
 
-      - name: Checkout one shared set of official Nuvio client runtimes
+      - name: Checkout one exact shared set of official Nuvio client runtimes
         shell: bash
         run: |
           set -euo pipefail
@@ -120,23 +131,26 @@ jobs:
           mkdir -p "$CLIENTS"
 
           clone_runtime() {
-            local repo="$1" branch="$2" dest="$3"; shift 3
-            git clone --quiet --depth 1 --filter=blob:none --sparse --branch "$branch" "https://github.com/$repo.git" "$dest"
+            local repo="$1" branch="$2" ref="$3" dest="$4"; shift 4
+            git clone --quiet --filter=blob:none --sparse --branch "$branch" "https://github.com/$repo.git" "$dest"
             git -C "$dest" sparse-checkout set "$@"
-            git -C "$dest" rev-parse HEAD > "$dest/.nuvio-lab-head"
+            git -C "$dest" checkout --quiet "$ref"
+            actual="$(git -C "$dest" rev-parse HEAD)"
+            test "$actual" = "$ref"
+            printf '%s\n' "$actual" > "$dest/.nuvio-lab-head"
           }
 
-          clone_runtime NuvioMedia/NuvioTV dev "$CLIENTS/tv" \
+          clone_runtime NuvioMedia/NuvioTV dev "$NUVIO_TV_AUDIT_REF" "$CLIENTS/tv" \
             app/src/full/java/com/nuvio/tv/core/plugin \
             app/src/main/java/com/nuvio/tv/core/player \
             app/src/main/java/com/nuvio/tv/ui/screens/player
 
-          clone_runtime NuvioMedia/NuvioDesktop Dev "$CLIENTS/desktop" \
+          clone_runtime NuvioMedia/NuvioDesktop Dev "$NUVIO_DESKTOP_AUDIT_REF" "$CLIENTS/desktop" \
             composeApp/src/fullCommonMain/kotlin/com/nuvio/app/features/plugins/runtime \
             composeApp/src/commonMain/kotlin/com/nuvio/app/features/player \
             composeApp/src/desktopMain/kotlin/com/nuvio/app/features/player
 
-          clone_runtime NuvioMedia/NuvioMobile cmp-rewrite "$CLIENTS/mobile" \
+          clone_runtime NuvioMedia/NuvioMobile cmp-rewrite "$NUVIO_MOBILE_AUDIT_REF" "$CLIENTS/mobile" \
             composeApp/src/fullCommonMain/kotlin/com/nuvio/app/features/plugins/runtime \
             composeApp/src/commonMain/kotlin/com/nuvio/app/features/player \
             composeApp/src/androidMain/kotlin/com/nuvio/app/features/player \
