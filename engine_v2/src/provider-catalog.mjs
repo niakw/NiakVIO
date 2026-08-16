@@ -32,8 +32,9 @@ export function buildCatalogFromPublished({ generalManifest, vfManifest }) {
       throw new Error(`vf provider is absent from general manifest: ${scraper.id}`);
     }
     const generalScraper = generalById.get(canonicalId);
-    if (!deepEqual(generalScraper, scraper)) {
-      throw new Error(`vf provider metadata diverges from general manifest: ${scraper.id}`);
+    const normalizedVf = normalizeProjectionScraper(scraper, "vf");
+    if (!deepEqual(generalScraper, normalizedVf)) {
+      throw new Error(`vf provider metadata diverges from general manifest beyond projection path: ${scraper.id}`);
     }
     vfOrder.push(canonicalId);
   }
@@ -142,7 +143,7 @@ export function manifestsFromCatalog(catalog) {
     },
     vf: {
       ...(structuredClone(catalog.manifestMeta?.vf) ?? {}),
-      scrapers: catalog.manifestOrder.vf.map((id) => structuredClone(byId.get(id).scraper)),
+      scrapers: catalog.manifestOrder.vf.map((id) => projectScraper(byId.get(id).scraper, "vf")),
     },
   };
 }
@@ -165,6 +166,22 @@ function assertManifest(manifest, label) {
 function withoutScrapers(manifest) {
   const copy = structuredClone(manifest);
   delete copy.scrapers;
+  return copy;
+}
+
+function normalizeProjectionScraper(scraper, projection) {
+  const copy = structuredClone(scraper);
+  if (projection === "vf" && typeof copy.filename === "string" && copy.filename.startsWith("../")) {
+    copy.filename = copy.filename.slice(3);
+  }
+  return copy;
+}
+
+function projectScraper(scraper, projection) {
+  const copy = structuredClone(scraper);
+  if (projection === "vf" && typeof copy.filename === "string" && !copy.filename.startsWith("../")) {
+    copy.filename = `../${copy.filename}`;
+  }
   return copy;
 }
 
