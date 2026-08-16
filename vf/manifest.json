@@ -1,19 +1,19 @@
 {
   "name": "Nuvio Curated Providers — VF uniquement",
-  "version": "5.20.63",
+  "version": "5.20.64",
   "scrapers": [
     {
       "id": "PURSTREAM",
       "name": "Purstream",
       "description": "Films and series in French (VF) / subtitled French (VOSTFR) / multi-language (MULTI) from purstream.art.",
-      "version": "3.0.22",
+      "version": "3.0.23",
       "author": "wooodyhood",
       "supportedTypes": [
         "movie",
         "tv",
         "anime"
       ],
-      "filename": "../providers/purstream--nuvio--61cfeb63eaef0c41.js",
+      "filename": "../providers/purstream--published-baseline--61cfeb63eaef0c41.js",
       "enabled": true,
       "hasSettings": true,
       "formats": [
@@ -55,13 +55,13 @@
       "id": "DESIFLIX",
       "name": "DesiFlix",
       "description": "Bollywood, Hollywood, and South Indian movies, in Dual Language",
-      "version": "1.0.22",
+      "version": "1.0.23",
       "author": "Nuvio Team",
       "supportedTypes": [
         "movie",
         "tv"
       ],
-      "filename": "../providers/desiflix--nuvio--650717c1f5b6ba9c.js",
+      "filename": "../providers/desiflix--published-baseline--650717c1f5b6ba9c.js",
       "enabled": true,
       "hasSettings": false,
       "formats": [
@@ -80,14 +80,14 @@
       "id": "PAPADUSTREAM",
       "name": "Papadustream",
       "description": "Films et séries TV en streaming HLS via Papadustream.",
-      "version": "1.0.27",
+      "version": "1.0.28",
       "author": "Gowaru",
       "supportedTypes": [
         "movie",
         "tv",
         "anime"
       ],
-      "filename": "../providers/papadustream--nuvio--19fc281914eeaf7c.js",
+      "filename": "../providers/papadustream--published-baseline--19fc281914eeaf7c.js",
       "enabled": true,
       "logo": "https://raw.githubusercontent.com/Gowaru/gowaru-nuvio-providers/main/assets/papadustream.png",
       "contentLanguage": [
@@ -105,13 +105,13 @@
       "id": "MUGIWARASTREAM",
       "name": "Mugiwara-no-Streaming",
       "description": "Streaming gratuit d'animes et scans en bonne qualite via API Next.js.",
-      "version": "1.0.44",
+      "version": "1.0.45",
       "author": "Gowaru",
       "supportedTypes": [
         "movie",
         "anime"
       ],
-      "filename": "../providers/mugiwarastream--nuvio--501a7c4caf82dc27.js",
+      "filename": "../providers/mugiwarastream--published-baseline--501a7c4caf82dc27.js",
       "enabled": true,
       "logo": "https://raw.githubusercontent.com/NOUSSS/mugiwara-no-streaming-images/main/Logo.png",
       "contentLanguage": [
@@ -120,54 +120,6 @@
       "formats": [
         "mp4",
         "mkv",
-        "m3u8"
-      ],
-      "limited": false,
-      "disabledPlatforms": [],
-      "supportsExternalPlayer": false
-    },
-    {
-      "id": "ANIMESAMA-CO",
-      "name": "AnimeSama.co (DLE Mirror)",
-      "description": "Animes VF et VOSTFR en streaming sur AnimeSama.co (miroir DLE).",
-      "version": "1.0.30",
-      "author": "Gowaru",
-      "supportedTypes": [
-        "movie",
-        "anime"
-      ],
-      "filename": "../providers/animesama-co--nuvio--157a7bb6a10eb0fd.js",
-      "enabled": true,
-      "logo": "https://raw.githubusercontent.com/Anime-Sama/IMG/img/autres/logo.png",
-      "contentLanguage": [
-        "fr"
-      ],
-      "formats": [
-        "mp4",
-        "m3u8"
-      ],
-      "limited": false,
-      "disabledPlatforms": [],
-      "supportsExternalPlayer": false
-    },
-    {
-      "id": "VOIRANIME-RIP",
-      "name": "VoirAnime.rip",
-      "description": "Animes VF et VOSTFR en streaming sur VoirAnime.rip (site DLE).",
-      "version": "1.0.35",
-      "author": "Gowaru",
-      "supportedTypes": [
-        "movie",
-        "anime"
-      ],
-      "filename": "../providers/voiranime-rip--nuvio--f862345dab7e9e88.js",
-      "enabled": true,
-      "logo": "https://voiranime.rip/img/icon.png",
-      "contentLanguage": [
-        "fr"
-      ],
-      "formats": [
-        "mp4",
         "m3u8"
       ],
       "limited": false,
@@ -201,6 +153,30 @@
       ],
       "supportsExternalPlayer": false,
       "disabledPlatforms": []
+    },
+    {
+      "id": "ANIMESAMA-CO",
+      "name": "AnimeSama.co (DLE Mirror)",
+      "description": "Animes VF et VOSTFR en streaming sur AnimeSama.co (miroir DLE).",
+      "version": "1.0.30",
+      "author": "Gowaru",
+      "supportedTypes": [
+        "movie",
+        "anime"
+      ],
+      "filename": "../providers/animesama-co--nuvio--157a7bb6a10eb0fd.js",
+      "enabled": true,
+      "logo": "https://raw.githubusercontent.com/Anime-Sama/IMG/img/autres/logo.png",
+      "contentLanguage": [
+        "fr"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "limited": false,
+      "disabledPlatforms": [],
+      "supportsExternalPlayer": false
     },
     {
       "id": "ANIMESULTRA",
@@ -379,6 +355,30 @@
       "supportsExternalPlayer": false
     },
     {
+      "id": "VOIRANIME-RIP",
+      "name": "VoirAnime.rip",
+      "description": "Animes VF et VOSTFR en streaming sur VoirAnime.rip (site DLE).",
+      "version": "1.0.35",
+      "author": "Gowaru",
+      "supportedTypes": [
+        "movie",
+        "anime"
+      ],
+      "filename": "../providers/voiranime-rip--nuvio--f862345dab7e9e88.js",
+      "enabled": true,
+      "logo": "https://voiranime.rip/img/icon.png",
+      "contentLanguage": [
+        "fr"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "limited": false,
+      "disabledPlatforms": [],
+      "supportsExternalPlayer": false
+    },
+    {
       "id": "VOSTFREE",
       "name": "Vostfree",
       "description": "Animes VF et VOSTFR en streaming et téléchargement.",
@@ -454,14 +454,14 @@
       "id": "anime-ultime",
       "name": "Anime-Ultime",
       "description": "Animes VOSTFR et VF en streaming sur v5.anime-ultime.net (séries licenciées exclues par le site).",
-      "version": "0.0.12",
+      "version": "0.0.13",
       "author": "Gowaru",
       "supportedTypes": [
         "anime",
         "movie",
         "tv"
       ],
-      "filename": "../providers/anime-ultime--nuvio--0541a63a7586f5df.js",
+      "filename": "../providers/anime-ultime--published-baseline--0541a63a7586f5df.js",
       "enabled": false,
       "logo": "https://v5.anime-ultime.net/static/favicon/android-icon-192x192.png",
       "contentLanguage": [
@@ -478,13 +478,13 @@
       "id": "ANIMOFLIX",
       "name": "AnimoFlix",
       "description": "Regarder des animes VF et VOSTFR gratuitement sur AnimoFlix.",
-      "version": "1.0.32",
+      "version": "1.0.33",
       "author": "Gowaru",
       "supportedTypes": [
         "movie",
         "anime"
       ],
-      "filename": "../providers/animoflix--nuvio--16371a31348ac690.js",
+      "filename": "../providers/animoflix--published-baseline--16371a31348ac690.js",
       "enabled": false,
       "logo": "https://animoflix.to/img/logo.png",
       "contentLanguage": [
@@ -526,12 +526,12 @@
       "id": "voiranime-homes",
       "name": "VoirAnime.homes",
       "description": "Animes VF et VOSTFR en streaming sur voiranime.homes (moteur DLE, miroir French-Manga).",
-      "version": "0.0.11",
+      "version": "0.0.12",
       "author": "Gowaru",
       "supportedTypes": [
         "anime"
       ],
-      "filename": "../providers/voiranime-homes--nuvio--43e29976175ef905.js",
+      "filename": "../providers/voiranime-homes--published-baseline--43e29976175ef905.js",
       "enabled": false,
       "logo": "https://voiranime.homes/img/icon.ico",
       "contentLanguage": [
@@ -650,12 +650,12 @@
       "id": "waveanime",
       "name": "WaveAnime",
       "description": "Animes en DASH (MPD) via waveanime.fr — lecture native ExoPlayer/Media3 (Android), non supporté par AVPlayer (iOS).",
-      "version": "0.0.13",
+      "version": "0.0.14",
       "author": "Gowaru",
       "supportedTypes": [
         "anime"
       ],
-      "filename": "../providers/waveanime--nuvio--ddc14dd97a63fc0e.js",
+      "filename": "../providers/waveanime--published-baseline--ddc14dd97a63fc0e.js",
       "enabled": false,
       "logo": "https://waveanime.fr/assets/favicon.ico",
       "contentLanguage": [
