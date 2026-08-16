@@ -2,10 +2,19 @@ name: Native corpus device lab
 
 on:
   workflow_dispatch:
+  workflow_run:
+    workflows:
+      - Repair providers on routine refresh
+    types:
+      - completed
+    branches:
+      - main
   push:
     branches: [main]
     paths:
       - ".github/triggers/native-corpus-device-lab"
+      - ".github/workflows/native-corpus-device-lab.yml"
+      - "sources.json"
 
 permissions:
   contents: read
@@ -14,20 +23,73 @@ concurrency:
   group: native-corpus-device-lab
   cancel-in-progress: true
 
-env:
-  NUVIO_DESKTOP_SHA: "8977fda639f5791947e6d8b36025635a77aed5da"
-  NUVIO_MOBILE_SHA: "0d6e30e4566e6f9f2051d5f80a1e3f1e0fcb1f18"
-  NUVIO_TV_SHA: "d95f3fb837b6ddfbf9ff445cdcba2413b576f0d4"
-
 jobs:
-  desktop-native-corpus:
+  publication-gate:
     runs-on: ubuntu-latest
-    timeout-minutes: 220
+    timeout-minutes: 8
+    outputs:
+      run: ${{ steps.resolve.outputs.run }}
+      target_sha: ${{ steps.resolve.outputs.target_sha }}
+      desktop_sha: ${{ steps.resolve.outputs.desktop_sha }}
+      mobile_sha: ${{ steps.resolve.outputs.mobile_sha }}
+      tv_sha: ${{ steps.resolve.outputs.tv_sha }}
     steps:
       - name: Checkout current Niakvio main
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
           ref: main
+          fetch-depth: 2
+
+      - name: Resolve exact published generation and accepted official clients
+        id: resolve
+        shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          UPSTREAM_CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+          UPSTREAM_HEAD: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          set -euo pipefail
+          TARGET_SHA="$(git rev-parse HEAD)"
+          SHOULD_RUN=true
+          if [ "$EVENT_NAME" = "workflow_run" ]; then
+            SHOULD_RUN=false
+            PARENT_SHA="$(git rev-parse HEAD^ 2>/dev/null || true)"
+            MESSAGE="$(git log -1 --format=%s)"
+            if [ "$UPSTREAM_CONCLUSION" = "success" ] \
+              && [ "$PARENT_SHA" = "$UPSTREAM_HEAD" ] \
+              && [ "$MESSAGE" = "chore: publish routine provider repair refresh" ]; then
+              SHOULD_RUN=true
+            fi
+          fi
+          echo "run=$SHOULD_RUN" >> "$GITHUB_OUTPUT"
+          echo "target_sha=$TARGET_SHA" >> "$GITHUB_OUTPUT"
+          python3 - <<'PY' >> "$GITHUB_OUTPUT"
+          import json
+          from pathlib import Path
+          data = json.loads(Path('sources.json').read_text(encoding='utf-8'))
+          clients = data.get('nuvio_client_compatibility', {}).get('clients', {})
+          required = {
+              'desktop_sha': 'nuvio-desktop',
+              'mobile_sha': 'nuvio-mobile',
+              'tv_sha': 'nuvio-tv',
+          }
+          for output, key in required.items():
+              ref = str((clients.get(key) or {}).get('accepted_ref') or '').strip()
+              if len(ref) != 40:
+                  raise SystemExit(f'missing accepted_ref for {key}')
+              print(f'{output}={ref}')
+          PY
+
+  desktop-native-corpus:
+    needs: publication-gate
+    if: needs.publication-gate.outputs.run == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 220
+    steps:
+      - name: Checkout exact published Niakvio generation
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: ${{ needs.publication-gate.outputs.target_sha }}
           path: niakvio
 
       - name: Set up JDK
@@ -47,8 +109,10 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev
 
-      - name: Checkout pinned official NuvioDesktop and stage all manifest providers once
+      - name: Checkout accepted official NuvioDesktop and stage all manifest providers once
         shell: bash
+        env:
+          NUVIO_DESKTOP_SHA: ${{ needs.publication-gate.outputs.desktop_sha }}
         run: |
           set -euxo pipefail
           git clone --filter=blob:none --no-checkout https://github.com/NuvioMedia/NuvioDesktop.git nuvio-desktop
@@ -100,13 +164,15 @@ jobs:
           if-no-files-found: warn
 
   android-mobile-tv-native-corpus:
+    needs: publication-gate
+    if: needs.publication-gate.outputs.run == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 300
     steps:
-      - name: Checkout current Niakvio main
+      - name: Checkout exact published Niakvio generation
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
-          ref: main
+          ref: ${{ needs.publication-gate.outputs.target_sha }}
           path: niakvio
 
       - name: Set up JDK
@@ -121,8 +187,11 @@ jobs:
           node-version: "24"
           package-manager-cache: false
 
-      - name: Checkout pinned official Mobile and TV runtimes and stage all manifest providers once
+      - name: Checkout accepted official Mobile and TV runtimes and stage all manifest providers once
         shell: bash
+        env:
+          NUVIO_MOBILE_SHA: ${{ needs.publication-gate.outputs.mobile_sha }}
+          NUVIO_TV_SHA: ${{ needs.publication-gate.outputs.tv_sha }}
         run: |
           set -euxo pipefail
           git clone --filter=blob:none --no-checkout https://github.com/NuvioMedia/NuvioMobile.git nuvio-mobile
@@ -168,17 +237,18 @@ jobs:
           if-no-files-found: warn
 
   native-corpus-engine-summary:
-    if: always()
+    if: ${{ always() && needs.publication-gate.outputs.run == 'true' }}
     needs:
+      - publication-gate
       - desktop-native-corpus
       - android-mobile-tv-native-corpus
     runs-on: ubuntu-latest
     timeout-minutes: 12
     steps:
-      - name: Checkout current Niakvio main
+      - name: Checkout exact published Niakvio generation
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
-          ref: main
+          ref: ${{ needs.publication-gate.outputs.target_sha }}
           path: niakvio
 
       - name: Set up Node
