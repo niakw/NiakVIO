@@ -1,7 +1,12 @@
 #!/usr/bin/env node
 import fs from "node:fs/promises";
 import path from "node:path";
-import { buildDomainCandidates, chooseBestObservedDomain, probeDomainCandidate } from "../src/domain-discovery.mjs";
+import {
+  buildDomainCandidates,
+  chooseBestObservedDomain,
+  fetchDomainRegistryCandidates,
+  probeDomainCandidate,
+} from "../src/domain-discovery.mjs";
 
 const root = path.resolve(path.dirname(new URL(import.meta.url).pathname), "..");
 const repoRoot = path.resolve(root, "..");
@@ -18,12 +23,24 @@ const [knowledge, hubs, history] = await Promise.all([
 ]);
 
 const providers = await mapLimit(knowledge.providers ?? [], concurrency, async (provider) => {
-  const candidates = buildDomainCandidates(provider, hubs.providers?.[provider.id], history.providers?.[provider.id]).slice(0, maxCandidates);
+  const registryCandidates = [];
+  for (const registryUrl of provider.domainRegistries ?? []) {
+    const found = await fetchDomainRegistryCandidates(registryUrl, provider, { timeoutMs });
+    registryCandidates.push(...found.map((candidate) => ({ ...candidate, registryUrl })));
+  }
+  const candidates = buildDomainCandidates(
+    provider,
+    hubs.providers?.[provider.id],
+    history.providers?.[provider.id],
+    registryCandidates,
+  ).slice(0, maxCandidates);
   const probes = [];
   for (const candidate of candidates) probes.push(await probeDomainCandidate(candidate, { timeoutMs }));
   const selected = chooseBestObservedDomain(probes);
   return {
     id: provider.id,
+    registries: provider.domainRegistries ?? [],
+    registryCandidateCount: registryCandidates.length,
     candidateCount: candidates.length,
     selected: selected ? {
       url: selected.http.finalUrl ?? selected.url,
@@ -37,11 +54,13 @@ const providers = await mapLimit(knowledge.providers ?? [], concurrency, async (
 });
 
 const report = {
-  schema_version: 1,
+  schema_version: 2,
   generated_at: new Date().toISOString(),
   policy: "report-only; observations feed evidence and never publish a domain by themselves",
   stats: {
     providers: providers.length,
+    withDomainRegistries: providers.filter((p) => p.registries.length > 0).length,
+    registryCandidatesFound: providers.reduce((sum, p) => sum + p.registryCandidateCount, 0),
     withCandidates: providers.filter((p) => p.candidateCount > 0).length,
     withReachableDomain: providers.filter((p) => p.selected).length,
     withoutCandidates: providers.filter((p) => p.candidateCount === 0).length,
