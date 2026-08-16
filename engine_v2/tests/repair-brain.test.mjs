@@ -21,27 +21,48 @@ assert.equal(classifyFailure({
 }), "episode_gap");
 assert.equal(classifyFailure({
   invoked: true,
-  stages: { player: { attempted: true, found: true }, media: { attempted: true, found: true, status: 403 } },
+  stages: {
+    player: { attempted: true, found: true },
+    media: { attempted: true, found: true, streamCount: 1 },
+    validation: { attempted: true, playable: false, playableCount: 0, statuses: [403] },
+  },
 }), "playback_context_gap");
 assert.equal(classifyFailure({
   invoked: true,
+  stages: {
+    media: { attempted: true, found: true, streamCount: 1 },
+    validation: { attempted: true, playable: false, playableCount: 0, statuses: [200], reasons: ["invalid-hls-body"] },
+  },
+}), "media_validation_gap");
+assert.equal(classifyFailure({
+  invoked: true,
   playableStreams: 1,
-  stages: { media: { attempted: true, found: true, status: 206, playable: true } },
+  stages: {
+    media: { attempted: true, found: true, streamCount: 1 },
+    validation: { attempted: true, playable: true, playableCount: 1, statuses: [206] },
+  },
 }), "healthy");
+assert.equal(classifyFailure({
+  invoked: true,
+  playableStreams: 0,
+  stages: { media: { attempted: true, found: true, streamCount: 1 }, validation: { observed: false } },
+}), "media_validation_gap");
 assert.equal(classifyFailure({ contractDrift: true }), "runtime_contract_drift");
 
-const plan = planRepair({
+const blockedEvidence = {
   invoked: true,
-  stages: { player: { attempted: true, found: true }, media: { attempted: true, found: true, status: 403 } },
-}, { maxHypotheses: 3 });
+  stages: {
+    player: { attempted: true, found: true },
+    media: { attempted: true, found: true, streamCount: 1 },
+    validation: { attempted: true, playable: false, playableCount: 0, statuses: [403] },
+  },
+};
+const plan = planRepair(blockedEvidence, { maxHypotheses: 3 });
 assert.equal(plan.failureClass, "playback_context_gap");
 assert.ok(plan.hypotheses.length > 0 && plan.hypotheses.length <= 3);
 assert.equal(plan.hypotheses[0].id, "preserve-playback-context");
 
-const constrainedPlan = planRepair({
-  invoked: true,
-  stages: { player: { attempted: true, found: true }, media: { attempted: true, found: true, status: 403 } },
-}, {
+const constrainedPlan = planRepair(blockedEvidence, {
   runtimeCompatibility: { invalidCapabilities: ["headers", "cookies", "referer", "origin"] },
 });
 assert.ok(constrainedPlan.hypotheses.every((recipe) => !recipe.capabilities.includes("headers")));
