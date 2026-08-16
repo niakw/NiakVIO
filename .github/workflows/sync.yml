@@ -102,7 +102,7 @@ jobs:
           echo "Resolved validation mode: ${MODE}"
 
       - name: Set up Python
-        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
         with:
           python-version: '3.12'
 
@@ -275,7 +275,7 @@ jobs:
           git show HEAD:manifest.json > "$NUVIO_PUBLISHED_MANIFEST_BASELINE"
 
       - name: Set up Python
-        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
         with:
           python-version: '3.12'
 
