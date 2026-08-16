@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   workflow_run:
     workflows:
-      - Repair providers on routine refresh
+      - Niakvio provider pipeline
     types:
       - completed
     branches:
@@ -57,7 +57,7 @@ jobs:
             MESSAGE="$(git log -1 --format=%s)"
             if [ "$UPSTREAM_CONCLUSION" = "success" ] \
               && [ "$PARENT_SHA" = "$UPSTREAM_HEAD" ] \
-              && [ "$MESSAGE" = "chore: publish routine provider repair refresh" ]; then
+              && [ "$MESSAGE" = "chore: publish validated ARCHI2 provider transaction" ]; then
               SHOULD_RUN=true
             fi
           fi

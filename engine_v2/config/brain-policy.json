@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "identity": {
+    "name": "NiakVIO Brain",
+    "role": "adaptive provider repair and learning orchestrator",
+    "principle": "learn aggressively, publish conservatively"
+  },
+  "production": {
+    "learningOnValidatedRepair": true,
+    "maxHypotheses": 3,
+    "maxMutationsPerProvider": 2,
+    "maxRepeatedSignature": 2,
+    "maxGeneratedBytesPerProvider": 180000,
+    "maxElapsedMsPerProvider": 45000,
+    "coreMutationPolicy": "proposal_only",
+    "fallbackPolicy": "lkg_only_after_repair_budget"
+  },
+  "skillMaturity": {
+    "candidateSuccesses": 2,
+    "trustedSuccesses": 3,
+    "trustedProviders": 2,
+    "minimumConfidence": 0.8
+  },
+  "learningLab": {
+    "enabled": true,
+    "scheduleUtc": "17 2 * * *",
+    "budgetMinutes": 30,
+    "publicationAllowed": false,
+    "productionWritesAllowed": false,
+    "pullRequestOnly": true,
+    "explorationShare": 0.35,
+    "coreChanges": "proposal_only"
+  },
+  "privacy": {
+    "persistRawUrls": false,
+    "persistTokens": false,
+    "persistHeaderValues": false,
+    "persistPrivateNotes": false,
+    "persistSourceSpreadsheetText": false
+  }
+}

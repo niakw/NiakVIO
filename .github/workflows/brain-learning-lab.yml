@@ -1,0 +1,85 @@
+name: NiakVIO Brain learning lab
+
+on:
+  workflow_dispatch:
+  schedule:
+    # 02:17 UTC: deliberately separated from NiakVIO domain/deep/quick cron slots.
+    # GitHub publishes no guaranteed global quiet-hour SLA; this is our low-collision slot.
+    - cron: "17 2 * * *"
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: niakvio-brain-learning-lab
+  cancel-in-progress: true
+
+jobs:
+  learn:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout production knowledge baseline
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: main
+          fetch-depth: 2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: "24"
+          package-manager-cache: false
+
+      - name: Generate sandbox learning proposals
+        run: |
+          rm -rf brain-learning-output
+          mkdir -p brain-learning-output
+          node engine_v2/scripts/learning-lab.mjs --output-dir brain-learning-output
+          node engine_v2/tests/repair-brain.test.mjs
+          node engine_v2/tests/recipe-memory.test.mjs
+
+      - name: Upload learning notebook regardless of PR permissions
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: niakvio-brain-learning-${{ github.run_id }}
+          path: brain-learning-output/
+          retention-days: 14
+          if-no-files-found: warn
+
+      - name: Update the single sandbox proposal PR
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          COUNT="$(node -e "const x=require('./brain-learning-output/latest.json');process.stdout.write(String((x.proposals||[]).length))")"
+          if [ "$COUNT" = "0" ]; then
+            echo "No useful learning proposal this run."
+            exit 0
+          fi
+          mkdir -p engine_v2/learning
+          cp brain-learning-output/latest.json engine_v2/learning/latest.json
+          cp brain-learning-output/latest.md engine_v2/learning/latest.md
+          BRANCH="brain-learning/proposals"
+          git fetch origin "$BRANCH:refs/remotes/origin/$BRANCH" || true
+          git switch -C "$BRANCH"
+          git config user.name "niakvio-brain"
+          git config user.email "actions@users.noreply.github.com"
+          git add engine_v2/learning/latest.json engine_v2/learning/latest.md
+          git commit -m "brain: refresh learned repair proposals"
+          git push --force-with-lease origin HEAD:"$BRANCH"
+          EXISTING="$(gh pr list --state open --head "$BRANCH" --base main --json number --jq '.[0].number // empty' || true)"
+          if [ -z "$EXISTING" ]; then
+            if ! gh pr create \
+              --base main \
+              --head "$BRANCH" \
+              --title "Brain learning: repair skill proposals" \
+              --body "Sandbox-only learning proposal. No manifest/provider publication is performed by this workflow. Review evidence before merging."; then
+              echo "PR creation is unavailable; the learning artifact remains available and no production state was changed."
+            fi
+          else
+            echo "Updated existing Brain learning PR #$EXISTING"
+          fi
