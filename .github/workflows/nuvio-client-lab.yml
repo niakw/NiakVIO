@@ -35,8 +35,10 @@ on:
       - "providers/**"
       - "scripts/nuvio_client_lab.cjs"
       - "scripts/provider_worker.cjs"
+      - "scripts/build_nuvio_client_lab_matrix.py"
       - "scripts/provider_patches/**"
       - "tests/nuvio_client_lab.test.cjs"
+      - "tests/nuvio_client_lab_dynamic_selection_test.py"
       - "package.json"
       - "package-lock.json"
       - "PROVENANCE.json"
@@ -82,11 +84,16 @@ jobs:
         run: |
           set -euo pipefail
           python3 - <<'PY' >> "$GITHUB_OUTPUT"
-          import json, os, re
+          import json, os, re, sys
+          sys.path.insert(0, "scripts")
+          from build_nuvio_client_lab_matrix import expand_push_source
 
           if os.environ.get("EVENT_NAME") == "push":
               with open(".github/triggers/nuvio-client-lab.json", encoding="utf-8") as handle:
                   source = json.load(handle)
+              with open("manifest.json", encoding="utf-8") as handle:
+                  manifest = json.load(handle)
+              source = expand_push_source(source, manifest)
           else:
               title = os.environ.get("INPUT_TITLE", "").strip() or "manual-fixture"
               year = os.environ.get("INPUT_YEAR", "").strip()
@@ -121,6 +128,10 @@ jobs:
           print("matrix=" + json.dumps({"include": cases}, separators=(",", ":"), ensure_ascii=True))
           PY
 
+      - name: Verify dynamic provider selection
+        if: github.event_name == 'push'
+        run: python3 tests/nuvio_client_lab_dynamic_selection_test.py
+
   lab:
     name: ${{ matrix.slug }} — probe media transport
     needs: prepare
@@ -128,8 +139,6 @@ jobs:
     timeout-minutes: 45
     strategy:
       fail-fast: false
-      # Keep the aggregate provider load below the former twelve-worker burst:
-      # three works x two providers per work = six concurrent providers.
       max-parallel: 3
       matrix: ${{ fromJson(needs.prepare.outputs.matrix) }}
 
@@ -208,7 +217,7 @@ jobs:
           printf 'Mobile  %s\n' "$(cat "$CLIENTS/mobile/.nuvio-lab-head")"
 
       - name: Run client playback lab
-        id: lab
+        id: labrun
         continue-on-error: true
         shell: bash
         env:
@@ -229,7 +238,7 @@ jobs:
 
       - name: Upload sanitized fixture report
         if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.0
         with:
           name: nuvio-client-lab-${{ matrix.slug }}-${{ github.run_id }}
           path: |
@@ -239,8 +248,5 @@ jobs:
           if-no-files-found: error
 
       - name: Fail on lab execution or content safety errors
-        if: always() && steps.lab.outcome == 'failure'
-        shell: bash
-        run: |
-          echo "The lab failed or found a playable content-identity contradiction. Coverage targets remain advisory."
-          exit 1
+        if: steps.labrun.outcome == 'failure'
+        run: exit 1
