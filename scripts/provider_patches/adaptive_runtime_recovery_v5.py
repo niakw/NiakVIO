@@ -78,13 +78,13 @@ def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> st
         "runtime_revision",
     )
 
-    # mediaProof() in V4 checks extensions before MIME. Recover the stronger
-    # network evidence explicitly so a genuine video/mp4 is still accepted in a
-    # single bounded probe, while extension-only HTML is never accepted.
+    # V4 declares ``proof`` in the same var chain as finalUrl/type/disposition.
+    # Rewrite that exact generated fragment: extension remains only a hint,
+    # while MIME/disposition/binary signatures are positive network evidence.
     patched = _replace_once(
         patched,
-        'var proof=mediaProof(finalUrl,type,"",disposition);if(proof)return{url:finalUrl,proof:proof};if(/(?:text\\/html|application\\/(?:json|javascript|xml)|text\\/(?:plain|xml|javascript))/i.test(type))return null;var bytes=await prefixBytes(r,a),binary=binaryProof(bytes);',
-        'var proof=mediaProof(finalUrl,type,"",disposition);if(proof==="extension"){if(mediaType(type))proof="mime";else if(mediaDisposition(disposition))proof="disposition"}if(proof&&proof!=="extension")return{url:finalUrl,proof:proof};if(/(?:text\\/html|application\\/(?:json|javascript|xml)|text\\/(?:xml|javascript))/i.test(type))return null;var bytes=await prefixBytes(r,a),binary=binaryProof(bytes);',
+        ',proof=mediaProof(finalUrl,type,"",disposition);if(proof)return{url:finalUrl,proof:proof};if(/(?:text\\/html|application\\/(?:json|javascript|xml)|text\\/(?:plain|xml|javascript))/i.test(type))return null;var bytes=await prefixBytes(r,a),binary=binaryProof(bytes);',
+        ',proof=mediaProof(finalUrl,type,"",disposition);if(proof==="extension"){if(mediaType(type))proof="mime";else if(mediaDisposition(disposition))proof="disposition"}if(proof&&proof!=="extension")return{url:finalUrl,proof:proof};if(/(?:text\\/html|application\\/(?:json|javascript|xml)|text\\/(?:xml|javascript))/i.test(type))return null;var bytes=await prefixBytes(r,a),binary=binaryProof(bytes);',
         "opaque_positive_proof",
     )
 
