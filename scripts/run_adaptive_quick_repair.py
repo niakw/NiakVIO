@@ -3,9 +3,12 @@
 """Run one bounded adaptive repair pass during routine provider refreshes.
 
 This reuses the same provider-agnostic repair engine and strict content-identity
-comparator as the deep harness, but executes health probes in ``quick`` mode
-and never persists newly learned repair profiles. Deep remains authoritative
-for broad catalogue proof, durable profile learning, and quarantine exit.
+comparator as the deep harness. Internally the health checker is invoked through
+its multi-category selector, but with a temporary quick-sized budget: one
+representative fixture per required catalogue type and at most two streams per
+fixture. Results are rewritten as ``quick`` and newly learned profiles are not
+persisted. Deep remains authoritative for broad catalogue proof, durable profile
+learning, new activation, and quarantine exit.
 """
 from __future__ import annotations
 
@@ -48,11 +51,15 @@ def _identity_safe_compare_results(parent: dict[str, Any], repaired: dict[str, A
 
 
 def _quick_run_health(*, stage: Path, registry_path: Path, output_dir: Path, mode: str, health_check: Path = loop.HEALTH_CHECK) -> dict[str, Any]:
+    # health_check.mjs currently enables its one-fixture-per-required-category
+    # selector only for requestedMode=deep. We therefore execute that selector
+    # with a temporary deep config cloned from our bounded quick profile, then
+    # rewrite the produced evidence to truthful mode=quick before publication.
     return _base_run_health(
         stage=stage,
         registry_path=registry_path,
         output_dir=output_dir,
-        mode="quick",
+        mode="deep",
         health_check=health_check,
     )
 
@@ -85,24 +92,32 @@ def _ensure_representative_fixture_categories(config: dict[str, Any], quick: dic
 
 def _strengthen_quick_probe(config: dict[str, Any]) -> None:
     """Keep refresh bounded while collecting enough evidence for safe repair."""
-    quick = config.setdefault("modes", {}).setdefault("quick", {})
+    modes = config.setdefault("modes", {})
+    original_deep = copy.deepcopy(modes.get("deep", {}) or {})
+    quick = modes.setdefault("quick", {})
     _ensure_representative_fixture_categories(config, quick)
     quick["max_streams_to_probe"] = max(2, int(quick.get("max_streams_to_probe") or 1))
     quick["probe_best_variant"] = True
     quick["probe_first_segment"] = True
     quick["probe_streams_adaptively"] = True
     quick["fixture_limit_per_category"] = True
+    quick["fallback_fixture_limit_per_category"] = 0
     quick["verify_fixture_duration_identity"] = True
     quick["minimum_fixture_duration_ratio"] = float(
         quick.get("minimum_fixture_duration_ratio")
-        or (config.get("modes", {}).get("deep", {}) or {}).get("minimum_fixture_duration_ratio")
+        or original_deep.get("minimum_fixture_duration_ratio")
         or 0.55
     )
     quick["maximum_fixture_duration_ratio"] = float(
         quick.get("maximum_fixture_duration_ratio")
-        or (config.get("modes", {}).get("deep", {}) or {}).get("maximum_fixture_duration_ratio")
+        or original_deep.get("maximum_fixture_duration_ratio")
         or 1.8
     )
+    # The health harness gates per-category fixture selection on requestedMode
+    # rather than solely on the mode config. Clone the bounded profile into the
+    # temporary deep slot so calling --deep does not silently consume deep-sized
+    # budgets or fallback fixtures.
+    modes["deep"] = copy.deepcopy(quick)
 
 
 def _rewrite_mode_metadata(stage: Path, output: Path) -> None:
