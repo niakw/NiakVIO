@@ -6,8 +6,10 @@ import { buildProviderInventory, inventoryStats } from "../src/provider-ingest.m
 
 const root = path.resolve(path.dirname(new URL(import.meta.url).pathname), "..");
 const configPath = path.join(root, "config", "provider-upstreams.json");
+const localConfigPath = path.join(root, "config", "local-provider-sources.json");
 const output = argValue("--output") ?? path.join(root, "reports", "provider-upstream-inventory.json");
 const config = JSON.parse(await fs.readFile(configPath, "utf8"));
+const localConfig = await readJson(localConfigPath, { providers: [] });
 const manifests = [];
 
 for (const upstream of config.upstreams) {
@@ -21,6 +23,7 @@ for (const upstream of config.upstreams) {
       const raw = Buffer.from(content.content, "base64").toString("utf8");
       loaded = {
         upstreamId: upstream.id,
+        sourceKind: "canonical-upstream",
         repository,
         ref: head.sha,
         manifestSha: content.sha,
@@ -35,12 +38,36 @@ for (const upstream of config.upstreams) {
   manifests.push(loaded);
 }
 
+for (const local of localConfig.providers ?? []) {
+  if (!local?.id || !local?.repository || !local?.ref || !local?.filename) {
+    throw new Error(`invalid local provider source: ${JSON.stringify(local)}`);
+  }
+  manifests.push({
+    upstreamId: `local-history:${String(local.id).toLowerCase()}`,
+    sourceKind: "local-historical",
+    repository: local.repository,
+    ref: local.ref,
+    manifestSha: null,
+    manifest: {
+      name: "NiakVIO reconciled local historical providers",
+      version: "v2-local-history",
+      scrapers: [{ ...local }],
+    },
+  });
+}
+
 const inventory = buildProviderInventory(manifests);
+const baseStats = inventoryStats(inventory);
+const localVariantCount = manifests
+  .filter((source) => source.sourceKind === "local-historical")
+  .reduce((sum, source) => sum + (source.manifest?.scrapers?.length ?? 0), 0);
+const canonicalVariantCount = inventory.variantCount - localVariantCount;
 const report = {
-  schema_version: 1,
+  schema_version: 2,
   generated_at: new Date().toISOString(),
-  sources: manifests.map(({ upstreamId, repository, ref, manifestSha, manifest }) => ({
+  sources: manifests.map(({ upstreamId, sourceKind, repository, ref, manifestSha, manifest }) => ({
     upstreamId,
+    sourceKind,
     repository,
     ref,
     manifestSha,
@@ -48,7 +75,12 @@ const report = {
     manifestVersion: manifest.version ?? null,
     scraperCount: manifest.scrapers?.length ?? 0,
   })),
-  stats: inventoryStats(inventory),
+  stats: {
+    ...baseStats,
+    canonicalUpstreamVariants: canonicalVariantCount,
+    localHistoricalVariants: localVariantCount,
+    reconciledProviderCount: inventory.providerCount,
+  },
   ...inventory,
 };
 
@@ -66,6 +98,11 @@ async function githubJson(apiPath) {
   const response = await fetch(`https://api.github.com${apiPath}`, { headers });
   if (!response.ok) throw new Error(`GitHub ${response.status} for ${apiPath}: ${await response.text()}`);
   return response.json();
+}
+
+async function readJson(file, fallback) {
+  try { return JSON.parse(await fs.readFile(file, "utf8")); }
+  catch { return fallback; }
 }
 
 function encodePath(value) {
