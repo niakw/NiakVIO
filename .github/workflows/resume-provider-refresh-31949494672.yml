@@ -1,0 +1,165 @@
+name: Resume validated provider refresh 31949494672
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/resume-provider-refresh-31949494672.yml"
+
+permissions:
+  contents: write
+
+env:
+  SOURCE_RUN_ID: "31949494672"
+  SOURCE_ARTIFACT: "nuvio-refresh-repair-31949494672"
+
+jobs:
+  publish:
+    name: Resume validated refresh publication
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    steps:
+      - name: Checkout current main
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: "3.12"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: "24"
+          package-manager-cache: false
+
+      - name: Install pinned dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Download already validated repair transaction
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          name: ${{ env.SOURCE_ARTIFACT }}
+          path: checked-artifact
+          github-token: ${{ github.token }}
+          repository: niakw/Niakvio
+          run-id: ${{ env.SOURCE_RUN_ID }}
+
+      - name: Restore validated routing state
+        run: |
+          cp checked-artifact/provider-overrides.json provider-overrides.json
+          cp checked-artifact/provider-domain-history.json provider-domain-history.json
+          python scripts/build_provider_runtime_profiles.py
+          python scripts/reapply_published_overrides.py
+
+      - name: Promote validated existing-provider recoveries
+        env:
+          NUVIO_STAGE: checked-artifact/staging
+          NUVIO_HEALTH_RESULTS: checked-artifact/health-output/health-results.json
+        run: python scripts/promote_refresh_candidates.py
+
+      - name: Finalize upstream LKG and diagnostics
+        run: |
+          python scripts/finalize_upstream_lkg.py \
+            --pending checked-artifact/staging/upstream-lkg-pending.json \
+            --keep-generations 2
+          cp checked-artifact/health-output/dns-preflight-report.json dns-preflight-report.json
+          cp checked-artifact/health-output/provider-hub-report.json provider-hub-report.json
+          cp checked-artifact/health-output/diagnostics-report.json diagnostics-report.json
+          cp checked-artifact/health-output/diagnostics-report.html diagnostics-report.html
+          cp checked-artifact/health-output/route-regressions.json route-regressions.json
+          cp checked-artifact/health-output/repair-report.json repair-report.json
+          python scripts/prune_unreferenced_providers.py
+          python scripts/validate_published_overrides.py
+
+      - name: Finalize manifest without unrelated client-upstream veto
+        env:
+          NUVIO_SKIP_CLIENT_UPSTREAM_GUARD: "1"
+        run: |
+          test -f manifest.next.json
+          PREVIOUS_MANIFEST="$(mktemp)"
+          git show HEAD:manifest.json > "$PREVIOUS_MANIFEST"
+          mv manifest.next.json manifest.json
+          python scripts/bump_release_patch_if_manifest_changed.py \
+            --previous "$PREVIOUS_MANIFEST" \
+            --manifest manifest.json
+          python scripts/build_provider_runtime_profiles.py
+          python scripts/reapply_published_overrides.py
+          python scripts/generate_language_manifests.py
+          python scripts/prune_unreferenced_providers.py
+          python scripts/sync_release_versions.py --manifest manifest.json
+          python scripts/validate_activation_preservation.py
+          python scripts/validate_language_projection.py
+          python scripts/release_evidence_fence.py fingerprint \
+            --manifest manifest.json \
+            --root . \
+            --output /tmp/refresh-release-generation.json
+
+      - name: Audit and quarantine conclusive wrong content
+        env:
+          NUVIO_CATALOGUE_AUDIT_OUTPUT: /tmp/catalogue-media-audit.json
+          NUVIO_CATALOGUE_AUDIT_WORKERS: "8"
+          NUVIO_CATALOGUE_AUDIT_TIMEOUT: "60"
+        run: |
+          set +e
+          python scripts/audit_catalogue_identity_media.py
+          audit_status=$?
+          set -e
+          if [ "$audit_status" -ne 0 ]; then
+            python scripts/quarantine_catalogue_audit_failures.py \
+              --audit /tmp/catalogue-media-audit.json \
+              --evidence /tmp/refresh-release-generation.json \
+              --workflow-run-id "${{ github.run_id }}" \
+              --tested-commit-sha "${{ github.sha }}"
+          fi
+
+      - name: Measure Interstellar coverage
+        continue-on-error: true
+        run: |
+          python scripts/interstellar_nuvio_matrix.py \
+            --workers 8 \
+            --timeout 90 \
+            --minimum-automatic 0 \
+            --output /tmp/interstellar-nuvio-matrix.json
+
+      - name: Upload Interstellar diagnostic
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: interstellar-resumed-coverage-${{ github.run_id }}
+          path: /tmp/interstellar-nuvio-matrix.json
+          retention-days: 7
+          if-no-files-found: warn
+
+      - name: Publish recovered provider generation
+        env:
+          NUVIO_SKIP_CLIENT_UPSTREAM_GUARD: "1"
+        run: |
+          python scripts/build_provider_runtime_profiles.py
+          python scripts/reapply_published_overrides.py
+          python scripts/release_evidence_fence.py fingerprint \
+            --manifest manifest.json \
+            --root . \
+            --output /tmp/refresh-release-generation.json
+          python scripts/generate_release_hashes.py
+          python scripts/validate_release_integrity.py
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A manifest.json vf/manifest.json providers PROVENANCE.json \
+            health-report.json health-history.json dns-preflight-report.json \
+            provider-hub-report.json diagnostics-report.json diagnostics-report.html \
+            route-regressions.json repair-report.json provider-overrides.json \
+            provider-domain-history.json upstream-lkg.json upstream-lkg package.json \
+            package-lock.json sources.json nuvio-client-id-state.json FILE-HASHES.json \
+            PATCH-SHA256SUMS.txt SHA256SUMS.json
+          if git diff --cached --quiet; then
+            echo "No provider publication delta."
+            exit 0
+          fi
+          git commit -m "chore: publish recovered provider coverage"
+          git fetch origin main
+          git rebase origin/main
+          git push origin HEAD:main
