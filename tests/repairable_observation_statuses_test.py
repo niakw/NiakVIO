@@ -26,14 +26,19 @@ candidate = {
 }
 source = "module.exports={getStreams:async()=>[]};\n"
 
-# These are raw probe observations, never terminal repair decisions. Every one
-# must enter the adaptive recovery path when a bounded provider origin is known.
+# Runtime labels are observations, never terminal repair decisions. Every
+# non-healthy/non-playable observation must enter adaptive recovery when a
+# bounded provider origin is available. This intentionally includes unknown
+# future labels so a new diagnostic vocabulary cannot silently disable Repair.
 for status in (
     "no_streams",
     "degraded",
     "blocked",
     "provider_unreachable",
     "unavailable",
+    "runtime_error",
+    "reachable",
+    "future_runtime_gap",
 ):
     result = {
         "status": status,
@@ -44,9 +49,16 @@ for status in (
     profiles = runtime_repair.matching_profiles(candidate, result, source)
     assert "adaptive_runtime_recovery" in profiles, (status, profiles)
 
-# A positive playable result is the only observation in this family that must
-# bypass repair. Strong safety exclusions remain separate and are not converted
-# into availability repair attempts.
+# Even a nominal `healthy` label is repairable if no playable media backs it.
+healthy_without_playable = {
+    "status": "healthy",
+    "tests": [],
+    "evidence": {"streams_returned": 0, "streams_playable": 0},
+}
+assert runtime_repair._adaptive_failure(healthy_without_playable) is True
+assert "adaptive_runtime_recovery" in runtime_repair.matching_profiles(candidate, healthy_without_playable, source)
+
+# Only positive playable health bypasses runtime repair.
 healthy = {
     "status": "healthy",
     "tests": [],
@@ -55,8 +67,19 @@ healthy = {
 assert runtime_repair._adaptive_failure(healthy) is False
 assert "adaptive_runtime_recovery" not in runtime_repair.matching_profiles(candidate, healthy, source)
 
-# Concrete failure classes must also trigger repair even when the coarse status
-# is not one of the legacy availability labels.
+# `excluded` is not a runtime failure. It represents an explicit policy/safety
+# decision (for example forbidden P2P/provenance) and must not be auto-repaired
+# into an active provider by the unattended availability engine.
+excluded = {
+    "status": "excluded",
+    "tests": [],
+    "evidence": {"streams_returned": 0, "streams_playable": 0},
+}
+assert runtime_repair._adaptive_failure(excluded) is False
+assert "adaptive_runtime_recovery" not in runtime_repair.matching_profiles(candidate, excluded, source)
+
+# Concrete failure classes still trigger repair independently of the coarse
+# status label.
 for failure_class in (
     "content_lookup_completed_no_streams",
     "stream_not_playback_verified",
