@@ -106,6 +106,38 @@ def _filtered_activation_lkg(payload: dict[str, Any], preserve_ids: set[str]) ->
     return output
 
 
+def _write_json(path: Path, value: dict[str, Any]) -> None:
+    path.write_text(json.dumps(value, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+
+def _postprocess_refresh_outputs() -> None:
+    """Undo the internal deep-mode compatibility shim in public metadata."""
+    report = pc.load_json(pc.REPORT_PATH, {}) or {}
+    if isinstance(report, dict):
+        report["test_mode"] = "quick"
+        report["publication_mode"] = "restricted_quick_refresh"
+        policy = report.setdefault("policy", {})
+        if isinstance(policy, dict):
+            policy["quick_checks_are_report_only"] = False
+            policy["deep_checks_are_required_for_publication"] = False
+            policy["quick_refresh_publication_is_restricted"] = True
+            policy["quick_refresh_requires_current_positive_proof"] = True
+            policy["deep_required_for_new_activation_or_quarantine_exit"] = True
+        _write_json(pc.REPORT_PATH, report)
+
+    provenance = pc.load_json(pc.PROVENANCE_PATH, {"providers": {}}) or {"providers": {}}
+    if isinstance(provenance, dict):
+        provenance["validation_mode"] = "quick"
+        provenance["publication_mode"] = "restricted_quick_refresh"
+        providers = provenance.get("providers")
+        if isinstance(providers, dict):
+            for row in providers.values():
+                if isinstance(row, dict) and row.get("checked_at"):
+                    row["check_mode"] = "quick"
+                    row["publication_mode"] = "restricted_quick_refresh"
+        _write_json(pc.PROVENANCE_PATH, provenance)
+
+
 def main() -> int:
     stage = Path(os.environ.get("NUVIO_STAGE", ROOT / "staging")).resolve()
     health_path = Path(
@@ -196,6 +228,8 @@ def main() -> int:
         pc.load_overrides = original_load_overrides
         pc.load_json = original_load_json
         pc.update_strict_history = original_update_history
+
+    _postprocess_refresh_outputs()
 
     next_manifest = pc.load_json(pc.NEXT_MANIFEST_PATH, {"scrapers": []}) or {"scrapers": []}
     next_rows = {
