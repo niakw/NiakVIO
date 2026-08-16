@@ -12,6 +12,11 @@ V5 reuses the audited V4 resolver and applies narrow, guarded source rewrites:
 - an extension-only candidate is probed before it can be returned;
 - HTML reached through a media-looking URL is parsed recursively as a player;
 - nested media-looking links are recursively verified rather than trusted.
+
+Its marker is intentionally outside the legacy V4 migration prefix. Older
+``reapply_published_overrides`` logic can therefore maintain historical V4
+bundles without ever downgrading a V5 bundle back to extension-trusting code.
+V5 removes/replaces its own prior wrapper before delegating to the V4 generator.
 """
 from __future__ import annotations
 
@@ -27,7 +32,9 @@ if _spec is None or _spec.loader is None:
 _v4 = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(_v4)
 
-MARKER_V5 = "NUVIO_ADAPTIVE_RUNTIME_RECOVERY_V5"
+MARKER_V5 = "NUVIO_VERIFIED_MEDIA_RUNTIME_RECOVERY_V5"
+MARKER_COMMENT = f"/* {MARKER_V5}:"
+ADAPTIVE_CALL = '})(typeof globalThis!=="undefined"?globalThis:this,'
 
 
 def _replace_once(text: str, old: str, new: str, label: str) -> str:
@@ -37,15 +44,33 @@ def _replace_once(text: str, old: str, new: str, label: str) -> str:
     return text.replace(old, new, 1)
 
 
+def _strip_previous_v5(text: str) -> str:
+    cursor = 0
+    parts: list[str] = []
+    while True:
+        start = text.find(MARKER_COMMENT, cursor)
+        if start < 0:
+            parts.append(text[cursor:])
+            break
+        parts.append(text[cursor:start])
+        call = text.find(ADAPTIVE_CALL, start)
+        end = text.find(");", call) if call >= 0 else -1
+        if call < 0 or end < 0:
+            raise ValueError("adaptive_runtime_recovery_v5: unterminated prior wrapper")
+        cursor = end + 2
+    return "".join(parts).rstrip()
+
+
 def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> str:
-    # V4 knows how to remove any previous NUVIO_ADAPTIVE_RUNTIME_RECOVERY_V*
-    # wrapper before appending a fresh generic resolver.
-    patched = _v4.apply(text, options=options, **kwargs)
+    # V4 removes historical NUVIO_ADAPTIVE_RUNTIME_RECOVERY_V* wrappers; V5
+    # removes its distinct marker itself so the operation stays byte-idempotent.
+    native = _strip_previous_v5(text)
+    patched = _v4.apply(native, options=options, **kwargs)
 
     patched = _replace_once(
         patched,
         "NUVIO_ADAPTIVE_RUNTIME_RECOVERY_V4:",
-        "NUVIO_ADAPTIVE_RUNTIME_RECOVERY_V5:",
+        f"{MARKER_V5}:",
         "marker",
     )
     patched = _replace_once(
@@ -101,7 +126,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> st
     patched = _replace_once(
         patched,
         'if(directProof){var directRow=Object.assign({},row,{isDirect:true});resolved.push(directRow);continue}var mediaRows=await resolve(url,ref,0,{});',
-        patched and 'if(directProof&&directProof!=="extension"){var directRow=Object.assign({},row,{isDirect:true});resolved.push(directRow);continue}var mediaRows=await resolve(url,ref,0,{});',
+        'if(directProof&&directProof!=="extension"){var directRow=Object.assign({},row,{isDirect:true});resolved.push(directRow);continue}var mediaRows=await resolve(url,ref,0,{});',
         "native_extension_probe",
     )
 
