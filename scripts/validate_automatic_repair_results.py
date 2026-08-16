@@ -1,12 +1,21 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: GPL-3.0-only
-"""Validate that every accepted automatic repair has strict playable identity proof."""
+"""Validate accepted automatic repairs with mode-appropriate safety policy."""
 from __future__ import annotations
 
 import argparse
 import json
+import sys
 from pathlib import Path
 from typing import Any
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "scripts"))
+
+from repair_identity_gate import (  # noqa: E402
+    automatic_repair_identity_gate,
+    automatic_repair_safety_gate,
+)
 
 
 def _load(path: Path) -> dict[str, Any]:
@@ -28,6 +37,8 @@ def validate(registry: dict[str, Any], health: dict[str, Any], repair: dict[str,
     ]
     failures: list[str] = []
     accepted_events = 0
+    mode = str(health.get("mode") or repair.get("mode") or "deep").casefold()
+    gate = automatic_repair_safety_gate if mode == "quick" else automatic_repair_identity_gate
 
     for candidate in repaired_candidates:
         key = str(candidate.get("key") or "")
@@ -41,46 +52,9 @@ def validate(registry: dict[str, Any], health: dict[str, Any], repair: dict[str,
             failures.append(f"{key}: accepted repair has no final health result")
             continue
 
-        evidence = result.get("evidence") if isinstance(result.get("evidence"), dict) else {}
-        playable = int(evidence.get("streams_playable") or 0)
-        contradictions = int(evidence.get("identity_contradiction_count") or 0)
-        duration_mismatches = int(evidence.get("duration_identity_mismatch_count") or 0)
-        verified = int(evidence.get("identity_verified_streams") or 0)
-        unknown = int(evidence.get("identity_unverified_streams") or 0)
-
-        if playable <= 0:
-            failures.append(f"{key}: accepted repair has no playable proof")
-        if contradictions > 0:
-            failures.append(f"{key}: accepted repair has content identity contradiction")
-        if duration_mismatches > 0:
-            failures.append(f"{key}: accepted repair has duration identity mismatch")
-        if verified <= 0:
-            failures.append(f"{key}: accepted repair has no positive content identity proof")
-
-        playable_tests = [
-            test for test in result.get("tests") or []
-            if isinstance(test, dict) and int(test.get("streams_playable") or 0) > 0
-        ]
-        if not playable_tests and (unknown > 0 or verified < playable):
-            failures.append(f"{key}: accepted repair playable identity is unresolved")
-
-        for test in playable_tests:
-            count = int(test.get("streams_playable") or 0)
-            test_verified = int(test.get("identity_verified_streams") or 0)
-            test_unknown = int(test.get("identity_unverified_streams") or 0)
-            test_contradictions = int(test.get("identity_contradiction_count") or 0)
-            test_duration = int(test.get("duration_identity_mismatch_count") or 0)
-            fixture = (
-                (test.get("fixture") or {}).get("label")
-                or (test.get("fixture") or {}).get("tmdbId")
-                or "fixture"
-            )
-            if test_contradictions > 0:
-                failures.append(f"{key}/{fixture}: playable repair sample has identity contradiction")
-            if test_duration > 0:
-                failures.append(f"{key}/{fixture}: playable repair sample has duration mismatch")
-            if test_verified < count or test_unknown > 0:
-                failures.append(f"{key}/{fixture}: playable repair sample is not fully identity-verified")
+        ok, reason = gate(result)
+        if not ok:
+            failures.append(f"{key}: {reason}")
 
     reported = int(repair.get("accepted_repairs") or 0)
     if reported != accepted_events:
@@ -102,10 +76,11 @@ def main() -> int:
     repair = _load(args.repairs)
     failures = validate(registry, health, repair)
     if failures:
-        raise SystemExit("automatic repair identity gate failed:\n- " + "\n- ".join(failures))
+        raise SystemExit("automatic repair gate failed:\n- " + "\n- ".join(failures))
     print(
-        "automatic repair identity gate passed: "
-        f"mode={health.get('mode')} accepted_repairs={int(repair.get('accepted_repairs') or 0)}"
+        "automatic repair gate passed: "
+        f"mode={health.get('mode')} policy={repair.get('acceptance_policy') or 'strict_identity'} "
+        f"accepted_repairs={int(repair.get('accepted_repairs') or 0)}"
     )
     return 0
 
