@@ -1,6 +1,15 @@
 name: Provider Engine V2
 
 on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'engine_v2/**'
+      - 'provider_catalog.json'
+      - 'manifest.json'
+      - 'vf/manifest.json'
+      - '.github/workflows/provider-engine-v2.yml'
   push:
     branches:
       - main
@@ -14,6 +23,10 @@ on:
 
 permissions:
   contents: read
+
+concurrency:
+  group: provider-engine-v2-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   architecture:
