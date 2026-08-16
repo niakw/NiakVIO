@@ -1,5 +1,6 @@
 const HTTP_BLOCKED = new Set([401, 403, 407, 429, 451]);
 const HTTP_GONE = new Set([404, 410]);
+export const BRAIN_CONTROL_PLANE_VERSION = 2;
 
 export const FAILURE_CLASSES = Object.freeze([
   "healthy", "not_invoked", "dns_unreachable", "transport_blocked", "search_gap",
@@ -136,6 +137,7 @@ export function buildLearnedRecipe({ id, signature, actions, provenOn, runtime, 
 
 function planResult(failureClass, hypotheses, action, budget, exitReason) {
   return {
+    brainVersion: BRAIN_CONTROL_PLANE_VERSION,
     failureClass, hypotheses, action, exitReason,
     budget: {
       maxHypotheses: budget.maxHypotheses,

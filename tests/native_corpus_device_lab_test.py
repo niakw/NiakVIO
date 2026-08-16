@@ -38,10 +38,6 @@ actual_slugs = {
 }
 assert actual_slugs == expected_slugs, (actual_slugs, expected_slugs)
 
-# Two expensive runtime jobs are reused: Desktop once and one Android emulator for
-# Mobile+TV. A lightweight publication gate resolves the exact released NiakVIO
-# SHA + accepted official client refs, then a final lightweight summary aggregates
-# the sanitized artifacts. No fixture/provider matrix may multiply heavy runners.
 for slug in sorted(expected_slugs):
     assert slug in workflow, (slug, "desktop workflow")
     assert slug in android_suite, (slug, "android suite")
@@ -71,10 +67,11 @@ for required in (
 ):
     assert required in workflow, required
 
-# Final native proof is tied to a successful provider-refresh publication and to
-# the exact accepted official client heads stored in the released sources.json.
+# Final native proof is tied to the canonical ARCHI2 publication workflow and
+# exact accepted official client heads stored in the released sources.json.
 assert "workflow_run:" in workflow
-assert "Repair providers on routine refresh" in workflow
+assert "Niakvio provider pipeline" in workflow
+assert "chore: publish validated ARCHI2 provider transaction" in workflow
 assert "github.event.workflow_run.conclusion" in workflow
 assert "sources.json" in workflow
 assert "accepted_ref" in workflow
@@ -83,8 +80,6 @@ assert '.github/triggers/native-corpus-device-lab' in workflow
 assert '"providers/**"' not in workflow
 assert "provider-overrides.json" not in workflow.split("permissions:", 1)[0]
 
-# Preparation must enumerate the manifest itself rather than silently shrinking
-# back to the old per-fixture provider lists.
 assert "def manifest_providers()" in prepare
 assert 'manifest.get("scrapers", [])' in prepare
 assert "stage_providers" in prepare
@@ -108,7 +103,6 @@ for row in manifest.get("scrapers", []):
     stageable.append(provider_id)
 assert len(stageable) >= 80, len(stageable)
 
-# The broad lab performs real transport checks inside each official native runtime.
 for required in (
     "java.net.HttpURLConnection",
     "probeTransport(row.url, row.headers)",
@@ -119,14 +113,10 @@ for required in (
     "host64",
 ):
     assert required in prepare, required
-
-# Never persist the complete provider URL or header values in public Actions output.
 assert "url64=" not in prepare
 assert "headers64=" not in prepare
 assert "row.headers}" not in prepare
 
-# Native rows are evaluated with the same identity engine used by the existing
-# Nuvio client lab. HLS duration and transport evidence feed that same verdict path.
 assert "streamIdentity" in analyzer
 assert "fixture_duration_mismatch" in analyzer
 assert "FIELD_NATIVE_CONTRADICTION" in analyzer
@@ -136,16 +126,12 @@ assert "FIELD_NATIVE_SLOW" in analyzer
 assert "decode(f.url64)" not in analyzer
 assert "safeSyntheticUrl" in analyzer
 
-# Reusing the emulator must not reduce client coverage or stop after the first
-# failure; each fixture is restaged and analyzed independently on both clients.
 assert 'for fixture in "${FIXTURES[@]}"' in android_suite
 assert android_suite.count('for fixture in "${FIXTURES[@]}"') == 2
 assert "FIELD_NATIVE_CORPUS_MOBILE_STATUS" in android_suite
 assert "FIELD_NATIVE_CORPUS_TV_STATUS" in android_suite
 assert "FIELD_NATIVE_CORPUS_ANDROID_SUITE_STATUS" in android_suite
 
-# Cross-device aggregation must surface patterns that are candidates for global
-# engine rules rather than leaving us to inspect provider logs one by one.
 for required in (
     "repeatedContradictions",
     "repeatedTransportFailures",
