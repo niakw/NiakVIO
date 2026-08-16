@@ -13,6 +13,10 @@ Two different decisions deliberately use two different gates:
   playable sample used to justify replacement is positively tied to the
   requested work.
 
+The gate consumes already-probed media evidence. Adaptive recovery therefore
+must resolve and positively verify media-looking URLs before they reach this
+policy layer; filename extensions alone never turn a repair into playable proof.
+
 Keeping these decisions separate prevents the quick loop from repairing a
 provider and immediately throwing the candidate away merely because the bounded
 probe could not prove identity, without weakening deep learning or final
@@ -46,10 +50,7 @@ def automatic_repair_safety_gate(result: dict[str, Any]) -> tuple[bool, str]:
     if duration_mismatches > 0:
         return False, "safety_gate:duration_identity_mismatch"
 
-    playable_tests = [
-        row for row in _tests(result)
-        if int(row.get("streams_playable") or 0) > 0
-    ]
+    playable_tests = [row for row in _tests(result) if int(row.get("streams_playable") or 0) > 0]
     if not playable_tests:
         return False, "safety_gate:no_fixture_level_playable_proof"
 
@@ -83,14 +84,7 @@ def automatic_repair_identity_gate(result: dict[str, Any]) -> tuple[bool, str]:
     if verified <= 0:
         return False, "identity_gate:no_positive_content_identity_proof"
 
-    playable_tests = [
-        row for row in _tests(result)
-        if int(row.get("streams_playable") or 0) > 0
-    ]
-
-    # Fail closed when the aggregate claims playability but the harness did not
-    # retain fixture-level playable evidence. Aggregate identity counters can
-    # include non-playable rows and are not sufficient to teach new bytes.
+    playable_tests = [row for row in _tests(result) if int(row.get("streams_playable") or 0) > 0]
     if not playable_tests:
         return False, "identity_gate:no_fixture_level_playable_identity_proof"
 
