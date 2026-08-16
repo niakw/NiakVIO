@@ -14,6 +14,7 @@ on:
       - "scripts/normalize_terminal_quarantine_stage.py"
       - "scripts/repair_profile_persistence.py"
       - "tests/quick_refresh_policy_test.py"
+      - "tests/quick_refresh_deep_authority_test.py"
       - "tests/quick_repair_probe_profile_test.py"
       - "tests/repair_profile_persistence_test.py"
       - "tests/terminal_quarantine_stage_normalization_test.py"
@@ -81,6 +82,7 @@ jobs:
           python -m py_compile scripts/normalize_terminal_quarantine_stage.py
           python -m py_compile scripts/repair_profile_persistence.py
           python tests/quick_refresh_policy_test.py
+          python tests/quick_refresh_deep_authority_test.py
           python tests/quick_repair_probe_profile_test.py
           python tests/repair_profile_persistence_test.py
           python tests/terminal_quarantine_stage_normalization_test.py
@@ -231,7 +233,7 @@ jobs:
           cp checked-artifact/health-output/diagnostics-report.html diagnostics-report.html
           cp checked-artifact/health-output/route-regressions.json route-regressions.json
           cp checked-artifact/health-output/repair-report.json repair-report.json
-          git add health-report.json health-history.json PROVENANCE.json \
+          git add health-report.json refresh-health-report.json health-history.json PROVENANCE.json \
             dns-preflight-report.json provider-hub-report.json diagnostics-report.json \
             diagnostics-report.html route-regressions.json repair-report.json \
             provider-overrides.json provider-domain-history.json upstream-lkg.json upstream-lkg/
