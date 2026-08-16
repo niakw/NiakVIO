@@ -91,22 +91,21 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
         metadata.get("baseUrl"), metadata.get("base_url"), metadata.get("url"),
         canonical.get("baseUrl"), canonical.get("base_url"), canonical.get("url"),
     ]
-    for logo in (metadata.get("logo"), canonical.get("logo")):
-        explicit.append(logo)
+    explicit.extend((metadata.get("logo"), canonical.get("logo")))
     observed = capability.get("observed_origins") if isinstance(capability.get("observed_origins"), list) else []
 
     provider_token = re.sub(r"[^a-z0-9]+", "", provider_id)
     base_url = None
     for raw in explicit + list(observed):
-        origin = _origin(raw)
-        if not origin:
+        peer = _origin(raw)
+        if not peer:
             continue
-        host = (urlparse(origin).hostname or "").casefold()
+        host = (urlparse(peer).hostname or "").casefold()
         if host in INFRASTRUCTURE_HOSTS or any(host.endswith("." + item) for item in INFRASTRUCTURE_HOSTS):
             continue
         compact_host = re.sub(r"[^a-z0-9]+", "", host)
         if raw in {patch.get("official_site"), recovery_options.get("base_url")} or (provider_token and provider_token in compact_host):
-            base_url = origin
+            base_url = peer
             break
     if not base_url:
         return None
@@ -147,8 +146,8 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
         peer = _origin(raw)
         if not peer:
             continue
-        peer_host = (urlparse(peer).hostname or "").casefold()
-        if peer_host in INFRASTRUCTURE_HOSTS or any(peer_host.endswith("." + item) for item in INFRASTRUCTURE_HOSTS):
+        host = (urlparse(peer).hostname or "").casefold()
+        if host in INFRASTRUCTURE_HOSTS or any(host.endswith("." + item) for item in INFRASTRUCTURE_HOSTS):
             continue
         if peer not in endpoint_origins:
             endpoint_origins.append(peer)
@@ -162,6 +161,7 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
         "direct_paths": direct_paths,
         "max_pages": 10,
         "max_embeds": 10,
+        "max_depth": 3,
         "timeout_ms": 9000,
         "blocked_hosts": sorted(blocked_hosts),
         "blocked_path_patterns": sorted(blocked_paths),
@@ -214,8 +214,8 @@ def _source_endpoint_origins(source_text: str) -> list[str]:
         peer = _origin(raw)
         if not peer:
             continue
-        peer_host = (urlparse(peer).hostname or "").casefold()
-        if peer_host in INFRASTRUCTURE_HOSTS or any(peer_host.endswith("." + item) for item in INFRASTRUCTURE_HOSTS):
+        host = (urlparse(peer).hostname or "").casefold()
+        if host in INFRASTRUCTURE_HOSTS or any(host.endswith("." + item) for item in INFRASTRUCTURE_HOSTS):
             continue
         if peer not in output:
             output.append(peer)
@@ -236,7 +236,7 @@ def _apply_adaptive(parent_data: bytes, candidate: dict[str, Any]) -> tuple[byte
         if peer not in peers:
             peers.append(peer)
     options["endpoint_origins"] = peers[:32]
-    script = ROOT / "scripts" / "provider_patches" / "adaptive_runtime_recovery_v4.py"
+    script = ROOT / "scripts" / "provider_patches" / "adaptive_runtime_recovery_v5.py"
     spec = importlib.util.spec_from_file_location("nuvio_adaptive_runtime_recovery", script)
     if spec is None or spec.loader is None:
         raise RuntimeError(f"cannot load {script}")
@@ -245,7 +245,7 @@ def _apply_adaptive(parent_data: bytes, candidate: dict[str, Any]) -> tuple[byte
     patched = module.apply(source_text, options=options).encode("utf-8")
     if patched == parent_data:
         return parent_data, []
-    return patched, [{"type": "patch_profile", "profile": "adaptive_runtime_recovery", "phase": "runtime", "options": options}]
+    return patched, [{"type": "patch_profile", "profile": "adaptive_runtime_recovery", "phase": "runtime", "revision": 5, "options": options}]
 
 
 def create_repair_candidate(stage: Path, candidate: dict[str, Any], profile_name: str, round_number: int) -> tuple[dict[str, Any] | None, str | None]:
@@ -295,5 +295,6 @@ def create_repair_candidate(stage: Path, candidate: dict[str, Any], profile_name
         "round": round_number,
         "profile": "",
         "strategy": "adaptive_runtime_recovery",
+        "revision": 5,
     }
     return repaired, None
