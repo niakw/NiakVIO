@@ -62,8 +62,6 @@ def _strip_previous_v5(text: str) -> str:
 
 
 def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> str:
-    # V4 removes historical NUVIO_ADAPTIVE_RUNTIME_RECOVERY_V* wrappers; V5
-    # removes its distinct marker itself so the operation stays byte-idempotent.
     native = _strip_previous_v5(text)
     patched = _v4.apply(native, options=options, **kwargs)
 
@@ -80,25 +78,23 @@ def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> st
         "runtime_revision",
     )
 
-    # An extension-only final URL is not proof. Probe MIME/binary/HLS/DASH first.
+    # mediaProof() in V4 checks extensions before MIME. Recover the stronger
+    # network evidence explicitly so a genuine video/mp4 is still accepted in a
+    # single bounded probe, while extension-only HTML is never accepted.
     patched = _replace_once(
         patched,
         'var proof=mediaProof(finalUrl,type,"",disposition);if(proof)return{url:finalUrl,proof:proof};if(/(?:text\\/html|application\\/(?:json|javascript|xml)|text\\/(?:plain|xml|javascript))/i.test(type))return null;var bytes=await prefixBytes(r,a),binary=binaryProof(bytes);',
-        'var proof=mediaProof(finalUrl,type,"",disposition);if(proof&&proof!=="extension")return{url:finalUrl,proof:proof};if(/(?:text\\/html|application\\/(?:json|javascript|xml)|text\\/(?:xml|javascript))/i.test(type))return null;var bytes=await prefixBytes(r,a),binary=binaryProof(bytes);',
+        'var proof=mediaProof(finalUrl,type,"",disposition);if(proof==="extension"){if(mediaType(type))proof="mime";else if(mediaDisposition(disposition))proof="disposition"}if(proof&&proof!=="extension")return{url:finalUrl,proof:proof};if(/(?:text\\/html|application\\/(?:json|javascript|xml)|text\\/(?:xml|javascript))/i.test(type))return null;var bytes=await prefixBytes(r,a),binary=binaryProof(bytes);',
         "opaque_positive_proof",
     )
 
-    # req() must read an HTML body even when the path happens to end in .mp4.
-    # Real media with a positive MIME/disposition still avoids text consumption.
     patched = _replace_once(
         patched,
         'var finalUrl=s(r.url||u),type=r.headers&&typeof r.headers.get==="function"?s(r.headers.get("content-type")):"",disposition=r.headers&&typeof r.headers.get==="function"?s(r.headers.get("content-disposition")):"",body=null;if(json){body=await r.json()}else if(media(finalUrl,type,"",disposition)){body=""}else{body=await r.text()}var result={body:body,url:finalUrl,type:type,disposition:disposition,status:r.status};',
-        'var finalUrl=s(r.url||u),type=r.headers&&typeof r.headers.get==="function"?s(r.headers.get("content-type")):"",disposition=r.headers&&typeof r.headers.get==="function"?s(r.headers.get("content-disposition")):"",body=null,directProof=mediaProof(finalUrl,type,"",disposition);if(json){body=await r.json()}else if(directProof&&directProof!=="extension"){body=""}else{body=await r.text()}var result={body:body,url:finalUrl,type:type,disposition:disposition,status:r.status};',
+        'var finalUrl=s(r.url||u),type=r.headers&&typeof r.headers.get==="function"?s(r.headers.get("content-type")):"",disposition=r.headers&&typeof r.headers.get==="function"?s(r.headers.get("content-disposition")):"",body=null,directProof=mediaProof(finalUrl,type,"",disposition);if(json){body=await r.json()}else if((directProof&&directProof!=="extension")||mediaType(type)||mediaDisposition(disposition)){body=""}else{body=await r.text()}var result={body:body,url:finalUrl,type:type,disposition:disposition,status:r.status};',
         "request_extension_hint",
     )
 
-    # At resolver entry, verify extension-only URLs. If they are HTML, continue
-    # through req()/urls() instead of returning the deceptive path as media.
     patched = _replace_once(
         patched,
         'var staticProof=mediaProof(requested,"","","");if(staticProof)return[{url:requested,referer:ref||requested,direct:true,proof:staticProof}];if(opaqueProbeCandidate(requested,ref)){',
@@ -106,8 +102,6 @@ def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> st
         "resolver_entry_probe",
     )
 
-    # Nested URLs discovered in a page are not trusted merely because their path
-    # looks like media. Extension-only entries fall through to recursive resolve.
     patched = _replace_once(
         patched,
         'var directProof=mediaProof(xs[d],"","","");if(directProof)out.push({url:xs[d],referer:page,direct:true,proof:directProof})',
@@ -121,8 +115,6 @@ def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> st
         "nested_extension_recurse",
     )
 
-    # Native provider output receives the same rule: extension-only URLs are sent
-    # through resolve() so playback headers/cookies and final redirects are kept.
     patched = _replace_once(
         patched,
         'if(directProof){var directRow=Object.assign({},row,{isDirect:true});resolved.push(directRow);continue}var mediaRows=await resolve(url,ref,0,{});',
