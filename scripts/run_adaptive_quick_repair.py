@@ -10,6 +10,7 @@ for broad catalogue proof, durable profile learning, and quarantine exit.
 from __future__ import annotations
 
 import argparse
+import copy
 import json
 import sys
 from pathlib import Path
@@ -56,9 +57,36 @@ def _quick_run_health(*, stage: Path, registry_path: Path, output_dir: Path, mod
     )
 
 
+def _ensure_representative_fixture_categories(config: dict[str, Any], quick: dict[str, Any]) -> None:
+    """Give routine repair one bounded fixture for movie, TV and anime."""
+    quick_fixtures = [
+        copy.deepcopy(row)
+        for row in quick.get("fixtures") or []
+        if isinstance(row, dict)
+    ]
+    deep_fixtures = [
+        row
+        for row in ((config.get("modes", {}).get("deep", {}) or {}).get("fixtures") or [])
+        if isinstance(row, dict)
+    ]
+    present = {str(row.get("category") or "") for row in quick_fixtures}
+    for category in ("movie", "tv", "anime"):
+        if category in present:
+            continue
+        source = next(
+            (row for row in deep_fixtures if str(row.get("category") or "") == category),
+            None,
+        )
+        if source is not None:
+            quick_fixtures.append(copy.deepcopy(source))
+            present.add(category)
+    quick["fixtures"] = quick_fixtures
+
+
 def _strengthen_quick_probe(config: dict[str, Any]) -> None:
     """Keep refresh bounded while collecting enough evidence for safe repair."""
     quick = config.setdefault("modes", {}).setdefault("quick", {})
+    _ensure_representative_fixture_categories(config, quick)
     quick["max_streams_to_probe"] = max(2, int(quick.get("max_streams_to_probe") or 1))
     quick["probe_best_variant"] = True
     quick["probe_first_segment"] = True
