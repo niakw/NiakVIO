@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "purpose": "cross-device-regression-and-repair-evidence",
+  "fixtures": [
+    {
+      "id": "interstellar",
+      "tmdbId": "157336",
+      "mediaType": "movie",
+      "title": "Interstellar",
+      "year": 2014
+    },
+    {
+      "id": "mon-ninja-et-moi-3",
+      "mediaType": "movie",
+      "title": "Mon ninja et moi 3",
+      "role": "streamzo-targeted-regression"
+    },
+    {
+      "id": "breaking-bad-s01e01",
+      "tmdbId": "1396",
+      "mediaType": "tv",
+      "title": "Breaking Bad",
+      "season": 1,
+      "episode": 1,
+      "role": "mandatory-series-contract-regression"
+    },
+    {
+      "id": "revenant-s01e01",
+      "mediaType": "tv",
+      "title": "Revenant",
+      "season": 1,
+      "episode": 1
+    },
+    {
+      "id": "jujutsu-kaisen-s01e01",
+      "mediaType": "anime",
+      "title": "Jujutsu Kaisen",
+      "season": 1,
+      "episode": 1
+    },
+    {
+      "id": "mushoku-tensei-s01e01",
+      "mediaType": "anime",
+      "title": "Mushoku Tensei",
+      "season": 1,
+      "episode": 1
+    }
+  ],
+  "devices": ["worker", "mobile", "desktop", "tv"],
+  "rule": "a fixture failure records stage evidence; it does not automatically disable or quarantine a provider"
+}
