@@ -2,20 +2,18 @@
 # SPDX-License-Identifier: GPL-3.0-only
 """Run one bounded adaptive repair pass during routine provider refreshes.
 
-Routine refresh is deliberately repair-first: a generated candidate may survive
-when it restores playable coverage without introducing a runtime/category
-regression or positive wrong-content evidence. Identity may remain unknown at
-this bounded stage; the complete catalogue/media audit still runs before any
-publication.
+Routine refresh is repair-first at the *canonical provider* level:
 
-A primary title returning no streams is not enough to call a provider broken.
-Quick repair therefore spends one bounded alternate fixture per required
-catalogue category before structural repair. This separates ordinary catalogue
-misses from real route/runtime failures without turning routine refresh into the
-full deep corpus.
+1. test every discovered upstream sibling;
+2. when one sibling already proves every declared catalogue category, treat the
+   provider as structurally resolved and do not waste repair attempts on its
+   broken siblings;
+3. only unresolved provider families enter structural adaptive repair;
+4. keep a repair only when it improves coverage/runtime without introducing a
+   positive identity/duration contradiction.
 
-Deep remains stricter and authoritative for broad catalogue proof, durable
-profile learning, new activation, and quarantine exit.
+This makes variant selection the cheapest and safest repair strategy. Deep
+remains stricter for durable profile learning and broader corpus proof.
 """
 from __future__ import annotations
 
@@ -44,10 +42,11 @@ if _loaded != _expected:
     raise SystemExit(f"adaptive runtime layer not loaded: {_loaded} != {_expected}")
 
 _base_run_health = loop.run_health
+_base_matching_profiles = loop.matching_profiles
+_sibling_resolutions: dict[str, str] = {}
 
 
 def _category_playable_totals(result: dict[str, Any]) -> dict[str, int]:
-    """Return bounded playable evidence per catalogue category."""
     totals: dict[str, int] = {}
     for row in result.get("tests") or []:
         if not isinstance(row, dict):
@@ -61,16 +60,81 @@ def _category_playable_totals(result: dict[str, Any]) -> dict[str, int]:
     return totals
 
 
-def _quick_compare_results(parent: dict[str, Any], repaired: dict[str, Any]) -> tuple[bool, str]:
-    """Keep safe incremental coverage gains for final catalogue classification.
+def _declared_categories(candidate: dict[str, Any]) -> set[str]:
+    metadata = candidate.get("metadata") if isinstance(candidate.get("metadata"), dict) else {}
+    return {
+        str(value).casefold()
+        for value in metadata.get("supportedTypes") or []
+        if str(value).casefold() in {"movie", "tv", "anime"}
+    }
 
-    Unlike deep profile learning, quick repair does not require every supported
-    category to become healthy in one pass. It requires:
-      * no hard/runtime/malformed regression;
-      * no positive wrong-content or duration contradiction;
-      * no loss of a category that was already playable;
-      * a strict coverage/runtime improvement.
-    """
+
+def _discover_sibling_resolutions(
+    registry_path: Path,
+    report: dict[str, Any],
+) -> dict[str, str]:
+    """Return canonical IDs already solved by one fully proven sibling."""
+    registry = json.loads(registry_path.read_text(encoding="utf-8"))
+    candidates = {
+        str(row.get("key")): row
+        for row in registry.get("candidates") or []
+        if isinstance(row, dict) and row.get("key")
+    }
+    target_categories: dict[str, set[str]] = {}
+    for candidate in candidates.values():
+        cid = str(candidate.get("canonical_id") or candidate.get("upstream_id") or "").casefold()
+        if cid:
+            target_categories.setdefault(cid, set()).update(_declared_categories(candidate))
+
+    choices: dict[str, tuple[tuple[int, int, int], str]] = {}
+    for result in report.get("results") or []:
+        if not isinstance(result, dict) or str(result.get("status") or "") != "healthy":
+            continue
+        key = str(result.get("key") or "")
+        candidate = candidates.get(key)
+        if candidate is None:
+            continue
+        cid = str(candidate.get("canonical_id") or candidate.get("upstream_id") or "").casefold()
+        evidence = result.get("evidence") if isinstance(result.get("evidence"), dict) else {}
+        healthy_categories = {
+            str(value).casefold()
+            for value in evidence.get("healthy_fixture_categories") or []
+            if str(value).casefold() in {"movie", "tv", "anime"}
+        }
+        required = target_categories.get(cid, set())
+        playable = int(evidence.get("streams_playable") or 0)
+        payloads = int(evidence.get("payload_verified_streams") or 0)
+        contradictions = int(evidence.get("identity_contradiction_count") or 0)
+        duration_mismatches = int(evidence.get("duration_identity_mismatch_count") or 0)
+        if playable <= 0 or payloads <= 0 or contradictions or duration_mismatches:
+            continue
+        if required and not required.issubset(healthy_categories):
+            continue
+        score = (
+            int(result.get("score") or 0),
+            playable,
+            payloads,
+        )
+        current = choices.get(cid)
+        if current is None or score > current[0]:
+            choices[cid] = (score, key)
+    return {cid: key for cid, (_score, key) in choices.items()}
+
+
+def _sibling_aware_matching_profiles(
+    candidate: dict[str, Any],
+    result: dict[str, Any],
+    source_text: str,
+    config: dict[str, Any] | None = None,
+) -> list[str]:
+    cid = str(candidate.get("canonical_id") or candidate.get("upstream_id") or "").casefold()
+    winner = _sibling_resolutions.get(cid)
+    if winner and str(candidate.get("key") or "") != winner:
+        return []
+    return _base_matching_profiles(candidate, result, source_text, config)
+
+
+def _quick_compare_results(parent: dict[str, Any], repaired: dict[str, Any]) -> tuple[bool, str]:
     repaired_status = str(repaired.get("status") or "runtime_error")
     if repaired_status in runtime_repair.HARD_FAILURES:
         return False, f"hard_failure:{repaired_status}"
@@ -105,21 +169,21 @@ def _quick_compare_results(parent: dict[str, Any], repaired: dict[str, Any]) -> 
 
 
 def _quick_run_health(*, stage: Path, registry_path: Path, output_dir: Path, mode: str, health_check: Path = loop.HEALTH_CHECK) -> dict[str, Any]:
-    # health_check.mjs currently enables its per-category primary/fallback
-    # selector only for requestedMode=deep. Execute that selector with a
-    # temporary deep config cloned from our bounded quick profile, then rewrite
-    # the evidence to truthful mode=quick before publication.
-    return _base_run_health(
+    report = _base_run_health(
         stage=stage,
         registry_path=registry_path,
         output_dir=output_dir,
         mode="deep",
         health_check=health_check,
     )
+    # The first call is the complete baseline containing every sibling. Build
+    # the canonical resolution map before the repair loop asks for profiles.
+    if not _sibling_resolutions and registry_path.name == "candidates.json":
+        _sibling_resolutions.update(_discover_sibling_resolutions(registry_path, report))
+    return report
 
 
 def _ensure_representative_fixture_categories(config: dict[str, Any], quick: dict[str, Any]) -> None:
-    """Keep compatibility with tests/configs that embed fixtures in mode slots."""
     quick_fixtures = [
         copy.deepcopy(row)
         for row in quick.get("fixtures") or []
@@ -145,7 +209,6 @@ def _ensure_representative_fixture_categories(config: dict[str, Any], quick: dic
 
 
 def _strengthen_quick_probe(config: dict[str, Any]) -> None:
-    """Keep refresh bounded while collecting enough evidence for safe repair."""
     modes = config.setdefault("modes", {})
     original_deep = copy.deepcopy(modes.get("deep", {}) or {})
     quick = modes.setdefault("quick", {})
@@ -155,9 +218,6 @@ def _strengthen_quick_probe(config: dict[str, Any]) -> None:
     quick["probe_first_segment"] = True
     quick["probe_streams_adaptively"] = True
     quick["fixture_limit_per_category"] = True
-    # One alternate title per required category is enough to avoid treating a
-    # single catalogue miss as structural breakage. Deep retains the broader
-    # three-fallback authority for activation/learning decisions.
     quick["fallback_fixture_limit_per_category"] = 1
     quick["verify_fixture_duration_identity"] = True
     quick["minimum_fixture_duration_ratio"] = float(
@@ -170,22 +230,21 @@ def _strengthen_quick_probe(config: dict[str, Any]) -> None:
         or original_deep.get("maximum_fixture_duration_ratio")
         or 1.8
     )
-    # The health harness gates per-category fixture selection and fallback on
-    # requestedMode=deep rather than solely on mode config. Clone the bounded
-    # quick profile into that temporary slot so routine repair gets exactly one
-    # fallback instead of silently consuming the ordinary deep-sized budget.
     modes["deep"] = copy.deepcopy(quick)
 
 
 def _rewrite_mode_metadata(stage: Path, output: Path) -> None:
+    sibling_ids = sorted(_sibling_resolutions)
     registry_path = stage / "candidates.json"
     if registry_path.exists():
         registry = json.loads(registry_path.read_text(encoding="utf-8"))
         runtime = registry.setdefault("runtime_repair", {})
         runtime["validation_mode"] = "quick"
         runtime["profile_persistence"] = "deep_only"
-        runtime["acceptance_policy"] = "repair_first_no_contradiction"
+        runtime["acceptance_policy"] = "healthy_sibling_then_repair"
         runtime["catalogue_fallbacks_per_category"] = 1
+        runtime["sibling_resolved_provider_count"] = len(sibling_ids)
+        runtime["sibling_resolved_provider_ids"] = sibling_ids
         registry_path.write_text(json.dumps(registry, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
     health_path = output / "health-results.json"
@@ -195,8 +254,10 @@ def _rewrite_mode_metadata(stage: Path, output: Path) -> None:
         runtime = health.setdefault("runtime_repair", {})
         runtime["validation_mode"] = "quick"
         runtime["profile_persistence"] = "deep_only"
-        runtime["acceptance_policy"] = "repair_first_no_contradiction"
+        runtime["acceptance_policy"] = "healthy_sibling_then_repair"
         runtime["catalogue_fallbacks_per_category"] = 1
+        runtime["sibling_resolved_provider_count"] = len(sibling_ids)
+        runtime["sibling_resolved_provider_ids"] = sibling_ids
         health_path.write_text(json.dumps(health, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
     report_path = output / "repair-report.json"
@@ -205,8 +266,10 @@ def _rewrite_mode_metadata(stage: Path, output: Path) -> None:
         report["mode"] = "quick"
         report["profile_persistence"] = "deep_only"
         report["bounded_refresh_pass"] = True
-        report["acceptance_policy"] = "repair_first_no_contradiction"
+        report["acceptance_policy"] = "healthy_sibling_then_repair"
         report["catalogue_fallbacks_per_category"] = 1
+        report["sibling_resolved_provider_count"] = len(sibling_ids)
+        report["sibling_resolved_provider_ids"] = sibling_ids
         report_path.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 
@@ -226,14 +289,17 @@ def main() -> int:
     original_compare = loop.compare_results
     original_run_health = loop.run_health
     original_persist = loop.persist_runtime_profiles
+    original_matching = loop.matching_profiles
 
     try:
+        _sibling_resolutions.clear()
         config = json.loads(original_health_config.decode("utf-8"))
         _strengthen_quick_probe(config)
         HEALTH_CONFIG.write_text(json.dumps(config, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
         loop.compare_results = _quick_compare_results
         loop.run_health = _quick_run_health
+        loop.matching_profiles = _sibling_aware_matching_profiles
         loop.persist_runtime_profiles = lambda _config, _assignments: []
 
         sys.argv = [
@@ -255,6 +321,7 @@ def main() -> int:
         sys.argv = original_argv
         loop.compare_results = original_compare
         loop.run_health = original_run_health
+        loop.matching_profiles = original_matching
         loop.persist_runtime_profiles = original_persist
 
 

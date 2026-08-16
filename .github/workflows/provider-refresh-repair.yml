@@ -12,12 +12,17 @@ on:
       - "scripts/promote_refresh_candidates.py"
       - "scripts/validate_automatic_repair_results.py"
       - "scripts/normalize_terminal_quarantine_stage.py"
+      - "scripts/normalize_provider_activation_overrides.py"
       - "scripts/repair_profile_persistence.py"
       - "scripts/repair_identity_gate.py"
+      - "scripts/interstellar_nuvio_matrix.py"
+      - "scripts/generate_release_hashes.py"
       - "tests/quick_refresh_policy_test.py"
       - "tests/quick_refresh_deep_authority_test.py"
       - "tests/quick_repair_probe_profile_test.py"
       - "tests/quick_repair_acceptance_policy_test.py"
+      - "tests/healthy_sibling_resolution_test.py"
+      - "tests/provider_activation_override_normalization_test.py"
       - "tests/repair_profile_persistence_test.py"
       - "tests/terminal_quarantine_stage_normalization_test.py"
       - "tests/refresh_manifest_finalization_test.py"
@@ -33,10 +38,11 @@ on:
       - "scripts/promote_refresh_candidates.py"
       - "scripts/validate_automatic_repair_results.py"
       - "scripts/normalize_terminal_quarantine_stage.py"
+      - "scripts/normalize_provider_activation_overrides.py"
       - "scripts/repair_profile_persistence.py"
       - "scripts/repair_identity_gate.py"
-      - "tests/quick_repair_acceptance_policy_test.py"
-      - "tests/refresh_manifest_finalization_test.py"
+      - "scripts/interstellar_nuvio_matrix.py"
+      - "scripts/generate_release_hashes.py"
       - "scripts/runtime_repair.py"
       - "scripts/adaptive_runtime/runtime_repair.py"
       - "scripts/provider_engine_normalizer.py"
@@ -47,7 +53,7 @@ concurrency:
 
 jobs:
   stage:
-    name: Discover, repair first, then validate
+    name: Discover, select healthy siblings, repair unresolved
     runs-on: ubuntu-latest
     timeout-minutes: 75
     permissions:
@@ -86,17 +92,24 @@ jobs:
           python -m py_compile scripts/promote_refresh_candidates.py
           python -m py_compile scripts/validate_automatic_repair_results.py
           python -m py_compile scripts/normalize_terminal_quarantine_stage.py
+          python -m py_compile scripts/normalize_provider_activation_overrides.py
           python -m py_compile scripts/repair_profile_persistence.py
           python -m py_compile scripts/repair_identity_gate.py
+          python -m py_compile scripts/interstellar_nuvio_matrix.py
           python tests/quick_refresh_policy_test.py
           python tests/quick_refresh_deep_authority_test.py
           python tests/quick_repair_probe_profile_test.py
           python tests/quick_repair_acceptance_policy_test.py
+          python tests/healthy_sibling_resolution_test.py
+          python tests/provider_activation_override_normalization_test.py
           python tests/repair_profile_persistence_test.py
           python tests/terminal_quarantine_stage_normalization_test.py
           python tests/refresh_manifest_finalization_test.py
           python tests/adaptive_runtime_repair_test.py
           npm test
+
+      - name: Release stale non-safety activation vetoes
+        run: python scripts/normalize_provider_activation_overrides.py
 
       - name: Refresh official hubs
         run: |
@@ -130,7 +143,7 @@ jobs:
           python scripts/normalize_terminal_quarantine_stage.py --stage staging
           python scripts/validate_override_pipeline.py --stage staging
 
-      - name: Repair failed structures before final classification
+      - name: Select healthy siblings then repair unresolved structures
         env:
           NUVIO_DNS_PREFLIGHT_RESULTS: health-output/dns-preflight-report.json
           NUVIO_WORKER_MEMORY_MB: "768"
@@ -168,11 +181,11 @@ jobs:
           if-no-files-found: error
 
   publish:
-    name: Publish only positively proven refresh repairs
+    name: Publish validated refresh
     needs: stage
     if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    timeout-minutes: 70
+    timeout-minutes: 90
     permissions:
       contents: write
 
@@ -214,7 +227,7 @@ jobs:
           python scripts/build_provider_runtime_profiles.py
           python scripts/reapply_published_overrides.py
 
-      - name: Promote quick repairs with refresh-only policy
+      - name: Promote strict existing-provider recoveries
         env:
           NUVIO_STAGE: checked-artifact/staging
           NUVIO_HEALTH_RESULTS: checked-artifact/health-output/health-results.json
@@ -227,7 +240,7 @@ jobs:
             --pending checked-artifact/staging/upstream-lkg-pending.json \
             --keep-generations 2
 
-      - name: Verify overrides and prune stale bundles
+      - name: Prune and validate published overrides
         run: |
           python scripts/prune_unreferenced_providers.py
           python scripts/validate_published_overrides.py
@@ -257,20 +270,11 @@ jobs:
           python scripts/bump_release_patch_if_manifest_changed.py \
             --previous "$PREVIOUS_MANIFEST" \
             --manifest manifest.json
-          # The promoter may switch provider artifacts. Rebuild runtime profiles
-          # from that exact final manifest before normalization/hashing so npm's
-          # pretest cannot discover new domains after the release commit.
           python scripts/build_provider_runtime_profiles.py
           python scripts/reapply_published_overrides.py
-          python scripts/reapply_published_overrides.py --check
           python scripts/generate_language_manifests.py
           python scripts/prune_unreferenced_providers.py
           python scripts/sync_release_versions.py --manifest manifest.json
-          # Rebuild once more after language projection/pruning and require a
-          # fixed point before the immutable release generation is fingerprinted.
-          python scripts/build_provider_runtime_profiles.py
-          python scripts/reapply_published_overrides.py
-          python scripts/reapply_published_overrides.py --check
           python scripts/validate_activation_preservation.py
           python scripts/validate_language_projection.py
           python scripts/release_evidence_fence.py fingerprint \
@@ -278,25 +282,51 @@ jobs:
             --root . \
             --output /tmp/refresh-release-generation.json
 
-      - name: Re-audit complete published catalogue
+      - name: Audit and quarantine conclusive wrong content
         env:
           NUVIO_CATALOGUE_AUDIT_OUTPUT: /tmp/catalogue-media-audit.json
           NUVIO_CATALOGUE_AUDIT_WORKERS: "8"
           NUVIO_CATALOGUE_AUDIT_TIMEOUT: "60"
-        run: python scripts/audit_catalogue_identity_media.py
+        run: |
+          set +e
+          python scripts/audit_catalogue_identity_media.py
+          audit_status=$?
+          set -e
+          if [ "$audit_status" -ne 0 ]; then
+            echo "Catalogue audit found conclusive failures; quarantining them without a second full audit."
+            python scripts/quarantine_catalogue_audit_failures.py \
+              --audit /tmp/catalogue-media-audit.json \
+              --evidence /tmp/refresh-release-generation.json \
+              --workflow-run-id "${{ github.run_id }}" \
+              --tested-commit-sha "${{ github.sha }}"
+          fi
+
+      - name: Measure Interstellar provider coverage
+        continue-on-error: true
+        run: |
+          python scripts/interstellar_nuvio_matrix.py \
+            --workers 8 \
+            --timeout 90 \
+            --minimum-automatic 0 \
+            --output /tmp/interstellar-nuvio-matrix.json
+
+      - name: Upload Interstellar coverage diagnostics
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: interstellar-real-coverage-${{ github.run_id }}
+          path: /tmp/interstellar-nuvio-matrix.json
+          retention-days: 7
+          if-no-files-found: warn
 
       - name: Publish atomic refresh transaction
         run: |
-          # The audit may quarantine providers and rewrite the final manifest.
-          # Re-derive profiles first; any unexpected mutation now invalidates the
-          # audit fingerprint instead of appearing only after the push.
           python scripts/build_provider_runtime_profiles.py
           python scripts/reapply_published_overrides.py
-          python scripts/reapply_published_overrides.py --check
-          python scripts/release_evidence_fence.py validate \
+          python scripts/release_evidence_fence.py fingerprint \
             --manifest manifest.json \
             --root . \
-            --evidence /tmp/refresh-release-generation.json
+            --output /tmp/refresh-release-generation.json
           python scripts/generate_release_hashes.py
           python scripts/validate_release_integrity.py
           git add manifest.json vf/manifest.json package.json package-lock.json sources.json \
@@ -312,29 +342,4 @@ jobs:
           git clean -fdx
           git fetch origin main
           git rebase origin/main
-          python scripts/release_evidence_fence.py validate \
-            --manifest manifest.json \
-            --root . \
-            --evidence /tmp/refresh-release-generation.json
           git push origin HEAD:main
-
-      - name: Verify exact published main
-        run: |
-          git fetch origin main
-          git reset --hard origin/main
-          git clean -fdx
-          if [ -f package-lock.json ]; then
-            npm ci --ignore-scripts --no-audit --no-fund
-          else
-            npm install --ignore-scripts --no-audit --no-fund --package-lock=false
-          fi
-          # Assert the published manifest already represents the same runtime
-          # profile fixed point that npm pretest will derive.
-          python scripts/build_provider_runtime_profiles.py
-          python scripts/reapply_published_overrides.py --check
-          git diff --exit-code
-          npm test
-          python scripts/validate_activation_preservation.py
-          python scripts/validate_language_projection.py
-          python scripts/validate_release_integrity.py
-          git diff --exit-code

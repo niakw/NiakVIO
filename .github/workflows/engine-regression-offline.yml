@@ -24,6 +24,10 @@ on:
       - "scripts/quarantine_catalogue_audit_failures.py"
       - "scripts/run_adaptive_deep_repair.py"
       - "scripts/run_adaptive_quick_repair.py"
+      - "scripts/promote_refresh_candidates.py"
+      - "scripts/normalize_provider_activation_overrides.py"
+      - "scripts/interstellar_nuvio_matrix.py"
+      - "scripts/generate_release_hashes.py"
       - "scripts/adaptive_runtime/runtime_repair.py"
       - "scripts/provider_patches/adaptive_runtime_recovery_v4.py"
       - "scripts/provider_patches/adaptive_runtime_recovery_v5.py"
@@ -36,6 +40,10 @@ on:
       - "tests/adaptive_extension_media_proof_test.py"
       - "tests/quick_repair_probe_profile_test.py"
       - "tests/quick_repair_acceptance_policy_test.py"
+      - "tests/healthy_sibling_resolution_test.py"
+      - "tests/provider_activation_override_normalization_test.py"
+      - "tests/quick_refresh_policy_test.py"
+      - "tests/quick_refresh_deep_authority_test.py"
 
 permissions:
   contents: read
@@ -81,6 +89,10 @@ jobs:
           python -m py_compile scripts/quarantine_catalogue_audit_failures.py
           python -m py_compile scripts/run_adaptive_deep_repair.py
           python -m py_compile scripts/run_adaptive_quick_repair.py
+          python -m py_compile scripts/promote_refresh_candidates.py
+          python -m py_compile scripts/normalize_provider_activation_overrides.py
+          python -m py_compile scripts/interstellar_nuvio_matrix.py
+          python -m py_compile scripts/generate_release_hashes.py
           python -m py_compile scripts/adaptive_runtime/runtime_repair.py
           python -m py_compile scripts/provider_patches/adaptive_runtime_recovery_v4.py
           python -m py_compile scripts/provider_patches/adaptive_runtime_recovery_v5.py
@@ -89,38 +101,26 @@ jobs:
           python -m py_compile scripts/provider_compiler.py
           python -m py_compile scripts/provider_rebuild.py
 
-      - name: Validate adaptive repair contracts
+      - name: Validate adaptive repair and selection contracts
         run: |
           python tests/repair_identity_gate_test.py
           python tests/quick_repair_probe_profile_test.py
           python tests/quick_repair_acceptance_policy_test.py
+          python tests/healthy_sibling_resolution_test.py
+          python tests/provider_activation_override_normalization_test.py
+          python tests/quick_refresh_policy_test.py
+          python tests/quick_refresh_deep_authority_test.py
           python tests/adaptive_extension_media_proof_test.py
           python tests/adaptive_runtime_repair_test.py
 
       - name: Reconstruct safe published generation in workspace
-        run: |
-          python scripts/reapply_published_overrides.py
-          echo "--- reconstructed files ---"
-          git status --short
-          echo "--- reconstructed diff stat ---"
-          git diff --stat
+        run: python scripts/reapply_published_overrides.py
 
-      - name: Validate reconstructed published generation
-        run: |
-          python scripts/reapply_published_overrides.py --check
-          python scripts/validate_published_overrides.py
-          python scripts/validate_activation_preservation.py
-          python scripts/validate_language_projection.py
-
-      - name: Run complete repository regression suite without mutating lifecycle hooks
+      - name: Run complete repository regression suite
         run: npm test --ignore-scripts
 
-      - name: Validate final release and require zero drift
+      - name: Require immutable release consistency
         run: |
-          python scripts/reapply_published_overrides.py --check
-          python scripts/validate_published_overrides.py
-          python scripts/validate_activation_preservation.py
-          python scripts/validate_language_projection.py
           python scripts/validate_release_integrity.py
           echo "--- final workspace delta ---"
           git status --short

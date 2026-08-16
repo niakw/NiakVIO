@@ -25,6 +25,10 @@ IGNORED_PARTS = {
 IGNORED_FILES = {
     "availability-history.json",
     "availability-report.json",
+    # Current quick evidence contains run timestamps and is intentionally
+    # regenerated on every routine refresh. The canonical deep health report,
+    # manifests, provider bytes and provenance remain release-hashed.
+    "refresh-health-report.json",
 }
 IGNORED_PREFIXES = (
     ".github/ci-status/",
@@ -61,8 +65,6 @@ CORE_FILES = [
     "scripts/provider_patches/vf_catalogue_recovery.py",
     "scripts/provider_patches/stream_output_sanitizer_v5.py",
 ]
-# These become mandatory release inputs once the cross-platform policy is
-# published, but are optional on the one transition release that creates them.
 OPTIONAL_CORE_FILES = [
     "automation/platform-runtime-matrix.json",
     "automation/platform-runtime-policy.json",

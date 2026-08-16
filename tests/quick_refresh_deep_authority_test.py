@@ -34,7 +34,7 @@ with tempfile.TemporaryDirectory() as directory:
 
     quick_generated = {
         "test_mode": "deep",
-        "providers": [{"id": "historic", "enabled": False, "action": "quick-generated"}],
+        "providers": [{"id": "historic", "enabled": True, "action": "quick-current-strict"}],
     }
     report_path.write_text(json.dumps(quick_generated), encoding="utf-8")
 
@@ -45,6 +45,10 @@ with tempfile.TemporaryDirectory() as directory:
                 "patched_sha256": "old-safe-sha",
                 "activation_blockers": ["catalogue_audit_playable_identity_contradiction"],
             },
+            "recovered": {
+                "published_filename": "providers/recovered-old.js",
+                "activation_eligible": False,
+            },
             "healthy": {"published_filename": "providers/healthy-old.js"},
         }
     }
@@ -53,6 +57,11 @@ with tempfile.TemporaryDirectory() as directory:
             "quarantined": {
                 "published_filename": "providers/quarantined-live.js",
                 "patched_sha256": "unsafe-new-sha",
+                "checked_at": "now",
+            },
+            "recovered": {
+                "published_filename": "providers/recovered-new.js",
+                "activation_eligible": True,
                 "checked_at": "now",
             },
             "healthy": {
@@ -74,24 +83,34 @@ with tempfile.TemporaryDirectory() as directory:
             canonical_bytes,
             original_provenance,
             {"quarantined"},
+            {"recovered"},
         )
     finally:
         module.pc.REPORT_PATH = old_report_path
         module.pc.PROVENANCE_PATH = old_provenance_path
         module.REFRESH_REPORT_PATH = old_refresh_path
 
+    # Deep report remains byte-for-byte canonical authority.
     assert report_path.read_bytes() == canonical_bytes
 
     refresh = json.loads(refresh_path.read_text(encoding="utf-8"))
     assert refresh["test_mode"] == "quick"
-    assert refresh["publication_mode"] == "restricted_quick_refresh"
-    assert refresh["policy"]["quick_refresh_preserves_activation_set"] is True
-    assert refresh["providers"][0]["action"] == "quick-generated"
+    assert refresh["publication_mode"] == "strict_existing_provider_refresh"
+    assert refresh["policy"]["quick_refresh_may_recover_existing_provider"] is True
+    assert refresh["policy"]["quick_refresh_blocks_brand_new_activation"] is True
+    assert refresh["recovered_existing_provider_ids"] == ["recovered"]
+    assert refresh["providers"][0]["action"] == "quick-current-strict"
 
     provenance = json.loads(provenance_path.read_text(encoding="utf-8"))
     assert provenance["validation_mode"] == "quick"
-    assert provenance["publication_mode"] == "restricted_quick_refresh"
+    assert provenance["publication_mode"] == "strict_existing_provider_refresh"
+    # Still-live quarantine keeps exact immutable provenance.
     assert provenance["providers"]["quarantined"] == original_provenance["providers"]["quarantined"]
+    # Recovered provider keeps current quick-proof provenance; it must not be
+    # restored to its old disabled/quarantine evidence.
+    assert provenance["providers"]["recovered"]["published_filename"] == "providers/recovered-new.js"
+    assert provenance["providers"]["recovered"]["activation_eligible"] is True
+    assert provenance["providers"]["recovered"]["check_mode"] == "quick"
     assert provenance["providers"]["healthy"]["published_filename"] == "providers/healthy-new.js"
     assert provenance["providers"]["healthy"]["check_mode"] == "quick"
 
