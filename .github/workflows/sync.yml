@@ -260,12 +260,18 @@ jobs:
     timeout-minutes: 90
     permissions:
       contents: write
+    env:
+      NUVIO_PUBLISHED_MANIFEST_BASELINE: ${{ runner.temp }}/published-manifest.json
 
     steps:
       - name: Checkout current published repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
           fetch-depth: 0
+
+      - name: Capture published manifest baseline
+        shell: bash
+        run: git show HEAD:manifest.json > "$NUVIO_PUBLISHED_MANIFEST_BASELINE"
 
       - name: Set up Python
         uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
@@ -339,19 +345,16 @@ jobs:
         shell: bash
         run: |
           test -f manifest.next.json
-          PREVIOUS_MANIFEST="$(mktemp)"
-          git show HEAD:manifest.json > "$PREVIOUS_MANIFEST"
           mv manifest.next.json manifest.json
           python scripts/build_provider_runtime_profiles.py
           python scripts/reapply_published_overrides.py
           python scripts/generate_language_manifests.py
           python scripts/prune_unreferenced_providers.py
 
-          # Single cache/version finalizer: activation IDs first, then provider
-          # versions, then the global release propagated everywhere.
+          # First pass catches promoter/repair changes before content audit.
           python scripts/sync_release_versions.py \
             --manifest manifest.json \
-            --previous "$PREVIOUS_MANIFEST"
+            --previous "$NUVIO_PUBLISHED_MANIFEST_BASELINE"
 
           python scripts/validate_activation_preservation.py
           python scripts/validate_language_projection.py
@@ -394,22 +397,32 @@ jobs:
                 --evidence /tmp/release-generation.json \
                 --workflow-run-id "${{ github.run_id }}" \
                 --tested-commit-sha "${{ github.sha }}"
-              python scripts/generate_language_manifests.py
-              node engine_v2/scripts/bootstrap-provider-catalog.mjs \
-                --general manifest.json \
-                --vf vf/manifest.json \
-                --output provider_catalog.json
-              node engine_v2/scripts/render-manifests-from-catalog.mjs \
-                --catalog provider_catalog.json \
-                --general manifest.json \
-                --vf vf/manifest.json
-              node engine_v2/tests/provider-catalog.test.mjs
-              python scripts/release_evidence_fence.py fingerprint \
-                --manifest manifest.json \
-                --root . \
-                --output /tmp/release-generation.json
             fi
           fi
+
+          # The audit is allowed to mutate activation state. Re-run the same
+          # idempotent finalizer against the original published generation so
+          # late quarantine/metadata changes cannot escape provider/global cache
+          # invalidation, and cannot double-bump earlier changes.
+          python scripts/generate_language_manifests.py
+          python scripts/sync_release_versions.py \
+            --manifest manifest.json \
+            --previous "$NUVIO_PUBLISHED_MANIFEST_BASELINE"
+          python scripts/validate_activation_preservation.py
+          python scripts/validate_language_projection.py
+          node engine_v2/scripts/bootstrap-provider-catalog.mjs \
+            --general manifest.json \
+            --vf vf/manifest.json \
+            --output provider_catalog.json
+          node engine_v2/scripts/render-manifests-from-catalog.mjs \
+            --catalog provider_catalog.json \
+            --general manifest.json \
+            --vf vf/manifest.json
+          node engine_v2/tests/provider-catalog.test.mjs
+          python scripts/release_evidence_fence.py fingerprint \
+            --manifest manifest.json \
+            --root . \
+            --output /tmp/release-generation.json
 
       - name: Upload catalogue/media audit
         if: always()
