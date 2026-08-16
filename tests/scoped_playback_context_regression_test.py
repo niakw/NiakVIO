@@ -50,15 +50,20 @@ assert changed_context.index("NUVIO_GLOBAL_MEDIA_ENRICHMENT_V1") < changed_conte
 assert '"defaultUserAgent":"UA-STREAMZO-2"' in changed_context
 
 
-# Canonical global playback order is HLS integrity -> enrichment -> final
-# safety. Reapplication must repair stale ordering once and remain stable.
+# Canonical global playback order is enrichment -> final safety -> final HLS
+# graph validation. The HLS layer is intentionally outermost: it must validate
+# the final rows after player/embed recovery has attached scoped playback
+# context and after the shared safety layer has normalized them. Reapplication
+# in any patch order must converge to this one byte-stable representation.
 canonical = media_apply(base, options={"default_user_agent":"UA-STREAMZO"})
 canonical = hls_apply(canonical, options={"default_user_agent":"UA-STREAMZO"}, context={"provider_id":"streamzo"})
 canonical = hls_runtime_apply(canonical, options={"probe_all_urls": True, "fail_closed_unknown": False})
-hls_pos = canonical.index("NUVIO_HLS_RUNTIME_INTEGRITY_V1")
+# hls_apply is the final ordering normalizer when all three layers exist.
+canonical = hls_apply(canonical, options={"default_user_agent":"UA-STREAMZO"}, context={"provider_id":"streamzo"})
 media_pos = canonical.index("NUVIO_GLOBAL_MEDIA_ENRICHMENT_V1")
 safety_pos = canonical.index("NUVIO_GLOBAL_RUNTIME_MEDIA_SAFETY_V1")
-assert hls_pos < media_pos < safety_pos, (hls_pos, media_pos, safety_pos)
+hls_pos = canonical.index("NUVIO_HLS_RUNTIME_INTEGRITY_V1")
+assert media_pos < safety_pos < hls_pos, (media_pos, safety_pos, hls_pos)
 canonical_again = hls_runtime_apply(canonical, options={"probe_all_urls": True, "fail_closed_unknown": False})
 canonical_again = media_apply(canonical_again, options={"default_user_agent":"UA-STREAMZO"})
 canonical_again = hls_apply(canonical_again, options={"default_user_agent":"UA-STREAMZO"}, context={"provider_id":"streamzo"})
