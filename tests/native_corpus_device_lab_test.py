@@ -39,11 +39,20 @@ actual_slugs = {
 assert actual_slugs == expected_slugs, (actual_slugs, expected_slugs)
 
 # Two expensive runtime jobs are reused: Desktop once and one Android emulator for
-# Mobile+TV. A third lightweight job only aggregates their sanitized artifacts.
+# Mobile+TV. A lightweight publication gate resolves the exact released NiakVIO
+# SHA + accepted official client refs, then a final lightweight summary aggregates
+# the sanitized artifacts. No fixture/provider matrix may multiply heavy runners.
 for slug in sorted(expected_slugs):
     assert slug in workflow, (slug, "desktop workflow")
     assert slug in android_suite, (slug, "android suite")
-assert workflow.count("runs-on: ubuntu-latest") == 3, workflow.count("runs-on: ubuntu-latest")
+assert workflow.count("runs-on: ubuntu-latest") == 4, workflow.count("runs-on: ubuntu-latest")
+for job in (
+    "publication-gate:",
+    "desktop-native-corpus:",
+    "android-mobile-tv-native-corpus:",
+    "native-corpus-engine-summary:",
+):
+    assert job in workflow, job
 assert "matrix:" not in workflow
 assert "strategy:" not in workflow
 
@@ -62,9 +71,14 @@ for required in (
 ):
     assert required in workflow, required
 
-# The expensive full corpus is deliberate/manual: normal provider changes must not
-# automatically launch the native suite. Promotion explicitly creates/bumps the
-# trigger once after hashes, Hub invariants and the quick native proof are green.
+# Final native proof is tied to a successful provider-refresh publication and to
+# the exact accepted official client heads stored in the released sources.json.
+assert "workflow_run:" in workflow
+assert "Repair providers on routine refresh" in workflow
+assert "github.event.workflow_run.conclusion" in workflow
+assert "sources.json" in workflow
+assert "accepted_ref" in workflow
+assert "target_sha" in workflow
 assert '.github/triggers/native-corpus-device-lab' in workflow
 assert '"providers/**"' not in workflow
 assert "provider-overrides.json" not in workflow.split("permissions:", 1)[0]
@@ -146,5 +160,5 @@ assert "native-corpus-engine-summary" in workflow
 
 print(
     "native corpus device lab coverage tests passed: "
-    f"fixtures={len(expected_slugs)} stageable_providers={len(stageable)} devices=3 heavy_runners=2 summary_runner=1 sanitized_transport=true"
+    f"fixtures={len(expected_slugs)} stageable_providers={len(stageable)} devices=3 heavy_runners=2 gate=1 summary_runner=1 sanitized_transport=true"
 )
