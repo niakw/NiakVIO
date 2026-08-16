@@ -405,7 +405,21 @@ def main() -> int:
     # Only conclusive failures stop the finite audit. A provider returning no
     # stream is a coverage gap to repair, not a reason to disable it.
     conclusive_failure = bool(playable_false_positive or wrong_content or hls_failures)
-    evidence_path = Path("/tmp/release-generation.json")
+    # Both the deep publisher and the routine refresh publisher use this audit.
+    # Pick the exact transaction fingerprint that exists in the current run so
+    # conclusive offenders can be quarantined and the same audit rerun instead
+    # of aborting a repair-first refresh before classification is complete.
+    evidence_path = next(
+        (
+            path
+            for path in (
+                Path("/tmp/refresh-release-generation.json"),
+                Path("/tmp/release-generation.json"),
+            )
+            if path.is_file()
+        ),
+        Path("/tmp/release-generation.json"),
+    )
     if (
         conclusive_failure
         and evidence_path.is_file()
