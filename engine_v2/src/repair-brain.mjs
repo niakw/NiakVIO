@@ -71,7 +71,7 @@ export function classifyFailure(evidence = {}) {
   if (evidence.contractDrift === true) return "runtime_contract_drift";
   if (evidence.suspicious === true || evidence.unsafe === true) return "identity_mismatch";
   if (evidence.invoked === false) return "not_invoked";
-  if (evidence.dns?.ok === false) return "dns_unreachable";
+  if (evidence.dns?.ok === false || evidence.stages?.dns?.ok === false) return "dns_unreachable";
 
   const homepage = evidence.stages?.homepage;
   if (isBlocked(homepage?.status)) return "transport_blocked";
@@ -95,10 +95,16 @@ export function classifyFailure(evidence = {}) {
 
   const media = evidence.stages?.media;
   if (media?.attempted && media?.found === false) return "media_extraction_gap";
-  if (media?.found === true && (isBlocked(media?.status) || HTTP_GONE.has(Number(media?.status)))) return "playback_context_gap";
-  if (media?.found === true && media?.playable === false) return "media_validation_gap";
 
-  if (Number(evidence.playableStreams ?? 0) > 0 || media?.playable === true) return "healthy";
+  const validation = evidence.stages?.validation;
+  if (validation?.attempted) {
+    const statuses = new Set((validation.statuses ?? []).map(Number));
+    if ([...statuses].some((status) => HTTP_BLOCKED.has(status) || HTTP_GONE.has(status))) return "playback_context_gap";
+    if (validation.playable === false || Number(validation.playableCount ?? 0) === 0) return "media_validation_gap";
+  }
+
+  if (Number(evidence.playableStreams ?? 0) > 0 || validation?.playable === true) return "healthy";
+  if (media?.found === true && validation?.observed !== true) return "media_validation_gap";
   return "unknown_failure";
 }
 
