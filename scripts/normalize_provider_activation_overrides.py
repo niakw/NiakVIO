@@ -36,7 +36,11 @@ def is_configured_safety_quarantine(patch: Any) -> bool:
     legacy = str(patch.get("patch_script") or "")
     if legacy:
         scripts.append(legacy)
-    return any(value.replace("\\", "/").endswith("/" + QUARANTINE_PATCH) or value == QUARANTINE_PATCH for value in scripts)
+    return any(
+        value.replace("\\", "/").endswith("/" + QUARANTINE_PATCH)
+        or value == QUARANTINE_PATCH
+        for value in scripts
+    )
 
 
 def normalize(config: dict[str, Any]) -> tuple[dict[str, Any], list[str]]:
@@ -58,8 +62,14 @@ def normalize(config: dict[str, Any]) -> tuple[dict[str, Any], list[str]]:
 
     meta = output.setdefault("provider_engine_normalization", {})
     if isinstance(meta, dict):
-        meta["non_safety_hard_disables_released"] = sorted(released)
-        meta["non_safety_hard_disable_count"] = len(released)
+        previous = {
+            str(value).casefold()
+            for value in meta.get("non_safety_hard_disables_released") or []
+            if str(value).strip()
+        }
+        recorded = sorted(previous | set(released))
+        meta["non_safety_hard_disables_released"] = recorded
+        meta["non_safety_hard_disable_count"] = len(recorded)
     return output, sorted(released)
 
 
@@ -82,11 +92,20 @@ def main() -> int:
                 + ", ".join(released)
             )
     else:
-        path.write_text(json.dumps(normalized, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        path.write_text(
+            json.dumps(normalized, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
 
+    meta = normalized.get("provider_engine_normalization") or {}
+    recorded = [
+        str(value)
+        for value in (meta.get("non_safety_hard_disables_released") or [])
+        if str(value)
+    ] if isinstance(meta, dict) else []
     print(
         "provider activation override normalization passed: "
-        f"released_non_safety={len(released)}"
+        f"released_now={len(released)} recorded_total={len(recorded)}"
         + (" ids=" + ",".join(released) if released else "")
     )
     return 0
