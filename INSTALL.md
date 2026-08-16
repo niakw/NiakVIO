@@ -1,32 +1,66 @@
-# Installation
+# Installation et maintenance
 
 ## Utilisateurs Nuvio
 
-Choisissez l'un des manifests stables :
+Choisissez l'un des deux manifests stables :
 
-- général (VF, VOSTFR, VO et autres langues) : `https://raw.githubusercontent.com/niakw/Niakvio/refs/heads/main/manifest.json` ;
-- francophone : `https://raw.githubusercontent.com/niakw/Niakvio/refs/heads/main/vf/manifest.json`.
+- général — VF, VOSTFR, VO et autres langues : `https://raw.githubusercontent.com/niakw/Niakvio/refs/heads/main/manifest.json` ;
+- francophone — VF/VOSTFR : `https://raw.githubusercontent.com/niakw/Niakvio/refs/heads/main/vf/manifest.json`.
 
-Dans un client Nuvio compatible, ouvrez la gestion des plugins/providers, ajoutez
-l'URL voulue, puis actualisez le repository. Les URLs restent stables : les versions,
-bundles et états d'activation évoluent derrière elles.
+Dans un client Nuvio compatible :
+
+1. ouvrir la gestion des plugins/providers ;
+2. ajouter/importer l'URL voulue ;
+3. actualiser le repository.
+
+Les URL restent stables. Les versions, bundles, domaines et états d'activation évoluent derrière elles.
 
 ## Mainteneurs
 
-1. Installer exactement le graphe verrouillé avec
-   `npm ci --ignore-scripts --no-audit --no-fund`.
-2. Exécuter `npm test` avant toute publication.
-3. Pour une modification du manifest visible par les clients, incrémenter la release
-   avec `python3 scripts/sync_release_versions.py --version X.Y.Z`.
-4. Élaguer les anciens bundles hachés non référencés avec
-   `python3 scripts/prune_unreferenced_providers.py`.
-5. Régénérer les empreintes avec `python3 scripts/generate_release_hashes.py`, puis
-   confirmer l'ensemble avec `python3 scripts/validate_release_integrity.py`.
-6. Laisser les workflows de publication et le lab multi-œuvres valider `main`.
+Prérequis : Node.js 24+ et Python 3.12 recommandé.
 
-Le workflow **Check all manifests and publish Nuvio providers** reste l'entrée de la
-validation distante complète. Le workflow **Nuvio client media transport lab** vérifie une
-matrice réelle sur NuvioTV, Desktop et Mobile ; sa cible 10 providers dont 3 VF est un
-objectif de couverture non bloquant pour les œuvres récentes ou rares.
-Les contradictions d’identité restent, elles, bloquantes et exigent un bundle inerte
-lorsqu’un ancien état d’activation client pourrait encore exécuter le provider.
+Installation reproductible :
+
+```bash
+npm ci --ignore-scripts --no-audit --no-fund
+```
+
+Validation locale minimale :
+
+```bash
+npm test
+node engine_v2/tests/provider-catalog.test.mjs
+```
+
+Diagnostics :
+
+```bash
+npm run diagnostics
+```
+
+## Publication
+
+Il n'existe qu'un orchestrateur de production : **`Niakvio provider pipeline`** (`.github/workflows/sync.yml`).
+
+Il expose deux profondeurs :
+
+- `quick` : maintenance courante, repair-first, capable de publier une amélioration prouvée sans attendre Deep ;
+- `deep` : reconstruction et preuve large pour changements structurels, nouvelles intégrations et apprentissage/persistance des recipes.
+
+Ne modifiez pas manuellement `manifest.json` et `vf/manifest.json` comme deux sources autonomes. La source publiée canonique est `provider_catalog.json` ; les manifests sont des projections rendues et revalidées depuis ce catalogue dans la transaction de publication.
+
+Le pipeline régénère également les versions, projections de langue, provenance, LKG et empreintes (`FILE-HASHES.json`, `SHA256SUMS.json`, `PATCH-SHA256SUMS.txt`) avant un commit atomique.
+
+## Vérification runtime
+
+Une modification du chemin de playback partagé doit être suivie des preuves natives appropriées :
+
+- Nuvio Mobile ;
+- Nuvio Desktop ;
+- NuvioTV / Android TV.
+
+Le workflow `final-native-client-validation-v2.yml` conserve ces preuves séparées. Le Lab multi-œuvres (`nuvio-client-lab.yml`) mesure films, séries et anime ; la cible 10 providers jouables dont 3 VF est un objectif de largeur, tandis que les contradictions d'identité ou médias illisibles restent des échecs.
+
+## Règle de maintenance
+
+Une correction générique appartient à ARCHI 2. Les scripts historiques encore présents ne sont que des primitives de compatibilité derrière le plan de contrôle V2 ; ils ne doivent pas recréer un second pipeline, un second manifest canonique ou une politique d'activation concurrente.
