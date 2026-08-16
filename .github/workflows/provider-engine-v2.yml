@@ -32,8 +32,17 @@ jobs:
       - name: Runtime adapter tests
         run: node engine_v2/tests/runtime-adapters.test.mjs
 
+      - name: Resolver core tests
+        run: node engine_v2/tests/resolver-core.test.mjs
+
       - name: Repair brain tests
         run: node engine_v2/tests/repair-brain.test.mjs
+
+      - name: Repair recipe memory tests
+        run: node engine_v2/tests/recipe-memory.test.mjs
+
+      - name: Provider decision tests
+        run: node engine_v2/tests/decision-engine.test.mjs
 
       - name: Evidence matrix tests
         run: node engine_v2/tests/evidence.test.mjs
@@ -49,6 +58,9 @@ jobs:
 
       - name: Domain discovery unit tests
         run: node engine_v2/tests/domain-discovery.test.mjs
+
+      - name: Provider spec builder tests
+        run: node engine_v2/tests/provider-spec-builder.test.mjs
 
       - name: Observe current Nuvio contract drift
         env:
@@ -69,6 +81,9 @@ jobs:
         continue-on-error: true
         run: node engine_v2/scripts/probe-provider-domains.mjs --knowledge engine_v2/reports/provider-knowledge-seed.json --output engine_v2/reports/provider-domain-observations.json --max-candidates 3 --concurrency 12 --timeout-ms 4500
 
+      - name: Build canonical unverified ProviderSpecs
+        run: node engine_v2/scripts/build-provider-specs.mjs --inventory engine_v2/reports/provider-upstream-inventory.json --knowledge engine_v2/reports/provider-knowledge-seed.json --domains engine_v2/reports/provider-domain-observations.json --output engine_v2/reports/provider-specs-v2.json
+
       - name: Upload V2 discovery reports
         if: always()
         uses: actions/upload-artifact@v4
@@ -79,4 +94,5 @@ jobs:
             engine_v2/reports/provider-upstream-inventory.json
             engine_v2/reports/provider-knowledge-seed.json
             engine_v2/reports/provider-domain-observations.json
+            engine_v2/reports/provider-specs-v2.json
           if-no-files-found: warn
