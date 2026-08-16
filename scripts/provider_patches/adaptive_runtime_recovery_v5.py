@@ -102,6 +102,16 @@ def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> st
         "resolver_entry_probe",
     )
 
+    # After req() reads a deceptive .mp4/.m3u8 HTML response, V4 evaluates the
+    # final URL again. Do not let the path extension short-circuit recursive
+    # player traversal; upgrade only genuinely stronger response evidence.
+    patched = _replace_once(
+        patched,
+        'var proof=mediaProof(page,doc.type,doc.body,doc.disposition);if(proof)return[{url:page,referer:ref||requested,direct:true,proof:proof}];var body=s(doc.body),xs=urls(body,page).concat(normalizedPlayers(body,page));',
+        'var proof=mediaProof(page,doc.type,doc.body,doc.disposition);if(proof==="extension"){if(mediaType(doc.type))proof="mime";else if(mediaDisposition(doc.disposition))proof="disposition";else if(mediaBody(doc.body))proof="body";else proof=""}if(proof)return[{url:page,referer:ref||requested,direct:true,proof:proof}];var body=s(doc.body),xs=urls(body,page).concat(normalizedPlayers(body,page));',
+        "resolved_page_positive_proof",
+    )
+
     patched = _replace_once(
         patched,
         'var directProof=mediaProof(xs[d],"","","");if(directProof)out.push({url:xs[d],referer:page,direct:true,proof:directProof})',
