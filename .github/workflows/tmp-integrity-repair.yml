@@ -1,0 +1,40 @@
+name: Temporary release integrity repair
+
+on:
+  push:
+    paths:
+      - '.github/workflows/tmp-integrity-repair.yml'
+
+permissions:
+  contents: write
+
+env:
+  PYTHONDONTWRITEBYTECODE: '1'
+
+jobs:
+  repair:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          fetch-depth: 1
+          persist-credentials: true
+
+      - name: Regenerate deterministic release hashes
+        run: python3 scripts/generate_release_hashes.py
+
+      - name: Validate regenerated release integrity
+        run: python3 scripts/validate_release_integrity.py
+
+      - name: Commit regenerated inventories
+        run: |
+          if git diff --quiet -- SHA256SUMS.json FILE-HASHES.json PATCH-SHA256SUMS.txt; then
+            echo 'Integrity inventories already current.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add SHA256SUMS.json FILE-HASHES.json PATCH-SHA256SUMS.txt
+          git commit -m 'chore: refresh release integrity inventories'
+          git push origin HEAD:main
