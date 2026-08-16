@@ -33,7 +33,6 @@ function install(obj,key){if(!obj||typeof obj[key]!=="function"||obj[key].__nuvi
 var installed=false;try{if(typeof module!=="undefined"&&module.exports)installed=install(module.exports,"getStreams")}catch(_){}try{if(g&&typeof g.getStreams==="function"){if(installed&&typeof module!=="undefined"&&module.exports)g.getStreams=module.exports.getStreams;else install(g,"getStreams")}}catch(_){}
 })(typeof globalThis!=="undefined"?globalThis:this,{"providerName":"Goated","maxDepth":4,"maxCandidates":10,"timeoutMs":12000,"blockedHosts":[]});
 
-
 /* NUVIO_HLS_RUNTIME_INTEGRITY_V1:128b76741346 */
 ;(function(g,config){
   "use strict";
@@ -261,9 +260,6 @@ var installed=false;try{if(typeof module!=="undefined"&&module.exports)installed
   }
   install();
 })(typeof globalThis!=="undefined"?globalThis:this,{"timeoutMs":6500,"maxChildren":2,"maxRecoveryPages":4,"maxRecoveryCandidates":12,"implementationRevision":"recovery-first-v3"});
-
-
-
 /* NUVIO_GLOBAL_MEDIA_ENRICHMENT_V1:92bdb33cf8f8 */
 ;(function(g,c){"use strict";
 var ASSET=/\.(?:css|js|mjs|map|png|jpe?g|gif|svg|ico|woff2?|ttf|otf|eot|json|xml|vtt|srt)(?:[?#]|$)/i;
