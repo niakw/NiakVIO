@@ -39,6 +39,7 @@ HEALTH_CONFIG.write_text(json.dumps(health_config, ensure_ascii=False, indent=2)
 # replace their parent only when every playable fixture is positively tied to
 # the requested work and has no duration/content contradiction.
 _base_compare_results = runtime_repair.compare_results
+_base_create_repair_candidate = runtime_repair.create_repair_candidate
 
 
 def _identity_safe_compare_results(parent: dict, repaired: dict) -> tuple[bool, str]:
@@ -51,7 +52,26 @@ def _identity_safe_compare_results(parent: dict, repaired: dict) -> tuple[bool, 
     return True, reason
 
 
+def _profiled_create_repair_candidate(stage, candidate, profile_name, round_number):
+    repaired, error = _base_create_repair_candidate(
+        stage, candidate, profile_name, round_number
+    )
+    if isinstance(repaired, dict):
+        event = repaired.get("runtime_repair")
+        if isinstance(event, dict) and not str(event.get("profile") or "").strip():
+            # Adaptive recovery historically stored its structural name in
+            # ``strategy`` and left ``profile`` blank. Deep persistence reads
+            # ``profile``; filling it here makes an accepted repair durable on
+            # future routine updates without changing the candidate schema used
+            # by existing runtime tests.
+            inferred = str(event.get("strategy") or profile_name or "").strip()
+            if inferred:
+                event["profile"] = inferred
+    return repaired, error
+
+
 runtime_repair.compare_results = _identity_safe_compare_results
+runtime_repair.create_repair_candidate = _profiled_create_repair_candidate
 
 # Do not force --max-rounds=0 anymore. deep_repair_loop now uses the configured
 # bounded round count, while promotion is protected by the identity gate above.
