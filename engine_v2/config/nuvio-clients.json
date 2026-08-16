@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-08-16T17:20:00Z",
+  "generated_at": "2026-08-16T17:31:00Z",
   "policy": {
     "contract_drift": "runtime-reaudit",
     "semantic_drift": "targeted-review",
@@ -92,9 +92,9 @@
     "tv": {
       "repository": "NuvioMedia/NuvioTV",
       "branch": "dev",
-      "audited_ref": "aa327f0e99645e1fc7094f56e3e827ff0925afae",
-      "accepted_ref": "cd864c6988ff0d9a682dfa8035be3ea5307cc9b2",
-      "observed_head": "3bced69c8c32c7ec7bcd69821c8bc21510d8fa39",
+      "audited_ref": "6db5c38bb77f83c27dc5df2dd5dd0594f538e465",
+      "accepted_ref": "6db5c38bb77f83c27dc5df2dd5dd0594f538e465",
+      "observed_head": "6db5c38bb77f83c27dc5df2dd5dd0594f538e465",
       "platforms": ["android-tv"],
       "invocation": "positional-4",
       "type_support_aliases": {
@@ -102,7 +102,7 @@
         "other": ["other", "tv"]
       },
       "supports_subtitles_in_plugin_result": false,
-      "head_delta_note": "5 commits ahead of accepted_ref; no provider contract path changed in the observed compare. Player/UI semantic files changed and remain watcher-visible.",
+      "head_delta_note": "2026-08-16 targeted review from cd864c6988ff to 6db5c38bb77: 17 commits. No plugin runtime, StreamRepository, Plugin model or PlayerMediaSourceFactory path changed. Player changes are subtitle/Matroska/audio/runtime work; current initialization still propagates provider headers into media probing and both player engines. Accepted as provider-contract compatible; watcher remains active for later drift.",
       "contract_paths": [
         "app/src/full/java/com/nuvio/tv/core/plugin/",
         "app/src/main/java/com/nuvio/tv/data/local/PluginDataStore.kt",
