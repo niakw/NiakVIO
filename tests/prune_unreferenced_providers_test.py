@@ -9,7 +9,17 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parents[1]
 SCRIPT = REPO / "scripts" / "prune_unreferenced_providers.py"
 WORKFLOW = (REPO / ".github/workflows/sync.yml").read_text(encoding="utf-8")
-assert WORKFLOW.count("git add -A providers") >= 2, "both publication phases must stage provider deletions"
+
+# ARCHI2 has one atomic publication transaction. Provider deletions must be
+# staged in that transaction after the final prune, not in two competing
+# publication phases.
+assert WORKFLOW.count("git add -A providers") == 1, (
+    "ARCHI2 must stage provider additions/deletions exactly once in its atomic publication transaction"
+)
+assert WORKFLOW.rfind("python scripts/prune_unreferenced_providers.py") < WORKFLOW.index("git add -A providers"), (
+    "the final provider prune must complete before the atomic provider tree is staged"
+)
+assert "provider_catalog.json" in WORKFLOW, "provider pruning must publish with the canonical catalog transaction"
 
 with tempfile.TemporaryDirectory() as tmp:
     root = Path(tmp)
@@ -23,9 +33,10 @@ with tempfile.TemporaryDirectory() as tmp:
     for path in (lkg, published, pending, stale, source):
         path.write_text("module.exports = {};\n", encoding="utf-8")
 
-    # During phase one, both the currently published manifest and the pending
-    # manifest are authoritative. Publishing new bundles must never delete the
-    # bundle still referenced by clients reading manifest.json.
+    # While a candidate manifest exists, both the currently published manifest
+    # and the candidate transaction are authoritative. Pruning must never
+    # delete the bundle still referenced by clients or the candidate awaiting
+    # canonical-catalog import.
     (root / "manifest.json").write_text(
         json.dumps({"scrapers": [{"url": "providers/movix--nuvio--2222222222222222.js"}]}),
         encoding="utf-8",
@@ -46,14 +57,15 @@ with tempfile.TemporaryDirectory() as tmp:
         check=True,
     )
     assert lkg.exists(), result.stdout
-    assert published.exists(), "phase one deleted the live published bundle"
-    assert pending.exists(), "phase one deleted the pending bundle"
+    assert published.exists(), "prune deleted the live published bundle before atomic promotion"
+    assert pending.exists(), "prune deleted the pending candidate bundle before atomic promotion"
     assert source.exists(), result.stdout
     assert not stale.exists(), "unreferenced bundle was not pruned"
     assert "manifest.next.json,manifest.json" in result.stdout, result.stdout
 
-    # Once the pending manifest is promoted, the old published bundle is no
-    # longer live and may be removed. LKG/source inputs remain protected.
+    # Once the candidate has been imported/promoted, the former published
+    # bundle is no longer live and may be removed. LKG/source inputs remain
+    # protected.
     (root / "manifest.json").write_text(
         json.dumps({"scrapers": [{"url": "providers/movix--nuvio--3333333333333333.js"}]}),
         encoding="utf-8",
@@ -66,8 +78,8 @@ with tempfile.TemporaryDirectory() as tmp:
         check=True,
     )
     assert lkg.exists(), result.stdout
-    assert not published.exists(), "old bundle survived after manifest promotion"
+    assert not published.exists(), "old bundle survived after candidate promotion"
     assert pending.exists(), result.stdout
     assert source.exists(), result.stdout
 
-print("provider prune test passed")
+print("ARCHI2 atomic provider prune test passed")
