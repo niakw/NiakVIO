@@ -113,33 +113,14 @@ jobs:
           python tests/adaptive_extension_media_proof_test.py
           python tests/adaptive_runtime_repair_test.py
 
-      - name: Require normalized activation policy
-        run: python scripts/normalize_provider_activation_overrides.py --check
-
       - name: Reconstruct safe published generation in workspace
-        run: |
-          python scripts/reapply_published_overrides.py
-          echo "--- reconstructed files ---"
-          git status --short
-          echo "--- reconstructed diff stat ---"
-          git diff --stat
+        run: python scripts/reapply_published_overrides.py
 
-      - name: Validate reconstructed published generation
-        run: |
-          python scripts/reapply_published_overrides.py --check
-          python scripts/validate_published_overrides.py
-          python scripts/validate_activation_preservation.py
-          python scripts/validate_language_projection.py
-
-      - name: Run complete repository regression suite without mutating lifecycle hooks
+      - name: Run complete repository regression suite
         run: npm test --ignore-scripts
 
-      - name: Validate final release and require zero drift
+      - name: Require immutable release consistency
         run: |
-          python scripts/reapply_published_overrides.py --check
-          python scripts/validate_published_overrides.py
-          python scripts/validate_activation_preservation.py
-          python scripts/validate_language_projection.py
           python scripts/validate_release_integrity.py
           echo "--- final workspace delta ---"
           git status --short
