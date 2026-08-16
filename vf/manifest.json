@@ -1,6 +1,6 @@
 {
   "name": "Nuvio Curated Providers — VF uniquement",
-  "version": "5.20.57",
+  "version": "5.20.58",
   "scrapers": [
     {
       "id": "PURSTREAM",
@@ -77,14 +77,39 @@
       "supportsExternalPlayer": false
     },
     {
+      "id": "PAPADUSTREAM",
+      "name": "Papadustream",
+      "description": "Films et séries TV en streaming HLS via Papadustream.",
+      "version": "1.0.24",
+      "author": "Gowaru",
+      "supportedTypes": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "filename": "../providers/papadustream--nuvio--db43149b04267847.js",
+      "enabled": true,
+      "logo": "https://raw.githubusercontent.com/Gowaru/gowaru-nuvio-providers/main/assets/papadustream.png",
+      "contentLanguage": [
+        "fr",
+        "en"
+      ],
+      "formats": [
+        "m3u8"
+      ],
+      "limited": false,
+      "disabledPlatforms": [],
+      "supportsExternalPlayer": false
+    },
+    {
       "id": "MUGIWARASTREAM",
       "name": "Mugiwara-no-Streaming",
       "description": "Streaming gratuit d'animes et scans en bonne qualite via API Next.js.",
-      "version": "1.0.36",
+      "version": "1.0.38",
       "author": "Gowaru",
       "supportedTypes": [
-        "anime",
-        "movie"
+        "movie",
+        "anime"
       ],
       "filename": "../providers/mugiwarastream--published-baseline--08b28bc5131e3dce.js",
       "enabled": true,
@@ -279,31 +304,6 @@
       "limited": false,
       "disabledPlatforms": [],
       "supportsExternalPlayer": true
-    },
-    {
-      "id": "PAPADUSTREAM",
-      "name": "Papadustream",
-      "description": "Films et séries TV en streaming HLS via Papadustream.",
-      "version": "1.0.23",
-      "author": "Gowaru",
-      "supportedTypes": [
-        "movie",
-        "tv",
-        "anime"
-      ],
-      "filename": "../providers/papadustream--published-baseline--b99bbe9324c95dd6.js",
-      "enabled": true,
-      "logo": "https://raw.githubusercontent.com/Gowaru/gowaru-nuvio-providers/main/assets/papadustream.png",
-      "contentLanguage": [
-        "fr",
-        "en"
-      ],
-      "formats": [
-        "m3u8"
-      ],
-      "limited": false,
-      "disabledPlatforms": [],
-      "supportsExternalPlayer": false
     },
     {
       "id": "streamzo",
