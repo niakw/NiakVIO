@@ -7,11 +7,18 @@ permits a narrower refresh transaction without weakening activation/media
 gates:
 
 * current quick evidence must still satisfy the canonical strict gates;
-* new providers cannot be activated by quick refresh;
-* historically active providers may be reactivated only from current positive
-  proof, never from an inconclusive activation-LKG fallback;
-* configured/content-addressed safety quarantines cannot be exited;
+* quick may replace bytes for an already-enabled provider only when the
+  canonical promoter keeps that candidate enabled; otherwise the exact current
+  published row is restored as LKG;
+* quick never changes the current activation set, never reactivates historical
+  providers, never activates new providers, and never exits a quarantine;
+* safety-quarantined rows are restored byte-for-byte at manifest level;
+* the canonical deep promotion report is preserved. Quick publication evidence
+  is written separately to ``refresh-health-report.json``;
 * quick runs never advance deep-validation history.
+
+Deep therefore remains the sole authority for activation changes, quarantine
+entry/exit, broad catalogue decisions, and durable learned repair profiles.
 """
 from __future__ import annotations
 
@@ -24,6 +31,7 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPTS = ROOT / "scripts"
+REFRESH_REPORT_PATH = ROOT / "refresh-health-report.json"
 sys.path.insert(0, str(SCRIPTS))
 
 import promote_candidates as pc  # noqa: E402
@@ -34,11 +42,19 @@ def _canonical(value: Any) -> str:
     return pc.canonical_id(str(value or ""))
 
 
+def _manifest_rows(manifest: dict[str, Any]) -> dict[str, dict[str, Any]]:
+    return {
+        _canonical(row.get("id")): row
+        for row in manifest.get("scrapers") or []
+        if isinstance(row, dict) and _canonical(row.get("id"))
+    }
+
+
 def _enabled_manifest_ids(manifest: dict[str, Any]) -> set[str]:
     return {
-        _canonical(row.get("id"))
-        for row in manifest.get("scrapers") or []
-        if isinstance(row, dict) and row.get("enabled") is True and _canonical(row.get("id"))
+        cid
+        for cid, row in _manifest_rows(manifest).items()
+        if row.get("enabled") is True
     }
 
 
@@ -80,14 +96,12 @@ def _quarantine_ids(
 def _refresh_policy_overlay(
     policy: dict[str, Any],
     candidate_ids: set[str],
-    positive_activation_ids: set[str],
-    quarantined_ids: set[str],
+    current_enabled_ids: set[str],
 ) -> dict[str, Any]:
+    """Make the in-memory publisher policy preserve today's activation set."""
     output = copy.deepcopy(policy)
     patches = output.setdefault("provider_patches", {})
     for cid in sorted(candidate_ids):
-        if cid in positive_activation_ids and cid not in quarantined_ids:
-            continue
         patch = patches.setdefault(cid, {})
         if not isinstance(patch, dict):
             patch = {}
@@ -96,7 +110,7 @@ def _refresh_policy_overlay(
         if not isinstance(manifest_overrides, dict):
             manifest_overrides = {}
             patch["manifest_overrides"] = manifest_overrides
-        manifest_overrides["enabled"] = False
+        manifest_overrides["enabled"] = cid in current_enabled_ids
     return output
 
 
@@ -106,35 +120,124 @@ def _filtered_activation_lkg(payload: dict[str, Any], preserve_ids: set[str]) ->
     return output
 
 
+def _preserve_quick_manifest(
+    generated: dict[str, Any],
+    current: dict[str, Any],
+    quarantined_ids: set[str],
+) -> dict[str, Any]:
+    """Allow byte refreshes while making activation changes impossible.
+
+    For an existing enabled provider, a generated row is accepted only when the
+    canonical promoter itself kept it enabled. A generated disabled row falls
+    back to the exact current row instead of re-enabling newly failed bytes.
+    Existing disabled providers stay disabled. Quarantines are copied from the
+    current manifest verbatim. Missing current rows are appended unchanged.
+    Brand-new rows may be discovered/published, but stay disabled until deep.
+    """
+    output = copy.deepcopy(generated)
+    current_rows = _manifest_rows(current)
+    result: list[dict[str, Any]] = []
+    seen: set[str] = set()
+
+    for raw in generated.get("scrapers") or []:
+        if not isinstance(raw, dict):
+            continue
+        cid = _canonical(raw.get("id"))
+        if not cid:
+            continue
+        seen.add(cid)
+        previous = current_rows.get(cid)
+        if previous is None:
+            row = copy.deepcopy(raw)
+            row["enabled"] = False
+        elif cid in quarantined_ids:
+            row = copy.deepcopy(previous)
+        elif previous.get("enabled") is True:
+            if raw.get("enabled") is True:
+                row = copy.deepcopy(raw)
+                row["enabled"] = True
+            else:
+                row = copy.deepcopy(previous)
+        else:
+            row = copy.deepcopy(raw)
+            row["enabled"] = False
+        result.append(row)
+
+    for cid, row in current_rows.items():
+        if cid not in seen:
+            result.append(copy.deepcopy(row))
+
+    output["scrapers"] = result
+    return output
+
+
 def _write_json(path: Path, value: dict[str, Any]) -> None:
     path.write_text(json.dumps(value, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 
-def _postprocess_refresh_outputs() -> None:
-    """Undo the internal deep-mode compatibility shim in public metadata."""
-    report = pc.load_json(pc.REPORT_PATH, {}) or {}
-    if isinstance(report, dict):
-        report["test_mode"] = "quick"
-        report["publication_mode"] = "restricted_quick_refresh"
-        policy = report.setdefault("policy", {})
+def _provider_rows_by_canonical(provenance: dict[str, Any]) -> dict[str, tuple[str, dict[str, Any]]]:
+    providers = provenance.get("providers") if isinstance(provenance.get("providers"), dict) else {}
+    output: dict[str, tuple[str, dict[str, Any]]] = {}
+    for raw_id, row in providers.items():
+        if isinstance(row, dict):
+            cid = _canonical(raw_id)
+            if cid:
+                output[cid] = (str(raw_id), row)
+    return output
+
+
+def _postprocess_refresh_outputs(
+    canonical_deep_report_bytes: bytes,
+    original_provenance: dict[str, Any],
+    quarantined_ids: set[str],
+) -> None:
+    """Store quick evidence separately and restore canonical deep authority."""
+    quick_report = pc.load_json(pc.REPORT_PATH, {}) or {}
+    if isinstance(quick_report, dict):
+        quick_report["test_mode"] = "quick"
+        quick_report["publication_mode"] = "restricted_quick_refresh"
+        policy = quick_report.setdefault("policy", {})
         if isinstance(policy, dict):
             policy["quick_checks_are_report_only"] = False
             policy["deep_checks_are_required_for_publication"] = False
             policy["quick_refresh_publication_is_restricted"] = True
             policy["quick_refresh_requires_current_positive_proof"] = True
-            policy["deep_required_for_new_activation_or_quarantine_exit"] = True
-        _write_json(pc.REPORT_PATH, report)
+            policy["quick_refresh_preserves_activation_set"] = True
+            policy["deep_required_for_activation_change_or_quarantine_exit"] = True
+        _write_json(REFRESH_REPORT_PATH, quick_report)
+
+    # health-report.json is the durable deep activation proof consumed by
+    # validate_activation_preservation.py. A quick refresh must never replace it.
+    pc.REPORT_PATH.write_bytes(canonical_deep_report_bytes)
 
     provenance = pc.load_json(pc.PROVENANCE_PATH, {"providers": {}}) or {"providers": {}}
     if isinstance(provenance, dict):
         provenance["validation_mode"] = "quick"
         provenance["publication_mode"] = "restricted_quick_refresh"
         providers = provenance.get("providers")
-        if isinstance(providers, dict):
-            for row in providers.values():
-                if isinstance(row, dict) and row.get("checked_at"):
-                    row["check_mode"] = "quick"
-                    row["publication_mode"] = "restricted_quick_refresh"
+        if not isinstance(providers, dict):
+            providers = {}
+            provenance["providers"] = providers
+        for row in providers.values():
+            if isinstance(row, dict) and row.get("checked_at"):
+                row["check_mode"] = "quick"
+                row["publication_mode"] = "restricted_quick_refresh"
+
+        # Safety quarantine provenance is part of the durable evidence for the
+        # inert current bundle. Quick must not rewrite it to candidate evidence.
+        original_rows = _provider_rows_by_canonical(original_provenance)
+        generated_rows = _provider_rows_by_canonical(provenance)
+        for cid in sorted(quarantined_ids):
+            original = original_rows.get(cid)
+            if original is None:
+                continue
+            original_key, original_row = original
+            generated = generated_rows.get(cid)
+            if generated is not None:
+                generated_key, _ = generated
+                providers[generated_key] = copy.deepcopy(original_row)
+            else:
+                providers[original_key] = copy.deepcopy(original_row)
         _write_json(pc.PROVENANCE_PATH, provenance)
 
 
@@ -161,23 +264,31 @@ def main() -> int:
     }
     candidate_ids.discard("")
 
+    if not pc.REPORT_PATH.is_file():
+        raise SystemExit("quick refresh requires an existing canonical deep health-report.json")
+    canonical_deep_report_bytes = pc.REPORT_PATH.read_bytes()
+    canonical_deep_report = json.loads(canonical_deep_report_bytes.decode("utf-8"))
+    if str(canonical_deep_report.get("test_mode") or "") != "deep":
+        raise SystemExit("quick refresh requires the current canonical deep promotion report")
+
     manifest = pc.load_json(pc.MANIFEST_PATH, {"scrapers": []}) or {"scrapers": []}
     activation_lkg = pc.load_json(pc.ACTIVATION_LKG_PATH, {}) or {}
-    provenance = pc.load_json(pc.PROVENANCE_PATH, {"providers": {}}) or {"providers": {}}
+    original_provenance = pc.load_json(pc.PROVENANCE_PATH, {"providers": {}}) or {"providers": {}}
     policy = load_real_overrides()
 
     current_enabled = _enabled_manifest_ids(manifest)
     historical_active = _historical_active_ids(activation_lkg)
-    quarantined = _quarantine_ids(policy, manifest, provenance)
+    quarantined = _quarantine_ids(policy, manifest, original_provenance)
 
-    positive_activation_ids = (current_enabled | historical_active) - quarantined
-    preserve_ids = current_enabled - quarantined
+    # Routine refresh has no activation authority. Its positive activation set
+    # is exactly the providers that are already enabled on current main.
+    positive_activation_ids = set(current_enabled)
+    preserve_ids = set(current_enabled)
 
     overlay = _refresh_policy_overlay(
         policy,
         candidate_ids,
-        positive_activation_ids,
-        quarantined,
+        current_enabled,
     )
     filtered_lkg = _filtered_activation_lkg(activation_lkg, preserve_ids)
 
@@ -229,22 +340,31 @@ def main() -> int:
         pc.load_json = original_load_json
         pc.update_strict_history = original_update_history
 
-    _postprocess_refresh_outputs()
+    generated_manifest = pc.load_json(pc.NEXT_MANIFEST_PATH, {"scrapers": []}) or {"scrapers": []}
+    next_manifest = _preserve_quick_manifest(generated_manifest, manifest, quarantined)
+    _write_json(pc.NEXT_MANIFEST_PATH, next_manifest)
 
-    next_manifest = pc.load_json(pc.NEXT_MANIFEST_PATH, {"scrapers": []}) or {"scrapers": []}
-    next_rows = {
-        _canonical(row.get("id")): row
-        for row in next_manifest.get("scrapers") or []
-        if isinstance(row, dict)
-    }
+    _postprocess_refresh_outputs(
+        canonical_deep_report_bytes,
+        original_provenance,
+        quarantined,
+    )
+
+    next_enabled = _enabled_manifest_ids(next_manifest)
     violations: list[str] = []
-    for cid, row in next_rows.items():
-        if row.get("enabled") is not True:
-            continue
-        if cid in quarantined:
-            violations.append(f"{cid}: quick refresh attempted to exit safety quarantine")
-        if cid not in positive_activation_ids:
-            violations.append(f"{cid}: quick refresh attempted brand-new activation")
+    if next_enabled != current_enabled:
+        added = sorted(next_enabled - current_enabled)
+        removed = sorted(current_enabled - next_enabled)
+        if added:
+            violations.append("quick refresh attempted activation: " + ", ".join(added))
+        if removed:
+            violations.append("quick refresh attempted disablement: " + ", ".join(removed))
+
+    current_rows = _manifest_rows(manifest)
+    next_rows = _manifest_rows(next_manifest)
+    for cid in sorted(quarantined & set(current_rows)):
+        if next_rows.get(cid) != current_rows[cid]:
+            violations.append(f"{cid}: quick refresh attempted to mutate safety quarantine")
 
     if violations:
         raise SystemExit("quick refresh publication policy failed:\n- " + "\n- ".join(violations))
@@ -254,7 +374,8 @@ def main() -> int:
         f"current_enabled={len(current_enabled)} "
         f"historical_active={len(historical_active)} "
         f"quarantined={len(quarantined)} "
-        f"candidate_ids={len(candidate_ids)}"
+        f"candidate_ids={len(candidate_ids)} "
+        f"activation_delta=0"
     )
     return int(rc)
 
