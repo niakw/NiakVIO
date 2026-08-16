@@ -79,9 +79,6 @@ def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> st
         "runtime_revision",
     )
 
-    # V4 declares ``proof`` in the same var chain as finalUrl/type/disposition.
-    # Rewrite that exact generated fragment: extension remains only a hint,
-    # while MIME/disposition/binary signatures are positive network evidence.
     patched = _replace_once(
         patched,
         ',proof=mediaProof(finalUrl,type,"",disposition);if(proof)return{url:finalUrl,proof:proof};if(/(?:text\\/html|application\\/(?:json|javascript|xml)|text\\/(?:plain|xml|javascript))/i.test(type))return null;var bytes=await prefixBytes(r,a),binary=binaryProof(bytes);',
@@ -103,9 +100,6 @@ def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> st
         "resolver_entry_probe",
     )
 
-    # After req() reads a deceptive .mp4/.m3u8 HTML response, V4 evaluates the
-    # final URL again. Do not let the path extension short-circuit recursive
-    # player traversal; upgrade only genuinely stronger response evidence.
     patched = _replace_once(
         patched,
         'var proof=mediaProof(page,doc.type,doc.body,doc.disposition);if(proof)return[{url:page,referer:ref||requested,direct:true,proof:proof}];var body=s(doc.body),xs=urls(body,page).concat(normalizedPlayers(body,page));',
@@ -133,14 +127,10 @@ def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> st
         "native_extension_probe",
     )
 
-    # V4 preserved any original native row as a final fallback, even if the
-    # adaptive probe had just proved that its media-looking URL was HTML. In V5
-    # only an already-strong provider-supplied MIME/body-style proof may bypass
-    # recovery; unresolved/extension-only native rows fail closed.
     patched = _replace_once(
         patched,
         'var safeNative=Array.isArray(native)?native.filter(function(row){var u=row&&s(row.url);return !!u&&!U[u]&&!bad(u)}):[];return r.length?r:safeNative',
-        'var safeNative=Array.isArray(native)?native.filter(function(row){var u=row&&s(row.url),p=mediaProof(u,s(row&&(?:row.mimeType||row.contentType||row.type||row.format)),"","");return !!u&&!!p&&p!=="extension"&&!U[u]&&!bad(u)}):[];return r.length?r:safeNative',
+        'var safeNative=Array.isArray(native)?native.filter(function(row){var u=row&&s(row.url),p=mediaProof(u,s(row&&(row.mimeType||row.contentType||row.type||row.format)),"","");return !!u&&!!p&&p!=="extension"&&!U[u]&&!bad(u)}):[];return r.length?r:safeNative',
         "unverified_native_fallback",
     )
 
