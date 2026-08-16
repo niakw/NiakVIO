@@ -49,16 +49,15 @@ jobs:
             --general /tmp/archi2-render/manifest.json \
             --vf /tmp/archi2-render/vf/manifest.json
           node - <<'NODE'
+          const assert = require('node:assert/strict');
           const fs = require('node:fs');
           for (const pair of [
             ['manifest.json', '/tmp/archi2-render/manifest.json'],
             ['vf/manifest.json', '/tmp/archi2-render/vf/manifest.json'],
           ]) {
-            const a = JSON.parse(fs.readFileSync(pair[0], 'utf8'));
-            const b = JSON.parse(fs.readFileSync(pair[1], 'utf8'));
-            if (JSON.stringify(a) !== JSON.stringify(b)) {
-              throw new Error(`catalog round-trip differs for ${pair[0]}`);
-            }
+            const expected = JSON.parse(fs.readFileSync(pair[0], 'utf8'));
+            const rendered = JSON.parse(fs.readFileSync(pair[1], 'utf8'));
+            assert.deepStrictEqual(rendered, expected, `catalog round-trip differs for ${pair[0]}`);
           }
           console.log('catalog round-trip parity passed');
           NODE
