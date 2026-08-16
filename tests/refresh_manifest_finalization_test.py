@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import importlib.util
+import json
+import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -41,4 +44,117 @@ assert "Verify exact published main" not in workflow, (
 assert "python scripts/normalize_provider_activation_overrides.py\n" in workflow
 assert "python scripts/normalize_provider_activation_overrides.py --check" not in workflow
 
-print("refresh manifest lean finalization test passed")
+# Nuvio Desktop/Mobile/TV preserve a scraper's previous local enabled state when
+# the client-visible scraper id is unchanged. A manifest-disabled -> enabled
+# recovery therefore MUST receive a new case-only id, while enabled -> enabled
+# refreshes must keep the id stable. This protects existing installations from
+# remaining stuck on an old local `enabled=false` after a provider is repaired.
+activation_script = ROOT / "scripts" / "nuvio_client_activation_ids.py"
+spec = importlib.util.spec_from_file_location("nuvio_client_activation_ids_tested", activation_script)
+assert spec is not None and spec.loader is not None
+activation = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(activation)
+
+with tempfile.TemporaryDirectory(prefix="niakvio-client-id-test-") as temp_dir:
+    temp = Path(temp_dir)
+    main_path = temp / "manifest.json"
+    vf_dir = temp / "vf"
+    vf_dir.mkdir()
+    vf_path = vf_dir / "manifest.json"
+    state_path = temp / "nuvio-client-id-state.json"
+
+    main_payload = {
+        "version": "9.9.9",
+        "scrapers": [
+            {
+                "id": "RECOVERED",
+                "name": "Recovered",
+                "version": "1.2.3",
+                "filename": "providers/recovered.js",
+                "enabled": True,
+                "supportedTypes": ["movie"],
+                "contentLanguage": ["en"],
+            },
+            {
+                "id": "STABLE",
+                "name": "Stable",
+                "version": "2.0.0",
+                "filename": "providers/stable.js",
+                "enabled": True,
+                "supportedTypes": ["movie"],
+            },
+        ],
+    }
+    vf_payload = {
+        "version": "9.9.9",
+        "scrapers": [
+            {
+                "id": "RECOVERED",
+                "name": "Recovered",
+                "version": "1.2.3",
+                "filename": "../providers/recovered.js",
+                "enabled": True,
+                "supportedTypes": ["movie"],
+            }
+        ],
+    }
+    state_payload = {
+        "schema_version": 1,
+        "strategy": "case-toggle-on-disabled-to-enabled",
+        "providers": {
+            "recovered": {"client_id": "RECOVERED", "enabled": False},
+            "stable": {"client_id": "STABLE", "enabled": True},
+        },
+    }
+
+    for path, payload in ((main_path, main_payload), (vf_path, vf_payload), (state_path, state_payload)):
+        path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+
+    activation.MAIN_PATH = main_path
+    activation.VF_PATH = vf_path
+    activation.STATE_PATH = state_path
+
+    first = activation.apply_policy(bootstrap_active=False)
+    first_main = json.loads(main_path.read_text(encoding="utf-8"))
+    first_vf = json.loads(vf_path.read_text(encoding="utf-8"))
+    first_state = json.loads(state_path.read_text(encoding="utf-8"))
+    recovered = next(row for row in first_main["scrapers"] if row["name"] == "Recovered")
+    stable = next(row for row in first_main["scrapers"] if row["name"] == "Stable")
+
+    assert first["activation_transitions"] == ["recovered"]
+    assert recovered["id"] == "recovered", "disabled->enabled must get a fresh case-only client id"
+    assert recovered["version"] == "1.2.4", "reactivation must also invalidate the client code/version cache"
+    assert stable["id"] == "STABLE" and stable["version"] == "2.0.0"
+    assert first_vf["scrapers"][0]["id"] == recovered["id"]
+    assert first_vf["scrapers"][0]["version"] == recovered["version"]
+    assert first_vf["scrapers"][0]["filename"] == "../providers/recovered.js"
+    assert first_state["providers"]["recovered"] == {"client_id": "recovered", "enabled": True}
+
+    # Re-running an enabled generation must be idempotent: no repeated case
+    # flip and no repeated version bump.
+    second = activation.apply_policy(bootstrap_active=False)
+    second_main = json.loads(main_path.read_text(encoding="utf-8"))
+    second_recovered = next(row for row in second_main["scrapers"] if row["name"] == "Recovered")
+    assert second["activation_transitions"] == []
+    assert second_recovered["id"] == "recovered"
+    assert second_recovered["version"] == "1.2.4"
+
+    # A later disable keeps the current id; the next genuine recovery toggles it
+    # once again so clients cannot inherit the disabled local state.
+    second_recovered["enabled"] = False
+    main_path.write_text(json.dumps(second_main, indent=2) + "\n", encoding="utf-8")
+    activation.apply_policy(bootstrap_active=False)
+    disabled_main = json.loads(main_path.read_text(encoding="utf-8"))
+    disabled_recovered = next(row for row in disabled_main["scrapers"] if row["name"] == "Recovered")
+    assert disabled_recovered["id"] == "recovered"
+
+    disabled_recovered["enabled"] = True
+    main_path.write_text(json.dumps(disabled_main, indent=2) + "\n", encoding="utf-8")
+    third = activation.apply_policy(bootstrap_active=False)
+    third_main = json.loads(main_path.read_text(encoding="utf-8"))
+    third_recovered = next(row for row in third_main["scrapers"] if row["name"] == "Recovered")
+    assert third["activation_transitions"] == ["recovered"]
+    assert third_recovered["id"] == "RECOVERED"
+    assert third_recovered["version"] == "1.2.5"
+
+print("refresh manifest lean finalization + Nuvio client reactivation test passed")

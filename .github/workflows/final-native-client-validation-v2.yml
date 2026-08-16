@@ -6,6 +6,7 @@ on:
     branches: [main]
     paths:
       - ".github/workflows/final-native-client-validation-v2.yml"
+      - "scripts/export_nuvio_client_refs.py"
       - "scripts/isolate_native_android_tests.py"
       - "scripts/native_mobile_playback_proof.sh"
       - "scripts/native_tv_playback_proof.sh"
@@ -17,11 +18,13 @@ on:
       - "manifest.json"
       - "vf/manifest.json"
       - "PROVENANCE.json"
+      - "sources.json"
   push:
     branches: [main]
     paths:
       - ".github/triggers/final-native-client-validation-v2"
       - ".github/workflows/final-native-client-validation-v2.yml"
+      - "scripts/export_nuvio_client_refs.py"
       - "scripts/isolate_native_android_tests.py"
       - "scripts/native_mobile_playback_proof.sh"
       - "scripts/native_tv_playback_proof.sh"
@@ -32,29 +35,31 @@ on:
       - "manifest.json"
       - "vf/manifest.json"
       - "PROVENANCE.json"
+      - "sources.json"
 
 permissions:
   contents: read
 
 concurrency:
   group: final-native-client-validation-v2-${{ github.ref }}
-  cancel-in-progress: true
-
-env:
-  NUVIO_DESKTOP_SHA: "8977fda639f5791947e6d8b36025635a77aed5da"
-  NUVIO_MOBILE_SHA: "0d6e30e4566e6f9f2051d5f80a1e3f1e0fcb1f18"
-  NUVIO_TV_SHA: "d95f3fb837b6ddfbf9ff445cdcba2413b576f0d4"
+  cancel-in-progress: false
 
 jobs:
   desktop-native-runtime:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 35
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      - name: Checkout NiakVIO
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           path: niakvio
+          persist-credentials: false
 
-      - uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165
+      - name: Resolve accepted Nuvio client revisions
+        run: python3 niakvio/scripts/export_nuvio_client_refs.py --sources niakvio/sources.json >> "$GITHUB_ENV"
+
+      - name: Set up Java
+        uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165 # v5.0.0
         with:
           distribution: temurin
           java-version: "17"
@@ -62,17 +67,20 @@ jobs:
       - name: Install official Linux player dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev
+          sudo apt-get install -y --no-install-recommends \
+            libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev
 
-      - name: Checkout pinned NuvioDesktop and inject current generation
+      - name: Checkout accepted NuvioDesktop and inject current generation
         run: |
-          git clone --filter=blob:none --no-checkout https://github.com/NuvioMedia/NuvioDesktop.git nuvio-desktop
+          git clone --quiet --filter=blob:none --no-checkout https://github.com/NuvioMedia/NuvioDesktop.git nuvio-desktop
           git -C nuvio-desktop checkout "$NUVIO_DESKTOP_SHA"
           touch nuvio-desktop/local.properties
-          python niakvio/scripts/prepare_native_client_validation.py desktop --workspace "$GITHUB_WORKSPACE"
+          printf 'Accepted NuvioDesktop: %s\n' "$NUVIO_DESKTOP_SHA"
+          python3 niakvio/scripts/prepare_native_client_validation.py desktop --workspace "$GITHUB_WORKSPACE"
 
       - name: Require real Desktop StreamZo HLS
         working-directory: nuvio-desktop
+        shell: bash
         run: |
           proof_ok() {
             grep -Eq 'FIELD_DESKTOP_NATIVE provider=streamzo .* count=[1-9][0-9]*' "$GITHUB_WORKSPACE/desktop-native-results.log" &&
@@ -98,16 +106,13 @@ jobs:
               break
             fi
             STATUS=1
-            if [[ "$ATTEMPT" -lt 2 ]]; then
-              echo "FIELD_DESKTOP_PROOF_RETRY reason=streamzo_or_test_failure"
-              sleep 3
-            fi
+            [[ "$ATTEMPT" -ge 2 ]] || sleep 3
           done
           exit "$STATUS"
 
       - name: Upload Desktop proof
         if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.0
         with:
           name: final-native-desktop-${{ github.run_id }}
           path: |
@@ -119,32 +124,38 @@ jobs:
 
   mobile-native-runtime:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 65
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      - name: Checkout NiakVIO
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           path: niakvio
+          persist-credentials: false
 
-      - uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165
+      - name: Resolve accepted Nuvio client revisions
+        run: python3 niakvio/scripts/export_nuvio_client_refs.py --sources niakvio/sources.json >> "$GITHUB_ENV"
+
+      - name: Set up Java
+        uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165 # v5.0.0
         with:
           distribution: temurin
           java-version: "17"
 
-      - name: Checkout pinned NuvioMobile and NuvioTV and inject current generation
+      - name: Checkout accepted Mobile/TV runtimes and inject current generation
         run: |
-          git clone --filter=blob:none --no-checkout https://github.com/NuvioMedia/NuvioMobile.git nuvio-mobile
+          git clone --quiet --filter=blob:none --no-checkout https://github.com/NuvioMedia/NuvioMobile.git nuvio-mobile
           git -C nuvio-mobile checkout "$NUVIO_MOBILE_SHA"
           touch nuvio-mobile/local.properties
-          git clone --filter=blob:none --no-checkout https://github.com/NuvioMedia/NuvioTV.git nuvio-tv
+          git clone --quiet --filter=blob:none --no-checkout https://github.com/NuvioMedia/NuvioTV.git nuvio-tv
           git -C nuvio-tv checkout "$NUVIO_TV_SHA"
           touch nuvio-tv/local.properties nuvio-tv/local.dev.properties
-          python niakvio/scripts/prepare_native_client_validation.py android --workspace "$GITHUB_WORKSPACE"
-          python niakvio/scripts/harden_nuvio_mobile_device_test.py "$GITHUB_WORKSPACE/nuvio-mobile"
-          python niakvio/scripts/isolate_native_android_tests.py mobile "$GITHUB_WORKSPACE/nuvio-mobile"
+          printf 'Accepted NuvioMobile: %s\nAccepted NuvioTV: %s\n' "$NUVIO_MOBILE_SHA" "$NUVIO_TV_SHA"
+          python3 niakvio/scripts/prepare_native_client_validation.py android --workspace "$GITHUB_WORKSPACE"
+          python3 niakvio/scripts/harden_nuvio_mobile_device_test.py "$GITHUB_WORKSPACE/nuvio-mobile"
+          python3 niakvio/scripts/isolate_native_android_tests.py mobile "$GITHUB_WORKSPACE/nuvio-mobile"
 
       - name: Enable KVM
-        run: |
-          if [ -e /dev/kvm ]; then sudo chmod 666 /dev/kvm || true; fi
+        run: if [ -e /dev/kvm ]; then sudo chmod 666 /dev/kvm || true; fi
 
       - name: Execute official Mobile PluginRuntime on phone AVD
         uses: ReactiveCircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d
@@ -160,7 +171,7 @@ jobs:
 
       - name: Upload Mobile proof
         if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.0
         with:
           name: final-native-mobile-${{ github.run_id }}
           path: |
@@ -172,31 +183,37 @@ jobs:
 
   tv-native-runtime:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 65
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      - name: Checkout NiakVIO
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           path: niakvio
+          persist-credentials: false
 
-      - uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165
+      - name: Resolve accepted Nuvio client revisions
+        run: python3 niakvio/scripts/export_nuvio_client_refs.py --sources niakvio/sources.json >> "$GITHUB_ENV"
+
+      - name: Set up Java
+        uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165 # v5.0.0
         with:
           distribution: temurin
           java-version: "17"
 
-      - name: Checkout pinned NuvioMobile and NuvioTV and inject current generation
+      - name: Checkout accepted Mobile/TV runtimes and inject current generation
         run: |
-          git clone --filter=blob:none --no-checkout https://github.com/NuvioMedia/NuvioMobile.git nuvio-mobile
+          git clone --quiet --filter=blob:none --no-checkout https://github.com/NuvioMedia/NuvioMobile.git nuvio-mobile
           git -C nuvio-mobile checkout "$NUVIO_MOBILE_SHA"
           touch nuvio-mobile/local.properties
-          git clone --filter=blob:none --no-checkout https://github.com/NuvioMedia/NuvioTV.git nuvio-tv
+          git clone --quiet --filter=blob:none --no-checkout https://github.com/NuvioMedia/NuvioTV.git nuvio-tv
           git -C nuvio-tv checkout "$NUVIO_TV_SHA"
           touch nuvio-tv/local.properties nuvio-tv/local.dev.properties
-          python niakvio/scripts/prepare_native_client_validation.py android --workspace "$GITHUB_WORKSPACE"
-          python niakvio/scripts/isolate_native_android_tests.py tv "$GITHUB_WORKSPACE/nuvio-tv"
+          printf 'Accepted NuvioMobile: %s\nAccepted NuvioTV: %s\n' "$NUVIO_MOBILE_SHA" "$NUVIO_TV_SHA"
+          python3 niakvio/scripts/prepare_native_client_validation.py android --workspace "$GITHUB_WORKSPACE"
+          python3 niakvio/scripts/isolate_native_android_tests.py tv "$GITHUB_WORKSPACE/nuvio-tv"
 
       - name: Enable KVM
-        run: |
-          if [ -e /dev/kvm ]; then sudo chmod 666 /dev/kvm || true; fi
+        run: if [ -e /dev/kvm ]; then sudo chmod 666 /dev/kvm || true; fi
 
       - name: Execute official NuvioTV PluginRuntime on Android TV AVD
         uses: ReactiveCircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d
@@ -212,7 +229,7 @@ jobs:
 
       - name: Upload TV proof
         if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.0
         with:
           name: final-native-tv-${{ github.run_id }}
           path: |
