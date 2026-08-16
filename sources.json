@@ -2,7 +2,7 @@
   "schema_version": 65,
   "repository": {
     "name": "Nuvio Curated Providers",
-    "manifest_version": "5.20.61",
+    "manifest_version": "5.20.62",
     "description": "Combined Nuvio manifest generated from every non-P2P entry declared by Gowaru, All-in-One-Nuvio and Yoru. Official address hubs, public Telegram announcements, curated candidates, consecutive search confirmation and persistent last-known-good history maintain provider routes. Each upstream keeps two content-addressed snapshots; current published bundles remain the final functional fallback. Curation merges descriptions, catalogue types, languages, formats and quality signals across the three upstream manifests. Enabled providers follow the explicit priority list, then French-language and quality ranking. P2P remains excluded."
   },
   "upstreams": {
@@ -157,68 +157,32 @@
     "no_provider_specific_activation_exception": true,
     "manifest_version_bumps_when_payload_changes": true
   },
-  "manifest_version": "5.20.61",
+  "manifest_version": "5.20.62",
   "nuvio_client_compatibility": {
     "schema_version": 1,
     "policy": "accepted_ref may advance automatically only when hard and semantic runtime contract checks remain unchanged",
     "clients": {
       "nuvio-mobile": {
         "contract_ref": "0d6e30e4566e6f9f2051d5f80a1e3f1e0fcb1f18",
-        "accepted_ref": "cc20e716a5c16e4bafcef71a85f1fa1a57638e4d",
-        "accepted_at": "2026-08-15T17:45:17.742656+00:00",
+        "accepted_ref": "d2db97a9a971be3aad2bd3e9528b3a17e43766ae",
+        "accepted_at": "2026-08-16T14:43:41.932580+00:00",
         "acceptance": "automatic-contract-safe-advance",
-        "changed_file_count": 22,
-        "observed_sensitive_changed_files": [],
+        "changed_file_count": 5,
+        "observed_sensitive_changed_files": [
+          "composeApp/src/androidMain/kotlin/com/nuvio/app/features/player/PlayerEngine.android.kt"
+        ],
         "unrelated_changed_files": [
-          "composeApp/src/androidFull/kotlin/com/nuvio/app/core/build/AppFeaturePolicy.android.kt",
-          "composeApp/src/androidMain/kotlin/com/nuvio/app/MainActivity.kt",
-          "composeApp/src/androidMain/kotlin/com/nuvio/app/core/network/ServerConfigurationStorage.android.kt",
-          "composeApp/src/androidPlaystore/kotlin/com/nuvio/app/core/build/AppFeaturePolicy.android.kt",
-          "composeApp/src/commonMain/composeResources/values/strings.xml",
-          "composeApp/src/commonMain/kotlin/com/nuvio/app/core/auth/AuthRepository.kt",
-          "composeApp/src/commonMain/kotlin/com/nuvio/app/core/build/AppFeaturePolicy.kt",
-          "composeApp/src/commonMain/kotlin/com/nuvio/app/core/network/NetworkStatusRepository.kt",
-          "composeApp/src/commonMain/kotlin/com/nuvio/app/core/network/ServerConfiguration.kt",
-          "composeApp/src/commonMain/kotlin/com/nuvio/app/core/network/ServerConfigurationStorage.kt",
-          "composeApp/src/commonMain/kotlin/com/nuvio/app/core/network/ServerDiscovery.kt",
-          "composeApp/src/commonMain/kotlin/com/nuvio/app/core/network/SupabaseEndpointConfig.kt",
-          "composeApp/src/commonMain/kotlin/com/nuvio/app/core/network/SupabaseProvider.kt",
-          "composeApp/src/commonMain/kotlin/com/nuvio/app/features/auth/AuthScreen.kt",
-          "composeApp/src/commonMain/kotlin/com/nuvio/app/features/auth/ServerConnectionController.kt",
-          "composeApp/src/commonMain/kotlin/com/nuvio/app/features/auth/ServerConnectionDialogs.kt",
-          "composeApp/src/commonMain/kotlin/com/nuvio/app/features/profiles/ProfileModels.kt",
-          "composeApp/src/desktopMain/kotlin/com/nuvio/app/core/build/AppFeaturePolicy.desktop.kt",
-          "composeApp/src/desktopMain/kotlin/com/nuvio/app/core/network/ServerConfigurationStorage.desktop.kt",
-          "composeApp/src/iosAppStore/kotlin/com/nuvio/app/core/build/AppFeaturePolicy.ios.kt",
-          "composeApp/src/iosFull/kotlin/com/nuvio/app/core/build/AppFeaturePolicy.ios.kt",
-          "composeApp/src/iosMain/kotlin/com/nuvio/app/core/network/ServerConfigurationStorage.ios.kt"
+          "composeApp/src/androidMain/res/xml/locale_config.xml",
+          "composeApp/src/commonMain/composeResources/values-ar/strings.xml",
+          "composeApp/src/commonMain/composeResources/values-bg/strings.xml",
+          "composeApp/src/commonMain/kotlin/com/nuvio/app/features/settings/AppLanguage.kt"
         ]
       },
       "nuvio-desktop": {
-        "contract_ref": "7dd2adb0f326781f7f45ff2369f1ba2e958bb173",
-        "accepted_ref": "6cd7e1498589d353d7cb9b318af7e548861295df",
-        "accepted_at": "2026-08-16T08:21:35.236111+00:00",
-        "acceptance": "automatic-contract-safe-advance",
-        "changed_file_count": 15,
-        "observed_sensitive_changed_files": [
-          "composeApp/src/commonMain/kotlin/com/nuvio/app/features/player/PlayerScreenRuntimeEffects.kt",
-          "composeApp/src/commonMain/kotlin/com/nuvio/app/features/player/PlayerScreenRuntimeState.kt",
-          "composeApp/src/commonMain/kotlin/com/nuvio/app/features/player/PlayerSettingsRepository.kt",
-          "composeApp/src/commonMain/kotlin/com/nuvio/app/features/player/PlayerSettingsStorage.kt",
-          "composeApp/src/commonMain/kotlin/com/nuvio/app/features/player/skip/AutoSkipSegmentType.kt",
-          "composeApp/src/commonMain/kotlin/com/nuvio/app/features/player/skip/SkipIntervalLookup.kt",
-          "composeApp/src/desktopMain/kotlin/com/nuvio/app/features/player/PlayerSettingsStorage.desktop.kt",
-          "composeApp/src/desktopMain/kotlin/com/nuvio/app/features/player/desktop/DesktopPlayerVolumeStorage.kt",
-          "composeApp/src/desktopMain/kotlin/com/nuvio/app/features/player/desktop/NativePlayerController.kt"
-        ],
-        "unrelated_changed_files": [
-          "composeApp/src/androidMain/kotlin/com/nuvio/app/features/player/PlayerSettingsStorage.android.kt",
-          "composeApp/src/commonMain/composeResources/values/strings.xml",
-          "composeApp/src/commonMain/kotlin/com/nuvio/app/features/settings/PlaybackSettingsPage.kt",
-          "composeApp/src/commonTest/kotlin/com/nuvio/app/features/player/skip/AutoSkipSegmentTypeTest.kt",
-          "composeApp/src/commonTest/kotlin/com/nuvio/app/features/player/skip/SkipIntervalLookupTest.kt",
-          "composeApp/src/iosMain/kotlin/com/nuvio/app/features/player/PlayerSettingsStorage.ios.kt"
-        ]
+        "contract_ref": "89017269cd68600b9e0ad44e06d12357860a8ceb",
+        "accepted_ref": "89017269cd68600b9e0ad44e06d12357860a8ceb",
+        "accepted_at": "2026-08-16T14:43:41.932580+00:00",
+        "acceptance": "contract-audited-baseline"
       },
       "nuvio-tv": {
         "contract_ref": "aa327f0e99645e1fc7094f56e3e827ff0925afae",
