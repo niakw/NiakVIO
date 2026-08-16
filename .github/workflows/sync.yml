@@ -11,6 +11,23 @@ on:
         options:
           - quick
           - deep
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/sync.yml'
+      - 'provider_catalog.json'
+      - 'engine_v2/**'
+      - 'scripts/run_adaptive_quick_repair.py'
+      - 'scripts/run_adaptive_deep_repair.py'
+      - 'scripts/promote_refresh_candidates.py'
+      - 'scripts/promote_candidates.py'
+      - 'scripts/runtime_repair.py'
+      - 'scripts/adaptive_runtime/runtime_repair.py'
+      - 'scripts/provider_engine_normalizer.py'
+      - 'scripts/provider_evidence_model.py'
+      - 'scripts/release_evidence_fence.py'
+      - 'tests/quick_refresh_policy_test.py'
   push:
     branches:
       - main
@@ -36,8 +53,8 @@ permissions:
   contents: read
 
 concurrency:
-  group: nuvio-provider-publish
-  cancel-in-progress: false
+  group: nuvio-provider-publish-${{ github.event.pull_request.number || 'main' }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   stage-and-test:
@@ -227,6 +244,7 @@ jobs:
   publish:
     name: Publish validated provider transaction
     needs: stage-and-test
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 90
     permissions:
