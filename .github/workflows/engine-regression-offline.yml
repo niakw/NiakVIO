@@ -8,6 +8,7 @@ on:
       - main
     paths:
       - ".github/triggers/offline-engine-regression"
+      - ".github/workflows/engine-regression-offline.yml"
       - "manifest.json"
       - "vf/manifest.json"
       - "PROVENANCE.json"
@@ -22,11 +23,19 @@ on:
       - "scripts/audit_catalogue_identity_media.py"
       - "scripts/quarantine_catalogue_audit_failures.py"
       - "scripts/run_adaptive_deep_repair.py"
+      - "scripts/run_adaptive_quick_repair.py"
+      - "scripts/adaptive_runtime/runtime_repair.py"
+      - "scripts/provider_patches/adaptive_runtime_recovery_v4.py"
+      - "scripts/provider_patches/adaptive_runtime_recovery_v5.py"
       - "scripts/repair_identity_gate.py"
       - "scripts/provider_engine_normalizer.py"
       - "scripts/provider_compiler.py"
       - "scripts/provider_rebuild.py"
       - "tests/repair_identity_gate_test.py"
+      - "tests/adaptive_runtime_repair_test.py"
+      - "tests/adaptive_extension_media_proof_test.py"
+      - "tests/quick_repair_probe_profile_test.py"
+      - "tests/quick_repair_acceptance_policy_test.py"
 
 permissions:
   contents: read
@@ -71,13 +80,22 @@ jobs:
           python -m py_compile scripts/audit_catalogue_identity_media.py
           python -m py_compile scripts/quarantine_catalogue_audit_failures.py
           python -m py_compile scripts/run_adaptive_deep_repair.py
+          python -m py_compile scripts/run_adaptive_quick_repair.py
+          python -m py_compile scripts/adaptive_runtime/runtime_repair.py
+          python -m py_compile scripts/provider_patches/adaptive_runtime_recovery_v4.py
+          python -m py_compile scripts/provider_patches/adaptive_runtime_recovery_v5.py
           python -m py_compile scripts/repair_identity_gate.py
           python -m py_compile scripts/provider_engine_normalizer.py
           python -m py_compile scripts/provider_compiler.py
           python -m py_compile scripts/provider_rebuild.py
 
-      - name: Validate automatic repair identity promotion gate
-        run: python tests/repair_identity_gate_test.py
+      - name: Validate adaptive repair contracts
+        run: |
+          python tests/repair_identity_gate_test.py
+          python tests/quick_repair_probe_profile_test.py
+          python tests/quick_repair_acceptance_policy_test.py
+          python tests/adaptive_extension_media_proof_test.py
+          python tests/adaptive_runtime_repair_test.py
 
       - name: Reconstruct safe published generation in workspace
         run: |
