@@ -3,7 +3,12 @@
 'use strict';
 
 const assert = require('node:assert/strict');
-const { inferSupportedTypes, isAnimeFocusedCatalogue, roundRobin } = require('./provider_semantics.cjs');
+const {
+  canonicalMetadataCanExpand,
+  inferSupportedTypes,
+  isAnimeFocusedCatalogue,
+  roundRobin,
+} = require('./provider_semantics.cjs');
 
 const movix = {
   canonical_id: 'movix',
@@ -27,6 +32,7 @@ assert.equal(
 
 const incompleteMovixVariant = {
   canonical_id: 'movix',
+  source: 'gowaru',
   metadata: {
     id: 'movix',
     description: 'Animes en VF et VOSTFR',
@@ -34,18 +40,45 @@ const incompleteMovixVariant = {
   },
   canonical_metadata: {
     descriptions: ['Films, Séries et Animes en VF et VOSTFR.'],
-    supportedTypes: ['anime'],
+    supportedTypes: ['anime', 'movie', 'tv'],
+    sources: ['gowaru', 'yoru'],
   },
 };
+assert.equal(canonicalMetadataCanExpand(incompleteMovixVariant), true);
 assert.deepEqual(
   inferSupportedTypes(incompleteMovixVariant),
   ['movie', 'tv', 'anime'],
-  'canonical descriptions from the other manifests must restore Movix movie/TV coverage',
+  'canonical descriptions from another live upstream must restore Movix movie/TV coverage',
 );
 assert.equal(
   isAnimeFocusedCatalogue(incompleteMovixVariant),
   false,
   'canonical mixed-catalogue evidence must prevent anime-only validation narrowing',
+);
+
+const stalePublishedBaselineExpansion = {
+  canonical_id: 'papadustream',
+  source: 'gowaru',
+  metadata: {
+    id: 'papadustream',
+    name: 'Papadustream',
+    description: 'Séries TV en streaming HLS.',
+    supportedTypes: ['tv'],
+  },
+  canonical_metadata: {
+    descriptions: [
+      'Séries TV en streaming HLS.',
+      'Films et séries TV en streaming HLS via an older published bundle.',
+    ],
+    supportedTypes: ['tv', 'movie', 'anime'],
+    sources: ['gowaru', 'published-baseline'],
+  },
+};
+assert.equal(canonicalMetadataCanExpand(stalePublishedBaselineExpansion), false);
+assert.deepEqual(
+  inferSupportedTypes(stalePublishedBaselineExpansion),
+  ['tv'],
+  'a published baseline must not widen a current upstream beyond its live catalogue declaration',
 );
 
 const animeOnly = {
@@ -91,4 +124,4 @@ assert.deepEqual(
   'multi-catalogue representative tests must begin with a movie, then TV, then anime',
 );
 
-console.log('Provider semantics self-test passed: mixed catalogues and anime-film validation scopes are preserved.');
+console.log('Provider semantics self-test passed: live upstream coverage is preserved without stale baseline widening.');
