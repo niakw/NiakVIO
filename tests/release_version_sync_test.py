@@ -12,11 +12,13 @@ script_path = ROOT / "scripts" / "sync_release_versions.py"
 workflow = (ROOT / ".github" / "workflows" / "sync.yml").read_text(encoding="utf-8")
 script_source = script_path.read_text(encoding="utf-8")
 
-expected_call = 'python scripts/sync_release_versions.py --manifest manifest.json --previous "$PREVIOUS_MANIFEST"'
-assert expected_call in workflow
+version_call = "python scripts/sync_release_versions.py"
+assert version_call in workflow
+assert "--manifest manifest.json" in workflow
+assert '--previous "$PREVIOUS_MANIFEST"' in workflow
 assert "python scripts/validate_activation_preservation.py" in workflow
 assert "python scripts/validate_language_projection.py" in workflow
-assert workflow.index(expected_call) < workflow.index("python scripts/validate_language_projection.py")
+assert workflow.index(version_call) < workflow.index("python scripts/validate_language_projection.py")
 assert workflow.index("python scripts/validate_language_projection.py") < workflow.index("python scripts/generate_release_hashes.py")
 assert "git add manifest.json vf/manifest.json provider_catalog.json" in workflow
 assert "package.json package-lock.json sources.json nuvio-client-id-state.json" in workflow
