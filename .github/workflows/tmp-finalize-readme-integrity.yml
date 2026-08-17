@@ -1,0 +1,83 @@
+name: One-shot finalize README and integrity
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/tmp-finalize-readme-integrity.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: one-shot-readme-integrity
+  cancel-in-progress: true
+
+jobs:
+  finalize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout main with history
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          fetch-depth: 0
+
+      - name: Patch README hero and publication rebase integrity
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          readme = Path('README.md')
+          text = readme.read_text(encoding='utf-8')
+          old = '''  <img src="assets/branding/nuvio-providers-logo.png" alt="NiakVIO" width="420">\n\n  <p><strong>Un seul repository Nuvio pour agréger, réparer et maintenir des providers VO, VF et VOSTFR.</strong></p>\n  <p>NiakVIO transforme plusieurs sources communautaires en manifests stables, contrôlés et testés sur les clients Nuvio réels.</p>'''
+          new = '''  <img src="assets/branding/nuvio-providers-logo.png" alt="Logo NiakVIO" width="300">\n\n  <h1>NiakVIO</h1>\n  <p><strong>Le moteur communautaire qui agrège, teste, répare et maintient les providers Nuvio.</strong></p>\n  <p>VO · VF · VOSTFR &nbsp;•&nbsp; Mobile · Desktop · TV</p>'''
+          if old not in text:
+              raise SystemExit('README hero anchor not found; refusing blind rewrite')
+          text = text.replace(old, new, 1)
+          readme.write_text(text, encoding='utf-8')
+
+          workflow = Path('.github/workflows/sync.yml')
+          text = workflow.read_text(encoding='utf-8')
+          old = '''          git fetch origin main\n          git rebase origin/main\n          python scripts/release_evidence_fence.py validate \\\n            --manifest manifest.json \\\n            --root . \\\n            --evidence /tmp/release-generation.json\n          git push origin HEAD:main'''
+          new = '''          git fetch origin main\n          git rebase origin/main\n\n          # The rebase can import concurrent README/config/cleanup changes after\n          # the publication hashes were first generated. Rebuild the inventories\n          # on the exact rebased tree so a provider transaction can never publish\n          # stale checksums for files that were changed or removed concurrently.\n          python scripts/generate_release_hashes.py\n          python scripts/validate_release_integrity.py\n          git add FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json\n          if ! git diff --cached --quiet; then\n            git commit --amend --no-edit\n          fi\n\n          python scripts/release_evidence_fence.py validate \\\n            --manifest manifest.json \\\n            --root . \\\n            --evidence /tmp/release-generation.json\n          git push origin HEAD:main'''
+          if old not in text:
+              raise SystemExit('sync.yml rebase anchor not found; refusing blind rewrite')
+          workflow.write_text(text.replace(old, new, 1), encoding='utf-8')
+
+          test = Path('tests/sync_atomic_publication_test.py')
+          text = test.read_text(encoding='utf-8')
+          old = '''push = workflow.index("git push origin HEAD:main", commit)\nverify = workflow.index("Verify exact published main", push)\n\nassert build < first_version < first_activation < audit < final_version < final_activation < final_catalog < hashes < commit < push < verify'''
+          new = '''rebase = workflow.index("git rebase origin/main", commit)\npost_rebase_hashes = workflow.index("python scripts/generate_release_hashes.py", rebase)\npost_rebase_integrity = workflow.index("python scripts/validate_release_integrity.py", post_rebase_hashes)\npush = workflow.index("git push origin HEAD:main", post_rebase_integrity)\nverify = workflow.index("Verify exact published main", push)\n\nassert build < first_version < first_activation < audit < final_version < final_activation < final_catalog < hashes < commit < rebase < post_rebase_hashes < post_rebase_integrity < push < verify'''
+          if old not in text:
+              raise SystemExit('sync atomic test anchor not found; refusing blind rewrite')
+          test.write_text(text.replace(old, new, 1), encoding='utf-8')
+          PY
+
+          python3 tests/sync_atomic_publication_test.py
+
+      - name: Commit semantic changes, rebase, then regenerate exact hashes
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+
+          git add README.md .github/workflows/sync.yml tests/sync_atomic_publication_test.py
+          git commit -m 'docs: refine NiakVIO hero and harden rebased release hashes'
+
+          git fetch origin main
+          git rebase origin/main
+
+          python3 scripts/generate_release_hashes.py
+          python3 scripts/validate_release_integrity.py
+          git add FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json
+          if ! git diff --cached --quiet; then
+            git commit -m 'chore: refresh release integrity after repository cleanup'
+          fi
+
+          python3 tests/sync_atomic_publication_test.py
+          python3 scripts/validate_release_integrity.py
+          git push origin HEAD:main
