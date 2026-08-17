@@ -12,6 +12,9 @@ on:
     branches: [main]
     paths:
       - "provider-overrides.json"
+      - "scripts/build_brain_repair_proposal.py"
+      - "tests/brain_repair_proposal_test.py"
+      - ".github/workflows/provider-overrides-gate.yml"
   workflow_dispatch:
 
 permissions:
@@ -63,7 +66,7 @@ jobs:
 
   dispatch-quick:
     name: Dispatch standard Quick pipeline after merge
-    if: github.event_name == 'push'
+    if: github.event_name == 'push' && github.event.head_commit != null && contains(toJson(github.event.commits), 'provider-overrides.json')
     needs: validate
     runs-on: ubuntu-latest
     timeout-minutes: 5
