@@ -22,6 +22,11 @@ on:
     branches: [main]
     paths:
       - ".github/workflows/native-corpus-device-targeted.yml"
+      - "scripts/prepare_native_corpus_client.py"
+      - "scripts/prepare_native_corpus_validation.py"
+      - "scripts/restage_native_corpus_client.py"
+      - "scripts/run_native_corpus_tv_suite.sh"
+      - "scripts/analyze_native_corpus_collection.cjs"
 
 permissions:
   contents: read
