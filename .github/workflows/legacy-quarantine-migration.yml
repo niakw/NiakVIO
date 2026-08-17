@@ -115,7 +115,8 @@ jobs:
           python scripts/reapply_published_overrides.py
 
           # Targeted contracts only: no discovery, DNS, health corpus or Repair.
-          python tests/catalogue_audit_quarantine_test.py
+          python tests/provider_quarantine_test.py
+          python tests/type_scoped_activation_test.py
           python tests/general_manifest_runtime_profiles_test.py
           node tests/vf_movie_recovery.test.cjs
 
@@ -130,9 +131,11 @@ jobs:
         run: |
           python - <<'PY'
           import json
+          import os
           from pathlib import Path
+          provider_id=os.environ['PROVIDER_ID'].casefold()
           manifest=json.loads(Path('manifest.json').read_text())
-          row=next(x for x in manifest['scrapers'] if str(x.get('id','')).casefold()==str('${{ env.PROVIDER_ID }}').casefold())
+          row=next(x for x in manifest['scrapers'] if str(x.get('id','')).casefold()==provider_id)
           assert row.get('enabled') is not False, row
           bundle=Path(row['filename']).read_text(encoding='utf-8')
           assert 'NUVIO_CATALOGUE_SCOPE_QUARANTINE_V1' in bundle
