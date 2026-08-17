@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import math
 import re
 import subprocess
 import time
@@ -24,8 +25,36 @@ def _load_json(path: Path, default: Any) -> Any:
         return default
 
 
+def _strict_json_value(value: Any) -> Any:
+    """Normalize Python-only JSON values before crossing the Node planner boundary.
+
+    Python deliberately accepts/emits NaN and infinities by default while
+    JavaScript JSON.parse rejects them. Runtime/network evidence can contain
+    non-finite measurements, so one such value must never abort the whole
+    provider repair batch.
+    """
+    if isinstance(value, float):
+        return value if math.isfinite(value) else None
+    if isinstance(value, dict):
+        return {str(key): _strict_json_value(item) for key, item in value.items()}
+    if isinstance(value, list):
+        return [_strict_json_value(item) for item in value]
+    if isinstance(value, tuple):
+        return [_strict_json_value(item) for item in value]
+    return value
+
+
+def _strict_json_dumps(value: Any, *, indent: int | None = None) -> str:
+    return json.dumps(
+        _strict_json_value(value),
+        ensure_ascii=False,
+        allow_nan=False,
+        indent=indent,
+    )
+
+
 def _write_json(path: Path, value: Any) -> None:
-    path.write_text(json.dumps(value, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    path.write_text(_strict_json_dumps(value, indent=2) + "\n", encoding="utf-8")
 
 
 def policy() -> dict[str, Any]:
@@ -139,7 +168,7 @@ def update_plans(registry_path: Path, report: dict[str, Any], mode: str) -> dict
     try:
         completed = subprocess.run(
             ["node", str(PLAN_SCRIPT)], cwd=ROOT,
-            input=json.dumps(payload, ensure_ascii=False), text=True,
+            input=_strict_json_dumps(payload), text=True,
             capture_output=True, check=True, timeout=30,
         )
     except subprocess.CalledProcessError as exc:
