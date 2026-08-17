@@ -88,7 +88,7 @@ for required in (
 ):
     assert required in workflow, required
 
-# The useful push corpus must not be cancelled by a no-op workflow_run on another revision.
+# A no-op workflow_run on another revision must not cancel a useful push corpus.
 assert "native-corpus-device-lab-${{ github.event_name }}-${{ github.sha }}" in workflow
 assert "workflow_run:" in workflow
 assert "Niakvio provider pipeline" in workflow
@@ -103,10 +103,15 @@ assert '.github/triggers/native-corpus-device-lab' in workflow
 assert "FIELD_NATIVE_CORPUS_BEGIN" in prepare_core
 assert "FIELD_NATIVE_CORPUS_END" in prepare_core
 assert "FIELD_NATIVE_ERROR" in prepare_core
-assert "missing_begin_marker" in collection_analyzer
-assert "missing_end_marker" in collection_analyzer
-assert "no_readable_log" in collection_analyzer
-assert "runtimeErrors" in collection_analyzer
+for marker in (
+    "no_readable_log",
+    "missing_begin_marker",
+    "missing_end:",
+    "incomplete_provider_traversal:",
+    "invalid_expected_provider_count:",
+):
+    assert marker in collection_analyzer, marker
+assert "process.exitCode = complete ? 0 : 2" in collection_analyzer
 
 # Kotlin/JUnit assertTrue signatures differ. Preparation and every fixture restage must preserve them.
 desktop_old = 'assertTrue(errors.isEmpty(), "native provider runtime errors:'
