@@ -1895,7 +1895,16 @@
     "reject_new_runtime_errors": true,
     "reject_malformed_requests": true,
     "retry_identical_repairs": false,
-    "generic_metadata_mutation_enabled": false
+    "generic_metadata_mutation_enabled": false,
+    "learned_skills": {},
+    "brain": {
+      "name": "NiakVIO Brain",
+      "controlPlaneVersion": 3,
+      "learningOnValidatedRepair": true,
+      "lastMode": "quick",
+      "fallbackPolicy": "lkg_only_after_repair_budget",
+      "coreMutationPolicy": "proposal_only"
+    }
   },
   "provider_capabilities": {
     "vidfast": {
@@ -2459,7 +2468,27 @@
       "validation": "provider_native",
       "allow_html_url": true,
       "requires_direct_media": false,
-      "observed_origins": [],
+      "observed_origins": [
+        "https://npms.io",
+        "https://video.sibnet.ru",
+        "https://vidmoly.me",
+        "https://fsvid.lol",
+        "https://vidzy.live",
+        "https://streamtape.com",
+        "https://sendvid.com",
+        "https://www.myvi.ru",
+        "https://younetu.org",
+        "https://vidoza.net",
+        "https://lecteurvideo.com",
+        "https://up4fun.top",
+        "https://w16.french-manga.net",
+        "https://kitsu.io",
+        "https://arm.haglund.dev",
+        "https://v3-cinemeta.strem.io",
+        "https://lodash.com",
+        "https://openjsf.org",
+        "http://underscorejs.org"
+      ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true,
       "catalogue_types": [

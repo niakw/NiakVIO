@@ -1,6 +1,6 @@
 {
   "name": "Nuvio Curated Providers — VF uniquement",
-  "version": "5.20.64",
+  "version": "5.20.65",
   "scrapers": [
     {
       "id": "PURSTREAM",
@@ -52,31 +52,6 @@
       "supportsExternalPlayer": true
     },
     {
-      "id": "DESIFLIX",
-      "name": "DesiFlix",
-      "description": "Bollywood, Hollywood, and South Indian movies, in Dual Language",
-      "version": "1.0.23",
-      "author": "Nuvio Team",
-      "supportedTypes": [
-        "movie",
-        "tv"
-      ],
-      "filename": "../providers/desiflix--published-baseline--650717c1f5b6ba9c.js",
-      "enabled": true,
-      "hasSettings": false,
-      "formats": [
-        "mp4",
-        "mkv",
-        "m3u8"
-      ],
-      "logo": "https://i.postimg.cc/Vvs4fmwM/desiflix.png",
-      "contentLanguage": [
-        "en",
-        "hi"
-      ],
-      "supportsExternalPlayer": false
-    },
-    {
       "id": "PAPADUSTREAM",
       "name": "Papadustream",
       "description": "Films et séries TV en streaming HLS via Papadustream.",
@@ -102,57 +77,28 @@
       "supportsExternalPlayer": false
     },
     {
-      "id": "MUGIWARASTREAM",
-      "name": "Mugiwara-no-Streaming",
-      "description": "Streaming gratuit d'animes et scans en bonne qualite via API Next.js.",
-      "version": "1.0.45",
+      "id": "french-manga",
+      "name": "French-Manga",
+      "description": "Animes VF et VOSTFR en streaming sur French-Manga.net",
+      "version": "1.0.34",
       "author": "Gowaru",
       "supportedTypes": [
         "movie",
         "anime"
       ],
-      "filename": "../providers/mugiwarastream--published-baseline--501a7c4caf82dc27.js",
+      "filename": "../providers/french-manga--nuvio--740e1f7e4e208e69.js",
       "enabled": true,
-      "logo": "https://raw.githubusercontent.com/NOUSSS/mugiwara-no-streaming-images/main/Logo.png",
+      "logo": "https://w16.french-manga.net/favicon.ico",
       "contentLanguage": [
         "fr"
       ],
       "formats": [
         "mp4",
-        "mkv",
         "m3u8"
       ],
       "limited": false,
       "disabledPlatforms": [],
       "supportsExternalPlayer": false
-    },
-    {
-      "id": "GOATED",
-      "name": "🐐 Goated",
-      "description": "4K • 1080p Movies & Series in Multi Language",
-      "version": "1.0.15",
-      "author": "Nuvio Team",
-      "supportedTypes": [
-        "movie",
-        "tv"
-      ],
-      "filename": "../providers/goated--nuvio--8c7202df852f641a.js",
-      "enabled": true,
-      "hasSettings": true,
-      "formats": [
-        "mkv",
-        "mp4",
-        "m3u8"
-      ],
-      "logo": "https://i.postimg.cc/qqsfgS0F/goated.png",
-      "contentLanguage": [
-        "en",
-        "hi",
-        "ru",
-        "es"
-      ],
-      "supportsExternalPlayer": false,
-      "disabledPlatforms": []
     },
     {
       "id": "ANIMESAMA-CO",
@@ -306,6 +252,31 @@
       "supportsExternalPlayer": true
     },
     {
+      "id": "MUGIWARASTREAM",
+      "name": "Mugiwara-no-Streaming",
+      "description": "Streaming gratuit d'animes et scans en bonne qualite via API Next.js.",
+      "version": "1.0.45",
+      "author": "Gowaru",
+      "supportedTypes": [
+        "movie",
+        "anime"
+      ],
+      "filename": "../providers/mugiwarastream--published-baseline--501a7c4caf82dc27.js",
+      "enabled": true,
+      "logo": "https://raw.githubusercontent.com/NOUSSS/mugiwara-no-streaming-images/main/Logo.png",
+      "contentLanguage": [
+        "fr"
+      ],
+      "formats": [
+        "mp4",
+        "mkv",
+        "m3u8"
+      ],
+      "limited": false,
+      "disabledPlatforms": [],
+      "supportsExternalPlayer": false
+    },
+    {
       "id": "streamzo",
       "name": "StreamZo",
       "description": "Films et séries en streaming VF/VOSTFR sur Streamzo.fr (SPA, iframe injecté, multi-serveurs).",
@@ -451,6 +422,31 @@
       "supportsExternalPlayer": false
     },
     {
+      "id": "DESIFLIX",
+      "name": "DesiFlix",
+      "description": "Bollywood, Hollywood, and South Indian movies, in Dual Language",
+      "version": "1.0.23",
+      "author": "Nuvio Team",
+      "supportedTypes": [
+        "movie",
+        "tv"
+      ],
+      "filename": "../providers/desiflix--published-baseline--650717c1f5b6ba9c.js",
+      "enabled": true,
+      "hasSettings": false,
+      "formats": [
+        "mp4",
+        "mkv",
+        "m3u8"
+      ],
+      "logo": "https://i.postimg.cc/Vvs4fmwM/desiflix.png",
+      "contentLanguage": [
+        "en",
+        "hi"
+      ],
+      "supportsExternalPlayer": false
+    },
+    {
       "id": "anime-ultime",
       "name": "Anime-Ultime",
       "description": "Animes VOSTFR et VF en streaming sur v5.anime-ultime.net (séries licenciées exclues par le site).",
@@ -478,7 +474,7 @@
       "id": "ANIMOFLIX",
       "name": "AnimoFlix",
       "description": "Regarder des animes VF et VOSTFR gratuitement sur AnimoFlix.",
-      "version": "1.0.33",
+      "version": "1.0.34",
       "author": "Gowaru",
       "supportedTypes": [
         "movie",
@@ -493,30 +489,6 @@
       "formats": [
         "mp4",
         "mkv"
-      ],
-      "limited": false,
-      "disabledPlatforms": [],
-      "supportsExternalPlayer": false
-    },
-    {
-      "id": "FRENCH-MANGA",
-      "name": "French-Manga",
-      "description": "Animes VF et VOSTFR en streaming sur French-Manga.net",
-      "version": "1.0.32",
-      "author": "Gowaru",
-      "supportedTypes": [
-        "movie",
-        "anime"
-      ],
-      "filename": "../providers/french-manga--nuvio-audit-quarantine--f7e932753c0be691.js",
-      "enabled": false,
-      "logo": "https://w16.french-manga.net/favicon.ico",
-      "contentLanguage": [
-        "fr"
-      ],
-      "formats": [
-        "mp4",
-        "m3u8"
       ],
       "limited": false,
       "disabledPlatforms": [],
@@ -667,6 +639,34 @@
       "limited": true,
       "disabledPlatforms": [],
       "supportsExternalPlayer": false
+    },
+    {
+      "id": "GOATED",
+      "name": "🐐 Goated",
+      "description": "4K • 1080p Movies & Series in Multi Language",
+      "version": "1.0.15",
+      "author": "Nuvio Team",
+      "supportedTypes": [
+        "movie",
+        "tv"
+      ],
+      "filename": "../providers/goated--nuvio--8c7202df852f641a.js",
+      "enabled": true,
+      "hasSettings": true,
+      "formats": [
+        "mkv",
+        "mp4",
+        "m3u8"
+      ],
+      "logo": "https://i.postimg.cc/qqsfgS0F/goated.png",
+      "contentLanguage": [
+        "en",
+        "hi",
+        "ru",
+        "es"
+      ],
+      "supportsExternalPlayer": false,
+      "disabledPlatforms": []
     }
   ]
 }

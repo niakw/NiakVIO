@@ -8185,8 +8185,8 @@
     },
     {
       "id": "anikototv",
-      "action": "enabled-current-dns-access-stream-quality-passed",
-      "enabled": true,
+      "action": "published-disabled-failed-gates",
+      "enabled": false,
       "activation_eligible": true,
       "strict_activation_eligible": true,
       "strict_grace_eligible": false,
@@ -8200,7 +8200,9 @@
         "eligible": false,
         "reason": "disabled_by_current_proof_policy"
       },
-      "failed_gates": [],
+      "failed_gates": [
+        "catalogue_audit_playable_identity_contradiction"
+      ],
       "activation_blockers": [],
       "activation_gates": {
         "01_policy_safe_no_p2p": {
@@ -8627,7 +8629,19 @@
         ]
       },
       "variant_count": 2,
-      "manifest_position": 21
+      "manifest_position": 21,
+      "catalogue_audit_quarantine": {
+        "reason": "catalogue_audit_playable_identity_contradiction",
+        "tested_filename": "providers/anikototv--nuvio--dbc8faddd8c0ebfc.js",
+        "tested_sha256": "dbc8faddd8c0ebfc161885d25402f414412ae88d8f75cb475b4a6a820bfdb8d7",
+        "quarantined_filename": "providers/anikototv--nuvio-audit-quarantine--f7e932753c0be691.js",
+        "quarantined_sha256": "f7e932753c0be691853a80ff2e73f5d564034ddb2c44fcbb11f5254b581f9277",
+        "fixtures": [
+          "impossible_movie"
+        ],
+        "identity_contradictions": 1,
+        "playable_streams": 1
+      }
     },
     {
       "id": "allmovieland",
@@ -22397,7 +22411,8 @@
         "07_verified_payload_playability",
         "08_quality_and_bitrate",
         "10_content_identity_integrity",
-        "00_current_playable_stream"
+        "00_current_playable_stream",
+        "catalogue_audit_playable_identity_contradiction"
       ],
       "activation_blockers": [
         "02_healthy_functional_status",
@@ -22901,7 +22916,19 @@
         ]
       },
       "variant_count": 2,
-      "manifest_position": 72
+      "manifest_position": 72,
+      "catalogue_audit_quarantine": {
+        "reason": "catalogue_audit_playable_identity_contradiction",
+        "tested_filename": "providers/cinefreak--published-baseline--9a1e33cb67f7818f.js",
+        "tested_sha256": "9a1e33cb67f7818f625ce25ccf7c59da40a2a157039208e28f0770d010ecb92a",
+        "quarantined_filename": "providers/cinefreak--nuvio-audit-quarantine--f7e932753c0be691.js",
+        "quarantined_sha256": "f7e932753c0be691853a80ff2e73f5d564034ddb2c44fcbb11f5254b581f9277",
+        "fixtures": [
+          "kdrama_squid_game_s01e01"
+        ],
+        "identity_contradictions": 1,
+        "playable_streams": 10
+      }
     },
     {
       "id": "einthusan",
