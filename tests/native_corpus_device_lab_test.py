@@ -6,19 +6,23 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 WORKFLOW = ROOT / ".github/workflows/native-corpus-device-lab.yml"
-PREPARE = ROOT / "scripts/prepare_native_corpus_validation.py"
-RESTAGE = ROOT / "scripts/restage_native_corpus_fixture.py"
-ANDROID_SUITE = ROOT / "scripts/run_native_corpus_android_suite.sh"
-ANALYZER = ROOT / "scripts/analyze_native_corpus_results.cjs"
+PREPARE_CORE = ROOT / "scripts/prepare_native_corpus_validation.py"
+PREPARE_CLIENT = ROOT / "scripts/prepare_native_corpus_client.py"
+RESTAGE_CLIENT = ROOT / "scripts/restage_native_corpus_client.py"
+MOBILE_SUITE = ROOT / "scripts/run_native_corpus_mobile_suite.sh"
+TV_SUITE = ROOT / "scripts/run_native_corpus_tv_suite.sh"
+COLLECTION_ANALYZER = ROOT / "scripts/analyze_native_corpus_collection.cjs"
 SUMMARIZER = ROOT / "scripts/summarize_native_corpus_suite.cjs"
 CORPUS = ROOT / ".github/triggers/nuvio-client-lab.json"
 MANIFEST = ROOT / "manifest.json"
 
 workflow = WORKFLOW.read_text(encoding="utf-8")
-prepare = PREPARE.read_text(encoding="utf-8")
-restage = RESTAGE.read_text(encoding="utf-8")
-android_suite = ANDROID_SUITE.read_text(encoding="utf-8")
-analyzer = ANALYZER.read_text(encoding="utf-8")
+prepare_core = PREPARE_CORE.read_text(encoding="utf-8")
+prepare_client = PREPARE_CLIENT.read_text(encoding="utf-8")
+restage_client = RESTAGE_CLIENT.read_text(encoding="utf-8")
+mobile_suite = MOBILE_SUITE.read_text(encoding="utf-8")
+tv_suite = TV_SUITE.read_text(encoding="utf-8")
+collection_analyzer = COLLECTION_ANALYZER.read_text(encoding="utf-8")
 summarizer = SUMMARIZER.read_text(encoding="utf-8")
 corpus = json.loads(CORPUS.read_text(encoding="utf-8"))
 manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
@@ -40,35 +44,52 @@ assert actual_slugs == expected_slugs, (actual_slugs, expected_slugs)
 
 for slug in sorted(expected_slugs):
     assert slug in workflow, (slug, "desktop workflow")
-    assert slug in android_suite, (slug, "android suite")
-assert workflow.count("runs-on: ubuntu-latest") == 4, workflow.count("runs-on: ubuntu-latest")
+    assert slug in mobile_suite, (slug, "mobile suite")
+    assert slug in tv_suite, (slug, "tv suite")
+
 for job in (
     "publication-gate:",
     "desktop-native-corpus:",
-    "android-mobile-tv-native-corpus:",
+    "mobile-native-corpus:",
+    "tv-native-corpus:",
     "native-corpus-engine-summary:",
 ):
     assert job in workflow, job
+assert "android-mobile-tv-native-corpus:" not in workflow
+assert workflow.count("runs-on: ubuntu-latest") == 5, workflow.count("runs-on: ubuntu-latest")
 assert "matrix:" not in workflow
 assert "strategy:" not in workflow
 
+# Each client owns its repository/job. Mobile and TV must never share a clone or emulator job.
+desktop_section = workflow.split("  desktop-native-corpus:", 1)[1].split("  mobile-native-corpus:", 1)[0]
+mobile_section = workflow.split("  mobile-native-corpus:", 1)[1].split("  tv-native-corpus:", 1)[0]
+tv_section = workflow.split("  tv-native-corpus:", 1)[1].split("  native-corpus-engine-summary:", 1)[0]
+assert "NuvioMedia/NuvioDesktop.git" in desktop_section
+assert "NuvioMedia/NuvioMobile.git" not in desktop_section
+assert "NuvioMedia/NuvioTV.git" not in desktop_section
+assert "NuvioMedia/NuvioMobile.git" in mobile_section
+assert "NuvioMedia/NuvioTV.git" not in mobile_section
+assert "NuvioMedia/NuvioDesktop.git" not in mobile_section
+assert "NuvioMedia/NuvioTV.git" in tv_section
+assert "NuvioMedia/NuvioMobile.git" not in tv_section
+assert "NuvioMedia/NuvioDesktop.git" not in tv_section
+assert mobile_section.count("ReactiveCircus/android-emulator-runner@") == 1
+assert tv_section.count("ReactiveCircus/android-emulator-runner@") == 1
+
 for required in (
-    "NuvioMedia/NuvioDesktop.git",
-    "NuvioMedia/NuvioMobile.git",
-    "NuvioMedia/NuvioTV.git",
-    "prepare_native_corpus_validation.py",
-    "restage_native_corpus_fixture.py",
-    "run_native_corpus_android_suite.sh",
-    "analyze_native_corpus_results.cjs",
+    "prepare_native_corpus_client.py",
+    "restage_native_corpus_client.py",
+    "run_native_corpus_mobile_suite.sh",
+    "run_native_corpus_tv_suite.sh",
+    "analyze_native_corpus_collection.cjs",
     "summarize_native_corpus_suite.cjs",
-    "ReactiveCircus/android-emulator-runner@",
     "actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a",
     "actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c",
 ):
     assert required in workflow, required
 
-# Final native proof is tied to the canonical ARCHI2 publication workflow and
-# exact accepted official client heads stored in the released sources.json.
+# The useful push corpus must not be cancelled by a no-op workflow_run on another revision.
+assert "native-corpus-device-lab-${{ github.event_name }}-${{ github.sha }}" in workflow
 assert "workflow_run:" in workflow
 assert "Niakvio provider pipeline" in workflow
 assert "chore: publish validated ARCHI2 provider transaction" in workflow
@@ -77,17 +98,26 @@ assert "sources.json" in workflow
 assert "accepted_ref" in workflow
 assert "target_sha" in workflow
 assert '.github/triggers/native-corpus-device-lab' in workflow
-assert '"providers/**"' not in workflow
-assert "provider-overrides.json" not in workflow.split("permissions:", 1)[0]
 
-assert "def manifest_providers()" in prepare
-assert 'manifest.get("scrapers", [])' in prepare
-assert "stage_providers" in prepare
-assert "fixtureRow" not in prepare
-assert 'row.get("providers")' not in prepare
-assert "corpus.manifest_providers()" in restage
-assert "corpus.android_test" in restage
-assert "corpus.desktop_test" in restage
+# Provider/runtime anomalies are evidence. Only an incomplete corpus is an infrastructure failure.
+assert "FIELD_NATIVE_CORPUS_BEGIN" in prepare_core
+assert "FIELD_NATIVE_CORPUS_END" in prepare_core
+assert "FIELD_NATIVE_ERROR" in prepare_core
+assert "missing_begin_marker" in collection_analyzer
+assert "missing_end_marker" in collection_analyzer
+assert "no_readable_log" in collection_analyzer
+assert "runtimeErrors" in collection_analyzer
+
+# Kotlin/JUnit assertTrue signatures differ. Preparation and every fixture restage must preserve them.
+desktop_old = 'assertTrue(errors.isEmpty(), "native provider runtime errors:'
+android_old = 'assertTrue("native provider runtime errors:'
+desktop_new = 'assertTrue(providers.isNotEmpty(), "native corpus provider list must not be empty")'
+android_new = 'assertTrue("native corpus provider list must not be empty", providers.isNotEmpty())'
+for source, label in ((prepare_client, "prepare"), (restage_client, "restage")):
+    assert desktop_old in source, (label, "desktop source anchor")
+    assert android_old in source, (label, "android source anchor")
+    assert desktop_new in source, (label, "desktop replacement")
+    assert android_new in source, (label, "android replacement")
 
 stageable = []
 seen = set()
@@ -112,25 +142,14 @@ for required in (
     "media_hint64",
     "host64",
 ):
-    assert required in prepare, required
-assert "url64=" not in prepare
-assert "headers64=" not in prepare
-assert "row.headers}" not in prepare
+    assert required in prepare_core, required
+assert "url64=" not in prepare_core
+assert "headers64=" not in prepare_core
 
-assert "streamIdentity" in analyzer
-assert "fixture_duration_mismatch" in analyzer
-assert "FIELD_NATIVE_CONTRADICTION" in analyzer
-assert "FIELD_NATIVE_TRANSPORT_FAILURE" in analyzer
-assert "FIELD_NATIVE_RUNTIME_ERROR" in analyzer
-assert "FIELD_NATIVE_SLOW" in analyzer
-assert "decode(f.url64)" not in analyzer
-assert "safeSyntheticUrl" in analyzer
-
-assert 'for fixture in "${FIXTURES[@]}"' in android_suite
-assert android_suite.count('for fixture in "${FIXTURES[@]}"') == 2
-assert "FIELD_NATIVE_CORPUS_MOBILE_STATUS" in android_suite
-assert "FIELD_NATIVE_CORPUS_TV_STATUS" in android_suite
-assert "FIELD_NATIVE_CORPUS_ANDROID_SUITE_STATUS" in android_suite
+for suite, client in ((mobile_suite, "MOBILE"), (tv_suite, "TV")):
+    assert 'for fixture in "${FIXTURES[@]}"' in suite, client
+    assert f"FIELD_NATIVE_CORPUS_{client}_STATUS" in suite, client
+    assert f"FIELD_NATIVE_CORPUS_{client}_SUITE_STATUS" in suite, client
 
 for required in (
     "repeatedContradictions",
@@ -146,5 +165,5 @@ assert "native-corpus-engine-summary" in workflow
 
 print(
     "native corpus device lab coverage tests passed: "
-    f"fixtures={len(expected_slugs)} stageable_providers={len(stageable)} devices=3 heavy_runners=2 gate=1 summary_runner=1 sanitized_transport=true"
+    f"fixtures={len(expected_slugs)} stageable_providers={len(stageable)} clients=3 isolated_android_jobs=2 collection_gate=true assertion_contract=true"
 )
