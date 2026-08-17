@@ -190,7 +190,18 @@ def build_profiles(data: dict, providers: dict[str, tuple[dict, Path]]) -> int:
         }.get(strategy, "provider_native"))
         capability.setdefault("allow_html_url", strategy in {"iframe_player", "mixed_embed_resolver", "html_scraper"})
         capability.setdefault("requires_direct_media", strategy == "direct_media")
-        capability["observed_origins"] = origins[:24]
+        # Audit quarantine bundles are intentionally inert stubs. They contain no
+        # runtime origins by design, so re-profiling a published quarantine must
+        # not erase origin evidence learned from the real provider bundle. Doing
+        # so made `npm test` mutate provider-overrides.json after publication and
+        # broke exact-main verification. Preserve prior evidence only for these
+        # explicit quarantine stubs; normal live bundles still refresh exactly
+        # from their current source.
+        if origins or "--nuvio-audit-quarantine--" not in path.name:
+            capability["observed_origins"] = origins[:24]
+        else:
+            prior_origins = existing.get("observed_origins") if isinstance(existing.get("observed_origins"), list) else []
+            capability["observed_origins"] = [str(value) for value in prior_origins if str(value)][:24]
         capability["generated_from_manifest_or_stage"] = True
         caps[provider_id] = capability
         patch = patches.setdefault(provider_id, {})
