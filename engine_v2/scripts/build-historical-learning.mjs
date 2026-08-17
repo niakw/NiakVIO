@@ -9,13 +9,54 @@ const baselineConfig = readJson(resolveArg('--baseline-config', path.join(root, 
 const baselineId = arg('--baseline-id') || baselineConfig.baselines?.[0]?.id;
 const baseline = (baselineConfig.baselines || []).find((row) => row?.id === baselineId);
 if (!baseline) throw new Error(`historical baseline not found: ${baselineId || '<none>'}`);
+const output = resolveArg('--output', path.join(root, 'brain-learning-output/historical-training.json'));
+
+// The historical spreadsheet is a bootstrap seed, not a permanent external oracle.
+// Once the sanitized Brain state proves that this exact bootstrap was consumed,
+// subsequent runs retain only a marker and learn from their own memory/native evidence.
+const previousState = readJson(path.join(root, 'brain-learning-input/previous.json'), {});
+const previousBaseline = obj(previousState.historicalTraining?.baseline);
+const previousSnapshot = obj(previousBaseline.spreadsheetSnapshot);
+const bootstrapAlreadyConsumed = String(previousBaseline.id || '') === String(baseline.id || '')
+  && (previousBaseline.bootstrapConsumed === true || Object.keys(previousSnapshot).length > 0);
+if (bootstrapAlreadyConsumed) {
+  const skipped = {
+    schemaVersion: 2,
+    generatedAt: new Date().toISOString(),
+    baseline: {
+      id: baseline.id,
+      source: baseline.source,
+      release: baseline.release,
+      bootstrapConsumed: true,
+    },
+    stats: {
+      providers: 0,
+      deltas: {},
+      unresolvedHighPriority: 0,
+      positiveExamples: 0,
+      safetyReferences: 0,
+      recoveredReferenceRegressions: 0,
+      recoveredReferenceConfirmed: 0,
+    },
+    cases: [],
+    bootstrap: {
+      consumed: true,
+      policy: 'one_shot_historical_seed',
+      futureEvidence: 'brain_memory_and_native_runtime_only',
+    },
+    privacy: 'Historical spreadsheet bootstrap was already consumed; this run injects no spreadsheet cases or aggregate evidence.',
+  };
+  fs.mkdirSync(path.dirname(output), { recursive: true });
+  fs.writeFileSync(output, JSON.stringify(skipped, null, 2) + '\n');
+  console.log(`FIELD_BRAIN_HISTORICAL_BOOTSTRAP skipped=1 baseline=${baseline.id}`);
+  process.exit(0);
+}
 
 const baselineManifest = readJson(required('--baseline-manifest'), {});
 const baselineHealth = readJson(required('--baseline-health'), {});
 const currentManifest = readJson(resolveArg('--current-manifest', path.join(root, 'manifest.json')), {});
 const currentHealth = readJson(required('--current-health'), {});
 const repairReport = readJson(required('--repair-report'), {});
-const output = resolveArg('--output', path.join(root, 'brain-learning-output/historical-training.json'));
 
 const bManifest = manifestMap(baselineManifest);
 const cManifest = manifestMap(currentManifest);
@@ -106,6 +147,7 @@ const payload = {
     comparedCommit: baseline.comparedCommit || null,
     expectedProviderCount: Number(baseline.providers || 0),
     spreadsheetSnapshot: obj(baseline.spreadsheetSnapshot),
+    bootstrapConsumed: false,
   },
   stats: {
     providers: cases.length,
@@ -117,6 +159,11 @@ const payload = {
     recoveredReferenceConfirmed: cases.filter((row) => row.delta === 'recovered_reference_confirmed').length,
   },
   cases,
+  bootstrap: {
+    consumed: false,
+    policy: 'one_shot_historical_seed',
+    futureEvidence: 'brain_memory_and_native_runtime_only',
+  },
   privacy: 'Initial bootstrap retains structured spreadsheet classifications and aggregate counters plus coarse provider evidence from the audited Git snapshot; no raw URLs, tokens, cookies or headers are persisted.',
 };
 fs.mkdirSync(path.dirname(output), { recursive: true });
