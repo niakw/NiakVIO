@@ -1,0 +1,100 @@
+name: Final dependency refresh once
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/dependency-refresh-once.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: final-dependency-refresh-once
+  cancel-in-progress: true
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout current main
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "24"
+          package-manager-cache: false
+
+      - name: Refresh npm dependency lock deterministically
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm install --package-lock-only --ignore-scripts --no-audit --no-fund --save-exact axios@1.19.0 cheerio@1.2.0
+          node - <<'NODE'
+          const pkg = require('./package.json');
+          const lock = require('./package-lock.json');
+          if (pkg.dependencies.axios !== '1.19.0') throw new Error('axios package version mismatch');
+          if (pkg.dependencies.cheerio !== '1.2.0') throw new Error('cheerio package version mismatch');
+          if (lock.packages['node_modules/axios']?.version !== '1.19.0') throw new Error('axios lock mismatch');
+          if (lock.packages['node_modules/cheerio']?.version !== '1.2.0') throw new Error('cheerio lock mismatch');
+          NODE
+
+      - name: Upgrade pinned GitHub Actions across current workflows
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          replacements = {
+              'actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd': 'actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1',
+              'actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e': 'actions/setup-node@820762786026740c76f36085b0efc47a31fe5020',
+              'actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405': 'actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97',
+          }
+          root = Path('.github/workflows')
+          changed = []
+          for path in sorted(root.glob('*.yml')):
+              text = path.read_text(encoding='utf-8')
+              before = text
+              for old, new in replacements.items():
+                  text = text.replace(old, new)
+              if text != before:
+                  path.write_text(text, encoding='utf-8')
+                  changed.append(path.as_posix())
+          print('updated workflows:', len(changed))
+          for path in changed:
+              print('-', path)
+          PY
+          if grep -R -E 'actions/(checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd|setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e|setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405)' .github/workflows; then
+            echo 'old pinned action SHA remains' >&2
+            exit 1
+          fi
+
+      - name: Validate refreshed dependency tree
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm ci --ignore-scripts --no-audit --no-fund
+          node -e "require('axios'); require('cheerio'); console.log('dependency imports ok')"
+          python -m py_compile scripts/build_brain_repair_proposal.py scripts/run_brain_learning_sandbox.py
+          python tests/brain_repair_proposal_test.py
+          node engine_v2/tests/repair-brain.test.mjs
+          node engine_v2/tests/recipe-memory.test.mjs
+
+      - name: Push self-cleaning dependency refresh branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          BRANCH="chore/dependency-refresh-final"
+          rm -f .github/workflows/dependency-refresh-once.yml
+          git config user.name "niakvio-maintenance"
+          git config user.email "actions@users.noreply.github.com"
+          git switch -C "$BRANCH"
+          git add package.json package-lock.json .github/workflows
+          git commit -m "chore: refresh dependencies and pinned actions"
+          git push --force origin HEAD:"$BRANCH"
