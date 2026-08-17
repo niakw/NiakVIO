@@ -17,11 +17,7 @@ const tvFixture = { id: '94605', title: 'Arcane', year: 2021, slug: 'arcane', se
 function configuredSite(id, fallback) {
   const patch = overrides?.provider_patches?.[id] || {};
   const raw = patch.official_site || fallback;
-  try {
-    return new URL(raw);
-  } catch {
-    return new URL(fallback);
-  }
+  try { return new URL(raw); } catch { return new URL(fallback); }
 }
 const streamzoHost = configuredSite('streamzo', 'https://streamzo.fr').hostname;
 const catalogueHosts = new Set([
@@ -39,13 +35,9 @@ function tmdbResponse(url) {
   const id = parsed.pathname.split('/').filter(Boolean).at(-1);
   const fixture = fixtureForId(id);
   return new Response(JSON.stringify({
-    id: Number(fixture.id),
-    title: fixture.title,
-    name: fixture.title,
-    original_title: fixture.title,
-    original_name: fixture.title,
-    release_date: `${fixture.year}-05-01`,
-    first_air_date: `${fixture.year}-05-01`,
+    id: Number(fixture.id), title: fixture.title, name: fixture.title,
+    original_title: fixture.title, original_name: fixture.title,
+    release_date: `${fixture.year}-05-01`, first_air_date: `${fixture.year}-05-01`,
   }), { status: 200, headers: { 'content-type': 'application/json' } });
 }
 function fixtureForUrl(url) {
@@ -61,7 +53,6 @@ function detailPage(fixture) {
   return `<!doctype html><h1>${fixture.title}</h1><section id="player" data-embed="${externalPlayer}/${fixture.id}"></section>`;
 }
 function hlsBody() {
-  // Keep the synthetic VOD above the 60-second short-preview rejection floor.
   return '\uFEFF  #EXTM3U\n#EXT-X-VERSION:3\n#EXT-X-TARGETDURATION:10\n' +
     Array.from({ length: 7 }, (_, index) => `#EXTINF:10.0,\nsegment-${index + 1}.ts\n`).join('') +
     '#EXT-X-ENDLIST\n';
@@ -71,47 +62,20 @@ global.fetch = async (input) => {
   const raw = typeof input === 'string' ? input : input.url;
   const url = new URL(raw);
   if (url.hostname === 'api.themoviedb.org') return tmdbResponse(raw);
-  if (url.hostname === 'movix.fun' && url.pathname === '/') {
-    return new Response('<script src="/assets/app.js"></script>', { status: 200, headers: { 'content-type': 'text/html' } });
-  }
-  if (url.hostname === 'movix.fun' && url.pathname === '/assets/app.js') {
-    return new Response('const movie="/api/catalog/movie/{id}"; const tv="/api/catalog/tv/{id}/season/{season}";', { status: 200, headers: { 'content-type': 'application/javascript' } });
-  }
+  if (url.hostname === 'movix.fun' && url.pathname === '/') return new Response('<script src="/assets/app.js"></script>', { status: 200, headers: { 'content-type': 'text/html' } });
+  if (url.hostname === 'movix.fun' && url.pathname === '/assets/app.js') return new Response('const movie="/api/catalog/movie/{id}"; const tv="/api/catalog/tv/{id}/season/{season}";', { status: 200, headers: { 'content-type': 'application/javascript' } });
   if (url.hostname === 'api.movix.fun' && url.pathname.startsWith('/api/catalog/movie/')) {
     const fixture = fixtureForId(url.pathname.split('/').filter(Boolean).at(-1));
-    return new Response(JSON.stringify({
-      success: true,
-      players: {
-        VFF: [{ url: `https://vidzy.example/embed-${fixture.id}.html` }],
-        Default: [{ url: 'https://fstream.top/troll/master.m3u8' }],
-      },
-    }), { status: 200, headers: { 'content-type': 'application/json' } });
+    return new Response(JSON.stringify({ success: true, players: { VFF: [{ url: `https://vidzy.example/embed-${fixture.id}.html` }], Default: [{ url: 'https://fstream.top/troll/master.m3u8' }] } }), { status: 200, headers: { 'content-type': 'application/json' } });
   }
-  if (url.hostname === 'api.movix.fun' && url.pathname.startsWith('/api/catalog/tv/')) {
-    return new Response(JSON.stringify({
-      success: true,
-      episodes: {
-        '1': { languages: { vf: [{ url: `https://player.example/embed/tv/${tvFixture.id}/1/1` }] } },
-      },
-    }), { status: 200, headers: { 'content-type': 'application/json' } });
-  }
-  if (url.hostname === 'media.example' && url.pathname === '/hls/fixture/master.m3u8') {
-    return new Response(hlsBody(), { status: 200, headers: { 'content-type': 'application/vnd.apple.mpegurl' } });
-  }
-  if (url.hostname === 's1.fsvid.lol' && url.pathname === '/troll/master.m3u8') {
-    return new Response(hlsBody(), { status: 200, headers: { 'content-type': 'text/plain; charset=utf-8' } });
-  }
-  if (['vidzy.example', 'player.example'].includes(url.hostname)) {
-    return new Response(`<html><script>const file=${JSON.stringify(provenHls)};</script></html>`, { status: 200, headers: { 'content-type': 'text/html' } });
-  }
+  if (url.hostname === 'api.movix.fun' && url.pathname.startsWith('/api/catalog/tv/')) return new Response(JSON.stringify({ success: true, episodes: { '1': { languages: { vf: [{ url: `https://player.example/embed/tv/${tvFixture.id}/1/1` }] } } } }), { status: 200, headers: { 'content-type': 'application/json' } });
+  if (url.hostname === 'media.example' && url.pathname === '/hls/fixture/master.m3u8') return new Response(hlsBody(), { status: 200, headers: { 'content-type': 'application/vnd.apple.mpegurl' } });
+  if (url.hostname === 's1.fsvid.lol' && url.pathname === '/troll/master.m3u8') return new Response(hlsBody(), { status: 200, headers: { 'content-type': 'text/plain; charset=utf-8' } });
+  if (['vidzy.example', 'player.example'].includes(url.hostname)) return new Response(`<html><script>const file=${JSON.stringify(provenHls)};</script></html>`, { status: 200, headers: { 'content-type': 'text/html' } });
   const fixture = fixtureForUrl(url);
-  if (url.hostname === streamzoHost) {
-    return new Response(detailPage(fixture), { status: 200, headers: { 'content-type': 'text/html' } });
-  }
+  if (url.hostname === streamzoHost) return new Response(detailPage(fixture), { status: 200, headers: { 'content-type': 'text/html' } });
   if (catalogueHosts.has(url.hostname)) {
-    if (/\/films?\/|interstellar|gardiens|arcane/.test(url.pathname) && !/index\.php/.test(url.pathname)) {
-      return new Response(detailPage(fixture), { status: 200, headers: { 'content-type': 'text/html' } });
-    }
+    if (/\/films?\/|interstellar|gardiens|arcane/.test(url.pathname) && !/index\.php/.test(url.pathname)) return new Response(detailPage(fixture), { status: 200, headers: { 'content-type': 'text/html' } });
     return new Response(dleSearch(url.origin, fixture), { status: 200, headers: { 'content-type': 'text/html' } });
   }
   return new Response('not found', { status: 404, headers: { 'content-type': 'text/plain' } });
@@ -130,7 +94,13 @@ function assertSafeRows(id, fixtureId, rows, kind) {
     const entry = entries[id];
     assert(entry, `missing manifest entry: ${id}`);
     const patch = overrides?.provider_patches?.[id] || {};
-    const quarantined = patch.capability === 'quarantined' && patch?.manifest_overrides?.enabled === false;
+    const configuredQuarantine = patch.capability === 'quarantined' && patch?.manifest_overrides?.enabled === false;
+    // Migration compatibility only: a publication-scoped legacy inert bundle
+    // may be the current LKG before the Quick promoter has a chance to recover
+    // a fresh sibling. Final publication rules no longer create global inert
+    // bundles from one fixture contradiction.
+    const legacyPublicationQuarantine = entry.enabled === false && /--nuvio-audit-quarantine--/.test(String(entry.filename || ''));
+    const quarantined = configuredQuarantine || legacyPublicationQuarantine;
     const providerPath = path.resolve(__dirname, '..', entry.filename);
     delete require.cache[require.resolve(providerPath)];
     const provider = require(providerPath);
@@ -150,8 +120,5 @@ function assertSafeRows(id, fixtureId, rows, kind) {
     }
     assertSafeRows(id, tvFixture.id, tvRows, 'TV');
   }
-  console.log('VF catalogue recovery tests passed with current routes, content-proven HLS, and inert safety quarantines (Interstellar + Guardians Vol. 3 + Arcane S01E01)');
-})().catch((error) => {
-  console.error(error);
-  process.exit(1);
-});
+  console.log('VF catalogue recovery tests passed with current routes, content-proven HLS, scoped publication quarantine migration, and configured safety quarantines');
+})().catch((error) => { console.error(error); process.exit(1); });

@@ -1,19 +1,28 @@
 #!/usr/bin/env python3
-"""Publish fail-safe inert bundles for providers with conclusive catalogue/media audit failures.
+"""Apply publication-scoped catalogue audit quarantines without killing valid scopes.
 
-The quarantine is deliberately publication-scoped: it is recorded in the
-manifest/provenance/health transaction, not in provider-overrides.json. New
-upstream candidates therefore remain testable on the next deep run and can
-recover automatically once they prove correct content again.
+A playback failure/unknown result is never a quarantine decision: it remains a
+Repair observation. Only a *playable identity contradiction* can be quarantined.
+The quarantine is as narrow as the evidence permits:
+
+* an impossible-ID false positive blocks that media type (the resolver proved it
+  can return arbitrary playable content for that type);
+* a contradiction on a real title blocks only that exact fixture;
+* two or more distinct contradictory fixtures of the same media type escalate
+  to a media-type quarantine;
+* the provider is disabled only when no declared media type remains usable.
+
+These quarantines are publication-scoped and recoverable on a later Quick when a
+new sibling earns fresh strict proof.
 """
 from __future__ import annotations
 
 import argparse
 import hashlib
-import importlib.util
 import json
 import re
 import subprocess
+from collections import defaultdict
 from pathlib import Path
 from typing import Any
 
@@ -21,9 +30,17 @@ ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = ROOT / "manifest.json"
 PROVENANCE = ROOT / "PROVENANCE.json"
 HEALTH_REPORT = ROOT / "health-report.json"
-QUARANTINE_PATCH = ROOT / "scripts" / "provider_patches" / "quarantine_provider_v1.py"
-QUARANTINE_MARKER = "NUVIO_PROVIDER_QUARANTINE_V1"
 BLOCKER = "catalogue_audit_playable_identity_contradiction"
+SCOPED_MARKER = "NUVIO_CATALOGUE_SCOPE_QUARANTINE_V1"
+
+FIXTURE_SCOPE: dict[str, dict[str, Any]] = {
+    "kdrama_squid_game_s01e01": {"mediaType": "tv", "tmdbId": "93405", "season": 1, "episode": 1},
+    "vf_revenant_s01e01": {"mediaType": "tv", "tmdbId": "126485", "season": 1, "episode": 1},
+    "vf_mushoku_s01e01": {"mediaType": "anime", "tmdbId": "94664", "season": 1, "episode": 1},
+    "impossible_movie": {"mediaType": "movie", "tmdbId": "999999999"},
+    "strict_movie_identity": {"mediaType": "movie", "tmdbId": "1215638"},
+    "vf_jjk_s01e01": {"mediaType": "tv", "tmdbId": "95479", "season": 1, "episode": 1},
+}
 
 
 def load(path: Path) -> dict[str, Any]:
@@ -53,29 +70,166 @@ def safe_id(value: str) -> str:
     return re.sub(r"[^a-z0-9._-]+", "-", value.casefold()).strip(".-") or "provider"
 
 
-def load_quarantine_apply():
-    spec = importlib.util.spec_from_file_location("nuvio_audit_quarantine", QUARANTINE_PATCH)
-    if spec is None or spec.loader is None:
-        raise RuntimeError(f"cannot load quarantine patch: {QUARANTINE_PATCH}")
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module.apply
-
-
 def conclusive_rows(audit: dict[str, Any]) -> dict[str, list[dict[str, Any]]]:
+    """Return identity contradictions only; playback/HLS failures stay in Repair."""
     grouped: dict[str, list[dict[str, Any]]] = {}
     for row in audit.get("rows") or []:
         if not isinstance(row, dict):
             continue
         wrong = int(row.get("identity_contradiction_count") or 0) > 0
         false_positive = row.get("playable_identity_false_positive") is True
-        broken_hls = int(row.get("hls_variant_failures") or 0) > 0 or int(row.get("hls_audio_failures") or 0) > 0
-        if not (wrong or false_positive or broken_hls):
+        if not (wrong or false_positive):
+            continue
+        if int(row.get("playable_stream_count") or 0) <= 0:
             continue
         provider_id = str(row.get("provider_id") or "").strip().casefold()
         if provider_id:
             grouped.setdefault(provider_id, []).append(row)
     return grouped
+
+
+def derive_scopes(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Derive the narrowest safe quarantine scopes from conclusive evidence."""
+    scopes: list[dict[str, Any]] = []
+    exact_by_type: dict[str, set[str]] = defaultdict(set)
+
+    for row in rows:
+        fixture_name = str(row.get("fixture") or "")
+        fixture = FIXTURE_SCOPE.get(fixture_name)
+        if not fixture:
+            continue
+        media_type = str(fixture.get("mediaType") or "").casefold()
+        if not media_type:
+            continue
+        if fixture_name.startswith("impossible_") or row.get("playable_identity_false_positive") is True:
+            scopes.append({
+                "kind": "media_type",
+                "mediaType": media_type,
+                "reason": "playable_unknown_identity_false_positive",
+            })
+            continue
+        exact = {
+            "kind": "fixture",
+            "fixture": fixture_name,
+            "mediaType": media_type,
+            "tmdbId": str(fixture.get("tmdbId") or ""),
+            "reason": "playable_identity_contradiction",
+        }
+        if fixture.get("season") is not None:
+            exact["season"] = int(fixture["season"])
+        if fixture.get("episode") is not None:
+            exact["episode"] = int(fixture["episode"])
+        scopes.append(exact)
+        exact_by_type[media_type].add(exact["tmdbId"])
+
+    # Multiple independent real-title contradictions for one type justify a
+    # type-wide quarantine. One title never does.
+    for media_type, ids in exact_by_type.items():
+        if len(ids) >= 2:
+            scopes = [
+                scope for scope in scopes
+                if not (scope.get("kind") == "fixture" and scope.get("mediaType") == media_type)
+            ]
+            scopes.append({
+                "kind": "media_type",
+                "mediaType": media_type,
+                "reason": "repeated_playable_identity_contradiction",
+            })
+
+    # A media-type scope dominates exact scopes of the same type.
+    blocked_types = {
+        str(scope.get("mediaType") or "")
+        for scope in scopes
+        if scope.get("kind") == "media_type"
+    }
+    scopes = [
+        scope for scope in scopes
+        if scope.get("kind") == "media_type"
+        or str(scope.get("mediaType") or "") not in blocked_types
+    ]
+
+    unique: dict[str, dict[str, Any]] = {}
+    for scope in scopes:
+        key = json.dumps(scope, sort_keys=True, separators=(",", ":"))
+        unique[key] = scope
+    return sorted(
+        unique.values(),
+        key=lambda scope: (
+            str(scope.get("mediaType") or ""),
+            0 if scope.get("kind") == "media_type" else 1,
+            str(scope.get("tmdbId") or ""),
+        ),
+    )
+
+
+def scoped_quarantine_source(source: str, provider_id: str, scopes: list[dict[str, Any]]) -> str:
+    """Append a getStreams wrapper that returns [] only for proven-bad scopes."""
+    encoded = json.dumps(scopes, ensure_ascii=True, separators=(",", ":"))
+    provider = json.dumps(provider_id, ensure_ascii=True)
+    return source + f"""
+
+/* {SCOPED_MARKER}: provider={provider_id} */
+;(function() {{
+  const __nuvioScopedRules = {encoded};
+  const __nuvioScopedProvider = {provider};
+  const __nuvioExports = (typeof module !== 'undefined' && module && module.exports) ? module.exports : null;
+  const __nuvioOriginal = (__nuvioExports && typeof __nuvioExports.getStreams === 'function')
+    ? __nuvioExports.getStreams
+    : (typeof globalThis !== 'undefined' && typeof globalThis.getStreams === 'function' ? globalThis.getStreams : null);
+  if (typeof __nuvioOriginal !== 'function') return;
+
+  function __nuvioInvocation(args) {{
+    const first = args[0];
+    if (first && typeof first === 'object' && !Array.isArray(first)) {{
+      return {{
+        tmdbId: String(first.tmdbId ?? first.id ?? ''),
+        mediaType: String(first.mediaType ?? first.type ?? first.category ?? '').toLowerCase(),
+        season: first.season == null ? null : Number(first.season),
+        episode: first.episode == null ? null : Number(first.episode),
+      }};
+    }}
+    return {{
+      tmdbId: String(first ?? ''),
+      mediaType: String(args[1] ?? '').toLowerCase(),
+      season: args[2] == null ? null : Number(args[2]),
+      episode: args[3] == null ? null : Number(args[3]),
+    }};
+  }}
+
+  function __nuvioMatches(rule, request) {{
+    if (String(rule.mediaType || '').toLowerCase() !== request.mediaType) return false;
+    if (rule.kind === 'media_type') return true;
+    if (String(rule.tmdbId || '') !== request.tmdbId) return false;
+    if (rule.season != null && Number(rule.season) !== request.season) return false;
+    if (rule.episode != null && Number(rule.episode) !== request.episode) return false;
+    return true;
+  }}
+
+  async function __nuvioScopedGetStreams(...args) {{
+    const request = __nuvioInvocation(args);
+    if (__nuvioScopedRules.some((rule) => __nuvioMatches(rule, request))) return [];
+    return await __nuvioOriginal.apply(this, args);
+  }}
+  try {{ if (__nuvioExports && typeof __nuvioExports === 'object') __nuvioExports.getStreams = __nuvioScopedGetStreams; }} catch {{}}
+  try {{ if (typeof globalThis !== 'undefined') globalThis.getStreams = __nuvioScopedGetStreams; }} catch {{}}
+  try {{ if (typeof global !== 'undefined') global.getStreams = __nuvioScopedGetStreams; }} catch {{}}
+  try {{ if (typeof self !== 'undefined') self.getStreams = __nuvioScopedGetStreams; }} catch {{}}
+  try {{ if (typeof globalThis !== 'undefined') globalThis.__NUVIO_CATALOGUE_SCOPE_QUARANTINE__ = {{ provider: __nuvioScopedProvider, rules: __nuvioScopedRules }}; }} catch {{}}
+}})();
+"""
+
+
+def _remaining_types(entry: dict[str, Any], scopes: list[dict[str, Any]]) -> list[str]:
+    values = entry.get("supportedTypes") or []
+    if isinstance(values, str):
+        values = [values]
+    declared = [str(value).strip().casefold() for value in values if str(value).strip()]
+    blocked = {
+        str(scope.get("mediaType") or "").casefold()
+        for scope in scopes
+        if scope.get("kind") == "media_type"
+    }
+    return [value for value in declared if value not in blocked]
 
 
 def main() -> int:
@@ -86,11 +240,10 @@ def main() -> int:
     parser.add_argument("--tested-commit-sha", default="")
     args = parser.parse_args()
 
-    audit_path = Path(args.audit).resolve()
-    audit = load(audit_path)
+    audit = load(Path(args.audit).resolve())
     failures = conclusive_rows(audit)
     if not failures:
-        print("catalogue audit quarantine: no conclusive failures")
+        print("catalogue audit quarantine: no conclusive identity failures")
         return 0
 
     manifest = load(MANIFEST)
@@ -117,35 +270,65 @@ def main() -> int:
     if missing_health:
         raise SystemExit("audit quarantine providers missing from health report: " + ", ".join(missing_health))
 
-    apply_quarantine = load_quarantine_apply()
     referenced_before = {
         str(row.get("filename") or "")
         for row in manifest_rows.values()
         if str(row.get("filename") or "")
     }
     old_candidates: list[Path] = []
+    scoped_count = 0
+    disabled_count = 0
 
     for provider_id, evidence_rows in sorted(failures.items()):
+        scopes = derive_scopes(evidence_rows)
+        if not scopes:
+            print(f"catalogue audit quarantine: {provider_id} has no safely classifiable scope; leaving to Repair")
+            continue
+
         entry = manifest_rows[provider_id]
         old_relative = str(entry.get("filename") or "").strip()
         old_path = (ROOT / old_relative).resolve()
         if not old_relative.startswith("providers/") or not old_path.is_file():
             raise SystemExit(f"{provider_id}: unsafe or missing current bundle: {old_relative}")
         old_sha = file_sha(old_path)
-        reason = BLOCKER
-        inert = str(apply_quarantine(old_path.read_text(encoding="utf-8"), {"reason": reason}))
-        if QUARANTINE_MARKER not in inert or reason not in inert:
-            raise SystemExit(f"{provider_id}: quarantine patch did not produce an inert marker")
-        payload = inert.encode("utf-8")
+        source = old_path.read_text(encoding="utf-8")
+        payload_text = scoped_quarantine_source(source, provider_id, scopes)
+        if SCOPED_MARKER not in payload_text:
+            raise SystemExit(f"{provider_id}: scoped quarantine marker missing")
+        payload = payload_text.encode("utf-8")
         digest = hashlib.sha256(payload).hexdigest()
         new_relative = f"providers/{safe_id(provider_id)}--nuvio-audit-quarantine--{digest[:16]}.js"
         new_path = ROOT / new_relative
         new_path.parent.mkdir(parents=True, exist_ok=True)
         new_path.write_bytes(payload)
 
+        original_types = entry.get("supportedTypes")
+        remaining_types = _remaining_types(entry, scopes)
+        if original_types is not None:
+            entry["supportedTypes"] = remaining_types
         entry["filename"] = new_relative
-        entry["enabled"] = False
+        if original_types is not None and not remaining_types:
+            entry["enabled"] = False
+            disabled_count += 1
         entry["version"] = bump_patch(entry.get("version"))
+
+        fixtures = sorted({str(row.get("fixture") or "") for row in evidence_rows if str(row.get("fixture") or "")})
+        identity_contradictions = sum(int(row.get("identity_contradiction_count") or 0) for row in evidence_rows)
+        playable_streams = sum(int(row.get("playable_stream_count") or 0) for row in evidence_rows)
+        audit_record = {
+            "type": "scoped_safety_quarantine",
+            "phase": "publication",
+            "source": "catalogue_media_audit",
+            "reason": BLOCKER,
+            "workflow_run_id": int(args.workflow_run_id or 0),
+            "tested_commit_sha": str(args.tested_commit_sha or ""),
+            "tested_filename": old_relative,
+            "tested_sha256": old_sha,
+            "fixtures": fixtures,
+            "scopes": scopes,
+            "identity_contradictions": identity_contradictions,
+            "playable_streams": playable_streams,
+        }
 
         provider_provenance = provenance_rows.setdefault(provider_id, {})
         if not isinstance(provider_provenance, dict):
@@ -154,58 +337,66 @@ def main() -> int:
         provider_provenance["published_filename"] = new_relative
         provider_provenance["sha256"] = digest
         provider_provenance["patched_sha256"] = digest
-        provider_provenance["activation_eligible"] = False
-        provider_provenance["strict_activation_eligible"] = False
-        provider_provenance["strict_grace_eligible"] = False
-        provider_provenance["historical_quality_grace_eligible"] = False
-        provider_provenance["runtime_evidence_eligible"] = False
-        provider_provenance["activation_mode"] = "catalogue_audit_safety_quarantine"
-        blockers = [str(value) for value in provider_provenance.get("activation_blockers") or [] if str(value)]
-        if BLOCKER not in blockers:
-            blockers.append(BLOCKER)
-        provider_provenance["activation_blockers"] = blockers
-        local_patches = list(provider_provenance.get("local_patches") or [])
-        audit_record = {
-            "type": "safety_quarantine",
-            "phase": "publication",
-            "source": "catalogue_media_audit",
-            "reason": reason,
-            "workflow_run_id": int(args.workflow_run_id or 0),
-            "tested_commit_sha": str(args.tested_commit_sha or ""),
-            "tested_filename": old_relative,
-            "tested_sha256": old_sha,
-            "fixtures": sorted({str(row.get("fixture") or "") for row in evidence_rows if str(row.get("fixture") or "")}),
-            "identity_contradictions": sum(int(row.get("identity_contradiction_count") or 0) for row in evidence_rows),
-            "playable_streams": sum(int(row.get("playable_stream_count") or 0) for row in evidence_rows),
-        }
+        provider_provenance["catalogue_audit_quarantine_scopes"] = scopes
+        provider_provenance["activation_mode"] = (
+            "catalogue_audit_scoped_quarantine"
+            if entry.get("enabled") is not False
+            else "catalogue_audit_all_declared_scopes_quarantined"
+        )
         local_patches = [
-            row for row in local_patches
-            if not (isinstance(row, dict) and row.get("type") == "safety_quarantine" and row.get("source") == "catalogue_media_audit")
+            row for row in list(provider_provenance.get("local_patches") or [])
+            if not (
+                isinstance(row, dict)
+                and row.get("source") == "catalogue_media_audit"
+                and row.get("type") in {"safety_quarantine", "scoped_safety_quarantine"}
+            )
         ]
         local_patches.append(audit_record)
         provider_provenance["local_patches"] = local_patches
+        if entry.get("enabled") is False:
+            provider_provenance["activation_eligible"] = False
+            provider_provenance["strict_activation_eligible"] = False
+            provider_provenance["strict_grace_eligible"] = False
+            provider_provenance["historical_quality_grace_eligible"] = False
+            provider_provenance["runtime_evidence_eligible"] = False
+            blockers = [str(value) for value in provider_provenance.get("activation_blockers") or [] if str(value)]
+            if BLOCKER not in blockers:
+                blockers.append(BLOCKER)
+            provider_provenance["activation_blockers"] = blockers
 
         health_row = health_rows[provider_id]
-        health_row["enabled"] = False
-        health_row["action"] = "published-disabled-failed-gates"
-        failed_gates = [str(value) for value in health_row.get("failed_gates") or [] if str(value)]
-        if BLOCKER not in failed_gates:
-            failed_gates.append(BLOCKER)
-        health_row["failed_gates"] = failed_gates
+        health_row["enabled"] = bool(entry.get("enabled"))
+        health_row["action"] = (
+            "published-scoped-quarantine"
+            if entry.get("enabled") is not False
+            else "published-disabled-all-declared-scopes-quarantined"
+        )
         health_row["catalogue_audit_quarantine"] = {
-            "reason": reason,
+            "reason": BLOCKER,
             "tested_filename": old_relative,
             "tested_sha256": old_sha,
             "quarantined_filename": new_relative,
             "quarantined_sha256": digest,
-            "fixtures": audit_record["fixtures"],
-            "identity_contradictions": audit_record["identity_contradictions"],
-            "playable_streams": audit_record["playable_streams"],
+            "fixtures": fixtures,
+            "scopes": scopes,
+            "identity_contradictions": identity_contradictions,
+            "playable_streams": playable_streams,
         }
+        if entry.get("enabled") is False:
+            failed_gates = [str(value) for value in health_row.get("failed_gates") or [] if str(value)]
+            if BLOCKER not in failed_gates:
+                failed_gates.append(BLOCKER)
+            health_row["failed_gates"] = failed_gates
+
         old_candidates.append(old_path)
+        scoped_count += 1
+        scope_text = ",".join(
+            f"{scope.get('kind')}:{scope.get('mediaType')}:{scope.get('tmdbId', '*')}"
+            for scope in scopes
+        )
         print(
-            f"catalogue audit quarantine: {provider_id} fixtures={','.join(audit_record['fixtures'])} "
-            f"contradictions={audit_record['identity_contradictions']} -> {new_relative}"
+            f"catalogue audit scoped quarantine: {provider_id} scopes={scope_text} "
+            f"contradictions={identity_contradictions} enabled={entry.get('enabled')} -> {new_relative}"
         )
 
     write(MANIFEST, manifest)
@@ -217,8 +408,6 @@ def main() -> int:
     subprocess.run(["python", "scripts/prune_unreferenced_providers.py"], cwd=ROOT, check=True)
     subprocess.run(["python", "scripts/validate_language_projection.py"], cwd=ROOT, check=True)
 
-    # Old unsafe bundles may remain only if another authoritative reference still
-    # needs them. Never delete a shared/reference-held artifact here.
     current_manifest = load(MANIFEST)
     referenced_after = {
         str(row.get("filename") or "")
@@ -231,9 +420,7 @@ def main() -> int:
         except ValueError:
             continue
         if relative not in referenced_after and relative in referenced_before and old_path.is_file():
-            # prune_unreferenced_providers owns deletion. This branch is only a
-            # diagnostic assertion that the unsafe path is no longer live.
-            print(f"catalogue audit quarantine: superseded bundle retained only by non-manifest state: {relative}")
+            print(f"catalogue audit scoped quarantine: superseded bundle retained only by non-manifest state: {relative}")
 
     if args.evidence:
         evidence = Path(args.evidence).resolve()
@@ -242,7 +429,10 @@ def main() -> int:
             "--manifest", "manifest.json", "--root", ".", "--output", str(evidence),
         ], cwd=ROOT, check=True)
 
-    print(f"catalogue audit quarantine complete: providers={len(failures)}")
+    print(
+        f"catalogue audit scoped quarantine complete: providers={scoped_count} "
+        f"fully_disabled={disabled_count}"
+    )
     return 0
 
 
