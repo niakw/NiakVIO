@@ -99,11 +99,15 @@ assert 'goated' in activation['active_ids']
 
 for provider_id in ('movix', 'coflix', 'flemmix'):
     assert by_id[provider_id]['supportsExternalPlayer'] is True, provider_id
-# StreamZo historically exposed embeds. Once the globally audited direct-media
-# bundle is promoted, every surviving output is a content-proven HLS/container
-# and the provider must no longer advertise an external-player requirement.
-if '--nuvio-tv-global--' in str(by_id['streamzo'].get('filename') or ''):
+# StreamZo historically exposed embeds. A validated direct-media generation may
+# advertise native HLS playback instead. The scoped catalogue wrapper is not a
+# regression to embeds: it wraps the exact validated candidate and only blocks
+# the proven-bad fixture, so it must preserve that candidate's direct-media flag.
+streamzo_filename = str(by_id['streamzo'].get('filename') or '')
+streamzo_bundle = (ROOT / streamzo_filename).read_text(encoding='utf-8')
+if '--nuvio-tv-global--' in streamzo_filename or 'NUVIO_CATALOGUE_SCOPE_QUARANTINE_V1' in streamzo_bundle:
     assert by_id['streamzo']['supportsExternalPlayer'] is False
+    assert 'm3u8' in by_id['streamzo'].get('formats', [])
 else:
     assert by_id['streamzo']['supportsExternalPlayer'] is True
 assert 'movie' in by_id['frenchstream']['supportedTypes']
