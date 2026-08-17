@@ -33,7 +33,7 @@ permissions:
 
 concurrency:
   group: native-corpus-device-targeted-${{ github.event_name }}-${{ github.ref }}-${{ inputs.device || 'tv' }}
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   resolve:
@@ -41,7 +41,7 @@ jobs:
     timeout-minutes: 8
     outputs:
       target_sha: ${{ steps.resolve.outputs.target_sha }}
-      devices: ${{ steps.resolve.outputs.devices }}
+      targets: ${{ steps.resolve.outputs.targets }}
       desktop_sha: ${{ steps.resolve.outputs.desktop_sha }}
       mobile_sha: ${{ steps.resolve.outputs.mobile_sha }}
       tv_sha: ${{ steps.resolve.outputs.tv_sha }}
@@ -66,18 +66,35 @@ jobs:
           else
             DEVICE="${INPUT_DEVICE:-tv}"
           fi
-          case "$DEVICE" in
-            desktop) DEVICES='["desktop"]' ;;
-            mobile) DEVICES='["mobile"]' ;;
-            tv) DEVICES='["tv"]' ;;
-            all) DEVICES='["desktop","mobile","tv"]' ;;
-            *) echo "unsupported device: $DEVICE" >&2; exit 2 ;;
-          esac
           echo "target_sha=$TARGET_SHA" >> "$GITHUB_OUTPUT"
-          echo "devices=$DEVICES" >> "$GITHUB_OUTPUT"
-          python3 - <<'PY' >> "$GITHUB_OUTPUT"
+          DEVICE="$DEVICE" python3 - <<'PY' >> "$GITHUB_OUTPUT"
           import json
+          import os
           from pathlib import Path
+
+          device = os.environ["DEVICE"]
+          fixtures = [
+              "interstellar",
+              "mon-ninja-et-moi-3",
+              "breaking-bad-s01e01",
+              "revenant-s01e01",
+              "jujutsu-kaisen-s01e01",
+              "mushoku-tensei-s01e01",
+          ]
+          if device == "tv":
+              targets = [{"device": "tv", "fixture": fixture} for fixture in fixtures]
+          elif device in {"desktop", "mobile"}:
+              targets = [{"device": device, "fixture": "all"}]
+          elif device == "all":
+              targets = [
+                  {"device": "desktop", "fixture": "all"},
+                  {"device": "mobile", "fixture": "all"},
+                  *({"device": "tv", "fixture": fixture} for fixture in fixtures),
+              ]
+          else:
+              raise SystemExit(f"unsupported device: {device}")
+          print("targets=" + json.dumps({"include": targets}, separators=(",", ":")))
+
           data = json.loads(Path("sources.json").read_text(encoding="utf-8"))
           clients = data.get("nuvio_client_compatibility", {}).get("clients", {})
           for output, key in {
@@ -95,8 +112,7 @@ jobs:
     needs: resolve
     strategy:
       fail-fast: false
-      matrix:
-        device: ${{ fromJSON(needs.resolve.outputs.devices) }}
+      matrix: ${{ fromJSON(needs.resolve.outputs.targets) }}
     runs-on: ubuntu-latest
     timeout-minutes: 220
     steps:
@@ -128,6 +144,7 @@ jobs:
         shell: bash
         env:
           DEVICE: ${{ matrix.device }}
+          FIXTURE: ${{ matrix.fixture }}
           NUVIO_DESKTOP_SHA: ${{ needs.resolve.outputs.desktop_sha }}
           NUVIO_MOBILE_SHA: ${{ needs.resolve.outputs.mobile_sha }}
           NUVIO_TV_SHA: ${{ needs.resolve.outputs.tv_sha }}
@@ -151,7 +168,7 @@ jobs:
               git clone --filter=blob:none --no-checkout https://github.com/NuvioMedia/NuvioTV.git nuvio-tv
               git -C nuvio-tv checkout "$NUVIO_TV_SHA"
               touch nuvio-tv/local.properties nuvio-tv/local.dev.properties
-              python3 niakvio/scripts/prepare_native_corpus_client.py tv --fixture interstellar --workspace "$GITHUB_WORKSPACE"
+              python3 niakvio/scripts/prepare_native_corpus_client.py tv --fixture "$FIXTURE" --workspace "$GITHUB_WORKSPACE"
               ;;
           esac
 
@@ -200,16 +217,20 @@ jobs:
           emulator-boot-timeout: 600
           script: bash "$GITHUB_WORKSPACE/niakvio/scripts/run_native_corpus_mobile_suite.sh"
 
-      - name: Prepare targeted TV diagnostic wrapper
+      - name: Prepare targeted TV fixture wrapper
         if: matrix.device == 'tv'
         shell: bash
+        env:
+          FIXTURE: ${{ matrix.fixture }}
         run: |
           cat > "$GITHUB_WORKSPACE/run-tv-targeted.sh" <<'EOF'
           #!/usr/bin/env bash
           set -uo pipefail
-          LOG="$GITHUB_WORKSPACE/tv-native-corpus-bootstrap.log"
+          FIXTURE="${TV_CORPUS_FIXTURE:?missing TV_CORPUS_FIXTURE}"
+          RESULT_LOG="$GITHUB_WORKSPACE/tv-native-corpus-${FIXTURE}.log"
+          BOOTSTRAP_LOG="$GITHUB_WORKSPACE/tv-native-corpus-${FIXTURE}-bootstrap.log"
           {
-            echo "=== TARGETED TV CORPUS BOOTSTRAP ==="
+            echo "=== TARGETED TV CORPUS FIXTURE: $FIXTURE ==="
             date -u
             echo "workspace=$GITHUB_WORKSPACE"
             echo "--- adb devices ---"
@@ -217,18 +238,32 @@ jobs:
             echo "--- TV Gradle entry points ---"
             ls -l "$GITHUB_WORKSPACE/nuvio-tv/gradlew" || true
             find "$GITHUB_WORKSPACE/nuvio-tv" -maxdepth 2 \( -name settings.gradle -o -name settings.gradle.kts -o -name build.gradle -o -name build.gradle.kts \) -print || true
-            echo "--- TV corpus suite ---"
-            bash "$GITHUB_WORKSPACE/niakvio/scripts/run_native_corpus_tv_suite.sh"
-          } 2>&1 | tee "$LOG"
+            echo "--- TV native corpus fixture ---"
+            adb logcat -c || true
+            RUNTIME_STATUS=0
+            "$GITHUB_WORKSPACE/nuvio-tv/gradlew" -p "$GITHUB_WORKSPACE/nuvio-tv" :app:connectedFullDebugAndroidTest --no-daemon --console=plain || RUNTIME_STATUS=$?
+            adb logcat -d -s NiakvioCorpus:I '*:S' > "$RESULT_LOG" || true
+            cat "$RESULT_LOG" || true
+            COLLECTION_STATUS=0
+            node "$GITHUB_WORKSPACE/niakvio/scripts/analyze_native_corpus_collection.cjs" "$FIXTURE" "$RESULT_LOG" || COLLECTION_STATUS=$?
+            echo "FIELD_NATIVE_CORPUS_TV_STATUS fixture=$FIXTURE runtime=$RUNTIME_STATUS collection=$COLLECTION_STATUS"
+            STATUS=0
+            if [ "$RUNTIME_STATUS" -ne 0 ] || [ "$COLLECTION_STATUS" -ne 0 ]; then STATUS=1; fi
+            echo "FIELD_NATIVE_CORPUS_TV_FIXTURE_STATUS fixture=$FIXTURE status=$STATUS"
+            exit "$STATUS"
+          } 2>&1 | tee "$BOOTSTRAP_LOG"
           status=${PIPESTATUS[0]}
-          echo "FIELD_NATIVE_CORPUS_TV_BOOTSTRAP_STATUS status=$status" | tee -a "$LOG"
+          echo "FIELD_NATIVE_CORPUS_TV_BOOTSTRAP_STATUS fixture=$FIXTURE status=$status" | tee -a "$BOOTSTRAP_LOG"
           exit "$status"
           EOF
           chmod +x "$GITHUB_WORKSPACE/run-tv-targeted.sh"
+          echo "TV_CORPUS_FIXTURE=$FIXTURE" >> "$GITHUB_ENV"
 
-      - name: Execute six works across every provider in isolated TV emulator
+      - name: Execute one work across every provider in isolated TV emulator
         if: matrix.device == 'tv'
         uses: ReactiveCircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d
+        env:
+          TV_CORPUS_FIXTURE: ${{ matrix.fixture }}
         with:
           api-level: 35
           target: google_apis
@@ -243,7 +278,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
-          name: native-corpus-${{ matrix.device }}-${{ github.run_id }}
+          name: native-corpus-${{ matrix.device }}-${{ matrix.fixture }}-${{ github.run_id }}
           path: ${{ matrix.device }}-native-corpus-*.log
           retention-days: 7
           if-no-files-found: warn
