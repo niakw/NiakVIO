@@ -6,6 +6,10 @@ unchanged. The identifier is `<manifest URL>:<provider id>`. We therefore keep a
 stable URL and toggle only the *case* of a provider id when it transitions from
 manifest-disabled to manifest-enabled. Repository tooling compares provider ids
 case-insensitively, while Nuvio treats the resulting scraper id as a new entry.
+
+Official client-runtime compatibility refs are tracked separately in `sources.json`;
+this module only manages provider cache/activation identity and never approves a
+Mobile, Desktop or TV runtime-contract change.
 """
 from __future__ import annotations
 
