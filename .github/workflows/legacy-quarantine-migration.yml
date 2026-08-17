@@ -1,0 +1,159 @@
+name: Migrate legacy audit quarantine scopes
+
+on:
+  workflow_dispatch:
+    inputs:
+      current_stage_run_id:
+        description: Validated current staging run
+        required: true
+        default: '32001774099'
+      evidence_run_id:
+        description: Historical run containing strict positive and contradiction evidence
+        required: true
+        default: '31986424008'
+      provider_id:
+        description: Canonical provider ID to migrate
+        required: true
+        default: 'streamzo'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/legacy-quarantine-migration.yml'
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: legacy-audit-quarantine-migration
+  cancel-in-progress: false
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      CURRENT_STAGE_RUN: ${{ github.event.inputs.current_stage_run_id || '32001774099' }}
+      EVIDENCE_RUN: ${{ github.event.inputs.evidence_run_id || '31986424008' }}
+      PROVIDER_ID: ${{ github.event.inputs.provider_id || 'streamzo' }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Checkout exact current main
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: '3.12'
+
+      - name: Set up Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: '24'
+          package-manager-cache: false
+
+      - name: Install pinned runtime dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Download already validated evidence only
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/current-stage /tmp/evidence-stage /tmp/evidence-audit
+          gh run download "$CURRENT_STAGE_RUN" \
+            -n "nuvio-validation-stage-$CURRENT_STAGE_RUN" \
+            -D /tmp/current-stage
+          gh run download "$EVIDENCE_RUN" \
+            -n "nuvio-validation-stage-$EVIDENCE_RUN" \
+            -D /tmp/evidence-stage
+          gh run download "$EVIDENCE_RUN" \
+            -n "catalogue-media-audit-$EVIDENCE_RUN" \
+            -D /tmp/evidence-audit
+          test -f /tmp/current-stage/staging/candidates.json
+          test -f /tmp/evidence-stage/staging/candidates.json
+          test -f /tmp/evidence-audit/catalogue-media-audit.json
+
+      - name: Migrate legacy global quarantine to proven scoped quarantine
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp manifest.json /tmp/published-manifest-before-migration.json
+          python maintenance/migrate_legacy_audit_quarantines.py \
+            --current-stage /tmp/current-stage/staging \
+            --evidence-stage /tmp/evidence-stage/staging \
+            --audit /tmp/evidence-audit/catalogue-media-audit.json \
+            --provider "$PROVIDER_ID" \
+            --current-run-id "$CURRENT_STAGE_RUN" \
+            --evidence-run-id "$EVIDENCE_RUN"
+
+      - name: Rebuild only publication projections, versions and integrity
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/build_provider_runtime_profiles.py
+          python scripts/reapply_published_overrides.py
+          python scripts/generate_language_manifests.py
+          python scripts/sync_release_versions.py \
+            --manifest manifest.json \
+            --previous /tmp/published-manifest-before-migration.json
+          python scripts/validate_activation_preservation.py
+          python scripts/validate_language_projection.py
+          node engine_v2/scripts/bootstrap-provider-catalog.mjs \
+            --general manifest.json \
+            --vf vf/manifest.json \
+            --output provider_catalog.json
+          node engine_v2/scripts/render-manifests-from-catalog.mjs \
+            --catalog provider_catalog.json \
+            --general manifest.json \
+            --vf vf/manifest.json
+          node engine_v2/tests/provider-catalog.test.mjs
+          python scripts/prune_unreferenced_providers.py
+          python scripts/build_provider_runtime_profiles.py
+          python scripts/reapply_published_overrides.py
+
+          # Targeted contracts only: no discovery, DNS, health corpus or Repair.
+          python tests/catalogue_audit_quarantine_test.py
+          python tests/general_manifest_runtime_profiles_test.py
+          node tests/vf_movie_recovery.test.cjs
+
+          python scripts/generate_release_hashes.py
+          python scripts/validate_release_integrity.py
+          python scripts/validate_activation_preservation.py
+          python scripts/validate_language_projection.py
+          node engine_v2/tests/provider-catalog.test.mjs
+
+      - name: Verify migration is scoped and the good media scope remains enabled
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          manifest=json.loads(Path('manifest.json').read_text())
+          row=next(x for x in manifest['scrapers'] if str(x.get('id','')).casefold()==str('${{ env.PROVIDER_ID }}').casefold())
+          assert row.get('enabled') is not False, row
+          bundle=Path(row['filename']).read_text(encoding='utf-8')
+          assert 'NUVIO_CATALOGUE_SCOPE_QUARANTINE_V1' in bundle
+          assert 'NUVIO_PROVIDER_QUARANTINE_V1: catalogue_audit_playable_identity_contradiction' not in bundle
+          assert '"tmdbId":"126485"' in bundle and '"season":1' in bundle and '"episode":1' in bundle
+          print(json.dumps({'provider':row['id'],'enabled':row['enabled'],'types':row.get('supportedTypes'),'filename':row['filename'],'version':row['version']}, indent=2))
+          PY
+
+      - name: Push atomic migration without launching Quick
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          if git diff --cached --quiet; then
+            echo 'No legacy quarantine migration required.'
+            exit 0
+          fi
+          git commit -m "fix: migrate legacy audit quarantine to scoped proof [skip ci]"
+          git fetch origin main
+          git rebase origin/main
+          python scripts/validate_release_integrity.py
+          git push origin HEAD:main
