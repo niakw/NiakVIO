@@ -33,7 +33,9 @@ jobs:
           git config user.name "niakvio-maintenance"
           git config user.email "actions@users.noreply.github.com"
           git switch -C "$BRANCH"
-          git commit --allow-empty -m "chore: dependency refresh bootstrap"
+          printf 'bootstrap\n' > .dependency-refresh-stage
+          git add .dependency-refresh-stage
+          git commit -m "chore: dependency refresh bootstrap"
           git push --force origin HEAD:"$BRANCH"
           git switch main
 
@@ -42,6 +44,18 @@ jobs:
         with:
           node-version: "24"
           package-manager-cache: false
+
+      - name: Mark Node bootstrap success
+        shell: bash
+        run: |
+          set -euo pipefail
+          BRANCH="chore/dependency-refresh-final"
+          git switch -C "$BRANCH" main
+          printf 'node-ready\n' > .dependency-refresh-stage
+          git add .dependency-refresh-stage
+          git commit -m "chore: dependency refresh node ready"
+          git push --force origin HEAD:"$BRANCH"
+          git switch main
 
       - name: Refresh npm dependency lock deterministically
         shell: bash
@@ -56,6 +70,17 @@ jobs:
           if (lock.packages['node_modules/axios']?.version !== '1.19.0') throw new Error('axios lock mismatch');
           if (lock.packages['node_modules/cheerio']?.version !== '1.2.0') throw new Error('cheerio lock mismatch');
           NODE
+
+      - name: Mark npm refresh success
+        shell: bash
+        run: |
+          set -euo pipefail
+          BRANCH="chore/dependency-refresh-final"
+          git switch -C "$BRANCH"
+          printf 'npm-ready\n' > .dependency-refresh-stage
+          git add package.json package-lock.json .dependency-refresh-stage
+          git commit -m "chore: dependency refresh npm ready"
+          git push --force origin HEAD:"$BRANCH"
 
       - name: Upgrade pinned GitHub Actions across current workflows
         shell: bash
@@ -92,10 +117,10 @@ jobs:
         run: |
           set -euo pipefail
           BRANCH="chore/dependency-refresh-final"
-          rm -f .github/workflows/dependency-refresh-once.yml
+          rm -f .dependency-refresh-stage .github/workflows/dependency-refresh-once.yml
           git config user.name "niakvio-maintenance"
           git config user.email "actions@users.noreply.github.com"
-          git switch -C "$BRANCH"
           git add package.json package-lock.json .github/workflows
+          git add -u .dependency-refresh-stage
           git commit -m "chore: refresh dependencies and pinned actions"
           git push --force origin HEAD:"$BRANCH"
