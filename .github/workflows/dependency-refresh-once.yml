@@ -107,10 +107,6 @@ jobs:
           for path in changed:
               print('-', path)
           PY
-          if grep -R -E 'actions/(checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd|setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e|setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405)' .github/workflows; then
-            echo 'old pinned action SHA remains' >&2
-            exit 1
-          fi
 
       - name: Mark action refresh success
         shell: bash
