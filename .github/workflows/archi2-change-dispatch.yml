@@ -9,6 +9,7 @@ on:
       - 'engine_v2/**'
       - 'package.json'
       - 'package-lock.json'
+      - 'scripts/brain_repair_runtime.py'
       - 'scripts/generate_language_manifests.py'
 
 permissions:
@@ -46,7 +47,7 @@ jobs:
               engine_v2/src/*|engine_v2/scripts/*)
                 canonical_trigger=true
                 ;;
-              engine_v2/*|package.json|package-lock.json|scripts/generate_language_manifests.py|.github/workflows/archi2-change-dispatch.yml)
+              engine_v2/*|package.json|package-lock.json|scripts/brain_repair_runtime.py|scripts/generate_language_manifests.py|.github/workflows/archi2-change-dispatch.yml)
                 uncovered_trigger=true
                 ;;
             esac
