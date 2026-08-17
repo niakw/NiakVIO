@@ -50,11 +50,23 @@ def main() -> int:
         and task["fixture"]["title"] == "Mon ninja et moi 3"
         for task in tasks
     ), "StreamZo must be measured on the rare Mon ninja fixture"
-    assert any(
-        task["identity"]["provider_id"] == "anime-sama"
-        and task["identity"]["enabled"] is False
+
+    # Breadth must continue measuring disabled providers, but no particular
+    # provider is required to stay disabled forever: Quick repair and scoped
+    # quarantine are explicitly allowed to reactivate recovered scopes.
+    manifest = json.loads((ROOT / "manifest.json").read_text(encoding="utf-8"))
+    disabled_ids = {
+        str(row.get("id") or "").casefold()
+        for row in manifest.get("scrapers") or []
+        if isinstance(row, dict) and row.get("enabled") is False
+    }
+    assert disabled_ids, "fixture expects at least one currently disabled provider"
+    planned_disabled = {
+        task["identity"]["provider_id"]
         for task in tasks
-    ), "disabled providers must remain measurable for repair/re-evaluation"
+        if task["identity"]["provider_id"] in disabled_ids
+    }
+    assert planned_disabled, "disabled providers must remain measurable for repair/re-evaluation"
 
     assert module.french_audio_evidence({"language": "fr", "title": "1080p VF"}) is True
     assert module.french_audio_evidence({"language": "fr", "title": "1080p VOSTFR"}) is False
@@ -70,7 +82,8 @@ def main() -> int:
 
     print(
         "provider catalogue breadth tests passed "
-        f"({len(fixtures)} fixtures, {len(providers)} providers, {len(tasks)} planned executions)"
+        f"({len(fixtures)} fixtures, {len(providers)} providers, {len(tasks)} planned executions, "
+        f"{len(planned_disabled)} disabled providers still measurable)"
     )
     return 0
 
