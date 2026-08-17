@@ -25,12 +25,16 @@
   "learningLab": {
     "enabled": true,
     "scheduleUtc": "17 2 * * *",
-    "budgetMinutes": 30,
+    "budgetMinutes": 50,
     "publicationAllowed": false,
     "productionWritesAllowed": false,
     "pullRequestOnly": true,
     "explorationShare": 0.35,
-    "coreChanges": "proposal_only"
+    "coreChanges": "proposal_only",
+    "maxRepeatedFailedProfile": 2,
+    "memoryMaxEntries": 1000,
+    "historicalBaselineId": "excel-provider-audit-5.20.63",
+    "consumeNativeClientFeedback": true
   },
   "privacy": {
     "persistRawUrls": false,
