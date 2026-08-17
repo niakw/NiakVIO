@@ -25,6 +25,18 @@ jobs:
           ref: main
           fetch-depth: 0
 
+      - name: Publish bootstrap branch immediately
+        shell: bash
+        run: |
+          set -euo pipefail
+          BRANCH="chore/dependency-refresh-final"
+          git config user.name "niakvio-maintenance"
+          git config user.email "actions@users.noreply.github.com"
+          git switch -C "$BRANCH"
+          git commit --allow-empty -m "chore: dependency refresh bootstrap"
+          git push --force origin HEAD:"$BRANCH"
+          git switch main
+
       - name: Set up Node.js
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
