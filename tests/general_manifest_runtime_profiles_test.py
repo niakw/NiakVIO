@@ -54,13 +54,23 @@ try:
         row = by_id[provider_id]
         filename = str(row.get('filename') or '')
         is_audit_quarantine = '--nuvio-audit-quarantine--' in filename
+        bundle = (ROOT / filename).read_text(encoding='utf-8')
+        is_scoped = 'NUVIO_CATALOGUE_SCOPE_QUARANTINE_V1' in bundle
         if caps[provider_id].get('strategy') == 'quarantined':
-            assert row.get('enabled') is False, provider_id
-            bundle = (ROOT / filename).read_text(encoding='utf-8')
-            assert 'NUVIO_PROVIDER_QUARANTINE_V1' in bundle, provider_id
+            if is_scoped:
+                # A scoped quarantine is a partial runtime state: the wrapper
+                # blocks only proven-bad scopes and may remain enabled for the
+                # provider's still-valid media types.
+                if row.get('enabled') is not False:
+                    supported = row.get('supportedTypes') or []
+                    if isinstance(supported, str):
+                        supported = [supported]
+                    assert any(str(value).strip() for value in supported), provider_id
+            else:
+                # A truly global quarantine remains fail-closed.
+                assert row.get('enabled') is False, provider_id
+                assert 'NUVIO_PROVIDER_QUARANTINE_V1' in bundle, provider_id
         if is_audit_quarantine:
-            bundle = (ROOT / filename).read_text(encoding='utf-8')
-            is_scoped = 'NUVIO_CATALOGUE_SCOPE_QUARANTINE_V1' in bundle
             if is_scoped:
                 # A scoped identity quarantine blocks only proven-bad
                 # fixture/media scopes. The provider remains enabled whenever
