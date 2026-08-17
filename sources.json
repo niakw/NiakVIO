@@ -164,16 +164,19 @@
     "clients": {
       "nuvio-mobile": {
         "contract_ref": "0d6e30e4566e6f9f2051d5f80a1e3f1e0fcb1f18",
-        "accepted_ref": "75e7429e974fd6736b31ef39278bb2af5699a372",
-        "accepted_at": "2026-08-17T16:41:18.584081+00:00",
-        "acceptance": "automatic-contract-safe-advance",
-        "changed_file_count": 3,
+        "accepted_ref": "bbac53b2767937c9dfede44cb86906ea921605fb",
+        "accepted_at": "2026-08-17T17:23:26.346598+00:00",
+        "acceptance": "manual-history-divergence-reviewed-unrelated-only",
+        "changed_file_count": 5,
         "observed_sensitive_changed_files": [],
         "unrelated_changed_files": [
-          "composeApp/src/androidMain/kotlin/com/nuvio/app/features/profiles/ProfilePinCacheStorage.android.kt",
-          "composeApp/src/commonMain/kotlin/com/nuvio/app/features/profiles/ProfileRepository.kt",
+          "composeApp/src/commonMain/composeResources/values-hu/strings.xml",
+          "composeApp/src/commonMain/kotlin/com/nuvio/app/features/library/LibraryDisplaySettings.kt",
+          "composeApp/src/commonMain/kotlin/com/nuvio/app/features/library/LibraryModels.kt",
+          "composeApp/src/commonMain/kotlin/com/nuvio/app/features/simkl/SimklLibraryProjection.kt",
           "iosApp/Configuration/Version.xcconfig"
-        ]
+        ],
+        "manual_review_note": "History divergence reviewed against 75e7429e974fd6736b31ef39278bb2af5699a372. Net tree diff changes library/SIMKL categorization, Hungarian localization and iOS version only; no configured plugin, stream or player runtime contract path changed."
       },
       "nuvio-desktop": {
         "contract_ref": "463cd0b72a8f08e2529efcbacfff2e7da8d4453a",
