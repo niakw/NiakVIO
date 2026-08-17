@@ -1,0 +1,62 @@
+name: Prune superseded engine rebuild branch
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/tmp-prune-engine-rebuild-v7.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: prune-superseded-engine-rebuild-v7
+  cancel-in-progress: false
+
+jobs:
+  prune:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout main with push credentials
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Delete superseded experimental branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          branch='agent/engine-rebuild-v7'
+          if git ls-remote --exit-code --heads origin "refs/heads/$branch" >/dev/null 2>&1; then
+            git push origin --delete "$branch"
+          fi
+
+      - name: Verify canonical branch set
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t heads < <(git ls-remote --heads origin | sed 's#.*refs/heads/##' | sort)
+          expected=(
+            'brain-learning/proposals'
+            'lab/desktop-mobile-real'
+            'lab/tv-real'
+            'main'
+          )
+          if [[ "${heads[*]}" != "${expected[*]}" ]]; then
+            printf 'Unexpected remaining branches: %s\n' "${heads[*]}" >&2
+            exit 1
+          fi
+
+      - name: Remove this completed one-shot workflow
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git rm .github/workflows/tmp-prune-engine-rebuild-v7.yml
+          git commit -m 'chore: remove completed experimental branch cleanup [skip ci]'
+          git fetch origin main
+          git rebase origin/main
+          git push origin HEAD:main
