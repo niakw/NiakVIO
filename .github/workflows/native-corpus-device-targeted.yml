@@ -195,6 +195,32 @@ jobs:
           emulator-boot-timeout: 600
           script: bash "$GITHUB_WORKSPACE/niakvio/scripts/run_native_corpus_mobile_suite.sh"
 
+      - name: Prepare targeted TV diagnostic wrapper
+        if: matrix.device == 'tv'
+        shell: bash
+        run: |
+          cat > "$GITHUB_WORKSPACE/run-tv-targeted.sh" <<'EOF'
+          #!/usr/bin/env bash
+          set -uo pipefail
+          LOG="$GITHUB_WORKSPACE/tv-native-corpus-bootstrap.log"
+          {
+            echo "=== TARGETED TV CORPUS BOOTSTRAP ==="
+            date -u
+            echo "workspace=$GITHUB_WORKSPACE"
+            echo "--- adb devices ---"
+            adb devices -l || true
+            echo "--- TV Gradle entry points ---"
+            ls -l "$GITHUB_WORKSPACE/nuvio-tv/gradlew" || true
+            find "$GITHUB_WORKSPACE/nuvio-tv" -maxdepth 2 \( -name settings.gradle -o -name settings.gradle.kts -o -name build.gradle -o -name build.gradle.kts \) -print || true
+            echo "--- TV corpus suite ---"
+            bash "$GITHUB_WORKSPACE/niakvio/scripts/run_native_corpus_tv_suite.sh"
+          } 2>&1 | tee "$LOG"
+          status=${PIPESTATUS[0]}
+          echo "FIELD_NATIVE_CORPUS_TV_BOOTSTRAP_STATUS status=$status" | tee -a "$LOG"
+          exit "$status"
+          EOF
+          chmod +x "$GITHUB_WORKSPACE/run-tv-targeted.sh"
+
       - name: Execute six works across every provider in isolated TV emulator
         if: matrix.device == 'tv'
         uses: ReactiveCircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d
@@ -206,7 +232,7 @@ jobs:
           cores: 2
           ram-size: 2048M
           emulator-boot-timeout: 600
-          script: bash "$GITHUB_WORKSPACE/niakvio/scripts/run_native_corpus_tv_suite.sh"
+          script: bash "$GITHUB_WORKSPACE/run-tv-targeted.sh"
 
       - name: Upload sanitized native corpus logs
         if: always()
