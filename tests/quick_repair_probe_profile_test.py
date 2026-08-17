@@ -90,14 +90,17 @@ assert budget["generatedBytes"] == 100
 assert budget["signatureCounts"]["same-signature"] == 2
 brain.reset_runtime_state()
 
-# Python's default json.dumps emits NaN/Infinity, while Node JSON.parse rejects
-# those tokens. Real network evidence may contain non-finite measurements, so the
-# Brain bridge must normalize them before the whole 201-variant batch is planned.
+# The Python -> Node planner boundary must survive both Python-only numeric JSON
+# values and malformed Unicode copied from remote pages. The transport itself is
+# ASCII-only escaped JSON and Node parses the exact bytes used in production.
 strict_payload = brain._strict_json_dumps({
     "finite": 1.25,
     "nan": float("nan"),
     "positiveInfinity": float("inf"),
     "negativeInfinity": float("-inf"),
+    "unicode": "é漢字",
+    "loneHighSurrogate": "\ud800",
+    "loneLowSurrogate": "\udfff",
     "nested": [float("nan"), {"latency": float("inf")}],
 })
 parsed_payload = json.loads(strict_payload)
@@ -105,17 +108,57 @@ assert parsed_payload["finite"] == 1.25
 assert parsed_payload["nan"] is None
 assert parsed_payload["positiveInfinity"] is None
 assert parsed_payload["negativeInfinity"] is None
+assert parsed_payload["unicode"] == "é漢字"
+assert parsed_payload["loneHighSurrogate"] == "\ud800"
+assert parsed_payload["loneLowSurrogate"] == "\udfff"
 assert parsed_payload["nested"] == [None, {"latency": None}]
+assert strict_payload.isascii()
 node_parse = subprocess.run(
     ["node", "-e", "JSON.parse(require('fs').readFileSync(0, 'utf8'))"],
-    input=strict_payload,
-    text=True,
+    input=strict_payload.encode("ascii"),
     capture_output=True,
     check=False,
 )
-assert node_parse.returncode == 0, node_parse.stderr
+assert node_parse.returncode == 0, node_parse.stderr.decode("utf-8", errors="replace")
+
+# The planner receives only fields needed for causal classification, not whole
+# live candidates/results. This bounds input size and keeps raw page/network data
+# out of the control-plane transport.
+minimal_candidate = brain._planner_candidate({
+    "canonical_id": "demo",
+    "upstream_id": "demo-upstream",
+    "metadata": {"supportedTypes": ["movie", "tv"], "rawHomepage": "DROP"},
+    "source": "DROP",
+})
+assert minimal_candidate == {
+    "canonical_id": "demo",
+    "upstream_id": "demo-upstream",
+    "metadata": {"supportedTypes": ["movie", "tv"]},
+}
+minimal_result = brain._planner_result({
+    "status": "blocked",
+    "raw_html": "DROP",
+    "evidence": {"streams_playable": 0, "private": "DROP"},
+    "tests": [{
+        "failure_class": "provider_http_blocked",
+        "status": "blocked",
+        "error_details": {"code": "HTTP_403", "message": "x" * 2000, "secret": "DROP"},
+        "network_observations": [{"status": 403, "infrastructure": False, "url": "DROP"}],
+        "fixture": {"category": "movie", "title": "DROP"},
+        "streams_playable": 0,
+    }],
+})
+assert "raw_html" not in minimal_result
+assert "private" not in minimal_result["evidence"]
+assert "secret" not in minimal_result["tests"][0]["error_details"]
+assert "url" not in minimal_result["tests"][0]["network_observations"][0]
+assert len(minimal_result["tests"][0]["error_details"]["message"]) == 600
+
 brain_source = (ROOT / "scripts" / "brain_repair_runtime.py").read_text(encoding="utf-8")
-assert "input=_strict_json_dumps(payload)" in brain_source
+assert "ensure_ascii=True" in brain_source
 assert "allow_nan=False" in brain_source
+assert 'encode("ascii")' in brain_source
+assert '"candidate": _planner_candidate(candidate)' in brain_source
+assert '"result": _planner_result(result)' in brain_source
 
 print("quick repair probe profile test passed")
