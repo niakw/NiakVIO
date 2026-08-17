@@ -4,6 +4,7 @@ from __future__ import annotations
 import copy
 import importlib.util
 import json
+import subprocess
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -99,14 +100,20 @@ strict_payload = brain._strict_json_dumps({
     "negativeInfinity": float("-inf"),
     "nested": [float("nan"), {"latency": float("inf")}],
 })
-assert "NaN" not in strict_payload
-assert "Infinity" not in strict_payload
 parsed_payload = json.loads(strict_payload)
 assert parsed_payload["finite"] == 1.25
 assert parsed_payload["nan"] is None
 assert parsed_payload["positiveInfinity"] is None
 assert parsed_payload["negativeInfinity"] is None
 assert parsed_payload["nested"] == [None, {"latency": None}]
+node_parse = subprocess.run(
+    ["node", "-e", "JSON.parse(require('fs').readFileSync(0, 'utf8'))"],
+    input=strict_payload,
+    text=True,
+    capture_output=True,
+    check=False,
+)
+assert node_parse.returncode == 0, node_parse.stderr
 brain_source = (ROOT / "scripts" / "brain_repair_runtime.py").read_text(encoding="utf-8")
 assert "input=_strict_json_dumps(payload)" in brain_source
 assert "allow_nan=False" in brain_source
