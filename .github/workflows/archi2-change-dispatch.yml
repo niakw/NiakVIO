@@ -1,0 +1,58 @@
+name: ARCHI2 uncovered-change dispatcher
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/archi2-change-dispatch.yml'
+      - 'engine_v2/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'scripts/generate_language_manifests.py'
+
+permissions:
+  actions: write
+  contents: read
+
+concurrency:
+  group: archi2-uncovered-change-dispatch
+  cancel-in-progress: true
+
+jobs:
+  dispatch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout enough history to classify changed paths
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+
+      - name: Dispatch canonical Quick only when sync.yml does not already cover the commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BEFORE: ${{ github.event.before }}
+          AFTER: ${{ github.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t CHANGED < <(git diff --name-only "$BEFORE" "$AFTER")
+          canonical_trigger=false
+          uncovered_trigger=false
+
+          for path in "${CHANGED[@]}"; do
+            case "$path" in
+              engine_v2/src/*|engine_v2/scripts/*)
+                canonical_trigger=true
+                ;;
+              engine_v2/*|package.json|package-lock.json|scripts/generate_language_manifests.py|.github/workflows/archi2-change-dispatch.yml)
+                uncovered_trigger=true
+                ;;
+            esac
+          done
+
+          printf 'canonical_trigger=%s uncovered_trigger=%s\n' "$canonical_trigger" "$uncovered_trigger"
+          if [ "$uncovered_trigger" = true ] && [ "$canonical_trigger" = false ]; then
+            gh workflow run sync.yml --ref main -f mode=quick
+          fi
