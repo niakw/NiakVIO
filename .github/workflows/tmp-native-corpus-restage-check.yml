@@ -20,7 +20,10 @@ jobs:
             scripts/prepare_native_corpus_validation.py \
             scripts/prepare_native_corpus_client.py \
             scripts/restage_native_corpus_client.py \
-            tests/native_corpus_collector_assertion_test.py
+            tests/native_corpus_collector_assertion_test.py \
+            tests/native_corpus_device_lab_test.py
+      - name: Verify isolated Device Lab architecture
+        run: python3 tests/native_corpus_device_lab_test.py
       - name: Verify prepare and restage assertion contracts
         run: python3 tests/native_corpus_collector_assertion_test.py
       - name: Verify generated Desktop test after restage
