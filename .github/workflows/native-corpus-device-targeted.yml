@@ -1,0 +1,218 @@
+name: Native corpus device targeted
+
+on:
+  workflow_dispatch:
+    inputs:
+      device:
+        description: Device corpus to execute
+        required: true
+        default: tv
+        type: choice
+        options:
+          - tv
+          - mobile
+          - desktop
+          - all
+      target_ref:
+        description: Niakvio ref/SHA to validate
+        required: false
+        default: main
+        type: string
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/native-corpus-device-targeted.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: native-corpus-device-targeted-${{ github.event_name }}-${{ github.ref }}-${{ inputs.device || 'tv' }}
+  cancel-in-progress: false
+
+jobs:
+  resolve:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    outputs:
+      target_sha: ${{ steps.resolve.outputs.target_sha }}
+      devices: ${{ steps.resolve.outputs.devices }}
+      desktop_sha: ${{ steps.resolve.outputs.desktop_sha }}
+      mobile_sha: ${{ steps.resolve.outputs.mobile_sha }}
+      tv_sha: ${{ steps.resolve.outputs.tv_sha }}
+    steps:
+      - name: Checkout requested Niakvio generation
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.target_ref || 'main' }}
+          fetch-depth: 1
+
+      - name: Resolve exact generation, selected devices and accepted clients
+        id: resolve
+        shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          INPUT_DEVICE: ${{ inputs.device }}
+        run: |
+          set -euo pipefail
+          TARGET_SHA="$(git rev-parse HEAD)"
+          if [ "$EVENT_NAME" = "push" ]; then
+            DEVICE="tv"
+          else
+            DEVICE="${INPUT_DEVICE:-tv}"
+          fi
+          case "$DEVICE" in
+            desktop) DEVICES='["desktop"]' ;;
+            mobile) DEVICES='["mobile"]' ;;
+            tv) DEVICES='["tv"]' ;;
+            all) DEVICES='["desktop","mobile","tv"]' ;;
+            *) echo "unsupported device: $DEVICE" >&2; exit 2 ;;
+          esac
+          echo "target_sha=$TARGET_SHA" >> "$GITHUB_OUTPUT"
+          echo "devices=$DEVICES" >> "$GITHUB_OUTPUT"
+          python3 - <<'PY' >> "$GITHUB_OUTPUT"
+          import json
+          from pathlib import Path
+          data = json.loads(Path("sources.json").read_text(encoding="utf-8"))
+          clients = data.get("nuvio_client_compatibility", {}).get("clients", {})
+          for output, key in {
+              "desktop_sha": "nuvio-desktop",
+              "mobile_sha": "nuvio-mobile",
+              "tv_sha": "nuvio-tv",
+          }.items():
+              ref = str((clients.get(key) or {}).get("accepted_ref") or "").strip()
+              if len(ref) != 40:
+                  raise SystemExit(f"missing accepted_ref for {key}")
+              print(f"{output}={ref}")
+          PY
+
+  native-corpus:
+    needs: resolve
+    strategy:
+      fail-fast: false
+      matrix:
+        device: ${{ fromJSON(needs.resolve.outputs.devices) }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 220
+    steps:
+      - name: Checkout exact Niakvio generation
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: ${{ needs.resolve.outputs.target_sha }}
+          path: niakvio
+
+      - name: Set up JDK
+        uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Node
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: "24"
+          package-manager-cache: false
+
+      - name: Install official Desktop player dependencies
+        if: matrix.device == 'desktop'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev
+
+      - name: Checkout accepted official client and stage corpus once
+        shell: bash
+        env:
+          DEVICE: ${{ matrix.device }}
+          NUVIO_DESKTOP_SHA: ${{ needs.resolve.outputs.desktop_sha }}
+          NUVIO_MOBILE_SHA: ${{ needs.resolve.outputs.mobile_sha }}
+          NUVIO_TV_SHA: ${{ needs.resolve.outputs.tv_sha }}
+        run: |
+          set -euxo pipefail
+          case "$DEVICE" in
+            desktop)
+              git clone --filter=blob:none --no-checkout https://github.com/NuvioMedia/NuvioDesktop.git nuvio-desktop
+              git -C nuvio-desktop checkout "$NUVIO_DESKTOP_SHA"
+              touch nuvio-desktop/local.properties
+              python3 niakvio/scripts/prepare_native_corpus_client.py desktop --fixture interstellar --workspace "$GITHUB_WORKSPACE"
+              ;;
+            mobile)
+              git clone --filter=blob:none --no-checkout https://github.com/NuvioMedia/NuvioMobile.git nuvio-mobile
+              git -C nuvio-mobile checkout "$NUVIO_MOBILE_SHA"
+              touch nuvio-mobile/local.properties
+              python3 niakvio/scripts/prepare_native_corpus_client.py mobile --fixture interstellar --workspace "$GITHUB_WORKSPACE"
+              python3 niakvio/scripts/harden_nuvio_mobile_device_test.py "$GITHUB_WORKSPACE/nuvio-mobile"
+              ;;
+            tv)
+              git clone --filter=blob:none --no-checkout https://github.com/NuvioMedia/NuvioTV.git nuvio-tv
+              git -C nuvio-tv checkout "$NUVIO_TV_SHA"
+              touch nuvio-tv/local.properties nuvio-tv/local.dev.properties
+              python3 niakvio/scripts/prepare_native_corpus_client.py tv --fixture interstellar --workspace "$GITHUB_WORKSPACE"
+              ;;
+          esac
+
+      - name: Enable Linux KVM when available
+        if: matrix.device != 'desktop'
+        shell: bash
+        run: |
+          if [ -e /dev/kvm ]; then
+            sudo chmod 666 /dev/kvm || true
+            ls -l /dev/kvm || true
+          fi
+
+      - name: Execute six works across every provider in official Desktop runtime
+        if: matrix.device == 'desktop'
+        shell: bash
+        run: |
+          set -u
+          FIXTURES=(interstellar mon-ninja-et-moi-3 breaking-bad-s01e01 revenant-s01e01 jujutsu-kaisen-s01e01 mushoku-tensei-s01e01)
+          STATUS=0
+          for fixture in "${FIXTURES[@]}"; do
+            echo "===== DESKTOP CORPUS FIXTURE: $fixture ====="
+            python3 niakvio/scripts/restage_native_corpus_client.py desktop --fixture "$fixture" --workspace "$GITHUB_WORKSPACE" || { STATUS=1; continue; }
+            LOG="$GITHUB_WORKSPACE/desktop-native-corpus-${fixture}.log"
+            rm -f "$LOG"
+            RUNTIME_STATUS=0
+            ./nuvio-desktop/gradlew -p nuvio-desktop :composeApp:desktopTest --tests 'com.nuvio.app.features.plugins.NiakvioNativeCorpusDesktopTest' --no-daemon --console=plain || RUNTIME_STATUS=$?
+            cat "$LOG" || true
+            COLLECTION_STATUS=0
+            node niakvio/scripts/analyze_native_corpus_collection.cjs "$fixture" "$LOG" || COLLECTION_STATUS=$?
+            echo "FIELD_NATIVE_CORPUS_DESKTOP_STATUS fixture=$fixture runtime=$RUNTIME_STATUS collection=$COLLECTION_STATUS"
+            if [ "$RUNTIME_STATUS" -ne 0 ] || [ "$COLLECTION_STATUS" -ne 0 ]; then STATUS=1; fi
+          done
+          echo "FIELD_NATIVE_CORPUS_DESKTOP_SUITE_STATUS status=$STATUS fixtures=${#FIXTURES[@]} clients=1"
+          exit "$STATUS"
+
+      - name: Execute six works across every provider in isolated Mobile emulator
+        if: matrix.device == 'mobile'
+        uses: ReactiveCircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_2
+          cores: 2
+          ram-size: 2048M
+          emulator-boot-timeout: 600
+          script: bash "$GITHUB_WORKSPACE/niakvio/scripts/run_native_corpus_mobile_suite.sh"
+
+      - name: Execute six works across every provider in isolated TV emulator
+        if: matrix.device == 'tv'
+        uses: ReactiveCircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_2
+          cores: 2
+          ram-size: 2048M
+          emulator-boot-timeout: 600
+          script: bash "$GITHUB_WORKSPACE/niakvio/scripts/run_native_corpus_tv_suite.sh"
+
+      - name: Upload sanitized native corpus logs
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: native-corpus-${{ matrix.device }}-${{ github.run_id }}
+          path: ${{ matrix.device }}-native-corpus-*.log
+          retention-days: 7
+          if-no-files-found: warn
