@@ -1,18 +1,18 @@
 {
   "name": "Nuvio Curated Providers",
-  "version": "5.20.68",
+  "version": "5.20.69",
   "scrapers": [
     {
       "id": "anime-sama",
       "name": "🐍 Anime-Sama",
       "description": "Watch AnimeSama France",
-      "version": "1.1.74",
+      "version": "1.1.75",
       "author": "Gowaru",
       "supportedTypes": [
         "movie",
         "anime"
       ],
-      "filename": "providers/anime-sama--published-baseline--c5f48581abb2cdc5.js",
+      "filename": "providers/anime-sama--nuvio--c5f48581abb2cdc5.js",
       "enabled": true,
       "hasSettings": true,
       "formats": [
@@ -150,9 +150,10 @@
       "id": "persianstremio",
       "name": "🌸 PersianStremio",
       "description": "Persian Stremio plugin for movies, series,and Persian media content in Iranian & English.",
-      "version": "1.4.26",
+      "version": "1.4.27",
       "author": "Nuvio Team",
       "supportedTypes": [
+        "movie",
         "tv"
       ],
       "filename": "providers/persianstremio--published-baseline--7aba3c7fae6dd298.js",
@@ -221,12 +222,12 @@
       "id": "anikototv",
       "name": "AnikotoTV",
       "description": "Anime provider for AnikotoTV.to via Mapper API + Native Extractor",
-      "version": "1.0.36",
+      "version": "1.0.38",
       "author": "piratezoro9",
       "supportedTypes": [
         "anime"
       ],
-      "filename": "providers/anikototv--nuvio-audit-quarantine--62f18b8ee5bb2ab3.js",
+      "filename": "providers/anikototv--nuvio-audit-quarantine--914ac7ce2f6575e7.js",
       "enabled": true,
       "hasSettings": true,
       "formats": [
@@ -845,6 +846,30 @@
       "supportsExternalPlayer": false
     },
     {
+      "id": "STREAMZO",
+      "name": "StreamZo",
+      "description": "Films et séries en streaming VF/VOSTFR sur Streamzo.fr (SPA, iframe injecté, multi-serveurs).",
+      "version": "1.0.51",
+      "author": "Gowaru",
+      "supportedTypes": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "filename": "providers/streamzo--nuvio-audit-quarantine--e36f0658fc80f0b2.js",
+      "enabled": true,
+      "logo": "https://streamzo.fr/static/favicon.ico",
+      "contentLanguage": [
+        "fr"
+      ],
+      "formats": [
+        "m3u8"
+      ],
+      "limited": false,
+      "disabledPlatforms": [],
+      "supportsExternalPlayer": false
+    },
+    {
       "id": "vidfast",
       "name": "VidFast",
       "description": "Stream movies and TV shows from vidfast.pro.",
@@ -1010,6 +1035,29 @@
       "disabledPlatforms": []
     },
     {
+      "id": "uhdmovies",
+      "name": "UHDMovies",
+      "description": "UHD Movies streaming with multiple resolution",
+      "version": "1.0.2",
+      "author": "Nuvio Team",
+      "supportedTypes": [
+        "movie",
+        "tv"
+      ],
+      "filename": "providers/uhdmovies--published-baseline--234dcc1d68c19dc9.js",
+      "enabled": false,
+      "hasSettings": true,
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "logo": "https://i.postimg.cc/KzDBBdbK/uhdmovies.png",
+      "contentLanguage": [
+        "en"
+      ],
+      "disabledPlatforms": []
+    },
+    {
       "id": "HINDMOVIEZ",
       "name": "HindMoviez",
       "description": "HindMoviez - Hindi & English Movies and Series (480p / 720p / 1080p / 4K)",
@@ -1107,7 +1155,7 @@
       "id": "ANIMOFLIX",
       "name": "AnimoFlix",
       "description": "Regarder des animes VF et VOSTFR gratuitement sur AnimoFlix.",
-      "version": "1.0.36",
+      "version": "1.0.37",
       "author": "Gowaru",
       "supportedTypes": [
         "movie",
@@ -1122,30 +1170,6 @@
       "formats": [
         "mp4",
         "mkv"
-      ],
-      "limited": false,
-      "disabledPlatforms": [],
-      "supportsExternalPlayer": false
-    },
-    {
-      "id": "STREAMZO",
-      "name": "StreamZo",
-      "description": "Films et séries en streaming VF/VOSTFR sur Streamzo.fr (SPA, iframe injecté, multi-serveurs).",
-      "version": "1.0.51",
-      "author": "Gowaru",
-      "supportedTypes": [
-        "movie",
-        "tv",
-        "anime"
-      ],
-      "filename": "providers/streamzo--nuvio-audit-quarantine--e36f0658fc80f0b2.js",
-      "enabled": true,
-      "logo": "https://streamzo.fr/static/favicon.ico",
-      "contentLanguage": [
-        "fr"
-      ],
-      "formats": [
-        "m3u8"
       ],
       "limited": false,
       "disabledPlatforms": [],
@@ -2163,29 +2187,6 @@
       "contentLanguage": [
         "ko"
       ]
-    },
-    {
-      "id": "uhdmovies",
-      "name": "UHDMovies",
-      "description": "UHD Movies streaming with multiple resolution",
-      "version": "1.0.2",
-      "author": "Nuvio Team",
-      "supportedTypes": [
-        "movie",
-        "tv"
-      ],
-      "filename": "providers/uhdmovies--published-baseline--234dcc1d68c19dc9.js",
-      "enabled": false,
-      "hasSettings": true,
-      "formats": [
-        "mp4",
-        "m3u8"
-      ],
-      "logo": "https://i.postimg.cc/KzDBBdbK/uhdmovies.png",
-      "contentLanguage": [
-        "en"
-      ],
-      "disabledPlatforms": []
     }
   ]
 }

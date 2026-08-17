@@ -1,6 +1,31 @@
 {
   "schema_version": 3,
-  "regressions": [],
+  "regressions": [
+    {
+      "provider": "streamzo",
+      "host": "streamzo.fr",
+      "stage": "episode",
+      "requests": 3,
+      "obsolete_responses": 3,
+      "obsolete_ratio": 1.0,
+      "path_patterns": [
+        {
+          "pattern": "/jujutsu-kaisen-season-1",
+          "count": 1
+        },
+        {
+          "pattern": "/kaisen-season",
+          "count": 1
+        },
+        {
+          "pattern": "/jujutsu-kaisen-season",
+          "count": 1
+        }
+      ],
+      "configured_route_replacements": {},
+      "action": "the bounded deep-repair loop should try every structurally compatible runtime profile; add a reusable profile only when no generic strategy matches"
+    }
+  ],
   "instrumentation_gaps": [],
   "provider_specific_rules": false
 }

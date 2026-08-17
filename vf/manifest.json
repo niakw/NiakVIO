@@ -1,18 +1,18 @@
 {
   "name": "Nuvio Curated Providers — VF uniquement",
-  "version": "5.20.68",
+  "version": "5.20.69",
   "scrapers": [
     {
       "id": "anime-sama",
       "name": "🐍 Anime-Sama",
       "description": "Watch AnimeSama France",
-      "version": "1.1.74",
+      "version": "1.1.75",
       "author": "Gowaru",
       "supportedTypes": [
         "movie",
         "anime"
       ],
-      "filename": "../providers/anime-sama--published-baseline--c5f48581abb2cdc5.js",
+      "filename": "../providers/anime-sama--nuvio--c5f48581abb2cdc5.js",
       "enabled": true,
       "hasSettings": true,
       "formats": [
@@ -328,6 +328,30 @@
       "supportsExternalPlayer": false
     },
     {
+      "id": "STREAMZO",
+      "name": "StreamZo",
+      "description": "Films et séries en streaming VF/VOSTFR sur Streamzo.fr (SPA, iframe injecté, multi-serveurs).",
+      "version": "1.0.51",
+      "author": "Gowaru",
+      "supportedTypes": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "filename": "../providers/streamzo--nuvio-audit-quarantine--e36f0658fc80f0b2.js",
+      "enabled": true,
+      "logo": "https://streamzo.fr/static/favicon.ico",
+      "contentLanguage": [
+        "fr"
+      ],
+      "formats": [
+        "m3u8"
+      ],
+      "limited": false,
+      "disabledPlatforms": [],
+      "supportsExternalPlayer": false
+    },
+    {
       "id": "VOIRANIME",
       "name": "VoirAnime",
       "description": "Un des plus gros catalogues français d'animes.",
@@ -477,7 +501,7 @@
       "id": "ANIMOFLIX",
       "name": "AnimoFlix",
       "description": "Regarder des animes VF et VOSTFR gratuitement sur AnimoFlix.",
-      "version": "1.0.36",
+      "version": "1.0.37",
       "author": "Gowaru",
       "supportedTypes": [
         "movie",
@@ -492,30 +516,6 @@
       "formats": [
         "mp4",
         "mkv"
-      ],
-      "limited": false,
-      "disabledPlatforms": [],
-      "supportsExternalPlayer": false
-    },
-    {
-      "id": "STREAMZO",
-      "name": "StreamZo",
-      "description": "Films et séries en streaming VF/VOSTFR sur Streamzo.fr (SPA, iframe injecté, multi-serveurs).",
-      "version": "1.0.51",
-      "author": "Gowaru",
-      "supportedTypes": [
-        "movie",
-        "tv",
-        "anime"
-      ],
-      "filename": "../providers/streamzo--nuvio-audit-quarantine--e36f0658fc80f0b2.js",
-      "enabled": true,
-      "logo": "https://streamzo.fr/static/favicon.ico",
-      "contentLanguage": [
-        "fr"
-      ],
-      "formats": [
-        "m3u8"
       ],
       "limited": false,
       "disabledPlatforms": [],
