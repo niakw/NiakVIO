@@ -1,8 +1,9 @@
 <div align="center">
-  <img src="assets/branding/nuvio-providers-logo.png" alt="NiakVIO" width="420">
+  <img src="assets/branding/nuvio-providers-logo.png" alt="Logo NiakVIO" width="300">
 
-  <p><strong>Un seul repository Nuvio pour agréger, réparer et maintenir des providers VO, VF et VOSTFR.</strong></p>
-  <p>NiakVIO transforme plusieurs sources communautaires en manifests stables, contrôlés et testés sur les clients Nuvio réels.</p>
+  <h1>NiakVIO</h1>
+  <p><strong>Le moteur communautaire qui agrège, teste, répare et maintient les providers Nuvio.</strong></p>
+  <p>VO · VF · VOSTFR &nbsp;•&nbsp; Mobile · Desktop · TV</p>
 
 [![Node](https://img.shields.io/badge/Node.js-%E2%89%A524-339933?style=for-the-badge&logo=node.js&logoColor=white)](package.json)
 [![Licence](https://img.shields.io/badge/licence-GPL--3.0-blue?style=for-the-badge)](LICENSE)
