@@ -10,11 +10,11 @@
   "manifestMeta": {
     "general": {
       "name": "Nuvio Curated Providers",
-      "version": "5.20.69"
+      "version": "5.20.70"
     },
     "vf": {
       "name": "Nuvio Curated Providers — VF uniquement",
-      "version": "5.20.69"
+      "version": "5.20.70"
     }
   },
   "manifestOrder": {
@@ -25,7 +25,7 @@
       "movieshunt",
       "zinkmovies",
       "vegamovies",
-      "persianstremio",
+      "desiflix",
       "papadustream",
       "french-manga",
       "anikototv",
@@ -62,10 +62,9 @@
       "vostfree",
       "wookafr",
       "yflix",
-      "uhdmovies",
       "hindmoviez",
       "4khdhub",
-      "desiflix",
+      "persianstremio",
       "anime-ultime",
       "animoflix",
       "voiranime-homes",
@@ -78,9 +77,8 @@
       "hdghartv",
       "playimdb",
       "castle",
-      "kisskh",
-      "streamflix",
       "animezey",
+      "streamflix",
       "1shows",
       "vidrock",
       "vidsrc",
@@ -109,13 +107,16 @@
       "4khdhubnew",
       "goatapi",
       "dvdplay",
+      "kisskh",
       "mycima",
-      "onlykdrama"
+      "onlykdrama",
+      "uhdmovies"
     ],
     "vf": [
       "anime-sama",
       "purstream",
       "flemmix",
+      "desiflix",
       "papadustream",
       "french-manga",
       "animesama-co",
@@ -131,7 +132,6 @@
       "voiranime-rip",
       "vostfree",
       "wookafr",
-      "desiflix",
       "anime-ultime",
       "animoflix",
       "voiranime-homes",
@@ -149,7 +149,7 @@
         "id": "anime-sama",
         "name": "🐍 Anime-Sama",
         "description": "Watch AnimeSama France",
-        "version": "1.1.75",
+        "version": "1.1.76",
         "author": "Gowaru",
         "supportedTypes": [
           "movie",
@@ -330,33 +330,35 @@
       }
     },
     {
-      "canonicalId": "persianstremio",
+      "canonicalId": "desiflix",
       "scraper": {
-        "id": "persianstremio",
-        "name": "🌸 PersianStremio",
-        "description": "Persian Stremio plugin for movies, series,and Persian media content in Iranian & English.",
-        "version": "1.4.27",
+        "id": "DESIFLIX",
+        "name": "DesiFlix",
+        "description": "Bollywood, Hollywood, and South Indian movies, in Dual Language",
+        "version": "1.0.23",
         "author": "Nuvio Team",
         "supportedTypes": [
           "movie",
           "tv"
         ],
-        "filename": "providers/persianstremio--published-baseline--7aba3c7fae6dd298.js",
+        "filename": "providers/desiflix--published-baseline--650717c1f5b6ba9c.js",
         "enabled": true,
         "hasSettings": false,
         "formats": [
           "mp4",
+          "mkv",
           "m3u8"
         ],
-        "logo": "https://i.postimg.cc/qq6V2fTL/persian.png",
+        "logo": "https://i.postimg.cc/Vvs4fmwM/desiflix.png",
         "contentLanguage": [
           "en",
-          "pe"
-        ]
+          "hi"
+        ],
+        "supportsExternalPlayer": false
       },
       "projections": {
         "general": true,
-        "vf": false
+        "vf": true
       }
     },
     {
@@ -428,7 +430,7 @@
         "id": "anikototv",
         "name": "AnikotoTV",
         "description": "Anime provider for AnikotoTV.to via Mapper API + Native Extractor",
-        "version": "1.0.38",
+        "version": "1.0.41",
         "author": "piratezoro9",
         "supportedTypes": [
           "anime"
@@ -1477,36 +1479,6 @@
       }
     },
     {
-      "canonicalId": "uhdmovies",
-      "scraper": {
-        "id": "uhdmovies",
-        "name": "UHDMovies",
-        "description": "UHD Movies streaming with multiple resolution",
-        "version": "1.0.2",
-        "author": "Nuvio Team",
-        "supportedTypes": [
-          "movie",
-          "tv"
-        ],
-        "filename": "providers/uhdmovies--published-baseline--234dcc1d68c19dc9.js",
-        "enabled": false,
-        "hasSettings": true,
-        "formats": [
-          "mp4",
-          "m3u8"
-        ],
-        "logo": "https://i.postimg.cc/KzDBBdbK/uhdmovies.png",
-        "contentLanguage": [
-          "en"
-        ],
-        "disabledPlatforms": []
-      },
-      "projections": {
-        "general": true,
-        "vf": false
-      }
-    },
-    {
       "canonicalId": "hindmoviez",
       "scraper": {
         "id": "HINDMOVIEZ",
@@ -1566,35 +1538,33 @@
       }
     },
     {
-      "canonicalId": "desiflix",
+      "canonicalId": "persianstremio",
       "scraper": {
-        "id": "DESIFLIX",
-        "name": "DesiFlix",
-        "description": "Bollywood, Hollywood, and South Indian movies, in Dual Language",
-        "version": "1.0.23",
+        "id": "persianstremio",
+        "name": "🌸 PersianStremio",
+        "description": "Persian Stremio plugin for movies, series,and Persian media content in Iranian & English.",
+        "version": "1.4.27",
         "author": "Nuvio Team",
         "supportedTypes": [
           "movie",
           "tv"
         ],
-        "filename": "providers/desiflix--published-baseline--650717c1f5b6ba9c.js",
+        "filename": "providers/persianstremio--published-baseline--7aba3c7fae6dd298.js",
         "enabled": true,
         "hasSettings": false,
         "formats": [
           "mp4",
-          "mkv",
           "m3u8"
         ],
-        "logo": "https://i.postimg.cc/Vvs4fmwM/desiflix.png",
+        "logo": "https://i.postimg.cc/qq6V2fTL/persian.png",
         "contentLanguage": [
           "en",
-          "hi"
-        ],
-        "supportsExternalPlayer": false
+          "pe"
+        ]
       },
       "projections": {
         "general": true,
-        "vf": true
+        "vf": false
       }
     },
     {
@@ -1634,7 +1604,7 @@
         "id": "ANIMOFLIX",
         "name": "AnimoFlix",
         "description": "Regarder des animes VF et VOSTFR gratuitement sur AnimoFlix.",
-        "version": "1.0.37",
+        "version": "1.0.38",
         "author": "Gowaru",
         "supportedTypes": [
           "movie",
@@ -1969,30 +1939,29 @@
       }
     },
     {
-      "canonicalId": "kisskh",
+      "canonicalId": "animezey",
       "scraper": {
-        "id": "KISSKH",
-        "name": "💋 Kisskh",
-        "description": "Streams Korean dramas and movies from onlykdrama.top",
-        "version": "1.0.16",
-        "author": "Michat88",
+        "id": "animezey",
+        "name": "AnimeZeY",
+        "description": "Movies via AnimeZeY, indexed by TMDB",
+        "version": "1.0.17",
+        "author": "Nuvio Team",
         "supportedTypes": [
           "movie",
           "tv"
         ],
-        "filename": "providers/kisskh--nuvio--b50d660c7f3fe455.js",
+        "filename": "providers/animezey--nuvio--0f4b1461d8aae37d.js",
         "enabled": true,
         "hasSettings": true,
         "formats": [
           "mp4",
+          "mkv",
           "m3u8"
         ],
-        "logo": "https://i.postimg.cc/2yLnTzPP/kisskh.jpg",
+        "logo": "https://i.postimg.cc/RVTy2djk/ainimezey.png",
         "contentLanguage": [
-          "ko",
-          "ch",
-          "ja",
-          "th"
+          "en",
+          "pt"
         ]
       },
       "projections": {
@@ -2023,37 +1992,6 @@
           "hin"
         ],
         "disabledPlatforms": []
-      },
-      "projections": {
-        "general": true,
-        "vf": false
-      }
-    },
-    {
-      "canonicalId": "animezey",
-      "scraper": {
-        "id": "animezey",
-        "name": "AnimeZeY",
-        "description": "Movies via AnimeZeY, indexed by TMDB",
-        "version": "1.0.17",
-        "author": "Nuvio Team",
-        "supportedTypes": [
-          "movie",
-          "tv"
-        ],
-        "filename": "providers/animezey--nuvio--0f4b1461d8aae37d.js",
-        "enabled": true,
-        "hasSettings": true,
-        "formats": [
-          "mp4",
-          "mkv",
-          "m3u8"
-        ],
-        "logo": "https://i.postimg.cc/RVTy2djk/ainimezey.png",
-        "contentLanguage": [
-          "en",
-          "pt"
-        ]
       },
       "projections": {
         "general": true,
@@ -2915,6 +2853,38 @@
       }
     },
     {
+      "canonicalId": "kisskh",
+      "scraper": {
+        "id": "KISSKH",
+        "name": "💋 Kisskh",
+        "description": "Streams Korean dramas and movies from onlykdrama.top",
+        "version": "1.0.16",
+        "author": "Michat88",
+        "supportedTypes": [
+          "movie",
+          "tv"
+        ],
+        "filename": "providers/kisskh--nuvio--b50d660c7f3fe455.js",
+        "enabled": true,
+        "hasSettings": true,
+        "formats": [
+          "mp4",
+          "m3u8"
+        ],
+        "logo": "https://i.postimg.cc/2yLnTzPP/kisskh.jpg",
+        "contentLanguage": [
+          "ko",
+          "ch",
+          "ja",
+          "th"
+        ]
+      },
+      "projections": {
+        "general": true,
+        "vf": false
+      }
+    },
+    {
       "canonicalId": "mycima",
       "scraper": {
         "id": "mycima",
@@ -2967,6 +2937,36 @@
         "contentLanguage": [
           "ko"
         ]
+      },
+      "projections": {
+        "general": true,
+        "vf": false
+      }
+    },
+    {
+      "canonicalId": "uhdmovies",
+      "scraper": {
+        "id": "uhdmovies",
+        "name": "UHDMovies",
+        "description": "UHD Movies streaming with multiple resolution",
+        "version": "1.0.2",
+        "author": "Nuvio Team",
+        "supportedTypes": [
+          "movie",
+          "tv"
+        ],
+        "filename": "providers/uhdmovies--published-baseline--234dcc1d68c19dc9.js",
+        "enabled": false,
+        "hasSettings": true,
+        "formats": [
+          "mp4",
+          "m3u8"
+        ],
+        "logo": "https://i.postimg.cc/KzDBBdbK/uhdmovies.png",
+        "contentLanguage": [
+          "en"
+        ],
+        "disabledPlatforms": []
       },
       "projections": {
         "general": true,
