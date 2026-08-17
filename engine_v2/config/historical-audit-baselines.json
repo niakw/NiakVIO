@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "baselines": [
     {
       "id": "excel-provider-audit-5.20.63",
@@ -16,6 +16,59 @@
       "activeWithObservedStreams": 25,
       "activeWithoutCurrentStreams": 29,
       "runtimeErrors": 0,
+      "spreadsheetSnapshot": {
+        "finalResultCounts": {
+          "recoveredActive": 18,
+          "activeObservedStreams": 7,
+          "activeLkgGrace": 0,
+          "activeToInvestigate": 29,
+          "disabled": 24,
+          "quarantine": 14
+        },
+        "diagnosticCounts": {
+          "healthy": 25,
+          "reachable": 0,
+          "degraded": 4,
+          "blocked": 21,
+          "no_streams": 25,
+          "provider_unreachable": 11,
+          "runtime_error": 0,
+          "unavailable": 6,
+          "excluded": 0
+        },
+        "variantRefresh": {
+          "canonicalFamilies": 92,
+          "variantsDiscovered": 201,
+          "healthy": 50,
+          "degraded": 5,
+          "blocked": 48,
+          "no_streams": 53,
+          "unreachable": 28,
+          "runtime_error": 2,
+          "unavailable": 14,
+          "excluded": 1
+        },
+        "adaptiveRepair": {
+          "attemptsGenerated": 117,
+          "attemptsEvaluatedOrRejected": 111,
+          "repairsAccepted": 0,
+          "familiesResolvedByHealthySibling": 15,
+          "terminalStageQuarantines": 8,
+          "routeRegressions": 1
+        },
+        "interstellar": {
+          "enabledMovieProvidersTested": 47,
+          "providersWithAutomaticStreams": 16,
+          "automaticVfProviders": 2
+        },
+        "streamzo": {
+          "exactSentinelRecovered": true,
+          "sentinelFixture": "Mon ninja et moi 3",
+          "sentinelStreams": 1,
+          "sentinelTransport": "HTTP 200/206",
+          "genericCorpusAtBaseline": "no_streams"
+        }
+      },
       "recoveredProviders": [
         "4khdhub", "animesama-co", "animezey", "castle", "cineby", "desiflix",
         "goated", "hdghartv", "hindmoviez", "kisskh", "movieblast", "movieshunt",
@@ -35,7 +88,7 @@
       ],
       "notes": {
         "streamzo": "The historical audit counted one exact recovered title while its generic corpus still had no streams.",
-        "purpose": "Historical audit anchor only. Raw spreadsheet text is never supplied to provider code or persisted in Brain learning output."
+        "purpose": "Structured historical spreadsheet evidence for Brain training. Provider-level runtime fields are reconstructed from the exact audited Git commit, while spreadsheet classifications and aggregate counters are preserved here. Raw URLs, secrets and free-form spreadsheet text are not persisted into Brain memory."
       }
     }
   ]
