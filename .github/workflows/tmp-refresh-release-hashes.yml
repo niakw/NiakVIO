@@ -1,0 +1,38 @@
+name: Temporary release hash regeneration
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/tmp-refresh-release-hashes.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: tmp-refresh-release-hashes
+  cancel-in-progress: true
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: main
+          fetch-depth: 1
+      - name: Regenerate release inventories only
+        run: |
+          set -euo pipefail
+          python3 scripts/generate_release_hashes.py
+          git add SHA256SUMS.json FILE-HASHES.json PATCH-SHA256SUMS.txt
+          if git diff --cached --quiet; then
+            echo "release hashes already current"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "chore: refresh release hashes [skip ci]"
+          git push origin HEAD:main
