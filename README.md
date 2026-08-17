@@ -1,23 +1,22 @@
 <div align="center">
-  <img src="assets/branding/nuvio-providers-logo.png" alt="Niakvio" width="280">
+  <img src="assets/branding/nuvio-providers-logo.png" alt="NiakVIO" width="420">
 
-# Niakvio
-
-**Moteur communautaire de collecte, reconstruction, réparation, validation et publication de providers Nuvio, avec preuves séparées Mobile, Desktop et NuvioTV.**
+  <p><strong>Un seul repository Nuvio pour agréger, réparer et maintenir des providers VO, VF et VOSTFR.</strong></p>
+  <p>NiakVIO transforme plusieurs sources communautaires en manifests stables, contrôlés et testés sur les clients Nuvio réels.</p>
 
 [![Node](https://img.shields.io/badge/Node.js-%E2%89%A524-339933?style=for-the-badge&logo=node.js&logoColor=white)](package.json)
 [![Licence](https://img.shields.io/badge/licence-GPL--3.0-blue?style=for-the-badge)](LICENSE)
-[![Runtimes](https://img.shields.io/badge/Nuvio-Mobile%20%7C%20Desktop%20%7C%20TV-7c3aed?style=for-the-badge)](#compatibilit%C3%A9-nuvio)
+[![Nuvio](https://img.shields.io/badge/Nuvio-Mobile%20%7C%20Desktop%20%7C%20TV-7c3aed?style=for-the-badge)](#compatibilit%C3%A9-nuvio)
 
 </div>
 
 ---
 
-## Installation
+## Ajouter NiakVIO à Nuvio
 
 ### Manifest général — recommandé
 
-VF, VOSTFR, VO et autres langues :
+Tous les providers publiés : VF, VOSTFR, VO et autres langues.
 
 ```text
 https://raw.githubusercontent.com/niakw/Niakvio/refs/heads/main/manifest.json
@@ -25,41 +24,153 @@ https://raw.githubusercontent.com/niakw/Niakvio/refs/heads/main/manifest.json
 
 ### Manifest francophone
 
-Projection dédiée aux providers proposant du français ou du sous-titrage français :
+Projection centrée sur les providers proposant du français ou du sous-titrage français.
 
 ```text
 https://raw.githubusercontent.com/niakw/Niakvio/refs/heads/main/vf/manifest.json
 ```
 
-Dans Nuvio :
+Dans Nuvio, copiez l'URL du manifest souhaité dans la gestion des plugins/providers puis actualisez le repository lorsque nécessaire.
 
-1. copier l'URL du manifest souhaité ;
-2. ouvrir la gestion des plugins/providers ;
-3. ajouter/importer l'URL ;
-4. actualiser le repository lorsque Niakvio publie une nouvelle version.
+**Les URL restent stables.** NiakVIO peut faire évoluer derrière elles les bundles, versions, domaines, règles runtime, preuves et états d'activation.
 
-Les URL restent stables. Les bundles, versions, hashes, domaines, règles runtime et états d'activation évoluent derrière elles.
-
-Lorsqu'un provider est réactivé après réparation, Niakvio peut réviser son identifiant client interne afin qu'un ancien état mis en cache ne maintienne pas artificiellement une désactivation devenue obsolète.
-
-**Niakvio ne stocke aucune vidéo.** Le dépôt publie des manifests, métadonnées, règles, preuves et bundles de providers consommés côté client.
+> NiakVIO ne stocke ni n'héberge de vidéo. Le projet maintient des manifests, des métadonnées, des règles de compatibilité et des bundles de providers consommés côté client.
 
 ---
 
-## ARCHI 2 : une seule source de vérité
+## Écosystème et sources
 
-Niakvio repose désormais sur un seul plan de contrôle : **Provider Engine V2 / ARCHI 2**.
+### Clients Nuvio officiels
 
-`provider_catalog.json` est le registre canonique des providers publiés. Il porte une définition unique de chaque provider et ses projections. `manifest.json` et `vf/manifest.json` sont des sorties déterministes de ce catalogue, pas deux bases indépendantes.
+- [Nuvio Mobile — `NuvioMedia/NuvioMobile`](https://github.com/NuvioMedia/NuvioMobile)
+- [Nuvio Desktop — `NuvioMedia/NuvioDesktop`](https://github.com/NuvioMedia/NuvioDesktop)
+- [NuvioTV — `NuvioMedia/NuvioTV`](https://github.com/NuvioMedia/NuvioTV)
+
+### Repositories providers suivis
+
+NiakVIO agrège et compare plusieurs upstreams au lieu de dépendre d'une seule copie d'un provider :
+
+- [Gowaru — `Gowaru/gowaru-nuvio-providers`](https://github.com/Gowaru/gowaru-nuvio-providers)
+- [Yoru — `yoruix/nuvio-providers`](https://github.com/yoruix/nuvio-providers)
+- [All-in-One Nuvio — `NuvioPlugin/All-in-One-Nuvio`](https://github.com/NuvioPlugin/All-in-One-Nuvio)
+
+La provenance et les licences tierces sont suivies dans [`PROVENANCE.json`](PROVENANCE.json) et [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).
+
+---
+
+## Pourquoi NiakVIO ?
+
+Un provider peut fonctionner aujourd'hui puis casser demain à cause d'un domaine déplacé, d'une API modifiée, d'un lecteur remplacé, d'un token devenu obsolète ou d'une différence entre Mobile, Desktop et TV.
+
+NiakVIO ajoute une couche de maintenance entre les repositories providers et Nuvio :
+
+- **un point d'installation unique** plutôt qu'une collection de manifests à gérer séparément ;
+- **plusieurs variantes comparées** avant de modifier du code ;
+- **réparation automatique bornée** lorsque la meilleure variante connue ne fonctionne plus ;
+- **contrôle réel du média**, pas seulement de l'URL retournée ;
+- **vérification de l'œuvre, de la saison et de l'épisode** pour éviter les faux positifs ;
+- **attention particulière au français** sans inventer VF/VOSTFR à partir d'un simple nom de domaine ;
+- **preuves séparées Mobile, Desktop et TV** ;
+- **dernier état sain conservé** lorsqu'une nouvelle observation est seulement inconclusive ;
+- **publication atomique et fail-closed** pour empêcher une génération partielle de remplacer silencieusement un état sain.
+
+L'objectif n'est donc pas d'afficher le plus grand nombre possible de providers. L'objectif est de publier **le plus de providers réellement utiles possible, avec suffisamment de preuves pour savoir pourquoi ils fonctionnent — ou pourquoi ils ne fonctionnent plus.**
+
+---
+
+## Ce que NiakVIO maintient automatiquement
+
+### Providers et variantes
+
+Pour une même famille, NiakVIO peut disposer de plusieurs bundles issus des upstreams, d'un dernier état publié et d'un LKG. La sélection d'un sibling sain est tentée avant une réparation structurelle.
+
+### Domaines et routes
+
+Le moteur distingue notamment :
+
+- hub d'information ;
+- domaine terminal ;
+- redirection ;
+- API ;
+- peer observé ;
+- domaine historique encore cohérent ;
+- route appartenant à un autre provider.
+
+Une migration de domaine n'est pas promue simplement parce qu'un serveur répond en HTTP.
+
+### Extraction média
+
+Lorsque cela est nécessaire, la récupération peut suivre la chaîne réelle :
 
 ```text
-3 upstreams + dernier état sain
+provider
+  → recherche / catalogue / API
+  → fiche exacte de l'œuvre
+  → saison / épisode
+  → iframe / lecteur
+  → JavaScript / XHR / JSON
+  → playlist / média final
+```
+
+Les budgets de pages, embeds, hosts, fetches, taille de réponse et temps empêchent cette exploration de devenir une navigation sans limite.
+
+### Lecture réelle
+
+Une URL n'est pas considérée comme valide uniquement parce qu'elle se termine par `.m3u8` ou `.mp4`. Les contrôles peuvent confirmer ou rejeter :
+
+- playlist HLS réelle (`#EXTM3U`) ;
+- DASH/MPD ;
+- signatures de conteneurs ;
+- HTML ou JSON déguisé en média ;
+- publicité, preview ou asset parasite ;
+- redirection incohérente ;
+- premier segment ou contenu inaccessible ;
+- contexte `Referer` / `Origin` / headers nécessaire à la lecture.
+
+### Identité du contenu
+
+Un flux jouable correspondant à la mauvaise œuvre est un **échec**, pas un succès.
+
+Les preuves peuvent combiner titre, alias, année, type, saison, épisode, metadata catalogue/player, nom du média et durée attendue/mesurée.
+
+### Langues
+
+VF/VOSTFR n'est jamais déduite d'un seul indice. Selon les informations disponibles, NiakVIO combine metadata provider, domaine, catalogue, player, pistes audio, sous-titres et observations de lecture.
+
+---
+
+## Compatibilité Nuvio
+
+Les commits clients acceptés sont épinglés dans [`sources.json`](sources.json) et les validations natives utilisent les repositories officiels.
+
+| Client | Repository | Preuve |
+|---|---|---|
+| Nuvio Mobile | [`NuvioMedia/NuvioMobile`](https://github.com/NuvioMedia/NuvioMobile) | runtime Android/iOS et contrat Mobile |
+| Nuvio Desktop | [`NuvioMedia/NuvioDesktop`](https://github.com/NuvioMedia/NuvioDesktop) | runtime Desktop Windows/macOS/Linux |
+| NuvioTV | [`NuvioMedia/NuvioTV`](https://github.com/NuvioMedia/NuvioTV) | runtime Android TV |
+
+Le contrat logique ARCHI 2 est commun, mais **une preuve Desktop ne vaut jamais automatiquement preuve Mobile ou TV**.
+
+Le corpus natif couvre actuellement plusieurs œuvres représentatives de films, séries et anime et exécute chaque provider dans le runtime du client concerné. Les jobs ciblés permettent de retester un seul device — et, pour TV, une seule fixture — sans relancer inutilement tout le parc.
+
+---
+
+# Architecture technique
+
+## ARCHI 2 : une seule source de vérité
+
+NiakVIO repose sur **Provider Engine V2 / ARCHI 2**.
+
+[`provider_catalog.json`](provider_catalog.json) est le registre canonique de publication. `manifest.json` et `vf/manifest.json` sont des projections déterministes du même catalogue et non deux bases concurrentes.
+
+```text
+3 upstreams + état publié/LKG
               │
               ▼
       Discovery multi-variantes
               │
               ▼
-    hubs / DNS / domaines / LKG
+      hubs / DNS / domaines
               │
               ▼
       provider_catalog.json
@@ -68,10 +179,10 @@ Niakvio repose désormais sur un seul plan de contrôle : **Provider Engine V2 /
  ProviderSpec + Resolver Core V2
               │
               ▼
-       Evidence Matrix
+        Evidence Matrix
               │
               ▼
-       Repair Brain V2
+        Repair Brain V2
               │
               ▼
  média + identité + langue + contexte
@@ -87,247 +198,176 @@ Niakvio repose désormais sur un seul plan de contrôle : **Provider Engine V2 /
  manifest.json   vf/manifest.json
 ```
 
-La référence complète est [`ARCHITECTURE.md`](ARCHITECTURE.md). L'implémentation du plan de contrôle est documentée dans [`engine_v2/README.md`](engine_v2/README.md).
+La description complète se trouve dans [`ARCHITECTURE.md`](ARCHITECTURE.md) et l'implémentation du moteur dans [`engine_v2/README.md`](engine_v2/README.md).
 
 ### Frontière de compatibilité
 
-Certains providers publiés utilisent encore des primitives historiques de `scripts/` pour exécuter ou transformer leur bundle. Elles sont conservées uniquement lorsqu'elles apportent une fonction non encore remplacée — LKG, adaptation de route, génération de bundle, probes spécialisés, etc.
+Certaines primitives historiques de `scripts/` sont encore utilisées lorsqu'elles assurent une fonction qui n'a pas encore d'équivalent V2 : LKG, adaptation de routes, probes spécialisés, génération de bundle, etc.
 
-Elles sont **derrière ARCHI 2** : elles ne possèdent ni manifest autonome, ni second orchestrateur, ni politique d'activation concurrente. Une primitive devenue inutile est supprimée après preuve d'équivalence.
+Elles restent **derrière ARCHI 2** : aucun second manifest, orchestrateur ou système d'activation concurrent ne doit devenir une deuxième source de vérité.
 
 ---
 
 ## Quick et Deep
 
-Un seul workflow orchestre la production : [`.github/workflows/sync.yml`](.github/workflows/sync.yml).
+Le pipeline principal est [`.github/workflows/sync.yml`](.github/workflows/sync.yml).
 
 ### Quick — maintenance courante
 
-Quick n'est plus un mode « rapport uniquement ». Il peut :
+Quick peut notamment :
 
-- actualiser hubs et domaines ;
-- collecter toutes les variantes upstream ;
-- conserver le bundle publié/LKG comme sibling de secours ;
-- choisir la variante déjà saine avant de modifier du code ;
-- lancer une réparation structurelle bornée sur les familles non résolues ;
-- préserver un dernier état sain lorsque le nouveau signal est inconclusif ;
-- publier immédiatement une amélioration réellement prouvée.
+- rafraîchir hubs et domaines ;
+- découvrir les variantes upstream ;
+- comparer les siblings ;
+- conserver le bundle publié/LKG ;
+- lancer une réparation bornée sur les familles non résolues ;
+- publier une amélioration lorsqu'elle est effectivement prouvée.
 
-Il évite donc d'attendre un deep pour chaque changement de domaine ou réparation simple.
+Il évite d'attendre un Deep pour une simple migration de domaine ou une réparation déjà comprise.
 
 ### Deep — reconstruction et preuve large
 
-Deep est réservé aux travaux qui justifient un coût supérieur :
+Deep est réservé aux opérations plus coûteuses :
 
-- nouvelles connaissances/variantes provider ;
-- persistance de profils/recipes ;
-- validation de corpus plus large ;
-- intégration de nouveaux providers ;
-- changements structurels importants ;
-- contrôles stricts d'identité et de transport.
+- nouvelles variantes et connaissances provider ;
+- corpus plus large ;
+- intégration d'un nouveau provider ;
+- changement structurel du moteur ;
+- reconstruction ou recherche de route plus profonde ;
+- validation stricte d'identité, de qualité et de transport.
 
-Il est planifié séparément et peut être déclenché explicitement avec `.github/triggers/deep-provider-repair`.
+Un changement courant ne force donc pas automatiquement une reconstruction profonde de tout le système.
 
 ---
 
-## Ce que le moteur sait faire
+## Repair Brain et apprentissage
 
-### Discovery et provenance
+Le Repair Brain ne considère pas `no_streams` comme une cause. Il cherche à classer l'étape fautive : DNS, accès, recherche, fiche, épisode, player, extraction média, contexte playback, transport, identité ou contrat Nuvio.
 
-Niakvio collecte plusieurs variantes d'un même provider depuis les upstreams communautaires, conserve leur provenance, rejette P2P/torrent/magnet/Acestream et compare les siblings avant de réparer.
-
-Les upstreams principaux sont :
-
-- [`Gowaru/gowaru-nuvio-providers`](https://github.com/Gowaru/gowaru-nuvio-providers) ;
-- [`yoruix/nuvio-providers`](https://github.com/yoruix/nuvio-providers) ;
-- [`NuvioPlugin/All-in-One-Nuvio`](https://github.com/NuvioPlugin/All-in-One-Nuvio).
-
-Les licences/provenances restent suivies dans [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md) et [`PROVENANCE.json`](PROVENANCE.json).
-
-### Hubs, DNS et domaines
-
-Un domaine qui répond en HTTP n'est pas automatiquement valide. Le moteur distingue notamment :
-
-- hub d'information ;
-- domaine terminal ;
-- redirection ;
-- peer observé ;
-- domaine historique encore cohérent ;
-- route contaminée ou appartenant à un autre provider.
-
-Les routes historiquement saines peuvent être retestées lorsqu'une adresse courante casse. Une migration n'est promue qu'après vérification d'identité et de rôle.
-
-### Récupération structurelle
-
-L'upstream JS est un point de départ, pas une autorité. Une récupération bornée peut poursuivre :
+Sa boucle de travail est :
 
 ```text
-provider natif
-  → API / recherche / catalogue
-  → fiche exacte de l'œuvre
-  → iframe / lecteur / embed
-  → JavaScript / XHR / JSON
-  → playlist / média final
+diagnostic
+   ↓
+hypothèse de réparation
+   ↓
+mutation en sandbox
+   ↓
+retest
+   ↓
+acceptation ou mémoire d'échec
 ```
 
-Les budgets limitent pages, embeds, hosts, fetches, taille de réponse et temps. Le contexte de lecture (`Referer`, `Origin`, `User-Agent`, cookies nécessaires) reste scoped à la chaîne qui l'a produit.
+Une stratégie échouée peut être mémorisée pour éviter de répéter mécaniquement le même repair. Une stratégie réussie n'est réutilisable automatiquement qu'après les preuves prévues par la politique du moteur.
 
-### Réparation déterministe
+Le **Brain Learning Lab** est séparé de la publication : il travaille en sandbox, produit une mémoire sanitizée et n'a pas le droit de publier directement un provider ou un manifest.
 
-Le Repair Brain classe les causes au lieu de traiter `no_streams` comme un diagnostic final : DNS, transport, recherche, détail, épisode, player, extraction média, contexte playback, validation média, identité ou dérive du contrat Nuvio.
-
-Une stratégie n'est conservée que si elle améliore réellement le résultat sans introduire de régression runtime ou de contradiction de contenu.
-
-### LKG avant destruction
-
-Une mise à jour upstream vide/cassée ne doit pas écraser silencieusement un provider publié sain.
-
-Niakvio conserve :
-
-- snapshots LKG des upstreams ;
-- bundle publié comme sibling de dernier recours ;
-- LKG provider vérifié ;
-- provenance et catégories précédemment prouvées.
-
-Un signal inconclusif conserve le LKG. La quarantine est réservée aux preuves fortes de problème de sécurité ou d'identité, pas à un simple zéro résultat.
-
-### Validation média
-
-Une URL ressemblant à une vidéo ne suffit pas. Le système sait confirmer/rejeter notamment :
-
-- HLS réel (`#EXTM3U`) ;
-- DASH/MPD ;
-- signatures de conteneurs ;
-- HTML/JSON déguisé ;
-- publicité/assets/démos ;
-- previews anormalement courtes ;
-- redirections incohérentes ;
-- playlist ou premier segment illisible.
-
-### Identité de contenu
-
-Un flux jouable correspondant à la mauvaise œuvre est un **échec bloquant**. Les preuves peuvent croiser :
-
-- titre/alias ;
-- année ;
-- movie/tv/anime ;
-- saison/épisode ;
-- métadonnées catalogue/player ;
-- nom du média ;
-- durée attendue/mesurée.
-
-`Unknown` / `Inconnue` dans un label de qualité Nuvio ne signifie pas que l'identité du contenu est inconnue.
-
-### Langue
-
-VF/VOSTFR n'est jamais inventée à partir d'un indice unique. Le moteur combine, lorsque disponibles, metadata provider, domaine, catalogue, player, pistes audio/sous-titres et observations de lecture.
+Un audit historique 5.20.63 sert de bootstrap de départ afin de confronter les nouvelles observations à un état antérieur riche. Les apprentissages futurs doivent ensuite être portés par les preuves du moteur, les corpus natifs et la mémoire d'expérience du Brain — pas par une liste humaine de providers à forcer.
 
 ---
 
-## Compatibilité Nuvio
+## LKG et quarantaine
 
-Les commits clients de référence sont épinglés dans [`automation/nuvio-client-upstreams.json`](automation/nuvio-client-upstreams.json).
+Une mise à jour upstream vide ou cassée ne doit pas écraser un provider publié sain.
 
-| Client | Dépôt officiel | Famille de preuve |
-|---|---|---|
-| Nuvio Mobile | [`NuvioMedia/NuvioMobile`](https://github.com/NuvioMedia/NuvioMobile) | Android/iOS, contrat Mobile |
-| Nuvio Desktop | [`NuvioMedia/NuvioDesktop`](https://github.com/NuvioMedia/NuvioDesktop) | Windows/macOS/Linux, runtime Desktop |
-| NuvioTV | [`NuvioMedia/NuvioTV`](https://github.com/NuvioMedia/NuvioTV) | Android TV, environnement TV |
+NiakVIO peut conserver :
 
-Le contrat interne ARCHI 2 est commun ; les adapters traduisent ce contrat vers chaque client. Une exception spécifique à une plateforme n'est admise que si le runtime l'impose réellement.
+- snapshots LKG upstream ;
+- bundle publié comme sibling ;
+- état d'activation précédemment prouvé ;
+- routes et domaines historiquement cohérents ;
+- provenance et catégories validées.
 
-Une preuve Desktop ne vaut jamais preuve Mobile ou TV.
-
-[`final-native-client-validation-v2.yml`](.github/workflows/final-native-client-validation-v2.yml) sépare les trois validations. Les Labs permanents permettent aussi de reproduire les comportements réels :
-
-- `lab/desktop-mobile-real` ;
-- `lab/tv-real`.
+Un signal inconclusif peut conserver le dernier état sain. La quarantaine est destinée aux contradictions fortes de sécurité ou d'identité, pas à un simple zéro résultat isolé.
 
 ---
 
-## Corpus et cible 10 / 3
+## Corpus natif et couverture
 
-Movie, série et anime sont des dimensions de test de premier rang. Breaking Bad S01E01 reste une régression TV obligatoire.
+Films, séries et anime sont des dimensions de test distinctes. La cible de largeur du projet est **10 providers jouables par œuvre, dont au moins 3 VF** lorsque le catalogue permet réellement de les obtenir.
 
-La cible de largeur est **10 providers jouables par œuvre, dont au moins 3 VF**. C'est un objectif de couverture, pas une excuse pour compter des résultats douteux : mauvaise œuvre, mauvaise saison/épisode, durée contradictoire, média illisible ou identité non prouvée ne comptent pas comme succès.
+Cette cible n'autorise aucun faux positif : mauvaise œuvre, mauvais épisode, durée incohérente ou média non lisible ne comptent pas.
+
+Le dispositif comprend :
+
+- corpus complet Desktop ;
+- corpus complet Mobile ;
+- corpus complet TV ;
+- jobs ciblés par device ;
+- fixtures TV parallélisées pour diagnostiquer et retester uniquement l'œuvre concernée ;
+- synthèse cross-device destinée au moteur et au Brain.
 
 ---
 
 ## Publication, versions et intégrité
 
-La publication est atomique et fail-closed. La transaction finale comprend :
+La publication est atomique et fail-closed. La transaction peut inclure :
 
 - `provider_catalog.json` ;
 - bundles providers ;
 - `manifest.json` ;
 - `vf/manifest.json` ;
 - provenance ;
-- états de domaine/LKG ;
+- états domaine/LKG ;
 - versions ;
 - `FILE-HASHES.json` ;
 - `SHA256SUMS.json` ;
 - `PATCH-SHA256SUMS.txt`.
 
-Le catalogue est revalidé avant publication, puis les manifests sont régénérés depuis lui. Une génération incohérente ne remplace pas silencieusement le dernier état publié.
+Une génération incohérente ne remplace pas silencieusement le dernier état publié.
 
-### Invalidation automatique des caches Nuvio
+### Invalidation des caches Nuvio
 
-La version n'est jamais laissée à une mise à jour manuelle séparée. Pour chaque transaction réellement publiée, `sync_release_versions.py` compare le candidat au manifest actuellement publié et finalise automatiquement toutes les couches client visibles :
+Lorsqu'une transaction change réellement une donnée visible côté client :
 
-- le **patch du provider** augmente lorsqu'une ligne provider existante change réellement ;
-- une réactivation `disabled → enabled` conserve en plus la rotation case-only de l'**ID client** afin d'éviter autant que possible un ancien état local `enabled=false` ;
-- les `id` et versions de la projection VF sont resynchronisés depuis la projection générale ;
-- la **release globale** augmente lorsqu'une génération client-visible change ;
-- cette release est propagée à `manifest.json`, `vf/manifest.json`, `package.json`, `package-lock.json` et `sources.json` ;
-- un rerun sans changement est **idempotent** : il ne rebump ni la release ni les providers.
-
-Le bump global, le bump provider, la rotation d'ID de réactivation, le catalogue et les hashes font donc partie de la **même transaction atomique**.
+- le patch provider peut être augmenté ;
+- une réactivation peut faire tourner l'ID client case-only pour éviter un ancien état local désactivé ;
+- la projection VF est resynchronisée depuis le catalogue ;
+- la release globale est propagée aux manifests et métadonnées associées ;
+- un rerun sans changement reste idempotent.
 
 ---
 
-## Workflows durables
-
-Le dépôt vise un petit nombre de workflows ayant chacun un rôle unique :
+## Workflows principaux
 
 | Workflow | Rôle |
 |---|---|
-| `sync.yml` | **seul pipeline de discovery → repair → publication quick/deep** |
-| `provider-engine-v2.yml` | tests/observation du moteur ARCHI 2 |
+| `sync.yml` | discovery → repair → validation → publication Quick/Deep |
+| `provider-engine-v2.yml` | tests et observation ARCHI 2 |
+| `brain-learning-lab.yml` | expérimentation et mémoire du Repair Brain en sandbox |
 | `availability.yml` | disponibilité des providers publiés |
-| `domain-refresh.yml` | observations de domaines, sans publication |
-| `engine-regression-offline.yml` | régressions moteur hors réseau |
+| `domain-refresh.yml` | observation des domaines |
+| `engine-regression-offline.yml` | non-régressions moteur hors réseau |
 | `provider-rebuild-offline.yml` | reconstruction hors réseau |
-| `final-native-client-validation-v2.yml` | preuves natives Mobile/Desktop/TV |
-| `validate-desktop-runtime-compat.yml` | contrat Desktop |
-| `nuvio-client-lab.yml` | matrice multi-œuvres / transport |
-| `native-corpus-device-lab.yml` | corpus natif devices |
-| `provider-catalogue-breadth-lab.yml` | largeur catalogue |
+| `final-native-client-validation-v2.yml` | validation native Mobile/Desktop/TV |
+| `native-corpus-device-lab.yml` | corpus natif cross-device complet |
+| `native-corpus-device-targeted.yml` | retests ciblés Desktop/Mobile/TV |
+| `provider-catalogue-breadth-lab.yml` | largeur de catalogue |
 | `permanent-real-client-labs.yml` | reproductions réelles Desktop/Mobile |
 | `permanent-android-real-client.yml` | banc Android isolé |
-| `permanent-lab-branch-guard.yml` | protection des Labs |
-| `provider-status-export.yml` | snapshot diagnostic après pipeline |
+| `provider-status-export.yml` | snapshot diagnostic |
 
-Les workflows `tmp-*`, one-shot, dispatchers de réparation et orchestrateurs superseded ne font pas partie de l'architecture finale.
+Les workflows temporaires, one-shot et orchestrateurs superseded ne font pas partie de l'architecture cible.
 
 ---
 
-## Structure
+## Structure du repository
 
 ```text
 Niakvio/
-├── provider_catalog.json            # source de vérité publiée
+├── provider_catalog.json            # source canonique de publication
 ├── manifest.json                    # projection générale
 ├── vf/manifest.json                 # projection francophone
-├── engine_v2/                       # plan de contrôle ARCHI 2
-│   ├── src/                         # contrats, resolver, repair, evidence, catalogue
-│   ├── scripts/                     # ingestion, observation, génération
-│   ├── config/                      # upstreams, adapters, evidence, classes
+├── engine_v2/                       # Provider Engine V2 / ARCHI 2
+│   ├── src/                         # contrats, resolver, repair, evidence
+│   ├── scripts/                     # ingestion, observation, apprentissage
+│   ├── config/                      # politiques et adapters
 │   └── tests/                       # invariants V2
-├── providers/                       # bundles publiés immuables/hashés
-├── scripts/                         # primitives de compatibilité encore nécessaires
-├── automation/                      # runtime/upstream/LKG/politiques
+├── providers/                       # bundles publiés hashés
+├── scripts/                         # primitives runtime/compatibilité nécessaires
+├── automation/                      # upstreams, LKG et états durables
 ├── tests/                           # non-régressions publication/compatibilité
-├── .github/workflows/               # production + preuves durables
+├── .github/workflows/               # production, labs et preuves natives
 ├── PROVENANCE.json
 ├── FILE-HASHES.json
 ├── SHA256SUMS.json
@@ -352,24 +392,24 @@ Diagnostics :
 npm run diagnostics
 ```
 
-Les tests locaux ne remplacent pas les preuves natives lorsqu'un chemin de playback partagé est modifié.
+Les tests locaux ne remplacent pas la validation native lorsqu'un changement touche le playback ou le contrat d'un client Nuvio.
 
 ---
 
 ## Politique de branches
 
-- `main` : état stable, publiable et propre ;
-- `lab/desktop-mobile-real` et `lab/tv-real` : Labs permanents ;
-- branches `fix/*`, `ci/*`, `proof/*`, `tmp/*`, `chore/*`, `refactor/*` : supprimées après intégration ou abandon **vérifié**.
+- `main` : état stable et publiable ;
+- `lab/desktop-mobile-real` et `lab/tv-real` : labs permanents ;
+- les branches temporaires `fix/*`, `ci/*`, `proof/*`, `tmp/*`, `chore/*` et `refactor/*` doivent disparaître après intégration ou abandon vérifié.
 
 Une branche n'est jamais supprimée avant comparaison avec `main`. Du contenu unique utile doit être intégré ou explicitement abandonné.
 
 ---
 
-## Sécurité et responsabilité
+## Sécurité, responsabilité et indépendance
 
-Le moteur impose des workers/budgets bornés, des protections réseau/SSRF, des contrôles d'identité, des sorties fail-closed et une sanitisation des artefacts CI. Aucun secret, token, URL signée complète ou header sensible ne doit être publié dans les rapports.
+Le moteur applique des budgets de workers, des protections réseau/SSRF, des contrôles d'identité, une publication fail-closed et une sanitisation des artefacts CI. Les secrets, tokens, cookies, headers sensibles et URL signées ne doivent pas être persistés dans la mémoire d'apprentissage publique.
 
-Niakvio est un projet communautaire indépendant, non affilié aux développeurs de Nuvio ni aux services tiers. Le projet ne contrôle pas la disponibilité, le contenu, les droits ni les pratiques des sites tiers. L'utilisation doit respecter la législation applicable et les conditions des services concernés.
+NiakVIO est un projet communautaire indépendant, non affilié aux développeurs de Nuvio ni aux services tiers référencés. Le projet ne contrôle pas la disponibilité, le contenu, les droits ou les pratiques de sites tiers. L'utilisation doit respecter la législation applicable et les conditions des services concernés.
 
-Voir [`DISCLAIMER.md`](DISCLAIMER.md), [`LICENSE`](LICENSE), [`NOTICE`](NOTICE), [`CONTRIBUTING.md`](CONTRIBUTING.md) et [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md).
+Voir [`DISCLAIMER.md`](DISCLAIMER.md), [`LICENSE`](LICENSE), [`NOTICE`](NOTICE), [`SECURITY.md`](SECURITY.md), [`CONTRIBUTING.md`](CONTRIBUTING.md) et [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md).
