@@ -29,9 +29,9 @@ def _strict_json_value(value: Any) -> Any:
     """Normalize Python-only JSON values before crossing the Node planner boundary.
 
     Python deliberately accepts/emits NaN and infinities by default while
-    JavaScript JSON.parse rejects them. Runtime/network evidence can contain
-    non-finite measurements, so one such value must never abort the whole
-    provider repair batch.
+    JavaScript JSON.parse rejects them. Runtime/network evidence can also carry
+    malformed Unicode from remote pages. The planner transport is therefore
+    ASCII-escaped JSON, so one upstream value can never corrupt the batch.
     """
     if isinstance(value, float):
         return value if math.isfinite(value) else None
@@ -47,7 +47,7 @@ def _strict_json_value(value: Any) -> Any:
 def _strict_json_dumps(value: Any, *, indent: int | None = None) -> str:
     return json.dumps(
         _strict_json_value(value),
-        ensure_ascii=False,
+        ensure_ascii=True,
         allow_nan=False,
         indent=indent,
     )
@@ -55,6 +55,80 @@ def _strict_json_dumps(value: Any, *, indent: int | None = None) -> str:
 
 def _write_json(path: Path, value: Any) -> None:
     path.write_text(_strict_json_dumps(value, indent=2) + "\n", encoding="utf-8")
+
+
+def _clip_text(value: Any, limit: int = 600) -> str:
+    text = str(value or "")
+    return text[:limit]
+
+
+def _planner_candidate(candidate: dict[str, Any]) -> dict[str, Any]:
+    metadata = candidate.get("metadata") if isinstance(candidate.get("metadata"), dict) else {}
+    supported = metadata.get("supportedTypes")
+    if isinstance(supported, list):
+        supported_types = [_clip_text(item, 64) for item in supported if str(item or "")][:8]
+    elif supported:
+        supported_types = [_clip_text(supported, 64)]
+    else:
+        supported_types = []
+    return {
+        "canonical_id": _clip_text(candidate.get("canonical_id"), 160),
+        "upstream_id": _clip_text(candidate.get("upstream_id"), 160),
+        "metadata": {"supportedTypes": supported_types},
+    }
+
+
+def _planner_result(result: dict[str, Any]) -> dict[str, Any]:
+    evidence = result.get("evidence") if isinstance(result.get("evidence"), dict) else {}
+    safe_evidence = {
+        key: evidence.get(key)
+        for key in (
+            "streams_playable",
+            "streams_returned",
+            "identity_contradiction_count",
+            "duration_identity_mismatch_count",
+        )
+        if key in evidence
+    }
+    safe_tests: list[dict[str, Any]] = []
+    for raw_test in result.get("tests") or []:
+        if not isinstance(raw_test, dict):
+            continue
+        details = raw_test.get("error_details") if isinstance(raw_test.get("error_details"), dict) else {}
+        fixture = raw_test.get("fixture") if isinstance(raw_test.get("fixture"), dict) else {}
+        observations = []
+        for raw_observation in raw_test.get("network_observations") or []:
+            if not isinstance(raw_observation, dict):
+                continue
+            observations.append({
+                "status": raw_observation.get("status"),
+                "infrastructure": raw_observation.get("infrastructure") is True,
+            })
+            if len(observations) >= 96:
+                break
+        safe_tests.append({
+            "failure_class": _clip_text(raw_test.get("failure_class"), 160),
+            "status": _clip_text(raw_test.get("status"), 160),
+            "error_details": {
+                "code": _clip_text(details.get("code"), 160),
+                "message": _clip_text(details.get("message"), 600),
+            },
+            "network_observations": observations,
+            "fixture": {
+                "category": _clip_text(fixture.get("category"), 64),
+                "mediaType": _clip_text(fixture.get("mediaType"), 64),
+            },
+            "streams_playable": raw_test.get("streams_playable"),
+            "stream_count": raw_test.get("stream_count"),
+            "streams_returned": raw_test.get("streams_returned"),
+        })
+        if len(safe_tests) >= 12:
+            break
+    return {
+        "status": _clip_text(result.get("status"), 160),
+        "evidence": safe_evidence,
+        "tests": safe_tests,
+    }
 
 
 def policy() -> dict[str, Any]:
@@ -124,7 +198,9 @@ def runtime_state_snapshot() -> dict[str, dict[str, Any]]:
     return snapshot
 
 
-def _safe_planner_stderr(value: str) -> str:
+def _safe_planner_stderr(value: Any) -> str:
+    if isinstance(value, bytes):
+        value = value.decode("utf-8", errors="replace")
     text = re.sub(r"https?://\S+", "<url>", str(value or ""))
     text = re.sub(r"(?i)(token|authorization|cookie|secret)\s*[:=]\s*\S+", r"\1=<redacted>", text)
     return " ".join(text.split())[:600]
@@ -153,8 +229,8 @@ def update_plans(registry_path: Path, report: dict[str, Any], mode: str) -> dict
             continue
         items.append({
             "key": plan_key,
-            "candidate": candidate,
-            "result": result,
+            "candidate": _planner_candidate(candidate),
+            "result": _planner_result(result),
             "state": _public_state(candidate, plan_key),
         })
     if not items:
@@ -165,20 +241,21 @@ def update_plans(registry_path: Path, report: dict[str, Any], mode: str) -> dict
         "learnedSkills": learned_skills(),
         "items": items,
     }
+    planner_input = _strict_json_dumps(payload).encode("ascii")
     try:
         completed = subprocess.run(
             ["node", str(PLAN_SCRIPT)], cwd=ROOT,
-            input=_strict_json_dumps(payload), text=True,
+            input=planner_input,
             capture_output=True, check=True, timeout=30,
         )
     except subprocess.CalledProcessError as exc:
         detail = _safe_planner_stderr(exc.stderr)
-        raise RuntimeError(f"ARCHI2 Brain planner failed (exit={exc.returncode}; stderr={detail or 'empty'})") from exc
+        raise RuntimeError(f"ARCHI2 Brain planner failed (exit={exc.returncode}; stderr={detail or 'empty'}; bytes={len(planner_input)})") from exc
     except subprocess.TimeoutExpired as exc:
         raise RuntimeError("ARCHI2 Brain planner exceeded its 30s control-plane timeout") from exc
     try:
-        parsed = json.loads(completed.stdout or "{}")
-    except json.JSONDecodeError as exc:
+        parsed = json.loads((completed.stdout or b"{}").decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
         raise RuntimeError("ARCHI2 Brain planner returned invalid JSON") from exc
     for key, row in (parsed.get("plans") or {}).items():
         if isinstance(row, dict):
