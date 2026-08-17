@@ -112,6 +112,16 @@ jobs:
             exit 1
           fi
 
+      - name: Mark action refresh success
+        shell: bash
+        run: |
+          set -euo pipefail
+          BRANCH="chore/dependency-refresh-final"
+          printf 'actions-ready\n' > .dependency-refresh-stage
+          git add .github/workflows .dependency-refresh-stage
+          git commit -m "chore: dependency refresh actions ready"
+          git push --force origin HEAD:"$BRANCH"
+
       - name: Push self-cleaning dependency refresh branch
         shell: bash
         run: |
@@ -120,7 +130,6 @@ jobs:
           rm -f .dependency-refresh-stage .github/workflows/dependency-refresh-once.yml
           git config user.name "niakvio-maintenance"
           git config user.email "actions@users.noreply.github.com"
-          git add package.json package-lock.json .github/workflows
-          git add -u .dependency-refresh-stage
+          git add -A
           git commit -m "chore: refresh dependencies and pinned actions"
           git push --force origin HEAD:"$BRANCH"
