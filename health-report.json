@@ -14419,8 +14419,8 @@
     },
     {
       "id": "streamzo",
-      "action": "preserved-current-enabled-ci-uncertain",
-      "enabled": true,
+      "action": "published-disabled-failed-gates",
+      "enabled": false,
       "restored_from_activation_lkg": false,
       "preservation_upstream_enabled": true,
       "activation_eligible": false,
@@ -14433,7 +14433,8 @@
         "06_distinct_host_diversity",
         "07_verified_payload_playability",
         "08_quality_and_bitrate",
-        "00_current_playable_stream"
+        "00_current_playable_stream",
+        "catalogue_audit_playable_identity_contradiction"
       ],
       "activation_blockers": [
         "02_healthy_functional_status",
@@ -14632,7 +14633,19 @@
       "observed_status": "no_streams",
       "published_filename": "providers/streamzo--published-baseline--d45a5488e4c07a7e.js",
       "variant_count": 2,
-      "manifest_position": 49
+      "manifest_position": 49,
+      "catalogue_audit_quarantine": {
+        "reason": "catalogue_audit_playable_identity_contradiction",
+        "tested_filename": "providers/streamzo--published-baseline--6b360acb31963ed5.js",
+        "tested_sha256": "6b360acb31963ed59004e800e4f67a6eaae04d1dc00914635a0cd2b375fa046f",
+        "quarantined_filename": "providers/streamzo--nuvio-audit-quarantine--f7e932753c0be691.js",
+        "quarantined_sha256": "f7e932753c0be691853a80ff2e73f5d564034ddb2c44fcbb11f5254b581f9277",
+        "fixtures": [
+          "vf_revenant_s01e01"
+        ],
+        "identity_contradictions": 1,
+        "playable_streams": 1
+      }
     },
     {
       "id": "vidfast",

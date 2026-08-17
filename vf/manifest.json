@@ -1,7 +1,30 @@
 {
   "name": "Nuvio Curated Providers — VF uniquement",
-  "version": "5.20.65",
+  "version": "5.20.66",
   "scrapers": [
+    {
+      "id": "anime-sama",
+      "name": "🐍 Anime-Sama",
+      "description": "Watch AnimeSama France",
+      "version": "1.1.73",
+      "author": "Gowaru",
+      "supportedTypes": [
+        "movie",
+        "anime"
+      ],
+      "filename": "../providers/anime-sama--nuvio--c5f48581abb2cdc5.js",
+      "enabled": true,
+      "hasSettings": true,
+      "formats": [
+        "mp4",
+        "mkv"
+      ],
+      "logo": "https://i.postimg.cc/tgYt2pYG/animesama.png",
+      "contentLanguage": [
+        "fr"
+      ],
+      "disabledPlatforms": []
+    },
     {
       "id": "PURSTREAM",
       "name": "Purstream",
@@ -280,15 +303,15 @@
       "id": "streamzo",
       "name": "StreamZo",
       "description": "Films et séries en streaming VF/VOSTFR sur Streamzo.fr (SPA, iframe injecté, multi-serveurs).",
-      "version": "1.0.47",
+      "version": "1.0.48",
       "author": "Gowaru",
       "supportedTypes": [
         "movie",
         "tv",
         "anime"
       ],
-      "filename": "../providers/streamzo--published-baseline--6b360acb31963ed5.js",
-      "enabled": true,
+      "filename": "../providers/streamzo--nuvio-audit-quarantine--f7e932753c0be691.js",
+      "enabled": false,
       "logo": "https://streamzo.fr/favicon.ico",
       "contentLanguage": [
         "fr"
@@ -398,30 +421,6 @@
       "supportsExternalPlayer": false
     },
     {
-      "id": "ANIME-SAMA",
-      "name": "Anime-Sama",
-      "description": "Un des plus gros catalogues français, très actif, sorties du jour.",
-      "version": "1.1.71",
-      "author": "Gowaru",
-      "supportedTypes": [
-        "movie",
-        "anime"
-      ],
-      "filename": "../providers/anime-sama--nuvio-audit-quarantine--f7e932753c0be691.js",
-      "enabled": false,
-      "logo": "https://raw.githubusercontent.com/Anime-Sama/IMG/img/autres/logo.png",
-      "contentLanguage": [
-        "fr"
-      ],
-      "formats": [
-        "mp4",
-        "mkv"
-      ],
-      "limited": false,
-      "disabledPlatforms": [],
-      "supportsExternalPlayer": false
-    },
-    {
       "id": "DESIFLIX",
       "name": "DesiFlix",
       "description": "Bollywood, Hollywood, and South Indian movies, in Dual Language",
@@ -474,7 +473,7 @@
       "id": "ANIMOFLIX",
       "name": "AnimoFlix",
       "description": "Regarder des animes VF et VOSTFR gratuitement sur AnimoFlix.",
-      "version": "1.0.34",
+      "version": "1.0.35",
       "author": "Gowaru",
       "supportedTypes": [
         "movie",

@@ -10,15 +10,16 @@
   "manifestMeta": {
     "general": {
       "name": "Nuvio Curated Providers",
-      "version": "5.20.65"
+      "version": "5.20.66"
     },
     "vf": {
       "name": "Nuvio Curated Providers — VF uniquement",
-      "version": "5.20.65"
+      "version": "5.20.66"
     }
   },
   "manifestOrder": {
     "general": [
+      "anime-sama",
       "purstream",
       "flemmix",
       "movieshunt",
@@ -60,8 +61,6 @@
       "vostfree",
       "wookafr",
       "yflix",
-      "anime-sama",
-      "uhdmovies",
       "hindmoviez",
       "4khdhub",
       "desiflix",
@@ -75,12 +74,12 @@
       "toflix",
       "waveanime",
       "hdghartv",
-      "playimdb",
       "castle",
-      "goated",
+      "playimdb",
       "kisskh",
       "streamflix",
       "animezey",
+      "goated",
       "1shows",
       "vidrock",
       "vidsrc",
@@ -91,12 +90,12 @@
       "peachify",
       "gramcinema",
       "animekai",
-      "cinefreak",
       "mallumv",
       "vidnest-anime",
       "allanime",
       "allwish",
       "animeworld",
+      "cinefreak",
       "cinevibe",
       "ctgmovies",
       "fibwatch",
@@ -110,9 +109,11 @@
       "goatapi",
       "dvdplay",
       "mycima",
-      "onlykdrama"
+      "onlykdrama",
+      "uhdmovies"
     ],
     "vf": [
+      "anime-sama",
       "purstream",
       "flemmix",
       "papadustream",
@@ -129,7 +130,6 @@
       "voiranime-rip",
       "vostfree",
       "wookafr",
-      "anime-sama",
       "desiflix",
       "anime-ultime",
       "animoflix",
@@ -143,6 +143,36 @@
     ]
   },
   "providers": [
+    {
+      "canonicalId": "anime-sama",
+      "scraper": {
+        "id": "anime-sama",
+        "name": "🐍 Anime-Sama",
+        "description": "Watch AnimeSama France",
+        "version": "1.1.73",
+        "author": "Gowaru",
+        "supportedTypes": [
+          "movie",
+          "anime"
+        ],
+        "filename": "providers/anime-sama--nuvio--c5f48581abb2cdc5.js",
+        "enabled": true,
+        "hasSettings": true,
+        "formats": [
+          "mp4",
+          "mkv"
+        ],
+        "logo": "https://i.postimg.cc/tgYt2pYG/animesama.png",
+        "contentLanguage": [
+          "fr"
+        ],
+        "disabledPlatforms": []
+      },
+      "projections": {
+        "general": true,
+        "vf": true
+      }
+    },
     {
       "canonicalId": "purstream",
       "scraper": {
@@ -212,12 +242,12 @@
         "id": "movieshunt",
         "name": "🎬 MoviesHunt",
         "description": "Hollywood & Bollywood Movies in Multi Language",
-        "version": "1.0.20",
+        "version": "1.0.21",
         "author": "piratezoro9",
         "supportedTypes": [
           "movie"
         ],
-        "filename": "providers/movieshunt--published-baseline--919d9e3f4d53c9cf.js",
+        "filename": "providers/movieshunt--nuvio--919d9e3f4d53c9cf.js",
         "enabled": true,
         "hasSettings": false,
         "formats": [
@@ -394,10 +424,10 @@
     {
       "canonicalId": "anikototv",
       "scraper": {
-        "id": "anikototv",
+        "id": "ANIKOTOTV",
         "name": "AnikotoTV",
         "description": "Anime provider for AnikotoTV.to via Mapper API + Native Extractor",
-        "version": "1.0.29",
+        "version": "1.0.32",
         "author": "piratezoro9",
         "supportedTypes": [
           "anime",
@@ -483,12 +513,12 @@
         "id": "movieblast",
         "name": "MovieBlast",
         "description": "MovieBlast - Hindi, Tamil, Telugu & English Movies/Series with multi-quality streams",
-        "version": "1.0.17",
+        "version": "1.0.18",
         "author": "Nuvio Team",
         "supportedTypes": [
           "movie"
         ],
-        "filename": "providers/movieblast--published-baseline--b7ac6b6f00ba20b7.js",
+        "filename": "providers/movieblast--nuvio--b7ac6b6f00ba20b7.js",
         "enabled": true,
         "hasSettings": true,
         "formats": [
@@ -1172,15 +1202,15 @@
         "id": "streamzo",
         "name": "StreamZo",
         "description": "Films et séries en streaming VF/VOSTFR sur Streamzo.fr (SPA, iframe injecté, multi-serveurs).",
-        "version": "1.0.47",
+        "version": "1.0.48",
         "author": "Gowaru",
         "supportedTypes": [
           "movie",
           "tv",
           "anime"
         ],
-        "filename": "providers/streamzo--published-baseline--6b360acb31963ed5.js",
-        "enabled": true,
+        "filename": "providers/streamzo--nuvio-audit-quarantine--f7e932753c0be691.js",
+        "enabled": false,
         "logo": "https://streamzo.fr/favicon.ico",
         "contentLanguage": [
           "fr"
@@ -1412,67 +1442,6 @@
       }
     },
     {
-      "canonicalId": "anime-sama",
-      "scraper": {
-        "id": "ANIME-SAMA",
-        "name": "Anime-Sama",
-        "description": "Un des plus gros catalogues français, très actif, sorties du jour.",
-        "version": "1.1.71",
-        "author": "Gowaru",
-        "supportedTypes": [
-          "movie",
-          "anime"
-        ],
-        "filename": "providers/anime-sama--nuvio-audit-quarantine--f7e932753c0be691.js",
-        "enabled": false,
-        "logo": "https://raw.githubusercontent.com/Anime-Sama/IMG/img/autres/logo.png",
-        "contentLanguage": [
-          "fr"
-        ],
-        "formats": [
-          "mp4",
-          "mkv"
-        ],
-        "limited": false,
-        "disabledPlatforms": [],
-        "supportsExternalPlayer": false
-      },
-      "projections": {
-        "general": true,
-        "vf": true
-      }
-    },
-    {
-      "canonicalId": "uhdmovies",
-      "scraper": {
-        "id": "uhdmovies",
-        "name": "UHDMovies",
-        "description": "UHD Movies streaming with multiple resolution",
-        "version": "1.0.2",
-        "author": "Nuvio Team",
-        "supportedTypes": [
-          "movie",
-          "tv"
-        ],
-        "filename": "providers/uhdmovies--published-baseline--234dcc1d68c19dc9.js",
-        "enabled": false,
-        "hasSettings": true,
-        "formats": [
-          "mp4",
-          "m3u8"
-        ],
-        "logo": "https://i.postimg.cc/KzDBBdbK/uhdmovies.png",
-        "contentLanguage": [
-          "en"
-        ],
-        "disabledPlatforms": []
-      },
-      "projections": {
-        "general": true,
-        "vf": false
-      }
-    },
-    {
       "canonicalId": "hindmoviez",
       "scraper": {
         "id": "HINDMOVIEZ",
@@ -1600,7 +1569,7 @@
         "id": "ANIMOFLIX",
         "name": "AnimoFlix",
         "description": "Regarder des animes VF et VOSTFR gratuitement sur AnimoFlix.",
-        "version": "1.0.34",
+        "version": "1.0.35",
         "author": "Gowaru",
         "supportedTypes": [
           "movie",
@@ -1874,37 +1843,6 @@
       }
     },
     {
-      "canonicalId": "playimdb",
-      "scraper": {
-        "id": "PLAYIMDB",
-        "name": "PlayIMDb",
-        "description": "High-Speed Direct Streaming for Movies (IMDb ID Extract)",
-        "version": "2.0.23",
-        "author": "PirateZoro9",
-        "supportedTypes": [
-          "movie",
-          "tv"
-        ],
-        "filename": "providers/playimdb--nuvio--adc3f701c90e246e.js",
-        "enabled": true,
-        "hasSettings": true,
-        "formats": [
-          "mp4",
-          "mkv",
-          "m3u8"
-        ],
-        "logo": "https://i.postimg.cc/KzjPtYWY/imdb.png",
-        "contentLanguage": [
-          "en",
-          "hi"
-        ]
-      },
-      "projections": {
-        "general": true,
-        "vf": false
-      }
-    },
-    {
       "canonicalId": "castle",
       "scraper": {
         "id": "CASTLE",
@@ -1935,38 +1873,34 @@
       }
     },
     {
-      "canonicalId": "goated",
+      "canonicalId": "playimdb",
       "scraper": {
-        "id": "GOATED",
-        "name": "🐐 Goated",
-        "description": "4K • 1080p Movies & Series in Multi Language",
-        "version": "1.0.15",
-        "author": "Nuvio Team",
+        "id": "PLAYIMDB",
+        "name": "PlayIMDb",
+        "description": "High-Speed Direct Streaming for Movies (IMDb ID Extract)",
+        "version": "2.0.23",
+        "author": "PirateZoro9",
         "supportedTypes": [
           "movie",
           "tv"
         ],
-        "filename": "providers/goated--nuvio--8c7202df852f641a.js",
+        "filename": "providers/playimdb--nuvio--adc3f701c90e246e.js",
         "enabled": true,
         "hasSettings": true,
         "formats": [
-          "mkv",
           "mp4",
+          "mkv",
           "m3u8"
         ],
-        "logo": "https://i.postimg.cc/qqsfgS0F/goated.png",
+        "logo": "https://i.postimg.cc/KzjPtYWY/imdb.png",
         "contentLanguage": [
           "en",
-          "hi",
-          "ru",
-          "es"
-        ],
-        "supportsExternalPlayer": false,
-        "disabledPlatforms": []
+          "hi"
+        ]
       },
       "projections": {
         "general": true,
-        "vf": true
+        "vf": false
       }
     },
     {
@@ -2059,6 +1993,41 @@
       "projections": {
         "general": true,
         "vf": false
+      }
+    },
+    {
+      "canonicalId": "goated",
+      "scraper": {
+        "id": "GOATED",
+        "name": "🐐 Goated",
+        "description": "4K • 1080p Movies & Series in Multi Language",
+        "version": "1.0.15",
+        "author": "Nuvio Team",
+        "supportedTypes": [
+          "movie",
+          "tv"
+        ],
+        "filename": "providers/goated--nuvio--8c7202df852f641a.js",
+        "enabled": true,
+        "hasSettings": true,
+        "formats": [
+          "mkv",
+          "mp4",
+          "m3u8"
+        ],
+        "logo": "https://i.postimg.cc/qqsfgS0F/goated.png",
+        "contentLanguage": [
+          "en",
+          "hi",
+          "ru",
+          "es"
+        ],
+        "supportsExternalPlayer": false,
+        "disabledPlatforms": []
+      },
+      "projections": {
+        "general": true,
+        "vf": true
       }
     },
     {
@@ -2375,36 +2344,6 @@
       }
     },
     {
-      "canonicalId": "cinefreak",
-      "scraper": {
-        "id": "cinefreak",
-        "name": "CineFreak",
-        "description": "Direct MKV streams from cinefreak.nl",
-        "version": "1.0.17",
-        "author": "piratezoro9",
-        "supportedTypes": [
-          "movie",
-          "tv"
-        ],
-        "filename": "providers/cinefreak--nuvio-audit-quarantine--f7e932753c0be691.js",
-        "enabled": false,
-        "hasSettings": true,
-        "formats": [
-          "mkv",
-          "mp4"
-        ],
-        "logo": "https://i.postimg.cc/rpDB2284/cinefreak.png",
-        "contentLanguage": [
-          "en",
-          "hi"
-        ]
-      },
-      "projections": {
-        "general": true,
-        "vf": false
-      }
-    },
-    {
       "canonicalId": "mallumv",
       "scraper": {
         "id": "mallumv",
@@ -2550,6 +2489,36 @@
           "hi",
           "en",
           "ja"
+        ]
+      },
+      "projections": {
+        "general": true,
+        "vf": false
+      }
+    },
+    {
+      "canonicalId": "cinefreak",
+      "scraper": {
+        "id": "cinefreak",
+        "name": "CineFreak",
+        "description": "Direct MKV streams from cinefreak.nl",
+        "version": "1.0.17",
+        "author": "piratezoro9",
+        "supportedTypes": [
+          "movie",
+          "tv"
+        ],
+        "filename": "providers/cinefreak--nuvio-audit-quarantine--f7e932753c0be691.js",
+        "enabled": false,
+        "hasSettings": true,
+        "formats": [
+          "mkv",
+          "mp4"
+        ],
+        "logo": "https://i.postimg.cc/rpDB2284/cinefreak.png",
+        "contentLanguage": [
+          "en",
+          "hi"
         ]
       },
       "projections": {
@@ -2968,6 +2937,36 @@
         "contentLanguage": [
           "ko"
         ]
+      },
+      "projections": {
+        "general": true,
+        "vf": false
+      }
+    },
+    {
+      "canonicalId": "uhdmovies",
+      "scraper": {
+        "id": "uhdmovies",
+        "name": "UHDMovies",
+        "description": "UHD Movies streaming with multiple resolution",
+        "version": "1.0.2",
+        "author": "Nuvio Team",
+        "supportedTypes": [
+          "movie",
+          "tv"
+        ],
+        "filename": "providers/uhdmovies--published-baseline--234dcc1d68c19dc9.js",
+        "enabled": false,
+        "hasSettings": true,
+        "formats": [
+          "mp4",
+          "m3u8"
+        ],
+        "logo": "https://i.postimg.cc/KzDBBdbK/uhdmovies.png",
+        "contentLanguage": [
+          "en"
+        ],
+        "disabledPlatforms": []
       },
       "projections": {
         "general": true,
