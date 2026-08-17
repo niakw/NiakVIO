@@ -2,29 +2,42 @@ name: NiakVIO Brain learning lab
 
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/brain-learning-lab.yml"
+      - "scripts/run_brain_learning_sandbox.py"
+      - "engine_v2/scripts/learning-lab.mjs"
+      - "engine_v2/scripts/build-historical-learning.mjs"
+      - "engine_v2/config/brain-policy.json"
+      - "engine_v2/config/historical-audit-baselines.json"
+      - "engine_v2/tests/learning-lab-memory.test.mjs"
   schedule:
-    # 02:17 UTC: deliberately separated from NiakVIO domain/deep/quick cron slots.
-    # GitHub publishes no guaranteed global quiet-hour SLA; this is our low-collision slot.
     - cron: "17 2 * * *"
-
-permissions:
-  contents: write
-  pull-requests: write
 
 concurrency:
   group: niakvio-brain-learning-lab
   cancel-in-progress: true
 
 jobs:
-  learn:
+  experiment:
+    name: Read-only provider repair sandbox
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 55
+    permissions:
+      contents: read
+      actions: read
     steps:
-      - name: Checkout production knowledge baseline
+      - name: Checkout trusted production baseline with history
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
           ref: main
-          fetch-depth: 2
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: "3.12"
 
       - name: Set up Node.js
         uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
@@ -32,54 +45,187 @@ jobs:
           node-version: "24"
           package-manager-cache: false
 
-      - name: Generate sandbox learning proposals
+      - name: Install pinned runtime dependencies
+        shell: bash
         run: |
-          rm -rf brain-learning-output
-          mkdir -p brain-learning-output
-          node engine_v2/scripts/learning-lab.mjs --output-dir brain-learning-output
-          node engine_v2/tests/repair-brain.test.mjs
-          node engine_v2/tests/recipe-memory.test.mjs
+          set -euo pipefail
+          if [ -f package-lock.json ]; then
+            npm ci --ignore-scripts --no-audit --no-fund
+          else
+            npm install --ignore-scripts --no-audit --no-fund --package-lock=false
+          fi
 
-      - name: Upload learning notebook regardless of PR permissions
-        if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
-        with:
-          name: niakvio-brain-learning-${{ github.run_id }}
-          path: brain-learning-output/
-          retention-days: 14
-          if-no-files-found: warn
+      - name: Restore prior sanitized Brain memory
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p brain-learning-input
+          git fetch origin brain-learning/proposals:refs/remotes/origin/brain-learning/proposals || true
+          if git cat-file -e refs/remotes/origin/brain-learning/proposals:engine_v2/learning/latest.json 2>/dev/null; then
+            git show refs/remotes/origin/brain-learning/proposals:engine_v2/learning/latest.json > brain-learning-input/previous.json
+          else
+            printf '{}\n' > brain-learning-input/previous.json
+          fi
+          node -e "const x=require('./brain-learning-input/previous.json'); if(x.productionWritesAllowed===true||x.publicationAllowed===true) process.exit(1)"
 
-      - name: Update the single sandbox proposal PR
+      - name: Import latest official native-client feedback when available
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
           set -euo pipefail
-          COUNT="$(node -e "const x=require('./brain-learning-output/latest.json');process.stdout.write(String((x.proposals||[]).length))")"
-          if [ "$COUNT" = "0" ]; then
-            echo "No useful learning proposal this run."
-            exit 0
+          mkdir -p brain-learning-input/native
+          RUN_ID="$(gh run list --workflow native-corpus-device-lab.yml --branch main --limit 20 --json databaseId,status --jq '[.[] | select(.status=="completed")][0].databaseId // empty' || true)"
+          if [ -n "$RUN_ID" ]; then
+            gh run download "$RUN_ID" --name "native-corpus-engine-summary-$RUN_ID" --dir brain-learning-input/native || true
           fi
+          [ -f brain-learning-input/native/native-corpus-summary.json ] || printf '{}\n' > brain-learning-input/native/native-corpus-summary.json
+          [ -f brain-learning-input/native/provider-portfolio.json ] || printf '{}\n' > brain-learning-input/native/provider-portfolio.json
+
+      - name: Materialize historical 5.20.63 audit anchor from Git history
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASELINE="$(node -e "const x=require('./engine_v2/config/historical-audit-baselines.json');process.stdout.write(x.baselines[0].commit)")"
+          git cat-file -e "$BASELINE^{commit}"
+          git show "$BASELINE:manifest.json" > brain-learning-input/baseline-manifest.json
+          git show "$BASELINE:health-report.json" > brain-learning-input/baseline-health.json
+
+      - name: Build isolated current provider stage
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf brain-sandbox staging
+          mkdir -p brain-sandbox/health-output
+          python scripts/normalize_provider_activation_overrides.py
+          python scripts/resolve_provider_hubs.py --apply --mode quick --include-disabled --workers 8 --timeout 8 --output brain-sandbox/health-output/provider-hub-report.json
+          python scripts/discover_candidates.py --require-all-upstreams
+          node engine_v2/scripts/validate-stage-against-catalog.mjs --catalog provider_catalog.json --stage staging/candidates.json
+          node scripts/provider_dns_preflight.mjs --stage staging --output brain-sandbox/health-output/dns-preflight-report.json
+          python scripts/apply_dns_migration_overrides.py --stage staging --report brain-sandbox/health-output/dns-preflight-report.json
+          python scripts/build_provider_runtime_profiles.py
+          python scripts/reapply_published_overrides.py
+          python scripts/build_provider_runtime_profiles.py --stage staging --apply-stage
+          python scripts/normalize_terminal_quarantine_stage.py --stage staging
+          python scripts/validate_override_pipeline.py --stage staging
+
+      - name: Diagnose mutate retest and learn inside sandbox
+        env:
+          NUVIO_DNS_PREFLIGHT_RESULTS: brain-sandbox/health-output/dns-preflight-report.json
+          NUVIO_WORKER_MEMORY_MB: "1024"
+          NUVIO_BRAIN_LEARNING_STATE: brain-learning-input/previous.json
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/run_brain_learning_sandbox.py --stage staging --output brain-sandbox/health-output --max-rounds 1
+          python scripts/validate_automatic_repair_results.py --stage staging --health brain-sandbox/health-output/health-results.json --repairs brain-sandbox/health-output/repair-report.json
+          python scripts/generate_diagnostics.py --results brain-sandbox/health-output/health-results.json --output brain-sandbox/health-output
+          test -s brain-sandbox/health-output/health-results.json
+          test -s brain-sandbox/health-output/repair-report.json
+
+      - name: Compare sandbox evidence against historical audit
+        shell: bash
+        run: |
+          set -euo pipefail
+          node engine_v2/scripts/build-historical-learning.mjs \
+            --baseline-config engine_v2/config/historical-audit-baselines.json \
+            --baseline-id excel-provider-audit-5.20.63 \
+            --baseline-manifest brain-learning-input/baseline-manifest.json \
+            --baseline-health brain-learning-input/baseline-health.json \
+            --current-manifest manifest.json \
+            --current-health brain-sandbox/health-output/health-results.json \
+            --repair-report brain-sandbox/health-output/repair-report.json \
+            --output brain-sandbox/historical-training.json
+
+      - name: Build sanitized cross-day Brain state
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf brain-learning-output
+          mkdir -p brain-learning-output
+          node engine_v2/scripts/learning-lab.mjs \
+            --output-dir brain-learning-output \
+            --repair-report brain-sandbox/health-output/repair-report.json \
+            --historical-training brain-sandbox/historical-training.json \
+            --previous-state brain-learning-input/previous.json \
+            --native-summary brain-learning-input/native/native-corpus-summary.json \
+            --provider-portfolio brain-learning-input/native/provider-portfolio.json \
+            --overrides provider-overrides.json
+          node engine_v2/tests/repair-brain.test.mjs
+          node engine_v2/tests/recipe-memory.test.mjs
+          node engine_v2/tests/learning-lab-memory.test.mjs
+          python -m py_compile scripts/run_brain_learning_sandbox.py
+          node -e "const x=require('./brain-learning-output/latest.json'); if(x.productionWritesAllowed!==false||x.publicationAllowed!==false||x.sandboxExecutedProviders!==true) process.exit(1)"
+          if grep -Eiq 'https?://|authorization[=:]|cookie[=:]|token[=:]' brain-learning-output/latest.json; then
+            echo 'persistent Brain state contains forbidden raw endpoint/credential material' >&2
+            exit 1
+          fi
+
+      - name: Upload sanitized learning state only
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: niakvio-brain-learning-state
+          path: |
+            brain-learning-output/latest.json
+            brain-learning-output/latest.md
+          retention-days: 14
+          if-no-files-found: error
+
+  publish-learning:
+    name: Publish sanitized Brain memory proposal
+    needs: experiment
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Checkout trusted production tree only
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Download sanitized state produced by read-only sandbox
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          name: niakvio-brain-learning-state
+          path: brain-learning-output
+
+      - name: Validate artifact cannot publish production
+        shell: bash
+        run: |
+          set -euo pipefail
+          node -e "const x=require('./brain-learning-output/latest.json'); if(x.productionWritesAllowed!==false||x.publicationAllowed!==false) process.exit(1)"
+          if grep -Eiq 'https?://|authorization[=:]|cookie[=:]|token[=:]' brain-learning-output/latest.json; then
+            echo 'refusing unsafe learning artifact' >&2
+            exit 1
+          fi
+
+      - name: Update the single Brain learning proposal branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          BRANCH="brain-learning/proposals"
+          git fetch origin "$BRANCH:refs/remotes/origin/$BRANCH" || true
+          git switch -C "$BRANCH" main
           mkdir -p engine_v2/learning
           cp brain-learning-output/latest.json engine_v2/learning/latest.json
           cp brain-learning-output/latest.md engine_v2/learning/latest.md
-          BRANCH="brain-learning/proposals"
-          git fetch origin "$BRANCH:refs/remotes/origin/$BRANCH" || true
-          git switch -C "$BRANCH"
           git config user.name "niakvio-brain"
           git config user.email "actions@users.noreply.github.com"
           git add engine_v2/learning/latest.json engine_v2/learning/latest.md
-          git commit -m "brain: refresh learned repair proposals"
-          git push --force-with-lease origin HEAD:"$BRANCH"
+          if git diff --cached --quiet; then
+            echo "No sanitized Brain learning change this run."
+          else
+            git commit -m "brain: refresh sandbox repair learning"
+            git push --force-with-lease origin HEAD:"$BRANCH"
+          fi
           EXISTING="$(gh pr list --state open --head "$BRANCH" --base main --json number --jq '.[0].number // empty' || true)"
           if [ -z "$EXISTING" ]; then
-            if ! gh pr create \
-              --base main \
-              --head "$BRANCH" \
-              --title "Brain learning: repair skill proposals" \
-              --body "Sandbox-only learning proposal. No manifest/provider publication is performed by this workflow. Review evidence before merging."; then
-              echo "PR creation is unavailable; the learning artifact remains available and no production state was changed."
-            fi
+            gh pr create --base main --head "$BRANCH" --title "Brain learning: sandbox repair evidence" --body "Daily read-only provider sandbox evidence, historical 5.20.63 audit comparison, native-client feedback and sanitized cross-day negative memory. No provider or manifest is published by this workflow." || true
           else
             echo "Updated existing Brain learning PR #$EXISTING"
           fi
