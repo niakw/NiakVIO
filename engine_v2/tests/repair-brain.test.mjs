@@ -42,7 +42,10 @@ assert.equal(recipeIsCompatible({ capabilities: ["headers"] }, { invalidCapabili
 const suspicious = planRepair({ suspicious: true, invoked: true });
 assert.equal(suspicious.action, "hold-or-quarantine-pending-proof");
 const unknown = planRepair({ invoked: true, playableStreams: 0 });
+assert.equal(unknown.failureClass, "unknown_failure");
 assert.equal(unknown.action, "collect-more-evidence");
+assert.deepEqual(unknown.hypotheses.map((row) => row.id), ["collect-missing-evidence"]);
+assert.equal(unknown.hypotheses.some((row) => row.id === "inspect-player-javascript"), false);
 
 // A dirty real-world provider/skill shape must never crash the batch planner.
 // In particular, providers/capabilities/actions may arrive as scalars and
