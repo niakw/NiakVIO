@@ -1,0 +1,58 @@
+name: Final pinned action refresh once
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/dependency-actions-refresh-once.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: final-pinned-action-refresh-once
+  cancel-in-progress: true
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout dependency refresh branch
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: chore/dependency-refresh-final
+          fetch-depth: 0
+
+      - name: Replace only known pinned action SHAs
+        shell: bash
+        run: |
+          set -euo pipefail
+          git grep -l -z 'de0fac2e4500dabe0009e67214ff5f5447ce83dd' -- .github/workflows | \
+            xargs -0 -r perl -pi -e 's/de0fac2e4500dabe0009e67214ff5f5447ce83dd/3d3c42e5aac5ba805825da76410c181273ba90b1/g'
+          git grep -l -z '48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e' -- .github/workflows | \
+            xargs -0 -r perl -pi -e 's/48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e/820762786026740c76f36085b0efc47a31fe5020/g'
+          git grep -l -z 'a309ff8b426b58ec0e2a45f0f869d46889d02405' -- .github/workflows | \
+            xargs -0 -r perl -pi -e 's/a309ff8b426b58ec0e2a45f0f869d46889d02405/5fda3b95a4ea91299a34e894583c3862153e4b97/g'
+
+      - name: Verify replacement scope and clean bootstrap files
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git grep -E 'de0fac2e4500dabe0009e67214ff5f5447ce83dd|48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e|a309ff8b426b58ec0e2a45f0f869d46889d02405' -- .github/workflows; then
+            echo 'old pinned action SHA remains' >&2
+            exit 1
+          fi
+          rm -f .dependency-refresh-stage .github/workflows/dependency-refresh-once.yml .github/workflows/dependency-actions-refresh-once.yml
+          node -e "const p=require('./package.json');const l=require('./package-lock.json');if(p.dependencies.axios!=='1.19.0'||p.dependencies.cheerio!=='1.2.0'||l.packages['node_modules/axios']?.version!=='1.19.0'||l.packages['node_modules/cheerio']?.version!=='1.2.0')process.exit(1)"
+
+      - name: Push final review branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "niakvio-maintenance"
+          git config user.email "actions@users.noreply.github.com"
+          git add -A
+          git commit -m "chore: refresh dependencies and pinned actions"
+          git push origin HEAD:chore/dependency-refresh-final
