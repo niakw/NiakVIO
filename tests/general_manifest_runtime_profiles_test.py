@@ -11,6 +11,12 @@ OVERRIDES = ROOT / 'provider-overrides.json'
 # inside npm test before the final regressions, so leaking this mutation makes a
 # successful test command corrupt the working tree and invalidates integrity.
 original = OVERRIDES.read_bytes()
+original_data = json.loads(original)
+original_caps = {
+    str(key).casefold(): value
+    for key, value in original_data.get('provider_capabilities', {}).items()
+    if isinstance(value, dict)
+}
 try:
     subprocess.run(
         ['python3', str(ROOT / 'scripts/build_provider_runtime_profiles.py')],
@@ -45,12 +51,22 @@ try:
         if row.get('id')
     }
     for provider_id in ids:
-        if caps[provider_id].get('strategy') != 'quarantined':
-            continue
         row = by_id[provider_id]
-        assert row.get('enabled') is False, provider_id
-        bundle = (ROOT / str(row.get('filename') or '')).read_text(encoding='utf-8')
-        assert 'NUVIO_PROVIDER_QUARANTINE_V1' in bundle, provider_id
+        filename = str(row.get('filename') or '')
+        is_audit_quarantine = '--nuvio-audit-quarantine--' in filename
+        if caps[provider_id].get('strategy') == 'quarantined':
+            assert row.get('enabled') is False, provider_id
+            bundle = (ROOT / filename).read_text(encoding='utf-8')
+            assert 'NUVIO_PROVIDER_QUARANTINE_V1' in bundle, provider_id
+        if is_audit_quarantine:
+            assert row.get('enabled') is False, provider_id
+            prior = original_caps.get(provider_id, {}).get('observed_origins')
+            if isinstance(prior, list) and prior:
+                assert caps[provider_id].get('observed_origins') == prior, (
+                    provider_id,
+                    prior,
+                    caps[provider_id].get('observed_origins'),
+                )
     assert d.get('provider_profile_generation', {}).get('provider_count') >= len(ids)
     print(f'general manifest runtime profiles test passed ({len(ids)} providers covered)')
 finally:
