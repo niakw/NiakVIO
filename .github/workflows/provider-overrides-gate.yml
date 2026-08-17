@@ -1,0 +1,77 @@
+name: Provider overrides gate
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "provider-overrides.json"
+      - "scripts/build_brain_repair_proposal.py"
+      - "tests/brain_repair_proposal_test.py"
+      - ".github/workflows/provider-overrides-gate.yml"
+  push:
+    branches: [main]
+    paths:
+      - "provider-overrides.json"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: provider-overrides-gate-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Validate provider override proposal
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "24"
+          package-manager-cache: false
+
+      - name: Install pinned dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Validate JSON and proposal materialization
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m json.tool provider-overrides.json >/dev/null
+          python -m py_compile scripts/build_brain_repair_proposal.py scripts/run_brain_learning_sandbox.py
+          python tests/brain_repair_proposal_test.py
+          python tests/overrides_test.py
+
+      - name: Validate Repair Brain contracts
+        run: |
+          node engine_v2/tests/repair-brain.test.mjs
+          node engine_v2/tests/recipe-memory.test.mjs
+          node engine_v2/tests/learning-lab-memory.test.mjs
+
+  dispatch-quick:
+    name: Dispatch standard Quick pipeline after merge
+    if: github.event_name == 'push'
+    needs: validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      actions: write
+    steps:
+      - name: Dispatch canonical provider pipeline
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run sync.yml --repo "${{ github.repository }}" --ref main -f mode=quick
