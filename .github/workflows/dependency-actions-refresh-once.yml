@@ -19,10 +19,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - name: Checkout dependency refresh branch
+      - name: Checkout isolated action refresh branch
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
-          ref: chore/dependency-refresh-final
+          ref: chore/pinned-actions-refresh
           fetch-depth: 0
 
       - name: Replace only known pinned action SHAs
@@ -36,7 +36,7 @@ jobs:
           git grep -l -z 'a309ff8b426b58ec0e2a45f0f869d46889d02405' -- .github/workflows | \
             xargs -0 -r perl -pi -e 's/a309ff8b426b58ec0e2a45f0f869d46889d02405/5fda3b95a4ea91299a34e894583c3862153e4b97/g'
 
-      - name: Verify replacement scope and clean bootstrap files
+      - name: Verify replacement and remove bootstrap workflows
         shell: bash
         run: |
           set -euo pipefail
@@ -44,15 +44,14 @@ jobs:
             echo 'old pinned action SHA remains' >&2
             exit 1
           fi
-          rm -f .dependency-refresh-stage .github/workflows/dependency-refresh-once.yml .github/workflows/dependency-actions-refresh-once.yml
-          node -e "const p=require('./package.json');const l=require('./package-lock.json');if(p.dependencies.axios!=='1.19.0'||p.dependencies.cheerio!=='1.2.0'||l.packages['node_modules/axios']?.version!=='1.19.0'||l.packages['node_modules/cheerio']?.version!=='1.2.0')process.exit(1)"
+          rm -f .github/workflows/dependency-refresh-once.yml .github/workflows/dependency-actions-refresh-once.yml
 
-      - name: Push final review branch
+      - name: Push review branch
         shell: bash
         run: |
           set -euo pipefail
           git config user.name "niakvio-maintenance"
           git config user.email "actions@users.noreply.github.com"
           git add -A
-          git commit -m "chore: refresh dependencies and pinned actions"
-          git push origin HEAD:chore/dependency-refresh-final
+          git commit -m "chore: refresh pinned GitHub Actions"
+          git push origin HEAD:chore/pinned-actions-refresh
