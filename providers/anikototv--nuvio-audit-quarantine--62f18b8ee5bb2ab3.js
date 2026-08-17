@@ -343,6 +343,57 @@ var ok=false;try{if(typeof module!=="undefined"&&module.exports)ok=install(modul
     }
   }catch(_e){}
 })(typeof globalThis!=="undefined"?globalThis:this,{"providerId":"anikototv","timeoutMs":6500,"tmdbTimeoutMs":4500,"maxRows":4,"minDurationRatio":0.55,"maxDurationRatio":1.8,"durationIdentity":false,"strictPlayback":false,"failClosedUnknown":false,"defaultUserAgent":"","tmdbKey":"1865f43a0549ca50d341dd9ab8b29f49","implementationRevision":"scoped-playback-context-v4"});
+
+
+
+/* NUVIO_CATALOGUE_SCOPE_QUARANTINE_V1: provider=anikototv */
+;(function() {
+  const __nuvioScopedRules = [{"kind":"media_type","mediaType":"movie","reason":"playable_unknown_identity_false_positive"}];
+  const __nuvioScopedProvider = "anikototv";
+  const __nuvioExports = (typeof module !== 'undefined' && module && module.exports) ? module.exports : null;
+  const __nuvioOriginal = (__nuvioExports && typeof __nuvioExports.getStreams === 'function')
+    ? __nuvioExports.getStreams
+    : (typeof globalThis !== 'undefined' && typeof globalThis.getStreams === 'function' ? globalThis.getStreams : null);
+  if (typeof __nuvioOriginal !== 'function') return;
+
+  function __nuvioInvocation(args) {
+    const first = args[0];
+    if (first && typeof first === 'object' && !Array.isArray(first)) {
+      return {
+        tmdbId: String(first.tmdbId ?? first.id ?? ''),
+        mediaType: String(first.mediaType ?? first.type ?? first.category ?? '').toLowerCase(),
+        season: first.season == null ? null : Number(first.season),
+        episode: first.episode == null ? null : Number(first.episode),
+      };
+    }
+    return {
+      tmdbId: String(first ?? ''),
+      mediaType: String(args[1] ?? '').toLowerCase(),
+      season: args[2] == null ? null : Number(args[2]),
+      episode: args[3] == null ? null : Number(args[3]),
+    };
+  }
+
+  function __nuvioMatches(rule, request) {
+    if (String(rule.mediaType || '').toLowerCase() !== request.mediaType) return false;
+    if (rule.kind === 'media_type') return true;
+    if (String(rule.tmdbId || '') !== request.tmdbId) return false;
+    if (rule.season != null && Number(rule.season) !== request.season) return false;
+    if (rule.episode != null && Number(rule.episode) !== request.episode) return false;
+    return true;
+  }
+
+  async function __nuvioScopedGetStreams(...args) {
+    const request = __nuvioInvocation(args);
+    if (__nuvioScopedRules.some((rule) => __nuvioMatches(rule, request))) return [];
+    return await __nuvioOriginal.apply(this, args);
+  }
+  try { if (__nuvioExports && typeof __nuvioExports === 'object') __nuvioExports.getStreams = __nuvioScopedGetStreams; } catch {}
+  try { if (typeof globalThis !== 'undefined') globalThis.getStreams = __nuvioScopedGetStreams; } catch {}
+  try { if (typeof global !== 'undefined') global.getStreams = __nuvioScopedGetStreams; } catch {}
+  try { if (typeof self !== 'undefined') self.getStreams = __nuvioScopedGetStreams; } catch {}
+  try { if (typeof globalThis !== 'undefined') globalThis.__NUVIO_CATALOGUE_SCOPE_QUARANTINE__ = { provider: __nuvioScopedProvider, rules: __nuvioScopedRules }; } catch {}
+})();
 /* NUVIO_HLS_RUNTIME_INTEGRITY_V1:128b76741346 */
 ;(function(g,config){
   "use strict";
@@ -570,53 +621,3 @@ var ok=false;try{if(typeof module!=="undefined"&&module.exports)ok=install(modul
   }
   install();
 })(typeof globalThis!=="undefined"?globalThis:this,{"timeoutMs":6500,"maxChildren":2,"maxRecoveryPages":4,"maxRecoveryCandidates":12,"implementationRevision":"recovery-first-v3"});
-
-
-/* NUVIO_CATALOGUE_SCOPE_QUARANTINE_V1: provider=anikototv */
-;(function() {
-  const __nuvioScopedRules = [{"kind":"media_type","mediaType":"movie","reason":"playable_unknown_identity_false_positive"}];
-  const __nuvioScopedProvider = "anikototv";
-  const __nuvioExports = (typeof module !== 'undefined' && module && module.exports) ? module.exports : null;
-  const __nuvioOriginal = (__nuvioExports && typeof __nuvioExports.getStreams === 'function')
-    ? __nuvioExports.getStreams
-    : (typeof globalThis !== 'undefined' && typeof globalThis.getStreams === 'function' ? globalThis.getStreams : null);
-  if (typeof __nuvioOriginal !== 'function') return;
-
-  function __nuvioInvocation(args) {
-    const first = args[0];
-    if (first && typeof first === 'object' && !Array.isArray(first)) {
-      return {
-        tmdbId: String(first.tmdbId ?? first.id ?? ''),
-        mediaType: String(first.mediaType ?? first.type ?? first.category ?? '').toLowerCase(),
-        season: first.season == null ? null : Number(first.season),
-        episode: first.episode == null ? null : Number(first.episode),
-      };
-    }
-    return {
-      tmdbId: String(first ?? ''),
-      mediaType: String(args[1] ?? '').toLowerCase(),
-      season: args[2] == null ? null : Number(args[2]),
-      episode: args[3] == null ? null : Number(args[3]),
-    };
-  }
-
-  function __nuvioMatches(rule, request) {
-    if (String(rule.mediaType || '').toLowerCase() !== request.mediaType) return false;
-    if (rule.kind === 'media_type') return true;
-    if (String(rule.tmdbId || '') !== request.tmdbId) return false;
-    if (rule.season != null && Number(rule.season) !== request.season) return false;
-    if (rule.episode != null && Number(rule.episode) !== request.episode) return false;
-    return true;
-  }
-
-  async function __nuvioScopedGetStreams(...args) {
-    const request = __nuvioInvocation(args);
-    if (__nuvioScopedRules.some((rule) => __nuvioMatches(rule, request))) return [];
-    return await __nuvioOriginal.apply(this, args);
-  }
-  try { if (__nuvioExports && typeof __nuvioExports === 'object') __nuvioExports.getStreams = __nuvioScopedGetStreams; } catch {}
-  try { if (typeof globalThis !== 'undefined') globalThis.getStreams = __nuvioScopedGetStreams; } catch {}
-  try { if (typeof global !== 'undefined') global.getStreams = __nuvioScopedGetStreams; } catch {}
-  try { if (typeof self !== 'undefined') self.getStreams = __nuvioScopedGetStreams; } catch {}
-  try { if (typeof globalThis !== 'undefined') globalThis.__NUVIO_CATALOGUE_SCOPE_QUARANTINE__ = { provider: __nuvioScopedProvider, rules: __nuvioScopedRules }; } catch {}
-})();

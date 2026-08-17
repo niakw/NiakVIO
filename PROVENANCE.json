@@ -1876,9 +1876,9 @@
     },
     "anikototv": {
       "id": "anikototv",
-      "published_filename": "providers/anikototv--nuvio-audit-quarantine--914ac7ce2f6575e7.js",
-      "sha256": "914ac7ce2f6575e7f630151f1c553b134a12430b5af4151ae78ee248f2342db8",
-      "patched_sha256": "914ac7ce2f6575e7f630151f1c553b134a12430b5af4151ae78ee248f2342db8",
+      "published_filename": "providers/anikototv--nuvio-audit-quarantine--62f18b8ee5bb2ab3.js",
+      "sha256": "62f18b8ee5bb2ab3efc5c31e37f41bad30b3aecf3d615819d7d3b5205d2eb23e",
+      "patched_sha256": "62f18b8ee5bb2ab3efc5c31e37f41bad30b3aecf3d615819d7d3b5205d2eb23e",
       "upstream_sha256": "4b75a13ad9f3a9e7c067e8cbd18a66830cce4ad0d7e75ed28eca66cf1ed32b5d",
       "local_patches": [
         {
@@ -18071,9 +18071,9 @@
     },
     "streamzo": {
       "id": "streamzo",
-      "published_filename": "providers/streamzo--nuvio-audit-quarantine--f7e932753c0be691.js",
-      "sha256": "f7e932753c0be691853a80ff2e73f5d564034ddb2c44fcbb11f5254b581f9277",
-      "patched_sha256": "f7e932753c0be691853a80ff2e73f5d564034ddb2c44fcbb11f5254b581f9277",
+      "published_filename": "providers/streamzo--nuvio-audit-quarantine--e36f0658fc80f0b2.js",
+      "sha256": "e36f0658fc80f0b2a02e9bd5a22ae790ac9bd1b271ce78063b8d0243754e3751",
+      "patched_sha256": "e36f0658fc80f0b2a02e9bd5a22ae790ac9bd1b271ce78063b8d0243754e3751",
       "upstream_sha256": "c20bdca7585cacf12f4819669ac8a5fabc2ec3e6be1b0b34609f6ac4cf23e285",
       "local_patches": [
         {
@@ -18136,7 +18136,7 @@
           "playable_streams": 1
         }
       ],
-      "source": "published-baseline",
+      "source": "gowaru",
       "source_name": "Last published local artifact",
       "source_repository": "Nuvio Curated Providers",
       "source_license": "GPL-3.0-only",
@@ -18152,7 +18152,7 @@
       "strict_grace_eligible": false,
       "historical_quality_grace_eligible": false,
       "runtime_evidence_eligible": false,
-      "activation_mode": "catalogue_audit_safety_quarantine",
+      "activation_mode": "catalogue_audit_scoped_quarantine",
       "activation_blockers": [
         "02_healthy_functional_status",
         "03_minimum_score",
@@ -18386,7 +18386,41 @@
       ],
       "preserved_candidate_key": "published:streamzo",
       "preserved_candidate_sha256": "6b360acb31963ed59004e800e4f67a6eaae04d1dc00914635a0cd2b375fa046f",
-      "publication_mode": "strict_existing_provider_refresh"
+      "publication_mode": "strict_existing_provider_refresh",
+      "selected_source": "gowaru",
+      "catalogue_audit_quarantine_scopes": [
+        {
+          "kind": "fixture",
+          "fixture": "vf_revenant_s01e01",
+          "mediaType": "tv",
+          "tmdbId": "126485",
+          "reason": "playable_identity_contradiction",
+          "season": 1,
+          "episode": 1
+        }
+      ],
+      "legacy_quarantine_migration": {
+        "historical_run_id": 31986424008,
+        "current_stage_run_id": 32001774099,
+        "validated_candidate_sha256": "259fa604b4f5715599b7471b94250d2ad7b8f5e98719dc91f219e79085a78bc8",
+        "positive_fixtures": [
+          "strict_movie_identity"
+        ],
+        "contradictory_fixtures": [
+          "vf_revenant_s01e01"
+        ],
+        "scopes": [
+          {
+            "kind": "fixture",
+            "fixture": "vf_revenant_s01e01",
+            "mediaType": "tv",
+            "tmdbId": "126485",
+            "reason": "playable_identity_contradiction",
+            "season": 1,
+            "episode": 1
+          }
+        ]
+      }
     },
     "toflix": {
       "id": "toflix",
@@ -19154,9 +19188,9 @@
     },
     "videasy": {
       "id": "videasy",
-      "published_filename": "providers/videasy--nuvio-audit-quarantine--db201a834d267d76.js",
-      "sha256": "db201a834d267d76dec33752e3ba2788d35e16646a9a9a3a4a69289f2be2ab0b",
-      "patched_sha256": "db201a834d267d76dec33752e3ba2788d35e16646a9a9a3a4a69289f2be2ab0b",
+      "published_filename": "providers/videasy--nuvio-audit-quarantine--49a63fd2f371b1aa.js",
+      "sha256": "49a63fd2f371b1aada276426a9852edea0bcf081fd6a68e66bb40da66fa91bcc",
+      "patched_sha256": "49a63fd2f371b1aada276426a9852edea0bcf081fd6a68e66bb40da66fa91bcc",
       "upstream_sha256": "8fb7fbc12e23d28185927a5a7f47fa65874ff0d1b1f3e01f4dbf9813c4fc7862",
       "local_patches": [
         {
