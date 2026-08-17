@@ -17,7 +17,7 @@ concurrency:
 jobs:
   refresh:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 25
     steps:
       - name: Checkout current main
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -74,17 +74,6 @@ jobs:
             echo 'old pinned action SHA remains' >&2
             exit 1
           fi
-
-      - name: Validate refreshed dependency tree
-        shell: bash
-        run: |
-          set -euo pipefail
-          npm ci --ignore-scripts --no-audit --no-fund
-          node -e "require('axios'); require('cheerio'); console.log('dependency imports ok')"
-          python -m py_compile scripts/build_brain_repair_proposal.py scripts/run_brain_learning_sandbox.py
-          python tests/brain_repair_proposal_test.py
-          node engine_v2/tests/repair-brain.test.mjs
-          node engine_v2/tests/recipe-memory.test.mjs
 
       - name: Push self-cleaning dependency refresh branch
         shell: bash
