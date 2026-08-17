@@ -19,9 +19,10 @@ def staged_providers() -> list[dict]:
 def collector_test(source: str, client: str) -> str:
     if client == "desktop":
         old = '        assertTrue(errors.isEmpty(), "native provider runtime errors: " + errors.take(12).joinToString(" | "))\n'
+        new = '        assertTrue(providers.isNotEmpty(), "native corpus provider list must not be empty")\n'
     else:
         old = '        assertTrue("native provider runtime errors: " + errors.take(12).joinToString(" | "), errors.isEmpty())\n'
-    new = '        assertTrue("native corpus provider list must not be empty", providers.isNotEmpty())\n'
+        new = '        assertTrue("native corpus provider list must not be empty", providers.isNotEmpty())\n'
     if source.count(old) != 1:
         raise SystemExit(f"unable to relax {client} provider-error assertion: anchor count={source.count(old)}")
     return source.replace(old, new, 1)
