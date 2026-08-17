@@ -120,7 +120,8 @@ def _sibling_aware_matching_profiles(candidate: dict[str, Any], result: dict[str
 def _brain_matching_profiles(candidate: dict[str, Any], result: dict[str, Any], source_text: str, config: dict[str, Any] | None = None) -> list[str]:
     base = _sibling_aware_matching_profiles(candidate, result, source_text, config)
     key = str(candidate.get("key") or "")
-    plan = brain.PLANS.get(key) or {}
+    parent_key = str((candidate.get("runtime_repair") or {}).get("parent_key") or "")
+    plan = brain.PLANS.get(parent_key or key) or {}
     if str(plan.get("action") or "") != "probe-targeted-repair":
         return []
     allowed = {str(value) for value in plan.get("allowedProfiles") or [] if str(value)}
@@ -159,6 +160,91 @@ def _quick_compare_results(parent: dict[str, Any], repaired: dict[str, Any]) -> 
     return False, "no_quick_runtime_improvement"
 
 
+def _fallback_failure_class(result: dict[str, Any]) -> str:
+    status = str(result.get("status") or "runtime_error")
+    return {
+        "blocked": "transport_blocked",
+        "no_streams": "search_gap",
+        "provider_unreachable": "unknown_failure",
+        "unavailable": "transport_blocked",
+        "runtime_error": "runtime_contract_drift",
+        "degraded": "media_validation_gap",
+        "reachable": "search_gap",
+    }.get(status, "unknown_failure")
+
+
+def _install_control_plane_fallback_plan(candidate: dict[str, Any], result: dict[str, Any], error: Exception) -> None:
+    key = str(result.get("key") or candidate.get("key") or "")
+    parent_key = str((candidate.get("runtime_repair") or {}).get("parent_key") or "")
+    plan_key = parent_key or key
+    if not plan_key:
+        return
+    evidence = result.get("evidence") if isinstance(result.get("evidence"), dict) else {}
+    playable = int(evidence.get("streams_playable") or 0)
+    status = str(result.get("status") or "runtime_error")
+    provider_id = str(candidate.get("canonical_id") or candidate.get("upstream_id") or plan_key).casefold()
+    if status == "healthy" and playable > 0:
+        failure_class = "healthy"
+        action = "none"
+        allowed_profiles: list[str] = []
+    elif status == "excluded":
+        failure_class = "identity_mismatch"
+        action = "none"
+        allowed_profiles = []
+    else:
+        failure_class = _fallback_failure_class(result)
+        action = "probe-targeted-repair"
+        allowed_profiles = ["adaptive_runtime_recovery"]
+    brain.PLANS[plan_key] = {
+        "brainVersion": 3,
+        "providerId": provider_id,
+        "failureClass": failure_class,
+        "signature": f"control-plane-fallback:{failure_class}:{status}",
+        "action": action,
+        "exitReason": "planner_transport_fallback",
+        "hypotheses": [],
+        "allowedProfiles": allowed_profiles,
+        "plannerErrorClass": type(error).__name__,
+        "fallbackPolicy": "lkg_only_after_repair_budget",
+        "coreMutationPolicy": "proposal_only",
+    }
+
+
+def _plan_quick_results(registry_path: Path, report: dict[str, Any]) -> None:
+    """Plan each runtime observation independently.
+
+    A malformed or oversized control-plane payload must never prevent the other
+    providers from entering Repair. Every result gets its own Node planner call;
+    an isolated planner failure receives a bounded generic Repair plan instead of
+    aborting the 92-provider refresh.
+    """
+    registry = json.loads(registry_path.read_text(encoding="utf-8"))
+    candidates = {
+        str(row.get("key")): row
+        for row in registry.get("candidates") or []
+        if isinstance(row, dict) and row.get("key")
+    }
+    planned = 0
+    fallback_plans = 0
+    for result in report.get("results") or []:
+        if not isinstance(result, dict) or not result.get("key"):
+            continue
+        key = str(result.get("key") or "")
+        candidate = candidates.get(key)
+        if candidate is None:
+            continue
+        try:
+            brain.update_plans(registry_path, {"results": [result]}, "quick")
+            planned += 1
+        except RuntimeError as error:
+            _install_control_plane_fallback_plan(candidate, result, error)
+            fallback_plans += 1
+    print(
+        f"Quick Brain isolated planning complete: planned={planned} fallback_plans={fallback_plans}",
+        file=sys.stderr,
+    )
+
+
 def _quick_run_health(*, stage: Path, registry_path: Path, output_dir: Path, mode: str, health_check: Path = loop.HEALTH_CHECK) -> dict[str, Any]:
     report = _base_run_health(
         stage=stage,
@@ -169,7 +255,7 @@ def _quick_run_health(*, stage: Path, registry_path: Path, output_dir: Path, mod
     )
     if not _sibling_resolutions and registry_path.name == "candidates.json":
         _sibling_resolutions.update(_discover_sibling_resolutions(registry_path, report))
-    brain.update_plans(registry_path, report, "quick")
+    _plan_quick_results(registry_path, report)
     return report
 
 
