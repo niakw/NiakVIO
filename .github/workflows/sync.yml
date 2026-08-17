@@ -482,6 +482,18 @@ jobs:
           git clean -fdx
           git fetch origin main
           git rebase origin/main
+
+          # The rebase can import concurrent README/config/cleanup changes after
+          # the publication hashes were first generated. Rebuild the inventories
+          # on the exact rebased tree so a provider transaction can never publish
+          # stale checksums for files that were changed or removed concurrently.
+          python scripts/generate_release_hashes.py
+          python scripts/validate_release_integrity.py
+          git add FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json
+          if ! git diff --cached --quiet; then
+            git commit --amend --no-edit
+          fi
+
           python scripts/release_evidence_fence.py validate \
             --manifest manifest.json \
             --root . \
