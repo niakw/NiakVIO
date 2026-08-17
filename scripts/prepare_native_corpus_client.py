@@ -28,6 +28,27 @@ def _collector_test(source: str, client: str) -> str:
     return source.replace(old, new, 1)
 
 
+def _isolate_tv_android_test_sources(tv: Path) -> int:
+    """Remove unrelated upstream instrumented sources from the ephemeral TV lab checkout.
+
+    connectedFullDebugAndroidTest compiles the complete androidTest source set before
+    applying instrumentation filters. Upstream UI tests can therefore break the
+    provider corpus when their own app APIs change, even though NiakVIO never invokes
+    those tests. Keep manifests/resources/assets intact and remove only Kotlin/Java
+    test sources before writing the standalone NiakVIO corpus test.
+    """
+    removed = 0
+    for source_dir in (tv / "app/src/androidTest/java", tv / "app/src/androidTest/kotlin"):
+        if not source_dir.is_dir():
+            continue
+        for source in source_dir.rglob("*"):
+            if source.is_file() and source.suffix.lower() in {".kt", ".java"}:
+                source.unlink()
+                removed += 1
+    print(f"FIELD_NATIVE_CORPUS_TV_TEST_SOURCES_ISOLATED removed={removed}")
+    return removed
+
+
 def prepare_desktop(workspace: Path, fixture: dict) -> None:
     providers = corpus.stage_providers(ROOT / "native-corpus-stage")
     target = workspace / "nuvio-desktop/composeApp/src/desktopTest/kotlin/com/nuvio/app/features/plugins/NiakvioNativeCorpusDesktopTest.kt"
@@ -48,6 +69,7 @@ def prepare_mobile(workspace: Path, fixture: dict) -> None:
 def prepare_tv(workspace: Path, fixture: dict) -> None:
     tv = workspace / "nuvio-tv"
     corpus.enable_tv_tests(tv)
+    _isolate_tv_android_test_sources(tv)
     assets = tv / "app/src/androidTest/assets/niakvio"
     providers = corpus.stage_providers(assets)
     target = tv / "app/src/androidTest/java/com/nuvio/tv/core/plugin/NiakvioNativeCorpusTvTest.kt"
