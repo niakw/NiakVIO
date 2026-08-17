@@ -10,6 +10,7 @@ on:
       - 'package.json'
       - 'package-lock.json'
       - 'scripts/brain_repair_runtime.py'
+      - 'scripts/adaptive_runtime/brain_repair_runtime.py'
       - 'scripts/build_provider_runtime_profiles.py'
       - 'scripts/generate_language_manifests.py'
       - 'tests/general_manifest_runtime_profiles_test.py'
@@ -50,7 +51,7 @@ jobs:
               engine_v2/src/*|engine_v2/scripts/*)
                 canonical_trigger=true
                 ;;
-              engine_v2/*|package.json|package-lock.json|scripts/brain_repair_runtime.py|scripts/build_provider_runtime_profiles.py|scripts/generate_language_manifests.py|tests/general_manifest_runtime_profiles_test.py|tests/quick_repair_probe_profile_test.py|.github/workflows/archi2-change-dispatch.yml)
+              engine_v2/*|package.json|package-lock.json|scripts/brain_repair_runtime.py|scripts/adaptive_runtime/brain_repair_runtime.py|scripts/build_provider_runtime_profiles.py|scripts/generate_language_manifests.py|tests/general_manifest_runtime_profiles_test.py|tests/quick_repair_probe_profile_test.py|.github/workflows/archi2-change-dispatch.yml)
                 uncovered_trigger=true
                 ;;
             esac
