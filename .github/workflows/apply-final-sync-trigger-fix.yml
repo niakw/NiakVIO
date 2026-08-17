@@ -1,4 +1,4 @@
-name: Apply final ARCHI2 sync trigger fix
+name: Build final ARCHI2 sync trigger patch
 
 on:
   push:
@@ -8,18 +8,18 @@ on:
       - '.github/workflows/apply-final-sync-trigger-fix.yml'
 
 permissions:
-  contents: write
-  actions: write
+  contents: read
 
 jobs:
-  patch-and-dispatch:
+  build-patch:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout main
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
           ref: main
-          fetch-depth: 2
+          fetch-depth: 1
+          persist-credentials: false
 
       - name: Make canonical sync cover every Brain change
         shell: bash
@@ -51,20 +51,12 @@ jobs:
               text = text.replace(anchor, anchor + package_paths, 1)
 
           path.write_text(text, encoding='utf-8')
-          Path('.github/workflows/apply-final-sync-trigger-fix.yml').unlink()
           PY
 
-      - name: Commit durable trigger fix and remove one-shot workflow
-        shell: bash
-        run: |
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add .github/workflows/sync.yml .github/workflows/apply-final-sync-trigger-fix.yml
-          git commit -m 'ci: trigger ARCHI2 Quick for every Brain change'
-          git push origin HEAD:main
-
-      - name: Dispatch one final Quick on the patched HEAD
-        env:
-          GH_TOKEN: ${{ github.token }}
-        shell: bash
-        run: gh workflow run sync.yml --ref main -f mode=quick
+      - name: Upload patched canonical workflow
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: patched-sync-yml-${{ github.run_id }}
+          path: .github/workflows/sync.yml
+          retention-days: 1
+          if-no-files-found: error
