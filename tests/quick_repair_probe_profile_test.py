@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import copy
 import importlib.util
+import json
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -87,5 +88,27 @@ assert budget["mutationCount"] == 2
 assert budget["generatedBytes"] == 100
 assert budget["signatureCounts"]["same-signature"] == 2
 brain.reset_runtime_state()
+
+# Python's default json.dumps emits NaN/Infinity, while Node JSON.parse rejects
+# those tokens. Real network evidence may contain non-finite measurements, so the
+# Brain bridge must normalize them before the whole 201-variant batch is planned.
+strict_payload = brain._strict_json_dumps({
+    "finite": 1.25,
+    "nan": float("nan"),
+    "positiveInfinity": float("inf"),
+    "negativeInfinity": float("-inf"),
+    "nested": [float("nan"), {"latency": float("inf")}],
+})
+assert "NaN" not in strict_payload
+assert "Infinity" not in strict_payload
+parsed_payload = json.loads(strict_payload)
+assert parsed_payload["finite"] == 1.25
+assert parsed_payload["nan"] is None
+assert parsed_payload["positiveInfinity"] is None
+assert parsed_payload["negativeInfinity"] is None
+assert parsed_payload["nested"] == [None, {"latency": None}]
+brain_source = (ROOT / "scripts" / "brain_repair_runtime.py").read_text(encoding="utf-8")
+assert "input=_strict_json_dumps(payload)" in brain_source
+assert "allow_nan=False" in brain_source
 
 print("quick repair probe profile test passed")
