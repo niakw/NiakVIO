@@ -4622,8 +4622,8 @@
     },
     {
       "id": "videasy",
-      "action": "published-disabled-failed-gates",
-      "enabled": false,
+      "action": "published-scoped-quarantine",
+      "enabled": true,
       "activation_eligible": true,
       "strict_activation_eligible": true,
       "strict_grace_eligible": false,
@@ -5076,15 +5076,24 @@
       "manifest_position": 13,
       "catalogue_audit_quarantine": {
         "reason": "catalogue_audit_playable_identity_contradiction",
-        "tested_filename": "providers/videasy--nuvio--4827302f0db903a5.js",
-        "tested_sha256": "4827302f0db903a573c2b3253714d25908368ed86735c45e5537add924133b5f",
-        "quarantined_filename": "providers/videasy--nuvio-audit-quarantine--f7e932753c0be691.js",
-        "quarantined_sha256": "f7e932753c0be691853a80ff2e73f5d564034ddb2c44fcbb11f5254b581f9277",
+        "tested_filename": "providers/videasy--nuvio--7aed81850201a403.js",
+        "tested_sha256": "7aed81850201a403672adf00bbfd7e98d77bd27dc99b93e8d3e5d86e273f7cfc",
+        "quarantined_filename": "providers/videasy--nuvio-audit-quarantine--db201a834d267d76.js",
+        "quarantined_sha256": "db201a834d267d76dec33752e3ba2788d35e16646a9a9a3a4a69289f2be2ab0b",
         "fixtures": [
-          "breaking-bad-s01e01"
+          "strict_movie_identity"
+        ],
+        "scopes": [
+          {
+            "kind": "fixture",
+            "fixture": "strict_movie_identity",
+            "mediaType": "movie",
+            "tmdbId": "1215638",
+            "reason": "playable_identity_contradiction"
+          }
         ],
         "identity_contradictions": 1,
-        "playable_streams": 5
+        "playable_streams": 4
       }
     },
     {
@@ -8185,8 +8194,8 @@
     },
     {
       "id": "anikototv",
-      "action": "published-disabled-failed-gates",
-      "enabled": false,
+      "action": "published-scoped-quarantine",
+      "enabled": true,
       "activation_eligible": true,
       "strict_activation_eligible": true,
       "strict_grace_eligible": false,
@@ -8634,10 +8643,17 @@
         "reason": "catalogue_audit_playable_identity_contradiction",
         "tested_filename": "providers/anikototv--nuvio--dbc8faddd8c0ebfc.js",
         "tested_sha256": "dbc8faddd8c0ebfc161885d25402f414412ae88d8f75cb475b4a6a820bfdb8d7",
-        "quarantined_filename": "providers/anikototv--nuvio-audit-quarantine--f7e932753c0be691.js",
-        "quarantined_sha256": "f7e932753c0be691853a80ff2e73f5d564034ddb2c44fcbb11f5254b581f9277",
+        "quarantined_filename": "providers/anikototv--nuvio-audit-quarantine--914ac7ce2f6575e7.js",
+        "quarantined_sha256": "914ac7ce2f6575e7f630151f1c553b134a12430b5af4151ae78ee248f2342db8",
         "fixtures": [
           "impossible_movie"
+        ],
+        "scopes": [
+          {
+            "kind": "media_type",
+            "mediaType": "movie",
+            "reason": "playable_unknown_identity_false_positive"
+          }
         ],
         "identity_contradictions": 1,
         "playable_streams": 1

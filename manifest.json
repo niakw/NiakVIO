@@ -1,18 +1,18 @@
 {
   "name": "Nuvio Curated Providers",
-  "version": "5.20.66",
+  "version": "5.20.67",
   "scrapers": [
     {
       "id": "anime-sama",
       "name": "🐍 Anime-Sama",
       "description": "Watch AnimeSama France",
-      "version": "1.1.73",
+      "version": "1.1.74",
       "author": "Gowaru",
       "supportedTypes": [
         "movie",
         "anime"
       ],
-      "filename": "providers/anime-sama--nuvio--c5f48581abb2cdc5.js",
+      "filename": "providers/anime-sama--published-baseline--c5f48581abb2cdc5.js",
       "enabled": true,
       "hasSettings": true,
       "formats": [
@@ -150,10 +150,10 @@
       "id": "persianstremio",
       "name": "🌸 PersianStremio",
       "description": "Persian Stremio plugin for movies, series,and Persian media content in Iranian & English.",
-      "version": "1.4.25",
+      "version": "1.4.26",
       "author": "Nuvio Team",
       "supportedTypes": [
-        "movie"
+        "tv"
       ],
       "filename": "providers/persianstremio--published-baseline--7aba3c7fae6dd298.js",
       "enabled": true,
@@ -218,17 +218,16 @@
       "supportsExternalPlayer": false
     },
     {
-      "id": "ANIKOTOTV",
+      "id": "anikototv",
       "name": "AnikotoTV",
       "description": "Anime provider for AnikotoTV.to via Mapper API + Native Extractor",
-      "version": "1.0.32",
+      "version": "1.0.35",
       "author": "piratezoro9",
       "supportedTypes": [
-        "anime",
-        "movie"
+        "anime"
       ],
-      "filename": "providers/anikototv--nuvio-audit-quarantine--f7e932753c0be691.js",
-      "enabled": false,
+      "filename": "providers/anikototv--nuvio-audit-quarantine--914ac7ce2f6575e7.js",
+      "enabled": true,
       "hasSettings": true,
       "formats": [
         "mp4"
@@ -645,6 +644,34 @@
       "supportsExternalPlayer": false
     },
     {
+      "id": "GOATED",
+      "name": "🐐 Goated",
+      "description": "4K • 1080p Movies & Series in Multi Language",
+      "version": "1.0.15",
+      "author": "Nuvio Team",
+      "supportedTypes": [
+        "movie",
+        "tv"
+      ],
+      "filename": "providers/goated--nuvio--8c7202df852f641a.js",
+      "enabled": true,
+      "hasSettings": true,
+      "formats": [
+        "mkv",
+        "mp4",
+        "m3u8"
+      ],
+      "logo": "https://i.postimg.cc/qqsfgS0F/goated.png",
+      "contentLanguage": [
+        "en",
+        "hi",
+        "ru",
+        "es"
+      ],
+      "supportsExternalPlayer": false,
+      "disabledPlatforms": []
+    },
+    {
       "id": "HDHUB4U",
       "name": "HDHub4u",
       "description": "Direct links from HDHub4u with high-speed download support",
@@ -816,30 +843,6 @@
       "limited": false,
       "disabledPlatforms": [],
       "supportsExternalPlayer": false
-    },
-    {
-      "id": "streamzo",
-      "name": "StreamZo",
-      "description": "Films et séries en streaming VF/VOSTFR sur Streamzo.fr (SPA, iframe injecté, multi-serveurs).",
-      "version": "1.0.48",
-      "author": "Gowaru",
-      "supportedTypes": [
-        "movie",
-        "tv",
-        "anime"
-      ],
-      "filename": "providers/streamzo--nuvio-audit-quarantine--f7e932753c0be691.js",
-      "enabled": false,
-      "logo": "https://streamzo.fr/favicon.ico",
-      "contentLanguage": [
-        "fr"
-      ],
-      "formats": [
-        "m3u8"
-      ],
-      "limited": false,
-      "disabledPlatforms": [],
-      "supportsExternalPlayer": true
     },
     {
       "id": "vidfast",
@@ -1104,7 +1107,7 @@
       "id": "ANIMOFLIX",
       "name": "AnimoFlix",
       "description": "Regarder des animes VF et VOSTFR gratuitement sur AnimoFlix.",
-      "version": "1.0.35",
+      "version": "1.0.36",
       "author": "Gowaru",
       "supportedTypes": [
         "movie",
@@ -1123,6 +1126,30 @@
       "limited": false,
       "disabledPlatforms": [],
       "supportsExternalPlayer": false
+    },
+    {
+      "id": "streamzo",
+      "name": "StreamZo",
+      "description": "Films et séries en streaming VF/VOSTFR sur Streamzo.fr (SPA, iframe injecté, multi-serveurs).",
+      "version": "1.0.48",
+      "author": "Gowaru",
+      "supportedTypes": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "filename": "providers/streamzo--nuvio-audit-quarantine--f7e932753c0be691.js",
+      "enabled": false,
+      "logo": "https://streamzo.fr/favicon.ico",
+      "contentLanguage": [
+        "fr"
+      ],
+      "formats": [
+        "m3u8"
+      ],
+      "limited": false,
+      "disabledPlatforms": [],
+      "supportsExternalPlayer": true
     },
     {
       "id": "voiranime-homes",
@@ -1177,13 +1204,13 @@
       "id": "VIDEASY",
       "name": "VidEasy",
       "description": "Videasy streaming with encrypted TMDB ID support for movies and TV shows",
-      "version": "1.0.24",
+      "version": "1.0.25",
       "author": "Nuvio Team",
       "supportedTypes": [
         "movie",
         "tv"
       ],
-      "filename": "providers/videasy--nuvio--7aed81850201a403.js",
+      "filename": "providers/videasy--nuvio-audit-quarantine--db201a834d267d76.js",
       "enabled": true,
       "hasSettings": true,
       "formats": [
@@ -1317,29 +1344,6 @@
       "disabledPlatforms": []
     },
     {
-      "id": "CASTLE",
-      "name": "🏰 Castle",
-      "description": "Multi Lang provider",
-      "version": "2.0.20",
-      "author": "Nuvio Team",
-      "supportedTypes": [
-        "movie",
-        "tv"
-      ],
-      "filename": "providers/castle--nuvio--6cfc72d41b91dca0.js",
-      "enabled": true,
-      "hasSettings": true,
-      "formats": [
-        "mp4",
-        "m3u8"
-      ],
-      "logo": "https://i.postimg.cc/0NvGzFyK/castle.png",
-      "contentLanguage": [
-        "en"
-      ],
-      "disabledPlatforms": []
-    },
-    {
       "id": "PLAYIMDB",
       "name": "PlayIMDb",
       "description": "High-Speed Direct Streaming for Movies (IMDb ID Extract)",
@@ -1362,6 +1366,29 @@
         "en",
         "hi"
       ]
+    },
+    {
+      "id": "CASTLE",
+      "name": "🏰 Castle",
+      "description": "Multi Lang provider",
+      "version": "2.0.20",
+      "author": "Nuvio Team",
+      "supportedTypes": [
+        "movie",
+        "tv"
+      ],
+      "filename": "providers/castle--nuvio--6cfc72d41b91dca0.js",
+      "enabled": true,
+      "hasSettings": true,
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "logo": "https://i.postimg.cc/0NvGzFyK/castle.png",
+      "contentLanguage": [
+        "en"
+      ],
+      "disabledPlatforms": []
     },
     {
       "id": "KISSKH",
@@ -1433,34 +1460,6 @@
         "en",
         "pt"
       ]
-    },
-    {
-      "id": "GOATED",
-      "name": "🐐 Goated",
-      "description": "4K • 1080p Movies & Series in Multi Language",
-      "version": "1.0.15",
-      "author": "Nuvio Team",
-      "supportedTypes": [
-        "movie",
-        "tv"
-      ],
-      "filename": "providers/goated--nuvio--8c7202df852f641a.js",
-      "enabled": true,
-      "hasSettings": true,
-      "formats": [
-        "mkv",
-        "mp4",
-        "m3u8"
-      ],
-      "logo": "https://i.postimg.cc/qqsfgS0F/goated.png",
-      "contentLanguage": [
-        "en",
-        "hi",
-        "ru",
-        "es"
-      ],
-      "supportsExternalPlayer": false,
-      "disabledPlatforms": []
     },
     {
       "id": "1SHOWS",

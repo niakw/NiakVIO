@@ -1,13 +1,13 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-08-17T02:11:48.232408+00:00",
+  "generated_at": "2026-08-17T06:46:18.927159+00:00",
   "mode": "quick",
   "provider_specific_rules": false,
   "max_rounds": 1,
   "rounds": [
     {
       "round": 1,
-      "generated_candidates": 73,
+      "generated_candidates": 74,
       "attempts": [
         {
           "parent_key": "gowaru:anime-ultime",
@@ -59,7 +59,7 @@
           "baseline_score": 10,
           "baseline_streams_returned": 0,
           "baseline_streams_playable": 0,
-          "baseline_runtime_errors": 2,
+          "baseline_runtime_errors": 1,
           "baseline_malformed_requests": 0,
           "status": "generated",
           "repair_key": "gowaru:animoflix::repair:r1:adaptive_runtime_recovery:ba4aaa42",
@@ -335,8 +335,8 @@
           "parent_key": "aio:goated",
           "parent_sha256": "8c7202df852f641a19d026e81d6d831dbb80389070afe0412b4ad6da1db01588",
           "profile": "adaptive_runtime_recovery",
-          "baseline_status": "unavailable",
-          "baseline_score": 10,
+          "baseline_status": "provider_unreachable",
+          "baseline_score": 0,
           "baseline_streams_returned": 0,
           "baseline_streams_playable": 0,
           "baseline_runtime_errors": 0,
@@ -353,7 +353,7 @@
           "baseline_score": 10,
           "baseline_streams_returned": 0,
           "baseline_streams_playable": 0,
-          "baseline_runtime_errors": 2,
+          "baseline_runtime_errors": 1,
           "baseline_malformed_requests": 0,
           "status": "generated",
           "repair_key": "aio:hdhub4u::repair:r1:adaptive_runtime_recovery:ede751bf",
@@ -600,6 +600,20 @@
           "repair_sha256": "64119288763a74d49f1aea628a0ad5bb15b1fb2df15e6391f7ef4b044c5ab643"
         },
         {
+          "parent_key": "yoru:videasy",
+          "parent_sha256": "2b2d8280c130b4f1a2ac4bb3c3987ee7a9f35dc9d6d010f46e134f039b40a5f3",
+          "profile": "adaptive_runtime_recovery",
+          "baseline_status": "provider_unreachable",
+          "baseline_score": 0,
+          "baseline_streams_returned": 0,
+          "baseline_streams_playable": 0,
+          "baseline_runtime_errors": 3,
+          "baseline_malformed_requests": 0,
+          "status": "generated",
+          "repair_key": "yoru:videasy::repair:r1:adaptive_runtime_recovery:d4a4b482",
+          "repair_sha256": "d4a4b482adc944f3da1ef8f6de83eee8ba7857d36283e5ea281cd0b75cfb1594"
+        },
+        {
           "parent_key": "yoru:vidnest",
           "parent_sha256": "ee87054425486b3823a4431539e377e50a43c639e90c1a00e84111b062e6c376",
           "profile": "adaptive_runtime_recovery",
@@ -826,11 +840,11 @@
           "parent_key": "published:hdhub4u",
           "parent_sha256": "10e6245742b935ac0ef01b2cd2920620483e707e27cfbd9fdddbf843e0e21c57",
           "profile": "adaptive_runtime_recovery",
-          "baseline_status": "blocked",
-          "baseline_score": 10,
+          "baseline_status": "provider_unreachable",
+          "baseline_score": 0,
           "baseline_streams_returned": 0,
           "baseline_streams_playable": 0,
-          "baseline_runtime_errors": 2,
+          "baseline_runtime_errors": 3,
           "baseline_malformed_requests": 0,
           "status": "not_generated",
           "reason": "brain_mutation_budget_exhausted"
@@ -983,7 +997,7 @@
           "baseline_score": 10,
           "baseline_streams_returned": 0,
           "baseline_streams_playable": 0,
-          "baseline_runtime_errors": 2,
+          "baseline_runtime_errors": 1,
           "baseline_malformed_requests": 0,
           "status": "generated",
           "repair_key": "published:animoflix::repair:r1:adaptive_runtime_recovery:9e711943",
@@ -1078,8 +1092,8 @@
           "parent_key": "published:goated",
           "parent_sha256": "8c7202df852f641a19d026e81d6d831dbb80389070afe0412b4ad6da1db01588",
           "profile": "adaptive_runtime_recovery",
-          "baseline_status": "unavailable",
-          "baseline_score": 10,
+          "baseline_status": "provider_unreachable",
+          "baseline_score": 0,
           "baseline_streams_returned": 0,
           "baseline_streams_playable": 0,
           "baseline_runtime_errors": 0,
@@ -1145,20 +1159,6 @@
           "reason": "brain_mutation_budget_exhausted"
         },
         {
-          "parent_key": "published:cinefreak",
-          "parent_sha256": "484d512c50f1504eb17c624d2a59488d438f53e6c70e443ce495b0914bb7895e",
-          "profile": "adaptive_runtime_recovery",
-          "baseline_status": "provider_unreachable",
-          "baseline_score": 10,
-          "baseline_streams_returned": 0,
-          "baseline_streams_playable": 0,
-          "baseline_runtime_errors": 0,
-          "baseline_malformed_requests": 0,
-          "status": "generated",
-          "repair_key": "published:cinefreak::repair:r1:adaptive_runtime_recovery:8d9c97c9",
-          "repair_sha256": "8d9c97c9ba0018dde70393bb231eb55e1737ba9d2e712c233c74b8df695fbec0"
-        },
-        {
           "parent_key": "published:allanime",
           "parent_sha256": "f377ac2090ea27989811fbfdfe60a860390265cf4652e66ed1d84ad2d994331d",
           "profile": "adaptive_runtime_recovery",
@@ -1185,6 +1185,20 @@
           "status": "generated",
           "repair_key": "published:animeworld::repair:r1:adaptive_runtime_recovery:df7c96ac",
           "repair_sha256": "df7c96acb6515337593424279465e5f62facdf02fe2b88452ea8eab884a5f376"
+        },
+        {
+          "parent_key": "published:cinefreak",
+          "parent_sha256": "484d512c50f1504eb17c624d2a59488d438f53e6c70e443ce495b0914bb7895e",
+          "profile": "adaptive_runtime_recovery",
+          "baseline_status": "provider_unreachable",
+          "baseline_score": 10,
+          "baseline_streams_returned": 0,
+          "baseline_streams_playable": 0,
+          "baseline_runtime_errors": 0,
+          "baseline_malformed_requests": 0,
+          "status": "generated",
+          "repair_key": "published:cinefreak::repair:r1:adaptive_runtime_recovery:8d9c97c9",
+          "repair_sha256": "8d9c97c9ba0018dde70393bb231eb55e1737ba9d2e712c233c74b8df695fbec0"
         },
         {
           "parent_key": "published:cinevibe",
@@ -1371,19 +1385,11 @@
           "reason": "safety_gate:no_playable_proof",
           "streams_returned": 0,
           "streams_playable": 0,
-          "runtime_errors": 2,
+          "runtime_errors": 1,
           "malformed_requests": 0,
           "error_summary": [
             {
-              "fixture": "Spirited Away",
-              "failure_class": "network_unreachable",
-              "name": "ProviderTimeoutError",
-              "code": "NUVIO_PROVIDER_TIMEOUT",
-              "message": "provider exceeded 50000 ms",
-              "phase": "worker_process"
-            },
-            {
-              "fixture": "One Piece Film: Red",
+              "fixture": "Attack on Titan S01E01",
               "failure_class": "network_unreachable",
               "name": "ProviderTimeoutError",
               "code": "NUVIO_PROVIDER_TIMEOUT",
@@ -1396,8 +1402,8 @@
             "reachable": 0,
             "blocked": 0,
             "degraded": 0,
-            "no_streams": 1,
-            "provider_unreachable": 2,
+            "no_streams": 2,
+            "provider_unreachable": 1,
             "runtime_error": 0,
             "unavailable": 0,
             "excluded": 0
@@ -1888,25 +1894,15 @@
           "parent_key": "aio:goated",
           "repair_key": "aio:goated::repair:r1:adaptive_runtime_recovery:26d94a4a",
           "profile": "",
-          "status": "blocked",
-          "score": 10,
+          "status": "provider_unreachable",
+          "score": 0,
           "reason": "safety_gate:no_playable_proof",
           "streams_returned": 0,
           "streams_playable": 0,
           "runtime_errors": 0,
           "malformed_requests": 0,
           "error_summary": [],
-          "fixture_status_counts": {
-            "healthy": 0,
-            "reachable": 0,
-            "blocked": 3,
-            "degraded": 0,
-            "no_streams": 0,
-            "provider_unreachable": 0,
-            "runtime_error": 0,
-            "unavailable": 0,
-            "excluded": 0
-          }
+          "fixture_status_counts": {}
         },
         {
           "parent_key": "aio:hdhub4u",
@@ -2318,6 +2314,55 @@
           }
         },
         {
+          "parent_key": "yoru:videasy",
+          "repair_key": "yoru:videasy::repair:r1:adaptive_runtime_recovery:d4a4b482",
+          "profile": "",
+          "status": "provider_unreachable",
+          "score": 0,
+          "reason": "safety_gate:no_playable_proof",
+          "streams_returned": 0,
+          "streams_playable": 0,
+          "runtime_errors": 3,
+          "malformed_requests": 0,
+          "error_summary": [
+            {
+              "fixture": "The Dark Knight",
+              "failure_class": "network_unreachable",
+              "name": "ProviderTimeoutError",
+              "code": "NUVIO_PROVIDER_TIMEOUT",
+              "message": "provider exceeded 50000 ms",
+              "phase": "worker_process"
+            },
+            {
+              "fixture": "Better Call Saul S01E01",
+              "failure_class": "network_unreachable",
+              "name": "ProviderTimeoutError",
+              "code": "NUVIO_PROVIDER_TIMEOUT",
+              "message": "provider exceeded 50000 ms",
+              "phase": "worker_process"
+            },
+            {
+              "fixture": "Les Gardiens de la Galaxie : Volume 3",
+              "failure_class": "network_unreachable",
+              "name": "ProviderTimeoutError",
+              "code": "NUVIO_PROVIDER_TIMEOUT",
+              "message": "provider exceeded 50000 ms",
+              "phase": "worker_process"
+            }
+          ],
+          "fixture_status_counts": {
+            "healthy": 0,
+            "reachable": 0,
+            "blocked": 0,
+            "degraded": 0,
+            "no_streams": 0,
+            "provider_unreachable": 3,
+            "runtime_error": 0,
+            "unavailable": 0,
+            "excluded": 0
+          }
+        },
+        {
           "parent_key": "yoru:vidnest",
           "repair_key": "yoru:vidnest::repair:r1:adaptive_runtime_recovery:3a543adb",
           "profile": "",
@@ -2807,19 +2852,11 @@
           "reason": "safety_gate:no_playable_proof",
           "streams_returned": 0,
           "streams_playable": 0,
-          "runtime_errors": 2,
+          "runtime_errors": 1,
           "malformed_requests": 0,
           "error_summary": [
             {
-              "fixture": "Spirited Away",
-              "failure_class": "network_unreachable",
-              "name": "ProviderTimeoutError",
-              "code": "NUVIO_PROVIDER_TIMEOUT",
-              "message": "provider exceeded 50000 ms",
-              "phase": "worker_process"
-            },
-            {
-              "fixture": "One Piece Film: Red",
+              "fixture": "Attack on Titan S01E01",
               "failure_class": "network_unreachable",
               "name": "ProviderTimeoutError",
               "code": "NUVIO_PROVIDER_TIMEOUT",
@@ -2832,8 +2869,8 @@
             "reachable": 0,
             "blocked": 0,
             "degraded": 0,
-            "no_streams": 1,
-            "provider_unreachable": 2,
+            "no_streams": 2,
+            "provider_unreachable": 1,
             "runtime_error": 0,
             "unavailable": 0,
             "excluded": 0
@@ -3032,30 +3069,6 @@
           }
         },
         {
-          "parent_key": "published:cinefreak",
-          "repair_key": "published:cinefreak::repair:r1:adaptive_runtime_recovery:8d9c97c9",
-          "profile": "",
-          "status": "no_streams",
-          "score": 10,
-          "reason": "safety_gate:no_playable_proof",
-          "streams_returned": 0,
-          "streams_playable": 0,
-          "runtime_errors": 0,
-          "malformed_requests": 0,
-          "error_summary": [],
-          "fixture_status_counts": {
-            "healthy": 0,
-            "reachable": 0,
-            "blocked": 0,
-            "degraded": 0,
-            "no_streams": 3,
-            "provider_unreachable": 0,
-            "runtime_error": 0,
-            "unavailable": 0,
-            "excluded": 0
-          }
-        },
-        {
           "parent_key": "published:allanime",
           "repair_key": "published:allanime::repair:r1:adaptive_runtime_recovery:43b50fea",
           "profile": "",
@@ -3082,6 +3095,30 @@
         {
           "parent_key": "published:animeworld",
           "repair_key": "published:animeworld::repair:r1:adaptive_runtime_recovery:df7c96ac",
+          "profile": "",
+          "status": "no_streams",
+          "score": 10,
+          "reason": "safety_gate:no_playable_proof",
+          "streams_returned": 0,
+          "streams_playable": 0,
+          "runtime_errors": 0,
+          "malformed_requests": 0,
+          "error_summary": [],
+          "fixture_status_counts": {
+            "healthy": 0,
+            "reachable": 0,
+            "blocked": 0,
+            "degraded": 0,
+            "no_streams": 3,
+            "provider_unreachable": 0,
+            "runtime_error": 0,
+            "unavailable": 0,
+            "excluded": 0
+          }
+        },
+        {
+          "parent_key": "published:cinefreak",
+          "repair_key": "published:cinefreak::repair:r1:adaptive_runtime_recovery:8d9c97c9",
           "profile": "",
           "status": "no_streams",
           "score": 10,
@@ -3154,18 +3191,18 @@
       ]
     }
   ],
-  "completed_at": "2026-08-17T02:17:13.283507+00:00",
+  "completed_at": "2026-08-17T06:51:29.854318+00:00",
   "accepted_repairs": 0,
   "persisted_runtime_profiles": [],
   "final_counts": {
     "healthy": 39,
     "reachable": 0,
-    "blocked": 48,
+    "blocked": 47,
     "degraded": 7,
-    "no_streams": 61,
-    "provider_unreachable": 28,
-    "runtime_error": 0,
-    "unavailable": 17,
+    "no_streams": 60,
+    "provider_unreachable": 32,
+    "runtime_error": 1,
+    "unavailable": 14,
     "excluded": 1
   },
   "validation_mode": "quick",
@@ -3470,14 +3507,13 @@
       },
       "aio:desiflix": {
         "providerId": "desiflix",
-        "failureClass": "not_invoked",
+        "failureClass": "runtime_contract_drift",
         "brainVersion": 3,
-        "signature": "271a63ca045b7efe495d5229",
+        "signature": "825995e5b672db8d26ea0228",
         "action": "probe-targeted-repair",
         "exitReason": null,
         "hypotheses": [
-          "inspect-runtime-call-contract",
-          "probe-provider-entrypoint"
+          "reaudit-device-adapter"
         ],
         "allowedProfiles": [],
         "plannerErrorClass": null
@@ -4120,18 +4156,17 @@
       },
       "gowaru:animoflix": {
         "providerId": "animoflix",
-        "failureClass": "search_gap",
+        "failureClass": "transport_blocked",
         "brainVersion": 3,
-        "signature": "a5acf1ae6fc3078e15bcfc89",
+        "signature": "407798151f15452ec1ccd098",
         "action": "probe-targeted-repair",
         "exitReason": null,
         "hypotheses": [
-          "rediscover-search-route",
-          "repair-search-parser"
+          "bootstrap-session",
+          "alternate-official-route"
         ],
         "allowedProfiles": [
-          "adaptive_runtime_recovery",
-          "dle_html_search_recovery"
+          "adaptive_runtime_recovery"
         ],
         "plannerErrorClass": null
       },
@@ -4519,15 +4554,18 @@
       },
       "published:anime-sama": {
         "providerId": "anime-sama",
-        "failureClass": "unknown_failure",
+        "failureClass": "playback_context_gap",
         "brainVersion": 3,
-        "signature": "5c839fd0abf2244d9aa0190d",
-        "action": "collect-more-evidence",
+        "signature": "c626ad91a7570fbf5b4e2921",
+        "action": "probe-targeted-repair",
         "exitReason": null,
         "hypotheses": [
-          "collect-missing-evidence"
+          "preserve-playback-context",
+          "refresh-media-token"
         ],
-        "allowedProfiles": [],
+        "allowedProfiles": [
+          "adaptive_runtime_recovery"
+        ],
         "plannerErrorClass": null
       },
       "published:anime-ultime": {
@@ -4684,18 +4722,17 @@
       },
       "published:animoflix": {
         "providerId": "animoflix",
-        "failureClass": "search_gap",
+        "failureClass": "transport_blocked",
         "brainVersion": 3,
-        "signature": "a5acf1ae6fc3078e15bcfc89",
+        "signature": "407798151f15452ec1ccd098",
         "action": "probe-targeted-repair",
         "exitReason": null,
         "hypotheses": [
-          "rediscover-search-route",
-          "repair-search-parser"
+          "bootstrap-session",
+          "alternate-official-route"
         ],
         "allowedProfiles": [
-          "adaptive_runtime_recovery",
-          "dle_html_search_recovery"
+          "adaptive_runtime_recovery"
         ],
         "plannerErrorClass": null
       },
@@ -5031,17 +5068,18 @@
       },
       "published:hdhub4u": {
         "providerId": "hdhub4u",
-        "failureClass": "transport_blocked",
+        "failureClass": "search_gap",
         "brainVersion": 3,
-        "signature": "407798151f15452ec1ccd098",
+        "signature": "a5acf1ae6fc3078e15bcfc89",
         "action": "probe-targeted-repair",
         "exitReason": null,
         "hypotheses": [
-          "bootstrap-session",
-          "alternate-official-route"
+          "rediscover-search-route",
+          "repair-search-parser"
         ],
         "allowedProfiles": [
-          "adaptive_runtime_recovery"
+          "adaptive_runtime_recovery",
+          "dle_html_search_recovery"
         ],
         "plannerErrorClass": null
       },
@@ -6105,15 +6143,19 @@
       },
       "yoru:videasy": {
         "providerId": "videasy",
-        "failureClass": "unknown_failure",
+        "failureClass": "search_gap",
         "brainVersion": 3,
-        "signature": "5c839fd0abf2244d9aa0190d",
-        "action": "collect-more-evidence",
+        "signature": "a5acf1ae6fc3078e15bcfc89",
+        "action": "probe-targeted-repair",
         "exitReason": null,
         "hypotheses": [
-          "collect-missing-evidence"
+          "rediscover-search-route",
+          "repair-search-parser"
         ],
-        "allowedProfiles": [],
+        "allowedProfiles": [
+          "adaptive_runtime_recovery",
+          "dle_html_search_recovery"
+        ],
         "plannerErrorClass": null
       },
       "yoru:vidlink": {
@@ -6200,7 +6242,7 @@
       "1shows": {
         "mutationCount": 2,
         "generatedBytes": 74465,
-        "elapsedMs": 333934,
+        "elapsedMs": 320599,
         "signatureCounts": {
           "a5acf1ae6fc3078e15bcfc89": 2
         }
@@ -6208,19 +6250,19 @@
       "4khdhub": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 333983,
+        "elapsedMs": 320648,
         "signatureCounts": {}
       },
       "4khdhubnew": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 325829,
+        "elapsedMs": 311992,
         "signatureCounts": {}
       },
       "allanime": {
         "mutationCount": 2,
         "generatedBytes": 65476,
-        "elapsedMs": 334029,
+        "elapsedMs": 320699,
         "signatureCounts": {
           "a5acf1ae6fc3078e15bcfc89": 2
         }
@@ -6228,7 +6270,7 @@
       "allmovieland": {
         "mutationCount": 2,
         "generatedBytes": 37692,
-        "elapsedMs": 333460,
+        "elapsedMs": 320113,
         "signatureCounts": {
           "407798151f15452ec1ccd098": 2
         }
@@ -6236,31 +6278,31 @@
       "allwish": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 333887,
+        "elapsedMs": 320551,
         "signatureCounts": {}
       },
       "anidb": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 333744,
+        "elapsedMs": 320407,
         "signatureCounts": {}
       },
       "anikototv": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 333793,
+        "elapsedMs": 320454,
         "signatureCounts": {}
       },
       "anime-sama": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 335068,
+        "elapsedMs": 321801,
         "signatureCounts": {}
       },
       "anime-ultime": {
         "mutationCount": 2,
         "generatedBytes": 38208,
-        "elapsedMs": 335114,
+        "elapsedMs": 321854,
         "signatureCounts": {
           "ac5f8426938872bee42dae1d": 2
         }
@@ -6268,13 +6310,13 @@
       "animekai": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 333841,
+        "elapsedMs": 320502,
         "signatureCounts": {}
       },
       "animepahe": {
         "mutationCount": 2,
         "generatedBytes": 37843,
-        "elapsedMs": 333698,
+        "elapsedMs": 320356,
         "signatureCounts": {
           "ac5f8426938872bee42dae1d": 2
         }
@@ -6282,19 +6324,19 @@
       "animesalt": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 333652,
+        "elapsedMs": 320307,
         "signatureCounts": {}
       },
       "animesama-co": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 335021,
+        "elapsedMs": 321752,
         "signatureCounts": {}
       },
       "animesultra": {
         "mutationCount": 2,
         "generatedBytes": 38199,
-        "elapsedMs": 334975,
+        "elapsedMs": 321702,
         "signatureCounts": {
           "407798151f15452ec1ccd098": 2
         }
@@ -6302,7 +6344,7 @@
       "animetsu": {
         "mutationCount": 2,
         "generatedBytes": 37801,
-        "elapsedMs": 333605,
+        "elapsedMs": 320258,
         "signatureCounts": {
           "a5acf1ae6fc3078e15bcfc89": 2
         }
@@ -6310,7 +6352,7 @@
       "animevostfr": {
         "mutationCount": 2,
         "generatedBytes": 38205,
-        "elapsedMs": 334930,
+        "elapsedMs": 321653,
         "signatureCounts": {
           "a5acf1ae6fc3078e15bcfc89": 2
         }
@@ -6318,7 +6360,7 @@
       "animeworld": {
         "mutationCount": 2,
         "generatedBytes": 37811,
-        "elapsedMs": 333558,
+        "elapsedMs": 320208,
         "signatureCounts": {
           "a5acf1ae6fc3078e15bcfc89": 1,
           "ac5f8426938872bee42dae1d": 1
@@ -6327,21 +6369,21 @@
       "animezey": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 333411,
+        "elapsedMs": 320065,
         "signatureCounts": {}
       },
       "animoflix": {
         "mutationCount": 2,
         "generatedBytes": 38177,
-        "elapsedMs": 334877,
+        "elapsedMs": 321604,
         "signatureCounts": {
-          "a5acf1ae6fc3078e15bcfc89": 2
+          "407798151f15452ec1ccd098": 2
         }
       },
       "anizone": {
         "mutationCount": 2,
         "generatedBytes": 37781,
-        "elapsedMs": 329998,
+        "elapsedMs": 316446,
         "signatureCounts": {
           "407798151f15452ec1ccd098": 2
         }
@@ -6349,19 +6391,19 @@
       "castle": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 333315,
+        "elapsedMs": 319968,
         "signatureCounts": {}
       },
       "cineby": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 333266,
+        "elapsedMs": 319917,
         "signatureCounts": {}
       },
       "cinefreak": {
         "mutationCount": 2,
         "generatedBytes": 74416,
-        "elapsedMs": 333218,
+        "elapsedMs": 319868,
         "signatureCounts": {
           "407798151f15452ec1ccd098": 1,
           "a5acf1ae6fc3078e15bcfc89": 1
@@ -6370,19 +6412,19 @@
       "cinemacity": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 333121,
+        "elapsedMs": 319766,
         "signatureCounts": {}
       },
       "cinemm": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 328881,
+        "elapsedMs": 315186,
         "signatureCounts": {}
       },
       "cinevibe": {
         "mutationCount": 2,
         "generatedBytes": 37662,
-        "elapsedMs": 330569,
+        "elapsedMs": 317050,
         "signatureCounts": {
           "407798151f15452ec1ccd098": 2
         }
@@ -6390,7 +6432,7 @@
       "coflix": {
         "mutationCount": 2,
         "generatedBytes": 38002,
-        "elapsedMs": 334830,
+        "elapsedMs": 321554,
         "signatureCounts": {
           "407798151f15452ec1ccd098": 1,
           "ac5f8426938872bee42dae1d": 1
@@ -6399,7 +6441,7 @@
       "ctgmovies": {
         "mutationCount": 2,
         "generatedBytes": 37754,
-        "elapsedMs": 333073,
+        "elapsedMs": 319716,
         "signatureCounts": {
           "a5acf1ae6fc3078e15bcfc89": 2
         }
@@ -6407,19 +6449,19 @@
       "desiflix": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 333364,
+        "elapsedMs": 320017,
         "signatureCounts": {}
       },
       "dooflix": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 333026,
+        "elapsedMs": 319667,
         "signatureCounts": {}
       },
       "dulourd": {
         "mutationCount": 2,
         "generatedBytes": 38222,
-        "elapsedMs": 334785,
+        "elapsedMs": 321505,
         "signatureCounts": {
           "9c5002c2f25fce9cea8338b6": 2
         }
@@ -6427,13 +6469,13 @@
       "dvdplay": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 330885,
+        "elapsedMs": 317393,
         "signatureCounts": {}
       },
       "einthusan": {
         "mutationCount": 2,
         "generatedBytes": 37810,
-        "elapsedMs": 332977,
+        "elapsedMs": 319615,
         "signatureCounts": {
           "a5acf1ae6fc3078e15bcfc89": 2
         }
@@ -6441,25 +6483,25 @@
       "fibwatch": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 332928,
+        "elapsedMs": 319563,
         "signatureCounts": {}
       },
       "flemmix": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 334740,
+        "elapsedMs": 321456,
         "signatureCounts": {}
       },
       "french-manga": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 334694,
+        "elapsedMs": 321405,
         "signatureCounts": {}
       },
       "frenchstream": {
         "mutationCount": 2,
         "generatedBytes": 49805,
-        "elapsedMs": 334596,
+        "elapsedMs": 321307,
         "signatureCounts": {
           "324ebdec180c9bda40b3a2b7": 2
         }
@@ -6467,13 +6509,13 @@
       "goatapi": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 325783,
+        "elapsedMs": 311942,
         "signatureCounts": {}
       },
       "goated": {
         "mutationCount": 2,
         "generatedBytes": 37720,
-        "elapsedMs": 332880,
+        "elapsedMs": 319512,
         "signatureCounts": {
           "a5acf1ae6fc3078e15bcfc89": 2
         }
@@ -6481,19 +6523,19 @@
       "gramcinema": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 332820,
+        "elapsedMs": 319436,
         "signatureCounts": {}
       },
       "hdghartv": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 332774,
+        "elapsedMs": 319387,
         "signatureCounts": {}
       },
       "hdhub4u": {
         "mutationCount": 2,
         "generatedBytes": 37735,
-        "elapsedMs": 332727,
+        "elapsedMs": 319338,
         "signatureCounts": {
           "407798151f15452ec1ccd098": 2
         }
@@ -6501,49 +6543,49 @@
       "hianime": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 332681,
+        "elapsedMs": 319288,
         "signatureCounts": {}
       },
       "hindmoviez": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 332635,
+        "elapsedMs": 319240,
         "signatureCounts": {}
       },
       "kisskh": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 331305,
+        "elapsedMs": 317834,
         "signatureCounts": {}
       },
       "kurage": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 332589,
+        "elapsedMs": 319188,
         "signatureCounts": {}
       },
       "mallumv": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 330748,
+        "elapsedMs": 317245,
         "signatureCounts": {}
       },
       "moonflix": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 333171,
+        "elapsedMs": 319816,
         "signatureCounts": {}
       },
       "movieblast": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 332498,
+        "elapsedMs": 319088,
         "signatureCounts": {}
       },
       "moviebox": {
         "mutationCount": 2,
         "generatedBytes": 37630,
-        "elapsedMs": 332543,
+        "elapsedMs": 319138,
         "signatureCounts": {
           "a5acf1ae6fc3078e15bcfc89": 2
         }
@@ -6551,7 +6593,7 @@
       "movies4u": {
         "mutationCount": 2,
         "generatedBytes": 37832,
-        "elapsedMs": 332359,
+        "elapsedMs": 318941,
         "signatureCounts": {
           "a5acf1ae6fc3078e15bcfc89": 2
         }
@@ -6559,7 +6601,7 @@
       "moviesdrive": {
         "mutationCount": 2,
         "generatedBytes": 37730,
-        "elapsedMs": 332453,
+        "elapsedMs": 319039,
         "signatureCounts": {
           "407798151f15452ec1ccd098": 1,
           "a5acf1ae6fc3078e15bcfc89": 1
@@ -6568,13 +6610,13 @@
       "movieshunt": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 332406,
+        "elapsedMs": 318991,
         "signatureCounts": {}
       },
       "moviesmod": {
         "mutationCount": 2,
         "generatedBytes": 37801,
-        "elapsedMs": 331119,
+        "elapsedMs": 317634,
         "signatureCounts": {
           "407798151f15452ec1ccd098": 2
         }
@@ -6582,7 +6624,7 @@
       "movix": {
         "mutationCount": 2,
         "generatedBytes": 38213,
-        "elapsedMs": 334545,
+        "elapsedMs": 321255,
         "signatureCounts": {
           "ac5f8426938872bee42dae1d": 2
         }
@@ -6590,13 +6632,13 @@
       "mugiwarastream": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 334498,
+        "elapsedMs": 321204,
         "signatureCounts": {}
       },
       "mycima": {
         "mutationCount": 2,
         "generatedBytes": 37704,
-        "elapsedMs": 330191,
+        "elapsedMs": 316652,
         "signatureCounts": {
           "ac5f8426938872bee42dae1d": 2
         }
@@ -6604,7 +6646,7 @@
       "nakios": {
         "mutationCount": 2,
         "generatedBytes": 37728,
-        "elapsedMs": 334262,
+        "elapsedMs": 320947,
         "signatureCounts": {
           "324ebdec180c9bda40b3a2b7": 2
         }
@@ -6612,7 +6654,7 @@
       "netmirror": {
         "mutationCount": 2,
         "generatedBytes": 37618,
-        "elapsedMs": 332214,
+        "elapsedMs": 318795,
         "signatureCounts": {
           "a5acf1ae6fc3078e15bcfc89": 2
         }
@@ -6620,43 +6662,43 @@
       "onlykdrama": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 331355,
+        "elapsedMs": 317883,
         "signatureCounts": {}
       },
       "papadustream": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 334215,
+        "elapsedMs": 320896,
         "signatureCounts": {}
       },
       "peachify": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 332117,
+        "elapsedMs": 318697,
         "signatureCounts": {}
       },
       "persianstremio": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 332164,
+        "elapsedMs": 318748,
         "signatureCounts": {}
       },
       "playimdb": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 332069,
+        "elapsedMs": 318647,
         "signatureCounts": {}
       },
       "purstream": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 332022,
+        "elapsedMs": 318600,
         "signatureCounts": {}
       },
       "sekai": {
         "mutationCount": 1,
         "generatedBytes": 67496,
-        "elapsedMs": 334452,
+        "elapsedMs": 321153,
         "signatureCounts": {
           "da071a0af07e1fa5b3910968": 1
         }
@@ -6664,25 +6706,25 @@
       "showbox": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 331974,
+        "elapsedMs": 318550,
         "signatureCounts": {}
       },
       "streamflix": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 331028,
+        "elapsedMs": 317538,
         "signatureCounts": {}
       },
       "streamzo": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 334122,
+        "elapsedMs": 320798,
         "signatureCounts": {}
       },
       "toflix": {
         "mutationCount": 1,
         "generatedBytes": 48511,
-        "elapsedMs": 327437,
+        "elapsedMs": 313720,
         "signatureCounts": {
           "324ebdec180c9bda40b3a2b7": 1
         }
@@ -6690,37 +6732,39 @@
       "topcartoons": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 331927,
+        "elapsedMs": 318498,
         "signatureCounts": {}
       },
       "uhdmovies": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 331835,
+        "elapsedMs": 318401,
         "signatureCounts": {}
       },
       "vegamovies": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 331786,
+        "elapsedMs": 318351,
         "signatureCounts": {}
       },
       "videasy": {
-        "mutationCount": 0,
-        "generatedBytes": 0,
-        "elapsedMs": 331689,
-        "signatureCounts": {}
+        "mutationCount": 1,
+        "generatedBytes": 18942,
+        "elapsedMs": 318251,
+        "signatureCounts": {
+          "a5acf1ae6fc3078e15bcfc89": 1
+        }
       },
       "vidfast": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 331545,
+        "elapsedMs": 318104,
         "signatureCounts": {}
       },
       "vidlink": {
         "mutationCount": 2,
         "generatedBytes": 37662,
-        "elapsedMs": 331740,
+        "elapsedMs": 318301,
         "signatureCounts": {
           "a5acf1ae6fc3078e15bcfc89": 2
         }
@@ -6728,7 +6772,7 @@
       "vidlove": {
         "mutationCount": 2,
         "generatedBytes": 37812,
-        "elapsedMs": 331498,
+        "elapsedMs": 318047,
         "signatureCounts": {
           "407798151f15452ec1ccd098": 2
         }
@@ -6736,7 +6780,7 @@
       "vidnest": {
         "mutationCount": 2,
         "generatedBytes": 37946,
-        "elapsedMs": 330660,
+        "elapsedMs": 317147,
         "signatureCounts": {
           "a5acf1ae6fc3078e15bcfc89": 2
         }
@@ -6744,13 +6788,13 @@
       "vidnest-anime": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 330615,
+        "elapsedMs": 317099,
         "signatureCounts": {}
       },
       "vidrock": {
         "mutationCount": 1,
         "generatedBytes": 18836,
-        "elapsedMs": 331882,
+        "elapsedMs": 318449,
         "signatureCounts": {
           "407798151f15452ec1ccd098": 1
         }
@@ -6758,7 +6802,7 @@
       "vidsrc": {
         "mutationCount": 2,
         "generatedBytes": 74459,
-        "elapsedMs": 331643,
+        "elapsedMs": 318202,
         "signatureCounts": {
           "a5acf1ae6fc3078e15bcfc89": 2
         }
@@ -6766,7 +6810,7 @@
       "vixsrc": {
         "mutationCount": 1,
         "generatedBytes": 18807,
-        "elapsedMs": 331593,
+        "elapsedMs": 318154,
         "signatureCounts": {
           "a5acf1ae6fc3078e15bcfc89": 1
         }
@@ -6774,13 +6818,13 @@
       "voiranime": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 334403,
+        "elapsedMs": 321102,
         "signatureCounts": {}
       },
       "voiranime-homes": {
         "mutationCount": 2,
         "generatedBytes": 38185,
-        "elapsedMs": 334646,
+        "elapsedMs": 321355,
         "signatureCounts": {
           "407798151f15452ec1ccd098": 2
         }
@@ -6788,7 +6832,7 @@
       "voiranime-rip": {
         "mutationCount": 2,
         "generatedBytes": 38189,
-        "elapsedMs": 334356,
+        "elapsedMs": 321052,
         "signatureCounts": {
           "a5acf1ae6fc3078e15bcfc89": 2
         }
@@ -6796,7 +6840,7 @@
       "vostfree": {
         "mutationCount": 2,
         "generatedBytes": 38335,
-        "elapsedMs": 334309,
+        "elapsedMs": 321001,
         "signatureCounts": {
           "407798151f15452ec1ccd098": 2
         }
@@ -6804,7 +6848,7 @@
       "waveanime": {
         "mutationCount": 2,
         "generatedBytes": 37665,
-        "elapsedMs": 334075,
+        "elapsedMs": 320748,
         "signatureCounts": {
           "407798151f15452ec1ccd098": 2
         }
@@ -6812,7 +6856,7 @@
       "wookafr": {
         "mutationCount": 2,
         "generatedBytes": 30716,
-        "elapsedMs": 334168,
+        "elapsedMs": 320847,
         "signatureCounts": {
           "a5acf1ae6fc3078e15bcfc89": 2
         }
@@ -6820,7 +6864,7 @@
       "xpass": {
         "mutationCount": 2,
         "generatedBytes": 37670,
-        "elapsedMs": 331451,
+        "elapsedMs": 317983,
         "signatureCounts": {
           "407798151f15452ec1ccd098": 2
         }
@@ -6828,7 +6872,7 @@
       "yflix": {
         "mutationCount": 2,
         "generatedBytes": 37696,
-        "elapsedMs": 330839,
+        "elapsedMs": 317342,
         "signatureCounts": {
           "a5acf1ae6fc3078e15bcfc89": 2
         }
@@ -6836,7 +6880,7 @@
       "zinkmovies": {
         "mutationCount": 2,
         "generatedBytes": 37806,
-        "elapsedMs": 331403,
+        "elapsedMs": 317933,
         "signatureCounts": {
           "407798151f15452ec1ccd098": 2
         }
