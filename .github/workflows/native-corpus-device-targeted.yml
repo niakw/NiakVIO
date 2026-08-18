@@ -13,11 +13,6 @@ on:
           - mobile
           - desktop
           - all
-      target_ref:
-        description: Niakvio ref/SHA to validate
-        required: false
-        default: main
-        type: string
   push:
     branches: [main]
     paths:
@@ -40,19 +35,18 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 8
     outputs:
-      target_sha: ${{ steps.resolve.outputs.target_sha }}
       targets: ${{ steps.resolve.outputs.targets }}
       desktop_sha: ${{ steps.resolve.outputs.desktop_sha }}
       mobile_sha: ${{ steps.resolve.outputs.mobile_sha }}
       tv_sha: ${{ steps.resolve.outputs.tv_sha }}
     steps:
-      - name: Checkout requested Niakvio generation
+      - name: Checkout selected Niakvio generation
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
-          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.target_ref || 'main' }}
           fetch-depth: 1
+          persist-credentials: false
 
-      - name: Resolve exact generation, selected devices and accepted clients
+      - name: Resolve selected devices and accepted clients
         id: resolve
         shell: bash
         env:
@@ -60,13 +54,11 @@ jobs:
           INPUT_DEVICE: ${{ inputs.device }}
         run: |
           set -euo pipefail
-          TARGET_SHA="$(git rev-parse HEAD)"
           if [ "$EVENT_NAME" = "push" ]; then
             DEVICE="tv"
           else
             DEVICE="${INPUT_DEVICE:-tv}"
           fi
-          echo "target_sha=$TARGET_SHA" >> "$GITHUB_OUTPUT"
           DEVICE="$DEVICE" python3 - <<'PY' >> "$GITHUB_OUTPUT"
           import json
           import os
@@ -119,8 +111,9 @@ jobs:
       - name: Checkout exact Niakvio generation
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
-          ref: ${{ needs.resolve.outputs.target_sha }}
+          ref: ${{ github.sha }}
           path: niakvio
+          persist-credentials: false
 
       - name: Set up JDK
         uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165

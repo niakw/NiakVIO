@@ -3,8 +3,8 @@
 
 Only conclusive runtime failures from the fresh platform matrix can add a
 platform block. Zero streams is inconclusive and never creates a block. The
-legacy 5.20.27 Android blocks that were based only on missing proof are removed
-when fresh evidence remains inconclusive. Existing blocks not managed by this
+Android blocks based only on missing proof are removed when fresh evidence
+remains inconclusive. Existing blocks not managed by this
 policy are preserved.
 """
 from __future__ import annotations
@@ -149,8 +149,8 @@ def main() -> int:
             else:
                 # Inconclusive evidence cannot create or remove a previously
                 # conclusive cross-platform block. The one exception is the
-                # legacy Android no-proof policy, whose basis was deliberately
-                # weaker and is retired by this release.
+                # Android no-proof blocks are weaker than conclusive runtime
+                # evidence and are retired once fresh evidence is inconclusive.
                 legacy_weak = token == "android" and provider_id in {
                     str(value).casefold() for value in legacy.get("android_disabled_no_direct_movie_proof") or []
                 } and token not in {

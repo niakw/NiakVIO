@@ -263,7 +263,6 @@ export function createGlobalpingDependencies(preflightConfig, injected = {}) {
             locations: [{ magic: dnsResult.measurement_id }],
             limit: 1,
             // Globalping HTTP options are top-level within measurementOptions.
-            // The previous nested request object was rejected with HTTP 400.
             measurementOptions: { method: 'GET', ipVersion: 4 },
           }, remoteConfig);
           return parseGlobalpingHttp(measurement, host);

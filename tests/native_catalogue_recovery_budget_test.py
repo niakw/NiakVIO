@@ -42,8 +42,8 @@ assert "nativeRecoveryHost()?Math.min(c.budgetMs,30000):c.budgetMs" in patched
 assert patched.count('var TMDB_KEY="8265bd1679663a7ea12ac168da84d2e8";') == 3
 assert module.apply(patched) == patched
 
-# A provider produced by the previous V1 budget revision must upgrade in place,
-# rather than keeping the overly narrow first-two-search policy forever.
+# V1-produced providers must upgrade in place rather than retaining the
+# narrower first-two-search policy.
 legacy = r'''/* NUVIO_GLOBAL_CATALOGUE_ALIAS_RECOVERY_V2:abc */
 ;(function(g,c){"use strict";
 var TMDB_KEY="8265bd1679663a7ea12ac168da84d2e8";function nativeRecoveryHost(){try{return typeof g.__native_fetch==="function"}catch(_){return false}}
