@@ -42,7 +42,7 @@ permissions:
 
 concurrency:
   group: final-native-client-validation-v2-${{ github.ref }}
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   desktop-native-runtime:
