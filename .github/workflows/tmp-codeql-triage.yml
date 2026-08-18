@@ -15,6 +15,9 @@ jobs:
   export:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout triage branch
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+
       - name: Export open CodeQL alerts
         env:
           GH_TOKEN: ${{ github.token }}
@@ -35,3 +38,12 @@ jobs:
                 (.most_recent_instance.location.start_line|tostring),
                 (.most_recent_instance.message.text // .rule.description // "")
               ] | @tsv'
+
+      - name: Find narrative comment candidates
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -RInE \
+            --include='*.py' --include='*.js' --include='*.cjs' --include='*.mjs' --include='*.yml' --include='*.yaml' \
+            '(^|[[:space:]])(#|//|/\*|\*)[^\n]*(Regression:|previously|previous |legacy [0-9]|temporary|formerly|ChatGPT|Copilot|TODO|FIXME|HACK)' \
+            scripts tests engine_v2 .github/workflows || true
