@@ -88,7 +88,7 @@ jobs:
               ref = str((clients.get(key) or {}).get("accepted_ref") or "").strip()
               if len(ref) != 40:
                   raise SystemExit(f"missing accepted_ref for {key}")
-              print(f"{output}={ref")
+              print(f"{output}={ref}")
           PY
 
   native-corpus:
