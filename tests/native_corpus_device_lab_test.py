@@ -43,10 +43,13 @@ actual_slugs = {
 }
 assert actual_slugs == expected_slugs, (actual_slugs, expected_slugs)
 
+# Sinners is the explicit Android reader sentinel. Desktop remains a provider-runtime
+# corpus until it moves from the Linux stub to a macOS/Windows native player runner.
 for slug in sorted(expected_slugs):
-    assert slug in workflow, (slug, "desktop workflow")
     assert slug in mobile_suite, (slug, "mobile suite")
     assert slug in tv_suite, (slug, "tv suite")
+    if slug != "sinners":
+        assert slug in workflow, (slug, "desktop workflow")
 
 for job in (
     "publication-gate:",
@@ -61,7 +64,6 @@ assert workflow.count("runs-on: ubuntu-latest") == 5, workflow.count("runs-on: u
 assert "matrix:" not in workflow
 assert "strategy:" not in workflow
 
-# Each client owns its repository/job. Mobile and TV must never share a clone or emulator job.
 desktop_section = workflow.split("  desktop-native-corpus:", 1)[1].split("  mobile-native-corpus:", 1)[0]
 mobile_section = workflow.split("  mobile-native-corpus:", 1)[1].split("  tv-native-corpus:", 1)[0]
 tv_section = workflow.split("  tv-native-corpus:", 1)[1].split("  native-corpus-engine-summary:", 1)[0]
@@ -89,7 +91,6 @@ for required in (
 ):
     assert required in workflow, required
 
-# A no-op workflow_run on another revision must not cancel a useful push corpus.
 assert "native-corpus-device-lab-${{ github.event_name }}-${{ github.sha }}" in workflow
 assert "workflow_run:" in workflow
 assert "Niakvio provider pipeline" in workflow
@@ -100,7 +101,6 @@ assert "accepted_ref" in workflow
 assert "target_sha" in workflow
 assert '.github/triggers/native-corpus-device-lab' in workflow
 
-# Provider/runtime anomalies are evidence. Only an incomplete corpus is an infrastructure failure.
 assert "FIELD_NATIVE_CORPUS_BEGIN" in prepare_core
 assert "FIELD_NATIVE_CORPUS_END" in prepare_core
 assert "FIELD_NATIVE_ERROR" in prepare_core
@@ -114,7 +114,6 @@ for marker in (
     assert marker in collection_analyzer, marker
 assert "process.exitCode = complete ? 0 : 2" in collection_analyzer
 
-# Kotlin/JUnit assertTrue signatures differ. Preparation and every fixture restage must preserve them.
 desktop_old = 'assertTrue(errors.isEmpty(), "native provider runtime errors:'
 android_old = 'assertTrue("native provider runtime errors:'
 desktop_new = 'assertTrue(providers.isNotEmpty(), "native corpus provider list must not be empty")'
@@ -152,8 +151,6 @@ for required in (
 assert "url64=" not in prepare_core
 assert "headers64=" not in prepare_core
 
-# The official Android reader is now the final proof, and the same generated
-# reader probe must survive fixture restaging. No provider-specific rule belongs here.
 for source, label in ((prepare_client, "prepare"), (restage_client, "restage")):
     assert "player_test" in source, (label, "player test integration")
 for required in (
