@@ -108,6 +108,24 @@ const dirtyPayload = {
       result: { status: "healthy", evidence: { streams_playable: 1 }, tests: [] },
       state: {},
     },
+    {
+      key: "published:reader-broken",
+      candidate: { canonical_id: "reader-broken", metadata: { supportedTypes: ["movie"] } },
+      result: {
+        status: "healthy",
+        evidence: { streams_playable: 3, streams_returned: 3 },
+        tests: [{
+          failure_class: "player_container_unsupported",
+          status: "native_player_failure",
+          error_details: {
+            code: "ERROR_CODE_PARSING_CONTAINER_UNSUPPORTED",
+            message: "native_player exo_code=3003 source_status=206 signature=matroska_ebml mpv_ready=false exo_ready=false playable=false",
+          },
+          network_observations: [{ status: 206, infrastructure: false }],
+        }],
+      },
+      state: {},
+    },
   ],
 };
 const plannerRun = spawnSync(process.execPath, [planner], { input: JSON.stringify(dirtyPayload), encoding: "utf8" });
@@ -117,5 +135,10 @@ assert.equal(plannerOutput.brainVersion, 4);
 assert.equal(plannerOutput.plannerErrors, 0);
 assert.ok(plannerOutput.plans["published:dirty-provider"]);
 assert.equal(plannerOutput.plans["published:healthy-provider"].action, "none");
+const readerPlan = plannerOutput.plans["published:reader-broken"];
+assert.equal(readerPlan.evidenceSource, "official_native_reader");
+assert.equal(readerPlan.failureClass, "player_container_unsupported");
+assert.equal(readerPlan.action, "probe-targeted-repair");
+assert.ok(readerPlan.allowedProfiles.includes("adaptive_runtime_recovery"), readerPlan.allowedProfiles);
 
 console.log("engine v2 repair brain tests passed");
