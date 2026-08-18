@@ -20,6 +20,10 @@ jobs:
           ref: fix/codeql-wrapper-sources
           fetch-depth: 0
 
+      - name: Install pinned dependencies
+        shell: bash
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
       - name: Remove redundant P.A.C.K.E.R key escaping
         shell: bash
         run: |
