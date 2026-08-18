@@ -60,10 +60,9 @@ jobs:
               raise SystemExit(f'refusing bulk dismissal: expected 39 provider snapshot alerts, found {len(rows)}')
 
           comment = (
-              'Vendored/generated provider snapshot. NiakVIO treats provider bundles as untrusted input and '
-              'executes them behind the hardened provider sandbox, network guard and runtime/media validation. '
-              'Repository-owned workflows, scripts/, engine_v2/ and tests have no remaining open CodeQL alert. '
-              'Snapshot/LKG files are not hand-edited because their hashes and provenance must remain immutable.'
+              'Vendored/generated untrusted provider snapshot; not repository-owned logic. '
+              'Runtime sandbox/network/media guards remain mandatory. LKG hashes/provenance are immutable; '
+              'published bundles are regenerated, not hand-edited. See SECURITY.md.'
           )
           for row in rows:
               payload = json.dumps({
