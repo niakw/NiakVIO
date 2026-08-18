@@ -187,13 +187,12 @@ jobs:
           if-no-files-found: error
 
   publish-learning:
-    name: Publish sanitized Brain memory proposal
+    name: Publish sanitized Brain memory branch
     needs: experiment
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
       contents: write
-      pull-requests: write
     steps:
       - name: Checkout trusted production tree only
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
@@ -217,9 +216,7 @@ jobs:
             exit 1
           fi
 
-      - name: Update the single Brain learning proposal branch
-        env:
-          GH_TOKEN: ${{ github.token }}
+      - name: Update the single Brain learning memory branch
         shell: bash
         run: |
           set -euo pipefail
@@ -237,12 +234,6 @@ jobs:
           else
             git commit -m "brain: refresh sandbox repair learning"
             git push --force-with-lease origin HEAD:"$BRANCH"
-          fi
-          EXISTING="$(gh pr list --state open --head "$BRANCH" --base main --json number --jq '.[0].number // empty' || true)"
-          if [ -z "$EXISTING" ]; then
-            gh pr create --base main --head "$BRANCH" --title "Brain learning: sandbox repair evidence" --body "Daily read-only provider sandbox evidence, one-shot historical bootstrap, native-client feedback and sanitized cross-day memory. No provider or manifest is published by this workflow." || true
-          else
-            echo "Updated existing Brain learning PR #$EXISTING"
           fi
 
   publish-repair-proposal:
