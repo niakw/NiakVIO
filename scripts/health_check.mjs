@@ -1134,6 +1134,11 @@ function runWorker(candidate, fixture) {
     const context = { ...executionContextForCandidate(candidate), fixtureMetadata: fixture };
     const child = spawn(process.execPath, [
       `--max-old-space-size=${workerMemoryMb}`,
+      '--permission',
+      `--allow-fs-read=${path.join(ROOT, 'scripts')}`,
+      `--allow-fs-read=${path.join(ROOT, 'node_modules')}`,
+      `--allow-fs-read=${path.join(ROOT, 'package.json')}`,
+      `--allow-fs-read=${STAGE}`,
       WORKER_PATH,
       providerPath,
       JSON.stringify(fixture),
