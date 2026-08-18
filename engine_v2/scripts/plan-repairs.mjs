@@ -249,7 +249,7 @@ function deriveEvidence(candidate, result) {
     return { invoked, request: { mediaType: mediaType === "movie" ? "tv" : mediaType }, stages: { search: { attempted: true, status: 200, matches: 1 }, identity: { attempted: true, matched: true }, detail: { attempted: true, found: true }, episode: { attempted: true, found: false } } };
   }
   if (/player|iframe|embed/.test(failureText)) {
-    return { invoked, request: { mediaType }, stages: { player: { attempted: true, found: false } };
+    return { invoked, request: { mediaType }, stages: { player: { attempted: true, found: false } } };
   }
   if (/media|stream|hls|dash|m3u8|mp4/.test(failureText) && !/no[_ -]?streams?/.test(failureText)) {
     return { invoked, request: { mediaType }, stages: { player: { attempted: true, found: true }, media: { attempted: true, found: false } } };
