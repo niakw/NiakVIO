@@ -5,10 +5,9 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 MARKER = '[Nuvio Runtime Repair] Using fixture title metadata'
-# These providers previously received a bad metadata-context repair. The durable
-# invariant is that the marker never returns and that manifest/provenance/hash
-# describe the exact current published bytes. Hard-coding an old SHA made this
-# regression test reject legitimate repository-wide playback hardening.
+# These published artifacts must never contain the rejected metadata-context
+# marker. Manifest, provenance and hashes must describe the exact current bytes;
+# fixed historical SHAs would incorrectly reject legitimate artifact rotation.
 ROLLBACK_PROVIDERS = {'anime-ultime', 'dulourd', 'waveanime'}
 ALLOWED_SOURCES = {'gowaru', 'published-baseline', 'nuvio'}
 OLD = {

@@ -38,9 +38,7 @@ with tempfile.TemporaryDirectory() as tmp:
 # pending manifest while still being authoritative through the published
 # manifest, LKG or provenance. Validation must never delete such a bundle just
 # because it still contains an old domain; prune owns deletion after all
-# references converge. Regression: Coflix was deleted after strict validation,
-# then the manifest transaction failed because provenance/LKG still referenced
-# the deleted content-addressed bundle.
+# references converge.
 with tempfile.TemporaryDirectory() as tmp:
     root = Path(tmp)
     (root/'providers').mkdir()
@@ -80,9 +78,8 @@ with tempfile.TemporaryDirectory() as tmp:
     assert protected.exists(), 'validator deleted a bundle still protected by the publication transaction'
     assert pending.exists()
 
-# A provider id must not match a longer sibling id while removing stale files.
-# Regression: validating 4khdhub previously deleted 4khdhubnew because the
-# cleanup used the broad glob ``4khdhub*.js``.
+# Stale-file removal must use exact provider-id boundaries so a provider id
+# cannot match a longer sibling id.
 with tempfile.TemporaryDirectory() as tmp:
     root = Path(tmp)
     (root/'providers').mkdir()

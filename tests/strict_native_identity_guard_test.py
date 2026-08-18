@@ -16,8 +16,8 @@ base = "module.exports={getStreams:async function(){return [{title:'TopCartoons 
 patched = module.apply(base, options)
 assert "nativeIdentityReject" in patched
 assert "implementationRevision" in patched
-# Same config must be idempotent, while an implementation-revision upgrade must
-# have stripped the previous V2 block instead of stacking it.
+# Reapplying the same config is idempotent; implementation upgrades replace
+# the existing V2 block instead of stacking another copy.
 assert module.apply(patched, options) == patched
 assert patched.count("NUVIO_GLOBAL_CATALOGUE_ALIAS_RECOVERY_V2:") == 1
 runner = r'''

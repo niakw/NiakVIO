@@ -97,9 +97,8 @@ def manifest_payload_without_version(manifest: dict[str, Any]) -> dict[str, Any]
 def next_manifest_version(current_version: str, base_version: str, changed: bool) -> str:
     """Keep the manifest in the configured version series and bump on payload changes.
 
-    ``base_version`` is a version floor. This prevents an unchanged run from
-    preserving an obsolete series (for example 5.13.x after the repository has
-    moved to 5.14.x).
+    ``base_version`` is a version floor so unchanged runs cannot preserve an
+    obsolete version series.
     """
     def parse(value: str) -> tuple[int, int, int] | None:
         match = re.fullmatch(r"(\d+)\.(\d+)\.(\d+)", str(value or ""))
@@ -2186,8 +2185,8 @@ def main() -> int:
             and not metadata_is_excluded(old_entry, sources)
         ):
             retained = dict(old_entry)
-            # A transient source download failure must not silently disable a
-            # previously published local provider.
+            # A transient source download failure must not disable a published
+            # local provider.
             retained["enabled"] = bool(old_entry.get("enabled", False))
             entries[cid] = retained
             old_provenance = previous_provenance.get("providers", {}).get(cid, {})
