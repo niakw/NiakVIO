@@ -2,10 +2,9 @@
 """Publish conservative cross-platform compatibility decisions.
 
 Only conclusive runtime failures from the fresh platform matrix can add a
-platform block. Zero streams is inconclusive and never creates a block. The
-Android blocks based only on missing proof are removed when fresh evidence
-remains inconclusive. Existing blocks not managed by this
-policy are preserved.
+platform block. Zero streams is inconclusive and never creates a block. Android
+blocks based only on missing proof are removed when fresh evidence remains
+inconclusive. Existing blocks not managed by this policy are preserved.
 """
 from __future__ import annotations
 
@@ -147,10 +146,9 @@ def main() -> int:
                 desired = False if was_managed else currently_blocked
                 policy_manages = False
             else:
-                # Inconclusive evidence cannot create or remove a previously
-                # conclusive cross-platform block. The one exception is the
-                # Android no-proof blocks are weaker than conclusive runtime
-                # evidence and are retired once fresh evidence is inconclusive.
+                # Inconclusive evidence preserves conclusive cross-platform blocks.
+                # Android no-proof blocks are weaker and are retired once fresh
+                # evidence is inconclusive.
                 legacy_weak = token == "android" and provider_id in {
                     str(value).casefold() for value in legacy.get("android_disabled_no_direct_movie_proof") or []
                 } and token not in {
