@@ -125,8 +125,7 @@ jobs:
 
       - name: Validate release after staged publication
         run: |
-          python scripts/bump_release_patch_if_manifest_changed.py --previous "$RUNNER_TEMP/manifest.before.json" --manifest manifest.json
-          python scripts/sync_release_versions.py --manifest manifest.json
+          python scripts/sync_release_versions.py --manifest manifest.json --previous "$RUNNER_TEMP/manifest.before.json"
           python scripts/validate_vf_projection.py
           npm test
           python scripts/generate_release_hashes.py
