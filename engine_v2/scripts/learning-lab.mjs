@@ -28,11 +28,18 @@ const plans = repair.brain?.plans ?? {};
 const maxMemory = Number(policy.learningLab?.memoryMaxEntries || 1000);
 const repeatedThreshold = Number(policy.learningLab?.maxRepeatedFailedProfile || 2);
 
+const playerProviders = sanitizePlayerProviders(nativeSummary.playerFeedback?.providers);
 const counts = new Map();
 for (const row of Object.values(plans)) {
   const failureClass = String(row?.failureClass ?? 'unknown_failure');
   if (failureClass === 'healthy') continue;
   counts.set(failureClass, (counts.get(failureClass) ?? 0) + 1);
+}
+for (const row of playerProviders) {
+  if (row.failedAttempts <= 0) continue;
+  for (const failureClass of row.failureClasses) {
+    counts.set(failureClass, (counts.get(failureClass) ?? 0) + 1);
+  }
 }
 const trustedByFailure = new Map();
 for (const skill of Object.values(skills)) {
@@ -90,7 +97,7 @@ for (const target of historicalTargets.slice(0, 80)) {
   });
 }
 
-const nativeRepairTargets = (portfolio.providers || [])
+const portfolioRepairTargets = (portfolio.providers || [])
   .filter((item) => item && item.recommendation === 'repair_runtime_or_transport')
   .sort((a, b) => Number(b.score || 0) - Number(a.score || 0))
   .map((row) => String(row.provider || '').toLowerCase()).filter(Boolean).slice(0, 200);
@@ -109,6 +116,24 @@ for (const row of (portfolio.providers || [])
   });
 }
 
+for (const row of playerProviders.filter((item) => item.failedAttempts > 0).slice(0, 120)) {
+  const primary = row.failureClasses[0] || 'player_runtime_gap';
+  proposals.push({
+    type: 'native_player_repair_target',
+    priority: ['media_extraction_gap', 'playback_context_gap', 'player_container_unsupported', 'player_engine_compatibility_gap'].includes(primary) ? 'high' : 'medium',
+    providerId: row.providerId,
+    failureClass: primary,
+    failureClasses: row.failureClasses,
+    failedAttempts: row.failedAttempts,
+    readyAttempts: row.readyAttempts,
+    exoCodeNames: row.exoCodeNames,
+    sourceSignatures: row.sourceSignatures,
+    sourceStatuses: row.sourceStatuses,
+    mpvRecovered: row.mpvRecovered,
+    reason: playerReason(row, primary),
+  });
+}
+
 const unknown = counts.get('unknown_failure') ?? 0;
 if (unknown >= 3) proposals.push({
   type: 'instrumentation_proposal', priority: 'high', target: 'evidence pipeline',
@@ -122,8 +147,10 @@ if (drift > 0) proposals.push({
   proposal: 'Re-audit official Nuvio device contracts and propose a core adapter change; production core remains immutable until reviewed.',
 });
 
+const playerRepairTargets = playerProviders.filter((row) => row.failedAttempts > 0).map((row) => row.providerId);
+const nativeRepairTargets = [...new Set([...portfolioRepairTargets, ...playerRepairTargets])].slice(0, 240);
 const payload = {
-  schemaVersion: 2,
+  schemaVersion: 3,
   generatedAt: new Date().toISOString(),
   brain: policy.identity ?? { name: 'NiakVIO Brain' },
   mode: 'learning_lab',
@@ -142,14 +169,21 @@ const payload = {
     contradictions: Number(nativeSummary.contradictions || 0),
     transportFailures: Number(nativeSummary.transportFailures || 0),
     runtimeErrors: Number(nativeSummary.runtimeErrors || 0),
+    playbackAttempts: Number(nativeSummary.playbackAttempts || nativeSummary.playerFeedback?.attempts || 0),
+    playbackReady: Number(nativeSummary.playbackReady || nativeSummary.playerFeedback?.ready || 0),
+    playbackFailures: Number(nativeSummary.playbackFailures || nativeSummary.playerFeedback?.failures || 0),
+    exoContainerUnsupported: Number(nativeSummary.exoContainerUnsupported || nativeSummary.playerFeedback?.exoContainerUnsupported || 0),
+    mpvOnly: Number(nativeSummary.mpvOnly || nativeSummary.playerFeedback?.mpvOnly || 0),
     repairPriorityProviders: nativeRepairTargets,
+    playerRepairPriorityProviders: playerRepairTargets,
+    playerProviders,
   },
   privacy: 'No raw URLs, tokens, header values, cookies, private notes or spreadsheet text are copied into persistent Brain learning state.',
 };
 
 fs.writeFileSync(path.join(outputDir, 'latest.json'), JSON.stringify(payload, null, 2) + '\n');
 fs.writeFileSync(path.join(outputDir, 'latest.md'), renderMarkdown(payload));
-console.log(`FIELD_BRAIN_LEARNING proposals=${payload.proposals.length} skills=${payload.learnedSkillCount} memory=${payload.experimentMemory.entries.length} historical_high=${Number(payload.historicalTraining.stats?.unresolvedHighPriority || 0)} native_repair=${payload.nativeFeedback.repairPriorityProviders.length}`);
+console.log(`FIELD_BRAIN_LEARNING proposals=${payload.proposals.length} skills=${payload.learnedSkillCount} memory=${payload.experimentMemory.entries.length} historical_high=${Number(payload.historicalTraining.stats?.unresolvedHighPriority || 0)} native_repair=${payload.nativeFeedback.repairPriorityProviders.length} player_repair=${payload.nativeFeedback.playerRepairPriorityProviders.length}`);
 
 function mergeExperimentMemory(previousMemory, report, planMap, limit) {
   const map = new Map();
@@ -212,6 +246,39 @@ function sanitizeMemoryEntry(raw) {
     lastSeenAt: raw.lastSeenAt ? String(raw.lastSeenAt).slice(0, 48) : null,
   };
 }
+function sanitizePlayerProviders(raw) {
+  const rows = Array.isArray(raw) ? raw : [];
+  return rows.map((row) => {
+    if (!isRecord(row)) return null;
+    const providerId = String(row.providerId || '').trim().toLowerCase().replace(/[^a-z0-9_.:-]/g, '').slice(0, 128);
+    if (!providerId) return null;
+    return {
+      providerId,
+      attempts: nonNegative(row.attempts),
+      readyAttempts: nonNegative(row.readyAttempts),
+      failedAttempts: nonNegative(row.failedAttempts),
+      clients: safeStrings(row.clients, 32),
+      fixtures: safeStrings(row.fixtures, 96),
+      failureClasses: safeStrings(row.failureClasses, 96),
+      exoCodes: [...new Set((Array.isArray(row.exoCodes) ? row.exoCodes : []).map(Number).filter(Number.isFinite))].slice(0, 16),
+      exoCodeNames: safeStrings(row.exoCodeNames, 96),
+      sourceSignatures: safeStrings(row.sourceSignatures, 64),
+      sourceStatuses: [...new Set((Array.isArray(row.sourceStatuses) ? row.sourceStatuses : []).map(Number).filter(Number.isFinite))].slice(0, 16),
+      mpvRecovered: row.mpvRecovered === true,
+      playbackReady: row.playbackReady === true,
+    };
+  }).filter(Boolean).slice(0, 240);
+}
+function playerReason(row, failureClass) {
+  if (failureClass === 'player_engine_compatibility_gap') return 'The official client reader proved that ExoPlayer failed while MPV could open at least one source. Repair should test alternate sources from the same provider and prefer cross-engine compatibility instead of guessing headers.';
+  if (failureClass === 'player_container_unsupported') return 'The official client reader reported an unsupported container. Repair should re-resolve the terminal media chain and test alternate sources before changing headers or codecs.';
+  if (failureClass === 'media_extraction_gap') return 'The official reader evidence indicates that the provider output is not terminal media. Repair the detail/embed/player extraction chain before treating the stream as playable.';
+  if (failureClass === 'playback_context_gap') return 'The official reader evidence indicates a blocked playback request. Preserve the scoped Referer/Origin/cookies/session from the provider player chain.';
+  return `Official reader evidence classified this provider as ${failureClass}; use that causal evidence before the next mutation.`;
+}
+function safeStrings(values, limit) {
+  return [...new Set((Array.isArray(values) ? values : []).map((value) => String(value || '').replace(/[^A-Za-z0-9_.:-]/g, '').slice(0, limit)).filter(Boolean))].slice(0, 40);
+}
 function memoryKey(row) { return `${row.providerId}::${row.providerVersion || '*'}::${row.signature}::${row.profile}`; }
 function providerFromKey(value) { const raw = String(value || '').split('::', 1)[0]; const parts = raw.split(':'); return parts.length > 1 ? parts.slice(1).join(':') : raw; }
 function sanitizeReason(value) { return String(value || '').replace(/https?:\/\/\S+/gi, '<url>').replace(/(?:(?:token|authorization|cookie|secret)\s*[:=]\s*)\S+/gi, 'credential=<redacted>').replace(/\s+/g, ' ').trim().slice(0, 240); }
@@ -224,7 +291,7 @@ function dedupeProposals(rows) {
     if (seen.has(key)) continue;
     seen.add(key); out.push(row);
   }
-  return out.slice(0, 300);
+  return out.slice(0, 400);
 }
 function renderMarkdown(data) {
   const lines = [
@@ -234,7 +301,10 @@ function renderMarkdown(data) {
     `Learned skills observed: **${data.learnedSkillCount}**`,
     `Negative-memory entries: **${data.experimentMemory.entries.length}**`,
     `Historical high/critical unresolved: **${Number(data.historicalTraining.stats?.unresolvedHighPriority || 0)}**`,
-    `Native repair-priority providers: **${data.nativeFeedback.repairPriorityProviders.length}**`, '',
+    `Native repair-priority providers: **${data.nativeFeedback.repairPriorityProviders.length}**`,
+    `Native reader failures: **${data.nativeFeedback.playbackFailures}**`,
+    `Exo container-unsupported observations: **${data.nativeFeedback.exoContainerUnsupported}**`,
+    `MPV-only recoveries: **${data.nativeFeedback.mpvOnly}**`, '',
     '## Highest-priority proposals', '',
   ];
   const ordered = [...data.proposals].sort((a, b) => priorityScore(b.priority) - priorityScore(a.priority));
@@ -249,11 +319,17 @@ function renderMarkdown(data) {
     if (proposal.proposedSkill) lines.push('', `Candidate composition: \`${proposal.proposedSkill.compose.join(' → ')}\``);
     lines.push('');
   });
-  lines.push('## Privacy', '', data.privacy, '');
-  return lines.join('\n');
+  return lines.join('\n').trimEnd() + '\n';
 }
-function isRecord(value) { return Boolean(value) && typeof value === 'object' && !Array.isArray(value); }
-function arg(name) { const i = args.indexOf(name); return i >= 0 ? args[i + 1] : null; }
-function optionalArg(name) { const value = arg(name); return value ? path.resolve(value) : null; }
-function resolveArg(name, fallback) { return path.resolve(arg(name) || fallback); }
-function readJson(file, fallback) { try { return JSON.parse(fs.readFileSync(file, 'utf8')); } catch { return fallback; } }
+function readJson(file, fallback) {
+  try { return JSON.parse(fs.readFileSync(file, 'utf8')); } catch { return fallback; }
+}
+function resolveArg(name, fallback) {
+  const value = optionalArg(name);
+  return path.resolve(value || fallback);
+}
+function optionalArg(name) {
+  const index = args.indexOf(name);
+  return index >= 0 && args[index + 1] ? args[index + 1] : null;
+}
+function isRecord(value) { return value && typeof value === 'object' && !Array.isArray(value); }
