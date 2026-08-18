@@ -1,0 +1,86 @@
+name: CodeQL wrapper source hardening once
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/codeql-wrapper-source-fix-main-once.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  harden:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Remove redundant P.A.C.K.E.R key escaping
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          paths = [
+              Path('scripts/provider_patches/adaptive_runtime_recovery_v4.py'),
+              Path('scripts/provider_patches/nuvio_tv_direct_media.py'),
+              Path('scripts/provider_patches/nuvio_tv_direct_media_v2.py'),
+          ]
+          needle = 'key(i).replace('
+          for path in paths:
+              text = path.read_text(encoding='utf-8')
+              start = text.find(needle)
+              if start < 0:
+                  raise SystemExit(f'{path}: packer key replacement not found')
+              if text.find(needle, start + len(needle)) >= 0:
+                  raise SystemExit(f'{path}: multiple packer key replacements')
+              end = text.find(')+"', start)
+              if end < 0:
+                  raise SystemExit(f'{path}: packer key replacement terminator not found')
+              before = text[start:end + 1]
+              if '/g,' not in before or '$&' not in before:
+                  raise SystemExit(f'{path}: unexpected packer replacement shape')
+              text = text[:start] + 'key(i)' + text[end + 1:]
+              path.write_text(text, encoding='utf-8')
+              print(f'FIELD_CODEQL_WRAPPER_SOURCE_FIXED path={path}')
+          PY
+
+      - name: Verify affected generators
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 tests/adaptive_runtime_repair_test.py
+          python3 tests/override_net_noop_regression_test.py
+          python3 tests/streamzo_target_media_profile_test.py
+          python3 tests/french_manga_target_media_profile_test.py
+          python3 tests/vf_recovery_profiles_test.py
+          git diff --check
+
+      - name: Run deterministic repository tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm test
+
+      - name: Commit verified generator hardening
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "niakvio-security"
+          git config user.email "actions@users.noreply.github.com"
+          git add \
+            scripts/provider_patches/adaptive_runtime_recovery_v4.py \
+            scripts/provider_patches/nuvio_tv_direct_media.py \
+            scripts/provider_patches/nuvio_tv_direct_media_v2.py
+          if git diff --cached --quiet; then
+            echo "No wrapper source change required."
+            exit 0
+          fi
+          git commit -m "security: remove redundant packer regex sanitization"
+          git push origin HEAD:main
