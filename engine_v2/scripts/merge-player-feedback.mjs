@@ -59,6 +59,7 @@ state.playerFeedback = {
   repairPriorityProviders: sanitized
     .filter((row) => !row.exoReady && row.state !== 'empty')
     .map((row) => row.providerId),
+  providers: sanitized,
 };
 state.unresolvedFailureCounts = mergeCounts(state.unresolvedFailureCounts, counts);
 state.privacy = 'No raw URLs, tokens, header values, cookies, private notes or spreadsheet text are copied into persistent Brain learning state.';
