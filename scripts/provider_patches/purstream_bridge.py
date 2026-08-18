@@ -1,9 +1,8 @@
-"""Remove the retired Purstream-to-Movix bridge from previously patched bundles.
+"""Strip repository-owned Purstream-to-Movix bridge wrappers.
 
-Purstream must resolve only through its own native/provider routes. This module
-is intentionally cleanup-only: it never installs a fallback and only removes
-repository-owned legacy bridge wrappers that may still exist in historical
-artifacts.
+Purstream resolves only through its own native/provider routes. This cleanup-only
+patch never installs a fallback and is safe to reapply when no bridge marker is
+present.
 """
 from __future__ import annotations
 
