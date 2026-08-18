@@ -168,10 +168,35 @@ jobs:
           touch nuvio-mobile/local.properties
           python3 niakvio/scripts/prepare_native_corpus_client.py mobile --fixture interstellar --workspace "$GITHUB_WORKSPACE"
           python3 niakvio/scripts/harden_nuvio_mobile_device_test.py "$GITHUB_WORKSPACE/nuvio-mobile"
+      - name: Set up Gradle cache
+        uses: gradle/actions/setup-gradle@0723195856401067f7a2779048b490ace7a47d7c
       - name: Enable Linux KVM when available
         shell: bash
         run: |
           if [ -e /dev/kvm ]; then sudo chmod 666 /dev/kvm || true; ls -l /dev/kvm || true; fi
+      - name: Restore Mobile AVD snapshot
+        id: avd-cache-mobile
+        uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25
+        with:
+          path: |
+            ~/.android/avd/*
+            ~/.android/adb*
+          key: avd-v1-${{ runner.os }}-mobile-api35-google_apis-x86_64-pixel_2
+      - name: Create Mobile AVD snapshot on cache miss
+        if: steps.avd-cache-mobile.outputs.cache-hit != 'true'
+        uses: ReactiveCircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_2
+          cores: 2
+          ram-size: 2048M
+          force-avd-creation: false
+          emulator-boot-timeout: 600
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
+          disable-animations: false
+          script: echo "Generated clean Mobile AVD snapshot."
       - name: Execute six works across every provider in isolated Mobile emulator
         uses: ReactiveCircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d
         with:
@@ -181,7 +206,9 @@ jobs:
           profile: pixel_2
           cores: 2
           ram-size: 2048M
+          force-avd-creation: false
           emulator-boot-timeout: 600
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
           script: bash "$GITHUB_WORKSPACE/niakvio/scripts/run_native_corpus_mobile_suite.sh"
       - name: Upload sanitized Mobile native corpus logs
         if: always()
@@ -219,20 +246,47 @@ jobs:
           git -C nuvio-tv checkout "$NUVIO_TV_SHA"
           touch nuvio-tv/local.properties nuvio-tv/local.dev.properties
           python3 niakvio/scripts/prepare_native_corpus_client.py tv --fixture interstellar --workspace "$GITHUB_WORKSPACE"
+      - name: Set up Gradle cache
+        uses: gradle/actions/setup-gradle@0723195856401067f7a2779048b490ace7a47d7c
       - name: Enable Linux KVM when available
         shell: bash
         run: |
           if [ -e /dev/kvm ]; then sudo chmod 666 /dev/kvm || true; ls -l /dev/kvm || true; fi
-      - name: Execute six works across every provider in isolated TV emulator
+      - name: Restore TV AVD snapshot
+        id: avd-cache-tv
+        uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25
+        with:
+          path: |
+            ~/.android/avd/*
+            ~/.android/adb*
+          key: avd-v1-${{ runner.os }}-tv-api31-android-tv-x86-tv_1080p
+      - name: Create TV AVD snapshot on cache miss
+        if: steps.avd-cache-tv.outputs.cache-hit != 'true'
         uses: ReactiveCircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d
         with:
-          api-level: 35
-          target: google_apis
-          arch: x86_64
-          profile: pixel_2
+          api-level: 31
+          target: android-tv
+          arch: x86
+          profile: tv_1080p
           cores: 2
           ram-size: 2048M
+          force-avd-creation: false
           emulator-boot-timeout: 600
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
+          disable-animations: false
+          script: echo "Generated clean TV AVD snapshot."
+      - name: Execute six works across every provider in isolated Android TV emulator
+        uses: ReactiveCircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d
+        with:
+          api-level: 31
+          target: android-tv
+          arch: x86
+          profile: tv_1080p
+          cores: 2
+          ram-size: 2048M
+          force-avd-creation: false
+          emulator-boot-timeout: 600
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
           script: bash "$GITHUB_WORKSPACE/niakvio/scripts/run_native_corpus_tv_suite.sh"
       - name: Upload sanitized TV native corpus logs
         if: always()
