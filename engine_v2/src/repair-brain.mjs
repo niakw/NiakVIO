@@ -1,11 +1,13 @@
 const HTTP_BLOCKED = new Set([401, 403, 407, 429, 451]);
 const HTTP_GONE = new Set([404, 410]);
-export const BRAIN_CONTROL_PLANE_VERSION = 3;
+export const BRAIN_CONTROL_PLANE_VERSION = 4;
 
 export const FAILURE_CLASSES = Object.freeze([
   "healthy", "not_invoked", "dns_unreachable", "transport_blocked", "search_gap",
   "identity_mismatch", "detail_gap", "episode_gap", "player_gap",
   "media_extraction_gap", "playback_context_gap", "media_validation_gap",
+  "player_container_unsupported", "player_container_malformed", "player_manifest_gap",
+  "player_decoder_gap", "player_engine_compatibility_gap", "player_runtime_gap",
   "runtime_contract_drift", "unknown_failure",
 ]);
 
@@ -50,6 +52,26 @@ export const REPAIR_RECIPES = Object.freeze({
   media_validation_gap: [
     recipe("validate-final-media", ["media", "identity"], ["probe final media response", "verify media identity and duration", "verify HLS/DASH/direct signatures", "reject HTML/error bodies and fake media"]),
   ],
+  player_container_unsupported: [
+    recipe("resolve-terminal-media-for-reader", ["player", "media", "embed", "xhr"], ["re-enter the provider player chain", "reject embed/API/HTML/JSON bodies disguised as media", "return the terminal HLS/DASH/direct resource rather than an intermediate player URL"]),
+    recipe("select-reader-compatible-source", ["media", "source-selection", "container"], ["test alternate sources returned by the same provider", "prefer a source that reaches READY in the official Nuvio reader", "do not rewrite a container or codec without proof"]),
+  ],
+  player_container_malformed: [
+    recipe("refresh-malformed-media", ["media", "token", "session"], ["resolve a fresh terminal media URL", "verify the binary/container signature before returning it", "reject truncated, placeholder or expired responses"]),
+    recipe("select-reader-compatible-source", ["media", "source-selection", "container"], ["test alternate sources returned by the same provider", "prefer a source that reaches READY in the official Nuvio reader"]),
+  ],
+  player_manifest_gap: [
+    recipe("repair-adaptive-manifest", ["hls", "dash", "headers", "referer", "origin"], ["fetch the terminal master manifest with the provider playback context", "resolve relative variant/segment URLs against the final manifest URL", "preserve required headers on manifest and segment requests", "reject malformed preview/error manifests"]),
+  ],
+  player_decoder_gap: [
+    recipe("select-decodable-source", ["media", "source-selection", "codec"], ["test alternate encodes from the same provider", "prefer an encode accepted by the official Nuvio reader", "keep the original source only when another internal engine proves it playable"]),
+  ],
+  player_engine_compatibility_gap: [
+    recipe("prefer-cross-engine-compatible-source", ["media", "source-selection", "container"], ["record that MPV parses the source while ExoPlayer does not", "test alternate provider sources for ExoPlayer compatibility", "prefer a source accepted by both engines when available", "do not treat headers as the cause unless HTTP evidence says so"]),
+  ],
+  player_runtime_gap: [
+    recipe("collect-reader-error-evidence", ["player", "evidence"], ["capture official reader error code and root cause", "capture response status, content type and binary signature without secrets", "reclassify before mutating provider code"]),
+  ],
   runtime_contract_drift: [
     recipe("reaudit-device-adapter", ["runtime-version", "contract"], ["diff changed Nuvio contract paths", "identify affected capabilities", "revalidate only impacted skills/providers"]),
   ],
@@ -85,6 +107,23 @@ export function classifyFailure(evidence = {}) {
     if ([...statuses].some((status) => HTTP_BLOCKED.has(status) || HTTP_GONE.has(status))) return "playback_context_gap";
     if (validation.playable === false || Number(validation.playableCount ?? 0) === 0) return "media_validation_gap";
   }
+
+  const playback = evidence.stages?.playerPlayback;
+  if (playback?.attempted) {
+    const sourceStatus = Number(playback.sourceStatus ?? 0);
+    const signature = String(playback.sourceSignature ?? "").toLowerCase();
+    const exoCode = Number(playback.exoCode ?? 0);
+    if (isBlocked(sourceStatus) || HTTP_GONE.has(sourceStatus)) return "playback_context_gap";
+    if (["html", "json", "empty", "probe_error"].includes(signature)) return "media_extraction_gap";
+    if (playback.exoReady === true || playback.playable === true) return "healthy";
+    if (exoCode === 3003 && playback.mpvReady === true) return "player_engine_compatibility_gap";
+    if (exoCode === 3003) return "player_container_unsupported";
+    if (exoCode === 3001) return "player_container_malformed";
+    if (exoCode === 3002 || exoCode === 3004) return "player_manifest_gap";
+    if (exoCode >= 4001 && exoCode <= 4005) return "player_decoder_gap";
+    if (playback.playable === false) return "player_runtime_gap";
+  }
+
   if (Number(evidence.playableStreams ?? 0) > 0 || validation?.playable === true) return "healthy";
   if (media?.found === true && validation?.observed !== true) return "media_validation_gap";
   return "unknown_failure";
