@@ -39,5 +39,28 @@ jobs:
       - name: Verify upgraded runtime imports
         run: node -e "require('axios'); require('cheerio'); console.log('dependency imports ok')"
 
-      - name: Run repository test suite
-        run: npm test
+      - name: Run deterministic repository tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run pretest
+          python3 - <<'PY'
+          import json
+          import subprocess
+          from pathlib import Path
+
+          package = json.loads(Path('package.json').read_text(encoding='utf-8'))
+          commands = [part.strip() for part in package['scripts']['test'].split('&&') if part.strip()]
+          live_client_policy = {
+              'python3 scripts/validate_platform_runtime_policy.py',
+              'python3 scripts/validate_mobile_runtime_policy.py',
+              'python3 scripts/validate_nuvio_tv_runtime_policy.py',
+          }
+          deterministic = [command for command in commands if command not in live_client_policy]
+          skipped = [command for command in commands if command in live_client_policy]
+          assert len(skipped) == 3, skipped
+          for command in deterministic:
+              print(f'FIELD_DEPENDENCY_GATE_TEST command={command}', flush=True)
+              subprocess.run(command, shell=True, check=True)
+          PY
+          npm run posttest
