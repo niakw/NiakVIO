@@ -2,10 +2,12 @@
 from __future__ import annotations
 
 import importlib.util
+import json
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "scripts" / "check_nuvio_client_upstreams.py"
+CONFIG = ROOT / "automation" / "nuvio-client-upstreams.json"
 
 spec = importlib.util.spec_from_file_location("nuvio_client_upstream_guard", SCRIPT)
 assert spec is not None and spec.loader is not None
@@ -70,6 +72,15 @@ def main() -> int:
     assert not module.path_matches("README.md", ["runtime/", "PluginManifest.kt"])
     assert module.semantic_hits("+val item: StreamItem\n", ["StreamItem"]) == ["StreamItem"]
     assert module.semantic_hits("+selectedSubtitleId = null\n", ["StreamItem"]) == []
+
+    # The provider-to-screen contract must be guarded on every accepted client.
+    # Mobile/Desktop already guard their complete features/streams surfaces; TV
+    # must also treat its stream-selection UI as a hard contract because
+    # StreamScreenViewModel is the consumer of StreamRepository plugin results.
+    upstreams = json.loads(CONFIG.read_text(encoding="utf-8"))["clients"]
+    assert "composeApp/src/commonMain/kotlin/com/nuvio/app/features/streams/" in upstreams["nuvio-mobile"]["contract_paths"]
+    assert "composeApp/src/commonMain/kotlin/com/nuvio/app/features/streams/" in upstreams["nuvio-desktop"]["contract_paths"]
+    assert "app/src/main/java/com/nuvio/tv/ui/screens/stream/" in upstreams["nuvio-tv"]["contract_paths"]
 
     identical = run_case("a" * 40, None)
     assert identical["status"] == "verified"
