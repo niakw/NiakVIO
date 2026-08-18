@@ -1,0 +1,71 @@
+name: CodeQL triage export once
+
+on:
+  push:
+    branches: [chore/codeql-triage]
+    paths:
+      - ".github/workflows/codeql-triage-export-once.yml"
+
+permissions:
+  contents: write
+  security-events: read
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout triage branch
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: chore/codeql-triage
+          fetch-depth: 0
+
+      - name: Export open CodeQL alerts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh api --paginate --slurp \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "repos/${GITHUB_REPOSITORY}/code-scanning/alerts?state=open&per_page=100" \
+            > /tmp/codeql-pages.json
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          pages = json.loads(Path('/tmp/codeql-pages.json').read_text())
+          alerts = [item for page in pages for item in page]
+          out = []
+          for alert in alerts:
+              rule = alert.get('rule') or {}
+              instance = alert.get('most_recent_instance') or {}
+              location = instance.get('location') or {}
+              out.append({
+                  'number': alert.get('number'),
+                  'rule_id': rule.get('id'),
+                  'rule_name': rule.get('name'),
+                  'security_severity': rule.get('security_severity_level'),
+                  'severity': rule.get('severity'),
+                  'tool': (alert.get('tool') or {}).get('name'),
+                  'path': location.get('path'),
+                  'start_line': location.get('start_line'),
+                  'ref': instance.get('ref'),
+                  'created_at': alert.get('created_at'),
+                  'updated_at': alert.get('updated_at'),
+                  'html_url': alert.get('html_url'),
+              })
+          Path('codeql-open-alerts.json').write_text(json.dumps({'count': len(out), 'alerts': out}, indent=2) + '\n')
+          print(f'FIELD_CODEQL_OPEN_ALERTS count={len(out)}')
+          PY
+
+      - name: Publish sanitized triage report on branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "niakvio-security"
+          git config user.email "actions@users.noreply.github.com"
+          git add codeql-open-alerts.json
+          git commit -m "security: snapshot open CodeQL alerts for triage"
+          git push origin HEAD:chore/codeql-triage
