@@ -1,0 +1,86 @@
+name: Fast publish corrected providers
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/provider-hotfix-publish.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: provider-hotfix-publish
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Install runtime dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Enable safe direct-media pass-through
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path('provider-overrides.json')
+          data=json.loads(p.read_text())
+          policy=data.setdefault('media_enrichment_policy', {})
+          caps=list(policy.get('capabilities') or [])
+          if 'direct_media' not in caps:
+              caps.append('direct_media')
+          policy['capabilities']=caps
+          policy['version']=max(int(policy.get('version') or 1), 2)
+          p.write_text(json.dumps(data, ensure_ascii=False, indent=2)+'\n')
+          PY
+      - name: Rematerialize all published providers
+        run: |
+          cp manifest.json /tmp/manifest-before-hotfix.json
+          python scripts/build_provider_runtime_profiles.py
+          python scripts/reapply_published_overrides.py
+          python scripts/generate_language_manifests.py
+          python scripts/prune_unreferenced_providers.py
+          python scripts/sync_release_versions.py --manifest manifest.json --previous /tmp/manifest-before-hotfix.json
+          node engine_v2/scripts/bootstrap-provider-catalog.mjs --general manifest.json --vf vf/manifest.json --output provider_catalog.json
+          node engine_v2/scripts/render-manifests-from-catalog.mjs --catalog provider_catalog.json --general manifest.json --vf vf/manifest.json
+          python scripts/generate_language_manifests.py
+          python scripts/sync_release_versions.py --manifest manifest.json --previous /tmp/manifest-before-hotfix.json
+      - name: Verify corrected publication
+        run: |
+          python tests/global_media_enrichment_direct_safety_test.py
+          python scripts/reapply_published_overrides.py --check
+          node engine_v2/tests/provider-catalog.test.mjs
+          python scripts/generate_release_hashes.py
+          python scripts/validate_release_integrity.py
+      - name: Publish manifest and corrected bundles
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add provider-overrides.json manifest.json vf/manifest.json vostfr/manifest.json provider_catalog.json \
+            package.json package-lock.json sources.json PROVENANCE.json FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json providers/
+          if git diff --cached --quiet; then
+            echo 'No provider publication change.'
+            exit 0
+          fi
+          git commit -m 'chore: publish corrected provider playback bundles'
+          git fetch origin main
+          git rebase origin/main
+          python scripts/generate_release_hashes.py
+          python scripts/validate_release_integrity.py
+          git add FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json
+          if ! git diff --cached --quiet; then git commit --amend --no-edit; fi
+          git push origin HEAD:main
