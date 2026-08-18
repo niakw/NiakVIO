@@ -160,6 +160,10 @@ jobs:
       - name: Set up Gradle cache
         uses: gradle/actions/setup-gradle@0723195856401067f7a2779048b490ace7a47d7c
 
+      - name: Precompile Mobile device test before emulator boot
+        working-directory: nuvio-mobile
+        run: ./gradlew :composeApp:compileAndroidDeviceTest --no-daemon --console=plain
+
       - name: Enable KVM
         run: if [ -e /dev/kvm ]; then sudo chmod 666 /dev/kvm || true; fi
 
