@@ -116,6 +116,64 @@ assert.equal(playbackPlan.failureClass, "playback_context_gap");
 assert.equal(playbackPlan.hypotheses[0].id, "preserve-playback-context");
 assert.ok(playbackPlan.allowedProfiles.includes("adaptive_runtime_recovery"));
 
+// Real StreamZo shape: the provider/search/player chain is healthy and returns
+// 2xx, but a terminal ShareCloudy HLS request is rejected before a stream row is
+// surfaced. That downstream 403 must not poison the provider as transport-blocked.
+const terminalMediaPayload = {
+  mode: "quick",
+  policy: dirtyPayload.policy,
+  learnedSkills: {},
+  items: [
+    {
+      key: "published:streamzo-zero-return",
+      candidate: { canonical_id: "streamzo", metadata: { supportedTypes: ["movie", "tv"] } },
+      result: {
+        status: "no_streams",
+        evidence: { streams_returned: 0, streams_playable: 0 },
+        tests: [{
+          fixture: { category: "anime" },
+          stream_count: 0,
+          streams_playable: 0,
+          failure_class: "content_lookup_completed_no_streams",
+          network_observations: [
+            { stage: "search", host: "streamzo.fr", path_pattern: "/search?q={value}", status: 200, infrastructure: false },
+            { stage: "content_lookup", host: "streamzo.fr", path_pattern: "/series/l-attaque-des-titans-2013", status: 200, infrastructure: false },
+            { stage: "player", host: "streamzo.fr", path_pattern: "/embed/sharecloudy.com/{id}", status: 200, infrastructure: false },
+            { stage: "content_lookup", host: "share102764.sharecloudy.com", path_pattern: "/files/aa/example.m3u8", status: 403, infrastructure: false },
+          ],
+        }],
+      },
+      state: {},
+    },
+    {
+      key: "published:provider-blocked",
+      candidate: { canonical_id: "provider-blocked", metadata: { supportedTypes: ["movie"] } },
+      result: {
+        status: "blocked",
+        evidence: { streams_returned: 0, streams_playable: 0 },
+        tests: [{
+          fixture: { category: "movie" },
+          stream_count: 0,
+          failure_class: "provider_http_error",
+          network_observations: [
+            { stage: "origin_probe", host: "provider-blocked.example", path_pattern: "/", status: 403, infrastructure: false },
+          ],
+        }],
+      },
+      state: {},
+    },
+  ],
+};
+const terminalMediaRun = spawnSync(process.execPath, [planner], { input: JSON.stringify(terminalMediaPayload), encoding: "utf8" });
+assert.equal(terminalMediaRun.status, 0, terminalMediaRun.stderr);
+const terminalMediaOutput = JSON.parse(terminalMediaRun.stdout);
+const streamzoTerminalPlan = terminalMediaOutput.plans["published:streamzo-zero-return"];
+assert.equal(streamzoTerminalPlan.failureClass, "playback_context_gap");
+assert.equal(streamzoTerminalPlan.hypotheses[0].id, "preserve-playback-context");
+assert.ok(streamzoTerminalPlan.allowedProfiles.includes("adaptive_runtime_recovery"));
+assert.equal(terminalMediaOutput.plans["published:provider-blocked"].failureClass, "transport_blocked");
+assert.equal(terminalMediaOutput.plans["published:provider-blocked"].hypotheses[0].id, "bootstrap-session");
+
 // Deep repair children must inherit the original causal plan. Otherwise round 2
 // silently loses every allowed profile because PLANS is keyed by the parent.
 const deepRepairPath = fileURLToPath(new URL("../../scripts/run_adaptive_deep_repair.py", import.meta.url));

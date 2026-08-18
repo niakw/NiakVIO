@@ -186,9 +186,19 @@ function deriveEvidence(candidate, result) {
   }).join(" ").toLowerCase();
   const observations = tests.flatMap((row) => asArray(row.network_observations).filter(isRecord));
   const statuses = observations.map((row) => Number(row.status)).filter(Number.isFinite);
-  const providerStatuses = observations.filter((row) => row.infrastructure !== true).map((row) => Number(row.status)).filter(Number.isFinite);
+  const providerObservations = observations.filter((row) => row.infrastructure !== true);
+  const providerStatuses = providerObservations.map((row) => Number(row.status)).filter(Number.isFinite);
   const blocked = providerStatuses.find((code) => [401, 403, 407, 429, 451].includes(code));
   const gone = providerStatuses.find((code) => [404, 410].includes(code));
+  const terminalMediaFailures = providerObservations.filter((row) => {
+    const code = Number(row.status);
+    return ([401, 403, 407, 429, 451, 404, 410].includes(code) && isTerminalMediaObservation(row));
+  });
+  const terminalMediaStatuses = terminalMediaFailures.map((row) => Number(row.status)).filter(Number.isFinite);
+  const providerSuccessObserved = providerObservations.some((row) => {
+    const code = Number(row.status);
+    return code >= 200 && code < 300 && !isTerminalMediaObservation(row);
+  });
   const fixture = asRecord(tests[0]?.fixture);
   const metadata = asRecord(candidate.metadata);
   const supportedTypes = stringArray(metadata.supportedTypes);
@@ -218,6 +228,20 @@ function deriveEvidence(candidate, result) {
       },
     };
   }
+  // A runtime may reach a terminal media URL but suppress it from the provider
+  // output because validation already saw a 403/410. If the provider/search path
+  // itself also produced successful responses, that downstream media rejection is
+  // a playback-context problem, not evidence that the provider transport is blocked.
+  if (terminalMediaStatuses.length && providerSuccessObserved) {
+    return {
+      invoked, contractDrift, request: { mediaType }, playableStreams: 0,
+      stages: {
+        player: { attempted: true, found: true },
+        media: { attempted: true, found: true, streamCount: 0 },
+        validation: { attempted: true, observed: true, playable: false, playableCount: 0, statuses: terminalMediaStatuses },
+      },
+    };
+  }
   if (status === "blocked" || blocked) {
     return { invoked, dns: { ok: true }, request: { mediaType }, stages: { homepage: { status: blocked || 403 } } };
   }
@@ -225,7 +249,7 @@ function deriveEvidence(candidate, result) {
     return { invoked, request: { mediaType: mediaType === "movie" ? "tv" : mediaType }, stages: { search: { attempted: true, status: 200, matches: 1 }, identity: { attempted: true, matched: true }, detail: { attempted: true, found: true }, episode: { attempted: true, found: false } } };
   }
   if (/player|iframe|embed/.test(failureText)) {
-    return { invoked, request: { mediaType }, stages: { player: { attempted: true, found: false } } };
+    return { invoked, request: { mediaType }, stages: { player: { attempted: true, found: false } };
   }
   if (/media|stream|hls|dash|m3u8|mp4/.test(failureText) && !/no[_ -]?streams?/.test(failureText)) {
     return { invoked, request: { mediaType }, stages: { player: { attempted: true, found: true }, media: { attempted: true, found: false } } };
@@ -234,6 +258,16 @@ function deriveEvidence(candidate, result) {
     return { invoked, request: { mediaType }, stages: { search: { attempted: true, status: gone || 200, matches: 0 } } };
   }
   return { invoked, contractDrift, request: { mediaType }, playableStreams: 0 };
+}
+
+function isTerminalMediaObservation(row) {
+  const stage = stringValue(row.stage).toLowerCase();
+  if (/^(?:media|stream|playback|validation|hls|dash)$/.test(stage)) return true;
+  const locator = [row.url, row.path, row.path_pattern, row.pathPattern]
+    .map((value) => stringValue(value))
+    .join(" ")
+    .toLowerCase();
+  return /\.(?:m3u8|mpd|mp4|mkv|webm)(?:[?&#\s]|$)/.test(locator) || /\/(?:hls|hls2)\//.test(locator);
 }
 
 function asRecord(value) {
