@@ -43,7 +43,7 @@ jobs:
           fi
           rm -f .github/workflows/dependency-actions-refresh-once.yml
 
-      - name: Push review branch
+      - name: Build and attempt review branch push
         shell: bash
         run: |
           set -euo pipefail
@@ -51,4 +51,5 @@ jobs:
           git config user.email "actions@users.noreply.github.com"
           git add -A
           git commit -m "chore: refresh pinned GitHub Actions"
+          echo "FIELD_PINNED_ACTION_REFRESH_COMMIT=$(git rev-parse HEAD)"
           git push origin HEAD:chore/pinned-actions-refresh
