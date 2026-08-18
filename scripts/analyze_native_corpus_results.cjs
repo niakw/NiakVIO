@@ -62,11 +62,6 @@ function providerPolicy(provider) {
     manifestRow.capability ||
     'unknown'
   );
-  // HTML is a legitimate terminal output only for recovery models whose public
-  // contract is explicitly an external/embed player. A normal html_scraper still
-  // has to traverse its detail/player chain to a usable output (StreamZo is the
-  // canonical sentinel), so generated allow_html_url on a generic scraper is not
-  // enough to waive transport validation.
   const allowEmbed = strategy === 'iframe_player' || (
     strategy === 'mixed_embed_resolver' && (
       manifestRow.supportsExternalPlayer === true || patch.preserve_embed_urls === true
@@ -80,9 +75,18 @@ function withPolicy(row) {
   return { ...row, capability: policy.strategy, allowEmbed: policy.allowEmbed };
 }
 
+function key(client, provider, index = 0) {
+  return `${client}\u0000${provider}\u0000${Number(index || 0)}`;
+}
+function providerKey(client, provider) {
+  return `${client}\u0000${provider}`;
+}
+
 const results = new Map();
 const rows = [];
 const transports = new Map();
+const playbacks = [];
+const playbackProviders = new Map();
 const runtimeErrors = [];
 for (const input of logPaths) {
   if (!fs.existsSync(input)) continue;
@@ -95,7 +99,7 @@ for (const input of logPaths) {
     if (line.startsWith('FIELD_NATIVE_RESULT ')) {
       const provider = decode(f.provider64);
       const client = f.client || 'unknown';
-      results.set(`${client}\u0000${provider}`, withPolicy({
+      results.set(providerKey(client, provider), withPolicy({
         client,
         provider,
         enabled: f.enabled === 'true',
@@ -117,17 +121,17 @@ for (const input of logPaths) {
           quality: decode(f.quality64),
           language: decode(f.language64),
           type: decode(f.type64),
-          // Only a synthetic URL is built. Native logs never expose the real URL,
-          // query string, path token or header value.
           url: safeSyntheticUrl(host, mediaHint),
         },
       }));
     } else if (line.startsWith('FIELD_NATIVE_TRANSPORT ')) {
       const provider = decode(f.provider64);
       const client = f.client || 'unknown';
-      transports.set(`${client}\u0000${provider}`, withPolicy({
+      const index = Number(f.index || 0);
+      transports.set(key(client, provider, index), withPolicy({
         client,
         provider,
+        index,
         state: f.state || 'unknown',
         kind: f.kind || 'unknown',
         status: Number(f.status || 0),
@@ -136,6 +140,38 @@ for (const input of logPaths) {
         durationSeconds: Number(f.duration_seconds || 0) || null,
         host: decode(f.host64),
         mediaHint: decode(f.media_hint64),
+      }));
+    } else if (line.startsWith('FIELD_NATIVE_PLAYBACK ')) {
+      const provider = decode(f.provider64);
+      const client = f.client || 'unknown';
+      playbacks.push(withPolicy({
+        client,
+        provider,
+        index: Number(f.index || 0),
+        state: f.state || 'error',
+        engine: f.engine || 'none',
+        repairClass: f.repair_class || 'player_runtime_gap',
+        sourceStatus: Number(f.source_status || 0),
+        sourceSignature: f.signature || 'unknown',
+        acceptsRanges: f.ranges === 'true',
+        contentType: decode(f.content_type64),
+        finalHost: decode(f.final_host64),
+        exoState: f.exo_state || 'unknown',
+        exoCode: Number(f.exo_code || 0),
+        exoName: f.exo_name || '',
+        exoCause: decode(f.exo_cause64),
+        retryMime: decode(f.retry_mime64),
+        mpvState: f.mpv_state || 'not_needed',
+        mpvName: f.mpv_name || '',
+        mpvCause: decode(f.mpv_cause64),
+      }));
+    } else if (line.startsWith('FIELD_NATIVE_PLAYBACK_PROVIDER ')) {
+      const provider = decode(f.provider64);
+      const client = f.client || 'unknown';
+      playbackProviders.set(providerKey(client, provider), withPolicy({
+        client,
+        provider,
+        state: f.state || 'unplayable',
       }));
     } else if (line.startsWith('FIELD_NATIVE_ERROR ')) {
       runtimeErrors.push(withPolicy({
@@ -153,7 +189,7 @@ const matches = [];
 const unknown = [];
 for (const row of rows) {
   let identity = streamIdentity(row.stream, fixture);
-  const transport = transports.get(`${row.client}\u0000${row.provider}`);
+  const transport = transports.get(key(row.client, row.provider, row.index));
   const durationRatio = expectedDurationSeconds && transport?.durationSeconds
     ? transport.durationSeconds / expectedDurationSeconds
     : null;
@@ -185,6 +221,7 @@ const expectedEmbeds = [...transports.values()]
   .map((row) => ({
     client: row.client,
     provider: row.provider,
+    index: row.index,
     capability: row.capability,
     state: 'embed',
     kind: row.kind,
@@ -198,6 +235,7 @@ const transportFailures = [...transports.values()]
   .map((row) => ({
     client: row.client,
     provider: row.provider,
+    index: row.index,
     capability: row.capability,
     state: row.state,
     kind: row.kind,
@@ -208,17 +246,27 @@ const transportFailures = [...transports.values()]
   }));
 const transportUnknown = [...transports.values()].filter((row) => row.state === 'unknown');
 const transportOk = [...transports.values()].filter((row) => row.state === 'ok');
+const playbackReady = playbacks.filter((row) => row.state === 'ready');
+const playbackFailures = playbacks.filter((row) => row.state !== 'ready');
+const exoContainerUnsupported = playbackFailures.filter((row) => row.exoName === 'ERROR_CODE_PARSING_CONTAINER_UNSUPPORTED');
+const mpvOnly = playbackReady.filter((row) => row.engine === 'mpv');
+const playerRepairClasses = {};
+for (const row of playbackFailures) playerRepairClasses[row.repairClass] = (playerRepairClasses[row.repairClass] || 0) + 1;
 const slow = [...results.values()].filter((row) => row.durationMs >= 30000).sort((a, b) => b.durationMs - a.durationMs);
 const nonEmpty = [...results.values()].filter((row) => row.count > 0);
 const empty = [...results.values()].filter((row) => row.count === 0);
 const clients = [...new Set([...results.values()].map((row) => row.client))].sort();
 const providers = [...new Set([...results.values()].map((row) => row.provider))].sort();
+const clientsWithPlayback = [...new Set(playbacks.map((row) => row.client))].sort();
+const playbackReadyProviders = [...playbackProviders.values()].filter((row) => row.state === 'ready');
+const playbackUnplayableProviders = [...playbackProviders.values()].filter((row) => row.state === 'unplayable');
 
 const summary = {
   fixture: fixtureSlug,
   title: fixture.title,
   tmdbId: fixture.tmdbId,
   clients,
+  clientsWithPlayback,
   providerCount: providers.length,
   executions: results.size,
   nonEmpty: nonEmpty.length,
@@ -231,6 +279,14 @@ const summary = {
   transportExpectedEmbeds: expectedEmbeds.length,
   transportUnknown: transportUnknown.length,
   transportFailures: transportFailures.length,
+  playbackAttempts: playbacks.length,
+  playbackReady: playbackReady.length,
+  playbackFailures: playbackFailures.length,
+  playbackReadyProviders: playbackReadyProviders.length,
+  playbackUnplayableProviders: playbackUnplayableProviders.length,
+  exoContainerUnsupported: exoContainerUnsupported.length,
+  mpvOnly: mpvOnly.length,
+  playerRepairClasses,
   durationEvidence: [...transports.values()].filter((row) => row.durationSeconds != null).length,
   slowProviders: slow.length,
 };
@@ -239,7 +295,9 @@ console.log(`FIELD_NATIVE_CORPUS_ANALYSIS ${JSON.stringify(summary)}`);
 for (const row of contradictions.slice(0, 80)) console.log(`FIELD_NATIVE_CONTRADICTION ${JSON.stringify(row)}`);
 for (const row of expectedEmbeds.slice(0, 80)) console.log(`FIELD_NATIVE_EXPECTED_EMBED ${JSON.stringify(row)}`);
 for (const row of transportFailures.slice(0, 80)) console.log(`FIELD_NATIVE_TRANSPORT_FAILURE ${JSON.stringify(row)}`);
+for (const row of playbackFailures.slice(0, 160)) console.log(`FIELD_NATIVE_PLAYBACK_FAILURE ${JSON.stringify(row)}`);
+for (const row of mpvOnly.slice(0, 80)) console.log(`FIELD_NATIVE_PLAYER_ENGINE_COMPAT ${JSON.stringify(row)}`);
 for (const row of runtimeErrors.slice(0, 80)) console.log(`FIELD_NATIVE_RUNTIME_ERROR ${JSON.stringify(row)}`);
 for (const row of slow.slice(0, 80)) console.log(`FIELD_NATIVE_SLOW ${JSON.stringify(row)}`);
 
-if (runtimeErrors.length || contradictions.length || transportFailures.length) process.exitCode = 1;
+if (runtimeErrors.length || contradictions.length || transportFailures.length || playbackFailures.length) process.exitCode = 1;
