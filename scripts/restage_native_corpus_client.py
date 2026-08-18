@@ -9,6 +9,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 import prepare_native_corpus_validation as corpus  # noqa: E402
+import prepare_native_corpus_client as client_prepare  # noqa: E402
 
 
 def staged_providers() -> list[dict]:
@@ -49,8 +50,13 @@ def main() -> int:
         source = corpus.android_test(fixture, providers, "tv")
 
     target.parent.mkdir(parents=True, exist_ok=True)
-    target.write_text(collector_test(source, args.target), encoding="utf-8")
-    print(f"FIELD_NATIVE_CORPUS_RESTAGED_ISOLATED target={args.target} fixture={args.fixture} tmdb={fixture.get('tmdbId')}")
+    generated = collector_test(source, args.target)
+    generated = client_prepare.player_test(generated, args.target)
+    target.write_text(generated, encoding="utf-8")
+    print(
+        f"FIELD_NATIVE_CORPUS_RESTAGED_ISOLATED target={args.target} fixture={args.fixture} "
+        f"tmdb={fixture.get('tmdbId')} player_proof={'true' if args.target in {'mobile', 'tv'} else 'pending-desktop-native'}"
+    )
     return 0
 
 
