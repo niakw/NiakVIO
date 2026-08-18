@@ -1,9 +1,9 @@
 name: Temporary CodeQL triage
 
 on:
-  push:
+  pull_request:
     branches:
-      - chore/codeql-triage
+      - main
     paths:
       - .github/workflows/tmp-codeql-triage.yml
 
