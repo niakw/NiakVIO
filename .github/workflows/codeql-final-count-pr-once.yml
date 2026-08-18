@@ -1,0 +1,30 @@
+name: CodeQL final count check once
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/triggers/codeql-final-count"
+
+permissions:
+  contents: read
+  security-events: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Verify zero open CodeQL alerts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          count=$(gh api --paginate \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2026-03-10" \
+            "repos/${GITHUB_REPOSITORY}/code-scanning/alerts?state=open&per_page=100" \
+            --jq '.[].number' | wc -l | tr -d ' ')
+          echo "FIELD_CODEQL_FINAL_OPEN_COUNT=${count}"
+          test "${count}" = "0"
