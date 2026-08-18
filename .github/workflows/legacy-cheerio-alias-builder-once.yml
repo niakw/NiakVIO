@@ -1,0 +1,89 @@
+name: Legacy Cheerio alias builder
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/legacy-cheerio-alias-builder-once.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: legacy-cheerio-alias-builder
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout security branch
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: chore/final-security-hardening
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "24"
+          package-manager-cache: false
+
+      - name: Replace vulnerable legacy Cheerio package with modern alias
+        shell: bash
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs = require('node:fs');
+          const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+          if (pkg.dependencies?.['cheerio'] !== '1.2.0') {
+            throw new Error(`unexpected cheerio version: ${pkg.dependencies?.['cheerio']}`);
+          }
+          pkg.dependencies['cheerio-without-node-native'] = 'npm:cheerio@1.2.0';
+          fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
+          NODE
+          npm install --package-lock-only --ignore-scripts --no-audit --no-fund
+
+      - name: Install exact regenerated dependency tree
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Prove legacy import compatibility and remove high advisories
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm audit --audit-level=high --omit=optional
+          node - <<'NODE'
+          const legacy = require('cheerio-without-node-native');
+          const modern = require('cheerio');
+          if (legacy.load !== modern.load) {
+            throw new Error('legacy alias does not resolve to the modern Cheerio implementation');
+          }
+          const $ = legacy.load('<main><article data-id="7"><a href="/x"><span>ok</span></a></article></main>');
+          if ($('article').first().attr('data-id') !== '7') throw new Error('attr compatibility failed');
+          if ($('article').find('span').text() !== 'ok') throw new Error('find/text compatibility failed');
+          if ($('article a').attr('href') !== '/x') throw new Error('selector compatibility failed');
+          let count = 0;
+          $('main article').each(() => { count += 1; });
+          if (count !== 1) throw new Error('each compatibility failed');
+          console.log('legacy Cheerio alias compatibility passed');
+          NODE
+          node tests/provider_worker_security.test.cjs
+
+      - name: Refresh and validate release integrity
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/generate_release_hashes.py
+          python3 scripts/validate_release_integrity.py
+          git diff --check
+
+      - name: Commit verified dependency replacement
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "niakvio-security"
+          git config user.email "actions@users.noreply.github.com"
+          git add -A
+          git commit -m "security: replace vulnerable legacy cheerio dependency"
+          git push origin HEAD:chore/final-security-hardening
