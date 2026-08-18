@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - ".github/workflows/**"
+      - "tests/workflow_security_policy_test.py"
   workflow_dispatch:
 
 permissions:
@@ -59,6 +60,7 @@ jobs:
 
       - name: Validate workflow architecture contracts
         run: |
+          python3 tests/workflow_security_policy_test.py
           python3 tests/ci_preservation_policy_test.py
           python3 tests/native_corpus_device_lab_test.py
           python3 tests/native_corpus_suite_summary_test.py

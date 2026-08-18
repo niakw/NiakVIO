@@ -5,6 +5,7 @@ on:
   workflow_run:
     workflows: ['Niakvio provider pipeline']
     types: [completed]
+    branches: [main]
 
 permissions:
   contents: read

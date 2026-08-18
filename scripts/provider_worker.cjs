@@ -42,17 +42,71 @@ function structuredError(error, phase = 'provider_runtime') {
     stack: stack || null,
   };
 }
+const BLOCKED_PROVIDER_MODULES = new Set([
+  'child_process', 'cluster', 'worker_threads', 'inspector', 'repl', 'vm', 'module',
+  'fs', 'fs/promises', 'http', 'https', 'http2', 'net', 'tls', 'dgram',
+  'dns', 'dns/promises', 'process', 'wasi', 'sqlite', 'v8',
+]);
+
+function canonicalProviderModule(request) {
+  const value = String(request || '').trim();
+  return value.startsWith('node:') ? value.slice(5) : value;
+}
+
+function blockedProviderModule(request) {
+  return BLOCKED_PROVIDER_MODULES.has(canonicalProviderModule(request));
+}
+
 function installModuleRestrictions() {
-  const blocked = new Set([
-    'child_process', 'node:child_process', 'cluster', 'node:cluster',
-    'worker_threads', 'node:worker_threads', 'inspector', 'node:inspector',
-    'repl', 'node:repl', 'vm', 'node:vm', 'module', 'node:module',
-  ]);
   const originalLoad = Module._load;
   Module._load = function restrictedLoad(request, parent, isMain) {
-    if (blocked.has(String(request))) throw new Error(`provider module blocked: ${request}`);
+    if (blockedProviderModule(request)) throw new Error(`provider module blocked: ${request}`);
     return originalLoad.call(this, request, parent, isMain);
   };
+
+  if (typeof process.getBuiltinModule === 'function') {
+    const originalGetBuiltinModule = process.getBuiltinModule.bind(process);
+    const restrictedGetBuiltinModule = (request) => {
+      if (blockedProviderModule(request)) throw new Error(`provider module blocked: ${request}`);
+      return originalGetBuiltinModule(request);
+    };
+    try {
+      Object.defineProperty(process, 'getBuiltinModule', {
+        value: restrictedGetBuiltinModule,
+        configurable: true,
+        writable: false,
+      });
+    } catch {
+      try { process.getBuiltinModule = restrictedGetBuiltinModule; } catch {}
+    }
+  }
+
+  for (const legacyAccessor of ['binding', '_linkedBinding']) {
+    if (typeof process[legacyAccessor] !== 'function') continue;
+    try {
+      Object.defineProperty(process, legacyAccessor, {
+        value: () => { throw new Error(`provider process API blocked: ${legacyAccessor}`); },
+        configurable: true,
+        writable: false,
+      });
+    } catch {}
+  }
+}
+
+function assertProviderSourcePolicy(sourceText) {
+  const patterns = [
+    /\b(?:require|import)\s*\(\s*['"`]([^'"`]+)['"`]\s*\)/g,
+    /\b(?:from|import)\s+['"`]([^'"`]+)['"`]/g,
+    /\bprocess\s*\.\s*getBuiltinModule\s*\(\s*['"`]([^'"`]+)['"`]\s*\)/g,
+  ];
+  for (const pattern of patterns) {
+    for (const match of String(sourceText || '').matchAll(pattern)) {
+      const request = match[1];
+      if (blockedProviderModule(request)) {
+        throw new Error(`provider module blocked by source policy: ${request}`);
+      }
+    }
+  }
 }
 
 function wrapLimitedResponse(response, perResponseLimit, consumeBytes) {
@@ -348,6 +402,8 @@ function suppressProviderLogs() {
 }
 
 async function loadProvider(filePath) {
+  const sourceText = fs.readFileSync(filePath, 'utf8');
+  assertProviderSourcePolicy(sourceText);
   installModuleRestrictions();
   try {
     return require(filePath);

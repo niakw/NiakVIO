@@ -36,6 +36,9 @@ jobs:
       - name: Install exact dependency tree
         run: npm ci --ignore-scripts --no-audit --no-fund
 
+      - name: Audit non-optional production dependencies
+        run: npm audit --audit-level=high --omit=optional
+
       - name: Verify upgraded runtime imports
         run: node -e "require('axios'); require('cheerio'); console.log('dependency imports ok')"
 
@@ -46,6 +49,7 @@ jobs:
           npm run pretest
           python3 - <<'PY'
           import json
+          import shlex
           import subprocess
           from pathlib import Path
 
@@ -61,6 +65,6 @@ jobs:
           assert len(skipped) == 3, skipped
           for command in deterministic:
               print(f'FIELD_DEPENDENCY_GATE_TEST command={command}', flush=True)
-              subprocess.run(command, shell=True, check=True)
+              subprocess.run(shlex.split(command), check=True)
           PY
           npm run posttest
