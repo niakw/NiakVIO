@@ -1,0 +1,303 @@
+name: Final security hardening builder
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/final-security-hardening-once.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout security hardening branch
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: chore/final-security-hardening
+          fetch-depth: 0
+
+      - name: Apply reviewed security hardening
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          root = Path('.')
+
+          worker_path = root / 'scripts/provider_worker.cjs'
+          worker = worker_path.read_text(encoding='utf-8')
+          old_restrictions = '''function installModuleRestrictions() {
+            const blocked = new Set([
+              'child_process', 'node:child_process', 'cluster', 'node:cluster',
+              'worker_threads', 'node:worker_threads', 'inspector', 'node:inspector',
+              'repl', 'node:repl', 'vm', 'node:vm', 'module', 'node:module',
+            ]);
+            const originalLoad = Module._load;
+            Module._load = function restrictedLoad(request, parent, isMain) {
+              if (blocked.has(String(request))) throw new Error(`provider module blocked: ${request}`);
+              return originalLoad.call(this, request, parent, isMain);
+            };
+          }
+          '''
+          new_restrictions = '''const BLOCKED_PROVIDER_MODULES = new Set([
+            'child_process', 'cluster', 'worker_threads', 'inspector', 'repl', 'vm', 'module',
+            'fs', 'fs/promises', 'http', 'https', 'http2', 'net', 'tls', 'dgram',
+            'dns', 'dns/promises', 'process', 'wasi', 'sqlite', 'v8',
+          ]);
+
+          function canonicalProviderModule(request) {
+            const value = String(request || '').trim();
+            return value.startsWith('node:') ? value.slice(5) : value;
+          }
+
+          function blockedProviderModule(request) {
+            return BLOCKED_PROVIDER_MODULES.has(canonicalProviderModule(request));
+          }
+
+          function installModuleRestrictions() {
+            const originalLoad = Module._load;
+            Module._load = function restrictedLoad(request, parent, isMain) {
+              if (blockedProviderModule(request)) throw new Error(`provider module blocked: ${request}`);
+              return originalLoad.call(this, request, parent, isMain);
+            };
+
+            if (typeof process.getBuiltinModule === 'function') {
+              const originalGetBuiltinModule = process.getBuiltinModule.bind(process);
+              const restrictedGetBuiltinModule = (request) => {
+                if (blockedProviderModule(request)) throw new Error(`provider module blocked: ${request}`);
+                return originalGetBuiltinModule(request);
+              };
+              try {
+                Object.defineProperty(process, 'getBuiltinModule', {
+                  value: restrictedGetBuiltinModule,
+                  configurable: true,
+                  writable: false,
+                });
+              } catch {
+                try { process.getBuiltinModule = restrictedGetBuiltinModule; } catch {}
+              }
+            }
+          }
+
+          function assertProviderSourcePolicy(sourceText) {
+            const patterns = [
+              /\\b(?:require|import)\\s*\\(\\s*['\"`]([^'\"`]+)['\"`]\\s*\\)/g,
+              /\\b(?:from|import)\\s+['\"`]([^'\"`]+)['\"`]/g,
+              /\\bprocess\\s*\\.\\s*getBuiltinModule\\s*\\(\\s*['\"`]([^'\"`]+)['\"`]\\s*\\)/g,
+            ];
+            for (const pattern of patterns) {
+              for (const match of String(sourceText || '').matchAll(pattern)) {
+                const request = match[1];
+                if (blockedProviderModule(request)) {
+                  throw new Error(`provider module blocked by source policy: ${request}`);
+                }
+              }
+            }
+          }
+          '''
+          if old_restrictions not in worker:
+              raise SystemExit('provider worker restriction anchor changed')
+          worker = worker.replace(old_restrictions, new_restrictions, 1)
+          old_loader = '''async function loadProvider(filePath) {
+            installModuleRestrictions();
+            try {
+              return require(filePath);
+          } catch (requireError) {
+          '''
+          new_loader = '''async function loadProvider(filePath) {
+            const sourceText = fs.readFileSync(filePath, 'utf8');
+            assertProviderSourcePolicy(sourceText);
+            installModuleRestrictions();
+            try {
+              return require(filePath);
+          } catch (requireError) {
+          '''
+          if old_loader not in worker:
+              raise SystemExit('provider worker loader anchor changed')
+          worker = worker.replace(old_loader, new_loader, 1)
+          worker_path.write_text(worker, encoding='utf-8')
+
+          health_path = root / 'scripts/health_check.mjs'
+          health = health_path.read_text(encoding='utf-8')
+          old_spawn = '''    const child = spawn(process.execPath, [
+                `--max-old-space-size=${workerMemoryMb}`,
+                WORKER_PATH,
+                providerPath,
+          '''
+          new_spawn = '''    const child = spawn(process.execPath, [
+                `--max-old-space-size=${workerMemoryMb}`,
+                '--permission',
+                `--allow-fs-read=${path.join(ROOT, 'scripts')}`,
+                `--allow-fs-read=${path.join(ROOT, 'node_modules')}`,
+                `--allow-fs-read=${path.join(ROOT, 'package.json')}`,
+                `--allow-fs-read=${STAGE}`,
+                WORKER_PATH,
+                providerPath,
+          '''
+          if old_spawn not in health:
+              raise SystemExit('health worker spawn anchor changed')
+          health = health.replace(old_spawn, new_spawn, 1)
+          health_path.write_text(health, encoding='utf-8')
+
+          security_test = r'''#!/usr/bin/env node
+          'use strict';
+          const assert = require('node:assert');
+          const fs = require('node:fs');
+          const os = require('node:os');
+          const path = require('node:path');
+          const { spawnSync } = require('node:child_process');
+          const root = path.resolve(__dirname, '..');
+          const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'nuvio-worker-security-'));
+          const fixture = JSON.stringify({tmdbId:'1',mediaType:'movie',title:'Test'});
+          const context = JSON.stringify({locale:'fr-FR',networkLimits:{maxFetches:1}});
+
+          function runProvider(source) {
+            const provider = path.join(dir, `provider-${Math.random().toString(16).slice(2)}.cjs`);
+            fs.writeFileSync(provider, source);
+            return spawnSync(process.execPath,[path.join(root,'scripts/provider_worker.cjs'),provider,fixture,context],{cwd:root,encoding:'utf8'});
+          }
+
+          for (const request of ['node:child_process','node:fs','node:https','node:net','node:dns']) {
+            const result = runProvider(`module.exports={getStreams(){require('${request}');return []}}`);
+            assert.match(result.stdout, new RegExp(`provider module blocked: ${request.replace(/[.*+?^${}()|[\\]\\]/g,'\\$&')}`));
+          }
+
+          if (typeof process.getBuiltinModule === 'function') {
+            const result = runProvider(`module.exports={getStreams(){process.getBuiltinModule('fs');return []}}`);
+            assert.match(result.stdout, /provider module blocked(?: by source policy)?: fs/);
+          }
+
+          {
+            const result = runProvider(`module.exports={async getStreams(){await import('node:http');return []}}`);
+            assert.match(result.stdout, /provider module blocked by source policy: node:http/);
+          }
+
+          {
+            const result = runProvider(`const cheerio=require('cheerio-without-node-native');module.exports={getStreams(){const $=cheerio.load('<div>ok</div>');if($('div').text()!=='ok')throw new Error('parser failed');return []}}`);
+            assert.strictEqual(result.status, 0, result.stderr || result.stdout);
+            assert.match(result.stdout, /NUVIO_HEALTH_RESULT=/);
+          }
+
+          console.log('provider worker security tests passed');
+          '''
+          # Remove indentation introduced by the Python raw string formatting.
+          security_test = '\n'.join(line[10:] if line.startswith('          ') else line for line in security_test.splitlines()) + '\n'
+          (root / 'tests/provider_worker_security.test.cjs').write_text(security_test, encoding='utf-8')
+
+          workflow_test = r'''#!/usr/bin/env python3
+          from __future__ import annotations
+
+          import re
+          from pathlib import Path
+
+          ROOT = Path(__file__).resolve().parents[1]
+          WORKFLOWS = ROOT / '.github' / 'workflows'
+          SHA = re.compile(r'^[0-9a-f]{40}$', re.IGNORECASE)
+          USES = re.compile(r'^\s*(?:-\s*)?uses:\s*([^\s#]+)', re.MULTILINE)
+          errors: list[str] = []
+
+          for path in sorted([*WORKFLOWS.glob('*.yml'), *WORKFLOWS.glob('*.yaml')]):
+              text = path.read_text(encoding='utf-8')
+              rel = path.relative_to(ROOT)
+              if re.search(r'^\s*pull_request_target\s*:', text, re.MULTILINE):
+                  errors.append(f'{rel}: pull_request_target is forbidden')
+              if re.search(r'^\s*permissions\s*:\s*write-all\s*$', text, re.MULTILINE):
+                  errors.append(f'{rel}: permissions write-all is forbidden')
+              if 'permissions:' not in text:
+                  errors.append(f'{rel}: explicit permissions are required')
+              for match in USES.finditer(text):
+                  value = match.group(1).strip('"\'')
+                  if value.startswith('./'):
+                      continue
+                  if value.startswith('docker://'):
+                      if '@sha256:' not in value:
+                          errors.append(f'{rel}: Docker action/image must be digest-pinned: {value}')
+                      continue
+                  if '@' not in value:
+                      errors.append(f'{rel}: action/ref missing immutable pin: {value}')
+                      continue
+                  _action, ref = value.rsplit('@', 1)
+                  if not SHA.fullmatch(ref):
+                      errors.append(f'{rel}: external action must use full commit SHA: {value}')
+
+          if errors:
+              raise SystemExit('workflow security policy failed:\n- ' + '\n- '.join(errors))
+          print('workflow security policy tests passed')
+          '''
+          workflow_test = '\n'.join(line[10:] if line.startswith('          ') else line for line in workflow_test.splitlines()) + '\n'
+          (root / 'tests/workflow_security_policy_test.py').write_text(workflow_test, encoding='utf-8')
+
+          codeowners = '''# Default ownership keeps review routing explicit for every repository change.
+          * @niakw
+
+          # Security- and publication-sensitive surfaces.
+          /.github/ @niakw
+          /engine_v2/ @niakw
+          /scripts/ @niakw
+          /tests/ @niakw
+          /provider_catalog.json @niakw
+          /provider-overrides.json @niakw
+          /manifest.json @niakw
+          /vf/manifest.json @niakw
+          /package.json @niakw
+          /package-lock.json @niakw
+          /SECURITY.md @niakw
+          '''
+          codeowners = '\n'.join(line[10:] if line.startswith('          ') else line for line in codeowners.splitlines()) + '\n'
+          (root / '.github' / 'CODEOWNERS').write_text(codeowners, encoding='utf-8')
+
+          dep_path = root / '.github/workflows/dependency-gate.yml'
+          dep = dep_path.read_text(encoding='utf-8')
+          dep = dep.replace(
+              '      - name: Verify upgraded runtime imports\n        run: node -e "require(\'axios\'); require(\'cheerio\'); console.log(\'dependency imports ok\')"\n',
+              '      - name: Audit non-optional production dependencies\n        run: npm audit --audit-level=high --omit=optional\n\n      - name: Verify upgraded runtime imports\n        run: node -e "require(\'axios\'); require(\'cheerio\'); console.log(\'dependency imports ok\')"\n',
+              1,
+          )
+          dep = dep.replace('          import subprocess\n          from pathlib import Path\n', '          import shlex\n          import subprocess\n          from pathlib import Path\n', 1)
+          dep = dep.replace('              subprocess.run(command, shell=True, check=True)\n', '              subprocess.run(shlex.split(command), check=True)\n', 1)
+          dep_path.write_text(dep, encoding='utf-8')
+
+          actions_path = root / '.github/workflows/github-actions-gate.yml'
+          actions = actions_path.read_text(encoding='utf-8')
+          actions = actions.replace('      - ".github/workflows/**"\n', '      - ".github/workflows/**"\n      - "tests/workflow_security_policy_test.py"\n', 1)
+          actions = actions.replace('          python3 tests/ci_preservation_policy_test.py\n', '          python3 tests/workflow_security_policy_test.py\n          python3 tests/ci_preservation_policy_test.py\n', 1)
+          actions_path.write_text(actions, encoding='utf-8')
+
+          export_path = root / '.github/workflows/provider-status-export.yml'
+          export = export_path.read_text(encoding='utf-8')
+          export = export.replace("    types: [completed]\n", "    types: [completed]\n    branches: [main]\n", 1)
+          export_path.write_text(export, encoding='utf-8')
+
+          security_path = root / 'SECURITY.md'
+          security = security_path.read_text(encoding='utf-8').rstrip() + '''\n\n## Repository and runtime hardening\n\nGitHub Actions use explicit least-privilege permissions and immutable full-length action SHAs. A repository policy test rejects `pull_request_target`, `write-all`, mutable external Action refs, and unpinned Docker action images. `CODEOWNERS` routes all changes — especially workflows, publication state, scripts and security controls — to the repository owner for review.\n\nThe provider worker is a defense-in-depth compatibility sandbox: it receives a reduced environment, blocks process spawning plus direct filesystem/network-capable Node modules, filters `process.getBuiltinModule`, rejects static dangerous imports, and is launched by health checks under Node's Permission Model with read-only access limited to the worker scripts, dependencies and staged provider inputs. Provider network access must go through the guarded `fetch` surface so SSRF, redirect, host-count and response-size limits remain effective. This still does not claim perfect hostile-code isolation; OS/container isolation remains the stronger long-term boundary.\n\nThe dependency gate installs the committed lockfile with lifecycle scripts disabled, checks high-severity advisories for the non-optional production tree, and runs the deterministic repository suite. The legacy `cheerio-without-node-native` package remains intentionally pinned because published upstream bundles still import it; replacing it requires provider compatibility evidence rather than a blind dependency substitution.\n\nFor a potentially sensitive vulnerability, avoid publishing exploit details in a normal public issue. Prefer GitHub private vulnerability reporting when available for the repository, or contact the repository owner privately.\n'''
+          security_path.write_text(security, encoding='utf-8')
+          PY
+
+      - name: Validate generated proposal locally
+        shell: bash
+        run: |
+          set -euo pipefail
+          node tests/provider_worker_security.test.cjs
+          python3 tests/workflow_security_policy_test.py
+          python3 -m py_compile scripts/validate_platform_runtime_policy.py tests/workflow_security_policy_test.py
+          git diff --check
+
+      - name: Build proposal commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "niakvio-security"
+          git config user.email "actions@users.noreply.github.com"
+          git add scripts/provider_worker.cjs scripts/health_check.mjs tests/provider_worker_security.test.cjs \
+            tests/workflow_security_policy_test.py .github/CODEOWNERS SECURITY.md \
+            .github/workflows/dependency-gate.yml .github/workflows/github-actions-gate.yml \
+            .github/workflows/provider-status-export.yml
+          git commit -m "security: harden provider sandbox and repository gates"
+          echo "FIELD_SECURITY_HARDENING_COMMIT=$(git rev-parse HEAD)"
+          git push origin HEAD:chore/final-security-hardening
