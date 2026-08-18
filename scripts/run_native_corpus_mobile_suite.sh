@@ -6,7 +6,7 @@ NIAKVIO="${WORKSPACE}/niakvio"
 MOBILE_ROOT="${WORKSPACE}/nuvio-mobile"
 ANALYZER="${NIAKVIO}/scripts/analyze_native_corpus_collection.cjs"
 RESTAGE="${NIAKVIO}/scripts/restage_native_corpus_client.py"
-FIXTURES=(interstellar mon-ninja-et-moi-3 breaking-bad-s01e01 revenant-s01e01 jujutsu-kaisen-s01e01 mushoku-tensei-s01e01)
+FIXTURES=(sinners interstellar mon-ninja-et-moi-3 breaking-bad-s01e01 revenant-s01e01 jujutsu-kaisen-s01e01 mushoku-tensei-s01e01)
 STATUS=0
 
 tasks=$("$MOBILE_ROOT/gradlew" -p "$MOBILE_ROOT" :composeApp:tasks --all -Pnuvio.android.distribution=full --console=plain) || exit $?
