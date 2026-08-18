@@ -17,7 +17,7 @@ const production = asRecord(policy.production);
 const maturity = asRecord(policy.skillMaturity);
 const learnedSkills = normalizeLearnedSkills(input.learnedSkills);
 const output = {
-  schemaVersion: 2,
+  schemaVersion: 3,
   brainVersion: BRAIN_CONTROL_PLANE_VERSION,
   mode: stringValue(input.mode, "quick"),
   plannerErrors: 0,
@@ -106,6 +106,7 @@ function buildPlan(item) {
     fallbackPolicy: stringValue(plan.fallbackPolicy, "lkg_only_after_repair_budget"),
     coreMutationPolicy: stringValue(plan.coreMutationPolicy, "proposal_only"),
     skillPolicy: maturity,
+    evidenceSource: nativePlayerEvidence(result) ? "official_native_reader" : "runtime_health",
   };
 }
 
@@ -167,6 +168,12 @@ function profilesForPlan(plan, learned) {
     "validate-final-media": ["adaptive_runtime_recovery"],
     "bootstrap-session": ["adaptive_runtime_recovery"],
     "alternate-official-route": ["adaptive_runtime_recovery"],
+    "resolve-terminal-media-for-reader": ["adaptive_runtime_recovery"],
+    "select-reader-compatible-source": ["adaptive_runtime_recovery"],
+    "refresh-malformed-media": ["adaptive_runtime_recovery"],
+    "repair-adaptive-manifest": ["adaptive_runtime_recovery"],
+    "select-decodable-source": ["adaptive_runtime_recovery"],
+    "prefer-cross-engine-compatible-source": ["adaptive_runtime_recovery"],
   };
   for (const hypothesis of hypotheses) {
     for (const profile of map[stringValue(hypothesis.id)] ?? []) profiles.push(profile);
@@ -196,6 +203,26 @@ function deriveEvidence(candidate, result) {
   const identityContradiction = finiteNumber(evidence.identity_contradiction_count, 0) > 0 || finiteNumber(evidence.duration_identity_mismatch_count, 0) > 0 || /identity|duration.*mismatch/.test(failureText);
   const invoked = !/not[_ -]?invoked|invalid[_ -]?request[_ -]?argument|object%20object|object object/.test(failureText);
   const contractDrift = status === "runtime_error" && /invalid[_ -]?request[_ -]?argument|object%20object|object object|signature|argument/.test(failureText);
+
+  const native = nativePlayerEvidence(result);
+  if (native) {
+    return {
+      invoked: true,
+      request: { mediaType },
+      playableStreams: 0,
+      stages: {
+        playerPlayback: {
+          attempted: true,
+          sourceStatus: native.sourceStatus,
+          sourceSignature: native.sourceSignature,
+          exoReady: native.exoReady,
+          exoCode: native.exoCode,
+          mpvReady: native.mpvReady,
+          playable: native.playable,
+        },
+      },
+    };
+  }
 
   if (playable > 0 && !identityContradiction) {
     return { invoked, contractDrift, playableStreams: playable, request: { mediaType }, stages: { validation: { attempted: true, playable: true, playableCount: playable, statuses } } };
@@ -230,6 +257,64 @@ function deriveEvidence(candidate, result) {
     return { invoked, request: { mediaType }, stages: { search: { attempted: true, status: gone || 200, matches: 0 } } };
   }
   return { invoked, contractDrift, request: { mediaType }, playableStreams: 0 };
+}
+
+function nativePlayerEvidence(result) {
+  const tests = asArray(result.tests).filter(isRecord);
+  const row = tests.find((test) => stringValue(test.status) === "native_player_failure" || stringValue(test.failure_class).startsWith("player_") || stringValue(test.failure_class) === "media_extraction_gap" || stringValue(test.failure_class) === "playback_context_gap");
+  if (!row) return null;
+  const details = asRecord(row.error_details);
+  const message = stringValue(details.message).toLowerCase();
+  const failureClass = stringValue(row.failure_class);
+  const exoCode = numericToken(message, "exo_code") || finiteNumber(details.code, 0) || exoCodeFromName(stringValue(details.code));
+  const sourceStatus = numericToken(message, "source_status") || firstStatus(row.network_observations);
+  const sourceSignature = stringToken(message, "signature") || (
+    failureClass === "media_extraction_gap" ? "html" : "unknown"
+  );
+  const mpvReady = booleanToken(message, "mpv_ready");
+  const exoReady = booleanToken(message, "exo_ready");
+  const playable = booleanToken(message, "playable");
+  return {
+    sourceStatus,
+    sourceSignature,
+    exoCode,
+    exoReady,
+    mpvReady,
+    playable,
+  };
+}
+
+function exoCodeFromName(value) {
+  const name = String(value || "");
+  const map = {
+    ERROR_CODE_PARSING_CONTAINER_MALFORMED: 3001,
+    ERROR_CODE_PARSING_MANIFEST_MALFORMED: 3002,
+    ERROR_CODE_PARSING_CONTAINER_UNSUPPORTED: 3003,
+    ERROR_CODE_PARSING_MANIFEST_UNSUPPORTED: 3004,
+    ERROR_CODE_DECODING_FAILED: 4003,
+    ERROR_CODE_DECODING_FORMAT_EXCEEDS_CAPABILITIES: 4004,
+    ERROR_CODE_DECODING_FORMAT_UNSUPPORTED: 4005,
+  };
+  return map[name] || 0;
+}
+function numericToken(text, name) {
+  const match = new RegExp(`(?:^|\\s)${name}=(-?[0-9]+)(?:\\s|$)`).exec(String(text || ""));
+  return match ? finiteNumber(match[1], 0) : 0;
+}
+function stringToken(text, name) {
+  const match = new RegExp(`(?:^|\\s)${name}=([a-z0-9_.:-]+)(?:\\s|$)`).exec(String(text || ""));
+  return match ? match[1] : "";
+}
+function booleanToken(text, name) {
+  const match = new RegExp(`(?:^|\\s)${name}=(true|false)(?:\\s|$)`).exec(String(text || ""));
+  return match?.[1] === "true";
+}
+function firstStatus(value) {
+  for (const row of asArray(value).filter(isRecord)) {
+    const status = Number(row.status);
+    if (Number.isFinite(status)) return status;
+  }
+  return 0;
 }
 
 function asRecord(value) {
