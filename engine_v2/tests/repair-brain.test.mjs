@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { BRAIN_CONTROL_PLANE_VERSION, classifyFailure, planRepair, recipeIsCompatible } from "../src/repair-brain.mjs";
@@ -82,5 +83,44 @@ assert.equal(plannerOutput.brainVersion, 3);
 assert.equal(plannerOutput.plannerErrors, 0);
 assert.ok(plannerOutput.plans["published:dirty-provider"]);
 assert.equal(plannerOutput.plans["published:healthy-provider"].action, "none");
+
+// A provider can return media successfully while the final media request is
+// blocked or gone. That is a playback-context failure, not a provider transport
+// failure. Misclassifying this sends the repair budget to the wrong layer.
+const playbackPayload = {
+  mode: "deep",
+  policy: dirtyPayload.policy,
+  learnedSkills: {},
+  items: [{
+    key: "published:stream-context",
+    candidate: { canonical_id: "stream-context", metadata: { supportedTypes: ["movie"] } },
+    result: {
+      status: "blocked",
+      evidence: { streams_returned: 2, streams_playable: 0 },
+      tests: [{
+        fixture: { category: "movie" },
+        stream_count: 2,
+        streams_playable: 0,
+        failure_class: "stream_http_forbidden",
+        network_observations: [{ status: 200 }, { status: 403 }],
+      }],
+    },
+    state: {},
+  }],
+};
+const playbackRun = spawnSync(process.execPath, [planner], { input: JSON.stringify(playbackPayload), encoding: "utf8" });
+assert.equal(playbackRun.status, 0, playbackRun.stderr);
+const playbackOutput = JSON.parse(playbackRun.stdout);
+const playbackPlan = playbackOutput.plans["published:stream-context"];
+assert.equal(playbackPlan.failureClass, "playback_context_gap");
+assert.equal(playbackPlan.hypotheses[0].id, "preserve-playback-context");
+assert.ok(playbackPlan.allowedProfiles.includes("adaptive_runtime_recovery"));
+
+// Deep repair children must inherit the original causal plan. Otherwise round 2
+// silently loses every allowed profile because PLANS is keyed by the parent.
+const deepRepairPath = fileURLToPath(new URL("../../scripts/run_adaptive_deep_repair.py", import.meta.url));
+const deepRepairSource = readFileSync(deepRepairPath, "utf8");
+assert.match(deepRepairSource, /parent_key = str\(\(candidate\.get\("runtime_repair"\) or \{\}\)\.get\("parent_key"\) or ""\)/);
+assert.match(deepRepairSource, /brain\.PLANS\.get\(parent_key or key\)/);
 
 console.log("engine v2 repair brain tests passed");
