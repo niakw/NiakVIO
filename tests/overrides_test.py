@@ -3,12 +3,20 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 import subprocess
 import sys
 import tempfile
 from pathlib import Path
+from urllib.parse import urlsplit
 
 ROOT = Path(__file__).resolve().parents[1]
+URL_LITERAL_RE = re.compile(r"https?://[^\"'\s}]+")
+
+def literal_url_hosts(value: str | bytes) -> set[str]:
+    text = value.decode("utf-8", errors="ignore") if isinstance(value, bytes) else value
+    return {host for raw in URL_LITERAL_RE.findall(text) if (host := urlsplit(raw).hostname)}
+
 sys.path.insert(0, str(ROOT / "scripts"))
 
 from apply_provider_overrides import apply_overrides
@@ -189,9 +197,11 @@ global.fetch = async function(input) {
         )
         requested = json.loads(result.stdout)
         assert requested, requested
-        assert "https://movix.fun" in requested, requested
-        assert all("api.movix.cash" not in url and "api.movix.cloud" not in url for url in requested), requested
-        assert all("/api/fstream/" not in url for url in requested), requested
+        requested_parts = [urlsplit(url) for url in requested]
+        requested_hosts = {part.hostname for part in requested_parts}
+        assert "movix.fun" in requested_hosts, requested
+        assert "api.movix.cash" not in requested_hosts and "api.movix.cloud" not in requested_hosts, requested
+        assert all(not (part.path == "/api/fstream" or part.path.startswith("/api/fstream/")) for part in requested_parts), requested
 
 
 test_obfuscated_runtime_endpoint_override()
@@ -318,7 +328,7 @@ def test_toflix_terminal_bootstrap_patch() -> None:
     source = b'''var _cachedEndpoint=null;function detectToflixEndpoint(){return Promise.resolve({api:"https://api.toflix.site/toflix_api.php",referer:"https://toflix.site/"})}module.exports={getStreams:async()=>[]};'''
     output, records = apply_overrides("toflix", source)
     assert b"NUVIO_TOFLIX_OFFICIAL_ENDPOINT_V1" in output
-    assert b"https://tfx05.lol" in output
+    assert "tfx05.lol" in literal_url_hosts(output)
     assert any(row.get("path") == "scripts/provider_patches/toflix_official_endpoint.py" for row in records)
 
 

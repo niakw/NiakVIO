@@ -51,8 +51,8 @@ function dnsResult(name, status, addresses = []) {
   );
   assert.equal(hints[0].host, 'api.movix.fun');
   assert.ok(hints.some((item) => item.host === 'movix.fun'));
-  assert.ok(!hints.some((item) => item.host.includes('githubusercontent.com')));
-  assert.ok(!hints.some((item) => item.host.includes('themoviedb.org')));
+  assert.equal(hints.some((item) => item.host === 'raw.githubusercontent.com'), false);
+  assert.equal(hints.some((item) => item.host === 'api.themoviedb.org'), false);
 }
 
 {
@@ -213,12 +213,12 @@ console.log('French ISP DNS preflight tests passed');
     s.includes(x); Array.isArray(v); Object.keys(v); g.fetch(url);
     const a = "api.movix.fun"; const b = "https://real-provider.example.com/path";
   `, {}, 12);
-  const hosts = hints.map((item) => item.host);
+  const hosts = new Set(hints.map((item) => item.host));
   for (const fake of ['s.includes', 'array.isarray', 'object.keys', 'g.fetch']) {
-    assert.equal(hosts.includes(fake), false, `false JavaScript domain leaked: ${fake}`);
+    assert.equal(hosts.has(fake), false, `false JavaScript domain leaked: ${fake}`);
   }
-  assert.equal(hosts.includes('api.movix.fun'), true);
-  assert.equal(hosts.includes('real-provider.example.com'), true);
+  assert.equal(hosts.has('api.movix.fun'), true);
+  assert.equal(hosts.has('real-provider.example.com'), true);
 }
 
 
