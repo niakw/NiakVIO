@@ -295,7 +295,11 @@ def main() -> int:
         if row_changed:
             row["version"] = bump(row.get("version"))
         if provider_id == "streamzo":
-            row["supportsExternalPlayer"] = "--nuvio-tv-global--" not in source_filename
+            scoped_direct_media = (
+                "--nuvio-tv-global--" in source_filename
+                or "NUVIO_CATALOGUE_SCOPE_QUARANTINE_V1" in source
+            )
+            row["supportsExternalPlayer"] = not scoped_direct_media
         sync_existing_vf(vf_rows, row)
         update_metadata(overrides, provenance, provider_id, filename, source_filename, old_sha, new_sha, options)
         report["providers"][provider_id] = {
