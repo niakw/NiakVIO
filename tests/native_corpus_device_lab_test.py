@@ -28,6 +28,7 @@ corpus = json.loads(CORPUS.read_text(encoding="utf-8"))
 manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
 
 expected_slugs = {
+    "sinners",
     "interstellar",
     "mon-ninja-et-moi-3",
     "breaking-bad-s01e01",
@@ -151,18 +152,41 @@ for required in (
 assert "url64=" not in prepare_core
 assert "headers64=" not in prepare_core
 
+# The official Android reader is now the final proof, and the same generated
+# reader probe must survive fixture restaging. No provider-specific rule belongs here.
+for source, label in ((prepare_client, "prepare"), (restage_client, "restage")):
+    assert "player_test" in source, (label, "player test integration")
+for required in (
+    "FIELD_NATIVE_PLAYBACK",
+    "FIELD_NATIVE_PLAYBACK_PROVIDER",
+    "ERROR_CODE_PARSING_CONTAINER_UNSUPPORTED",
+    "PlayerMediaSourceFactory",
+    "NuvioMpvSurfaceView",
+    "PlatformPlaybackDataSourceFactory",
+    "probeMimeType",
+    "player_container_unsupported",
+    "player_engine_compatibility_gap",
+):
+    assert required in prepare_client, required
+assert "goated" not in prepare_client.casefold()
+assert "cineby" not in prepare_client.casefold()
+assert "videasy" not in prepare_client.casefold()
+
 for suite, client in ((mobile_suite, "MOBILE"), (tv_suite, "TV")):
     assert 'for fixture in "${FIXTURES[@]}"' in suite, client
+    assert "sinners" in suite, client
     assert f"FIELD_NATIVE_CORPUS_{client}_STATUS" in suite, client
     assert f"FIELD_NATIVE_CORPUS_{client}_SUITE_STATUS" in suite, client
 
 for required in (
     "repeatedContradictions",
     "repeatedTransportFailures",
+    "repeatedPlaybackFailures",
     "repeatedSlow",
     "repeatedPlatformGaps",
     "systemicEmpty",
     "providerRuntimeErrors",
+    "playerFeedback",
     "FIELD_NATIVE_ENGINE_SIGNAL",
 ):
     assert required in summarizer, required
@@ -170,5 +194,6 @@ assert "native-corpus-engine-summary" in workflow
 
 print(
     "native corpus device lab coverage tests passed: "
-    f"fixtures={len(expected_slugs)} stageable_providers={len(stageable)} clients=3 isolated_android_jobs=2 collection_gate=true assertion_contract=true"
+    f"fixtures={len(expected_slugs)} stageable_providers={len(stageable)} clients=3 isolated_android_jobs=2 "
+    "collection_gate=true assertion_contract=true native_reader_feedback=true"
 )
