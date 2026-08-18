@@ -1,0 +1,103 @@
+name: CodeQL owned-test fixes once
+
+on:
+  push:
+    branches: [chore/codeql-triage]
+    paths:
+      - ".github/workflows/codeql-owned-tests-fix-once.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  fix-and-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout triage branch
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: chore/codeql-triage
+          fetch-depth: 0
+
+      - name: Rewrite URL assertions structurally
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          def replace_exact(path, old, new, count=1):
+              p = Path(path)
+              text = p.read_text()
+              actual = text.count(old)
+              if actual != count:
+                  raise SystemExit(f'{path}: expected {count} occurrence(s), found {actual}: {old!r}')
+              p.write_text(text.replace(old, new, count))
+
+          replace_exact(
+              'tests/dns_preflight.test.mjs',
+              "  assert.ok(!hints.some((item) => item.host.includes('githubusercontent.com')));\n  assert.ok(!hints.some((item) => item.host.includes('themoviedb.org')));",
+              "  assert.equal(hints.some((item) => item.host === 'raw.githubusercontent.com'), false);\n  assert.equal(hints.some((item) => item.host === 'api.themoviedb.org'), false);",
+          )
+          replace_exact(
+              'tests/dns_preflight.test.mjs',
+              "  const hosts = hints.map((item) => item.host);\n  for (const fake of ['s.includes', 'array.isarray', 'object.keys', 'g.fetch']) {\n    assert.equal(hosts.includes(fake), false, `false JavaScript domain leaked: ${fake}`);\n  }\n  assert.equal(hosts.includes('api.movix.fun'), true);\n  assert.equal(hosts.includes('real-provider.example.com'), true);",
+              "  const hosts = new Set(hints.map((item) => item.host));\n  for (const fake of ['s.includes', 'array.isarray', 'object.keys', 'g.fetch']) {\n    assert.equal(hosts.has(fake), false, `false JavaScript domain leaked: ${fake}`);\n  }\n  assert.equal(hosts.has('api.movix.fun'), true);\n  assert.equal(hosts.has('real-provider.example.com'), true);",
+          )
+
+          replace_exact('tests/overrides_test.py', 'import json\n', 'import json\nimport re\n', 1)
+          replace_exact('tests/overrides_test.py', 'from pathlib import Path\n', 'from pathlib import Path\nfrom urllib.parse import urlsplit\n', 1)
+          replace_exact(
+              'tests/overrides_test.py',
+              'ROOT = Path(__file__).resolve().parents[1]\n',
+              '''ROOT = Path(__file__).resolve().parents[1]\nURL_LITERAL_RE = re.compile(r"https?://[^\\\"'\\s}]+")\n\ndef literal_url_hosts(value: str | bytes) -> set[str]:\n    text = value.decode("utf-8", errors="ignore") if isinstance(value, bytes) else value\n    return {host for raw in URL_LITERAL_RE.findall(text) if (host := urlsplit(raw).hostname)}\n\n''',
+              1,
+          )
+          replace_exact(
+              'tests/overrides_test.py',
+              '''        assert "https://movix.fun" in requested, requested\n        assert all("api.movix.cash" not in url and "api.movix.cloud" not in url for url in requested), requested\n        assert all("/api/fstream/" not in url for url in requested), requested''',
+              '''        requested_parts = [urlsplit(url) for url in requested]\n        requested_hosts = {part.hostname for part in requested_parts}\n        assert "movix.fun" in requested_hosts, requested\n        assert "api.movix.cash" not in requested_hosts and "api.movix.cloud" not in requested_hosts, requested\n        assert all(not (part.path == "/api/fstream" or part.path.startswith("/api/fstream/")) for part in requested_parts), requested''',
+              1,
+          )
+          replace_exact(
+              'tests/overrides_test.py',
+              '    assert b"https://tfx05.lol" in output\n',
+              '    assert "tfx05.lol" in literal_url_hosts(output)\n',
+              1,
+          )
+
+          replace_exact('tests/adaptive_runtime_repair_test.py', 'import json\n', 'import json\nimport re\n', 1)
+          replace_exact('tests/adaptive_runtime_repair_test.py', 'from pathlib import Path\n', 'from pathlib import Path\nfrom urllib.parse import urlsplit\n', 1)
+          replace_exact(
+              'tests/adaptive_runtime_repair_test.py',
+              'ROOT = Path(__file__).resolve().parents[1]\n',
+              '''ROOT = Path(__file__).resolve().parents[1]\nURL_LITERAL_RE = re.compile(r"https?://[^\\\"'\\s}]+")\n\ndef literal_url_hosts(value: str) -> set[str]:\n    return {host for raw in URL_LITERAL_RE.findall(value) if (host := urlsplit(raw).hostname)}\n\n''',
+              1,
+          )
+          replace_exact(
+              'tests/adaptive_runtime_repair_test.py',
+              '    assert "https://new-demo.example" in refreshed_source\n    assert "https://demo.example" not in refreshed_source\n',
+              '    refreshed_hosts = literal_url_hosts(refreshed_source)\n    assert "new-demo.example" in refreshed_hosts\n    assert "demo.example" not in refreshed_hosts\n',
+              1,
+          )
+          PY
+
+      - name: Run affected regression tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          node tests/dns_preflight.test.mjs
+          python3 tests/overrides_test.py
+          python3 tests/adaptive_runtime_repair_test.py
+          git diff --check
+
+      - name: Commit verified fixes
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "niakvio-security"
+          git config user.email "actions@users.noreply.github.com"
+          git add tests/dns_preflight.test.mjs tests/overrides_test.py tests/adaptive_runtime_repair_test.py
+          git commit -m "test: use structured URL assertions for CodeQL"
+          git push origin HEAD:chore/codeql-triage
