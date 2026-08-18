@@ -1,0 +1,172 @@
+name: Native Nuvio player lab
+
+on:
+  workflow_dispatch:
+    inputs:
+      fixture:
+        description: Fixture to run through the real NuvioTV players
+        required: true
+        default: sinners
+        type: choice
+        options:
+          - sinners
+          - interstellar
+          - mon-ninja-et-moi-3
+          - breaking-bad-s01e01
+          - revenant-s01e01
+          - jujutsu-kaisen-s01e01
+          - mushoku-tensei-s01e01
+  pull_request:
+    paths:
+      - ".github/workflows/native-player-lab.yml"
+      - ".github/triggers/nuvio-client-lab.json"
+      - "scripts/prepare_native_player_lab.py"
+      - "scripts/analyze_native_player_lab.cjs"
+      - "scripts/prepare_native_corpus_client.py"
+      - "scripts/prepare_native_corpus_validation.py"
+      - "providers/**"
+      - "manifest.json"
+      - "provider-overrides.json"
+      - "scripts/provider_patches/**"
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/native-player-lab.yml"
+      - ".github/triggers/nuvio-client-lab.json"
+      - "scripts/prepare_native_player_lab.py"
+      - "scripts/analyze_native_player_lab.cjs"
+      - "scripts/prepare_native_corpus_client.py"
+      - "scripts/prepare_native_corpus_validation.py"
+      - "providers/**"
+      - "manifest.json"
+      - "provider-overrides.json"
+      - "scripts/provider_patches/**"
+  schedule:
+    - cron: "47 0 * * *"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: native-player-lab-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  tv-player-lab:
+    name: NuvioTV ExoPlayer + MPV playback evidence
+    runs-on: ubuntu-latest
+    timeout-minutes: 160
+    steps:
+      - name: Checkout NiakVIO generation
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          path: niakvio
+          persist-credentials: false
+
+      - name: Set up JDK
+        uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: "24"
+          package-manager-cache: false
+
+      - name: Resolve fixture and accepted NuvioTV ref
+        id: resolve
+        shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          INPUT_FIXTURE: ${{ inputs.fixture }}
+        run: |
+          set -euo pipefail
+          FIXTURE="sinners"
+          if [ "$EVENT_NAME" = "workflow_dispatch" ] && [ -n "${INPUT_FIXTURE:-}" ]; then
+            FIXTURE="$INPUT_FIXTURE"
+          fi
+          TV_SHA="$(node -e "const x=require('./niakvio/sources.json');process.stdout.write(x.nuvio_client_compatibility.clients['nuvio-tv'].accepted_ref)")"
+          test "${#TV_SHA}" -eq 40
+          echo "fixture=$FIXTURE" >> "$GITHUB_OUTPUT"
+          echo "tv_sha=$TV_SHA" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout accepted official NuvioTV and stage provider corpus
+        shell: bash
+        env:
+          FIXTURE: ${{ steps.resolve.outputs.fixture }}
+          TV_SHA: ${{ steps.resolve.outputs.tv_sha }}
+        run: |
+          set -euxo pipefail
+          git clone --filter=blob:none --no-checkout https://github.com/NuvioMedia/NuvioTV.git nuvio-tv
+          git -C nuvio-tv checkout "$TV_SHA"
+          touch nuvio-tv/local.properties nuvio-tv/local.dev.properties
+          python3 niakvio/scripts/prepare_native_corpus_client.py tv --fixture "$FIXTURE" --workspace "$GITHUB_WORKSPACE"
+          python3 niakvio/scripts/prepare_native_player_lab.py tv --fixture "$FIXTURE" --workspace "$GITHUB_WORKSPACE" --max-streams 3 --timeout-ms 18000
+
+      - name: Enable Linux KVM when available
+        shell: bash
+        run: |
+          if [ -e /dev/kvm ]; then
+            sudo chmod 666 /dev/kvm || true
+            ls -l /dev/kvm || true
+          fi
+
+      - name: Run real NuvioTV player lab in Android emulator
+        uses: ReactiveCircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d
+        env:
+          PLAYER_FIXTURE: ${{ steps.resolve.outputs.fixture }}
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_2
+          cores: 2
+          ram-size: 3072M
+          emulator-boot-timeout: 600
+          script: |
+            set -uo pipefail
+            adb logcat -c || true
+            STATUS=0
+            "$GITHUB_WORKSPACE/nuvio-tv/gradlew" -p "$GITHUB_WORKSPACE/nuvio-tv" :app:connectedFullDebugAndroidTest \
+              -Pandroid.testInstrumentationRunnerArguments.class=com.nuvio.tv.ui.screens.player.NiakvioNativePlayerLabTvTest \
+              --no-daemon --console=plain || STATUS=$?
+            adb logcat -d -s NiakvioPlayerLab:I '*:S' > "$GITHUB_WORKSPACE/tv-native-player-${PLAYER_FIXTURE}.log" || true
+            cat "$GITHUB_WORKSPACE/tv-native-player-${PLAYER_FIXTURE}.log" || true
+            node "$GITHUB_WORKSPACE/niakvio/scripts/analyze_native_player_lab.cjs" \
+              "$PLAYER_FIXTURE" \
+              "$GITHUB_WORKSPACE/tv-native-player-${PLAYER_FIXTURE}.log" \
+              "$GITHUB_WORKSPACE/player-lab-output" || STATUS=$?
+            exit "$STATUS"
+
+      - name: Validate sanitized player evidence
+        if: always()
+        shell: bash
+        env:
+          FIXTURE: ${{ steps.resolve.outputs.fixture }}
+        run: |
+          set -euo pipefail
+          test -s "player-lab-output/player-lab-summary-${FIXTURE}.json"
+          test -s "player-lab-output/player-repair-evidence-${FIXTURE}.json"
+          node - <<'NODE'
+          const fs=require('fs');
+          const files=fs.readdirSync('player-lab-output').filter(x=>x.endsWith('.json'));
+          for(const file of files){
+            const raw=fs.readFileSync(`player-lab-output/${file}`,'utf8');
+            if(/https?:\/\//i.test(raw)) throw new Error(`${file}: raw URL leaked`);
+            if(/authorization[=:]|cookie[=:]|token[=:]/i.test(raw)) throw new Error(`${file}: credential material leaked`);
+          }
+          NODE
+
+      - name: Upload player and repair evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: native-player-lab-${{ steps.resolve.outputs.fixture }}-${{ github.run_id }}
+          path: |
+            tv-native-player-${{ steps.resolve.outputs.fixture }}.log
+            player-lab-output/player-lab-summary-${{ steps.resolve.outputs.fixture }}.json
+            player-lab-output/player-repair-evidence-${{ steps.resolve.outputs.fixture }}.json
+          retention-days: 14
+          if-no-files-found: error
