@@ -6,7 +6,7 @@ NIAKVIO="${WORKSPACE}/niakvio"
 TV_ROOT="${WORKSPACE}/nuvio-tv"
 ANALYZER="${NIAKVIO}/scripts/analyze_native_corpus_collection.cjs"
 RESTAGE="${NIAKVIO}/scripts/restage_native_corpus_client.py"
-FIXTURES=(interstellar mon-ninja-et-moi-3 breaking-bad-s01e01 revenant-s01e01 jujutsu-kaisen-s01e01 mushoku-tensei-s01e01)
+FIXTURES=(sinners interstellar mon-ninja-et-moi-3 breaking-bad-s01e01 revenant-s01e01 jujutsu-kaisen-s01e01 mushoku-tensei-s01e01)
 STATUS=0
 
 for fixture in "${FIXTURES[@]}"; do
