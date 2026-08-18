@@ -204,18 +204,22 @@ function deriveEvidence(candidate, result) {
   if (status === "provider_unreachable" && /dns|enotfound|eai_again|getaddrinfo/.test(failureText)) {
     return { invoked, dns: { ok: false }, request: { mediaType } };
   }
-  if (status === "blocked" || blocked) {
-    return { invoked, dns: { ok: true }, request: { mediaType }, stages: { homepage: { status: blocked || 403 } } };
-  }
+  // Once a provider has returned media candidates, blocked/gone observations are
+  // playback evidence, not evidence that the provider homepage itself is blocked.
+  // Preserve that stage so the Brain repairs Referer/Origin/cookies/tokens rather
+  // than wasting a mutation on domain/session bootstrap.
   if (returned > 0) {
     return {
       invoked, contractDrift, request: { mediaType }, playableStreams: 0,
       stages: {
         player: { attempted: true, found: true },
         media: { attempted: true, found: true, streamCount: returned },
-        validation: { attempted: true, observed: true, playable: false, playableCount: 0, statuses: statuses.length ? statuses : [gone || 200] },
+        validation: { attempted: true, observed: true, playable: false, playableCount: 0, statuses: statuses.length ? statuses : [gone || blocked || 200] },
       },
     };
+  }
+  if (status === "blocked" || blocked) {
+    return { invoked, dns: { ok: true }, request: { mediaType }, stages: { homepage: { status: blocked || 403 } } };
   }
   if (/episode/.test(failureText)) {
     return { invoked, request: { mediaType: mediaType === "movie" ? "tv" : mediaType }, stages: { search: { attempted: true, status: 200, matches: 1 }, identity: { attempted: true, matched: true }, detail: { attempted: true, found: true }, episode: { attempted: true, found: false } } };
