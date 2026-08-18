@@ -1,0 +1,49 @@
+name: CodeQL alert export once
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/triggers/codeql-alert-export"
+
+permissions:
+  contents: read
+  security-events: read
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Export sanitized open CodeQL alerts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh api --paginate \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2026-03-10" \
+            "repos/${GITHUB_REPOSITORY}/code-scanning/alerts?state=open&per_page=100" \
+            --jq '.[] | {
+              number,
+              rule_id: .rule.id,
+              rule_name: .rule.name,
+              severity: .rule.security_severity_level,
+              tool: .tool.name,
+              path: .most_recent_instance.location.path,
+              start_line: .most_recent_instance.location.start_line,
+              message: .most_recent_instance.message.text
+            }' | jq -s '.' > codeql-open-alerts.json
+          jq 'group_by(.rule_id) | map({rule_id: .[0].rule_id, rule_name: .[0].rule_name, severity: .[0].severity, count: length})' codeql-open-alerts.json > codeql-rule-summary.json
+          echo "open_alerts=$(jq 'length' codeql-open-alerts.json)"
+
+      - name: Upload sanitized CodeQL alert report
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: codeql-open-alert-export
+          path: |
+            codeql-open-alerts.json
+            codeql-rule-summary.json
+          retention-days: 1
+          if-no-files-found: error
