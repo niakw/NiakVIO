@@ -3,12 +3,19 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import re
 import subprocess
 import sys
 import tempfile
 from pathlib import Path
+from urllib.parse import urlsplit
 
 ROOT = Path(__file__).resolve().parents[1]
+URL_LITERAL_RE = re.compile(r"https?://[^\"'\s}]+")
+
+def literal_url_hosts(value: str) -> set[str]:
+    return {host for raw in URL_LITERAL_RE.findall(value) if (host := urlsplit(raw).hostname)}
+
 sys.path.insert(0, str(ROOT / "scripts" / "adaptive_runtime"))
 sys.path.insert(1, str(ROOT / "scripts"))
 
@@ -80,8 +87,9 @@ with tempfile.TemporaryDirectory() as directory:
     assert refresh_error is None, refresh_error
     assert refreshed is not None
     refreshed_source = (stage / refreshed["local_path"]).read_text(encoding="utf-8")
-    assert "https://new-demo.example" in refreshed_source
-    assert "https://demo.example" not in refreshed_source
+    refreshed_hosts = literal_url_hosts(refreshed_source)
+    assert "new-demo.example" in refreshed_hosts
+    assert "demo.example" not in refreshed_hosts
     assert refreshed_source.count("NUVIO_VERIFIED_MEDIA_RUNTIME_RECOVERY_V5") == 1
 
     current_candidate = json.loads(json.dumps(refreshed))
