@@ -71,14 +71,15 @@
       "verified_ref": "6103a144485277f06ebc31456f1949c65b304e8e",
       "platforms": ["android-tv"],
       "contract": "automation/nuvio-tv-runtime-contract.json",
-      "audit_note": "2026-08-16: audited 52 commits from aa327f0e9964 to 6103a1444852. No full/plugin getStreams contract path, AddonApi, StreamRepositoryImpl/StreamRepository or Plugin model contract changed. Semantic player work includes subtitle/SDH handling and a parsing-error fallback that now probes the actual network MIME using the selected stream URL plus sanitized current playback headers instead of blindly forcing HLS; it preserves Referer/Origin/User-Agent headers and retries with the detected type. The bundled player library also changed, so this ref is accepted only together with the exact TV native-client/runtime proof executed by Niakvio on this generation.",
+      "audit_note": "2026-08-18: provider-to-screen navigation re-audited. StreamScreenViewModel consumes StreamRepository.getStreamsFromAllAddons, so ui/screens/stream is now a hard contract path alongside PluginManager/PluginRuntime and StreamRepositoryImpl. Any upstream change in the TV stream-selection surface must be re-reviewed instead of being auto-accepted as unrelated.",
       "contract_paths": [
         "app/src/full/java/com/nuvio/tv/core/plugin/",
         "app/src/main/java/com/nuvio/tv/data/local/PluginDataStore.kt",
         "app/src/main/java/com/nuvio/tv/data/remote/api/AddonApi.kt",
         "app/src/main/java/com/nuvio/tv/data/repository/StreamRepositoryImpl.kt",
         "app/src/main/java/com/nuvio/tv/domain/repository/StreamRepository.kt",
-        "app/src/main/java/com/nuvio/tv/domain/model/Plugin.kt"
+        "app/src/main/java/com/nuvio/tv/domain/model/Plugin.kt",
+        "app/src/main/java/com/nuvio/tv/ui/screens/stream/"
       ],
       "semantic_review_paths": [
         "app/src/main/java/com/nuvio/tv/core/player/",

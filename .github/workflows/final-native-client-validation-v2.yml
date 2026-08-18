@@ -42,7 +42,7 @@ permissions:
 
 concurrency:
   group: final-native-client-validation-v2-${{ github.ref }}
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   desktop-native-runtime:
@@ -63,6 +63,9 @@ jobs:
         with:
           distribution: temurin
           java-version: "17"
+
+      - name: Set up Gradle cache
+        uses: gradle/actions/setup-gradle@0723195856401067f7a2779048b490ace7a47d7c
 
       - name: Install official Linux player dependencies
         run: |
@@ -154,8 +157,40 @@ jobs:
           python3 niakvio/scripts/harden_nuvio_mobile_device_test.py "$GITHUB_WORKSPACE/nuvio-mobile"
           python3 niakvio/scripts/isolate_native_android_tests.py mobile "$GITHUB_WORKSPACE/nuvio-mobile"
 
+      - name: Set up Gradle cache
+        uses: gradle/actions/setup-gradle@0723195856401067f7a2779048b490ace7a47d7c
+
+      - name: Precompile Mobile device test before emulator boot
+        working-directory: nuvio-mobile
+        run: ./gradlew :composeApp:compileAndroidDeviceTest -Pnuvio.android.distribution=full --build-cache --no-daemon --console=plain
+
       - name: Enable KVM
         run: if [ -e /dev/kvm ]; then sudo chmod 666 /dev/kvm || true; fi
+
+      - name: Restore Mobile AVD snapshot
+        id: avd-cache-mobile
+        uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25
+        with:
+          path: |
+            ~/.android/avd/*
+            ~/.android/adb*
+          key: avd-v1-${{ runner.os }}-mobile-api35-google_apis-x86_64-pixel_2
+
+      - name: Create Mobile AVD snapshot on cache miss
+        if: steps.avd-cache-mobile.outputs.cache-hit != 'true'
+        uses: ReactiveCircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_2
+          cores: 2
+          ram-size: 2048M
+          force-avd-creation: false
+          emulator-boot-timeout: 600
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
+          disable-animations: false
+          script: echo "Generated clean Mobile AVD snapshot."
 
       - name: Execute official Mobile PluginRuntime on phone AVD
         uses: ReactiveCircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d
@@ -166,7 +201,9 @@ jobs:
           profile: pixel_2
           cores: 2
           ram-size: 2048M
+          force-avd-creation: false
           emulator-boot-timeout: 600
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
           script: bash "$GITHUB_WORKSPACE/niakvio/scripts/native_mobile_playback_proof.sh"
 
       - name: Upload Mobile proof
@@ -212,8 +249,36 @@ jobs:
           python3 niakvio/scripts/prepare_native_client_validation.py android --workspace "$GITHUB_WORKSPACE"
           python3 niakvio/scripts/isolate_native_android_tests.py tv "$GITHUB_WORKSPACE/nuvio-tv"
 
+      - name: Set up Gradle cache
+        uses: gradle/actions/setup-gradle@0723195856401067f7a2779048b490ace7a47d7c
+
       - name: Enable KVM
         run: if [ -e /dev/kvm ]; then sudo chmod 666 /dev/kvm || true; fi
+
+      - name: Restore TV AVD snapshot
+        id: avd-cache-tv
+        uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25
+        with:
+          path: |
+            ~/.android/avd/*
+            ~/.android/adb*
+          key: avd-v1-${{ runner.os }}-tv-api31-android-tv-x86-tv_1080p
+
+      - name: Create TV AVD snapshot on cache miss
+        if: steps.avd-cache-tv.outputs.cache-hit != 'true'
+        uses: ReactiveCircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d
+        with:
+          api-level: 31
+          target: android-tv
+          arch: x86
+          profile: tv_1080p
+          cores: 2
+          ram-size: 2048M
+          force-avd-creation: false
+          emulator-boot-timeout: 600
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
+          disable-animations: false
+          script: echo "Generated clean TV AVD snapshot."
 
       - name: Execute official NuvioTV PluginRuntime on Android TV AVD
         uses: ReactiveCircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d
@@ -224,7 +289,9 @@ jobs:
           profile: tv_1080p
           cores: 2
           ram-size: 2048M
+          force-avd-creation: false
           emulator-boot-timeout: 600
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
           script: bash "$GITHUB_WORKSPACE/niakvio/scripts/native_tv_playback_proof.sh"
 
       - name: Upload TV proof

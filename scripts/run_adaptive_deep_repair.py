@@ -55,7 +55,9 @@ def _brain_run_health(*, stage, registry_path, output_dir, mode, health_check=lo
 
 def _brain_matching(candidate, result, source_text, config=None):
     profiles = list(_base_matching(candidate, result, source_text, config))
-    plan = brain.PLANS.get(str(candidate.get("key") or "")) or {}
+    key = str(candidate.get("key") or "")
+    parent_key = str((candidate.get("runtime_repair") or {}).get("parent_key") or "")
+    plan = brain.PLANS.get(parent_key or key) or {}
     if str(plan.get("action") or "") != "probe-targeted-repair":
         return []
     allowed = {str(value) for value in plan.get("allowedProfiles") or [] if str(value)}

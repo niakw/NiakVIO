@@ -6,6 +6,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 WORKFLOW = ROOT / ".github/workflows/native-corpus-device-lab.yml"
+TARGETED_WORKFLOW = ROOT / ".github/workflows/native-corpus-device-targeted.yml"
 PREPARE_CORE = ROOT / "scripts/prepare_native_corpus_validation.py"
 PREPARE_CLIENT = ROOT / "scripts/prepare_native_corpus_client.py"
 RESTAGE_CLIENT = ROOT / "scripts/restage_native_corpus_client.py"
@@ -17,6 +18,7 @@ CORPUS = ROOT / ".github/triggers/nuvio-client-lab.json"
 MANIFEST = ROOT / "manifest.json"
 
 workflow = WORKFLOW.read_text(encoding="utf-8")
+targeted_workflow = TARGETED_WORKFLOW.read_text(encoding="utf-8")
 prepare_core = PREPARE_CORE.read_text(encoding="utf-8")
 prepare_client = PREPARE_CLIENT.read_text(encoding="utf-8")
 restage_client = RESTAGE_CLIENT.read_text(encoding="utf-8")
@@ -73,8 +75,47 @@ assert "NuvioMedia/NuvioDesktop.git" not in mobile_section
 assert "NuvioMedia/NuvioTV.git" in tv_section
 assert "NuvioMedia/NuvioMobile.git" not in tv_section
 assert "NuvioMedia/NuvioDesktop.git" not in tv_section
-assert mobile_section.count("ReactiveCircus/android-emulator-runner@") == 1
-assert tv_section.count("ReactiveCircus/android-emulator-runner@") == 1
+# One cold-cache snapshot-generation invocation + one runtime invocation. Warm runs skip the first.
+assert mobile_section.count("ReactiveCircus/android-emulator-runner@") == 2
+assert tv_section.count("ReactiveCircus/android-emulator-runner@") == 2
+
+# Android profiles are cached as clean snapshots and reused without saving test state.
+for section, cache_key in (
+    (mobile_section, "avd-v1-${{ runner.os }}-mobile-api35-google_apis-x86_64-pixel_2"),
+    (tv_section, "avd-v1-${{ runner.os }}-tv-api31-android-tv-x86-tv_1080p"),
+):
+    assert "gradle/actions/setup-gradle@0723195856401067f7a2779048b490ace7a47d7c" in section
+    assert "actions/cache@caa296126883cff596d87d8935842f9db880ef25" in section
+    assert "~/.android/avd/*" in section
+    assert "~/.android/adb*" in section
+    assert cache_key in section
+    assert section.count("force-avd-creation: false") == 2
+    assert "-no-snapshot-save" in section
+
+# TV corpus must be a genuine Android TV proof, not a phone AVD labelled as TV.
+assert "api-level: 31" in tv_section
+assert "target: android-tv" in tv_section
+assert "arch: x86" in tv_section
+assert "profile: tv_1080p" in tv_section
+assert "profile: pixel_2" not in tv_section
+
+# Targeted retries stay per-device, but TV is one job/one emulator for all six fixtures.
+assert "- tv\n          - mobile\n          - desktop\n          - all" in targeted_workflow
+assert 'targets = [{"device": device, "fixture": "all"}]' in targeted_workflow
+assert '{"device": "tv", "fixture": "all"}' in targeted_workflow
+assert 'run_native_corpus_tv_suite.sh' in targeted_workflow
+assert 'run-tv-targeted.sh' not in targeted_workflow
+assert 'TV_CORPUS_FIXTURE' not in targeted_workflow
+targeted_tv = targeted_workflow.split("- name: Restore TV AVD snapshot", 1)[1]
+assert "api-level: 31" in targeted_tv
+assert "target: android-tv" in targeted_tv
+assert "arch: x86" in targeted_tv
+assert "profile: tv_1080p" in targeted_tv
+assert "avd-v1-${{ runner.os }}-tv-api31-android-tv-x86-tv_1080p" in targeted_tv
+assert "force-avd-creation: false" in targeted_tv
+assert "-no-snapshot-save" in targeted_tv
+assert "run_native_corpus_mobile_suite.sh" in targeted_workflow
+assert "avd-v1-${{ runner.os }}-mobile-api35-google_apis-x86_64-pixel_2" in targeted_workflow
 
 for required in (
     "prepare_native_corpus_client.py",
@@ -170,5 +211,5 @@ assert "native-corpus-engine-summary" in workflow
 
 print(
     "native corpus device lab coverage tests passed: "
-    f"fixtures={len(expected_slugs)} stageable_providers={len(stageable)} clients=3 isolated_android_jobs=2 collection_gate=true assertion_contract=true"
+    f"fixtures={len(expected_slugs)} stageable_providers={len(stageable)} clients=3 isolated_android_jobs=2 cached_avds=true real_tv=true targeted_single_boot=true collection_gate=true assertion_contract=true"
 )

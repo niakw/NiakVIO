@@ -20,6 +20,7 @@ on:
       - "scripts/prepare_native_corpus_client.py"
       - "scripts/prepare_native_corpus_validation.py"
       - "scripts/restage_native_corpus_client.py"
+      - "scripts/run_native_corpus_mobile_suite.sh"
       - "scripts/run_native_corpus_tv_suite.sh"
       - "scripts/analyze_native_corpus_collection.cjs"
 
@@ -65,23 +66,13 @@ jobs:
           from pathlib import Path
 
           device = os.environ["DEVICE"]
-          fixtures = [
-              "interstellar",
-              "mon-ninja-et-moi-3",
-              "breaking-bad-s01e01",
-              "revenant-s01e01",
-              "jujutsu-kaisen-s01e01",
-              "mushoku-tensei-s01e01",
-          ]
-          if device == "tv":
-              targets = [{"device": "tv", "fixture": fixture} for fixture in fixtures]
-          elif device in {"desktop", "mobile"}:
+          if device in {"desktop", "mobile", "tv"}:
               targets = [{"device": device, "fixture": "all"}]
           elif device == "all":
               targets = [
                   {"device": "desktop", "fixture": "all"},
                   {"device": "mobile", "fixture": "all"},
-                  *({"device": "tv", "fixture": fixture} for fixture in fixtures),
+                  {"device": "tv", "fixture": "all"},
               ]
           else:
               raise SystemExit(f"unsupported device: {device}")
@@ -137,7 +128,6 @@ jobs:
         shell: bash
         env:
           DEVICE: ${{ matrix.device }}
-          FIXTURE: ${{ matrix.fixture }}
           NUVIO_DESKTOP_SHA: ${{ needs.resolve.outputs.desktop_sha }}
           NUVIO_MOBILE_SHA: ${{ needs.resolve.outputs.mobile_sha }}
           NUVIO_TV_SHA: ${{ needs.resolve.outputs.tv_sha }}
@@ -161,9 +151,13 @@ jobs:
               git clone --filter=blob:none --no-checkout https://github.com/NuvioMedia/NuvioTV.git nuvio-tv
               git -C nuvio-tv checkout "$NUVIO_TV_SHA"
               touch nuvio-tv/local.properties nuvio-tv/local.dev.properties
-              python3 niakvio/scripts/prepare_native_corpus_client.py tv --fixture "$FIXTURE" --workspace "$GITHUB_WORKSPACE"
+              python3 niakvio/scripts/prepare_native_corpus_client.py tv --fixture interstellar --workspace "$GITHUB_WORKSPACE"
               ;;
           esac
+
+      - name: Set up Gradle cache
+        if: matrix.device != 'desktop'
+        uses: gradle/actions/setup-gradle@0723195856401067f7a2779048b490ace7a47d7c
 
       - name: Enable Linux KVM when available
         if: matrix.device != 'desktop'
@@ -173,6 +167,58 @@ jobs:
             sudo chmod 666 /dev/kvm || true
             ls -l /dev/kvm || true
           fi
+
+      - name: Restore Mobile AVD snapshot
+        if: matrix.device == 'mobile'
+        id: avd-cache-mobile
+        uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25
+        with:
+          path: |
+            ~/.android/avd/*
+            ~/.android/adb*
+          key: avd-v1-${{ runner.os }}-mobile-api35-google_apis-x86_64-pixel_2
+
+      - name: Create Mobile AVD snapshot on cache miss
+        if: matrix.device == 'mobile' && steps.avd-cache-mobile.outputs.cache-hit != 'true'
+        uses: ReactiveCircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_2
+          cores: 2
+          ram-size: 2048M
+          force-avd-creation: false
+          emulator-boot-timeout: 600
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
+          disable-animations: false
+          script: echo "Generated clean Mobile AVD snapshot."
+
+      - name: Restore TV AVD snapshot
+        if: matrix.device == 'tv'
+        id: avd-cache-tv
+        uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25
+        with:
+          path: |
+            ~/.android/avd/*
+            ~/.android/adb*
+          key: avd-v1-${{ runner.os }}-tv-api31-android-tv-x86-tv_1080p
+
+      - name: Create TV AVD snapshot on cache miss
+        if: matrix.device == 'tv' && steps.avd-cache-tv.outputs.cache-hit != 'true'
+        uses: ReactiveCircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d
+        with:
+          api-level: 31
+          target: android-tv
+          arch: x86
+          profile: tv_1080p
+          cores: 2
+          ram-size: 2048M
+          force-avd-creation: false
+          emulator-boot-timeout: 600
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
+          disable-animations: false
+          script: echo "Generated clean TV AVD snapshot."
 
       - name: Execute six works across every provider in official Desktop runtime
         if: matrix.device == 'desktop'
@@ -207,65 +253,25 @@ jobs:
           profile: pixel_2
           cores: 2
           ram-size: 2048M
+          force-avd-creation: false
           emulator-boot-timeout: 600
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
           script: bash "$GITHUB_WORKSPACE/niakvio/scripts/run_native_corpus_mobile_suite.sh"
 
-      - name: Prepare targeted TV fixture wrapper
-        if: matrix.device == 'tv'
-        shell: bash
-        env:
-          FIXTURE: ${{ matrix.fixture }}
-        run: |
-          cat > "$GITHUB_WORKSPACE/run-tv-targeted.sh" <<'EOF'
-          #!/usr/bin/env bash
-          set -uo pipefail
-          FIXTURE="${TV_CORPUS_FIXTURE:?missing TV_CORPUS_FIXTURE}"
-          RESULT_LOG="$GITHUB_WORKSPACE/tv-native-corpus-${FIXTURE}.log"
-          BOOTSTRAP_LOG="$GITHUB_WORKSPACE/tv-native-corpus-${FIXTURE}-bootstrap.log"
-          {
-            echo "=== TARGETED TV CORPUS FIXTURE: $FIXTURE ==="
-            date -u
-            echo "workspace=$GITHUB_WORKSPACE"
-            echo "--- adb devices ---"
-            adb devices -l || true
-            echo "--- TV Gradle entry points ---"
-            ls -l "$GITHUB_WORKSPACE/nuvio-tv/gradlew" || true
-            find "$GITHUB_WORKSPACE/nuvio-tv" -maxdepth 2 \( -name settings.gradle -o -name settings.gradle.kts -o -name build.gradle -o -name build.gradle.kts \) -print || true
-            echo "--- TV native corpus fixture ---"
-            adb logcat -c || true
-            RUNTIME_STATUS=0
-            "$GITHUB_WORKSPACE/nuvio-tv/gradlew" -p "$GITHUB_WORKSPACE/nuvio-tv" :app:connectedFullDebugAndroidTest --no-daemon --console=plain || RUNTIME_STATUS=$?
-            adb logcat -d -s NiakvioCorpus:I '*:S' > "$RESULT_LOG" || true
-            cat "$RESULT_LOG" || true
-            COLLECTION_STATUS=0
-            node "$GITHUB_WORKSPACE/niakvio/scripts/analyze_native_corpus_collection.cjs" "$FIXTURE" "$RESULT_LOG" || COLLECTION_STATUS=$?
-            echo "FIELD_NATIVE_CORPUS_TV_STATUS fixture=$FIXTURE runtime=$RUNTIME_STATUS collection=$COLLECTION_STATUS"
-            STATUS=0
-            if [ "$RUNTIME_STATUS" -ne 0 ] || [ "$COLLECTION_STATUS" -ne 0 ]; then STATUS=1; fi
-            echo "FIELD_NATIVE_CORPUS_TV_FIXTURE_STATUS fixture=$FIXTURE status=$STATUS"
-            exit "$STATUS"
-          } 2>&1 | tee "$BOOTSTRAP_LOG"
-          status=${PIPESTATUS[0]}
-          echo "FIELD_NATIVE_CORPUS_TV_BOOTSTRAP_STATUS fixture=$FIXTURE status=$status" | tee -a "$BOOTSTRAP_LOG"
-          exit "$status"
-          EOF
-          chmod +x "$GITHUB_WORKSPACE/run-tv-targeted.sh"
-          echo "TV_CORPUS_FIXTURE=$FIXTURE" >> "$GITHUB_ENV"
-
-      - name: Execute one work across every provider in isolated TV emulator
+      - name: Execute six works across every provider in isolated Android TV emulator
         if: matrix.device == 'tv'
         uses: ReactiveCircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d
-        env:
-          TV_CORPUS_FIXTURE: ${{ matrix.fixture }}
         with:
-          api-level: 35
-          target: google_apis
-          arch: x86_64
-          profile: pixel_2
+          api-level: 31
+          target: android-tv
+          arch: x86
+          profile: tv_1080p
           cores: 2
           ram-size: 2048M
+          force-avd-creation: false
           emulator-boot-timeout: 600
-          script: bash "$GITHUB_WORKSPACE/run-tv-targeted.sh"
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
+          script: bash "$GITHUB_WORKSPACE/niakvio/scripts/run_native_corpus_tv_suite.sh"
 
       - name: Upload sanitized native corpus logs
         if: always()
