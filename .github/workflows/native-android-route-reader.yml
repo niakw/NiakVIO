@@ -52,6 +52,7 @@ on:
       - "scripts/capture_native_device_frontend.sh"
       - "scripts/watch_native_device_frontend.sh"
       - "scripts/native_player_diagnostics_codegen.py"
+      - "scripts/native_player_diagnostics.cjs"
       - "scripts/native_evidence_completeness.cjs"
       - "scripts/run_native_corpus_tv_suite.sh"
       - "scripts/run_native_corpus_mobile_suite.sh"
@@ -225,9 +226,6 @@ jobs:
           touch nuvio-mobile/local.properties
           python3 niakvio/scripts/prepare_native_reader_acceptance.py mobile --fixture sinners-2025 --workspace "$GITHUB_WORKSPACE" --manifest manifest.json --provider all --streams all --initial
           python3 niakvio/scripts/harden_nuvio_mobile_device_test.py "$GITHUB_WORKSPACE/nuvio-mobile"
-      - name: Precompile Mobile device test before emulator boot
-        working-directory: nuvio-mobile
-        run: ./gradlew :composeApp:compileAndroidDeviceTest -Pnuvio.android.distribution=full --build-cache --console=plain
       - name: Enable KVM
         run: if [ -e /dev/kvm ]; then sudo chmod 666 /dev/kvm || true; fi
       - name: Restore Mobile AVD snapshot
