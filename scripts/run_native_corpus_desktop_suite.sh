@@ -10,6 +10,7 @@ READER_GATE="${NIAKVIO}/scripts/gate_native_reader_result.cjs"
 COVERAGE_GATE="${NIAKVIO}/scripts/gate_native_reader_coverage.cjs"
 INSTRUMENTER="${NIAKVIO}/scripts/instrument_native_desktop_evidence.py"
 REQUEST_CONTRACT="${NIAKVIO}/scripts/augment_native_corpus_request_contract.py"
+PROVIDER_LOADING="${NIAKVIO}/scripts/augment_native_provider_loading.py"
 PLAYER_AUGMENT="${NIAKVIO}/scripts/augment_native_desktop_player.py"
 FRONTEND_PHASES="${NIAKVIO}/scripts/complete_native_desktop_frontend_phases.py"
 TEST_SOURCE="${DESKTOP_ROOT}/composeApp/src/desktopTest/kotlin/com/nuvio/app/features/plugins/NiakvioNativeCorpusDesktopTest.kt"
@@ -21,6 +22,9 @@ PRIMARY_FIXTURE="${NIAKVIO_PRIMARY_FIXTURE:-sinners-2025}"
 PRIMARY_STREAM_SCOPE="${NIAKVIO_PRIMARY_STREAM_SCOPE:-all}"
 REGRESSION_STREAM_SCOPE="${NIAKVIO_REGRESSION_STREAM_SCOPE:-2}"
 REQUIRE_READER_SUCCESS="${NIAKVIO_REQUIRE_READER_SUCCESS:-1}"
+SOURCE_SHA="${NIAKVIO_SOURCE_SHA:-$(git -C "$NIAKVIO" rev-parse HEAD)}"
+SOURCE_REPOSITORY="${GITHUB_REPOSITORY:-niakw/NiakVIO}"
+MANIFEST_URL="https://raw.githubusercontent.com/${SOURCE_REPOSITORY}/${SOURCE_SHA}/${TARGET_MANIFEST}"
 
 case "$(uname -s)" in
   Darwin) HOST_OS="macos" ;;
@@ -42,7 +46,7 @@ fi
 python3 "$INSTRUMENTER" "$DESKTOP_ROOT" || exit $?
 STATUS=0
 
-echo "FIELD_NATIVE_CORPUS_DESKTOP_PROFILE os=$HOST_OS fixtures=${#FIXTURES[@]} provider=${TARGET_PROVIDER:-all} manifest=$TARGET_MANIFEST primary_stream_scope=$PRIMARY_STREAM_SCOPE regression_stream_scope=$REGRESSION_STREAM_SCOPE official_player=native_player_controller"
+echo "FIELD_NATIVE_CORPUS_DESKTOP_PROFILE os=$HOST_OS fixtures=${#FIXTURES[@]} provider=${TARGET_PROVIDER:-all} manifest=$TARGET_MANIFEST primary_stream_scope=$PRIMARY_STREAM_SCOPE regression_stream_scope=$REGRESSION_STREAM_SCOPE official_player=native_player_controller official_repository_loading=true"
 for fixture in "${FIXTURES[@]}"; do
   STREAM_SCOPE="$REGRESSION_STREAM_SCOPE"
   if [[ "$fixture" = "$PRIMARY_FIXTURE" ]]; then STREAM_SCOPE="$PRIMARY_STREAM_SCOPE"; fi
@@ -50,6 +54,7 @@ for fixture in "${FIXTURES[@]}"; do
 
   python3 "$RESTAGE" desktop --fixture "$fixture" --workspace "$WORKSPACE" "${PROVIDER_ARGS[@]}" --manifest "$TARGET_MANIFEST" || { STATUS=1; continue; }
   python3 "$REQUEST_CONTRACT" desktop --fixture "$fixture" --manifest "$TARGET_MANIFEST" --source "$TEST_SOURCE" || { STATUS=1; continue; }
+  python3 "$PROVIDER_LOADING" desktop --manifest "$TARGET_MANIFEST" --manifest-url "$MANIFEST_URL" --source "$TEST_SOURCE" --platform "$HOST_OS" || { STATUS=1; continue; }
   EXPECTED_MINUTES="$(python3 - "$fixture" "$NIAKVIO/.github/triggers/nuvio-client-lab.json" <<'PY'
 import json, sys
 slug, path = sys.argv[1], sys.argv[2]
@@ -78,8 +83,9 @@ PY
     RUNTIME_STATUS=${PIPESTATUS[0]}
   fi
 
-  # The generated test writes ordered corpus/player/front-end markers. Kermit emits
-  # provider HTTP evidence to Gradle stdout; append only NiakVIO's sanitized fields.
+  # The generated test writes ordered corpus/provider-load/player/front-end markers.
+  # Kermit emits provider HTTP evidence to Gradle stdout; append only NiakVIO's
+  # sanitized fields, never the client's raw request logs.
   if [[ -s "$BASE_LOG" ]]; then
     cp "$BASE_LOG" "$LOG"
   else
