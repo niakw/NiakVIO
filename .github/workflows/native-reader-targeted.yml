@@ -38,6 +38,7 @@ on:
       - "scripts/run_native_corpus_mobile_suite.sh"
       - "scripts/analyze_native_corpus_results.cjs"
       - "engine_v2/src/repair-brain.mjs"
+      - "engine_v2/scripts/diagnose-native-reader.mjs"
 
 permissions:
   contents: read
@@ -161,12 +162,27 @@ jobs:
           emulator-boot-timeout: 600
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
           script: bash "$GITHUB_WORKSPACE/niakvio/scripts/run_native_corpus_tv_suite.sh"
+      - name: Build targeted TV Brain diagnosis
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          logs=("$GITHUB_WORKSPACE"/tv-native-corpus-*.log)
+          if [ "${#logs[@]}" -eq 0 ]; then
+            echo "No TV reader evidence log was produced." >&2
+            exit 2
+          fi
+          node niakvio/engine_v2/scripts/diagnose-native-reader.mjs --output "$GITHUB_WORKSPACE/tv-targeted-reader-brain.json" "${logs[@]}"
+          cat "$GITHUB_WORKSPACE/tv-targeted-reader-brain.json"
       - name: Upload targeted TV reader evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: targeted-reader-tv-${{ needs.resolve.outputs.fixture }}-${{ needs.resolve.outputs.provider }}-${{ github.run_id }}
-          path: tv-native-corpus-*.log
+          path: |
+            tv-native-corpus-*.log
+            tv-targeted-reader-brain.json
           retention-days: 7
           if-no-files-found: warn
 
@@ -238,11 +254,26 @@ jobs:
           emulator-boot-timeout: 600
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
           script: bash "$GITHUB_WORKSPACE/niakvio/scripts/run_native_corpus_mobile_suite.sh"
+      - name: Build targeted Mobile Brain diagnosis
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          logs=("$GITHUB_WORKSPACE"/mobile-native-corpus-*.log)
+          if [ "${#logs[@]}" -eq 0 ]; then
+            echo "No Mobile reader evidence log was produced." >&2
+            exit 2
+          fi
+          node niakvio/engine_v2/scripts/diagnose-native-reader.mjs --output "$GITHUB_WORKSPACE/mobile-targeted-reader-brain.json" "${logs[@]}"
+          cat "$GITHUB_WORKSPACE/mobile-targeted-reader-brain.json"
       - name: Upload targeted Mobile reader evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: targeted-reader-mobile-${{ needs.resolve.outputs.fixture }}-${{ needs.resolve.outputs.provider }}-${{ github.run_id }}
-          path: mobile-native-corpus-*.log
+          path: |
+            mobile-native-corpus-*.log
+            mobile-targeted-reader-brain.json
           retention-days: 7
           if-no-files-found: warn
