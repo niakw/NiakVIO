@@ -52,7 +52,9 @@ def manifest_types(path: Path) -> dict[str, list[str]]:
         seen.add(key)
         raw_types = row.get("supportedTypes")
         if not isinstance(raw_types, list) or not raw_types:
-            raw_types = ["movie", "tv"]
+            raise SystemExit(
+                f"provider {provider_id}: supportedTypes must be a non-empty list of canonical types"
+            )
         types: list[str] = []
         for raw in raw_types:
             typ = str(raw or "").strip().lower()
