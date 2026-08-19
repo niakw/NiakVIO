@@ -258,6 +258,16 @@ jobs:
         with:
           name: native-reader-acceptance-tv-${{ github.run_id }}
           path: baseline-reader
+      - name: Restore prior sanitized reader repair memory
+        shell: bash
+        run: |
+          set -euo pipefail
+          git -C niakvio fetch origin brain-learning/proposals:refs/remotes/origin/brain-learning/proposals || true
+          if git -C niakvio cat-file -e refs/remotes/origin/brain-learning/proposals:engine_v2/learning/latest.json 2>/dev/null; then
+            git -C niakvio show refs/remotes/origin/brain-learning/proposals:engine_v2/learning/latest.json > niakvio/native-reader-learning-previous.json
+          else
+            printf '{}\n' > niakvio/native-reader-learning-previous.json
+          fi
       - name: Materialize bounded Brain mutations for Sinners
         id: repair
         shell: bash
@@ -272,6 +282,7 @@ jobs:
           python3 niakvio/scripts/build_native_reader_brain_repair.py \
             --diagnosis "$BEFORE" \
             --manifest niakvio/manifest.json \
+            --learning-state niakvio/native-reader-learning-previous.json \
             --output-dir niakvio/native-reader-repair \
             --fixture sinners-2025 \
             --max-providers 4
