@@ -5,6 +5,7 @@ import importlib.util
 import json
 import tempfile
 from pathlib import Path
+from urllib.parse import urlparse
 
 ROOT = Path(__file__).resolve().parents[1]
 module_path = ROOT / 'scripts/prepare_native_corpus_client.py'
@@ -25,11 +26,23 @@ hotfix_manifest = {
     if isinstance(row, dict) and row.get('id')
 }
 
+
+def expected_local_source(filename: str) -> Path:
+    raw = str(filename or '')
+    if raw.startswith(('http://', 'https://')):
+        parsed = urlparse(raw)
+        parts = [part for part in parsed.path.split('/') if part]
+        assert parsed.hostname == 'raw.githubusercontent.com', raw
+        providers_index = parts.index('providers')
+        return (ROOT / Path(*parts[providers_index:])).resolve()
+    return (ROOT / raw).resolve()
+
+
 assert set(hotfix) == {'4khdhub', 'moviesdrive', 'moviesmod', 'movieshunt'}, hotfix.keys()
 assert 'moviesdrive' in canonical
-assert canonical['moviesdrive']['source'] == (ROOT / canonical_manifest['moviesdrive']['filename']).resolve()
+assert canonical['moviesdrive']['source'] == expected_local_source(canonical_manifest['moviesdrive']['filename'])
 for provider_id, row in hotfix.items():
-    assert row['source'] == (ROOT / hotfix_manifest[provider_id]['filename']).resolve(), provider_id
+    assert row['source'] == expected_local_source(hotfix_manifest[provider_id]['filename']), provider_id
     assert row['source'].is_file(), provider_id
     assert row['manifest'] == 'playback-hotfix/manifest.json', provider_id
 
