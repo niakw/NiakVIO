@@ -10,6 +10,8 @@ on:
       - "engine_v2/src/contracts.mjs"
       - "engine_v2/tests/contracts.test.mjs"
       - "engine_v2/scripts/diagnose-native-reader.mjs"
+      - "scripts/prepare_native_corpus_validation.py"
+      - "scripts/native_player_diagnostics_codegen.py"
       - "scripts/augment_native_corpus_request_contract.py"
       - "scripts/native_evidence_completeness.cjs"
       - "scripts/instrument_native_client_evidence.py"
@@ -25,6 +27,7 @@ on:
       - ".github/workflows/native-desktop-reader-acceptance.yml"
       - "tests/canonical_media_types_test.py"
       - "tests/native_evidence_contract_test.py"
+      - "tests/native_evidence_codegen_pipeline_test.py"
       - ".github/workflows/canonical-media-types.yml"
   workflow_dispatch:
 
@@ -46,3 +49,5 @@ jobs:
         run: node engine_v2/tests/contracts.test.mjs
       - name: Validate full native evidence architecture
         run: python3 tests/native_evidence_contract_test.py
+      - name: Execute native evidence Kotlin codegen pipeline
+        run: python3 tests/native_evidence_codegen_pipeline_test.py
