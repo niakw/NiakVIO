@@ -87,7 +87,9 @@ for fixture in "${FIXTURES[@]}"; do
   wait "$WATCH_PID" 2>/dev/null || true
 
   LOG="${WORKSPACE}/mobile-native-corpus-${fixture}.log"
-  adb logcat -d -v brief -s NiakvioCorpus:I NiakvioEvidence:I PluginRuntime:I PluginRepository:D '*:S' > "$LOG" || true
+  # Persist only NiakVIO's structured evidence. Official PluginRepository/runtime
+  # debug lines may contain raw provider URLs and are intentionally excluded.
+  adb logcat -d -v brief -s NiakvioCorpus:I NiakvioEvidence:I '*:S' > "$LOG" || true
   echo "FIELD_NATIVE_EVIDENCE_INSTRUMENTED client=mobile" >> "$LOG"
   cat "$FRONT_LOG" >> "$LOG" 2>/dev/null || true
   cat "$LOG" || true
