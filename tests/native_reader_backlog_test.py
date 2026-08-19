@@ -8,6 +8,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 MERGE = ROOT / "scripts/merge_native_reader_backlog.py"
+SYNC = ROOT / ".github/workflows/native-reader-learning-sync.yml"
+CANONICAL = ROOT / ".github/workflows/canonical-media-types.yml"
 
 
 def run_merge(state: Path, root: Path, run_id: str, output: Path, md_in: Path, md_out: Path) -> dict:
@@ -24,6 +26,23 @@ def run_merge(state: Path, root: Path, run_id: str, output: Path, md_in: Path, m
     assert "FIELD_NATIVE_READER_BACKLOG" in run.stdout, run.stdout
     return json.loads(output.read_text(encoding="utf-8"))
 
+
+sync_text = SYNC.read_text(encoding="utf-8")
+canonical_text = CANONICAL.read_text(encoding="utf-8")
+assert "Native Android route reader acceptance" in sync_text
+assert "Native Desktop reader acceptance" in sync_text
+assert "github.event.workflow_run.event == 'push'" in sync_text
+assert "github.event.workflow_run.head_branch == 'main'" in sync_text
+assert "merge_native_reader_backlog.py" in sync_text
+assert "native-reader-backlog.json" in sync_text
+assert "native-reader-backlog.md" in sync_text
+assert "--diagnostics-root reader-learning-input/diagnostics" in sync_text
+assert 'gh run download "$RUN_ID" --pattern' in sync_text
+assert "brain-learning/proposals" in sync_text
+assert "find reader-learning-input/diagnostics -type f -name '*brain.json'" in sync_text
+assert "merge_native_reader_backlog.py" in canonical_text
+assert "tests/native_reader_backlog_test.py" in canonical_text
+assert "Validate automatic native reader bug backlog" in canonical_text
 
 with tempfile.TemporaryDirectory(dir=ROOT) as tmp_raw:
     tmp = Path(tmp_raw)
@@ -159,4 +178,4 @@ with tempfile.TemporaryDirectory(dir=ROOT) as tmp_raw:
     assert incomplete_backlog["skippedIncompleteThisRun"] == 1, incomplete_backlog
     assert len(incomplete_backlog["importedEvidenceIds"]) == 2, incomplete_backlog
 
-print("native reader automatic backlog lifecycle tests passed")
+print("native reader automatic backlog lifecycle and workflow topology tests passed")
