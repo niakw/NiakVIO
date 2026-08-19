@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""Prepare an exhaustive real-reader acceptance corpus for official Nuvio Android clients.
+"""Prepare real-reader acceptance corpus runs for official Nuvio Android clients.
 
-This is deliberately provider-agnostic. The fixture decides which providers are in
-scope; every stream returned by each selected provider is then played by the real
-Media3 reader. No provider-specific repair logic lives here.
+The fixture decides which providers are in scope. Primary acceptance can play every
+returned stream; broad regression can sample a bounded number of streams while still
+executing every provider listed for the fixture. No provider-specific repair logic
+lives here.
 """
 from __future__ import annotations
 
@@ -79,15 +80,33 @@ def stage_selected(destination: Path, providers: list[dict]) -> list[dict]:
     return staged
 
 
-def exhaustive_reader_source(source: str, client: str, expected_duration_minutes: int | float | None) -> str:
-    # The existing codegen is the single implementation of the official reader
-    # path. Acceptance only changes sampling into exhaustive enumeration.
+def parse_stream_scope(value: str | int) -> str | int:
+    raw = str(value).strip().casefold()
+    if raw == "all":
+        return "all"
+    try:
+        count = int(raw)
+    except ValueError as error:
+        raise SystemExit(f"invalid stream scope {value!r}; expected all or 1-4") from error
+    if count < 1 or count > 4:
+        raise SystemExit(f"invalid stream scope {value!r}; expected all or 1-4")
+    return count
+
+
+def reader_source(source: str, client: str, expected_duration_minutes: int | float | None, stream_scope: str | int) -> str:
+    scope = parse_stream_scope(stream_scope)
+    probes = 4 if scope == "all" else int(scope)
     output = reader_diag.augment_android_test(
         source,
         client=client,
         expected_duration_minutes=expected_duration_minutes,
-        max_player_probes=4,
+        max_player_probes=probes,
     )
+    if scope != "all":
+        return output
+
+    # The normal generator intentionally caps device cost. Primary acceptance
+    # removes that cap for both sanitized row evidence and actual Media3 playback.
     output, replacements = re.subn(r"rows\.take\(\d+\)\.forEachIndexed", "rows.forEachIndexed", output)
     if replacements < 2:
         raise SystemExit(f"exhaustive reader rewrite incomplete: replacements={replacements}")
@@ -96,10 +115,19 @@ def exhaustive_reader_source(source: str, client: str, expected_duration_minutes
     return output
 
 
-def prepare(target: str, workspace: Path, slug: str, manifest_path: str, provider: str | None, initial: bool) -> Path:
+def prepare(
+    target: str,
+    workspace: Path,
+    slug: str,
+    manifest_path: str,
+    provider: str | None,
+    initial: bool,
+    stream_scope: str | int,
+) -> Path:
     row = fixture_row(slug)
     fixture = row["fixture"]
     selected = select_providers(manifest_path, slug, provider)
+    scope = parse_stream_scope(stream_scope)
 
     if target == "tv":
         repo = workspace / "nuvio-tv"
@@ -109,7 +137,7 @@ def prepare(target: str, workspace: Path, slug: str, manifest_path: str, provide
         assets = repo / "app/src/androidTest/assets/niakvio"
         staged = stage_selected(assets, selected)
         source = corpus.android_test(fixture, staged, "tv")
-        source = exhaustive_reader_source(source, "tv", fixture.get("expectedDurationMinutes"))
+        source = reader_source(source, "tv", fixture.get("expectedDurationMinutes"), scope)
         source = client_prepare._collector_test(source, "tv")
         output = repo / "app/src/androidTest/java/com/nuvio/tv/core/plugin/NiakvioNativeCorpusTvTest.kt"
     else:
@@ -119,7 +147,7 @@ def prepare(target: str, workspace: Path, slug: str, manifest_path: str, provide
         assets = repo / "composeApp/src/androidDeviceTest/assets/niakvio"
         staged = stage_selected(assets, selected)
         source = corpus.android_test(fixture, staged, "mobile")
-        source = exhaustive_reader_source(source, "mobile", fixture.get("expectedDurationMinutes"))
+        source = reader_source(source, "mobile", fixture.get("expectedDurationMinutes"), scope)
         source = client_prepare._collector_test(source, "mobile")
         output = repo / "composeApp/src/androidDeviceTest/kotlin/com/nuvio/app/features/plugins/NiakvioNativeCorpusMobileTest.kt"
 
@@ -128,7 +156,7 @@ def prepare(target: str, workspace: Path, slug: str, manifest_path: str, provide
     ids = ",".join(str(row.get("id") or "") for row in staged)
     print(
         f"FIELD_NATIVE_READER_ACCEPTANCE_PREPARED client={target} fixture={slug} "
-        f"manifest={manifest_path} providers={len(staged)} provider_ids={ids} streams=all initial={str(initial).lower()}"
+        f"manifest={manifest_path} providers={len(staged)} provider_ids={ids} streams={scope} initial={str(initial).lower()}"
     )
     return output
 
@@ -140,6 +168,7 @@ def main() -> int:
     parser.add_argument("--workspace", required=True)
     parser.add_argument("--manifest", default="manifest.json")
     parser.add_argument("--provider", default="fixture", help="fixture/all uses fixture provider scope; otherwise exact provider id")
+    parser.add_argument("--streams", default="all", help="all, or a bounded reader sample 1-4")
     parser.add_argument("--initial", action="store_true", help="enable official client device tests before first fixture")
     args = parser.parse_args()
 
@@ -151,6 +180,7 @@ def main() -> int:
         manifest,
         args.provider.strip() or "fixture",
         args.initial,
+        args.streams,
     )
     return 0
 
