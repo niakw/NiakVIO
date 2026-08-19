@@ -27,10 +27,18 @@ def player(provider: str, route: str, mode: str, state: str, *, status: int = 0,
 
 
 def evidence_lines(*, probe_state: str) -> list[str]:
-    provider = "anime-sama"  # manifest: movie + anime, intentionally no tv
+    provider = "anime-sama"  # catalog/manifest: movie + anime, intentionally no tv
     phases = [
-        "ui-launched", "corpus-begin", "provider-loading", "provider-result",
-        "player-start", "player-result", "corpus-end",
+        "ui-launched",
+        "repository-load",
+        "repository-loaded",
+        "provider-load-state",
+        "corpus-begin",
+        "provider-loading",
+        "provider-result",
+        "player-start",
+        "player-result",
+        "corpus-end",
     ]
     lines = ["FIELD_NATIVE_EVIDENCE_INSTRUMENTED client=tv"]
     lines.extend(
@@ -38,6 +46,9 @@ def evidence_lines(*, probe_state: str) -> list[str]:
         for phase in phases
     )
     lines.extend([
+        "FIELD_NATIVE_REPOSITORY_LOAD_BEGIN client=tv fixture=jujutsu-kaisen-s01e01 manifest_host=raw.githubusercontent.com expected=1",
+        "FIELD_NATIVE_REPOSITORY_LOAD_RESULT client=tv fixture=jujutsu-kaisen-s01e01 expected=1 loaded=1",
+        f"FIELD_NATIVE_PROVIDER_LOAD_RESULT client=tv fixture=jujutsu-kaisen-s01e01 provider64={b64(provider)} manifest_enabled=true runtime_enabled=true supported_types64={b64('anime,movie')} metadata_match=true",
         "FIELD_NATIVE_CORPUS_BEGIN client=tv fixture=jujutsu-kaisen-s01e01 providers=1",
         f"FIELD_NATIVE_PROVIDER_BEGIN client=tv fixture=jujutsu-kaisen-s01e01 provider64={b64(provider)} enabled=true request_type=anime route_mode=declared",
         f"FIELD_NATIVE_RESULT client=tv fixture=jujutsu-kaisen-s01e01 provider64={b64(provider)} request_type=anime route_mode=declared enabled=true duration_ms=10 count=1",
