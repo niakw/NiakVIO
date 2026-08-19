@@ -17,6 +17,8 @@ on:
       - "scripts/native_player_diagnostics_codegen.py"
       - "scripts/augment_native_corpus_request_contract.py"
       - "scripts/augment_native_provider_loading.py"
+      - "scripts/prepare_native_candidate_repository.py"
+      - "scripts/resolve_native_repository.sh"
       - "scripts/native_evidence_completeness.cjs"
       - "scripts/analyze_native_corpus_collection.cjs"
       - "scripts/analyze_native_corpus_results.cjs"
@@ -37,6 +39,7 @@ on:
       - "tests/canonical_media_types_test.py"
       - "tests/native_evidence_contract_test.py"
       - "tests/native_evidence_codegen_pipeline_test.py"
+      - "tests/native_repository_cache_contract_test.py"
       - "tests/native_media_type_capability_test.py"
       - ".github/workflows/canonical-media-types.yml"
   workflow_dispatch:
@@ -61,5 +64,7 @@ jobs:
         run: python3 tests/native_evidence_contract_test.py
       - name: Execute native evidence Kotlin codegen pipeline
         run: python3 tests/native_evidence_codegen_pipeline_test.py
+      - name: Validate persistent native repository cache safety
+        run: python3 tests/native_repository_cache_contract_test.py
       - name: Validate non-blocking tv/anime capability learning
         run: python3 tests/native_media_type_capability_test.py
