@@ -17,12 +17,14 @@ const READER_FAILURE_CLASSES = Object.freeze({
   player_setup: 'playback_runtime_setup',
   player: 'playback_player_error',
   duration_identity: 'short_media',
+  duration_unknown: 'playback_duration_unknown',
 });
 
 function readerFailureClass(row = {}) {
   const state = String(row.state || '').toLowerCase();
   if (state === 'ready' || state === 'ended') return 'healthy';
   if (state === 'short_media') return 'short_media';
+  if (state === 'duration_unknown') return 'playback_duration_unknown';
   const stage = String(row.failureStage || row.failure_stage || '').toLowerCase();
   if (READER_FAILURE_CLASSES[stage]) return READER_FAILURE_CLASSES[stage];
   const status = Number(row.httpStatus ?? row.http_status ?? 0);
