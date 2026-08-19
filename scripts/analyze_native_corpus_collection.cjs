@@ -19,11 +19,14 @@ if (child.stderr) process.stderr.write(child.stderr);
 const starts = new Map();
 const ends = new Set();
 const observed = new Map();
+const clients = new Set();
 let readableLogs = 0;
+let hasCapabilityProbe = false;
 for (const log of logs) {
   if (!fs.existsSync(log)) continue;
   readableLogs += 1;
   const text = fs.readFileSync(log, 'utf8');
+  if (/route_mode=capability_probe(?:\s|$)/.test(text)) hasCapabilityProbe = true;
   for (const raw of text.split(/\r?\n/)) {
     const marker = raw.indexOf('FIELD_NATIVE_');
     if (marker < 0) continue;
@@ -31,13 +34,18 @@ for (const log of logs) {
     const f = fields(line);
     const client = f.client || '';
     const rowFixture = f.fixture || '';
+    if (client) clients.add(client);
     if (rowFixture && rowFixture !== fixture) continue;
     const key = `${client}\u0000${fixture}`;
     if (line.startsWith('FIELD_NATIVE_CORPUS_BEGIN ')) {
       starts.set(key, Number(f.providers || 0));
     } else if (line.startsWith('FIELD_NATIVE_CORPUS_END ')) {
       ends.add(key);
-    } else if (line.startsWith('FIELD_NATIVE_RESULT ') || line.startsWith('FIELD_NATIVE_ERROR ')) {
+    } else if (
+      line.startsWith('FIELD_NATIVE_RESULT ') ||
+      line.startsWith('FIELD_NATIVE_ERROR ') ||
+      line.startsWith('FIELD_NATIVE_PROVIDER_SKIPPED ')
+    ) {
       if (!observed.has(key)) observed.set(key, new Set());
       if (f.provider64) observed.get(key).add(f.provider64);
     }
@@ -54,17 +62,34 @@ for (const [key, expected] of starts) {
   else if (count < expected) problems.push(`incomplete_provider_traversal:${safeKey(key)}:${count}/${expected}`);
 }
 
+// Media-type discovery is Brain evidence, not a provider repair. Run it only when
+// the generated corpus actually exercised an undeclared tv/anime capability.
+// The dedicated diagnostic is itself fail-closed on backend/frontend completeness.
+if (hasCapabilityProbe && problems.length === 0) {
+  const client = clients.size === 1 ? [...clients][0] : 'cross-client';
+  const evidenceRoot = path.join(path.dirname(path.resolve(logs[0])), 'native-evidence', client, fixture);
+  fs.mkdirSync(evidenceRoot, { recursive: true });
+  const output = path.join(evidenceRoot, 'native-media-capabilities-brain.json');
+  const capabilityBrain = path.join(__dirname, '..', 'engine_v2', 'scripts', 'diagnose-native-media-capabilities.mjs');
+  const capability = spawnSync(process.execPath, [capabilityBrain, '--output', output, ...logs], { encoding: 'utf8' });
+  if (capability.stdout) process.stdout.write(capability.stdout);
+  if (capability.stderr) process.stderr.write(capability.stderr);
+  const status = Number.isInteger(capability.status) ? capability.status : 2;
+  if (status !== 0) problems.push(`capability_evidence_incomplete:${client}:${status}`);
+  else console.log(`FIELD_NATIVE_MEDIA_CAPABILITY_ARTIFACT client=${client} fixture=${fixture} path=${output}`);
+}
+
 const anomalyStatus = Number.isInteger(child.status) ? child.status : 1;
 const complete = problems.length === 0;
 console.log(
   `FIELD_NATIVE_CORPUS_COLLECTION_GATE fixture=${fixture} complete=${complete} ` +
-  `analyzer_status=${anomalyStatus} problems=${problems.length}`
+  `analyzer_status=${anomalyStatus} capability_probe=${hasCapabilityProbe} problems=${problems.length}`
 );
 for (const problem of problems) console.log(`FIELD_NATIVE_CORPUS_INFRA_ERROR ${problem}`);
 
-// The underlying analyzer deliberately reports provider anomalies with exit 1.
-// Those are Brain evidence, not lab infrastructure failure. Only an incomplete
-// corpus collection fails this gate.
+// Provider/runtime anomalies and intentionally skipped incompatible routes are
+// evidence, not lab infrastructure failure. Only an incomplete corpus/evidence
+// chain fails this gate.
 process.exitCode = complete ? 0 : 2;
 
 function fields(line) {

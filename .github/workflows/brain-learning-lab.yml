@@ -27,7 +27,6 @@ jobs:
     timeout-minutes: 55
     permissions:
       contents: read
-      actions: read
     steps:
       - name: Checkout trusted production baseline with history
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
@@ -68,20 +67,6 @@ jobs:
             printf '{}\n' > brain-learning-input/previous.json
           fi
           node -e "const x=require('./brain-learning-input/previous.json'); if(x.productionWritesAllowed===true||x.publicationAllowed===true) process.exit(1)"
-
-      - name: Import latest official native-client feedback when available
-        env:
-          GH_TOKEN: ${{ github.token }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p brain-learning-input/native
-          RUN_ID="$(gh run list --workflow native-corpus-device-lab.yml --branch main --limit 20 --json databaseId,status --jq '[.[] | select(.status=="completed")][0].databaseId // empty' || true)"
-          if [ -n "$RUN_ID" ]; then
-            gh run download "$RUN_ID" --name "native-corpus-engine-summary-$RUN_ID" --dir brain-learning-input/native || true
-          fi
-          [ -f brain-learning-input/native/native-corpus-summary.json ] || printf '{}\n' > brain-learning-input/native/native-corpus-summary.json
-          [ -f brain-learning-input/native/provider-portfolio.json ] || printf '{}\n' > brain-learning-input/native/provider-portfolio.json
 
       - name: Materialize historical 5.20.63 audit anchor from Git history
         shell: bash
@@ -149,14 +134,20 @@ jobs:
             --repair-report brain-sandbox/health-output/repair-report.json \
             --historical-training brain-sandbox/historical-training.json \
             --previous-state brain-learning-input/previous.json \
-            --native-summary brain-learning-input/native/native-corpus-summary.json \
-            --provider-portfolio brain-learning-input/native/provider-portfolio.json \
             --overrides provider-overrides.json
           node engine_v2/tests/repair-brain.test.mjs
           node engine_v2/tests/recipe-memory.test.mjs
           node engine_v2/tests/learning-lab-memory.test.mjs
           python -m py_compile scripts/run_brain_learning_sandbox.py scripts/build_brain_repair_proposal.py
           node -e "const x=require('./brain-learning-output/latest.json'); if(x.productionWritesAllowed!==false||x.publicationAllowed!==false||x.sandboxExecutedProviders!==true) process.exit(1)"
+          node - <<'NODE'
+          const fs=require('fs');
+          const previous=JSON.parse(fs.readFileSync('brain-learning-input/previous.json','utf8'));
+          const next=JSON.parse(fs.readFileSync('brain-learning-output/latest.json','utf8'));
+          if (previous.nativeReaderRepairMemory && JSON.stringify(next.nativeReaderRepairMemory)!==JSON.stringify(previous.nativeReaderRepairMemory)) {
+            throw new Error('native reader repair memory was not preserved across Brain sandbox learning');
+          }
+          NODE
           if grep -Eiq 'https?://|authorization[=:]|cookie[=:]|token[=:]' brain-learning-output/latest.json; then
             echo 'persistent Brain state contains forbidden raw endpoint/credential material' >&2
             exit 1

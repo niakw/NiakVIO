@@ -1,0 +1,98 @@
+name: Canonical media type and native evidence gate
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "provider_catalog.json"
+      - "manifest.json"
+      - "vf/manifest.json"
+      - "package.json"
+      - "package-lock.json"
+      - ".github/triggers/nuvio-client-lab.json"
+      - "engine_v2/src/contracts.mjs"
+      - "engine_v2/tests/contracts.test.mjs"
+      - "engine_v2/tests/native-reader-diagnosis.test.mjs"
+      - "engine_v2/tests/learning-lab-memory.test.mjs"
+      - "engine_v2/scripts/diagnose-native-reader.mjs"
+      - "engine_v2/scripts/diagnose-native-media-capabilities.mjs"
+      - "engine_v2/scripts/learning-lab.mjs"
+      - "scripts/prepare_native_corpus_validation.py"
+      - "scripts/native_player_diagnostics_codegen.py"
+      - "scripts/augment_native_corpus_request_contract.py"
+      - "scripts/augment_native_provider_loading.py"
+      - "scripts/prepare_native_candidate_repository.py"
+      - "scripts/resolve_native_repository.sh"
+      - "scripts/native_evidence_completeness.cjs"
+      - "scripts/analyze_native_corpus_collection.cjs"
+      - "scripts/analyze_native_corpus_results.cjs"
+      - "scripts/analyze_native_media_type_capabilities.cjs"
+      - "scripts/gate_native_reader_result.cjs"
+      - "scripts/gate_native_reader_coverage.cjs"
+      - "scripts/instrument_native_client_evidence.py"
+      - "scripts/instrument_native_repository_http_evidence.py"
+      - "scripts/instrument_native_desktop_evidence.py"
+      - "scripts/capture_native_device_frontend.sh"
+      - "scripts/watch_native_device_frontend.sh"
+      - "scripts/augment_native_desktop_player.py"
+      - "scripts/complete_native_desktop_frontend_phases.py"
+      - "scripts/run_native_corpus_tv_suite.sh"
+      - "scripts/run_native_corpus_mobile_suite.sh"
+      - "scripts/run_native_corpus_desktop_suite.sh"
+      - "scripts/merge_native_reader_repair_learning.py"
+      - ".github/workflows/native-android-route-reader.yml"
+      - ".github/workflows/native-desktop-reader-acceptance.yml"
+      - ".github/workflows/native-reader-learning-sync.yml"
+      - ".github/workflows/brain-learning-lab.yml"
+      - "tests/canonical_media_types_test.py"
+      - "tests/native_evidence_contract_test.py"
+      - "tests/native_evidence_codegen_pipeline_test.py"
+      - "tests/native_repository_cache_contract_test.py"
+      - "tests/native_repository_http_instrumentation_test.py"
+      - "tests/native_media_type_capability_test.py"
+      - "tests/native_reader_learning_memory_test.py"
+      - ".github/workflows/canonical-media-types.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: canonical-media-types-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  canonical-media-types:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with: {persist-credentials: false}
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with: {node-version: "24", package-manager-cache: false}
+      - name: Install exact dependency tree
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Audit non-optional production dependencies
+        run: npm audit --audit-level=high --omit=optional
+      - name: Verify upgraded runtime imports
+        run: node -e "require('axios'); require('cheerio'); console.log('dependency imports ok')"
+      - name: Validate canonical catalog and manifest projections
+        run: python3 tests/canonical_media_types_test.py
+      - name: Validate Core alias boundary
+        run: node engine_v2/tests/contracts.test.mjs
+      - name: Validate full native evidence architecture
+        run: python3 tests/native_evidence_contract_test.py
+      - name: Execute native evidence Kotlin codegen pipeline
+        run: python3 tests/native_evidence_codegen_pipeline_test.py
+      - name: Validate repository HTTP instrumentation contracts
+        run: python3 tests/native_repository_http_instrumentation_test.py
+      - name: Validate persistent native repository cache safety
+        run: python3 tests/native_repository_cache_contract_test.py
+      - name: Validate repository and reader Brain diagnosis
+        run: node engine_v2/tests/native-reader-diagnosis.test.mjs
+      - name: Validate native reader repair-memory merge
+        run: python3 tests/native_reader_learning_memory_test.py
+      - name: Validate Brain cross-day reader-memory preservation
+        run: node engine_v2/tests/learning-lab-memory.test.mjs
+      - name: Validate non-blocking tv/anime capability learning
+        run: python3 tests/native_media_type_capability_test.py

@@ -3,12 +3,24 @@ export const CANONICAL_MEDIA_TYPES = Object.freeze(["movie", "tv", "anime"]);
 
 const SERIES_ALIASES = new Set(["series", "show", "other"]);
 
+// External/client-facing requests remain tolerant because official Nuvio clients
+// may surface aliases such as "series". NiakVIO normalizes those at the boundary.
 export function normalizeMediaType(value) {
   const raw = String(value ?? "").trim().toLowerCase();
   if (!raw) throw new Error("mediaType is required");
   if (SERIES_ALIASES.has(raw)) return "tv";
   if (CANONICAL_MEDIA_TYPES.includes(raw)) return raw;
   throw new Error(`unsupported mediaType: ${raw}`);
+}
+
+// Provider manifests/specs are stricter than request inputs: one global vocabulary
+// prevents divergent publication contracts and ambiguous lab coverage.
+export function normalizeProviderMediaType(value) {
+  const raw = String(value ?? "").trim().toLowerCase();
+  if (!CANONICAL_MEDIA_TYPES.includes(raw)) {
+    throw new Error(`provider media type must be canonical (${CANONICAL_MEDIA_TYPES.join("|")}): ${raw || "<empty>"}`);
+  }
+  return raw;
 }
 
 export function normalizeResolveRequest(input = {}) {
@@ -40,8 +52,8 @@ export function normalizeResolveRequest(input = {}) {
 
 export function adaptRequestForDevice(input, device) {
   const request = normalizeResolveRequest({ ...input, device });
-  // Nuvio Mobile/Desktop/TV all accept the canonical positional four-argument
-  // invocation. Keep aliases out of provider code and normalize before calling.
+  // The provider runtime receives NiakVIO's canonical vocabulary. Official Nuvio
+  // aliases are accepted only before this boundary, never persisted in provider specs.
   return {
     device: request.device,
     call: "getStreams",
@@ -91,7 +103,7 @@ export function validateProviderSpec(spec = {}) {
   const types = normalizeStringList(spec.supportedTypes);
   if (!types.length) errors.push("supportedTypes is required");
   for (const type of types) {
-    try { normalizeMediaType(type); } catch { errors.push(`unsupported type: ${type}`); }
+    try { normalizeProviderMediaType(type); } catch { errors.push(`non-canonical provider type: ${type}`); }
   }
   if (!Array.isArray(spec.sources) || spec.sources.length === 0) errors.push("at least one provenance source is required");
   if (!isPlainObject(spec.strategies)) errors.push("strategies object is required");
@@ -104,7 +116,7 @@ export function normalizeProviderSpec(spec = {}) {
   return {
     id: String(spec.id).trim().toLowerCase(),
     name: String(spec.name).trim(),
-    supportedTypes: [...new Set(spec.supportedTypes.map(normalizeMediaType))],
+    supportedTypes: [...new Set(spec.supportedTypes.map(normalizeProviderMediaType))],
     languages: normalizeStringList(spec.languages),
     sources: structuredClone(spec.sources),
     hubs: normalizeStringList(spec.hubs),

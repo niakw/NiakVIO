@@ -1,0 +1,159 @@
+name: Native reader learning sync
+
+on:
+  workflow_run:
+    workflows:
+      - Native Android route reader acceptance
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: Exact completed Native Android route reader run ID to import
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: niakvio-brain-learning-memory-writer
+  cancel-in-progress: false
+
+jobs:
+  sync-reader-learning:
+    if: ${{ github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion != 'cancelled' && github.event.workflow_run.event == 'push' && github.event.workflow_run.head_branch == 'main') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout trusted main implementation
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: "3.12"
+
+      - name: Restore current sanitized Brain state
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p reader-learning-input reader-learning-output
+          git fetch origin brain-learning/proposals:refs/remotes/origin/brain-learning/proposals || true
+          if git cat-file -e refs/remotes/origin/brain-learning/proposals:engine_v2/learning/latest.json 2>/dev/null; then
+            git show refs/remotes/origin/brain-learning/proposals:engine_v2/learning/latest.json > reader-learning-input/latest.json
+          else
+            printf '{"publicationAllowed":false,"productionWritesAllowed":false,"proposals":[]}\n' > reader-learning-input/latest.json
+          fi
+          if git cat-file -e refs/remotes/origin/brain-learning/proposals:engine_v2/learning/latest.md 2>/dev/null; then
+            git show refs/remotes/origin/brain-learning/proposals:engine_v2/learning/latest.md > reader-learning-input/latest.md
+          else
+            printf '# NiakVIO Brain Learning\n' > reader-learning-input/latest.md
+          fi
+
+      - name: Resolve exact reader run and reject duplicate imports
+        id: source
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          EVENT_RUN_ID: ${{ github.event.workflow_run.id }}
+          INPUT_RUN_ID: ${{ inputs.run_id }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "$EVENT_NAME" = "workflow_run" ]; then
+            RUN_ID="$EVENT_RUN_ID"
+          else
+            RUN_ID="$INPUT_RUN_ID"
+          fi
+          [[ "$RUN_ID" =~ ^[0-9]+$ ]] || { echo "invalid reader run id: $RUN_ID" >&2; exit 2; }
+          echo "run_id=$RUN_ID" >> "$GITHUB_OUTPUT"
+          RUN_ID="$RUN_ID" python3 - <<'PY' >> "$GITHUB_OUTPUT"
+          import json, os
+          state=json.load(open('reader-learning-input/latest.json'))
+          memory=state.get('nativeReaderRepairMemory') if isinstance(state.get('nativeReaderRepairMemory'), dict) else {}
+          imported={str(v) for v in memory.get('importedRunIds', [])}
+          print('duplicate=' + ('true' if os.environ['RUN_ID'] in imported else 'false'))
+          PY
+
+      - name: Download exact Android reader-repair comparison
+        id: evidence
+        if: steps.source.outputs.duplicate != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_ID: ${{ steps.source.outputs.run_id }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p reader-learning-input/acceptance
+          if gh run download "$RUN_ID" --name "native-reader-brain-repair-$RUN_ID" --dir reader-learning-input/acceptance \
+            && [ -s reader-learning-input/acceptance/tv-reader-repair-comparison.json ]; then
+            echo "has_comparison=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_comparison=false" >> "$GITHUB_OUTPUT"
+            rm -rf reader-learning-input/acceptance
+            echo "No materialized reader-repair comparison for run $RUN_ID; nothing is learned and the run remains importable after a rerun."
+          fi
+
+      - name: Merge sanitized reader repair memory once
+        if: steps.source.outputs.duplicate != 'true' && steps.evidence.outputs.has_comparison == 'true'
+        env:
+          RUN_ID: ${{ steps.source.outputs.run_id }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/merge_native_reader_repair_learning.py \
+            --state reader-learning-input/latest.json \
+            --previous-state reader-learning-input/latest.json \
+            --comparison reader-learning-input/acceptance/tv-reader-repair-comparison.json \
+            --output reader-learning-output/latest.json \
+            --markdown-input reader-learning-input/latest.md \
+            --markdown-output reader-learning-output/latest.md
+          python3 - <<'PY'
+          import json, os
+          path='reader-learning-output/latest.json'
+          state=json.load(open(path))
+          memory=state.setdefault('nativeReaderRepairMemory', {})
+          ids=[str(v) for v in memory.get('importedRunIds', [])]
+          run_id=os.environ['RUN_ID']
+          ids=[v for v in ids if v != run_id] + [run_id]
+          memory['importedRunIds']=ids[-100:]
+          with open(path,'w') as fh: json.dump(state, fh, ensure_ascii=False, indent=2); fh.write('\n')
+          PY
+          node -e "const x=require('./reader-learning-output/latest.json');if(x.productionWritesAllowed===true||x.publicationAllowed===true)process.exit(1)"
+          if grep -Eiq 'https?://|authorization[=:]|cookie[=:]|token[=:]' reader-learning-output/latest.json; then
+            echo 'refusing unsafe native reader learning state' >&2
+            exit 1
+          fi
+
+      - name: Report duplicate reader evidence
+        if: steps.source.outputs.duplicate == 'true'
+        shell: bash
+        run: echo "Reader run ${{ steps.source.outputs.run_id }} was already imported; no counters changed."
+
+      - name: Report missing reader comparison
+        if: steps.source.outputs.duplicate != 'true' && steps.evidence.outputs.has_comparison != 'true'
+        shell: bash
+        run: echo "Reader run ${{ steps.source.outputs.run_id }} produced no importable repair comparison; persistent Brain state is unchanged."
+
+      - name: Update the single Brain memory branch
+        if: steps.source.outputs.duplicate != 'true' && steps.evidence.outputs.has_comparison == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          BRANCH="brain-learning/proposals"
+          git switch -C "$BRANCH" main
+          mkdir -p engine_v2/learning
+          cp reader-learning-output/latest.json engine_v2/learning/latest.json
+          cp reader-learning-output/latest.md engine_v2/learning/latest.md
+          git config user.name "niakvio-brain"
+          git config user.email "actions@users.noreply.github.com"
+          git add engine_v2/learning/latest.json engine_v2/learning/latest.md
+          if git diff --cached --quiet; then
+            echo "No native reader learning change."
+          else
+            git commit -m "brain: learn from native reader repair outcomes"
+            git push --force-with-lease origin HEAD:"$BRANCH"
+          fi

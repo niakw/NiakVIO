@@ -23,29 +23,15 @@ const {
 
 const repositoryRoot = path.resolve(__dirname, '..');
 const packageJson = JSON.parse(fs.readFileSync(path.join(repositoryRoot, 'package.json'), 'utf8'));
-const labWorkflow = fs.readFileSync(path.join(repositoryRoot, '.github/workflows/nuvio-client-lab.yml'), 'utf8');
 const labTrigger = JSON.parse(fs.readFileSync(path.join(repositoryRoot, '.github/triggers/nuvio-client-lab.json'), 'utf8'));
 const npmTestLifecycle = `${packageJson.scripts.pretest || ''} ${packageJson.scripts.test || ''}`;
 assert.match(npmTestLifecycle, /node tests\/nuvio_client_lab\.test\.cjs/);
 assert.match(packageJson.scripts.posttest || '', /python3 scripts\/validate_release_integrity\.py/);
-for (const requiredPath of [
-  'manifest.json',
-  'vf/manifest.json',
-  'provider-overrides.json',
-  'providers/**',
-  'scripts/nuvio_client_lab.cjs',
-  'scripts/provider_worker.cjs',
-  'scripts/provider_patches/**',
-  'tests/nuvio_client_lab.test.cjs',
-]) {
-  assert.equal(labWorkflow.includes(`- "${requiredPath}"`), true, `lab workflow must watch ${requiredPath}`);
-}
-assert.match(labWorkflow, /python3 scripts\/validate_release_integrity\.py/);
-assert.doesNotMatch(labWorkflow, /lab\/nuvio-client-matrix/);
+assert.equal(fs.existsSync(path.join(repositoryRoot, '.github/workflows/nuvio-client-lab.yml')), false, 'mutable-client transport workflow is retired; official native readers own CI evidence');
 assert.equal(labTrigger.policy.blocking, false);
 assert.equal(labTrigger.policy.require_identity_match, true);
 assert.equal(labTrigger.policy.block_identity_contradictions, true);
-assert.equal(labTrigger.fixtures.length, 6);
+assert.equal(labTrigger.fixtures.length, 7);
 assert.equal(labTrigger.fixtures.every((row) => Number(row.fixture.expectedDurationMinutes) > 0), true);
 
 const manifest = {
@@ -176,4 +162,4 @@ try {
   fs.rmSync(tmp, { recursive: true, force: true });
 }
 
-console.log('nuvio client lab tests passed');
+console.log('nuvio client transport unit tests passed');

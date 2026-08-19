@@ -20,6 +20,8 @@ const repair = readJson(repairPath, {});
 const diagnostics = readJson(path.join(root, 'diagnostics-report.json'), {});
 const policy = readJson(path.join(root, 'engine_v2/config/brain-policy.json'), {});
 const previous = previousPath ? readJson(previousPath, {}) : {};
+const previousReaderMemory = isRecord(previous.nativeReaderRepairMemory) ? previous.nativeReaderRepairMemory : null;
+const previousNativeFeedback = isRecord(previous.nativeFeedback) ? previous.nativeFeedback : {};
 const historical = historicalPath ? readJson(historicalPath, {}) : {};
 const nativeSummary = nativeSummaryPath ? readJson(nativeSummaryPath, {}) : {};
 const portfolio = portfolioPath ? readJson(portfolioPath, {}) : {};
@@ -109,6 +111,57 @@ for (const row of (portfolio.providers || [])
   });
 }
 
+// Reader evidence has precedence over generic transport labels because it is the
+// closest observation to what a human sees after pressing Play on the real OS.
+const readerSignals = Array.isArray(nativeSummary.readerFailureSignals) ? nativeSummary.readerFailureSignals : [];
+for (const row of readerSignals.slice(0, 80)) {
+  const failureClass = String(row?.failureClass || 'unknown_failure');
+  const recipes = REPAIR_RECIPES[failureClass] ?? REPAIR_RECIPES.unknown_failure;
+  proposals.push({
+    type: 'native_reader_failure_class',
+    priority: Number(row?.occurrences || 0) >= 5 ? 'critical' : 'high',
+    failureClass,
+    evidenceCount: Number(row?.occurrences || 0),
+    providers: Array.isArray(row?.providers) ? row.providers.slice(0, 24) : [],
+    clients: Array.isArray(row?.clients) ? row.clients.slice(0, 8) : [],
+    proposedSkill: {
+      id: `native-reader-${failureClass}`,
+      compose: recipes.map((recipe) => recipe.id).slice(0, 3),
+      capabilities: [...new Set(recipes.flatMap((recipe) => recipe.capabilities ?? []))],
+      execution: 'targeted_native_reader_then_sandbox',
+    },
+    reason: `Official native readers observed ${Number(row?.occurrences || 0)} ${failureClass} failure(s). Prefer reader-causal repair before generic provider mutation.`,
+  });
+}
+
+const providerReaderFailures = Array.isArray(nativeSummary.providerReaderFailures) ? nativeSummary.providerReaderFailures : [];
+for (const row of providerReaderFailures.slice(0, 120)) {
+  const classes = isRecord(row?.failureClasses) ? row.failureClasses : {};
+  const dominant = Object.entries(classes).sort((a, b) => Number(b[1]) - Number(a[1]))[0]?.[0] || 'unknown_failure';
+  proposals.push({
+    type: 'native_reader_provider_target',
+    priority: dominant === 'short_media' || dominant === 'playback_http_access' ? 'critical' : 'high',
+    providerId: String(row?.provider || '').toLowerCase(),
+    failureClass: dominant,
+    evidenceCount: Number(row?.occurrences || 0),
+    readerFailureClasses: classes,
+    clients: Array.isArray(row?.clients) ? row.clients.slice(0, 8) : [],
+    fixtures: Array.isArray(row?.fixtures) ? row.fixtures.slice(0, 16) : [],
+    reason: `Native player failure for this provider is causally classified as ${dominant}; retest the same provider/fixture/reader before broad repair.`,
+  });
+}
+
+const repeatedReaderFailures = Array.isArray(nativeSummary.engineSignals?.repeatedReaderFailures)
+  ? nativeSummary.engineSignals.repeatedReaderFailures : [];
+for (const row of repeatedReaderFailures.slice(0, 80)) {
+  proposals.push({
+    type: 'native_reader_repeated_signature', priority: 'critical',
+    providerId: String(row?.provider || '').toLowerCase(), failureClass: String(row?.failureClass || 'unknown_failure'),
+    evidenceCount: Number(row?.occurrences || 0),
+    reason: 'The same native-reader causal failure repeated. Stop generic retries; use the matching Brain v4 recipe and require a fresh reader proof before acceptance.',
+  });
+}
+
 const unknown = counts.get('unknown_failure') ?? 0;
 if (unknown >= 3) proposals.push({
   type: 'instrumentation_proposal', priority: 'high', target: 'evidence pipeline',
@@ -123,7 +176,7 @@ if (drift > 0) proposals.push({
 });
 
 const payload = {
-  schemaVersion: 2,
+  schemaVersion: 3,
   generatedAt: new Date().toISOString(),
   brain: policy.identity ?? { name: 'NiakVIO Brain' },
   mode: 'learning_lab',
@@ -135,21 +188,31 @@ const payload = {
   unresolvedFailureCounts: Object.fromEntries(counts),
   diagnosticsAvailable: Boolean(Object.keys(diagnostics).length),
   experimentMemory,
+  nativeReaderRepairMemory: previousReaderMemory,
   historicalTraining: { baseline: historical.baseline ?? null, stats: historical.stats ?? {}, targets: historicalTargets },
   nativeFeedback: {
     providersObserved: Number(nativeSummary.providersObserved || portfolio.observedProviders || 0),
     executions: Number(nativeSummary.executions || 0),
     contradictions: Number(nativeSummary.contradictions || 0),
     transportFailures: Number(nativeSummary.transportFailures || 0),
+    nativeReaderObserved: Number(nativeSummary.nativeReaderObserved || 0),
+    nativeReaderFailures: Number(nativeSummary.nativeReaderFailures || 0),
+    readerFailureClasses: isRecord(nativeSummary.readerFailureClasses) ? nativeSummary.readerFailureClasses : {},
     runtimeErrors: Number(nativeSummary.runtimeErrors || 0),
-    repairPriorityProviders: nativeRepairTargets,
+    readerRepairAccepted: nonNegative(previousNativeFeedback.readerRepairAccepted),
+    readerRepairRejected: nonNegative(previousNativeFeedback.readerRepairRejected),
+    readerRepairInconclusive: nonNegative(previousNativeFeedback.readerRepairInconclusive),
+    repairPriorityProviders: [...new Set([
+      ...nativeRepairTargets,
+      ...providerReaderFailures.map((row) => String(row?.provider || '').toLowerCase()).filter(Boolean),
+    ])].slice(0, 240),
   },
   privacy: 'No raw URLs, tokens, header values, cookies, private notes or spreadsheet text are copied into persistent Brain learning state.',
 };
 
 fs.writeFileSync(path.join(outputDir, 'latest.json'), JSON.stringify(payload, null, 2) + '\n');
 fs.writeFileSync(path.join(outputDir, 'latest.md'), renderMarkdown(payload));
-console.log(`FIELD_BRAIN_LEARNING proposals=${payload.proposals.length} skills=${payload.learnedSkillCount} memory=${payload.experimentMemory.entries.length} historical_high=${Number(payload.historicalTraining.stats?.unresolvedHighPriority || 0)} native_repair=${payload.nativeFeedback.repairPriorityProviders.length}`);
+console.log(`FIELD_BRAIN_LEARNING proposals=${payload.proposals.length} skills=${payload.learnedSkillCount} memory=${payload.experimentMemory.entries.length} historical_high=${Number(payload.historicalTraining.stats?.unresolvedHighPriority || 0)} native_repair=${payload.nativeFeedback.repairPriorityProviders.length} reader_failures=${payload.nativeFeedback.nativeReaderFailures}`);
 
 function mergeExperimentMemory(previousMemory, report, planMap, limit) {
   const map = new Map();
@@ -234,7 +297,8 @@ function renderMarkdown(data) {
     `Learned skills observed: **${data.learnedSkillCount}**`,
     `Negative-memory entries: **${data.experimentMemory.entries.length}**`,
     `Historical high/critical unresolved: **${Number(data.historicalTraining.stats?.unresolvedHighPriority || 0)}**`,
-    `Native repair-priority providers: **${data.nativeFeedback.repairPriorityProviders.length}**`, '',
+    `Native repair-priority providers: **${data.nativeFeedback.repairPriorityProviders.length}**`,
+    `Native reader failures: **${data.nativeFeedback.nativeReaderFailures}**`, '',
     '## Highest-priority proposals', '',
   ];
   const ordered = [...data.proposals].sort((a, b) => priorityScore(b.priority) - priorityScore(a.priority));

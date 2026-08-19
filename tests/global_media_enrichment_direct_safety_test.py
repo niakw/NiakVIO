@@ -23,9 +23,14 @@ globalThis.getStreams=async function(){return [
 ]};
 '''
 patched = module.apply(base, options={"preserve_original": True})
-assert "scoped-playback-context-v5-direct-safe" in patched
+# Lock the behavior, not an implementation revision string: direct nested rows
+# must keep their request context, opaque containers must be provable from final
+# response metadata, and unresolved player pages must not leak as playable rows.
 assert "declaredDirect" in patched
+assert "metadataKind" in patched
+assert "content-disposition" in patched
 assert "row.url&&typeof row.url===\"object\"&&row.url.headers" in patched
+assert "Unresolved player/download pages are not playable streams" in patched
 
 runtime = patched + r'''
 const fetches=[];
