@@ -16,6 +16,8 @@ try {
     'FIELD_NATIVE_EVIDENCE_INSTRUMENTED client=tv',
     'FIELD_NATIVE_FRONTEND_CAPTURE client=tv phase=ui-launched screenshot=a.png bytes=100',
     'FIELD_NATIVE_FRONTEND_CAPTURE client=tv phase=repository-load screenshot=repo-a.png bytes=100',
+    'FIELD_NATIVE_FRONTEND_CAPTURE client=tv phase=repository-http-request screenshot=repo-http-a.png bytes=100',
+    'FIELD_NATIVE_FRONTEND_CAPTURE client=tv phase=repository-http-response screenshot=repo-http-b.png bytes=100',
     'FIELD_NATIVE_FRONTEND_CAPTURE client=tv phase=repository-loaded screenshot=repo-b.png bytes=100',
     'FIELD_NATIVE_FRONTEND_CAPTURE client=tv phase=provider-load-state screenshot=repo-c.png bytes=100',
     'FIELD_NATIVE_FRONTEND_CAPTURE client=tv phase=corpus-begin screenshot=b.png bytes=100',
@@ -25,6 +27,8 @@ try {
     'FIELD_NATIVE_FRONTEND_CAPTURE client=tv phase=player-result screenshot=f.png bytes=100',
     'FIELD_NATIVE_FRONTEND_CAPTURE client=tv phase=corpus-end screenshot=g.png bytes=100',
     'FIELD_NATIVE_REPOSITORY_LOAD_BEGIN client=tv fixture=sinners-2025 expected=2 manifest_host=raw.githubusercontent.com',
+    'FIELD_NATIVE_REPOSITORY_HTTP_REQUEST client=tv kind=manifest method=GET endpoint=https://raw.githubusercontent.com/niakw/NiakVIO/sha/manifest.json request_header_names=accept',
+    'FIELD_NATIVE_REPOSITORY_HTTP_RESPONSE client=tv kind=manifest method=GET endpoint=https://raw.githubusercontent.com/niakw/NiakVIO/sha/manifest.json status=200 duration_ms=20 response_header_names=content-type source=network',
     'FIELD_NATIVE_REPOSITORY_LOAD_RESULT client=tv fixture=sinners-2025 expected=2 loaded=2',
     `FIELD_NATIVE_PROVIDER_LOAD_RESULT client=tv fixture=sinners-2025 provider64=${b64('MOVIESDRIVE')} manifest_enabled=true runtime_enabled=true metadata_match=true`,
     `FIELD_NATIVE_PROVIDER_LOAD_RESULT client=tv fixture=sinners-2025 provider64=${b64('PURSTREAM')} manifest_enabled=true runtime_enabled=true metadata_match=true`,
@@ -54,6 +58,7 @@ try {
   assert.equal(data.readerHealthy, 1);
   assert.equal(data.readerFailures, 2);
   assert.equal(data.evidenceStats.providerLoads, 2);
+  assert.equal(data.evidenceStats.repositoryHttpRequests, 1);
   assert.equal(data.providerLoadIssues.length, 0);
   const access = data.plans.find((row) => row.failureClass === 'playback_http_access');
   assert.ok(access);
@@ -69,20 +74,24 @@ try {
   assert.match(data.privacy, /No raw URLs/);
   assert.match(run.stdout, /FIELD_NATIVE_READER_BRAIN evidence_complete=true/);
 
-  // A provider can fail before any execution/reader route. If repository loading,
-  // traversal and the visual state are fully observed, that is actionable evidence
-  // about the repository/Core layer — not an incomplete lab.
+  // A provider can fail after repository installation but before any execution/
+  // reader route. Complete loading/network/traversal evidence makes this actionable
+  // repository/Core evidence, not an incomplete lab.
   const loadFailure = path.join(tmp, 'provider-load-failure.log');
   const loadFailureOutput = path.join(tmp, 'provider-load-failure.json');
   fs.writeFileSync(loadFailure, [
     'FIELD_NATIVE_EVIDENCE_INSTRUMENTED client=tv',
     'FIELD_NATIVE_FRONTEND_CAPTURE client=tv phase=ui-launched screenshot=a.png bytes=100',
     'FIELD_NATIVE_FRONTEND_CAPTURE client=tv phase=repository-load screenshot=b.png bytes=100',
+    'FIELD_NATIVE_FRONTEND_CAPTURE client=tv phase=repository-http-request screenshot=bh.png bytes=100',
+    'FIELD_NATIVE_FRONTEND_CAPTURE client=tv phase=repository-http-response screenshot=bi.png bytes=100',
     'FIELD_NATIVE_FRONTEND_CAPTURE client=tv phase=repository-loaded screenshot=c.png bytes=100',
     'FIELD_NATIVE_FRONTEND_CAPTURE client=tv phase=provider-load-state screenshot=d.png bytes=100',
     'FIELD_NATIVE_FRONTEND_CAPTURE client=tv phase=corpus-begin screenshot=e.png bytes=100',
     'FIELD_NATIVE_FRONTEND_CAPTURE client=tv phase=corpus-end screenshot=f.png bytes=100',
     'FIELD_NATIVE_REPOSITORY_LOAD_BEGIN client=tv fixture=sinners-2025 expected=1 manifest_host=raw.githubusercontent.com',
+    'FIELD_NATIVE_REPOSITORY_HTTP_REQUEST client=tv kind=manifest method=GET endpoint=https://raw.githubusercontent.com/niakw/NiakVIO/sha/manifest.json request_header_names=accept',
+    'FIELD_NATIVE_REPOSITORY_HTTP_RESPONSE client=tv kind=manifest method=GET endpoint=https://raw.githubusercontent.com/niakw/NiakVIO/sha/manifest.json status=200 duration_ms=20 response_header_names=content-type source=network',
     'FIELD_NATIVE_REPOSITORY_LOAD_RESULT client=tv fixture=sinners-2025 expected=1 loaded=0',
     `FIELD_NATIVE_PROVIDER_LOAD_ERROR client=tv fixture=sinners-2025 provider64=${b64('MOVIESDRIVE')} reason=missing_after_repository_install`,
     'FIELD_NATIVE_CORPUS_BEGIN client=tv fixture=sinners-2025 providers=1',
@@ -104,6 +113,43 @@ try {
   assert.equal(loadFailureData.policy.repositoryLearningAllowed, true);
   assert.equal(loadFailureData.policy.providerLoadJsMutationAllowed, false);
   assert.match(loadFailureRun.stdout, /provider_load_failures=1/);
+
+  // A whole repository can fail before any provider or player runs. The HTTP 404,
+  // terminal repository error and per-provider fallout are still a complete proof.
+  // The Brain may propose Core/repository work but must never generate provider JS.
+  const installFailure = path.join(tmp, 'repository-install-failure.log');
+  const installFailureOutput = path.join(tmp, 'repository-install-failure.json');
+  fs.writeFileSync(installFailure, [
+    'FIELD_NATIVE_EVIDENCE_INSTRUMENTED client=tv',
+    'FIELD_NATIVE_FRONTEND_CAPTURE client=tv phase=ui-launched screenshot=a.png bytes=100',
+    'FIELD_NATIVE_FRONTEND_CAPTURE client=tv phase=repository-load screenshot=b.png bytes=100',
+    'FIELD_NATIVE_FRONTEND_CAPTURE client=tv phase=repository-http-request screenshot=c.png bytes=100',
+    'FIELD_NATIVE_FRONTEND_CAPTURE client=tv phase=repository-http-response screenshot=d.png bytes=100',
+    'FIELD_NATIVE_FRONTEND_CAPTURE client=tv phase=repository-load-error screenshot=e.png bytes=100',
+    'FIELD_NATIVE_FRONTEND_CAPTURE client=tv phase=provider-load-state screenshot=f.png bytes=100',
+    'FIELD_NATIVE_FRONTEND_CAPTURE client=tv phase=corpus-begin screenshot=g.png bytes=100',
+    'FIELD_NATIVE_FRONTEND_CAPTURE client=tv phase=corpus-end screenshot=h.png bytes=100',
+    'FIELD_NATIVE_REPOSITORY_LOAD_BEGIN client=tv fixture=sinners-2025 expected=1 manifest_host=raw.githubusercontent.com',
+    'FIELD_NATIVE_REPOSITORY_HTTP_REQUEST client=tv kind=manifest method=GET endpoint=https://raw.githubusercontent.com/niakw/NiakVIO/sha/manifest.json request_header_names=accept',
+    'FIELD_NATIVE_REPOSITORY_HTTP_RESPONSE client=tv kind=manifest method=GET endpoint=https://raw.githubusercontent.com/niakw/NiakVIO/sha/manifest.json status=404 duration_ms=12 response_header_names=content-type source=network',
+    `FIELD_NATIVE_REPOSITORY_LOAD_ERROR client=tv fixture=sinners-2025 reason=install_failed error64=${b64('HTTP 404')}`,
+    `FIELD_NATIVE_PROVIDER_LOAD_ERROR client=tv fixture=sinners-2025 provider64=${b64('MOVIESDRIVE')} reason=repository_install_failed`,
+    'FIELD_NATIVE_CORPUS_BEGIN client=tv fixture=sinners-2025 providers=1',
+    `FIELD_NATIVE_PROVIDER_SKIPPED client=tv fixture=sinners-2025 provider64=${b64('MOVIESDRIVE')} enabled=false requested_type=movie reason=load_failure`,
+    'FIELD_NATIVE_CORPUS_END client=tv fixture=sinners-2025 errors=0',
+  ].join('\n') + '\n');
+  const installFailureRun = spawnSync(process.execPath, [script, '--output', installFailureOutput, installFailure], { cwd: root, encoding: 'utf8' });
+  assert.equal(installFailureRun.status, 0, installFailureRun.stderr + installFailureRun.stdout);
+  const installFailureData = JSON.parse(fs.readFileSync(installFailureOutput, 'utf8'));
+  assert.equal(installFailureData.evidenceComplete, true);
+  assert.equal(installFailureData.evidenceStats.repositoryLoadFailures, 1);
+  assert.equal(installFailureData.evidenceStats.repositoryHttpRequests, 1);
+  assert.equal(installFailureData.readerObserved, 0);
+  assert.equal(installFailureData.providerLoadActionableFailures, 1);
+  assert.equal(installFailureData.providerLoadIssues[0].failureClass, 'provider_repository_load_error');
+  assert.equal(installFailureData.providerLoadIssues[0].providerJsMutationAllowed, false);
+  assert.equal(installFailureData.providerLoadIssues[0].coreOrManifestProposalAllowed, true);
+  assert.deepEqual(installFailureData.plans, []);
 
   // Metadata drift at load time belongs to manifest/Core semantics, never JS repair.
   const metadataFailure = path.join(tmp, 'provider-metadata-failure.log');
@@ -138,8 +184,10 @@ try {
   const withoutLoading = common.filter((line) =>
     !line.includes('repository-load') &&
     !line.includes('repository-loaded') &&
+    !line.includes('repository-http') &&
     !line.includes('provider-load-state') &&
     !line.startsWith('FIELD_NATIVE_REPOSITORY_LOAD_') &&
+    !line.startsWith('FIELD_NATIVE_REPOSITORY_HTTP_') &&
     !line.startsWith('FIELD_NATIVE_PROVIDER_LOAD_')
   );
   fs.writeFileSync(loadMissing, withoutLoading.join('\n') + '\n');
