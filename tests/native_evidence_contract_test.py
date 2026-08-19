@@ -26,6 +26,9 @@ desktop_suite = text("scripts/run_native_corpus_desktop_suite.sh")
 desktop_frontend = text("scripts/complete_native_desktop_frontend_phases.py")
 android_workflow = text(".github/workflows/native-android-route-reader.yml")
 desktop_workflow = text(".github/workflows/native-desktop-reader-acceptance.yml")
+reader_acceptance = text("scripts/prepare_native_reader_acceptance.py")
+restage = text("scripts/restage_native_corpus_client.py")
+desktop_player = text("scripts/augment_native_desktop_player.py")
 
 # Every staged provider remains in traversal scope; unsupported routes are an
 # explicit observation rather than an execution failure. Anime-capable providers
@@ -213,9 +216,9 @@ for suite, client in ((tv_suite, "tv"), (mobile_suite, "mobile")):
     assert "PluginRepository:D" not in suite, (client, "raw PluginRepository log persisted")
     assert "PluginRuntime:I" not in suite, (client, "raw PluginRuntime log persisted")
 
-# Route workflows are exhaustive by logical media route, with all manifest rows
-# (including disabled entries) and every returned stream. The three routes must run
-# inside one warm TV job and one warm Mobile job, never one runner per fixture.
+# Route workflows share one boot/profile per client. Exhaustive all-provider/all-
+# stream intent remains declared by the workflow, while PR staging is bounded by
+# event-aware preparation so every push no longer spends an hour in native readers.
 for fixture in ("sinners-2025", "breaking-bad-s01e01", "jujutsu-kaisen-s01e01"):
     assert fixture in android_workflow, fixture
 for required in (
@@ -224,18 +227,23 @@ for required in (
     "--provider all --streams all",
     "native-evidence/tv/**",
     "native-evidence/mobile/**",
-    "Execute all representative routes in one TV profile",
-    "Execute all representative routes in one Mobile profile",
-    "Warm TV Gradle build before QEMU",
-    "Warm Mobile Gradle build before QEMU",
+    "Execute representative routes in one TV boot",
+    "Execute representative routes in one Mobile boot",
     "diagnose-native-reader.mjs",
 ):
     assert required in android_workflow, required
 assert "matrix.fixture" not in android_workflow, "Android route fixtures must share one launched emulator profile per client"
+for source, label in ((reader_acceptance, "android"), (restage, "desktop")):
+    assert "GITHUB_EVENT_NAME" in source, label
+    assert "NIAKVIO_PR_PROVIDER_LIMIT" in source, label
+    assert "pr-bounded" in source, label
+assert "DEFAULT_PR_PROVIDER_LIMIT = 4" in reader_acceptance
+assert "DEFAULT_PR_PROVIDER_LIMIT = 4" in restage
 
 # Desktop Linux is explicitly not native-reader proof. macOS/Windows build the
 # official bridge once per OS, then reuse that process/Gradle profile for all three
-# representative routes.
+# representative routes. PR playback is one stream per bounded fixture provider;
+# trusted main/manual execution keeps the exhaustive stream path.
 for required in (
     "official_nuvio_desktop_player_is_stub",
     "instrument_native_desktop_evidence.py",
@@ -248,7 +256,8 @@ for required in (
     "gate_native_reader_result.cjs",
     "official_repository_loading=true",
     "repository_http_evidence=true",
-    'rm -f "$GRADLE_LOG"',
+    "GRADLE_LOG=",
+    'rm -f "$HTTP_LOG" "$GRADLE_LOG"',
 ):
     assert required in desktop_suite, required
 assert "PROVIDER_ARGS[@]" not in desktop_suite, "macOS Bash 3.2 + set -u must not expand an empty provider array"
@@ -277,5 +286,8 @@ for required in (
 assert "matrix.fixture" not in desktop_workflow, "Desktop route fixtures must share one runner per OS"
 assert desktop_workflow.count("- runner: macos-15") == 1, "macOS must be launched once"
 assert desktop_workflow.count("- runner: windows-2022") == 1, "Windows must be launched once"
+assert "__READER_TIMEOUT_MS__" in desktop_player
+assert "12_000 if pr_bounded else 25_000" in desktop_player
+assert 'stream_scope = "1"' in desktop_player
 
 print("full native evidence contract tests passed")
