@@ -46,13 +46,15 @@ try {
   assert.equal(run.status, 0, run.stderr + run.stdout);
   const data = JSON.parse(fs.readFileSync(output, 'utf8'));
   assert.equal(data.brainVersion, 4);
-  assert.equal(data.schemaVersion, 4);
+  assert.equal(data.schemaVersion, 5);
   assert.equal(data.evidenceComplete, true);
   assert.equal(data.policy.learningAllowed, true);
+  assert.equal(data.policy.providerLoadJsMutationAllowed, false);
   assert.equal(data.readerObserved, 3);
   assert.equal(data.readerHealthy, 1);
   assert.equal(data.readerFailures, 2);
   assert.equal(data.evidenceStats.providerLoads, 2);
+  assert.equal(data.providerLoadIssues.length, 0);
   const access = data.plans.find((row) => row.failureClass === 'playback_http_access');
   assert.ok(access);
   assert.equal(access.requestType, 'movie');
@@ -66,6 +68,54 @@ try {
   assert.equal(data.policy.requireFreshNativeReaderProofAfterRepair, true);
   assert.match(data.privacy, /No raw URLs/);
   assert.match(run.stdout, /FIELD_NATIVE_READER_BRAIN evidence_complete=true/);
+
+  // A provider can fail before any execution/reader route. If repository loading,
+  // traversal and the visual state are fully observed, that is actionable evidence
+  // about the repository/Core layer — not an incomplete lab.
+  const loadFailure = path.join(tmp, 'provider-load-failure.log');
+  const loadFailureOutput = path.join(tmp, 'provider-load-failure.json');
+  fs.writeFileSync(loadFailure, [
+    'FIELD_NATIVE_EVIDENCE_INSTRUMENTED client=tv',
+    'FIELD_NATIVE_FRONTEND_CAPTURE client=tv phase=ui-launched screenshot=a.png bytes=100',
+    'FIELD_NATIVE_FRONTEND_CAPTURE client=tv phase=repository-load screenshot=b.png bytes=100',
+    'FIELD_NATIVE_FRONTEND_CAPTURE client=tv phase=repository-loaded screenshot=c.png bytes=100',
+    'FIELD_NATIVE_FRONTEND_CAPTURE client=tv phase=provider-load-state screenshot=d.png bytes=100',
+    'FIELD_NATIVE_FRONTEND_CAPTURE client=tv phase=corpus-begin screenshot=e.png bytes=100',
+    'FIELD_NATIVE_FRONTEND_CAPTURE client=tv phase=corpus-end screenshot=f.png bytes=100',
+    'FIELD_NATIVE_REPOSITORY_LOAD_BEGIN client=tv fixture=sinners-2025 expected=1 manifest_host=raw.githubusercontent.com',
+    'FIELD_NATIVE_REPOSITORY_LOAD_RESULT client=tv fixture=sinners-2025 expected=1 loaded=0',
+    `FIELD_NATIVE_PROVIDER_LOAD_ERROR client=tv fixture=sinners-2025 provider64=${b64('MOVIESDRIVE')} reason=missing_after_repository_install`,
+    'FIELD_NATIVE_CORPUS_BEGIN client=tv fixture=sinners-2025 providers=1',
+    `FIELD_NATIVE_PROVIDER_SKIPPED client=tv fixture=sinners-2025 provider64=${b64('MOVIESDRIVE')} enabled=false requested_type=movie reason=load_failure`,
+    'FIELD_NATIVE_CORPUS_END client=tv fixture=sinners-2025 errors=0',
+  ].join('\n') + '\n');
+  const loadFailureRun = spawnSync(process.execPath, [script, '--output', loadFailureOutput, loadFailure], { cwd: root, encoding: 'utf8' });
+  assert.equal(loadFailureRun.status, 0, loadFailureRun.stderr + loadFailureRun.stdout);
+  const loadFailureData = JSON.parse(fs.readFileSync(loadFailureOutput, 'utf8'));
+  assert.equal(loadFailureData.evidenceComplete, true);
+  assert.equal(loadFailureData.readerObserved, 0);
+  assert.equal(loadFailureData.providerLoadActionableFailures, 1);
+  assert.deepEqual(loadFailureData.plans, []);
+  assert.equal(loadFailureData.providerLoadIssues[0].failureClass, 'provider_repository_load_missing');
+  assert.equal(loadFailureData.providerLoadIssues[0].providerJsMutationAllowed, false);
+  assert.equal(loadFailureData.providerLoadIssues[0].coreOrManifestProposalAllowed, true);
+  assert.equal(loadFailureData.providerLoadPriorities[0].layer, 'repository');
+  assert.equal(loadFailureData.providerOutcomes[0].loadFailures, 1);
+  assert.equal(loadFailureData.policy.repositoryLearningAllowed, true);
+  assert.equal(loadFailureData.policy.providerLoadJsMutationAllowed, false);
+  assert.match(loadFailureRun.stdout, /provider_load_failures=1/);
+
+  // Metadata drift at load time belongs to manifest/Core semantics, never JS repair.
+  const metadataFailure = path.join(tmp, 'provider-metadata-failure.log');
+  const metadataFailureOutput = path.join(tmp, 'provider-metadata-failure.json');
+  fs.writeFileSync(metadataFailure, fs.readFileSync(loadFailure, 'utf8')
+    .replace('missing_after_repository_install', 'metadata_or_code_mismatch'));
+  const metadataRun = spawnSync(process.execPath, [script, '--output', metadataFailureOutput, metadataFailure], { cwd: root, encoding: 'utf8' });
+  assert.equal(metadataRun.status, 0, metadataRun.stderr + metadataRun.stdout);
+  const metadataData = JSON.parse(fs.readFileSync(metadataFailureOutput, 'utf8'));
+  assert.equal(metadataData.providerLoadIssues[0].failureClass, 'provider_repository_metadata_mismatch');
+  assert.equal(metadataData.providerLoadIssues[0].layer, 'manifest_contract');
+  assert.deepEqual(metadataData.plans, []);
 
   // A log can look structurally complete yet still be causally unusable if the
   // Nuvio media route was not recorded. The Brain must refuse to learn from it.
