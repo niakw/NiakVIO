@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import importlib.util
+import os
 import subprocess
 import sys
 import tempfile
@@ -113,55 +114,79 @@ with tempfile.TemporaryDirectory() as tmp_raw:
     assert "FIELD_NATIVE_PLAYER client=mobile" in mobile_out
     assert "route_mode=$routeMode" in mobile_out
 
-    # Desktop: route contract -> official PluginRepository loading -> official native
-    # Desktop player -> visual phase augmentation. Prove both macOS and Windows
-    # platform filtering source generation without touching the network.
-    for platform in ("macos", "windows"):
-        desktop_source = corpus.desktop_test(anime, selected)
-        desktop_path = tmp / f"Desktop-{platform}.kt"
-        desktop_path.write_text(desktop_source, encoding="utf-8")
-        contract.augment(desktop_path, "desktop", "jujutsu-kaisen-s01e01", manifest)
-        provider_loading.augment(desktop_path, "desktop", manifest, PINNED_MANIFEST_URL, platform)
-        desktop_player.augment(desktop_path, int(anime.get("expectedDurationMinutes") or 0), "all")
-        completed = subprocess.run(
-            [sys.executable, str(ROOT / "scripts/complete_native_desktop_frontend_phases.py"), str(desktop_path)],
-            cwd=ROOT,
-            text=True,
-            capture_output=True,
-        )
-        assert completed.returncode == 0, completed.stdout + completed.stderr
-        desktop_out = desktop_path.read_text(encoding="utf-8")
-        for required in (
-            "PluginRepository.initialize()",
-            "PluginRepository.uiState.value.repositories.firstOrNull",
-            "PluginRepository.addRepository(repositoryManifestUrl)",
-            "PluginRepository.executeScraper(loadedScraper",
-            "FIELD_NATIVE_REPOSITORY_LOAD_BEGIN client=desktop",
-            "FIELD_NATIVE_REPOSITORY_LOAD_ERROR client=desktop",
-            "FIELD_NATIVE_REPOSITORY_CACHE_HIT client=desktop",
-            "reason=repository_install_failed",
-            "return emptyMap()",
-            "NativePlayerController",
-            "NativePlayerHost",
-            "probeDesktopNativePlayer",
-            "FIELD_NATIVE_PLAYER_BEGIN client=desktop",
-            "route_mode=$routeMode",
-            "engine=native-desktop",
-            'captureDesktopPhase("ui-launched"',
-            'captureDesktopPhase("repository-load"',
-            'captureDesktopPhase("repository-loaded", fixtureSlugForLoad)',
-            'captureDesktopPhase("repository-load-error", fixtureSlugForLoad)',
-            'captureDesktopPhase("repository-http-request", fixtureSlugForLoad)',
-            'captureDesktopPhase("repository-http-response", fixtureSlugForLoad)',
-            'captureDesktopPhase("provider-load-state"',
-            'captureDesktopPhase("provider-http-request"',
-            'captureDesktopPhase("provider-http-response"',
-            'captureDesktopPhase("player-start"',
-            'captureDesktopPhase("player-result"',
-        ):
-            assert required in desktop_out, f"{platform}:{required}"
-        assert "PluginRepository.clearLocalState()" not in desktop_out
-        assert "PluginRuntime.executePlugin(" not in desktop_out
-        assert "rows.take(" not in desktop_out, "all-stream Desktop proof must not sample rows"
+    # Desktop deep mode: explicit all-stream proof must stay exhaustive regardless
+    # of the outer CI event. PR budget behavior is validated separately below.
+    original_event = os.environ.pop("GITHUB_EVENT_NAME", None)
+    try:
+        for platform in ("macos", "windows"):
+            desktop_source = corpus.desktop_test(anime, selected)
+            desktop_path = tmp / f"Desktop-{platform}.kt"
+            desktop_path.write_text(desktop_source, encoding="utf-8")
+            contract.augment(desktop_path, "desktop", "jujutsu-kaisen-s01e01", manifest)
+            provider_loading.augment(desktop_path, "desktop", manifest, PINNED_MANIFEST_URL, platform)
+            desktop_player.augment(desktop_path, int(anime.get("expectedDurationMinutes") or 0), "all")
+            completed = subprocess.run(
+                [sys.executable, str(ROOT / "scripts/complete_native_desktop_frontend_phases.py"), str(desktop_path)],
+                cwd=ROOT,
+                text=True,
+                capture_output=True,
+            )
+            assert completed.returncode == 0, completed.stdout + completed.stderr
+            desktop_out = desktop_path.read_text(encoding="utf-8")
+            for required in (
+                "PluginRepository.initialize()",
+                "PluginRepository.uiState.value.repositories.firstOrNull",
+                "PluginRepository.addRepository(repositoryManifestUrl)",
+                "PluginRepository.executeScraper(loadedScraper",
+                "FIELD_NATIVE_REPOSITORY_LOAD_BEGIN client=desktop",
+                "FIELD_NATIVE_REPOSITORY_LOAD_ERROR client=desktop",
+                "FIELD_NATIVE_REPOSITORY_CACHE_HIT client=desktop",
+                "reason=repository_install_failed",
+                "return emptyMap()",
+                "NativePlayerController",
+                "NativePlayerHost",
+                "probeDesktopNativePlayer",
+                "FIELD_NATIVE_PLAYER_BEGIN client=desktop",
+                "route_mode=$routeMode",
+                "engine=native-desktop",
+                'captureDesktopPhase("ui-launched"',
+                'captureDesktopPhase("repository-load"',
+                'captureDesktopPhase("repository-loaded", fixtureSlugForLoad)',
+                'captureDesktopPhase("repository-load-error", fixtureSlugForLoad)',
+                'captureDesktopPhase("repository-http-request", fixtureSlugForLoad)',
+                'captureDesktopPhase("repository-http-response", fixtureSlugForLoad)',
+                'captureDesktopPhase("provider-load-state"',
+                'captureDesktopPhase("provider-http-request"',
+                'captureDesktopPhase("provider-http-response"',
+                'captureDesktopPhase("player-start"',
+                'captureDesktopPhase("player-result"',
+            ):
+                assert required in desktop_out, f"{platform}:{required}"
+            assert "PluginRepository.clearLocalState()" not in desktop_out
+            assert "PluginRuntime.executePlugin(" not in desktop_out
+            assert "rows.take(" not in desktop_out, "all-stream Desktop proof must not sample rows"
+            assert "25000L" in desktop_out, "deep Desktop reader timeout must remain 25s"
+    finally:
+        if original_event is not None:
+            os.environ["GITHUB_EVENT_NAME"] = original_event
+
+    # Pull requests intentionally cap Desktop to one stream and a 12s reader budget.
+    original_event = os.environ.get("GITHUB_EVENT_NAME")
+    os.environ["GITHUB_EVENT_NAME"] = "pull_request"
+    try:
+        pr_source = corpus.desktop_test(anime, selected)
+        pr_path = tmp / "Desktop-pr.kt"
+        pr_path.write_text(pr_source, encoding="utf-8")
+        contract.augment(pr_path, "desktop", "jujutsu-kaisen-s01e01", manifest)
+        provider_loading.augment(pr_path, "desktop", manifest, PINNED_MANIFEST_URL, "windows")
+        desktop_player.augment(pr_path, int(anime.get("expectedDurationMinutes") or 0), "all")
+        pr_out = pr_path.read_text(encoding="utf-8")
+        assert "rows.take(1).forEachIndexed" in pr_out
+        assert "12000L" in pr_out
+    finally:
+        if original_event is None:
+            os.environ.pop("GITHUB_EVENT_NAME", None)
+        else:
+            os.environ["GITHUB_EVENT_NAME"] = original_event
 
 print("native evidence Kotlin codegen pipeline tests passed")
