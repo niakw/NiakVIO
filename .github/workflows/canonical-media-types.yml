@@ -11,6 +11,7 @@ on:
       - ".github/triggers/nuvio-client-lab.json"
       - "engine_v2/src/contracts.mjs"
       - "engine_v2/tests/contracts.test.mjs"
+      - "engine_v2/tests/native-reader-diagnosis.test.mjs"
       - "engine_v2/scripts/diagnose-native-reader.mjs"
       - "engine_v2/scripts/diagnose-native-media-capabilities.mjs"
       - "scripts/prepare_native_corpus_validation.py"
@@ -26,6 +27,7 @@ on:
       - "scripts/gate_native_reader_result.cjs"
       - "scripts/gate_native_reader_coverage.cjs"
       - "scripts/instrument_native_client_evidence.py"
+      - "scripts/instrument_native_repository_http_evidence.py"
       - "scripts/instrument_native_desktop_evidence.py"
       - "scripts/capture_native_device_frontend.sh"
       - "scripts/watch_native_device_frontend.sh"
@@ -40,6 +42,7 @@ on:
       - "tests/native_evidence_contract_test.py"
       - "tests/native_evidence_codegen_pipeline_test.py"
       - "tests/native_repository_cache_contract_test.py"
+      - "tests/native_repository_http_instrumentation_test.py"
       - "tests/native_media_type_capability_test.py"
       - ".github/workflows/canonical-media-types.yml"
   workflow_dispatch:
@@ -64,7 +67,11 @@ jobs:
         run: python3 tests/native_evidence_contract_test.py
       - name: Execute native evidence Kotlin codegen pipeline
         run: python3 tests/native_evidence_codegen_pipeline_test.py
+      - name: Validate repository HTTP instrumentation contracts
+        run: python3 tests/native_repository_http_instrumentation_test.py
       - name: Validate persistent native repository cache safety
         run: python3 tests/native_repository_cache_contract_test.py
+      - name: Validate repository and reader Brain diagnosis
+        run: node engine_v2/tests/native-reader-diagnosis.test.mjs
       - name: Validate non-blocking tv/anime capability learning
         run: python3 tests/native_media_type_capability_test.py
