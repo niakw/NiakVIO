@@ -4,7 +4,7 @@ import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { BRAIN_CONTROL_PLANE_VERSION, classifyFailure, planRepair, recipeIsCompatible } from "../src/repair-brain.mjs";
 
-assert.equal(BRAIN_CONTROL_PLANE_VERSION, 3);
+assert.equal(BRAIN_CONTROL_PLANE_VERSION, 4);
 assert.equal(classifyFailure({ invoked: false }), "not_invoked");
 assert.equal(classifyFailure({ invoked: true, dns: { ok: false } }), "dns_unreachable");
 assert.equal(classifyFailure({ invoked: true, dns: { ok: true }, stages: { homepage: { status: 403 } } }), "transport_blocked");
@@ -17,7 +17,7 @@ assert.equal(classifyFailure({ contractDrift: true }), "runtime_contract_drift")
 
 const blockedEvidence = { invoked: true, stages: { player: { attempted: true, found: true }, media: { attempted: true, found: true }, validation: { attempted: true, playable: false, playableCount: 0, statuses: [403] } } };
 const plan = planRepair(blockedEvidence, { maxHypotheses: 3 });
-assert.equal(plan.brainVersion, 3);
+assert.equal(plan.brainVersion, 4);
 assert.equal(plan.failureClass, "playback_context_gap");
 assert.equal(plan.action, "probe-targeted-repair");
 assert.equal(plan.hypotheses[0].id, "preserve-playback-context");
@@ -79,7 +79,7 @@ const dirtyPayload = {
 const plannerRun = spawnSync(process.execPath, [planner], { input: JSON.stringify(dirtyPayload), encoding: "utf8" });
 assert.equal(plannerRun.status, 0, plannerRun.stderr);
 const plannerOutput = JSON.parse(plannerRun.stdout);
-assert.equal(plannerOutput.brainVersion, 3);
+assert.equal(plannerOutput.brainVersion, 4);
 assert.equal(plannerOutput.plannerErrors, 0);
 assert.ok(plannerOutput.plans["published:dirty-provider"]);
 assert.equal(plannerOutput.plans["published:healthy-provider"].action, "none");
