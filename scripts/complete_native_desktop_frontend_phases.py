@@ -18,13 +18,18 @@ def main() -> int:
     args = parser.parse_args()
     path = Path(args.source).resolve()
     text = path.read_text(encoding="utf-8")
-    if 'captureDesktopPhase("ui-launched"' in text:
+    if 'captureDesktopPhase("repository-load"' in text:
         return 0
+
     text = replace_once(
         text,
-        '        captureDesktopPhase("corpus-begin", fixtureSlug)',
-        '        captureDesktopPhase("ui-launched", fixtureSlug)\n        captureDesktopPhase("corpus-begin", fixtureSlug)',
-        "ui launch",
+        '        val loadedProviders = loadProvidersThroughNuvio()\n',
+        '        captureDesktopPhase("ui-launched", fixtureSlug)\n'
+        '        captureDesktopPhase("repository-load", fixtureSlug)\n'
+        '        val loadedProviders = loadProvidersThroughNuvio()\n'
+        '        captureDesktopPhase("repository-loaded", fixtureSlug)\n'
+        '        captureDesktopPhase("provider-load-state", fixtureSlug)\n',
+        "repository loading",
     )
     text = replace_once(
         text,
