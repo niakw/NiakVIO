@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Compare native-reader outcomes before/after a Brain sandbox mutation."""
+# Kept in the native-reader workflow path set so reader-proof changes trigger a fresh exact-run comparison.
 from __future__ import annotations
 
 import argparse
