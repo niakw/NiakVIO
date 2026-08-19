@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# PR reader trigger: route-list execution stays inside this shell so one emulator boot is reused.
 set -u
 
 WORKSPACE="${GITHUB_WORKSPACE}"
