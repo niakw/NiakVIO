@@ -63,8 +63,11 @@ with tempfile.TemporaryDirectory() as tmp_raw:
     tv_out = tv_path.read_text(encoding="utf-8")
     assert "FIELD_NATIVE_UI_LAUNCHED client=tv" in tv_out
     assert "FIELD_NATIVE_REPOSITORY_LOAD_BEGIN client=tv" in tv_out
+    assert "FIELD_NATIVE_REPOSITORY_LOAD_ERROR client=tv" in tv_out
     assert "FIELD_NATIVE_REPOSITORY_CACHE_HIT client=tv" in tv_out
     assert "FIELD_NATIVE_PROVIDER_LOAD_RESULT client=tv" in tv_out
+    assert "reason=repository_install_failed" in tv_out
+    assert "return manager to emptyMap()" in tv_out
     assert "manager.repositories.first()" in tv_out
     assert "PluginManager.addRepository" not in tv_out  # instance call below is intentional
     assert "manager.addRepository(repositoryManifestUrl)" in tv_out
@@ -96,7 +99,10 @@ with tempfile.TemporaryDirectory() as tmp_raw:
     assert "requestRoute.declared" in mobile_out
     assert "FIELD_NATIVE_UI_LAUNCHED client=mobile" in mobile_out
     assert "FIELD_NATIVE_REPOSITORY_LOAD_BEGIN client=mobile" in mobile_out
+    assert "FIELD_NATIVE_REPOSITORY_LOAD_ERROR client=mobile" in mobile_out
     assert "FIELD_NATIVE_REPOSITORY_CACHE_HIT client=mobile" in mobile_out
+    assert "reason=repository_install_failed" in mobile_out
+    assert "return emptyMap()" in mobile_out
     assert "PluginRepository.initialize()" in mobile_out
     assert "PluginRepository.uiState.value.repositories.firstOrNull" in mobile_out
     assert "PluginRepository.clearLocalState()" not in mobile_out
@@ -131,7 +137,10 @@ with tempfile.TemporaryDirectory() as tmp_raw:
             "PluginRepository.addRepository(repositoryManifestUrl)",
             "PluginRepository.executeScraper(loadedScraper",
             "FIELD_NATIVE_REPOSITORY_LOAD_BEGIN client=desktop",
+            "FIELD_NATIVE_REPOSITORY_LOAD_ERROR client=desktop",
             "FIELD_NATIVE_REPOSITORY_CACHE_HIT client=desktop",
+            "reason=repository_install_failed",
+            "return emptyMap()",
             "NativePlayerController",
             "NativePlayerHost",
             "probeDesktopNativePlayer",
@@ -140,7 +149,10 @@ with tempfile.TemporaryDirectory() as tmp_raw:
             "engine=native-desktop",
             'captureDesktopPhase("ui-launched"',
             'captureDesktopPhase("repository-load"',
-            'captureDesktopPhase("repository-loaded"',
+            'captureDesktopPhase("repository-loaded", fixtureSlugForLoad)',
+            'captureDesktopPhase("repository-load-error", fixtureSlugForLoad)',
+            'captureDesktopPhase("repository-http-request", fixtureSlugForLoad)',
+            'captureDesktopPhase("repository-http-response", fixtureSlugForLoad)',
             'captureDesktopPhase("provider-load-state"',
             'captureDesktopPhase("provider-http-request"',
             'captureDesktopPhase("provider-http-response"',
