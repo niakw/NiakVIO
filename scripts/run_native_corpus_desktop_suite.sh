@@ -84,7 +84,8 @@ PY
   LOG="${WORKSPACE}/desktop-native-corpus-${HOST_OS}-${fixture}.log"
   GRADLE_LOG="${WORKSPACE}/desktop-native-gradle-${HOST_OS}-${fixture}.log"
   HTTP_LOG="${WORKSPACE}/desktop-native-http-evidence.log"
-  rm -f "$BASE_LOG" "$LOG" "$GRADLE_LOG" "$HTTP_LOG"
+  rm -f "$BASE_LOG" "$LOG" "$HTTP_LOG"
+  rm -f "$GRADLE_LOG"
   RUNTIME_STATUS=0
   if [[ "$HOST_OS" = "windows" ]]; then
     "$DESKTOP_ROOT/gradlew.bat" -p "$DESKTOP_ROOT" :composeApp:desktopTest --tests 'com.nuvio.app.features.plugins.NiakvioNativeCorpusDesktopTest' --console=plain 2>&1 | tee "$GRADLE_LOG"
