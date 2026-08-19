@@ -14,5 +14,11 @@ assert.equal(readerFailureClass({ state: 'error', failureStage: 'parser' }), 'pl
 assert.equal(readerFailureClass({ state: 'error', failureStage: 'decoder' }), 'playback_decoder');
 assert.equal(isReaderFailure({ state: 'ready' }), false);
 assert.equal(isReaderFailure({ state: 'error', httpStatus: 403 }), true);
-assert.equal(readerSignature({ state: 'error', failureStage: 'http_access', httpStatus: 403, errorCode: 'ERROR_CODE_IO_BAD_HTTP_STATUS', host: 'zipdisk.example' }), 'playback_http_access:403:ERROR_CODE_IO_BAD_HTTP_STATUS:zipdisk.example');
+const legacySignature = readerSignature({ state: 'error', failureStage: 'http_access', httpStatus: 403, errorCode: 'ERROR_CODE_IO_BAD_HTTP_STATUS', host: 'zipdisk.example' });
+assert.equal(legacySignature, 'playback_http_access:403:ERROR_CODE_IO_BAD_HTTP_STATUS:zipdisk.example');
+const tvSignature = readerSignature({ state: 'error', failureStage: 'http_access', httpStatus: 403, errorCode: 'ERROR_CODE_IO_BAD_HTTP_STATUS', host: 'zipdisk.example', requestType: 'tv' });
+const animeSignature = readerSignature({ state: 'error', failureStage: 'http_access', httpStatus: 403, errorCode: 'ERROR_CODE_IO_BAD_HTTP_STATUS', host: 'zipdisk.example', requestType: 'anime' });
+assert.equal(tvSignature, 'tv:playback_http_access:403:ERROR_CODE_IO_BAD_HTTP_STATUS:zipdisk.example');
+assert.equal(animeSignature, 'anime:playback_http_access:403:ERROR_CODE_IO_BAD_HTTP_STATUS:zipdisk.example');
+assert.notEqual(tvSignature, animeSignature);
 console.log('native player diagnostics taxonomy tests passed');
