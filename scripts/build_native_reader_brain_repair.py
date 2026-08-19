@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """Materialize bounded provider-agnostic repair candidates from native-reader Brain evidence.
 
-This is a Learning Lab mutation step, not publication. It consumes the sanitized
-reader diagnosis, composes only allow-listed generic repair skills, writes candidate
-provider bundles plus a candidate manifest, and requires a fresh native-reader run
-before any candidate can be considered successful.
+This is a Learning Lab mutation step, not publication. It consumes sanitized reader
+diagnosis and cross-day reader-repair memory, composes only allow-listed generic
+repair skills, writes candidate provider bundles plus a candidate manifest, and
+requires a fresh native-reader run before any candidate can be considered successful.
 """
 from __future__ import annotations
 
@@ -36,6 +36,15 @@ def load_json(path: Path) -> dict[str, Any]:
     if not isinstance(value, dict):
         raise ValueError(f"{path}: expected JSON object")
     return value
+
+
+def load_optional(path: Path | None) -> dict[str, Any]:
+    if path is None or not path.is_file():
+        return {}
+    try:
+        return load_json(path)
+    except (OSError, json.JSONDecodeError, ValueError):
+        return {}
 
 
 def write_json(path: Path, value: Any) -> None:
@@ -105,13 +114,43 @@ def diagnosis_targets(diagnosis: dict[str, Any], max_providers: int, fixture: st
     return sorted(grouped.values(), key=lambda row: (-int(row["occurrences"]), row["provider"]))[:max_providers]
 
 
-def skills_for(target: dict[str, Any]) -> list[str]:
-    output: list[str] = []
+def skill_memory(learning: dict[str, Any], target: dict[str, Any], skill: str) -> dict[str, int]:
+    memory = learning.get("nativeReaderRepairMemory") if isinstance(learning.get("nativeReaderRepairMemory"), dict) else {}
+    entries = memory.get("entries") if isinstance(memory.get("entries"), list) else []
+    provider = str(target.get("provider") or "").casefold()
+    failures = {str(value) for value in target.get("failureClasses") or []}
+    fixtures = {str(value) for value in target.get("fixtures") or []}
+    matched = [
+        row for row in entries
+        if isinstance(row, dict)
+        and str(row.get("providerId") or "").casefold() == provider
+        and str(row.get("skill") or "") == skill
+        and (not failures or str(row.get("failureClass") or "") in failures)
+        and (not fixtures or str(row.get("fixture") or "") in fixtures)
+    ]
+    return {
+        "attempts": sum(max(0, int(row.get("attempts") or 0)) for row in matched),
+        "successes": sum(max(0, int(row.get("successes") or 0)) for row in matched),
+        "failures": sum(max(0, int(row.get("failures") or 0)) for row in matched),
+        "consecutiveFailures": max([max(0, int(row.get("consecutiveFailures") or 0)) for row in matched] or [0]),
+    }
+
+
+def skills_for(target: dict[str, Any], learning: dict[str, Any], avoid_threshold: int = 2) -> tuple[list[str], list[str]]:
+    candidates: list[str] = []
     for hypothesis in target.get("hypotheses") or []:
         for skill in HYPOTHESIS_SKILLS.get(str(hypothesis), ()):
-            if skill not in output:
-                output.append(skill)
-    return output
+            if skill not in candidates:
+                candidates.append(skill)
+    ranked: list[tuple[int, int, str]] = []
+    suppressed: list[str] = []
+    for skill in candidates:
+        memory = skill_memory(learning, target, skill)
+        if memory["successes"] == 0 and memory["consecutiveFailures"] >= avoid_threshold:
+            suppressed.append(skill)
+            continue
+        ranked.append((-memory["successes"], memory["failures"], skill))
+    return [skill for _success, _failures, skill in sorted(ranked)], suppressed
 
 
 def apply_skill(source: str, skill: str, patch_module) -> str:
@@ -131,12 +170,15 @@ def main() -> int:
     parser.add_argument("--diagnosis", type=Path, required=True)
     parser.add_argument("--manifest", type=Path, default=ROOT / "manifest.json")
     parser.add_argument("--output-dir", type=Path, default=ROOT / "native-reader-repair")
+    parser.add_argument("--learning-state", type=Path, help="optional prior sanitized Brain learning state")
     parser.add_argument("--fixture", default="", help="optional fixture slug; only its reader failures are mutated")
     parser.add_argument("--max-providers", type=int, default=12)
+    parser.add_argument("--avoid-threshold", type=int, default=2)
     args = parser.parse_args()
 
     diagnosis = load_json(args.diagnosis.resolve())
     manifest = load_json(args.manifest.resolve())
+    learning = load_optional(args.learning_state.resolve() if args.learning_state else None)
     output_dir = args.output_dir.resolve()
     output_dir.mkdir(parents=True, exist_ok=True)
     providers_dir = output_dir / "providers"
@@ -166,16 +208,17 @@ def main() -> int:
         provider = target["provider"]
         row = by_id.get(provider)
         proposed_row = proposed_by_id.get(provider)
-        skills = skills_for(target)
+        skills, suppressed = skills_for(target, learning, max(1, int(args.avoid_threshold)))
         if row is None or proposed_row is None:
             skipped.append({"provider": provider, "reason": "provider_not_in_manifest"})
             continue
         if not skills:
             skipped.append({
                 "provider": provider,
-                "reason": "no_allowlisted_reader_repair_skill",
+                "reason": "all_compatible_reader_skills_suppressed_by_negative_memory" if suppressed else "no_allowlisted_reader_repair_skill",
                 "failureClasses": target["failureClasses"],
                 "hypotheses": target["hypotheses"],
+                "suppressedSkills": suppressed,
             })
             continue
         try:
@@ -204,6 +247,7 @@ def main() -> int:
             "failureClasses": target["failureClasses"],
             "hypotheses": target["hypotheses"],
             "skills": skills,
+            "suppressedSkills": suppressed,
             "occurrences": target["occurrences"],
             "sourceSha256": sha256(original_bytes),
             "candidateSha256": digest,
@@ -214,7 +258,7 @@ def main() -> int:
     candidate_manifest = output_dir / "manifest.json"
     write_json(candidate_manifest, proposed_manifest)
     report = {
-        "schemaVersion": 1,
+        "schemaVersion": 2,
         "brainVersion": diagnosis.get("brainVersion"),
         "mode": "native_reader_repair_sandbox",
         "fixtureScope": args.fixture.strip() or "all",
@@ -223,19 +267,21 @@ def main() -> int:
         "providers": [row["provider"] for row in proposals],
         "proposals": proposals,
         "skipped": skipped,
+        "learningApplied": bool(learning.get("nativeReaderRepairMemory")),
         "policy": {
             "productionWritesAllowed": False,
             "publicationAllowed": False,
             "candidateManifestOnly": True,
             "requireFreshNativeReaderProof": True,
             "maxMutationProviders": max(1, min(int(args.max_providers), 24)),
+            "avoidRepeatedFailedSkillThreshold": max(1, int(args.avoid_threshold)),
         },
         "privacy": "No raw media URLs, query tokens, cookie values, authorization values or response-header values are written to this repair report.",
     }
     write_json(output_dir / "repair-report.json", report)
     print(
         f"FIELD_NATIVE_READER_REPAIR proposals={len(proposals)} skipped={len(skipped)} "
-        f"reader_failures={report['diagnosedReaderFailures']} fixture={report['fixtureScope']} manifest={candidate_manifest.relative_to(ROOT)}"
+        f"reader_failures={report['diagnosedReaderFailures']} fixture={report['fixtureScope']} learning={str(report['learningApplied']).lower()} manifest={candidate_manifest.relative_to(ROOT)}"
     )
     return 0
 
