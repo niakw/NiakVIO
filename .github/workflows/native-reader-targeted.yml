@@ -15,9 +15,14 @@ on:
         default: sinners-2025
         type: string
       provider:
-        description: Exact provider id
+        description: Exact provider id from the selected manifest
         required: true
         default: MOVIESDRIVE
+        type: string
+      manifest:
+        description: In-repository manifest currently deployed to the client
+        required: true
+        default: playback-hotfix/manifest.json
         type: string
       player_probes:
         description: Number of returned streams to actually play (1-4)
@@ -29,6 +34,8 @@ on:
     branches: [main]
     paths:
       - ".github/workflows/native-reader-targeted.yml"
+      - "playback-hotfix/manifest.json"
+      - "manifest-playback-hotfix.json"
       - "scripts/native_player_diagnostics_codegen.py"
       - "scripts/native_player_diagnostics.cjs"
       - "scripts/gate_native_reader_result.cjs"
@@ -55,6 +62,7 @@ jobs:
       device: ${{ steps.values.outputs.device }}
       fixture: ${{ steps.values.outputs.fixture }}
       provider: ${{ steps.values.outputs.provider }}
+      manifest: ${{ steps.values.outputs.manifest }}
       probes: ${{ steps.values.outputs.probes }}
       mobile_sha: ${{ steps.values.outputs.mobile_sha }}
       tv_sha: ${{ steps.values.outputs.tv_sha }}
@@ -68,6 +76,7 @@ jobs:
           INPUT_DEVICE: ${{ inputs.device }}
           INPUT_FIXTURE: ${{ inputs.fixture }}
           INPUT_PROVIDER: ${{ inputs.provider }}
+          INPUT_MANIFEST: ${{ inputs.manifest }}
           INPUT_PROBES: ${{ inputs.player_probes }}
         run: |
           set -euo pipefail
@@ -78,9 +87,17 @@ jobs:
           device='tv' if event=='pull_request' else (os.environ.get('INPUT_DEVICE') or 'tv')
           fixture='sinners-2025' if event=='pull_request' else (os.environ.get('INPUT_FIXTURE') or 'sinners-2025')
           provider='MOVIESDRIVE' if event=='pull_request' else (os.environ.get('INPUT_PROVIDER') or 'MOVIESDRIVE')
+          manifest='playback-hotfix/manifest.json' if event=='pull_request' else (os.environ.get('INPUT_MANIFEST') or 'playback-hotfix/manifest.json')
           probes='3' if event=='pull_request' else (os.environ.get('INPUT_PROBES') or '3')
           if device not in {'tv','mobile'}: raise SystemExit(f'unsupported device {device}')
           if probes not in {'1','2','3','4'}: raise SystemExit(f'invalid player_probes {probes}')
+          manifest_path=Path(manifest)
+          if manifest_path.is_absolute() or '..' in manifest_path.parts or not manifest_path.is_file():
+              raise SystemExit(f'invalid in-repository manifest: {manifest}')
+          selected=json.loads(manifest_path.read_text())
+          ids={str(row.get('id') or '').casefold() for row in selected.get('scrapers',[]) if isinstance(row,dict)}
+          if provider.casefold() not in ids:
+              raise SystemExit(f'provider {provider!r} not found in selected manifest {manifest}')
           data=json.loads(Path('sources.json').read_text())
           clients=data.get('nuvio_client_compatibility',{}).get('clients',{})
           refs={
@@ -91,6 +108,7 @@ jobs:
           print(f'device={device}')
           print(f'fixture={fixture}')
           print(f'provider={provider}')
+          print(f'manifest={manifest}')
           print(f'probes={probes}')
           for k,v in refs.items(): print(f'{k}={v}')
           PY
@@ -116,7 +134,7 @@ jobs:
           git clone --filter=blob:none --no-checkout https://github.com/NuvioMedia/NuvioTV.git nuvio-tv
           git -C nuvio-tv checkout "$NUVIO_TV_SHA"
           touch nuvio-tv/local.properties nuvio-tv/local.dev.properties
-          python3 niakvio/scripts/prepare_native_corpus_client.py tv --fixture "${{ needs.resolve.outputs.fixture }}" --workspace "$GITHUB_WORKSPACE" --provider "${{ needs.resolve.outputs.provider }}" --player-probes "${{ needs.resolve.outputs.probes }}"
+          python3 niakvio/scripts/prepare_native_corpus_client.py tv --fixture "${{ needs.resolve.outputs.fixture }}" --workspace "$GITHUB_WORKSPACE" --provider "${{ needs.resolve.outputs.provider }}" --player-probes "${{ needs.resolve.outputs.probes }}" --manifest "${{ needs.resolve.outputs.manifest }}"
       - uses: gradle/actions/setup-gradle@0723195856401067f7a2779048b490ace7a47d7c
       - name: Enable KVM
         shell: bash
@@ -149,6 +167,7 @@ jobs:
         env:
           NIAKVIO_TARGET_FIXTURE: ${{ needs.resolve.outputs.fixture }}
           NIAKVIO_TARGET_PROVIDER: ${{ needs.resolve.outputs.provider }}
+          NIAKVIO_TARGET_MANIFEST: ${{ needs.resolve.outputs.manifest }}
           NIAKVIO_PLAYER_PROBES: ${{ needs.resolve.outputs.probes }}
           NIAKVIO_REQUIRE_READER_SUCCESS: "1"
         with:
@@ -207,7 +226,7 @@ jobs:
           git clone --filter=blob:none --no-checkout https://github.com/NuvioMedia/NuvioMobile.git nuvio-mobile
           git -C nuvio-mobile checkout "$NUVIO_MOBILE_SHA"
           touch nuvio-mobile/local.properties
-          python3 niakvio/scripts/prepare_native_corpus_client.py mobile --fixture "${{ needs.resolve.outputs.fixture }}" --workspace "$GITHUB_WORKSPACE" --provider "${{ needs.resolve.outputs.provider }}" --player-probes "${{ needs.resolve.outputs.probes }}"
+          python3 niakvio/scripts/prepare_native_corpus_client.py mobile --fixture "${{ needs.resolve.outputs.fixture }}" --workspace "$GITHUB_WORKSPACE" --provider "${{ needs.resolve.outputs.provider }}" --player-probes "${{ needs.resolve.outputs.probes }}" --manifest "${{ needs.resolve.outputs.manifest }}"
           python3 niakvio/scripts/harden_nuvio_mobile_device_test.py "$GITHUB_WORKSPACE/nuvio-mobile"
       - uses: gradle/actions/setup-gradle@0723195856401067f7a2779048b490ace7a47d7c
       - name: Enable KVM
@@ -241,6 +260,7 @@ jobs:
         env:
           NIAKVIO_TARGET_FIXTURE: ${{ needs.resolve.outputs.fixture }}
           NIAKVIO_TARGET_PROVIDER: ${{ needs.resolve.outputs.provider }}
+          NIAKVIO_TARGET_MANIFEST: ${{ needs.resolve.outputs.manifest }}
           NIAKVIO_PLAYER_PROBES: ${{ needs.resolve.outputs.probes }}
           NIAKVIO_REQUIRE_READER_SUCCESS: "1"
         with:
