@@ -10,7 +10,8 @@ export const FAILURE_CLASSES = Object.freeze([
   "playback_http_upstream", "playback_http_response", "playback_timeout",
   "playback_dns", "playback_tls", "playback_parser", "playback_decoder",
   "playback_io", "playback_live_window", "playback_runtime_setup",
-  "playback_player_error", "short_media", "runtime_contract_drift", "unknown_failure",
+  "playback_player_error", "playback_duration_unknown", "short_media",
+  "runtime_contract_drift", "unknown_failure",
 ]);
 
 export const REPAIR_RECIPES = Object.freeze({
@@ -64,6 +65,7 @@ export const REPAIR_RECIPES = Object.freeze({
   playback_live_window: [recipe("refresh-live-window", ["media", "playlist"], ["reload current manifest", "avoid stale media sequence", "retry only the refreshed live candidate"])],
   playback_runtime_setup: [recipe("repair-native-reader-setup", ["runtime-version", "contract"], ["verify official client data-source factory can be constructed", "diff accepted client revision", "treat setup failure as lab/runtime defect before provider mutation"])],
   playback_player_error: [recipe("inspect-native-player-error-chain", ["player", "evidence"], ["retain sanitized PlaybackException code/class chain", "classify the first causal layer", "do not mutate provider until the error is reclassified"])],
+  playback_duration_unknown: [recipe("prove-vod-duration-before-promotion", ["duration", "media", "identity"], ["wait for the native reader timeline to settle", "derive VOD duration from reader, manifest or container metadata", "reject promotion when long-form duration still cannot be proven"])],
   short_media: [recipe("reject-short-or-preview-media", ["duration", "identity", "ranking"], ["compare reader duration with fixture expectation", "reject previews/trailers/20-second placeholders", "advance to the next same-provider candidate and validate again"])],
   media_validation_gap: [recipe("validate-final-media", ["media", "identity"], ["probe final media response", "verify media identity and duration", "verify HLS/DASH/direct signatures", "reject HTML/error bodies and fake media"])],
   runtime_contract_drift: [recipe("reaudit-device-adapter", ["runtime-version", "contract"], ["diff changed Nuvio contract paths", "identify affected capabilities", "revalidate only impacted skills/providers"])],
@@ -75,7 +77,7 @@ const READER_STAGE_TO_FAILURE = Object.freeze({
   http_upstream: "playback_http_upstream", http_response: "playback_http_response", timeout: "playback_timeout",
   dns: "playback_dns", tls: "playback_tls", parser: "playback_parser", decoder: "playback_decoder",
   io: "playback_io", live_window: "playback_live_window", player_setup: "playback_runtime_setup",
-  player: "playback_player_error", duration_identity: "short_media",
+  player: "playback_player_error", duration_identity: "short_media", duration_unknown: "playback_duration_unknown",
 });
 
 export function classifyFailure(evidence = {}) {
@@ -107,6 +109,7 @@ export function classifyFailure(evidence = {}) {
     const state = String(reader.state ?? "").toLowerCase();
     if (state === "ready" || state === "ended") return "healthy";
     if (state === "short_media") return "short_media";
+    if (state === "duration_unknown") return "playback_duration_unknown";
     const stage = String(reader.failureStage ?? reader.failure_stage ?? "").toLowerCase();
     if (READER_STAGE_TO_FAILURE[stage]) return READER_STAGE_TO_FAILURE[stage];
     const status = Number(reader.httpStatus ?? reader.http_status ?? 0);
