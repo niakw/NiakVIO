@@ -42,14 +42,20 @@ for required in (
     assert required in request_contract, required
 
 # Provider proof must pass through the real Nuvio repository/manager layer first.
+# Repeated fixtures keep the user's/app profile warm and reuse the exact repository
+# installation/provider cache instead of resetting plugin state on every launch.
 for required in (
     "FIELD_NATIVE_REPOSITORY_LOAD_BEGIN",
     "FIELD_NATIVE_REPOSITORY_LOAD_RESULT",
+    "FIELD_NATIVE_REPOSITORY_CACHE_HIT",
     "FIELD_NATIVE_PROVIDER_LOAD_RESULT",
     "FIELD_NATIVE_PROVIDER_LOAD_ERROR",
     "FIELD_NATIVE_PROVIDER_LOAD_SKIPPED",
+    "manager.repositories.first()",
     "manager.addRepository(repositoryManifestUrl)",
     "officialPluginManager.executeScraper(loadedScraper",
+    "PluginRepository.initialize()",
+    "PluginRepository.uiState.value.repositories.firstOrNull",
     "PluginRepository.addRepository(repositoryManifestUrl)",
     "PluginRepository.executeScraper(loadedScraper",
     "requestRoutesFor(provider.id, mediaType)",
@@ -57,6 +63,7 @@ for required in (
     "reason=load_failure",
 ):
     assert required in provider_loading, required
+assert "PluginRepository.clearLocalState()" not in provider_loading, "native lab must preserve Nuvio profile/plugin state"
 
 # Backend + frontend evidence is part of the validity contract, not optional debug.
 for required in (
