@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import importlib.util
-import shutil
 import tempfile
 from pathlib import Path
 
@@ -28,11 +27,11 @@ with tempfile.TemporaryDirectory() as tmp_raw:
     tv_path = write(
         tv,
         "app/src/full/java/com/nuvio/tv/core/plugin/PluginManager.kt",
-        """private val httpClient = OkHttpClient.Builder()\n"
+        "private val httpClient = OkHttpClient.Builder()\n"
         "        .dns(com.nuvio.tv.core.network.IPv4FirstDns())\n"
         "        .connectTimeout(30, TimeUnit.SECONDS)\n"
         "        .readTimeout(30, TimeUnit.SECONDS)\n"
-        "        .build()\n""",
+        "        .build()\n",
     )
     mod.instrument_tv(tv)
     tv_out = tv_path.read_text(encoding="utf-8")
@@ -44,10 +43,10 @@ with tempfile.TemporaryDirectory() as tmp_raw:
     mobile_path = write(
         mobile,
         "composeApp/src/androidMain/kotlin/com/nuvio/app/features/addons/AddonPlatform.android.kt",
-        """private fun client() = OkHttpClient.Builder()\n"
+        "private fun client() = OkHttpClient.Builder()\n"
         "        .addInterceptor(SentryNetworkBreadcrumbInterceptor())\n"
         "        .proxy(Proxy.NO_PROXY)\n"
-        "        .build()\n""",
+        "        .build()\n",
     )
     mod.instrument_mobile(mobile)
     mobile_out = mobile_path.read_text(encoding="utf-8")
@@ -58,10 +57,10 @@ with tempfile.TemporaryDirectory() as tmp_raw:
     desktop_path = write(
         desktop,
         "composeApp/src/desktopMain/kotlin/com/nuvio/app/features/addons/AddonPlatform.desktop.kt",
-        """private val desktopHttpClient = OkHttpClient.Builder()\n"
+        "private val desktopHttpClient = OkHttpClient.Builder()\n"
         "    .followRedirects(true)\n"
         "    .followSslRedirects(true)\n"
-        "    .build()\n""",
+        "    .build()\n",
     )
     mod.instrument_desktop(desktop)
     desktop_out = desktop_path.read_text(encoding="utf-8")
@@ -71,8 +70,8 @@ with tempfile.TemporaryDirectory() as tmp_raw:
         for required in (
             "rawGithubEvidence",
             "loopbackEvidence",
-            'setOf(\"127.0.0.1\", \"localhost\", \"10.0.2.2\")',
-            'Regex(\"/candidate-[0-9a-f]{32}/\")',
+            'setOf("127.0.0.1", "localhost", "10.0.2.2")',
+            'Regex("/candidate-[0-9a-f]{32}/")',
             "FIELD_NATIVE_REPOSITORY_HTTP_RESPONSE",
             "FIELD_NATIVE_REPOSITORY_HTTP_ERROR",
             "request_header_names=$requestHeaderNames",
