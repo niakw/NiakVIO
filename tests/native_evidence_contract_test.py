@@ -12,6 +12,8 @@ def text(path: str) -> str:
 
 request_contract = text("scripts/augment_native_corpus_request_contract.py")
 provider_loading = text("scripts/augment_native_provider_loading.py")
+repository_http = text("scripts/instrument_native_repository_http_evidence.py")
+repository_resolver = text("scripts/resolve_native_repository.sh")
 completeness = text("scripts/native_evidence_completeness.cjs")
 collection_analyzer = text("scripts/analyze_native_corpus_collection.cjs")
 diagnosis = text("engine_v2/scripts/diagnose-native-reader.mjs")
@@ -21,6 +23,7 @@ capability_analyzer = text("scripts/analyze_native_media_type_capabilities.cjs")
 tv_suite = text("scripts/run_native_corpus_tv_suite.sh")
 mobile_suite = text("scripts/run_native_corpus_mobile_suite.sh")
 desktop_suite = text("scripts/run_native_corpus_desktop_suite.sh")
+desktop_frontend = text("scripts/complete_native_desktop_frontend_phases.py")
 android_workflow = text(".github/workflows/native-android-route-reader.yml")
 desktop_workflow = text(".github/workflows/native-desktop-reader-acceptance.yml")
 
@@ -47,10 +50,14 @@ for required in (
 for required in (
     "FIELD_NATIVE_REPOSITORY_LOAD_BEGIN",
     "FIELD_NATIVE_REPOSITORY_LOAD_RESULT",
+    "FIELD_NATIVE_REPOSITORY_LOAD_ERROR",
     "FIELD_NATIVE_REPOSITORY_CACHE_HIT",
     "FIELD_NATIVE_PROVIDER_LOAD_RESULT",
     "FIELD_NATIVE_PROVIDER_LOAD_ERROR",
     "FIELD_NATIVE_PROVIDER_LOAD_SKIPPED",
+    "reason=repository_install_failed",
+    "return manager to emptyMap()",
+    "return emptyMap()",
     "manager.repositories.first()",
     "manager.addRepository(repositoryManifestUrl)",
     "officialPluginManager.executeScraper(loadedScraper",
@@ -65,10 +72,34 @@ for required in (
     assert required in provider_loading, required
 assert "PluginRepository.clearLocalState()" not in provider_loading, "native lab must preserve Nuvio profile/plugin state"
 
+# Repository network evidence is passive and sanitized, and applies to the exact
+# pinned GitHub candidate or a content-addressed loopback repair candidate only.
+for required in (
+    "FIELD_NATIVE_REPOSITORY_HTTP_REQUEST",
+    "FIELD_NATIVE_REPOSITORY_HTTP_RESPONSE",
+    "FIELD_NATIVE_REPOSITORY_HTTP_ERROR",
+    'rawUrl.host.equals("raw.githubusercontent.com"',
+    'setOf("127.0.0.1", "localhost", "10.0.2.2")',
+    'Regex("/candidate-[0-9a-f]{32}/")',
+    "response_header_names=$responseHeaderNames",
+    "source=$cacheSource",
+):
+    assert required in repository_http, required
+for required in (
+    "content-addressed",
+    "candidate-${content_key}",
+    "manifest + every provider",
+    "NIAKVIO_LOCAL_REPOSITORY_KEY",
+):
+    assert required in repository_resolver, required
+
 # Backend + frontend evidence is part of the validity contract, not optional debug.
 for required in (
     "missing_runtime_instrumentation",
     "missing_repository_load:",
+    "missing_repository_http:",
+    "repository_http_terminal:",
+    "repository_http_pair:",
     "provider_load_coverage:",
     "provider_traversal:",
     "provider_route_terminal:",
@@ -79,6 +110,9 @@ for required in (
     "ui-launched",
     "repository-load",
     "repository-loaded",
+    "repository-load-error",
+    "repository-http-request",
+    "repository-http-response",
     "provider-load-state",
     "provider-loading",
     "provider-http-request",
@@ -89,23 +123,33 @@ for required in (
     "corpus-end",
 ):
     assert required in completeness, required
+# A terminal repository failure is actionable evidence, not an infrastructure
+# incompleteness merely because no provider/player route could begin.
+assert "repository_load_failed:" not in completeness
 
 # Brain must be fail-closed when any evidence link is missing, and capability
-# probes must never become provider-repair plans.
+# probes must never become provider-repair plans. Complete repository/provider-load
+# evidence is learnable even when no player row exists.
 for required in (
     "assessNativeEvidence",
     "evidenceComplete",
     "evidenceProblems",
     "learningAllowed: evidence.complete",
     "repairPlanningAllowed: evidence.complete",
+    "repositoryLearningAllowed: evidence.complete",
+    "providerLoadJsMutationAllowed: false",
+    "coreOrManifestLoadProposalAllowed: evidence.complete",
     "capabilityLearningAllowed: evidence.complete",
     "capabilityPromotionRequiresIdentityProof: true",
     "const declaredRows = readerRows.filter",
     "const capabilityRows = readerRows.filter",
     "const plans = evidence.complete ? failures.map",
-    "if (readerRows.length === 0 || !evidence.complete) process.exitCode = 2",
+    "providerLoadIssues",
+    "providerLoadPriorities",
+    "if (!evidence.complete) process.exitCode = 2",
 ):
     assert required in diagnosis, required
+assert "readerRows.length === 0 || !evidence.complete" not in diagnosis
 for required in (
     "routeMode",
     "const declared = rows.filter",
@@ -147,11 +191,12 @@ for required in (
 ):
     assert required in collection_analyzer, required
 
-# Android suites instrument the official client, install the repository through
-# Nuvio, run visual capture, and persist ONLY structured sanitized evidence.
+# Android suites instrument the official client AND its repository HTTP stack,
+# install through Nuvio, run visual capture, and persist only sanitized evidence.
 for suite, client in ((tv_suite, "tv"), (mobile_suite, "mobile")):
     for required in (
         "instrument_native_client_evidence.py",
+        "instrument_native_repository_http_evidence.py",
         "augment_native_corpus_request_contract.py",
         "augment_native_provider_loading.py",
         "watch_native_device_frontend.sh",
@@ -161,6 +206,7 @@ for suite, client in ((tv_suite, "tv"), (mobile_suite, "mobile")):
         "gate_native_reader_coverage.cjs",
         "gate_native_reader_result.cjs",
         "official_repository_loading=true",
+        "repository_http_evidence=true",
     ):
         assert required in suite, (client, required)
     assert "PluginManager:D" not in suite, (client, "raw PluginManager log persisted")
@@ -181,11 +227,13 @@ for required in (
 ):
     assert required in android_workflow, required
 
-# Desktop Linux is explicitly not native-reader proof. macOS/Windows must build
-# Nuvio's own bridges and run NativePlayerController evidence on all streams.
+# Desktop Linux is explicitly not native-reader proof. macOS/Windows build the
+# official bridge, use native reader + repository HTTP evidence, and capture success
+# versus load-error phases from the actual repository terminal marker.
 for required in (
     "official_nuvio_desktop_player_is_stub",
     "instrument_native_desktop_evidence.py",
+    "instrument_native_repository_http_evidence.py",
     "augment_native_provider_loading.py",
     "augment_native_desktop_player.py",
     "complete_native_desktop_frontend_phases.py",
@@ -193,9 +241,17 @@ for required in (
     "gate_native_reader_coverage.cjs",
     "gate_native_reader_result.cjs",
     "official_repository_loading=true",
+    "repository_http_evidence=true",
     'rm -f "$GRADLE_LOG"',
 ):
     assert required in desktop_suite, required
+for required in (
+    'captureDesktopPhase("repository-loaded", fixtureSlugForLoad)',
+    'captureDesktopPhase("repository-load-error", fixtureSlugForLoad)',
+    'captureDesktopPhase("repository-http-request", fixtureSlugForLoad)',
+    'captureDesktopPhase("repository-http-response", fixtureSlugForLoad)',
+):
+    assert required in desktop_frontend or required in provider_loading, required
 for required in (
     "macos-15",
     "windows-2022",
