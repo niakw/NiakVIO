@@ -50,6 +50,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: canonical-media-types-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   canonical-media-types:
     runs-on: ubuntu-latest
