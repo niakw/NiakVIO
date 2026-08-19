@@ -21,9 +21,14 @@ capture_once() {
 # The watcher is deliberately phase-based, not provider-count based. Backend logs
 # retain every provider/request/reader event; screenshots prove the visible client
 # state at each human stage without generating hundreds of redundant framebuffers.
-adb logcat -v brief -s NiakvioCorpus:I NiakvioEvidence:I PluginRuntime:I '*:S' | while IFS= read -r line; do
+adb logcat -v brief -s NiakvioCorpus:I NiakvioEvidence:I PluginRuntime:I PluginManager:D PluginRepository:D '*:S' | while IFS= read -r line; do
   case "$line" in
     *FIELD_NATIVE_UI_LAUNCHED*) capture_once "ui-launched" ;;
+    *FIELD_NATIVE_REPOSITORY_LOAD_BEGIN*) capture_once "repository-load" ;;
+    *FIELD_NATIVE_REPOSITORY_LOAD_RESULT*) capture_once "repository-loaded" ;;
+    *FIELD_NATIVE_REPOSITORY_LOAD_ERROR*) capture_once "repository-load-error" ;;
+    *FIELD_NATIVE_PROVIDER_LOAD_RESULT*) capture_once "provider-loaded" ;;
+    *FIELD_NATIVE_PROVIDER_LOAD_ERROR*) capture_once "provider-load-error" ;;
     *FIELD_NATIVE_CORPUS_BEGIN*) capture_once "corpus-begin" ;;
     *FIELD_NATIVE_PROVIDER_BEGIN*) capture_once "provider-loading" ;;
     *FIELD_NATIVE_HTTP_REQUEST*) capture_once "provider-http-request" ;;
