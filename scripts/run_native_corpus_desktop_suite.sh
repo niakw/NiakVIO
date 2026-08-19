@@ -82,7 +82,8 @@ PY
   BASE_LOG="${WORKSPACE}/desktop-native-corpus-${fixture}.log"
   LOG="${WORKSPACE}/desktop-native-corpus-${HOST_OS}-${fixture}.log"
   GRADLE_LOG="${WORKSPACE}/desktop-native-gradle-${HOST_OS}-${fixture}.log"
-  rm -f "$BASE_LOG" "$LOG" "$GRADLE_LOG"
+  HTTP_LOG="${WORKSPACE}/desktop-native-http-evidence.log"
+  rm -f "$BASE_LOG" "$LOG" "$GRADLE_LOG" "$HTTP_LOG"
   RUNTIME_STATUS=0
   if [[ "$HOST_OS" = "windows" ]]; then
     "$DESKTOP_ROOT/gradlew.bat" -p "$DESKTOP_ROOT" :composeApp:desktopTest --tests 'com.nuvio.app.features.plugins.NiakvioNativeCorpusDesktopTest' --console=plain 2>&1 | tee "$GRADLE_LOG"
@@ -92,16 +93,19 @@ PY
     RUNTIME_STATUS=${PIPESTATUS[0]}
   fi
 
-  # The generated test writes ordered corpus/provider-load/player/front-end markers.
-  # Kermit may emit raw provider URLs in ordinary debug output, so extract only our
-  # sanitized HTTP fields and immediately delete the raw Gradle capture.
+  # The generated test writes ordered corpus/provider-load/player/front-end markers
+  # to BASE_LOG. Runtime and repository HTTP instrumentation write only sanitized
+  # FIELD_NATIVE_* lines to HTTP_LOG, avoiding any dependency on Gradle's captured
+  # test stdout and avoiding persistence of ordinary client debug output.
   if [[ -s "$BASE_LOG" ]]; then
     cp "$BASE_LOG" "$LOG"
   else
     : > "$LOG"
   fi
-  grep -E 'FIELD_NATIVE_(REPOSITORY_)?HTTP_(REQUEST|RESPONSE|ERROR)' "$GRADLE_LOG" >> "$LOG" 2>/dev/null || true
-  rm -f "$GRADLE_LOG"
+  if [[ -s "$HTTP_LOG" ]]; then
+    cat "$HTTP_LOG" >> "$LOG"
+  fi
+  rm -f "$HTTP_LOG" "$GRADLE_LOG"
   echo "FIELD_NATIVE_EVIDENCE_INSTRUMENTED client=desktop" >> "$LOG"
   cat "$LOG" || true
 
