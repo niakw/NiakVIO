@@ -10,6 +10,7 @@ COVERAGE_GATE="${NIAKVIO}/scripts/gate_native_reader_coverage.cjs"
 RESTAGE="${NIAKVIO}/scripts/restage_native_corpus_client.py"
 ACCEPTANCE_PREPARE="${NIAKVIO}/scripts/prepare_native_reader_acceptance.py"
 INSTRUMENTER="${NIAKVIO}/scripts/instrument_native_client_evidence.py"
+REPOSITORY_HTTP_INSTRUMENTER="${NIAKVIO}/scripts/instrument_native_repository_http_evidence.py"
 REQUEST_CONTRACT="${NIAKVIO}/scripts/augment_native_corpus_request_contract.py"
 PROVIDER_LOADING="${NIAKVIO}/scripts/augment_native_provider_loading.py"
 REPOSITORY_RESOLVER="${NIAKVIO}/scripts/resolve_native_repository.sh"
@@ -55,8 +56,9 @@ if [[ -n "$TARGET_PROVIDER" && "$TARGET_PROVIDER" != "all" && "$TARGET_PROVIDER"
 
 mkdir -p "$EVIDENCE_ROOT"
 python3 "$INSTRUMENTER" tv "$TV_ROOT" || exit $?
+python3 "$REPOSITORY_HTTP_INSTRUMENTER" tv "$TV_ROOT" || exit $?
 
-echo "FIELD_NATIVE_CORPUS_TV_PROFILE fixtures=${#FIXTURES[@]} provider=${TARGET_PROVIDER:-all} configured_acceptance_provider_scope=$CONFIGURED_ACCEPTANCE_PROVIDER_SCOPE manifest=$TARGET_MANIFEST player_probes=$PLAYER_PROBES require_reader_success=$REQUIRE_READER_SUCCESS reader_acceptance=$READER_ACCEPTANCE primary_stream_scope=$PRIMARY_STREAM_SCOPE regression_stream_scope=$REGRESSION_STREAM_SCOPE reuse_avd=true reuse_gradle_daemon=true full_backend_evidence=true frontend_timeline=true official_repository_loading=true local_manifest=$ALLOW_LOCAL_MANIFEST"
+echo "FIELD_NATIVE_CORPUS_TV_PROFILE fixtures=${#FIXTURES[@]} provider=${TARGET_PROVIDER:-all} configured_acceptance_provider_scope=$CONFIGURED_ACCEPTANCE_PROVIDER_SCOPE manifest=$TARGET_MANIFEST player_probes=$PLAYER_PROBES require_reader_success=$REQUIRE_READER_SUCCESS reader_acceptance=$READER_ACCEPTANCE primary_stream_scope=$PRIMARY_STREAM_SCOPE regression_stream_scope=$REGRESSION_STREAM_SCOPE reuse_avd=true reuse_gradle_daemon=true full_backend_evidence=true repository_http_evidence=true frontend_timeline=true official_repository_loading=true local_manifest=$ALLOW_LOCAL_MANIFEST"
 for fixture in "${FIXTURES[@]}"; do
   echo "===== TV CORPUS FIXTURE: $fixture ====="
   STREAM_SCOPE="$REGRESSION_STREAM_SCOPE"
