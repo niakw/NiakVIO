@@ -13,6 +13,8 @@ def text(path: str) -> str:
 request_contract = text("scripts/augment_native_corpus_request_contract.py")
 completeness = text("scripts/native_evidence_completeness.cjs")
 diagnosis = text("engine_v2/scripts/diagnose-native-reader.mjs")
+reader_gate = text("scripts/gate_native_reader_result.cjs")
+capability_analyzer = text("scripts/analyze_native_media_type_capabilities.cjs")
 tv_suite = text("scripts/run_native_corpus_tv_suite.sh")
 mobile_suite = text("scripts/run_native_corpus_mobile_suite.sh")
 desktop_suite = text("scripts/run_native_corpus_desktop_suite.sh")
@@ -20,15 +22,18 @@ android_workflow = text(".github/workflows/native-android-route-reader.yml")
 desktop_workflow = text(".github/workflows/native-desktop-reader-acceptance.yml")
 
 # Every staged provider remains in traversal scope; unsupported routes are an
-# explicit observation rather than an execution failure.
+# explicit observation rather than an execution failure. Anime-capable providers
+# get both tv and anime routes; an undeclared side is discovery evidence only.
 for required in (
     "duplicate provider id in canonical manifest",
     'CANONICAL = {"movie", "tv", "anime"}',
-    'listOf("anime", "tv").filter',
+    "ProviderRequestRoute",
+    'listOf("anime", "tv").map',
+    '"capability_probe"',
     "FIELD_NATIVE_PROVIDER_SKIPPED",
     "reason=unsupported_type",
     "FIELD_NATIVE_PROVIDER_BEGIN",
-    "request_type=$requestMediaType",
+    "request_type=$requestMediaType route_mode=$routeMode",
     "FIELD_NATIVE_PLAYER_BEGIN",
 ):
     assert required in request_contract, required
@@ -53,17 +58,45 @@ for required in (
 ):
     assert required in completeness, required
 
-# Brain must be fail-closed when any evidence link is missing.
+# Brain must be fail-closed when any evidence link is missing, and capability
+# probes must never become provider-repair plans.
 for required in (
     "assessNativeEvidence",
     "evidenceComplete",
     "evidenceProblems",
     "learningAllowed: evidence.complete",
     "repairPlanningAllowed: evidence.complete",
-    "const plans = evidence.complete ?",
+    "capabilityLearningAllowed: evidence.complete",
+    "capabilityPromotionRequiresIdentityProof: true",
+    "const declaredRows = readerRows.filter",
+    "const capabilityRows = readerRows.filter",
+    "const plans = evidence.complete ? failures.map",
     "if (readerRows.length === 0 || !evidence.complete) process.exitCode = 2",
 ):
     assert required in diagnosis, required
+for required in (
+    "routeMode",
+    "const declared = rows.filter",
+    "const probes = rows.filter",
+    "FIELD_NATIVE_CAPABILITY_PROBE_REJECTED",
+    "process.exit(failures.length ? 1 : 0)",
+):
+    assert required in reader_gate, required
+
+# A new manifest type is only provable when every returned stream is reader-healthy
+# AND identity/duration matched under complete native evidence.
+for required in (
+    "assessNativeEvidence",
+    "routeMode !== 'capability_probe'",
+    "healthyPlayers === route.returned",
+    "identityMatches === route.returned",
+    "identityUnknown === 0",
+    "identityContradictions === 0",
+    "requireCrossDeviceConfirmationBeforeManifestMutation: true",
+    "manifestMutationAllowed: false",
+    "FIELD_NATIVE_MEDIA_CAPABILITY_PROVEN",
+):
+    assert required in capability_analyzer, required
 
 # Android suites must instrument the official client, collect multi-tag backend
 # logs, run visual capture, and preserve evidence into the corpus log.
