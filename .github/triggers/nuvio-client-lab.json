@@ -45,7 +45,7 @@
     }
   ],
   "clients": ["tv", "desktop", "mobile"],
-  "run_revision": "native-reader-diagnostics-v13-exhaustive-acceptance",
+  "run_revision": "native-reader-diagnostics-v14-all-providers-including-inactive",
   "policy": {
     "target_total": 10,
     "minimum_vf": 3,
@@ -64,9 +64,11 @@
   "retry_provider_timeout_ms": 70000,
   "playback_timeout_ms": 18000,
   "native_reader_acceptance": {
-    "provider_scope": "fixture",
+    "provider_scope": "all",
+    "include_disabled": true,
     "stream_scope": "all",
     "primary_fixture": "sinners-2025",
-    "regression_fixtures": ["interstellar", "mon-ninja-et-moi-3", "breaking-bad-s01e01", "revenant-s01e01", "jujutsu-kaisen-s01e01", "mushoku-tensei-s01e01"]
+    "regression_fixtures": ["interstellar", "mon-ninja-et-moi-3", "breaking-bad-s01e01", "revenant-s01e01", "jujutsu-kaisen-s01e01", "mushoku-tensei-s01e01"],
+    "publication_requires_fresh_reader_proof": true
   }
 }
