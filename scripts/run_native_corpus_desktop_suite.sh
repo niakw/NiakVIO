@@ -9,6 +9,7 @@ ANALYZER="${NIAKVIO}/scripts/analyze_native_corpus_collection.cjs"
 READER_GATE="${NIAKVIO}/scripts/gate_native_reader_result.cjs"
 COVERAGE_GATE="${NIAKVIO}/scripts/gate_native_reader_coverage.cjs"
 INSTRUMENTER="${NIAKVIO}/scripts/instrument_native_desktop_evidence.py"
+REPOSITORY_HTTP_INSTRUMENTER="${NIAKVIO}/scripts/instrument_native_repository_http_evidence.py"
 REQUEST_CONTRACT="${NIAKVIO}/scripts/augment_native_corpus_request_contract.py"
 PROVIDER_LOADING="${NIAKVIO}/scripts/augment_native_provider_loading.py"
 REPOSITORY_RESOLVER="${NIAKVIO}/scripts/resolve_native_repository.sh"
@@ -51,9 +52,10 @@ if [[ -n "$TARGET_PROVIDER" && "$TARGET_PROVIDER" != "all" && "$TARGET_PROVIDER"
 fi
 
 python3 "$INSTRUMENTER" "$DESKTOP_ROOT" || exit $?
+python3 "$REPOSITORY_HTTP_INSTRUMENTER" desktop "$DESKTOP_ROOT" || exit $?
 STATUS=0
 
-echo "FIELD_NATIVE_CORPUS_DESKTOP_PROFILE os=$HOST_OS fixtures=${#FIXTURES[@]} provider=${TARGET_PROVIDER:-all} manifest=$TARGET_MANIFEST primary_stream_scope=$PRIMARY_STREAM_SCOPE regression_stream_scope=$REGRESSION_STREAM_SCOPE official_player=native_player_controller official_repository_loading=true local_manifest=$ALLOW_LOCAL_MANIFEST"
+echo "FIELD_NATIVE_CORPUS_DESKTOP_PROFILE os=$HOST_OS fixtures=${#FIXTURES[@]} provider=${TARGET_PROVIDER:-all} manifest=$TARGET_MANIFEST primary_stream_scope=$PRIMARY_STREAM_SCOPE regression_stream_scope=$REGRESSION_STREAM_SCOPE official_player=native_player_controller official_repository_loading=true repository_http_evidence=true local_manifest=$ALLOW_LOCAL_MANIFEST"
 for fixture in "${FIXTURES[@]}"; do
   STREAM_SCOPE="$REGRESSION_STREAM_SCOPE"
   if [[ "$fixture" = "$PRIMARY_FIXTURE" ]]; then STREAM_SCOPE="$PRIMARY_STREAM_SCOPE"; fi
@@ -98,7 +100,7 @@ PY
   else
     : > "$LOG"
   fi
-  grep -E 'FIELD_NATIVE_HTTP_(REQUEST|RESPONSE|ERROR)' "$GRADLE_LOG" >> "$LOG" 2>/dev/null || true
+  grep -E 'FIELD_NATIVE_(REPOSITORY_)?HTTP_(REQUEST|RESPONSE|ERROR)' "$GRADLE_LOG" >> "$LOG" 2>/dev/null || true
   rm -f "$GRADLE_LOG"
   echo "FIELD_NATIVE_EVIDENCE_INSTRUMENTED client=desktop" >> "$LOG"
   cat "$LOG" || true
