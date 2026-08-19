@@ -38,13 +38,12 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Restore current sanitized Brain state and reader backlog
+      - name: Restore current sanitized Brain state
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p reader-learning-input/diagnostics reader-learning-output
           git fetch origin brain-learning/proposals:refs/remotes/origin/brain-learning/proposals || true
-
           if git cat-file -e refs/remotes/origin/brain-learning/proposals:engine_v2/learning/latest.json 2>/dev/null; then
             git show refs/remotes/origin/brain-learning/proposals:engine_v2/learning/latest.json > reader-learning-input/latest.json
           else
@@ -55,22 +54,8 @@ jobs:
           else
             printf '# NiakVIO Brain Learning\n' > reader-learning-input/latest.md
           fi
-
-          if git cat-file -e refs/remotes/origin/brain-learning/proposals:engine_v2/learning/native-reader-backlog.json 2>/dev/null; then
-            git show refs/remotes/origin/brain-learning/proposals:engine_v2/learning/native-reader-backlog.json > reader-learning-input/native-reader-backlog.json
-          else
-            printf '{"nativeReaderBacklog":{"schemaVersion":1,"entries":[],"importedRunIds":[],"importedEvidenceIds":[]}}\n' > reader-learning-input/native-reader-backlog.json
-          fi
-          if git cat-file -e refs/remotes/origin/brain-learning/proposals:engine_v2/learning/native-reader-backlog.md 2>/dev/null; then
-            git show refs/remotes/origin/brain-learning/proposals:engine_v2/learning/native-reader-backlog.md > reader-learning-input/native-reader-backlog.md
-          else
-            printf '# NiakVIO Native Reader Backlog\n' > reader-learning-input/native-reader-backlog.md
-          fi
-
           cp reader-learning-input/latest.json reader-learning-output/latest.json
           cp reader-learning-input/latest.md reader-learning-output/latest.md
-          cp reader-learning-input/native-reader-backlog.json reader-learning-output/native-reader-backlog.json
-          cp reader-learning-input/native-reader-backlog.md reader-learning-output/native-reader-backlog.md
 
       - name: Resolve exact reader run and repair-memory duplicate state
         id: source
@@ -120,7 +105,7 @@ jobs:
             find reader-learning-input/diagnostics -type f -name '*brain.json' -print | sort
           else
             echo "has_diagnostics=false" >> "$GITHUB_OUTPUT"
-            echo "No complete-reader diagnosis artifact was materialized for run $RUN_ID."
+            echo "No reader diagnosis artifact was materialized for run $RUN_ID."
           fi
 
       - name: Download exact Android reader-repair comparison
@@ -178,24 +163,30 @@ jobs:
         run: |
           set -euo pipefail
           python3 scripts/merge_native_reader_backlog.py \
-            --state reader-learning-input/native-reader-backlog.json \
+            --state reader-learning-output/latest.json \
+            --previous-state reader-learning-input/latest.json \
             --diagnostics-root reader-learning-input/diagnostics \
             --run-id "$RUN_ID" \
-            --output reader-learning-output/native-reader-backlog.json \
-            --markdown-input reader-learning-input/native-reader-backlog.md \
-            --markdown-output reader-learning-output/native-reader-backlog.md
+            --output reader-learning-output/latest.json \
+            --markdown-input reader-learning-output/latest.md \
+            --markdown-output reader-learning-output/latest.md
 
       - name: Enforce sanitized fail-closed learning state
         shell: bash
         run: |
           set -euo pipefail
           node -e "const x=require('./reader-learning-output/latest.json');if(x.productionWritesAllowed===true||x.publicationAllowed===true)process.exit(1)"
-          for file in reader-learning-output/latest.json reader-learning-output/native-reader-backlog.json; do
-            if grep -Eiq 'https?://|authorization[=:]|cookie[=:]|token[=:]|secret[=:]' "$file"; then
-              echo "refusing unsafe native reader learning artifact: $file" >&2
-              exit 1
-            fi
-          done
+          if grep -Eiq 'https?://|authorization[=:]|cookie[=:]|token[=:]|secret[=:]' reader-learning-output/latest.json; then
+            echo "refusing unsafe native reader learning state" >&2
+            exit 1
+          fi
+          node - <<'NODE'
+          const fs=require('fs');
+          const state=JSON.parse(fs.readFileSync('reader-learning-output/latest.json','utf8'));
+          const memory=state.nativeReaderRepairMemory || {};
+          const backlog=memory.readerBacklog || {};
+          if (backlog.openCount != null && !Array.isArray(backlog.entries)) throw new Error('invalid reader backlog shape');
+          NODE
 
       - name: Report reader sync outcome
         shell: bash
@@ -211,15 +202,9 @@ jobs:
           mkdir -p engine_v2/learning
           cp reader-learning-output/latest.json engine_v2/learning/latest.json
           cp reader-learning-output/latest.md engine_v2/learning/latest.md
-          cp reader-learning-output/native-reader-backlog.json engine_v2/learning/native-reader-backlog.json
-          cp reader-learning-output/native-reader-backlog.md engine_v2/learning/native-reader-backlog.md
           git config user.name "niakvio-brain"
           git config user.email "actions@users.noreply.github.com"
-          git add \
-            engine_v2/learning/latest.json \
-            engine_v2/learning/latest.md \
-            engine_v2/learning/native-reader-backlog.json \
-            engine_v2/learning/native-reader-backlog.md
+          git add engine_v2/learning/latest.json engine_v2/learning/latest.md
           if git diff --cached --quiet; then
             echo "No native reader learning/backlog change."
           else
