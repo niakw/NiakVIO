@@ -11,6 +11,10 @@ Manifest-disabled providers are still loaded and executed individually. Provider
 that the official client rejects for the current platform are recorded as platform
 skips. The request-contract postprocessor runs first and owns declared/capability
 probe routes; this postprocessor preserves those routes unchanged.
+
+Normal evidence accepts only an exact 40-hex raw.githubusercontent.com revision.
+Repair sandboxes may explicitly opt into a loopback-only HTTP repository so the
+real client can install a locally generated candidate without publishing it first.
 """
 from __future__ import annotations
 
@@ -22,10 +26,30 @@ from urllib.parse import urlparse
 
 ROOT = Path(__file__).resolve().parents[1]
 CANONICAL_TYPES = {"movie", "tv", "anime"}
+LOCAL_LAB_HOSTS = {"127.0.0.1", "localhost", "10.0.2.2"}
 
 
 def kotlin_string(value: str) -> str:
     return json.dumps(str(value), ensure_ascii=False)
+
+
+def validate_manifest_url(manifest_url: str, allow_local_lab_url: bool):
+    parsed = urlparse(manifest_url)
+    if parsed.username or parsed.password or parsed.fragment:
+        raise SystemExit("native provider loading manifest URL must not contain credentials or fragments")
+    if parsed.scheme == "https" and parsed.hostname == "raw.githubusercontent.com":
+        parts = [part for part in parsed.path.split("/") if part]
+        if len(parts) < 4 or re.fullmatch(r"[0-9a-fA-F]{40}", parts[2]) is None:
+            raise SystemExit("raw GitHub native provider manifest must be pinned to an exact 40-hex commit SHA")
+        return parsed, "pinned_github"
+    if allow_local_lab_url and parsed.scheme == "http" and parsed.hostname in LOCAL_LAB_HOSTS:
+        if parsed.port is None or parsed.port < 1 or parsed.port > 65535:
+            raise SystemExit("local native provider lab manifest URL requires an explicit TCP port")
+        return parsed, "local_candidate"
+    raise SystemExit(
+        "native provider loading manifest URL must be pinned raw.githubusercontent.com HTTPS; "
+        "loopback HTTP is allowed only with --allow-local-lab-url"
+    )
 
 
 def load_manifest(path: Path) -> list[dict]:
@@ -126,8 +150,10 @@ def tv_helpers(manifest_url: str, blocked: list[str]) -> str:
         val repo = installed.getOrThrow()
         val loaded = manager.scrapers.first().filter {{ it.repositoryId == repo.id }}
         val byId = loaded.associateBy {{ it.id.substringAfterLast(':').lowercase() }}
+        val selectedKeys = providers.map {{ it.id.lowercase() }}.toSet()
+        val selectedLoaded = byId.keys.count {{ it in selectedKeys }}
         val expectedLoaded = providers.count {{ it.id.lowercase() !in platformExcludedProviders }}
-        emit("FIELD_NATIVE_REPOSITORY_LOAD_RESULT client=tv fixture=$fixtureSlugForLoad repository64=${{b64(repo.name)}} expected=$expectedLoaded loaded=${{loaded.size}}")
+        emit("FIELD_NATIVE_REPOSITORY_LOAD_RESULT client=tv fixture=$fixtureSlugForLoad repository64=${{b64(repo.name)}} expected=$expectedLoaded loaded=$selectedLoaded")
         providers.forEach {{ provider ->
             val key = provider.id.lowercase()
             if (key in platformExcludedProviders) {{
@@ -170,8 +196,10 @@ def repository_helpers(client: str, manifest_url: str, blocked: list[str]) -> st
         }}
         val loaded = PluginRepository.uiState.value.scrapers.filter {{ it.repositoryUrl == repositoryUrl }}
         val byId = loaded.associateBy {{ it.id.substringAfterLast(':').lowercase() }}
+        val selectedKeys = providers.map {{ it.id.lowercase() }}.toSet()
+        val selectedLoaded = byId.keys.count {{ it in selectedKeys }}
         val expectedLoaded = providers.count {{ it.id.lowercase() !in platformExcludedProviders }}
-        emit("FIELD_NATIVE_REPOSITORY_LOAD_RESULT client={client} fixture=$fixtureSlugForLoad expected=$expectedLoaded loaded=${{loaded.size}}")
+        emit("FIELD_NATIVE_REPOSITORY_LOAD_RESULT client={client} fixture=$fixtureSlugForLoad expected=$expectedLoaded loaded=$selectedLoaded")
         providers.forEach {{ provider ->
             val key = provider.id.lowercase()
             if (key in platformExcludedProviders) {{
@@ -230,10 +258,15 @@ def replace_official_execution(text: str, client: str) -> str:
     return text
 
 
-def augment(source: Path, client: str, manifest: Path, manifest_url: str, host_platform: str) -> None:
-    parsed = urlparse(manifest_url)
-    if parsed.scheme != "https" or parsed.hostname != "raw.githubusercontent.com":
-        raise SystemExit("native provider loading manifest URL must be pinned raw.githubusercontent.com HTTPS")
+def augment(
+    source: Path,
+    client: str,
+    manifest: Path,
+    manifest_url: str,
+    host_platform: str,
+    allow_local_lab_url: bool = False,
+) -> None:
+    parsed, manifest_transport = validate_manifest_url(manifest_url, allow_local_lab_url)
     rows = load_manifest(manifest)
     blocked = excluded_ids(rows, client, host_platform)
     text = source.read_text(encoding="utf-8")
@@ -292,7 +325,7 @@ def augment(source: Path, client: str, manifest: Path, manifest_url: str, host_p
     source.write_text(text, encoding="utf-8")
     print(
         f"FIELD_NATIVE_PROVIDER_LOADING client={client} providers={len(rows)} platform_blocked={len(blocked)} "
-        f"manifest={manifest} manifest_host={parsed.hostname} source={source}"
+        f"manifest={manifest} manifest_host={parsed.hostname} manifest_transport={manifest_transport} source={source}"
     )
 
 
@@ -303,11 +336,23 @@ def main() -> int:
     parser.add_argument("--manifest-url", required=True)
     parser.add_argument("--source", required=True)
     parser.add_argument("--platform", default="", help="desktop host: macos or windows")
+    parser.add_argument(
+        "--allow-local-lab-url",
+        action="store_true",
+        help="allow only localhost/127.0.0.1/10.0.2.2 HTTP repository URLs for an isolated repair lab",
+    )
     args = parser.parse_args()
     manifest = Path(args.manifest)
     if not manifest.is_absolute():
         manifest = (ROOT / manifest).resolve()
-    augment(Path(args.source).resolve(), args.client, manifest, args.manifest_url, args.platform)
+    augment(
+        Path(args.source).resolve(),
+        args.client,
+        manifest,
+        args.manifest_url,
+        args.platform,
+        allow_local_lab_url=args.allow_local_lab_url,
+    )
     return 0
 
 
