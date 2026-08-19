@@ -11,6 +11,7 @@ def text(path: str) -> str:
 
 
 request_contract = text("scripts/augment_native_corpus_request_contract.py")
+provider_loading = text("scripts/augment_native_provider_loading.py")
 completeness = text("scripts/native_evidence_completeness.cjs")
 collection_analyzer = text("scripts/analyze_native_corpus_collection.cjs")
 diagnosis = text("engine_v2/scripts/diagnose-native-reader.mjs")
@@ -40,9 +41,28 @@ for required in (
 ):
     assert required in request_contract, required
 
+# Provider proof must pass through the real Nuvio repository/manager layer first.
+for required in (
+    "FIELD_NATIVE_REPOSITORY_LOAD_BEGIN",
+    "FIELD_NATIVE_REPOSITORY_LOAD_RESULT",
+    "FIELD_NATIVE_PROVIDER_LOAD_RESULT",
+    "FIELD_NATIVE_PROVIDER_LOAD_ERROR",
+    "FIELD_NATIVE_PROVIDER_LOAD_SKIPPED",
+    "manager.addRepository(repositoryManifestUrl)",
+    "officialPluginManager.executeScraper(loadedScraper",
+    "PluginRepository.addRepository(repositoryManifestUrl)",
+    "PluginRepository.executeScraper(loadedScraper",
+    "requestRoutesFor(provider.id, mediaType)",
+    "reason=disabled_platform",
+    "reason=load_failure",
+):
+    assert required in provider_loading, required
+
 # Backend + frontend evidence is part of the validity contract, not optional debug.
 for required in (
     "missing_runtime_instrumentation",
+    "missing_repository_load:",
+    "provider_load_coverage:",
     "provider_traversal:",
     "provider_route_terminal:",
     "player_terminal:",
@@ -50,6 +70,9 @@ for required in (
     "missing_frontend_phase:",
     "frontend_capture_errors:",
     "ui-launched",
+    "repository-load",
+    "repository-loaded",
+    "provider-load-state",
     "provider-loading",
     "provider-http-request",
     "provider-http-response",
@@ -117,20 +140,25 @@ for required in (
 ):
     assert required in collection_analyzer, required
 
-# Android suites must instrument the official client, collect multi-tag backend
-# logs, run visual capture, and preserve evidence into the corpus log.
+# Android suites instrument the official client, install the repository through
+# Nuvio, run visual capture, and persist ONLY structured sanitized evidence.
 for suite, client in ((tv_suite, "tv"), (mobile_suite, "mobile")):
     for required in (
         "instrument_native_client_evidence.py",
         "augment_native_corpus_request_contract.py",
+        "augment_native_provider_loading.py",
         "watch_native_device_frontend.sh",
         "capture_native_device_frontend.sh",
-        "NiakvioCorpus:I NiakvioEvidence:I PluginRuntime:I",
+        "NiakvioCorpus:I NiakvioEvidence:I",
         f"FIELD_NATIVE_EVIDENCE_INSTRUMENTED client={client}",
         "gate_native_reader_coverage.cjs",
         "gate_native_reader_result.cjs",
+        "official_repository_loading=true",
     ):
         assert required in suite, (client, required)
+    assert "PluginManager:D" not in suite, (client, "raw PluginManager log persisted")
+    assert "PluginRepository:D" not in suite, (client, "raw PluginRepository log persisted")
+    assert "PluginRuntime:I" not in suite, (client, "raw PluginRuntime log persisted")
 
 # Route workflows are exhaustive by logical media route, with all manifest rows
 # (including disabled entries) and every returned stream.
@@ -151,11 +179,14 @@ for required in (
 for required in (
     "official_nuvio_desktop_player_is_stub",
     "instrument_native_desktop_evidence.py",
+    "augment_native_provider_loading.py",
     "augment_native_desktop_player.py",
     "complete_native_desktop_frontend_phases.py",
     "NIAKVIO_PRIMARY_STREAM_SCOPE",
     "gate_native_reader_coverage.cjs",
     "gate_native_reader_result.cjs",
+    "official_repository_loading=true",
+    'rm -f "$GRADLE_LOG"',
 ):
     assert required in desktop_suite, required
 for required in (
