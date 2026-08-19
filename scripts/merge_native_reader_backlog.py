@@ -95,8 +95,6 @@ def classification(failure_class: str, *, load_issue: dict[str, Any] | None = No
             "layer": "playback_transport",
             "scope": "external_or_context",
             "externalCandidate": True,
-            # External-vs-context causality must be proven before a provider JS
-            # mutation is authorized. Brain can still plan a context hypothesis.
             "providerJsMutationAllowed": False,
         }
     if failure in {
@@ -190,6 +188,7 @@ def render_markdown(base: str, backlog: dict[str, Any]) -> str:
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--state", type=Path, required=True)
+    parser.add_argument("--previous-state", type=Path)
     parser.add_argument("--diagnostics-root", type=Path, required=True)
     parser.add_argument("--run-id", required=True)
     parser.add_argument("--output", type=Path)
@@ -203,11 +202,16 @@ def main() -> int:
     if not run_id.isdigit():
         raise SystemExit(f"invalid run id: {run_id!r}")
     state = read_json(args.state)
+    previous = read_json(args.previous_state)
     output = args.output or args.state
     now = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
 
     reader_memory = state.get("nativeReaderRepairMemory") if isinstance(state.get("nativeReaderRepairMemory"), dict) else {}
-    prior = reader_memory.get("readerBacklog") if isinstance(reader_memory.get("readerBacklog"), dict) else {}
+    previous_memory = previous.get("nativeReaderRepairMemory") if isinstance(previous.get("nativeReaderRepairMemory"), dict) else {}
+    current_backlog = reader_memory.get("readerBacklog") if isinstance(reader_memory.get("readerBacklog"), dict) else {}
+    previous_backlog = previous_memory.get("readerBacklog") if isinstance(previous_memory.get("readerBacklog"), dict) else {}
+    prior = current_backlog or previous_backlog
+
     imported_evidence = [clean(v, 40) for v in prior.get("importedEvidenceIds") or [] if clean(v, 40)]
     imported_evidence = list(dict.fromkeys(imported_evidence))[-max(1, int(args.max_evidence_ids)):]
     imported_set = set(imported_evidence)
@@ -254,10 +258,7 @@ def main() -> int:
             key = issue_key(client, provider, fixture, request_type, failure)
             ids = []
             for hypothesis in plan.get("hypotheses") or []:
-                if isinstance(hypothesis, dict):
-                    value = clean(hypothesis.get("id"), 96)
-                else:
-                    value = clean(hypothesis, 96)
+                value = clean(hypothesis.get("id"), 96) if isinstance(hypothesis, dict) else clean(hypothesis, 96)
                 if value and value not in ids:
                     ids.append(value)
             plan_hypotheses[key] = ids[:12]
@@ -328,8 +329,6 @@ def main() -> int:
             failures: dict[str, int] = route["failures"]
             base = route_key(client, provider, fixture, request_type)
 
-            # A fresh complete observation resolves any old causal class that is
-            # no longer present for the exact client/provider/fixture/type route.
             for key, current in list(entries.items()):
                 if route_key(current["client"], current["providerId"], current["fixture"], current["requestType"]) != base:
                     continue
@@ -370,8 +369,6 @@ def main() -> int:
                 current["hypotheses"] = plan_hypotheses.get(key, current.get("hypotheses") or [])[:12]
                 entries[key] = current
 
-        # Reaching reader observations is fresh proof that a prior repository/load
-        # defect for the same provider/client/fixture is no longer present.
         for key, current in list(entries.items()):
             if current.get("status") != "open" or current.get("requestType") != "repository":
                 continue
