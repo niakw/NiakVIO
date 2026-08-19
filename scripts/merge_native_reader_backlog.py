@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Merge complete native-reader diagnoses into a persistent sanitized backlog.
+"""Merge complete native-reader diagnoses into persistent sanitized Brain memory.
 
 The backlog is keyed by client/provider/fixture/request-type/failure-class and is
 updated only from complete official-reader evidence. Capability probes are not
-bugs. Healthy fresh evidence resolves prior failures for the same route. No raw
-media URLs, query strings, header values, cookies, tokens, or exception payloads
-are persisted.
+bugs. Healthy fresh evidence resolves prior failures for the same route. The
+backlog lives under nativeReaderRepairMemory.readerBacklog so the daily Brain
+learning cycle preserves it automatically with the rest of reader memory.
 """
 from __future__ import annotations
 
@@ -95,9 +95,14 @@ def classification(failure_class: str, *, load_issue: dict[str, Any] | None = No
             "layer": "playback_transport",
             "scope": "external_or_context",
             "externalCandidate": True,
+            # External-vs-context causality must be proven before a provider JS
+            # mutation is authorized. Brain can still plan a context hypothesis.
             "providerJsMutationAllowed": False,
         }
-    if failure in {"playback_decoder", "short_media", "playback_duration_unknown", "media_validation_gap", "playback_parser"}:
+    if failure in {
+        "playback_decoder", "short_media", "playback_duration_unknown",
+        "media_validation_gap", "playback_parser",
+    }:
         return {
             "layer": "media_candidate",
             "scope": "provider_media_or_compatibility",
@@ -145,7 +150,6 @@ def sanitize_existing(raw: Any) -> dict[str, Any] | None:
         "lastOutcome": clean(raw.get("lastOutcome"), 32) or None,
         "lastReason": clean(raw.get("lastReason"), 160) or None,
         "hypotheses": [clean(v, 96) for v in raw.get("hypotheses") or [] if clean(v, 96)][:12],
-        "skills": [clean(v, 96) for v in raw.get("skills") or [] if clean(v, 96)][:12],
     }
 
 
@@ -202,7 +206,8 @@ def main() -> int:
     output = args.output or args.state
     now = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
 
-    prior = state.get("nativeReaderBacklog") if isinstance(state.get("nativeReaderBacklog"), dict) else {}
+    reader_memory = state.get("nativeReaderRepairMemory") if isinstance(state.get("nativeReaderRepairMemory"), dict) else {}
+    prior = reader_memory.get("readerBacklog") if isinstance(reader_memory.get("readerBacklog"), dict) else {}
     imported_evidence = [clean(v, 40) for v in prior.get("importedEvidenceIds") or [] if clean(v, 40)]
     imported_evidence = list(dict.fromkeys(imported_evidence))[-max(1, int(args.max_evidence_ids)):]
     imported_set = set(imported_evidence)
@@ -236,9 +241,29 @@ def main() -> int:
 
         observations = [row for row in diagnosis.get("observations") or [] if isinstance(row, dict)]
         load_issues = [row for row in diagnosis.get("providerLoadIssues") or [] if isinstance(row, dict)]
+        plans = [row for row in diagnosis.get("plans") or [] if isinstance(row, dict)]
+        plan_hypotheses: dict[str, list[str]] = {}
+        for plan in plans:
+            client = clean(plan.get("client"), 32).lower()
+            provider = clean(plan.get("provider"), 128).casefold()
+            fixture = clean(plan.get("fixture"), 96)
+            request_type = clean(plan.get("requestType"), 32).lower() or "unknown"
+            failure = clean(plan.get("failureClass"), 96) or "unknown_failure"
+            if not client or not provider or not fixture:
+                continue
+            key = issue_key(client, provider, fixture, request_type, failure)
+            ids = []
+            for hypothesis in plan.get("hypotheses") or []:
+                if isinstance(hypothesis, dict):
+                    value = clean(hypothesis.get("id"), 96)
+                else:
+                    value = clean(hypothesis, 96)
+                if value and value not in ids:
+                    ids.append(value)
+            plan_hypotheses[key] = ids[:12]
+
         routes: dict[str, dict[str, Any]] = {}
         providers_seen: set[tuple[str, str, str]] = set()
-
         for raw in observations:
             if clean(raw.get("routeMode"), 32).lower() == "capability_probe":
                 continue
@@ -281,7 +306,7 @@ def main() -> int:
                     "id": issue_id(key), "client": client, "providerId": provider, "fixture": fixture,
                     "requestType": "repository", "failureClass": failure,
                     "occurrences": 0, "consecutiveFailures": 0, "healthyRetests": 0,
-                    "firstSeenAt": now, "resolvedAt": None, "hypotheses": [], "skills": [],
+                    "firstSeenAt": now, "resolvedAt": None, "hypotheses": [],
                 }
                 opened += 1
             current.update(cls)
@@ -296,19 +321,19 @@ def main() -> int:
             entries[key] = current
 
         for route in routes.values():
-            client, provider, fixture, request_type = route["client"], route["provider"], route["fixture"], route["requestType"]
+            client = route["client"]
+            provider = route["provider"]
+            fixture = route["fixture"]
+            request_type = route["requestType"]
             failures: dict[str, int] = route["failures"]
             base = route_key(client, provider, fixture, request_type)
 
-            # Any previous failure class for this exact route that disappeared in
-            # fresh complete evidence is resolved. If another class appeared, the
-            # old class closes and the new class becomes the active bug.
+            # A fresh complete observation resolves any old causal class that is
+            # no longer present for the exact client/provider/fixture/type route.
             for key, current in list(entries.items()):
                 if route_key(current["client"], current["providerId"], current["fixture"], current["requestType"]) != base:
                     continue
-                if current.get("status") != "open":
-                    continue
-                if current["failureClass"] in failures:
+                if current.get("status") != "open" or current["failureClass"] in failures:
                     continue
                 current["status"] = "resolved"
                 current["healthyRetests"] = non_negative(current.get("healthyRetests")) + (1 if route["healthy"] else 0)
@@ -330,7 +355,7 @@ def main() -> int:
                         "id": issue_id(key), "client": client, "providerId": provider, "fixture": fixture,
                         "requestType": request_type, "failureClass": failure,
                         "occurrences": 0, "consecutiveFailures": 0, "healthyRetests": 0,
-                        "firstSeenAt": now, "resolvedAt": None, "hypotheses": [], "skills": [],
+                        "firstSeenAt": now, "resolvedAt": None, "hypotheses": [],
                     }
                     opened += 1
                 current.update(cls)
@@ -342,10 +367,11 @@ def main() -> int:
                 current["lastRunId"] = run_id
                 current["lastOutcome"] = "failure"
                 current["lastReason"] = failure
+                current["hypotheses"] = plan_hypotheses.get(key, current.get("hypotheses") or [])[:12]
                 entries[key] = current
 
-        # A provider that previously failed to load but now reaches reader
-        # observations has fresh proof that the repository/load defect is gone.
+        # Reaching reader observations is fresh proof that a prior repository/load
+        # defect for the same provider/client/fixture is no longer present.
         for key, current in list(entries.items()):
             if current.get("status") != "open" or current.get("requestType") != "repository":
                 continue
@@ -394,7 +420,8 @@ def main() -> int:
         "externalCandidateOpenCount": sum(1 for row in ordered if row.get("status") == "open" and row.get("externalCandidate")),
         "entries": ordered,
     }
-    state["nativeReaderBacklog"] = backlog
+    reader_memory["readerBacklog"] = backlog
+    state["nativeReaderRepairMemory"] = reader_memory
     state["privacy"] = "No raw URLs, query tokens, header values, cookies, credentials or private notes are persisted in Brain state. Reader backlog stores only sanitized route identities and aggregate outcomes."
 
     output.parent.mkdir(parents=True, exist_ok=True)
