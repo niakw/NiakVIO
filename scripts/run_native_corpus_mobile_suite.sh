@@ -10,6 +10,7 @@ RESTAGE="${NIAKVIO}/scripts/restage_native_corpus_client.py"
 DEFAULT_FIXTURES=(sinners-2025 interstellar mon-ninja-et-moi-3 breaking-bad-s01e01 revenant-s01e01 jujutsu-kaisen-s01e01 mushoku-tensei-s01e01)
 TARGET_FIXTURE="${NIAKVIO_TARGET_FIXTURE:-}"
 TARGET_PROVIDER="${NIAKVIO_TARGET_PROVIDER:-}"
+TARGET_MANIFEST="${NIAKVIO_TARGET_MANIFEST:-manifest.json}"
 PLAYER_PROBES="${NIAKVIO_PLAYER_PROBES:-1}"
 REQUIRE_READER_SUCCESS="${NIAKVIO_REQUIRE_READER_SUCCESS:-0}"
 if [[ -n "$TARGET_FIXTURE" && "$TARGET_FIXTURE" != "all" ]]; then FIXTURES=("$TARGET_FIXTURE"); else FIXTURES=("${DEFAULT_FIXTURES[@]}"); fi
@@ -22,11 +23,11 @@ MOBILE_TASK=$(printf '%s\n' "$tasks" | awk 'tolower($1) ~ /connected.*device.*te
 if [[ -z "${MOBILE_TASK:-}" ]]; then MOBILE_TASK=$(printf '%s\n' "$tasks" | awk 'tolower($1) ~ /device.*test/ && tolower($0) ~ /connected/ {print $1; exit}'); fi
 if [[ -z "${MOBILE_TASK:-}" ]]; then echo "Unable to resolve NuvioMobile connected device-test task" >&2; exit 97; fi
 echo "Resolved NuvioMobile task once for corpus suite: $MOBILE_TASK"
-echo "FIELD_NATIVE_CORPUS_MOBILE_PROFILE fixtures=${#FIXTURES[@]} provider=${TARGET_PROVIDER:-all} player_probes=$PLAYER_PROBES require_reader_success=$REQUIRE_READER_SUCCESS reuse_avd=true reuse_gradle_daemon=true"
+echo "FIELD_NATIVE_CORPUS_MOBILE_PROFILE fixtures=${#FIXTURES[@]} provider=${TARGET_PROVIDER:-all} manifest=$TARGET_MANIFEST player_probes=$PLAYER_PROBES require_reader_success=$REQUIRE_READER_SUCCESS reuse_avd=true reuse_gradle_daemon=true"
 
 for fixture in "${FIXTURES[@]}"; do
   echo "===== MOBILE CORPUS FIXTURE: $fixture ====="
-  python3 "$RESTAGE" mobile --fixture "$fixture" --workspace "$WORKSPACE" "${PROVIDER_ARGS[@]}" --player-probes "$PLAYER_PROBES" || { STATUS=1; continue; }
+  python3 "$RESTAGE" mobile --fixture "$fixture" --workspace "$WORKSPACE" "${PROVIDER_ARGS[@]}" --player-probes "$PLAYER_PROBES" --manifest "$TARGET_MANIFEST" || { STATUS=1; continue; }
   adb logcat -c || true
   RUNTIME_STATUS=0
   "$MOBILE_ROOT/gradlew" -p "$MOBILE_ROOT" ":composeApp:$MOBILE_TASK" -Pnuvio.android.distribution=full --console=plain || RUNTIME_STATUS=$?
@@ -43,5 +44,5 @@ for fixture in "${FIXTURES[@]}"; do
   if [[ "$RUNTIME_STATUS" -ne 0 || "$ANALYSIS_STATUS" -ne 0 || "$READER_STATUS" -ne 0 ]]; then STATUS=1; fi
 done
 
-echo "FIELD_NATIVE_CORPUS_MOBILE_SUITE_STATUS status=$STATUS fixtures=${#FIXTURES[@]} clients=1 provider=${TARGET_PROVIDER:-all} require_reader_success=$REQUIRE_READER_SUCCESS"
+echo "FIELD_NATIVE_CORPUS_MOBILE_SUITE_STATUS status=$STATUS fixtures=${#FIXTURES[@]} clients=1 provider=${TARGET_PROVIDER:-all} manifest=$TARGET_MANIFEST require_reader_success=$REQUIRE_READER_SUCCESS"
 exit "$STATUS"
