@@ -18,10 +18,10 @@ capture_once() {
   }
 }
 
-# The watcher is deliberately phase-based, not provider-count based. Backend logs
-# retain every provider/request/reader event; screenshots prove the visible client
-# state at each human stage without generating hundreds of redundant framebuffers.
-adb logcat -v brief -s NiakvioCorpus:I NiakvioEvidence:I PluginRuntime:I PluginManager:D PluginRepository:D '*:S' | while IFS= read -r line; do
+# Watch only NiakVIO's structured/sanitized tags. Official client debug tags may
+# contain raw provider URLs; they are not needed because every phase marker below
+# is emitted explicitly through NiakvioCorpus/NiakvioEvidence.
+adb logcat -v brief -s NiakvioCorpus:I NiakvioEvidence:I '*:S' | while IFS= read -r line; do
   case "$line" in
     *FIELD_NATIVE_UI_LAUNCHED*) capture_once "ui-launched" ;;
     *FIELD_NATIVE_REPOSITORY_LOAD_BEGIN*) capture_once "repository-load" ;;
