@@ -24,7 +24,10 @@ REGRESSION_STREAM_SCOPE="${NIAKVIO_REGRESSION_STREAM_SCOPE:-2}"
 REQUIRE_READER_SUCCESS="${NIAKVIO_REQUIRE_READER_SUCCESS:-1}"
 SOURCE_SHA="${NIAKVIO_SOURCE_SHA:-$(git -C "$NIAKVIO" rev-parse HEAD)}"
 SOURCE_REPOSITORY="${GITHUB_REPOSITORY:-niakw/NiakVIO}"
-MANIFEST_URL="https://raw.githubusercontent.com/${SOURCE_REPOSITORY}/${SOURCE_SHA}/${TARGET_MANIFEST}"
+MANIFEST_URL="${NIAKVIO_MANIFEST_URL:-https://raw.githubusercontent.com/${SOURCE_REPOSITORY}/${SOURCE_SHA}/${TARGET_MANIFEST}}"
+ALLOW_LOCAL_MANIFEST="${NIAKVIO_ALLOW_LOCAL_MANIFEST:-0}"
+PROVIDER_LOADING_URL_ARGS=()
+if [[ "$ALLOW_LOCAL_MANIFEST" = "1" ]]; then PROVIDER_LOADING_URL_ARGS+=(--allow-local-lab-url); fi
 
 case "$(uname -s)" in
   Darwin) HOST_OS="macos" ;;
@@ -46,7 +49,7 @@ fi
 python3 "$INSTRUMENTER" "$DESKTOP_ROOT" || exit $?
 STATUS=0
 
-echo "FIELD_NATIVE_CORPUS_DESKTOP_PROFILE os=$HOST_OS fixtures=${#FIXTURES[@]} provider=${TARGET_PROVIDER:-all} manifest=$TARGET_MANIFEST primary_stream_scope=$PRIMARY_STREAM_SCOPE regression_stream_scope=$REGRESSION_STREAM_SCOPE official_player=native_player_controller official_repository_loading=true"
+echo "FIELD_NATIVE_CORPUS_DESKTOP_PROFILE os=$HOST_OS fixtures=${#FIXTURES[@]} provider=${TARGET_PROVIDER:-all} manifest=$TARGET_MANIFEST primary_stream_scope=$PRIMARY_STREAM_SCOPE regression_stream_scope=$REGRESSION_STREAM_SCOPE official_player=native_player_controller official_repository_loading=true local_manifest=$ALLOW_LOCAL_MANIFEST"
 for fixture in "${FIXTURES[@]}"; do
   STREAM_SCOPE="$REGRESSION_STREAM_SCOPE"
   if [[ "$fixture" = "$PRIMARY_FIXTURE" ]]; then STREAM_SCOPE="$PRIMARY_STREAM_SCOPE"; fi
@@ -54,7 +57,7 @@ for fixture in "${FIXTURES[@]}"; do
 
   python3 "$RESTAGE" desktop --fixture "$fixture" --workspace "$WORKSPACE" "${PROVIDER_ARGS[@]}" --manifest "$TARGET_MANIFEST" || { STATUS=1; continue; }
   python3 "$REQUEST_CONTRACT" desktop --fixture "$fixture" --manifest "$TARGET_MANIFEST" --source "$TEST_SOURCE" || { STATUS=1; continue; }
-  python3 "$PROVIDER_LOADING" desktop --manifest "$TARGET_MANIFEST" --manifest-url "$MANIFEST_URL" --source "$TEST_SOURCE" --platform "$HOST_OS" || { STATUS=1; continue; }
+  python3 "$PROVIDER_LOADING" desktop --manifest "$TARGET_MANIFEST" --manifest-url "$MANIFEST_URL" --source "$TEST_SOURCE" --platform "$HOST_OS" "${PROVIDER_LOADING_URL_ARGS[@]}" || { STATUS=1; continue; }
   EXPECTED_MINUTES="$(python3 - "$fixture" "$NIAKVIO/.github/triggers/nuvio-client-lab.json" <<'PY'
 import json, sys
 slug, path = sys.argv[1], sys.argv[2]
