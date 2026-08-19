@@ -35,6 +35,25 @@ const readerMemory = {
     skill: 'global_media_enrichment_v1', attempts: 2, successes: 1, failures: 1, inconclusive: 0,
     provenProviderCount: 1, failedProviderCount: 0, provenProviders: ['moviesdrive'], failedProviders: [], maturity: 'promising',
   }],
+  readerBacklog: {
+    schemaVersion: 1,
+    updatedAt: '2026-08-18T00:00:00Z',
+    lastRunId: '12345',
+    importedRunIds: ['12345'],
+    importedEvidenceIds: ['abc123'],
+    openCount: 1,
+    resolvedCount: 0,
+    externalCandidateOpenCount: 1,
+    entries: [{
+      id: 'reader-bug-1', client: 'tv', providerId: 'moviesdrive', fixture: 'sinners-2025',
+      requestType: 'movie', failureClass: 'playback_http_access', layer: 'playback_transport',
+      scope: 'external_or_context', status: 'open', externalCandidate: true, providerJsMutationAllowed: false,
+      occurrences: 2, consecutiveFailures: 2, healthyRetests: 0,
+      firstSeenAt: '2026-08-18T00:00:00Z', lastSeenAt: '2026-08-18T00:00:00Z', resolvedAt: null,
+      lastRunId: '12345', lastOutcome: 'failure', lastReason: 'playback_http_access',
+      hypotheses: ['replay-native-request-context'],
+    }],
+  },
 };
 write(previous, {
   experimentMemory: { entries: [{
@@ -72,13 +91,14 @@ assert.equal(entry.consecutiveFailures, 2);
 assert.ok(latest.proposals.some((row) => row.type === 'avoid_failed_profile' && row.providerId === 'foo'));
 assert.ok(latest.proposals.some((row) => row.type === 'historical_provider_repair_target' && row.providerId === 'foo'));
 assert.ok(latest.proposals.some((row) => row.type === 'native_cross_device_repair_target' && row.providerId === 'foo'));
-assert.deepEqual(latest.nativeReaderRepairMemory, readerMemory, 'daily Brain learning must preserve sanitized native-reader repair memory');
+assert.deepEqual(latest.nativeReaderRepairMemory, readerMemory, 'daily Brain learning must preserve repair memory and reader backlog');
+assert.equal(latest.nativeReaderRepairMemory.readerBacklog.openCount, 1);
 assert.equal(latest.nativeFeedback.readerRepairAccepted, 3);
 assert.equal(latest.nativeFeedback.readerRepairRejected, 2);
 assert.equal(latest.nativeFeedback.readerRepairInconclusive, 1);
 assert.equal(latest.productionWritesAllowed, false);
 assert.equal(latest.publicationAllowed, false);
-console.log('learning lab negative-memory and native-reader-memory tests passed');
+console.log('learning lab negative-memory, native-reader-memory and backlog preservation tests passed');
 
 function write(file, value) {
   fs.writeFileSync(file, JSON.stringify(value, null, 2) + '\n');
