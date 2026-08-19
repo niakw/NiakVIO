@@ -31,6 +31,7 @@ on:
       - ".github/workflows/native-reader-targeted.yml"
       - "scripts/native_player_diagnostics_codegen.py"
       - "scripts/native_player_diagnostics.cjs"
+      - "scripts/gate_native_reader_result.cjs"
       - "scripts/prepare_native_corpus_client.py"
       - "scripts/restage_native_corpus_client.py"
       - "scripts/run_native_corpus_tv_suite.sh"
@@ -148,6 +149,7 @@ jobs:
           NIAKVIO_TARGET_FIXTURE: ${{ needs.resolve.outputs.fixture }}
           NIAKVIO_TARGET_PROVIDER: ${{ needs.resolve.outputs.provider }}
           NIAKVIO_PLAYER_PROBES: ${{ needs.resolve.outputs.probes }}
+          NIAKVIO_REQUIRE_READER_SUCCESS: "1"
         with:
           api-level: 31
           target: android-tv
@@ -224,6 +226,7 @@ jobs:
           NIAKVIO_TARGET_FIXTURE: ${{ needs.resolve.outputs.fixture }}
           NIAKVIO_TARGET_PROVIDER: ${{ needs.resolve.outputs.provider }}
           NIAKVIO_PLAYER_PROBES: ${{ needs.resolve.outputs.probes }}
+          NIAKVIO_REQUIRE_READER_SUCCESS: "1"
         with:
           api-level: 35
           target: google_apis
