@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import json
-import shutil
 import subprocess
 import tempfile
 from pathlib import Path
@@ -53,7 +52,8 @@ with tempfile.TemporaryDirectory(dir=ROOT) as tmp_raw:
     assert candidate.is_file(), proposal
     text = candidate.read_text(encoding="utf-8")
     assert "scoped-playback-context-v6-direct-safe-opaque-media" in text
-    assert "https://" not in json.dumps(report).replace("No raw media URLs", "") or True
+    serialized_report = json.dumps(report).lower()
+    assert "http://" not in serialized_report and "https://" not in serialized_report, report
 
     after = tmp / "after.json"
     after.write_text(json.dumps({
