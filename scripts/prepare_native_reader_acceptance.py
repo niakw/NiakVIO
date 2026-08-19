@@ -6,11 +6,16 @@ selects every stageable provider from the chosen manifest, including entries who
 published ``enabled`` flag is false. Primary acceptance can play every returned
 stream; broad regression can sample a bounded number of streams. No provider-specific
 repair logic lives here.
+
+Pull-request validation is intentionally bounded: a small provider sample from each
+fixture and one returned stream are enough to prove the real reader path while the
+trusted-main/manual runs keep the exhaustive all-provider/all-stream evidence path.
 """
 from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import shutil
 import sys
@@ -24,6 +29,19 @@ import prepare_native_corpus_client as client_prepare  # noqa: E402
 import prepare_native_corpus_validation as corpus  # noqa: E402
 
 CORPUS_PATH = ROOT / ".github/triggers/nuvio-client-lab.json"
+DEFAULT_PR_PROVIDER_LIMIT = 4
+
+
+def _is_pull_request() -> bool:
+    return os.environ.get("GITHUB_EVENT_NAME", "").strip().lower() == "pull_request"
+
+
+def _pr_provider_limit() -> int:
+    raw = os.environ.get("NIAKVIO_PR_PROVIDER_LIMIT", str(DEFAULT_PR_PROVIDER_LIMIT)).strip()
+    try:
+        return max(1, min(int(raw), 12))
+    except ValueError:
+        return DEFAULT_PR_PROVIDER_LIMIT
 
 
 def fixture_row(slug: str) -> dict:
@@ -133,8 +151,24 @@ def prepare(
 ) -> Path:
     row = fixture_row(slug)
     fixture = row["fixture"]
-    selected = select_providers(manifest_path, slug, provider)
-    scope = parse_stream_scope(stream_scope)
+    requested_provider = str(provider or "fixture").strip() or "fixture"
+    requested_stream_scope = stream_scope
+    effective_provider = requested_provider
+    effective_stream_scope = stream_scope
+    pr_bounded = _is_pull_request()
+
+    # PRs prove the end-to-end native path without re-running the exhaustive corpus
+    # on every commit. Trusted main/manual execution still honors all/all exactly.
+    if pr_bounded:
+        if effective_provider.casefold() == "all":
+            effective_provider = "fixture"
+        if str(effective_stream_scope).strip().casefold() == "all":
+            effective_stream_scope = 1
+
+    selected = select_providers(manifest_path, slug, effective_provider)
+    if pr_bounded and effective_provider.casefold() == "fixture":
+        selected = selected[: _pr_provider_limit()]
+    scope = parse_stream_scope(effective_stream_scope)
 
     if target == "tv":
         repo = workspace / "nuvio-tv"
@@ -166,7 +200,9 @@ def prepare(
     print(
         f"FIELD_NATIVE_READER_ACCEPTANCE_PREPARED client={target} fixture={slug} "
         f"manifest={manifest_path} providers={len(staged)} enabled={enabled} disabled={disabled} "
-        f"provider_ids={ids} streams={scope} initial={str(initial).lower()}"
+        f"provider_ids={ids} streams={scope} initial={str(initial).lower()} "
+        f"ci_mode={'pr-bounded' if pr_bounded else 'deep'} requested_provider={requested_provider} "
+        f"requested_streams={requested_stream_scope} provider_limit={_pr_provider_limit() if pr_bounded else 0}"
     )
     return output
 
