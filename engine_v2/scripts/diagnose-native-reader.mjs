@@ -120,14 +120,48 @@ const priorities = [...grouped.values()]
   }))
   .sort((a, b) => b.occurrences - a.occurrences || a.provider.localeCompare(b.provider));
 
+const observations = readerRows.map((row) => ({
+  provider: String(row.provider || '').toLowerCase(), client: row.client, fixture: row.fixture, index: row.index,
+  state: row.state, failureClass: row.failureClass, failureStage: row.failureStage,
+  httpStatus: row.httpStatus, errorCode: row.errorCode, host: row.host,
+  durationSeconds: row.durationSeconds, loadBytes: row.loadBytes, loadDurationMs: row.loadDurationMs,
+}));
+const providerMap = new Map();
+for (const row of observations) {
+  const current = providerMap.get(row.provider) || {
+    provider: row.provider, observed: 0, healthy: 0, failures: 0,
+    failureClasses: {}, clients: new Set(), fixtures: new Set(),
+  };
+  current.observed += 1;
+  current.clients.add(row.client);
+  current.fixtures.add(row.fixture);
+  if (row.failureClass === 'healthy') current.healthy += 1;
+  else {
+    current.failures += 1;
+    current.failureClasses[row.failureClass] = Number(current.failureClasses[row.failureClass] || 0) + 1;
+  }
+  providerMap.set(row.provider, current);
+}
+const providerOutcomes = [...providerMap.values()].map((row) => ({
+  provider: row.provider,
+  observed: row.observed,
+  healthy: row.healthy,
+  failures: row.failures,
+  failureClasses: row.failureClasses,
+  clients: [...row.clients].sort(),
+  fixtures: [...row.fixtures].sort(),
+})).sort((a, b) => b.failures - a.failures || a.provider.localeCompare(b.provider));
+
 const payload = {
-  schemaVersion: 2,
+  schemaVersion: 3,
   generatedAt: new Date().toISOString(),
   brainVersion: BRAIN_CONTROL_PLANE_VERSION,
   readerObserved: readerRows.length,
   readerHealthy: readerRows.length - failures.length,
   readerFailures: failures.length,
   readerLoadErrorEvidence: readerRows.filter((row) => row.loadDurationMs > 0 || row.loadBytes > 0 || row.httpStatus > 0).length,
+  observations,
+  providerOutcomes,
   plans,
   priorities,
   policy: {
@@ -139,6 +173,6 @@ const payload = {
 };
 fs.mkdirSync(path.dirname(outputPath), { recursive: true });
 fs.writeFileSync(outputPath, JSON.stringify(payload, null, 2) + '\n');
-console.log(`FIELD_NATIVE_READER_BRAIN observed=${payload.readerObserved} healthy=${payload.readerHealthy} failures=${payload.readerFailures} load_error_evidence=${payload.readerLoadErrorEvidence} priorities=${priorities.length}`);
+console.log(`FIELD_NATIVE_READER_BRAIN observed=${payload.readerObserved} healthy=${payload.readerHealthy} failures=${payload.readerFailures} load_error_evidence=${payload.readerLoadErrorEvidence} priorities=${priorities.length} provider_outcomes=${providerOutcomes.length}`);
 for (const priority of priorities.slice(0, 40)) console.log(`FIELD_NATIVE_READER_BRAIN_PRIORITY ${JSON.stringify(priority)}`);
 if (readerRows.length === 0) process.exitCode = 2;
