@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import importlib.util
+import json
 import subprocess
 import tempfile
 from pathlib import Path
@@ -28,10 +29,30 @@ sampled = mod.reader_source(source("tv"), "tv", 137, 2)
 assert "rows.take(2).forEachIndexed" in sampled
 assert "rows.take(3).forEachIndexed" in sampled
 
-selected = mod.select_providers("manifest.json", "sinners-2025", "fixture")
-ids = [str(row["id"]).casefold() for row in selected]
-assert ids == ["moviesdrive", "moviesmod", "movieshunt", "4khdhub"], ids
-assert "4khdhubnew" not in ids
+# Curated fixture scope remains available for a manual/targeted diagnosis.
+selected_fixture = mod.select_providers("manifest.json", "sinners-2025", "fixture")
+fixture_ids = [str(row["id"]).casefold() for row in selected_fixture]
+assert fixture_ids == ["moviesdrive", "moviesmod", "movieshunt", "4khdhub"], fixture_ids
+assert "4khdhubnew" not in fixture_ids
+
+# Acceptance scope is intentionally exhaustive and includes inactive providers.
+selected_all = mod.select_providers("manifest.json", "sinners-2025", "all")
+manifest_all = mod.client_prepare.manifest_providers("manifest.json")
+all_ids = [str(row["id"]).casefold() for row in selected_all]
+assert len(selected_all) == len(manifest_all) >= 90, (len(selected_all), len(manifest_all))
+assert len(set(all_ids)) == len(all_ids)
+assert any(not bool(row.get("enabled")) for row in selected_all), "inactive providers must stay in reader lab scope"
+assert any(bool(row.get("enabled")) for row in selected_all), "active providers must stay in reader lab scope"
+
+config = json.loads((ROOT / ".github/triggers/nuvio-client-lab.json").read_text(encoding="utf-8"))
+acceptance = config["native_reader_acceptance"]
+assert acceptance["provider_scope"] == "all"
+assert acceptance["include_disabled"] is True
+assert acceptance["publication_requires_fresh_reader_proof"] is True
+for suite in ("scripts/run_native_corpus_tv_suite.sh", "scripts/run_native_corpus_mobile_suite.sh"):
+    text = (ROOT / suite).read_text(encoding="utf-8")
+    assert "CONFIGURED_ACCEPTANCE_PROVIDER_SCOPE" in text
+    assert 'if [[ -z "$PROVIDER_SCOPE" || "$PROVIDER_SCOPE" = "all" ]]; then PROVIDER_SCOPE="fixture"; fi' not in text
 
 b64 = lambda value: __import__("base64").urlsafe_b64encode(value.encode()).decode().rstrip("=")
 with tempfile.TemporaryDirectory() as tmp:
