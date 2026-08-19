@@ -103,6 +103,10 @@ for (const input of logPaths) {
         durationSeconds: Number(f.duration_seconds || 0) || null, host: decode(f.host64),
         errorClass: decode(f.error_class64), errorCode: decode(f.error_code64),
         exceptionChain: decode(f.exception_chain64), responseHeaderNames: decode(f.response_header_names64),
+        loadBytes: Math.max(0, Number(f.load_bytes || 0) || 0),
+        loadDurationMs: Math.max(0, Number(f.load_duration_ms || 0) || 0),
+        mediaDataType: Number.isFinite(Number(f.media_data_type)) ? Number(f.media_data_type) : -1,
+        trackType: Number.isFinite(Number(f.track_type)) ? Number(f.track_type) : -1,
       });
       player.failureClass = readerFailureClass(player);
       player.signature = readerSignature(player);
@@ -158,6 +162,7 @@ const summary = {
     const key = streamKey(row.client, row.provider, row.index);
     return Boolean(players.get(key)?.durationSeconds || transports.get(key)?.durationSeconds);
   }).length,
+  readerLoadErrorEvidence: [...players.values()].filter((row) => row.loadDurationMs > 0 || row.loadBytes > 0 || row.httpStatus > 0).length,
   slowProviders: slow.length,
 };
 
