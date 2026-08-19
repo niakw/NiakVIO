@@ -7,6 +7,7 @@ and is therefore never accepted as native-reader proof.
 from __future__ import annotations
 
 import argparse
+import os
 import re
 from pathlib import Path
 
@@ -88,7 +89,7 @@ HELPERS = r'''
                 nvidiaRtxSuperResolutionEnabled = false,
                 onError = { message -> errorRef.compareAndSet(null, message ?: "native_player_error") },
             )
-            val deadline = System.currentTimeMillis() + 25_000L
+            val deadline = System.currentTimeMillis() + __READER_TIMEOUT_MS__L
             var lastDuration: Long = 0L
             var lastPosition: Long = 0L
             while (System.currentTimeMillis() < deadline) {
@@ -145,8 +146,13 @@ def augment(path: Path, expected_minutes: int, stream_scope: str) -> None:
     text = path.read_text(encoding="utf-8")
     if "DesktopNativePlayerProbe" in text:
         return
+    pr_bounded = os.environ.get("GITHUB_EVENT_NAME", "").strip().lower() == "pull_request"
+    if pr_bounded and stream_scope == "all":
+        stream_scope = "1"
+    reader_timeout_ms = 12_000 if pr_bounded else 25_000
     text = replace_once(text, IMPORT_ANCHOR, IMPORT_ANCHOR + IMPORTS, "imports")
-    text = replace_once(text, TEST_ANCHOR, HELPERS + "\n" + TEST_ANCHOR, "test")
+    helpers = HELPERS.replace("__READER_TIMEOUT_MS__", str(reader_timeout_ms))
+    text = replace_once(text, TEST_ANCHOR, helpers + "\n" + TEST_ANCHOR, "test")
 
     # Make row evidence match the actual reader scope.
     if stream_scope == "all":
@@ -185,7 +191,10 @@ def augment(path: Path, expected_minutes: int, stream_scope: str) -> None:
     end = '        emit("FIELD_NATIVE_CORPUS_END client=desktop fixture=$fixtureSlug errors=${errors.size}")'
     text = replace_once(text, end, '        captureDesktopPhase("corpus-end", fixtureSlug)\n' + end, "corpus end")
     path.write_text(text, encoding="utf-8")
-    print(f"FIELD_NATIVE_DESKTOP_READER_AUGMENTED source={path} streams={stream_scope} expected_minutes={expected_minutes}")
+    print(
+        f"FIELD_NATIVE_DESKTOP_READER_AUGMENTED source={path} streams={stream_scope} "
+        f"expected_minutes={expected_minutes} timeout_ms={reader_timeout_ms} ci_mode={'pr-bounded' if pr_bounded else 'deep'}"
+    )
 
 
 def main() -> int:
