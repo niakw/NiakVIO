@@ -4,8 +4,8 @@
 The generated corpus still owns fixture traversal and reader evidence, but provider
 code must first travel through the same repository/manager path used by the client:
 
-* NuvioTV: PluginManager.addRepository -> ScraperInfo -> executeScraper
-* Mobile/Desktop: PluginRepository.addRepository -> PluginScraper -> executeScraper
+* NuvioTV: PluginManager repository state -> ScraperInfo -> executeScraper
+* Mobile/Desktop: PluginRepository profile state -> PluginScraper -> executeScraper
 
 Manifest-disabled providers are still loaded and executed individually. Providers
 that the official client rejects for the current platform are recorded as platform
@@ -15,6 +15,11 @@ probe routes; this postprocessor preserves those routes unchanged.
 Normal evidence accepts only an exact 40-hex raw.githubusercontent.com revision.
 Repair sandboxes may explicitly opt into a loopback-only HTTP repository so the
 real client can install a locally generated candidate without publishing it first.
+
+The lab deliberately preserves the Nuvio app/profile state between fixtures. It
+reuses an already-installed repository and provider-code cache whenever the exact
+manifest URL is already present, instead of clearing PluginRepository state. This
+keeps repeated launches fast and mirrors a real user session more closely.
 """
 from __future__ import annotations
 
@@ -142,12 +147,21 @@ def tv_helpers(manifest_url: str, blocked: list[str]) -> str:
             NiakvioPluginManagerEntryPoint::class.java,
         ).pluginManager()
         emit("FIELD_NATIVE_REPOSITORY_LOAD_BEGIN client=tv fixture=$fixtureSlugForLoad manifest_host=${{hostOnly(repositoryManifestUrl)}} expected=${{providers.size}}")
-        val installed = manager.addRepository(repositoryManifestUrl)
-        if (installed.isFailure) {{
-            emit("FIELD_NATIVE_REPOSITORY_LOAD_ERROR client=tv fixture=$fixtureSlugForLoad error64=${{b64(installed.exceptionOrNull()?.message ?: \"repository install failed\")}}")
-            throw installed.exceptionOrNull() ?: IllegalStateException("NuvioTV repository install failed")
+        val canonicalTarget = repositoryManifestUrl.substringBefore("?").trimEnd('/')
+        val existing = manager.repositories.first().firstOrNull {{ repo ->
+            repo.url.substringBefore("?").trimEnd('/').equals(canonicalTarget, ignoreCase = true)
         }}
-        val repo = installed.getOrThrow()
+        val repo = if (existing != null) {{
+            emit("FIELD_NATIVE_REPOSITORY_CACHE_HIT client=tv fixture=$fixtureSlugForLoad repository64=${{b64(existing.name)}}")
+            existing
+        }} else {{
+            val installed = manager.addRepository(repositoryManifestUrl)
+            if (installed.isFailure) {{
+                emit("FIELD_NATIVE_REPOSITORY_LOAD_ERROR client=tv fixture=$fixtureSlugForLoad error64=${{b64(installed.exceptionOrNull()?.message ?: \"repository install failed\")}}")
+                throw installed.exceptionOrNull() ?: IllegalStateException("NuvioTV repository install failed")
+            }}
+            installed.getOrThrow()
+        }}
         val loaded = manager.scrapers.first().filter {{ it.repositoryId == repo.id }}
         val byId = loaded.associateBy {{ it.id.substringAfterLast(':').lowercase() }}
         val selectedKeys = providers.map {{ it.id.lowercase() }}.toSet()
@@ -184,14 +198,24 @@ def repository_helpers(client: str, manifest_url: str, blocked: list[str]) -> st
     private val platformExcludedProviders = {platform_set_literal(blocked)}
 
     private suspend fun loadProvidersThroughNuvio(): Map<String, PluginScraper> {{
-        PluginRepository.clearLocalState()
+        // Preserve Nuvio's active profile/settings and previously downloaded plugin
+        // cache. Reusing the exact repository makes subsequent fixture launches much
+        // faster and mirrors a real user's persistent installation.
+        PluginRepository.initialize()
         emit("FIELD_NATIVE_REPOSITORY_LOAD_BEGIN client={client} fixture=$fixtureSlugForLoad manifest_host=${{hostOnly(repositoryManifestUrl)}} expected=${{providers.size}}")
-        val installed = PluginRepository.addRepository(repositoryManifestUrl)
-        val repositoryUrl = when (installed) {{
-            is AddPluginRepositoryResult.Success -> installed.repository.manifestUrl
-            is AddPluginRepositoryResult.Error -> {{
-                emit("FIELD_NATIVE_REPOSITORY_LOAD_ERROR client={client} fixture=$fixtureSlugForLoad error64=${{b64(installed.message)}}")
-                throw IllegalStateException(installed.message)
+        val existing = PluginRepository.uiState.value.repositories.firstOrNull {{ repo ->
+            repo.manifestUrl == repositoryManifestUrl
+        }}
+        val repositoryUrl = if (existing != null) {{
+            emit("FIELD_NATIVE_REPOSITORY_CACHE_HIT client={client} fixture=$fixtureSlugForLoad repository64=${{b64(existing.name)}}")
+            existing.manifestUrl
+        }} else {{
+            when (val installed = PluginRepository.addRepository(repositoryManifestUrl)) {{
+                is AddPluginRepositoryResult.Success -> installed.repository.manifestUrl
+                is AddPluginRepositoryResult.Error -> {{
+                    emit("FIELD_NATIVE_REPOSITORY_LOAD_ERROR client={client} fixture=$fixtureSlugForLoad error64=${{b64(installed.message)}}")
+                    throw IllegalStateException(installed.message)
+                }}
             }}
         }}
         val loaded = PluginRepository.uiState.value.scrapers.filter {{ it.repositoryUrl == repositoryUrl }}
