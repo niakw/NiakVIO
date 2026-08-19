@@ -134,8 +134,10 @@ for required in (
     "player_probes:",
     "default: sinners-2025",
     "default: MOVIESDRIVE",
+    "default: playback-hotfix/manifest.json",
     "NIAKVIO_TARGET_FIXTURE",
     "NIAKVIO_TARGET_PROVIDER",
+    "NIAKVIO_TARGET_MANIFEST",
     "NIAKVIO_PLAYER_PROBES",
     'NIAKVIO_REQUIRE_READER_SUCCESS: "1"',
     "avd-v1-${{ runner.os }}-tv-api31-android-tv-x86-tv_1080p",
@@ -143,6 +145,7 @@ for required in (
 ):
     assert required in reader_workflow, required
 assert "avd-v2-" not in reader_workflow, "targeted reader lab must reuse established AVD profiles"
+assert 'provider {provider!r} not found in selected manifest' in reader_workflow
 
 for required in (
     "prepare_native_corpus_client.py",
@@ -193,6 +196,9 @@ for source, label in ((prepare_client, "prepare"), (restage_client, "restage")):
     assert android_new in source, (label, "android replacement")
     assert "--provider" in source, (label, "target provider")
     assert "--player-probes" in source, (label, "target reader probe count")
+    assert "--manifest" in source, (label, "deployed manifest selection")
+assert "raw.githubusercontent.com" in prepare_client
+assert "FIELD_NATIVE_CORPUS_STAGE_SELECTED" in prepare_client
 
 # Android reader diagnostics must use the official Media3 stack, not a parallel
 # fake HTTP client, and expose causal errors without raw URL/credential values.
@@ -208,6 +214,7 @@ for required in (
     "<redacted>",
 ):
     assert required in reader_codegen, required
+assert reader_codegen.index("val reader = probeNativePlayer") < reader_codegen.index("val transport = probeTransport"), "official reader must consume the URL before diagnostics"
 for required in (
     "missing_native_reader_evidence",
     "FIELD_NATIVE_READER_GATE_FAILURE",
@@ -249,6 +256,8 @@ for suite, client in ((mobile_suite, "MOBILE"), (tv_suite, "TV")):
     assert f"FIELD_NATIVE_CORPUS_{client}_STATUS" in suite, client
     assert f"FIELD_NATIVE_CORPUS_{client}_SUITE_STATUS" in suite, client
     assert 'NIAKVIO_REQUIRE_READER_SUCCESS' in suite, client
+    assert 'NIAKVIO_TARGET_MANIFEST' in suite, client
+    assert '--manifest "$TARGET_MANIFEST"' in suite, client
     assert 'gate_native_reader_result.cjs' in suite, client
     assert '--no-daemon' not in suite, client
 
@@ -269,5 +278,5 @@ assert "native-corpus-engine-summary" in workflow
 
 print(
     "native corpus device lab coverage tests passed: "
-    f"fixtures={len(expected_slugs)} stageable_providers={len(stageable)} clients=3 isolated_android_jobs=2 cached_avds=true real_tv=true targeted_reader=true reader_gate=true collection_gate=true assertion_contract=true"
+    f"fixtures={len(expected_slugs)} stageable_providers={len(stageable)} clients=3 isolated_android_jobs=2 cached_avds=true real_tv=true targeted_reader=true deployed_manifest=true reader_gate=true collection_gate=true assertion_contract=true"
 )
