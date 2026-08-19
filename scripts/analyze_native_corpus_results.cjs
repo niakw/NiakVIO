@@ -58,13 +58,17 @@ function withPolicy(row) {
   const policy = providerPolicy(row.provider);
   return { ...row, capability: policy.strategy, allowEmbed: policy.allowEmbed };
 }
-function streamKey(client, provider, index = 0) { return `${client}\u0000${provider}\u0000${index}`; }
+function routeType(f) { return String(f.request_type || 'unknown').toLowerCase(); }
+function streamKey(client, provider, requestType, index = 0) {
+  return `${client}\u0000${provider}\u0000${requestType}\u0000${index}`;
+}
 
 const results = new Map();
 const rows = [];
 const transports = new Map();
 const players = new Map();
 const runtimeErrors = [];
+const skippedProviders = [];
 for (const input of logPaths) {
   if (!fs.existsSync(input)) continue;
   const text = fs.readFileSync(input, 'utf8');
@@ -73,32 +77,40 @@ for (const input of logPaths) {
     if (marker < 0) continue;
     const line = raw.slice(marker).trim();
     const f = fields(line);
-    if (line.startsWith('FIELD_NATIVE_RESULT ')) {
+    if (line.startsWith('FIELD_NATIVE_PROVIDER_SKIPPED ')) {
+      skippedProviders.push(withPolicy({
+        client: f.client || 'unknown', provider: decode(f.provider64), requestedType: f.requested_type || 'unknown',
+        enabled: f.enabled === 'true', reason: f.reason || 'unknown', declaredTypes: decode(f.declared_types64),
+      }));
+    } else if (line.startsWith('FIELD_NATIVE_RESULT ')) {
       const provider = decode(f.provider64);
       const client = f.client || 'unknown';
-      results.set(`${client}\u0000${provider}`, withPolicy({ client, provider, enabled: f.enabled === 'true', durationMs: Number(f.duration_ms || 0), count: Number(f.count || 0) }));
+      const requestType = routeType(f);
+      results.set(`${client}\u0000${provider}\u0000${requestType}`, withPolicy({ client, provider, requestType, enabled: f.enabled === 'true', durationMs: Number(f.duration_ms || 0), count: Number(f.count || 0) }));
     } else if (line.startsWith('FIELD_NATIVE_ROW ')) {
       const host = decode(f.host64);
       const mediaHint = decode(f.media_hint64);
       rows.push(withPolicy({
-        client: f.client || 'unknown', provider: decode(f.provider64), index: Number(f.index || 0), host, mediaHint,
+        client: f.client || 'unknown', provider: decode(f.provider64), requestType: routeType(f), index: Number(f.index || 0), host, mediaHint,
         stream: { title: decode(f.title64), name: decode(f.name64), quality: decode(f.quality64), language: decode(f.language64), type: decode(f.type64), url: safeSyntheticUrl(host, mediaHint) },
       }));
     } else if (line.startsWith('FIELD_NATIVE_TRANSPORT ')) {
       const provider = decode(f.provider64);
       const client = f.client || 'unknown';
+      const requestType = routeType(f);
       const index = Number(f.index || 0);
-      transports.set(streamKey(client, provider, index), withPolicy({
-        client, provider, index, state: f.state || 'unknown', kind: f.kind || 'unknown', status: Number(f.status || 0),
+      transports.set(streamKey(client, provider, requestType, index), withPolicy({
+        client, provider, requestType, index, state: f.state || 'unknown', kind: f.kind || 'unknown', status: Number(f.status || 0),
         contentType: decode(f.content_type64), extm3u: f.extm3u === 'true', durationSeconds: Number(f.duration_seconds || 0) || null,
         host: decode(f.host64), mediaHint: decode(f.media_hint64),
       }));
     } else if (line.startsWith('FIELD_NATIVE_PLAYER ')) {
       const provider = decode(f.provider64);
       const client = f.client || 'unknown';
+      const requestType = routeType(f);
       const index = Number(f.index || 0);
       const player = withPolicy({
-        client, provider, index, state: f.state || 'unknown', engine: f.engine || 'unknown',
+        client, provider, requestType, index, state: f.state || 'unknown', engine: f.engine || 'unknown',
         httpStatus: Number(f.http_status || 0), failureStage: f.failure_stage || 'unknown',
         durationSeconds: Number(f.duration_seconds || 0) || null, host: decode(f.host64),
         errorClass: decode(f.error_class64), errorCode: decode(f.error_code64),
@@ -110,9 +122,9 @@ for (const input of logPaths) {
       });
       player.failureClass = readerFailureClass(player);
       player.signature = readerSignature(player);
-      players.set(streamKey(client, provider, index), player);
+      players.set(streamKey(client, provider, requestType, index), player);
     } else if (line.startsWith('FIELD_NATIVE_ERROR ')) {
-      runtimeErrors.push(withPolicy({ client: f.client || 'unknown', provider: decode(f.provider64), durationMs: Number(f.duration_ms || 0), error: decode(f.error64) }));
+      runtimeErrors.push(withPolicy({ client: f.client || 'unknown', provider: decode(f.provider64), requestType: routeType(f), durationMs: Number(f.duration_ms || 0), error: decode(f.error64) }));
     }
   }
 }
@@ -122,8 +134,8 @@ const matches = [];
 const unknown = [];
 for (const row of rows) {
   let identity = streamIdentity(row.stream, fixture);
-  const transport = transports.get(streamKey(row.client, row.provider, row.index));
-  const player = players.get(streamKey(row.client, row.provider, row.index));
+  const transport = transports.get(streamKey(row.client, row.provider, row.requestType, row.index));
+  const player = players.get(streamKey(row.client, row.provider, row.requestType, row.index));
   const measuredDuration = player?.durationSeconds || transport?.durationSeconds || null;
   const durationRatio = expectedDurationSeconds && measuredDuration ? measuredDuration / expectedDurationSeconds : null;
   if (durationRatio != null && (durationRatio < minimumDurationRatio || durationRatio > maximumDurationRatio)) {
@@ -131,7 +143,7 @@ for (const row of rows) {
   } else if (identity.status === 'unknown' && durationRatio != null) {
     identity = { status: 'match', reason: 'fixture_duration_match' };
   }
-  const record = { client: row.client, provider: row.provider, capability: row.capability, index: row.index, status: identity.status, reason: identity.reason, title: row.stream.title, name: row.stream.name, host: row.host || null, mediaHint: row.mediaHint || null, durationRatio };
+  const record = { client: row.client, provider: row.provider, requestType: row.requestType, capability: row.capability, index: row.index, status: identity.status, reason: identity.reason, title: row.stream.title, name: row.stream.name, host: row.host || null, mediaHint: row.mediaHint || null, durationRatio };
   if (identity.status === 'contradiction') contradictions.push(record);
   else if (identity.status === 'match') matches.push(record);
   else unknown.push(record);
@@ -146,20 +158,22 @@ const readerHealthy = [...players.values()].filter((row) => !isReaderFailure(row
 const slow = [...results.values()].filter((row) => row.durationMs >= 30000).sort((a, b) => b.durationMs - a.durationMs);
 const nonEmpty = [...results.values()].filter((row) => row.count > 0);
 const empty = [...results.values()].filter((row) => row.count === 0);
-const clients = [...new Set([...results.values()].map((row) => row.client))].sort();
-const providers = [...new Set([...results.values()].map((row) => row.provider))].sort();
+const allObservedRows = [...results.values(), ...runtimeErrors, ...skippedProviders];
+const clients = [...new Set(allObservedRows.map((row) => row.client))].sort();
+const providers = [...new Set(allObservedRows.map((row) => row.provider).filter(Boolean))].sort();
 const readerFailureClasses = Object.fromEntries([...new Set(readerFailures.map((row) => row.failureClass))].sort().map((cls) => [cls, readerFailures.filter((row) => row.failureClass === cls).length]));
 
 const summary = {
   fixture: fixtureSlug, title: fixture.title, tmdbId: fixture.tmdbId, clients,
-  providerCount: providers.length, executions: results.size, nonEmpty: nonEmpty.length, empty: empty.length,
+  providerCount: providers.length, executions: results.size, skippedUnsupported: skippedProviders.length,
+  nonEmpty: nonEmpty.length, empty: empty.length,
   runtimeErrors: runtimeErrors.length, identityMatches: matches.length, identityUnknown: unknown.length,
   identityContradictions: contradictions.length, transportOk: transportOk.length,
   transportExpectedEmbeds: expectedEmbeds.length, transportUnknown: transportUnknown.length,
   transportFailures: transportFailures.length, nativeReaderObserved: players.size,
   nativeReaderHealthy: readerHealthy.length, nativeReaderFailures: readerFailures.length,
   readerFailureClasses, durationEvidence: rows.filter((row) => {
-    const key = streamKey(row.client, row.provider, row.index);
+    const key = streamKey(row.client, row.provider, row.requestType, row.index);
     return Boolean(players.get(key)?.durationSeconds || transports.get(key)?.durationSeconds);
   }).length,
   readerLoadErrorEvidence: [...players.values()].filter((row) => row.loadDurationMs > 0 || row.loadBytes > 0 || row.httpStatus > 0).length,
