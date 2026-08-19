@@ -42,7 +42,12 @@ function readerSignature(row = {}) {
   const status = Number(row.httpStatus ?? row.http_status ?? 0);
   const code = String(row.errorCode || row.error_code || '').slice(0, 96);
   const host = String(row.host || '').toLowerCase().slice(0, 160);
-  return [cls, status || '-', code || '-', host || '-'].join(':');
+  const requestType = String(row.requestType || row.request_type || '').trim().toLowerCase().slice(0, 24);
+  const base = [cls, status || '-', code || '-', host || '-'];
+  // Keep legacy signatures stable when no route exists, but once the real Nuvio
+  // request route is known it becomes part of the causal identity. This prevents
+  // a provider's anime and tv failures from being learned as the same observation.
+  return (requestType ? [requestType, ...base] : base).join(':');
 }
 
 function isReaderFailure(row = {}) {
