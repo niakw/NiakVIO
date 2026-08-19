@@ -14,7 +14,10 @@ import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.datasource.HttpDataSource
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.analytics.AnalyticsListener
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
+import androidx.media3.exoplayer.source.LoadEventInfo
+import androidx.media3.exoplayer.source.MediaLoadData
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicReference
@@ -34,6 +37,23 @@ PLAYER_HELPERS_TEMPLATE = r'''
         val durationSeconds: Double?,
         val exceptionChain: String,
         val responseHeaderNames: String,
+        val loadBytes: Long = 0L,
+        val loadDurationMs: Long = 0L,
+        val mediaDataType: Int = -1,
+        val trackType: Int = -1,
+    )
+
+    data class NativeLoadFailure(
+        val errorClass: String,
+        val httpStatus: Int,
+        val failureStage: String,
+        val host: String,
+        val exceptionChain: String,
+        val responseHeaderNames: String,
+        val loadBytes: Long,
+        val loadDurationMs: Long,
+        val mediaDataType: Int,
+        val trackType: Int,
     )
 
     private fun sanitizeDiag(raw: String?): String {
@@ -70,7 +90,7 @@ PLAYER_HELPERS_TEMPLATE = r'''
         return null
     }
 
-    private fun playerFailureStage(error: PlaybackException?): String {
+    private fun throwableFailureStage(error: Throwable?, errorCode: String = ""): String {
         if (error == null) return "none"
         val response = invalidResponse(error)
         if (response != null) return when (response.responseCode) {
@@ -80,19 +100,22 @@ PLAYER_HELPERS_TEMPLATE = r'''
             in 500..599 -> "http_upstream"
             else -> "http_response"
         }
-        val code = error.errorCodeName.lowercase()
+        val code = errorCode.lowercase()
         val chain = exceptionChain(error).lowercase()
         return when {
             "timeout" in chain -> "timeout"
             "unknownhost" in chain || "dns" in chain -> "dns"
             "ssl" in chain || "certificate" in chain || "handshake" in chain -> "tls"
-            "parser" in code || "parsing" in code || "unrecognized" in chain -> "parser"
+            "invalidcontenttype" in chain || "parser" in code || "parsing" in code || "unrecognized" in chain -> "parser"
             "decoder" in code || "codec" in code || "mediacodec" in chain -> "decoder"
             "behind_live_window" in code -> "live_window"
             "io_" in code || "datasource" in chain || "http" in chain -> "io"
             else -> "player"
         }
     }
+
+    private fun playerFailureStage(error: PlaybackException?): String =
+        throwableFailureStage(error, error?.errorCodeName.orEmpty())
 
     private fun nativeReaderDataSource(
         context: android.content.Context,
@@ -110,6 +133,7 @@ PLAYER_HELPERS_TEMPLATE = r'''
         val terminal = CountDownLatch(1)
         val outcome = AtomicReference<NativePlayerProbe?>(null)
         val playerRef = AtomicReference<ExoPlayer?>(null)
+        val lastLoadFailure = AtomicReference<NativeLoadFailure?>(null)
         val safeHeaders = headers.orEmpty().filterKeys { !it.equals("Range", ignoreCase = true) }
         val instrumentation = InstrumentationRegistry.getInstrumentation()
         val context = instrumentation.targetContext
@@ -126,31 +150,77 @@ PLAYER_HELPERS_TEMPLATE = r'''
                     .setMediaSourceFactory(DefaultMediaSourceFactory(dataSourceFactory))
                     .build()
                 playerRef.set(player)
+                player.addAnalyticsListener(object : AnalyticsListener {
+                    override fun onLoadError(
+                        eventTime: AnalyticsListener.EventTime,
+                        loadEventInfo: LoadEventInfo,
+                        mediaLoadData: MediaLoadData,
+                        error: java.io.IOException,
+                        wasCanceled: Boolean,
+                    ) {
+                        if (wasCanceled) return
+                        val response = invalidResponse(error)
+                        val headerNames = loadEventInfo.responseHeaders.keys
+                            .filterNotNull().map { it.lowercase() }.distinct().sorted().joinToString(",")
+                        val loadHost = loadEventInfo.uri.host.orEmpty().ifBlank { host }
+                        lastLoadFailure.set(NativeLoadFailure(
+                            errorClass = error::class.qualifiedName.orEmpty(),
+                            httpStatus = response?.responseCode ?: 0,
+                            failureStage = throwableFailureStage(error),
+                            host = loadHost,
+                            exceptionChain = exceptionChain(error),
+                            responseHeaderNames = headerNames.take(360),
+                            loadBytes = loadEventInfo.bytesLoaded.coerceAtLeast(0L),
+                            loadDurationMs = loadEventInfo.loadDurationMs.coerceAtLeast(0L),
+                            mediaDataType = mediaLoadData.dataType,
+                            trackType = mediaLoadData.trackType,
+                        ))
+                    }
+                })
                 player.addListener(object : Player.Listener {
                     override fun onPlayerError(error: PlaybackException) {
                         val response = invalidResponse(error)
                         val headerNames = response?.headerFields?.keys
                             ?.filterNotNull()?.map { it.lowercase() }?.distinct()?.sorted()?.joinToString(",").orEmpty()
+                        val failureHost = response?.dataSpec?.uri?.host.orEmpty().ifBlank { host }
+                        val load = lastLoadFailure.get()
                         complete(NativePlayerProbe(
                             state = "error", engine = "media3",
                             errorClass = error::class.qualifiedName.orEmpty(), errorCode = error.errorCodeName,
-                            httpStatus = response?.responseCode ?: 0, failureStage = playerFailureStage(error),
-                            host = host, durationSeconds = null, exceptionChain = exceptionChain(error),
-                            responseHeaderNames = headerNames.take(360),
+                            httpStatus = response?.responseCode ?: load?.httpStatus ?: 0,
+                            failureStage = playerFailureStage(error),
+                            host = failureHost, durationSeconds = null, exceptionChain = exceptionChain(error),
+                            responseHeaderNames = (headerNames.ifBlank { load?.responseHeaderNames.orEmpty() }).take(360),
+                            loadBytes = load?.loadBytes ?: 0L,
+                            loadDurationMs = load?.loadDurationMs ?: 0L,
+                            mediaDataType = load?.mediaDataType ?: -1,
+                            trackType = load?.trackType ?: -1,
                         ))
                     }
 
                     override fun onPlaybackStateChanged(state: Int) {
                         if (state == Player.STATE_READY) {
-                            val durationMs = player.duration
-                            val durationSeconds = if (durationMs > 0 && durationMs != C.TIME_UNSET) durationMs / 1000.0 else null
-                            val expected = expectedDurationMinutes.takeIf { it > 0 }?.times(60.0)
-                            val shortMedia = durationSeconds != null && (durationSeconds < 60.0 || (expected != null && durationSeconds / expected < 0.55))
+                            // Read duration after a small period of actual playback. Some
+                            // sources expose TIME_UNSET at the first READY callback and a
+                            // real duration once the timeline settles.
                             handler.postDelayed({
+                                val durationMs = player.duration
+                                val durationSeconds = if (durationMs > 0 && durationMs != C.TIME_UNSET) durationMs / 1000.0 else null
+                                val expected = expectedDurationMinutes.takeIf { it > 0 }?.times(60.0)
+                                val shortMedia = durationSeconds != null && (durationSeconds < 60.0 || (expected != null && durationSeconds / expected < 0.55))
+                                val durationUnknown = expected != null && durationSeconds == null
                                 complete(NativePlayerProbe(
-                                    state = if (shortMedia) "short_media" else "ready", engine = "media3",
-                                    errorClass = "", errorCode = "", httpStatus = 0,
-                                    failureStage = if (shortMedia) "duration_identity" else "none",
+                                    state = when {
+                                        shortMedia -> "short_media"
+                                        durationUnknown -> "duration_unknown"
+                                        else -> "ready"
+                                    },
+                                    engine = "media3", errorClass = "", errorCode = "", httpStatus = 0,
+                                    failureStage = when {
+                                        shortMedia -> "duration_identity"
+                                        durationUnknown -> "duration_unknown"
+                                        else -> "none"
+                                    },
                                     host = host, durationSeconds = durationSeconds, exceptionChain = "", responseHeaderNames = "",
                                 ))
                             }, 2500L)
@@ -166,18 +236,27 @@ PLAYER_HELPERS_TEMPLATE = r'''
                 player.prepare()
             }
             if (!terminal.await(18, TimeUnit.SECONDS)) {
-                complete(NativePlayerProbe("timeout", "media3", "reader_timeout", "", 0, "timeout", host, null, "", ""))
+                val load = lastLoadFailure.get()
+                if (load != null) {
+                    complete(NativePlayerProbe(
+                        state = "error", engine = "media3",
+                        errorClass = load.errorClass, errorCode = "LOAD_ERROR",
+                        httpStatus = load.httpStatus, failureStage = load.failureStage,
+                        host = load.host, durationSeconds = null,
+                        exceptionChain = load.exceptionChain, responseHeaderNames = load.responseHeaderNames,
+                        loadBytes = load.loadBytes, loadDurationMs = load.loadDurationMs,
+                        mediaDataType = load.mediaDataType, trackType = load.trackType,
+                    ))
+                } else {
+                    complete(NativePlayerProbe("timeout", "media3", "reader_timeout", "", 0, "timeout", host, null, "", ""))
+                }
             }
             return outcome.get() ?: NativePlayerProbe("unknown", "media3", "", "", 0, "player", host, null, "", "")
         } catch (error: Throwable) {
             return NativePlayerProbe(
                 state = "error", engine = "media3", errorClass = error::class.qualifiedName.orEmpty(), errorCode = "",
                 httpStatus = invalidResponse(error)?.responseCode ?: 0,
-                failureStage = when {
-                    error::class.qualifiedName.orEmpty().contains("UnknownHost", ignoreCase = true) -> "dns"
-                    error::class.qualifiedName.orEmpty().contains("SSL", ignoreCase = true) -> "tls"
-                    else -> "player_setup"
-                },
+                failureStage = throwableFailureStage(error).takeUnless { it == "player" } ?: "player_setup",
                 host = host, durationSeconds = null, exceptionChain = exceptionChain(error), responseHeaderNames = "",
             )
         } finally {
@@ -197,7 +276,7 @@ NEW_ANDROID_PROBE_BLOCK = '''                rows.take(__MAX_PROBES__).forEachIn
                     // consumer. A diagnostic GET before Media3 can consume a signed
                     // or one-shot URL and manufacture the very 403 we are measuring.
                     val reader = probeNativePlayer(row.url, row.headers, __EXPECTED_MINUTES__)
-                    emit("FIELD_NATIVE_PLAYER client=__CLIENT__ fixture=$fixtureSlug provider64=${b64(provider.id)} index=$index state=${reader.state} engine=${reader.engine} http_status=${reader.httpStatus} failure_stage=${reader.failureStage} duration_seconds=${reader.durationSeconds ?: 0.0} host64=${b64(reader.host)} error_class64=${b64(reader.errorClass)} error_code64=${b64(reader.errorCode)} exception_chain64=${b64(reader.exceptionChain)} response_header_names64=${b64(reader.responseHeaderNames)}")
+                    emit("FIELD_NATIVE_PLAYER client=__CLIENT__ fixture=$fixtureSlug provider64=${b64(provider.id)} index=$index state=${reader.state} engine=${reader.engine} http_status=${reader.httpStatus} failure_stage=${reader.failureStage} duration_seconds=${reader.durationSeconds ?: 0.0} host64=${b64(reader.host)} error_class64=${b64(reader.errorClass)} error_code64=${b64(reader.errorCode)} exception_chain64=${b64(reader.exceptionChain)} response_header_names64=${b64(reader.responseHeaderNames)} load_bytes=${reader.loadBytes} load_duration_ms=${reader.loadDurationMs} media_data_type=${reader.mediaDataType} track_type=${reader.trackType}")
                     val transport = probeTransport(row.url, row.headers)
                     emit("FIELD_NATIVE_TRANSPORT client=__CLIENT__ fixture=$fixtureSlug provider64=${b64(provider.id)} index=$index state=${transport.state} kind=${transport.kind} status=${transport.status} content_type64=${b64(transport.contentType)} extm3u=${transport.extm3u} duration_seconds=${transport.durationSeconds ?: 0.0} host64=${b64(transport.host)} media_hint64=${b64(transport.mediaHint)}")
                 }
