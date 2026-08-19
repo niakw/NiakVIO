@@ -45,7 +45,7 @@ assert.doesNotMatch(labWorkflow, /lab\/nuvio-client-matrix/);
 assert.equal(labTrigger.policy.blocking, false);
 assert.equal(labTrigger.policy.require_identity_match, true);
 assert.equal(labTrigger.policy.block_identity_contradictions, true);
-assert.equal(labTrigger.fixtures.length, 6);
+assert.equal(labTrigger.fixtures.length, 7);
 assert.equal(labTrigger.fixtures.every((row) => Number(row.fixture.expectedDurationMinutes) > 0), true);
 
 const manifest = {
