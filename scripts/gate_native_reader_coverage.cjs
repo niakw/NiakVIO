@@ -29,12 +29,18 @@ function fields(line) {
   while ((match = re.exec(line)) !== null) out[match[1]] = match[2];
   return out;
 }
-function key(client, fixture, provider) { return `${client}\u0000${fixture}\u0000${provider.toLowerCase()}`; }
+function routeKey(client, fixture, provider, requestType) {
+  return `${client}\u0000${fixture}\u0000${provider.toLowerCase()}\u0000${String(requestType || 'unknown').toLowerCase()}`;
+}
+function providerKey(client, fixture, provider) {
+  return `${client}\u0000${fixture}\u0000${provider.toLowerCase()}`;
+}
 function expectedStreams(returned) {
   return streamScope === 'all' ? returned : Math.min(returned, Number(streamScope));
 }
 
 const expectedProviders = new Map();
+const traversedProviders = new Set();
 const results = new Map();
 const players = new Map();
 let readable = 0;
@@ -49,12 +55,28 @@ for (const file of logs) {
       expectedProviders.set(`${f.client || 'unknown'}\u0000${f.fixture || 'unknown'}`, Number(f.providers || 0));
       continue;
     }
+    const skippedAt = raw.indexOf('FIELD_NATIVE_PROVIDER_SKIPPED ');
+    if (skippedAt >= 0) {
+      const f = fields(raw.slice(skippedAt));
+      const provider = decode(f.provider64);
+      if (provider) traversedProviders.add(providerKey(f.client || 'unknown', f.fixture || 'unknown', provider));
+      continue;
+    }
+    const errorAt = raw.indexOf('FIELD_NATIVE_ERROR ');
+    if (errorAt >= 0) {
+      const f = fields(raw.slice(errorAt));
+      const provider = decode(f.provider64);
+      if (provider) traversedProviders.add(providerKey(f.client || 'unknown', f.fixture || 'unknown', provider));
+      continue;
+    }
     const resultAt = raw.indexOf('FIELD_NATIVE_RESULT ');
     if (resultAt >= 0) {
       const f = fields(raw.slice(resultAt));
       const provider = decode(f.provider64);
-      results.set(key(f.client || 'unknown', f.fixture || 'unknown', provider), {
-        client: f.client || 'unknown', fixture: f.fixture || 'unknown', provider,
+      const requestType = f.request_type || 'unknown';
+      traversedProviders.add(providerKey(f.client || 'unknown', f.fixture || 'unknown', provider));
+      results.set(routeKey(f.client || 'unknown', f.fixture || 'unknown', provider, requestType), {
+        client: f.client || 'unknown', fixture: f.fixture || 'unknown', provider, requestType,
         returned: Math.max(0, Number(f.count || 0) || 0),
       });
       continue;
@@ -63,7 +85,8 @@ for (const file of logs) {
     if (playerAt >= 0) {
       const f = fields(raw.slice(playerAt));
       const provider = decode(f.provider64);
-      const k = key(f.client || 'unknown', f.fixture || 'unknown', provider);
+      const requestType = f.request_type || 'unknown';
+      const k = routeKey(f.client || 'unknown', f.fixture || 'unknown', provider, requestType);
       if (!players.has(k)) players.set(k, new Set());
       players.get(k).add(Math.max(0, Number(f.index || 0) || 0));
     }
@@ -74,15 +97,15 @@ if (!readable) {
   console.error('FIELD_NATIVE_READER_COVERAGE state=infra_error reason=no_readable_log');
   process.exit(2);
 }
-if (!results.size) {
-  console.error('FIELD_NATIVE_READER_COVERAGE state=infra_error reason=no_provider_results');
+if (!expectedProviders.size) {
+  console.error('FIELD_NATIVE_READER_COVERAGE state=infra_error reason=no_corpus_begin');
   process.exit(2);
 }
 
 const failures = [];
 for (const [scope, expected] of expectedProviders) {
   const [client, fixture] = scope.split('\u0000');
-  const observed = [...results.values()].filter((row) => row.client === client && row.fixture === fixture).length;
+  const observed = [...traversedProviders].filter((key) => key.startsWith(`${client}\u0000${fixture}\u0000`)).length;
   if (expected !== observed) failures.push({ client, fixture, reason: 'provider_coverage', expected, observed });
 }
 for (const [k, result] of results) {
@@ -90,7 +113,7 @@ for (const [k, result] of results) {
   const expected = expectedStreams(result.returned);
   if (observed !== expected) {
     failures.push({
-      client: result.client, fixture: result.fixture, provider: result.provider,
+      client: result.client, fixture: result.fixture, provider: result.provider, requestType: result.requestType,
       reason: 'stream_coverage', scope: streamScope, returned: result.returned, expectedPlayed: expected, played: observed,
     });
   }
@@ -99,6 +122,6 @@ for (const [k, result] of results) {
 const returned = [...results.values()].reduce((sum, row) => sum + row.returned, 0);
 const expectedPlayed = [...results.values()].reduce((sum, row) => sum + expectedStreams(row.returned), 0);
 const played = [...players.values()].reduce((sum, set) => sum + set.size, 0);
-console.log(`FIELD_NATIVE_READER_COVERAGE state=${failures.length ? 'failed' : 'passed'} scope=${streamScope} providers=${results.size} returned=${returned} expected_played=${expectedPlayed} played=${played} failures=${failures.length}`);
+console.log(`FIELD_NATIVE_READER_COVERAGE state=${failures.length ? 'failed' : 'passed'} scope=${streamScope} providers=${traversedProviders.size} routes=${results.size} returned=${returned} expected_played=${expectedPlayed} played=${played} failures=${failures.length}`);
 for (const failure of failures.slice(0, 120)) console.log(`FIELD_NATIVE_READER_COVERAGE_FAILURE ${JSON.stringify(failure)}`);
 process.exit(failures.length ? 1 : 0);
