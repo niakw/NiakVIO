@@ -8,6 +8,7 @@ on:
       - ".github/triggers/nuvio-client-lab.json"
       - "manifest.json"
       - "sources.json"
+      - "engine_v2/**"
       - "scripts/prepare_native_reader_acceptance.py"
       - "scripts/augment_native_corpus_request_contract.py"
       - "scripts/augment_native_provider_loading.py"
@@ -24,7 +25,35 @@ on:
       - "scripts/run_native_corpus_mobile_suite.sh"
       - "scripts/gate_native_reader_coverage.cjs"
       - "scripts/gate_native_reader_result.cjs"
-      - "engine_v2/scripts/diagnose-native-reader.mjs"
+      - "scripts/build_native_reader_brain_repair.py"
+      - "scripts/compare_native_reader_brain_repair.py"
+      - "scripts/provider_patches/global_media_enrichment_v1.py"
+  push:
+    branches: [main]
+    paths:
+      - "manifest.json"
+      - "sources.json"
+      - "engine_v2/**"
+      - "scripts/prepare_native_reader_acceptance.py"
+      - "scripts/augment_native_corpus_request_contract.py"
+      - "scripts/augment_native_provider_loading.py"
+      - "scripts/resolve_native_repository.sh"
+      - "scripts/prepare_native_candidate_repository.py"
+      - "scripts/instrument_native_client_evidence.py"
+      - "scripts/instrument_native_repository_http_evidence.py"
+      - "scripts/capture_native_device_frontend.sh"
+      - "scripts/watch_native_device_frontend.sh"
+      - "scripts/native_player_diagnostics_codegen.py"
+      - "scripts/native_player_diagnostics.cjs"
+      - "scripts/native_evidence_completeness.cjs"
+      - "scripts/run_native_corpus_tv_suite.sh"
+      - "scripts/run_native_corpus_mobile_suite.sh"
+      - "scripts/gate_native_reader_coverage.cjs"
+      - "scripts/gate_native_reader_result.cjs"
+      - "scripts/build_native_reader_brain_repair.py"
+      - "scripts/compare_native_reader_brain_repair.py"
+      - "scripts/provider_patches/global_media_enrichment_v1.py"
+      - ".github/workflows/native-android-route-reader.yml"
   workflow_dispatch:
 
 permissions:
@@ -116,6 +145,7 @@ jobs:
           force-avd-creation: false
           emulator-boot-timeout: 600
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
+          disable-animations: false
           script: echo "TV route AVD ready"
       - name: Execute every provider and every returned stream
         uses: ReactiveCircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d
@@ -213,6 +243,7 @@ jobs:
           force-avd-creation: false
           emulator-boot-timeout: 600
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
+          disable-animations: false
           script: echo "Mobile route AVD ready"
       - name: Execute every provider and every returned stream
         uses: ReactiveCircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d
@@ -254,5 +285,156 @@ jobs:
             mobile-native-frontend-${{ matrix.fixture }}.log
             mobile-route-${{ matrix.fixture }}-brain.json
             native-evidence/mobile/${{ matrix.fixture }}/**
+          retention-days: 7
+          if-no-files-found: warn
+
+  brain-reader-repair-sandbox:
+    name: Brain reader repair sandbox and official TV retest
+    needs: [resolve, tv-route-reader]
+    if: ${{ always() && needs.resolve.result == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    steps:
+      - name: Checkout exact NiakVIO candidate
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          path: niakvio
+          persist-credentials: false
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165
+        with: {distribution: temurin, java-version: "17"}
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with: {node-version: "24", package-manager-cache: false}
+      - name: Download Sinners TV evidence from this exact run
+        continue-on-error: true
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          name: native-tv-route-sinners-2025-${{ github.run_id }}
+          path: baseline-reader
+      - name: Restore prior sanitized reader repair memory
+        shell: bash
+        run: |
+          set -euo pipefail
+          git -C niakvio fetch origin brain-learning/proposals:refs/remotes/origin/brain-learning/proposals || true
+          if git -C niakvio cat-file -e refs/remotes/origin/brain-learning/proposals:engine_v2/learning/latest.json 2>/dev/null; then
+            git -C niakvio show refs/remotes/origin/brain-learning/proposals:engine_v2/learning/latest.json > niakvio/native-reader-learning-previous.json
+          else
+            printf '{}\n' > niakvio/native-reader-learning-previous.json
+          fi
+      - name: Materialize bounded generic Brain mutations
+        id: repair
+        shell: bash
+        run: |
+          set -euo pipefail
+          BEFORE="$GITHUB_WORKSPACE/baseline-reader/tv-route-sinners-2025-brain.json"
+          if [ ! -s "$BEFORE" ]; then
+            echo "No complete Sinners TV diagnosis; mutation is forbidden."
+            echo "proposals=0" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          python3 niakvio/scripts/build_native_reader_brain_repair.py \
+            --diagnosis "$BEFORE" \
+            --manifest niakvio/manifest.json \
+            --learning-state niakvio/native-reader-learning-previous.json \
+            --output-dir niakvio/native-reader-repair \
+            --fixture sinners-2025 \
+            --max-providers 24
+          COUNT="$(python3 - <<'PY'
+          import json
+          print(json.load(open('niakvio/native-reader-repair/repair-report.json'))['proposalCount'])
+          PY
+          )"
+          echo "proposals=$COUNT" >> "$GITHUB_OUTPUT"
+          cat niakvio/native-reader-repair/repair-report.json
+      - name: Checkout accepted NuvioTV for candidate retest
+        if: steps.repair.outputs.proposals != '0'
+        shell: bash
+        env: {NUVIO_TV_SHA: "${{ needs.resolve.outputs.tv_sha }}"}
+        run: |
+          set -euxo pipefail
+          git clone --filter=blob:none --no-checkout https://github.com/NuvioMedia/NuvioTV.git nuvio-tv
+          git -C nuvio-tv checkout "$NUVIO_TV_SHA"
+          touch nuvio-tv/local.properties nuvio-tv/local.dev.properties
+          python3 niakvio/scripts/prepare_native_reader_acceptance.py tv --fixture sinners-2025 --workspace "$GITHUB_WORKSPACE" --manifest native-reader-repair/manifest.json --provider all --streams all --initial
+      - uses: gradle/actions/setup-gradle@0723195856401067f7a2779048b490ace7a47d7c
+        if: steps.repair.outputs.proposals != '0'
+      - name: Enable KVM for candidate retest
+        if: steps.repair.outputs.proposals != '0'
+        run: if [ -e /dev/kvm ]; then sudo chmod 666 /dev/kvm || true; fi
+      - name: Restore TV AVD snapshot for candidate retest
+        if: steps.repair.outputs.proposals != '0'
+        id: repair-avd-cache
+        uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25
+        with:
+          path: |
+            ~/.android/avd/*
+            ~/.android/adb*
+          key: avd-v1-${{ runner.os }}-tv-api31-android-tv-x86-tv_1080p
+      - name: Create TV AVD snapshot on candidate cache miss
+        if: steps.repair.outputs.proposals != '0' && steps.repair-avd-cache.outputs.cache-hit != 'true'
+        uses: ReactiveCircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d
+        with:
+          api-level: 31
+          target: android-tv
+          arch: x86
+          profile: tv_1080p
+          cores: 2
+          ram-size: 2048M
+          force-avd-creation: false
+          emulator-boot-timeout: 600
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
+          disable-animations: false
+          script: echo "TV repair AVD ready"
+      - name: Re-read every Sinners provider and stream after Brain mutation
+        if: steps.repair.outputs.proposals != '0'
+        continue-on-error: true
+        uses: ReactiveCircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d
+        env:
+          NIAKVIO_TARGET_FIXTURE: sinners-2025
+          NIAKVIO_TARGET_PROVIDER: all
+          NIAKVIO_TARGET_MANIFEST: native-reader-repair/manifest.json
+          NIAKVIO_READER_ACCEPTANCE: "1"
+          NIAKVIO_PRIMARY_FIXTURE: sinners-2025
+          NIAKVIO_PRIMARY_STREAM_SCOPE: all
+          NIAKVIO_REGRESSION_STREAM_SCOPE: all
+          NIAKVIO_REQUIRE_READER_SUCCESS: "1"
+        with:
+          api-level: 31
+          target: android-tv
+          arch: x86
+          profile: tv_1080p
+          cores: 2
+          ram-size: 2048M
+          force-avd-creation: false
+          emulator-boot-timeout: 600
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
+          script: bash "$GITHUB_WORKSPACE/niakvio/scripts/run_native_corpus_tv_suite.sh"
+      - name: Diagnose and compare Brain mutation with fresh reader proof
+        if: steps.repair.outputs.proposals != '0'
+        shell: bash
+        run: |
+          set -euo pipefail
+          LOG="$GITHUB_WORKSPACE/tv-native-corpus-sinners-2025.log"
+          test -s "$LOG"
+          node niakvio/engine_v2/scripts/diagnose-native-reader.mjs --output "$GITHUB_WORKSPACE/tv-reader-repair-after.json" "$LOG"
+          python3 niakvio/scripts/compare_native_reader_brain_repair.py \
+            --before "$GITHUB_WORKSPACE/baseline-reader/tv-route-sinners-2025-brain.json" \
+            --after "$GITHUB_WORKSPACE/tv-reader-repair-after.json" \
+            --repair-report niakvio/native-reader-repair/repair-report.json \
+            --fixture sinners-2025 \
+            --output "$GITHUB_WORKSPACE/tv-reader-repair-comparison.json"
+          cat "$GITHUB_WORKSPACE/tv-reader-repair-comparison.json"
+      - name: Upload Brain mutation and reader comparison
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: native-reader-brain-repair-${{ github.run_id }}
+          path: |
+            niakvio/native-reader-repair/manifest.json
+            niakvio/native-reader-repair/repair-report.json
+            niakvio/native-reader-repair/providers/*.js
+            tv-native-corpus-sinners-2025.log
+            tv-reader-repair-after.json
+            tv-reader-repair-comparison.json
           retention-days: 7
           if-no-files-found: warn
