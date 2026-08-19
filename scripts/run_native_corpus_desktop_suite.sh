@@ -11,6 +11,7 @@ COVERAGE_GATE="${NIAKVIO}/scripts/gate_native_reader_coverage.cjs"
 INSTRUMENTER="${NIAKVIO}/scripts/instrument_native_desktop_evidence.py"
 REQUEST_CONTRACT="${NIAKVIO}/scripts/augment_native_corpus_request_contract.py"
 PLAYER_AUGMENT="${NIAKVIO}/scripts/augment_native_desktop_player.py"
+FRONTEND_PHASES="${NIAKVIO}/scripts/complete_native_desktop_frontend_phases.py"
 TEST_SOURCE="${DESKTOP_ROOT}/composeApp/src/desktopTest/kotlin/com/nuvio/app/features/plugins/NiakvioNativeCorpusDesktopTest.kt"
 DEFAULT_FIXTURES=(sinners-2025 interstellar mon-ninja-et-moi-3 breaking-bad-s01e01 revenant-s01e01 jujutsu-kaisen-s01e01 mushoku-tensei-s01e01)
 TARGET_FIXTURE="${NIAKVIO_TARGET_FIXTURE:-}"
@@ -62,23 +63,30 @@ else:
 PY
 )" || { STATUS=1; continue; }
   python3 "$PLAYER_AUGMENT" --source "$TEST_SOURCE" --expected-minutes "$EXPECTED_MINUTES" --streams "$STREAM_SCOPE" || { STATUS=1; continue; }
+  python3 "$FRONTEND_PHASES" "$TEST_SOURCE" || { STATUS=1; continue; }
 
+  BASE_LOG="${WORKSPACE}/desktop-native-corpus-${fixture}.log"
   LOG="${WORKSPACE}/desktop-native-corpus-${HOST_OS}-${fixture}.log"
   GRADLE_LOG="${WORKSPACE}/desktop-native-gradle-${HOST_OS}-${fixture}.log"
-  rm -f "$LOG" "$GRADLE_LOG"
+  rm -f "$BASE_LOG" "$LOG" "$GRADLE_LOG"
   RUNTIME_STATUS=0
   if [[ "$HOST_OS" = "windows" ]]; then
-    "$DESKTOP_ROOT/gradlew.bat" -p "$DESKTOP_ROOT" :composeApp:desktopTest --tests 'com.nuvio.app.features.plugins.NiakvioNativeCorpusDesktopTest' --console=plain 2>&1 | tee "$GRADLE_LOG" || RUNTIME_STATUS=${PIPESTATUS[0]}
+    "$DESKTOP_ROOT/gradlew.bat" -p "$DESKTOP_ROOT" :composeApp:desktopTest --tests 'com.nuvio.app.features.plugins.NiakvioNativeCorpusDesktopTest' --console=plain 2>&1 | tee "$GRADLE_LOG"
+    RUNTIME_STATUS=${PIPESTATUS[0]}
   else
-    "$DESKTOP_ROOT/gradlew" -p "$DESKTOP_ROOT" :composeApp:desktopTest --tests 'com.nuvio.app.features.plugins.NiakvioNativeCorpusDesktopTest' --console=plain 2>&1 | tee "$GRADLE_LOG" || RUNTIME_STATUS=${PIPESTATUS[0]}
+    "$DESKTOP_ROOT/gradlew" -p "$DESKTOP_ROOT" :composeApp:desktopTest --tests 'com.nuvio.app.features.plugins.NiakvioNativeCorpusDesktopTest' --console=plain 2>&1 | tee "$GRADLE_LOG"
+    RUNTIME_STATUS=${PIPESTATUS[0]}
   fi
 
-  # The generated test writes corpus/player/front-end markers directly. Kermit emits
-  # provider HTTP evidence to Gradle stdout, so merge only sanitized FIELD markers.
-  touch "$LOG"
+  # The generated test writes ordered corpus/player/front-end markers. Kermit emits
+  # provider HTTP evidence to Gradle stdout; append only NiakVIO's sanitized fields.
+  if [[ -s "$BASE_LOG" ]]; then
+    cp "$BASE_LOG" "$LOG"
+  else
+    : > "$LOG"
+  fi
   grep -E 'FIELD_NATIVE_HTTP_(REQUEST|RESPONSE|ERROR)' "$GRADLE_LOG" >> "$LOG" 2>/dev/null || true
   echo "FIELD_NATIVE_EVIDENCE_INSTRUMENTED client=desktop" >> "$LOG"
-  sort -u "$LOG" -o "$LOG" 2>/dev/null || true
   cat "$LOG" || true
 
   ANALYSIS_STATUS=0
