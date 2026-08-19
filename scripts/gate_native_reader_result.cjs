@@ -40,6 +40,10 @@ for (const file of logs) {
       durationSeconds: Number(f.duration_seconds || 0) || null, host: decode(f.host64),
       errorClass: decode(f.error_class64), errorCode: decode(f.error_code64),
       exceptionChain: decode(f.exception_chain64), responseHeaderNames: decode(f.response_header_names64),
+      loadBytes: Math.max(0, Number(f.load_bytes || 0) || 0),
+      loadDurationMs: Math.max(0, Number(f.load_duration_ms || 0) || 0),
+      mediaDataType: Number.isFinite(Number(f.media_data_type)) ? Number(f.media_data_type) : -1,
+      trackType: Number.isFinite(Number(f.track_type)) ? Number(f.track_type) : -1,
     };
     row.failureClass = readerFailureClass(row);
     row.signature = readerSignature(row);
@@ -60,13 +64,15 @@ const failures = rows.filter(isReaderFailure);
 const healthy = rows.filter((row) => !isReaderFailure(row));
 console.log(`FIELD_NATIVE_READER_GATE state=${failures.length ? 'failed' : 'passed'} observed=${rows.length} healthy=${healthy.length} failures=${failures.length}`);
 for (const row of failures.slice(0, 40)) {
-  // All fields are already sanitized or structural. Never print raw stream URLs or request values here.
+  // All fields are sanitized or structural. Never print raw stream URLs or request/response values here.
   console.log(`FIELD_NATIVE_READER_GATE_FAILURE ${JSON.stringify({
     client: row.client, fixture: row.fixture, provider: row.provider, index: row.index,
     failureClass: row.failureClass, httpStatus: row.httpStatus, failureStage: row.failureStage,
     errorCode: row.errorCode, errorClass: row.errorClass, host: row.host,
     durationSeconds: row.durationSeconds, signature: row.signature,
     exceptionChain: row.exceptionChain, responseHeaderNames: row.responseHeaderNames,
+    loadBytes: row.loadBytes, loadDurationMs: row.loadDurationMs,
+    mediaDataType: row.mediaDataType, trackType: row.trackType,
   })}`);
 }
 process.exit(failures.length ? 1 : 0);
