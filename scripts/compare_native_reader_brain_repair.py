@@ -58,8 +58,11 @@ def main() -> int:
         post = after.get(provider, {"observed": 0, "healthy": 0, "failures": 0, "failureClasses": {}})
         row = {
             "provider": provider,
+            "fixture": args.fixture,
             "candidateFile": proposal.get("candidateFile"),
-            "skills": proposal.get("skills") or [],
+            "failureClasses": [str(value) for value in proposal.get("failureClasses") or [] if str(value)],
+            "hypotheses": [str(value) for value in proposal.get("hypotheses") or [] if str(value)],
+            "skills": [str(value) for value in proposal.get("skills") or [] if str(value)],
             "before": pre,
             "after": post,
         }
@@ -77,7 +80,7 @@ def main() -> int:
             rejected.append(row)
 
     payload = {
-        "schemaVersion": 1,
+        "schemaVersion": 2,
         "fixture": args.fixture,
         "acceptedCount": len(accepted),
         "rejectedCount": len(rejected),
@@ -93,6 +96,7 @@ def main() -> int:
             "acceptedRequiresAllPlayedStreamsHealthy": True,
             "freshNativeReaderProofRequired": True,
         },
+        "privacy": "Only provider ids, fixture ids, failure classes, generic hypothesis/skill ids and aggregate reader outcomes are persisted; no raw media URLs, tokens, cookies or header values.",
     }
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
