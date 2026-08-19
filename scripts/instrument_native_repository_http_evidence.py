@@ -1,9 +1,13 @@
 #!/usr/bin/env python3
 """Inject passive HTTP evidence into official Nuvio repository loaders.
 
-Only requests to the NiakVIO raw GitHub repository are logged. The interceptor does
-not alter method, URL, headers, body, redirects, cache policy, DNS, timeouts or
-response handling. Query strings/header values/bodies are never persisted.
+Requests are observed only when they belong to the NiakVIO repository under test:
+- exact raw.githubusercontent.com/niakw/NiakVIO paths, or
+- content-addressed loopback candidate paths used by isolated native repair labs.
+
+The interceptor does not alter method, URL, headers, body, redirects, cache policy,
+DNS, timeouts or response handling. Query strings/header values/bodies are never
+persisted.
 """
 from __future__ import annotations
 
@@ -27,13 +31,18 @@ def kotlin_interceptor(client: str, logger: str) -> str:
     return f'''.addInterceptor {{ chain ->
             val request = chain.request()
             val rawUrl = request.url
-            val repoEvidence = rawUrl.host.equals("raw.githubusercontent.com", ignoreCase = true) &&
-                rawUrl.encodedPath.lowercase().contains("/niakw/niakvio/")
+            val encodedPath = rawUrl.encodedPath
+            val rawGithubEvidence = rawUrl.host.equals("raw.githubusercontent.com", ignoreCase = true) &&
+                encodedPath.lowercase().contains("/niakw/niakvio/")
+            val loopbackEvidence = rawUrl.host.lowercase() in setOf("127.0.0.1", "localhost", "10.0.2.2") &&
+                Regex("/candidate-[0-9a-f]{{32}}/").containsMatchIn(encodedPath.lowercase())
+            val repoEvidence = rawGithubEvidence || loopbackEvidence
             if (!repoEvidence) return@addInterceptor chain.proceed(request)
             val endpoint = rawUrl.toString().substringBefore('?').substringBefore('#')
                 .replace(Regex("\\\\s+"), "%20")
             val kind = when {{
                 endpoint.endsWith("/manifest.json", ignoreCase = true) -> "manifest"
+                loopbackEvidence -> "provider"
                 endpoint.contains("/providers/", ignoreCase = true) -> "provider"
                 else -> "repository"
             }}
