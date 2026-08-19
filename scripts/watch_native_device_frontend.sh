@@ -25,6 +25,8 @@ adb logcat -v brief -s NiakvioCorpus:I NiakvioEvidence:I '*:S' | while IFS= read
   case "$line" in
     *FIELD_NATIVE_UI_LAUNCHED*) capture_once "ui-launched" ;;
     *FIELD_NATIVE_REPOSITORY_LOAD_BEGIN*) capture_once "repository-load" ;;
+    *FIELD_NATIVE_REPOSITORY_HTTP_REQUEST*) capture_once "repository-http-request" ;;
+    *FIELD_NATIVE_REPOSITORY_HTTP_RESPONSE*|*FIELD_NATIVE_REPOSITORY_HTTP_ERROR*) capture_once "repository-http-response" ;;
     *FIELD_NATIVE_REPOSITORY_LOAD_RESULT*) capture_once "repository-loaded" ;;
     *FIELD_NATIVE_REPOSITORY_LOAD_ERROR*) capture_once "repository-load-error" ;;
     *FIELD_NATIVE_PROVIDER_LOAD_RESULT*|*FIELD_NATIVE_PROVIDER_LOAD_ERROR*|*FIELD_NATIVE_PROVIDER_LOAD_SKIPPED*) capture_once "provider-load-state" ;;
