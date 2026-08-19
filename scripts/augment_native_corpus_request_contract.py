@@ -3,9 +3,14 @@
 
 The manifest vocabulary is strictly movie|tv|anime. Catalogue/user aliases are a
 client input concern. The lab still traverses every staged provider (including
-manifest-disabled rows), but executes only routes the provider declares compatible.
-Anime fixtures deliberately exercise both anime and tv when a provider declares both,
-because Nuvio catalogues may surface episodic anime through either route.
+manifest-disabled rows), but executes only meaningful media routes.
+
+For episodic anime, Nuvio catalogues may surface the same title through a series/tv
+route or an anime route. A provider that already declares either tv or anime is
+therefore exercised on BOTH routes. The declared route is normal validation; the
+other route is explicitly tagged ``capability_probe``. A failed capability probe is
+never a provider failure or Brain repair signal. A successful end-to-end probe can
+justify a later supportedTypes expansion.
 """
 from __future__ import annotations
 
@@ -98,7 +103,7 @@ def augment(path: Path, client: str, slug: str, manifest: Path) -> None:
     provider_list = re.search(r"(    private val providers = listOf\(\n.*?\n    \)\n)", text, flags=re.S)
     if not provider_list:
         raise SystemExit("request-contract provider list anchor missing")
-    helpers = f'''\n    private val declaredTypesByProvider = {kotlin_map(types)}\n\n    private fun requestTypesFor(providerId: String, fixtureMediaType: String): List<String> {{\n        val declared = declaredTypesByProvider[providerId.lowercase()].orEmpty()\n        return if ({str(is_anime).lower()}) {{\n            listOf("anime", "tv").filter {{ it in declared }}\n        }} else {{\n            listOf(fixtureMediaType).filter {{ it in declared }}\n        }}\n    }}\n'''
+    helpers = f'''\n    data class ProviderRequestRoute(val mediaType: String, val declared: Boolean)\n\n    private val declaredTypesByProvider = {kotlin_map(types)}\n\n    private fun requestRoutesFor(providerId: String, fixtureMediaType: String): List<ProviderRequestRoute> {{\n        val declared = declaredTypesByProvider[providerId.lowercase()].orEmpty()\n        return if ({str(is_anime).lower()}) {{\n            // Episodic anime can enter Nuvio through either anime or series/tv.\n            // If a provider participates in either ecosystem, test both. The\n            // undeclared side is discovery evidence only and cannot fail the provider.\n            if ("anime" !in declared && "tv" !in declared) emptyList()\n            else listOf("anime", "tv").map {{ type -> ProviderRequestRoute(type, type in declared) }}\n        }} else {{\n            listOf(fixtureMediaType).filter {{ it in declared }}\n                .map {{ type -> ProviderRequestRoute(type, true) }}\n        }}\n    }}\n'''
     text = text[: provider_list.end()] + helpers + text[provider_list.end() :]
 
     if client in {"tv", "mobile"}:
@@ -109,7 +114,7 @@ def augment(path: Path, client: str, slug: str, manifest: Path) -> None:
         text = replace_once(text, begin, f"        launchClientUi()\n{begin}", "ui launch")
 
     loop = "        for (provider in providers) {\n            val started = System.currentTimeMillis()\n            try {"
-    replacement = f'''        for (provider in providers) {{\n            val requestTypes = requestTypesFor(provider.id, mediaType)\n            if (requestTypes.isEmpty()) {{\n                emit("FIELD_NATIVE_PROVIDER_SKIPPED client={client} fixture=$fixtureSlug provider64=${{b64(provider.id)}} enabled=${{provider.enabled}} requested_type=$mediaType declared_types64=${{b64(declaredTypesByProvider[provider.id.lowercase()].orEmpty().sorted().joinToString(","))}} reason=unsupported_type")\n                continue\n            }}\n            for (requestMediaType in requestTypes) {{\n                val started = System.currentTimeMillis()\n                emit("FIELD_NATIVE_PROVIDER_BEGIN client={client} fixture=$fixtureSlug provider64=${{b64(provider.id)}} enabled=${{provider.enabled}} request_type=$requestMediaType declared_types64=${{b64(declaredTypesByProvider[provider.id.lowercase()].orEmpty().sorted().joinToString(","))}}")\n                try {{'''
+    replacement = f'''        for (provider in providers) {{\n            val requestRoutes = requestRoutesFor(provider.id, mediaType)\n            if (requestRoutes.isEmpty()) {{\n                emit("FIELD_NATIVE_PROVIDER_SKIPPED client={client} fixture=$fixtureSlug provider64=${{b64(provider.id)}} enabled=${{provider.enabled}} requested_type=$mediaType declared_types64=${{b64(declaredTypesByProvider[provider.id.lowercase()].orEmpty().sorted().joinToString(","))}} reason=unsupported_type")\n                continue\n            }}\n            for (requestRoute in requestRoutes) {{\n                val requestMediaType = requestRoute.mediaType\n                val routeMode = if (requestRoute.declared) "declared" else "capability_probe"\n                val started = System.currentTimeMillis()\n                emit("FIELD_NATIVE_PROVIDER_BEGIN client={client} fixture=$fixtureSlug provider64=${{b64(provider.id)}} enabled=${{provider.enabled}} request_type=$requestMediaType route_mode=$routeMode declared_types64=${{b64(declaredTypesByProvider[provider.id.lowercase()].orEmpty().sorted().joinToString(","))}}")\n                try {{'''
     text = replace_once(text, loop, replacement, "provider loop")
     text = replace_once(text, "                    mediaType = mediaType,", "                    mediaType = requestMediaType,", "runtime media type")
 
@@ -123,15 +128,16 @@ def augment(path: Path, client: str, slug: str, manifest: Path) -> None:
     for marker in markers:
         needle = f"{marker} client={client} fixture=$fixtureSlug provider64=${{b64(provider.id)}}"
         if needle in text:
-            text = text.replace(needle, needle + " request_type=$requestMediaType")
+            text = text.replace(needle, needle + " request_type=$requestMediaType route_mode=$routeMode")
 
-    # Reader codegen runs after the base generator and therefore sees the nested
-    # requestMediaType variable. Emit a visual phase marker before each real reader.
+    # Reader codegen runs before this postprocessor and therefore sees the nested
+    # requestMediaType/routeMode variables after replacement. Emit an explicit
+    # player-begin marker so completeness can pair every attempt with its terminal.
     reader_needle = "                    val reader = probeNativePlayer(row.url, row.headers,"
     if reader_needle in text:
         text = text.replace(
             reader_needle,
-            f'                    emit("FIELD_NATIVE_PLAYER_BEGIN client={client} fixture=$fixtureSlug provider64=${{b64(provider.id)}} request_type=$requestMediaType index=$index")\n' + reader_needle,
+            f'                    emit("FIELD_NATIVE_PLAYER_BEGIN client={client} fixture=$fixtureSlug provider64=${{b64(provider.id)}} request_type=$requestMediaType route_mode=$routeMode index=$index")\n' + reader_needle,
         )
 
     end_anchor = '        }\n        emit("FIELD_NATIVE_CORPUS_END client=' + client
