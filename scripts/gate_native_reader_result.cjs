@@ -36,6 +36,7 @@ for (const file of logs) {
     const row = {
       client: f.client || 'unknown', fixture: f.fixture || 'unknown', provider: decode(f.provider64),
       requestType: String(f.request_type || 'unknown').toLowerCase(),
+      routeMode: String(f.route_mode || 'declared').toLowerCase(),
       index: Number(f.index || 0), state: f.state || 'unknown', engine: f.engine || 'unknown',
       httpStatus: Number(f.http_status || 0), failureStage: f.failure_stage || 'unknown',
       durationSeconds: Number(f.duration_seconds || 0) || null, host: decode(f.host64),
@@ -61,19 +62,35 @@ if (rows.length === 0) {
   process.exit(2);
 }
 
-const failures = rows.filter(isReaderFailure);
-const healthy = rows.filter((row) => !isReaderFailure(row));
-console.log(`FIELD_NATIVE_READER_GATE state=${failures.length ? 'failed' : 'passed'} observed=${rows.length} healthy=${healthy.length} failures=${failures.length}`);
+const declared = rows.filter((row) => row.routeMode !== 'capability_probe');
+const probes = rows.filter((row) => row.routeMode === 'capability_probe');
+const failures = declared.filter(isReaderFailure);
+const healthy = declared.filter((row) => !isReaderFailure(row));
+const probeFailures = probes.filter(isReaderFailure);
+const probeHealthy = probes.filter((row) => !isReaderFailure(row));
+console.log(
+  `FIELD_NATIVE_READER_GATE state=${failures.length ? 'failed' : 'passed'} observed=${rows.length} ` +
+  `declared=${declared.length} healthy=${healthy.length} failures=${failures.length} ` +
+  `capability_probes=${probes.length} capability_probe_healthy=${probeHealthy.length} capability_probe_failures=${probeFailures.length}`
+);
 for (const row of failures.slice(0, 40)) {
   // All fields are sanitized or structural. Never print raw stream URLs or request/response values here.
   console.log(`FIELD_NATIVE_READER_GATE_FAILURE ${JSON.stringify({
-    client: row.client, fixture: row.fixture, provider: row.provider, requestType: row.requestType, index: row.index,
+    client: row.client, fixture: row.fixture, provider: row.provider, requestType: row.requestType,
+    routeMode: row.routeMode, index: row.index,
     failureClass: row.failureClass, httpStatus: row.httpStatus, failureStage: row.failureStage,
     errorCode: row.errorCode, errorClass: row.errorClass, host: row.host,
     durationSeconds: row.durationSeconds, signature: row.signature,
     exceptionChain: row.exceptionChain, responseHeaderNames: row.responseHeaderNames,
     loadBytes: row.loadBytes, loadDurationMs: row.loadDurationMs,
     mediaDataType: row.mediaDataType, trackType: row.trackType,
+  })}`);
+}
+for (const row of probeFailures.slice(0, 40)) {
+  console.log(`FIELD_NATIVE_CAPABILITY_PROBE_REJECTED ${JSON.stringify({
+    client: row.client, fixture: row.fixture, provider: row.provider, requestType: row.requestType,
+    index: row.index, failureClass: row.failureClass, failureStage: row.failureStage,
+    httpStatus: row.httpStatus, errorCode: row.errorCode,
   })}`);
 }
 process.exit(failures.length ? 1 : 0);
