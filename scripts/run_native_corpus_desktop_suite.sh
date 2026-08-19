@@ -84,14 +84,15 @@ PY
   fi
 
   # The generated test writes ordered corpus/provider-load/player/front-end markers.
-  # Kermit emits provider HTTP evidence to Gradle stdout; append only NiakVIO's
-  # sanitized fields, never the client's raw request logs.
+  # Kermit may emit raw provider URLs in ordinary debug output, so extract only our
+  # sanitized HTTP fields and immediately delete the raw Gradle capture.
   if [[ -s "$BASE_LOG" ]]; then
     cp "$BASE_LOG" "$LOG"
   else
     : > "$LOG"
   fi
   grep -E 'FIELD_NATIVE_HTTP_(REQUEST|RESPONSE|ERROR)' "$GRADLE_LOG" >> "$LOG" 2>/dev/null || true
+  rm -f "$GRADLE_LOG"
   echo "FIELD_NATIVE_EVIDENCE_INSTRUMENTED client=desktop" >> "$LOG"
   cat "$LOG" || true
 
