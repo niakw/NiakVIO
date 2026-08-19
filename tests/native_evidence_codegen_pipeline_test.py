@@ -46,7 +46,8 @@ with tempfile.TemporaryDirectory() as tmp_raw:
 
     # TV / movie: generated corpus -> official Media3 reader -> route contract ->
     # real PluginManager repository loading. No direct PluginRuntime execution may
-    # remain as the primary provider path.
+    # remain as the primary provider path. Existing repository/profile state is
+    # reused on subsequent fixtures rather than downloaded again.
     movie = corpus.fixture_by_slug("sinners-2025")
     tv_source = corpus.android_test(movie, selected, "tv")
     tv_source = reader.augment_android_test(
@@ -62,7 +63,9 @@ with tempfile.TemporaryDirectory() as tmp_raw:
     tv_out = tv_path.read_text(encoding="utf-8")
     assert "FIELD_NATIVE_UI_LAUNCHED client=tv" in tv_out
     assert "FIELD_NATIVE_REPOSITORY_LOAD_BEGIN client=tv" in tv_out
+    assert "FIELD_NATIVE_REPOSITORY_CACHE_HIT client=tv" in tv_out
     assert "FIELD_NATIVE_PROVIDER_LOAD_RESULT client=tv" in tv_out
+    assert "manager.repositories.first()" in tv_out
     assert "PluginManager.addRepository" not in tv_out  # instance call below is intentional
     assert "manager.addRepository(repositoryManifestUrl)" in tv_out
     assert "officialPluginManager.executeScraper(loadedScraper" in tv_out
@@ -73,7 +76,8 @@ with tempfile.TemporaryDirectory() as tmp_raw:
     assert "PlayerPlaybackNetworking.createDataSourceFactory" in tv_out
 
     # Mobile / anime: the route contract keeps declared + capability_probe anime/tv
-    # routes, then the official PluginRepository supplies the loaded scraper.
+    # routes, then the official PluginRepository supplies the loaded scraper while
+    # preserving active profile/settings and the installed repository cache.
     anime = corpus.fixture_by_slug("jujutsu-kaisen-s01e01")
     mobile_source = corpus.android_test(anime, selected, "mobile")
     mobile_source = reader.augment_android_test(
@@ -92,6 +96,10 @@ with tempfile.TemporaryDirectory() as tmp_raw:
     assert "requestRoute.declared" in mobile_out
     assert "FIELD_NATIVE_UI_LAUNCHED client=mobile" in mobile_out
     assert "FIELD_NATIVE_REPOSITORY_LOAD_BEGIN client=mobile" in mobile_out
+    assert "FIELD_NATIVE_REPOSITORY_CACHE_HIT client=mobile" in mobile_out
+    assert "PluginRepository.initialize()" in mobile_out
+    assert "PluginRepository.uiState.value.repositories.firstOrNull" in mobile_out
+    assert "PluginRepository.clearLocalState()" not in mobile_out
     assert "PluginRepository.addRepository(repositoryManifestUrl)" in mobile_out
     assert "PluginRepository.executeScraper(loadedScraper" in mobile_out
     assert "PluginRuntime.executePlugin(" not in mobile_out
@@ -118,9 +126,12 @@ with tempfile.TemporaryDirectory() as tmp_raw:
         assert completed.returncode == 0, completed.stdout + completed.stderr
         desktop_out = desktop_path.read_text(encoding="utf-8")
         for required in (
+            "PluginRepository.initialize()",
+            "PluginRepository.uiState.value.repositories.firstOrNull",
             "PluginRepository.addRepository(repositoryManifestUrl)",
             "PluginRepository.executeScraper(loadedScraper",
             "FIELD_NATIVE_REPOSITORY_LOAD_BEGIN client=desktop",
+            "FIELD_NATIVE_REPOSITORY_CACHE_HIT client=desktop",
             "NativePlayerController",
             "NativePlayerHost",
             "probeDesktopNativePlayer",
@@ -137,6 +148,7 @@ with tempfile.TemporaryDirectory() as tmp_raw:
             'captureDesktopPhase("player-result"',
         ):
             assert required in desktop_out, f"{platform}:{required}"
+        assert "PluginRepository.clearLocalState()" not in desktop_out
         assert "PluginRuntime.executePlugin(" not in desktop_out
         assert "rows.take(" not in desktop_out, "all-stream Desktop proof must not sample rows"
 
