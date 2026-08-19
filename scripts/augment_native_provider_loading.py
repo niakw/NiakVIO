@@ -20,6 +20,11 @@ The lab deliberately preserves the Nuvio app/profile state between fixtures. It
 reuses an already-installed repository and provider-code cache whenever the exact
 manifest URL is already present, instead of clearing PluginRepository state. This
 keeps repeated launches fast and mirrors a real user session more closely.
+
+Repository installation failures are terminal observations, not harness crashes:
+every selected provider receives a structured load failure and the corpus continues
+to its normal end marker so the Brain can classify Core/manifest/repository faults
+without ever turning them into provider-JS mutations.
 """
 from __future__ import annotations
 
@@ -157,8 +162,17 @@ def tv_helpers(manifest_url: str, blocked: list[str]) -> str:
         }} else {{
             val installed = manager.addRepository(repositoryManifestUrl)
             if (installed.isFailure) {{
-                emit("FIELD_NATIVE_REPOSITORY_LOAD_ERROR client=tv fixture=$fixtureSlugForLoad error64=${{b64(installed.exceptionOrNull()?.message ?: \"repository install failed\")}}")
-                throw installed.exceptionOrNull() ?: IllegalStateException("NuvioTV repository install failed")
+                val message = installed.exceptionOrNull()?.message ?: "repository install failed"
+                emit("FIELD_NATIVE_REPOSITORY_LOAD_ERROR client=tv fixture=$fixtureSlugForLoad reason=install_failed error64=${{b64(message)}}")
+                providers.forEach {{ provider ->
+                    val key = provider.id.lowercase()
+                    if (key in platformExcludedProviders) {{
+                        emit("FIELD_NATIVE_PROVIDER_LOAD_SKIPPED client=tv fixture=$fixtureSlugForLoad provider64=${{b64(provider.id)}} reason=disabled_platform")
+                    }} else {{
+                        emit("FIELD_NATIVE_PROVIDER_LOAD_ERROR client=tv fixture=$fixtureSlugForLoad provider64=${{b64(provider.id)}} reason=repository_install_failed")
+                    }}
+                }}
+                return manager to emptyMap()
             }}
             installed.getOrThrow()
         }}
@@ -193,6 +207,8 @@ def tv_helpers(manifest_url: str, blocked: list[str]) -> str:
 
 
 def repository_helpers(client: str, manifest_url: str, blocked: list[str]) -> str:
+    desktop_before = '            captureDesktopPhase("repository-http-request", fixtureSlugForLoad)\n' if client == "desktop" else ""
+    desktop_after = '                    captureDesktopPhase("repository-http-response", fixtureSlugForLoad)\n' if client == "desktop" else ""
     return f'''
     private val repositoryManifestUrl = {kotlin_string(manifest_url)}
     private val platformExcludedProviders = {platform_set_literal(blocked)}
@@ -210,11 +226,21 @@ def repository_helpers(client: str, manifest_url: str, blocked: list[str]) -> st
             emit("FIELD_NATIVE_REPOSITORY_CACHE_HIT client={client} fixture=$fixtureSlugForLoad repository64=${{b64(existing.name)}}")
             existing.manifestUrl
         }} else {{
-            when (val installed = PluginRepository.addRepository(repositoryManifestUrl)) {{
-                is AddPluginRepositoryResult.Success -> installed.repository.manifestUrl
+{desktop_before}            when (val installed = PluginRepository.addRepository(repositoryManifestUrl)) {{
+                is AddPluginRepositoryResult.Success -> {{
+{desktop_after}                    installed.repository.manifestUrl
+                }}
                 is AddPluginRepositoryResult.Error -> {{
-                    emit("FIELD_NATIVE_REPOSITORY_LOAD_ERROR client={client} fixture=$fixtureSlugForLoad error64=${{b64(installed.message)}}")
-                    throw IllegalStateException(installed.message)
+{desktop_after}                    emit("FIELD_NATIVE_REPOSITORY_LOAD_ERROR client={client} fixture=$fixtureSlugForLoad reason=install_failed error64=${{b64(installed.message)}}")
+                    providers.forEach {{ provider ->
+                        val key = provider.id.lowercase()
+                        if (key in platformExcludedProviders) {{
+                            emit("FIELD_NATIVE_PROVIDER_LOAD_SKIPPED client={client} fixture=$fixtureSlugForLoad provider64=${{b64(provider.id)}} reason=disabled_platform")
+                        }} else {{
+                            emit("FIELD_NATIVE_PROVIDER_LOAD_ERROR client={client} fixture=$fixtureSlugForLoad provider64=${{b64(provider.id)}} reason=repository_install_failed")
+                        }}
+                    }}
+                    return emptyMap()
                 }}
             }}
         }}
