@@ -1,0 +1,245 @@
+name: Native Android route reader acceptance
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/native-android-route-reader.yml"
+      - ".github/triggers/nuvio-client-lab.json"
+      - "manifest.json"
+      - "sources.json"
+      - "scripts/prepare_native_reader_acceptance.py"
+      - "scripts/augment_native_corpus_request_contract.py"
+      - "scripts/instrument_native_client_evidence.py"
+      - "scripts/capture_native_device_frontend.sh"
+      - "scripts/watch_native_device_frontend.sh"
+      - "scripts/native_player_diagnostics_codegen.py"
+      - "scripts/native_player_diagnostics.cjs"
+      - "scripts/native_evidence_completeness.cjs"
+      - "scripts/run_native_corpus_tv_suite.sh"
+      - "scripts/run_native_corpus_mobile_suite.sh"
+      - "scripts/gate_native_reader_coverage.cjs"
+      - "scripts/gate_native_reader_result.cjs"
+      - "engine_v2/scripts/diagnose-native-reader.mjs"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: native-android-route-reader-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  resolve:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      mobile_sha: ${{ steps.refs.outputs.mobile_sha }}
+      tv_sha: ${{ steps.refs.outputs.tv_sha }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with: {fetch-depth: 1, persist-credentials: false}
+      - id: refs
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY' >> "$GITHUB_OUTPUT"
+          import json
+          from pathlib import Path
+          data=json.loads(Path('sources.json').read_text())
+          clients=(data.get('nuvio_client_compatibility') or {}).get('clients') or {}
+          refs={
+            'mobile_sha': str((clients.get('nuvio-mobile') or {}).get('accepted_ref') or ''),
+            'tv_sha': str((clients.get('nuvio-tv') or {}).get('accepted_ref') or ''),
+          }
+          if any(len(v)!=40 for v in refs.values()): raise SystemExit(f'missing accepted refs: {refs}')
+          for key,value in refs.items(): print(f'{key}={value}')
+          PY
+
+  tv-route-reader:
+    needs: resolve
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    strategy:
+      fail-fast: false
+      matrix:
+        fixture: [sinners-2025, breaking-bad-s01e01, jujutsu-kaisen-s01e01]
+    steps:
+      - name: Checkout NiakVIO candidate
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with: {path: niakvio, persist-credentials: false}
+      - uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165
+        with: {distribution: temurin, java-version: "17"}
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with: {node-version: "24", package-manager-cache: false}
+      - uses: gradle/actions/setup-gradle@0723195856401067f7a2779048b490ace7a47d7c
+      - name: Checkout accepted official NuvioTV and stage exhaustive route
+        shell: bash
+        env: {NUVIO_TV_SHA: "${{ needs.resolve.outputs.tv_sha }}"}
+        run: |
+          set -euxo pipefail
+          git clone --filter=blob:none --no-checkout https://github.com/NuvioMedia/NuvioTV.git nuvio-tv
+          git -C nuvio-tv checkout "$NUVIO_TV_SHA"
+          touch nuvio-tv/local.properties nuvio-tv/local.dev.properties
+          python3 niakvio/scripts/prepare_native_reader_acceptance.py tv --fixture "${{ matrix.fixture }}" --workspace "$GITHUB_WORKSPACE" --manifest manifest.json --provider all --streams all --initial
+      - name: Enable KVM
+        run: if [ -e /dev/kvm ]; then sudo chmod 666 /dev/kvm || true; fi
+      - name: Restore TV AVD snapshot
+        id: avd-cache
+        uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25
+        with:
+          path: |
+            ~/.android/avd/*
+            ~/.android/adb*
+          key: avd-v1-${{ runner.os }}-tv-api31-android-tv-x86-tv_1080p
+      - name: Create TV AVD snapshot on cache miss
+        if: steps.avd-cache.outputs.cache-hit != 'true'
+        uses: ReactiveCircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d
+        with:
+          api-level: 31
+          target: android-tv
+          arch: x86
+          profile: tv_1080p
+          cores: 2
+          ram-size: 2048M
+          force-avd-creation: false
+          emulator-boot-timeout: 600
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
+          script: echo "TV route AVD ready"
+      - name: Execute every provider and every returned stream
+        uses: ReactiveCircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d
+        env:
+          NIAKVIO_TARGET_FIXTURE: ${{ matrix.fixture }}
+          NIAKVIO_TARGET_PROVIDER: all
+          NIAKVIO_TARGET_MANIFEST: manifest.json
+          NIAKVIO_READER_ACCEPTANCE: "1"
+          NIAKVIO_PRIMARY_FIXTURE: ${{ matrix.fixture }}
+          NIAKVIO_PRIMARY_STREAM_SCOPE: all
+          NIAKVIO_REGRESSION_STREAM_SCOPE: all
+          NIAKVIO_REQUIRE_READER_SUCCESS: "1"
+        with:
+          api-level: 31
+          target: android-tv
+          arch: x86
+          profile: tv_1080p
+          cores: 2
+          ram-size: 2048M
+          force-avd-creation: false
+          emulator-boot-timeout: 600
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
+          script: bash "$GITHUB_WORKSPACE/niakvio/scripts/run_native_corpus_tv_suite.sh"
+      - name: Diagnose only complete TV evidence
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          LOG="$GITHUB_WORKSPACE/tv-native-corpus-${{ matrix.fixture }}.log"
+          test -s "$LOG"
+          node niakvio/engine_v2/scripts/diagnose-native-reader.mjs --output "$GITHUB_WORKSPACE/tv-route-${{ matrix.fixture }}-brain.json" "$LOG"
+      - name: Upload TV route evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: native-tv-route-${{ matrix.fixture }}-${{ github.run_id }}
+          path: |
+            tv-native-corpus-${{ matrix.fixture }}.log
+            tv-native-frontend-${{ matrix.fixture }}.log
+            tv-route-${{ matrix.fixture }}-brain.json
+            native-evidence/tv/${{ matrix.fixture }}/**
+          retention-days: 7
+          if-no-files-found: warn
+
+  mobile-route-reader:
+    needs: resolve
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    strategy:
+      fail-fast: false
+      matrix:
+        fixture: [sinners-2025, breaking-bad-s01e01, jujutsu-kaisen-s01e01]
+    steps:
+      - name: Checkout NiakVIO candidate
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with: {path: niakvio, persist-credentials: false}
+      - uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165
+        with: {distribution: temurin, java-version: "17"}
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with: {node-version: "24", package-manager-cache: false}
+      - uses: gradle/actions/setup-gradle@0723195856401067f7a2779048b490ace7a47d7c
+      - name: Checkout accepted official NuvioMobile and stage exhaustive route
+        shell: bash
+        env: {NUVIO_MOBILE_SHA: "${{ needs.resolve.outputs.mobile_sha }}"}
+        run: |
+          set -euxo pipefail
+          git clone --filter=blob:none --no-checkout https://github.com/NuvioMedia/NuvioMobile.git nuvio-mobile
+          git -C nuvio-mobile checkout "$NUVIO_MOBILE_SHA"
+          touch nuvio-mobile/local.properties
+          python3 niakvio/scripts/prepare_native_reader_acceptance.py mobile --fixture "${{ matrix.fixture }}" --workspace "$GITHUB_WORKSPACE" --manifest manifest.json --provider all --streams all --initial
+          python3 niakvio/scripts/harden_nuvio_mobile_device_test.py "$GITHUB_WORKSPACE/nuvio-mobile"
+      - name: Enable KVM
+        run: if [ -e /dev/kvm ]; then sudo chmod 666 /dev/kvm || true; fi
+      - name: Restore Mobile AVD snapshot
+        id: avd-cache
+        uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25
+        with:
+          path: |
+            ~/.android/avd/*
+            ~/.android/adb*
+          key: avd-v1-${{ runner.os }}-mobile-api35-google_apis-x86_64-pixel_2
+      - name: Create Mobile AVD snapshot on cache miss
+        if: steps.avd-cache.outputs.cache-hit != 'true'
+        uses: ReactiveCircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_2
+          cores: 2
+          ram-size: 2048M
+          force-avd-creation: false
+          emulator-boot-timeout: 600
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
+          script: echo "Mobile route AVD ready"
+      - name: Execute every provider and every returned stream
+        uses: ReactiveCircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d
+        env:
+          NIAKVIO_TARGET_FIXTURE: ${{ matrix.fixture }}
+          NIAKVIO_TARGET_PROVIDER: all
+          NIAKVIO_TARGET_MANIFEST: manifest.json
+          NIAKVIO_READER_ACCEPTANCE: "1"
+          NIAKVIO_PRIMARY_FIXTURE: ${{ matrix.fixture }}
+          NIAKVIO_PRIMARY_STREAM_SCOPE: all
+          NIAKVIO_REGRESSION_STREAM_SCOPE: all
+          NIAKVIO_REQUIRE_READER_SUCCESS: "1"
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_2
+          cores: 2
+          ram-size: 2048M
+          force-avd-creation: false
+          emulator-boot-timeout: 600
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
+          script: bash "$GITHUB_WORKSPACE/niakvio/scripts/run_native_corpus_mobile_suite.sh"
+      - name: Diagnose only complete Mobile evidence
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          LOG="$GITHUB_WORKSPACE/mobile-native-corpus-${{ matrix.fixture }}.log"
+          test -s "$LOG"
+          node niakvio/engine_v2/scripts/diagnose-native-reader.mjs --output "$GITHUB_WORKSPACE/mobile-route-${{ matrix.fixture }}-brain.json" "$LOG"
+      - name: Upload Mobile route evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: native-mobile-route-${{ matrix.fixture }}-${{ github.run_id }}
+          path: |
+            mobile-native-corpus-${{ matrix.fixture }}.log
+            mobile-native-frontend-${{ matrix.fixture }}.log
+            mobile-route-${{ matrix.fixture }}-brain.json
+            native-evidence/mobile/${{ matrix.fixture }}/**
+          retention-days: 7
+          if-no-files-found: warn
