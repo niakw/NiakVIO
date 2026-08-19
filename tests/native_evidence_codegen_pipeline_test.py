@@ -21,7 +21,6 @@ corpus = load("native_corpus_validation", "scripts/prepare_native_corpus_validat
 reader = load("native_player_diag_codegen", "scripts/native_player_diagnostics_codegen.py")
 contract = load("native_request_contract", "scripts/augment_native_corpus_request_contract.py")
 desktop_player = load("native_desktop_player", "scripts/augment_native_desktop_player.py")
-desktop_frontend = load("native_desktop_frontend", "scripts/complete_native_desktop_frontend_phases.py")
 
 manifest = ROOT / "manifest.json"
 providers = corpus.manifest_providers()
@@ -54,13 +53,14 @@ with tempfile.TemporaryDirectory() as tmp_raw:
     tv_out = tv_path.read_text(encoding="utf-8")
     assert "FIELD_NATIVE_UI_LAUNCHED client=tv" in tv_out
     assert "FIELD_NATIVE_PROVIDER_SKIPPED client=tv" in tv_out
-    assert "request_type=$requestMediaType" in tv_out
+    assert "request_type=$requestMediaType route_mode=$routeMode" in tv_out
     assert "mediaType = requestMediaType" in tv_out
     assert "FIELD_NATIVE_PLAYER_BEGIN client=tv" in tv_out
     assert "PlayerPlaybackNetworking.createDataSourceFactory" in tv_out
 
-    # Mobile / anime: prove dual anime/tv route generation while preserving the
-    # official mobile reader factory.
+    # Mobile / anime: providers already participating through anime OR tv receive
+    # both routes. The undeclared side is explicitly a capability_probe and is not
+    # a provider failure path.
     anime = corpus.fixture_by_slug("jujutsu-kaisen-s01e01")
     mobile_source = corpus.android_test(anime, selected, "mobile")
     mobile_source = reader.augment_android_test(
@@ -73,10 +73,13 @@ with tempfile.TemporaryDirectory() as tmp_raw:
     mobile_path.write_text(mobile_source, encoding="utf-8")
     contract.augment(mobile_path, "mobile", "jujutsu-kaisen-s01e01", manifest)
     mobile_out = mobile_path.read_text(encoding="utf-8")
-    assert 'listOf("anime", "tv").filter' in mobile_out
+    assert 'listOf("anime", "tv").map' in mobile_out
+    assert '"capability_probe"' in mobile_out
+    assert "requestRoute.declared" in mobile_out
     assert "FIELD_NATIVE_UI_LAUNCHED client=mobile" in mobile_out
     assert "PlatformPlaybackDataSourceFactory.create" in mobile_out
     assert "FIELD_NATIVE_PLAYER client=mobile" in mobile_out
+    assert "route_mode=$routeMode" in mobile_out
 
     # Desktop: base runtime -> media-route contract -> official native desktop
     # player -> frontend phase augmentation.
@@ -85,8 +88,6 @@ with tempfile.TemporaryDirectory() as tmp_raw:
     desktop_path.write_text(desktop_source, encoding="utf-8")
     contract.augment(desktop_path, "desktop", "jujutsu-kaisen-s01e01", manifest)
     desktop_player.augment(desktop_path, int(anime.get("expectedDurationMinutes") or 0), "all")
-    # complete_native_desktop_frontend_phases exposes main only; emulate its
-    # deterministic three replacements here by invoking the module through argv.
     import subprocess, sys
     completed = subprocess.run(
         [sys.executable, str(ROOT / "scripts/complete_native_desktop_frontend_phases.py"), str(desktop_path)],
@@ -101,6 +102,7 @@ with tempfile.TemporaryDirectory() as tmp_raw:
         "NativePlayerHost",
         "probeDesktopNativePlayer",
         "FIELD_NATIVE_PLAYER_BEGIN client=desktop",
+        "route_mode=$routeMode",
         "engine=native-desktop",
         'captureDesktopPhase("ui-launched"',
         'captureDesktopPhase("provider-http-request"',
