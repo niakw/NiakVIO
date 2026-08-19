@@ -14,6 +14,9 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+SECTION_BEGIN = "<!-- NATIVE_READER_REPAIR_MEMORY_BEGIN -->"
+SECTION_END = "<!-- NATIVE_READER_REPAIR_MEMORY_END -->"
+
 
 def read_json(path: Path | None) -> dict[str, Any]:
     if path is None or not path.is_file():
@@ -70,12 +73,40 @@ def proposal_key(row: Any) -> str:
     )
 
 
+def render_markdown(base: str, entries: list[dict[str, Any]], stats: list[dict[str, Any]], imported: int) -> str:
+    if SECTION_BEGIN in base and SECTION_END in base:
+        prefix = base.split(SECTION_BEGIN, 1)[0].rstrip()
+        suffix = base.split(SECTION_END, 1)[1].lstrip()
+        base = prefix + ("\n\n" + suffix if suffix else "")
+    lines = [
+        SECTION_BEGIN,
+        "## Native reader repair memory",
+        "",
+        f"Reader repair memory entries: **{len(entries)}**  ",
+        f"Reader repair outcomes imported this run: **{imported}**  ",
+        f"Generic reader repair skills observed: **{len(stats)}**",
+        "",
+    ]
+    if stats:
+        lines.extend(["| Skill | Maturity | Successes | Failures | Proven providers |", "|---|---:|---:|---:|---:|"])
+        for row in stats[:20]:
+            lines.append(
+                f"| `{clean(row.get('skill'), 96)}` | {clean(row.get('maturity'), 24)} | "
+                f"{int(row.get('successes') or 0)} | {int(row.get('failures') or 0)} | {int(row.get('provenProviderCount') or 0)} |"
+            )
+        lines.append("")
+    lines.append(SECTION_END)
+    return base.rstrip() + "\n\n" + "\n".join(lines) + "\n"
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--state", type=Path, required=True)
     parser.add_argument("--previous-state", type=Path)
     parser.add_argument("--comparison", type=Path, required=True)
     parser.add_argument("--output", type=Path)
+    parser.add_argument("--markdown-input", type=Path)
+    parser.add_argument("--markdown-output", type=Path)
     parser.add_argument("--max-entries", type=int, default=1200)
     parser.add_argument("--avoid-threshold", type=int, default=2)
     args = parser.parse_args()
@@ -231,6 +262,14 @@ def main() -> int:
 
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(json.dumps(state, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+    if args.markdown_output:
+        base = "# NiakVIO Brain Learning\n"
+        if args.markdown_input and args.markdown_input.is_file():
+            base = args.markdown_input.read_text(encoding="utf-8")
+        args.markdown_output.parent.mkdir(parents=True, exist_ok=True)
+        args.markdown_output.write_text(render_markdown(base, entries, stats_rows, imported), encoding="utf-8")
+
     print(f"FIELD_NATIVE_READER_LEARNING imported={imported} entries={len(entries)} skills={len(stats_rows)}")
     return 0
 
