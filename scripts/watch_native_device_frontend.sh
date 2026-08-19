@@ -27,8 +27,7 @@ adb logcat -v brief -s NiakvioCorpus:I NiakvioEvidence:I PluginRuntime:I PluginM
     *FIELD_NATIVE_REPOSITORY_LOAD_BEGIN*) capture_once "repository-load" ;;
     *FIELD_NATIVE_REPOSITORY_LOAD_RESULT*) capture_once "repository-loaded" ;;
     *FIELD_NATIVE_REPOSITORY_LOAD_ERROR*) capture_once "repository-load-error" ;;
-    *FIELD_NATIVE_PROVIDER_LOAD_RESULT*) capture_once "provider-loaded" ;;
-    *FIELD_NATIVE_PROVIDER_LOAD_ERROR*) capture_once "provider-load-error" ;;
+    *FIELD_NATIVE_PROVIDER_LOAD_RESULT*|*FIELD_NATIVE_PROVIDER_LOAD_ERROR*|*FIELD_NATIVE_PROVIDER_LOAD_SKIPPED*) capture_once "provider-load-state" ;;
     *FIELD_NATIVE_CORPUS_BEGIN*) capture_once "corpus-begin" ;;
     *FIELD_NATIVE_PROVIDER_BEGIN*) capture_once "provider-loading" ;;
     *FIELD_NATIVE_HTTP_REQUEST*) capture_once "provider-http-request" ;;
