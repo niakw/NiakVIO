@@ -49,6 +49,7 @@ for (const file of logPaths) {
     const row = {
       client: f.client || 'unknown', fixture: f.fixture || 'unknown', provider: decode(f.provider64),
       requestType: String(f.request_type || 'unknown').toLowerCase(),
+      routeMode: String(f.route_mode || 'declared').toLowerCase(),
       index: Number(f.index || 0), state: f.state || 'unknown', engine: f.engine || 'unknown',
       httpStatus: Number(f.http_status || 0), failureStage: f.failure_stage || 'unknown',
       durationSeconds: Number(f.duration_seconds || 0) || null, host: decode(f.host64),
@@ -65,7 +66,16 @@ for (const file of logPaths) {
   }
 }
 
-const failures = readerRows.filter(isReaderFailure);
+const declaredRows = readerRows.filter((row) => row.routeMode !== 'capability_probe');
+const capabilityRows = readerRows.filter((row) => row.routeMode === 'capability_probe');
+const failures = declaredRows.filter(isReaderFailure);
+const declaredHealthy = declaredRows.filter((row) => !isReaderFailure(row));
+const capabilityFailures = capabilityRows.filter(isReaderFailure);
+const capabilityHealthy = capabilityRows.filter((row) => !isReaderFailure(row));
+
+// Repair planning is intentionally restricted to already-declared routes. An
+// undeclared media-type probe can discover coverage, but its failure must never
+// mutate a provider that is behaving according to its published contract.
 const plans = evidence.complete ? failures.map((row) => {
   const failureEvidence = {
     invoked: true,
@@ -92,7 +102,7 @@ const plans = evidence.complete ? failures.map((row) => {
   const plan = planRepair(failureEvidence, { signature: row.signature, maxHypotheses: 3 });
   return {
     provider: String(row.provider || '').toLowerCase(), client: row.client, fixture: row.fixture,
-    requestType: row.requestType, index: row.index,
+    requestType: row.requestType, routeMode: row.routeMode, index: row.index,
     state: row.state, failureClass: row.failureClass, failureStage: row.failureStage,
     httpStatus: row.httpStatus, errorCode: row.errorCode, errorClass: row.errorClass,
     host: row.host, durationSeconds: row.durationSeconds,
@@ -128,7 +138,7 @@ const priorities = [...grouped.values()]
 
 const observations = readerRows.map((row) => ({
   provider: String(row.provider || '').toLowerCase(), client: row.client, fixture: row.fixture,
-  requestType: row.requestType, index: row.index,
+  requestType: row.requestType, routeMode: row.routeMode, index: row.index,
   state: row.state, failureClass: row.failureClass, failureStage: row.failureStage,
   httpStatus: row.httpStatus, errorCode: row.errorCode, host: row.host,
   durationSeconds: row.durationSeconds, loadBytes: row.loadBytes, loadDurationMs: row.loadDurationMs,
@@ -137,14 +147,20 @@ const providerMap = new Map();
 for (const row of observations) {
   const current = providerMap.get(row.provider) || {
     provider: row.provider, observed: 0, healthy: 0, failures: 0,
+    capabilityProbes: 0, capabilityHealthy: 0, capabilityFailures: 0,
     failureClasses: {}, clients: new Set(), fixtures: new Set(), requestTypes: new Set(),
   };
   current.observed += 1;
   current.clients.add(row.client);
   current.fixtures.add(row.fixture);
   current.requestTypes.add(row.requestType);
-  if (row.failureClass === 'healthy') current.healthy += 1;
-  else {
+  if (row.routeMode === 'capability_probe') {
+    current.capabilityProbes += 1;
+    if (row.failureClass === 'healthy') current.capabilityHealthy += 1;
+    else current.capabilityFailures += 1;
+  } else if (row.failureClass === 'healthy') {
+    current.healthy += 1;
+  } else {
     current.failures += 1;
     current.failureClasses[row.failureClass] = Number(current.failureClasses[row.failureClass] || 0) + 1;
   }
@@ -155,11 +171,25 @@ const providerOutcomes = [...providerMap.values()].map((row) => ({
   observed: row.observed,
   healthy: row.healthy,
   failures: row.failures,
+  capabilityProbes: row.capabilityProbes,
+  capabilityHealthy: row.capabilityHealthy,
+  capabilityFailures: row.capabilityFailures,
   failureClasses: row.failureClasses,
   clients: [...row.clients].sort(),
   fixtures: [...row.fixtures].sort(),
   requestTypes: [...row.requestTypes].sort(),
 })).sort((a, b) => b.failures - a.failures || a.provider.localeCompare(b.provider));
+
+const capabilityProbes = capabilityRows.map((row) => ({
+  provider: String(row.provider || '').toLowerCase(), client: row.client, fixture: row.fixture,
+  requestType: row.requestType, index: row.index,
+  state: row.state, healthy: !isReaderFailure(row), failureClass: row.failureClass,
+  failureStage: row.failureStage, httpStatus: row.httpStatus,
+  durationSeconds: row.durationSeconds,
+  // Reader health alone is intentionally NOT enough to mutate supportedTypes.
+  // Identity/duration coverage is proven by the dedicated capability analyzer.
+  promotionEligibleFromReaderAlone: false,
+}));
 
 const payload = {
   schemaVersion: 4,
@@ -169,16 +199,23 @@ const payload = {
   evidenceProblems: evidence.problems,
   evidenceStats: evidence.stats,
   readerObserved: readerRows.length,
-  readerHealthy: readerRows.length - failures.length,
+  readerDeclaredObserved: declaredRows.length,
+  readerHealthy: declaredHealthy.length,
   readerFailures: failures.length,
+  capabilityProbeObserved: capabilityRows.length,
+  capabilityProbeHealthy: capabilityHealthy.length,
+  capabilityProbeFailures: capabilityFailures.length,
   readerLoadErrorEvidence: readerRows.filter((row) => row.loadDurationMs > 0 || row.loadBytes > 0 || row.httpStatus > 0).length,
   observations,
   providerOutcomes,
+  capabilityProbes,
   plans,
   priorities,
   policy: {
     learningAllowed: evidence.complete,
     repairPlanningAllowed: evidence.complete,
+    capabilityLearningAllowed: evidence.complete,
+    capabilityPromotionRequiresIdentityProof: true,
     productionWritesAllowed: false,
     publicationAllowed: false,
     requireFreshNativeReaderProofAfterRepair: true,
@@ -187,7 +224,12 @@ const payload = {
 };
 fs.mkdirSync(path.dirname(outputPath), { recursive: true });
 fs.writeFileSync(outputPath, JSON.stringify(payload, null, 2) + '\n');
-console.log(`FIELD_NATIVE_READER_BRAIN evidence_complete=${payload.evidenceComplete} observed=${payload.readerObserved} healthy=${payload.readerHealthy} failures=${payload.readerFailures} load_error_evidence=${payload.readerLoadErrorEvidence} priorities=${priorities.length} provider_outcomes=${providerOutcomes.length}`);
+console.log(
+  `FIELD_NATIVE_READER_BRAIN evidence_complete=${payload.evidenceComplete} observed=${payload.readerObserved} ` +
+  `declared=${payload.readerDeclaredObserved} healthy=${payload.readerHealthy} failures=${payload.readerFailures} ` +
+  `capability_probes=${payload.capabilityProbeObserved} capability_probe_healthy=${payload.capabilityProbeHealthy} ` +
+  `capability_probe_failures=${payload.capabilityProbeFailures} priorities=${priorities.length} provider_outcomes=${providerOutcomes.length}`
+);
 if (!evidence.complete) {
   for (const problem of evidence.problems.slice(0, 80)) console.log(`FIELD_NATIVE_READER_BRAIN_EVIDENCE_INCOMPLETE ${problem}`);
 }
