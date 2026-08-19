@@ -3,9 +3,16 @@
 
 const fs = require('node:fs');
 
-const logs = process.argv.slice(2);
-if (!logs.length) {
-  console.error('usage: node scripts/gate_native_reader_coverage.cjs <log> [log ...]');
+const argv = process.argv.slice(2);
+let streamScope = 'all';
+const scopeIndex = argv.indexOf('--streams');
+if (scopeIndex >= 0) {
+  streamScope = String(argv[scopeIndex + 1] || '').trim().toLowerCase();
+  argv.splice(scopeIndex, 2);
+}
+const logs = argv;
+if (!logs.length || !(streamScope === 'all' || /^[1-4]$/.test(streamScope))) {
+  console.error('usage: node scripts/gate_native_reader_coverage.cjs [--streams all|1|2|3|4] <log> [log ...]');
   process.exit(64);
 }
 
@@ -23,6 +30,9 @@ function fields(line) {
   return out;
 }
 function key(client, fixture, provider) { return `${client}\u0000${fixture}\u0000${provider.toLowerCase()}`; }
+function expectedStreams(returned) {
+  return streamScope === 'all' ? returned : Math.min(returned, Number(streamScope));
+}
 
 const expectedProviders = new Map();
 const results = new Map();
@@ -77,16 +87,18 @@ for (const [scope, expected] of expectedProviders) {
 }
 for (const [k, result] of results) {
   const observed = players.get(k)?.size || 0;
-  if (observed !== result.returned) {
+  const expected = expectedStreams(result.returned);
+  if (observed !== expected) {
     failures.push({
       client: result.client, fixture: result.fixture, provider: result.provider,
-      reason: 'stream_coverage', returned: result.returned, played: observed,
+      reason: 'stream_coverage', scope: streamScope, returned: result.returned, expectedPlayed: expected, played: observed,
     });
   }
 }
 
 const returned = [...results.values()].reduce((sum, row) => sum + row.returned, 0);
+const expectedPlayed = [...results.values()].reduce((sum, row) => sum + expectedStreams(row.returned), 0);
 const played = [...players.values()].reduce((sum, set) => sum + set.size, 0);
-console.log(`FIELD_NATIVE_READER_COVERAGE state=${failures.length ? 'failed' : 'passed'} providers=${results.size} returned=${returned} played=${played} failures=${failures.length}`);
+console.log(`FIELD_NATIVE_READER_COVERAGE state=${failures.length ? 'failed' : 'passed'} scope=${streamScope} providers=${results.size} returned=${returned} expected_played=${expectedPlayed} played=${played} failures=${failures.length}`);
 for (const failure of failures.slice(0, 120)) console.log(`FIELD_NATIVE_READER_COVERAGE_FAILURE ${JSON.stringify(failure)}`);
 process.exit(failures.length ? 1 : 0);
