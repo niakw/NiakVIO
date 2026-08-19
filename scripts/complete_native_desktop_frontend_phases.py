@@ -18,18 +18,36 @@ def main() -> int:
     args = parser.parse_args()
     path = Path(args.source).resolve()
     text = path.read_text(encoding="utf-8")
-    if 'captureDesktopPhase("repository-load"' in text:
+    if 'captureDesktopPhase("ui-launched", fixtureSlug)' in text:
         return 0
 
+    # The repository call itself owns the outcome. Capture "loaded" only when the
+    # official Nuvio repository layer emitted a successful terminal result, and
+    # capture "load-error" exactly on its terminal error. This avoids a false green
+    # screenshot when addRepository() failed but the lab intentionally continued to
+    # collect actionable Core/repository evidence.
     text = replace_once(
         text,
         '        val loadedProviders = loadProvidersThroughNuvio()\n',
         '        captureDesktopPhase("ui-launched", fixtureSlug)\n'
         '        captureDesktopPhase("repository-load", fixtureSlug)\n'
         '        val loadedProviders = loadProvidersThroughNuvio()\n'
-        '        captureDesktopPhase("repository-loaded", fixtureSlug)\n'
         '        captureDesktopPhase("provider-load-state", fixtureSlug)\n',
         "repository loading",
+    )
+    repository_result = '        emit("FIELD_NATIVE_REPOSITORY_LOAD_RESULT client=desktop fixture=$fixtureSlugForLoad expected=$expectedLoaded loaded=$selectedLoaded")'
+    text = replace_once(
+        text,
+        repository_result,
+        '        captureDesktopPhase("repository-loaded", fixtureSlugForLoad)\n' + repository_result,
+        "repository success",
+    )
+    repository_error = '                    emit("FIELD_NATIVE_REPOSITORY_LOAD_ERROR client=desktop fixture=$fixtureSlugForLoad reason=install_failed error64=${b64(installed.message)}")'
+    text = replace_once(
+        text,
+        repository_error,
+        '                    captureDesktopPhase("repository-load-error", fixtureSlugForLoad)\n' + repository_error,
+        "repository error",
     )
     text = replace_once(
         text,
