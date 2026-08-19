@@ -3,7 +3,7 @@ name: Native reader learning sync
 on:
   workflow_run:
     workflows:
-      - Native reader acceptance
+      - Native Android route reader acceptance
       - NiakVIO Brain learning lab
     types: [completed]
   workflow_dispatch:
@@ -50,14 +50,14 @@ jobs:
             printf '# NiakVIO Brain Learning\n' > reader-learning-input/latest.md
           fi
 
-      - name: Download latest completed main reader-repair comparison
+      - name: Download latest completed Android reader-repair comparison
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p reader-learning-input/acceptance
-          RUN_ID="$(gh run list --workflow native-reader-acceptance.yml --branch main --limit 30 --json databaseId,status --jq '[.[] | select(.status=="completed")][0].databaseId // empty' || true)"
+          RUN_ID="$(gh run list --workflow native-android-route-reader.yml --branch main --limit 30 --json databaseId,status --jq '[.[] | select(.status=="completed")][0].databaseId // empty' || true)"
           if [ -n "$RUN_ID" ]; then
             gh run download "$RUN_ID" --name "native-reader-brain-repair-$RUN_ID" --dir reader-learning-input/acceptance || true
           fi
