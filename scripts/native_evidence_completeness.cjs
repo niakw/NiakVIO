@@ -60,6 +60,14 @@ function ensureScope(scopes, client, fixture) {
       results: 0,
       httpRequests: 0,
       playerResults: 0,
+      repositoryLoadBegun: 0,
+      repositoryLoadTerminal: 0,
+      repositoryLoadFailed: false,
+      repositoryLoadExpected: 0,
+      providerLoadObserved: new Set(),
+      providerLoadResults: 0,
+      providerLoadErrors: 0,
+      providerLoadSkipped: 0,
     });
   }
   return scopes.get(key);
@@ -120,6 +128,32 @@ function assessNativeEvidence(logPaths) {
         if (f.phase) fileFrontend.add(f.phase);
       } else if (line.startsWith('FIELD_NATIVE_FRONTEND_ERROR ')) {
         frontendErrors += 1;
+      } else if (line.startsWith('FIELD_NATIVE_REPOSITORY_LOAD_BEGIN ')) {
+        const scope = ensureScope(scopes, client, fixture);
+        scope.repositoryLoadBegun += 1;
+        scope.repositoryLoadExpected = Math.max(scope.repositoryLoadExpected, Number(f.expected || 0));
+        fileScopeKeys.add(scopeKey(client, fixture));
+      } else if (line.startsWith('FIELD_NATIVE_REPOSITORY_LOAD_RESULT ')) {
+        const scope = ensureScope(scopes, client, fixture);
+        scope.repositoryLoadTerminal += 1;
+        fileScopeKeys.add(scopeKey(client, fixture));
+      } else if (line.startsWith('FIELD_NATIVE_REPOSITORY_LOAD_ERROR ')) {
+        const scope = ensureScope(scopes, client, fixture);
+        scope.repositoryLoadTerminal += 1;
+        scope.repositoryLoadFailed = true;
+        fileScopeKeys.add(scopeKey(client, fixture));
+      } else if (
+        line.startsWith('FIELD_NATIVE_PROVIDER_LOAD_RESULT ') ||
+        line.startsWith('FIELD_NATIVE_PROVIDER_LOAD_ERROR ') ||
+        line.startsWith('FIELD_NATIVE_PROVIDER_LOAD_SKIPPED ')
+      ) {
+        const scope = ensureScope(scopes, client, fixture);
+        const provider = providerName(f);
+        if (provider) scope.providerLoadObserved.add(provider);
+        if (line.startsWith('FIELD_NATIVE_PROVIDER_LOAD_RESULT ')) scope.providerLoadResults += 1;
+        else if (line.startsWith('FIELD_NATIVE_PROVIDER_LOAD_ERROR ')) scope.providerLoadErrors += 1;
+        else scope.providerLoadSkipped += 1;
+        fileScopeKeys.add(scopeKey(client, fixture));
       } else if (line.startsWith('FIELD_NATIVE_PROVIDER_SKIPPED ')) {
         const provider = providerName(f);
         const scope = ensureScope(scopes, client, fixture);
@@ -193,7 +227,25 @@ function assessNativeEvidence(logPaths) {
     if (scope.expectedProviders > 0 && scope.traversed.size !== scope.expectedProviders) {
       problems.push(`provider_traversal:${label}:${scope.traversed.size}/${scope.expectedProviders}`);
     }
+
+    if (scope.repositoryLoadBegun === 0) problems.push(`missing_repository_load:${label}`);
+    if (scope.repositoryLoadBegun !== scope.repositoryLoadTerminal) {
+      problems.push(`repository_load_terminal:${label}:${scope.repositoryLoadTerminal}/${scope.repositoryLoadBegun}`);
+    }
+    if (scope.repositoryLoadFailed) problems.push(`repository_load_failed:${label}`);
+    const expectedLoad = scope.repositoryLoadExpected || scope.expectedProviders;
+    if (expectedLoad > 0 && scope.providerLoadObserved.size !== expectedLoad) {
+      problems.push(`provider_load_coverage:${label}:${scope.providerLoadObserved.size}/${expectedLoad}`);
+    }
+
     const requiredFrontend = new Set(['ui-launched', 'corpus-begin', 'provider-loading', 'corpus-end']);
+    if (scope.repositoryLoadBegun > 0) {
+      requiredFrontend.add('repository-load');
+      if (!scope.repositoryLoadFailed) requiredFrontend.add('repository-loaded');
+      else requiredFrontend.add('repository-load-error');
+    }
+    if (scope.providerLoadResults > 0) requiredFrontend.add('provider-loaded');
+    if (scope.providerLoadErrors > 0) requiredFrontend.add('provider-load-error');
     if (scope.results > 0) requiredFrontend.add('provider-result');
     if (scope.httpRequests > 0) {
       requiredFrontend.add('provider-http-request');
@@ -240,6 +292,8 @@ function assessNativeEvidence(logPaths) {
       readableLogs,
       scopes: scopes.size,
       providerRoutes: routesBegun.size,
+      providerLoads: [...scopes.values()].reduce((sum, scope) => sum + scope.providerLoadObserved.size, 0),
+      providerLoadErrors: [...scopes.values()].reduce((sum, scope) => sum + scope.providerLoadErrors, 0),
       playerProbes: playersTerminal.size,
       httpRequests: [...httpRequests.values()].reduce((a, b) => a + b, 0),
       frontendErrors,
