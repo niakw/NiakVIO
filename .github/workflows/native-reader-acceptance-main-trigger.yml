@@ -1,0 +1,40 @@
+name: Native reader acceptance main trigger
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "manifest.json"
+      - "providers/**"
+      - "provider-overrides.json"
+      - ".github/triggers/nuvio-client-lab.json"
+      - ".github/workflows/native-reader-acceptance.yml"
+      - "scripts/prepare_native_reader_acceptance.py"
+      - "scripts/native_player_diagnostics_codegen.py"
+      - "scripts/native_player_diagnostics.cjs"
+      - "scripts/build_native_reader_brain_repair.py"
+      - "scripts/compare_native_reader_brain_repair.py"
+      - "scripts/provider_patches/**"
+  workflow_dispatch:
+
+permissions:
+  actions: write
+  contents: read
+
+concurrency:
+  group: native-reader-acceptance-main-trigger
+  cancel-in-progress: true
+
+jobs:
+  dispatch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Dispatch acceptance on trusted main
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh workflow run native-reader-acceptance.yml --repo "$GITHUB_REPOSITORY" --ref main
+          echo "FIELD_NATIVE_READER_MAIN_DISPATCH ref=main"
