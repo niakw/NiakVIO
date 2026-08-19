@@ -142,7 +142,7 @@ for required in (
     "native-reader-brain-repair-$RUN_ID",
     "has_comparison=true",
     "has_comparison=false",
-    "run remains importable after a rerun",
+    "remains importable after a rerun",
     "duplicate",
 ):
     assert required in reader_learning, required
