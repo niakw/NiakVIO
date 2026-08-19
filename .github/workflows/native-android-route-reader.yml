@@ -10,7 +10,11 @@ on:
       - "sources.json"
       - "scripts/prepare_native_reader_acceptance.py"
       - "scripts/augment_native_corpus_request_contract.py"
+      - "scripts/augment_native_provider_loading.py"
+      - "scripts/resolve_native_repository.sh"
+      - "scripts/prepare_native_candidate_repository.py"
       - "scripts/instrument_native_client_evidence.py"
+      - "scripts/instrument_native_repository_http_evidence.py"
       - "scripts/capture_native_device_frontend.sh"
       - "scripts/watch_native_device_frontend.sh"
       - "scripts/native_player_diagnostics_codegen.py"
@@ -39,7 +43,10 @@ jobs:
       tv_sha: ${{ steps.refs.outputs.tv_sha }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
-        with: {fetch-depth: 1, persist-credentials: false}
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - id: refs
         shell: bash
         run: |
@@ -68,7 +75,10 @@ jobs:
     steps:
       - name: Checkout NiakVIO candidate
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
-        with: {path: niakvio, persist-credentials: false}
+        with:
+          path: niakvio
+          persist-credentials: false
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165
         with: {distribution: temurin, java-version: "17"}
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
@@ -161,7 +171,10 @@ jobs:
     steps:
       - name: Checkout NiakVIO candidate
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
-        with: {path: niakvio, persist-credentials: false}
+        with:
+          path: niakvio
+          persist-credentials: false
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165
         with: {distribution: temurin, java-version: "17"}
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
