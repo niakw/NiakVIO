@@ -214,22 +214,28 @@ for suite, client in ((tv_suite, "tv"), (mobile_suite, "mobile")):
     assert "PluginRuntime:I" not in suite, (client, "raw PluginRuntime log persisted")
 
 # Route workflows are exhaustive by logical media route, with all manifest rows
-# (including disabled entries) and every returned stream.
+# (including disabled entries) and every returned stream. The three routes must run
+# inside one warm TV job and one warm Mobile job, never one runner per fixture.
 for fixture in ("sinners-2025", "breaking-bad-s01e01", "jujutsu-kaisen-s01e01"):
     assert fixture in android_workflow, fixture
 for required in (
     "NIAKVIO_TARGET_PROVIDER: all",
     "NIAKVIO_PRIMARY_STREAM_SCOPE: all",
     "--provider all --streams all",
-    "native-evidence/tv/${{ matrix.fixture }}/**",
-    "native-evidence/mobile/${{ matrix.fixture }}/**",
+    "native-evidence/tv/**",
+    "native-evidence/mobile/**",
+    "Execute all representative routes in one TV profile",
+    "Execute all representative routes in one Mobile profile",
+    "Warm TV Gradle build before QEMU",
+    "Warm Mobile Gradle build before QEMU",
     "diagnose-native-reader.mjs",
 ):
     assert required in android_workflow, required
+assert "matrix.fixture" not in android_workflow, "Android route fixtures must share one launched emulator profile per client"
 
 # Desktop Linux is explicitly not native-reader proof. macOS/Windows build the
-# official bridge, use native reader + repository HTTP evidence, and capture success
-# versus load-error phases from the actual repository terminal marker.
+# official bridge once per OS, then reuse that process/Gradle profile for all three
+# representative routes.
 for required in (
     "official_nuvio_desktop_player_is_stub",
     "instrument_native_desktop_evidence.py",
@@ -263,7 +269,13 @@ for required in (
     "NIAKVIO_TARGET_PROVIDER: all",
     "NIAKVIO_PRIMARY_STREAM_SCOPE: all",
     "native-evidence/desktop/**",
+    "Build official macOS native player bridge once",
+    "Build official Windows native player bridge once",
+    "Execute all representative routes in one Desktop profile",
 ):
     assert required in desktop_workflow, required
+assert "matrix.fixture" not in desktop_workflow, "Desktop route fixtures must share one runner per OS"
+assert desktop_workflow.count("- runner: macos-15") == 1, "macOS must be launched once"
+assert desktop_workflow.count("- runner: windows-2022") == 1, "Windows must be launched once"
 
 print("full native evidence contract tests passed")
