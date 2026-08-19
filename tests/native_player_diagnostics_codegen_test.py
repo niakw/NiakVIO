@@ -25,11 +25,18 @@ assert 'durationSeconds / expected < 0.55' in tv
 assert 'responseHeaderNames' in tv
 assert '<url>' in tv and '<redacted>' in tv
 assert 'row.url' not in [line for line in tv.splitlines() if 'FIELD_NATIVE_PLAYER client=tv' in line][0]
+# The official reader must be the first network consumer. A diagnostic GET before
+# Media3 can consume one-shot/signed links and create a false 403.
+reader_call = tv.index('val reader = probeNativePlayer(row.url, row.headers, 137)')
+transport_call = tv.index('val transport = probeTransport(row.url, row.headers)')
+assert reader_call < transport_call, (reader_call, transport_call)
+assert 'official player must be the first' in tv
 
 mobile = mod.augment_android_test(source('mobile'), client='mobile', expected_duration_minutes=137, max_player_probes=2)
 assert 'PlatformPlaybackDataSourceFactory.create(' in mobile
 assert 'FIELD_NATIVE_PLAYER client=mobile' in mobile
 assert 'rows.take(2)' in mobile
+assert mobile.index('val reader = probeNativePlayer(row.url, row.headers, 137)') < mobile.index('val transport = probeTransport(row.url, row.headers)')
 
 rows = [{'id': 'A'}, {'id': 'MOVIESDRIVE'}, {'id': 'B'}]
 assert [row['id'] for row in mod.filter_staged_providers(rows, 'moviesdrive')] == ['MOVIESDRIVE']
