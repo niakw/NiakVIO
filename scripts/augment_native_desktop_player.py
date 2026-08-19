@@ -159,17 +159,17 @@ def augment(path: Path, expected_minutes: int, stream_scope: str) -> None:
     transport_pattern = re.compile(
         r'''                rows\.firstOrNull\(\)\?\.let \{ row ->\n'''
         r'''                    val probe = probeTransport\(row\.url, row\.headers\)\n'''
-        r'''                    emit\("FIELD_NATIVE_TRANSPORT client=desktop fixture=\$fixtureSlug provider64=\$\{b64\(provider\.id\)\} request_type=\$requestMediaType state=\$\{probe\.state\} kind=\$\{probe\.kind\} status=\$\{probe\.status\} content_type64=\$\{b64\(probe\.contentType\)\} extm3u=\$\{probe\.extm3u\} duration_seconds=\$\{probe\.durationSeconds \?: 0\.0\} host64=\$\{b64\(probe\.host\)\} media_hint64=\$\{b64\(probe\.mediaHint\)\}"\)\n'''
+        r'''                    emit\("FIELD_NATIVE_TRANSPORT client=desktop fixture=\$fixtureSlug provider64=\$\{b64\(provider\.id\)\} request_type=\$requestMediaType route_mode=\$routeMode state=\$\{probe\.state\} kind=\$\{probe\.kind\} status=\$\{probe\.status\} content_type64=\$\{b64\(probe\.contentType\)\} extm3u=\$\{probe\.extm3u\} duration_seconds=\$\{probe\.durationSeconds \?: 0\.0\} host64=\$\{b64\(probe\.host\)\} media_hint64=\$\{b64\(probe\.mediaHint\)\}"\)\n'''
         r'''                \}\n'''
     )
     replacement = f'''                {reader_iter} {{ index, row ->
-                    emit("FIELD_NATIVE_PLAYER_BEGIN client=desktop fixture=$fixtureSlug provider64=${{b64(provider.id)}} request_type=$requestMediaType index=$index")
+                    emit("FIELD_NATIVE_PLAYER_BEGIN client=desktop fixture=$fixtureSlug provider64=${{b64(provider.id)}} request_type=$requestMediaType route_mode=$routeMode index=$index")
                     captureDesktopPhase("player-start", fixtureSlug)
                     val reader = probeDesktopNativePlayer(row.url, row.headers, {expected_minutes})
-                    emit("FIELD_NATIVE_PLAYER client=desktop fixture=$fixtureSlug provider64=${{b64(provider.id)}} request_type=$requestMediaType index=$index state=${{reader.state}} engine=native-desktop http_status=${{reader.httpStatus}} failure_stage=${{reader.failureStage}} duration_seconds=${{reader.durationSeconds ?: 0.0}} host64=${{b64(hostOnly(row.url))}} error_class64=${{b64(reader.errorClass)}} error_code64=${{b64(reader.errorCode)}} exception_chain64=${{b64("")}} response_header_names64=${{b64("")}} load_bytes=0 load_duration_ms=0 media_data_type=-1 track_type=-1")
+                    emit("FIELD_NATIVE_PLAYER client=desktop fixture=$fixtureSlug provider64=${{b64(provider.id)}} request_type=$requestMediaType route_mode=$routeMode index=$index state=${{reader.state}} engine=native-desktop http_status=${{reader.httpStatus}} failure_stage=${{reader.failureStage}} duration_seconds=${{reader.durationSeconds ?: 0.0}} host64=${{b64(hostOnly(row.url))}} error_class64=${{b64(reader.errorClass)}} error_code64=${{b64(reader.errorCode)}} exception_chain64=${{b64("")}} response_header_names64=${{b64("")}} load_bytes=0 load_duration_ms=0 media_data_type=-1 track_type=-1")
                     captureDesktopPhase("player-result", fixtureSlug)
                     val transport = probeTransport(row.url, row.headers)
-                    emit("FIELD_NATIVE_TRANSPORT client=desktop fixture=$fixtureSlug provider64=${{b64(provider.id)}} request_type=$requestMediaType index=$index state=${{transport.state}} kind=${{transport.kind}} status=${{transport.status}} content_type64=${{b64(transport.contentType)}} extm3u=${{transport.extm3u}} duration_seconds=${{transport.durationSeconds ?: 0.0}} host64=${{b64(transport.host)}} media_hint64=${{b64(transport.mediaHint)}}")
+                    emit("FIELD_NATIVE_TRANSPORT client=desktop fixture=$fixtureSlug provider64=${{b64(provider.id)}} request_type=$requestMediaType route_mode=$routeMode index=$index state=${{transport.state}} kind=${{transport.kind}} status=${{transport.status}} content_type64=${{b64(transport.contentType)}} extm3u=${{transport.extm3u}} duration_seconds=${{transport.durationSeconds ?: 0.0}} host64=${{b64(transport.host)}} media_hint64=${{b64(transport.mediaHint)}}")
                 }}
 '''
     text, changed = transport_pattern.subn(replacement, text, count=1)
@@ -178,9 +178,9 @@ def augment(path: Path, expected_minutes: int, stream_scope: str) -> None:
 
     begin = '        emit("FIELD_NATIVE_CORPUS_BEGIN client=desktop fixture=$fixtureSlug title64=${b64(title)} providers=${providers.size}")'
     text = replace_once(text, begin, begin + '\n        captureDesktopPhase("corpus-begin", fixtureSlug)', "corpus begin")
-    provider_begin = '                emit("FIELD_NATIVE_PROVIDER_BEGIN client=desktop fixture=$fixtureSlug provider64=${b64(provider.id)} enabled=${provider.enabled} request_type=$requestMediaType declared_types64=${b64(declaredTypesByProvider[provider.id.lowercase()].orEmpty().sorted().joinToString(","))}")'
+    provider_begin = '                emit("FIELD_NATIVE_PROVIDER_BEGIN client=desktop fixture=$fixtureSlug provider64=${b64(provider.id)} enabled=${provider.enabled} request_type=$requestMediaType route_mode=$routeMode declared_types64=${b64(declaredTypesByProvider[provider.id.lowercase()].orEmpty().sorted().joinToString(","))}")'
     text = replace_once(text, provider_begin, provider_begin + '\n                captureDesktopPhase("provider-loading", fixtureSlug)', "provider begin")
-    result_marker = 'emit("FIELD_NATIVE_RESULT client=desktop fixture=$fixtureSlug provider64=${b64(provider.id)} request_type=$requestMediaType'
+    result_marker = 'emit("FIELD_NATIVE_RESULT client=desktop fixture=$fixtureSlug provider64=${b64(provider.id)} request_type=$requestMediaType route_mode=$routeMode'
     text = text.replace(result_marker, 'captureDesktopPhase("provider-result", fixtureSlug)\n                ' + result_marker)
     end = '        emit("FIELD_NATIVE_CORPUS_END client=desktop fixture=$fixtureSlug errors=${errors.size}")'
     text = replace_once(text, end, '        captureDesktopPhase("corpus-end", fixtureSlug)\n' + end, "corpus end")
