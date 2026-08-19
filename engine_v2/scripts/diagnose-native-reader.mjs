@@ -37,12 +37,73 @@ function safeText(value, max = 420) {
     .trim()
     .slice(0, max);
 }
+function providerLoadFailureClass(reason) {
+  const value = String(reason || '').trim().toLowerCase();
+  if (value === 'missing_after_repository_install') return 'provider_repository_load_missing';
+  if (value === 'metadata_mismatch' || value === 'metadata_or_code_mismatch') return 'provider_repository_metadata_mismatch';
+  return 'provider_repository_load_error';
+}
+function providerLoadRepair(issue) {
+  if (issue.failureClass === 'provider_repository_load_missing') {
+    return {
+      layer: 'repository',
+      providerJsMutationAllowed: false,
+      coreOrManifestProposalAllowed: true,
+      actions: [
+        'verify the provider filename is reachable from the exact pinned manifest SHA',
+        'compare the official client platform filter and provider id reconstruction',
+        'verify Nuvio downloaded and cached the provider code',
+        'repair repository/Core loading before touching provider JS',
+        're-run the same official repository installation on the affected device',
+      ],
+    };
+  }
+  if (issue.failureClass === 'provider_repository_metadata_mismatch') {
+    return {
+      layer: 'manifest_contract',
+      providerJsMutationAllowed: false,
+      coreOrManifestProposalAllowed: true,
+      actions: [
+        'diff canonical manifest enabled/types against the model reconstructed by Nuvio',
+        'inspect manifest parser normalization and cached provider reconstruction',
+        'repair manifest/Core adapter semantics instead of provider stream logic',
+        're-run cross-device repository loading before publication',
+      ],
+    };
+  }
+  return {
+    layer: 'repository',
+    providerJsMutationAllowed: false,
+    coreOrManifestProposalAllowed: true,
+    actions: [
+      'inspect the first observed repository/provider loading failure',
+      'verify manifest download, provider download and cache reconstruction independently',
+      'repair the loading layer before provider JS mutation',
+      're-run official repository loading on the same device',
+    ],
+  };
+}
 
 const evidence = assessNativeEvidence(logPaths);
 const readerRows = [];
+const providerLoadObservations = [];
 for (const file of logPaths) {
   if (!fs.existsSync(file)) continue;
   for (const raw of fs.readFileSync(file, 'utf8').split(/\r?\n/)) {
+    const loadAt = raw.indexOf('FIELD_NATIVE_PROVIDER_LOAD_ERROR ');
+    if (loadAt >= 0) {
+      const f = fields(raw.slice(loadAt).trim());
+      const reason = safeText(f.reason || decode(f.error64) || 'unknown', 240);
+      const failureClass = providerLoadFailureClass(reason);
+      providerLoadObservations.push({
+        client: f.client || 'unknown',
+        fixture: f.fixture || 'unknown',
+        provider: decode(f.provider64).toLowerCase(),
+        reason,
+        failureClass,
+      });
+    }
+
     const marker = raw.indexOf('FIELD_NATIVE_PLAYER ');
     if (marker < 0) continue;
     const f = fields(raw.slice(marker).trim());
@@ -117,6 +178,15 @@ const plans = evidence.complete ? failures.map((row) => {
   };
 }) : [];
 
+// Loading failures are a different mutation domain from stream/player failures.
+// Keep them completely out of `plans`, because build_native_reader_brain_repair.py
+// consumes that list to patch provider JS. A load failure must target repository,
+// manifest or Core semantics first.
+const providerLoadIssues = evidence.complete ? providerLoadObservations.map((row) => ({
+  ...row,
+  ...providerLoadRepair(row),
+})) : [];
+
 const grouped = new Map();
 for (const plan of plans) {
   const key = `${plan.provider}\u0000${plan.requestType}\u0000${plan.failureClass}`;
@@ -136,6 +206,26 @@ const priorities = [...grouped.values()]
   }))
   .sort((a, b) => b.occurrences - a.occurrences || a.provider.localeCompare(b.provider));
 
+const loadGrouped = new Map();
+for (const issue of providerLoadIssues) {
+  const key = `${issue.provider}\u0000${issue.failureClass}`;
+  if (!loadGrouped.has(key)) loadGrouped.set(key, []);
+  loadGrouped.get(key).push(issue);
+}
+const providerLoadPriorities = [...loadGrouped.values()]
+  .map((rows) => ({
+    provider: rows[0].provider,
+    failureClass: rows[0].failureClass,
+    layer: rows[0].layer,
+    occurrences: rows.length,
+    clients: [...new Set(rows.map((row) => row.client))].sort(),
+    fixtures: [...new Set(rows.map((row) => row.fixture))].sort(),
+    providerJsMutationAllowed: false,
+    coreOrManifestProposalAllowed: evidence.complete,
+    actions: rows[0].actions,
+  }))
+  .sort((a, b) => b.occurrences - a.occurrences || a.provider.localeCompare(b.provider));
+
 const observations = readerRows.map((row) => ({
   provider: String(row.provider || '').toLowerCase(), client: row.client, fixture: row.fixture,
   requestType: row.requestType, routeMode: row.routeMode, index: row.index,
@@ -144,12 +234,20 @@ const observations = readerRows.map((row) => ({
   durationSeconds: row.durationSeconds, loadBytes: row.loadBytes, loadDurationMs: row.loadDurationMs,
 }));
 const providerMap = new Map();
+function ensureProviderOutcome(provider) {
+  const key = String(provider || '').toLowerCase();
+  if (!providerMap.has(key)) {
+    providerMap.set(key, {
+      provider: key, observed: 0, healthy: 0, failures: 0,
+      capabilityProbes: 0, capabilityHealthy: 0, capabilityFailures: 0,
+      loadFailures: 0, loadFailureClasses: {},
+      failureClasses: {}, clients: new Set(), fixtures: new Set(), requestTypes: new Set(),
+    });
+  }
+  return providerMap.get(key);
+}
 for (const row of observations) {
-  const current = providerMap.get(row.provider) || {
-    provider: row.provider, observed: 0, healthy: 0, failures: 0,
-    capabilityProbes: 0, capabilityHealthy: 0, capabilityFailures: 0,
-    failureClasses: {}, clients: new Set(), fixtures: new Set(), requestTypes: new Set(),
-  };
+  const current = ensureProviderOutcome(row.provider);
   current.observed += 1;
   current.clients.add(row.client);
   current.fixtures.add(row.fixture);
@@ -164,7 +262,13 @@ for (const row of observations) {
     current.failures += 1;
     current.failureClasses[row.failureClass] = Number(current.failureClasses[row.failureClass] || 0) + 1;
   }
-  providerMap.set(row.provider, current);
+}
+for (const issue of providerLoadIssues) {
+  const current = ensureProviderOutcome(issue.provider);
+  current.loadFailures += 1;
+  current.loadFailureClasses[issue.failureClass] = Number(current.loadFailureClasses[issue.failureClass] || 0) + 1;
+  current.clients.add(issue.client);
+  current.fixtures.add(issue.fixture);
 }
 const providerOutcomes = [...providerMap.values()].map((row) => ({
   provider: row.provider,
@@ -174,11 +278,13 @@ const providerOutcomes = [...providerMap.values()].map((row) => ({
   capabilityProbes: row.capabilityProbes,
   capabilityHealthy: row.capabilityHealthy,
   capabilityFailures: row.capabilityFailures,
+  loadFailures: row.loadFailures,
+  loadFailureClasses: row.loadFailureClasses,
   failureClasses: row.failureClasses,
   clients: [...row.clients].sort(),
   fixtures: [...row.fixtures].sort(),
   requestTypes: [...row.requestTypes].sort(),
-})).sort((a, b) => b.failures - a.failures || a.provider.localeCompare(b.provider));
+})).sort((a, b) => b.loadFailures - a.loadFailures || b.failures - a.failures || a.provider.localeCompare(b.provider));
 
 const capabilityProbes = capabilityRows.map((row) => ({
   provider: String(row.provider || '').toLowerCase(), client: row.client, fixture: row.fixture,
@@ -192,7 +298,7 @@ const capabilityProbes = capabilityRows.map((row) => ({
 }));
 
 const payload = {
-  schemaVersion: 4,
+  schemaVersion: 5,
   generatedAt: new Date().toISOString(),
   brainVersion: BRAIN_CONTROL_PLANE_VERSION,
   evidenceComplete: evidence.complete,
@@ -205,15 +311,23 @@ const payload = {
   capabilityProbeObserved: capabilityRows.length,
   capabilityProbeHealthy: capabilityHealthy.length,
   capabilityProbeFailures: capabilityFailures.length,
+  providerLoadObservedFailures: providerLoadObservations.length,
+  providerLoadActionableFailures: providerLoadIssues.length,
   readerLoadErrorEvidence: readerRows.filter((row) => row.loadDurationMs > 0 || row.loadBytes > 0 || row.httpStatus > 0).length,
   observations,
+  providerLoadObservations,
+  providerLoadIssues,
   providerOutcomes,
   capabilityProbes,
   plans,
   priorities,
+  providerLoadPriorities,
   policy: {
     learningAllowed: evidence.complete,
     repairPlanningAllowed: evidence.complete,
+    repositoryLearningAllowed: evidence.complete,
+    providerLoadJsMutationAllowed: false,
+    coreOrManifestLoadProposalAllowed: evidence.complete,
     capabilityLearningAllowed: evidence.complete,
     capabilityPromotionRequiresIdentityProof: true,
     productionWritesAllowed: false,
@@ -227,11 +341,13 @@ fs.writeFileSync(outputPath, JSON.stringify(payload, null, 2) + '\n');
 console.log(
   `FIELD_NATIVE_READER_BRAIN evidence_complete=${payload.evidenceComplete} observed=${payload.readerObserved} ` +
   `declared=${payload.readerDeclaredObserved} healthy=${payload.readerHealthy} failures=${payload.readerFailures} ` +
-  `capability_probes=${payload.capabilityProbeObserved} capability_probe_healthy=${payload.capabilityProbeHealthy} ` +
-  `capability_probe_failures=${payload.capabilityProbeFailures} priorities=${priorities.length} provider_outcomes=${providerOutcomes.length}`
+  `provider_load_failures=${payload.providerLoadActionableFailures} capability_probes=${payload.capabilityProbeObserved} ` +
+  `capability_probe_healthy=${payload.capabilityProbeHealthy} capability_probe_failures=${payload.capabilityProbeFailures} ` +
+  `priorities=${priorities.length} provider_load_priorities=${providerLoadPriorities.length} provider_outcomes=${providerOutcomes.length}`
 );
 if (!evidence.complete) {
   for (const problem of evidence.problems.slice(0, 80)) console.log(`FIELD_NATIVE_READER_BRAIN_EVIDENCE_INCOMPLETE ${problem}`);
 }
+for (const priority of providerLoadPriorities.slice(0, 40)) console.log(`FIELD_NATIVE_READER_BRAIN_LOAD_PRIORITY ${JSON.stringify(priority)}`);
 for (const priority of priorities.slice(0, 40)) console.log(`FIELD_NATIVE_READER_BRAIN_PRIORITY ${JSON.stringify(priority)}`);
-if (readerRows.length === 0 || !evidence.complete) process.exitCode = 2;
+if (!evidence.complete) process.exitCode = 2;
