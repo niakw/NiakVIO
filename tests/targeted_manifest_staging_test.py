@@ -5,56 +5,40 @@ import importlib.util
 import json
 import tempfile
 from pathlib import Path
-from urllib.parse import urlparse
 
 ROOT = Path(__file__).resolve().parents[1]
 module_path = ROOT / 'scripts/prepare_native_corpus_client.py'
 spec = importlib.util.spec_from_file_location('prepare_native_corpus_client', module_path)
 mod = importlib.util.module_from_spec(spec)
+assert spec.loader is not None
 spec.loader.exec_module(mod)
 
-canonical = {row['id'].casefold(): row for row in mod.manifest_providers('manifest.json')}
-hotfix = {row['id'].casefold(): row for row in mod.manifest_providers('playback-hotfix/manifest.json')}
-canonical_manifest = {
-    str(row.get('id') or '').casefold(): row
-    for row in json.loads((ROOT / 'manifest.json').read_text(encoding='utf-8')).get('scrapers', [])
-    if isinstance(row, dict) and row.get('id')
-}
-hotfix_manifest = {
-    str(row.get('id') or '').casefold(): row
-    for row in json.loads((ROOT / 'playback-hotfix/manifest.json').read_text(encoding='utf-8')).get('scrapers', [])
-    if isinstance(row, dict) and row.get('id')
-}
+canonical = mod.manifest_providers('manifest.json')
+canonical_manifest = json.loads((ROOT / 'manifest.json').read_text(encoding='utf-8'))
+assert len(canonical) >= 90, len(canonical)
+assert len({str(row['id']).casefold() for row in canonical}) == len(canonical)
+for row in canonical:
+    assert row['source'].is_file(), row['id']
+    assert row['manifest'] == 'manifest.json', row['id']
 
+# Any alternate manifest used by a repair/lab must be an in-repository projection
+# that points to locally present provider bundles. This keeps the staging contract
+# generic without retaining a historical playback-hotfix repository.
+with tempfile.TemporaryDirectory(dir=ROOT, prefix='.native-manifest-test-') as tmp:
+    temp_root = Path(tmp)
+    selected = canonical_manifest.get('scrapers', [])[:2]
+    assert len(selected) == 2
+    alternate = temp_root / 'manifest.json'
+    alternate.write_text(json.dumps({'name': 'Native staging fixture', 'scrapers': selected}), encoding='utf-8')
+    alternate_rel = alternate.relative_to(ROOT)
 
-def expected_local_source(filename: str) -> Path:
-    raw = str(filename or '')
-    if raw.startswith(('http://', 'https://')):
-        parsed = urlparse(raw)
-        parts = [part for part in parsed.path.split('/') if part]
-        assert parsed.hostname == 'raw.githubusercontent.com', raw
-        providers_index = parts.index('providers')
-        return (ROOT / Path(*parts[providers_index:])).resolve()
-    return (ROOT / raw).resolve()
+    rows = mod.manifest_providers(alternate_rel)
+    assert [str(row['id']).casefold() for row in rows] == [str(row['id']).casefold() for row in selected]
+    assert all(row['source'].is_file() for row in rows)
 
-
-assert set(hotfix) == {'4khdhub', 'moviesdrive', 'moviesmod', 'movieshunt'}, hotfix.keys()
-assert 'moviesdrive' in canonical
-assert canonical['moviesdrive']['source'] == expected_local_source(canonical_manifest['moviesdrive']['filename'])
-for provider_id, row in hotfix.items():
-    assert row['source'] == expected_local_source(hotfix_manifest[provider_id]['filename']), provider_id
-    assert row['source'].is_file(), provider_id
-    assert row['manifest'] == 'playback-hotfix/manifest.json', provider_id
-
-# The historical emergency manifest is intentionally a distinct selectable tree;
-# the canonical manifest may be regenerated at any time and must not be pinned to
-# one content-addressed filename in this staging contract test.
-assert canonical['moviesdrive']['source'] != hotfix['moviesdrive']['source']
-
-with tempfile.TemporaryDirectory() as tmp:
-    destination = Path(tmp) / 'assets'
-    staged = mod.stage_manifest_providers(destination, 'playback-hotfix/manifest.json')
-    assert [row['id'] for row in staged] == ['4khdhub', 'MOVIESDRIVE', 'MOVIESMOD', 'movieshunt']
+    destination = temp_root / 'assets'
+    staged = mod.stage_manifest_providers(destination, alternate_rel)
+    assert [row['id'] for row in staged] == [row['id'] for row in rows]
     for row in staged:
         copied = destination / row['asset']
         assert copied.read_bytes() == row['source'].read_bytes(), row['id']
@@ -66,4 +50,4 @@ except SystemExit as error:
 else:
     raise AssertionError('manifest traversal must fail closed')
 
-print('targeted deployed-manifest staging tests passed')
+print('generic in-repository manifest staging tests passed')
