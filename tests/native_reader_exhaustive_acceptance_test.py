@@ -3,7 +3,6 @@ from __future__ import annotations
 
 import importlib.util
 import subprocess
-import sys
 import tempfile
 from pathlib import Path
 
@@ -19,11 +18,15 @@ def source(client: str) -> str:
     return f'''package example\n\nimport android.util.Log\nimport androidx.test.platform.app.InstrumentationRegistry\nimport org.junit.Test\n\nclass Sample {{\n    private fun b64(v: Any?) = ""\n    private fun hostOnly(v: String) = ""\n    private fun probeTransport(url: String, headers: Map<String,String>?) = TODO()\n\n    @Test\n    fun run() {{\n        val fixtureSlug = "sinners-2025"\n        val provider = object {{ val id = "MOVIESDRIVE" }}\n        val rows = emptyList<dynamic>()\n                rows.take(3).forEachIndexed {{ index, row ->\n                    emit("FIELD_NATIVE_ROW client={client} fixture=$fixtureSlug provider64=${{b64(provider.id)}} index=$index")\n                }}\n                rows.firstOrNull()?.let {{ row ->\n                    val probe = probeTransport(row.url, row.headers)\n                    emit("FIELD_NATIVE_TRANSPORT client={client} fixture=$fixtureSlug provider64=${{b64(provider.id)}} state=${{probe.state}} kind=${{probe.kind}} status=${{probe.status}} content_type64=${{b64(probe.contentType)}} extm3u=${{probe.extm3u}} duration_seconds=${{probe.durationSeconds ?: 0.0}} host64=${{b64(probe.host)}} media_hint64=${{b64(probe.mediaHint)}}")\n                }}\n    }}\n    private fun emit(v: String) {{}}\n}}\n'''
 
 
-out = mod.exhaustive_reader_source(source("tv"), "tv", 137)
+out = mod.reader_source(source("tv"), "tv", 137, "all")
 assert "rows.take(" not in out
 assert out.count("rows.forEachIndexed") >= 2
 assert "PlayerPlaybackNetworking.createDataSourceFactory(context, headers)" in out
 assert out.index("val reader = probeNativePlayer") < out.index("val transport = probeTransport")
+
+sampled = mod.reader_source(source("tv"), "tv", 137, 2)
+assert "rows.take(2).forEachIndexed" in sampled
+assert "rows.take(3).forEachIndexed" in sampled
 
 selected = mod.select_providers("manifest.json", "sinners-2025", "fixture")
 ids = [str(row["id"]).casefold() for row in selected]
@@ -40,15 +43,29 @@ with tempfile.TemporaryDirectory() as tmp:
     for index in range(3):
         lines.append(f"FIELD_NATIVE_PLAYER client=tv fixture=sinners-2025 provider64={b64('MOVIESDRIVE')} index={index} state=error")
     log.write_text("\n".join(lines) + "\n", encoding="utf-8")
-    failed = subprocess.run(["node", str(ROOT / "scripts/gate_native_reader_coverage.cjs"), str(log)], cwd=ROOT, text=True, capture_output=True)
+
+    failed = subprocess.run(
+        ["node", str(ROOT / "scripts/gate_native_reader_coverage.cjs"), "--streams", "all", str(log)],
+        cwd=ROOT, text=True, capture_output=True,
+    )
     assert failed.returncode == 1, failed.stdout + failed.stderr
-    assert "returned=9 played=3" in failed.stdout
+    assert "returned=9" in failed.stdout and "played=3" in failed.stdout
+
+    sampled_pass = subprocess.run(
+        ["node", str(ROOT / "scripts/gate_native_reader_coverage.cjs"), "--streams", "3", str(log)],
+        cwd=ROOT, text=True, capture_output=True,
+    )
+    assert sampled_pass.returncode == 0, sampled_pass.stdout + sampled_pass.stderr
+    assert "expected_played=3 played=3" in sampled_pass.stdout
 
     for index in range(3, 9):
         lines.append(f"FIELD_NATIVE_PLAYER client=tv fixture=sinners-2025 provider64={b64('MOVIESDRIVE')} index={index} state=error")
     log.write_text("\n".join(lines) + "\n", encoding="utf-8")
-    passed = subprocess.run(["node", str(ROOT / "scripts/gate_native_reader_coverage.cjs"), str(log)], cwd=ROOT, text=True, capture_output=True)
+    passed = subprocess.run(
+        ["node", str(ROOT / "scripts/gate_native_reader_coverage.cjs"), "--streams", "all", str(log)],
+        cwd=ROOT, text=True, capture_output=True,
+    )
     assert passed.returncode == 0, passed.stdout + passed.stderr
-    assert "returned=9 played=9" in passed.stdout
+    assert "expected_played=9 played=9" in passed.stdout
 
-print("exhaustive native reader acceptance tests passed")
+print("sampled/exhaustive native reader acceptance tests passed")
