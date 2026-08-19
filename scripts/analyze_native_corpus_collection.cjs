@@ -37,7 +37,11 @@ for (const log of logs) {
       starts.set(key, Number(f.providers || 0));
     } else if (line.startsWith('FIELD_NATIVE_CORPUS_END ')) {
       ends.add(key);
-    } else if (line.startsWith('FIELD_NATIVE_RESULT ') || line.startsWith('FIELD_NATIVE_ERROR ')) {
+    } else if (
+      line.startsWith('FIELD_NATIVE_RESULT ') ||
+      line.startsWith('FIELD_NATIVE_ERROR ') ||
+      line.startsWith('FIELD_NATIVE_PROVIDER_SKIPPED ')
+    ) {
       if (!observed.has(key)) observed.set(key, new Set());
       if (f.provider64) observed.get(key).add(f.provider64);
     }
@@ -62,9 +66,9 @@ console.log(
 );
 for (const problem of problems) console.log(`FIELD_NATIVE_CORPUS_INFRA_ERROR ${problem}`);
 
-// The underlying analyzer deliberately reports provider anomalies with exit 1.
-// Those are Brain evidence, not lab infrastructure failure. Only an incomplete
-// corpus collection fails this gate.
+// Provider/runtime anomalies and intentionally skipped incompatible routes are
+// evidence, not lab infrastructure failure. Only an incomplete corpus traversal
+// fails this gate.
 process.exitCode = complete ? 0 : 2;
 
 function fields(line) {
