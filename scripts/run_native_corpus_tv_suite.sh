@@ -77,6 +77,7 @@ for fixture in "${FIXTURES[@]}"; do
 
   LOG="${WORKSPACE}/tv-native-corpus-${fixture}.log"
   adb logcat -d -v brief -s NiakvioCorpus:I NiakvioEvidence:I PluginRuntime:I '*:S' > "$LOG" || true
+  echo "FIELD_NATIVE_EVIDENCE_INSTRUMENTED client=tv" >> "$LOG"
   cat "$FRONT_LOG" >> "$LOG" 2>/dev/null || true
   cat "$LOG" || true
 
