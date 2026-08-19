@@ -12,8 +12,22 @@ SYNC = ROOT / ".github/workflows/native-reader-learning-sync.yml"
 CANONICAL = ROOT / ".github/workflows/canonical-media-types.yml"
 
 
-def run_merge(state: Path, root: Path, run_id: str, output: Path, md_in: Path, md_out: Path) -> dict:
-    run = subprocess.run([
+def backlog_of(state: dict) -> dict:
+    memory = state.get("nativeReaderRepairMemory") if isinstance(state.get("nativeReaderRepairMemory"), dict) else {}
+    backlog = memory.get("readerBacklog") if isinstance(memory.get("readerBacklog"), dict) else {}
+    return backlog
+
+
+def run_merge(
+    state: Path,
+    root: Path,
+    run_id: str,
+    output: Path,
+    md_in: Path,
+    md_out: Path,
+    previous: Path | None = None,
+) -> dict:
+    command = [
         "python3", str(MERGE),
         "--state", str(state),
         "--diagnostics-root", str(root),
@@ -21,7 +35,10 @@ def run_merge(state: Path, root: Path, run_id: str, output: Path, md_in: Path, m
         "--output", str(output),
         "--markdown-input", str(md_in),
         "--markdown-output", str(md_out),
-    ], cwd=ROOT, text=True, capture_output=True)
+    ]
+    if previous is not None:
+        command.extend(["--previous-state", str(previous)])
+    run = subprocess.run(command, cwd=ROOT, text=True, capture_output=True)
     assert run.returncode == 0, run.stdout + run.stderr
     assert "FIELD_NATIVE_READER_BACKLOG" in run.stdout, run.stdout
     return json.loads(output.read_text(encoding="utf-8"))
@@ -34,8 +51,11 @@ assert "Native Desktop reader acceptance" in sync_text
 assert "github.event.workflow_run.event == 'push'" in sync_text
 assert "github.event.workflow_run.head_branch == 'main'" in sync_text
 assert "merge_native_reader_backlog.py" in sync_text
-assert "native-reader-backlog.json" in sync_text
-assert "native-reader-backlog.md" in sync_text
+assert "--previous-state reader-learning-input/latest.json" in sync_text
+assert "--state reader-learning-output/latest.json" in sync_text
+assert "--output reader-learning-output/latest.json" in sync_text
+assert "native-reader-backlog.json" not in sync_text
+assert "native-reader-backlog.md" not in sync_text
 assert "--diagnostics-root reader-learning-input/diagnostics" in sync_text
 assert 'gh run download "$RUN_ID" --pattern' in sync_text
 assert "brain-learning/proposals" in sync_text
@@ -51,6 +71,7 @@ with tempfile.TemporaryDirectory(dir=ROOT) as tmp_raw:
         "publicationAllowed": False,
         "productionWritesAllowed": False,
         "proposals": [],
+        "nativeReaderRepairMemory": {"schemaVersion": 1, "entries": [], "importedRunIds": []},
     }), encoding="utf-8")
     md = tmp / "latest.md"
     md.write_text("# NiakVIO Brain Learning\n", encoding="utf-8")
@@ -85,6 +106,13 @@ with tempfile.TemporaryDirectory(dir=ROOT) as tmp_raw:
                 "reason": "https://unsafe.example/signed?token=secret",
             }
         ],
+        "plans": [
+            {
+                "provider": "moviesdrive", "client": "tv", "fixture": "sinners-2025",
+                "requestType": "movie", "failureClass": "playback_http_access",
+                "hypotheses": [{"id": "replay-native-request-context"}],
+            }
+        ],
         "providerOutcomes": [],
     }
     diag.write_text(json.dumps(first_diag), encoding="utf-8")
@@ -92,7 +120,7 @@ with tempfile.TemporaryDirectory(dir=ROOT) as tmp_raw:
     first_out = tmp / "first.json"
     first_md = tmp / "first.md"
     first = run_merge(state, evidence, "100", first_out, md, first_md)
-    backlog = first["nativeReaderBacklog"]
+    backlog = backlog_of(first)
     assert backlog["openCount"] == 2, backlog
     assert backlog["resolvedCount"] == 0, backlog
     assert backlog["externalCandidateOpenCount"] == 1, backlog
@@ -105,22 +133,32 @@ with tempfile.TemporaryDirectory(dir=ROOT) as tmp_raw:
     assert movie["scope"] == "external_or_context"
     assert movie["externalCandidate"] is True
     assert movie["providerJsMutationAllowed"] is False
+    assert movie["hypotheses"] == ["replay-native-request-context"]
 
     load = next(row for row in backlog["entries"] if row["providerId"] == "goated")
     assert load["requestType"] == "repository"
     assert load["providerJsMutationAllowed"] is False
     assert "http" not in json.dumps(load).lower(), load
 
-    # Exact same artifact is idempotent even with the same run id.
+    # Exact same diagnosis artifact is idempotent.
     duplicate_out = tmp / "duplicate.json"
     duplicate_md = tmp / "duplicate.md"
     duplicate = run_merge(first_out, evidence, "100", duplicate_out, first_md, duplicate_md)
-    duplicate_backlog = duplicate["nativeReaderBacklog"]
+    duplicate_backlog = backlog_of(duplicate)
     assert duplicate_backlog["skippedDuplicateThisRun"] == 1, duplicate_backlog
     assert next(row for row in duplicate_backlog["entries"] if row["providerId"] == "moviesdrive")["occurrences"] == 1
 
-    # A rerun of the same GitHub run id with different complete evidence is new
-    # evidence: old failures resolve and a changed causal failure opens separately.
+    # Simulate a repair-memory merger rebuilding nativeReaderRepairMemory without
+    # carrying readerBacklog. --previous-state must recover it before new evidence.
+    rebuilt = tmp / "rebuilt.json"
+    rebuilt_payload = json.loads(duplicate_out.read_text(encoding="utf-8"))
+    rebuilt_payload["nativeReaderRepairMemory"] = {
+        "schemaVersion": 1,
+        "entries": [{"providerId": "moviesdrive", "fixture": "sinners-2025", "failureClass": "playback_http_access", "skill": "x"}],
+        "importedRunIds": ["100"],
+    }
+    rebuilt.write_text(json.dumps(rebuilt_payload), encoding="utf-8")
+
     second_diag = {
         "generatedAt": "2026-08-19T17:30:00Z",
         "evidenceComplete": True,
@@ -142,13 +180,15 @@ with tempfile.TemporaryDirectory(dir=ROOT) as tmp_raw:
             },
         ],
         "providerLoadIssues": [],
+        "plans": [],
         "providerOutcomes": [],
     }
     diag.write_text(json.dumps(second_diag), encoding="utf-8")
     second_out = tmp / "second.json"
     second_md = tmp / "second.md"
-    second = run_merge(duplicate_out, evidence, "100", second_out, duplicate_md, second_md)
-    second_backlog = second["nativeReaderBacklog"]
+    second = run_merge(rebuilt, evidence, "100", second_out, duplicate_md, second_md, previous=duplicate_out)
+    second_backlog = backlog_of(second)
+    assert second["nativeReaderRepairMemory"]["entries"][0]["skill"] == "x"
     assert second_backlog["importedRunIds"] == ["100"], second_backlog
     assert len(second_backlog["importedEvidenceIds"]) == 2, second_backlog
     assert second_backlog["openCount"] == 1, second_backlog
@@ -159,7 +199,7 @@ with tempfile.TemporaryDirectory(dir=ROOT) as tmp_raw:
     assert parser["status"] == "open" and parser["providerJsMutationAllowed"] is True, parser
     assert "Native reader bug backlog" in second_md.read_text(encoding="utf-8")
 
-    # Incomplete evidence is fail-closed and does not consume the run id/evidence.
+    # Incomplete evidence is fail-closed and does not consume run/evidence IDs.
     diag.write_text(json.dumps({
         "generatedAt": "2026-08-19T18:00:00Z",
         "evidenceComplete": False,
@@ -171,11 +211,11 @@ with tempfile.TemporaryDirectory(dir=ROOT) as tmp_raw:
     }), encoding="utf-8")
     incomplete_out = tmp / "incomplete.json"
     incomplete_md = tmp / "incomplete.md"
-    incomplete = run_merge(second_out, evidence, "101", incomplete_out, second_md, incomplete_md)
-    incomplete_backlog = incomplete["nativeReaderBacklog"]
+    incomplete = run_merge(second_out, evidence, "101", incomplete_out, second_md, incomplete_md, previous=second_out)
+    incomplete_backlog = backlog_of(incomplete)
     assert incomplete_backlog["openCount"] == 1, incomplete_backlog
     assert incomplete_backlog["importedRunIds"] == ["100"], incomplete_backlog
     assert incomplete_backlog["skippedIncompleteThisRun"] == 1, incomplete_backlog
     assert len(incomplete_backlog["importedEvidenceIds"]) == 2, incomplete_backlog
 
-print("native reader automatic backlog lifecycle and workflow topology tests passed")
+print("native reader automatic backlog lifecycle, persistence and workflow topology tests passed")
