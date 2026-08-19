@@ -40,6 +40,7 @@ on:
       - "scripts/run_native_corpus_mobile_suite.sh"
       - "scripts/run_native_corpus_desktop_suite.sh"
       - "scripts/merge_native_reader_repair_learning.py"
+      - "scripts/merge_native_reader_backlog.py"
       - ".github/workflows/native-android-route-reader.yml"
       - ".github/workflows/native-desktop-reader-acceptance.yml"
       - ".github/workflows/native-reader-learning-sync.yml"
@@ -51,6 +52,7 @@ on:
       - "tests/native_repository_http_instrumentation_test.py"
       - "tests/native_media_type_capability_test.py"
       - "tests/native_reader_learning_memory_test.py"
+      - "tests/native_reader_backlog_test.py"
       - ".github/workflows/canonical-media-types.yml"
   workflow_dispatch:
 
@@ -92,6 +94,8 @@ jobs:
         run: node engine_v2/tests/native-reader-diagnosis.test.mjs
       - name: Validate native reader repair-memory merge
         run: python3 tests/native_reader_learning_memory_test.py
+      - name: Validate automatic native reader bug backlog
+        run: python3 tests/native_reader_backlog_test.py
       - name: Validate Brain cross-day reader-memory preservation
         run: node engine_v2/tests/learning-lab-memory.test.mjs
       - name: Validate non-blocking tv/anime capability learning
