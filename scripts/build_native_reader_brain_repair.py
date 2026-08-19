@@ -71,10 +71,13 @@ def local_provider_path(filename: str) -> Path:
     return path
 
 
-def diagnosis_targets(diagnosis: dict[str, Any], max_providers: int) -> list[dict[str, Any]]:
+def diagnosis_targets(diagnosis: dict[str, Any], max_providers: int, fixture: str | None = None) -> list[dict[str, Any]]:
     grouped: dict[str, dict[str, Any]] = {}
+    wanted_fixture = str(fixture or "").strip()
     for raw in diagnosis.get("plans") or []:
         if not isinstance(raw, dict):
+            continue
+        if wanted_fixture and str(raw.get("fixture") or "") != wanted_fixture:
             continue
         provider = str(raw.get("provider") or "").casefold().strip()
         if not provider or str(raw.get("action") or "") != "probe-targeted-repair":
@@ -84,8 +87,12 @@ def diagnosis_targets(diagnosis: dict[str, Any], max_providers: int) -> list[dic
             "failureClasses": [],
             "hypotheses": [],
             "occurrences": 0,
+            "fixtures": [],
         })
         target["occurrences"] += 1
+        raw_fixture = str(raw.get("fixture") or "")
+        if raw_fixture and raw_fixture not in target["fixtures"]:
+            target["fixtures"].append(raw_fixture)
         failure = str(raw.get("failureClass") or "unknown_failure")
         if failure not in target["failureClasses"]:
             target["failureClasses"].append(failure)
@@ -124,6 +131,7 @@ def main() -> int:
     parser.add_argument("--diagnosis", type=Path, required=True)
     parser.add_argument("--manifest", type=Path, default=ROOT / "manifest.json")
     parser.add_argument("--output-dir", type=Path, default=ROOT / "native-reader-repair")
+    parser.add_argument("--fixture", default="", help="optional fixture slug; only its reader failures are mutated")
     parser.add_argument("--max-providers", type=int, default=12)
     args = parser.parse_args()
 
@@ -134,7 +142,11 @@ def main() -> int:
     providers_dir = output_dir / "providers"
     providers_dir.mkdir(parents=True, exist_ok=True)
 
-    target_rows = diagnosis_targets(diagnosis, max(1, min(int(args.max_providers), 24)))
+    target_rows = diagnosis_targets(
+        diagnosis,
+        max(1, min(int(args.max_providers), 24)),
+        args.fixture.strip() or None,
+    )
     by_id = {
         str(row.get("id") or "").casefold(): row
         for row in manifest.get("scrapers") or []
@@ -188,6 +200,7 @@ def main() -> int:
         proposed_row["filename"] = relative
         proposals.append({
             "provider": provider,
+            "fixtures": target["fixtures"],
             "failureClasses": target["failureClasses"],
             "hypotheses": target["hypotheses"],
             "skills": skills,
@@ -204,6 +217,7 @@ def main() -> int:
         "schemaVersion": 1,
         "brainVersion": diagnosis.get("brainVersion"),
         "mode": "native_reader_repair_sandbox",
+        "fixtureScope": args.fixture.strip() or "all",
         "diagnosedReaderFailures": int(diagnosis.get("readerFailures") or 0),
         "proposalCount": len(proposals),
         "providers": [row["provider"] for row in proposals],
@@ -221,7 +235,7 @@ def main() -> int:
     write_json(output_dir / "repair-report.json", report)
     print(
         f"FIELD_NATIVE_READER_REPAIR proposals={len(proposals)} skipped={len(skipped)} "
-        f"reader_failures={report['diagnosedReaderFailures']} manifest={candidate_manifest.relative_to(ROOT)}"
+        f"reader_failures={report['diagnosedReaderFailures']} fixture={report['fixtureScope']} manifest={candidate_manifest.relative_to(ROOT)}"
     )
     return 0
 
