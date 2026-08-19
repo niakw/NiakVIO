@@ -7,7 +7,8 @@ Requests are observed only when they belong to the NiakVIO repository under test
 
 The interceptor does not alter method, URL, headers, body, redirects, cache policy,
 DNS, timeouts or response handling. Query strings/header values/bodies are never
-persisted.
+persisted. Desktop writes only these sanitized evidence lines to a dedicated file
+because Gradle may capture test stdout instead of exposing it to the lab harness.
 """
 from __future__ import annotations
 
@@ -23,11 +24,13 @@ def replace_once(text: str, old: str, new: str, label: str) -> str:
 
 
 def kotlin_interceptor(client: str, logger: str) -> str:
-    emit = (
-        'android.util.Log.i("NiakvioEvidence", message)'
-        if logger == "android"
-        else "println(message)"
-    )
+    if logger == "android":
+        emit = 'android.util.Log.i("NiakvioEvidence", message)'
+    else:
+        emit = (
+            'runCatching { java.io.File(System.getenv("GITHUB_WORKSPACE") ?: ".", '
+            '"desktop-native-http-evidence.log").appendText(message + "\\n") }'
+        )
     return f'''.addInterceptor {{ chain ->
             val request = chain.request()
             val rawUrl = request.url
@@ -111,7 +114,7 @@ def instrument_desktop(repo: Path) -> None:
         print(f"FIELD_NATIVE_REPOSITORY_HTTP_INSTRUMENTED client=desktop path={path}")
         return
     anchor = """    .followRedirects(true)\n    .followSslRedirects(true)\n    .build()\n"""
-    replacement = """    .followRedirects(true)\n    .followSslRedirects(true)\n    """ + kotlin_interceptor("desktop", "stdout") + """.build()\n"""
+    replacement = """    .followRedirects(true)\n    .followSslRedirects(true)\n    """ + kotlin_interceptor("desktop", "desktop_file") + """.build()\n"""
     text = replace_once(text, anchor, replacement, "desktop AddonHttpClient")
     path.write_text(text, encoding="utf-8")
     print(f"FIELD_NATIVE_REPOSITORY_HTTP_INSTRUMENTED client=desktop path={path}")
