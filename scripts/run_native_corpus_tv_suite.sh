@@ -28,7 +28,10 @@ PRIMARY_STREAM_SCOPE="${NIAKVIO_PRIMARY_STREAM_SCOPE:-all}"
 REGRESSION_STREAM_SCOPE="${NIAKVIO_REGRESSION_STREAM_SCOPE:-2}"
 SOURCE_SHA="${NIAKVIO_SOURCE_SHA:-$(git -C "$NIAKVIO" rev-parse HEAD)}"
 SOURCE_REPOSITORY="${GITHUB_REPOSITORY:-niakw/NiakVIO}"
-MANIFEST_URL="https://raw.githubusercontent.com/${SOURCE_REPOSITORY}/${SOURCE_SHA}/${TARGET_MANIFEST}"
+MANIFEST_URL="${NIAKVIO_MANIFEST_URL:-https://raw.githubusercontent.com/${SOURCE_REPOSITORY}/${SOURCE_SHA}/${TARGET_MANIFEST}}"
+ALLOW_LOCAL_MANIFEST="${NIAKVIO_ALLOW_LOCAL_MANIFEST:-0}"
+PROVIDER_LOADING_URL_ARGS=()
+if [[ "$ALLOW_LOCAL_MANIFEST" = "1" ]]; then PROVIDER_LOADING_URL_ARGS+=(--allow-local-lab-url); fi
 CONFIGURED_ACCEPTANCE_PROVIDER_SCOPE="$(python3 - <<'PY' 2>/dev/null || true
 import json
 from pathlib import Path
@@ -49,7 +52,7 @@ if [[ -n "$TARGET_PROVIDER" && "$TARGET_PROVIDER" != "all" && "$TARGET_PROVIDER"
 mkdir -p "$EVIDENCE_ROOT"
 python3 "$INSTRUMENTER" tv "$TV_ROOT" || exit $?
 
-echo "FIELD_NATIVE_CORPUS_TV_PROFILE fixtures=${#FIXTURES[@]} provider=${TARGET_PROVIDER:-all} configured_acceptance_provider_scope=$CONFIGURED_ACCEPTANCE_PROVIDER_SCOPE manifest=$TARGET_MANIFEST player_probes=$PLAYER_PROBES require_reader_success=$REQUIRE_READER_SUCCESS reader_acceptance=$READER_ACCEPTANCE primary_stream_scope=$PRIMARY_STREAM_SCOPE regression_stream_scope=$REGRESSION_STREAM_SCOPE reuse_avd=true reuse_gradle_daemon=true full_backend_evidence=true frontend_timeline=true official_repository_loading=true"
+echo "FIELD_NATIVE_CORPUS_TV_PROFILE fixtures=${#FIXTURES[@]} provider=${TARGET_PROVIDER:-all} configured_acceptance_provider_scope=$CONFIGURED_ACCEPTANCE_PROVIDER_SCOPE manifest=$TARGET_MANIFEST player_probes=$PLAYER_PROBES require_reader_success=$REQUIRE_READER_SUCCESS reader_acceptance=$READER_ACCEPTANCE primary_stream_scope=$PRIMARY_STREAM_SCOPE regression_stream_scope=$REGRESSION_STREAM_SCOPE reuse_avd=true reuse_gradle_daemon=true full_backend_evidence=true frontend_timeline=true official_repository_loading=true local_manifest=$ALLOW_LOCAL_MANIFEST"
 for fixture in "${FIXTURES[@]}"; do
   echo "===== TV CORPUS FIXTURE: $fixture ====="
   STREAM_SCOPE="$REGRESSION_STREAM_SCOPE"
@@ -64,7 +67,7 @@ for fixture in "${FIXTURES[@]}"; do
   fi
 
   python3 "$REQUEST_CONTRACT" tv --fixture "$fixture" --manifest "$TARGET_MANIFEST" --source "$TEST_SOURCE" || { STATUS=1; continue; }
-  python3 "$PROVIDER_LOADING" tv --manifest "$TARGET_MANIFEST" --manifest-url "$MANIFEST_URL" --source "$TEST_SOURCE" || { STATUS=1; continue; }
+  python3 "$PROVIDER_LOADING" tv --manifest "$TARGET_MANIFEST" --manifest-url "$MANIFEST_URL" --source "$TEST_SOURCE" "${PROVIDER_LOADING_URL_ARGS[@]}" || { STATUS=1; continue; }
 
   FRONT_DIR="${EVIDENCE_ROOT}/${fixture}"
   FRONT_LOG="${WORKSPACE}/tv-native-frontend-${fixture}.log"
