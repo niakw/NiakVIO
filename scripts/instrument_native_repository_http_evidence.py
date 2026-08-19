@@ -81,8 +81,11 @@ def instrument_tv(repo: Path) -> None:
     if "FIELD_NATIVE_REPOSITORY_HTTP_REQUEST client=tv" in text:
         print(f"FIELD_NATIVE_REPOSITORY_HTTP_INSTRUMENTED client=tv path={path}")
         return
-    anchor = """        .proxy(java.net.Proxy.NO_PROXY)\n        .dispatcher(okhttp3.Dispatcher(\n"""
-    replacement = """        .proxy(java.net.Proxy.NO_PROXY)\n        """ + kotlin_interceptor("tv", "android") + """.dispatcher(okhttp3.Dispatcher(\n"""
+    # Accepted NuvioTV keeps a small dedicated PluginManager OkHttp client. Anchor
+    # on its read-timeout/build tail rather than older branches that also had
+    # proxy/dispatcher customisation.
+    anchor = """        .connectTimeout(30, TimeUnit.SECONDS)\n        .readTimeout(30, TimeUnit.SECONDS)\n        .build()\n"""
+    replacement = """        .connectTimeout(30, TimeUnit.SECONDS)\n        .readTimeout(30, TimeUnit.SECONDS)\n        """ + kotlin_interceptor("tv", "android") + """.build()\n"""
     text = replace_once(text, anchor, replacement, "tv PluginManager OkHttp")
     path.write_text(text, encoding="utf-8")
     print(f"FIELD_NATIVE_REPOSITORY_HTTP_INSTRUMENTED client=tv path={path}")
