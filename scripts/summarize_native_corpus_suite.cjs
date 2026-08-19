@@ -299,14 +299,32 @@ const summary = {
 
 fs.mkdirSync(path.dirname(outputPath), { recursive: true });
 fs.writeFileSync(outputPath, JSON.stringify(summary, null, 2) + '\n');
+
+// The base summarizer remains the single corpus aggregation path. Enrich that
+// exact artifact with sanitized native-reader evidence so the Brain sees the
+// same OS -> reader failures humans see, without persisting raw endpoints.
+const enrich = require('node:child_process').spawnSync(
+  process.execPath,
+  [path.join(__dirname, 'enrich_native_corpus_summary_with_player.cjs'), '--dir', inputDir, '--summary', outputPath],
+  { encoding: 'utf8' },
+);
+if (enrich.stdout) process.stdout.write(enrich.stdout);
+if (enrich.stderr) process.stderr.write(enrich.stderr);
+if (enrich.status !== 0) throw new Error(`native reader summary enrichment failed: ${enrich.status}`);
+Object.assign(summary, JSON.parse(fs.readFileSync(outputPath, 'utf8')));
+
 console.log(`FIELD_NATIVE_CORPUS_SUITE_SUMMARY ${JSON.stringify({
   providersObserved: summary.providersObserved,
   executions: summary.executions,
   contradictions: summary.contradictions,
   transportExpectedEmbeds: summary.transportExpectedEmbeds,
   transportFailures: summary.transportFailures,
+  nativeReaderObserved: summary.nativeReaderObserved || 0,
+  nativeReaderFailures: summary.nativeReaderFailures || 0,
+  readerFailureClasses: summary.readerFailureClasses || {},
   runtimeErrors: summary.runtimeErrors,
   repeatedPlatformGaps: repeatedPlatformGaps.length,
+  repeatedReaderFailures: summary.engineSignals?.repeatedReaderFailures?.length || 0,
   systemicEmpty: systemicEmpty.length,
   capabilitiesObserved: capabilityInventory.length,
 })}`);
