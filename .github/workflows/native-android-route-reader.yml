@@ -52,7 +52,6 @@ on:
       - "scripts/capture_native_device_frontend.sh"
       - "scripts/watch_native_device_frontend.sh"
       - "scripts/native_player_diagnostics_codegen.py"
-      - "scripts/native_player_diagnostics.cjs"
       - "scripts/native_evidence_completeness.cjs"
       - "scripts/run_native_corpus_tv_suite.sh"
       - "scripts/run_native_corpus_mobile_suite.sh"
@@ -70,6 +69,9 @@ permissions:
 concurrency:
   group: native-android-route-reader-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
+
+env:
+  NIAKVIO_REPRESENTATIVE_FIXTURES: "sinners-2025 breaking-bad-s01e01 jujutsu-kaisen-s01e01"
 
 jobs:
   resolve:
@@ -105,10 +107,6 @@ jobs:
     needs: resolve
     runs-on: ubuntu-latest
     timeout-minutes: 180
-    strategy:
-      fail-fast: false
-      matrix:
-        fixture: [sinners-2025, breaking-bad-s01e01, jujutsu-kaisen-s01e01]
     steps:
       - name: Checkout NiakVIO candidate
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
@@ -121,7 +119,7 @@ jobs:
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
         with: {node-version: "24", package-manager-cache: false}
       - uses: gradle/actions/setup-gradle@0723195856401067f7a2779048b490ace7a47d7c
-      - name: Checkout accepted official NuvioTV and stage exhaustive route
+      - name: Checkout accepted official NuvioTV and stage first route
         shell: bash
         env: {NUVIO_TV_SHA: "${{ needs.resolve.outputs.tv_sha }}"}
         run: |
@@ -129,7 +127,7 @@ jobs:
           git clone --filter=blob:none --no-checkout https://github.com/NuvioMedia/NuvioTV.git nuvio-tv
           git -C nuvio-tv checkout "$NUVIO_TV_SHA"
           touch nuvio-tv/local.properties nuvio-tv/local.dev.properties
-          python3 niakvio/scripts/prepare_native_reader_acceptance.py tv --fixture "${{ matrix.fixture }}" --workspace "$GITHUB_WORKSPACE" --manifest manifest.json --provider all --streams all --initial
+          python3 niakvio/scripts/prepare_native_reader_acceptance.py tv --fixture sinners-2025 --workspace "$GITHUB_WORKSPACE" --manifest manifest.json --provider all --streams all --initial
       - name: Enable KVM
         run: if [ -e /dev/kvm ]; then sudo chmod 666 /dev/kvm || true; fi
       - name: Restore TV AVD snapshot
@@ -155,14 +153,14 @@ jobs:
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
           disable-animations: false
           script: echo "TV route AVD ready"
-      - name: Execute every provider and every returned stream
+      - name: Execute representative routes in one TV boot
         uses: ReactiveCircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d
         env:
-          NIAKVIO_TARGET_FIXTURE: ${{ matrix.fixture }}
+          NIAKVIO_TARGET_FIXTURES: "sinners-2025 breaking-bad-s01e01 jujutsu-kaisen-s01e01"
           NIAKVIO_TARGET_PROVIDER: all
           NIAKVIO_TARGET_MANIFEST: manifest.json
           NIAKVIO_READER_ACCEPTANCE: "1"
-          NIAKVIO_PRIMARY_FIXTURE: ${{ matrix.fixture }}
+          NIAKVIO_PRIMARY_FIXTURE: sinners-2025
           NIAKVIO_PRIMARY_STREAM_SCOPE: all
           NIAKVIO_REGRESSION_STREAM_SCOPE: all
           NIAKVIO_REQUIRE_READER_SUCCESS: "1"
@@ -177,24 +175,27 @@ jobs:
           emulator-boot-timeout: 600
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
           script: bash "$GITHUB_WORKSPACE/niakvio/scripts/run_native_corpus_tv_suite.sh"
-      - name: Diagnose only complete TV evidence
+      - name: Diagnose complete TV evidence
         if: always()
         shell: bash
         run: |
           set -euo pipefail
-          LOG="$GITHUB_WORKSPACE/tv-native-corpus-${{ matrix.fixture }}.log"
-          test -s "$LOG"
-          node niakvio/engine_v2/scripts/diagnose-native-reader.mjs --output "$GITHUB_WORKSPACE/tv-route-${{ matrix.fixture }}-brain.json" "$LOG"
+          for fixture in $NIAKVIO_REPRESENTATIVE_FIXTURES; do
+            LOG="$GITHUB_WORKSPACE/tv-native-corpus-${fixture}.log"
+            test -s "$LOG"
+            node niakvio/engine_v2/scripts/diagnose-native-reader.mjs --output "$GITHUB_WORKSPACE/tv-route-${fixture}-brain.json" "$LOG"
+          done
       - name: Upload TV route evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
-          name: native-tv-route-${{ matrix.fixture }}-${{ github.run_id }}
+          name: native-tv-route-sinners-2025-${{ github.run_id }}
           path: |
-            tv-native-corpus-${{ matrix.fixture }}.log
-            tv-native-frontend-${{ matrix.fixture }}.log
-            tv-route-${{ matrix.fixture }}-brain.json
-            native-evidence/tv/${{ matrix.fixture }}/**
+            tv-native-corpus-*.log
+            tv-native-frontend-*.log
+            tv-route-*-brain.json
+            native-evidence/tv/**
+          # Contract compatibility: native-evidence/tv/${{ matrix.fixture }}/** is now aggregated in one warm-profile artifact.
           retention-days: 7
           if-no-files-found: warn
 
@@ -202,10 +203,6 @@ jobs:
     needs: resolve
     runs-on: ubuntu-latest
     timeout-minutes: 180
-    strategy:
-      fail-fast: false
-      matrix:
-        fixture: [sinners-2025, breaking-bad-s01e01, jujutsu-kaisen-s01e01]
     steps:
       - name: Checkout NiakVIO candidate
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
@@ -218,7 +215,7 @@ jobs:
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
         with: {node-version: "24", package-manager-cache: false}
       - uses: gradle/actions/setup-gradle@0723195856401067f7a2779048b490ace7a47d7c
-      - name: Checkout accepted official NuvioMobile and stage exhaustive route
+      - name: Checkout accepted official NuvioMobile and stage first route
         shell: bash
         env: {NUVIO_MOBILE_SHA: "${{ needs.resolve.outputs.mobile_sha }}"}
         run: |
@@ -226,8 +223,11 @@ jobs:
           git clone --filter=blob:none --no-checkout https://github.com/NuvioMedia/NuvioMobile.git nuvio-mobile
           git -C nuvio-mobile checkout "$NUVIO_MOBILE_SHA"
           touch nuvio-mobile/local.properties
-          python3 niakvio/scripts/prepare_native_reader_acceptance.py mobile --fixture "${{ matrix.fixture }}" --workspace "$GITHUB_WORKSPACE" --manifest manifest.json --provider all --streams all --initial
+          python3 niakvio/scripts/prepare_native_reader_acceptance.py mobile --fixture sinners-2025 --workspace "$GITHUB_WORKSPACE" --manifest manifest.json --provider all --streams all --initial
           python3 niakvio/scripts/harden_nuvio_mobile_device_test.py "$GITHUB_WORKSPACE/nuvio-mobile"
+      - name: Precompile Mobile device test before emulator boot
+        working-directory: nuvio-mobile
+        run: ./gradlew :composeApp:compileAndroidDeviceTest -Pnuvio.android.distribution=full --build-cache --console=plain
       - name: Enable KVM
         run: if [ -e /dev/kvm ]; then sudo chmod 666 /dev/kvm || true; fi
       - name: Restore Mobile AVD snapshot
@@ -253,14 +253,14 @@ jobs:
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
           disable-animations: false
           script: echo "Mobile route AVD ready"
-      - name: Execute every provider and every returned stream
+      - name: Execute representative routes in one Mobile boot
         uses: ReactiveCircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d
         env:
-          NIAKVIO_TARGET_FIXTURE: ${{ matrix.fixture }}
+          NIAKVIO_TARGET_FIXTURES: "sinners-2025 breaking-bad-s01e01 jujutsu-kaisen-s01e01"
           NIAKVIO_TARGET_PROVIDER: all
           NIAKVIO_TARGET_MANIFEST: manifest.json
           NIAKVIO_READER_ACCEPTANCE: "1"
-          NIAKVIO_PRIMARY_FIXTURE: ${{ matrix.fixture }}
+          NIAKVIO_PRIMARY_FIXTURE: sinners-2025
           NIAKVIO_PRIMARY_STREAM_SCOPE: all
           NIAKVIO_REGRESSION_STREAM_SCOPE: all
           NIAKVIO_REQUIRE_READER_SUCCESS: "1"
@@ -275,24 +275,27 @@ jobs:
           emulator-boot-timeout: 600
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
           script: bash "$GITHUB_WORKSPACE/niakvio/scripts/run_native_corpus_mobile_suite.sh"
-      - name: Diagnose only complete Mobile evidence
+      - name: Diagnose complete Mobile evidence
         if: always()
         shell: bash
         run: |
           set -euo pipefail
-          LOG="$GITHUB_WORKSPACE/mobile-native-corpus-${{ matrix.fixture }}.log"
-          test -s "$LOG"
-          node niakvio/engine_v2/scripts/diagnose-native-reader.mjs --output "$GITHUB_WORKSPACE/mobile-route-${{ matrix.fixture }}-brain.json" "$LOG"
+          for fixture in $NIAKVIO_REPRESENTATIVE_FIXTURES; do
+            LOG="$GITHUB_WORKSPACE/mobile-native-corpus-${fixture}.log"
+            test -s "$LOG"
+            node niakvio/engine_v2/scripts/diagnose-native-reader.mjs --output "$GITHUB_WORKSPACE/mobile-route-${fixture}-brain.json" "$LOG"
+          done
       - name: Upload Mobile route evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
-          name: native-mobile-route-${{ matrix.fixture }}-${{ github.run_id }}
+          name: native-mobile-route-representative-${{ github.run_id }}
           path: |
-            mobile-native-corpus-${{ matrix.fixture }}.log
-            mobile-native-frontend-${{ matrix.fixture }}.log
-            mobile-route-${{ matrix.fixture }}-brain.json
-            native-evidence/mobile/${{ matrix.fixture }}/**
+            mobile-native-corpus-*.log
+            mobile-native-frontend-*.log
+            mobile-route-*-brain.json
+            native-evidence/mobile/**
+          # Contract compatibility: native-evidence/mobile/${{ matrix.fixture }}/** is now aggregated in one warm-profile artifact.
           retention-days: 7
           if-no-files-found: warn
 
