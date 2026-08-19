@@ -31,6 +31,8 @@ def evidence_lines(*, probe_state: str) -> list[str]:
     phases = [
         "ui-launched",
         "repository-load",
+        "repository-http-request",
+        "repository-http-response",
         "repository-loaded",
         "provider-load-state",
         "corpus-begin",
@@ -47,6 +49,8 @@ def evidence_lines(*, probe_state: str) -> list[str]:
     )
     lines.extend([
         "FIELD_NATIVE_REPOSITORY_LOAD_BEGIN client=tv fixture=jujutsu-kaisen-s01e01 manifest_host=raw.githubusercontent.com expected=1",
+        "FIELD_NATIVE_REPOSITORY_HTTP_REQUEST client=tv kind=manifest method=GET endpoint=https://raw.githubusercontent.com/niakw/NiakVIO/sha/manifest.json request_header_names=accept",
+        "FIELD_NATIVE_REPOSITORY_HTTP_RESPONSE client=tv kind=manifest method=GET endpoint=https://raw.githubusercontent.com/niakw/NiakVIO/sha/manifest.json status=200 duration_ms=20 response_header_names=content-type source=network",
         "FIELD_NATIVE_REPOSITORY_LOAD_RESULT client=tv fixture=jujutsu-kaisen-s01e01 expected=1 loaded=1",
         f"FIELD_NATIVE_PROVIDER_LOAD_RESULT client=tv fixture=jujutsu-kaisen-s01e01 provider64={b64(provider)} manifest_enabled=true runtime_enabled=true supported_types64={b64('anime,movie')} metadata_match=true",
         "FIELD_NATIVE_CORPUS_BEGIN client=tv fixture=jujutsu-kaisen-s01e01 providers=1",
