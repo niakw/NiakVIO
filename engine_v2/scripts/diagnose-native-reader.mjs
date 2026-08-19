@@ -51,6 +51,10 @@ for (const file of logPaths) {
       durationSeconds: Number(f.duration_seconds || 0) || null, host: decode(f.host64),
       errorClass: safeText(decode(f.error_class64), 180), errorCode: safeText(decode(f.error_code64), 120),
       exceptionChain: safeText(decode(f.exception_chain64), 800), responseHeaderNames: safeText(decode(f.response_header_names64), 360),
+      loadBytes: Math.max(0, Number(f.load_bytes || 0) || 0),
+      loadDurationMs: Math.max(0, Number(f.load_duration_ms || 0) || 0),
+      mediaDataType: Number.isFinite(Number(f.media_data_type)) ? Number(f.media_data_type) : -1,
+      trackType: Number.isFinite(Number(f.track_type)) ? Number(f.track_type) : -1,
     };
     row.failureClass = readerFailureClass(row);
     row.signature = readerSignature(row);
@@ -74,6 +78,10 @@ const plans = failures.map((row) => {
         errorCode: row.errorCode,
         errorClass: row.errorClass,
         durationSeconds: row.durationSeconds,
+        loadBytes: row.loadBytes,
+        loadDurationMs: row.loadDurationMs,
+        mediaDataType: row.mediaDataType,
+        trackType: row.trackType,
       },
     },
   };
@@ -82,8 +90,10 @@ const plans = failures.map((row) => {
     provider: String(row.provider || '').toLowerCase(), client: row.client, fixture: row.fixture, index: row.index,
     state: row.state, failureClass: row.failureClass, failureStage: row.failureStage,
     httpStatus: row.httpStatus, errorCode: row.errorCode, errorClass: row.errorClass,
-    host: row.host, durationSeconds: row.durationSeconds, signature: row.signature,
-    action: plan.action, exitReason: plan.exitReason,
+    host: row.host, durationSeconds: row.durationSeconds,
+    loadBytes: row.loadBytes, loadDurationMs: row.loadDurationMs,
+    mediaDataType: row.mediaDataType, trackType: row.trackType,
+    signature: row.signature, action: plan.action, exitReason: plan.exitReason,
     hypotheses: plan.hypotheses.map((hypothesis) => ({
       id: hypothesis.id,
       capabilities: [...(hypothesis.capabilities || [])],
@@ -111,12 +121,13 @@ const priorities = [...grouped.values()]
   .sort((a, b) => b.occurrences - a.occurrences || a.provider.localeCompare(b.provider));
 
 const payload = {
-  schemaVersion: 1,
+  schemaVersion: 2,
   generatedAt: new Date().toISOString(),
   brainVersion: BRAIN_CONTROL_PLANE_VERSION,
   readerObserved: readerRows.length,
   readerHealthy: readerRows.length - failures.length,
   readerFailures: failures.length,
+  readerLoadErrorEvidence: readerRows.filter((row) => row.loadDurationMs > 0 || row.loadBytes > 0 || row.httpStatus > 0).length,
   plans,
   priorities,
   policy: {
@@ -128,6 +139,6 @@ const payload = {
 };
 fs.mkdirSync(path.dirname(outputPath), { recursive: true });
 fs.writeFileSync(outputPath, JSON.stringify(payload, null, 2) + '\n');
-console.log(`FIELD_NATIVE_READER_BRAIN observed=${payload.readerObserved} healthy=${payload.readerHealthy} failures=${payload.readerFailures} priorities=${priorities.length}`);
+console.log(`FIELD_NATIVE_READER_BRAIN observed=${payload.readerObserved} healthy=${payload.readerHealthy} failures=${payload.readerFailures} load_error_evidence=${payload.readerLoadErrorEvidence} priorities=${priorities.length}`);
 for (const priority of priorities.slice(0, 40)) console.log(`FIELD_NATIVE_READER_BRAIN_PRIORITY ${JSON.stringify(priority)}`);
 if (readerRows.length === 0) process.exitCode = 2;
