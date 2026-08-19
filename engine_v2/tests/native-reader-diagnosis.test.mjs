@@ -48,6 +48,7 @@ try {
   const access = data.plans.find((row) => row.failureClass === 'playback_http_access');
   assert.ok(access);
   assert.equal(access.requestType, 'movie');
+  assert.match(access.signature, /^movie:/);
   assert.equal(access.httpStatus, 403);
   assert.equal(access.hypotheses[0].id, 'replay-native-request-context');
   const short = data.plans.find((row) => row.failureClass === 'short_media');
@@ -57,6 +58,20 @@ try {
   assert.equal(data.policy.requireFreshNativeReaderProofAfterRepair, true);
   assert.match(data.privacy, /No raw URLs/);
   assert.match(run.stdout, /FIELD_NATIVE_READER_BRAIN evidence_complete=true/);
+
+  // A log can look structurally complete yet still be causally unusable if the
+  // Nuvio media route was not recorded. The Brain must refuse to learn from it.
+  const routeMissing = path.join(tmp, 'route-missing.log');
+  const routeMissingOutput = path.join(tmp, 'route-missing.json');
+  fs.writeFileSync(routeMissing, common.map((line) => line.replace(/ request_type=movie/g, '')).join('\n') + '\n');
+  const routeRefused = spawnSync(process.execPath, [script, '--output', routeMissingOutput, routeMissing], { cwd: root, encoding: 'utf8' });
+  assert.equal(routeRefused.status, 2, routeRefused.stderr + routeRefused.stdout);
+  const routeRefusedData = JSON.parse(fs.readFileSync(routeMissingOutput, 'utf8'));
+  assert.equal(routeRefusedData.evidenceComplete, false);
+  assert.equal(routeRefusedData.policy.learningAllowed, false);
+  assert.equal(routeRefusedData.policy.repairPlanningAllowed, false);
+  assert.deepEqual(routeRefusedData.plans, []);
+  assert.ok(routeRefusedData.evidenceProblems.some((problem) => problem.startsWith('invalid_request_type:')));
 
   const incomplete = path.join(tmp, 'incomplete.log');
   const incompleteOutput = path.join(tmp, 'incomplete.json');
