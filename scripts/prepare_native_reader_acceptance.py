@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 """Prepare real-reader acceptance corpus runs for official Nuvio Android clients.
 
-The fixture decides which providers are in scope. Primary acceptance can play every
-returned stream; broad regression can sample a bounded number of streams while still
-executing every provider listed for the fixture. No provider-specific repair logic
-lives here.
+The fixture can provide a curated provider scope, while ``--provider all`` deliberately
+selects every stageable provider from the chosen manifest, including entries whose
+published ``enabled`` flag is false. Primary acceptance can play every returned
+stream; broad regression can sample a bounded number of streams. No provider-specific
+repair logic lives here.
 """
 from __future__ import annotations
 
@@ -41,10 +42,16 @@ def select_providers(manifest_path: str, slug: str, provider: str | None) -> lis
     available = client_prepare.manifest_providers(manifest_path)
     by_id = {str(row.get("id") or "").casefold(): row for row in available}
     requested: list[str]
-    if provider and provider.casefold() not in {"all", "fixture"}:
-        requested = [provider]
-    else:
+    mode = str(provider or "fixture").strip().casefold()
+    if mode == "all":
+        # Lab scope intentionally ignores the publication enabled flag. Disabled
+        # providers are valuable repair candidates and must receive the same real
+        # reader/device evidence as currently active providers.
+        requested = [str(row.get("id") or "") for row in available if str(row.get("id") or "").strip()]
+    elif mode == "fixture":
         requested = [str(value) for value in fixture_row(slug)["providers"] if str(value).strip()]
+    else:
+        requested = [str(provider)]
     selected: list[dict] = []
     missing: list[str] = []
     seen: set[str] = set()
@@ -154,9 +161,12 @@ def prepare(
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(source, encoding="utf-8")
     ids = ",".join(str(row.get("id") or "") for row in staged)
+    enabled = sum(1 for provider_row in staged if provider_row.get("enabled"))
+    disabled = len(staged) - enabled
     print(
         f"FIELD_NATIVE_READER_ACCEPTANCE_PREPARED client={target} fixture={slug} "
-        f"manifest={manifest_path} providers={len(staged)} provider_ids={ids} streams={scope} initial={str(initial).lower()}"
+        f"manifest={manifest_path} providers={len(staged)} enabled={enabled} disabled={disabled} "
+        f"provider_ids={ids} streams={scope} initial={str(initial).lower()}"
     )
     return output
 
@@ -167,7 +177,7 @@ def main() -> int:
     parser.add_argument("--fixture", required=True)
     parser.add_argument("--workspace", required=True)
     parser.add_argument("--manifest", default="manifest.json")
-    parser.add_argument("--provider", default="fixture", help="fixture/all uses fixture provider scope; otherwise exact provider id")
+    parser.add_argument("--provider", default="fixture", help="all selects every manifest provider, including disabled; fixture uses fixture scope; otherwise exact provider id")
     parser.add_argument("--streams", default="all", help="all, or a bounded reader sample 1-4")
     parser.add_argument("--initial", action="store_true", help="enable official client device tests before first fixture")
     args = parser.parse_args()
