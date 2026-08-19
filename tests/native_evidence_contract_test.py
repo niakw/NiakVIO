@@ -12,7 +12,9 @@ def text(path: str) -> str:
 
 request_contract = text("scripts/augment_native_corpus_request_contract.py")
 completeness = text("scripts/native_evidence_completeness.cjs")
+collection_analyzer = text("scripts/analyze_native_corpus_collection.cjs")
 diagnosis = text("engine_v2/scripts/diagnose-native-reader.mjs")
+capability_brain = text("engine_v2/scripts/diagnose-native-media-capabilities.mjs")
 reader_gate = text("scripts/gate_native_reader_result.cjs")
 capability_analyzer = text("scripts/analyze_native_media_type_capabilities.cjs")
 tv_suite = text("scripts/run_native_corpus_tv_suite.sh")
@@ -95,8 +97,25 @@ for required in (
     "requireCrossDeviceConfirmationBeforeManifestMutation: true",
     "manifestMutationAllowed: false",
     "FIELD_NATIVE_MEDIA_CAPABILITY_PROVEN",
+    "module.exports = { analyzeMediaTypeCapabilities }",
 ):
     assert required in capability_analyzer, required
+for required in (
+    "analyzeMediaTypeCapabilities",
+    "learningAllowed: evidence.complete",
+    "productionManifestMutationAllowed: false",
+    "requireCrossDeviceConfirmation: true",
+    "FIELD_NATIVE_MEDIA_CAPABILITY_BRAIN_PROPOSAL",
+):
+    assert required in capability_brain, required
+for required in (
+    "route_mode=capability_probe",
+    "diagnose-native-media-capabilities.mjs",
+    "native-media-capabilities-brain.json",
+    "capability_evidence_incomplete",
+    "FIELD_NATIVE_MEDIA_CAPABILITY_ARTIFACT",
+):
+    assert required in collection_analyzer, required
 
 # Android suites must instrument the official client, collect multi-tag backend
 # logs, run visual capture, and preserve evidence into the corpus log.
