@@ -1,6 +1,7 @@
 'use strict';
 
 const fs = require('node:fs');
+const CANONICAL_REQUEST_TYPES = new Set(['movie', 'tv', 'anime']);
 
 function fields(line) {
   const out = {};
@@ -21,20 +22,28 @@ function providerName(f) {
   return (decode(f.provider64) || String(f.provider || '')).trim().toLowerCase();
 }
 
+function requestType(f) {
+  return String(f.request_type || '').trim().toLowerCase();
+}
+
+function validRequestType(f) {
+  return CANONICAL_REQUEST_TYPES.has(requestType(f));
+}
+
 function scopeKey(client, fixture) {
   return `${client}\u0000${fixture}`;
 }
 
-function routeKey(client, fixture, provider, requestType) {
-  return `${client}\u0000${fixture}\u0000${provider}\u0000${String(requestType || 'unknown').toLowerCase()}`;
+function routeKey(client, fixture, provider, requestedType) {
+  return `${client}\u0000${fixture}\u0000${provider}\u0000${String(requestedType || 'unknown').toLowerCase()}`;
 }
 
-function playerKey(client, fixture, provider, requestType, index) {
-  return `${routeKey(client, fixture, provider, requestType)}\u0000${Number(index || 0)}`;
+function playerKey(client, fixture, provider, requestedType, index) {
+  return `${routeKey(client, fixture, provider, requestedType)}\u0000${Number(index || 0)}`;
 }
 
-function httpKey(client, provider, requestType, method, endpoint) {
-  return `${client}\u0000${provider}\u0000${String(requestType || 'unknown').toLowerCase()}\u0000${String(method || 'GET').toUpperCase()}\u0000${String(endpoint || '')}`;
+function httpKey(client, provider, requestedType, method, endpoint) {
+  return `${client}\u0000${provider}\u0000${String(requestedType || 'unknown').toLowerCase()}\u0000${String(method || 'GET').toUpperCase()}\u0000${String(endpoint || '')}`;
 }
 
 function ensureScope(scopes, client, fixture) {
@@ -71,6 +80,12 @@ function assessNativeEvidence(logPaths) {
   const problems = [];
   let readableLogs = 0;
   let frontendErrors = 0;
+
+  const requireRoute = (kind, f, client, fixture, provider) => {
+    if (validRequestType(f)) return;
+    const raw = requestType(f) || '<missing>';
+    problems.push(`invalid_request_type:${kind}:${client}:${fixture}:${provider || '<unknown>'}:${raw}`);
+  };
 
   for (const file of logPaths) {
     if (!fs.existsSync(file)) {
@@ -112,11 +127,13 @@ function assessNativeEvidence(logPaths) {
         fileScopeKeys.add(scopeKey(client, fixture));
       } else if (line.startsWith('FIELD_NATIVE_PROVIDER_BEGIN ')) {
         const provider = providerName(f);
+        requireRoute('provider_begin', f, client, fixture, provider);
         const key = routeKey(client, fixture, provider, f.request_type);
         increment(routesBegun, key);
         fileScopeKeys.add(scopeKey(client, fixture));
       } else if (line.startsWith('FIELD_NATIVE_RESULT ')) {
         const provider = providerName(f);
+        requireRoute('provider_result', f, client, fixture, provider);
         const scope = ensureScope(scopes, client, fixture);
         if (provider) scope.traversed.add(provider);
         scope.results += 1;
@@ -124,22 +141,26 @@ function assessNativeEvidence(logPaths) {
         fileScopeKeys.add(scopeKey(client, fixture));
       } else if (line.startsWith('FIELD_NATIVE_ERROR ')) {
         const provider = providerName(f);
+        requireRoute('provider_error', f, client, fixture, provider);
         const scope = ensureScope(scopes, client, fixture);
         if (provider) scope.traversed.add(provider);
         increment(routesTerminal, routeKey(client, fixture, provider, f.request_type));
         fileScopeKeys.add(scopeKey(client, fixture));
       } else if (line.startsWith('FIELD_NATIVE_PLAYER_BEGIN ')) {
         const provider = providerName(f);
+        requireRoute('player_begin', f, client, fixture, provider);
         increment(playersBegun, playerKey(client, fixture, provider, f.request_type, f.index));
         fileScopeKeys.add(scopeKey(client, fixture));
       } else if (line.startsWith('FIELD_NATIVE_PLAYER ')) {
         const provider = providerName(f);
+        requireRoute('player_result', f, client, fixture, provider);
         increment(playersTerminal, playerKey(client, fixture, provider, f.request_type, f.index));
         const scope = ensureScope(scopes, client, fixture);
         scope.playerResults += 1;
         fileScopeKeys.add(scopeKey(client, fixture));
       } else if (line.startsWith('FIELD_NATIVE_HTTP_REQUEST ')) {
         const provider = providerName(f);
+        requireRoute('http_request', f, client, fixture, provider);
         increment(httpRequests, httpKey(client, provider, f.request_type, f.method, f.endpoint));
         for (const key of fileScopeKeys) {
           const scope = scopes.get(key);
@@ -147,6 +168,7 @@ function assessNativeEvidence(logPaths) {
         }
       } else if (line.startsWith('FIELD_NATIVE_HTTP_RESPONSE ') || line.startsWith('FIELD_NATIVE_HTTP_ERROR ')) {
         const provider = providerName(f);
+        requireRoute('http_terminal', f, client, fixture, provider);
         increment(httpTerminal, httpKey(client, provider, f.request_type, f.method, f.endpoint));
       }
     }
