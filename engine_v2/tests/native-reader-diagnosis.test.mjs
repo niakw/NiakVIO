@@ -17,7 +17,7 @@ try {
     'FIELD_NATIVE_FRONTEND_CAPTURE client=tv phase=ui-launched screenshot=a.png bytes=100',
     'FIELD_NATIVE_FRONTEND_CAPTURE client=tv phase=repository-load screenshot=repo-a.png bytes=100',
     'FIELD_NATIVE_FRONTEND_CAPTURE client=tv phase=repository-loaded screenshot=repo-b.png bytes=100',
-    'FIELD_NATIVE_FRONTEND_CAPTURE client=tv phase=provider-loaded screenshot=repo-c.png bytes=100',
+    'FIELD_NATIVE_FRONTEND_CAPTURE client=tv phase=provider-load-state screenshot=repo-c.png bytes=100',
     'FIELD_NATIVE_FRONTEND_CAPTURE client=tv phase=corpus-begin screenshot=b.png bytes=100',
     'FIELD_NATIVE_FRONTEND_CAPTURE client=tv phase=provider-loading screenshot=c.png bytes=100',
     'FIELD_NATIVE_FRONTEND_CAPTURE client=tv phase=provider-result screenshot=d.png bytes=100',
@@ -88,7 +88,7 @@ try {
   const withoutLoading = common.filter((line) =>
     !line.includes('repository-load') &&
     !line.includes('repository-loaded') &&
-    !line.includes('provider-loaded') &&
+    !line.includes('provider-load-state') &&
     !line.startsWith('FIELD_NATIVE_REPOSITORY_LOAD_') &&
     !line.startsWith('FIELD_NATIVE_PROVIDER_LOAD_')
   );
