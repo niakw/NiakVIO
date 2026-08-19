@@ -35,6 +35,7 @@ for (const file of logs) {
     const f = fields(raw.slice(marker).trim());
     const row = {
       client: f.client || 'unknown', fixture: f.fixture || 'unknown', provider: decode(f.provider64),
+      requestType: String(f.request_type || 'unknown').toLowerCase(),
       index: Number(f.index || 0), state: f.state || 'unknown', engine: f.engine || 'unknown',
       httpStatus: Number(f.http_status || 0), failureStage: f.failure_stage || 'unknown',
       durationSeconds: Number(f.duration_seconds || 0) || null, host: decode(f.host64),
@@ -66,7 +67,7 @@ console.log(`FIELD_NATIVE_READER_GATE state=${failures.length ? 'failed' : 'pass
 for (const row of failures.slice(0, 40)) {
   // All fields are sanitized or structural. Never print raw stream URLs or request/response values here.
   console.log(`FIELD_NATIVE_READER_GATE_FAILURE ${JSON.stringify({
-    client: row.client, fixture: row.fixture, provider: row.provider, index: row.index,
+    client: row.client, fixture: row.fixture, provider: row.provider, requestType: row.requestType, index: row.index,
     failureClass: row.failureClass, httpStatus: row.httpStatus, failureStage: row.failureStage,
     errorCode: row.errorCode, errorClass: row.errorClass, host: row.host,
     durationSeconds: row.durationSeconds, signature: row.signature,
