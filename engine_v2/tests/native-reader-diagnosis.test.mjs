@@ -15,12 +15,19 @@ try {
   const common = [
     'FIELD_NATIVE_EVIDENCE_INSTRUMENTED client=tv',
     'FIELD_NATIVE_FRONTEND_CAPTURE client=tv phase=ui-launched screenshot=a.png bytes=100',
+    'FIELD_NATIVE_FRONTEND_CAPTURE client=tv phase=repository-load screenshot=repo-a.png bytes=100',
+    'FIELD_NATIVE_FRONTEND_CAPTURE client=tv phase=repository-loaded screenshot=repo-b.png bytes=100',
+    'FIELD_NATIVE_FRONTEND_CAPTURE client=tv phase=provider-loaded screenshot=repo-c.png bytes=100',
     'FIELD_NATIVE_FRONTEND_CAPTURE client=tv phase=corpus-begin screenshot=b.png bytes=100',
     'FIELD_NATIVE_FRONTEND_CAPTURE client=tv phase=provider-loading screenshot=c.png bytes=100',
     'FIELD_NATIVE_FRONTEND_CAPTURE client=tv phase=provider-result screenshot=d.png bytes=100',
     'FIELD_NATIVE_FRONTEND_CAPTURE client=tv phase=player-start screenshot=e.png bytes=100',
     'FIELD_NATIVE_FRONTEND_CAPTURE client=tv phase=player-result screenshot=f.png bytes=100',
     'FIELD_NATIVE_FRONTEND_CAPTURE client=tv phase=corpus-end screenshot=g.png bytes=100',
+    'FIELD_NATIVE_REPOSITORY_LOAD_BEGIN client=tv fixture=sinners-2025 expected=2 manifest_host=raw.githubusercontent.com',
+    'FIELD_NATIVE_REPOSITORY_LOAD_RESULT client=tv fixture=sinners-2025 expected=2 loaded=2',
+    `FIELD_NATIVE_PROVIDER_LOAD_RESULT client=tv fixture=sinners-2025 provider64=${b64('MOVIESDRIVE')} manifest_enabled=true runtime_enabled=true metadata_match=true`,
+    `FIELD_NATIVE_PROVIDER_LOAD_RESULT client=tv fixture=sinners-2025 provider64=${b64('PURSTREAM')} manifest_enabled=true runtime_enabled=true metadata_match=true`,
     'FIELD_NATIVE_CORPUS_BEGIN client=tv fixture=sinners-2025 providers=2',
     `FIELD_NATIVE_PROVIDER_BEGIN client=tv fixture=sinners-2025 provider64=${b64('MOVIESDRIVE')} request_type=movie`,
     `FIELD_NATIVE_RESULT client=tv fixture=sinners-2025 provider64=${b64('MOVIESDRIVE')} request_type=movie enabled=true duration_ms=1 count=2`,
@@ -45,6 +52,7 @@ try {
   assert.equal(data.readerObserved, 3);
   assert.equal(data.readerHealthy, 1);
   assert.equal(data.readerFailures, 2);
+  assert.equal(data.evidenceStats.providerLoads, 2);
   const access = data.plans.find((row) => row.failureClass === 'playback_http_access');
   assert.ok(access);
   assert.equal(access.requestType, 'movie');
@@ -72,6 +80,26 @@ try {
   assert.equal(routeRefusedData.policy.repairPlanningAllowed, false);
   assert.deepEqual(routeRefusedData.plans, []);
   assert.ok(routeRefusedData.evidenceProblems.some((problem) => problem.startsWith('invalid_request_type:')));
+
+  // Likewise, direct PluginRuntime evidence without proof that Nuvio actually
+  // installed/reconstructed the providers is no longer sufficient.
+  const loadMissing = path.join(tmp, 'load-missing.log');
+  const loadMissingOutput = path.join(tmp, 'load-missing.json');
+  const withoutLoading = common.filter((line) =>
+    !line.includes('repository-load') &&
+    !line.includes('repository-loaded') &&
+    !line.includes('provider-loaded') &&
+    !line.startsWith('FIELD_NATIVE_REPOSITORY_LOAD_') &&
+    !line.startsWith('FIELD_NATIVE_PROVIDER_LOAD_')
+  );
+  fs.writeFileSync(loadMissing, withoutLoading.join('\n') + '\n');
+  const loadRefused = spawnSync(process.execPath, [script, '--output', loadMissingOutput, loadMissing], { cwd: root, encoding: 'utf8' });
+  assert.equal(loadRefused.status, 2, loadRefused.stderr + loadRefused.stdout);
+  const loadRefusedData = JSON.parse(fs.readFileSync(loadMissingOutput, 'utf8'));
+  assert.equal(loadRefusedData.evidenceComplete, false);
+  assert.equal(loadRefusedData.policy.learningAllowed, false);
+  assert.deepEqual(loadRefusedData.plans, []);
+  assert.ok(loadRefusedData.evidenceProblems.some((problem) => problem.startsWith('missing_repository_load:')));
 
   const incomplete = path.join(tmp, 'incomplete.log');
   const incompleteOutput = path.join(tmp, 'incomplete.json');
