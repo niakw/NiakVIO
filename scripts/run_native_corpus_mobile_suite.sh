@@ -12,6 +12,7 @@ ACCEPTANCE_PREPARE="${NIAKVIO}/scripts/prepare_native_reader_acceptance.py"
 INSTRUMENTER="${NIAKVIO}/scripts/instrument_native_client_evidence.py"
 REQUEST_CONTRACT="${NIAKVIO}/scripts/augment_native_corpus_request_contract.py"
 PROVIDER_LOADING="${NIAKVIO}/scripts/augment_native_provider_loading.py"
+REPOSITORY_RESOLVER="${NIAKVIO}/scripts/resolve_native_repository.sh"
 FRONTEND_CAPTURE="${NIAKVIO}/scripts/capture_native_device_frontend.sh"
 FRONTEND_WATCHER="${NIAKVIO}/scripts/watch_native_device_frontend.sh"
 EVIDENCE_ROOT="${WORKSPACE}/native-evidence/mobile"
@@ -28,8 +29,11 @@ PRIMARY_STREAM_SCOPE="${NIAKVIO_PRIMARY_STREAM_SCOPE:-all}"
 REGRESSION_STREAM_SCOPE="${NIAKVIO_REGRESSION_STREAM_SCOPE:-2}"
 SOURCE_SHA="${NIAKVIO_SOURCE_SHA:-$(git -C "$NIAKVIO" rev-parse HEAD)}"
 SOURCE_REPOSITORY="${GITHUB_REPOSITORY:-niakw/NiakVIO}"
-MANIFEST_URL="${NIAKVIO_MANIFEST_URL:-https://raw.githubusercontent.com/${SOURCE_REPOSITORY}/${SOURCE_SHA}/${TARGET_MANIFEST}}"
-ALLOW_LOCAL_MANIFEST="${NIAKVIO_ALLOW_LOCAL_MANIFEST:-0}"
+source "$REPOSITORY_RESOLVER"
+resolve_native_repository mobile 10.0.2.2 18766 || exit $?
+trap cleanup_native_repository EXIT
+MANIFEST_URL="$NIAKVIO_RESOLVED_MANIFEST_URL"
+ALLOW_LOCAL_MANIFEST="$NIAKVIO_RESOLVED_ALLOW_LOCAL"
 PROVIDER_LOADING_URL_ARGS=()
 if [[ "$ALLOW_LOCAL_MANIFEST" = "1" ]]; then PROVIDER_LOADING_URL_ARGS+=(--allow-local-lab-url); fi
 CONFIGURED_ACCEPTANCE_PROVIDER_SCOPE="$(python3 - <<'PY' 2>/dev/null || true
