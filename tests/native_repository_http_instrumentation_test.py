@@ -2,6 +2,8 @@
 from __future__ import annotations
 
 import importlib.util
+import subprocess
+import sys
 import tempfile
 from pathlib import Path
 
@@ -88,6 +90,47 @@ with tempfile.TemporaryDirectory() as tmp_raw:
         assert "authorization=" not in client_out.lower()
         assert "cookie=" not in client_out.lower()
         assert "query=" not in client_out.lower()
+
+    # Execute the provider-runtime Desktop code generator against its exact anchors.
+    # This catches Python/Kotlin escaping regressions before macOS/Windows runners.
+    desktop_runtime = tmp / "desktop-runtime"
+    runtime_path = write(
+        desktop_runtime,
+        "composeApp/src/fullCommonMain/kotlin/com/nuvio/app/features/plugins/runtime/PluginRuntime.kt",
+        "fun install() { addModule(FetchBridge()) }\n",
+    )
+    bridge_path = write(
+        desktop_runtime,
+        "composeApp/src/fullCommonMain/kotlin/com/nuvio/app/features/plugins/runtime/network/FetchBridge.kt",
+        '''internal class FetchBridge : HostModule {\n'''
+        '''    fun fetch() {\n'''
+        '''            } catch (t: Throwable) {\n'''
+        '''                log.e(t) { "Fetch bridge error for $method $url" }\n'''
+        '''        val headers = parseHeaders(headersJson).toMutableMap()\n'''
+        '''        if (!headers.containsKey("User-Agent")) {\n'''
+        '''            headers["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"\n'''
+        '''        }\n\n'''
+        '''        val response = httpRequestRaw(\n'''
+        '''        val responseHeaders = response.headers.mapKeys { (key, _) -> key.lowercase() }\n'''
+        '''            .mapValues { (_, value) -> truncateString(value, MAX_FETCH_HEADER_VALUE_CHARS) }\n'''
+        '''        val result = JsonObject(\n'''
+        '''    }\n}\n''',
+    )
+    generated = subprocess.run(
+        [sys.executable, str(ROOT / "scripts/instrument_native_desktop_evidence.py"), str(desktop_runtime)],
+        cwd=ROOT,
+        text=True,
+        capture_output=True,
+    )
+    assert generated.returncode == 0, generated.stdout + generated.stderr
+    runtime_out = runtime_path.read_text(encoding="utf-8")
+    bridge_out = bridge_path.read_text(encoding="utf-8")
+    assert "FetchBridge(scraperId, mediaType)" in runtime_out
+    assert "FIELD_NATIVE_HTTP_REQUEST client=desktop" in bridge_out
+    assert "FIELD_NATIVE_HTTP_RESPONSE client=desktop" in bridge_out
+    assert "FIELD_NATIVE_HTTP_ERROR client=desktop" in bridge_out
+    assert bridge_out.count("desktop-native-http-evidence.log") == 3
+    assert 'log.i { "FIELD_NATIVE_HTTP_' not in bridge_out
 
 # Provider-runtime Desktop evidence uses the same dedicated sanitized channel;
 # never depend on Gradle's captured test stdout for Brain input.
