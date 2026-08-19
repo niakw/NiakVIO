@@ -1,0 +1,102 @@
+name: Native reader learning sync
+
+on:
+  workflow_run:
+    workflows:
+      - Native reader acceptance
+      - NiakVIO Brain learning lab
+    types: [completed]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: niakvio-brain-learning-memory-writer
+  cancel-in-progress: false
+
+jobs:
+  sync-reader-learning:
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion != 'cancelled' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout trusted main implementation
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: "3.12"
+
+      - name: Restore current sanitized Brain state
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p reader-learning-input reader-learning-output
+          git fetch origin brain-learning/proposals:refs/remotes/origin/brain-learning/proposals || true
+          if git cat-file -e refs/remotes/origin/brain-learning/proposals:engine_v2/learning/latest.json 2>/dev/null; then
+            git show refs/remotes/origin/brain-learning/proposals:engine_v2/learning/latest.json > reader-learning-input/latest.json
+          else
+            printf '{"publicationAllowed":false,"productionWritesAllowed":false,"proposals":[]}\n' > reader-learning-input/latest.json
+          fi
+          if git cat-file -e refs/remotes/origin/brain-learning/proposals:engine_v2/learning/latest.md 2>/dev/null; then
+            git show refs/remotes/origin/brain-learning/proposals:engine_v2/learning/latest.md > reader-learning-input/latest.md
+          else
+            printf '# NiakVIO Brain Learning\n' > reader-learning-input/latest.md
+          fi
+
+      - name: Download latest completed main reader-repair comparison
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p reader-learning-input/acceptance
+          RUN_ID="$(gh run list --workflow native-reader-acceptance.yml --branch main --limit 30 --json databaseId,status --jq '[.[] | select(.status=="completed")][0].databaseId // empty' || true)"
+          if [ -n "$RUN_ID" ]; then
+            gh run download "$RUN_ID" --name "native-reader-brain-repair-$RUN_ID" --dir reader-learning-input/acceptance || true
+          fi
+          if [ ! -s reader-learning-input/acceptance/tv-reader-repair-comparison.json ]; then
+            printf '{"acceptedCount":0,"rejectedCount":0,"inconclusiveCount":0,"accepted":[],"rejected":[],"inconclusive":[]}\n' > reader-learning-input/acceptance/tv-reader-repair-comparison.json
+          fi
+
+      - name: Merge sanitized reader repair memory
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/merge_native_reader_repair_learning.py \
+            --state reader-learning-input/latest.json \
+            --previous-state reader-learning-input/latest.json \
+            --comparison reader-learning-input/acceptance/tv-reader-repair-comparison.json \
+            --output reader-learning-output/latest.json \
+            --markdown-input reader-learning-input/latest.md \
+            --markdown-output reader-learning-output/latest.md
+          node -e "const x=require('./reader-learning-output/latest.json');if(x.productionWritesAllowed===true||x.publicationAllowed===true)process.exit(1)"
+          if grep -Eiq 'https?://|authorization[=:]|cookie[=:]|token[=:]' reader-learning-output/latest.json; then
+            echo 'refusing unsafe native reader learning state' >&2
+            exit 1
+          fi
+
+      - name: Update the single Brain memory branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          BRANCH="brain-learning/proposals"
+          git switch -C "$BRANCH" main
+          mkdir -p engine_v2/learning
+          cp reader-learning-output/latest.json engine_v2/learning/latest.json
+          cp reader-learning-output/latest.md engine_v2/learning/latest.md
+          git config user.name "niakvio-brain"
+          git config user.email "actions@users.noreply.github.com"
+          git add engine_v2/learning/latest.json engine_v2/learning/latest.md
+          if git diff --cached --quiet; then
+            echo "No native reader learning change."
+          else
+            git commit -m "brain: learn from native reader repair outcomes"
+            git push --force-with-lease origin HEAD:"$BRANCH"
+          fi
