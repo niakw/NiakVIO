@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
 import { createRequire } from 'node:module';
-import { planRepair } from '../src/repair-brain.mjs';
+import { BRAIN_CONTROL_PLANE_VERSION, planRepair } from '../src/repair-brain.mjs';
 
 const require = createRequire(import.meta.url);
 const { readerFailureClass, readerSignature, isReaderFailure } = require('../../scripts/native_player_diagnostics.cjs');
@@ -113,7 +113,7 @@ const priorities = [...grouped.values()]
 const payload = {
   schemaVersion: 1,
   generatedAt: new Date().toISOString(),
-  brainVersion: plans[0]?.hypotheses ? 4 : 4,
+  brainVersion: BRAIN_CONTROL_PLANE_VERSION,
   readerObserved: readerRows.length,
   readerHealthy: readerRows.length - failures.length,
   readerFailures: failures.length,
