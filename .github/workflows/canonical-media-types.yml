@@ -1,0 +1,31 @@
+name: Canonical media type gate
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "manifest.json"
+      - "playback-hotfix/manifest.json"
+      - ".github/triggers/nuvio-client-lab.json"
+      - "engine_v2/src/contracts.mjs"
+      - "engine_v2/tests/contracts.test.mjs"
+      - "tests/canonical_media_types_test.py"
+      - ".github/workflows/canonical-media-types.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  canonical-media-types:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with: {persist-credentials: false}
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with: {node-version: "24", package-manager-cache: false}
+      - name: Validate canonical manifests and fixtures
+        run: python3 tests/canonical_media_types_test.py
+      - name: Validate Core alias boundary
+        run: node engine_v2/tests/contracts.test.mjs
