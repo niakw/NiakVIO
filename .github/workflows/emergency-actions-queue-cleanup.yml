@@ -1,0 +1,69 @@
+name: Emergency Actions queue cleanup
+
+on:
+  push:
+    branches:
+      - cleanup/actions-queue
+    paths:
+      - .github/workflows/emergency-actions-queue-cleanup.yml
+
+permissions:
+  contents: read
+  actions: write
+
+jobs:
+  cancel-obsolete-runs:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      KEEP_RUN_IDS: "32279408922,32279408837,32279408897,32279408836,32279408941"
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Cancel every obsolete active Actions run
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh api --paginate --slurp "repos/$GITHUB_REPOSITORY/actions/runs?per_page=100" > /tmp/runs.json
+
+          mapfile -t RUN_IDS < <(
+            jq -r '.[] | .workflow_runs[] | select(.status != "completed") | .id' /tmp/runs.json | sort -n -u
+          )
+
+          cancelled=0
+          skipped=0
+          for run_id in "${RUN_IDS[@]}"; do
+            case ",${KEEP_RUN_IDS},${GITHUB_RUN_ID}," in
+              *",${run_id},"*)
+                echo "KEEP run=${run_id}"
+                skipped=$((skipped + 1))
+                continue
+                ;;
+            esac
+
+            meta="$(jq -c --argjson id "$run_id" '.[] | .workflow_runs[] | select(.id == $id) | {id,name,status,event,head_branch,head_sha}' /tmp/runs.json | head -n 1)"
+            echo "CANCEL ${meta}"
+            if gh api --method POST "repos/$GITHUB_REPOSITORY/actions/runs/$run_id/cancel" >/dev/null 2>&1; then
+              cancelled=$((cancelled + 1))
+            else
+              echo "Normal cancel refused for ${run_id}; trying force-cancel"
+              gh api --method POST "repos/$GITHUB_REPOSITORY/actions/runs/$run_id/force-cancel" >/dev/null 2>&1 || true
+            fi
+          done
+
+          echo "Initial cancellation requests=${cancelled}; protected=${skipped}"
+
+          sleep 8
+          gh api --paginate --slurp "repos/$GITHUB_REPOSITORY/actions/runs?per_page=100" > /tmp/remaining.json
+          mapfile -t REMAINING < <(
+            jq -r '.[] | .workflow_runs[] | select(.status != "completed") | .id' /tmp/remaining.json | sort -n -u
+          )
+
+          for run_id in "${REMAINING[@]}"; do
+            case ",${KEEP_RUN_IDS},${GITHUB_RUN_ID}," in
+              *",${run_id},"*) continue ;;
+            esac
+            echo "FORCE_CANCEL run=${run_id}"
+            gh api --method POST "repos/$GITHUB_REPOSITORY/actions/runs/$run_id/force-cancel" >/dev/null 2>&1 || true
+          done
+
+          echo "FIELD_ACTIONS_QUEUE_CLEANUP protected=${KEEP_RUN_IDS} self=${GITHUB_RUN_ID}"
