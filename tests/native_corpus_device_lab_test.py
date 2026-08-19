@@ -138,10 +138,11 @@ for required in (
     "NIAKVIO_TARGET_PROVIDER",
     "NIAKVIO_PLAYER_PROBES",
     'NIAKVIO_REQUIRE_READER_SUCCESS: "1"',
-    "avd-v2-${{ runner.os }}-tv-api31-android-tv-x86-tv_1080p-reader",
-    "avd-v2-${{ runner.os }}-mobile-api35-google_apis-x86_64-pixel_2-reader",
+    "avd-v1-${{ runner.os }}-tv-api31-android-tv-x86-tv_1080p",
+    "avd-v1-${{ runner.os }}-mobile-api35-google_apis-x86_64-pixel_2",
 ):
     assert required in reader_workflow, required
+assert "avd-v2-" not in reader_workflow, "targeted reader lab must reuse established AVD profiles"
 
 for required in (
     "prepare_native_corpus_client.py",
