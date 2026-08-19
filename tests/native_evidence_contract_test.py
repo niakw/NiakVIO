@@ -74,13 +74,15 @@ assert "PluginRepository.clearLocalState()" not in provider_loading, "native lab
 
 # Repository network evidence is passive and sanitized, and applies to the exact
 # pinned GitHub candidate or a content-addressed loopback repair candidate only.
+# The Python source is an f-string, hence doubled braces are required to emit the
+# runtime Kotlin regex /candidate-[0-9a-f]{32}/.
 for required in (
     "FIELD_NATIVE_REPOSITORY_HTTP_REQUEST",
     "FIELD_NATIVE_REPOSITORY_HTTP_RESPONSE",
     "FIELD_NATIVE_REPOSITORY_HTTP_ERROR",
     'rawUrl.host.equals("raw.githubusercontent.com"',
     'setOf("127.0.0.1", "localhost", "10.0.2.2")',
-    'Regex("/candidate-[0-9a-f]{32}/")',
+    'Regex("/candidate-[0-9a-f]{{32}}/")',
     "response_header_names=$responseHeaderNames",
     "source=$cacheSource",
 ):
@@ -123,8 +125,6 @@ for required in (
     "corpus-end",
 ):
     assert required in completeness, required
-# A terminal repository failure is actionable evidence, not an infrastructure
-# incompleteness merely because no provider/player route could begin.
 assert "repository_load_failed:" not in completeness
 
 # Brain must be fail-closed when any evidence link is missing, and capability
@@ -245,6 +245,8 @@ for required in (
     'rm -f "$GRADLE_LOG"',
 ):
     assert required in desktop_suite, required
+assert "PROVIDER_ARGS[@]" not in desktop_suite, "macOS Bash 3.2 + set -u must not expand an empty provider array"
+assert "PROVIDER_LOADING_URL_ARGS[@]" not in desktop_suite, "macOS Bash 3.2 + set -u must not expand an empty loading array"
 for required in (
     'captureDesktopPhase("repository-loaded", fixtureSlugForLoad)',
     'captureDesktopPhase("repository-load-error", fixtureSlugForLoad)',
