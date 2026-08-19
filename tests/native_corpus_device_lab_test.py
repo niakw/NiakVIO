@@ -80,7 +80,9 @@ assert "avd-v1-${{ runner.os }}-mobile-api35-google_apis-x86_64-pixel_2" in targ
 
 # Canonical reader proof is one Android workflow: representative movie/TV/anime
 # catalogue routes, every manifest provider including inactive entries, every
-# returned stream, official TV/Mobile readers, then a bounded Brain retest.
+# returned stream, official TV/Mobile readers, then a bounded Brain retest. The
+# workflow declares exhaustive intent; pull-request staging may bound that intent
+# while trusted-main/manual runs keep the full path.
 for fixture in ("sinners-2025", "breaking-bad-s01e01", "jujutsu-kaisen-s01e01"):
     assert fixture in android_reader, fixture
 for required in (
@@ -142,7 +144,8 @@ for required in (
     "native-reader-brain-repair-$RUN_ID",
     "has_comparison=true",
     "has_comparison=false",
-    "run remains importable after a rerun",
+    "steps.source.outputs.repair_duplicate != 'true'",
+    "rm -rf reader-learning-input/acceptance",
     "duplicate",
 ):
     assert required in reader_learning, required
@@ -163,14 +166,17 @@ for workflow, cache_key in (
     assert "force-avd-creation: false" in workflow
     assert "-no-snapshot-save" in workflow
 
-# Preparation supports any safe in-repository manifest/candidate without a
-# hard-coded hotfix tree, and keeps provider/runtime failures as evidence.
+# Pull-request reader staging is explicitly bounded, but trusted main/manual
+# execution remains exhaustive because the bound is derived from the event name.
 for source, label in ((prepare_client, "prepare"), (restage_client, "restage")):
     assert "--provider" in source, (label, "target provider")
     assert "--player-probes" in source, (label, "target reader probe count")
     assert "--manifest" in source, (label, "manifest selection")
 assert "raw.githubusercontent.com" in prepare_client
 assert "FIELD_NATIVE_CORPUS_STAGE_SELECTED" in prepare_client
+assert "GITHUB_EVENT_NAME" in restage_client
+assert "NIAKVIO_PR_PROVIDER_LIMIT" in restage_client
+assert "pr-bounded" in restage_client
 
 # Official Media3 reader is primary evidence; lightweight HTTP is secondary.
 for required in (
@@ -255,5 +261,5 @@ assert len(stageable) >= 80, len(stageable)
 
 print(
     "native device lab contract passed: "
-    f"fixtures={len(expected_slugs)} providers={len(stageable)} android_exhaustive=true desktop_native=true brain_retest=true cached_profiles=true targeted_manual=true reader_learning_idempotent=true trusted_main_learning=true missing_artifact_retriable=true"
+    f"fixtures={len(expected_slugs)} providers={len(stageable)} android_exhaustive=true desktop_native=true brain_retest=true cached_profiles=true targeted_manual=true reader_learning_idempotent=true trusted_main_learning=true missing_artifact_retriable=true pr_bounded=true"
 )
