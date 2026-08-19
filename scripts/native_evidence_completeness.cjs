@@ -287,20 +287,26 @@ function assessNativeEvidence(logPaths) {
     }
     if (scope.repositoryHttpRequests > 0) {
       requiredFrontend.add('repository-http-request');
-      requiredFrontend.add('repository-http-response');
+      requiredFrontend.add('repository-http-terminal');
     }
     if (scope.providerLoadObserved.size > 0) requiredFrontend.add('provider-load-state');
     if (scope.results > 0) requiredFrontend.add('provider-result');
     if (scope.httpRequests > 0) {
       requiredFrontend.add('provider-http-request');
-      requiredFrontend.add('provider-http-response');
+      requiredFrontend.add('provider-http-terminal');
     }
     if (scope.playerResults > 0) {
       requiredFrontend.add('player-start');
       requiredFrontend.add('player-result');
     }
     for (const phase of requiredFrontend) {
-      if (!scope.frontendPhases.has(phase)) problems.push(`missing_frontend_phase:${label}:${phase}`);
+      const legacyPhase = phase === 'repository-http-terminal'
+        ? 'repository-http-response'
+        : phase === 'provider-http-terminal'
+          ? 'provider-http-response'
+          : null;
+      const observed = scope.frontendPhases.has(phase) || (legacyPhase && scope.frontendPhases.has(legacyPhase));
+      if (!observed) problems.push(`missing_frontend_phase:${label}:${phase}`);
     }
   }
 
