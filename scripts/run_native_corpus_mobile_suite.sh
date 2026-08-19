@@ -83,6 +83,7 @@ for fixture in "${FIXTURES[@]}"; do
 
   LOG="${WORKSPACE}/mobile-native-corpus-${fixture}.log"
   adb logcat -d -v brief -s NiakvioCorpus:I NiakvioEvidence:I PluginRuntime:I '*:S' > "$LOG" || true
+  echo "FIELD_NATIVE_EVIDENCE_INSTRUMENTED client=mobile" >> "$LOG"
   cat "$FRONT_LOG" >> "$LOG" 2>/dev/null || true
   cat "$LOG" || true
 
