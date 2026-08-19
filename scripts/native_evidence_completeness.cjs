@@ -1,0 +1,228 @@
+'use strict';
+
+const fs = require('node:fs');
+
+function fields(line) {
+  const out = {};
+  const re = /([A-Za-z0-9_]+)=([^\s]+)/g;
+  let match;
+  while ((match = re.exec(line)) !== null) out[match[1]] = match[2];
+  return out;
+}
+
+function decode(value) {
+  if (!value) return '';
+  let text = String(value).replace(/-/g, '+').replace(/_/g, '/');
+  while (text.length % 4) text += '=';
+  try { return Buffer.from(text, 'base64').toString('utf8'); } catch { return ''; }
+}
+
+function providerName(f) {
+  return (decode(f.provider64) || String(f.provider || '')).trim().toLowerCase();
+}
+
+function scopeKey(client, fixture) {
+  return `${client}\u0000${fixture}`;
+}
+
+function routeKey(client, fixture, provider, requestType) {
+  return `${client}\u0000${fixture}\u0000${provider}\u0000${String(requestType || 'unknown').toLowerCase()}`;
+}
+
+function playerKey(client, fixture, provider, requestType, index) {
+  return `${routeKey(client, fixture, provider, requestType)}\u0000${Number(index || 0)}`;
+}
+
+function httpKey(client, provider, requestType, method, endpoint) {
+  return `${client}\u0000${provider}\u0000${String(requestType || 'unknown').toLowerCase()}\u0000${String(method || 'GET').toUpperCase()}\u0000${String(endpoint || '')}`;
+}
+
+function ensureScope(scopes, client, fixture) {
+  const key = scopeKey(client, fixture);
+  if (!scopes.has(key)) {
+    scopes.set(key, {
+      client,
+      fixture,
+      expectedProviders: 0,
+      ended: false,
+      instrumented: false,
+      traversed: new Set(),
+      frontendPhases: new Set(),
+      results: 0,
+      httpRequests: 0,
+      playerResults: 0,
+    });
+  }
+  return scopes.get(key);
+}
+
+function increment(map, key) {
+  map.set(key, Number(map.get(key) || 0) + 1);
+}
+
+function assessNativeEvidence(logPaths) {
+  const scopes = new Map();
+  const routesBegun = new Map();
+  const routesTerminal = new Map();
+  const playersBegun = new Map();
+  const playersTerminal = new Map();
+  const httpRequests = new Map();
+  const httpTerminal = new Map();
+  const problems = [];
+  let readableLogs = 0;
+  let frontendErrors = 0;
+
+  for (const file of logPaths) {
+    if (!fs.existsSync(file)) {
+      problems.push(`missing_log:${file}`);
+      continue;
+    }
+    readableLogs += 1;
+    const fileScopeKeys = new Set();
+    const fileFrontend = new Set();
+    const fileInstrumentedClients = new Set();
+    const lines = fs.readFileSync(file, 'utf8').split(/\r?\n/);
+
+    for (const raw of lines) {
+      const markerAt = raw.indexOf('FIELD_NATIVE_');
+      if (markerAt < 0) continue;
+      const line = raw.slice(markerAt).trim();
+      const f = fields(line);
+      const client = f.client || 'unknown';
+      const fixture = f.fixture || 'unknown';
+
+      if (line.startsWith('FIELD_NATIVE_CORPUS_BEGIN ')) {
+        const scope = ensureScope(scopes, client, fixture);
+        scope.expectedProviders = Number(f.providers || 0);
+        fileScopeKeys.add(scopeKey(client, fixture));
+      } else if (line.startsWith('FIELD_NATIVE_CORPUS_END ')) {
+        const scope = ensureScope(scopes, client, fixture);
+        scope.ended = true;
+        fileScopeKeys.add(scopeKey(client, fixture));
+      } else if (line.startsWith('FIELD_NATIVE_EVIDENCE_INSTRUMENTED ')) {
+        fileInstrumentedClients.add(client);
+      } else if (line.startsWith('FIELD_NATIVE_FRONTEND_CAPTURE ')) {
+        if (f.phase) fileFrontend.add(f.phase);
+      } else if (line.startsWith('FIELD_NATIVE_FRONTEND_ERROR ')) {
+        frontendErrors += 1;
+      } else if (line.startsWith('FIELD_NATIVE_PROVIDER_SKIPPED ')) {
+        const provider = providerName(f);
+        const scope = ensureScope(scopes, client, fixture);
+        if (provider) scope.traversed.add(provider);
+        fileScopeKeys.add(scopeKey(client, fixture));
+      } else if (line.startsWith('FIELD_NATIVE_PROVIDER_BEGIN ')) {
+        const provider = providerName(f);
+        const key = routeKey(client, fixture, provider, f.request_type);
+        increment(routesBegun, key);
+        fileScopeKeys.add(scopeKey(client, fixture));
+      } else if (line.startsWith('FIELD_NATIVE_RESULT ')) {
+        const provider = providerName(f);
+        const scope = ensureScope(scopes, client, fixture);
+        if (provider) scope.traversed.add(provider);
+        scope.results += 1;
+        increment(routesTerminal, routeKey(client, fixture, provider, f.request_type));
+        fileScopeKeys.add(scopeKey(client, fixture));
+      } else if (line.startsWith('FIELD_NATIVE_ERROR ')) {
+        const provider = providerName(f);
+        const scope = ensureScope(scopes, client, fixture);
+        if (provider) scope.traversed.add(provider);
+        increment(routesTerminal, routeKey(client, fixture, provider, f.request_type));
+        fileScopeKeys.add(scopeKey(client, fixture));
+      } else if (line.startsWith('FIELD_NATIVE_PLAYER_BEGIN ')) {
+        const provider = providerName(f);
+        increment(playersBegun, playerKey(client, fixture, provider, f.request_type, f.index));
+        fileScopeKeys.add(scopeKey(client, fixture));
+      } else if (line.startsWith('FIELD_NATIVE_PLAYER ')) {
+        const provider = providerName(f);
+        increment(playersTerminal, playerKey(client, fixture, provider, f.request_type, f.index));
+        const scope = ensureScope(scopes, client, fixture);
+        scope.playerResults += 1;
+        fileScopeKeys.add(scopeKey(client, fixture));
+      } else if (line.startsWith('FIELD_NATIVE_HTTP_REQUEST ')) {
+        const provider = providerName(f);
+        increment(httpRequests, httpKey(client, provider, f.request_type, f.method, f.endpoint));
+        for (const key of fileScopeKeys) {
+          const scope = scopes.get(key);
+          if (scope && scope.client === client) scope.httpRequests += 1;
+        }
+      } else if (line.startsWith('FIELD_NATIVE_HTTP_RESPONSE ') || line.startsWith('FIELD_NATIVE_HTTP_ERROR ')) {
+        const provider = providerName(f);
+        increment(httpTerminal, httpKey(client, provider, f.request_type, f.method, f.endpoint));
+      }
+    }
+
+    for (const key of fileScopeKeys) {
+      const scope = scopes.get(key);
+      if (!scope) continue;
+      if (fileInstrumentedClients.has(scope.client)) scope.instrumented = true;
+      for (const phase of fileFrontend) scope.frontendPhases.add(phase);
+    }
+  }
+
+  if (readableLogs === 0) problems.push('no_readable_log');
+  if (scopes.size === 0) problems.push('missing_corpus_scope');
+  if (frontendErrors > 0) problems.push(`frontend_capture_errors:${frontendErrors}`);
+
+  for (const scope of scopes.values()) {
+    const label = `${scope.client}:${scope.fixture}`;
+    if (scope.expectedProviders <= 0) problems.push(`invalid_expected_provider_count:${label}`);
+    if (!scope.ended) problems.push(`missing_corpus_end:${label}`);
+    if (!scope.instrumented) problems.push(`missing_runtime_instrumentation:${label}`);
+    if (scope.expectedProviders > 0 && scope.traversed.size !== scope.expectedProviders) {
+      problems.push(`provider_traversal:${label}:${scope.traversed.size}/${scope.expectedProviders}`);
+    }
+    const requiredFrontend = new Set(['ui-launched', 'corpus-begin', 'provider-loading', 'corpus-end']);
+    if (scope.results > 0) requiredFrontend.add('provider-result');
+    if (scope.httpRequests > 0) {
+      requiredFrontend.add('provider-http-request');
+      requiredFrontend.add('provider-http-response');
+    }
+    if (scope.playerResults > 0) {
+      requiredFrontend.add('player-start');
+      requiredFrontend.add('player-result');
+    }
+    for (const phase of requiredFrontend) {
+      if (!scope.frontendPhases.has(phase)) problems.push(`missing_frontend_phase:${label}:${phase}`);
+    }
+  }
+
+  for (const [key, begun] of routesBegun) {
+    const terminal = Number(routesTerminal.get(key) || 0);
+    if (terminal !== begun) problems.push(`provider_route_terminal:${key.replace(/\u0000/g, ':')}:${terminal}/${begun}`);
+  }
+  for (const [key, terminal] of routesTerminal) {
+    const begun = Number(routesBegun.get(key) || 0);
+    if (terminal > begun) problems.push(`provider_route_missing_begin:${key.replace(/\u0000/g, ':')}:${terminal}/${begun}`);
+  }
+  for (const [key, begun] of playersBegun) {
+    const terminal = Number(playersTerminal.get(key) || 0);
+    if (terminal !== begun) problems.push(`player_terminal:${key.replace(/\u0000/g, ':')}:${terminal}/${begun}`);
+  }
+  for (const [key, terminal] of playersTerminal) {
+    const begun = Number(playersBegun.get(key) || 0);
+    if (terminal > begun) problems.push(`player_missing_begin:${key.replace(/\u0000/g, ':')}:${terminal}/${begun}`);
+  }
+  for (const [key, requested] of httpRequests) {
+    const terminal = Number(httpTerminal.get(key) || 0);
+    if (terminal !== requested) problems.push(`http_terminal:${key.replace(/\u0000/g, ':')}:${terminal}/${requested}`);
+  }
+  for (const [key, terminal] of httpTerminal) {
+    const requested = Number(httpRequests.get(key) || 0);
+    if (terminal > requested) problems.push(`http_missing_request:${key.replace(/\u0000/g, ':')}:${terminal}/${requested}`);
+  }
+
+  return {
+    complete: problems.length === 0,
+    problems,
+    stats: {
+      readableLogs,
+      scopes: scopes.size,
+      providerRoutes: routesBegun.size,
+      playerProbes: playersTerminal.size,
+      httpRequests: [...httpRequests.values()].reduce((a, b) => a + b, 0),
+      frontendErrors,
+    },
+  };
+}
+
+module.exports = { assessNativeEvidence };
