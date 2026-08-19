@@ -193,10 +193,13 @@ OLD_ANDROID_PROBE_BLOCK = '''                rows.firstOrNull()?.let { row ->
 '''
 
 NEW_ANDROID_PROBE_BLOCK = '''                rows.take(__MAX_PROBES__).forEachIndexed { index, row ->
-                    val transport = probeTransport(row.url, row.headers)
-                    emit("FIELD_NATIVE_TRANSPORT client=__CLIENT__ fixture=$fixtureSlug provider64=${b64(provider.id)} index=$index state=${transport.state} kind=${transport.kind} status=${transport.status} content_type64=${b64(transport.contentType)} extm3u=${transport.extm3u} duration_seconds=${transport.durationSeconds ?: 0.0} host64=${b64(transport.host)} media_hint64=${b64(transport.mediaHint)}")
+                    // Human-order contract: the official player must be the first
+                    // consumer. A diagnostic GET before Media3 can consume a signed
+                    // or one-shot URL and manufacture the very 403 we are measuring.
                     val reader = probeNativePlayer(row.url, row.headers, __EXPECTED_MINUTES__)
                     emit("FIELD_NATIVE_PLAYER client=__CLIENT__ fixture=$fixtureSlug provider64=${b64(provider.id)} index=$index state=${reader.state} engine=${reader.engine} http_status=${reader.httpStatus} failure_stage=${reader.failureStage} duration_seconds=${reader.durationSeconds ?: 0.0} host64=${b64(reader.host)} error_class64=${b64(reader.errorClass)} error_code64=${b64(reader.errorCode)} exception_chain64=${b64(reader.exceptionChain)} response_header_names64=${b64(reader.responseHeaderNames)}")
+                    val transport = probeTransport(row.url, row.headers)
+                    emit("FIELD_NATIVE_TRANSPORT client=__CLIENT__ fixture=$fixtureSlug provider64=${b64(provider.id)} index=$index state=${transport.state} kind=${transport.kind} status=${transport.status} content_type64=${b64(transport.contentType)} extm3u=${transport.extm3u} duration_seconds=${transport.durationSeconds ?: 0.0} host64=${b64(transport.host)} media_hint64=${b64(transport.mediaHint)}")
                 }
 '''
 
