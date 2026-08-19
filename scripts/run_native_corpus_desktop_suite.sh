@@ -31,8 +31,6 @@ resolve_native_repository desktop 127.0.0.1 18767 || exit $?
 trap cleanup_native_repository EXIT
 MANIFEST_URL="$NIAKVIO_RESOLVED_MANIFEST_URL"
 ALLOW_LOCAL_MANIFEST="$NIAKVIO_RESOLVED_ALLOW_LOCAL"
-PROVIDER_LOADING_URL_ARGS=()
-if [[ "$ALLOW_LOCAL_MANIFEST" = "1" ]]; then PROVIDER_LOADING_URL_ARGS+=(--allow-local-lab-url); fi
 
 case "$(uname -s)" in
   Darwin) HOST_OS="macos" ;;
@@ -46,11 +44,6 @@ else
   FIXTURES=("${DEFAULT_FIXTURES[@]}")
 fi
 
-PROVIDER_ARGS=()
-if [[ -n "$TARGET_PROVIDER" && "$TARGET_PROVIDER" != "all" && "$TARGET_PROVIDER" != "fixture" ]]; then
-  PROVIDER_ARGS=(--provider "$TARGET_PROVIDER")
-fi
-
 python3 "$INSTRUMENTER" "$DESKTOP_ROOT" || exit $?
 python3 "$REPOSITORY_HTTP_INSTRUMENTER" desktop "$DESKTOP_ROOT" || exit $?
 STATUS=0
@@ -61,9 +54,17 @@ for fixture in "${FIXTURES[@]}"; do
   if [[ "$fixture" = "$PRIMARY_FIXTURE" ]]; then STREAM_SCOPE="$PRIMARY_STREAM_SCOPE"; fi
   echo "===== DESKTOP NATIVE READER FIXTURE: $fixture ($HOST_OS) ====="
 
-  python3 "$RESTAGE" desktop --fixture "$fixture" --workspace "$WORKSPACE" "${PROVIDER_ARGS[@]}" --manifest "$TARGET_MANIFEST" || { STATUS=1; continue; }
+  if [[ -n "$TARGET_PROVIDER" && "$TARGET_PROVIDER" != "all" && "$TARGET_PROVIDER" != "fixture" ]]; then
+    python3 "$RESTAGE" desktop --fixture "$fixture" --workspace "$WORKSPACE" --provider "$TARGET_PROVIDER" --manifest "$TARGET_MANIFEST" || { STATUS=1; continue; }
+  else
+    python3 "$RESTAGE" desktop --fixture "$fixture" --workspace "$WORKSPACE" --manifest "$TARGET_MANIFEST" || { STATUS=1; continue; }
+  fi
   python3 "$REQUEST_CONTRACT" desktop --fixture "$fixture" --manifest "$TARGET_MANIFEST" --source "$TEST_SOURCE" || { STATUS=1; continue; }
-  python3 "$PROVIDER_LOADING" desktop --manifest "$TARGET_MANIFEST" --manifest-url "$MANIFEST_URL" --source "$TEST_SOURCE" --platform "$HOST_OS" "${PROVIDER_LOADING_URL_ARGS[@]}" || { STATUS=1; continue; }
+  if [[ "$ALLOW_LOCAL_MANIFEST" = "1" ]]; then
+    python3 "$PROVIDER_LOADING" desktop --manifest "$TARGET_MANIFEST" --manifest-url "$MANIFEST_URL" --source "$TEST_SOURCE" --platform "$HOST_OS" --allow-local-lab-url || { STATUS=1; continue; }
+  else
+    python3 "$PROVIDER_LOADING" desktop --manifest "$TARGET_MANIFEST" --manifest-url "$MANIFEST_URL" --source "$TEST_SOURCE" --platform "$HOST_OS" || { STATUS=1; continue; }
+  fi
   EXPECTED_MINUTES="$(python3 - "$fixture" "$NIAKVIO/.github/triggers/nuvio-client-lab.json" <<'PY'
 import json, sys
 slug, path = sys.argv[1], sys.argv[2]
