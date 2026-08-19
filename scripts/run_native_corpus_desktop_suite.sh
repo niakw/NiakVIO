@@ -11,6 +11,7 @@ COVERAGE_GATE="${NIAKVIO}/scripts/gate_native_reader_coverage.cjs"
 INSTRUMENTER="${NIAKVIO}/scripts/instrument_native_desktop_evidence.py"
 REQUEST_CONTRACT="${NIAKVIO}/scripts/augment_native_corpus_request_contract.py"
 PROVIDER_LOADING="${NIAKVIO}/scripts/augment_native_provider_loading.py"
+REPOSITORY_RESOLVER="${NIAKVIO}/scripts/resolve_native_repository.sh"
 PLAYER_AUGMENT="${NIAKVIO}/scripts/augment_native_desktop_player.py"
 FRONTEND_PHASES="${NIAKVIO}/scripts/complete_native_desktop_frontend_phases.py"
 TEST_SOURCE="${DESKTOP_ROOT}/composeApp/src/desktopTest/kotlin/com/nuvio/app/features/plugins/NiakvioNativeCorpusDesktopTest.kt"
@@ -24,8 +25,11 @@ REGRESSION_STREAM_SCOPE="${NIAKVIO_REGRESSION_STREAM_SCOPE:-2}"
 REQUIRE_READER_SUCCESS="${NIAKVIO_REQUIRE_READER_SUCCESS:-1}"
 SOURCE_SHA="${NIAKVIO_SOURCE_SHA:-$(git -C "$NIAKVIO" rev-parse HEAD)}"
 SOURCE_REPOSITORY="${GITHUB_REPOSITORY:-niakw/NiakVIO}"
-MANIFEST_URL="${NIAKVIO_MANIFEST_URL:-https://raw.githubusercontent.com/${SOURCE_REPOSITORY}/${SOURCE_SHA}/${TARGET_MANIFEST}}"
-ALLOW_LOCAL_MANIFEST="${NIAKVIO_ALLOW_LOCAL_MANIFEST:-0}"
+source "$REPOSITORY_RESOLVER"
+resolve_native_repository desktop 127.0.0.1 18767 || exit $?
+trap cleanup_native_repository EXIT
+MANIFEST_URL="$NIAKVIO_RESOLVED_MANIFEST_URL"
+ALLOW_LOCAL_MANIFEST="$NIAKVIO_RESOLVED_ALLOW_LOCAL"
 PROVIDER_LOADING_URL_ARGS=()
 if [[ "$ALLOW_LOCAL_MANIFEST" = "1" ]]; then PROVIDER_LOADING_URL_ARGS+=(--allow-local-lab-url); fi
 
