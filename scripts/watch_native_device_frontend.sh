@@ -12,10 +12,21 @@ capture_once() {
   local phase="$1"
   if [[ -n "${SEEN[$phase]:-}" ]]; then return 0; fi
   SEEN[$phase]=1
-  "$CAPTURE" "$CLIENT" "$phase" "$OUT_DIR" || {
+  # Do not depend on the executable bit of a checked-out helper. GitHub artifact
+  # and patch paths can legitimately lose it; the helper is a Bash script.
+  bash "$CAPTURE" "$CLIENT" "$phase" "$OUT_DIR" || {
     echo "FIELD_NATIVE_FRONTEND_ERROR client=$CLIENT phase=$phase reason=capture_failed"
     return 0
   }
+}
+
+capture_http_terminal() {
+  local scope="$1"
+  # Canonical phase: an HTTP exchange is complete after either a response or a
+  # structured error. Keep the historical *-http-response capture as an alias
+  # so existing evidence consumers remain backward-compatible.
+  capture_once "${scope}-http-terminal"
+  capture_once "${scope}-http-response"
 }
 
 # Watch only NiakVIO's structured/sanitized tags. Official client debug tags may
@@ -26,14 +37,14 @@ adb logcat -v brief -s NiakvioCorpus:I NiakvioEvidence:I '*:S' | while IFS= read
     *FIELD_NATIVE_UI_LAUNCHED*) capture_once "ui-launched" ;;
     *FIELD_NATIVE_REPOSITORY_LOAD_BEGIN*) capture_once "repository-load" ;;
     *FIELD_NATIVE_REPOSITORY_HTTP_REQUEST*) capture_once "repository-http-request" ;;
-    *FIELD_NATIVE_REPOSITORY_HTTP_RESPONSE*|*FIELD_NATIVE_REPOSITORY_HTTP_ERROR*) capture_once "repository-http-response" ;;
+    *FIELD_NATIVE_REPOSITORY_HTTP_RESPONSE*|*FIELD_NATIVE_REPOSITORY_HTTP_ERROR*) capture_http_terminal "repository" ;;
     *FIELD_NATIVE_REPOSITORY_LOAD_RESULT*) capture_once "repository-loaded" ;;
     *FIELD_NATIVE_REPOSITORY_LOAD_ERROR*) capture_once "repository-load-error" ;;
     *FIELD_NATIVE_PROVIDER_LOAD_RESULT*|*FIELD_NATIVE_PROVIDER_LOAD_ERROR*|*FIELD_NATIVE_PROVIDER_LOAD_SKIPPED*) capture_once "provider-load-state" ;;
     *FIELD_NATIVE_CORPUS_BEGIN*) capture_once "corpus-begin" ;;
     *FIELD_NATIVE_PROVIDER_BEGIN*) capture_once "provider-loading" ;;
     *FIELD_NATIVE_HTTP_REQUEST*) capture_once "provider-http-request" ;;
-    *FIELD_NATIVE_HTTP_RESPONSE*|*FIELD_NATIVE_HTTP_ERROR*) capture_once "provider-http-response" ;;
+    *FIELD_NATIVE_HTTP_RESPONSE*|*FIELD_NATIVE_HTTP_ERROR*) capture_http_terminal "provider" ;;
     *FIELD_NATIVE_RESULT*) capture_once "provider-result" ;;
     *FIELD_NATIVE_PLAYER_BEGIN*) capture_once "player-start" ;;
     *FIELD_NATIVE_PLAYER*) capture_once "player-result" ;;
