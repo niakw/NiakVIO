@@ -9,6 +9,12 @@ READER_GATE="${NIAKVIO}/scripts/gate_native_reader_result.cjs"
 COVERAGE_GATE="${NIAKVIO}/scripts/gate_native_reader_coverage.cjs"
 RESTAGE="${NIAKVIO}/scripts/restage_native_corpus_client.py"
 ACCEPTANCE_PREPARE="${NIAKVIO}/scripts/prepare_native_reader_acceptance.py"
+INSTRUMENTER="${NIAKVIO}/scripts/instrument_native_client_evidence.py"
+REQUEST_CONTRACT="${NIAKVIO}/scripts/augment_native_corpus_request_contract.py"
+FRONTEND_CAPTURE="${NIAKVIO}/scripts/capture_native_device_frontend.sh"
+FRONTEND_WATCHER="${NIAKVIO}/scripts/watch_native_device_frontend.sh"
+EVIDENCE_ROOT="${WORKSPACE}/native-evidence/tv"
+TEST_SOURCE="${TV_ROOT}/app/src/androidTest/java/com/nuvio/tv/core/plugin/NiakvioNativeCorpusTvTest.kt"
 DEFAULT_FIXTURES=(sinners-2025 interstellar mon-ninja-et-moi-3 breaking-bad-s01e01 revenant-s01e01 jujutsu-kaisen-s01e01 mushoku-tensei-s01e01)
 TARGET_FIXTURE="${NIAKVIO_TARGET_FIXTURE:-}"
 TARGET_PROVIDER="${NIAKVIO_TARGET_PROVIDER:-}"
@@ -36,7 +42,10 @@ STATUS=0
 PROVIDER_ARGS=()
 if [[ -n "$TARGET_PROVIDER" && "$TARGET_PROVIDER" != "all" && "$TARGET_PROVIDER" != "fixture" ]]; then PROVIDER_ARGS=(--provider "$TARGET_PROVIDER"); fi
 
-echo "FIELD_NATIVE_CORPUS_TV_PROFILE fixtures=${#FIXTURES[@]} provider=${TARGET_PROVIDER:-all} configured_acceptance_provider_scope=$CONFIGURED_ACCEPTANCE_PROVIDER_SCOPE manifest=$TARGET_MANIFEST player_probes=$PLAYER_PROBES require_reader_success=$REQUIRE_READER_SUCCESS reader_acceptance=$READER_ACCEPTANCE primary_stream_scope=$PRIMARY_STREAM_SCOPE regression_stream_scope=$REGRESSION_STREAM_SCOPE reuse_avd=true reuse_gradle_daemon=true"
+mkdir -p "$EVIDENCE_ROOT"
+python3 "$INSTRUMENTER" tv "$TV_ROOT" || exit $?
+
+echo "FIELD_NATIVE_CORPUS_TV_PROFILE fixtures=${#FIXTURES[@]} provider=${TARGET_PROVIDER:-all} configured_acceptance_provider_scope=$CONFIGURED_ACCEPTANCE_PROVIDER_SCOPE manifest=$TARGET_MANIFEST player_probes=$PLAYER_PROBES require_reader_success=$REQUIRE_READER_SUCCESS reader_acceptance=$READER_ACCEPTANCE primary_stream_scope=$PRIMARY_STREAM_SCOPE regression_stream_scope=$REGRESSION_STREAM_SCOPE reuse_avd=true reuse_gradle_daemon=true full_backend_evidence=true frontend_timeline=true"
 for fixture in "${FIXTURES[@]}"; do
   echo "===== TV CORPUS FIXTURE: $fixture ====="
   STREAM_SCOPE="$REGRESSION_STREAM_SCOPE"
@@ -49,12 +58,28 @@ for fixture in "${FIXTURES[@]}"; do
   else
     python3 "$RESTAGE" tv --fixture "$fixture" --workspace "$WORKSPACE" "${PROVIDER_ARGS[@]}" --player-probes "$PLAYER_PROBES" --manifest "$TARGET_MANIFEST" || { STATUS=1; continue; }
   fi
+
+  python3 "$REQUEST_CONTRACT" tv --fixture "$fixture" --manifest "$TARGET_MANIFEST" --source "$TEST_SOURCE" || { STATUS=1; continue; }
+
+  FRONT_DIR="${EVIDENCE_ROOT}/${fixture}"
+  FRONT_LOG="${WORKSPACE}/tv-native-frontend-${fixture}.log"
+  mkdir -p "$FRONT_DIR"
+  rm -f "$FRONT_LOG"
   adb logcat -c || true
+  bash "$FRONTEND_WATCHER" tv "$FRONT_DIR" "$FRONTEND_CAPTURE" > "$FRONT_LOG" 2>&1 &
+  WATCH_PID=$!
+
   RUNTIME_STATUS=0
   "$TV_ROOT/gradlew" -p "$TV_ROOT" :app:connectedFullDebugAndroidTest --console=plain || RUNTIME_STATUS=$?
+  sleep 1
+  kill "$WATCH_PID" 2>/dev/null || true
+  wait "$WATCH_PID" 2>/dev/null || true
+
   LOG="${WORKSPACE}/tv-native-corpus-${fixture}.log"
-  adb logcat -d -s NiakvioCorpus:I '*:S' > "$LOG" || true
+  adb logcat -d -v brief -s NiakvioCorpus:I NiakvioEvidence:I PluginRuntime:I '*:S' > "$LOG" || true
+  cat "$FRONT_LOG" >> "$LOG" 2>/dev/null || true
   cat "$LOG" || true
+
   ANALYSIS_STATUS=0
   node "$ANALYZER" "$fixture" "$LOG" || ANALYSIS_STATUS=$?
   COVERAGE_STATUS=0
@@ -65,9 +90,9 @@ for fixture in "${FIXTURES[@]}"; do
   if [[ "$REQUIRE_READER_SUCCESS" = "1" ]]; then
     node "$READER_GATE" "$LOG" || READER_STATUS=$?
   fi
-  echo "FIELD_NATIVE_CORPUS_TV_STATUS fixture=$fixture runtime=$RUNTIME_STATUS collection=$ANALYSIS_STATUS coverage=$COVERAGE_STATUS reader=$READER_STATUS stream_scope=$STREAM_SCOPE"
+  echo "FIELD_NATIVE_CORPUS_TV_STATUS fixture=$fixture runtime=$RUNTIME_STATUS collection=$ANALYSIS_STATUS coverage=$COVERAGE_STATUS reader=$READER_STATUS stream_scope=$STREAM_SCOPE frontend_dir=$FRONT_DIR"
   if [[ "$RUNTIME_STATUS" -ne 0 || "$ANALYSIS_STATUS" -ne 0 || "$COVERAGE_STATUS" -ne 0 || "$READER_STATUS" -ne 0 ]]; then STATUS=1; fi
 done
 
-echo "FIELD_NATIVE_CORPUS_TV_SUITE_STATUS status=$STATUS fixtures=${#FIXTURES[@]} clients=1 provider=${TARGET_PROVIDER:-all} configured_acceptance_provider_scope=$CONFIGURED_ACCEPTANCE_PROVIDER_SCOPE manifest=$TARGET_MANIFEST require_reader_success=$REQUIRE_READER_SUCCESS reader_acceptance=$READER_ACCEPTANCE"
+echo "FIELD_NATIVE_CORPUS_TV_SUITE_STATUS status=$STATUS fixtures=${#FIXTURES[@]} clients=1 provider=${TARGET_PROVIDER:-all} configured_acceptance_provider_scope=$CONFIGURED_ACCEPTANCE_PROVIDER_SCOPE manifest=$TARGET_MANIFEST require_reader_success=$REQUIRE_READER_SUCCESS reader_acceptance=$READER_ACCEPTANCE evidence_root=$EVIDENCE_ROOT"
 exit "$STATUS"
