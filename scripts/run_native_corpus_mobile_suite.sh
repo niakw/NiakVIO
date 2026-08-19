@@ -20,6 +20,7 @@ EVIDENCE_ROOT="${WORKSPACE}/native-evidence/mobile"
 TEST_SOURCE="${MOBILE_ROOT}/composeApp/src/androidDeviceTest/kotlin/com/nuvio/app/features/plugins/NiakvioNativeCorpusMobileTest.kt"
 DEFAULT_FIXTURES=(sinners-2025 interstellar mon-ninja-et-moi-3 breaking-bad-s01e01 revenant-s01e01 jujutsu-kaisen-s01e01 mushoku-tensei-s01e01)
 TARGET_FIXTURE="${NIAKVIO_TARGET_FIXTURE:-}"
+TARGET_FIXTURES="${NIAKVIO_TARGET_FIXTURES:-}"
 TARGET_PROVIDER="${NIAKVIO_TARGET_PROVIDER:-}"
 TARGET_MANIFEST="${NIAKVIO_TARGET_MANIFEST:-manifest.json}"
 PLAYER_PROBES="${NIAKVIO_PLAYER_PROBES:-1}"
@@ -49,7 +50,14 @@ except Exception:
 PY
 )"
 CONFIGURED_ACCEPTANCE_PROVIDER_SCOPE="${CONFIGURED_ACCEPTANCE_PROVIDER_SCOPE:-fixture}"
-if [[ -n "$TARGET_FIXTURE" && "$TARGET_FIXTURE" != "all" ]]; then FIXTURES=("$TARGET_FIXTURE"); else FIXTURES=("${DEFAULT_FIXTURES[@]}"); fi
+if [[ -n "$TARGET_FIXTURES" ]]; then
+  FIXTURES=()
+  for fixture in $TARGET_FIXTURES; do FIXTURES+=("$fixture"); done
+elif [[ -n "$TARGET_FIXTURE" && "$TARGET_FIXTURE" != "all" ]]; then
+  FIXTURES=("$TARGET_FIXTURE")
+else
+  FIXTURES=("${DEFAULT_FIXTURES[@]}")
+fi
 STATUS=0
 PROVIDER_ARGS=()
 if [[ -n "$TARGET_PROVIDER" && "$TARGET_PROVIDER" != "all" && "$TARGET_PROVIDER" != "fixture" ]]; then PROVIDER_ARGS=(--provider "$TARGET_PROVIDER"); fi
@@ -96,8 +104,6 @@ for fixture in "${FIXTURES[@]}"; do
   wait "$WATCH_PID" 2>/dev/null || true
 
   LOG="${WORKSPACE}/mobile-native-corpus-${fixture}.log"
-  # Persist only NiakVIO's structured evidence. Official PluginRepository/runtime
-  # debug lines may contain raw provider URLs and are intentionally excluded.
   adb logcat -d -v brief -s NiakvioCorpus:I NiakvioEvidence:I '*:S' > "$LOG" || true
   echo "FIELD_NATIVE_EVIDENCE_INSTRUMENTED client=mobile" >> "$LOG"
   cat "$FRONT_LOG" >> "$LOG" 2>/dev/null || true
