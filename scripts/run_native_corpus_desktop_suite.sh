@@ -18,6 +18,7 @@ FRONTEND_PHASES="${NIAKVIO}/scripts/complete_native_desktop_frontend_phases.py"
 TEST_SOURCE="${DESKTOP_ROOT}/composeApp/src/desktopTest/kotlin/com/nuvio/app/features/plugins/NiakvioNativeCorpusDesktopTest.kt"
 DEFAULT_FIXTURES=(sinners-2025 interstellar mon-ninja-et-moi-3 breaking-bad-s01e01 revenant-s01e01 jujutsu-kaisen-s01e01 mushoku-tensei-s01e01)
 TARGET_FIXTURE="${NIAKVIO_TARGET_FIXTURE:-}"
+TARGET_FIXTURES="${NIAKVIO_TARGET_FIXTURES:-}"
 TARGET_PROVIDER="${NIAKVIO_TARGET_PROVIDER:-all}"
 TARGET_MANIFEST="${NIAKVIO_TARGET_MANIFEST:-manifest.json}"
 PRIMARY_FIXTURE="${NIAKVIO_PRIMARY_FIXTURE:-sinners-2025}"
@@ -38,7 +39,10 @@ case "$(uname -s)" in
   *) echo "FIELD_NATIVE_DESKTOP_READER_UNSUPPORTED os=$(uname -s) reason=official_nuvio_desktop_player_is_stub" >&2; exit 96 ;;
 esac
 
-if [[ -n "$TARGET_FIXTURE" && "$TARGET_FIXTURE" != "all" ]]; then
+if [[ -n "$TARGET_FIXTURES" ]]; then
+  FIXTURES=()
+  for fixture in $TARGET_FIXTURES; do FIXTURES+=("$fixture"); done
+elif [[ -n "$TARGET_FIXTURE" && "$TARGET_FIXTURE" != "all" ]]; then
   FIXTURES=("$TARGET_FIXTURE")
 else
   FIXTURES=("${DEFAULT_FIXTURES[@]}")
@@ -94,10 +98,6 @@ PY
     RUNTIME_STATUS=${PIPESTATUS[0]}
   fi
 
-  # The generated test writes ordered corpus/provider-load/player/front-end markers
-  # to BASE_LOG. Runtime and repository HTTP instrumentation write only sanitized
-  # FIELD_NATIVE_* lines to HTTP_LOG, avoiding any dependency on Gradle's captured
-  # test stdout and avoiding persistence of ordinary client debug output.
   if [[ -s "$BASE_LOG" ]]; then
     cp "$BASE_LOG" "$LOG"
   else
