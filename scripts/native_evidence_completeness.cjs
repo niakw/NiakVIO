@@ -60,6 +60,7 @@ function ensureScope(scopes, client, fixture) {
       results: 0,
       httpRequests: 0,
       playerResults: 0,
+      providerRoutesBegun: 0,
       repositoryLoadBegun: 0,
       repositoryLoadTerminal: 0,
       repositoryLoadFailed: false,
@@ -162,6 +163,8 @@ function assessNativeEvidence(logPaths) {
       } else if (line.startsWith('FIELD_NATIVE_PROVIDER_BEGIN ')) {
         const provider = providerName(f);
         requireRoute('provider_begin', f, client, fixture, provider);
+        const scope = ensureScope(scopes, client, fixture);
+        scope.providerRoutesBegun += 1;
         const key = routeKey(client, fixture, provider, f.request_type);
         increment(routesBegun, key);
         fileScopeKeys.add(scopeKey(client, fixture));
@@ -238,7 +241,8 @@ function assessNativeEvidence(logPaths) {
       problems.push(`provider_load_coverage:${label}:${scope.providerLoadObserved.size}/${expectedLoad}`);
     }
 
-    const requiredFrontend = new Set(['ui-launched', 'corpus-begin', 'provider-loading', 'corpus-end']);
+    const requiredFrontend = new Set(['ui-launched', 'corpus-begin', 'corpus-end']);
+    if (scope.providerRoutesBegun > 0) requiredFrontend.add('provider-loading');
     if (scope.repositoryLoadBegun > 0) {
       requiredFrontend.add('repository-load');
       if (!scope.repositoryLoadFailed) requiredFrontend.add('repository-loaded');
