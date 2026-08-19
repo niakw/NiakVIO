@@ -46,6 +46,10 @@ function httpKey(client, provider, requestedType, method, endpoint) {
   return `${client}\u0000${provider}\u0000${String(requestedType || 'unknown').toLowerCase()}\u0000${String(method || 'GET').toUpperCase()}\u0000${String(endpoint || '')}`;
 }
 
+function repositoryHttpKey(client, kind, method, endpoint) {
+  return `${client}\u0000${String(kind || 'repository').toLowerCase()}\u0000${String(method || 'GET').toUpperCase()}\u0000${String(endpoint || '')}`;
+}
+
 function ensureScope(scopes, client, fixture) {
   const key = scopeKey(client, fixture);
   if (!scopes.has(key)) {
@@ -59,6 +63,9 @@ function ensureScope(scopes, client, fixture) {
       frontendPhases: new Set(),
       results: 0,
       httpRequests: 0,
+      repositoryHttpRequests: 0,
+      repositoryHttpTerminal: 0,
+      repositoryCacheHits: 0,
       playerResults: 0,
       providerRoutesBegun: 0,
       repositoryLoadBegun: 0,
@@ -86,6 +93,8 @@ function assessNativeEvidence(logPaths) {
   const playersTerminal = new Map();
   const httpRequests = new Map();
   const httpTerminal = new Map();
+  const repositoryHttpRequests = new Map();
+  const repositoryHttpTerminal = new Map();
   const problems = [];
   let readableLogs = 0;
   let frontendErrors = 0;
@@ -134,6 +143,10 @@ function assessNativeEvidence(logPaths) {
         scope.repositoryLoadBegun += 1;
         scope.repositoryLoadExpected = Math.max(scope.repositoryLoadExpected, Number(f.expected || 0));
         fileScopeKeys.add(scopeKey(client, fixture));
+      } else if (line.startsWith('FIELD_NATIVE_REPOSITORY_CACHE_HIT ')) {
+        const scope = ensureScope(scopes, client, fixture);
+        scope.repositoryCacheHits += 1;
+        fileScopeKeys.add(scopeKey(client, fixture));
       } else if (line.startsWith('FIELD_NATIVE_REPOSITORY_LOAD_RESULT ')) {
         const scope = ensureScope(scopes, client, fixture);
         scope.repositoryLoadTerminal += 1;
@@ -143,6 +156,20 @@ function assessNativeEvidence(logPaths) {
         scope.repositoryLoadTerminal += 1;
         scope.repositoryLoadFailed = true;
         fileScopeKeys.add(scopeKey(client, fixture));
+      } else if (line.startsWith('FIELD_NATIVE_REPOSITORY_HTTP_REQUEST ')) {
+        const key = repositoryHttpKey(client, f.kind, f.method, f.endpoint);
+        increment(repositoryHttpRequests, key);
+        for (const scopeId of fileScopeKeys) {
+          const scope = scopes.get(scopeId);
+          if (scope && scope.client === client) scope.repositoryHttpRequests += 1;
+        }
+      } else if (line.startsWith('FIELD_NATIVE_REPOSITORY_HTTP_RESPONSE ') || line.startsWith('FIELD_NATIVE_REPOSITORY_HTTP_ERROR ')) {
+        const key = repositoryHttpKey(client, f.kind, f.method, f.endpoint);
+        increment(repositoryHttpTerminal, key);
+        for (const scopeId of fileScopeKeys) {
+          const scope = scopes.get(scopeId);
+          if (scope && scope.client === client) scope.repositoryHttpTerminal += 1;
+        }
       } else if (
         line.startsWith('FIELD_NATIVE_PROVIDER_LOAD_RESULT ') ||
         line.startsWith('FIELD_NATIVE_PROVIDER_LOAD_ERROR ') ||
@@ -235,10 +262,20 @@ function assessNativeEvidence(logPaths) {
     if (scope.repositoryLoadBegun !== scope.repositoryLoadTerminal) {
       problems.push(`repository_load_terminal:${label}:${scope.repositoryLoadTerminal}/${scope.repositoryLoadBegun}`);
     }
-    if (scope.repositoryLoadFailed) problems.push(`repository_load_failed:${label}`);
     const expectedLoad = scope.repositoryLoadExpected || scope.expectedProviders;
     if (expectedLoad > 0 && scope.providerLoadObserved.size !== expectedLoad) {
       problems.push(`provider_load_coverage:${label}:${scope.providerLoadObserved.size}/${expectedLoad}`);
+    }
+
+    // Cache hits legitimately produce no repository network traffic. A successful
+    // fresh install must prove its manifest/provider HTTP chain. A terminal install
+    // failure may occur before a request is constructed; that absence is itself
+    // valid evidence when the structured load error and provider fallout are present.
+    if (!scope.repositoryLoadFailed && scope.repositoryLoadBegun > 0 && scope.repositoryCacheHits === 0 && scope.repositoryHttpRequests === 0) {
+      problems.push(`missing_repository_http:${label}`);
+    }
+    if (scope.repositoryHttpRequests !== scope.repositoryHttpTerminal) {
+      problems.push(`repository_http_terminal:${label}:${scope.repositoryHttpTerminal}/${scope.repositoryHttpRequests}`);
     }
 
     const requiredFrontend = new Set(['ui-launched', 'corpus-begin', 'corpus-end']);
@@ -247,6 +284,10 @@ function assessNativeEvidence(logPaths) {
       requiredFrontend.add('repository-load');
       if (!scope.repositoryLoadFailed) requiredFrontend.add('repository-loaded');
       else requiredFrontend.add('repository-load-error');
+    }
+    if (scope.repositoryHttpRequests > 0) {
+      requiredFrontend.add('repository-http-request');
+      requiredFrontend.add('repository-http-response');
     }
     if (scope.providerLoadObserved.size > 0) requiredFrontend.add('provider-load-state');
     if (scope.results > 0) requiredFrontend.add('provider-result');
@@ -287,6 +328,14 @@ function assessNativeEvidence(logPaths) {
     const requested = Number(httpRequests.get(key) || 0);
     if (terminal > requested) problems.push(`http_missing_request:${key.replace(/\u0000/g, ':')}:${terminal}/${requested}`);
   }
+  for (const [key, requested] of repositoryHttpRequests) {
+    const terminal = Number(repositoryHttpTerminal.get(key) || 0);
+    if (terminal !== requested) problems.push(`repository_http_pair:${key.replace(/\u0000/g, ':')}:${terminal}/${requested}`);
+  }
+  for (const [key, terminal] of repositoryHttpTerminal) {
+    const requested = Number(repositoryHttpRequests.get(key) || 0);
+    if (terminal > requested) problems.push(`repository_http_missing_request:${key.replace(/\u0000/g, ':')}:${terminal}/${requested}`);
+  }
 
   return {
     complete: problems.length === 0,
@@ -297,6 +346,9 @@ function assessNativeEvidence(logPaths) {
       providerRoutes: routesBegun.size,
       providerLoads: [...scopes.values()].reduce((sum, scope) => sum + scope.providerLoadObserved.size, 0),
       providerLoadErrors: [...scopes.values()].reduce((sum, scope) => sum + scope.providerLoadErrors, 0),
+      repositoryLoadFailures: [...scopes.values()].reduce((sum, scope) => sum + (scope.repositoryLoadFailed ? 1 : 0), 0),
+      repositoryCacheHits: [...scopes.values()].reduce((sum, scope) => sum + scope.repositoryCacheHits, 0),
+      repositoryHttpRequests: [...repositoryHttpRequests.values()].reduce((a, b) => a + b, 0),
       playerProbes: playersTerminal.size,
       httpRequests: [...httpRequests.values()].reduce((a, b) => a + b, 0),
       frontendErrors,
