@@ -244,8 +244,7 @@ function assessNativeEvidence(logPaths) {
       if (!scope.repositoryLoadFailed) requiredFrontend.add('repository-loaded');
       else requiredFrontend.add('repository-load-error');
     }
-    if (scope.providerLoadResults > 0) requiredFrontend.add('provider-loaded');
-    if (scope.providerLoadErrors > 0) requiredFrontend.add('provider-load-error');
+    if (scope.providerLoadObserved.size > 0) requiredFrontend.add('provider-load-state');
     if (scope.results > 0) requiredFrontend.add('provider-result');
     if (scope.httpRequests > 0) {
       requiredFrontend.add('provider-http-request');
