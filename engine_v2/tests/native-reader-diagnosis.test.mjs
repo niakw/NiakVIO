@@ -12,20 +12,42 @@ const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'niakvio-reader-brain-'));
 try {
   const log = path.join(tmp, 'tv-native-corpus-sinners-2025.log');
   const output = path.join(tmp, 'brain.json');
-  fs.writeFileSync(log, [
-    `FIELD_NATIVE_PLAYER client=tv fixture=sinners-2025 provider64=${b64('MOVIESDRIVE')} index=0 state=error engine=media3 http_status=403 failure_stage=http_access duration_seconds=0 host64=${b64('zip.example')} error_class64=${b64('PlaybackException')} error_code64=${b64('ERROR_CODE_IO_BAD_HTTP_STATUS')} exception_chain64=${b64('InvalidResponseCodeException')} response_header_names64=${b64('content-type,date')}`,
-    `FIELD_NATIVE_PLAYER client=tv fixture=sinners-2025 provider64=${b64('MOVIESDRIVE')} index=1 state=short_media engine=media3 http_status=0 failure_stage=duration_identity duration_seconds=20 host64=${b64('media.example')} error_class64=${b64('')} error_code64=${b64('')} exception_chain64=${b64('')} response_header_names64=${b64('')}`,
-    `FIELD_NATIVE_PLAYER client=tv fixture=sinners-2025 provider64=${b64('PURSTREAM')} index=0 state=ready engine=media3 http_status=0 failure_stage=none duration_seconds=8220 host64=${b64('media.example')} error_class64=${b64('')} error_code64=${b64('')} exception_chain64=${b64('')} response_header_names64=${b64('')}`,
-  ].join('\n') + '\n');
+  const common = [
+    'FIELD_NATIVE_EVIDENCE_INSTRUMENTED client=tv',
+    'FIELD_NATIVE_FRONTEND_CAPTURE client=tv phase=ui-launched screenshot=a.png bytes=100',
+    'FIELD_NATIVE_FRONTEND_CAPTURE client=tv phase=corpus-begin screenshot=b.png bytes=100',
+    'FIELD_NATIVE_FRONTEND_CAPTURE client=tv phase=provider-loading screenshot=c.png bytes=100',
+    'FIELD_NATIVE_FRONTEND_CAPTURE client=tv phase=provider-result screenshot=d.png bytes=100',
+    'FIELD_NATIVE_FRONTEND_CAPTURE client=tv phase=player-start screenshot=e.png bytes=100',
+    'FIELD_NATIVE_FRONTEND_CAPTURE client=tv phase=player-result screenshot=f.png bytes=100',
+    'FIELD_NATIVE_FRONTEND_CAPTURE client=tv phase=corpus-end screenshot=g.png bytes=100',
+    'FIELD_NATIVE_CORPUS_BEGIN client=tv fixture=sinners-2025 providers=2',
+    `FIELD_NATIVE_PROVIDER_BEGIN client=tv fixture=sinners-2025 provider64=${b64('MOVIESDRIVE')} request_type=movie`,
+    `FIELD_NATIVE_RESULT client=tv fixture=sinners-2025 provider64=${b64('MOVIESDRIVE')} request_type=movie enabled=true duration_ms=1 count=2`,
+    `FIELD_NATIVE_PLAYER_BEGIN client=tv fixture=sinners-2025 provider64=${b64('MOVIESDRIVE')} request_type=movie index=0`,
+    `FIELD_NATIVE_PLAYER client=tv fixture=sinners-2025 provider64=${b64('MOVIESDRIVE')} request_type=movie index=0 state=error engine=media3 http_status=403 failure_stage=http_access duration_seconds=0 host64=${b64('zip.example')} error_class64=${b64('PlaybackException')} error_code64=${b64('ERROR_CODE_IO_BAD_HTTP_STATUS')} exception_chain64=${b64('InvalidResponseCodeException')} response_header_names64=${b64('content-type,date')}`,
+    `FIELD_NATIVE_PLAYER_BEGIN client=tv fixture=sinners-2025 provider64=${b64('MOVIESDRIVE')} request_type=movie index=1`,
+    `FIELD_NATIVE_PLAYER client=tv fixture=sinners-2025 provider64=${b64('MOVIESDRIVE')} request_type=movie index=1 state=short_media engine=media3 http_status=0 failure_stage=duration_identity duration_seconds=20 host64=${b64('media.example')} error_class64=${b64('')} error_code64=${b64('')} exception_chain64=${b64('')} response_header_names64=${b64('')}`,
+    `FIELD_NATIVE_PROVIDER_BEGIN client=tv fixture=sinners-2025 provider64=${b64('PURSTREAM')} request_type=movie`,
+    `FIELD_NATIVE_RESULT client=tv fixture=sinners-2025 provider64=${b64('PURSTREAM')} request_type=movie enabled=true duration_ms=1 count=1`,
+    `FIELD_NATIVE_PLAYER_BEGIN client=tv fixture=sinners-2025 provider64=${b64('PURSTREAM')} request_type=movie index=0`,
+    `FIELD_NATIVE_PLAYER client=tv fixture=sinners-2025 provider64=${b64('PURSTREAM')} request_type=movie index=0 state=ready engine=media3 http_status=0 failure_stage=none duration_seconds=8220 host64=${b64('media.example')} error_class64=${b64('')} error_code64=${b64('')} exception_chain64=${b64('')} response_header_names64=${b64('')}`,
+    'FIELD_NATIVE_CORPUS_END client=tv fixture=sinners-2025 errors=0',
+  ];
+  fs.writeFileSync(log, common.join('\n') + '\n');
   const run = spawnSync(process.execPath, [script, '--output', output, log], { cwd: root, encoding: 'utf8' });
-  assert.equal(run.status, 0, run.stderr);
+  assert.equal(run.status, 0, run.stderr + run.stdout);
   const data = JSON.parse(fs.readFileSync(output, 'utf8'));
   assert.equal(data.brainVersion, 4);
+  assert.equal(data.schemaVersion, 4);
+  assert.equal(data.evidenceComplete, true);
+  assert.equal(data.policy.learningAllowed, true);
   assert.equal(data.readerObserved, 3);
   assert.equal(data.readerHealthy, 1);
   assert.equal(data.readerFailures, 2);
   const access = data.plans.find((row) => row.failureClass === 'playback_http_access');
   assert.ok(access);
+  assert.equal(access.requestType, 'movie');
   assert.equal(access.httpStatus, 403);
   assert.equal(access.hypotheses[0].id, 'replay-native-request-context');
   const short = data.plans.find((row) => row.failureClass === 'short_media');
@@ -34,7 +56,23 @@ try {
   assert.equal(short.hypotheses[0].id, 'reject-short-or-preview-media');
   assert.equal(data.policy.requireFreshNativeReaderProofAfterRepair, true);
   assert.match(data.privacy, /No raw URLs/);
-  assert.match(run.stdout, /FIELD_NATIVE_READER_BRAIN/);
+  assert.match(run.stdout, /FIELD_NATIVE_READER_BRAIN evidence_complete=true/);
+
+  const incomplete = path.join(tmp, 'incomplete.log');
+  const incompleteOutput = path.join(tmp, 'incomplete.json');
+  fs.writeFileSync(incomplete, [
+    'FIELD_NATIVE_CORPUS_BEGIN client=tv fixture=sinners-2025 providers=1',
+    `FIELD_NATIVE_PLAYER client=tv fixture=sinners-2025 provider64=${b64('MOVIESDRIVE')} request_type=movie index=0 state=error engine=media3 http_status=403 failure_stage=http_access`,
+  ].join('\n') + '\n');
+  const refused = spawnSync(process.execPath, [script, '--output', incompleteOutput, incomplete], { cwd: root, encoding: 'utf8' });
+  assert.equal(refused.status, 2, refused.stderr + refused.stdout);
+  const refusedData = JSON.parse(fs.readFileSync(incompleteOutput, 'utf8'));
+  assert.equal(refusedData.evidenceComplete, false);
+  assert.equal(refusedData.policy.learningAllowed, false);
+  assert.equal(refusedData.policy.repairPlanningAllowed, false);
+  assert.deepEqual(refusedData.plans, []);
+  assert.ok(refusedData.evidenceProblems.length > 0);
+  assert.match(refused.stdout, /FIELD_NATIVE_READER_BRAIN_EVIDENCE_INCOMPLETE/);
 } finally {
   fs.rmSync(tmp, { recursive: true, force: true });
 }
