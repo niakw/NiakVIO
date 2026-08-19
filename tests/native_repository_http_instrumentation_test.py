@@ -65,6 +65,10 @@ with tempfile.TemporaryDirectory() as tmp_raw:
     mod.instrument_desktop(desktop)
     desktop_out = desktop_path.read_text(encoding="utf-8")
     assert "FIELD_NATIVE_REPOSITORY_HTTP_REQUEST client=desktop" in desktop_out
+    assert "desktop-native-http-evidence.log" in desktop_out
+    assert "println(requestMessage)" not in desktop_out
+    assert "println(responseMessage)" not in desktop_out
+    assert "println(errorMessage)" not in desktop_out
 
     for client_out in (tv_out, mobile_out, desktop_out):
         for required in (
@@ -84,5 +88,16 @@ with tempfile.TemporaryDirectory() as tmp_raw:
         assert "authorization=" not in client_out.lower()
         assert "cookie=" not in client_out.lower()
         assert "query=" not in client_out.lower()
+
+# Provider-runtime Desktop evidence uses the same dedicated sanitized channel;
+# never depend on Gradle's captured test stdout for Brain input.
+desktop_provider_instrumenter = (ROOT / "scripts/instrument_native_desktop_evidence.py").read_text(encoding="utf-8")
+desktop_suite = (ROOT / "scripts/run_native_corpus_desktop_suite.sh").read_text(encoding="utf-8")
+assert "desktop-native-http-evidence.log" in desktop_provider_instrumenter
+assert 'log.i { "FIELD_NATIVE_HTTP_' not in desktop_provider_instrumenter
+assert 'HTTP_LOG="${WORKSPACE}/desktop-native-http-evidence.log"' in desktop_suite
+assert 'cat "$HTTP_LOG" >> "$LOG"' in desktop_suite
+assert 'rm -f "$HTTP_LOG" "$GRADLE_LOG"' in desktop_suite
+assert "grep -E 'FIELD_NATIVE_(REPOSITORY_)?HTTP_" not in desktop_suite
 
 print("native repository HTTP instrumentation tests passed")
