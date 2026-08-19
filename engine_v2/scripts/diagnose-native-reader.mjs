@@ -7,6 +7,7 @@ import { BRAIN_CONTROL_PLANE_VERSION, planRepair } from '../src/repair-brain.mjs
 
 const require = createRequire(import.meta.url);
 const { readerFailureClass, readerSignature, isReaderFailure } = require('../../scripts/native_player_diagnostics.cjs');
+const { assessNativeEvidence } = require('../../scripts/native_evidence_completeness.cjs');
 
 const args = process.argv.slice(2);
 const outputIndex = args.indexOf('--output');
@@ -37,6 +38,7 @@ function safeText(value, max = 420) {
     .slice(0, max);
 }
 
+const evidence = assessNativeEvidence(logPaths);
 const readerRows = [];
 for (const file of logPaths) {
   if (!fs.existsSync(file)) continue;
@@ -46,6 +48,7 @@ for (const file of logPaths) {
     const f = fields(raw.slice(marker).trim());
     const row = {
       client: f.client || 'unknown', fixture: f.fixture || 'unknown', provider: decode(f.provider64),
+      requestType: String(f.request_type || 'unknown').toLowerCase(),
       index: Number(f.index || 0), state: f.state || 'unknown', engine: f.engine || 'unknown',
       httpStatus: Number(f.http_status || 0), failureStage: f.failure_stage || 'unknown',
       durationSeconds: Number(f.duration_seconds || 0) || null, host: decode(f.host64),
@@ -57,16 +60,17 @@ for (const file of logPaths) {
       trackType: Number.isFinite(Number(f.track_type)) ? Number(f.track_type) : -1,
     };
     row.failureClass = readerFailureClass(row);
-    row.signature = readerSignature(row);
+    row.signature = readerSignature({ ...row, requestType: row.requestType });
     readerRows.push(row);
   }
 }
 
 const failures = readerRows.filter(isReaderFailure);
-const plans = failures.map((row) => {
-  const evidence = {
+const plans = evidence.complete ? failures.map((row) => {
+  const failureEvidence = {
     invoked: true,
     signature: row.signature,
+    request: { mediaType: row.requestType },
     stages: {
       reader: {
         attempted: true,
@@ -85,9 +89,10 @@ const plans = failures.map((row) => {
       },
     },
   };
-  const plan = planRepair(evidence, { signature: row.signature, maxHypotheses: 3 });
+  const plan = planRepair(failureEvidence, { signature: row.signature, maxHypotheses: 3 });
   return {
-    provider: String(row.provider || '').toLowerCase(), client: row.client, fixture: row.fixture, index: row.index,
+    provider: String(row.provider || '').toLowerCase(), client: row.client, fixture: row.fixture,
+    requestType: row.requestType, index: row.index,
     state: row.state, failureClass: row.failureClass, failureStage: row.failureStage,
     httpStatus: row.httpStatus, errorCode: row.errorCode, errorClass: row.errorClass,
     host: row.host, durationSeconds: row.durationSeconds,
@@ -100,17 +105,18 @@ const plans = failures.map((row) => {
       actions: [...(hypothesis.actions || [])],
     })),
   };
-});
+}) : [];
 
 const grouped = new Map();
 for (const plan of plans) {
-  const key = `${plan.provider}\u0000${plan.failureClass}`;
+  const key = `${plan.provider}\u0000${plan.requestType}\u0000${plan.failureClass}`;
   if (!grouped.has(key)) grouped.set(key, []);
   grouped.get(key).push(plan);
 }
 const priorities = [...grouped.values()]
   .map((rows) => ({
     provider: rows[0].provider,
+    requestType: rows[0].requestType,
     failureClass: rows[0].failureClass,
     occurrences: rows.length,
     clients: [...new Set(rows.map((row) => row.client))].sort(),
@@ -121,7 +127,8 @@ const priorities = [...grouped.values()]
   .sort((a, b) => b.occurrences - a.occurrences || a.provider.localeCompare(b.provider));
 
 const observations = readerRows.map((row) => ({
-  provider: String(row.provider || '').toLowerCase(), client: row.client, fixture: row.fixture, index: row.index,
+  provider: String(row.provider || '').toLowerCase(), client: row.client, fixture: row.fixture,
+  requestType: row.requestType, index: row.index,
   state: row.state, failureClass: row.failureClass, failureStage: row.failureStage,
   httpStatus: row.httpStatus, errorCode: row.errorCode, host: row.host,
   durationSeconds: row.durationSeconds, loadBytes: row.loadBytes, loadDurationMs: row.loadDurationMs,
@@ -130,11 +137,12 @@ const providerMap = new Map();
 for (const row of observations) {
   const current = providerMap.get(row.provider) || {
     provider: row.provider, observed: 0, healthy: 0, failures: 0,
-    failureClasses: {}, clients: new Set(), fixtures: new Set(),
+    failureClasses: {}, clients: new Set(), fixtures: new Set(), requestTypes: new Set(),
   };
   current.observed += 1;
   current.clients.add(row.client);
   current.fixtures.add(row.fixture);
+  current.requestTypes.add(row.requestType);
   if (row.failureClass === 'healthy') current.healthy += 1;
   else {
     current.failures += 1;
@@ -150,12 +158,16 @@ const providerOutcomes = [...providerMap.values()].map((row) => ({
   failureClasses: row.failureClasses,
   clients: [...row.clients].sort(),
   fixtures: [...row.fixtures].sort(),
+  requestTypes: [...row.requestTypes].sort(),
 })).sort((a, b) => b.failures - a.failures || a.provider.localeCompare(b.provider));
 
 const payload = {
-  schemaVersion: 3,
+  schemaVersion: 4,
   generatedAt: new Date().toISOString(),
   brainVersion: BRAIN_CONTROL_PLANE_VERSION,
+  evidenceComplete: evidence.complete,
+  evidenceProblems: evidence.problems,
+  evidenceStats: evidence.stats,
   readerObserved: readerRows.length,
   readerHealthy: readerRows.length - failures.length,
   readerFailures: failures.length,
@@ -165,6 +177,8 @@ const payload = {
   plans,
   priorities,
   policy: {
+    learningAllowed: evidence.complete,
+    repairPlanningAllowed: evidence.complete,
     productionWritesAllowed: false,
     publicationAllowed: false,
     requireFreshNativeReaderProofAfterRepair: true,
@@ -173,6 +187,9 @@ const payload = {
 };
 fs.mkdirSync(path.dirname(outputPath), { recursive: true });
 fs.writeFileSync(outputPath, JSON.stringify(payload, null, 2) + '\n');
-console.log(`FIELD_NATIVE_READER_BRAIN observed=${payload.readerObserved} healthy=${payload.readerHealthy} failures=${payload.readerFailures} load_error_evidence=${payload.readerLoadErrorEvidence} priorities=${priorities.length} provider_outcomes=${providerOutcomes.length}`);
+console.log(`FIELD_NATIVE_READER_BRAIN evidence_complete=${payload.evidenceComplete} observed=${payload.readerObserved} healthy=${payload.readerHealthy} failures=${payload.readerFailures} load_error_evidence=${payload.readerLoadErrorEvidence} priorities=${priorities.length} provider_outcomes=${providerOutcomes.length}`);
+if (!evidence.complete) {
+  for (const problem of evidence.problems.slice(0, 80)) console.log(`FIELD_NATIVE_READER_BRAIN_EVIDENCE_INCOMPLETE ${problem}`);
+}
 for (const priority of priorities.slice(0, 40)) console.log(`FIELD_NATIVE_READER_BRAIN_PRIORITY ${JSON.stringify(priority)}`);
-if (readerRows.length === 0) process.exitCode = 2;
+if (readerRows.length === 0 || !evidence.complete) process.exitCode = 2;
