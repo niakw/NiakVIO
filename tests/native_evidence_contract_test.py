@@ -50,6 +50,8 @@ for required in (
 # Provider proof must pass through the real Nuvio repository/manager layer first.
 # Repeated fixtures keep the user's/app profile warm and reuse the exact repository
 # installation/provider cache instead of resetting plugin state on every launch.
+# Generated empty collections are explicitly typed: native Kotlin compilers must
+# never be asked to infer T from an empty literal in code emitted by this harness.
 for required in (
     "FIELD_NATIVE_REPOSITORY_LOAD_BEGIN",
     "FIELD_NATIVE_REPOSITORY_LOAD_RESULT",
@@ -59,8 +61,11 @@ for required in (
     "FIELD_NATIVE_PROVIDER_LOAD_ERROR",
     "FIELD_NATIVE_PROVIDER_LOAD_SKIPPED",
     "reason=repository_install_failed",
-    "return manager to emptyMap()",
-    "return emptyMap()",
+    "return manager to emptyMap<String, com.nuvio.tv.domain.model.ScraperInfo>()",
+    "return emptyMap<String, PluginScraper>()",
+    "private val platformExcludedProviders: Set<String>",
+    'return "emptySet<String>()"',
+    'return "setOf<String>("',
     "manager.repositories.first()",
     "manager.addRepository(repositoryManifestUrl)",
     "officialPluginManager.executeScraper(loadedScraper",
@@ -73,6 +78,8 @@ for required in (
     "reason=load_failure",
 ):
     assert required in provider_loading, required
+assert "return manager to emptyMap()" not in provider_loading
+assert "return emptyMap()" not in provider_loading
 assert "PluginRepository.clearLocalState()" not in provider_loading, "native lab must preserve Nuvio profile/plugin state"
 
 # Repository network evidence is passive and sanitized, and applies to the exact
