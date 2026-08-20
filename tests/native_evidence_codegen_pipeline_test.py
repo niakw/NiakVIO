@@ -33,8 +33,6 @@ desktop_player = load("native_desktop_player", "scripts/augment_native_desktop_p
 manifest = ROOT / "manifest.json"
 providers = corpus.manifest_providers()
 assert len(providers) >= 80
-# Keep generation compact while deliberately covering movie-only, tv-capable and
-# anime-capable declarations if available.
 selected = []
 for wanted in ("movieshunt", "purstream", "anime-sama"):
     row = next((p for p in providers if str(p["id"]).casefold() == wanted), None)
@@ -45,10 +43,6 @@ assert len(selected) >= 2
 with tempfile.TemporaryDirectory() as tmp_raw:
     tmp = Path(tmp_raw)
 
-    # TV / movie: generated corpus -> official Media3 reader -> route contract ->
-    # real PluginManager repository loading. No direct PluginRuntime execution may
-    # remain as the primary provider path. Existing repository/profile state is
-    # reused on subsequent fixtures rather than downloaded again.
     movie = corpus.fixture_by_slug("sinners-2025")
     tv_source = corpus.android_test(movie, selected, "tv")
     tv_source = reader.augment_android_test(
@@ -68,20 +62,20 @@ with tempfile.TemporaryDirectory() as tmp_raw:
     assert "FIELD_NATIVE_REPOSITORY_CACHE_HIT client=tv" in tv_out
     assert "FIELD_NATIVE_PROVIDER_LOAD_RESULT client=tv" in tv_out
     assert "reason=repository_install_failed" in tv_out
-    assert "return manager to emptyMap()" in tv_out
+    assert "return manager to emptyMap<String, com.nuvio.tv.domain.model.ScraperInfo>()" in tv_out
+    assert "return manager to emptyMap()" not in tv_out
     assert "manager.repositories.first()" in tv_out
-    assert "PluginManager.addRepository" not in tv_out  # instance call below is intentional
+    assert "PluginManager.addRepository" not in tv_out
     assert "manager.addRepository(repositoryManifestUrl)" in tv_out
     assert "officialPluginManager.executeScraper(loadedScraper" in tv_out
     assert "runtime.executePlugin(" not in tv_out
     assert "request_type=$requestMediaType route_mode=$routeMode" in tv_out
-    assert "mediaType = requestMediaType" not in tv_out  # direct runtime call was replaced
+    assert "mediaType = requestMediaType" not in tv_out
     assert "FIELD_NATIVE_PLAYER_BEGIN client=tv" in tv_out
     assert "PlayerPlaybackNetworking.createDataSourceFactory" in tv_out
+    assert "val playbackHeaders = headers.orEmpty()" in tv_out
+    assert ".filterKeys" not in tv_out
 
-    # Mobile / anime: the route contract keeps declared + capability_probe anime/tv
-    # routes, then the official PluginRepository supplies the loaded scraper while
-    # preserving active profile/settings and the installed repository cache.
     anime = corpus.fixture_by_slug("jujutsu-kaisen-s01e01")
     mobile_source = corpus.android_test(anime, selected, "mobile")
     mobile_source = reader.augment_android_test(
@@ -103,7 +97,8 @@ with tempfile.TemporaryDirectory() as tmp_raw:
     assert "FIELD_NATIVE_REPOSITORY_LOAD_ERROR client=mobile" in mobile_out
     assert "FIELD_NATIVE_REPOSITORY_CACHE_HIT client=mobile" in mobile_out
     assert "reason=repository_install_failed" in mobile_out
-    assert "return emptyMap()" in mobile_out
+    assert "return emptyMap<String, PluginScraper>()" in mobile_out
+    assert "return emptyMap()" not in mobile_out
     assert "PluginRepository.initialize()" in mobile_out
     assert "PluginRepository.uiState.value.repositories.firstOrNull" in mobile_out
     assert "PluginRepository.clearLocalState()" not in mobile_out
@@ -113,9 +108,9 @@ with tempfile.TemporaryDirectory() as tmp_raw:
     assert "PlatformPlaybackDataSourceFactory.create" in mobile_out
     assert "FIELD_NATIVE_PLAYER client=mobile" in mobile_out
     assert "route_mode=$routeMode" in mobile_out
+    assert "val playbackHeaders = headers.orEmpty()" in mobile_out
+    assert ".filterKeys" not in mobile_out
 
-    # Desktop deep mode: explicit all-stream proof must stay exhaustive regardless
-    # of the outer CI event. PR budget behavior is validated separately below.
     original_event = os.environ.pop("GITHUB_EVENT_NAME", None)
     try:
         for platform in ("macos", "windows"):
@@ -142,7 +137,7 @@ with tempfile.TemporaryDirectory() as tmp_raw:
                 "FIELD_NATIVE_REPOSITORY_LOAD_ERROR client=desktop",
                 "FIELD_NATIVE_REPOSITORY_CACHE_HIT client=desktop",
                 "reason=repository_install_failed",
-                "return emptyMap()",
+                "return emptyMap<String, PluginScraper>()",
                 "NativePlayerController",
                 "NativePlayerHost",
                 "probeDesktopNativePlayer",
@@ -160,19 +155,20 @@ with tempfile.TemporaryDirectory() as tmp_raw:
                 'captureDesktopPhase("player-result"',
             ):
                 assert required in desktop_out, f"{platform}:{required}"
-            # Repository HTTP truth comes from the passive OkHttp instrumentation,
-            # not synthetic frontend phases that would also fire on a cache hit.
             assert 'captureDesktopPhase("repository-http-request", fixtureSlugForLoad)' not in desktop_out
             assert 'captureDesktopPhase("repository-http-terminal", fixtureSlugForLoad)' not in desktop_out
             assert "PluginRepository.clearLocalState()" not in desktop_out
             assert "PluginRuntime.executePlugin(" not in desktop_out
             assert "rows.take(" not in desktop_out, "all-stream Desktop proof must not sample rows"
             assert "25000L" in desktop_out, "deep Desktop reader timeout must remain 25s"
+            assert "sourceHeaders = headers.orEmpty()" in desktop_out
+            assert ".filterKeys" not in desktop_out
     finally:
         if original_event is not None:
             os.environ["GITHUB_EVENT_NAME"] = original_event
 
-    # Pull requests intentionally cap Desktop to one stream and a 12s reader budget.
+    # PR runs are bounded but must still test the first two returned sources. This
+    # catches the common first-green/second-broken case and matches Android.
     original_event = os.environ.get("GITHUB_EVENT_NAME")
     os.environ["GITHUB_EVENT_NAME"] = "pull_request"
     try:
@@ -183,8 +179,11 @@ with tempfile.TemporaryDirectory() as tmp_raw:
         provider_loading.augment(pr_path, "desktop", manifest, PINNED_MANIFEST_URL, "windows")
         desktop_player.augment(pr_path, int(anime.get("expectedDurationMinutes") or 0), "all")
         pr_out = pr_path.read_text(encoding="utf-8")
-        assert "rows.take(1).forEachIndexed" in pr_out
+        assert "rows.take(2).forEachIndexed" in pr_out
+        assert "rows.take(1).forEachIndexed" not in pr_out
         assert "12000L" in pr_out
+        assert "sourceHeaders = headers.orEmpty()" in pr_out
+        assert ".filterKeys" not in pr_out
     finally:
         if original_event is None:
             os.environ.pop("GITHUB_EVENT_NAME", None)
