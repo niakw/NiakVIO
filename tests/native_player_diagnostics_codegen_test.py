@@ -25,6 +25,24 @@ assert 'durationSeconds / expected < 0.55' in tv
 assert 'responseHeaderNames' in tv
 assert '<url>' in tv and '<redacted>' in tv
 assert 'row.url' not in [line for line in tv.splitlines() if 'FIELD_NATIVE_PLAYER client=tv' in line][0]
+
+# Retroactive observational-purity contract. The harness may observe the official
+# player but must never repair the stream on its behalf. In particular, an existing
+# provider Range/Referer/Origin/Cookie/Authorization/User-Agent header must reach
+# Media3 exactly as emitted, and the lab must not synthesize any of them.
+assert 'val playbackHeaders = headers.orEmpty()' in tv
+assert 'nativeReaderDataSource(context, playbackHeaders)' in tv
+assert '.filterKeys' not in tv
+for forbidden in (
+    'playbackHeaders["Range"]',
+    'playbackHeaders["Referer"]',
+    'playbackHeaders["Origin"]',
+    'playbackHeaders["Cookie"]',
+    'playbackHeaders["Authorization"]',
+    'playbackHeaders["User-Agent"]',
+):
+    assert forbidden not in tv, forbidden
+
 # The official reader must be the first network consumer. A diagnostic GET before
 # Media3 can consume one-shot/signed links and create a false 403.
 reader_call = tv.index('val reader = probeNativePlayer(row.url, row.headers, 137)')
@@ -36,6 +54,8 @@ mobile = mod.augment_android_test(source('mobile'), client='mobile', expected_du
 assert 'PlatformPlaybackDataSourceFactory.create(' in mobile
 assert 'FIELD_NATIVE_PLAYER client=mobile' in mobile
 assert 'rows.take(2)' in mobile
+assert 'val playbackHeaders = headers.orEmpty()' in mobile
+assert '.filterKeys' not in mobile
 assert mobile.index('val reader = probeNativePlayer(row.url, row.headers, 137)') < mobile.index('val transport = probeTransport(row.url, row.headers)')
 
 rows = [{'id': 'A'}, {'id': 'MOVIESDRIVE'}, {'id': 'B'}]
