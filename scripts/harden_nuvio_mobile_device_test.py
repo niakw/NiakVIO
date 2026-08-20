@@ -4,7 +4,8 @@
 The native lab preparation intentionally modifies a pinned upstream checkout.
 This helper keeps infrastructure-only Android requirements in one place:
 - resolve duplicate libc++_shared.so packaging in instrumentation APKs;
-- disable Sentry auto-init in the test process so no DSN is required.
+- disable Sentry auto-init in the test process so no DSN is required;
+- enable host-served local_candidate HTTP only for the instrumentation APK.
 
 It is idempotent and tolerant of whitespace changes in the prepared Gradle block.
 """
@@ -13,6 +14,8 @@ from __future__ import annotations
 import argparse
 import re
 from pathlib import Path
+
+from configure_native_android_lab_transport import configure_manifest
 
 
 def harden(repo: Path) -> None:
@@ -59,6 +62,7 @@ def harden(repo: Path) -> None:
 ''',
         encoding="utf-8",
     )
+    configure_manifest(test_manifest)
 
     final = build.read_text(encoding="utf-8")
     if final.count(packaging_line) != 1:
