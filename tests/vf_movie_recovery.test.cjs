@@ -61,7 +61,10 @@ function hlsBody() {
 
 global.fetch = async (input) => {
   const raw = typeof input === 'string' ? input : input.url;
-  fetchTrace.push(raw);
+  fetchTrace.push({
+    url: raw,
+    stack: String(new Error().stack || '').split('\n').slice(2, 8).map((line) => line.trim()),
+  });
   const url = new URL(raw);
   if (url.hostname === 'api.themoviedb.org') return tmdbResponse(raw);
   if (url.hostname === 'movix.fun' && url.pathname === '/') return new Response('<script src="/assets/app.js"></script>', { status: 200, headers: { 'content-type': 'text/html' } });
