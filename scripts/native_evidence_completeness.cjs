@@ -257,6 +257,7 @@ function assessNativeEvidence(logPaths) {
     if (scope.expectedProviders > 0 && scope.traversed.size !== scope.expectedProviders) {
       problems.push(`provider_traversal:${label}:${scope.traversed.size}/${scope.expectedProviders}`);
     }
+    if (scope.providerRoutesBegun <= 0) problems.push(`missing_provider_execution:${label}`);
 
     if (scope.repositoryLoadBegun === 0) problems.push(`missing_repository_load:${label}`);
     if (scope.repositoryLoadBegun !== scope.repositoryLoadTerminal) {
@@ -343,6 +344,7 @@ function assessNativeEvidence(logPaths) {
     if (terminal > requested) problems.push(`repository_http_missing_request:${key.replace(/\u0000/g, ':')}:${terminal}/${requested}`);
   }
 
+  const providerExecutions = [...routesTerminal.values()].reduce((a, b) => a + b, 0);
   return {
     complete: problems.length === 0,
     problems,
@@ -350,6 +352,7 @@ function assessNativeEvidence(logPaths) {
       readableLogs,
       scopes: scopes.size,
       providerRoutes: routesBegun.size,
+      providerExecutions,
       providerLoads: [...scopes.values()].reduce((sum, scope) => sum + scope.providerLoadObserved.size, 0),
       providerLoadErrors: [...scopes.values()].reduce((sum, scope) => sum + scope.providerLoadErrors, 0),
       repositoryLoadFailures: [...scopes.values()].reduce((sum, scope) => sum + (scope.repositoryLoadFailed ? 1 : 0), 0),
