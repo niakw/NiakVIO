@@ -134,7 +134,10 @@ PLAYER_HELPERS_TEMPLATE = r'''
         val outcome = AtomicReference<NativePlayerProbe?>(null)
         val playerRef = AtomicReference<ExoPlayer?>(null)
         val lastLoadFailure = AtomicReference<NativeLoadFailure?>(null)
-        val safeHeaders = headers.orEmpty().filterKeys { !it.equals("Range", ignoreCase = true) }
+        // Observational-purity contract: the lab passes the provider's exact
+        // canonical header map to the official player. It never strips Range or
+        // synthesizes Referer/Origin/Cookie/User-Agent on the player's behalf.
+        val playbackHeaders = headers.orEmpty()
         val instrumentation = InstrumentationRegistry.getInstrumentation()
         val context = instrumentation.targetContext
         val handler = Handler(Looper.getMainLooper())
@@ -145,7 +148,7 @@ PLAYER_HELPERS_TEMPLATE = r'''
 
         try {
             instrumentation.runOnMainSync {
-                val dataSourceFactory = nativeReaderDataSource(context, safeHeaders)
+                val dataSourceFactory = nativeReaderDataSource(context, playbackHeaders)
                 val player = ExoPlayer.Builder(context)
                     .setMediaSourceFactory(DefaultMediaSourceFactory(dataSourceFactory))
                     .build()
