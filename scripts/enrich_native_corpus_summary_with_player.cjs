@@ -50,13 +50,37 @@ function groupBy(items, fn) {
 }
 
 const players = [];
+const routeTerminals = new Map();
 for (const file of listFiles(inputDir)) {
   for (const raw of fs.readFileSync(file, 'utf8').split(/\r?\n/)) {
-    const marker = raw.indexOf('FIELD_NATIVE_PLAYER ');
+    const marker = raw.indexOf('FIELD_NATIVE_');
     if (marker < 0) continue;
-    const f = fields(raw.slice(marker).trim());
+    const line = raw.slice(marker).trim();
+    const f = fields(line);
+
+    // A provider execution is terminal whether extraction returned streams or
+    // raised a structured runtime error. Provider failures are valid evidence;
+    // treating only FIELD_NATIVE_RESULT as execution used to erase exactly the
+    // failures the Brain is supposed to learn from.
+    if (line.startsWith('FIELD_NATIVE_RESULT ') || line.startsWith('FIELD_NATIVE_ERROR ')) {
+      const provider = decode(f.provider64) || String(f.provider || '');
+      const client = f.client || 'unknown';
+      const fixture = f.fixture || 'unknown';
+      const requestType = String(f.request_type || 'unknown').toLowerCase();
+      const routeMode = String(f.route_mode || 'declared').toLowerCase();
+      const key = `${client}\u0000${fixture}\u0000${provider.toLowerCase()}\u0000${requestType}\u0000${routeMode}`;
+      routeTerminals.set(key, {
+        client, fixture, provider, requestType, routeMode,
+        terminal: line.startsWith('FIELD_NATIVE_ERROR ') ? 'error' : 'result',
+      });
+      continue;
+    }
+
+    if (!line.startsWith('FIELD_NATIVE_PLAYER ')) continue;
     const row = {
       client: f.client || 'unknown', fixture: f.fixture || 'unknown', provider: decode(f.provider64),
+      requestType: String(f.request_type || 'unknown').toLowerCase(),
+      routeMode: String(f.route_mode || 'declared').toLowerCase(),
       index: Number(f.index || 0), state: f.state || 'unknown', engine: f.engine || 'unknown',
       httpStatus: Number(f.http_status || 0), failureStage: f.failure_stage || 'unknown',
       durationSeconds: Number(f.duration_seconds || 0) || null, host: decode(f.host64),
@@ -100,7 +124,19 @@ const repeated = [...groupBy(failures, (row) => `${String(row.provider || '').to
   }))
   .sort((a, b) => b.occurrences - a.occurrences);
 
-summary.schemaVersion = Math.max(3, Number(summary.schemaVersion || 0));
+const terminalRows = [...routeTerminals.values()];
+const executedProviders = [...new Set(terminalRows.map((row) => String(row.provider || '').toLowerCase()).filter(Boolean))].sort();
+const observedClients = [...new Set([
+  ...terminalRows.map((row) => row.client),
+  ...players.map((row) => row.client),
+].filter(Boolean))].sort();
+
+summary.schemaVersion = Math.max(4, Number(summary.schemaVersion || 0));
+summary.clients = observedClients.length ? observedClients : (Array.isArray(summary.clients) ? summary.clients : []);
+summary.providersObserved = executedProviders.length;
+summary.executions = routeTerminals.size;
+summary.mediaVerified = players.length;
+summary.nativeEvidenceComplete = summary.providersObserved > 0 && summary.executions > 0 && summary.mediaVerified > 0;
 summary.nativeReaderObserved = players.length;
 summary.nativeReaderHealthy = healthy.length;
 summary.nativeReaderFailures = failures.length;
@@ -113,4 +149,8 @@ summary.readerPrivacy = 'Sanitized only: no raw URLs, query tokens, cookie value
 
 fs.mkdirSync(path.dirname(summaryPath), { recursive: true });
 fs.writeFileSync(summaryPath, JSON.stringify(summary, null, 2) + '\n');
-console.log(`FIELD_NATIVE_PLAYER_SUMMARY observed=${players.length} healthy=${healthy.length} failures=${failures.length} classes=${byClass.length} repeated=${repeated.length}`);
+console.log(
+  `FIELD_NATIVE_PLAYER_SUMMARY providers_observed=${summary.providersObserved} executions=${summary.executions} ` +
+  `media_verified=${summary.mediaVerified} complete=${summary.nativeEvidenceComplete} observed=${players.length} ` +
+  `healthy=${healthy.length} failures=${failures.length} classes=${byClass.length} repeated=${repeated.length}`
+);
