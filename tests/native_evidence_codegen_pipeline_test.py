@@ -154,10 +154,10 @@ with tempfile.TemporaryDirectory() as tmp_raw:
                 'captureDesktopPhase("repository-loaded", fixtureSlugForLoad)',
                 'captureDesktopPhase("repository-load-error", fixtureSlugForLoad)',
                 'captureDesktopPhase("repository-http-request", fixtureSlugForLoad)',
-                'captureDesktopPhase("repository-http-response", fixtureSlugForLoad)',
+                'captureDesktopPhase("repository-http-terminal", fixtureSlugForLoad)',
                 'captureDesktopPhase("provider-load-state"',
                 'captureDesktopPhase("provider-http-request"',
-                'captureDesktopPhase("provider-http-response"',
+                'captureDesktopPhase("provider-http-terminal"',
                 'captureDesktopPhase("player-start"',
                 'captureDesktopPhase("player-result"',
             ):
