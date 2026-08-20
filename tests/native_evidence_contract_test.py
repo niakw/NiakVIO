@@ -117,15 +117,25 @@ for required in (
     "repository-loaded",
     "repository-load-error",
     "repository-http-request",
-    "repository-http-response",
+    "repository-http-terminal",
     "provider-load-state",
     "provider-loading",
     "provider-http-request",
-    "provider-http-response",
+    "provider-http-terminal",
     "provider-result",
     "player-start",
     "player-result",
     "corpus-end",
+):
+    assert required in completeness, required
+# Legacy *-response screenshots remain accepted only as migration aliases; the
+# canonical requirement itself is terminal because either HTTP response or error
+# closes the request pair.
+for required in (
+    "phase === 'repository-http-terminal'",
+    "? 'repository-http-response'",
+    "phase === 'provider-http-terminal'",
+    "? 'provider-http-response'",
 ):
     assert required in completeness, required
 assert "repository_load_failed:" not in completeness
@@ -266,7 +276,7 @@ for required in (
     'captureDesktopPhase("repository-loaded", fixtureSlugForLoad)',
     'captureDesktopPhase("repository-load-error", fixtureSlugForLoad)',
     'captureDesktopPhase("repository-http-request", fixtureSlugForLoad)',
-    'captureDesktopPhase("repository-http-response", fixtureSlugForLoad)',
+    'captureDesktopPhase("repository-http-terminal", fixtureSlugForLoad)',
 ):
     assert required in desktop_frontend or required in provider_loading, required
 for required in (
