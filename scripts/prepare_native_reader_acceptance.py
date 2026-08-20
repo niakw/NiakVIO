@@ -8,8 +8,9 @@ stream; broad regression can sample a bounded number of streams. No provider-spe
 repair logic lives here.
 
 Pull-request validation is intentionally bounded: a small provider sample from each
-fixture and one returned stream are enough to prove the real reader path while the
-trusted-main/manual runs keep the exhaustive all-provider/all-stream evidence path.
+fixture and a small returned-stream sample are enough to prove the real reader path
+while the trusted-main/manual runs keep the exhaustive all-provider/all-stream
+evidence path.
 """
 from __future__ import annotations
 
@@ -30,6 +31,7 @@ import prepare_native_corpus_validation as corpus  # noqa: E402
 
 CORPUS_PATH = ROOT / ".github/triggers/nuvio-client-lab.json"
 DEFAULT_PR_PROVIDER_LIMIT = 4
+DEFAULT_PR_STREAM_LIMIT = 2
 
 
 def _is_pull_request() -> bool:
@@ -42,6 +44,14 @@ def _pr_provider_limit() -> int:
         return max(1, min(int(raw), 12))
     except ValueError:
         return DEFAULT_PR_PROVIDER_LIMIT
+
+
+def _pr_stream_limit() -> int:
+    raw = os.environ.get("NIAKVIO_PR_STREAM_LIMIT", str(DEFAULT_PR_STREAM_LIMIT)).strip()
+    try:
+        return max(1, min(int(raw), 4))
+    except ValueError:
+        return DEFAULT_PR_STREAM_LIMIT
 
 
 def fixture_row(slug: str) -> dict:
@@ -163,7 +173,7 @@ def prepare(
         if effective_provider.casefold() == "all":
             effective_provider = "fixture"
         if str(effective_stream_scope).strip().casefold() == "all":
-            effective_stream_scope = 1
+            effective_stream_scope = _pr_stream_limit()
 
     selected = select_providers(manifest_path, slug, effective_provider)
     if pr_bounded and effective_provider.casefold() == "fixture":
@@ -202,7 +212,8 @@ def prepare(
         f"manifest={manifest_path} providers={len(staged)} enabled={enabled} disabled={disabled} "
         f"provider_ids={ids} streams={scope} initial={str(initial).lower()} "
         f"ci_mode={'pr-bounded' if pr_bounded else 'deep'} requested_provider={requested_provider} "
-        f"requested_streams={requested_stream_scope} provider_limit={_pr_provider_limit() if pr_bounded else 0}"
+        f"requested_streams={requested_stream_scope} provider_limit={_pr_provider_limit() if pr_bounded else 0} "
+        f"stream_limit={_pr_stream_limit() if pr_bounded else 0}"
     )
     return output
 
