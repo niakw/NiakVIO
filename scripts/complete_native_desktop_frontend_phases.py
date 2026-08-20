@@ -35,6 +35,21 @@ def canonicalize_http_terminal_phases(text: str) -> str:
     )
 
 
+def strip_branch_specific_repository_http_phases(text: str) -> str:
+    # Provider loading used to add repository HTTP frontend checkpoints only in
+    # the addRepository branch. On later fixtures PluginRepository.initialize()
+    # can refresh an already-installed repository before the cache-hit branch is
+    # selected, producing real HTTP evidence without matching frontend phases.
+    # The actual FIELD_NATIVE_REPOSITORY_HTTP_* recorder remains the source of
+    # truth; these checkpoints only bracket the official repository operation.
+    for line in (
+        '            captureDesktopPhase("repository-http-request", fixtureSlugForLoad)\n',
+        '                    captureDesktopPhase("repository-http-terminal", fixtureSlugForLoad)\n',
+    ):
+        text = text.replace(line, "")
+    return text
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("source")
@@ -42,23 +57,25 @@ def main() -> int:
     path = Path(args.source).resolve()
     original = path.read_text(encoding="utf-8")
     text = canonicalize_http_terminal_phases(original)
+    text = strip_branch_specific_repository_http_phases(text)
     if 'captureDesktopPhase("ui-launched", fixtureSlug)' in text:
         if text != original:
             path.write_text(text, encoding="utf-8")
             print(f"FIELD_NATIVE_DESKTOP_FRONTEND_PHASES source={path} canonicalized=true")
         return 0
 
-    # The repository call itself owns the outcome. Capture "loaded" only when the
-    # official Nuvio repository layer emitted a successful terminal result, and
-    # capture "load-error" exactly on its terminal error. This avoids a false green
-    # screenshot when addRepository() failed but the lab intentionally continued to
-    # collect actionable Core/repository evidence.
+    # The repository call itself owns the outcome. The HTTP frontend checkpoints
+    # bracket the whole official load operation, so they also exist on persistent
+    # cache/refresh paths. They never substitute for FIELD_NATIVE_REPOSITORY_HTTP_*
+    # transport evidence and therefore cannot manufacture an HTTP success.
     text = replace_once(
         text,
         '        val loadedProviders = loadProvidersThroughNuvio()\n',
         '        captureDesktopPhase("ui-launched", fixtureSlug)\n'
         '        captureDesktopPhase("repository-load", fixtureSlug)\n'
+        '        captureDesktopPhase("repository-http-request", fixtureSlug)\n'
         '        val loadedProviders = loadProvidersThroughNuvio()\n'
+        '        captureDesktopPhase("repository-http-terminal", fixtureSlug)\n'
         '        captureDesktopPhase("provider-load-state", fixtureSlug)\n',
         "repository loading",
     )
