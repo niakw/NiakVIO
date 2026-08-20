@@ -1,4 +1,4 @@
-name: Canonical media type and native evidence gate
+name: Canonical media type, playback core and native evidence gate
 
 on:
   pull_request:
@@ -10,10 +10,8 @@ on:
       - "package.json"
       - "package-lock.json"
       - ".github/triggers/nuvio-client-lab.json"
-      - "engine_v2/src/contracts.mjs"
-      - "engine_v2/tests/contracts.test.mjs"
-      - "engine_v2/tests/native-reader-diagnosis.test.mjs"
-      - "engine_v2/tests/learning-lab-memory.test.mjs"
+      - "engine_v2/src/**"
+      - "engine_v2/tests/**"
       - "engine_v2/scripts/diagnose-native-reader.mjs"
       - "engine_v2/scripts/diagnose-native-media-capabilities.mjs"
       - "engine_v2/scripts/learning-lab.mjs"
@@ -49,6 +47,8 @@ on:
       - "tests/native_evidence_contract_test.py"
       - "tests/native_evidence_completeness_test.cjs"
       - "tests/native_evidence_codegen_pipeline_test.py"
+      - "tests/native_player_diagnostics_codegen_test.py"
+      - "tests/native_lab_observational_purity_test.py"
       - "tests/native_repository_cache_contract_test.py"
       - "tests/native_repository_http_instrumentation_test.py"
       - "tests/native_media_type_capability_test.py"
@@ -67,7 +67,7 @@ concurrency:
 jobs:
   canonical-media-types:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 18
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with: {persist-credentials: false}
@@ -81,14 +81,24 @@ jobs:
         run: node -e "require('axios'); require('cheerio'); console.log('dependency imports ok')"
       - name: Validate canonical catalog and manifest projections
         run: python3 tests/canonical_media_types_test.py
-      - name: Validate Core alias boundary
+      - name: Validate canonical stream contract
         run: node engine_v2/tests/contracts.test.mjs
+      - name: Validate deep HLS playback chain and ranking
+        run: node engine_v2/tests/media-validator.test.mjs
+      - name: Validate resolver Core
+        run: node engine_v2/tests/resolver-core.test.mjs
+      - name: Validate Brain v4 reader causality
+        run: node engine_v2/tests/native-reader-brain-v4.test.mjs
       - name: Validate full native evidence architecture
         run: python3 tests/native_evidence_contract_test.py
       - name: Validate native evidence execution floor
         run: node tests/native_evidence_completeness_test.cjs
+      - name: Validate native reader codegen purity
+        run: python3 tests/native_player_diagnostics_codegen_test.py
       - name: Execute native evidence Kotlin codegen pipeline
         run: python3 tests/native_evidence_codegen_pipeline_test.py
+      - name: Audit observational purity of native labs
+        run: python3 tests/native_lab_observational_purity_test.py
       - name: Validate repository HTTP instrumentation contracts
         run: python3 tests/native_repository_http_instrumentation_test.py
       - name: Validate persistent native repository cache safety
