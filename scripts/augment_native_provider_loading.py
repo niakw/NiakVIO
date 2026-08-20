@@ -129,15 +129,18 @@ def insert_imports(text: str, client: str) -> str:
 
 
 def platform_set_literal(ids: list[str]) -> str:
+    # Generated Kotlin is compiled by several different client/compiler stacks.
+    # Empty generic constructors therefore carry their type explicitly instead of
+    # relying on local inference (a real TV route run has failed here before).
     if not ids:
-        return "emptySet()"
-    return "setOf(" + ", ".join(kotlin_string(value) for value in ids) + ")"
+        return "emptySet<String>()"
+    return "setOf<String>(" + ", ".join(kotlin_string(value) for value in ids) + ")"
 
 
 def tv_helpers(manifest_url: str, blocked: list[str]) -> str:
     return f'''
     private val repositoryManifestUrl = {kotlin_string(manifest_url)}
-    private val platformExcludedProviders = {platform_set_literal(blocked)}
+    private val platformExcludedProviders: Set<String> = {platform_set_literal(blocked)}
 
     @EntryPoint
     @InstallIn(SingletonComponent::class)
@@ -172,7 +175,7 @@ def tv_helpers(manifest_url: str, blocked: list[str]) -> str:
                         emit("FIELD_NATIVE_PROVIDER_LOAD_ERROR client=tv fixture=$fixtureSlugForLoad provider64=${{b64(provider.id)}} reason=repository_install_failed")
                     }}
                 }}
-                return manager to emptyMap()
+                return manager to emptyMap<String, com.nuvio.tv.domain.model.ScraperInfo>()
             }}
             installed.getOrThrow()
         }}
@@ -211,7 +214,7 @@ def repository_helpers(client: str, manifest_url: str, blocked: list[str]) -> st
     desktop_after = '                    captureDesktopPhase("repository-http-response", fixtureSlugForLoad)\n' if client == "desktop" else ""
     return f'''
     private val repositoryManifestUrl = {kotlin_string(manifest_url)}
-    private val platformExcludedProviders = {platform_set_literal(blocked)}
+    private val platformExcludedProviders: Set<String> = {platform_set_literal(blocked)}
 
     private suspend fun loadProvidersThroughNuvio(): Map<String, PluginScraper> {{
         // Preserve Nuvio's active profile/settings and previously downloaded plugin
@@ -240,7 +243,7 @@ def repository_helpers(client: str, manifest_url: str, blocked: list[str]) -> st
                             emit("FIELD_NATIVE_PROVIDER_LOAD_ERROR client={client} fixture=$fixtureSlugForLoad provider64=${{b64(provider.id)}} reason=repository_install_failed")
                         }}
                     }}
-                    return emptyMap()
+                    return emptyMap<String, PluginScraper>()
                 }}
             }}
         }}
