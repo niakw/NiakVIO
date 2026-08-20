@@ -12,13 +12,34 @@ def replace_once(text: str, old: str, new: str, label: str) -> str:
     return text.replace(old, new, 1)
 
 
+def canonicalize_http_terminal_phases(text: str) -> str:
+    # The native evidence contract defines a terminal HTTP phase as either a
+    # response or an error. Older desktop augmentation emitted a misleading
+    # *-http-response phase even when FIELD_NATIVE_*_HTTP_ERROR was terminal.
+    # Normalize those generated calls before adding any missing phases.
+    return (
+        text.replace(
+            'captureDesktopPhase("repository-http-response",',
+            'captureDesktopPhase("repository-http-terminal",',
+        )
+        .replace(
+            'captureDesktopPhase("provider-http-response",',
+            'captureDesktopPhase("provider-http-terminal",',
+        )
+    )
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("source")
     args = parser.parse_args()
     path = Path(args.source).resolve()
-    text = path.read_text(encoding="utf-8")
+    original = path.read_text(encoding="utf-8")
+    text = canonicalize_http_terminal_phases(original)
     if 'captureDesktopPhase("ui-launched", fixtureSlug)' in text:
+        if text != original:
+            path.write_text(text, encoding="utf-8")
+            print(f"FIELD_NATIVE_DESKTOP_FRONTEND_PHASES source={path} canonicalized=true")
         return 0
 
     # The repository call itself owns the outcome. Capture "loaded" only when the
@@ -58,11 +79,11 @@ def main() -> int:
     text = replace_once(
         text,
         '                captureDesktopPhase("provider-result", fixtureSlug)',
-        '                captureDesktopPhase("provider-http-response", fixtureSlug)\n                captureDesktopPhase("provider-result", fixtureSlug)',
-        "provider response",
+        '                captureDesktopPhase("provider-http-terminal", fixtureSlug)\n                captureDesktopPhase("provider-result", fixtureSlug)',
+        "provider terminal",
     )
     path.write_text(text, encoding="utf-8")
-    print(f"FIELD_NATIVE_DESKTOP_FRONTEND_PHASES source={path}")
+    print(f"FIELD_NATIVE_DESKTOP_FRONTEND_PHASES source={path} canonicalized=true")
     return 0
 
 
