@@ -45,8 +45,12 @@ def _fixture_provider_ids(slug: str) -> list[str]:
 def staged_providers(manifest_path: str, provider: str | None = None, fixture: str | None = None) -> list[dict]:
     staged = selected_manifest.staged_manifest_providers(manifest_path)
     if _is_pull_request() and not provider and fixture:
-        wanted = {value.casefold() for value in _fixture_provider_ids(fixture)}
-        filtered = [row for row in staged if str(row.get("id") or "").strip().casefold() in wanted]
+        # The fixture list is an ordered canary contract. Preserve that order
+        # before applying the PR budget; filtering through a set and then keeping
+        # manifest order silently changes which providers the native reader tests.
+        wanted = _fixture_provider_ids(fixture)
+        by_id = {str(row.get("id") or "").strip().casefold(): row for row in staged}
+        filtered = [by_id[key] for value in wanted if (key := value.casefold()) in by_id]
         if not filtered:
             raise SystemExit(f"PR native corpus fixture {fixture} selected no providers from {manifest_path}")
         return filtered[: _pr_provider_limit()]
