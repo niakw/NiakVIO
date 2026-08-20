@@ -76,9 +76,15 @@ with tempfile.TemporaryDirectory() as tmp:
         lines.append(f"FIELD_NATIVE_PLAYER client=tv fixture=sinners-2025 provider64={b64('MOVIESDRIVE')} index={index} state=error")
     log.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
+    # Explicitly isolate both modes. GitHub's provider pipeline itself runs as a
+    # pull_request, so inheriting its environment here would make the synthetic
+    # deep assertion silently exercise the PR floor instead.
+    deep_env = dict(os.environ, GITHUB_EVENT_NAME="push")
+    pr_env = dict(os.environ, GITHUB_EVENT_NAME="pull_request")
+
     failed = subprocess.run(
         ["node", str(ROOT / "scripts/gate_native_reader_coverage.cjs"), "--streams", "all", str(log)],
-        cwd=ROOT, text=True, capture_output=True,
+        cwd=ROOT, text=True, capture_output=True, env=deep_env,
     )
     assert failed.returncode == 1, failed.stdout + failed.stderr
     assert "returned=9" in failed.stdout and "played=3" in failed.stdout
@@ -87,7 +93,6 @@ with tempfile.TemporaryDirectory() as tmp:
     # PR acceptance has exactly one canonical coverage floor: at least one real
     # native read for every route that returned media. The generator may choose a
     # larger bounded sample; the gate must not independently re-invent that count.
-    pr_env = dict(os.environ, GITHUB_EVENT_NAME="pull_request")
     pr_bounded = subprocess.run(
         ["node", str(ROOT / "scripts/gate_native_reader_coverage.cjs"), "--streams", "all", str(log)],
         cwd=ROOT, text=True, capture_output=True, env=pr_env,
@@ -98,7 +103,7 @@ with tempfile.TemporaryDirectory() as tmp:
 
     sampled_pass = subprocess.run(
         ["node", str(ROOT / "scripts/gate_native_reader_coverage.cjs"), "--streams", "3", str(log)],
-        cwd=ROOT, text=True, capture_output=True,
+        cwd=ROOT, text=True, capture_output=True, env=deep_env,
     )
     assert sampled_pass.returncode == 0, sampled_pass.stdout + sampled_pass.stderr
     assert "expected_played=3 played=3" in sampled_pass.stdout
@@ -108,7 +113,7 @@ with tempfile.TemporaryDirectory() as tmp:
     log.write_text("\n".join(lines) + "\n", encoding="utf-8")
     passed = subprocess.run(
         ["node", str(ROOT / "scripts/gate_native_reader_coverage.cjs"), "--streams", "all", str(log)],
-        cwd=ROOT, text=True, capture_output=True,
+        cwd=ROOT, text=True, capture_output=True, env=deep_env,
     )
     assert passed.returncode == 0, passed.stdout + passed.stderr
     assert "expected_played=9 played=9" in passed.stdout
