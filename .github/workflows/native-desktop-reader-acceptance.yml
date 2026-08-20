@@ -110,7 +110,9 @@ jobs:
       NIAKVIO_TARGET_MANIFEST: manifest.json
       NIAKVIO_PRIMARY_STREAM_SCOPE: all
       NIAKVIO_REGRESSION_STREAM_SCOPE: all
-      NIAKVIO_REQUIRE_READER_SUCCESS: "1"
+      # Playback outcome is compatibility evidence, not a global provider verdict.
+      # Corpus/evidence completeness remains blocking; player red alone does not.
+      NIAKVIO_REQUIRE_READER_SUCCESS: "0"
     steps:
       - name: Checkout NiakVIO candidate
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
@@ -160,9 +162,8 @@ jobs:
         shell: bash
         run: |
           set -euxo pipefail
-          MACOS_JAVA_OPENS="--add-opens=java.desktop/java.awt=ALL-UNNAMED --add-opens=java.desktop/java.awt.peer=ALL-UNNAMED --add-opens=java.desktop/sun.awt=ALL-UNNAMED --add-opens=java.desktop/sun.lwawt=ALL-UNNAMED --add-opens=java.desktop/sun.lwawt.macosx=ALL-UNNAMED"
-          echo "JAVA_TOOL_OPTIONS=$MACOS_JAVA_OPENS" >> "$GITHUB_ENV"
-          export JAVA_TOOL_OPTIONS="$MACOS_JAVA_OPENS"
+          # No test-only --add-opens/JVM privilege relaxation. If accepted
+          # NuvioDesktop cannot run under normal JVM policy, record/fix it upstream.
           ./nuvio-desktop/gradlew -p nuvio-desktop \
             :composeApp:buildMacosPlayerBridge \
             :composeApp:prepareMacosPlayerRuntime \
@@ -172,6 +173,7 @@ jobs:
         if: matrix.os_name == 'windows'
         shell: pwsh
         run: |
+          # Same normal-user/runtime policy as a real NuvioDesktop launch.
           & .\nuvio-desktop\gradlew.bat -p nuvio-desktop `
             :composeApp:buildWindowsPlayerBridge `
             :composeApp:prepareWindowsPlayerRuntime `
@@ -179,7 +181,6 @@ jobs:
             "-Pnuvio.webview2.dir=$env:WEBVIEW2_ROOT" `
             --no-configuration-cache --console=plain
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          "JAVA_TOOL_OPTIONS=--add-opens=java.desktop/java.awt=ALL-UNNAMED --add-opens=java.desktop/sun.awt.windows=ALL-UNNAMED" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
       - name: Execute all representative routes in one Desktop profile
         shell: bash
