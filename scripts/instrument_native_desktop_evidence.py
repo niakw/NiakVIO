@@ -48,21 +48,35 @@ def main() -> int:
     # Nuvio intentionally turns a thrown getStreams() into [] inside QuickJS. Keep
     # that production behavior unchanged, but surface the swallowed reason to the
     # lab in sanitized form so an empty provider result is diagnosable evidence.
-    plugin_error_line = evidence_write(
-        '"FIELD_NATIVE_PLUGIN_ERROR client=desktop provider=$scraperId request_type=${mediaType.lowercase()} error=$safePluginError"'
-    )
-    runtime_text = replace_once(
-        runtime_text,
-        '''                val callCode = """\n                    (async function() {\n''',
-        f'''                function("__niakvio_capture_plugin_error") {{ args: Array<Any?> ->\n                    val rawPluginError = args.getOrNull(0)?.toString().orEmpty()\n                    val safePluginError = rawPluginError\n                        .replace(Regex("https?://\\\\S+", RegexOption.IGNORE_CASE), "<url>")\n                        .replace(Regex("(?i)(authorization|cookie|token|secret)\\\\s*[:=]\\\\s*\\\\S+"), "$1=<redacted>")\n                        .replace(Regex("\\\\s+"), "_")\n                        .take(360)\n                    {plugin_error_line}\n                    null\n                }}\n\n                val callCode = """\n                    (async function() {{\n''',
-        "plugin error capture binding",
-    )
-    runtime_text = replace_once(
-        runtime_text,
-        '''                            console.error("getStreams error:", e && e.message ? e.message : e, e && e.stack ? e.stack : "");\n                            __capture_result(JSON.stringify([]));\n''',
-        '''                            console.error("getStreams error:", e && e.message ? e.message : e, e && e.stack ? e.stack : "");\n                            __niakvio_capture_plugin_error(String(e && e.message ? e.message : e));\n                            __capture_result(JSON.stringify([]));\n''',
-        "plugin error JS callback",
-    )
+    # This diagnostic is deliberately optional for minimal/synthetic runtimes used
+    # by instrumentation contract tests. HTTP evidence remains mandatory. On the
+    # accepted real NuvioDesktop runtime both anchors are present and the callback
+    # is injected; a partial anchor match is treated as drift and fails closed.
+    plugin_error_binding_anchor = '''                val callCode = """\n                    (async function() {\n'''
+    plugin_error_callback_anchor = '''                            console.error("getStreams error:", e && e.message ? e.message : e, e && e.stack ? e.stack : "");\n                            __capture_result(JSON.stringify([]));\n'''
+    binding_count = runtime_text.count(plugin_error_binding_anchor)
+    callback_count = runtime_text.count(plugin_error_callback_anchor)
+    plugin_error_capture = False
+    if binding_count == 1 and callback_count == 1:
+        plugin_error_line = evidence_write(
+            '"FIELD_NATIVE_PLUGIN_ERROR client=desktop provider=$scraperId request_type=${mediaType.lowercase()} error=$safePluginError"'
+        )
+        runtime_text = runtime_text.replace(
+            plugin_error_binding_anchor,
+            f'''                function("__niakvio_capture_plugin_error") {{ args: Array<Any?> ->\n                    val rawPluginError = args.getOrNull(0)?.toString().orEmpty()\n                    val safePluginError = rawPluginError\n                        .replace(Regex("https?://\\\\S+", RegexOption.IGNORE_CASE), "<url>")\n                        .replace(Regex("(?i)(authorization|cookie|token|secret)\\\\s*[:=]\\\\s*\\\\S+"), "$1=<redacted>")\n                        .replace(Regex("\\\\s+"), "_")\n                        .take(360)\n                    {plugin_error_line}\n                    null\n                }}\n\n                val callCode = """\n                    (async function() {{\n''',
+            1,
+        )
+        runtime_text = runtime_text.replace(
+            plugin_error_callback_anchor,
+            '''                            console.error("getStreams error:", e && e.message ? e.message : e, e && e.stack ? e.stack : "");\n                            __niakvio_capture_plugin_error(String(e && e.message ? e.message : e));\n                            __capture_result(JSON.stringify([]));\n''',
+            1,
+        )
+        plugin_error_capture = True
+    elif binding_count != 0 or callback_count != 0:
+        raise SystemExit(
+            "desktop evidence instrumentation partial plugin-error anchor drift "
+            f"binding={binding_count} callback={callback_count}"
+        )
 
     bridge_text = replace_once(
         bridge_text,
@@ -94,7 +108,10 @@ def main() -> int:
 
     runtime.write_text(runtime_text, encoding="utf-8")
     bridge.write_text(bridge_text, encoding="utf-8")
-    print(f"FIELD_NATIVE_EVIDENCE_INSTRUMENTED client=desktop runtime={runtime} bridge={bridge}")
+    print(
+        f"FIELD_NATIVE_EVIDENCE_INSTRUMENTED client=desktop runtime={runtime} bridge={bridge} "
+        f"plugin_error_capture={str(plugin_error_capture).lower()}"
+    )
     return 0
 
 
