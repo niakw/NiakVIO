@@ -25,7 +25,12 @@ TARGET_FIXTURES="${NIAKVIO_TARGET_FIXTURES:-}"
 TARGET_PROVIDER="${NIAKVIO_TARGET_PROVIDER:-}"
 TARGET_MANIFEST="${NIAKVIO_TARGET_MANIFEST:-manifest.json}"
 PLAYER_PROBES="${NIAKVIO_PLAYER_PROBES:-1}"
-REQUIRE_READER_SUCCESS="${NIAKVIO_REQUIRE_READER_SUCCESS:-0}"
+REQUESTED_READER_SUCCESS="${NIAKVIO_REQUIRE_READER_SUCCESS:-0}"
+PLAYER_OUTCOME_GLOBAL_GATE="${NIAKVIO_NATIVE_PLAYER_OUTCOME_GLOBAL_GATE:-0}"
+REQUIRE_READER_SUCCESS=0
+if [[ "$PLAYER_OUTCOME_GLOBAL_GATE" = "1" && "$REQUESTED_READER_SUCCESS" = "1" ]]; then
+  REQUIRE_READER_SUCCESS=1
+fi
 READER_ACCEPTANCE="${NIAKVIO_READER_ACCEPTANCE:-0}"
 PRIMARY_FIXTURE="${NIAKVIO_PRIMARY_FIXTURE:-sinners-2025}"
 PRIMARY_STREAM_SCOPE="${NIAKVIO_PRIMARY_STREAM_SCOPE:-all}"
@@ -84,7 +89,7 @@ echo "FIELD_NATIVE_MOBILE_APP_INSTALLED package=com.nuviodebug.com variant=fullD
 
 mkdir -p "$EVIDENCE_ROOT"
 echo "Resolved NuvioMobile task once for corpus suite: $MOBILE_TASK"
-echo "FIELD_NATIVE_CORPUS_MOBILE_PROFILE fixtures=${#FIXTURES[@]} provider=${TARGET_PROVIDER:-all} configured_acceptance_provider_scope=$CONFIGURED_ACCEPTANCE_PROVIDER_SCOPE manifest=$TARGET_MANIFEST player_probes=$PLAYER_PROBES require_reader_success=$REQUIRE_READER_SUCCESS reader_acceptance=$READER_ACCEPTANCE primary_stream_scope=$PRIMARY_STREAM_SCOPE regression_stream_scope=$REGRESSION_STREAM_SCOPE reuse_avd=true reuse_gradle_daemon=true full_backend_evidence=true repository_http_evidence=true frontend_timeline=true official_repository_loading=true local_manifest=$ALLOW_LOCAL_MANIFEST"
+echo "FIELD_NATIVE_CORPUS_MOBILE_PROFILE fixtures=${#FIXTURES[@]} provider=${TARGET_PROVIDER:-all} configured_acceptance_provider_scope=$CONFIGURED_ACCEPTANCE_PROVIDER_SCOPE manifest=$TARGET_MANIFEST player_probes=$PLAYER_PROBES requested_reader_success=$REQUESTED_READER_SUCCESS require_reader_success=$REQUIRE_READER_SUCCESS player_outcome_global_gate=$PLAYER_OUTCOME_GLOBAL_GATE reader_acceptance=$READER_ACCEPTANCE primary_stream_scope=$PRIMARY_STREAM_SCOPE regression_stream_scope=$REGRESSION_STREAM_SCOPE reuse_avd=true reuse_gradle_daemon=true full_backend_evidence=true repository_http_evidence=true frontend_timeline=true official_repository_loading=true local_manifest=$ALLOW_LOCAL_MANIFEST"
 
 for fixture in "${FIXTURES[@]}"; do
   echo "===== MOBILE CORPUS FIXTURE: $fixture ====="
@@ -128,13 +133,15 @@ for fixture in "${FIXTURES[@]}"; do
   if [[ "$READER_ACCEPTANCE" = "1" ]]; then
     node "$COVERAGE_GATE" --streams "$STREAM_SCOPE" "$LOG" || COVERAGE_STATUS=$?
   fi
+  OBSERVED_READER_STATUS=0
+  node "$READER_GATE" "$LOG" || OBSERVED_READER_STATUS=$?
   READER_STATUS=0
   if [[ "$REQUIRE_READER_SUCCESS" = "1" ]]; then
-    node "$READER_GATE" "$LOG" || READER_STATUS=$?
+    READER_STATUS=$OBSERVED_READER_STATUS
   fi
-  echo "FIELD_NATIVE_CORPUS_MOBILE_STATUS fixture=$fixture runtime=$RUNTIME_STATUS collection=$ANALYSIS_STATUS coverage=$COVERAGE_STATUS reader=$READER_STATUS stream_scope=$STREAM_SCOPE frontend_dir=$FRONT_DIR"
+  echo "FIELD_NATIVE_CORPUS_MOBILE_STATUS fixture=$fixture runtime=$RUNTIME_STATUS collection=$ANALYSIS_STATUS coverage=$COVERAGE_STATUS reader_observed=$OBSERVED_READER_STATUS reader_blocking=$READER_STATUS stream_scope=$STREAM_SCOPE frontend_dir=$FRONT_DIR"
   if [[ "$RUNTIME_STATUS" -ne 0 || "$ANALYSIS_STATUS" -ne 0 || "$COVERAGE_STATUS" -ne 0 || "$READER_STATUS" -ne 0 ]]; then STATUS=1; fi
 done
 
-echo "FIELD_NATIVE_CORPUS_MOBILE_SUITE_STATUS status=$STATUS fixtures=${#FIXTURES[@]} clients=1 provider=${TARGET_PROVIDER:-all} configured_acceptance_provider_scope=$CONFIGURED_ACCEPTANCE_PROVIDER_SCOPE manifest=$TARGET_MANIFEST require_reader_success=$REQUIRE_READER_SUCCESS reader_acceptance=$READER_ACCEPTANCE evidence_root=$EVIDENCE_ROOT"
+echo "FIELD_NATIVE_CORPUS_MOBILE_SUITE_STATUS status=$STATUS fixtures=${#FIXTURES[@]} clients=1 provider=${TARGET_PROVIDER:-all} configured_acceptance_provider_scope=$CONFIGURED_ACCEPTANCE_PROVIDER_SCOPE manifest=$TARGET_MANIFEST requested_reader_success=$REQUESTED_READER_SUCCESS require_reader_success=$REQUIRE_READER_SUCCESS player_outcome_global_gate=$PLAYER_OUTCOME_GLOBAL_GATE reader_acceptance=$READER_ACCEPTANCE evidence_root=$EVIDENCE_ROOT"
 exit "$STATUS"
