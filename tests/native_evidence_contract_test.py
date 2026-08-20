@@ -259,8 +259,9 @@ assert "DEFAULT_PR_PROVIDER_LIMIT = 4" in restage
 
 # Desktop Linux is explicitly not native-reader proof. macOS/Windows build the
 # official bridge once per OS, then reuse that process/Gradle profile for all three
-# representative routes. PR playback is one stream per bounded fixture provider;
-# trusted main/manual execution keeps the exhaustive stream path.
+# representative routes. PR playback tests two streams per bounded fixture provider
+# so a first-green/second-broken result cannot be hidden; trusted main/manual runs
+# keep the exhaustive stream path.
 for required in (
     "official_nuvio_desktop_player_is_stub",
     "instrument_native_desktop_evidence.py",
@@ -305,6 +306,9 @@ assert desktop_workflow.count("- runner: macos-15") == 1, "macOS must be launche
 assert desktop_workflow.count("- runner: windows-2022") == 1, "Windows must be launched once"
 assert "__READER_TIMEOUT_MS__" in desktop_player
 assert "12_000 if pr_bounded else 25_000" in desktop_player
-assert 'stream_scope = "1"' in desktop_player
+assert 'stream_scope = "2"' in desktop_player
+assert 'stream_scope = "1"' not in desktop_player
+assert "sourceHeaders = headers.orEmpty()" in desktop_player
+assert ".filterKeys" not in desktop_player
 
 print("full native evidence contract tests passed")
