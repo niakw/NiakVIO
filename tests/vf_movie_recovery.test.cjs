@@ -13,6 +13,7 @@ const entries = Object.fromEntries(manifest.scrapers.map((row) => [String(row.id
 const externalPlayer = 'https://player.example/embed/movie';
 const provenHls = 'https://media.example/hls/fixture/master.m3u8';
 const tvFixture = { id: '94605', title: 'Arcane', year: 2021, slug: 'arcane', season: 1, episode: 1 };
+const fetchTrace = [];
 
 function configuredSite(id, fallback) {
   const patch = overrides?.provider_patches?.[id] || {};
@@ -60,6 +61,7 @@ function hlsBody() {
 
 global.fetch = async (input) => {
   const raw = typeof input === 'string' ? input : input.url;
+  fetchTrace.push(raw);
   const url = new URL(raw);
   if (url.hostname === 'api.themoviedb.org') return tmdbResponse(raw);
   if (url.hostname === 'movix.fun' && url.pathname === '/') return new Response('<script src="/assets/app.js"></script>', { status: 200, headers: { 'content-type': 'text/html' } });
@@ -82,11 +84,12 @@ global.fetch = async (input) => {
 };
 
 function assertSafeRows(id, fixtureId, rows, kind) {
-  assert(Array.isArray(rows) && rows.length > 0, `${id}/${fixtureId}: ${kind} recovery produced no player`);
-  assert(rows.every((row) => typeof row.url === 'string' && /^https?:\/\//.test(row.url)), `${id}/${fixtureId}: invalid ${kind} player URL`);
-  assert(rows.every((row) => !/fstream\.top/i.test(row.url)), `${id}/${fixtureId}: known fake short player escaped filtering`);
-  assert(rows.every((row) => !/\/troll\/master\.m3u8(?:[?#]|$)/i.test(row.url)), `${id}/${fixtureId}: known troll fallback escaped filtering`);
-  assert(rows.every((row) => !/(?:^|\.)(?:snap\.com|snapchat\.com|ctfassets\.net|sc-cdn\.net)$/i.test(new URL(row.url).hostname)), `${id}/${fixtureId}: unrelated advertising media escaped filtering`);
+  const trace = JSON.stringify(fetchTrace.slice(-24));
+  assert(Array.isArray(rows) && rows.length > 0, `${id}/${fixtureId}: ${kind} recovery produced no player; fetchTrace=${trace}`);
+  assert(rows.every((row) => typeof row.url === 'string' && /^https?:\/\//.test(row.url)), `${id}/${fixtureId}: invalid ${kind} player URL; fetchTrace=${trace}`);
+  assert(rows.every((row) => !/fstream\.top/i.test(row.url)), `${id}/${fixtureId}: known fake short player escaped filtering; fetchTrace=${trace}`);
+  assert(rows.every((row) => !/\/troll\/master\.m3u8(?:[?#]|$)/i.test(row.url)), `${id}/${fixtureId}: known troll fallback escaped filtering; fetchTrace=${trace}`);
+  assert(rows.every((row) => !/(?:^|\.)(?:snap\.com|snapchat\.com|ctfassets\.net|sc-cdn\.net)$/i.test(new URL(row.url).hostname)), `${id}/${fixtureId}: unrelated advertising media escaped filtering; fetchTrace=${trace}`);
 }
 
 (async () => {
@@ -105,6 +108,7 @@ function assertSafeRows(id, fixtureId, rows, kind) {
     delete require.cache[require.resolve(providerPath)];
     const provider = require(providerPath);
     for (const fixture of fixtures) {
+      fetchTrace.length = 0;
       const rows = await provider.getStreams(fixture.id, 'movie', null, null, {});
       if (quarantined) {
         assert.deepEqual(rows, [], `${id}/${fixture.id}: quarantined movie provider returned content`);
@@ -113,6 +117,7 @@ function assertSafeRows(id, fixtureId, rows, kind) {
       assertSafeRows(id, fixture.id, rows, 'movie');
     }
     if (id === 'flemmix') continue;
+    fetchTrace.length = 0;
     const tvRows = await provider.getStreams(tvFixture.id, 'tv', tvFixture.season, tvFixture.episode, {});
     if (quarantined) {
       assert.deepEqual(tvRows, [], `${id}/${tvFixture.id}: quarantined TV provider returned content`);
