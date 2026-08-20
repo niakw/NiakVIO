@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import os
 import subprocess
 import tempfile
 from pathlib import Path
@@ -81,6 +82,19 @@ with tempfile.TemporaryDirectory() as tmp:
     )
     assert failed.returncode == 1, failed.stdout + failed.stderr
     assert "returned=9" in failed.stdout and "played=3" in failed.stdout
+    assert "ci_mode=deep" in failed.stdout
+
+    # PR acceptance has exactly one canonical coverage floor: at least one real
+    # native read for every route that returned media. The generator may choose a
+    # larger bounded sample; the gate must not independently re-invent that count.
+    pr_env = dict(os.environ, GITHUB_EVENT_NAME="pull_request")
+    pr_bounded = subprocess.run(
+        ["node", str(ROOT / "scripts/gate_native_reader_coverage.cjs"), "--streams", "all", str(log)],
+        cwd=ROOT, text=True, capture_output=True, env=pr_env,
+    )
+    assert pr_bounded.returncode == 0, pr_bounded.stdout + pr_bounded.stderr
+    assert "ci_mode=pr-bounded" in pr_bounded.stdout
+    assert "expected_played=1 played=3" in pr_bounded.stdout
 
     sampled_pass = subprocess.run(
         ["node", str(ROOT / "scripts/gate_native_reader_coverage.cjs"), "--streams", "3", str(log)],
@@ -99,4 +113,4 @@ with tempfile.TemporaryDirectory() as tmp:
     assert passed.returncode == 0, passed.stdout + passed.stderr
     assert "expected_played=9 played=9" in passed.stdout
 
-print("sampled/exhaustive native reader acceptance tests passed")
+print("sampled/exhaustive native reader acceptance tests passed: pr_floor=1 deep=all")
