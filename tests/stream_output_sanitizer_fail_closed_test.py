@@ -13,6 +13,14 @@ module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(module)
 
 
+def sanitizer_region(text: str) -> str:
+    start = text.find(module.SANITIZER_PREFIX)
+    assert start >= 0
+    call = text.find(module.SANITIZER_CALL, start)
+    assert call >= 0
+    return text[start:call]
+
+
 def main() -> int:
     source = "module.exports={getStreams:async function(){return [];}};\n"
     options = {
@@ -36,6 +44,7 @@ def main() -> int:
     assert '"maxProbes":20' in first
     assert module.NEW in first
     assert module.OLD not in first
+    assert module.PROBE_ALIAS in sanitizer_region(first)
     for path in options["blocked_path_patterns"]:
         assert f'"{path}"' in first
 
@@ -49,6 +58,7 @@ def main() -> int:
     assert module.apply(changed, options=changed_options) == changed
     assert changed.count(module.MARKER) == 1
     assert module.NEW in changed
+    assert module.PROBE_ALIAS in sanitizer_region(changed)
 
     # Durable/LKG reapplication can append a freshly force-rewrapped target-media
     # adapter after an already-materialized sanitizer. Reapplying V6 must move
@@ -60,7 +70,17 @@ def main() -> int:
     assert target_pos >= 0 and sanitizer_pos > target_pos, (target_pos, sanitizer_pos)
     assert relocated.count(module.SANITIZER_PREFIX) == 1
     assert relocated.count(module.MARKER) == 1
+    assert module.PROBE_ALIAS in sanitizer_region(relocated)
     assert module.apply(relocated, options=options) == relocated
+
+    # Reproduce the Coflix collision: another provider wrapper may already define
+    # the exact V5 compatibility alias text. Whole-file detection must not make
+    # the terminal sanitizer omit its own lexical alias.
+    collision_source = module.PROBE_ALIAS + source
+    collision = module.apply(collision_source, options=options)
+    assert collision.count(module.PROBE_ALIAS) >= 2
+    assert module.PROBE_ALIAS in sanitizer_region(collision)
+    assert module.apply(collision, options=options) == collision
 
     print("fail-closed all-URL stream sanitizer tests passed")
     return 0
