@@ -1,31 +1,49 @@
 #!/usr/bin/env python3
-"""Augment generated Android native-corpus tests with real Media3 reader diagnostics."""
+"""Augment Android native-corpus tests with production Nuvio playback observation.
+
+The generated lab never constructs a parallel Media3 player. TV launches NuvioTV's
+real Player screen and reads LastPlaybackDiagnostics written by PlayerRuntimeController.
+Mobile renders NuvioMobile's real PlatformPlayerSurface inside its real MainActivity,
+therefore preserving production header sanitation, player settings and ExoPlayer→libmpv
+fallback. Independent transport diagnostics run only after the player observation.
+"""
 from __future__ import annotations
+
 from typing import Iterable
 
 ANDROID_IMPORT_ANCHOR = "import android.util.Log\n"
 TEST_ANCHOR = "    @Test\n"
 
-COMMON_IMPORTS = """import android.os.Handler
-import android.os.Looper
-import androidx.media3.common.C
-import androidx.media3.common.MediaItem
-import androidx.media3.common.PlaybackException
-import androidx.media3.common.Player
-import androidx.media3.datasource.HttpDataSource
-import androidx.media3.exoplayer.ExoPlayer
-import androidx.media3.exoplayer.analytics.AnalyticsListener
-import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
-import androidx.media3.exoplayer.source.LoadEventInfo
-import androidx.media3.exoplayer.source.MediaLoadData
+COMMON_IMPORTS = """import android.content.Intent
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicReference
 """
-TV_IMPORT = "import com.nuvio.tv.ui.screens.player.PlayerPlaybackNetworking\n"
-MOBILE_IMPORT = "import com.nuvio.app.features.player.PlatformPlaybackDataSourceFactory\n"
 
-PLAYER_HELPERS_TEMPLATE = r'''
+TV_IMPORTS = """import androidx.activity.compose.setContent
+import androidx.navigation.compose.rememberNavController
+import com.nuvio.tv.MainActivity
+import com.nuvio.tv.core.player.LastPlaybackDiagnostics
+import com.nuvio.tv.data.local.PlayerSettingsDataStore
+import com.nuvio.tv.ui.navigation.NuvioNavHost
+import com.nuvio.tv.ui.navigation.Screen
+import dagger.hilt.EntryPoint
+import dagger.hilt.InstallIn
+import dagger.hilt.android.EntryPointAccessors
+import dagger.hilt.components.SingletonComponent
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeout
+"""
+
+MOBILE_IMPORTS = """import androidx.activity.compose.setContent
+import com.nuvio.app.MainActivity
+import com.nuvio.app.features.player.PlatformPlayerSurface
+import com.nuvio.app.features.player.PlayerPlaybackSnapshot
+import com.nuvio.app.features.player.PlayerResizeMode
+"""
+
+PROBE_MODEL = r'''
     data class NativePlayerProbe(
         val state: String,
         val engine: String,
@@ -35,235 +53,171 @@ PLAYER_HELPERS_TEMPLATE = r'''
         val failureStage: String,
         val host: String,
         val durationSeconds: Double?,
-        val exceptionChain: String,
-        val responseHeaderNames: String,
+        val exceptionChain: String = "",
+        val responseHeaderNames: String = "",
         val loadBytes: Long = 0L,
         val loadDurationMs: Long = 0L,
         val mediaDataType: Int = -1,
         val trackType: Int = -1,
     )
 
-    data class NativeLoadFailure(
-        val errorClass: String,
-        val httpStatus: Int,
-        val failureStage: String,
-        val host: String,
-        val exceptionChain: String,
-        val responseHeaderNames: String,
-        val loadBytes: Long,
-        val loadDurationMs: Long,
-        val mediaDataType: Int,
-        val trackType: Int,
-    )
+    private fun sanitizeDiag(raw: String?): String = raw.orEmpty()
+        .replace(Regex("https?://\\S+", RegexOption.IGNORE_CASE), "<url>")
+        .replace(Regex("(?i)(authorization|cookie|token|secret)\\s*[:=]\\s*\\S+"), "$1=<redacted>")
+        .replace(Regex("\\s+"), " ")
+        .take(420)
+'''
 
-    private fun sanitizeDiag(raw: String?): String {
-        if (raw.isNullOrBlank()) return ""
-        return raw
-            .replace(Regex("https?://\\S+", RegexOption.IGNORE_CASE), "<url>")
-            .replace(Regex("(?i)(authorization|cookie|token|secret)\\s*[:=]\\s*\\S+"), "$1=<redacted>")
-            .replace(Regex("\\s+"), " ")
-            .take(420)
-    }
-
-    private fun exceptionChain(error: Throwable?): String {
-        val out = mutableListOf<String>()
-        var current = error
-        var depth = 0
-        while (current != null && depth < 8) {
-            val name = current::class.qualifiedName ?: current::class.simpleName.orEmpty()
-            val message = sanitizeDiag(current.message)
-            out += if (message.isBlank()) name else "$name:$message"
-            current = current.cause
-            depth += 1
-        }
-        return out.joinToString(" -> ").take(1000)
-    }
-
-    private fun invalidResponse(error: Throwable?): HttpDataSource.InvalidResponseCodeException? {
-        var current = error
-        var depth = 0
-        while (current != null && depth < 10) {
-            if (current is HttpDataSource.InvalidResponseCodeException) return current
-            current = current.cause
-            depth += 1
-        }
-        return null
-    }
-
-    private fun throwableFailureStage(error: Throwable?, errorCode: String = ""): String {
-        if (error == null) return "none"
-        val response = invalidResponse(error)
-        if (response != null) return when (response.responseCode) {
-            401, 403, 407, 451 -> "http_access"
-            404, 410 -> "http_gone"
-            429 -> "http_rate_limit"
-            in 500..599 -> "http_upstream"
-            else -> "http_response"
-        }
-        val code = errorCode.lowercase()
-        val chain = exceptionChain(error).lowercase()
-        return when {
-            "timeout" in chain -> "timeout"
-            "unknownhost" in chain || "dns" in chain -> "dns"
-            "ssl" in chain || "certificate" in chain || "handshake" in chain -> "tls"
-            "invalidcontenttype" in chain || "parser" in code || "parsing" in code || "unrecognized" in chain -> "parser"
-            "decoder" in code || "codec" in code || "mediacodec" in chain -> "decoder"
-            "behind_live_window" in code -> "live_window"
-            "io_" in code || "datasource" in chain || "http" in chain -> "io"
-            else -> "player"
-        }
-    }
-
-    private fun playerFailureStage(error: PlaybackException?): String =
-        throwableFailureStage(error, error?.errorCodeName.orEmpty())
-
-    private fun nativeReaderDataSource(
-        context: android.content.Context,
-        headers: Map<String, String>,
-    ): androidx.media3.datasource.DataSource.Factory {
-        __DATA_SOURCE_FACTORY__
+TV_HELPERS = PROBE_MODEL + r'''
+    @EntryPoint
+    @InstallIn(SingletonComponent::class)
+    interface NiakvioPlayerSettingsEntryPoint {
+        fun playerSettingsDataStore(): PlayerSettingsDataStore
     }
 
     private fun probeNativePlayer(
         url: String,
         headers: Map<String, String>?,
+        streamType: String?,
         expectedDurationMinutes: Int,
     ): NativePlayerProbe {
-        val host = hostOnly(url)
-        val terminal = CountDownLatch(1)
-        val outcome = AtomicReference<NativePlayerProbe?>(null)
-        val playerRef = AtomicReference<ExoPlayer?>(null)
-        val lastLoadFailure = AtomicReference<NativeLoadFailure?>(null)
-        // Observational-purity contract: the lab passes the provider's exact
-        // canonical header map to the official player. It never strips Range or
-        // synthesizes Referer/Origin/Cookie/User-Agent on the player's behalf.
-        val playbackHeaders = headers.orEmpty()
         val instrumentation = InstrumentationRegistry.getInstrumentation()
         val context = instrumentation.targetContext
-        val handler = Handler(Looper.getMainLooper())
-
-        fun complete(probe: NativePlayerProbe) {
-            if (outcome.compareAndSet(null, probe)) terminal.countDown()
-        }
-
-        try {
+        val host = hostOnly(url)
+        var activity: MainActivity? = null
+        return try {
+            val store = EntryPointAccessors.fromApplication(
+                context.applicationContext,
+                NiakvioPlayerSettingsEntryPoint::class.java,
+            ).playerSettingsDataStore()
+            val baseline = runBlocking { store.lastPlaybackDiagnostics.first().timestampMs }
+            val intent = context.packageManager.getLaunchIntentForPackage(context.packageName)
+                ?: return NativePlayerProbe("error", "nuvio-tv", "MainActivity", "NO_LAUNCH_INTENT", 0, "player_setup", host, null)
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+            activity = instrumentation.startActivitySync(intent) as? MainActivity
+                ?: return NativePlayerProbe("error", "nuvio-tv", "MainActivity", "WRONG_ACTIVITY", 0, "player_setup", host, null)
+            val route = Screen.Player.createRoute(
+                streamUrl = url,
+                title = "NiakVIO native reader",
+                streamName = "NiakVIO native reader",
+                headers = headers,
+                contentType = streamType,
+                autoPlayNav = true,
+            )
             instrumentation.runOnMainSync {
-                val dataSourceFactory = nativeReaderDataSource(context, playbackHeaders)
-                val player = ExoPlayer.Builder(context)
-                    .setMediaSourceFactory(DefaultMediaSourceFactory(dataSourceFactory))
-                    .build()
-                playerRef.set(player)
-                player.addAnalyticsListener(object : AnalyticsListener {
-                    override fun onLoadError(
-                        eventTime: AnalyticsListener.EventTime,
-                        loadEventInfo: LoadEventInfo,
-                        mediaLoadData: MediaLoadData,
-                        error: java.io.IOException,
-                        wasCanceled: Boolean,
-                    ) {
-                        if (wasCanceled) return
-                        val response = invalidResponse(error)
-                        val headerNames = loadEventInfo.responseHeaders.keys
-                            .filterNotNull().map { it.lowercase() }.distinct().sorted().joinToString(",")
-                        val loadHost = loadEventInfo.uri.host.orEmpty().ifBlank { host }
-                        lastLoadFailure.set(NativeLoadFailure(
-                            errorClass = error::class.qualifiedName.orEmpty(),
-                            httpStatus = response?.responseCode ?: 0,
-                            failureStage = throwableFailureStage(error),
-                            host = loadHost,
-                            exceptionChain = exceptionChain(error),
-                            responseHeaderNames = headerNames.take(360),
-                            loadBytes = loadEventInfo.bytesLoaded.coerceAtLeast(0L),
-                            loadDurationMs = loadEventInfo.loadDurationMs.coerceAtLeast(0L),
-                            mediaDataType = mediaLoadData.dataType,
-                            trackType = mediaLoadData.trackType,
-                        ))
-                    }
-                })
-                player.addListener(object : Player.Listener {
-                    override fun onPlayerError(error: PlaybackException) {
-                        val response = invalidResponse(error)
-                        val headerNames = response?.headerFields?.keys
-                            ?.filterNotNull()?.map { it.lowercase() }?.distinct()?.sorted()?.joinToString(",").orEmpty()
-                        val failureHost = response?.dataSpec?.uri?.host.orEmpty().ifBlank { host }
-                        val load = lastLoadFailure.get()
-                        complete(NativePlayerProbe(
-                            state = "error", engine = "media3",
-                            errorClass = error::class.qualifiedName.orEmpty(), errorCode = error.errorCodeName,
-                            httpStatus = response?.responseCode ?: load?.httpStatus ?: 0,
-                            failureStage = playerFailureStage(error),
-                            host = failureHost, durationSeconds = null, exceptionChain = exceptionChain(error),
-                            responseHeaderNames = (headerNames.ifBlank { load?.responseHeaderNames.orEmpty() }).take(360),
-                            loadBytes = load?.loadBytes ?: 0L,
-                            loadDurationMs = load?.loadDurationMs ?: 0L,
-                            mediaDataType = load?.mediaDataType ?: -1,
-                            trackType = load?.trackType ?: -1,
-                        ))
-                    }
-
-                    override fun onPlaybackStateChanged(state: Int) {
-                        if (state == Player.STATE_READY) {
-                            // Read duration after a small period of actual playback. Some
-                            // sources expose TIME_UNSET at the first READY callback and a
-                            // real duration once the timeline settles.
-                            handler.postDelayed({
-                                val durationMs = player.duration
-                                val durationSeconds = if (durationMs > 0 && durationMs != C.TIME_UNSET) durationMs / 1000.0 else null
-                                val expected = expectedDurationMinutes.takeIf { it > 0 }?.times(60.0)
-                                val shortMedia = durationSeconds != null && (durationSeconds < 60.0 || (expected != null && durationSeconds / expected < 0.55))
-                                val durationUnknown = expected != null && durationSeconds == null
-                                complete(NativePlayerProbe(
-                                    state = when {
-                                        shortMedia -> "short_media"
-                                        durationUnknown -> "duration_unknown"
-                                        else -> "ready"
-                                    },
-                                    engine = "media3", errorClass = "", errorCode = "", httpStatus = 0,
-                                    failureStage = when {
-                                        shortMedia -> "duration_identity"
-                                        durationUnknown -> "duration_unknown"
-                                        else -> "none"
-                                    },
-                                    host = host, durationSeconds = durationSeconds, exceptionChain = "", responseHeaderNames = "",
-                                ))
-                            }, 2500L)
-                        } else if (state == Player.STATE_ENDED) {
-                            val durationMs = player.duration
-                            val durationSeconds = if (durationMs > 0 && durationMs != C.TIME_UNSET) durationMs / 1000.0 else null
-                            complete(NativePlayerProbe("ended", "media3", "", "", 0, "none", host, durationSeconds, "", ""))
-                        }
-                    }
-                })
-                player.setMediaItem(MediaItem.fromUri(url))
-                player.playWhenReady = true
-                player.prepare()
-            }
-            if (!terminal.await(18, TimeUnit.SECONDS)) {
-                val load = lastLoadFailure.get()
-                if (load != null) {
-                    complete(NativePlayerProbe(
-                        state = "error", engine = "media3",
-                        errorClass = load.errorClass, errorCode = "LOAD_ERROR",
-                        httpStatus = load.httpStatus, failureStage = load.failureStage,
-                        host = load.host, durationSeconds = null,
-                        exceptionChain = load.exceptionChain, responseHeaderNames = load.responseHeaderNames,
-                        loadBytes = load.loadBytes, loadDurationMs = load.loadDurationMs,
-                        mediaDataType = load.mediaDataType, trackType = load.trackType,
-                    ))
-                } else {
-                    complete(NativePlayerProbe("timeout", "media3", "reader_timeout", "", 0, "timeout", host, null, "", ""))
+                activity?.setContent {
+                    val navController = rememberNavController()
+                    NuvioNavHost(navController = navController, startDestination = route)
                 }
             }
-            return outcome.get() ?: NativePlayerProbe("unknown", "media3", "", "", 0, "player", host, null, "", "")
-        } catch (error: Throwable) {
-            return NativePlayerProbe(
-                state = "error", engine = "media3", errorClass = error::class.qualifiedName.orEmpty(), errorCode = "",
-                httpStatus = invalidResponse(error)?.responseCode ?: 0,
-                failureStage = throwableFailureStage(error).takeUnless { it == "player" } ?: "player_setup",
-                host = host, durationSeconds = null, exceptionChain = exceptionChain(error), responseHeaderNames = "",
+            val diagnostics = runBlocking {
+                withTimeout(__PLAYER_TIMEOUT_MS__L) {
+                    store.lastPlaybackDiagnostics.first { row ->
+                        row.timestampMs > baseline && row.result != "Pending"
+                    }
+                }
+            }
+            val durationSeconds = diagnostics.durationMs.takeIf { it > 0L }?.div(1000.0)
+            val expected = expectedDurationMinutes.takeIf { it > 0 }?.times(60.0)
+            val shortMedia = durationSeconds != null && (
+                durationSeconds < 60.0 || (expected != null && durationSeconds / expected < 0.55)
             )
+            when {
+                shortMedia -> NativePlayerProbe("short_media", "nuvio-tv-production", "", "", 0, "duration_identity", diagnostics.host.ifBlank { host }, durationSeconds)
+                diagnostics.result.startsWith("Played", ignoreCase = true) || diagnostics.firstFrameMs >= 0L ->
+                    NativePlayerProbe("ready", "nuvio-tv-production", "", "", 0, "none", diagnostics.host.ifBlank { host }, durationSeconds)
+                diagnostics.result.startsWith("Error", ignoreCase = true) ->
+                    NativePlayerProbe("error", "nuvio-tv-production", "PlayerRuntimeController", sanitizeDiag(diagnostics.result), 0, "player", diagnostics.host.ifBlank { host }, durationSeconds)
+                else -> NativePlayerProbe("error", "nuvio-tv-production", "PlayerRuntimeController", sanitizeDiag(diagnostics.result), 0, "player", diagnostics.host.ifBlank { host }, durationSeconds)
+            }
+        } catch (error: kotlinx.coroutines.TimeoutCancellationException) {
+            NativePlayerProbe("timeout", "nuvio-tv-production", error::class.qualifiedName.orEmpty(), "READER_TIMEOUT", 0, "timeout", host, null)
+        } catch (error: Throwable) {
+            NativePlayerProbe("error", "nuvio-tv-production", error::class.qualifiedName.orEmpty(), sanitizeDiag(error.message), 0, "player_setup", host, null)
         } finally {
-            runCatching { instrumentation.runOnMainSync { playerRef.getAndSet(null)?.release() } }
+            runCatching { instrumentation.runOnMainSync { activity?.finish() } }
+        }
+    }
+'''
+
+MOBILE_HELPERS = PROBE_MODEL + r'''
+    private fun probeNativePlayer(
+        url: String,
+        headers: Map<String, String>?,
+        streamType: String?,
+        expectedDurationMinutes: Int,
+    ): NativePlayerProbe {
+        val instrumentation = InstrumentationRegistry.getInstrumentation()
+        val context = instrumentation.targetContext
+        val host = hostOnly(url)
+        val terminal = CountDownLatch(1)
+        val snapshotRef = AtomicReference<PlayerPlaybackSnapshot?>(null)
+        val errorRef = AtomicReference<String?>(null)
+        var activity: MainActivity? = null
+        return try {
+            val intent = context.packageManager.getLaunchIntentForPackage(context.packageName)
+                ?: return NativePlayerProbe("error", "nuvio-mobile", "MainActivity", "NO_LAUNCH_INTENT", 0, "player_setup", host, null)
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+            activity = instrumentation.startActivitySync(intent) as? MainActivity
+                ?: return NativePlayerProbe("error", "nuvio-mobile", "MainActivity", "WRONG_ACTIVITY", 0, "player_setup", host, null)
+            instrumentation.runOnMainSync {
+                activity?.setContent {
+                    // Real NuvioMobile production player entry. Its own code performs
+                    // header sanitation, settings lookup and Auto engine fallback.
+                    PlatformPlayerSurface(
+                        sourceUrl = url,
+                        sourceHeaders = headers.orEmpty(),
+                        sourceResponseHeaders = emptyMap(),
+                        externalSubtitles = emptyList(),
+                        streamType = streamType,
+                        useYoutubeChunkedPlayback = false,
+                        playWhenReady = true,
+                        initialPositionMs = 0L,
+                        initialPositionRequestKey = "niakvio-native-reader",
+                        resizeMode = PlayerResizeMode.Fit,
+                        useNativeController = true,
+                        onInitialPositionHandled = { _, _ -> },
+                        onControllerReady = { _ -> },
+                        onSnapshot = { snapshot ->
+                            snapshotRef.set(snapshot)
+                            if (snapshot.isEnded || (!snapshot.isLoading && (snapshot.isPlaying || snapshot.positionMs > 0L || snapshot.durationMs > 0L))) {
+                                terminal.countDown()
+                            }
+                        },
+                        onError = { message ->
+                            // Auto mode intentionally emits null while switching from
+                            // ExoPlayer to libmpv; do not terminate until Nuvio itself
+                            // reports a final error or a playable snapshot.
+                            if (!message.isNullOrBlank()) {
+                                errorRef.compareAndSet(null, message)
+                                terminal.countDown()
+                            }
+                        },
+                    )
+                }
+            }
+            terminal.await(__PLAYER_TIMEOUT_MS__L, TimeUnit.MILLISECONDS)
+            val error = errorRef.get()
+            val snapshot = snapshotRef.get()
+            if (!error.isNullOrBlank()) {
+                return NativePlayerProbe("error", "nuvio-mobile-production", "PlatformPlayerSurface", sanitizeDiag(error), 0, "player", host, null)
+            }
+            val durationSeconds = snapshot?.durationMs?.takeIf { it > 0L }?.div(1000.0)
+            val expected = expectedDurationMinutes.takeIf { it > 0 }?.times(60.0)
+            val shortMedia = durationSeconds != null && (
+                durationSeconds < 60.0 || (expected != null && durationSeconds / expected < 0.55)
+            )
+            when {
+                shortMedia -> NativePlayerProbe("short_media", "nuvio-mobile-production", "", "", 0, "duration_identity", host, durationSeconds)
+                snapshot?.isEnded == true -> NativePlayerProbe("ended", "nuvio-mobile-production", "", "", 0, "none", host, durationSeconds)
+                snapshot != null && !snapshot.isLoading && (snapshot.isPlaying || snapshot.positionMs > 0L || snapshot.durationMs > 0L) ->
+                    NativePlayerProbe("ready", "nuvio-mobile-production", "", "", 0, "none", host, durationSeconds)
+                else -> NativePlayerProbe("timeout", "nuvio-mobile-production", "PlatformPlayerSurface", "READER_TIMEOUT", 0, "timeout", host, durationSeconds)
+            }
+        } catch (error: Throwable) {
+            NativePlayerProbe("error", "nuvio-mobile-production", error::class.qualifiedName.orEmpty(), sanitizeDiag(error.message), 0, "player_setup", host, null)
+        } finally {
+            runCatching { instrumentation.runOnMainSync { activity?.finish() } }
         }
     }
 '''
@@ -275,17 +229,25 @@ OLD_ANDROID_PROBE_BLOCK = '''                rows.firstOrNull()?.let { row ->
 '''
 
 NEW_ANDROID_PROBE_BLOCK = '''                rows.take(__MAX_PROBES__).forEachIndexed { index, row ->
-                    // Human-order contract: the official player must be the first
-                    // consumer. A diagnostic GET before Media3 can consume a signed
-                    // or one-shot URL and manufacture the very 403 we are measuring.
-                    val reader = probeNativePlayer(row.url, row.headers, __EXPECTED_MINUTES__)
+                    // Human UX contract: Nuvio's production player is the first
+                    // consumer. A diagnostic GET before playback can consume a
+                    // signed/one-shot URL and manufacture a false failure.
+                    emit("FIELD_NATIVE_PLAYER_BEGIN client=__CLIENT__ fixture=$fixtureSlug provider64=${b64(provider.id)} index=$index entry=nuvio-production-player")
+                    val reader = probeNativePlayer(row.url, row.headers, row.type, __EXPECTED_MINUTES__)
                     emit("FIELD_NATIVE_PLAYER client=__CLIENT__ fixture=$fixtureSlug provider64=${b64(provider.id)} index=$index state=${reader.state} engine=${reader.engine} http_status=${reader.httpStatus} failure_stage=${reader.failureStage} duration_seconds=${reader.durationSeconds ?: 0.0} host64=${b64(reader.host)} error_class64=${b64(reader.errorClass)} error_code64=${b64(reader.errorCode)} exception_chain64=${b64(reader.exceptionChain)} response_header_names64=${b64(reader.responseHeaderNames)} load_bytes=${reader.loadBytes} load_duration_ms=${reader.loadDurationMs} media_data_type=${reader.mediaDataType} track_type=${reader.trackType}")
                     val transport = probeTransport(row.url, row.headers)
                     emit("FIELD_NATIVE_TRANSPORT client=__CLIENT__ fixture=$fixtureSlug provider64=${b64(provider.id)} index=$index state=${transport.state} kind=${transport.kind} status=${transport.status} content_type64=${b64(transport.contentType)} extm3u=${transport.extm3u} duration_seconds=${transport.durationSeconds ?: 0.0} host64=${b64(transport.host)} media_hint64=${b64(transport.mediaHint)}")
                 }
 '''
 
-def augment_android_test(source: str, *, client: str, expected_duration_minutes: int | float | None = None, max_player_probes: int = 1) -> str:
+
+def augment_android_test(
+    source: str,
+    *,
+    client: str,
+    expected_duration_minutes: int | float | None = None,
+    max_player_probes: int = 1,
+) -> str:
     if client not in {"mobile", "tv"}:
         raise ValueError(f"unsupported Android client: {client}")
     max_player_probes = max(1, min(int(max_player_probes or 1), 4))
@@ -294,26 +256,20 @@ def augment_android_test(source: str, *, client: str, expected_duration_minutes:
         return source
     if source.count(ANDROID_IMPORT_ANCHOR) != 1:
         raise ValueError("android import anchor missing or ambiguous")
-    imports = COMMON_IMPORTS + (TV_IMPORT if client == "tv" else MOBILE_IMPORT)
+    imports = COMMON_IMPORTS + (TV_IMPORTS if client == "tv" else MOBILE_IMPORTS)
     source = source.replace(ANDROID_IMPORT_ANCHOR, ANDROID_IMPORT_ANCHOR + imports, 1)
-    factory = (
-        "return PlayerPlaybackNetworking.createDataSourceFactory(context, headers)"
-        if client == "tv"
-        else """return PlatformPlaybackDataSourceFactory.create(
-            context = context,
-            defaultRequestHeaders = headers,
-            defaultResponseHeaders = emptyMap(),
-            useYoutubeChunkedPlayback = false,
-        )"""
-    )
-    helpers = PLAYER_HELPERS_TEMPLATE.replace("__DATA_SOURCE_FACTORY__", factory)
+    helpers = (TV_HELPERS if client == "tv" else MOBILE_HELPERS).replace("__PLAYER_TIMEOUT_MS__", "22000")
     if source.count(TEST_ANCHOR) != 1:
         raise ValueError("test anchor missing or ambiguous")
     source = source.replace(TEST_ANCHOR, helpers + "\n" + TEST_ANCHOR, 1)
     old = OLD_ANDROID_PROBE_BLOCK.replace("__CLIENT__", client)
     if source.count(old) != 1:
         raise ValueError(f"transport probe anchor missing for {client}: count={source.count(old)}")
-    new = NEW_ANDROID_PROBE_BLOCK.replace("__CLIENT__", client).replace("__MAX_PROBES__", str(max_player_probes)).replace("__EXPECTED_MINUTES__", str(expected))
+    new = (
+        NEW_ANDROID_PROBE_BLOCK.replace("__CLIENT__", client)
+        .replace("__MAX_PROBES__", str(max_player_probes))
+        .replace("__EXPECTED_MINUTES__", str(expected))
+    )
     return source.replace(old, new, 1)
 
 
