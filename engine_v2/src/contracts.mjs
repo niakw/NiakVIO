@@ -69,11 +69,25 @@ export function adaptRequestForDevice(input, device) {
 }
 
 export function normalizeStreamCandidate(raw = {}, context = {}) {
-  const nestedUrl = isPlainObject(raw.url) ? raw.url.url : null;
+  const nested = isPlainObject(raw.url) ? raw.url : null;
+  const nestedUrl = nested?.url ?? null;
+  // A signed provider URL is an opaque playback credential. Never rebuild it or
+  // move its query parameters: only discard accidental outer whitespace.
   const url = String(nestedUrl ?? raw.url ?? "").trim();
   if (!url) throw new Error("stream url is required");
 
-  const headers = normalizeHeaders(raw.headers ?? raw.requestHeaders);
+  // Nuvio/Stremio providers use several equivalent header surfaces. The Core must
+  // preserve all of them because Referer/Origin/Cookie/Authorization may be required
+  // again for HLS child playlists, keys and segments. Later/more explicit sources win
+  // case-insensitively without producing duplicate header names.
+  const headers = mergeHeaders(
+    nested?.behaviorHints?.proxyHeaders?.request,
+    raw.behaviorHints?.proxyHeaders?.request,
+    nested?.requestHeaders,
+    nested?.headers,
+    raw.requestHeaders,
+    raw.headers,
+  );
   const subtitles = Array.isArray(raw.subtitles)
     ? raw.subtitles.map(normalizeSubtitle).filter(Boolean)
     : [];
@@ -82,7 +96,7 @@ export function normalizeStreamCandidate(raw = {}, context = {}) {
     title: textOrNull(raw.title) ?? textOrNull(raw.name) ?? context.providerName ?? "Unknown",
     name: textOrNull(raw.name),
     url,
-    quality: textOrNull(raw.quality),
+    quality: normalizeQualityLabel(raw.quality ?? raw.resolution),
     size: textOrNull(raw.size),
     language: textOrNull(raw.language),
     provider: textOrNull(raw.provider) ?? context.providerId ?? null,
@@ -130,13 +144,21 @@ export function normalizeProviderSpec(spec = {}) {
 
 function normalizeSubtitle(value) {
   if (!isPlainObject(value)) return null;
-  const url = textOrNull(value.url);
+  const nested = isPlainObject(value.url) ? value.url : null;
+  const url = textOrNull(nested?.url ?? value.url);
   if (!url) return null;
   return {
     url,
     language: textOrNull(value.language) ?? "Unknown",
     name: textOrNull(value.name),
-    headers: normalizeHeaders(value.headers),
+    headers: mergeHeaders(
+      nested?.behaviorHints?.proxyHeaders?.request,
+      value.behaviorHints?.proxyHeaders?.request,
+      nested?.requestHeaders,
+      nested?.headers,
+      value.requestHeaders,
+      value.headers,
+    ),
   };
 }
 
@@ -149,6 +171,30 @@ function normalizeHeaders(value) {
     if (text) out[String(key)] = text;
   }
   return out;
+}
+
+function mergeHeaders(...sources) {
+  const out = {};
+  const keys = new Map();
+  for (const source of sources) {
+    for (const [key, value] of Object.entries(normalizeHeaders(source))) {
+      const lower = key.toLowerCase();
+      const previous = keys.get(lower);
+      if (previous && previous !== key) delete out[previous];
+      out[key] = value;
+      keys.set(lower, key);
+    }
+  }
+  return out;
+}
+
+function normalizeQualityLabel(value) {
+  const text = textOrNull(value);
+  if (!text) return null;
+  if (/^(?:4k|uhd|2160p?)$/i.test(text)) return "2160p";
+  const resolution = text.match(/(?:^|\b)(2160|1440|1080|720|576|480)p?(?:\b|$)/i);
+  if (resolution) return `${resolution[1]}p`;
+  return text;
 }
 
 function normalizeStringList(value) {
