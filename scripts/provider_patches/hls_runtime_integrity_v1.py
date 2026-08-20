@@ -29,17 +29,17 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
         "maxChildren": max_children,
         "maxRecoveryPages": max_recovery_pages,
         "maxRecoveryCandidates": max_recovery_candidates,
-        "implementationRevision": "recovery-first-v3",
+        "implementationRevision": "recovery-first-v4-timer-safe",
     }
     # Preserve byte-for-byte idempotence for the repository-wide default. Only
     # providers which explicitly require a strict final-output gate receive the
-    # v4 payload and its two additional flags.
+    # payload with its two additional flags.
     if probe_all_urls or fail_closed_unknown:
         payload_config.update(
             {
                 "probeAllUrls": probe_all_urls,
                 "failClosedUnknown": fail_closed_unknown,
-                "implementationRevision": "final-output-order-v4",
+                "implementationRevision": "final-output-order-v5-timer-safe",
             }
         )
     payload = json.dumps(payload_config, separators=(",", ":"))
@@ -99,7 +99,8 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
   async function fetchBounded(url,stream,referer,range){
     if(!g||typeof g.fetch!=="function")return {state:"unknown",reason:"fetch_unavailable"};
     var controller=typeof AbortController!=="undefined"?new AbortController():null;
-    var timer=setTimeout(function(){try{if(controller)controller.abort()}catch(_e){}},config.timeoutMs);
+    var timer=null;
+    if(controller&&typeof setTimeout==="function")timer=setTimeout(function(){try{controller.abort()}catch(_e){}},config.timeoutMs);
     try{
       var response=await g.fetch(url,{method:"GET",redirect:"follow",headers:requestHeaders(stream,referer,range),signal:controller?controller.signal:void 0});
       if(!response)return {state:"unknown",reason:"no_response"};
@@ -108,7 +109,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
       var contentType=String(response.headers&&response.headers.get?response.headers.get("content-type")||"":"").toLowerCase();
       return {state:"ok",response:response,url:String(response.url||url),contentType:contentType};
     }catch(error){return {state:"unknown",reason:error&&error.name==="AbortError"?"timeout":"network_error"}}
-    finally{clearTimeout(timer)}
+    finally{if(timer!==null&&typeof clearTimeout==="function")try{clearTimeout(timer)}catch(_e){}}
   }
   async function responseText(result){
     var response=result&&result.response;if(!response)return "";
