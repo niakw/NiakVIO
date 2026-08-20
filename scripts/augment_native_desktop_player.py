@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
-"""Augment a generated NuvioDesktop corpus test with the official native player.
+"""Augment a generated NuvioDesktop corpus test with the production player surface.
 
-This runs only on macOS/Windows. Linux NuvioDesktop intentionally uses a stub player
-and is therefore never accepted as native-reader proof.
+Human-UX invariant: provider output is handed to NuvioDesktop's real
+PlatformPlayerSurface. The lab does not construct NativePlayerController directly,
+does not sanitize/rewrite the stream itself and does not choose decoder/network
+settings. Whatever Nuvio's production player does with the source is the evidence.
 """
 from __future__ import annotations
 
@@ -11,17 +13,23 @@ import os
 import re
 from pathlib import Path
 
-
 IMPORT_ANCHOR = "import com.nuvio.app.features.plugins.runtime.PluginRuntime\n"
 TEST_ANCHOR = "    @Test\n"
+DEFAULT_PR_STREAM_LIMIT = 2
 
-IMPORTS = """import com.nuvio.app.features.player.desktop.DesktopHostOs
-import com.nuvio.app.features.player.desktop.NativePlayerController
-import com.nuvio.app.features.player.desktop.NativePlayerHost
+IMPORTS = """import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.awt.ComposePanel
+import com.nuvio.app.features.player.PlatformPlayerSurface
+import com.nuvio.app.features.player.PlayerControlsState
+import com.nuvio.app.features.player.PlayerPlaybackSnapshot
+import com.nuvio.app.features.player.PlayerResizeMode
 import java.awt.BorderLayout
 import java.awt.Rectangle
 import java.awt.Robot
 import java.awt.Toolkit
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicReference
 import javax.imageio.ImageIO
 import javax.swing.JFrame
@@ -54,84 +62,95 @@ HELPERS = r'''
         }
     }
 
-    private fun probeDesktopNativePlayer(
+    private fun probeDesktopProductionPlayer(
         url: String,
         headers: Map<String, String>?,
+        streamType: String?,
         expectedDurationMinutes: Int,
     ): DesktopNativePlayerProbe {
-        if (DesktopHostOs.current != DesktopHostOs.MACOS && DesktopHostOs.current != DesktopHostOs.WINDOWS) {
-            return DesktopNativePlayerProbe("unsupported", "DesktopHostOs", "LINUX_STUB", 0, "player_setup", null, null)
-        }
         val frameRef = AtomicReference<JFrame?>(null)
-        val controllerRef = AtomicReference<NativePlayerController?>(null)
+        val latestSnapshot = AtomicReference<PlayerPlaybackSnapshot?>(null)
         val errorRef = AtomicReference<String?>(null)
+        val terminal = CountDownLatch(1)
         try {
             SwingUtilities.invokeAndWait {
                 val frame = JFrame("Nuvio Desktop native reader lab")
-                val host = NativePlayerHost()
+                val panel = ComposePanel()
                 frame.layout = BorderLayout()
-                frame.add(host, BorderLayout.CENTER)
+                frame.add(panel, BorderLayout.CENTER)
                 frame.setSize(960, 540)
                 frame.setLocationRelativeTo(null)
-                frame.isVisible = true
-                val controller = NativePlayerController(host)
+                frame.defaultCloseOperation = JFrame.DISPOSE_ON_CLOSE
                 frameRef.set(frame)
-                controllerRef.set(controller)
-            }
-            val controller = controllerRef.get()
-                ?: return DesktopNativePlayerProbe("error", "NativePlayerController", "NO_CONTROLLER", 0, "player_setup", null, null)
-            controller.attach(
-                // Observational-purity contract: the lab cannot make a source easier
-                // to play than Nuvio would receive it. URL and provider headers are
-                // passed byte-for-byte/value-for-value to the official controller.
-                sourceUrl = url,
-                sourceHeaders = headers.orEmpty(),
-                playWhenReady = true,
-                initialPositionMs = 0L,
-                decoderPriority = 1,
-                nvidiaRtxSuperResolutionEnabled = false,
-                onError = { message -> errorRef.compareAndSet(null, message ?: "native_player_error") },
-            )
-            val deadline = System.currentTimeMillis() + __READER_TIMEOUT_MS__L
-            var lastDuration: Long = 0L
-            var lastPosition: Long = 0L
-            while (System.currentTimeMillis() < deadline) {
-                errorRef.get()?.let { message ->
-                    return DesktopNativePlayerProbe(
-                        "error", "NativePlayer", message.replace(Regex("\\s+"), "_").take(120),
-                        0, "player", null, null,
+                panel.setContent {
+                    // Production entry point. Provider output enters Nuvio unchanged;
+                    // Nuvio's own production surface decides sanitation, settings,
+                    // native bridge and playback behavior exactly as the app does.
+                    PlatformPlayerSurface(
+                        sourceUrl = url,
+                        sourceHeaders = headers.orEmpty(),
+                        sourceResponseHeaders = emptyMap(),
+                        externalSubtitles = emptyList(),
+                        streamType = streamType,
+                        useYoutubeChunkedPlayback = false,
+                        modifier = Modifier.fillMaxSize(),
+                        playWhenReady = true,
+                        initialPositionMs = 0L,
+                        initialPositionRequestKey = "niakvio-native-reader",
+                        resizeMode = PlayerResizeMode.Fit,
+                        useNativeController = true,
+                        playerControlsState = PlayerControlsState(),
+                        onControllerReady = { _ -> },
+                        onSnapshot = { snapshot ->
+                            latestSnapshot.set(snapshot)
+                            if (snapshot.isEnded || (!snapshot.isLoading && (snapshot.isPlaying || snapshot.positionMs > 0L || snapshot.durationMs > 0L))) {
+                                terminal.countDown()
+                            }
+                        },
+                        onError = { message ->
+                            if (!message.isNullOrBlank()) {
+                                errorRef.compareAndSet(null, message)
+                                terminal.countDown()
+                            }
+                        },
                     )
                 }
-                val snapshot = controller.snapshot()
-                lastDuration = snapshot.durationMs.coerceAtLeast(0L)
-                lastPosition = snapshot.positionMs.coerceAtLeast(0L)
-                val durationSeconds = lastDuration.takeIf { it > 0 }?.div(1000.0)
-                val expected = expectedDurationMinutes.takeIf { it > 0 }?.times(60.0)
-                val shortMedia = durationSeconds != null && (
-                    durationSeconds < 60.0 || (expected != null && durationSeconds / expected < 0.55)
-                )
-                if (shortMedia) {
-                    return DesktopNativePlayerProbe("short_media", "", "", 0, "duration_identity", durationSeconds, lastPosition / 1000.0)
-                }
-                if (snapshot.isEnded) {
-                    return DesktopNativePlayerProbe("ended", "", "", 0, "none", durationSeconds, lastPosition / 1000.0)
-                }
-                if (!snapshot.isLoading && (snapshot.isPlaying || lastPosition > 0L || lastDuration > 0L)) {
-                    return DesktopNativePlayerProbe("ready", "", "", 0, "none", durationSeconds, lastPosition / 1000.0)
-                }
-                Thread.sleep(500L)
+                frame.isVisible = true
             }
-            return DesktopNativePlayerProbe(
-                "timeout", "NativePlayer", "READER_TIMEOUT", 0, "timeout",
-                lastDuration.takeIf { it > 0 }?.div(1000.0),
-                lastPosition.takeIf { it > 0 }?.div(1000.0),
+
+            terminal.await(__READER_TIMEOUT_MS__L, TimeUnit.MILLISECONDS)
+            val error = errorRef.get()
+            val snapshot = latestSnapshot.get()
+            if (!error.isNullOrBlank()) {
+                return DesktopNativePlayerProbe(
+                    "error", "NuvioDesktopProductionPlayer",
+                    error.replace(Regex("\\s+"), "_").take(160),
+                    0, "player", null, null,
+                )
+            }
+            val durationSeconds = snapshot?.durationMs?.takeIf { it > 0L }?.div(1000.0)
+            val positionSeconds = snapshot?.positionMs?.takeIf { it >= 0L }?.div(1000.0)
+            val expected = expectedDurationMinutes.takeIf { it > 0 }?.times(60.0)
+            val shortMedia = durationSeconds != null && (
+                durationSeconds < 60.0 || (expected != null && durationSeconds / expected < 0.55)
             )
+            if (shortMedia) {
+                return DesktopNativePlayerProbe("short_media", "", "", 0, "duration_identity", durationSeconds, positionSeconds)
+            }
+            if (snapshot?.isEnded == true) {
+                return DesktopNativePlayerProbe("ended", "", "", 0, "none", durationSeconds, positionSeconds)
+            }
+            if (snapshot != null && !snapshot.isLoading && (snapshot.isPlaying || snapshot.positionMs > 0L || snapshot.durationMs > 0L)) {
+                return DesktopNativePlayerProbe("ready", "", "", 0, "none", durationSeconds, positionSeconds)
+            }
+            return DesktopNativePlayerProbe("timeout", "NuvioDesktopProductionPlayer", "READER_TIMEOUT", 0, "timeout", durationSeconds, positionSeconds)
         } catch (error: Throwable) {
             return DesktopNativePlayerProbe(
-                "error", error::class.qualifiedName.orEmpty(), "PLAYER_SETUP", 0, "player_setup", null, null,
+                "error", error::class.qualifiedName.orEmpty(),
+                (error.message ?: "PLAYER_SETUP").replace(Regex("\\s+"), "_").take(160),
+                0, "player_setup", null, null,
             )
         } finally {
-            runCatching { controllerRef.getAndSet(null)?.dispose() }
             runCatching { SwingUtilities.invokeAndWait { frameRef.getAndSet(null)?.dispose() } }
         }
     }
@@ -147,20 +166,21 @@ def replace_once(text: str, old: str, new: str, label: str) -> str:
 
 def augment(path: Path, expected_minutes: int, stream_scope: str) -> None:
     text = path.read_text(encoding="utf-8")
-    if "DesktopNativePlayerProbe" in text:
+    if "probeDesktopProductionPlayer" in text:
         return
     pr_bounded = os.environ.get("GITHUB_EVENT_NAME", "").strip().lower() == "pull_request"
     if pr_bounded and stream_scope == "all":
-        # Match Android's bounded PR proof: two returned rows are enough to expose
-        # the common "first source works, second source breaks" class without
-        # turning every PR into the trusted exhaustive run.
-        stream_scope = "2"
+        configured = os.environ.get("NIAKVIO_PR_STREAM_LIMIT", str(DEFAULT_PR_STREAM_LIMIT)).strip()
+        try:
+            stream_scope = str(max(1, min(int(configured), 4)))
+        except ValueError:
+            stream_scope = str(DEFAULT_PR_STREAM_LIMIT)
     reader_timeout_ms = 12_000 if pr_bounded else 25_000
+
     text = replace_once(text, IMPORT_ANCHOR, IMPORT_ANCHOR + IMPORTS, "imports")
     helpers = HELPERS.replace("__READER_TIMEOUT_MS__", str(reader_timeout_ms))
     text = replace_once(text, TEST_ANCHOR, helpers + "\n" + TEST_ANCHOR, "test")
 
-    # Make row evidence match the actual reader scope.
     if stream_scope == "all":
         text = re.sub(r"rows\.take\(\d+\)\.forEachIndexed", "rows.forEachIndexed", text)
         reader_iter = "rows.forEachIndexed"
@@ -175,11 +195,13 @@ def augment(path: Path, expected_minutes: int, stream_scope: str) -> None:
         r'''                \}\n'''
     )
     replacement = f'''                {reader_iter} {{ index, row ->
-                    emit("FIELD_NATIVE_PLAYER_BEGIN client=desktop fixture=$fixtureSlug provider64=${{b64(provider.id)}} request_type=$requestMediaType route_mode=$routeMode index=$index")
+                    emit("FIELD_NATIVE_PLAYER_BEGIN client=desktop fixture=$fixtureSlug provider64=${{b64(provider.id)}} request_type=$requestMediaType route_mode=$routeMode index=$index entry=PlatformPlayerSurface")
                     captureDesktopPhase("player-start", fixtureSlug)
-                    val reader = probeDesktopNativePlayer(row.url, row.headers, {expected_minutes})
-                    emit("FIELD_NATIVE_PLAYER client=desktop fixture=$fixtureSlug provider64=${{b64(provider.id)}} request_type=$requestMediaType route_mode=$routeMode index=$index state=${{reader.state}} engine=native-desktop http_status=${{reader.httpStatus}} failure_stage=${{reader.failureStage}} duration_seconds=${{reader.durationSeconds ?: 0.0}} host64=${{b64(hostOnly(row.url))}} error_class64=${{b64(reader.errorClass)}} error_code64=${{b64(reader.errorCode)}} exception_chain64=${{b64("")}} response_header_names64=${{b64("")}} load_bytes=0 load_duration_ms=0 media_data_type=-1 track_type=-1")
+                    val reader = probeDesktopProductionPlayer(row.url, row.headers, row.type, {expected_minutes})
+                    emit("FIELD_NATIVE_PLAYER client=desktop fixture=$fixtureSlug provider64=${{b64(provider.id)}} request_type=$requestMediaType route_mode=$routeMode index=$index state=${{reader.state}} engine=nuvio-production-desktop http_status=${{reader.httpStatus}} failure_stage=${{reader.failureStage}} duration_seconds=${{reader.durationSeconds ?: 0.0}} host64=${{b64(hostOnly(row.url))}} error_class64=${{b64(reader.errorClass)}} error_code64=${{b64(reader.errorCode)}} exception_chain64=${{b64("")}} response_header_names64=${{b64("")}} load_bytes=0 load_duration_ms=0 media_data_type=-1 track_type=-1")
                     captureDesktopPhase("player-result", fixtureSlug)
+                    // Independent transport diagnostics run only after the production
+                    // player has reached a terminal observation for this source.
                     val transport = probeTransport(row.url, row.headers)
                     emit("FIELD_NATIVE_TRANSPORT client=desktop fixture=$fixtureSlug provider64=${{b64(provider.id)}} request_type=$requestMediaType route_mode=$routeMode index=$index state=${{transport.state}} kind=${{transport.kind}} status=${{transport.status}} content_type64=${{b64(transport.contentType)}} extm3u=${{transport.extm3u}} duration_seconds=${{transport.durationSeconds ?: 0.0}} host64=${{b64(transport.host)}} media_hint64=${{b64(transport.mediaHint)}}")
                 }}
@@ -199,7 +221,8 @@ def augment(path: Path, expected_minutes: int, stream_scope: str) -> None:
     path.write_text(text, encoding="utf-8")
     print(
         f"FIELD_NATIVE_DESKTOP_READER_AUGMENTED source={path} streams={stream_scope} "
-        f"expected_minutes={expected_minutes} timeout_ms={reader_timeout_ms} ci_mode={'pr-bounded' if pr_bounded else 'deep'}"
+        f"expected_minutes={expected_minutes} timeout_ms={reader_timeout_ms} entry=PlatformPlayerSurface "
+        f"ci_mode={'pr-bounded' if pr_bounded else 'deep'}"
     )
 
 
