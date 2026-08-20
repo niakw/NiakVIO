@@ -160,11 +160,13 @@ jobs:
         shell: bash
         run: |
           set -euxo pipefail
+          MACOS_JAVA_OPENS="--add-opens=java.desktop/java.awt=ALL-UNNAMED --add-opens=java.desktop/java.awt.peer=ALL-UNNAMED --add-opens=java.desktop/sun.awt=ALL-UNNAMED --add-opens=java.desktop/sun.lwawt=ALL-UNNAMED --add-opens=java.desktop/sun.lwawt.macosx=ALL-UNNAMED"
+          echo "JAVA_TOOL_OPTIONS=$MACOS_JAVA_OPENS" >> "$GITHUB_ENV"
+          export JAVA_TOOL_OPTIONS="$MACOS_JAVA_OPENS"
           ./nuvio-desktop/gradlew -p nuvio-desktop \
             :composeApp:buildMacosPlayerBridge \
             :composeApp:prepareMacosPlayerRuntime \
             --no-configuration-cache --console=plain
-          echo "JAVA_TOOL_OPTIONS=--add-opens=java.desktop/java.awt=ALL-UNNAMED --add-opens=java.desktop/sun.lwawt=ALL-UNNAMED --add-opens=java.desktop/sun.lwawt.macosx=ALL-UNNAMED" >> "$GITHUB_ENV"
 
       - name: Build official Windows native player bridge once
         if: matrix.os_name == 'windows'
