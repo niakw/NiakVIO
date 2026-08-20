@@ -19,6 +19,8 @@ if (child.stderr) process.stderr.write(child.stderr);
 const starts = new Map();
 const ends = new Set();
 const observed = new Map();
+const executed = new Map();
+const mediaVerified = new Map();
 const clients = new Set();
 let readableLogs = 0;
 let hasCapabilityProbe = false;
@@ -48,6 +50,18 @@ for (const log of logs) {
     ) {
       if (!observed.has(key)) observed.set(key, new Set());
       if (f.provider64) observed.get(key).add(f.provider64);
+      if (line.startsWith('FIELD_NATIVE_RESULT ') || line.startsWith('FIELD_NATIVE_ERROR ')) {
+        if (!executed.has(key)) executed.set(key, new Set());
+        const provider = f.provider64 || f.provider || '<unknown>';
+        const requestType = String(f.request_type || 'unknown').toLowerCase();
+        executed.get(key).add(`${provider}\u0000${requestType}`);
+      }
+    } else if (line.startsWith('FIELD_NATIVE_PLAYER ')) {
+      if (!mediaVerified.has(key)) mediaVerified.set(key, new Set());
+      const provider = f.provider64 || f.provider || '<unknown>';
+      const requestType = String(f.request_type || 'unknown').toLowerCase();
+      const index = Number(f.index || 0);
+      mediaVerified.get(key).add(`${provider}\u0000${requestType}\u0000${index}`);
     }
   }
 }
@@ -55,11 +69,23 @@ for (const log of logs) {
 const problems = [];
 if (readableLogs === 0) problems.push('no_readable_log');
 if (starts.size === 0) problems.push('missing_begin_marker');
+let providersObservedCount = 0;
+let executionCount = 0;
+let mediaVerifiedCount = 0;
 for (const [key, expected] of starts) {
   if (!ends.has(key)) problems.push(`missing_end:${safeKey(key)}`);
   const count = observed.get(key)?.size || 0;
+  const scopeExecutions = executed.get(key) || new Set();
+  const scopeProviders = new Set([...scopeExecutions].map((value) => value.split('\u0000')[0]).filter(Boolean));
+  const scopeMediaVerified = mediaVerified.get(key)?.size || 0;
+  providersObservedCount += scopeProviders.size;
+  executionCount += scopeExecutions.size;
+  mediaVerifiedCount += scopeMediaVerified;
   if (expected <= 0) problems.push(`invalid_expected_provider_count:${safeKey(key)}`);
   else if (count < expected) problems.push(`incomplete_provider_traversal:${safeKey(key)}:${count}/${expected}`);
+  if (scopeProviders.size === 0) problems.push(`zero_providers_observed:${safeKey(key)}`);
+  if (scopeExecutions.size === 0) problems.push(`zero_provider_executions:${safeKey(key)}`);
+  if (scopeMediaVerified === 0) problems.push(`zero_media_verified:${safeKey(key)}`);
 }
 
 // Media-type discovery is Brain evidence, not a provider repair. Run it only when
@@ -83,13 +109,15 @@ const anomalyStatus = Number.isInteger(child.status) ? child.status : 1;
 const complete = problems.length === 0;
 console.log(
   `FIELD_NATIVE_CORPUS_COLLECTION_GATE fixture=${fixture} complete=${complete} ` +
-  `analyzer_status=${anomalyStatus} capability_probe=${hasCapabilityProbe} problems=${problems.length}`
+  `analyzer_status=${anomalyStatus} capability_probe=${hasCapabilityProbe} providers_observed=${providersObservedCount} ` +
+  `executions=${executionCount} media_verified=${mediaVerifiedCount} problems=${problems.length}`
 );
 for (const problem of problems) console.log(`FIELD_NATIVE_CORPUS_INFRA_ERROR ${problem}`);
 
 // Provider/runtime anomalies and intentionally skipped incompatible routes are
 // evidence, not lab infrastructure failure. Only an incomplete corpus/evidence
-// chain fails this gate.
+// chain fails this gate. A corpus with zero provider execution or zero native
+// player terminal is not evidence and must never reach the Brain as complete.
 process.exitCode = complete ? 0 : 2;
 
 function fields(line) {
