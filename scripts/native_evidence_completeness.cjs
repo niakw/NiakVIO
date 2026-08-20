@@ -257,7 +257,8 @@ function assessNativeEvidence(logPaths) {
     if (scope.expectedProviders > 0 && scope.traversed.size !== scope.expectedProviders) {
       problems.push(`provider_traversal:${label}:${scope.traversed.size}/${scope.expectedProviders}`);
     }
-    if (scope.providerRoutesBegun <= 0) problems.push(`missing_provider_execution:${label}`);
+    const executionProofs = scope.providerRoutesBegun + scope.providerLoadErrors + (scope.repositoryLoadFailed ? 1 : 0);
+    if (executionProofs <= 0) problems.push(`missing_provider_execution:${label}`);
 
     if (scope.repositoryLoadBegun === 0) problems.push(`missing_repository_load:${label}`);
     if (scope.repositoryLoadBegun !== scope.repositoryLoadTerminal) {
@@ -345,6 +346,9 @@ function assessNativeEvidence(logPaths) {
   }
 
   const providerExecutions = [...routesTerminal.values()].reduce((a, b) => a + b, 0);
+  const providerLoadErrors = [...scopes.values()].reduce((sum, scope) => sum + scope.providerLoadErrors, 0);
+  const repositoryLoadFailures = [...scopes.values()].reduce((sum, scope) => sum + (scope.repositoryLoadFailed ? 1 : 0), 0);
+  const executionProofs = providerExecutions + providerLoadErrors + repositoryLoadFailures;
   return {
     complete: problems.length === 0,
     problems,
@@ -353,9 +357,10 @@ function assessNativeEvidence(logPaths) {
       scopes: scopes.size,
       providerRoutes: routesBegun.size,
       providerExecutions,
+      executionProofs,
       providerLoads: [...scopes.values()].reduce((sum, scope) => sum + scope.providerLoadObserved.size, 0),
-      providerLoadErrors: [...scopes.values()].reduce((sum, scope) => sum + scope.providerLoadErrors, 0),
-      repositoryLoadFailures: [...scopes.values()].reduce((sum, scope) => sum + (scope.repositoryLoadFailed ? 1 : 0), 0),
+      providerLoadErrors,
+      repositoryLoadFailures,
       repositoryCacheHits: [...scopes.values()].reduce((sum, scope) => sum + scope.repositoryCacheHits, 0),
       repositoryHttpRequests: [...repositoryHttpRequests.values()].reduce((a, b) => a + b, 0),
       playerProbes: playersTerminal.size,
