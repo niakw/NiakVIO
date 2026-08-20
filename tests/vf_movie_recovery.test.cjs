@@ -83,6 +83,34 @@ global.fetch = async (input) => {
   return new Response('not found', { status: 404, headers: { 'content-type': 'text/plain' } });
 };
 
+function summarizeRows(rows) {
+  if (!Array.isArray(rows)) return { kind: typeof rows };
+  return rows.slice(0, 4).map((row) => ({
+    url: row && row.url,
+    type: row && (row.type || row.format || row.mimeType),
+    isDirect: row && row.isDirect,
+    headers: row && row.headers ? Object.keys(row.headers).sort() : [],
+    proxyHeaders: row?.behaviorHints?.proxyHeaders?.request ? Object.keys(row.behaviorHints.proxyHeaders.request).sort() : [],
+  }));
+}
+
+async function debugWrapperChain(fn, args) {
+  const layers = [];
+  let current = fn;
+  const seen = new Set();
+  for (let depth = 0; typeof current === 'function' && depth < 12 && !seen.has(current); depth += 1) {
+    seen.add(current);
+    const markers = Object.keys(current).filter((key) => key.startsWith('__nuvio')).sort();
+    fetchTrace.length = 0;
+    let rows = null;
+    let error = null;
+    try { rows = await current(...args); } catch (caught) { error = String(caught && caught.stack || caught); }
+    layers.push({ depth, markers, rows: summarizeRows(rows), error, fetchTrace: fetchTrace.slice(-16) });
+    current = current.__nuvioOriginal;
+  }
+  return layers;
+}
+
 function assertSafeRows(id, fixtureId, rows, kind) {
   const trace = JSON.stringify(fetchTrace.slice(-24));
   assert(Array.isArray(rows) && rows.length > 0, `${id}/${fixtureId}: ${kind} recovery produced no player; fetchTrace=${trace}`);
@@ -98,10 +126,6 @@ function assertSafeRows(id, fixtureId, rows, kind) {
     assert(entry, `missing manifest entry: ${id}`);
     const patch = overrides?.provider_patches?.[id] || {};
     const configuredQuarantine = patch.capability === 'quarantined' && patch?.manifest_overrides?.enabled === false;
-    // Migration compatibility only: a publication-scoped legacy inert bundle
-    // may be the current LKG before the Quick promoter has a chance to recover
-    // a fresh sibling. Final publication rules no longer create global inert
-    // bundles from one fixture contradiction.
     const legacyPublicationQuarantine = entry.enabled === false && /--nuvio-audit-quarantine--/.test(String(entry.filename || ''));
     const quarantined = configuredQuarantine || legacyPublicationQuarantine;
     const providerPath = path.resolve(__dirname, '..', entry.filename);
@@ -118,10 +142,17 @@ function assertSafeRows(id, fixtureId, rows, kind) {
     }
     if (id === 'flemmix') continue;
     fetchTrace.length = 0;
-    const tvRows = await provider.getStreams(tvFixture.id, 'tv', tvFixture.season, tvFixture.episode, {});
+    const tvArgs = [tvFixture.id, 'tv', tvFixture.season, tvFixture.episode, {}];
+    const tvRows = await provider.getStreams(...tvArgs);
     if (quarantined) {
       assert.deepEqual(tvRows, [], `${id}/${tvFixture.id}: quarantined TV provider returned content`);
       continue;
+    }
+    if (id === 'coflix' && (!Array.isArray(tvRows) || tvRows.length === 0)) {
+      const layers = await debugWrapperChain(provider.getStreams, tvArgs);
+      console.error(`COFLIX_WRAPPER_CHAIN=${JSON.stringify(layers)}`);
+      fetchTrace.length = 0;
+      await provider.getStreams(...tvArgs).catch?.(() => {});
     }
     assertSafeRows(id, tvFixture.id, tvRows, 'TV');
   }
