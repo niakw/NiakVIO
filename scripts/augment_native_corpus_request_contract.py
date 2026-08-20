@@ -78,7 +78,10 @@ def kotlin_map(values: dict[str, list[str]]) -> str:
     for provider_id, types in values.items():
         items = ", ".join(json.dumps(value) for value in types)
         rows.append(f"        {json.dumps(provider_id)} to setOf({items})")
-    return "mapOf(\n" + ",\n".join(rows) + "\n    )"
+    # NuvioTV's Android-test compiler cannot always infer the nested Set type
+    # from a large generated map. Keep the generated contract unambiguous on all
+    # clients instead of relying on compiler-version-specific inference.
+    return "mapOf<String, Set<String>>(\n" + ",\n".join(rows) + "\n    )"
 
 
 def replace_once(text: str, old: str, new: str, label: str) -> str:
@@ -130,9 +133,6 @@ def augment(path: Path, client: str, slug: str, manifest: Path) -> None:
         if needle in text:
             text = text.replace(needle, needle + " request_type=$requestMediaType route_mode=$routeMode")
 
-    # Reader codegen runs before this postprocessor and therefore sees the nested
-    # requestMediaType/routeMode variables after replacement. Emit an explicit
-    # player-begin marker so completeness can pair every attempt with its terminal.
     reader_needle = "                    val reader = probeNativePlayer(row.url, row.headers,"
     if reader_needle in text:
         text = text.replace(
