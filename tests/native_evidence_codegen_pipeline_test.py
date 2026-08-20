@@ -153,8 +153,6 @@ with tempfile.TemporaryDirectory() as tmp_raw:
                 'captureDesktopPhase("repository-load"',
                 'captureDesktopPhase("repository-loaded", fixtureSlugForLoad)',
                 'captureDesktopPhase("repository-load-error", fixtureSlugForLoad)',
-                'captureDesktopPhase("repository-http-request", fixtureSlugForLoad)',
-                'captureDesktopPhase("repository-http-terminal", fixtureSlugForLoad)',
                 'captureDesktopPhase("provider-load-state"',
                 'captureDesktopPhase("provider-http-request"',
                 'captureDesktopPhase("provider-http-terminal"',
@@ -162,6 +160,10 @@ with tempfile.TemporaryDirectory() as tmp_raw:
                 'captureDesktopPhase("player-result"',
             ):
                 assert required in desktop_out, f"{platform}:{required}"
+            # Repository HTTP truth comes from the passive OkHttp instrumentation,
+            # not synthetic frontend phases that would also fire on a cache hit.
+            assert 'captureDesktopPhase("repository-http-request", fixtureSlugForLoad)' not in desktop_out
+            assert 'captureDesktopPhase("repository-http-terminal", fixtureSlugForLoad)' not in desktop_out
             assert "PluginRepository.clearLocalState()" not in desktop_out
             assert "PluginRuntime.executePlugin(" not in desktop_out
             assert "rows.take(" not in desktop_out, "all-stream Desktop proof must not sample rows"
