@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import os
 import re
 import shutil
 import subprocess
@@ -27,7 +28,25 @@ printf 'RESOLVED_URL=%s\n' "$NIAKVIO_RESOLVED_MANIFEST_URL"
 printf 'RESOLVED_KEY=%s\n' "$NIAKVIO_LOCAL_REPOSITORY_KEY"
 cleanup_native_repository
 '''
-    run = subprocess.run(["bash", "-lc", script], cwd=ROOT, text=True, capture_output=True)
+    env = os.environ.copy()
+    # A runner-level proxy must never intercept the loopback readiness probe.
+    # This reproduces the failure mode seen on GitHub-hosted macOS runners.
+    env.update(
+        {
+            "HTTP_PROXY": "http://127.0.0.1:9",
+            "HTTPS_PROXY": "http://127.0.0.1:9",
+            "ALL_PROXY": "http://127.0.0.1:9",
+            "NO_PROXY": "",
+            "no_proxy": "",
+        }
+    )
+    run = subprocess.run(
+        ["bash", "-lc", script],
+        cwd=ROOT,
+        text=True,
+        capture_output=True,
+        env=env,
+    )
     assert run.returncode == 0, run.stdout + run.stderr
     url = re.search(r"^RESOLVED_URL=(.+)$", run.stdout, re.MULTILINE)
     key = re.search(r"^RESOLVED_KEY=([0-9a-f]{32})$", run.stdout, re.MULTILINE)
@@ -71,6 +90,7 @@ try:
         "candidate-${content_key}",
         "manifest + every provider",
         "NIAKVIO_LOCAL_REPOSITORY_KEY",
+        'http.client.HTTPConnection("127.0.0.1", port, timeout=1.0)',
     ):
         assert required in resolver_text, required
 finally:
