@@ -38,6 +38,24 @@ case "$(uname -s)" in
   *) echo "FIELD_NATIVE_DESKTOP_READER_UNSUPPORTED os=$(uname -s) reason=official_nuvio_desktop_player_is_stub" >&2; exit 96 ;;
 esac
 
+# macOS 15 GitHub-hosted runners can apply Local Network Privacy to the Actions
+# agent. The repository remains the same content-addressed HTTP loopback endpoint
+# and still flows through the real Nuvio PluginRepository; only the test JVM is
+# launched through macOS's root exemption when the resolver proved that this CI
+# runner needs it. A separate Gradle home guarantees the privileged JVM cannot
+# reuse the already-running unprivileged daemon created by the bridge build.
+PRIVILEGED_MACOS_LOCAL_CLIENT=0
+PRIVILEGED_GRADLE_HOME=""
+if [[ "$HOST_OS" == "macos" && "$ALLOW_LOCAL_MANIFEST" == "1" && "$NIAKVIO_LOCAL_REPOSITORY_PRIVILEGED_CLIENT" == "1" ]]; then
+  PRIVILEGED_MACOS_LOCAL_CLIENT=1
+  PRIVILEGED_GRADLE_HOME="${RUNNER_TEMP:-$WORKSPACE/.native-tmp}/niakvio-macos-local-gradle"
+  mkdir -p "$PRIVILEGED_GRADLE_HOME"
+  if ! sudo -n true >/dev/null 2>&1; then
+    echo "FIELD_NATIVE_DESKTOP_READER_INFRA_ERROR os=macos reason=macos_local_network_privilege_unavailable" >&2
+    exit 97
+  fi
+fi
+
 if [[ -n "$TARGET_FIXTURE" && "$TARGET_FIXTURE" != "all" ]]; then
   FIXTURES=("$TARGET_FIXTURE")
 else
@@ -48,7 +66,7 @@ python3 "$INSTRUMENTER" "$DESKTOP_ROOT" || exit $?
 python3 "$REPOSITORY_HTTP_INSTRUMENTER" desktop "$DESKTOP_ROOT" || exit $?
 STATUS=0
 
-echo "FIELD_NATIVE_CORPUS_DESKTOP_PROFILE os=$HOST_OS fixtures=${#FIXTURES[@]} provider=${TARGET_PROVIDER:-all} manifest=$TARGET_MANIFEST primary_stream_scope=$PRIMARY_STREAM_SCOPE regression_stream_scope=$REGRESSION_STREAM_SCOPE official_player=native_player_controller official_repository_loading=true repository_http_evidence=true local_manifest=$ALLOW_LOCAL_MANIFEST"
+echo "FIELD_NATIVE_CORPUS_DESKTOP_PROFILE os=$HOST_OS fixtures=${#FIXTURES[@]} provider=${TARGET_PROVIDER:-all} manifest=$TARGET_MANIFEST primary_stream_scope=$PRIMARY_STREAM_SCOPE regression_stream_scope=$REGRESSION_STREAM_SCOPE official_player=native_player_controller official_repository_loading=true repository_http_evidence=true local_manifest=$ALLOW_LOCAL_MANIFEST privileged_loopback_client=$PRIVILEGED_MACOS_LOCAL_CLIENT"
 for fixture in "${FIXTURES[@]}"; do
   STREAM_SCOPE="$REGRESSION_STREAM_SCOPE"
   if [[ "$fixture" = "$PRIMARY_FIXTURE" ]]; then STREAM_SCOPE="$PRIMARY_STREAM_SCOPE"; fi
@@ -88,6 +106,20 @@ PY
   RUNTIME_STATUS=0
   if [[ "$HOST_OS" = "windows" ]]; then
     "$DESKTOP_ROOT/gradlew.bat" -p "$DESKTOP_ROOT" :composeApp:desktopTest --tests 'com.nuvio.app.features.plugins.NiakvioNativeCorpusDesktopTest' --console=plain 2>&1 | tee "$GRADLE_LOG"
+    RUNTIME_STATUS=${PIPESTATUS[0]}
+  elif [[ "$PRIVILEGED_MACOS_LOCAL_CLIENT" = "1" ]]; then
+    sudo -n -E env \
+      HOME="$HOME" \
+      GRADLE_USER_HOME="$PRIVILEGED_GRADLE_HOME" \
+      GITHUB_WORKSPACE="$GITHUB_WORKSPACE" \
+      NIAKVIO_TARGET_FIXTURE="${NIAKVIO_TARGET_FIXTURE:-}" \
+      NIAKVIO_TARGET_PROVIDER="$TARGET_PROVIDER" \
+      NIAKVIO_TARGET_MANIFEST="$TARGET_MANIFEST" \
+      NIAKVIO_PRIMARY_FIXTURE="$PRIMARY_FIXTURE" \
+      NIAKVIO_PRIMARY_STREAM_SCOPE="$PRIMARY_STREAM_SCOPE" \
+      NIAKVIO_REGRESSION_STREAM_SCOPE="$REGRESSION_STREAM_SCOPE" \
+      NIAKVIO_REQUIRE_READER_SUCCESS="$REQUIRE_READER_SUCCESS" \
+      "$DESKTOP_ROOT/gradlew" -p "$DESKTOP_ROOT" :composeApp:desktopTest --tests 'com.nuvio.app.features.plugins.NiakvioNativeCorpusDesktopTest' --console=plain 2>&1 | tee "$GRADLE_LOG"
     RUNTIME_STATUS=${PIPESTATUS[0]}
   else
     "$DESKTOP_ROOT/gradlew" -p "$DESKTOP_ROOT" :composeApp:desktopTest --tests 'com.nuvio.app.features.plugins.NiakvioNativeCorpusDesktopTest' --console=plain 2>&1 | tee "$GRADLE_LOG"
