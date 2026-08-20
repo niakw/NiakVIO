@@ -8,12 +8,15 @@ site -> player/embed -> media boundary for the native TV client:
 * Referer and Origin are refreshed to the immediate parent on every hop.
 * A small per-row cookie jar captures Set-Cookie and scopes Cookie by domain/path.
 * The browser User-Agent used by the provider bridge is preserved for playback.
+* HLS proof tolerates UTF-8 BOM/mojibake and a missing #EXTM3U line when the
+  payload otherwise contains structural HLS tags. The final HLS integrity layer
+  remains responsible for strict validation/repair before native playback.
 * The compact TV row keeps a useful size/description fallback without changing
   Desktop/Mobile mapping semantics.
 
 V4 markers remain present so existing release-integrity and profile checks keep
-working. Existing materialized V4 bundles are upgraded in place and reapply is
-byte-idempotent.
+working. Existing materialized V4/V5 bundles are upgraded in place and reapply
+is byte-idempotent.
 """
 from __future__ import annotations
 
@@ -40,6 +43,7 @@ FILTER = _load_apply(ROOT / "target_media_host_filter_v4.py")
 
 V4_MARKER = "/* NUVIO_TV_TARGET_MEDIA_V4 */"
 V5_MARKER = "/* NUVIO_TV_TARGET_MEDIA_V5_PLAYBACK_CONTEXT */"
+HLS_PROOF_MARKER = "/* NUVIO_TV_TARGET_MEDIA_HLS_PROOF_V6 */"
 FETCH_COMPAT_MARKER = "/* NUVIO_TV_TEXT_ONLY_FETCH_COMPAT_V1 */"
 PROTOCOL_RELATIVE_MARKER = "/* NUVIO_TV_PROTOCOL_RELATIVE_URL_COMPAT_V1 */"
 VIDZY_DECODER_START = "function decodeVidzy(text){"
@@ -55,6 +59,10 @@ ABS_V3 = r'''function abs(v,b){try{return new URL(clean(v),b).toString()}catch(_
 ABS_V4 = r'''function abs(v,b){try{var raw=clean(v);if(/^\/\//.test(raw)){var scheme=/^https:/i.test(String(b||""))?"https:":"http:";return scheme+raw}return new URL(raw,b).toString()}catch(_){return ""}}'''
 RESOURCE_V3 = r'''async function resource(u,base,ref){try{var h=probeHeaders(base,ref,u),r=await g.fetch(u,{headers:h,redirect:"follow",signal:timeout()});if(!r)return null;var type=r.headers&&r.headers.get?s(r.headers.get("content-type")):"",buffer=await r.arrayBuffer(),bytes=new Uint8Array(buffer),text=decode(bytes.slice(0,300000));return{ok:!!r.ok,status:r.status,url:s(r.url||u),type:type,bytes:bytes,text:text,headers:outputHeaders(base,ref,u)}}catch(_){return null}}'''
 RESOURCE_V4 = r'''async function resource(u,base,ref){try{var h=probeHeaders(base,ref,u),r=await g.fetch(u,{headers:h,redirect:"follow",signal:timeout()});if(!r)return null;var type=r.headers&&r.headers.get?s(r.headers.get("content-type")):"",bytes=null,text="";if(typeof r.arrayBuffer==="function"){var buffer=await r.arrayBuffer();bytes=new Uint8Array(buffer);text=decode(bytes.slice(0,300000))}else if(typeof r.text==="function"){text=String(await r.text()||"").slice(0,300000)}return{ok:!!r.ok,status:r.status,url:s(r.url||u),type:type,bytes:bytes,text:text,headers:outputHeaders(base,ref,u)}}catch(_){return null}}'''
+PROOF_V3 = r'''function proof(r){if(!r)return null;if(startsHls(r.text))return"hls";if(startsDash(r.text)||/application\/dash\+xml/i.test(r.type))return"dash";var binary=bytesKind(r.bytes);if(binary)return binary;if(/^video\//i.test(r.type)&&r.bytes&&r.bytes.length>12)return"video";return null}'''
+PROOF_V6 = r'''function normalizedHlsProofText(text){return String(text==null?"":text).replace(/^(?:\uFEFF|ï»¿)/,"").trimStart()}
+function hlsStructure(text){var value=normalizedHlsProofText(text);if(/^#EXTM3U(?:\s|$)/i.test(value))return true;return /(?:^|\n)#EXT-(?:X-[A-Z0-9-]+|INF)\s*:/i.test(value)}
+function proof(r){if(!r)return null;if(hlsStructure(r.text))return"hls";if(startsDash(r.text)||/application\/dash\+xml/i.test(r.type))return"dash";var binary=bytesKind(r.bytes);if(binary)return binary;if(/^video\//i.test(r.type)&&r.bytes&&r.bytes.length>12)return"video";return null}'''
 
 STRICT_BLOCKED_HOSTS = {
     "cloudflare.com", "googletagmanager.com", "google-analytics.com",
@@ -182,6 +190,17 @@ def upgrade_player_decoders(text: str, blocked_hosts: list[str]) -> str:
     return text
 
 
+def upgrade_hls_proof(text: str) -> str:
+    if HLS_PROOF_MARKER in text:
+        return text
+    if PROOF_V6 not in text:
+        count = text.count(PROOF_V3)
+        if count != 1:
+            raise RuntimeError(f"target-media HLS proof anchor count={count}")
+        text = text.replace(PROOF_V3, PROOF_V6, 1)
+    return text.rstrip() + "\n" + HLS_PROOF_MARKER + "\n"
+
+
 def _replace_once(text: str, old: str, new: str, label: str) -> str:
     count = text.count(old)
     if count != 1:
@@ -205,7 +224,8 @@ def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> st
     if V4_MARKER in text:
         patched = upgrade_fetch_capability(text)
         patched = upgrade_protocol_relative_urls(patched)
-        return upgrade_playback_context(patched)
+        patched = upgrade_playback_context(patched)
+        return upgrade_hls_proof(patched)
 
     blocked_hosts = sorted(
         STRICT_BLOCKED_HOSTS
@@ -221,4 +241,5 @@ def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> st
     patched = EXPOSE(patched)
     patched = FILTER(patched, options=cfg)
     patched = patched.rstrip() + "\n" + V4_MARKER + "\n"
-    return upgrade_playback_context(patched)
+    patched = upgrade_playback_context(patched)
+    return upgrade_hls_proof(patched)
