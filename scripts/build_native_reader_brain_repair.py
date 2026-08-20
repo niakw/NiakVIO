@@ -1,10 +1,15 @@
 #!/usr/bin/env python3
 """Materialize bounded provider-agnostic repair candidates from native-reader Brain evidence.
 
-This is a Learning Lab mutation step, not publication. It consumes sanitized reader
-diagnosis and cross-day reader-repair memory, composes only allow-listed generic
-repair skills, writes candidate provider bundles plus a candidate manifest, and
-requires a fresh native-reader run before any candidate can be considered successful.
+Native readers are compatibility observers, not authorities that may condemn a
+provider globally. A provider mutation is eligible only after the same declared
+route fails on at least two distinct Nuvio client families and no peer client has a
+healthy observation for that provider/route/fixture. Single-client/OS failures remain
+compatibility evidence for future Nuvio updates and Core analysis; they are never
+turned into provider JS mutations here.
+
+This remains a Learning Lab mutation step, never publication. Candidate bundles still
+require fresh native proof before they can be considered successful.
 """
 from __future__ import annotations
 
@@ -19,6 +24,7 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 PATCH_PATH = ROOT / "scripts/provider_patches/global_media_enrichment_v1.py"
+MIN_DISTINCT_CLIENTS_FOR_GLOBAL_PROVIDER_REPAIR = 2
 
 HYPOTHESIS_SKILLS: dict[str, tuple[str, ...]] = {
     "replay-native-request-context": ("global_media_enrichment_v1",),
@@ -80,28 +86,75 @@ def local_provider_path(filename: str) -> Path:
     return path
 
 
-def diagnosis_targets(diagnosis: dict[str, Any], max_providers: int, fixture: str | None = None) -> list[dict[str, Any]]:
-    grouped: dict[str, dict[str, Any]] = {}
+def _key(row: dict[str, Any]) -> tuple[str, str, str]:
+    return (
+        str(row.get("provider") or "").casefold().strip(),
+        str(row.get("requestType") or row.get("request_type") or "unknown").casefold().strip(),
+        str(row.get("fixture") or "").strip(),
+    )
+
+
+def diagnosis_targets(
+    diagnosis: dict[str, Any],
+    max_providers: int,
+    fixture: str | None = None,
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    """Return globally repairable targets plus compatibility-only skips.
+
+    A native failure is globally mutable only when:
+      * evidence contains the same provider/request/fixture failure on >=2 distinct
+        Nuvio client families; and
+      * no client has a healthy declared-route observation for that same key.
+
+    This deliberately treats Windows/macOS as the same `desktop` family unless the
+    evidence schema later exposes distinct production player families. OS-specific
+    failures therefore cannot accidentally satisfy cross-client consensus.
+    """
     wanted_fixture = str(fixture or "").strip()
+    healthy_clients: dict[tuple[str, str, str], set[str]] = {}
+    for raw in diagnosis.get("observations") or []:
+        if not isinstance(raw, dict):
+            continue
+        if str(raw.get("routeMode") or raw.get("route_mode") or "declared").casefold() == "capability_probe":
+            continue
+        if str(raw.get("failureClass") or "").casefold() != "healthy":
+            continue
+        key = _key(raw)
+        if wanted_fixture and key[2] != wanted_fixture:
+            continue
+        client = str(raw.get("client") or "unknown").casefold().strip() or "unknown"
+        healthy_clients.setdefault(key, set()).add(client)
+
+    grouped: dict[tuple[str, str, str], dict[str, Any]] = {}
     for raw in diagnosis.get("plans") or []:
         if not isinstance(raw, dict):
             continue
         if wanted_fixture and str(raw.get("fixture") or "") != wanted_fixture:
             continue
+        if str(raw.get("routeMode") or "declared").casefold() == "capability_probe":
+            continue
         provider = str(raw.get("provider") or "").casefold().strip()
         if not provider or str(raw.get("action") or "") != "probe-targeted-repair":
             continue
-        target = grouped.setdefault(provider, {
+        key = _key(raw)
+        target = grouped.setdefault(key, {
             "provider": provider,
+            "requestType": key[1],
+            "fixture": key[2],
             "failureClasses": [],
             "hypotheses": [],
             "occurrences": 0,
             "fixtures": [],
+            "failingClients": [],
+            "healthyClients": [],
         })
         target["occurrences"] += 1
         raw_fixture = str(raw.get("fixture") or "")
         if raw_fixture and raw_fixture not in target["fixtures"]:
             target["fixtures"].append(raw_fixture)
+        client = str(raw.get("client") or "unknown").casefold().strip() or "unknown"
+        if client not in target["failingClients"]:
+            target["failingClients"].append(client)
         failure = str(raw.get("failureClass") or "unknown_failure")
         if failure not in target["failureClasses"]:
             target["failureClasses"].append(failure)
@@ -111,7 +164,46 @@ def diagnosis_targets(diagnosis: dict[str, Any], max_providers: int, fixture: st
             hid = str(hypothesis.get("id") or "")
             if hid and hid not in target["hypotheses"]:
                 target["hypotheses"].append(hid)
-    return sorted(grouped.values(), key=lambda row: (-int(row["occurrences"]), row["provider"]))[:max_providers]
+
+    eligible: list[dict[str, Any]] = []
+    compatibility_only: list[dict[str, Any]] = []
+    for key, target in grouped.items():
+        target["failingClients"] = sorted(set(target["failingClients"]))
+        target["healthyClients"] = sorted(healthy_clients.get(key, set()))
+        target["crossClientConfirmed"] = (
+            len(target["failingClients"]) >= MIN_DISTINCT_CLIENTS_FOR_GLOBAL_PROVIDER_REPAIR
+            and not target["healthyClients"]
+        )
+        if target["healthyClients"]:
+            compatibility_only.append({
+                **target,
+                "reason": "client_specific_failure_has_healthy_peer",
+                "providerMutationAllowed": False,
+            })
+        elif len(target["failingClients"]) < MIN_DISTINCT_CLIENTS_FOR_GLOBAL_PROVIDER_REPAIR:
+            compatibility_only.append({
+                **target,
+                "reason": "insufficient_cross_client_confirmation",
+                "providerMutationAllowed": False,
+            })
+        else:
+            eligible.append(target)
+
+    eligible.sort(key=lambda row: (-int(row["occurrences"]), row["provider"], row["requestType"]))
+    compatibility_only.sort(key=lambda row: (-int(row["occurrences"]), row["provider"], row["requestType"]))
+
+    # Keep at most max_providers distinct providers, while retaining multiple
+    # corroborated request/fixture rows for those providers.
+    selected_providers: list[str] = []
+    selected: list[dict[str, Any]] = []
+    for row in eligible:
+        provider = row["provider"]
+        if provider not in selected_providers:
+            if len(selected_providers) >= max_providers:
+                continue
+            selected_providers.append(provider)
+        selected.append(row)
+    return selected, compatibility_only
 
 
 def skill_memory(learning: dict[str, Any], target: dict[str, Any], skill: str) -> dict[str, int]:
@@ -171,7 +263,7 @@ def main() -> int:
     parser.add_argument("--manifest", type=Path, default=ROOT / "manifest.json")
     parser.add_argument("--output-dir", type=Path, default=ROOT / "native-reader-repair")
     parser.add_argument("--learning-state", type=Path, help="optional prior sanitized Brain learning state")
-    parser.add_argument("--fixture", default="", help="optional fixture slug; only its reader failures are mutated")
+    parser.add_argument("--fixture", default="", help="optional fixture slug; only its reader failures are considered")
     parser.add_argument("--max-providers", type=int, default=12)
     parser.add_argument("--avoid-threshold", type=int, default=2)
     args = parser.parse_args()
@@ -184,7 +276,7 @@ def main() -> int:
     providers_dir = output_dir / "providers"
     providers_dir.mkdir(parents=True, exist_ok=True)
 
-    target_rows = diagnosis_targets(
+    target_rows, compatibility_only = diagnosis_targets(
         diagnosis,
         max(1, min(int(args.max_providers), 24)),
         args.fixture.strip() or None,
@@ -202,9 +294,34 @@ def main() -> int:
     }
     patch_module = load_patch_module()
     proposals: list[dict[str, Any]] = []
-    skipped: list[dict[str, Any]] = []
+    skipped: list[dict[str, Any]] = [dict(row) for row in compatibility_only]
 
+    # Collapse multiple corroborated request rows into one provider mutation proposal.
+    provider_targets: dict[str, dict[str, Any]] = {}
     for target in target_rows:
+        provider = target["provider"]
+        merged = provider_targets.setdefault(provider, {
+            "provider": provider,
+            "failureClasses": [],
+            "hypotheses": [],
+            "occurrences": 0,
+            "fixtures": [],
+            "requestTypes": [],
+            "failingClients": [],
+        })
+        merged["occurrences"] += int(target.get("occurrences") or 0)
+        for field, source in (
+            ("failureClasses", target.get("failureClasses") or []),
+            ("hypotheses", target.get("hypotheses") or []),
+            ("fixtures", target.get("fixtures") or []),
+            ("requestTypes", [target.get("requestType")]),
+            ("failingClients", target.get("failingClients") or []),
+        ):
+            for value in source:
+                if value and value not in merged[field]:
+                    merged[field].append(value)
+
+    for target in sorted(provider_targets.values(), key=lambda row: (-int(row["occurrences"]), row["provider"])):
         provider = target["provider"]
         row = by_id.get(provider)
         proposed_row = proposed_by_id.get(provider)
@@ -218,6 +335,8 @@ def main() -> int:
                 "reason": "all_compatible_reader_skills_suppressed_by_negative_memory" if suppressed else "no_allowlisted_reader_repair_skill",
                 "failureClasses": target["failureClasses"],
                 "hypotheses": target["hypotheses"],
+                "failingClients": target["failingClients"],
+                "providerMutationAllowed": False,
                 "suppressedSkills": suppressed,
             })
             continue
@@ -244,11 +363,14 @@ def main() -> int:
         proposals.append({
             "provider": provider,
             "fixtures": target["fixtures"],
+            "requestTypes": target["requestTypes"],
             "failureClasses": target["failureClasses"],
             "hypotheses": target["hypotheses"],
             "skills": skills,
             "suppressedSkills": suppressed,
             "occurrences": target["occurrences"],
+            "failingClients": sorted(target["failingClients"]),
+            "crossClientConfirmed": True,
             "sourceSha256": sha256(original_bytes),
             "candidateSha256": digest,
             "candidateFile": relative,
@@ -258,7 +380,7 @@ def main() -> int:
     candidate_manifest = output_dir / "manifest.json"
     write_json(candidate_manifest, proposed_manifest)
     report = {
-        "schemaVersion": 2,
+        "schemaVersion": 3,
         "brainVersion": diagnosis.get("brainVersion"),
         "mode": "native_reader_repair_sandbox",
         "fixtureScope": args.fixture.strip() or "all",
@@ -267,12 +389,16 @@ def main() -> int:
         "providers": [row["provider"] for row in proposals],
         "proposals": proposals,
         "skipped": skipped,
+        "compatibilityOnlyCount": len(compatibility_only),
         "learningApplied": bool(learning.get("nativeReaderRepairMemory")),
         "policy": {
             "productionWritesAllowed": False,
             "publicationAllowed": False,
             "candidateManifestOnly": True,
             "requireFreshNativeReaderProof": True,
+            "minimumDistinctClientFamiliesForProviderMutation": MIN_DISTINCT_CLIENTS_FOR_GLOBAL_PROVIDER_REPAIR,
+            "healthyPeerVetoesProviderMutation": True,
+            "singleClientFailureIsCompatibilityEvidenceOnly": True,
             "maxMutationProviders": max(1, min(int(args.max_providers), 24)),
             "avoidRepeatedFailedSkillThreshold": max(1, int(args.avoid_threshold)),
         },
@@ -281,7 +407,9 @@ def main() -> int:
     write_json(output_dir / "repair-report.json", report)
     print(
         f"FIELD_NATIVE_READER_REPAIR proposals={len(proposals)} skipped={len(skipped)} "
-        f"reader_failures={report['diagnosedReaderFailures']} fixture={report['fixtureScope']} learning={str(report['learningApplied']).lower()} manifest={candidate_manifest.relative_to(ROOT)}"
+        f"compatibility_only={len(compatibility_only)} reader_failures={report['diagnosedReaderFailures']} "
+        f"fixture={report['fixtureScope']} learning={str(report['learningApplied']).lower()} "
+        f"manifest={candidate_manifest.relative_to(ROOT)}"
     )
     return 0
 
