@@ -14,6 +14,12 @@ media URL then bypasses the terminal sanitizer entirely. V6 detects that stale
 textual order, removes only its own sanitizer wrapper/markers, and lets V5
 rebuild it after target-media. This keeps reapplication deterministic without
 weakening fail-closed probing or adding provider-specific behavior.
+
+V5 historically detects its compatibility ``probe()`` alias with a whole-file
+substring search. A provider or another wrapper may coincidentally define the
+same function, causing V5 to skip the alias inside the sanitizer and fail at
+runtime with ``ReferenceError: probe is not defined``. V6 verifies the alias in
+the sanitizer's own lexical region and injects it there when needed.
 """
 from __future__ import annotations
 
@@ -38,6 +44,9 @@ TARGET_MEDIA_MARKERS = (
     "/* NUVIO_TV_TARGET_MEDIA_V5_PLAYBACK_CONTEXT */",
     "/* NUVIO_TV_TARGET_MEDIA_HLS_PROOF_V6 */",
 )
+PROBE_RESOLVED = "  async function probeResolved(stream,url,depth,referer){\n"
+PROBE_ALIAS = '  async function probe(stream,url){return await probeResolved(stream,url,0,"")}\n'
+INSTALL_ANCHOR = "  function install(container,key){\n"
 
 
 def _load_v5_apply():
@@ -91,6 +100,21 @@ def _strip_existing_sanitizer(text: str) -> str:
     return output.rstrip()
 
 
+def _ensure_local_probe_alias(text: str) -> str:
+    """Ensure ``probe()`` exists inside this sanitizer, not merely elsewhere."""
+    sanitizer = _sanitizer_position(text)
+    if sanitizer < 0:
+        return text
+    resolved = text.find(PROBE_RESOLVED, sanitizer)
+    install = text.find(INSTALL_ANCHOR, resolved if resolved >= 0 else sanitizer)
+    if resolved < 0 or install < 0:
+        raise ValueError("stream sanitizer local probe region not found")
+    region = text[resolved:install]
+    if PROBE_ALIAS in region:
+        return text
+    return text[:install] + PROBE_ALIAS + text[install:]
+
+
 def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> str:
     cfg = dict(options or {})
     if not bool(cfg.get("probe_all_urls")):
@@ -105,6 +129,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> st
     # changing blocked paths or probe policy cannot be hidden by a static V6
     # marker from an older materialization.
     patched = V5_APPLY(source, options=cfg, **kwargs)
+    patched = _ensure_local_probe_alias(patched)
     if not relocated and patched == text and MARKER in text:
         return text
 
