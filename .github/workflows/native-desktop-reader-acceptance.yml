@@ -94,7 +94,7 @@ jobs:
 
   desktop-reader:
     needs: resolve
-    timeout-minutes: 240
+    timeout-minutes: ${{ github.event_name == 'pull_request' && 55 || 240 }}
     strategy:
       fail-fast: false
       matrix:
