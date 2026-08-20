@@ -47,6 +47,7 @@ on:
       - ".github/workflows/brain-learning-lab.yml"
       - "tests/canonical_media_types_test.py"
       - "tests/native_evidence_contract_test.py"
+      - "tests/native_evidence_completeness_test.cjs"
       - "tests/native_evidence_codegen_pipeline_test.py"
       - "tests/native_repository_cache_contract_test.py"
       - "tests/native_repository_http_instrumentation_test.py"
@@ -84,6 +85,8 @@ jobs:
         run: node engine_v2/tests/contracts.test.mjs
       - name: Validate full native evidence architecture
         run: python3 tests/native_evidence_contract_test.py
+      - name: Validate native evidence execution floor
+        run: node tests/native_evidence_completeness_test.cjs
       - name: Execute native evidence Kotlin codegen pipeline
         run: python3 tests/native_evidence_codegen_pipeline_test.py
       - name: Validate repository HTTP instrumentation contracts
