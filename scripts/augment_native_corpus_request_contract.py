@@ -77,10 +77,12 @@ def kotlin_map(values: dict[str, list[str]]) -> str:
     rows = []
     for provider_id, types in values.items():
         items = ", ".join(json.dumps(value) for value in types)
-        rows.append(f"        {json.dumps(provider_id)} to setOf<String>({items})")
-    # Keep every generic type explicit. NuvioTV currently builds androidTest with
-    # a Kotlin compiler that does not reliably propagate nested collection types
-    # through `to`, `orEmpty` and empty collection branches in generated code.
+        rows.append(
+            f"        Pair<String, Set<String>>({json.dumps(provider_id)}, setOf<String>({items}))"
+        )
+    # NuvioTV's androidTest Kotlin compiler has failed to infer the generic T of
+    # the infix `to` helper in this generated nested map. Keep the complete Pair
+    # type explicit so TV and Mobile consume one deterministic request contract.
     return "mapOf<String, Set<String>>(\n" + ",\n".join(rows) + "\n    )"
 
 
@@ -111,7 +113,15 @@ def augment(path: Path, client: str, slug: str, manifest: Path) -> None:
 
     if client in {"tv", "mobile"}:
         test_anchor = "    @Test\n"
-        launch_helper = f'''    private fun launchClientUi() {{\n        val instrumentation = InstrumentationRegistry.getInstrumentation()\n        val context = instrumentation.targetContext\n        val instrumentationPackage = context.packageName\n        val packageName = if (instrumentationPackage.endsWith(".test")) instrumentationPackage.removeSuffix(".test") else instrumentationPackage\n        val intent = context.packageManager.getLaunchIntentForPackage(packageName)\n        if (intent == null) {{\n            emit("FIELD_NATIVE_UI_LAUNCH_ERROR client={client} package64=${{b64(packageName)}} reason=no_launch_intent")\n            return\n        }}\n        intent.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_ACTIVITY_CLEAR_TOP)\n        context.startActivity(intent)\n        Thread.sleep(1200L)\n        emit("FIELD_NATIVE_UI_LAUNCHED client={client} package64=${{b64(packageName)}}")\n    }}\n\n'''
+        if client == "mobile":
+            # composeApp device tests run under a test package, while the real
+            # official debug application is produced by androidApp and overrides
+            # its applicationId to com.nuviodebug.com. Prefer that real launcher;
+            # retain the instrumentation-derived package only as a compatibility
+            # fallback for upstream changes.
+            launch_helper = '''    private fun launchClientUi() {\n        val instrumentation = InstrumentationRegistry.getInstrumentation()\n        val context = instrumentation.targetContext\n        var packageName: String = "com.nuviodebug.com"\n        var intent: android.content.Intent? = context.packageManager.getLaunchIntentForPackage(packageName)\n        if (intent == null) {\n            val instrumentationPackage: String = context.packageName\n            packageName = if (instrumentationPackage.endsWith(".test")) instrumentationPackage.removeSuffix(".test") else instrumentationPackage\n            intent = context.packageManager.getLaunchIntentForPackage(packageName)\n        }\n        val launchIntent: android.content.Intent? = intent\n        if (launchIntent == null) {\n            emit("FIELD_NATIVE_UI_LAUNCH_ERROR client=mobile package64=${b64(packageName)} reason=no_launch_intent")\n            return\n        }\n        launchIntent.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_ACTIVITY_CLEAR_TOP)\n        context.startActivity(launchIntent)\n        Thread.sleep(1200L)\n        emit("FIELD_NATIVE_UI_LAUNCHED client=mobile package64=${b64(packageName)}")\n    }\n\n'''
+        else:
+            launch_helper = '''    private fun launchClientUi() {\n        val instrumentation = InstrumentationRegistry.getInstrumentation()\n        val context = instrumentation.targetContext\n        val instrumentationPackage: String = context.packageName\n        val packageName: String = if (instrumentationPackage.endsWith(".test")) instrumentationPackage.removeSuffix(".test") else instrumentationPackage\n        val intent: android.content.Intent? = context.packageManager.getLaunchIntentForPackage(packageName)\n        if (intent == null) {\n            emit("FIELD_NATIVE_UI_LAUNCH_ERROR client=tv package64=${b64(packageName)} reason=no_launch_intent")\n            return\n        }\n        intent.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_ACTIVITY_CLEAR_TOP)\n        context.startActivity(intent)\n        Thread.sleep(1200L)\n        emit("FIELD_NATIVE_UI_LAUNCHED client=tv package64=${b64(packageName)}")\n    }\n\n'''
         text = replace_once(text, test_anchor, launch_helper + test_anchor, "android test")
         begin = f'        emit("FIELD_NATIVE_CORPUS_BEGIN client={client} fixture=$fixtureSlug title64=${{b64(title)}} providers=${{providers.size}}")'
         text = replace_once(text, begin, f"        launchClientUi()\n{begin}", "ui launch")
