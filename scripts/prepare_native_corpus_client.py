@@ -39,11 +39,28 @@ def ensure_materialized_provider_transaction() -> None:
 
     Each GitHub Actions job owns an isolated checkout, so a simple sentinel is
     sufficient and deliberately avoids re-running the ~60-provider materializer
-    once per representative fixture. The sentinel is written only after both
-    commands succeed; a failed materialization therefore remains fail-closed.
+    once per representative fixture. The sentinel is written only after dependency
+    installation and both materialization commands succeed; a failed transaction
+    therefore remains fail-closed.
     """
     if MATERIALIZED_SENTINEL.is_file():
         return
+
+    # The publication materializer validates generated provider JS with Node and
+    # therefore needs the repository's pinned runtime modules. Native workflows
+    # set up Node but intentionally do not run npm ci themselves, so make this
+    # Brain->native boundary self-contained instead of depending on workflow order.
+    package_lock = ROOT / "package-lock.json"
+    if package_lock.is_file() and not (ROOT / "node_modules").is_dir():
+        npm = shutil.which("npm") or shutil.which("npm.cmd")
+        if not npm:
+            raise RuntimeError("npm is required to materialize provider overrides for native readers")
+        subprocess.run(
+            [npm, "ci", "--ignore-scripts", "--no-audit", "--no-fund"],
+            cwd=ROOT,
+            check=True,
+        )
+
     commands = (
         [sys.executable, str(ROOT / "scripts/build_provider_runtime_profiles.py")],
         [sys.executable, str(ROOT / "scripts/reapply_published_overrides.py")],
