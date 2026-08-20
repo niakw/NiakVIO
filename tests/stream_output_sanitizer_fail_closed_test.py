@@ -50,6 +50,18 @@ def main() -> int:
     assert changed.count(module.MARKER) == 1
     assert module.NEW in changed
 
+    # Durable/LKG reapplication can append a freshly force-rewrapped target-media
+    # adapter after an already-materialized sanitizer. Reapplying V6 must move
+    # the sanitizer IIFE after that target-media layer so final media is probed.
+    stale_order = first.rstrip() + "\n/* NUVIO_TV_TARGET_MEDIA_V3:fixture */\n"
+    relocated = module.apply(stale_order, options=options)
+    sanitizer_pos = relocated.find(module.SANITIZER_PREFIX)
+    target_pos = relocated.rfind("/* NUVIO_TV_TARGET_MEDIA_V3:fixture */")
+    assert target_pos >= 0 and sanitizer_pos > target_pos, (target_pos, sanitizer_pos)
+    assert relocated.count(module.SANITIZER_PREFIX) == 1
+    assert relocated.count(module.MARKER) == 1
+    assert module.apply(relocated, options=options) == relocated
+
     print("fail-closed all-URL stream sanitizer tests passed")
     return 0
 
