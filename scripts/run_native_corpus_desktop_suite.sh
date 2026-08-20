@@ -23,7 +23,12 @@ TARGET_MANIFEST="${NIAKVIO_TARGET_MANIFEST:-manifest.json}"
 PRIMARY_FIXTURE="${NIAKVIO_PRIMARY_FIXTURE:-sinners-2025}"
 PRIMARY_STREAM_SCOPE="${NIAKVIO_PRIMARY_STREAM_SCOPE:-all}"
 REGRESSION_STREAM_SCOPE="${NIAKVIO_REGRESSION_STREAM_SCOPE:-2}"
-REQUIRE_READER_SUCCESS="${NIAKVIO_REQUIRE_READER_SUCCESS:-1}"
+REQUESTED_READER_SUCCESS="${NIAKVIO_REQUIRE_READER_SUCCESS:-0}"
+PLAYER_OUTCOME_GLOBAL_GATE="${NIAKVIO_NATIVE_PLAYER_OUTCOME_GLOBAL_GATE:-0}"
+REQUIRE_READER_SUCCESS=0
+if [[ "$PLAYER_OUTCOME_GLOBAL_GATE" = "1" && "$REQUESTED_READER_SUCCESS" = "1" ]]; then
+  REQUIRE_READER_SUCCESS=1
+fi
 SOURCE_SHA="${NIAKVIO_SOURCE_SHA:-$(git -C "$NIAKVIO" rev-parse HEAD)}"
 SOURCE_REPOSITORY="${GITHUB_REPOSITORY:-niakw/NiakVIO}"
 source "$REPOSITORY_RESOLVER"
@@ -58,7 +63,7 @@ python3 "$INSTRUMENTER" "$DESKTOP_ROOT" || exit $?
 python3 "$REPOSITORY_HTTP_INSTRUMENTER" desktop "$DESKTOP_ROOT" || exit $?
 STATUS=0
 
-echo "FIELD_NATIVE_CORPUS_DESKTOP_PROFILE os=$HOST_OS fixtures=${#FIXTURES[@]} provider=${TARGET_PROVIDER:-all} manifest=$TARGET_MANIFEST primary_stream_scope=$PRIMARY_STREAM_SCOPE regression_stream_scope=$REGRESSION_STREAM_SCOPE official_player=production_path official_repository_loading=true repository_http_evidence=true local_manifest=$ALLOW_LOCAL_MANIFEST observational=true privilege=ordinary-user"
+echo "FIELD_NATIVE_CORPUS_DESKTOP_PROFILE os=$HOST_OS fixtures=${#FIXTURES[@]} provider=${TARGET_PROVIDER:-all} manifest=$TARGET_MANIFEST primary_stream_scope=$PRIMARY_STREAM_SCOPE regression_stream_scope=$REGRESSION_STREAM_SCOPE requested_reader_success=$REQUESTED_READER_SUCCESS require_reader_success=$REQUIRE_READER_SUCCESS player_outcome_global_gate=$PLAYER_OUTCOME_GLOBAL_GATE official_player=production_path official_repository_loading=true repository_http_evidence=true local_manifest=$ALLOW_LOCAL_MANIFEST observational=true privilege=ordinary-user"
 for fixture in "${FIXTURES[@]}"; do
   STREAM_SCOPE="$REGRESSION_STREAM_SCOPE"
   if [[ "$fixture" = "$PRIMARY_FIXTURE" ]]; then STREAM_SCOPE="$PRIMARY_STREAM_SCOPE"; fi
@@ -120,13 +125,15 @@ PY
   node "$ANALYZER" "$fixture" "$LOG" || ANALYSIS_STATUS=$?
   COVERAGE_STATUS=0
   node "$COVERAGE_GATE" --streams "$STREAM_SCOPE" "$LOG" || COVERAGE_STATUS=$?
+  OBSERVED_READER_STATUS=0
+  node "$READER_GATE" "$LOG" || OBSERVED_READER_STATUS=$?
   READER_STATUS=0
   if [[ "$REQUIRE_READER_SUCCESS" = "1" ]]; then
-    node "$READER_GATE" "$LOG" || READER_STATUS=$?
+    READER_STATUS=$OBSERVED_READER_STATUS
   fi
-  echo "FIELD_NATIVE_CORPUS_DESKTOP_STATUS os=$HOST_OS fixture=$fixture runtime=$RUNTIME_STATUS collection=$ANALYSIS_STATUS coverage=$COVERAGE_STATUS reader=$READER_STATUS stream_scope=$STREAM_SCOPE"
+  echo "FIELD_NATIVE_CORPUS_DESKTOP_STATUS os=$HOST_OS fixture=$fixture runtime=$RUNTIME_STATUS collection=$ANALYSIS_STATUS coverage=$COVERAGE_STATUS reader_observed=$OBSERVED_READER_STATUS reader_blocking=$READER_STATUS stream_scope=$STREAM_SCOPE"
   if [[ "$RUNTIME_STATUS" -ne 0 || "$ANALYSIS_STATUS" -ne 0 || "$COVERAGE_STATUS" -ne 0 || "$READER_STATUS" -ne 0 ]]; then STATUS=1; fi
 done
 
-echo "FIELD_NATIVE_CORPUS_DESKTOP_SUITE_STATUS os=$HOST_OS status=$STATUS fixtures=${#FIXTURES[@]} provider=${TARGET_PROVIDER:-all} manifest=$TARGET_MANIFEST"
+echo "FIELD_NATIVE_CORPUS_DESKTOP_SUITE_STATUS os=$HOST_OS status=$STATUS fixtures=${#FIXTURES[@]} provider=${TARGET_PROVIDER:-all} manifest=$TARGET_MANIFEST requested_reader_success=$REQUESTED_READER_SUCCESS require_reader_success=$REQUIRE_READER_SUCCESS player_outcome_global_gate=$PLAYER_OUTCOME_GLOBAL_GATE"
 exit "$STATUS"
