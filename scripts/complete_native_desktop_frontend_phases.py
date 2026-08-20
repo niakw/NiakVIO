@@ -16,7 +16,13 @@ def canonicalize_http_terminal_phases(text: str) -> str:
     # The native evidence contract defines a terminal HTTP phase as either a
     # response or an error. Older desktop augmentation emitted a misleading
     # *-http-response phase even when FIELD_NATIVE_*_HTTP_ERROR was terminal.
-    # Normalize those generated calls before adding any missing phases.
+    # Keep the repository migration explicit because provider-loading generates
+    # this exact fixtureSlugForLoad call; then retain generic fallbacks for already
+    # generated labs that may use another fixture expression.
+    text = text.replace(
+        'captureDesktopPhase("repository-http-response", fixtureSlugForLoad)',
+        'captureDesktopPhase("repository-http-terminal", fixtureSlugForLoad)',
+    )
     return (
         text.replace(
             'captureDesktopPhase("repository-http-response",',
