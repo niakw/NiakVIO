@@ -195,14 +195,31 @@ function normalizeStreams(result, providerId) {
 function applyValidationResult(context, result = {}) {
   const rows = Array.isArray(result.results) ? result.results : [];
   const byUrl = new Map(rows.map((row) => [row?.candidate?.url, row?.validation]));
-  context.streams = context.streams.map((stream) => {
+  const rankedRows = Array.isArray(result.rankedResults) ? result.rankedResults : [];
+  const rankByUrl = new Map();
+  for (const row of rankedRows) {
+    const url = row?.candidate?.url;
+    if (url && !rankByUrl.has(url)) rankByUrl.set(url, rankByUrl.size);
+  }
+
+  const annotated = context.streams.map((stream, originalIndex) => {
     const validation = byUrl.get(stream.url) ?? null;
     return {
-      ...stream,
-      playable: validation?.playable === true,
-      validation,
+      originalIndex,
+      rank: rankByUrl.has(stream.url) ? rankByUrl.get(stream.url) : Number.POSITIVE_INFINITY,
+      stream: {
+        ...stream,
+        playable: validation?.playable === true,
+        validation,
+      },
     };
   });
+
+  // Validation/ranking is part of the canonical Core contract, not a device hack.
+  // Proven playable rows lead; the validator can therefore prefer a stable 1080p
+  // fallback over a flaky 2160p route while leaving untested rows in stable order.
+  annotated.sort((a, b) => a.rank - b.rank || a.originalIndex - b.originalIndex);
+  context.streams = annotated.map((row) => row.stream);
   context.evidence.playableStreams = context.streams.filter((stream) => stream.playable === true).length;
 }
 
