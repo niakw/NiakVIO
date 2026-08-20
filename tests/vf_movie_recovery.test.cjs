@@ -59,12 +59,9 @@ function hlsBody() {
     '#EXT-X-ENDLIST\n';
 }
 
-global.fetch = async (input) => {
+async function fixtureFetch(input) {
   const raw = typeof input === 'string' ? input : input.url;
-  fetchTrace.push({
-    url: raw,
-    stack: String(new Error().stack || '').split('\n').slice(2, 8).map((line) => line.trim()),
-  });
+  fetchTrace.push(raw);
   const url = new URL(raw);
   if (url.hostname === 'api.themoviedb.org') return tmdbResponse(raw);
   if (url.hostname === 'movix.fun' && url.pathname === '/') return new Response('<script src="/assets/app.js"></script>', { status: 200, headers: { 'content-type': 'text/html' } });
@@ -84,34 +81,19 @@ global.fetch = async (input) => {
     return new Response(dleSearch(url.origin, fixture), { status: 200, headers: { 'content-type': 'text/html' } });
   }
   return new Response('not found', { status: 404, headers: { 'content-type': 'text/plain' } });
-};
-
-function summarizeRows(rows) {
-  if (!Array.isArray(rows)) return { kind: typeof rows };
-  return rows.slice(0, 4).map((row) => ({
-    url: row && row.url,
-    type: row && (row.type || row.format || row.mimeType),
-    isDirect: row && row.isDirect,
-    headers: row && row.headers ? Object.keys(row.headers).sort() : [],
-    proxyHeaders: row?.behaviorHints?.proxyHeaders?.request ? Object.keys(row.behaviorHints.proxyHeaders.request).sort() : [],
-  }));
 }
 
-async function debugWrapperChain(fn, args) {
-  const layers = [];
-  let current = fn;
-  const seen = new Set();
-  for (let depth = 0; typeof current === 'function' && depth < 12 && !seen.has(current); depth += 1) {
-    seen.add(current);
-    const markers = Object.keys(current).filter((key) => key.startsWith('__nuvio')).sort();
-    fetchTrace.length = 0;
-    let rows = null;
-    let error = null;
-    try { rows = await current(...args); } catch (caught) { error = String(caught && caught.stack || caught); }
-    layers.push({ depth, markers, rows: summarizeRows(rows), error, fetchTrace: fetchTrace.slice(-16) });
-    current = current.__nuvioOriginal;
+function resetProviderGlobal() {
+  // Official Nuvio runtimes isolate provider execution contexts. This Node
+  // regression harness must do the same: provider-local fetch/domain wrappers
+  // must never leak from Movix into Coflix (or any neighboring provider).
+  global.fetch = fixtureFetch;
+  try { delete global.getStreams; } catch {}
+  for (const key of Object.keys(globalThis)) {
+    if (/^__nuvio/i.test(key)) {
+      try { delete globalThis[key]; } catch {}
+    }
   }
-  return layers;
 }
 
 function assertSafeRows(id, fixtureId, rows, kind) {
@@ -132,6 +114,7 @@ function assertSafeRows(id, fixtureId, rows, kind) {
     const legacyPublicationQuarantine = entry.enabled === false && /--nuvio-audit-quarantine--/.test(String(entry.filename || ''));
     const quarantined = configuredQuarantine || legacyPublicationQuarantine;
     const providerPath = path.resolve(__dirname, '..', entry.filename);
+    resetProviderGlobal();
     delete require.cache[require.resolve(providerPath)];
     const provider = require(providerPath);
     for (const fixture of fixtures) {
@@ -145,19 +128,13 @@ function assertSafeRows(id, fixtureId, rows, kind) {
     }
     if (id === 'flemmix') continue;
     fetchTrace.length = 0;
-    const tvArgs = [tvFixture.id, 'tv', tvFixture.season, tvFixture.episode, {}];
-    const tvRows = await provider.getStreams(...tvArgs);
+    const tvRows = await provider.getStreams(tvFixture.id, 'tv', tvFixture.season, tvFixture.episode, {});
     if (quarantined) {
       assert.deepEqual(tvRows, [], `${id}/${tvFixture.id}: quarantined TV provider returned content`);
       continue;
     }
-    if (id === 'coflix' && (!Array.isArray(tvRows) || tvRows.length === 0)) {
-      const layers = await debugWrapperChain(provider.getStreams, tvArgs);
-      console.error(`COFLIX_WRAPPER_CHAIN=${JSON.stringify(layers)}`);
-      fetchTrace.length = 0;
-      await provider.getStreams(...tvArgs).catch?.(() => {});
-    }
     assertSafeRows(id, tvFixture.id, tvRows, 'TV');
   }
-  console.log('VF catalogue recovery tests passed with current routes, content-proven HLS, scoped publication quarantine migration, and configured safety quarantines');
+  resetProviderGlobal();
+  console.log('VF catalogue recovery tests passed with isolated provider runtimes, current routes, content-proven HLS, scoped publication quarantine migration, and configured safety quarantines');
 })().catch((error) => { console.error(error); process.exit(1); });
