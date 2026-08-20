@@ -71,6 +71,17 @@ tasks=$("$MOBILE_ROOT/gradlew" -p "$MOBILE_ROOT" :composeApp:tasks --all -Pnuvio
 MOBILE_TASK=$(printf '%s\n' "$tasks" | awk 'tolower($1) ~ /connected.*device.*test/ {print $1; exit}')
 if [[ -z "${MOBILE_TASK:-}" ]]; then MOBILE_TASK=$(printf '%s\n' "$tasks" | awk 'tolower($1) ~ /device.*test/ && tolower($0) ~ /connected/ {print $1; exit}'); fi
 if [[ -z "${MOBILE_TASK:-}" ]]; then echo "Unable to resolve NuvioMobile connected device-test task" >&2; exit 97; fi
+
+# composeApp owns the device-test runtime, but the actual launcher belongs to the
+# official androidApp module. Install that real debug application once per warm
+# emulator so frontend evidence observes Nuvio itself instead of a test package.
+"$MOBILE_ROOT/gradlew" -p "$MOBILE_ROOT" :androidApp:installFullDebug -Pnuvio.android.distribution=full --console=plain || exit $?
+if ! adb shell pm path com.nuviodebug.com >/dev/null 2>&1; then
+  echo "Official NuvioMobile debug application com.nuviodebug.com is not installed" >&2
+  exit 98
+fi
+echo "FIELD_NATIVE_MOBILE_APP_INSTALLED package=com.nuviodebug.com variant=fullDebug"
+
 mkdir -p "$EVIDENCE_ROOT"
 echo "Resolved NuvioMobile task once for corpus suite: $MOBILE_TASK"
 echo "FIELD_NATIVE_CORPUS_MOBILE_PROFILE fixtures=${#FIXTURES[@]} provider=${TARGET_PROVIDER:-all} configured_acceptance_provider_scope=$CONFIGURED_ACCEPTANCE_PROVIDER_SCOPE manifest=$TARGET_MANIFEST player_probes=$PLAYER_PROBES require_reader_success=$REQUIRE_READER_SUCCESS reader_acceptance=$READER_ACCEPTANCE primary_stream_scope=$PRIMARY_STREAM_SCOPE regression_stream_scope=$REGRESSION_STREAM_SCOPE reuse_avd=true reuse_gradle_daemon=true full_backend_evidence=true repository_http_evidence=true frontend_timeline=true official_repository_loading=true local_manifest=$ALLOW_LOCAL_MANIFEST"
