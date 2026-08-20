@@ -15,6 +15,7 @@ REPOSITORY_HTTP_INSTRUMENTER="${NIAKVIO}/scripts/instrument_native_repository_ht
 REQUEST_CONTRACT="${NIAKVIO}/scripts/augment_native_corpus_request_contract.py"
 PROVIDER_LOADING="${NIAKVIO}/scripts/augment_native_provider_loading.py"
 REPOSITORY_RESOLVER="${NIAKVIO}/scripts/resolve_native_repository.sh"
+LAB_TRANSPORT="${NIAKVIO}/scripts/configure_native_android_lab_transport.py"
 FRONTEND_CAPTURE="${NIAKVIO}/scripts/capture_native_device_frontend.sh"
 FRONTEND_WATCHER="${NIAKVIO}/scripts/watch_native_device_frontend.sh"
 EVIDENCE_ROOT="${WORKSPACE}/native-evidence/tv"
@@ -64,6 +65,7 @@ PROVIDER_ARGS=()
 if [[ -n "$TARGET_PROVIDER" && "$TARGET_PROVIDER" != "all" && "$TARGET_PROVIDER" != "fixture" ]]; then PROVIDER_ARGS=(--provider "$TARGET_PROVIDER"); fi
 
 mkdir -p "$EVIDENCE_ROOT"
+python3 "$LAB_TRANSPORT" "$TV_ROOT/app/src/androidTest/AndroidManifest.xml" || exit $?
 python3 "$INSTRUMENTER" tv "$TV_ROOT" || exit $?
 python3 "$REPOSITORY_HTTP_INSTRUMENTER" tv "$TV_ROOT" || exit $?
 
