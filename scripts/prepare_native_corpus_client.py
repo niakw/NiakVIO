@@ -5,16 +5,23 @@ This intentionally wraps the existing corpus generator instead of duplicating it
 runtime contract. Provider/runtime failures are observations; the generated test
 only fails when the corpus itself cannot be constructed/traversed.
 
-Targeted reader runs may select another in-repository manifest (for example the
-currently deployed playback hotfix). Raw GitHub filenames from that manifest are
-resolved back to the exact local provider bundle so the lab executes the same code
-without downloading mutable remote content during preparation.
+Targeted reader runs may select another in-repository manifest. Raw GitHub
+filenames from that manifest are resolved back to the exact local provider bundle
+so the lab executes the same code without downloading mutable remote content.
+
+Before any provider is staged, the checkout is materialized through the same
+runtime-profile + published-override pipeline used for publication. This is a
+critical Brain/lab boundary: native readers must exercise the JavaScript produced
+by the current repair rules, not stale provider bundles committed before those
+rules changed. A checkout-local sentinel makes the operation once-per-job while
+all subsequent fixture restages reuse the exact same materialized transaction.
 """
 from __future__ import annotations
 
 import argparse
 import json
 import shutil
+import subprocess
 import sys
 from pathlib import Path
 from urllib.parse import urlparse
@@ -23,6 +30,28 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 import prepare_native_corpus_validation as corpus  # noqa: E402
 import native_player_diagnostics_codegen as reader_diag  # noqa: E402
+
+MATERIALIZED_SENTINEL = ROOT / ".native-provider-overrides-materialized"
+
+
+def ensure_materialized_provider_transaction() -> None:
+    """Apply the current Brain/runtime repair transaction before native staging.
+
+    Each GitHub Actions job owns an isolated checkout, so a simple sentinel is
+    sufficient and deliberately avoids re-running the ~60-provider materializer
+    once per representative fixture. The sentinel is written only after both
+    commands succeed; a failed materialization therefore remains fail-closed.
+    """
+    if MATERIALIZED_SENTINEL.is_file():
+        return
+    commands = (
+        [sys.executable, str(ROOT / "scripts/build_provider_runtime_profiles.py")],
+        [sys.executable, str(ROOT / "scripts/reapply_published_overrides.py")],
+    )
+    for command in commands:
+        subprocess.run(command, cwd=ROOT, check=True)
+    MATERIALIZED_SENTINEL.write_text("materialized\n", encoding="utf-8")
+    print("FIELD_NATIVE_PROVIDER_TRANSACTION_MATERIALIZED source=brain-overrides status=ok")
 
 
 def _manifest_path(value: str | Path) -> Path:
@@ -70,6 +99,9 @@ def _provider_source(filename: str) -> Path:
 
 
 def manifest_providers(manifest_path: str | Path) -> list[dict]:
+    # Materialize before reading the manifest because reapply_published_overrides
+    # may update both provider filenames and their manifest references.
+    ensure_materialized_provider_transaction()
     manifest_file = _manifest_path(manifest_path)
     data = json.loads(manifest_file.read_text(encoding="utf-8"))
     providers: list[dict] = []
