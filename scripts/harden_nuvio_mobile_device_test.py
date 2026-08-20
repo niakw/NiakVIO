@@ -1,13 +1,9 @@
 #!/usr/bin/env python3
-"""Harden a prepared NuvioMobile Android device-test workspace.
+"""Harden a prepared NuvioMobile Android device-test workspace for test execution only.
 
-The native lab preparation intentionally modifies a pinned upstream checkout.
-This helper keeps infrastructure-only Android requirements in one place:
-- resolve duplicate libc++_shared.so packaging in instrumentation APKs;
-- disable Sentry auto-init in the test process so no DSN is required;
-- enable host-served local_candidate HTTP only for the instrumentation APK.
-
-It is idempotent and tolerant of whitespace changes in the prepared Gradle block.
+This helper may resolve build/test-process requirements (duplicate libc++ packaging and
+Sentry auto-init) but it must never relax playback/network policy. The human UX reader
+lab inherits the accepted Nuvio application's production transport conditions exactly.
 """
 from __future__ import annotations
 
@@ -15,7 +11,7 @@ import argparse
 import re
 from pathlib import Path
 
-from configure_native_android_lab_transport import configure_manifest
+from configure_native_android_lab_transport import validate_manifest
 
 
 def harden(repo: Path) -> None:
@@ -62,14 +58,16 @@ def harden(repo: Path) -> None:
 ''',
         encoding="utf-8",
     )
-    configure_manifest(test_manifest)
+    validate_manifest(test_manifest)
 
     final = build.read_text(encoding="utf-8")
     if final.count(packaging_line) != 1:
         raise SystemExit(
             f"unexpected libc++ shared packaging rule count={final.count(packaging_line)}"
         )
-    print("NuvioMobile device-test hardening applied")
+    if "usesCleartextTraffic" in test_manifest.read_text(encoding="utf-8"):
+        raise SystemExit("device-test hardening must not relax Android cleartext policy")
+    print("NuvioMobile device-test build hardening applied; playback network policy unchanged")
 
 
 def main() -> int:
