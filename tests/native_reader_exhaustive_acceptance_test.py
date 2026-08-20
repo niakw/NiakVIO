@@ -29,10 +29,20 @@ sampled = mod.reader_source(source("tv"), "tv", 137, 2)
 assert "rows.take(2).forEachIndexed" in sampled
 assert "rows.take(3).forEachIndexed" in sampled
 
-# Curated fixture scope remains available for a manual/targeted diagnosis.
+# Curated fixture scope remains available for a manual/targeted diagnosis. Its
+# ordering is deliberate: the PR-bounded lab consumes the first canaries exactly
+# in this order, while deep acceptance below still traverses the whole manifest.
 selected_fixture = mod.select_providers("manifest.json", "sinners-2025", "fixture")
 fixture_ids = [str(row["id"]).casefold() for row in selected_fixture]
-assert fixture_ids == ["moviesdrive", "moviesmod", "movieshunt", "4khdhub"], fixture_ids
+assert fixture_ids == [
+    "cineby",
+    "movieshunt",
+    "videasy",
+    "vixsrc",
+    "moviesdrive",
+    "moviesmod",
+    "4khdhub",
+], fixture_ids
 assert "4khdhubnew" not in fixture_ids
 
 # Acceptance scope is intentionally exhaustive and includes inactive providers.
