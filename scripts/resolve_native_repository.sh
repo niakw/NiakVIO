@@ -91,17 +91,36 @@ PY
   NIAKVIO_LOCAL_REPOSITORY_PID=$!
   NIAKVIO_LOCAL_REPOSITORY_LOG="$server_log"
 
+  # Probe loopback with http.client rather than urllib.request. GitHub-hosted
+  # macOS runners may expose HTTP(S)_PROXY/ALL_PROXY variables; urllib can honor
+  # those variables even for a loopback URL and make a healthy local server look
+  # unavailable. http.client opens 127.0.0.1 directly and therefore validates the
+  # exact transport the Desktop client needs without consulting proxy settings.
   local ready=0
   local attempt
   for attempt in $(seq 1 40); do
+    if ! kill -0 "$NIAKVIO_LOCAL_REPOSITORY_PID" 2>/dev/null; then
+      echo "FIELD_NATIVE_REPOSITORY_SOURCE_ERROR client=$client reason=local_server_exited cache_key=$content_key" >&2
+      cat "$server_log" >&2 2>/dev/null || true
+      rm -rf "$serve_root"
+      NIAKVIO_LOCAL_REPOSITORY_PID=""
+      return 2
+    fi
     if python3 - "$port" "$candidate_dir" <<'PY' >/dev/null 2>&1
-import sys, urllib.request
+import http.client
+import sys
+
 port = int(sys.argv[1])
 candidate = sys.argv[2]
-with urllib.request.urlopen(f"http://127.0.0.1:{port}/{candidate}/manifest.json", timeout=1.0) as response:
+connection = http.client.HTTPConnection("127.0.0.1", port, timeout=1.0)
+try:
+    connection.request("GET", f"/{candidate}/manifest.json", headers={"Connection": "close"})
+    response = connection.getresponse()
     if response.status != 200:
         raise SystemExit(1)
     response.read(64)
+finally:
+    connection.close()
 PY
     then
       ready=1
