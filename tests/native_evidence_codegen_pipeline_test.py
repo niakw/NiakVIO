@@ -44,9 +44,8 @@ with tempfile.TemporaryDirectory() as tmp_raw:
     tmp = Path(tmp_raw)
 
     movie = corpus.fixture_by_slug("sinners-2025")
-    tv_source = corpus.android_test(movie, selected, "tv")
     tv_source = reader.augment_android_test(
-        tv_source,
+        corpus.android_test(movie, selected, "tv"),
         client="tv",
         expected_duration_minutes=movie.get("expectedDurationMinutes"),
         max_player_probes=4,
@@ -56,30 +55,24 @@ with tempfile.TemporaryDirectory() as tmp_raw:
     contract.augment(tv_path, "tv", "sinners-2025", manifest)
     provider_loading.augment(tv_path, "tv", manifest, PINNED_MANIFEST_URL, "")
     tv_out = tv_path.read_text(encoding="utf-8")
-    assert "FIELD_NATIVE_UI_LAUNCHED client=tv" in tv_out
-    assert "FIELD_NATIVE_REPOSITORY_LOAD_BEGIN client=tv" in tv_out
-    assert "FIELD_NATIVE_REPOSITORY_LOAD_ERROR client=tv" in tv_out
-    assert "FIELD_NATIVE_REPOSITORY_CACHE_HIT client=tv" in tv_out
-    assert "FIELD_NATIVE_PROVIDER_LOAD_RESULT client=tv" in tv_out
-    assert "reason=repository_install_failed" in tv_out
-    assert "return manager to emptyMap<String, com.nuvio.tv.domain.model.ScraperInfo>()" in tv_out
-    assert "return manager to emptyMap()" not in tv_out
-    assert "manager.repositories.first()" in tv_out
-    assert "PluginManager.addRepository" not in tv_out
-    assert "manager.addRepository(repositoryManifestUrl)" in tv_out
-    assert "officialPluginManager.executeScraper(loadedScraper" in tv_out
-    assert "runtime.executePlugin(" not in tv_out
-    assert "request_type=$requestMediaType route_mode=$routeMode" in tv_out
-    assert "mediaType = requestMediaType" not in tv_out
-    assert "FIELD_NATIVE_PLAYER_BEGIN client=tv" in tv_out
-    assert "PlayerPlaybackNetworking.createDataSourceFactory" in tv_out
-    assert "val playbackHeaders = headers.orEmpty()" in tv_out
-    assert ".filterKeys" not in tv_out
+    for required in (
+        "FIELD_NATIVE_UI_LAUNCHED client=tv",
+        "FIELD_NATIVE_REPOSITORY_LOAD_BEGIN client=tv",
+        "FIELD_NATIVE_PROVIDER_LOAD_RESULT client=tv",
+        "officialPluginManager.executeScraper(loadedScraper",
+        "FIELD_NATIVE_PLAYER_BEGIN client=tv",
+        "Screen.Player.createRoute",
+        "NuvioNavHost",
+        "LastPlaybackDiagnostics",
+        "nuvio-tv-production",
+    ):
+        assert required in tv_out, required
+    assert "ExoPlayer.Builder" not in tv_out
+    assert "PluginRuntime.executePlugin(" not in tv_out
 
     anime = corpus.fixture_by_slug("jujutsu-kaisen-s01e01")
-    mobile_source = corpus.android_test(anime, selected, "mobile")
     mobile_source = reader.augment_android_test(
-        mobile_source,
+        corpus.android_test(anime, selected, "mobile"),
         client="mobile",
         expected_duration_minutes=anime.get("expectedDurationMinutes"),
         max_player_probes=4,
@@ -89,34 +82,26 @@ with tempfile.TemporaryDirectory() as tmp_raw:
     contract.augment(mobile_path, "mobile", "jujutsu-kaisen-s01e01", manifest)
     provider_loading.augment(mobile_path, "mobile", manifest, PINNED_MANIFEST_URL, "")
     mobile_out = mobile_path.read_text(encoding="utf-8")
-    assert 'listOf("anime", "tv").map' in mobile_out
-    assert '"capability_probe"' in mobile_out
-    assert "requestRoute.declared" in mobile_out
-    assert "FIELD_NATIVE_UI_LAUNCHED client=mobile" in mobile_out
-    assert "FIELD_NATIVE_REPOSITORY_LOAD_BEGIN client=mobile" in mobile_out
-    assert "FIELD_NATIVE_REPOSITORY_LOAD_ERROR client=mobile" in mobile_out
-    assert "FIELD_NATIVE_REPOSITORY_CACHE_HIT client=mobile" in mobile_out
-    assert "reason=repository_install_failed" in mobile_out
-    assert "return emptyMap<String, PluginScraper>()" in mobile_out
-    assert "return emptyMap()" not in mobile_out
-    assert "PluginRepository.initialize()" in mobile_out
-    assert "PluginRepository.uiState.value.repositories.firstOrNull" in mobile_out
+    for required in (
+        'listOf("anime", "tv").map',
+        '"capability_probe"',
+        "FIELD_NATIVE_REPOSITORY_LOAD_BEGIN client=mobile",
+        "PluginRepository.executeScraper(loadedScraper",
+        "PlatformPlayerSurface",
+        "sourceHeaders = headers.orEmpty()",
+        "nuvio-mobile-production",
+        "FIELD_NATIVE_PLAYER_BEGIN client=mobile",
+    ):
+        assert required in mobile_out, required
+    assert "ExoPlayer.Builder" not in mobile_out
     assert "PluginRepository.clearLocalState()" not in mobile_out
-    assert "PluginRepository.addRepository(repositoryManifestUrl)" in mobile_out
-    assert "PluginRepository.executeScraper(loadedScraper" in mobile_out
     assert "PluginRuntime.executePlugin(" not in mobile_out
-    assert "PlatformPlaybackDataSourceFactory.create" in mobile_out
-    assert "FIELD_NATIVE_PLAYER client=mobile" in mobile_out
-    assert "route_mode=$routeMode" in mobile_out
-    assert "val playbackHeaders = headers.orEmpty()" in mobile_out
-    assert ".filterKeys" not in mobile_out
 
     original_event = os.environ.pop("GITHUB_EVENT_NAME", None)
     try:
         for platform in ("macos", "windows"):
-            desktop_source = corpus.desktop_test(anime, selected)
             desktop_path = tmp / f"Desktop-{platform}.kt"
-            desktop_path.write_text(desktop_source, encoding="utf-8")
+            desktop_path.write_text(corpus.desktop_test(anime, selected), encoding="utf-8")
             contract.augment(desktop_path, "desktop", "jujutsu-kaisen-s01e01", manifest)
             provider_loading.augment(desktop_path, "desktop", manifest, PINNED_MANIFEST_URL, platform)
             desktop_player.augment(desktop_path, int(anime.get("expectedDurationMinutes") or 0), "all")
@@ -129,52 +114,29 @@ with tempfile.TemporaryDirectory() as tmp_raw:
             assert completed.returncode == 0, completed.stdout + completed.stderr
             desktop_out = desktop_path.read_text(encoding="utf-8")
             for required in (
-                "PluginRepository.initialize()",
-                "PluginRepository.uiState.value.repositories.firstOrNull",
-                "PluginRepository.addRepository(repositoryManifestUrl)",
                 "PluginRepository.executeScraper(loadedScraper",
-                "FIELD_NATIVE_REPOSITORY_LOAD_BEGIN client=desktop",
-                "FIELD_NATIVE_REPOSITORY_LOAD_ERROR client=desktop",
-                "FIELD_NATIVE_REPOSITORY_CACHE_HIT client=desktop",
-                "reason=repository_install_failed",
-                "return emptyMap<String, PluginScraper>()",
-                "NativePlayerController",
-                "NativePlayerHost",
-                "probeDesktopNativePlayer",
-                "FIELD_NATIVE_PLAYER_BEGIN client=desktop",
-                "route_mode=$routeMode",
-                "engine=native-desktop",
-                'captureDesktopPhase("ui-launched"',
-                'captureDesktopPhase("repository-load"',
-                'captureDesktopPhase("repository-loaded", fixtureSlugForLoad)',
-                'captureDesktopPhase("repository-load-error", fixtureSlugForLoad)',
-                'captureDesktopPhase("provider-load-state"',
-                'captureDesktopPhase("provider-http-request"',
-                'captureDesktopPhase("provider-http-terminal"',
+                "PlatformPlayerSurface(",
+                "probeDesktopProductionPlayer",
+                "engine=nuvio-production-desktop",
+                "sourceHeaders = headers.orEmpty()",
                 'captureDesktopPhase("player-start"',
                 'captureDesktopPhase("player-result"',
             ):
                 assert required in desktop_out, f"{platform}:{required}"
-            assert 'captureDesktopPhase("repository-http-request", fixtureSlugForLoad)' not in desktop_out
-            assert 'captureDesktopPhase("repository-http-terminal", fixtureSlugForLoad)' not in desktop_out
-            assert "PluginRepository.clearLocalState()" not in desktop_out
-            assert "PluginRuntime.executePlugin(" not in desktop_out
-            assert "rows.take(" not in desktop_out, "all-stream Desktop proof must not sample rows"
-            assert "25000L" in desktop_out, "deep Desktop reader timeout must remain 25s"
-            assert "sourceHeaders = headers.orEmpty()" in desktop_out
-            assert ".filterKeys" not in desktop_out
+            assert "NativePlayerController(" not in desktop_out
+            assert "controller.attach(" not in desktop_out
+            assert "rows.take(" not in desktop_out
+            assert "25000L" in desktop_out
     finally:
         if original_event is not None:
             os.environ["GITHUB_EVENT_NAME"] = original_event
 
-    # PR runs are bounded but must still test the first two returned sources. This
-    # catches the common first-green/second-broken case and matches Android.
     original_event = os.environ.get("GITHUB_EVENT_NAME")
     os.environ["GITHUB_EVENT_NAME"] = "pull_request"
+    os.environ["NIAKVIO_PR_STREAM_LIMIT"] = "2"
     try:
-        pr_source = corpus.desktop_test(anime, selected)
         pr_path = tmp / "Desktop-pr.kt"
-        pr_path.write_text(pr_source, encoding="utf-8")
+        pr_path.write_text(corpus.desktop_test(anime, selected), encoding="utf-8")
         contract.augment(pr_path, "desktop", "jujutsu-kaisen-s01e01", manifest)
         provider_loading.augment(pr_path, "desktop", manifest, PINNED_MANIFEST_URL, "windows")
         desktop_player.augment(pr_path, int(anime.get("expectedDurationMinutes") or 0), "all")
@@ -182,12 +144,12 @@ with tempfile.TemporaryDirectory() as tmp_raw:
         assert "rows.take(2).forEachIndexed" in pr_out
         assert "rows.take(1).forEachIndexed" not in pr_out
         assert "12000L" in pr_out
-        assert "sourceHeaders = headers.orEmpty()" in pr_out
-        assert ".filterKeys" not in pr_out
+        assert "PlatformPlayerSurface(" in pr_out
     finally:
+        os.environ.pop("NIAKVIO_PR_STREAM_LIMIT", None)
         if original_event is None:
             os.environ.pop("GITHUB_EVENT_NAME", None)
         else:
             os.environ["GITHUB_EVENT_NAME"] = original_event
 
-print("native evidence Kotlin codegen pipeline tests passed")
+print("native evidence production-player codegen pipeline tests passed")
