@@ -88,14 +88,16 @@ for fixture in "${FIXTURES[@]}"; do
 
   FRONT_DIR="${EVIDENCE_ROOT}/${fixture}"
   FRONT_LOG="${WORKSPACE}/tv-native-frontend-${fixture}.log"
+  GRADLE_LOG="${FRONT_DIR}/gradle.log"
   mkdir -p "$FRONT_DIR"
-  rm -f "$FRONT_LOG"
+  rm -f "$FRONT_LOG" "$GRADLE_LOG"
   adb logcat -c || true
   bash "$FRONTEND_WATCHER" tv "$FRONT_DIR" "$FRONTEND_CAPTURE" > "$FRONT_LOG" 2>&1 &
   WATCH_PID=$!
 
   RUNTIME_STATUS=0
-  "$TV_ROOT/gradlew" -p "$TV_ROOT" :app:connectedFullDebugAndroidTest --console=plain || RUNTIME_STATUS=$?
+  "$TV_ROOT/gradlew" -p "$TV_ROOT" :app:connectedFullDebugAndroidTest --console=plain 2>&1 | tee "$GRADLE_LOG"
+  RUNTIME_STATUS=${PIPESTATUS[0]}
   sleep 1
   kill "$WATCH_PID" 2>/dev/null || true
   wait "$WATCH_PID" 2>/dev/null || true
