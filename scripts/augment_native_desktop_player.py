@@ -81,8 +81,11 @@ HELPERS = r'''
             val controller = controllerRef.get()
                 ?: return DesktopNativePlayerProbe("error", "NativePlayerController", "NO_CONTROLLER", 0, "player_setup", null, null)
             controller.attach(
+                // Observational-purity contract: the lab cannot make a source easier
+                // to play than Nuvio would receive it. URL and provider headers are
+                // passed byte-for-byte/value-for-value to the official controller.
                 sourceUrl = url,
-                sourceHeaders = headers.orEmpty().filterKeys { !it.equals("Range", ignoreCase = true) },
+                sourceHeaders = headers.orEmpty(),
                 playWhenReady = true,
                 initialPositionMs = 0L,
                 decoderPriority = 1,
@@ -148,7 +151,10 @@ def augment(path: Path, expected_minutes: int, stream_scope: str) -> None:
         return
     pr_bounded = os.environ.get("GITHUB_EVENT_NAME", "").strip().lower() == "pull_request"
     if pr_bounded and stream_scope == "all":
-        stream_scope = "1"
+        # Match Android's bounded PR proof: two returned rows are enough to expose
+        # the common "first source works, second source breaks" class without
+        # turning every PR into the trusted exhaustive run.
+        stream_scope = "2"
     reader_timeout_ms = 12_000 if pr_bounded else 25_000
     text = replace_once(text, IMPORT_ANCHOR, IMPORT_ANCHOR + IMPORTS, "imports")
     helpers = HELPERS.replace("__READER_TIMEOUT_MS__", str(reader_timeout_ms))
