@@ -12,8 +12,6 @@ capture_once() {
   local phase="$1"
   if [[ -n "${SEEN[$phase]:-}" ]]; then return 0; fi
   SEEN[$phase]=1
-  # Do not depend on the executable bit of a checked-out helper. GitHub artifact
-  # and patch paths can legitimately lose it; the helper is a Bash script.
   bash "$CAPTURE" "$CLIENT" "$phase" "$OUT_DIR" || {
     echo "FIELD_NATIVE_FRONTEND_ERROR client=$CLIENT phase=$phase reason=capture_failed"
     return 0
@@ -22,11 +20,10 @@ capture_once() {
 
 capture_http_terminal() {
   local scope="$1"
-  # Canonical phase: an HTTP exchange is complete after either a response or a
-  # structured error. Keep the historical *-http-response capture as an alias
-  # so existing evidence consumers remain backward-compatible.
+  # One canonical screenshot is enough. The completeness reader still accepts the
+  # historical *-http-response alias when consuming older artifacts, but creating
+  # both snapshots doubles synchronous ADB work and can backlog current logcat.
   capture_once "${scope}-http-terminal"
-  capture_once "${scope}-http-response"
 }
 
 # Watch only NiakVIO's structured/sanitized tags. Official client debug tags may
