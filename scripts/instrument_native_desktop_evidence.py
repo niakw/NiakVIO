@@ -44,6 +44,26 @@ def main() -> int:
         "addModule(FetchBridge(scraperId, mediaType))",
         "bridge ownership",
     )
+
+    # Nuvio intentionally turns a thrown getStreams() into [] inside QuickJS. Keep
+    # that production behavior unchanged, but surface the swallowed reason to the
+    # lab in sanitized form so an empty provider result is diagnosable evidence.
+    plugin_error_line = evidence_write(
+        '"FIELD_NATIVE_PLUGIN_ERROR client=desktop provider=$scraperId request_type=${mediaType.lowercase()} error=$safePluginError"'
+    )
+    runtime_text = replace_once(
+        runtime_text,
+        '''                val callCode = """\n                    (async function() {\n''',
+        f'''                function("__niakvio_capture_plugin_error") {{ args: Array<Any?> ->\n                    val rawPluginError = args.getOrNull(0)?.toString().orEmpty()\n                    val safePluginError = rawPluginError\n                        .replace(Regex("https?://\\\\S+", RegexOption.IGNORE_CASE), "<url>")\n                        .replace(Regex("(?i)(authorization|cookie|token|secret)\\\\s*[:=]\\\\s*\\\\S+"), "$1=<redacted>")\n                        .replace(Regex("\\\\s+"), "_")\n                        .take(360)\n                    {plugin_error_line}\n                    null\n                }}\n\n                val callCode = """\n                    (async function() {{\n''',
+        "plugin error capture binding",
+    )
+    runtime_text = replace_once(
+        runtime_text,
+        '''                            console.error("getStreams error:", e && e.message ? e.message : e, e && e.stack ? e.stack : "");\n                            __capture_result(JSON.stringify([]));\n''',
+        '''                            console.error("getStreams error:", e && e.message ? e.message : e, e && e.stack ? e.stack : "");\n                            __niakvio_capture_plugin_error(String(e && e.message ? e.message : e));\n                            __capture_result(JSON.stringify([]));\n''',
+        "plugin error JS callback",
+    )
+
     bridge_text = replace_once(
         bridge_text,
         "internal class FetchBridge : HostModule {",
