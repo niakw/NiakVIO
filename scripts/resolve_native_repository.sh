@@ -16,10 +16,6 @@ probe_native_repository_loopback() {
   local use_privileged_client="${3:-0}"
   local python_args=(python3 - "$port" "$candidate_dir")
 
-  # GitHub-hosted macOS 15 runners can subject agent-launched processes to Local
-  # Network Privacy even for a loopback repository. Root processes are exempt on
-  # macOS; use that exemption only for this CI-local readiness request. Android,
-  # Windows and normal user execution remain completely unprivileged.
   if [[ "$use_privileged_client" == "1" ]]; then
     sudo -n "${python_args[@]}" <<'PY'
 import http.client
@@ -89,8 +85,10 @@ resolve_native_repository() {
   fi
 
   # Generated, modified, or nested manifests are materialized as a root repository
-  # and served only on the runner's loopback bridge. Android emulators reach the
-  # host at 10.0.2.2; Desktop uses 127.0.0.1.
+  # and served only on the runner bridge. Android emulators must reach the host at
+  # 10.0.2.2, so they bind all interfaces. Desktop only consumes 127.0.0.1 and is
+  # deliberately bound to loopback; this avoids macOS Local Network Privacy treating
+  # an otherwise local-only CI repository as a LAN listener.
   #
   # IMPORTANT: the URL path is content-addressed from manifest + every provider
   # byte. A persisted AVD/profile may therefore reuse the cache for the exact same
@@ -134,46 +132,50 @@ PY
   NIAKVIO_LOCAL_REPOSITORY_ROOT="$serve_root"
   NIAKVIO_LOCAL_REPOSITORY_KEY="$content_key"
 
+  local bind_host="0.0.0.0"
+  if [[ "$client" == "desktop" && ( "$device_host" == "127.0.0.1" || "$device_host" == "localhost" ) ]]; then
+    bind_host="127.0.0.1"
+  fi
+
   rm -f "$server_log"
-  python3 -m http.server "$port" --bind 0.0.0.0 --directory "$serve_root" >"$server_log" 2>&1 &
+  python3 -m http.server "$port" --bind "$bind_host" --directory "$serve_root" >"$server_log" 2>&1 &
   NIAKVIO_LOCAL_REPOSITORY_PID=$!
   NIAKVIO_LOCAL_REPOSITORY_LOG="$server_log"
 
-  local privileged_probe=0
+  # Readiness always starts through the same unprivileged loopback path the client
+  # should use. On macOS CI only, sudo is a bounded fallback after several ordinary
+  # attempts; it is never required just because the runner happens to be macOS.
+  local allow_privileged_probe=0
   if [[ "$client" == "desktop" && "$(uname -s)" == "Darwin" && "${CI:-}" == "true" ]]; then
-    if ! sudo -n true >/dev/null 2>&1; then
-      echo "FIELD_NATIVE_REPOSITORY_SOURCE_ERROR client=$client reason=macos_local_network_privilege_unavailable cache_key=$content_key" >&2
-      kill "$NIAKVIO_LOCAL_REPOSITORY_PID" 2>/dev/null || true
-      rm -rf "$serve_root"
-      return 2
+    if sudo -n true >/dev/null 2>&1; then
+      allow_privileged_probe=1
     fi
-    privileged_probe=1
-    NIAKVIO_LOCAL_REPOSITORY_PRIVILEGED_CLIENT="1"
   fi
 
-  # Probe loopback with http.client rather than urllib.request. GitHub-hosted
-  # runners may expose HTTP(S)_PROXY/ALL_PROXY variables, and macOS 15 runner
-  # agents may additionally be gated by Local Network Privacy. The macOS CI case
-  # uses the same root exemption that the official Desktop test JVM uses below;
-  # this changes only runner privileges, never the repository protocol or route.
   local ready=0
   local attempt
   for attempt in $(seq 1 40); do
     if ! kill -0 "$NIAKVIO_LOCAL_REPOSITORY_PID" 2>/dev/null; then
-      echo "FIELD_NATIVE_REPOSITORY_SOURCE_ERROR client=$client reason=local_server_exited cache_key=$content_key" >&2
+      echo "FIELD_NATIVE_REPOSITORY_SOURCE_ERROR client=$client reason=local_server_exited cache_key=$content_key bind_host=$bind_host" >&2
       cat "$server_log" >&2 2>/dev/null || true
       rm -rf "$serve_root"
       NIAKVIO_LOCAL_REPOSITORY_PID=""
       return 2
     fi
-    if probe_native_repository_loopback "$port" "$candidate_dir" "$privileged_probe" >/dev/null 2>&1; then
+    if probe_native_repository_loopback "$port" "$candidate_dir" 0 >/dev/null 2>&1; then
       ready=1
+      break
+    fi
+    if [[ "$allow_privileged_probe" == "1" && "$attempt" -ge 5 ]] \
+      && probe_native_repository_loopback "$port" "$candidate_dir" 1 >/dev/null 2>&1; then
+      ready=1
+      NIAKVIO_LOCAL_REPOSITORY_PRIVILEGED_CLIENT="1"
       break
     fi
     sleep 0.2
   done
   if [[ "$ready" != "1" ]]; then
-    echo "FIELD_NATIVE_REPOSITORY_SOURCE_ERROR client=$client reason=local_server_not_ready cache_key=$content_key privileged_probe=$privileged_probe" >&2
+    echo "FIELD_NATIVE_REPOSITORY_SOURCE_ERROR client=$client reason=local_server_not_ready cache_key=$content_key bind_host=$bind_host privileged_fallback=$allow_privileged_probe" >&2
     cat "$server_log" >&2 2>/dev/null || true
     kill "$NIAKVIO_LOCAL_REPOSITORY_PID" 2>/dev/null || true
     rm -rf "$serve_root"
@@ -182,7 +184,7 @@ PY
 
   NIAKVIO_RESOLVED_MANIFEST_URL="http://${device_host}:${port}/${candidate_dir}/manifest.json"
   NIAKVIO_RESOLVED_ALLOW_LOCAL="1"
-  echo "FIELD_NATIVE_REPOSITORY_SOURCE client=$client mode=local_candidate local=1 port=$port cache_key=$content_key privileged_client=$NIAKVIO_LOCAL_REPOSITORY_PRIVILEGED_CLIENT"
+  echo "FIELD_NATIVE_REPOSITORY_SOURCE client=$client mode=local_candidate local=1 port=$port bind_host=$bind_host cache_key=$content_key privileged_client=$NIAKVIO_LOCAL_REPOSITORY_PRIVILEGED_CLIENT"
 }
 
 cleanup_native_repository() {
