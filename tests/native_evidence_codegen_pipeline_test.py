@@ -26,6 +26,7 @@ def load(name: str, relative: str):
 
 corpus = load("native_corpus_validation", "scripts/prepare_native_corpus_validation.py")
 reader = load("native_player_diag_codegen", "scripts/native_player_diagnostics_codegen.py")
+reader_finalizer = load("native_reader_source_finalizer", "scripts/finalize_native_android_reader_source.py")
 contract = load("native_request_contract", "scripts/augment_native_corpus_request_contract.py")
 provider_loading = load("native_provider_loading", "scripts/augment_native_provider_loading.py")
 desktop_player = load("native_desktop_player", "scripts/augment_native_desktop_player.py")
@@ -50,6 +51,7 @@ with tempfile.TemporaryDirectory() as tmp_raw:
         expected_duration_minutes=movie.get("expectedDurationMinutes"),
         max_player_probes=4,
     )
+    tv_source = reader_finalizer.finalize_source(tv_source, "tv")
     tv_path = tmp / "Tv.kt"
     tv_path.write_text(tv_source, encoding="utf-8")
     contract.augment(tv_path, "tv", "sinners-2025", manifest)
@@ -60,13 +62,17 @@ with tempfile.TemporaryDirectory() as tmp_raw:
         "FIELD_NATIVE_REPOSITORY_LOAD_BEGIN client=tv",
         "FIELD_NATIVE_PROVIDER_LOAD_RESULT client=tv",
         "officialPluginManager.executeScraper(loadedScraper",
+        "FIELD_NATIVE_PLAYER_ENTRY client=tv",
         "FIELD_NATIVE_PLAYER_BEGIN client=tv",
+        "request_type=$requestMediaType route_mode=$routeMode index=$index",
         "Screen.Player.createRoute",
         "NuvioNavHost",
         "LastPlaybackDiagnostics",
         "nuvio-tv-production",
     ):
         assert required in tv_out, required
+    assert tv_out.count("FIELD_NATIVE_PLAYER_ENTRY client=tv") == 1
+    assert tv_out.count("FIELD_NATIVE_PLAYER_BEGIN client=tv") == 1
     assert "ExoPlayer.Builder" not in tv_out
     assert "PluginRuntime.executePlugin(" not in tv_out
 
@@ -77,6 +83,7 @@ with tempfile.TemporaryDirectory() as tmp_raw:
         expected_duration_minutes=anime.get("expectedDurationMinutes"),
         max_player_probes=4,
     )
+    mobile_source = reader_finalizer.finalize_source(mobile_source, "mobile")
     mobile_path = tmp / "Mobile.kt"
     mobile_path.write_text(mobile_source, encoding="utf-8")
     contract.augment(mobile_path, "mobile", "jujutsu-kaisen-s01e01", manifest)
@@ -90,9 +97,13 @@ with tempfile.TemporaryDirectory() as tmp_raw:
         "PlatformPlayerSurface",
         "sourceHeaders = headers.orEmpty()",
         "nuvio-mobile-production",
+        "FIELD_NATIVE_PLAYER_ENTRY client=mobile",
         "FIELD_NATIVE_PLAYER_BEGIN client=mobile",
+        'getLaunchIntentForPackage("com.nuviodebug.com")',
     ):
         assert required in mobile_out, required
+    assert mobile_out.count("FIELD_NATIVE_PLAYER_ENTRY client=mobile") == 1
+    assert mobile_out.count("FIELD_NATIVE_PLAYER_BEGIN client=mobile") == 1
     assert "ExoPlayer.Builder" not in mobile_out
     assert "PluginRepository.clearLocalState()" not in mobile_out
     assert "PluginRuntime.executePlugin(" not in mobile_out
@@ -117,7 +128,7 @@ with tempfile.TemporaryDirectory() as tmp_raw:
                 "PluginRepository.executeScraper(loadedScraper",
                 "PlatformPlayerSurface(",
                 "probeDesktopProductionPlayer",
-                "engine=nuvio-production-desktop",
+                "engine=nuvio-desktop-production",
                 "sourceHeaders = headers.orEmpty()",
                 'captureDesktopPhase("player-start"',
                 'captureDesktopPhase("player-result"',
@@ -145,6 +156,7 @@ with tempfile.TemporaryDirectory() as tmp_raw:
         assert "rows.take(1).forEachIndexed" not in pr_out
         assert "12000L" in pr_out
         assert "PlatformPlayerSurface(" in pr_out
+        assert "engine=nuvio-desktop-production" in pr_out
     finally:
         os.environ.pop("NIAKVIO_PR_STREAM_LIMIT", None)
         if original_event is None:
