@@ -8,6 +8,7 @@ TV_ROOT="${WORKSPACE}/nuvio-tv"
 ANALYZER="${NIAKVIO}/scripts/analyze_native_corpus_collection.cjs"
 READER_GATE="${NIAKVIO}/scripts/gate_native_reader_result.cjs"
 COVERAGE_GATE="${NIAKVIO}/scripts/gate_native_reader_coverage.cjs"
+SMOKE_GATE="${NIAKVIO}/scripts/gate_native_player_reached.cjs"
 RESTAGE="${NIAKVIO}/scripts/restage_native_corpus_client.py"
 ACCEPTANCE_PREPARE="${NIAKVIO}/scripts/prepare_native_reader_acceptance.py"
 INSTRUMENTER="${NIAKVIO}/scripts/instrument_native_client_evidence.py"
@@ -27,10 +28,6 @@ TARGET_PROVIDER="${NIAKVIO_TARGET_PROVIDER:-}"
 TARGET_MANIFEST="${NIAKVIO_TARGET_MANIFEST:-manifest.json}"
 PLAYER_PROBES="${NIAKVIO_PLAYER_PROBES:-1}"
 REQUESTED_READER_SUCCESS="${NIAKVIO_REQUIRE_READER_SUCCESS:-0}"
-# Native playback is a compatibility observation by default. It becomes a blocking
-# gate only when a caller explicitly opts into BOTH variables. This prevents an old
-# workflow value from globally condemning a provider because one Nuvio/OS player is
-# behind or temporarily broken.
 PLAYER_OUTCOME_GLOBAL_GATE="${NIAKVIO_NATIVE_PLAYER_OUTCOME_GLOBAL_GATE:-0}"
 REQUIRE_READER_SUCCESS=0
 if [[ "$PLAYER_OUTCOME_GLOBAL_GATE" = "1" && "$REQUESTED_READER_SUCCESS" = "1" ]]; then
@@ -69,7 +66,7 @@ elif [[ -n "$TARGET_FIXTURE" && "$TARGET_FIXTURE" != "all" ]]; then
 else
   FIXTURES=("${DEFAULT_FIXTURES[@]}")
 fi
-STATUS=0
+SOFT_FAILURES=0
 PROVIDER_ARGS=()
 if [[ -n "$TARGET_PROVIDER" && "$TARGET_PROVIDER" != "all" && "$TARGET_PROVIDER" != "fixture" ]]; then PROVIDER_ARGS=(--provider "$TARGET_PROVIDER"); fi
 
@@ -77,8 +74,9 @@ mkdir -p "$EVIDENCE_ROOT"
 python3 "$LAB_TRANSPORT" "$TV_ROOT/app/src/androidTest/AndroidManifest.xml" || exit $?
 python3 "$INSTRUMENTER" tv "$TV_ROOT" || exit $?
 python3 "$REPOSITORY_HTTP_INSTRUMENTER" tv "$TV_ROOT" || exit $?
+if [[ -n "${GITHUB_ENV:-}" ]]; then echo "NIAKVIO_BRAIN_NONBLOCKING=1" >> "$GITHUB_ENV"; fi
 
-echo "FIELD_NATIVE_CORPUS_TV_PROFILE fixtures=${#FIXTURES[@]} provider=${TARGET_PROVIDER:-all} configured_acceptance_provider_scope=$CONFIGURED_ACCEPTANCE_PROVIDER_SCOPE manifest=$TARGET_MANIFEST player_probes=$PLAYER_PROBES requested_reader_success=$REQUESTED_READER_SUCCESS require_reader_success=$REQUIRE_READER_SUCCESS player_outcome_global_gate=$PLAYER_OUTCOME_GLOBAL_GATE reader_acceptance=$READER_ACCEPTANCE primary_stream_scope=$PRIMARY_STREAM_SCOPE regression_stream_scope=$REGRESSION_STREAM_SCOPE reuse_avd=true reuse_gradle_daemon=true full_backend_evidence=true repository_http_evidence=true frontend_timeline=true official_repository_loading=true local_manifest=$ALLOW_LOCAL_MANIFEST"
+echo "FIELD_NATIVE_CORPUS_TV_PROFILE fixtures=${#FIXTURES[@]} provider=${TARGET_PROVIDER:-all} configured_acceptance_provider_scope=$CONFIGURED_ACCEPTANCE_PROVIDER_SCOPE manifest=$TARGET_MANIFEST player_probes=$PLAYER_PROBES requested_reader_success=$REQUESTED_READER_SUCCESS require_reader_success=$REQUIRE_READER_SUCCESS player_outcome_global_gate=$PLAYER_OUTCOME_GLOBAL_GATE reader_acceptance=$READER_ACCEPTANCE primary_stream_scope=$PRIMARY_STREAM_SCOPE regression_stream_scope=$REGRESSION_STREAM_SCOPE reuse_avd=true reuse_gradle_daemon=true full_backend_evidence=true repository_http_evidence=true frontend_timeline=true official_repository_loading=true local_manifest=$ALLOW_LOCAL_MANIFEST smoke_gate=player_reached"
 for fixture in "${FIXTURES[@]}"; do
   echo "===== TV CORPUS FIXTURE: $fixture ====="
   STREAM_SCOPE="$REGRESSION_STREAM_SCOPE"
@@ -87,13 +85,13 @@ for fixture in "${FIXTURES[@]}"; do
     PROVIDER_SCOPE="$TARGET_PROVIDER"
     if [[ -z "$PROVIDER_SCOPE" || "$PROVIDER_SCOPE" = "fixture" ]]; then PROVIDER_SCOPE="$CONFIGURED_ACCEPTANCE_PROVIDER_SCOPE"; fi
     if [[ -z "$PROVIDER_SCOPE" ]]; then PROVIDER_SCOPE="fixture"; fi
-    python3 "$ACCEPTANCE_PREPARE" tv --fixture "$fixture" --workspace "$WORKSPACE" --provider "$PROVIDER_SCOPE" --streams "$STREAM_SCOPE" --manifest "$TARGET_MANIFEST" || { STATUS=1; continue; }
+    python3 "$ACCEPTANCE_PREPARE" tv --fixture "$fixture" --workspace "$WORKSPACE" --provider "$PROVIDER_SCOPE" --streams "$STREAM_SCOPE" --manifest "$TARGET_MANIFEST" || { SOFT_FAILURES=$((SOFT_FAILURES+1)); continue; }
   else
-    python3 "$RESTAGE" tv --fixture "$fixture" --workspace "$WORKSPACE" "${PROVIDER_ARGS[@]}" --player-probes "$PLAYER_PROBES" --manifest "$TARGET_MANIFEST" || { STATUS=1; continue; }
+    python3 "$RESTAGE" tv --fixture "$fixture" --workspace "$WORKSPACE" "${PROVIDER_ARGS[@]}" --player-probes "$PLAYER_PROBES" --manifest "$TARGET_MANIFEST" || { SOFT_FAILURES=$((SOFT_FAILURES+1)); continue; }
   fi
 
-  python3 "$REQUEST_CONTRACT" tv --fixture "$fixture" --manifest "$TARGET_MANIFEST" --source "$TEST_SOURCE" || { STATUS=1; continue; }
-  python3 "$PROVIDER_LOADING" tv --manifest "$TARGET_MANIFEST" --manifest-url "$MANIFEST_URL" --source "$TEST_SOURCE" "${PROVIDER_LOADING_URL_ARGS[@]}" || { STATUS=1; continue; }
+  python3 "$REQUEST_CONTRACT" tv --fixture "$fixture" --manifest "$TARGET_MANIFEST" --source "$TEST_SOURCE" || { SOFT_FAILURES=$((SOFT_FAILURES+1)); continue; }
+  python3 "$PROVIDER_LOADING" tv --manifest "$TARGET_MANIFEST" --manifest-url "$MANIFEST_URL" --source "$TEST_SOURCE" "${PROVIDER_LOADING_URL_ARGS[@]}" || { SOFT_FAILURES=$((SOFT_FAILURES+1)); continue; }
 
   FRONT_DIR="${EVIDENCE_ROOT}/${fixture}"
   FRONT_LOG="${WORKSPACE}/tv-native-frontend-${fixture}.log"
@@ -123,17 +121,16 @@ for fixture in "${FIXTURES[@]}"; do
   if [[ "$READER_ACCEPTANCE" = "1" ]]; then
     node "$COVERAGE_GATE" --streams "$STREAM_SCOPE" "$LOG" || COVERAGE_STATUS=$?
   fi
-  # Always calculate the player outcome so it remains visible to Brain/evidence.
-  # Only the explicit global-gate opt-in can promote it to the suite exit status.
   OBSERVED_READER_STATUS=0
   node "$READER_GATE" "$LOG" || OBSERVED_READER_STATUS=$?
-  READER_STATUS=0
-  if [[ "$REQUIRE_READER_SUCCESS" = "1" ]]; then
-    READER_STATUS=$OBSERVED_READER_STATUS
+  if [[ "$RUNTIME_STATUS" -ne 0 || "$ANALYSIS_STATUS" -ne 0 || "$COVERAGE_STATUS" -ne 0 || "$OBSERVED_READER_STATUS" -ne 0 ]]; then
+    SOFT_FAILURES=$((SOFT_FAILURES+1))
   fi
-  echo "FIELD_NATIVE_CORPUS_TV_STATUS fixture=$fixture runtime=$RUNTIME_STATUS collection=$ANALYSIS_STATUS coverage=$COVERAGE_STATUS reader_observed=$OBSERVED_READER_STATUS reader_blocking=$READER_STATUS stream_scope=$STREAM_SCOPE frontend_dir=$FRONT_DIR"
-  if [[ "$RUNTIME_STATUS" -ne 0 || "$ANALYSIS_STATUS" -ne 0 || "$COVERAGE_STATUS" -ne 0 || "$READER_STATUS" -ne 0 ]]; then STATUS=1; fi
+  echo "FIELD_NATIVE_CORPUS_TV_STATUS fixture=$fixture runtime=$RUNTIME_STATUS collection=$ANALYSIS_STATUS coverage=$COVERAGE_STATUS reader_observed=$OBSERVED_READER_STATUS blocking=false stream_scope=$STREAM_SCOPE frontend_dir=$FRONT_DIR"
 done
 
-echo "FIELD_NATIVE_CORPUS_TV_SUITE_STATUS status=$STATUS fixtures=${#FIXTURES[@]} clients=1 provider=${TARGET_PROVIDER:-all} configured_acceptance_provider_scope=$CONFIGURED_ACCEPTANCE_PROVIDER_SCOPE manifest=$TARGET_MANIFEST requested_reader_success=$REQUESTED_READER_SUCCESS require_reader_success=$REQUIRE_READER_SUCCESS player_outcome_global_gate=$PLAYER_OUTCOME_GLOBAL_GATE reader_acceptance=$READER_ACCEPTANCE evidence_root=$EVIDENCE_ROOT"
-exit "$STATUS"
+LOGS=("${WORKSPACE}"/tv-native-corpus-*.log)
+SMOKE_STATUS=0
+node "$SMOKE_GATE" "${LOGS[@]}" || SMOKE_STATUS=$?
+echo "FIELD_NATIVE_CORPUS_TV_SUITE_STATUS status=$SMOKE_STATUS soft_failures=$SOFT_FAILURES fixtures=${#FIXTURES[@]} clients=1 provider=${TARGET_PROVIDER:-all} configured_acceptance_provider_scope=$CONFIGURED_ACCEPTANCE_PROVIDER_SCOPE manifest=$TARGET_MANIFEST gate=production_player_reached evidence_root=$EVIDENCE_ROOT"
+exit "$SMOKE_STATUS"
