@@ -18,6 +18,8 @@ def text(path: str) -> str:
 request_contract = text("scripts/augment_native_corpus_request_contract.py")
 provider_loading = text("scripts/augment_native_provider_loading.py")
 repository_http = text("scripts/instrument_native_repository_http_evidence.py")
+client_instrumenter = text("scripts/instrument_native_client_evidence.py")
+desktop_instrumenter = text("scripts/instrument_native_desktop_evidence.py")
 resolver = text("scripts/resolve_native_repository.sh")
 client_head_resolver = text("scripts/resolve_nuvio_lab_heads.py")
 reader_runtime_scope = text("scripts/scope_native_reader_learning_runtime.py")
@@ -63,18 +65,21 @@ for required in (
 assert "PluginRepository.clearLocalState()" not in provider_loading
 assert "PluginRuntime.executePlugin(" not in provider_loading
 
-# Repository instrumentation is passive: request semantics are preserved and only
-# sanitized metadata is emitted.
-for required in (
-    "FIELD_NATIVE_REPOSITORY_HTTP_REQUEST",
-    "FIELD_NATIVE_REPOSITORY_HTTP_RESPONSE",
-    "FIELD_NATIVE_REPOSITORY_HTTP_ERROR",
-    "response_header_names=$responseHeaderNames",
-    "source=$cacheSource",
-):
-    assert required in repository_http, required
-for forbidden in ("newBuilder().url(", "header(\"Referer\"", "header(\"Origin\""):
-    assert forbidden not in repository_http, forbidden
+# Production Nuvio source must not be patched merely to gain richer HTTP evidence.
+# Historical instrumentation entry points remain as audited no-op shims so stale
+# workflow references cannot silently reintroduce runtime mutation.
+for shim in (repository_http, client_instrumenter, desktop_instrumenter):
+    assert "disabled_by_human_ux_policy" in shim
+    assert "runtime_mutation=false" in shim
+    assert "audit_checkout" in shim
+    for forbidden in (
+        "write_text(",
+        "write_bytes(",
+        "addInterceptor",
+        "FIELD_NATIVE_HTTP_REQUEST client=",
+        "FIELD_NATIVE_REPOSITORY_HTTP_REQUEST client=",
+    ):
+        assert forbidden not in shim, forbidden
 
 # Staging may expose a generated content-addressed NiakVIO repository, but may never
 # elevate Nuvio or bypass the OS to reach it.
@@ -127,10 +132,11 @@ assert "scope_native_reader_learning_runtime.py merge" in learning_sync
 assert "validate_manifest" in android_transport
 assert "mode=production-policy" in android_transport
 assert "modified=false" in android_transport
-assert 'usesCleartextTraffic", "true"' not in android_transport
+assert 'usesCleartextTraffic\", \"true\"' not in android_transport
 assert "android.permission.INTERNET" not in android_transport
 
-# Human UX playback uses Nuvio production entries, not a parallel lab player.
+# Component diagnostics invoke production player entry points and may supplement
+# diagnosis, but the policy prevents them from being counted as human-UX acceptance.
 for required in (
     "Screen.Player.createRoute",
     "NuvioNavHost",
@@ -161,12 +167,15 @@ for forbidden in (
 ):
     assert forbidden not in desktop_player, forbidden
 
-# The production player is always the first media consumer. Transport diagnostics
-# are post-observation only and cannot consume/expire a signed URL before playback.
+# The production player is always the first media consumer in component diagnostics.
+# Transport diagnostics are post-observation only and cannot consume/expire a signed
+# URL before the production player attempts it.
 assert android_player.index("val reader = probeNativePlayer(row.url, row.headers, row.type") < android_player.index("val transport = probeTransport(row.url, row.headers)")
 assert desktop_player.index("val reader = probeDesktopProductionPlayer(row.url, row.headers, row.type") < desktop_player.index("val transport = probeTransport(row.url, row.headers)")
 
-# Every suite still collects repository -> provider -> player -> frontend evidence.
+# Suites may retain historical shim calls, but those calls are now explicit audited
+# no-ops. Repository/provider/player/frontend evidence comes from test-owned code,
+# official Nuvio behavior and external capture rather than runtime source patching.
 for suite, client in ((tv_suite, "tv"), (mobile_suite, "mobile")):
     for required in (
         "instrument_native_client_evidence.py",
@@ -189,8 +198,8 @@ for required in (
 ):
     assert required in desktop_suite, required
 
-# Coverage is fail-closed and PR proof checks two returned streams; deep/manual paths
-# remain exhaustive. The assertion follows semantics rather than one code spelling.
+# Coverage is fail-closed and PR component proof checks two returned streams; deep/
+# manual diagnostic paths remain exhaustive. This is not human-UX acceptance by itself.
 assert "NIAKVIO_PR_STREAM_LIMIT" in coverage_gate
 assert "DEFAULT_PR_STREAM_LIMIT = 2" in coverage_gate
 assert "streamCoverageSatisfied" in coverage_gate
@@ -206,7 +215,6 @@ assert "NIAKVIO_TARGET_PROVIDER: all" in desktop_workflow
 # client/runtime failures can never authorize provider mutation.
 for required in (
     "missing_repository_load:",
-    "missing_repository_http:",
     "provider_route_terminal:",
     "player_terminal:",
     "http_terminal:",
