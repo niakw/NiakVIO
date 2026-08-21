@@ -4,8 +4,9 @@
 Providers remain responsible for factual stream output (URL, headers, language,
 quality, codec, audio, duration and explicit source type). This final Core layer
 normalizes those facts and builds one presentation contract for Nuvio clients.
-TMDB is a bounded, optional factual fallback for title/year/runtime/age rating;
-a TMDB failure never removes a stream and never changes playback URL/headers.
+TMDB is an optional factual fallback for title/year/runtime/age rating; browser
+fetches stay JS-timeout-bounded while native bridges use their host timeout so no
+host request is abandoned without a terminal response/error evidence marker.
 """
 from __future__ import annotations
 
@@ -36,12 +37,10 @@ def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> st
         "providerId": provider_id,
         "tmdbKey": str(cfg.get("tmdb_key") or TMDB_KEY),
         "tmdbTimeoutMs": max(350, min(int(cfg.get("tmdb_timeout_ms", 1200)), 2500)),
-        "implementationRevision": "facts-first-shared-display-v3",
+        "implementationRevision": "facts-first-shared-display-v4-native-terminal",
     }
     serialized = json.dumps(payload, separators=(",", ":"))
     marker = f"{MARKER}:{hashlib.sha256(serialized.encode()).hexdigest()[:12]}"
-    # Reapplication deliberately strips/re-appends this outermost layer. That
-    # keeps presentation outside HLS/safety even when those inner wrappers move.
     text = _strip_existing(text)
 
     wrapper = r'''
@@ -66,9 +65,10 @@ function qualityBadge(v){if(v==="2160p")return"【4K】";return v?"【"+v.toUppe
 function two(v){return v<10?"0"+v:String(v)}
 function fmtDuration(minutes){var n=Number(minutes||0);if(!n)return"";var h=Math.floor(n/60),m=n%60;return h?(h+"h"+(m?two(m):"")):n+"min"}
 function unique(list){var out=[];list.forEach(function(v){if(v&&out.indexOf(v)<0)out.push(v)});return out}
+function nativeFetchBridge(){try{return !!(g&&typeof g.__native_fetch==="function")}catch(_e){return false}}
 function safeSignal(){try{if(typeof AbortSignal!=="undefined"&&typeof AbortSignal.timeout==="function")return AbortSignal.timeout(c.tmdbTimeoutMs)}catch(_e){}return null}
 function certification(d,kind){var rows=kind==="movie"?(d&&d.release_dates&&d.release_dates.results):(d&&d.content_ratings&&d.content_ratings.results);if(!Array.isArray(rows))return"";var row=rows.find(function(x){return s(x&&x.iso_3166_1).toUpperCase()==="FR"})||rows.find(function(x){return s(x&&x.iso_3166_1).toUpperCase()==="US"})||rows[0];if(!row)return"";if(kind==="movie"){var releases=Array.isArray(row.release_dates)?row.release_dates:[];for(var i=0;i<releases.length;i++){var v=s(releases[i]&&releases[i].certification);if(v)return v}return""}return s(row.rating)}
-async function tmdb(q){if(!/^\d+$/.test(q.tmdbId||"")||!g||typeof g.fetch!=="function")return null;var signal=safeSignal();if(!signal)return null;var kind=(q.mediaType==="tv"||q.mediaType==="series"||q.mediaType==="anime")?"tv":"movie",append=kind==="movie"?"release_dates":"content_ratings",url="https://api.themoviedb.org/3/"+kind+"/"+encodeURIComponent(q.tmdbId)+"?api_key="+encodeURIComponent(c.tmdbKey)+"&language=fr-FR&append_to_response="+append;try{var r=await g.fetch(url,{headers:{Accept:"application/json"},signal:signal});if(!r||!r.ok)return null;var d=await r.json(),date=s(d.release_date||d.first_air_date),runtime=Number(d.runtime||0);if(!runtime&&Array.isArray(d.episode_run_time)&&d.episode_run_time.length)runtime=Number(d.episode_run_time[0]||0);return{title:s(d.title||d.name||q.title),year:Number((date.match(/(?:19|20)\d{2}/)||[])[0]||q.year||0)||0,runtime:runtime>0?Math.round(runtime):0,age:certification(d,kind)}}catch(_e){return null}}
+async function tmdb(q){if(!/^\d+$/.test(q.tmdbId||"")||!g||typeof g.fetch!=="function")return null;var nativeBridge=nativeFetchBridge(),signal=nativeBridge?null:safeSignal();if(!nativeBridge&&!signal)return null;var kind=(q.mediaType==="tv"||q.mediaType==="series"||q.mediaType==="anime")?"tv":"movie",append=kind==="movie"?"release_dates":"content_ratings",url="https://api.themoviedb.org/3/"+kind+"/"+encodeURIComponent(q.tmdbId)+"?api_key="+encodeURIComponent(c.tmdbKey)+"&language=fr-FR&append_to_response="+append,init={headers:{Accept:"application/json"}};if(signal)init.signal=signal;try{var r=await g.fetch(url,init);if(!r||!r.ok)return null;var d=await r.json(),date=s(d.release_date||d.first_air_date),runtime=Number(d.runtime||0);if(!runtime&&Array.isArray(d.episode_run_time)&&d.episode_run_time.length)runtime=Number(d.episode_run_time[0]||0);return{title:s(d.title||d.name||q.title),year:Number((date.match(/(?:19|20)\d{2}/)||[])[0]||q.year||0)||0,runtime:runtime>0?Math.round(runtime):0,age:certification(d,kind)}}catch(_e){return null}}
 function present(row,meta,q){if(!row||typeof row!=="object")return row;var out=Object.assign({},row),ql=quality(row),lang=language(row),co=codec(row),au=audio(row),du=duration(row)||(meta&&meta.runtime)||0,src=sourceType(row),ag=age(row)||(meta&&meta.age)||"";if(ql)out.quality=ql;if(lang)out.language=lang;if(co)out.codec=co;if(au)out.audio=au;if(du)out.duration=du;if(src)out.sourceType=src;if(ag)out.ageRating=ag;var badges=unique([qualityBadge(ql),src?"【"+src+"】":"",lang?"🌐 "+lang:"",co?"🎞 "+co:"",au?"🔊 "+au:"",du?"⏱ "+fmtDuration(du):"",ag?"🔞 "+ag:""]);out.displayBadges=badges;var title=s((meta&&meta.title)||q.title),year=Number((meta&&meta.year)||q.year||0)||0,lines=[];if(badges.length)lines.push(badges.join(" "));if(title||year)lines.push([title,year?String(year):""].filter(Boolean).join(" • "));if(!lines.length)lines.push("🎬 "+providerName(row));out.description=lines.join("\n");if(!meaningful(out.title)||legacyLabel(out.title))out.title=providerName(row);if(legacyLabel(out.size))out.size=badges.slice(0,4).join(" ");if(!meaningful(out.name))out.name=providerName(row);return out}
 function install(o,k){if(!o||typeof o[k]!=="function"||o[k].__nuvioGlobalStreamPresentationV1)return false;var native=o[k];var wrap=async function(){var q=req(arguments),v=await native.apply(this,arguments),x=slot(v);if(!x||!x.list.length)return v;var meta=null;try{meta=await tmdb(q)}catch(_e){}return rebuild(v,x,x.list.map(function(row){return present(row,meta,q)}))};wrap.__nuvioGlobalStreamPresentationV1=true;o[k]=wrap;return true}
 var ok=false;try{if(typeof module!=="undefined"&&module.exports){ok=install(module.exports,"getStreams")||install(module.exports,"streams")}}catch(_e){}try{if(g&&typeof g.getStreams==="function"){if(ok&&typeof module!=="undefined"&&module.exports)g.getStreams=module.exports.getStreams;else install(g,"getStreams")}}catch(_e){}
