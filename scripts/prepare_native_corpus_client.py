@@ -1,25 +1,18 @@
 #!/usr/bin/env python3
 """Prepare exactly one official Nuvio client for the native corpus lab.
 
-This intentionally wraps the existing corpus generator instead of duplicating its
-runtime contract. Provider/runtime failures are observations; the generated test
-only fails when the corpus itself cannot be constructed/traversed.
-
-Targeted reader runs may select another in-repository manifest. Raw GitHub
-filenames from that manifest are resolved back to the exact local provider bundle
-so the lab executes the same code without downloading mutable remote content.
-
-Before any provider is staged, the checkout is materialized through the same
-runtime-profile + published-override pipeline used for publication. This is a
-critical Brain/lab boundary: native readers must exercise the JavaScript produced
-by the current repair rules, not stale provider bundles committed before those
-rules changed. A checkout-local sentinel makes the operation once-per-job while
-all subsequent fixture restages reuse the exact same materialized transaction.
+PR smoke runs intentionally exercise the provider bundles committed on the tested
+NiakVIO SHA, exactly as a user-installed raw GitHub repository would see them.
+Trusted main/manual deep runs may materialize current Brain/runtime repair rules
+before staging. This separation keeps PR smoke reachable through ordinary pinned
+HTTPS and avoids turning an ephemeral materialization into a cleartext lab-only
+repository requirement on Android.
 """
 from __future__ import annotations
 
 import argparse
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -39,22 +32,29 @@ from native_client_test_bootstrap import (  # noqa: E402
 MATERIALIZED_SENTINEL = ROOT / ".native-provider-overrides-materialized"
 
 
-def ensure_materialized_provider_transaction() -> None:
-    """Apply the current Brain/runtime repair transaction before native staging.
+def _use_committed_pr_bundles() -> bool:
+    return (
+        os.environ.get("GITHUB_EVENT_NAME", "").strip().lower() == "pull_request"
+        and os.environ.get("NIAKVIO_MATERIALIZE_PR_NATIVE", "0").strip() != "1"
+    )
 
-    Each GitHub Actions job owns an isolated checkout, so a simple sentinel is
-    sufficient and deliberately avoids re-running the ~60-provider materializer
-    once per representative fixture. The sentinel is written only after dependency
-    installation and both materialization commands succeed; a failed transaction
-    therefore remains fail-closed.
+
+def ensure_materialized_provider_transaction() -> None:
+    """Materialize Brain/runtime repairs only for trusted deep native runs.
+
+    Pull-request reader smoke must consume the exact committed SHA so the official
+    clients can install the same immutable HTTPS repository a normal user would.
+    Provider-pipeline tests are responsible for rejecting stale generated bundles.
     """
+    if _use_committed_pr_bundles():
+        print(
+            "FIELD_NATIVE_PROVIDER_TRANSACTION source=committed-pr-sha "
+            "materialized=false https_repository_compatible=true"
+        )
+        return
     if MATERIALIZED_SENTINEL.is_file():
         return
 
-    # The publication materializer validates generated provider JS with Node and
-    # therefore needs the repository's pinned runtime modules. Native workflows
-    # set up Node but intentionally do not run npm ci themselves, so make this
-    # Brain->native boundary self-contained instead of depending on workflow order.
     package_lock = ROOT / "package-lock.json"
     if package_lock.is_file() and not (ROOT / "node_modules").is_dir():
         npm = shutil.which("npm") or shutil.which("npm.cmd")
