@@ -127,17 +127,27 @@ jobs:
             echo "No materialized reader-repair comparison for run $RUN_ID; repair memory remains importable after a rerun."
           fi
 
-      - name: Merge sanitized reader repair memory once
+      - name: Merge sanitized reader repair memory once for the exact Nuvio runtime
         if: steps.source.outputs.repair_duplicate != 'true' && steps.repair_evidence.outputs.has_comparison == 'true'
         env:
           RUN_ID: ${{ steps.source.outputs.run_id }}
         shell: bash
         run: |
           set -euo pipefail
-          python scripts/merge_native_reader_repair_learning.py \
+          RUNTIME_FINGERPRINT="$(python3 - <<'PY'
+          import json
+          value=str(json.load(open('reader-learning-input/acceptance/tv-reader-repair-comparison.json')).get('runtimeFingerprint') or '').strip()
+          print(value)
+          PY
+          )"
+          if [ -z "$RUNTIME_FINGERPRINT" ]; then
+            echo "Reader comparison has no exact Nuvio runtime fingerprint; refusing to learn from an unscoped run." >&2
+            exit 2
+          fi
+          python scripts/scope_native_reader_learning_runtime.py merge \
             --state reader-learning-input/latest.json \
-            --previous-state reader-learning-input/latest.json \
             --comparison reader-learning-input/acceptance/tv-reader-repair-comparison.json \
+            --runtime-fingerprint "$RUNTIME_FINGERPRINT" \
             --output reader-learning-output/latest.json \
             --markdown-input reader-learning-input/latest.md \
             --markdown-output reader-learning-output/latest.md
@@ -186,6 +196,9 @@ jobs:
           const memory=state.nativeReaderRepairMemory || {};
           const backlog=memory.readerBacklog || {};
           if (backlog.openCount != null && !Array.isArray(backlog.entries)) throw new Error('invalid reader backlog shape');
+          if (memory.runtimeAware === true && memory.runtimeScope?.reusePolicy !== 'exact-runtime-fingerprint-only') {
+            throw new Error('runtime-aware reader memory lost its exact-runtime reuse policy');
+          }
           NODE
 
       - name: Report reader sync outcome
