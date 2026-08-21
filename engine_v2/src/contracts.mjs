@@ -95,10 +95,16 @@ export function normalizeStreamCandidate(raw = {}, context = {}) {
   return {
     title: textOrNull(raw.title) ?? textOrNull(raw.name) ?? context.providerName ?? "Unknown",
     name: textOrNull(raw.name),
+    description: textOrNull(raw.description),
     url,
     quality: normalizeQualityLabel(raw.quality ?? raw.resolution),
     size: textOrNull(raw.size),
-    language: textOrNull(raw.language),
+    language: textOrNull(raw.language ?? raw.lang ?? raw.audioLanguage),
+    codec: textOrNull(raw.codec ?? raw.videoCodec ?? raw.video_codec),
+    audio: textOrNull(raw.audio ?? raw.audioCodec ?? raw.audio_codec),
+    duration: normalizeDurationMinutes(raw.duration ?? raw.durationMinutes ?? raw.runtime),
+    sourceType: textOrNull(raw.sourceType ?? raw.source_type ?? raw.releaseType ?? raw.release_type),
+    ageRating: textOrNull(raw.ageRating ?? raw.age_rating ?? raw.certification),
     provider: textOrNull(raw.provider) ?? context.providerId ?? null,
     type: textOrNull(raw.type),
     headers,
@@ -195,6 +201,23 @@ function normalizeQualityLabel(value) {
   const resolution = text.match(/(?:^|\b)(2160|1440|1080|720|576|480)p?(?:\b|$)/i);
   if (resolution) return `${resolution[1]}p`;
   return text;
+}
+
+function normalizeDurationMinutes(value) {
+  if (value == null || value === "") return null;
+  if (typeof value === "number" && Number.isFinite(value) && value > 0) {
+    return value > 600 ? Math.round(value / 60) : Math.round(value);
+  }
+  const text = textOrNull(value);
+  if (!text) return null;
+  const hm = text.match(/(?:(\d+)\s*h(?:ours?)?)?\s*(?:(\d+)\s*m(?:in(?:utes?)?)?)?/i);
+  if (hm && (hm[1] || hm[2])) {
+    const minutes = Number(hm[1] || 0) * 60 + Number(hm[2] || 0);
+    return minutes > 0 ? minutes : null;
+  }
+  const parsed = Number(text);
+  if (!Number.isFinite(parsed) || parsed <= 0) return null;
+  return parsed > 600 ? Math.round(parsed / 60) : Math.round(parsed);
 }
 
 function normalizeStringList(value) {
