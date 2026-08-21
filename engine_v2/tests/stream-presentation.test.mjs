@@ -5,6 +5,7 @@ import {
   presentStreamCandidate,
   normalizeSourceType,
 } from "../src/stream-presentation.mjs";
+import { createTmdbMetadataResolver, normalizeTmdbPayload } from "../src/tmdb-metadata.mjs";
 
 const facts = normalizeStreamCandidate({
   name: "Purstream",
@@ -76,4 +77,55 @@ assert.equal(normalizeSourceType("some provider label"), null);
 const badges = buildBadges({ quality: "4K", language: "VFQ", codec: "H.264" });
 assert.deepEqual(badges, ["【4K】", "🌐 VFQ", "🎞 H.264"]);
 
-console.log("engine v2 stream presentation tests passed");
+const normalizedMovie = normalizeTmdbPayload({
+  id: 157336,
+  title: "Interstellar",
+  original_title: "Interstellar",
+  release_date: "2014-11-05",
+  runtime: 169,
+  alternative_titles: { titles: [{ title: "Interstellar" }] },
+  release_dates: {
+    results: [
+      { iso_3166_1: "US", release_dates: [{ certification: "PG-13" }] },
+      { iso_3166_1: "FR", release_dates: [{ certification: "U" }] },
+    ],
+  },
+}, { mediaType: "movie", request: { tmdbId: "157336" } });
+assert.equal(normalizedMovie.runtime, 169);
+assert.equal(normalizedMovie.certification, "U");
+assert.equal(normalizedMovie.year, 2014);
+
+let requestedUrl = "";
+const tmdbResolver = createTmdbMetadataResolver({
+  apiKey: "test-key",
+  fetchImpl: async (url) => {
+    requestedUrl = String(url);
+    return {
+      ok: true,
+      async json() {
+        return {
+          id: 95396,
+          name: "Severance",
+          original_name: "Severance",
+          first_air_date: "2022-02-18",
+          episode_run_time: [50],
+          alternative_titles: { results: [] },
+          content_ratings: { results: [{ iso_3166_1: "FR", rating: "12" }] },
+        };
+      },
+    };
+  },
+});
+const tvMetadata = await tmdbResolver({ tmdbId: "95396", mediaType: "tv", title: "Severance" });
+assert.match(requestedUrl, /\/tv\/95396/);
+assert.match(requestedUrl, /language=fr-FR/);
+assert.equal(tvMetadata.runtime, 50);
+assert.equal(tvMetadata.certification, "12");
+assert.equal(tvMetadata.source, "tmdb");
+
+const fallbackWithoutId = await tmdbResolver({ mediaType: "movie", title: "Sinners", year: 2025 });
+assert.equal(fallbackWithoutId.title, "Sinners");
+assert.equal(fallbackWithoutId.year, 2025);
+assert.equal(fallbackWithoutId.source, "request");
+
+console.log("engine v2 stream presentation and shared TMDB metadata tests passed");
