@@ -21,6 +21,7 @@ desktop_suite = (SCRIPTS / "run_native_corpus_desktop_suite.sh").read_text(encod
 desktop_player = (SCRIPTS / "augment_native_desktop_player.py").read_text(encoding="utf-8")
 desktop_workflow = (ROOT / ".github/workflows/native-desktop-reader-acceptance.yml").read_text(encoding="utf-8")
 tv_bootstrap = (SCRIPTS / "nuvio_tv_test_bootstrap.py").read_text(encoding="utf-8")
+shared_bootstrap = (SCRIPTS / "native_client_test_bootstrap.py").read_text(encoding="utf-8")
 reader_acceptance = (SCRIPTS / "prepare_native_reader_acceptance.py").read_text(encoding="utf-8")
 corpus_client = (SCRIPTS / "prepare_native_corpus_client.py").read_text(encoding="utf-8")
 
@@ -47,9 +48,9 @@ assert "private val platformExcludedProviders =" not in provider_loading
 assert "emptyMap<String, com.nuvio.tv.domain.model.ScraperInfo>()" in provider_loading
 assert "emptyMap<String, PluginScraper>()" in provider_loading
 
-# Player and repository augmentation are two layers of one generated TV test.
-# Repository loading owns their shared Hilt/Flow imports; the player layer must
-# never emit a second copy (the official 0.8.7 Kotlin compiler rejects duplicates).
+# Player and repository augmentation are two layers of one generated diagnostic TV
+# test. Repository loading owns their shared Hilt/Flow imports; the player layer must
+# never emit a second copy (the official Kotlin compiler rejects duplicates).
 layered_tv_imports = insert_imports(
     "import androidx.test.platform.app.InstrumentationRegistry\n" + TV_IMPORTS,
     "tv",
@@ -64,11 +65,41 @@ for shared_import in (
     assert shared_import not in TV_IMPORTS, shared_import
     assert layered_tv_imports.count(shared_import) == 1, shared_import
 
-# NuvioTV instrumentation bootstrap is a structural contract, never a client
-# version contract. The official client advanced from 0.8.4 to 0.8.7 and exposed
-# why anchoring on versionName was wrong. Future version bumps must remain valid.
-assert 'versionName = "0.8.4-beta"' not in tv_bootstrap
-assert "defaultConfig" in tv_bootstrap
+# The historical TV bootstrap entry point is now only a compatibility wrapper. The
+# actual implementation is centralized in native_client_test_bootstrap.py so policy
+# audits have one place to police diagnostic test plumbing. Never restore runtime or
+# network mutation logic to this wrapper just to satisfy this test.
+assert 'from native_client_test_bootstrap import enable_tv_tests' in tv_bootstrap
+assert '__all__ = ["enable_tv_tests"]' in tv_bootstrap
+for forbidden in (
+    "write_text(",
+    "defaultConfig",
+    "AndroidManifest.xml",
+    "android.permission.INTERNET",
+    "usesCleartextTraffic",
+    "networkSecurityConfig",
+    "ExoPlayer.Builder",
+):
+    assert forbidden not in tv_bootstrap, f"tv-wrapper:{forbidden}"
+
+# Diagnostic instrumentation bootstrap remains structural/version-agnostic and may
+# add only test plumbing. It must not manufacture production playback capabilities.
+assert 'versionName = "0.8.4-beta"' not in shared_bootstrap
+assert "defaultConfig" in shared_bootstrap
+assert "testInstrumentationRunner" in shared_bootstrap
+assert "runtime_mutation=false" in shared_bootstrap
+for forbidden in (
+    "AndroidManifest.xml",
+    "android.permission.INTERNET",
+    "usesCleartextTraffic",
+    "networkSecurityConfig",
+    "cleartextTrafficPermitted",
+    "PlayerPlaybackNetworking",
+    "PlatformPlaybackDataSourceFactory",
+    "ExoPlayer.Builder",
+    "setDefaultRequestProperties",
+):
+    assert forbidden not in shared_bootstrap, f"shared-bootstrap:{forbidden}"
 assert "enable_tv_test_bootstrap(repo)" in reader_acceptance
 assert "enable_tv_test_bootstrap(tv)" in corpus_client
 assert "corpus.enable_tv_tests" not in reader_acceptance
@@ -92,17 +123,16 @@ with tempfile.TemporaryDirectory(prefix="niakvio-tv-bootstrap-") as tmp:
     assert 'signingConfigs.getByName("debug")' in first
     assert 'versionName = "9.99.0-future"' in first
 
-# Mobile device tests execute from composeApp, but the official launcher is the
+# Mobile device diagnostics execute from composeApp, but the official launcher is the
 # androidApp fullDebug APK whose debug application id is com.nuviodebug.com.
 assert 'packageName: String = "com.nuviodebug.com"' in request_contract
 assert ":androidApp:installFullDebug" in mobile_suite
 assert "adb shell pm path com.nuviodebug.com" in mobile_suite
 assert "FIELD_NATIVE_MOBILE_APP_INSTALLED" in mobile_suite
 
-# Desktop evidence must run under the same ordinary JVM/module policy and
-# composition-local contract as the real NuvioDesktop UI. The current production
-# PlatformPlayerSurface reads LocalNuvioPlatformDensity, which is intentionally
-# unavailable outside NuvioTheme; a bare ComposePanel is therefore not production.
+# Desktop diagnostic evidence must run under the same ordinary JVM/module policy and
+# composition-local contract as the real NuvioDesktop UI. A direct component probe is
+# diagnostic-only; it must not relax JVM privileges or count as human-UX acceptance.
 for forbidden in (
     "--add-opens=java.desktop/java.awt.peer=ALL-UNNAMED",
     "--add-opens=java.desktop/sun.awt=ALL-UNNAMED",
@@ -121,6 +151,7 @@ assert "exception_chain64=${{b64(reader.exceptionChain)}}" in desktop_player
 print(
     "native reader runtime bootstrap contract passed: "
     "tv_explicit_pairs=true generated_empty_generics_typed=true tv_single_owner_hilt_imports=true "
-    "tv_version_agnostic_bootstrap=true mobile_real_app=true desktop_ordinary_jvm_policy=true "
+    "tv_wrapper_non_mutating=true tv_version_agnostic_diagnostic_bootstrap=true "
+    "mobile_real_app=true desktop_ordinary_jvm_policy=true "
     "desktop_production_theme=true desktop_unwrapped_errors=true"
 )
