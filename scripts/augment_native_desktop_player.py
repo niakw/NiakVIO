@@ -20,6 +20,7 @@ DEFAULT_PR_STREAM_LIMIT = 2
 IMPORTS = """import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.awt.ComposePanel
+import com.nuvio.app.core.ui.NuvioTheme
 import com.nuvio.app.features.player.PlatformPlayerSurface
 import com.nuvio.app.features.player.PlayerControlsState
 import com.nuvio.app.features.player.PlayerPlaybackSnapshot
@@ -45,7 +46,31 @@ HELPERS = r'''
         val failureStage: String,
         val durationSeconds: Double?,
         val positionSeconds: Double?,
+        val exceptionChain: String = "",
     )
+
+    private fun desktopThrowableChain(error: Throwable): Pair<Throwable, String> {
+        var current = error
+        val parts = mutableListOf<String>()
+        repeat(8) {
+            val name = current::class.qualifiedName.orEmpty().ifBlank { current.javaClass.name }
+            val message = current.message.orEmpty()
+                .replace(Regex("https?://\\S+", RegexOption.IGNORE_CASE), "<url>")
+                .replace(Regex("(?i)(authorization|cookie|token|secret)\\s*[:=]\\s*\\S+"), "$1=<redacted>")
+                .replace(Regex("\\s+"), " ")
+                .take(180)
+            parts += if (message.isBlank()) name else "$name:$message"
+            val next = when (current) {
+                is java.lang.reflect.InvocationTargetException -> current.targetException ?: current.cause
+                else -> current.cause
+            }
+            if (next == null || next === current) {
+                return current to parts.joinToString(" -> ").take(420)
+            }
+            current = next
+        }
+        return current to parts.joinToString(" -> ").take(420)
+    }
 
     private fun captureDesktopPhase(phase: String, fixtureSlug: String) {
         val safe = phase.replace(Regex("[^A-Za-z0-9_.-]+"), "-").trim('-').ifBlank { "phase" }
@@ -83,37 +108,41 @@ HELPERS = r'''
                 frame.defaultCloseOperation = JFrame.DISPOSE_ON_CLOSE
                 frameRef.set(frame)
                 panel.setContent {
-                    // Production entry point. Provider output enters Nuvio unchanged;
-                    // Nuvio's own production surface decides sanitation, settings,
-                    // native bridge and playback behavior exactly as the app does.
-                    PlatformPlayerSurface(
-                        sourceUrl = url,
-                        sourceHeaders = headers.orEmpty(),
-                        sourceResponseHeaders = emptyMap(),
-                        externalSubtitles = emptyList(),
-                        streamType = streamType,
-                        useYoutubeChunkedPlayback = false,
-                        modifier = Modifier.fillMaxSize(),
-                        playWhenReady = true,
-                        initialPositionMs = 0L,
-                        initialPositionRequestKey = "niakvio-native-reader",
-                        resizeMode = PlayerResizeMode.Fit,
-                        useNativeController = true,
-                        playerControlsState = PlayerControlsState(),
-                        onControllerReady = { _ -> },
-                        onSnapshot = { snapshot ->
-                            latestSnapshot.set(snapshot)
-                            if (snapshot.isEnded || (!snapshot.isLoading && (snapshot.isPlaying || snapshot.positionMs > 0L || snapshot.durationMs > 0L))) {
-                                terminal.countDown()
-                            }
-                        },
-                        onError = { message ->
-                            if (!message.isNullOrBlank()) {
-                                errorRef.compareAndSet(null, message)
-                                terminal.countDown()
-                            }
-                        },
-                    )
+                    // PlatformPlayerSurface assumes the same production composition
+                    // locals as a normal Nuvio app screen. In particular the current
+                    // Desktop implementation reads LocalNuvioPlatformDensity, whose
+                    // deliberate default throws outside NuvioTheme. Keep the real
+                    // theme around the real surface instead of inventing test values.
+                    NuvioTheme {
+                        PlatformPlayerSurface(
+                            sourceUrl = url,
+                            sourceHeaders = headers.orEmpty(),
+                            sourceResponseHeaders = emptyMap(),
+                            externalSubtitles = emptyList(),
+                            streamType = streamType,
+                            useYoutubeChunkedPlayback = false,
+                            modifier = Modifier.fillMaxSize(),
+                            playWhenReady = true,
+                            initialPositionMs = 0L,
+                            initialPositionRequestKey = "niakvio-native-reader",
+                            resizeMode = PlayerResizeMode.Fit,
+                            useNativeController = true,
+                            playerControlsState = PlayerControlsState(),
+                            onControllerReady = { _ -> },
+                            onSnapshot = { snapshot ->
+                                latestSnapshot.set(snapshot)
+                                if (snapshot.isEnded || (!snapshot.isLoading && (snapshot.isPlaying || snapshot.positionMs > 0L || snapshot.durationMs > 0L))) {
+                                    terminal.countDown()
+                                }
+                            },
+                            onError = { message ->
+                                if (!message.isNullOrBlank()) {
+                                    errorRef.compareAndSet(null, message)
+                                    terminal.countDown()
+                                }
+                            },
+                        )
+                    }
                 }
                 frame.isVisible = true
             }
@@ -145,10 +174,12 @@ HELPERS = r'''
             }
             return DesktopNativePlayerProbe("timeout", "NuvioDesktopProductionPlayer", "READER_TIMEOUT", 0, "timeout", durationSeconds, positionSeconds)
         } catch (error: Throwable) {
+            val (root, chain) = desktopThrowableChain(error)
+            val rootMessage = root.message.orEmpty().ifBlank { "PLAYER_SETUP" }
             return DesktopNativePlayerProbe(
-                "error", error::class.qualifiedName.orEmpty(),
-                (error.message ?: "PLAYER_SETUP").replace(Regex("\\s+"), "_").take(160),
-                0, "player_setup", null, null,
+                "error", root::class.qualifiedName.orEmpty().ifBlank { root.javaClass.name },
+                rootMessage.replace(Regex("\\s+"), "_").take(160),
+                0, "player_setup", null, null, chain,
             )
         } finally {
             runCatching { SwingUtilities.invokeAndWait { frameRef.getAndSet(null)?.dispose() } }
@@ -198,7 +229,7 @@ def augment(path: Path, expected_minutes: int, stream_scope: str) -> None:
                     emit("FIELD_NATIVE_PLAYER_BEGIN client=desktop fixture=$fixtureSlug provider64=${{b64(provider.id)}} request_type=$requestMediaType route_mode=$routeMode index=$index entry=PlatformPlayerSurface")
                     captureDesktopPhase("player-start", fixtureSlug)
                     val reader = probeDesktopProductionPlayer(row.url, row.headers, row.type, {expected_minutes})
-                    emit("FIELD_NATIVE_PLAYER client=desktop fixture=$fixtureSlug provider64=${{b64(provider.id)}} request_type=$requestMediaType route_mode=$routeMode index=$index state=${{reader.state}} engine=nuvio-production-desktop http_status=${{reader.httpStatus}} failure_stage=${{reader.failureStage}} duration_seconds=${{reader.durationSeconds ?: 0.0}} host64=${{b64(hostOnly(row.url))}} error_class64=${{b64(reader.errorClass)}} error_code64=${{b64(reader.errorCode)}} exception_chain64=${{b64("")}} response_header_names64=${{b64("")}} load_bytes=0 load_duration_ms=0 media_data_type=-1 track_type=-1")
+                    emit("FIELD_NATIVE_PLAYER client=desktop fixture=$fixtureSlug provider64=${{b64(provider.id)}} request_type=$requestMediaType route_mode=$routeMode index=$index state=${{reader.state}} engine=nuvio-production-desktop http_status=${{reader.httpStatus}} failure_stage=${{reader.failureStage}} duration_seconds=${{reader.durationSeconds ?: 0.0}} host64=${{b64(hostOnly(row.url))}} error_class64=${{b64(reader.errorClass)}} error_code64=${{b64(reader.errorCode)}} exception_chain64=${{b64(reader.exceptionChain)}} response_header_names64=${{b64("")}} load_bytes=0 load_duration_ms=0 media_data_type=-1 track_type=-1")
                     captureDesktopPhase("player-result", fixtureSlug)
                     // Independent transport diagnostics run only after the production
                     // player has reached a terminal observation for this source.
@@ -222,7 +253,7 @@ def augment(path: Path, expected_minutes: int, stream_scope: str) -> None:
     print(
         f"FIELD_NATIVE_DESKTOP_READER_AUGMENTED source={path} streams={stream_scope} "
         f"expected_minutes={expected_minutes} timeout_ms={reader_timeout_ms} entry=PlatformPlayerSurface "
-        f"ci_mode={'pr-bounded' if pr_bounded else 'deep'}"
+        f"ci_mode={'pr-bounded' if pr_bounded else 'deep'} theme=NuvioTheme"
     )
 
 
