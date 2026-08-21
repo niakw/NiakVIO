@@ -216,7 +216,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
-          name: native-tv-route-sinners-2025-${{ github.run_id }}
+          name: native-tv-route-representative-${{ github.run_id }}
           path: |
             tv-native-corpus-*.log
             tv-native-frontend-*.log
@@ -322,11 +322,11 @@ jobs:
           if-no-files-found: warn
 
   brain-reader-repair-sandbox:
-    name: Brain reader repair sandbox and official TV retest
+    name: Brain representative repair sandbox and official TV retest
     needs: [resolve, tv-route-reader, mobile-route-reader]
     if: ${{ always() && needs.resolve.result == 'success' }}
     runs-on: ubuntu-latest
-    timeout-minutes: ${{ github.event_name == 'pull_request' && 55 || 150 }}
+    timeout-minutes: ${{ github.event_name == 'pull_request' && 75 || 180 }}
     steps:
       - name: Checkout exact NiakVIO candidate
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
@@ -338,14 +338,12 @@ jobs:
         with: {distribution: temurin, java-version: "17"}
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
         with: {node-version: "24", package-manager-cache: false}
-      - name: Download Sinners TV evidence from this exact run
-        continue-on-error: true
+      - name: Download representative TV evidence from this exact run
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
         with:
-          name: native-tv-route-sinners-2025-${{ github.run_id }}
+          name: native-tv-route-representative-${{ github.run_id }}
           path: baseline-reader/tv
       - name: Download representative Mobile evidence from this exact run
-        continue-on-error: true
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
         with:
           name: native-mobile-route-representative-${{ github.run_id }}
@@ -366,27 +364,27 @@ jobs:
             --state niakvio/native-reader-learning-previous.json \
             --runtime-fingerprint "$NIAKVIO_RUNTIME_FINGERPRINT" \
             --output niakvio/native-reader-learning-current-runtime.json
-      - name: Materialize bounded generic Brain mutations
+      - name: Materialize bounded generic Brain mutations across three representative routes
         id: repair
         shell: bash
         run: |
           set -euo pipefail
-          TV_LOG="$GITHUB_WORKSPACE/baseline-reader/tv/tv-native-corpus-sinners-2025.log"
-          MOBILE_LOG="$GITHUB_WORKSPACE/baseline-reader/mobile/mobile-native-corpus-sinners-2025.log"
-          BEFORE="$GITHUB_WORKSPACE/baseline-reader/sinners-cross-client-brain.json"
-          if [ ! -s "$TV_LOG" ] || [ ! -s "$MOBILE_LOG" ]; then
-            echo "No complete cross-client Sinners TV+Mobile evidence; provider mutation is forbidden."
-            echo "proposals=0" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
+          BEFORE="$GITHUB_WORKSPACE/baseline-reader/representative-cross-client-brain.json"
+          INPUTS=()
+          for fixture in $NIAKVIO_REPRESENTATIVE_FIXTURES; do
+            TV_LOG="$GITHUB_WORKSPACE/baseline-reader/tv/tv-native-corpus-${fixture}.log"
+            MOBILE_LOG="$GITHUB_WORKSPACE/baseline-reader/mobile/mobile-native-corpus-${fixture}.log"
+            test -s "$TV_LOG"
+            test -s "$MOBILE_LOG"
+            INPUTS+=("$TV_LOG" "$MOBILE_LOG")
+          done
           node niakvio/engine_v2/scripts/diagnose-native-reader.mjs \
-            --output "$BEFORE" "$TV_LOG" "$MOBILE_LOG"
+            --output "$BEFORE" "${INPUTS[@]}"
           python3 niakvio/scripts/build_native_reader_brain_repair.py \
             --diagnosis "$BEFORE" \
             --manifest niakvio/manifest.json \
             --learning-state niakvio/native-reader-learning-current-runtime.json \
             --output-dir niakvio/native-reader-repair \
-            --fixture sinners-2025 \
             --max-providers 24
           COUNT="$(python3 - <<'PY'
           import json
@@ -394,6 +392,7 @@ jobs:
           PY
           )"
           echo "proposals=$COUNT" >> "$GITHUB_OUTPUT"
+          echo "FIELD_NATIVE_REPRESENTATIVE_REPAIR_BASELINE fixtures=3 proposals=$COUNT"
           cat niakvio/native-reader-repair/repair-report.json
       - name: Checkout latest official NuvioTV HEAD for candidate retest
         if: steps.repair.outputs.proposals != '0'
@@ -434,12 +433,11 @@ jobs:
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
           disable-animations: false
           script: echo "TV repair AVD ready"
-      - name: Re-read every Sinners provider and stream after Brain mutation
+      - name: Re-read every provider and returned stream for all representative routes after Brain mutation
         if: steps.repair.outputs.proposals != '0'
-        continue-on-error: true
         uses: ReactiveCircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d
         env:
-          NIAKVIO_TARGET_FIXTURE: sinners-2025
+          NIAKVIO_TARGET_FIXTURES: "sinners-2025 breaking-bad-s01e01 jujutsu-kaisen-s01e01"
           NIAKVIO_TARGET_PROVIDER: all
           NIAKVIO_TARGET_MANIFEST: native-reader-repair/manifest.json
           NIAKVIO_READER_ACCEPTANCE: "1"
@@ -458,38 +456,46 @@ jobs:
           emulator-boot-timeout: 600
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
           script: bash "$GITHUB_WORKSPACE/niakvio/scripts/run_native_corpus_tv_suite.sh"
-      - name: Diagnose and compare Brain mutation with fresh reader proof
+      - name: Diagnose and compare Brain mutations with fresh reader proof for all three routes
         if: steps.repair.outputs.proposals != '0'
         env:
           NIAKVIO_RUNTIME_FINGERPRINT: ${{ needs.resolve.outputs.runtime_fingerprint }}
         shell: bash
         run: |
           set -euo pipefail
-          LOG="$GITHUB_WORKSPACE/tv-native-corpus-sinners-2025.log"
-          BEFORE="$GITHUB_WORKSPACE/baseline-reader/sinners-cross-client-brain.json"
-          test -s "$LOG"
+          BEFORE="$GITHUB_WORKSPACE/baseline-reader/representative-cross-client-brain.json"
+          POST="$GITHUB_WORKSPACE/tv-reader-repair-after.json"
+          POST_INPUTS=()
           test -s "$BEFORE"
-          node niakvio/engine_v2/scripts/diagnose-native-reader.mjs --output "$GITHUB_WORKSPACE/tv-reader-repair-after.json" "$LOG"
-          python3 niakvio/scripts/compare_native_reader_brain_repair.py \
-            --before "$BEFORE" \
-            --after "$GITHUB_WORKSPACE/tv-reader-repair-after.json" \
-            --repair-report niakvio/native-reader-repair/repair-report.json \
-            --fixture sinners-2025 \
-            --runtime-fingerprint "$NIAKVIO_RUNTIME_FINGERPRINT" \
-            --output "$GITHUB_WORKSPACE/tv-reader-repair-comparison.json"
-          cat "$GITHUB_WORKSPACE/tv-reader-repair-comparison.json"
-      - name: Upload Brain mutation and reader comparison
+          for fixture in $NIAKVIO_REPRESENTATIVE_FIXTURES; do
+            LOG="$GITHUB_WORKSPACE/tv-native-corpus-${fixture}.log"
+            test -s "$LOG"
+            POST_INPUTS+=("$LOG")
+          done
+          node niakvio/engine_v2/scripts/diagnose-native-reader.mjs --output "$POST" "${POST_INPUTS[@]}"
+          for fixture in $NIAKVIO_REPRESENTATIVE_FIXTURES; do
+            OUT="$GITHUB_WORKSPACE/tv-reader-repair-comparison-${fixture}.json"
+            python3 niakvio/scripts/compare_native_reader_brain_repair.py \
+              --before "$BEFORE" \
+              --after "$POST" \
+              --repair-report niakvio/native-reader-repair/repair-report.json \
+              --fixture "$fixture" \
+              --runtime-fingerprint "$NIAKVIO_RUNTIME_FINGERPRINT" \
+              --output "$OUT"
+            cat "$OUT"
+          done
+      - name: Upload Brain mutation and representative reader comparisons
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: native-reader-brain-repair-${{ github.run_id }}
           path: |
-            baseline-reader/sinners-cross-client-brain.json
+            baseline-reader/representative-cross-client-brain.json
             niakvio/native-reader-repair/manifest.json
             niakvio/native-reader-repair/repair-report.json
             niakvio/native-reader-repair/providers/*.js
-            tv-native-corpus-sinners-2025.log
+            tv-native-corpus-*.log
             tv-reader-repair-after.json
-            tv-reader-repair-comparison.json
+            tv-reader-repair-comparison-*.json
           retention-days: 7
           if-no-files-found: warn
