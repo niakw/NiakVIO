@@ -2,10 +2,14 @@
 """Compose playback safety with the final shared stream presentation layer.
 
 The historical HLS/audio/runtime-safety implementation is retained byte-for-byte
-in ``hls_master_audio_preserver_impl_v1.py``.  This stable public hook now runs
-that playback layer first and then materializes the common NiakVIO presentation
-wrapper.  Presentation is therefore outside playback validation: it can decorate
-only rows that survived the real media guards and it never rewrites URL/headers.
+in ``hls_master_audio_preserver_impl_v1.py``. This stable public hook normalizes
+the layer stack before applying playback safety, then materializes exactly one
+common NiakVIO presentation wrapper as the final outer layer.
+
+Presentation is therefore outside playback validation: it can decorate only rows
+that survived the real media guards and it never rewrites URL/headers. Removing
+an existing presentation wrapper before re-running the inner HLS compositor also
+keeps repeated override application byte-identical for stable hashes/cache keys.
 """
 from __future__ import annotations
 
@@ -39,7 +43,15 @@ SAFETY_WRAPPER = _IMPL.SAFETY_WRAPPER
 
 
 def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> str:
-    playback_safe = _IMPL.apply(text, options=options, **kwargs)
+    # Normalize the outer presentation layer away before asking the historical
+    # HLS compositor to reason about tail ordering. Otherwise the inner helper
+    # quite correctly moves HLS integrity behind that later wrapper on a second
+    # application, after which presentation moves itself back to the end. The
+    # semantics stay equal but bytes/hash change. Starting from the same inner
+    # stack makes the whole composed transform strictly idempotent.
+    without_presentation = _PRESENTATION._strip_existing(text)
+    playback_safe = _IMPL.apply(without_presentation, options=options, **kwargs)
+
     # Metadata presentation is optional/bounded and may never become a playback
     # dependency. Keep its timeout short even when a provider raises HLS bounds.
     return _PRESENTATION.apply(
