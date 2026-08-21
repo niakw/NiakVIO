@@ -27,6 +27,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
 import native_player_diagnostics_codegen as reader_diag  # noqa: E402
+import finalize_native_android_reader_source as reader_source_finalizer  # noqa: E402
 import prepare_native_corpus_client as client_prepare  # noqa: E402
 import prepare_native_corpus_validation as corpus  # noqa: E402
 from audit_native_client_checkout import audit_checkout  # noqa: E402
@@ -140,6 +141,7 @@ def reader_source(source: str, client: str, expected_duration_minutes: int | flo
         expected_duration_minutes=expected_duration_minutes,
         max_player_probes=probes,
     )
+    output = reader_source_finalizer.finalize_source(output, client)
     if scope != "all":
         return output
     output, replacements = re.subn(r"rows\.take\(\d+\)\.forEachIndexed", "rows.forEachIndexed", output)
