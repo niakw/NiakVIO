@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import sys
+import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -10,12 +11,15 @@ sys.path.insert(0, str(SCRIPTS))
 
 from augment_native_corpus_request_contract import kotlin_map  # noqa: E402
 from augment_native_provider_loading import platform_set_literal, repository_helpers, tv_helpers  # noqa: E402
+from nuvio_tv_test_bootstrap import enable_tv_tests  # noqa: E402
 
 request_contract = (SCRIPTS / "augment_native_corpus_request_contract.py").read_text(encoding="utf-8")
 provider_loading = (SCRIPTS / "augment_native_provider_loading.py").read_text(encoding="utf-8")
 mobile_suite = (SCRIPTS / "run_native_corpus_mobile_suite.sh").read_text(encoding="utf-8")
 desktop_suite = (SCRIPTS / "run_native_corpus_desktop_suite.sh").read_text(encoding="utf-8")
 desktop_workflow = (ROOT / ".github/workflows/native-desktop-reader-acceptance.yml").read_text(encoding="utf-8")
+tv_bootstrap = (SCRIPTS / "nuvio_tv_test_bootstrap.py").read_text(encoding="utf-8")
+reader_acceptance = (SCRIPTS / "prepare_native_reader_acceptance.py").read_text(encoding="utf-8")
 
 # NuvioTV's androidTest compiler must not infer nested map Pair types through
 # Kotlin's generic infix `to`; the real run previously failed before the corpus
@@ -39,6 +43,31 @@ assert 'return "emptySet()"' not in provider_loading
 assert "private val platformExcludedProviders =" not in provider_loading
 assert "emptyMap<String, com.nuvio.tv.domain.model.ScraperInfo>()" in provider_loading
 assert "emptyMap<String, PluginScraper>()" in provider_loading
+
+# NuvioTV instrumentation bootstrap is a structural contract, never a client
+# version contract. The official client advanced from 0.8.4 to 0.8.7 and exposed
+# why anchoring on versionName was wrong. Future version bumps must remain valid.
+assert 'versionName = "0.8.4-beta"' not in tv_bootstrap
+assert "defaultConfig" in tv_bootstrap
+assert "enable_tv_test_bootstrap(repo)" in reader_acceptance
+with tempfile.TemporaryDirectory(prefix="niakvio-tv-bootstrap-") as tmp:
+    repo = Path(tmp)
+    build = repo / "app/build.gradle.kts"
+    build.parent.mkdir(parents=True)
+    build.write_text(
+        '''android {\n    defaultConfig {\n        applicationId = "com.nuvio.tv"\n        versionCode = 9999\n        versionName = "9.99.0-future"\n    }\n    buildTypes {\n        debug {\n            signingConfig = signingConfigs.getByName("release")\n        }\n    }\n}\n''',
+        encoding="utf-8",
+    )
+    enable_tv_tests(repo)
+    first = build.read_text(encoding="utf-8")
+    enable_tv_tests(repo)
+    second = build.read_text(encoding="utf-8")
+    assert second == first
+    assert first.count('testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"') == 1
+    assert first.count('androidTestImplementation("androidx.test.ext:junit:1.3.0")') == 1
+    assert first.count('androidTestImplementation("androidx.test:runner:1.7.0")') == 1
+    assert 'signingConfigs.getByName("debug")' in first
+    assert 'versionName = "9.99.0-future"' in first
 
 # Mobile device tests execute from composeApp, but the official launcher is the
 # androidApp fullDebug APK whose debug application id is com.nuviodebug.com.
@@ -65,6 +94,6 @@ assert "privilege=ordinary-user" in desktop_suite
 
 print(
     "native reader runtime bootstrap contract passed: "
-    "tv_explicit_pairs=true generated_empty_generics_typed=true mobile_real_app=true "
-    "desktop_ordinary_jvm_policy=true"
+    "tv_explicit_pairs=true generated_empty_generics_typed=true tv_version_agnostic_bootstrap=true "
+    "mobile_real_app=true desktop_ordinary_jvm_policy=true"
 )

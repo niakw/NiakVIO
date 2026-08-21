@@ -28,6 +28,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 import native_player_diagnostics_codegen as reader_diag  # noqa: E402
 import prepare_native_corpus_client as client_prepare  # noqa: E402
 import prepare_native_corpus_validation as corpus  # noqa: E402
+from nuvio_tv_test_bootstrap import enable_tv_tests as enable_tv_test_bootstrap  # noqa: E402
 
 CORPUS_PATH = ROOT / ".github/triggers/nuvio-client-lab.json"
 DEFAULT_PR_PROVIDER_LIMIT = 4
@@ -183,7 +184,7 @@ def prepare(
     if target == "tv":
         repo = workspace / "nuvio-tv"
         if initial:
-            corpus.enable_tv_tests(repo)
+            enable_tv_test_bootstrap(repo)
             client_prepare._isolate_tv_android_test_sources(repo)
         assets = repo / "app/src/androidTest/assets/niakvio"
         staged = stage_selected(assets, selected)
