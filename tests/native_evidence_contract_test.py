@@ -33,6 +33,7 @@ completeness = text("scripts/native_evidence_completeness.cjs")
 diagnosis = text("engine_v2/scripts/diagnose-native-reader.mjs")
 reader_gate = text("scripts/gate_native_reader_result.cjs")
 coverage_gate = text("scripts/gate_native_reader_coverage.cjs")
+player_reach_gate = text("scripts/gate_native_player_reached.cjs")
 android_workflow = text(".github/workflows/native-android-route-reader.yml")
 desktop_workflow = text(".github/workflows/native-desktop-reader-acceptance.yml")
 learning_sync = text(".github/workflows/native-reader-learning-sync.yml")
@@ -183,6 +184,7 @@ for suite, client in ((tv_suite, "tv"), (mobile_suite, "mobile")):
         "augment_native_provider_loading.py",
         "gate_native_reader_coverage.cjs",
         "gate_native_reader_result.cjs",
+        "gate_native_player_reached.cjs",
         "official_repository_loading=true",
         f"FIELD_NATIVE_EVIDENCE_INSTRUMENTED client={client}",
     ):
@@ -193,10 +195,24 @@ for required in (
     "augment_native_desktop_player.py",
     "gate_native_reader_coverage.cjs",
     "gate_native_reader_result.cjs",
+    "gate_native_player_reached.cjs",
     "official_repository_loading=true",
     "privilege=ordinary-user",
 ):
     assert required in desktop_suite, required
+
+# Smoke acceptance is allowed to keep ordinary provider/evidence/player outcomes as
+# diagnostics, but it must never claim success without reaching the production player.
+for required in (
+    "FIELD_NATIVE_PLAYER_BEGIN",
+    "player_never_reached",
+    "FIELD_NATIVE_PLAYER_REACH_GATE",
+):
+    assert required in player_reach_gate, required
+for suite in (tv_suite, mobile_suite, desktop_suite):
+    assert "soft_failures=" in suite
+    assert "gate=production_player_reached" in suite
+    assert "NIAKVIO_BRAIN_NONBLOCKING=1" in suite
 
 # Coverage is fail-closed and PR component proof checks two returned streams; deep/
 # manual diagnostic paths remain exhaustive. This is not human-UX acceptance by itself.
@@ -210,9 +226,9 @@ for workflow in (android_workflow, desktop_workflow):
 assert "NIAKVIO_TARGET_PROVIDER: all" in android_workflow
 assert "NIAKVIO_TARGET_PROVIDER: all" in desktop_workflow
 
-# Evidence completeness and Brain learning remain fail-closed. Complete evidence is
-# usable as observation, but provider learning/repair requires independent clients;
-# client/runtime failures can never authorize provider mutation.
+# Evidence completeness and Brain learning remain fail-closed outside the smoke. The
+# native-reader smoke may suppress the diagnostic process exit only; it does not turn
+# incomplete evidence into usable learning or permit provider mutation.
 for required in (
     "missing_repository_load:",
     "provider_route_terminal:",
@@ -229,7 +245,9 @@ for required in (
     "providerMutationRequiresCrossClientConsensus: true",
     "clientRuntimeFailureLearningAllowed: false",
     "providerLoadJsMutationAllowed: false",
-    "if (!evidence.complete) process.exitCode = 2",
+    "const nonblockingSmoke = process.env.NIAKVIO_BRAIN_NONBLOCKING === '1'",
+    "if (!evidence.complete && !nonblockingSmoke) process.exitCode = 2",
+    "nonblockingSmoke,",
 ):
     assert required in diagnosis, required
 assert "FIELD_NATIVE_CAPABILITY_PROBE_REJECTED" in reader_gate
