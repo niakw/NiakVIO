@@ -12,7 +12,13 @@ on:
       - "provider-overrides.json"
       - "providers/**"
       - "sources.json"
+      - "automation/nuvio-client-upstreams.json"
+      - "automation/platform-runtime-contracts.json"
+      - "automation/nuvio-tv-runtime-contract.json"
       - "engine_v2/**"
+      - "scripts/check_nuvio_client_upstreams.py"
+      - "scripts/resolve_nuvio_lab_heads.py"
+      - "scripts/scope_native_reader_learning_runtime.py"
       - "scripts/prepare_native_reader_acceptance.py"
       - "scripts/augment_native_corpus_request_contract.py"
       - "scripts/augment_native_provider_loading.py"
@@ -41,7 +47,13 @@ on:
       - "provider-overrides.json"
       - "providers/**"
       - "sources.json"
+      - "automation/nuvio-client-upstreams.json"
+      - "automation/platform-runtime-contracts.json"
+      - "automation/nuvio-tv-runtime-contract.json"
       - "engine_v2/**"
+      - "scripts/check_nuvio_client_upstreams.py"
+      - "scripts/resolve_nuvio_lab_heads.py"
+      - "scripts/scope_native_reader_learning_runtime.py"
       - "scripts/prepare_native_reader_acceptance.py"
       - "scripts/augment_native_corpus_request_contract.py"
       - "scripts/augment_native_provider_loading.py"
@@ -77,32 +89,46 @@ env:
 jobs:
   resolve:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 8
     outputs:
       mobile_sha: ${{ steps.refs.outputs.mobile_sha }}
       tv_sha: ${{ steps.refs.outputs.tv_sha }}
+      runtime_fingerprint: ${{ steps.refs.outputs.runtime_fingerprint }}
+      mobile_drift_status: ${{ steps.refs.outputs.mobile_drift_status }}
+      tv_drift_status: ${{ steps.refs.outputs.tv_drift_status }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           fetch-depth: 1
           persist-credentials: false
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
-      - id: refs
+      - name: Inspect current official Nuvio client drift
         shell: bash
         run: |
           set -euo pipefail
-          python3 - <<'PY' >> "$GITHUB_OUTPUT"
-          import json
-          from pathlib import Path
-          data=json.loads(Path('sources.json').read_text())
-          clients=(data.get('nuvio_client_compatibility') or {}).get('clients') or {}
-          refs={
-            'mobile_sha': str((clients.get('nuvio-mobile') or {}).get('accepted_ref') or ''),
-            'tv_sha': str((clients.get('nuvio-tv') or {}).get('accepted_ref') or ''),
-          }
-          if any(len(v)!=40 for v in refs.values()): raise SystemExit(f'missing accepted refs: {refs}')
-          for key,value in refs.items(): print(f'{key}={value}')
-          PY
+          python3 scripts/check_nuvio_client_upstreams.py \
+            --no-fail \
+            --output health-output/nuvio-client-upstream-status.json
+      - id: refs
+        name: Resolve latest official Android client HEADs
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/resolve_nuvio_lab_heads.py \
+            --report health-output/nuvio-client-upstream-status.json \
+            --clients nuvio-tv nuvio-mobile \
+            --github-output "$GITHUB_OUTPUT" \
+            --output health-output/nuvio-android-lab-heads.json
+      - name: Publish Nuvio Android runtime audit context
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: nuvio-android-lab-heads-${{ github.run_id }}
+          path: |
+            health-output/nuvio-client-upstream-status.json
+            health-output/nuvio-android-lab-heads.json
+          retention-days: 7
+          if-no-files-found: error
 
   tv-route-reader:
     needs: resolve
@@ -120,7 +146,7 @@ jobs:
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
         with: {node-version: "24", package-manager-cache: false}
       - uses: gradle/actions/setup-gradle@0723195856401067f7a2779048b490ace7a47d7c
-      - name: Checkout accepted official NuvioTV and stage first route
+      - name: Checkout latest official NuvioTV HEAD and stage first route
         shell: bash
         env: {NUVIO_TV_SHA: "${{ needs.resolve.outputs.tv_sha }}"}
         run: |
@@ -215,7 +241,7 @@ jobs:
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
         with: {node-version: "24", package-manager-cache: false}
       - uses: gradle/actions/setup-gradle@0723195856401067f7a2779048b490ace7a47d7c
-      - name: Checkout accepted official NuvioMobile and stage first route
+      - name: Checkout latest official NuvioMobile HEAD and stage first route
         shell: bash
         env: {NUVIO_MOBILE_SHA: "${{ needs.resolve.outputs.mobile_sha }}"}
         run: |
@@ -297,7 +323,7 @@ jobs:
 
   brain-reader-repair-sandbox:
     name: Brain reader repair sandbox and official TV retest
-    needs: [resolve, tv-route-reader]
+    needs: [resolve, tv-route-reader, mobile-route-reader]
     if: ${{ always() && needs.resolve.result == 'success' }}
     runs-on: ubuntu-latest
     timeout-minutes: ${{ github.event_name == 'pull_request' && 55 || 150 }}
@@ -317,9 +343,17 @@ jobs:
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
         with:
           name: native-tv-route-sinners-2025-${{ github.run_id }}
-          path: baseline-reader
+          path: baseline-reader/tv
+      - name: Download representative Mobile evidence from this exact run
+        continue-on-error: true
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          name: native-mobile-route-representative-${{ github.run_id }}
+          path: baseline-reader/mobile
       - name: Restore prior sanitized reader repair memory
         shell: bash
+        env:
+          NIAKVIO_RUNTIME_FINGERPRINT: ${{ needs.resolve.outputs.runtime_fingerprint }}
         run: |
           set -euo pipefail
           git -C niakvio fetch origin brain-learning/proposals:refs/remotes/origin/brain-learning/proposals || true
@@ -328,21 +362,29 @@ jobs:
           else
             printf '{}\n' > niakvio/native-reader-learning-previous.json
           fi
+          python3 niakvio/scripts/scope_native_reader_learning_runtime.py filter \
+            --state niakvio/native-reader-learning-previous.json \
+            --runtime-fingerprint "$NIAKVIO_RUNTIME_FINGERPRINT" \
+            --output niakvio/native-reader-learning-current-runtime.json
       - name: Materialize bounded generic Brain mutations
         id: repair
         shell: bash
         run: |
           set -euo pipefail
-          BEFORE="$GITHUB_WORKSPACE/baseline-reader/tv-route-sinners-2025-brain.json"
-          if [ ! -s "$BEFORE" ]; then
-            echo "No complete Sinners TV diagnosis; mutation is forbidden."
+          TV_LOG="$GITHUB_WORKSPACE/baseline-reader/tv/tv-native-corpus-sinners-2025.log"
+          MOBILE_LOG="$GITHUB_WORKSPACE/baseline-reader/mobile/mobile-native-corpus-sinners-2025.log"
+          BEFORE="$GITHUB_WORKSPACE/baseline-reader/sinners-cross-client-brain.json"
+          if [ ! -s "$TV_LOG" ] || [ ! -s "$MOBILE_LOG" ]; then
+            echo "No complete cross-client Sinners TV+Mobile evidence; provider mutation is forbidden."
             echo "proposals=0" >> "$GITHUB_OUTPUT"
             exit 0
           fi
+          node niakvio/engine_v2/scripts/diagnose-native-reader.mjs \
+            --output "$BEFORE" "$TV_LOG" "$MOBILE_LOG"
           python3 niakvio/scripts/build_native_reader_brain_repair.py \
             --diagnosis "$BEFORE" \
             --manifest niakvio/manifest.json \
-            --learning-state niakvio/native-reader-learning-previous.json \
+            --learning-state niakvio/native-reader-learning-current-runtime.json \
             --output-dir niakvio/native-reader-repair \
             --fixture sinners-2025 \
             --max-providers 24
@@ -353,7 +395,7 @@ jobs:
           )"
           echo "proposals=$COUNT" >> "$GITHUB_OUTPUT"
           cat niakvio/native-reader-repair/repair-report.json
-      - name: Checkout accepted NuvioTV for candidate retest
+      - name: Checkout latest official NuvioTV HEAD for candidate retest
         if: steps.repair.outputs.proposals != '0'
         shell: bash
         env: {NUVIO_TV_SHA: "${{ needs.resolve.outputs.tv_sha }}"}
@@ -418,17 +460,22 @@ jobs:
           script: bash "$GITHUB_WORKSPACE/niakvio/scripts/run_native_corpus_tv_suite.sh"
       - name: Diagnose and compare Brain mutation with fresh reader proof
         if: steps.repair.outputs.proposals != '0'
+        env:
+          NIAKVIO_RUNTIME_FINGERPRINT: ${{ needs.resolve.outputs.runtime_fingerprint }}
         shell: bash
         run: |
           set -euo pipefail
           LOG="$GITHUB_WORKSPACE/tv-native-corpus-sinners-2025.log"
+          BEFORE="$GITHUB_WORKSPACE/baseline-reader/sinners-cross-client-brain.json"
           test -s "$LOG"
+          test -s "$BEFORE"
           node niakvio/engine_v2/scripts/diagnose-native-reader.mjs --output "$GITHUB_WORKSPACE/tv-reader-repair-after.json" "$LOG"
           python3 niakvio/scripts/compare_native_reader_brain_repair.py \
-            --before "$GITHUB_WORKSPACE/baseline-reader/tv-route-sinners-2025-brain.json" \
+            --before "$BEFORE" \
             --after "$GITHUB_WORKSPACE/tv-reader-repair-after.json" \
             --repair-report niakvio/native-reader-repair/repair-report.json \
             --fixture sinners-2025 \
+            --runtime-fingerprint "$NIAKVIO_RUNTIME_FINGERPRINT" \
             --output "$GITHUB_WORKSPACE/tv-reader-repair-comparison.json"
           cat "$GITHUB_WORKSPACE/tv-reader-repair-comparison.json"
       - name: Upload Brain mutation and reader comparison
@@ -437,6 +484,7 @@ jobs:
         with:
           name: native-reader-brain-repair-${{ github.run_id }}
           path: |
+            baseline-reader/sinners-cross-client-brain.json
             niakvio/native-reader-repair/manifest.json
             niakvio/native-reader-repair/repair-report.json
             niakvio/native-reader-repair/providers/*.js
