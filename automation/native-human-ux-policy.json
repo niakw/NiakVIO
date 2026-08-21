@@ -1,7 +1,14 @@
 {
-  "version": 1,
+  "version": 2,
   "mode": "human-ux-observation-only",
   "purpose": "Native labs reproduce the real Nuvio user path and observe launch, player and playback failures without repairing Nuvio, the OS or the lab environment to improve outcomes.",
+  "immutable_principles": [
+    "The harness exists to observe the user path, not to improve it.",
+    "Do not modify Nuvio production runtime code to make tests pass or to gain visibility.",
+    "Do not modify the OS or emulator security/network/runtime policy to make playback easier.",
+    "Playback/player failures are evidence first; only a demonstrated NiakVIO-owned cause may become a Brain repair target.",
+    "If the official Nuvio client or OS blocks faithful observation before playback, classify and retain the external limitation instead of repairing the environment."
+  ],
   "ownership": {
     "repairable": [
       "NiakVIO Core",
@@ -36,6 +43,26 @@
       "local.properties"
     ]
   },
+  "allowed_gradle_additions": {
+    "mobile": [
+      "withDeviceTest {",
+      "instrumentationRunner = \"androidx.test.runner.AndroidJUnitRunner\"",
+      "execution = \"HOST\"",
+      "val androidDeviceTest by getting {",
+      "dependencies {",
+      "implementation(\"junit:junit:4.13.2\")",
+      "implementation(\"androidx.test.ext:junit:1.3.0\")",
+      "implementation(\"androidx.test:runner:1.7.0\")"
+    ],
+    "tv": [
+      "signingConfig = signingConfigs.getByName(\"debug\")",
+      "testInstrumentationRunner = \"androidx.test.runner.AndroidJUnitRunner\"",
+      "dependencies {",
+      "androidTestImplementation(\"androidx.test.ext:junit:1.3.0\")",
+      "androidTestImplementation(\"androidx.test:runner:1.7.0\")"
+    ],
+    "desktop": []
+  },
   "allowed_change_intent": [
     "add or enable test source sets",
     "add instrumentation runner declarations",
@@ -59,7 +86,9 @@
     "NativePlayerController(",
     "decoderPriority",
     "nvidiaRtxSuperResolutionEnabled",
-    "PluginRepository.clearLocalState"
+    "PluginRepository.clearLocalState",
+    "FIELD_NATIVE_HTTP_REQUEST client=",
+    "FIELD_NATIVE_REPOSITORY_HTTP_REQUEST client="
   ],
   "forbidden_behaviors": [
     "edit any production AndroidManifest.xml",
@@ -69,16 +98,18 @@
     "change decoder or playback settings to obtain a green result",
     "clear or rewrite the real user profile, plugin state or cache to hide failures",
     "patch Nuvio source code for logging or instrumentation",
+    "patch Nuvio repository/network loaders to inject evidence interceptors",
     "patch OS permissions, security policy or runtime privileges",
     "classify an external Nuvio or OS limitation as a NiakVIO provider repair target"
   ],
-  "evidence_rule": "Production player behaviour is primary evidence. Diagnostics may observe from NiakVIO-owned test code or external process output, but must not patch Nuvio production runtime code to gain visibility.",
+  "evidence_rule": "Production player behaviour is primary evidence. Diagnostics may observe from NiakVIO-owned test code, official logs already emitted by Nuvio, or external process output, but must not patch Nuvio production runtime code to gain visibility.",
   "failure_rule": "If faithful observation cannot reach playback because the official Nuvio client or OS blocks earlier, record the condition as external evidence. Do not repair the external environment merely to continue the test.",
   "brain_rule": "Brain may learn and repair only from complete evidence that demonstrates a NiakVIO-owned cause. External Nuvio/OS failures must not generate provider mutations.",
   "change_control": {
     "policy_file_is_source_of_truth": true,
     "audit_must_read_this_file": true,
     "policy_changes_require_canonical_gate": true,
+    "policy_changes_require_explicit_diff_review": true,
     "default_on_ambiguity": "fail-closed"
   }
 }
