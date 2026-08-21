@@ -1,0 +1,74 @@
+name: Weekly upstream provider discovery
+
+on:
+  schedule:
+    - cron: '23 5 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: weekly-provider-discovery
+  cancel-in-progress: false
+
+jobs:
+  scout:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout NiakVIO
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Lock weekly discovery contract
+        run: python tests/weekly_provider_discovery_test.py
+
+      - name: Check configured upstream manifests
+        run: >-
+          python scripts/check_upstream_provider_additions.py
+          --output health-output/weekly-provider-discovery.json
+
+      - name: Write review summary
+        if: always()
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          path = Path('health-output/weekly-provider-discovery.json')
+          summary = Path(os.environ['GITHUB_STEP_SUMMARY'])
+          if not path.is_file():
+              summary.write_text('## Weekly provider discovery\n\nNo report was produced.\n', encoding='utf-8')
+              raise SystemExit(0)
+          report = json.loads(path.read_text(encoding='utf-8'))
+          lines = [
+              '## Weekly provider discovery',
+              '',
+              f"Upstreams checked: **{report['checkedUpstreamCount']}/{report['configuredUpstreamCount']}**",
+              f"Known NiakVIO providers: **{report['knownProviderCount']}**",
+              f"New review candidates: **{report['candidateCount']}**",
+              '',
+          ]
+          for row in report.get('candidates', [])[:25]:
+              signals = ', '.join(row.get('signals') or [])
+              lines.append(f"- **{row['canonicalId']}** — {row['sourceName']} — score {row['score']} — {signals}")
+          if report.get('candidateCount', 0) > 25:
+              lines.append(f"- … {report['candidateCount'] - 25} more in the artifact")
+          lines += ['', 'Read-only review: no provider is imported, enabled or published by this workflow.']
+          summary.write_text('\n'.join(lines) + '\n', encoding='utf-8')
+          PY
+
+      - name: Upload discovery report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: weekly-provider-discovery
+          path: health-output/weekly-provider-discovery.json
+          if-no-files-found: warn
+          retention-days: 30
