@@ -8,6 +8,11 @@ families, with no healthy peer at the causal layer. Single-client/OS failures re
 compatibility evidence for future Nuvio updates and Core analysis; they are never
 turned into provider JS mutations here.
 
+TV is the primary retention signal because it is NiakVIO's principal native target,
+but any healthy real client is sufficient to prevent a provider-global failure or
+automatic disable decision. Cross-client failure consensus may justify only a bounded
+repair candidate; it never authorizes provider deactivation from this Lab.
+
 This remains a Learning Lab mutation step, never publication. Candidate bundles still
 require fresh native proof before they can be considered successful.
 """
@@ -25,6 +30,7 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 PATCH_PATH = ROOT / "scripts/provider_patches/global_media_enrichment_v1.py"
 MIN_DISTINCT_CLIENTS_FOR_GLOBAL_PROVIDER_REPAIR = 2
+PRIMARY_NATIVE_CLIENT = "tv"
 
 HYPOTHESIS_SKILLS: dict[str, tuple[str, ...]] = {
     "capture-media-network": ("global_media_enrichment_v1",),
@@ -101,6 +107,14 @@ def _failure_key(row: dict[str, Any]) -> tuple[str, str, str, str]:
     return (*route, str(row.get("failureClass") or "unknown_failure").casefold().strip())
 
 
+def _retention_disposition(healthy_clients: list[str]) -> str:
+    if PRIMARY_NATIVE_CLIENT in healthy_clients:
+        return "retained_tv_healthy"
+    if healthy_clients:
+        return "retained_healthy_peer"
+    return "compatibility_issue_only"
+
+
 def diagnosis_targets(
     diagnosis: dict[str, Any],
     max_providers: int,
@@ -117,6 +131,10 @@ def diagnosis_targets(
     media_extraction_gap is vetoed by any enabled peer that returned at least one
     stream for the same provider/request/fixture, even if that stream later fails
     in the player. This prevents fixing extraction when extraction demonstrably works.
+
+    TV is the primary retention proof. A healthy TV observation always preserves
+    the provider globally. A healthy Desktop/Mobile observation also preserves it;
+    the failing client is then tracked as platform compatibility evidence only.
 
     Windows/macOS remain the same `desktop` family unless the evidence schema later
     exposes distinct production player families. OS-specific failures therefore
@@ -203,24 +221,33 @@ def diagnosis_targets(
         )
         target["failingClients"] = sorted(set(target["failingClients"]))
         target["healthyClients"] = sorted(healthy_source.get(route_key, set()))
+        target["primaryClient"] = PRIMARY_NATIVE_CLIENT
+        target["tvHealthy"] = PRIMARY_NATIVE_CLIENT in target["healthyClients"]
         target["crossClientConfirmed"] = (
             len(target["failingClients"]) >= MIN_DISTINCT_CLIENTS_FOR_GLOBAL_PROVIDER_REPAIR
             and not target["healthyClients"]
         )
+        target["globalDisableAllowed"] = False
         if target["healthyClients"]:
             compatibility_only.append({
                 **target,
                 "reason": "client_specific_failure_has_healthy_peer",
+                "providerDisposition": _retention_disposition(target["healthyClients"]),
                 "providerMutationAllowed": False,
             })
         elif len(target["failingClients"]) < MIN_DISTINCT_CLIENTS_FOR_GLOBAL_PROVIDER_REPAIR:
             compatibility_only.append({
                 **target,
                 "reason": "insufficient_cross_client_confirmation",
+                "providerDisposition": "compatibility_issue_only",
                 "providerMutationAllowed": False,
             })
         else:
-            eligible.append(target)
+            eligible.append({
+                **target,
+                "providerDisposition": "cross_client_repair_candidate",
+                "providerMutationAllowed": True,
+            })
 
     eligible.sort(key=lambda row: (-int(row["occurrences"]), row["provider"], row["requestType"], row["failureClasses"][0]))
     compatibility_only.sort(key=lambda row: (-int(row["occurrences"]), row["provider"], row["requestType"], row["failureClasses"][0]))
@@ -372,6 +399,7 @@ def main() -> int:
                 "hypotheses": target["hypotheses"],
                 "failingClients": target["failingClients"],
                 "providerMutationAllowed": False,
+                "globalDisableAllowed": False,
                 "suppressedSkills": suppressed,
             })
             continue
@@ -382,12 +410,12 @@ def main() -> int:
             for skill in skills:
                 repaired = apply_skill(repaired, skill, patch_module)
         except Exception as error:
-            skipped.append({"provider": provider, "reason": f"mutation_error:{type(error).__name__}"})
+            skipped.append({"provider": provider, "reason": f"mutation_error:{type(error).__name__}", "globalDisableAllowed": False})
             continue
         original_bytes = original.encode("utf-8")
         repaired_bytes = repaired.encode("utf-8")
         if repaired_bytes == original_bytes:
-            skipped.append({"provider": provider, "reason": "mutation_made_no_change", "skills": skills})
+            skipped.append({"provider": provider, "reason": "mutation_made_no_change", "skills": skills, "globalDisableAllowed": False})
             continue
 
         digest = sha256(repaired_bytes)
@@ -406,6 +434,8 @@ def main() -> int:
             "occurrences": target["occurrences"],
             "failingClients": sorted(target["failingClients"]),
             "crossClientConfirmed": True,
+            "providerDisposition": "cross_client_repair_candidate",
+            "globalDisableAllowed": False,
             "sourceSha256": sha256(original_bytes),
             "candidateSha256": digest,
             "candidateFile": relative,
@@ -416,14 +446,32 @@ def main() -> int:
     write_json(candidate_manifest, proposed_manifest)
     diagnosed_reader_failures = int(diagnosis.get("readerFailures") or 0)
     diagnosed_extraction_failures = int(diagnosis.get("extractionFailures") or 0)
+    confirmed_provider_groups = len(target_rows)
+    confirmed_provider_ids = sorted({str(row.get("provider") or "") for row in target_rows if row.get("provider")})
+    retained_tv_healthy = sorted({
+        str(row.get("provider") or "")
+        for row in compatibility_only
+        if row.get("providerDisposition") == "retained_tv_healthy"
+    })
+    retained_healthy_peer = sorted({
+        str(row.get("provider") or "")
+        for row in compatibility_only
+        if row.get("providerDisposition") == "retained_healthy_peer"
+    })
     report = {
-        "schemaVersion": 3,
+        "schemaVersion": 4,
         "brainVersion": diagnosis.get("brainVersion"),
         "mode": "native_reader_repair_sandbox",
         "fixtureScope": args.fixture.strip() or "all",
         "diagnosedReaderFailures": diagnosed_reader_failures,
         "diagnosedExtractionFailures": diagnosed_extraction_failures,
-        "diagnosedProviderFailures": diagnosed_reader_failures + diagnosed_extraction_failures,
+        "clientFailureObservations": diagnosed_reader_failures + diagnosed_extraction_failures,
+        "diagnosedProviderFailures": confirmed_provider_groups,
+        "confirmedCrossClientFailureGroups": confirmed_provider_groups,
+        "confirmedCrossClientRepairProviders": confirmed_provider_ids,
+        "globalProviderDisableCandidates": 0,
+        "retainedTvHealthyProviders": retained_tv_healthy,
+        "retainedHealthyPeerProviders": retained_healthy_peer,
         "proposalCount": len(proposals),
         "providers": [row["provider"] for row in proposals],
         "proposals": proposals,
@@ -440,6 +488,12 @@ def main() -> int:
             "healthyPeerVetoesProviderMutation": True,
             "extractionHealthyPeerVetoesExtractionMutation": True,
             "singleClientFailureIsCompatibilityEvidenceOnly": True,
+            "anyHealthyClientPreventsGlobalDisable": True,
+            "tvIsPrimaryRetentionSignal": True,
+            "tvHealthyAlwaysRetainsProvider": True,
+            "nativeReaderFailureNeverDirectlyDisablesProvider": True,
+            "crossClientFailureMayRepairButNeverAutoDisable": True,
+            "globalDisableRequiresIndependentProviderSafetyEvidence": True,
             "maxMutationProviders": max(1, min(int(args.max_providers), 24)),
             "avoidRepeatedFailedSkillThreshold": max(1, int(args.avoid_threshold)),
         },
@@ -449,7 +503,9 @@ def main() -> int:
     print(
         f"FIELD_NATIVE_READER_REPAIR proposals={len(proposals)} skipped={len(skipped)} "
         f"compatibility_only={len(compatibility_only)} reader_failures={diagnosed_reader_failures} "
-        f"extraction_failures={diagnosed_extraction_failures} fixture={report['fixtureScope']} "
+        f"extraction_failures={diagnosed_extraction_failures} confirmed_provider_groups={confirmed_provider_groups} "
+        f"retained_tv_healthy={len(retained_tv_healthy)} retained_healthy_peer={len(retained_healthy_peer)} "
+        f"global_disable_candidates=0 fixture={report['fixtureScope']} "
         f"learning={str(report['learningApplied']).lower()} manifest={candidate_manifest.relative_to(ROOT)}"
     )
     return 0
