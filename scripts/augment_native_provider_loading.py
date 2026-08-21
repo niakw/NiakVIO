@@ -115,17 +115,19 @@ def insert_imports(text: str, client: str) -> str:
     if client != "tv":
         return text
     anchor = "import androidx.test.platform.app.InstrumentationRegistry\n"
-    addition = (
-        anchor
-        + "import dagger.hilt.EntryPoint\n"
-        + "import dagger.hilt.InstallIn\n"
-        + "import dagger.hilt.android.EntryPointAccessors\n"
-        + "import dagger.hilt.components.SingletonComponent\n"
-        + "import kotlinx.coroutines.flow.first\n"
+    shared_imports = (
+        "import dagger.hilt.EntryPoint\n",
+        "import dagger.hilt.InstallIn\n",
+        "import dagger.hilt.android.EntryPointAccessors\n",
+        "import dagger.hilt.components.SingletonComponent\n",
+        "import kotlinx.coroutines.flow.first\n",
     )
+    missing = [line for line in shared_imports if line not in text]
+    if not missing:
+        return text
     if text.count(anchor) != 1:
         raise SystemExit(f"provider-loading import anchor client=tv count={text.count(anchor)}")
-    return text.replace(anchor, addition, 1)
+    return text.replace(anchor, anchor + "".join(missing), 1)
 
 
 def platform_set_literal(ids: list[str]) -> str:
