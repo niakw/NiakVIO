@@ -52,14 +52,22 @@ try {
   assert.equal(data.brainVersion, 4);
   assert.equal(data.schemaVersion, 5);
   assert.equal(data.evidenceComplete, true);
-  assert.equal(data.policy.learningAllowed, true);
+  assert.equal(data.policy.evidenceUsable, true);
+  assert.equal(data.policy.learningAllowed, false);
+  assert.equal(data.policy.repairPlanningAllowed, false);
+  assert.equal(data.policy.providerMutationRequiresCrossClientConsensus, true);
+  assert.equal(data.crossClientProviderFailureGroups, 0);
   assert.equal(data.policy.providerLoadJsMutationAllowed, false);
   assert.equal(data.readerObserved, 3);
   assert.equal(data.readerHealthy, 1);
   assert.equal(data.readerFailures, 2);
+  assert.equal(data.providerEligibleReaderFailures, 2);
+  assert.equal(data.clientRuntimeReaderFailures, 0);
   assert.equal(data.evidenceStats.providerLoads, 2);
   assert.equal(data.evidenceStats.repositoryHttpRequests, 1);
   assert.equal(data.providerLoadIssues.length, 0);
+  // Single-client failures remain useful diagnostic observations, but the policy
+  // above forbids learning/repair until an independent client corroborates them.
   const access = data.plans.find((row) => row.failureClass === 'playback_http_access');
   assert.ok(access);
   assert.equal(access.requestType, 'movie');
