@@ -69,13 +69,31 @@ for text, label in ((resolver, "resolver"), (desktop_suite, "desktop-suite")):
 assert "root_execution_forbidden" in desktop_suite
 assert "local_server_not_ready_unprivileged" in resolver
 
-# Android helper is a validator only: no cleartext/network-security/permission grant.
+# Android transport helper is a validator only: no cleartext/network-security/permission grant.
 assert "validate_manifest" in android_transport
 assert "modified=false" in android_transport
 assert '.set(f"{ANDROID}usesCleartextTraffic"' not in android_transport
 assert "android.permission.INTERNET" not in android_transport
-assert "configure_manifest" not in mobile_hardener
-assert "validate_manifest(test_manifest)" in mobile_hardener
+
+# The historical Mobile hardener entry point must now be a strict no-op.  It may
+# verify that a checkout exists, but it must never edit Gradle, AndroidManifest,
+# Sentry, packaging, native libraries, networking, or any other Nuvio-owned file.
+assert "leaving Nuvio checkout unchanged" in mobile_hardener
+for forbidden in (
+    "write_text(",
+    "write_bytes(",
+    "configure_manifest",
+    "validate_manifest(test_manifest)",
+    "pickFirsts",
+    "libc++_shared.so",
+    "sentry-android-gradle",
+    "io.sentry.android.gradle",
+    "tools:replace",
+    "usesCleartextTraffic",
+    "networkSecurityConfig",
+    "android.permission.INTERNET",
+):
+    assert forbidden not in mobile_hardener, f"mobile-hardener:{forbidden}"
 
 # No playback-row rewriting/ranking inside the Lab preparation path.
 for text, label in (
