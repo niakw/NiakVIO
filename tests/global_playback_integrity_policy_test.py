@@ -96,6 +96,23 @@ assert "scripts/provider_patches/hls_master_audio_preserver_v1.py" in paths
 assert "scripts/provider_patches/hls_runtime_integrity_v1.py" in paths
 assert any(row.get("scope") == "global_playback_integrity" for row in records if isinstance(row, dict))
 
+# The complete discovery transform must be byte-idempotent. Stable output bytes
+# are required for content-addressed filenames, cache keys and future post-Brain
+# minification/purification: a second apply with no source change cannot create a
+# new provider artifact just because wrapper tail ordering is reconsidered.
+reapplied, reapplied_records = module.apply_overrides(
+    "future-provider-never-seen-before", patched, phase="discovery"
+)
+assert reapplied == patched
+assert reapplied.decode("utf-8").count("NUVIO_GLOBAL_STREAM_PRESENTATION_V1") == 1
+assert reapplied.decode("utf-8").count("NUVIO_GLOBAL_RUNTIME_MEDIA_SAFETY_V1") == 1
+assert reapplied.decode("utf-8").count("NUVIO_HLS_RUNTIME_INTEGRITY_V1") == 1
+assert not any(
+    row.get("type") == "replace"
+    for row in reapplied_records
+    if isinstance(row, dict)
+)
+
 # Runtime repair phase must not inject discovery wrappers.
 runtime, runtime_records = module.apply_overrides("future-provider-never-seen-before", future, phase="runtime")
 assert b"NUVIO_HLS_RUNTIME_INTEGRITY_V1" not in runtime
