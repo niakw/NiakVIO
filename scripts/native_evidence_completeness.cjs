@@ -269,13 +269,10 @@ function assessNativeEvidence(logPaths) {
       problems.push(`provider_load_coverage:${label}:${scope.providerLoadObserved.size}/${expectedLoad}`);
     }
 
-    // Cache hits legitimately produce no repository network traffic. A successful
-    // fresh install must prove its manifest/provider HTTP chain. A terminal install
-    // failure may occur before a request is constructed; that absence is itself
-    // valid evidence when the structured load error and provider fallout are present.
-    if (!scope.repositoryLoadFailed && scope.repositoryLoadBegun > 0 && scope.repositoryCacheHits === 0 && scope.repositoryHttpRequests === 0) {
-      problems.push(`missing_repository_http:${label}`);
-    }
+    // Repository/provider load markers are the canonical proof. Passive HTTP markers
+    // are optional because the human-UX policy forbids patching Nuvio merely to emit
+    // them. When passive markers exist, they still have to form complete request /
+    // terminal pairs and their frontend phases remain checked below.
     if (scope.repositoryHttpRequests !== scope.repositoryHttpTerminal) {
       problems.push(`repository_http_terminal:${label}:${scope.repositoryHttpTerminal}/${scope.repositoryHttpRequests}`);
     }
