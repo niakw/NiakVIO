@@ -17,7 +17,7 @@ sys.path.insert(1, str(SCRIPTS))
 import runtime_repair  # noqa: E402
 import deep_repair_loop as loop  # noqa: E402
 import brain_repair_runtime as brain  # noqa: E402
-from provider_purification import purify_candidate  # noqa: E402
+from provider_purification import purify_candidate, purify_registry  # noqa: E402
 from repair_identity_gate import automatic_repair_identity_gate  # noqa: E402
 from repair_profile_persistence import ensure_repair_profile  # noqa: E402
 
@@ -80,6 +80,15 @@ def _brain_matching(candidate, result, source_text, config=None):
     return [profile for profile in profiles if profile in allowed]
 
 
+def _argument_path(flag: str, default: Path) -> Path:
+    if flag in sys.argv:
+        try:
+            return Path(sys.argv[sys.argv.index(flag) + 1]).resolve()
+        except (ValueError, IndexError):
+            pass
+    return default.resolve()
+
+
 def main() -> int:
     original_config = HEALTH_CONFIG.read_bytes()
     original_argv = list(sys.argv)
@@ -91,18 +100,25 @@ def main() -> int:
         deep_config["probe_streams_adaptively"] = True
         HEALTH_CONFIG.write_text(json.dumps(health_config, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
+        # Deep is the authoritative purification phase: all effective staged bundles
+        # are optimized after known patches/profiles, then that exact registry becomes
+        # baseline input. Repairs generated later in this same loop are purified again
+        # by _profiled_create before their own retest.
+        stage = _argument_path("--stage", ROOT / "staging")
+        output = _argument_path("--output", ROOT / "health-output")
+        purification = purify_registry(stage, output / "provider-purification.json")
+        print(
+            "FIELD_PROVIDER_PURIFICATION_DEEP "
+            f"candidates={purification['candidateCount']} applied={purification['appliedCount']} "
+            f"bytes_saved={purification['bytesSaved']} saving_percent={purification['savingPercent']}"
+        )
+
         loop.compare_results = _identity_safe_compare
         loop.create_repair_candidate = brain.wrap_create_repair_candidate(_profiled_create)
         loop.run_health = _brain_run_health
         loop.matching_profiles = _brain_matching
         sys.argv[0] = str(SCRIPTS / "deep_repair_loop.py")
         rc = loop.main()
-        output = ROOT / "health-output"
-        if "--output" in sys.argv:
-            try:
-                output = Path(sys.argv[sys.argv.index("--output") + 1]).resolve()
-            except (ValueError, IndexError):
-                pass
         brain.annotate_and_learn(output, "deep")
         return int(rc)
     finally:
