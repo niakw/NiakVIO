@@ -2,6 +2,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { ResolverCore } from "../src/resolver-core.mjs";
+import { createTmdbMetadataResolver } from "../src/tmdb-metadata.mjs";
 import { createPurstreamAdapter, derivePurstreamEndpoint } from "../providers/purstream.mjs";
 
 const root = path.resolve(path.dirname(new URL(import.meta.url).pathname), "..");
@@ -26,11 +27,14 @@ for (const terminalUrl of candidates) {
     attempts.push({ terminalUrl, setupError: String(error?.message ?? error), fixtures: [] });
     continue;
   }
-  const core = new ResolverCore({ mediaValidationOptions: { timeoutMs: 8000, maxCandidates: 3, probeHlsChild: true } });
+  const core = new ResolverCore({
+    metadataResolver: createTmdbMetadataResolver({ fetchImpl, timeoutMs: 6000 }),
+    mediaValidationOptions: { timeoutMs: 8000, maxCandidates: 3, probeHlsChild: true },
+  });
   const fixtureResults = [];
   for (const fixture of fixtures()) {
     const result = await core.resolve({
-      provider: { id: "purstream" },
+      provider: { id: "purstream", name: "Purstream" },
       adapter,
       request: { ...fixture.request, device: fixture.device },
       fixtureId: fixture.id,
@@ -59,6 +63,7 @@ const report = {
   generated_at: new Date().toISOString(),
   mode: "diagnostic-not-publication-blocker",
   provider: "purstream",
+  presentation: "core-shared-facts-plus-tmdb",
   domainObservation: observation ? {
     selected: observation.selected ?? null,
     hubUrls: observation.hubUrls ?? [],
@@ -124,6 +129,20 @@ function summarizeFixture(result, fixture) {
     failureClass: result.repair.failureClass,
     repairHypotheses: result.repair.hypotheses.map((item) => item.id),
     playableStreams: result.evidence.playableStreams,
+    streams: result.streams.map((stream) => ({
+      title: stream.title,
+      description: stream.description,
+      quality: stream.quality,
+      language: stream.language,
+      codec: stream.codec,
+      audio: stream.audio,
+      duration: stream.duration,
+      sourceType: stream.sourceType,
+      ageRating: stream.ageRating,
+      displayBadges: stream.displayBadges,
+      playable: stream.playable,
+      host: safeHost(stream.validation?.finalUrl ?? stream.url),
+    })),
     streamHosts: [...new Set(result.streams.filter((stream) => stream.playable).map((stream) => safeHost(stream.validation?.finalUrl ?? stream.url)).filter(Boolean))],
     stages: Object.fromEntries(Object.entries(result.evidence.stages).map(([name, stage]) => [name, compactStage(stage)])),
     errors: result.evidence.errors,
