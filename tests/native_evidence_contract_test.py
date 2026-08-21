@@ -202,13 +202,18 @@ for required in (
     assert required in desktop_suite, required
 
 # Smoke acceptance is allowed to keep ordinary provider/evidence/player outcomes as
-# diagnostics, but it must never claim success without reaching the production player.
+# diagnostics, but it must never claim success from an entry/setup attempt. Only a
+# terminal FIELD_NATIVE_PLAYER row from a *-production engine can satisfy reach.
 for required in (
-    "FIELD_NATIVE_PLAYER_BEGIN",
-    "player_never_reached",
+    "FIELD_NATIVE_PLAYER ",
+    "-production$",
+    "player_setup",
+    "NO_LAUNCH_INTENT",
+    "production_player_never_reached",
     "FIELD_NATIVE_PLAYER_REACH_GATE",
 ):
     assert required in player_reach_gate, required
+assert "FIELD_NATIVE_PLAYER_BEGIN" not in player_reach_gate
 for suite in (tv_suite, mobile_suite, desktop_suite):
     assert "soft_failures=" in suite
     assert "gate=production_player_reached" in suite
