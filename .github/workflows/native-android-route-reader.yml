@@ -164,7 +164,7 @@ jobs:
           path: |
             ~/.android/avd/*
             ~/.android/adb*
-          key: avd-v1-${{ runner.os }}-tv-api31-android-tv-x86-tv_1080p
+          key: avd-v2-${{ runner.os }}-tv-api31-android-tv-x86-tv_1080p-${{ needs.resolve.outputs.tv_sha }}-${{ needs.resolve.outputs.runtime_fingerprint }}
       - name: Create TV AVD snapshot on cache miss
         if: steps.avd-cache.outputs.cache-hit != 'true'
         uses: ReactiveCircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d
@@ -260,7 +260,7 @@ jobs:
           path: |
             ~/.android/avd/*
             ~/.android/adb*
-          key: avd-v1-${{ runner.os }}-mobile-api35-google_apis-x86_64-pixel_2
+          key: avd-v2-${{ runner.os }}-mobile-api35-google_apis-x86_64-pixel_2-${{ needs.resolve.outputs.mobile_sha }}-${{ needs.resolve.outputs.runtime_fingerprint }}
       - name: Create Mobile AVD snapshot on cache miss
         if: steps.avd-cache.outputs.cache-hit != 'true'
         uses: ReactiveCircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d
@@ -418,7 +418,7 @@ jobs:
           path: |
             ~/.android/avd/*
             ~/.android/adb*
-          key: avd-v1-${{ runner.os }}-tv-api31-android-tv-x86-tv_1080p
+          key: avd-v2-${{ runner.os }}-tv-api31-android-tv-x86-tv_1080p-${{ needs.resolve.outputs.tv_sha }}-${{ needs.resolve.outputs.runtime_fingerprint }}
       - name: Create TV AVD snapshot on candidate cache miss
         if: steps.repair.outputs.proposals != '0' && steps.repair-avd-cache.outputs.cache-hit != 'true'
         uses: ReactiveCircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d
