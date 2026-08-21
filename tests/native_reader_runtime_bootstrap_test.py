@@ -20,6 +20,7 @@ desktop_suite = (SCRIPTS / "run_native_corpus_desktop_suite.sh").read_text(encod
 desktop_workflow = (ROOT / ".github/workflows/native-desktop-reader-acceptance.yml").read_text(encoding="utf-8")
 tv_bootstrap = (SCRIPTS / "nuvio_tv_test_bootstrap.py").read_text(encoding="utf-8")
 reader_acceptance = (SCRIPTS / "prepare_native_reader_acceptance.py").read_text(encoding="utf-8")
+corpus_client = (SCRIPTS / "prepare_native_corpus_client.py").read_text(encoding="utf-8")
 
 # NuvioTV's androidTest compiler must not infer nested map Pair types through
 # Kotlin's generic infix `to`; the real run previously failed before the corpus
@@ -50,6 +51,9 @@ assert "emptyMap<String, PluginScraper>()" in provider_loading
 assert 'versionName = "0.8.4-beta"' not in tv_bootstrap
 assert "defaultConfig" in tv_bootstrap
 assert "enable_tv_test_bootstrap(repo)" in reader_acceptance
+assert "enable_tv_test_bootstrap(tv)" in corpus_client
+assert "corpus.enable_tv_tests" not in reader_acceptance
+assert "corpus.enable_tv_tests" not in corpus_client
 with tempfile.TemporaryDirectory(prefix="niakvio-tv-bootstrap-") as tmp:
     repo = Path(tmp)
     build = repo / "app/build.gradle.kts"

@@ -30,6 +30,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 import prepare_native_corpus_validation as corpus  # noqa: E402
 import native_player_diagnostics_codegen as reader_diag  # noqa: E402
+from nuvio_tv_test_bootstrap import enable_tv_tests as enable_tv_test_bootstrap  # noqa: E402
 
 MATERIALIZED_SENTINEL = ROOT / ".native-provider-overrides-materialized"
 
@@ -93,9 +94,6 @@ def _provider_source(filename: str) -> Path:
         if parsed.hostname != "raw.githubusercontent.com":
             raise SystemExit(f"targeted reader refuses non-repository remote provider: {parsed.hostname or raw}")
         parts = [part for part in parsed.path.split("/") if part]
-        # Expected shape: /niakw/NiakVIO/<ref>/providers/<bundle>.js. Keep the
-        # selected manifest immutable by mapping the final providers path back
-        # into this checkout rather than fetching main over the network.
         try:
             providers_index = parts.index("providers")
         except ValueError as error:
@@ -116,8 +114,6 @@ def _provider_source(filename: str) -> Path:
 
 
 def manifest_providers(manifest_path: str | Path) -> list[dict]:
-    # Materialize before reading the manifest because reapply_published_overrides
-    # may update both provider filenames and their manifest references.
     ensure_materialized_provider_transaction()
     manifest_file = _manifest_path(manifest_path)
     data = json.loads(manifest_file.read_text(encoding="utf-8"))
@@ -149,8 +145,6 @@ def manifest_providers(manifest_path: str | Path) -> list[dict]:
 def stage_manifest_providers(destination: Path, manifest_path: str | Path) -> list[dict]:
     providers = manifest_providers(manifest_path)
     destination.mkdir(parents=True, exist_ok=True)
-    # Clean only our generated asset names so changing from the canonical
-    # manifest to a four-provider hotfix cannot leave stale bundles addressable.
     for stale in destination.glob("p[0-9][0-9][0-9].js"):
         stale.unlink()
     staged: list[dict] = []
@@ -230,7 +224,7 @@ def prepare_mobile(workspace: Path, fixture: dict, provider: str | None, player_
 
 def prepare_tv(workspace: Path, fixture: dict, provider: str | None, player_probes: int, manifest_path: str | Path) -> None:
     tv = workspace / "nuvio-tv"
-    corpus.enable_tv_tests(tv)
+    enable_tv_test_bootstrap(tv)
     _isolate_tv_android_test_sources(tv)
     assets = tv / "app/src/androidTest/assets/niakvio"
     staged = stage_manifest_providers(assets, manifest_path)
