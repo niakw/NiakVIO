@@ -19,6 +19,7 @@ INSTRUMENTER="${NIAKVIO}/scripts/instrument_native_client_evidence.py"
 REPOSITORY_HTTP_INSTRUMENTER="${NIAKVIO}/scripts/instrument_native_repository_http_evidence.py"
 REQUEST_CONTRACT="${NIAKVIO}/scripts/augment_native_corpus_request_contract.py"
 PROVIDER_LOADING="${NIAKVIO}/scripts/augment_native_provider_loading.py"
+TV_HILT_FINALIZER="${NIAKVIO}/scripts/finalize_native_tv_test_entrypoint.py"
 REPOSITORY_RESOLVER="${NIAKVIO}/scripts/resolve_native_repository.sh"
 LAB_TRANSPORT="${NIAKVIO}/scripts/configure_native_android_lab_transport.py"
 FRONTEND_CAPTURE="${NIAKVIO}/scripts/capture_native_device_frontend.sh"
@@ -96,6 +97,7 @@ for fixture in "${FIXTURES[@]}"; do
 
   python3 "$REQUEST_CONTRACT" tv --fixture "$fixture" --manifest "$TARGET_MANIFEST" --source "$TEST_SOURCE" || { SOFT_FAILURES=$((SOFT_FAILURES+1)); continue; }
   python3 "$PROVIDER_LOADING" tv --manifest "$TARGET_MANIFEST" --manifest-url "$MANIFEST_URL" --source "$TEST_SOURCE" "${PROVIDER_LOADING_URL_ARGS[@]}" || { SOFT_FAILURES=$((SOFT_FAILURES+1)); continue; }
+  python3 "$TV_HILT_FINALIZER" "$TEST_SOURCE" || { SOFT_FAILURES=$((SOFT_FAILURES+1)); continue; }
 
   FRONT_DIR="${EVIDENCE_ROOT}/${fixture}"
   FRONT_LOG="${WORKSPACE}/tv-native-frontend-${fixture}.log"
