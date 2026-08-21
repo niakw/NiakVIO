@@ -1,0 +1,92 @@
+name: Scratch native lab profile validation
+
+on:
+  push:
+    branches: [scratch/native-lab-core-fixes-20260821]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: scratch-native-lab-profile-validation
+  cancel-in-progress: true
+
+jobs:
+  validate-and-materialize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 1
+          ref: scratch/native-lab-core-fixes-20260821
+      - uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165
+        with: {distribution: temurin, java-version: "17"}
+      - uses: gradle/actions/setup-gradle@0723195856401067f7a2779048b490ace7a47d7c
+
+      - name: Apply persisted harness fixes
+        run: python3 scripts/_scratch_apply_lab_profile_fixes.py
+
+      - name: Run NiakVIO harness/profile regressions
+        run: |
+          set -euxo pipefail
+          python3 tests/native_human_ux_policy_lock_test.py
+          python3 tests/native_reader_runtime_bootstrap_test.py
+          node tests/native_evidence_completeness_test.cjs
+          python3 scripts/audit_native_client_checkout.py --help >/dev/null
+
+      - name: Prove Mobile device-test JNI packaging on official HEAD
+        run: |
+          set -euxo pipefail
+          git clone --filter=blob:none https://github.com/NuvioMedia/NuvioMobile.git "$RUNNER_TEMP/nuvio-mobile"
+          python3 - "$RUNNER_TEMP/nuvio-mobile" <<'PY'
+          import sys
+          from pathlib import Path
+          sys.path.insert(0, "scripts")
+          from native_client_test_bootstrap import enable_mobile_device_tests
+          enable_mobile_device_tests(Path(sys.argv[1]))
+          PY
+          touch "$RUNNER_TEMP/nuvio-mobile/local.properties"
+          cd "$RUNNER_TEMP/nuvio-mobile"
+          ./gradlew :composeApp:mergeAndroidDeviceTestNativeLibs -Pnuvio.android.distribution=full --no-daemon --stacktrace
+
+      - name: Prove TV debug Hilt entry point is aggregated into debug app graph
+        run: |
+          set -euxo pipefail
+          git clone --filter=blob:none https://github.com/NuvioMedia/NuvioTV.git "$RUNNER_TEMP/nuvio-tv"
+          touch "$RUNNER_TEMP/nuvio-tv/local.properties" "$RUNNER_TEMP/nuvio-tv/local.dev.properties"
+          python3 - "$RUNNER_TEMP/nuvio-tv" <<'PY'
+          import sys
+          from pathlib import Path
+          sys.path.insert(0, "scripts")
+          from native_client_test_bootstrap import enable_tv_tests
+          enable_tv_tests(Path(sys.argv[1]))
+          PY
+          TEST="$RUNNER_TEMP/nuvio-tv/app/src/androidTest/java/com/nuvio/tv/core/plugin/NiakvioLabEntryPointCompileTest.kt"
+          mkdir -p "$(dirname "$TEST")"
+          cat > "$TEST" <<'KT'
+          package com.nuvio.tv.core.plugin
+          import androidx.test.platform.app.InstrumentationRegistry
+          import dagger.hilt.android.EntryPointAccessors
+          import org.junit.Test
+          class NiakvioLabEntryPointCompileTest {
+              @Test fun resolvesManager() {
+                  val app = InstrumentationRegistry.getInstrumentation().targetContext.applicationContext
+                  EntryPointAccessors.fromApplication(app, NiakvioLabPluginManagerEntryPoint::class.java).pluginManager()
+              }
+          }
+          KT
+          cd "$RUNNER_TEMP/nuvio-tv"
+          ./gradlew :app:assembleFullDebug :app:assembleFullDebugAndroidTest --no-daemon --stacktrace
+          grep -R -F "NiakvioLabPluginManagerEntryPoint" app/build/generated app/build/intermediates >/dev/null
+
+      - name: Materialize clean scratch commit
+        run: |
+          set -euxo pipefail
+          rm -f scripts/_scratch_apply_lab_profile_fixes.py .github/workflows/_scratch-native-lab-profile-validation.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --check
+          git commit -m "Persist native lab harness profiles and blockers"
+          git push origin HEAD:scratch/native-lab-core-fixes-20260821
