@@ -57,6 +57,11 @@ def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> st
     }
     serialized = json.dumps(payload, separators=(",", ":"))
     marker = f"{MARKER}:{hashlib.sha256(serialized.encode()).hexdigest()[:12]}"
+    # Exact same Core revision/config is a byte-for-byte no-op. This matters because
+    # apply_overrides is intentionally re-runnable and other wrappers have stable
+    # relative ordering contracts. Only an implementation/config change replaces V1.
+    if f"/* {marker} */" in text:
+        return text
     text = _strip_existing(text)
 
     wrapper = r'''
