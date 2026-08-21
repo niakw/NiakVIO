@@ -19,6 +19,8 @@ request_contract = text("scripts/augment_native_corpus_request_contract.py")
 provider_loading = text("scripts/augment_native_provider_loading.py")
 repository_http = text("scripts/instrument_native_repository_http_evidence.py")
 resolver = text("scripts/resolve_native_repository.sh")
+client_head_resolver = text("scripts/resolve_nuvio_lab_heads.py")
+reader_runtime_scope = text("scripts/scope_native_reader_learning_runtime.py")
 android_player = text("scripts/native_player_diagnostics_codegen.py")
 desktop_player = text("scripts/augment_native_desktop_player.py")
 android_transport = text("scripts/configure_native_android_lab_transport.py")
@@ -31,6 +33,7 @@ reader_gate = text("scripts/gate_native_reader_result.cjs")
 coverage_gate = text("scripts/gate_native_reader_coverage.cjs")
 android_workflow = text(".github/workflows/native-android-route-reader.yml")
 desktop_workflow = text(".github/workflows/native-desktop-reader-acceptance.yml")
+learning_sync = text(".github/workflows/native-reader-learning-sync.yml")
 
 # Canonical media route traversal remains explicit; capability probes are evidence,
 # never permission for a Lab-side provider/player rewrite.
@@ -87,6 +90,38 @@ for forbidden in ("sudo -n", "sudo ", "--add-opens", "ALL-UNNAMED"):
     assert forbidden not in resolver, forbidden
     assert forbidden not in desktop_suite, forbidden
 assert "root_execution_forbidden" in desktop_suite
+
+# Labs resolve the latest official client branch HEAD. Accepted/contract refs remain
+# audit context only; an unresolved HEAD may never silently fall back to stale code.
+for required in (
+    "latest official HEAD is unresolved",
+    "refusing stale fallback",
+    "current_head",
+    "accepted_ref",
+    "contract_ref",
+    "latest-official-head-for-labs",
+):
+    assert required in client_head_resolver, required
+for workflow in (android_workflow, desktop_workflow):
+    assert "check_nuvio_client_upstreams.py" in workflow
+    assert "resolve_nuvio_lab_heads.py" in workflow
+    assert "Checkout latest official" in workflow
+assert "get('accepted_ref') or '')" not in android_workflow
+assert "get('accepted_ref') or '')" not in desktop_workflow
+
+# Reader repair memory is historical but only influences the exact client revision
+# fingerprint that produced it. Legacy/unscoped memory is never recycled after drift.
+for required in (
+    "exact-runtime-fingerprint-only",
+    "legacyUnscopedExcluded",
+    "runtimeFingerprint",
+    "entry_fingerprint(row) == fingerprint",
+):
+    assert required in reader_runtime_scope, required
+assert "scope_native_reader_learning_runtime.py filter" in android_workflow
+assert "sinners-cross-client-brain.json" in android_workflow
+assert 'needs: [resolve, tv-route-reader, mobile-route-reader]' in android_workflow
+assert "scope_native_reader_learning_runtime.py merge" in learning_sync
 
 # Android may not gain a test-only transport capability.
 assert "validate_manifest" in android_transport
@@ -155,10 +190,12 @@ for required in (
     assert required in desktop_suite, required
 
 # Coverage is fail-closed and PR proof checks two returned streams; deep/manual paths
-# remain exhaustive.
+# remain exhaustive. The assertion follows semantics rather than one code spelling.
 assert "NIAKVIO_PR_STREAM_LIMIT" in coverage_gate
-assert "DEFAULT_PR_STREAM_LIMIT" in coverage_gate
-assert "observed !== expected" in coverage_gate
+assert "DEFAULT_PR_STREAM_LIMIT = 2" in coverage_gate
+assert "streamCoverageSatisfied" in coverage_gate
+assert "return observed >= expected && observed <= returned;" in coverage_gate
+assert "return observed === expected;" in coverage_gate
 for workflow in (android_workflow, desktop_workflow):
     assert "NIAKVIO_PRIMARY_STREAM_SCOPE: all" in workflow
 assert "NIAKVIO_TARGET_PROVIDER: all" in android_workflow
