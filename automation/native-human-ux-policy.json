@@ -1,5 +1,5 @@
 {
-  "version": 3,
+  "version": 4,
   "mode": "human-ux-observation-only",
   "purpose": "Native labs reproduce the real Nuvio user path and observe launch, stream selection, player opening and playback failures without repairing Nuvio, the OS or the lab environment to improve outcomes.",
   "immutable_principles": [
@@ -8,7 +8,8 @@
     "Do not modify the OS or emulator security/network/runtime policy to make playback easier.",
     "Playback/player failures are evidence first; only a demonstrated NiakVIO-owned cause may become a Brain repair target.",
     "If the official Nuvio client or OS blocks faithful observation before playback, classify and retain the external limitation instead of repairing the environment.",
-    "A component-level player or provider probe is diagnostic evidence only and can never satisfy human-UX acceptance by itself."
+    "A component-level player or provider probe is diagnostic evidence only and can never satisfy human-UX acceptance by itself.",
+    "Validated native-lab profiles and known job blockers are persistent memory and must be consulted before changing the harness."
   ],
   "ownership": {
     "repairable": [
@@ -32,6 +33,7 @@
     "change_policy": "only-when-faithful-observation-is-blocked",
     "rule": "Do not improve, refactor, harden, tune or make the harness more permissive while it can still faithfully observe the real user path. If the harness itself prevents observation, apply only the smallest behavior-neutral change required to resume observation.",
     "required_before_change": [
+      "consult persistent_profiles and job_blocker_memory",
       "identify the exact harness blocker",
       "show that the blocker prevents observation rather than merely producing a bad playback result",
       "show that the proposed change cannot make Nuvio, the player, networking or the OS more permissive",
@@ -42,7 +44,155 @@
       "increase playback success rate",
       "work around a Nuvio player failure",
       "work around an OS or emulator playback/network limitation",
-      "obtain richer evidence by changing Nuvio runtime semantics"
+      "obtain richer evidence by changing Nuvio runtime semantics",
+      "re-diagnose a resolved blocker without a changed signature or invalidated profile"
+    ]
+  },
+  "persistent_profiles": {
+    "schema_version": 1,
+    "reuse_rule": "reuse-before-rediagnosis",
+    "invalidation_rule": "A validated profile may be reopened only when its declared invalidation trigger is observed. A red playback result or unrelated CI failure does not invalidate a harness profile.",
+    "common": {
+      "status": "validated-and-reusable",
+      "production_player_first": true,
+      "transport_probe_after_player_only": true,
+      "preserve_warm_profile_plugin_cache_state": true,
+      "nuvio_runtime_source_read_only": true,
+      "os_network_security_policy_read_only": true,
+      "component_probes_are_diagnostic_only": true,
+      "human_ux_acceptance_requires_real_ui_path": true,
+      "provider_transaction": "materialize current NiakVIO Brain/runtime overrides before staging; keep candidate repositories content-addressed",
+      "invalidated_by": [
+        "official Nuvio public user path changes so the recorded path can no longer be executed",
+        "test-owned staging itself prevents Nuvio from launching or reaching the real user path",
+        "a policy requirement becomes impossible to satisfy without changing the observation mechanism"
+      ],
+      "not_invalidated_by": [
+        "stream playback failure",
+        "decoder/player failure",
+        "provider returns zero streams",
+        "external DNS/network failure",
+        "a stale regression-test assertion",
+        "GitHub Actions log blob not yet available while a job is running"
+      ]
+    },
+    "tv": {
+      "status": "validated-and-reusable",
+      "client": "official NuvioTV HEAD",
+      "runner_profile": "Android TV API 31 x86 tv_1080p",
+      "allowed_test_plumbing": [
+        "app/src/androidTest/",
+        "app/build.gradle.kts test runner and test dependencies",
+        "debug signing only when hosted CI lacks the official release key",
+        "local.properties",
+        "local.dev.properties"
+      ],
+      "forbidden_retouch": [
+        "production AndroidManifest.xml",
+        "player/network runtime",
+        "cleartext or INTERNET permission changes",
+        "forced playback headers",
+        "lab player replacement"
+      ],
+      "known_entry": "native_client_test_bootstrap.enable_tv_tests"
+    },
+    "mobile": {
+      "status": "validated-and-reusable",
+      "client": "official NuvioMobile HEAD",
+      "runner_profile": "Android API 35 google_apis x86_64 pixel_2",
+      "launcher_package": "com.nuviodebug.com",
+      "allowed_test_plumbing": [
+        "composeApp/src/androidDeviceTest/",
+        "composeApp/build.gradle.kts device-test runner and test dependencies",
+        "local.properties"
+      ],
+      "forbidden_retouch": [
+        "production AndroidManifest.xml",
+        "player/network runtime",
+        "cleartext or INTERNET permission changes",
+        "forced playback headers",
+        "lab player replacement"
+      ],
+      "known_entry": "native_client_test_bootstrap.enable_mobile_device_tests"
+    },
+    "desktop": {
+      "status": "validated-and-reusable",
+      "clients": [
+        "official NuvioDesktop HEAD on macOS",
+        "official NuvioDesktop HEAD on Windows"
+      ],
+      "execution_policy": "ordinary-user",
+      "required_production_context": [
+        "NuvioTheme",
+        "PlatformPlayerSurface"
+      ],
+      "forbidden_retouch": [
+        "root execution",
+        "sudo",
+        "--add-opens or ALL-UNNAMED JVM privilege relaxation",
+        "decoder priority overrides",
+        "RTX/player setting overrides",
+        "lab-native player/controller replacement"
+      ]
+    }
+  },
+  "job_blocker_memory": {
+    "schema_version": 1,
+    "consult_before_harness_change": true,
+    "resolved_rule": "Do not reapply the old workaround for a resolved blocker unless the failure signature materially changes and the relevant profile is invalidated.",
+    "open_rule": "When an open blocker signature appears, follow its next_action first; do not make Nuvio/OS/player more permissive.",
+    "entries": [
+      {
+        "id": "stale-repository-http-instrumentation-contract",
+        "status": "resolved",
+        "signature": "native_evidence_contract_test.py AssertionError FIELD_NATIVE_REPOSITORY_HTTP_REQUEST",
+        "cause": "architecture test still required runtime-injected repository HTTP markers after runtime instrumentation had correctly been disabled",
+        "resolution": "contract now asserts audited non-mutating compatibility shims instead of requiring injected HTTP markers",
+        "resolved_commit": "6a1c174c4cb554fd0b43e1fdf10438b5087b0e4e",
+        "never_repeat": "do not re-enable Nuvio repository/network runtime instrumentation"
+      },
+      {
+        "id": "stale-tv-bootstrap-wrapper-contract",
+        "status": "resolved",
+        "signature": "native_reader_runtime_bootstrap_test.py AssertionError defaultConfig in tv_bootstrap",
+        "cause": "test inspected the compatibility wrapper although bootstrap implementation had moved to native_client_test_bootstrap.py",
+        "resolution": "validate the shared bootstrap and require the old wrapper to remain non-mutating",
+        "resolved_commit": "9a9ed7f7d3c66ba774b76f94350e7f9d6c50be0b",
+        "never_repeat": "do not move runtime/test bootstrap logic back into nuvio_tv_test_bootstrap.py"
+      },
+      {
+        "id": "stale-tv-bootstrap-alias-contract",
+        "status": "resolved",
+        "signature": "native_reader_runtime_bootstrap_test.py AssertionError enable_tv_test_bootstrap(repo)",
+        "cause": "test expected an obsolete alias while preparation code directly imports enable_tv_tests from the shared bootstrap",
+        "resolution": "assert enable_tv_tests(repo/tv) directly",
+        "resolved_commit": "7912065bedfcd4dd760a454722f82ef3b4c9335c",
+        "never_repeat": "do not recreate the obsolete alias to satisfy a stale test"
+      },
+      {
+        "id": "reader-run-cancellation-churn",
+        "status": "operational-guard",
+        "signature": "new head commit while native reader jobs are queued or running causes concurrency cancellation/restart",
+        "cause": "frequent small commits prevent expensive reader jobs from reaching evidence collection",
+        "resolution": "batch non-reader corrections; once a reader run is executing on the intended head, freeze the head until evidence is collected unless a known deterministic pre-reader blocker makes completion impossible",
+        "never_repeat": "do not push cosmetic or speculative harness changes while waiting for reader evidence"
+      },
+      {
+        "id": "repository-http-evidence-gap-after-instrumentation-disable",
+        "status": "watch",
+        "signature": "missing_repository_http:<client>:<fixture> after a successful fresh repository load",
+        "cause": "native_evidence_completeness may still expect repository HTTP request/terminal markers even though production runtime injection is forbidden",
+        "next_action": "if observed, fix the NiakVIO-owned evidence/completeness contract or obtain passive/test-owned evidence; never restore Nuvio runtime HTTP instrumentation",
+        "never_repeat": "do not patch Nuvio repository/network loaders"
+      },
+      {
+        "id": "actions-log-blob-not-ready",
+        "status": "operational-guard",
+        "signature": "GitHub job-log fetch returns BlobNotFound/404 while job is still in progress",
+        "cause": "GitHub has not materialized the downloadable job log yet",
+        "resolution": "inspect job step status and retry log retrieval only after completion or later in the same investigation",
+        "never_repeat": "do not classify this as a Nuvio/NiakVIO failure or change the harness"
+      }
     ]
   },
   "human_ux_acceptance_path": [
@@ -157,6 +307,8 @@
   "change_control": {
     "policy_file_is_source_of_truth": true,
     "audit_must_read_this_file": true,
+    "persistent_profiles_are_source_of_truth": true,
+    "job_blocker_memory_is_source_of_truth": true,
     "policy_changes_require_canonical_gate": true,
     "policy_changes_require_explicit_diff_review": true,
     "default_on_ambiguity": "fail-closed"
