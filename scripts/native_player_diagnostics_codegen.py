@@ -20,6 +20,9 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicReference
 """
 
+# Shared TV Hilt/repository imports are owned by augment_native_provider_loading.py.
+# Keeping them out of this player-only layer prevents two independent augmenters
+# from emitting the same Kotlin imports into the final native corpus source.
 TV_IMPORTS = """import androidx.activity.compose.setContent
 import androidx.navigation.compose.rememberNavController
 import com.nuvio.tv.MainActivity
@@ -27,11 +30,6 @@ import com.nuvio.tv.core.player.LastPlaybackDiagnostics
 import com.nuvio.tv.data.local.PlayerSettingsDataStore
 import com.nuvio.tv.ui.navigation.NuvioNavHost
 import com.nuvio.tv.ui.navigation.Screen
-import dagger.hilt.EntryPoint
-import dagger.hilt.InstallIn
-import dagger.hilt.android.EntryPointAccessors
-import dagger.hilt.components.SingletonComponent
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 """
