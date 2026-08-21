@@ -20,6 +20,25 @@ const READER_FAILURE_CLASSES = Object.freeze({
   duration_unknown: 'playback_duration_unknown',
 });
 
+const CLIENT_RUNTIME_FAILURE_CLASSES = new Set([
+  'playback_runtime_setup',
+  'playback_player_error',
+  'playback_decoder',
+]);
+
+const CLIENT_RUNTIME_ERROR_PATTERNS = [
+  /java\.awt\.peer/i,
+  /componentpeer/i,
+  /inaccessibleobjectexception/i,
+  /module[_ ]java\.desktop/i,
+  /does[_ ]not[_ ]?["']?opens/i,
+  /unable[_ ]to[_ ]make[_ ]field/i,
+  /java[_ .]heap[_ ]space/i,
+  /outofmemoryerror/i,
+  /qemu.*(?:hang|shutdown|killed)/i,
+  /runner.*(?:shutdown|cancel)/i,
+];
+
 function readerFailureClass(row = {}) {
   const state = String(row.state || '').toLowerCase();
   if (state === 'ready' || state === 'ended') return 'healthy';
@@ -35,6 +54,23 @@ function readerFailureClass(row = {}) {
   if (state === 'timeout') return 'playback_timeout';
   if (state === 'error') return 'playback_player_error';
   return state ? 'playback_unknown' : 'unknown_failure';
+}
+
+function readerFailureDomain(row = {}) {
+  const cls = readerFailureClass(row);
+  if (cls === 'healthy') return 'healthy';
+  if (CLIENT_RUNTIME_FAILURE_CLASSES.has(cls)) return 'client_runtime';
+  const details = [
+    row.errorClass, row.error_class,
+    row.errorCode, row.error_code,
+    row.exceptionChain, row.exception_chain,
+  ].filter(Boolean).join(' ');
+  if (CLIENT_RUNTIME_ERROR_PATTERNS.some((pattern) => pattern.test(details))) return 'client_runtime';
+  return 'provider_stream';
+}
+
+function providerMutationEligible(row = {}) {
+  return readerFailureDomain(row) === 'provider_stream';
 }
 
 function readerSignature(row = {}) {
@@ -54,4 +90,12 @@ function isReaderFailure(row = {}) {
   return readerFailureClass(row) !== 'healthy';
 }
 
-module.exports = { READER_FAILURE_CLASSES, readerFailureClass, readerSignature, isReaderFailure };
+module.exports = {
+  READER_FAILURE_CLASSES,
+  CLIENT_RUNTIME_FAILURE_CLASSES,
+  readerFailureClass,
+  readerFailureDomain,
+  providerMutationEligible,
+  readerSignature,
+  isReaderFailure,
+};
