@@ -20,10 +20,55 @@ ROOT = Path(__file__).resolve().parents[1]
 PURIFIER = ROOT / "engine_v2/scripts/purify-provider.mjs"
 VALIDATOR = ROOT / "scripts/validate_provider_artifact.cjs"
 TERSER_VERSION = "5.50.0"
+_TERSER_READY = False
 
 
 def sha256(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
+
+
+def ensure_terser() -> None:
+    """Install the exact build-only purifier dependency when absent.
+
+    Terser is deliberately not a provider runtime dependency. Keeping it out of
+    package.json avoids shipping a build tool into Nuvio; deep/Brain pipelines
+    install the exact pinned version in their ephemeral workspace only.
+    """
+    global _TERSER_READY
+    if _TERSER_READY:
+        return
+    package_path = ROOT / "node_modules/terser/package.json"
+    try:
+        payload = json.loads(package_path.read_text(encoding="utf-8"))
+        if str(payload.get("version") or "") == TERSER_VERSION:
+            _TERSER_READY = True
+            return
+    except (OSError, json.JSONDecodeError):
+        pass
+
+    completed = subprocess.run(
+        [
+            "npm", "install",
+            "--ignore-scripts", "--no-audit", "--no-fund",
+            "--no-save", "--package-lock=false",
+            f"terser@{TERSER_VERSION}",
+        ],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        timeout=180,
+        check=False,
+    )
+    if completed.returncode != 0:
+        details = "\n".join(part.strip() for part in (completed.stdout, completed.stderr) if part and part.strip())
+        raise RuntimeError(f"unable to install pinned Terser {TERSER_VERSION}: {details[-1800:]}")
+    try:
+        payload = json.loads(package_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise RuntimeError("pinned Terser install completed but package metadata is unavailable") from exc
+    if str(payload.get("version") or "") != TERSER_VERSION:
+        raise RuntimeError(f"pinned Terser install resolved unexpected version {payload.get('version')!r}")
+    _TERSER_READY = True
 
 
 def _extract_result(stdout: str) -> dict[str, Any]:
@@ -56,6 +101,7 @@ def validate_artifact(path: Path) -> None:
 
 
 def purify_bytes(data: bytes) -> tuple[bytes, dict[str, Any]]:
+    ensure_terser()
     before_sha = sha256(data)
     with tempfile.TemporaryDirectory(prefix="niakvio-provider-purify-") as temp:
         temp_dir = Path(temp)
