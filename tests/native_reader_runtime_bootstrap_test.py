@@ -116,7 +116,7 @@ assert "privilege=ordinary-user" in desktop_suite
 assert "import com.nuvio.app.core.ui.NuvioTheme" in desktop_player
 assert "NuvioTheme {" in desktop_player
 assert "desktopThrowableChain" in desktop_player
-assert "exception_chain64=${b64(reader.exceptionChain)}" in desktop_player
+assert "exception_chain64=${{b64(reader.exceptionChain)}}" in desktop_player
 
 print(
     "native reader runtime bootstrap contract passed: "
