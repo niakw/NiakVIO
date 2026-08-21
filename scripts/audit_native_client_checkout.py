@@ -1,72 +1,54 @@
 #!/usr/bin/env python3
 """Fail closed when a native human-UX lab mutates official Nuvio runtime code.
 
-The labs are allowed to add instrumentation/test sources and the minimum Gradle
-plumbing needed to execute them. They are not allowed to make the application
-more permissive or easier to play than the official checkout.
+The machine-readable source of truth is automation/native-human-ux-policy.json.
+This script intentionally contains no independent allow-list for Nuvio checkout
+paths or forbidden runtime tokens: changing the lab boundary requires an explicit
+policy diff that is visible to canonical CI and review.
 """
 from __future__ import annotations
 
 import argparse
-import re
+import json
 import subprocess
 from pathlib import Path
 
+ROOT = Path(__file__).resolve().parents[1]
+POLICY_PATH = ROOT / "automation/native-human-ux-policy.json"
 
-FORBIDDEN_DIFF_TOKENS = (
-    "android.permission.INTERNET",
-    "usesCleartextTraffic",
-    "networkSecurityConfig",
-    "cleartextTrafficPermitted",
-    "setDefaultRequestProperties",
-    "setRequestProperty(\"Referer\"",
-    "setRequestProperty(\"Origin\"",
-    "setRequestProperty(\"User-Agent\"",
-    "PlayerPlaybackNetworking",
-    "PlatformPlaybackDataSourceFactory",
-    "ExoPlayer.Builder",
-    "NativePlayerController(",
-    "decoderPriority",
-    "nvidiaRtxSuperResolutionEnabled",
-    "PluginRepository.clearLocalState",
-)
 
+def load_policy() -> dict:
+    if not POLICY_PATH.is_file():
+        raise SystemExit(f"native human-UX policy missing: {POLICY_PATH}")
+    try:
+        policy = json.loads(POLICY_PATH.read_text(encoding="utf-8"))
+    except Exception as error:
+        raise SystemExit(f"native human-UX policy is invalid JSON: {error}") from error
+    if policy.get("mode") != "human-ux-observation-only":
+        raise SystemExit("native human-UX policy mode must remain human-ux-observation-only")
+    change_control = policy.get("change_control") or {}
+    if change_control.get("policy_file_is_source_of_truth") is not True:
+        raise SystemExit("native human-UX policy must remain the source of truth")
+    if change_control.get("audit_must_read_this_file") is not True:
+        raise SystemExit("native human-UX policy must require audit consumption")
+    if change_control.get("default_on_ambiguity") != "fail-closed":
+        raise SystemExit("native human-UX policy must remain fail-closed")
+    for key in ("allowed_checkout_changes", "allowed_gradle_additions", "forbidden_checkout_tokens"):
+        if not policy.get(key):
+            raise SystemExit(f"native human-UX policy missing non-empty {key}")
+    return policy
+
+
+POLICY = load_policy()
 ALLOWED_PREFIXES = {
-    "mobile": (
-        "composeApp/build.gradle.kts",
-        "composeApp/src/androidDeviceTest/",
-        "local.properties",
-    ),
-    "tv": (
-        "app/build.gradle.kts",
-        "app/src/androidTest/",
-        "local.properties",
-        "local.dev.properties",
-    ),
-    "desktop": (
-        "composeApp/src/desktopTest/",
-        "local.properties",
-    ),
+    str(client): tuple(str(value) for value in values)
+    for client, values in POLICY["allowed_checkout_changes"].items()
 }
-
-# Added lines permitted in tracked Gradle files. Braces/blank lines are ignored.
-MOBILE_GRADLE_ADDITIONS = (
-    'withDeviceTest {',
-    'instrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"',
-    'execution = "HOST"',
-    'val androidDeviceTest by getting {',
-    'dependencies {',
-    'implementation("junit:junit:4.13.2")',
-    'implementation("androidx.test.ext:junit:1.3.0")',
-    'implementation("androidx.test:runner:1.7.0")',
-)
-TV_GRADLE_ADDITIONS = (
-    'signingConfig = signingConfigs.getByName("debug")',
-    'testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"',
-    'dependencies {',
-    'androidTestImplementation("androidx.test.ext:junit:1.3.0")',
-    'androidTestImplementation("androidx.test:runner:1.7.0")',
-)
+ALLOWED_GRADLE_ADDITIONS = {
+    str(client): tuple(str(value) for value in values)
+    for client, values in POLICY["allowed_gradle_additions"].items()
+}
+FORBIDDEN_DIFF_TOKENS = tuple(str(value) for value in POLICY["forbidden_checkout_tokens"])
 
 
 def _run(repo: Path, *args: str) -> str:
@@ -97,7 +79,7 @@ def _path_allowed(client: str, path: str) -> bool:
 
 
 def _audit_gradle_diff(client: str, diff: str) -> None:
-    allowed = MOBILE_GRADLE_ADDITIONS if client == "mobile" else TV_GRADLE_ADDITIONS
+    allowed = set(ALLOWED_GRADLE_ADDITIONS.get(client, ()))
     for line in diff.splitlines():
         if not line.startswith("+") or line.startswith("+++"):
             continue
@@ -106,6 +88,19 @@ def _audit_gradle_diff(client: str, diff: str) -> None:
             continue
         if value not in allowed:
             raise SystemExit(f"native lab forbidden Gradle mutation ({client}): {value}")
+
+
+def _read_changed_file(repo: Path, relative: str) -> str:
+    path = repo / relative
+    if not path.is_file():
+        return ""
+    # Binary provider/test assets are irrelevant to runtime-mutation tokens.
+    if path.suffix.lower() not in {".kt", ".java", ".kts", ".xml", ".gradle", ".properties", ".txt"}:
+        return ""
+    try:
+        return path.read_text(encoding="utf-8", errors="replace")
+    except Exception:
+        return ""
 
 
 def audit_checkout(repo: Path, client: str) -> None:
@@ -124,24 +119,24 @@ def audit_checkout(repo: Path, client: str) -> None:
         )
 
     tracked_diff = _run(repo, "diff", "--no-ext-diff", "--unified=0", "--")
+    changed_text = tracked_diff + "\n" + "\n".join(_read_changed_file(repo, path) for path in paths)
     for token in FORBIDDEN_DIFF_TOKENS:
-        if token in tracked_diff:
+        if token in changed_text:
             raise SystemExit(f"native human-UX lab introduced forbidden runtime mutation: {token}")
 
-    if client == "mobile" and "composeApp/build.gradle.kts" in paths:
+    gradle_path = {
+        "mobile": "composeApp/build.gradle.kts",
+        "tv": "app/build.gradle.kts",
+    }.get(client)
+    if gradle_path and gradle_path in paths:
         _audit_gradle_diff(
             client,
-            _run(repo, "diff", "--no-ext-diff", "--unified=0", "--", "composeApp/build.gradle.kts"),
-        )
-    if client == "tv" and "app/build.gradle.kts" in paths:
-        _audit_gradle_diff(
-            client,
-            _run(repo, "diff", "--no-ext-diff", "--unified=0", "--", "app/build.gradle.kts"),
+            _run(repo, "diff", "--no-ext-diff", "--unified=0", "--", gradle_path),
         )
 
     print(
         f"FIELD_NATIVE_CHECKOUT_AUDIT client={client} changed_paths={len(paths)} "
-        "runtime_mutation=false status=ok"
+        f"policy_version={POLICY.get('version')} runtime_mutation=false status=ok"
     )
 
 
