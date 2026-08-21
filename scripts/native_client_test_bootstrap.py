@@ -19,15 +19,22 @@ TV_EXT_JUNIT = 'androidTestImplementation("androidx.test.ext:junit:1.3.0")'
 TV_TEST_RUNNER = 'androidTestImplementation("androidx.test:runner:1.7.0")'
 TV_DEBUG_ENTRYPOINT = '''package com.nuvio.tv.core.plugin
 
+import com.nuvio.tv.data.local.PlayerSettingsDataStore
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 
-/** Test-build-only accessor for the real production PluginManager singleton. */
+/** Test-build-only accessors aggregated into the real debug SingletonComponent. */
 @EntryPoint
 @InstallIn(SingletonComponent::class)
 interface NiakvioPluginManagerEntryPoint {
     fun pluginManager(): PluginManager
+}
+
+@EntryPoint
+@InstallIn(SingletonComponent::class)
+interface NiakvioPlayerSettingsEntryPoint {
+    fun playerSettingsDataStore(): PlayerSettingsDataStore
 }
 '''
 
@@ -106,8 +113,8 @@ def enable_tv_tests(repo: Path) -> None:
     build.write_text(text, encoding="utf-8")
 
     # Hilt aggregates EntryPoints when compiling the target APK, not afterwards
-    # when androidTest is compiled. Materialize the accessor in debug-only source
-    # so it is part of the real debug SingletonComponent without changing main/release.
+    # when androidTest is compiled. Materialize both accessors in debug-only source
+    # so they are part of the real debug SingletonComponent without changing main/release.
     entrypoint = repo / "app/src/debug/java/com/nuvio/tv/core/plugin/NiakvioPluginManagerEntryPoint.kt"
     entrypoint.parent.mkdir(parents=True, exist_ok=True)
     if entrypoint.exists() and entrypoint.read_text(encoding="utf-8") != TV_DEBUG_ENTRYPOINT:
@@ -116,5 +123,5 @@ def enable_tv_tests(repo: Path) -> None:
 
     print(
         "FIELD_NATIVE_TEST_BOOTSTRAP client=tv scope=test-only runtime_mutation=false "
-        "hilt_debug_entrypoint=true"
+        "hilt_debug_entrypoints=plugin_manager,player_settings"
     )
