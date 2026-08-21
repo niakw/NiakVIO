@@ -6,7 +6,13 @@ import { createRequire } from 'node:module';
 import { BRAIN_CONTROL_PLANE_VERSION, planRepair } from '../src/repair-brain.mjs';
 
 const require = createRequire(import.meta.url);
-const { readerFailureClass, readerSignature, isReaderFailure } = require('../../scripts/native_player_diagnostics.cjs');
+const {
+  readerFailureClass,
+  readerFailureDomain,
+  providerMutationEligible,
+  readerSignature,
+  isReaderFailure,
+} = require('../../scripts/native_player_diagnostics.cjs');
 const { assessNativeEvidence } = require('../../scripts/native_evidence_completeness.cjs');
 
 const args = process.argv.slice(2);
@@ -122,6 +128,8 @@ for (const file of logPaths) {
       trackType: Number.isFinite(Number(f.track_type)) ? Number(f.track_type) : -1,
     };
     row.failureClass = readerFailureClass(row);
+    row.failureDomain = readerFailureDomain(row);
+    row.providerMutationEligible = providerMutationEligible(row);
     row.signature = readerSignature({ ...row, requestType: row.requestType });
     readerRows.push(row);
   }
@@ -130,14 +138,13 @@ for (const file of logPaths) {
 const declaredRows = readerRows.filter((row) => row.routeMode !== 'capability_probe');
 const capabilityRows = readerRows.filter((row) => row.routeMode === 'capability_probe');
 const failures = declaredRows.filter(isReaderFailure);
+const providerEligibleFailures = failures.filter((row) => row.providerMutationEligible);
+const clientRuntimeFailures = failures.filter((row) => !row.providerMutationEligible);
 const declaredHealthy = declaredRows.filter((row) => !isReaderFailure(row));
 const capabilityFailures = capabilityRows.filter(isReaderFailure);
 const capabilityHealthy = capabilityRows.filter((row) => !isReaderFailure(row));
 
-// Repair planning is intentionally restricted to already-declared routes. An
-// undeclared media-type probe can discover coverage, but its failure must never
-// mutate a provider that is behaving according to its published contract.
-const plans = evidence.complete ? failures.map((row) => {
+const plans = evidence.complete ? providerEligibleFailures.map((row) => {
   const failureEvidence = {
     invoked: true,
     signature: row.signature,
@@ -164,7 +171,8 @@ const plans = evidence.complete ? failures.map((row) => {
   return {
     provider: String(row.provider || '').toLowerCase(), client: row.client, fixture: row.fixture,
     requestType: row.requestType, routeMode: row.routeMode, index: row.index,
-    state: row.state, failureClass: row.failureClass, failureStage: row.failureStage,
+    state: row.state, failureClass: row.failureClass, failureDomain: row.failureDomain,
+    providerMutationEligible: true, failureStage: row.failureStage,
     httpStatus: row.httpStatus, errorCode: row.errorCode, errorClass: row.errorClass,
     host: row.host, durationSeconds: row.durationSeconds,
     loadBytes: row.loadBytes, loadDurationMs: row.loadDurationMs,
@@ -178,14 +186,28 @@ const plans = evidence.complete ? failures.map((row) => {
   };
 }) : [];
 
-// Loading failures are a different mutation domain from stream/player failures.
-// Keep them completely out of `plans`, because build_native_reader_brain_repair.py
-// consumes that list to patch provider JS. A load failure must target repository,
-// manifest or Core semantics first.
 const providerLoadIssues = evidence.complete ? providerLoadObservations.map((row) => ({
   ...row,
   ...providerLoadRepair(row),
 })) : [];
+
+const healthyByRoute = new Map();
+for (const row of declaredHealthy) {
+  const key = `${String(row.provider || '').toLowerCase()}\u0000${row.requestType}\u0000${row.fixture}`;
+  if (!healthyByRoute.has(key)) healthyByRoute.set(key, new Set());
+  healthyByRoute.get(key).add(row.client);
+}
+const consensusGrouped = new Map();
+for (const plan of plans) {
+  const key = `${plan.provider}\u0000${plan.requestType}\u0000${plan.fixture}\u0000${plan.failureClass}`;
+  if (!consensusGrouped.has(key)) consensusGrouped.set(key, { plan, clients: new Set() });
+  consensusGrouped.get(key).clients.add(plan.client);
+}
+const crossClientProviderFailures = [...consensusGrouped.values()].filter(({ plan, clients }) => {
+  const routeKey = `${plan.provider}\u0000${plan.requestType}\u0000${plan.fixture}`;
+  return clients.size >= 2 && !(healthyByRoute.get(routeKey)?.size > 0);
+});
+const providerLearningAllowed = evidence.complete && crossClientProviderFailures.length > 0;
 
 const grouped = new Map();
 for (const plan of plans) {
@@ -229,7 +251,8 @@ const providerLoadPriorities = [...loadGrouped.values()]
 const observations = readerRows.map((row) => ({
   provider: String(row.provider || '').toLowerCase(), client: row.client, fixture: row.fixture,
   requestType: row.requestType, routeMode: row.routeMode, index: row.index,
-  state: row.state, failureClass: row.failureClass, failureStage: row.failureStage,
+  state: row.state, failureClass: row.failureClass, failureDomain: row.failureDomain,
+  providerMutationEligible: row.providerMutationEligible, failureStage: row.failureStage,
   httpStatus: row.httpStatus, errorCode: row.errorCode, host: row.host,
   durationSeconds: row.durationSeconds, loadBytes: row.loadBytes, loadDurationMs: row.loadDurationMs,
 }));
@@ -239,6 +262,7 @@ function ensureProviderOutcome(provider) {
   if (!providerMap.has(key)) {
     providerMap.set(key, {
       provider: key, observed: 0, healthy: 0, failures: 0,
+      providerEligibleFailures: 0, clientRuntimeFailures: 0,
       capabilityProbes: 0, capabilityHealthy: 0, capabilityFailures: 0,
       loadFailures: 0, loadFailureClasses: {},
       failureClasses: {}, clients: new Set(), fixtures: new Set(), requestTypes: new Set(),
@@ -260,6 +284,8 @@ for (const row of observations) {
     current.healthy += 1;
   } else {
     current.failures += 1;
+    if (row.providerMutationEligible) current.providerEligibleFailures += 1;
+    else current.clientRuntimeFailures += 1;
     current.failureClasses[row.failureClass] = Number(current.failureClasses[row.failureClass] || 0) + 1;
   }
 }
@@ -275,6 +301,8 @@ const providerOutcomes = [...providerMap.values()].map((row) => ({
   observed: row.observed,
   healthy: row.healthy,
   failures: row.failures,
+  providerEligibleFailures: row.providerEligibleFailures,
+  clientRuntimeFailures: row.clientRuntimeFailures,
   capabilityProbes: row.capabilityProbes,
   capabilityHealthy: row.capabilityHealthy,
   capabilityFailures: row.capabilityFailures,
@@ -290,10 +318,9 @@ const capabilityProbes = capabilityRows.map((row) => ({
   provider: String(row.provider || '').toLowerCase(), client: row.client, fixture: row.fixture,
   requestType: row.requestType, index: row.index,
   state: row.state, healthy: !isReaderFailure(row), failureClass: row.failureClass,
+  failureDomain: row.failureDomain, providerMutationEligible: false,
   failureStage: row.failureStage, httpStatus: row.httpStatus,
   durationSeconds: row.durationSeconds,
-  // Reader health alone is intentionally NOT enough to mutate supportedTypes.
-  // Identity/duration coverage is proven by the dedicated capability analyzer.
   promotionEligibleFromReaderAlone: false,
 }));
 
@@ -308,6 +335,9 @@ const payload = {
   readerDeclaredObserved: declaredRows.length,
   readerHealthy: declaredHealthy.length,
   readerFailures: failures.length,
+  providerEligibleReaderFailures: providerEligibleFailures.length,
+  clientRuntimeReaderFailures: clientRuntimeFailures.length,
+  crossClientProviderFailureGroups: crossClientProviderFailures.length,
   capabilityProbeObserved: capabilityRows.length,
   capabilityProbeHealthy: capabilityHealthy.length,
   capabilityProbeFailures: capabilityFailures.length,
@@ -323,12 +353,16 @@ const payload = {
   priorities,
   providerLoadPriorities,
   policy: {
-    learningAllowed: evidence.complete,
-    repairPlanningAllowed: evidence.complete,
-    repositoryLearningAllowed: evidence.complete,
+    evidenceUsable: evidence.complete,
+    learningAllowed: providerLearningAllowed,
+    providerLearningAllowed,
+    repairPlanningAllowed: providerLearningAllowed,
+    providerMutationRequiresCrossClientConsensus: true,
+    clientRuntimeFailureLearningAllowed: false,
+    repositoryLearningAllowed: evidence.complete && providerLoadIssues.length > 0,
     providerLoadJsMutationAllowed: false,
-    coreOrManifestLoadProposalAllowed: evidence.complete,
-    capabilityLearningAllowed: evidence.complete,
+    coreOrManifestLoadProposalAllowed: evidence.complete && providerLoadIssues.length > 0,
+    capabilityLearningAllowed: false,
     capabilityPromotionRequiresIdentityProof: true,
     productionWritesAllowed: false,
     publicationAllowed: false,
@@ -341,6 +375,8 @@ fs.writeFileSync(outputPath, JSON.stringify(payload, null, 2) + '\n');
 console.log(
   `FIELD_NATIVE_READER_BRAIN evidence_complete=${payload.evidenceComplete} observed=${payload.readerObserved} ` +
   `declared=${payload.readerDeclaredObserved} healthy=${payload.readerHealthy} failures=${payload.readerFailures} ` +
+  `provider_eligible_failures=${payload.providerEligibleReaderFailures} client_runtime_failures=${payload.clientRuntimeReaderFailures} ` +
+  `cross_client_provider_groups=${payload.crossClientProviderFailureGroups} ` +
   `provider_load_failures=${payload.providerLoadActionableFailures} capability_probes=${payload.capabilityProbeObserved} ` +
   `capability_probe_healthy=${payload.capabilityProbeHealthy} capability_probe_failures=${payload.capabilityProbeFailures} ` +
   `priorities=${priorities.length} provider_load_priorities=${providerLoadPriorities.length} provider_outcomes=${providerOutcomes.length}`
