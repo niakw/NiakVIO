@@ -1,5 +1,5 @@
 {
-  "version": 4,
+  "version": 5,
   "mode": "human-ux-observation-only",
   "purpose": "Native labs reproduce the real Nuvio user path and observe launch, stream selection, player opening and playback failures without repairing Nuvio, the OS or the lab environment to improve outcomes.",
   "immutable_principles": [
@@ -104,6 +104,7 @@
       "allowed_test_plumbing": [
         "composeApp/src/androidDeviceTest/",
         "composeApp/build.gradle.kts device-test runner and test dependencies",
+        "composeApp/build.gradle.kts device-test-only duplicate libc++ packaging selection",
         "local.properties"
       ],
       "forbidden_retouch": [
@@ -168,6 +169,14 @@
         "resolution": "assert enable_tv_tests(repo/tv) directly",
         "resolved_commit": "7912065bedfcd4dd760a454722f82ef3b4c9335c",
         "never_repeat": "do not recreate the obsolete alias to satisfy a stale test"
+      },
+      {
+        "id": "mobile-device-test-libcxx-packaging-conflict",
+        "status": "resolved",
+        "signature": "mergeAndroidDeviceTestNativeLibs duplicate libc++_shared.so from upstream native dependencies",
+        "cause": "the generated NuvioMobile instrumentation APK merges more than one copy of the same C++ runtime before the real application/player can launch",
+        "resolution": "allow one idempotent device-test-only Gradle packaging pickFirst for lib/*/libc++_shared.so in the ephemeral checkout; do not modify application runtime, player, provider, networking or OS policy",
+        "never_repeat": "do not remove the test-only packaging exception while this upstream dependency conflict exists, and never replace it with player/network/runtime changes"
       },
       {
         "id": "reader-run-cancellation-churn",
@@ -249,7 +258,10 @@
       "dependencies {",
       "implementation(\"junit:junit:4.13.2\")",
       "implementation(\"androidx.test.ext:junit:1.3.0\")",
-      "implementation(\"androidx.test:runner:1.7.0\")"
+      "implementation(\"androidx.test:runner:1.7.0\")",
+      "packaging {",
+      "jniLibs {",
+      "pickFirsts.add(\"lib/*/libc++_shared.so\")"
     ],
     "tv": [
       "signingConfig = signingConfigs.getByName(\"debug\")",
@@ -264,6 +276,7 @@
     "add or enable test source sets for diagnostic probes only",
     "add instrumentation runner declarations for diagnostic probes only",
     "add test-only dependencies for diagnostic probes only",
+    "resolve duplicate C++ runtime packaging in the instrumentation APK only without changing application runtime, player, provider, network or OS behavior",
     "use a debug signing configuration when hosted CI cannot access an official release signing key",
     "stage NiakVIO provider bundles as diagnostic test assets",
     "add test code that invokes production Nuvio entry points only as component diagnostics, never as human-UX acceptance proof"
