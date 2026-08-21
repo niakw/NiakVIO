@@ -2,6 +2,10 @@
 # PR reader trigger: route-list execution stays inside this shell so one emulator boot is reused.
 set -u
 
+if [[ "${GITHUB_EVENT_NAME:-}" = "pull_request" ]]; then
+  export NIAKVIO_PR_PROVIDER_LIMIT="${NIAKVIO_PR_PROVIDER_LIMIT:-8}"
+fi
+
 WORKSPACE="${GITHUB_WORKSPACE}"
 NIAKVIO="${WORKSPACE}/niakvio"
 TV_ROOT="${WORKSPACE}/nuvio-tv"
@@ -76,7 +80,7 @@ python3 "$INSTRUMENTER" tv "$TV_ROOT" || exit $?
 python3 "$REPOSITORY_HTTP_INSTRUMENTER" tv "$TV_ROOT" || exit $?
 if [[ -n "${GITHUB_ENV:-}" ]]; then echo "NIAKVIO_BRAIN_NONBLOCKING=1" >> "$GITHUB_ENV"; fi
 
-echo "FIELD_NATIVE_CORPUS_TV_PROFILE fixtures=${#FIXTURES[@]} provider=${TARGET_PROVIDER:-all} configured_acceptance_provider_scope=$CONFIGURED_ACCEPTANCE_PROVIDER_SCOPE manifest=$TARGET_MANIFEST player_probes=$PLAYER_PROBES requested_reader_success=$REQUESTED_READER_SUCCESS require_reader_success=$REQUIRE_READER_SUCCESS player_outcome_global_gate=$PLAYER_OUTCOME_GLOBAL_GATE reader_acceptance=$READER_ACCEPTANCE primary_stream_scope=$PRIMARY_STREAM_SCOPE regression_stream_scope=$REGRESSION_STREAM_SCOPE reuse_avd=true reuse_gradle_daemon=true full_backend_evidence=true repository_http_evidence=true frontend_timeline=true official_repository_loading=true local_manifest=$ALLOW_LOCAL_MANIFEST smoke_gate=player_reached"
+echo "FIELD_NATIVE_CORPUS_TV_PROFILE fixtures=${#FIXTURES[@]} provider=${TARGET_PROVIDER:-all} configured_acceptance_provider_scope=$CONFIGURED_ACCEPTANCE_PROVIDER_SCOPE manifest=$TARGET_MANIFEST player_probes=$PLAYER_PROBES requested_reader_success=$REQUESTED_READER_SUCCESS require_reader_success=$REQUIRE_READER_SUCCESS player_outcome_global_gate=$PLAYER_OUTCOME_GLOBAL_GATE reader_acceptance=$READER_ACCEPTANCE primary_stream_scope=$PRIMARY_STREAM_SCOPE regression_stream_scope=$REGRESSION_STREAM_SCOPE reuse_avd=true reuse_gradle_daemon=true full_backend_evidence=true repository_http_evidence=true frontend_timeline=true official_repository_loading=true local_manifest=$ALLOW_LOCAL_MANIFEST smoke_gate=player_reached pr_provider_limit=${NIAKVIO_PR_PROVIDER_LIMIT:-default}"
 for fixture in "${FIXTURES[@]}"; do
   echo "===== TV CORPUS FIXTURE: $fixture ====="
   STREAM_SCOPE="$REGRESSION_STREAM_SCOPE"
@@ -127,6 +131,13 @@ for fixture in "${FIXTURES[@]}"; do
     SOFT_FAILURES=$((SOFT_FAILURES+1))
   fi
   echo "FIELD_NATIVE_CORPUS_TV_STATUS fixture=$fixture runtime=$RUNTIME_STATUS collection=$ANALYSIS_STATUS coverage=$COVERAGE_STATUS reader_observed=$OBSERVED_READER_STATUS blocking=false stream_scope=$STREAM_SCOPE frontend_dir=$FRONT_DIR"
+done
+
+for fixture in "${FIXTURES[@]}"; do
+  LOG="${WORKSPACE}/tv-native-corpus-${fixture}.log"
+  if [[ ! -s "$LOG" ]]; then
+    printf 'FIELD_NATIVE_SMOKE_DIAGNOSTIC_PLACEHOLDER client=tv fixture=%s reason=no_route_log\n' "$fixture" > "$LOG"
+  fi
 done
 
 LOGS=("${WORKSPACE}"/tv-native-corpus-*.log)
