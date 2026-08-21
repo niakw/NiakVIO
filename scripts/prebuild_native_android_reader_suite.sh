@@ -10,6 +10,9 @@ FIXTURE="${NIAKVIO_PRIMARY_FIXTURE:-sinners-2025}"
 TARGET_MANIFEST="${NIAKVIO_TARGET_MANIFEST:-manifest.json}"
 TARGET_PROVIDER="${NIAKVIO_TARGET_PROVIDER:-all}"
 STREAM_SCOPE="${NIAKVIO_PRIMARY_STREAM_SCOPE:-all}"
+SOURCE_SHA="${NIAKVIO_SOURCE_SHA:-$(git -C "$NIAKVIO" rev-parse HEAD)}"
+SOURCE_REPOSITORY="${GITHUB_REPOSITORY:-niakw/NiakVIO}"
+export SOURCE_SHA SOURCE_REPOSITORY
 REPOSITORY_RESOLVER="${NIAKVIO}/scripts/resolve_native_repository.sh"
 LAB_TRANSPORT="${NIAKVIO}/scripts/configure_native_android_lab_transport.py"
 INSTRUMENTER="${NIAKVIO}/scripts/instrument_native_client_evidence.py"
@@ -17,6 +20,7 @@ REPOSITORY_HTTP_INSTRUMENTER="${NIAKVIO}/scripts/instrument_native_repository_ht
 REQUEST_CONTRACT="${NIAKVIO}/scripts/augment_native_corpus_request_contract.py"
 PROVIDER_LOADING="${NIAKVIO}/scripts/augment_native_provider_loading.py"
 ACCEPTANCE_PREPARE="${NIAKVIO}/scripts/prepare_native_reader_acceptance.py"
+MOBILE_HARDEN="${NIAKVIO}/scripts/harden_nuvio_mobile_device_test.py"
 
 case "$CLIENT" in
   tv)
@@ -41,6 +45,11 @@ MANIFEST_URL="$NIAKVIO_RESOLVED_MANIFEST_URL"
 URL_ARGS=()
 if [[ "$NIAKVIO_RESOLVED_ALLOW_LOCAL" = "1" ]]; then URL_ARGS+=(--allow-local-lab-url); fi
 
+# Mobile hardening changes only test packaging/Sentry startup. Apply it before the
+# prebuild so QEMU never has to invalidate and rebuild the device-test APK later.
+if [[ "$CLIENT" = "mobile" ]]; then
+  python3 "$MOBILE_HARDEN" "$ROOT"
+fi
 python3 "$LAB_TRANSPORT" "$TEST_MANIFEST"
 python3 "$INSTRUMENTER" "$CLIENT" "$ROOT"
 python3 "$REPOSITORY_HTTP_INSTRUMENTER" "$CLIENT" "$ROOT"
@@ -54,4 +63,4 @@ else
   "$ROOT/gradlew" -p "$ROOT" :androidApp:assembleFullDebug :composeApp:packageAndroidDeviceTest -Pnuvio.android.distribution=full --console=plain
 fi
 
-echo "FIELD_NATIVE_ANDROID_PREBUILD client=$CLIENT fixture=$FIXTURE manifest=$TARGET_MANIFEST provider=$TARGET_PROVIDER streams=$STREAM_SCOPE status=ready"
+echo "FIELD_NATIVE_ANDROID_PREBUILD client=$CLIENT fixture=$FIXTURE manifest=$TARGET_MANIFEST provider=$TARGET_PROVIDER streams=$STREAM_SCOPE source_sha=$SOURCE_SHA status=ready"
