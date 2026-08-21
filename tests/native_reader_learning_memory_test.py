@@ -64,17 +64,33 @@ with tempfile.TemporaryDirectory(dir=ROOT) as tmp_raw:
     assert "http://" not in second.read_text(encoding="utf-8").lower()
     assert "https://" not in second.read_text(encoding="utf-8").lower()
 
+    # The repair Brain now requires cross-client confirmation before a global
+    # provider mutation is even eligible. Exercise negative memory *after* that
+    # guard by presenting the same declared-route failure from TV and Mobile.
     diagnosis = tmp / "diagnosis.json"
     diagnosis.write_text(json.dumps({
         "brainVersion": 4,
-        "readerFailures": 1,
-        "plans": [{
-            "provider": "moviesdrive",
-            "fixture": "sinners-2025",
-            "failureClass": "playback_http_access",
-            "action": "probe-targeted-repair",
-            "hypotheses": [{"id": "replay-native-request-context"}],
-        }],
+        "readerFailures": 2,
+        "plans": [
+            {
+                "provider": "moviesdrive",
+                "fixture": "sinners-2025",
+                "requestType": "movie",
+                "client": "tv",
+                "failureClass": "playback_http_access",
+                "action": "probe-targeted-repair",
+                "hypotheses": [{"id": "replay-native-request-context"}],
+            },
+            {
+                "provider": "moviesdrive",
+                "fixture": "sinners-2025",
+                "requestType": "movie",
+                "client": "mobile",
+                "failureClass": "playback_http_access",
+                "action": "probe-targeted-repair",
+                "hypotheses": [{"id": "replay-native-request-context"}],
+            },
+        ],
     }), encoding="utf-8")
     repair_dir = tmp / "repair-suppressed"
     build = subprocess.run([
@@ -89,6 +105,8 @@ with tempfile.TemporaryDirectory(dir=ROOT) as tmp_raw:
     report = json.loads((repair_dir / "repair-report.json").read_text(encoding="utf-8"))
     assert report["learningApplied"] is True
     assert report["proposalCount"] == 0, report
+    assert report["compatibilityOnlyCount"] == 0, report
+    assert report["skipped"][0]["crossClientConfirmed"] is True, report
     assert report["skipped"][0]["reason"] == "all_compatible_reader_skills_suppressed_by_negative_memory", report
 
     accepted = dict(rejected)
