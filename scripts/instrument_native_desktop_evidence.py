@@ -10,6 +10,8 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
+from audit_native_client_checkout import audit_checkout
+
 
 def main() -> int:
     parser = argparse.ArgumentParser()
@@ -18,6 +20,7 @@ def main() -> int:
     repo = Path(args.repo).resolve()
     if not (repo / ".git").exists():
         raise SystemExit(f"official NuvioDesktop checkout missing: {repo}")
+    audit_checkout(repo, "desktop")
     print(
         "FIELD_NATIVE_RUNTIME_INSTRUMENTATION client=desktop "
         "status=disabled_by_human_ux_policy runtime_mutation=false"
