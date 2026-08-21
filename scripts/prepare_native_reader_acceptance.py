@@ -19,6 +19,7 @@ import json
 import os
 import re
 import shutil
+import subprocess
 import sys
 from pathlib import Path
 
@@ -73,9 +74,6 @@ def select_providers(manifest_path: str, slug: str, provider: str | None) -> lis
     requested: list[str]
     mode = str(provider or "fixture").strip().casefold()
     if mode == "all":
-        # Lab scope intentionally ignores the publication enabled flag. Disabled
-        # providers are valuable repair candidates and must receive the same real
-        # reader/device evidence as currently active providers.
         requested = [str(row.get("id") or "") for row in available if str(row.get("id") or "").strip()]
     elif mode == "fixture":
         requested = [str(value) for value in fixture_row(slug)["providers"] if str(value).strip()]
@@ -140,9 +138,6 @@ def reader_source(source: str, client: str, expected_duration_minutes: int | flo
     )
     if scope != "all":
         return output
-
-    # The normal generator intentionally caps device cost. Primary acceptance
-    # removes that cap for both sanitized row evidence and actual Media3 playback.
     output, replacements = re.subn(r"rows\.take\(\d+\)\.forEachIndexed", "rows.forEachIndexed", output)
     if replacements < 2:
         raise SystemExit(f"exhaustive reader rewrite incomplete: replacements={replacements}")
@@ -168,8 +163,6 @@ def prepare(
     effective_stream_scope = stream_scope
     pr_bounded = _is_pull_request()
 
-    # PRs prove the end-to-end native path without re-running the exhaustive corpus
-    # on every commit. Trusted main/manual execution still honors all/all exactly.
     if pr_bounded:
         if effective_provider.casefold() == "all":
             effective_provider = "fixture"
@@ -230,16 +223,30 @@ def main() -> int:
     parser.add_argument("--initial", action="store_true", help="enable official client device tests before first fixture")
     args = parser.parse_args()
 
+    workspace = Path(args.workspace).resolve()
     manifest = str(client_prepare._manifest_path(args.manifest).relative_to(ROOT))
     prepare(
         args.target,
-        Path(args.workspace).resolve(),
+        workspace,
         args.fixture,
         manifest,
         args.provider.strip() or "fixture",
         args.initial,
         args.streams,
     )
+    if (
+        args.initial
+        and os.environ.get("GITHUB_ACTIONS", "").strip().lower() == "true"
+        and os.environ.get("NIAKVIO_SKIP_ANDROID_PREBUILD", "0").strip() != "1"
+    ):
+        env = os.environ.copy()
+        env["GITHUB_WORKSPACE"] = str(workspace)
+        subprocess.run(
+            ["bash", str(ROOT / "scripts/prebuild_native_android_reader_suite.sh"), args.target],
+            cwd=ROOT,
+            env=env,
+            check=True,
+        )
     return 0
 
 
