@@ -1,0 +1,84 @@
+{
+  "version": 1,
+  "mode": "human-ux-observation-only",
+  "purpose": "Native labs reproduce the real Nuvio user path and observe launch, player and playback failures without repairing Nuvio, the OS or the lab environment to improve outcomes.",
+  "ownership": {
+    "repairable": [
+      "NiakVIO Core",
+      "NiakVIO providers and adapters",
+      "NiakVIO Brain logic",
+      "NiakVIO manifests and generated provider artifacts"
+    ],
+    "external_read_only": [
+      "NuvioMobile",
+      "NuvioTV",
+      "NuvioDesktop",
+      "Android emulator and Android OS",
+      "macOS",
+      "Windows",
+      "native player implementations owned by Nuvio"
+    ]
+  },
+  "allowed_checkout_changes": {
+    "mobile": [
+      "composeApp/build.gradle.kts",
+      "composeApp/src/androidDeviceTest/",
+      "local.properties"
+    ],
+    "tv": [
+      "app/build.gradle.kts",
+      "app/src/androidTest/",
+      "local.properties",
+      "local.dev.properties"
+    ],
+    "desktop": [
+      "composeApp/src/desktopTest/",
+      "local.properties"
+    ]
+  },
+  "allowed_change_intent": [
+    "add or enable test source sets",
+    "add instrumentation runner declarations",
+    "add test-only dependencies",
+    "use a debug signing configuration when hosted CI cannot access an official release signing key",
+    "stage NiakVIO provider bundles as test assets",
+    "add test code that invokes production Nuvio entry points without changing their semantics"
+  ],
+  "forbidden_checkout_tokens": [
+    "android.permission.INTERNET",
+    "usesCleartextTraffic",
+    "networkSecurityConfig",
+    "cleartextTrafficPermitted",
+    "setDefaultRequestProperties",
+    "setRequestProperty(\"Referer\"",
+    "setRequestProperty(\"Origin\"",
+    "setRequestProperty(\"User-Agent\"",
+    "PlayerPlaybackNetworking",
+    "PlatformPlaybackDataSourceFactory",
+    "ExoPlayer.Builder",
+    "NativePlayerController(",
+    "decoderPriority",
+    "nvidiaRtxSuperResolutionEnabled",
+    "PluginRepository.clearLocalState"
+  ],
+  "forbidden_behaviors": [
+    "edit any production AndroidManifest.xml",
+    "grant network or cleartext capabilities",
+    "change DNS, proxy, headers, redirects, cache policy or HTTP semantics",
+    "replace or wrap the production player with a friendlier lab player",
+    "change decoder or playback settings to obtain a green result",
+    "clear or rewrite the real user profile, plugin state or cache to hide failures",
+    "patch Nuvio source code for logging or instrumentation",
+    "patch OS permissions, security policy or runtime privileges",
+    "classify an external Nuvio or OS limitation as a NiakVIO provider repair target"
+  ],
+  "evidence_rule": "Production player behaviour is primary evidence. Diagnostics may observe from NiakVIO-owned test code or external process output, but must not patch Nuvio production runtime code to gain visibility.",
+  "failure_rule": "If faithful observation cannot reach playback because the official Nuvio client or OS blocks earlier, record the condition as external evidence. Do not repair the external environment merely to continue the test.",
+  "brain_rule": "Brain may learn and repair only from complete evidence that demonstrates a NiakVIO-owned cause. External Nuvio/OS failures must not generate provider mutations.",
+  "change_control": {
+    "policy_file_is_source_of_truth": true,
+    "audit_must_read_this_file": true,
+    "policy_changes_require_canonical_gate": true,
+    "default_on_ambiguity": "fail-closed"
+  }
+}
