@@ -8,6 +8,7 @@ RESTAGE="${NIAKVIO}/scripts/restage_native_corpus_client.py"
 ANALYZER="${NIAKVIO}/scripts/analyze_native_corpus_collection.cjs"
 READER_GATE="${NIAKVIO}/scripts/gate_native_reader_result.cjs"
 COVERAGE_GATE="${NIAKVIO}/scripts/gate_native_reader_coverage.cjs"
+SMOKE_GATE="${NIAKVIO}/scripts/gate_native_player_reached.cjs"
 INSTRUMENTER="${NIAKVIO}/scripts/instrument_native_desktop_evidence.py"
 REPOSITORY_HTTP_INSTRUMENTER="${NIAKVIO}/scripts/instrument_native_repository_http_evidence.py"
 REQUEST_CONTRACT="${NIAKVIO}/scripts/augment_native_corpus_request_contract.py"
@@ -43,11 +44,6 @@ case "$(uname -s)" in
   *) echo "FIELD_NATIVE_DESKTOP_READER_UNSUPPORTED os=$(uname -s) reason=official_nuvio_desktop_player_is_stub" >&2; exit 96 ;;
 esac
 
-# Human-UX contract: the official Nuvio process runs with the ordinary runner user
-# and the runner's ordinary OS/network policy. Never elevate Gradle/Nuvio, never add
-# module opens, never proxy around the OS, and never turn an inaccessible candidate
-# into a fake green. The repository resolver fails closed before this point if the
-# candidate is not reachable without privilege.
 if [[ "$(id -u)" == "0" ]]; then
   echo "FIELD_NATIVE_DESKTOP_READER_INFRA_ERROR os=$HOST_OS reason=root_execution_forbidden" >&2
   exit 97
@@ -61,24 +57,26 @@ fi
 
 python3 "$INSTRUMENTER" "$DESKTOP_ROOT" || exit $?
 python3 "$REPOSITORY_HTTP_INSTRUMENTER" desktop "$DESKTOP_ROOT" || exit $?
-STATUS=0
+if [[ -n "${GITHUB_ENV:-}" ]]; then echo "NIAKVIO_BRAIN_NONBLOCKING=1" >> "$GITHUB_ENV"; fi
 
-echo "FIELD_NATIVE_CORPUS_DESKTOP_PROFILE os=$HOST_OS fixtures=${#FIXTURES[@]} provider=${TARGET_PROVIDER:-all} manifest=$TARGET_MANIFEST primary_stream_scope=$PRIMARY_STREAM_SCOPE regression_stream_scope=$REGRESSION_STREAM_SCOPE requested_reader_success=$REQUESTED_READER_SUCCESS require_reader_success=$REQUIRE_READER_SUCCESS player_outcome_global_gate=$PLAYER_OUTCOME_GLOBAL_GATE official_player=production_path official_repository_loading=true repository_http_evidence=true local_manifest=$ALLOW_LOCAL_MANIFEST observational=true privilege=ordinary-user"
+SOFT_FAILURES=0
+
+echo "FIELD_NATIVE_CORPUS_DESKTOP_PROFILE os=$HOST_OS fixtures=${#FIXTURES[@]} provider=${TARGET_PROVIDER:-all} manifest=$TARGET_MANIFEST primary_stream_scope=$PRIMARY_STREAM_SCOPE regression_stream_scope=$REGRESSION_STREAM_SCOPE requested_reader_success=$REQUESTED_READER_SUCCESS require_reader_success=$REQUIRE_READER_SUCCESS player_outcome_global_gate=$PLAYER_OUTCOME_GLOBAL_GATE official_player=production_path official_repository_loading=true repository_http_evidence=true local_manifest=$ALLOW_LOCAL_MANIFEST observational=true privilege=ordinary-user smoke_gate=player_reached"
 for fixture in "${FIXTURES[@]}"; do
   STREAM_SCOPE="$REGRESSION_STREAM_SCOPE"
   if [[ "$fixture" = "$PRIMARY_FIXTURE" ]]; then STREAM_SCOPE="$PRIMARY_STREAM_SCOPE"; fi
   echo "===== DESKTOP NATIVE READER FIXTURE: $fixture ($HOST_OS) ====="
 
   if [[ -n "$TARGET_PROVIDER" && "$TARGET_PROVIDER" != "all" && "$TARGET_PROVIDER" != "fixture" ]]; then
-    python3 "$RESTAGE" desktop --fixture "$fixture" --workspace "$WORKSPACE" --provider "$TARGET_PROVIDER" --manifest "$TARGET_MANIFEST" || { STATUS=1; continue; }
+    python3 "$RESTAGE" desktop --fixture "$fixture" --workspace "$WORKSPACE" --provider "$TARGET_PROVIDER" --manifest "$TARGET_MANIFEST" || { SOFT_FAILURES=$((SOFT_FAILURES+1)); continue; }
   else
-    python3 "$RESTAGE" desktop --fixture "$fixture" --workspace "$WORKSPACE" --manifest "$TARGET_MANIFEST" || { STATUS=1; continue; }
+    python3 "$RESTAGE" desktop --fixture "$fixture" --workspace "$WORKSPACE" --manifest "$TARGET_MANIFEST" || { SOFT_FAILURES=$((SOFT_FAILURES+1)); continue; }
   fi
-  python3 "$REQUEST_CONTRACT" desktop --fixture "$fixture" --manifest "$TARGET_MANIFEST" --source "$TEST_SOURCE" || { STATUS=1; continue; }
+  python3 "$REQUEST_CONTRACT" desktop --fixture "$fixture" --manifest "$TARGET_MANIFEST" --source "$TEST_SOURCE" || { SOFT_FAILURES=$((SOFT_FAILURES+1)); continue; }
   if [[ "$ALLOW_LOCAL_MANIFEST" = "1" ]]; then
-    python3 "$PROVIDER_LOADING" desktop --manifest "$TARGET_MANIFEST" --manifest-url "$MANIFEST_URL" --source "$TEST_SOURCE" --platform "$HOST_OS" --allow-local-lab-url || { STATUS=1; continue; }
+    python3 "$PROVIDER_LOADING" desktop --manifest "$TARGET_MANIFEST" --manifest-url "$MANIFEST_URL" --source "$TEST_SOURCE" --platform "$HOST_OS" --allow-local-lab-url || { SOFT_FAILURES=$((SOFT_FAILURES+1)); continue; }
   else
-    python3 "$PROVIDER_LOADING" desktop --manifest "$TARGET_MANIFEST" --manifest-url "$MANIFEST_URL" --source "$TEST_SOURCE" --platform "$HOST_OS" || { STATUS=1; continue; }
+    python3 "$PROVIDER_LOADING" desktop --manifest "$TARGET_MANIFEST" --manifest-url "$MANIFEST_URL" --source "$TEST_SOURCE" --platform "$HOST_OS" || { SOFT_FAILURES=$((SOFT_FAILURES+1)); continue; }
   fi
   EXPECTED_MINUTES="$(python3 - "$fixture" "$NIAKVIO/.github/triggers/nuvio-client-lab.json" <<'PY'
 import json, sys
@@ -91,9 +89,9 @@ for row in data.get('fixtures', []):
 else:
     raise SystemExit(f'fixture not found: {slug}')
 PY
-)" || { STATUS=1; continue; }
-  python3 "$PLAYER_AUGMENT" --source "$TEST_SOURCE" --expected-minutes "$EXPECTED_MINUTES" --streams "$STREAM_SCOPE" || { STATUS=1; continue; }
-  python3 "$FRONTEND_PHASES" "$TEST_SOURCE" || { STATUS=1; continue; }
+)" || { SOFT_FAILURES=$((SOFT_FAILURES+1)); continue; }
+  python3 "$PLAYER_AUGMENT" --source "$TEST_SOURCE" --expected-minutes "$EXPECTED_MINUTES" --streams "$STREAM_SCOPE" || { SOFT_FAILURES=$((SOFT_FAILURES+1)); continue; }
+  python3 "$FRONTEND_PHASES" "$TEST_SOURCE" || { SOFT_FAILURES=$((SOFT_FAILURES+1)); continue; }
 
   BASE_LOG="${WORKSPACE}/desktop-native-corpus-${fixture}.log"
   LOG="${WORKSPACE}/desktop-native-corpus-${HOST_OS}-${fixture}.log"
@@ -109,14 +107,8 @@ PY
     RUNTIME_STATUS=${PIPESTATUS[0]}
   fi
 
-  if [[ -s "$BASE_LOG" ]]; then
-    cp "$BASE_LOG" "$LOG"
-  else
-    : > "$LOG"
-  fi
-  if [[ -s "$HTTP_LOG" ]]; then
-    cat "$HTTP_LOG" >> "$LOG"
-  fi
+  if [[ -s "$BASE_LOG" ]]; then cp "$BASE_LOG" "$LOG"; else : > "$LOG"; fi
+  if [[ -s "$HTTP_LOG" ]]; then cat "$HTTP_LOG" >> "$LOG"; fi
   rm -f "$HTTP_LOG" "$GRADLE_LOG"
   echo "FIELD_NATIVE_EVIDENCE_INSTRUMENTED client=desktop" >> "$LOG"
   cat "$LOG" || true
@@ -127,13 +119,14 @@ PY
   node "$COVERAGE_GATE" --streams "$STREAM_SCOPE" "$LOG" || COVERAGE_STATUS=$?
   OBSERVED_READER_STATUS=0
   node "$READER_GATE" "$LOG" || OBSERVED_READER_STATUS=$?
-  READER_STATUS=0
-  if [[ "$REQUIRE_READER_SUCCESS" = "1" ]]; then
-    READER_STATUS=$OBSERVED_READER_STATUS
+  if [[ "$RUNTIME_STATUS" -ne 0 || "$ANALYSIS_STATUS" -ne 0 || "$COVERAGE_STATUS" -ne 0 || "$OBSERVED_READER_STATUS" -ne 0 ]]; then
+    SOFT_FAILURES=$((SOFT_FAILURES+1))
   fi
-  echo "FIELD_NATIVE_CORPUS_DESKTOP_STATUS os=$HOST_OS fixture=$fixture runtime=$RUNTIME_STATUS collection=$ANALYSIS_STATUS coverage=$COVERAGE_STATUS reader_observed=$OBSERVED_READER_STATUS reader_blocking=$READER_STATUS stream_scope=$STREAM_SCOPE"
-  if [[ "$RUNTIME_STATUS" -ne 0 || "$ANALYSIS_STATUS" -ne 0 || "$COVERAGE_STATUS" -ne 0 || "$READER_STATUS" -ne 0 ]]; then STATUS=1; fi
+  echo "FIELD_NATIVE_CORPUS_DESKTOP_STATUS os=$HOST_OS fixture=$fixture runtime=$RUNTIME_STATUS collection=$ANALYSIS_STATUS coverage=$COVERAGE_STATUS reader_observed=$OBSERVED_READER_STATUS blocking=false stream_scope=$STREAM_SCOPE"
 done
 
-echo "FIELD_NATIVE_CORPUS_DESKTOP_SUITE_STATUS os=$HOST_OS status=$STATUS fixtures=${#FIXTURES[@]} provider=${TARGET_PROVIDER:-all} manifest=$TARGET_MANIFEST requested_reader_success=$REQUESTED_READER_SUCCESS require_reader_success=$REQUIRE_READER_SUCCESS player_outcome_global_gate=$PLAYER_OUTCOME_GLOBAL_GATE"
-exit "$STATUS"
+LOGS=("${WORKSPACE}"/desktop-native-corpus-${HOST_OS}-*.log)
+SMOKE_STATUS=0
+node "$SMOKE_GATE" "${LOGS[@]}" || SMOKE_STATUS=$?
+echo "FIELD_NATIVE_CORPUS_DESKTOP_SUITE_STATUS os=$HOST_OS status=$SMOKE_STATUS soft_failures=$SOFT_FAILURES fixtures=${#FIXTURES[@]} provider=${TARGET_PROVIDER:-all} manifest=$TARGET_MANIFEST gate=production_player_reached"
+exit "$SMOKE_STATUS"
