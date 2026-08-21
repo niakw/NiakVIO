@@ -59,7 +59,7 @@ def run_case(head: str, comparison: dict | None, state: dict | None = None) -> d
     old_compare = module.compare
     try:
         module.current_head = lambda repository, branch: head
-        module.compare = lambda repository, base, current: comparison or {}
+        module.compare = lambda repository, base, current, patch_rules=None: comparison or {}
         return module.inspect_client("client", sample(), state or {})
     finally:
         module.current_head = old_head
@@ -72,6 +72,12 @@ def main() -> int:
     assert not module.path_matches("README.md", ["runtime/", "PluginManifest.kt"])
     assert module.semantic_hits("+val item: StreamItem\n", ["StreamItem"]) == ["StreamItem"]
     assert module.semantic_hits("+selectedSubtitleId = null\n", ["StreamItem"]) == []
+
+    source = SCRIPT.read_text(encoding="utf-8")
+    assert '"--clients"' in source
+    assert "ThreadPoolExecutor" in source
+    assert "parallel-git-ls-remote-plus-targeted-partial-tree-diff" in source
+    assert "patch_files = [name for name in files if path_matches(name, patch_rules)]" in source
 
     # The provider-to-screen contract must be guarded on every accepted client.
     # Mobile/Desktop already guard their complete features/streams surfaces; TV
@@ -206,13 +212,14 @@ def main() -> int:
             "unrelated_changed_files": ["README.md"],
         }
     }
-    config = {"clients": {"client": sample()}}
+    config = {"clients": {"client": sample(), "unselected": sample()}}
     advanced = module.apply_safe_state(payload, config, result, "2026-08-09T00:00:00+00:00")
     assert advanced == ["client"]
     saved = payload["nuvio_client_compatibility"]["clients"]["client"]
     assert saved["contract_ref"] == "a" * 40
     assert saved["accepted_ref"] == "c" * 40
     assert saved["acceptance"] == "automatic-contract-safe-advance"
+    assert "unselected" not in payload["nuvio_client_compatibility"]["clients"]
 
     print("Nuvio client upstream drift guard tests passed")
     return 0
