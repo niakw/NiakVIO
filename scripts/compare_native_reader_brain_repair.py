@@ -45,6 +45,11 @@ def aggregate(diagnosis: dict[str, Any], fixture: str) -> dict[str, dict[str, An
     return output
 
 
+def proposal_applies_to_fixture(proposal: dict[str, Any], fixture: str) -> bool:
+    fixtures = [str(value).strip() for value in proposal.get("fixtures") or [] if str(value).strip()]
+    return not fixtures or fixture in fixtures
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--before", type=Path, required=True)
@@ -62,9 +67,13 @@ def main() -> int:
     accepted: list[dict[str, Any]] = []
     rejected: list[dict[str, Any]] = []
     inconclusive: list[dict[str, Any]] = []
+    skipped_unrelated = 0
 
     for proposal in repair.get("proposals") or []:
         if not isinstance(proposal, dict):
+            continue
+        if not proposal_applies_to_fixture(proposal, args.fixture):
+            skipped_unrelated += 1
             continue
         provider = str(proposal.get("provider") or "").casefold().strip()
         pre = before.get(provider, {"observed": 0, "healthy": 0, "failures": 0, "failureClasses": {}})
@@ -93,12 +102,13 @@ def main() -> int:
             rejected.append(row)
 
     payload = {
-        "schemaVersion": 3,
+        "schemaVersion": 4,
         "fixture": args.fixture,
         "runtimeFingerprint": runtime_fingerprint or None,
         "acceptedCount": len(accepted),
         "rejectedCount": len(rejected),
         "inconclusiveCount": len(inconclusive),
+        "skippedUnrelatedProposalCount": skipped_unrelated,
         "acceptedProviders": [row["provider"] for row in accepted],
         "rejectedProviders": [row["provider"] for row in rejected],
         "accepted": accepted,
@@ -109,6 +119,7 @@ def main() -> int:
             "publicationAllowed": False,
             "acceptedRequiresAllPlayedStreamsHealthy": True,
             "freshNativeReaderProofRequired": True,
+            "fixtureScopedRepairComparison": True,
             "readerLearningReuseRequiresExactRuntimeFingerprint": True,
         },
         "privacy": "Only provider ids, fixture ids, failure classes, generic hypothesis/skill ids, aggregate reader outcomes and official client revision fingerprints are persisted; no raw media URLs, tokens, cookies or header values.",
@@ -117,7 +128,8 @@ def main() -> int:
     args.output.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
     print(
         f"FIELD_NATIVE_READER_REPAIR_COMPARE fixture={args.fixture} accepted={len(accepted)} "
-        f"rejected={len(rejected)} inconclusive={len(inconclusive)} runtime_scoped={str(bool(runtime_fingerprint)).lower()}"
+        f"rejected={len(rejected)} inconclusive={len(inconclusive)} skipped_unrelated={skipped_unrelated} "
+        f"runtime_scoped={str(bool(runtime_fingerprint)).lower()}"
     )
     return 0
 
