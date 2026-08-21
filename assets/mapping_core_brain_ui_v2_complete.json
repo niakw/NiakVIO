@@ -1,0 +1,57 @@
+{
+  "version": "2.0-complete",
+  "display": {
+    "singleRowOrder": [
+      "source",
+      "resolution",
+      "sourceType",
+      "dynamicRange",
+      "premiumVideo",
+      "videoCodec",
+      "bitDepth",
+      "premiumAudio",
+      "audioCodec",
+      "channels",
+      "language",
+      "subtitles"
+    ],
+    "preferredThemeFolders": {
+      "dark_app_background": "assets/dark",
+      "light_app_background": "assets/light"
+    },
+    "transparentAssets": "assets/transparent",
+    "renderedLogoHeightPx": {
+      "mobileDesktop": "14-18",
+      "tv": "18-22"
+    },
+    "keepTechnicalTextLine": true,
+    "hideUnknownBadges": true
+  },
+  "rules": [
+    "Never infer Blu-ray or Ultra HD Blu-ray from 1080p/2160p alone.",
+    "Resolution and physical source are separate facts and may both be displayed.",
+    "REMUX must be confirmed by source metadata or naming, never inferred from resolution.",
+    "Dolby Vision/HDR10+/IMAX Enhanced/Atmos/TrueHD/DTS:X are shown only when confirmed.",
+    "Prefer one badge per fact in the primary row; retain additional details in the technical text line.",
+    "Use dark folder on gray/dark Nuvio themes and light folder on white/light Nuvio themes."
+  ],
+  "bestCaseExample": {
+    "title": "ECLIPSE RISING",
+    "year": 2025,
+    "badgeIds": [
+      "uhd-blu-ray",
+      "4k-ultra-hd",
+      "remux",
+      "dolby-vision",
+      "imax-enhanced",
+      "hevc",
+      "10bit",
+      "dolby-atmos",
+      "truehd",
+      "7.1",
+      "vff",
+      "vostfr"
+    ],
+    "technicalLine": "2160p • Ultra HD Blu-ray REMUX • HEVC 10-bit • Dolby Vision • IMAX Enhanced • Dolby Atmos TrueHD 7.1 • VFF • VOSTFR"
+  }
+}

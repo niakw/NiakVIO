@@ -1,0 +1,1876 @@
+{
+  "version": "2.0-complete",
+  "groups": [
+    {
+      "id": "source",
+      "name": "Source"
+    },
+    {
+      "id": "resolution",
+      "name": "Resolution"
+    },
+    {
+      "id": "video-tech",
+      "name": "Video Tech"
+    },
+    {
+      "id": "video-codec",
+      "name": "Video Codec"
+    },
+    {
+      "id": "bit-depth",
+      "name": "Bit Depth"
+    },
+    {
+      "id": "audio-tech",
+      "name": "Audio Tech"
+    },
+    {
+      "id": "audio-codec",
+      "name": "Audio Codec"
+    },
+    {
+      "id": "audio-channels",
+      "name": "Audio Channels"
+    },
+    {
+      "id": "language",
+      "name": "Language"
+    },
+    {
+      "id": "subtitles",
+      "name": "Subtitles"
+    },
+    {
+      "id": "age-rating",
+      "name": "Age Rating"
+    }
+  ],
+  "badges": [
+    {
+      "id": "uhd-blu-ray",
+      "group": "source",
+      "name": "Ultra HD Blu-ray",
+      "text": "UHD BLU-RAY",
+      "brand": true,
+      "pattern": "(?i)\\\\b(ultra[ ._-]?hd[ ._-]?blu[ ._-]?ray|uhd[ ._-]?blu[ ._-]?ray|uhd[ ._-]?bd)\\\\b",
+      "assetBasis": "official_reference_retrieved",
+      "order": 1,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/uhd-blu-ray.webp",
+          "96x40": "assets/transparent/96x40/uhd-blu-ray.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/uhd-blu-ray.webp",
+          "96x40": "assets/dark/96x40/uhd-blu-ray.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/uhd-blu-ray.webp",
+          "96x40": "assets/light/96x40/uhd-blu-ray.webp"
+        }
+      },
+      "fallbackText": "UHD BLU-RAY"
+    },
+    {
+      "id": "blu-ray-disc",
+      "group": "source",
+      "name": "Blu-ray Disc",
+      "text": "BLU-RAY",
+      "brand": true,
+      "pattern": "(?i)\\\\b(blu[ ._-]?ray|bluray|bd[ ._-]?rip|bdremux)\\\\b",
+      "assetBasis": "user_supplied_brand_or_technical_asset",
+      "order": 2,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/blu-ray-disc.webp",
+          "96x40": "assets/transparent/96x40/blu-ray-disc.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/blu-ray-disc.webp",
+          "96x40": "assets/dark/96x40/blu-ray-disc.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/blu-ray-disc.webp",
+          "96x40": "assets/light/96x40/blu-ray-disc.webp"
+        }
+      },
+      "fallbackText": "BLU-RAY"
+    },
+    {
+      "id": "uhd-remux",
+      "group": "source",
+      "name": "UHD REMUX",
+      "text": "UHD REMUX",
+      "brand": false,
+      "pattern": "(?i)\\\\b(uhd|2160p|4k).{0,12}remux|remux.{0,12}(uhd|2160p|4k)\\\\b",
+      "assetBasis": "niakvio_generated_generic",
+      "order": 3,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/uhd-remux.webp",
+          "96x40": "assets/transparent/96x40/uhd-remux.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/uhd-remux.webp",
+          "96x40": "assets/dark/96x40/uhd-remux.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/uhd-remux.webp",
+          "96x40": "assets/light/96x40/uhd-remux.webp"
+        }
+      },
+      "fallbackText": "UHD REMUX"
+    },
+    {
+      "id": "blu-ray-remux",
+      "group": "source",
+      "name": "Blu-ray REMUX",
+      "text": "BD REMUX",
+      "brand": false,
+      "pattern": "(?i)\\\\b(blu[ ._-]?ray|bd).{0,12}remux|remux.{0,12}(blu[ ._-]?ray|bd)\\\\b",
+      "assetBasis": "niakvio_generated_generic",
+      "order": 4,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/blu-ray-remux.webp",
+          "96x40": "assets/transparent/96x40/blu-ray-remux.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/blu-ray-remux.webp",
+          "96x40": "assets/dark/96x40/blu-ray-remux.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/blu-ray-remux.webp",
+          "96x40": "assets/light/96x40/blu-ray-remux.webp"
+        }
+      },
+      "fallbackText": "BD REMUX"
+    },
+    {
+      "id": "remux",
+      "group": "source",
+      "name": "REMUX",
+      "text": "REMUX",
+      "brand": false,
+      "pattern": "(?i)\\\\bremux\\\\b",
+      "assetBasis": "user_supplied_brand_or_technical_asset",
+      "order": 5,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/remux.webp",
+          "96x40": "assets/transparent/96x40/remux.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/remux.webp",
+          "96x40": "assets/dark/96x40/remux.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/remux.webp",
+          "96x40": "assets/light/96x40/remux.webp"
+        }
+      },
+      "fallbackText": "REMUX"
+    },
+    {
+      "id": "bdmv",
+      "group": "source",
+      "name": "BDMV",
+      "text": "BDMV",
+      "brand": false,
+      "pattern": "(?i)\\\\bbdmv\\\\b",
+      "assetBasis": "niakvio_generated_generic",
+      "order": 6,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/bdmv.webp",
+          "96x40": "assets/transparent/96x40/bdmv.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/bdmv.webp",
+          "96x40": "assets/dark/96x40/bdmv.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/bdmv.webp",
+          "96x40": "assets/light/96x40/bdmv.webp"
+        }
+      },
+      "fallbackText": "BDMV"
+    },
+    {
+      "id": "webdl",
+      "group": "source",
+      "name": "WEB-DL",
+      "text": "WEB-DL",
+      "brand": false,
+      "pattern": "(?i)\\\\bweb[ ._-]?dl\\\\b",
+      "assetBasis": "user_supplied_brand_or_technical_asset",
+      "order": 7,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/webdl.webp",
+          "96x40": "assets/transparent/96x40/webdl.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/webdl.webp",
+          "96x40": "assets/dark/96x40/webdl.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/webdl.webp",
+          "96x40": "assets/light/96x40/webdl.webp"
+        }
+      },
+      "fallbackText": "WEB-DL"
+    },
+    {
+      "id": "webrip",
+      "group": "source",
+      "name": "WEBRip",
+      "text": "WEBRIP",
+      "brand": false,
+      "pattern": "(?i)\\\\bweb[ ._-]?rip\\\\b",
+      "assetBasis": "user_supplied_brand_or_technical_asset",
+      "order": 8,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/webrip.webp",
+          "96x40": "assets/transparent/96x40/webrip.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/webrip.webp",
+          "96x40": "assets/dark/96x40/webrip.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/webrip.webp",
+          "96x40": "assets/light/96x40/webrip.webp"
+        }
+      },
+      "fallbackText": "WEBRIP"
+    },
+    {
+      "id": "hdtv",
+      "group": "source",
+      "name": "HDTV",
+      "text": "HDTV",
+      "brand": false,
+      "pattern": "(?i)\\\\bhdtv\\\\b",
+      "assetBasis": "user_supplied_brand_or_technical_asset",
+      "order": 9,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/hdtv.webp",
+          "96x40": "assets/transparent/96x40/hdtv.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/hdtv.webp",
+          "96x40": "assets/dark/96x40/hdtv.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/hdtv.webp",
+          "96x40": "assets/light/96x40/hdtv.webp"
+        }
+      },
+      "fallbackText": "HDTV"
+    },
+    {
+      "id": "dvd-rip",
+      "group": "source",
+      "name": "DVD Rip",
+      "text": "DVD RIP",
+      "brand": false,
+      "pattern": "(?i)\\\\bdvd[ ._-]?rip\\\\b",
+      "assetBasis": "user_supplied_brand_or_technical_asset",
+      "order": 10,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/dvd-rip.webp",
+          "96x40": "assets/transparent/96x40/dvd-rip.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/dvd-rip.webp",
+          "96x40": "assets/dark/96x40/dvd-rip.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/dvd-rip.webp",
+          "96x40": "assets/light/96x40/dvd-rip.webp"
+        }
+      },
+      "fallbackText": "DVD RIP"
+    },
+    {
+      "id": "dvd",
+      "group": "source",
+      "name": "DVD",
+      "text": "DVD",
+      "brand": false,
+      "pattern": "(?i)\\\\bdvd\\\\b",
+      "assetBasis": "niakvio_generated_generic",
+      "order": 11,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/dvd.webp",
+          "96x40": "assets/transparent/96x40/dvd.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/dvd.webp",
+          "96x40": "assets/dark/96x40/dvd.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/dvd.webp",
+          "96x40": "assets/light/96x40/dvd.webp"
+        }
+      },
+      "fallbackText": "DVD"
+    },
+    {
+      "id": "4k-ultra-hd",
+      "group": "resolution",
+      "name": "4K Ultra HD",
+      "text": "4K UHD",
+      "brand": false,
+      "pattern": "(?i)\\\\b(4k|2160p|uhd|ultra[ ]?hd)\\\\b",
+      "assetBasis": "user_supplied_brand_or_technical_asset",
+      "order": 12,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/4k-ultra-hd.webp",
+          "96x40": "assets/transparent/96x40/4k-ultra-hd.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/4k-ultra-hd.webp",
+          "96x40": "assets/dark/96x40/4k-ultra-hd.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/4k-ultra-hd.webp",
+          "96x40": "assets/light/96x40/4k-ultra-hd.webp"
+        }
+      },
+      "fallbackText": "4K UHD"
+    },
+    {
+      "id": "2160p",
+      "group": "resolution",
+      "name": "2160p",
+      "text": "2160p",
+      "brand": false,
+      "pattern": "(?i)\\\\b2160p\\\\b",
+      "assetBasis": "niakvio_generated_generic",
+      "order": 13,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/2160p.webp",
+          "96x40": "assets/transparent/96x40/2160p.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/2160p.webp",
+          "96x40": "assets/dark/96x40/2160p.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/2160p.webp",
+          "96x40": "assets/light/96x40/2160p.webp"
+        }
+      },
+      "fallbackText": "2160p"
+    },
+    {
+      "id": "1440p",
+      "group": "resolution",
+      "name": "1440p QHD",
+      "text": "1440p",
+      "brand": false,
+      "pattern": "(?i)\\\\b1440p\\\\b",
+      "assetBasis": "niakvio_generated_generic",
+      "order": 14,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/1440p.webp",
+          "96x40": "assets/transparent/96x40/1440p.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/1440p.webp",
+          "96x40": "assets/dark/96x40/1440p.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/1440p.webp",
+          "96x40": "assets/light/96x40/1440p.webp"
+        }
+      },
+      "fallbackText": "1440p"
+    },
+    {
+      "id": "1080p-full-hd",
+      "group": "resolution",
+      "name": "1080p Full HD",
+      "text": "1080p",
+      "brand": false,
+      "pattern": "(?i)\\\\b(1080p|fhd|full[ ]?hd)\\\\b",
+      "assetBasis": "user_supplied_brand_or_technical_asset",
+      "order": 15,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/1080p-full-hd.webp",
+          "96x40": "assets/transparent/96x40/1080p-full-hd.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/1080p-full-hd.webp",
+          "96x40": "assets/dark/96x40/1080p-full-hd.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/1080p-full-hd.webp",
+          "96x40": "assets/light/96x40/1080p-full-hd.webp"
+        }
+      },
+      "fallbackText": "1080p"
+    },
+    {
+      "id": "1080i",
+      "group": "resolution",
+      "name": "1080i",
+      "text": "1080i",
+      "brand": false,
+      "pattern": "(?i)\\\\b1080i\\\\b",
+      "assetBasis": "niakvio_generated_generic",
+      "order": 16,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/1080i.webp",
+          "96x40": "assets/transparent/96x40/1080i.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/1080i.webp",
+          "96x40": "assets/dark/96x40/1080i.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/1080i.webp",
+          "96x40": "assets/light/96x40/1080i.webp"
+        }
+      },
+      "fallbackText": "1080i"
+    },
+    {
+      "id": "720p-hd",
+      "group": "resolution",
+      "name": "720p HD",
+      "text": "720p",
+      "brand": false,
+      "pattern": "(?i)\\\\b720p\\\\b",
+      "assetBasis": "user_supplied_brand_or_technical_asset",
+      "order": 17,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/720p-hd.webp",
+          "96x40": "assets/transparent/96x40/720p-hd.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/720p-hd.webp",
+          "96x40": "assets/dark/96x40/720p-hd.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/720p-hd.webp",
+          "96x40": "assets/light/96x40/720p-hd.webp"
+        }
+      },
+      "fallbackText": "720p"
+    },
+    {
+      "id": "576p",
+      "group": "resolution",
+      "name": "576p",
+      "text": "576p",
+      "brand": false,
+      "pattern": "(?i)\\\\b576p\\\\b",
+      "assetBasis": "niakvio_generated_generic",
+      "order": 18,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/576p.webp",
+          "96x40": "assets/transparent/96x40/576p.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/576p.webp",
+          "96x40": "assets/dark/96x40/576p.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/576p.webp",
+          "96x40": "assets/light/96x40/576p.webp"
+        }
+      },
+      "fallbackText": "576p"
+    },
+    {
+      "id": "480p-sd",
+      "group": "resolution",
+      "name": "480p SD",
+      "text": "480p",
+      "brand": false,
+      "pattern": "(?i)\\\\b480p\\\\b",
+      "assetBasis": "user_supplied_brand_or_technical_asset",
+      "order": 19,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/480p-sd.webp",
+          "96x40": "assets/transparent/96x40/480p-sd.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/480p-sd.webp",
+          "96x40": "assets/dark/96x40/480p-sd.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/480p-sd.webp",
+          "96x40": "assets/light/96x40/480p-sd.webp"
+        }
+      },
+      "fallbackText": "480p"
+    },
+    {
+      "id": "dolby-vision",
+      "group": "video-tech",
+      "name": "Dolby Vision",
+      "text": "DOLBY VISION",
+      "brand": true,
+      "pattern": "(?i)\\\\b(dolby[ ]?vision|dovi|dv)\\\\b",
+      "assetBasis": "user_supplied_brand_or_technical_asset",
+      "order": 20,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/dolby-vision.webp",
+          "96x40": "assets/transparent/96x40/dolby-vision.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/dolby-vision.webp",
+          "96x40": "assets/dark/96x40/dolby-vision.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/dolby-vision.webp",
+          "96x40": "assets/light/96x40/dolby-vision.webp"
+        }
+      },
+      "fallbackText": "DOLBY VISION"
+    },
+    {
+      "id": "hdr10-plus",
+      "group": "video-tech",
+      "name": "HDR10+",
+      "text": "HDR10+",
+      "brand": true,
+      "pattern": "(?i)\\\\b(hdr10\\\\+|hdr10[ ]?plus|hdr[ ]?10[ ]?\\\\+)\\\\b",
+      "assetBasis": "user_supplied_brand_or_technical_asset",
+      "order": 21,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/hdr10-plus.webp",
+          "96x40": "assets/transparent/96x40/hdr10-plus.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/hdr10-plus.webp",
+          "96x40": "assets/dark/96x40/hdr10-plus.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/hdr10-plus.webp",
+          "96x40": "assets/light/96x40/hdr10-plus.webp"
+        }
+      },
+      "fallbackText": "HDR10+"
+    },
+    {
+      "id": "hdr10",
+      "group": "video-tech",
+      "name": "HDR10",
+      "text": "HDR10",
+      "brand": false,
+      "pattern": "(?i)\\\\bhdr[ ]?10\\\\b",
+      "assetBasis": "user_supplied_brand_or_technical_asset",
+      "order": 22,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/hdr10.webp",
+          "96x40": "assets/transparent/96x40/hdr10.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/hdr10.webp",
+          "96x40": "assets/dark/96x40/hdr10.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/hdr10.webp",
+          "96x40": "assets/light/96x40/hdr10.webp"
+        }
+      },
+      "fallbackText": "HDR10"
+    },
+    {
+      "id": "hdr",
+      "group": "video-tech",
+      "name": "HDR",
+      "text": "HDR",
+      "brand": false,
+      "pattern": "(?i)\\\\bhdr\\\\b",
+      "assetBasis": "user_supplied_brand_or_technical_asset",
+      "order": 23,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/hdr.webp",
+          "96x40": "assets/transparent/96x40/hdr.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/hdr.webp",
+          "96x40": "assets/dark/96x40/hdr.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/hdr.webp",
+          "96x40": "assets/light/96x40/hdr.webp"
+        }
+      },
+      "fallbackText": "HDR"
+    },
+    {
+      "id": "hlg",
+      "group": "video-tech",
+      "name": "HLG",
+      "text": "HLG",
+      "brand": false,
+      "pattern": "(?i)\\\\bhlg\\\\b",
+      "assetBasis": "niakvio_generated_generic",
+      "order": 24,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/hlg.webp",
+          "96x40": "assets/transparent/96x40/hlg.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/hlg.webp",
+          "96x40": "assets/dark/96x40/hlg.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/hlg.webp",
+          "96x40": "assets/light/96x40/hlg.webp"
+        }
+      },
+      "fallbackText": "HLG"
+    },
+    {
+      "id": "sdr",
+      "group": "video-tech",
+      "name": "SDR",
+      "text": "SDR",
+      "brand": false,
+      "pattern": "(?i)\\\\bsdr\\\\b",
+      "assetBasis": "user_supplied_brand_or_technical_asset",
+      "order": 25,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/sdr.webp",
+          "96x40": "assets/transparent/96x40/sdr.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/sdr.webp",
+          "96x40": "assets/dark/96x40/sdr.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/sdr.webp",
+          "96x40": "assets/light/96x40/sdr.webp"
+        }
+      },
+      "fallbackText": "SDR"
+    },
+    {
+      "id": "imax-enhanced",
+      "group": "video-tech",
+      "name": "IMAX Enhanced",
+      "text": "IMAX ENHANCED",
+      "brand": true,
+      "pattern": "(?i)\\\\bimax[ ._-]?enhanced\\\\b",
+      "assetBasis": "user_supplied_brand_or_technical_asset",
+      "order": 26,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/imax-enhanced.webp",
+          "96x40": "assets/transparent/96x40/imax-enhanced.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/imax-enhanced.webp",
+          "96x40": "assets/dark/96x40/imax-enhanced.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/imax-enhanced.webp",
+          "96x40": "assets/light/96x40/imax-enhanced.webp"
+        }
+      },
+      "fallbackText": "IMAX ENHANCED"
+    },
+    {
+      "id": "imax",
+      "group": "video-tech",
+      "name": "IMAX",
+      "text": "IMAX",
+      "brand": true,
+      "pattern": "(?i)\\\\bimax\\\\b",
+      "assetBasis": "user_supplied_brand_or_technical_asset",
+      "order": 27,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/imax.webp",
+          "96x40": "assets/transparent/96x40/imax.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/imax.webp",
+          "96x40": "assets/dark/96x40/imax.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/imax.webp",
+          "96x40": "assets/light/96x40/imax.webp"
+        }
+      },
+      "fallbackText": "IMAX"
+    },
+    {
+      "id": "3d",
+      "group": "video-tech",
+      "name": "3D",
+      "text": "3D",
+      "brand": false,
+      "pattern": "(?i)\\\\b(3d|sbs|hsbs|ou|hou)\\\\b",
+      "assetBasis": "niakvio_generated_generic",
+      "order": 28,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/3d.webp",
+          "96x40": "assets/transparent/96x40/3d.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/3d.webp",
+          "96x40": "assets/dark/96x40/3d.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/3d.webp",
+          "96x40": "assets/light/96x40/3d.webp"
+        }
+      },
+      "fallbackText": "3D"
+    },
+    {
+      "id": "av1",
+      "group": "video-codec",
+      "name": "AV1",
+      "text": "AV1",
+      "brand": false,
+      "pattern": "(?i)\\\\bav1\\\\b",
+      "assetBasis": "niakvio_generated_generic",
+      "order": 29,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/av1.webp",
+          "96x40": "assets/transparent/96x40/av1.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/av1.webp",
+          "96x40": "assets/dark/96x40/av1.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/av1.webp",
+          "96x40": "assets/light/96x40/av1.webp"
+        }
+      },
+      "fallbackText": "AV1"
+    },
+    {
+      "id": "hevc",
+      "group": "video-codec",
+      "name": "HEVC / H.265",
+      "text": "HEVC",
+      "brand": false,
+      "pattern": "(?i)\\\\b(hevc|h[ ._-]?265|x265)\\\\b",
+      "assetBasis": "user_supplied_brand_or_technical_asset",
+      "order": 30,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/hevc.webp",
+          "96x40": "assets/transparent/96x40/hevc.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/hevc.webp",
+          "96x40": "assets/dark/96x40/hevc.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/hevc.webp",
+          "96x40": "assets/light/96x40/hevc.webp"
+        }
+      },
+      "fallbackText": "HEVC"
+    },
+    {
+      "id": "avc",
+      "group": "video-codec",
+      "name": "AVC / H.264",
+      "text": "AVC",
+      "brand": false,
+      "pattern": "(?i)\\\\b(avc|h[ ._-]?264|x264)\\\\b",
+      "assetBasis": "user_supplied_brand_or_technical_asset",
+      "order": 31,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/avc.webp",
+          "96x40": "assets/transparent/96x40/avc.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/avc.webp",
+          "96x40": "assets/dark/96x40/avc.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/avc.webp",
+          "96x40": "assets/light/96x40/avc.webp"
+        }
+      },
+      "fallbackText": "AVC"
+    },
+    {
+      "id": "vp9",
+      "group": "video-codec",
+      "name": "VP9",
+      "text": "VP9",
+      "brand": false,
+      "pattern": "(?i)\\\\bvp9\\\\b",
+      "assetBasis": "niakvio_generated_generic",
+      "order": 32,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/vp9.webp",
+          "96x40": "assets/transparent/96x40/vp9.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/vp9.webp",
+          "96x40": "assets/dark/96x40/vp9.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/vp9.webp",
+          "96x40": "assets/light/96x40/vp9.webp"
+        }
+      },
+      "fallbackText": "VP9"
+    },
+    {
+      "id": "mpeg2",
+      "group": "video-codec",
+      "name": "MPEG-2",
+      "text": "MPEG-2",
+      "brand": false,
+      "pattern": "(?i)\\\\bmpeg[ ._-]?2\\\\b",
+      "assetBasis": "niakvio_generated_generic",
+      "order": 33,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/mpeg2.webp",
+          "96x40": "assets/transparent/96x40/mpeg2.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/mpeg2.webp",
+          "96x40": "assets/dark/96x40/mpeg2.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/mpeg2.webp",
+          "96x40": "assets/light/96x40/mpeg2.webp"
+        }
+      },
+      "fallbackText": "MPEG-2"
+    },
+    {
+      "id": "vc1",
+      "group": "video-codec",
+      "name": "VC-1",
+      "text": "VC-1",
+      "brand": false,
+      "pattern": "(?i)\\\\bvc[ ._-]?1\\\\b",
+      "assetBasis": "niakvio_generated_generic",
+      "order": 34,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/vc1.webp",
+          "96x40": "assets/transparent/96x40/vc1.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/vc1.webp",
+          "96x40": "assets/dark/96x40/vc1.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/vc1.webp",
+          "96x40": "assets/light/96x40/vc1.webp"
+        }
+      },
+      "fallbackText": "VC-1"
+    },
+    {
+      "id": "12bit",
+      "group": "bit-depth",
+      "name": "12-bit",
+      "text": "12BIT",
+      "brand": false,
+      "pattern": "(?i)\\\\b12[ ._-]?bit\\\\b",
+      "assetBasis": "niakvio_generated_generic",
+      "order": 35,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/12bit.webp",
+          "96x40": "assets/transparent/96x40/12bit.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/12bit.webp",
+          "96x40": "assets/dark/96x40/12bit.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/12bit.webp",
+          "96x40": "assets/light/96x40/12bit.webp"
+        }
+      },
+      "fallbackText": "12BIT"
+    },
+    {
+      "id": "10bit",
+      "group": "bit-depth",
+      "name": "10-bit",
+      "text": "10BIT",
+      "brand": false,
+      "pattern": "(?i)\\\\b(10[ ._-]?bit|10b|hi10p)\\\\b",
+      "assetBasis": "user_supplied_brand_or_technical_asset",
+      "order": 36,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/10bit.webp",
+          "96x40": "assets/transparent/96x40/10bit.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/10bit.webp",
+          "96x40": "assets/dark/96x40/10bit.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/10bit.webp",
+          "96x40": "assets/light/96x40/10bit.webp"
+        }
+      },
+      "fallbackText": "10BIT"
+    },
+    {
+      "id": "8bit",
+      "group": "bit-depth",
+      "name": "8-bit",
+      "text": "8BIT",
+      "brand": false,
+      "pattern": "(?i)\\\\b8[ ._-]?bit\\\\b",
+      "assetBasis": "user_supplied_brand_or_technical_asset",
+      "order": 37,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/8bit.webp",
+          "96x40": "assets/transparent/96x40/8bit.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/8bit.webp",
+          "96x40": "assets/dark/96x40/8bit.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/8bit.webp",
+          "96x40": "assets/light/96x40/8bit.webp"
+        }
+      },
+      "fallbackText": "8BIT"
+    },
+    {
+      "id": "dolby-atmos",
+      "group": "audio-tech",
+      "name": "Dolby Atmos",
+      "text": "DOLBY ATMOS",
+      "brand": true,
+      "pattern": "(?i)\\\\b(dolby[ ]?atmos|atmos)\\\\b",
+      "assetBasis": "user_supplied_brand_or_technical_asset",
+      "order": 38,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/dolby-atmos.webp",
+          "96x40": "assets/transparent/96x40/dolby-atmos.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/dolby-atmos.webp",
+          "96x40": "assets/dark/96x40/dolby-atmos.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/dolby-atmos.webp",
+          "96x40": "assets/light/96x40/dolby-atmos.webp"
+        }
+      },
+      "fallbackText": "DOLBY ATMOS"
+    },
+    {
+      "id": "truehd",
+      "group": "audio-tech",
+      "name": "Dolby TrueHD",
+      "text": "TRUEHD",
+      "brand": true,
+      "pattern": "(?i)\\\\b(truehd|true[ ]?hd|dolby[ ]?truehd)\\\\b",
+      "assetBasis": "user_supplied_brand_or_technical_asset",
+      "order": 39,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/truehd.webp",
+          "96x40": "assets/transparent/96x40/truehd.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/truehd.webp",
+          "96x40": "assets/dark/96x40/truehd.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/truehd.webp",
+          "96x40": "assets/light/96x40/truehd.webp"
+        }
+      },
+      "fallbackText": "TRUEHD"
+    },
+    {
+      "id": "dolby-digital-plus",
+      "group": "audio-tech",
+      "name": "Dolby Digital Plus / E-AC-3",
+      "text": "DD+",
+      "brand": true,
+      "pattern": "(?i)\\\\b(ddp|dd\\\\+|dolby[ ._-]?digital[ ._-]?plus|e-?ac-?3)\\\\b",
+      "assetBasis": "user_supplied_brand_or_technical_asset",
+      "order": 40,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/dolby-digital-plus.webp",
+          "96x40": "assets/transparent/96x40/dolby-digital-plus.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/dolby-digital-plus.webp",
+          "96x40": "assets/dark/96x40/dolby-digital-plus.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/dolby-digital-plus.webp",
+          "96x40": "assets/light/96x40/dolby-digital-plus.webp"
+        }
+      },
+      "fallbackText": "DD+"
+    },
+    {
+      "id": "dolby-digital",
+      "group": "audio-tech",
+      "name": "Dolby Digital / AC-3",
+      "text": "DOLBY DIGITAL",
+      "brand": true,
+      "pattern": "(?i)\\\\b(dolby[ ._-]?digital|ac-?3|dd)\\\\b",
+      "assetBasis": "user_supplied_brand_or_technical_asset",
+      "order": 41,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/dolby-digital.webp",
+          "96x40": "assets/transparent/96x40/dolby-digital.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/dolby-digital.webp",
+          "96x40": "assets/dark/96x40/dolby-digital.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/dolby-digital.webp",
+          "96x40": "assets/light/96x40/dolby-digital.webp"
+        }
+      },
+      "fallbackText": "DOLBY DIGITAL"
+    },
+    {
+      "id": "dts-x",
+      "group": "audio-tech",
+      "name": "DTS:X",
+      "text": "DTS:X",
+      "brand": true,
+      "pattern": "(?i)\\\\bdts[: ._-]?x\\\\b",
+      "assetBasis": "user_supplied_brand_or_technical_asset",
+      "order": 42,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/dts-x.webp",
+          "96x40": "assets/transparent/96x40/dts-x.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/dts-x.webp",
+          "96x40": "assets/dark/96x40/dts-x.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/dts-x.webp",
+          "96x40": "assets/light/96x40/dts-x.webp"
+        }
+      },
+      "fallbackText": "DTS:X"
+    },
+    {
+      "id": "dts-hd-master-audio",
+      "group": "audio-tech",
+      "name": "DTS-HD Master Audio",
+      "text": "DTS-HD MA",
+      "brand": true,
+      "pattern": "(?i)\\\\b(dts[ ._-]?hd[ ._-]?ma|dts[ ._-]?hd[ ._-]?master)\\\\b",
+      "assetBasis": "user_supplied_brand_or_technical_asset",
+      "order": 43,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/dts-hd-master-audio.webp",
+          "96x40": "assets/transparent/96x40/dts-hd-master-audio.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/dts-hd-master-audio.webp",
+          "96x40": "assets/dark/96x40/dts-hd-master-audio.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/dts-hd-master-audio.webp",
+          "96x40": "assets/light/96x40/dts-hd-master-audio.webp"
+        }
+      },
+      "fallbackText": "DTS-HD MA"
+    },
+    {
+      "id": "dts-hd-hra",
+      "group": "audio-tech",
+      "name": "DTS-HD High Resolution Audio",
+      "text": "DTS-HD HRA",
+      "brand": true,
+      "pattern": "(?i)\\\\b(dts[ ._-]?hd[ ._-]?(hra|high[ ._-]?resolution))\\\\b",
+      "assetBasis": "niakvio_generated_generic",
+      "order": 44,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/dts-hd-hra.webp",
+          "96x40": "assets/transparent/96x40/dts-hd-hra.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/dts-hd-hra.webp",
+          "96x40": "assets/dark/96x40/dts-hd-hra.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/dts-hd-hra.webp",
+          "96x40": "assets/light/96x40/dts-hd-hra.webp"
+        }
+      },
+      "fallbackText": "DTS-HD HRA"
+    },
+    {
+      "id": "dts-hd",
+      "group": "audio-tech",
+      "name": "DTS-HD",
+      "text": "DTS-HD",
+      "brand": true,
+      "pattern": "(?i)\\\\bdts[ ._-]?hd\\\\b",
+      "assetBasis": "user_supplied_brand_or_technical_asset",
+      "order": 45,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/dts-hd.webp",
+          "96x40": "assets/transparent/96x40/dts-hd.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/dts-hd.webp",
+          "96x40": "assets/dark/96x40/dts-hd.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/dts-hd.webp",
+          "96x40": "assets/light/96x40/dts-hd.webp"
+        }
+      },
+      "fallbackText": "DTS-HD"
+    },
+    {
+      "id": "dts",
+      "group": "audio-tech",
+      "name": "DTS",
+      "text": "DTS",
+      "brand": true,
+      "pattern": "(?i)\\\\bdts\\\\b",
+      "assetBasis": "user_supplied_brand_or_technical_asset",
+      "order": 46,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/dts.webp",
+          "96x40": "assets/transparent/96x40/dts.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/dts.webp",
+          "96x40": "assets/dark/96x40/dts.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/dts.webp",
+          "96x40": "assets/light/96x40/dts.webp"
+        }
+      },
+      "fallbackText": "DTS"
+    },
+    {
+      "id": "aac",
+      "group": "audio-codec",
+      "name": "AAC",
+      "text": "AAC",
+      "brand": false,
+      "pattern": "(?i)\\\\baac\\\\b",
+      "assetBasis": "niakvio_generated_generic",
+      "order": 47,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/aac.webp",
+          "96x40": "assets/transparent/96x40/aac.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/aac.webp",
+          "96x40": "assets/dark/96x40/aac.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/aac.webp",
+          "96x40": "assets/light/96x40/aac.webp"
+        }
+      },
+      "fallbackText": "AAC"
+    },
+    {
+      "id": "flac",
+      "group": "audio-codec",
+      "name": "FLAC",
+      "text": "FLAC",
+      "brand": false,
+      "pattern": "(?i)\\\\bflac\\\\b",
+      "assetBasis": "niakvio_generated_generic",
+      "order": 48,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/flac.webp",
+          "96x40": "assets/transparent/96x40/flac.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/flac.webp",
+          "96x40": "assets/dark/96x40/flac.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/flac.webp",
+          "96x40": "assets/light/96x40/flac.webp"
+        }
+      },
+      "fallbackText": "FLAC"
+    },
+    {
+      "id": "lpcm",
+      "group": "audio-codec",
+      "name": "LPCM",
+      "text": "LPCM",
+      "brand": false,
+      "pattern": "(?i)\\\\blpcm\\\\b",
+      "assetBasis": "niakvio_generated_generic",
+      "order": 49,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/lpcm.webp",
+          "96x40": "assets/transparent/96x40/lpcm.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/lpcm.webp",
+          "96x40": "assets/dark/96x40/lpcm.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/lpcm.webp",
+          "96x40": "assets/light/96x40/lpcm.webp"
+        }
+      },
+      "fallbackText": "LPCM"
+    },
+    {
+      "id": "pcm",
+      "group": "audio-codec",
+      "name": "PCM",
+      "text": "PCM",
+      "brand": false,
+      "pattern": "(?i)\\\\bpcm\\\\b",
+      "assetBasis": "niakvio_generated_generic",
+      "order": 50,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/pcm.webp",
+          "96x40": "assets/transparent/96x40/pcm.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/pcm.webp",
+          "96x40": "assets/dark/96x40/pcm.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/pcm.webp",
+          "96x40": "assets/light/96x40/pcm.webp"
+        }
+      },
+      "fallbackText": "PCM"
+    },
+    {
+      "id": "opus",
+      "group": "audio-codec",
+      "name": "Opus",
+      "text": "OPUS",
+      "brand": false,
+      "pattern": "(?i)\\\\bopus\\\\b",
+      "assetBasis": "niakvio_generated_generic",
+      "order": 51,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/opus.webp",
+          "96x40": "assets/transparent/96x40/opus.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/opus.webp",
+          "96x40": "assets/dark/96x40/opus.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/opus.webp",
+          "96x40": "assets/light/96x40/opus.webp"
+        }
+      },
+      "fallbackText": "OPUS"
+    },
+    {
+      "id": "mp3",
+      "group": "audio-codec",
+      "name": "MP3",
+      "text": "MP3",
+      "brand": false,
+      "pattern": "(?i)\\\\bmp3\\\\b",
+      "assetBasis": "niakvio_generated_generic",
+      "order": 52,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/mp3.webp",
+          "96x40": "assets/transparent/96x40/mp3.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/mp3.webp",
+          "96x40": "assets/dark/96x40/mp3.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/mp3.webp",
+          "96x40": "assets/light/96x40/mp3.webp"
+        }
+      },
+      "fallbackText": "MP3"
+    },
+    {
+      "id": "alac",
+      "group": "audio-codec",
+      "name": "ALAC",
+      "text": "ALAC",
+      "brand": false,
+      "pattern": "(?i)\\\\balac\\\\b",
+      "assetBasis": "niakvio_generated_generic",
+      "order": 53,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/alac.webp",
+          "96x40": "assets/transparent/96x40/alac.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/alac.webp",
+          "96x40": "assets/dark/96x40/alac.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/alac.webp",
+          "96x40": "assets/light/96x40/alac.webp"
+        }
+      },
+      "fallbackText": "ALAC"
+    },
+    {
+      "id": "7.1",
+      "group": "audio-channels",
+      "name": "7.1 Audio",
+      "text": "7.1",
+      "brand": false,
+      "pattern": "(?i)\\\\b(7\\\\.1|8ch|8[ ]?channel)\\\\b",
+      "assetBasis": "user_supplied_brand_or_technical_asset",
+      "order": 54,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/7.1.webp",
+          "96x40": "assets/transparent/96x40/7.1.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/7.1.webp",
+          "96x40": "assets/dark/96x40/7.1.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/7.1.webp",
+          "96x40": "assets/light/96x40/7.1.webp"
+        }
+      },
+      "fallbackText": "7.1"
+    },
+    {
+      "id": "5.1",
+      "group": "audio-channels",
+      "name": "5.1 Audio",
+      "text": "5.1",
+      "brand": false,
+      "pattern": "(?i)\\\\b(5\\\\.1|6ch|6[ ]?channel)\\\\b",
+      "assetBasis": "user_supplied_brand_or_technical_asset",
+      "order": 55,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/5.1.webp",
+          "96x40": "assets/transparent/96x40/5.1.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/5.1.webp",
+          "96x40": "assets/dark/96x40/5.1.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/5.1.webp",
+          "96x40": "assets/light/96x40/5.1.webp"
+        }
+      },
+      "fallbackText": "5.1"
+    },
+    {
+      "id": "2.1",
+      "group": "audio-channels",
+      "name": "2.1 Audio",
+      "text": "2.1",
+      "brand": false,
+      "pattern": "(?i)\\\\b2\\\\.1\\\\b",
+      "assetBasis": "niakvio_generated_generic",
+      "order": 56,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/2.1.webp",
+          "96x40": "assets/transparent/96x40/2.1.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/2.1.webp",
+          "96x40": "assets/dark/96x40/2.1.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/2.1.webp",
+          "96x40": "assets/light/96x40/2.1.webp"
+        }
+      },
+      "fallbackText": "2.1"
+    },
+    {
+      "id": "2.0",
+      "group": "audio-channels",
+      "name": "2.0 Stereo",
+      "text": "2.0",
+      "brand": false,
+      "pattern": "(?i)\\\\b(2\\\\.0|stereo|2ch)\\\\b",
+      "assetBasis": "niakvio_generated_generic",
+      "order": 57,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/2.0.webp",
+          "96x40": "assets/transparent/96x40/2.0.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/2.0.webp",
+          "96x40": "assets/dark/96x40/2.0.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/2.0.webp",
+          "96x40": "assets/light/96x40/2.0.webp"
+        }
+      },
+      "fallbackText": "2.0"
+    },
+    {
+      "id": "1.0",
+      "group": "audio-channels",
+      "name": "1.0 Mono",
+      "text": "1.0",
+      "brand": false,
+      "pattern": "(?i)\\\\b(1\\\\.0|mono|1ch)\\\\b",
+      "assetBasis": "niakvio_generated_generic",
+      "order": 58,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/1.0.webp",
+          "96x40": "assets/transparent/96x40/1.0.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/1.0.webp",
+          "96x40": "assets/dark/96x40/1.0.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/1.0.webp",
+          "96x40": "assets/light/96x40/1.0.webp"
+        }
+      },
+      "fallbackText": "1.0"
+    },
+    {
+      "id": "multi",
+      "group": "language",
+      "name": "Multi",
+      "text": "MULTI",
+      "brand": false,
+      "pattern": "(?i)\\\\bmulti\\\\b",
+      "assetBasis": "niakvio_generated_generic",
+      "order": 59,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/multi.webp",
+          "96x40": "assets/transparent/96x40/multi.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/multi.webp",
+          "96x40": "assets/dark/96x40/multi.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/multi.webp",
+          "96x40": "assets/light/96x40/multi.webp"
+        }
+      },
+      "fallbackText": "MULTI"
+    },
+    {
+      "id": "vff",
+      "group": "language",
+      "name": "VFF",
+      "text": "VFF",
+      "brand": false,
+      "pattern": "(?i)\\\\bvff\\\\b",
+      "assetBasis": "niakvio_generated_generic",
+      "order": 60,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/vff.webp",
+          "96x40": "assets/transparent/96x40/vff.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/vff.webp",
+          "96x40": "assets/dark/96x40/vff.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/vff.webp",
+          "96x40": "assets/light/96x40/vff.webp"
+        }
+      },
+      "fallbackText": "VFF"
+    },
+    {
+      "id": "vfq",
+      "group": "language",
+      "name": "VFQ",
+      "text": "VFQ",
+      "brand": false,
+      "pattern": "(?i)\\\\b(vfq|fr[-_ ]?ca)\\\\b",
+      "assetBasis": "niakvio_generated_generic",
+      "order": 61,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/vfq.webp",
+          "96x40": "assets/transparent/96x40/vfq.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/vfq.webp",
+          "96x40": "assets/dark/96x40/vfq.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/vfq.webp",
+          "96x40": "assets/light/96x40/vfq.webp"
+        }
+      },
+      "fallbackText": "VFQ"
+    },
+    {
+      "id": "vo",
+      "group": "language",
+      "name": "VO",
+      "text": "VO",
+      "brand": false,
+      "pattern": "(?i)\\\\bvo\\\\b",
+      "assetBasis": "niakvio_generated_generic",
+      "order": 62,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/vo.webp",
+          "96x40": "assets/transparent/96x40/vo.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/vo.webp",
+          "96x40": "assets/dark/96x40/vo.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/vo.webp",
+          "96x40": "assets/light/96x40/vo.webp"
+        }
+      },
+      "fallbackText": "VO"
+    },
+    {
+      "id": "vostfr",
+      "group": "subtitles",
+      "name": "VOSTFR",
+      "text": "VOSTFR",
+      "brand": false,
+      "pattern": "(?i)\\\\bvostfr\\\\b",
+      "assetBasis": "niakvio_generated_generic",
+      "order": 63,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/vostfr.webp",
+          "96x40": "assets/transparent/96x40/vostfr.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/vostfr.webp",
+          "96x40": "assets/dark/96x40/vostfr.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/vostfr.webp",
+          "96x40": "assets/light/96x40/vostfr.webp"
+        }
+      },
+      "fallbackText": "VOSTFR"
+    },
+    {
+      "id": "sub-fr",
+      "group": "subtitles",
+      "name": "French subtitles",
+      "text": "SUB FR",
+      "brand": false,
+      "pattern": "(?i)\\\\b(sub[ ._-]?fr|fre[nch]*[ ._-]?sub)\\\\b",
+      "assetBasis": "niakvio_generated_generic",
+      "order": 64,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/sub-fr.webp",
+          "96x40": "assets/transparent/96x40/sub-fr.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/sub-fr.webp",
+          "96x40": "assets/dark/96x40/sub-fr.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/sub-fr.webp",
+          "96x40": "assets/light/96x40/sub-fr.webp"
+        }
+      },
+      "fallbackText": "SUB FR"
+    },
+    {
+      "id": "sub-en",
+      "group": "subtitles",
+      "name": "English subtitles",
+      "text": "SUB EN",
+      "brand": false,
+      "pattern": "(?i)\\\\b(sub[ ._-]?en|eng[lish]*[ ._-]?sub)\\\\b",
+      "assetBasis": "niakvio_generated_generic",
+      "order": 65,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/sub-en.webp",
+          "96x40": "assets/transparent/96x40/sub-en.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/sub-en.webp",
+          "96x40": "assets/dark/96x40/sub-en.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/sub-en.webp",
+          "96x40": "assets/light/96x40/sub-en.webp"
+        }
+      },
+      "fallbackText": "SUB EN"
+    },
+    {
+      "id": "forced",
+      "group": "subtitles",
+      "name": "Forced subtitles",
+      "text": "FORCED",
+      "brand": false,
+      "pattern": "(?i)\\\\bforced\\\\b",
+      "assetBasis": "niakvio_generated_generic",
+      "order": 66,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/forced.webp",
+          "96x40": "assets/transparent/96x40/forced.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/forced.webp",
+          "96x40": "assets/dark/96x40/forced.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/forced.webp",
+          "96x40": "assets/light/96x40/forced.webp"
+        }
+      },
+      "fallbackText": "FORCED"
+    },
+    {
+      "id": "sdh-cc",
+      "group": "subtitles",
+      "name": "SDH / CC",
+      "text": "SDH/CC",
+      "brand": false,
+      "pattern": "(?i)\\\\b(sdh|closed[ ]?caption|cc)\\\\b",
+      "assetBasis": "niakvio_generated_generic",
+      "order": 67,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/sdh-cc.webp",
+          "96x40": "assets/transparent/96x40/sdh-cc.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/sdh-cc.webp",
+          "96x40": "assets/dark/96x40/sdh-cc.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/sdh-cc.webp",
+          "96x40": "assets/light/96x40/sdh-cc.webp"
+        }
+      },
+      "fallbackText": "SDH/CC"
+    },
+    {
+      "id": "age-all",
+      "group": "age-rating",
+      "name": "Tous publics",
+      "text": "TOUS",
+      "brand": false,
+      "pattern": "(?i)\\\\b(tous[ ]?publics|all[ ]?ages|g)\\\\b",
+      "assetBasis": "niakvio_generated_generic",
+      "order": 68,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/age-all.webp",
+          "96x40": "assets/transparent/96x40/age-all.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/age-all.webp",
+          "96x40": "assets/dark/96x40/age-all.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/age-all.webp",
+          "96x40": "assets/light/96x40/age-all.webp"
+        }
+      },
+      "fallbackText": "TOUS"
+    },
+    {
+      "id": "age-12",
+      "group": "age-rating",
+      "name": "12+",
+      "text": "12+",
+      "brand": false,
+      "pattern": "(?i)\\\\b(-?12|12\\\\+)\\\\b",
+      "assetBasis": "niakvio_generated_generic",
+      "order": 69,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/age-12.webp",
+          "96x40": "assets/transparent/96x40/age-12.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/age-12.webp",
+          "96x40": "assets/dark/96x40/age-12.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/age-12.webp",
+          "96x40": "assets/light/96x40/age-12.webp"
+        }
+      },
+      "fallbackText": "12+"
+    },
+    {
+      "id": "age-16",
+      "group": "age-rating",
+      "name": "16+",
+      "text": "16+",
+      "brand": false,
+      "pattern": "(?i)\\\\b(-?16|16\\\\+)\\\\b",
+      "assetBasis": "niakvio_generated_generic",
+      "order": 70,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/age-16.webp",
+          "96x40": "assets/transparent/96x40/age-16.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/age-16.webp",
+          "96x40": "assets/dark/96x40/age-16.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/age-16.webp",
+          "96x40": "assets/light/96x40/age-16.webp"
+        }
+      },
+      "fallbackText": "16+"
+    },
+    {
+      "id": "age-18",
+      "group": "age-rating",
+      "name": "18+",
+      "text": "18+",
+      "brand": false,
+      "pattern": "(?i)\\\\b(-?18|18\\\\+)\\\\b",
+      "assetBasis": "niakvio_generated_generic",
+      "order": 71,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/age-18.webp",
+          "96x40": "assets/transparent/96x40/age-18.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/age-18.webp",
+          "96x40": "assets/dark/96x40/age-18.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/age-18.webp",
+          "96x40": "assets/light/96x40/age-18.webp"
+        }
+      },
+      "fallbackText": "18+"
+    },
+    {
+      "id": "pg-13",
+      "group": "age-rating",
+      "name": "PG-13",
+      "text": "PG-13",
+      "brand": false,
+      "pattern": "(?i)\\\\bpg-?13\\\\b",
+      "assetBasis": "niakvio_generated_generic",
+      "order": 72,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/pg-13.webp",
+          "96x40": "assets/transparent/96x40/pg-13.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/pg-13.webp",
+          "96x40": "assets/dark/96x40/pg-13.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/pg-13.webp",
+          "96x40": "assets/light/96x40/pg-13.webp"
+        }
+      },
+      "fallbackText": "PG-13"
+    },
+    {
+      "id": "tv-ma",
+      "group": "age-rating",
+      "name": "TV-MA",
+      "text": "TV-MA",
+      "brand": false,
+      "pattern": "(?i)\\\\btv-?ma\\\\b",
+      "assetBasis": "niakvio_generated_generic",
+      "order": 73,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/tv-ma.webp",
+          "96x40": "assets/transparent/96x40/tv-ma.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/tv-ma.webp",
+          "96x40": "assets/dark/96x40/tv-ma.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/tv-ma.webp",
+          "96x40": "assets/light/96x40/tv-ma.webp"
+        }
+      },
+      "fallbackText": "TV-MA"
+    }
+  ]
+}
