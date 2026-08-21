@@ -1,21 +1,34 @@
 #!/usr/bin/env python3
-"""Materialize the shared NiakVIO stream presentation in isolated provider bundles.
+"""Materialize the shared NiakVIO stream finalization in isolated provider bundles.
 
 Providers remain responsible for factual stream output (URL, headers, language,
-quality, codec, audio, duration and explicit source type). This final Core layer
-normalizes those facts and builds one presentation contract for Nuvio clients.
-TMDB is an optional factual fallback for title/year/runtime/age rating; browser
-fetches stay JS-timeout-bounded while native bridges use their host timeout so no
-host request is abandoned without a terminal response/error evidence marker.
+quality, codec, audio, duration and explicit source type). The Core first applies
+one conservative media-identity contract, then normalizes those facts and builds
+one presentation contract for Nuvio clients. TMDB is an optional factual fallback
+for title/year/runtime/age rating; browser fetches stay JS-timeout-bounded while
+native bridges use their host timeout so no host request is abandoned without a
+terminal response/error evidence marker.
 """
 from __future__ import annotations
 
 import hashlib
+import importlib.util
 import json
+from pathlib import Path
 from typing import Any
 
 MARKER = "NUVIO_GLOBAL_STREAM_PRESENTATION_V1"
 TMDB_KEY = "1865f43a0549ca50d341dd9ab8b29f49"
+IDENTITY_PATH = Path(__file__).with_name("global_stream_identity_v1.py")
+
+
+def _apply_identity(text: str, context: dict[str, Any]) -> str:
+    spec = importlib.util.spec_from_file_location("nuvio_global_stream_identity_v1", IDENTITY_PATH)
+    if spec is None or spec.loader is None:
+        raise RuntimeError(f"cannot load {IDENTITY_PATH}")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module.apply(text, context=context)
 
 
 def _strip_existing(text: str) -> str:
@@ -31,13 +44,16 @@ def _strip_existing(text: str) -> str:
 
 def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> str:
     context = kwargs.get("context") if isinstance(kwargs.get("context"), dict) else {}
+    # Identity must run before presentation on every provider. It rejects only
+    # positive mismatch evidence; generic rows remain untouched.
+    text = _apply_identity(text, context)
     provider_id = str(context.get("provider_id") or "").strip().casefold()
     cfg = dict(options or {})
     payload = {
         "providerId": provider_id,
         "tmdbKey": str(cfg.get("tmdb_key") or TMDB_KEY),
         "tmdbTimeoutMs": max(350, min(int(cfg.get("tmdb_timeout_ms", 1200)), 2500)),
-        "implementationRevision": "facts-first-shared-display-v4-native-terminal",
+        "implementationRevision": "identity-first-facts-shared-display-v5",
     }
     serialized = json.dumps(payload, separators=(",", ":"))
     marker = f"{MARKER}:{hashlib.sha256(serialized.encode()).hexdigest()[:12]}"
