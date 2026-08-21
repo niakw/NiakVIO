@@ -201,8 +201,9 @@ for workflow in (android_workflow, desktop_workflow):
 assert "NIAKVIO_TARGET_PROVIDER: all" in android_workflow
 assert "NIAKVIO_TARGET_PROVIDER: all" in desktop_workflow
 
-# Evidence completeness and Brain learning remain fail-closed. A broken player is a
-# valid observed failure, not a reason for the Lab to mutate Nuvio or the OS.
+# Evidence completeness and Brain learning remain fail-closed. Complete evidence is
+# usable as observation, but provider learning/repair requires independent clients;
+# client/runtime failures can never authorize provider mutation.
 for required in (
     "missing_repository_load:",
     "missing_repository_http:",
@@ -214,8 +215,11 @@ for required in (
     assert required in completeness, required
 for required in (
     "evidenceComplete",
-    "learningAllowed: evidence.complete",
-    "repairPlanningAllowed: evidence.complete",
+    "evidenceUsable: evidence.complete",
+    "learningAllowed: providerLearningAllowed",
+    "repairPlanningAllowed: providerLearningAllowed",
+    "providerMutationRequiresCrossClientConsensus: true",
+    "clientRuntimeFailureLearningAllowed: false",
     "providerLoadJsMutationAllowed: false",
     "if (!evidence.complete) process.exitCode = 2",
 ):
