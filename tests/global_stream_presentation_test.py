@@ -73,6 +73,17 @@ for token in ("【4K】", "【BLU-RAY】", "🌐 Dual Audio", "🎞 HEVC", "🔊
     assert token in row["description"], (token, row)
 assert "Unknown" not in row["description"]
 
+# Empty provider output must not start an optional TMDB request that can outlive
+# the provider route and make native evidence look incomplete.
+empty = "module.exports={getStreams:async()=>[]};\n"
+empty_patched = presentation.apply(empty, context={"provider_id": "movieshunt"})
+empty_result = run(
+    empty_patched,
+    "async function(){global.__tmdbCalls=(global.__tmdbCalls||0)+1;throw new Error('must not run')}",
+    "p.getStreams({tmdbId:'1233413',mediaType:'movie',title:'Sinners',year:2025}).then(v=>console.log(JSON.stringify({streams:v,calls:global.__tmdbCalls||0})))",
+)
+assert empty_result == {"streams": [], "calls": 0}, empty_result
+
 # Resolution alone never invents Blu-ray provenance.
 plain = "module.exports={getStreams:async()=>[{name:'Cineby',url:'https://media.example/video.mp4',quality:'1080p'}]};\n"
 plain_patched = presentation.apply(plain, context={"provider_id": "cineby"})
