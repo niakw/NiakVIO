@@ -161,7 +161,7 @@ jobs:
           path: |
             ~/.android/avd/*
             ~/.android/adb*
-          key: avd-v1-${{ runner.os }}-mobile-api35-google_apis-x86_64-pixel_2
+          key: avd-v2-${{ runner.os }}-mobile-api35-google_apis-x86_64-pixel_2-${{ needs.resolve.outputs.mobile_sha }}-${{ github.sha }}
 
       - name: Create Mobile AVD snapshot on cache miss
         if: matrix.device == 'mobile' && steps.avd-cache-mobile.outputs.cache-hit != 'true'
@@ -187,7 +187,7 @@ jobs:
           path: |
             ~/.android/avd/*
             ~/.android/adb*
-          key: avd-v1-${{ runner.os }}-tv-api31-android-tv-x86-tv_1080p
+          key: avd-v2-${{ runner.os }}-tv-api31-android-tv-x86-tv_1080p-${{ needs.resolve.outputs.tv_sha }}-${{ github.sha }}
 
       - name: Create TV AVD snapshot on cache miss
         if: matrix.device == 'tv' && steps.avd-cache-tv.outputs.cache-hit != 'true'
