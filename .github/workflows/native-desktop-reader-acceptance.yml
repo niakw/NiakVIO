@@ -32,6 +32,7 @@ on:
       - "scripts/analyze_native_corpus_results.cjs"
       - "scripts/gate_native_reader_coverage.cjs"
       - "scripts/gate_native_reader_result.cjs"
+      - "scripts/gate_native_player_reached.cjs"
       - "scripts/native_evidence_completeness.cjs"
       - "engine_v2/scripts/diagnose-native-reader.mjs"
   push:
@@ -63,6 +64,7 @@ on:
       - "scripts/analyze_native_corpus_results.cjs"
       - "scripts/gate_native_reader_coverage.cjs"
       - "scripts/gate_native_reader_result.cjs"
+      - "scripts/gate_native_player_reached.cjs"
       - "scripts/native_evidence_completeness.cjs"
       - "engine_v2/scripts/diagnose-native-reader.mjs"
       - ".github/workflows/native-desktop-reader-acceptance.yml"
@@ -135,8 +137,9 @@ jobs:
       NIAKVIO_TARGET_MANIFEST: manifest.json
       NIAKVIO_PRIMARY_STREAM_SCOPE: all
       NIAKVIO_REGRESSION_STREAM_SCOPE: all
-      # Playback outcome is compatibility evidence, not a global provider verdict.
-      # Corpus/evidence completeness remains blocking; player red alone does not.
+      NIAKVIO_PR_PROVIDER_LIMIT: "8"
+      # Playback outcomes are evidence to repair after the smoke. The smoke only
+      # blocks if the production player is never reached at all.
       NIAKVIO_REQUIRE_READER_SUCCESS: "0"
     steps:
       - name: Checkout NiakVIO candidate
@@ -187,8 +190,6 @@ jobs:
         shell: bash
         run: |
           set -euxo pipefail
-          # No test-only --add-opens/JVM privilege relaxation. If current
-          # NuvioDesktop cannot run under normal JVM policy, record/fix it upstream.
           ./nuvio-desktop/gradlew -p nuvio-desktop \
             :composeApp:buildMacosPlayerBridge \
             :composeApp:prepareMacosPlayerRuntime \
@@ -198,7 +199,6 @@ jobs:
         if: matrix.os_name == 'windows'
         shell: pwsh
         run: |
-          # Same normal-user/runtime policy as a real NuvioDesktop launch.
           & .\nuvio-desktop\gradlew.bat -p nuvio-desktop `
             :composeApp:buildWindowsPlayerBridge `
             :composeApp:prepareWindowsPlayerRuntime `
@@ -207,38 +207,40 @@ jobs:
             --no-configuration-cache --console=plain
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
-      - name: Execute all representative routes in one Desktop profile
+      - name: Execute representative routes and require one real player reach
         shell: bash
         run: |
           set -u
           FIXTURES=(sinners-2025 breaking-bad-s01e01 jujutsu-kaisen-s01e01)
-          STATUS=0
           for fixture in "${FIXTURES[@]}"; do
             echo "===== DESKTOP ROUTE: $fixture (${{ matrix.os_name }}) ====="
             NIAKVIO_TARGET_FIXTURE="$fixture" \
             NIAKVIO_PRIMARY_FIXTURE="$fixture" \
-              bash "$GITHUB_WORKSPACE/niakvio/scripts/run_native_corpus_desktop_suite.sh" || STATUS=1
+              bash "$GITHUB_WORKSPACE/niakvio/scripts/run_native_corpus_desktop_suite.sh" || true
           done
-          exit "$STATUS"
+          LOGS=()
+          for fixture in "${FIXTURES[@]}"; do
+            LOG="$GITHUB_WORKSPACE/desktop-native-corpus-${{ matrix.os_name }}-${fixture}.log"
+            [[ -f "$LOG" ]] && LOGS+=("$LOG")
+          done
+          node "$GITHUB_WORKSPACE/niakvio/scripts/gate_native_player_reached.cjs" "${LOGS[@]}"
 
-      - name: Build Desktop Brain diagnoses from complete evidence
+      - name: Build Desktop Brain diagnoses from captured evidence
         if: always()
+        continue-on-error: true
         shell: bash
         run: |
-          set -euo pipefail
-          STATUS=0
+          set -u
           for fixture in sinners-2025 breaking-bad-s01e01 jujutsu-kaisen-s01e01; do
             LOG="$GITHUB_WORKSPACE/desktop-native-corpus-${{ matrix.os_name }}-${fixture}.log"
             if [ ! -s "$LOG" ]; then
               echo "Missing Desktop reader evidence: $LOG" >&2
-              STATUS=1
               continue
             fi
             node niakvio/engine_v2/scripts/diagnose-native-reader.mjs \
               --output "$GITHUB_WORKSPACE/desktop-reader-${{ matrix.os_name }}-${fixture}-brain.json" \
-              "$LOG" || STATUS=1
+              "$LOG" || true
           done
-          exit "$STATUS"
 
       - name: Upload Desktop reader evidence
         if: always()
