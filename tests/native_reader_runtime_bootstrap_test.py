@@ -10,7 +10,8 @@ SCRIPTS = ROOT / "scripts"
 sys.path.insert(0, str(SCRIPTS))
 
 from augment_native_corpus_request_contract import kotlin_map  # noqa: E402
-from augment_native_provider_loading import platform_set_literal, repository_helpers, tv_helpers  # noqa: E402
+from augment_native_provider_loading import insert_imports, platform_set_literal, repository_helpers, tv_helpers  # noqa: E402
+from native_player_diagnostics_codegen import TV_IMPORTS  # noqa: E402
 from nuvio_tv_test_bootstrap import enable_tv_tests  # noqa: E402
 
 request_contract = (SCRIPTS / "augment_native_corpus_request_contract.py").read_text(encoding="utf-8")
@@ -44,6 +45,23 @@ assert 'return "emptySet()"' not in provider_loading
 assert "private val platformExcludedProviders =" not in provider_loading
 assert "emptyMap<String, com.nuvio.tv.domain.model.ScraperInfo>()" in provider_loading
 assert "emptyMap<String, PluginScraper>()" in provider_loading
+
+# Player and repository augmentation are two layers of one generated TV test.
+# Repository loading owns their shared Hilt/Flow imports; the player layer must
+# never emit a second copy (the official 0.8.7 Kotlin compiler rejects duplicates).
+layered_tv_imports = insert_imports(
+    "import androidx.test.platform.app.InstrumentationRegistry\n" + TV_IMPORTS,
+    "tv",
+)
+for shared_import in (
+    "import dagger.hilt.EntryPoint\n",
+    "import dagger.hilt.InstallIn\n",
+    "import dagger.hilt.android.EntryPointAccessors\n",
+    "import dagger.hilt.components.SingletonComponent\n",
+    "import kotlinx.coroutines.flow.first\n",
+):
+    assert shared_import not in TV_IMPORTS, shared_import
+    assert layered_tv_imports.count(shared_import) == 1, shared_import
 
 # NuvioTV instrumentation bootstrap is a structural contract, never a client
 # version contract. The official client advanced from 0.8.4 to 0.8.7 and exposed
@@ -98,6 +116,6 @@ assert "privilege=ordinary-user" in desktop_suite
 
 print(
     "native reader runtime bootstrap contract passed: "
-    "tv_explicit_pairs=true generated_empty_generics_typed=true tv_version_agnostic_bootstrap=true "
-    "mobile_real_app=true desktop_ordinary_jvm_policy=true"
+    "tv_explicit_pairs=true generated_empty_generics_typed=true tv_single_owner_hilt_imports=true "
+    "tv_version_agnostic_bootstrap=true mobile_real_app=true desktop_ordinary_jvm_policy=true"
 )
