@@ -3,7 +3,7 @@
 
 This module may enable an upstream project's instrumentation source set, test
 runner, test dependencies, and (for TV) a debug signing configuration required
-to install the debug APK on the emulator.  It must never change production
+to install the debug APK on the emulator. It must never change production
 Android manifests, networking policy, player code, stream headers, storage,
 DNS, proxying, decoder settings, or any other runtime behaviour.
 """
@@ -17,15 +17,23 @@ MOBILE_TEST_RUNNER = 'implementation("androidx.test:runner:1.7.0")'
 TV_RUNNER = 'testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"'
 TV_EXT_JUNIT = 'androidTestImplementation("androidx.test.ext:junit:1.3.0")'
 TV_TEST_RUNNER = 'androidTestImplementation("androidx.test:runner:1.7.0")'
+TV_DEBUG_ENTRYPOINT = '''package com.nuvio.tv.core.plugin
+
+import dagger.hilt.EntryPoint
+import dagger.hilt.InstallIn
+import dagger.hilt.components.SingletonComponent
+
+/** Test-build-only accessor for the real production PluginManager singleton. */
+@EntryPoint
+@InstallIn(SingletonComponent::class)
+interface NiakvioPluginManagerEntryPoint {
+    fun pluginManager(): PluginManager
+}
+'''
 
 
 def enable_mobile_device_tests(repo: Path) -> None:
-    """Enable only the Android device-test source set in NuvioMobile.
-
-    No main manifest is created or edited here. If the official application is
-    missing a capability required by playback, the native lab must observe that
-    failure rather than manufacture the capability.
-    """
+    """Enable only the Android device-test source set in NuvioMobile."""
     build = Path(repo) / "composeApp/build.gradle.kts"
     text = build.read_text(encoding="utf-8")
 
@@ -66,12 +74,12 @@ def enable_mobile_device_tests(repo: Path) -> None:
 
 def enable_tv_tests(repo: Path) -> None:
     """Enable NuvioTV instrumentation without touching production runtime code."""
-    build = Path(repo) / "app/build.gradle.kts"
+    repo = Path(repo)
+    build = repo / "app/build.gradle.kts"
     text = build.read_text(encoding="utf-8")
 
     # Hosted CI does not possess the official release signing key. Switching the
-    # debug variant back to the standard debug keystore is a packaging-only test
-    # prerequisite; it does not alter player/network/provider behaviour.
+    # debug variant back to the standard debug keystore is packaging-only test plumbing.
     release_signing = '        debug {\n            signingConfig = signingConfigs.getByName("release")'
     debug_signing = '        debug {\n            signingConfig = signingConfigs.getByName("debug")'
     if release_signing in text:
@@ -96,4 +104,17 @@ def enable_tv_tests(repo: Path) -> None:
         text += "\n}\n"
 
     build.write_text(text, encoding="utf-8")
-    print("FIELD_NATIVE_TEST_BOOTSTRAP client=tv scope=test-only runtime_mutation=false")
+
+    # Hilt aggregates EntryPoints when compiling the target APK, not afterwards
+    # when androidTest is compiled. Materialize the accessor in debug-only source
+    # so it is part of the real debug SingletonComponent without changing main/release.
+    entrypoint = repo / "app/src/debug/java/com/nuvio/tv/core/plugin/NiakvioPluginManagerEntryPoint.kt"
+    entrypoint.parent.mkdir(parents=True, exist_ok=True)
+    if entrypoint.exists() and entrypoint.read_text(encoding="utf-8") != TV_DEBUG_ENTRYPOINT:
+        raise SystemExit(f"unexpected existing TV debug entrypoint content: {entrypoint}")
+    entrypoint.write_text(TV_DEBUG_ENTRYPOINT, encoding="utf-8")
+
+    print(
+        "FIELD_NATIVE_TEST_BOOTSTRAP client=tv scope=test-only runtime_mutation=false "
+        "hilt_debug_entrypoint=true"
+    )
