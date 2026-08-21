@@ -81,7 +81,8 @@ for required in (
 
 # Canonical Android proof uses current official client SHAs and a runtime
 # fingerprint in every persistent AVD cache key. No broad restore fallback exists.
-for fixture in ("sinners-2025", "breaking-bad-s01e01", "jujutsu-kaisen-s01e01"):
+representative_fixtures = ("sinners-2025", "breaking-bad-s01e01", "jujutsu-kaisen-s01e01")
+for fixture in representative_fixtures:
     assert fixture in android_reader, fixture
 for required in (
     "pull_request:",
@@ -103,9 +104,14 @@ for required in (
     "compare_native_reader_brain_repair.py",
     "--max-providers 24",
     "native-reader-brain-repair-${{ github.run_id }}",
-    "native-tv-route-sinners-2025-${{ github.run_id }}",
+    "native-tv-route-representative-${{ github.run_id }}",
+    "native-mobile-route-representative-${{ github.run_id }}",
+    "representative-cross-client-brain.json",
+    "tv-reader-repair-comparison-${fixture}.json",
+    "Re-read every provider and returned stream for all representative routes after Brain mutation",
 ):
     assert required in android_reader, required
+assert android_reader.count('NIAKVIO_TARGET_FIXTURES: "sinners-2025 breaking-bad-s01e01 jujutsu-kaisen-s01e01"') >= 3
 assert "avd-v1-" not in android_reader
 assert "restore-keys:" not in android_reader
 assert "playback-hotfix" not in android_reader
@@ -261,7 +267,7 @@ assert len(stageable) >= 80, len(stageable)
 print(
     "native device lab contract passed: "
     f"fixtures={len(expected_slugs)} providers={len(stageable)} android_exhaustive=true "
-    "desktop_native=true brain_retest=true cached_profiles=v2-fingerprinted "
+    "desktop_native=true brain_retest=movie-tv-anime cached_profiles=v2-fingerprinted "
     "targeted_manual=true reader_learning_idempotent=true trusted_main_learning=true "
     "missing_artifact_retriable=true pr_bounded=true production_player_only=true"
 )
