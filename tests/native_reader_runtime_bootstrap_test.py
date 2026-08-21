@@ -61,7 +61,7 @@ for forbidden in (
     assert forbidden not in desktop_workflow, forbidden
 assert "No test-only --add-opens/JVM privilege relaxation" in desktop_workflow
 assert "root_execution_forbidden" in desktop_suite
-assert "privilege=ordinary-user" in desktop_workflow
+assert "privilege=ordinary-user" in desktop_suite
 
 print(
     "native reader runtime bootstrap contract passed: "
