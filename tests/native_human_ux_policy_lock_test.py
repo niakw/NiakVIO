@@ -5,8 +5,9 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 POLICY = json.loads((ROOT / "automation/native-human-ux-policy.json").read_text(encoding="utf-8"))
+ANDROID_WORKFLOW = (ROOT / ".github/workflows/native-android-route-reader.yml").read_text(encoding="utf-8")
 
-assert POLICY["version"] >= 4
+assert POLICY["version"] >= 6
 assert POLICY["mode"] == "human-ux-observation-only"
 
 harness = POLICY["harness_change_control"]
@@ -48,6 +49,14 @@ assert profiles["mobile"]["known_entry"] == "native_client_test_bootstrap.enable
 assert profiles["mobile"]["launcher_package"] == "com.nuviodebug.com"
 assert profiles["desktop"]["execution_policy"] == "ordinary-user"
 
+# The TV Hilt escape hatch is deliberately one exact debug-build-only file. Never
+# broaden it to app/src/debug/, otherwise the lab could mutate runtime behavior.
+tv_allowed = POLICY["allowed_checkout_changes"]["tv"]
+exact_tv_debug_accessor = "app/src/debug/java/com/nuvio/tv/core/plugin/NiakvioPluginManagerEntryPoint.kt"
+assert exact_tv_debug_accessor in tv_allowed
+assert "app/src/debug/" not in tv_allowed
+assert any("exact debug-build-only Hilt accessor" in value for value in profiles["tv"]["allowed_test_plumbing"])
+
 blockers = POLICY["job_blocker_memory"]
 assert blockers["schema_version"] == 1
 assert blockers["consult_before_harness_change"] is True
@@ -56,6 +65,7 @@ for blocker_id in (
     "stale-repository-http-instrumentation-contract",
     "stale-tv-bootstrap-wrapper-contract",
     "stale-tv-bootstrap-alias-contract",
+    "tv-debug-hilt-entrypoint-audit",
     "reader-run-cancellation-churn",
     "repository-http-evidence-gap-after-instrumentation-disable",
     "actions-log-blob-not-ready",
@@ -65,6 +75,7 @@ for blocker_id in (
     "stale-repository-http-instrumentation-contract",
     "stale-tv-bootstrap-wrapper-contract",
     "stale-tv-bootstrap-alias-contract",
+    "tv-debug-hilt-entrypoint-audit",
 ):
     assert entries[blocker_id]["status"] == "resolved", blocker_id
     assert entries[blocker_id]["never_repeat"], blocker_id
@@ -72,6 +83,15 @@ assert entries["repository-http-evidence-gap-after-instrumentation-disable"]["st
 assert "never restore Nuvio runtime HTTP instrumentation" in entries["repository-http-evidence-gap-after-instrumentation-disable"]["next_action"]
 assert entries["reader-run-cancellation-churn"]["status"] == "operational-guard"
 assert "freeze the head until evidence is collected" in entries["reader-run-cancellation-churn"]["resolution"]
+
+# AVD snapshot generation is part of the persistent harness contract. Old static
+# avd-v1 snapshots must never be eligible after client/harness changes.
+assert "avd-v1-" not in ANDROID_WORKFLOW
+assert ANDROID_WORKFLOW.count("key: avd-v2-") == 3
+assert ANDROID_WORKFLOW.count("${{ needs.resolve.outputs.runtime_fingerprint }}") >= 4
+assert ANDROID_WORKFLOW.count("${{ needs.resolve.outputs.tv_sha }}") >= 3
+assert ANDROID_WORKFLOW.count("${{ needs.resolve.outputs.mobile_sha }}") >= 2
+assert "restore-keys:" not in ANDROID_WORKFLOW
 
 human_path = POLICY["human_ux_acceptance_path"]
 for step in (
