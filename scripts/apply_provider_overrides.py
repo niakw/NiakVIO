@@ -21,6 +21,7 @@ from override_text_utils import replace_literal
 
 ROOT = Path(__file__).resolve().parents[1]
 CONFIG = ROOT / "provider-overrides.json"
+GLOBAL_STREAM_PRESENTATION = "scripts/provider_patches/global_stream_presentation_v1.py"
 
 
 def load_overrides() -> dict[str, Any]:
@@ -460,7 +461,6 @@ def apply_overrides(
                     "scope": "global_media_enrichment",
                 })
 
-
         _apply_playback_stage(post_media_hooks)
         staged_hooks = {str(value) for value in pre_media_hooks + post_media_hooks if str(value).strip()}
         legacy_tail_hooks = [
@@ -468,6 +468,21 @@ def apply_overrides(
             if str(value).strip() and str(value) not in staged_hooks
         ]
         _apply_playback_stage(legacy_tail_hooks)
+
+        # Presentation is a Core-wide finalization layer, not a provider capability.
+        # Apply it after catalogue/media/playback recovery to every reconstructed
+        # provider bundle. It only normalizes structured facts and optionally enriches
+        # non-empty rows with TMDB metadata; it never changes playback URL/headers.
+        before = text
+        text = _apply_patch_script(text, provider_id, GLOBAL_STREAM_PRESENTATION, {}, None)
+        if text != before:
+            applied.append({
+                "type": "patch_script",
+                "path": GLOBAL_STREAM_PRESENTATION,
+                "phase": phase,
+                "scope": "global_stream_presentation",
+            })
+
     if text == original_text:
         return data, []
     return text.encode("utf-8"), applied
