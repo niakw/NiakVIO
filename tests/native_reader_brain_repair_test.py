@@ -40,6 +40,7 @@ with tempfile.TemporaryDirectory(dir=ROOT) as tmp_raw:
             "fixture": "sinners-2025",
             "requestType": "movie",
             "routeMode": "declared",
+            "index": 0,
             "failureClass": "playback_http_access",
             "action": "probe-targeted-repair",
             "hypotheses": [{"id": "replay-native-request-context"}],
@@ -66,21 +67,21 @@ with tempfile.TemporaryDirectory(dir=ROOT) as tmp_raw:
         "plans": [
             {
                 "provider": "moviesdrive", "client": "mobile", "fixture": "sinners-2025",
-                "requestType": "movie", "routeMode": "declared",
+                "requestType": "movie", "routeMode": "declared", "index": 0,
                 "failureClass": "playback_http_access", "action": "probe-targeted-repair",
                 "hypotheses": [{"id": "replay-native-request-context"}],
             },
             {
                 "provider": "moviesdrive", "client": "desktop", "fixture": "sinners-2025",
-                "requestType": "movie", "routeMode": "declared",
+                "requestType": "movie", "routeMode": "declared", "index": 0,
                 "failureClass": "playback_http_access", "action": "probe-targeted-repair",
                 "hypotheses": [{"id": "replay-native-request-context"}],
             },
         ],
         "observations": [
-            {"provider": "moviesdrive", "client": "mobile", "fixture": "sinners-2025", "requestType": "movie", "routeMode": "declared", "failureClass": "playback_http_access", "state": "error"},
-            {"provider": "moviesdrive", "client": "desktop", "fixture": "sinners-2025", "requestType": "movie", "routeMode": "declared", "failureClass": "playback_http_access", "state": "error"},
-            {"provider": "moviesdrive", "client": "tv", "fixture": "sinners-2025", "requestType": "movie", "routeMode": "declared", "failureClass": "healthy", "state": "ready"},
+            {"provider": "moviesdrive", "client": "mobile", "fixture": "sinners-2025", "requestType": "movie", "routeMode": "declared", "index": 0, "failureClass": "playback_http_access", "state": "error"},
+            {"provider": "moviesdrive", "client": "desktop", "fixture": "sinners-2025", "requestType": "movie", "routeMode": "declared", "index": 0, "failureClass": "playback_http_access", "state": "error"},
+            {"provider": "moviesdrive", "client": "tv", "fixture": "sinners-2025", "requestType": "movie", "routeMode": "declared", "index": 0, "failureClass": "healthy", "state": "ready"},
         ],
     }), encoding="utf-8")
     peer_report = run_builder(healthy_peer, tmp / "peer-repair")
@@ -88,8 +89,48 @@ with tempfile.TemporaryDirectory(dir=ROOT) as tmp_raw:
     assert peer_report["skipped"][0]["reason"] == "client_specific_failure_has_healthy_peer"
     assert peer_report["skipped"][0]["healthyClients"] == ["tv"]
 
+    # One provider may expose several independent streams. Failures stay indexed
+    # stream-by-stream, but any healthy alternate stream for the same provider/route/
+    # fixture prevents the Brain from condemning the whole provider globally. This
+    # also covers the case where two client families fail one candidate while another
+    # candidate from the same provider remains playable.
+    mixed_streams = tmp / "mixed-streams.json"
+    mixed_streams.write_text(json.dumps({
+        "schemaVersion": 5,
+        "brainVersion": 4,
+        "readerFailures": 2,
+        "plans": [
+            {
+                "provider": "moviesdrive", "client": "tv", "fixture": "sinners-2025",
+                "requestType": "movie", "routeMode": "declared", "index": 1,
+                "failureClass": "playback_http_access", "action": "probe-targeted-repair",
+                "hypotheses": [{"id": "replay-native-request-context"}],
+            },
+            {
+                "provider": "moviesdrive", "client": "mobile", "fixture": "sinners-2025",
+                "requestType": "movie", "routeMode": "declared", "index": 1,
+                "failureClass": "playback_http_access", "action": "probe-targeted-repair",
+                "hypotheses": [{"id": "replay-native-request-context"}],
+            },
+        ],
+        "observations": [
+            {"provider": "moviesdrive", "client": "tv", "fixture": "sinners-2025", "requestType": "movie", "routeMode": "declared", "index": 0, "failureClass": "healthy", "state": "ready"},
+            {"provider": "moviesdrive", "client": "tv", "fixture": "sinners-2025", "requestType": "movie", "routeMode": "declared", "index": 1, "failureClass": "playback_http_access", "state": "error"},
+            {"provider": "moviesdrive", "client": "mobile", "fixture": "sinners-2025", "requestType": "movie", "routeMode": "declared", "index": 0, "failureClass": "healthy", "state": "ready"},
+            {"provider": "moviesdrive", "client": "mobile", "fixture": "sinners-2025", "requestType": "movie", "routeMode": "declared", "index": 1, "failureClass": "playback_http_access", "state": "error"},
+        ],
+    }), encoding="utf-8")
+    mixed_report = run_builder(mixed_streams, tmp / "mixed-streams-repair")
+    assert mixed_report["proposalCount"] == 0, mixed_report
+    assert mixed_report["compatibilityOnlyCount"] == 1, mixed_report
+    assert mixed_report["skipped"][0]["reason"] == "client_specific_failure_has_healthy_peer"
+    assert mixed_report["skipped"][0]["failingClients"] == ["mobile", "tv"]
+    assert mixed_report["skipped"][0]["healthyClients"] == ["mobile", "tv"]
+    assert mixed_report["skipped"][0]["occurrences"] == 2
+
     # A provider mutation sandbox becomes eligible only after independent client
-    # families corroborate the same failure and no healthy peer contradicts it.
+    # families corroborate the same failure and no healthy peer/alternate stream
+    # contradicts it.
     diagnosis = tmp / "cross-client.json"
     diagnosis.write_text(json.dumps({
         "schemaVersion": 5,
@@ -98,7 +139,7 @@ with tempfile.TemporaryDirectory(dir=ROOT) as tmp_raw:
         "plans": [
             {
                 "provider": "moviesdrive", "client": "tv", "fixture": "sinners-2025",
-                "requestType": "movie", "routeMode": "declared",
+                "requestType": "movie", "routeMode": "declared", "index": 0,
                 "failureClass": "playback_http_access", "action": "probe-targeted-repair",
                 "hypotheses": [
                     {"id": "replay-native-request-context"},
@@ -107,7 +148,7 @@ with tempfile.TemporaryDirectory(dir=ROOT) as tmp_raw:
             },
             {
                 "provider": "moviesdrive", "client": "mobile", "fixture": "sinners-2025",
-                "requestType": "movie", "routeMode": "declared",
+                "requestType": "movie", "routeMode": "declared", "index": 0,
                 "failureClass": "playback_http_access", "action": "probe-targeted-repair",
                 "hypotheses": [{"id": "replay-native-request-context"}],
             },
@@ -158,4 +199,4 @@ with tempfile.TemporaryDirectory(dir=ROOT) as tmp_raw:
     assert result["acceptedProviders"] == ["moviesdrive"], result
     assert result["policy"]["freshNativeReaderProofRequired"] is True
 
-print("native reader Brain repair cross-client safety tests passed")
+print("native reader Brain repair cross-client and multi-stream safety tests passed")
