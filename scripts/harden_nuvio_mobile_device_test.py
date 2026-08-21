@@ -5,7 +5,9 @@ Human-UX invariant: this helper must not change Nuvio application runtime,
 player, network, provider behavior, settings, or Android OS policy. It only:
 - resolves the duplicate libc++_shared.so merge conflict in the instrumentation APK;
 - removes Sentry auto-init from the *instrumentation test process* so a missing DSN
-  cannot crash the harness before the first test starts.
+  cannot crash the harness before the first test starts;
+- makes the separately-installed official androidApp debug package visible to the
+  instrumentation PackageManager on Android 11+.
 
 The production application manifest/process is never edited. Changes are scoped to
 the prepared ephemeral upstream checkout and are idempotent.
@@ -20,6 +22,7 @@ from pathlib import Path
 ANDROID_NS = "http://schemas.android.com/apk/res/android"
 TOOLS_NS = "http://schemas.android.com/tools"
 SENTRY_INIT_PROVIDER = "io.sentry.android.core.SentryInitProvider"
+OFFICIAL_DEBUG_PACKAGE = "com.nuviodebug.com"
 
 ET.register_namespace("android", ANDROID_NS)
 ET.register_namespace("tools", TOOLS_NS)
@@ -61,10 +64,12 @@ def _ensure_device_test_packaging(repo: Path) -> None:
         raise SystemExit(f"unexpected libc++ packaging rule count={final.count(packaging_line)}")
 
 
-def _disable_sentry_only_in_test_process(repo: Path) -> None:
+def _harden_test_manifest_only(repo: Path) -> None:
     # This is the Android instrumentation manifest overlay, not the application's
-    # production manifest. Removing this provider only prevents the test APK process
-    # (com.nuvio.app.test) from requiring a Sentry DSN before JUnit starts.
+    # production manifest. Removing the Sentry provider only prevents the test APK
+    # process from requiring a DSN before JUnit starts. The <queries> row only makes
+    # the official androidApp debug APK visible to PackageManager on Android 11+;
+    # it grants no permission and changes no OS policy.
     test_manifest = repo / "composeApp/src/androidDeviceTest/AndroidManifest.xml"
     test_manifest.parent.mkdir(parents=True, exist_ok=True)
 
@@ -80,12 +85,32 @@ def _disable_sentry_only_in_test_process(repo: Path) -> None:
         root = ET.Element("manifest")
         tree = ET.ElementTree(root)
 
+    name_key = f"{{{ANDROID_NS}}}name"
+    node_key = f"{{{TOOLS_NS}}}node"
+
+    queries = root.find("queries")
+    if queries is None:
+        queries = ET.Element("queries")
+        application_index = next(
+            (index for index, child in enumerate(list(root)) if child.tag == "application"),
+            len(list(root)),
+        )
+        root.insert(application_index, queries)
+    package_rows = [
+        child
+        for child in list(queries)
+        if child.tag == "package" and child.attrib.get(name_key) == OFFICIAL_DEBUG_PACKAGE
+    ]
+    if len(package_rows) > 1:
+        raise SystemExit(f"unexpected official debug package query count={len(package_rows)}")
+    if not package_rows:
+        package_row = ET.SubElement(queries, "package")
+        package_row.set(name_key, OFFICIAL_DEBUG_PACKAGE)
+
     application = root.find("application")
     if application is None:
         application = ET.SubElement(root, "application")
 
-    name_key = f"{{{ANDROID_NS}}}name"
-    node_key = f"{{{TOOLS_NS}}}node"
     providers = [
         child
         for child in list(application)
@@ -108,6 +133,12 @@ def _disable_sentry_only_in_test_process(repo: Path) -> None:
     if relative != expected:
         raise SystemExit(f"refusing non-test manifest mutation: {relative}")
     check = ET.parse(test_manifest).getroot()
+    queries_check = check.find("queries")
+    visible_packages = [] if queries_check is None else [
+        child
+        for child in list(queries_check)
+        if child.tag == "package" and child.attrib.get(name_key) == OFFICIAL_DEBUG_PACKAGE
+    ]
     app_check = check.find("application")
     matching = [] if app_check is None else [
         child
@@ -116,16 +147,19 @@ def _disable_sentry_only_in_test_process(repo: Path) -> None:
         and child.attrib.get(name_key) == SENTRY_INIT_PROVIDER
         and child.attrib.get(node_key) == "remove"
     ]
+    if len(visible_packages) != 1:
+        raise SystemExit("official NuvioMobile debug package visibility was not materialized exactly once")
     if len(matching) != 1:
         raise SystemExit("Sentry test-process provider removal was not materialized exactly once")
 
 
 def harden(repo: Path) -> None:
     _ensure_device_test_packaging(repo)
-    _disable_sentry_only_in_test_process(repo)
+    _harden_test_manifest_only(repo)
     print(
         "NuvioMobile device-test bootstrap compatibility applied "
-        "libcxx_pick_first=true sentry_test_process_autoinit=false runtime_mutation=false"
+        "libcxx_pick_first=true sentry_test_process_autoinit=false "
+        "official_debug_package_visible=true runtime_mutation=false"
     )
 
 
