@@ -16,6 +16,16 @@ def load_json(path: Path) -> dict[str, Any]:
     return value
 
 
+def safe_runtime_fingerprint(value: Any) -> str:
+    text = str(value or "").strip()
+    lowered = text.casefold()
+    if not text:
+        return ""
+    if len(text) > 700 or "://" in text or any(token in lowered for token in ("authorization=", "cookie=", "token=", "secret=")):
+        raise ValueError("unsafe runtime fingerprint")
+    return text
+
+
 def aggregate(diagnosis: dict[str, Any], fixture: str) -> dict[str, dict[str, Any]]:
     output: dict[str, dict[str, Any]] = {}
     for raw in diagnosis.get("observations") or []:
@@ -41,12 +51,14 @@ def main() -> int:
     parser.add_argument("--after", type=Path, required=True)
     parser.add_argument("--repair-report", type=Path, required=True)
     parser.add_argument("--fixture", required=True)
+    parser.add_argument("--runtime-fingerprint", default="")
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
 
     before = aggregate(load_json(args.before), args.fixture)
     after = aggregate(load_json(args.after), args.fixture)
     repair = load_json(args.repair_report)
+    runtime_fingerprint = safe_runtime_fingerprint(args.runtime_fingerprint or repair.get("runtimeFingerprint"))
     accepted: list[dict[str, Any]] = []
     rejected: list[dict[str, Any]] = []
     inconclusive: list[dict[str, Any]] = []
@@ -81,8 +93,9 @@ def main() -> int:
             rejected.append(row)
 
     payload = {
-        "schemaVersion": 2,
+        "schemaVersion": 3,
         "fixture": args.fixture,
+        "runtimeFingerprint": runtime_fingerprint or None,
         "acceptedCount": len(accepted),
         "rejectedCount": len(rejected),
         "inconclusiveCount": len(inconclusive),
@@ -96,14 +109,15 @@ def main() -> int:
             "publicationAllowed": False,
             "acceptedRequiresAllPlayedStreamsHealthy": True,
             "freshNativeReaderProofRequired": True,
+            "readerLearningReuseRequiresExactRuntimeFingerprint": True,
         },
-        "privacy": "Only provider ids, fixture ids, failure classes, generic hypothesis/skill ids and aggregate reader outcomes are persisted; no raw media URLs, tokens, cookies or header values.",
+        "privacy": "Only provider ids, fixture ids, failure classes, generic hypothesis/skill ids, aggregate reader outcomes and official client revision fingerprints are persisted; no raw media URLs, tokens, cookies or header values.",
     }
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
     print(
         f"FIELD_NATIVE_READER_REPAIR_COMPARE fixture={args.fixture} accepted={len(accepted)} "
-        f"rejected={len(rejected)} inconclusive={len(inconclusive)}"
+        f"rejected={len(rejected)} inconclusive={len(inconclusive)} runtime_scoped={str(bool(runtime_fingerprint)).lower()}"
     )
     return 0
 
