@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 set -u
 
+if [[ "${GITHUB_EVENT_NAME:-}" = "pull_request" ]]; then
+  export NIAKVIO_PR_PROVIDER_LIMIT="${NIAKVIO_PR_PROVIDER_LIMIT:-8}"
+fi
+
 WORKSPACE="${GITHUB_WORKSPACE}"
 NIAKVIO="${WORKSPACE}/niakvio"
 DESKTOP_ROOT="${WORKSPACE}/nuvio-desktop"
@@ -61,7 +65,7 @@ if [[ -n "${GITHUB_ENV:-}" ]]; then echo "NIAKVIO_BRAIN_NONBLOCKING=1" >> "$GITH
 
 SOFT_FAILURES=0
 
-echo "FIELD_NATIVE_CORPUS_DESKTOP_PROFILE os=$HOST_OS fixtures=${#FIXTURES[@]} provider=${TARGET_PROVIDER:-all} manifest=$TARGET_MANIFEST primary_stream_scope=$PRIMARY_STREAM_SCOPE regression_stream_scope=$REGRESSION_STREAM_SCOPE requested_reader_success=$REQUESTED_READER_SUCCESS require_reader_success=$REQUIRE_READER_SUCCESS player_outcome_global_gate=$PLAYER_OUTCOME_GLOBAL_GATE official_player=production_path official_repository_loading=true repository_http_evidence=true local_manifest=$ALLOW_LOCAL_MANIFEST observational=true privilege=ordinary-user smoke_gate=player_reached"
+echo "FIELD_NATIVE_CORPUS_DESKTOP_PROFILE os=$HOST_OS fixtures=${#FIXTURES[@]} provider=${TARGET_PROVIDER:-all} manifest=$TARGET_MANIFEST primary_stream_scope=$PRIMARY_STREAM_SCOPE regression_stream_scope=$REGRESSION_STREAM_SCOPE requested_reader_success=$REQUESTED_READER_SUCCESS require_reader_success=$REQUIRE_READER_SUCCESS player_outcome_global_gate=$PLAYER_OUTCOME_GLOBAL_GATE official_player=production_path official_repository_loading=true repository_http_evidence=true local_manifest=$ALLOW_LOCAL_MANIFEST observational=true privilege=ordinary-user smoke_gate=player_reached pr_provider_limit=${NIAKVIO_PR_PROVIDER_LIMIT:-default}"
 for fixture in "${FIXTURES[@]}"; do
   STREAM_SCOPE="$REGRESSION_STREAM_SCOPE"
   if [[ "$fixture" = "$PRIMARY_FIXTURE" ]]; then STREAM_SCOPE="$PRIMARY_STREAM_SCOPE"; fi
@@ -123,6 +127,13 @@ PY
     SOFT_FAILURES=$((SOFT_FAILURES+1))
   fi
   echo "FIELD_NATIVE_CORPUS_DESKTOP_STATUS os=$HOST_OS fixture=$fixture runtime=$RUNTIME_STATUS collection=$ANALYSIS_STATUS coverage=$COVERAGE_STATUS reader_observed=$OBSERVED_READER_STATUS blocking=false stream_scope=$STREAM_SCOPE"
+done
+
+for fixture in "${FIXTURES[@]}"; do
+  LOG="${WORKSPACE}/desktop-native-corpus-${HOST_OS}-${fixture}.log"
+  if [[ ! -s "$LOG" ]]; then
+    printf 'FIELD_NATIVE_SMOKE_DIAGNOSTIC_PLACEHOLDER client=desktop fixture=%s reason=no_route_log\n' "$fixture" > "$LOG"
+  fi
 done
 
 LOGS=("${WORKSPACE}"/desktop-native-corpus-${HOST_OS}-*.log)
