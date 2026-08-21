@@ -23,7 +23,13 @@ def source(client: str) -> str:
 out = mod.reader_source(source("tv"), "tv", 137, "all")
 assert "rows.take(" not in out
 assert out.count("rows.forEachIndexed") >= 2
-assert "PlayerPlaybackNetworking.createDataSourceFactory(context, headers)" in out
+# The acceptance generator must exercise Nuvio's production player path. A
+# test-only PlayerPlaybackNetworking/ExoPlayer stack would create a second reader
+# implementation and can disagree with the real application.
+for required in ("Screen.Player.createRoute", "NuvioNavHost", "LastPlaybackDiagnostics"):
+    assert required in out, required
+assert "PlayerPlaybackNetworking.createDataSourceFactory(context, headers)" not in out
+assert "ExoPlayer.Builder(context)" not in out
 assert out.index("val reader = probeNativePlayer") < out.index("val transport = probeTransport")
 
 sampled = mod.reader_source(source("tv"), "tv", 137, 2)
@@ -90,16 +96,16 @@ with tempfile.TemporaryDirectory() as tmp:
     assert "returned=9" in failed.stdout and "played=3" in failed.stdout
     assert "ci_mode=deep" in failed.stdout
 
-    # PR acceptance has exactly one canonical coverage floor: at least one real
-    # native read for every route that returned media. The generator may choose a
-    # larger bounded sample; the gate must not independently re-invent that count.
+    # PR acceptance has exactly one bounded canonical coverage floor: two native
+    # reads for a route when at least two streams exist. Deep/manual remains all.
     pr_bounded = subprocess.run(
         ["node", str(ROOT / "scripts/gate_native_reader_coverage.cjs"), "--streams", "all", str(log)],
         cwd=ROOT, text=True, capture_output=True, env=pr_env,
     )
     assert pr_bounded.returncode == 0, pr_bounded.stdout + pr_bounded.stderr
     assert "ci_mode=pr-bounded" in pr_bounded.stdout
-    assert "expected_played=1 played=3" in pr_bounded.stdout
+    assert "pr_stream_limit=2" in pr_bounded.stdout
+    assert "expected_played=2 played=3" in pr_bounded.stdout
 
     sampled_pass = subprocess.run(
         ["node", str(ROOT / "scripts/gate_native_reader_coverage.cjs"), "--streams", "3", str(log)],
@@ -118,4 +124,4 @@ with tempfile.TemporaryDirectory() as tmp:
     assert passed.returncode == 0, passed.stdout + passed.stderr
     assert "expected_played=9 played=9" in passed.stdout
 
-print("sampled/exhaustive native reader acceptance tests passed: pr_floor=1 deep=all")
+print("sampled/exhaustive native reader acceptance tests passed: pr_floor=2 deep=all production_player=true")
