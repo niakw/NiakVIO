@@ -1,14 +1,16 @@
 #!/usr/bin/env python3
 """Fail closed if native reader labs make playback easier than real Nuvio.
 
-A human-UX reader lab may stage NiakVIO, invoke production Nuvio playback entry points
-and record sanitized evidence. It must never repair the OS, grant extra network
-capabilities, elevate the process, construct a friendlier player, rewrite streams or
-consume one-shot media before Nuvio's production player does.
+The machine-readable policy is automation/native-human-ux-policy.json. Tests here
+protect both sides of the contract: the policy cannot silently become permissive,
+and the implementation cannot silently stop consuming it.
 """
+import json
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+POLICY_PATH = ROOT / "automation/native-human-ux-policy.json"
+policy = json.loads(POLICY_PATH.read_text(encoding="utf-8"))
 
 android = (ROOT / "scripts/native_player_diagnostics_codegen.py").read_text(encoding="utf-8")
 desktop = (ROOT / "scripts/augment_native_desktop_player.py").read_text(encoding="utf-8")
@@ -23,6 +25,57 @@ client_prepare = (ROOT / "scripts/prepare_native_corpus_client.py").read_text(en
 corpus = (ROOT / "scripts/prepare_native_corpus_validation.py").read_text(encoding="utf-8")
 request_contract = (ROOT / "scripts/augment_native_corpus_request_contract.py").read_text(encoding="utf-8")
 provider_loading = (ROOT / "scripts/augment_native_provider_loading.py").read_text(encoding="utf-8")
+
+# The policy itself is intentionally strict and fail-closed. Relaxing any of these
+# requires an explicit policy diff instead of an incidental helper change.
+assert policy["version"] >= 2
+assert policy["mode"] == "human-ux-observation-only"
+control = policy["change_control"]
+assert control["policy_file_is_source_of_truth"] is True
+assert control["audit_must_read_this_file"] is True
+assert control["policy_changes_require_canonical_gate"] is True
+assert control["policy_changes_require_explicit_diff_review"] is True
+assert control["default_on_ambiguity"] == "fail-closed"
+for required_external in (
+    "NuvioMobile",
+    "NuvioTV",
+    "NuvioDesktop",
+    "Android emulator and Android OS",
+    "macOS",
+    "Windows",
+):
+    assert required_external in policy["ownership"]["external_read_only"]
+for forbidden in (
+    "android.permission.INTERNET",
+    "usesCleartextTraffic",
+    "networkSecurityConfig",
+    "PlayerPlaybackNetworking",
+    "PlatformPlaybackDataSourceFactory",
+    "ExoPlayer.Builder",
+    "NativePlayerController(",
+    "PluginRepository.clearLocalState",
+    "FIELD_NATIVE_HTTP_REQUEST client=",
+    "FIELD_NATIVE_REPOSITORY_HTTP_REQUEST client=",
+):
+    assert forbidden in policy["forbidden_checkout_tokens"], forbidden
+for required_rule in (
+    "patch Nuvio source code for logging or instrumentation",
+    "patch Nuvio repository/network loaders to inject evidence interceptors",
+    "patch OS permissions, security policy or runtime privileges",
+):
+    assert required_rule in policy["forbidden_behaviors"], required_rule
+
+# Audit implementation must consume the policy file rather than duplicate an
+# independent allow-list that can drift from it.
+assert 'POLICY_PATH = ROOT / "automation/native-human-ux-policy.json"' in checkout_audit
+assert "json.loads(POLICY_PATH.read_text" in checkout_audit
+assert 'POLICY["allowed_checkout_changes"]' in checkout_audit
+assert 'POLICY["allowed_gradle_additions"]' in checkout_audit
+assert 'POLICY["forbidden_checkout_tokens"]' in checkout_audit
+assert "native human-UX lab mutated runtime-owned path" in checkout_audit
+assert "native human-UX lab introduced forbidden runtime mutation" in checkout_audit
+assert "default_on_ambiguity" in checkout_audit
+assert "fail-closed" in checkout_audit
 
 # Android must use Nuvio's production entries, not a lab-created ExoPlayer.
 for required in (
@@ -133,23 +186,6 @@ assert "enable_mobile_device_tests(mobile)" in client_prepare
 assert "enable_tv_tests(repo)" in reader_acceptance
 assert "enable_tv_tests(tv)" in client_prepare
 
-# Checkout audit is fail-closed on both path scope and forbidden runtime tokens.
-for required in (
-    "git",
-    "status",
-    "--porcelain=v1",
-    "runtime_mutation=false",
-    "android.permission.INTERNET",
-    "usesCleartextTraffic",
-    "networkSecurityConfig",
-    "PlayerPlaybackNetworking",
-    "composeApp/src/androidDeviceTest/",
-    "app/src/androidTest/",
-):
-    assert required in checkout_audit, required
-assert "native human-UX lab mutated runtime-owned path" in checkout_audit
-assert "native human-UX lab introduced forbidden runtime mutation" in checkout_audit
-
 # No playback-row rewriting/ranking inside the Lab preparation path.
 for text, label in (
     (corpus, "corpus"),
@@ -175,4 +211,4 @@ assert "PluginRepository.clearLocalState()" not in provider_loading
 assert "officialPluginManager.executeScraper(loadedScraper" in provider_loading
 assert "PluginRepository.executeScraper(loadedScraper" in provider_loading
 
-print("native human UX observational-purity tests passed")
+print("native human UX observational-purity policy and implementation tests passed")
