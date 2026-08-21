@@ -1,0 +1,66 @@
+{
+  "schema_version": 1,
+  "policy_id": "native-human-ux-reader",
+  "status": "locked",
+  "authority": "Canonical machine-readable contract for NiakVIO native reader labs.",
+  "purpose": "Observe the same launch, stream-selection, player-opening and playback path a real Nuvio user experiences, then let the NiakVIO Brain repair NiakVIO-owned causes only.",
+  "core_rule": "The lab must never make Nuvio, its player, the guest OS, networking, or the test environment more permissive or playback-friendly in order to obtain a better result.",
+  "repair_scope": {
+    "allowed": [
+      "NiakVIO Core",
+      "NiakVIO providers/adapters",
+      "NiakVIO Brain",
+      "NiakVIO-owned manifests and generated provider bundles"
+    ],
+    "forbidden": [
+      "Nuvio source repositories",
+      "Nuvio application behavior",
+      "Nuvio player implementation",
+      "host or guest OS playback/network policy",
+      "third-party upstream repositories"
+    ]
+  },
+  "harness": {
+    "change_policy": "only_when_observation_is_blocked",
+    "rule": "Do not improve, refactor or tune the harness while it can still faithfully observe the user path. If the harness itself blocks observation, apply only the smallest behavior-neutral change required to resume observation.",
+    "allowed_setup": [
+      "checkout or download an official Nuvio revision/artifact",
+      "boot a standard CI emulator or native runner",
+      "install and launch the official Nuvio application",
+      "serve NiakVIO-owned manifest/provider artifacts outside the Nuvio checkout",
+      "use public deep links and external input automation to reproduce user actions",
+      "collect passive logs, screenshots, UI hierarchy and timing evidence"
+    ]
+  },
+  "forbidden_lab_behaviors": [
+    "modify tracked files in a Nuvio checkout",
+    "patch Nuvio Gradle, manifests, signing, dependencies or test-runner configuration",
+    "inject diagnostics into Nuvio PluginRuntime, MainActivity, player or networking source",
+    "replace a Nuvio screen with a lab Composable or direct player invocation",
+    "construct a lab-only player or decoder path",
+    "add or change INTERNET permission, cleartext policy or networkSecurityConfig for the lab",
+    "force playback headers such as Range, Referer, Origin or User-Agent when Nuvio would not",
+    "install a proxy, DNS override, certificate override or transport bypass to make a stream work",
+    "rewrite, rank, sanitize or repair returned streams inside the lab before Nuvio consumes them",
+    "pre-consume signed or one-shot media URLs before the production player",
+    "clear or rewrite Nuvio profile/plugin/cache state merely to obtain a greener run",
+    "convert an OS/Nuvio/client-specific failure into a provider mutation without independent NiakVIO-owned evidence"
+  ],
+  "required_human_path": [
+    "launch official Nuvio",
+    "install or open the NiakVIO addon through a Nuvio-supported public flow",
+    "open the requested title through a Nuvio-supported public flow or equivalent external user input",
+    "reach the real stream-selection UI",
+    "select the returned stream through the real Nuvio UI",
+    "let the real Nuvio player attempt playback first",
+    "record first-frame success or the visible/native player failure",
+    "classify the evidence before any NiakVIO repair is proposed"
+  ],
+  "evidence_rules": {
+    "nuvio_checkout": "tracked-source-clean-before-and-after",
+    "player": "production-client-path-only",
+    "diagnostics": "passive-or-post-failure-only",
+    "external_failure": "record-as-external-limit-unless-a-NiakVIO-owned-cause-is-demonstrated",
+    "brain_learning": "fail-closed-on-incomplete-or-non-human-path-evidence"
+  }
+}
