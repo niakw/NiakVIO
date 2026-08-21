@@ -10,6 +10,7 @@ on:
       - "package.json"
       - "package-lock.json"
       - ".github/triggers/nuvio-client-lab.json"
+      - "automation/native-human-ux-policy.json"
       - "engine_v2/src/**"
       - "engine_v2/tests/**"
       - "engine_v2/scripts/diagnose-native-reader.mjs"
@@ -53,6 +54,7 @@ on:
       - "tests/native_evidence_codegen_pipeline_test.py"
       - "tests/native_player_diagnostics_codegen_test.py"
       - "tests/native_lab_observational_purity_test.py"
+      - "tests/native_human_ux_policy_lock_test.py"
       - "tests/native_repository_cache_contract_test.py"
       - "tests/native_repository_http_instrumentation_test.py"
       - "tests/native_media_type_capability_test.py"
@@ -111,6 +113,8 @@ jobs:
         run: python3 tests/native_evidence_codegen_pipeline_test.py
       - name: Audit observational purity of native labs
         run: python3 tests/native_lab_observational_purity_test.py
+      - name: Enforce locked human UX harness policy
+        run: python3 tests/native_human_ux_policy_lock_test.py
       - name: Validate repository HTTP instrumentation contracts
         run: python3 tests/native_repository_http_instrumentation_test.py
       - name: Validate persistent native repository cache safety
