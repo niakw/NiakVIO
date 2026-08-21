@@ -20,6 +20,7 @@ PROVIDER_LOADING="${NIAKVIO}/scripts/augment_native_provider_loading.py"
 REPOSITORY_RESOLVER="${NIAKVIO}/scripts/resolve_native_repository.sh"
 PLAYER_AUGMENT="${NIAKVIO}/scripts/augment_native_desktop_player.py"
 FRONTEND_PHASES="${NIAKVIO}/scripts/complete_native_desktop_frontend_phases.py"
+DESKTOP_TEST_JVM_INIT="${NIAKVIO}/scripts/nuvio_desktop_test_jvm.init.gradle"
 TEST_SOURCE="${DESKTOP_ROOT}/composeApp/src/desktopTest/kotlin/com/nuvio/app/features/plugins/NiakvioNativeCorpusDesktopTest.kt"
 DEFAULT_FIXTURES=(sinners-2025 interstellar mon-ninja-et-moi-3 breaking-bad-s01e01 revenant-s01e01 jujutsu-kaisen-s01e01 mushoku-tensei-s01e01)
 TARGET_FIXTURE="${NIAKVIO_TARGET_FIXTURE:-}"
@@ -104,10 +105,10 @@ PY
   rm -f "$BASE_LOG" "$LOG" "$GRADLE_LOG" "$HTTP_LOG"
   RUNTIME_STATUS=0
   if [[ "$HOST_OS" = "windows" ]]; then
-    "$DESKTOP_ROOT/gradlew.bat" -p "$DESKTOP_ROOT" :composeApp:desktopTest --tests 'com.nuvio.app.features.plugins.NiakvioNativeCorpusDesktopTest' --console=plain 2>&1 | tee "$GRADLE_LOG"
+    "$DESKTOP_ROOT/gradlew.bat" -p "$DESKTOP_ROOT" --init-script "$DESKTOP_TEST_JVM_INIT" :composeApp:desktopTest --tests 'com.nuvio.app.features.plugins.NiakvioNativeCorpusDesktopTest' --console=plain 2>&1 | tee "$GRADLE_LOG"
     RUNTIME_STATUS=${PIPESTATUS[0]}
   else
-    "$DESKTOP_ROOT/gradlew" -p "$DESKTOP_ROOT" :composeApp:desktopTest --tests 'com.nuvio.app.features.plugins.NiakvioNativeCorpusDesktopTest' --console=plain 2>&1 | tee "$GRADLE_LOG"
+    "$DESKTOP_ROOT/gradlew" -p "$DESKTOP_ROOT" --init-script "$DESKTOP_TEST_JVM_INIT" :composeApp:desktopTest --tests 'com.nuvio.app.features.plugins.NiakvioNativeCorpusDesktopTest' --console=plain 2>&1 | tee "$GRADLE_LOG"
     RUNTIME_STATUS=${PIPESTATUS[0]}
   fi
 
