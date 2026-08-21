@@ -15,6 +15,10 @@ on:
       - "engine_v2/scripts/diagnose-native-reader.mjs"
       - "engine_v2/scripts/diagnose-native-media-capabilities.mjs"
       - "engine_v2/scripts/learning-lab.mjs"
+      - "engine_v2/scripts/watch-upstream-providers.mjs"
+      - "scripts/check_nuvio_client_upstreams.py"
+      - "scripts/resolve_nuvio_lab_heads.py"
+      - "scripts/scope_native_reader_learning_runtime.py"
       - "scripts/prepare_native_corpus_validation.py"
       - "scripts/native_player_diagnostics_codegen.py"
       - "scripts/augment_native_corpus_request_contract.py"
@@ -53,6 +57,8 @@ on:
       - "tests/native_repository_http_instrumentation_test.py"
       - "tests/native_media_type_capability_test.py"
       - "tests/native_reader_learning_memory_test.py"
+      - "tests/native_reader_runtime_scope_test.py"
+      - "tests/nuvio_lab_head_resolver_test.py"
       - "tests/native_reader_backlog_test.py"
       - ".github/workflows/canonical-media-types.yml"
   workflow_dispatch:
@@ -83,12 +89,18 @@ jobs:
         run: python3 tests/canonical_media_types_test.py
       - name: Validate canonical stream contract
         run: node engine_v2/tests/contracts.test.mjs
+      - name: Validate shared stream presentation and TMDB fallback
+        run: node engine_v2/tests/stream-presentation.test.mjs
+      - name: Validate weekly upstream provider comparator
+        run: node engine_v2/tests/upstream-provider-watch.test.mjs
       - name: Validate deep HLS playback chain and ranking
         run: node engine_v2/tests/media-validator.test.mjs
       - name: Validate resolver Core
         run: node engine_v2/tests/resolver-core.test.mjs
       - name: Validate Brain v4 reader causality
         run: node engine_v2/tests/native-reader-brain-v4.test.mjs
+      - name: Validate exact official Nuvio Lab HEAD resolver
+        run: python3 tests/nuvio_lab_head_resolver_test.py
       - name: Validate full native evidence architecture
         run: python3 tests/native_evidence_contract_test.py
       - name: Validate native evidence execution floor
@@ -107,6 +119,8 @@ jobs:
         run: node engine_v2/tests/native-reader-diagnosis.test.mjs
       - name: Validate native reader repair-memory merge
         run: python3 tests/native_reader_learning_memory_test.py
+      - name: Validate reader memory isolation across Nuvio runtime drift
+        run: python3 tests/native_reader_runtime_scope_test.py
       - name: Validate automatic native reader bug backlog
         run: python3 tests/native_reader_backlog_test.py
       - name: Validate Brain cross-day reader-memory preservation
