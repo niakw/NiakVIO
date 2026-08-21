@@ -17,7 +17,11 @@ if (!logs.length || !(streamScope === 'all' || /^[1-4]$/.test(streamScope))) {
 }
 
 const isPullRequest = String(process.env.GITHUB_EVENT_NAME || '').trim().toLowerCase() === 'pull_request';
-const prReaderFloor = 1;
+const DEFAULT_PR_STREAM_LIMIT = 2;
+const configuredPrLimit = Number(process.env.NIAKVIO_PR_STREAM_LIMIT || DEFAULT_PR_STREAM_LIMIT);
+const prReaderFloor = Number.isInteger(configuredPrLimit) && configuredPrLimit > 0
+  ? Math.min(configuredPrLimit, 4)
+  : DEFAULT_PR_STREAM_LIMIT;
 
 function decode(value) {
   if (!value) return '';
@@ -40,10 +44,9 @@ function providerKey(client, fixture, provider) {
 }
 function expectedStreams(returned) {
   if (streamScope === 'all') {
-    // PR codegen is deliberately bounded for runner cost, but the exact sample
-    // count belongs to the generator, not to this gate. The canonical PR
-    // contract is therefore one or more real native reads for every route that
-    // returned media. Trusted main/manual runs remain exhaustive and require all.
+    // PR runs keep a bounded native-reader floor for hosted-runner cost, but two
+    // distinct returned streams are required whenever available. Trusted main and
+    // manual runs remain exhaustive and must play every returned stream.
     if (isPullRequest) return returned > 0 ? Math.min(returned, prReaderFloor) : 0;
     return returned;
   }
@@ -141,6 +144,6 @@ for (const [k, result] of results) {
 const returned = [...results.values()].reduce((sum, row) => sum + row.returned, 0);
 const expectedPlayed = [...results.values()].reduce((sum, row) => sum + expectedStreams(row.returned), 0);
 const played = [...players.values()].reduce((sum, set) => sum + set.size, 0);
-console.log(`FIELD_NATIVE_READER_COVERAGE state=${failures.length ? 'failed' : 'passed'} scope=${streamScope} ci_mode=${isPullRequest ? 'pr-bounded' : 'deep'} providers=${traversedProviders.size} routes=${results.size} returned=${returned} expected_played=${expectedPlayed} played=${played} failures=${failures.length}`);
+console.log(`FIELD_NATIVE_READER_COVERAGE state=${failures.length ? 'failed' : 'passed'} scope=${streamScope} ci_mode=${isPullRequest ? 'pr-bounded' : 'deep'} pr_stream_limit=${prReaderFloor} providers=${traversedProviders.size} routes=${results.size} returned=${returned} expected_played=${expectedPlayed} played=${played} failures=${failures.length}`);
 for (const failure of failures.slice(0, 120)) console.log(`FIELD_NATIVE_READER_COVERAGE_FAILURE ${JSON.stringify(failure)}`);
 process.exit(failures.length ? 1 : 0);
