@@ -1,16 +1,16 @@
 {
   "schema_version": 63,
-  "generated_at": "2026-08-21T04:58:18.287942+00:00",
+  "generated_at": "2026-08-21T09:02:19.654048+00:00",
   "test_environment": "github-actions-node",
   "checked_providers": 92,
   "status_counts": {
-    "healthy": 15,
+    "healthy": 10,
     "reachable": 0,
-    "blocked": 13,
+    "blocked": 11,
     "degraded": 3,
-    "no_streams": 20,
+    "no_streams": 25,
     "provider_unreachable": 15,
-    "runtime_error": 17,
+    "runtime_error": 19,
     "unavailable": 9,
     "excluded": 0
   },
@@ -251,18 +251,14 @@
     },
     {
       "id": "movieshunt",
-      "status": "healthy",
+      "status": "no_streams",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 2,
-      "hosts": [
-        "spring-resonance-3bff.watacoy4847661.workers.dev"
-      ],
-      "response_categories": [
-        "playable"
-      ],
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
       "host_health": {
         "pub-a0a5ce422c034486a372657692292682.r2.dev": {
           "last_checked_at": "2026-08-20T20:51:31.269754+00:00",
@@ -765,36 +761,38 @@
     },
     {
       "id": "papadustream",
-      "status": "degraded",
+      "status": "healthy",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 0,
-      "hosts": [],
+      "consecutive_successes": 1,
+      "hosts": [
+        "papadustream.club"
+      ],
       "response_categories": [
-        "not_found"
+        "playable"
       ],
       "host_health": {
         "papadustream.club": {
-          "last_checked_at": "2026-08-21T02:01:47.666687+00:00",
+          "last_checked_at": "2026-08-21T09:02:19.654048+00:00",
           "last_category": "playable",
           "reachable": true,
           "http_status": 200,
-          "latency_ms": 792,
+          "latency_ms": 399,
           "kind": "hls",
           "consecutive_hard_failures": 0,
-          "consecutive_successes": 39,
+          "consecutive_successes": 40,
           "consecutive_blocked": 0
         },
         "papadustream-v2.watch": {
-          "last_checked_at": "2026-08-21T04:58:18.287942+00:00",
-          "last_category": "not_found",
+          "last_checked_at": "2026-08-21T09:02:19.654048+00:00",
+          "last_category": "not_returned",
           "reachable": false,
-          "http_status": 404,
-          "latency_ms": 936,
+          "http_status": null,
+          "latency_ms": null,
           "kind": "html",
-          "consecutive_hard_failures": 1,
+          "consecutive_hard_failures": 0,
           "consecutive_successes": 0,
           "consecutive_blocked": 0
         }
@@ -1085,18 +1083,14 @@
     },
     {
       "id": "movieblast",
-      "status": "healthy",
+      "status": "no_streams",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 2,
-      "hosts": [
-        "mblinkmove.mycdn-mb.xyz"
-      ],
-      "response_categories": [
-        "playable"
-      ],
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
       "host_health": {
         "mblinkserie.mycdn-mb.xyz": {
           "last_checked_at": "2026-08-20T16:54:47.991660+00:00",
@@ -1204,18 +1198,14 @@
     },
     {
       "id": "animesama-co",
-      "status": "healthy",
+      "status": "no_streams",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 2,
-      "hosts": [
-        "video.sibnet.ru"
-      ],
-      "response_categories": [
-        "playable"
-      ],
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
       "host_health": {
         "video.sibnet.ru": {
           "last_checked_at": "2026-08-21T04:58:18.287942+00:00",
@@ -1392,7 +1382,7 @@
     },
     {
       "id": "dulourd",
-      "status": "blocked",
+      "status": "runtime_error",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
@@ -1490,21 +1480,23 @@
     },
     {
       "id": "moviesdrive",
-      "status": "no_streams",
+      "status": "degraded",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
       "consecutive_successes": 0,
       "hosts": [],
-      "response_categories": [],
+      "response_categories": [
+        "invalid_payload"
+      ],
       "host_health": {
         "new2.moviesdrive.christmas": {
-          "last_checked_at": "2026-08-18T20:44:06.028127+00:00",
+          "last_checked_at": "2026-08-21T09:02:19.654048+00:00",
           "last_category": "invalid_payload",
           "reachable": false,
           "http_status": 200,
-          "latency_ms": 216,
+          "latency_ms": 246,
           "kind": "json",
           "consecutive_hard_failures": 0,
           "consecutive_successes": 0,
@@ -1750,18 +1742,14 @@
     },
     {
       "id": "streamzo",
-      "status": "healthy",
+      "status": "no_streams",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 1,
-      "hosts": [
-        "moon.peakstorm.top"
-      ],
-      "response_categories": [
-        "playable"
-      ],
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
       "host_health": {
         "static.cloudflareinsights.com": {
           "last_checked_at": "2026-08-21T04:58:18.287942+00:00",
@@ -1920,7 +1908,7 @@
     },
     {
       "id": "voiranime",
-      "status": "no_streams",
+      "status": "runtime_error",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
@@ -1968,18 +1956,14 @@
     },
     {
       "id": "voiranime-rip",
-      "status": "healthy",
+      "status": "no_streams",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 2,
-      "hosts": [
-        "video.sibnet.ru"
-      ],
-      "response_categories": [
-        "playable"
-      ],
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
       "host_health": {
         "video.sibnet.ru": {
           "last_checked_at": "2026-08-21T04:58:18.287942+00:00",
@@ -2794,7 +2778,7 @@
     },
     {
       "id": "anime-ultime",
-      "status": "blocked",
+      "status": "no_streams",
       "action": "unchanged",
       "enabled": false,
       "consecutive_hard_failures": 0,
@@ -3142,18 +3126,14 @@
     },
     {
       "id": "hdghartv",
-      "status": "healthy",
+      "status": "no_streams",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 2,
-      "hosts": [
-        "cdn6.streamraiwind.stream"
-      ],
-      "response_categories": [
-        "playable"
-      ],
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
       "host_health": {
         "cdn6.streamraiwind.stream": {
           "last_checked_at": "2026-08-20T04:57:15.722715+00:00",
