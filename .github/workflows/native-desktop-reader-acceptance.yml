@@ -12,6 +12,10 @@ on:
       - "provider-overrides.json"
       - "providers/**"
       - "sources.json"
+      - "automation/nuvio-client-upstreams.json"
+      - "automation/platform-runtime-contracts.json"
+      - "scripts/check_nuvio_client_upstreams.py"
+      - "scripts/resolve_nuvio_lab_heads.py"
       - "scripts/prepare_native_corpus_client.py"
       - "scripts/restage_native_corpus_client.py"
       - "scripts/augment_native_corpus_request_contract.py"
@@ -39,6 +43,10 @@ on:
       - "provider-overrides.json"
       - "providers/**"
       - "sources.json"
+      - "automation/nuvio-client-upstreams.json"
+      - "automation/platform-runtime-contracts.json"
+      - "scripts/check_nuvio_client_upstreams.py"
+      - "scripts/resolve_nuvio_lab_heads.py"
       - "scripts/prepare_native_corpus_client.py"
       - "scripts/restage_native_corpus_client.py"
       - "scripts/augment_native_corpus_request_contract.py"
@@ -70,27 +78,44 @@ concurrency:
 jobs:
   resolve:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 8
     outputs:
       desktop_sha: ${{ steps.refs.outputs.desktop_sha }}
+      runtime_fingerprint: ${{ steps.refs.outputs.runtime_fingerprint }}
+      desktop_drift_status: ${{ steps.refs.outputs.desktop_drift_status }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           fetch-depth: 1
           persist-credentials: false
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
-      - id: refs
+      - name: Inspect current official Nuvio client drift
         shell: bash
         run: |
           set -euo pipefail
-          python3 - <<'PY' >> "$GITHUB_OUTPUT"
-          import json
-          from pathlib import Path
-          data=json.loads(Path('sources.json').read_text())
-          ref=str((((data.get('nuvio_client_compatibility') or {}).get('clients') or {}).get('nuvio-desktop') or {}).get('accepted_ref') or '')
-          if len(ref) != 40: raise SystemExit(f'missing accepted NuvioDesktop ref: {ref!r}')
-          print(f'desktop_sha={ref}')
-          PY
+          python3 scripts/check_nuvio_client_upstreams.py \
+            --no-fail \
+            --output health-output/nuvio-client-upstream-status.json
+      - id: refs
+        name: Resolve latest official Desktop client HEAD
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/resolve_nuvio_lab_heads.py \
+            --report health-output/nuvio-client-upstream-status.json \
+            --clients nuvio-desktop \
+            --github-output "$GITHUB_OUTPUT" \
+            --output health-output/nuvio-desktop-lab-head.json
+      - name: Publish Nuvio Desktop runtime audit context
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: nuvio-desktop-lab-head-${{ github.run_id }}
+          path: |
+            health-output/nuvio-client-upstream-status.json
+            health-output/nuvio-desktop-lab-head.json
+          retention-days: 7
+          if-no-files-found: error
 
   desktop-reader:
     needs: resolve
@@ -129,7 +154,7 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@0723195856401067f7a2779048b490ace7a47d7c
 
-      - name: Checkout accepted official NuvioDesktop and stage initial route
+      - name: Checkout latest official NuvioDesktop HEAD and stage initial route
         shell: bash
         env:
           NUVIO_DESKTOP_SHA: ${{ needs.resolve.outputs.desktop_sha }}
@@ -162,7 +187,7 @@ jobs:
         shell: bash
         run: |
           set -euxo pipefail
-          # No test-only --add-opens/JVM privilege relaxation. If accepted
+          # No test-only --add-opens/JVM privilege relaxation. If current
           # NuvioDesktop cannot run under normal JVM policy, record/fix it upstream.
           ./nuvio-desktop/gradlew -p nuvio-desktop \
             :composeApp:buildMacosPlayerBridge \
