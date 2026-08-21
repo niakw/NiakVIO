@@ -14,6 +14,7 @@ from augment_native_provider_loading import platform_set_literal, repository_hel
 request_contract = (SCRIPTS / "augment_native_corpus_request_contract.py").read_text(encoding="utf-8")
 provider_loading = (SCRIPTS / "augment_native_provider_loading.py").read_text(encoding="utf-8")
 mobile_suite = (SCRIPTS / "run_native_corpus_mobile_suite.sh").read_text(encoding="utf-8")
+desktop_suite = (SCRIPTS / "run_native_corpus_desktop_suite.sh").read_text(encoding="utf-8")
 desktop_workflow = (ROOT / ".github/workflows/native-desktop-reader-acceptance.yml").read_text(encoding="utf-8")
 
 # NuvioTV's androidTest compiler must not infer nested map Pair types through
@@ -46,14 +47,24 @@ assert ":androidApp:installFullDebug" in mobile_suite
 assert "adb shell pm path com.nuviodebug.com" in mobile_suite
 assert "FIELD_NATIVE_MOBILE_APP_INSTALLED" in mobile_suite
 
-# The macOS native bridge reflects into AWT peer internals. JVM module access
-# must be configured before the first Gradle daemon is started, not after it.
-assert "--add-opens=java.desktop/java.awt.peer=ALL-UNNAMED" in desktop_workflow
-assert "--add-opens=java.desktop/sun.awt=ALL-UNNAMED" in desktop_workflow
-assert 'export JAVA_TOOL_OPTIONS="$MACOS_JAVA_OPENS"' in desktop_workflow
-assert desktop_workflow.index('export JAVA_TOOL_OPTIONS="$MACOS_JAVA_OPENS"') < desktop_workflow.index(":composeApp:buildMacosPlayerBridge")
+# Desktop evidence must run under the same ordinary JVM/module policy as the real
+# NuvioDesktop application. A test-only --add-opens can make a lab pass while the
+# actual application still fails, creating exactly the parallel-runtime logic the
+# native acceptance architecture is designed to eliminate. If an official HEAD
+# requires forbidden reflective access, the real Desktop lab must expose it.
+for forbidden in (
+    "--add-opens=java.desktop/java.awt.peer=ALL-UNNAMED",
+    "--add-opens=java.desktop/sun.awt=ALL-UNNAMED",
+    "MACOS_JAVA_OPENS",
+    "JAVA_TOOL_OPTIONS",
+):
+    assert forbidden not in desktop_workflow, forbidden
+assert "No test-only --add-opens/JVM privilege relaxation" in desktop_workflow
+assert "root_execution_forbidden" in desktop_suite
+assert "privilege=ordinary-user" in desktop_workflow
 
 print(
     "native reader runtime bootstrap contract passed: "
-    "tv_explicit_pairs=true generated_empty_generics_typed=true mobile_real_app=true macos_jvm_opens_pre_gradle=true"
+    "tv_explicit_pairs=true generated_empty_generics_typed=true mobile_real_app=true "
+    "desktop_ordinary_jvm_policy=true"
 )
