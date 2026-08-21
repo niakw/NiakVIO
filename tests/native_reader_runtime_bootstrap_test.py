@@ -100,8 +100,8 @@ for forbidden in (
     "setDefaultRequestProperties",
 ):
     assert forbidden not in shared_bootstrap, f"shared-bootstrap:{forbidden}"
-assert "enable_tv_test_bootstrap(repo)" in reader_acceptance
-assert "enable_tv_test_bootstrap(tv)" in corpus_client
+assert "enable_tv_tests(repo)" in reader_acceptance
+assert "enable_tv_tests(tv)" in corpus_client
 assert "corpus.enable_tv_tests" not in reader_acceptance
 assert "corpus.enable_tv_tests" not in corpus_client
 with tempfile.TemporaryDirectory(prefix="niakvio-tv-bootstrap-") as tmp:
