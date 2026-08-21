@@ -1,5 +1,5 @@
 {
-  "version": 5,
+  "version": 6,
   "mode": "human-ux-observation-only",
   "purpose": "Native labs reproduce the real Nuvio user path and observe launch, stream selection, player opening and playback failures without repairing Nuvio, the OS or the lab environment to improve outcomes.",
   "immutable_principles": [
@@ -82,6 +82,7 @@
       "runner_profile": "Android TV API 31 x86 tv_1080p",
       "allowed_test_plumbing": [
         "app/src/androidTest/",
+        "app/src/debug/java/com/nuvio/tv/core/plugin/NiakvioPluginManagerEntryPoint.kt (exact debug-build-only Hilt accessor)",
         "app/build.gradle.kts test runner and test dependencies",
         "debug signing only when hosted CI lacks the official release key",
         "local.properties",
@@ -179,6 +180,14 @@
         "never_repeat": "do not remove the test-only packaging exception while this upstream dependency conflict exists, and never replace it with player/network/runtime changes"
       },
       {
+        "id": "tv-debug-hilt-entrypoint-audit",
+        "status": "resolved",
+        "signature": "native human-UX lab mutated runtime-owned path(s): app/src/debug/java/com/nuvio/tv/core/plugin/NiakvioPluginManagerEntryPoint.kt",
+        "cause": "Hilt aggregates EntryPoints into the target debug APK before androidTest compilation, so the diagnostic accessor cannot live only in androidTest",
+        "resolution": "allow exactly one debug-build-only accessor file exposing the existing production PluginManager singleton; no player, provider, network, manifest or main/release source may be changed",
+        "never_repeat": "never widen this exception to app/src/debug generally or use it for runtime behavior changes"
+      },
+      {
         "id": "reader-run-cancellation-churn",
         "status": "operational-guard",
         "signature": "new head commit while native reader jobs are queued or running causes concurrency cancellation/restart",
@@ -241,6 +250,7 @@
     "tv": [
       "app/build.gradle.kts",
       "app/src/androidTest/",
+      "app/src/debug/java/com/nuvio/tv/core/plugin/NiakvioPluginManagerEntryPoint.kt",
       "local.properties",
       "local.dev.properties"
     ],
@@ -276,6 +286,7 @@
     "add or enable test source sets for diagnostic probes only",
     "add instrumentation runner declarations for diagnostic probes only",
     "add test-only dependencies for diagnostic probes only",
+    "add exactly one debug-build-only Hilt EntryPoint accessor required for diagnostic access to the existing production PluginManager singleton",
     "resolve duplicate C++ runtime packaging in the instrumentation APK only without changing application runtime, player, provider, network or OS behavior",
     "use a debug signing configuration when hosted CI cannot access an official release signing key",
     "stage NiakVIO provider bundles as diagnostic test assets",
