@@ -22,9 +22,6 @@ SUMMARIZER = ROOT / "scripts/summarize_native_corpus_suite.cjs"
 CORPUS = ROOT / ".github/triggers/nuvio-client-lab.json"
 MANIFEST = ROOT / "manifest.json"
 
-# Obsolete labs must stay removed. They used stale/mutable client refs, Linux
-# Desktop as reader evidence, duplicated device work, provider-specific staging,
-# or persisted overly broad runtime logs.
 for retired in (
     ".github/workflows/native-corpus-device-lab.yml",
     ".github/workflows/native-corpus-visual-sublab.yml",
@@ -68,21 +65,22 @@ actual_slugs = {
 }
 assert actual_slugs == expected_slugs, (actual_slugs, expected_slugs)
 
-# Fast runtime retries are explicitly manual-only; they never consume runners
-# because a normal provider/script push happened.
+# Manual targeted retries remain manual-only and must never reuse an AVD from a
+# different NiakVIO/client generation.
 assert "workflow_dispatch:" in targeted_runtime
 assert "pull_request:" not in targeted_runtime
 assert "\n  push:" not in targeted_runtime
 assert "run_native_corpus_tv_suite.sh" in targeted_runtime
 assert "run_native_corpus_mobile_suite.sh" in targeted_runtime
-assert "avd-v1-${{ runner.os }}-tv-api31-android-tv-x86-tv_1080p" in targeted_runtime
-assert "avd-v1-${{ runner.os }}-mobile-api35-google_apis-x86_64-pixel_2" in targeted_runtime
+assert "avd-v1-" not in targeted_runtime
+for required in (
+    "avd-v2-${{ runner.os }}-tv-api31-android-tv-x86-tv_1080p-${{ needs.resolve.outputs.tv_sha }}-${{ github.sha }}",
+    "avd-v2-${{ runner.os }}-mobile-api35-google_apis-x86_64-pixel_2-${{ needs.resolve.outputs.mobile_sha }}-${{ github.sha }}",
+):
+    assert required in targeted_runtime, required
 
-# Canonical reader proof is one Android workflow: representative movie/TV/anime
-# catalogue routes, every manifest provider including inactive entries, every
-# returned stream, official TV/Mobile readers, then a bounded Brain retest. The
-# workflow declares exhaustive intent; pull-request staging may bound that intent
-# while trusted-main/manual runs keep the full path.
+# Canonical Android proof uses current official client SHAs and a runtime
+# fingerprint in every persistent AVD cache key. No broad restore fallback exists.
 for fixture in ("sinners-2025", "breaking-bad-s01e01", "jujutsu-kaisen-s01e01"):
     assert fixture in android_reader, fixture
 for required in (
@@ -99,8 +97,8 @@ for required in (
     "NIAKVIO_REGRESSION_STREAM_SCOPE: all",
     "--provider all --streams all",
     'NIAKVIO_REQUIRE_READER_SUCCESS: "1"',
-    "avd-v1-${{ runner.os }}-tv-api31-android-tv-x86-tv_1080p",
-    "avd-v1-${{ runner.os }}-mobile-api35-google_apis-x86_64-pixel_2",
+    "avd-v2-${{ runner.os }}-tv-api31-android-tv-x86-tv_1080p-${{ needs.resolve.outputs.tv_sha }}-${{ needs.resolve.outputs.runtime_fingerprint }}",
+    "avd-v2-${{ runner.os }}-mobile-api35-google_apis-x86_64-pixel_2-${{ needs.resolve.outputs.mobile_sha }}-${{ needs.resolve.outputs.runtime_fingerprint }}",
     "build_native_reader_brain_repair.py",
     "compare_native_reader_brain_repair.py",
     "--max-providers 24",
@@ -108,10 +106,18 @@ for required in (
     "native-tv-route-sinners-2025-${{ github.run_id }}",
 ):
     assert required in android_reader, required
+assert "avd-v1-" not in android_reader
+assert "restore-keys:" not in android_reader
 assert "playback-hotfix" not in android_reader
 
-# Desktop reader proof is native macOS/Windows only, never the Linux stub, and
-# direct provider/catalog/override changes must trigger fresh native proof.
+# Android AVD sessions are cacheable, while every actual test boot remains
+# non-persistent so a failed playback cannot poison the saved clean generation.
+for workflow in (android_reader, targeted_runtime):
+    assert "actions/cache@caa296126883cff596d87d8935842f9db880ef25" in workflow
+    assert "force-avd-creation: false" in workflow
+    assert "-no-snapshot-save" in workflow
+
+# Desktop proof remains real macOS/Windows native player evidence.
 for required in (
     "macos-15",
     "windows-2022",
@@ -131,10 +137,7 @@ for required in (
     assert required in desktop_reader, required
 assert "official_nuvio_desktop_player_is_stub" in (ROOT / "scripts/run_native_corpus_desktop_suite.sh").read_text(encoding="utf-8")
 
-# Reader learning imports exactly the trusted-main Android run that completed,
-# once. PR candidate evidence is diagnosable but cannot silently mutate persistent
-# Brain memory. Missing repair artifacts do not consume the run id, so rerunning
-# the same GitHub run remains learnable when it later produces complete evidence.
+# Learning is trusted-main only and idempotent.
 for required in (
     "Native Android route reader acceptance",
     "github.event.workflow_run.id",
@@ -156,18 +159,7 @@ assert "--native-summary" not in brain_learning
 assert "--provider-portfolio" not in brain_learning
 assert "nativeReaderRepairMemory" in brain_learning
 
-# Android AVDs remain warm/cached; test sessions do not save mutated snapshots.
-for workflow, cache_key in (
-    (android_reader, "avd-v1-${{ runner.os }}-tv-api31-android-tv-x86-tv_1080p"),
-    (android_reader, "avd-v1-${{ runner.os }}-mobile-api35-google_apis-x86_64-pixel_2"),
-):
-    assert "actions/cache@caa296126883cff596d87d8935842f9db880ef25" in workflow
-    assert cache_key in workflow
-    assert "force-avd-creation: false" in workflow
-    assert "-no-snapshot-save" in workflow
-
-# Pull-request reader staging is explicitly bounded, but trusted main/manual
-# execution remains exhaustive because the bound is derived from the event name.
+# PR staging is bounded; trusted main/manual paths retain exhaustive intent.
 for source, label in ((prepare_client, "prepare"), (restage_client, "restage")):
     assert "--provider" in source, (label, "target provider")
     assert "--player-probes" in source, (label, "target reader probe count")
@@ -178,9 +170,7 @@ assert "GITHUB_EVENT_NAME" in restage_client
 assert "NIAKVIO_PR_PROVIDER_LIMIT" in restage_client
 assert "pr-bounded" in restage_client
 
-# Production Nuvio player is primary evidence; lightweight HTTP is secondary.
-# The lab must never construct a parallel ExoPlayer/data-source stack because that
-# can disagree with the actual TV/Mobile application and create a second test logic.
+# The production Nuvio player is primary evidence; transport probing comes after it.
 for required in (
     "Screen.Player.createRoute",
     "NuvioNavHost",
@@ -219,8 +209,7 @@ for required in (
 assert "url64=" not in prepare_core
 assert "headers64=" not in prepare_core
 
-# Provider/runtime anomalies are evidence. Infrastructure fails only on an
-# incomplete corpus/evidence chain.
+# Collection integrity stays strict; provider/playback outcomes are evidence.
 for marker in (
     "no_readable_log",
     "missing_begin_marker",
@@ -271,5 +260,8 @@ assert len(stageable) >= 80, len(stageable)
 
 print(
     "native device lab contract passed: "
-    f"fixtures={len(expected_slugs)} providers={len(stageable)} android_exhaustive=true desktop_native=true brain_retest=true cached_profiles=true targeted_manual=true reader_learning_idempotent=true trusted_main_learning=true missing_artifact_retriable=true pr_bounded=true production_player_only=true"
+    f"fixtures={len(expected_slugs)} providers={len(stageable)} android_exhaustive=true "
+    "desktop_native=true brain_retest=true cached_profiles=v2-fingerprinted "
+    "targeted_manual=true reader_learning_idempotent=true trusted_main_learning=true "
+    "missing_artifact_retriable=true pr_bounded=true production_player_only=true"
 )
