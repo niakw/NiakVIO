@@ -2,6 +2,7 @@ import { normalizeResolveRequest, normalizeStreamCandidate } from "./contracts.m
 import { addEvidenceError, newEvidenceRecord, recordStage, summarizeEvidence } from "./evidence.mjs";
 import { validateMediaCandidates } from "./media-validator.mjs";
 import { planRepair } from "./repair-brain.mjs";
+import { presentStreamCandidates } from "./stream-presentation.mjs";
 
 const PIPELINE = Object.freeze(["homepage", "search", "identity", "detail", "episode", "player", "media", "validation"]);
 
@@ -10,6 +11,10 @@ export class ResolverCore {
     this.maxRepairHypotheses = Math.max(1, Math.min(3, Number(options.maxRepairHypotheses ?? 3)));
     this.mediaValidator = options.mediaValidator ?? validateMediaCandidates;
     this.mediaValidationOptions = options.mediaValidationOptions ?? {};
+    // Optional shared metadata resolver (normally TMDB-backed). Metadata enriches
+    // presentation only: a metadata outage must never turn a playable provider into
+    // a provider failure or fabricate media facts.
+    this.metadataResolver = typeof options.metadataResolver === "function" ? options.metadataResolver : null;
   }
 
   async resolve({ provider, adapter, request, fixtureId = "adhoc", clientRef = "unknown", runtimeCompatibility = null }) {
@@ -35,6 +40,15 @@ export class ResolverCore {
       evidence,
       streams: [],
     };
+
+    if (this.metadataResolver) {
+      try {
+        const metadata = await this.metadataResolver(canonical);
+        if (metadata && typeof metadata === "object") context.state.coreMetadata = metadata;
+      } catch (error) {
+        context.state.coreMetadataError = String(error?.message ?? error);
+      }
+    }
 
     try {
       if (typeof adapter.discover === "function") {
@@ -71,6 +85,7 @@ export class ResolverCore {
 
           if (stage === "media") {
             context.streams = normalizeStreams(result, provider.id);
+            context.streams = presentStreamCandidates(context.streams, presentationMetadata(context), provider);
             evidence.playableStreams = 0;
             recordStage(evidence, stage, stageEvidence(stage, { ...asObject(result), streams: context.streams }));
           } else if (stage === "validation") {
@@ -190,6 +205,22 @@ function normalizeStreams(result, providerId) {
     }
   }
   return out;
+}
+
+function presentationMetadata(context) {
+  const request = context.request ?? {};
+  const shared = context.state.coreMetadata && typeof context.state.coreMetadata === "object"
+    ? context.state.coreMetadata
+    : {};
+  const providerMetadata = context.state.metadata && typeof context.state.metadata === "object"
+    ? context.state.metadata
+    : {};
+  return {
+    title: request.title ?? null,
+    year: request.year ?? null,
+    ...shared,
+    ...providerMetadata,
+  };
 }
 
 function applyValidationResult(context, result = {}) {
