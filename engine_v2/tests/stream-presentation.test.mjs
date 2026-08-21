@@ -46,6 +46,7 @@ assert.match(presented.description, /🎞 HEVC/);
 assert.match(presented.description, /🔊 E-AC3 5\.1/);
 assert.match(presented.description, /⏱ 2h49/);
 assert.match(presented.description, /🔞 -12/);
+assert.match(presented.description, /Interstellar • 2014/);
 
 const tmdbFallback = presentStreamCandidate({
   name: "Cineby",
@@ -60,6 +61,7 @@ const tmdbFallback = presentStreamCandidate({
 assert.doesNotMatch(tmdbFallback.description ?? "", /Unknown/i);
 assert.match(tmdbFallback.description, /⏱ 2h17/);
 assert.match(tmdbFallback.description, /🔞 16\+/);
+assert.match(tmdbFallback.description, /Sinners • 2025/);
 
 const noInventedBluray = presentStreamCandidate({
   name: "FrenchStream",
@@ -68,7 +70,8 @@ const noInventedBluray = presentStreamCandidate({
 }, {}, { name: "FrenchStream" });
 assert.match(noInventedBluray.description, /【1080P】/);
 assert.doesNotMatch(noInventedBluray.description, /BLU-RAY/i);
-assert.equal(normalizeSourceType("1080p"), "1080P");
+assert.equal(normalizeSourceType("1080p"), null);
+assert.equal(normalizeSourceType("some provider label"), null);
 
 const badges = buildBadges({ quality: "4K", language: "VFQ", codec: "H.264" });
 assert.deepEqual(badges, ["【4K】", "🌐 VFQ", "🎞 H.264"]);
