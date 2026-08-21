@@ -17,6 +17,7 @@ sys.path.insert(1, str(SCRIPTS))
 import runtime_repair  # noqa: E402
 import deep_repair_loop as loop  # noqa: E402
 import brain_repair_runtime as brain  # noqa: E402
+from guard_nuvio_client_brain_compat import guard as guard_nuvio_client_brain_compat  # noqa: E402
 from provider_purification import purify_candidate, purify_registry  # noqa: E402
 from repair_identity_gate import automatic_repair_identity_gate  # noqa: E402
 from repair_profile_persistence import ensure_repair_profile  # noqa: E402
@@ -100,12 +101,19 @@ def main() -> int:
         deep_config["probe_streams_adaptively"] = True
         HEALTH_CONFIG.write_text(json.dumps(health_config, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
+        stage = _argument_path("--stage", ROOT / "staging")
+        output = _argument_path("--output", ROOT / "health-output")
+
+        # Provider repair logic is valid only against a conclusively known official
+        # Nuvio runtime contract. Safe unrelated client updates may proceed; hard or
+        # semantic runtime drift and transport-inconclusive checks fail closed before
+        # any provider JS mutation or purification is attempted.
+        guard_nuvio_client_brain_compat(output / "nuvio-client-upstream-status.json")
+
         # Deep is the authoritative purification phase: all effective staged bundles
         # are optimized after known patches/profiles, then that exact registry becomes
         # baseline input. Repairs generated later in this same loop are purified again
         # by _profiled_create before their own retest.
-        stage = _argument_path("--stage", ROOT / "staging")
-        output = _argument_path("--output", ROOT / "health-output")
         purification = purify_registry(stage, output / "provider-purification.json")
         print(
             "FIELD_PROVIDER_PURIFICATION_DEEP "
