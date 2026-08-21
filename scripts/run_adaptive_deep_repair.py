@@ -17,6 +17,7 @@ sys.path.insert(1, str(SCRIPTS))
 import runtime_repair  # noqa: E402
 import deep_repair_loop as loop  # noqa: E402
 import brain_repair_runtime as brain  # noqa: E402
+from provider_purification import purify_candidate  # noqa: E402
 from repair_identity_gate import automatic_repair_identity_gate  # noqa: E402
 from repair_profile_persistence import ensure_repair_profile  # noqa: E402
 
@@ -41,6 +42,21 @@ def _identity_safe_compare(parent: dict, repaired: dict) -> tuple[bool, str]:
 
 def _profiled_create(stage, candidate, profile_name, round_number):
     repaired, error = _base_create(stage, candidate, profile_name, round_number)
+    if not isinstance(repaired, dict):
+        return repaired, error
+    # Any Brain/runtime mutation must immediately re-enter purification before its
+    # strict deep retest. The deep result therefore proves the exact optimized bytes,
+    # not the larger pre-purification candidate.
+    try:
+        repaired, _purification = purify_candidate(Path(stage), repaired)
+    except Exception as exc:
+        try:
+            target = (Path(stage).resolve() / str(repaired.get("local_path") or "")).resolve()
+            target.relative_to((Path(stage).resolve() / "providers" / "runtime-repairs").resolve())
+            target.unlink(missing_ok=True)
+        except (ValueError, OSError):
+            pass
+        return None, f"purification_failed:{type(exc).__name__}:{exc}"
     return ensure_repair_profile(repaired, profile_name), error
 
 
