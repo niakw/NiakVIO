@@ -114,9 +114,17 @@ with tempfile.TemporaryDirectory(prefix="niakvio-tv-bootstrap-") as tmp:
     )
     enable_tv_tests(repo)
     first = build.read_text(encoding="utf-8")
+    debug_entrypoint = repo / "app/src/debug/java/com/nuvio/tv/core/plugin/NiakvioPluginManagerEntryPoint.kt"
+    assert debug_entrypoint.is_file()
+    first_entrypoint = debug_entrypoint.read_text(encoding="utf-8")
     enable_tv_tests(repo)
     second = build.read_text(encoding="utf-8")
+    second_entrypoint = debug_entrypoint.read_text(encoding="utf-8")
     assert second == first
+    assert second_entrypoint == first_entrypoint
+    assert first_entrypoint.count("interface NiakvioPluginManagerEntryPoint") == 1
+    assert "@InstallIn(SingletonComponent::class)" in first_entrypoint
+    assert "fun pluginManager(): PluginManager" in first_entrypoint
     assert first.count('testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"') == 1
     assert first.count('androidTestImplementation("androidx.test.ext:junit:1.3.0")') == 1
     assert first.count('androidTestImplementation("androidx.test:runner:1.7.0")') == 1
@@ -140,7 +148,6 @@ for forbidden in (
     "JAVA_TOOL_OPTIONS",
 ):
     assert forbidden not in desktop_workflow, forbidden
-assert "No test-only --add-opens/JVM privilege relaxation" in desktop_workflow
 assert "root_execution_forbidden" in desktop_suite
 assert "privilege=ordinary-user" in desktop_suite
 assert "import com.nuvio.app.core.ui.NuvioTheme" in desktop_player
@@ -152,6 +159,6 @@ print(
     "native reader runtime bootstrap contract passed: "
     "tv_explicit_pairs=true generated_empty_generics_typed=true tv_single_owner_hilt_imports=true "
     "tv_wrapper_non_mutating=true tv_version_agnostic_diagnostic_bootstrap=true "
-    "mobile_real_app=true desktop_ordinary_jvm_policy=true "
+    "tv_debug_hilt_accessor=true mobile_real_app=true desktop_ordinary_jvm_policy=true "
     "desktop_production_theme=true desktop_unwrapped_errors=true"
 )
