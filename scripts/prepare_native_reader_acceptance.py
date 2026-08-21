@@ -29,7 +29,11 @@ sys.path.insert(0, str(ROOT / "scripts"))
 import native_player_diagnostics_codegen as reader_diag  # noqa: E402
 import prepare_native_corpus_client as client_prepare  # noqa: E402
 import prepare_native_corpus_validation as corpus  # noqa: E402
-from nuvio_tv_test_bootstrap import enable_tv_tests as enable_tv_test_bootstrap  # noqa: E402
+from audit_native_client_checkout import audit_checkout  # noqa: E402
+from native_client_test_bootstrap import (  # noqa: E402
+    enable_mobile_device_tests,
+    enable_tv_tests,
+)
 
 CORPUS_PATH = ROOT / ".github/triggers/nuvio-client-lab.json"
 DEFAULT_PR_PROVIDER_LIMIT = 4
@@ -177,7 +181,7 @@ def prepare(
     if target == "tv":
         repo = workspace / "nuvio-tv"
         if initial:
-            enable_tv_test_bootstrap(repo)
+            enable_tv_tests(repo)
             client_prepare._isolate_tv_android_test_sources(repo)
         assets = repo / "app/src/androidTest/assets/niakvio"
         staged = stage_selected(assets, selected)
@@ -188,7 +192,7 @@ def prepare(
     else:
         repo = workspace / "nuvio-mobile"
         if initial:
-            corpus.enable_mobile_device_tests(repo)
+            enable_mobile_device_tests(repo)
         assets = repo / "composeApp/src/androidDeviceTest/assets/niakvio"
         staged = stage_selected(assets, selected)
         source = corpus.android_test(fixture, staged, "mobile")
@@ -198,6 +202,7 @@ def prepare(
 
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(source, encoding="utf-8")
+    audit_checkout(repo, target)
     ids = ",".join(str(row.get("id") or "") for row in staged)
     enabled = sum(1 for provider_row in staged if provider_row.get("enabled"))
     disabled = len(staged) - enabled
