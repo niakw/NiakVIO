@@ -3,8 +3,8 @@
 
 Native readers are compatibility observers, not authorities that may condemn a
 provider globally. A provider mutation is eligible only after the same declared
-route fails on at least two distinct Nuvio client families and no peer client has a
-healthy observation for that provider/route/fixture. Single-client/OS failures remain
+route and same failure class are corroborated by at least two distinct Nuvio client
+families, with no healthy peer at the causal layer. Single-client/OS failures remain
 compatibility evidence for future Nuvio updates and Core analysis; they are never
 turned into provider JS mutations here.
 
@@ -27,6 +27,8 @@ PATCH_PATH = ROOT / "scripts/provider_patches/global_media_enrichment_v1.py"
 MIN_DISTINCT_CLIENTS_FOR_GLOBAL_PROVIDER_REPAIR = 2
 
 HYPOTHESIS_SKILLS: dict[str, tuple[str, ...]] = {
+    "capture-media-network": ("global_media_enrichment_v1",),
+    "inspect-player-javascript": ("global_media_enrichment_v1",),
     "replay-native-request-context": ("global_media_enrichment_v1",),
     "refresh-access-bound-media": ("global_media_enrichment_v1",),
     "refresh-terminal-media-candidate": ("global_media_enrichment_v1",),
@@ -94,6 +96,11 @@ def _key(row: dict[str, Any]) -> tuple[str, str, str]:
     )
 
 
+def _failure_key(row: dict[str, Any]) -> tuple[str, str, str, str]:
+    route = _key(row)
+    return (*route, str(row.get("failureClass") or "unknown_failure").casefold().strip())
+
+
 def diagnosis_targets(
     diagnosis: dict[str, Any],
     max_providers: int,
@@ -102,16 +109,23 @@ def diagnosis_targets(
     """Return globally repairable targets plus compatibility-only skips.
 
     A native failure is globally mutable only when:
-      * evidence contains the same provider/request/fixture failure on >=2 distinct
-        Nuvio client families; and
-      * no client has a healthy declared-route observation for that same key.
+      * evidence contains the same provider/request/fixture/failure-class on >=2
+        distinct Nuvio client families; and
+      * no client has a healthy observation for the same causal layer.
 
-    This deliberately treats Windows/macOS as the same `desktop` family unless the
-    evidence schema later exposes distinct production player families. OS-specific
-    failures therefore cannot accidentally satisfy cross-client consensus.
+    Player failures are vetoed by a healthy production-player observation. A
+    media_extraction_gap is vetoed by any enabled peer that returned at least one
+    stream for the same provider/request/fixture, even if that stream later fails
+    in the player. This prevents fixing extraction when extraction demonstrably works.
+
+    Windows/macOS remain the same `desktop` family unless the evidence schema later
+    exposes distinct production player families. OS-specific failures therefore
+    cannot accidentally satisfy cross-client consensus.
     """
     wanted_fixture = str(fixture or "").strip()
-    healthy_clients: dict[tuple[str, str, str], set[str]] = {}
+    player_healthy_clients: dict[tuple[str, str, str], set[str]] = {}
+    extraction_healthy_clients: dict[tuple[str, str, str], set[str]] = {}
+
     for raw in diagnosis.get("observations") or []:
         if not isinstance(raw, dict):
             continue
@@ -123,9 +137,22 @@ def diagnosis_targets(
         if wanted_fixture and key[2] != wanted_fixture:
             continue
         client = str(raw.get("client") or "unknown").casefold().strip() or "unknown"
-        healthy_clients.setdefault(key, set()).add(client)
+        player_healthy_clients.setdefault(key, set()).add(client)
 
-    grouped: dict[tuple[str, str, str], dict[str, Any]] = {}
+    for raw in diagnosis.get("extractionHealthyObservations") or []:
+        if not isinstance(raw, dict):
+            continue
+        if str(raw.get("routeMode") or raw.get("route_mode") or "declared").casefold() == "capability_probe":
+            continue
+        key = _key(raw)
+        if wanted_fixture and key[2] != wanted_fixture:
+            continue
+        if int(raw.get("returnedCount") or 0) <= 0:
+            continue
+        client = str(raw.get("client") or "unknown").casefold().strip() or "unknown"
+        extraction_healthy_clients.setdefault(key, set()).add(client)
+
+    grouped: dict[tuple[str, str, str, str], dict[str, Any]] = {}
     for raw in diagnosis.get("plans") or []:
         if not isinstance(raw, dict):
             continue
@@ -136,12 +163,14 @@ def diagnosis_targets(
         provider = str(raw.get("provider") or "").casefold().strip()
         if not provider or str(raw.get("action") or "") != "probe-targeted-repair":
             continue
-        key = _key(raw)
+        key = _failure_key(raw)
+        route_key = key[:3]
+        failure_class = key[3]
         target = grouped.setdefault(key, {
             "provider": provider,
-            "requestType": key[1],
-            "fixture": key[2],
-            "failureClasses": [],
+            "requestType": route_key[1],
+            "fixture": route_key[2],
+            "failureClasses": [failure_class],
             "hypotheses": [],
             "occurrences": 0,
             "fixtures": [],
@@ -155,9 +184,6 @@ def diagnosis_targets(
         client = str(raw.get("client") or "unknown").casefold().strip() or "unknown"
         if client not in target["failingClients"]:
             target["failingClients"].append(client)
-        failure = str(raw.get("failureClass") or "unknown_failure")
-        if failure not in target["failureClasses"]:
-            target["failureClasses"].append(failure)
         for hypothesis in raw.get("hypotheses") or []:
             if not isinstance(hypothesis, dict):
                 continue
@@ -168,8 +194,15 @@ def diagnosis_targets(
     eligible: list[dict[str, Any]] = []
     compatibility_only: list[dict[str, Any]] = []
     for key, target in grouped.items():
+        route_key = key[:3]
+        failure_class = key[3]
+        healthy_source = (
+            extraction_healthy_clients
+            if failure_class == "media_extraction_gap"
+            else player_healthy_clients
+        )
         target["failingClients"] = sorted(set(target["failingClients"]))
-        target["healthyClients"] = sorted(healthy_clients.get(key, set()))
+        target["healthyClients"] = sorted(healthy_source.get(route_key, set()))
         target["crossClientConfirmed"] = (
             len(target["failingClients"]) >= MIN_DISTINCT_CLIENTS_FOR_GLOBAL_PROVIDER_REPAIR
             and not target["healthyClients"]
@@ -189,11 +222,11 @@ def diagnosis_targets(
         else:
             eligible.append(target)
 
-    eligible.sort(key=lambda row: (-int(row["occurrences"]), row["provider"], row["requestType"]))
-    compatibility_only.sort(key=lambda row: (-int(row["occurrences"]), row["provider"], row["requestType"]))
+    eligible.sort(key=lambda row: (-int(row["occurrences"]), row["provider"], row["requestType"], row["failureClasses"][0]))
+    compatibility_only.sort(key=lambda row: (-int(row["occurrences"]), row["provider"], row["requestType"], row["failureClasses"][0]))
 
     # Keep at most max_providers distinct providers, while retaining multiple
-    # corroborated request/fixture rows for those providers.
+    # independently corroborated failure/request rows for those providers.
     selected_providers: list[str] = []
     selected: list[dict[str, Any]] = []
     for row in eligible:
@@ -296,7 +329,9 @@ def main() -> int:
     proposals: list[dict[str, Any]] = []
     skipped: list[dict[str, Any]] = [dict(row) for row in compatibility_only]
 
-    # Collapse multiple corroborated request rows into one provider mutation proposal.
+    # Collapse multiple independently corroborated request/failure rows into one
+    # provider candidate. Stream-level observations remain intact in the diagnosis;
+    # this is only the bounded provider-JS mutation boundary.
     provider_targets: dict[str, dict[str, Any]] = {}
     for target in target_rows:
         provider = target["provider"]
@@ -379,12 +414,16 @@ def main() -> int:
 
     candidate_manifest = output_dir / "manifest.json"
     write_json(candidate_manifest, proposed_manifest)
+    diagnosed_reader_failures = int(diagnosis.get("readerFailures") or 0)
+    diagnosed_extraction_failures = int(diagnosis.get("extractionFailures") or 0)
     report = {
         "schemaVersion": 3,
         "brainVersion": diagnosis.get("brainVersion"),
         "mode": "native_reader_repair_sandbox",
         "fixtureScope": args.fixture.strip() or "all",
-        "diagnosedReaderFailures": int(diagnosis.get("readerFailures") or 0),
+        "diagnosedReaderFailures": diagnosed_reader_failures,
+        "diagnosedExtractionFailures": diagnosed_extraction_failures,
+        "diagnosedProviderFailures": diagnosed_reader_failures + diagnosed_extraction_failures,
         "proposalCount": len(proposals),
         "providers": [row["provider"] for row in proposals],
         "proposals": proposals,
@@ -397,7 +436,9 @@ def main() -> int:
             "candidateManifestOnly": True,
             "requireFreshNativeReaderProof": True,
             "minimumDistinctClientFamiliesForProviderMutation": MIN_DISTINCT_CLIENTS_FOR_GLOBAL_PROVIDER_REPAIR,
+            "sameFailureClassCrossClientConsensusRequired": True,
             "healthyPeerVetoesProviderMutation": True,
+            "extractionHealthyPeerVetoesExtractionMutation": True,
             "singleClientFailureIsCompatibilityEvidenceOnly": True,
             "maxMutationProviders": max(1, min(int(args.max_providers), 24)),
             "avoidRepeatedFailedSkillThreshold": max(1, int(args.avoid_threshold)),
@@ -407,9 +448,9 @@ def main() -> int:
     write_json(output_dir / "repair-report.json", report)
     print(
         f"FIELD_NATIVE_READER_REPAIR proposals={len(proposals)} skipped={len(skipped)} "
-        f"compatibility_only={len(compatibility_only)} reader_failures={report['diagnosedReaderFailures']} "
-        f"fixture={report['fixtureScope']} learning={str(report['learningApplied']).lower()} "
-        f"manifest={candidate_manifest.relative_to(ROOT)}"
+        f"compatibility_only={len(compatibility_only)} reader_failures={diagnosed_reader_failures} "
+        f"extraction_failures={diagnosed_extraction_failures} fixture={report['fixtureScope']} "
+        f"learning={str(report['learningApplied']).lower()} manifest={candidate_manifest.relative_to(ROOT)}"
     )
     return 0
 
