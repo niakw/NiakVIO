@@ -30,7 +30,11 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 import prepare_native_corpus_validation as corpus  # noqa: E402
 import native_player_diagnostics_codegen as reader_diag  # noqa: E402
-from nuvio_tv_test_bootstrap import enable_tv_tests as enable_tv_test_bootstrap  # noqa: E402
+from audit_native_client_checkout import audit_checkout  # noqa: E402
+from native_client_test_bootstrap import (  # noqa: E402
+    enable_mobile_device_tests,
+    enable_tv_tests,
+)
 
 MATERIALIZED_SENTINEL = ROOT / ".native-provider-overrides-materialized"
 
@@ -199,14 +203,16 @@ def _selected(providers: list[dict], provider: str | None) -> list[dict]:
 def prepare_desktop(workspace: Path, fixture: dict, provider: str | None, manifest_path: str | Path) -> None:
     staged = stage_manifest_providers(ROOT / "native-corpus-stage", manifest_path)
     providers = _selected(staged, provider)
-    target = workspace / "nuvio-desktop/composeApp/src/desktopTest/kotlin/com/nuvio/app/features/plugins/NiakvioNativeCorpusDesktopTest.kt"
+    repo = workspace / "nuvio-desktop"
+    target = repo / "composeApp/src/desktopTest/kotlin/com/nuvio/app/features/plugins/NiakvioNativeCorpusDesktopTest.kt"
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(_collector_test(corpus.desktop_test(fixture, providers), "desktop"), encoding="utf-8")
+    audit_checkout(repo, "desktop")
 
 
 def prepare_mobile(workspace: Path, fixture: dict, provider: str | None, player_probes: int, manifest_path: str | Path) -> None:
     mobile = workspace / "nuvio-mobile"
-    corpus.enable_mobile_device_tests(mobile)
+    enable_mobile_device_tests(mobile)
     assets = mobile / "composeApp/src/androidDeviceTest/assets/niakvio"
     staged = stage_manifest_providers(assets, manifest_path)
     providers = _selected(staged, provider)
@@ -220,11 +226,12 @@ def prepare_mobile(workspace: Path, fixture: dict, provider: str | None, player_
     target = mobile / "composeApp/src/androidDeviceTest/kotlin/com/nuvio/app/features/plugins/NiakvioNativeCorpusMobileTest.kt"
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(_collector_test(source, "mobile"), encoding="utf-8")
+    audit_checkout(mobile, "mobile")
 
 
 def prepare_tv(workspace: Path, fixture: dict, provider: str | None, player_probes: int, manifest_path: str | Path) -> None:
     tv = workspace / "nuvio-tv"
-    enable_tv_test_bootstrap(tv)
+    enable_tv_tests(tv)
     _isolate_tv_android_test_sources(tv)
     assets = tv / "app/src/androidTest/assets/niakvio"
     staged = stage_manifest_providers(assets, manifest_path)
@@ -239,6 +246,7 @@ def prepare_tv(workspace: Path, fixture: dict, provider: str | None, player_prob
     target = tv / "app/src/androidTest/java/com/nuvio/tv/core/plugin/NiakvioNativeCorpusTvTest.kt"
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(_collector_test(source, "tv"), encoding="utf-8")
+    audit_checkout(tv, "tv")
 
 
 def main() -> int:
