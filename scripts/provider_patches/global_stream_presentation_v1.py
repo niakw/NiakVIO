@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """Materialize the shared NiakVIO stream finalization in isolated provider bundles.
 
-Providers remain responsible for factual stream output (URL, headers, language,
-quality, codec, audio, duration and explicit source type). The Core first applies
-one conservative media-identity contract, then normalizes those facts and builds
-one presentation contract for Nuvio clients. TMDB is an optional factual fallback
-for title/year/runtime/age rating; browser fetches stay JS-timeout-bounded while
-native bridges use their host timeout so no host request is abandoned without a
-terminal response/error evidence marker.
+Every provider is responsible only for factual playback output (URL/headers and any
+stream facts it really knows). This Core layer is applied to every reconstructed
+provider bundle. It normalizes available facts, enriches missing media context from
+TMDB when possible, and builds one coherent Nuvio title/description contract.
+
+Provider-specific adapters may expose facts hidden in legacy labels, but they never
+own final presentation. TMDB is optional and must never change/drop playback material.
 """
 from __future__ import annotations
 
@@ -53,13 +53,10 @@ def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> st
         "providerId": provider_id,
         "tmdbKey": str(cfg.get("tmdb_key") or TMDB_KEY),
         "tmdbTimeoutMs": max(350, min(int(cfg.get("tmdb_timeout_ms", 1200)), 2500)),
-        "implementationRevision": "identity-first-facts-shared-display-v5",
+        "implementationRevision": "all-providers-tmdb-media-episode-display-v6",
     }
     serialized = json.dumps(payload, separators=(",", ":"))
     marker = f"{MARKER}:{hashlib.sha256(serialized.encode()).hexdigest()[:12]}"
-    # Exact same Core revision/config is a byte-for-byte no-op. This matters because
-    # apply_overrides is intentionally re-runnable and other wrappers have stable
-    # relative ordering contracts. Only an implementation/config change replaces V1.
     if f"/* {marker} */" in text:
         return text
     text = _strip_existing(text)
@@ -89,8 +86,10 @@ function unique(list){var out=[];list.forEach(function(v){if(v&&out.indexOf(v)<0
 function nativeFetchBridge(){try{return !!(g&&typeof g.__native_fetch==="function")}catch(_e){return false}}
 function safeSignal(){try{if(typeof AbortSignal!=="undefined"&&typeof AbortSignal.timeout==="function")return AbortSignal.timeout(c.tmdbTimeoutMs)}catch(_e){}return null}
 function certification(d,kind){var rows=kind==="movie"?(d&&d.release_dates&&d.release_dates.results):(d&&d.content_ratings&&d.content_ratings.results);if(!Array.isArray(rows))return"";var row=rows.find(function(x){return s(x&&x.iso_3166_1).toUpperCase()==="FR"})||rows.find(function(x){return s(x&&x.iso_3166_1).toUpperCase()==="US"})||rows[0];if(!row)return"";if(kind==="movie"){var releases=Array.isArray(row.release_dates)?row.release_dates:[];for(var i=0;i<releases.length;i++){var v=s(releases[i]&&releases[i].certification);if(v)return v}return""}return s(row.rating)}
-async function tmdb(q){if(!/^\d+$/.test(q.tmdbId||"")||!g||typeof g.fetch!=="function")return null;var nativeBridge=nativeFetchBridge(),signal=nativeBridge?null:safeSignal();if(!nativeBridge&&!signal)return null;var kind=(q.mediaType==="tv"||q.mediaType==="series"||q.mediaType==="anime")?"tv":"movie",append=kind==="movie"?"release_dates":"content_ratings",url="https://api.themoviedb.org/3/"+kind+"/"+encodeURIComponent(q.tmdbId)+"?api_key="+encodeURIComponent(c.tmdbKey)+"&language=fr-FR&append_to_response="+append,init={headers:{Accept:"application/json"}};if(signal)init.signal=signal;try{var r=await g.fetch(url,init);if(!r||!r.ok)return null;var d=await r.json(),date=s(d.release_date||d.first_air_date),runtime=Number(d.runtime||0);if(!runtime&&Array.isArray(d.episode_run_time)&&d.episode_run_time.length)runtime=Number(d.episode_run_time[0]||0);return{title:s(d.title||d.name||q.title),year:Number((date.match(/(?:19|20)\d{2}/)||[])[0]||q.year||0)||0,runtime:runtime>0?Math.round(runtime):0,age:certification(d,kind)}}catch(_e){return null}}
-function present(row,meta,q){if(!row||typeof row!=="object")return row;var out=Object.assign({},row),ql=quality(row),lang=language(row),co=codec(row),au=audio(row),du=duration(row)||(meta&&meta.runtime)||0,src=sourceType(row),ag=age(row)||(meta&&meta.age)||"";if(ql)out.quality=ql;if(lang)out.language=lang;if(co)out.codec=co;if(au)out.audio=au;if(du)out.duration=du;if(src)out.sourceType=src;if(ag)out.ageRating=ag;var badges=unique([qualityBadge(ql),src?"【"+src+"】":"",lang?"🌐 "+lang:"",co?"🎞 "+co:"",au?"🔊 "+au:"",du?"⏱ "+fmtDuration(du):"",ag?"🔞 "+ag:""]);out.displayBadges=badges;var title=s((meta&&meta.title)||q.title),year=Number((meta&&meta.year)||q.year||0)||0,lines=[];if(badges.length)lines.push(badges.join(" "));if(title||year)lines.push([title,year?String(year):""].filter(Boolean).join(" • "));if(!lines.length)lines.push("🎬 "+providerName(row));out.description=lines.join("\n");if(!meaningful(out.title)||legacyLabel(out.title))out.title=providerName(row);if(legacyLabel(out.size))out.size=badges.slice(0,4).join(" ");if(!meaningful(out.name))out.name=providerName(row);return out}
+async function tmdbJson(url){if(!g||typeof g.fetch!=="function")return null;var nativeBridge=nativeFetchBridge(),sig=nativeBridge?null:safeSignal();if(!nativeBridge&&!sig)return null;var init={headers:{Accept:"application/json"}};if(sig)init.signal=sig;try{var r=await g.fetch(url,init);if(!r||!r.ok)return null;return await r.json()}catch(_e){return null}}
+async function tmdb(q){if(!/^\d+$/.test(q.tmdbId||""))return null;var kind=(q.mediaType==="tv"||q.mediaType==="series"||q.mediaType==="anime")?"tv":"movie",append=kind==="movie"?"release_dates":"content_ratings",base="https://api.themoviedb.org/3/"+kind+"/"+encodeURIComponent(q.tmdbId),mainUrl=base+"?api_key="+encodeURIComponent(c.tmdbKey)+"&language=fr-FR&append_to_response="+append,d=await tmdbJson(mainUrl);if(!d)return null;var date=s(d.release_date||d.first_air_date),runtime=Number(d.runtime||0);if(!runtime&&Array.isArray(d.episode_run_time)&&d.episode_run_time.length)runtime=Number(d.episode_run_time[0]||0);var meta={title:s(d.title||d.name||q.title),year:Number((date.match(/(?:19|20)\d{2}/)||[])[0]||q.year||0)||0,runtime:runtime>0?Math.round(runtime):0,age:certification(d,kind),episodeTitle:"",season:q.season||0,episode:q.episode||0};if(kind==="tv"&&q.season>0&&q.episode>0){var episodeUrl=base+"/season/"+encodeURIComponent(q.season)+"/episode/"+encodeURIComponent(q.episode)+"?api_key="+encodeURIComponent(c.tmdbKey)+"&language=fr-FR",ep=await tmdbJson(episodeUrl);if(ep){var epRuntime=Number(ep.runtime||0);if(epRuntime>0)meta.runtime=Math.round(epRuntime);meta.episodeTitle=s(ep.name);var epDate=s(ep.air_date),epYear=Number((epDate.match(/(?:19|20)\d{2}/)||[])[0]||0)||0;if(!meta.year&&epYear)meta.year=epYear}}return meta}
+function mediaLine(meta,q){var title=s((meta&&meta.title)||q.title),year=Number((meta&&meta.year)||q.year||0)||0,parts=[];if(title)parts.push(title);if(year)parts.push(String(year));var episodic=(q.mediaType==="tv"||q.mediaType==="series"||q.mediaType==="anime")&&(q.season>0||q.episode>0);if(episodic){var se="S"+two(q.season||0)+"E"+two(q.episode||0);parts.push(se);var epTitle=s(meta&&meta.episodeTitle);if(epTitle)parts.push(epTitle)}return parts.join(" • ")}
+function present(row,meta,q){if(!row||typeof row!=="object")return row;var out=Object.assign({},row),ql=quality(row),lang=language(row),co=codec(row),au=audio(row),du=duration(row)||(meta&&meta.runtime)||0,src=sourceType(row),ag=age(row)||(meta&&meta.age)||"";if(ql)out.quality=ql;if(lang)out.language=lang;if(co)out.codec=co;if(au)out.audio=au;if(du)out.duration=du;if(src)out.sourceType=src;if(ag)out.ageRating=ag;var badges=unique([qualityBadge(ql),src?"【"+src+"】":"",lang?"🌐 "+lang:"",co?"🎞 "+co:"",au?"🔊 "+au:"",du?"⏱ "+fmtDuration(du):"",ag?"🔞 "+ag:""]);out.displayBadges=badges;var media=mediaLine(meta,q),lines=[];if(badges.length)lines.push(badges.join(" "));if(media)lines.push(media);if(!lines.length)lines.push("🎬 "+providerName(row));out.description=lines.join("\n");out.title=providerName(row);out.name=providerName(row);out.size=badges.length?badges.slice(0,4).join(" "):(media||providerName(row));return out}
 function install(o,k){if(!o||typeof o[k]!=="function"||o[k].__nuvioGlobalStreamPresentationV1)return false;var native=o[k];var wrap=async function(){var q=req(arguments),v=await native.apply(this,arguments),x=slot(v);if(!x||!x.list.length)return v;var meta=null;try{meta=await tmdb(q)}catch(_e){}return rebuild(v,x,x.list.map(function(row){return present(row,meta,q)}))};wrap.__nuvioGlobalStreamPresentationV1=true;o[k]=wrap;return true}
 var ok=false;try{if(typeof module!=="undefined"&&module.exports){ok=install(module.exports,"getStreams")||install(module.exports,"streams")}}catch(_e){}try{if(g&&typeof g.getStreams==="function"){if(ok&&typeof module!=="undefined"&&module.exports)g.getStreams=module.exports.getStreams;else install(g,"getStreams")}}catch(_e){}
 })(typeof globalThis!=="undefined"?globalThis:this,CONFIG_PLACEHOLDER);
