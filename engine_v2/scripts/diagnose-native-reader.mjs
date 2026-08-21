@@ -90,9 +90,16 @@ function providerLoadRepair(issue) {
     ],
   };
 }
+function routeKey(row) {
+  return `${String(row.provider || '').toLowerCase()}\u0000${row.requestType}\u0000${row.fixture}`;
+}
+function extractionSignature(row) {
+  return `${row.requestType}:media_extraction_gap:${String(row.provider || '').toLowerCase()}:${row.fixture}`;
+}
 
 const evidence = assessNativeEvidence(logPaths);
 const readerRows = [];
+const resultRows = [];
 const providerLoadObservations = [];
 for (const file of logPaths) {
   if (!fs.existsSync(file)) continue;
@@ -108,6 +115,20 @@ for (const file of logPaths) {
         provider: decode(f.provider64).toLowerCase(),
         reason,
         failureClass,
+      });
+    }
+
+    const resultAt = raw.indexOf('FIELD_NATIVE_RESULT ');
+    if (resultAt >= 0) {
+      const f = fields(raw.slice(resultAt).trim());
+      resultRows.push({
+        client: f.client || 'unknown',
+        fixture: f.fixture || 'unknown',
+        provider: decode(f.provider64),
+        requestType: String(f.request_type || 'unknown').toLowerCase(),
+        routeMode: String(f.route_mode || 'declared').toLowerCase(),
+        enabled: f.enabled === 'true',
+        count: Math.max(0, Number(f.count ?? f.returned ?? 0) || 0),
       });
     }
 
@@ -145,7 +166,14 @@ const declaredHealthy = declaredRows.filter((row) => !isReaderFailure(row));
 const capabilityFailures = capabilityRows.filter(isReaderFailure);
 const capabilityHealthy = capabilityRows.filter((row) => !isReaderFailure(row));
 
-const plans = evidence.complete ? providerEligibleFailures.map((row) => {
+const declaredResultRows = resultRows.filter((row) => row.routeMode !== 'capability_probe');
+const capabilityResultRows = resultRows.filter((row) => row.routeMode === 'capability_probe');
+const enabledDeclaredResults = declaredResultRows.filter((row) => row.enabled);
+const extractionFailures = enabledDeclaredResults.filter((row) => row.count === 0);
+const extractionHealthy = enabledDeclaredResults.filter((row) => row.count > 0);
+const ignoredDisabledExtractionFailures = declaredResultRows.filter((row) => !row.enabled && row.count === 0);
+
+const readerPlans = evidence.complete ? providerEligibleFailures.map((row) => {
   const failureEvidence = {
     invoked: true,
     signature: row.signature,
@@ -187,16 +215,48 @@ const plans = evidence.complete ? providerEligibleFailures.map((row) => {
   };
 }) : [];
 
+const extractionPlans = evidence.complete ? extractionFailures.map((row) => {
+  const signature = extractionSignature(row);
+  const failureEvidence = {
+    invoked: true,
+    signature,
+    request: { mediaType: row.requestType },
+    stages: { media: { attempted: true, found: false } },
+  };
+  const plan = planRepair(failureEvidence, { signature, maxHypotheses: 3 });
+  return {
+    provider: String(row.provider || '').toLowerCase(), client: row.client, fixture: row.fixture,
+    requestType: row.requestType, routeMode: row.routeMode, index: -1,
+    state: 'empty', failureClass: plan.failureClass, failureDomain: 'provider_extraction',
+    providerMutationEligible: true, failureStage: 'media_extraction',
+    httpStatus: 0, errorCode: '', errorClass: '', host: '', durationSeconds: null,
+    loadBytes: 0, loadDurationMs: 0, mediaDataType: -1, trackType: -1, returnedCount: 0,
+    signature, action: plan.action, exitReason: plan.exitReason,
+    hypotheses: plan.hypotheses.map((hypothesis) => ({
+      id: hypothesis.id,
+      capabilities: [...(hypothesis.capabilities || [])],
+      actions: [...(hypothesis.actions || [])],
+    })),
+  };
+}) : [];
+const plans = [...readerPlans, ...extractionPlans];
+
 const providerLoadIssues = evidence.complete ? providerLoadObservations.map((row) => ({
   ...row,
   ...providerLoadRepair(row),
 })) : [];
 
-const healthyByRoute = new Map();
+const playerHealthyByRoute = new Map();
 for (const row of declaredHealthy) {
-  const key = `${String(row.provider || '').toLowerCase()}\u0000${row.requestType}\u0000${row.fixture}`;
-  if (!healthyByRoute.has(key)) healthyByRoute.set(key, new Set());
-  healthyByRoute.get(key).add(row.client);
+  const key = routeKey(row);
+  if (!playerHealthyByRoute.has(key)) playerHealthyByRoute.set(key, new Set());
+  playerHealthyByRoute.get(key).add(row.client);
+}
+const extractionHealthyByRoute = new Map();
+for (const row of extractionHealthy) {
+  const key = routeKey(row);
+  if (!extractionHealthyByRoute.has(key)) extractionHealthyByRoute.set(key, new Set());
+  extractionHealthyByRoute.get(key).add(row.client);
 }
 const consensusGrouped = new Map();
 for (const plan of plans) {
@@ -205,8 +265,11 @@ for (const plan of plans) {
   consensusGrouped.get(key).clients.add(plan.client);
 }
 const crossClientProviderFailures = [...consensusGrouped.values()].filter(({ plan, clients }) => {
-  const routeKey = `${plan.provider}\u0000${plan.requestType}\u0000${plan.fixture}`;
-  return clients.size >= 2 && !(healthyByRoute.get(routeKey)?.size > 0);
+  const key = routeKey(plan);
+  const healthy = plan.failureClass === 'media_extraction_gap'
+    ? extractionHealthyByRoute.get(key)
+    : playerHealthyByRoute.get(key);
+  return clients.size >= 2 && !(healthy?.size > 0);
 });
 const providerLearningAllowed = evidence.complete && crossClientProviderFailures.length > 0;
 
@@ -249,14 +312,29 @@ const providerLoadPriorities = [...loadGrouped.values()]
   }))
   .sort((a, b) => b.occurrences - a.occurrences || a.provider.localeCompare(b.provider));
 
-const observations = readerRows.map((row) => ({
+const playerObservations = readerRows.map((row) => ({
   provider: String(row.provider || '').toLowerCase(), client: row.client, fixture: row.fixture,
   requestType: row.requestType, routeMode: row.routeMode, index: row.index,
   state: row.state, failureClass: row.failureClass, failureDomain: row.failureDomain,
   providerMutationEligible: row.providerMutationEligible, failureStage: row.failureStage,
   httpStatus: row.httpStatus, errorCode: row.errorCode, host: row.host,
   durationSeconds: row.durationSeconds, loadBytes: row.loadBytes, loadDurationMs: row.loadDurationMs,
+  observationLayer: 'player',
 }));
+const extractionObservations = extractionFailures.map((row) => ({
+  provider: String(row.provider || '').toLowerCase(), client: row.client, fixture: row.fixture,
+  requestType: row.requestType, routeMode: row.routeMode, index: -1,
+  state: 'empty', failureClass: 'media_extraction_gap', failureDomain: 'provider_extraction',
+  providerMutationEligible: true, failureStage: 'media_extraction',
+  httpStatus: 0, errorCode: '', host: '', durationSeconds: null, loadBytes: 0, loadDurationMs: 0,
+  returnedCount: 0, observationLayer: 'extraction',
+}));
+const extractionHealthyObservations = extractionHealthy.map((row) => ({
+  provider: String(row.provider || '').toLowerCase(), client: row.client, fixture: row.fixture,
+  requestType: row.requestType, routeMode: row.routeMode, returnedCount: row.count,
+  observationLayer: 'extraction', state: 'non_empty', failureClass: 'healthy',
+}));
+const observations = [...playerObservations, ...extractionObservations];
 const providerMap = new Map();
 function ensureProviderOutcome(provider) {
   const key = String(provider || '').toLowerCase();
@@ -264,6 +342,7 @@ function ensureProviderOutcome(provider) {
     providerMap.set(key, {
       provider: key, observed: 0, healthy: 0, failures: 0,
       providerEligibleFailures: 0, clientRuntimeFailures: 0,
+      extractionExecutions: 0, extractionHealthy: 0, extractionFailures: 0,
       capabilityProbes: 0, capabilityHealthy: 0, capabilityFailures: 0,
       loadFailures: 0, loadFailureClasses: {},
       failureClasses: {}, clients: new Set(), fixtures: new Set(), requestTypes: new Set(),
@@ -271,7 +350,7 @@ function ensureProviderOutcome(provider) {
   }
   return providerMap.get(key);
 }
-for (const row of observations) {
+for (const row of playerObservations) {
   const current = ensureProviderOutcome(row.provider);
   current.observed += 1;
   current.clients.add(row.client);
@@ -290,6 +369,20 @@ for (const row of observations) {
     current.failureClasses[row.failureClass] = Number(current.failureClasses[row.failureClass] || 0) + 1;
   }
 }
+for (const row of enabledDeclaredResults) {
+  const current = ensureProviderOutcome(row.provider);
+  current.extractionExecutions += 1;
+  current.clients.add(row.client);
+  current.fixtures.add(row.fixture);
+  current.requestTypes.add(row.requestType);
+  if (row.count > 0) current.extractionHealthy += 1;
+  else {
+    current.extractionFailures += 1;
+    current.failures += 1;
+    current.providerEligibleFailures += 1;
+    current.failureClasses.media_extraction_gap = Number(current.failureClasses.media_extraction_gap || 0) + 1;
+  }
+}
 for (const issue of providerLoadIssues) {
   const current = ensureProviderOutcome(issue.provider);
   current.loadFailures += 1;
@@ -304,6 +397,9 @@ const providerOutcomes = [...providerMap.values()].map((row) => ({
   failures: row.failures,
   providerEligibleFailures: row.providerEligibleFailures,
   clientRuntimeFailures: row.clientRuntimeFailures,
+  extractionExecutions: row.extractionExecutions,
+  extractionHealthy: row.extractionHealthy,
+  extractionFailures: row.extractionFailures,
   capabilityProbes: row.capabilityProbes,
   capabilityHealthy: row.capabilityHealthy,
   capabilityFailures: row.capabilityFailures,
@@ -338,6 +434,11 @@ const payload = {
   readerFailures: failures.length,
   providerEligibleReaderFailures: providerEligibleFailures.length,
   clientRuntimeReaderFailures: clientRuntimeFailures.length,
+  extractionResultObserved: enabledDeclaredResults.length,
+  extractionHealthy: extractionHealthy.length,
+  extractionFailures: extractionFailures.length,
+  ignoredDisabledExtractionFailures: ignoredDisabledExtractionFailures.length,
+  capabilityResultObserved: capabilityResultRows.length,
   crossClientProviderFailureGroups: crossClientProviderFailures.length,
   capabilityProbeObserved: capabilityRows.length,
   capabilityProbeHealthy: capabilityHealthy.length,
@@ -346,6 +447,7 @@ const payload = {
   providerLoadActionableFailures: providerLoadIssues.length,
   readerLoadErrorEvidence: readerRows.filter((row) => row.loadDurationMs > 0 || row.loadBytes > 0 || row.httpStatus > 0).length,
   observations,
+  extractionHealthyObservations,
   providerLoadObservations,
   providerLoadIssues,
   providerOutcomes,
@@ -365,6 +467,7 @@ const payload = {
     coreOrManifestLoadProposalAllowed: evidence.complete && providerLoadIssues.length > 0,
     capabilityLearningAllowed: false,
     capabilityPromotionRequiresIdentityProof: true,
+    disabledProviderExtractionLearningAllowed: false,
     productionWritesAllowed: false,
     publicationAllowed: false,
     requireFreshNativeReaderProofAfterRepair: true,
@@ -377,8 +480,8 @@ fs.writeFileSync(outputPath, JSON.stringify(payload, null, 2) + '\n');
 console.log(
   `FIELD_NATIVE_READER_BRAIN evidence_complete=${payload.evidenceComplete} observed=${payload.readerObserved} ` +
   `declared=${payload.readerDeclaredObserved} healthy=${payload.readerHealthy} failures=${payload.readerFailures} ` +
-  `provider_eligible_failures=${payload.providerEligibleReaderFailures} client_runtime_failures=${payload.clientRuntimeReaderFailures} ` +
-  `cross_client_provider_groups=${payload.crossClientProviderFailureGroups} ` +
+  `provider_eligible_failures=${payload.providerEligibleReaderFailures} extraction_failures=${payload.extractionFailures} ` +
+  `client_runtime_failures=${payload.clientRuntimeReaderFailures} cross_client_provider_groups=${payload.crossClientProviderFailureGroups} ` +
   `provider_load_failures=${payload.providerLoadActionableFailures} capability_probes=${payload.capabilityProbeObserved} ` +
   `capability_probe_healthy=${payload.capabilityProbeHealthy} capability_probe_failures=${payload.capabilityProbeFailures} ` +
   `priorities=${priorities.length} provider_load_priorities=${providerLoadPriorities.length} provider_outcomes=${providerOutcomes.length} ` +
