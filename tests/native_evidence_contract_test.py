@@ -125,7 +125,9 @@ for required in (
 ):
     assert required in reader_runtime_scope, required
 assert "scope_native_reader_learning_runtime.py filter" in android_workflow
-assert "sinners-cross-client-brain.json" in android_workflow
+assert "representative-cross-client-brain.json" in android_workflow
+assert "tv-reader-repair-comparison-${fixture}.json" in android_workflow
+assert 'NIAKVIO_TARGET_FIXTURES: "sinners-2025 breaking-bad-s01e01 jujutsu-kaisen-s01e01"' in android_workflow
 assert 'needs: [resolve, tv-route-reader, mobile-route-reader]' in android_workflow
 assert "scope_native_reader_learning_runtime.py merge" in learning_sync
 
