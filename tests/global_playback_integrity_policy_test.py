@@ -56,6 +56,7 @@ assert streamzo_hls_options["fail_closed_unknown"] is False
 
 
 # Staged scheduler contract: HLS integrity runs before enrichment and final safety.
+# The stable hls_master hook now composes final presentation after media safety.
 original_apply_patch_script = module._apply_patch_script
 captured_scheduler_paths = []
 def capture_scheduler(text, provider_id, patch_script, options, profile_name):
@@ -85,6 +86,11 @@ patched, records = module.apply_overrides("future-provider-never-seen-before", f
 text = patched.decode("utf-8")
 assert "NUVIO_HLS_MASTER_AUDIO_PRESERVER_V1" in text
 assert "NUVIO_HLS_RUNTIME_INTEGRITY_V1" in text
+assert "NUVIO_GLOBAL_STREAM_PRESENTATION_V1" in text
+# Presentation must be the outermost/final provider output layer so it cannot
+# influence HLS validation or native playback semantics.
+assert text.rfind("NUVIO_GLOBAL_STREAM_PRESENTATION_V1") > text.rfind("NUVIO_HLS_MASTER_AUDIO_PRESERVER_V1")
+assert text.rfind("NUVIO_GLOBAL_STREAM_PRESENTATION_V1") > text.rfind("NUVIO_HLS_RUNTIME_INTEGRITY_V1")
 paths = {str(row.get("path")) for row in records if isinstance(row, dict)}
 assert "scripts/provider_patches/hls_master_audio_preserver_v1.py" in paths
 assert "scripts/provider_patches/hls_runtime_integrity_v1.py" in paths
@@ -93,6 +99,7 @@ assert any(row.get("scope") == "global_playback_integrity" for row in records if
 # Runtime repair phase must not inject discovery wrappers.
 runtime, runtime_records = module.apply_overrides("future-provider-never-seen-before", future, phase="runtime")
 assert b"NUVIO_HLS_RUNTIME_INTEGRITY_V1" not in runtime
+assert b"NUVIO_GLOBAL_STREAM_PRESENTATION_V1" not in runtime
 assert not any(row.get("scope") == "global_playback_integrity" for row in runtime_records if isinstance(row, dict))
 
 health_cfg = json.loads((ROOT / "health-config.json").read_text(encoding="utf-8"))
@@ -110,4 +117,4 @@ for marker in (
 ):
     assert marker in health_source, marker
 
-print("global playback integrity policy tests passed")
+print("global playback integrity + final stream presentation policy tests passed")
