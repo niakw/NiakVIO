@@ -1,13 +1,14 @@
 {
-  "version": 2,
+  "version": 3,
   "mode": "human-ux-observation-only",
-  "purpose": "Native labs reproduce the real Nuvio user path and observe launch, player and playback failures without repairing Nuvio, the OS or the lab environment to improve outcomes.",
+  "purpose": "Native labs reproduce the real Nuvio user path and observe launch, stream selection, player opening and playback failures without repairing Nuvio, the OS or the lab environment to improve outcomes.",
   "immutable_principles": [
     "The harness exists to observe the user path, not to improve it.",
     "Do not modify Nuvio production runtime code to make tests pass or to gain visibility.",
     "Do not modify the OS or emulator security/network/runtime policy to make playback easier.",
     "Playback/player failures are evidence first; only a demonstrated NiakVIO-owned cause may become a Brain repair target.",
-    "If the official Nuvio client or OS blocks faithful observation before playback, classify and retain the external limitation instead of repairing the environment."
+    "If the official Nuvio client or OS blocks faithful observation before playback, classify and retain the external limitation instead of repairing the environment.",
+    "A component-level player or provider probe is diagnostic evidence only and can never satisfy human-UX acceptance by itself."
   ],
   "ownership": {
     "repairable": [
@@ -25,6 +26,52 @@
       "Windows",
       "native player implementations owned by Nuvio"
     ]
+  },
+  "harness_change_control": {
+    "default": "locked-do-not-modify",
+    "change_policy": "only-when-faithful-observation-is-blocked",
+    "rule": "Do not improve, refactor, harden, tune or make the harness more permissive while it can still faithfully observe the real user path. If the harness itself prevents observation, apply only the smallest behavior-neutral change required to resume observation.",
+    "required_before_change": [
+      "identify the exact harness blocker",
+      "show that the blocker prevents observation rather than merely producing a bad playback result",
+      "show that the proposed change cannot make Nuvio, the player, networking or the OS more permissive",
+      "keep the change outside Nuvio-owned runtime code whenever technically possible"
+    ],
+    "forbidden_reasons": [
+      "make CI green",
+      "increase playback success rate",
+      "work around a Nuvio player failure",
+      "work around an OS or emulator playback/network limitation",
+      "obtain richer evidence by changing Nuvio runtime semantics"
+    ]
+  },
+  "human_ux_acceptance_path": [
+    "launch the official Nuvio client",
+    "install or open the NiakVIO addon through a Nuvio-supported public flow",
+    "open the target title through a Nuvio-supported public flow or equivalent external user input",
+    "reach the real Nuvio stream-selection surface",
+    "select the returned stream through the real Nuvio UI",
+    "let the real Nuvio player attempt playback before any media transport diagnostic",
+    "record first-frame success or the visible/native player failure",
+    "classify the evidence before any NiakVIO repair is proposed"
+  ],
+  "evidence_classes": {
+    "human_ux_proof": {
+      "can_gate_acceptance": true,
+      "requires_real_ui_path": true,
+      "requires_production_player": true,
+      "may_patch_nuvio_runtime": false
+    },
+    "component_probe": {
+      "can_gate_acceptance": false,
+      "role": "diagnostic-only",
+      "examples": [
+        "direct provider runtime invocation",
+        "direct production player component invocation",
+        "transport probe",
+        "generated instrumentation test"
+      ]
+    }
   },
   "allowed_checkout_changes": {
     "mobile": [
@@ -64,12 +111,12 @@
     "desktop": []
   },
   "allowed_change_intent": [
-    "add or enable test source sets",
-    "add instrumentation runner declarations",
-    "add test-only dependencies",
+    "add or enable test source sets for diagnostic probes only",
+    "add instrumentation runner declarations for diagnostic probes only",
+    "add test-only dependencies for diagnostic probes only",
     "use a debug signing configuration when hosted CI cannot access an official release signing key",
-    "stage NiakVIO provider bundles as test assets",
-    "add test code that invokes production Nuvio entry points without changing their semantics"
+    "stage NiakVIO provider bundles as diagnostic test assets",
+    "add test code that invokes production Nuvio entry points only as component diagnostics, never as human-UX acceptance proof"
   ],
   "forbidden_checkout_tokens": [
     "android.permission.INTERNET",
@@ -100,9 +147,11 @@
     "patch Nuvio source code for logging or instrumentation",
     "patch Nuvio repository/network loaders to inject evidence interceptors",
     "patch OS permissions, security policy or runtime privileges",
-    "classify an external Nuvio or OS limitation as a NiakVIO provider repair target"
+    "classify an external Nuvio or OS limitation as a NiakVIO provider repair target",
+    "count a direct player/provider component probe as human-UX acceptance",
+    "retouch the harness merely because playback or player tests are failing"
   ],
-  "evidence_rule": "Production player behaviour is primary evidence. Diagnostics may observe from NiakVIO-owned test code, official logs already emitted by Nuvio, or external process output, but must not patch Nuvio production runtime code to gain visibility.",
+  "evidence_rule": "Human-UX acceptance must come from the real Nuvio user path and production player. Component probes may supplement diagnosis but cannot replace that path. Diagnostics must not patch Nuvio production runtime code to gain visibility.",
   "failure_rule": "If faithful observation cannot reach playback because the official Nuvio client or OS blocks earlier, record the condition as external evidence. Do not repair the external environment merely to continue the test.",
   "brain_rule": "Brain may learn and repair only from complete evidence that demonstrates a NiakVIO-owned cause. External Nuvio/OS failures must not generate provider mutations.",
   "change_control": {
