@@ -16,9 +16,11 @@ export function presentStreamCandidate(stream = {}, metadata = {}, provider = {}
     descriptionParts.push(originalDescription);
   }
 
+  // TMDB (or another shared factual metadata resolver) fills sparse/Unknown provider
+  // descriptions. It supplements facts only; it never invents stream provenance.
   const tmdbTitle = useful(metadata.title ?? metadata.name ?? metadata.originalTitle ?? metadata.original_name);
   const tmdbYear = positiveInt(metadata.year ?? yearFromDate(metadata.releaseDate ?? metadata.release_date ?? metadata.firstAirDate ?? metadata.first_air_date));
-  if (!descriptionParts.length && (tmdbTitle || tmdbYear)) {
+  if (!originalDescription && (tmdbTitle || tmdbYear)) {
     descriptionParts.push([tmdbTitle, tmdbYear].filter(Boolean).join(" • "));
   }
 
@@ -92,8 +94,10 @@ export function normalizeSourceType(value) {
   if (/WEB-?RIP/.test(compact)) return "WEBRIP";
   if (/HDTV/.test(compact)) return "HDTV";
   if (/DVDRIP|DVD/.test(compact)) return "DVD";
-  if (/CAM|TS|TELESYNC/.test(compact)) return "CAM";
-  return text.toUpperCase();
+  if (/(?:^|-)CAM(?:-|$)|TELESYNC/.test(compact)) return "CAM";
+  // Unknown strings are not provenance. In particular, a quality such as 1080p
+  // must never be converted into a source badge or used to imply Blu-ray/Web-DL.
+  return null;
 }
 
 export function normalizeCodec(value) {
@@ -140,7 +144,7 @@ export function normalizeAgeRating(value) {
   const upper = text.toUpperCase();
   const france = upper.match(/(?:-|INTERDIT\s+MOINS\s+DE\s+)(10|12|16|18)\b/);
   if (france) return `-${france[1]}`;
-  const plus = upper.match(/\b(7|10|12|13|14|15|16|17|18)\+\b/);
+  const plus = upper.match(/(?:^|\b)(7|10|12|13|14|15|16|17|18)\+(?:$|\s)/);
   if (plus) return `${plus[1]}+`;
   if (/^(?:U|G|PG|PG-13|R|NC-17|TV-Y|TV-Y7|TV-G|TV-PG|TV-14|TV-MA)$/i.test(text)) return upper;
   return text;
