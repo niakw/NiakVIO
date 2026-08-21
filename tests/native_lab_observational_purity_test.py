@@ -28,7 +28,7 @@ provider_loading = (ROOT / "scripts/augment_native_provider_loading.py").read_te
 
 # The policy itself is intentionally strict and fail-closed. Relaxing any of these
 # requires an explicit policy diff instead of an incidental helper change.
-assert policy["version"] >= 2
+assert policy["version"] >= 5
 assert policy["mode"] == "human-ux-observation-only"
 control = policy["change_control"]
 assert control["policy_file_is_source_of_truth"] is True
@@ -132,20 +132,34 @@ assert "modified=false" in android_transport
 assert '.set(f"{ANDROID}usesCleartextTraffic"' not in android_transport
 assert "android.permission.INTERNET" not in android_transport
 
-# Historical Mobile hardener is a strict no-op.
-assert "leaving Nuvio checkout unchanged" in mobile_hardener
+# Mobile has one persisted behavior-neutral exception: the ephemeral device-test APK
+# may select one duplicate libc++ runtime so instrumentation can be packaged. This
+# must never spread into application/player/network/runtime behavior.
+assert 'pickFirsts.add("lib/*/libc++_shared.so")' in mobile_hardener
+assert "composeApp/build.gradle.kts" in mobile_hardener
+assert "device-test" in mobile_hardener
+assert "instrumentation APK" in mobile_hardener
+assert 'pickFirsts.add("lib/*/libc++_shared.so")' in policy["allowed_gradle_additions"]["mobile"]
+assert any(
+    row.get("id") == "mobile-device-test-libcxx-packaging-conflict" and row.get("status") == "resolved"
+    for row in policy["job_blocker_memory"]["entries"]
+)
 for forbidden in (
-    "write_text(",
-    "write_bytes(",
     "configure_manifest",
-    "pickFirsts",
-    "libc++_shared.so",
     "sentry-android-gradle",
     "io.sentry.android.gradle",
     "tools:replace",
     "usesCleartextTraffic",
     "networkSecurityConfig",
     "android.permission.INTERNET",
+    "PlayerPlaybackNetworking",
+    "PlatformPlaybackDataSourceFactory",
+    "ExoPlayer.Builder",
+    "NativePlayerController(",
+    "setDefaultRequestProperties",
+    'setRequestProperty("Referer"',
+    'setRequestProperty("Origin"',
+    'setRequestProperty("User-Agent"',
 ):
     assert forbidden not in mobile_hardener, f"mobile-hardener:{forbidden}"
 
