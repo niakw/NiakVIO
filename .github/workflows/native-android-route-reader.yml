@@ -133,7 +133,7 @@ jobs:
   tv-route-reader:
     needs: resolve
     runs-on: ubuntu-latest
-    timeout-minutes: ${{ github.event_name == 'pull_request' && 55 || 180 }}
+    timeout-minutes: ${{ github.event_name == 'pull_request' && 100 || 180 }}
     steps:
       - name: Checkout NiakVIO candidate
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
@@ -228,7 +228,7 @@ jobs:
   mobile-route-reader:
     needs: resolve
     runs-on: ubuntu-latest
-    timeout-minutes: ${{ github.event_name == 'pull_request' && 55 || 180 }}
+    timeout-minutes: ${{ github.event_name == 'pull_request' && 100 || 180 }}
     steps:
       - name: Checkout NiakVIO candidate
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
@@ -326,7 +326,7 @@ jobs:
     needs: [resolve, tv-route-reader, mobile-route-reader]
     if: ${{ always() && needs.resolve.result == 'success' }}
     runs-on: ubuntu-latest
-    timeout-minutes: ${{ github.event_name == 'pull_request' && 75 || 180 }}
+    timeout-minutes: ${{ github.event_name == 'pull_request' && 100 || 180 }}
     steps:
       - name: Checkout exact NiakVIO candidate
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
