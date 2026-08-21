@@ -178,19 +178,29 @@ assert "GITHUB_EVENT_NAME" in restage_client
 assert "NIAKVIO_PR_PROVIDER_LIMIT" in restage_client
 assert "pr-bounded" in restage_client
 
-# Official Media3 reader is primary evidence; lightweight HTTP is secondary.
+# Production Nuvio player is primary evidence; lightweight HTTP is secondary.
+# The lab must never construct a parallel ExoPlayer/data-source stack because that
+# can disagree with the actual TV/Mobile application and create a second test logic.
 for required in (
-    "ExoPlayer.Builder(context)",
-    "HttpDataSource.InvalidResponseCodeException",
-    "PlayerPlaybackNetworking.createDataSourceFactory(context, headers)",
-    "PlatformPlaybackDataSourceFactory.create(",
+    "Screen.Player.createRoute",
+    "NuvioNavHost",
+    "LastPlaybackDiagnostics",
+    "PlatformPlayerSurface(",
+    "PlayerPlaybackSnapshot",
+    "nuvio-tv-production",
+    "nuvio-mobile-production",
     "FIELD_NATIVE_PLAYER",
-    "errorCodeName",
     "duration_identity",
     "short_media",
     "<redacted>",
 ):
     assert required in reader_codegen, required
+for forbidden in (
+    "ExoPlayer.Builder(context)",
+    "PlayerPlaybackNetworking.createDataSourceFactory(context, headers)",
+    "PlatformPlaybackDataSourceFactory.create(",
+):
+    assert forbidden not in reader_codegen, forbidden
 assert reader_codegen.index("val reader = probeNativePlayer") < reader_codegen.index("val transport = probeTransport")
 for required in (
     "missing_native_reader_evidence",
@@ -261,5 +271,5 @@ assert len(stageable) >= 80, len(stageable)
 
 print(
     "native device lab contract passed: "
-    f"fixtures={len(expected_slugs)} providers={len(stageable)} android_exhaustive=true desktop_native=true brain_retest=true cached_profiles=true targeted_manual=true reader_learning_idempotent=true trusted_main_learning=true missing_artifact_retriable=true pr_bounded=true"
+    f"fixtures={len(expected_slugs)} providers={len(stageable)} android_exhaustive=true desktop_native=true brain_retest=true cached_profiles=true targeted_manual=true reader_learning_idempotent=true trusted_main_learning=true missing_artifact_retriable=true pr_bounded=true production_player_only=true"
 )
