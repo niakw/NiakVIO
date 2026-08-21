@@ -152,6 +152,23 @@ def reader_source(source: str, client: str, expected_duration_minutes: int | flo
     return output
 
 
+def maybe_purify_reader_repair_manifest(manifest_path: Path) -> None:
+    """Enforce Brain mutation -> purification -> official reader proof ordering."""
+    report = manifest_path.parent / "repair-report.json"
+    if not report.is_file():
+        return
+    subprocess.run(
+        [
+            sys.executable,
+            str(ROOT / "scripts/purify_native_reader_repair.py"),
+            "--output-dir",
+            str(manifest_path.parent),
+        ],
+        cwd=ROOT,
+        check=True,
+    )
+
+
 def prepare(
     target: str,
     workspace: Path,
@@ -231,7 +248,9 @@ def main() -> int:
     args = parser.parse_args()
 
     workspace = Path(args.workspace).resolve()
-    manifest = str(client_prepare._manifest_path(args.manifest).relative_to(ROOT))
+    manifest_path = client_prepare._manifest_path(args.manifest).resolve()
+    maybe_purify_reader_repair_manifest(manifest_path)
+    manifest = str(manifest_path.relative_to(ROOT))
     prepare(
         args.target,
         workspace,
