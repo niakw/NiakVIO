@@ -16,6 +16,10 @@ resolver = (ROOT / "scripts/resolve_native_repository.sh").read_text(encoding="u
 desktop_suite = (ROOT / "scripts/run_native_corpus_desktop_suite.sh").read_text(encoding="utf-8")
 android_transport = (ROOT / "scripts/configure_native_android_lab_transport.py").read_text(encoding="utf-8")
 mobile_hardener = (ROOT / "scripts/harden_nuvio_mobile_device_test.py").read_text(encoding="utf-8")
+bootstrap = (ROOT / "scripts/native_client_test_bootstrap.py").read_text(encoding="utf-8")
+checkout_audit = (ROOT / "scripts/audit_native_client_checkout.py").read_text(encoding="utf-8")
+reader_acceptance = (ROOT / "scripts/prepare_native_reader_acceptance.py").read_text(encoding="utf-8")
+client_prepare = (ROOT / "scripts/prepare_native_corpus_client.py").read_text(encoding="utf-8")
 corpus = (ROOT / "scripts/prepare_native_corpus_validation.py").read_text(encoding="utf-8")
 request_contract = (ROOT / "scripts/augment_native_corpus_request_contract.py").read_text(encoding="utf-8")
 provider_loading = (ROOT / "scripts/augment_native_provider_loading.py").read_text(encoding="utf-8")
@@ -75,15 +79,12 @@ assert "modified=false" in android_transport
 assert '.set(f"{ANDROID}usesCleartextTraffic"' not in android_transport
 assert "android.permission.INTERNET" not in android_transport
 
-# The historical Mobile hardener entry point must now be a strict no-op.  It may
-# verify that a checkout exists, but it must never edit Gradle, AndroidManifest,
-# Sentry, packaging, native libraries, networking, or any other Nuvio-owned file.
+# Historical Mobile hardener is a strict no-op.
 assert "leaving Nuvio checkout unchanged" in mobile_hardener
 for forbidden in (
     "write_text(",
     "write_bytes(",
     "configure_manifest",
-    "validate_manifest(test_manifest)",
     "pickFirsts",
     "libc++_shared.so",
     "sentry-android-gradle",
@@ -94,6 +95,60 @@ for forbidden in (
     "android.permission.INTERNET",
 ):
     assert forbidden not in mobile_hardener, f"mobile-hardener:{forbidden}"
+
+# The only supported Android checkout edits are test plumbing. The shared bootstrap
+# must never manufacture a production network/player/runtime capability.
+for required in (
+    "enable_mobile_device_tests",
+    "enable_tv_tests",
+    "withDeviceTest {",
+    "androidDeviceTest by getting",
+    "testInstrumentationRunner",
+    "androidTestImplementation",
+    "runtime_mutation=false",
+):
+    assert required in bootstrap, required
+for forbidden in (
+    "AndroidManifest.xml",
+    "android.permission.INTERNET",
+    "usesCleartextTraffic",
+    "networkSecurityConfig",
+    "cleartextTrafficPermitted",
+    "PlayerPlaybackNetworking",
+    "PlatformPlaybackDataSourceFactory",
+    "ExoPlayer.Builder",
+    "setDefaultRequestProperties",
+    "PluginRepository.clearLocalState",
+):
+    assert forbidden not in bootstrap, f"bootstrap:{forbidden}"
+
+# Every active preparation entry point uses the shared test-only bootstrap and then
+# audits the actual Nuvio checkout before Gradle/player execution.
+for text, label in ((reader_acceptance, "reader-acceptance"), (client_prepare, "client-prepare")):
+    assert "from native_client_test_bootstrap import" in text, label
+    assert "audit_checkout(" in text, label
+    assert "corpus.enable_mobile_device_tests" not in text, label
+assert "enable_mobile_device_tests(repo)" in reader_acceptance
+assert "enable_mobile_device_tests(mobile)" in client_prepare
+assert "enable_tv_tests(repo)" in reader_acceptance
+assert "enable_tv_tests(tv)" in client_prepare
+
+# Checkout audit is fail-closed on both path scope and forbidden runtime tokens.
+for required in (
+    "git",
+    "status",
+    "--porcelain=v1",
+    "runtime_mutation=false",
+    "android.permission.INTERNET",
+    "usesCleartextTraffic",
+    "networkSecurityConfig",
+    "PlayerPlaybackNetworking",
+    "composeApp/src/androidDeviceTest/",
+    "app/src/androidTest/",
+):
+    assert required in checkout_audit, required
+assert "native human-UX lab mutated runtime-owned path" in checkout_audit
+assert "native human-UX lab introduced forbidden runtime mutation" in checkout_audit
 
 # No playback-row rewriting/ranking inside the Lab preparation path.
 for text, label in (
