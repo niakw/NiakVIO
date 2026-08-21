@@ -1,4 +1,4 @@
-name: Scratch native lab profile validation
+name: Scratch native Lab Brain Core validation
 
 on:
   push:
@@ -14,7 +14,7 @@ concurrency:
 jobs:
   validate-and-materialize:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 55
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
@@ -22,18 +22,27 @@ jobs:
           ref: scratch/native-lab-core-fixes-20260821
       - uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165
         with: {distribution: temurin, java-version: "17"}
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with: {node-version: "24", package-manager-cache: false}
       - uses: gradle/actions/setup-gradle@0723195856401067f7a2779048b490ace7a47d7c
 
-      - name: Apply persisted harness fixes
-        run: python3 scripts/_scratch_apply_lab_profile_fixes.py
+      - name: Apply candidate fixes
+        run: |
+          set -euxo pipefail
+          python3 scripts/_scratch_apply_lab_profile_fixes.py
+          python3 scripts/_scratch_apply_brain_core_fixes.py
 
-      - name: Run NiakVIO harness/profile regressions
+      - name: Run NiakVIO targeted regressions
         run: |
           set -euxo pipefail
           python3 tests/native_human_ux_policy_lock_test.py
           python3 tests/native_reader_runtime_bootstrap_test.py
           node tests/native_evidence_completeness_test.cjs
-          python3 scripts/audit_native_client_checkout.py --help >/dev/null
+          node engine_v2/tests/native-reader-zero-result.test.mjs
+          node engine_v2/tests/stream-presentation.test.mjs
+          python3 -m py_compile scripts/native_client_test_bootstrap.py scripts/augment_native_provider_loading.py scripts/build_native_reader_brain_repair.py
+          node --check engine_v2/scripts/diagnose-native-reader.mjs
+          node --check engine_v2/src/stream-presentation.mjs
 
       - name: Prove Mobile device-test JNI packaging on official HEAD
         run: |
@@ -80,13 +89,13 @@ jobs:
           ./gradlew :app:assembleFullDebug :app:assembleFullDebugAndroidTest --no-daemon --stacktrace
           grep -R -F "NiakvioLabPluginManagerEntryPoint" app/build/generated app/build/intermediates >/dev/null
 
-      - name: Materialize clean scratch commit
+      - name: Materialize clean scratch candidate
         run: |
           set -euxo pipefail
-          rm -f scripts/_scratch_apply_lab_profile_fixes.py .github/workflows/_scratch-native-lab-profile-validation.yml
+          rm -f scripts/_scratch_apply_lab_profile_fixes.py scripts/_scratch_apply_brain_core_fixes.py .github/workflows/_scratch-native-lab-profile-validation.yml
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
           git diff --cached --check
-          git commit -m "Persist native lab harness profiles and blockers"
+          git commit -m "Fix native Lab evidence and Core presentation contracts"
           git push origin HEAD:scratch/native-lab-core-fixes-20260821
