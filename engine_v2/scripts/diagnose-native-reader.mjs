@@ -21,6 +21,7 @@ const outputPath = outputIndex >= 0 && args[outputIndex + 1]
   ? path.resolve(args[outputIndex + 1])
   : path.resolve('targeted-reader-brain.json');
 const logPaths = args.filter((value, index) => index !== outputIndex && index !== outputIndex + 1 && value !== '--output').map((value) => path.resolve(value));
+const nonblockingSmoke = process.env.NIAKVIO_BRAIN_NONBLOCKING === '1';
 
 function decode(value) {
   if (!value) return '';
@@ -367,6 +368,7 @@ const payload = {
     productionWritesAllowed: false,
     publicationAllowed: false,
     requireFreshNativeReaderProofAfterRepair: true,
+    nonblockingSmoke,
   },
   privacy: 'No raw URLs, query tokens, cookie values, authorization values or response-header values are persisted.',
 };
@@ -379,11 +381,12 @@ console.log(
   `cross_client_provider_groups=${payload.crossClientProviderFailureGroups} ` +
   `provider_load_failures=${payload.providerLoadActionableFailures} capability_probes=${payload.capabilityProbeObserved} ` +
   `capability_probe_healthy=${payload.capabilityProbeHealthy} capability_probe_failures=${payload.capabilityProbeFailures} ` +
-  `priorities=${priorities.length} provider_load_priorities=${providerLoadPriorities.length} provider_outcomes=${providerOutcomes.length}`
+  `priorities=${priorities.length} provider_load_priorities=${providerLoadPriorities.length} provider_outcomes=${providerOutcomes.length} ` +
+  `nonblocking_smoke=${nonblockingSmoke}`
 );
 if (!evidence.complete) {
   for (const problem of evidence.problems.slice(0, 80)) console.log(`FIELD_NATIVE_READER_BRAIN_EVIDENCE_INCOMPLETE ${problem}`);
 }
 for (const priority of providerLoadPriorities.slice(0, 40)) console.log(`FIELD_NATIVE_READER_BRAIN_LOAD_PRIORITY ${JSON.stringify(priority)}`);
 for (const priority of priorities.slice(0, 40)) console.log(`FIELD_NATIVE_READER_BRAIN_PRIORITY ${JSON.stringify(priority)}`);
-if (!evidence.complete) process.exitCode = 2;
+if (!evidence.complete && !nonblockingSmoke) process.exitCode = 2;
