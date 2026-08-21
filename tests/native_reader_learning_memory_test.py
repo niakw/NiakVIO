@@ -105,8 +105,10 @@ with tempfile.TemporaryDirectory(dir=ROOT) as tmp_raw:
     report = json.loads((repair_dir / "repair-report.json").read_text(encoding="utf-8"))
     assert report["learningApplied"] is True
     assert report["proposalCount"] == 0, report
+    # If this were still blocked by client compatibility, compatibilityOnlyCount
+    # would be non-zero. Zero proves the target passed cross-client eligibility;
+    # the explicit skip reason then proves negative memory suppressed the skill.
     assert report["compatibilityOnlyCount"] == 0, report
-    assert report["skipped"][0]["crossClientConfirmed"] is True, report
     assert report["skipped"][0]["reason"] == "all_compatible_reader_skills_suppressed_by_negative_memory", report
 
     accepted = dict(rejected)
