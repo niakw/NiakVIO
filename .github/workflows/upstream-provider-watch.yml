@@ -1,0 +1,58 @@
+name: Weekly upstream provider watch
+
+on:
+  schedule:
+    - cron: "17 5 * * 1"
+  workflow_dispatch:
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/upstream-provider-watch.yml"
+      - "engine_v2/config/provider-upstreams.json"
+      - "engine_v2/scripts/watch-upstream-providers.mjs"
+      - "engine_v2/tests/upstream-provider-watch.test.mjs"
+      - "provider_catalog.json"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: upstream-provider-watch-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout NiakVIO
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Set up Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: "24"
+          package-manager-cache: false
+      - name: Contract test
+        run: node engine_v2/tests/upstream-provider-watch.test.mjs
+      - name: Compare Gowaru, All-in-One-Nuvio and Yoru
+        run: node engine_v2/scripts/watch-upstream-providers.mjs
+      - name: Publish readable summary
+        if: always()
+        shell: bash
+        run: |
+          if [ -s health-output/upstream-provider-watch.md ]; then
+            cat health-output/upstream-provider-watch.md >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - name: Upload discovery report
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: upstream-provider-watch-${{ github.run_id }}
+          path: |
+            health-output/upstream-provider-watch.json
+            health-output/upstream-provider-watch.md
+          retention-days: 30
+          if-no-files-found: error
