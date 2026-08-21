@@ -13,6 +13,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 import prepare_native_corpus_validation as corpus  # noqa: E402
 import prepare_native_corpus_client as selected_manifest  # noqa: E402
 import native_player_diagnostics_codegen as reader_diag  # noqa: E402
+import finalize_native_android_reader_source as reader_source_finalizer  # noqa: E402
 
 CORPUS_PATH = ROOT / ".github/triggers/nuvio-client-lab.json"
 DEFAULT_PR_PROVIDER_LIMIT = 4
@@ -100,6 +101,7 @@ def main() -> int:
             expected_duration_minutes=fixture.get("expectedDurationMinutes"),
             max_player_probes=probes,
         )
+        source = reader_source_finalizer.finalize_source(source, "mobile")
     else:
         target = workspace / "nuvio-tv/app/src/androidTest/java/com/nuvio/tv/core/plugin/NiakvioNativeCorpusTvTest.kt"
         source = corpus.android_test(fixture, providers, "tv")
@@ -109,6 +111,7 @@ def main() -> int:
             expected_duration_minutes=fixture.get("expectedDurationMinutes"),
             max_player_probes=probes,
         )
+        source = reader_source_finalizer.finalize_source(source, "tv")
 
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(collector_test(source, args.target), encoding="utf-8")
