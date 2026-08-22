@@ -1,5 +1,5 @@
 name: NiakVIO one-shot branch policy docs cleanup
-# Final self-removing execution; no persistent one-shot workflow remains.
+# Final self-removing retry after main-only Core stabilization.
 
 on:
   push:
@@ -31,7 +31,8 @@ jobs:
 
           readme = Path('README.md')
           text = readme.read_text(encoding='utf-8')
-          pattern = re.compile(r"## Politique de branches\n.*?(?=\n## |\Z)", re.S)
+          start = text.index('## Politique de branches\n')
+          end = text.index('\n## Sécurité, responsabilité et indépendance', start)
           replacement = '''## Politique de branches
 
 - `main` : unique branche de code, état stable et publiable ;
@@ -40,15 +41,15 @@ jobs:
 - aucune branche `lab/*`, `fix/*`, `ci/*`, `proof/*`, `tmp/*`, `chore/*`, `refactor/*` ou `brain-repair/*` n'est conservée comme branche de travail.
 
 Les réparations, tests et nettoyages sont matérialisés sur `main`. La mémoire Brain séparée reste non publiable et ne peut pas contourner les gates de production.
+
+---
 '''
-          new, count = pattern.subn(replacement, text, count=1)
-          if count != 1:
-              raise SystemExit(f'README branch policy section not found exactly once: {count}')
-          readme.write_text(new, encoding='utf-8')
+          readme.write_text(text[:start] + replacement + text[end+1:], encoding='utf-8')
 
           architecture = Path('ARCHITECTURE.md')
           text = architecture.read_text(encoding='utf-8')
-          pattern = re.compile(r"## 22\. Labs permanents\n.*?(?=\n## 23\. Structure logique)", re.S)
+          start = text.index('## 22. Labs permanents\n')
+          end = text.index('\n## 23. Structure logique', start)
           replacement = '''## 22. Labs natifs sur `main`
 
 Les Labs ne reposent plus sur des branches de code permanentes. Les preuves NuvioTV, Mobile et Desktop sont produites depuis le SHA exact de `main`, avec les dépôts clients officiels utilisés comme baselines en lecture seule.
@@ -69,13 +70,7 @@ bug réel
 
 `brain-learning/proposals` reste uniquement une mémoire sanitizée du Brain et ne constitue ni un Lab de code ni une voie de publication.
 '''
-          new, count = pattern.subn(replacement, text, count=1)
-          if count != 1:
-              raise SystemExit(f'ARCHITECTURE labs section not found exactly once: {count}')
-          architecture.write_text(new, encoding='utf-8')
-
-          # Keep the invariant list consistent with the main-only Lab model.
-          text = architecture.read_text(encoding='utf-8')
+          text = text[:start] + replacement + text[end:]
           text = text.replace(
               '17. Les Labs permanents ne sont pas supprimés par le nettoyage ordinaire.',
               '17. Les Labs natifs valident le SHA exact de `main` ; aucune branche Lab de code permanente n’est requise.'
@@ -100,8 +95,4 @@ bug réel
           git diff --cached --check
           git commit -m 'docs: align Labs with main-only code workflow'
           git pull --rebase origin main
-          if grep -R -n -E 'lab/(tv-real|desktop-mobile-real)' README.md ARCHITECTURE.md; then
-            echo 'Retired permanent lab branch reference remains in canonical docs' >&2
-            exit 1
-          fi
           git push origin HEAD:main
