@@ -106,22 +106,13 @@ def _insert_prelude(source: str, snippets: list[str], digest: str) -> str:
     directive = re.match(r'''(?:"use strict"|'use strict')\s*;''', source[cursor:])
     if directive:
         cursor += directive.end()
-    marker = f"\n/* {MARKER}:{digest} */\n"
+    marker = "" if MARKER in source else f"\n/* {MARKER}:{digest} */\n"
     payload = marker + "\n".join(snippets) + "\n"
     return source[:cursor] + payload + source[cursor:]
 
 
 def harden_text(source: str) -> tuple[str, dict[str, Any]]:
-    if MARKER in source:
-        return source, {
-            "changed": False,
-            "alreadyHardened": True,
-            "structuredParseChanges": 0,
-            "literalDecodeChanges": 0,
-            "hostnameChanges": 0,
-            "consoleShadow": False,
-        }
-
+    had_marker = MARKER in source
     structured = _load_safe_parse().apply(source)
     structured_changed = structured != source
     source = structured
@@ -136,13 +127,17 @@ def harden_text(source: str) -> tuple[str, dict[str, Any]]:
     )
 
     snippets: list[str] = []
-    if literal_changes:
+    if literal_changes and "function __nuvioDecodeEscapedLiteral(" not in source:
         snippets.append(_LITERAL_HELPER)
-    if hostname_changes:
+    if hostname_changes and "function __nuvioHostMatches(" not in source:
         snippets.append(_HOST_HELPER)
 
     console_shadow = False
-    if _CONSOLE_USE.search(source) and not _CONSOLE_DECL.search(source):
+    if (
+        _CONSOLE_USE.search(source)
+        and "NUVIO_PROVIDER_CONSOLE_SHADOW_V1" not in source
+        and not _CONSOLE_DECL.search(source)
+    ):
         source = _GLOBAL_CONSOLE.sub("console", source)
         snippets.append(_CONSOLE_SHADOW)
         console_shadow = True
@@ -150,7 +145,7 @@ def harden_text(source: str) -> tuple[str, dict[str, Any]]:
     changed = structured_changed or bool(literal_changes or hostname_changes or console_shadow)
     report = {
         "changed": changed,
-        "alreadyHardened": False,
+        "alreadyHardened": had_marker and not changed,
         "structuredParseChanges": 1 if structured_changed else 0,
         "literalDecodeChanges": literal_changes,
         "hostnameChanges": hostname_changes,
