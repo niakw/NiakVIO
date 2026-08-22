@@ -1,13 +1,17 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: GPL-3.0-only
-"""Remove stale routing replacements from terminal quarantine candidates.
+"""Normalize staged provider security and terminal quarantine routing state.
+
+Every staged candidate first passes the provider-wide security hardener. This is
+publication-neutral: the hardener never decides provider health or activation;
+it rewrites bounded unsafe code shapes, validates the exact bytes, and updates
+candidate hashes before the existing Brain/runtime gates execute.
 
 A content-addressed quarantine bundle is intentionally inert. Once every staged
 variant for a provider is a NUVIO_PROVIDER_QUARANTINE_V1 bundle, historical
 routing replacement records are no longer meaningful and can make the override
 validator demand terminal hosts that the inert bundle deliberately does not
-contain. This normalization is publication-neutral: it never reactivates a
-provider and never edits the quarantined JavaScript bytes.
+contain. This normalization never reactivates a provider.
 """
 from __future__ import annotations
 
@@ -15,6 +19,8 @@ import argparse
 import json
 from pathlib import Path
 from typing import Any
+
+from harden_staged_provider_security import harden_stage
 
 ROOT = Path(__file__).resolve().parents[1]
 MARKER = "NUVIO_PROVIDER_QUARANTINE_V1"
@@ -28,6 +34,8 @@ def load_object(path: Path) -> dict[str, Any]:
 
 
 def normalize(root: Path, stage: Path, overrides_path: Path) -> dict[str, int]:
+    del root
+    security = harden_stage(stage)
     registry_path = stage / "candidates.json"
     if not registry_path.is_file():
         raise FileNotFoundError(f"missing staged candidate registry: {registry_path}")
@@ -89,6 +97,8 @@ def normalize(root: Path, stage: Path, overrides_path: Path) -> dict[str, int]:
     meta["terminal_quarantine_routing_contracts_pruned"] = len(terminal)
     meta["terminal_quarantine_mapping_entries_removed"] = removed_maps
     meta["terminal_quarantine_replace_records_removed"] = removed_records
+    meta["provider_security_hardening_candidates"] = int(security["candidate_count"])
+    meta["provider_security_hardening_applied"] = int(security["applied_count"])
 
     overrides_path.write_text(json.dumps(config, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     registry_path.write_text(json.dumps(registry, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
@@ -97,6 +107,8 @@ def normalize(root: Path, stage: Path, overrides_path: Path) -> dict[str, int]:
         "providers": len(terminal),
         "mappings": removed_maps,
         "records": removed_records,
+        "security_candidates": int(security["candidate_count"]),
+        "security_applied": int(security["applied_count"]),
     }
 
 
@@ -108,7 +120,8 @@ def main() -> int:
     stats = normalize(ROOT, args.stage.resolve(), args.overrides.resolve())
     print(
         "terminal quarantine normalization: "
-        f"providers={stats['providers']} mappings={stats['mappings']} records={stats['records']}"
+        f"providers={stats['providers']} mappings={stats['mappings']} records={stats['records']} "
+        f"security_candidates={stats['security_candidates']} security_applied={stats['security_applied']}"
     )
     return 0
 
