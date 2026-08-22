@@ -131,7 +131,43 @@ jobs:
           python tests/nuvio_client_upstream_drift_guard_test.py
           python tests/badge_asset_contract_test.py
           python tests/repository_hygiene_contract_test.py
-          python scripts/reapply_published_overrides.py --check
+          if ! python scripts/reapply_published_overrides.py --check; then
+            cp manifest.json "$RUNNER_TEMP/manifest-before-reapply-check.json"
+            cp vf/manifest.json "$RUNNER_TEMP/vf-before-reapply-check.json"
+            cp PROVENANCE.json "$RUNNER_TEMP/provenance-before-reapply-check.json"
+            python scripts/reapply_published_overrides.py
+            python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          root = Path(os.environ['RUNNER_TEMP'])
+          def load(path):
+              return json.loads(Path(path).read_text(encoding='utf-8'))
+          before = load(root / 'manifest-before-reapply-check.json')
+          after = load('manifest.json')
+          b = {str(row.get('id','')).casefold(): row for row in before.get('scrapers',[]) if isinstance(row,dict)}
+          a = {str(row.get('id','')).casefold(): row for row in after.get('scrapers',[]) if isinstance(row,dict)}
+          print('FIELD_REAPPLY_DIAGNOSTIC_MANIFEST')
+          for provider_id in sorted(set(b) | set(a)):
+              if b.get(provider_id) != a.get(provider_id):
+                  old = b.get(provider_id) or {}
+                  new = a.get(provider_id) or {}
+                  keys = sorted(k for k in set(old) | set(new) if old.get(k) != new.get(k))
+                  print(provider_id, 'keys=' + ','.join(keys), 'old_file=' + str(old.get('filename')), 'new_file=' + str(new.get('filename')), 'old_version=' + str(old.get('version')), 'new_version=' + str(new.get('version')))
+          pb = load(root / 'provenance-before-reapply-check.json').get('providers', {})
+          pa = load('PROVENANCE.json').get('providers', {})
+          print('FIELD_REAPPLY_DIAGNOSTIC_PROVENANCE')
+          for provider_id in sorted(set(pb) | set(pa)):
+              if pb.get(provider_id) != pa.get(provider_id):
+                  old = pb.get(provider_id) or {}
+                  new = pa.get(provider_id) or {}
+                  keys = sorted(k for k in set(old) | set(new) if old.get(k) != new.get(k))
+                  print(provider_id, 'keys=' + ','.join(keys), 'old_file=' + str(old.get('published_filename')), 'new_file=' + str(new.get('published_filename')))
+          PY
+            echo 'FIELD_REAPPLY_DIAGNOSTIC_STATUS'
+            git status --short | head -n 300
+            exit 1
+          fi
           node engine_v2/tests/provider-catalog.test.mjs
 
       - name: Validate complete repository suite
