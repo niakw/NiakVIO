@@ -67,6 +67,13 @@ again, again_report = harden_text(hardened)
 assert again == hardened
 assert again_report["alreadyHardened"] is True
 assert known_unsafe_findings(hardened) == [], known_unsafe_findings(hardened)
+
+mutated = hardened + '\nfunction later(u){return u.includes("evil.example")}'
+rehardened, re_report = harden_text(mutated)
+assert re_report["hostnameChanges"] == 1, re_report
+assert '__nuvioHostMatches(u,"evil.example")' in rehardened
+assert rehardened.count("function __nuvioHostMatches(") == 1
+js_ok(rehardened)
 print("provider security hardening tests passed")
 
 with tempfile.TemporaryDirectory() as raw:
