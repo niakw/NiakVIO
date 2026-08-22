@@ -69,7 +69,7 @@ def test_domain_overrides() -> None:
     # inert artifact. Historical route/domain mappings are intentionally pruned
     # from terminal quarantines so a later reapply cannot resurrect a stale
     # repair path. Domain replacement behavior remains covered by active
-    # providers such as Movix and Flemmix below.
+    # providers below.
     assert b"NUVIO_PROVIDER_QUARANTINE_V1" in output
     assert b"french-stream.one" not in output
     assert not any(
@@ -93,35 +93,60 @@ def test_runtime_profiles_are_not_blindly_applied() -> None:
     assert not any(row.get("type") == "patch_profile" for row in patch_records)
 
 
-def test_domain_prefix_collision_is_idempotent() -> None:
-    # flemmix.me is a prefix of historical flemmix.men/flemmix.menn spellings.
-    # This is specifically a stable-domain/runtime-rewrite contract. Keep the
-    # synthetic fixture in the runtime phase so unrelated discovery-time Core
-    # wrappers cannot turn this focused unit test into a second end-to-end
-    # publication-idempotence suite. Published artifacts retain their dedicated
-    # byte-level reapply checks elsewhere in npm test.
-    source = b'const BASE="https://flemmix.me/";'
+def test_runtime_domain_prefix_collisions_are_globally_idempotent() -> None:
+    """Every configured host-prefix collision must be byte-idempotent.
+
+    This is a Core override-engine contract, not a provider-specific repair. The
+    fixture set is discovered from provider-overrides.json so adding a new
+    provider with overlapping historical domains automatically extends coverage.
+    """
     config = json.loads((ROOT / "provider-overrides.json").read_text())
-    patch = config["provider_patches"]["flemmix"]
-    target_host = (
-        (patch.get("runtime_domain_replacements") or patch.get("replacements") or {})
-        .get("flemmix.me")
-    )
-    assert target_host, patch
-    first, records = apply_overrides("flemmix", source, phase="runtime")
-    assert ("https://" + target_host + "/").encode() in first
-    assert b"flemmix.menn" not in first
-    assert any(row.get("from") == "flemmix.me" for row in records)
-    second, second_records = apply_overrides("flemmix", first, phase="runtime")
-    assert second == first
-    assert b"flemmix.menn" not in second
-    assert not any(row.get("type") == "replace" and row.get("from") == "flemmix.me" for row in second_records)
+    patches = config.get("provider_patches") or {}
+    exercised = 0
+
+    for provider_id, patch in patches.items():
+        if not isinstance(patch, dict):
+            continue
+        replacements = patch.get("runtime_domain_replacements") or patch.get("replacements") or {}
+        if not isinstance(replacements, dict) or len(replacements) < 2:
+            continue
+
+        old_hosts = [str(value).strip().lower().rstrip("/") for value in replacements if str(value).strip()]
+        collisions = [
+            host
+            for host in old_hosts
+            if any(other != host and other.startswith(host) for other in old_hosts)
+        ]
+        if not collisions:
+            continue
+
+        for old_host in sorted(set(collisions)):
+            target_host = str(replacements.get(old_host) or "").strip().lower().rstrip("/")
+            if not target_host or target_host == old_host:
+                continue
+            exercised += 1
+            source = f'const BASE="https://{old_host}/";'.encode()
+            first, first_records = apply_overrides(provider_id, source, phase="runtime")
+            assert f"https://{target_host}/".encode() in first, (provider_id, old_host, target_host)
+            assert any(
+                row.get("type") == "replace" and row.get("from") == old_host
+                for row in first_records
+            ), (provider_id, old_host, first_records)
+
+            second, second_records = apply_overrides(provider_id, first, phase="runtime")
+            assert second == first, f"runtime domain override is not idempotent for {provider_id}:{old_host}"
+            assert not any(
+                row.get("type") == "replace" and row.get("from") == old_host
+                for row in second_records
+            ), (provider_id, old_host, second_records)
+
+    assert exercised > 0, "expected at least one configured runtime-domain prefix collision fixture"
 
 
 test_staged_artifact_contract()
 test_domain_overrides()
 test_runtime_profiles_are_not_blindly_applied()
-test_domain_prefix_collision_is_idempotent()
+test_runtime_domain_prefix_collisions_are_globally_idempotent()
 
 
 def test_obfuscated_runtime_endpoint_override() -> None:
