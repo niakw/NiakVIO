@@ -26,6 +26,7 @@ assert policy.get("provider_disabling_is_not_a_repair") is True
 assert policy.get("global_discovery_hooks") == [
     "scripts/provider_patches/hls_master_audio_preserver_v1.py",
     "scripts/provider_patches/hls_runtime_integrity_v1.py",
+    "scripts/provider_patches/global_provider_security_hardening_v1.py",
 ]
 assert policy.get("pre_media_discovery_hooks") == [
     "scripts/provider_patches/hls_runtime_integrity_v1.py",
@@ -34,7 +35,7 @@ assert policy.get("post_media_discovery_hooks") == [
     "scripts/provider_patches/hls_master_audio_preserver_v1.py",
 ]
 
-# The global hooks must not be duplicated into today's provider script lists. A
+# Global hooks must not be duplicated into today's provider script lists. A
 # provider may only tighten their global options; newly discovered providers
 # still receive the common protection automatically.
 for provider_id, row in (cfg.get("provider_patches") or {}).items():
@@ -43,6 +44,7 @@ for provider_id, row in (cfg.get("provider_patches") or {}).items():
     scripts = row.get("patch_scripts") or []
     assert "scripts/provider_patches/hls_master_audio_preserver_v1.py" not in scripts, provider_id
     assert "scripts/provider_patches/hls_runtime_integrity_v1.py" not in scripts, provider_id
+    assert "scripts/provider_patches/global_provider_security_hardening_v1.py" not in scripts, provider_id
     options = row.get("patch_script_options") or {}
     hls_options = options.get("scripts/provider_patches/hls_runtime_integrity_v1.py")
     if hls_options is not None:
@@ -54,9 +56,9 @@ streamzo_hls_options = cfg["provider_patches"]["streamzo"]["patch_script_options
 assert streamzo_hls_options["probe_all_urls"] is True
 assert streamzo_hls_options["fail_closed_unknown"] is False
 
-
 # Staged scheduler contract: HLS integrity runs before enrichment and final safety.
-# The stable hls_master hook now composes final presentation after media safety.
+# The stable hls_master hook composes before the Core-wide security tail; final
+# presentation stays outermost and therefore cannot alter playback validation.
 original_apply_patch_script = module._apply_patch_script
 captured_scheduler_paths = []
 def capture_scheduler(text, provider_id, patch_script, options, profile_name):
@@ -73,12 +75,16 @@ wanted = [
         "scripts/provider_patches/hls_runtime_integrity_v1.py",
         "scripts/provider_patches/global_media_enrichment_v1.py",
         "scripts/provider_patches/hls_master_audio_preserver_v1.py",
+        "scripts/provider_patches/global_provider_security_hardening_v1.py",
+        module.GLOBAL_STREAM_PRESENTATION,
     }
 ]
 assert wanted == [
     "scripts/provider_patches/hls_runtime_integrity_v1.py",
     "scripts/provider_patches/global_media_enrichment_v1.py",
     "scripts/provider_patches/hls_master_audio_preserver_v1.py",
+    "scripts/provider_patches/global_provider_security_hardening_v1.py",
+    module.GLOBAL_STREAM_PRESENTATION,
 ], wanted
 
 future = b'''\nasync function helper(t){let x=await fetch(t.url).then(r=>r.text());if(!/#EXT-X-STREAM-INF/i.test(x))return [{url:t.url,type:"hls"}];return []}\nglobalThis.getStreams=async function(){return [{url:"https://media.example/master.m3u8",type:"hls"}]};\n'''
@@ -86,14 +92,17 @@ patched, records = module.apply_overrides("future-provider-never-seen-before", f
 text = patched.decode("utf-8")
 assert "NUVIO_HLS_MASTER_AUDIO_PRESERVER_V1" in text
 assert "NUVIO_HLS_RUNTIME_INTEGRITY_V1" in text
+assert "NUVIO_GLOBAL_PROVIDER_SECURITY_HOOK_V1" in text
 assert "NUVIO_GLOBAL_STREAM_PRESENTATION_V1" in text
-# Presentation must be the outermost/final provider output layer so it cannot
-# influence HLS validation or native playback semantics.
-assert text.rfind("NUVIO_GLOBAL_STREAM_PRESENTATION_V1") > text.rfind("NUVIO_HLS_MASTER_AUDIO_PRESERVER_V1")
-assert text.rfind("NUVIO_GLOBAL_STREAM_PRESENTATION_V1") > text.rfind("NUVIO_HLS_RUNTIME_INTEGRITY_V1")
+# Security is the final Core transform before user-facing presentation. Presentation
+# remains outermost so neither layer can influence HLS discovery semantics.
+assert text.rfind("NUVIO_GLOBAL_PROVIDER_SECURITY_HOOK_V1") > text.rfind("NUVIO_HLS_MASTER_AUDIO_PRESERVER_V1")
+assert text.rfind("NUVIO_GLOBAL_PROVIDER_SECURITY_HOOK_V1") > text.rfind("NUVIO_HLS_RUNTIME_INTEGRITY_V1")
+assert text.rfind("NUVIO_GLOBAL_STREAM_PRESENTATION_V1") > text.rfind("NUVIO_GLOBAL_PROVIDER_SECURITY_HOOK_V1")
 paths = {str(row.get("path")) for row in records if isinstance(row, dict)}
 assert "scripts/provider_patches/hls_master_audio_preserver_v1.py" in paths
 assert "scripts/provider_patches/hls_runtime_integrity_v1.py" in paths
+assert "scripts/provider_patches/global_provider_security_hardening_v1.py" in paths
 assert any(row.get("scope") == "global_playback_integrity" for row in records if isinstance(row, dict))
 
 # The complete discovery transform must be byte-idempotent. Stable output bytes
@@ -107,6 +116,7 @@ assert reapplied == patched
 assert reapplied.decode("utf-8").count("NUVIO_GLOBAL_STREAM_PRESENTATION_V1") == 1
 assert reapplied.decode("utf-8").count("NUVIO_GLOBAL_RUNTIME_MEDIA_SAFETY_V1") == 1
 assert reapplied.decode("utf-8").count("NUVIO_HLS_RUNTIME_INTEGRITY_V1") == 1
+assert reapplied.decode("utf-8").count("NUVIO_GLOBAL_PROVIDER_SECURITY_HOOK_V1") == 1
 assert not any(
     row.get("type") == "replace"
     for row in reapplied_records
@@ -116,6 +126,7 @@ assert not any(
 # Runtime repair phase must not inject discovery wrappers.
 runtime, runtime_records = module.apply_overrides("future-provider-never-seen-before", future, phase="runtime")
 assert b"NUVIO_HLS_RUNTIME_INTEGRITY_V1" not in runtime
+assert b"NUVIO_GLOBAL_PROVIDER_SECURITY_HOOK_V1" not in runtime
 assert b"NUVIO_GLOBAL_STREAM_PRESENTATION_V1" not in runtime
 assert not any(row.get("scope") == "global_playback_integrity" for row in runtime_records if isinstance(row, dict))
 
@@ -134,4 +145,4 @@ for marker in (
 ):
     assert marker in health_source, marker
 
-print("global playback integrity + final stream presentation policy tests passed")
+print("global playback integrity + final stream presentation/security policy tests passed")
