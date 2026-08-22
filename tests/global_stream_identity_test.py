@@ -65,15 +65,22 @@ global.fetch=async function(raw){
 };
 PATCHED
 (async()=>{
+  const expected=[
+    'https://cdn.example/Jujutsu-Kaisen-S01E01.mp4',
+    'https://cdn.example/Ryomen-Sukuna-S01E01.mp4',
+    'https://cdn.example/opaque-93af1.m3u8'
+  ];
+  // Desktop/Mobile object-shaped request.
   for (const mediaType of ['anime','tv']) {
     const rows=await module.exports.getStreams({tmdbId:'95479',imdbId:'tt12343534',mediaType,title:'Jujutsu Kaisen',year:2020,season:1,episode:1});
-    assert.deepEqual(rows.map(x=>x.url),[
-      'https://cdn.example/Jujutsu-Kaisen-S01E01.mp4',
-      'https://cdn.example/Ryomen-Sukuna-S01E01.mp4',
-      'https://cdn.example/opaque-93af1.m3u8'
-    ],mediaType+':'+JSON.stringify(rows));
+    assert.deepEqual(rows.map(x=>x.url),expected,mediaType+':object:'+JSON.stringify(rows));
   }
-  assert(searches.filter(q=>q.toLowerCase().includes('naruto')).length>=2,JSON.stringify(searches));
+  // NuvioTV historically invokes providers positionally. The same wrong-anime row
+  // must be rejected even though title/year are absent from the direct call; TMDB
+  // identity enrichment supplies them and keeps TV/Desktop behavior aligned.
+  const tvRows=await module.exports.getStreams('95479','anime',1,1);
+  assert.deepEqual(tvRows.map(x=>x.url),expected,'anime:positional:'+JSON.stringify(tvRows));
+  assert(searches.filter(q=>q.toLowerCase().includes('naruto')).length>=3,JSON.stringify(searches));
   console.log(JSON.stringify({searches}));
 })().catch(e=>{console.error(e);process.exit(1)});
 '''.replace('PATCHED', patched)
