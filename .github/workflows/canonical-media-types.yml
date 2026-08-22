@@ -44,11 +44,18 @@ on:
       - "scripts/run_native_corpus_desktop_suite.sh"
       - "scripts/merge_native_reader_repair_learning.py"
       - "scripts/merge_native_reader_backlog.py"
+      - "scripts/provider_patches/global_stream_facts_v1.py"
+      - "scripts/provider_patches/global_stream_identity_v1.py"
+      - "scripts/provider_patches/global_stream_presentation_v1.py"
       - ".github/workflows/native-android-route-reader.yml"
       - ".github/workflows/native-desktop-reader-acceptance.yml"
       - ".github/workflows/native-reader-learning-sync.yml"
       - ".github/workflows/brain-learning-lab.yml"
       - "tests/canonical_media_types_test.py"
+      - "tests/global_stream_identity_test.py"
+      - "tests/global_stream_presentation_test.py"
+      - "tests/global_stream_presentation_pipeline_test.py"
+      - "tests/brain_cron_full_coverage_test.py"
       - "tests/native_evidence_contract_test.py"
       - "tests/native_evidence_completeness_test.cjs"
       - "tests/native_evidence_codegen_pipeline_test.py"
@@ -93,6 +100,12 @@ jobs:
         run: node engine_v2/tests/contracts.test.mjs
       - name: Validate shared stream presentation and TMDB fallback
         run: node engine_v2/tests/stream-presentation.test.mjs
+      - name: Validate Core-wide stream facts, identity and presentation
+        run: |
+          python3 tests/global_stream_presentation_test.py
+          python3 tests/global_stream_presentation_pipeline_test.py
+          python3 tests/global_stream_identity_test.py
+          python3 tests/brain_cron_full_coverage_test.py
       - name: Validate weekly upstream provider comparator
         run: node engine_v2/tests/upstream-provider-watch.test.mjs
       - name: Validate deep HLS playback chain and ranking
