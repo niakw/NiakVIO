@@ -81,18 +81,19 @@ jobs:
           package-manager-cache: false
 
       - name: Install locked runtime dependencies
-        shell: bash
         run: npm ci --ignore-scripts --no-audit --no-fund
 
-      - name: Canonicalize generated Core security boundary
+      - name: Materialize deterministic Core boundaries
         shell: bash
         run: |
           set -euo pipefail
           python - <<'PY'
           from pathlib import Path
+          from textwrap import dedent
 
           source = Path('scripts/apply_provider_overrides.py')
           text = source.read_text(encoding='utf-8')
+
           tuple_old = '''GENERATED_CORE_TAIL_MARKERS = (\n    "NUVIO_GLOBAL_STREAM_FACTS_V1",'''
           tuple_new = '''GENERATED_CORE_TAIL_MARKERS = (\n    "NUVIO_GLOBAL_PROVIDER_SECURITY_HOOK_V1",\n    "NUVIO_GLOBAL_STREAM_FACTS_V1",'''
           if '"NUVIO_GLOBAL_PROVIDER_SECURITY_HOOK_V1",\n    "NUVIO_GLOBAL_STREAM_FACTS_V1"' not in text:
@@ -106,24 +107,131 @@ jobs:
               if scan_old not in text:
                   raise SystemExit('unable to locate generated Core tail scanner')
               text = text.replace(scan_old, scan_new, 1)
+          text = text.replace(
+              '    Facts, identity and presentation are generated artifacts owned by the Core\n    scheduler.',
+              '    Security, facts, identity and presentation are generated artifacts owned by the Core\n    scheduler.',
+              1,
+          )
 
-          doc_old = '''    Facts, identity and presentation are generated artifacts owned by the Core\n    scheduler.'''
-          doc_new = '''    Security, facts, identity and presentation are generated artifacts owned by the Core\n    scheduler.'''
-          if doc_old in text:
-              text = text.replace(doc_old, doc_new, 1)
+          start = text.index('def _inject_runtime_domain_overrides(')
+          end = text.index('\ndef _strip_legacy_global_stream_guards', start)
+          runtime_domain = dedent(r'''
+          def _inject_runtime_domain_overrides(text: str, replacements: dict[str, Any]) -> tuple[str, int]:
+              """Embed host rewriting into the provider JavaScript artifact itself.
+
+              Existing wrappers are replaced at their current byte position. Moving
+              one back to byte zero during every reconstruction reorders it against
+              idempotent prefix wrappers and rotates hashes without semantic change.
+              """
+              from urllib.parse import urlparse
+
+              original_text = text
+              rules: dict[str, str] = {}
+              for old, new in replacements.items():
+                  old_value = str(old).lower().strip().rstrip("/")
+                  new_value = str(new).lower().strip().rstrip("/")
+                  old_host = urlparse(old_value).hostname if "://" in old_value else old_value
+                  new_host = urlparse(new_value).hostname if "://" in new_value else new_value
+                  if old_host and new_host and old_host != new_host:
+                      rules[old_host] = new_host
+
+              marker = "NUVIO_RUNTIME_DOMAIN_OVERRIDES_V1"
+              marker_comment = f"/* {marker} */"
+              existing_span: tuple[int, int] | None = None
+              if marker_comment in text:
+                  existing_start = text.find(marker_comment)
+                  call = text.find('})(typeof globalThis!=="undefined"?globalThis:this,', existing_start)
+                  existing_end = text.find(");\n", call) if call >= 0 else -1
+                  if existing_start < 0 or existing_end < 0:
+                      raise ValueError("unterminated runtime domain override bootstrap")
+                  existing_span = (existing_start, existing_end + 3)
+
+              if not rules:
+                  if existing_span is None:
+                      return text, 0
+                  output = text[:existing_span[0]] + text[existing_span[1]:]
+                  return output, 0 if output == original_text else 1
+
+              import base64
+              encoded_rules = [
+                  [base64.b64encode(old.encode("utf-8")).decode("ascii"), new]
+                  for old, new in sorted(rules.items())
+              ]
+              payload = json.dumps(encoded_rules, separators=(",", ":"))
+              bootstrap = """/* %s */
+          ;(function(g,rules){
+            if(!g||typeof g.fetch!=="function")return;
+            var key="__nuvioDomainOverrideV1";
+            var state=g[key];
+            if(!state){
+              state={native:g.fetch.bind(g),rules:Object.create(null)};
+              g[key]=state;
+              g.fetch=function(input,init){
+                var next=input;
+                try{
+                  var raw=(typeof Request!=="undefined"&&input instanceof Request)?input.url:String(input);
+                  var url=new URL(raw);
+                  var replacement=state.rules[String(url.hostname).toLowerCase()];
+                  if(replacement){
+                    url.hostname=replacement;
+                    next=(typeof Request!=="undefined"&&input instanceof Request)?new Request(url.toString(),input):url.toString();
+                  }
+                }catch(_error){}
+                return state.native(next,init);
+              };
+            }
+            for(var i=0;i<rules.length;i++){
+              try{state.rules[atob(rules[i][0])]=rules[i][1];}catch(_error){}
+            }
+          })(typeof globalThis!=="undefined"?globalThis:this,%s);
+          """ % (marker, payload)
+
+              if existing_span is None:
+                  output = bootstrap + text
+              else:
+                  output = text[:existing_span[0]] + bootstrap + text[existing_span[1]:]
+              return output, 0 if output == original_text else len(rules)
+          ''').lstrip('\n')
+          text = text[:start] + runtime_domain + text[end:]
           source.write_text(text, encoding='utf-8')
 
           test = Path('tests/global_playback_integrity_policy_test.py')
-          test_text = test.read_text(encoding='utf-8')
-          marker = '# Security is itself a generated Core boundary and must be rebuilt, not retained as provider source.'
-          if marker not in test_text:
+          t = test.read_text(encoding='utf-8')
+          security_marker = '# Security is itself a generated Core boundary and must be rebuilt, not retained as provider source.'
+          if security_marker not in t:
               anchor = '# The complete discovery transform must be byte-idempotent. Stable output bytes\n'
-              if anchor not in test_text:
-                  raise SystemExit('unable to locate playback fixed-point test anchor')
-              block = '''# Security is itself a generated Core boundary and must be rebuilt, not retained as provider source.\nboundary_input = "provider-source\\n/* NUVIO_GLOBAL_PROVIDER_SECURITY_HOOK_V1 */\\n/* NUVIO_GLOBAL_STREAM_FACTS_V1:old */\\nstale-tail"\nboundary_prefix, boundary_removed = module._strip_generated_core_tail(boundary_input)\nassert boundary_removed is True\nassert boundary_prefix == "provider-source"\n\n'''
-              test_text = test_text.replace(anchor, block + anchor, 1)
-              test.write_text(test_text, encoding='utf-8')
+              block = dedent('''
+              # Security is itself a generated Core boundary and must be rebuilt, not retained as provider source.
+              boundary_input = "provider-source\\n/* NUVIO_GLOBAL_PROVIDER_SECURITY_HOOK_V1 */\\n/* NUVIO_GLOBAL_STREAM_FACTS_V1:old */\\nstale-tail"
+              boundary_prefix, boundary_removed = module._strip_generated_core_tail(boundary_input)
+              assert boundary_removed is True
+              assert boundary_prefix == "provider-source"
+
+              ''').lstrip('\n')
+              if anchor not in t:
+                  raise SystemExit('security fixed-point test anchor missing')
+              t = t.replace(anchor, block + anchor, 1)
+
+          runtime_marker = '# Runtime-domain wrappers preserve their existing position across reconstruction.'
+          if runtime_marker not in t:
+              anchor = '# Runtime repair phase must not inject discovery wrappers.\n'
+              block = dedent('''
+              # Runtime-domain wrappers preserve their existing position across reconstruction.
+              domain_seed = 'provider-source\\n'
+              domain_once, _ = module._inject_runtime_domain_overrides(domain_seed, {'old.example': 'new.example'})
+              domain_prefixed = 'HLS-PREFIX\\n' + domain_once
+              domain_twice, _ = module._inject_runtime_domain_overrides(domain_prefixed, {'old.example': 'new.example'})
+              assert domain_twice == domain_prefixed
+              assert domain_twice.index('HLS-PREFIX') < domain_twice.index('NUVIO_RUNTIME_DOMAIN_OVERRIDES_V1')
+
+              ''').lstrip('\n')
+              if anchor not in t:
+                  raise SystemExit('runtime-domain fixed-point test anchor missing')
+              t = t.replace(anchor, block + anchor, 1)
+          test.write_text(t, encoding='utf-8')
           PY
+          python -m py_compile scripts/apply_provider_overrides.py
+          python tests/global_playback_integrity_policy_test.py
 
       - name: Normalize Core media architecture
         shell: bash
@@ -135,21 +243,11 @@ jobs:
           python scripts/reapply_published_overrides.py
           python scripts/generate_language_manifests.py
           python scripts/prune_unreferenced_providers.py
-          python scripts/sync_release_versions.py \
-            --manifest manifest.json \
-            --previous "$RUNNER_TEMP/manifest-before.json"
-          node engine_v2/scripts/bootstrap-provider-catalog.mjs \
-            --general manifest.json \
-            --vf vf/manifest.json \
-            --output provider_catalog.json
-          node engine_v2/scripts/render-manifests-from-catalog.mjs \
-            --catalog provider_catalog.json \
-            --general manifest.json \
-            --vf vf/manifest.json
+          python scripts/sync_release_versions.py --manifest manifest.json --previous "$RUNNER_TEMP/manifest-before.json"
+          node engine_v2/scripts/bootstrap-provider-catalog.mjs --general manifest.json --vf vf/manifest.json --output provider_catalog.json
+          node engine_v2/scripts/render-manifests-from-catalog.mjs --catalog provider_catalog.json --general manifest.json --vf vf/manifest.json
           python scripts/generate_language_manifests.py
-          python scripts/sync_release_versions.py \
-            --manifest manifest.json \
-            --previous "$RUNNER_TEMP/manifest-before.json"
+          python scripts/sync_release_versions.py --manifest manifest.json --previous "$RUNNER_TEMP/manifest-before.json"
           python scripts/prune_unreferenced_providers.py
 
       - name: Verify Core and native media contracts
@@ -172,47 +270,10 @@ jobs:
           python tests/nuvio_client_upstream_drift_guard_test.py
           python tests/badge_asset_contract_test.py
           python tests/repository_hygiene_contract_test.py
-          if ! python scripts/reapply_published_overrides.py --check; then
-            cp manifest.json "$RUNNER_TEMP/manifest-before-reapply-check.json"
-            cp vf/manifest.json "$RUNNER_TEMP/vf-before-reapply-check.json"
-            cp PROVENANCE.json "$RUNNER_TEMP/provenance-before-reapply-check.json"
-            python scripts/reapply_published_overrides.py
-            python - <<'PY'
-          import json
-          import os
-          from pathlib import Path
-          root = Path(os.environ['RUNNER_TEMP'])
-          def load(path):
-              return json.loads(Path(path).read_text(encoding='utf-8'))
-          before = load(root / 'manifest-before-reapply-check.json')
-          after = load('manifest.json')
-          b = {str(row.get('id','')).casefold(): row for row in before.get('scrapers',[]) if isinstance(row,dict)}
-          a = {str(row.get('id','')).casefold(): row for row in after.get('scrapers',[]) if isinstance(row,dict)}
-          print('FIELD_REAPPLY_DIAGNOSTIC_MANIFEST')
-          for provider_id in sorted(set(b) | set(a)):
-              if b.get(provider_id) != a.get(provider_id):
-                  old = b.get(provider_id) or {}
-                  new = a.get(provider_id) or {}
-                  keys = sorted(k for k in set(old) | set(new) if old.get(k) != new.get(k))
-                  print(provider_id, 'keys=' + ','.join(keys), 'old_file=' + str(old.get('filename')), 'new_file=' + str(new.get('filename')), 'old_version=' + str(old.get('version')), 'new_version=' + str(new.get('version')))
-          pb = load(root / 'provenance-before-reapply-check.json').get('providers', {})
-          pa = load('PROVENANCE.json').get('providers', {})
-          print('FIELD_REAPPLY_DIAGNOSTIC_PROVENANCE')
-          for provider_id in sorted(set(pb) | set(pa)):
-              if pb.get(provider_id) != pa.get(provider_id):
-                  old = pb.get(provider_id) or {}
-                  new = pa.get(provider_id) or {}
-                  keys = sorted(k for k in set(old) | set(new) if old.get(k) != new.get(k))
-                  print(provider_id, 'keys=' + ','.join(keys), 'old_file=' + str(old.get('published_filename')), 'new_file=' + str(new.get('published_filename')))
-          PY
-            echo 'FIELD_REAPPLY_DIAGNOSTIC_STATUS'
-            git status --short | sed -n '1,300p'
-            exit 1
-          fi
+          python scripts/reapply_published_overrides.py --check
           node engine_v2/tests/provider-catalog.test.mjs
 
       - name: Validate complete repository suite
-        shell: bash
         run: npm test
 
       - name: Rebuild release integrity inventories
@@ -253,12 +314,12 @@ jobs:
           python scripts/normalize_core_media_policy.py --check
           python scripts/enforce_main_only_repository_policy.py --check
           python tests/core_media_policy_test.py
-          python tests/global_core_presentation_pipeline_test.py
-          python tests/native_sync_fetch_target_order_test.py
-          python tests/runtime_capability_media_safety_v4_test.py
           python tests/global_playback_integrity_policy_test.py
+          python tests/runtime_capability_media_safety_v4_test.py
           python tests/provider_security_hardening_test.py
           python tests/provider_purification_contract_test.py
+          python tests/nuvio_client_upstream_drift_guard_test.py
+          python tests/badge_asset_contract_test.py
           python tests/repository_hygiene_contract_test.py
           python scripts/reapply_published_overrides.py --check
           python scripts/validate_release_integrity.py
