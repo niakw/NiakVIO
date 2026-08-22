@@ -20,12 +20,22 @@ def load_module():
     return module
 
 
-def candidate(cid: str, source: str, *, language: list[str] | None = None, types: list[str] | None = None, formats: list[str] | None = None, enabled: bool = True) -> dict:
+def candidate(
+    cid: str,
+    source: str,
+    *,
+    language: list[str] | None = None,
+    types: list[str] | None = None,
+    formats: list[str] | None = None,
+    enabled: bool = True,
+    manifest_origin: str = "live",
+) -> dict:
     return {
         "canonical_id": cid,
         "upstream_id": cid.upper(),
         "source": source,
         "source_priority": {"gowaru": 0, "aio": 1, "yoru": 2}.get(source, 99),
+        "manifest_origin": manifest_origin,
         "metadata": {
             "id": cid.upper(),
             "name": cid.title(),
@@ -54,12 +64,17 @@ def main() -> int:
         ]
     }
     stage = {
-        "upstreams": {key: {"status": "loaded"} for key in ("gowaru", "aio", "yoru")},
+        "upstreams": {
+            "gowaru": {"status": "loaded"},
+            "aio": {"status": "loaded"},
+            "yoru": {"status": "loaded_from_upstream_lkg"},
+        },
         "candidates": [
             candidate("known", "gowaru", language=["fr"], types=["movie"]),
             candidate("new-french", "aio", language=["fr"], types=["movie", "tv"], formats=["m3u8"]),
             candidate("new-french", "yoru", language=["fr"], types=["movie", "tv"], formats=["m3u8"]),
             candidate("new-anime", "gowaru", language=["en"], types=["anime"], formats=["mp4"]),
+            candidate("stale-snapshot-new", "yoru", language=["fr"], types=["movie"], manifest_origin="upstream_lkg"),
             # Baselines are intentionally ignored by the new-upstream detector.
             candidate("baseline-only", "published-baseline", language=["fr"], types=["movie"]),
         ],
@@ -69,18 +84,23 @@ def main() -> int:
     assert report["newProviderCount"] == 2, report
     assert report["interestingProviderCount"] == 2, report
     assert [row["canonicalId"] for row in report["providers"]] == ["new-french", "new-anime"], report
+    assert report["snapshotOnlyNewProviderIdsIgnored"] == ["stale-snapshot-new"], report
     french = report["providers"][0]
     assert french["sources"] == ["aio", "yoru"]
     assert french["variantCount"] == 2
+    assert french["liveManifestObserved"] is True
     assert french["reviewRequired"] is True
     assert french["automaticImportAllowed"] is False
     assert french["automaticActivationAllowed"] is False
     assert report["policy"]["upstreamsReadOnly"] is True
     assert report["policy"]["niakvioCatalogMutationAllowed"] is False
+    assert report["policy"]["liveManifestRequiredForNewProvider"] is True
+    assert report["policy"]["nativeReaderProofRequiredBeforeFuturePromotion"] is True
 
     md = module.markdown(report)
     assert "new-french" in md.lower()
-    assert "never imports, enables or publishes" in md
+    assert "never imports, enables, disables or publishes" in md
+    assert "LKG snapshot" in md
 
     workflow = WORKFLOW.read_text(encoding="utf-8")
     # Exactly one weekly schedule: day-of-week is constrained and no daily wildcard.
