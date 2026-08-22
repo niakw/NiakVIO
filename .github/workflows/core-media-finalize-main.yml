@@ -6,8 +6,20 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/core-media-finalize-main.yml'
+      - 'provider-overrides.json'
+      - 'package.json'
+      - 'package-lock.json'
       - 'scripts/normalize_core_media_policy.py'
       - 'scripts/apply_runtime_capability_upgrade_v4.py'
+      - 'scripts/apply_provider_overrides.py'
+      - 'scripts/build_provider_runtime_profiles.py'
+      - 'scripts/reapply_published_overrides.py'
+      - 'scripts/generate_language_manifests.py'
+      - 'scripts/prune_unreferenced_providers.py'
+      - 'scripts/sync_release_versions.py'
+      - 'scripts/generate_release_hashes.py'
+      - 'scripts/validate_release_integrity.py'
+      - 'scripts/enforce_main_only_repository_policy.py'
       - 'scripts/provider_patches/native_sync_fetch_target_order_v1.py'
       - 'scripts/provider_patches/runtime_capability_media_safety_v4.py'
       - 'scripts/provider_patches/global_stream_presentation_v1.py'
@@ -20,6 +32,15 @@ on:
       - 'tests/global_core_presentation_pipeline_test.py'
       - 'tests/native_sync_fetch_target_order_test.py'
       - 'tests/runtime_capability_media_safety_v4_test.py'
+      - 'tests/global_playback_integrity_policy_test.py'
+      - 'tests/global_stream_presentation_test.py'
+      - 'tests/global_stream_presentation_pipeline_test.py'
+      - 'tests/provider_specific_adapters_test.py'
+      - 'tests/tv_provider_hardening_test.py'
+      - 'tests/provider_security_hardening_test.py'
+      - 'tests/provider_purification_contract_test.py'
+      - 'tests/nuvio_client_upstream_drift_guard_test.py'
+      - 'tests/badge_asset_contract_test.py'
       - 'tests/repository_hygiene_contract_test.py'
 
 permissions:
@@ -154,6 +175,7 @@ jobs:
           python tests/global_core_presentation_pipeline_test.py
           python tests/native_sync_fetch_target_order_test.py
           python tests/runtime_capability_media_safety_v4_test.py
+          python tests/global_playback_integrity_policy_test.py
           python tests/provider_security_hardening_test.py
           python tests/provider_purification_contract_test.py
           python tests/repository_hygiene_contract_test.py
