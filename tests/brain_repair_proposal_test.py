@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import importlib.util
 import json
 import subprocess
 import sys
@@ -15,7 +16,23 @@ def write(path: Path, value: object) -> None:
     path.write_text(json.dumps(value), encoding="utf-8")
 
 
+def load_script():
+    spec = importlib.util.spec_from_file_location("brain_repair_proposal", SCRIPT)
+    assert spec and spec.loader
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
 def main() -> None:
+    module = load_script()
+    committed, source = module.load_proposal_baseline(ROOT / "provider-overrides.json")
+    expected = json.loads(subprocess.check_output(
+        ["git", "show", "HEAD:provider-overrides.json"], cwd=ROOT, text=True
+    ))
+    assert source == "git-head"
+    assert committed == expected
+
     with tempfile.TemporaryDirectory(prefix="niakvio-brain-proposal-") as tmp:
         root = Path(tmp)
         stage = root / "candidates.json"
@@ -106,6 +123,7 @@ def main() -> None:
         assert adaptive in foo["patch_scripts"]
         assert foo["patch_script_options"][adaptive]["provider_name"] == "Foo"
         assert bar["profiles"] == ["metadata_context_recovery"]
+        assert proposal["baselineSource"] == "input-file"
         assert proposal["proposalCount"] == 2
         assert proposal["providers"] == ["bar", "foo"]
         assert proposal["policy"]["pullRequestOnly"] is True
