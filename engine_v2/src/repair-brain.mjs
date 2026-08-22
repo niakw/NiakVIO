@@ -11,7 +11,7 @@ export const FAILURE_CLASSES = Object.freeze([
   "playback_dns", "playback_tls", "playback_parser", "playback_decoder",
   "playback_io", "playback_live_window", "playback_runtime_setup",
   "playback_player_error", "playback_duration_unknown", "short_media",
-  "runtime_contract_drift", "unknown_failure",
+  "structured_parse_gap", "runtime_contract_drift", "unknown_failure",
 ]);
 
 export const REPAIR_RECIPES = Object.freeze({
@@ -68,6 +68,7 @@ export const REPAIR_RECIPES = Object.freeze({
   playback_duration_unknown: [recipe("prove-vod-duration-before-promotion", ["duration", "media", "identity"], ["wait for the native reader timeline to settle", "derive VOD duration from reader, manifest or container metadata", "reject promotion when long-form duration still cannot be proven"])],
   short_media: [recipe("reject-short-or-preview-media", ["duration", "identity", "ranking"], ["compare reader duration with fixture expectation", "reject previews/trailers/20-second placeholders", "advance to the next same-provider candidate and validate again"])],
   media_validation_gap: [recipe("validate-final-media", ["media", "identity"], ["probe final media response", "verify media identity and duration", "verify HLS/DASH/direct signatures", "reject HTML/error bodies and fake media"])],
+  structured_parse_gap: [recipe("repair-structured-parser", ["parser", "json", "javascript"], ["locate destructive pre-parse decoding", "preserve JSON escapes", "retry strict structured parsing", "retain raw fallback when parsing remains ambiguous"])],
   runtime_contract_drift: [recipe("reaudit-device-adapter", ["runtime-version", "contract"], ["diff changed Nuvio contract paths", "identify affected capabilities", "revalidate only impacted skills/providers"])],
   unknown_failure: [recipe("collect-missing-evidence", ["evidence"], ["find first unobserved pipeline stage", "probe that stage only", "reclassify before mutating provider code"])],
 });
@@ -81,6 +82,7 @@ const READER_STAGE_TO_FAILURE = Object.freeze({
 });
 
 export function classifyFailure(evidence = {}) {
+  if (evidence.structuredParseFailure === true) return "structured_parse_gap";
   if (evidence.contractDrift === true) return "runtime_contract_drift";
   if (evidence.suspicious === true || evidence.unsafe === true) return "identity_mismatch";
   if (evidence.invoked === false) return "not_invoked";
