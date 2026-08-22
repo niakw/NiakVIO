@@ -84,13 +84,25 @@ assert "never restore Nuvio runtime HTTP instrumentation" in entries["repository
 assert entries["reader-run-cancellation-churn"]["status"] == "operational-guard"
 assert "freeze the head until evidence is collected" in entries["reader-run-cancellation-churn"]["resolution"]
 
-# AVD snapshot generation is part of the persistent harness contract. Old static
-# avd-v1 snapshots must never be eligible after client/harness changes.
+# The clean AVD snapshot is an emulator/system-image artifact, not a Nuvio client
+# artifact. Canonical route-reader caches therefore remain stable across audited
+# Nuvio HEAD changes, while each run still checks out the exact current client
+# revision separately. ADB must be ready before any cold/warm emulator boot.
 assert "avd-v1-" not in ANDROID_WORKFLOW
-assert ANDROID_WORKFLOW.count("key: avd-v2-") == 3
-assert ANDROID_WORKFLOW.count("${{ needs.resolve.outputs.runtime_fingerprint }}") >= 4
-assert ANDROID_WORKFLOW.count("${{ needs.resolve.outputs.tv_sha }}") >= 3
-assert ANDROID_WORKFLOW.count("${{ needs.resolve.outputs.mobile_sha }}") >= 2
+canonical_cache_lines = [
+    line.strip()
+    for line in ANDROID_WORKFLOW.splitlines()
+    if line.strip().startswith("key: avd-v3-")
+]
+assert len(canonical_cache_lines) == 3, canonical_cache_lines
+assert sum("tv-api31-android-tv-x86-tv_1080p" in line for line in canonical_cache_lines) == 2
+assert sum("mobile-api35-google_apis-x86_64-pixel_2" in line for line in canonical_cache_lines) == 1
+for line in canonical_cache_lines:
+    assert "runtime_fingerprint" not in line, line
+    assert "tv_sha" not in line, line
+    assert "mobile_sha" not in line, line
+assert ANDROID_WORKFLOW.count("Prime Android adb server") >= 3
+assert "prime_android_lab_adb.sh" in ANDROID_WORKFLOW
 assert "restore-keys:" not in ANDROID_WORKFLOW
 
 human_path = POLICY["human_ux_acceptance_path"]
