@@ -28,13 +28,14 @@ pur_opts = patches['purstream'].get('patch_script_options', {}).get(purstream_id
 assert float(pur_opts.get('duration_tolerance')) <= 0.35
 assert int(pur_opts.get('max_probes')) <= 3
 pur_source = (ROOT / purstream_identity).read_text(encoding='utf-8')
-# Purstream is intentionally composed now: factual metadata projection first,
-# then the existing episodic duration-identity guard.  Keep checking the public
-# hook wiring and the concrete identity implementation rather than requiring the
-# wrapper itself to contain the old monolithic JavaScript shim.
-assert 'purstream_stream_facts_v1.py' in pur_source
+# Purstream is intentionally composed now: Core-wide factual metadata projection
+# first, then only its provider-specific episodic duration/identity guard. There
+# must be no resurrected Purstream-only facts/presentation fork.
+assert 'global_stream_facts_v1.py' in pur_source
+assert 'purstream_stream_facts_v1.py' not in pur_source
 assert 'purstream_tv_identity_impl_v3.py' in pur_source
 assert '_FACTS.apply' in pur_source and '_IDENTITY.apply' in pur_source
+assert not (ROOT / 'scripts/provider_patches/purstream_stream_facts_v1.py').exists()
 pur_identity_source = (ROOT / purstream_identity_impl).read_text(encoding='utf-8')
 assert '#EXTINF' in pur_identity_source and 'durationTolerance' in pur_identity_source
 assert 'episodic' in pur_identity_source and 'series' in pur_identity_source and 'anime' in pur_identity_source
