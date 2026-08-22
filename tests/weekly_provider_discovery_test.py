@@ -3,11 +3,13 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "scripts/check_upstream_provider_additions.py"
 WORKFLOW = ROOT / ".github/workflows/weekly-provider-discovery.yml"
+sys.path.insert(0, str(ROOT / "scripts"))
 
 spec = importlib.util.spec_from_file_location("weekly_provider_discovery", SCRIPT)
 assert spec is not None and spec.loader is not None
