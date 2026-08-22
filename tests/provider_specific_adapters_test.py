@@ -16,28 +16,27 @@ def load(path):
 
 
 movix = load(Path('scripts/provider_patches/movix_multi_source.py'))
-purstream = load(Path('scripts/provider_patches/purstream_bridge.py'))
 sanitizer = load(Path('scripts/provider_patches/stream_output_sanitizer.py'))
 toflix = load(Path('scripts/provider_patches/toflix_official_endpoint.py'))
 
-legacy = 'module.exports={getStreams:function(){return Promise.resolve([])}};\n/* NUVIO_MOVIX_MULTI_SOURCE_V1 */\nlegacy purstream bridge'
+legacy = 'module.exports={getStreams:function(){return Promise.resolve([])}};\n/* NUVIO_MOVIX_MULTI_SOURCE_V1 */\nlegacy foreign provider bridge'
 clean = movix.apply(legacy)
 assert 'NUVIO_MOVIX_MULTI_SOURCE_V1' not in clean
-assert 'legacy purstream bridge' not in clean
+assert 'legacy foreign provider bridge' not in clean
 assert movix.apply(clean) == clean
 
-legacy_bridge = '''const before = 1;\n/* NUVIO_PURSTREAM_BRIDGE_V1 */\n;(function(g){ const foreign = "https://api.movix.fun"; })(typeof globalThis!=="undefined"?globalThis:this);\nconst after = 2;\n'''
-p = purstream.apply(legacy_bridge)
-assert 'NUVIO_PURSTREAM_BRIDGE_V1' not in p
-assert 'api.movix.fun' not in p.casefold()
-assert 'const before = 1' in p and 'const after = 2' in p
-assert purstream.apply(p) == p
-bridge_source = Path('scripts/provider_patches/purstream_bridge.py').read_text(encoding='utf-8')
-assert 'api.movix.fun' not in bridge_source.casefold()
-
 cfg = json.loads(Path('provider-overrides.json').read_text(encoding='utf-8'))
+# Purstream may retain generic runtime/domain configuration, but no active
+# Purstream-specific repair implementation is allowed in the provider chain.
 purstream_cfg = cfg['provider_patches']['purstream']
-assert 'scripts/provider_patches/purstream_bridge.py' not in purstream_cfg.get('patch_scripts', [])
+assert not [
+    path for path in purstream_cfg.get('patch_scripts', [])
+    if '/purstream_' in str(path)
+]
+assert not [
+    path for path in purstream_cfg.get('patch_script_options', {})
+    if '/purstream_' in str(path)
+]
 violations = validate_provider_isolation(cfg, Path('.').resolve())
 assert violations == [], '\n'.join(violations)
 
@@ -83,4 +82,4 @@ assert 'provider-domain-history.json' in hub
 assert 'search_engine_urls' in hub
 assert 'telegram_links' in hub
 assert 'retained_last_known_good' in hub
-print('provider specific adapters and isolation tests passed')
+print('provider-specific extraction adapters and isolation tests passed')
