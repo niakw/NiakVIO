@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "skills": {
+    "safe_structured_parse": {
+      "id": "safe-structured-parse",
+      "failureClass": "structured_parse_gap",
+      "profile": "safe_structured_parse",
+      "autoApply": true,
+      "maturity": "candidate",
+      "capabilities": ["parser", "json", "javascript"],
+      "actions": [
+        "detect destructive generic backslash stripping around structured parsing",
+        "remove the destructive transform rather than guessing an encoding",
+        "retain the original raw fallback when strict JSON parsing still fails",
+        "retest the same fixtures and reject the mutation unless runtime evidence improves"
+      ],
+      "scope": {
+        "providerSpecific": false,
+        "sourcePatternRequired": true,
+        "runtimeEvidenceRequiredForPromotion": true,
+        "sharedClientCompatibilityRequired": true
+      }
+    }
+  }
+}
