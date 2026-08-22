@@ -17,6 +17,7 @@ on:
       - 'tests/core_media_policy_test.py'
       - 'tests/global_core_presentation_pipeline_test.py'
       - 'tests/runtime_capability_media_safety_v4_test.py'
+      - 'tests/repository_hygiene_contract_test.py'
 
 permissions:
   contents: write
@@ -87,6 +88,7 @@ jobs:
         run: |
           set -euo pipefail
           python scripts/normalize_core_media_policy.py --check
+          python scripts/enforce_main_only_repository_policy.py --check
           python tests/core_media_policy_test.py
           python tests/global_core_presentation_pipeline_test.py
           python tests/runtime_capability_media_safety_v4_test.py
@@ -99,6 +101,7 @@ jobs:
           python tests/provider_purification_contract_test.py
           python tests/nuvio_client_upstream_drift_guard_test.py
           python tests/badge_asset_contract_test.py
+          python tests/repository_hygiene_contract_test.py
           python scripts/reapply_published_overrides.py --check
           node engine_v2/tests/provider-catalog.test.mjs
 
@@ -142,11 +145,13 @@ jobs:
           git clean -fdx
           npm ci --ignore-scripts --no-audit --no-fund
           python scripts/normalize_core_media_policy.py --check
+          python scripts/enforce_main_only_repository_policy.py --check
           python tests/core_media_policy_test.py
           python tests/global_core_presentation_pipeline_test.py
           python tests/runtime_capability_media_safety_v4_test.py
           python tests/provider_security_hardening_test.py
           python tests/provider_purification_contract_test.py
+          python tests/repository_hygiene_contract_test.py
           python scripts/reapply_published_overrides.py --check
           python scripts/validate_release_integrity.py
           node engine_v2/tests/provider-catalog.test.mjs
