@@ -1,0 +1,46 @@
+name: NiakVIO final gate observer
+
+on:
+  workflow_run:
+    workflows:
+      - NiakVIO Core media finalizer
+      - Niakvio provider pipeline
+      - NiakVIO Brain learning lab
+      - Native Android route reader acceptance
+      - Native Desktop reader acceptance
+      - NiakVIO light badge contrast QA
+      - NiakVIO final provider security gate
+      - NiakVIO weekly upstream provider discovery
+      - NiakVIO repository hygiene
+      - NiakVIO main-only repository policy
+      - NiakVIO final validation orchestrator
+      - NiakVIO one-shot branch policy docs cleanup
+    types: [completed]
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  report:
+    if: github.event.workflow_run.head_branch == 'main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      GH_TOKEN: ${{ github.token }}
+      REPO: ${{ github.repository }}
+    steps:
+      - name: Report gate completion only while completion issue is open
+        shell: bash
+        run: |
+          set -euo pipefail
+          state="$(gh api "repos/$REPO/issues/69" --jq .state)"
+          if [ "$state" != "open" ]; then
+            echo 'Issue #69 already closed; observer is silent.'
+            exit 0
+          fi
+          name='${{ github.event.workflow_run.name }}'
+          conclusion='${{ github.event.workflow_run.conclusion }}'
+          run='${{ github.event.workflow_run.id }}'
+          sha='${{ github.event.workflow_run.head_sha }}'
+          gh issue comment 69 --repo "$REPO" --body "Gate completed: **${name}** — **${conclusion}** — run https://github.com/${REPO}/actions/runs/${run} — head \`${sha}\`."
