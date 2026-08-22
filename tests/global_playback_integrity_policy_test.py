@@ -113,10 +113,17 @@ reapplied, reapplied_records = module.apply_overrides(
     "future-provider-never-seen-before", patched, phase="discovery"
 )
 assert reapplied == patched
-assert reapplied.decode("utf-8").count("NUVIO_GLOBAL_STREAM_PRESENTATION_V1") == 1
-assert reapplied.decode("utf-8").count("NUVIO_GLOBAL_RUNTIME_MEDIA_SAFETY_V1") == 1
-assert reapplied.decode("utf-8").count("NUVIO_HLS_RUNTIME_INTEGRITY_V1") == 1
-assert reapplied.decode("utf-8").count("NUVIO_GLOBAL_PROVIDER_SECURITY_HOOK_V1") == 1
+reapplied_text = reapplied.decode("utf-8")
+assert reapplied_text.count("NUVIO_GLOBAL_STREAM_PRESENTATION_V1") == 1
+assert reapplied_text.count("NUVIO_GLOBAL_RUNTIME_MEDIA_SAFETY_V1") == 1
+assert reapplied_text.count("NUVIO_HLS_RUNTIME_INTEGRITY_V1") == 1
+assert reapplied_text.count("NUVIO_GLOBAL_PROVIDER_SECURITY_HOOK_V1") == 1
+# The second pass must preserve the same canonical boundary. In particular the
+# legacy HLS implementation must never migrate outside the Core security marker.
+assert reapplied_text.rfind("NUVIO_HLS_RUNTIME_INTEGRITY_V1") < reapplied_text.rfind("NUVIO_GLOBAL_PROVIDER_SECURITY_HOOK_V1")
+assert reapplied_text.rfind("NUVIO_GLOBAL_PROVIDER_SECURITY_HOOK_V1") < reapplied_text.rfind("NUVIO_GLOBAL_STREAM_FACTS_V1")
+assert reapplied_text.rfind("NUVIO_GLOBAL_STREAM_FACTS_V1") < reapplied_text.rfind("NUVIO_GLOBAL_STREAM_IDENTITY_V1")
+assert reapplied_text.rfind("NUVIO_GLOBAL_STREAM_IDENTITY_V1") < reapplied_text.rfind("NUVIO_GLOBAL_STREAM_PRESENTATION_V1")
 assert not any(
     row.get("type") == "replace"
     for row in reapplied_records

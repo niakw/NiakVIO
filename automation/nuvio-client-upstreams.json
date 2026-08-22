@@ -17,7 +17,7 @@
       "verified_ref": "b80ee5ab8a550f1385c438071694a51ed3b0ef00",
       "platforms": ["android", "ios"],
       "contract": "automation/platform-runtime-contracts.json",
-      "audit_note": "2026-08-22: audited 32 commits from 0d6e30e4566e (0.4.5/109) to b80ee5ab8a55 (0.4.7/111). No files changed under the plugin runtime or streams repository contract paths. The relevant changes are reader/UI/configuration work, principally Android PlayerEngine, iOS player bridge/engine and player settings. Positional getStreams, provider fetch/runtime, request shape and provider result ingestion therefore remain compatible for Brain provider mutation; native reader proof remains a separate gate.",
+      "audit_note": "2026-08-22: provider request/result/extraction contract remains pinned to audited b80ee5ab8a55. The 11 subsequent commits through 0363f38c88a4 were reviewed: no plugin runtime, StreamsRepository, StreamParser, StreamModels, StreamFetchSupport, PlaybackUrlCredentials or StreamLinkCacheRepository file changed. The only streams-area change is StreamsScreen.kt and is presentation-only episode-thumbnail blur state; player changes are reader/UI state. Fresh native reader proof is still required, but this is not provider contract drift.",
       "contract_paths": [
         "composeApp/src/fullCommonMain/kotlin/com/nuvio/app/features/plugins/",
         "composeApp/src/commonMain/kotlin/com/nuvio/app/features/plugins/",
@@ -25,9 +25,12 @@
         "composeApp/src/iosFull/kotlin/com/nuvio/app/features/plugins/",
         "composeApp/src/androidPlaystore/kotlin/com/nuvio/app/features/plugins/",
         "composeApp/src/iosAppStore/kotlin/com/nuvio/app/features/plugins/",
-        "composeApp/src/commonMain/kotlin/com/nuvio/app/features/streams/",
-        "composeApp/src/androidFull/kotlin/com/nuvio/app/features/streams/",
-        "composeApp/src/iosFull/kotlin/com/nuvio/app/features/streams/"
+        "composeApp/src/commonMain/kotlin/com/nuvio/app/features/streams/PlaybackUrlCredentials.kt",
+        "composeApp/src/commonMain/kotlin/com/nuvio/app/features/streams/StreamFetchSupport.kt",
+        "composeApp/src/commonMain/kotlin/com/nuvio/app/features/streams/StreamLinkCacheRepository.kt",
+        "composeApp/src/commonMain/kotlin/com/nuvio/app/features/streams/StreamModels.kt",
+        "composeApp/src/commonMain/kotlin/com/nuvio/app/features/streams/StreamParser.kt",
+        "composeApp/src/commonMain/kotlin/com/nuvio/app/features/streams/StreamsRepository.kt"
       ],
       "brain_mutation_contract_paths": [
         "composeApp/src/fullCommonMain/kotlin/com/nuvio/app/features/plugins/",
@@ -44,6 +47,9 @@
         "composeApp/src/commonMain/kotlin/com/nuvio/app/features/streams/StreamsRepository.kt"
       ],
       "semantic_review_paths": [
+        "composeApp/src/commonMain/kotlin/com/nuvio/app/features/streams/",
+        "composeApp/src/androidFull/kotlin/com/nuvio/app/features/streams/",
+        "composeApp/src/iosFull/kotlin/com/nuvio/app/features/streams/",
         "composeApp/src/commonMain/kotlin/com/nuvio/app/features/player/",
         "composeApp/src/androidMain/kotlin/com/nuvio/app/features/player/",
         "composeApp/src/iosMain/kotlin/com/nuvio/app/features/player/",

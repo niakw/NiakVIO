@@ -110,11 +110,25 @@ def main() -> int:
     assert '"--no-fail"' in brain_source
     assert "classify_provider_mutation_compat" in brain_source
 
-    # Full native-reader acceptance still guards the complete provider-to-screen
-    # contract. Brain provider mutation gets a narrower request/result/extraction
-    # fence so UI/player-only drift cannot deadlock provider repair.
+    # Hard contract paths model provider request/result/extraction. Reader/UI stream
+    # surfaces remain semantic-review paths: they still force fresh native reader
+    # proof when runtime-sensitive tokens move, without making presentation-only UI
+    # changes look like provider-contract breakage.
     upstreams = json.loads(CONFIG.read_text(encoding="utf-8"))["clients"]
-    assert "composeApp/src/commonMain/kotlin/com/nuvio/app/features/streams/" in upstreams["nuvio-mobile"]["contract_paths"]
+    mobile = upstreams["nuvio-mobile"]
+    mobile_stream_root = "composeApp/src/commonMain/kotlin/com/nuvio/app/features/streams/"
+    assert mobile_stream_root not in mobile["contract_paths"]
+    assert mobile_stream_root in mobile["semantic_review_paths"]
+    for hard_path in (
+        "composeApp/src/commonMain/kotlin/com/nuvio/app/features/streams/PlaybackUrlCredentials.kt",
+        "composeApp/src/commonMain/kotlin/com/nuvio/app/features/streams/StreamFetchSupport.kt",
+        "composeApp/src/commonMain/kotlin/com/nuvio/app/features/streams/StreamModels.kt",
+        "composeApp/src/commonMain/kotlin/com/nuvio/app/features/streams/StreamParser.kt",
+        "composeApp/src/commonMain/kotlin/com/nuvio/app/features/streams/StreamsRepository.kt",
+    ):
+        assert hard_path in mobile["contract_paths"], hard_path
+        assert hard_path in mobile["brain_mutation_contract_paths"], hard_path
+    assert "composeApp/src/commonMain/kotlin/com/nuvio/app/features/streams/StreamsScreen.kt" not in mobile["contract_paths"]
     assert "composeApp/src/commonMain/kotlin/com/nuvio/app/features/streams/" in upstreams["nuvio-desktop"]["contract_paths"]
     assert "app/src/main/java/com/nuvio/tv/ui/screens/stream/" in upstreams["nuvio-tv"]["contract_paths"]
     assert "app/src/main/java/com/nuvio/tv/ui/screens/stream/" not in upstreams["nuvio-tv"]["brain_mutation_contract_paths"]

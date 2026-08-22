@@ -6,10 +6,11 @@ Presentation is deliberately *not* composed here: ``apply_provider_overrides`` o
 one Core-wide final presentation pass after every playback/media layer.
 
 The historical implementation still moves the HLS integrity wrapper to the absolute
-bundle tail. That was correct before Core facts/identity/presentation existed, but it
-now makes a second reconstruction move HLS across those metadata-only layers. This
-public adapter restores the canonical boundary without changing playback semantics:
-media recovery/safety -> HLS validation -> facts/identity/presentation.
+bundle tail. That was correct before Core facts/identity/presentation/security existed,
+but it now makes a repeated reconstruction move HLS across Core-owned final layers.
+This public adapter restores the canonical boundary without changing playback
+semantics: media recovery/safety -> HLS validation -> security -> facts/identity/
+presentation.
 """
 from __future__ import annotations
 
@@ -40,7 +41,12 @@ GUARD = _IMPL.GUARD
 TV_PREDICATE = _IMPL.TV_PREDICATE
 SAFETY_WRAPPER = _IMPL.SAFETY_WRAPPER
 
+# Every entry below is a Core-owned boundary which must remain outside the HLS
+# playback validator. In particular the security hook marker may already exist on
+# a second reconstruction before facts/identity/presentation are rebuilt; treating
+# it as a finalizer prevents the legacy implementation from moving HLS past it.
 _CORE_FINALIZERS = (
+    "NUVIO_GLOBAL_PROVIDER_SECURITY_HOOK_V1",
     "NUVIO_GLOBAL_STREAM_FACTS_V1",
     "NUVIO_GLOBAL_STREAM_IDENTITY_V1",
     "NUVIO_GLOBAL_STREAM_PRESENTATION_V1",
@@ -66,7 +72,7 @@ def _place_hls_before_core_finalizers(text: str) -> str:
     core_positions = [
         position
         for position in (
-            text.find(f"/* {marker}:") for marker in _CORE_FINALIZERS
+            text.find(f"/* {marker}") for marker in _CORE_FINALIZERS
         )
         if position >= 0
     ]
@@ -83,7 +89,7 @@ def _place_hls_before_core_finalizers(text: str) -> str:
     core_positions = [
         position
         for position in (
-            body.find(f"/* {marker}:") for marker in _CORE_FINALIZERS
+            body.find(f"/* {marker}") for marker in _CORE_FINALIZERS
         )
         if position >= 0
     ]
