@@ -1,0 +1,200 @@
+name: NiakVIO one-shot final repository cleanup
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/final-repository-cleanup-once.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout exact main
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Remove superseded paths and align durable contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          root = Path('.')
+
+          # Canonical documentation: code lives on main; the second ref is Brain memory only.
+          readme = root / 'README.md'
+          text = readme.read_text(encoding='utf-8')
+          start = text.index('## Politique de branches\n')
+          end = text.index('\n## Sécurité, responsabilité et indépendance', start)
+          branch_policy = '''## Politique de branches
+
+- `main` : unique branche de code, état stable et publiable ;
+- `brain-learning/proposals` : mémoire sanitizée persistante du Brain, sans code de production ni publication autonome ;
+- les Labs TV/Mobile/Desktop utilisent directement le SHA de `main` et les dépôts clients Nuvio officiels comme baselines en lecture seule ;
+- aucune branche `lab/*`, `fix/*`, `ci/*`, `proof/*`, `tmp/*`, `chore/*`, `refactor/*` ou `brain-repair/*` n'est conservée comme branche de travail.
+
+Les réparations, tests et nettoyages sont matérialisés sur `main`. La mémoire Brain séparée reste non publiable et ne peut pas contourner les gates de production.
+
+---
+'''
+          readme.write_text(text[:start] + branch_policy + text[end+1:], encoding='utf-8')
+
+          architecture = root / 'ARCHITECTURE.md'
+          text = architecture.read_text(encoding='utf-8')
+          start = text.index('## 22. Labs permanents\n') if '## 22. Labs permanents\n' in text else text.index('## 22. Labs natifs sur `main`\n')
+          end = text.index('\n## 23. Structure logique', start)
+          labs = '''## 22. Labs natifs sur `main`
+
+Les Labs ne reposent plus sur des branches de code permanentes. Les preuves NuvioTV, Mobile et Desktop sont produites depuis le SHA exact de `main`, avec les dépôts clients officiels utilisés comme baselines en lecture seule.
+
+Une anomalie réelle devient une non-régression durable par la chaîne :
+
+```text
+bug réel
+  → reproduction sur client officiel
+  → observation
+  → famille de cause
+  → règle/recipe générique Core/Brain
+  → validation
+  → preuve runtime concernée
+  → publication sur main
+  → test permanent
+```
+
+`brain-learning/proposals` reste uniquement une mémoire sanitizée du Brain et ne constitue ni un Lab de code ni une voie de publication.
+'''
+          text = text[:start] + labs + text[end:]
+          text = text.replace(
+              '17. Les Labs permanents ne sont pas supprimés par le nettoyage ordinaire.',
+              '17. Les Labs natifs valident le SHA exact de `main` ; aucune branche Lab de code permanente n’est requise.'
+          )
+          architecture.write_text(text, encoding='utf-8')
+
+          # Security gate must be sensitive to the real Core scheduler/hardening layer.
+          security = root / '.github/workflows/security-final-gate.yml'
+          text = security.read_text(encoding='utf-8')
+          anchor = "      - 'scripts/provider_security_hardening.py'\n"
+          additions = (
+              "      - 'scripts/provider_patches/global_provider_security_hardening_v1.py'\n"
+              "      - 'scripts/normalize_core_media_policy.py'\n"
+              "      - 'scripts/apply_provider_overrides.py'\n"
+          )
+          if "global_provider_security_hardening_v1.py" not in text:
+              if anchor not in text:
+                  raise SystemExit('security trigger anchor missing')
+              text = text.replace(anchor, anchor + additions, 1)
+
+          # Require a CodeQL analysis for the exact dispatched main SHA before evaluating alerts.
+          old = '''      - name: Gate open high/critical CodeQL alerts in generated providers
+              env:
+                GH_TOKEN: ${{ github.token }}
+              shell: bash
+              run: |
+                set -euo pipefail
+                gh api --paginate \\
+          '''.replace('              ', '')
+          new = '''      - name: Wait for CodeQL analysis of exact tested main SHA
+              env:
+                GH_TOKEN: ${{ github.token }}
+              shell: bash
+              run: |
+                set -euo pipefail
+                found=''
+                for attempt in $(seq 1 60); do
+                  found="$(gh api --paginate \\
+                    -H 'Accept: application/vnd.github+json' \\
+                    -H 'X-GitHub-Api-Version: 2022-11-28' \\
+                    "repos/${GITHUB_REPOSITORY}/code-scanning/analyses?ref=refs/heads/main&per_page=100" \\
+                    --jq ".[] | select(.commit_sha == \"${GITHUB_SHA}\") | .id" | head -n1 || true)"
+                  if [ -n "$found" ]; then
+                    echo "FIELD_CODEQL_EXACT_SHA analysis=$found sha=${GITHUB_SHA}"
+                    break
+                  fi
+                  sleep 20
+                done
+                if [ -z "$found" ]; then
+                  echo "No CodeQL analysis found for exact tested main SHA ${GITHUB_SHA}" >&2
+                  exit 1
+                fi
+
+            - name: Gate open high/critical CodeQL alerts in generated providers
+              env:
+                GH_TOKEN: ${{ github.token }}
+              shell: bash
+              run: |
+                set -euo pipefail
+                gh api --paginate \\
+          '''.replace('            ', '')
+          if 'Wait for CodeQL analysis of exact tested main SHA' not in text:
+              if old not in text:
+                  raise SystemExit('CodeQL gate anchor missing')
+              text = text.replace(old, new, 1)
+          security.write_text(text, encoding='utf-8')
+
+          # Repository hygiene test owns the retired-path contract.
+          hygiene_test = root / 'tests/repository_hygiene_contract_test.py'
+          text = hygiene_test.read_text(encoding='utf-8')
+          anchor = '    "tests/purstream_core_presentation_pipeline_test.py",\n'
+          additions = (
+              '    ".github/workflows/docs-branch-policy-cleanup.yml",\n'
+              '    ".github/workflows/core-media-normalize-main.yml",\n'
+              '    ".github/workflows/final-gate-observer.yml",\n'
+              '    ".github/workflows/final-repository-cleanup-once.yml",\n'
+              '    "scripts/apply_playback_integrity_upgrade.py",\n'
+          )
+          if '.github/workflows/core-media-normalize-main.yml' not in text:
+              if anchor not in text:
+                  raise SystemExit('repository hygiene retired-path anchor missing')
+              text = text.replace(anchor, anchor + additions, 1)
+          hygiene_test.write_text(text, encoding='utf-8')
+
+          # Make this exact cleanup commit start the authoritative final orchestrator.
+          orchestrator = root / '.github/workflows/final-validation-orchestrator.yml'
+          text = orchestrator.read_text(encoding='utf-8')
+          if '# Final generation: repository-clean main-only v3.' not in text:
+              text = text.replace(
+                  '# Authoritative end-to-end gate for the exact main generation.\n',
+                  '# Authoritative end-to-end gate for the exact main generation.\n# Final generation: repository-clean main-only v3.\n',
+                  1,
+              )
+          orchestrator.write_text(text, encoding='utf-8')
+
+          # Superseded one-shots/migrations are removed in the same commit.
+          for rel in (
+              '.github/workflows/docs-branch-policy-cleanup.yml',
+              '.github/workflows/core-media-normalize-main.yml',
+              '.github/workflows/final-gate-observer.yml',
+              'scripts/apply_playback_integrity_upgrade.py',
+          ):
+              (root / rel).unlink(missing_ok=True)
+
+          # The cleanup workflow also removes itself before commit.
+          for doc in (readme, architecture):
+              value = doc.read_text(encoding='utf-8')
+              assert 'lab/tv-real' not in value
+              assert 'lab/desktop-mobile-real' not in value
+          PY
+
+      - name: Self-remove and publish one final repository-clean source generation
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f .github/workflows/final-repository-cleanup-once.yml
+          python -m py_compile tests/repository_hygiene_contract_test.py
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git diff --cached --check
+          python tests/repository_hygiene_contract_test.py
+          git commit -m 'chore: finalize main-only repository and security gates'
+          git pull --rebase origin main
+          python tests/repository_hygiene_contract_test.py
+          git push origin HEAD:main
