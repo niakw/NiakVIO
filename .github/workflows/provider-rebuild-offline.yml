@@ -19,7 +19,7 @@ jobs:
     name: Rematerialize PR provider generation
     if: github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
       - name: Checkout current PR branch
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
@@ -38,6 +38,16 @@ jobs:
         with:
           node-version: "24"
           package-manager-cache: false
+
+      - name: Install pinned runtime dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -f package-lock.json ]; then
+            npm ci --ignore-scripts --no-audit --no-fund
+          else
+            npm install --ignore-scripts --no-audit --no-fund --package-lock=false
+          fi
 
       - name: Rematerialize published provider bundles
         shell: bash
