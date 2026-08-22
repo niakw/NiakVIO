@@ -4,15 +4,22 @@
 This script never publishes providers. It translates only repairs already accepted
 by the bounded sandbox retest into a proposed provider-overrides.json that can be
 reviewed and validated in a draft pull request.
+
+When the live repository provider-overrides.json is used, the proposal is anchored
+to the immutable Git HEAD checked out for the run. Sandbox preparation is allowed
+to mutate its working-tree copy for diagnostics, but those incidental top-level
+changes must never leak into a repair proposal.
 """
 from __future__ import annotations
 
 import argparse
 import copy
 import json
+import subprocess
 from pathlib import Path
 from typing import Any
 
+ROOT = Path(__file__).resolve().parents[1]
 ADAPTIVE_PROFILE = "adaptive_runtime_recovery"
 ADAPTIVE_SCRIPT = "scripts/provider_patches/adaptive_runtime_recovery_v5.py"
 
@@ -22,6 +29,45 @@ def load_json(path: Path) -> dict[str, Any]:
     if not isinstance(value, dict):
         raise ValueError(f"{path}: expected JSON object")
     return value
+
+
+def load_proposal_baseline(path: Path) -> tuple[dict[str, Any], str]:
+    """Return the trusted config baseline and how it was obtained.
+
+    The Brain workflow mutates ROOT/provider-overrides.json while building its
+    isolated stage (normalization, learned runtime metadata, etc.). The repair PR
+    must be derived from the exact committed input instead, otherwise an unrelated
+    sandbox metadata change trips the publication guard or, worse, gets proposed.
+
+    Temporary/custom override files used by tests and tooling remain literal input.
+    """
+    resolved = path.resolve()
+    committed = (ROOT / "provider-overrides.json").resolve()
+    if resolved != committed:
+        return load_json(resolved), "input-file"
+
+    completed = subprocess.run(
+        ["git", "show", "HEAD:provider-overrides.json"],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        timeout=30,
+        check=False,
+    )
+    if completed.returncode != 0 or not completed.stdout.strip():
+        details = "\n".join(
+            part.strip()
+            for part in (completed.stdout, completed.stderr)
+            if part and part.strip()
+        )
+        raise RuntimeError(
+            "cannot materialize immutable provider-overrides baseline from run HEAD: "
+            + details[-1200:]
+        )
+    value = json.loads(completed.stdout)
+    if not isinstance(value, dict):
+        raise ValueError("HEAD:provider-overrides.json must be a JSON object")
+    return value, "git-head"
 
 
 def write_json(path: Path, value: Any) -> None:
@@ -117,7 +163,7 @@ def main() -> int:
 
     stage = load_json(args.stage)
     report = load_json(args.repair_report)
-    original = load_json(args.overrides)
+    original, baseline_source = load_proposal_baseline(args.overrides)
     proposed = copy.deepcopy(original)
 
     candidates = {
@@ -159,6 +205,7 @@ def main() -> int:
     write_json(args.output, proposed)
     summary = {
         "schemaVersion": 1,
+        "baselineSource": baseline_source,
         "proposalCount": len(proposals),
         "providers": sorted({row["providerId"] for row in proposals if row.get("providerId")}),
         "proposals": proposals,
@@ -172,7 +219,11 @@ def main() -> int:
         },
     }
     write_json(args.summary, summary)
-    print(f"FIELD_BRAIN_REPAIR_PROPOSAL proposals={len(proposals)} providers={len(summary['providers'])} skipped={len(skipped)}")
+    print(
+        "FIELD_BRAIN_REPAIR_PROPOSAL "
+        f"proposals={len(proposals)} providers={len(summary['providers'])} skipped={len(skipped)} "
+        f"baseline={baseline_source}"
+    )
     return 0
 
 
