@@ -1,0 +1,153 @@
+name: NiakVIO Core media finalizer
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/core-media-finalize-main.yml'
+      - 'scripts/normalize_core_media_policy.py'
+      - 'scripts/apply_runtime_capability_upgrade_v4.py'
+      - 'scripts/provider_patches/runtime_capability_media_safety_v4.py'
+      - 'scripts/provider_patches/global_stream_presentation_v1.py'
+      - 'scripts/provider_patches/global_stream_facts_v1.py'
+      - 'scripts/provider_patches/global_media_enrichment_v1.py'
+      - 'scripts/provider_security_hardening.py'
+      - 'scripts/provider_purification.py'
+      - 'tests/core_media_policy_test.py'
+      - 'tests/global_core_presentation_pipeline_test.py'
+      - 'tests/runtime_capability_media_safety_v4_test.py'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: niakvio-core-media-finalize-main
+  cancel-in-progress: true
+
+jobs:
+  finalize-main:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - name: Checkout exact main
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Capture publication baseline
+        shell: bash
+        run: git show HEAD:manifest.json > "$RUNNER_TEMP/manifest-before.json"
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+          package-manager-cache: false
+
+      - name: Install locked runtime dependencies
+        shell: bash
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Normalize Core media architecture
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/normalize_core_media_policy.py --apply
+          python scripts/apply_runtime_capability_upgrade_v4.py
+          python scripts/build_provider_runtime_profiles.py
+          python scripts/reapply_published_overrides.py
+          python scripts/generate_language_manifests.py
+          python scripts/prune_unreferenced_providers.py
+          python scripts/sync_release_versions.py \
+            --manifest manifest.json \
+            --previous "$RUNNER_TEMP/manifest-before.json"
+          node engine_v2/scripts/bootstrap-provider-catalog.mjs \
+            --general manifest.json \
+            --vf vf/manifest.json \
+            --output provider_catalog.json
+          node engine_v2/scripts/render-manifests-from-catalog.mjs \
+            --catalog provider_catalog.json \
+            --general manifest.json \
+            --vf vf/manifest.json
+          python scripts/generate_language_manifests.py
+          python scripts/sync_release_versions.py \
+            --manifest manifest.json \
+            --previous "$RUNNER_TEMP/manifest-before.json"
+          python scripts/prune_unreferenced_providers.py
+
+      - name: Verify Core and native media contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/normalize_core_media_policy.py --check
+          python tests/core_media_policy_test.py
+          python tests/global_core_presentation_pipeline_test.py
+          python tests/runtime_capability_media_safety_v4_test.py
+          python tests/global_playback_integrity_policy_test.py
+          python tests/global_stream_presentation_test.py
+          python tests/global_stream_presentation_pipeline_test.py
+          python tests/provider_specific_adapters_test.py
+          python tests/tv_provider_hardening_test.py
+          python tests/provider_security_hardening_test.py
+          python tests/provider_purification_contract_test.py
+          python tests/nuvio_client_upstream_drift_guard_test.py
+          python tests/badge_asset_contract_test.py
+          python scripts/reapply_published_overrides.py --check
+          node engine_v2/tests/provider-catalog.test.mjs
+
+      - name: Validate complete repository suite
+        shell: bash
+        run: npm test
+
+      - name: Rebuild release integrity inventories
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/generate_release_hashes.py
+          python scripts/validate_release_integrity.py
+
+      - name: Publish exact finalized tree to main
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          if git diff --cached --quiet; then
+            echo 'Core media policy already fully materialized on main.'
+          else
+            git commit -m 'chore: materialize global Core media policy'
+            git fetch origin main
+            git rebase origin/main
+            python scripts/generate_release_hashes.py
+            python scripts/validate_release_integrity.py
+            git add FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json
+            if ! git diff --cached --quiet; then git commit --amend --no-edit; fi
+            git push origin HEAD:main
+          fi
+
+      - name: Verify exact resulting main
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin main
+          git reset --hard origin/main
+          git clean -fdx
+          npm ci --ignore-scripts --no-audit --no-fund
+          python scripts/normalize_core_media_policy.py --check
+          python tests/core_media_policy_test.py
+          python tests/global_core_presentation_pipeline_test.py
+          python tests/runtime_capability_media_safety_v4_test.py
+          python tests/provider_security_hardening_test.py
+          python tests/provider_purification_contract_test.py
+          python scripts/reapply_published_overrides.py --check
+          python scripts/validate_release_integrity.py
+          node engine_v2/tests/provider-catalog.test.mjs
+          git diff --exit-code
