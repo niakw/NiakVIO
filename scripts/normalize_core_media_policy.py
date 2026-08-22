@@ -3,8 +3,9 @@
 
 Purstream remains a normal provider with its own official-domain discovery, but
 it must not own any special repair, media identity, facts, presentation, or
-platform compatibility hook. Those concerns belong to shared Core/capability
-layers so every provider receives the same behavior.
+platform compatibility hook. Shared Core/capability hooks may still be
+materialized in its provider patch list because the bundle builder records
+repository-wide transforms per provider artifact.
 """
 from __future__ import annotations
 
@@ -16,6 +17,10 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 OVERRIDES = ROOT / "provider-overrides.json"
 DESKTOP_COMPAT = ROOT / "scripts/publish_desktop_runtime_compat.py"
+ALLOWED_SHARED_PURSTREAM_SCRIPTS = {
+    "scripts/provider_patches/native_sync_fetch_target_order_v1.py",
+    "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+}
 POLICY_NOTE = (
     "Purstream has no provider-specific repair hooks; content identity, stream facts, "
     "presentation and platform compatibility are handled by shared Core/capability layers."
@@ -52,15 +57,24 @@ def normalize(value: dict[str, Any]) -> tuple[dict[str, Any], list[str]]:
     scripts = row.get("patch_scripts") or []
     if not isinstance(scripts, list):
         raise ValueError("provider_patches.purstream.patch_scripts must be an array")
-    if scripts:
-        row["patch_scripts"] = []
+    filtered = [
+        str(path) for path in scripts
+        if str(path) in ALLOWED_SHARED_PURSTREAM_SCRIPTS
+    ]
+    if filtered != scripts:
+        row["patch_scripts"] = filtered
         changed.append("provider_patches.purstream.patch_scripts")
 
     options = row.get("patch_script_options") or {}
     if not isinstance(options, dict):
         raise ValueError("provider_patches.purstream.patch_script_options must be an object")
-    if options:
-        row["patch_script_options"] = {}
+    filtered_options = {
+        str(path): config
+        for path, config in options.items()
+        if str(path) in ALLOWED_SHARED_PURSTREAM_SCRIPTS
+    }
+    if filtered_options != options:
+        row["patch_script_options"] = filtered_options
         changed.append("provider_patches.purstream.patch_script_options")
 
     notes = [str(note) for note in (row.get("notes") or [])]
@@ -91,12 +105,13 @@ def normalize_source_files(*, apply: bool) -> list[str]:
 
 def assert_policy(value: dict[str, Any]) -> None:
     row = value["provider_patches"]["purstream"]
-    scripts = [str(path) for path in (row.get("patch_scripts") or [])]
-    options = [str(path) for path in (row.get("patch_script_options") or {})]
-    if scripts or options:
+    scripts = {str(path) for path in (row.get("patch_scripts") or [])}
+    options = {str(path) for path in (row.get("patch_script_options") or {})}
+    forbidden = sorted((scripts | options) - ALLOWED_SHARED_PURSTREAM_SCRIPTS)
+    if forbidden:
         raise ValueError(
             "Purstream-specific repair/configuration remains active: "
-            + ", ".join(sorted(set(scripts + options)))
+            + ", ".join(forbidden)
         )
 
     runtime = ROOT / "scripts/provider_patches/runtime_capability_media_safety_v4.py"
