@@ -169,7 +169,11 @@ function markdown(report) {
 }
 
 function escapeTable(value) {
-  return String(value ?? "").replace(/\|/g, "\\|").replace(/\s+/g, " ").trim();
+  return String(value ?? "")
+    .replace(/\\/g, "\\\\")
+    .replace(/\|/g, "\\|")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 function list(value) {
