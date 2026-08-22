@@ -173,7 +173,7 @@ jobs:
             exit 1
           fi
 
-      - name: Materialize validated repair proposal
+      - name: Materialize validated repair proposal as artifact only
         shell: bash
         run: |
           set -euo pipefail
@@ -227,7 +227,7 @@ jobs:
             exit 1
           fi
 
-      - name: Update the single Brain learning memory branch
+      - name: Update the single sanitized learning-memory ref
         shell: bash
         run: |
           set -euo pipefail
@@ -245,95 +245,4 @@ jobs:
           else
             git commit -m "brain: refresh sandbox repair learning"
             git push --force-with-lease origin HEAD:"$BRANCH"
-          fi
-
-  publish-repair-proposal:
-    name: Publish validated repair as draft PR
-    needs: experiment
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    permissions:
-      contents: write
-      pull-requests: write
-    steps:
-      - name: Checkout trusted production tree only
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
-        with:
-          ref: main
-          fetch-depth: 0
-
-      - name: Download validated proposal artifact
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
-        with:
-          name: niakvio-brain-learning-state
-          path: brain-learning-output
-
-      - name: Validate proposal safety boundary
-        shell: bash
-        run: |
-          set -euo pipefail
-          python - <<'PY'
-          import json
-          from pathlib import Path
-          base = json.loads(Path('provider-overrides.json').read_text())
-          proposed = json.loads(Path('brain-learning-output/provider-overrides.proposed.json').read_text())
-          summary = json.loads(Path('brain-learning-output/repair-proposal.json').read_text())
-          policy = summary.get('policy') or {}
-          assert policy.get('publicationAllowed') is False
-          assert policy.get('productionWritesAllowed') is False
-          assert policy.get('pullRequestOnly') is True
-          assert policy.get('requiresHumanMerge') is True
-          assert set(base) == set(proposed), 'top-level override schema changed'
-          for key in base:
-              if key != 'provider_patches':
-                  assert base[key] == proposed[key], f'unexpected top-level mutation: {key}'
-          base_patches = base.get('provider_patches') or {}
-          proposed_patches = proposed.get('provider_patches') or {}
-          for pid in set(base_patches) | set(proposed_patches):
-              before = base_patches.get(pid) or {}
-              after = proposed_patches.get(pid) or {}
-              for key in set(before) | set(after):
-                  if key not in {'profiles', 'patch_scripts', 'patch_script_options'}:
-                      assert before.get(key) == after.get(key), f'unsafe mutation: {pid}.{key}'
-              before_opts = before.get('patch_script_options') or {}
-              after_opts = after.get('patch_script_options') or {}
-              for script in set(before_opts) | set(after_opts):
-                  if before_opts.get(script) != after_opts.get(script):
-                      assert script == 'scripts/provider_patches/adaptive_runtime_recovery_v5.py', f'unsafe patch options mutation: {pid}:{script}'
-          PY
-
-      - name: Update repair proposal branch and draft PR
-        env:
-          GH_TOKEN: ${{ github.token }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          COUNT="$(node -e "const x=require('./brain-learning-output/repair-proposal.json');process.stdout.write(String(x.proposalCount||0))")"
-          if [ "$COUNT" -le 0 ]; then
-            echo "No newly validated repair to propose."
-            exit 0
-          fi
-          BRANCH="brain-repair/proposals"
-          git fetch origin "$BRANCH:refs/remotes/origin/$BRANCH" || true
-          git switch -C "$BRANCH" main
-          cp brain-learning-output/provider-overrides.proposed.json provider-overrides.json
-          python -m json.tool provider-overrides.json >/dev/null
-          git config user.name "niakvio-brain"
-          git config user.email "actions@users.noreply.github.com"
-          git add provider-overrides.json
-          if git diff --cached --quiet; then
-            echo "Validated repair is already represented on main."
-            exit 0
-          fi
-          PROVIDERS="$(node -e "const x=require('./brain-learning-output/repair-proposal.json');process.stdout.write((x.providers||[]).join(', '))")"
-          git commit -m "brain: propose validated provider repairs"
-          git push --force-with-lease origin HEAD:"$BRANCH"
-          EXISTING="$(gh pr list --state open --head "$BRANCH" --base main --json number --jq '.[0].number // empty' || true)"
-          BODY="NiakVIO Brain accepted ${COUNT} bounded sandbox repair proposal(s) for: ${PROVIDERS}. This PR only materializes reproducible provider override configuration. It does not auto-publish or auto-merge; fresh PR CI and human review are required."
-          if [ -z "$EXISTING" ]; then
-            gh pr create --draft --base main --head "$BRANCH" --title "Brain repair: validated provider coverage proposal" --body "$BODY"
-          else
-            gh pr edit "$EXISTING" --title "Brain repair: validated provider coverage proposal" --body "$BODY"
-            gh pr ready "$EXISTING" --undo || true
-            echo "Updated Brain repair draft PR #$EXISTING"
           fi
