@@ -15,14 +15,16 @@ spec.loader.exec_module(module)
 
 cfg = json.loads((ROOT / "provider-overrides.json").read_text(encoding="utf-8"))
 normalized, changed = module.normalize(cfg)
-module.assert_policy(normalized)
+source_changes = module.normalize_source_files(apply=False)
 
 # Once main has been normalized this must remain a pure assertion, not a repair.
 assert changed == [], changed
+assert source_changes == [], source_changes
+module.assert_policy(normalized)
+
 purstream = normalized["provider_patches"]["purstream"]
-active = [str(value) for value in purstream.get("patch_scripts", [])]
-active += [str(value) for value in (purstream.get("patch_script_options") or {})]
-assert not [value for value in active if value.startswith(module.FORBIDDEN_PURSTREAM_PREFIX)]
+assert purstream.get("patch_scripts") == [], purstream.get("patch_scripts")
+assert purstream.get("patch_script_options") == {}, purstream.get("patch_script_options")
 
 # Retired provider-specific implementations must not creep back into main.
 for retired in (
@@ -34,4 +36,4 @@ for retired in (
 ):
     assert not (ROOT / retired).exists(), retired
 
-print("Core media policy test passed: provider-specific Purstream repair hooks=0")
+print("Core media policy test passed: Purstream-specific repair hooks=0")
