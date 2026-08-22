@@ -92,15 +92,13 @@ def test_runtime_profiles_are_not_blindly_applied() -> None:
 
     # Discovery-time Core finalization is intentionally universal. This test is
     # only about runtime repair profiles: matching their old structural markers
-    # must never auto-apply a provider-specific runtime mutation.
+    # must never auto-apply a provider-specific runtime mutation. We assert the
+    # final bundle contract itself rather than an internal patch-record ordering.
     assert output != source
+    assert b"NUVIO_GLOBAL_STREAM_FACTS_V1" in output
     assert b"NUVIO_GLOBAL_STREAM_IDENTITY_V1" in output
     assert b"NUVIO_GLOBAL_STREAM_PRESENTATION_V1" in output
     assert not any(row.get("type") == "patch_profile" for row in patch_records)
-    assert any(
-        row.get("type") == "patch_script" and row.get("scope") == "global_stream_presentation"
-        for row in patch_records
-    ), patch_records
 
 
 def test_runtime_domain_prefix_collisions_are_globally_idempotent() -> None:
