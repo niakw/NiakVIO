@@ -171,6 +171,44 @@ jobs:
           touch nuvio-desktop/local.properties
           python3 niakvio/scripts/prepare_native_corpus_client.py desktop --fixture sinners-2025 --workspace "$GITHUB_WORKSPACE" --manifest manifest.json
 
+      - name: Install official Windows WebView2 build dependency
+        if: matrix.os_name == 'windows'
+        shell: pwsh
+        run: |
+          nuget install Microsoft.Web.WebView2 `
+            -Version $env:WEBVIEW2_VERSION `
+            -OutputDirectory "$env:RUNNER_TEMP\nuget" `
+            -DirectDownload `
+            -NonInteractive `
+            -NoCache
+          $root = Join-Path $env:RUNNER_TEMP "nuget\Microsoft.Web.WebView2.$env:WEBVIEW2_VERSION"
+          if (-not (Test-Path (Join-Path $root "build\native\x64\WebView2Loader.dll.lib"))) {
+            throw "WebView2Loader.dll.lib missing from $root"
+          }
+          "WEBVIEW2_ROOT=$root" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Build official macOS native player bridge once
+        if: matrix.os_name == 'macos'
+        shell: bash
+        run: |
+          set -euxo pipefail
+          ./nuvio-desktop/gradlew -p nuvio-desktop \
+            :composeApp:buildMacosPlayerBridge \
+            :composeApp:prepareMacosPlayerRuntime \
+            --no-configuration-cache --console=plain
+
+      - name: Build official Windows native player bridge once
+        if: matrix.os_name == 'windows'
+        shell: pwsh
+        run: |
+          & .\nuvio-desktop\gradlew.bat -p nuvio-desktop `
+            :composeApp:buildWindowsPlayerBridge `
+            :composeApp:prepareWindowsPlayerRuntime `
+            :composeApp:generateWindowsPlayerRuntimeIndex `
+            "-Pnuvio.webview2.dir=$env:WEBVIEW2_ROOT" `
+            --no-configuration-cache --console=plain
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
       - name: Execute representative routes and require one real player reach
         shell: bash
         run: |
