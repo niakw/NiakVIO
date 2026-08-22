@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 from __future__ import annotations
-
 import importlib.util
 import subprocess
 import tempfile
@@ -33,11 +32,13 @@ assert "NUVIO_GLOBAL_STREAM_IDENTITY_V1" in patched
 assert "cross-client-positive-mismatch-anime-confirmed-v3" in patched
 assert identity.apply(patched, context={"provider_id": "example"}) == patched
 
-# The final Core presentation composes identity first, so every provider rebuilt
-# through the global presentation hook gets exactly the same TV/Mobile/Desktop guard.
+# The final Core presentation composes facts + identity before presentation, so
+# every provider rebuilt for TV/Mobile/Desktop receives the same identity guard.
 finalized = presentation.apply(base, context={"provider_id": "example"})
+assert "NUVIO_GLOBAL_STREAM_FACTS_V1" in finalized
 assert "NUVIO_GLOBAL_STREAM_IDENTITY_V1" in finalized
 assert "NUVIO_GLOBAL_STREAM_PRESENTATION_V1" in finalized
+assert finalized.index("NUVIO_GLOBAL_STREAM_FACTS_V1") < finalized.index("NUVIO_GLOBAL_STREAM_IDENTITY_V1")
 assert finalized.index("NUVIO_GLOBAL_STREAM_IDENTITY_V1") < finalized.index("NUVIO_GLOBAL_STREAM_PRESENTATION_V1")
 
 runner = r'''
@@ -64,14 +65,16 @@ global.fetch=async function(raw){
 };
 PATCHED
 (async()=>{
-  const rows=await module.exports.getStreams({tmdbId:'95479',imdbId:'tt12343534',mediaType:'anime',title:'Jujutsu Kaisen',year:2020,season:1,episode:1});
-  assert.deepEqual(rows.map(x=>x.url),[
-    'https://cdn.example/Jujutsu-Kaisen-S01E01.mp4',
-    'https://cdn.example/Ryomen-Sukuna-S01E01.mp4',
-    'https://cdn.example/opaque-93af1.m3u8'
-  ],JSON.stringify(rows));
-  assert(searches.some(q=>q.toLowerCase().includes('naruto')),JSON.stringify(searches));
-  console.log(JSON.stringify({rows,searches}));
+  for (const mediaType of ['anime','tv']) {
+    const rows=await module.exports.getStreams({tmdbId:'95479',imdbId:'tt12343534',mediaType,title:'Jujutsu Kaisen',year:2020,season:1,episode:1});
+    assert.deepEqual(rows.map(x=>x.url),[
+      'https://cdn.example/Jujutsu-Kaisen-S01E01.mp4',
+      'https://cdn.example/Ryomen-Sukuna-S01E01.mp4',
+      'https://cdn.example/opaque-93af1.m3u8'
+    ],mediaType+':'+JSON.stringify(rows));
+  }
+  assert(searches.filter(q=>q.toLowerCase().includes('naruto')).length>=2,JSON.stringify(searches));
+  console.log(JSON.stringify({searches}));
 })().catch(e=>{console.error(e);process.exit(1)});
 '''.replace('PATCHED', patched)
 
@@ -121,4 +124,4 @@ try:
 finally:
     movie_path.unlink(missing_ok=True)
 
-print('global stream identity TV/anime regression tests passed')
+print('global stream identity TV/anime dual-route regression tests passed')
