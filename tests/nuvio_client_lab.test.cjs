@@ -20,33 +20,35 @@ const {
   tailText,
   verifyRuntimeContract,
 } = require('../scripts/nuvio_client_lab.cjs');
+const { explicitYears, releaseIdentityGuard } = require('../scripts/native_fixture_identity_guard.cjs');
 
 const repositoryRoot = path.resolve(__dirname, '..');
 const packageJson = JSON.parse(fs.readFileSync(path.join(repositoryRoot, 'package.json'), 'utf8'));
-const labWorkflow = fs.readFileSync(path.join(repositoryRoot, '.github/workflows/nuvio-client-lab.yml'), 'utf8');
 const labTrigger = JSON.parse(fs.readFileSync(path.join(repositoryRoot, '.github/triggers/nuvio-client-lab.json'), 'utf8'));
 const npmTestLifecycle = `${packageJson.scripts.pretest || ''} ${packageJson.scripts.test || ''}`;
 assert.match(npmTestLifecycle, /node tests\/nuvio_client_lab\.test\.cjs/);
 assert.match(packageJson.scripts.posttest || '', /python3 scripts\/validate_release_integrity\.py/);
-for (const requiredPath of [
-  'manifest.json',
-  'vf/manifest.json',
-  'provider-overrides.json',
-  'providers/**',
-  'scripts/nuvio_client_lab.cjs',
-  'scripts/provider_worker.cjs',
-  'scripts/provider_patches/**',
-  'tests/nuvio_client_lab.test.cjs',
-]) {
-  assert.equal(labWorkflow.includes(`- "${requiredPath}"`), true, `lab workflow must watch ${requiredPath}`);
-}
-assert.match(labWorkflow, /python3 scripts\/validate_release_integrity\.py/);
-assert.doesNotMatch(labWorkflow, /lab\/nuvio-client-matrix/);
+assert.equal(fs.existsSync(path.join(repositoryRoot, '.github/workflows/nuvio-client-lab.yml')), false, 'mutable-client transport workflow is retired; official native readers own CI evidence');
 assert.equal(labTrigger.policy.blocking, false);
 assert.equal(labTrigger.policy.require_identity_match, true);
 assert.equal(labTrigger.policy.block_identity_contradictions, true);
-assert.equal(labTrigger.fixtures.length, 6);
+assert.equal(labTrigger.fixtures.length, 10);
 assert.equal(labTrigger.fixtures.every((row) => Number(row.fixture.expectedDurationMinutes) > 0), true);
+assert.deepEqual(labTrigger.native_reader_acceptance.tv_priority_regressions, [
+  'colony-2021',
+  'failure-frame-s01e01',
+  'hell-teacher-nube-2025-s01e01',
+]);
+const fixturesBySlug = new Map(labTrigger.fixtures.map((row) => [row.slug, row.fixture]));
+assert.equal(fixturesBySlug.get('colony-2021').tmdbId, '760873');
+assert.equal(fixturesBySlug.get('colony-2021').year, 2021);
+assert.deepEqual(fixturesBySlug.get('colony-2021').ambiguousReleaseYears, [2013, 2021]);
+assert.equal(fixturesBySlug.get('failure-frame-s01e01').tmdbId, '245285');
+assert.equal(fixturesBySlug.get('failure-frame-s01e01').category, 'anime');
+assert.equal(fixturesBySlug.get('failure-frame-s01e01').episode, 1);
+assert.equal(fixturesBySlug.get('hell-teacher-nube-2025-s01e01').tmdbId, '259544');
+assert.equal(fixturesBySlug.get('hell-teacher-nube-2025-s01e01').year, 2025);
+assert.deepEqual(fixturesBySlug.get('hell-teacher-nube-2025-s01e01').ambiguousReleaseYears, [1996, 2025]);
 
 const manifest = {
   scrapers: [
@@ -135,6 +137,27 @@ assert.deepEqual(streamIdentity({ title: 'S1E1 - Ryomen Sukuna', name: 'ToFlix' 
 assert.deepEqual(streamIdentity({ title: 'Saison 1 - Vidmoly', name: 'Mugiwara (VOSTFR)' }, { title: 'Mushoku Tensei', mediaType: 'tv', season: 1, episode: 1 }), { status: 'unknown', reason: 'insufficient_identity_metadata' });
 assert.deepEqual(streamIdentity({ title: 'Enola Holmes 2 - 1080p' }, { title: 'Mon ninja et moi 3', forbiddenAliases: ['Enola Holmes 2'], mediaType: 'movie' }), { status: 'contradiction', reason: 'forbidden_title_alias' });
 
+// Release/remake collision guard: resolution labels are not years; explicit wrong
+// release years are contradictions; same-title rows without a discriminator stay
+// unproven so duration alone cannot bless the wrong work.
+assert.deepEqual(explicitYears('The Colony 2013 1080p x265'), [2013]);
+assert.deepEqual(explicitYears('2160p 1080p HEVC'), []);
+const colonyFixture = fixturesBySlug.get('colony-2021');
+assert.equal(releaseIdentityGuard({ title: 'The Colony 2013 1080p' }, colonyFixture).reason, 'wrong_release_year');
+assert.equal(releaseIdentityGuard({ title: 'The Colony 2021 1080p' }, colonyFixture), null);
+assert.equal(releaseIdentityGuard({ title: 'Tides 1080p' }, colonyFixture), null);
+const colonyAmbiguous = releaseIdentityGuard({ title: 'The Colony 1080p' }, colonyFixture);
+assert.equal(colonyAmbiguous.status, 'unknown');
+assert.equal(colonyAmbiguous.reason, 'ambiguous_same_title_release');
+assert.equal(colonyAmbiguous.preventDurationPromotion, true);
+const nubeFixture = fixturesBySlug.get('hell-teacher-nube-2025-s01e01');
+assert.equal(releaseIdentityGuard({ title: 'Hell Teacher Nube 1996 S01E01' }, nubeFixture).reason, 'wrong_release_year');
+assert.equal(releaseIdentityGuard({ title: 'Hell Teacher Nube 2025 S01E01' }, nubeFixture), null);
+const nubeAmbiguous = releaseIdentityGuard({ title: 'Hell Teacher Nube S01E01 1080p' }, nubeFixture);
+assert.equal(nubeAmbiguous.status, 'unknown');
+assert.equal(nubeAmbiguous.preventDurationPromotion, true);
+assert.equal(releaseIdentityGuard({ title: 'Failure Frame S01E01' }, fixturesBySlug.get('failure-frame-s01e01')), null);
+
 const unsafePolicy = summarizePolicy([
   { id: 'disabled-but-cacheable', manifest_enabled: false, is_vf: false, clients: { tv: { verdict: 'wrong_content', identity_status: 'contradiction', identity_contradiction_count: 1 } } },
 ], ['tv'], { policy: { target_total: 10, minimum_vf: 3, blocking: false } });
@@ -176,4 +199,4 @@ try {
   fs.rmSync(tmp, { recursive: true, force: true });
 }
 
-console.log('nuvio client lab tests passed');
+console.log('nuvio client transport unit tests passed');

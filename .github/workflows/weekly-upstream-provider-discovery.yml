@@ -1,0 +1,121 @@
+name: NiakVIO weekly upstream provider discovery
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/weekly-upstream-provider-discovery.yml'
+      - 'scripts/report_new_upstream_providers.py'
+      - 'scripts/discover_candidates.py'
+      - 'tests/weekly_upstream_provider_discovery_test.py'
+      - 'tests/brain_cron_full_coverage_test.py'
+      - 'sources.json'
+      - 'provider_catalog.json'
+  schedule:
+    - cron: '37 3 * * 3'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: niakvio-weekly-upstream-provider-discovery-${{ github.event.pull_request.number || 'main' }}
+  cancel-in-progress: true
+
+jobs:
+  discover:
+    name: Review new providers from all three upstreams
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout review target
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || 'main' }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+          package-manager-cache: false
+
+      - name: Install pinned runtime dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -f package-lock.json ]; then
+            npm ci --ignore-scripts --no-audit --no-fund
+          else
+            npm install --ignore-scripts --no-audit --no-fund --package-lock=false
+          fi
+
+      - name: Resolve official hubs without publishing
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p health-output
+          python scripts/resolve_provider_hubs.py \
+            --mode quick \
+            --include-disabled \
+            --workers 8 \
+            --timeout 8 \
+            --output health-output/provider-hub-report.json
+
+      - name: Stage every non-P2P upstream provider
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/discover_candidates.py --require-all-upstreams
+          node engine_v2/scripts/validate-stage-against-catalog.mjs \
+            --catalog provider_catalog.json \
+            --stage staging/candidates.json
+
+      - name: Report providers absent from NiakVIO catalog
+        id: report
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/report_new_upstream_providers.py \
+            --stage staging/candidates.json \
+            --catalog provider_catalog.json \
+            --sources sources.json \
+            --output health-output/upstream-provider-discovery.json \
+            --markdown health-output/upstream-provider-discovery.md
+          cat health-output/upstream-provider-discovery.md >> "$GITHUB_STEP_SUMMARY"
+          python - <<'PY' >> "$GITHUB_OUTPUT"
+          import json
+          from pathlib import Path
+          report = json.loads(Path('health-output/upstream-provider-discovery.json').read_text())
+          print(f"new_count={int(report.get('newProviderCount') or 0)}")
+          print(f"interesting_count={int(report.get('interestingProviderCount') or 0)}")
+          PY
+
+      - name: Validate weekly discovery safety contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          python tests/weekly_upstream_provider_discovery_test.py
+          python tests/brain_cron_full_coverage_test.py
+          git diff --exit-code -- provider_catalog.json manifest.json providers/ provider-overrides.json
+
+      - name: Upload review artifacts
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: niakvio-weekly-upstream-provider-discovery-${{ github.run_id }}
+          path: |
+            health-output/upstream-provider-discovery.json
+            health-output/upstream-provider-discovery.md
+            health-output/provider-hub-report.json
+            staging/candidates.json
+            staging/manifests/
+          retention-days: 21
+          if-no-files-found: error

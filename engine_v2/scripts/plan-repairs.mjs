@@ -15,12 +15,25 @@ try {
 const policy = asRecord(input.policy);
 const production = asRecord(policy.production);
 const maturity = asRecord(policy.skillMaturity);
-const learnedSkills = normalizeLearnedSkills(input.learnedSkills);
+const globalSkillConfig = readJsonFile("engine_v2/config/global-repair-skills.json", {});
+const learnedSkills = [
+  ...normalizeLearnedSkills(input.learnedSkills),
+  ...normalizeLearnedSkills(asRecord(globalSkillConfig).skills),
+];
+const runtimeCompatibility = buildRuntimeCompatibility(
+  readJsonFile("automation/nuvio-client-compatibility-matrix.json", {}),
+);
 const output = {
   schemaVersion: 2,
   brainVersion: BRAIN_CONTROL_PLANE_VERSION,
   mode: stringValue(input.mode, "quick"),
   plannerErrors: 0,
+  runtimeCompatibility: {
+    matrixVersion: runtimeCompatibility.matrixVersion,
+    supportedCapabilities: runtimeCompatibility.supportedCapabilities,
+    invalidCapabilities: runtimeCompatibility.invalidCapabilities,
+    clients: runtimeCompatibility.clients,
+  },
   plans: {},
 };
 
@@ -56,6 +69,7 @@ function buildPlan(item) {
       id: stringValue(skill.id),
       failureClass: skill.failureClass ?? skill.failure_class ?? null,
       capabilities: stringArray(skill.capabilities),
+      clientVersions: asRecord(skill.clientVersions ?? skill.runtimeVersions),
       actions: stringArray(skill.actions).length ? stringArray(skill.actions) : [`apply learned profile ${stringValue(skill.profile)}`],
       profile: stringValue(skill.profile) || null,
       learned: true,
@@ -71,6 +85,7 @@ function buildPlan(item) {
   const plan = planRepair(evidence, {
     signature,
     learnedSkills: reusable,
+    runtimeCompatibility,
     maxHypotheses: finiteNumber(production.maxHypotheses, 3),
     budget: {
       maxHypotheses: finiteNumber(production.maxHypotheses, 3),
@@ -97,6 +112,7 @@ function buildPlan(item) {
     hypotheses: hypotheses.map((row) => ({
       id: stringValue(row.id),
       capabilities: stringArray(row.capabilities),
+      clientVersions: asRecord(row.clientVersions ?? row.runtimeVersions),
       actions: stringArray(row.actions),
       learned: row.learned === true,
       maturity: row.maturity ?? null,
@@ -138,6 +154,47 @@ function policyBudget() {
   };
 }
 
+function readJsonFile(filename, fallback) {
+  try {
+    return JSON.parse(fs.readFileSync(filename, "utf8"));
+  } catch (_error) {
+    return fallback;
+  }
+}
+
+function buildRuntimeCompatibility(matrixValue) {
+  const matrix = asRecord(matrixValue);
+  const universe = new Set(stringArray(matrix.capability_universe));
+  const clientEntries = Object.entries(asRecord(matrix.clients)).filter(([, row]) => isRecord(row));
+  if (!universe.size || !clientEntries.length) {
+    throw new Error("nuvio_runtime_compatibility_matrix_missing");
+  }
+  const supportedSets = clientEntries.map(([, row]) => new Set(stringArray(row.brain_capabilities)));
+  const supportedCapabilities = [...universe].filter((capability) => supportedSets.every((set) => set.has(capability))).sort();
+  const supported = new Set(supportedCapabilities);
+  const clients = {};
+  for (const [clientId, row] of clientEntries) {
+    const supportedRange = asRecord(row.supported_version_code);
+    const baseline = asRecord(row.baseline);
+    const current = asRecord(row.current_audited);
+    clients[clientId] = {
+      family: stringValue(row.family),
+      baselineVersion: stringValue(baseline.version_name),
+      baselineVersionCode: finiteNumber(baseline.version_code, 0),
+      currentVersion: stringValue(current.version_name),
+      currentVersionCode: finiteNumber(current.version_code, 0),
+      supportedMinVersionCode: finiteNumber(supportedRange.min, 0),
+      supportedMaxVersionCode: finiteNumber(supportedRange.max, 0),
+    };
+  }
+  return {
+    matrixVersion: finiteNumber(matrix.schema_version, 1),
+    supportedCapabilities,
+    invalidCapabilities: [...universe].filter((capability) => !supported.has(capability)).sort(),
+    clients,
+  };
+}
+
 function normalizeLearnedSkills(value) {
   if (Array.isArray(value)) return value.filter(isRecord);
   if (isRecord(value)) return Object.values(value).filter(isRecord);
@@ -167,6 +224,7 @@ function profilesForPlan(plan, learned) {
     "validate-final-media": ["adaptive_runtime_recovery"],
     "bootstrap-session": ["adaptive_runtime_recovery"],
     "alternate-official-route": ["adaptive_runtime_recovery"],
+    "repair-structured-parser": ["safe_structured_parse"],
   };
   for (const hypothesis of hypotheses) {
     for (const profile of map[stringValue(hypothesis.id)] ?? []) profiles.push(profile);
@@ -205,19 +263,17 @@ function deriveEvidence(candidate, result) {
   const mediaType = stringValue(fixture.category ?? fixture.mediaType ?? supportedTypes[0], "movie").toLowerCase();
   const identityContradiction = finiteNumber(evidence.identity_contradiction_count, 0) > 0 || finiteNumber(evidence.duration_identity_mismatch_count, 0) > 0 || /identity|duration.*mismatch/.test(failureText);
   const invoked = !/not[_ -]?invoked|invalid[_ -]?request[_ -]?argument|object%20object|object object/.test(failureText);
+  const structuredParseFailure = status === "runtime_error" && playable === 0 && /(?:json(?:\.parse)?|syntaxerror|structured)[^\n]{0,120}(?:unexpected|invalid|escape|unterminated|control character|parse)|(?:unexpected token|bad escape|invalid json)/.test(failureText);
   const contractDrift = status === "runtime_error" && /invalid[_ -]?request[_ -]?argument|object%20object|object object|signature|argument/.test(failureText);
 
   if (playable > 0 && !identityContradiction) {
     return { invoked, contractDrift, playableStreams: playable, request: { mediaType }, stages: { validation: { attempted: true, playable: true, playableCount: playable, statuses } } };
   }
   if (identityContradiction) return { invoked, suspicious: true, request: { mediaType } };
+  if (structuredParseFailure) return { invoked, structuredParseFailure: true, request: { mediaType } };
   if (status === "provider_unreachable" && /dns|enotfound|eai_again|getaddrinfo/.test(failureText)) {
     return { invoked, dns: { ok: false }, request: { mediaType } };
   }
-  // Once a provider has returned media candidates, blocked/gone observations are
-  // playback evidence, not evidence that the provider homepage itself is blocked.
-  // Preserve that stage so the Brain repairs Referer/Origin/cookies/tokens rather
-  // than wasting a mutation on domain/session bootstrap.
   if (returned > 0) {
     return {
       invoked, contractDrift, request: { mediaType }, playableStreams: 0,
@@ -228,10 +284,6 @@ function deriveEvidence(candidate, result) {
       },
     };
   }
-  // A runtime may reach a terminal media URL but suppress it from the provider
-  // output because validation already saw a 403/410. If the provider/search path
-  // itself also produced successful responses, that downstream media rejection is
-  // a playback-context problem, not evidence that the provider transport is blocked.
   if (terminalMediaStatuses.length && providerSuccessObserved) {
     return {
       invoked, contractDrift, request: { mediaType }, playableStreams: 0,

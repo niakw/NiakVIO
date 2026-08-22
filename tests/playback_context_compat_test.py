@@ -85,7 +85,7 @@ def test_embed_cookie_and_header_inheritance(root: Path) -> None:
     base = 'module.exports={getStreams:async()=>[{title:"x",url:"https://player.example.com/watch"}]};\n'
     patched = enrichment.apply(base)
     assert patched == enrichment.apply(patched)
-    assert "scoped-playback-context-v4" in patched
+    assert "scoped-playback-context-v6-direct-safe-opaque-media" in patched
     assert 'typeof r.arrayBuffer==="function"' in patched
     assert 'typeof r.text==="function"' in patched
 

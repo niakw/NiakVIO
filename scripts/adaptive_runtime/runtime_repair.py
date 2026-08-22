@@ -32,6 +32,7 @@ ADAPTIVE_MARKERS = (
     "/* NUVIO_VERIFIED_MEDIA_RUNTIME_RECOVERY_V5",
 )
 ADAPTIVE_CALL = '})(typeof globalThis!=="undefined"?globalThis:this,'
+SAFE_STRUCTURED_PARSE_PROFILE = "safe_structured_parse"
 # `excluded` is not an availability/runtime failure. It represents a deliberate
 # policy/safety exclusion and therefore must not be turned into an unattended
 # network-repair attempt. Every other non-healthy/non-playable observation is a
@@ -193,9 +194,33 @@ def _adaptive_failure(result: dict[str, Any]) -> bool:
     return not (status == "healthy" and playable > 0)
 
 
+def _load_safe_structured_parse_module():
+    script = ROOT / "scripts" / "provider_patches" / "safe_structured_parse_v1.py"
+    spec = importlib.util.spec_from_file_location("nuvio_safe_structured_parse", script)
+    if spec is None or spec.loader is None:
+        raise RuntimeError(f"cannot load {script}")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def _safe_structured_parse_applicable(source_text: str) -> bool:
+    try:
+        patched = _load_safe_structured_parse_module().apply(source_text)
+    except Exception:
+        return False
+    return isinstance(patched, str) and patched != source_text
+
+
 def matching_profiles(candidate: dict[str, Any], result: dict[str, Any], source_text: str, config: dict[str, Any] | None = None) -> list[str]:
     config = config or load_overrides()
     matches = list(_base.matching_profiles(candidate, result, source_text, config))
+    if (
+        str(result.get("status") or "") == "runtime_error"
+        and _safe_structured_parse_applicable(source_text)
+        and SAFE_STRUCTURED_PARSE_PROFILE not in matches
+    ):
+        matches.append(SAFE_STRUCTURED_PARSE_PROFILE)
     name = "adaptive_runtime_recovery"
     if _adaptive_failure(result) and _adaptive_runtime_options(candidate, config) is not None and name not in matches:
         matches.append(name)
@@ -262,8 +287,72 @@ def _apply_adaptive(parent_data: bytes, candidate: dict[str, Any]) -> tuple[byte
     return patched, [{"type": "patch_profile", "profile": "adaptive_runtime_recovery", "phase": "runtime", "revision": 5, "options": options}]
 
 
+def _apply_safe_structured_parse(parent_data: bytes) -> tuple[bytes, list[dict[str, Any]]]:
+    source_text = parent_data.decode("utf-8", errors="strict")
+    patched_text = _load_safe_structured_parse_module().apply(source_text)
+    if not isinstance(patched_text, str):
+        raise TypeError("safe_structured_parse_v1.apply() must return str")
+    patched = patched_text.encode("utf-8")
+    if patched == parent_data:
+        return parent_data, []
+    return patched, [{
+        "type": "patch_profile",
+        "profile": SAFE_STRUCTURED_PARSE_PROFILE,
+        "phase": "runtime",
+        "revision": 1,
+        "scope": "global_structured_parse",
+    }]
+
+
+def _materialize_repair(
+    stage: Path,
+    candidate: dict[str, Any],
+    profile_name: str,
+    round_number: int,
+    parent_data: bytes,
+    patched: bytes,
+    records: list[dict[str, Any]],
+    revision: int,
+) -> tuple[dict[str, Any] | None, str | None]:
+    if patched == parent_data or not records:
+        return None, "structural_profile_made_no_change"
+
+    digest = hashlib.sha256(patched).hexdigest()
+    parent_digest = hashlib.sha256(parent_data).hexdigest()
+    repair_dir = stage / "providers" / "runtime-repairs" / _base._safe_fragment(str(candidate.get("source") or "source"))
+    repair_dir.mkdir(parents=True, exist_ok=True)
+    target = repair_dir / (
+        f"{_base._safe_fragment(str(candidate.get('canonical_id') or 'provider'))}--"
+        f"r{round_number}--{_base._safe_fragment(profile_name)}--{digest[:16]}.js"
+    )
+    target.write_bytes(patched)
+    try:
+        _base._validate_artifact(target)
+    except Exception as exc:
+        target.unlink(missing_ok=True)
+        return None, f"artifact_validation_failed:{type(exc).__name__}:{exc}"
+
+    repaired = copy.deepcopy(candidate)
+    parent_key = str(candidate.get("key"))
+    repaired["key"] = f"{parent_key}::repair:r{round_number}:{profile_name}:{digest[:8]}"
+    repaired["local_path"] = target.relative_to(stage).as_posix()
+    repaired["sha256"] = digest
+    repaired["bytes"] = len(patched)
+    repaired["local_patches"] = list(candidate.get("local_patches") or []) + records
+    runtime_profile = "" if profile_name == "adaptive_runtime_recovery" else profile_name
+    repaired["runtime_repair"] = {
+        "parent_key": parent_key,
+        "parent_sha256": parent_digest,
+        "round": round_number,
+        "profile": runtime_profile,
+        "strategy": profile_name,
+        "revision": revision,
+    }
+    return repaired, None
+
+
 def create_repair_candidate(stage: Path, candidate: dict[str, Any], profile_name: str, round_number: int) -> tuple[dict[str, Any] | None, str | None]:
-    if profile_name != "adaptive_runtime_recovery":
+    if profile_name not in {"adaptive_runtime_recovery", SAFE_STRUCTURED_PARSE_PROFILE}:
         return _base.create_repair_candidate(stage, candidate, profile_name, round_number)
     source_path = (stage / str(candidate.get("local_path") or "")).resolve()
     providers_root = (stage / "providers").resolve()
@@ -275,40 +364,21 @@ def create_repair_candidate(stage: Path, candidate: dict[str, Any], profile_name
         return None, "missing_parent_artifact"
     parent_data = source_path.read_bytes()
     try:
-        patched, records = _apply_adaptive(parent_data, candidate)
+        if profile_name == SAFE_STRUCTURED_PARSE_PROFILE:
+            patched, records = _apply_safe_structured_parse(parent_data)
+            revision = 1
+        else:
+            patched, records = _apply_adaptive(parent_data, candidate)
+            revision = 5
     except Exception as exc:
         return None, f"patch_exception:{type(exc).__name__}:{exc}"
-    if patched == parent_data or not records:
-        return None, "structural_profile_made_no_change"
-
-    digest = hashlib.sha256(patched).hexdigest()
-    parent_digest = hashlib.sha256(parent_data).hexdigest()
-    repair_dir = stage / "providers" / "runtime-repairs" / _base._safe_fragment(str(candidate.get("source") or "source"))
-    repair_dir.mkdir(parents=True, exist_ok=True)
-    target = repair_dir / (
-        f"{_base._safe_fragment(str(candidate.get('canonical_id') or 'provider'))}--"
-        f"r{round_number}--adaptive_runtime_recovery--{digest[:16]}.js"
+    return _materialize_repair(
+        stage,
+        candidate,
+        profile_name,
+        round_number,
+        parent_data,
+        patched,
+        records,
+        revision,
     )
-    target.write_bytes(patched)
-    try:
-        _base._validate_artifact(target)
-    except Exception as exc:
-        target.unlink(missing_ok=True)
-        return None, f"artifact_validation_failed:{type(exc).__name__}:{exc}"
-
-    repaired = copy.deepcopy(candidate)
-    parent_key = str(candidate.get("key"))
-    repaired["key"] = f"{parent_key}::repair:r{round_number}:adaptive_runtime_recovery:{digest[:8]}"
-    repaired["local_path"] = target.relative_to(stage).as_posix()
-    repaired["sha256"] = digest
-    repaired["bytes"] = len(patched)
-    repaired["local_patches"] = list(candidate.get("local_patches") or []) + records
-    repaired["runtime_repair"] = {
-        "parent_key": parent_key,
-        "parent_sha256": parent_digest,
-        "round": round_number,
-        "profile": "",
-        "strategy": "adaptive_runtime_recovery",
-        "revision": 5,
-    }
-    return repaired, None

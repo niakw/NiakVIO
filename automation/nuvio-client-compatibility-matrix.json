@@ -1,0 +1,187 @@
+{
+  "schema_version": 1,
+  "policy": {
+    "shared_bundle_rule": "A Brain/Core provider mutation must be compatible with every supported official Nuvio client generation because the published provider bundle is shared across clients.",
+    "selection_rule": "Prefer runtime capability detection inside generated provider code; use client version/ref gates only when a behavior cannot be detected safely at runtime.",
+    "unknown_generation": "fail-closed for automatic mutation capabilities not proven on the baseline generation",
+    "reader_only_drift": "may require native reader re-proof without invalidating provider-only capabilities",
+    "provider_contract_drift": "blocks automatic Brain provider mutation until audited"
+  },
+  "capability_universe": [
+    "invocation",
+    "media-type",
+    "settings",
+    "dns",
+    "hub",
+    "search",
+    "telegram",
+    "lkg",
+    "headers",
+    "cookies",
+    "redirects",
+    "routes",
+    "parser",
+    "json",
+    "javascript",
+    "identity",
+    "detail",
+    "series",
+    "episode",
+    "anime",
+    "player",
+    "embed",
+    "html",
+    "media",
+    "xhr",
+    "token",
+    "session",
+    "referer",
+    "origin",
+    "ranking",
+    "timing",
+    "timeout",
+    "range",
+    "tls",
+    "decoder",
+    "codec",
+    "playlist",
+    "runtime-version",
+    "contract",
+    "evidence",
+    "duration"
+  ],
+  "clients": {
+    "nuvio-mobile": {
+      "family": "mobile-quickjs",
+      "repository": "NuvioMedia/NuvioMobile",
+      "branch": "cmp-rewrite",
+      "platforms": ["android", "ios"],
+      "baseline": {
+        "ref": "0d6e30e4566e6f9f2051d5f80a1e3f1e0fcb1f18",
+        "version_name": "0.4.5",
+        "version_code": 109
+      },
+      "current_audited": {
+        "ref": "b80ee5ab8a550f1385c438071694a51ed3b0ef00",
+        "version_name": "0.4.7",
+        "version_code": 111
+      },
+      "supported_version_code": {"min": 109, "max": 111},
+      "provider_contract": {
+        "runtime": "quickjs-positional-getStreams",
+        "request_shape": "getStreams(tmdbId, mediaType, season, episode)",
+        "stable_between_baseline_and_current": true,
+        "changed_provider_contract_paths": [],
+        "reader_only_changes": ["android PlayerEngine", "ios player bridge/engine", "player settings"]
+      },
+      "brain_capabilities": [
+        "invocation", "media-type", "settings", "dns", "hub", "search", "telegram", "lkg",
+        "headers", "cookies", "redirects", "routes", "parser", "json", "javascript", "identity",
+        "detail", "series", "episode", "anime", "player", "embed", "html", "media", "xhr",
+        "token", "session", "referer", "origin", "ranking", "timing", "timeout", "range", "tls",
+        "decoder", "codec", "playlist", "runtime-version", "contract", "evidence", "duration"
+      ],
+      "versioned_features": [
+        {
+          "id": "mobile-player-engine-2026-08",
+          "min_version_code": 111,
+          "scope": "reader-only",
+          "brain_provider_mutation_required": false
+        }
+      ]
+    },
+    "nuvio-desktop": {
+      "family": "desktop-quickjs",
+      "repository": "NuvioMedia/NuvioDesktop",
+      "branch": "Dev",
+      "platforms": ["windows", "macos", "linux"],
+      "baseline": {
+        "ref": "463cd0b72a8f08e2529efcbacfff2e7da8d4453a",
+        "version_name": "0.1.17-alpha",
+        "version_code": 17
+      },
+      "current_audited": {
+        "ref": "85877828687722fdc4ed5c16766068df94640b8a",
+        "version_name": "0.1.20-alpha",
+        "version_code": 20
+      },
+      "supported_version_code": {"min": 17, "max": 20},
+      "provider_contract": {
+        "runtime": "quickjs-positional-getStreams",
+        "request_shape": "getStreams(tmdbId, mediaType, season, episode)",
+        "stable_between_baseline_and_current": true,
+        "changed_provider_contract_paths": ["composeApp/src/commonMain/kotlin/com/nuvio/app/features/streams/StreamsRepository.kt"],
+        "audited_change": "fetchAddonResponseText preserves normal httpGetText behavior and adds Cache-Control no-cache only for forceRefresh"
+      },
+      "brain_capabilities": [
+        "invocation", "media-type", "settings", "dns", "hub", "search", "telegram", "lkg",
+        "headers", "cookies", "redirects", "routes", "parser", "json", "javascript", "identity",
+        "detail", "series", "episode", "anime", "player", "embed", "html", "media", "xhr",
+        "token", "session", "referer", "origin", "ranking", "timing", "timeout", "range", "tls",
+        "decoder", "codec", "playlist", "runtime-version", "contract", "evidence", "duration"
+      ],
+      "versioned_features": [
+        {
+          "id": "addon-force-refresh-no-cache-v1",
+          "min_version_code": 20,
+          "scope": "repository-reader",
+          "brain_provider_mutation_required": false
+        }
+      ]
+    },
+    "nuvio-tv": {
+      "family": "android-tv-quickjs",
+      "repository": "NuvioMedia/NuvioTV",
+      "branch": "dev",
+      "platforms": ["android-tv"],
+      "baseline": {
+        "ref": "6103a144485277f06ebc31456f1949c65b304e8e",
+        "version_name": "0.8.4-beta",
+        "version_code": 1045
+      },
+      "current_audited": {
+        "ref": "188efb59dc8a30b62332f330dfc16941ff1f6f7e",
+        "version_name": "0.8.7-beta",
+        "version_code": 1048
+      },
+      "supported_version_code": {"min": 1045, "max": 1048},
+      "provider_contract": {
+        "runtime": "quickjs-positional-getStreams",
+        "request_shape": "getStreams(tmdbId, mediaType, season, episode) plus global SCRAPER_SETTINGS",
+        "stable_between_baseline_and_current": true,
+        "changed_provider_contract_paths": [
+          "app/src/main/java/com/nuvio/tv/data/repository/StreamRepositoryImpl.kt",
+          "app/src/main/java/com/nuvio/tv/domain/repository/StreamRepository.kt"
+        ],
+        "audited_change": "forceRefresh default remains backward-compatible; session cache key includes profile, media identity and source/debrid configuration; provider positional invocation and returned URL/header ingestion remain preserved"
+      },
+      "brain_capabilities": [
+        "invocation", "media-type", "settings", "dns", "hub", "search", "telegram", "lkg",
+        "headers", "cookies", "redirects", "routes", "parser", "json", "javascript", "identity",
+        "detail", "series", "episode", "anime", "player", "embed", "html", "media", "xhr",
+        "token", "session", "referer", "origin", "ranking", "timing", "timeout", "range", "tls",
+        "decoder", "codec", "playlist", "runtime-version", "contract", "evidence", "duration"
+      ],
+      "versioned_features": [
+        {
+          "id": "stream-session-cache-v1",
+          "min_version_code": 1048,
+          "scope": "repository",
+          "brain_provider_mutation_required": false
+        },
+        {
+          "id": "stream-force-refresh-v1",
+          "min_version_code": 1048,
+          "scope": "repository",
+          "brain_provider_mutation_required": false
+        },
+        {
+          "id": "local-plugin-playback-pause-v1",
+          "min_version_code": 1048,
+          "scope": "reader-lifecycle",
+          "brain_provider_mutation_required": false
+        }
+      ]
+    }
+  }
+}

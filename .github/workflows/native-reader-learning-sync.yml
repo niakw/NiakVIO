@@ -1,0 +1,226 @@
+name: Native reader learning sync
+
+on:
+  workflow_run:
+    workflows:
+      - Native Android route reader acceptance
+      - Native Desktop reader acceptance
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: Exact completed native reader run ID to import
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: niakvio-brain-learning-memory-writer
+  cancel-in-progress: false
+
+jobs:
+  sync-reader-learning:
+    if: ${{ github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion != 'cancelled' && github.event.workflow_run.event == 'push' && github.event.workflow_run.head_branch == 'main') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout trusted main implementation
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: "3.12"
+
+      - name: Restore current sanitized Brain state
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p reader-learning-input/diagnostics reader-learning-output
+          git fetch origin brain-learning/proposals:refs/remotes/origin/brain-learning/proposals || true
+          if git cat-file -e refs/remotes/origin/brain-learning/proposals:engine_v2/learning/latest.json 2>/dev/null; then
+            git show refs/remotes/origin/brain-learning/proposals:engine_v2/learning/latest.json > reader-learning-input/latest.json
+          else
+            printf '{"publicationAllowed":false,"productionWritesAllowed":false,"proposals":[]}\n' > reader-learning-input/latest.json
+          fi
+          if git cat-file -e refs/remotes/origin/brain-learning/proposals:engine_v2/learning/latest.md 2>/dev/null; then
+            git show refs/remotes/origin/brain-learning/proposals:engine_v2/learning/latest.md > reader-learning-input/latest.md
+          else
+            printf '# NiakVIO Brain Learning\n' > reader-learning-input/latest.md
+          fi
+          cp reader-learning-input/latest.json reader-learning-output/latest.json
+          cp reader-learning-input/latest.md reader-learning-output/latest.md
+
+      - name: Resolve exact reader run and repair-memory duplicate state
+        id: source
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          EVENT_RUN_ID: ${{ github.event.workflow_run.id }}
+          EVENT_WORKFLOW: ${{ github.event.workflow_run.name }}
+          INPUT_RUN_ID: ${{ inputs.run_id }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "$EVENT_NAME" = "workflow_run" ]; then
+            RUN_ID="$EVENT_RUN_ID"
+            SOURCE_WORKFLOW="$EVENT_WORKFLOW"
+          else
+            RUN_ID="$INPUT_RUN_ID"
+            SOURCE_WORKFLOW="manual"
+          fi
+          [[ "$RUN_ID" =~ ^[0-9]+$ ]] || { echo "invalid reader run id: $RUN_ID" >&2; exit 2; }
+          echo "run_id=$RUN_ID" >> "$GITHUB_OUTPUT"
+          echo "source_workflow=$SOURCE_WORKFLOW" >> "$GITHUB_OUTPUT"
+          RUN_ID="$RUN_ID" python3 - <<'PY' >> "$GITHUB_OUTPUT"
+          import json, os
+          state=json.load(open('reader-learning-input/latest.json'))
+          memory=state.get('nativeReaderRepairMemory') if isinstance(state.get('nativeReaderRepairMemory'), dict) else {}
+          imported={str(v) for v in memory.get('importedRunIds', [])}
+          print('repair_duplicate=' + ('true' if os.environ['RUN_ID'] in imported else 'false'))
+          PY
+
+      - name: Download exact native reader diagnosis artifacts
+        id: diagnoses
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_ID: ${{ steps.source.outputs.run_id }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p reader-learning-input/diagnostics
+          for pattern in \
+            "native-tv-route-*-$RUN_ID" \
+            "native-mobile-route-*-$RUN_ID" \
+            "native-desktop-reader-*-$RUN_ID"; do
+            gh run download "$RUN_ID" --pattern "$pattern" --dir reader-learning-input/diagnostics || true
+          done
+          if find reader-learning-input/diagnostics -type f -name '*brain.json' -print -quit | grep -q .; then
+            echo "has_diagnostics=true" >> "$GITHUB_OUTPUT"
+            find reader-learning-input/diagnostics -type f -name '*brain.json' -print | sort
+          else
+            echo "has_diagnostics=false" >> "$GITHUB_OUTPUT"
+            echo "No reader diagnosis artifact was materialized for run $RUN_ID."
+          fi
+
+      - name: Download exact Android reader-repair comparison
+        id: repair_evidence
+        if: steps.source.outputs.repair_duplicate != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_ID: ${{ steps.source.outputs.run_id }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p reader-learning-input/acceptance
+          if gh run download "$RUN_ID" --name "native-reader-brain-repair-$RUN_ID" --dir reader-learning-input/acceptance \
+            && [ -s reader-learning-input/acceptance/tv-reader-repair-comparison.json ]; then
+            echo "has_comparison=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_comparison=false" >> "$GITHUB_OUTPUT"
+            rm -rf reader-learning-input/acceptance
+            echo "No materialized reader-repair comparison for run $RUN_ID; repair memory remains importable after a rerun."
+          fi
+
+      - name: Merge sanitized reader repair memory once for the exact Nuvio runtime
+        if: steps.source.outputs.repair_duplicate != 'true' && steps.repair_evidence.outputs.has_comparison == 'true'
+        env:
+          RUN_ID: ${{ steps.source.outputs.run_id }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          RUNTIME_FINGERPRINT="$(python3 - <<'PY'
+          import json
+          value=str(json.load(open('reader-learning-input/acceptance/tv-reader-repair-comparison.json')).get('runtimeFingerprint') or '').strip()
+          print(value)
+          PY
+          )"
+          if [ -z "$RUNTIME_FINGERPRINT" ]; then
+            echo "Reader comparison has no exact Nuvio runtime fingerprint; refusing to learn from an unscoped run." >&2
+            exit 2
+          fi
+          python scripts/scope_native_reader_learning_runtime.py merge \
+            --state reader-learning-input/latest.json \
+            --comparison reader-learning-input/acceptance/tv-reader-repair-comparison.json \
+            --runtime-fingerprint "$RUNTIME_FINGERPRINT" \
+            --output reader-learning-output/latest.json \
+            --markdown-input reader-learning-input/latest.md \
+            --markdown-output reader-learning-output/latest.md
+          python3 - <<'PY'
+          import json, os
+          path='reader-learning-output/latest.json'
+          state=json.load(open(path))
+          memory=state.setdefault('nativeReaderRepairMemory', {})
+          ids=[str(v) for v in memory.get('importedRunIds', [])]
+          run_id=os.environ['RUN_ID']
+          ids=[v for v in ids if v != run_id] + [run_id]
+          memory['importedRunIds']=ids[-100:]
+          with open(path,'w') as fh:
+              json.dump(state, fh, ensure_ascii=False, indent=2)
+              fh.write('\n')
+          PY
+
+      - name: Merge automatic native reader bug backlog
+        if: steps.diagnoses.outputs.has_diagnostics == 'true'
+        env:
+          RUN_ID: ${{ steps.source.outputs.run_id }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/merge_native_reader_backlog.py \
+            --state reader-learning-output/latest.json \
+            --previous-state reader-learning-input/latest.json \
+            --diagnostics-root reader-learning-input/diagnostics \
+            --run-id "$RUN_ID" \
+            --output reader-learning-output/latest.json \
+            --markdown-input reader-learning-output/latest.md \
+            --markdown-output reader-learning-output/latest.md
+
+      - name: Enforce sanitized fail-closed learning state
+        shell: bash
+        run: |
+          set -euo pipefail
+          node -e "const x=require('./reader-learning-output/latest.json');if(x.productionWritesAllowed===true||x.publicationAllowed===true)process.exit(1)"
+          if grep -Eiq 'https?://|authorization[=:]|cookie[=:]|token[=:]|secret[=:]' reader-learning-output/latest.json; then
+            echo "refusing unsafe native reader learning state" >&2
+            exit 1
+          fi
+          node - <<'NODE'
+          const fs=require('fs');
+          const state=JSON.parse(fs.readFileSync('reader-learning-output/latest.json','utf8'));
+          const memory=state.nativeReaderRepairMemory || {};
+          const backlog=memory.readerBacklog || {};
+          if (backlog.openCount != null && !Array.isArray(backlog.entries)) throw new Error('invalid reader backlog shape');
+          if (memory.runtimeAware === true && memory.runtimeScope?.reusePolicy !== 'exact-runtime-fingerprint-only') {
+            throw new Error('runtime-aware reader memory lost its exact-runtime reuse policy');
+          }
+          NODE
+
+      - name: Report reader sync outcome
+        shell: bash
+        run: |
+          echo "Reader run ${{ steps.source.outputs.run_id }} source=${{ steps.source.outputs.source_workflow }} repair_duplicate=${{ steps.source.outputs.repair_duplicate }} diagnostics=${{ steps.diagnoses.outputs.has_diagnostics }} comparison=${{ steps.repair_evidence.outputs.has_comparison || 'false' }}"
+
+      - name: Update the single Brain memory branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          BRANCH="brain-learning/proposals"
+          git switch -C "$BRANCH" main
+          mkdir -p engine_v2/learning
+          cp reader-learning-output/latest.json engine_v2/learning/latest.json
+          cp reader-learning-output/latest.md engine_v2/learning/latest.md
+          git config user.name "niakvio-brain"
+          git config user.email "actions@users.noreply.github.com"
+          git add engine_v2/learning/latest.json engine_v2/learning/latest.md
+          if git diff --cached --quiet; then
+            echo "No native reader learning/backlog change."
+          else
+            git commit -m "brain: sync native reader learning and bug backlog"
+            git push --force-with-lease origin HEAD:"$BRANCH"
+          fi

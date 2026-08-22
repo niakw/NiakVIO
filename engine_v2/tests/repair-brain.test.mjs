@@ -4,7 +4,7 @@ import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { BRAIN_CONTROL_PLANE_VERSION, classifyFailure, planRepair, recipeIsCompatible } from "../src/repair-brain.mjs";
 
-assert.equal(BRAIN_CONTROL_PLANE_VERSION, 3);
+assert.equal(BRAIN_CONTROL_PLANE_VERSION, 4);
 assert.equal(classifyFailure({ invoked: false }), "not_invoked");
 assert.equal(classifyFailure({ invoked: true, dns: { ok: false } }), "dns_unreachable");
 assert.equal(classifyFailure({ invoked: true, dns: { ok: true }, stages: { homepage: { status: 403 } } }), "transport_blocked");
@@ -17,7 +17,7 @@ assert.equal(classifyFailure({ contractDrift: true }), "runtime_contract_drift")
 
 const blockedEvidence = { invoked: true, stages: { player: { attempted: true, found: true }, media: { attempted: true, found: true }, validation: { attempted: true, playable: false, playableCount: 0, statuses: [403] } } };
 const plan = planRepair(blockedEvidence, { maxHypotheses: 3 });
-assert.equal(plan.brainVersion, 3);
+assert.equal(plan.brainVersion, 4);
 assert.equal(plan.failureClass, "playback_context_gap");
 assert.equal(plan.action, "probe-targeted-repair");
 assert.equal(plan.hypotheses[0].id, "preserve-playback-context");
@@ -39,6 +39,22 @@ const constrainedPlan = planRepair(blockedEvidence, { runtimeCompatibility: { in
 assert.ok(constrainedPlan.hypotheses.every((recipe) => !recipe.capabilities.includes("headers")));
 assert.equal(recipeIsCompatible({ capabilities: ["media"] }, { invalidCapabilities: ["headers"] }), true);
 assert.equal(recipeIsCompatible({ capabilities: ["headers"] }, { invalidCapabilities: ["headers"] }), false);
+
+// Version-gated skills must be compatible with the complete client generation
+// range NiakVIO claims to support, not merely with the newest audited HEAD.
+const versionedRuntime = {
+  invalidCapabilities: [],
+  clients: {
+    "nuvio-mobile": { supportedMinVersionCode: 109, supportedMaxVersionCode: 111 },
+    "nuvio-desktop": { supportedMinVersionCode: 17, supportedMaxVersionCode: 20 },
+    "nuvio-tv": { supportedMinVersionCode: 1045, supportedMaxVersionCode: 1048 },
+  },
+};
+assert.equal(recipeIsCompatible({ capabilities: ["parser"], clientVersions: { "nuvio-mobile": { min: 109 } } }, versionedRuntime), true);
+assert.equal(recipeIsCompatible({ capabilities: ["parser"], clientVersions: { "nuvio-mobile": { min: 111 } } }, versionedRuntime), false);
+assert.equal(recipeIsCompatible({ capabilities: ["media"], clientVersions: { "nuvio-tv": { max: 1048 } } }, versionedRuntime), true);
+assert.equal(recipeIsCompatible({ capabilities: ["media"], clientVersions: { "nuvio-tv": { max: 1047 } } }, versionedRuntime), false);
+assert.equal(recipeIsCompatible({ capabilities: ["media"], clientVersions: { "unknown-client": { min: 1 } } }, versionedRuntime), false);
 
 const suspicious = planRepair({ suspicious: true, invoked: true });
 assert.equal(suspicious.action, "hold-or-quarantine-pending-proof");
@@ -79,7 +95,7 @@ const dirtyPayload = {
 const plannerRun = spawnSync(process.execPath, [planner], { input: JSON.stringify(dirtyPayload), encoding: "utf8" });
 assert.equal(plannerRun.status, 0, plannerRun.stderr);
 const plannerOutput = JSON.parse(plannerRun.stdout);
-assert.equal(plannerOutput.brainVersion, 3);
+assert.equal(plannerOutput.brainVersion, 4);
 assert.equal(plannerOutput.plannerErrors, 0);
 assert.ok(plannerOutput.plans["published:dirty-provider"]);
 assert.equal(plannerOutput.plans["published:healthy-provider"].action, "none");
