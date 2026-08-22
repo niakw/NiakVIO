@@ -64,6 +64,31 @@ def _wrapper_bounds(text: str, marker: str) -> tuple[int, int] | None:
     return start, end + 2
 
 
+def _ensure_audio_marker_before_safety(text: str) -> str:
+    """Keep the audio-rewrite marker deterministic across Core rebuilds.
+
+    The implementation mutates provider source only on the first pass. The global
+    Core boundary intentionally preserves that already-rewritten provider source
+    while discarding generated tail markers. On the next pass there is therefore
+    nothing left for the legacy GUARD substitution to change, so it would omit the
+    marker and rotate the bundle hash. Reinsert the marker at its canonical position
+    immediately before the runtime media-safety wrapper.
+    """
+    marker_comment = f"/* {AUDIO_MARKER} */"
+    if marker_comment in text:
+        return text
+    safety_start = text.find(f"/* {SAFETY_MARKER}:")
+    if safety_start < 0:
+        return text.rstrip() + f"\n{marker_comment}\n"
+    return (
+        text[:safety_start].rstrip()
+        + "\n"
+        + marker_comment
+        + "\n"
+        + text[safety_start:].lstrip()
+    )
+
+
 def _place_hls_before_core_finalizers(text: str) -> str:
     bounds = _wrapper_bounds(text, HLS_INTEGRITY_MARKER)
     if bounds is None:
@@ -107,4 +132,5 @@ def _place_hls_before_core_finalizers(text: str) -> str:
 
 def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> str:
     output = _IMPL.apply(text, options=options, **kwargs)
+    output = _ensure_audio_marker_before_safety(output)
     return _place_hls_before_core_finalizers(output)
