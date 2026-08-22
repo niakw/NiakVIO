@@ -9,11 +9,13 @@ CATALOG = ROOT / "assets/badge_catalog_v2_complete.json"
 MAPPING = ROOT / "assets/mapping_core_brain_ui_v2_complete.json"
 README = ROOT / "assets/README.txt"
 CORE = ROOT / "scripts/provider_patches/global_stream_presentation_v1.py"
+LIGHT_QA = ROOT / "assets/docs/LIGHT_BADGE_QA.json"
 
 catalog = json.loads(CATALOG.read_text(encoding="utf-8"))
 mapping = json.loads(MAPPING.read_text(encoding="utf-8"))
 readme = README.read_text(encoding="utf-8")
 core = CORE.read_text(encoding="utf-8")
+light_qa = json.loads(LIGHT_QA.read_text(encoding="utf-8"))
 
 badges = catalog.get("badges") or []
 assert len(badges) == 73, f"expected complete 73-badge image catalog, got {len(badges)}"
@@ -34,6 +36,31 @@ for badge_id, row in by_id.items():
             assert path.is_file(), (badge_id, theme, size, rel, "missing image")
             assert path.suffix.lower() == ".webp", (badge_id, rel)
             assert path.stat().st_size > 0, (badge_id, rel, "empty image")
+
+# Structural existence is not enough for light-theme assets: lock the deterministic
+# contrast QA report produced from transparent artwork so a future asset refresh
+# cannot silently reintroduce white-on-white/tiny-label regressions.
+assert light_qa.get("revision") == "light-contrast-v3-native-size", light_qa.get("revision")
+assert light_qa.get("catalogBadges") == len(badges), light_qa.get("catalogBadges")
+assert light_qa.get("assetCount") == len(badges) * 2, light_qa.get("assetCount")
+assert light_qa.get("changedCount") == len(badges) * 2, light_qa.get("changedCount")
+assert light_qa.get("rerenderedTextCount", 0) > 0, light_qa.get("rerenderedTextCount")
+assert light_qa.get("preservedArtworkCount", 0) > 0, light_qa.get("preservedArtworkCount")
+assert light_qa.get("minimumGenericFontSize", 0) >= 9, light_qa.get("minimumGenericFontSize")
+assert light_qa.get("whiteBackgroundMinimumSeparationRatio", 0) >= 4.5, light_qa.get("whiteBackgroundMinimumSeparationRatio")
+assert light_qa.get("sourceOfTruth") == "assets/transparent", light_qa.get("sourceOfTruth")
+assert light_qa.get("idempotent") is True
+qa_rows = light_qa.get("rows") or []
+assert len(qa_rows) == len(badges) * 2, len(qa_rows)
+qa_by_key = {(str(row.get("badge") or ""), str(row.get("size") or "")): row for row in qa_rows if isinstance(row, dict)}
+assert len(qa_by_key) == len(qa_rows), "light QA badge/size rows must be unique"
+for badge_id in by_id:
+    for size in ("72x32", "96x40"):
+        qa = qa_by_key.get((badge_id, size))
+        assert qa, (badge_id, size, "missing light QA row")
+        assert qa.get("output") == by_id[badge_id]["assets"]["light"][size], (badge_id, size, qa.get("output"))
+        separation = max(float(qa.get("backgroundVsWhiteContrast") or 0), float(qa.get("outlineVsWhiteContrast") or 0))
+        assert separation >= 4.5, (badge_id, size, separation)
 
 assert mapping["display"]["preferredThemeFolders"] == {
     "dark_app_background": "assets/dark",
@@ -104,5 +131,6 @@ assert "REMUX must be confirmed" in rules
 print(
     "badge asset contract passed: "
     f"catalog={len(badges)} themes=3 sizes=2 core_ids={len(core_badge_ids)} "
+    f"light_qa_rows={len(qa_rows)} min_white_separation={light_qa['whiteBackgroundMinimumSeparationRatio']} "
     "dark_light_contrast=true image_fallbacks=true"
 )
