@@ -6,11 +6,11 @@ same deterministic implementation is shared by staging, Brain repair candidates,
 publication reconstruction and security audits. This adapter exists only to make
 that implementation composable through the normal provider Core hook scheduler.
 
-Security hardening owns provider-derived code. On a repeated reconstruction the
-bundle can already carry trusted NiakVIO Core facts/identity/presentation tails that
-were intentionally appended *after* the security stage. Those generated tails are
-kept byte-for-byte and excluded from provider-source rewrites; otherwise a second
-pass can mutate a trusted wrapper before its own marker-based idempotence guard runs.
+The first statement emitted by this hook is also the durable Core-tail boundary.
+It is a side-effect-free JavaScript string expression rather than a comment because
+Terser may reattach comments while printing a minified bundle. Statement order is
+preserved by the conservative purification profile, so repeated reconstruction can
+always recover the exact provider-derived prefix without cutting through its code.
 """
 from __future__ import annotations
 
@@ -26,6 +26,7 @@ if str(SCRIPTS) not in sys.path:
 from provider_security_hardening import assert_hardened, harden_text  # noqa: E402
 
 HOOK_MARKER = "NUVIO_GLOBAL_PROVIDER_SECURITY_HOOK_V1"
+HOOK_SENTINEL = f'"{HOOK_MARKER}"'
 TRUSTED_CORE_TAIL_MARKERS = (
     "NUVIO_GLOBAL_STREAM_FACTS_V1",
     "NUVIO_GLOBAL_STREAM_IDENTITY_V1",
@@ -51,8 +52,8 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
     provider_text, trusted_tail = _split_trusted_core_tail(text)
     hardened, _report = harden_text(provider_text)
     assert_hardened(hardened)
-    if HOOK_MARKER not in hardened:
-        # The hook marker is evidence that the full Core reconstruction traversed
-        # the security layer even when a source already had no known unsafe shape.
-        hardened = hardened.rstrip() + f"\n/* {HOOK_MARKER} */\n"
+    if HOOK_SENTINEL not in hardened:
+        # This side-effect-free statement is deliberately positional. Unlike a
+        # comment, Terser cannot reattach it ahead of provider source code.
+        hardened = hardened.rstrip() + f"\n{HOOK_SENTINEL};\n"
     return hardened + trusted_tail
