@@ -230,7 +230,13 @@ def assert_contract() -> None:
         "keep_classnames: true",
     ):
         assert required in purifier_text, required
-    assert "assert reapplied == patched" in playback_test
+    for required in (
+        "if reapplied != patched:",
+        "Core discovery transform not byte-idempotent",
+        "hashlib.sha256(patched).hexdigest()",
+        "hashlib.sha256(reapplied).hexdigest()",
+    ):
+        assert required in playback_test, f"missing diagnostic fixed-point assertion: {required}"
     assert "purified, purification = purify_bytes(patched)" in purification_test
 
 
