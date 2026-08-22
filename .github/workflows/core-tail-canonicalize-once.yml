@@ -1,0 +1,112 @@
+name: NiakVIO one-shot Core tail canonicalizer
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/core-tail-canonicalize-once.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  canonicalize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact main
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Canonicalize generated Core tails at scheduler boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path('scripts/apply_provider_overrides.py')
+          text = path.read_text(encoding='utf-8')
+
+          constant_anchor = 'GLOBAL_STREAM_PRESENTATION = "scripts/provider_patches/global_stream_presentation_v1.py"\n'
+          constant_block = '''GLOBAL_STREAM_PRESENTATION = "scripts/provider_patches/global_stream_presentation_v1.py"
+          GENERATED_CORE_TAIL_MARKERS = (
+              "NUVIO_GLOBAL_STREAM_FACTS_V1",
+              "NUVIO_GLOBAL_STREAM_IDENTITY_V1",
+              "NUVIO_GLOBAL_STREAM_PRESENTATION_V1",
+          )
+          '''.replace('          ', '')
+          if 'GENERATED_CORE_TAIL_MARKERS = (' not in text:
+              if constant_anchor not in text:
+                  raise SystemExit('Core presentation constant anchor not found')
+              text = text.replace(constant_anchor, constant_block, 1)
+
+          helper_anchor = '\ndef apply_overrides(\n'
+          helper = '''
+          def _strip_generated_core_tail(text: str) -> tuple[str, bool]:
+              """Return provider-derived code without Core tails from an earlier discovery pass.
+
+              Facts, identity and presentation are generated artifacts owned by the Core
+              scheduler. Reconstructing them from their canonical provider prefix prevents
+              earlier HLS/media/security stages from rewriting stale generated wrappers and
+              guarantees byte-idempotent content-addressed provider artifacts.
+              """
+              starts = [
+                  index
+                  for marker in GENERATED_CORE_TAIL_MARKERS
+                  if (index := text.find(f"/* {marker}:")) >= 0
+              ]
+              if not starts:
+                  return text, False
+              return text[:min(starts)].rstrip(), True
+
+
+          def apply_overrides(
+          '''.replace('          ', '')
+          if 'def _strip_generated_core_tail(' not in text:
+              if helper_anchor not in text:
+                  raise SystemExit('apply_overrides anchor not found')
+              text = text.replace(helper_anchor, '\n' + helper, 1)
+
+          body_anchor = '''    original_text = text
+              applied: list[dict[str, Any]] = []
+              provider_id = provider_id.casefold()
+          '''.replace('              ', '')
+          body_replacement = '''    original_text = text
+              applied: list[dict[str, Any]] = []
+              if phase == "discovery":
+                  text, removed_core_tail = _strip_generated_core_tail(text)
+                  if removed_core_tail:
+                      applied.append({
+                          "type": "rebuild_generated_core_tail",
+                          "phase": phase,
+                          "scope": "global_core_tail",
+                      })
+              provider_id = provider_id.casefold()
+          '''.replace('              ', '')
+          if '"type": "rebuild_generated_core_tail"' not in text:
+              if body_anchor not in text:
+                  raise SystemExit('apply_overrides body anchor not found')
+              text = text.replace(body_anchor, body_replacement, 1)
+
+          path.write_text(text, encoding='utf-8')
+          PY
+          python -m py_compile scripts/apply_provider_overrides.py
+          python tests/global_playback_integrity_policy_test.py
+
+      - name: Self-remove and publish canonical scheduler
+        shell: bash
+        run: |
+          set -euo pipefail
+          git rm .github/workflows/core-tail-canonicalize-once.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add scripts/apply_provider_overrides.py
+          git diff --cached --check
+          git commit -m 'core: rebuild generated tails from canonical provider prefix'
+          git pull --rebase origin main
+          python -m py_compile scripts/apply_provider_overrides.py
+          python tests/global_playback_integrity_policy_test.py
+          git push origin HEAD:main
