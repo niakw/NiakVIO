@@ -30,6 +30,7 @@ for required in (
     '"--no-save", "--package-lock=false"',
     'f"terser@{TERSER_VERSION}"',
     "validate_provider_artifact.cjs",
+    'TemporaryDirectory(prefix="niakvio-provider-purify-", dir=ROOT)',
     '"type": "provider_purification"',
     '"requiresRuntimeRetest": True',
     '"repair_candidates_must_repurify": True',

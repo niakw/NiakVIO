@@ -103,7 +103,10 @@ def validate_artifact(path: Path) -> None:
 def purify_bytes(data: bytes) -> tuple[bytes, dict[str, Any]]:
     ensure_terser()
     before_sha = sha256(data)
-    with tempfile.TemporaryDirectory(prefix="niakvio-provider-purify-") as temp:
+    # Keep the temporary artifact below ROOT so CommonJS dependencies used by a
+    # provider resolve through ROOT/node_modules during structural validation.
+    # /tmp would make Node walk the wrong parent chain and reject valid bundles.
+    with tempfile.TemporaryDirectory(prefix="niakvio-provider-purify-", dir=ROOT) as temp:
         temp_dir = Path(temp)
         input_path = temp_dir / "input.js"
         output_path = temp_dir / "output.js"
