@@ -34,7 +34,10 @@
         "category": "movie",
         "expectedDurationMinutes": 104,
         "aliases": ["The Colony", "Colony", "Tides"],
-        "forbiddenAliases": ["The Colony 2013", "Colony 2013"]
+        "forbiddenAliases": ["The Colony 2013", "Colony 2013"],
+        "ambiguousReleaseYears": [2013, 2021],
+        "requireExplicitReleaseDisambiguation": true,
+        "releaseDisambiguatingAliases": ["Tides"]
       }
     },
     {
@@ -85,7 +88,10 @@
         "category": "anime",
         "expectedDurationMinutes": 23,
         "aliases": ["Hell Teacher: Jigoku Sensei Nube", "Jigoku Sensei Nube", "Hell Teacher Nube", "地獄先生ぬ～べ～"],
-        "forbiddenAliases": ["Hell Teacher Nube 1996", "Jigoku Sensei Nube 1996", "The Terrifying New School Term! The Mysterious Demon Hand"]
+        "forbiddenAliases": ["Hell Teacher Nube 1996", "Jigoku Sensei Nube 1996", "The Terrifying New School Term! The Mysterious Demon Hand"],
+        "ambiguousReleaseYears": [1996, 2025],
+        "requireExplicitReleaseDisambiguation": true,
+        "releaseDisambiguatingAliases": ["The 99-Legged Bug"]
       }
     }
   ],
