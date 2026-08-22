@@ -1,17 +1,17 @@
 {
   "schema_version": 63,
-  "generated_at": "2026-08-22T13:04:34.419127+00:00",
+  "generated_at": "2026-08-22T16:45:00.375268+00:00",
   "test_environment": "github-actions-node",
   "checked_providers": 92,
   "status_counts": {
-    "healthy": 17,
+    "healthy": 12,
     "reachable": 0,
-    "blocked": 11,
+    "blocked": 9,
     "degraded": 1,
-    "no_streams": 20,
+    "no_streams": 24,
     "provider_unreachable": 16,
-    "runtime_error": 17,
-    "unavailable": 10,
+    "runtime_error": 19,
+    "unavailable": 11,
     "excluded": 0
   },
   "policy": {
@@ -251,18 +251,14 @@
     },
     {
       "id": "movieshunt",
-      "status": "healthy",
+      "status": "no_streams",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 2,
-      "hosts": [
-        "556138dca7367763ed46eecaa4284eca.r2.cloudflarestorage.com"
-      ],
-      "response_categories": [
-        "playable"
-      ],
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
       "host_health": {
         "pub-a0a5ce422c034486a372657692292682.r2.dev": {
           "last_checked_at": "2026-08-22T04:53:59.113328+00:00",
@@ -695,18 +691,14 @@
     },
     {
       "id": "desiflix",
-      "status": "healthy",
+      "status": "runtime_error",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 1,
-      "hosts": [
-        "cdn4.streamraiwind.stream"
-      ],
-      "response_categories": [
-        "playable"
-      ],
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
       "host_health": {
         "desiflix-app.redgrass-e8268bc5.eastus2.azurecontainerapps.io": {
           "last_checked_at": "2026-08-22T13:04:34.419127+00:00",
@@ -785,7 +777,7 @@
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 1,
+      "consecutive_successes": 2,
       "hosts": [
         "papadustream.club"
       ],
@@ -794,18 +786,18 @@
       ],
       "host_health": {
         "papadustream.club": {
-          "last_checked_at": "2026-08-22T13:04:34.419127+00:00",
+          "last_checked_at": "2026-08-22T16:45:00.375268+00:00",
           "last_category": "playable",
           "reachable": true,
           "http_status": 200,
-          "latency_ms": 502,
+          "latency_ms": 536,
           "kind": "hls",
           "consecutive_hard_failures": 0,
-          "consecutive_successes": 44,
+          "consecutive_successes": 45,
           "consecutive_blocked": 0
         },
         "papadustream-v2.watch": {
-          "last_checked_at": "2026-08-22T13:04:34.419127+00:00",
+          "last_checked_at": "2026-08-22T16:45:00.375268+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -878,7 +870,7 @@
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 1,
+      "consecutive_successes": 2,
       "hosts": [
         "cdn.watching.onl"
       ],
@@ -887,7 +879,7 @@
       ],
       "host_health": {
         "megap.kotocdn.site": {
-          "last_checked_at": "2026-08-22T13:04:34.419127+00:00",
+          "last_checked_at": "2026-08-22T16:45:00.375268+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -898,7 +890,7 @@
           "consecutive_blocked": 0
         },
         "megap.shiora.top": {
-          "last_checked_at": "2026-08-22T13:04:34.419127+00:00",
+          "last_checked_at": "2026-08-22T16:45:00.375268+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -909,7 +901,7 @@
           "consecutive_blocked": 0
         },
         "megap.mikora.top": {
-          "last_checked_at": "2026-08-22T13:04:34.419127+00:00",
+          "last_checked_at": "2026-08-22T16:45:00.375268+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -920,7 +912,7 @@
           "consecutive_blocked": 0
         },
         "megap.norami.top": {
-          "last_checked_at": "2026-08-22T13:04:34.419127+00:00",
+          "last_checked_at": "2026-08-22T16:45:00.375268+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -931,7 +923,7 @@
           "consecutive_blocked": 0
         },
         "megap.shiora.site": {
-          "last_checked_at": "2026-08-22T13:04:34.419127+00:00",
+          "last_checked_at": "2026-08-22T16:45:00.375268+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -942,7 +934,7 @@
           "consecutive_blocked": 0
         },
         "megap.akirax.buzz": {
-          "last_checked_at": "2026-08-22T13:04:34.419127+00:00",
+          "last_checked_at": "2026-08-22T16:45:00.375268+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -953,14 +945,14 @@
           "consecutive_blocked": 0
         },
         "cdn.watching.onl": {
-          "last_checked_at": "2026-08-22T13:04:34.419127+00:00",
+          "last_checked_at": "2026-08-22T16:45:00.375268+00:00",
           "last_category": "playable",
           "reachable": true,
           "http_status": 206,
-          "latency_ms": 24,
+          "latency_ms": 23,
           "kind": "hls",
           "consecutive_hard_failures": 0,
-          "consecutive_successes": 15,
+          "consecutive_successes": 16,
           "consecutive_blocked": 0
         }
       },
@@ -1102,18 +1094,14 @@
     },
     {
       "id": "movieblast",
-      "status": "healthy",
+      "status": "no_streams",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 2,
-      "hosts": [
-        "mblinkmove.mycdn-mb.xyz"
-      ],
-      "response_categories": [
-        "playable"
-      ],
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
       "host_health": {
         "mblinkserie.mycdn-mb.xyz": {
           "last_checked_at": "2026-08-22T13:04:34.419127+00:00",
@@ -1221,18 +1209,14 @@
     },
     {
       "id": "animesama-co",
-      "status": "healthy",
+      "status": "provider_unreachable",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 2,
-      "hosts": [
-        "video.sibnet.ru"
-      ],
-      "response_categories": [
-        "playable"
-      ],
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
       "host_health": {
         "video.sibnet.ru": {
           "last_checked_at": "2026-08-22T13:04:34.419127+00:00",
@@ -1409,7 +1393,7 @@
     },
     {
       "id": "dulourd",
-      "status": "blocked",
+      "status": "runtime_error",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
@@ -1981,18 +1965,14 @@
     },
     {
       "id": "voiranime-rip",
-      "status": "healthy",
+      "status": "no_streams",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 1,
-      "hosts": [
-        "video.sibnet.ru"
-      ],
-      "response_categories": [
-        "playable"
-      ],
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
       "host_health": {
         "video.sibnet.ru": {
           "last_checked_at": "2026-08-22T13:04:34.419127+00:00",
@@ -2070,16 +2050,16 @@
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 1,
+      "consecutive_successes": 2,
       "hosts": [
-        "my.adminone130mojamsite.workers.dev"
+        "my.fanajpl92.workers.dev"
       ],
       "response_categories": [
         "playable"
       ],
       "host_health": {
         "share.kujeucoixeti-6043.workers.dev": {
-          "last_checked_at": "2026-08-22T13:04:34.419127+00:00",
+          "last_checked_at": "2026-08-22T16:45:00.375268+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2090,7 +2070,7 @@
           "consecutive_blocked": 0
         },
         "md.nuxatrequoujoi-5721.workers.dev": {
-          "last_checked_at": "2026-08-22T13:04:34.419127+00:00",
+          "last_checked_at": "2026-08-22T16:45:00.375268+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2101,7 +2081,7 @@
           "consecutive_blocked": 0
         },
         "ger.balessoppouja-2059.workers.dev": {
-          "last_checked_at": "2026-08-22T13:04:34.419127+00:00",
+          "last_checked_at": "2026-08-22T16:45:00.375268+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2112,7 +2092,7 @@
           "consecutive_blocked": 0
         },
         "share.mauvevoumaja-7549.workers.dev": {
-          "last_checked_at": "2026-08-22T13:04:34.419127+00:00",
+          "last_checked_at": "2026-08-22T16:45:00.375268+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2123,7 +2103,7 @@
           "consecutive_blocked": 0
         },
         "abc.zollutroinoju-4636.workers.dev": {
-          "last_checked_at": "2026-08-22T13:04:34.419127+00:00",
+          "last_checked_at": "2026-08-22T16:45:00.375268+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2134,7 +2114,7 @@
           "consecutive_blocked": 0
         },
         "my.mainone08vegamoviesnlcom.workers.dev": {
-          "last_checked_at": "2026-08-22T13:04:34.419127+00:00",
+          "last_checked_at": "2026-08-22T16:45:00.375268+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2145,7 +2125,7 @@
           "consecutive_blocked": 0
         },
         "rapid-mouse-7439.licraupekoupo-1855-e79.workers.dev": {
-          "last_checked_at": "2026-08-22T13:04:34.419127+00:00",
+          "last_checked_at": "2026-08-22T16:45:00.375268+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2156,7 +2136,7 @@
           "consecutive_blocked": 0
         },
         "india.zaquannobowe-2124.workers.dev": {
-          "last_checked_at": "2026-08-22T13:04:34.419127+00:00",
+          "last_checked_at": "2026-08-22T16:45:00.375268+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2167,7 +2147,7 @@
           "consecutive_blocked": 0
         },
         "dhg.sessauholoippo-5775.workers.dev": {
-          "last_checked_at": "2026-08-22T13:04:34.419127+00:00",
+          "last_checked_at": "2026-08-22T16:45:00.375268+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2178,7 +2158,7 @@
           "consecutive_blocked": 0
         },
         "abc.mutuyuffouhe-4918.workers.dev": {
-          "last_checked_at": "2026-08-22T13:04:34.419127+00:00",
+          "last_checked_at": "2026-08-22T16:45:00.375268+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2189,7 +2169,7 @@
           "consecutive_blocked": 0
         },
         "abc.fuyouxassogru-4365.workers.dev": {
-          "last_checked_at": "2026-08-22T13:04:34.419127+00:00",
+          "last_checked_at": "2026-08-22T16:45:00.375268+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2200,7 +2180,7 @@
           "consecutive_blocked": 0
         },
         "abb.queilluxeferi-4297.workers.dev": {
-          "last_checked_at": "2026-08-22T13:04:34.419127+00:00",
+          "last_checked_at": "2026-08-22T16:45:00.375268+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2211,7 +2191,7 @@
           "consecutive_blocked": 0
         },
         "abc.beuwapoicrifa-6315.workers.dev": {
-          "last_checked_at": "2026-08-22T13:04:34.419127+00:00",
+          "last_checked_at": "2026-08-22T16:45:00.375268+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2222,7 +2202,7 @@
           "consecutive_blocked": 0
         },
         "india.lapicriqueicra-3919.workers.dev": {
-          "last_checked_at": "2026-08-22T13:04:34.419127+00:00",
+          "last_checked_at": "2026-08-22T16:45:00.375268+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2233,7 +2213,7 @@
           "consecutive_blocked": 0
         },
         "share.licraupekoupo-1855.workers.dev": {
-          "last_checked_at": "2026-08-22T13:04:34.419127+00:00",
+          "last_checked_at": "2026-08-22T16:45:00.375268+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2244,7 +2224,7 @@
           "consecutive_blocked": 0
         },
         "abc.croiceloikace-6966.workers.dev": {
-          "last_checked_at": "2026-08-22T13:04:34.419127+00:00",
+          "last_checked_at": "2026-08-22T16:45:00.375268+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2255,7 +2235,7 @@
           "consecutive_blocked": 0
         },
         "abc.teicrequaupara-2874.workers.dev": {
-          "last_checked_at": "2026-08-22T13:04:34.419127+00:00",
+          "last_checked_at": "2026-08-22T16:45:00.375268+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2266,7 +2246,7 @@
           "consecutive_blocked": 0
         },
         "me.vetoilloinipau-9446.workers.dev": {
-          "last_checked_at": "2026-08-22T13:04:34.419127+00:00",
+          "last_checked_at": "2026-08-22T16:45:00.375268+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2277,7 +2257,7 @@
           "consecutive_blocked": 0
         },
         "share.petroicemeili-6716.workers.dev": {
-          "last_checked_at": "2026-08-22T13:04:34.419127+00:00",
+          "last_checked_at": "2026-08-22T16:45:00.375268+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2288,7 +2268,7 @@
           "consecutive_blocked": 0
         },
         "rgh.valerellauki-6271.workers.dev": {
-          "last_checked_at": "2026-08-22T13:04:34.419127+00:00",
+          "last_checked_at": "2026-08-22T16:45:00.375268+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2299,7 +2279,7 @@
           "consecutive_blocked": 0
         },
         "ger.proputuddeddau-6761.workers.dev": {
-          "last_checked_at": "2026-08-22T13:04:34.419127+00:00",
+          "last_checked_at": "2026-08-22T16:45:00.375268+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2310,7 +2290,7 @@
           "consecutive_blocked": 0
         },
         "share.quexipittoune-4659.workers.dev": {
-          "last_checked_at": "2026-08-22T13:04:34.419127+00:00",
+          "last_checked_at": "2026-08-22T16:45:00.375268+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2321,7 +2301,7 @@
           "consecutive_blocked": 0
         },
         "abc.beyoippattotra-2024.workers.dev": {
-          "last_checked_at": "2026-08-22T13:04:34.419127+00:00",
+          "last_checked_at": "2026-08-22T16:45:00.375268+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2332,7 +2312,7 @@
           "consecutive_blocked": 0
         },
         "abc.dappaddeteuzoi-2734.workers.dev": {
-          "last_checked_at": "2026-08-22T13:04:34.419127+00:00",
+          "last_checked_at": "2026-08-22T16:45:00.375268+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2343,7 +2323,7 @@
           "consecutive_blocked": 0
         },
         "share.youfrejakize-4828.workers.dev": {
-          "last_checked_at": "2026-08-22T13:04:34.419127+00:00",
+          "last_checked_at": "2026-08-22T16:45:00.375268+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2354,7 +2334,7 @@
           "consecutive_blocked": 0
         },
         "ger.nottaunnimmoffa-2043.workers.dev": {
-          "last_checked_at": "2026-08-22T13:04:34.419127+00:00",
+          "last_checked_at": "2026-08-22T16:45:00.375268+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2365,7 +2345,7 @@
           "consecutive_blocked": 0
         },
         "abc.ceuwabreprumma-3727.workers.dev": {
-          "last_checked_at": "2026-08-22T13:04:34.419127+00:00",
+          "last_checked_at": "2026-08-22T16:45:00.375268+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2376,7 +2356,7 @@
           "consecutive_blocked": 0
         },
         "shareme.brituyeirefroi-2166.workers.dev": {
-          "last_checked_at": "2026-08-22T13:04:34.419127+00:00",
+          "last_checked_at": "2026-08-22T16:45:00.375268+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2387,7 +2367,7 @@
           "consecutive_blocked": 0
         },
         "abc.befronnaufreba-2745.workers.dev": {
-          "last_checked_at": "2026-08-22T13:04:34.419127+00:00",
+          "last_checked_at": "2026-08-22T16:45:00.375268+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2398,7 +2378,7 @@
           "consecutive_blocked": 0
         },
         "abc.jounoiyeiboqui-8508.workers.dev": {
-          "last_checked_at": "2026-08-22T13:04:34.419127+00:00",
+          "last_checked_at": "2026-08-22T16:45:00.375268+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2409,7 +2389,7 @@
           "consecutive_blocked": 0
         },
         "abc.favegraddeufru-1750.workers.dev": {
-          "last_checked_at": "2026-08-22T13:04:34.419127+00:00",
+          "last_checked_at": "2026-08-22T16:45:00.375268+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2420,7 +2400,7 @@
           "consecutive_blocked": 0
         },
         "abc.teissacraxeiquo-2004.workers.dev": {
-          "last_checked_at": "2026-08-22T13:04:34.419127+00:00",
+          "last_checked_at": "2026-08-22T16:45:00.375268+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2431,7 +2411,7 @@
           "consecutive_blocked": 0
         },
         "vbgh.tilloinnouffaudeu-1055.workers.dev": {
-          "last_checked_at": "2026-08-22T13:04:34.419127+00:00",
+          "last_checked_at": "2026-08-22T16:45:00.375268+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2442,7 +2422,7 @@
           "consecutive_blocked": 0
         },
         "cvb.cemmaujeyicre-9140.workers.dev": {
-          "last_checked_at": "2026-08-22T13:04:34.419127+00:00",
+          "last_checked_at": "2026-08-22T16:45:00.375268+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2453,7 +2433,7 @@
           "consecutive_blocked": 0
         },
         "my.gdfour245joshmoviescom.workers.dev": {
-          "last_checked_at": "2026-08-22T13:04:34.419127+00:00",
+          "last_checked_at": "2026-08-22T16:45:00.375268+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2464,7 +2444,7 @@
           "consecutive_blocked": 0
         },
         "my.renukajpl82.workers.dev": {
-          "last_checked_at": "2026-08-22T13:04:34.419127+00:00",
+          "last_checked_at": "2026-08-22T16:45:00.375268+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2475,7 +2455,7 @@
           "consecutive_blocked": 0
         },
         "my.mainone04hindmoviezday.workers.dev": {
-          "last_checked_at": "2026-08-22T13:04:34.419127+00:00",
+          "last_checked_at": "2026-08-22T16:45:00.375268+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2486,7 +2466,7 @@
           "consecutive_blocked": 0
         },
         "my.gdseven264joshmoviescom.workers.dev": {
-          "last_checked_at": "2026-08-22T13:04:34.419127+00:00",
+          "last_checked_at": "2026-08-22T16:45:00.375268+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2497,7 +2477,7 @@
           "consecutive_blocked": 0
         },
         "my.mainone0hindmoviezday.workers.dev": {
-          "last_checked_at": "2026-08-22T13:04:34.419127+00:00",
+          "last_checked_at": "2026-08-22T16:45:00.375268+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2508,7 +2488,7 @@
           "consecutive_blocked": 0
         },
         "my.mainone00hindmoviezday.workers.dev": {
-          "last_checked_at": "2026-08-22T13:04:34.419127+00:00",
+          "last_checked_at": "2026-08-22T16:45:00.375268+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2519,18 +2499,7 @@
           "consecutive_blocked": 0
         },
         "my.adminone130mojamsite.workers.dev": {
-          "last_checked_at": "2026-08-22T13:04:34.419127+00:00",
-          "last_category": "playable",
-          "reachable": true,
-          "http_status": 206,
-          "latency_ms": 1395,
-          "kind": "matroska",
-          "consecutive_hard_failures": 0,
-          "consecutive_successes": 1,
-          "consecutive_blocked": 0
-        },
-        "my.fanajpl92.workers.dev": {
-          "last_checked_at": "2026-08-22T13:04:34.419127+00:00",
+          "last_checked_at": "2026-08-22T16:45:00.375268+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2540,8 +2509,19 @@
           "consecutive_successes": 0,
           "consecutive_blocked": 0
         },
+        "my.fanajpl92.workers.dev": {
+          "last_checked_at": "2026-08-22T16:45:00.375268+00:00",
+          "last_category": "playable",
+          "reachable": true,
+          "http_status": 206,
+          "latency_ms": 360,
+          "kind": "matroska",
+          "consecutive_hard_failures": 0,
+          "consecutive_successes": 1,
+          "consecutive_blocked": 0
+        },
         "my.kinjaljpl111mustbesite.workers.dev": {
-          "last_checked_at": "2026-08-22T13:04:34.419127+00:00",
+          "last_checked_at": "2026-08-22T16:45:00.375268+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2552,7 +2532,7 @@
           "consecutive_blocked": 0
         },
         "my.maintwo132hindmoviezday.workers.dev": {
-          "last_checked_at": "2026-08-22T13:04:34.419127+00:00",
+          "last_checked_at": "2026-08-22T16:45:00.375268+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2979,7 +2959,7 @@
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 1,
+      "consecutive_successes": 2,
       "hosts": [
         "moon.peakstorm.top"
       ],
@@ -2988,7 +2968,7 @@
       ],
       "host_health": {
         "moon.ironwallnet.net": {
-          "last_checked_at": "2026-08-22T13:04:34.419127+00:00",
+          "last_checked_at": "2026-08-22T16:45:00.375268+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2999,7 +2979,7 @@
           "consecutive_blocked": 0
         },
         "lemonvertex.site": {
-          "last_checked_at": "2026-08-22T13:04:34.419127+00:00",
+          "last_checked_at": "2026-08-22T16:45:00.375268+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -3010,14 +2990,14 @@
           "consecutive_blocked": 0
         },
         "moon.peakstorm.top": {
-          "last_checked_at": "2026-08-22T13:04:34.419127+00:00",
+          "last_checked_at": "2026-08-22T16:45:00.375268+00:00",
           "last_category": "playable",
           "reachable": true,
           "http_status": 200,
-          "latency_ms": 26,
+          "latency_ms": 24,
           "kind": "hls",
           "consecutive_hard_failures": 0,
-          "consecutive_successes": 1,
+          "consecutive_successes": 2,
           "consecutive_blocked": 0
         }
       },
@@ -3171,27 +3151,27 @@
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 1,
+      "consecutive_successes": 2,
       "hosts": [
-        "cdn4.streamraiwind.stream"
+        "cdn6.streamraiwind.stream"
       ],
       "response_categories": [
         "playable"
       ],
       "host_health": {
         "cdn6.streamraiwind.stream": {
-          "last_checked_at": "2026-08-22T13:04:34.419127+00:00",
-          "last_category": "not_returned",
-          "reachable": false,
-          "http_status": null,
-          "latency_ms": null,
+          "last_checked_at": "2026-08-22T16:45:00.375268+00:00",
+          "last_category": "playable",
+          "reachable": true,
+          "http_status": 206,
+          "latency_ms": 213,
           "kind": "hls",
           "consecutive_hard_failures": 0,
-          "consecutive_successes": 0,
+          "consecutive_successes": 1,
           "consecutive_blocked": 0
         },
         "cdn10.streamraiwind.stream": {
-          "last_checked_at": "2026-08-22T13:04:34.419127+00:00",
+          "last_checked_at": "2026-08-22T16:45:00.375268+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -3202,18 +3182,18 @@
           "consecutive_blocked": 0
         },
         "cdn4.streamraiwind.stream": {
-          "last_checked_at": "2026-08-22T13:04:34.419127+00:00",
-          "last_category": "playable",
-          "reachable": true,
-          "http_status": 206,
-          "latency_ms": 271,
+          "last_checked_at": "2026-08-22T16:45:00.375268+00:00",
+          "last_category": "not_returned",
+          "reachable": false,
+          "http_status": null,
+          "latency_ms": null,
           "kind": "hls",
           "consecutive_hard_failures": 0,
-          "consecutive_successes": 1,
+          "consecutive_successes": 0,
           "consecutive_blocked": 0
         },
         "cdn9.streamraiwind.stream": {
-          "last_checked_at": "2026-08-22T13:04:34.419127+00:00",
+          "last_checked_at": "2026-08-22T16:45:00.375268+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -3224,7 +3204,7 @@
           "consecutive_blocked": 0
         },
         "cdn3.streamraiwind.stream": {
-          "last_checked_at": "2026-08-22T13:04:34.419127+00:00",
+          "last_checked_at": "2026-08-22T16:45:00.375268+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -3235,7 +3215,7 @@
           "consecutive_blocked": 0
         },
         "cdn100.streamraiwind.stream": {
-          "last_checked_at": "2026-08-22T13:04:34.419127+00:00",
+          "last_checked_at": "2026-08-22T16:45:00.375268+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -3256,27 +3236,27 @@
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 1,
+      "consecutive_successes": 2,
       "hosts": [
-        "startupmomentumengine.site"
+        "quietmidnightgardeningideas.site"
       ],
       "response_categories": [
         "playable"
       ],
       "host_health": {
         "quietmidnightgardeningideas.site": {
-          "last_checked_at": "2026-08-22T13:04:34.419127+00:00",
-          "last_category": "not_returned",
-          "reachable": false,
-          "http_status": null,
-          "latency_ms": null,
+          "last_checked_at": "2026-08-22T16:45:00.375268+00:00",
+          "last_category": "playable",
+          "reachable": true,
+          "http_status": 200,
+          "latency_ms": 527,
           "kind": "hls",
           "consecutive_hard_failures": 0,
-          "consecutive_successes": 0,
+          "consecutive_successes": 1,
           "consecutive_blocked": 0
         },
         "premiumcontentengine.site": {
-          "last_checked_at": "2026-08-22T13:04:34.419127+00:00",
+          "last_checked_at": "2026-08-22T16:45:00.375268+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -3287,7 +3267,7 @@
           "consecutive_blocked": 0
         },
         "strategicgrowthpartners.site": {
-          "last_checked_at": "2026-08-22T13:04:34.419127+00:00",
+          "last_checked_at": "2026-08-22T16:45:00.375268+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -3298,7 +3278,7 @@
           "consecutive_blocked": 0
         },
         "onlinevisibilitysystem.site": {
-          "last_checked_at": "2026-08-22T13:04:34.419127+00:00",
+          "last_checked_at": "2026-08-22T16:45:00.375268+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -3309,7 +3289,7 @@
           "consecutive_blocked": 0
         },
         "smartincomeplaybook.site": {
-          "last_checked_at": "2026-08-22T13:04:34.419127+00:00",
+          "last_checked_at": "2026-08-22T16:45:00.375268+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -3320,7 +3300,7 @@
           "consecutive_blocked": 0
         },
         "growthmindsetcollective.site": {
-          "last_checked_at": "2026-08-22T13:04:34.419127+00:00",
+          "last_checked_at": "2026-08-22T16:45:00.375268+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -3331,7 +3311,7 @@
           "consecutive_blocked": 0
         },
         "nextlevelbrandstudio.site": {
-          "last_checked_at": "2026-08-22T13:04:34.419127+00:00",
+          "last_checked_at": "2026-08-22T16:45:00.375268+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -3342,18 +3322,18 @@
           "consecutive_blocked": 0
         },
         "startupmomentumengine.site": {
-          "last_checked_at": "2026-08-22T13:04:34.419127+00:00",
-          "last_category": "playable",
-          "reachable": true,
-          "http_status": 200,
-          "latency_ms": 384,
+          "last_checked_at": "2026-08-22T16:45:00.375268+00:00",
+          "last_category": "not_returned",
+          "reachable": false,
+          "http_status": null,
+          "latency_ms": null,
           "kind": "hls",
           "consecutive_hard_failures": 0,
-          "consecutive_successes": 1,
+          "consecutive_successes": 0,
           "consecutive_blocked": 0
         },
         "profitableaffiliatehub.site": {
-          "last_checked_at": "2026-08-22T13:04:34.419127+00:00",
+          "last_checked_at": "2026-08-22T16:45:00.375268+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -3364,7 +3344,7 @@
           "consecutive_blocked": 0
         },
         "nextgenmarketinghub.site": {
-          "last_checked_at": "2026-08-22T13:04:34.419127+00:00",
+          "last_checked_at": "2026-08-22T16:45:00.375268+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -3375,7 +3355,7 @@
           "consecutive_blocked": 0
         },
         "nicheauthorityengine.site": {
-          "last_checked_at": "2026-08-22T13:04:34.419127+00:00",
+          "last_checked_at": "2026-08-22T16:45:00.375268+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -3386,7 +3366,7 @@
           "consecutive_blocked": 0
         },
         "urbansolardiyprojectshub.site": {
-          "last_checked_at": "2026-08-22T13:04:34.419127+00:00",
+          "last_checked_at": "2026-08-22T16:45:00.375268+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -3397,7 +3377,7 @@
           "consecutive_blocked": 0
         },
         "highperformancebrands.site": {
-          "last_checked_at": "2026-08-22T13:04:34.419127+00:00",
+          "last_checked_at": "2026-08-22T16:45:00.375268+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -3408,7 +3388,7 @@
           "consecutive_blocked": 0
         },
         "visionaryfounderslab.site": {
-          "last_checked_at": "2026-08-22T13:04:34.419127+00:00",
+          "last_checked_at": "2026-08-22T16:45:00.375268+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -3419,7 +3399,7 @@
           "consecutive_blocked": 0
         },
         "digitalassetlaunchpad.site": {
-          "last_checked_at": "2026-08-22T13:04:34.419127+00:00",
+          "last_checked_at": "2026-08-22T16:45:00.375268+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -3440,16 +3420,16 @@
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 1,
+      "consecutive_successes": 2,
       "hosts": [
-        "img1.bxncw.com"
+        "img1.klcxm.com"
       ],
       "response_categories": [
         "playable"
       ],
       "host_health": {
         "img1.fvncw.com": {
-          "last_checked_at": "2026-08-22T13:04:34.419127+00:00",
+          "last_checked_at": "2026-08-22T16:45:00.375268+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -3460,7 +3440,7 @@
           "consecutive_blocked": 0
         },
         "img1.nxocw.com": {
-          "last_checked_at": "2026-08-22T13:04:34.419127+00:00",
+          "last_checked_at": "2026-08-22T16:45:00.375268+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -3471,7 +3451,7 @@
           "consecutive_blocked": 0
         },
         "img1.hvncw.com": {
-          "last_checked_at": "2026-08-22T13:04:34.419127+00:00",
+          "last_checked_at": "2026-08-22T16:45:00.375268+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -3482,7 +3462,7 @@
           "consecutive_blocked": 0
         },
         "img1.kucwn.com": {
-          "last_checked_at": "2026-08-22T13:04:34.419127+00:00",
+          "last_checked_at": "2026-08-22T16:45:00.375268+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -3493,7 +3473,18 @@
           "consecutive_blocked": 0
         },
         "img1.klcxm.com": {
-          "last_checked_at": "2026-08-22T13:04:34.419127+00:00",
+          "last_checked_at": "2026-08-22T16:45:00.375268+00:00",
+          "last_category": "playable",
+          "reachable": true,
+          "http_status": 206,
+          "latency_ms": 40,
+          "kind": "hls",
+          "consecutive_hard_failures": 0,
+          "consecutive_successes": 1,
+          "consecutive_blocked": 0
+        },
+        "img1.bxncw.com": {
+          "last_checked_at": "2026-08-22T16:45:00.375268+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -3503,19 +3494,8 @@
           "consecutive_successes": 0,
           "consecutive_blocked": 0
         },
-        "img1.bxncw.com": {
-          "last_checked_at": "2026-08-22T13:04:34.419127+00:00",
-          "last_category": "playable",
-          "reachable": true,
-          "http_status": 206,
-          "latency_ms": 41,
-          "kind": "hls",
-          "consecutive_hard_failures": 0,
-          "consecutive_successes": 1,
-          "consecutive_blocked": 0
-        },
         "img1.flocw.com": {
-          "last_checked_at": "2026-08-22T13:04:34.419127+00:00",
+          "last_checked_at": "2026-08-22T16:45:00.375268+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -3526,7 +3506,7 @@
           "consecutive_blocked": 0
         },
         "img1.wnowe.com": {
-          "last_checked_at": "2026-08-22T13:04:34.419127+00:00",
+          "last_checked_at": "2026-08-22T16:45:00.375268+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -3547,7 +3527,7 @@
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 1,
+      "consecutive_successes": 2,
       "hosts": [
         "1.animezeydl.workers.dev"
       ],
@@ -3556,7 +3536,7 @@
       ],
       "host_health": {
         "animezey16082023.animezey16082023.workers.dev": {
-          "last_checked_at": "2026-08-22T13:04:34.419127+00:00",
+          "last_checked_at": "2026-08-22T16:45:00.375268+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -3567,14 +3547,14 @@
           "consecutive_blocked": 0
         },
         "1.animezeydl.workers.dev": {
-          "last_checked_at": "2026-08-22T13:04:34.419127+00:00",
+          "last_checked_at": "2026-08-22T16:45:00.375268+00:00",
           "last_category": "playable",
           "reachable": true,
           "http_status": 206,
-          "latency_ms": 739,
+          "latency_ms": 1085,
           "kind": "matroska",
           "consecutive_hard_failures": 0,
-          "consecutive_successes": 1,
+          "consecutive_successes": 2,
           "consecutive_blocked": 0
         }
       },
@@ -3767,7 +3747,7 @@
     },
     {
       "id": "einthusan",
-      "status": "provider_unreachable",
+      "status": "no_streams",
       "action": "unchanged",
       "enabled": false,
       "consecutive_hard_failures": 0,
@@ -3931,7 +3911,7 @@
     },
     {
       "id": "animeworld",
-      "status": "blocked",
+      "status": "unavailable",
       "action": "unchanged",
       "enabled": false,
       "consecutive_hard_failures": 0,
