@@ -50,7 +50,7 @@ jobs:
             local workflow="$1"; shift
             local started run_id
             started="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-            gh workflow run "$workflow" --repo "$REPO" --ref main "$@"
+            gh workflow run "$workflow" --repo "$REPO" --ref main "$@" >/dev/null
             run_id=""
             for _ in $(seq 1 60); do
               run_id="$(gh run list --repo "$REPO" --workflow "$workflow" --branch main --event workflow_dispatch --limit 20 --json databaseId,createdAt --jq ".[] | select(.createdAt >= \"$started\") | .databaseId" | head -n1)"
