@@ -9,6 +9,8 @@ ROOT = Path(__file__).resolve().parents[1]
 WORKFLOW = ROOT / ".github/workflows/brain-learning-lab.yml"
 DISCOVERY = ROOT / "scripts/discover_candidates.py"
 APPLY = ROOT / "scripts/apply_provider_overrides.py"
+GLOBAL_PRESENTATION = ROOT / "scripts/provider_patches/global_stream_presentation_v1.py"
+GLOBAL_FACTS = ROOT / "scripts/provider_patches/global_stream_facts_v1.py"
 READER_REPAIR = ROOT / "scripts/build_native_reader_brain_repair.py"
 RUN_SANDBOX = ROOT / "scripts/run_brain_learning_sandbox.py"
 OVERRIDES = ROOT / "provider-overrides.json"
@@ -59,6 +61,8 @@ def main() -> int:
     workflow = WORKFLOW.read_text(encoding="utf-8")
     discovery = DISCOVERY.read_text(encoding="utf-8")
     apply_source = APPLY.read_text(encoding="utf-8")
+    presentation_source = GLOBAL_PRESENTATION.read_text(encoding="utf-8")
+    facts_source = GLOBAL_FACTS.read_text(encoding="utf-8")
     sandbox_source = RUN_SANDBOX.read_text(encoding="utf-8")
     overrides = json.loads(OVERRIDES.read_text(encoding="utf-8"))
     catalog = json.loads(CATALOG.read_text(encoding="utf-8"))
@@ -79,6 +83,15 @@ def main() -> int:
     assert "apply_overrides(canonical_id(upstream_id), data)" in discovery
     assert "GLOBAL_STREAM_PRESENTATION" in apply_source
     assert '"scope": "global_stream_presentation"' in apply_source
+
+    # Stream facts/badges are a Core-wide contract. No provider-specific facts
+    # adapter may be required for Purstream or any other provider.
+    assert GLOBAL_FACTS.is_file()
+    assert "NUVIO_GLOBAL_STREAM_FACTS_V1" in facts_source
+    assert "FACTS_PATH" in presentation_source
+    assert "global_stream_facts_v1.py" in presentation_source
+    assert "_apply_facts(text, context)" in presentation_source
+    assert not (PATCH_ROOT / "purstream_stream_facts_v1.py").exists()
 
     # Every patch/profile referenced by production configuration must physically
     # exist. This catches a skill being renamed/fixed without wiring the cron.
