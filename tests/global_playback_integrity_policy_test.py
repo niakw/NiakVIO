@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import hashlib
 import importlib.util
 import json
 import sys
@@ -35,9 +36,6 @@ assert policy.get("post_media_discovery_hooks") == [
     "scripts/provider_patches/hls_master_audio_preserver_v1.py",
 ]
 
-# Global hooks must not be duplicated into today's provider script lists. A
-# provider may only tighten their global options; newly discovered providers
-# still receive the common protection automatically.
 for provider_id, row in (cfg.get("provider_patches") or {}).items():
     if not isinstance(row, dict):
         continue
@@ -56,9 +54,6 @@ streamzo_hls_options = cfg["provider_patches"]["streamzo"]["patch_script_options
 assert streamzo_hls_options["probe_all_urls"] is True
 assert streamzo_hls_options["fail_closed_unknown"] is False
 
-# Staged scheduler contract: HLS integrity runs before enrichment and final safety.
-# The stable hls_master hook composes before the Core-wide security tail; final
-# presentation stays outermost and therefore cannot alter playback validation.
 original_apply_patch_script = module._apply_patch_script
 captured_scheduler_paths = []
 def capture_scheduler(text, provider_id, patch_script, options, profile_name):
@@ -94,8 +89,6 @@ assert "NUVIO_HLS_MASTER_AUDIO_PRESERVER_V1" in text
 assert "NUVIO_HLS_RUNTIME_INTEGRITY_V1" in text
 assert "NUVIO_GLOBAL_PROVIDER_SECURITY_HOOK_V1" in text
 assert "NUVIO_GLOBAL_STREAM_PRESENTATION_V1" in text
-# Security is the final Core transform before user-facing presentation. Presentation
-# remains outermost so neither layer can influence HLS discovery semantics.
 assert text.rfind("NUVIO_GLOBAL_PROVIDER_SECURITY_HOOK_V1") > text.rfind("NUVIO_HLS_MASTER_AUDIO_PRESERVER_V1")
 assert text.rfind("NUVIO_GLOBAL_PROVIDER_SECURITY_HOOK_V1") > text.rfind("NUVIO_HLS_RUNTIME_INTEGRITY_V1")
 assert text.rfind("NUVIO_GLOBAL_STREAM_PRESENTATION_V1") > text.rfind("NUVIO_GLOBAL_PROVIDER_SECURITY_HOOK_V1")
@@ -105,21 +98,29 @@ assert "scripts/provider_patches/hls_runtime_integrity_v1.py" in paths
 assert "scripts/provider_patches/global_provider_security_hardening_v1.py" in paths
 assert any(row.get("scope") == "global_playback_integrity" for row in records if isinstance(row, dict))
 
-# The complete discovery transform must be byte-idempotent. Stable output bytes
-# are required for content-addressed filenames, cache keys and future post-Brain
-# minification/purification: a second apply with no source change cannot create a
-# new provider artifact just because wrapper tail ordering is reconsidered.
 reapplied, reapplied_records = module.apply_overrides(
     "future-provider-never-seen-before", patched, phase="discovery"
 )
-assert reapplied == patched
+if reapplied != patched:
+    left = patched.decode("utf-8", errors="replace")
+    right = reapplied.decode("utf-8", errors="replace")
+    limit = min(len(left), len(right))
+    first = next((i for i in range(limit) if left[i] != right[i]), limit)
+    window_start = max(0, first - 180)
+    window_end = first + 360
+    raise AssertionError(
+        "Core discovery transform not byte-idempotent: "
+        f"first_diff={first} len1={len(left)} len2={len(right)} "
+        f"sha1={hashlib.sha256(patched).hexdigest()} "
+        f"sha2={hashlib.sha256(reapplied).hexdigest()}\n"
+        f"FIRST={left[window_start:window_end]!r}\n"
+        f"SECOND={right[window_start:window_end]!r}"
+    )
 reapplied_text = reapplied.decode("utf-8")
 assert reapplied_text.count("NUVIO_GLOBAL_STREAM_PRESENTATION_V1") == 1
 assert reapplied_text.count("NUVIO_GLOBAL_RUNTIME_MEDIA_SAFETY_V1") == 1
 assert reapplied_text.count("NUVIO_HLS_RUNTIME_INTEGRITY_V1") == 1
 assert reapplied_text.count("NUVIO_GLOBAL_PROVIDER_SECURITY_HOOK_V1") == 1
-# The second pass must preserve the same canonical boundary. In particular the
-# legacy HLS implementation must never migrate outside the Core security marker.
 assert reapplied_text.rfind("NUVIO_HLS_RUNTIME_INTEGRITY_V1") < reapplied_text.rfind("NUVIO_GLOBAL_PROVIDER_SECURITY_HOOK_V1")
 assert reapplied_text.rfind("NUVIO_GLOBAL_PROVIDER_SECURITY_HOOK_V1") < reapplied_text.rfind("NUVIO_GLOBAL_STREAM_FACTS_V1")
 assert reapplied_text.rfind("NUVIO_GLOBAL_STREAM_FACTS_V1") < reapplied_text.rfind("NUVIO_GLOBAL_STREAM_IDENTITY_V1")
@@ -130,7 +131,6 @@ assert not any(
     if isinstance(row, dict)
 )
 
-# Runtime repair phase must not inject discovery wrappers.
 runtime, runtime_records = module.apply_overrides("future-provider-never-seen-before", future, phase="runtime")
 assert b"NUVIO_HLS_RUNTIME_INTEGRITY_V1" not in runtime
 assert b"NUVIO_GLOBAL_PROVIDER_SECURITY_HOOK_V1" not in runtime
