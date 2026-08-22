@@ -118,16 +118,17 @@ def normalize_apply(text: str) -> str:
         """Recover exact provider-derived bytes before the global Core pipeline.
 
         New bundles contain an observable Core-start assignment immediately after
-        provider-derived code. Terser cannot relocate/drop it without changing
-        semantics. Legacy bundles fall back to their old final-tail markers for
-        one migration pass; every newly materialized bundle uses the start boundary.
+        provider-derived code. Cut at that exact JavaScript statement instead of
+        guessing a preceding line/semicolon boundary: Terser may compact closing
+        braces and semicolons differently, while the observable globalThis property
+        access itself remains stable and cannot be relocated across side effects.
+        Legacy bundles fall back to their old final-tail markers for one migration
+        pass; every newly materialized bundle uses the exact start boundary.
         """
-        boundary_index = text.find(CORE_START_BOUNDARY)
+        boundary_needle = f"globalThis.{CORE_START_BOUNDARY}"
+        boundary_index = text.find(boundary_needle)
         if boundary_index >= 0:
-            line_start = text.rfind("\n", 0, boundary_index) + 1
-            semicolon_start = text.rfind(";", 0, boundary_index) + 1
-            cut = max(line_start, semicolon_start)
-            return text[:cut].rstrip(), True
+            return text[:boundary_index].rstrip(), True
 
         starts = []
         for marker in GENERATED_CORE_TAIL_MARKERS:
@@ -193,7 +194,8 @@ def assert_contract() -> None:
 
     for required in (
         f'CORE_START_BOUNDARY = "{CORE_START_BOUNDARY}"',
-        "text.find(CORE_START_BOUNDARY)",
+        'boundary_needle = f"globalThis.{CORE_START_BOUNDARY}"',
+        "text.find(boundary_needle)",
         f"globalThis.{{CORE_START_BOUNDARY}}=true;",
         "existing_span",
         "output = text[:existing_span[0]] + bootstrap + text[existing_span[1]:]",
