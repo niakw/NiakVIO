@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
-"""Compose Purstream factual metadata projection with TV identity validation.
+"""Compose Core-global stream facts with Purstream-specific identity validation.
 
-Purstream's provider adapter first exposes language/quality/codec/audio/duration
-as explicit stream facts.  The existing episodic duration-identity guard then
-validates those rows.  Final user-facing formatting remains entirely owned by
-the repository-wide Core presentation layer.
+The structured facts layer is shared by every provider. Purstream keeps only its
+provider-specific episodic duration/identity validation here. Final user-facing
+formatting and badges remain entirely owned by the repository-wide Core layer.
 """
 from __future__ import annotations
 
@@ -19,13 +18,13 @@ def _load(filename: str, module_name: str):
     path = HERE / filename
     spec = importlib.util.spec_from_file_location(module_name, path)
     if spec is None or spec.loader is None:
-        raise RuntimeError(f"cannot load Purstream layer: {path}")
+        raise RuntimeError(f"cannot load Purstream identity layer dependency: {path}")
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
 
 
-_FACTS = _load("purstream_stream_facts_v1.py", "nuvio_purstream_stream_facts_v1")
+_FACTS = _load("global_stream_facts_v1.py", "nuvio_global_stream_facts_v1")
 _IDENTITY = _load("purstream_tv_identity_impl_v3.py", "nuvio_purstream_tv_identity_impl_v3")
 MARKER = _IDENTITY.MARKER
 
