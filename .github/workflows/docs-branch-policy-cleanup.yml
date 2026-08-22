@@ -1,5 +1,5 @@
 name: NiakVIO one-shot branch policy docs cleanup
-# Retry is self-removing; observer reports completion while #69 is open.
+# Final self-removing execution; no persistent one-shot workflow remains.
 
 on:
   push:
@@ -73,6 +73,14 @@ bug réel
           if count != 1:
               raise SystemExit(f'ARCHITECTURE labs section not found exactly once: {count}')
           architecture.write_text(new, encoding='utf-8')
+
+          # Keep the invariant list consistent with the main-only Lab model.
+          text = architecture.read_text(encoding='utf-8')
+          text = text.replace(
+              '17. Les Labs permanents ne sont pas supprimés par le nettoyage ordinaire.',
+              '17. Les Labs natifs valident le SHA exact de `main` ; aucune branche Lab de code permanente n’est requise.'
+          )
+          architecture.write_text(text, encoding='utf-8')
 
           for path in (readme, architecture):
               value = path.read_text(encoding='utf-8')
