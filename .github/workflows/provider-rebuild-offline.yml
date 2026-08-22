@@ -1,9 +1,9 @@
 name: Validate provider rebuild offline
 
 on:
-  push:
+  pull_request:
     branches:
-      - final/native-reader-brain-v4
+      - main
     paths:
       - ".github/workflows/provider-rebuild-offline.yml"
 
@@ -11,19 +11,22 @@ permissions:
   contents: write
 
 concurrency:
-  group: provider-rebuild-pr-rematerialize
+  group: provider-rebuild-pr-rematerialize-${{ github.event.pull_request.number }}
   cancel-in-progress: false
 
 jobs:
   rebuild:
     name: Rematerialize PR provider generation
+    if: github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
       - name: Checkout current PR branch
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
+          ref: ${{ github.event.pull_request.head.ref }}
           fetch-depth: 0
+          persist-credentials: true
 
       - name: Set up Python
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
@@ -76,4 +79,4 @@ jobs:
             exit 0
           fi
           git commit -m 'chore: rematerialize provider artifacts after Core ordering fix'
-          git push origin HEAD:final/native-reader-brain-v4
+          git push origin HEAD:${{ github.event.pull_request.head.ref }}
