@@ -155,12 +155,30 @@ export function planRepair(evidence = {}, options = {}) {
 export function recipeIsCompatible(candidate, runtimeCompatibility = null) {
   if (!runtimeCompatibility) return true;
   const invalidCapabilities = new Set(runtimeCompatibility.invalidCapabilities ?? []);
-  return !(candidate.capabilities ?? []).some((capability) => invalidCapabilities.has(capability));
+  if ((candidate.capabilities ?? []).some((capability) => invalidCapabilities.has(capability))) return false;
+
+  const requirements = candidate.clientVersions ?? candidate.runtimeVersions ?? {};
+  const clients = runtimeCompatibility.clients ?? {};
+  for (const [clientId, rawRequirement] of Object.entries(requirements)) {
+    const requirement = rawRequirement && typeof rawRequirement === "object" ? rawRequirement : {};
+    const client = clients[clientId];
+    if (!client || typeof client !== "object") return false;
+    const supportedMin = Number(client.supportedMinVersionCode ?? client.minVersionCode);
+    const supportedMax = Number(client.supportedMaxVersionCode ?? client.maxVersionCode);
+    const requiredMin = requirement.min == null ? null : Number(requirement.min);
+    const requiredMax = requirement.max == null ? null : Number(requirement.max);
+    if (!Number.isFinite(supportedMin) || !Number.isFinite(supportedMax)) return false;
+    // A shared provider repair must work for the whole generation range NiakVIO
+    // claims to support, not merely for the newest client HEAD used by a Lab run.
+    if (requiredMin !== null && (!Number.isFinite(requiredMin) || supportedMin < requiredMin)) return false;
+    if (requiredMax !== null && (!Number.isFinite(requiredMax) || supportedMax > requiredMax)) return false;
+  }
+  return true;
 }
 
-export function buildLearnedRecipe({ id, signature, actions, provenOn, runtime, capabilities = [], failureClass = null, scope = {} }) {
+export function buildLearnedRecipe({ id, signature, actions, provenOn, runtime, capabilities = [], failureClass = null, scope = {}, clientVersions = {} }) {
   if (!id || !signature || !Array.isArray(actions) || actions.length === 0) throw new Error("learned recipe requires id, signature and actions");
-  return { id, signature, failureClass, actions: [...actions], capabilities: [...new Set(capabilities)], provenOn: Array.isArray(provenOn) ? [...provenOn] : [], scope: structuredClone(scope), runtime: runtime ?? {}, learnedAt: new Date().toISOString() };
+  return { id, signature, failureClass, actions: [...actions], capabilities: [...new Set(capabilities)], provenOn: Array.isArray(provenOn) ? [...provenOn] : [], scope: structuredClone(scope), runtime: runtime ?? {}, clientVersions: structuredClone(clientVersions ?? {}), learnedAt: new Date().toISOString() };
 }
 
 function planResult(failureClass, hypotheses, action, budget, exitReason) {
