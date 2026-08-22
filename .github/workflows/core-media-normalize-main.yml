@@ -1,0 +1,50 @@
+name: NiakVIO Core media normalize main
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/core-media-normalize-main.yml'
+      - 'scripts/normalize_core_media_policy.py'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: niakvio-core-media-normalize-main
+  cancel-in-progress: false
+
+jobs:
+  normalize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact main
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Materialize provider-agnostic configuration
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/normalize_core_media_policy.py --apply
+          python scripts/normalize_core_media_policy.py --check
+
+      - name: Commit normalization directly to main
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add provider-overrides.json scripts/publish_desktop_runtime_compat.py
+          if git diff --cached --quiet; then
+            echo 'Core media configuration already normalized.'
+            exit 0
+          fi
+          git commit -m 'core: materialize provider-agnostic media configuration'
+          git pull --rebase origin main
+          python scripts/normalize_core_media_policy.py --check
+          git push origin HEAD:main
