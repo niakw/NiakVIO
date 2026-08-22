@@ -14,10 +14,10 @@
     "nuvio-mobile": {
       "repository": "NuvioMedia/NuvioMobile",
       "branch": "cmp-rewrite",
-      "verified_ref": "0d6e30e4566e6f9f2051d5f80a1e3f1e0fcb1f18",
+      "verified_ref": "b80ee5ab8a550f1385c438071694a51ed3b0ef00",
       "platforms": ["android", "ios"],
       "contract": "automation/platform-runtime-contracts.json",
-      "audit_note": "2026-08-12: audited 5 commits from f9ad843b14cd to 0d6e30e4566e. StreamsRepository and PlayerStreamsRepository only route HTTP through fetchAddonResponseText so forceRefresh adds Cache-Control: no-cache; normal GET, resource URL construction, StreamParser, plugin runtime, positional getStreams and provider URL/header ingestion remain unchanged.",
+      "audit_note": "2026-08-22: audited 32 commits from 0d6e30e4566e (0.4.5/109) to b80ee5ab8a55 (0.4.7/111). No files changed under the plugin runtime or streams repository contract paths. The relevant changes are reader/UI/configuration work, principally Android PlayerEngine, iOS player bridge/engine and player settings. Positional getStreams, provider fetch/runtime, request shape and provider result ingestion therefore remain compatible for Brain provider mutation; native reader proof remains a separate gate.",
       "contract_paths": [
         "composeApp/src/fullCommonMain/kotlin/com/nuvio/app/features/plugins/",
         "composeApp/src/commonMain/kotlin/com/nuvio/app/features/plugins/",
