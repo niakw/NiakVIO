@@ -10,6 +10,7 @@ on:
 permissions:
   contents: write
   actions: write
+  issues: write
 
 concurrency:
   group: niakvio-final-provider-terser-purification-once
@@ -20,6 +21,12 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 75
     steps:
+      - name: Announce exact run
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: gh issue comment 69 --repo "$GITHUB_REPOSITORY" --body "Final Terser publication materialization started: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID} on ${GITHUB_SHA}."
+
       - name: Checkout main
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
@@ -155,6 +162,12 @@ jobs:
           git rebase origin/main
           git push origin HEAD:main
 
-          # GITHUB_TOKEN pushes do not recursively trigger normal push workflows.
-          # Explicitly start the authoritative chain on the new exact main.
+          gh issue comment 69 --repo "$GITHUB_REPOSITORY" --body "Final Terser publication materialization succeeded: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}. Durable code published; dispatching authoritative final validation."
           gh workflow run final-validation-orchestrator.yml --ref main
+
+      - name: Report failure
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: gh issue comment 69 --repo "$GITHUB_REPOSITORY" --body "Final Terser publication materialization FAILED: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID} on ${GITHUB_SHA}. Inspect this run before changing provider code."
