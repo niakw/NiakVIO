@@ -1,0 +1,89 @@
+name: NiakVIO light badge contrast
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/badge-light-contrast.yml'
+      - 'scripts/regenerate_light_badges.py'
+      - 'assets/badge_catalog_v2_complete.json'
+      - 'assets/transparent/**'
+      - 'assets/light/**'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: niakvio-light-badge-contrast-main
+  cancel-in-progress: true
+
+jobs:
+  regenerate-and-verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout main with history
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+
+      - name: Install pinned image QA dependency
+        shell: bash
+        run: python -m pip install --disable-pip-version-check --no-cache-dir 'Pillow==11.3.0'
+
+      - name: Regenerate all light variants from immutable transparent artwork
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/regenerate_light_badges.py --apply
+          python tests/badge_asset_contract_test.py
+          python scripts/regenerate_light_badges.py --check
+
+      - name: Verify exact asset cardinality and native dimensions
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          from PIL import Image
+          root = Path('.')
+          catalog = json.loads((root/'assets/badge_catalog_v2_complete.json').read_text())
+          checked = 0
+          for row in catalog.get('badges') or []:
+              for size in ('72x32','96x40'):
+                  rel = row['assets']['light'][size]
+                  path = root/rel
+                  with Image.open(path) as im:
+                      assert im.size == tuple(map(int,size.split('x'))), (rel, im.size)
+                      assert im.format == 'WEBP', (rel, im.format)
+                  checked += 1
+          assert checked == 146, checked
+          report = json.loads((root/'assets/docs/LIGHT_BADGE_QA.json').read_text())
+          assert report['assetCount'] == 146
+          assert report['whiteBackgroundMinimumSeparationRatio'] >= 4.5
+          assert report['idempotent'] is True
+          print(f'light badge QA passed: assets={checked} revision={report["revision"]}')
+          PY
+
+      - name: Commit regenerated light assets directly to main
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'niakvio-assets'
+          git config user.email 'actions@users.noreply.github.com'
+          git add assets/light assets/docs/LIGHT_BADGE_QA.json
+          if git diff --cached --quiet; then
+            echo 'Light badge assets already match the contrast generator.'
+            exit 0
+          fi
+          git commit -m 'assets: rebuild light badges for native-size contrast'
+          git pull --rebase origin main
+          git push origin HEAD:main
