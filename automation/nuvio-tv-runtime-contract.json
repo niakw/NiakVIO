@@ -6,7 +6,7 @@
   "runtime_contract": "getStreams(tmdbId, mediaType, season, episode) plus global SCRAPER_SETTINGS",
   "source_repository": "NuvioMedia/NuvioTV",
   "source_branch": "dev",
-  "source_ref": "6103a144485277f06ebc31456f1949c65b304e8e",
+  "source_ref": "188efb59dc8a30b62332f330dfc16941ff1f6f7e",
   "runtime_source": "app/src/full/java/com/nuvio/tv/core/plugin/PluginRuntime.kt",
   "settings_source": "app/src/main/java/com/nuvio/tv/data/local/PluginDataStore.kt",
   "stream_repository_source": "app/src/main/java/com/nuvio/tv/data/repository/StreamRepositoryImpl.kt",
@@ -32,28 +32,28 @@
     "consequence": "Do not rely on manifest platform fields to hide an unsafe provider from NuvioTV; the provider output itself must be strict-media safe or globally disabled."
   },
   "audit": {
-    "date": "2026-08-16",
-    "previous_ref": "aa327f0e99645e1fc7094f56e3e827ff0925afae",
-    "audited_ref": "6103a144485277f06ebc31456f1949c65b304e8e",
-    "commits_reviewed": 52,
-    "hard_contract_paths_changed": false,
+    "date": "2026-08-22",
+    "previous_ref": "6103a144485277f06ebc31456f1949c65b304e8e",
+    "audited_ref": "188efb59dc8a30b62332f330dfc16941ff1f6f7e",
+    "commits_reviewed": 116,
+    "hard_contract_paths_changed": true,
     "plugin_runtime_positional_getstreams_unchanged": true,
     "provider_stream_repository_contract_unchanged": true,
     "provider_url_header_ingestion_unchanged": true,
     "semantic_changes_reviewed": [
-      "parsing-error recovery now probes actual network MIME rather than blindly forcing HLS",
-      "MIME probe reuses sanitized selected-stream playback headers and default User-Agent fallback",
-      "subtitle charset, SDH stripping and sidecar subtitle behavior",
-      "player initialization/error recovery and bundled player library changes",
-      "server/account/catalog/home/search changes outside provider runtime contract"
+      "StreamRepository adds backward-compatible forceRefresh=false and playback-time local plugin pause/resume",
+      "StreamRepositoryImpl adds session caching keyed by profile, type, videoId, season, episode and source/debrid configuration",
+      "provider executeScrapersStreaming positional tmdbId/mediaType/season/episode invocation remains unchanged",
+      "stream URL and behaviorHints/proxyHeaders ingestion remain preserved through the player path",
+      "exact current-head official TV route-reader proof reaches the production player successfully"
     ],
-    "runtime_reproof_required": true
+    "runtime_reproof_required": false
   },
   "notes": [
     "NuvioTV provider compatibility is a distinct runtime family from Nuvio Mobile and Nuvio Desktop.",
-    "The source_ref is the exact official NuvioTV commit most recently source-audited against this contract and is re-proven by Niakvio native-client tests before publication.",
-    "The 2026-08-16 audit found no changes under PluginRuntime/PluginManager/StreamRepository/AddonApi/plugin model contract paths between the previous baseline and source_ref.",
-    "The current parsing-error fallback probes the selected URL with its playback headers; this is compatible with providers requiring Referer/Origin/User-Agent and removes the former unconditional HLS assumption.",
+    "The source_ref is the exact official NuvioTV commit most recently source-audited against this contract and re-proven by NiakVIO native-client tests before publication.",
+    "The 2026-08-22 audit reviewed the new search-session cache and repository interface changes; cache identity includes profile, media identity and source configuration and does not collapse distinct episode requests.",
+    "Provider extraction still uses positional getStreams and preserves returned URL/header material; playback networking continues to consume behaviorHints/proxyHeaders.",
     "NuvioTV currently parses supportedPlatforms/disabledPlatforms in the manifest model but its PluginManager does not apply those fields when building enabled scrapers.",
     "A zero-stream result is not by itself proof of incompatibility.",
     "Providers blocked on every Mobile/Desktop runtime but still enabled in the shared manifest must sanitize all NuvioTV-returned URLs against real media payloads.",
