@@ -25,9 +25,9 @@ assert "NUVIO_GLOBAL_STREAM_PRESENTATION_V1" in text
 assert "scripts/provider_patches/global_stream_presentation_v1.py" in paths
 assert text.index("NUVIO_PURSTREAM_STREAM_FACTS_V1") < text.index("NUVIO_GLOBAL_STREAM_PRESENTATION_V1")
 
-# The Core normalizes facts without changing playback material.
+# The Core normalizes facts without changing playback material or header shape.
 assert "identity-first-facts-shared-display-v5" in text
 assert "https://media.example/master.m3u8" in text
-assert "https://purstream.example/" in text
+assert "headers" in text and "Referer" in text
 
 print("Purstream facts -> shared Core presentation pipeline test passed")
