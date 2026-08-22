@@ -31,6 +31,7 @@ on:
       - "scripts/augment_native_provider_loading.py"
       - "scripts/prepare_native_candidate_repository.py"
       - "scripts/resolve_native_repository.sh"
+      - "scripts/prime_android_lab_adb.sh"
       - "scripts/native_evidence_completeness.cjs"
       - "scripts/analyze_native_corpus_collection.cjs"
       - "scripts/analyze_native_corpus_results.cjs"
@@ -66,6 +67,7 @@ on:
       - "tests/brain_cron_full_coverage_test.py"
       - "tests/safe_structured_parse_skill_test.py"
       - "tests/adaptive_safe_structured_parse_profile_test.py"
+      - "tests/native_android_avd_cache_contract_test.py"
       - "tests/native_evidence_contract_test.py"
       - "tests/native_evidence_completeness_test.cjs"
       - "tests/native_evidence_codegen_pipeline_test.py"
@@ -122,6 +124,8 @@ jobs:
           node engine_v2/tests/repair-brain.test.mjs
           python3 tests/safe_structured_parse_skill_test.py
           python3 tests/adaptive_safe_structured_parse_profile_test.py
+      - name: Validate Android AVD reuse and adb bootstrap
+        run: python3 tests/native_android_avd_cache_contract_test.py
       - name: Validate image badge assets and theme contrast mapping
         run: python3 tests/badge_asset_contract_test.py
       - name: Validate weekly upstream provider comparator
