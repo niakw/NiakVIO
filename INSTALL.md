@@ -55,11 +55,11 @@ Le pipeline régénère également les versions, projections de langue, provenan
 
 Une modification du chemin de playback partagé doit être suivie des preuves natives appropriées :
 
-- Nuvio Mobile ;
-- Nuvio Desktop ;
-- NuvioTV / Android TV.
+- Nuvio Mobile et NuvioTV / Android TV : `.github/workflows/native-android-route-reader.yml` ;
+- Nuvio Desktop macOS/Windows : `.github/workflows/native-desktop-reader-acceptance.yml` ;
+- corpus natif ciblé : `.github/workflows/native-corpus-device-targeted.yml`.
 
-Le workflow `final-native-client-validation-v2.yml` conserve ces preuves séparées. Le Lab multi-œuvres (`nuvio-client-lab.yml`) mesure films, séries et anime ; la cible 10 providers jouables dont 3 VF est un objectif de largeur, tandis que les contradictions d'identité ou médias illisibles restent des échecs.
+Le corpus de référence est versionné dans `.github/triggers/nuvio-client-lab.json` et couvre films, séries, anime ainsi que les régressions prioritaires d'identité média. Les Labs utilisent les dépôts clients Nuvio officiels uniquement comme baselines de lecture : NiakVIO ne modifie pas ces dépôts.
 
 ## Règle de maintenance
 
