@@ -9,6 +9,7 @@ on:
 permissions:
   actions: write
   contents: write
+  issues: write
 
 concurrency:
   group: niakvio-final-repository-cleanup-once
@@ -21,18 +22,11 @@ jobs:
     env:
       GH_TOKEN: ${{ github.token }}
     steps:
-      - name: Cancel superseded unsafe cleanup attempts
+      - name: Announce cleanup run
         shell: bash
         run: |
           set -euo pipefail
-          gh run list --repo "$GITHUB_REPOSITORY" \
-            --workflow final-repository-cleanup-once.yml \
-            --limit 20 \
-            --json databaseId,headSha,status \
-            --jq ".[] | select(.headSha != \"${GITHUB_SHA}\" and .status != \"completed\") | .databaseId" \
-          | while read -r run_id; do
-              [ -n "$run_id" ] && gh run cancel "$run_id" --repo "$GITHUB_REPOSITORY" || true
-            done
+          gh issue comment 69 --repo "$GITHUB_REPOSITORY" --body "Final repository cleanup started: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID} — source ${GITHUB_SHA}."
 
       - name: Checkout exact main
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
@@ -40,20 +34,19 @@ jobs:
           ref: main
           fetch-depth: 0
 
-      - name: Remove superseded paths and align durable contracts
+      - name: Materialize final main-only repository state
         shell: bash
         run: |
           set -euo pipefail
           python3 - <<'PY'
           from pathlib import Path
-
           root = Path('.')
 
           readme = root / 'README.md'
           text = readme.read_text(encoding='utf-8')
           start = text.index('## Politique de branches\n')
           end = text.index('\n## Sécurité, responsabilité et indépendance', start)
-          branch_policy = '''## Politique de branches
+          replacement = '''## Politique de branches
 
 - `main` : unique branche de code, état stable et publiable ;
 - `brain-learning/proposals` : mémoire sanitizée persistante du Brain, sans code de production ni publication autonome ;
@@ -64,7 +57,7 @@ Les réparations, tests et nettoyages sont matérialisés sur `main`. La mémoir
 
 ---
 '''
-          readme.write_text(text[:start] + branch_policy + text[end+1:], encoding='utf-8')
+          readme.write_text(text[:start] + replacement + text[end+1:], encoding='utf-8')
 
           architecture = root / 'ARCHITECTURE.md'
           text = architecture.read_text(encoding='utf-8')
@@ -72,7 +65,7 @@ Les réparations, tests et nettoyages sont matérialisés sur `main`. La mémoir
           new_heading = '## 22. Labs natifs sur `main`\n'
           start = text.index(old_heading) if old_heading in text else text.index(new_heading)
           end = text.index('\n## 23. Structure logique', start)
-          labs = '''## 22. Labs natifs sur `main`
+          replacement = '''## 22. Labs natifs sur `main`
 
 Les Labs ne reposent plus sur des branches de code permanentes. Les preuves NuvioTV, Mobile et Desktop sont produites depuis le SHA exact de `main`, avec les dépôts clients officiels utilisés comme baselines en lecture seule.
 
@@ -92,7 +85,7 @@ bug réel
 
 `brain-learning/proposals` reste uniquement une mémoire sanitizée du Brain et ne constitue ni un Lab de code ni une voie de publication.
 '''
-          text = text[:start] + labs + text[end:]
+          text = text[:start] + replacement + text[end:]
           text = text.replace(
               '17. Les Labs permanents ne sont pas supprimés par le nettoyage ordinaire.',
               '17. Les Labs natifs valident le SHA exact de `main` ; aucune branche Lab de code permanente n’est requise.'
@@ -101,70 +94,20 @@ bug réel
 
           security = root / '.github/workflows/security-final-gate.yml'
           text = security.read_text(encoding='utf-8')
-          anchor = "      - 'scripts/provider_security_hardening.py'\n"
-          additions = (
+          trigger_anchor = "      - 'scripts/provider_security_hardening.py'\n"
+          trigger_additions = (
               "      - 'scripts/provider_patches/global_provider_security_hardening_v1.py'\n"
               "      - 'scripts/normalize_core_media_policy.py'\n"
               "      - 'scripts/apply_provider_overrides.py'\n"
           )
-          if "global_provider_security_hardening_v1.py" not in text:
-              if anchor not in text:
+          if 'global_provider_security_hardening_v1.py' not in text:
+              if trigger_anchor not in text:
                   raise SystemExit('security trigger anchor missing')
-              text = text.replace(anchor, anchor + additions, 1)
-          security.write_text(text, encoding='utf-8')
+              text = text.replace(trigger_anchor, trigger_anchor + trigger_additions, 1)
 
-          hygiene_test = root / 'tests/repository_hygiene_contract_test.py'
-          text = hygiene_test.read_text(encoding='utf-8')
-          anchor = '    "tests/purstream_core_presentation_pipeline_test.py",\n'
-          additions = (
-              '    ".github/workflows/docs-branch-policy-cleanup.yml",\n'
-              '    ".github/workflows/core-media-normalize-main.yml",\n'
-              '    ".github/workflows/final-gate-observer.yml",\n'
-              '    ".github/workflows/final-repository-cleanup-once.yml",\n'
-              '    "scripts/apply_playback_integrity_upgrade.py",\n'
-          )
-          if '.github/workflows/core-media-normalize-main.yml' not in text:
-              if anchor not in text:
-                  raise SystemExit('repository hygiene retired-path anchor missing')
-              text = text.replace(anchor, anchor + additions, 1)
-          hygiene_test.write_text(text, encoding='utf-8')
-
-          orchestrator = root / '.github/workflows/final-validation-orchestrator.yml'
-          text = orchestrator.read_text(encoding='utf-8')
-          marker = '# Final generation: repository-clean main-only v4.\n'
-          if marker not in text:
-              text = text.replace(
-                  '# Authoritative end-to-end gate for the exact main generation.\n',
-                  '# Authoritative end-to-end gate for the exact main generation.\n' + marker,
-                  1,
-              )
-          orchestrator.write_text(text, encoding='utf-8')
-
-          for rel in (
-              '.github/workflows/docs-branch-policy-cleanup.yml',
-              '.github/workflows/core-media-normalize-main.yml',
-              '.github/workflows/final-gate-observer.yml',
-              'scripts/apply_playback_integrity_upgrade.py',
-          ):
-              (root / rel).unlink(missing_ok=True)
-
-          for doc in (readme, architecture):
-              value = doc.read_text(encoding='utf-8')
-              assert 'lab/tv-real' not in value
-              assert 'lab/desktop-mobile-real' not in value
-          PY
-
-      - name: Add exact-SHA CodeQL freshness fence without exposing tokens
-        shell: bash
-        run: |
-          set -euo pipefail
-          python3 - <<'PY'
-          from pathlib import Path
-          path = Path('.github/workflows/security-final-gate.yml')
-          text = path.read_text(encoding='utf-8')
           if 'Wait for CodeQL analysis of exact tested main SHA' not in text:
-              anchor = '      - name: Gate open high/critical CodeQL alerts in generated providers\n'
-              if anchor not in text:
+              gate_anchor = '      - name: Gate open high/critical CodeQL alerts in generated providers\n'
+              if gate_anchor not in text:
                   raise SystemExit('CodeQL gate anchor missing')
               dollar = '$'
               token_expr = dollar + '{{ github.token }}'
@@ -193,20 +136,59 @@ bug réel
           fi
 
 '''
-              text = text.replace(anchor, block + anchor, 1)
-              path.write_text(text, encoding='utf-8')
+              text = text.replace(gate_anchor, block + gate_anchor, 1)
+          security.write_text(text, encoding='utf-8')
+
+          hygiene = root / 'tests/repository_hygiene_contract_test.py'
+          text = hygiene.read_text(encoding='utf-8')
+          anchor = '    "tests/purstream_core_presentation_pipeline_test.py",\n'
+          additions = (
+              '    ".github/workflows/docs-branch-policy-cleanup.yml",\n'
+              '    ".github/workflows/core-media-normalize-main.yml",\n'
+              '    ".github/workflows/final-gate-observer.yml",\n'
+              '    ".github/workflows/final-repository-cleanup-once.yml",\n'
+              '    "scripts/apply_playback_integrity_upgrade.py",\n'
+          )
+          if '.github/workflows/core-media-normalize-main.yml' not in text:
+              if anchor not in text:
+                  raise SystemExit('hygiene retired-path anchor missing')
+              text = text.replace(anchor, anchor + additions, 1)
+          hygiene.write_text(text, encoding='utf-8')
+
+          orchestrator = root / '.github/workflows/final-validation-orchestrator.yml'
+          text = orchestrator.read_text(encoding='utf-8')
+          marker = '# Final generation: repository-clean main-only v5.\n'
+          if marker not in text:
+              text = text.replace(
+                  '# Authoritative end-to-end gate for the exact main generation.\n',
+                  '# Authoritative end-to-end gate for the exact main generation.\n' + marker,
+                  1,
+              )
+          orchestrator.write_text(text, encoding='utf-8')
+
+          for rel in (
+              '.github/workflows/docs-branch-policy-cleanup.yml',
+              '.github/workflows/core-media-normalize-main.yml',
+              '.github/workflows/final-gate-observer.yml',
+              'scripts/apply_playback_integrity_upgrade.py',
+          ):
+              (root / rel).unlink(missing_ok=True)
+
+          for path in (readme, architecture):
+              value = path.read_text(encoding='utf-8')
+              assert 'lab/tv-real' not in value
+              assert 'lab/desktop-mobile-real' not in value
           PY
           if grep -R -n -E 'gh[ps]_[A-Za-z0-9_]+' .github/workflows/security-final-gate.yml; then
-            echo 'A GitHub credential-looking value was materialized into the workflow' >&2
+            echo 'Credential-looking literal was materialized into security workflow' >&2
             exit 1
           fi
 
-      - name: Self-remove and publish one final repository-clean source generation
+      - name: Self-remove and publish final source generation
         shell: bash
         run: |
           set -euo pipefail
           rm -f .github/workflows/final-repository-cleanup-once.yml
-          python -m py_compile tests/repository_hygiene_contract_test.py
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add -A
@@ -216,3 +198,17 @@ bug réel
           git pull --rebase origin main
           python tests/repository_hygiene_contract_test.py
           git push origin HEAD:main
+
+      - name: Dispatch authoritative final validation explicitly
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh workflow run final-validation-orchestrator.yml --repo "$GITHUB_REPOSITORY" --ref main
+          gh issue comment 69 --repo "$GITHUB_REPOSITORY" --body "Final cleanup published successfully; authoritative final validation was explicitly dispatched from cleanup run https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}."
+
+      - name: Report cleanup failure
+        if: failure()
+        shell: bash
+        run: |
+          set +e
+          gh issue comment 69 --repo "$GITHUB_REPOSITORY" --body "Final repository cleanup failed: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID} — source ${GITHUB_SHA}. The completion issue remains open."
