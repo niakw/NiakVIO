@@ -3,10 +3,14 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import subprocess
+import sys
+import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "scripts/normalize_core_media_policy.py"
+sys.path.insert(0, str(ROOT / "scripts"))
 
 spec = importlib.util.spec_from_file_location("core_media_policy", SCRIPT)
 assert spec is not None and spec.loader is not None
@@ -22,9 +26,9 @@ assert changed == [], changed
 assert source_changes == [], source_changes
 module.assert_policy(normalized)
 
-purstream = normalized["provider_patches"]["purstream"]
-active_scripts = {str(value) for value in purstream.get("patch_scripts", [])}
-active_options = {str(value) for value in (purstream.get("patch_script_options") or {})}
+row = normalized["provider_patches"]["purstream"]
+active_scripts = {str(value) for value in row.get("patch_scripts", [])}
+active_options = {str(value) for value in (row.get("patch_script_options") or {})}
 assert active_scripts.issubset(module.ALLOWED_SHARED_PURSTREAM_SCRIPTS), active_scripts
 assert active_options.issubset(module.ALLOWED_SHARED_PURSTREAM_SCRIPTS), active_options
 assert not any("purstream_" in value for value in active_scripts | active_options)
@@ -39,4 +43,40 @@ for retired in (
 ):
     assert not (ROOT / retired).exists(), retired
 
-print("Core media policy test passed: provider-specific Purstream repair hooks=0; shared Core hooks only")
+playback = normalized["playback_integrity_policy"]
+hooks = [str(value) for value in playback.get("global_discovery_hooks", [])]
+assert hooks.count(module.GLOBAL_SECURITY_HOOK) == 1, hooks
+assert hooks[-1] == module.GLOBAL_SECURITY_HOOK, hooks
+
+# Prove the final reconstructed artifact, not only the configuration: a generic
+# provider containing recurring unsafe shapes must leave the common Core with no
+# finding, while still retaining the required provider export and presentation.
+from apply_provider_overrides import apply_overrides
+from provider_security_hardening import known_unsafe_findings
+
+unsafe = b'''function badHost(u){return u.includes("example.com")};\nglobalThis.console.log("provider debug");\nglobalThis.getStreams=async function(){return []};\n'''
+output, applied = apply_overrides("synthetic-core-security", unsafe, phase="discovery")
+text = output.decode("utf-8")
+assert known_unsafe_findings(text) == [], known_unsafe_findings(text)
+assert "NUVIO_GLOBAL_PROVIDER_SECURITY_HOOK_V1" in text
+assert "NUVIO_PROVIDER_SECURITY_HARDENING_V1" in text
+assert "NUVIO_GLOBAL_STREAM_PRESENTATION_V1" in text
+assert any(record.get("scope") == "global_playback_integrity" for record in applied), applied
+
+with tempfile.NamedTemporaryFile("wb", suffix=".js", delete=False) as handle:
+    handle.write(output)
+    artifact = Path(handle.name)
+try:
+    result = subprocess.run(
+        ["node", str(ROOT / "scripts/validate_provider_artifact.cjs"), str(artifact)],
+        cwd=ROOT,
+        text=True,
+        capture_output=True,
+        check=False,
+        timeout=45,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+finally:
+    artifact.unlink(missing_ok=True)
+
+print("Core media/security policy test passed: provider-specific media repair hooks=0; shared Core layers only")
