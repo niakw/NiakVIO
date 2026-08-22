@@ -46,7 +46,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
     marker = f"{MARKER}:{hashlib.sha256(payload.encode()).hexdigest()[:12]}"
     marker_comment = f"/* {marker} */"
     current = text.find(marker_comment)
-    final_layers = [
+    recovery_layers = [
         position
         for position in (
             text.find("/* NUVIO_GLOBAL_MEDIA_ENRICHMENT_V1:"),
@@ -54,7 +54,22 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
         )
         if position >= 0
     ]
-    if current >= 0 and (not final_layers or current < min(final_layers)):
+    core_layers = [
+        position
+        for position in (
+            text.find("/* NUVIO_GLOBAL_STREAM_FACTS_V1:"),
+            text.find("/* NUVIO_GLOBAL_STREAM_IDENTITY_V1:"),
+            text.find("/* NUVIO_GLOBAL_STREAM_PRESENTATION_V1:"),
+        )
+        if position >= 0
+    ]
+    # Canonical order is recovery/media safety -> HLS validation -> Core metadata
+    # projection/identity/presentation. The Core layers do not alter URL/headers,
+    # while HLS remains the terminal playback validator. If the exact wrapper is
+    # already in that slot, preserve the bytes instead of removing/re-appending it.
+    after_recovery = not recovery_layers or current > max(recovery_layers)
+    before_core = not core_layers or current < min(core_layers)
+    if current >= 0 and after_recovery and before_core:
         return text
 
     old = text.find(f"/* {MARKER}:")
@@ -245,7 +260,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
       pages++;
       var page=await fetchBounded(item.url,stream,item.referer,false);if(page.state!=="ok")continue;
       var ct=page.contentType||"";
-      if(/^video\//i.test(ct))return cloneRecovered(stream,page.url,ct.indexOf("webm")>=0?"webm":"mp4",item.referer);
+      if(/^video\//i.test(ct))return cloneRecovered(stream,page.url,page.contentType.indexOf("webm")>=0?"webm":"mp4",item.referer);
       var body=await responseText(page);
       if(/^#EXTM3U(?:\s|$)/i.test(body)){
         var pageHls=await inspectHls(page.url,stream,item.referer);if(pageHls.state==="valid")return cloneRecovered(stream,pageHls.url||page.url,"hls",item.referer);
@@ -295,7 +310,19 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
   install();
 })(typeof globalThis!=="undefined"?globalThis:this,CONFIG_PLACEHOLDER);
 '''.replace("MARKER_PLACEHOLDER", marker).replace("CONFIG_PLACEHOLDER", payload)
-    final_layers = [
+    # Once an old/misordered wrapper has been removed, put the HLS validator after
+    # media recovery/safety but before Core facts/identity/presentation. This is the
+    # same canonical slot checked above, so reapplication converges in one pass.
+    core_layers = [
+        position
+        for position in (
+            text.find("/* NUVIO_GLOBAL_STREAM_FACTS_V1:"),
+            text.find("/* NUVIO_GLOBAL_STREAM_IDENTITY_V1:"),
+            text.find("/* NUVIO_GLOBAL_STREAM_PRESENTATION_V1:"),
+        )
+        if position >= 0
+    ]
+    recovery_layers = [
         position
         for position in (
             text.find("/* NUVIO_GLOBAL_MEDIA_ENRICHMENT_V1:"),
@@ -303,8 +330,8 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
         )
         if position >= 0
     ]
-    if final_layers:
-        insertion = min(final_layers)
+    if core_layers and (not recovery_layers or max(recovery_layers) < min(core_layers)):
+        insertion = min(core_layers)
         return (
             text[:insertion].rstrip()
             + "\n"
