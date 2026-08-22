@@ -11,14 +11,18 @@ on:
       - "package-lock.json"
       - ".github/triggers/nuvio-client-lab.json"
       - "automation/native-human-ux-policy.json"
+      - "automation/nuvio-client-compatibility-matrix.json"
       - "assets/**"
+      - "engine_v2/config/global-repair-skills.json"
       - "engine_v2/src/**"
       - "engine_v2/tests/**"
+      - "engine_v2/scripts/plan-repairs.mjs"
       - "engine_v2/scripts/diagnose-native-reader.mjs"
       - "engine_v2/scripts/diagnose-native-media-capabilities.mjs"
       - "engine_v2/scripts/learning-lab.mjs"
       - "engine_v2/scripts/watch-upstream-providers.mjs"
       - "scripts/check_nuvio_client_upstreams.py"
+      - "scripts/nuvio_runtime_compatibility.py"
       - "scripts/resolve_nuvio_lab_heads.py"
       - "scripts/scope_native_reader_learning_runtime.py"
       - "scripts/prepare_native_corpus_validation.py"
@@ -45,6 +49,8 @@ on:
       - "scripts/run_native_corpus_desktop_suite.sh"
       - "scripts/merge_native_reader_repair_learning.py"
       - "scripts/merge_native_reader_backlog.py"
+      - "scripts/adaptive_runtime/runtime_repair.py"
+      - "scripts/provider_patches/safe_structured_parse_v1.py"
       - "scripts/provider_patches/global_stream_facts_v1.py"
       - "scripts/provider_patches/global_stream_identity_v1.py"
       - "scripts/provider_patches/global_stream_presentation_v1.py"
@@ -58,6 +64,8 @@ on:
       - "tests/global_stream_presentation_pipeline_test.py"
       - "tests/badge_asset_contract_test.py"
       - "tests/brain_cron_full_coverage_test.py"
+      - "tests/safe_structured_parse_skill_test.py"
+      - "tests/adaptive_safe_structured_parse_profile_test.py"
       - "tests/native_evidence_contract_test.py"
       - "tests/native_evidence_completeness_test.cjs"
       - "tests/native_evidence_codegen_pipeline_test.py"
@@ -108,6 +116,12 @@ jobs:
           python3 tests/global_stream_presentation_pipeline_test.py
           python3 tests/global_stream_identity_test.py
           python3 tests/brain_cron_full_coverage_test.py
+      - name: Validate versioned Nuvio Brain compatibility and global structural skills
+        run: |
+          python3 scripts/nuvio_runtime_compatibility.py
+          node engine_v2/tests/repair-brain.test.mjs
+          python3 tests/safe_structured_parse_skill_test.py
+          python3 tests/adaptive_safe_structured_parse_profile_test.py
       - name: Validate image badge assets and theme contrast mapping
         run: python3 tests/badge_asset_contract_test.py
       - name: Validate weekly upstream provider comparator
