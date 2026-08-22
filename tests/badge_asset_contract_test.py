@@ -44,9 +44,9 @@ assert mapping["display"]["hideUnknownBadges"] is True
 assert "Use assets/dark when the Nuvio application background is gray/dark." in readme
 assert "Use assets/light when the Nuvio application background is white/light." in readme
 
-# These are the image IDs emitted by the shared Core presentation wrapper today.
-# If Core learns a new visual fact, this test forces the corresponding image to be
-# added before the new ID can ship.
+# These are the exact image IDs emitted by the shared Core presentation wrapper.
+# Keep them aligned with the existing complete asset catalog rather than inventing
+# near-duplicate aliases such as 5-1-audio/7-1-audio/dts-hd-ma/sdh.
 core_badge_ids = {
     "4k-ultra-hd",
     "1080p-full-hd",
@@ -71,9 +71,9 @@ core_badge_ids = {
     "dolby-digital-plus",
     "dolby-digital",
     "dts-x",
-    "dts-hd-ma",
-    "7-1-audio",
-    "5-1-audio",
+    "dts-hd-master-audio",
+    "7.1",
+    "5.1",
     "multi",
     "vff",
     "vfq",
@@ -82,12 +82,14 @@ core_badge_ids = {
     "sub-fr",
     "sub-en",
     "forced",
-    "sdh",
+    "sdh-cc",
 }
 missing = sorted(core_badge_ids - set(by_id))
 assert not missing, f"Core emits badge IDs with no catalog image: {missing}"
 for badge_id in core_badge_ids:
     assert f'"{badge_id}"' in core, f"expected shared Core to reference locked badge id {badge_id}"
+for stale_id in ("dts-hd-ma", "7-1-audio", "5-1-audio", "sdh"):
+    assert f'"{stale_id}"' not in core, f"stale non-catalog badge alias leaked from Core: {stale_id}"
 
 # The most important branded/technical image cases must retain a declared asset
 # provenance rather than silently being regenerated from unrelated facts.
