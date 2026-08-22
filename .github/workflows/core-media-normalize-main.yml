@@ -7,6 +7,7 @@ on:
     paths:
       - '.github/workflows/core-media-normalize-main.yml'
       - 'scripts/normalize_core_media_policy.py'
+      - 'tests/core_media_policy_test.py'
 
 permissions:
   contents: write
@@ -32,6 +33,7 @@ jobs:
           set -euo pipefail
           python scripts/normalize_core_media_policy.py --apply
           python scripts/normalize_core_media_policy.py --check
+          python tests/core_media_policy_test.py
 
       - name: Commit normalization directly to main
         shell: bash
@@ -47,4 +49,5 @@ jobs:
           git commit -m 'core: materialize provider-agnostic media configuration'
           git pull --rebase origin main
           python scripts/normalize_core_media_policy.py --check
+          python tests/core_media_policy_test.py
           git push origin HEAD:main
