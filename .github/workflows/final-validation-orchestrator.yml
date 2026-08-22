@@ -25,7 +25,7 @@ jobs:
     env:
       GH_TOKEN: ${{ github.token }}
       REPO: ${{ github.repository }}
-      STATE_FILE: ${{ runner.temp }}/niakvio-final-validation.env
+      STATE_FILE: /tmp/niakvio-final-validation.env
     steps:
       - name: Checkout exact main
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
