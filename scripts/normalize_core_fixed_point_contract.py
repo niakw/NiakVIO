@@ -2,9 +2,9 @@
 # SPDX-License-Identifier: GPL-3.0-only
 """Materialize durable Core byte contracts, then verify their fixed point.
 
-Only the owning runtime/publication modules are normalized. Tests are never
-rewritten by this script, so ``--apply`` followed by ``--check`` cannot enter a
-self-modifying CI loop.
+Only owning runtime/publication modules are normalized. The canonical rebuild
+boundary is an observable JavaScript assignment placed after provider-derived
+code and before every global Core hook. Tests are never rewritten here.
 """
 from __future__ import annotations
 
@@ -21,25 +21,24 @@ PURIFIER = ROOT / "engine_v2" / "scripts" / "purify-provider.mjs"
 PLAYBACK_TEST = ROOT / "tests" / "global_playback_integrity_policy_test.py"
 PURIFICATION_TEST = ROOT / "tests" / "provider_purification_contract_test.py"
 
-BOUNDARY = "__nuvioGlobalProviderSecurityBoundaryV1"
+CORE_START_BOUNDARY = "__nuvioGlobalCoreStartBoundaryV1"
+SECURITY_BOUNDARY = "__nuvioGlobalProviderSecurityBoundaryV1"
 SECURITY_MARKER = "NUVIO_GLOBAL_PROVIDER_SECURITY_HOOK_V1"
 
 
 def normalize_apply(text: str) -> str:
-    if '"NUVIO_GLOBAL_PROVIDER_SECURITY_HOOK_V1",\n    "NUVIO_GLOBAL_STREAM_FACTS_V1"' not in text:
-        old = '''GENERATED_CORE_TAIL_MARKERS = (\n    "NUVIO_GLOBAL_STREAM_FACTS_V1",'''
-        new = '''GENERATED_CORE_TAIL_MARKERS = (\n    "NUVIO_GLOBAL_PROVIDER_SECURITY_HOOK_V1",\n    "NUVIO_GLOBAL_STREAM_FACTS_V1",'''
-        if old not in text:
-            raise ValueError("generated Core tail tuple anchor missing")
-        text = text.replace(old, new, 1)
+    if f'CORE_START_BOUNDARY = "{CORE_START_BOUNDARY}"' not in text:
+        anchor = 'GLOBAL_STREAM_PRESENTATION = "scripts/provider_patches/global_stream_presentation_v1.py"\n'
+        if anchor not in text:
+            raise ValueError("Core start boundary declaration anchor missing")
+        text = text.replace(anchor, anchor + f'CORE_START_BOUNDARY = "{CORE_START_BOUNDARY}"\n', 1)
 
     domain_fn = dedent(r'''
     def _inject_runtime_domain_overrides(text: str, replacements: dict[str, Any]) -> tuple[str, int]:
         """Embed host rewriting into the provider JavaScript artifact itself.
 
-        Existing wrappers are replaced at their current byte position. Moving
-        one back to byte zero on every reconstruction reorders it against Core
-        wrappers and rotates content-addressed hashes without semantic change.
+        Existing wrappers are replaced at their current byte position. Moving one
+        to byte zero on every reconstruction rotates hashes without semantic change.
         """
         from urllib.parse import urlparse
 
@@ -116,26 +115,19 @@ def normalize_apply(text: str) -> str:
 
     strip_fn = dedent(r'''
     def _strip_generated_core_tail(text: str) -> tuple[str, bool]:
-        """Return provider-derived bytes without a generated Core tail.
+        """Recover exact provider-derived bytes before the global Core pipeline.
 
-        The security hook emits an observable assignment. Terser may relocate
-        retained comments, but it cannot discard this assignment without changing
-        semantics, so it is the authoritative fixed-point boundary.
+        New bundles contain an observable Core-start assignment immediately after
+        provider-derived code. Terser cannot relocate/drop it without changing
+        semantics. Legacy bundles fall back to their old final-tail markers for
+        one migration pass; every newly materialized bundle uses the start boundary.
         """
-        security_boundary = "__nuvioGlobalProviderSecurityBoundaryV1"
-        security_index = text.find(security_boundary)
-        if security_index >= 0:
-            line_start = text.rfind("\n", 0, security_index) + 1
-            semicolon_start = text.rfind(";", 0, security_index) + 1
+        boundary_index = text.find(CORE_START_BOUNDARY)
+        if boundary_index >= 0:
+            line_start = text.rfind("\n", 0, boundary_index) + 1
+            semicolon_start = text.rfind(";", 0, boundary_index) + 1
             cut = max(line_start, semicolon_start)
-            prefix = text[:cut]
-            prefix = re.sub(
-                r"/\*\s*NUVIO_GLOBAL_(?:PROVIDER_SECURITY_HOOK_V1|STREAM_(?:FACTS|IDENTITY|PRESENTATION)_V1(?::[^*]*)?)\s*\*/\s*",
-                "",
-                prefix,
-                flags=re.DOTALL,
-            )
-            return prefix.rstrip(), True
+            return text[:cut].rstrip(), True
 
         starts = []
         for marker in GENERATED_CORE_TAIL_MARKERS:
@@ -154,6 +146,15 @@ def normalize_apply(text: str) -> str:
     start = text.index("def _strip_generated_core_tail(")
     end = text.index("\ndef apply_overrides(", start)
     text = text[:start] + strip_fn + text[end:]
+
+    # Place the observable boundary after provider-specific/runtime transforms but
+    # before the first global playback/media hook.
+    boundary_block = '''        if CORE_START_BOUNDARY not in text:\n            text = text.rstrip() + f"\\nglobalThis.{CORE_START_BOUNDARY}=true;\\n"\n\n'''
+    if boundary_block not in text:
+        anchor = '        def _apply_playback_stage(hooks: list[str]) -> None:\n'
+        if anchor not in text:
+            raise ValueError("global playback stage anchor missing")
+        text = text.replace(anchor, boundary_block + anchor, 1)
     return text
 
 
@@ -174,7 +175,7 @@ def normalize_reapply(text: str) -> str:
     return text
 
 
-def outputs() -> dict[Path, str]:
+def normalized_outputs() -> dict[Path, str]:
     return {
         APPLY: normalize_apply(APPLY.read_text(encoding="utf-8")),
         REAPPLY: normalize_reapply(REAPPLY.read_text(encoding="utf-8")),
@@ -191,14 +192,14 @@ def assert_contract() -> None:
     purification_test = PURIFICATION_TEST.read_text(encoding="utf-8")
 
     for required in (
-        SECURITY_MARKER,
-        BOUNDARY,
+        f'CORE_START_BOUNDARY = "{CORE_START_BOUNDARY}"',
+        "text.find(CORE_START_BOUNDARY)",
+        f"globalThis.{{CORE_START_BOUNDARY}}=true;",
         "existing_span",
         "output = text[:existing_span[0]] + bootstrap + text[existing_span[1]:]",
     ):
         assert required in apply_text, f"missing apply fixed-point contract: {required}"
-    assert f'HOOK_BOUNDARY = "{BOUNDARY}"' in security_text
-    assert "globalThis.{HOOK_BOUNDARY}=true;" in security_text
+    assert f'HOOK_BOUNDARY = "{SECURITY_BOUNDARY}"' in security_text
 
     for required in (
         "from provider_purification import purify_bytes",
@@ -240,15 +241,15 @@ def main() -> int:
     mode.add_argument("--check", action="store_true")
     args = parser.parse_args()
 
-    normalized = outputs()
-    changed = [path for path, value in normalized.items() if value != path.read_text(encoding="utf-8")]
+    outputs = normalized_outputs()
+    changed = [path for path, value in outputs.items() if value != path.read_text(encoding="utf-8")]
     if args.apply:
         for path in changed:
-            path.write_text(normalized[path], encoding="utf-8")
+            path.write_text(outputs[path], encoding="utf-8")
         assert_contract()
         print(
             "FIELD_CORE_FIXED_POINT_CONTRACT "
-            f"changed={len(changed)} security_boundary=observable "
+            f"changed={len(changed)} core_start_boundary=observable "
             "runtime_domain_position=stable final_terser=5.50.0"
         )
         return 0
@@ -259,7 +260,7 @@ def main() -> int:
         return 1
     assert_contract()
     print(
-        "FIELD_CORE_FIXED_POINT_CONTRACT changed=0 security_boundary=observable "
+        "FIELD_CORE_FIXED_POINT_CONTRACT changed=0 core_start_boundary=observable "
         "runtime_domain_position=stable final_terser=5.50.0"
     )
     return 0
