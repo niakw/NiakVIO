@@ -42,13 +42,6 @@ TARGETS: dict[str, dict[str, Any]] = {
         "filter_episode_labels": True,
         "max_series_streams": 24,
     },
-    "purstream": {
-        "normalize_missing_episodes": True,
-        "domain_failover": {
-            "host_prefixes": ["api.purstream", "purstream"],
-            "suffixes": ["club", "mx", "ch", "ac", "cx", "art", "co", "me", "to", "store"],
-        },
-    },
 }
 
 

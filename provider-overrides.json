@@ -355,7 +355,8 @@
     },
     "purstream": {
       "notes": [
-        "Do not map the provider to the hub itself. resolve_provider_hubs.py follows the official-address page and persists only a runtime-validated terminal site/API."
+        "Do not map the provider to the hub itself. resolve_provider_hubs.py follows the official-address page and persists only a runtime-validated terminal site/API.",
+        "Purstream has no provider-specific repair hooks; content identity, stream facts, presentation and platform compatibility are handled by shared Core/capability layers."
       ],
       "capability": "official_domain_hub",
       "official_hub": "https://purstream.wiki",
@@ -365,38 +366,8 @@
         "tv",
         "anime"
       ],
-      "patch_scripts": [
-        "scripts/provider_patches/desktop_runtime_compat_v1.py",
-        "scripts/provider_patches/purstream_tv_identity_v3.py"
-      ],
-      "patch_script_options": {
-        "scripts/provider_patches/desktop_runtime_compat_v1.py": {
-          "normalize_missing_episodes": true,
-          "domain_failover": {
-            "host_prefixes": [
-              "api.purstream",
-              "purstream"
-            ],
-            "suffixes": [
-              "club",
-              "mx",
-              "ch",
-              "ac",
-              "cx",
-              "art",
-              "co",
-              "me",
-              "to",
-              "store"
-            ]
-          }
-        },
-        "scripts/provider_patches/purstream_tv_identity_v3.py": {
-          "duration_tolerance": 0.35,
-          "timeout_ms": 7000,
-          "max_probes": 3
-        }
-      },
+      "patch_scripts": [],
+      "patch_script_options": {},
       "manifest_overrides": {
         "disabledPlatforms": []
       }
