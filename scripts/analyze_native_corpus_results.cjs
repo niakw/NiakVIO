@@ -4,6 +4,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const { streamIdentity } = require('./nuvio_client_lab.cjs');
+const { releaseIdentityGuard } = require('./native_fixture_identity_guard.cjs');
 const { readerFailureClass, readerSignature, isReaderFailure } = require('./native_player_diagnostics.cjs');
 
 function usage() {
@@ -98,7 +99,10 @@ for (const input of logPaths) {
       rows.push(withPolicy({
         client: f.client || 'unknown', provider: decode(f.provider64), requestType: routeType(f), routeMode: routeMode(f),
         index: Number(f.index || 0), host, mediaHint,
-        stream: { title: decode(f.title64), name: decode(f.name64), quality: decode(f.quality64), language: decode(f.language64), type: decode(f.type64), url: safeSyntheticUrl(host, mediaHint) },
+        stream: {
+          title: decode(f.title64), name: decode(f.name64), quality: decode(f.quality64), language: decode(f.language64),
+          type: decode(f.type64), mediaHint, url: safeSyntheticUrl(host, mediaHint),
+        },
       }));
     } else if (line.startsWith('FIELD_NATIVE_TRANSPORT ')) {
       const provider = decode(f.provider64);
@@ -145,19 +149,30 @@ const matches = [];
 const unknown = [];
 for (const row of rows) {
   let identity = streamIdentity(row.stream, fixture);
+  const releaseGuard = releaseIdentityGuard(row.stream, fixture);
+  if (releaseGuard) {
+    // A pre-existing hard contradiction (wrong title/episode) stays authoritative.
+    // Otherwise the release collision guard may downgrade a title match to unknown,
+    // or turn an explicit wrong release year into a contradiction.
+    if (identity.status !== 'contradiction' || releaseGuard.status === 'contradiction') {
+      identity = { status: releaseGuard.status, reason: releaseGuard.reason };
+    }
+  }
   const transport = transports.get(streamKey(row.client, row.provider, row.requestType, row.index));
   const player = players.get(streamKey(row.client, row.provider, row.requestType, row.index));
   const measuredDuration = player?.durationSeconds || transport?.durationSeconds || null;
   const durationRatio = expectedDurationSeconds && measuredDuration ? measuredDuration / expectedDurationSeconds : null;
   if (durationRatio != null && (durationRatio < minimumDurationRatio || durationRatio > maximumDurationRatio)) {
     identity = { status: 'contradiction', reason: 'fixture_duration_mismatch' };
-  } else if (identity.status === 'unknown' && durationRatio != null) {
+  } else if (identity.status === 'unknown' && durationRatio != null && !releaseGuard?.preventDurationPromotion) {
     identity = { status: 'match', reason: 'fixture_duration_match' };
   }
   const record = {
     client: row.client, provider: row.provider, requestType: row.requestType, routeMode: row.routeMode,
     capability: row.capability, index: row.index, status: identity.status, reason: identity.reason,
     title: row.stream.title, name: row.stream.name, host: row.host || null, mediaHint: row.mediaHint || null, durationRatio,
+    expectedYear: releaseGuard?.expectedYear || Number(fixture.year || 0) || null,
+    observedYears: releaseGuard?.observedYears || [],
   };
   if (identity.status === 'contradiction') contradictions.push(record);
   else if (identity.status === 'match') matches.push(record);
