@@ -2,6 +2,16 @@ name: NiakVIO weekly upstream provider discovery
 
 on:
   workflow_dispatch:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/weekly-upstream-provider-discovery.yml'
+      - 'scripts/report_new_upstream_providers.py'
+      - 'scripts/discover_candidates.py'
+      - 'tests/weekly_upstream_provider_discovery_test.py'
+      - 'tests/brain_cron_full_coverage_test.py'
+      - 'sources.json'
+      - 'provider_catalog.json'
   schedule:
     - cron: '37 3 * * 3'
 
@@ -9,7 +19,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: niakvio-weekly-upstream-provider-discovery
+  group: niakvio-weekly-upstream-provider-discovery-${{ github.event.pull_request.number || 'main' }}
   cancel-in-progress: true
 
 jobs:
@@ -20,10 +30,10 @@ jobs:
     permissions:
       contents: read
     steps:
-      - name: Checkout trusted production baseline
+      - name: Checkout review target
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
-          ref: main
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || 'main' }}
           fetch-depth: 1
           persist-credentials: false
 
