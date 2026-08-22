@@ -7,6 +7,7 @@ import os
 import subprocess
 import sys
 import tempfile
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -205,7 +206,17 @@ def current_head(repository: str, branch: str) -> str:
     return sha
 
 
-def compare(repository: str, base: str, head: str) -> dict[str, Any]:
+def compare(
+    repository: str,
+    base: str,
+    head: str,
+    patch_rules: list[str] | None = None,
+) -> dict[str, Any]:
+    """Compare refs while materializing patches only for semantic-review paths.
+
+    Hard contract changes need only their filenames. Diffing every changed file was
+    the dominant cost of the native Lab resolver and provided no extra evidence.
+    """
     with tempfile.TemporaryDirectory(prefix="niakvio-client-drift-") as tmp:
         work = Path(tmp)
         run_git(["init", "--quiet"], cwd=work)
@@ -244,8 +255,12 @@ def compare(repository: str, base: str, head: str) -> dict[str, Any]:
             timeout=30,
         )
         files = [name.strip() for name in names.splitlines() if name.strip()]
+        if patch_rules:
+            patch_files = [name for name in files if path_matches(name, patch_rules)][:250]
+        else:
+            patch_files = files[:250]
         patches: dict[str, str] = {}
-        for filename in files[:250]:
+        for filename in patch_files:
             patch = run_git(
                 [
                     "diff",
@@ -315,7 +330,7 @@ def inspect_client(key: str, row: dict[str, Any], sources: dict[str, Any] | None
     if head == accepted_ref:
         return result
 
-    comparison = compare(repository, accepted_ref, head)
+    comparison = compare(repository, accepted_ref, head, semantic_rules)
     status = str(comparison.get("status") or "unknown")
     patches = comparison.get("patches") or {}
     files = [
@@ -389,6 +404,8 @@ def apply_safe_state(
     advanced: list[str] = []
 
     for key, row in (config.get("clients") or {}).items():
+        if key not in results:
+            continue
         result = results[key]
         contract_ref = str(row.get("verified_ref") or "")
         state = clients.get(key)
@@ -432,6 +449,11 @@ def main() -> int:
         default=str(ROOT / "health-output" / "nuvio-client-upstream-status.json"),
     )
     parser.add_argument(
+        "--clients",
+        nargs="+",
+        help="Inspect only these configured client ids. Omit for the full registry.",
+    )
+    parser.add_argument(
         "--no-fail",
         action="store_true",
         help="Report contract drift without a non-zero exit code.",
@@ -460,12 +482,20 @@ def main() -> int:
             "Nuvio client upstream configuration invalid:\n- " + "\n- ".join(config_errors)
         )
 
+    all_clients = config.get("clients") or {}
+    requested = args.clients or list(all_clients)
+    unknown = [key for key in requested if key not in all_clients]
+    if unknown:
+        raise SystemExit("unknown Nuvio client ids: " + ", ".join(unknown))
+    selected_items = [(key, all_clients[key]) for key in requested]
+
     now = datetime.now(timezone.utc).isoformat()
     report: dict[str, Any] = {
-        "schema_version": 3,
+        "schema_version": 4,
         "generated_at": now,
-        "transport": "git-ls-remote-plus-partial-tree-diff",
+        "transport": "parallel-git-ls-remote-plus-targeted-partial-tree-diff",
         "policy": config.get("policy") or {},
+        "selected_clients": requested,
         "clients": {},
         "review_required": [],
         "safe_advance_available": [],
@@ -474,12 +504,11 @@ def main() -> int:
         "inconclusive": [],
     }
 
-    failures: list[str] = []
-    for key, row in (config.get("clients") or {}).items():
+    def inspect_one(key: str, row: dict[str, Any]) -> dict[str, Any]:
         try:
-            result = resilient_inspect_client(str(key), row, sources)
+            return resilient_inspect_client(str(key), row, sources)
         except Exception as error:
-            result = {
+            return {
                 "id": key,
                 "repository": row.get("repository"),
                 "branch": row.get("branch"),
@@ -488,6 +517,15 @@ def main() -> int:
                 "review_required": True,
                 "error": f"{type(error).__name__}: {error}",
             }
+
+    worker_count = max(1, min(3, len(selected_items)))
+    with ThreadPoolExecutor(max_workers=worker_count, thread_name_prefix="nuvio-drift") as pool:
+        futures = {key: pool.submit(inspect_one, key, row) for key, row in selected_items}
+        inspected = {key: futures[key].result() for key, _row in selected_items}
+
+    failures: list[str] = []
+    for key, _row in selected_items:
+        result = inspected[key]
         report["clients"][key] = result
         status = result.get("status")
         if status == "verified":
@@ -529,7 +567,8 @@ def main() -> int:
 
     if args.apply_safe_advance and not failures and not report["inconclusive"]:
         advanced = apply_safe_state(sources, config, report["clients"], now)
-        if advanced or "nuvio_client_compatibility" not in load(sources_path):
+        previous_sources = load(sources_path) if sources_path.is_file() else {}
+        if advanced or "nuvio_client_compatibility" not in previous_sources:
             dump(sources_path, sources)
         report["auto_advanced"] = advanced
         for key in advanced:
@@ -555,6 +594,7 @@ def main() -> int:
 
     print(
         "Nuvio client upstream drift check: "
+        f"selected={','.join(requested) or '-'}; "
         f"verified={','.join(report['verified']) or '-'}; "
         f"safe={','.join(report['safe_advance_available']) or '-'}; "
         f"auto_advanced={','.join(report['auto_advanced']) or '-'}; "

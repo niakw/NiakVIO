@@ -1,0 +1,268 @@
+name: Native Desktop reader acceptance
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/native-desktop-reader-acceptance.yml"
+      - ".github/triggers/nuvio-client-lab.json"
+      - "manifest.json"
+      - "vf/manifest.json"
+      - "provider_catalog.json"
+      - "provider-overrides.json"
+      - "providers/**"
+      - "sources.json"
+      - "automation/nuvio-client-upstreams.json"
+      - "automation/platform-runtime-contracts.json"
+      - "scripts/check_nuvio_client_upstreams.py"
+      - "scripts/resolve_nuvio_lab_heads.py"
+      - "scripts/prepare_native_corpus_client.py"
+      - "scripts/restage_native_corpus_client.py"
+      - "scripts/augment_native_corpus_request_contract.py"
+      - "scripts/augment_native_provider_loading.py"
+      - "scripts/resolve_native_repository.sh"
+      - "scripts/prepare_native_candidate_repository.py"
+      - "scripts/augment_native_desktop_player.py"
+      - "scripts/complete_native_desktop_frontend_phases.py"
+      - "scripts/instrument_native_client_evidence.py"
+      - "scripts/instrument_native_repository_http_evidence.py"
+      - "scripts/instrument_native_desktop_evidence.py"
+      - "scripts/run_native_corpus_desktop_suite.sh"
+      - "scripts/analyze_native_corpus_collection.cjs"
+      - "scripts/analyze_native_corpus_results.cjs"
+      - "scripts/native_fixture_identity_guard.cjs"
+      - "scripts/gate_native_reader_coverage.cjs"
+      - "scripts/gate_native_reader_result.cjs"
+      - "scripts/gate_native_player_reached.cjs"
+      - "scripts/native_evidence_completeness.cjs"
+      - "engine_v2/scripts/diagnose-native-reader.mjs"
+  push:
+    branches: [main]
+    paths:
+      - "manifest.json"
+      - "vf/manifest.json"
+      - "provider_catalog.json"
+      - "provider-overrides.json"
+      - "providers/**"
+      - "sources.json"
+      - "automation/nuvio-client-upstreams.json"
+      - "automation/platform-runtime-contracts.json"
+      - "scripts/check_nuvio_client_upstreams.py"
+      - "scripts/resolve_nuvio_lab_heads.py"
+      - "scripts/prepare_native_corpus_client.py"
+      - "scripts/restage_native_corpus_client.py"
+      - "scripts/augment_native_corpus_request_contract.py"
+      - "scripts/augment_native_provider_loading.py"
+      - "scripts/resolve_native_repository.sh"
+      - "scripts/prepare_native_candidate_repository.py"
+      - "scripts/augment_native_desktop_player.py"
+      - "scripts/complete_native_desktop_frontend_phases.py"
+      - "scripts/instrument_native_client_evidence.py"
+      - "scripts/instrument_native_repository_http_evidence.py"
+      - "scripts/instrument_native_desktop_evidence.py"
+      - "scripts/run_native_corpus_desktop_suite.sh"
+      - "scripts/analyze_native_corpus_collection.cjs"
+      - "scripts/analyze_native_corpus_results.cjs"
+      - "scripts/native_fixture_identity_guard.cjs"
+      - "scripts/gate_native_reader_coverage.cjs"
+      - "scripts/gate_native_reader_result.cjs"
+      - "scripts/gate_native_player_reached.cjs"
+      - "scripts/native_evidence_completeness.cjs"
+      - "engine_v2/scripts/diagnose-native-reader.mjs"
+      - ".github/workflows/native-desktop-reader-acceptance.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: native-desktop-reader-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  resolve:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    outputs:
+      desktop_sha: ${{ steps.refs.outputs.desktop_sha }}
+      runtime_fingerprint: ${{ steps.refs.outputs.runtime_fingerprint }}
+      desktop_drift_status: ${{ steps.refs.outputs.desktop_drift_status }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Inspect current official Nuvio client drift
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/check_nuvio_client_upstreams.py \
+            --no-fail \
+            --output health-output/nuvio-client-upstream-status.json
+      - id: refs
+        name: Resolve latest official Desktop client HEAD
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/resolve_nuvio_lab_heads.py \
+            --report health-output/nuvio-client-upstream-status.json \
+            --clients nuvio-desktop \
+            --github-output "$GITHUB_OUTPUT" \
+            --output health-output/nuvio-desktop-lab-head.json
+      - name: Publish Nuvio Desktop runtime audit context
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: nuvio-desktop-lab-head-${{ github.run_id }}
+          path: |
+            health-output/nuvio-client-upstream-status.json
+            health-output/nuvio-desktop-lab-head.json
+          retention-days: 7
+          if-no-files-found: error
+
+  desktop-reader:
+    needs: resolve
+    timeout-minutes: ${{ github.event_name == 'pull_request' && 75 || 240 }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-15
+            os_name: macos
+          - runner: windows-2022
+            os_name: windows
+    runs-on: ${{ matrix.runner }}
+    env:
+      WEBVIEW2_VERSION: 1.0.4078.44
+      NIAKVIO_TARGET_PROVIDER: all
+      NIAKVIO_TARGET_MANIFEST: manifest.json
+      NIAKVIO_PRIMARY_STREAM_SCOPE: all
+      NIAKVIO_REGRESSION_STREAM_SCOPE: all
+      NIAKVIO_PR_PROVIDER_LIMIT: "8"
+      # Playback outcomes are evidence to repair after the smoke. The smoke only
+      # blocks if the production player is never reached at all.
+      NIAKVIO_REQUIRE_READER_SUCCESS: "0"
+    steps:
+      - name: Checkout NiakVIO candidate
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          path: niakvio
+          persist-credentials: false
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165
+        with: {distribution: temurin, java-version: "17"}
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with: {node-version: "24", package-manager-cache: false}
+
+      - uses: gradle/actions/setup-gradle@0723195856401067f7a2779048b490ace7a47d7c
+
+      - name: Checkout latest official NuvioDesktop HEAD and stage initial route
+        shell: bash
+        env:
+          NUVIO_DESKTOP_SHA: ${{ needs.resolve.outputs.desktop_sha }}
+        run: |
+          set -euxo pipefail
+          git clone --filter=blob:none --no-checkout https://github.com/NuvioMedia/NuvioDesktop.git nuvio-desktop
+          git -C nuvio-desktop checkout "$NUVIO_DESKTOP_SHA"
+          git -C nuvio-desktop lfs pull --include="composeApp/src/desktopMain/native/macos/runtime/**,composeApp/src/desktopMain/native/windows/runtime/**" --exclude=""
+          touch nuvio-desktop/local.properties
+          python3 niakvio/scripts/prepare_native_corpus_client.py desktop --fixture sinners-2025 --workspace "$GITHUB_WORKSPACE" --manifest manifest.json
+
+      - name: Install official Windows WebView2 build dependency
+        if: matrix.os_name == 'windows'
+        shell: pwsh
+        run: |
+          nuget install Microsoft.Web.WebView2 `
+            -Version $env:WEBVIEW2_VERSION `
+            -OutputDirectory "$env:RUNNER_TEMP\nuget" `
+            -DirectDownload `
+            -NonInteractive `
+            -NoCache
+          $root = Join-Path $env:RUNNER_TEMP "nuget\Microsoft.Web.WebView2.$env:WEBVIEW2_VERSION"
+          if (-not (Test-Path (Join-Path $root "build\native\x64\WebView2Loader.dll.lib"))) {
+            throw "WebView2Loader.dll.lib missing from $root"
+          }
+          "WEBVIEW2_ROOT=$root" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Build official macOS native player bridge once
+        if: matrix.os_name == 'macos'
+        shell: bash
+        run: |
+          set -euxo pipefail
+          ./nuvio-desktop/gradlew -p nuvio-desktop \
+            :composeApp:buildMacosPlayerBridge \
+            :composeApp:prepareMacosPlayerRuntime \
+            --no-configuration-cache --console=plain
+
+      - name: Build official Windows native player bridge once
+        if: matrix.os_name == 'windows'
+        shell: pwsh
+        run: |
+          & .\nuvio-desktop\gradlew.bat -p nuvio-desktop `
+            :composeApp:buildWindowsPlayerBridge `
+            :composeApp:prepareWindowsPlayerRuntime `
+            :composeApp:generateWindowsPlayerRuntimeIndex `
+            "-Pnuvio.webview2.dir=$env:WEBVIEW2_ROOT" `
+            --no-configuration-cache --console=plain
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Execute representative routes and require one real player reach
+        shell: bash
+        run: |
+          set -u
+          FIXTURES=(sinners-2025 breaking-bad-s01e01 jujutsu-kaisen-s01e01)
+          if [[ "${{ matrix.os_name }}" = "macos" ]]; then
+            FIXTURES+=(colony-2021 failure-frame-s01e01 hell-teacher-nube-2025-s01e01)
+          fi
+          printf '%s\n' "${FIXTURES[@]}" > "$GITHUB_WORKSPACE/desktop-fixtures-${{ matrix.os_name }}.txt"
+          for fixture in "${FIXTURES[@]}"; do
+            echo "===== DESKTOP ROUTE: $fixture (${{ matrix.os_name }}) ====="
+            NIAKVIO_TARGET_FIXTURE="$fixture" \
+            NIAKVIO_PRIMARY_FIXTURE="$fixture" \
+              bash "$GITHUB_WORKSPACE/niakvio/scripts/run_native_corpus_desktop_suite.sh" || true
+          done
+          LOGS=()
+          for fixture in "${FIXTURES[@]}"; do
+            LOG="$GITHUB_WORKSPACE/desktop-native-corpus-${{ matrix.os_name }}-${fixture}.log"
+            [[ -f "$LOG" ]] && LOGS+=("$LOG")
+          done
+          node "$GITHUB_WORKSPACE/niakvio/scripts/gate_native_player_reached.cjs" "${LOGS[@]}"
+
+      - name: Build Desktop Brain diagnoses from captured evidence
+        if: always()
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -u
+          FIXTURE_FILE="$GITHUB_WORKSPACE/desktop-fixtures-${{ matrix.os_name }}.txt"
+          if [[ ! -s "$FIXTURE_FILE" ]]; then
+            printf '%s\n' sinners-2025 breaking-bad-s01e01 jujutsu-kaisen-s01e01 > "$FIXTURE_FILE"
+          fi
+          while IFS= read -r fixture; do
+            [[ -n "$fixture" ]] || continue
+            LOG="$GITHUB_WORKSPACE/desktop-native-corpus-${{ matrix.os_name }}-${fixture}.log"
+            if [ ! -s "$LOG" ]; then
+              echo "Missing Desktop reader evidence: $LOG" >&2
+              continue
+            fi
+            node niakvio/engine_v2/scripts/diagnose-native-reader.mjs \
+              --output "$GITHUB_WORKSPACE/desktop-reader-${{ matrix.os_name }}-${fixture}-brain.json" \
+              "$LOG" || true
+          done < "$FIXTURE_FILE"
+
+      - name: Upload Desktop reader evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: native-desktop-reader-${{ matrix.os_name }}-routes-${{ github.run_id }}
+          path: |
+            desktop-native-corpus-${{ matrix.os_name }}-*.log
+            desktop-native-gradle-${{ matrix.os_name }}-*.log
+            desktop-reader-${{ matrix.os_name }}-*-brain.json
+            desktop-fixtures-${{ matrix.os_name }}.txt
+            native-evidence/desktop/**
+          retention-days: 7
+          if-no-files-found: warn

@@ -1,0 +1,13 @@
+// Test-harness parity with the official NuvioDesktop compose.desktop.application JVM args.
+// This configures Gradle Test workers only; it does not modify NuvioDesktop runtime sources.
+allprojects {
+    tasks.withType(org.gradle.api.tasks.testing.Test).configureEach {
+        jvmArgs(
+            "-Dapple.awt.application.appearance=NSAppearanceNameDarkAqua",
+            "--add-opens=java.desktop/java.awt=ALL-UNNAMED",
+            "--add-opens=java.desktop/sun.lwawt=ALL-UNNAMED",
+            "--add-opens=java.desktop/sun.lwawt.macosx=ALL-UNNAMED",
+            "--add-opens=java.desktop/sun.awt.windows=ALL-UNNAMED"
+        )
+    }
+}

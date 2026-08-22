@@ -142,17 +142,19 @@ VF/VOSTFR n'est jamais déduite d'un seul indice. Selon les informations disponi
 
 ## Compatibilité Nuvio
 
-Les commits clients acceptés sont épinglés dans [`sources.json`](sources.json) et les validations natives utilisent les repositories officiels.
+Les commits clients acceptés sont épinglés dans [`sources.json`](sources.json) et les validations natives utilisent les repositories officiels à ces révisions exactes.
 
-| Client | Repository | Preuve |
+| Client | Repository | Preuve native retenue |
 |---|---|---|
-| Nuvio Mobile | [`NuvioMedia/NuvioMobile`](https://github.com/NuvioMedia/NuvioMobile) | runtime Android/iOS et contrat Mobile |
-| Nuvio Desktop | [`NuvioMedia/NuvioDesktop`](https://github.com/NuvioMedia/NuvioDesktop) | runtime Desktop Windows/macOS/Linux |
-| NuvioTV | [`NuvioMedia/NuvioTV`](https://github.com/NuvioMedia/NuvioTV) | runtime Android TV |
+| Nuvio Mobile | [`NuvioMedia/NuvioMobile`](https://github.com/NuvioMedia/NuvioMobile) | chemin Android officiel et stack de lecture du client |
+| Nuvio Desktop | [`NuvioMedia/NuvioDesktop`](https://github.com/NuvioMedia/NuvioDesktop) | bridges/lecteurs natifs **macOS et Windows** ; le stub Linux n'est pas une preuve lecteur |
+| NuvioTV | [`NuvioMedia/NuvioTV`](https://github.com/NuvioMedia/NuvioTV) | Android TV officiel avec Media3/ExoPlayer |
 
 Le contrat logique ARCHI 2 est commun, mais **une preuve Desktop ne vaut jamais automatiquement preuve Mobile ou TV**.
 
-Le corpus natif couvre actuellement plusieurs œuvres représentatives de films, séries et anime et exécute chaque provider dans le runtime du client concerné. Les jobs ciblés permettent de retester un seul device — et, pour TV, une seule fixture — sans relancer inutilement tout le parc.
+Les labs natifs parcourent les lignes du manifest compatibles avec la plateforme, **y compris les providers `enabled:false`**, et lisent **chaque stream retourné** sur des routes représentatives film, série et anime. Les routes incompatibles sont comptabilisées comme skips explicites ; les probes `tv/anime` non déclarés restent des preuves de capacité et ne déclenchent pas de réparation provider sur un simple échec.
+
+Les profils Nuvio, snapshots AVD, caches providers et caches Gradle sont conservés lorsque c'est sûr afin d'éviter de reconstruire inutilement l'environnement. Les retests ciblés par device restent disponibles manuellement.
 
 ---
 
@@ -183,7 +185,7 @@ NiakVIO repose sur **Provider Engine V2 / ARCHI 2**.
         Evidence Matrix
               │
               ▼
-        Repair Brain V2
+        Repair Brain v4
               │
               ▼
  média + identité + langue + contexte
@@ -254,14 +256,14 @@ hypothèse de réparation
    ↓
 mutation en sandbox
    ↓
-retest
+retest lecteur officiel
    ↓
 acceptation ou mémoire d'échec
 ```
 
 Une stratégie échouée peut être mémorisée pour éviter de répéter mécaniquement le même repair. Une stratégie réussie n'est réutilisable automatiquement qu'après les preuves prévues par la politique du moteur.
 
-Le **Brain Learning Lab** est séparé de la publication : il travaille en sandbox, produit une mémoire sanitizée et n'a pas le droit de publier directement un provider ou un manifest.
+Le **Brain Learning Lab** est séparé de la publication : il travaille en sandbox, produit une mémoire sanitizée et n'a pas le droit de publier directement un provider ou un manifest. La mémoire de réparation lecteur conserve les résultats des retests officiels et les IDs de runs déjà importés afin d'éviter le double apprentissage d'une même preuve. L'import automatique est limité aux runs lecteurs issus de `main` ; une preuve de PR ne modifie pas silencieusement la mémoire persistante.
 
 Un audit historique 5.20.63 sert de bootstrap de départ afin de confronter les nouvelles observations à un état antérieur riche. Les apprentissages futurs doivent ensuite être portés par les preuves du moteur, les corpus natifs et la mémoire d'expérience du Brain — pas par une liste humaine de providers à forcer.
 
@@ -291,12 +293,13 @@ Cette cible n'autorise aucun faux positif : mauvaise œuvre, mauvais épisode, d
 
 Le dispositif comprend :
 
-- corpus complet Desktop ;
-- corpus complet Mobile ;
-- corpus complet TV ;
-- jobs ciblés par device ;
-- fixtures TV parallélisées pour diagnostiquer et retester uniquement l'œuvre concernée ;
-- synthèse cross-device destinée au moteur et au Brain.
+- un lab **NuvioTV Android TV** officiel sur des routes film/TV/anime, tous providers compatibles — actifs ou inactifs — et tous les streams retournés ;
+- un lab **Nuvio Mobile Android** officiel avec le même contrat de traversal et de lecture ;
+- un lab **Nuvio Desktop natif macOS/Windows**, Linux étant explicitement exclu comme preuve lecteur ;
+- une preuve repository → provider → HTTP → stream → lecteur, plus des phases frontend capturées ;
+- des retests ciblés par device disponibles **manuellement** sans relancer toute la matrice ;
+- un sandbox Brain v4 qui peut matérialiser jusqu'à 24 mutations provider génériques justifiées, puis rejoue Sinners sur NuvioTV avec tous les providers et tous les streams avant comparaison ;
+- une mémoire lecteur fail-closed : preuve incomplète = pas d'apprentissage et pas de plan de réparation.
 
 ---
 
@@ -334,21 +337,21 @@ Lorsqu'une transaction change réellement une donnée visible côté client :
 | Workflow | Rôle |
 |---|---|
 | `sync.yml` | discovery → repair → validation → publication Quick/Deep |
-| `provider-engine-v2.yml` | tests et observation ARCHI 2 |
+| `canonical-media-types.yml` | contrats media, evidence native, cache et mémoire Brain |
+| `github-actions-gate.yml` | sécurité et invariants des workflows |
+| `native-android-route-reader.yml` | preuve native exhaustive NuvioTV + Mobile et retest Brain v4 |
+| `native-desktop-reader-acceptance.yml` | preuve lecteur officielle Desktop macOS/Windows |
+| `native-corpus-device-targeted.yml` | retests device à la demande uniquement |
+| `native-reader-learning-sync.yml` | import idempotent des résultats lecteur validés de `main` |
 | `brain-learning-lab.yml` | expérimentation et mémoire du Repair Brain en sandbox |
 | `availability.yml` | disponibilité des providers publiés |
 | `domain-refresh.yml` | observation des domaines |
 | `engine-regression-offline.yml` | non-régressions moteur hors réseau |
 | `provider-rebuild-offline.yml` | reconstruction hors réseau |
-| `final-native-client-validation-v2.yml` | validation native Mobile/Desktop/TV |
-| `native-corpus-device-lab.yml` | corpus natif cross-device complet |
-| `native-corpus-device-targeted.yml` | retests ciblés Desktop/Mobile/TV |
 | `provider-catalogue-breadth-lab.yml` | largeur de catalogue |
-| `permanent-real-client-labs.yml` | reproductions réelles Desktop/Mobile |
-| `permanent-android-real-client.yml` | banc Android isolé |
 | `provider-status-export.yml` | snapshot diagnostic |
 
-Les workflows temporaires, one-shot et orchestrateurs superseded ne font pas partie de l'architecture cible.
+Les anciens labs à refs clientes mutables, les preuves Desktop Linux, les workflows provider-spécifiques et les orchestrateurs superseded ne font pas partie de l'architecture cible.
 
 ---
 
@@ -400,7 +403,8 @@ Les tests locaux ne remplacent pas la validation native lorsqu'un changement tou
 ## Politique de branches
 
 - `main` : état stable et publiable ;
-- `lab/desktop-mobile-real` et `lab/tv-real` : labs permanents ;
+- `brain-learning/proposals` : mémoire sanitizée persistante du Brain ;
+- `lab/desktop-mobile-real` et `lab/tv-real` : labs permanents, à ne pas nettoyer automatiquement ;
 - les branches temporaires `fix/*`, `ci/*`, `proof/*`, `tmp/*`, `chore/*` et `refactor/*` doivent disparaître après intégration ou abandon vérifié.
 
 Une branche n'est jamais supprimée avant comparaison avec `main`. Du contenu unique utile doit être intégré ou explicitement abandonné.

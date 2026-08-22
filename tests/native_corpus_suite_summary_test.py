@@ -32,9 +32,19 @@ def row(client: str, fixture: str, provider: str, title: str, hint: str) -> str:
 
 def transport(client: str, fixture: str, provider: str, seconds: float) -> str:
     return (
-        f"FIELD_NATIVE_TRANSPORT client={client} fixture={fixture} provider64={b64(provider)} "
+        f"FIELD_NATIVE_TRANSPORT client={client} fixture={fixture} provider64={b64(provider)} index=0 "
         f"state=ok kind=hls status=200 content_type64={b64('application/vnd.apple.mpegurl')} "
         f"extm3u=true duration_seconds={seconds} host64={b64('media.example')} media_hint64={b64('fixture-media')}"
+    )
+
+
+def player(client: str, fixture: str, provider: str, state: str, *, status: int = 0, stage: str = 'none', seconds: float = 0) -> str:
+    return (
+        f"FIELD_NATIVE_PLAYER client={client} fixture={fixture} provider64={b64(provider)} index=0 "
+        f"state={state} engine=media3 http_status={status} failure_stage={stage} duration_seconds={seconds} "
+        f"host64={b64('media.example')} error_class64={b64('PlaybackException' if state == 'error' else '')} "
+        f"error_code64={b64('ERROR_CODE_IO_BAD_HTTP_STATUS' if status else '')} "
+        f"exception_chain64={b64('InvalidResponseCodeException' if status else '')} response_header_names64={b64('content-type,date' if status else '')}"
     )
 
 
@@ -65,6 +75,18 @@ with tempfile.TemporaryDirectory() as tmp:
             transport("desktop", fixture, "topcartoons", 7 * 60),
         ]
 
+    # Reader evidence must survive the cross-device summary with the exact causal
+    # class while remaining sanitized. Two 403s become a repeated reader signal.
+    for fixture in ("sinners-2025", "interstellar"):
+        tv += [
+            result("tv", fixture, "MOVIESDRIVE", 1),
+            player("tv", fixture, "MOVIESDRIVE", "error", status=403, stage="http_access"),
+        ]
+    tv += [
+        result("tv", "sinners-2025", "PURSTREAM", 1),
+        player("tv", "sinners-2025", "PURSTREAM", "ready", seconds=137 * 60),
+    ]
+
     (root / "desktop-native-corpus-synthetic.log").write_text("\n".join(desktop) + "\n")
     (root / "tv-native-corpus-synthetic.log").write_text("\n".join(tv) + "\n")
     output = root / "summary.json"
@@ -77,7 +99,7 @@ with tempfile.TemporaryDirectory() as tmp:
     if proc.returncode != 0:
         raise AssertionError(proc.stdout + "\n" + proc.stderr)
     data = json.loads(output.read_text())
-    assert data["schemaVersion"] >= 2, data
+    assert data["schemaVersion"] >= 3, data
     signals = data["engineSignals"]
     streamzo_gap = next(
         row for row in signals["repeatedPlatformGaps"]
@@ -103,7 +125,20 @@ with tempfile.TemporaryDirectory() as tmp:
     )
     assert topcartoons["occurrences"] >= 2, topcartoons
     assert data["contradictions"] >= 2, data
+
+    assert data["nativeReaderObserved"] == 3, data
+    assert data["nativeReaderHealthy"] == 1, data
+    assert data["nativeReaderFailures"] == 2, data
+    assert data["readerFailureClasses"]["playback_http_access"] == 2, data
+    moviesdrive = next(row for row in data["providerReaderFailures"] if row["provider"] == "moviesdrive")
+    assert moviesdrive["occurrences"] == 2, moviesdrive
+    repeated_reader = next(row for row in signals["repeatedReaderFailures"] if row["provider"] == "moviesdrive")
+    assert repeated_reader["failureClass"] == "playback_http_access", repeated_reader
+    assert repeated_reader["occurrences"] == 2, repeated_reader
+    assert data["readerPrivacy"].startswith("Sanitized only"), data["readerPrivacy"]
+
     assert "FIELD_NATIVE_ENGINE_SIGNAL" in proc.stdout, proc.stdout
     assert "FIELD_NATIVE_CAPABILITY_SIGNAL" in proc.stdout, proc.stdout
+    assert "FIELD_NATIVE_PLAYER_SUMMARY" in proc.stdout, proc.stdout
 
 print("native corpus suite summary tests passed")

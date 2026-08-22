@@ -44,7 +44,9 @@ globalThis.getStreams=async function(){return [{url:"https://media.test/master.m
 '''
 wrapped = integrity.apply(base_provider, {"timeout_ms": 2000, "max_children": 2})
 assert "NUVIO_HLS_RUNTIME_INTEGRITY_V1" in wrapped
-assert "recovery-first-v3" in wrapped
+assert "recovery-first-v4-timer-safe" in wrapped
+assert 'typeof setTimeout==="function"' in wrapped
+assert 'typeof clearTimeout==="function"' in wrapped
 assert integrity.apply(wrapped, {"timeout_ms": 2000, "max_children": 2}) == wrapped
 
 # A syntactically valid HLS header without any variant/media structure is not
@@ -122,7 +124,7 @@ ordered = integrity.apply(ordered, {
 })
 assert ordered.count("NUVIO_HLS_RUNTIME_INTEGRITY_V1:") == 1
 assert ordered.rfind("NUVIO_HLS_RUNTIME_INTEGRITY_V1:") > ordered.rfind("streamzo #1")
-assert "final-output-order-v4" in ordered
+assert "final-output-order-v5-timer-safe" in ordered
 run_node(r'''
 const media="#EXTM3U\n#EXT-X-TARGETDURATION:6\n#EXTINF:6,\nseg.ts\n#EXT-X-ENDLIST\n";
 globalThis.fetch=async function(url){var u=String(url);

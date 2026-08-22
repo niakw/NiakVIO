@@ -39,6 +39,7 @@ def main() -> int:
     patched = module.apply(source, options=options)
     assert module.V4_MARKER in patched
     assert module.V5_MARKER in patched
+    assert module.HLS_PROOF_MARKER in patched
     assert module.FETCH_COMPAT_MARKER in patched
     assert module.PROTOCOL_RELATIVE_MARKER in patched
     assert module.apply(patched, options=options) == patched
@@ -52,9 +53,13 @@ function response(url,body,contentType,setCookie){
     ok:true,status:200,url,
     headers:{get:function(name){name=String(name).toLowerCase();if(name==='content-type')return contentType||'text/html';if(name==='set-cookie')return setCookie||null;return null;}},
     text:async function(){return body;},
+    arrayBuffer:async function(){const b=Buffer.from(body,'utf8');return b.buffer.slice(b.byteOffset,b.byteOffset+b.byteLength);},
     json:async function(){try{return JSON.parse(body)}catch(_){return null;}}
   };
 }
+// Intentionally do not inject TextDecoder into the VM. QuickJS-style runtimes
+// can take decode()'s byte fallback, which exposes a UTF-8 BOM as the mojibake
+// sequence ï»¿. The target-media resolver must still recognize the HLS structure.
 const ctx={console,URL,setTimeout,clearTimeout,module:{exports:{}},exports:{}};ctx.globalThis=ctx;
 ctx.fetch=async function(url,opt){
   const headers=Object.assign({},opt&&opt.headers||{});requests.push({url,headers});
@@ -65,13 +70,15 @@ ctx.fetch=async function(url,opt){
     return response(url,'<script>var file="https://cdn.example.com/master.m3u8";</script>','text/html','play=xyz; Domain=.example.com; Path=/; Secure');
   }
   if(url==='https://cdn.example.com/master.m3u8'){
-    return response(url,'#EXTM3U\n#EXTINF:600,\nseg.ts\n#EXTINF:600,\nseg2.ts\n','application/vnd.apple.mpegurl',null);
+    // Deliberately omit #EXTM3U. Structural HLS proof must preserve the row so
+    // the outer HLS-integrity/sanitizer layer can normalize the final manifest.
+    return response(url,'\uFEFF  #EXT-X-VERSION:3\n#EXT-X-TARGETDURATION:600\n#EXTINF:600,\nseg.ts\n#EXTINF:600,\nseg2.ts\n','application/vnd.apple.mpegurl',null);
   }
-  return {ok:false,status:404,url,headers:{get:()=> 'text/plain'},text:async()=>''};
+  return {ok:false,status:404,url,headers:{get:()=> 'text/plain'},text:async()=>'',arrayBuffer:async()=>new ArrayBuffer(0)};
 };
 vm.createContext(ctx);vm.runInContext(code,ctx);
 (async()=>{
-  const rows=await ctx.module.exports.getStreams('123','movie');
+  const rows=await ctx.module.exports.getStreams('123','tv',1,1);
   console.log(JSON.stringify({rows,requests}));
 })().catch(e=>{console.error(e&&e.stack||e);process.exit(1)});
 '''
@@ -103,7 +110,7 @@ vm.createContext(ctx);vm.runInContext(code,ctx);
     assert req["https://cdn.example.com/master.m3u8"]["Origin"] == "https://player.example.com"
     assert req["https://cdn.example.com/master.m3u8"]["Cookie"] in ("sid=abc; play=xyz", "play=xyz; sid=abc")
 
-    print("NuvioTV target-media playback-context tests passed")
+    print("NuvioTV target-media playback-context and malformed-HLS handoff tests passed")
     return 0
 
 

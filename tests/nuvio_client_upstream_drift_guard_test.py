@@ -7,12 +7,18 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "scripts" / "check_nuvio_client_upstreams.py"
+BRAIN_GUARD = ROOT / "scripts" / "guard_nuvio_client_brain_compat.py"
 CONFIG = ROOT / "automation" / "nuvio-client-upstreams.json"
 
 spec = importlib.util.spec_from_file_location("nuvio_client_upstream_guard", SCRIPT)
 assert spec is not None and spec.loader is not None
 module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(module)
+
+brain_spec = importlib.util.spec_from_file_location("nuvio_client_brain_guard", BRAIN_GUARD)
+assert brain_spec is not None and brain_spec.loader is not None
+brain_guard = importlib.util.module_from_spec(brain_spec)
+brain_spec.loader.exec_module(brain_guard)
 
 
 def sample() -> dict:
@@ -59,11 +65,33 @@ def run_case(head: str, comparison: dict | None, state: dict | None = None) -> d
     old_compare = module.compare
     try:
         module.current_head = lambda repository, branch: head
-        module.compare = lambda repository, base, current: comparison or {}
+        module.compare = lambda repository, base, current, patch_rules=None: comparison or {}
         return module.inspect_client("client", sample(), state or {})
     finally:
         module.current_head = old_head
         module.compare = old_compare
+
+
+def brain_config() -> dict:
+    return {
+        "clients": {
+            "client": {
+                "contract_paths": ["runtime/", "ui/screens/stream/"],
+                "brain_mutation_contract_paths": ["runtime/"],
+                "semantic_review_tokens": ["getStreams", "StreamItem", "MediaItem", "exoplayer"],
+                "brain_mutation_semantic_tokens": ["getStreams", "StreamItem"],
+            }
+        }
+    }
+
+
+def classify(result: dict) -> tuple[list[str], list[str]]:
+    report = {
+        "clients": {"client": result},
+        "review_required": ["client"] if result.get("review_required") else [],
+        "inconclusive": ["client"] if result.get("status") == "verification_inconclusive" else [],
+    }
+    return brain_guard.classify_provider_mutation_compat(report, brain_config())
 
 
 def main() -> int:
@@ -73,14 +101,27 @@ def main() -> int:
     assert module.semantic_hits("+val item: StreamItem\n", ["StreamItem"]) == ["StreamItem"]
     assert module.semantic_hits("+selectedSubtitleId = null\n", ["StreamItem"]) == []
 
-    # The provider-to-screen contract must be guarded on every accepted client.
-    # Mobile/Desktop already guard their complete features/streams surfaces; TV
-    # must also treat its stream-selection UI as a hard contract because
-    # StreamScreenViewModel is the consumer of StreamRepository plugin results.
+    source = SCRIPT.read_text(encoding="utf-8")
+    brain_source = BRAIN_GUARD.read_text(encoding="utf-8")
+    assert '"--clients"' in source
+    assert "ThreadPoolExecutor" in source
+    assert "parallel-git-ls-remote-plus-targeted-partial-tree-diff" in source
+    assert "patch_files = [name for name in files if path_matches(name, patch_rules)]" in source
+    assert '"--no-fail"' in brain_source
+    assert "classify_provider_mutation_compat" in brain_source
+
+    # Full native-reader acceptance still guards the complete provider-to-screen
+    # contract. Brain provider mutation gets a narrower request/result/extraction
+    # fence so UI/player-only drift cannot deadlock provider repair.
     upstreams = json.loads(CONFIG.read_text(encoding="utf-8"))["clients"]
     assert "composeApp/src/commonMain/kotlin/com/nuvio/app/features/streams/" in upstreams["nuvio-mobile"]["contract_paths"]
     assert "composeApp/src/commonMain/kotlin/com/nuvio/app/features/streams/" in upstreams["nuvio-desktop"]["contract_paths"]
     assert "app/src/main/java/com/nuvio/tv/ui/screens/stream/" in upstreams["nuvio-tv"]["contract_paths"]
+    assert "app/src/main/java/com/nuvio/tv/ui/screens/stream/" not in upstreams["nuvio-tv"]["brain_mutation_contract_paths"]
+    assert "app/src/full/java/com/nuvio/tv/core/plugin/" in upstreams["nuvio-tv"]["brain_mutation_contract_paths"]
+    assert "MediaItem" in upstreams["nuvio-tv"]["semantic_review_tokens"]
+    assert "MediaItem" not in upstreams["nuvio-tv"]["brain_mutation_semantic_tokens"]
+    assert "StreamItem" in upstreams["nuvio-tv"]["brain_mutation_semantic_tokens"]
 
     identical = run_case("a" * 40, None)
     assert identical["status"] == "verified"
@@ -148,6 +189,78 @@ def main() -> int:
     assert diverged["status"] == "contract_review_required"
     assert diverged["review_required"] is True
 
+    # Brain-specific fence: full reader review remains pending for UI/player-only
+    # drift, but provider mutation is allowed unless request/result/extraction
+    # semantics are implicated.
+    blockers, pending = classify(
+        {
+            "status": "contract_review_required",
+            "compare_status": "ahead",
+            "review_required": True,
+            "contract_changed_files": ["ui/screens/stream/StreamScreenViewModel.kt"],
+            "semantic_token_hits": {},
+        }
+    )
+    assert blockers == []
+    assert pending == ["client"]
+
+    blockers, pending = classify(
+        {
+            "status": "contract_review_required",
+            "compare_status": "ahead",
+            "review_required": True,
+            "contract_changed_files": [],
+            "semantic_token_hits": {"player/Playback.kt": ["MediaItem", "exoplayer"]},
+        }
+    )
+    assert blockers == []
+    assert pending == ["client"]
+
+    blockers, pending = classify(
+        {
+            "status": "contract_review_required",
+            "compare_status": "ahead",
+            "review_required": True,
+            "contract_changed_files": ["runtime/PluginRuntime.kt"],
+            "semantic_token_hits": {},
+        }
+    )
+    assert any("provider_contract_drift" in value for value in blockers)
+    assert pending == []
+
+    blockers, pending = classify(
+        {
+            "status": "contract_review_required",
+            "compare_status": "ahead",
+            "review_required": True,
+            "contract_changed_files": [],
+            "semantic_token_hits": {"player/Playback.kt": ["StreamItem"]},
+        }
+    )
+    assert any("provider_contract_drift" in value for value in blockers)
+    assert pending == []
+
+    blockers, _pending = classify(
+        {
+            "status": "contract_review_required",
+            "compare_status": "history_divergence",
+            "review_required": True,
+            "contract_changed_files": [],
+            "semantic_token_hits": {},
+        }
+    )
+    assert any("history_history_divergence" in value for value in blockers)
+
+    blockers, _pending = classify(
+        {
+            "status": "verification_inconclusive",
+            "review_required": False,
+            "contract_changed_files": [],
+            "semantic_token_hits": {},
+        }
+    )
+    assert blockers == ["client:verification_inconclusive"]
+
     # accepted_ref is the incremental comparison point; contract_ref remains pinned.
     state = sources("b" * 40)
     incremental = run_case(
@@ -206,13 +319,14 @@ def main() -> int:
             "unrelated_changed_files": ["README.md"],
         }
     }
-    config = {"clients": {"client": sample()}}
+    config = {"clients": {"client": sample(), "unselected": sample()}}
     advanced = module.apply_safe_state(payload, config, result, "2026-08-09T00:00:00+00:00")
     assert advanced == ["client"]
     saved = payload["nuvio_client_compatibility"]["clients"]["client"]
     assert saved["contract_ref"] == "a" * 40
     assert saved["accepted_ref"] == "c" * 40
     assert saved["acceptance"] == "automatic-contract-safe-advance"
+    assert "unselected" not in payload["nuvio_client_compatibility"]["clients"]
 
     print("Nuvio client upstream drift guard tests passed")
     return 0

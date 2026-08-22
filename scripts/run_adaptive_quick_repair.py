@@ -30,6 +30,8 @@ sys.path.insert(1, str(SCRIPTS))
 import runtime_repair  # noqa: E402
 import deep_repair_loop as loop  # noqa: E402
 import brain_repair_runtime as brain  # noqa: E402
+from guard_nuvio_client_brain_compat import guard as guard_nuvio_client_brain_compat  # noqa: E402
+from provider_purification import purify_candidate  # noqa: E402
 from repair_identity_gate import automatic_repair_safety_gate  # noqa: E402
 
 _loaded = Path(runtime_repair.__file__).resolve()
@@ -41,6 +43,23 @@ _base_run_health = loop.run_health
 _base_matching_profiles = loop.matching_profiles
 _base_create_repair_candidate = loop.create_repair_candidate
 _sibling_resolutions: dict[str, str] = {}
+
+
+def _purified_create_repair_candidate(stage, candidate, profile_name, round_number):
+    repaired, error = _base_create_repair_candidate(stage, candidate, profile_name, round_number)
+    if not isinstance(repaired, dict):
+        return repaired, error
+    try:
+        repaired, _purification = purify_candidate(Path(stage), repaired)
+    except Exception as exc:
+        try:
+            target = (Path(stage).resolve() / str(repaired.get("local_path") or "")).resolve()
+            target.relative_to((Path(stage).resolve() / "providers" / "runtime-repairs").resolve())
+            target.unlink(missing_ok=True)
+        except (ValueError, OSError):
+            pass
+        return None, f"purification_failed:{type(exc).__name__}:{exc}"
+    return repaired, error
 
 
 def _category_playable_totals(result: dict[str, Any]) -> dict[str, int]:
@@ -330,12 +349,16 @@ def main() -> int:
         config = json.loads(original_health_config.decode("utf-8"))
         _strengthen_quick_probe(config)
         HEALTH_CONFIG.write_text(json.dumps(config, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+        # Quick can mutate providers too, so it is subject to the same official
+        # client-runtime drift fence as deep before any Brain plan is allowed.
+        guard_nuvio_client_brain_compat(output / "nuvio-client-upstream-status.json")
         _run_domain_search_fallback(stage, output)
 
         loop.compare_results = _quick_compare_results
         loop.run_health = _quick_run_health
         loop.matching_profiles = _brain_matching_profiles
-        loop.create_repair_candidate = brain.wrap_create_repair_candidate(_base_create_repair_candidate)
+        loop.create_repair_candidate = brain.wrap_create_repair_candidate(_purified_create_repair_candidate)
         loop.persist_runtime_profiles = lambda _config, _assignments: []
         sys.argv = [
             str(SCRIPTS / "deep_repair_loop.py"), "--stage", str(stage), "--output", str(output),

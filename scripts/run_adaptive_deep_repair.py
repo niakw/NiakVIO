@@ -17,6 +17,8 @@ sys.path.insert(1, str(SCRIPTS))
 import runtime_repair  # noqa: E402
 import deep_repair_loop as loop  # noqa: E402
 import brain_repair_runtime as brain  # noqa: E402
+from guard_nuvio_client_brain_compat import guard as guard_nuvio_client_brain_compat  # noqa: E402
+from provider_purification import purify_candidate, purify_registry  # noqa: E402
 from repair_identity_gate import automatic_repair_identity_gate  # noqa: E402
 from repair_profile_persistence import ensure_repair_profile  # noqa: E402
 
@@ -41,6 +43,21 @@ def _identity_safe_compare(parent: dict, repaired: dict) -> tuple[bool, str]:
 
 def _profiled_create(stage, candidate, profile_name, round_number):
     repaired, error = _base_create(stage, candidate, profile_name, round_number)
+    if not isinstance(repaired, dict):
+        return repaired, error
+    # Any Brain/runtime mutation must immediately re-enter purification before its
+    # strict deep retest. The deep result therefore proves the exact optimized bytes,
+    # not the larger pre-purification candidate.
+    try:
+        repaired, _purification = purify_candidate(Path(stage), repaired)
+    except Exception as exc:
+        try:
+            target = (Path(stage).resolve() / str(repaired.get("local_path") or "")).resolve()
+            target.relative_to((Path(stage).resolve() / "providers" / "runtime-repairs").resolve())
+            target.unlink(missing_ok=True)
+        except (ValueError, OSError):
+            pass
+        return None, f"purification_failed:{type(exc).__name__}:{exc}"
     return ensure_repair_profile(repaired, profile_name), error
 
 
@@ -64,6 +81,15 @@ def _brain_matching(candidate, result, source_text, config=None):
     return [profile for profile in profiles if profile in allowed]
 
 
+def _argument_path(flag: str, default: Path) -> Path:
+    if flag in sys.argv:
+        try:
+            return Path(sys.argv[sys.argv.index(flag) + 1]).resolve()
+        except (ValueError, IndexError):
+            pass
+    return default.resolve()
+
+
 def main() -> int:
     original_config = HEALTH_CONFIG.read_bytes()
     original_argv = list(sys.argv)
@@ -75,18 +101,32 @@ def main() -> int:
         deep_config["probe_streams_adaptively"] = True
         HEALTH_CONFIG.write_text(json.dumps(health_config, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
+        stage = _argument_path("--stage", ROOT / "staging")
+        output = _argument_path("--output", ROOT / "health-output")
+
+        # Provider repair logic is valid only against a conclusively known official
+        # Nuvio runtime contract. Safe unrelated client updates may proceed; hard or
+        # semantic runtime drift and transport-inconclusive checks fail closed before
+        # any provider JS mutation or purification is attempted.
+        guard_nuvio_client_brain_compat(output / "nuvio-client-upstream-status.json")
+
+        # Deep is the authoritative purification phase: all effective staged bundles
+        # are optimized after known patches/profiles, then that exact registry becomes
+        # baseline input. Repairs generated later in this same loop are purified again
+        # by _profiled_create before their own retest.
+        purification = purify_registry(stage, output / "provider-purification.json")
+        print(
+            "FIELD_PROVIDER_PURIFICATION_DEEP "
+            f"candidates={purification['candidateCount']} applied={purification['appliedCount']} "
+            f"bytes_saved={purification['bytesSaved']} saving_percent={purification['savingPercent']}"
+        )
+
         loop.compare_results = _identity_safe_compare
         loop.create_repair_candidate = brain.wrap_create_repair_candidate(_profiled_create)
         loop.run_health = _brain_run_health
         loop.matching_profiles = _brain_matching
         sys.argv[0] = str(SCRIPTS / "deep_repair_loop.py")
         rc = loop.main()
-        output = ROOT / "health-output"
-        if "--output" in sys.argv:
-            try:
-                output = Path(sys.argv[sys.argv.index("--output") + 1]).resolve()
-            except (ValueError, IndexError):
-                pass
         brain.annotate_and_learn(output, "deep")
         return int(rc)
     finally:

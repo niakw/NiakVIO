@@ -40,7 +40,7 @@ for token in (
     assert token in cat_source, token
 for forbidden in ("Mon ninja et moi 3", "Interstellar", "Ternet Ninja 3"):
     assert forbidden not in cat_source, forbidden
-for token in ("preserveOriginal", "m3u8|mpd|mp4|mkv|webm", "kindBytes", "add(row)"):
+for token in ("preserveOriginal", "m3u8|mpd|mp4|m4v|mkv|webm|ts", "kindBytes", "add(row)"):
     assert token in media_source, token
 
 # A configured HTML provider receives both global behaviours automatically.

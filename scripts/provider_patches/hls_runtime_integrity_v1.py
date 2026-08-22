@@ -29,24 +29,24 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
         "maxChildren": max_children,
         "maxRecoveryPages": max_recovery_pages,
         "maxRecoveryCandidates": max_recovery_candidates,
-        "implementationRevision": "recovery-first-v3",
+        "implementationRevision": "recovery-first-v4-timer-safe",
     }
     # Preserve byte-for-byte idempotence for the repository-wide default. Only
     # providers which explicitly require a strict final-output gate receive the
-    # v4 payload and its two additional flags.
+    # payload with its two additional flags.
     if probe_all_urls or fail_closed_unknown:
         payload_config.update(
             {
                 "probeAllUrls": probe_all_urls,
                 "failClosedUnknown": fail_closed_unknown,
-                "implementationRevision": "final-output-order-v4",
+                "implementationRevision": "final-output-order-v5-timer-safe",
             }
         )
     payload = json.dumps(payload_config, separators=(",", ":"))
     marker = f"{MARKER}:{hashlib.sha256(payload.encode()).hexdigest()[:12]}"
     marker_comment = f"/* {marker} */"
     current = text.find(marker_comment)
-    final_layers = [
+    recovery_layers = [
         position
         for position in (
             text.find("/* NUVIO_GLOBAL_MEDIA_ENRICHMENT_V1:"),
@@ -54,7 +54,22 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
         )
         if position >= 0
     ]
-    if current >= 0 and (not final_layers or current < min(final_layers)):
+    core_layers = [
+        position
+        for position in (
+            text.find("/* NUVIO_GLOBAL_STREAM_FACTS_V1:"),
+            text.find("/* NUVIO_GLOBAL_STREAM_IDENTITY_V1:"),
+            text.find("/* NUVIO_GLOBAL_STREAM_PRESENTATION_V1:"),
+        )
+        if position >= 0
+    ]
+    # Canonical order is recovery/media safety -> HLS validation -> Core metadata
+    # projection/identity/presentation. The Core layers do not alter URL/headers,
+    # while HLS remains the terminal playback validator. If the exact wrapper is
+    # already in that slot, preserve the bytes instead of removing/re-appending it.
+    after_recovery = not recovery_layers or current > max(recovery_layers)
+    before_core = not core_layers or current < min(core_layers)
+    if current >= 0 and after_recovery and before_core:
         return text
 
     old = text.find(f"/* {MARKER}:")
@@ -99,7 +114,8 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
   async function fetchBounded(url,stream,referer,range){
     if(!g||typeof g.fetch!=="function")return {state:"unknown",reason:"fetch_unavailable"};
     var controller=typeof AbortController!=="undefined"?new AbortController():null;
-    var timer=setTimeout(function(){try{if(controller)controller.abort()}catch(_e){}},config.timeoutMs);
+    var timer=null;
+    if(controller&&typeof setTimeout==="function")timer=setTimeout(function(){try{controller.abort()}catch(_e){}},config.timeoutMs);
     try{
       var response=await g.fetch(url,{method:"GET",redirect:"follow",headers:requestHeaders(stream,referer,range),signal:controller?controller.signal:void 0});
       if(!response)return {state:"unknown",reason:"no_response"};
@@ -108,7 +124,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
       var contentType=String(response.headers&&response.headers.get?response.headers.get("content-type")||"":"").toLowerCase();
       return {state:"ok",response:response,url:String(response.url||url),contentType:contentType};
     }catch(error){return {state:"unknown",reason:error&&error.name==="AbortError"?"timeout":"network_error"}}
-    finally{clearTimeout(timer)}
+    finally{if(timer!==null&&typeof clearTimeout==="function")try{clearTimeout(timer)}catch(_e){}}
   }
   async function responseText(result){
     var response=result&&result.response;if(!response)return "";
@@ -244,7 +260,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
       pages++;
       var page=await fetchBounded(item.url,stream,item.referer,false);if(page.state!=="ok")continue;
       var ct=page.contentType||"";
-      if(/^video\//i.test(ct))return cloneRecovered(stream,page.url,ct.indexOf("webm")>=0?"webm":"mp4",item.referer);
+      if(/^video\//i.test(ct))return cloneRecovered(stream,page.url,page.contentType.indexOf("webm")>=0?"webm":"mp4",item.referer);
       var body=await responseText(page);
       if(/^#EXTM3U(?:\s|$)/i.test(body)){
         var pageHls=await inspectHls(page.url,stream,item.referer);if(pageHls.state==="valid")return cloneRecovered(stream,pageHls.url||page.url,"hls",item.referer);
@@ -294,7 +310,19 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
   install();
 })(typeof globalThis!=="undefined"?globalThis:this,CONFIG_PLACEHOLDER);
 '''.replace("MARKER_PLACEHOLDER", marker).replace("CONFIG_PLACEHOLDER", payload)
-    final_layers = [
+    # Once an old/misordered wrapper has been removed, put the HLS validator after
+    # media recovery/safety but before Core facts/identity/presentation. This is the
+    # same canonical slot checked above, so reapplication converges in one pass.
+    core_layers = [
+        position
+        for position in (
+            text.find("/* NUVIO_GLOBAL_STREAM_FACTS_V1:"),
+            text.find("/* NUVIO_GLOBAL_STREAM_IDENTITY_V1:"),
+            text.find("/* NUVIO_GLOBAL_STREAM_PRESENTATION_V1:"),
+        )
+        if position >= 0
+    ]
+    recovery_layers = [
         position
         for position in (
             text.find("/* NUVIO_GLOBAL_MEDIA_ENRICHMENT_V1:"),
@@ -302,8 +330,8 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
         )
         if position >= 0
     ]
-    if final_layers:
-        insertion = min(final_layers)
+    if core_layers and (not recovery_layers or max(recovery_layers) < min(core_layers)):
+        insertion = min(core_layers)
         return (
             text[:insertion].rstrip()
             + "\n"

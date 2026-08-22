@@ -13,6 +13,7 @@ const entries = Object.fromEntries(manifest.scrapers.map((row) => [String(row.id
 const externalPlayer = 'https://player.example/embed/movie';
 const provenHls = 'https://media.example/hls/fixture/master.m3u8';
 const tvFixture = { id: '94605', title: 'Arcane', year: 2021, slug: 'arcane', season: 1, episode: 1 };
+const fetchTrace = [];
 
 function configuredSite(id, fallback) {
   const patch = overrides?.provider_patches?.[id] || {};
@@ -58,8 +59,9 @@ function hlsBody() {
     '#EXT-X-ENDLIST\n';
 }
 
-global.fetch = async (input) => {
+async function fixtureFetch(input) {
   const raw = typeof input === 'string' ? input : input.url;
+  fetchTrace.push(raw);
   const url = new URL(raw);
   if (url.hostname === 'api.themoviedb.org') return tmdbResponse(raw);
   if (url.hostname === 'movix.fun' && url.pathname === '/') return new Response('<script src="/assets/app.js"></script>', { status: 200, headers: { 'content-type': 'text/html' } });
@@ -79,14 +81,28 @@ global.fetch = async (input) => {
     return new Response(dleSearch(url.origin, fixture), { status: 200, headers: { 'content-type': 'text/html' } });
   }
   return new Response('not found', { status: 404, headers: { 'content-type': 'text/plain' } });
-};
+}
+
+function resetProviderGlobal() {
+  // Official Nuvio runtimes isolate provider execution contexts. This Node
+  // regression harness must do the same: provider-local fetch/domain wrappers
+  // must never leak from Movix into Coflix (or any neighboring provider).
+  global.fetch = fixtureFetch;
+  try { delete global.getStreams; } catch {}
+  for (const key of Object.keys(globalThis)) {
+    if (/^__nuvio/i.test(key)) {
+      try { delete globalThis[key]; } catch {}
+    }
+  }
+}
 
 function assertSafeRows(id, fixtureId, rows, kind) {
-  assert(Array.isArray(rows) && rows.length > 0, `${id}/${fixtureId}: ${kind} recovery produced no player`);
-  assert(rows.every((row) => typeof row.url === 'string' && /^https?:\/\//.test(row.url)), `${id}/${fixtureId}: invalid ${kind} player URL`);
-  assert(rows.every((row) => !/fstream\.top/i.test(row.url)), `${id}/${fixtureId}: known fake short player escaped filtering`);
-  assert(rows.every((row) => !/\/troll\/master\.m3u8(?:[?#]|$)/i.test(row.url)), `${id}/${fixtureId}: known troll fallback escaped filtering`);
-  assert(rows.every((row) => !/(?:^|\.)(?:snap\.com|snapchat\.com|ctfassets\.net|sc-cdn\.net)$/i.test(new URL(row.url).hostname)), `${id}/${fixtureId}: unrelated advertising media escaped filtering`);
+  const trace = JSON.stringify(fetchTrace.slice(-24));
+  assert(Array.isArray(rows) && rows.length > 0, `${id}/${fixtureId}: ${kind} recovery produced no player; fetchTrace=${trace}`);
+  assert(rows.every((row) => typeof row.url === 'string' && /^https?:\/\//.test(row.url)), `${id}/${fixtureId}: invalid ${kind} player URL; fetchTrace=${trace}`);
+  assert(rows.every((row) => !/fstream\.top/i.test(row.url)), `${id}/${fixtureId}: known fake short player escaped filtering; fetchTrace=${trace}`);
+  assert(rows.every((row) => !/\/troll\/master\.m3u8(?:[?#]|$)/i.test(row.url)), `${id}/${fixtureId}: known troll fallback escaped filtering; fetchTrace=${trace}`);
+  assert(rows.every((row) => !/(?:^|\.)(?:snap\.com|snapchat\.com|ctfassets\.net|sc-cdn\.net)$/i.test(new URL(row.url).hostname)), `${id}/${fixtureId}: unrelated advertising media escaped filtering; fetchTrace=${trace}`);
 }
 
 (async () => {
@@ -95,16 +111,14 @@ function assertSafeRows(id, fixtureId, rows, kind) {
     assert(entry, `missing manifest entry: ${id}`);
     const patch = overrides?.provider_patches?.[id] || {};
     const configuredQuarantine = patch.capability === 'quarantined' && patch?.manifest_overrides?.enabled === false;
-    // Migration compatibility only: a publication-scoped legacy inert bundle
-    // may be the current LKG before the Quick promoter has a chance to recover
-    // a fresh sibling. Final publication rules no longer create global inert
-    // bundles from one fixture contradiction.
     const legacyPublicationQuarantine = entry.enabled === false && /--nuvio-audit-quarantine--/.test(String(entry.filename || ''));
     const quarantined = configuredQuarantine || legacyPublicationQuarantine;
     const providerPath = path.resolve(__dirname, '..', entry.filename);
+    resetProviderGlobal();
     delete require.cache[require.resolve(providerPath)];
     const provider = require(providerPath);
     for (const fixture of fixtures) {
+      fetchTrace.length = 0;
       const rows = await provider.getStreams(fixture.id, 'movie', null, null, {});
       if (quarantined) {
         assert.deepEqual(rows, [], `${id}/${fixture.id}: quarantined movie provider returned content`);
@@ -113,6 +127,7 @@ function assertSafeRows(id, fixtureId, rows, kind) {
       assertSafeRows(id, fixture.id, rows, 'movie');
     }
     if (id === 'flemmix') continue;
+    fetchTrace.length = 0;
     const tvRows = await provider.getStreams(tvFixture.id, 'tv', tvFixture.season, tvFixture.episode, {});
     if (quarantined) {
       assert.deepEqual(tvRows, [], `${id}/${tvFixture.id}: quarantined TV provider returned content`);
@@ -120,5 +135,6 @@ function assertSafeRows(id, fixtureId, rows, kind) {
     }
     assertSafeRows(id, tvFixture.id, tvRows, 'TV');
   }
-  console.log('VF catalogue recovery tests passed with current routes, content-proven HLS, scoped publication quarantine migration, and configured safety quarantines');
+  resetProviderGlobal();
+  console.log('VF catalogue recovery tests passed with isolated provider runtimes, current routes, content-proven HLS, scoped publication quarantine migration, and configured safety quarantines');
 })().catch((error) => { console.error(error); process.exit(1); });

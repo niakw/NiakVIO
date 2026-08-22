@@ -206,15 +206,28 @@ function normalizeSource(item, endpoint, userAgent, request) {
   const explicitFormat = cleanText(item.format)?.toLowerCase();
   const direct = lower.endsWith(".m3u8") || lower.endsWith(".mp4") || explicitFormat === "m3u8" || explicitFormat === "mp4";
   if (!direct) return null;
+
   const label = cleanText(item.source_name ?? item.name ?? item.label) ?? "Purstream";
-  const language = parseLanguage(label);
-  const quality = parseQuality(label);
+  const declaredQuality = cleanText(item.quality ?? item.resolution);
+  const declaredLanguage = cleanText(item.language ?? item.lang ?? item.audio_language);
+  const declaredCodec = cleanText(item.codec ?? item.video_codec ?? item.videoCodec);
+  const declaredAudio = cleanText(item.audio ?? item.audio_codec ?? item.audioCodec);
+  const declaredDuration = item.duration ?? item.duration_minutes ?? item.durationMinutes ?? item.runtime ?? null;
+  const declaredSourceType = cleanText(item.source_type ?? item.sourceType ?? item.release_type ?? item.releaseType);
+  const declaredAgeRating = cleanText(item.age_rating ?? item.ageRating ?? item.certification);
+
   return {
-    title: `Purstream ${quality} | ${language}`,
+    // Purstream supplies facts only. The Core owns all user-facing presentation.
+    title: "Purstream",
     name: "Purstream",
     url,
-    quality,
-    language,
+    quality: declaredQuality ?? parseQuality(label),
+    language: declaredLanguage ?? parseLanguage(label),
+    codec: declaredCodec ?? parseCodec(label),
+    audio: declaredAudio ?? parseAudio(label),
+    duration: declaredDuration,
+    sourceType: declaredSourceType ?? parseSourceType(label),
+    ageRating: declaredAgeRating,
     format: lower.endsWith(".mp4") || explicitFormat === "mp4" ? "mp4" : "m3u8",
     headers: {
       "User-Agent": userAgent,
@@ -231,18 +244,51 @@ function parseLanguage(value) {
   if (text.includes("VOSTFR")) return "VOSTFR";
   if (text.includes("VFQ")) return "VFQ";
   if (text.includes("VFF")) return "VFF";
-  if (text.includes("VF")) return "VF";
+  if (/\bVF\b/.test(text)) return "VF";
   if (text.includes("MULTI") || text.includes("DUAL")) return "MULTI";
-  return "MULTI";
+  if (/\bVO\b/.test(text)) return "VO";
+  return null;
 }
 
 function parseQuality(value) {
   const text = String(value ?? "").toUpperCase();
-  if (text.includes("2160") || text.includes("4K")) return "4K";
+  if (text.includes("2160") || /\b4K\b/.test(text) || text.includes("UHD")) return "4K";
+  if (text.includes("1440")) return "1440p";
   if (text.includes("1080")) return "1080p";
   if (text.includes("720")) return "720p";
+  if (text.includes("576")) return "576p";
   if (text.includes("480")) return "480p";
-  return "HD";
+  return null;
+}
+
+function parseCodec(value) {
+  const text = String(value ?? "").toUpperCase();
+  if (/\b(?:HEVC|H\.?265|X265)\b/.test(text)) return "HEVC";
+  if (/\b(?:AVC|H\.?264|X264)\b/.test(text)) return "H.264";
+  if (/\bAV1\b/.test(text)) return "AV1";
+  if (/\bVP9\b/.test(text)) return "VP9";
+  return null;
+}
+
+function parseAudio(value) {
+  const text = String(value ?? "").toUpperCase();
+  const codec = text.match(/\b(?:E-?AC-?3|DDP|DD\+|AC-?3|AAC|DTS(?:-HD)?|TRUEHD|ATMOS|FLAC|OPUS)\b/);
+  const channels = text.match(/\b(?:7\.1|5\.1|2\.0|2\.1|1\.0)\b/);
+  if (!codec && !channels) return null;
+  let name = codec?.[0] ?? "";
+  name = name.replace(/^DDP$/i, "E-AC3").replace(/^DD\+$/i, "E-AC3").replace(/^E-?AC-?3$/i, "E-AC3").replace(/^AC-?3$/i, "AC3");
+  return [name, channels?.[0]].filter(Boolean).join(" ");
+}
+
+function parseSourceType(value) {
+  const text = String(value ?? "").toUpperCase();
+  if (/BLU[ ._-]?RAY|BDRIP|BRRIP/.test(text)) return "BLU-RAY";
+  if (/WEB[ ._-]?DL/.test(text)) return "WEB-DL";
+  if (/WEB[ ._-]?RIP/.test(text)) return "WEBRIP";
+  if (/\bHDTV\b/.test(text)) return "HDTV";
+  if (/\bDVD(?:RIP)?\b/.test(text)) return "DVD";
+  if (/\bCAM\b|\bTELESYNC\b/.test(text)) return "CAM";
+  return null;
 }
 
 async function resolveMetadata(request, resolver) {
@@ -250,6 +296,10 @@ async function resolveMetadata(request, resolver) {
     title: cleanText(request.title),
     aliases: [],
     year: asYear(request.year),
+    runtime: null,
+    durationMinutes: null,
+    certification: null,
+    ageRating: null,
   };
   if (!resolver) {
     if (!base.title) throw new Error("Purstream search requires title or metadataResolver");
@@ -260,6 +310,11 @@ async function resolveMetadata(request, resolver) {
     title: cleanText(resolved?.title ?? resolved?.fr ?? base.title),
     aliases: unique([...(resolved?.aliases ?? []), resolved?.originalTitle, resolved?.orig, base.title].map(cleanText).filter(Boolean)),
     year: asYear(resolved?.year ?? base.year),
+    runtime: resolved?.runtime ?? resolved?.duration ?? null,
+    durationMinutes: resolved?.durationMinutes ?? resolved?.duration_minutes ?? null,
+    certification: cleanText(resolved?.certification ?? resolved?.contentRating ?? resolved?.content_rating),
+    ageRating: cleanText(resolved?.ageRating ?? resolved?.age_rating),
+    releaseDate: cleanText(resolved?.releaseDate ?? resolved?.release_date ?? resolved?.firstAirDate ?? resolved?.first_air_date),
   };
 }
 
