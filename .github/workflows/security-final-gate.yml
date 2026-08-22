@@ -2,10 +2,28 @@ name: NiakVIO final provider security gate
 
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/security-final-gate.yml'
+      - 'manifest.json'
+      - 'provider-overrides.json'
+      - 'providers/**'
+      - 'scripts/provider_security_hardening.py'
+      - 'scripts/harden_staged_provider_security.py'
+      - 'scripts/provider_purification.py'
+      - 'scripts/provider_patches/runtime_capability_media_safety_v4.py'
+      - 'tests/provider_security_hardening_test.py'
+      - 'tests/provider_purification_contract_test.py'
+      - 'tests/runtime_capability_media_safety_v4_test.py'
 
 permissions:
   contents: read
   security-events: read
+
+concurrency:
+  group: niakvio-final-provider-security-main
+  cancel-in-progress: true
 
 jobs:
   security:
