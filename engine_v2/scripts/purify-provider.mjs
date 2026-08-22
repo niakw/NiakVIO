@@ -35,8 +35,6 @@ async function terserVersion() {
     const parsed = JSON.parse(await fs.readFile(packagePath, "utf8"));
     return String(parsed.version || "");
   } catch {
-    // Normal node resolution may place dependencies elsewhere. Fall back to the
-    // public package metadata exposed by the imported module only when available.
     try {
       const resolved = await import("terser/package.json", { with: { type: "json" } });
       return String(resolved.default?.version || "");
@@ -49,7 +47,8 @@ async function terserVersion() {
 async function main() {
   const input = arg("--input");
   const output = arg("--output");
-  if (!input || !output) throw new Error("usage: purify-provider.mjs --input <file.js> --output <file.js>");
+  const forceFormatOnly = process.argv.includes("--format-only");
+  if (!input || !output) throw new Error("usage: purify-provider.mjs --input <file.js> --output <file.js> [--format-only]");
 
   const code = await fs.readFile(input, "utf8");
   const flags = riskFlags(code);
@@ -58,11 +57,8 @@ async function main() {
     throw new Error(`Terser version mismatch: expected ${EXPECTED_TERSER_VERSION}, got ${version}`);
   }
 
-  // Dynamic/self-source providers get formatting/minification only. For ordinary
-  // providers, enable a narrow, non-unsafe compression set while preserving names,
-  // top-level layout semantics and all potentially side-effectful/unused code.
   const risky = flags.includes("dynamic_eval") || flags.includes("dynamic_function_constructor") || flags.includes("function_source_introspection");
-  const compress = risky ? false : {
+  const compress = (forceFormatOnly || risky) ? false : {
     defaults: false,
     booleans: true,
     comparisons: true,
@@ -108,13 +104,15 @@ async function main() {
   await fs.mkdir(path.dirname(path.resolve(output)), { recursive: true });
   await fs.writeFile(output, purified, "utf8");
 
+  const mode = forceFormatOnly ? "format-only" : (risky ? "risk-format-only" : "conservative-compression");
   const payload = {
-    schemaVersion: 1,
+    schemaVersion: 2,
     tool: "terser",
     toolVersion: version,
     phase: "provider-purification-v1",
+    mode,
     mangle: false,
-    conservativeCompression: !risky,
+    conservativeCompression: mode === "conservative-compression",
     riskFlags: flags,
     bytesBefore: Buffer.byteLength(code),
     bytesAfter: Buffer.byteLength(purified),

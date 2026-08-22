@@ -28,12 +28,7 @@ def sha256(data: bytes) -> str:
 
 
 def ensure_terser() -> None:
-    """Install the exact build-only purifier dependency when absent.
-
-    Terser is deliberately not a provider runtime dependency. Keeping it out of
-    package.json avoids shipping a build tool into Nuvio; deep/Brain pipelines
-    install the exact pinned version in their ephemeral workspace only.
-    """
+    """Install the exact build-only purifier dependency when absent."""
     global _TERSER_READY
     if _TERSER_READY:
         return
@@ -100,19 +95,21 @@ def validate_artifact(path: Path) -> None:
         raise RuntimeError(f"purified provider rejected by validator ({completed.returncode}): {details[-1600:]}")
 
 
-def purify_bytes(data: bytes) -> tuple[bytes, dict[str, Any]]:
+def _run_purifier(data: bytes, *, format_only: bool) -> tuple[bytes, dict[str, Any]]:
+    """Run one pinned-Terser pass and validate the resulting bundle."""
     ensure_terser()
-    before_sha = sha256(data)
-    # Keep the temporary artifact below ROOT so CommonJS dependencies used by a
-    # provider resolve through ROOT/node_modules during structural validation.
-    # /tmp would make Node walk the wrong parent chain and reject valid bundles.
+    # Keep temp files under ROOT so provider CommonJS imports resolve through
+    # ROOT/node_modules during structural validation.
     with tempfile.TemporaryDirectory(prefix="niakvio-provider-purify-", dir=ROOT) as temp:
         temp_dir = Path(temp)
         input_path = temp_dir / "input.js"
         output_path = temp_dir / "output.js"
         input_path.write_bytes(data)
+        command = ["node", str(PURIFIER), "--input", str(input_path), "--output", str(output_path)]
+        if format_only:
+            command.append("--format-only")
         completed = subprocess.run(
-            ["node", str(PURIFIER), "--input", str(input_path), "--output", str(output_path)],
+            command,
             cwd=ROOT,
             capture_output=True,
             text=True,
@@ -125,15 +122,95 @@ def purify_bytes(data: bytes) -> tuple[bytes, dict[str, Any]]:
         result = _extract_result(completed.stdout)
         purified = output_path.read_bytes()
         validate_artifact(output_path)
+    return purified, result
 
-    after_sha = sha256(purified)
-    applied = purified != data and len(purified) < len(data)
-    chosen = purified if applied else data
-    chosen_sha = after_sha if applied else before_sha
+
+def _stable_candidate(data: bytes, *, format_only: bool) -> tuple[bytes, dict[str, Any], bool, str | None]:
+    """Return a candidate only when an identical second Terser pass validates."""
+    first, result = _run_purifier(data, format_only=format_only)
+    try:
+        second, _second_result = _run_purifier(first, format_only=format_only)
+    except Exception as exc:  # validation failure is itself a fixed-point failure
+        return first, result, False, f"second_pass_error:{type(exc).__name__}:{exc}"
+    if second != first:
+        return first, result, False, "second_pass_bytes_changed"
+    return first, result, True, None
+
+
+def purify_bytes(data: bytes) -> tuple[bytes, dict[str, Any]]:
+    """Return the smallest validated, byte-idempotent conservative Terser result.
+
+    Compression is preferred. If compression is not fixed-point safe for a bundle,
+    retry formatting-only minification. If neither mode is stable, preserve the
+    original bytes rather than publishing a transform whose next rebuild changes
+    or fails to execute.
+    """
+    before_sha = sha256(data)
+    fallback_reason: str | None = None
+    selected_mode = "original"
+    selected_result: dict[str, Any] = {
+        "schemaVersion": 2,
+        "tool": "terser",
+        "toolVersion": TERSER_VERSION,
+        "phase": "provider-purification-v1",
+        "mode": "original",
+        "mangle": False,
+        "conservativeCompression": False,
+        "riskFlags": [],
+        "bytesBefore": len(data),
+        "bytesAfter": len(data),
+    }
+    chosen = data
+    fixed_point_verified = True
+
+    try:
+        compressed, compressed_result, stable, reason = _stable_candidate(data, format_only=False)
+    except Exception as exc:
+        compressed = data
+        compressed_result = selected_result
+        stable = False
+        reason = f"first_pass_error:{type(exc).__name__}:{exc}"
+
+    if stable and len(compressed) < len(data):
+        chosen = compressed
+        selected_result = compressed_result
+        selected_mode = str(compressed_result.get("mode") or "conservative-compression")
+    elif stable and compressed == data:
+        chosen = data
+        selected_result = compressed_result
+        selected_mode = str(compressed_result.get("mode") or "conservative-compression")
+    else:
+        fallback_reason = reason or "compression_not_fixed_point"
+        try:
+            formatted, formatted_result, format_stable, format_reason = _stable_candidate(data, format_only=True)
+        except Exception as exc:
+            formatted = data
+            formatted_result = selected_result
+            format_stable = False
+            format_reason = f"format_first_pass_error:{type(exc).__name__}:{exc}"
+        if format_stable and len(formatted) < len(data):
+            chosen = formatted
+            selected_result = formatted_result
+            selected_mode = "format-only"
+        elif format_stable and formatted == data:
+            chosen = data
+            selected_result = formatted_result
+            selected_mode = "format-only"
+        else:
+            chosen = data
+            selected_mode = "original"
+            fixed_point_verified = True
+            fallback_reason = f"{fallback_reason};{format_reason or 'format_not_fixed_point'}"
+
+    chosen_sha = sha256(chosen)
+    applied = chosen != data and len(chosen) < len(data)
     report = {
-        **result,
+        **selected_result,
+        "mode": selected_mode,
         "applied": applied,
-        "reason": "size_reduced_and_valid" if applied else "no_safe_size_gain",
+        "reason": "size_reduced_valid_and_fixed_point" if applied else "no_safe_fixed_point_size_gain",
+        "fallbackReason": fallback_reason,
+        "fixedPointVerified": fixed_point_verified,
         "sourceSha256": before_sha,
         "candidateSha256": chosen_sha,
         "bytesBefore": len(data),
@@ -180,10 +257,12 @@ def purify_candidate(stage: Path, candidate: dict[str, Any]) -> tuple[dict[str, 
         patches.append({
             "type": "provider_purification",
             "phase": "post-transform",
-            "revision": 1,
+            "revision": 2,
             "tool": "terser",
             "tool_version": TERSER_VERSION,
+            "mode": report.get("mode"),
             "mangle": False,
+            "fixed_point_verified": True,
             "conservative_compression": bool(report.get("conservativeCompression")),
             "risk_flags": list(report.get("riskFlags") or []),
             "source_sha256": report["sourceSha256"],
@@ -231,13 +310,15 @@ def purify_registry(stage: Path, report_path: Path) -> dict[str, Any]:
 
     registry["candidates"] = output_candidates
     registry["provider_purification"] = {
-        "schema_version": 1,
+        "schema_version": 2,
         "phase": "provider-purification-v1",
         "tool": "terser",
         "tool_version": TERSER_VERSION,
         "mangle": False,
+        "fixed_point_required": True,
         "candidate_count": len(rows),
         "applied_count": sum(1 for row in rows if row["applied"]),
+        "format_only_count": sum(1 for row in rows if row.get("mode") == "format-only"),
         "bytes_before": total_before,
         "bytes_after": total_after,
         "bytes_saved": max(0, total_before - total_after),
@@ -247,13 +328,15 @@ def purify_registry(stage: Path, report_path: Path) -> dict[str, Any]:
     write_json(registry_path, registry)
 
     payload = {
-        "schemaVersion": 1,
+        "schemaVersion": 2,
         "phase": "provider-purification-v1",
         "tool": "terser",
         "toolVersion": TERSER_VERSION,
         "mangle": False,
+        "fixedPointRequired": True,
         "candidateCount": len(rows),
         "appliedCount": sum(1 for row in rows if row["applied"]),
+        "formatOnlyCount": sum(1 for row in rows if row.get("mode") == "format-only"),
         "riskyFormattingOnlyCount": sum(1 for row in rows if row.get("riskFlags")),
         "bytesBefore": total_before,
         "bytesAfter": total_after,
@@ -275,8 +358,9 @@ def main() -> int:
     print(
         "FIELD_PROVIDER_PURIFICATION "
         f"candidates={payload['candidateCount']} applied={payload['appliedCount']} "
-        f"risky={payload['riskyFormattingOnlyCount']} bytes_saved={payload['bytesSaved']} "
-        f"saving_percent={payload['savingPercent']} mangle=false runtime_retest_required=true"
+        f"format_only={payload['formatOnlyCount']} risky={payload['riskyFormattingOnlyCount']} "
+        f"bytes_saved={payload['bytesSaved']} saving_percent={payload['savingPercent']} "
+        "mangle=false fixed_point_required=true runtime_retest_required=true"
     )
     return 0
 
