@@ -6,8 +6,16 @@ on:
     branches: [main]
     paths:
       - ".github/workflows/brain-learning-lab.yml"
+      - "provider_catalog.json"
+      - "manifest.json"
+      - "provider-overrides.json"
       - "scripts/run_brain_learning_sandbox.py"
       - "scripts/build_brain_repair_proposal.py"
+      - "scripts/build_native_reader_brain_repair.py"
+      - "scripts/discover_candidates.py"
+      - "scripts/apply_provider_overrides.py"
+      - "scripts/provider_patches/**"
+      - "tests/brain_cron_full_coverage_test.py"
       - "engine_v2/scripts/learning-lab.mjs"
       - "engine_v2/scripts/build-historical-learning.mjs"
       - "engine_v2/config/brain-policy.json"
@@ -54,6 +62,18 @@ jobs:
           else
             npm install --ignore-scripts --no-audit --no-fund --package-lock=false
           fi
+
+      - name: Validate Brain cron skills and full provider coverage
+        shell: bash
+        run: |
+          set -euo pipefail
+          python tests/brain_cron_full_coverage_test.py
+          python tests/native_reader_provider_retention_policy_test.py
+          python -m py_compile \
+            scripts/run_brain_learning_sandbox.py \
+            scripts/build_brain_repair_proposal.py \
+            scripts/build_native_reader_brain_repair.py \
+            scripts/report_new_upstream_providers.py
 
       - name: Restore prior sanitized Brain memory
         shell: bash
@@ -117,7 +137,7 @@ jobs:
             --baseline-config engine_v2/config/historical-audit-baselines.json \
             --baseline-id excel-provider-audit-5.20.63 \
             --baseline-manifest brain-learning-input/baseline-manifest.json \
-            --baseline-health brain-learning-input/baseline-health.json \
+            --baseline-health brain-sandbox/health-output/health-results.json \
             --current-manifest manifest.json \
             --current-health brain-sandbox/health-output/health-results.json \
             --repair-report brain-sandbox/health-output/repair-report.json \
