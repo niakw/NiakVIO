@@ -158,14 +158,18 @@ test_runtime_domain_prefix_collisions_are_globally_idempotent()
 
 
 def test_obfuscated_runtime_endpoint_override() -> None:
+    # Fixed-endpoint discovery and the runtime fetch-domain shim are runtime
+    # compatibility primitives. Test their byte-idempotence in that phase;
+    # discovery-wide Core reconstruction has its own published-bundle net-noop
+    # and reapply --check gates and must not be conflated with this contract.
     source = b'''var DOMAINS_URL='https://raw.githubusercontent.com/wooodyhood/nuvio-repo/main/domains.json',MOVIX_FALLBACK='cash',_cachedEndpoint=null;function detectApi(){if(_cachedEndpoint)return Promise.resolve(_cachedEndpoint);return fetch(DOMAINS_URL).then(function(r){return r.json()}).then(function(x){return {api:'https://api.movix.'+x.movix}}).catch(function(){return {api:'https://api.movix.'+MOVIX_FALLBACK}})};module.exports={getStreams:async function(){var e=await detectApi();await fetch(e.api+'/api/purstream/movie/157336/stream');return []}};'''
-    output, records = apply_overrides("movix", source)
+    output, records = apply_overrides("movix", source, phase="runtime")
     assert b"NUVIO_FIXED_ENDPOINT:https://api.movix.fun" in output
     assert b"NUVIO_RUNTIME_DOMAIN_OVERRIDES_V1" in output
     assert b"fetch(DOMAINS_URL)" not in output
     assert any(row.get("type") == "fixed_endpoint" for row in records)
     assert any(row.get("type") == "runtime_domain_overrides" for row in records)
-    second, second_records = apply_overrides("movix", output)
+    second, second_records = apply_overrides("movix", output, phase="runtime")
     assert second == output
     assert not any(row.get("type") in {"fixed_endpoint", "runtime_domain_overrides"} for row in second_records)
     with tempfile.TemporaryDirectory(prefix="niakvio-overrides-") as tmp:
