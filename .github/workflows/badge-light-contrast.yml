@@ -7,9 +7,11 @@ on:
     paths:
       - '.github/workflows/badge-light-contrast.yml'
       - 'scripts/regenerate_light_badges.py'
+      - 'tests/badge_asset_contract_test.py'
       - 'assets/badge_catalog_v2_complete.json'
       - 'assets/transparent/**'
       - 'assets/light/**'
+      - 'assets/docs/LIGHT_BADGE_QA.json'
 
 permissions:
   contents: write
