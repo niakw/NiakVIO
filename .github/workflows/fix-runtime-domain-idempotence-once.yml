@@ -17,7 +17,7 @@ concurrency:
 jobs:
   repair:
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 45
     steps:
       - name: Checkout main
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
@@ -39,25 +39,48 @@ jobs:
       - name: Install dependencies
         run: npm ci --ignore-scripts --no-audit --no-fund
 
-      - name: Patch runtime-domain wrapper in place
+      - name: Make both fixed-point repairs durable
         shell: bash
         run: |
           set -euo pipefail
           python - <<'PY'
           from pathlib import Path
+          from textwrap import dedent
 
           path = Path('scripts/apply_provider_overrides.py')
           text = path.read_text(encoding='utf-8')
+
+          # 1) Generated security marker is a Core boundary, not provider source.
+          tuple_old = '''GENERATED_CORE_TAIL_MARKERS = (\n    "NUVIO_GLOBAL_STREAM_FACTS_V1",'''
+          tuple_new = '''GENERATED_CORE_TAIL_MARKERS = (\n    "NUVIO_GLOBAL_PROVIDER_SECURITY_HOOK_V1",\n    "NUVIO_GLOBAL_STREAM_FACTS_V1",'''
+          if '"NUVIO_GLOBAL_PROVIDER_SECURITY_HOOK_V1",\n    "NUVIO_GLOBAL_STREAM_FACTS_V1"' not in text:
+              if tuple_old not in text:
+                  raise SystemExit('unable to locate generated Core tail marker tuple')
+              text = text.replace(tuple_old, tuple_new, 1)
+
+          scan_old = '''    starts = [\n        index\n        for marker in GENERATED_CORE_TAIL_MARKERS\n        if (index := text.find(f"/* {marker}:")) >= 0\n    ]'''
+          scan_new = '''    starts = []\n    for marker in GENERATED_CORE_TAIL_MARKERS:\n        needle = (\n            f"/* {marker} */"\n            if marker == "NUVIO_GLOBAL_PROVIDER_SECURITY_HOOK_V1"\n            else f"/* {marker}:"\n        )\n        index = text.find(needle)\n        if index >= 0:\n            starts.append(index)'''
+          if scan_new not in text:
+              if scan_old not in text:
+                  raise SystemExit('unable to locate generated Core tail scanner')
+              text = text.replace(scan_old, scan_new, 1)
+          text = text.replace(
+              '    Facts, identity and presentation are generated artifacts owned by the Core\n    scheduler.',
+              '    Security, facts, identity and presentation are generated artifacts owned by the Core\n    scheduler.',
+              1,
+          )
+
+          # 2) Runtime-domain wrapper must retain its existing byte position.
           start = text.index('def _inject_runtime_domain_overrides(')
           end = text.index('\ndef _strip_legacy_global_stream_guards', start)
-          replacement = r'''def _inject_runtime_domain_overrides(text: str, replacements: dict[str, Any]) -> tuple[str, int]:
+          replacement = dedent(r'''
+          def _inject_runtime_domain_overrides(text: str, replacements: dict[str, Any]) -> tuple[str, int]:
               """Embed host rewriting into the provider JavaScript artifact itself.
 
-              When a previous runtime-domain wrapper already exists, replace it at
-              the exact same byte position. Re-prepending the wrapper on every pass
-              changes its order relative to other idempotent prefix wrappers (HLS,
-              provider adapters, etc.) and rotates content-addressed hashes despite
-              identical semantics.
+              Existing runtime-domain wrappers are replaced in place. Moving an
+              existing wrapper back to byte zero on every reconstruction changes
+              its order relative to already-idempotent prefix wrappers and rotates
+              content-addressed hashes without a semantic provider change.
               """
               from urllib.parse import urlparse
 
@@ -75,17 +98,17 @@ jobs:
               marker_comment = f"/* {marker} */"
               existing_span: tuple[int, int] | None = None
               if marker_comment in text:
-                  start = text.find(marker_comment)
-                  call = text.find('})(typeof globalThis!=="undefined"?globalThis:this,', start)
-                  end = text.find(");\n", call) if call >= 0 else -1
-                  if start < 0 or end < 0:
+                  existing_start = text.find(marker_comment)
+                  call = text.find('})(typeof globalThis!=="undefined"?globalThis:this,', existing_start)
+                  existing_end = text.find(");\n", call) if call >= 0 else -1
+                  if existing_start < 0 or existing_end < 0:
                       raise ValueError("unterminated runtime domain override bootstrap")
-                  existing_span = (start, end + 3)
+                  existing_span = (existing_start, existing_end + 3)
 
               if not rules:
                   if existing_span is None:
                       return text, 0
-                  output = text[: existing_span[0]] + text[existing_span[1] :]
+                  output = text[:existing_span[0]] + text[existing_span[1]:]
                   return output, 0 if output == original_text else 1
 
               import base64
@@ -125,41 +148,51 @@ jobs:
               if existing_span is None:
                   output = bootstrap + text
               else:
-                  output = text[: existing_span[0]] + bootstrap + text[existing_span[1] :]
+                  output = text[:existing_span[0]] + bootstrap + text[existing_span[1]:]
               return output, 0 if output == original_text else len(rules)
-          '''
-          # De-indent the Python source while preserving the JavaScript literal.
-          lines = replacement.splitlines()
-          normalized = []
-          for line in lines:
-              normalized.append(line[14:] if line.startswith('              ') else line)
-          replacement = '\n'.join(normalized) + '\n'
-          path.write_text(text[:start] + replacement + text[end:], encoding='utf-8')
+          ''').lstrip('\n')
+          text = text[:start] + replacement + text[end:]
+          path.write_text(text, encoding='utf-8')
 
           test = Path('tests/global_playback_integrity_policy_test.py')
           t = test.read_text(encoding='utf-8')
-          marker = '# Runtime-domain wrappers preserve their existing position across reconstruction.'
-          if marker not in t:
-              anchor = '# Runtime repair phase must not inject discovery wrappers.\n'
-              if anchor not in t:
-                  raise SystemExit('runtime-domain test anchor missing')
-              block = r'''# Runtime-domain wrappers preserve their existing position across reconstruction.
-          domain_seed = 'PREFIX-WRAPPER\nprovider-source\n'
-          domain_once, _ = module._inject_runtime_domain_overrides(domain_seed, {'old.example': 'new.example'})
-          domain_prefixed = 'HLS-PREFIX\n' + domain_once
-          domain_twice, _ = module._inject_runtime_domain_overrides(domain_prefixed, {'old.example': 'new.example'})
-          assert domain_twice == domain_prefixed
-          assert domain_twice.index('HLS-PREFIX') < domain_twice.index('NUVIO_RUNTIME_DOMAIN_OVERRIDES_V1')
+          security_marker = '# Security is itself a generated Core boundary and must be rebuilt, not retained as provider source.'
+          if security_marker not in t:
+              anchor = '# The complete discovery transform must be byte-idempotent. Stable output bytes\n'
+              block = dedent('''
+              # Security is itself a generated Core boundary and must be rebuilt, not retained as provider source.
+              boundary_input = "provider-source\\n/* NUVIO_GLOBAL_PROVIDER_SECURITY_HOOK_V1 */\\n/* NUVIO_GLOBAL_STREAM_FACTS_V1:old */\\nstale-tail"
+              boundary_prefix, boundary_removed = module._strip_generated_core_tail(boundary_input)
+              assert boundary_removed is True
+              assert boundary_prefix == "provider-source"
 
-          '''
-              block = '\n'.join(line[10:] if line.startswith('          ') else line for line in block.splitlines()) + '\n'
+              ''').lstrip('\n')
+              if anchor not in t:
+                  raise SystemExit('security fixed-point test anchor missing')
               t = t.replace(anchor, block + anchor, 1)
-              test.write_text(t, encoding='utf-8')
+
+          runtime_marker = '# Runtime-domain wrappers preserve their existing position across reconstruction.'
+          if runtime_marker not in t:
+              anchor = '# Runtime repair phase must not inject discovery wrappers.\n'
+              block = dedent('''
+              # Runtime-domain wrappers preserve their existing position across reconstruction.
+              domain_seed = 'provider-source\\n'
+              domain_once, _ = module._inject_runtime_domain_overrides(domain_seed, {'old.example': 'new.example'})
+              domain_prefixed = 'HLS-PREFIX\\n' + domain_once
+              domain_twice, _ = module._inject_runtime_domain_overrides(domain_prefixed, {'old.example': 'new.example'})
+              assert domain_twice == domain_prefixed
+              assert domain_twice.index('HLS-PREFIX') < domain_twice.index('NUVIO_RUNTIME_DOMAIN_OVERRIDES_V1')
+
+              ''').lstrip('\n')
+              if anchor not in t:
+                  raise SystemExit('runtime-domain fixed-point test anchor missing')
+              t = t.replace(anchor, block + anchor, 1)
+          test.write_text(t, encoding='utf-8')
           PY
           python -m py_compile scripts/apply_provider_overrides.py
           python tests/global_playback_integrity_policy_test.py
 
-      - name: Prove full published fixed point
+      - name: Prove complete published fixed point
         shell: bash
         run: |
           set -euo pipefail
@@ -178,7 +211,7 @@ jobs:
           python scripts/prune_unreferenced_providers.py
           python scripts/reapply_published_overrides.py --check
 
-      - name: Keep only durable source fix and self-delete
+      - name: Keep durable fixes only and self-delete
         shell: bash
         run: |
           set -euo pipefail
@@ -194,7 +227,7 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add scripts/apply_provider_overrides.py tests/global_playback_integrity_policy_test.py
-          git commit -m 'core: preserve runtime domain wrapper position'
+          git commit -m 'core: stabilize generated security and runtime domain boundaries'
           git fetch origin main
           git rebase origin/main
           git push origin HEAD:main
