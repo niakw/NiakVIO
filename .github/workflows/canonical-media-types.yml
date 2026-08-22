@@ -11,6 +11,7 @@ on:
       - "package-lock.json"
       - ".github/triggers/nuvio-client-lab.json"
       - "automation/native-human-ux-policy.json"
+      - "assets/**"
       - "engine_v2/src/**"
       - "engine_v2/tests/**"
       - "engine_v2/scripts/diagnose-native-reader.mjs"
@@ -55,6 +56,7 @@ on:
       - "tests/global_stream_identity_test.py"
       - "tests/global_stream_presentation_test.py"
       - "tests/global_stream_presentation_pipeline_test.py"
+      - "tests/badge_asset_contract_test.py"
       - "tests/brain_cron_full_coverage_test.py"
       - "tests/native_evidence_contract_test.py"
       - "tests/native_evidence_completeness_test.cjs"
@@ -106,6 +108,8 @@ jobs:
           python3 tests/global_stream_presentation_pipeline_test.py
           python3 tests/global_stream_identity_test.py
           python3 tests/brain_cron_full_coverage_test.py
+      - name: Validate image badge assets and theme contrast mapping
+        run: python3 tests/badge_asset_contract_test.py
       - name: Validate weekly upstream provider comparator
         run: node engine_v2/tests/upstream-provider-watch.test.mjs
       - name: Validate deep HLS playback chain and ranking
