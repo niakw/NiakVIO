@@ -28,7 +28,7 @@ with_facts = facts.apply(legacy)
 assert "NUVIO_PURSTREAM_STREAM_FACTS_V1" in with_facts
 patched = presentation.apply(with_facts, context={"provider_id": "purstream"})
 assert "NUVIO_GLOBAL_STREAM_PRESENTATION_V1" in patched
-assert "all-providers-badge-dedupe-tmdb-fallback-v8" in patched
+assert "all-providers-facts-badge-dedupe-tmdb-fallback-v9" in patched
 assert patched == presentation.apply(patched, context={"provider_id": "purstream"})
 
 
