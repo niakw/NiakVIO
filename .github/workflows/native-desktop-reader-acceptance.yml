@@ -30,6 +30,7 @@ on:
       - "scripts/run_native_corpus_desktop_suite.sh"
       - "scripts/analyze_native_corpus_collection.cjs"
       - "scripts/analyze_native_corpus_results.cjs"
+      - "scripts/native_fixture_identity_guard.cjs"
       - "scripts/gate_native_reader_coverage.cjs"
       - "scripts/gate_native_reader_result.cjs"
       - "scripts/gate_native_player_reached.cjs"
@@ -62,6 +63,7 @@ on:
       - "scripts/run_native_corpus_desktop_suite.sh"
       - "scripts/analyze_native_corpus_collection.cjs"
       - "scripts/analyze_native_corpus_results.cjs"
+      - "scripts/native_fixture_identity_guard.cjs"
       - "scripts/gate_native_reader_coverage.cjs"
       - "scripts/gate_native_reader_result.cjs"
       - "scripts/gate_native_player_reached.cjs"
@@ -121,7 +123,7 @@ jobs:
 
   desktop-reader:
     needs: resolve
-    timeout-minutes: ${{ github.event_name == 'pull_request' && 55 || 240 }}
+    timeout-minutes: ${{ github.event_name == 'pull_request' && 75 || 240 }}
     strategy:
       fail-fast: false
       matrix:
@@ -169,49 +171,15 @@ jobs:
           touch nuvio-desktop/local.properties
           python3 niakvio/scripts/prepare_native_corpus_client.py desktop --fixture sinners-2025 --workspace "$GITHUB_WORKSPACE" --manifest manifest.json
 
-      - name: Install official Windows WebView2 build dependency
-        if: matrix.os_name == 'windows'
-        shell: pwsh
-        run: |
-          nuget install Microsoft.Web.WebView2 `
-            -Version $env:WEBVIEW2_VERSION `
-            -OutputDirectory "$env:RUNNER_TEMP\nuget" `
-            -DirectDownload `
-            -NonInteractive `
-            -NoCache
-          $root = Join-Path $env:RUNNER_TEMP "nuget\Microsoft.Web.WebView2.$env:WEBVIEW2_VERSION"
-          if (-not (Test-Path (Join-Path $root "build\native\x64\WebView2Loader.dll.lib"))) {
-            throw "WebView2Loader.dll.lib missing from $root"
-          }
-          "WEBVIEW2_ROOT=$root" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-
-      - name: Build official macOS native player bridge once
-        if: matrix.os_name == 'macos'
-        shell: bash
-        run: |
-          set -euxo pipefail
-          ./nuvio-desktop/gradlew -p nuvio-desktop \
-            :composeApp:buildMacosPlayerBridge \
-            :composeApp:prepareMacosPlayerRuntime \
-            --no-configuration-cache --console=plain
-
-      - name: Build official Windows native player bridge once
-        if: matrix.os_name == 'windows'
-        shell: pwsh
-        run: |
-          & .\nuvio-desktop\gradlew.bat -p nuvio-desktop `
-            :composeApp:buildWindowsPlayerBridge `
-            :composeApp:prepareWindowsPlayerRuntime `
-            :composeApp:generateWindowsPlayerRuntimeIndex `
-            "-Pnuvio.webview2.dir=$env:WEBVIEW2_ROOT" `
-            --no-configuration-cache --console=plain
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-
       - name: Execute representative routes and require one real player reach
         shell: bash
         run: |
           set -u
           FIXTURES=(sinners-2025 breaking-bad-s01e01 jujutsu-kaisen-s01e01)
+          if [[ "${{ matrix.os_name }}" = "macos" ]]; then
+            FIXTURES+=(colony-2021 failure-frame-s01e01 hell-teacher-nube-2025-s01e01)
+          fi
+          printf '%s\n' "${FIXTURES[@]}" > "$GITHUB_WORKSPACE/desktop-fixtures-${{ matrix.os_name }}.txt"
           for fixture in "${FIXTURES[@]}"; do
             echo "===== DESKTOP ROUTE: $fixture (${{ matrix.os_name }}) ====="
             NIAKVIO_TARGET_FIXTURE="$fixture" \
@@ -231,7 +199,12 @@ jobs:
         shell: bash
         run: |
           set -u
-          for fixture in sinners-2025 breaking-bad-s01e01 jujutsu-kaisen-s01e01; do
+          FIXTURE_FILE="$GITHUB_WORKSPACE/desktop-fixtures-${{ matrix.os_name }}.txt"
+          if [[ ! -s "$FIXTURE_FILE" ]]; then
+            printf '%s\n' sinners-2025 breaking-bad-s01e01 jujutsu-kaisen-s01e01 > "$FIXTURE_FILE"
+          fi
+          while IFS= read -r fixture; do
+            [[ -n "$fixture" ]] || continue
             LOG="$GITHUB_WORKSPACE/desktop-native-corpus-${{ matrix.os_name }}-${fixture}.log"
             if [ ! -s "$LOG" ]; then
               echo "Missing Desktop reader evidence: $LOG" >&2
@@ -240,7 +213,7 @@ jobs:
             node niakvio/engine_v2/scripts/diagnose-native-reader.mjs \
               --output "$GITHUB_WORKSPACE/desktop-reader-${{ matrix.os_name }}-${fixture}-brain.json" \
               "$LOG" || true
-          done
+          done < "$FIXTURE_FILE"
 
       - name: Upload Desktop reader evidence
         if: always()
@@ -251,6 +224,7 @@ jobs:
             desktop-native-corpus-${{ matrix.os_name }}-*.log
             desktop-native-gradle-${{ matrix.os_name }}-*.log
             desktop-reader-${{ matrix.os_name }}-*-brain.json
+            desktop-fixtures-${{ matrix.os_name }}.txt
             native-evidence/desktop/**
           retention-days: 7
           if-no-files-found: warn
