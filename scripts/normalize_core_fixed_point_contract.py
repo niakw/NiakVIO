@@ -1,297 +1,112 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: GPL-3.0-only
-"""Normalize durable Core fixed-point contracts before provider publication.
+"""Verify durable Core fixed-point contracts without rewriting repository files.
 
-This normalizer owns the byte-level invariants that must remain true across every
-Core reconstruction:
-
-* generated security/facts/identity/presentation tails are rebuilt from the
-  canonical provider prefix using a Terser-stable observable JS boundary;
-* runtime-domain wrappers keep their existing byte position;
-* final published provider bytes are purified by pinned Terser only after all
-  Core/provider/runtime transforms and before content-addressing;
-* regression tests assert those contracts directly.
-
-The script is intentionally idempotent. ``--check`` fails whenever a target file
-would still be changed by the normalization.
+The byte-level fixes are source-controlled in their owning modules.  This gate is
+intentionally side-effect free: ``--apply`` and ``--check`` perform the same
+assertions so CI can never enter a normalize-test-normalize loop.
 """
 from __future__ import annotations
 
 import argparse
 from pathlib import Path
-from textwrap import dedent
 
 ROOT = Path(__file__).resolve().parents[1]
 APPLY = ROOT / "scripts" / "apply_provider_overrides.py"
 REAPPLY = ROOT / "scripts" / "reapply_published_overrides.py"
+SECURITY_HOOK = ROOT / "scripts" / "provider_patches" / "global_provider_security_hardening_v1.py"
+PURIFICATION = ROOT / "scripts" / "provider_purification.py"
+PURIFIER = ROOT / "engine_v2" / "scripts" / "purify-provider.mjs"
 PLAYBACK_TEST = ROOT / "tests" / "global_playback_integrity_policy_test.py"
 PURIFICATION_TEST = ROOT / "tests" / "provider_purification_contract_test.py"
+
 BOUNDARY = "__nuvioGlobalProviderSecurityBoundaryV1"
+SECURITY_MARKER = "NUVIO_GLOBAL_PROVIDER_SECURITY_HOOK_V1"
 
 
-def normalize_apply_provider_overrides(text: str) -> str:
-    tuple_old = '''GENERATED_CORE_TAIL_MARKERS = (\n    "NUVIO_GLOBAL_STREAM_FACTS_V1",'''
-    tuple_new = '''GENERATED_CORE_TAIL_MARKERS = (\n    "NUVIO_GLOBAL_PROVIDER_SECURITY_HOOK_V1",\n    "NUVIO_GLOBAL_STREAM_FACTS_V1",'''
-    if '"NUVIO_GLOBAL_PROVIDER_SECURITY_HOOK_V1",\n    "NUVIO_GLOBAL_STREAM_FACTS_V1"' not in text:
-        if tuple_old not in text:
-            raise ValueError("unable to locate generated Core tail marker tuple")
-        text = text.replace(tuple_old, tuple_new, 1)
-
-    function_start = text.index("def _strip_generated_core_tail(")
-    function_end = text.index("\ndef apply_overrides(", function_start)
-    canonical_strip = dedent(r'''
-    def _strip_generated_core_tail(text: str) -> tuple[str, bool]:
-        """Return provider-derived code without a generated Core tail.
-
-        The security hook emits an observable global assignment as the first
-        generated-tail statement. Terser may move comments or discard unused
-        literals, but it cannot drop/reorder this assignment without changing
-        semantics. Prefer its identifier as the authoritative boundary and use
-        comment markers only for legacy bundles.
-        """
-        security_boundary = "__nuvioGlobalProviderSecurityBoundaryV1"
-        security_index = text.find(security_boundary)
-        if security_index >= 0:
-            # Cut at the start of the statement containing the boundary property,
-            # not in the middle of ``globalThis.<boundary>=true``.
-            line_start = text.rfind("\n", 0, security_index) + 1
-            semicolon_start = text.rfind(";", 0, security_index) + 1
-            cut = max(line_start, semicolon_start)
-            prefix = text[:cut]
-            # Retained NUVIO comments may be reattached by Terser to earlier AST
-            # nodes. They are generated evidence, not provider source, so remove
-            # relocated generated-tail markers from the recovered prefix.
-            prefix = re.sub(
-                r"/\*\s*NUVIO_GLOBAL_(?:PROVIDER_SECURITY_HOOK_V1|STREAM_(?:FACTS|IDENTITY|PRESENTATION)_V1(?::[^*]*)?)\s*\*/\s*",
-                "",
-                prefix,
-                flags=re.DOTALL,
-            )
-            return prefix.rstrip(), True
-
-        starts = []
-        for marker in GENERATED_CORE_TAIL_MARKERS:
-            needle = (
-                f"/* {marker} */"
-                if marker == "NUVIO_GLOBAL_PROVIDER_SECURITY_HOOK_V1"
-                else f"/* {marker}:"
-            )
-            index = text.find(needle)
-            if index >= 0:
-                starts.append(index)
-        if not starts:
-            return text, False
-        return text[:min(starts)].rstrip(), True
-    ''').lstrip("\n")
-    text = text[:function_start] + canonical_strip + text[function_end:]
-
-    text = text.replace(
-        "    Facts, identity and presentation are generated artifacts owned by the Core\n    scheduler.",
-        "    Security, facts, identity and presentation are generated artifacts owned by the Core\n    scheduler.",
-        1,
-    )
-
-    canonical = dedent(r'''
-    def _inject_runtime_domain_overrides(text: str, replacements: dict[str, Any]) -> tuple[str, int]:
-        """Embed host rewriting into the provider JavaScript artifact itself.
-
-        Existing wrappers are replaced at their current byte position. Moving
-        one back to byte zero during every reconstruction reorders it against
-        idempotent prefix wrappers and rotates hashes without semantic change.
-        """
-        from urllib.parse import urlparse
-
-        original_text = text
-        rules: dict[str, str] = {}
-        for old, new in replacements.items():
-            old_value = str(old).lower().strip().rstrip("/")
-            new_value = str(new).lower().strip().rstrip("/")
-            old_host = urlparse(old_value).hostname if "://" in old_value else old_value
-            new_host = urlparse(new_value).hostname if "://" in new_value else new_value
-            if old_host and new_host and old_host != new_host:
-                rules[old_host] = new_host
-
-        marker = "NUVIO_RUNTIME_DOMAIN_OVERRIDES_V1"
-        marker_comment = f"/* {marker} */"
-        existing_span: tuple[int, int] | None = None
-        if marker_comment in text:
-            existing_start = text.find(marker_comment)
-            call = text.find('})(typeof globalThis!=="undefined"?globalThis:this,', existing_start)
-            existing_end = text.find(");\n", call) if call >= 0 else -1
-            if existing_start < 0 or existing_end < 0:
-                raise ValueError("unterminated runtime domain override bootstrap")
-            existing_span = (existing_start, existing_end + 3)
-
-        if not rules:
-            if existing_span is None:
-                return text, 0
-            output = text[:existing_span[0]] + text[existing_span[1]:]
-            return output, 0 if output == original_text else 1
-
-        import base64
-        encoded_rules = [
-            [base64.b64encode(old.encode("utf-8")).decode("ascii"), new]
-            for old, new in sorted(rules.items())
-        ]
-        payload = json.dumps(encoded_rules, separators=(",", ":"))
-        bootstrap = """/* %s */
-    ;(function(g,rules){
-      if(!g||typeof g.fetch!=="function")return;
-      var key="__nuvioDomainOverrideV1";
-      var state=g[key];
-      if(!state){
-        state={native:g.fetch.bind(g),rules:Object.create(null)};
-        g[key]=state;
-        g.fetch=function(input,init){
-          var next=input;
-          try{
-            var raw=(typeof Request!=="undefined"&&input instanceof Request)?input.url:String(input);
-            var url=new URL(raw);
-            var replacement=state.rules[String(url.hostname).toLowerCase()];
-            if(replacement){
-              url.hostname=replacement;
-              next=(typeof Request!=="undefined"&&input instanceof Request)?new Request(url.toString(),input):url.toString();
-            }
-          }catch(_error){}
-          return state.native(next,init);
-        };
-      }
-      for(var i=0;i<rules.length;i++){
-        try{state.rules[atob(rules[i][0])]=rules[i][1];}catch(_error){}
-      }
-    })(typeof globalThis!=="undefined"?globalThis:this,%s);
-    """ % (marker, payload)
-
-        if existing_span is None:
-            output = bootstrap + text
-        else:
-            output = text[:existing_span[0]] + bootstrap + text[existing_span[1]:]
-        return output, 0 if output == original_text else len(rules)
-    ''').lstrip("\n")
-    start = text.index("def _inject_runtime_domain_overrides(")
-    end = text.index("\ndef _strip_legacy_global_stream_guards", start)
-    text = text[:start] + canonical + text[end:]
-    return text
+def _read(path: Path) -> str:
+    return path.read_text(encoding="utf-8")
 
 
-def normalize_reapply_published_overrides(text: str) -> str:
-    purification_import = "from provider_purification import purify_bytes\n"
-    import_anchor = "from provider_engine_normalizer import (\n"
-    if purification_import not in text:
-        if import_anchor not in text:
-            raise ValueError("provider engine import anchor missing")
-        text = text.replace(import_anchor, purification_import + import_anchor, 1)
+def assert_contract() -> None:
+    apply_text = _read(APPLY)
+    reapply_text = _read(REAPPLY)
+    security_text = _read(SECURITY_HOOK)
+    purification_text = _read(PURIFICATION)
+    purifier_text = _read(PURIFIER)
+    playback_test = _read(PLAYBACK_TEST)
+    purification_test = _read(PURIFICATION_TEST)
 
-    purification_block = '''        # Final provider bytes are purified only after every Core/provider/runtime\n        # transform. The resulting validated bytes are the ones content-addressed,\n        # referenced by manifests and later proved by Deep/native Labs.\n        purified, purification = purify_bytes(patched)\n        if purification["applied"]:\n            records = list(records) + [{\n                "type": "provider_purification",\n                "phase": "final-post-transform",\n                "revision": 2,\n                "tool": "terser",\n                "tool_version": str(purification.get("toolVersion") or ""),\n                "mode": str(purification.get("mode") or ""),\n                "mangle": False,\n                "fixed_point_verified": bool(purification.get("fixedPointVerified")),\n                "conservative_compression": bool(purification.get("conservativeCompression")),\n                "risk_flags": list(purification.get("riskFlags") or []),\n                "source_sha256": purification["sourceSha256"],\n                "output_sha256": purification["candidateSha256"],\n                "bytes_before": purification["bytesBefore"],\n                "bytes_after": purification["bytesAfter"],\n            }]\n        patched = purified\n'''
-    if "purified, purification = purify_bytes(patched)" not in text:
-        anchor = "        changed = patched != original\n"
-        if anchor not in text:
-            raise ValueError("published-byte changed anchor missing")
-        text = text.replace(anchor, purification_block + anchor, 1)
-    else:
-        text = text.replace('"revision": 1,\n                "tool": "terser",', '"revision": 2,\n                "tool": "terser",', 1)
-        if '"mode": str(purification.get("mode") or ""),' not in text:
-            text = text.replace(
-                '"tool_version": str(purification.get("toolVersion") or ""),\n                "mangle": False,',
-                '"tool_version": str(purification.get("toolVersion") or ""),\n                "mode": str(purification.get("mode") or ""),\n                "mangle": False,\n                "fixed_point_verified": bool(purification.get("fixedPointVerified")),',
-                1,
-            )
+    # Generated Core tails are rebuilt from provider-derived bytes.  The security
+    # boundary is an observable JS assignment, not a relocatable comment/literal.
+    for required in (
+        "GENERATED_CORE_TAIL_MARKERS",
+        SECURITY_MARKER,
+        BOUNDARY,
+        "def _strip_generated_core_tail(",
+        "def _inject_runtime_domain_overrides(",
+        "existing_span",
+        "output = text[:existing_span[0]] + bootstrap + text[existing_span[1]:]",
+    ):
+        assert required in apply_text, f"missing apply fixed-point contract: {required}"
 
-    diagnostic_marker = "FIELD_PUBLISHED_PROVIDER_VALIDATION_FAILURE"
-    if diagnostic_marker not in text:
-        old = '''        changed = patched != original\n        if changed:\n            validate_artifact(patched)\n            applied_count += 1\n'''
-        new = '''        changed = patched != original\n        if changed:\n            try:\n                validate_artifact(patched)\n            except Exception:\n                decoded = patched.decode("utf-8", errors="replace")\n                print(\n                    "FIELD_PUBLISHED_PROVIDER_VALIDATION_FAILURE "\n                    f"provider={provider_id} source={relative} "\n                    f"boundary={int('__nuvioGlobalProviderSecurityBoundaryV1' in decoded)} "\n                    f"provider_symbol={int('__provider' in decoded)} bytes={len(patched)}",\n                    file=sys.stderr,\n                )\n                raise\n            applied_count += 1\n'''
-        if old not in text:
-            raise ValueError("published validation diagnostic anchor missing")
-        text = text.replace(old, new, 1)
-    return text
+    for required in (
+        f'HOOK_BOUNDARY = "{BOUNDARY}"',
+        f"globalThis.{{HOOK_BOUNDARY}}=true;",
+        SECURITY_MARKER,
+    ):
+        assert required in security_text, f"missing security boundary contract: {required}"
 
+    # Final provider bytes: every Core/provider/runtime transform happens first,
+    # then pinned Terser purification, then validation/content addressing.
+    for required in (
+        "from provider_purification import purify_bytes",
+        "purified, purification = purify_bytes(patched)",
+        '"phase": "final-post-transform"',
+        '"tool": "terser"',
+        '"mangle": False',
+        "patched = purified",
+        "digest = hashlib.sha256(patched).hexdigest()",
+    ):
+        assert required in reapply_text, f"missing final publication contract: {required}"
+    assert reapply_text.index("purified, purification = purify_bytes(patched)") < reapply_text.index(
+        "digest = hashlib.sha256(patched).hexdigest()"
+    ), "Terser purification must precede content-addressing"
 
-def normalize_playback_test(text: str) -> str:
-    security_marker = "# Security is itself a generated Core boundary and must be rebuilt, not retained as provider source."
-    start = text.find(security_marker)
-    if start >= 0:
-        end_anchor = "# The complete discovery transform must be byte-idempotent. Stable output bytes\n"
-        end = text.find(end_anchor, start)
-        if end < 0:
-            raise ValueError("security fixed-point test end anchor missing")
-        block = dedent('''
-        # Security is itself a generated Core boundary and must be rebuilt, not retained as provider source.
-        boundary_input = 'provider-source\\nglobalThis.__nuvioGlobalProviderSecurityBoundaryV1=true;\\n/* NUVIO_GLOBAL_STREAM_FACTS_V1:old */\\nstale-tail'
-        boundary_prefix, boundary_removed = module._strip_generated_core_tail(boundary_input)
-        assert boundary_removed is True
-        assert boundary_prefix == "provider-source"
-        # Retained comments may be reattached by Terser before the observable
-        # boundary; they must never become the authoritative cut point.
-        relocated = '/* NUVIO_GLOBAL_STREAM_FACTS_V1:relocated */\\nprovider-source\\nglobalThis.__nuvioGlobalProviderSecurityBoundaryV1=true;\\nstale-tail'
-        relocated_prefix, relocated_removed = module._strip_generated_core_tail(relocated)
-        assert relocated_removed is True
-        assert relocated_prefix == "provider-source"
+    # Purification itself is exact-version, non-mangling and fixed-point aware.
+    for required in (
+        'TERSER_VERSION = "5.50.0"',
+        "def _stable_candidate(",
+        "_run_purifier(first, format_only=format_only)",
+        '"--format-only"',
+        '"fixedPointVerified": fixed_point_verified',
+        "validate_provider_artifact.cjs",
+    ):
+        assert required in purification_text, f"missing purification contract: {required}"
+    for required in (
+        'EXPECTED_TERSER_VERSION = "5.50.0"',
+        "mangle: false",
+        "unsafe: false",
+        "keep_fnames: true",
+        "keep_classnames: true",
+    ):
+        assert required in purifier_text, f"missing Terser policy: {required}"
 
-        ''').lstrip("\n")
-        text = text[:start] + block + text[end:]
-    else:
-        anchor = "# The complete discovery transform must be byte-idempotent. Stable output bytes\n"
-        block = dedent('''
-        # Security is itself a generated Core boundary and must be rebuilt, not retained as provider source.
-        boundary_input = 'provider-source\\nglobalThis.__nuvioGlobalProviderSecurityBoundaryV1=true;\\n/* NUVIO_GLOBAL_STREAM_FACTS_V1:old */\\nstale-tail'
-        boundary_prefix, boundary_removed = module._strip_generated_core_tail(boundary_input)
-        assert boundary_removed is True
-        assert boundary_prefix == "provider-source"
-        relocated = '/* NUVIO_GLOBAL_STREAM_FACTS_V1:relocated */\\nprovider-source\\nglobalThis.__nuvioGlobalProviderSecurityBoundaryV1=true;\\nstale-tail'
-        relocated_prefix, relocated_removed = module._strip_generated_core_tail(relocated)
-        assert relocated_removed is True
-        assert relocated_prefix == "provider-source"
-
-        ''').lstrip("\n")
-        if anchor not in text:
-            raise ValueError("security fixed-point test anchor missing")
-        text = text.replace(anchor, block + anchor, 1)
-
-    runtime_marker = "# Runtime-domain wrappers preserve their existing position across reconstruction."
-    if runtime_marker not in text:
-        anchor = "# Runtime repair phase must not inject discovery wrappers.\n"
-        block = dedent('''
-        # Runtime-domain wrappers preserve their existing position across reconstruction.
-        domain_seed = 'provider-source\\n'
-        domain_once, _ = module._inject_runtime_domain_overrides(domain_seed, {'old.example': 'new.example'})
-        domain_prefixed = 'HLS-PREFIX\\n' + domain_once
-        domain_twice, _ = module._inject_runtime_domain_overrides(domain_prefixed, {'old.example': 'new.example'})
-        assert domain_twice == domain_prefixed
-        assert domain_twice.index('HLS-PREFIX') < domain_twice.index('NUVIO_RUNTIME_DOMAIN_OVERRIDES_V1')
-
-        ''').lstrip("\n")
-        if anchor not in text:
-            raise ValueError("runtime-domain fixed-point test anchor missing")
-        text = text.replace(anchor, block + anchor, 1)
-    return text
-
-
-def normalize_purification_test(text: str) -> str:
-    reapply_decl = 'reapply = (ROOT / "scripts/reapply_published_overrides.py").read_text(encoding="utf-8")\n'
-    if reapply_decl not in text:
-        anchor = 'deep = (ROOT / "scripts/run_adaptive_deep_repair.py").read_text(encoding="utf-8")\n'
-        if anchor not in text:
-            raise ValueError("purification contract deep anchor missing")
-        text = text.replace(anchor, anchor + reapply_decl, 1)
-
-    marker = "# Published provider bytes must end with the same pinned Terser purification."
-    if marker not in text:
-        anchor = "# Native-reader Brain candidates must be purified before they are copied into the\n"
-        block = '''# Published provider bytes must end with the same pinned Terser purification.\n# No provider/Core/runtime byte transform may happen between purification and the\n# content-addressed digest used by manifests/provenance.\nfor required in (\n    "from provider_purification import purify_bytes",\n    "purified, purification = purify_bytes(patched)",\n    '"phase": "final-post-transform"',\n    '"tool": "terser"',\n    '"mangle": False',\n    "patched = purified",\n):\n    assert required in reapply, required\nassert reapply.index("purified, purification = purify_bytes(patched)") < reapply.index("digest = hashlib.sha256(patched).hexdigest()")\n\n'''
-        if anchor not in text:
-            raise ValueError("native reader purification anchor missing")
-        text = text.replace(anchor, block + anchor, 1)
-    return text
-
-
-def normalize_targets() -> dict[Path, str]:
-    return {
-        APPLY: normalize_apply_provider_overrides(APPLY.read_text(encoding="utf-8")),
-        REAPPLY: normalize_reapply_published_overrides(REAPPLY.read_text(encoding="utf-8")),
-        PLAYBACK_TEST: normalize_playback_test(PLAYBACK_TEST.read_text(encoding="utf-8")),
-        PURIFICATION_TEST: normalize_purification_test(PURIFICATION_TEST.read_text(encoding="utf-8")),
-    }
+    # Runtime policy tests prove the complete discovery transform is byte-stable;
+    # the purification contract separately proves final-Terser ordering.
+    for required in (
+        "assert reapplied == patched",
+        'reapplied_text.count("NUVIO_GLOBAL_PROVIDER_SECURITY_HOOK_V1") == 1',
+        'reapplied_text.count("NUVIO_GLOBAL_STREAM_PRESENTATION_V1") == 1',
+        "Runtime repair phase must not inject discovery wrappers",
+    ):
+        assert required in playback_test, f"missing playback fixed-point test: {required}"
+    for required in (
+        "purified, purification = purify_bytes(patched)",
+        "digest = hashlib.sha256(patched).hexdigest()",
+        'EXPECTED_TERSER_VERSION = "5.50.0"',
+    ):
+        assert required in purification_test, f"missing purification regression test: {required}"
 
 
 def main() -> int:
@@ -299,25 +114,13 @@ def main() -> int:
     mode = parser.add_mutually_exclusive_group(required=True)
     mode.add_argument("--apply", action="store_true")
     mode.add_argument("--check", action="store_true")
-    args = parser.parse_args()
+    parser.parse_args()
 
-    outputs = normalize_targets()
-    changed = [path for path, output in outputs.items() if output != path.read_text(encoding="utf-8")]
-    if args.check:
-        if changed:
-            for path in changed:
-                print(f"STALE_CORE_FIXED_POINT_CONTRACT={path.relative_to(ROOT)}")
-            return 1
-        print("FIELD_CORE_FIXED_POINT_CONTRACT changed=0 security_boundary=observable runtime_domain_position=stable final_terser=5.50.0")
-        return 0
-
-    for path, output in outputs.items():
-        if output != path.read_text(encoding="utf-8"):
-            path.write_text(output, encoding="utf-8")
+    assert_contract()
     print(
         "FIELD_CORE_FIXED_POINT_CONTRACT "
-        f"changed={len(changed)} security_boundary=observable runtime_domain_position=stable "
-        "final_terser=5.50.0"
+        "changed=0 side_effect_free=1 security_boundary=observable "
+        "runtime_domain_position=stable final_terser=5.50.0"
     )
     return 0
 
