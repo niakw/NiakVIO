@@ -6,11 +6,10 @@ same deterministic implementation is shared by staging, Brain repair candidates,
 publication reconstruction and security audits. This adapter exists only to make
 that implementation composable through the normal provider Core hook scheduler.
 
-The first statement emitted by this hook is also the durable Core-tail boundary.
-It is a side-effect-free JavaScript string expression rather than a comment because
-Terser may reattach comments while printing a minified bundle. Statement order is
-preserved by the conservative purification profile, so repeated reconstruction can
-always recover the exact provider-derived prefix without cutting through its code.
+The final statement emitted by this hook is also the durable Core-tail boundary.
+It is an observable assignment to a NiakVIO-owned global marker rather than a
+comment or an unused literal expression: conservative Terser cannot discard or
+reattach it, and statement order remains stable across repeated reconstruction.
 """
 from __future__ import annotations
 
@@ -26,7 +25,7 @@ if str(SCRIPTS) not in sys.path:
 from provider_security_hardening import assert_hardened, harden_text  # noqa: E402
 
 HOOK_MARKER = "NUVIO_GLOBAL_PROVIDER_SECURITY_HOOK_V1"
-HOOK_SENTINEL = f'"{HOOK_MARKER}"'
+HOOK_BOUNDARY = "__nuvioGlobalProviderSecurityBoundaryV1"
 TRUSTED_CORE_TAIL_MARKERS = (
     "NUVIO_GLOBAL_STREAM_FACTS_V1",
     "NUVIO_GLOBAL_STREAM_IDENTITY_V1",
@@ -52,8 +51,11 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
     provider_text, trusted_tail = _split_trusted_core_tail(text)
     hardened, _report = harden_text(provider_text)
     assert_hardened(hardened)
-    if HOOK_SENTINEL not in hardened:
-        # This side-effect-free statement is deliberately positional. Unlike a
-        # comment, Terser cannot reattach it ahead of provider source code.
-        hardened = hardened.rstrip() + f"\n{HOOK_SENTINEL};\n"
+    if HOOK_BOUNDARY not in hardened:
+        # Deliberate observable assignment: unlike a comment or standalone string,
+        # this cannot be dropped/re-attached by Terser without changing semantics.
+        hardened = hardened.rstrip() + (
+            f"\n/* {HOOK_MARKER} */\n"
+            f"globalThis.{HOOK_BOUNDARY}=true;\n"
+        )
     return hardened + trusted_tail
