@@ -57,13 +57,19 @@ legacy_slugs = {
     "jujutsu-kaisen-s01e01",
     "mushoku-tensei-s01e01",
 }
-expected_slugs = legacy_slugs | {"sinners-2025"}
+tv_wrong_media_regressions = {
+    "colony-2021",
+    "failure-frame-s01e01",
+    "hell-teacher-nube-2025-s01e01",
+}
+expected_slugs = legacy_slugs | {"sinners-2025"} | tv_wrong_media_regressions
 actual_slugs = {
     str(row.get("slug") or "")
     for row in corpus.get("fixtures", [])
     if isinstance(row, dict)
 }
 assert actual_slugs == expected_slugs, (actual_slugs, expected_slugs)
+assert set((corpus.get("native_reader_acceptance") or {}).get("tv_priority_regressions") or []) == tv_wrong_media_regressions
 
 # Manual targeted retries remain manual-only and must never reuse an AVD from a
 # different NiakVIO/client generation.
@@ -112,6 +118,9 @@ for required in (
 ):
     assert required in android_reader, required
 assert android_reader.count('NIAKVIO_TARGET_FIXTURES: "sinners-2025 breaking-bad-s01e01 jujutsu-kaisen-s01e01"') >= 3
+assert "TV_PRIORITY_FIXTURES" in tv_suite
+for fixture in tv_wrong_media_regressions:
+    assert fixture in tv_suite or fixture in corpus["native_reader_acceptance"]["tv_priority_regressions"], fixture
 assert "avd-v1-" not in android_reader
 assert "restore-keys:" not in android_reader
 assert "playback-hotfix" not in android_reader
@@ -123,7 +132,8 @@ for workflow in (android_reader, targeted_runtime):
     assert "force-avd-creation: false" in workflow
     assert "-no-snapshot-save" in workflow
 
-# Desktop proof remains real macOS/Windows native player evidence.
+# Desktop proof remains real macOS/Windows native player evidence. macOS also acts
+# as the witness for the three TV wrong-media cases while Windows stays bounded.
 for required in (
     "macos-15",
     "windows-2022",
@@ -139,6 +149,7 @@ for required in (
     "NIAKVIO_PRIMARY_STREAM_SCOPE: all",
     "NIAKVIO_REGRESSION_STREAM_SCOPE: all",
     "native-evidence/desktop/**",
+    "colony-2021 failure-frame-s01e01 hell-teacher-nube-2025-s01e01",
 ):
     assert required in desktop_reader, required
 assert "official_nuvio_desktop_player_is_stub" in (ROOT / "scripts/run_native_corpus_desktop_suite.sh").read_text(encoding="utf-8")
@@ -267,7 +278,8 @@ assert len(stageable) >= 80, len(stageable)
 print(
     "native device lab contract passed: "
     f"fixtures={len(expected_slugs)} providers={len(stageable)} android_exhaustive=true "
-    "desktop_native=true brain_retest=movie-tv-anime cached_profiles=v2-fingerprinted "
-    "targeted_manual=true reader_learning_idempotent=true trusted_main_learning=true "
-    "missing_artifact_retriable=true pr_bounded=true production_player_only=true"
+    "desktop_native=true tv_wrong_media_regressions=3 macos_witness=true "
+    "brain_retest=movie-tv-anime cached_profiles=v2-fingerprinted targeted_manual=true "
+    "reader_learning_idempotent=true trusted_main_learning=true missing_artifact_retriable=true "
+    "pr_bounded=true production_player_only=true"
 )
