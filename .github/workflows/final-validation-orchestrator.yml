@@ -1,0 +1,155 @@
+name: NiakVIO final validation orchestrator
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/final-validation-orchestrator.yml'
+
+permissions:
+  actions: write
+  contents: read
+  issues: write
+  pull-requests: read
+
+concurrency:
+  group: niakvio-final-validation-orchestrator
+  cancel-in-progress: true
+
+jobs:
+  final-validation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    env:
+      GH_TOKEN: ${{ github.token }}
+      REPO: ${{ github.repository }}
+      STATE_FILE: ${{ runner.temp }}/niakvio-final-validation.env
+    steps:
+      - name: Checkout exact main
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Run authoritative final gates
+        shell: bash
+        run: |
+          set -euo pipefail
+          : > "$STATE_FILE"
+
+          dispatch_and_capture() {
+            local workflow="$1"; shift
+            local started run_id
+            started="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            gh workflow run "$workflow" --repo "$REPO" --ref main "$@"
+            run_id=""
+            for _ in $(seq 1 60); do
+              run_id="$(gh run list --repo "$REPO" --workflow "$workflow" --branch main --event workflow_dispatch --limit 20 --json databaseId,createdAt --jq ".[] | select(.createdAt >= \"$started\") | .databaseId" | head -n1)"
+              if [ -n "$run_id" ]; then break; fi
+              sleep 2
+            done
+            if [ -z "$run_id" ]; then
+              echo "Unable to capture workflow_dispatch run for $workflow" >&2
+              return 1
+            fi
+            echo "$run_id"
+          }
+
+          watch_gate() {
+            local label="$1" run_id="$2"
+            echo "FIELD_FINAL_GATE_START label=$label run=$run_id"
+            gh run watch "$run_id" --repo "$REPO" --exit-status --interval 20
+            echo "FIELD_FINAL_GATE_OK label=$label run=$run_id"
+          }
+
+          CORE_RUN="$(dispatch_and_capture core-media-finalize-main.yml)"
+          echo "CORE_RUN=$CORE_RUN" >> "$STATE_FILE"
+          watch_gate core "$CORE_RUN"
+
+          DEEP_RUN="$(dispatch_and_capture sync.yml -f mode=deep)"
+          echo "DEEP_RUN=$DEEP_RUN" >> "$STATE_FILE"
+          watch_gate deep "$DEEP_RUN"
+
+          TEST_SHA="$(gh api "repos/$REPO/commits/main" --jq .sha)"
+          echo "TEST_SHA=$TEST_SHA" >> "$STATE_FILE"
+          echo "FIELD_FINAL_TEST_SHA sha=$TEST_SHA"
+
+          declare -A workflows=(
+            [brain]='brain-learning-lab.yml'
+            [android]='native-android-route-reader.yml'
+            [desktop]='native-desktop-reader-acceptance.yml'
+            [badge]='badge-light-contrast.yml'
+            [security]='security-final-gate.yml'
+            [upstreams]='weekly-upstream-provider-discovery.yml'
+            [hygiene]='repository-hygiene.yml'
+            [mainonly]='main-only-policy.yml'
+          )
+          declare -A runs=()
+          for label in brain android desktop badge security upstreams hygiene mainonly; do
+            runs[$label]="$(dispatch_and_capture "${workflows[$label]}")"
+            echo "${label^^}_RUN=${runs[$label]}" >> "$STATE_FILE"
+          done
+
+          for label in badge security upstreams hygiene mainonly brain desktop android; do
+            watch_gate "$label" "${runs[$label]}"
+          done
+
+          FINAL_SHA="$(gh api "repos/$REPO/commits/main" --jq .sha)"
+          echo "FINAL_SHA=$FINAL_SHA" >> "$STATE_FILE"
+          if [ "$FINAL_SHA" != "$TEST_SHA" ]; then
+            echo "main changed after final validation dispatches: tested=$TEST_SHA final=$FINAL_SHA" >&2
+            exit 1
+          fi
+
+          mapfile -t BRANCHES < <(gh api --paginate "repos/$REPO/branches?per_page=100" --jq '.[].name' | sort -u)
+          printf 'FIELD_FINAL_BRANCH=%s\n' "${BRANCHES[@]}"
+          for branch in "${BRANCHES[@]}"; do
+            case "$branch" in
+              main|brain-learning/proposals) ;;
+              *) echo "Unexpected branch remains: $branch" >&2; exit 1 ;;
+            esac
+          done
+
+          OPEN_PRS="$(gh pr list --repo "$REPO" --state open --json number --jq 'length')"
+          if [ "$OPEN_PRS" != "0" ]; then
+            echo "Open PRs remain: $OPEN_PRS" >&2
+            gh pr list --repo "$REPO" --state open
+            exit 1
+          fi
+
+          cat "$STATE_FILE"
+
+      - name: Close security completion issue on full success
+        if: success()
+        shell: bash
+        run: |
+          set -euo pipefail
+          source "$STATE_FILE"
+          BODY=$(cat <<EOF
+          Final NiakVIO validation succeeded on main at ${TEST_SHA}.
+
+          - Core finalizer: https://github.com/${REPO}/actions/runs/${CORE_RUN}
+          - Deep provider audit: https://github.com/${REPO}/actions/runs/${DEEP_RUN}
+          - Brain sandbox: https://github.com/${REPO}/actions/runs/${BRAIN_RUN}
+          - Android TV/Mobile native readers: https://github.com/${REPO}/actions/runs/${ANDROID_RUN}
+          - Desktop native readers: https://github.com/${REPO}/actions/runs/${DESKTOP_RUN}
+          - Light badge QA: https://github.com/${REPO}/actions/runs/${BADGE_RUN}
+          - Provider security/CodeQL gate: https://github.com/${REPO}/actions/runs/${SECURITY_RUN}
+          - Three-upstream discovery review: https://github.com/${REPO}/actions/runs/${UPSTREAMS_RUN}
+          - Repository hygiene: https://github.com/${REPO}/actions/runs/${HYGIENE_RUN}
+          - Main-only policy: https://github.com/${REPO}/actions/runs/${MAINONLY_RUN}
+
+          Final repository state was rechecked after all gates: main unchanged, no open PR, only main plus the sanitized brain-learning/proposals memory ref.
+          EOF
+          )
+          gh issue close 69 --repo "$REPO" --comment "$BODY"
+
+      - name: Preserve failure evidence without closing issue
+        if: failure()
+        shell: bash
+        run: |
+          set +e
+          echo 'Final validation did not complete successfully; issue #69 remains open.'
+          if [ -f "$STATE_FILE" ]; then cat "$STATE_FILE"; fi
