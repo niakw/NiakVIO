@@ -15,25 +15,35 @@ def apply(provider: str, source: str) -> tuple[str, list[dict]]:
     return payload.decode("utf-8"), records
 
 
-# The Core presentation layer is unconditional at discovery/reconstruction time;
-# provider capabilities only control media/catalogue repair, never presentation.
-for provider in ("purstream", "movix", "cineby", "animepahe"):
-    source = "module.exports={getStreams:async()=>[{name:'X',url:'https://media.example/a.mp4',quality:'4K'}]};\n"
+# Facts and presentation are Core-wide layers, never provider-specific adapters.
+for provider in ("purstream", "movix", "cineby", "animepahe", "goated"):
+    source = "module.exports={getStreams:async()=>[{name:'X 4K VFF HEVC E-AC3 5.1 WEB-DL',url:'https://media.example/a.m3u8'}]};\n"
     output, records = apply(provider, source)
+    assert "NUVIO_GLOBAL_STREAM_FACTS_V1" in output, provider
+    assert "NUVIO_GLOBAL_STREAM_IDENTITY_V1" in output, provider
     assert "NUVIO_GLOBAL_STREAM_PRESENTATION_V1" in output, provider
+    assert output.index("NUVIO_GLOBAL_STREAM_FACTS_V1") < output.index("NUVIO_GLOBAL_STREAM_IDENTITY_V1"), provider
+    assert output.index("NUVIO_GLOBAL_STREAM_IDENTITY_V1") < output.index("NUVIO_GLOBAL_STREAM_PRESENTATION_V1"), provider
     assert any(
         row.get("path") == GLOBAL_STREAM_PRESENTATION
         and row.get("scope") == "global_stream_presentation"
         for row in records
     ), (provider, records)
 
-# Reapplication is idempotent: the wrapper is replaced, never stacked.
+# Reapplication is idempotent: global Core wrappers are replaced/reused, never stacked.
 first, _ = apply("cineby", "module.exports={getStreams:async()=>[]};\n")
 second, _ = apply("cineby", first)
+assert second.count("NUVIO_GLOBAL_STREAM_FACTS_V1") == 1
+assert second.count("NUVIO_GLOBAL_STREAM_IDENTITY_V1") == 1
 assert second.count("NUVIO_GLOBAL_STREAM_PRESENTATION_V1") == 1
 
-source = (ROOT / "scripts/apply_provider_overrides.py").read_text(encoding="utf-8")
-assert "GLOBAL_STREAM_PRESENTATION" in source
-assert '"scope": "global_stream_presentation"' in source
+apply_source = (ROOT / "scripts/apply_provider_overrides.py").read_text(encoding="utf-8")
+presentation_source = (ROOT / "scripts/provider_patches/global_stream_presentation_v1.py").read_text(encoding="utf-8")
+assert "GLOBAL_STREAM_PRESENTATION" in apply_source
+assert '"scope": "global_stream_presentation"' in apply_source
+assert "FACTS_PATH" in presentation_source
+assert "global_stream_facts_v1.py" in presentation_source
+assert "purstream_stream_facts_v1.py" not in presentation_source
+assert not (ROOT / "scripts/provider_patches/purstream_stream_facts_v1.py").exists()
 
-print("global stream presentation pipeline tests passed")
+print("global stream facts/presentation pipeline tests passed")
