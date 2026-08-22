@@ -32,6 +32,7 @@ const output = {
     matrixVersion: runtimeCompatibility.matrixVersion,
     supportedCapabilities: runtimeCompatibility.supportedCapabilities,
     invalidCapabilities: runtimeCompatibility.invalidCapabilities,
+    clients: runtimeCompatibility.clients,
   },
   plans: {},
 };
@@ -68,6 +69,7 @@ function buildPlan(item) {
       id: stringValue(skill.id),
       failureClass: skill.failureClass ?? skill.failure_class ?? null,
       capabilities: stringArray(skill.capabilities),
+      clientVersions: asRecord(skill.clientVersions ?? skill.runtimeVersions),
       actions: stringArray(skill.actions).length ? stringArray(skill.actions) : [`apply learned profile ${stringValue(skill.profile)}`],
       profile: stringValue(skill.profile) || null,
       learned: true,
@@ -110,6 +112,7 @@ function buildPlan(item) {
     hypotheses: hypotheses.map((row) => ({
       id: stringValue(row.id),
       capabilities: stringArray(row.capabilities),
+      clientVersions: asRecord(row.clientVersions ?? row.runtimeVersions),
       actions: stringArray(row.actions),
       learned: row.learned === true,
       maturity: row.maturity ?? null,
@@ -162,17 +165,33 @@ function readJsonFile(filename, fallback) {
 function buildRuntimeCompatibility(matrixValue) {
   const matrix = asRecord(matrixValue);
   const universe = new Set(stringArray(matrix.capability_universe));
-  const clients = Object.values(asRecord(matrix.clients)).filter(isRecord);
-  if (!universe.size || !clients.length) {
+  const clientEntries = Object.entries(asRecord(matrix.clients)).filter(([, row]) => isRecord(row));
+  if (!universe.size || !clientEntries.length) {
     throw new Error("nuvio_runtime_compatibility_matrix_missing");
   }
-  const supportedSets = clients.map((row) => new Set(stringArray(row.brain_capabilities)));
+  const supportedSets = clientEntries.map(([, row]) => new Set(stringArray(row.brain_capabilities)));
   const supportedCapabilities = [...universe].filter((capability) => supportedSets.every((set) => set.has(capability))).sort();
   const supported = new Set(supportedCapabilities);
+  const clients = {};
+  for (const [clientId, row] of clientEntries) {
+    const supportedRange = asRecord(row.supported_version_code);
+    const baseline = asRecord(row.baseline);
+    const current = asRecord(row.current_audited);
+    clients[clientId] = {
+      family: stringValue(row.family),
+      baselineVersion: stringValue(baseline.version_name),
+      baselineVersionCode: finiteNumber(baseline.version_code, 0),
+      currentVersion: stringValue(current.version_name),
+      currentVersionCode: finiteNumber(current.version_code, 0),
+      supportedMinVersionCode: finiteNumber(supportedRange.min, 0),
+      supportedMaxVersionCode: finiteNumber(supportedRange.max, 0),
+    };
+  }
   return {
     matrixVersion: finiteNumber(matrix.schema_version, 1),
     supportedCapabilities,
     invalidCapabilities: [...universe].filter((capability) => !supported.has(capability)).sort(),
+    clients,
   };
 }
 
@@ -255,10 +274,6 @@ function deriveEvidence(candidate, result) {
   if (status === "provider_unreachable" && /dns|enotfound|eai_again|getaddrinfo/.test(failureText)) {
     return { invoked, dns: { ok: false }, request: { mediaType } };
   }
-  // Once a provider has returned media candidates, blocked/gone observations are
-  // playback evidence, not evidence that the provider homepage itself is blocked.
-  // Preserve that stage so the Brain repairs Referer/Origin/cookies/tokens rather
-  // than wasting a mutation on domain/session bootstrap.
   if (returned > 0) {
     return {
       invoked, contractDrift, request: { mediaType }, playableStreams: 0,
@@ -269,10 +284,6 @@ function deriveEvidence(candidate, result) {
       },
     };
   }
-  // A runtime may reach a terminal media URL but suppress it from the provider
-  // output because validation already saw a 403/410. If the provider/search path
-  // itself also produced successful responses, that downstream media rejection is
-  // a playback-context problem, not evidence that the provider transport is blocked.
   if (terminalMediaStatuses.length && providerSuccessObserved) {
     return {
       invoked, contractDrift, request: { mediaType }, playableStreams: 0,
