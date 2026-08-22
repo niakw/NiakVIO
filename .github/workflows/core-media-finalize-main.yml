@@ -8,6 +8,7 @@ on:
       - '.github/workflows/core-media-finalize-main.yml'
       - 'scripts/normalize_core_media_policy.py'
       - 'scripts/apply_runtime_capability_upgrade_v4.py'
+      - 'scripts/provider_patches/native_sync_fetch_target_order_v1.py'
       - 'scripts/provider_patches/runtime_capability_media_safety_v4.py'
       - 'scripts/provider_patches/global_stream_presentation_v1.py'
       - 'scripts/provider_patches/global_stream_facts_v1.py'
@@ -16,6 +17,7 @@ on:
       - 'scripts/provider_purification.py'
       - 'tests/core_media_policy_test.py'
       - 'tests/global_core_presentation_pipeline_test.py'
+      - 'tests/native_sync_fetch_target_order_test.py'
       - 'tests/runtime_capability_media_safety_v4_test.py'
       - 'tests/repository_hygiene_contract_test.py'
 
@@ -91,6 +93,7 @@ jobs:
           python scripts/enforce_main_only_repository_policy.py --check
           python tests/core_media_policy_test.py
           python tests/global_core_presentation_pipeline_test.py
+          python tests/native_sync_fetch_target_order_test.py
           python tests/runtime_capability_media_safety_v4_test.py
           python tests/global_playback_integrity_policy_test.py
           python tests/global_stream_presentation_test.py
@@ -148,6 +151,7 @@ jobs:
           python scripts/enforce_main_only_repository_policy.py --check
           python tests/core_media_policy_test.py
           python tests/global_core_presentation_pipeline_test.py
+          python tests/native_sync_fetch_target_order_test.py
           python tests/runtime_capability_media_safety_v4_test.py
           python tests/provider_security_hardening_test.py
           python tests/provider_purification_contract_test.py
