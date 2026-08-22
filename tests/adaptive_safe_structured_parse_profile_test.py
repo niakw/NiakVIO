@@ -3,11 +3,14 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import sys
 import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 MODULE_PATH = ROOT / "scripts/adaptive_runtime/runtime_repair.py"
+sys.path.insert(0, str(ROOT / "scripts/adaptive_runtime"))
+sys.path.insert(1, str(ROOT / "scripts"))
 
 spec = importlib.util.spec_from_file_location("adaptive_runtime_repair_safe_parse_test", MODULE_PATH)
 assert spec and spec.loader
