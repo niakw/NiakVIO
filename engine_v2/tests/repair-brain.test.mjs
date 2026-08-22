@@ -40,6 +40,22 @@ assert.ok(constrainedPlan.hypotheses.every((recipe) => !recipe.capabilities.incl
 assert.equal(recipeIsCompatible({ capabilities: ["media"] }, { invalidCapabilities: ["headers"] }), true);
 assert.equal(recipeIsCompatible({ capabilities: ["headers"] }, { invalidCapabilities: ["headers"] }), false);
 
+// Version-gated skills must be compatible with the complete client generation
+// range NiakVIO claims to support, not merely with the newest audited HEAD.
+const versionedRuntime = {
+  invalidCapabilities: [],
+  clients: {
+    "nuvio-mobile": { supportedMinVersionCode: 109, supportedMaxVersionCode: 111 },
+    "nuvio-desktop": { supportedMinVersionCode: 17, supportedMaxVersionCode: 20 },
+    "nuvio-tv": { supportedMinVersionCode: 1045, supportedMaxVersionCode: 1048 },
+  },
+};
+assert.equal(recipeIsCompatible({ capabilities: ["parser"], clientVersions: { "nuvio-mobile": { min: 109 } } }, versionedRuntime), true);
+assert.equal(recipeIsCompatible({ capabilities: ["parser"], clientVersions: { "nuvio-mobile": { min: 111 } } }, versionedRuntime), false);
+assert.equal(recipeIsCompatible({ capabilities: ["media"], clientVersions: { "nuvio-tv": { max: 1048 } } }, versionedRuntime), true);
+assert.equal(recipeIsCompatible({ capabilities: ["media"], clientVersions: { "nuvio-tv": { max: 1047 } } }, versionedRuntime), false);
+assert.equal(recipeIsCompatible({ capabilities: ["media"], clientVersions: { "unknown-client": { min: 1 } } }, versionedRuntime), false);
+
 const suspicious = planRepair({ suspicious: true, invoked: true });
 assert.equal(suspicious.action, "hold-or-quarantine-pending-proof");
 const unknown = planRepair({ invoked: true, playableStreams: 0 });
