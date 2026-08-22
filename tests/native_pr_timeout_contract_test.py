@@ -10,12 +10,16 @@ desktop = (ROOT / ".github/workflows/native-desktop-reader-acceptance.yml").read
 # while the restored AVD was still booting, before representative provider routes ran.
 android_reader_timeout = "timeout-minutes: ${{ github.event_name == 'pull_request' && 100 || 180 }}"
 android_brain_timeout = "timeout-minutes: ${{ github.event_name == 'pull_request' && 100 || 180 }}"
-desktop_reader_timeout = "timeout-minutes: ${{ github.event_name == 'pull_request' && 55 || 240 }}"
+# macOS now also runs three explicit TV wrong-media witness routes (Colony, Failure
+# Frame, Nube) in addition to the representative trio, so retain a bounded 75m PR
+# budget while deep/non-PR desktop acceptance remains 240m.
+desktop_reader_timeout = "timeout-minutes: ${{ github.event_name == 'pull_request' && 75 || 240 }}"
 
 assert android.count(android_reader_timeout) == 3, "TV, Mobile and 3-route Brain PR jobs must each get a 100 minute native budget"
 assert "pull_request' && 55 || 180" not in android, "obsolete 55 minute Android reader cap can kill the emulator before route execution"
 assert "pull_request' && 75 || 180" not in android, "Brain retest must have the same representative native-reader budget"
-assert desktop.count(desktop_reader_timeout) == 1, "Desktop PR reader matrix must remain capped at 55 minutes"
+assert desktop.count(desktop_reader_timeout) == 1, "Desktop PR reader matrix must get the bounded 75 minute wrong-media witness budget"
+assert "pull_request' && 55 || 240" not in desktop, "old Desktop cap can truncate the added macOS identity witness routes"
 
 # Exhaustive/deep budgets remain available outside PRs through the right-hand
 # branch of each event-aware expression; artifact persistence must remain fail-safe.
