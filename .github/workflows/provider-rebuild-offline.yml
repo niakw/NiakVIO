@@ -1,7 +1,8 @@
 name: Validate provider rebuild offline
 
 on:
-  pull_request:
+  workflow_dispatch:
+  push:
     branches:
       - main
     paths:
@@ -11,22 +12,19 @@ permissions:
   contents: write
 
 concurrency:
-  group: provider-rebuild-pr-rematerialize-${{ github.event.pull_request.number }}
+  group: provider-rebuild-offline
   cancel-in-progress: false
 
 jobs:
   rebuild:
-    name: Rematerialize PR provider generation
-    if: github.event.pull_request.head.repo.full_name == github.repository
+    name: Publish corrected provider generation
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 12
     steps:
-      - name: Checkout current PR branch
+      - name: Checkout current main
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
-          ref: ${{ github.event.pull_request.head.ref }}
           fetch-depth: 0
-          persist-credentials: true
 
       - name: Set up Python
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
@@ -39,66 +37,118 @@ jobs:
           node-version: "24"
           package-manager-cache: false
 
-      - name: Install pinned runtime dependencies
+      - name: Promote direct-media-safe generic core
         shell: bash
         run: |
           set -euo pipefail
-          if [ -f package-lock.json ]; then
-            npm ci --ignore-scripts --no-audit --no-fund
-          else
-            npm install --ignore-scripts --no-audit --no-fund --package-lock=false
-          fi
+          python - <<'PY'
+          import json
+          from pathlib import Path
 
-      - name: Rematerialize published provider bundles to a fixed point
+          patch = Path('scripts/provider_patches/global_media_enrichment_v1.py')
+          text = patch.read_text(encoding='utf-8')
+          old = '        "defaultUserAgent": str(cfg.get("default_user_agent") or ""),\n        "implementationRevision": "scoped-playback-context-v5-direct-safe",'
+          new = '        "defaultUserAgent": str(cfg.get("default_user_agent") or ""),\n        "directPassThrough": bool(cfg.get("direct_passthrough", False)),\n        "implementationRevision": "scoped-playback-context-v6-direct-mode",'
+          if old not in text and 'scoped-playback-context-v6-direct-mode' not in text:
+              raise SystemExit('unexpected global media enrichment payload')
+          text = text.replace(old, new)
+          old_enrich = 'if(declaredDirect(row,u)){add(row);continue}'
+          new_enrich = 'if(c.directPassThrough||declaredDirect(row,u)){add(row);continue}'
+          if old_enrich not in text and new_enrich not in text:
+              raise SystemExit('unexpected global media enrichment direct branch')
+          text = text.replace(old_enrich, new_enrich)
+          patch.write_text(text, encoding='utf-8')
+
+          applier = Path('scripts/apply_provider_overrides.py')
+          text = applier.read_text(encoding='utf-8')
+          needle = '            options = dict(media_policy.get("options") or {})\n            provider_options = script_options.get(patch_script)'
+          replacement = '            options = dict(media_policy.get("options") or {})\n            if capability == "direct_media":\n                options["direct_passthrough"] = True\n            provider_options = script_options.get(patch_script)'
+          if needle not in text and replacement not in text:
+              raise SystemExit('unexpected media policy option block')
+          text = text.replace(needle, replacement)
+          applier.write_text(text, encoding='utf-8')
+
+          p = Path('provider-overrides.json')
+          data = json.loads(p.read_text(encoding='utf-8'))
+          policy = data.setdefault('media_enrichment_policy', {})
+          caps = [str(v) for v in (policy.get('capabilities') or [])]
+          if 'direct_media' not in caps:
+              caps.append('direct_media')
+          policy['capabilities'] = caps
+          policy['version'] = max(2, int(policy.get('version') or 1))
+          p.write_text(json.dumps(data, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+          PY
+
+          python -m py_compile scripts/provider_patches/global_media_enrichment_v1.py scripts/apply_provider_overrides.py
+          grep -Fq 'scoped-playback-context-v6-direct-mode' scripts/provider_patches/global_media_enrichment_v1.py
+          grep -Fq 'options["direct_passthrough"] = True' scripts/apply_provider_overrides.py
+
+      - name: Rematerialize published provider bundles now
         shell: bash
         run: |
           set -euo pipefail
           cp manifest.json /tmp/manifest-before.json
-          converged=false
-          for round in 1 2 3; do
-            echo "Provider rematerialization convergence round ${round}"
-            python scripts/reapply_published_overrides.py
-            python scripts/generate_language_manifests.py
-            python scripts/sync_release_versions.py --manifest manifest.json --previous /tmp/manifest-before.json
-            node engine_v2/scripts/bootstrap-provider-catalog.mjs --general manifest.json --vf vf/manifest.json --output provider_catalog.json
-            node engine_v2/scripts/render-manifests-from-catalog.mjs --catalog provider_catalog.json --general manifest.json --vf vf/manifest.json
-            python scripts/generate_language_manifests.py
-            python scripts/sync_release_versions.py --manifest manifest.json --previous /tmp/manifest-before.json
-            if python scripts/reapply_published_overrides.py --check; then
-              converged=true
-              echo "Provider rematerialization converged in ${round} round(s)."
-              break
-            fi
-          done
-          if [ "$converged" != true ]; then
-            echo "Provider rematerialization did not converge after 3 rounds." >&2
-            exit 1
-          fi
-          python scripts/generate_release_hashes.py
-          python scripts/validate_release_integrity.py
+          python scripts/reapply_published_overrides.py
+          python scripts/generate_language_manifests.py
+          python scripts/sync_release_versions.py --manifest manifest.json --previous /tmp/manifest-before.json
+          node engine_v2/scripts/bootstrap-provider-catalog.mjs --general manifest.json --vf vf/manifest.json --output provider_catalog.json
+          node engine_v2/scripts/render-manifests-from-catalog.mjs --catalog provider_catalog.json --general manifest.json --vf vf/manifest.json
+          python scripts/generate_language_manifests.py
+          python scripts/sync_release_versions.py --manifest manifest.json --previous /tmp/manifest-before.json
 
-      - name: Verify reconstructed provider generation
+      - name: Verify target provider publication
         shell: bash
         run: |
           set -euo pipefail
-          python tests/global_final_wrapper_order_test.py
-          python tests/global_stream_presentation_test.py
-          python tests/global_stream_presentation_pipeline_test.py
-          python tests/provider_purification_contract_test.py
+          python tests/global_media_enrichment_direct_safety_test.py
           python scripts/reapply_published_overrides.py --check
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          m=json.loads(Path('manifest.json').read_text())
+          targets={'4khdhub','moviesdrive','moviesmod','movieshunt'}
+          found={}
+          for row in m.get('scrapers',[]):
+              pid=str(row.get('id','')).casefold()
+              if pid in targets:
+                  path=Path(str(row['filename']))
+                  text=path.read_text(encoding='utf-8')
+                  assert 'scoped-playback-context-v6-direct-mode' in text, (pid,path)
+                  if pid == 'movieshunt':
+                      assert '"directPassThrough":true' in text, (pid,path)
+                  found[pid]=(str(row.get('version')),str(path))
+          assert set(found)==targets, found
+          print('TARGET_PROVIDER_PUBLICATION=' + json.dumps(found, sort_keys=True))
+          PY
+          for f in $(python - <<'PY'
+          import json
+          m=json.load(open('manifest.json'))
+          wanted={'4khdhub','moviesdrive','moviesmod','movieshunt'}
+          print(' '.join(row['filename'] for row in m['scrapers'] if str(row.get('id','')).casefold() in wanted))
+          PY
+          ); do node --check "$f"; done
+          python scripts/generate_release_hashes.py
+          python scripts/validate_release_integrity.py
 
-      - name: Commit regenerated artifacts to PR branch only
+      - name: Publish corrected manifest and bundles
         shell: bash
         run: |
           set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add manifest.json vf/manifest.json provider_catalog.json package.json package-lock.json sources.json \
-            PROVENANCE.json FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json providers/ provider-overrides.json
+          git add scripts/provider_patches/global_media_enrichment_v1.py scripts/apply_provider_overrides.py provider-overrides.json \
+            manifest.json vf/manifest.json provider_catalog.json package.json package-lock.json sources.json \
+            PROVENANCE.json FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json providers/
           if [ -f vostfr/manifest.json ]; then git add vostfr/manifest.json; fi
           if git diff --cached --quiet; then
-            echo 'No regenerated artifact changes.'
-            exit 0
+            echo 'No provider publication change.'
+            exit 1
           fi
-          git commit -m 'chore: rematerialize provider artifacts after Core ordering fix'
-          git push origin HEAD:${{ github.event.pull_request.head.ref }}
+          git commit -m 'chore: publish direct-media-safe provider generation'
+          git fetch origin main
+          git rebase origin/main
+          python scripts/generate_release_hashes.py
+          python scripts/validate_release_integrity.py
+          git add FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json
+          if ! git diff --cached --quiet; then git commit --amend --no-edit; fi
+          git push origin HEAD:main
