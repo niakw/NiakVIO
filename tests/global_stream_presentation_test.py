@@ -20,12 +20,12 @@ def load(name: str):
     return module
 
 
-facts = load("purstream_stream_facts_v1.py")
+facts = load("global_stream_facts_v1.py")
 presentation = load("global_stream_presentation_v1.py")
 
 legacy = """module.exports={getStreams:async()=>[{name:'Purstream | 4k | Dual-Audio',title:'🎬 Interstellar - 2014\\n🔥 4k | 🔊 Dual-Audio\\n🎯 HLS • HEVC | 🎧 AAC • 169 min • BLU-RAY',size:'🎬 Interstellar - 2014\\n🔥 4k | 🔊 Dual-Audio\\n🎯 HLS • HEVC | 🎧 AAC • 169 min • BLU-RAY',description:'🎬 Interstellar - 2014\\n🔥 4k | 🔊 Dual-Audio\\n🎯 HLS • HEVC | 🎧 AAC • 169 min • BLU-RAY',url:'https://media.example/master.m3u8',quality:'',language:'',format:'m3u8',headers:{Referer:'https://purstream.example/'}}]};\n"""
-with_facts = facts.apply(legacy)
-assert "NUVIO_PURSTREAM_STREAM_FACTS_V1" in with_facts
+with_facts = facts.apply(legacy, context={"provider_id": "purstream"})
+assert "NUVIO_GLOBAL_STREAM_FACTS_V1" in with_facts
 patched = presentation.apply(with_facts, context={"provider_id": "purstream"})
 assert "NUVIO_GLOBAL_STREAM_PRESENTATION_V1" in patched
 assert "all-providers-facts-badge-dedupe-tmdb-fallback-v9" in patched
