@@ -459,35 +459,32 @@ Aucun nouveau comportement architectural ne doit être ajouté dans cette couche
 
 - `sync.yml` : unique pipeline publication quick/deep ;
 - `provider-engine-v2.yml` : tests et connaissance V2 ;
-- Labs et preuves natives : reproduction/runtime ;
-- offline regression/rebuild : tests reproductibles ;
+- Labs et preuves natives : reproduction/runtime sur le SHA exact de `main` et les HEAD officiels clients résolus en lecture seule ;
+- offline regression : tests reproductibles ;
 - disponibilité/domain refresh : observabilité ;
 - provider status export : reporting uniquement.
 
-Les workflows temporaires, one-shot et anciens orchestrateurs de refresh doivent disparaître après leur absorption dans `sync.yml`.
+Les workflows temporaires, one-shot et anciens orchestrateurs de refresh doivent disparaître après leur absorption dans les workflows durables.
 
-## 22. Labs permanents
+## 22. Labs natifs sur `main`
 
-Les branches suivantes sont structurelles :
+Les Labs ne reposent pas sur des branches de code permanentes. Les preuves NuvioTV, Mobile et Desktop sont produites depuis le SHA exact de `main`, avec les dépôts clients officiels utilisés comme baselines en lecture seule et résolus à leur HEAD courant après contrôle de drift.
 
-- `lab/desktop-mobile-real` ;
-- `lab/tv-real`.
-
-Elles ne sont pas supprimées lors d'un nettoyage des branches de travail.
-
-Les Labs servent à transformer un bug réel en non-régression durable :
+Une anomalie réelle devient une non-régression durable par la chaîne :
 
 ```text
 bug réel
-  → reproduction
+  → reproduction sur client officiel
   → observation
   → famille de cause
-  → règle/recipe générique
+  → règle/recipe générique Core/Brain
   → validation
   → preuve runtime concernée
-  → publication
+  → publication sur main
   → test permanent
 ```
+
+`brain-learning/proposals` reste uniquement une mémoire sanitizée du Brain. Elle ne constitue ni un Lab de code ni une voie de publication, et les dépôts Nuvio officiels ne sont jamais modifiés par NiakVIO.
 
 ## 23. Structure logique
 
@@ -533,5 +530,5 @@ Niakvio/
 14. Deep ne doit pas être relancé inutilement à chaque modification.
 15. Les manifests sont rendus depuis le catalogue avant publication.
 16. Toute publication est atomique, hashée et fail-closed.
-17. Les Labs permanents ne sont pas supprimés par le nettoyage ordinaire.
+17. Les Labs natifs valident le SHA exact de `main` ; aucune branche Lab de code permanente n'est requise.
 18. Une primitive historique n'est conservée que tant qu'elle apporte une fonction réellement non remplacée.

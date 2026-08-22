@@ -142,7 +142,7 @@ VF/VOSTFR n'est jamais déduite d'un seul indice. Selon les informations disponi
 
 ## Compatibilité Nuvio
 
-Les commits clients acceptés sont épinglés dans [`sources.json`](sources.json) et les validations natives utilisent les repositories officiels à ces révisions exactes.
+Les commits clients audités sont suivis dans [`automation/nuvio-client-upstreams.json`](automation/nuvio-client-upstreams.json) et [`sources.json`](sources.json). Les Labs résolvent le **HEAD officiel courant** de chaque branche client suivie, vérifient le drift de contrat, puis utilisent ce SHA exact comme baseline en lecture seule.
 
 | Client | Repository | Preuve native retenue |
 |---|---|---|
@@ -347,7 +347,6 @@ Lorsqu'une transaction change réellement une donnée visible côté client :
 | `availability.yml` | disponibilité des providers publiés |
 | `domain-refresh.yml` | observation des domaines |
 | `engine-regression-offline.yml` | non-régressions moteur hors réseau |
-| `provider-rebuild-offline.yml` | reconstruction hors réseau |
 | `provider-catalogue-breadth-lab.yml` | largeur de catalogue |
 | `provider-status-export.yml` | snapshot diagnostic |
 
@@ -402,12 +401,12 @@ Les tests locaux ne remplacent pas la validation native lorsqu'un changement tou
 
 ## Politique de branches
 
-- `main` : état stable et publiable ;
-- `brain-learning/proposals` : mémoire sanitizée persistante du Brain ;
-- `lab/desktop-mobile-real` et `lab/tv-real` : labs permanents, à ne pas nettoyer automatiquement ;
-- les branches temporaires `fix/*`, `ci/*`, `proof/*`, `tmp/*`, `chore/*` et `refactor/*` doivent disparaître après intégration ou abandon vérifié.
+- `main` : unique branche de code, état stable et publiable ;
+- `brain-learning/proposals` : mémoire sanitizée persistante du Brain, sans code de production ni publication autonome ;
+- les Labs TV/Mobile/Desktop utilisent directement le SHA de `main` et les dépôts clients Nuvio officiels comme baselines en lecture seule ;
+- aucune branche `lab/*`, `fix/*`, `ci/*`, `proof/*`, `tmp/*`, `chore/*`, `refactor/*` ou `brain-repair/*` n'est conservée comme branche de travail.
 
-Une branche n'est jamais supprimée avant comparaison avec `main`. Du contenu unique utile doit être intégré ou explicitement abandonné.
+Les réparations, tests et nettoyages sont matérialisés sur `main`. La mémoire Brain séparée reste non publiable et ne peut pas contourner les gates de production.
 
 ---
 

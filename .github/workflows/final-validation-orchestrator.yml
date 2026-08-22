@@ -1,5 +1,6 @@
 name: NiakVIO final validation orchestrator
 # Authoritative end-to-end gate for the exact main generation.
+# Final generation: repository-clean main-only v4.
 
 on:
   workflow_dispatch:
@@ -33,6 +34,30 @@ jobs:
           ref: main
           fetch-depth: 1
           persist-credentials: false
+
+      - name: Verify repository-clean source contract before expensive gates
+        shell: bash
+        run: |
+          set -euo pipefail
+          python tests/repository_hygiene_contract_test.py
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          manifest=json.loads(Path('manifest.json').read_text(encoding='utf-8'))
+          rows=manifest.get('scrapers') or []
+          if len(rows) < 92:
+              raise SystemExit(f'provider catalogue unexpectedly shrank below audited baseline: {len(rows)}')
+          missing=[]
+          for row in rows:
+              if not isinstance(row,dict):
+                  continue
+              rel=str(row.get('filename') or '')
+              if rel and not Path(rel).is_file():
+                  missing.append(rel)
+          if missing:
+              raise SystemExit(f'missing provider bundles: {missing[:20]}')
+          print(f'FIELD_FINAL_PROVIDER_CATALOG rows={len(rows)} missing=0')
+          PY
 
       - name: Announce authoritative validation run
         shell: bash
@@ -99,7 +124,7 @@ jobs:
             echo "${label^^}_RUN=${runs[$label]}" >> "$STATE_FILE"
           done
 
-          for label in badge security upstreams hygiene mainonly brain desktop android; do
+          for label in badge upstreams hygiene mainonly security brain desktop android; do
             watch_gate "$label" "${runs[$label]}"
           done
 

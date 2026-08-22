@@ -10,11 +10,15 @@ on:
       - 'provider-overrides.json'
       - 'providers/**'
       - 'scripts/provider_security_hardening.py'
+      - 'scripts/provider_patches/global_provider_security_hardening_v1.py'
+      - 'scripts/normalize_core_media_policy.py'
+      - 'scripts/apply_provider_overrides.py'
       - 'scripts/harden_staged_provider_security.py'
       - 'scripts/provider_purification.py'
       - 'scripts/provider_patches/runtime_capability_media_safety_v4.py'
       - 'tests/provider_security_hardening_test.py'
       - 'tests/provider_purification_contract_test.py'
+      - 'tests/core_media_policy_test.py'
       - 'tests/runtime_capability_media_safety_v4_test.py'
 
 permissions:
@@ -28,7 +32,7 @@ concurrency:
 jobs:
   security:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 45
     steps:
       - name: Checkout exact main
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
@@ -88,6 +92,30 @@ jobs:
               raise SystemExit(f'known unsafe provider shapes remain: {len(failures)}')
           print(f'FIELD_ACTIVE_PROVIDER_SECURITY_SCAN checked={checked} unsafe=0')
           PY
+
+      - name: Wait for CodeQL analysis of exact tested main SHA
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          found=''
+          for attempt in $(seq 1 90); do
+            found="$(gh api --paginate \
+              -H 'Accept: application/vnd.github+json' \
+              -H 'X-GitHub-Api-Version: 2022-11-28' \
+              "repos/${GITHUB_REPOSITORY}/code-scanning/analyses?ref=refs/heads/main&per_page=100" \
+              --jq ".[] | select(.commit_sha == \"${GITHUB_SHA}\") | .id" | head -n1 || true)"
+            if [ -n "$found" ]; then
+              echo "FIELD_CODEQL_EXACT_SHA analysis=$found sha=${GITHUB_SHA}"
+              break
+            fi
+            sleep 20
+          done
+          if [ -z "$found" ]; then
+            echo "No CodeQL analysis found for exact tested main SHA ${GITHUB_SHA}" >&2
+            exit 1
+          fi
 
       - name: Gate open high/critical CodeQL alerts in generated providers
         env:
