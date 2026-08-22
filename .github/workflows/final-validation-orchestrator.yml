@@ -34,6 +34,12 @@ jobs:
           fetch-depth: 1
           persist-credentials: false
 
+      - name: Announce authoritative validation run
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh issue comment 69 --repo "$REPO" --body "Final main validation started on ${GITHUB_SHA}: https://github.com/${REPO}/actions/runs/${GITHUB_RUN_ID}. Core → Deep → Brain/native clients/badges/security/upstreams/hygiene. Issue remains open until every gate succeeds."
+
       - name: Run authoritative final gates
         shell: bash
         run: |
@@ -152,5 +158,7 @@ jobs:
         shell: bash
         run: |
           set +e
-          echo 'Final validation did not complete successfully; issue #69 remains open.'
+          DETAILS=''
+          if [ -f "$STATE_FILE" ]; then DETAILS="$(cat "$STATE_FILE")"; fi
+          gh issue comment 69 --repo "$REPO" --body "Final validation run failed and #69 remains open: https://github.com/${REPO}/actions/runs/${GITHUB_RUN_ID}. Captured gate state:\n\n${DETAILS}"
           if [ -f "$STATE_FILE" ]; then cat "$STATE_FILE"; fi
