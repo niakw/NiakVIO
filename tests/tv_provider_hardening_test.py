@@ -14,8 +14,6 @@ manifest = json.loads((ROOT / 'manifest.json').read_text(encoding='utf-8'))['scr
 by_id = {str(row.get('id') or '').casefold(): row for row in manifest}
 patches = overrides['provider_patches']
 
-purstream_identity = 'scripts/provider_patches/purstream_tv_identity_v3.py'
-purstream_identity_impl = 'scripts/provider_patches/purstream_tv_identity_impl_v3.py'
 papa_anime = 'scripts/provider_patches/papadustream_anime_tv_v1.py'
 playable_first = 'scripts/provider_patches/nuvio_tv_playable_first_v1.py'
 streamzo_identity = 'scripts/provider_patches/streamzo_source_identity_v3.py'
@@ -23,22 +21,16 @@ streamzo_public = 'scripts/provider_patches/streamzo_public_catalogue_v2.py'
 toflix_vf_v1 = 'scripts/provider_patches/toflix_explicit_vf_v1.py'
 toflix_vf = 'scripts/provider_patches/toflix_explicit_vf_v2.py'
 
-assert purstream_identity in patches['purstream'].get('patch_scripts', [])
-pur_opts = patches['purstream'].get('patch_script_options', {}).get(purstream_identity, {})
-assert float(pur_opts.get('duration_tolerance')) <= 0.35
-assert int(pur_opts.get('max_probes')) <= 3
-pur_source = (ROOT / purstream_identity).read_text(encoding='utf-8')
-# Purstream is intentionally composed now: Core-wide factual metadata projection
-# first, then only its provider-specific episodic duration/identity guard. There
-# must be no resurrected Purstream-only facts/presentation fork.
-assert 'global_stream_facts_v1.py' in pur_source
-assert 'purstream_stream_facts_v1.py' not in pur_source
-assert 'purstream_tv_identity_impl_v3.py' in pur_source
-assert '_FACTS.apply' in pur_source and '_IDENTITY.apply' in pur_source
-assert not (ROOT / 'scripts/provider_patches/purstream_stream_facts_v1.py').exists()
-pur_identity_source = (ROOT / purstream_identity_impl).read_text(encoding='utf-8')
-assert '#EXTINF' in pur_identity_source and 'durationTolerance' in pur_identity_source
-assert 'episodic' in pur_identity_source and 'series' in pur_identity_source and 'anime' in pur_identity_source
+# Media identity/presentation is Core/capability safety, never a Purstream-only
+# exception. Provider-specific Purstream media repair scripts are forbidden from
+# the active provider chain; generic compatibility/domain configuration may stay.
+purstream_scripts = [str(value) for value in patches['purstream'].get('patch_scripts', [])]
+assert not [path for path in purstream_scripts if '/purstream_' in path], purstream_scripts
+purstream_options = patches['purstream'].get('patch_script_options', {})
+assert not [path for path in purstream_options if '/purstream_' in str(path)], purstream_options
+runtime_safety_source = (ROOT / 'scripts/provider_patches/runtime_capability_media_safety_v4.py').read_text(encoding='utf-8')
+assert 'field-safety-v5-native-identity-collisions-all-rows' in runtime_safety_source
+assert 'collisionFixtures' in runtime_safety_source
 
 assert papa_anime in patches['papadustream'].get('patch_scripts', [])
 assert patches['papadustream']['published_types'] == ['movie', 'tv', 'anime']
