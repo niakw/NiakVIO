@@ -90,6 +90,80 @@ with tempfile.TemporaryDirectory() as tmp:
     assert value["rows"][0]["kind"] == "hls", value
     assert "/embed/uqload.is/" in value["rows"][0]["url"], value
 
+# Playback-context V5 changes the resolver/tvRows signatures by threading a
+# per-row cookie jar. The ordering layer must compose with that shape rather than
+# treating it as an unknown anchor and aborting global reconstruction.
+context_scaffold = r'''
+/* NUVIO_TV_TARGET_MEDIA_V4 */
+/* NUVIO_TV_TARGET_MEDIA_V5_PLAYBACK_CONTEXT */
+;(function(g,c){"use strict";
+function s(v){return String(v==null?"":v).trim()}
+function hostname(u){try{return new URL(u).hostname.toLowerCase()}catch(_){return ""}}
+function rejected(){return false}
+async function resource(u,base,ref,jar){return await g.fetch(u,{headers:base,referrer:ref,jar:jar})}
+function proof(r){return r&&r.kind?r.kind:null}
+function genericUrls(){return[]}
+function normalizeRow(row){return row&&row.url?row:null}
+function unique(rows){var out=[],seen={};rows.forEach(function(row){if(!row||!row.url||seen[row.url])return;seen[row.url]=1;out.push(row)});return out}
+function compactRow(row,media){return{url:media.url,kind:media.kind,name:row.name||"x",headers:media.headers||{}}}
+function seedCookieHeader(jar,headers,url){if(headers&&headers.Cookie)jar.push({url:url,value:headers.Cookie})}
+async function invoke(old,self,args){return await old.apply(self,args)}
+'''
+context_source = context_scaffold + module.CONTEXT_RESOLVE + "\n" + module.CONTEXT_TV_ROWS + r'''
+module.exports={run:async function(){return tvRows(async function(){return [
+ {name:"external-dead",url:"https://uqload.is/embed-dead.html",headers:{Referer:"https://streamzo.fr/interstellar",Cookie:"sid=abc"}},
+ {name:"same-origin-good",url:"https://streamzo.fr/embed/uqload.is/23254",headers:{Referer:"https://streamzo.fr/interstellar",Cookie:"sid=abc"}}
+]},null,arguments)}};
+})(typeof globalThis!=="undefined"?globalThis:this,{maxDepth:5,maxCandidates:22,providerName:"StreamZo"});
+'''
+context_patched = module.apply(context_source)
+assert context_patched != context_source
+assert context_patched.count(module.MARKER) == 1
+assert module.CONTEXT_RESOLVE not in context_patched
+assert module.CONTEXT_TV_ROWS not in context_patched
+assert module.CONTEXT_NEW_RESOLVE in context_patched
+assert module.CONTEXT_NEW_TV_ROWS in context_patched
+assert "seedCookieHeader(jar,item.row.headers,item.row.url)" in context_patched
+assert "depth+1,seen,jar" in context_patched
+assert module.apply(context_patched) == context_patched
+
+with tempfile.TemporaryDirectory() as tmp:
+    root = Path(tmp)
+    provider = root / "provider.cjs"
+    runner = root / "runner.cjs"
+    provider.write_text(context_patched, encoding="utf-8")
+    runner.write_text(
+        "global.navigator={userAgent:'NuvioTV Android TV'};\n"
+        "global.__NUVIO_TV_RUNTIME__=true;\n"
+        "global.__native_fetch=function(){};\n"
+        "global.__calls=[];\n"
+        "global.fetch=async function(url,opts){\n"
+        "  url=String(url);global.__calls.push({url:url,jar:(opts&&opts.jar)||[]});\n"
+        "  if(url.includes('uqload.is/embed-dead'))throw new Error('dead external fallback must not be reached');\n"
+        "  if(url.includes('streamzo.fr/embed/'))return {url:url,kind:'hls',headers:{Cookie:'sid=abc'}};\n"
+        "  return {url:url,kind:null,headers:{}};\n"
+        "};\n"
+        f"const p=require({json.dumps(str(provider))});\n"
+        "p.run().then(rows=>console.log(JSON.stringify({calls:global.__calls,rows:rows}))).catch(e=>{console.error(e);process.exit(1)});\n",
+        encoding="utf-8",
+    )
+    result = subprocess.run(["node", str(runner)], text=True, capture_output=True, check=False)
+    assert result.returncode == 0, result.stdout + result.stderr
+    value = json.loads(result.stdout.strip())
+    assert [row["url"] for row in value["calls"]] == ["https://streamzo.fr/embed/uqload.is/23254"], value
+    assert value["calls"][0]["jar"] and value["calls"][0]["jar"][0]["value"] == "sid=abc", value
+    assert len(value["rows"]) == 1 and value["rows"][0]["kind"] == "hls", value
+
+# Unknown future resolver shapes still fail closed rather than silently dropping
+# the native ordering protection.
+unknown = "/* NUVIO_TV_TARGET_MEDIA_V4 */\nasync function resolveChanged(){}\n"
+try:
+    module.apply(unknown)
+except RuntimeError as exc:
+    assert "target-media traversal anchors changed" in str(exc)
+else:
+    raise AssertionError("unknown target-media shape must fail closed")
+
 # The repository-wide runtime upgrade must keep this traversal transform directly
 # before the final safety wrapper for every HLS-capable provider.
 upgrade = UPGRADE.read_text(encoding="utf-8")
@@ -97,4 +171,4 @@ assert 'TARGET_ORDER_PATCH = "scripts/provider_patches/native_sync_fetch_target_
 assert "scripts.append(TARGET_ORDER_PATCH)\n        scripts.append(RUNTIME_PATCH)" in upgrade
 assert '"target_order_patch": TARGET_ORDER_PATCH' in upgrade
 
-print("native synchronous target ordering tests passed")
+print("native synchronous target ordering tests passed for V4 and V5 playback-context resolvers")
