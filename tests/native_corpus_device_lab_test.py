@@ -181,7 +181,7 @@ for source, label in ((prepare_client, "prepare"), (restage_client, "restage")):
     assert "--provider" in source, (label, "target provider")
     assert "--player-probes" in source, (label, "target reader probe count")
     assert "--manifest" in source, (label, "manifest selection")
-assert "raw.githubusercontent.com" in prepare_client
+assert 'parsed.hostname != "raw.githubusercontent.com"' in prepare_client
 assert "FIELD_NATIVE_CORPUS_STAGE_SELECTED" in prepare_client
 assert "GITHUB_EVENT_NAME" in restage_client
 assert "NIAKVIO_PR_PROVIDER_LIMIT" in restage_client
