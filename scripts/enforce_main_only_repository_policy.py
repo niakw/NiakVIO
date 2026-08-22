@@ -3,7 +3,9 @@
 
 The persistent ``brain-learning/proposals`` ref is sanitized learning memory, not
 a code-review branch. Brain repair proposals remain artifacts only: no workflow
-may create ``brain-repair/proposals`` or a temporary repair PR.
+may create ``brain-repair/proposals`` or a temporary repair PR. The repository
+hygiene workflow is the sole exception allowed to mention the forbidden ref,
+because it only deletes it.
 """
 from __future__ import annotations
 
@@ -14,6 +16,7 @@ ROOT = Path(__file__).resolve().parents[1]
 BRAIN_WORKFLOW = ROOT / ".github/workflows/brain-learning-lab.yml"
 FORBIDDEN_BRANCH = "brain-repair/proposals"
 JOB_MARKER = "\n  publish-repair-proposal:\n"
+HYGIENE_WORKFLOW = ROOT / ".github/workflows/repository-hygiene.yml"
 
 
 def normalize(*, apply: bool) -> list[str]:
@@ -31,13 +34,15 @@ def assert_policy() -> None:
     workflow = BRAIN_WORKFLOW.read_text(encoding="utf-8")
     if JOB_MARKER in workflow:
         raise ValueError("Brain repair proposal job still exists")
-    for path in sorted((ROOT / ".github/workflows").glob("*.yml")):
-        text = path.read_text(encoding="utf-8")
-        if FORBIDDEN_BRANCH in text:
-            raise ValueError(f"temporary Brain repair branch can still be created by {path.relative_to(ROOT)}")
-    for path in sorted((ROOT / ".github/workflows").glob("*.yaml")):
-        text = path.read_text(encoding="utf-8")
-        if FORBIDDEN_BRANCH in text:
+    for pattern in ("*.yml", "*.yaml"):
+        for path in sorted((ROOT / ".github/workflows").glob(pattern)):
+            text = path.read_text(encoding="utf-8")
+            if FORBIDDEN_BRANCH not in text:
+                continue
+            if path.resolve() == HYGIENE_WORKFLOW.resolve():
+                if f"git push origin --delete \"$branch\"" not in text:
+                    raise ValueError("repository hygiene mentions forbidden branch without a deletion-only implementation")
+                continue
             raise ValueError(f"temporary Brain repair branch can still be created by {path.relative_to(ROOT)}")
 
 
