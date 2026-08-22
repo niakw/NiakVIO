@@ -7,13 +7,33 @@ on:
       - '.github/workflows/final-repository-cleanup-once.yml'
 
 permissions:
+  actions: write
   contents: write
+
+concurrency:
+  group: niakvio-final-repository-cleanup-once
+  cancel-in-progress: true
 
 jobs:
   cleanup:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    env:
+      GH_TOKEN: ${{ github.token }}
     steps:
+      - name: Cancel superseded unsafe cleanup attempts
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh run list --repo "$GITHUB_REPOSITORY" \
+            --workflow final-repository-cleanup-once.yml \
+            --limit 20 \
+            --json databaseId,headSha,status \
+            --jq ".[] | select(.headSha != \"${GITHUB_SHA}\" and .status != \"completed\") | .databaseId" \
+          | while read -r run_id; do
+              [ -n "$run_id" ] && gh run cancel "$run_id" --repo "$GITHUB_REPOSITORY" || true
+            done
+
       - name: Checkout exact main
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
@@ -29,7 +49,6 @@ jobs:
 
           root = Path('.')
 
-          # Canonical documentation: code lives on main; the second ref is Brain memory only.
           readme = root / 'README.md'
           text = readme.read_text(encoding='utf-8')
           start = text.index('## Politique de branches\n')
@@ -49,7 +68,9 @@ Les réparations, tests et nettoyages sont matérialisés sur `main`. La mémoir
 
           architecture = root / 'ARCHITECTURE.md'
           text = architecture.read_text(encoding='utf-8')
-          start = text.index('## 22. Labs permanents\n') if '## 22. Labs permanents\n' in text else text.index('## 22. Labs natifs sur `main`\n')
+          old_heading = '## 22. Labs permanents\n'
+          new_heading = '## 22. Labs natifs sur `main`\n'
+          start = text.index(old_heading) if old_heading in text else text.index(new_heading)
           end = text.index('\n## 23. Structure logique', start)
           labs = '''## 22. Labs natifs sur `main`
 
@@ -78,7 +99,6 @@ bug réel
           )
           architecture.write_text(text, encoding='utf-8')
 
-          # Security gate must be sensitive to the real Core scheduler/hardening layer.
           security = root / '.github/workflows/security-final-gate.yml'
           text = security.read_text(encoding='utf-8')
           anchor = "      - 'scripts/provider_security_hardening.py'\n"
@@ -91,55 +111,8 @@ bug réel
               if anchor not in text:
                   raise SystemExit('security trigger anchor missing')
               text = text.replace(anchor, anchor + additions, 1)
-
-          # Require a CodeQL analysis for the exact dispatched main SHA before evaluating alerts.
-          old = '''      - name: Gate open high/critical CodeQL alerts in generated providers
-              env:
-                GH_TOKEN: ${{ github.token }}
-              shell: bash
-              run: |
-                set -euo pipefail
-                gh api --paginate \\
-          '''.replace('              ', '')
-          new = '''      - name: Wait for CodeQL analysis of exact tested main SHA
-              env:
-                GH_TOKEN: ${{ github.token }}
-              shell: bash
-              run: |
-                set -euo pipefail
-                found=''
-                for attempt in $(seq 1 60); do
-                  found="$(gh api --paginate \\
-                    -H 'Accept: application/vnd.github+json' \\
-                    -H 'X-GitHub-Api-Version: 2022-11-28' \\
-                    "repos/${GITHUB_REPOSITORY}/code-scanning/analyses?ref=refs/heads/main&per_page=100" \\
-                    --jq ".[] | select(.commit_sha == \"${GITHUB_SHA}\") | .id" | head -n1 || true)"
-                  if [ -n "$found" ]; then
-                    echo "FIELD_CODEQL_EXACT_SHA analysis=$found sha=${GITHUB_SHA}"
-                    break
-                  fi
-                  sleep 20
-                done
-                if [ -z "$found" ]; then
-                  echo "No CodeQL analysis found for exact tested main SHA ${GITHUB_SHA}" >&2
-                  exit 1
-                fi
-
-            - name: Gate open high/critical CodeQL alerts in generated providers
-              env:
-                GH_TOKEN: ${{ github.token }}
-              shell: bash
-              run: |
-                set -euo pipefail
-                gh api --paginate \\
-          '''.replace('            ', '')
-          if 'Wait for CodeQL analysis of exact tested main SHA' not in text:
-              if old not in text:
-                  raise SystemExit('CodeQL gate anchor missing')
-              text = text.replace(old, new, 1)
           security.write_text(text, encoding='utf-8')
 
-          # Repository hygiene test owns the retired-path contract.
           hygiene_test = root / 'tests/repository_hygiene_contract_test.py'
           text = hygiene_test.read_text(encoding='utf-8')
           anchor = '    "tests/purstream_core_presentation_pipeline_test.py",\n'
@@ -156,18 +129,17 @@ bug réel
               text = text.replace(anchor, anchor + additions, 1)
           hygiene_test.write_text(text, encoding='utf-8')
 
-          # Make this exact cleanup commit start the authoritative final orchestrator.
           orchestrator = root / '.github/workflows/final-validation-orchestrator.yml'
           text = orchestrator.read_text(encoding='utf-8')
-          if '# Final generation: repository-clean main-only v3.' not in text:
+          marker = '# Final generation: repository-clean main-only v4.\n'
+          if marker not in text:
               text = text.replace(
                   '# Authoritative end-to-end gate for the exact main generation.\n',
-                  '# Authoritative end-to-end gate for the exact main generation.\n# Final generation: repository-clean main-only v3.\n',
+                  '# Authoritative end-to-end gate for the exact main generation.\n' + marker,
                   1,
               )
           orchestrator.write_text(text, encoding='utf-8')
 
-          # Superseded one-shots/migrations are removed in the same commit.
           for rel in (
               '.github/workflows/docs-branch-policy-cleanup.yml',
               '.github/workflows/core-media-normalize-main.yml',
@@ -176,12 +148,58 @@ bug réel
           ):
               (root / rel).unlink(missing_ok=True)
 
-          # The cleanup workflow also removes itself before commit.
           for doc in (readme, architecture):
               value = doc.read_text(encoding='utf-8')
               assert 'lab/tv-real' not in value
               assert 'lab/desktop-mobile-real' not in value
           PY
+
+      - name: Add exact-SHA CodeQL freshness fence without exposing tokens
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('.github/workflows/security-final-gate.yml')
+          text = path.read_text(encoding='utf-8')
+          if 'Wait for CodeQL analysis of exact tested main SHA' not in text:
+              anchor = '      - name: Gate open high/critical CodeQL alerts in generated providers\n'
+              if anchor not in text:
+                  raise SystemExit('CodeQL gate anchor missing')
+              dollar = '$'
+              token_expr = dollar + '{{ github.token }}'
+              block = f'''      - name: Wait for CodeQL analysis of exact tested main SHA
+        env:
+          GH_TOKEN: {token_expr}
+        shell: bash
+        run: |
+          set -euo pipefail
+          found=''
+          for attempt in $(seq 1 60); do
+            found="$(gh api --paginate \\
+              -H 'Accept: application/vnd.github+json' \\
+              -H 'X-GitHub-Api-Version: 2022-11-28' \\
+              "repos/${{GITHUB_REPOSITORY}}/code-scanning/analyses?ref=refs/heads/main&per_page=100" \\
+              --jq ".[] | select(.commit_sha == \\\"${{GITHUB_SHA}}\\\") | .id" | head -n1 || true)"
+            if [ -n "$found" ]; then
+              echo "FIELD_CODEQL_EXACT_SHA analysis=$found sha=${{GITHUB_SHA}}"
+              break
+            fi
+            sleep 20
+          done
+          if [ -z "$found" ]; then
+            echo "No CodeQL analysis found for exact tested main SHA ${{GITHUB_SHA}}" >&2
+            exit 1
+          fi
+
+'''
+              text = text.replace(anchor, block + anchor, 1)
+              path.write_text(text, encoding='utf-8')
+          PY
+          if grep -R -n -E 'gh[ps]_[A-Za-z0-9_]+' .github/workflows/security-final-gate.yml; then
+            echo 'A GitHub credential-looking value was materialized into the workflow' >&2
+            exit 1
+          fi
 
       - name: Self-remove and publish one final repository-clean source generation
         shell: bash
