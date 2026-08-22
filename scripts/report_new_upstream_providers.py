@@ -6,6 +6,10 @@ This script is intentionally read-only with respect to provider_catalog.json,
 manifest.json and providers/. It consumes an already staged discovery transaction,
 compares only the three configured upstream sources against the canonical catalog,
 and writes review artifacts. No candidate is imported, enabled or published here.
+
+A weekly *new provider* must be observed in a live upstream manifest. Upstream LKG
+snapshots remain useful to the normal provider pipeline but cannot fabricate a new
+weekly discovery after the upstream declaration has disappeared or become unreachable.
 """
 from __future__ import annotations
 
@@ -83,12 +87,16 @@ def build_report(stage: dict[str, Any], catalog: dict[str, Any], sources: dict[s
         if isinstance(row, dict) and norm(row.get("canonicalId"))
     }
     grouped: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    snapshot_only_ignored: set[str] = set()
     for candidate in stage.get("candidates") or []:
         if not isinstance(candidate, dict):
             continue
         source = str(candidate.get("source") or "").strip()
         cid = norm(candidate.get("canonical_id") or candidate.get("upstream_id"))
         if source not in allowed_sources or not cid or cid in known:
+            continue
+        if str(candidate.get("manifest_origin") or "") != "live":
+            snapshot_only_ignored.add(cid)
             continue
         grouped[cid].append(candidate)
 
@@ -123,6 +131,7 @@ def build_report(stage: dict[str, Any], catalog: dict[str, Any], sources: dict[s
             "contentLanguage": string_list(canonical.get("contentLanguage")) or string_list(metadata.get("contentLanguage")),
             "formats": string_list(canonical.get("formats")) or string_list(metadata.get("formats")),
             "variantCount": len(variants),
+            "liveManifestObserved": True,
             "reviewRequired": True,
             "automaticImportAllowed": False,
             "automaticActivationAllowed": False,
@@ -135,13 +144,14 @@ def build_report(stage: dict[str, Any], catalog: dict[str, Any], sources: dict[s
         for key in sorted(allowed_sources)
     }
     return {
-        "schemaVersion": 1,
+        "schemaVersion": 2,
         "generatedAt": datetime.now(timezone.utc).isoformat(),
         "mode": "weekly_upstream_provider_discovery",
         "configuredUpstreams": sorted(allowed_sources),
         "knownCanonicalProviders": len(known),
         "newProviderCount": len(providers),
         "interestingProviderCount": len(interesting),
+        "snapshotOnlyNewProviderIdsIgnored": sorted(snapshot_only_ignored - set(grouped)),
         "providers": providers,
         "upstreamStatus": upstream_status,
         "policy": {
@@ -150,7 +160,9 @@ def build_report(stage: dict[str, Any], catalog: dict[str, Any], sources: dict[s
             "automaticImportAllowed": False,
             "automaticActivationAllowed": False,
             "manualReviewRequired": True,
+            "liveManifestRequiredForNewProvider": True,
             "p2pExcludedByDiscovery": True,
+            "nativeReaderProofRequiredBeforeFuturePromotion": True,
         },
     }
 
@@ -162,14 +174,15 @@ def markdown(report: dict[str, Any]) -> str:
         "",
         f"Configured upstreams: **{len(report.get('configuredUpstreams') or [])}**",
         f"Known NiakVIO providers: **{report.get('knownCanonicalProviders', 0)}**",
-        f"New upstream providers: **{report.get('newProviderCount', 0)}**",
+        f"New live upstream providers: **{report.get('newProviderCount', 0)}**",
         f"Interesting candidates: **{report.get('interestingProviderCount', 0)}**",
         "",
-        "> Review only: this job never imports, enables or publishes a provider automatically.",
+        "> Review only: this job never imports, enables, disables or publishes a provider automatically.",
+        "> A provider seen only in an upstream LKG snapshot is not considered a new weekly discovery.",
         "",
     ]
     if not rows:
-        lines.append("No new non-P2P upstream provider is currently missing from the canonical catalog.")
+        lines.append("No new non-P2P provider observed in a live upstream manifest is currently missing from the canonical catalog.")
         return "\n".join(lines) + "\n"
     lines.extend([
         "| Provider | Score | Sources | Types | Languages | Formats | Why review |",
@@ -208,7 +221,7 @@ def main() -> int:
         "FIELD_UPSTREAM_PROVIDER_DISCOVERY "
         f"upstreams={len(report['configuredUpstreams'])} "
         f"new={report['newProviderCount']} interesting={report['interestingProviderCount']} "
-        "automatic_import=false automatic_activation=false"
+        "live_only=true automatic_import=false automatic_activation=false"
     )
     return 0
 
