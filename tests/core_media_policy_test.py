@@ -23,8 +23,11 @@ assert source_changes == [], source_changes
 module.assert_policy(normalized)
 
 purstream = normalized["provider_patches"]["purstream"]
-assert purstream.get("patch_scripts") == [], purstream.get("patch_scripts")
-assert purstream.get("patch_script_options") == {}, purstream.get("patch_script_options")
+active_scripts = {str(value) for value in purstream.get("patch_scripts", [])}
+active_options = {str(value) for value in (purstream.get("patch_script_options") or {})}
+assert active_scripts.issubset(module.ALLOWED_SHARED_PURSTREAM_SCRIPTS), active_scripts
+assert active_options.issubset(module.ALLOWED_SHARED_PURSTREAM_SCRIPTS), active_options
+assert not any("purstream_" in value for value in active_scripts | active_options)
 
 # Retired provider-specific implementations must not creep back into main.
 for retired in (
@@ -36,4 +39,4 @@ for retired in (
 ):
     assert not (ROOT / retired).exists(), retired
 
-print("Core media policy test passed: Purstream-specific repair hooks=0")
+print("Core media policy test passed: provider-specific Purstream repair hooks=0; shared Core hooks only")
