@@ -339,11 +339,12 @@ def _materialize_repair(
     repaired["sha256"] = digest
     repaired["bytes"] = len(patched)
     repaired["local_patches"] = list(candidate.get("local_patches") or []) + records
+    runtime_profile = "" if profile_name == "adaptive_runtime_recovery" else profile_name
     repaired["runtime_repair"] = {
         "parent_key": parent_key,
         "parent_sha256": parent_digest,
         "round": round_number,
-        "profile": profile_name,
+        "profile": runtime_profile,
         "strategy": profile_name,
         "revision": revision,
     }
