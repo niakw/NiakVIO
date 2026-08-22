@@ -26,7 +26,7 @@ FRONTEND_CAPTURE="${NIAKVIO}/scripts/capture_native_device_frontend.sh"
 FRONTEND_WATCHER="${NIAKVIO}/scripts/watch_native_device_frontend.sh"
 EVIDENCE_ROOT="${WORKSPACE}/native-evidence/tv"
 TEST_SOURCE="${TV_ROOT}/app/src/androidTest/java/com/nuvio/tv/core/plugin/NiakvioNativeCorpusTvTest.kt"
-DEFAULT_FIXTURES=(sinners-2025 interstellar mon-ninja-et-moi-3 breaking-bad-s01e01 revenant-s01e01 jujutsu-kaisen-s01e01 mushoku-tensei-s01e01)
+DEFAULT_FIXTURES=(sinners-2025 interstellar mon-ninja-et-moi-3 colony-2021 breaking-bad-s01e01 revenant-s01e01 jujutsu-kaisen-s01e01 mushoku-tensei-s01e01 failure-frame-s01e01 hell-teacher-nube-2025-s01e01)
 TARGET_FIXTURE="${NIAKVIO_TARGET_FIXTURE:-}"
 TARGET_FIXTURES="${NIAKVIO_TARGET_FIXTURES:-}"
 TARGET_PROVIDER="${NIAKVIO_TARGET_PROVIDER:-}"
@@ -71,6 +71,37 @@ elif [[ -n "$TARGET_FIXTURE" && "$TARGET_FIXTURE" != "all" ]]; then
 else
   FIXTURES=("${DEFAULT_FIXTURES[@]}")
 fi
+
+# TV is the primary user-impact signal. On the production manifest baseline, always
+# append the small collision/remake regression set even when the caller requests only
+# the generic representative movie/series/anime trio. Candidate Brain retests use a
+# different manifest path and intentionally keep their bounded original fixture set.
+TV_PRIORITY_FIXTURES=()
+if [[ "$TARGET_MANIFEST" = "manifest.json" ]]; then
+  while IFS= read -r fixture; do
+    [[ -n "$fixture" ]] && TV_PRIORITY_FIXTURES+=("$fixture")
+  done < <(python3 - <<'PY' 2>/dev/null || true
+import json
+import os
+from pathlib import Path
+path = Path(os.environ['GITHUB_WORKSPACE']) / 'niakvio/.github/triggers/nuvio-client-lab.json'
+try:
+    data = json.loads(path.read_text(encoding='utf-8'))
+    for fixture in (data.get('native_reader_acceptance') or {}).get('tv_priority_regressions') or []:
+        print(str(fixture))
+except Exception:
+    pass
+PY
+)
+  for priority_fixture in "${TV_PRIORITY_FIXTURES[@]}"; do
+    already=false
+    for existing_fixture in "${FIXTURES[@]}"; do
+      if [[ "$existing_fixture" = "$priority_fixture" ]]; then already=true; break; fi
+    done
+    if [[ "$already" != "true" ]]; then FIXTURES+=("$priority_fixture"); fi
+  done
+fi
+
 SOFT_FAILURES=0
 PROVIDER_ARGS=()
 if [[ -n "$TARGET_PROVIDER" && "$TARGET_PROVIDER" != "all" && "$TARGET_PROVIDER" != "fixture" ]]; then PROVIDER_ARGS=(--provider "$TARGET_PROVIDER"); fi
@@ -81,7 +112,7 @@ python3 "$INSTRUMENTER" tv "$TV_ROOT" || exit $?
 python3 "$REPOSITORY_HTTP_INSTRUMENTER" tv "$TV_ROOT" || exit $?
 if [[ -n "${GITHUB_ENV:-}" ]]; then echo "NIAKVIO_BRAIN_NONBLOCKING=1" >> "$GITHUB_ENV"; fi
 
-echo "FIELD_NATIVE_CORPUS_TV_PROFILE fixtures=${#FIXTURES[@]} provider=${TARGET_PROVIDER:-all} configured_acceptance_provider_scope=$CONFIGURED_ACCEPTANCE_PROVIDER_SCOPE manifest=$TARGET_MANIFEST player_probes=$PLAYER_PROBES requested_reader_success=$REQUESTED_READER_SUCCESS require_reader_success=$REQUIRE_READER_SUCCESS player_outcome_global_gate=$PLAYER_OUTCOME_GLOBAL_GATE reader_acceptance=$READER_ACCEPTANCE primary_stream_scope=$PRIMARY_STREAM_SCOPE regression_stream_scope=$REGRESSION_STREAM_SCOPE reuse_avd=true reuse_gradle_daemon=true full_backend_evidence=true repository_http_evidence=true frontend_timeline=true official_repository_loading=true local_manifest=$ALLOW_LOCAL_MANIFEST smoke_gate=player_reached pr_provider_limit=${NIAKVIO_PR_PROVIDER_LIMIT:-default}"
+echo "FIELD_NATIVE_CORPUS_TV_PROFILE fixtures=${#FIXTURES[@]} tv_priority_fixtures=${#TV_PRIORITY_FIXTURES[@]} provider=${TARGET_PROVIDER:-all} configured_acceptance_provider_scope=$CONFIGURED_ACCEPTANCE_PROVIDER_SCOPE manifest=$TARGET_MANIFEST player_probes=$PLAYER_PROBES requested_reader_success=$REQUESTED_READER_SUCCESS require_reader_success=$REQUIRE_READER_SUCCESS player_outcome_global_gate=$PLAYER_OUTCOME_GLOBAL_GATE reader_acceptance=$READER_ACCEPTANCE primary_stream_scope=$PRIMARY_STREAM_SCOPE regression_stream_scope=$REGRESSION_STREAM_SCOPE reuse_avd=true reuse_gradle_daemon=true full_backend_evidence=true repository_http_evidence=true frontend_timeline=true official_repository_loading=true local_manifest=$ALLOW_LOCAL_MANIFEST smoke_gate=player_reached pr_provider_limit=${NIAKVIO_PR_PROVIDER_LIMIT:-default}"
 for fixture in "${FIXTURES[@]}"; do
   echo "===== TV CORPUS FIXTURE: $fixture ====="
   STREAM_SCOPE="$REGRESSION_STREAM_SCOPE"
