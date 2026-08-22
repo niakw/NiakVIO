@@ -19,7 +19,7 @@ jobs:
     name: Rematerialize PR provider generation
     if: github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 30
     steps:
       - name: Checkout current PR branch
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
@@ -49,19 +49,31 @@ jobs:
             npm install --ignore-scripts --no-audit --no-fund --package-lock=false
           fi
 
-      - name: Rematerialize published provider bundles
+      - name: Rematerialize published provider bundles to a fixed point
         shell: bash
         run: |
           set -euo pipefail
           cp manifest.json /tmp/manifest-before.json
-          python scripts/reapply_published_overrides.py
-          python scripts/generate_language_manifests.py
-          python scripts/sync_release_versions.py --manifest manifest.json --previous /tmp/manifest-before.json
-          node engine_v2/scripts/bootstrap-provider-catalog.mjs --general manifest.json --vf vf/manifest.json --output provider_catalog.json
-          node engine_v2/scripts/render-manifests-from-catalog.mjs --catalog provider_catalog.json --general manifest.json --vf vf/manifest.json
-          python scripts/generate_language_manifests.py
-          python scripts/sync_release_versions.py --manifest manifest.json --previous /tmp/manifest-before.json
-          python scripts/reapply_published_overrides.py --check
+          converged=false
+          for round in 1 2 3; do
+            echo "Provider rematerialization convergence round ${round}"
+            python scripts/reapply_published_overrides.py
+            python scripts/generate_language_manifests.py
+            python scripts/sync_release_versions.py --manifest manifest.json --previous /tmp/manifest-before.json
+            node engine_v2/scripts/bootstrap-provider-catalog.mjs --general manifest.json --vf vf/manifest.json --output provider_catalog.json
+            node engine_v2/scripts/render-manifests-from-catalog.mjs --catalog provider_catalog.json --general manifest.json --vf vf/manifest.json
+            python scripts/generate_language_manifests.py
+            python scripts/sync_release_versions.py --manifest manifest.json --previous /tmp/manifest-before.json
+            if python scripts/reapply_published_overrides.py --check; then
+              converged=true
+              echo "Provider rematerialization converged in ${round} round(s)."
+              break
+            fi
+          done
+          if [ "$converged" != true ]; then
+            echo "Provider rematerialization did not converge after 3 rounds." >&2
+            exit 1
+          fi
           python scripts/generate_release_hashes.py
           python scripts/validate_release_integrity.py
 
@@ -82,7 +94,7 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add manifest.json vf/manifest.json provider_catalog.json package.json package-lock.json sources.json \
-            PROVENANCE.json FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json providers/
+            PROVENANCE.json FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json providers/ provider-overrides.json
           if [ -f vostfr/manifest.json ]; then git add vostfr/manifest.json; fi
           if git diff --cached --quiet; then
             echo 'No regenerated artifact changes.'
