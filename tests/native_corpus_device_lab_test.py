@@ -85,8 +85,9 @@ for required in (
 ):
     assert required in targeted_runtime, required
 
-# Canonical Android proof uses current official client SHAs and a runtime
-# fingerprint in every persistent AVD cache key. No broad restore fallback exists.
+# Canonical Android proof still checks out the exact current official client SHA,
+# but the clean AVD snapshot itself is reusable across client revisions because it
+# depends only on emulator/system-image configuration. ADB is primed before boot.
 representative_fixtures = ("sinners-2025", "breaking-bad-s01e01", "jujutsu-kaisen-s01e01")
 for fixture in representative_fixtures:
     assert fixture in android_reader, fixture
@@ -104,8 +105,10 @@ for required in (
     "NIAKVIO_REGRESSION_STREAM_SCOPE: all",
     "--provider all --streams all",
     'NIAKVIO_REQUIRE_READER_SUCCESS: "1"',
-    "avd-v2-${{ runner.os }}-tv-api31-android-tv-x86-tv_1080p-${{ needs.resolve.outputs.tv_sha }}-${{ needs.resolve.outputs.runtime_fingerprint }}",
-    "avd-v2-${{ runner.os }}-mobile-api35-google_apis-x86_64-pixel_2-${{ needs.resolve.outputs.mobile_sha }}-${{ needs.resolve.outputs.runtime_fingerprint }}",
+    "avd-v3-${{ runner.os }}-tv-api31-android-tv-x86-tv_1080p",
+    "avd-v3-${{ runner.os }}-mobile-api35-google_apis-x86_64-pixel_2",
+    "Prime Android adb server",
+    "prime_android_lab_adb.sh",
     "build_native_reader_brain_repair.py",
     "compare_native_reader_brain_repair.py",
     "--max-providers 24",
@@ -279,7 +282,7 @@ print(
     "native device lab contract passed: "
     f"fixtures={len(expected_slugs)} providers={len(stageable)} android_exhaustive=true "
     "desktop_native=true tv_wrong_media_regressions=3 macos_witness=true "
-    "brain_retest=movie-tv-anime cached_profiles=v2-fingerprinted targeted_manual=true "
+    "brain_retest=movie-tv-anime cached_profiles=v3-emulator-config targeted_manual=true "
     "reader_learning_idempotent=true trusted_main_learning=true missing_artifact_retriable=true "
     "pr_bounded=true production_player_only=true"
 )
