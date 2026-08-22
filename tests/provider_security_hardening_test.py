@@ -80,7 +80,14 @@ with tempfile.TemporaryDirectory() as raw:
     stage = Path(raw)
     (stage / "providers").mkdir()
     source = stage / "providers" / "one.js"
-    original = b'function f(u){return u.includes("example.com"),console.log(u)}'
+    # Stage hardening validates the resulting artifact with the same provider
+    # validator used by production. Keep the fixture intentionally unsafe while
+    # still exposing the mandatory getStreams contract; otherwise this test would
+    # be testing an invalid pseudo-provider rather than the hardening pipeline.
+    original = (
+        b'function f(u){return u.includes("example.com"),console.log(u)};'
+        b'globalThis.getStreams=async function(){return []}'
+    )
     source.write_bytes(original)
     registry = {
         "candidates": [{
@@ -100,4 +107,5 @@ with tempfile.TemporaryDirectory() as raw:
     assert updated["sha256"] == hashlib.sha256(data).hexdigest()
     assert updated["sha256"] != hashlib.sha256(original).hexdigest()
     assert any(record.get("type") == "provider_security_hardening" for record in updated["local_patches"])
+    assert known_unsafe_findings(data.decode("utf-8")) == []
 print("staged provider security hardening tests passed")
