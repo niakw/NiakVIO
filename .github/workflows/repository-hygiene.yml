@@ -1,0 +1,86 @@
+name: NiakVIO repository hygiene
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/repository-hygiene.yml'
+  schedule:
+    - cron: '23 6 * * 1'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: niakvio-repository-hygiene
+  cancel-in-progress: false
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Delete retired temporary branches
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --prune origin '+refs/heads/*:refs/remotes/origin/*'
+          keep_regex='^(main|brain-learning/proposals)$'
+          retired=(
+            'agent/native-player-diagnostics-brain-v4'
+            'agent/native-player-lab'
+            'agent/profile-reuse-pr68-v2'
+            'agent/profile-reuse-pr68'
+            'chore/codeql-triage'
+            'chore/codeql-triage-trigger'
+            'chore/codeql-verify-trigger'
+            'ci/avd-cache-targeted'
+            'ci/native-reader-budget-fix'
+            'cleanup/actions-queue'
+            'final/native-reader-brain-v4'
+            'fix/codeql-wrapper-sources'
+            'lab/desktop-mobile-real'
+            'lab/tv-real'
+            'postmerge/global-provider-security-v1'
+            'scratch/native-lab-core-fixes-20260821'
+            'tmp/native-profile-contract-fixes'
+            'trigger/codeql-final-count'
+            'trigger/codeql-provider-dismiss'
+            'trigger/codeql-wrapper-source-hardening'
+            'work/native-reader-backlog'
+          )
+          deleted=0
+          for branch in "${retired[@]}"; do
+            if [[ "$branch" =~ $keep_regex ]]; then
+              echo "Refusing to delete protected persistent branch: $branch" >&2
+              exit 1
+            fi
+            if git ls-remote --exit-code --heads origin "refs/heads/$branch" >/dev/null 2>&1; then
+              git push origin --delete "$branch"
+              deleted=$((deleted+1))
+            fi
+          done
+          echo "FIELD_REPOSITORY_HYGIENE deleted=$deleted keep=main,brain-learning/proposals"
+
+      - name: Prove only intentional branches remain
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --prune origin '+refs/heads/*:refs/remotes/origin/*'
+          mapfile -t branches < <(git for-each-ref --format='%(refname:strip=3)' refs/remotes/origin | grep -v '^HEAD$' | sort)
+          printf '%s\n' "${branches[@]}"
+          unexpected=0
+          for branch in "${branches[@]}"; do
+            case "$branch" in
+              main|brain-learning/proposals) ;;
+              *) echo "Unexpected branch remains: $branch" >&2; unexpected=1 ;;
+            esac
+          done
+          exit "$unexpected"
