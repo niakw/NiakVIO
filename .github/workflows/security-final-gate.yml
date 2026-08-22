@@ -1,0 +1,109 @@
+name: NiakVIO final provider security gate
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: read
+
+jobs:
+  security:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout exact main
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+          package-manager-cache: false
+
+      - name: Validate global hardening implementation
+        shell: bash
+        run: |
+          set -euo pipefail
+          python tests/provider_security_hardening_test.py
+          python tests/provider_purification_contract_test.py
+          python tests/core_media_policy_test.py
+          python tests/runtime_capability_media_safety_v4_test.py
+
+      - name: Scan every active published provider for known unsafe shapes
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json, sys
+          from pathlib import Path
+          root=Path('.')
+          sys.path.insert(0, str((root/'scripts').resolve()))
+          from provider_security_hardening import known_unsafe_findings
+          manifest=json.loads((root/'manifest.json').read_text())
+          failures=[]
+          checked=0
+          for row in manifest.get('scrapers') or []:
+              if not isinstance(row,dict) or row.get('enabled') is False:
+                  continue
+              rel=str(row.get('filename') or '')
+              path=root/rel
+              if not path.is_file():
+                  failures.append((str(row.get('id')), 'missing_bundle', rel))
+                  continue
+              findings=known_unsafe_findings(path.read_text(encoding='utf-8', errors='strict'))
+              checked+=1
+              if findings:
+                  failures.append((str(row.get('id')), ','.join(sorted(set(findings))), rel))
+          if failures:
+              for item in failures:
+                  print('UNSAFE_PROVIDER=' + '|'.join(item))
+              raise SystemExit(f'known unsafe provider shapes remain: {len(failures)}')
+          print(f'FIELD_ACTIVE_PROVIDER_SECURITY_SCAN checked={checked} unsafe=0')
+          PY
+
+      - name: Gate open high/critical CodeQL alerts in generated providers
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh api --paginate \
+            -H 'Accept: application/vnd.github+json' \
+            -H 'X-GitHub-Api-Version: 2022-11-28' \
+            "repos/${GITHUB_REPOSITORY}/code-scanning/alerts?state=open&per_page=100" \
+            --slurp > "$RUNNER_TEMP/codeql-open.json"
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          pages=json.loads(Path(os.environ['RUNNER_TEMP']+'/codeql-open.json').read_text())
+          alerts=[row for page in pages for row in (page if isinstance(page,list) else []) if isinstance(row,dict)]
+          bad=[]
+          for row in alerts:
+              rule=row.get('rule') or {}
+              severity=str(rule.get('security_severity_level') or rule.get('severity') or '').lower()
+              instance=row.get('most_recent_instance') or {}
+              location=instance.get('location') or {}
+              path=str(location.get('path') or '')
+              if path.startswith('providers/') and severity in {'high','critical'}:
+                  bad.append({
+                      'number': row.get('number'),
+                      'rule': rule.get('id') or rule.get('name'),
+                      'severity': severity,
+                      'path': path,
+                  })
+          print(f'FIELD_CODEQL_PROVIDER_ALERTS open={len(alerts)} high_or_critical_provider={len(bad)}')
+          for row in bad:
+              print('OPEN_PROVIDER_ALERT=' + json.dumps(row, sort_keys=True))
+          if bad:
+              raise SystemExit('open high/critical CodeQL alerts remain in generated providers')
+          PY
