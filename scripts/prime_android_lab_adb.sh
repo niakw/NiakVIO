@@ -1,31 +1,41 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Hosted Android readers occasionally enter the emulator action with no adb
-# daemon listening on 5037. Prime the production SDK bridge before an AVD is
-# launched. This is Lab-only orchestration: it never changes Nuvio runtime code,
-# app manifests, provider JS or player/network behavior.
+# Hosted Android readers can enter the emulator action while the SDK bridge is
+# absent, stale, or temporarily unable to bind port 5037. This preflight is
+# deliberately best-effort: the emulator runner remains the authority for ADB
+# availability once an AVD is launched. A transient host-side ADB failure must
+# therefore never prevent the real native reader from being attempted.
+#
+# Lab-only orchestration: this never changes Nuvio runtime code, app manifests,
+# provider JS, player behavior, or network behavior.
 if ! command -v adb >/dev/null 2>&1; then
-  echo "FIELD_NATIVE_ADB_PRIME status=missing_adb runtime_mutation=false" >&2
-  exit 1
+  echo "FIELD_NATIVE_ADB_PRIME status=missing_adb fallback=emulator_runner runtime_mutation=false" >&2
+  exit 0
 fi
 
+# A hosted runner may inherit a custom server socket or a stale daemon. Force
+# the normal local SDK bridge and clean up only host-side adb state.
+unset ADB_SERVER_SOCKET || true
 adb kill-server >/dev/null 2>&1 || true
-adb start-server >/dev/null
+pkill -f '(^|/)adb( |$).*server' >/dev/null 2>&1 || true
 
 ready=0
+: > /tmp/niakvio-adb-error.txt
 for _attempt in 1 2 3 4 5; do
-  if adb devices >/tmp/niakvio-adb-devices.txt 2>/tmp/niakvio-adb-error.txt; then
+  if adb start-server >/tmp/niakvio-adb-start.txt 2>>/tmp/niakvio-adb-error.txt \
+    && adb devices >/tmp/niakvio-adb-devices.txt 2>>/tmp/niakvio-adb-error.txt; then
     ready=1
     break
   fi
-  sleep 1
+  adb kill-server >/dev/null 2>&1 || true
+  sleep 2
 done
 
 if [ "$ready" -ne 1 ]; then
   cat /tmp/niakvio-adb-error.txt >&2 || true
-  echo "FIELD_NATIVE_ADB_PRIME status=unavailable runtime_mutation=false" >&2
-  exit 1
+  echo "FIELD_NATIVE_ADB_PRIME status=degraded fallback=emulator_runner runtime_mutation=false" >&2
+  exit 0
 fi
 
 echo "FIELD_NATIVE_ADB_PRIME status=ready port=5037 runtime_mutation=false"
