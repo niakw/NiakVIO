@@ -1,5 +1,5 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "purpose": "cross-device-regression-and-repair-evidence",
   "fixtures": [
     {
@@ -14,6 +14,17 @@
       "mediaType": "movie",
       "title": "Mon ninja et moi 3",
       "role": "streamzo-targeted-regression"
+    },
+    {
+      "id": "colony-2021",
+      "tmdbId": "760873",
+      "mediaType": "movie",
+      "title": "The Colony",
+      "year": 2021,
+      "expectedDurationMinutes": 104,
+      "aliases": ["The Colony", "Colony", "Tides"],
+      "role": "tv-priority-wrong-media-regression",
+      "known_collision": "same-title 2013 film and Colony TV series must not be accepted as the requested 2021 movie"
     },
     {
       "id": "breaking-bad-s01e01",
@@ -44,8 +55,40 @@
       "title": "Mushoku Tensei",
       "season": 1,
       "episode": 1
+    },
+    {
+      "id": "failure-frame-s01e01",
+      "tmdbId": "245285",
+      "mediaType": "anime",
+      "title": "Failure Frame: I Became the Strongest and Annihilated Everything with Low-Level Spells",
+      "year": 2024,
+      "season": 1,
+      "episode": 1,
+      "expectedDurationMinutes": 24,
+      "aliases": ["Failure Frame", "Hazure Waku", "Hazurewaku"],
+      "role": "tv-priority-wrong-media-regression"
+    },
+    {
+      "id": "hell-teacher-nube-2025-s01e01",
+      "tmdbId": "259544",
+      "mediaType": "anime",
+      "title": "Hell Teacher: Jigoku Sensei Nube",
+      "year": 2025,
+      "season": 1,
+      "episode": 1,
+      "expectedDurationMinutes": 23,
+      "aliases": ["Hell Teacher: Jigoku Sensei Nube", "Jigoku Sensei Nube", "Hell Teacher Nube", "地獄先生ぬ～べ～"],
+      "role": "tv-priority-wrong-media-regression",
+      "known_collision": "the 1996 adaptation must not be accepted as the 2025 remake"
     }
   ],
   "devices": ["worker", "mobile", "desktop", "tv"],
-  "rule": "a fixture failure records stage evidence; it does not automatically disable or quarantine a provider"
+  "priority": {
+    "primary_client": "tv",
+    "healthy_client_vetoes_provider_disable": true,
+    "tv_healthy_vetoes_provider_disable": true,
+    "single_client_failure_is_compatibility_evidence_only": true,
+    "cross_client_failure_does_not_disable_when_any_healthy_peer_exists": true
+  },
+  "rule": "A fixture/client failure records compatibility evidence only. A provider is never disabled or quarantined because one client fails when TV, Desktop or Mobile has a healthy proof for the same provider/route; TV is the primary user-impact signal."
 }
