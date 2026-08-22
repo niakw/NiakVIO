@@ -3,9 +3,13 @@
 
 The historical implementation remains in ``hls_master_audio_preserver_impl_v1.py``.
 Presentation is deliberately *not* composed here: ``apply_provider_overrides`` owns
-one Core-wide final presentation pass after every playback/media layer. Keeping this
-hook playback-only prevents a second override application from moving HLS wrappers
-around the presentation/facts layers and changing provider bytes/cache hashes.
+one Core-wide final presentation pass after every playback/media layer.
+
+The historical implementation still moves the HLS integrity wrapper to the absolute
+bundle tail. That was correct before Core facts/identity/presentation existed, but it
+now makes a second reconstruction move HLS across those metadata-only layers. This
+public adapter restores the canonical boundary without changing playback semantics:
+media recovery/safety -> HLS validation -> facts/identity/presentation.
 """
 from __future__ import annotations
 
@@ -36,6 +40,65 @@ GUARD = _IMPL.GUARD
 TV_PREDICATE = _IMPL.TV_PREDICATE
 SAFETY_WRAPPER = _IMPL.SAFETY_WRAPPER
 
+_CORE_FINALIZERS = (
+    "NUVIO_GLOBAL_STREAM_FACTS_V1",
+    "NUVIO_GLOBAL_STREAM_IDENTITY_V1",
+    "NUVIO_GLOBAL_STREAM_PRESENTATION_V1",
+)
+
+
+def _wrapper_bounds(text: str, marker: str) -> tuple[int, int] | None:
+    start = text.find(f"/* {marker}:")
+    if start < 0:
+        return None
+    call = text.find('})(typeof globalThis!=="undefined"?globalThis:this,', start)
+    end = text.find(");", call) if call >= 0 else -1
+    if call < 0 or end < 0:
+        raise ValueError(f"unterminated {marker} wrapper")
+    return start, end + 2
+
+
+def _place_hls_before_core_finalizers(text: str) -> str:
+    bounds = _wrapper_bounds(text, HLS_INTEGRITY_MARKER)
+    if bounds is None:
+        return text
+    start, end = bounds
+    core_positions = [
+        position
+        for position in (
+            text.find(f"/* {marker}:") for marker in _CORE_FINALIZERS
+        )
+        if position >= 0
+    ]
+    if not core_positions or start < min(core_positions):
+        return text
+
+    segment = text[start:end].strip()
+    before = text[:start].rstrip()
+    after = text[end:].strip()
+    body = before
+    if after:
+        body = (body + "\n" + after) if body else after
+
+    core_positions = [
+        position
+        for position in (
+            body.find(f"/* {marker}:") for marker in _CORE_FINALIZERS
+        )
+        if position >= 0
+    ]
+    if not core_positions:
+        return body.rstrip() + "\n" + segment + "\n"
+    insertion = min(core_positions)
+    return (
+        body[:insertion].rstrip()
+        + "\n"
+        + segment
+        + "\n"
+        + body[insertion:].lstrip()
+    ).rstrip() + "\n"
+
 
 def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> str:
-    return _IMPL.apply(text, options=options, **kwargs)
+    output = _IMPL.apply(text, options=options, **kwargs)
+    return _place_hls_before_core_finalizers(output)
