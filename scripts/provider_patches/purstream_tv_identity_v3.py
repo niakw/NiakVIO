@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""Compose Core-global stream facts with Purstream-specific identity validation.
+"""Compose Purstream structured facts with provider-specific identity validation.
 
-The structured facts layer is shared by every provider. Purstream keeps only its
-provider-specific episodic duration/identity validation here. Final user-facing
-formatting and badges remain entirely owned by the repository-wide Core layer.
+Purstream first migrates its legacy presentation-heavy rows into the shared structured
+facts contract. It then applies only the provider-specific episodic duration/identity
+validation. Final user-facing formatting, badge selection and TMDB fallback remain
+owned by the repository-wide Core presentation layer.
 """
 from __future__ import annotations
 
@@ -24,7 +25,7 @@ def _load(filename: str, module_name: str):
     return module
 
 
-_FACTS = _load("global_stream_facts_v1.py", "nuvio_global_stream_facts_v1")
+_FACTS = _load("purstream_stream_facts_v1.py", "nuvio_purstream_stream_facts_v1")
 _IDENTITY = _load("purstream_tv_identity_impl_v3.py", "nuvio_purstream_tv_identity_impl_v3")
 MARKER = _IDENTITY.MARKER
 
