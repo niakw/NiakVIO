@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Shared NiakVIO presentation for every reconstructed provider.
 
-Providers expose playback material and any facts they actually know. This Core layer
-normalizes those facts, enriches media identity/context from TMDB when possible and
-produces one presentation contract for every provider.
+Every provider first passes through the provider-agnostic Core facts layer. This layer
+then enriches media identity/context from TMDB when possible and produces one common
+presentation contract. No provider owns badge formatting or final technical labels.
 
 Important presentation rule: a technical fact represented by a badge is NOT repeated
 in user-facing title/description/size. Structured facts remain available to runtimes
@@ -19,16 +19,25 @@ from typing import Any
 
 MARKER = "NUVIO_GLOBAL_STREAM_PRESENTATION_V1"
 TMDB_KEY = "1865f43a0549ca50d341dd9ab8b29f49"
+FACTS_PATH = Path(__file__).with_name("global_stream_facts_v1.py")
 IDENTITY_PATH = Path(__file__).with_name("global_stream_identity_v1.py")
 
 
-def _apply_identity(text: str, context: dict[str, Any]) -> str:
-    spec = importlib.util.spec_from_file_location("nuvio_global_stream_identity_v1", IDENTITY_PATH)
+def _apply_module(path: Path, module_name: str, text: str, context: dict[str, Any]) -> str:
+    spec = importlib.util.spec_from_file_location(module_name, path)
     if spec is None or spec.loader is None:
-        raise RuntimeError(f"cannot load {IDENTITY_PATH}")
+        raise RuntimeError(f"cannot load {path}")
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module.apply(text, context=context)
+
+
+def _apply_facts(text: str, context: dict[str, Any]) -> str:
+    return _apply_module(FACTS_PATH, "nuvio_global_stream_facts_v1", text, context)
+
+
+def _apply_identity(text: str, context: dict[str, Any]) -> str:
+    return _apply_module(IDENTITY_PATH, "nuvio_global_stream_identity_v1", text, context)
 
 
 def _strip_existing(text: str) -> str:
@@ -44,13 +53,14 @@ def _strip_existing(text: str) -> str:
 
 def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> str:
     context = kwargs.get("context") if isinstance(kwargs.get("context"), dict) else {}
+    text = _apply_facts(text, context)
     text = _apply_identity(text, context)
     cfg = dict(options or {})
     payload = {
         "providerId": str(context.get("provider_id") or "").strip().casefold(),
         "tmdbKey": str(cfg.get("tmdb_key") or TMDB_KEY),
         "tmdbTimeoutMs": max(350, min(int(cfg.get("tmdb_timeout_ms", 1200)), 2500)),
-        "implementationRevision": "all-providers-badge-dedupe-tmdb-fallback-v8",
+        "implementationRevision": "all-providers-facts-badge-dedupe-tmdb-fallback-v9",
     }
     serialized = json.dumps(payload, separators=(",", ":"))
     marker = f"{MARKER}:{hashlib.sha256(serialized.encode()).hexdigest()[:12]}"
