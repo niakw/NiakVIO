@@ -84,6 +84,47 @@ jobs:
         shell: bash
         run: npm ci --ignore-scripts --no-audit --no-fund
 
+      - name: Canonicalize generated Core security boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+
+          source = Path('scripts/apply_provider_overrides.py')
+          text = source.read_text(encoding='utf-8')
+          tuple_old = '''GENERATED_CORE_TAIL_MARKERS = (\n    "NUVIO_GLOBAL_STREAM_FACTS_V1",'''
+          tuple_new = '''GENERATED_CORE_TAIL_MARKERS = (\n    "NUVIO_GLOBAL_PROVIDER_SECURITY_HOOK_V1",\n    "NUVIO_GLOBAL_STREAM_FACTS_V1",'''
+          if '"NUVIO_GLOBAL_PROVIDER_SECURITY_HOOK_V1",\n    "NUVIO_GLOBAL_STREAM_FACTS_V1"' not in text:
+              if tuple_old not in text:
+                  raise SystemExit('unable to locate generated Core tail marker tuple')
+              text = text.replace(tuple_old, tuple_new, 1)
+
+          scan_old = '''    starts = [\n        index\n        for marker in GENERATED_CORE_TAIL_MARKERS\n        if (index := text.find(f"/* {marker}:")) >= 0\n    ]'''
+          scan_new = '''    starts = []\n    for marker in GENERATED_CORE_TAIL_MARKERS:\n        needle = (\n            f"/* {marker} */"\n            if marker == "NUVIO_GLOBAL_PROVIDER_SECURITY_HOOK_V1"\n            else f"/* {marker}:"\n        )\n        index = text.find(needle)\n        if index >= 0:\n            starts.append(index)'''
+          if scan_new not in text:
+              if scan_old not in text:
+                  raise SystemExit('unable to locate generated Core tail scanner')
+              text = text.replace(scan_old, scan_new, 1)
+
+          doc_old = '''    Facts, identity and presentation are generated artifacts owned by the Core\n    scheduler.'''
+          doc_new = '''    Security, facts, identity and presentation are generated artifacts owned by the Core\n    scheduler.'''
+          if doc_old in text:
+              text = text.replace(doc_old, doc_new, 1)
+          source.write_text(text, encoding='utf-8')
+
+          test = Path('tests/global_playback_integrity_policy_test.py')
+          test_text = test.read_text(encoding='utf-8')
+          marker = '# Security is itself a generated Core boundary and must be rebuilt, not retained as provider source.'
+          if marker not in test_text:
+              anchor = '# The complete discovery transform must be byte-idempotent. Stable output bytes\n'
+              if anchor not in test_text:
+                  raise SystemExit('unable to locate playback fixed-point test anchor')
+              block = '''# Security is itself a generated Core boundary and must be rebuilt, not retained as provider source.\nboundary_input = "provider-source\\n/* NUVIO_GLOBAL_PROVIDER_SECURITY_HOOK_V1 */\\n/* NUVIO_GLOBAL_STREAM_FACTS_V1:old */\\nstale-tail"\nboundary_prefix, boundary_removed = module._strip_generated_core_tail(boundary_input)\nassert boundary_removed is True\nassert boundary_prefix == "provider-source"\n\n'''
+              test_text = test_text.replace(anchor, block + anchor, 1)
+              test.write_text(test_text, encoding='utf-8')
+          PY
+
       - name: Normalize Core media architecture
         shell: bash
         run: |
@@ -165,7 +206,7 @@ jobs:
                   print(provider_id, 'keys=' + ','.join(keys), 'old_file=' + str(old.get('published_filename')), 'new_file=' + str(new.get('published_filename')))
           PY
             echo 'FIELD_REAPPLY_DIAGNOSTIC_STATUS'
-            git status --short | head -n 300
+            git status --short | sed -n '1,300p'
             exit 1
           fi
           node engine_v2/tests/provider-catalog.test.mjs
