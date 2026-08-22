@@ -11,10 +11,10 @@ ROOT = Path(__file__).resolve().parents[1]
 OUT = Path(os.environ.get("NUVIO_TV_CANDIDATE_DIR", ROOT / "automation" / "tv-candidates"))
 MANIFEST = ROOT / "manifest.json"
 
+# Candidate-only TV experiments remain reserved for genuinely provider-shaped
+# extraction differences. Content identity/media safety is Core-wide and must
+# never get a provider-specific exception here.
 PATCHES: dict[str, list[tuple[str, dict[str, Any]]]] = {
-    "purstream": [
-        ("scripts/provider_patches/purstream_tv_identity_v3.py", {"duration_tolerance": 0.35, "timeout_ms": 7000, "max_probes": 3}),
-    ],
     "papadustream": [
         ("scripts/provider_patches/papadustream_anime_tv_v1.py", {}),
     ],
