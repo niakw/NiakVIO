@@ -22,6 +22,11 @@ from override_text_utils import replace_literal
 ROOT = Path(__file__).resolve().parents[1]
 CONFIG = ROOT / "provider-overrides.json"
 GLOBAL_STREAM_PRESENTATION = "scripts/provider_patches/global_stream_presentation_v1.py"
+GENERATED_CORE_TAIL_MARKERS = (
+    "NUVIO_GLOBAL_STREAM_FACTS_V1",
+    "NUVIO_GLOBAL_STREAM_IDENTITY_V1",
+    "NUVIO_GLOBAL_STREAM_PRESENTATION_V1",
+)
 
 
 def load_overrides() -> dict[str, Any]:
@@ -249,6 +254,25 @@ def _strip_legacy_global_stream_guards(text: str) -> tuple[str, int]:
     return output.rstrip() + ("\n" if output else ""), count
 
 
+
+def _strip_generated_core_tail(text: str) -> tuple[str, bool]:
+    """Return provider-derived code without Core tails from an earlier discovery pass.
+
+    Facts, identity and presentation are generated artifacts owned by the Core
+    scheduler. Reconstructing them from their canonical provider prefix prevents
+    earlier HLS/media/security stages from rewriting stale generated wrappers and
+    guarantees byte-idempotent content-addressed provider artifacts.
+    """
+    starts = [
+        index
+        for marker in GENERATED_CORE_TAIL_MARKERS
+        if (index := text.find(f"/* {marker}:")) >= 0
+    ]
+    if not starts:
+        return text, False
+    return text[:min(starts)].rstrip(), True
+
+
 def apply_overrides(
     provider_id: str,
     data: bytes,
@@ -261,6 +285,14 @@ def apply_overrides(
     text = data.decode("utf-8")
     original_text = text
     applied: list[dict[str, Any]] = []
+    if phase == "discovery":
+        text, removed_core_tail = _strip_generated_core_tail(text)
+        if removed_core_tail:
+            applied.append({
+  "type": "rebuild_generated_core_tail",
+  "phase": phase,
+  "scope": "global_core_tail",
+            })
     provider_id = provider_id.casefold()
     specific = (config.get("provider_patches") or {}).get(provider_id, {})
     if not isinstance(specific, dict):
