@@ -21,11 +21,13 @@ assert "NUVIO_GLOBAL_STREAM_PRESENTATION_V1" in text
 assert "scripts/provider_patches/global_stream_presentation_v1.py" in paths
 assert not [path for path in paths if "/purstream_" in path]
 
-# Lock stable Core behavior rather than a disposable implementation-revision label.
-# The facts layer and structured badge contract must be present for a generic provider.
+# Lock stable public Core markers/behavior rather than disposable internal revision
+# labels or implementation-local property names. The generic provider receives the
+# shared facts wrapper and structured badge/presentation contract.
 assert "NUVIO_GLOBAL_STREAM_FACTS_V1" in text
-assert "__nuvioStreamFacts" in text
+assert "__nuvioGlobalStreamFactsV1" in text
 assert "badgeIds" in text
+assert "presentationFacts" in text
 
 # The Core enriches presentation without replacing playback material or the
 # provider's header shape.
