@@ -165,7 +165,7 @@ jobs:
               fh.write('\n')
           PY
 
-      - name: Merge automatic native reader bug backlog
+      - name: Merge automatic complete-evidence reader bug backlog
         if: steps.diagnoses.outputs.has_diagnostics == 'true'
         env:
           RUN_ID: ${{ steps.source.outputs.run_id }}
@@ -181,7 +181,20 @@ jobs:
             --markdown-input reader-learning-output/latest.md \
             --markdown-output reader-learning-output/latest.md
 
-      - name: Enforce sanitized fail-closed learning state
+      - name: Merge all failed reader evidence into learning-only memory
+        if: steps.diagnoses.outputs.has_diagnostics == 'true'
+        env:
+          RUN_ID: ${{ steps.source.outputs.run_id }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/merge_native_reader_learning_failures.py \
+            --state reader-learning-output/latest.json \
+            --diagnostics-root reader-learning-input/diagnostics \
+            --run-id "$RUN_ID" \
+            --output reader-learning-output/latest.json
+
+      - name: Enforce sanitized fail-closed mutation state
         shell: bash
         run: |
           set -euo pipefail
@@ -195,9 +208,17 @@ jobs:
           const state=JSON.parse(fs.readFileSync('reader-learning-output/latest.json','utf8'));
           const memory=state.nativeReaderRepairMemory || {};
           const backlog=memory.readerBacklog || {};
+          const learning=memory.readerLearningFailures || {};
           if (backlog.openCount != null && !Array.isArray(backlog.entries)) throw new Error('invalid reader backlog shape');
           if (memory.runtimeAware === true && memory.runtimeScope?.reusePolicy !== 'exact-runtime-fingerprint-only') {
             throw new Error('runtime-aware reader memory lost its exact-runtime reuse policy');
+          }
+          if (Array.isArray(learning.entries)) {
+            for (const row of learning.entries) {
+              if (row.providerJsMutationAllowed !== false || row.productionWritesAllowed !== false || row.learningOnly !== true) {
+                throw new Error('learning-only reader failure gained mutation authority');
+              }
+            }
           }
           NODE
 
