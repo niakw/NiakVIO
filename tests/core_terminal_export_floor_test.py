@@ -54,6 +54,37 @@ def test_obfuscated_ternary_export_with_global_fallback_is_bounded() -> None:
     assert movieshunt[floor:].lstrip().startswith("/* NUVIO_GLOBAL_RUNTIME_MEDIA_SAFETY_V1:")
 
 
+def test_floated_core_marker_before_obfuscated_export_is_not_an_upper_bound() -> None:
+    # Terser may preserve a Core comment while attaching it before the terminal
+    # provider export. That stale comment must not hide an otherwise proven
+    # obfuscated CommonJS boundary when another owned Core marker follows it.
+    floated = marker("NUVIO_GLOBAL_STREAM_FACTS_V1")
+    trailing = marker("NUVIO_GLOBAL_STREAM_PRESENTATION_V1")
+    text = (
+        "const providerByte=1;\n"
+        + floated
+        + "function getStreams(){};"
+        + "module[_decoder(0xc3)]={'getStreams':getStreams};\n"
+        + trailing
+    )
+    floor = provider_export_floor(text)
+    assert floor > text.index("module[_decoder")
+    assert text[floor:].lstrip().startswith("/* NUVIO_GLOBAL_STREAM_PRESENTATION_V1:")
+
+    ternary = (
+        "const providerByte=1;\n"
+        + marker("NUVIO_GLOBAL_CORE_START_BOUNDARY_V1")
+        + "function getStreams(){}function onSettings(){};"
+        + "typeof module!=='undefined'&&module[_x]?"
+        + "module[_x]={'getStreams':getStreams,'onSettings':onSettings}:"
+        + "(global[_g]=getStreams,global[_s]=onSettings);\n"
+        + marker("NUVIO_HLS_RUNTIME_INTEGRITY_V1")
+    )
+    floor = provider_export_floor(ternary)
+    assert floor > ternary.index("module[_x]={'getStreams'")
+    assert ternary[floor:].lstrip().startswith("/* NUVIO_HLS_RUNTIME_INTEGRITY_V1:")
+
+
 def test_terminal_commonjs_fallback_remains_fail_closed() -> None:
     tail = marker("NUVIO_GLOBAL_STREAM_FACTS_V1")
     assert provider_export_floor("module[_x]={foo:1};\n" + tail) == -1
@@ -81,6 +112,7 @@ def test_exact_provider_bridge_remains_authoritative() -> None:
 if __name__ == "__main__":
     test_obfuscated_terminal_commonjs_export_is_bounded_by_core_tail()
     test_obfuscated_ternary_export_with_global_fallback_is_bounded()
+    test_floated_core_marker_before_obfuscated_export_is_not_an_upper_bound()
     test_terminal_commonjs_fallback_remains_fail_closed()
     test_exact_provider_bridge_remains_authoritative()
-    print("Core terminal/ternary export floor regression tests passed")
+    print("Core terminal/ternary/floated-marker export floor regression tests passed")
