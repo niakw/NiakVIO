@@ -130,6 +130,14 @@ jobs:
           python scripts/sync_release_versions.py --manifest manifest.json --previous "$RUNNER_TEMP/manifest-before.json"
           python scripts/prune_unreferenced_providers.py
 
+      - name: Trace two-pass Core reconstruction
+        shell: bash
+        run: |
+          set +e
+          python scripts/diagnose_core_rebuild_once.py
+          echo "diagnostic_rc=$? (non-blocking one-shot trace)"
+          exit 0
+
       - name: Verify Core and native media contracts
         shell: bash
         run: |
