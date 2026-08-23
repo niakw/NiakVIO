@@ -90,12 +90,48 @@ completed = subprocess.run(["node", percent_name], capture_output=True, text=Tru
 Path(percent_name).unlink(missing_ok=True)
 assert completed.returncode == 0, completed.stdout + completed.stderr
 
+# MalluMV-style HTML entity decoding used to decode &amp; before &lt;/&gt;/etc.
+# That means &amp;lt; becomes a literal '<' in one chain: a genuine double-unescape.
+# The generic Core keeps the same fixed entity map but decodes ampersand last.
+html_entities = r'''function decodeOne(raw){return raw
+  .replace(/&raquo;/g, '»')
+  .replace(/&amp;/g, '&')
+  .replace(/&lt;/g, '<')
+  .replace(/&gt;/g, '>')
+  .replace(/&quot;/g, '"')
+  .replace(/&#39;/g, "'");}
+'''
+hardened, report = harden_text(html_entities)
+assert report["htmlEntityDecodeReorders"] == 1, (report, hardened)
+assert hardened.index("/&lt;/g") < hardened.index("/&amp;/g"), hardened
+assert hardened.index("/&#39;/g") < hardened.index("/&amp;/g"), hardened
+assert "double_html_entity_unescape" not in known_unsafe_findings(hardened)
+js_ok(hardened)
+html_runtime = hardened + r'''
+if(decodeOne("&lt;b&gt;")!=="<b>")process.exit(31);
+if(decodeOne("Tom &amp; Jerry")!=="Tom & Jerry")process.exit(32);
+if(decodeOne("&amp;lt;b&amp;gt;")!=="&lt;b&gt;")process.exit(33);
+'''
+with tempfile.NamedTemporaryFile("w", suffix=".js", encoding="utf-8", delete=False) as handle:
+    handle.write(html_runtime)
+    html_name = handle.name
+completed = subprocess.run(["node", html_name], capture_output=True, text=True)
+Path(html_name).unlink(missing_ok=True)
+assert completed.returncode == 0, completed.stdout + completed.stderr
+
+# Imported providers must not retain CodeQL-recognized console sinks at all. A
+# local no-op sink is stronger than merely shadowing console because tainted values
+# no longer flow into console.log/error/warn calls in the generated source graph.
 logs = '''var TMDB_API_KEY="secret";function f(u){console.log(u+TMDB_API_KEY);console["warn"](TMDB_API_KEY);globalThis.console.error(u)}'''
 hardened, report = harden_text(logs)
-assert report["consoleShadow"] is True, report
-assert "var console={" in hardened
-assert "globalThis.console" not in hardened
+assert report["consoleSinkChanges"] == 3, (report, hardened)
+assert "console.log" not in hardened
+assert 'console["warn"]' not in hardened
+assert "globalThis.console.error" not in hardened
+assert hardened.count("__nuvioProviderSilentLog") >= 4
+assert "var __nuvioProviderSilentLog=function(){};" in hardened
 assert MARKER in hardened
+assert "provider_console_sensitive_sink" not in known_unsafe_findings(hardened)
 js_ok(hardened)
 
 again, again_report = harden_text(hardened)
@@ -105,7 +141,7 @@ assert known_unsafe_findings(hardened) == [], known_unsafe_findings(hardened)
 
 # A formatter/minifier may relocate a preserved marker while a later Core-tail
 # rebuild removes only the silent helper declaration. Marker presence must not
-# suppress structural repair of the remaining console shadow object.
+# suppress structural repair of remaining helper uses.
 orphan_shadow = '''/* NUVIO_PROVIDER_SECURITY_HARDENING_V1:deadbeef */
 /* NUVIO_PROVIDER_CONSOLE_SHADOW_V1 */
 var console={log:__nuvioProviderSilentLog,warn:__nuvioProviderSilentLog,error:__nuvioProviderSilentLog};
@@ -113,23 +149,23 @@ function getStreams(){console.log("x");return []}
 globalThis.getStreams=getStreams;'''
 assert "provider_console_shadow_orphan_helper" in known_unsafe_findings(orphan_shadow)
 repaired_shadow, repaired_report = harden_text(orphan_shadow)
-assert repaired_report["consoleShadowRepair"] is True, repaired_report
 assert repaired_shadow.count("var __nuvioProviderSilentLog=function(){};") == 1
+assert "console.log" not in repaired_shadow
 assert known_unsafe_findings(repaired_shadow) == [], known_unsafe_findings(repaired_shadow)
 js_ok(repaired_shadow)
 repaired_again, repaired_again_report = harden_text(repaired_shadow)
 assert repaired_again == repaired_shadow
 assert repaired_again_report["alreadyHardened"] is True
 
-# A relocated marker without any concrete shadow declarations is stale metadata,
-# not evidence that the provider console is already sandboxed.
+# A relocated marker without any concrete declarations is stale metadata, not
+# evidence that standard console sinks are already safe.
 marker_only = '''/* NUVIO_PROVIDER_SECURITY_HARDENING_V1:deadbeef */
 function getStreams(){console.log("x");return []}
 globalThis.getStreams=getStreams;'''
 marker_repaired, marker_report = harden_text(marker_only)
-assert marker_report["consoleShadow"] is True, marker_report
+assert marker_report["consoleSinkChanges"] == 1, marker_report
 assert "var __nuvioProviderSilentLog=function(){};" in marker_repaired
-assert "var console={" in marker_repaired
+assert "console.log" not in marker_repaired
 assert known_unsafe_findings(marker_repaired) == []
 js_ok(marker_repaired)
 
