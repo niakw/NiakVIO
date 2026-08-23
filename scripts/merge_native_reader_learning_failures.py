@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-"""Persist sanitized native-reader failures as learning-only Brain memory.
+"""Persist sanitized native-reader failures as nonblocking Brain memory.
 
-This channel intentionally accepts incomplete reader evidence. A player that never
-opens is still useful evidence for skill learning, but incomplete evidence may never
-authorize provider JS mutation or production publication. The stricter readerBacklog
-continues to own mutation-eligible, complete evidence separately.
+Incomplete reader evidence is allowed to improve diagnosis and skill learning, but it
+never authorizes provider mutation. Ownership is explicit:
+- provider_stream/provider_extraction -> provider learning + independent Deep retry;
+- client_runtime -> official Nuvio vendor-wait memory, no provider mutation/retry;
+- lab_emulation -> excluded from provider learning and left to Lab final validation.
 """
 from __future__ import annotations
 
@@ -13,6 +14,12 @@ import json
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
+
+CLIENT_RUNTIME_CLASSES = {
+    "playback_runtime_setup",
+    "playback_player_error",
+    "playback_decoder",
+}
 
 
 def load(path: Path) -> dict[str, Any]:
@@ -38,16 +45,22 @@ def count(value: Any) -> int:
         return 0
 
 
-def normalized_counts(value: Any) -> dict[str, int]:
-    if not isinstance(value, dict):
-        return {}
-    out: dict[str, int] = {}
-    for key, raw in value.items():
-        name = clean(key, 96) or "unknown_failure"
-        amount = count(raw)
-        if amount:
-            out[name] = out.get(name, 0) + amount
-    return out
+def owner_for(row: dict[str, Any]) -> str:
+    domain = clean(row.get("failureDomain"), 64).casefold()
+    failure = clean(row.get("failureClass"), 96) or "unknown_failure"
+    if domain == "lab_emulation":
+        return "lab_emulation"
+    if domain == "client_runtime" or failure in CLIENT_RUNTIME_CLASSES:
+        return "nuvio_vendor_wait"
+    if domain in {"provider_stream", "provider_extraction"} or bool(row.get("providerMutationEligible")):
+        return "provider_learning"
+    if clean(row.get("failureStage"), 64).casefold() == "media_extraction":
+        return "provider_learning"
+    return "unresolved_nonblocking"
+
+
+def key_for(provider: str, failure: str, owner: str) -> tuple[str, str, str]:
+    return provider, failure, owner
 
 
 def main() -> int:
@@ -70,17 +83,21 @@ def main() -> int:
         state["nativeReaderRepairMemory"] = memory
     learning = memory.get("readerLearningFailures") if isinstance(memory.get("readerLearningFailures"), dict) else {}
     previous = [row for row in learning.get("entries") or [] if isinstance(row, dict)]
-    by_key: dict[tuple[str, str], dict[str, Any]] = {}
+    by_key: dict[tuple[str, str, str], dict[str, Any]] = {}
     for row in previous:
         provider = clean(row.get("providerId"), 128).casefold()
         failure = clean(row.get("failureClass"), 96) or "unknown_failure"
+        owner = clean(row.get("owner"), 48) or "provider_learning"
         if provider:
-            by_key[(provider, failure)] = row
+            by_key[key_for(provider, failure, owner)] = row
 
     now = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
     imported_files = 0
     incomplete_files = 0
-    observations = 0
+    observed = 0
+    lab_excluded = 0
+    owner_counts: dict[str, int] = {}
+
     for path in sorted(args.diagnostics_root.rglob("*brain.json")) if args.diagnostics_root.exists() else []:
         report = load(path)
         if not report:
@@ -89,89 +106,114 @@ def main() -> int:
         complete = report.get("evidenceComplete") is True
         if not complete:
             incomplete_files += 1
-        outcomes = [row for row in report.get("providerOutcomes") or [] if isinstance(row, dict)]
-        for outcome in outcomes:
-            provider = clean(outcome.get("provider"), 128).casefold()
+
+        observations = [row for row in report.get("observations") or [] if isinstance(row, dict)]
+        for raw in observations:
+            if clean(raw.get("routeMode"), 32).casefold() == "capability_probe":
+                continue
+            failure = clean(raw.get("failureClass"), 96) or "unknown_failure"
+            if failure == "healthy":
+                continue
+            provider = clean(raw.get("provider"), 128).casefold()
             if not provider:
                 continue
-            classes = normalized_counts(outcome.get("failureClasses"))
-            load_classes = normalized_counts(outcome.get("loadFailureClasses"))
-            for failure, amount in load_classes.items():
-                classes[failure] = classes.get(failure, 0) + amount
-            unresolved = count(outcome.get("failures")) + count(outcome.get("loadFailures"))
-            if not classes and unresolved:
-                classes["native_reader_unclassified"] = unresolved
-            clients = sorted({clean(v, 32).lower() for v in outcome.get("clients") or [] if clean(v, 32)})[:16]
-            fixtures = sorted({clean(v, 96) for v in outcome.get("fixtures") or [] if clean(v, 96)})[:32]
-            for failure, amount in classes.items():
-                if amount <= 0:
-                    continue
-                key = (provider, failure)
-                row = by_key.get(key) or {
-                    "providerId": provider,
-                    "failureClass": failure,
-                    "occurrences": 0,
-                    "incompleteOccurrences": 0,
-                    "completeOccurrences": 0,
-                    "clients": [],
-                    "fixtures": [],
-                    "firstSeenAt": now,
-                }
-                row["occurrences"] = count(row.get("occurrences")) + amount
-                bucket = "completeOccurrences" if complete else "incompleteOccurrences"
-                row[bucket] = count(row.get(bucket)) + amount
-                row["clients"] = sorted(set([*(row.get("clients") or []), *clients]))[:16]
-                row["fixtures"] = sorted(set([*(row.get("fixtures") or []), *fixtures]))[:32]
-                row["lastSeenAt"] = now
-                row["lastRunId"] = run_id
-                row["learningOnly"] = True
-                row["providerJsMutationAllowed"] = False
-                row["productionWritesAllowed"] = False
-                row["deepRetryRequested"] = True
-                row["lastEvidenceComplete"] = complete
-                by_key[key] = row
-                observations += amount
-
-    # Preserve a report-level failure even when the incomplete native run could not
-    # attribute it to a provider. This improves instrumentation/skill learning but is
-    # deliberately excluded from provider-targeted mutation or Deep provider hints.
-    if imported_files and not by_key:
-        aggregate = 0
-        for path in sorted(args.diagnostics_root.rglob("*brain.json")):
-            aggregate += count(load(path).get("readerFailures"))
-        if aggregate:
-            memory["unattributedReaderLearningFailures"] = {
-                "occurrences": count((memory.get("unattributedReaderLearningFailures") or {}).get("occurrences")) + aggregate,
-                "lastRunId": run_id,
-                "lastSeenAt": now,
-                "learningOnly": True,
-                "providerJsMutationAllowed": False,
-                "deepRetryRequested": False,
+            owner = owner_for(raw)
+            if owner == "lab_emulation":
+                lab_excluded += 1
+                owner_counts[owner] = owner_counts.get(owner, 0) + 1
+                continue
+            k = key_for(provider, failure, owner)
+            row = by_key.get(k) or {
+                "providerId": provider,
+                "failureClass": failure,
+                "owner": owner,
+                "occurrences": 0,
+                "incompleteOccurrences": 0,
+                "completeOccurrences": 0,
+                "clients": [],
+                "fixtures": [],
+                "firstSeenAt": now,
             }
+            row["occurrences"] = count(row.get("occurrences")) + 1
+            bucket = "completeOccurrences" if complete else "incompleteOccurrences"
+            row[bucket] = count(row.get(bucket)) + 1
+            client = clean(raw.get("client"), 32).lower()
+            fixture = clean(raw.get("fixture"), 96)
+            row["clients"] = sorted(set([*(row.get("clients") or []), *([client] if client else [])]))[:16]
+            row["fixtures"] = sorted(set([*(row.get("fixtures") or []), *([fixture] if fixture else [])]))[:32]
+            row["lastSeenAt"] = now
+            row["lastRunId"] = run_id
+            row["learningOnly"] = True
+            row["providerJsMutationAllowed"] = False
+            row["productionWritesAllowed"] = False
+            row["deepRetryRequested"] = owner == "provider_learning"
+            row["vendorWait"] = owner == "nuvio_vendor_wait"
+            row["lastEvidenceComplete"] = complete
+            by_key[k] = row
+            observed += 1
+            owner_counts[owner] = owner_counts.get(owner, 0) + 1
+
+        # Backward-compatible fallback for older diagnoses without observation rows.
+        if not observations:
+            for outcome in [row for row in report.get("providerOutcomes") or [] if isinstance(row, dict)]:
+                provider = clean(outcome.get("provider"), 128).casefold()
+                if not provider:
+                    continue
+                provider_failures = count(outcome.get("providerEligibleFailures")) + count(outcome.get("extractionFailures"))
+                vendor_failures = count(outcome.get("clientRuntimeFailures"))
+                for failure, amount in (("native_reader_unclassified", provider_failures), ("playback_player_error", vendor_failures)):
+                    if amount <= 0:
+                        continue
+                    owner = "provider_learning" if failure == "native_reader_unclassified" else "nuvio_vendor_wait"
+                    k = key_for(provider, failure, owner)
+                    row = by_key.get(k) or {
+                        "providerId": provider, "failureClass": failure, "owner": owner,
+                        "occurrences": 0, "incompleteOccurrences": 0, "completeOccurrences": 0,
+                        "clients": [], "fixtures": [], "firstSeenAt": now,
+                    }
+                    row["occurrences"] = count(row.get("occurrences")) + amount
+                    row["incompleteOccurrences" if not complete else "completeOccurrences"] = count(row.get("incompleteOccurrences" if not complete else "completeOccurrences")) + amount
+                    row["lastSeenAt"] = now
+                    row["lastRunId"] = run_id
+                    row["learningOnly"] = True
+                    row["providerJsMutationAllowed"] = False
+                    row["productionWritesAllowed"] = False
+                    row["deepRetryRequested"] = owner == "provider_learning"
+                    row["vendorWait"] = owner == "nuvio_vendor_wait"
+                    row["lastEvidenceComplete"] = complete
+                    by_key[k] = row
+                    observed += amount
+                    owner_counts[owner] = owner_counts.get(owner, 0) + amount
 
     entries = sorted(
         by_key.values(),
-        key=lambda row: (-count(row.get("occurrences")), str(row.get("providerId")), str(row.get("failureClass"))),
+        key=lambda row: (-count(row.get("occurrences")), str(row.get("providerId")), str(row.get("failureClass")), str(row.get("owner"))),
     )[: max(1, int(args.max_entries))]
     imported_runs = [clean(v, 32) for v in learning.get("importedRunIds") or [] if clean(v, 32).isdigit()]
     imported_runs = [v for v in imported_runs if v != run_id] + [run_id]
     memory["readerLearningFailures"] = {
-        "schemaVersion": 1,
+        "schemaVersion": 2,
         "updatedAt": now,
         "entries": entries,
         "importedRunIds": imported_runs[-100:],
+        "lastRunOwnershipCounts": dict(sorted(owner_counts.items())),
+        "labEmulationExcluded": lab_excluded,
         "policy": {
             "learningAllowedFromIncompleteEvidence": True,
             "providerMutationAllowed": False,
             "productionWritesAllowed": False,
-            "deepRetryUsesIndependentEvidence": True,
+            "providerFailuresRequestIndependentDeepRetry": True,
+            "nuvioClientRuntimeFailuresAreVendorWait": True,
+            "labEmulationExcludedFromProviderLearning": True,
         },
     }
     output.write_text(json.dumps(state, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(
         f"FIELD_NATIVE_READER_LEARNING_MERGE run={run_id} files={imported_files} "
-        f"incomplete_files={incomplete_files} observations={observations} entries={len(entries)} "
-        "blocking=false mutation_allowed=false deep_retry=true"
+        f"incomplete_files={incomplete_files} observations={observed} entries={len(entries)} "
+        f"provider_learning={owner_counts.get('provider_learning', 0)} "
+        f"vendor_wait={owner_counts.get('nuvio_vendor_wait', 0)} lab_excluded={lab_excluded} "
+        "blocking=false mutation_allowed=false"
     )
     return 0
 
