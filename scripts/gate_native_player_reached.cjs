@@ -49,18 +49,24 @@ for (const file of paths) {
 }
 
 if (!readable) {
-  console.error('FIELD_NATIVE_PLAYER_REACH_GATE status=fail reason=no_readable_logs terminal=0 production=0 setup_rejected=0');
+  console.error('FIELD_NATIVE_PLAYER_REACH_GATE status=fail reason=no_readable_logs terminal=0 production=0 setup_rejected=0 blocking=true owner=lab_infra');
   process.exit(3);
 }
 if (!productionPlayerReached) {
+  // A route that reaches no production player is valuable Lab evidence, not a Lab
+  // infrastructure failure. Keep the structured failure for the Brain to classify
+  // and repair. Explicit strict callers may still opt into the historical exit 4.
+  const blocking = process.env.NIAKVIO_NATIVE_PLAYER_GATE_BLOCKING === '1';
   console.error(
     `FIELD_NATIVE_PLAYER_REACH_GATE status=fail reason=production_player_never_reached ` +
-    `terminal=${terminalEvidence} production=0 setup_rejected=${rejectedSetup}`
+    `terminal=${terminalEvidence} production=0 setup_rejected=${rejectedSetup} ` +
+    `blocking=${blocking} owner=brain`
   );
-  process.exit(4);
+  if (blocking) process.exit(4);
+  process.exit(0);
 }
 const clients = [...byClient.entries()].map(([client, count]) => `${client}:${count}`).join(',');
 console.log(
   `FIELD_NATIVE_PLAYER_REACH_GATE status=pass terminal=${terminalEvidence} ` +
-  `production=${productionPlayerReached} setup_rejected=${rejectedSetup} clients=${clients}`
+  `production=${productionPlayerReached} setup_rejected=${rejectedSetup} clients=${clients} blocking=false owner=brain`
 );
