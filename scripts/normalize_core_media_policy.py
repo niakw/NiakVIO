@@ -13,6 +13,9 @@ import json
 from pathlib import Path
 from typing import Any
 
+from normalize_provider_branding_pipeline import assert_contract as assert_branding_pipeline_contract
+from normalize_provider_branding_pipeline import normalize as normalize_branding_pipeline
+
 ROOT = Path(__file__).resolve().parents[1]
 OVERRIDES = ROOT / "provider-overrides.json"
 MANIFEST = ROOT / "manifest.json"
@@ -120,6 +123,14 @@ def normalize_source_files(*, apply: bool) -> list[str]:
         changed.append("scripts/publish_desktop_runtime_compat.py:provider_specific_target")
         if apply:
             DESKTOP_COMPAT.write_text(source.replace(_PURSTREAM_DESKTOP_TARGET, ""), encoding="utf-8")
+
+    apply_source = APPLY_OVERRIDES.read_text(encoding="utf-8")
+    normalized_apply, branding_changes = normalize_branding_pipeline(apply_source)
+    assert_branding_pipeline_contract(normalized_apply)
+    if branding_changes:
+        changed.extend(f"scripts/apply_provider_overrides.py:{item}" for item in branding_changes)
+        if apply:
+            APPLY_OVERRIDES.write_text(normalized_apply, encoding="utf-8")
     return changed
 
 
@@ -153,13 +164,12 @@ def _assert_branding_inventory() -> None:
 
 def _assert_branding_pipeline_order() -> None:
     source = APPLY_OVERRIDES.read_text(encoding="utf-8")
+    assert_branding_pipeline_contract(source)
     presentation = source.find('"scope": "global_stream_presentation"')
     branding = source.find('"scope": "global_provider_branding"')
     final_return = source.find("    if text == original_text:", branding)
     if presentation < 0 or branding < 0 or final_return < 0 or not (presentation < branding < final_return):
         raise ValueError("provider branding must execute after stream presentation and before final return")
-    if 'GLOBAL_PROVIDER_BRANDING = "scripts/provider_patches/global_provider_branding_v1.py"' not in source:
-        raise ValueError("controlled provider branding constant is missing")
 
 
 def assert_policy(value: dict[str, Any]) -> None:
