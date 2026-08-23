@@ -31,20 +31,39 @@ SAFETY_CALL = '})(typeof globalThis!=="undefined"?globalThis:this,'
 
 
 def _strip_previous(text: str) -> str:
+    """Remove owned safety wrappers and canonicalize only their join boundaries.
+
+    When another Core wrapper follows this one, preserving whitespace from both
+    sides made two extra newlines accumulate on every reconstruction for bundles
+    whose provider export floor is intentionally unknown. Each removed owned IIFE
+    now leaves exactly one statement separator between the untouched neighbours.
+    """
     cursor = 0
+    removed = False
     parts: list[str] = []
+
+    def append_piece(value: str, *, trim_left: bool) -> None:
+        piece = value.lstrip() if trim_left else value
+        piece = piece.rstrip()
+        if not piece:
+            return
+        if parts and not parts[-1].endswith("\n"):
+            parts.append("\n")
+        parts.append(piece)
+
     while True:
         start = text.find(SAFETY_PREFIX, cursor)
         if start < 0:
-            parts.append(text[cursor:])
+            append_piece(text[cursor:], trim_left=removed)
             break
         marker_end = text.find("*/", start)
         call = text.find(SAFETY_CALL, marker_end + 2 if marker_end >= 0 else start)
         end = text.find(");", call + len(SAFETY_CALL)) if call >= 0 else -1
         if marker_end < 0 or call < 0 or end < 0:
             raise ValueError("unterminated global runtime media safety wrapper")
-        parts.append(text[cursor:start])
+        append_piece(text[cursor:start], trim_left=removed)
         cursor = end + 2
+        removed = True
     return "".join(parts)
 
 
