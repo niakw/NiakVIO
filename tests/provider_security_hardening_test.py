@@ -68,6 +68,36 @@ assert again == hardened
 assert again_report["alreadyHardened"] is True
 assert known_unsafe_findings(hardened) == [], known_unsafe_findings(hardened)
 
+# A formatter/minifier may relocate a preserved marker while a later Core-tail
+# rebuild removes only the silent helper declaration. Marker presence must not
+# suppress structural repair of the remaining console shadow object.
+orphan_shadow = '''/* NUVIO_PROVIDER_SECURITY_HARDENING_V1:deadbeef */
+/* NUVIO_PROVIDER_CONSOLE_SHADOW_V1 */
+var console={log:__nuvioProviderSilentLog,warn:__nuvioProviderSilentLog,error:__nuvioProviderSilentLog};
+function getStreams(){console.log("x");return []}
+globalThis.getStreams=getStreams;'''
+assert "provider_console_shadow_orphan_helper" in known_unsafe_findings(orphan_shadow)
+repaired_shadow, repaired_report = harden_text(orphan_shadow)
+assert repaired_report["consoleShadowRepair"] is True, repaired_report
+assert repaired_shadow.count("var __nuvioProviderSilentLog=function(){};") == 1
+assert known_unsafe_findings(repaired_shadow) == [], known_unsafe_findings(repaired_shadow)
+js_ok(repaired_shadow)
+repaired_again, repaired_again_report = harden_text(repaired_shadow)
+assert repaired_again == repaired_shadow
+assert repaired_again_report["alreadyHardened"] is True
+
+# A relocated marker without any concrete shadow declarations is stale metadata,
+# not evidence that the provider console is already sandboxed.
+marker_only = '''/* NUVIO_PROVIDER_SECURITY_HARDENING_V1:deadbeef */
+function getStreams(){console.log("x");return []}
+globalThis.getStreams=getStreams;'''
+marker_repaired, marker_report = harden_text(marker_only)
+assert marker_report["consoleShadow"] is True, marker_report
+assert "var __nuvioProviderSilentLog=function(){};" in marker_repaired
+assert "var console={" in marker_repaired
+assert known_unsafe_findings(marker_repaired) == []
+js_ok(marker_repaired)
+
 mutated = hardened + '\nfunction later(u){return u.includes("evil.example")}'
 rehardened, re_report = harden_text(mutated)
 assert re_report["hostnameChanges"] == 1, re_report
