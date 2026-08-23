@@ -49,8 +49,6 @@ def _regressions() -> None:
     assert floor > kurage.index("function _decoder")
     assert kurage[floor:].lstrip().startswith("/* NUVIO_GLOBAL_CATALOGUE_ALIAS_RECOVERY_V2:")
 
-    # Only classic named declarations are provider-owned after the export. Calls,
-    # assignments and anonymous declarations must never be swallowed as provider bytes.
     assert provider_export_floor(
         "module.exports={getStreams};dangerousCall();\n" + core
     ) == -1
@@ -68,6 +66,66 @@ def _regressions() -> None:
     floor = provider_export_floor(vegamovies)
     assert floor > vegamovies.index("module.exports")
     assert vegamovies[floor:].lstrip().startswith("/* NUVIO_TV_PLAYABLE_FIRST_V1")
+
+    # CTGMovies/FibWatch: the object export is wrapped in a boolean-expression
+    # parenthesis. Only syntactic closing parentheses may appear before Core.
+    wrapped = (
+        "function getStreams(){};"
+        "typeof module!=='undefined'&&module.exports&&("
+        "module['exports']={'getStreams':getStreams,'scrape':scrape});\n" + core
+    )
+    floor = provider_export_floor(wrapped)
+    assert floor > wrapped.index("module['exports']")
+    assert wrapped[floor:].lstrip().startswith("/* NUVIO_GLOBAL_CATALOGUE_ALIAS_RECOVERY_V2:")
+    assert provider_export_floor(
+        "module.exports={getStreams});dangerousCall();\n" + core
+    ) == -1
+
+    # StreamFlix/YFlix/MalluMV/VidNest: explicit CommonJS branch with a global
+    # fallback. The fallback is provider glue only when it contains global bindings.
+    braced = (
+        "function getStreams(){};"
+        "if(typeof module!=='undefined'&&module.exports){"
+        "module.exports={getStreams};}else{global.getStreams=getStreams;}\n" + core
+    )
+    floor = provider_export_floor(braced)
+    assert floor > braced.index("module.exports")
+    assert braced[floor:].lstrip().startswith("/* NUVIO_GLOBAL_CATALOGUE_ALIAS_RECOVERY_V2:")
+
+    cinevibe = (
+        "function getStreams(){};"
+        "if(typeof module!=='undefined'&&module.exports){module.exports={getStreams};}else{"
+        "// React Native compatibility\n"
+        "global.CinevibeScraperModule={getStreams};}\n" + core
+    )
+    floor = provider_export_floor(cinevibe)
+    assert floor > cinevibe.index("module.exports")
+
+    moonflix = (
+        "function mGetStreams(){};function mOnSettings(){};"
+        "if(x)module.exports={'getStreams':mGetStreams,'onSettings':mOnSettings};"
+        "else typeof global!=='undefined'&&(global.getStreams=mGetStreams,global.onSettings=mOnSettings);\n"
+        + core
+    )
+    floor = provider_export_floor(moonflix)
+    assert floor > moonflix.index("module.exports")
+
+    # AnimeKai: ternary global fallback may publish a small object, but that object
+    # itself must have a getStreams key with identifier-only values.
+    animekai = (
+        "function getStreams(){};x?module['exports']={'getStreams':getStreams}:"
+        "global['AnimeKai']={'getStreams':getStreams};\n" + core
+    )
+    floor = provider_export_floor(animekai)
+    assert floor > animekai.index("module['exports']")
+
+    for unsafe in (
+        "if(x){module.exports={getStreams};}else{global.getStreams=dangerousCall();}\n",
+        "if(x){module.exports={getStreams};}else{global.box={getStreams:dangerousCall()};}\n",
+        "x?module.exports={getStreams}:global.box={other:getStreams};\n",
+        "if(x){module.exports={getStreams};}else{global.getStreams=getStreams;}dangerousCall();\n",
+    ):
+        assert provider_export_floor(unsafe + core) == -1
 
 
 def _shape_excerpt(text: str, marker_positions: list[int]) -> str:
