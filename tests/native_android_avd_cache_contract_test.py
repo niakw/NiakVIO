@@ -10,13 +10,28 @@ prebuild = (ROOT / "scripts/prebuild_native_android_reader_suite.sh").read_text(
 # invalidated whenever an official Nuvio app commit advances; the guest userdata
 # is deliberately retained so a warm Lab can reuse the installed client/profile
 # and provider cache instead of recreating the device on every run.
-assert "avd-v3-${{ runner.os }}-mobile-api35-google_apis-x86_64-pixel_2" in workflow
-assert "avd-v3-${{ runner.os }}-tv-api31-android-tv-x86-tv_1080p" in workflow
+assert "avd-v4-${{ runner.os }}-mobile-api35-google_apis-x86_64-pixel_2" in workflow
+assert "avd-v4-${{ runner.os }}-tv-api31-android-tv-x86-tv_1080p" in workflow
 for line in workflow.splitlines():
-    if "key: avd-v3-" in line:
+    if "key: avd-v4-" in line:
         assert "needs.resolve.outputs.mobile_sha" not in line
         assert "needs.resolve.outputs.tv_sha" not in line
         assert "needs.resolve.outputs.runtime_fingerprint" not in line
+
+# A cache miss must not attempt to load a snapshot that cannot exist yet. The
+# representative run cold-boots the newly-created AVD directly, while a warm
+# cache may load its saved default snapshot without overwriting it on exit.
+assert workflow.count("-no-snapshot-load -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim") >= 3
+assert workflow.count("-no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim") >= 3
+assert "Create Mobile AVD snapshot on cache miss" not in workflow
+assert "Create TV AVD snapshot on cache miss" not in workflow
+assert "Create TV AVD snapshot on candidate cache miss" not in workflow
+
+# Long main/workflow_dispatch native proofs are authoritative and must not be
+# killed by a later main commit. Only stale revisions of the same pull request
+# may cancel one another.
+assert "github.event.pull_request.number || github.run_id" in workflow
+assert "cancel-in-progress: ${{ github.event_name == 'pull_request' }}" in workflow
 
 # Every Android emulator path primes adb before the emulator action. GitHub's
 # hosted image can expose sdkmanager while platform-tools/adb is still absent,
@@ -47,4 +62,4 @@ assert "FIELD_NATIVE_ANDROID_PREBUILD_NETWORK_RETRY" in prebuild
 assert "attempt=$attempt status=exhausted" in prebuild
 assert "return \"$status\"" in prebuild
 
-print("native Android AVD persistence + resilient adb/bootstrap/dependency contract passed")
+print("native Android AVD persistence + cold-boot/adb/dependency resilience contract passed")
