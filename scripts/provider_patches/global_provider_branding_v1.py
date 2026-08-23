@@ -9,9 +9,9 @@ normalized.
 
 Every currently published provider must exist in ``assets/providers/emojis.json``
 (the repository contract checks exact 92/92 coverage). A provider discovered only
-inside a future/synthetic Core probe may still pass safely with a generic alphabet
-emoji and a readable name derived from its id; it is not publishable until the
-committed inventory is updated.
+inside a future/synthetic Core probe may still pass safely with a regional-indicator
+emoji derived from the first alphabetic letter of its readable provider name; it is
+not publishable until the committed inventory is updated.
 """
 from __future__ import annotations
 
@@ -24,12 +24,21 @@ from typing import Any
 MARKER = "NUVIO_GLOBAL_PROVIDER_BRANDING_V1"
 ROOT = Path(__file__).resolve().parents[2]
 BRANDING = ROOT / "assets" / "providers" / "emojis.json"
-FALLBACK_EMOJI = "🔤"
 
 
 def _fallback_name(provider_id: str) -> str:
     parts = [part for part in re.split(r"[-_\s]+", str(provider_id or "").strip()) if part]
     return " ".join(part[:1].upper() + part[1:] for part in parts) or "Source"
+
+
+def _initial_emoji(name: str) -> str:
+    """Return the Unicode regional-indicator emoji for the first A-Z letter."""
+    for char in str(name or "").upper():
+        if "A" <= char <= "Z":
+            return chr(0x1F1E6 + ord(char) - ord("A"))
+    # _fallback_name always supplies Source for an empty/non-alphabetic id, so
+    # this is a defensive invariant rather than a visible generic fallback.
+    return chr(0x1F1E6 + ord("S") - ord("A"))
 
 
 def _load_provider(provider_id: str) -> dict[str, str]:
@@ -42,7 +51,8 @@ def _load_provider(provider_id: str) -> dict[str, str]:
     normalized_id = str(provider_id or "").strip().casefold()
     row = providers.get(normalized_id)
     if not isinstance(row, dict):
-        return {"name": _fallback_name(normalized_id), "emoji": FALLBACK_EMOJI}
+        name = _fallback_name(normalized_id)
+        return {"name": name, "emoji": _initial_emoji(name)}
     name = str(row.get("name") or "").strip()
     emoji = str(row.get("emoji") or "").strip()
     if not name or not emoji:
@@ -72,7 +82,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> st
         "providerId": provider_id,
         "providerName": row["name"],
         "providerEmoji": row["emoji"],
-        "implementationRevision": "post-presentation-emoji-stream-label-v3",
+        "implementationRevision": "post-presentation-emoji-stream-label-v4",
     }
     serialized = json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
     marker = f"{MARKER}:{hashlib.sha256(serialized.encode('utf-8')).hexdigest()[:12]}"
