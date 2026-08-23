@@ -19,11 +19,14 @@ V5 historically detects its compatibility ``probe()`` alias with a whole-file
 substring search. A provider or another wrapper may coincidentally define the
 same function, causing V5 to skip the alias inside the sanitizer and fail at
 runtime with ``ReferenceError: probe is not defined``. V6 verifies the alias in
-the sanitizer's own lexical region and injects it there when needed.
+the sanitizer's own lexical region and injects it there when needed. Detection
+is structural rather than formatting-dependent because Terser may compact an
+already-published sanitizer before the next Core reconstruction.
 """
 from __future__ import annotations
 
 import importlib.util
+import re
 from pathlib import Path
 from typing import Any
 
@@ -47,6 +50,16 @@ TARGET_MEDIA_MARKERS = (
 PROBE_RESOLVED = "  async function probeResolved(stream,url,depth,referer){\n"
 PROBE_ALIAS = '  async function probe(stream,url){return await probeResolved(stream,url,0,"")}\n'
 INSTALL_ANCHOR = "  function install(container,key){\n"
+PROBE_RESOLVED_RE = re.compile(
+    r"async\s+function\s+probeResolved\s*\(\s*stream\s*,\s*url\s*,\s*depth\s*,\s*referer\s*\)\s*\{"
+)
+PROBE_ALIAS_RE = re.compile(
+    r"async\s+function\s+probe\s*\(\s*stream\s*,\s*url\s*\)\s*\{\s*"
+    r"return\s+await\s+probeResolved\s*\(\s*stream\s*,\s*url\s*,\s*0\s*,\s*[\"']{2}\s*\)\s*;?\s*\}"
+)
+INSTALL_ANCHOR_RE = re.compile(
+    r"function\s+install\s*\(\s*container\s*,\s*key\s*\)\s*\{"
+)
 
 
 def _load_v5_apply():
@@ -101,18 +114,20 @@ def _strip_existing_sanitizer(text: str) -> str:
 
 
 def _ensure_local_probe_alias(text: str) -> str:
-    """Ensure ``probe()`` exists inside this sanitizer, not merely elsewhere."""
+    """Ensure ``probe()`` exists inside this sanitizer, independent of formatting."""
     sanitizer = _sanitizer_position(text)
     if sanitizer < 0:
         return text
-    resolved = text.find(PROBE_RESOLVED, sanitizer)
-    install = text.find(INSTALL_ANCHOR, resolved if resolved >= 0 else sanitizer)
-    if resolved < 0 or install < 0:
-        raise ValueError("stream sanitizer local probe region not found")
-    region = text[resolved:install]
-    if PROBE_ALIAS in region:
+    resolved = PROBE_RESOLVED_RE.search(text, sanitizer)
+    if resolved is None:
+        raise ValueError("stream sanitizer local probeResolved region not found")
+    install = INSTALL_ANCHOR_RE.search(text, resolved.end())
+    if install is None:
+        raise ValueError("stream sanitizer local install region not found")
+    region = text[resolved.start():install.start()]
+    if PROBE_ALIAS_RE.search(region):
         return text
-    return text[:install] + PROBE_ALIAS + text[install:]
+    return text[:install.start()] + PROBE_ALIAS + text[install.start():]
 
 
 def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> str:
