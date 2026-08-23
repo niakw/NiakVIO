@@ -3,8 +3,8 @@
 """Materialize durable Core byte contracts, then verify their fixed point.
 
 Only owning runtime/publication modules are normalized. The canonical rebuild
-boundary is an observable JavaScript assignment placed after provider-derived
-code and before every global Core hook. Tests are never rewritten here.
+boundary is a Terser-preserved NUVIO comment placed after provider-derived code
+and before every global Core hook. Tests are never rewritten here.
 """
 from __future__ import annotations
 
@@ -21,17 +21,17 @@ PURIFIER = ROOT / "engine_v2" / "scripts" / "purify-provider.mjs"
 PLAYBACK_TEST = ROOT / "tests" / "global_playback_integrity_policy_test.py"
 PURIFICATION_TEST = ROOT / "tests" / "provider_purification_contract_test.py"
 
-CORE_START_BOUNDARY = "__nuvioGlobalCoreStartBoundaryV1"
+CORE_START_MARKER = "NUVIO_GLOBAL_CORE_START_BOUNDARY_V1"
 SECURITY_BOUNDARY = "__nuvioGlobalProviderSecurityBoundaryV1"
 SECURITY_MARKER = "NUVIO_GLOBAL_PROVIDER_SECURITY_HOOK_V1"
 
 
 def normalize_apply(text: str) -> str:
-    if f'CORE_START_BOUNDARY = "{CORE_START_BOUNDARY}"' not in text:
+    if f'CORE_START_MARKER = "{CORE_START_MARKER}"' not in text:
         anchor = 'GLOBAL_STREAM_PRESENTATION = "scripts/provider_patches/global_stream_presentation_v1.py"\n'
         if anchor not in text:
             raise ValueError("Core start boundary declaration anchor missing")
-        text = text.replace(anchor, anchor + f'CORE_START_BOUNDARY = "{CORE_START_BOUNDARY}"\n', 1)
+        text = text.replace(anchor, anchor + f'CORE_START_MARKER = "{CORE_START_MARKER}"\n', 1)
 
     domain_fn = dedent(r'''
     def _inject_runtime_domain_overrides(text: str, replacements: dict[str, Any]) -> tuple[str, int]:
@@ -115,29 +115,30 @@ def normalize_apply(text: str) -> str:
 
     strip_fn = dedent(r'''
     def _strip_generated_core_tail(text: str) -> tuple[str, bool]:
-        """Recover exact provider-derived bytes before the global Core pipeline.
+        """Recover provider-derived bytes before the global Core pipeline.
 
-        New bundles contain an observable Core-start assignment immediately after
-        provider-derived code. Cut at that exact JavaScript statement instead of
-        guessing a preceding line/semicolon boundary: Terser may compact closing
-        braces and semicolons differently. The boundary reads the provider export,
-        so moving it before provider initialization would change observable state.
-        Legacy bundles fall back to their old final-tail markers for one migration
-        pass; every newly materialized bundle uses the exact start boundary.
+        New bundles carry a standalone NUVIO comment immediately before the first
+        global Core hook. The final Terser policy explicitly preserves NUVIO
+        comments, so unlike an executable assignment this boundary cannot acquire
+        a JavaScript dependency or fail at runtime. Legacy global markers are only
+        a one-pass migration fallback for bundles published before the boundary.
         """
-        boundary_needle = f"globalThis.{CORE_START_BOUNDARY}"
+        boundary_needle = f"/* {CORE_START_MARKER} */"
         boundary_index = text.find(boundary_needle)
         if boundary_index >= 0:
             return text[:boundary_index].rstrip(), True
 
+        legacy_markers = tuple(GENERATED_CORE_TAIL_MARKERS) + (
+            "NUVIO_GLOBAL_CATALOGUE_ALIAS_RECOVERY_V2",
+            "NUVIO_GLOBAL_MEDIA_ENRICHMENT_V1",
+            "NUVIO_GLOBAL_RUNTIME_MEDIA_SAFETY_V1",
+            "NUVIO_HLS_RUNTIME_INTEGRITY_V1",
+            "NUVIO_HLS_MASTER_AUDIO_PRESERVER_V1",
+            "NUVIO_GLOBAL_PROVIDER_SECURITY_HOOK_V1",
+        )
         starts = []
-        for marker in GENERATED_CORE_TAIL_MARKERS:
-            needle = (
-                f"/* {marker} */"
-                if marker == "NUVIO_GLOBAL_PROVIDER_SECURITY_HOOK_V1"
-                else f"/* {marker}:"
-            )
-            index = text.find(needle)
+        for marker in legacy_markers:
+            index = text.find(f"/* {marker}")
             if index >= 0:
                 starts.append(index)
         if not starts:
@@ -148,10 +149,7 @@ def normalize_apply(text: str) -> str:
     end = text.index("\ndef apply_overrides(", start)
     text = text[:start] + strip_fn + text[end:]
 
-    # The boundary reads the provider export on purpose. A constant marker may be
-    # moved by an optimizer; this read makes crossing provider initialization a
-    # semantic change while leaving only a harmless boolean on globalThis.
-    boundary_block = '''        if CORE_START_BOUNDARY not in text:\n            text = text.rstrip() + f"\\nglobalThis.{CORE_START_BOUNDARY}=!!((typeof globalThis.getStreams===\\\"function\\\")||(typeof module!==\\\"undefined\\\"&&module&&module.exports&&typeof module.exports.getStreams===\\\"function\\\"));\\n"\n\n'''
+    boundary_block = '''        if CORE_START_MARKER not in text:\n            text = text.rstrip() + f"\\n/* {CORE_START_MARKER} */\\n"\n\n'''
     if boundary_block not in text:
         anchor = '        def _apply_playback_stage(hooks: list[str]) -> None:\n'
         if anchor not in text:
@@ -210,12 +208,13 @@ def assert_contract() -> None:
     purification_test = PURIFICATION_TEST.read_text(encoding="utf-8")
 
     for required in (
-        f'CORE_START_BOUNDARY = "{CORE_START_BOUNDARY}"',
-        'boundary_needle = f"globalThis.{CORE_START_BOUNDARY}"',
+        f'CORE_START_MARKER = "{CORE_START_MARKER}"',
+        'boundary_needle = f"/* {CORE_START_MARKER} */"',
         "text.find(boundary_needle)",
-        f"globalThis.{{CORE_START_BOUNDARY}}=!!(",
-        'typeof globalThis.getStreams===\\"function\\"',
-        'typeof module.exports.getStreams===\\"function\\"',
+        f"/* {{CORE_START_MARKER}} */",
+        '"NUVIO_GLOBAL_CATALOGUE_ALIAS_RECOVERY_V2"',
+        '"NUVIO_GLOBAL_MEDIA_ENRICHMENT_V1"',
+        '"NUVIO_HLS_RUNTIME_INTEGRITY_V1"',
         "existing_span",
         "output = text[:existing_span[0]] + bootstrap + text[existing_span[1]:]",
     ):
@@ -248,6 +247,7 @@ def assert_contract() -> None:
         assert required in purification_text, required
     for required in (
         'EXPECTED_TERSER_VERSION = "5.50.0"',
+        "comments: /(?:@license|@preserve|NUVIO_|^!)/",
         "mangle: false",
         "unsafe: false",
         "keep_fnames: true",
@@ -279,7 +279,7 @@ def main() -> int:
         assert_contract()
         print(
             "FIELD_CORE_FIXED_POINT_CONTRACT "
-            f"changed={len(changed)} core_start_boundary=observable "
+            f"changed={len(changed)} core_start_boundary=preserved_comment "
             "runtime_domain_position=stable final_terser=5.50.0"
         )
         return 0
@@ -290,7 +290,7 @@ def main() -> int:
         return 1
     assert_contract()
     print(
-        "FIELD_CORE_FIXED_POINT_CONTRACT changed=0 core_start_boundary=observable "
+        "FIELD_CORE_FIXED_POINT_CONTRACT changed=0 core_start_boundary=preserved_comment "
         "runtime_domain_position=stable final_terser=5.50.0"
     )
     return 0
