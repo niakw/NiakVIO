@@ -41,17 +41,20 @@ on:
       - 'scripts/provider_patches/stream_output_sanitizer_v6.py'
       - 'scripts/provider_patches/global_stream_presentation_v1.py'
       - 'scripts/provider_patches/global_stream_facts_v1.py'
+      - 'scripts/provider_patches/global_stream_identity_v1.py'
       - 'scripts/provider_patches/global_media_enrichment_v1.py'
       - 'scripts/provider_patches/global_provider_security_hardening_v1.py'
       - 'scripts/provider_patches/global_provider_branding_v1.py'
       - 'scripts/provider_security_hardening.py'
       - 'scripts/provider_purification.py'
+      - 'tests/core_terminal_export_floor_test.py'
       - 'tests/core_media_policy_test.py'
       - 'tests/provider_branding_contract_test.py'
       - 'tests/global_core_presentation_pipeline_test.py'
       - 'tests/native_sync_fetch_target_order_test.py'
       - 'tests/runtime_capability_media_safety_v4_test.py'
       - 'tests/global_playback_integrity_policy_test.py'
+      - 'tests/global_stream_identity_test.py'
       - 'tests/global_stream_presentation_test.py'
       - 'tests/global_stream_presentation_pipeline_test.py'
       - 'tests/provider_specific_adapters_test.py'
@@ -132,9 +135,11 @@ jobs:
             scripts/reapply_published_overrides.py \
             scripts/provider_patches/global_provider_branding_v1.py \
             scripts/provider_patches/stream_output_sanitizer_v6.py
+          python tests/core_terminal_export_floor_test.py
           python tests/provider_wrapper_isolation_test.py
           python tests/stream_output_sanitizer_fail_closed_test.py
           python tests/global_playback_integrity_policy_test.py
+          python tests/global_stream_identity_test.py
           python tests/provider_purification_contract_test.py
           python tests/prune_unreferenced_providers_test.py
           python scripts/normalize_provider_rebuild_safety.py --check
@@ -183,12 +188,14 @@ jobs:
           python scripts/normalize_provider_branding_pipeline.py --check
           python scripts/normalize_core_media_policy.py --check
           python scripts/enforce_main_only_repository_policy.py --check
+          python tests/core_terminal_export_floor_test.py
           python tests/core_media_policy_test.py
           python tests/provider_branding_contract_test.py
           python tests/global_core_presentation_pipeline_test.py
           python tests/native_sync_fetch_target_order_test.py
           python tests/runtime_capability_media_safety_v4_test.py
           python tests/global_playback_integrity_policy_test.py
+          python tests/global_stream_identity_test.py
           python tests/global_stream_presentation_test.py
           python tests/global_stream_presentation_pipeline_test.py
           python tests/provider_specific_adapters_test.py
@@ -282,9 +289,11 @@ jobs:
           python scripts/normalize_provider_branding_pipeline.py --check
           python scripts/normalize_core_media_policy.py --check
           python scripts/enforce_main_only_repository_policy.py --check
+          python tests/core_terminal_export_floor_test.py
           python tests/core_media_policy_test.py
           python tests/provider_branding_contract_test.py
           python tests/global_playback_integrity_policy_test.py
+          python tests/global_stream_identity_test.py
           python tests/runtime_capability_media_safety_v4_test.py
           python tests/provider_wrapper_isolation_test.py
           python tests/stream_output_sanitizer_fail_closed_test.py
