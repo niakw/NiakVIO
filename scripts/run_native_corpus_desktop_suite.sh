@@ -104,11 +104,15 @@ PY
   HTTP_LOG="${WORKSPACE}/desktop-native-http-evidence.log"
   rm -f "$BASE_LOG" "$LOG" "$GRADLE_LOG" "$HTTP_LOG"
   RUNTIME_STATUS=0
+  # The test source is regenerated for every fixture. Gradle's build cache can
+  # otherwise restore desktopTest outputs from an earlier injected source and make
+  # the native corpus appear to execute while producing no corpus/player markers.
+  # Force this one lab test to run from the exact source just staged above.
   if [[ "$HOST_OS" = "windows" ]]; then
-    "$DESKTOP_ROOT/gradlew.bat" -p "$DESKTOP_ROOT" --init-script "$DESKTOP_TEST_JVM_INIT" :composeApp:desktopTest --tests 'com.nuvio.app.features.plugins.NiakvioNativeCorpusDesktopTest' --console=plain 2>&1 | tee "$GRADLE_LOG"
+    "$DESKTOP_ROOT/gradlew.bat" -p "$DESKTOP_ROOT" --init-script "$DESKTOP_TEST_JVM_INIT" :composeApp:desktopTest --tests 'com.nuvio.app.features.plugins.NiakvioNativeCorpusDesktopTest' --rerun-tasks --no-build-cache --no-configuration-cache --console=plain 2>&1 | tee "$GRADLE_LOG"
     RUNTIME_STATUS=${PIPESTATUS[0]}
   else
-    "$DESKTOP_ROOT/gradlew" -p "$DESKTOP_ROOT" --init-script "$DESKTOP_TEST_JVM_INIT" :composeApp:desktopTest --tests 'com.nuvio.app.features.plugins.NiakvioNativeCorpusDesktopTest' --console=plain 2>&1 | tee "$GRADLE_LOG"
+    "$DESKTOP_ROOT/gradlew" -p "$DESKTOP_ROOT" --init-script "$DESKTOP_TEST_JVM_INIT" :composeApp:desktopTest --tests 'com.nuvio.app.features.plugins.NiakvioNativeCorpusDesktopTest' --rerun-tasks --no-build-cache --no-configuration-cache --console=plain 2>&1 | tee "$GRADLE_LOG"
     RUNTIME_STATUS=${PIPESTATUS[0]}
   fi
 
