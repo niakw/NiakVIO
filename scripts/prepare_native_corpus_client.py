@@ -1,12 +1,16 @@
 #!/usr/bin/env python3
 """Prepare exactly one official Nuvio client for the native corpus lab.
 
-PR smoke runs intentionally exercise the provider bundles committed on the tested
-NiakVIO SHA, exactly as a user-installed raw GitHub repository would see them.
-Trusted main/manual deep runs may materialize current Brain/runtime repair rules
-before staging. This separation keeps PR smoke reachable through ordinary pinned
-HTTPS and avoids turning an ephemeral materialization into a cleartext lab-only
-repository requirement on Android.
+Official native acceptance consumes the provider bundles committed on the tested
+NiakVIO SHA, exactly as a user-installed raw GitHub repository sees them. This is
+true for pull requests, trusted main and manual acceptance runs: the lab must not
+silently rewrite the repository and then require an Android-only cleartext transport
+that the production client correctly refuses.
+
+A dedicated repair sandbox may explicitly opt into materializing current Brain/runtime
+repair rules by setting ``NIAKVIO_MATERIALIZE_NATIVE=1``. That mode is never implied
+by a normal GitHub Actions acceptance run and its candidate transport remains subject
+to the real client network policy.
 """
 from __future__ import annotations
 
@@ -32,24 +36,23 @@ from native_client_test_bootstrap import (  # noqa: E402
 MATERIALIZED_SENTINEL = ROOT / ".native-provider-overrides-materialized"
 
 
-def _use_committed_pr_bundles() -> bool:
-    return (
-        os.environ.get("GITHUB_EVENT_NAME", "").strip().lower() == "pull_request"
-        and os.environ.get("NIAKVIO_MATERIALIZE_PR_NATIVE", "0").strip() != "1"
-    )
+def _materialization_requested() -> bool:
+    return os.environ.get("NIAKVIO_MATERIALIZE_NATIVE", "0").strip() == "1"
 
 
 def ensure_materialized_provider_transaction() -> None:
-    """Materialize Brain/runtime repairs only for trusted deep native runs.
+    """Use immutable published bytes unless a repair sandbox explicitly opts in.
 
-    Pull-request reader smoke must consume the exact committed SHA so the official
-    clients can install the same immutable HTTPS repository a normal user would.
-    Provider-pipeline tests are responsible for rejecting stale generated bundles.
+    Native acceptance is evidence about what an actual Nuvio client can install.
+    Rewriting provider/manifest bytes before repository resolution makes the checkout
+    dirty, forces the Android resolver onto ``http://10.0.2.2``, and changes the test
+    into a lab-only transport experiment. That is forbidden by default.
     """
-    if _use_committed_pr_bundles():
+    if not _materialization_requested():
+        event = os.environ.get("GITHUB_EVENT_NAME", "local").strip().lower() or "local"
         print(
-            "FIELD_NATIVE_PROVIDER_TRANSACTION source=committed-pr-sha "
-            "materialized=false https_repository_compatible=true"
+            "FIELD_NATIVE_PROVIDER_TRANSACTION source=committed-sha "
+            f"event={event} materialized=false https_repository_compatible=true explicit_repair=false"
         )
         return
     if MATERIALIZED_SENTINEL.is_file():
@@ -73,7 +76,10 @@ def ensure_materialized_provider_transaction() -> None:
     for command in commands:
         subprocess.run(command, cwd=ROOT, check=True)
     MATERIALIZED_SENTINEL.write_text("materialized\n", encoding="utf-8")
-    print("FIELD_NATIVE_PROVIDER_TRANSACTION_MATERIALIZED source=brain-overrides status=ok")
+    print(
+        "FIELD_NATIVE_PROVIDER_TRANSACTION_MATERIALIZED source=brain-overrides "
+        "status=ok explicit_repair=true"
+    )
 
 
 def _manifest_path(value: str | Path) -> Path:
