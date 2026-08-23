@@ -28,7 +28,6 @@ CORE_SAFETY = ROOT / "scripts" / "core_rebuild_safety.py"
 HLS_RUNTIME = ROOT / "scripts" / "provider_patches" / "hls_runtime_integrity_v1.py"
 CORE_HARDENING_MARKER = "return harden_generated_apply(text)"
 REAPPLY_DIAGNOSTIC_MARKER = "FIELD_PROVIDER_REF_CHANGES"
-REAPPLY_DIAGNOSTIC_STOP_MARKER = "FIELD_PROVIDER_REF_DIAGNOSTIC_STOP"
 
 SAFE_FUNCTION = dedent(r'''
 def _owned_wrapper_end(text: str, marker_end: int, limit: int) -> int | None:
@@ -114,18 +113,6 @@ def normalized_reapply_diagnostics(text: str) -> str:
         )
 '''
         text = text.replace(anchor, block + anchor, 1)
-    if REAPPLY_DIAGNOSTIC_STOP_MARKER not in text:
-        anchor = '''    print(
-        f"published overrides reapplied: patched={applied_count}, "
-'''
-        stop = '''    if 0 < len(changed_provider_rows) <= 13 and (ROOT / ".provider-fixed-point-diagnostic").is_file():
-        print(
-            "FIELD_PROVIDER_REF_DIAGNOSTIC_STOP "
-            f"count={len(changed_provider_rows)} ids={','.join(row[0] for row in changed_provider_rows)}"
-        )
-        return 86
-'''
-        text = text.replace(anchor, stop + anchor, 1)
     return text
 
 
@@ -147,7 +134,6 @@ def _materialize_reapply_diagnostics() -> bool:
     changed = current != expected
     if changed:
         REAPPLY.write_text(expected, encoding="utf-8")
-    (ROOT / ".provider-fixed-point-diagnostic").write_text("diagnostic-only\n", encoding="utf-8")
     return changed
 
 
