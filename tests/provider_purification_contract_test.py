@@ -1,7 +1,12 @@
 #!/usr/bin/env python3
 from pathlib import Path
+import sys
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "scripts"))
+
+from provider_purification import purify_bytes, split_owned_prefix_bootstraps  # noqa: E402
+
 node = (ROOT / "engine_v2/scripts/purify-provider.mjs").read_text(encoding="utf-8")
 helper = (ROOT / "scripts/provider_purification.py").read_text(encoding="utf-8")
 deep = (ROOT / "scripts/run_adaptive_deep_repair.py").read_text(encoding="utf-8")
@@ -26,8 +31,8 @@ for required in (
 ):
     assert required in node, required
 
-# The build-only dependency is exact/pinned and every accepted transform must be
-# structurally valid and byte-stable under an identical second Terser pass.
+# The build-only dependency is exact/pinned and every accepted body transform must
+# be structurally valid and byte-stable under an identical second Terser pass.
 for required in (
     'TERSER_VERSION = "5.50.0"',
     '"--no-save", "--package-lock=false"',
@@ -42,8 +47,33 @@ for required in (
     '"type": "provider_purification"',
     '"requiresRuntimeRetest": True',
     '"repair_candidates_must_repurify": True',
+    "def split_owned_prefix_bootstraps(data: bytes)",
+    '"ownedPrefixPreserved": True',
 ):
     assert required in helper, required
+
+# Generated prefix bootstraps are Core-owned boundaries. They must remain exact
+# source bytes while the actual provider/Core body is purified. This regression is
+# intentionally executable: it proves the complete artifact is a fixed point under
+# the same public purify_bytes() function used by Deep and publication.
+runtime_prefix = '''/* NUVIO_RUNTIME_DOMAIN_OVERRIDES_V1 */
+;(function(g,rules){if(g)g.__nuvioDomainOverrideV1=rules;})(typeof globalThis!=="undefined"?globalThis:this,[["b2xkLmV4YW1wbGU=","new.example"]]);
+'''
+adaptive_prefix = '''/* NUVIO_ADAPTIVE_DOMAIN_RECOVERY_V1:BEGIN */
+;(function(g,encoded){if(g)g.__nuvioAdaptiveDomainRecoveryV1=encoded;})(typeof globalThis!=="undefined"?globalThis:this,"eyJncm91cHMiOltdLCJyZXZpc2lvbiI6InRlc3QifQ==");
+/* NUVIO_ADAPTIVE_DOMAIN_RECOVERY_V1:END */
+'''
+provider_body = 'module.exports={getStreams:async function(){const unused=1+1;return [];}};\n'
+source = (runtime_prefix + adaptive_prefix + provider_body).encode("utf-8")
+prefix, body = split_owned_prefix_bootstraps(source)
+assert prefix.decode("utf-8") == runtime_prefix + adaptive_prefix
+assert body.decode("utf-8") == provider_body
+first, first_report = purify_bytes(source)
+second, second_report = purify_bytes(first)
+assert first.startswith(prefix)
+assert second == first
+assert first_report.get("ownedPrefixPreserved") is True
+assert second_report.get("ownedPrefixPreserved") is True
 
 # Deep proves the exact purified baseline and every later Brain/runtime mutation.
 assert "purify_registry(stage, output / \"provider-purification.json\")" in deep
