@@ -1,0 +1,40 @@
+name: Core rebuild diagnostic once
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/core-rebuild-diagnostic-once.yml'
+      - 'scripts/diagnose_core_rebuild_once.py'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          fetch-depth: 1
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Materialize current Core scripts in workspace
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/normalize_core_fixed_point_contract.py --apply
+          python scripts/normalize_core_media_policy.py --apply
+          python scripts/apply_runtime_capability_upgrade_v4.py
+          python scripts/build_provider_runtime_profiles.py
+      - name: Trace Anime-Sama two-pass reconstruction
+        run: python scripts/diagnose_core_rebuild_once.py
