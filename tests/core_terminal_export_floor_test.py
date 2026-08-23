@@ -36,6 +36,7 @@ def runtime_safety_module():
 
 
 def portfolio_module():
+    # Portfolio failures intentionally expose a compact terminal-export excerpt in CI.
     path = ROOT / "tests" / "provider_export_floor_portfolio_test.py"
     spec = importlib.util.spec_from_file_location("nuvio_provider_export_floor_portfolio_test", path)
     assert spec is not None and spec.loader is not None
