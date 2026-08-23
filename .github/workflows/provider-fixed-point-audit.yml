@@ -1,5 +1,5 @@
 name: NiakVIO provider fixed-point audit
-# Diagnostic workflow intentionally mirrors the authoritative Core publication loop.
+# Temporary diagnostic workflow mirroring the authoritative Core publication loop.
 
 on:
   workflow_dispatch:
@@ -24,8 +24,12 @@ concurrency:
 jobs:
   audit:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
+      - name: Report audit start
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh issue comment 69 --repo "$GITHUB_REPOSITORY" --body "Provider fixed-point audit started on ${GITHUB_SHA}: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}."
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           ref: main
@@ -37,10 +41,6 @@ jobs:
           node-version: '24'
           package-manager-cache: false
       - run: npm ci --ignore-scripts --no-audit --no-fund
-      - name: Report audit start
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: gh issue comment 69 --repo "$GITHUB_REPOSITORY" --body "Provider fixed-point audit started on ${GITHUB_SHA}: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}."
       - name: Audit exact provider fixed point
         run: python scripts/audit_provider_fixed_point.py
       - name: Report audit result
