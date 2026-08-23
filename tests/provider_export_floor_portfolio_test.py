@@ -31,6 +31,18 @@ def provider_export_floor(text: str) -> int:
     return namespace["_provider_export_floor"](text)  # type: ignore[index,operator]
 
 
+def _shape_excerpt(text: str, marker_positions: list[int]) -> str:
+    """Return a compact public diagnostic around the terminal getStreams/export area."""
+    get_positions = [match.start() for match in re.finditer(r"getStreams", text)]
+    anchor = get_positions[-1] if get_positions else max(0, (marker_positions[0] if marker_positions else len(text)) - 1)
+    post_markers = [position for position in marker_positions if position > anchor]
+    end = min(post_markers) if post_markers else min(marker_positions) if marker_positions else len(text)
+    start = max(0, anchor - 900)
+    excerpt = text[start:min(len(text), end + 80)]
+    excerpt = re.sub(r"\s+", " ", excerpt).strip()
+    return excerpt[-1400:]
+
+
 def main() -> int:
     manifest = json.loads((ROOT / "manifest.json").read_text(encoding="utf-8"))
     rows = manifest.get("scrapers") or []
@@ -49,17 +61,21 @@ def main() -> int:
         if not path.is_file():
             raise AssertionError(f"missing provider bundle: {provider_id} {relative}")
         text = path.read_text(encoding="utf-8", errors="strict")
-        marker_positions = sorted(
-            position
+        marker_positions = sorted({
+            match.start()
             for marker in CORE_MARKERS
-            if (position := text.find(f"/* {marker}")) >= 0
-        )
+            for match in re.finditer(re.escape(f"/* {marker}"), text)
+        })
         if not marker_positions:
             continue
         checked += 1
         floor = provider_export_floor(text)
         if floor < 0:
             unresolved.append(provider_id)
+            print(
+                "FIELD_PROVIDER_EXPORT_SHAPE "
+                f"provider={provider_id} excerpt={json.dumps(_shape_excerpt(text, marker_positions), ensure_ascii=True)}"
+            )
             continue
         if not any(position > floor for position in marker_positions):
             no_post_core.append(provider_id)
