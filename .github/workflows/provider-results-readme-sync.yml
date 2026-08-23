@@ -59,6 +59,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           RUN_ID: ${{ steps.source.outputs.run_id }}
+          EVENT_NAME: ${{ github.event_name }}
         shell: bash
         run: |
           set -euo pipefail
@@ -69,7 +70,13 @@ jobs:
             "native-desktop-reader-*-$RUN_ID"; do
             gh run download "$RUN_ID" --pattern "$pattern" --dir provider-results-input || true
           done
-          find provider-results-input -type f -name '*brain.json' -print | sort
+          mapfile -t DIAGNOSTICS < <(find provider-results-input -type f -name '*brain.json' -print | sort)
+          printf '%s\n' "${DIAGNOSTICS[@]}"
+          if [ "$EVENT_NAME" = "workflow_dispatch" ] && [ "${#DIAGNOSTICS[@]}" -eq 0 ]; then
+            echo "Exact native reader run $RUN_ID yielded no importable *brain.json evidence" >&2
+            exit 1
+          fi
+          echo "FIELD_PROVIDER_RESULT_DIAGNOSTICS run=$RUN_ID count=${#DIAGNOSTICS[@]}"
 
       - name: Merge positive native results and render README
         env:
