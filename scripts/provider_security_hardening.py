@@ -28,6 +28,10 @@ _UNSAFE_LITERAL_DECODE = re.compile(
 _CONSOLE_DECL = re.compile(r"\b(?:var|let|const|class|function)\s+console\b")
 _CONSOLE_USE = re.compile(r"(?<![\w$])(?:console|globalThis\.console|window\.console)\s*[\[.]")
 _GLOBAL_CONSOLE = re.compile(r"\b(?:globalThis|window)\.console(?=\s*[\[.])")
+_SILENT_LOG_DECL = re.compile(
+    r"\bvar\s+__nuvioProviderSilentLog\s*=\s*function\s*\(\s*\)\s*\{\s*\}\s*;?"
+)
+_SILENT_LOG_USE = re.compile(r"\b__nuvioProviderSilentLog\b")
 
 _HOST_HELPER = r'''function __nuvioHostMatches(value,expected){
   try{
@@ -65,14 +69,14 @@ _LITERAL_HELPER = r'''function __nuvioDecodeEscapedLiteral(value){
   return out;
 }'''
 
-_CONSOLE_SHADOW = r'''/* NUVIO_PROVIDER_CONSOLE_SHADOW_V1 */
-var __nuvioProviderSilentLog=function(){};
-var console={
+_SILENT_LOG_HELPER = r'''var __nuvioProviderSilentLog=function(){};'''
+_CONSOLE_OBJECT = r'''var console={
   log:__nuvioProviderSilentLog,warn:__nuvioProviderSilentLog,
   error:__nuvioProviderSilentLog,info:__nuvioProviderSilentLog,
   debug:__nuvioProviderSilentLog,trace:__nuvioProviderSilentLog,
   dir:__nuvioProviderSilentLog
 };'''
+_CONSOLE_SHADOW = "/* NUVIO_PROVIDER_CONSOLE_SHADOW_V1 */\n" + _SILENT_LOG_HELPER + "\n" + _CONSOLE_OBJECT
 
 
 def _load_safe_parse():
@@ -132,17 +136,32 @@ def harden_text(source: str) -> tuple[str, dict[str, Any]]:
     if hostname_changes and "function __nuvioHostMatches(" not in source:
         snippets.append(_HOST_HELPER)
 
+    # Terser is allowed to preserve/move comments. Marker presence therefore is
+    # never treated as proof that its owning declarations survived. Reconstruct
+    # the concrete shadow declarations from structure whenever a previous pass
+    # left only part of them behind.
     console_shadow = False
-    if (
-        _CONSOLE_USE.search(source)
-        and "NUVIO_PROVIDER_CONSOLE_SHADOW_V1" not in source
-        and not _CONSOLE_DECL.search(source)
-    ):
+    console_shadow_repair = False
+    silent_log_declared = _SILENT_LOG_DECL.search(source) is not None
+    silent_log_used = _SILENT_LOG_USE.search(source) is not None
+    console_declared = _CONSOLE_DECL.search(source) is not None
+
+    if silent_log_used and not silent_log_declared:
+        snippets.append(_SILENT_LOG_HELPER)
+        console_shadow_repair = True
+        silent_log_declared = True
+
+    if _CONSOLE_USE.search(source) and not console_declared:
         source = _GLOBAL_CONSOLE.sub("console", source)
-        snippets.append(_CONSOLE_SHADOW)
+        if silent_log_declared:
+            snippets.append("/* NUVIO_PROVIDER_CONSOLE_SHADOW_V1 */\n" + _CONSOLE_OBJECT)
+        else:
+            snippets.append(_CONSOLE_SHADOW)
         console_shadow = True
 
-    changed = structured_changed or bool(literal_changes or hostname_changes or console_shadow)
+    changed = structured_changed or bool(
+        literal_changes or hostname_changes or console_shadow or console_shadow_repair
+    )
     report = {
         "changed": changed,
         "alreadyHardened": had_marker and not changed,
@@ -150,13 +169,20 @@ def harden_text(source: str) -> tuple[str, dict[str, Any]]:
         "literalDecodeChanges": literal_changes,
         "hostnameChanges": hostname_changes,
         "consoleShadow": console_shadow,
+        "consoleShadowRepair": console_shadow_repair,
     }
     if not changed:
         return source, report
 
     digest_input = "|".join(
         str(report[key])
-        for key in ("structuredParseChanges", "literalDecodeChanges", "hostnameChanges", "consoleShadow")
+        for key in (
+            "structuredParseChanges",
+            "literalDecodeChanges",
+            "hostnameChanges",
+            "consoleShadow",
+            "consoleShadowRepair",
+        )
     )
     digest = hashlib.sha256(digest_input.encode("utf-8")).hexdigest()[:12]
     source = _insert_prelude(source, snippets, digest)
@@ -180,7 +206,9 @@ def known_unsafe_findings(source: str) -> list[str]:
             findings.append("destructive_structured_unescape")
     except Exception:
         findings.append("structured_parse_scan_failed")
-    if _CONSOLE_USE.search(source) and "NUVIO_PROVIDER_CONSOLE_SHADOW_V1" not in source and not _CONSOLE_DECL.search(source):
+    if _SILENT_LOG_USE.search(source) and not _SILENT_LOG_DECL.search(source):
+        findings.append("provider_console_shadow_orphan_helper")
+    if _CONSOLE_USE.search(source) and not _CONSOLE_DECL.search(source):
         findings.append("provider_console_unsandboxed")
     return findings
 
