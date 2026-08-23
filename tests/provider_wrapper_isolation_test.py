@@ -50,6 +50,23 @@ if(typeof module!=="undefined"&&module.exports){module.exports=__provider;}
     assert "var __provider=" in output
 
 
+def test_relocated_marker_can_never_consume_provider_bridge() -> None:
+    # A minifier is allowed to preserve a comment while attaching it to another
+    # AST node. If a NUVIO marker floats in front of provider-derived bytes, the
+    # next IIFE terminator is not proof that those bytes belong to the wrapper.
+    text = r'''/* NUVIO_RUNTIME_DOMAIN_OVERRIDES_V1 */
+var __provider=(()=>({getStreams:async()=>[{url:"https://foreign.example/media.m3u8"}]}))();
+if(typeof module!=="undefined"&&module.exports){module.exports=__provider;}
+if(__provider&&__provider.getStreams){globalThis.getStreams=__provider.getStreams;}
+;(function(g,rules){if(g){g.__later=rules.length;}})(typeof globalThis!=="undefined"?globalThis:this,[]);
+'''
+    output, removed = strip_foreign_provider_wrappers(text, "anime-sama", config())
+    assert removed == [], removed
+    assert output == text
+    assert "var __provider=" in output
+    assert "module.exports=__provider" in output
+
+
 def test_unknown_wrapper_shape_is_fail_closed() -> None:
     text = r'''/* NUVIO_UNKNOWN_WRAPPER_V1 */
 customRuntimeBootstrap("https://foreign.example/api");
@@ -64,5 +81,6 @@ module.exports=__provider;
 if __name__ == "__main__":
     test_exact_foreign_wrapper_removed_without_provider_bytes()
     test_foreign_url_in_provider_body_never_expands_wrapper_span()
+    test_relocated_marker_can_never_consume_provider_bridge()
     test_unknown_wrapper_shape_is_fail_closed()
     print("provider wrapper isolation span tests passed")
