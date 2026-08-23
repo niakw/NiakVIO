@@ -22,6 +22,11 @@ INFRASTRUCTURE_HOSTS = {
 }
 URL_RE = re.compile(r"https?://[^\s\"'`<>\\)]+", re.I)
 OWNED_WRAPPER_MARKER_RE = re.compile(r"/\*\s*(NUVIO_[A-Z0-9_:.-]+)\s*\*/", re.I)
+GLOBAL_WRAPPER_CALL_RE = re.compile(
+    r"\}\)\(\s*(?:typeof\s+globalThis\b|globalThis\b|this\b)",
+    re.I,
+)
+EMPTY_IIFE_END_RE = re.compile(r"\}\)\(\s*\)\s*;", re.I)
 FAMILY_SUFFIXES = ("official", "homes", "home", "new", "rip", "co", "tv", "app", "web")
 GENERIC_HOST_LABELS = {"www", "api", "app", "web", "new", "new1", "new2", "new3", "new4", "cdn", "stream", "media"}
 
@@ -338,32 +343,67 @@ def sanitize_provider_hooks(
     return output, removed
 
 
+def _owned_wrapper_end(text: str, marker_end: int, limit: int) -> int | None:
+    """Return the exact end of one repository-owned wrapper, never provider bytes.
+
+    NUVIO wrappers are emitted as IIFEs. The previous implementation treated the
+    whole region until the *next marker* as the wrapper. For a bootstrap marker at
+    byte zero that region also contains the actual provider bundle, so isolation
+    could delete provider declarations such as ``var __provider``. We now remove
+    only the IIFE expression itself and fail closed (keep bytes) when its end cannot
+    be identified unambiguously.
+    """
+    region = text[marker_end:limit]
+    global_call = GLOBAL_WRAPPER_CALL_RE.search(region)
+    if global_call:
+        call_start = marker_end + global_call.start()
+        end = text.find(");", call_start, limit)
+        if end >= 0:
+            return end + 2
+    empty_call = EMPTY_IIFE_END_RE.search(region)
+    if empty_call:
+        return marker_end + empty_call.end()
+    return None
+
+
 def strip_foreign_provider_wrappers(
     text: str, provider_id: str, data: dict[str, Any]
 ) -> tuple[str, list[dict[str, str]]]:
-    """Strip only repository-owned NUVIO wrapper blocks that call another provider backend."""
+    """Strip only exact repository-owned NUVIO wrapper IIFEs using foreign backends."""
     patches = normalize_mapping_keys(data.get("provider_patches"))
     ownership = _provider_backend_hosts(patches)
     markers = list(OWNED_WRAPPER_MARKER_RE.finditer(text))
     if not markers:
         return text, []
-    parts: list[str] = []
-    cursor = 0
+
+    removals: list[tuple[int, int]] = []
     removed: list[dict[str, str]] = []
     for index, marker in enumerate(markers):
-        start = marker.start()
-        end = markers[index + 1].start() if index + 1 < len(markers) else len(text)
-        segment = text[start:end]
+        limit = markers[index + 1].start() if index + 1 < len(markers) else len(text)
+        end = _owned_wrapper_end(text, marker.end(), limit)
+        if end is None:
+            # Unknown wrapper shape is intentionally preserved. Isolation is not
+            # allowed to consume arbitrary provider code merely to force a repair.
+            continue
+        segment = text[marker.start():end]
         hits = _foreign_hits(segment, provider_id.casefold(), ownership)
+        if not hits:
+            continue
+        removals.append((marker.start(), end))
+        removed.append({
+            "provider_id": provider_id.casefold(),
+            "marker": marker.group(1),
+            "foreign_backends": ",".join(f"{host}:{owner}" for host, owner in hits),
+        })
+
+    if not removals:
+        return text, []
+    parts: list[str] = []
+    cursor = 0
+    for start, end in removals:
+        if start < cursor:
+            continue
         parts.append(text[cursor:start])
-        if hits:
-            removed.append({
-                "provider_id": provider_id.casefold(),
-                "marker": marker.group(1),
-                "foreign_backends": ",".join(f"{host}:{owner}" for host, owner in hits),
-            })
-        else:
-            parts.append(segment)
         cursor = end
     parts.append(text[cursor:])
     return "".join(parts).rstrip() + "\n", removed
