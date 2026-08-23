@@ -14,6 +14,7 @@ on:
       - 'scripts/normalize_core_media_policy.py'
       - 'scripts/apply_runtime_capability_upgrade_v4.py'
       - 'scripts/apply_provider_overrides.py'
+      - 'scripts/provider_engine_normalizer.py'
       - 'scripts/build_provider_runtime_profiles.py'
       - 'scripts/reapply_published_overrides.py'
       - 'scripts/generate_language_manifests.py'
@@ -41,6 +42,7 @@ on:
       - 'tests/global_stream_presentation_test.py'
       - 'tests/global_stream_presentation_pipeline_test.py'
       - 'tests/provider_specific_adapters_test.py'
+      - 'tests/provider_wrapper_isolation_test.py'
       - 'tests/tv_provider_hardening_test.py'
       - 'tests/provider_security_hardening_test.py'
       - 'tests/provider_purification_contract_test.py'
@@ -100,7 +102,9 @@ jobs:
           python -m py_compile \
             scripts/normalize_core_fixed_point_contract.py \
             scripts/apply_provider_overrides.py \
+            scripts/provider_engine_normalizer.py \
             scripts/reapply_published_overrides.py
+          python tests/provider_wrapper_isolation_test.py
           python tests/global_playback_integrity_policy_test.py
           python tests/provider_purification_contract_test.py
           python scripts/normalize_core_fixed_point_contract.py --check
@@ -137,6 +141,7 @@ jobs:
           python tests/global_stream_presentation_test.py
           python tests/global_stream_presentation_pipeline_test.py
           python tests/provider_specific_adapters_test.py
+          python tests/provider_wrapper_isolation_test.py
           python tests/tv_provider_hardening_test.py
           python tests/provider_security_hardening_test.py
           python tests/provider_purification_contract_test.py
@@ -225,6 +230,7 @@ jobs:
           python tests/core_media_policy_test.py
           python tests/global_playback_integrity_policy_test.py
           python tests/runtime_capability_media_safety_v4_test.py
+          python tests/provider_wrapper_isolation_test.py
           python tests/provider_security_hardening_test.py
           python tests/provider_purification_contract_test.py
           python tests/nuvio_client_upstream_drift_guard_test.py
