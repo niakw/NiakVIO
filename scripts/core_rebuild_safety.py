@@ -7,34 +7,19 @@ from textwrap import dedent
 
 
 SAFE_DOMAIN_FN = dedent(r'''
-def _runtime_domain_wrapper_span(text: str, marker_start: int) -> tuple[int, int] | None:
-    """Return the marked pre-provider JS statement without crossing provider bytes."""
-    marker_comment = "/* NUVIO_RUNTIME_DOMAIN_OVERRIDES_V1 */"
-    marker_end = marker_start + len(marker_comment)
-    provider_starts = [
-        match.start()
-        for pattern in (
-            r"\b(?:var|let|const)\s+__provider\b",
-            r"\bmodule\.exports\s*=\s*__provider\b",
-            r"\b(?:globalThis|global|self)\.getStreams\s*=\s*__provider\.getStreams\b",
-        )
-        for match in re.finditer(pattern, text)
-    ]
-    first_provider = min(provider_starts) if provider_starts else -1
-    if first_provider >= 0 and marker_start >= first_provider:
+def _scan_runtime_domain_iife_end(text: str, start: int) -> int | None:
+    """Return the end of one complete IIFE statement starting at ``start``."""
+    if start < 0 or start >= len(text) or text[start] != "(":
         return None
-    limit = first_provider if first_provider > marker_end else len(text)
-
-    paren = brace = bracket = 0
+    paren = 0
     quote: str | None = None
     escaped = False
     line_comment = False
     block_comment = False
-    saw_code = False
-    index = marker_end
-    while index < limit:
+    index = start
+    while index < len(text):
         char = text[index]
-        nxt = text[index + 1] if index + 1 < limit else ""
+        nxt = text[index + 1] if index + 1 < len(text) else ""
         if line_comment:
             if char in "\r\n":
                 line_comment = False
@@ -52,7 +37,6 @@ def _runtime_domain_wrapper_span(text: str, marker_start: int) -> tuple[int, int
         else:
             if char in ("'", '"', "`"):
                 quote = char
-                saw_code = True
             elif char == "/" and nxt == "/":
                 line_comment = True
                 index += 1
@@ -61,45 +45,91 @@ def _runtime_domain_wrapper_span(text: str, marker_start: int) -> tuple[int, int
                 index += 1
             elif char == "(":
                 paren += 1
-                saw_code = True
             elif char == ")":
                 paren -= 1
                 if paren < 0:
                     return None
-            elif char == "{":
-                brace += 1
-                saw_code = True
-            elif char == "}":
-                brace -= 1
-                if brace < 0:
-                    return None
-            elif char == "[":
-                bracket += 1
-                saw_code = True
-            elif char == "]":
-                bracket -= 1
-                if bracket < 0:
-                    return None
-            elif char == ";" and paren == 0 and brace == 0 and bracket == 0 and saw_code:
-                end = index + 1
-                if text[end:end + 2] == "\r\n":
-                    end += 2
-                elif text[end:end + 1] in ("\r", "\n"):
-                    end += 1
-                return marker_start, end
-            elif not char.isspace():
-                saw_code = True
+                if paren == 0:
+                    end = index + 1
+                    while end < len(text) and text[end] in " \t":
+                        end += 1
+                    if end < len(text) and text[end] == ";":
+                        end += 1
+                    if text[end:end + 2] == "\r\n":
+                        end += 2
+                    elif text[end:end + 1] in ("\r", "\n"):
+                        end += 1
+                    return end
         index += 1
     return None
 
 
-def _inject_runtime_domain_overrides(text: str, replacements: dict[str, Any]) -> tuple[str, int]:
-    """Embed host rewriting without allowing marker scans to consume provider code.
+def _runtime_domain_wrapper_span_from_key(text: str, key_index: int) -> tuple[int, int] | None:
+    """Own a markerless/minified bootstrap only through its reserved runtime key."""
+    window_start = max(0, key_index - 768)
+    starts = [
+        window_start + match.start()
+        for match in re.finditer(r"\(\s*function\s*\(", text[window_start:key_index], re.I)
+    ]
+    marker_comment = "/* NUVIO_RUNTIME_DOMAIN_OVERRIDES_V1 */"
+    for start in reversed(starts):
+        end = _scan_runtime_domain_iife_end(text, start)
+        if end is None or not (start <= key_index < end):
+            continue
+        candidate = text[start:end]
+        required = (
+            "__nuvioDomainOverrideV1",
+            ".fetch",
+            "rules",
+            "state",
+            "atob",
+        )
+        if not all(needle in candidate for needle in required):
+            continue
+        marker_start = text.rfind(marker_comment, max(0, start - 160), start)
+        if marker_start >= 0:
+            between = text[marker_start + len(marker_comment):start]
+            if re.fullmatch(r"\s*;?\s*", between):
+                start = marker_start
+        return start, end
+    return None
 
-    A preserved marker can be relocated by Terser. When the marker no longer owns
-    a bounded pre-provider statement, only the comment is stale; provider-derived
-    bytes remain authoritative and must stay untouched. The canonical bootstrap is
-    then reinserted at its stable pre-provider position.
+
+def _runtime_domain_wrapper_spans(text: str) -> list[tuple[int, int]]:
+    """Return every structurally-owned runtime-domain bootstrap, or fail closed."""
+    key = "__nuvioDomainOverrideV1"
+    positions = [match.start() for match in re.finditer(re.escape(key), text)]
+    spans: list[tuple[int, int]] = []
+    for position in positions:
+        if any(start <= position < end for start, end in spans):
+            continue
+        span = _runtime_domain_wrapper_span_from_key(text, position)
+        if span is None:
+            raise ValueError("unowned runtime-domain reserved key")
+        if any(not (span[1] <= start or span[0] >= end) for start, end in spans):
+            raise ValueError("overlapping runtime-domain wrappers")
+        spans.append(span)
+    return sorted(spans)
+
+
+def _runtime_domain_wrapper_span(text: str, marker_start: int) -> tuple[int, int] | None:
+    """Return a marked bootstrap only when the reserved-key IIFE proves ownership."""
+    key_index = text.find("__nuvioDomainOverrideV1", marker_start)
+    if key_index < 0:
+        return None
+    span = _runtime_domain_wrapper_span_from_key(text, key_index)
+    if span is None or span[0] != marker_start:
+        return None
+    return span
+
+
+def _inject_runtime_domain_overrides(text: str, replacements: dict[str, Any]) -> tuple[str, int]:
+    """Embed one canonical host-rewrite bootstrap, including after Terser strips its marker.
+
+    The stable reserved key survives compression even when the comment does not.
+    Every occurrence must belong to the exact bounded IIFE shape; an unowned key
+    fails closed. All proven duplicates are removed and one canonical bootstrap is
+    placed at the earliest owned position, so repeated rebuilds cannot grow bytes.
     """
     from urllib.parse import urlparse
 
@@ -115,20 +145,24 @@ def _inject_runtime_domain_overrides(text: str, replacements: dict[str, Any]) ->
 
     marker = "NUVIO_RUNTIME_DOMAIN_OVERRIDES_V1"
     marker_comment = f"/* {marker} */"
-    existing_span: tuple[int, int] | None = None
-    if marker_comment in text:
-        existing_start = text.find(marker_comment)
-        existing_span = _runtime_domain_wrapper_span(text, existing_start)
-        if existing_span is None:
-            # Fail closed on code ownership: remove only stale metadata, never a
-            # following statement whose ownership is ambiguous.
-            text = text[:existing_start] + text[existing_start + len(marker_comment):]
+    spans = _runtime_domain_wrapper_spans(text)
+
+    # Strip every structurally-owned copy. Stale marker comments outside an owned
+    # statement are metadata only and are removed without consuming adjacent code.
+    parts: list[str] = []
+    cursor = 0
+    insertion: int | None = None
+    for start, end in spans:
+        segment = text[cursor:start].replace(marker_comment, "")
+        parts.append(segment)
+        if insertion is None:
+            insertion = sum(len(part) for part in parts)
+        cursor = end
+    parts.append(text[cursor:].replace(marker_comment, ""))
+    base = "".join(parts)
 
     if not rules:
-        if existing_span is None:
-            return text, 0 if text == original_text else 1
-        output = text[:existing_span[0]] + text[existing_span[1]:]
-        return output, 0 if output == original_text else 1
+        return base, 0 if base == original_text else max(1, len(spans))
 
     import base64
     encoded_rules = [
@@ -164,10 +198,8 @@ def _inject_runtime_domain_overrides(text: str, replacements: dict[str, Any]) ->
 })(typeof globalThis!=="undefined"?globalThis:this,%s);
 """ % (marker, payload)
 
-    if existing_span is None:
-        output = bootstrap + text
-    else:
-        output = text[:existing_span[0]] + bootstrap + text[existing_span[1]:]
+    insert_at = insertion if insertion is not None else 0
+    output = base[:insert_at] + bootstrap + base[insert_at:]
     return output, 0 if output == original_text else len(rules)
 ''').lstrip("\n")
 
@@ -339,7 +371,9 @@ def _replace_provider_export_floor(text: str) -> str:
 def harden_generated_apply(text: str) -> str:
     """Harden the generated apply module after the owning normalizer renders it."""
     inject_start = text.index("def _inject_runtime_domain_overrides(")
-    helper_start = text.rfind("def _runtime_domain_wrapper_span(", 0, inject_start)
+    helper_start = text.rfind("def _scan_runtime_domain_iife_end(", 0, inject_start)
+    if helper_start < 0:
+        helper_start = text.rfind("def _runtime_domain_wrapper_span(", 0, inject_start)
     start = helper_start if helper_start >= 0 else inject_start
     end = text.index("\ndef _strip_legacy_global_stream_guards", inject_start)
     text = text[:start] + SAFE_DOMAIN_FN + text[end:]
@@ -347,6 +381,12 @@ def harden_generated_apply(text: str) -> str:
 
     if "CommonJS export remains the safest generic floor" in text:
         raise ValueError("unsafe generic provider-export fallback remains")
+    if text.count("def _scan_runtime_domain_iife_end(") != 1:
+        raise ValueError("runtime-domain IIFE scanner must be generated exactly once")
+    if text.count("def _runtime_domain_wrapper_span_from_key(") != 1:
+        raise ValueError("markerless runtime-domain ownership parser must be generated exactly once")
+    if text.count("def _runtime_domain_wrapper_spans(") != 1:
+        raise ValueError("runtime-domain duplicate collector must be generated exactly once")
     if text.count("def _runtime_domain_wrapper_span(") != 1:
         raise ValueError("bounded runtime-domain parser must be generated exactly once")
     if text.count("def _balanced_terminal_object_end(") != 1:
@@ -361,4 +401,6 @@ def harden_generated_apply(text: str) -> str:
         raise ValueError("terminal obfuscated CommonJS boundary guard is missing")
     if 'for match in re.finditer(re.escape(f"/* {marker}"), text)' not in text:
         raise ValueError("floated Core markers are not filtered by post-export ownership")
+    if "unowned runtime-domain reserved key" not in text:
+        raise ValueError("markerless runtime-domain ownership must fail closed")
     return text
