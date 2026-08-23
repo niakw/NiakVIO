@@ -1,0 +1,98 @@
+#!/usr/bin/env python3
+# SPDX-License-Identifier: GPL-3.0-only
+"""Materialize fail-closed wrapper isolation around provider-derived bytes.
+
+Minifiers may preserve a NUVIO comment while moving its attachment to another
+AST node. A comment alone must therefore never authorize deleting bytes through
+the next IIFE terminator. This normalizer keeps wrapper isolation exact and
+refuses any candidate span that is not immediately an IIFE or that crosses the
+provider declaration/export bridge.
+"""
+from __future__ import annotations
+
+import argparse
+from pathlib import Path
+from textwrap import dedent
+
+ROOT = Path(__file__).resolve().parents[1]
+TARGET = ROOT / "scripts" / "provider_engine_normalizer.py"
+
+SAFE_FUNCTION = dedent(r'''
+def _owned_wrapper_end(text: str, marker_end: int, limit: int) -> int | None:
+    """Return an exact owned IIFE end without ever crossing provider bytes.
+
+    Preserved comments are not structural boundaries: Terser or another formatter
+    may relocate them. A marker is accepted only when the following non-whitespace
+    bytes begin an IIFE and the candidate span contains no provider declaration or
+    export bridge. Ambiguous shapes fail closed and remain untouched.
+    """
+    region = text[marker_end:limit]
+    if not re.match(r"\s*;?\s*\(\s*function\b", region, re.I):
+        return None
+
+    candidate_end: int | None = None
+    global_call = GLOBAL_WRAPPER_CALL_RE.search(region)
+    if global_call:
+        call_start = marker_end + global_call.start()
+        end = text.find(");", call_start, limit)
+        if end >= 0:
+            candidate_end = end + 2
+    if candidate_end is None:
+        empty_call = EMPTY_IIFE_END_RE.search(region)
+        if empty_call:
+            candidate_end = marker_end + empty_call.end()
+    if candidate_end is None:
+        return None
+
+    candidate = text[marker_end:candidate_end]
+    protected = (
+        r"\b(?:var|let|const)\s+__provider\b",
+        r"\bmodule\.exports\s*=\s*__provider\b",
+        r"\b(?:globalThis|global|self)\.getStreams\s*=\s*__provider\.getStreams\b",
+    )
+    if any(re.search(pattern, candidate) for pattern in protected):
+        return None
+    return candidate_end
+''').lstrip("\n")
+
+
+def normalized(text: str) -> str:
+    start = text.index("def _owned_wrapper_end(")
+    end = text.index("\ndef strip_foreign_provider_wrappers(", start)
+    return text[:start] + SAFE_FUNCTION + text[end:]
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--apply", action="store_true")
+    parser.add_argument("--check", action="store_true")
+    args = parser.parse_args()
+    if args.apply == args.check:
+        parser.error("choose exactly one of --apply or --check")
+
+    current = TARGET.read_text(encoding="utf-8")
+    expected = normalized(current)
+    if args.check:
+        if current != expected:
+            raise SystemExit("provider rebuild safety contract is not materialized")
+        required = (
+            're.match(r"\\s*;?\\s*\\(\\s*function\\b", region, re.I)',
+            'r"\\b(?:var|let|const)\\s+__provider\\b"',
+            'r"\\bmodule\\.exports\\s*=\\s*__provider\\b"',
+        )
+        for needle in required:
+            if needle not in current:
+                raise SystemExit(f"missing provider rebuild safety guard: {needle}")
+        print("provider rebuild safety contract verified")
+        return 0
+
+    if current != expected:
+        TARGET.write_text(expected, encoding="utf-8")
+        print("provider rebuild safety contract materialized")
+    else:
+        print("provider rebuild safety contract already materialized")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
