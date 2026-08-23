@@ -2,9 +2,10 @@
 # SPDX-License-Identifier: GPL-3.0-only
 """Materialize durable Core byte contracts, then verify their fixed point.
 
-Only owning runtime/publication modules are normalized. The canonical rebuild
-boundary is a Terser-preserved NUVIO comment placed after provider-derived code
-and before every global Core hook. Tests are never rewritten here.
+Only owning runtime/publication modules are normalized. Rebuild boundaries are
+accepted only after the provider export bridge, so a preserved comment relocated
+by a JS formatter can never truncate provider-derived bytes. Tests are never
+rewritten here.
 """
 from __future__ import annotations
 
@@ -59,9 +60,13 @@ def normalize_apply(text: str) -> str:
             existing_start = text.find(marker_comment)
             call = text.find('})(typeof globalThis!=="undefined"?globalThis:this,', existing_start)
             existing_end = text.find(");\n", call) if call >= 0 else -1
+            if existing_end < 0 and call >= 0:
+                existing_end = text.find(");", call)
             if existing_start < 0 or existing_end < 0:
                 raise ValueError("unterminated runtime domain override bootstrap")
-            existing_span = (existing_start, existing_end + 3)
+            existing_span = (existing_start, existing_end + 2)
+            if text[existing_end + 2:existing_end + 3] == "\n":
+                existing_span = (existing_start, existing_end + 3)
 
         if not rules:
             if existing_span is None:
@@ -114,19 +119,55 @@ def normalize_apply(text: str) -> str:
     text = text[:start] + domain_fn + text[end:]
 
     strip_fn = dedent(r'''
-    def _strip_generated_core_tail(text: str) -> tuple[str, bool]:
-        """Recover provider-derived bytes before the global Core pipeline.
+    def _provider_export_floor(text: str) -> int:
+        """Return the end of the last provider export bridge, or -1 when unknown.
 
-        New bundles carry a standalone NUVIO comment immediately before the first
-        global Core hook. The final Terser policy explicitly preserves NUVIO
-        comments, so unlike an executable assignment this boundary cannot acquire
-        a JavaScript dependency or fail at runtime. Legacy global markers are only
-        a one-pass migration fallback for bundles published before the boundary.
+        Core-generated wrappers must never become the authority for where provider
+        bytes end. The common Nuvio bundle bridge is deliberately narrow here; an
+        unrecognized bundle shape fails closed and is kept intact for validation.
         """
+        patterns = (
+            r"\bmodule\.exports\s*=\s*__provider\b",
+            r"\bglobalThis\.getStreams\s*=\s*__provider\.getStreams\b",
+            r"\bglobal\.getStreams\s*=\s*__provider\.getStreams\b",
+            r"\bself\.getStreams\s*=\s*__provider\.getStreams\b",
+        )
+        ends = [match.end() for pattern in patterns for match in re.finditer(pattern, text)]
+        if ends:
+            return max(ends)
+        # A minority of upstream bundles export a provider object directly rather
+        # than through __provider. CommonJS export remains the safest generic floor.
+        generic = [match.end() for match in re.finditer(r"\bmodule\.exports\s*=", text)]
+        return max(generic) if generic else -1
+
+
+    def _strip_generated_core_tail(text: str) -> tuple[str, bool]:
+        """Recover provider bytes without ever cutting before the export bridge.
+
+        Terser is allowed to preserve comments while changing their attachment to
+        AST nodes. Therefore a Core boundary/marker found before the provider export
+        is stale metadata, not a truncation point. Stale boundary comments are
+        removed, then only markers strictly after the export floor may delimit the
+        generated Core tail. Unknown export shapes fail closed and retain all bytes.
+        """
+        original = text
         boundary_needle = f"/* {CORE_START_MARKER} */"
-        boundary_index = text.find(boundary_needle)
-        if boundary_index >= 0:
-            return text[:boundary_index].rstrip(), True
+        floor = _provider_export_floor(text)
+        if floor < 0:
+            return text, False
+
+        boundary_index = text.find(boundary_needle, floor)
+        if boundary_index > floor:
+            prefix = text[:boundary_index].replace(boundary_needle, "").rstrip()
+            return prefix, True
+
+        # A preserved comment may have floated before the provider bridge. It must
+        # not suppress insertion of a fresh post-export boundary on reconstruction.
+        if boundary_needle in text:
+            text = text.replace(boundary_needle, "")
+            floor = _provider_export_floor(text)
+            if floor < 0:
+                return original, False
 
         legacy_markers = tuple(GENERATED_CORE_TAIL_MARKERS) + (
             "NUVIO_GLOBAL_CATALOGUE_ALIAS_RECOVERY_V2",
@@ -138,23 +179,33 @@ def normalize_apply(text: str) -> str:
         )
         starts = []
         for marker in legacy_markers:
-            index = text.find(f"/* {marker}")
-            if index >= 0:
+            index = text.find(f"/* {marker}", floor)
+            if index > floor:
                 starts.append(index)
-        if not starts:
-            return text, False
-        return text[:min(starts)].rstrip(), True
+        if starts:
+            return text[:min(starts)].rstrip(), True
+        return text, text != original
     ''').lstrip("\n")
     start = text.index("def _strip_generated_core_tail(")
+    # Replace an older helper too when this normalization has already been applied.
+    helper_start = text.rfind("def _provider_export_floor(", 0, start)
+    if helper_start >= 0:
+        start = helper_start
     end = text.index("\ndef apply_overrides(", start)
     text = text[:start] + strip_fn + text[end:]
 
-    boundary_block = '''        if CORE_START_MARKER not in text:\n            text = text.rstrip() + f"\\n/* {CORE_START_MARKER} */\\n"\n\n'''
-    if boundary_block not in text:
-        anchor = '        def _apply_playback_stage(hooks: list[str]) -> None:\n'
-        if anchor not in text:
-            raise ValueError("global playback stage anchor missing")
-        text = text.replace(anchor, boundary_block + anchor, 1)
+    boundary_block = '''        provider_floor = _provider_export_floor(text)\n        boundary_needle = f"/* {CORE_START_MARKER} */"\n        if provider_floor >= 0 and text.find(boundary_needle, provider_floor) < 0:\n            text = text.rstrip() + f"\\n{boundary_needle}\\n"\n\n'''
+    old_boundary_blocks = (
+        '''        if CORE_START_MARKER not in text:\n            text = text.rstrip() + f"\\n/* {CORE_START_MARKER} */\\n"\n\n''',
+        boundary_block,
+    )
+    anchor = '        def _apply_playback_stage(hooks: list[str]) -> None:\n'
+    if anchor not in text:
+        raise ValueError("global playback stage anchor missing")
+    # Collapse any previous boundary insertion form before materializing the guarded one.
+    for old in old_boundary_blocks:
+        text = text.replace(old, "", 1)
+    text = text.replace(anchor, boundary_block + anchor, 1)
     return text
 
 
@@ -209,9 +260,13 @@ def assert_contract() -> None:
 
     for required in (
         f'CORE_START_MARKER = "{CORE_START_MARKER}"',
-        'boundary_needle = f"/* {CORE_START_MARKER} */"',
-        "text.find(boundary_needle)",
-        f"/* {{CORE_START_MARKER}} */",
+        "def _provider_export_floor(text: str) -> int:",
+        'r"\\bmodule\\.exports\\s*=\\s*__provider\\b"',
+        'boundary_index = text.find(boundary_needle, floor)',
+        'text.replace(boundary_needle, "")',
+        'text.find(f"/* {marker}", floor)',
+        "provider_floor = _provider_export_floor(text)",
+        'text.find(boundary_needle, provider_floor) < 0',
         '"NUVIO_GLOBAL_CATALOGUE_ALIAS_RECOVERY_V2"',
         '"NUVIO_GLOBAL_MEDIA_ENRICHMENT_V1"',
         '"NUVIO_HLS_RUNTIME_INTEGRITY_V1"',
@@ -279,7 +334,7 @@ def main() -> int:
         assert_contract()
         print(
             "FIELD_CORE_FIXED_POINT_CONTRACT "
-            f"changed={len(changed)} core_start_boundary=preserved_comment "
+            f"changed={len(changed)} core_start_boundary=export_guarded_comment "
             "runtime_domain_position=stable final_terser=5.50.0"
         )
         return 0
@@ -290,7 +345,7 @@ def main() -> int:
         return 1
     assert_contract()
     print(
-        "FIELD_CORE_FIXED_POINT_CONTRACT changed=0 core_start_boundary=preserved_comment "
+        "FIELD_CORE_FIXED_POINT_CONTRACT changed=0 core_start_boundary=export_guarded_comment "
         "runtime_domain_position=stable final_terser=5.50.0"
     )
     return 0
