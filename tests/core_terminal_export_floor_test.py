@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import importlib.util
 import json
 import re
 import sys
@@ -23,6 +24,15 @@ def inject_domain_overrides(text: str, replacements: dict[str, str]) -> tuple[st
     namespace: dict[str, object] = {"re": re, "json": json, "Any": Any}
     exec(SAFE_DOMAIN_FN, namespace)
     return namespace["_inject_runtime_domain_overrides"](text, replacements)  # type: ignore[index,operator]
+
+
+def runtime_safety_module():
+    path = ROOT / "scripts" / "provider_patches" / "runtime_capability_media_safety_v4.py"
+    spec = importlib.util.spec_from_file_location("nuvio_runtime_safety_separator_test", path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 
 def marker(name: str = "NUVIO_GLOBAL_CATALOGUE_ALIAS_RECOVERY_V2") -> str:
@@ -63,9 +73,6 @@ def test_obfuscated_ternary_export_with_global_fallback_is_bounded() -> None:
 
 
 def test_floated_core_marker_before_obfuscated_export_is_not_an_upper_bound() -> None:
-    # Terser may preserve a Core comment while attaching it before the terminal
-    # provider export. That stale comment must not hide an otherwise proven
-    # obfuscated CommonJS boundary when another owned Core marker follows it.
     floated = marker("NUVIO_GLOBAL_STREAM_FACTS_V1")
     trailing = marker("NUVIO_GLOBAL_STREAM_PRESENTATION_V1")
     text = (
@@ -102,8 +109,6 @@ def test_terminal_commonjs_fallback_remains_fail_closed() -> None:
     assert provider_export_floor(
         tail + "const providerByte=1;module[_x]={'getStreams':getStreams};\n"
     ) == -1
-    # A ternary suffix may only expose provider identifiers through a known global
-    # bridge. Arbitrary execution after the object export must never be swallowed.
     assert provider_export_floor(
         "module[_x]={'getStreams':getStreams}:dangerousCall();\n" + tail
     ) == -1
@@ -124,8 +129,6 @@ def test_runtime_domain_markerless_bootstrap_reaches_one_copy() -> None:
     assert first.count("__nuvioDomainOverrideV1") == 1
     assert first.count("NUVIO_RUNTIME_DOMAIN_OVERRIDES_V1") == 1
 
-    # Terser can remove the comment while retaining the reserved runtime key. The
-    # next Core pass must structurally own and replace that IIFE, not prepend copy 2.
     markerless = first.replace("/* NUVIO_RUNTIME_DOMAIN_OVERRIDES_V1 */\n", "", 1)
     second, _ = inject_domain_overrides(markerless, rules)
     assert second.count("__nuvioDomainOverrideV1") == 1
@@ -159,6 +162,31 @@ def test_runtime_domain_duplicate_bootstraps_collapse_fail_closed() -> None:
         raise AssertionError("unowned runtime-domain reserved key must fail closed")
 
 
+def test_runtime_safety_owned_wrapper_separator_is_canonical() -> None:
+    module = runtime_safety_module()
+    wrapper = (
+        "/* NUVIO_GLOBAL_RUNTIME_MEDIA_SAFETY_V1:fixture */\n"
+        ";(function(g,c){})(typeof globalThis!==\"undefined\"?globalThis:this,{});"
+    )
+    before = (
+        "const before=1;\n\n\n"
+        + wrapper
+        + "\n\n\n/* NUVIO_GLOBAL_PROVIDER_BRANDING_V1:fixture */\nconst after=1;"
+    )
+    stripped = module._strip_previous(before)
+    assert stripped == (
+        "const before=1;\n"
+        "/* NUVIO_GLOBAL_PROVIDER_BRANDING_V1:fixture */\nconst after=1;"
+    )
+
+    current = before
+    for _ in range(6):
+        base = module._strip_previous(current).rstrip()
+        current = base + "\n" + wrapper
+        assert "\n\n/* NUVIO_GLOBAL_PROVIDER_BRANDING_V1" not in base
+        assert current.count("NUVIO_GLOBAL_RUNTIME_MEDIA_SAFETY_V1:") == 1
+
+
 if __name__ == "__main__":
     test_obfuscated_terminal_commonjs_export_is_bounded_by_core_tail()
     test_obfuscated_ternary_export_with_global_fallback_is_bounded()
@@ -167,4 +195,5 @@ if __name__ == "__main__":
     test_exact_provider_bridge_remains_authoritative()
     test_runtime_domain_markerless_bootstrap_reaches_one_copy()
     test_runtime_domain_duplicate_bootstraps_collapse_fail_closed()
-    print("Core export-floor + runtime-domain fixed-point regression tests passed")
+    test_runtime_safety_owned_wrapper_separator_is_canonical()
+    print("Core export-floor + domain/runtime fixed-point regression tests passed")
