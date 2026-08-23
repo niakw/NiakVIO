@@ -33,6 +33,26 @@ _UNSAFE_LITERAL_DECODE = re.compile(
 _PERCENT_DECODE_CALL = re.compile(
     r"\bdecodeURIComponent\(\s*(?P<value>[A-Za-z_$][\w$]*)\s*\)"
 )
+
+# HTML entity chains such as "&amp;" -> "&" followed by "&lt;" -> "<" decode
+# an input like "&amp;lt;" twice. The provider only needs one HTML-decoding pass.
+# We preserve each exact replacement but move ampersand decoding to the end of a
+# contiguous known-entity chain, which makes double-unescaping impossible.
+_HTML_ENTITY_REPLACE = re.compile(
+    r'''\.replace\(\s*/&(?P<entity>amp|lt|gt|quot|#39|apos|raquo|nbsp);/g\s*,\s*(?P<value>'(?:\\.|[^'\\])*'|"(?:\\.|[^"\\])*")\s*\)''',
+    re.IGNORECASE,
+)
+
+# Provider logs are not part of the public runtime contract. Sensitive values in
+# imported providers must not reach a CodeQL-recognized console sink. Rewrite the
+# standard sink property itself to a private no-op function, rather than merely
+# shadowing console while still passing tainted values to console.log/error/etc.
+_CONSOLE_METHOD = re.compile(
+    r"(?<![\w$])(?:(?:globalThis|window)\.)?console\s*\.\s*(?:log|warn|error|info|debug|trace|dir)\b"
+)
+_CONSOLE_BRACKET_METHOD = re.compile(
+    r'''(?<![\w$])(?:(?:globalThis|window)\.)?console\s*\[\s*(["'])(?:log|warn|error|info|debug|trace|dir)\1\s*\]'''
+)
 _CONSOLE_DECL = re.compile(r"\b(?:var|let|const|class|function)\s+console\b")
 _CONSOLE_USE = re.compile(r"(?<![\w$])(?:console|globalThis\.console|window\.console)\s*[\[.]")
 _GLOBAL_CONSOLE = re.compile(r"\b(?:globalThis|window)\.console(?=\s*[\[.])")
@@ -188,6 +208,57 @@ def _rewrite_percent_byte_decoders(source: str) -> tuple[str, int]:
     return "".join(parts), len(matches)
 
 
+def _html_entity_chains(source: str) -> list[list[re.Match[str]]]:
+    matches = list(_HTML_ENTITY_REPLACE.finditer(source))
+    chains: list[list[re.Match[str]]] = []
+    current: list[re.Match[str]] = []
+    for match in matches:
+        if current and source[current[-1].end() : match.start()].strip():
+            if len(current) > 1:
+                chains.append(current)
+            current = []
+        current.append(match)
+    if len(current) > 1:
+        chains.append(current)
+    return chains
+
+
+def _double_html_entity_chains(source: str) -> list[list[re.Match[str]]]:
+    unsafe: list[list[re.Match[str]]] = []
+    for chain in _html_entity_chains(source):
+        entities = [match.group("entity").casefold() for match in chain]
+        if "amp" in entities and entities.index("amp") < len(entities) - 1:
+            unsafe.append(chain)
+    return unsafe
+
+
+def _reorder_html_entity_decoders(source: str) -> tuple[str, int]:
+    chains = _double_html_entity_chains(source)
+    if not chains:
+        return source, 0
+    parts: list[str] = []
+    cursor = 0
+    for chain in chains:
+        start, end = chain[0].start(), chain[-1].end()
+        parts.append(source[cursor:start])
+        entities = [match.group("entity").casefold() for match in chain]
+        amp_index = entities.index("amp")
+        ordered = [match for index, match in enumerate(chain) if index != amp_index] + [chain[amp_index]]
+        separator = source[chain[0].end() : chain[1].start()]
+        if separator.strip():
+            separator = ""
+        parts.append(separator.join(match.group(0) for match in ordered))
+        cursor = end
+    parts.append(source[cursor:])
+    return "".join(parts), len(chains)
+
+
+def _rewrite_console_sinks(source: str) -> tuple[str, int]:
+    source, dot_changes = _CONSOLE_METHOD.subn("__nuvioProviderSilentLog", source)
+    source, bracket_changes = _CONSOLE_BRACKET_METHOD.subn("__nuvioProviderSilentLog", source)
+    return source, dot_changes + bracket_changes
+
+
 def harden_text(source: str) -> tuple[str, dict[str, Any]]:
     had_marker = MARKER in source
     structured = _load_safe_parse().apply(source)
@@ -203,6 +274,8 @@ def harden_text(source: str) -> tuple[str, dict[str, Any]]:
         source,
     )
     source, percent_decode_changes = _rewrite_percent_byte_decoders(source)
+    source, html_entity_reorders = _reorder_html_entity_decoders(source)
+    source, console_sink_changes = _rewrite_console_sinks(source)
 
     snippets: list[str] = []
     if literal_changes and "function __nuvioDecodeEscapedLiteral(" not in source:
@@ -214,17 +287,18 @@ def harden_text(source: str) -> tuple[str, dict[str, Any]]:
 
     # Terser is allowed to preserve/move comments. Marker presence therefore is
     # never treated as proof that its owning declarations survived. Reconstruct
-    # the concrete shadow declarations from structure whenever a previous pass
-    # left only part of them behind.
+    # concrete declarations from structure whenever a previous pass left only part
+    # of them behind. Standard console sinks are rewritten to the private no-op
+    # first; an object shadow remains only as a fallback for unusual console APIs.
     console_shadow = False
     console_shadow_repair = False
     silent_log_declared = _SILENT_LOG_DECL.search(source) is not None
     silent_log_used = _SILENT_LOG_USE.search(source) is not None
     console_declared = _CONSOLE_DECL.search(source) is not None
 
-    if silent_log_used and not silent_log_declared:
+    if (console_sink_changes or silent_log_used) and not silent_log_declared:
         snippets.append(_SILENT_LOG_HELPER)
-        console_shadow_repair = True
+        console_shadow_repair = silent_log_used and not console_sink_changes
         silent_log_declared = True
 
     if _CONSOLE_USE.search(source) and not console_declared:
@@ -239,6 +313,8 @@ def harden_text(source: str) -> tuple[str, dict[str, Any]]:
         literal_changes
         or hostname_changes
         or percent_decode_changes
+        or html_entity_reorders
+        or console_sink_changes
         or console_shadow
         or console_shadow_repair
     )
@@ -249,6 +325,8 @@ def harden_text(source: str) -> tuple[str, dict[str, Any]]:
         "literalDecodeChanges": literal_changes,
         "hostnameChanges": hostname_changes,
         "percentDecodeChanges": percent_decode_changes,
+        "htmlEntityDecodeReorders": html_entity_reorders,
+        "consoleSinkChanges": console_sink_changes,
         "consoleShadow": console_shadow,
         "consoleShadowRepair": console_shadow_repair,
     }
@@ -262,6 +340,8 @@ def harden_text(source: str) -> tuple[str, dict[str, Any]]:
             "literalDecodeChanges",
             "hostnameChanges",
             "percentDecodeChanges",
+            "htmlEntityDecodeReorders",
+            "consoleSinkChanges",
             "consoleShadow",
             "consoleShadowRepair",
         )
@@ -285,11 +365,15 @@ def known_unsafe_findings(source: str) -> list[str]:
         findings.append("incomplete_literal_escape")
     if _percent_byte_decoder_matches(source):
         findings.append("incomplete_percent_byte_decode")
+    if _double_html_entity_chains(source):
+        findings.append("double_html_entity_unescape")
     try:
         if _load_safe_parse().apply(source) != source:
             findings.append("destructive_structured_unescape")
     except Exception:
         findings.append("structured_parse_scan_failed")
+    if _CONSOLE_METHOD.search(source) or _CONSOLE_BRACKET_METHOD.search(source):
+        findings.append("provider_console_sensitive_sink")
     if _SILENT_LOG_USE.search(source) and not _SILENT_LOG_DECL.search(source):
         findings.append("provider_console_shadow_orphan_helper")
     if _CONSOLE_USE.search(source) and not _CONSOLE_DECL.search(source):
