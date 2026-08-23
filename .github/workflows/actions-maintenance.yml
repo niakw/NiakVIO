@@ -48,6 +48,13 @@ jobs:
           for row in "${active[@]}"; do
             IFS=$'\t' read -r id name head status <<<"$row"
             [[ "$id" == "$self" ]] && continue
+            # Other maintenance runs are serialized by concurrency; never cancel a
+            # queued successor, otherwise cleanup itself could prevent the final
+            # hand-off generation from running.
+            if [[ "$name" == "NiakVIO Actions maintenance" ]]; then
+              echo "FIELD_ACTIONS_MAINTENANCE keep-maintenance id=$id status=$status head=$head"
+              continue
+            fi
             echo "FIELD_ACTIONS_MAINTENANCE cancel id=$id status=$status head=$head name=$name"
             gh api --method POST "repos/${repo}/actions/runs/${id}/cancel" >/dev/null 2>&1 || true
             cancelled=$((cancelled + 1))
@@ -85,3 +92,31 @@ jobs:
 
           echo "FIELD_ACTIONS_MAINTENANCE_RESULT cancelled=$cancelled deleted=$deleted kept_success=$kept_success main=$main_sha self=$self"
           gh issue comment 69 --repo "$repo" --body "Actions maintenance completed in https://github.com/${repo}/actions/runs/${self}: cancelled=${cancelled}, deleted=${deleted}, retained_success_proofs=${kept_success}, main=${main_sha}. Obsolete active runs were stopped before the next authoritative final validation."
+
+      - name: Dispatch authoritative final validation after clean queue
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          repo="$GITHUB_REPOSITORY"
+          # Only the newest maintenance generation may hand off. Older queued
+          # maintenance runs finish cleanup but deliberately do not start a final run.
+          workflow_sha="$(gh api "repos/${repo}/contents/.github/workflows/actions-maintenance.yml?ref=main" --jq .sha)"
+          current_sha="$(git ls-remote "https://github.com/${repo}.git" refs/heads/main | awk '{print $1}')"
+          main_file_sha="$(gh api "repos/${repo}/contents/.github/workflows/actions-maintenance.yml?ref=${current_sha}" --jq .sha)"
+          if [[ "$workflow_sha" != "$main_file_sha" ]]; then
+            echo "FIELD_ACTIONS_MAINTENANCE_HANDOFF skipped=stale_generation"
+            exit 0
+          fi
+          started="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          gh workflow run final-validation-orchestrator.yml --repo "$repo" --ref main
+          final_id=""
+          for _ in $(seq 1 60); do
+            final_id="$(gh run list --repo "$repo" --workflow final-validation-orchestrator.yml --branch main --event workflow_dispatch --limit 20 --json databaseId,createdAt --jq ".[] | select(.createdAt >= \"$started\") | .databaseId" | head -n1)"
+            [[ -n "$final_id" ]] && break
+            sleep 2
+          done
+          [[ -n "$final_id" ]] || { echo 'final validation dispatch was not captured' >&2; exit 1; }
+          gh issue comment 69 --repo "$repo" --body "Clean Actions queue handed off to authoritative final validation: https://github.com/${repo}/actions/runs/${final_id}."
+          echo "FIELD_ACTIONS_MAINTENANCE_HANDOFF final_run=$final_id"
