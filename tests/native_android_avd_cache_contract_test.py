@@ -4,6 +4,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 workflow = (ROOT / ".github/workflows/native-android-route-reader.yml").read_text(encoding="utf-8")
 prime = (ROOT / "scripts/prime_android_lab_adb.sh").read_text(encoding="utf-8")
+prebuild = (ROOT / "scripts/prebuild_native_android_reader_suite.sh").read_text(encoding="utf-8")
 
 # The emulator image/snapshot is a Lab infrastructure artifact. It must not be
 # invalidated whenever an official Nuvio app commit advances; the guest userdata
@@ -35,4 +36,15 @@ assert "fallback=emulator_runner" in prime
 assert "status=degraded" in prime
 assert "runtime_mutation=false" in prime
 
-print("native Android AVD persistence + resilient adb bootstrap contract passed")
+# Dependency downloads happen before QEMU. Hosted runner/CDN bursts such as the
+# Maven Central 403 observed in run 32644909456 are infrastructure transients.
+# The prebuild may retry those network-shaped failures, but deterministic Gradle
+# failures must still return immediately and therefore remain visible as red CI.
+assert "run_gradle_with_network_retry" in prebuild
+assert "Could not (GET|HEAD)" in prebuild
+assert "Received status code (403|408|425|429|5[0-9][0-9])" in prebuild
+assert "FIELD_NATIVE_ANDROID_PREBUILD_NETWORK_RETRY" in prebuild
+assert "attempt=$attempt status=exhausted" in prebuild
+assert "return \"$status\"" in prebuild
+
+print("native Android AVD persistence + resilient adb/bootstrap/dependency contract passed")
