@@ -198,6 +198,15 @@ def _inject_runtime_domain_overrides(text: str, replacements: dict[str, Any]) ->
 })(typeof globalThis!=="undefined"?globalThis:this,%s);
 """ % (marker, payload)
 
+    # Preserve the established in-place replacement contract for one canonical
+    # marked wrapper. Markerless/minified or duplicate wrappers use the structural
+    # path below; this keeps older fixed-point assertions meaningful without making
+    # the comment authoritative again.
+    existing_span = spans[0] if len(spans) == 1 else None
+    if existing_span is not None and marker_comment in text[existing_span[0]:existing_span[1]]:
+        output = text[:existing_span[0]] + bootstrap + text[existing_span[1]:]
+        return output, 0 if output == original_text else len(rules)
+
     insert_at = insertion if insertion is not None else 0
     output = base[:insert_at] + bootstrap + base[insert_at:]
     return output, 0 if output == original_text else len(rules)
