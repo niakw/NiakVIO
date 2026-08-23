@@ -8,6 +8,10 @@ on:
     paths:
       - '.github/workflows/provider-fixed-point-audit.yml'
       - 'scripts/audit_provider_fixed_point.py'
+      - 'scripts/reapply_published_overrides.py'
+      - 'scripts/normalize_provider_rebuild_safety.py'
+      - 'scripts/normalize_core_fixed_point_contract.py'
+      - 'scripts/provider_patches/hls_runtime_integrity_v1.py'
 
 permissions:
   contents: read
