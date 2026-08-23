@@ -10,12 +10,17 @@ on:
 
 permissions:
   contents: read
+  issues: write
 
 jobs:
   diagnose:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
+      - name: Announce diagnostic run
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh issue comment 69 --repo "$GITHUB_REPOSITORY" --body "One-shot Core rebuild diagnostic: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID} on ${GITHUB_SHA}."
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           ref: main
