@@ -77,6 +77,44 @@ export function buildCatalogFromPublished({ generalManifest, vfManifest }) {
   return catalog;
 }
 
+/**
+ * Bind already-committed provider artwork into native Nuvio metadata.
+ *
+ * Logo discovery/conversion is intentionally NOT performed here. The one-shot
+ * importer produced immutable WebP assets plus assets/providers/index.json. This
+ * function only consumes that committed index so every future manifest rebuild
+ * keeps using repository-owned URLs instead of fragile third-party image hosts.
+ */
+export function applyCommittedProviderLogos(catalog, logoIndex) {
+  validateProviderCatalog(catalog);
+  if (!logoIndex || typeof logoIndex !== "object") return catalog;
+  if (logoIndex.futurePolicy !== "committed-assets-only-no-network-regeneration") {
+    throw new Error("provider logo index must declare committed-assets-only policy");
+  }
+  const indexed = logoIndex.providers;
+  if (!indexed || typeof indexed !== "object") return catalog;
+
+  const byId = new Map(catalog.providers.map((row) => [row.canonicalId, row]));
+  let applied = 0;
+  for (const [rawId, logo] of Object.entries(indexed)) {
+    if (!logo || typeof logo !== "object") continue;
+    const canonicalId = canonicalProviderId(rawId);
+    const row = byId.get(canonicalId);
+    if (!row) throw new Error(`provider logo index references unknown provider: ${rawId}`);
+    const url = String(logo.urls?.["96x40"] ?? "").trim();
+    if (!url) continue;
+    if (!url.startsWith("https://raw.githubusercontent.com/niakw/NiakVIO/")) {
+      throw new Error(`${canonicalId}: committed provider logo must use NiakVIO raw asset URL`);
+    }
+    row.scraper.logo = url;
+    applied += 1;
+  }
+  catalog.policy.committedProviderLogos = true;
+  catalog.policy.committedProviderLogoCount = applied;
+  validateProviderCatalog(catalog);
+  return catalog;
+}
+
 export function validateProviderCatalog(catalog) {
   if (!catalog || typeof catalog !== "object") throw new Error("provider catalog must be an object");
   if (catalog.schemaVersion !== PROVIDER_CATALOG_SCHEMA_VERSION) {
