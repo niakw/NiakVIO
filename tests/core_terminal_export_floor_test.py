@@ -35,6 +35,15 @@ def runtime_safety_module():
     return module
 
 
+def portfolio_module():
+    path = ROOT / "tests" / "provider_export_floor_portfolio_test.py"
+    spec = importlib.util.spec_from_file_location("nuvio_provider_export_floor_portfolio_test", path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
 def marker(name: str = "NUVIO_GLOBAL_CATALOGUE_ALIAS_RECOVERY_V2") -> str:
     return f'''/* {name}:abc */
 ;(function(g,c){{g.__core=c}})(globalThis,{{}});
@@ -187,6 +196,10 @@ def test_runtime_safety_owned_wrapper_separator_is_canonical() -> None:
         assert current.count("NUVIO_GLOBAL_RUNTIME_MEDIA_SAFETY_V1:") == 1
 
 
+def test_real_provider_portfolio_export_boundaries() -> None:
+    assert portfolio_module().main() == 0
+
+
 if __name__ == "__main__":
     test_obfuscated_terminal_commonjs_export_is_bounded_by_core_tail()
     test_obfuscated_ternary_export_with_global_fallback_is_bounded()
@@ -196,4 +209,5 @@ if __name__ == "__main__":
     test_runtime_domain_markerless_bootstrap_reaches_one_copy()
     test_runtime_domain_duplicate_bootstraps_collapse_fail_closed()
     test_runtime_safety_owned_wrapper_separator_is_canonical()
-    print("Core export-floor + domain/runtime fixed-point regression tests passed")
+    test_real_provider_portfolio_export_boundaries()
+    print("Core export-floor + domain/runtime fixed-point regressions passed across provider portfolio")
