@@ -39,6 +39,7 @@ on:
       - "scripts/build_native_reader_brain_repair.py"
       - "scripts/compare_native_reader_brain_repair.py"
       - "scripts/prime_android_lab_adb.sh"
+      - "scripts/prebuild_native_android_reader_suite.sh"
       - "scripts/provider_patches/global_media_enrichment_v1.py"
       - "tests/native_android_avd_cache_contract_test.py"
   push:
@@ -77,6 +78,7 @@ on:
       - "scripts/build_native_reader_brain_repair.py"
       - "scripts/compare_native_reader_brain_repair.py"
       - "scripts/prime_android_lab_adb.sh"
+      - "scripts/prebuild_native_android_reader_suite.sh"
       - "scripts/provider_patches/global_media_enrichment_v1.py"
       - "tests/native_android_avd_cache_contract_test.py"
       - ".github/workflows/native-android-route-reader.yml"
@@ -85,9 +87,12 @@ on:
 permissions:
   contents: read
 
+# PR revisions may cancel stale validation, but every main/workflow_dispatch run
+# gets its own group. A long native proof must never be killed just because a
+# later main commit lands while its emulator is booting.
 concurrency:
-  group: native-android-route-reader-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
+  group: native-android-route-reader-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 env:
   NIAKVIO_REPRESENTATIVE_FIXTURES: "sinners-2025 breaking-bad-s01e01 jujutsu-kaisen-s01e01"
@@ -172,22 +177,7 @@ jobs:
           path: |
             ~/.android/avd/*
             ~/.android/adb*
-          key: avd-v3-${{ runner.os }}-tv-api31-android-tv-x86-tv_1080p
-      - name: Create TV AVD snapshot on cache miss
-        if: steps.avd-cache.outputs.cache-hit != 'true'
-        uses: ReactiveCircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d
-        with:
-          api-level: 31
-          target: android-tv
-          arch: x86
-          profile: tv_1080p
-          cores: 2
-          ram-size: 2048M
-          force-avd-creation: false
-          emulator-boot-timeout: 600
-          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
-          disable-animations: false
-          script: echo "TV route AVD ready"
+          key: avd-v4-${{ runner.os }}-tv-api31-android-tv-x86-tv_1080p
       - name: Execute representative routes in one TV boot
         uses: ReactiveCircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d
         env:
@@ -208,7 +198,7 @@ jobs:
           ram-size: 2048M
           force-avd-creation: false
           emulator-boot-timeout: 600
-          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
+          emulator-options: ${{ steps.avd-cache.outputs.cache-hit == 'true' && '-no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim' || '-no-snapshot-load -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim' }}
           script: bash "$GITHUB_WORKSPACE/niakvio/scripts/run_native_corpus_tv_suite.sh"
       - name: Diagnose complete TV evidence
         if: always()
@@ -270,22 +260,7 @@ jobs:
           path: |
             ~/.android/avd/*
             ~/.android/adb*
-          key: avd-v3-${{ runner.os }}-mobile-api35-google_apis-x86_64-pixel_2
-      - name: Create Mobile AVD snapshot on cache miss
-        if: steps.avd-cache.outputs.cache-hit != 'true'
-        uses: ReactiveCircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d
-        with:
-          api-level: 35
-          target: google_apis
-          arch: x86_64
-          profile: pixel_2
-          cores: 2
-          ram-size: 2048M
-          force-avd-creation: false
-          emulator-boot-timeout: 600
-          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
-          disable-animations: false
-          script: echo "Mobile route AVD ready"
+          key: avd-v4-${{ runner.os }}-mobile-api35-google_apis-x86_64-pixel_2
       - name: Execute representative routes in one Mobile boot
         uses: ReactiveCircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d
         env:
@@ -306,7 +281,7 @@ jobs:
           ram-size: 2048M
           force-avd-creation: false
           emulator-boot-timeout: 600
-          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
+          emulator-options: ${{ steps.avd-cache.outputs.cache-hit == 'true' && '-no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim' || '-no-snapshot-load -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim' }}
           script: bash "$GITHUB_WORKSPACE/niakvio/scripts/run_native_corpus_mobile_suite.sh"
       - name: Diagnose complete Mobile evidence
         if: always()
@@ -430,22 +405,7 @@ jobs:
           path: |
             ~/.android/avd/*
             ~/.android/adb*
-          key: avd-v3-${{ runner.os }}-tv-api31-android-tv-x86-tv_1080p
-      - name: Create TV AVD snapshot on candidate cache miss
-        if: steps.repair.outputs.proposals != '0' && steps.repair-avd-cache.outputs.cache-hit != 'true'
-        uses: ReactiveCircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d
-        with:
-          api-level: 31
-          target: android-tv
-          arch: x86
-          profile: tv_1080p
-          cores: 2
-          ram-size: 2048M
-          force-avd-creation: false
-          emulator-boot-timeout: 600
-          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
-          disable-animations: false
-          script: echo "TV repair AVD ready"
+          key: avd-v4-${{ runner.os }}-tv-api31-android-tv-x86-tv_1080p
       - name: Re-read every provider and returned stream for all representative routes after Brain mutation
         if: steps.repair.outputs.proposals != '0'
         uses: ReactiveCircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d
@@ -467,7 +427,7 @@ jobs:
           ram-size: 2048M
           force-avd-creation: false
           emulator-boot-timeout: 600
-          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
+          emulator-options: ${{ steps.repair-avd-cache.outputs.cache-hit == 'true' && '-no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim' || '-no-snapshot-load -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim' }}
           script: bash "$GITHUB_WORKSPACE/niakvio/scripts/run_native_corpus_tv_suite.sh"
       - name: Diagnose and compare Brain mutations with fresh reader proof for all three routes
         if: steps.repair.outputs.proposals != '0'
