@@ -17,41 +17,30 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  NIAKVIO_FINALIZATION_LAUNCH_REVISION: "current-v4"
+  NIAKVIO_FINALIZATION_LAUNCH_REVISION: "core-v1"
 
 jobs:
   launch:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - name: Announce launcher run
-        env:
-          GH_TOKEN: ${{ github.token }}
-          REPO: ${{ github.repository }}
-        run: |
-          gh issue comment 69 --repo "$REPO" --body "Finalization launcher started: https://github.com/${REPO}/actions/runs/${GITHUB_RUN_ID} on ${GITHUB_SHA}."
-      - name: Dispatch exact current validation runs
+      - name: Launch exact Core finalizer
         env:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
         shell: bash
         run: |
           set -euo pipefail
-          dispatch_and_capture() {
-            local workflow="$1"
-            local started run_id
-            started="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-            gh workflow run "$workflow" --repo "$REPO" --ref main >/dev/null
-            run_id=""
-            for _ in $(seq 1 60); do
-              run_id="$(gh run list --repo "$REPO" --workflow "$workflow" --branch main --event workflow_dispatch --limit 20 --json databaseId,createdAt --jq ".[] | select(.createdAt >= \"$started\") | .databaseId" | head -n1)"
-              if [ -n "$run_id" ]; then break; fi
-              sleep 2
-            done
-            test -n "$run_id"
-            echo "$run_id"
-          }
-          ANDROID_RUN="$(dispatch_and_capture native-android-route-reader.yml)"
-          DESKTOP_RUN="$(dispatch_and_capture native-desktop-reader-acceptance.yml)"
-          CORE_TRACE_RUN="$(dispatch_and_capture core-reapply-diagnostic-once.yml)"
-          gh issue comment 69 --repo "$REPO" --body "Current finalization runs launched on ${GITHUB_SHA}: ANDROID_RUN=${ANDROID_RUN} https://github.com/${REPO}/actions/runs/${ANDROID_RUN} ; DESKTOP_RUN=${DESKTOP_RUN} https://github.com/${REPO}/actions/runs/${DESKTOP_RUN} ; CORE_TRACE_RUN=${CORE_TRACE_RUN} https://github.com/${REPO}/actions/runs/${CORE_TRACE_RUN}."
+          started="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          gh workflow run core-media-finalize-main.yml --repo "$REPO" --ref main >/dev/null
+          run_id=""
+          for _ in $(seq 1 60); do
+            run_id="$(gh run list --repo "$REPO" --workflow core-media-finalize-main.yml --branch main --event workflow_dispatch --limit 20 --json databaseId,createdAt --jq ".[] | select(.createdAt >= \"$started\") | .databaseId" | head -n1)"
+            if [[ -n "$run_id" ]]; then break; fi
+            sleep 2
+          done
+          if [[ -z "$run_id" ]]; then
+            echo "Unable to capture Core finalizer workflow_dispatch run" >&2
+            exit 1
+          fi
+          gh issue comment 69 --repo "$REPO" --body "Explicit Core finalizer launched on ${GITHUB_SHA}: CORE_RUN=${run_id} https://github.com/${REPO}/actions/runs/${run_id}."
