@@ -162,9 +162,13 @@ def media_label(value: str) -> str:
 def active_providers() -> list[dict[str, Any]]:
     manifest = load_json(ROOT / "manifest.json", {})
     logo_index = load_json(ROOT / "assets" / "providers" / "index.json", {})
+    branding_index = load_json(ROOT / "assets" / "providers" / "emojis.json", {})
     indexed = logo_index.get("providers") if isinstance(logo_index, dict) else {}
+    branding = branding_index.get("providers") if isinstance(branding_index, dict) else {}
     if not isinstance(indexed, dict):
         indexed = {}
+    if not isinstance(branding, dict):
+        branding = {}
     rows: list[dict[str, Any]] = []
     for scraper in manifest.get("scrapers") or []:
         if not isinstance(scraper, dict) or scraper.get("enabled") is not True:
@@ -174,6 +178,12 @@ def active_providers() -> list[dict[str, Any]]:
             continue
         key = provider_id.casefold()
         local = indexed.get(key)
+        brand = branding.get(key)
+        clean_name = (
+            str(brand.get("name") or "").strip()
+            if isinstance(brand, dict)
+            else ""
+        ) or str(scraper.get("name") or provider_id).strip()
         logo = ""
         if isinstance(local, dict):
             urls = local.get("urls") or {}
@@ -185,7 +195,7 @@ def active_providers() -> list[dict[str, Any]]:
             {
                 "id": provider_id,
                 "key": key,
-                "name": str(scraper.get("name") or provider_id),
+                "name": clean_name,
                 "logo": logo,
                 "types": [str(value) for value in (scraper.get("supportedTypes") or []) if str(value).strip()],
             }
@@ -294,7 +304,7 @@ def render(results: dict[str, Any]) -> str:
             "| Dernier état sain / publication fail-closed | ✅ | Non garanti |",
             "| Projection francophone dédiée | ✅ | Variable |",
             "",
-            "La source machine des preuves est [`automation/provider-device-results.json`](automation/provider-device-results.json). Les logos affichés privilégient les assets WebP committés de NiakVIO ; les preuves des prochains gros Deep/Labs complètent automatiquement les lignes existantes.",
+            "La source machine des preuves est [`automation/provider-device-results.json`](automation/provider-device-results.json). Les logos affichés privilégient les assets WebP committés de NiakVIO ; les noms du tableau viennent du même registre de branding mais restent volontairement sans emoji à côté du logo. Les preuves des prochains gros Deep/Labs complètent automatiquement les lignes existantes.",
             END,
         ]
     )
