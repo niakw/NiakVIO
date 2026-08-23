@@ -16,6 +16,7 @@ on:
       - 'engine_v2/tests/provider-catalog.test.mjs'
       - 'scripts/normalize_core_fixed_point_contract.py'
       - 'scripts/normalize_provider_rebuild_safety.py'
+      - 'scripts/normalize_provider_branding_pipeline.py'
       - 'scripts/core_rebuild_safety.py'
       - 'scripts/normalize_core_media_policy.py'
       - 'scripts/apply_runtime_capability_upgrade_v4.py'
@@ -113,6 +114,7 @@ jobs:
           python scripts/normalize_core_fixed_point_contract.py --apply
           python -m py_compile \
             scripts/normalize_provider_rebuild_safety.py \
+            scripts/normalize_provider_branding_pipeline.py \
             scripts/core_rebuild_safety.py \
             scripts/normalize_core_fixed_point_contract.py \
             scripts/normalize_core_media_policy.py \
@@ -127,6 +129,7 @@ jobs:
           python tests/provider_purification_contract_test.py
           python scripts/normalize_provider_rebuild_safety.py --check
           python scripts/normalize_core_fixed_point_contract.py --check
+          python scripts/normalize_provider_branding_pipeline.py --check
 
       - name: Normalize Core media architecture
         shell: bash
@@ -161,20 +164,13 @@ jobs:
           python scripts/sync_release_versions.py --manifest manifest.json --previous "$RUNNER_TEMP/manifest-before.json"
           python scripts/prune_unreferenced_providers.py
 
-      - name: Trace two-pass Core reconstruction
-        shell: bash
-        run: |
-          set +e
-          python scripts/diagnose_core_rebuild_once.py
-          echo "diagnostic_rc=$? (non-blocking one-shot trace)"
-          exit 0
-
       - name: Verify Core and native media contracts
         shell: bash
         run: |
           set -euo pipefail
           python scripts/normalize_provider_rebuild_safety.py --check
           python scripts/normalize_core_fixed_point_contract.py --check
+          python scripts/normalize_provider_branding_pipeline.py --check
           python scripts/normalize_core_media_policy.py --check
           python scripts/enforce_main_only_repository_policy.py --check
           python tests/core_media_policy_test.py
@@ -272,6 +268,7 @@ jobs:
           npm ci --ignore-scripts --no-audit --no-fund
           python scripts/normalize_provider_rebuild_safety.py --check
           python scripts/normalize_core_fixed_point_contract.py --check
+          python scripts/normalize_provider_branding_pipeline.py --check
           python scripts/normalize_core_media_policy.py --check
           python scripts/enforce_main_only_repository_policy.py --check
           python tests/core_media_policy_test.py
