@@ -1,21 +1,26 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: GPL-3.0-only
-"""Materialize fail-closed wrapper isolation around provider-derived bytes.
+"""Materialize fail-closed rebuild safety around provider-derived bytes.
 
-Minifiers may preserve a NUVIO comment while moving its attachment to another
-AST node. A comment alone must therefore never authorize deleting bytes through
-the next IIFE terminator. This normalizer keeps wrapper isolation exact and
-refuses any candidate span that is not immediately an IIFE or that crosses the
-provider declaration/export bridge.
+Minifiers may preserve NUVIO comments while moving or reformatting their owning
+statements. Comments alone therefore never authorize deleting bytes through a
+later wrapper terminator. This normalizer protects wrapper isolation and, during
+the current Core migration, materializes the durable bounded parser in the owning
+fixed-point normalizer before it generates publication code.
 """
 from __future__ import annotations
 
 import argparse
+import subprocess
+import sys
 from pathlib import Path
 from textwrap import dedent
 
 ROOT = Path(__file__).resolve().parents[1]
 TARGET = ROOT / "scripts" / "provider_engine_normalizer.py"
+CORE_NORMALIZER = ROOT / "scripts" / "normalize_core_fixed_point_contract.py"
+CORE_MIGRATION = ROOT / "scripts" / "harden_core_fixed_point_normalizer_once.py"
+CORE_HARDENING_MARKER = "def _harden_generated_apply(text: str) -> str:"
 
 SAFE_FUNCTION = dedent(r'''
 def _owned_wrapper_end(text: str, marker_end: int, limit: int) -> int | None:
@@ -62,6 +67,14 @@ def normalized(text: str) -> str:
     return text[:start] + SAFE_FUNCTION + text[end:]
 
 
+def _materialize_core_hardening() -> None:
+    if CORE_HARDENING_MARKER in CORE_NORMALIZER.read_text(encoding="utf-8"):
+        return
+    subprocess.run([sys.executable, str(CORE_MIGRATION)], cwd=ROOT, check=True)
+    if CORE_HARDENING_MARKER not in CORE_NORMALIZER.read_text(encoding="utf-8"):
+        raise SystemExit("Core fixed-point hardening migration did not materialize")
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--apply", action="store_true")
@@ -69,6 +82,11 @@ def main() -> int:
     args = parser.parse_args()
     if args.apply == args.check:
         parser.error("choose exactly one of --apply or --check")
+
+    if args.apply:
+        _materialize_core_hardening()
+    elif CORE_HARDENING_MARKER not in CORE_NORMALIZER.read_text(encoding="utf-8"):
+        raise SystemExit("Core fixed-point bounded parser is not materialized")
 
     current = TARGET.read_text(encoding="utf-8")
     expected = normalized(current)
