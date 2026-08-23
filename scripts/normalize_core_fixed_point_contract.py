@@ -167,6 +167,22 @@ def normalize_reapply(text: str) -> str:
             raise ValueError("provider engine import anchor missing")
         text = text.replace(anchor, purifier_import + anchor, 1)
 
+    text = text.replace(
+        "def validate_artifact(data: bytes) -> None:\n",
+        "def validate_artifact(data: bytes, provider_id: str) -> None:\n",
+        1,
+    )
+    text = text.replace(
+        'raise ValueError(f"patched published provider rejected:\\n{detail or \'no diagnostic\'}")',
+        'raise ValueError(f"patched published provider rejected provider={provider_id}:\\n{detail or \'no diagnostic\'}")',
+        1,
+    )
+    text = text.replace(
+        "            validate_artifact(patched)\n",
+        "            validate_artifact(patched, provider_id)\n",
+        1,
+    )
+
     if "purified, purification = purify_bytes(patched)" not in text:
         anchor = "        changed = patched != original\n"
         if anchor not in text:
@@ -205,6 +221,9 @@ def assert_contract() -> None:
 
     for required in (
         "from provider_purification import purify_bytes",
+        "def validate_artifact(data: bytes, provider_id: str) -> None:",
+        "patched published provider rejected provider={provider_id}",
+        "validate_artifact(patched, provider_id)",
         "purified, purification = purify_bytes(patched)",
         '"phase": "final-post-transform"',
         '"mangle": False',
