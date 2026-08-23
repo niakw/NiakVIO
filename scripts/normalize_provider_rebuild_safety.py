@@ -20,7 +20,7 @@ from textwrap import dedent
 ROOT = Path(__file__).resolve().parents[1]
 TARGET = ROOT / "scripts" / "provider_engine_normalizer.py"
 CORE_NORMALIZER = ROOT / "scripts" / "normalize_core_fixed_point_contract.py"
-CORE_MIGRATION = ROOT / "scripts" / "harden_core_fixed_point_normalizer_once.py"
+CORE_MATERIALIZER = ROOT / "scripts" / "materialize_core_fixed_point_hardening.py"
 CORE_SAFETY = ROOT / "scripts" / "core_rebuild_safety.py"
 CORE_HARDENING_MARKER = "return harden_generated_apply(text)"
 
@@ -72,11 +72,13 @@ def normalized(text: str) -> str:
 def _materialize_core_hardening() -> None:
     if not CORE_SAFETY.is_file():
         raise SystemExit("durable Core rebuild safety module is missing")
+    if not CORE_MATERIALIZER.is_file():
+        raise SystemExit("durable Core fixed-point materializer is missing")
     if CORE_HARDENING_MARKER in CORE_NORMALIZER.read_text(encoding="utf-8"):
         return
-    subprocess.run([sys.executable, str(CORE_MIGRATION)], cwd=ROOT, check=True)
+    subprocess.run([sys.executable, str(CORE_MATERIALIZER)], cwd=ROOT, check=True)
     if CORE_HARDENING_MARKER not in CORE_NORMALIZER.read_text(encoding="utf-8"):
-        raise SystemExit("Core fixed-point hardening migration did not materialize")
+        raise SystemExit("Core fixed-point hardening did not materialize")
 
 
 def main() -> int:
