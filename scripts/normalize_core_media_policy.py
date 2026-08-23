@@ -18,6 +18,7 @@ OVERRIDES = ROOT / "provider-overrides.json"
 MANIFEST = ROOT / "manifest.json"
 PROVIDER_BRANDING = ROOT / "assets/providers/emojis.json"
 DESKTOP_COMPAT = ROOT / "scripts/publish_desktop_runtime_compat.py"
+APPLY_OVERRIDES = ROOT / "scripts/apply_provider_overrides.py"
 GLOBAL_SECURITY_HOOK = "scripts/provider_patches/global_provider_security_hardening_v1.py"
 GLOBAL_BRANDING_HOOK = "scripts/provider_patches/global_provider_branding_v1.py"
 ALLOWED_SHARED_PURSTREAM_SCRIPTS = {
@@ -55,16 +56,15 @@ def _normalize_global_tail(value: dict[str, Any], changed: list[str]) -> None:
     hooks = playback.get("global_discovery_hooks") or []
     if not isinstance(hooks, list):
         raise ValueError("playback_integrity_policy.global_discovery_hooks must be an array")
+    # Security remains the last configurable playback hook. Provider branding is
+    # deliberately excluded here and is applied by the controlled Core pipeline
+    # *after* global_stream_presentation, so original stream facts remain readable.
     controlled = {GLOBAL_SECURITY_HOOK, GLOBAL_BRANDING_HOOK}
     normalized = [str(path) for path in hooks if str(path).strip() and str(path) not in controlled]
-    # Pre/post HLS hooks are removed from this legacy-tail stage by
-    # apply_provider_overrides.py. Security therefore executes after all media
-    # recovery, branding then establishes the stable provider text identity, and
-    # the separate controlled presentation wrapper executes last.
-    normalized.extend([GLOBAL_SECURITY_HOOK, GLOBAL_BRANDING_HOOK])
+    normalized.append(GLOBAL_SECURITY_HOOK)
     if normalized != hooks:
         playback["global_discovery_hooks"] = normalized
-        changed.append("playback_integrity_policy.global_discovery_hooks:security_branding_tail")
+        changed.append("playback_integrity_policy.global_discovery_hooks:security_tail")
 
 
 def normalize(value: dict[str, Any]) -> tuple[dict[str, Any], list[str]]:
@@ -151,6 +151,17 @@ def _assert_branding_inventory() -> None:
             raise ValueError(f"provider branding row requires clean name + emoji: {provider_id}")
 
 
+def _assert_branding_pipeline_order() -> None:
+    source = APPLY_OVERRIDES.read_text(encoding="utf-8")
+    presentation = source.find('"scope": "global_stream_presentation"')
+    branding = source.find('"scope": "global_provider_branding"')
+    final_return = source.find("    if text == original_text:", branding)
+    if presentation < 0 or branding < 0 or final_return < 0 or not (presentation < branding < final_return):
+        raise ValueError("provider branding must execute after stream presentation and before final return")
+    if 'GLOBAL_PROVIDER_BRANDING = "scripts/provider_patches/global_provider_branding_v1.py"' not in source:
+        raise ValueError("controlled provider branding constant is missing")
+
+
 def assert_policy(value: dict[str, Any]) -> None:
     row = value["provider_patches"]["purstream"]
     scripts = {str(path) for path in (row.get("patch_scripts") or [])}
@@ -178,13 +189,16 @@ def assert_policy(value: dict[str, Any]) -> None:
     if "NUVIO_GLOBAL_PROVIDER_BRANDING_V1" not in branding_text:
         raise ValueError("shared provider branding Core hook is missing")
     _assert_branding_inventory()
+    _assert_branding_pipeline_order()
 
     playback = value.get("playback_integrity_policy") or {}
     hooks = [str(path) for path in (playback.get("global_discovery_hooks") or [])]
-    if hooks.count(GLOBAL_SECURITY_HOOK) != 1 or hooks.count(GLOBAL_BRANDING_HOOK) != 1:
-        raise ValueError("global provider security/branding hooks must each be present exactly once")
-    if hooks[-2:] != [GLOBAL_SECURITY_HOOK, GLOBAL_BRANDING_HOOK]:
-        raise ValueError("global Core tail must end security -> provider branding before presentation")
+    if hooks.count(GLOBAL_SECURITY_HOOK) != 1:
+        raise ValueError("global provider security hook must be present exactly once")
+    if GLOBAL_BRANDING_HOOK in hooks:
+        raise ValueError("provider branding must not run before stream presentation as a playback hook")
+    if not hooks or hooks[-1] != GLOBAL_SECURITY_HOOK:
+        raise ValueError("global configurable Core tail must end with provider security")
 
     desktop_text = DESKTOP_COMPAT.read_text(encoding="utf-8")
     if _PURSTREAM_DESKTOP_TARGET in desktop_text:
@@ -215,7 +229,7 @@ def main() -> int:
     print(
         "FIELD_CORE_MEDIA_POLICY "
         f"provider_specific_media_repairs=0 changed={len(changed) + len(source_changes)} "
-        "identity=global_runtime presentation=global_core branding=global_core "
+        "identity=global_runtime presentation=global_core branding=post_presentation_global_core "
         "compatibility=shared security=global_core"
     )
     return 0
