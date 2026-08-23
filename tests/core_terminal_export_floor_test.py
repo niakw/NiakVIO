@@ -36,7 +36,6 @@ def runtime_safety_module():
 
 
 def portfolio_module():
-    # Portfolio failures intentionally expose a compact terminal-export excerpt in CI.
     path = ROOT / "tests" / "provider_export_floor_portfolio_test.py"
     spec = importlib.util.spec_from_file_location("nuvio_provider_export_floor_portfolio_test", path)
     assert spec is not None and spec.loader is not None
@@ -80,6 +79,35 @@ def test_obfuscated_ternary_export_with_global_fallback_is_bounded() -> None:
     floor = provider_export_floor(movieshunt)
     assert floor > 0
     assert movieshunt[floor:].lstrip().startswith("/* NUVIO_GLOBAL_RUNTIME_MEDIA_SAFETY_V1:")
+
+
+def test_shorthand_commonjs_exports_before_owned_wrappers_are_bounded() -> None:
+    sanitizer = (
+        "/* NUVIO_STREAM_OUTPUT_SANITIZER_V4:fixture */\n"
+        ";(function(g,c){})(globalThis,{});\n"
+    )
+    direct = "function getStreams(){};module.exports = { getStreams };\n" + sanitizer
+    floor = provider_export_floor(direct)
+    assert floor > direct.index("module.exports")
+    assert direct[floor:].lstrip().startswith("/* NUVIO_STREAM_OUTPUT_SANITIZER_V4:")
+
+    branding = marker("NUVIO_GLOBAL_PROVIDER_BRANDING_V1")
+    settings = (
+        "function getStreams(){}function onSettings(){};"
+        "module.exports={getStreams,onSettings};\n" + branding
+    )
+    floor = provider_export_floor(settings)
+    assert floor > settings.index("module.exports")
+    assert settings[floor:].lstrip().startswith("/* NUVIO_GLOBAL_PROVIDER_BRANDING_V1:")
+
+    # Merely using getStreams as another property's value is not an export key.
+    assert provider_export_floor(
+        "function getStreams(){};module.exports={other:getStreams};\n" + sanitizer
+    ) == -1
+    # The owned marker must be adjacent to the complete export statement.
+    assert provider_export_floor(
+        "function getStreams(){};module.exports={getStreams};\ndangerousCall();\n" + sanitizer
+    ) == -1
 
 
 def test_floated_core_marker_before_obfuscated_export_is_not_an_upper_bound() -> None:
@@ -204,6 +232,7 @@ def test_real_provider_portfolio_export_boundaries() -> None:
 if __name__ == "__main__":
     test_obfuscated_terminal_commonjs_export_is_bounded_by_core_tail()
     test_obfuscated_ternary_export_with_global_fallback_is_bounded()
+    test_shorthand_commonjs_exports_before_owned_wrappers_are_bounded()
     test_floated_core_marker_before_obfuscated_export_is_not_an_upper_bound()
     test_terminal_commonjs_fallback_remains_fail_closed()
     test_exact_provider_bridge_remains_authoritative()
