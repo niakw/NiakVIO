@@ -55,6 +55,41 @@ assert '__nuvioHostMatches(t,"example.com")' in hardened
 assert 't.includes("big_buck_bunny")' in hardened
 js_ok(hardened)
 
+# JavaScript-obfuscator output used by multiple imported providers accumulates a
+# complete UTF-8 %HH byte stream and then routes it through decodeURIComponent.
+# That generic URI-decoding boundary is the source of CodeQL's incomplete-string-
+# encoding alerts. The Core rewrites only this structural byte-decoder shape and
+# leaves normal URL decodeURIComponent calls alone.
+percent_decoder = r'''function decodeTable(value){
+  var raw="abc", encoded="";
+  for(var i=0;i<raw.length;i++){encoded+="%"+("00"+raw.charCodeAt(i).toString(16)).slice(-2)}
+  return decodeURIComponent(encoded);
+}
+function legitimate(url){return decodeURIComponent(url)}
+'''
+hardened, report = harden_text(percent_decoder)
+assert report["percentDecodeChanges"] == 1, (report, hardened)
+assert "return __nuvioDecodeUtf8PercentBytes(encoded)" in hardened
+assert "function __nuvioDecodeUtf8PercentBytes(" in hardened
+assert "return decodeURIComponent(url)" in hardened
+assert "incomplete_percent_byte_decode" not in known_unsafe_findings(hardened)
+js_ok(hardened)
+
+# Prove strict UTF-8 compatibility for the replacement, including a 4-byte code
+# point and URIError on malformed input, without depending on TextDecoder support.
+percent_runtime = hardened + r'''
+if(__nuvioDecodeUtf8PercentBytes("%63%61%66%C3%A9")!=="café")process.exit(21);
+if(__nuvioDecodeUtf8PercentBytes("%F0%9F%8D%91")!=="🍑")process.exit(22);
+var threw=false;try{__nuvioDecodeUtf8PercentBytes("%C3%28")}catch(e){threw=e instanceof URIError}
+if(!threw)process.exit(23);
+'''
+with tempfile.NamedTemporaryFile("w", suffix=".js", encoding="utf-8", delete=False) as handle:
+    handle.write(percent_runtime)
+    percent_name = handle.name
+completed = subprocess.run(["node", percent_name], capture_output=True, text=True)
+Path(percent_name).unlink(missing_ok=True)
+assert completed.returncode == 0, completed.stdout + completed.stderr
+
 logs = '''var TMDB_API_KEY="secret";function f(u){console.log(u+TMDB_API_KEY);console["warn"](TMDB_API_KEY);globalThis.console.error(u)}'''
 hardened, report = harden_text(logs)
 assert report["consoleShadow"] is True, report
