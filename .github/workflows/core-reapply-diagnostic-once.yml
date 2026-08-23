@@ -17,7 +17,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  NIAKVIO_CORE_TRACE_REVISION: "current-v2"
+  NIAKVIO_CORE_TRACE_REVISION: "current-v3"
 
 jobs:
   trace:
@@ -27,7 +27,8 @@ jobs:
       - name: Announce diagnostic run
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh issue comment 69 --repo "$GITHUB_REPOSITORY" --body "One-shot Core fixed-point trace started: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID} on ${GITHUB_SHA}."
+        run: |
+          gh issue comment 69 --repo "$GITHUB_REPOSITORY" --body "One-shot Core fixed-point trace started: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID} on ${GITHUB_SHA}."
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           fetch-depth: 1
