@@ -6,8 +6,10 @@ Minifiers may preserve NUVIO comments while moving or reformatting their owning
 statements. Comments alone therefore never authorize deleting bytes through a
 later wrapper terminator; relocated metadata is stripped without touching the
 provider body. This normalizer protects wrapper isolation, wires the durable
-``core_rebuild_safety`` parser into the owning fixed-point normalizer, and owns
-canonical single-newline separation for the global HLS runtime hook.
+``core_rebuild_safety`` parser into the owning fixed-point normalizer, owns
+canonical single-newline separation for the global HLS runtime hook, and keeps
+provider rebuild transitions observable when a content-addressed fixed point
+fails to converge.
 """
 from __future__ import annotations
 
@@ -19,11 +21,13 @@ from textwrap import dedent
 
 ROOT = Path(__file__).resolve().parents[1]
 TARGET = ROOT / "scripts" / "provider_engine_normalizer.py"
+REAPPLY = ROOT / "scripts" / "reapply_published_overrides.py"
 CORE_NORMALIZER = ROOT / "scripts" / "normalize_core_fixed_point_contract.py"
 CORE_MATERIALIZER = ROOT / "scripts" / "materialize_core_fixed_point_hardening.py"
 CORE_SAFETY = ROOT / "scripts" / "core_rebuild_safety.py"
 HLS_RUNTIME = ROOT / "scripts" / "provider_patches" / "hls_runtime_integrity_v1.py"
 CORE_HARDENING_MARKER = "return harden_generated_apply(text)"
+REAPPLY_DIAGNOSTIC_MARKER = "FIELD_PROVIDER_REF_CHANGES"
 
 SAFE_FUNCTION = dedent(r'''
 def _owned_wrapper_end(text: str, marker_end: int, limit: int) -> int | None:
@@ -88,6 +92,37 @@ def normalized_hls(text: str) -> str:
     return text.replace("wrapper.rstrip()", "wrapper.strip()")
 
 
+def normalized_reapply_diagnostics(text: str) -> str:
+    """Expose exact content-addressed transitions without changing publication."""
+    if REAPPLY_DIAGNOSTIC_MARKER in text:
+        return text
+    anchor = '''    print(
+        f"published overrides reapplied: patched={applied_count}, "
+'''
+    if anchor not in text:
+        raise ValueError("published override summary anchor missing")
+    block = '''    changed_provider_rows = sorted(
+        (provider_id, old, new)
+        for provider_id, (old, new) in updates.items()
+        if old != new
+    )
+    if changed_provider_rows:
+        print(
+            "FIELD_PROVIDER_REF_CHANGES "
+            f"count={len(changed_provider_rows)} ids={','.join(row[0] for row in changed_provider_rows)}"
+        )
+        print(
+            "FIELD_PROVIDER_REF_TRANSITIONS values="
+            + ",".join(
+                f"{provider_id}:{Path(old).stem.rsplit('--', 1)[-1][:16]}>"
+                f"{Path(new).stem.rsplit('--', 1)[-1][:16]}"
+                for provider_id, old, new in changed_provider_rows
+            )
+        )
+'''
+    return text.replace(anchor, block + anchor, 1)
+
+
 def _materialize_core_hardening() -> None:
     if not CORE_SAFETY.is_file():
         raise SystemExit("durable Core rebuild safety module is missing")
@@ -100,6 +135,15 @@ def _materialize_core_hardening() -> None:
         raise SystemExit("Core fixed-point hardening did not materialize")
 
 
+def _materialize_reapply_diagnostics() -> bool:
+    current = REAPPLY.read_text(encoding="utf-8")
+    expected = normalized_reapply_diagnostics(current)
+    if current == expected:
+        return False
+    REAPPLY.write_text(expected, encoding="utf-8")
+    return True
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--apply", action="store_true")
@@ -108,8 +152,10 @@ def main() -> int:
     if args.apply == args.check:
         parser.error("choose exactly one of --apply or --check")
 
+    diagnostics_changed = False
     if args.apply:
         _materialize_core_hardening()
+        diagnostics_changed = _materialize_reapply_diagnostics()
     elif not CORE_SAFETY.is_file() or CORE_HARDENING_MARKER not in CORE_NORMALIZER.read_text(encoding="utf-8"):
         raise SystemExit("Core fixed-point bounded parser is not materialized")
 
@@ -135,7 +181,7 @@ def main() -> int:
         print("provider rebuild safety contract verified")
         return 0
 
-    changed = False
+    changed = diagnostics_changed
     if current != expected:
         TARGET.write_text(expected, encoding="utf-8")
         changed = True
