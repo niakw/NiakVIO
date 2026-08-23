@@ -13,6 +13,12 @@ from core_rebuild_safety import SAFE_EXPORT_FN  # noqa: E402
 
 CORE_MARKERS = (
     "NUVIO_GLOBAL_CORE_START_BOUNDARY_V1",
+    "NUVIO_STREAM_OUTPUT_SANITIZER_V",
+    "NUVIO_GLOBAL_PROVIDER_BRANDING_V1",
+    "NUVIO_DESKTOP_RUNTIME_COMPAT_V1",
+    "NUVIO_TV_DIRECT_MEDIA_V2",
+    "NUVIO_ANIMEZEY_STREAM_HOST_V1",
+    "NUVIO_TV_PLAYABLE_FIRST_V1",
     "NUVIO_GLOBAL_CATALOGUE_ALIAS_RECOVERY_V2",
     "NUVIO_GLOBAL_MEDIA_ENRICHMENT_V1",
     "NUVIO_GLOBAL_RUNTIME_MEDIA_SAFETY_V1",
@@ -31,19 +37,49 @@ def provider_export_floor(text: str) -> int:
     return namespace["_provider_export_floor"](text)  # type: ignore[index,operator]
 
 
+def _regressions() -> None:
+    core = "/* NUVIO_GLOBAL_CATALOGUE_ALIAS_RECOVERY_V2:fixture */\n;(function(){})();\n"
+    kurage = (
+        "function getStreams(){};"
+        "module['exports']={'getStreams':getStreams};"
+        "function _decoder(){const table=['a'];_decoder=function(){return table;};return _decoder();}\n"
+        + core
+    )
+    floor = provider_export_floor(kurage)
+    assert floor > kurage.index("function _decoder")
+    assert kurage[floor:].lstrip().startswith("/* NUVIO_GLOBAL_CATALOGUE_ALIAS_RECOVERY_V2:")
+
+    # Only classic named declarations are provider-owned after the export. Calls,
+    # assignments and anonymous declarations must never be swallowed as provider bytes.
+    assert provider_export_floor(
+        "module.exports={getStreams};dangerousCall();\n" + core
+    ) == -1
+    assert provider_export_floor(
+        "module.exports={getStreams};const decoder=function(){};\n" + core
+    ) == -1
+
+    tv = "/* NUVIO_TV_PLAYABLE_FIRST_V1 */\n;(function(){})();\n"
+    vegamovies = (
+        "function getStreams(){};"
+        "typeof module!=='undefined'&&module.exports?"
+        "module.exports={'getStreams':getStreams}:global.getStreams=getStreams;\n"
+        + tv
+    )
+    floor = provider_export_floor(vegamovies)
+    assert floor > vegamovies.index("module.exports")
+    assert vegamovies[floor:].lstrip().startswith("/* NUVIO_TV_PLAYABLE_FIRST_V1")
+
+
 def _shape_excerpt(text: str, marker_positions: list[int]) -> str:
-    """Return a compact public diagnostic around the terminal getStreams/export area."""
-    get_positions = [match.start() for match in re.finditer(r"getStreams", text)]
-    anchor = get_positions[-1] if get_positions else max(0, (marker_positions[0] if marker_positions else len(text)) - 1)
-    post_markers = [position for position in marker_positions if position > anchor]
-    end = min(post_markers) if post_markers else min(marker_positions) if marker_positions else len(text)
-    start = max(0, anchor - 900)
-    excerpt = text[start:min(len(text), end + 80)]
-    excerpt = re.sub(r"\s+", " ", excerpt).strip()
-    return excerpt[-1400:]
+    """Return a compact diagnostic immediately before the first generated layer."""
+    marker = min(marker_positions) if marker_positions else len(text)
+    start = max(0, marker - 1800)
+    excerpt = re.sub(r"\s+", " ", text[start:min(len(text), marker + 100)]).strip()
+    return excerpt[-1800:]
 
 
 def main() -> int:
+    _regressions()
     manifest = json.loads((ROOT / "manifest.json").read_text(encoding="utf-8"))
     rows = manifest.get("scrapers") or []
     unresolved: list[str] = []
