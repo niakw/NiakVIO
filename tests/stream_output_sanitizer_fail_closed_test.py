@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import importlib.util
+import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -44,9 +45,26 @@ def main() -> int:
     assert '"maxProbes":20' in first
     assert module.NEW in first
     assert module.OLD not in first
-    assert module.PROBE_ALIAS in sanitizer_region(first)
+    assert module.PROBE_ALIAS_RE.search(sanitizer_region(first))
     for path in options["blocked_path_patterns"]:
         assert f'"{path}"' in first
+
+    # Rebuild inputs are often Terser-formatted rather than source-formatted.
+    # Compact only the signatures/spacing that V6 needs to locate structurally;
+    # the generic repair must still find the local region and remain idempotent.
+    compacted = first
+    compacted = compacted.replace(
+        "async function probeResolved(stream,url,depth,referer){",
+        "async function probeResolved(stream,url,depth,referer){",
+    )
+    compacted = compacted.replace(
+        '  async function probe(stream,url){return await probeResolved(stream,url,0,"")}\n',
+        'async function probe(stream,url){return await probeResolved(stream,url,0,"")} ',
+    )
+    compacted = compacted.replace("  function install(container,key){\n", "function install(container,key){")
+    compacted_repaired = module.apply(compacted, options=options)
+    assert module.PROBE_ALIAS_RE.search(sanitizer_region(compacted_repaired))
+    assert module.apply(compacted_repaired, options=options) == compacted_repaired
 
     # A changed V5 configuration must not be hidden by the static V6 marker.
     changed_options = dict(options)
@@ -58,7 +76,7 @@ def main() -> int:
     assert module.apply(changed, options=changed_options) == changed
     assert changed.count(module.MARKER) == 1
     assert module.NEW in changed
-    assert module.PROBE_ALIAS in sanitizer_region(changed)
+    assert module.PROBE_ALIAS_RE.search(sanitizer_region(changed))
 
     # Durable/LKG reapplication can append a freshly force-rewrapped target-media
     # adapter after an already-materialized sanitizer. Reapplying V6 must move
@@ -70,7 +88,7 @@ def main() -> int:
     assert target_pos >= 0 and sanitizer_pos > target_pos, (target_pos, sanitizer_pos)
     assert relocated.count(module.SANITIZER_PREFIX) == 1
     assert relocated.count(module.MARKER) == 1
-    assert module.PROBE_ALIAS in sanitizer_region(relocated)
+    assert module.PROBE_ALIAS_RE.search(sanitizer_region(relocated))
     assert module.apply(relocated, options=options) == relocated
 
     # Reproduce the Coflix collision: another provider wrapper may already define
@@ -78,8 +96,9 @@ def main() -> int:
     # the terminal sanitizer omit its own lexical alias.
     collision_source = module.PROBE_ALIAS + source
     collision = module.apply(collision_source, options=options)
-    assert collision.count(module.PROBE_ALIAS) >= 2
-    assert module.PROBE_ALIAS in sanitizer_region(collision)
+    aliases = list(module.PROBE_ALIAS_RE.finditer(collision))
+    assert len(aliases) >= 2
+    assert module.PROBE_ALIAS_RE.search(sanitizer_region(collision))
     assert module.apply(collision, options=options) == collision
 
     print("fail-closed all-URL stream sanitizer tests passed")
