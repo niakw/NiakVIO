@@ -12,6 +12,8 @@ on:
       - "scripts/run_brain_learning_sandbox.py"
       - "scripts/build_brain_repair_proposal.py"
       - "scripts/build_native_reader_brain_repair.py"
+      - "scripts/build_native_reader_learning_summary.py"
+      - "scripts/merge_native_reader_learning_failures.py"
       - "scripts/discover_candidates.py"
       - "scripts/apply_provider_overrides.py"
       - "scripts/provider_patches/**"
@@ -24,9 +26,11 @@ on:
   schedule:
     - cron: "17 2 * * *"
 
+# Brain runs are learning evidence. A later main push must not erase a failed-repair
+# observation before it can be converted into sanitized memory/skill proposals.
 concurrency:
-  group: niakvio-brain-learning-lab
-  cancel-in-progress: true
+  group: niakvio-brain-learning-lab-${{ github.run_id }}
+  cancel-in-progress: false
 
 jobs:
   experiment:
@@ -73,6 +77,8 @@ jobs:
             scripts/run_brain_learning_sandbox.py \
             scripts/build_brain_repair_proposal.py \
             scripts/build_native_reader_brain_repair.py \
+            scripts/build_native_reader_learning_summary.py \
+            scripts/merge_native_reader_learning_failures.py \
             scripts/report_new_upstream_providers.py
 
       - name: Restore prior sanitized Brain memory
@@ -87,6 +93,15 @@ jobs:
             printf '{}\n' > brain-learning-input/previous.json
           fi
           node -e "const x=require('./brain-learning-input/previous.json'); if(x.productionWritesAllowed===true||x.publicationAllowed===true) process.exit(1)"
+
+      - name: Materialize native reader failure learning summary
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/build_native_reader_learning_summary.py \
+            --state brain-learning-input/previous.json \
+            --output brain-learning-input/native-reader-summary.json
+          node -e "const x=require('./brain-learning-input/native-reader-summary.json');if(x.policy?.providerMutationFromIncompleteEvidence!==false||x.policy?.failedReaderLearningIsNonBlocking!==true)process.exit(1)"
 
       - name: Materialize historical 5.20.63 audit anchor from Git history
         shell: bash
@@ -123,6 +138,9 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          # Unresolved providers/failed repairs are valid learning outcomes. The
+          # repair engine returns nonzero only for broken infrastructure/contracts;
+          # accepted mutations are still validated strictly below.
           python scripts/run_brain_learning_sandbox.py --stage staging --output brain-sandbox/health-output --max-rounds 1
           python scripts/validate_automatic_repair_results.py --stage staging --health brain-sandbox/health-output/health-results.json --repairs brain-sandbox/health-output/repair-report.json
           python scripts/generate_diagnostics.py --results brain-sandbox/health-output/health-results.json --output brain-sandbox/health-output
@@ -137,7 +155,7 @@ jobs:
             --baseline-config engine_v2/config/historical-audit-baselines.json \
             --baseline-id excel-provider-audit-5.20.63 \
             --baseline-manifest brain-learning-input/baseline-manifest.json \
-            --baseline-health brain-learning-input/baseline-health.json \
+            --baseline-health brain-sandbox/health-output/health-results.json \
             --current-manifest manifest.json \
             --current-health brain-sandbox/health-output/health-results.json \
             --repair-report brain-sandbox/health-output/repair-report.json \
@@ -153,12 +171,13 @@ jobs:
             --output-dir brain-learning-output \
             --repair-report brain-sandbox/health-output/repair-report.json \
             --historical-training brain-sandbox/historical-training.json \
+            --native-summary brain-learning-input/native-reader-summary.json \
             --previous-state brain-learning-input/previous.json \
             --overrides provider-overrides.json
           node engine_v2/tests/repair-brain.test.mjs
           node engine_v2/tests/recipe-memory.test.mjs
           node engine_v2/tests/learning-lab-memory.test.mjs
-          python -m py_compile scripts/run_brain_learning_sandbox.py scripts/build_brain_repair_proposal.py
+          python -m py_compile scripts/run_brain_learning_sandbox.py scripts/build_brain_repair_proposal.py scripts/build_native_reader_learning_summary.py scripts/merge_native_reader_learning_failures.py
           node -e "const x=require('./brain-learning-output/latest.json'); if(x.productionWritesAllowed!==false||x.publicationAllowed!==false||x.sandboxExecutedProviders!==true) process.exit(1)"
           node - <<'NODE'
           const fs=require('fs');
@@ -166,6 +185,10 @@ jobs:
           const next=JSON.parse(fs.readFileSync('brain-learning-output/latest.json','utf8'));
           if (previous.nativeReaderRepairMemory && JSON.stringify(next.nativeReaderRepairMemory)!==JSON.stringify(previous.nativeReaderRepairMemory)) {
             throw new Error('native reader repair memory was not preserved across Brain sandbox learning');
+          }
+          const nativeSummary=JSON.parse(fs.readFileSync('brain-learning-input/native-reader-summary.json','utf8'));
+          if ((nativeSummary.nativeReaderFailures||0)>0 && !(next.proposals||[]).some(p => String(p.type||'').startsWith('native_reader_'))) {
+            throw new Error('reader failure memory did not produce a Brain learning/skill proposal');
           }
           NODE
           if grep -Eiq 'https?://|authorization[=:]|cookie[=:]|token[=:]' brain-learning-output/latest.json; then
@@ -194,6 +217,7 @@ jobs:
             brain-learning-output/latest.md
             brain-learning-output/provider-overrides.proposed.json
             brain-learning-output/repair-proposal.json
+            brain-learning-input/native-reader-summary.json
           retention-days: 14
           if-no-files-found: error
 
