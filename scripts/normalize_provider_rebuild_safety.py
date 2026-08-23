@@ -5,9 +5,9 @@
 Minifiers may preserve NUVIO comments while moving or reformatting their owning
 statements. Comments alone therefore never authorize deleting bytes through a
 later wrapper terminator; relocated metadata is stripped without touching the
-provider body. This normalizer protects wrapper isolation and wires the durable
-``core_rebuild_safety`` parser into the owning fixed-point normalizer before it
-generates publication code.
+provider body. This normalizer protects wrapper isolation, wires the durable
+``core_rebuild_safety`` parser into the owning fixed-point normalizer, and owns
+canonical single-newline separation for the global HLS runtime hook.
 """
 from __future__ import annotations
 
@@ -22,6 +22,7 @@ TARGET = ROOT / "scripts" / "provider_engine_normalizer.py"
 CORE_NORMALIZER = ROOT / "scripts" / "normalize_core_fixed_point_contract.py"
 CORE_MATERIALIZER = ROOT / "scripts" / "materialize_core_fixed_point_hardening.py"
 CORE_SAFETY = ROOT / "scripts" / "core_rebuild_safety.py"
+HLS_RUNTIME = ROOT / "scripts" / "provider_patches" / "hls_runtime_integrity_v1.py"
 CORE_HARDENING_MARKER = "return harden_generated_apply(text)"
 
 SAFE_FUNCTION = dedent(r'''
@@ -69,6 +70,24 @@ def normalized(text: str) -> str:
     return text[:start] + SAFE_FUNCTION + text[end:]
 
 
+def normalized_hls(text: str) -> str:
+    """Make HLS wrapper insertion byte-stable across Core/Terser reapplication.
+
+    ``wrapper`` is defined by a triple-quoted literal with one leading newline.
+    The insertion code also owns an explicit ``\n`` separator. Using rstrip()
+    therefore emitted two newlines before the HLS marker; Terser could preserve or
+    collapse that blank line depending on comment attachment, producing a 1-byte
+    two-state hash cycle. strip() makes the explicit separator the sole owner.
+    """
+    expected_occurrences = 2
+    current_occurrences = text.count("wrapper.rstrip()")
+    if current_occurrences not in (0, expected_occurrences):
+        raise ValueError(
+            f"unexpected HLS wrapper separator shape: wrapper.rstrip occurrences={current_occurrences}"
+        )
+    return text.replace("wrapper.rstrip()", "wrapper.strip()")
+
+
 def _materialize_core_hardening() -> None:
     if not CORE_SAFETY.is_file():
         raise SystemExit("durable Core rebuild safety module is missing")
@@ -96,9 +115,13 @@ def main() -> int:
 
     current = TARGET.read_text(encoding="utf-8")
     expected = normalized(current)
+    hls_current = HLS_RUNTIME.read_text(encoding="utf-8")
+    hls_expected = normalized_hls(hls_current)
     if args.check:
         if current != expected:
             raise SystemExit("provider rebuild safety contract is not materialized")
+        if hls_current != hls_expected:
+            raise SystemExit("HLS wrapper separator fixed-point contract is not materialized")
         required = (
             're.match(r"\\s*;?\\s*\\(\\s*function\\b", region, re.I)',
             'r"\\b(?:var|let|const)\\s+__provider\\b"',
@@ -107,11 +130,19 @@ def main() -> int:
         for needle in required:
             if needle not in current:
                 raise SystemExit(f"missing provider rebuild safety guard: {needle}")
+        if hls_current.count("wrapper.strip()") != 2 or "wrapper.rstrip()" in hls_current:
+            raise SystemExit("HLS wrapper separator must be owned by one explicit newline")
         print("provider rebuild safety contract verified")
         return 0
 
+    changed = False
     if current != expected:
         TARGET.write_text(expected, encoding="utf-8")
+        changed = True
+    if hls_current != hls_expected:
+        HLS_RUNTIME.write_text(hls_expected, encoding="utf-8")
+        changed = True
+    if changed:
         print("provider rebuild safety contract materialized")
     else:
         print("provider rebuild safety contract already materialized")
