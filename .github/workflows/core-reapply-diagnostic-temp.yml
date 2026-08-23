@@ -1,0 +1,96 @@
+name: NiakVIO temporary Core reapply diagnostic
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/core-reapply-diagnostic-temp.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: niakvio-core-reapply-diagnostic-temp
+  cancel-in-progress: true
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Reproduce first Core publication pass
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/normalize_provider_rebuild_safety.py --apply
+          python scripts/normalize_core_fixed_point_contract.py --apply
+          python scripts/normalize_provider_branding_pipeline.py --apply
+          python scripts/normalize_core_media_policy.py --apply
+          python scripts/apply_runtime_capability_upgrade_v4.py
+          python scripts/build_provider_runtime_profiles.py
+          python scripts/reapply_published_overrides.py
+      - name: Trace bounded second-pass check
+        shell: bash
+        run: |
+          set -euo pipefail
+          timeout 900 python - <<'PY'
+          import signal, sys, time
+          from scripts import reapply_published_overrides as m
+
+          if hasattr(signal, 'SIGALRM'):
+              def alarm_handler(_signum, _frame):
+                  raise TimeoutError('FIELD_REAPPLY_COMPONENT_TIMEOUT')
+              signal.signal(signal.SIGALRM, alarm_handler)
+
+          def bounded(label, fn, seconds=30):
+              def inner(*args, **kwargs):
+                  provider = kwargs.get('provider_id')
+                  if provider is None and len(args) > 1 and label == 'strip_wrappers':
+                      provider = args[1]
+                  if provider is None and args and label == 'apply_overrides':
+                      provider = args[0]
+                  print(f'FIELD_REAPPLY_TRACE start={label} provider={provider or "unknown"}', flush=True)
+                  started=time.monotonic()
+                  if hasattr(signal, 'SIGALRM'):
+                      signal.alarm(seconds)
+                  try:
+                      result=fn(*args, **kwargs)
+                  finally:
+                      if hasattr(signal, 'SIGALRM'):
+                          signal.alarm(0)
+                  print(f'FIELD_REAPPLY_TRACE done={label} provider={provider or "unknown"} elapsed={time.monotonic()-started:.3f}', flush=True)
+                  return result
+              return inner
+
+          m.strip_foreign_provider_wrappers = bounded('strip_wrappers', m.strip_foreign_provider_wrappers)
+          m.apply_overrides = bounded('apply_overrides', m.apply_overrides)
+          m.reapply_adaptive_domain_revision = bounded('adaptive_domain', m.reapply_adaptive_domain_revision)
+          m.reapply_adaptive_runtime_revision = bounded('adaptive_runtime', m.reapply_adaptive_runtime_revision)
+          m.validate_artifact = bounded('validate_artifact', m.validate_artifact)
+          sys.argv=['reapply_published_overrides.py','--check']
+          raise SystemExit(m.main())
+          PY
+      - name: Report diagnostic success
+        if: success()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh issue comment 69 --repo "$GITHUB_REPOSITORY" --body "Temporary Core reapply diagnostic succeeded: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}."
+      - name: Report diagnostic failure
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh issue comment 69 --repo "$GITHUB_REPOSITORY" --body "Temporary Core reapply diagnostic FAILED: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}. Inspect trace; temporary workflow must be removed after repair."
