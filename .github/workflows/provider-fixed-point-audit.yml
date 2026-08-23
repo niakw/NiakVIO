@@ -1,0 +1,41 @@
+name: NiakVIO provider fixed-point audit
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/provider-fixed-point-audit.yml'
+      - 'scripts/audit_provider_fixed_point.py'
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: niakvio-provider-fixed-point-audit
+  cancel-in-progress: true
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Audit exact provider fixed point
+        run: python scripts/audit_provider_fixed_point.py
+      - name: Report failed audit
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh issue comment 69 --repo "$GITHUB_REPOSITORY" --body "Provider fixed-point audit failed as expected while diagnosing Core non-convergence: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}. Inspect FIELD_PROVIDER_FIXED_POINT_* for the exact stagnant provider set."
