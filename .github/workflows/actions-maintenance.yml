@@ -26,9 +26,9 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
-          gh issue comment 69 --repo "$GITHUB_REPOSITORY" --body "Actions maintenance started: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}. It will stop obsolete active runs and prune obsolete failed/cancelled/duplicate history while retaining useful success proofs."
+          gh issue comment 69 --repo "$GITHUB_REPOSITORY" --body "Actions maintenance started: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}. It will stop obsolete active runs and prune the recent obsolete queue before the authoritative final hand-off."
 
-      - name: Cancel obsolete active runs and prune obsolete history
+      - name: Cancel obsolete active runs and prune recent obsolete history
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
@@ -42,15 +42,12 @@ jobs:
           kept_success=0
 
           mapfile -t active < <(
-            gh api --paginate "repos/${repo}/actions/runs?per_page=100" \
+            gh api "repos/${repo}/actions/runs?per_page=100" \
               --jq '.workflow_runs[] | select(.status == "queued" or .status == "in_progress") | [.id,.name,.head_sha,.status] | @tsv'
           )
           for row in "${active[@]}"; do
             IFS=$'\t' read -r id name head status <<<"$row"
             [[ "$id" == "$self" ]] && continue
-            # Other maintenance runs are serialized by concurrency; never cancel a
-            # queued successor, otherwise cleanup itself could prevent the final
-            # hand-off generation from running.
             if [[ "$name" == "NiakVIO Actions maintenance" ]]; then
               echo "FIELD_ACTIONS_MAINTENANCE keep-maintenance id=$id status=$status head=$head"
               continue
@@ -60,11 +57,11 @@ jobs:
             cancelled=$((cancelled + 1))
           done
 
-          sleep 8
+          sleep 5
 
           declare -A latest_success_seen=()
           mapfile -t completed < <(
-            gh api --paginate "repos/${repo}/actions/runs?status=completed&per_page=100" \
+            gh api "repos/${repo}/actions/runs?status=completed&per_page=100" \
               --jq '.workflow_runs | sort_by(.created_at) | reverse | .[] | [.id,.name,.head_sha,(.conclusion // ""),.created_at] | @tsv'
           )
           for row in "${completed[@]}"; do
@@ -91,7 +88,7 @@ jobs:
           done
 
           echo "FIELD_ACTIONS_MAINTENANCE_RESULT cancelled=$cancelled deleted=$deleted kept_success=$kept_success main=$main_sha self=$self"
-          gh issue comment 69 --repo "$repo" --body "Actions maintenance completed in https://github.com/${repo}/actions/runs/${self}: cancelled=${cancelled}, deleted=${deleted}, retained_success_proofs=${kept_success}, main=${main_sha}. Obsolete active runs were stopped before the next authoritative final validation."
+          gh issue comment 69 --repo "$repo" --body "Actions maintenance completed in https://github.com/${repo}/actions/runs/${self}: cancelled=${cancelled}, deleted=${deleted}, retained_success_proofs=${kept_success}, main=${main_sha}. Recent obsolete runs are pruned and the queue is ready for final validation."
 
       - name: Dispatch authoritative final validation after clean queue
         env:
@@ -100,15 +97,16 @@ jobs:
         run: |
           set -euo pipefail
           repo="$GITHUB_REPOSITORY"
-          # Only the newest maintenance generation may hand off. Older queued
-          # maintenance runs finish cleanup but deliberately do not start a final run.
-          workflow_sha="$(gh api "repos/${repo}/contents/.github/workflows/actions-maintenance.yml?ref=main" --jq .sha)"
-          current_sha="$(git ls-remote "https://github.com/${repo}.git" refs/heads/main | awk '{print $1}')"
-          main_file_sha="$(gh api "repos/${repo}/contents/.github/workflows/actions-maintenance.yml?ref=${current_sha}" --jq .sha)"
-          if [[ "$workflow_sha" != "$main_file_sha" ]]; then
-            echo "FIELD_ACTIONS_MAINTENANCE_HANDOFF skipped=stale_generation"
+          # Only the workflow generation that is still present on main may hand off.
+          # A stale queued maintenance run must finish silently rather than launching
+          # an authoritative proof before a newer cleanup generation executes.
+          run_file_sha="$(gh api "repos/${repo}/contents/.github/workflows/actions-maintenance.yml?ref=${GITHUB_SHA}" --jq .sha)"
+          main_file_sha="$(gh api "repos/${repo}/contents/.github/workflows/actions-maintenance.yml?ref=main" --jq .sha)"
+          if [[ "$run_file_sha" != "$main_file_sha" ]]; then
+            echo "FIELD_ACTIONS_MAINTENANCE_HANDOFF skipped=stale_generation run_file=$run_file_sha main_file=$main_file_sha"
             exit 0
           fi
+
           started="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
           gh workflow run final-validation-orchestrator.yml --repo "$repo" --ref main
           final_id=""
