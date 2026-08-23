@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Native acceptance revision: pinned-https-v17 (fresh Mobile/TV/Desktop proof).
 # Source from a native client suite after WORKSPACE, NIAKVIO, TARGET_MANIFEST,
 # SOURCE_SHA and SOURCE_REPOSITORY are defined.
 #
