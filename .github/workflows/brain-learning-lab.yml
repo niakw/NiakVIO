@@ -14,10 +14,12 @@ on:
       - "scripts/build_native_reader_brain_repair.py"
       - "scripts/build_native_reader_learning_summary.py"
       - "scripts/merge_native_reader_learning_failures.py"
+      - "scripts/classify_native_reader_ownership.py"
       - "scripts/discover_candidates.py"
       - "scripts/apply_provider_overrides.py"
       - "scripts/provider_patches/**"
       - "tests/brain_cron_full_coverage_test.py"
+      - "tests/native_reader_ownership_policy_test.py"
       - "engine_v2/scripts/learning-lab.mjs"
       - "engine_v2/scripts/build-historical-learning.mjs"
       - "engine_v2/config/brain-policy.json"
@@ -73,12 +75,14 @@ jobs:
           set -euo pipefail
           python tests/brain_cron_full_coverage_test.py
           python tests/native_reader_provider_retention_policy_test.py
+          python tests/native_reader_ownership_policy_test.py
           python -m py_compile \
             scripts/run_brain_learning_sandbox.py \
             scripts/build_brain_repair_proposal.py \
             scripts/build_native_reader_brain_repair.py \
             scripts/build_native_reader_learning_summary.py \
             scripts/merge_native_reader_learning_failures.py \
+            scripts/classify_native_reader_ownership.py \
             scripts/report_new_upstream_providers.py
 
       - name: Restore prior sanitized Brain memory
@@ -101,7 +105,7 @@ jobs:
           python scripts/build_native_reader_learning_summary.py \
             --state brain-learning-input/previous.json \
             --output brain-learning-input/native-reader-summary.json
-          node -e "const x=require('./brain-learning-input/native-reader-summary.json');if(x.policy?.providerMutationFromIncompleteEvidence!==false||x.policy?.failedReaderLearningIsNonBlocking!==true)process.exit(1)"
+          node -e "const x=require('./brain-learning-input/native-reader-summary.json');if(x.policy?.providerMutationFromIncompleteEvidence!==false||x.policy?.failedReaderLearningIsNonBlocking!==true||x.policy?.nuvioClientRuntimeFailuresAreVendorWait!==true)process.exit(1)"
 
       - name: Materialize historical 5.20.63 audit anchor from Git history
         shell: bash
@@ -155,7 +159,7 @@ jobs:
             --baseline-config engine_v2/config/historical-audit-baselines.json \
             --baseline-id excel-provider-audit-5.20.63 \
             --baseline-manifest brain-learning-input/baseline-manifest.json \
-            --baseline-health brain-sandbox/health-output/health-results.json \
+            --baseline-health brain-learning-input/baseline-health.json \
             --current-manifest manifest.json \
             --current-health brain-sandbox/health-output/health-results.json \
             --repair-report brain-sandbox/health-output/repair-report.json \
@@ -177,7 +181,7 @@ jobs:
           node engine_v2/tests/repair-brain.test.mjs
           node engine_v2/tests/recipe-memory.test.mjs
           node engine_v2/tests/learning-lab-memory.test.mjs
-          python -m py_compile scripts/run_brain_learning_sandbox.py scripts/build_brain_repair_proposal.py scripts/build_native_reader_learning_summary.py scripts/merge_native_reader_learning_failures.py
+          python -m py_compile scripts/run_brain_learning_sandbox.py scripts/build_brain_repair_proposal.py scripts/build_native_reader_learning_summary.py scripts/merge_native_reader_learning_failures.py scripts/classify_native_reader_ownership.py
           node -e "const x=require('./brain-learning-output/latest.json'); if(x.productionWritesAllowed!==false||x.publicationAllowed!==false||x.sandboxExecutedProviders!==true) process.exit(1)"
           node - <<'NODE'
           const fs=require('fs');
@@ -187,8 +191,11 @@ jobs:
             throw new Error('native reader repair memory was not preserved across Brain sandbox learning');
           }
           const nativeSummary=JSON.parse(fs.readFileSync('brain-learning-input/native-reader-summary.json','utf8'));
-          if ((nativeSummary.nativeReaderFailures||0)>0 && !(next.proposals||[]).some(p => String(p.type||'').startsWith('native_reader_'))) {
-            throw new Error('reader failure memory did not produce a Brain learning/skill proposal');
+          if ((nativeSummary.providerLearningFailures||0)>0 && !(next.proposals||[]).some(p => String(p.type||'').startsWith('native_reader_'))) {
+            throw new Error('provider-owned reader failure memory did not produce a Brain learning/skill proposal');
+          }
+          if ((nativeSummary.nuvioVendorWaitFailures||0)>0 && (nativeSummary.nuvioVendorWait||[]).some(r => r.providerMutationAllowed!==false || r.deepRetryRequested!==false)) {
+            throw new Error('Nuvio vendor-wait evidence escaped into provider mutation/deep retry');
           }
           NODE
           if grep -Eiq 'https?://|authorization[=:]|cookie[=:]|token[=:]' brain-learning-output/latest.json; then
