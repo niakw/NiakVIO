@@ -6,17 +6,30 @@ on local stream rows, one committed emoji per provider gives the textual stream
 name/title a stable identity. This layer runs *after* Core stream presentation so
 it never destroys provider-returned quality/language/codec facts before they are
 normalized.
+
+Every currently published provider must exist in ``assets/providers/emojis.json``
+(the repository contract checks exact 92/92 coverage). A provider discovered only
+inside a future/synthetic Core probe may still pass safely with a generic alphabet
+emoji and a readable name derived from its id; it is not publishable until the
+committed inventory is updated.
 """
 from __future__ import annotations
 
 import hashlib
 import json
+import re
 from pathlib import Path
 from typing import Any
 
 MARKER = "NUVIO_GLOBAL_PROVIDER_BRANDING_V1"
 ROOT = Path(__file__).resolve().parents[2]
 BRANDING = ROOT / "assets" / "providers" / "emojis.json"
+FALLBACK_EMOJI = "🔤"
+
+
+def _fallback_name(provider_id: str) -> str:
+    parts = [part for part in re.split(r"[-_\s]+", str(provider_id or "").strip()) if part]
+    return " ".join(part[:1].upper() + part[1:] for part in parts) or "Source"
 
 
 def _load_provider(provider_id: str) -> dict[str, str]:
@@ -26,9 +39,10 @@ def _load_provider(provider_id: str) -> dict[str, str]:
     providers = payload.get("providers")
     if not isinstance(providers, dict):
         raise ValueError("provider emoji map providers must be an object")
-    row = providers.get(str(provider_id or "").strip().casefold())
+    normalized_id = str(provider_id or "").strip().casefold()
+    row = providers.get(normalized_id)
     if not isinstance(row, dict):
-        raise ValueError(f"provider emoji map is missing {provider_id}")
+        return {"name": _fallback_name(normalized_id), "emoji": FALLBACK_EMOJI}
     name = str(row.get("name") or "").strip()
     emoji = str(row.get("emoji") or "").strip()
     if not name or not emoji:
@@ -52,20 +66,13 @@ def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> st
     provider_id = str(context.get("provider_id") or "").strip().casefold()
     if not provider_id:
         return text
-    try:
-        row = _load_provider(provider_id)
-    except ValueError:
-        # Synthetic Core fixtures are not published providers. Real provider
-        # coverage is fail-closed by the committed branding inventory contract.
-        if provider_id.startswith("synthetic-"):
-            return text
-        raise
+    row = _load_provider(provider_id)
 
     payload = {
         "providerId": provider_id,
         "providerName": row["name"],
         "providerEmoji": row["emoji"],
-        "implementationRevision": "post-presentation-emoji-stream-label-v2",
+        "implementationRevision": "post-presentation-emoji-stream-label-v3",
     }
     serialized = json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
     marker = f"{MARKER}:{hashlib.sha256(serialized.encode('utf-8')).hexdigest()[:12]}"
