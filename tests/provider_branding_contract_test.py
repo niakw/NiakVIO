@@ -26,12 +26,32 @@ assert len(rows) == len(manifest_ids) == 92, (len(rows), len(manifest_ids))
 for provider_id, row in rows.items():
     assert isinstance(row, dict), provider_id
     assert str(row.get("name") or "").strip(), provider_id
-    assert str(row.get("emoji") or "").strip(), provider_id
+    emoji = str(row.get("emoji") or "").strip()
+    assert emoji, provider_id
+    assert emoji != "🔤", f"generic alphabet fallback is forbidden: {provider_id}"
+
+# Providers for which no stronger semantic symbol was selected use their own
+# first initial as a regional-indicator emoji rather than a generic ABC marker.
+for provider_id, expected in {
+    "animepahe": "🇦",
+    "yflix": "🇾",
+    "nakios": "🇳",
+    "ctgmovies": "🇨",
+}.items():
+    assert rows[provider_id]["emoji"] == expected, (provider_id, rows[provider_id])
 
 spec = importlib.util.spec_from_file_location("provider_branding_contract", PATCH_FILE)
 assert spec is not None and spec.loader is not None
 module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(module)
+
+# Future Core probes get the first alphabetic initial too; the committed 92/92
+# inventory remains mandatory for anything that is actually publishable.
+future = module._load_provider("future-provider-never-seen-before")
+assert future["name"] == "Future Provider Never Seen Before", future
+assert future["emoji"] == "🇫", future
+assert module._initial_emoji("4KHDHub Next") == "🇰"
+assert module._initial_emoji("") == "🇸"
 
 source = 'globalThis.getStreams=async function(){return [{url:"https://example.com/video.m3u8",name:"old"}]};\n'
 output = module.apply(source, context={"provider_id": "peachify"})
@@ -45,7 +65,7 @@ with tempfile.NamedTemporaryFile("w", suffix=".js", delete=False, encoding="utf-
         '\nPromise.resolve(globalThis.getStreams()).then(function(rows){'
         'if(!Array.isArray(rows)||rows.length!==1||rows[0].name!=="🍑 Peachify")'
         '{console.error(JSON.stringify(rows));process.exit(2)}'
-        'console.log(rows[0].name)' 
+        'console.log(rows[0].name)'
         '}).catch(function(error){console.error(error);process.exit(3)});\n'
     )
     artifact = Path(handle.name)
@@ -63,4 +83,4 @@ try:
 finally:
     artifact.unlink(missing_ok=True)
 
-print(f"provider branding contract passed: providers={len(rows)} local_stream_fallback=emoji+clean_name")
+print(f"provider branding contract passed: providers={len(rows)} local_stream_fallback=semantic_or_initial_emoji+clean_name")
