@@ -16,11 +16,19 @@ concurrency:
   group: niakvio-finalization-explicit-launcher-temp
   cancel-in-progress: true
 
+env:
+  NIAKVIO_FINALIZATION_LAUNCH_REVISION: "current-v2"
+
 jobs:
   launch:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
+      - name: Announce launcher run
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: gh issue comment 69 --repo "$REPO" --body "Finalization launcher started: https://github.com/${REPO}/actions/runs/${GITHUB_RUN_ID} on ${GITHUB_SHA}."
       - name: Dispatch exact current validation runs
         env:
           GH_TOKEN: ${{ github.token }}
