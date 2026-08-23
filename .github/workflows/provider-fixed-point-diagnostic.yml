@@ -1,12 +1,14 @@
 name: NiakVIO provider fixed-point diagnostic
 
-# one-shot diagnostic trigger: 2026-08-24T00:27+02:00
+# one-shot diagnostic trigger: 2026-08-24T00:29+02:00
 on:
   push:
     branches: [main]
     paths:
       - '.github/workflows/provider-fixed-point-diagnostic.yml'
   workflow_dispatch:
+  issue_comment:
+    types: [created]
 
 permissions:
   contents: read
@@ -14,6 +16,7 @@ permissions:
 
 jobs:
   diagnose:
+    if: github.event_name != 'issue_comment' || (github.event.issue.number == 69 && contains(github.event.comment.body, '/run-fixed-point'))
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -31,7 +34,7 @@ jobs:
       - name: Announce diagnostic
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh issue comment 69 --repo "$GITHUB_REPOSITORY" --body "Provider fixed-point diagnostic started: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID} on ${GITHUB_SHA}."
+        run: gh issue comment 69 --repo "$GITHUB_REPOSITORY" --body "Provider fixed-point diagnostic started: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID} on $(git rev-parse HEAD)."
       - name: Diagnose exact plateau
         id: diagnose
         shell: bash
