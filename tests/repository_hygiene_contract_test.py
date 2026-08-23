@@ -12,12 +12,16 @@ retired_paths = (
     ".github/workflows/core-media-normalize-main.yml",
     ".github/workflows/final-gate-observer.yml",
     ".github/workflows/final-repository-cleanup-once.yml",
+    ".github/workflows/core-reapply-diagnostic-once.yml",
+    ".github/workflows/finalization-explicit-launcher-temp.yml",
     ".github/triggers/final-native-client-validation-v2",
     ".github/triggers/native-corpus-device-lab",
     ".github/triggers/permanent-android-real-client",
     ".github/triggers/permanent-real-client-labs",
     "automation/permanent-lab-branches.json",
     "scripts/apply_playback_integrity_upgrade.py",
+    "scripts/diagnose_reapply_fixed_point_once.py",
+    "scripts/harden_core_fixed_point_normalizer_once.py",
     "scripts/provider_patches/purstream_tv_identity_v3.py",
     "scripts/provider_patches/purstream_tv_identity_impl_v3.py",
     "scripts/provider_patches/purstream_exact_tv_v2.py",
@@ -27,6 +31,14 @@ retired_paths = (
 )
 for rel in retired_paths:
     assert not (ROOT / rel).exists(), f"retired path resurrected: {rel}"
+
+# The rebuild hardening is permanent now; future normalization must never depend
+# on a deleted one-shot migration.
+materializer = ROOT / "scripts/materialize_core_fixed_point_hardening.py"
+assert materializer.is_file()
+provider_safety = (ROOT / "scripts/normalize_provider_rebuild_safety.py").read_text(encoding="utf-8")
+assert "materialize_core_fixed_point_hardening.py" in provider_safety
+assert "harden_core_fixed_point_normalizer_once.py" not in provider_safety
 
 brain = (ROOT / ".github/workflows/brain-learning-lab.yml").read_text(encoding="utf-8")
 assert "publish-repair-proposal:" not in brain
@@ -58,4 +70,10 @@ assert "## 22. Labs natifs sur `main`" in architecture
 assert "brain-learning/proposals" in readme
 assert "brain-learning/proposals" in architecture
 
-print("repository hygiene contract passed: main-only code workflow, no retired lab/provider repair paths")
+codeql = (ROOT / ".github/workflows/codeql.yml").read_text(encoding="utf-8")
+assert "javascript-typescript" in codeql
+assert "python" in codeql
+assert "security-extended" in codeql
+assert "db488ddef3bf6cb639b32c2e9a7c0a7ea8271d28" in codeql
+
+print("repository hygiene contract passed: main-only code workflow, permanent Core hardening, no retired one-shots")
