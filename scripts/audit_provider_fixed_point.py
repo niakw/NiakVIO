@@ -14,6 +14,7 @@ import subprocess
 import sys
 from pathlib import Path
 
+AUDIT_REVISION = "stagnation-ids-v2"
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = ROOT / "manifest.json"
 REAPPLY = ROOT / "scripts" / "reapply_published_overrides.py"
@@ -41,6 +42,7 @@ def short_ref(value: str) -> str:
 
 
 def main() -> int:
+    print(f"FIELD_PROVIDER_FIXED_POINT_AUDIT revision={AUDIT_REVISION}", flush=True)
     # Mirror Core step 8 before the media/rebuild loop. Auditing the repository
     # sources without these materialized contracts diagnoses the wrong pipeline.
     run("scripts/normalize_provider_rebuild_safety.py", "--apply")
