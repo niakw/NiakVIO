@@ -32,15 +32,12 @@ retired_paths = (
 for rel in retired_paths:
     assert not (ROOT / rel).exists(), f"retired path resurrected: {rel}"
 
-# The rebuild hardening is permanent now; future normalization must never depend
-# on a deleted one-shot migration.
 materializer = ROOT / "scripts/materialize_core_fixed_point_hardening.py"
 assert materializer.is_file()
 provider_safety = (ROOT / "scripts/normalize_provider_rebuild_safety.py").read_text(encoding="utf-8")
 assert "materialize_core_fixed_point_hardening.py" in provider_safety
 assert "harden_core_fixed_point_normalizer_once.py" not in provider_safety
 
-# Reader ownership/learning is permanent architecture, not a finalization one-shot.
 for rel in (
     "scripts/classify_native_reader_ownership.py",
     "scripts/merge_native_reader_learning_failures.py",
@@ -49,20 +46,20 @@ for rel in (
 ):
     assert (ROOT / rel).is_file(), f"permanent reader ownership contract missing: {rel}"
 
-# Provider artifact validation is static-only and credential-isolated. Runtime
-# execution belongs to the dedicated worker/native probes, not a credentialed Core
-# normalizer. This also prevents top-level provider timers from hanging finalization.
+# Core materialization validates only JavaScript syntax. It must neither execute
+# upstream-derived providers nor guess runtime exports from obfuscated source text;
+# workers/native Labs own runtime and getStreams validation.
 validator = (ROOT / "scripts/validate_provider_artifact.cjs").read_text(encoding="utf-8")
 assert "node:path" in validator
 assert "--check" in validator
 assert "timeout: 5000" in validator
 assert "env: {}" in validator
-assert "getStreamsContracts" in validator
-assert "mode=static-only" in validator
+assert "mode=syntax-only" in validator
 assert "execution=false" in validator
 assert "require(file)" not in validator
 assert "runInContext" not in validator
 assert "vm.createContext" not in validator
+assert "getStreamsContracts" not in validator
 
 brain = (ROOT / ".github/workflows/brain-learning-lab.yml").read_text(encoding="utf-8")
 assert "publish-repair-proposal:" not in brain
@@ -102,4 +99,4 @@ assert "python" in codeql
 assert "security-extended" in codeql
 assert "db488ddef3bf6cb639b32c2e9a7c0a7ea8271d28" in codeql
 
-print("repository hygiene contract passed: main-only code workflow, permanent Core/reader hardening, static-only provider validation, no retired one-shots")
+print("repository hygiene contract passed: main-only code workflow, permanent Core/reader hardening, syntax-only provider validation, no retired one-shots")
