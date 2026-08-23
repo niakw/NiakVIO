@@ -214,14 +214,47 @@ def _balanced_terminal_object_end(text: str, open_brace: int, limit: int) -> int
                 if depth < 0:
                     return None
                 if depth == 0:
-                    end = index + 1
-                    while end < limit and text[end].isspace():
-                        end += 1
-                    if end < limit and text[end] == ";":
-                        end += 1
-                    return end
+                    return index + 1
         index += 1
     return None
+
+
+def _terminal_provider_export_end(text: str, object_end: int, limit: int) -> int | None:
+    """Accept only a terminal object export or a narrow global fallback ternary.
+
+    Obfuscated bundles commonly finish with either::
+
+      module[decoder(...) ]={'getStreams':getStreams};
+      cond ? module[decoder(...) ]={'getStreams':getStreams}
+           : (global[decoder(...)]=getStreams, global[...]=onSettings);
+
+    The module assignment is already proven by the caller.  Any suffix is accepted
+    only when it consists exclusively of global/globalThis/self assignments whose
+    right-hand sides are identifiers and at least one assigns ``getStreams``.  The
+    complete statement must be adjacent to the first known Core marker.
+    """
+    cursor = object_end
+    while cursor < limit and text[cursor].isspace():
+        cursor += 1
+    if cursor >= limit:
+        return object_end
+    if text[cursor] == ";":
+        end = cursor + 1
+        return end if not text[end:limit].strip() else None
+    if text[cursor] != ":":
+        return None
+
+    suffix = text[cursor:limit]
+    target = r"(?:globalThis|global|self)\s*(?:\.[A-Za-z_$][\w$]*|\[[^\]\r\n;]{1,160}\])"
+    value = r"[A-Za-z_$][\w$]*"
+    assignment = rf"{target}\s*=\s*{value}"
+    fallback = re.fullmatch(
+        rf"\s*:\s*\(?\s*({assignment})(?:\s*,\s*{assignment})*\s*\)?\s*;?\s*",
+        suffix,
+    )
+    if not fallback or "getStreams" not in suffix:
+        return None
+    return limit
 
 
 def _provider_export_floor(text: str) -> int:
@@ -230,10 +263,10 @@ def _provider_export_floor(text: str) -> int:
     Normal Nuvio bundles expose ``__provider`` through one of the exact bridges
     below. Some upstream-obfuscated CommonJS bundles instead end with an object
     assignment such as ``module[decoder(...)]=...``. That shape is accepted only
-    when the terminal object literally exports ``getStreams`` and the next
-    non-whitespace bytes are a known NiakVIO Core-tail marker. This adjacency
-    requirement proves the provider body has ended without trusting the obfuscated
-    property expression or a marker which floated in front of provider code.
+    when the terminal object literally exports ``getStreams`` and the complete
+    terminal statement ends immediately before a known NiakVIO Core-tail marker.
+    This supports the common ternary global fallback without trusting arbitrary
+    post-export JavaScript or a marker which floated in front of provider code.
     """
     exact_patterns = (
         r"\bmodule\.exports\s*=\s*__provider\b",
@@ -278,18 +311,16 @@ def _provider_export_floor(text: str) -> int:
         open_brace = prefix.find("{", match.start(), match.end())
         if open_brace < 0:
             continue
-        end = _balanced_terminal_object_end(prefix, open_brace, len(prefix))
-        if end is None:
+        object_end = _balanced_terminal_object_end(prefix, open_brace, len(prefix))
+        if object_end is None:
             continue
-        segment = prefix[match.start():end]
+        segment = prefix[match.start():object_end]
         if re.search(r"(?:[\"']getStreams[\"']\s*:|\bgetStreams\s*:)", segment) is None:
             continue
-        # The export object must be the terminal provider statement. Any
-        # provider-derived byte between it and the first Core marker invalidates
-        # the fallback and keeps the reconstruction fail-closed.
-        if prefix[end:].strip():
+        statement_end = _terminal_provider_export_end(prefix, object_end, len(prefix))
+        if statement_end is None:
             continue
-        return end
+        return statement_end
     return -1
 ''').lstrip("\n")
 
@@ -317,6 +348,8 @@ def harden_generated_apply(text: str) -> str:
         raise ValueError("bounded runtime-domain parser must be generated exactly once")
     if text.count("def _balanced_terminal_object_end(") != 1:
         raise ValueError("terminal CommonJS object parser must be generated exactly once")
+    if text.count("def _terminal_provider_export_end(") != 1:
+        raise ValueError("terminal provider export statement parser must be generated exactly once")
     if text.count("def _provider_export_floor(") != 1:
         raise ValueError("provider-export floor must be generated exactly once")
     if 'r"\\bmodule\\.exports\\s*=\\s*__provider\\b"' not in text:
