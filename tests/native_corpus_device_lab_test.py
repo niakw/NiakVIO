@@ -13,6 +13,7 @@ BRAIN_LEARNING = ROOT / ".github/workflows/brain-learning-lab.yml"
 PREPARE_CORE = ROOT / "scripts/prepare_native_corpus_validation.py"
 PREPARE_CLIENT = ROOT / "scripts/prepare_native_corpus_client.py"
 RESTAGE_CLIENT = ROOT / "scripts/restage_native_corpus_client.py"
+RESOLVE_REPOSITORY = ROOT / "scripts/resolve_native_repository.sh"
 READER_CODEGEN = ROOT / "scripts/native_player_diagnostics_codegen.py"
 READER_GATE = ROOT / "scripts/gate_native_reader_result.cjs"
 MOBILE_SUITE = ROOT / "scripts/run_native_corpus_mobile_suite.sh"
@@ -40,6 +41,7 @@ brain_learning = BRAIN_LEARNING.read_text(encoding="utf-8")
 prepare_core = PREPARE_CORE.read_text(encoding="utf-8")
 prepare_client = PREPARE_CLIENT.read_text(encoding="utf-8")
 restage_client = RESTAGE_CLIENT.read_text(encoding="utf-8")
+resolve_repository = RESOLVE_REPOSITORY.read_text(encoding="utf-8")
 reader_codegen = READER_CODEGEN.read_text(encoding="utf-8")
 reader_gate = READER_GATE.read_text(encoding="utf-8")
 mobile_suite = MOBILE_SUITE.read_text(encoding="utf-8")
@@ -190,6 +192,23 @@ assert "GITHUB_EVENT_NAME" in restage_client
 assert "NIAKVIO_PR_PROVIDER_LIMIT" in restage_client
 assert "pr-bounded" in restage_client
 
+# Official acceptance must stay on immutable HTTPS repository bytes. The old
+# implicit materialization dirtied main, forced resolve_native_repository.sh onto
+# http://10.0.2.2 and was rejected by NuvioMobile's production network policy.
+# Materialization is now an explicit repair-sandbox opt-in only.
+for required in (
+    "NIAKVIO_MATERIALIZE_NATIVE",
+    "source=committed-sha",
+    "https_repository_compatible=true",
+    "explicit_repair=false",
+    "explicit_repair=true",
+):
+    assert required in prepare_client, required
+assert "raw.githubusercontent.com" in resolve_repository
+assert "10.0.2.2" in resolve_repository
+assert "10.0.2.2" not in prepare_client
+assert "cleartext" not in prepare_client.casefold()
+
 # The production Nuvio player is primary evidence; transport probing comes after it.
 for required in (
     "Screen.Player.createRoute",
@@ -284,5 +303,5 @@ print(
     "desktop_native=true tv_wrong_media_regressions=3 macos_witness=true "
     "brain_retest=movie-tv-anime cached_profiles=v3-emulator-config targeted_manual=true "
     "reader_learning_idempotent=true trusted_main_learning=true missing_artifact_retriable=true "
-    "pr_bounded=true production_player_only=true"
+    "pr_bounded=true production_player_only=true https_repository_acceptance=true repair_materialization_explicit=true"
 )
