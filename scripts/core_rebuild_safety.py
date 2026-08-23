@@ -228,10 +228,10 @@ def _terminal_provider_export_end(text: str, object_end: int, limit: int) -> int
       cond ? module[decoder(...) ]={'getStreams':getStreams}
            : (global[decoder(...)]=getStreams, global[...]=onSettings);
 
-    The module assignment is already proven by the caller.  Any suffix is accepted
+    The module assignment is already proven by the caller. Any suffix is accepted
     only when it consists exclusively of global/globalThis/self assignments whose
-    right-hand sides are identifiers and at least one assigns ``getStreams``.  The
-    complete statement must be adjacent to the first known Core marker.
+    right-hand sides are identifiers and at least one assigns ``getStreams``. The
+    complete statement must be adjacent to the selected post-export Core marker.
     """
     cursor = object_end
     while cursor < limit and text[cursor].isspace():
@@ -264,9 +264,9 @@ def _provider_export_floor(text: str) -> int:
     below. Some upstream-obfuscated CommonJS bundles instead end with an object
     assignment such as ``module[decoder(...)]=...``. That shape is accepted only
     when the terminal object literally exports ``getStreams`` and the complete
-    terminal statement ends immediately before a known NiakVIO Core-tail marker.
-    This supports the common ternary global fallback without trusting arbitrary
-    post-export JavaScript or a marker which floated in front of provider code.
+    terminal statement is adjacent to a known Core-tail marker *after* the export.
+    Core comments which Terser floated before provider bytes are ignored rather
+    than becoming false upper bounds for provider ownership.
     """
     exact_patterns = (
         r"\bmodule\.exports\s*=\s*__provider\b",
@@ -283,6 +283,7 @@ def _provider_export_floor(text: str) -> int:
         return max(exact_ends)
 
     terminal_core_markers = (
+        "NUVIO_GLOBAL_CORE_START_BOUNDARY_V1",
         "NUVIO_GLOBAL_CATALOGUE_ALIAS_RECOVERY_V2",
         "NUVIO_GLOBAL_MEDIA_ENRICHMENT_V1",
         "NUVIO_GLOBAL_RUNTIME_MEDIA_SAFETY_V1",
@@ -293,31 +294,33 @@ def _provider_export_floor(text: str) -> int:
         "NUVIO_GLOBAL_STREAM_IDENTITY_V1",
         "NUVIO_GLOBAL_STREAM_PRESENTATION_V1",
     )
-    core_starts = [
-        position
+    core_starts = sorted({
+        match.start()
         for marker in terminal_core_markers
-        if (position := text.find(f"/* {marker}")) >= 0
-    ]
+        for match in re.finditer(re.escape(f"/* {marker}"), text)
+    })
     if not core_starts:
         return -1
-    first_core = min(core_starts)
-    prefix = text[:first_core]
 
     assignment = re.compile(
         r"\bmodule\s*(?:\.exports|\[[^\]\r\n;]{1,160}\])\s*=\s*\{"
     )
-    candidates = list(assignment.finditer(prefix))
+    candidates = list(assignment.finditer(text))
     for match in reversed(candidates):
-        open_brace = prefix.find("{", match.start(), match.end())
+        open_brace = text.find("{", match.start(), match.end())
         if open_brace < 0:
             continue
-        object_end = _balanced_terminal_object_end(prefix, open_brace, len(prefix))
+        object_end = _balanced_terminal_object_end(text, open_brace, len(text))
         if object_end is None:
             continue
-        segment = prefix[match.start():object_end]
+        segment = text[match.start():object_end]
         if re.search(r"(?:[\"']getStreams[\"']\s*:|\bgetStreams\s*:)", segment) is None:
             continue
-        statement_end = _terminal_provider_export_end(prefix, object_end, len(prefix))
+        post_markers = [position for position in core_starts if position > object_end]
+        if not post_markers:
+            continue
+        core_start = min(post_markers)
+        statement_end = _terminal_provider_export_end(text, object_end, core_start)
         if statement_end is None:
             continue
         return statement_end
@@ -356,4 +359,6 @@ def harden_generated_apply(text: str) -> str:
         raise ValueError("proven provider export bridge is missing")
     if "terminal_core_markers = (" not in text or "getStreams" not in text:
         raise ValueError("terminal obfuscated CommonJS boundary guard is missing")
+    if 'for match in re.finditer(re.escape(f"/* {marker}"), text)' not in text:
+        raise ValueError("floated Core markers are not filtered by post-export ownership")
     return text
