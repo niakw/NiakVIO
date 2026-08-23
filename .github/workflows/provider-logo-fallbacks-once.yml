@@ -1,0 +1,72 @@
+name: Provider logo fallbacks once
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/provider-logo-fallbacks-once.yml'
+      - 'scripts/generate_missing_provider_logo_fallbacks_once.py'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency:
+  group: niakvio-provider-logo-fallbacks-once
+  cancel-in-progress: false
+
+jobs:
+  generate-once:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+      - name: Install one-shot image dependency
+        run: python -m pip install --disable-pip-version-check --no-cache-dir 'Pillow==11.3.0'
+      - name: Generate missing committed fallbacks
+        run: python scripts/generate_missing_provider_logo_fallbacks_once.py
+      - name: Verify all provider logo assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          from PIL import Image
+          root=Path('.')
+          index=json.loads((root/'assets/providers/index.json').read_text(encoding='utf-8'))
+          manifest=json.loads((root/'manifest.json').read_text(encoding='utf-8'))
+          assert index.get('missingCount') == 0, index.get('missing')
+          assert len(index.get('providers') or {}) == len(manifest.get('scrapers') or []) == 92
+          for provider_id,row in (index.get('providers') or {}).items():
+              for key,size in {'72x32':(72,32),'96x40':(96,40)}.items():
+                  path=root/row['assets'][key]
+                  assert path.is_file(), (provider_id,path)
+                  with Image.open(path) as image:
+                      assert image.format == 'WEBP', (provider_id,key,image.format)
+                      assert image.size == size, (provider_id,key,image.size)
+          print('FIELD_PROVIDER_LOGO_ASSET_QA providers=92 missing=0 sizes=72x32,96x40 format=webp')
+          PY
+      - name: Commit assets and remove one-shot machinery
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f scripts/generate_missing_provider_logo_fallbacks_once.py .github/workflows/provider-logo-fallbacks-once.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'assets: add fallback provider logos'
+          git fetch origin main
+          git rebase origin/main
+          git push origin HEAD:main
+      - name: Report completion
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh issue comment 69 --repo "$GITHUB_REPOSITORY" --body "Provider logo fallback migration completed once: every current manifest provider now has committed 72x32 + 96x40 WebP artwork; unrecoverable logos use a first-character fallback. One-shot generator/workflow removed."
