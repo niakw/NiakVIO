@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-"""Shared provider branding layer used by every reconstructed NiakVIO provider.
+"""Shared final provider branding layer for reconstructed NiakVIO providers.
 
-Provider artwork stays in the native scraper.logo field. Until Nuvio exposes that
-logo on local stream rows, one committed emoji per provider gives the textual
-stream title a stable visual identity. The mapping is data-only and shared by all
-providers; no provider bundle owns its own presentation exception.
+Provider artwork stays in native ``scraper.logo``. Until Nuvio exposes that logo
+on local stream rows, one committed emoji per provider gives the textual stream
+name/title a stable identity. This layer runs *after* Core stream presentation so
+it never destroys provider-returned quality/language/codec facts before they are
+normalized.
 """
 from __future__ import annotations
 
@@ -50,14 +51,12 @@ def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> st
     context = kwargs.get("context") if isinstance(kwargs.get("context"), dict) else {}
     provider_id = str(context.get("provider_id") or "").strip().casefold()
     if not provider_id:
-        # Synthetic tests that do not represent a published provider must remain
-        # valid without inventing branding data.
         return text
     try:
         row = _load_provider(provider_id)
     except ValueError:
-        # The global hook also runs in synthetic Core tests. Published coverage is
-        # fail-closed separately by the branding contract test and normalizer.
+        # Synthetic Core fixtures are not published providers. Real provider
+        # coverage is fail-closed by the committed branding inventory contract.
         if provider_id.startswith("synthetic-"):
             return text
         raise
@@ -66,7 +65,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> st
         "providerId": provider_id,
         "providerName": row["name"],
         "providerEmoji": row["emoji"],
-        "implementationRevision": "committed-emoji-stream-label-v1",
+        "implementationRevision": "post-presentation-emoji-stream-label-v2",
     }
     serialized = json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
     marker = f"{MARKER}:{hashlib.sha256(serialized.encode('utf-8')).hexdigest()[:12]}"
@@ -77,8 +76,9 @@ def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> st
 ;(function(g,c){"use strict";
 function slot(v){if(Array.isArray(v))return{key:null,list:v};if(v&&typeof v==="object"){for(var i=0;i<3;i++){var k=["streams","results","data"][i];if(Array.isArray(v[k]))return{key:k,list:v[k]}}}return null}
 function rebuild(v,x,list){if(x.key===null)return list;var o=Object.assign({},v);o[x.key]=list;return o}
-function label(){return String(c.providerEmoji||"").trim()+" "+String(c.providerName||c.providerId||"Source").trim()}
-function brand(r){if(!r||typeof r!=="object")return r;var o=Object.assign({},r),v=label().trim();if(v)o.name=v;return o}
+function label(){return(String(c.providerEmoji||"").trim()+" "+String(c.providerName||c.providerId||"Source").trim()).trim()}
+function title(v,old){old=String(old||"").trim();if(!old)return v;var token=" • ",i=old.indexOf(token);return i>=0?v+old.slice(i):v}
+function brand(r){if(!r||typeof r!=="object")return r;var o=Object.assign({},r),v=label();if(!v)return o;o.title=title(v,o.title);o.name=v;return o}
 function install(o,k){if(!o||typeof o[k]!=="function"||o[k].__nuvioGlobalProviderBrandingV1)return false;var native=o[k];var wrap=async function(){var v=await native.apply(this,arguments),x=slot(v);if(!x||!x.list.length)return v;return rebuild(v,x,x.list.map(brand))};wrap.__nuvioGlobalProviderBrandingV1=true;o[k]=wrap;return true}
 var ok=false;try{if(typeof module!=="undefined"&&module.exports){ok=install(module.exports,"getStreams")||install(module.exports,"streams")}}catch(_e){}try{if(g&&typeof g.getStreams==="function"){if(ok&&typeof module!=="undefined"&&module.exports)g.getStreams=module.exports.getStreams;else install(g,"getStreams")}}catch(_e){}
 })(typeof globalThis!=="undefined"?globalThis:this,CONFIG_PLACEHOLDER);
