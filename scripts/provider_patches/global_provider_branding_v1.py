@@ -1,0 +1,86 @@
+#!/usr/bin/env python3
+"""Shared provider branding layer used by every reconstructed NiakVIO provider.
+
+Provider artwork stays in the native scraper.logo field. Until Nuvio exposes that
+logo on local stream rows, one committed emoji per provider gives the textual
+stream title a stable visual identity. The mapping is data-only and shared by all
+providers; no provider bundle owns its own presentation exception.
+"""
+from __future__ import annotations
+
+import hashlib
+import json
+from pathlib import Path
+from typing import Any
+
+MARKER = "NUVIO_GLOBAL_PROVIDER_BRANDING_V1"
+ROOT = Path(__file__).resolve().parents[2]
+BRANDING = ROOT / "assets" / "providers" / "emojis.json"
+
+
+def _load_provider(provider_id: str) -> dict[str, str]:
+    payload = json.loads(BRANDING.read_text(encoding="utf-8"))
+    if payload.get("policy") != "committed-provider-default-emoji":
+        raise ValueError("provider emoji map must declare committed-provider-default-emoji policy")
+    providers = payload.get("providers")
+    if not isinstance(providers, dict):
+        raise ValueError("provider emoji map providers must be an object")
+    row = providers.get(str(provider_id or "").strip().casefold())
+    if not isinstance(row, dict):
+        raise ValueError(f"provider emoji map is missing {provider_id}")
+    name = str(row.get("name") or "").strip()
+    emoji = str(row.get("emoji") or "").strip()
+    if not name or not emoji:
+        raise ValueError(f"provider emoji map row is incomplete: {provider_id}")
+    return {"name": name, "emoji": emoji}
+
+
+def _strip_existing(text: str) -> str:
+    start = text.find(f"/* {MARKER}:")
+    if start < 0:
+        return text
+    call = text.find('})(typeof globalThis!=="undefined"?globalThis:this,', start)
+    end = text.find(");", call) if call >= 0 else -1
+    if call < 0 or end < 0:
+        raise ValueError("unterminated global provider branding wrapper")
+    return (text[:start] + text[end + 2 :]).rstrip()
+
+
+def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> str:
+    context = kwargs.get("context") if isinstance(kwargs.get("context"), dict) else {}
+    provider_id = str(context.get("provider_id") or "").strip().casefold()
+    if not provider_id:
+        # Synthetic tests that do not represent a published provider must remain
+        # valid without inventing branding data.
+        return text
+    try:
+        row = _load_provider(provider_id)
+    except ValueError:
+        # The global hook also runs in synthetic Core tests. Published coverage is
+        # fail-closed separately by the branding contract test and normalizer.
+        if provider_id.startswith("synthetic-"):
+            return text
+        raise
+
+    payload = {
+        "providerId": provider_id,
+        "providerName": row["name"],
+        "providerEmoji": row["emoji"],
+        "implementationRevision": "committed-emoji-stream-label-v1",
+    }
+    serialized = json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
+    marker = f"{MARKER}:{hashlib.sha256(serialized.encode('utf-8')).hexdigest()[:12]}"
+    text = _strip_existing(text)
+
+    wrapper = r'''
+/* MARKER_PLACEHOLDER */
+;(function(g,c){"use strict";
+function slot(v){if(Array.isArray(v))return{key:null,list:v};if(v&&typeof v==="object"){for(var i=0;i<3;i++){var k=["streams","results","data"][i];if(Array.isArray(v[k]))return{key:k,list:v[k]}}}return null}
+function rebuild(v,x,list){if(x.key===null)return list;var o=Object.assign({},v);o[x.key]=list;return o}
+function label(){return String(c.providerEmoji||"").trim()+" "+String(c.providerName||c.providerId||"Source").trim()}
+function brand(r){if(!r||typeof r!=="object")return r;var o=Object.assign({},r),v=label().trim();if(v)o.name=v;return o}
+function install(o,k){if(!o||typeof o[k]!=="function"||o[k].__nuvioGlobalProviderBrandingV1)return false;var native=o[k];var wrap=async function(){var v=await native.apply(this,arguments),x=slot(v);if(!x||!x.list.length)return v;return rebuild(v,x,x.list.map(brand))};wrap.__nuvioGlobalProviderBrandingV1=true;o[k]=wrap;return true}
+var ok=false;try{if(typeof module!=="undefined"&&module.exports){ok=install(module.exports,"getStreams")||install(module.exports,"streams")}}catch(_e){}try{if(g&&typeof g.getStreams==="function"){if(ok&&typeof module!=="undefined"&&module.exports)g.getStreams=module.exports.getStreams;else install(g,"getStreams")}}catch(_e){}
+})(typeof globalThis!=="undefined"?globalThis:this,CONFIG_PLACEHOLDER);
+'''.replace("MARKER_PLACEHOLDER", marker).replace("CONFIG_PLACEHOLDER", serialized)
+    return text.rstrip() + "\n" + wrapper.strip() + "\n"
