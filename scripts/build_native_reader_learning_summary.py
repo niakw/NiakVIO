@@ -134,10 +134,15 @@ def main() -> int:
             "deepRetryRequested": True,
         })
 
+    total_reader_failures = provider_total + vendor_total
     payload = {
         "schemaVersion": 2,
-        "nativeReaderObserved": provider_total + vendor_total,
-        "nativeReaderFailures": provider_total + vendor_total,
+        "nativeReaderObserved": total_reader_failures,
+        # Backward-compatible Brain field means provider-learning failures only.
+        # Vendor-owned client/runtime failures are reported separately and must not
+        # generate provider repair skills or satisfy provider repair accounting.
+        "nativeReaderFailures": provider_total,
+        "totalNativeReaderFailures": total_reader_failures,
         "providerLearningFailures": provider_total,
         "nuvioVendorWaitFailures": vendor_total,
         "readerFailureClasses": dict(provider_failure_counts.most_common()),
@@ -159,7 +164,7 @@ def main() -> int:
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(
-        f"FIELD_NATIVE_READER_LEARNING_SUMMARY failures={payload['nativeReaderFailures']} "
+        f"FIELD_NATIVE_READER_LEARNING_SUMMARY total_failures={total_reader_failures} "
         f"provider_learning={provider_total} vendor_wait={vendor_total} providers={len(provider_rows)} "
         f"classes={len(signals)} repeated={len(repeated)} blocking=false"
     )
