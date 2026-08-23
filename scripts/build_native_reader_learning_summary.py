@@ -43,23 +43,47 @@ def main() -> int:
     learning = memory.get("readerLearningFailures") if isinstance(memory.get("readerLearningFailures"), dict) else {}
     entries = [row for row in learning.get("entries") or [] if isinstance(row, dict)]
 
-    by_failure: Counter[str] = Counter()
+    provider_failure_counts: Counter[str] = Counter()
+    vendor_failure_counts: Counter[str] = Counter()
     providers_by_failure: dict[str, set[str]] = defaultdict(set)
     clients_by_failure: dict[str, set[str]] = defaultdict(set)
     by_provider: dict[str, dict[str, Any]] = {}
+    vendor_rows: list[dict[str, Any]] = []
     repeated: list[dict[str, Any]] = []
-    total = 0
+    provider_total = 0
+    vendor_total = 0
+
     for row in entries:
         provider = clean(row.get("providerId"), 128).casefold()
         failure = clean(row.get("failureClass"), 96) or "unknown_failure"
+        owner = clean(row.get("owner"), 48) or "provider_learning"
         occurrences = number(row.get("occurrences"))
         if not provider or not occurrences:
             continue
-        total += occurrences
-        by_failure[failure] += occurrences
-        providers_by_failure[failure].add(provider)
         clients = {clean(v, 32).lower() for v in row.get("clients") or [] if clean(v, 32)}
         fixtures = {clean(v, 96) for v in row.get("fixtures") or [] if clean(v, 96)}
+
+        if owner == "nuvio_vendor_wait":
+            vendor_total += occurrences
+            vendor_failure_counts[failure] += occurrences
+            vendor_rows.append({
+                "provider": provider,
+                "failureClass": failure,
+                "occurrences": occurrences,
+                "clients": sorted(clients)[:8],
+                "fixtures": sorted(fixtures)[:16],
+                "owner": "nuvio_vendor_wait",
+                "vendorWait": True,
+                "providerMutationAllowed": False,
+                "deepRetryRequested": False,
+            })
+            continue
+        if owner != "provider_learning":
+            continue
+
+        provider_total += occurrences
+        provider_failure_counts[failure] += occurrences
+        providers_by_failure[failure].add(provider)
         clients_by_failure[failure].update(clients)
         target = by_provider.setdefault(provider, {
             "provider": provider,
@@ -92,8 +116,9 @@ def main() -> int:
             "providers": sorted(providers_by_failure[failure])[:24],
             "clients": sorted(clients_by_failure[failure])[:8],
             "learningOnly": True,
+            "owner": "provider_learning",
         }
-        for failure, amount in by_failure.most_common()
+        for failure, amount in provider_failure_counts.most_common()
     ]
     provider_rows = []
     for provider, row in sorted(by_provider.items(), key=lambda pair: (-pair[1]["occurrences"], pair[0])):
@@ -104,29 +129,38 @@ def main() -> int:
             "clients": sorted(row["clients"])[:8],
             "fixtures": sorted(row["fixtures"])[:16],
             "learningOnly": True,
+            "owner": "provider_learning",
             "providerMutationAllowed": False,
             "deepRetryRequested": True,
         })
 
     payload = {
-        "schemaVersion": 1,
-        "nativeReaderObserved": total,
-        "nativeReaderFailures": total,
-        "readerFailureClasses": dict(by_failure.most_common()),
+        "schemaVersion": 2,
+        "nativeReaderObserved": provider_total + vendor_total,
+        "nativeReaderFailures": provider_total + vendor_total,
+        "providerLearningFailures": provider_total,
+        "nuvioVendorWaitFailures": vendor_total,
+        "readerFailureClasses": dict(provider_failure_counts.most_common()),
+        "vendorFailureClasses": dict(vendor_failure_counts.most_common()),
         "readerFailureSignals": signals,
         "providerReaderFailures": provider_rows,
+        "nuvioVendorWait": sorted(vendor_rows, key=lambda row: (-row["occurrences"], row["provider"], row["failureClass"]))[:120],
         "engineSignals": {"repeatedReaderFailures": repeated[:80]},
         "policy": {
             "failedReaderLearningIsNonBlocking": True,
             "incompleteEvidenceMayTrainSkills": True,
             "providerMutationFromIncompleteEvidence": False,
-            "deepRetryRequested": True,
+            "providerFailuresRequestIndependentDeepRetry": True,
+            "nuvioClientRuntimeFailuresAreVendorWait": True,
+            "vendorWaitDoesNotCreateProviderSkill": True,
+            "labEmulationExcludedFromProviderLearning": True,
         },
     }
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(
-        f"FIELD_NATIVE_READER_LEARNING_SUMMARY failures={total} providers={len(provider_rows)} "
+        f"FIELD_NATIVE_READER_LEARNING_SUMMARY failures={payload['nativeReaderFailures']} "
+        f"provider_learning={provider_total} vendor_wait={vendor_total} providers={len(provider_rows)} "
         f"classes={len(signals)} repeated={len(repeated)} blocking=false"
     )
     return 0
