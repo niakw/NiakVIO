@@ -159,12 +159,23 @@ def _inject_runtime_domain_overrides(text: str, replacements: dict[str, Any]) ->
     return output, 0 if output == original_text else len(rules)
 ''').lstrip("\n")
 
-UNSAFE_EXPORT_FALLBACK = dedent(r'''
-    # A minority of upstream bundles export a provider object directly rather
-    # than through __provider. CommonJS export remains the safest generic floor.
-    generic = [match.end() for match in re.finditer(r"\bmodule\.exports\s*=", text)]
-    return max(generic) if generic else -1
-''')
+
+def _remove_unsafe_export_fallback(text: str) -> str:
+    phrase = "# A minority of upstream bundles export a provider object directly rather"
+    start_phrase = text.find(phrase)
+    if start_phrase < 0:
+        return text
+    start = text.rfind("\n", 0, start_phrase) + 1
+    end_needle = "return max(generic) if generic else -1"
+    end_stmt = text.find(end_needle, start_phrase)
+    if end_stmt < 0:
+        raise ValueError("generic provider-export fallback terminator missing")
+    end = text.find("\n", end_stmt)
+    end = len(text) if end < 0 else end + 1
+    indent = text[start:start_phrase]
+    if indent.strip():
+        raise ValueError("unexpected provider-export fallback indentation")
+    return text[:start] + indent + "return -1\n" + text[end:]
 
 
 def harden_generated_apply(text: str) -> str:
@@ -172,12 +183,10 @@ def harden_generated_apply(text: str) -> str:
     start = text.index("def _inject_runtime_domain_overrides(")
     end = text.index("\ndef _strip_legacy_global_stream_guards", start)
     text = text[:start] + SAFE_DOMAIN_FN + text[end:]
+    text = _remove_unsafe_export_fallback(text)
 
-    if UNSAFE_EXPORT_FALLBACK in text:
-        text = text.replace(UNSAFE_EXPORT_FALLBACK, "    return -1\n", 1)
-    elif "CommonJS export remains the safest generic floor" in text:
-        raise ValueError("unable to replace generic provider-export fallback")
-
+    if "CommonJS export remains the safest generic floor" in text:
+        raise ValueError("unsafe generic provider-export fallback remains")
     if "def _runtime_domain_wrapper_span(" not in text:
         raise ValueError("bounded runtime-domain parser was not generated")
     if 'r"\\bmodule\\.exports\\s*=\\s*__provider\\b"' not in text:
