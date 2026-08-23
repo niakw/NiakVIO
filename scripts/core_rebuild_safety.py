@@ -180,15 +180,17 @@ def _remove_unsafe_export_fallback(text: str) -> str:
 
 def harden_generated_apply(text: str) -> str:
     """Harden the generated apply module after the owning normalizer renders it."""
-    start = text.index("def _inject_runtime_domain_overrides(")
-    end = text.index("\ndef _strip_legacy_global_stream_guards", start)
+    inject_start = text.index("def _inject_runtime_domain_overrides(")
+    helper_start = text.rfind("def _runtime_domain_wrapper_span(", 0, inject_start)
+    start = helper_start if helper_start >= 0 else inject_start
+    end = text.index("\ndef _strip_legacy_global_stream_guards", inject_start)
     text = text[:start] + SAFE_DOMAIN_FN + text[end:]
     text = _remove_unsafe_export_fallback(text)
 
     if "CommonJS export remains the safest generic floor" in text:
         raise ValueError("unsafe generic provider-export fallback remains")
-    if "def _runtime_domain_wrapper_span(" not in text:
-        raise ValueError("bounded runtime-domain parser was not generated")
+    if text.count("def _runtime_domain_wrapper_span(") != 1:
+        raise ValueError("bounded runtime-domain parser must be generated exactly once")
     if 'r"\\bmodule\\.exports\\s*=\\s*__provider\\b"' not in text:
         raise ValueError("proven provider export bridge is missing")
     return text
