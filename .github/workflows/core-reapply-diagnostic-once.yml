@@ -16,6 +16,9 @@ concurrency:
   group: core-reapply-diagnostic-once
   cancel-in-progress: true
 
+env:
+  NIAKVIO_CORE_TRACE_REVISION: "current-v2"
+
 jobs:
   trace:
     runs-on: ubuntu-latest
