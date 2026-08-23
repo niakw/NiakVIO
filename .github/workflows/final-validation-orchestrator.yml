@@ -1,6 +1,6 @@
 name: NiakVIO final validation orchestrator
 # Authoritative end-to-end gate for the exact main generation.
-# Final generation: provider branding + native evidence + security sealed v6.
+# Final generation: provider branding + native evidence + provider security + CodeQL.
 
 on:
   workflow_dispatch:
@@ -15,9 +15,11 @@ permissions:
   issues: write
   pull-requests: read
 
+# A final validation run is evidence in its own right. Never kill it because a
+# later main generation appears; a later run must prove that generation separately.
 concurrency:
-  group: niakvio-final-validation-orchestrator
-  cancel-in-progress: true
+  group: niakvio-final-validation-orchestrator-${{ github.run_id }}
+  cancel-in-progress: false
 
 jobs:
   final-validation:
@@ -40,6 +42,7 @@ jobs:
         run: |
           set -euo pipefail
           python tests/repository_hygiene_contract_test.py
+          python tests/native_android_avd_cache_contract_test.py
           python - <<'PY'
           import json
           from pathlib import Path
@@ -63,7 +66,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          gh issue comment 69 --repo "$REPO" --body "Final main validation started on ${GITHUB_SHA}: https://github.com/${REPO}/actions/runs/${GITHUB_RUN_ID}. One-shot logo migration (only if still present) → Core → Deep → Brain/native clients/badges/security/upstreams → exact native README import → hygiene/main-only. Issue remains open until every gate succeeds."
+          gh issue comment 69 --repo "$REPO" --body "Final main validation started on ${GITHUB_SHA}: https://github.com/${REPO}/actions/runs/${GITHUB_RUN_ID}. Core → durable fixed-point proof → Deep → Brain/native clients/badges/provider-security/CodeQL/upstreams → exact native README import → hygiene/main-only. Issue remains open until every gate succeeds."
 
       - name: Run authoritative final gates
         shell: bash
@@ -96,9 +99,8 @@ jobs:
             echo "FIELD_FINAL_GATE_OK label=$label run=$run_id"
           }
 
-          # Execute the bounded network favicon preference exactly once inline.
-          # The same transaction permanently deletes all migration launchers/scripts,
-          # so subsequent orchestrator runs can only consume committed logo assets.
+          # Legacy logo one-shot is retained only as an idempotent compatibility
+          # cleanup for an older main. The current final tree must not contain it.
           LOGO_MIGRATED=0
           if [ -f scripts/refine_provider_logos_from_favicons_once.py ]; then
             python -m pip install --disable-pip-version-check --no-cache-dir 'Pillow==11.3.0' 'CairoSVG==2.8.2'
@@ -122,8 +124,6 @@ jobs:
           fi
           echo "LOGO_MIGRATED=$LOGO_MIGRATED" >> "$STATE_FILE"
 
-          # Reload main after the migration and prove no network logo-generation
-          # or Core diagnostic machinery survives into the final repository.
           git fetch origin main
           git reset --hard origin/main
           for retired in \
@@ -131,12 +131,17 @@ jobs:
             .github/workflows/provider-favicon-refinement-once.yml \
             .github/workflows/provider-logo-refinement-finalize-once.yml \
             scripts/diagnose_core_rebuild_once.py \
-            .github/workflows/core-rebuild-diagnostic-once.yml; do
+            .github/workflows/core-rebuild-diagnostic-once.yml \
+            scripts/diagnose_reapply_fixed_point_once.py \
+            scripts/harden_core_fixed_point_normalizer_once.py \
+            .github/workflows/core-reapply-diagnostic-once.yml \
+            .github/workflows/finalization-explicit-launcher-temp.yml; do
             if [ -e "$retired" ]; then
-              echo "One-shot/diagnostic machinery remains after migration: $retired" >&2
+              echo "One-shot/diagnostic machinery remains: $retired" >&2
               exit 1
             fi
           done
+          python tests/repository_hygiene_contract_test.py
           python - <<'PY'
           import json
           from pathlib import Path
@@ -153,6 +158,22 @@ jobs:
           echo "CORE_RUN=$CORE_RUN" >> "$STATE_FILE"
           watch_gate core "$CORE_RUN"
 
+          # Core is allowed to materialize its permanent fixed-point wiring. Reload
+          # the exact resulting main and prove no deleted one-shot is required.
+          git fetch origin main
+          git reset --hard origin/main
+          grep -q 'from core_rebuild_safety import harden_generated_apply' scripts/normalize_core_fixed_point_contract.py
+          grep -q 'return harden_generated_apply(text)' scripts/normalize_core_fixed_point_contract.py
+          grep -q 'materialize_core_fixed_point_hardening.py' scripts/normalize_provider_rebuild_safety.py
+          if grep -q 'harden_core_fixed_point_normalizer_once.py' scripts/normalize_provider_rebuild_safety.py; then
+            echo 'provider rebuild safety still depends on retired one-shot migration' >&2
+            exit 1
+          fi
+          python scripts/normalize_provider_rebuild_safety.py --check
+          python scripts/normalize_core_fixed_point_contract.py --check
+          python tests/repository_hygiene_contract_test.py
+          echo 'FIELD_FINAL_CORE_DURABILITY status=ok one_shots=0'
+
           DEEP_RUN="$(dispatch_and_capture sync.yml -f mode=deep)"
           echo "DEEP_RUN=$DEEP_RUN" >> "$STATE_FILE"
           watch_gate deep "$DEEP_RUN"
@@ -167,15 +188,16 @@ jobs:
             [desktop]='native-desktop-reader-acceptance.yml'
             [badge]='badge-light-contrast.yml'
             [security]='security-final-gate.yml'
+            [codeql]='codeql.yml'
             [upstreams]='weekly-upstream-provider-discovery.yml'
           )
           declare -A runs=()
-          for label in brain android desktop badge security upstreams; do
+          for label in brain android desktop badge security codeql upstreams; do
             runs[$label]="$(dispatch_and_capture "${workflows[$label]}")"
             echo "${label^^}_RUN=${runs[$label]}" >> "$STATE_FILE"
           done
 
-          for label in badge upstreams security brain desktop android; do
+          for label in badge upstreams security codeql brain desktop android; do
             watch_gate "$label" "${runs[$label]}"
           done
 
@@ -266,12 +288,13 @@ jobs:
           - Android native evidence → README: https://github.com/${REPO}/actions/runs/${ANDROID_SYNC_RUN}
           - Desktop native evidence → README: https://github.com/${REPO}/actions/runs/${DESKTOP_SYNC_RUN}
           - Light badge QA: https://github.com/${REPO}/actions/runs/${BADGE_RUN}
-          - Provider security/CodeQL gate: https://github.com/${REPO}/actions/runs/${SECURITY_RUN}
+          - Provider security gate: https://github.com/${REPO}/actions/runs/${SECURITY_RUN}
+          - CodeQL security analysis: https://github.com/${REPO}/actions/runs/${CODEQL_RUN}
           - Three-upstream discovery review: https://github.com/${REPO}/actions/runs/${UPSTREAMS_RUN}
           - Repository hygiene: https://github.com/${REPO}/actions/runs/${HYGIENE_RUN}
           - Main-only policy: https://github.com/${REPO}/actions/runs/${MAINONLY_RUN}
 
-          Final repository state was rechecked after all gates: only README.md and automation/provider-device-results.json were allowed to change after the tested provider/runtime SHA; main then remained sealed, no open PR remained, and only main plus brain-learning/proposals remained as allowed branches.
+          Final repository state was rechecked after all gates: permanent Core hardening no longer depends on one-shot migration machinery; only README.md and automation/provider-device-results.json were allowed to change after the tested provider/runtime SHA; main then remained sealed, no open PR remained, and only main plus brain-learning/proposals remained as allowed branches.
           EOF
           )
           gh issue close 69 --repo "$REPO" --comment "$BODY"
