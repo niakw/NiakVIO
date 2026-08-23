@@ -8,6 +8,7 @@ sizes, updates provenance, and is deleted by its workflow after success.
 
 The network phase is intentionally bounded and concurrent because this is a one-
 time migration over the full provider inventory, not a recurring runtime job.
+This file update intentionally triggers the self-deleting one-shot workflow.
 """
 from __future__ import annotations
 
@@ -37,7 +38,7 @@ MANIFEST = ROOT / "manifest.json"
 OVERRIDES = ROOT / "provider-overrides.json"
 HUBS = ROOT / "provider-hubs.json"
 TARGETS = ((72, 32), (96, 40))
-UA = "Mozilla/5.0 (compatible; NiakVIO-FaviconRefine/1.1)"
+UA = "Mozilla/5.0 (compatible; NiakVIO-FaviconRefine/1.2)"
 TIMEOUT = 4
 MAX_BYTES = 3 * 1024 * 1024
 PAGE_BYTES = 768 * 1024
