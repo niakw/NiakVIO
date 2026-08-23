@@ -5,8 +5,8 @@
 Minifiers may preserve NUVIO comments while moving or reformatting their owning
 statements. Comments alone therefore never authorize deleting bytes through a
 later wrapper terminator. This normalizer protects wrapper isolation and, during
-the current Core migration, materializes the durable bounded parser in the owning
-fixed-point normalizer before it generates publication code.
+the current Core migration, wires the durable ``core_rebuild_safety`` parser into
+the owning fixed-point normalizer before it generates publication code.
 """
 from __future__ import annotations
 
@@ -20,6 +20,7 @@ ROOT = Path(__file__).resolve().parents[1]
 TARGET = ROOT / "scripts" / "provider_engine_normalizer.py"
 CORE_NORMALIZER = ROOT / "scripts" / "normalize_core_fixed_point_contract.py"
 CORE_MIGRATION = ROOT / "scripts" / "harden_core_fixed_point_normalizer_once.py"
+CORE_SAFETY = ROOT / "scripts" / "core_rebuild_safety.py"
 CORE_HARDENING_MARKER = "return harden_generated_apply(text)"
 
 SAFE_FUNCTION = dedent(r'''
@@ -68,6 +69,8 @@ def normalized(text: str) -> str:
 
 
 def _materialize_core_hardening() -> None:
+    if not CORE_SAFETY.is_file():
+        raise SystemExit("durable Core rebuild safety module is missing")
     if CORE_HARDENING_MARKER in CORE_NORMALIZER.read_text(encoding="utf-8"):
         return
     subprocess.run([sys.executable, str(CORE_MIGRATION)], cwd=ROOT, check=True)
@@ -85,7 +88,7 @@ def main() -> int:
 
     if args.apply:
         _materialize_core_hardening()
-    elif CORE_HARDENING_MARKER not in CORE_NORMALIZER.read_text(encoding="utf-8"):
+    elif not CORE_SAFETY.is_file() or CORE_HARDENING_MARKER not in CORE_NORMALIZER.read_text(encoding="utf-8"):
         raise SystemExit("Core fixed-point bounded parser is not materialized")
 
     current = TARGET.read_text(encoding="utf-8")
