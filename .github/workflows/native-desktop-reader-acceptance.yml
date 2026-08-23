@@ -75,9 +75,11 @@ on:
 permissions:
   contents: read
 
+# PR revisions may cancel stale validation, but every main/workflow_dispatch run
+# gets its own group. Long native evidence collection must survive later main pushes.
 concurrency:
-  group: native-desktop-reader-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
+  group: native-desktop-reader-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   resolve:
@@ -140,8 +142,8 @@ jobs:
       NIAKVIO_PRIMARY_STREAM_SCOPE: all
       NIAKVIO_REGRESSION_STREAM_SCOPE: all
       NIAKVIO_PR_PROVIDER_LIMIT: "8"
-      # Playback outcomes are evidence to repair after the smoke. The smoke only
-      # blocks if the production player is never reached at all.
+      # Reader/player outcomes are evidence for Brain/Deep. A failed playback or
+      # failed repair never freezes this Lab; only real setup/infra/contract errors do.
       NIAKVIO_REQUIRE_READER_SUCCESS: "0"
     steps:
       - name: Checkout NiakVIO candidate
@@ -209,7 +211,7 @@ jobs:
             --no-configuration-cache --console=plain
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
-      - name: Execute representative routes and require one real player reach
+      - name: Execute representative routes and accumulate player evidence
         shell: bash
         run: |
           set -u
@@ -229,12 +231,15 @@ jobs:
             LOG="$GITHUB_WORKSPACE/desktop-native-corpus-${{ matrix.os_name }}-${fixture}.log"
             [[ -f "$LOG" ]] && LOGS+=("$LOG")
           done
+          # Missing/corrupt Lab logs remain infra-fatal. A valid log with no player
+          # reach is emitted as owner=brain/blocking=false and returns success.
           node "$GITHUB_WORKSPACE/niakvio/scripts/gate_native_player_reached.cjs" "${LOGS[@]}"
 
       - name: Build Desktop Brain diagnoses from captured evidence
         if: always()
-        continue-on-error: true
         shell: bash
+        env:
+          NIAKVIO_BRAIN_NONBLOCKING: "1"
         run: |
           set -u
           FIXTURE_FILE="$GITHUB_WORKSPACE/desktop-fixtures-${{ matrix.os_name }}.txt"
@@ -250,7 +255,7 @@ jobs:
             fi
             node niakvio/engine_v2/scripts/diagnose-native-reader.mjs \
               --output "$GITHUB_WORKSPACE/desktop-reader-${{ matrix.os_name }}-${fixture}-brain.json" \
-              "$LOG" || true
+              "$LOG" || echo "FIELD_NATIVE_BRAIN_DIAGNOSIS status=unresolved blocking=false owner=brain fixture=$fixture os=${{ matrix.os_name }}"
           done < "$FIXTURE_FILE"
 
       - name: Upload Desktop reader evidence
