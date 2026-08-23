@@ -5,6 +5,9 @@ At Nuvio stream/plugin sizes, square site icons are often more readable than ful
 wordmarks. This migration only uses provider site/hub URLs already known to the
 repository, prefers declared/apple/root favicons, writes the two committed WebP
 sizes, updates provenance, and is deleted by its workflow after success.
+
+The network phase is intentionally bounded and concurrent because this is a one-
+time migration over the full provider inventory, not a recurring runtime job.
 """
 from __future__ import annotations
 
@@ -14,6 +17,7 @@ import json
 import re
 import ssl
 import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from html.parser import HTMLParser
 from pathlib import Path
 from typing import Any
@@ -33,11 +37,13 @@ MANIFEST = ROOT / "manifest.json"
 OVERRIDES = ROOT / "provider-overrides.json"
 HUBS = ROOT / "provider-hubs.json"
 TARGETS = ((72, 32), (96, 40))
-RAW_BASE = "https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers"
-UA = "Mozilla/5.0 (compatible; NiakVIO-FaviconRefine/1.0)"
-TIMEOUT = 8
+UA = "Mozilla/5.0 (compatible; NiakVIO-FaviconRefine/1.1)"
+TIMEOUT = 4
 MAX_BYTES = 3 * 1024 * 1024
-PAGE_BYTES = 1024 * 1024
+PAGE_BYTES = 768 * 1024
+MAX_PAGES = 2
+MAX_CANDIDATES = 10
+MAX_WORKERS = 12
 
 
 def load(path: Path, default: Any) -> Any:
@@ -52,12 +58,22 @@ def norm_id(value: Any) -> str:
 
 
 def fetch(url: str, limit: int = MAX_BYTES) -> tuple[bytes, str, str]:
-    req = Request(url, headers={"User-Agent": UA, "Accept": "image/avif,image/webp,image/png,image/svg+xml,image/*,*/*;q=0.8"})
+    req = Request(
+        url,
+        headers={
+            "User-Agent": UA,
+            "Accept": "image/avif,image/webp,image/png,image/svg+xml,image/*,*/*;q=0.8",
+        },
+    )
     with urlopen(req, timeout=TIMEOUT, context=ssl.create_default_context()) as response:
         data = response.read(limit + 1)
         if len(data) > limit:
             raise ValueError("response_too_large")
-        return data, str(response.headers.get("content-type") or "").split(";", 1)[0].casefold(), str(response.geturl() or url)
+        return (
+            data,
+            str(response.headers.get("content-type") or "").split(";", 1)[0].casefold(),
+            str(response.geturl() or url),
+        )
 
 
 class IconParser(HTMLParser):
@@ -82,31 +98,38 @@ class IconParser(HTMLParser):
             self.items.append((urljoin(self.base, href), "page_icon", 155 + bonus))
 
 
+def root_icons(page: str) -> list[tuple[str, str, int]]:
+    parsed = urlparse(str(page or "").strip())
+    if parsed.scheme not in ("http", "https") or not parsed.netloc:
+        return []
+    root = f"{parsed.scheme}://{parsed.netloc}/"
+    domain = quote(parsed.hostname or parsed.netloc)
+    return [
+        (urljoin(root, "apple-touch-icon.png"), "root_apple_touch_icon", 150),
+        (urljoin(root, "favicon-192x192.png"), "root_favicon_192", 148),
+        (urljoin(root, "favicon-128x128.png"), "root_favicon_128", 146),
+        (urljoin(root, "favicon.png"), "root_favicon_png", 140),
+        (urljoin(root, "favicon.ico"), "root_favicon", 132),
+        (f"https://www.google.com/s2/favicons?domain={domain}&sz=128", "google_site_favicon", 120),
+    ]
+
+
 def page_icons(page: str) -> list[tuple[str, str, int]]:
     url = str(page or "").strip()
     if not url.startswith(("http://", "https://")):
         return []
-    final = url
     items: list[tuple[str, str, int]] = []
+    final = url
     try:
         data, content_type, final = fetch(url, PAGE_BYTES)
-        if "html" in content_type or data.lstrip()[:16].lower().startswith((b"<!doctype", b"<html")):
+        prefix = data.lstrip()[:16].lower()
+        if "html" in content_type or prefix.startswith((b"<!doctype", b"<html")):
             parser = IconParser(final)
             parser.feed(data.decode("utf-8", errors="ignore"))
             items.extend(parser.items)
     except Exception:
         pass
-    parsed = urlparse(final)
-    if parsed.scheme and parsed.netloc:
-        root = f"{parsed.scheme}://{parsed.netloc}/"
-        items.extend([
-            (urljoin(root, "apple-touch-icon.png"), "root_apple_touch_icon", 150),
-            (urljoin(root, "favicon-192x192.png"), "root_favicon_192", 148),
-            (urljoin(root, "favicon-128x128.png"), "root_favicon_128", 146),
-            (urljoin(root, "favicon.png"), "root_favicon_png", 140),
-            (urljoin(root, "favicon.ico"), "root_favicon", 132),
-            (f"https://www.google.com/s2/favicons?domain={quote(parsed.hostname or parsed.netloc)}&sz=128", "google_site_favicon", 120),
-        ])
+    items.extend(root_icons(final))
     seen: set[str] = set()
     out: list[tuple[str, str, int]] = []
     for item in items:
@@ -118,7 +141,11 @@ def page_icons(page: str) -> list[tuple[str, str, int]]:
 
 
 def open_image(data: bytes, content_type: str, url: str) -> Image.Image:
-    is_svg = "svg" in content_type or urlparse(url).path.casefold().endswith(".svg") or data.lstrip().startswith(b"<svg")
+    is_svg = (
+        "svg" in content_type
+        or urlparse(url).path.casefold().endswith(".svg")
+        or data.lstrip().startswith(b"<svg")
+    )
     if is_svg:
         if cairosvg is None:
             raise ValueError("svg_without_cairosvg")
@@ -146,8 +173,6 @@ def score(image: Image.Image, base: int) -> int:
 def render(image: Image.Image, width: int, height: int) -> Image.Image:
     canvas = Image.new("RGBA", (width, height), (0, 0, 0, 0))
     work = image.copy()
-    # Icon-first rendering: fill the available height instead of shrinking a
-    # complete wordmark across the full card width.
     work.thumbnail((height - 4, height - 4), Image.Resampling.LANCZOS)
     x = (width - work.width) // 2
     y = (height - work.height) // 2
@@ -164,7 +189,62 @@ def pages_for(provider_id: str, patches: dict[str, Any], hubs: dict[str, Any]) -
         url = str(value or "").strip()
         if url.startswith(("http://", "https://")) and url not in out:
             out.append(url)
-    return out
+    return out[:MAX_PAGES]
+
+
+def refine_candidate(provider_id: str, pages: list[str]) -> dict[str, Any] | None:
+    candidates: list[tuple[str, str, int]] = []
+    # Page markup gives the best declared icon; root/google fallbacks stay available
+    # even when page HTML is unavailable.
+    for page in pages:
+        candidates.extend(page_icons(page))
+    seen: set[str] = set()
+    unique: list[tuple[str, str, int]] = []
+    for candidate in candidates:
+        if candidate[0] in seen:
+            continue
+        seen.add(candidate[0])
+        unique.append(candidate)
+        if len(unique) >= MAX_CANDIDATES:
+            break
+
+    best: tuple[int, Image.Image, dict[str, Any]] | None = None
+    failures: list[str] = []
+    for url, kind, base in unique:
+        try:
+            data, content_type, final_url = fetch(url)
+            image = open_image(data, content_type, final_url)
+            value = score(image, base)
+            meta = {
+                "sourceUrl": final_url,
+                "requestedUrl": url,
+                "sourceKind": kind,
+                "contentType": content_type,
+                "originalWidth": image.width,
+                "originalHeight": image.height,
+                "sourceSha256": hashlib.sha256(data).hexdigest(),
+                "score": value,
+                "faviconRefined": True,
+                "faviconSourcePage": pages[0],
+            }
+            if best is None or value > best[0]:
+                best = (value, image, meta)
+        except Exception as exc:
+            failures.append(f"{kind}:{type(exc).__name__}")
+
+    if best is None:
+        return None
+    value, image, meta = best
+    ratio = image.width / max(1, image.height)
+    if not (0.55 <= ratio <= 1.8) or min(image.size) < 32:
+        return None
+    return {
+        "providerId": provider_id,
+        "image": image,
+        "meta": meta,
+        "candidateCount": len(unique),
+        "failures": failures[:12],
+    }
 
 
 def main() -> int:
@@ -177,59 +257,37 @@ def main() -> int:
     patches = {norm_id(k): v for k, v in (patches_raw or {}).items()}
     hubs = {norm_id(k): v for k, v in (hubs_raw or {}).items()}
     providers = index.setdefault("providers", {})
-    changed = 0
-    attempted = 0
 
+    work: list[tuple[str, list[str]]] = []
     for row in manifest.get("scrapers") or []:
         if not isinstance(row, dict):
             continue
         provider_id = norm_id(row.get("id"))
-        current = providers.get(provider_id)
-        if not provider_id or not isinstance(current, dict):
+        if not provider_id or not isinstance(providers.get(provider_id), dict):
             continue
         pages = pages_for(provider_id, patches, hubs)
-        if not pages:
-            continue
-        attempted += 1
-        best: tuple[int, Image.Image, dict[str, Any]] | None = None
-        failures: list[str] = []
-        candidates: list[tuple[str, str, int]] = []
-        for page in pages:
-            candidates.extend(page_icons(page))
-        seen: set[str] = set()
-        for url, kind, base in candidates[:36]:
-            if url in seen:
-                continue
-            seen.add(url)
+        if pages:
+            work.append((provider_id, pages))
+
+    refined: list[dict[str, Any]] = []
+    with ThreadPoolExecutor(max_workers=MAX_WORKERS, thread_name_prefix="favicon") as pool:
+        futures = {pool.submit(refine_candidate, provider_id, pages): provider_id for provider_id, pages in work}
+        for future in as_completed(futures):
+            provider_id = futures[future]
             try:
-                data, content_type, final_url = fetch(url)
-                image = open_image(data, content_type, final_url)
-                value = score(image, base)
-                meta = {
-                    "sourceUrl": final_url,
-                    "requestedUrl": url,
-                    "sourceKind": kind,
-                    "contentType": content_type,
-                    "originalWidth": image.width,
-                    "originalHeight": image.height,
-                    "sourceSha256": hashlib.sha256(data).hexdigest(),
-                    "score": value,
-                    "faviconRefined": True,
-                    "faviconSourcePage": pages[0],
-                }
-                if best is None or value > best[0]:
-                    best = (value, image, meta)
+                result = future.result()
             except Exception as exc:
-                failures.append(f"{kind}:{type(exc).__name__}")
-            time.sleep(0.02)
-        if best is None:
-            continue
-        value, image, meta = best
-        # Require an icon-like source. A rectangular asset is likely another
-        # wordmark and would not solve the tiny-text problem this pass targets.
-        ratio = image.width / max(1, image.height)
-        if not (0.55 <= ratio <= 1.8) or min(image.size) < 32:
-            continue
+                print(f"FIELD_PROVIDER_FAVICON_REFINE_SKIP provider={provider_id} error={type(exc).__name__}")
+                continue
+            if result is not None:
+                refined.append(result)
+
+    changed = 0
+    for result in sorted(refined, key=lambda value: value["providerId"]):
+        provider_id = result["providerId"]
+        current = providers[provider_id]
+        image = result["image"]
+        meta = result["meta"]
         slug = str(current.get("slug") or re.sub(r"[^a-z0-9]+", "-", provider_id).strip("-"))
         for width, height in TARGETS:
             rel = ROOT / "assets" / "providers" / f"{width}x{height}" / f"{slug}.webp"
@@ -238,23 +296,32 @@ def main() -> int:
         providers[provider_id] = {
             **preserved,
             **meta,
-            "candidateCount": len(seen),
-            "failures": failures[:12],
+            "candidateCount": result["candidateCount"],
+            "failures": result["failures"],
             "previousSourceKind": current.get("sourceKind"),
             "previousSourceUrl": current.get("sourceUrl"),
         }
         changed += 1
-        print(f"FIELD_PROVIDER_FAVICON_REFINE provider={provider_id} source={meta['sourceKind']} original={image.width}x{image.height}")
+        print(
+            f"FIELD_PROVIDER_FAVICON_REFINE provider={provider_id} source={meta['sourceKind']} "
+            f"original={image.width}x{image.height}"
+        )
 
     index["faviconRefinement"] = {
         "mode": "one-shot-site-icon-preference",
-        "attemptedProviders": attempted,
+        "attemptedProviders": len(work),
         "refinedProviders": changed,
         "completedAt": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+        "network": {
+            "timeoutSeconds": TIMEOUT,
+            "maxPagesPerProvider": MAX_PAGES,
+            "maxCandidatesPerProvider": MAX_CANDIDATES,
+            "workers": MAX_WORKERS,
+        },
     }
     index["futurePolicy"] = "committed-assets-only-no-network-regeneration"
     INDEX.write_text(json.dumps(index, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-    print(f"FIELD_PROVIDER_FAVICON_REFINEMENT attempted={attempted} refined={changed}")
+    print(f"FIELD_PROVIDER_FAVICON_REFINEMENT attempted={len(work)} refined={changed}")
     return 0
 
 
