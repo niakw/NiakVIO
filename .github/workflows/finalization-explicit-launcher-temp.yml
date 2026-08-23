@@ -17,7 +17,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  NIAKVIO_FINALIZATION_LAUNCH_REVISION: "current-v3"
+  NIAKVIO_FINALIZATION_LAUNCH_REVISION: "current-v4"
 
 jobs:
   launch:
@@ -28,7 +28,8 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
-        run: gh issue comment 69 --repo "$REPO" --body "Finalization launcher started: https://github.com/${REPO}/actions/runs/${GITHUB_RUN_ID} on ${GITHUB_SHA}."
+        run: |
+          gh issue comment 69 --repo "$REPO" --body "Finalization launcher started: https://github.com/${REPO}/actions/runs/${GITHUB_RUN_ID} on ${GITHUB_SHA}."
       - name: Dispatch exact current validation runs
         env:
           GH_TOKEN: ${{ github.token }}
