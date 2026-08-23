@@ -261,14 +261,86 @@ def _object_exports_getstreams(segment: str) -> bool:
     return re.search(r"(?:\{|,)\s*getStreams\s*(?=,|})", segment) is not None
 
 
-def _terminal_named_function_suffix_end(text: str, cursor: int, limit: int) -> int | None:
-    """Consume only classic named function declarations up to an owned Core marker.
+def _safe_binding_object(value: str) -> bool:
+    """Accept only a flat identifier-binding object which exports getStreams."""
+    value = value.strip()
+    if not value.startswith("{") or not value.endswith("}"):
+        return False
+    end = _balanced_terminal_object_end(value, 0, len(value))
+    if end != len(value) or not _object_exports_getstreams(value):
+        return False
+    identifier = r"[A-Za-z_$][\w$]*"
+    key = rf"(?:[A-Za-z_$][\w$]*|[\"'][A-Za-z_$][\w$]*[\"'])"
+    prop = rf"(?:{key}\s*:\s*{identifier}|{identifier})"
+    return re.fullmatch(
+        rf"\{{\s*(?:{prop})(?:\s*,\s*{prop})*\s*,?\s*\}}",
+        value,
+    ) is not None
 
-    Some obfuscated upstream bundles export ``getStreams`` and then declare their
-    string-table decoder before the generated NiakVIO tail. Those declarations are
-    still provider bytes. Arbitrary calls, assignments, anonymous functions, class
-    declarations, or unterminated bodies fail closed.
-    """
+
+def _safe_global_assignments(body: str) -> bool:
+    """Accept a list of global bindings to identifiers or safe provider objects."""
+    body = body.strip()
+    if body.startswith("(") and body.endswith(")"):
+        body = body[1:-1].strip()
+    body = body.rstrip(";").strip()
+    if not body:
+        return False
+    target = re.compile(
+        r"(?:globalThis|global|self)\s*(?:\.[A-Za-z_$][\w$]*|\[[^\]\r\n;]{1,160}\])\s*=\s*"
+    )
+    identifier = re.compile(r"[A-Za-z_$][\w$]*")
+    position = 0
+    count = 0
+    while position < len(body):
+        while position < len(body) and body[position].isspace():
+            position += 1
+        match = target.match(body, position)
+        if not match:
+            return False
+        position = match.end()
+        while position < len(body) and body[position].isspace():
+            position += 1
+        if position < len(body) and body[position] == "{":
+            end = _balanced_terminal_object_end(body, position, len(body))
+            if end is None or not _safe_binding_object(body[position:end]):
+                return False
+            position = end
+        else:
+            match_value = identifier.match(body, position)
+            if not match_value:
+                return False
+            position = match_value.end()
+        count += 1
+        while position < len(body) and body[position].isspace():
+            position += 1
+        if position >= len(body):
+            break
+        if body[position] not in ",;":
+            return False
+        position += 1
+    return count > 0
+
+
+def _safe_else_global_suffix(suffix: str) -> bool:
+    """Accept only an else branch containing global provider bindings."""
+    cleaned = re.sub(r"//[^\r\n]*|/\*[\s\S]*?\*/", "", suffix).strip()
+    if cleaned.startswith(";"):
+        cleaned = cleaned[1:].lstrip()
+    braced = re.fullmatch(r"\}\s*else\s*\{([\s\S]*)\}\s*;?\s*", cleaned)
+    if braced:
+        return _safe_global_assignments(braced.group(1))
+    unbraced = re.fullmatch(
+        r"else\s+typeof\s+(?:globalThis|global|self)\s*!==?\s*[\"']undefined[\"']\s*&&\s*([\s\S]+?)\s*;?\s*",
+        cleaned,
+    )
+    if unbraced:
+        return _safe_global_assignments(unbraced.group(1))
+    return False
+
+
+def _terminal_named_function_suffix_end(text: str, cursor: int, limit: int) -> int | None:
+    """Consume only classic named function declarations up to an owned Core marker."""
     position = cursor
     consumed = False
     while True:
@@ -293,7 +365,15 @@ def _terminal_named_function_suffix_end(text: str, cursor: int, limit: int) -> i
 
 
 def _terminal_provider_export_end(text: str, object_end: int, limit: int) -> int | None:
-    """Accept only a terminal object export or a narrow global fallback ternary."""
+    """Accept only proven provider glue between an object export and owned Core."""
+    raw_suffix = text[object_end:limit]
+    # Boolean-expression wrappers such as ``&&(module.exports={...});`` may leave
+    # only syntactic closing parentheses after the object assignment.
+    if re.fullmatch(r"\s*\)+\s*;?\s*", raw_suffix):
+        return limit
+    if _safe_else_global_suffix(raw_suffix):
+        return limit
+
     cursor = object_end
     while cursor < limit and text[cursor].isspace():
         cursor += 1
@@ -307,18 +387,11 @@ def _terminal_provider_export_end(text: str, object_end: int, limit: int) -> int
         return function_end if function_end is not None and not text[function_end:limit].strip() else None
     if text[cursor] != ":":
         return None
-
-    suffix = text[cursor:limit]
-    target = r"(?:globalThis|global|self)\s*(?:\.[A-Za-z_$][\w$]*|\[[^\]\r\n;]{1,160}\])"
-    value = r"[A-Za-z_$][\w$]*"
-    assignment = rf"{target}\s*=\s*{value}"
-    fallback = re.fullmatch(
-        rf"\s*:\s*\(?\s*({assignment})(?:\s*,\s*{assignment})*\s*\)?\s*;?\s*",
-        suffix,
-    )
-    if not fallback or "getStreams" not in suffix:
-        return None
-    return limit
+    # Ternary fallbacks may expose either an identifier directly or the same small
+    # getStreams binding object through a global slot. Calls/nested objects fail.
+    if _safe_global_assignments(text[cursor + 1:limit]):
+        return limit
+    return None
 
 
 def _provider_export_floor(text: str) -> int:
@@ -326,8 +399,8 @@ def _provider_export_floor(text: str) -> int:
 
     Exact Nuvio ``__provider`` bridges remain authoritative. Direct/obfuscated
     CommonJS object exports are accepted only when the object itself exports
-    ``getStreams`` (including ES shorthand) and the complete provider terminal
-    suffix is adjacent to a known repository-owned generated wrapper marker.
+    ``getStreams`` and the complete terminal provider glue is adjacent to a known
+    repository-owned generated wrapper marker.
     """
     exact_patterns = (
         r"\bmodule\.exports\s*=\s*__provider\b",
@@ -431,6 +504,10 @@ def harden_generated_apply(text: str) -> str:
         raise ValueError("terminal CommonJS object parser must be generated exactly once")
     if text.count("def _object_exports_getstreams(") != 1:
         raise ValueError("provider getStreams object-key parser must be generated exactly once")
+    if text.count("def _safe_binding_object(") != 1 or text.count("def _safe_global_assignments(") != 1:
+        raise ValueError("safe provider fallback binding parsers must be generated exactly once")
+    if text.count("def _safe_else_global_suffix(") != 1:
+        raise ValueError("safe CommonJS else fallback parser must be generated exactly once")
     if text.count("def _terminal_named_function_suffix_end(") != 1:
         raise ValueError("terminal named-function suffix parser must be generated exactly once")
     if text.count("def _terminal_provider_export_end(") != 1:
