@@ -49,16 +49,20 @@ for rel in (
 ):
     assert (ROOT / rel).is_file(), f"permanent reader ownership contract missing: {rel}"
 
-# Provider artifact validation must be bounded and credential-isolated. Directly
-# requiring upstream-derived bundles in the Core runner can hang on timers and can
-# expose repository credentials/network. The validator therefore stays VM-only.
+# Provider artifact validation is static-only and credential-isolated. Runtime
+# execution belongs to the dedicated worker/native probes, not a credentialed Core
+# normalizer. This also prevents top-level provider timers from hanging finalization.
 validator = (ROOT / "scripts/validate_provider_artifact.cjs").read_text(encoding="utf-8")
-assert "vm.createContext" in validator
-assert "runInContext" in validator
-assert "timeout: 2000" in validator
+assert "node:path" in validator
+assert "--check" in validator
+assert "timeout: 5000" in validator
 assert "env: {}" in validator
+assert "getStreamsContracts" in validator
+assert "mode=static-only" in validator
+assert "execution=false" in validator
 assert "require(file)" not in validator
-assert "process=false require=false" in validator
+assert "runInContext" not in validator
+assert "vm.createContext" not in validator
 
 brain = (ROOT / ".github/workflows/brain-learning-lab.yml").read_text(encoding="utf-8")
 assert "publish-repair-proposal:" not in brain
@@ -98,4 +102,4 @@ assert "python" in codeql
 assert "security-extended" in codeql
 assert "db488ddef3bf6cb639b32c2e9a7c0a7ea8271d28" in codeql
 
-print("repository hygiene contract passed: main-only code workflow, permanent Core/reader hardening, sandboxed provider validation, no retired one-shots")
+print("repository hygiene contract passed: main-only code workflow, permanent Core/reader hardening, static-only provider validation, no retired one-shots")
