@@ -5,6 +5,14 @@
 Purification is never accepted as proof by itself. The transformed artifact is
 validated syntactically/structurally here, then the existing deep/native reader
 pipelines must prove it again before publication or repair acceptance.
+
+NiakVIO-owned *prefix* bootstraps are deliberately kept outside Terser. They are
+rebuild boundaries, not provider source. Letting a formatter relocate their
+NUVIO comments makes the next Core pass lose ownership of the corresponding
+statement and can accumulate a second bootstrap. The provider/Core body is still
+fully purified and byte-fixed-point; the small generated prefix is preserved in
+its canonical source form and then the complete artifact is runtime-tested by the
+normal Deep/native gates.
 """
 from __future__ import annotations
 
@@ -22,9 +30,73 @@ VALIDATOR = ROOT / "scripts/validate_provider_artifact.cjs"
 TERSER_VERSION = "5.50.0"
 _TERSER_READY = False
 
+RUNTIME_DOMAIN_PREFIX = "/* NUVIO_RUNTIME_DOMAIN_OVERRIDES_V1 */"
+ADAPTIVE_DOMAIN_BEGIN = "/* NUVIO_ADAPTIVE_DOMAIN_RECOVERY_V1:BEGIN */"
+ADAPTIVE_DOMAIN_END = "/* NUVIO_ADAPTIVE_DOMAIN_RECOVERY_V1:END */"
+RUNTIME_DOMAIN_CALL = '})(typeof globalThis!=="undefined"?globalThis:this,'
+
 
 def sha256(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
+
+
+def _consume_owned_newline(text: str, index: int) -> int:
+    if text[index:index + 2] == "\r\n":
+        return index + 2
+    if text[index:index + 1] in {"\r", "\n"}:
+        return index + 1
+    return index
+
+
+def _canonical_runtime_prefix_end(text: str, start: int) -> int | None:
+    """Return the end of our canonical runtime-domain prefix statement.
+
+    This parser is intentionally used *before* Terser sees the generated prefix.
+    Therefore the exact invocation anchor is an ownership proof rather than a
+    heuristic over third-party JavaScript.
+    """
+    if not text.startswith(RUNTIME_DOMAIN_PREFIX, start):
+        return None
+    call = text.find(RUNTIME_DOMAIN_CALL, start + len(RUNTIME_DOMAIN_PREFIX))
+    if call < 0:
+        return None
+    end = text.find(");", call + len(RUNTIME_DOMAIN_CALL))
+    if end < 0:
+        return None
+    return _consume_owned_newline(text, end + 2)
+
+
+def _canonical_adaptive_prefix_end(text: str, start: int) -> int | None:
+    if not text.startswith(ADAPTIVE_DOMAIN_BEGIN, start):
+        return None
+    end = text.find(ADAPTIVE_DOMAIN_END, start + len(ADAPTIVE_DOMAIN_BEGIN))
+    if end < 0:
+        return None
+    return _consume_owned_newline(text, end + len(ADAPTIVE_DOMAIN_END))
+
+
+def split_owned_prefix_bootstraps(data: bytes) -> tuple[bytes, bytes]:
+    """Split only canonical NiakVIO prefix wrappers from provider/Core body bytes."""
+    try:
+        text = data.decode("utf-8", errors="strict")
+    except UnicodeDecodeError:
+        return b"", data
+    cursor = 0
+    while cursor < len(text):
+        end = _canonical_runtime_prefix_end(text, cursor)
+        if end is None:
+            end = _canonical_adaptive_prefix_end(text, cursor)
+        if end is None or end <= cursor:
+            break
+        cursor = end
+    if cursor <= 0:
+        return b"", data
+    prefix = text[:cursor].encode("utf-8")
+    body = text[cursor:].encode("utf-8")
+    if not body.strip():
+        # Never feed an empty/non-provider body into a build transform.
+        return b"", data
+    return prefix, body
 
 
 def ensure_terser() -> None:
@@ -96,10 +168,8 @@ def validate_artifact(path: Path) -> None:
 
 
 def _run_purifier(data: bytes, *, format_only: bool) -> tuple[bytes, dict[str, Any]]:
-    """Run one pinned-Terser pass and validate the resulting bundle."""
+    """Run one pinned-Terser pass and validate the resulting provider/Core body."""
     ensure_terser()
-    # Keep temp files under ROOT so provider CommonJS imports resolve through
-    # ROOT/node_modules during structural validation.
     with tempfile.TemporaryDirectory(prefix="niakvio-provider-purify-", dir=ROOT) as temp:
         temp_dir = Path(temp)
         input_path = temp_dir / "input.js"
@@ -130,21 +200,15 @@ def _stable_candidate(data: bytes, *, format_only: bool) -> tuple[bytes, dict[st
     first, result = _run_purifier(data, format_only=format_only)
     try:
         second, _second_result = _run_purifier(first, format_only=format_only)
-    except Exception as exc:  # validation failure is itself a fixed-point failure
+    except Exception as exc:
         return first, result, False, f"second_pass_error:{type(exc).__name__}:{exc}"
     if second != first:
         return first, result, False, "second_pass_bytes_changed"
     return first, result, True, None
 
 
-def purify_bytes(data: bytes) -> tuple[bytes, dict[str, Any]]:
-    """Return the smallest validated, byte-idempotent conservative Terser result.
-
-    Compression is preferred. If compression is not fixed-point safe for a bundle,
-    retry formatting-only minification. If neither mode is stable, preserve the
-    original bytes rather than publishing a transform whose next rebuild changes
-    or fails to execute.
-    """
+def _purify_body_bytes(data: bytes) -> tuple[bytes, dict[str, Any]]:
+    """Purify bytes that contain provider/Core code but no owned prefix wrapper."""
     before_sha = sha256(data)
     fallback_reason: str | None = None
     selected_mode = "original"
@@ -223,6 +287,37 @@ def purify_bytes(data: bytes) -> tuple[bytes, dict[str, Any]]:
     return chosen, report
 
 
+def purify_bytes(data: bytes) -> tuple[bytes, dict[str, Any]]:
+    """Purify provider/Core bytes while preserving canonical owned prefix bootstraps.
+
+    The returned *complete* artifact is itself byte-idempotent under this function:
+    the prefix is reproduced byte-for-byte and only the provider/Core body crosses
+    the Terser boundary.
+    """
+    prefix, body = split_owned_prefix_bootstraps(data)
+    if not prefix:
+        return _purify_body_bytes(data)
+
+    purified_body, body_report = _purify_body_bytes(body)
+    chosen = prefix + purified_body
+    applied = chosen != data and len(chosen) < len(data)
+    report = {
+        **body_report,
+        "applied": applied,
+        "reason": "size_reduced_valid_and_fixed_point" if applied else "no_safe_fixed_point_size_gain",
+        "sourceSha256": sha256(data),
+        "candidateSha256": sha256(chosen),
+        "bytesBefore": len(data),
+        "bytesAfter": len(chosen),
+        "bytesSaved": max(0, len(data) - len(chosen)),
+        "savingPercent": round(max(0, len(data) - len(chosen)) * 100 / max(1, len(data)), 2),
+        "ownedPrefixPreserved": True,
+        "ownedPrefixBytes": len(prefix),
+        "fixedPointVerified": bool(body_report.get("fixedPointVerified", True)),
+    }
+    return chosen, report
+
+
 def purify_file(path: Path) -> dict[str, Any]:
     path = path.resolve()
     original = path.read_bytes()
@@ -257,7 +352,7 @@ def purify_candidate(stage: Path, candidate: dict[str, Any]) -> tuple[dict[str, 
         patches.append({
             "type": "provider_purification",
             "phase": "post-transform",
-            "revision": 2,
+            "revision": 3,
             "tool": "terser",
             "tool_version": TERSER_VERSION,
             "mode": report.get("mode"),
@@ -269,6 +364,7 @@ def purify_candidate(stage: Path, candidate: dict[str, Any]) -> tuple[dict[str, 
             "output_sha256": report["candidateSha256"],
             "bytes_before": report["bytesBefore"],
             "bytes_after": report["bytesAfter"],
+            "owned_prefix_preserved": bool(report.get("ownedPrefixPreserved")),
         })
         updated["local_patches"] = patches
     updated["purification"] = report
@@ -310,12 +406,13 @@ def purify_registry(stage: Path, report_path: Path) -> dict[str, Any]:
 
     registry["candidates"] = output_candidates
     registry["provider_purification"] = {
-        "schema_version": 2,
+        "schema_version": 3,
         "phase": "provider-purification-v1",
         "tool": "terser",
         "tool_version": TERSER_VERSION,
         "mangle": False,
         "fixed_point_required": True,
+        "owned_prefix_bootstraps_outside_terser": True,
         "candidate_count": len(rows),
         "applied_count": sum(1 for row in rows if row["applied"]),
         "format_only_count": sum(1 for row in rows if row.get("mode") == "format-only"),
@@ -328,12 +425,13 @@ def purify_registry(stage: Path, report_path: Path) -> dict[str, Any]:
     write_json(registry_path, registry)
 
     payload = {
-        "schemaVersion": 2,
+        "schemaVersion": 3,
         "phase": "provider-purification-v1",
         "tool": "terser",
         "toolVersion": TERSER_VERSION,
         "mangle": False,
         "fixedPointRequired": True,
+        "ownedPrefixBootstrapsOutsideTerser": True,
         "candidateCount": len(rows),
         "appliedCount": sum(1 for row in rows if row["applied"]),
         "formatOnlyCount": sum(1 for row in rows if row.get("mode") == "format-only"),
@@ -360,7 +458,7 @@ def main() -> int:
         f"candidates={payload['candidateCount']} applied={payload['appliedCount']} "
         f"format_only={payload['formatOnlyCount']} risky={payload['riskyFormattingOnlyCount']} "
         f"bytes_saved={payload['bytesSaved']} saving_percent={payload['savingPercent']} "
-        "mangle=false fixed_point_required=true runtime_retest_required=true"
+        "mangle=false fixed_point_required=true owned_prefixes_outside_terser=true runtime_retest_required=true"
     )
     return 0
 
