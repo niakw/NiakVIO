@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
-"""Merge positive native-reader evidence and render the README result matrix.
+"""Merge native-reader evidence and render the README provider matrix.
 
-Only healthy player observations from complete official native-reader diagnosis
-artifacts are accepted. Existing positive proofs are retained as dated evidence;
-missing cells are never converted into failures by this script.
+The visible inventory is derived from enabled scrapers in the general manifest,
+so it cannot silently drift from the plugin users actually load. Native-reader
+proofs are crossed onto that inventory as they arrive; missing proof stays unknown
+rather than being misreported as a provider failure.
 """
 from __future__ import annotations
 
 import argparse
+import html
 import json
 from datetime import datetime, timezone
 from pathlib import Path
@@ -154,57 +156,126 @@ def merge_diagnostics(results: dict[str, Any], diagnostics_root: Path, run_id: s
 
 
 def media_label(value: str) -> str:
-    return {"movie": "Film", "tv": "Série", "anime": "Anime"}.get(str(value), str(value).title())
+    return {"movie": "Film", "tv": "Série", "anime": "Anime"}.get(str(value).casefold(), str(value).title())
 
 
-def latest_date(row: dict[str, Any]) -> str:
-    return max(
-        (
-            str(proof.get("verifiedAt") or "")
-            for proof in (row.get("devices") or {}).values()
-            if isinstance(proof, dict)
-        ),
-        default="—",
-    )
+def active_providers() -> list[dict[str, Any]]:
+    manifest = load_json(ROOT / "manifest.json", {})
+    logo_index = load_json(ROOT / "assets" / "providers" / "index.json", {})
+    indexed = logo_index.get("providers") if isinstance(logo_index, dict) else {}
+    if not isinstance(indexed, dict):
+        indexed = {}
+    rows: list[dict[str, Any]] = []
+    for scraper in manifest.get("scrapers") or []:
+        if not isinstance(scraper, dict) or scraper.get("enabled") is not True:
+            continue
+        provider_id = str(scraper.get("id") or "").strip()
+        if not provider_id:
+            continue
+        key = provider_id.casefold()
+        local = indexed.get(key)
+        logo = ""
+        if isinstance(local, dict):
+            urls = local.get("urls") or {}
+            if isinstance(urls, dict):
+                logo = str(urls.get("72x32") or urls.get("96x40") or "").strip()
+        if not logo:
+            logo = str(scraper.get("logo") or "").strip()
+        rows.append(
+            {
+                "id": provider_id,
+                "key": key,
+                "name": str(scraper.get("name") or provider_id),
+                "logo": logo,
+                "types": [str(value) for value in (scraper.get("supportedTypes") or []) if str(value).strip()],
+            }
+        )
+    return rows
 
 
-def device_cell(row: dict[str, Any], device: str) -> str:
-    proof = (row.get("devices") or {}).get(device)
-    if not isinstance(proof, dict):
-        return "—"
-    date = str(proof.get("verifiedAt") or "")
-    return f"✅ {date}" if date else "✅"
+def provider_proof_summary(
+    provider: dict[str, Any], results: dict[str, Any], fixtures: dict[str, dict[str, Any]]
+) -> dict[str, Any]:
+    matching = [
+        row
+        for row in (results.get("proofs") or [])
+        if isinstance(row, dict) and str(row.get("provider") or "").strip().casefold() == provider["key"]
+    ]
+    devices: dict[str, str] = {}
+    verified_content: list[str] = []
+    seen_content: set[str] = set()
+    for row in matching:
+        fixture = str(row.get("fixture") or "").strip()
+        fixture_row = fixtures.get(fixture) if isinstance(fixtures.get(fixture), dict) else {}
+        label = str(fixture_row.get("label") or fixture.replace("-", " ").title())
+        kind = media_label(str(row.get("mediaType") or fixture_row.get("mediaType") or "unknown"))
+        content = f"{label} ({kind})" if label else kind
+        if content not in seen_content:
+            seen_content.add(content)
+            verified_content.append(content)
+        for device, proof in (row.get("devices") or {}).items():
+            if not isinstance(proof, dict):
+                continue
+            date = str(proof.get("verifiedAt") or "")
+            if date and date >= devices.get(str(device), ""):
+                devices[str(device)] = date
+    return {
+        "proofCount": len(matching),
+        "content": verified_content,
+        "devices": devices,
+        "latest": max(devices.values(), default="—"),
+    }
+
+
+def device_cell(summary: dict[str, Any], device: str) -> str:
+    date = str((summary.get("devices") or {}).get(device) or "")
+    return f"✅ {date}" if date else "—"
+
+
+def provider_label(provider: dict[str, Any]) -> str:
+    name = html.escape(str(provider.get("name") or provider.get("id") or ""), quote=False).replace("|", "&#124;")
+    logo = html.escape(str(provider.get("logo") or ""), quote=True)
+    if not logo:
+        return name
+    return f'<img src="{logo}" width="36" alt="">&nbsp; {name}'
 
 
 def render(results: dict[str, Any]) -> str:
     fixtures = fixture_catalog(results)
-    rows = [row for row in (results.get("proofs") or []) if isinstance(row, dict)]
-    last_update = str(results.get("updatedAt") or max((latest_date(row) for row in rows), default="—"))
+    providers = active_providers()
+    summaries = {provider["key"]: provider_proof_summary(provider, results, fixtures) for provider in providers}
+    positive_dates = [
+        str(summary.get("latest"))
+        for summary in summaries.values()
+        if str(summary.get("latest") or "") not in ("", "—")
+    ]
+    last_update = str(results.get("updatedAt") or max(positive_dates, default="—"))
     lines = [
         START,
-        "## Résultats natifs vérifiés",
+        "## Providers actifs & résultats natifs vérifiés",
         "",
-        f"**Dernière mise à jour des preuves positives : {last_update}.**",
+        f"**Inventaire : {len(providers)} providers activés dans `manifest.json`. Dernière preuve positive : {last_update}.**",
         "",
-        "Cette matrice ne compte qu'une preuve où le **lecteur officiel Nuvio** a atteint un état sain pour le provider, le contenu et le device indiqués. `—` signifie simplement qu'aucune preuve positive n'est encore conservée pour cette case. Les services tiers pouvant changer, la date reste volontairement visible.",
+        "La liste ci-dessous est reconstruite automatiquement depuis le **manifest général actif**. Les résultats du Deep/Brain et des Labs natifs sont ensuite croisés dessus. Une case `—` signifie uniquement *pas encore de preuve positive conservée* ; elle n'est jamais transformée automatiquement en échec.",
         "",
-        "| Provider | Contenu testé | Type | TV | Mobile | Desktop macOS | Desktop Windows | Dernière preuve |",
-        "|---|---|---|---:|---:|---:|---:|---:|",
+        "| Provider | Types déclarés | Contenus réellement vérifiés | TV | Mobile | Desktop macOS | Desktop Windows | Preuves | Dernière preuve |",
+        "|---|---|---|---:|---:|---:|---:|---:|---:|",
     ]
-    for row in sorted(rows, key=lambda value: (str(value.get("fixture")), str(value.get("provider")))):
-        fixture = str(row.get("fixture") or "")
-        fixture_row = fixtures.get(fixture) if isinstance(fixtures.get(fixture), dict) else {}
-        label = str(fixture_row.get("label") or fixture.replace("-", " ").title())
+    for provider in providers:
+        summary = summaries[provider["key"]]
+        types = ", ".join(media_label(value) for value in provider.get("types") or []) or "—"
+        contents = "<br>".join(str(value).replace("|", "\\|") for value in summary.get("content") or []) or "—"
         lines.append(
-            "| {provider} | {label} | {kind} | {tv} | {mobile} | {mac} | {win} | {date} |".format(
-                provider=str(row.get("provider") or ""),
-                label=label.replace("|", "\\|"),
-                kind=media_label(str(row.get("mediaType") or fixture_row.get("mediaType") or "unknown")),
-                tv=device_cell(row, "tv"),
-                mobile=device_cell(row, "mobile"),
-                mac=device_cell(row, "desktop_macos"),
-                win=device_cell(row, "desktop_windows"),
-                date=latest_date(row),
+            "| {provider} | {types} | {contents} | {tv} | {mobile} | {mac} | {win} | {proofs} | {date} |".format(
+                provider=provider_label(provider),
+                types=types,
+                contents=contents,
+                tv=device_cell(summary, "tv"),
+                mobile=device_cell(summary, "mobile"),
+                mac=device_cell(summary, "desktop_macos"),
+                win=device_cell(summary, "desktop_windows"),
+                proofs=summary.get("proofCount") or "—",
+                date=summary.get("latest") or "—",
             )
         )
     lines.extend(
@@ -214,6 +285,7 @@ def render(results: dict[str, Any]) -> str:
             "",
             "| Capacité | NiakVIO | Manifest/provider brut |",
             "|---|---|---|",
+            "| Inventaire automatiquement synchronisé au manifest actif | ✅ | N/A |",
             "| Plusieurs upstreams comparés | ✅ | Généralement une seule source |",
             "| Preuve lecteur officielle par device | ✅ TV / Mobile / Desktop | Non garantie |",
             "| Vérification œuvre / saison / épisode | ✅ | Non garantie |",
@@ -222,7 +294,7 @@ def render(results: dict[str, Any]) -> str:
             "| Dernier état sain / publication fail-closed | ✅ | Non garanti |",
             "| Projection francophone dédiée | ✅ | Variable |",
             "",
-            "La source machine de cette matrice est [`automation/provider-device-results.json`](automation/provider-device-results.json). Les nouveaux diagnostics natifs positifs sont fusionnés sans transformer une absence de preuve en échec.",
+            "La source machine des preuves est [`automation/provider-device-results.json`](automation/provider-device-results.json). Les logos affichés privilégient les assets WebP committés de NiakVIO ; les preuves des prochains gros Deep/Labs complètent automatiquement les lignes existantes.",
             END,
         ]
     )
@@ -257,8 +329,8 @@ def main() -> int:
     args.results.write_text(results_text, encoding="utf-8")
     args.readme.write_text(next_readme, encoding="utf-8")
     print(
-        f"provider/device README matrix current: proofs={len(results.get('proofs') or [])} "
-        f"updated={results.get('updatedAt') or 'unknown'}"
+        f"provider/device README matrix current: active={len(active_providers())} "
+        f"proofs={len(results.get('proofs') or [])} updated={results.get('updatedAt') or 'unknown'}"
     )
     return 0
 
