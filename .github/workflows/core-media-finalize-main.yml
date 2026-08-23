@@ -127,7 +127,12 @@ jobs:
           python scripts/normalize_core_media_policy.py --apply
           python scripts/apply_runtime_capability_upgrade_v4.py
           python scripts/build_provider_runtime_profiles.py
+          # Two materialization passes are deliberate: pass 1 migrates old published
+          # bytes, pass 2 proves every generic patch survives its own rebuilt/Terser
+          # representation before any client-visible version is finalized.
           python scripts/reapply_published_overrides.py
+          python scripts/reapply_published_overrides.py
+          python scripts/reapply_published_overrides.py --check
           python scripts/generate_language_manifests.py
           python scripts/prune_unreferenced_providers.py
           python scripts/sync_release_versions.py --manifest manifest.json --previous "$RUNNER_TEMP/manifest-before.json"
