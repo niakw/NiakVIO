@@ -16,10 +16,14 @@ def _runtime_domain_wrapper_span(text: str, marker_start: int) -> tuple[int, int
         for pattern in (
             r"\b(?:var|let|const)\s+__provider\b",
             r"\bmodule\.exports\s*=\s*__provider\b",
+            r"\b(?:globalThis|global|self)\.getStreams\s*=\s*__provider\.getStreams\b",
         )
-        for match in re.finditer(pattern, text[marker_end:])
+        for match in re.finditer(pattern, text)
     ]
-    limit = marker_end + min(provider_starts) if provider_starts else len(text)
+    first_provider = min(provider_starts) if provider_starts else -1
+    if first_provider >= 0 and marker_start >= first_provider:
+        return None
+    limit = first_provider if first_provider > marker_end else len(text)
 
     paren = brace = bracket = 0
     quote: str | None = None
