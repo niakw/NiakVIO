@@ -147,8 +147,6 @@ def _inject_runtime_domain_overrides(text: str, replacements: dict[str, Any]) ->
     marker_comment = f"/* {marker} */"
     spans = _runtime_domain_wrapper_spans(text)
 
-    # Strip every structurally-owned copy. Stale marker comments outside an owned
-    # statement are metadata only and are removed without consuming adjacent code.
     parts: list[str] = []
     cursor = 0
     insertion: int | None = None
@@ -198,10 +196,6 @@ def _inject_runtime_domain_overrides(text: str, replacements: dict[str, Any]) ->
 })(typeof globalThis!=="undefined"?globalThis:this,%s);
 """ % (marker, payload)
 
-    # Preserve the established in-place replacement contract for one canonical
-    # marked wrapper. Markerless/minified or duplicate wrappers use the structural
-    # path below; this keeps older fixed-point assertions meaningful without making
-    # the comment authoritative again.
     existing_span = spans[0] if len(spans) == 1 else None
     if existing_span is not None and marker_comment in text[existing_span[0]:existing_span[1]]:
         output = text[:existing_span[0]] + bootstrap + text[existing_span[1]:]
@@ -260,20 +254,15 @@ def _balanced_terminal_object_end(text: str, open_brace: int, limit: int) -> int
     return None
 
 
+def _object_exports_getstreams(segment: str) -> bool:
+    """Accept explicit or ES object-shorthand getStreams keys, never value-only hits."""
+    if re.search(r"(?:[\"']getStreams[\"']\s*:|\bgetStreams\s*:)", segment):
+        return True
+    return re.search(r"(?:\{|,)\s*getStreams\s*(?=,|})", segment) is not None
+
+
 def _terminal_provider_export_end(text: str, object_end: int, limit: int) -> int | None:
-    """Accept only a terminal object export or a narrow global fallback ternary.
-
-    Obfuscated bundles commonly finish with either::
-
-      module[decoder(...) ]={'getStreams':getStreams};
-      cond ? module[decoder(...) ]={'getStreams':getStreams}
-           : (global[decoder(...)]=getStreams, global[...]=onSettings);
-
-    The module assignment is already proven by the caller. Any suffix is accepted
-    only when it consists exclusively of global/globalThis/self assignments whose
-    right-hand sides are identifiers and at least one assigns ``getStreams``. The
-    complete statement must be adjacent to the selected post-export Core marker.
-    """
+    """Accept only a terminal object export or a narrow global fallback ternary."""
     cursor = object_end
     while cursor < limit and text[cursor].isspace():
         cursor += 1
@@ -301,13 +290,13 @@ def _terminal_provider_export_end(text: str, object_end: int, limit: int) -> int
 def _provider_export_floor(text: str) -> int:
     """Return a proven provider/Core boundary, never a generic CommonJS guess.
 
-    Normal Nuvio bundles expose ``__provider`` through one of the exact bridges
-    below. Some upstream-obfuscated CommonJS bundles instead end with an object
-    assignment such as ``module[decoder(...)]=...``. That shape is accepted only
-    when the terminal object literally exports ``getStreams`` and the complete
-    terminal statement is adjacent to a known Core-tail marker *after* the export.
-    Core comments which Terser floated before provider bytes are ignored rather
-    than becoming false upper bounds for provider ownership.
+    Exact Nuvio ``__provider`` bridges remain authoritative. Direct/obfuscated
+    CommonJS object exports are accepted only when the object itself exports
+    ``getStreams`` (including ES shorthand) and the complete terminal export is
+    adjacent to a known repository-owned generated wrapper marker. This lets Core
+    recover older published bundles where the first generated layer was the stream
+    sanitizer rather than the newer explicit Core-start boundary, without treating
+    arbitrary comments or executable suffixes as provider/Core boundaries.
     """
     exact_patterns = (
         r"\bmodule\.exports\s*=\s*__provider\b",
@@ -325,6 +314,8 @@ def _provider_export_floor(text: str) -> int:
 
     terminal_core_markers = (
         "NUVIO_GLOBAL_CORE_START_BOUNDARY_V1",
+        "NUVIO_STREAM_OUTPUT_SANITIZER_V",
+        "NUVIO_GLOBAL_PROVIDER_BRANDING_V1",
         "NUVIO_GLOBAL_CATALOGUE_ALIAS_RECOVERY_V2",
         "NUVIO_GLOBAL_MEDIA_ENRICHMENT_V1",
         "NUVIO_GLOBAL_RUNTIME_MEDIA_SAFETY_V1",
@@ -334,6 +325,9 @@ def _provider_export_floor(text: str) -> int:
         "NUVIO_GLOBAL_STREAM_FACTS_V1",
         "NUVIO_GLOBAL_STREAM_IDENTITY_V1",
         "NUVIO_GLOBAL_STREAM_PRESENTATION_V1",
+        "NUVIO_ADAPTIVE_RUNTIME_RECOVERY_V",
+        "NUVIO_ADAPTIVE_DOMAIN_RECOVERY_V1",
+        "NUVIO_GLOBAL_STREAM_OUTPUT_GUARD_V",
     )
     core_starts = sorted({
         match.start()
@@ -355,7 +349,7 @@ def _provider_export_floor(text: str) -> int:
         if object_end is None:
             continue
         segment = text[match.start():object_end]
-        if re.search(r"(?:[\"']getStreams[\"']\s*:|\bgetStreams\s*:)", segment) is None:
+        if not _object_exports_getstreams(segment):
             continue
         post_markers = [position for position in core_starts if position > object_end]
         if not post_markers:
@@ -400,14 +394,16 @@ def harden_generated_apply(text: str) -> str:
         raise ValueError("bounded runtime-domain parser must be generated exactly once")
     if text.count("def _balanced_terminal_object_end(") != 1:
         raise ValueError("terminal CommonJS object parser must be generated exactly once")
+    if text.count("def _object_exports_getstreams(") != 1:
+        raise ValueError("provider getStreams object-key parser must be generated exactly once")
     if text.count("def _terminal_provider_export_end(") != 1:
         raise ValueError("terminal provider export statement parser must be generated exactly once")
     if text.count("def _provider_export_floor(") != 1:
         raise ValueError("provider-export floor must be generated exactly once")
     if 'r"\\bmodule\\.exports\\s*=\\s*__provider\\b"' not in text:
         raise ValueError("proven provider export bridge is missing")
-    if "terminal_core_markers = (" not in text or "getStreams" not in text:
-        raise ValueError("terminal obfuscated CommonJS boundary guard is missing")
+    if "terminal_core_markers = (" not in text or "NUVIO_STREAM_OUTPUT_SANITIZER_V" not in text:
+        raise ValueError("owned generated export-boundary markers are missing")
     if 'for match in re.finditer(re.escape(f"/* {marker}"), text)' not in text:
         raise ValueError("floated Core markers are not filtered by post-export ownership")
     if "unowned runtime-domain reserved key" not in text:
