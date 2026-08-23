@@ -47,7 +47,8 @@ def main() -> int:
     run("scripts/normalize_core_fixed_point_contract.py", "--apply")
     run("scripts/normalize_provider_branding_pipeline.py", "--apply")
 
-    # Mirror Core step 9 preparation exactly.
+    # Mirror Core step 9 preparation exactly. Keep this sequence visibly aligned
+    # with core-media-finalize-main.yml so provider IDs reported here are authoritative.
     run("scripts/normalize_core_media_policy.py", "--apply")
     run("scripts/apply_runtime_capability_upgrade_v4.py")
     run("scripts/build_provider_runtime_profiles.py")
