@@ -2,7 +2,6 @@
 'use strict';
 const path = require('node:path');
 const fs = require('node:fs');
-const vm = require('node:vm');
 const { spawnSync } = require('node:child_process');
 
 const file = path.resolve(process.argv[2] || '');
@@ -11,10 +10,11 @@ if (!file || !fs.existsSync(file)) {
   process.exit(2);
 }
 
-// Syntax validation stays in a separate bounded process. Never require a provider
-// bundle in this CI process: provider code is upstream-derived and the Core job can
-// carry repository credentials. Direct require() also lets top-level timers keep the
-// validator alive forever. Both are unacceptable for artifact validation.
+// Provider bundles are upstream-derived artifacts. Artifact validation must never
+// execute their top-level code inside a credentialed Core job: legitimate bundles
+// may require Nuvio-provided modules, while malicious/broken bundles could perform
+// network/process/timer work or keep the event loop alive. Runtime behavior is
+// tested later by the dedicated isolated provider workers and native Labs.
 const syntax = spawnSync(process.execPath, ['--check', file], {
   encoding: 'utf8',
   timeout: 5000,
@@ -30,43 +30,20 @@ if (syntax.status !== 0) {
 }
 
 const code = fs.readFileSync(file, 'utf8');
-const quietConsole = Object.freeze({
-  log() {}, info() {}, warn() {}, error() {}, debug() {},
-});
-const moduleObject = { exports: {} };
-const sandbox = {
-  module: moduleObject,
-  exports: moduleObject.exports,
-  console: quietConsole,
-  URL,
-  URLSearchParams,
-  TextEncoder,
-  TextDecoder,
-  Buffer,
-  atob: globalThis.atob,
-  btoa: globalThis.btoa,
-};
-sandbox.globalThis = sandbox;
-sandbox.global = sandbox;
-sandbox.self = sandbox;
-
-try {
-  const context = vm.createContext(sandbox, {
-    name: `provider-validation:${path.basename(file)}`,
-    codeGeneration: { strings: false, wasm: false },
-  });
-  const script = new vm.Script(code, { filename: file, displayErrors: true });
-  script.runInContext(context, { timeout: 2000, breakOnSigint: true });
-  const mod = moduleObject.exports;
-  const getStreams = mod && typeof mod.getStreams === 'function'
-    ? mod.getStreams
-    : typeof sandbox.getStreams === 'function'
-      ? sandbox.getStreams
-      : null;
-  if (typeof getStreams !== 'function') throw new Error('getStreams export missing');
-} catch (error) {
-  console.error(error && error.stack || error);
+const getStreamsContracts = [
+  /\b(?:async\s+)?function\s+getStreams\s*\(/,
+  /\b(?:const|let|var)\s+getStreams\s*=\s*(?:async\s*)?(?:function\b|(?:\([^)]*\)|[A-Za-z_$][\w$]*)\s*=>)/,
+  /\b(?:globalThis|global|self)\.getStreams\s*=/,
+  /\b(?:module\.exports|exports)\.getStreams\s*=/,
+  /\bmodule\.exports\s*=\s*\{[\s\S]{0,4000}?\bgetStreams\b[\s\S]{0,4000}?\}/,
+];
+if (!getStreamsContracts.some((pattern) => pattern.test(code))) {
+  console.error('getStreams contract missing:', path.basename(file));
   process.exit(1);
 }
 
-console.log('provider artifact validation passed:', path.basename(file), 'sandbox=vm timeout_ms=2000 network=false timers=false process=false require=false');
+console.log(
+  'provider artifact validation passed:',
+  path.basename(file),
+  'mode=static-only syntax_timeout_ms=5000 execution=false network=false timers=false process=false require=false',
+);
