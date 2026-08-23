@@ -1,0 +1,72 @@
+name: NiakVIO explicit fresh native proof once
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/native-fresh-proof-once.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: write
+  issues: write
+
+concurrency:
+  group: niakvio-native-fresh-proof-once
+  cancel-in-progress: true
+
+jobs:
+  launch-and-watch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - name: Launch fresh official-client readers and capture exact runs
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          repo="$GITHUB_REPOSITORY"
+          before="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          gh workflow run native-android-route-reader.yml --repo "$repo" --ref main
+          gh workflow run native-desktop-reader-acceptance.yml --repo "$repo" --ref main
+
+          find_run() {
+            local workflow="$1"
+            local id=""
+            for _ in $(seq 1 90); do
+              id="$(gh run list --repo "$repo" --workflow "$workflow" --branch main --event workflow_dispatch --limit 20 --json databaseId,createdAt --jq '.[] | select(.createdAt >= "'"$before"'") | .databaseId' | head -n1)"
+              if [[ "$id" =~ ^[0-9]+$ ]]; then
+                printf '%s' "$id"
+                return 0
+              fi
+              sleep 2
+            done
+            return 1
+          }
+
+          android="$(find_run native-android-route-reader.yml)"
+          desktop="$(find_run native-desktop-reader-acceptance.yml)"
+          gh issue comment 69 --repo "$repo" --body "Explicit fresh native proof launched from ${GITHUB_SHA}: ANDROID_RUN=${android} https://github.com/${repo}/actions/runs/${android} ; DESKTOP_RUN=${desktop} https://github.com/${repo}/actions/runs/${desktop}. Mobile/TV and Windows/macOS must finish green; no production network-policy bypass is permitted."
+          echo "ANDROID_RUN=$android" >> "$GITHUB_ENV"
+          echo "DESKTOP_RUN=$desktop" >> "$GITHUB_ENV"
+
+      - name: Require fresh Android Mobile and TV run success
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh run watch "$ANDROID_RUN" --repo "$GITHUB_REPOSITORY" --exit-status
+
+      - name: Require fresh Desktop Windows and macOS run success
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh run watch "$DESKTOP_RUN" --repo "$GITHUB_REPOSITORY" --exit-status
+
+      - name: Report fresh native proof result
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          JOB_STATUS: ${{ job.status }}
+        shell: bash
+        run: |
+          gh issue comment 69 --repo "$GITHUB_REPOSITORY" --body "Explicit fresh native proof finished **${JOB_STATUS}**: ANDROID_RUN=${ANDROID_RUN:-unknown} ; DESKTOP_RUN=${DESKTOP_RUN:-unknown}. These are independent fresh workflow_dispatch proofs for the finalization checkpoint."
