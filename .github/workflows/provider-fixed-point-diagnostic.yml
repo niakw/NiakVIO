@@ -1,6 +1,6 @@
 name: NiakVIO provider fixed-point diagnostic
 
-# one-shot diagnostic trigger: 2026-08-23T23:20+02:00
+# one-shot diagnostic trigger: 2026-08-24T00:27+02:00
 on:
   push:
     branches: [main]
@@ -33,9 +33,33 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: gh issue comment 69 --repo "$GITHUB_REPOSITORY" --body "Provider fixed-point diagnostic started: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID} on ${GITHUB_SHA}."
       - name: Diagnose exact plateau
-        run: python scripts/audit_provider_fixed_point.py
+        id: diagnose
+        shell: bash
+        run: |
+          set +e
+          python scripts/audit_provider_fixed_point.py 2>&1 | tee "$RUNNER_TEMP/provider-fixed-point.log"
+          status=${PIPESTATUS[0]}
+          {
+            echo '### Provider fixed-point root diagnostic'
+            echo
+            echo '```text'
+            grep -E 'FIELD_PROVIDER_FIXED_POINT_(AUDIT|PASS|ROOT|BASE_DIFF|RESULT)' "$RUNNER_TEMP/provider-fixed-point.log" | tail -n 120 || true
+            echo '```'
+          } > "$RUNNER_TEMP/provider-fixed-point-summary.md"
+          echo "exit_code=$status" >> "$GITHUB_OUTPUT"
+          exit "$status"
+      - name: Publish diagnostic evidence
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [[ -s "$RUNNER_TEMP/provider-fixed-point-summary.md" ]]; then
+            gh issue comment 69 --repo "$GITHUB_REPOSITORY" --body-file "$RUNNER_TEMP/provider-fixed-point-summary.md"
+          else
+            gh issue comment 69 --repo "$GITHUB_REPOSITORY" --body "Provider fixed-point diagnostic produced no summary; inspect run https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}."
+          fi
       - name: Report diagnostic completion
         if: always()
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh issue comment 69 --repo "$GITHUB_REPOSITORY" --body "Provider fixed-point diagnostic ended with **${{ job.status }}**: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}."
+        run: gh issue comment 69 --repo "$GITHUB_REPOSITORY" --body "Provider fixed-point diagnostic ended with **${{ job.status }}** (exit=${{ steps.diagnose.outputs.exit_code || 'unknown' }}): https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}."
