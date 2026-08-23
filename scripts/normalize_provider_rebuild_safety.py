@@ -20,7 +20,7 @@ ROOT = Path(__file__).resolve().parents[1]
 TARGET = ROOT / "scripts" / "provider_engine_normalizer.py"
 CORE_NORMALIZER = ROOT / "scripts" / "normalize_core_fixed_point_contract.py"
 CORE_MIGRATION = ROOT / "scripts" / "harden_core_fixed_point_normalizer_once.py"
-CORE_HARDENING_MARKER = "def _harden_generated_apply(text: str) -> str:"
+CORE_HARDENING_MARKER = "return harden_generated_apply(text)"
 
 SAFE_FUNCTION = dedent(r'''
 def _owned_wrapper_end(text: str, marker_end: int, limit: int) -> int | None:
