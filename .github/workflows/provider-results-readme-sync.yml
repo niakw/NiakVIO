@@ -1,0 +1,102 @@
+name: Provider results README sync
+
+on:
+  workflow_run:
+    workflows:
+      - Native Android route reader acceptance
+      - Native Desktop reader acceptance
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: Exact completed native reader run ID to import
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: niakvio-provider-results-readme-sync
+  cancel-in-progress: false
+
+jobs:
+  update-results:
+    if: ${{ github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion != 'cancelled' && github.event.workflow_run.event == 'push' && github.event.workflow_run.head_branch == 'main') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout current main
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+
+      - name: Resolve native reader run
+        id: source
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          EVENT_RUN_ID: ${{ github.event.workflow_run.id }}
+          INPUT_RUN_ID: ${{ inputs.run_id }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "$EVENT_NAME" = "workflow_run" ]; then
+            RUN_ID="$EVENT_RUN_ID"
+          else
+            RUN_ID="$INPUT_RUN_ID"
+          fi
+          [[ "$RUN_ID" =~ ^[0-9]+$ ]] || { echo "invalid native reader run id: $RUN_ID" >&2; exit 2; }
+          echo "run_id=$RUN_ID" >> "$GITHUB_OUTPUT"
+
+      - name: Download exact positive-evidence diagnostics
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_ID: ${{ steps.source.outputs.run_id }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p provider-results-input
+          for pattern in \
+            "native-tv-route-*-$RUN_ID" \
+            "native-mobile-route-*-$RUN_ID" \
+            "native-desktop-reader-*-$RUN_ID"; do
+            gh run download "$RUN_ID" --pattern "$pattern" --dir provider-results-input || true
+          done
+          find provider-results-input -type f -name '*brain.json' -print | sort
+
+      - name: Merge positive native results and render README
+        env:
+          RUN_ID: ${{ steps.source.outputs.run_id }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin main
+          git reset --hard origin/main
+          python scripts/update_provider_device_results.py \
+            --diagnostics-root provider-results-input \
+            --run-id "$RUN_ID" \
+            --results automation/provider-device-results.json \
+            --readme README.md
+
+      - name: Publish result matrix only when changed
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add README.md automation/provider-device-results.json
+          if git diff --cached --quiet; then
+            echo 'Provider/device result matrix already current.'
+            exit 0
+          fi
+          git commit -m 'docs: refresh native provider result matrix'
+          git fetch origin main
+          git rebase origin/main
+          git push origin HEAD:main
