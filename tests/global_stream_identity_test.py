@@ -113,6 +113,38 @@ try:
 finally:
     id_path.unlink(missing_ok=True)
 
+# Regression for homonymous movies (real-world class: "Unstoppable"). A textual
+# title match must never override contradictory TMDB identity. Year evidence is
+# also authoritative when a provider exposes it in the row/filename. This keeps a
+# wrong same-name film out while preserving the correctly identified stream.
+homonym_source = r'''module.exports={getStreams:async()=>[
+ {name:'Wrong same-title',title:'Unstoppable',tmdbId:'111',url:'https://cdn.example/wrong-id.m3u8'},
+ {name:'Correct same-title',title:'Unstoppable',tmdbId:'222',url:'https://cdn.example/correct-id.m3u8'},
+ {name:'Wrong year',title:'Unstoppable 2010',url:'https://cdn.example/wrong-year.m3u8'},
+ {name:'Correct year',title:'Unstoppable 2024',url:'https://cdn.example/correct-year.m3u8'}
+]};'''
+homonym_patched = identity.apply(homonym_source, context={"provider_id": "example"})
+homonym_runner = r'''
+const assert=require('assert');
+global.fetch=async raw=>{const u=String(raw);if(u.includes('/movie/222?'))return {ok:true,status:200,json:async()=>({id:222,title:'Unstoppable',original_title:'Unstoppable',release_date:'2024-12-06',external_ids:{imdb_id:'tt3864060'}})};return {ok:true,status:200,json:async()=>({results:[]})}};
+PATCHED
+module.exports.getStreams({tmdbId:'222',imdbId:'tt3864060',mediaType:'movie',title:'Unstoppable',year:2024}).then(rows=>{
+ const urls=rows.map(x=>x.url);
+ assert(!urls.includes('https://cdn.example/wrong-id.m3u8'),JSON.stringify(rows));
+ assert(!urls.includes('https://cdn.example/wrong-year.m3u8'),JSON.stringify(rows));
+ assert(urls.includes('https://cdn.example/correct-id.m3u8'),JSON.stringify(rows));
+ assert(urls.includes('https://cdn.example/correct-year.m3u8'),JSON.stringify(rows));
+}).catch(e=>{console.error(e);process.exit(3)});
+'''.replace('PATCHED', homonym_patched)
+with tempfile.NamedTemporaryFile('w', suffix='.cjs', encoding='utf-8', delete=False) as handle:
+    handle.write(homonym_runner)
+    homonym_path = Path(handle.name)
+try:
+    proc = subprocess.run(['node', str(homonym_path)], cwd=ROOT, text=True, capture_output=True, timeout=20)
+    assert proc.returncode == 0, proc.stdout + proc.stderr
+finally:
+    homonym_path.unlink(missing_ok=True)
+
 # Film request must reject an explicit episodic filename, while generic opaque
 # media remains because the guard is positive-mismatch-only, not guesswork.
 movie_source = "module.exports={getStreams:async()=>[{url:'https://cdn.example/Other-Show-S02E04.mp4'},{name:'Server 1',url:'https://cdn.example/a8f.m3u8'}]};"
@@ -131,4 +163,4 @@ try:
 finally:
     movie_path.unlink(missing_ok=True)
 
-print('global stream identity TV/anime dual-route regression tests passed')
+print('global stream identity TV/anime/homonymous-movie regression tests passed')
