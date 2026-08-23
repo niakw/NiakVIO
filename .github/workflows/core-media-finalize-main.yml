@@ -69,9 +69,12 @@ permissions:
   contents: write
   issues: write
 
+# A Core run can publish its own permanent materialization to main. That push may
+# legitimately trigger another Core run, but it must never cancel the exact run
+# whose result an orchestrator is already watching as authoritative evidence.
 concurrency:
-  group: niakvio-core-media-finalize-main
-  cancel-in-progress: true
+  group: niakvio-core-media-finalize-main-${{ github.run_id }}
+  cancel-in-progress: false
 
 jobs:
   finalize-main:
