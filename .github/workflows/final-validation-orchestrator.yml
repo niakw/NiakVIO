@@ -1,6 +1,5 @@
 name: NiakVIO final validation orchestrator
-# Authoritative end-to-end gate for the exact main generation.
-# Final generation: provider branding + native evidence + provider security + CodeQL.
+# Authoritative end-to-end proof for the exact final main generation.
 
 on:
   workflow_dispatch:
@@ -15,8 +14,9 @@ permissions:
   issues: write
   pull-requests: read
 
-# A final validation run is evidence in its own right. Never kill it because a
-# later main generation appears; a later run must prove that generation separately.
+# Every final proof is authoritative for its own generation. Never cancel it merely
+# because another main revision appears; the run itself verifies that main stayed
+# sealed before it is allowed to close the completion issue.
 concurrency:
   group: niakvio-final-validation-orchestrator-${{ github.run_id }}
   cancel-in-progress: false
@@ -30,43 +30,55 @@ jobs:
       REPO: ${{ github.repository }}
       STATE_FILE: /tmp/niakvio-final-validation.env
     steps:
-      - name: Checkout exact main
+      - name: Checkout current main
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           ref: main
           fetch-depth: 0
           persist-credentials: true
 
-      - name: Verify repository-clean source contract before expensive gates
+      - name: Verify permanent contracts before expensive gates
         shell: bash
         run: |
           set -euo pipefail
           python tests/repository_hygiene_contract_test.py
           python tests/native_android_avd_cache_contract_test.py
+          python tests/native_evidence_contract_test.py
+          python tests/native_reader_ownership_policy_test.py
+          python -m py_compile \
+            scripts/classify_native_reader_ownership.py \
+            scripts/merge_native_reader_learning_failures.py \
+            scripts/build_native_reader_learning_summary.py
           python - <<'PY'
           import json
           from pathlib import Path
           manifest=json.loads(Path('manifest.json').read_text(encoding='utf-8'))
           rows=manifest.get('scrapers') or []
-          if len(rows) < 92:
-              raise SystemExit(f'provider catalogue unexpectedly shrank below audited baseline: {len(rows)}')
-          missing=[]
-          for row in rows:
-              if not isinstance(row,dict):
-                  continue
-              rel=str(row.get('filename') or '')
-              if rel and not Path(rel).is_file():
-                  missing.append(rel)
+          if len(rows) != 92:
+              raise SystemExit(f'provider catalogue must remain exactly 92 during finalization: {len(rows)}')
+          missing=[str(row.get('filename')) for row in rows if isinstance(row,dict) and row.get('filename') and not Path(str(row.get('filename'))).is_file()]
           if missing:
               raise SystemExit(f'missing provider bundles: {missing[:20]}')
-          print(f'FIELD_FINAL_PROVIDER_CATALOG rows={len(rows)} missing=0')
+          print('FIELD_FINAL_PROVIDER_CATALOG rows=92 missing=0')
           PY
+          for retired in \
+            scripts/refine_provider_logos_from_favicons_once.py \
+            .github/workflows/provider-favicon-refinement-once.yml \
+            .github/workflows/provider-logo-refinement-finalize-once.yml \
+            scripts/diagnose_core_rebuild_once.py \
+            .github/workflows/core-rebuild-diagnostic-once.yml \
+            scripts/diagnose_reapply_fixed_point_once.py \
+            scripts/harden_core_fixed_point_normalizer_once.py \
+            .github/workflows/core-reapply-diagnostic-once.yml \
+            .github/workflows/finalization-explicit-launcher-temp.yml; do
+            test ! -e "$retired" || { echo "retired one-shot remains: $retired" >&2; exit 1; }
+          done
 
       - name: Announce authoritative validation run
         shell: bash
         run: |
           set -euo pipefail
-          gh issue comment 69 --repo "$REPO" --body "Final main validation started on ${GITHUB_SHA}: https://github.com/${REPO}/actions/runs/${GITHUB_RUN_ID}. Core → durable fixed-point proof → Deep → Brain/native clients/badges/provider-security/CodeQL/upstreams → exact native README import → hygiene/main-only. Issue remains open until every gate succeeds."
+          gh issue comment 69 --repo "$REPO" --body "Final main validation started on $(git rev-parse HEAD): https://github.com/${REPO}/actions/runs/${GITHUB_RUN_ID}. Core → Deep → Brain → native TV/Mobile/macOS/Windows → reader ownership classification → native learning import → post-Lab Brain → badges/security/CodeQL/upstreams → exact README evidence → hygiene/main-only. Playback failures are nonblocking; Lab/emulator infrastructure defects remain blocking."
 
       - name: Run authoritative final gates
         shell: bash
@@ -80,86 +92,34 @@ jobs:
             started="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
             gh workflow run "$workflow" --repo "$REPO" --ref main "$@" >/dev/null
             run_id=""
-            for _ in $(seq 1 60); do
-              run_id="$(gh run list --repo "$REPO" --workflow "$workflow" --branch main --event workflow_dispatch --limit 20 --json databaseId,createdAt --jq ".[] | select(.createdAt >= \"$started\") | .databaseId" | head -n1)"
+            for _ in $(seq 1 90); do
+              run_id="$(gh run list --repo "$REPO" --workflow "$workflow" --branch main --event workflow_dispatch --limit 30 --json databaseId,createdAt --jq ".[] | select(.createdAt >= \"$started\") | .databaseId" | head -n1)"
               if [ -n "$run_id" ]; then break; fi
               sleep 2
             done
-            if [ -z "$run_id" ]; then
-              echo "Unable to capture workflow_dispatch run for $workflow" >&2
-              return 1
-            fi
+            test -n "$run_id" || { echo "Unable to capture workflow_dispatch run for $workflow" >&2; return 1; }
             echo "$run_id"
           }
 
           watch_gate() {
-            local label="$1" run_id="$2"
-            echo "FIELD_FINAL_GATE_START label=$label run=$run_id"
+            local label="$1" run_id="$2" expected_sha="${3:-}"
+            echo "FIELD_FINAL_GATE_START label=$label run=$run_id expected_sha=${expected_sha:-any}"
+            if [ -n "$expected_sha" ]; then
+              local actual_sha
+              actual_sha="$(gh run view "$run_id" --repo "$REPO" --json headSha --jq .headSha)"
+              if [ "$actual_sha" != "$expected_sha" ]; then
+                echo "Gate $label started on unexpected SHA: expected=$expected_sha actual=$actual_sha run=$run_id" >&2
+                return 1
+              fi
+            fi
             gh run watch "$run_id" --repo "$REPO" --exit-status --interval 20
             echo "FIELD_FINAL_GATE_OK label=$label run=$run_id"
           }
-
-          # Legacy logo one-shot is retained only as an idempotent compatibility
-          # cleanup for an older main. The current final tree must not contain it.
-          LOGO_MIGRATED=0
-          if [ -f scripts/refine_provider_logos_from_favicons_once.py ]; then
-            python -m pip install --disable-pip-version-check --no-cache-dir 'Pillow==11.3.0' 'CairoSVG==2.8.2'
-            python scripts/refine_provider_logos_from_favicons_once.py
-            rm -f \
-              scripts/refine_provider_logos_from_favicons_once.py \
-              .github/workflows/provider-favicon-refinement-once.yml \
-              .github/workflows/provider-logo-refinement-finalize-once.yml \
-              scripts/diagnose_core_rebuild_once.py \
-              .github/workflows/core-rebuild-diagnostic-once.yml
-            git config user.name 'github-actions[bot]'
-            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-            git add -A
-            if ! git diff --cached --quiet; then
-              git commit -m 'assets: finalize provider logos as committed-only assets'
-              git fetch origin main
-              git rebase origin/main
-              git push origin HEAD:main
-            fi
-            LOGO_MIGRATED=1
-          fi
-          echo "LOGO_MIGRATED=$LOGO_MIGRATED" >> "$STATE_FILE"
-
-          git fetch origin main
-          git reset --hard origin/main
-          for retired in \
-            scripts/refine_provider_logos_from_favicons_once.py \
-            .github/workflows/provider-favicon-refinement-once.yml \
-            .github/workflows/provider-logo-refinement-finalize-once.yml \
-            scripts/diagnose_core_rebuild_once.py \
-            .github/workflows/core-rebuild-diagnostic-once.yml \
-            scripts/diagnose_reapply_fixed_point_once.py \
-            scripts/harden_core_fixed_point_normalizer_once.py \
-            .github/workflows/core-reapply-diagnostic-once.yml \
-            .github/workflows/finalization-explicit-launcher-temp.yml; do
-            if [ -e "$retired" ]; then
-              echo "One-shot/diagnostic machinery remains: $retired" >&2
-              exit 1
-            fi
-          done
-          python tests/repository_hygiene_contract_test.py
-          python - <<'PY'
-          import json
-          from pathlib import Path
-          index=json.loads(Path('assets/providers/index.json').read_text(encoding='utf-8'))
-          providers=index.get('providers') or {}
-          assert len(providers)==92, len(providers)
-          assert index.get('futurePolicy')=='committed-assets-only-no-network-regeneration'
-          refinement=index.get('faviconRefinement') or {}
-          assert refinement.get('mode')=='one-shot-site-icon-preference', refinement
-          print(f"FIELD_FINAL_LOGO_MIGRATION providers={len(providers)} refined={refinement.get('refinedProviders',0)} policy=committed-only")
-          PY
 
           CORE_RUN="$(dispatch_and_capture core-media-finalize-main.yml)"
           echo "CORE_RUN=$CORE_RUN" >> "$STATE_FILE"
           watch_gate core "$CORE_RUN"
 
-          # Core is allowed to materialize its permanent fixed-point wiring. Reload
-          # the exact resulting main and prove no deleted one-shot is required.
           git fetch origin main
           git reset --hard origin/main
           grep -q 'from core_rebuild_safety import harden_generated_apply' scripts/normalize_core_fixed_point_contract.py
@@ -178,7 +138,9 @@ jobs:
           echo "DEEP_RUN=$DEEP_RUN" >> "$STATE_FILE"
           watch_gate deep "$DEEP_RUN"
 
-          TEST_SHA="$(gh api "repos/$REPO/commits/main" --jq .sha)"
+          git fetch origin main
+          git reset --hard origin/main
+          TEST_SHA="$(git rev-parse HEAD)"
           echo "TEST_SHA=$TEST_SHA" >> "$STATE_FILE"
           echo "FIELD_FINAL_TEST_SHA sha=$TEST_SHA"
 
@@ -198,11 +160,73 @@ jobs:
           done
 
           for label in badge upstreams security codeql brain desktop android; do
-            watch_gate "$label" "${runs[$label]}"
+            watch_gate "$label" "${runs[$label]}" "$TEST_SHA"
           done
 
-          # workflow_run intentionally ignores workflow_dispatch native runs.
-          # Import the two exact final native runs explicitly and serially.
+          # A native Lab can be green with playback/provider failures because those
+          # are evidence, not publication locks. It may NOT be green if the evidence
+          # indicates QEMU/ADB/AVD/runner infrastructure trouble. Classify the exact
+          # native runs before accepting them as authoritative proof.
+          rm -rf .final-validation/reader
+          mkdir -p .final-validation/reader/android .final-validation/reader/desktop
+          for pattern in \
+            "native-tv-route-*-${runs[android]}" \
+            "native-mobile-route-*-${runs[android]}"; do
+            gh run download "${runs[android]}" --repo "$REPO" --pattern "$pattern" --dir .final-validation/reader/android || true
+          done
+          gh run download "${runs[desktop]}" --repo "$REPO" --pattern "native-desktop-reader-*-${runs[desktop]}" --dir .final-validation/reader/desktop || true
+
+          python scripts/classify_native_reader_ownership.py \
+            --diagnostics-root .final-validation/reader/android \
+            --output .final-validation/reader/android-ownership.json \
+            --fail-on-lab-infra
+          python scripts/classify_native_reader_ownership.py \
+            --diagnostics-root .final-validation/reader/desktop \
+            --output .final-validation/reader/desktop-ownership.json \
+            --fail-on-lab-infra
+          python - <<'PY' >> "$STATE_FILE"
+          import json
+          from pathlib import Path
+          a=json.loads(Path('.final-validation/reader/android-ownership.json').read_text())
+          d=json.loads(Path('.final-validation/reader/desktop-ownership.json').read_text())
+          if int(a.get('diagnosticFiles') or 0) <= 0:
+              raise SystemExit('Android Lab produced no readable Brain diagnostics')
+          if int(d.get('diagnosticFiles') or 0) <= 0:
+              raise SystemExit('Desktop Lab produced no readable Brain diagnostics')
+          if int(a.get('labEmulationFailures') or 0) or int(d.get('labEmulationFailures') or 0):
+              raise SystemExit('emulator/runner infrastructure evidence remains in a green native run')
+          values={
+              'ANDROID_DIAGNOSTIC_FILES':int(a.get('diagnosticFiles') or 0),
+              'ANDROID_VENDOR_WAIT':int(a.get('nuvioVendorWaitFailures') or 0),
+              'ANDROID_PROVIDER_LEARNING':int(a.get('providerLearningFailures') or 0),
+              'DESKTOP_DIAGNOSTIC_FILES':int(d.get('diagnosticFiles') or 0),
+              'DESKTOP_VENDOR_WAIT':int(d.get('nuvioVendorWaitFailures') or 0),
+              'DESKTOP_PROVIDER_LEARNING':int(d.get('providerLearningFailures') or 0),
+          }
+          for key,value in values.items(): print(f'{key}={value}')
+          print('FIELD_FINAL_NATIVE_OWNERSHIP status=ok lab_emulation=0 '
+                f"vendor_wait={values['ANDROID_VENDOR_WAIT']+values['DESKTOP_VENDOR_WAIT']} "
+                f"provider_learning={values['ANDROID_PROVIDER_LEARNING']+values['DESKTOP_PROVIDER_LEARNING']}")
+          PY
+
+          # workflow_run intentionally ignores workflow_dispatch native runs. Import
+          # both exact final native runs into the sanitized Brain branch explicitly,
+          # then execute Brain once more so current failures become current skills or
+          # vendor-wait observations rather than waiting for another daily cycle.
+          ANDROID_LEARNING_RUN="$(dispatch_and_capture native-reader-learning-sync.yml -f run_id="${runs[android]}")"
+          echo "ANDROID_LEARNING_RUN=$ANDROID_LEARNING_RUN" >> "$STATE_FILE"
+          watch_gate android-learning "$ANDROID_LEARNING_RUN" "$TEST_SHA"
+
+          DESKTOP_LEARNING_RUN="$(dispatch_and_capture native-reader-learning-sync.yml -f run_id="${runs[desktop]}")"
+          echo "DESKTOP_LEARNING_RUN=$DESKTOP_LEARNING_RUN" >> "$STATE_FILE"
+          watch_gate desktop-learning "$DESKTOP_LEARNING_RUN" "$TEST_SHA"
+
+          POST_NATIVE_BRAIN_RUN="$(dispatch_and_capture brain-learning-lab.yml)"
+          echo "POST_NATIVE_BRAIN_RUN=$POST_NATIVE_BRAIN_RUN" >> "$STATE_FILE"
+          watch_gate post-native-brain "$POST_NATIVE_BRAIN_RUN" "$TEST_SHA"
+
+          # Import exact native evidence into public repository documentation only
+          # after both native runs and their learning import are proven.
           ANDROID_SYNC_RUN="$(dispatch_and_capture provider-results-readme-sync.yml -f run_id="${runs[android]}")"
           echo "ANDROID_SYNC_RUN=$ANDROID_SYNC_RUN" >> "$STATE_FILE"
           watch_gate android-readme-sync "$ANDROID_SYNC_RUN"
@@ -211,18 +235,20 @@ jobs:
           echo "DESKTOP_SYNC_RUN=$DESKTOP_SYNC_RUN" >> "$STATE_FILE"
           watch_gate desktop-readme-sync "$DESKTOP_SYNC_RUN"
 
-          RESULT_SHA="$(gh api "repos/$REPO/commits/main" --jq .sha)"
+          git fetch origin main
+          git reset --hard origin/main
+          RESULT_SHA="$(git rev-parse HEAD)"
           echo "RESULT_SHA=$RESULT_SHA" >> "$STATE_FILE"
           echo "FIELD_FINAL_RESULT_SHA sha=$RESULT_SHA"
 
           if [ "$RESULT_SHA" != "$TEST_SHA" ]; then
             gh api "repos/$REPO/compare/${TEST_SHA}...${RESULT_SHA}" > "$RUNNER_TEMP/final-docs-compare.json"
             mapfile -t CHANGED < <(jq -r '.files[]?.filename' "$RUNNER_TEMP/final-docs-compare.json" | sort -u)
-            printf 'FIELD_FINAL_POST_TEST_CHANGE=%s\n' "${CHANGED[@]}"
             if [ "${#CHANGED[@]}" -eq 0 ]; then
-              echo "main SHA changed but compare contains no files: tested=$TEST_SHA result=$RESULT_SHA" >&2
+              echo "main SHA changed but compare contains no files" >&2
               exit 1
             fi
+            printf 'FIELD_FINAL_POST_TEST_CHANGE=%s\n' "${CHANGED[@]}"
             for path in "${CHANGED[@]}"; do
               case "$path" in
                 README.md|automation/provider-device-results.json) ;;
@@ -233,18 +259,34 @@ jobs:
 
           HYGIENE_RUN="$(dispatch_and_capture repository-hygiene.yml)"
           echo "HYGIENE_RUN=$HYGIENE_RUN" >> "$STATE_FILE"
-          watch_gate hygiene "$HYGIENE_RUN"
+          watch_gate hygiene "$HYGIENE_RUN" "$RESULT_SHA"
 
           MAINONLY_RUN="$(dispatch_and_capture main-only-policy.yml)"
           echo "MAINONLY_RUN=$MAINONLY_RUN" >> "$STATE_FILE"
-          watch_gate mainonly "$MAINONLY_RUN"
+          watch_gate mainonly "$MAINONLY_RUN" "$RESULT_SHA"
 
-          FINAL_SHA="$(gh api "repos/$REPO/commits/main" --jq .sha)"
+          git fetch origin main
+          git reset --hard origin/main
+          FINAL_SHA="$(git rev-parse HEAD)"
           echo "FINAL_SHA=$FINAL_SHA" >> "$STATE_FILE"
           if [ "$FINAL_SHA" != "$RESULT_SHA" ]; then
-            echo "main changed after final hygiene/main-only seal: result=$RESULT_SHA final=$FINAL_SHA" >&2
+            echo "main changed after hygiene/main-only seal: result=$RESULT_SHA final=$FINAL_SHA" >&2
             exit 1
           fi
+
+          python tests/repository_hygiene_contract_test.py
+          python tests/native_android_avd_cache_contract_test.py
+          python tests/native_evidence_contract_test.py
+          python tests/native_reader_ownership_policy_test.py
+          python scripts/normalize_provider_rebuild_safety.py --check
+          python scripts/normalize_core_fixed_point_contract.py --check
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          rows=json.loads(Path('manifest.json').read_text()).get('scrapers') or []
+          if len(rows)!=92: raise SystemExit(f'final provider count changed: {len(rows)}')
+          print('FIELD_FINAL_PROVIDER_CATALOG_FINAL rows=92')
+          PY
 
           mapfile -t BRANCHES < <(gh api --paginate "repos/$REPO/branches?per_page=100" --jq '.[].name' | sort -u)
           printf 'FIELD_FINAL_BRANCH=%s\n' "${BRANCHES[@]}"
@@ -264,37 +306,37 @@ jobs:
 
           cat "$STATE_FILE"
 
-      - name: Close security completion issue on full success
+      - name: Close completion issue on full success
         if: success()
         shell: bash
         run: |
           set -euo pipefail
           source "$STATE_FILE"
-          LOGO_LINE='- Provider logo one-shot: already completed before this run'
-          if [ "${LOGO_MIGRATED:-0}" = "1" ]; then
-            LOGO_LINE="- Provider logo one-shot: executed inline in https://github.com/${REPO}/actions/runs/${GITHUB_RUN_ID}"
-          fi
           BODY=$(cat <<EOF
           Final NiakVIO validation succeeded.
 
           - Tested provider/runtime SHA after Core + Deep: ${TEST_SHA}
           - Final documentation/native evidence SHA: ${FINAL_SHA}
-          ${LOGO_LINE}
           - Core finalizer: https://github.com/${REPO}/actions/runs/${CORE_RUN}
           - Deep provider audit: https://github.com/${REPO}/actions/runs/${DEEP_RUN}
-          - Brain sandbox: https://github.com/${REPO}/actions/runs/${BRAIN_RUN}
+          - Brain pre-native: https://github.com/${REPO}/actions/runs/${BRAIN_RUN}
           - Android TV/Mobile native readers: https://github.com/${REPO}/actions/runs/${ANDROID_RUN}
-          - Desktop native readers: https://github.com/${REPO}/actions/runs/${DESKTOP_RUN}
+          - Desktop macOS/Windows native readers: https://github.com/${REPO}/actions/runs/${DESKTOP_RUN}
+          - Android reader learning import: https://github.com/${REPO}/actions/runs/${ANDROID_LEARNING_RUN}
+          - Desktop reader learning import: https://github.com/${REPO}/actions/runs/${DESKTOP_LEARNING_RUN}
+          - Brain post-native learning: https://github.com/${REPO}/actions/runs/${POST_NATIVE_BRAIN_RUN}
+          - Android ownership: diagnostics=${ANDROID_DIAGNOSTIC_FILES}, emulator/runner=0, Nuvio vendor-wait=${ANDROID_VENDOR_WAIT}, provider-learning=${ANDROID_PROVIDER_LEARNING}
+          - Desktop ownership: diagnostics=${DESKTOP_DIAGNOSTIC_FILES}, emulator/runner=0, Nuvio vendor-wait=${DESKTOP_VENDOR_WAIT}, provider-learning=${DESKTOP_PROVIDER_LEARNING}
           - Android native evidence → README: https://github.com/${REPO}/actions/runs/${ANDROID_SYNC_RUN}
           - Desktop native evidence → README: https://github.com/${REPO}/actions/runs/${DESKTOP_SYNC_RUN}
           - Light badge QA: https://github.com/${REPO}/actions/runs/${BADGE_RUN}
           - Provider security gate: https://github.com/${REPO}/actions/runs/${SECURITY_RUN}
-          - CodeQL security analysis: https://github.com/${REPO}/actions/runs/${CODEQL_RUN}
+          - CodeQL: https://github.com/${REPO}/actions/runs/${CODEQL_RUN}
           - Three-upstream discovery review: https://github.com/${REPO}/actions/runs/${UPSTREAMS_RUN}
           - Repository hygiene: https://github.com/${REPO}/actions/runs/${HYGIENE_RUN}
           - Main-only policy: https://github.com/${REPO}/actions/runs/${MAINONLY_RUN}
 
-          Final repository state was rechecked after all gates: permanent Core hardening no longer depends on one-shot migration machinery; only README.md and automation/provider-device-results.json were allowed to change after the tested provider/runtime SHA; main then remained sealed, no open PR remained, and only main plus brain-learning/proposals remained as allowed branches.
+          Native playback/provider failures were treated as structured observations, not manifest publication locks. Emulator/ADB/AVD/runner defects remained fatal to final proof; official Nuvio client-runtime failures were retained as vendor-wait evidence; provider-owned failures were imported into sanitized Brain learning for independent Deep/skill follow-up. Final main remained sealed with exactly 92 providers, no open PRs, and only main plus brain-learning/proposals branches.
           EOF
           )
           gh issue close 69 --repo "$REPO" --comment "$BODY"
@@ -306,5 +348,5 @@ jobs:
           set +e
           DETAILS=''
           if [ -f "$STATE_FILE" ]; then DETAILS="$(cat "$STATE_FILE")"; fi
-          gh issue comment 69 --repo "$REPO" --body "Final validation run failed and #69 remains open: https://github.com/${REPO}/actions/runs/${GITHUB_RUN_ID}. Captured gate state:\n\n${DETAILS}"
+          gh issue comment 69 --repo "$REPO" --body "Final validation failed and #69 remains open: https://github.com/${REPO}/actions/runs/${GITHUB_RUN_ID}. Captured gate state:\n\n${DETAILS}"
           if [ -f "$STATE_FILE" ]; then cat "$STATE_FILE"; fi
