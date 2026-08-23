@@ -17,6 +17,8 @@ on:
       - 'scripts/normalize_core_fixed_point_contract.py'
       - 'scripts/normalize_provider_rebuild_safety.py'
       - 'scripts/normalize_provider_branding_pipeline.py'
+      - 'scripts/normalize_terminal_quarantine_stage.py'
+      - 'scripts/harden_staged_provider_security.py'
       - 'scripts/core_rebuild_safety.py'
       - 'scripts/normalize_core_media_policy.py'
       - 'scripts/apply_runtime_capability_upgrade_v4.py'
@@ -58,6 +60,7 @@ on:
       - 'tests/tv_provider_hardening_test.py'
       - 'tests/provider_security_hardening_test.py'
       - 'tests/provider_purification_contract_test.py'
+      - 'tests/prune_unreferenced_providers_test.py'
       - 'tests/nuvio_client_upstream_drift_guard_test.py'
       - 'tests/badge_asset_contract_test.py'
       - 'tests/repository_hygiene_contract_test.py'
@@ -116,6 +119,8 @@ jobs:
           python -m py_compile \
             scripts/normalize_provider_rebuild_safety.py \
             scripts/normalize_provider_branding_pipeline.py \
+            scripts/normalize_terminal_quarantine_stage.py \
+            scripts/harden_staged_provider_security.py \
             scripts/core_rebuild_safety.py \
             scripts/normalize_core_fixed_point_contract.py \
             scripts/normalize_core_media_policy.py \
@@ -128,6 +133,7 @@ jobs:
           python tests/stream_output_sanitizer_fail_closed_test.py
           python tests/global_playback_integrity_policy_test.py
           python tests/provider_purification_contract_test.py
+          python tests/prune_unreferenced_providers_test.py
           python scripts/normalize_provider_rebuild_safety.py --check
           python scripts/normalize_core_fixed_point_contract.py --check
           python scripts/normalize_provider_branding_pipeline.py --check
@@ -188,6 +194,7 @@ jobs:
           python tests/tv_provider_hardening_test.py
           python tests/provider_security_hardening_test.py
           python tests/provider_purification_contract_test.py
+          python tests/prune_unreferenced_providers_test.py
           python tests/nuvio_client_upstream_drift_guard_test.py
           python tests/badge_asset_contract_test.py
           python tests/repository_hygiene_contract_test.py
@@ -280,6 +287,7 @@ jobs:
           python tests/stream_output_sanitizer_fail_closed_test.py
           python tests/provider_security_hardening_test.py
           python tests/provider_purification_contract_test.py
+          python tests/prune_unreferenced_providers_test.py
           python tests/nuvio_client_upstream_drift_guard_test.py
           python tests/badge_asset_contract_test.py
           python tests/repository_hygiene_contract_test.py
