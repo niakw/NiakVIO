@@ -25,6 +25,14 @@ _HOST_INCLUDES = re.compile(
 _UNSAFE_LITERAL_DECODE = re.compile(
     r'''JSON\.parse\(\s*[\'"]"[\'"]\s*\+\s*(?P<expr>[^;\n]+?)\.replace\(/"/g,\s*[\'\"]\\\\"[\'\"]\)\s*\+\s*[\'\"]"[\'\"]\s*\)'''
 )
+# Common JavaScript-obfuscator string tables decode base64 bytes by first building
+# a complete %HH byte stream and then calling decodeURIComponent on that generated
+# string. CodeQL correctly treats the generic URI decoder as an incomplete encoding
+# boundary. We only rewrite calls whose *same local variable* is visibly accumulated
+# from percent bytes + charCodeAt/toString immediately beforehand.
+_PERCENT_DECODE_CALL = re.compile(
+    r"\bdecodeURIComponent\(\s*(?P<value>[A-Za-z_$][\w$]*)\s*\)"
+)
 _CONSOLE_DECL = re.compile(r"\b(?:var|let|const|class|function)\s+console\b")
 _CONSOLE_USE = re.compile(r"(?<![\w$])(?:console|globalThis\.console|window\.console)\s*[\[.]")
 _GLOBAL_CONSOLE = re.compile(r"\b(?:globalThis|window)\.console(?=\s*[\[.])")
@@ -65,6 +73,37 @@ _LITERAL_HELPER = r'''function __nuvioDecodeEscapedLiteral(value){
     }
     if(next==="\\"||next==='"'||next==="'"||next==="/"){out+=next;continue}
     out+="\\"+next;
+  }
+  return out;
+}'''
+
+_PERCENT_UTF8_HELPER = r'''function __nuvioDecodeUtf8PercentBytes(value){
+  var input=String(value==null?"":value),bytes=[],i=0,hex;
+  while(i<input.length){
+    if(input.charAt(i)!=="%"||i+2>=input.length||!/^[0-9a-fA-F]{2}$/.test(hex=input.slice(i+1,i+3)))throw new URIError("URI malformed");
+    bytes.push(parseInt(hex,16));i+=3;
+  }
+  var out="",p=0;
+  function cont(v){return v>=128&&v<=191}
+  while(p<bytes.length){
+    var b0=bytes[p++],b1,b2,b3,cp;
+    if(b0<=127){out+=String.fromCharCode(b0);continue}
+    if(b0>=194&&b0<=223){
+      if(p>=bytes.length||!cont(b1=bytes[p++]))throw new URIError("URI malformed");
+      cp=((b0&31)<<6)|(b1&63);out+=String.fromCharCode(cp);continue;
+    }
+    if(b0>=224&&b0<=239){
+      if(p+1>=bytes.length||!cont(b1=bytes[p++])||!cont(b2=bytes[p++]))throw new URIError("URI malformed");
+      if((b0===224&&b1<160)||(b0===237&&b1>159))throw new URIError("URI malformed");
+      cp=((b0&15)<<12)|((b1&63)<<6)|(b2&63);out+=String.fromCharCode(cp);continue;
+    }
+    if(b0>=240&&b0<=244){
+      if(p+2>=bytes.length||!cont(b1=bytes[p++])||!cont(b2=bytes[p++])||!cont(b3=bytes[p++]))throw new URIError("URI malformed");
+      if((b0===240&&b1<144)||(b0===244&&b1>143))throw new URIError("URI malformed");
+      cp=((b0&7)<<18)|((b1&63)<<12)|((b2&63)<<6)|(b3&63);cp-=65536;
+      out+=String.fromCharCode(55296+(cp>>10),56320+(cp&1023));continue;
+    }
+    throw new URIError("URI malformed");
   }
   return out;
 }'''
@@ -115,6 +154,40 @@ def _insert_prelude(source: str, snippets: list[str], digest: str) -> str:
     return source[:cursor] + payload + source[cursor:]
 
 
+def _percent_byte_decoder_matches(source: str) -> list[re.Match[str]]:
+    matches: list[re.Match[str]] = []
+    for match in _PERCENT_DECODE_CALL.finditer(source):
+        value = match.group("value")
+        # Keep the structural window deliberately local. This targets generated
+        # string-table decoders, not legitimate URL decoding elsewhere in a provider.
+        window = source[max(0, match.start() - 3000) : match.start()]
+        accumulation = re.search(
+            rf"(?<![\w$]){re.escape(value)}\s*\+=\s*[\"']%[\"']\s*\+",
+            window,
+        )
+        if accumulation is None:
+            continue
+        tail = window[accumulation.start() :]
+        if "charCodeAt" not in tail or "toString" not in tail:
+            continue
+        matches.append(match)
+    return matches
+
+
+def _rewrite_percent_byte_decoders(source: str) -> tuple[str, int]:
+    matches = _percent_byte_decoder_matches(source)
+    if not matches:
+        return source, 0
+    parts: list[str] = []
+    cursor = 0
+    for match in matches:
+        parts.append(source[cursor : match.start()])
+        parts.append(f"__nuvioDecodeUtf8PercentBytes({match.group('value')})")
+        cursor = match.end()
+    parts.append(source[cursor:])
+    return "".join(parts), len(matches)
+
+
 def harden_text(source: str) -> tuple[str, dict[str, Any]]:
     had_marker = MARKER in source
     structured = _load_safe_parse().apply(source)
@@ -129,12 +202,15 @@ def harden_text(source: str) -> tuple[str, dict[str, Any]]:
         lambda match: f'__nuvioHostMatches({match.group("expr")},"{match.group("host").lower()}")',
         source,
     )
+    source, percent_decode_changes = _rewrite_percent_byte_decoders(source)
 
     snippets: list[str] = []
     if literal_changes and "function __nuvioDecodeEscapedLiteral(" not in source:
         snippets.append(_LITERAL_HELPER)
     if hostname_changes and "function __nuvioHostMatches(" not in source:
         snippets.append(_HOST_HELPER)
+    if percent_decode_changes and "function __nuvioDecodeUtf8PercentBytes(" not in source:
+        snippets.append(_PERCENT_UTF8_HELPER)
 
     # Terser is allowed to preserve/move comments. Marker presence therefore is
     # never treated as proof that its owning declarations survived. Reconstruct
@@ -160,7 +236,11 @@ def harden_text(source: str) -> tuple[str, dict[str, Any]]:
         console_shadow = True
 
     changed = structured_changed or bool(
-        literal_changes or hostname_changes or console_shadow or console_shadow_repair
+        literal_changes
+        or hostname_changes
+        or percent_decode_changes
+        or console_shadow
+        or console_shadow_repair
     )
     report = {
         "changed": changed,
@@ -168,6 +248,7 @@ def harden_text(source: str) -> tuple[str, dict[str, Any]]:
         "structuredParseChanges": 1 if structured_changed else 0,
         "literalDecodeChanges": literal_changes,
         "hostnameChanges": hostname_changes,
+        "percentDecodeChanges": percent_decode_changes,
         "consoleShadow": console_shadow,
         "consoleShadowRepair": console_shadow_repair,
     }
@@ -180,6 +261,7 @@ def harden_text(source: str) -> tuple[str, dict[str, Any]]:
             "structuredParseChanges",
             "literalDecodeChanges",
             "hostnameChanges",
+            "percentDecodeChanges",
             "consoleShadow",
             "consoleShadowRepair",
         )
@@ -201,6 +283,8 @@ def known_unsafe_findings(source: str) -> list[str]:
         findings.append("hostname_substring")
     if _UNSAFE_LITERAL_DECODE.search(source):
         findings.append("incomplete_literal_escape")
+    if _percent_byte_decoder_matches(source):
+        findings.append("incomplete_percent_byte_decode")
     try:
         if _load_safe_parse().apply(source) != source:
             findings.append("destructive_structured_unescape")
