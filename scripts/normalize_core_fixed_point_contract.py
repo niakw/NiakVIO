@@ -120,8 +120,8 @@ def normalize_apply(text: str) -> str:
         New bundles contain an observable Core-start assignment immediately after
         provider-derived code. Cut at that exact JavaScript statement instead of
         guessing a preceding line/semicolon boundary: Terser may compact closing
-        braces and semicolons differently, while the observable globalThis property
-        access itself remains stable and cannot be relocated across side effects.
+        braces and semicolons differently. The boundary reads the provider export,
+        so moving it before provider initialization would change observable state.
         Legacy bundles fall back to their old final-tail markers for one migration
         pass; every newly materialized bundle uses the exact start boundary.
         """
@@ -148,9 +148,10 @@ def normalize_apply(text: str) -> str:
     end = text.index("\ndef apply_overrides(", start)
     text = text[:start] + strip_fn + text[end:]
 
-    # Place the observable boundary after provider-specific/runtime transforms but
-    # before the first global playback/media hook.
-    boundary_block = '''        if CORE_START_BOUNDARY not in text:\n            text = text.rstrip() + f"\\nglobalThis.{CORE_START_BOUNDARY}=true;\\n"\n\n'''
+    # The boundary reads the provider export on purpose. A constant marker may be
+    # moved by an optimizer; this read makes crossing provider initialization a
+    # semantic change while leaving only a harmless boolean on globalThis.
+    boundary_block = '''        if CORE_START_BOUNDARY not in text:\n            text = text.rstrip() + f"\\nglobalThis.{CORE_START_BOUNDARY}=!!((typeof globalThis.getStreams===\\\"function\\\")||(typeof module!==\\\"undefined\\\"&&module&&module.exports&&typeof module.exports.getStreams===\\\"function\\\"));\\n"\n\n'''
     if boundary_block not in text:
         anchor = '        def _apply_playback_stage(hooks: list[str]) -> None:\n'
         if anchor not in text:
@@ -212,7 +213,9 @@ def assert_contract() -> None:
         f'CORE_START_BOUNDARY = "{CORE_START_BOUNDARY}"',
         'boundary_needle = f"globalThis.{CORE_START_BOUNDARY}"',
         "text.find(boundary_needle)",
-        f"globalThis.{{CORE_START_BOUNDARY}}=true;",
+        f"globalThis.{{CORE_START_BOUNDARY}}=!!(",
+        'typeof globalThis.getStreams===\\"function\\"',
+        'typeof module.exports.getStreams===\\"function\\"',
         "existing_span",
         "output = text[:existing_span[0]] + bootstrap + text[existing_span[1]:]",
     ):
