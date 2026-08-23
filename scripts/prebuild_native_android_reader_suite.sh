@@ -57,10 +57,47 @@ python3 "$ACCEPTANCE_PREPARE" "$CLIENT" --fixture "$FIXTURE" --workspace "$WORKS
 python3 "$REQUEST_CONTRACT" "$CLIENT" --fixture "$FIXTURE" --manifest "$TARGET_MANIFEST" --source "$TEST_SOURCE"
 python3 "$PROVIDER_LOADING" "$CLIENT" --manifest "$TARGET_MANIFEST" --manifest-url "$MANIFEST_URL" --source "$TEST_SOURCE" "${URL_ARGS[@]}"
 
+# Maven Central/CDN occasionally answers hosted runners with a short burst of
+# 403/429/5xx responses. Those are infrastructure transients, not product failures.
+# Retry only network-shaped Gradle failures; deterministic compile/test failures are
+# returned immediately so this lab cannot hide a real regression.
+run_gradle_with_network_retry() {
+  local attempt status log
+  log="$(mktemp)"
+  trap 'rm -f "$log"; cleanup_native_repository' EXIT
+  for attempt in 1 2 3 4; do
+    : > "$log"
+    set +e
+    "$@" 2>&1 | tee "$log"
+    status=${PIPESTATUS[0]}
+    set -e
+    if [[ "$status" -eq 0 ]]; then
+      rm -f "$log"
+      trap cleanup_native_repository EXIT
+      return 0
+    fi
+    if ! grep -Eqi \
+      'Could not (GET|HEAD)|Received status code (403|408|425|429|5[0-9][0-9])|Read timed out|Connection reset|Connection refused|Temporary failure|Remote host terminated the handshake|network is unreachable|Name or service not known' \
+      "$log"; then
+      rm -f "$log"
+      trap cleanup_native_repository EXIT
+      return "$status"
+    fi
+    if [[ "$attempt" -ge 4 ]]; then
+      echo "FIELD_NATIVE_ANDROID_PREBUILD_NETWORK_RETRY client=$CLIENT attempt=$attempt status=exhausted" >&2
+      rm -f "$log"
+      trap cleanup_native_repository EXIT
+      return "$status"
+    fi
+    echo "FIELD_NATIVE_ANDROID_PREBUILD_NETWORK_RETRY client=$CLIENT attempt=$attempt status=retrying" >&2
+    sleep $((attempt * 10))
+  done
+}
+
 if [[ "$CLIENT" = "tv" ]]; then
-  "$ROOT/gradlew" -p "$ROOT" :app:assembleFullDebug :app:assembleFullDebugAndroidTest --console=plain
+  run_gradle_with_network_retry "$ROOT/gradlew" -p "$ROOT" :app:assembleFullDebug :app:assembleFullDebugAndroidTest --console=plain
 else
-  "$ROOT/gradlew" -p "$ROOT" :androidApp:assembleFullDebug :composeApp:packageAndroidDeviceTest -Pnuvio.android.distribution=full --console=plain
+  run_gradle_with_network_retry "$ROOT/gradlew" -p "$ROOT" :androidApp:assembleFullDebug :composeApp:packageAndroidDeviceTest -Pnuvio.android.distribution=full --console=plain
 fi
 
 echo "FIELD_NATIVE_ANDROID_PREBUILD client=$CLIENT fixture=$FIXTURE manifest=$TARGET_MANIFEST provider=$TARGET_PROVIDER streams=$STREAM_SCOPE source_sha=$SOURCE_SHA status=ready"
