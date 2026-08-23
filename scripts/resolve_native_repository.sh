@@ -65,9 +65,21 @@ resolve_native_repository() {
     return 0
   fi
 
-  # Generated/modified manifests must still resolve repository-relative provider
-  # filenames. Materialize manifest + every provider into a content-addressed local
-  # repository so persistent Nuvio caches cannot reuse stale JS.
+  # Android production clients intentionally reject cleartext HTTP. Never convert a
+  # dirty/unpinned acceptance checkout into a 10.0.2.2 lab transport behind their
+  # back: that both invalidates the production-path evidence and deterministically
+  # fails NuvioMobile's network security policy. A caller that truly needs a custom
+  # candidate must provide an explicit reachable NIAKVIO_MANIFEST_URL; normal
+  # acceptance must remain SHA-pinned HTTPS.
+  if [[ "$client" == "mobile" || "$client" == "tv" ]]; then
+    echo "FIELD_NATIVE_REPOSITORY_SOURCE_ERROR client=$client reason=unpinned_android_repository_requires_explicit_https target_manifest=$TARGET_MANIFEST source_sha=$SOURCE_SHA" >&2
+    return 2
+  fi
+
+  # Generated/modified Desktop manifests must still resolve repository-relative
+  # provider filenames. Materialize manifest + every provider into a content-addressed
+  # loopback repository. Desktop runs on the same host, so ordinary loopback HTTP is
+  # an observational transport rather than an Android network-policy bypass.
   local serve_root="${WORKSPACE}/native-candidate-repository-${client}"
   local prepared_root="${serve_root}.prepared"
   local server_log="${WORKSPACE}/native-candidate-repository-${client}.server.log"
