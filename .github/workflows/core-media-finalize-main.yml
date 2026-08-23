@@ -11,6 +11,7 @@ on:
       - 'package-lock.json'
       - 'automation/nuvio-client-upstreams.json'
       - 'scripts/normalize_core_fixed_point_contract.py'
+      - 'scripts/normalize_provider_rebuild_safety.py'
       - 'scripts/normalize_core_media_policy.py'
       - 'scripts/apply_runtime_capability_upgrade_v4.py'
       - 'scripts/apply_provider_overrides.py'
@@ -98,8 +99,10 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          python scripts/normalize_provider_rebuild_safety.py --apply
           python scripts/normalize_core_fixed_point_contract.py --apply
           python -m py_compile \
+            scripts/normalize_provider_rebuild_safety.py \
             scripts/normalize_core_fixed_point_contract.py \
             scripts/apply_provider_overrides.py \
             scripts/provider_engine_normalizer.py \
@@ -107,6 +110,7 @@ jobs:
           python tests/provider_wrapper_isolation_test.py
           python tests/global_playback_integrity_policy_test.py
           python tests/provider_purification_contract_test.py
+          python scripts/normalize_provider_rebuild_safety.py --check
           python scripts/normalize_core_fixed_point_contract.py --check
 
       - name: Normalize Core media architecture
@@ -130,6 +134,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          python scripts/normalize_provider_rebuild_safety.py --check
           python scripts/normalize_core_fixed_point_contract.py --check
           python scripts/normalize_core_media_policy.py --check
           python scripts/enforce_main_only_repository_policy.py --check
@@ -224,6 +229,7 @@ jobs:
           git reset --hard origin/main
           git clean -fdx
           npm ci --ignore-scripts --no-audit --no-fund
+          python scripts/normalize_provider_rebuild_safety.py --check
           python scripts/normalize_core_fixed_point_contract.py --check
           python scripts/normalize_core_media_policy.py --check
           python scripts/enforce_main_only_repository_policy.py --check
