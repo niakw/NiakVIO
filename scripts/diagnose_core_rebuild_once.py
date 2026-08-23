@@ -12,7 +12,7 @@ ROOT = Path(__file__).resolve().parents[1]
 import sys
 sys.path.insert(0, str(ROOT / "scripts"))
 
-from apply_provider_overrides import apply_overrides, load_overrides
+import apply_provider_overrides as apo
 from provider_engine_normalizer import sanitize_provider_hooks, strip_foreign_provider_wrappers
 from provider_purification import purify_bytes
 from reapply_published_overrides import (
@@ -57,6 +57,25 @@ def validate(label: str, data: bytes) -> None:
         path.unlink(missing_ok=True)
 
 
+def install_patch_trace() -> None:
+    native = apo._apply_patch_script
+    def traced(text, provider_id, patch_script, options, profile_name):
+        before_var = text.find("var __provider")
+        before_export = text.find("module.exports=__provider")
+        before_len = len(text)
+        out = native(text, provider_id, patch_script, options, profile_name)
+        after_var = out.find("var __provider")
+        after_export = out.find("module.exports=__provider")
+        print(
+            "FIELD_REBUILD_PATCH "
+            f"provider={provider_id} script={patch_script} profile={profile_name or '-'} "
+            f"bytes_before={before_len} bytes_after={len(out)} provider_var_before={before_var} "
+            f"provider_var_after={after_var} export_before={before_export} export_after={after_export}"
+        )
+        return out
+    apo._apply_patch_script = traced
+
+
 def transform(data: bytes, config: dict, provenance_row: dict | None, pass_no: int) -> bytes:
     validate(f"p{pass_no}-input", data)
     text, removed = strip_foreign_provider_wrappers(data.decode("utf-8"), PROVIDER, config)
@@ -72,8 +91,8 @@ def transform(data: bytes, config: dict, provenance_row: dict | None, pass_no: i
     print(f"FIELD_REBUILD_MUTATION label=p{pass_no}-adaptive-domain records={len(records)}")
     validate(f"p{pass_no}-after-adaptive-domain", data)
 
-    data, records = apply_overrides(PROVIDER, data, phase="discovery")
-    print(f"FIELD_REBUILD_MUTATION label=p{pass_no}-core-overrides records={len(records)}")
+    data, records = apo.apply_overrides(PROVIDER, data, phase="discovery")
+    print(f"FIELD_REBUILD_MUTATION label=p{pass_no}-core-overrides records={json.dumps(records, separators=(',', ':'))}")
     validate(f"p{pass_no}-after-core-overrides", data)
 
     data, records = reapply_adaptive_runtime_revision(data, provenance_row)
@@ -96,7 +115,8 @@ def main() -> int:
     source = ROOT / row["filename"]
     provenance = json.loads((ROOT / "PROVENANCE.json").read_text(encoding="utf-8"))
     provenance_row = (provenance.get("providers") or {}).get(PROVIDER)
-    config, _ = sanitize_provider_hooks(load_overrides(), ROOT)
+    config, _ = sanitize_provider_hooks(apo.load_overrides(), ROOT)
+    install_patch_trace()
 
     first = transform(source.read_bytes(), config, provenance_row, 1)
     second = transform(first, config, provenance_row, 2)
