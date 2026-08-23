@@ -14,22 +14,23 @@ on:
       - 'assets/docs/LIGHT_BADGE_QA.json'
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: niakvio-light-badge-contrast-main
   cancel-in-progress: true
 
 jobs:
-  regenerate-and-verify:
+  verify-committed-assets:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - name: Checkout main with history
+      - name: Checkout exact main
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           ref: main
-          fetch-depth: 0
+          fetch-depth: 1
+          persist-credentials: false
 
       - name: Set up Python
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
@@ -40,11 +41,10 @@ jobs:
         shell: bash
         run: python -m pip install --disable-pip-version-check --no-cache-dir 'Pillow==11.3.0'
 
-      - name: Regenerate all light variants from immutable transparent artwork
+      - name: Verify committed light variants without regeneration
         shell: bash
         run: |
           set -euo pipefail
-          python scripts/regenerate_light_badges.py --apply
           python tests/badge_asset_contract_test.py
           python scripts/regenerate_light_badges.py --check
 
@@ -72,20 +72,9 @@ jobs:
           assert report['assetCount'] == 146
           assert report['whiteBackgroundMinimumSeparationRatio'] >= 4.5
           assert report['idempotent'] is True
-          print(f'light badge QA passed: assets={checked} revision={report["revision"]}')
+          print(f'light badge QA passed: committed_assets={checked} revision={report["revision"]} regeneration=disabled')
           PY
 
-      - name: Commit regenerated light assets directly to main
+      - name: Prove QA is side-effect free
         shell: bash
-        run: |
-          set -euo pipefail
-          git config user.name 'niakvio-assets'
-          git config user.email 'actions@users.noreply.github.com'
-          git add assets/light assets/docs/LIGHT_BADGE_QA.json
-          if git diff --cached --quiet; then
-            echo 'Light badge assets already match the contrast generator.'
-            exit 0
-          fi
-          git commit -m 'assets: rebuild light badges for native-size contrast'
-          git pull --rebase origin main
-          git push origin HEAD:main
+        run: git diff --exit-code
