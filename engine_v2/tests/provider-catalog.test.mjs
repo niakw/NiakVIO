@@ -10,6 +10,7 @@ import {
   writeJson,
   loadProviderCatalog,
 } from "../src/provider-catalog.mjs";
+import { applyCommittedProviderNames } from "../src/provider-branding.mjs";
 
 const general = JSON.parse(fs.readFileSync("manifest.json", "utf8"));
 const vf = JSON.parse(fs.readFileSync("vf/manifest.json", "utf8"));
@@ -24,6 +25,35 @@ assert.equal(catalog.policy.quickRefreshMayRepairAndPublish, true);
 const rendered = manifestsFromCatalog(catalog);
 assert.deepEqual(rendered.general, general, "general manifest must round-trip byte-semantically through catalog");
 assert.deepEqual(rendered.vf, vf, "VF manifest must round-trip byte-semantically through catalog");
+
+const brandingIndex = JSON.parse(fs.readFileSync("assets/providers/emojis.json", "utf8"));
+const brandingCatalog = applyCommittedProviderNames(structuredClone(catalog), brandingIndex);
+const expectedNameRows = Object.keys(brandingIndex.providers ?? {}).length;
+assert.equal(brandingCatalog.policy.committedProviderNames, true);
+assert.equal(
+  brandingCatalog.policy.committedProviderNameCount,
+  expectedNameRows,
+  "catalog must bind every committed provider display name",
+);
+assert.equal(expectedNameRows, catalog.providers.length, "branding map must cover the complete provider catalog");
+const brandingRendered = manifestsFromCatalog(brandingCatalog);
+for (const scraper of brandingRendered.general.scrapers) {
+  const branding = brandingIndex.providers?.[String(scraper.id).toLowerCase()];
+  assert.ok(branding, `${scraper.id}: branding row missing`);
+  assert.equal(scraper.name, `${branding.emoji} ${branding.name}`, `${scraper.id}: general display branding mismatch`);
+}
+for (const scraper of brandingRendered.vf.scrapers) {
+  const branding = brandingIndex.providers?.[String(scraper.id).toLowerCase()];
+  assert.ok(branding, `${scraper.id}: VF branding row missing`);
+  assert.equal(scraper.name, `${branding.emoji} ${branding.name}`, `${scraper.id}: VF display branding mismatch`);
+}
+const incompleteBranding = structuredClone(brandingIndex);
+delete incompleteBranding.providers[Object.keys(incompleteBranding.providers)[0]];
+assert.throws(
+  () => applyCommittedProviderNames(structuredClone(catalog), incompleteBranding),
+  /coverage mismatch/i,
+  "catalog must reject incomplete provider branding coverage",
+);
 
 const logoIndex = JSON.parse(fs.readFileSync("assets/providers/index.json", "utf8"));
 const logoCatalog = applyCommittedProviderLogos(structuredClone(catalog), logoIndex);
@@ -76,5 +106,5 @@ unsafe.policy.repairBeforeTriage = false;
 assert.throws(() => validateProviderCatalog(unsafe), /repair-before-triage/i);
 
 console.log(
-  `provider catalog tests passed: general=${general.scrapers.length} vf=${vf.scrapers.length} committed_logos=${expectedLogoRows.length}`,
+  `provider catalog tests passed: general=${general.scrapers.length} vf=${vf.scrapers.length} committed_names=${expectedNameRows} committed_logos=${expectedLogoRows.length}`,
 );
