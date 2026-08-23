@@ -42,4 +42,19 @@ jobs:
           python scripts/apply_runtime_capability_upgrade_v4.py
           python scripts/build_provider_runtime_profiles.py
       - name: Trace Anime-Sama two-pass reconstruction
-        run: python scripts/diagnose_core_rebuild_once.py
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set +e
+          python scripts/diagnose_core_rebuild_once.py 2>&1 | tee /tmp/core-rebuild-trace.log
+          rc=${PIPESTATUS[0]}
+          {
+            echo 'One-shot Core rebuild trace:'
+            echo
+            echo '```text'
+            grep -E '^(FIELD_REBUILD_|Traceback|ValueError|ReferenceError)' /tmp/core-rebuild-trace.log | tail -n 80
+            echo '```'
+          } > /tmp/core-rebuild-comment.md
+          gh issue comment 69 --repo "$GITHUB_REPOSITORY" --body-file /tmp/core-rebuild-comment.md
+          exit "$rc"
