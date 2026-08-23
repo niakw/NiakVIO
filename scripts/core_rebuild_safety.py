@@ -90,7 +90,13 @@ def _runtime_domain_wrapper_span(text: str, marker_start: int) -> tuple[int, int
 
 
 def _inject_runtime_domain_overrides(text: str, replacements: dict[str, Any]) -> tuple[str, int]:
-    """Embed host rewriting without allowing marker scans to consume provider code."""
+    """Embed host rewriting without allowing marker scans to consume provider code.
+
+    A preserved marker can be relocated by Terser. When the marker no longer owns
+    a bounded pre-provider statement, only the comment is stale; provider-derived
+    bytes remain authoritative and must stay untouched. The canonical bootstrap is
+    then reinserted at its stable pre-provider position.
+    """
     from urllib.parse import urlparse
 
     original_text = text
@@ -110,11 +116,13 @@ def _inject_runtime_domain_overrides(text: str, replacements: dict[str, Any]) ->
         existing_start = text.find(marker_comment)
         existing_span = _runtime_domain_wrapper_span(text, existing_start)
         if existing_span is None:
-            raise ValueError("runtime domain override marker is not a bounded pre-provider statement")
+            # Fail closed on code ownership: remove only stale metadata, never a
+            # following statement whose ownership is ambiguous.
+            text = text[:existing_start] + text[existing_start + len(marker_comment):]
 
     if not rules:
         if existing_span is None:
-            return text, 0
+            return text, 0 if text == original_text else 1
         output = text[:existing_span[0]] + text[existing_span[1]:]
         return output, 0 if output == original_text else 1
 
