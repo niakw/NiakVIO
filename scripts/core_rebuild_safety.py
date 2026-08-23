@@ -172,22 +172,132 @@ def _inject_runtime_domain_overrides(text: str, replacements: dict[str, Any]) ->
 ''').lstrip("\n")
 
 
-def _remove_unsafe_export_fallback(text: str) -> str:
-    phrase = "# A minority of upstream bundles export a provider object directly rather"
-    start_phrase = text.find(phrase)
-    if start_phrase < 0:
-        return text
-    start = text.rfind("\n", 0, start_phrase) + 1
-    end_needle = "return max(generic) if generic else -1"
-    end_stmt = text.find(end_needle, start_phrase)
-    if end_stmt < 0:
-        raise ValueError("generic provider-export fallback terminator missing")
-    end = text.find("\n", end_stmt)
-    end = len(text) if end < 0 else end + 1
-    indent = text[start:start_phrase]
-    if indent.strip():
-        raise ValueError("unexpected provider-export fallback indentation")
-    return text[:start] + indent + "return -1\n" + text[end:]
+SAFE_EXPORT_FN = dedent(r'''
+def _balanced_terminal_object_end(text: str, open_brace: int, limit: int) -> int | None:
+    """Return the end of one balanced object assignment, or fail closed."""
+    depth = 0
+    quote: str | None = None
+    escaped = False
+    line_comment = False
+    block_comment = False
+    index = open_brace
+    while index < limit:
+        char = text[index]
+        nxt = text[index + 1] if index + 1 < limit else ""
+        if line_comment:
+            if char in "\r\n":
+                line_comment = False
+        elif block_comment:
+            if char == "*" and nxt == "/":
+                block_comment = False
+                index += 1
+        elif quote:
+            if escaped:
+                escaped = False
+            elif char == "\\":
+                escaped = True
+            elif char == quote:
+                quote = None
+        else:
+            if char in ("'", '"', "`"):
+                quote = char
+            elif char == "/" and nxt == "/":
+                line_comment = True
+                index += 1
+            elif char == "/" and nxt == "*":
+                block_comment = True
+                index += 1
+            elif char == "{":
+                depth += 1
+            elif char == "}":
+                depth -= 1
+                if depth < 0:
+                    return None
+                if depth == 0:
+                    end = index + 1
+                    while end < limit and text[end].isspace():
+                        end += 1
+                    if end < limit and text[end] == ";":
+                        end += 1
+                    return end
+        index += 1
+    return None
+
+
+def _provider_export_floor(text: str) -> int:
+    """Return a proven provider/Core boundary, never a generic CommonJS guess.
+
+    Normal Nuvio bundles expose ``__provider`` through one of the exact bridges
+    below. Some upstream-obfuscated CommonJS bundles instead end with an object
+    assignment such as ``module[decoder(...)]=...``. That shape is accepted only
+    when the terminal object literally exports ``getStreams`` and the next
+    non-whitespace bytes are a known NiakVIO Core-tail marker. This adjacency
+    requirement proves the provider body has ended without trusting the obfuscated
+    property expression or a marker which floated in front of provider code.
+    """
+    exact_patterns = (
+        r"\bmodule\.exports\s*=\s*__provider\b",
+        r"\bglobalThis\.getStreams\s*=\s*__provider\.getStreams\b",
+        r"\bglobal\.getStreams\s*=\s*__provider\.getStreams\b",
+        r"\bself\.getStreams\s*=\s*__provider\.getStreams\b",
+    )
+    exact_ends = [
+        match.end()
+        for pattern in exact_patterns
+        for match in re.finditer(pattern, text)
+    ]
+    if exact_ends:
+        return max(exact_ends)
+
+    terminal_core_markers = (
+        "NUVIO_GLOBAL_CATALOGUE_ALIAS_RECOVERY_V2",
+        "NUVIO_GLOBAL_MEDIA_ENRICHMENT_V1",
+        "NUVIO_GLOBAL_RUNTIME_MEDIA_SAFETY_V1",
+        "NUVIO_HLS_RUNTIME_INTEGRITY_V1",
+        "NUVIO_HLS_MASTER_AUDIO_PRESERVER_V1",
+        "NUVIO_GLOBAL_PROVIDER_SECURITY_HOOK_V1",
+        "NUVIO_GLOBAL_STREAM_FACTS_V1",
+        "NUVIO_GLOBAL_STREAM_IDENTITY_V1",
+        "NUVIO_GLOBAL_STREAM_PRESENTATION_V1",
+    )
+    core_starts = [
+        position
+        for marker in terminal_core_markers
+        if (position := text.find(f"/* {marker}")) >= 0
+    ]
+    if not core_starts:
+        return -1
+    first_core = min(core_starts)
+    prefix = text[:first_core]
+
+    assignment = re.compile(
+        r"\bmodule\s*(?:\.exports|\[[^\]\r\n;]{1,160}\])\s*=\s*\{"
+    )
+    candidates = list(assignment.finditer(prefix))
+    for match in reversed(candidates):
+        open_brace = prefix.find("{", match.start(), match.end())
+        if open_brace < 0:
+            continue
+        end = _balanced_terminal_object_end(prefix, open_brace, len(prefix))
+        if end is None:
+            continue
+        segment = prefix[match.start():end]
+        if re.search(r"(?:[\"']getStreams[\"']\s*:|\bgetStreams\s*:)", segment) is None:
+            continue
+        # The export object must be the terminal provider statement. Any
+        # provider-derived byte between it and the first Core marker invalidates
+        # the fallback and keeps the reconstruction fail-closed.
+        if prefix[end:].strip():
+            continue
+        return end
+    return -1
+''').lstrip("\n")
+
+
+def _replace_provider_export_floor(text: str) -> str:
+    start = text.index("def _provider_export_floor(")
+    end = text.index("\ndef _strip_generated_core_tail", start)
+    return text[:start] + SAFE_EXPORT_FN + text[end:]
 
 
 def harden_generated_apply(text: str) -> str:
@@ -197,12 +307,16 @@ def harden_generated_apply(text: str) -> str:
     start = helper_start if helper_start >= 0 else inject_start
     end = text.index("\ndef _strip_legacy_global_stream_guards", inject_start)
     text = text[:start] + SAFE_DOMAIN_FN + text[end:]
-    text = _remove_unsafe_export_fallback(text)
+    text = _replace_provider_export_floor(text)
 
     if "CommonJS export remains the safest generic floor" in text:
         raise ValueError("unsafe generic provider-export fallback remains")
     if text.count("def _runtime_domain_wrapper_span(") != 1:
         raise ValueError("bounded runtime-domain parser must be generated exactly once")
+    if text.count("def _provider_export_floor(") != 1:
+        raise ValueError("provider-export floor must be generated exactly once")
     if 'r"\\bmodule\\.exports\\s*=\\s*__provider\\b"' not in text:
         raise ValueError("proven provider export bridge is missing")
+    if "terminal_core_markers = (" not in text or "getStreams" not in text:
+        raise ValueError("terminal obfuscated CommonJS boundary guard is missing")
     return text
