@@ -112,6 +112,7 @@ jobs:
           set -euo pipefail
           python scripts/normalize_provider_rebuild_safety.py --apply
           python scripts/normalize_core_fixed_point_contract.py --apply
+          python scripts/normalize_provider_branding_pipeline.py --apply
           python -m py_compile \
             scripts/normalize_provider_rebuild_safety.py \
             scripts/normalize_provider_branding_pipeline.py \
