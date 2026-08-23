@@ -29,14 +29,16 @@ with tempfile.TemporaryDirectory() as tmp:
     published = providers / "movix--nuvio--2222222222222222.js"
     pending = providers / "movix--nuvio--3333333333333333.js"
     stale = providers / "movix--nuvio--4444444444444444.js"
+    canonical_history = providers / "movix--nuvio--5555555555555555.js"
     source = providers / "movix.js"
-    for path in (lkg, published, pending, stale, source):
+    for path in (lkg, published, pending, stale, canonical_history, source):
         path.write_text("module.exports = {};\n", encoding="utf-8")
 
     # While a candidate manifest exists, both the currently published manifest
     # and the candidate transaction are authoritative. Pruning must never
     # delete the bundle still referenced by clients or the candidate awaiting
-    # canonical-catalog import.
+    # canonical-catalog import. A provenance-only canonical source, however, is
+    # historical metadata and must not keep an old executable JS alias alive.
     (root / "manifest.json").write_text(
         json.dumps({"scrapers": [{"url": "providers/movix--nuvio--2222222222222222.js"}]}),
         encoding="utf-8",
@@ -47,6 +49,13 @@ with tempfile.TemporaryDirectory() as tmp:
     )
     (root / "provider-lkg.json").write_text(
         json.dumps({"providers": {"movix": {"filename": "providers/movix--nuvio--1111111111111111.js"}}}),
+        encoding="utf-8",
+    )
+    (root / "PROVENANCE.json").write_text(
+        json.dumps({"providers": {"movix": {
+            "published_filename": "providers/movix--nuvio--2222222222222222.js",
+            "canonical_source_filename": "providers/movix--nuvio--5555555555555555.js"
+        }}}),
         encoding="utf-8",
     )
 
@@ -61,16 +70,24 @@ with tempfile.TemporaryDirectory() as tmp:
     assert pending.exists(), "prune deleted the pending candidate bundle before atomic promotion"
     assert source.exists(), result.stdout
     assert not stale.exists(), "unreferenced bundle was not pruned"
+    assert not canonical_history.exists(), "provenance-only canonical JS alias must not survive runtime prune"
     assert "manifest.next.json,manifest.json" in result.stdout, result.stdout
 
     # Once the candidate has been imported/promoted, the former published
-    # bundle is no longer live and may be removed. LKG/source inputs remain
+    # bundle is no longer live and may be removed. LKG/plain source inputs remain
     # protected.
     (root / "manifest.json").write_text(
         json.dumps({"scrapers": [{"url": "providers/movix--nuvio--3333333333333333.js"}]}),
         encoding="utf-8",
     )
     (root / "manifest.next.json").unlink()
+    (root / "PROVENANCE.json").write_text(
+        json.dumps({"providers": {"movix": {
+            "published_filename": "providers/movix--nuvio--3333333333333333.js",
+            "canonical_source_filename": "providers/movix--nuvio--5555555555555555.js"
+        }}}),
+        encoding="utf-8",
+    )
     result = subprocess.run(
         ["python3", str(SCRIPT), "--root", str(root)],
         text=True,
