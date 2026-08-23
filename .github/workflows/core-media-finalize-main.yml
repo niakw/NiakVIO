@@ -10,6 +10,10 @@ on:
       - 'package.json'
       - 'package-lock.json'
       - 'automation/nuvio-client-upstreams.json'
+      - 'assets/providers/emojis.json'
+      - 'engine_v2/src/provider-branding.mjs'
+      - 'engine_v2/scripts/bootstrap-provider-catalog.mjs'
+      - 'engine_v2/tests/provider-catalog.test.mjs'
       - 'scripts/normalize_core_fixed_point_contract.py'
       - 'scripts/normalize_provider_rebuild_safety.py'
       - 'scripts/core_rebuild_safety.py'
@@ -36,9 +40,11 @@ on:
       - 'scripts/provider_patches/global_stream_facts_v1.py'
       - 'scripts/provider_patches/global_media_enrichment_v1.py'
       - 'scripts/provider_patches/global_provider_security_hardening_v1.py'
+      - 'scripts/provider_patches/global_provider_branding_v1.py'
       - 'scripts/provider_security_hardening.py'
       - 'scripts/provider_purification.py'
       - 'tests/core_media_policy_test.py'
+      - 'tests/provider_branding_contract_test.py'
       - 'tests/global_core_presentation_pipeline_test.py'
       - 'tests/native_sync_fetch_target_order_test.py'
       - 'tests/runtime_capability_media_safety_v4_test.py'
@@ -109,9 +115,11 @@ jobs:
             scripts/normalize_provider_rebuild_safety.py \
             scripts/core_rebuild_safety.py \
             scripts/normalize_core_fixed_point_contract.py \
+            scripts/normalize_core_media_policy.py \
             scripts/apply_provider_overrides.py \
             scripts/provider_engine_normalizer.py \
             scripts/reapply_published_overrides.py \
+            scripts/provider_patches/global_provider_branding_v1.py \
             scripts/provider_patches/stream_output_sanitizer_v6.py
           python tests/provider_wrapper_isolation_test.py
           python tests/stream_output_sanitizer_fail_closed_test.py
@@ -127,12 +135,23 @@ jobs:
           python scripts/normalize_core_media_policy.py --apply
           python scripts/apply_runtime_capability_upgrade_v4.py
           python scripts/build_provider_runtime_profiles.py
-          # Two materialization passes are deliberate: pass 1 migrates old published
-          # bytes, pass 2 proves every generic patch survives its own rebuilt/Terser
-          # representation before any client-visible version is finalized.
-          python scripts/reapply_published_overrides.py
-          python scripts/reapply_published_overrides.py
-          python scripts/reapply_published_overrides.py --check
+          # Published artifacts may arrive from several historical Core revisions.
+          # Rebuild until the generic pipeline reaches a true byte/reference fixed
+          # point instead of assuming an arbitrary number of passes.
+          converged=0
+          for pass in 1 2 3 4 5 6; do
+            echo "FIELD_PROVIDER_REBUILD_CONVERGENCE pass=${pass}"
+            python scripts/reapply_published_overrides.py
+            if python scripts/reapply_published_overrides.py --check; then
+              converged=1
+              echo "FIELD_PROVIDER_REBUILD_CONVERGENCE converged_at=${pass}"
+              break
+            fi
+          done
+          if [[ "$converged" -ne 1 ]]; then
+            echo 'provider publication failed to converge within 6 passes' >&2
+            exit 1
+          fi
           python scripts/generate_language_manifests.py
           python scripts/prune_unreferenced_providers.py
           python scripts/sync_release_versions.py --manifest manifest.json --previous "$RUNNER_TEMP/manifest-before.json"
@@ -159,6 +178,7 @@ jobs:
           python scripts/normalize_core_media_policy.py --check
           python scripts/enforce_main_only_repository_policy.py --check
           python tests/core_media_policy_test.py
+          python tests/provider_branding_contract_test.py
           python tests/global_core_presentation_pipeline_test.py
           python tests/native_sync_fetch_target_order_test.py
           python tests/runtime_capability_media_safety_v4_test.py
@@ -255,6 +275,7 @@ jobs:
           python scripts/normalize_core_media_policy.py --check
           python scripts/enforce_main_only_repository_policy.py --check
           python tests/core_media_policy_test.py
+          python tests/provider_branding_contract_test.py
           python tests/global_playback_integrity_policy_test.py
           python tests/runtime_capability_media_safety_v4_test.py
           python tests/provider_wrapper_isolation_test.py
