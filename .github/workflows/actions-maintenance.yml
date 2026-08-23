@@ -1,0 +1,86 @@
+name: NiakVIO Actions maintenance
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/actions-maintenance.yml'
+
+permissions:
+  actions: write
+  contents: read
+  issues: write
+
+concurrency:
+  group: niakvio-actions-maintenance
+  cancel-in-progress: false
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Cancel obsolete active runs and prune obsolete history
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          repo="$GITHUB_REPOSITORY"
+          self="$GITHUB_RUN_ID"
+          main_sha="$(gh api "repos/${repo}/branches/main" --jq '.commit.sha')"
+          cancelled=0
+          deleted=0
+          kept_success=0
+
+          mapfile -t active < <(
+            gh api --paginate "repos/${repo}/actions/runs?per_page=100" \
+              --jq '.workflow_runs[] | select(.status == "queued" or .status == "in_progress") | [.id,.name,.head_sha,.status] | @tsv'
+          )
+          for row in "${active[@]}"; do
+            IFS=$'\t' read -r id name head status <<<"$row"
+            [[ "$id" == "$self" ]] && continue
+            echo "FIELD_ACTIONS_MAINTENANCE cancel id=$id status=$status head=$head name=$name"
+            gh api --method POST "repos/${repo}/actions/runs/${id}/cancel" >/dev/null 2>&1 || true
+            cancelled=$((cancelled + 1))
+          done
+
+          # Give GitHub a short bounded window to transition cancellations before
+          # pruning. Any still-transitioning run is harmless and will be removed by
+          # the next maintenance invocation.
+          sleep 8
+
+          declare -A latest_success_seen=()
+          mapfile -t completed < <(
+            gh api --paginate "repos/${repo}/actions/runs?status=completed&per_page=100" \
+              --jq '.workflow_runs | sort_by(.created_at) | reverse | .[] | [.id,.name,.head_sha,(.conclusion // ""),.created_at] | @tsv'
+          )
+          for row in "${completed[@]}"; do
+            IFS=$'\t' read -r id name head conclusion created <<<"$row"
+            [[ "$id" == "$self" ]] && continue
+
+            # Keep every successful proof on the exact current main generation.
+            if [[ "$conclusion" == "success" && "$head" == "$main_sha" ]]; then
+              kept_success=$((kept_success + 1))
+              continue
+            fi
+
+            # For obsolete generations keep only the newest successful proof for
+            # each workflow; duplicate successes and every non-success are noise.
+            if [[ "$conclusion" == "success" ]]; then
+              key="${name//[^A-Za-z0-9_]/_}"
+              if [[ -z "${latest_success_seen[$key]+x}" ]]; then
+                latest_success_seen[$key]=1
+                kept_success=$((kept_success + 1))
+                continue
+              fi
+            fi
+
+            echo "FIELD_ACTIONS_MAINTENANCE delete id=$id conclusion=$conclusion head=$head name=$name"
+            gh api --method DELETE "repos/${repo}/actions/runs/${id}" >/dev/null 2>&1 || true
+            deleted=$((deleted + 1))
+          done
+
+          echo "FIELD_ACTIONS_MAINTENANCE_RESULT cancelled=$cancelled deleted=$deleted kept_success=$kept_success main=$main_sha self=$self"
+          gh issue comment 69 --repo "$repo" --body "Actions maintenance completed in https://github.com/${repo}/actions/runs/${self}: cancelled=${cancelled}, deleted=${deleted}, retained_success_proofs=${kept_success}, main=${main_sha}. Obsolete active runs were stopped before the next authoritative final validation."
