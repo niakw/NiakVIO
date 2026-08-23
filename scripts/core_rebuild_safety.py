@@ -209,7 +209,7 @@ def _inject_runtime_domain_overrides(text: str, replacements: dict[str, Any]) ->
 
 SAFE_EXPORT_FN = dedent(r'''
 def _balanced_terminal_object_end(text: str, open_brace: int, limit: int) -> int | None:
-    """Return the end of one balanced object assignment, or fail closed."""
+    """Return the end of one balanced brace-delimited declaration, or fail closed."""
     depth = 0
     quote: str | None = None
     escaped = False
@@ -261,6 +261,37 @@ def _object_exports_getstreams(segment: str) -> bool:
     return re.search(r"(?:\{|,)\s*getStreams\s*(?=,|})", segment) is not None
 
 
+def _terminal_named_function_suffix_end(text: str, cursor: int, limit: int) -> int | None:
+    """Consume only classic named function declarations up to an owned Core marker.
+
+    Some obfuscated upstream bundles export ``getStreams`` and then declare their
+    string-table decoder before the generated NiakVIO tail. Those declarations are
+    still provider bytes. Arbitrary calls, assignments, anonymous functions, class
+    declarations, or unterminated bodies fail closed.
+    """
+    position = cursor
+    consumed = False
+    while True:
+        while position < limit and text[position].isspace():
+            position += 1
+        if position >= limit:
+            return limit if consumed else cursor
+        match = re.match(
+            r"function\s+[A-Za-z_$][\w$]*\s*\([^()]*\)\s*\{",
+            text[position:limit],
+        )
+        if not match:
+            return None
+        open_brace = text.find("{", position, position + match.end())
+        if open_brace < 0:
+            return None
+        end = _balanced_terminal_object_end(text, open_brace, limit)
+        if end is None:
+            return None
+        position = end
+        consumed = True
+
+
 def _terminal_provider_export_end(text: str, object_end: int, limit: int) -> int | None:
     """Accept only a terminal object export or a narrow global fallback ternary."""
     cursor = object_end
@@ -270,7 +301,10 @@ def _terminal_provider_export_end(text: str, object_end: int, limit: int) -> int
         return object_end
     if text[cursor] == ";":
         end = cursor + 1
-        return end if not text[end:limit].strip() else None
+        if not text[end:limit].strip():
+            return end
+        function_end = _terminal_named_function_suffix_end(text, end, limit)
+        return function_end if function_end is not None and not text[function_end:limit].strip() else None
     if text[cursor] != ":":
         return None
 
@@ -292,11 +326,8 @@ def _provider_export_floor(text: str) -> int:
 
     Exact Nuvio ``__provider`` bridges remain authoritative. Direct/obfuscated
     CommonJS object exports are accepted only when the object itself exports
-    ``getStreams`` (including ES shorthand) and the complete terminal export is
-    adjacent to a known repository-owned generated wrapper marker. This lets Core
-    recover older published bundles where the first generated layer was the stream
-    sanitizer rather than the newer explicit Core-start boundary, without treating
-    arbitrary comments or executable suffixes as provider/Core boundaries.
+    ``getStreams`` (including ES shorthand) and the complete provider terminal
+    suffix is adjacent to a known repository-owned generated wrapper marker.
     """
     exact_patterns = (
         r"\bmodule\.exports\s*=\s*__provider\b",
@@ -319,6 +350,7 @@ def _provider_export_floor(text: str) -> int:
         "NUVIO_DESKTOP_RUNTIME_COMPAT_V1",
         "NUVIO_TV_DIRECT_MEDIA_V2",
         "NUVIO_ANIMEZEY_STREAM_HOST_V1",
+        "NUVIO_TV_PLAYABLE_FIRST_V1",
         "NUVIO_GLOBAL_CATALOGUE_ALIAS_RECOVERY_V2",
         "NUVIO_GLOBAL_MEDIA_ENRICHMENT_V1",
         "NUVIO_GLOBAL_RUNTIME_MEDIA_SAFETY_V1",
@@ -399,13 +431,15 @@ def harden_generated_apply(text: str) -> str:
         raise ValueError("terminal CommonJS object parser must be generated exactly once")
     if text.count("def _object_exports_getstreams(") != 1:
         raise ValueError("provider getStreams object-key parser must be generated exactly once")
+    if text.count("def _terminal_named_function_suffix_end(") != 1:
+        raise ValueError("terminal named-function suffix parser must be generated exactly once")
     if text.count("def _terminal_provider_export_end(") != 1:
         raise ValueError("terminal provider export statement parser must be generated exactly once")
     if text.count("def _provider_export_floor(") != 1:
         raise ValueError("provider-export floor must be generated exactly once")
     if 'r"\\bmodule\\.exports\\s*=\\s*__provider\\b"' not in text:
         raise ValueError("proven provider export bridge is missing")
-    if "terminal_core_markers = (" not in text or "NUVIO_STREAM_OUTPUT_SANITIZER_V" not in text:
+    if "terminal_core_markers = (" not in text or "NUVIO_TV_PLAYABLE_FIRST_V1" not in text:
         raise ValueError("owned generated export-boundary markers are missing")
     if 'for match in re.finditer(re.escape(f"/* {marker}"), text)' not in text:
         raise ValueError("floated Core markers are not filtered by post-export ownership")
