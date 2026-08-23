@@ -158,6 +158,43 @@ Les profils Nuvio, snapshots AVD, caches providers et caches Gradle sont conserv
 
 ---
 
+<!-- NIAKVIO_PROVIDER_RESULTS_START -->
+## Résultats natifs vérifiés
+
+**Dernière mise à jour des preuves positives : 2026-08-22.**
+
+Cette matrice ne compte qu'une preuve où le **lecteur officiel Nuvio** a atteint un état sain pour le provider, le contenu et le device indiqués. `—` signifie simplement qu'aucune preuve positive n'est encore conservée pour cette case. Les services tiers pouvant changer, la date reste volontairement visible.
+
+| Provider | Contenu testé | Type | TV | Mobile | Desktop macOS | Desktop Windows | Dernière preuve |
+|---|---|---|---:|---:|---:|---:|---:|
+| castle | Breaking Bad S01E01 | Série | ✅ 2026-08-22 | — | — | — | 2026-08-22 |
+| cineby | Breaking Bad S01E01 | Série | ✅ 2026-08-22 | — | — | — | 2026-08-22 |
+| hindmoviez | Breaking Bad S01E01 | Série | ✅ 2026-08-22 | — | — | — | 2026-08-22 |
+| videasy | Breaking Bad S01E01 | Série | ✅ 2026-08-22 | — | — | — | 2026-08-22 |
+| anikototv | Jujutsu Kaisen S01E01 | Anime | ✅ 2026-08-22 | — | — | — | 2026-08-22 |
+| anime-sama | Jujutsu Kaisen S01E01 | Anime | ✅ 2026-08-22 | — | — | — | 2026-08-22 |
+| animesama-co | Jujutsu Kaisen S01E01 | Anime | ✅ 2026-08-22 | — | — | — | 2026-08-22 |
+| hianime | Jujutsu Kaisen S01E01 | Anime | ✅ 2026-08-22 | — | — | — | 2026-08-22 |
+| cineby | Sinners | Film | ✅ 2026-08-22 | — | — | — | 2026-08-22 |
+| videasy | Sinners | Film | ✅ 2026-08-22 | — | — | — | 2026-08-22 |
+
+### Ce que NiakVIO ajoute à une simple liste de providers
+
+| Capacité | NiakVIO | Manifest/provider brut |
+|---|---|---|
+| Plusieurs upstreams comparés | ✅ | Généralement une seule source |
+| Preuve lecteur officielle par device | ✅ TV / Mobile / Desktop | Non garantie |
+| Vérification œuvre / saison / épisode | ✅ | Non garantie |
+| Validation média et premier segment | ✅ | Non garantie |
+| Repair Brain + retest après mutation | ✅ | Non |
+| Dernier état sain / publication fail-closed | ✅ | Non garanti |
+| Projection francophone dédiée | ✅ | Variable |
+
+La source machine de cette matrice est [`automation/provider-device-results.json`](automation/provider-device-results.json). Les nouveaux diagnostics natifs positifs sont fusionnés sans transformer une absence de preuve en échec.
+<!-- NIAKVIO_PROVIDER_RESULTS_END -->
+
+---
+
 # Architecture technique
 
 ## ARCHI 2 : une seule source de vérité
@@ -343,6 +380,7 @@ Lorsqu'une transaction change réellement une donnée visible côté client :
 | `native-desktop-reader-acceptance.yml` | preuve lecteur officielle Desktop macOS/Windows |
 | `native-corpus-device-targeted.yml` | retests device à la demande uniquement |
 | `native-reader-learning-sync.yml` | import idempotent des résultats lecteur validés de `main` |
+| `provider-results-readme-sync.yml` | fusion des nouvelles preuves lecteur positives dans la matrice README |
 | `brain-learning-lab.yml` | expérimentation et mémoire du Repair Brain en sandbox |
 | `availability.yml` | disponibilité des providers publiés |
 | `domain-refresh.yml` | observation des domaines |
