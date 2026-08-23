@@ -21,6 +21,13 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
+      - name: Announce maintenance run
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          gh issue comment 69 --repo "$GITHUB_REPOSITORY" --body "Actions maintenance started: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}. It will stop obsolete active runs and prune obsolete failed/cancelled/duplicate history while retaining useful success proofs."
+
       - name: Cancel obsolete active runs and prune obsolete history
         env:
           GH_TOKEN: ${{ github.token }}
@@ -46,9 +53,6 @@ jobs:
             cancelled=$((cancelled + 1))
           done
 
-          # Give GitHub a short bounded window to transition cancellations before
-          # pruning. Any still-transitioning run is harmless and will be removed by
-          # the next maintenance invocation.
           sleep 8
 
           declare -A latest_success_seen=()
@@ -60,14 +64,11 @@ jobs:
             IFS=$'\t' read -r id name head conclusion created <<<"$row"
             [[ "$id" == "$self" ]] && continue
 
-            # Keep every successful proof on the exact current main generation.
             if [[ "$conclusion" == "success" && "$head" == "$main_sha" ]]; then
               kept_success=$((kept_success + 1))
               continue
             fi
 
-            # For obsolete generations keep only the newest successful proof for
-            # each workflow; duplicate successes and every non-success are noise.
             if [[ "$conclusion" == "success" ]]; then
               key="${name//[^A-Za-z0-9_]/_}"
               if [[ -z "${latest_success_seen[$key]+x}" ]]; then
