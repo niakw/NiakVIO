@@ -28,6 +28,7 @@ CORE_SAFETY = ROOT / "scripts" / "core_rebuild_safety.py"
 HLS_RUNTIME = ROOT / "scripts" / "provider_patches" / "hls_runtime_integrity_v1.py"
 CORE_HARDENING_MARKER = "return harden_generated_apply(text)"
 REAPPLY_DIAGNOSTIC_MARKER = "FIELD_PROVIDER_REF_CHANGES"
+REAPPLY_DIAGNOSTIC_STOP_MARKER = "FIELD_PROVIDER_REF_DIAGNOSTIC_STOP"
 
 SAFE_FUNCTION = dedent(r'''
 def _owned_wrapper_end(text: str, marker_end: int, limit: int) -> int | None:
@@ -75,14 +76,7 @@ def normalized(text: str) -> str:
 
 
 def normalized_hls(text: str) -> str:
-    """Make HLS wrapper insertion byte-stable across Core/Terser reapplication.
-
-    ``wrapper`` is defined by a triple-quoted literal with one leading newline.
-    The insertion code also owns an explicit ``\n`` separator. Using rstrip()
-    therefore emitted two newlines before the HLS marker; Terser could preserve or
-    collapse that blank line depending on comment attachment, producing a 1-byte
-    two-state hash cycle. strip() makes the explicit separator the sole owner.
-    """
+    """Make HLS wrapper insertion byte-stable across Core/Terser reapplication."""
     expected_occurrences = 2
     current_occurrences = text.count("wrapper.rstrip()")
     if current_occurrences not in (0, expected_occurrences):
@@ -93,15 +87,14 @@ def normalized_hls(text: str) -> str:
 
 
 def normalized_reapply_diagnostics(text: str) -> str:
-    """Expose exact content-addressed transitions without changing publication."""
-    if REAPPLY_DIAGNOSTIC_MARKER in text:
-        return text
-    anchor = '''    print(
+    """Expose exact content-addressed transitions without changing publication bytes."""
+    if REAPPLY_DIAGNOSTIC_MARKER not in text:
+        anchor = '''    print(
         f"published overrides reapplied: patched={applied_count}, "
 '''
-    if anchor not in text:
-        raise ValueError("published override summary anchor missing")
-    block = '''    changed_provider_rows = sorted(
+        if anchor not in text:
+            raise ValueError("published override summary anchor missing")
+        block = '''    changed_provider_rows = sorted(
         (provider_id, old, new)
         for provider_id, (old, new) in updates.items()
         if old != new
@@ -120,7 +113,20 @@ def normalized_reapply_diagnostics(text: str) -> str:
             )
         )
 '''
-    return text.replace(anchor, block + anchor, 1)
+        text = text.replace(anchor, block + anchor, 1)
+    if REAPPLY_DIAGNOSTIC_STOP_MARKER not in text:
+        anchor = '''    print(
+        f"published overrides reapplied: patched={applied_count}, "
+'''
+        stop = '''    if 0 < len(changed_provider_rows) <= 13 and (ROOT / ".provider-fixed-point-diagnostic").is_file():
+        print(
+            "FIELD_PROVIDER_REF_DIAGNOSTIC_STOP "
+            f"count={len(changed_provider_rows)} ids={','.join(row[0] for row in changed_provider_rows)}"
+        )
+        return 86
+'''
+        text = text.replace(anchor, stop + anchor, 1)
+    return text
 
 
 def _materialize_core_hardening() -> None:
@@ -138,10 +144,11 @@ def _materialize_core_hardening() -> None:
 def _materialize_reapply_diagnostics() -> bool:
     current = REAPPLY.read_text(encoding="utf-8")
     expected = normalized_reapply_diagnostics(current)
-    if current == expected:
-        return False
-    REAPPLY.write_text(expected, encoding="utf-8")
-    return True
+    changed = current != expected
+    if changed:
+        REAPPLY.write_text(expected, encoding="utf-8")
+    (ROOT / ".provider-fixed-point-diagnostic").write_text("diagnostic-only\n", encoding="utf-8")
+    return changed
 
 
 def main() -> int:
