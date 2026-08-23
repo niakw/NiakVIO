@@ -1,6 +1,6 @@
 name: NiakVIO final validation orchestrator
 # Authoritative end-to-end gate for the exact main generation.
-# Final generation: provider branding + native evidence + security sealed v5.
+# Final generation: provider branding + native evidence + security sealed v6.
 
 on:
   workflow_dispatch:
@@ -11,7 +11,7 @@ on:
 
 permissions:
   actions: write
-  contents: read
+  contents: write
   issues: write
   pull-requests: read
 
@@ -32,8 +32,8 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           ref: main
-          fetch-depth: 1
-          persist-credentials: false
+          fetch-depth: 0
+          persist-credentials: true
 
       - name: Verify repository-clean source contract before expensive gates
         shell: bash
@@ -96,19 +96,34 @@ jobs:
             echo "FIELD_FINAL_GATE_OK label=$label run=$run_id"
           }
 
-          # The favicon/site-icon network pass is a migration, never a recurring
-          # maintenance job. If its launcher still exists, run it exactly once.
-          if gh api "repos/$REPO/contents/.github/workflows/provider-logo-refinement-finalize-once.yml?ref=main" >/dev/null 2>&1; then
-            LOGO_RUN="$(dispatch_and_capture provider-logo-refinement-finalize-once.yml)"
-            echo "LOGO_RUN=$LOGO_RUN" >> "$STATE_FILE"
-            watch_gate logo-once "$LOGO_RUN"
-          else
-            LOGO_RUN=""
-            echo "LOGO_RUN=" >> "$STATE_FILE"
+          # Execute the bounded network favicon preference exactly once inline.
+          # The same transaction permanently deletes all migration launchers/scripts,
+          # so subsequent orchestrator runs can only consume committed logo assets.
+          LOGO_MIGRATED=0
+          if [ -f scripts/refine_provider_logos_from_favicons_once.py ]; then
+            python -m pip install --disable-pip-version-check --no-cache-dir 'Pillow==11.3.0' 'CairoSVG==2.8.2'
+            python scripts/refine_provider_logos_from_favicons_once.py
+            rm -f \
+              scripts/refine_provider_logos_from_favicons_once.py \
+              .github/workflows/provider-favicon-refinement-once.yml \
+              .github/workflows/provider-logo-refinement-finalize-once.yml \
+              scripts/diagnose_core_rebuild_once.py \
+              .github/workflows/core-rebuild-diagnostic-once.yml
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git add -A
+            if ! git diff --cached --quiet; then
+              git commit -m 'assets: finalize provider logos as committed-only assets'
+              git fetch origin main
+              git rebase origin/main
+              git push origin HEAD:main
+            fi
+            LOGO_MIGRATED=1
           fi
+          echo "LOGO_MIGRATED=$LOGO_MIGRATED" >> "$STATE_FILE"
 
-          # Reload main after the self-deleting migration and prove no network
-          # logo-generation machinery survives into the final repository.
+          # Reload main after the migration and prove no network logo-generation
+          # or Core diagnostic machinery survives into the final repository.
           git fetch origin main
           git reset --hard origin/main
           for retired in \
@@ -234,8 +249,8 @@ jobs:
           set -euo pipefail
           source "$STATE_FILE"
           LOGO_LINE='- Provider logo one-shot: already completed before this run'
-          if [ -n "${LOGO_RUN:-}" ]; then
-            LOGO_LINE="- Provider logo one-shot: https://github.com/${REPO}/actions/runs/${LOGO_RUN}"
+          if [ "${LOGO_MIGRATED:-0}" = "1" ]; then
+            LOGO_LINE="- Provider logo one-shot: executed inline in https://github.com/${REPO}/actions/runs/${GITHUB_RUN_ID}"
           fi
           BODY=$(cat <<EOF
           Final NiakVIO validation succeeded.
