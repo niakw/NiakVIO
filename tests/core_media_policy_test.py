@@ -46,8 +46,8 @@ for retired in (
 playback = normalized["playback_integrity_policy"]
 hooks = [str(value) for value in playback.get("global_discovery_hooks", [])]
 assert hooks.count(module.GLOBAL_SECURITY_HOOK) == 1, hooks
-assert hooks.count(module.GLOBAL_BRANDING_HOOK) == 1, hooks
-assert hooks[-2:] == [module.GLOBAL_SECURITY_HOOK, module.GLOBAL_BRANDING_HOOK], hooks
+assert module.GLOBAL_BRANDING_HOOK not in hooks, hooks
+assert hooks[-1] == module.GLOBAL_SECURITY_HOOK, hooks
 
 # Prove the final reconstructed artifact, not only the configuration: a generic
 # provider containing recurring unsafe shapes must leave the common Core with no
@@ -82,4 +82,30 @@ try:
 finally:
     artifact.unlink(missing_ok=True)
 
-print("Core media/branding/security policy test passed: provider-specific media repair hooks=0; shared Core layers only")
+# A real published provider proves the ordering contract end-to-end: quality and
+# language are extracted from the original upstream stream name first, then the
+# local row name/title are replaced by the committed provider emoji/name.
+raw = b'''globalThis.getStreams=async function(){return [{url:"https://example.com/video.m3u8",name:"1080p VFF",title:"raw upstream title"}]};\n'''
+branded, records = apply_overrides("peachify", raw, phase="discovery")
+branded_text = branded.decode("utf-8")
+assert "NUVIO_GLOBAL_STREAM_PRESENTATION_V1" in branded_text
+assert "NUVIO_GLOBAL_PROVIDER_BRANDING_V1" in branded_text
+assert branded_text.find("NUVIO_GLOBAL_STREAM_PRESENTATION_V1") < branded_text.find("NUVIO_GLOBAL_PROVIDER_BRANDING_V1")
+assert any(record.get("scope") == "global_stream_presentation" for record in records), records
+assert any(record.get("scope") == "global_provider_branding" for record in records), records
+with tempfile.NamedTemporaryFile("wb", suffix=".js", delete=False) as handle:
+    handle.write(branded)
+    handle.write(
+        b'\nPromise.resolve(globalThis.getStreams()).then(function(rows){var r=rows[0];'
+        b'if(!r||r.name!=="\xf0\x9f\x8d\x91 Peachify"||r.title!=="\xf0\x9f\x8d\x91 Peachify"||r.quality!=="1080p"||r.language!=="VFF")'
+        b'{console.error(JSON.stringify(r));process.exit(4)}console.log(JSON.stringify(r))'
+        b'}).catch(function(e){console.error(e);process.exit(5)});\n'
+    )
+    artifact = Path(handle.name)
+try:
+    result = subprocess.run(["node", str(artifact)], cwd=ROOT, text=True, capture_output=True, check=False, timeout=45)
+    assert result.returncode == 0, result.stdout + result.stderr
+finally:
+    artifact.unlink(missing_ok=True)
+
+print("Core media/branding/security policy test passed: provider facts preserved before committed final branding")
