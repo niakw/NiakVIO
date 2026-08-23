@@ -1,0 +1,95 @@
+name: Provider logo refinement finalize once
+
+# One-shot migration launcher. It deletes itself, the superseded launcher and the
+# network refinement script after successful committed-asset conversion.
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/provider-logo-refinement-finalize-once.yml'
+      - 'scripts/refine_provider_logos_from_favicons_once.py'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency:
+  group: niakvio-provider-logo-refinement-finalize-once
+  cancel-in-progress: true
+
+jobs:
+  refine-once:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Announce exact one-shot run
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh issue comment 69 --repo "$GITHUB_REPOSITORY" --body "Provider logo refinement final one-shot started: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}."
+
+      - name: Checkout current main
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+
+      - name: Install one-shot image dependencies
+        run: python -m pip install --disable-pip-version-check --no-cache-dir 'Pillow==11.3.0' 'CairoSVG==2.8.2'
+
+      - name: Prefer readable provider site icons once
+        run: python scripts/refine_provider_logos_from_favicons_once.py
+
+      - name: Verify exact committed logo inventory
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          from PIL import Image
+          root=Path('.')
+          index=json.loads((root/'assets/providers/index.json').read_text(encoding='utf-8'))
+          manifest=json.loads((root/'manifest.json').read_text(encoding='utf-8'))
+          providers=index.get('providers') or {}
+          ids={str(r.get('id') or '').strip().casefold() for r in manifest.get('scrapers',[]) if isinstance(r,dict) and str(r.get('id') or '').strip()}
+          assert len(ids)==92, len(ids)
+          assert set(providers)==ids, (len(providers), sorted(ids-set(providers)), sorted(set(providers)-ids))
+          assert index.get('futurePolicy') == 'committed-assets-only-no-network-regeneration'
+          refinement=index.get('faviconRefinement') or {}
+          assert refinement.get('mode') == 'one-shot-site-icon-preference', refinement
+          for provider_id,row in providers.items():
+              for key,size in {'72x32':(72,32),'96x40':(96,40)}.items():
+                  path=root/row['assets'][key]
+                  assert path.is_file(), (provider_id,path)
+                  with Image.open(path) as image:
+                      assert image.format == 'WEBP', (provider_id,key,image.format)
+                      assert image.size == size, (provider_id,key,image.size)
+          print(f"FIELD_PROVIDER_LOGO_FINAL_QA providers={len(providers)} missing=0 policy=committed-only")
+          PY
+
+      - name: Commit assets and permanently remove one-shot machinery
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f \
+            scripts/refine_provider_logos_from_favicons_once.py \
+            .github/workflows/provider-favicon-refinement-once.yml \
+            .github/workflows/provider-logo-refinement-finalize-once.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'assets: finalize provider logos as committed-only assets'
+          git fetch origin main
+          git rebase origin/main
+          git push origin HEAD:main
+
+      - name: Report one-shot completion
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh issue comment 69 --repo "$GITHUB_REPOSITORY" --body "Provider logo refinement completed once. All 92 provider logos are committed WebP assets; network refinement launchers/scripts were removed and future runtime policy remains committed-assets-only."
