@@ -5,6 +5,8 @@ ROOT = Path(__file__).resolve().parents[1]
 workflow = (ROOT / ".github/workflows/native-android-route-reader.yml").read_text(encoding="utf-8")
 prime = (ROOT / "scripts/prime_android_lab_adb.sh").read_text(encoding="utf-8")
 prebuild = (ROOT / "scripts/prebuild_native_android_reader_suite.sh").read_text(encoding="utf-8")
+tv_suite = (ROOT / "scripts/run_native_corpus_tv_suite.sh").read_text(encoding="utf-8")
+mobile_suite = (ROOT / "scripts/run_native_corpus_mobile_suite.sh").read_text(encoding="utf-8")
 
 # The emulator image/snapshot is a Lab infrastructure artifact. It must not be
 # invalidated whenever an official Nuvio app commit advances; the guest userdata
@@ -32,6 +34,17 @@ assert "Create TV AVD snapshot on candidate cache miss" not in workflow
 # may cancel one another.
 assert "github.event.pull_request.number || github.run_id" in workflow
 assert "cancel-in-progress: ${{ github.event_name == 'pull_request' }}" in workflow
+
+# Player/read failures are observations for Brain/Deep, never publication locks.
+# The historical YAML request flag is inert unless an explicit global blocking
+# gate is enabled; normal Labs must keep that gate disabled. Missing/corrupt Lab
+# evidence remains independently fatal in gate_native_player_reached.cjs.
+for suite in (tv_suite, mobile_suite):
+    assert 'PLAYER_OUTCOME_GLOBAL_GATE="${NIAKVIO_NATIVE_PLAYER_OUTCOME_GLOBAL_GATE:-0}"' in suite
+    assert 'REQUIRE_READER_SUCCESS=0' in suite
+    assert 'if [[ "$PLAYER_OUTCOME_GLOBAL_GATE" = "1" && "$REQUESTED_READER_SUCCESS" = "1" ]]' in suite
+    assert 'blocking=false' in suite
+assert "NIAKVIO_NATIVE_PLAYER_OUTCOME_GLOBAL_GATE: \"1\"" not in workflow
 
 # Every Android emulator path primes adb before the emulator action. GitHub's
 # hosted image can expose sdkmanager while platform-tools/adb is still absent,
@@ -62,4 +75,4 @@ assert "FIELD_NATIVE_ANDROID_PREBUILD_NETWORK_RETRY" in prebuild
 assert "attempt=$attempt status=exhausted" in prebuild
 assert "return \"$status\"" in prebuild
 
-print("native Android AVD persistence + cold-boot/adb/dependency resilience contract passed")
+print("native Android AVD persistence + cold-boot/adb/dependency + nonblocking-reader contract passed")
