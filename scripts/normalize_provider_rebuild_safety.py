@@ -4,9 +4,10 @@
 
 Minifiers may preserve NUVIO comments while moving or reformatting their owning
 statements. Comments alone therefore never authorize deleting bytes through a
-later wrapper terminator. This normalizer protects wrapper isolation and wires
-the durable ``core_rebuild_safety`` parser into the owning fixed-point normalizer
-before it generates publication code.
+later wrapper terminator; relocated metadata is stripped without touching the
+provider body. This normalizer protects wrapper isolation and wires the durable
+``core_rebuild_safety`` parser into the owning fixed-point normalizer before it
+generates publication code.
 """
 from __future__ import annotations
 
