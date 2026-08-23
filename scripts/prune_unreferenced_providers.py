@@ -9,8 +9,12 @@ must remain available until phase two succeeds.
 
 Once manifest.next.json has been consumed, the published manifests become
 solely authoritative and old bundles can be pruned normally. Content-addressed
-last-known-good artifacts and canonical provider sources recorded in provenance
-are retained as reproducible inputs. Plain source files (for example
+last-known-good artifacts remain protected because they can still be selected by
+the publication transaction. ``canonical_source_filename`` in provenance is
+historical metadata only: it is not a client/runtime dependency and is therefore
+not allowed to keep an otherwise stale JavaScript alias executable/scannable in
+``providers/``. Desktop compatibility already falls back to the current published
+bundle when that historical source is absent. Plain source files (for example
 providers/foo.js) are never removed; only generated bundles ending in
 ``--<16 hex>.js`` are eligible.
 """
@@ -126,11 +130,10 @@ def main() -> int:
             for record in records.values():
                 if not isinstance(record, dict):
                     continue
-                # published_filename is normally already covered by manifests,
-                # while canonical_source_filename intentionally preserves the
-                # clean immutable input used for repeatable Desktop publication.
+                # published_filename can still be part of the active transaction.
+                # canonical_source_filename is deliberately *not* retained: it is
+                # historical provenance, not a client-visible executable artifact.
                 retain_recorded_provider_path(referenced, record.get("published_filename"))
-                retain_recorded_provider_path(referenced, record.get("canonical_source_filename"))
         except json.JSONDecodeError as exc:
             raise SystemExit(f"Invalid PROVENANCE.json; refusing to prune: {exc}")
 
