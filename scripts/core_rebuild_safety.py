@@ -295,8 +295,10 @@ def _provider_export_floor(text: str) -> int:
 
 
 def _replace_provider_export_floor(text: str) -> str:
-    start = text.index("def _provider_export_floor(")
-    end = text.index("\ndef _strip_generated_core_tail", start)
+    export_start = text.index("def _provider_export_floor(")
+    helper_start = text.rfind("def _balanced_terminal_object_end(", 0, export_start)
+    start = helper_start if helper_start >= 0 else export_start
+    end = text.index("\ndef _strip_generated_core_tail", export_start)
     return text[:start] + SAFE_EXPORT_FN + text[end:]
 
 
@@ -313,6 +315,8 @@ def harden_generated_apply(text: str) -> str:
         raise ValueError("unsafe generic provider-export fallback remains")
     if text.count("def _runtime_domain_wrapper_span(") != 1:
         raise ValueError("bounded runtime-domain parser must be generated exactly once")
+    if text.count("def _balanced_terminal_object_end(") != 1:
+        raise ValueError("terminal CommonJS object parser must be generated exactly once")
     if text.count("def _provider_export_floor(") != 1:
         raise ValueError("provider-export floor must be generated exactly once")
     if 'r"\\bmodule\\.exports\\s*=\\s*__provider\\b"' not in text:
