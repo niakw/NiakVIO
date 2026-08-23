@@ -15,13 +15,17 @@ permissions:
 
 concurrency:
   group: niakvio-provider-favicon-refinement-once
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   refine-once:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 15
     steps:
+      - name: Announce one-shot run
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh issue comment 69 --repo "$GITHUB_REPOSITORY" --body "Provider favicon refinement one-shot started: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}."
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           ref: main
@@ -65,10 +69,6 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add -A
-          if git diff --cached --quiet; then
-            echo 'No favicon refinement changed committed assets.'
-            exit 0
-          fi
           git commit -m 'assets: refine provider logos for small displays'
           git fetch origin main
           git rebase origin/main
