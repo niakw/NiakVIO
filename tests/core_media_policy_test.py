@@ -46,11 +46,14 @@ for retired in (
 playback = normalized["playback_integrity_policy"]
 hooks = [str(value) for value in playback.get("global_discovery_hooks", [])]
 assert hooks.count(module.GLOBAL_SECURITY_HOOK) == 1, hooks
-assert hooks[-1] == module.GLOBAL_SECURITY_HOOK, hooks
+assert hooks.count(module.GLOBAL_BRANDING_HOOK) == 1, hooks
+assert hooks[-2:] == [module.GLOBAL_SECURITY_HOOK, module.GLOBAL_BRANDING_HOOK], hooks
 
 # Prove the final reconstructed artifact, not only the configuration: a generic
 # provider containing recurring unsafe shapes must leave the common Core with no
 # finding, while still retaining the required provider export and presentation.
+# Synthetic providers intentionally skip committed branding because the branding
+# inventory is fail-closed against the 92 published IDs in its dedicated contract.
 from apply_provider_overrides import apply_overrides
 from provider_security_hardening import known_unsafe_findings
 
@@ -79,4 +82,4 @@ try:
 finally:
     artifact.unlink(missing_ok=True)
 
-print("Core media/security policy test passed: provider-specific media repair hooks=0; shared Core layers only")
+print("Core media/branding/security policy test passed: provider-specific media repair hooks=0; shared Core layers only")
