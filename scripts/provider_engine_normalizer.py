@@ -344,27 +344,40 @@ def sanitize_provider_hooks(
 
 
 def _owned_wrapper_end(text: str, marker_end: int, limit: int) -> int | None:
-    """Return the exact end of one repository-owned wrapper, never provider bytes.
+    """Return an exact owned IIFE end without ever crossing provider bytes.
 
-    NUVIO wrappers are emitted as IIFEs. The previous implementation treated the
-    whole region until the *next marker* as the wrapper. For a bootstrap marker at
-    byte zero that region also contains the actual provider bundle, so isolation
-    could delete provider declarations such as ``var __provider``. We now remove
-    only the IIFE expression itself and fail closed (keep bytes) when its end cannot
-    be identified unambiguously.
+    Preserved comments are not structural boundaries: Terser or another formatter
+    may relocate them. A marker is accepted only when the following non-whitespace
+    bytes begin an IIFE and the candidate span contains no provider declaration or
+    export bridge. Ambiguous shapes fail closed and remain untouched.
     """
     region = text[marker_end:limit]
+    if not re.match(r"\s*;?\s*\(\s*function\b", region, re.I):
+        return None
+
+    candidate_end: int | None = None
     global_call = GLOBAL_WRAPPER_CALL_RE.search(region)
     if global_call:
         call_start = marker_end + global_call.start()
         end = text.find(");", call_start, limit)
         if end >= 0:
-            return end + 2
-    empty_call = EMPTY_IIFE_END_RE.search(region)
-    if empty_call:
-        return marker_end + empty_call.end()
-    return None
+            candidate_end = end + 2
+    if candidate_end is None:
+        empty_call = EMPTY_IIFE_END_RE.search(region)
+        if empty_call:
+            candidate_end = marker_end + empty_call.end()
+    if candidate_end is None:
+        return None
 
+    candidate = text[marker_end:candidate_end]
+    protected = (
+        r"\b(?:var|let|const)\s+__provider\b",
+        r"\bmodule\.exports\s*=\s*__provider\b",
+        r"\b(?:globalThis|global|self)\.getStreams\s*=\s*__provider\.getStreams\b",
+    )
+    if any(re.search(pattern, candidate) for pattern in protected):
+        return None
+    return candidate_end
 
 def strip_foreign_provider_wrappers(
     text: str, provider_id: str, data: dict[str, Any]

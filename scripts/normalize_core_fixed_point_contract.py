@@ -12,6 +12,7 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 from textwrap import dedent
+from core_rebuild_safety import harden_generated_apply
 
 ROOT = Path(__file__).resolve().parents[1]
 APPLY = ROOT / "scripts" / "apply_provider_overrides.py"
@@ -206,7 +207,7 @@ def normalize_apply(text: str) -> str:
     for old in old_boundary_blocks:
         text = text.replace(old, "", 1)
     text = text.replace(anchor, boundary_block + anchor, 1)
-    return text
+    return harden_generated_apply(text)
 
 
 def normalize_reapply(text: str) -> str:
@@ -271,7 +272,10 @@ def assert_contract() -> None:
         '"NUVIO_GLOBAL_MEDIA_ENRICHMENT_V1"',
         '"NUVIO_HLS_RUNTIME_INTEGRITY_V1"',
         "existing_span",
-        "output = text[:existing_span[0]] + bootstrap + text[existing_span[1]:]",
+        "def _runtime_domain_span_matches_rules(candidate: str, rules: dict[str, str]) -> bool:",
+        "_strip_runtime_domain_orphan_calls(text, rules)",
+        "_runtime_domain_span_matches_rules(candidate, rules)",
+        "return text, 0 if text == original_text else max(1, orphan_count)",
     ):
         assert required in apply_text, f"missing apply fixed-point contract: {required}"
     assert f'HOOK_BOUNDARY = "{SECURITY_BOUNDARY}"' in security_text

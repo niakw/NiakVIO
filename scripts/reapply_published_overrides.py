@@ -25,6 +25,7 @@ from pathlib import Path
 from typing import Any
 
 from apply_provider_overrides import apply_overrides, load_overrides
+from provider_purification import purify_bytes
 from provider_engine_normalizer import (
     _host,
     _host_belongs,
@@ -233,7 +234,7 @@ def sanitize_capability_origins(config: dict[str, Any]) -> tuple[dict[str, Any],
     return config, removed
 
 
-def validate_artifact(data: bytes) -> None:
+def validate_artifact(data: bytes, provider_id: str) -> None:
     with tempfile.NamedTemporaryFile(suffix=".js", delete=False, dir=ROOT) as handle:
         handle.write(data)
         temporary = Path(handle.name)
@@ -246,7 +247,7 @@ def validate_artifact(data: bytes) -> None:
         )
         if result.returncode:
             detail = "\n".join(v.strip() for v in (result.stdout, result.stderr) if v.strip())
-            raise ValueError(f"patched published provider rejected:\n{detail or 'no diagnostic'}")
+            raise ValueError(f"patched published provider rejected provider={provider_id}:\n{detail or 'no diagnostic'}")
     finally:
         temporary.unlink(missing_ok=True)
 
@@ -357,9 +358,31 @@ def main() -> int:
                     "phase": "discovery",
                     "scope": "language_integrity",
                 }] + list(records)
+        # Final provider bytes are purified only after every Core/provider/runtime
+        # transform. These exact validated bytes are content-addressed and later
+        # proved by Deep and native Labs.
+        purified, purification = purify_bytes(patched)
+        if purification["applied"]:
+            records = list(records) + [{
+                "type": "provider_purification",
+                "phase": "final-post-transform",
+                "revision": 2,
+                "tool": "terser",
+                "tool_version": str(purification.get("toolVersion") or ""),
+                "mode": str(purification.get("mode") or ""),
+                "mangle": False,
+                "fixed_point_verified": bool(purification.get("fixedPointVerified")),
+                "conservative_compression": bool(purification.get("conservativeCompression")),
+                "risk_flags": list(purification.get("riskFlags") or []),
+                "source_sha256": purification["sourceSha256"],
+                "output_sha256": purification["candidateSha256"],
+                "bytes_before": purification["bytesBefore"],
+                "bytes_after": purification["bytesAfter"],
+            }]
+        patched = purified
         changed = patched != original
         if changed:
-            validate_artifact(patched)
+            validate_artifact(patched, provider_id)
             applied_count += 1
         digest = hashlib.sha256(patched).hexdigest()
         new_relative = f"providers/{published_name(provider_id, path, digest, changed)}"
@@ -484,6 +507,86 @@ def main() -> int:
     provenance_refs = sum(
         1 for update in provenance_updates.values() if update["old"] != update["new"]
     ) if provenance is not None else 0
+    changed_provider_rows = sorted(
+        (provider_id, old, new)
+        for provider_id, (old, new) in updates.items()
+        if old != new
+    )
+    if changed_provider_rows and len(changed_provider_rows) <= 20:
+        from apply_provider_overrides import _provider_export_floor, _strip_generated_core_tail
+
+        def _fixed_point_diff(left: str, right: str) -> tuple[int, int]:
+            prefix = 0
+            limit = min(len(left), len(right))
+            while prefix < limit and left[prefix] == right[prefix]:
+                prefix += 1
+            suffix = 0
+            remaining = limit - prefix
+            while suffix < remaining and left[len(left) - 1 - suffix] == right[len(right) - 1 - suffix]:
+                suffix += 1
+            return prefix, suffix
+
+        for provider_id, old_relative, new_relative in changed_provider_rows:
+            old_path = ROOT / old_relative
+            new_path = ROOT / new_relative
+            if not old_path.is_file() or not new_path.is_file():
+                continue
+            before_text = old_path.read_text(encoding="utf-8", errors="replace")
+            after_text = new_path.read_text(encoding="utf-8", errors="replace")
+            before_base, before_stripped = _strip_generated_core_tail(before_text)
+            after_base, after_stripped = _strip_generated_core_tail(after_text)
+            prefix, suffix = _fixed_point_diff(before_text, after_text)
+            base_prefix, base_suffix = _fixed_point_diff(before_base, after_base)
+            markers = (
+                "NUVIO_GLOBAL_CORE_START_BOUNDARY_V1",
+                "NUVIO_GLOBAL_CATALOGUE_ALIAS_RECOVERY_V2",
+                "NUVIO_GLOBAL_MEDIA_ENRICHMENT_V1",
+                "NUVIO_GLOBAL_RUNTIME_MEDIA_SAFETY_V1",
+                "NUVIO_HLS_RUNTIME_INTEGRITY_V1",
+                "NUVIO_GLOBAL_STREAM_FACTS_V1",
+                "NUVIO_GLOBAL_STREAM_IDENTITY_V1",
+                "NUVIO_GLOBAL_STREAM_PRESENTATION_V1",
+                "NUVIO_GLOBAL_PROVIDER_BRANDING_V1",
+                "NUVIO_GLOBAL_PROVIDER_SECURITY_HOOK_V1",
+            )
+            marker_state = ";".join(
+                f"{marker.replace('NUVIO_', '')}:{before_text.find(marker)}>{after_text.find(marker)}"
+                for marker in markers
+            )
+            print(
+                "FIELD_PROVIDER_FIXED_POINT_ROOT "
+                f"provider={provider_id} "
+                f"len={len(before_text)}>{len(after_text)} first_diff={prefix} common_suffix={suffix} "
+                f"floor={_provider_export_floor(before_text)}>{_provider_export_floor(after_text)} "
+                f"stripped={str(before_stripped).lower()}>{str(after_stripped).lower()} "
+                f"base_len={len(before_base)}>{len(after_base)} "
+                f"base_sha={hashlib.sha256(before_base.encode('utf-8')).hexdigest()[:16]}>"
+                f"{hashlib.sha256(after_base.encode('utf-8')).hexdigest()[:16]} "
+                f"base_equal={str(before_base == after_base).lower()} "
+                f"base_first_diff={base_prefix} base_common_suffix={base_suffix} markers={marker_state}"
+            )
+            if before_base != after_base:
+                left = before_base[max(0, base_prefix - 100): base_prefix + 220]
+                right = after_base[max(0, base_prefix - 100): base_prefix + 220]
+                print(
+                    "FIELD_PROVIDER_FIXED_POINT_BASE_DIFF "
+                    f"provider={provider_id} before={json.dumps(left, ensure_ascii=True)} "
+                    f"after={json.dumps(right, ensure_ascii=True)}"
+                )
+
+    if changed_provider_rows:
+        print(
+            "FIELD_PROVIDER_REF_CHANGES "
+            f"count={len(changed_provider_rows)} ids={','.join(row[0] for row in changed_provider_rows)}"
+        )
+        print(
+            "FIELD_PROVIDER_REF_TRANSITIONS values="
+            + ",".join(
+                f"{provider_id}:{Path(old).stem.rsplit('--', 1)[-1][:16]}>"
+                f"{Path(new).stem.rsplit('--', 1)[-1][:16]}"
+                for provider_id, old, new in changed_provider_rows
+            )
+        )
     print(
         f"published overrides reapplied: patched={applied_count}, "
         f"manifest_refs={changed_refs}, provenance_refs={provenance_refs}, "

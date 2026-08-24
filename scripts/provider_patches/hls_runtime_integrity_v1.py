@@ -335,8 +335,8 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
         return (
             text[:insertion].rstrip()
             + "\n"
-            + wrapper.rstrip()
+            + wrapper.strip()
             + "\n"
             + text[insertion:].lstrip()
         ).rstrip() + "\n"
-    return text.rstrip() + "\n" + wrapper.rstrip() + "\n"
+    return text.rstrip() + "\n" + wrapper.strip() + "\n"

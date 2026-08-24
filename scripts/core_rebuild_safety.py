@@ -8,60 +8,76 @@ from textwrap import dedent
 
 SAFE_DOMAIN_FN = dedent(r'''
 def _scan_runtime_domain_iife_end(text: str, start: int) -> int | None:
-    """Return the end of one complete IIFE statement starting at ``start``."""
+    """Return the end of a complete ``(function(){...})(args)`` statement."""
     if start < 0 or start >= len(text) or text[start] != "(":
         return None
-    paren = 0
-    quote: str | None = None
-    escaped = False
-    line_comment = False
-    block_comment = False
-    index = start
-    while index < len(text):
-        char = text[index]
-        nxt = text[index + 1] if index + 1 < len(text) else ""
-        if line_comment:
-            if char in "\r\n":
-                line_comment = False
-        elif block_comment:
-            if char == "*" and nxt == "/":
-                block_comment = False
-                index += 1
-        elif quote:
-            if escaped:
-                escaped = False
-            elif char == "\\":
-                escaped = True
-            elif char == quote:
-                quote = None
-        else:
-            if char in ("'", '"', "`"):
-                quote = char
-            elif char == "/" and nxt == "/":
-                line_comment = True
-                index += 1
-            elif char == "/" and nxt == "*":
-                block_comment = True
-                index += 1
-            elif char == "(":
-                paren += 1
-            elif char == ")":
-                paren -= 1
-                if paren < 0:
-                    return None
-                if paren == 0:
-                    end = index + 1
-                    while end < len(text) and text[end] in " \t":
-                        end += 1
-                    if end < len(text) and text[end] == ";":
-                        end += 1
-                    if text[end:end + 2] == "\r\n":
-                        end += 2
-                    elif text[end:end + 1] in ("\r", "\n"):
-                        end += 1
-                    return end
-        index += 1
-    return None
+
+    def balanced(open_index: int) -> int | None:
+        if open_index < 0 or open_index >= len(text) or text[open_index] != "(":
+            return None
+        depth = 0
+        quote: str | None = None
+        escaped = False
+        line_comment = False
+        block_comment = False
+        index = open_index
+        while index < len(text):
+            char = text[index]
+            nxt = text[index + 1] if index + 1 < len(text) else ""
+            if line_comment:
+                if char in "\r\n":
+                    line_comment = False
+            elif block_comment:
+                if char == "*" and nxt == "/":
+                    block_comment = False
+                    index += 1
+            elif quote:
+                if escaped:
+                    escaped = False
+                elif char == "\\":
+                    escaped = True
+                elif char == quote:
+                    quote = None
+            else:
+                if char in ("'", '"', "`"):
+                    quote = char
+                elif char == "/" and nxt == "/":
+                    line_comment = True
+                    index += 1
+                elif char == "/" and nxt == "*":
+                    block_comment = True
+                    index += 1
+                elif char == "(":
+                    depth += 1
+                elif char == ")":
+                    depth -= 1
+                    if depth < 0:
+                        return None
+                    if depth == 0:
+                        return index + 1
+            index += 1
+        return None
+
+    expression_end = balanced(start)
+    if expression_end is None:
+        return None
+    call_start = expression_end
+    while call_start < len(text) and text[call_start] in " \t\r\n":
+        call_start += 1
+    if call_start >= len(text) or text[call_start] != "(":
+        return None
+    end = balanced(call_start)
+    if end is None:
+        return None
+    while end < len(text) and text[end] in " \t":
+        end += 1
+    if end < len(text) and text[end] == ";":
+        end += 1
+    if text[end:end + 2] == "\r\n":
+        end += 2
+    elif text[end:end + 1] in ("\r", "\n"):
+        end += 1
+    return end
 
 
 def _runtime_domain_wrapper_span_from_key(text: str, key_index: int) -> tuple[int, int] | None:
@@ -123,6 +139,121 @@ def _runtime_domain_wrapper_span(text: str, marker_start: int) -> tuple[int, int
     return span
 
 
+def _runtime_domain_expected_payload(rules: dict[str, str]) -> list[list[str]]:
+    import base64
+    return [
+        [base64.b64encode(old.encode("utf-8")).decode("ascii"), new]
+        for old, new in sorted(rules.items())
+    ]
+
+
+def _runtime_domain_span_matches_rules(candidate: str, rules: dict[str, str]) -> bool:
+    """Return whether one owned IIFE already carries exactly the requested rules."""
+    if not rules:
+        return False
+    needle = 'typeof globalThis!=="undefined"?globalThis:this,'
+    position = candidate.rfind(needle)
+    if position < 0:
+        return False
+    tail = candidate[position + len(needle):]
+    try:
+        payload, payload_end = json.JSONDecoder().raw_decode(tail)
+    except (TypeError, ValueError, json.JSONDecodeError):
+        return False
+    remainder = tail[payload_end:].strip()
+    if remainder not in (")", ");"):
+        return False
+    return payload == _runtime_domain_expected_payload(rules)
+
+
+def _strip_runtime_domain_orphan_calls(
+    text: str,
+    rules: dict[str, str],
+) -> tuple[str, int]:
+    """Remove only historical invocation tails whose payload matches generated rules."""
+    if not rules:
+        return text, 0
+
+    import base64
+
+    needle = 'typeof globalThis!=="undefined"?globalThis:this,'
+    decoder = json.JSONDecoder()
+    output: list[str] = []
+    cursor = 0
+    search_at = 0
+    removed = 0
+
+    def statement_boundary(start: int) -> bool:
+        if start <= 0:
+            return True
+        index = start - 1
+        while index >= 0 and text[index] in " \t":
+            index -= 1
+        return index < 0 or text[index] in ";}\r\n"
+
+    def authorized(payload: object) -> bool:
+        if not isinstance(payload, list) or not payload:
+            return False
+        for row in payload:
+            if not isinstance(row, list) or len(row) != 2:
+                return False
+            encoded_old, new_host = row
+            if not isinstance(encoded_old, str) or not isinstance(new_host, str):
+                return False
+            try:
+                old_host = base64.b64decode(encoded_old, validate=True).decode("utf-8").lower().strip().rstrip("/")
+            except Exception:
+                return False
+            if rules.get(old_host) != new_host.lower().strip().rstrip("/"):
+                return False
+        return True
+
+    while True:
+        position = text.find(needle, search_at)
+        if position < 0:
+            break
+        candidates: list[tuple[int, str]] = []
+        if position > 0 and text[position - 1] == "(" and statement_boundary(position - 1):
+            candidates.extend(((position - 1, ");"), (position - 1, ")")))
+        if statement_boundary(position):
+            candidates.append((position, ";"))
+
+        tail = text[position + len(needle):]
+        try:
+            payload, payload_end = decoder.raw_decode(tail)
+        except (TypeError, ValueError, json.JSONDecodeError):
+            payload, payload_end = None, 0
+
+        match: tuple[int, int] | None = None
+        if authorized(payload):
+            remainder = tail[payload_end:]
+            for start, suffix in candidates:
+                if not remainder.startswith(suffix):
+                    continue
+                end = position + len(needle) + payload_end + len(suffix)
+                while end < len(text) and text[end] in " \t":
+                    end += 1
+                if text[end:end + 2] == "\r\n":
+                    end += 2
+                elif text[end:end + 1] in ("\r", "\n"):
+                    end += 1
+                match = (start, end)
+                break
+        if match is None:
+            search_at = position + len(needle)
+            continue
+        start, end = match
+        output.append(text[cursor:start])
+        cursor = end
+        search_at = end
+        removed += 1
+
+    if removed == 0:
+        return text, 0
+    output.append(text[cursor:])
+    return "".join(output), removed
+
+
 def _inject_runtime_domain_overrides(text: str, replacements: dict[str, Any]) -> tuple[str, int]:
     """Embed one canonical host-rewrite bootstrap, including after Terser strips its marker.
 
@@ -145,7 +276,13 @@ def _inject_runtime_domain_overrides(text: str, replacements: dict[str, Any]) ->
 
     marker = "NUVIO_RUNTIME_DOMAIN_OVERRIDES_V1"
     marker_comment = f"/* {marker} */"
+    text, orphan_count = _strip_runtime_domain_orphan_calls(text, rules)
     spans = _runtime_domain_wrapper_spans(text)
+    existing_span = spans[0] if len(spans) == 1 else None
+    if rules and existing_span is not None:
+        candidate = text[existing_span[0]:existing_span[1]]
+        if _runtime_domain_span_matches_rules(candidate, rules):
+            return text, 0 if text == original_text else max(1, orphan_count)
 
     parts: list[str] = []
     cursor = 0
@@ -195,11 +332,6 @@ def _inject_runtime_domain_overrides(text: str, replacements: dict[str, Any]) ->
   }
 })(typeof globalThis!=="undefined"?globalThis:this,%s);
 """ % (marker, payload)
-
-    existing_span = spans[0] if len(spans) == 1 else None
-    if existing_span is not None and marker_comment in text[existing_span[0]:existing_span[1]]:
-        output = text[:existing_span[0]] + bootstrap + text[existing_span[1]:]
-        return output, 0 if output == original_text else len(rules)
 
     insert_at = insertion if insertion is not None else 0
     output = base[:insert_at] + bootstrap + base[insert_at:]
