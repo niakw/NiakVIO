@@ -26,6 +26,7 @@ from typing import Any
 
 from apply_provider_overrides import apply_overrides, load_overrides
 from provider_purification import purify_bytes
+from provider_security_hardening import assert_hardened, harden_bytes
 from provider_engine_normalizer import (
     _host,
     _host_belongs,
@@ -358,6 +359,27 @@ def main() -> int:
                     "phase": "discovery",
                     "scope": "language_integrity",
                 }] + list(records)
+        # all-published-provider-security-finalization-v1
+        # Security is independent from activation/quarantine state. Run this after
+        # either branch above so disabled and terminal-quarantined bundles receive
+        # the same mandatory global hardening as active providers.
+        security_hardened, security_report = harden_bytes(patched)
+        if security_hardened != patched:
+            records = list(records) + [{
+                "type": "provider_security_hardening",
+                "phase": "final-post-transform",
+                "revision": 1,
+                "scope": "all-published-providers",
+                "structured_parse_changes": int(security_report.get("structuredParseChanges") or 0),
+                "literal_decode_changes": int(security_report.get("literalDecodeChanges") or 0),
+                "hostname_changes": int(security_report.get("hostnameChanges") or 0),
+                "percent_decode_changes": int(security_report.get("percentDecodeChanges") or 0),
+                "html_entity_decode_reorders": int(security_report.get("htmlEntityDecodeReorders") or 0),
+                "console_sink_changes": int(security_report.get("consoleSinkChanges") or 0),
+                "console_shadow": bool(security_report.get("consoleShadow")),
+            }]
+        patched = security_hardened
+        assert_hardened(patched.decode("utf-8", errors="strict"))
         # Final provider bytes are purified only after every Core/provider/runtime
         # transform. These exact validated bytes are content-addressed and later
         # proved by Deep and native Labs.
@@ -380,6 +402,7 @@ def main() -> int:
                 "bytes_after": purification["bytesAfter"],
             }]
         patched = purified
+        assert_hardened(patched.decode("utf-8", errors="strict"))
         changed = patched != original
         if changed:
             validate_artifact(patched, provider_id)

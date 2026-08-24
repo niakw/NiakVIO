@@ -10261,9 +10261,9 @@
     },
     "dvdplay": {
       "id": "dvdplay",
-      "published_filename": "providers/dvdplay--published-baseline--5211da6f6a8bd524.js",
-      "sha256": "5211da6f6a8bd524f5a7842299883a79c443d187a973872a045a8792612cf5b7",
-      "patched_sha256": "5211da6f6a8bd524f5a7842299883a79c443d187a973872a045a8792612cf5b7",
+      "published_filename": "providers/dvdplay--published-baseline--8fafd2e757dad9a6.js",
+      "sha256": "8fafd2e757dad9a62372ab00d4d93b8c8ae62f4678fcf889bd3567a055d9f6db",
+      "patched_sha256": "8fafd2e757dad9a62372ab00d4d93b8c8ae62f4678fcf889bd3567a055d9f6db",
       "upstream_sha256": "8403775717c0c21bb62fefdec5fcbceda03759f49ef83a455c8c287db3983863",
       "local_patches": [
         {
@@ -10283,6 +10283,37 @@
           "output_sha256": "5211da6f6a8bd524f5a7842299883a79c443d187a973872a045a8792612cf5b7",
           "bytes_before": 14984,
           "bytes_after": 13584
+        },
+        {
+          "type": "provider_security_hardening",
+          "phase": "final-post-transform",
+          "revision": 1,
+          "scope": "all-published-providers",
+          "structured_parse_changes": 0,
+          "literal_decode_changes": 0,
+          "hostname_changes": 0,
+          "percent_decode_changes": 0,
+          "html_entity_decode_reorders": 0,
+          "console_sink_changes": 1,
+          "console_shadow": false
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "65b7e29cc08bd0bdcadf1e59ae203196842ecb283d6004fcc2d540cc3ced0133",
+          "output_sha256": "8fafd2e757dad9a62372ab00d4d93b8c8ae62f4678fcf889bd3567a055d9f6db",
+          "bytes_before": 13696,
+          "bytes_after": 13694
         }
       ],
       "source": "published-baseline",
@@ -11845,9 +11876,9 @@
     },
     "frenchstream": {
       "id": "frenchstream",
-      "published_filename": "providers/frenchstream--published-baseline--b7810c3140d7042d.js",
-      "sha256": "b7810c3140d7042db3f6632b48240597489a7f2860a9b8a6fdb93cb2ac3fb3e6",
-      "patched_sha256": "b7810c3140d7042db3f6632b48240597489a7f2860a9b8a6fdb93cb2ac3fb3e6",
+      "published_filename": "providers/frenchstream--published-baseline--b649b06836d088c2.js",
+      "sha256": "b649b06836d088c2e1afdef1f23db5871e111f15df0a827279012371873b26bb",
+      "patched_sha256": "b649b06836d088c2e1afdef1f23db5871e111f15df0a827279012371873b26bb",
       "upstream_sha256": "b91c0d32785411f1c788166d8dcc91a8fd9c17348b20abeac96ead20506044b1",
       "local_patches": [
         {
@@ -11889,6 +11920,37 @@
           "output_sha256": "b7810c3140d7042db3f6632b48240597489a7f2860a9b8a6fdb93cb2ac3fb3e6",
           "bytes_before": 14983,
           "bytes_after": 13583
+        },
+        {
+          "type": "provider_security_hardening",
+          "phase": "final-post-transform",
+          "revision": 1,
+          "scope": "all-published-providers",
+          "structured_parse_changes": 0,
+          "literal_decode_changes": 0,
+          "hostname_changes": 0,
+          "percent_decode_changes": 0,
+          "html_entity_decode_reorders": 0,
+          "console_sink_changes": 1,
+          "console_shadow": false
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "dbb7e0d9f07dcda0bc8af6b1cce210e27d6347de039d35d160300bd7964ba1ee",
+          "output_sha256": "b649b06836d088c2e1afdef1f23db5871e111f15df0a827279012371873b26bb",
+          "bytes_before": 13695,
+          "bytes_after": 13693
         }
       ],
       "source": "published-baseline",
@@ -16006,9 +16068,9 @@
     },
     "moviebox": {
       "id": "moviebox",
-      "published_filename": "providers/moviebox--published-baseline--b27e22bfff7139d9.js",
-      "sha256": "b27e22bfff7139d99e3328d9a6a53e45d6237424a6355fae62026732f7b5bb7e",
-      "patched_sha256": "b27e22bfff7139d99e3328d9a6a53e45d6237424a6355fae62026732f7b5bb7e",
+      "published_filename": "providers/moviebox--published-baseline--3d04af8828764119.js",
+      "sha256": "3d04af882876411990d382cfb565bc3f9a2ff6222bcdee4f7a82a4793a934c32",
+      "patched_sha256": "3d04af882876411990d382cfb565bc3f9a2ff6222bcdee4f7a82a4793a934c32",
       "upstream_sha256": "f19ec5a037e53220e1457e6db0cb9abee1d2f9f299c594dddefb14df7822c847",
       "local_patches": [
         {
@@ -16068,6 +16130,37 @@
           "output_sha256": "b27e22bfff7139d99e3328d9a6a53e45d6237424a6355fae62026732f7b5bb7e",
           "bytes_before": 24704,
           "bytes_after": 22034
+        },
+        {
+          "type": "provider_security_hardening",
+          "phase": "final-post-transform",
+          "revision": 1,
+          "scope": "all-published-providers",
+          "structured_parse_changes": 0,
+          "literal_decode_changes": 0,
+          "hostname_changes": 0,
+          "percent_decode_changes": 0,
+          "html_entity_decode_reorders": 0,
+          "console_sink_changes": 1,
+          "console_shadow": false
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "630a918c91de28aeb902693a48edc4421761a84cbca547991a4ea13a1b5e00c3",
+          "output_sha256": "3d04af882876411990d382cfb565bc3f9a2ff6222bcdee4f7a82a4793a934c32",
+          "bytes_before": 22146,
+          "bytes_after": 22144
         }
       ],
       "source": "published-baseline",
@@ -19003,9 +19096,9 @@
     },
     "netmirror": {
       "id": "netmirror",
-      "published_filename": "providers/netmirror--published-baseline--d402465d87a554c0.js",
-      "sha256": "d402465d87a554c0308f77b339f0ec95cf88857da7d6a02b377f7f30b078261e",
-      "patched_sha256": "d402465d87a554c0308f77b339f0ec95cf88857da7d6a02b377f7f30b078261e",
+      "published_filename": "providers/netmirror--published-baseline--1243412f69ad2092.js",
+      "sha256": "1243412f69ad2092b6cfb56fb1142fce2fa91b1a703a4ec1ed5344a2d5139d8b",
+      "patched_sha256": "1243412f69ad2092b6cfb56fb1142fce2fa91b1a703a4ec1ed5344a2d5139d8b",
       "upstream_sha256": "5cc8283a945c663ea55e049931f22c3f9afdeb3ff38e564899dc5359d40600c1",
       "local_patches": [
         {
@@ -19065,6 +19158,37 @@
           "output_sha256": "d402465d87a554c0308f77b339f0ec95cf88857da7d6a02b377f7f30b078261e",
           "bytes_before": 24717,
           "bytes_after": 22047
+        },
+        {
+          "type": "provider_security_hardening",
+          "phase": "final-post-transform",
+          "revision": 1,
+          "scope": "all-published-providers",
+          "structured_parse_changes": 0,
+          "literal_decode_changes": 0,
+          "hostname_changes": 0,
+          "percent_decode_changes": 0,
+          "html_entity_decode_reorders": 0,
+          "console_sink_changes": 1,
+          "console_shadow": false
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "0a6184b734093651d0528f118419c79a29115e1c974e85809b1b34463dc5417c",
+          "output_sha256": "1243412f69ad2092b6cfb56fb1142fce2fa91b1a703a4ec1ed5344a2d5139d8b",
+          "bytes_before": 22159,
+          "bytes_after": 22157
         }
       ],
       "source": "published-baseline",
@@ -22902,9 +23026,9 @@
     },
     "topcartoons": {
       "id": "topcartoons",
-      "published_filename": "providers/topcartoons--published-baseline--436079753f82499f.js",
-      "sha256": "436079753f82499fd738081b663aafc79bb45fc841526ac2f9081626f2992010",
-      "patched_sha256": "436079753f82499fd738081b663aafc79bb45fc841526ac2f9081626f2992010",
+      "published_filename": "providers/topcartoons--published-baseline--becedaaa5542ab8f.js",
+      "sha256": "becedaaa5542ab8f7b319cae68c88dc0abfca6449979e5b864c8f18cf2fa0d75",
+      "patched_sha256": "becedaaa5542ab8f7b319cae68c88dc0abfca6449979e5b864c8f18cf2fa0d75",
       "upstream_sha256": "5bceb7e156448e73174e7ca9b386fb8401afa0ec1e2233004f77ddf9ffaf8e81",
       "local_patches": [
         {
@@ -22924,6 +23048,37 @@
           "output_sha256": "436079753f82499fd738081b663aafc79bb45fc841526ac2f9081626f2992010",
           "bytes_before": 14977,
           "bytes_after": 13577
+        },
+        {
+          "type": "provider_security_hardening",
+          "phase": "final-post-transform",
+          "revision": 1,
+          "scope": "all-published-providers",
+          "structured_parse_changes": 0,
+          "literal_decode_changes": 0,
+          "hostname_changes": 0,
+          "percent_decode_changes": 0,
+          "html_entity_decode_reorders": 0,
+          "console_sink_changes": 1,
+          "console_shadow": false
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "d33c7f35aabe1597ca3c17636ffb6316fc7ba9ccf9af81b58c23af1956adb372",
+          "output_sha256": "becedaaa5542ab8f7b319cae68c88dc0abfca6449979e5b864c8f18cf2fa0d75",
+          "bytes_before": 13689,
+          "bytes_after": 13687
         }
       ],
       "source": "published-baseline",
@@ -26106,9 +26261,9 @@
     },
     "vixsrc": {
       "id": "vixsrc",
-      "published_filename": "providers/vixsrc--nuvio--d3546171dc7ebd12.js",
-      "sha256": "d3546171dc7ebd128d11461cf19d10e23ddbea2b64ab50e74c1eb7d3ee291c81",
-      "patched_sha256": "d3546171dc7ebd128d11461cf19d10e23ddbea2b64ab50e74c1eb7d3ee291c81",
+      "published_filename": "providers/vixsrc--nuvio--64ab7efdf7248f7b.js",
+      "sha256": "64ab7efdf7248f7b436429ee21bba3b71e25d11c80d83d73f83a934adfd53572",
+      "patched_sha256": "64ab7efdf7248f7b436429ee21bba3b71e25d11c80d83d73f83a934adfd53572",
       "upstream_sha256": "b38a464f826f7ea87fee2c4e483ccbe9d5925e8a89a678a816b77873245611eb",
       "local_patches": [
         {
@@ -26144,6 +26299,37 @@
           "output_sha256": "d3546171dc7ebd128d11461cf19d10e23ddbea2b64ab50e74c1eb7d3ee291c81",
           "bytes_before": 14979,
           "bytes_after": 13579
+        },
+        {
+          "type": "provider_security_hardening",
+          "phase": "final-post-transform",
+          "revision": 1,
+          "scope": "all-published-providers",
+          "structured_parse_changes": 0,
+          "literal_decode_changes": 0,
+          "hostname_changes": 0,
+          "percent_decode_changes": 0,
+          "html_entity_decode_reorders": 0,
+          "console_sink_changes": 1,
+          "console_shadow": false
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "b87908c3f7788a495d5a95ebc9aca4717db34316925096b86d961e7b4031a31d",
+          "output_sha256": "64ab7efdf7248f7b436429ee21bba3b71e25d11c80d83d73f83a934adfd53572",
+          "bytes_before": 13691,
+          "bytes_after": 13689
         }
       ],
       "source": "aio",
