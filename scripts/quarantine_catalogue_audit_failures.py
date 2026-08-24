@@ -238,6 +238,9 @@ def main() -> int:
     parser.add_argument("--evidence")
     parser.add_argument("--workflow-run-id", type=int, default=0)
     parser.add_argument("--tested-commit-sha", default="")
+    # Temporary CLI compatibility for in-flight Deep workflows created before the canonical audit migration.
+    parser.add_argument("--manifest", help=argparse.SUPPRESS)
+    parser.add_argument("--overrides", help=argparse.SUPPRESS)
     args = parser.parse_args()
 
     audit = load(Path(args.audit).resolve())
