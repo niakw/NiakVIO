@@ -1,0 +1,200 @@
+name: FIX - Resume Core finalizer after fixed-point checks
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency:
+  group: niakvio-core-step-resume-${{ github.run_id }}
+  cancel-in-progress: false
+
+jobs:
+  resume-finalize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 110
+    steps:
+      - name: Checkout current main
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Capture publication baseline
+        shell: bash
+        run: git show HEAD:manifest.json > "$RUNNER_TEMP/manifest-before.json"
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+          package-manager-cache: false
+
+      - name: Install locked runtime dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Resume at Core media materialization
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/normalize_core_media_policy.py --apply
+          python scripts/apply_runtime_capability_upgrade_v4.py
+          python scripts/build_provider_runtime_profiles.py
+          converged=0
+          for pass in 1 2 3 4 5 6; do
+            echo "FIELD_PROVIDER_REBUILD_CONVERGENCE pass=${pass}"
+            python scripts/reapply_published_overrides.py
+            if python scripts/reapply_published_overrides.py --check; then
+              converged=1
+              echo "FIELD_PROVIDER_REBUILD_CONVERGENCE converged_at=${pass}"
+              break
+            fi
+          done
+          if [[ "$converged" -ne 1 ]]; then
+            echo 'provider publication failed to converge within 6 passes' >&2
+            exit 1
+          fi
+          python scripts/generate_language_manifests.py
+          python scripts/prune_unreferenced_providers.py
+          python scripts/sync_release_versions.py --manifest manifest.json --previous "$RUNNER_TEMP/manifest-before.json"
+          node engine_v2/scripts/bootstrap-provider-catalog.mjs --general manifest.json --vf vf/manifest.json --output provider_catalog.json
+          node engine_v2/scripts/render-manifests-from-catalog.mjs --catalog provider_catalog.json --general manifest.json --vf vf/manifest.json
+          python scripts/generate_language_manifests.py
+          python scripts/sync_release_versions.py --manifest manifest.json --previous "$RUNNER_TEMP/manifest-before.json"
+          python scripts/prune_unreferenced_providers.py
+
+      - name: Verify Core and native media contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/normalize_provider_rebuild_safety.py --check
+          python scripts/normalize_core_fixed_point_contract.py --check
+          python scripts/normalize_provider_branding_pipeline.py --check
+          python scripts/normalize_core_media_policy.py --check
+          python scripts/enforce_main_only_repository_policy.py --check
+          python tests/core_terminal_export_floor_test.py
+          python tests/core_media_policy_test.py
+          python tests/provider_branding_contract_test.py
+          python tests/global_core_presentation_pipeline_test.py
+          python tests/native_sync_fetch_target_order_test.py
+          python tests/runtime_capability_media_safety_v4_test.py
+          python tests/global_playback_integrity_policy_test.py
+          python tests/global_stream_identity_test.py
+          python tests/global_stream_presentation_test.py
+          python tests/global_stream_presentation_pipeline_test.py
+          python tests/provider_specific_adapters_test.py
+          python tests/provider_wrapper_isolation_test.py
+          python tests/stream_output_sanitizer_fail_closed_test.py
+          python tests/tv_provider_hardening_test.py
+          python tests/provider_security_hardening_test.py
+          python tests/provider_purification_contract_test.py
+          python tests/prune_unreferenced_providers_test.py
+          python tests/nuvio_client_upstream_drift_guard_test.py
+          python tests/badge_asset_contract_test.py
+          python tests/repository_hygiene_contract_test.py
+          python scripts/reapply_published_overrides.py --check
+          node engine_v2/tests/provider-catalog.test.mjs
+
+      - name: Prove every published provider is final Terser fixed-point
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          from scripts.provider_purification import TERSER_VERSION, purify_bytes
+          root = Path('.')
+          manifest = json.loads((root / 'manifest.json').read_text(encoding='utf-8'))
+          checked = 0
+          for row in manifest.get('scrapers') or []:
+              if not isinstance(row, dict):
+                  continue
+              relative = str(row.get('filename') or '')
+              if not relative.startswith('providers/'):
+                  continue
+              path = root / relative
+              data = path.read_bytes()
+              chosen, report = purify_bytes(data)
+              if chosen != data:
+                  raise SystemExit(f"published provider is not final Terser fixed-point: {row.get('id')} {relative} bytes_saved={report.get('bytesSaved')}")
+              checked += 1
+          if checked < 1:
+              raise SystemExit('no published provider was checked')
+          print(f'FIELD_FINAL_TERSER_FIXED_POINT providers={checked} tool=terser version={TERSER_VERSION} mangle=false')
+          PY
+
+      - name: Validate complete repository suite
+        run: npm test
+
+      - name: Rebuild release integrity inventories
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/generate_release_hashes.py
+          python scripts/validate_release_integrity.py
+
+      - name: Publish exact finalized tree to main
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          if git diff --cached --quiet; then
+            echo 'Core media policy already fully materialized on main.'
+          else
+            git commit -m 'chore: materialize global Core media policy'
+            git fetch origin main
+            git rebase origin/main
+            python scripts/generate_release_hashes.py
+            python scripts/validate_release_integrity.py
+            git add FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json
+            if ! git diff --cached --quiet; then git commit --amend --no-edit; fi
+            git push origin HEAD:main
+          fi
+
+      - name: Verify exact resulting main
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin main
+          git reset --hard origin/main
+          git clean -fdx
+          npm ci --ignore-scripts --no-audit --no-fund
+          python scripts/normalize_provider_rebuild_safety.py --check
+          python scripts/normalize_core_fixed_point_contract.py --check
+          python scripts/normalize_provider_branding_pipeline.py --check
+          python scripts/normalize_core_media_policy.py --check
+          python scripts/enforce_main_only_repository_policy.py --check
+          python tests/core_terminal_export_floor_test.py
+          python tests/core_media_policy_test.py
+          python tests/provider_branding_contract_test.py
+          python tests/global_playback_integrity_policy_test.py
+          python tests/global_stream_identity_test.py
+          python tests/runtime_capability_media_safety_v4_test.py
+          python tests/provider_wrapper_isolation_test.py
+          python tests/stream_output_sanitizer_fail_closed_test.py
+          python tests/provider_security_hardening_test.py
+          python tests/provider_purification_contract_test.py
+          python tests/prune_unreferenced_providers_test.py
+          python tests/nuvio_client_upstream_drift_guard_test.py
+          python tests/badge_asset_contract_test.py
+          python tests/repository_hygiene_contract_test.py
+          python scripts/reapply_published_overrides.py --check
+          python scripts/validate_release_integrity.py
+          node engine_v2/tests/provider-catalog.test.mjs
+          test -z "$(git status --porcelain)"
+
+      - name: Report recovery success
+        if: success()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: gh issue comment 69 --repo "$GITHUB_REPOSITORY" --body "Core step-resume recovery succeeded: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}."
