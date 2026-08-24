@@ -1,10 +1,14 @@
 #!/usr/bin/env python3
-"""Merge native-reader evidence and render the README provider matrix.
+"""Merge native-reader evidence and render the README provider showcase.
 
 The visible inventory is derived from enabled scrapers in the general manifest,
 so it cannot silently drift from the plugin users actually load. Native-reader
 proofs are crossed onto that inventory as they arrive; missing proof stays unknown
 rather than being misreported as a provider failure.
+
+The README intentionally showcases retained positive player evidence first. The
+complete active inventory remains available in a compact disclosure block without
+a wall of empty per-device cells that could be mistaken for failures.
 """
 from __future__ import annotations
 
@@ -24,6 +28,17 @@ DEVICES = (
     ("desktop_macos", "Desktop macOS"),
     ("desktop_windows", "Desktop Windows"),
 )
+DEVICE_ICONS = {
+    "tv": "📺",
+    "mobile": "📱",
+    "desktop_macos": "🖥️",
+    "desktop_windows": "🪟",
+}
+MEDIA_ICONS = {
+    "movie": "🎬",
+    "tv": "📺",
+    "anime": "🎌",
+}
 
 
 def load_json(path: Path, default: Any) -> Any:
@@ -159,6 +174,10 @@ def media_label(value: str) -> str:
     return {"movie": "Film", "tv": "Série", "anime": "Anime"}.get(str(value).casefold(), str(value).title())
 
 
+def media_icon(value: str) -> str:
+    return MEDIA_ICONS.get(str(value).casefold(), "🎞️")
+
+
 def active_providers() -> list[dict[str, Any]]:
     manifest = load_json(ROOT / "manifest.json", {})
     logo_index = load_json(ROOT / "assets" / "providers" / "index.json", {})
@@ -214,12 +233,14 @@ def provider_proof_summary(
     devices: dict[str, str] = {}
     verified_content: list[str] = []
     seen_content: set[str] = set()
+    native_proof_count = 0
     for row in matching:
         fixture = str(row.get("fixture") or "").strip()
         fixture_row = fixtures.get(fixture) if isinstance(fixtures.get(fixture), dict) else {}
+        media_type = str(row.get("mediaType") or fixture_row.get("mediaType") or "unknown").casefold()
         label = str(fixture_row.get("label") or fixture.replace("-", " ").title())
-        kind = media_label(str(row.get("mediaType") or fixture_row.get("mediaType") or "unknown"))
-        content = f"{label} ({kind})" if label else kind
+        kind = media_label(media_type)
+        content = f"{media_icon(media_type)} {label} · {kind}" if label else f"{media_icon(media_type)} {kind}"
         if content not in seen_content:
             seen_content.add(content)
             verified_content.append(content)
@@ -227,84 +248,169 @@ def provider_proof_summary(
             if not isinstance(proof, dict):
                 continue
             date = str(proof.get("verifiedAt") or "")
-            if date and date >= devices.get(str(device), ""):
+            if not date:
+                continue
+            native_proof_count += 1
+            if date >= devices.get(str(device), ""):
                 devices[str(device)] = date
     return {
         "proofCount": len(matching),
+        "nativeProofCount": native_proof_count,
         "content": verified_content,
         "devices": devices,
         "latest": max(devices.values(), default="—"),
     }
 
 
-def device_cell(summary: dict[str, Any], device: str) -> str:
-    date = str((summary.get("devices") or {}).get(device) or "")
-    return f"✅ {date}" if date else "—"
-
-
 def provider_label(provider: dict[str, Any]) -> str:
     name = html.escape(str(provider.get("name") or provider.get("id") or ""), quote=False).replace("|", "&#124;")
     logo = html.escape(str(provider.get("logo") or ""), quote=True)
     if not logo:
-        return name
-    return f'<img src="{logo}" width="36" alt="">&nbsp; {name}'
+        return f"**{name}**"
+    return f'<img src="{logo}" width="42" alt="">&nbsp; **{name}**'
+
+
+def native_device_cell(summary: dict[str, Any]) -> str:
+    devices = summary.get("devices") or {}
+    labels = []
+    for key, label in DEVICES:
+        if str(devices.get(key) or ""):
+            labels.append(f"{DEVICE_ICONS.get(key, '✅')} **{label}** ✅")
+    return "<br>".join(labels) or ""
+
+
+def shield(label: str, value: str, color: str) -> str:
+    clean_label = str(label).replace("-", "--").replace("_", "__").replace(" ", "_")
+    clean_value = str(value).replace("-", "--").replace("_", "__").replace(" ", "_")
+    return f"![{label}](https://img.shields.io/badge/{clean_label}-{clean_value}-{color}?style=for-the-badge)"
 
 
 def render(results: dict[str, Any]) -> str:
     fixtures = fixture_catalog(results)
     providers = active_providers()
     summaries = {provider["key"]: provider_proof_summary(provider, results, fixtures) for provider in providers}
+    verified = [provider for provider in providers if summaries[provider["key"]].get("nativeProofCount", 0) > 0]
+    verified.sort(
+        key=lambda provider: (
+            -len(summaries[provider["key"]].get("devices") or {}),
+            -int(summaries[provider["key"]].get("nativeProofCount") or 0),
+            str(provider.get("name") or "").casefold(),
+        )
+    )
     positive_dates = [
         str(summary.get("latest"))
         for summary in summaries.values()
         if str(summary.get("latest") or "") not in ("", "—")
     ]
     last_update = str(results.get("updatedAt") or max(positive_dates, default="—"))
+    native_proofs = sum(int(summary.get("nativeProofCount") or 0) for summary in summaries.values())
+    verified_cases = {
+        str(content)
+        for summary in summaries.values()
+        for content in (summary.get("content") or [])
+        if str(content).strip()
+    }
+    device_coverage = {
+        device
+        for summary in summaries.values()
+        for device, date in (summary.get("devices") or {}).items()
+        if str(date or "")
+    }
+
     lines = [
         START,
         "## Providers actifs & résultats natifs vérifiés",
         "",
-        f"**Inventaire : {len(providers)} providers activés dans `manifest.json`. Dernière preuve positive : {last_update}.**",
+        '<div align="center">',
         "",
-        "La liste ci-dessous est reconstruite automatiquement depuis le **manifest général actif**. Les résultats du Deep/Brain et des Labs natifs sont ensuite croisés dessus. Une case `—` signifie uniquement *pas encore de preuve positive conservée* ; elle n'est jamais transformée automatiquement en échec.",
+        shield("PROVIDERS ACTIFS", str(len(providers)), "16a34a"),
+        shield("NATIFS VERIFIES", str(len(verified)), "2563eb"),
+        shield("PREUVES LECTEUR", str(native_proofs), "7c3aed"),
+        shield("DERNIERE PREUVE", last_update, "334155"),
         "",
-        "| Provider | Types déclarés | Contenus réellement vérifiés | TV | Mobile | Desktop macOS | Desktop Windows | Preuves | Dernière preuve |",
-        "|---|---|---|---:|---:|---:|---:|---:|---:|",
+        "</div>",
+        "",
+        "> **Ici, NiakVIO n'affiche que des succès natifs réellement conservés.** Une preuve signifie que le lecteur officiel Nuvio a atteint un état sain pour le **provider + contenu + device exacts**. L'absence de preuve n'est jamais maquillée en succès — et n'est pas non plus présentée comme un échec.",
+        "",
+        f"**{len(verified)} providers** disposent actuellement d'au moins une preuve lecteur native conservée, sur **{len(verified_cases)} cas de lecture distincts** et **{len(device_coverage)} famille(s) de device** déjà représentée(s). L'inventaire complet reste synchronisé automatiquement sur `manifest.json`.",
+        "",
+        "### ✅ Lectures natives confirmées",
+        "",
+        "| Provider | Cas réellement lus | Lecteurs officiels confirmés | Preuves | Dernière validation |",
+        "|---|---|---|---:|---:|",
     ]
-    for provider in providers:
+
+    for provider in verified:
         summary = summaries[provider["key"]]
-        types = ", ".join(media_label(value) for value in provider.get("types") or []) or "—"
-        contents = "<br>".join(str(value).replace("|", "\\|") for value in summary.get("content") or []) or "—"
+        contents = "<br>".join(str(value).replace("|", "\\|") for value in summary.get("content") or [])
         lines.append(
-            "| {provider} | {types} | {contents} | {tv} | {mobile} | {mac} | {win} | {proofs} | {date} |".format(
+            "| {provider} | {contents} | {devices} | **{proofs}** | `{date}` |".format(
                 provider=provider_label(provider),
-                types=types,
                 contents=contents,
-                tv=device_cell(summary, "tv"),
-                mobile=device_cell(summary, "mobile"),
-                mac=device_cell(summary, "desktop_macos"),
-                win=device_cell(summary, "desktop_windows"),
-                proofs=summary.get("proofCount") or "—",
+                devices=native_device_cell(summary),
+                proofs=summary.get("nativeProofCount") or 0,
                 date=summary.get("latest") or "—",
             )
         )
+
+    if not verified:
+        lines.append("| _Aucune preuve positive conservée pour le moment_ | — | — | 0 | — |")
+
     lines.extend(
         [
             "",
-            "### Ce que NiakVIO ajoute à une simple liste de providers",
+            "<details>",
+            f"<summary><strong>🟢 Voir les {len(providers)} providers actifs</strong> — inventaire complet synchronisé au manifest</summary>",
             "",
-            "| Capacité | NiakVIO | Manifest/provider brut |",
+            "La liste ci-dessous décrit **l'état de publication**, pas une supposition sur la lecture. Les providers déjà prouvés natifs sont signalés ; les autres restent simplement actifs dans le manifest jusqu'à ce qu'une preuve positive soit conservée.",
+            "",
+            "| Provider | Types publiés | État de confiance public |",
             "|---|---|---|",
-            "| Inventaire automatiquement synchronisé au manifest actif | ✅ | N/A |",
-            "| Plusieurs upstreams comparés | ✅ | Généralement une seule source |",
-            "| Preuve lecteur officielle par device | ✅ TV / Mobile / Desktop | Non garantie |",
-            "| Vérification œuvre / saison / épisode | ✅ | Non garantie |",
-            "| Validation média et premier segment | ✅ | Non garantie |",
-            "| Repair Brain + retest après mutation | ✅ | Non |",
-            "| Dernier état sain / publication fail-closed | ✅ | Non garanti |",
-            "| Projection francophone dédiée | ✅ | Variable |",
+        ]
+    )
+
+    inventory = sorted(
+        providers,
+        key=lambda provider: (
+            0 if summaries[provider["key"]].get("nativeProofCount", 0) > 0 else 1,
+            str(provider.get("name") or "").casefold(),
+        ),
+    )
+    for provider in inventory:
+        summary = summaries[provider["key"]]
+        types = " · ".join(
+            f"{media_icon(value)} {media_label(value)}" for value in provider.get("types") or []
+        ) or "Type non déclaré"
+        proof_count = int(summary.get("nativeProofCount") or 0)
+        if proof_count:
+            state = f"✅ **Preuve native conservée** · {proof_count} validation(s) lecteur"
+        else:
+            state = "🟢 **Actif dans le manifest** · prochaine preuve native conservée dès validation positive"
+        lines.append(f"| {provider_label(provider)} | {types} | {state} |")
+
+    lines.extend(
+        [
             "",
-            "La source machine des preuves est [`automation/provider-device-results.json`](automation/provider-device-results.json). Les logos affichés privilégient les assets WebP committés de NiakVIO ; les noms du tableau viennent du même registre de branding mais restent volontairement sans emoji à côté du logo. Les preuves des prochains gros Deep/Labs complètent automatiquement les lignes existantes.",
+            "</details>",
+            "",
+            "### Pourquoi ces résultats sont plus stricts qu'une simple liste de providers",
+            "",
+            "| Contrôle | NiakVIO | Manifest/provider brut |",
+            "|---|---|---|",
+            "| Provider présent dans un manifest | ✅ | ✅ |",
+            "| Plusieurs upstreams comparés avant promotion | ✅ | Variable |",
+            "| Média final réellement atteint | ✅ | Non garanti |",
+            "| Lecteur officiel vérifié par plateforme | ✅ TV / Mobile / macOS / Windows | Non garanti |",
+            "| Identité œuvre / année / saison / épisode contrôlée | ✅ | Non garanti |",
+            "| HLS / DASH / média direct validé au-delà de l'extension URL | ✅ | Non garanti |",
+            "| Mauvais média jouable classé comme échec | ✅ | Non garanti |",
+            "| Repair Brain puis retest avant promotion | ✅ | Non |",
+            "| Dernier état sain + publication fail-closed | ✅ | Non garanti |",
+            "| Historique machine des preuves positives | ✅ | Variable |",
+            "",
+            "**Lecture de la vitrine :** `✅` signifie *preuve positive conservée*, jamais simple détection d'URL. Les résultats affichés restent fixes tant qu'une nouvelle preuve native plus récente ne vient pas les compléter ; un run inconclusif ne détruit pas une preuve saine existante.",
+            "",
+            "Source machine : [`automation/provider-device-results.json`](automation/provider-device-results.json) · Inventaire : [`manifest.json`](manifest.json) · Les prochains Deep/Brain/Labs enrichissent automatiquement cette vitrine uniquement avec des preuves positives qualifiées.",
             END,
         ]
     )
@@ -339,7 +445,7 @@ def main() -> int:
     args.results.write_text(results_text, encoding="utf-8")
     args.readme.write_text(next_readme, encoding="utf-8")
     print(
-        f"provider/device README matrix current: active={len(active_providers())} "
+        f"provider/device README showcase current: active={len(active_providers())} "
         f"proofs={len(results.get('proofs') or [])} updated={results.get('updatedAt') or 'unknown'}"
     )
     return 0
