@@ -174,12 +174,13 @@ function dnsResult(name, status, addresses = []) {
   assert.equal(dns.status, 'resolved');
   assert.equal(dns.transport, 'globalping');
   assert.equal(dns.measurement_id, 'dns-measurement-sfr');
+  assert.equal(dns.location_magic, 'France+SFR+eyeball');
   const http = await dependencies.probeFn('example.com', { name: 'sfr', kind: 'french_isp', servers: ['109.0.66.10'] }, config);
   assert.equal(http.status, 'reachable');
   assert.equal(http.transport, 'globalping');
   assert.equal(calls[0].locations[0].magic, 'France+SFR+eyeball');
   assert.equal(calls[0].measurementOptions.resolver, '109.0.66.10');
-  assert.equal(calls[1].locations[0].magic, 'dns-measurement-sfr');
+  assert.equal(calls[1].locations[0].magic, 'France+SFR+eyeball');
   assert.equal(calls[1].measurementOptions.method, 'GET');
   assert.equal(calls[1].measurementOptions.ipVersion, 4);
   assert.equal('request' in calls[1].measurementOptions, false);

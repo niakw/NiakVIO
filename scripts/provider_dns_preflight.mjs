@@ -212,7 +212,8 @@ export function createGlobalpingDependencies(preflightConfig, injected = {}) {
     let lastError = null;
     for (const magic of candidates.filter(Boolean)) {
       try {
-        return await runMeasurement(bodyFactory(String(magic)), remoteConfig);
+        const measurement = await runMeasurement(bodyFactory(String(magic)), remoteConfig);
+        return { measurement, locationMagic: String(magic) };
       } catch (error) {
         lastError = error;
         if (![400, 404, 422].includes(Number(error?.status))) break;
@@ -230,14 +231,16 @@ export function createGlobalpingDependencies(preflightConfig, injected = {}) {
       dnsCache.set(key, (async () => {
         try {
           const resolver = String((resolverConfig.servers || [])[0] || '');
-          const measurement = await runAtFirstAvailableLocation((magic) => ({
+          const selectedLocation = await runAtFirstAvailableLocation((magic) => ({
             type: 'dns',
             target: normalizeHost(host),
             locations: [{ magic }],
             limit: 1,
             measurementOptions: { query: { type: 'A' }, resolver, protocol: 'UDP' },
           }), resolverConfig.name, resolverConfig);
-          return parseGlobalpingDns(measurement, resolverConfig.name, resolverConfig);
+          const dnsResult = parseGlobalpingDns(selectedLocation.measurement, resolverConfig.name, resolverConfig);
+          dnsResult.location_magic = selectedLocation.locationMagic;
+          return dnsResult;
         } catch (error) {
           if (remoteConfig.fallback_to_direct === true) return resolveWithResolver(host, resolverConfig, options);
           return { resolver: resolverConfig.name, servers: resolverConfig.servers || [], status: 'unavailable', addresses: [], errors: [{ family: 4, code: compactError(error) }], transport: 'globalping', error: compactError(error) };
@@ -256,11 +259,11 @@ export function createGlobalpingDependencies(preflightConfig, injected = {}) {
       httpCache.set(key, (async () => {
         try {
           const dnsResult = await resolveFn(host, resolverConfig, options);
-          if (!dnsResult.measurement_id) return { status: 'unreachable', http_status: null, final_host: normalizeHost(host), redirects: [], body_excerpt: '', attempts: [], error: 'GLOBALPING_DNS_MEASUREMENT_MISSING', transport: 'globalping' };
+          if (!dnsResult.location_magic) return { status: 'unreachable', http_status: null, final_host: normalizeHost(host), redirects: [], body_excerpt: '', attempts: [], error: 'GLOBALPING_DNS_LOCATION_MISSING', transport: 'globalping' };
           const measurement = await runMeasurement({
             type: 'http',
             target: `https://${normalizeHost(host)}/`,
-            locations: [{ magic: dnsResult.measurement_id }],
+            locations: [{ magic: dnsResult.location_magic }],
             limit: 1,
             // Globalping HTTP options are top-level within measurementOptions.
             measurementOptions: { method: 'GET', ipVersion: 4 },
