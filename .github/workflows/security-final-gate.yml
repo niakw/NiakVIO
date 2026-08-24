@@ -20,6 +20,7 @@ on:
       - 'tests/provider_purification_contract_test.py'
       - 'tests/core_media_policy_test.py'
       - 'tests/runtime_capability_media_safety_v4_test.py'
+      - 'tests/native_corpus_device_lab_test.py'
 
 permissions:
   contents: read
@@ -60,6 +61,7 @@ jobs:
           python tests/provider_purification_contract_test.py
           python tests/core_media_policy_test.py
           python tests/runtime_capability_media_safety_v4_test.py
+          python tests/native_corpus_device_lab_test.py
 
       - name: Scan every active published provider for known unsafe shapes
         shell: bash
@@ -117,7 +119,7 @@ jobs:
             exit 1
           fi
 
-      - name: Gate open high/critical CodeQL alerts in generated providers
+      - name: Gate open high and critical CodeQL alerts on main
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
@@ -126,7 +128,7 @@ jobs:
           gh api --paginate \
             -H 'Accept: application/vnd.github+json' \
             -H 'X-GitHub-Api-Version: 2022-11-28' \
-            "repos/${GITHUB_REPOSITORY}/code-scanning/alerts?state=open&per_page=100" \
+            "repos/${GITHUB_REPOSITORY}/code-scanning/alerts?state=open&ref=refs/heads/main&per_page=100" \
             --slurp > "$RUNNER_TEMP/codeql-open.json"
           python - <<'PY'
           import json, os
@@ -134,22 +136,26 @@ jobs:
           pages=json.loads(Path(os.environ['RUNNER_TEMP']+'/codeql-open.json').read_text())
           alerts=[row for page in pages for row in (page if isinstance(page,list) else []) if isinstance(row,dict)]
           bad=[]
+          provider_bad=[]
           for row in alerts:
               rule=row.get('rule') or {}
               severity=str(rule.get('security_severity_level') or rule.get('severity') or '').lower()
               instance=row.get('most_recent_instance') or {}
               location=instance.get('location') or {}
               path=str(location.get('path') or '')
-              if path.startswith('providers/') and severity in {'high','critical'}:
-                  bad.append({
+              if severity in {'high','critical'}:
+                  item={
                       'number': row.get('number'),
                       'rule': rule.get('id') or rule.get('name'),
                       'severity': severity,
                       'path': path,
-                  })
-          print(f'FIELD_CODEQL_PROVIDER_ALERTS open={len(alerts)} high_or_critical_provider={len(bad)}')
+                  }
+                  bad.append(item)
+                  if path.startswith('providers/'):
+                      provider_bad.append(item)
+          print(f'FIELD_CODEQL_ALERTS open={len(alerts)} high_or_critical={len(bad)} high_or_critical_provider={len(provider_bad)}')
           for row in bad:
-              print('OPEN_PROVIDER_ALERT=' + json.dumps(row, sort_keys=True))
+              print('OPEN_HIGH_ALERT=' + json.dumps(row, sort_keys=True))
           if bad:
-              raise SystemExit('open high/critical CodeQL alerts remain in generated providers')
+              raise SystemExit('open high/critical CodeQL alerts remain on main')
           PY
