@@ -97,13 +97,12 @@ def _place_hls_before_core_finalizers(text: str) -> str:
     if not core_positions:
         return body.rstrip() + "\n" + segment + "\n"
     insertion = min(core_positions)
-    return (
-        body[:insertion].rstrip()
-        + "\n"
-        + segment
-        + "\n"
-        + body[insertion:].lstrip()
-    ).rstrip() + "\n"
+    prefix = body[:insertion].rstrip()
+    suffix = body[insertion:].lstrip()
+    output = (prefix + "\n" + segment) if prefix else segment
+    if suffix:
+        output += "\n" + suffix
+    return output.rstrip() + "\n"
 
 
 def _place_safety_before_hls(text: str) -> str:
