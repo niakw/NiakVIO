@@ -58,6 +58,29 @@ def _restore_leading_whitespace(original: str, output: str) -> str:
     return leading + output.lstrip()
 
 
+def _canonicalize_audio_marker_boundary(text: str) -> str:
+    """Keep the generated audio marker on one deterministic line boundary.
+
+    The marker can legitimately survive Core-tail stripping because it records an
+    in-place provider guard rewrite. Reordering generated wrappers must therefore
+    never accumulate blank lines around that retained marker across rebuild passes.
+    """
+    marker = f"/* {AUDIO_MARKER} */"
+    first = text.find(marker)
+    if first < 0:
+        return text
+    if text.find(marker, first + len(marker)) >= 0:
+        raise ValueError("duplicate HLS master audio marker")
+    left = text[:first].rstrip(" \t\r\n")
+    right = text[first + len(marker):].lstrip(" \t\r\n")
+    output = (left + "\n" if left else "") + marker
+    if right:
+        output += "\n" + right
+    else:
+        output += "\n"
+    return output
+
+
 def _wrapper_bounds(text: str, marker: str) -> tuple[int, int] | None:
     start = text.find(f"/* {marker}:")
     if start < 0:
@@ -156,4 +179,5 @@ def _place_safety_before_hls(text: str) -> str:
 def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> str:
     output = _IMPL.apply(text, options=options, **kwargs)
     output = _place_safety_before_hls(output)
-    return _place_hls_before_core_finalizers(output)
+    output = _place_hls_before_core_finalizers(output)
+    return _canonicalize_audio_marker_boundary(output)
