@@ -1,0 +1,130 @@
+name: FIX - post-Deep compatibility once
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/tmp-postdeep-compat.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  harden:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Add bounded legacy audit compatibility
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+
+          quarantine = Path('scripts/quarantine_catalogue_audit_failures.py')
+          text = quarantine.read_text(encoding='utf-8')
+          anchor = '    parser.add_argument("--tested-commit-sha", default="")\n'
+          legacy = (
+              '    # Temporary CLI compatibility for in-flight Deep workflows created before the canonical audit migration.\n'
+              '    parser.add_argument("--manifest", help=argparse.SUPPRESS)\n'
+              '    parser.add_argument("--overrides", help=argparse.SUPPRESS)\n'
+          )
+          if 'parser.add_argument("--manifest", help=argparse.SUPPRESS)' not in text:
+              if anchor not in text:
+                  raise SystemExit('quarantine parser anchor not found')
+              text = text.replace(anchor, anchor + legacy, 1)
+              quarantine.write_text(text, encoding='utf-8')
+
+          wrapper = Path('scripts/audit_catalogue_media.py')
+          wrapper.write_text('''#!/usr/bin/env python3
+# SPDX-License-Identifier: GPL-3.0-only
+"""Compatibility entrypoint for an in-flight Deep publisher.
+
+The canonical finite audit is audit_catalogue_identity_media.py. This adapter
+only translates the retired argument-based workflow contract into that audit's
+environment contract; it does not duplicate audit or quarantine policy.
+"""
+from __future__ import annotations
+
+import argparse
+import os
+import subprocess
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+CANONICAL = ROOT / "scripts" / "audit_catalogue_identity_media.py"
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--manifest", type=Path, required=True)
+    parser.add_argument("--stage", type=Path, required=True)
+    parser.add_argument("--health", type=Path, required=True)
+    parser.add_argument("--output", type=Path, required=True)
+    args = parser.parse_args()
+
+    required = {
+        "manifest": args.manifest,
+        "stage candidates": args.stage / "candidates.json",
+        "health evidence": args.health,
+        "canonical auditor": CANONICAL,
+    }
+    missing = [f"{label}: {path}" for label, path in required.items() if not path.is_file()]
+    if missing:
+        print("legacy catalogue audit compatibility failed:", file=sys.stderr)
+        for item in missing:
+            print(f"- missing {item}", file=sys.stderr)
+        return 2
+
+    env = dict(os.environ)
+    env["NUVIO_CATALOGUE_AUDIT_OUTPUT"] = str(args.output.resolve())
+    completed = subprocess.run([sys.executable, str(CANONICAL)], cwd=ROOT, env=env, check=False)
+    return int(completed.returncode)
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
+''', encoding='utf-8')
+          PY
+          python -m py_compile scripts/audit_catalogue_media.py scripts/quarantine_catalogue_audit_failures.py
+          python tests/catalogue_audit_transient_hls_test.py
+          python tests/sync_catalogue_audit_gate_test.py
+
+      - name: Refresh integrity inventories and remove consumed one-shots
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f .github/workflows/tmp-fix-learning-artifact-layout.yml
+          rm -f .github/workflows/tmp-resume-quick-publish.yml
+          rm -f .github/workflows/tmp-postdeep-compat.yml
+          python scripts/generate_release_hashes.py
+          python scripts/validate_release_integrity.py
+
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add scripts/audit_catalogue_media.py scripts/quarantine_catalogue_audit_failures.py \
+            FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json \
+            .github/workflows/tmp-fix-learning-artifact-layout.yml \
+            .github/workflows/tmp-resume-quick-publish.yml \
+            .github/workflows/tmp-postdeep-compat.yml
+          if git diff --cached --quiet; then
+            echo 'No compatibility change required.'
+            exit 0
+          fi
+          git commit -m 'fix: bridge in-flight Deep audit contract [skip ci]'
+          git fetch origin main
+          git rebase origin/main
+          python scripts/generate_release_hashes.py
+          python scripts/validate_release_integrity.py
+          git add FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json
+          if ! git diff --cached --quiet; then
+            git commit --amend --no-edit
+          fi
+          git push origin HEAD:main
