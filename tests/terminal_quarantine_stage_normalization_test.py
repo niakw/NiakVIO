@@ -67,7 +67,13 @@ with tempfile.TemporaryDirectory() as tmp:
     overrides_path.write_text(json.dumps(overrides), encoding="utf-8")
 
     stats = module.normalize(root, stage, overrides_path)
-    assert stats == {"providers": 1, "mappings": 3, "records": 1}, stats
+    assert stats == {
+        "providers": 1,
+        "mappings": 3,
+        "records": 1,
+        "security_candidates": 2,
+        "security_applied": 0,
+    }, stats
 
     normalized_registry = json.loads(registry_path.read_text(encoding="utf-8"))
     normalized_overrides = json.loads(overrides_path.read_text(encoding="utf-8"))
