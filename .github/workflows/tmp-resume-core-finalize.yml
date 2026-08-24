@@ -209,4 +209,5 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
-        run: gh issue comment 69 --repo "$GITHUB_REPOSITORY" --body "Core V11 step-resume recovery succeeded: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}."
+        run: |
+          gh issue comment 69 --repo "$GITHUB_REPOSITORY" --body "Core V11 step-resume recovery succeeded: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}."
