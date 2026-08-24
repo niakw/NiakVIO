@@ -1,4 +1,7 @@
 name: CodeQL
+# Default Setup owns GitHub code-scanning uploads. This advanced security-extended
+# workflow remains an independent exact-SHA proof, but never uploads SARIF and
+# therefore cannot conflict with Default Setup.
 
 on:
   push:
@@ -11,7 +14,6 @@ on:
 
 permissions:
   contents: read
-  security-events: write
   packages: read
   actions: read
 
@@ -34,12 +36,63 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
-      - name: Initialize CodeQL
+
+      - name: Initialize CodeQL security-extended
         uses: github/codeql-action/init@db488ddef3bf6cb639b32c2e9a7c0a7ea8271d28
         with:
           languages: ${{ matrix.language }}
           queries: security-extended
-      - name: Analyze
+
+      - name: Analyze locally without conflicting with Default Setup
         uses: github/codeql-action/analyze@db488ddef3bf6cb639b32c2e9a7c0a7ea8271d28
         with:
           category: "/language:${{ matrix.language }}"
+          output: ../results
+          upload: never
+          upload-database: false
+
+      - name: Gate local security-extended High/Critical findings
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          sarifs = sorted(Path('../results').glob('*.sarif'))
+          if not sarifs:
+              raise SystemExit('CodeQL local analysis produced no SARIF')
+
+          high = []
+          result_count = 0
+          for path in sarifs:
+              payload = json.loads(path.read_text(encoding='utf-8'))
+              for run in payload.get('runs') or []:
+                  rules = {}
+                  driver = ((run.get('tool') or {}).get('driver') or {})
+                  for rule in driver.get('rules') or []:
+                      if not isinstance(rule, dict):
+                          continue
+                      rule_id = str(rule.get('id') or '')
+                      props = rule.get('properties') or {}
+                      raw_score = props.get('security-severity')
+                      try:
+                          score = float(raw_score)
+                      except (TypeError, ValueError):
+                          score = None
+                      rules[rule_id] = (score, str(rule.get('name') or rule_id))
+                  for result in run.get('results') or []:
+                      if not isinstance(result, dict):
+                          continue
+                      result_count += 1
+                      rule_id = str(result.get('ruleId') or '')
+                      score, name = rules.get(rule_id, (None, rule_id))
+                      if score is not None and score >= 7.0:
+                          high.append((rule_id, name, score))
+
+          print(f'FIELD_CODEQL_LOCAL_EXTENDED results={result_count} high_or_critical={len(high)} sarif={len(sarifs)}')
+          for rule_id, name, score in high:
+              print(f'OPEN_LOCAL_HIGH_ALERT={rule_id}|{score}|{name}')
+          if high:
+              raise SystemExit('local CodeQL security-extended High/Critical findings remain')
+          PY
