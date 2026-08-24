@@ -7,6 +7,7 @@ on:
       - '.github/workflows/core-resume-after-native-contract.yml'
       - 'tests/native_corpus_device_lab_test.py'
       - 'tests/native_human_ux_policy_lock_test.py'
+      - 'tests/native_player_diagnostics_codegen_test.py'
   workflow_dispatch:
 
 permissions:
@@ -27,7 +28,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
-          gh issue comment 69 --repo "$GITHUB_REPOSITORY" --body "Targeted Core resume started: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID} on ${GITHUB_SHA}. Resuming at native_corpus_device_lab_test.py; Core normalization/convergence/Terser are not repeated."
+          gh issue comment 69 --repo "$GITHUB_REPOSITORY" --body "Targeted Core resume started: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID} on ${GITHUB_SHA}. Resuming after already-proven Core normalization/convergence/Terser; no provider rematerialization loop is repeated."
 
       - name: Checkout exact main
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
@@ -76,8 +77,19 @@ jobs:
       - name: Run repository test body without repeating pretest
         run: npm test --ignore-scripts
 
-      - name: Verify release integrity
-        run: python3 scripts/validate_release_integrity.py
+      - name: Verify exact main fixed-point read-only
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/normalize_provider_rebuild_safety.py --check
+          python3 scripts/normalize_core_fixed_point_contract.py --check
+          python3 scripts/normalize_provider_branding_pipeline.py --check
+          python3 scripts/normalize_core_media_policy.py --check
+          python3 scripts/reapply_published_overrides.py --check
+          python3 tests/repository_hygiene_contract_test.py
+          python3 scripts/validate_release_integrity.py
+          node engine_v2/tests/provider-catalog.test.mjs
+          git diff --exit-code
 
       - name: Report targeted resume success
         if: success()
@@ -85,7 +97,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
-          gh issue comment 69 --repo "$GITHUB_REPOSITORY" --body "Targeted Core resume SUCCEEDED: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID} on ${GITHUB_SHA}. Remaining pretest + repository test body + release integrity passed without repeating Core normalization/convergence/Terser."
+          gh issue comment 69 --repo "$GITHUB_REPOSITORY" --body "Targeted Core resume SUCCEEDED: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID} on ${GITHUB_SHA}. Remaining native/Brain tests + full repository test body + fixed-point read-only checks + release integrity + hygiene are green, without repeating Core rematerialization."
 
       - name: Report targeted resume failure
         if: failure()
