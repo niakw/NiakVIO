@@ -48,6 +48,16 @@ _CORE_FINALIZERS = (
 )
 
 
+def _leading_whitespace(text: str) -> str:
+    return text[: len(text) - len(text.lstrip())]
+
+
+def _restore_leading_whitespace(original: str, output: str) -> str:
+    """Keep byte-stable provider prefix whitespace across generated-layer moves."""
+    leading = _leading_whitespace(original)
+    return leading + output.lstrip()
+
+
 def _wrapper_bounds(text: str, marker: str) -> tuple[int, int] | None:
     start = text.find(f"/* {marker}:")
     if start < 0:
@@ -66,7 +76,8 @@ def _ensure_audio_marker_before_safety(text: str) -> str:
     safety_start = text.find(f"/* {SAFETY_MARKER}:")
     if safety_start < 0:
         return text.rstrip() + f"\n{marker_comment}\n"
-    return text[:safety_start].rstrip() + "\n" + marker_comment + "\n" + text[safety_start:].lstrip()
+    output = text[:safety_start].rstrip() + "\n" + marker_comment + "\n" + text[safety_start:].lstrip()
+    return _restore_leading_whitespace(text, output)
 
 
 def _place_hls_before_core_finalizers(text: str) -> str:
@@ -95,14 +106,15 @@ def _place_hls_before_core_finalizers(text: str) -> str:
         if position >= 0
     ]
     if not core_positions:
-        return body.rstrip() + "\n" + segment + "\n"
+        output = body.rstrip() + "\n" + segment + "\n"
+        return _restore_leading_whitespace(text, output)
     insertion = min(core_positions)
     prefix = body[:insertion].rstrip()
     suffix = body[insertion:].lstrip()
     output = (prefix + "\n" + segment) if prefix else segment
     if suffix:
         output += "\n" + suffix
-    return output.rstrip() + "\n"
+    return _restore_leading_whitespace(text, output.rstrip() + "\n")
 
 
 def _place_safety_before_hls(text: str) -> str:
@@ -138,7 +150,7 @@ def _place_safety_before_hls(text: str) -> str:
     output = (prefix + "\n" + unit) if prefix else unit
     if suffix:
         output += "\n" + suffix
-    return output.rstrip() + "\n"
+    return _restore_leading_whitespace(text, output.rstrip() + "\n")
 
 
 def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> str:
