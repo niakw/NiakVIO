@@ -254,6 +254,54 @@ def _balanced_terminal_object_end(text: str, open_brace: int, limit: int) -> int
     return None
 
 
+def _balanced_terminal_paren_end(text: str, open_paren: int, limit: int) -> int | None:
+    """Return the end of one balanced parenthesized signature, or fail closed."""
+    if open_paren < 0 or open_paren >= limit or text[open_paren] != "(":
+        return None
+    depth = 0
+    quote: str | None = None
+    escaped = False
+    line_comment = False
+    block_comment = False
+    index = open_paren
+    while index < limit:
+        char = text[index]
+        nxt = text[index + 1] if index + 1 < limit else ""
+        if line_comment:
+            if char in "\r\n":
+                line_comment = False
+        elif block_comment:
+            if char == "*" and nxt == "/":
+                block_comment = False
+                index += 1
+        elif quote:
+            if escaped:
+                escaped = False
+            elif char == "\\":
+                escaped = True
+            elif char == quote:
+                quote = None
+        else:
+            if char in ("'", '"', "`"):
+                quote = char
+            elif char == "/" and nxt == "/":
+                line_comment = True
+                index += 1
+            elif char == "/" and nxt == "*":
+                block_comment = True
+                index += 1
+            elif char == "(":
+                depth += 1
+            elif char == ")":
+                depth -= 1
+                if depth < 0:
+                    return None
+                if depth == 0:
+                    return index + 1
+        index += 1
+    return None
+
+
 def _object_exports_getstreams(segment: str) -> bool:
     """Accept explicit or ES object-shorthand getStreams keys, never value-only hits."""
     if re.search(r"(?:[\"']getStreams[\"']\s*:|\bgetStreams\s*:)", segment):
@@ -347,16 +395,19 @@ def _terminal_named_function_suffix_end(text: str, cursor: int, limit: int) -> i
             position += 1
         if position >= limit:
             return limit if consumed else cursor
-        match = re.match(
-            r"function\s+[A-Za-z_$][\w$]*\s*\([^()]*\)\s*\{",
-            text[position:limit],
-        )
+        match = re.match(r"function\s+[A-Za-z_$][\w$]*\s*\(", text[position:limit])
         if not match:
             return None
-        open_brace = text.find("{", position, position + match.end())
-        if open_brace < 0:
+        open_paren = text.find("(", position, position + match.end())
+        signature_end = _balanced_terminal_paren_end(text, open_paren, limit)
+        if signature_end is None:
             return None
-        end = _balanced_terminal_object_end(text, open_brace, limit)
+        body_start = signature_end
+        while body_start < limit and text[body_start].isspace():
+            body_start += 1
+        if body_start >= limit or text[body_start] != "{":
+            return None
+        end = _balanced_terminal_object_end(text, body_start, limit)
         if end is None:
             return None
         position = end
@@ -367,15 +418,21 @@ def _terminal_getstreams_function_end(text: str, core_start: int) -> int | None:
     """Bound providers whose public API is a terminal getStreams declaration.
 
     This covers bundles such as DooFlix that deliberately rely on the runtime global
-    declaration instead of a CommonJS export. The declaration must end immediately
-    before a repository-owned Core marker; any executable suffix fails closed.
+    declaration instead of a CommonJS export. Nested calls/default expressions in
+    the parameter list are scanned structurally; executable suffixes still fail closed.
     """
-    matches = list(re.finditer(r"\bfunction\s+getStreams\s*\([^()]*\)\s*\{", text[:core_start]))
+    matches = list(re.finditer(r"\bfunction\s+getStreams\s*\(", text[:core_start]))
     for match in reversed(matches):
-        open_brace = text.find("{", match.start(), match.end())
-        if open_brace < 0:
+        open_paren = text.find("(", match.start(), match.end())
+        signature_end = _balanced_terminal_paren_end(text, open_paren, core_start)
+        if signature_end is None:
             continue
-        end = _balanced_terminal_object_end(text, open_brace, core_start)
+        body_start = signature_end
+        while body_start < core_start and text[body_start].isspace():
+            body_start += 1
+        if body_start >= core_start or text[body_start] != "{":
+            continue
+        end = _balanced_terminal_object_end(text, body_start, core_start)
         if end is None:
             continue
         cursor = end
@@ -482,9 +539,6 @@ def _provider_export_floor(text: str) -> int:
             continue
         return statement_end
 
-    # Some providers expose the classic runtime-global declaration directly and do
-    # not publish a CommonJS object at all. Accept it only when it is the terminal
-    # provider statement immediately preceding the first owned Core layer.
     for core_start in core_starts:
         function_end = _terminal_getstreams_function_end(text, core_start)
         if function_end is not None:
@@ -524,6 +578,8 @@ def harden_generated_apply(text: str) -> str:
         raise ValueError("bounded runtime-domain parser must be generated exactly once")
     if text.count("def _balanced_terminal_object_end(") != 1:
         raise ValueError("terminal CommonJS object parser must be generated exactly once")
+    if text.count("def _balanced_terminal_paren_end(") != 1:
+        raise ValueError("terminal function-signature parser must be generated exactly once")
     if text.count("def _object_exports_getstreams(") != 1:
         raise ValueError("provider getStreams object-key parser must be generated exactly once")
     if text.count("def _safe_binding_object(") != 1 or text.count("def _safe_global_assignments(") != 1:
