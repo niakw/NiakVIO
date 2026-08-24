@@ -1,0 +1,53 @@
+name: FIX - Core shared V5 target compatibility
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/tmp-fix-core-shared-target-compat.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+      - name: Align shared Core hook authority
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('scripts/normalize_core_media_policy.py')
+          text = path.read_text(encoding='utf-8')
+          old = '''ALLOWED_SHARED_PURSTREAM_SCRIPTS = {\n    "scripts/provider_patches/native_sync_fetch_target_order_v1.py",\n    "scripts/provider_patches/runtime_capability_media_safety_v4.py",\n}\n'''
+          new = '''ALLOWED_SHARED_PURSTREAM_SCRIPTS = {\n    "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",\n    "scripts/provider_patches/native_sync_fetch_target_order_v1.py",\n    "scripts/provider_patches/runtime_capability_media_safety_v4.py",\n}\n'''
+          if old not in text:
+              if new in text:
+                  raise SystemExit(0)
+              raise SystemExit('shared hook authority anchor missing')
+          path.write_text(text.replace(old, new, 1), encoding='utf-8')
+          PY
+          python -m py_compile scripts/normalize_core_media_policy.py scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py
+          python tests/core_media_policy_test.py
+          python scripts/normalize_core_media_policy.py --check
+      - name: Commit and consume one-shot
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          rm -f .github/workflows/tmp-fix-core-shared-target-compat.yml
+          git add scripts/normalize_core_media_policy.py .github/workflows/tmp-fix-core-shared-target-compat.yml
+          git diff --cached --check
+          git commit -m 'fix: recognize shared V5 target compatibility in Core policy [skip ci]'
+          git push origin HEAD:main
