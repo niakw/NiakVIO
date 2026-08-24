@@ -1,5 +1,5 @@
-name: NiakVIO final Core cleanup seal
-# target: all-published-security-finalization-v2
+name: NiakVIO publish hardened provider fixed point
+# target: publish-all-provider-security-v3
 
 on:
   push:
@@ -21,12 +21,12 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
-      - name: Announce targeted security finalization
+      - name: Announce final targeted publication
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
-          gh issue comment 69 --repo "$GITHUB_REPOSITORY" --body "Targeted published-security finalization started: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID} on ${GITHUB_SHA}. Existing 92-provider publication is reused; only mandatory provider-agnostic hardening/fixed-point materialization and Core one-shot cleanup run."
+          gh issue comment 69 --repo "$GITHUB_REPOSITORY" --body "Final targeted 92-provider security publication started: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID} on ${GITHUB_SHA}. No discovery, network provider audit, Quick, Deep, Brain or native workflow is included."
 
       - name: Checkout exact main
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
@@ -48,7 +48,7 @@ jobs:
       - name: Install locked dependencies
         run: npm ci --ignore-scripts --no-audit --no-fund
 
-      - name: Materialize mandatory security on all published bundles
+      - name: Materialize and prove hardened fixed point
         shell: bash
         run: |
           set -euo pipefail
@@ -71,42 +71,33 @@ jobs:
           python3 scripts/normalize_core_media_policy.py --check
           python3 tests/activation_preservation_core_rehash_test.py
           node engine_v2/tests/provider-catalog.test.mjs
-
-      - name: Require all 92 published bundles hardened
-        shell: bash
-        run: |
-          set -euo pipefail
           python3 - <<'PY'
           import json, sys
           from pathlib import Path
-          root = Path('.')
-          sys.path.insert(0, str((root / 'scripts').resolve()))
+          root=Path('.')
+          sys.path.insert(0, str((root/'scripts').resolve()))
           from provider_security_hardening import known_unsafe_findings
-          manifest = json.loads((root / 'manifest.json').read_text(encoding='utf-8'))
-          rows = [row for row in (manifest.get('scrapers') or []) if isinstance(row, dict) and str(row.get('filename') or '').strip()]
-          failures = []
-          checked = 0
+          rows=[row for row in json.loads((root/'manifest.json').read_text(encoding='utf-8')).get('scrapers',[]) if isinstance(row,dict) and str(row.get('filename') or '').strip()]
+          failures=[]
+          checked=0
           for row in rows:
-              relative = str(row.get('filename') or '')
-              path = root / relative
+              path=root/str(row['filename'])
               if not path.is_file():
-                  failures.append((str(row.get('id') or ''), 'missing_bundle', relative))
+                  failures.append((str(row.get('id') or ''),'missing_bundle',str(row.get('filename') or '')))
                   continue
-              findings = known_unsafe_findings(path.read_text(encoding='utf-8', errors='strict'))
-              checked += 1
+              checked+=1
+              findings=known_unsafe_findings(path.read_text(encoding='utf-8',errors='strict'))
               if findings:
-                  failures.append((str(row.get('id') or ''), ','.join(sorted(set(findings))), relative))
+                  failures.append((str(row.get('id') or ''),','.join(sorted(set(findings))),str(row.get('filename') or '')))
           print(f"FIELD_PUBLISHED_PROVIDER_SECURITY_SCAN checked={checked} expected={len(rows)} unsafe={len(failures)}")
-          for item in failures:
-              print('UNSAFE_PROVIDER=' + '|'.join(item))
-          if len(rows) != 92 or checked != 92 or failures:
-              raise SystemExit('full 92-provider hardening proof failed')
+          for item in failures: print('UNSAFE_PROVIDER='+'|'.join(item))
+          if len(rows)!=92 or checked!=92 or failures: raise SystemExit('full 92-provider hardening proof failed')
           PY
           python3 scripts/generate_release_hashes.py
           python3 scripts/validate_release_integrity.py
           python3 scripts/reapply_published_overrides.py --check
 
-      - name: Remove Core one-shot and seal hashes
+      - name: Publish hardened fixed point and remove one-shot
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
@@ -114,19 +105,22 @@ jobs:
           set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git rm .github/workflows/core-resume-after-native-contract.yml
+          if [ -e .github/workflows/core-resume-after-native-contract.yml ]; then
+            git rm .github/workflows/core-resume-after-native-contract.yml
+          fi
           python3 scripts/generate_release_hashes.py
           python3 scripts/validate_release_integrity.py
           python3 scripts/reapply_published_overrides.py --check
           python3 scripts/normalize_published_security_finalization.py --check
           python3 tests/repository_hygiene_contract_test.py
           git add -A
-          git commit -m 'security: seal all published provider hardening [skip ci]'
+          git commit -m 'security: publish hardened 92-provider fixed point'
           git fetch origin main
           git rebase origin/main
           python3 scripts/generate_release_hashes.py
           python3 scripts/validate_release_integrity.py
           python3 scripts/reapply_published_overrides.py --check
+          python3 scripts/normalize_published_security_finalization.py --check
           git add FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json
           if ! git diff --cached --quiet; then
             git commit --amend --no-edit
@@ -134,12 +128,12 @@ jobs:
           git diff --exit-code
           git push origin HEAD:main
           SHA="$(git rev-parse HEAD)"
-          gh issue comment 69 --repo "$GITHUB_REPOSITORY" --body "Targeted published-security finalization SUCCEEDED on main ${SHA}: all 92 published bundles hardened provider-agnostically, fixed point + release integrity green, Core one-shot removed and hashes resealed. No Quick/Deep/Brain/native/upstream-drift pipeline was rerun."
+          gh issue comment 69 --repo "$GITHUB_REPOSITORY" --body "Final targeted 92-provider security publication SUCCEEDED on main ${SHA}: all published bundles hardened, fixed point + release integrity green, one-shot removed. The non-skipped push now hands this exact SHA to #69 security/CodeQL."
 
-      - name: Report targeted finalization failure
+      - name: Report targeted publication failure
         if: failure()
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
-          gh issue comment 69 --repo "$GITHUB_REPOSITORY" --body "Targeted published-security finalization FAILED: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}. Inspect this run only; do not restart full provider convergence."
+          gh issue comment 69 --repo "$GITHUB_REPOSITORY" --body "Final targeted 92-provider security publication FAILED: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}. Inspect only this targeted publication; do not restart full provider convergence."
