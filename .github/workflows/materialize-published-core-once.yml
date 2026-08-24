@@ -1,5 +1,5 @@
 name: Materialize published Core once
-# target: checkpointed-quarantine-rehash-v3
+# target: checkpointed-quarantine-rehash-v4
 
 on:
   push:
@@ -87,7 +87,7 @@ jobs:
           set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -A -- providers manifest.json vf/manifest.json vostfr/manifest.json PROVENANCE.json provider-overrides.json
+          git add -A -- providers manifest.json vf/manifest.json PROVENANCE.json provider-overrides.json
           if git diff --cached --quiet; then
             echo 'FIELD_TARGETED_CORE_CHECKPOINT changed=false'
           else
