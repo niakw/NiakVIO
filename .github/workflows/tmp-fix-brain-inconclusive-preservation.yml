@@ -1,0 +1,94 @@
+name: FIX - Brain preserves proven state on inconclusive Deep
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/tmp-fix-brain-inconclusive-preservation.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Patch generic Brain preservation policy
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path('scripts/promote_candidates.py')
+          text = path.read_text(encoding='utf-8')
+
+          helper_anchor = '''def healthy_categories(variant: dict[str, Any]) -> set[str]:\n    health = variant.get("health", {}) if isinstance(variant.get("health"), dict) else {}\n    evidence = health.get("evidence", {}) if isinstance(health.get("evidence"), dict) else {}\n    return {str(value) for value in (evidence.get("healthy_fixture_categories") or []) if value}\n\n\n'''
+          helpers = '''def ci_result_is_inconclusive(variant: dict[str, Any], activation: dict[str, Any]) -> bool:\n    """Treat either the explicit CI class or an inconclusive runtime status as uncertainty."""\n    health = variant.get("health", {}) if isinstance(variant.get("health"), dict) else {}\n    classification = str(health.get("ci_classification") or "")\n    status = str(health.get("status") or "runtime_error")\n    return classification == "inconclusive" or status in inconclusive_statuses(activation)\n\n\ndef previous_state_is_safety_quarantine(\n    entry: dict[str, Any] | None, provenance: dict[str, Any] | None\n) -> bool:\n    """Recognize a previously published safety state without weakening its validator.\n\n    This helper only decides whether the promoter must retain the old disabled\n    artifact when current evidence is inconclusive. The activation-preservation\n    validator remains authoritative and re-verifies the complete quarantine\n    evidence before publication.\n    """\n    if not isinstance(entry, dict) or not isinstance(provenance, dict):\n        return False\n    if entry.get("enabled") is not False:\n        return False\n    filename = str(entry.get("filename") or "")\n    blockers = {str(value) for value in provenance.get("activation_blockers") or []}\n    mode = str(provenance.get("activation_mode") or "")\n    return (\n        mode == "configured_safety_quarantine"\n        or "configured_safety_quarantine" in blockers\n        or "catalogue_audit_playable_identity_contradiction" in blockers\n        or "--nuvio-audit-quarantine--" in filename\n    )\n\n\n'''
+          if 'def ci_result_is_inconclusive(' not in text:
+              if helper_anchor not in text:
+                  raise SystemExit('healthy_categories anchor not found')
+              text = text.replace(helper_anchor, helper_anchor + helpers, 1)
+
+          start_marker = '''            old_filename = old_entry.get("filename") if isinstance(old_entry, dict) else None\n'''
+          end_marker = '''                continue\n\n            try:\n                destination, digest = copy_candidate(selected)\n'''
+          start = text.find(start_marker)
+          end = text.find(end_marker, start)
+          if start < 0 or end < 0:
+              raise SystemExit('preservation block anchors not found')
+
+          replacement = '''            old_filename = old_entry.get("filename") if isinstance(old_entry, dict) else None\n            old_target = (ROOT / old_filename).resolve() if isinstance(old_filename, str) else None\n            old_artifact_available = bool(\n                old_target\n                and is_under(old_target, ROOT / "providers")\n                and old_target.exists()\n            )\n            old_was_enabled = bool(old_entry.get("enabled", False))\n            old_provenance = previous_provenance.get("providers", {}).get(cid, {})\n            old_safety_quarantine = previous_state_is_safety_quarantine(old_entry, old_provenance)\n            current_ci_inconclusive = ci_result_is_inconclusive(selected, activation)\n            restore_activation_lkg = bool(\n                cid in activation_lkg_ids\n                and current_ci_inconclusive\n                and gates.get("01_policy_safe_no_p2p", {}).get("passed", False)\n            )\n            preserve_previous_state = (\n                not enabled\n                and current_ci_inconclusive\n                and (old_was_enabled or restore_activation_lkg or old_safety_quarantine)\n                and not auto_disabled\n                and upstream_enabled\n                and old_artifact_available\n                and observed_status in preserve_statuses\n                and not metadata_is_excluded(old_entry, sources)\n            )\n            if preserve_previous_state:\n                retained = dict(old_entry)\n                # Never turn a proven safety quarantine back on merely because\n                # the new CI run is uncertain. Conversely, an LKG-active state\n                # remains active until current conclusive evidence says otherwise.\n                retained["enabled"] = False if old_safety_quarantine else True\n                entries[cid] = retained\n                retained_digest = hashlib.sha256(old_target.read_bytes()).hexdigest()\n\n                if old_safety_quarantine:\n                    provenance[cid] = {\n                        **old_provenance,\n                        "checked_at": now,\n                        "check_mode": mode,\n                        "check_status": observed_status,\n                        "preserved_reason": "ci_uncertain_kept_last_conclusive_safety_quarantine",\n                        "preserved_candidate_key": selected.get("key"),\n                        "preserved_candidate_sha256": selected.get("sha256"),\n                    }\n                    report_items.append(\n                        {\n                            "id": cid,\n                            "action": "preserved-conclusive-safety-quarantine-ci-uncertain",\n                            "enabled": False,\n                            "activation_eligible": False,\n                            "activation_mode": str(old_provenance.get("activation_mode") or "safety_quarantine"),\n                            "failed_gates": [\n                                name for name, value in gates.items() if not value.get("passed")\n                            ],\n                            "activation_blockers": list(old_provenance.get("activation_blockers") or blockers),\n                            "activation_gates": gates,\n                            "observed_status": observed_status,\n                            "published_filename": old_filename,\n                            "variant_count": len(variants),\n                        }\n                    )\n                else:\n                    provenance[cid] = {\n                        **old_provenance,\n                        "id": cid,\n                        "published_filename": old_filename,\n                        "sha256": retained_digest,\n                        "patched_sha256": retained_digest,\n                        "checked_at": now,\n                        "check_mode": mode,\n                        "check_status": observed_status,\n                        "activation_eligible": False,\n                        "activation_mode": "preserved_current_ci_uncertain",\n                        "activation_blockers": blockers,\n                        "preserved_reason": "ci_uncertain_kept_last_published_artifact",\n                        "restored_from_activation_lkg": bool(restore_activation_lkg and not old_was_enabled),\n                        "preservation_upstream_enabled": upstream_enabled,\n                        "preservation_live_upstream_sources": sorted(\n                            {\n                                str(variant.get("source") or "")\n                                for variant in live_upstream_variants\n                                if str(variant.get("source") or "")\n                            }\n                        ),\n                        "preserved_candidate_key": selected.get("key"),\n                        "preserved_candidate_sha256": selected.get("sha256"),\n                    }\n                    report_items.append(\n                        {\n                            "id": cid,\n                            "action": (\n                                "restored-activation-lkg-enabled-ci-uncertain"\n                                if restore_activation_lkg and not old_was_enabled\n                                else "preserved-current-enabled-ci-uncertain"\n                            ),\n                            "enabled": True,\n                            "restored_from_activation_lkg": bool(restore_activation_lkg and not old_was_enabled),\n                            "preservation_upstream_enabled": upstream_enabled,\n                            "activation_eligible": False,\n                            "activation_mode": "preserved_current_ci_uncertain",\n                            "failed_gates": [\n                                name for name, value in gates.items() if not value.get("passed")\n                            ],\n                            "activation_blockers": blockers,\n                            "activation_gates": gates,\n                            "observed_status": observed_status,\n                            "published_filename": old_filename,\n                            "variant_count": len(variants),\n                        }\n                    )\n                continue\n\n            try:\n                destination, digest = copy_candidate(selected)\n'''
+          text = text[:start] + replacement + text[end + len(end_marker):]
+          path.write_text(text, encoding='utf-8')
+
+          test_path = Path('tests/ci_preservation_policy_test.py')
+          tests = test_path.read_text(encoding='utf-8')
+          assertion_anchor = '''assert 'continue\\n\\n            try:\\n                destination, digest = copy_candidate(selected)' in promoter\n'''
+          assertion_extra = '''assert 'previous_state_is_safety_quarantine' in promoter\nassert 'ci_result_is_inconclusive' in promoter\nassert 'preserved-conclusive-safety-quarantine-ci-uncertain' in promoter\nassert 'ci_uncertain_kept_last_conclusive_safety_quarantine' in promoter\n'''
+          if assertion_extra.strip() not in tests:
+              if assertion_anchor not in tests:
+                  raise SystemExit('ci policy assertion anchor not found')
+              tests = tests.replace(assertion_anchor, assertion_anchor + assertion_extra, 1)
+
+          runtime_anchor = '''spec.loader.exec_module(promoter_module)\n\n\n'''
+          runtime_extra = '''# Generic Brain state preservation: no provider-specific exception is allowed.\nassert promoter_module.ci_result_is_inconclusive(\n    {"health": {"status": "no_streams", "ci_classification": ""}}, config\n) is True\nassert promoter_module.ci_result_is_inconclusive(\n    {"health": {"status": "healthy", "ci_classification": "conclusive"}}, config\n) is False\nassert promoter_module.previous_state_is_safety_quarantine(\n    {"enabled": False, "filename": "providers/example--nuvio-audit-quarantine--deadbeef.js"},\n    {"activation_blockers": ["catalogue_audit_playable_identity_contradiction"]},\n) is True\nassert promoter_module.previous_state_is_safety_quarantine(\n    {"enabled": False, "filename": "providers/example--ordinary.js"},\n    {"activation_mode": "configured_safety_quarantine"},\n) is True\nassert promoter_module.previous_state_is_safety_quarantine(\n    {"enabled": False, "filename": "providers/example--ordinary.js"},\n    {"activation_mode": "disabled", "activation_blockers": ["02_healthy_functional_status"]},\n) is False\n\n\n'''
+          if runtime_extra.strip() not in tests:
+              if runtime_anchor not in tests:
+                  raise SystemExit('runtime test anchor not found')
+              tests = tests.replace(runtime_anchor, runtime_anchor + runtime_extra, 1)
+          test_path.write_text(tests, encoding='utf-8')
+          PY
+
+          python -m py_compile scripts/promote_candidates.py
+          python tests/ci_preservation_policy_test.py
+          python tests/published_overrides_test.py
+
+      - name: Commit generic Brain fix and self-clean
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f .github/workflows/tmp-fix-brain-inconclusive-preservation.yml
+          python scripts/generate_release_hashes.py
+          python scripts/validate_release_integrity.py
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add scripts/promote_candidates.py tests/ci_preservation_policy_test.py \
+            FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json \
+            .github/workflows/tmp-fix-brain-inconclusive-preservation.yml
+          git commit -m 'fix: preserve proven provider state on inconclusive Deep [skip ci]'
+          git fetch origin main
+          git rebase origin/main
+          python scripts/generate_release_hashes.py
+          python scripts/validate_release_integrity.py
+          git add FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json
+          if ! git diff --cached --quiet; then
+            git commit --amend --no-edit
+          fi
+          git push origin HEAD:main
