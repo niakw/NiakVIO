@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import ast
 import json
 from pathlib import Path
+from urllib.parse import urlsplit
 
 ROOT = Path(__file__).resolve().parents[1]
 TARGETED_RUNTIME = ROOT / ".github/workflows/native-corpus-device-targeted.yml"
@@ -186,7 +188,16 @@ for source, label in ((prepare_client, "prepare"), (restage_client, "restage")):
     assert "--provider" in source, (label, "target provider")
     assert "--player-probes" in source, (label, "target reader probe count")
     assert "--manifest" in source, (label, "manifest selection")
-assert 'parsed.hostname != "raw.githubusercontent.com"' in prepare_client
+prepare_tree = ast.parse(prepare_client)
+hostname_guards = [
+    node
+    for node in ast.walk(prepare_tree)
+    if isinstance(node, ast.Compare)
+    and isinstance(node.left, ast.Attribute)
+    and node.left.attr == "hostname"
+    and any(isinstance(comparator, ast.Constant) and comparator.value == "raw.githubusercontent.com" for comparator in node.comparators)
+]
+assert hostname_guards, "prepare client must compare parsed hostname against raw.githubusercontent.com"
 assert "FIELD_NATIVE_CORPUS_STAGE_SELECTED" in prepare_client
 assert "GITHUB_EVENT_NAME" in restage_client
 assert "NIAKVIO_PR_PROVIDER_LIMIT" in restage_client
@@ -204,7 +215,21 @@ for required in (
     "explicit_repair=true",
 ):
     assert required in prepare_client, required
-assert "raw.githubusercontent.com" in resolve_repository
+pinned_assignment = next(
+    line.strip()
+    for line in resolve_repository.splitlines()
+    if line.strip().startswith('NIAKVIO_RESOLVED_MANIFEST_URL="https://')
+)
+pinned_template = pinned_assignment.split("=", 1)[1].strip().strip('"')
+rendered_pinned_url = (
+    pinned_template.replace("${SOURCE_REPOSITORY}", "niakw/NiakVIO")
+    .replace("${SOURCE_SHA}", "0" * 40)
+    .replace("${TARGET_MANIFEST}", "manifest.json")
+)
+parsed_pinned_url = urlsplit(rendered_pinned_url)
+assert parsed_pinned_url.scheme == "https"
+assert parsed_pinned_url.hostname == "raw.githubusercontent.com"
+assert parsed_pinned_url.path == f"/niakw/NiakVIO/{'0' * 40}/manifest.json"
 assert "10.0.2.2" in resolve_repository
 # Explanatory documentation may name the retired emulator route; executable
 # preparation code must never construct it or relax Android cleartext policy.
