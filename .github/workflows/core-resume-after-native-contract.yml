@@ -1,5 +1,5 @@
-name: NiakVIO targeted Core seal
-# target: metadata-plus-readonly-v1
+name: NiakVIO minimal final Core seal
+# target: test-body-after-sealed-metadata-v2
 
 on:
   push:
@@ -19,14 +19,14 @@ concurrency:
 jobs:
   seal-core:
     runs-on: ubuntu-latest
-    timeout-minutes: 50
+    timeout-minutes: 40
     steps:
-      - name: Announce targeted Core seal
+      - name: Announce minimal Core seal
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
-          gh issue comment 69 --repo "$GITHUB_REPOSITORY" --body "Targeted Core seal started: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID} on ${GITHUB_SHA}. Reuses provider checkpoint 41e68b71; no provider convergence or full Core workflow is repeated."
+          gh issue comment 69 --repo "$GITHUB_REPOSITORY" --body "Minimal final Core seal started: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID} on ${GITHUB_SHA}. Metadata is already sealed on 30e5504e; provider convergence and native/Brain pretests are NOT repeated."
 
       - name: Checkout exact main
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
@@ -48,57 +48,20 @@ jobs:
       - name: Install locked dependencies
         run: npm ci --ignore-scripts --no-audit --no-fund
 
-      - name: Verify checkpoint and rebuild metadata only
+      - name: Verify sealed Core and Frenchstream regression
         shell: bash
         run: |
           set -euo pipefail
-          git merge-base --is-ancestor 41e68b71cf846af2deed274c4730d0527b855081 HEAD
-          python3 scripts/reapply_published_overrides.py --check
-          python3 scripts/normalize_provider_rebuild_safety.py --check
-          python3 scripts/normalize_core_fixed_point_contract.py --check
-          python3 scripts/normalize_provider_branding_pipeline.py --check
-          python3 scripts/normalize_core_media_policy.py --check
-          python3 tests/activation_preservation_core_rehash_test.py
-          git show 8cc553d1b1576ea8ad116f3ec2ea5cb356aa9326:manifest.json > "$RUNNER_TEMP/manifest-before-core-materialization.json"
-          python3 scripts/generate_language_manifests.py
-          python3 scripts/prune_unreferenced_providers.py
-          python3 scripts/sync_release_versions.py --manifest manifest.json --previous "$RUNNER_TEMP/manifest-before-core-materialization.json"
-          node engine_v2/scripts/bootstrap-provider-catalog.mjs --general manifest.json --vf vf/manifest.json --output provider_catalog.json
-          node engine_v2/scripts/render-manifests-from-catalog.mjs --catalog provider_catalog.json --general manifest.json --vf vf/manifest.json
-          python3 scripts/generate_language_manifests.py
-          python3 scripts/sync_release_versions.py --manifest manifest.json --previous "$RUNNER_TEMP/manifest-before-core-materialization.json"
-          python3 scripts/prune_unreferenced_providers.py
-          python3 scripts/generate_release_hashes.py
+          git merge-base --is-ancestor 30e5504e00b37b41d8b4bd756f791b38840591de HEAD
           python3 scripts/validate_release_integrity.py
+          python3 scripts/reapply_published_overrides.py --check
+          python3 tests/activation_preservation_core_rehash_test.py
+          python3 tests/vf_movie_policy_test.py
 
-      - name: Resume corrected native and Brain pretests
-        shell: bash
-        run: |
-          set -euo pipefail
-          python3 tests/native_corpus_device_lab_test.py
-          python3 tests/native_human_ux_policy_lock_test.py
-          python3 tests/native_corpus_suite_summary_test.py
-          python3 tests/native_corpus_transport_capability_test.py
-          python3 tests/streamzo_native_platform_contract_test.py
-          python3 tests/native_player_diagnostics_codegen_test.py
-          node tests/native_player_diagnostics.test.cjs
-          python3 tests/native_reader_gate_test.py
-          python3 tests/targeted_manifest_staging_test.py
-          python3 tests/native_reader_exhaustive_acceptance_test.py
-          python3 tests/native_reader_brain_repair_test.py
-          python3 tests/native_reader_provider_retention_policy_test.py
-          python3 tests/native_reader_learning_memory_test.py
-          python3 tests/native_reader_backlog_test.py
-          python3 tests/provider_security_hardening_test.py
-          python3 tests/provider_purification_contract_test.py
-          node engine_v2/tests/native-reader-brain-v4.test.mjs
-          node engine_v2/tests/native-reader-diagnosis.test.mjs
-          node engine_v2/tests/repair-brain.test.mjs
-
-      - name: Run repository test body without pretest
+      - name: Run repository test body without expensive pretest
         run: npm test --ignore-scripts
 
-      - name: Seal fixed point and remove Core one-shots
+      - name: Seal fixed point and remove final Core one-shot
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
@@ -109,13 +72,12 @@ jobs:
           python3 scripts/normalize_core_fixed_point_contract.py --check
           python3 scripts/normalize_provider_branding_pipeline.py --check
           python3 scripts/normalize_core_media_policy.py --check
-          python3 tests/repository_hygiene_contract_test.py
           node engine_v2/tests/provider-catalog.test.mjs
           python3 scripts/validate_release_integrity.py
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git rm .github/workflows/core-resume-after-native-contract.yml
-          git rm .github/workflows/materialize-published-core-once.yml
+          python3 tests/repository_hygiene_contract_test.py
           python3 scripts/generate_release_hashes.py
           python3 scripts/validate_release_integrity.py
           python3 scripts/reapply_published_overrides.py --check
@@ -125,7 +87,6 @@ jobs:
           git rebase origin/main
           python3 scripts/generate_release_hashes.py
           python3 scripts/validate_release_integrity.py
-          python3 scripts/reapply_published_overrides.py --check
           git add FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json
           if ! git diff --cached --quiet; then
             git commit --amend --no-edit
@@ -133,12 +94,12 @@ jobs:
           git diff --exit-code
           git push origin HEAD:main
           SHA="$(git rev-parse HEAD)"
-          gh issue comment 69 --repo "$GITHUB_REPOSITORY" --body "Targeted Core seal SUCCEEDED on main ${SHA}: 92-provider checkpoint reused, metadata/release hashes finalized, native/Brain pretests + full repository test body + fixed-point/release integrity green, Core one-shots removed. Full Core was not restarted."
+          gh issue comment 69 --repo "$GITHUB_REPOSITORY" --body "Minimal final Core seal SUCCEEDED on main ${SHA}: sealed 92-provider fixed point reused, Frenchstream rehash regression + full repository test body + release integrity green, final Core one-shot removed. Full Core/native/Brain pretests were not repeated."
 
-      - name: Report targeted Core seal failure
+      - name: Report minimal Core seal failure
         if: failure()
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
-          gh issue comment 69 --repo "$GITHUB_REPOSITORY" --body "Targeted Core seal FAILED: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}. Inspect this run only; do not restart full Core."
+          gh issue comment 69 --repo "$GITHUB_REPOSITORY" --body "Minimal final Core seal FAILED: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}. Inspect this run only; do not restart full Core or provider convergence."
