@@ -6,6 +6,11 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/security-final-gate.yml'
+      - '.github/workflows/core-resume-after-native-contract.yml'
+      - '.github/workflows/native-fresh-proof-once.yml'
+      - 'FILE-HASHES.json'
+      - 'PATCH-SHA256SUMS.txt'
+      - 'SHA256SUMS.json'
       - 'manifest.json'
       - 'provider-overrides.json'
       - 'providers/**'
@@ -41,7 +46,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
-          gh issue comment 69 --repo "$GITHUB_REPOSITORY" --body "#69 security gate started: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID} on ${GITHUB_SHA}. Global hardening + active provider scan + exact-SHA CodeQL + all High/Critical alerts."
+          gh issue comment 69 --repo "$GITHUB_REPOSITORY" --body "#69 security gate started: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID} on ${GITHUB_SHA}. Global hardening + full published-provider scan + exact-SHA CodeQL + all High/Critical alerts."
 
       - name: Checkout exact main
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
@@ -71,7 +76,7 @@ jobs:
           python tests/runtime_capability_media_safety_v4_test.py
           python tests/native_corpus_device_lab_test.py
 
-      - name: Scan every active published provider for known unsafe shapes
+      - name: Scan every published provider for known unsafe shapes
         shell: bash
         run: |
           set -euo pipefail
@@ -83,10 +88,9 @@ jobs:
           from provider_security_hardening import known_unsafe_findings
           manifest=json.loads((root/'manifest.json').read_text())
           failures=[]
+          rows=[row for row in (manifest.get('scrapers') or []) if isinstance(row,dict) and str(row.get('filename') or '').strip()]
           checked=0
-          for row in manifest.get('scrapers') or []:
-              if not isinstance(row,dict) or row.get('enabled') is False:
-                  continue
+          for row in rows:
               rel=str(row.get('filename') or '')
               path=root/rel
               if not path.is_file():
@@ -96,11 +100,13 @@ jobs:
               checked+=1
               if findings:
                   failures.append((str(row.get('id')), ','.join(sorted(set(findings))), rel))
+          if checked != len(rows):
+              failures.append(('catalogue', f'incomplete_scan:{checked}/{len(rows)}', 'manifest.json'))
           if failures:
               for item in failures:
                   print('UNSAFE_PROVIDER=' + '|'.join(item))
-              raise SystemExit(f'known unsafe provider shapes remain: {len(failures)}')
-          print(f'FIELD_ACTIVE_PROVIDER_SECURITY_SCAN checked={checked} unsafe=0')
+              raise SystemExit(f'known unsafe provider shapes or incomplete catalogue scan remain: {len(failures)}')
+          print(f'FIELD_PUBLISHED_PROVIDER_SECURITY_SCAN checked={checked} expected={len(rows)} unsafe=0')
           PY
 
       - name: Wait for CodeQL analysis of exact tested main SHA
@@ -174,7 +180,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
-          gh issue comment 69 --repo "$GITHUB_REPOSITORY" --body "#69 security gate SUCCEEDED: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID} on ${GITHUB_SHA}. Global hardening tests, active provider scan, exact-SHA CodeQL and repository-wide High/Critical gate are green."
+          gh issue comment 69 --repo "$GITHUB_REPOSITORY" --body "#69 security gate SUCCEEDED: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID} on ${GITHUB_SHA}. Global hardening tests, full published-provider scan, exact-SHA CodeQL and repository-wide High/Critical gate are green."
 
       - name: Report issue 69 security failure
         if: failure()
