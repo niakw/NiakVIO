@@ -51,9 +51,18 @@ with tempfile.TemporaryDirectory(dir=ROOT) as raw:
     assert outputs["tv_accepted_ref"] == OLD
     assert outputs["tv_contract_ref"] == CONTRACT
     assert outputs["tv_drift_status"] == "contract_review_required"
+    assert outputs["tv_adaptation_required"] == "true"
+    assert outputs["tv_lab_blocking"] == "false"
+    assert outputs["mobile_adaptation_required"] == "false"
+    assert outputs["mobile_lab_blocking"] == "false"
     assert outputs["runtime_fingerprint"] == f"tv={TV_HEAD};mobile={MOBILE_HEAD}"
     payload = json.loads(audit.read_text(encoding="utf-8"))
-    assert payload["clients"]["nuvio-tv"]["head"] == TV_HEAD
+    tv = payload["clients"]["nuvio-tv"]
+    assert tv["head"] == TV_HEAD
+    assert tv["adaptationRequired"] is True
+    assert tv["labBlocking"] is False
+    assert tv["adaptationPolicy"] == "latest-head-version-adaptive-preparation"
+    assert "contract_review_required is observational/nonblocking" in payload["policy"]
     assert "no stale fallback" in payload["policy"]
 
     broken = tmp / "broken.json"
