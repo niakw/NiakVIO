@@ -791,39 +791,6 @@
         "scripts/provider_patches/papadustream_anime_tv_v1.py"
       ]
     },
-    "toflix": {
-      "profiles": [],
-      "capability": "direct_media",
-      "replacements": {},
-      "runtime_domain_replacements": {},
-      "required_values": [],
-      "route_replacements": {},
-      "required_route_values": [],
-      "patch_scripts": [
-        "scripts/provider_patches/toflix_official_endpoint.py",
-        "scripts/provider_patches/toflix_explicit_vf_v2.py"
-      ],
-      "patch_script_options": {
-        "scripts/provider_patches/toflix_official_endpoint.py": {
-          "site": "https://tfx05.lol",
-          "fallback_api": "https://api.tfx05.lol/toflix_api.php"
-        },
-        "scripts/provider_patches/toflix_explicit_vf_v2.py": {
-          "require_french_host": true
-        }
-      },
-      "notes": [
-        "Bootstrap the current ToFlix terminal site from toflix.wiki and discover its API endpoint from the terminal page when available."
-      ],
-      "official_hub": "https://toflix.wiki/",
-      "official_site": "https://tfx05.lol",
-      "official_api": "https://api.tfx05.lol",
-      "published_types": [
-        "movie",
-        "tv",
-        "anime"
-      ]
-    },
     "4khdhub": {
       "capability": "html_scraper",
       "replacements": {
@@ -855,18 +822,6 @@
       "official_hub": "https://hdhub4u.ec/",
       "official_site": "https://new4.hdhub4u.cl",
       "manifest_overrides": {}
-    },
-    "4khdhubnew": {
-      "capability": "html_scraper",
-      "patch_scripts": [
-        "scripts/provider_patches/nuvio_tv_playable_first_v1.py"
-      ],
-      "patch_script_options": {
-        "scripts/provider_patches/nuvio_tv_playable_first_v1.py": {
-          "max_probes": 6,
-          "timeout_ms": 6500
-        }
-      }
     },
     "Cineby": {
       "capability": "api_stream_resolver",
@@ -1709,9 +1664,6 @@
     "STREAMZO": {
       "capability": "mixed_embed_resolver"
     },
-    "TOFLIX": {
-      "capability": "api_stream_resolver"
-    },
     "UHDMOVIES": {
       "capability": "html_scraper"
     },
@@ -1754,9 +1706,6 @@
     "ZINKMOVIES": {
       "capability": "direct_media"
     },
-    "4KHDHUBNEW": {
-      "capability": "html_scraper"
-    },
     "HIANIME": {
       "capability": "html_scraper"
     },
@@ -1795,6 +1744,57 @@
     },
     "TOPCARTOONS": {
       "capability": "html_scraper"
+    },
+    "4khdhubnew": {
+      "capability": "html_scraper",
+      "patch_scripts": [
+        "scripts/provider_patches/nuvio_tv_playable_first_v1.py"
+      ],
+      "patch_script_options": {
+        "scripts/provider_patches/nuvio_tv_playable_first_v1.py": {
+          "max_probes": 6,
+          "timeout_ms": 6500
+        }
+      }
+    },
+    "4KHDHUBNEW": {
+      "capability": "html_scraper"
+    },
+    "toflix": {
+      "profiles": [],
+      "capability": "direct_media",
+      "replacements": {},
+      "runtime_domain_replacements": {},
+      "required_values": [],
+      "route_replacements": {},
+      "required_route_values": [],
+      "patch_scripts": [
+        "scripts/provider_patches/toflix_official_endpoint.py",
+        "scripts/provider_patches/toflix_explicit_vf_v2.py"
+      ],
+      "patch_script_options": {
+        "scripts/provider_patches/toflix_official_endpoint.py": {
+          "site": "https://tfx05.lol",
+          "fallback_api": "https://api.tfx05.lol/toflix_api.php"
+        },
+        "scripts/provider_patches/toflix_explicit_vf_v2.py": {
+          "require_french_host": true
+        }
+      },
+      "notes": [
+        "Bootstrap the current ToFlix terminal site from toflix.wiki and discover its API endpoint from the terminal page when available."
+      ],
+      "official_hub": "https://toflix.wiki/",
+      "official_site": "https://tfx05.lol",
+      "official_api": "https://api.tfx05.lol",
+      "published_types": [
+        "movie",
+        "tv",
+        "anime"
+      ]
+    },
+    "TOFLIX": {
+      "capability": "api_stream_resolver"
     }
   },
   "route_override_defaults": {
@@ -1885,7 +1885,7 @@
       "name": "NiakVIO Brain",
       "controlPlaneVersion": 4,
       "learningOnValidatedRepair": true,
-      "lastMode": "quick",
+      "lastMode": "deep",
       "fallbackPolicy": "lkg_only_after_repair_budget",
       "coreMutationPolicy": "proposal_only"
     }
@@ -4903,8 +4903,8 @@
     "removed_cross_provider_wrappers": 0,
     "isolation_applied_before_profiles": true,
     "terminal_quarantine_routing_contracts_pruned": 8,
-    "terminal_quarantine_mapping_entries_removed": 0,
-    "terminal_quarantine_replace_records_removed": 0,
+    "terminal_quarantine_mapping_entries_removed": 12,
+    "terminal_quarantine_replace_records_removed": 1,
     "non_safety_hard_disables_released": [
       "1shows",
       "4khdhub",
