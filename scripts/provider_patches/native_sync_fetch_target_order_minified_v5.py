@@ -39,7 +39,13 @@ def apply(source: str, options: dict[str, Any] | None = None, **_kwargs: Any) ->
         return source
 
     resolve_count = source.count(MINIFIED_CONTEXT_RESOLVE)
-    if resolve_count == 0 and rows_count == 0:
+    if resolve_count == 0:
+        # This compatibility layer owns only the exact un-ordered compact V5
+        # resolver above. A later reconstruction can already contain the ordered
+        # V1 contract after Terser has compacted it, while still retaining a
+        # recognizable V5 tvRows shape. Do not turn that into a false ambiguity:
+        # leave it untouched so native_sync_fetch_target_order_v1.py remains the
+        # strict final authority (_already_ordered or fail-closed unknown shape).
         return source
     if resolve_count != 1 or rows_count != 1:
         # A canonical V5 shape that the strict V1 patch recognizes (including a
