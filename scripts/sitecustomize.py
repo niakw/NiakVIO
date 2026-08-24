@@ -91,86 +91,103 @@ SCANNER = r'''def _scan_runtime_domain_iife_end(text: str, start: int) -> int | 
 ORPHAN_HELPER = r'''
 def _strip_runtime_domain_orphan_calls(
     text: str,
-    insertion: int | None,
     rules: dict[str, str],
 ) -> tuple[str, int]:
-    """Remove only historical generated call tails owned by current domain rules.
+    """Remove authorized historical runtime-domain invocation tails anywhere in base.
 
-    Old builds could delete the function-expression half of the bootstrap while
-    retaining its invocation arguments. Terser may additionally remove the outer
-    parentheses. A tail is removable only at the proven bootstrap insertion point
-    and only if every decoded ``oldHost -> newHost`` pair is still authorized by
-    the current normalized rule map. Foreign targets fail closed and remain bytes.
+    The real reserved-key IIFE has already been structurally removed before this
+    helper runs. What remains may contain invocation-only debris created by older
+    scanners, including Terser variants without outer parentheses. We remove only
+    standalone statement-shaped tails whose every decoded ``oldHost -> newHost``
+    pair is still authorized by the current normalized rule map. Foreign, malformed
+    or context-ambiguous expressions remain untouched.
     """
-    if insertion is None or not rules:
+    if not rules:
         return text, 0
 
     import base64
     import json
 
-    head = text[:insertion]
-    tail = text[insertion:]
-    prefixes = (
-        ('(typeof globalThis!=="undefined"?globalThis:this,', ');'),
-        ('typeof globalThis!=="undefined"?globalThis:this,', ';'),
-    )
+    needle = 'typeof globalThis!=="undefined"?globalThis:this,'
     decoder = json.JSONDecoder()
+    output: list[str] = []
+    cursor = 0
+    search_at = 0
     removed = 0
 
-    while True:
-        whitespace_end = 0
-        while whitespace_end < len(tail) and tail[whitespace_end] in " \t\r\n":
-            whitespace_end += 1
-        candidate = tail[whitespace_end:]
-        matched = False
+    def statement_boundary(start: int) -> bool:
+        if start <= 0:
+            return True
+        index = start - 1
+        while index >= 0 and text[index] in " \t":
+            index -= 1
+        return index < 0 or text[index] in ";}\r\n"
 
-        for prefix, suffix in prefixes:
-            if not candidate.startswith(prefix):
-                continue
-            payload_text = candidate[len(prefix):]
+    def authorized_payload(payload: object) -> bool:
+        if not isinstance(payload, list) or not payload:
+            return False
+        for row in payload:
+            if not isinstance(row, list) or len(row) != 2:
+                return False
+            encoded_old, new_host = row
+            if not isinstance(encoded_old, str) or not isinstance(new_host, str):
+                return False
             try:
-                payload, payload_end = decoder.raw_decode(payload_text)
-            except (TypeError, ValueError, json.JSONDecodeError):
-                continue
-            if not isinstance(payload, list) or not payload:
-                continue
+                old_host = (
+                    base64.b64decode(encoded_old, validate=True)
+                    .decode("utf-8")
+                    .lower()
+                    .strip()
+                    .rstrip("/")
+                )
+            except Exception:
+                return False
+            normalized_new = new_host.lower().strip().rstrip("/")
+            if rules.get(old_host) != normalized_new:
+                return False
+        return True
 
-            authorized = True
-            for row in payload:
-                if not isinstance(row, list) or len(row) != 2:
-                    authorized = False
-                    break
-                encoded_old, new_host = row
-                if not isinstance(encoded_old, str) or not isinstance(new_host, str):
-                    authorized = False
-                    break
-                try:
-                    old_host = base64.b64decode(encoded_old, validate=True).decode("utf-8").lower().strip().rstrip("/")
-                except Exception:
-                    authorized = False
-                    break
-                normalized_new = new_host.lower().strip().rstrip("/")
-                if rules.get(old_host) != normalized_new:
-                    authorized = False
-                    break
-            if not authorized:
-                continue
+    while True:
+        position = text.find(needle, search_at)
+        if position < 0:
+            break
 
+        starts: list[tuple[int, str]] = []
+        if position > 0 and text[position - 1] == "(" and statement_boundary(position - 1):
+            starts.append((position - 1, ");"))
+        if statement_boundary(position):
+            starts.append((position, ";"))
+
+        payload_text = text[position + len(needle):]
+        try:
+            payload, payload_end = decoder.raw_decode(payload_text)
+        except (TypeError, ValueError, json.JSONDecodeError):
+            payload = None
+            payload_end = 0
+
+        match: tuple[int, int] | None = None
+        if authorized_payload(payload):
             after_payload = payload_text[payload_end:]
-            if not after_payload.startswith(suffix):
-                continue
-            consumed = len(prefix) + payload_end + len(suffix)
-            tail = candidate[consumed:]
-            removed += 1
-            matched = True
-            break
+            for start, suffix in starts:
+                if after_payload.startswith(suffix):
+                    end = position + len(needle) + payload_end + len(suffix)
+                    match = (start, end)
+                    break
 
-        if not matched:
-            break
+        if match is None:
+            search_at = position + len(needle)
+            continue
+
+        start, end = match
+        output.append(text[cursor:start])
+        cursor = end
+        search_at = end
+        removed += 1
 
     if removed == 0:
         return text, 0
-    return head + tail, removed
+    output.append(text[cursor:])
+    return "".join(output), removed
 '''.lstrip("\n")
 
 
@@ -191,15 +208,18 @@ def patch_core() -> None:
     else:
         text = text.replace(inject_anchor, "\n\n" + ORPHAN_HELPER + inject_anchor, 1)
 
-    old_cleanup = "    base, orphan_count = _strip_runtime_domain_orphan_calls(base, insertion, payload)\n"
-    new_cleanup = "    base, orphan_count = _strip_runtime_domain_orphan_calls(base, insertion, rules)\n"
-    if old_cleanup in text:
-        text = text.replace(old_cleanup, new_cleanup, 1)
-    elif new_cleanup not in text:
+    cleanup_variants = (
+        "    base, orphan_count = _strip_runtime_domain_orphan_calls(base, insertion, payload)\n",
+        "    base, orphan_count = _strip_runtime_domain_orphan_calls(base, insertion, rules)\n",
+    )
+    cleanup = "    base, orphan_count = _strip_runtime_domain_orphan_calls(base, rules)\n"
+    for old in cleanup_variants:
+        text = text.replace(old, cleanup)
+    if cleanup not in text:
         payload_anchor = '    payload = json.dumps(encoded_rules, separators=(",", ":"))\n'
         if payload_anchor not in text:
             raise RuntimeError("runtime-domain payload anchor missing")
-        text = text.replace(payload_anchor, payload_anchor + new_cleanup, 1)
+        text = text.replace(payload_anchor, payload_anchor + cleanup, 1)
 
     old_condition = "    if existing_span is not None and marker_comment in text[existing_span[0]:existing_span[1]]:\n"
     new_condition = "    if existing_span is not None and orphan_count == 0 and marker_comment in text[existing_span[0]:existing_span[1]]:\n"
@@ -208,17 +228,22 @@ def patch_core() -> None:
     elif new_condition not in text:
         raise RuntimeError("runtime-domain existing-span anchor missing")
 
+    if text.count("def _strip_runtime_domain_orphan_calls(") != 1:
+        raise RuntimeError("runtime-domain orphan cleaner must be generated exactly once")
+    if text.count(cleanup) != 1:
+        raise RuntimeError("runtime-domain orphan cleaner must be invoked exactly once")
+
     CORE.write_text(text, encoding="utf-8")
 
 
 def patch_test() -> None:
     text = TEST.read_text(encoding="utf-8")
-    name = "test_runtime_domain_historical_orphan_subsets_collapse_fail_closed"
+    name = "test_runtime_domain_historical_orphans_anywhere_collapse_fail_closed"
     if f"def {name}()" not in text:
         anchor = "def test_runtime_domain_duplicate_bootstraps_collapse_fail_closed() -> None:\n"
         if anchor not in text:
             raise RuntimeError("runtime-domain regression anchor missing")
-        regression = '''def test_runtime_domain_historical_orphan_subsets_collapse_fail_closed() -> None:\n    rules = {"old.example": "new.example", "older.example": "new.example"}\n    provider = "const providerByte=1;function getStreams(){};module.exports=__provider;\\n"\n    canonical, _ = inject_domain_overrides(provider, rules)\n    repeated, _ = inject_domain_overrides(canonical, rules)\n    assert repeated == canonical\n\n    import base64, json\n    subset = [[base64.b64encode(b"old.example").decode("ascii"), "new.example"]]\n    subset_payload = json.dumps(subset, separators=(",", ":"))\n    provider_start = canonical.index(provider)\n    orphan = f'typeof globalThis!=="undefined"?globalThis:this,{subset_payload};'\n    damaged = canonical[:provider_start] + orphan + orphan + canonical[provider_start:]\n    repaired, _ = inject_domain_overrides(damaged, rules)\n    assert repaired == canonical\n\n    foreign = orphan.replace("new.example", "foreign.example")\n    foreign_input = canonical[:provider_start] + foreign + canonical[provider_start:]\n    foreign_output, _ = inject_domain_overrides(foreign_input, rules)\n    assert foreign in foreign_output\n    assert foreign_output.count("__nuvioDomainOverrideV1") == 1\n\n\n'''
+        regression = '''def test_runtime_domain_historical_orphans_anywhere_collapse_fail_closed() -> None:\n    import base64, json\n\n    rules = {"old.example": "new.example", "older.example": "new.example"}\n    provider = "const providerByte=1;\\n/* NUVIO_ADAPTIVE_DOMAIN_RECOVERY_V1:BEGIN */\\nfunction getStreams(){};module.exports=__provider;\\n"\n    canonical, _ = inject_domain_overrides(provider, rules)\n    repeated, _ = inject_domain_overrides(canonical, rules)\n    assert repeated == canonical\n\n    markerless = canonical.replace("/* NUVIO_RUNTIME_DOMAIN_OVERRIDES_V1 */\\n", "", 1)\n    rebuilt_markerless, _ = inject_domain_overrides(markerless, rules)\n    assert rebuilt_markerless == canonical\n\n    subset = [[base64.b64encode(b"old.example").decode("ascii"), "new.example"]]\n    payload = json.dumps(subset, separators=(",", ":"))\n    plain = f'typeof globalThis!=="undefined"?globalThis:this,{payload};'\n    wrapped = f'(typeof globalThis!=="undefined"?globalThis:this,{payload});'\n\n    provider_start = canonical.index("const providerByte=1;")\n    damaged_provider = canonical[:provider_start] + plain + wrapped + canonical[provider_start:]\n    repaired_provider, _ = inject_domain_overrides(damaged_provider, rules)\n    assert repaired_provider == canonical\n\n    adaptive_start = canonical.index("/* NUVIO_ADAPTIVE_DOMAIN_RECOVERY_V1:BEGIN */")\n    damaged_adaptive = canonical[:adaptive_start] + plain + "\\n" + canonical[adaptive_start:]\n    repaired_adaptive, _ = inject_domain_overrides(damaged_adaptive, rules)\n    assert repaired_adaptive == canonical\n\n    foreign = plain.replace("new.example", "foreign.example")\n    foreign_input = canonical[:provider_start] + foreign + canonical[provider_start:]\n    foreign_output, _ = inject_domain_overrides(foreign_input, rules)\n    assert foreign in foreign_output\n    assert foreign_output.count("__nuvioDomainOverrideV1") == 1\n\n    malformed = 'typeof globalThis!=="undefined"?globalThis:this,[["@@@","new.example"]];'\n    malformed_input = canonical[:provider_start] + malformed + canonical[provider_start:]\n    malformed_output, _ = inject_domain_overrides(malformed_input, rules)\n    assert malformed in malformed_output\n\n\n'''
         text = text.replace(anchor, regression + anchor, 1)
 
     call = f"    {name}()\n"
