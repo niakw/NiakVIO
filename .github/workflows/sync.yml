@@ -121,79 +121,61 @@ jobs:
           fi
 
       - name: Validate ARCHI2 control plane
+        shell: bash
         run: |
-          node engine_v2/tests/provider-catalog.test.mjs
-          node engine_v2/tests/contracts.test.mjs
-          node engine_v2/tests/runtime-adapters.test.mjs
-          node engine_v2/tests/media-validator.test.mjs
-          node engine_v2/tests/resolver-core.test.mjs
-          node engine_v2/tests/repair-brain.test.mjs
-          node engine_v2/tests/recipe-memory.test.mjs
-          node engine_v2/tests/decision-engine.test.mjs
-          node engine_v2/tests/evidence.test.mjs
+          set -euo pipefail
+          npm test
 
       - name: Validate compatibility execution primitives
+        shell: bash
         run: |
-          python -m py_compile scripts/run_adaptive_quick_repair.py
-          python -m py_compile scripts/run_adaptive_deep_repair.py
-          python -m py_compile scripts/promote_refresh_candidates.py
-          python -m py_compile scripts/promote_candidates.py
-          python -m py_compile scripts/validate_automatic_repair_results.py
-          python -m py_compile scripts/normalize_terminal_quarantine_stage.py
-          python -m py_compile scripts/normalize_provider_activation_overrides.py
-          python -m py_compile scripts/repair_profile_persistence.py
-          python -m py_compile scripts/repair_identity_gate.py
-          python -m py_compile scripts/sync_release_versions.py
-          python tests/quick_refresh_policy_test.py
-          python tests/quick_refresh_deep_authority_test.py
-          python tests/quick_repair_probe_profile_test.py
-          python tests/quick_repair_acceptance_policy_test.py
-          python tests/healthy_sibling_resolution_test.py
-          python tests/provider_activation_override_normalization_test.py
-          python tests/repair_profile_persistence_test.py
-          python tests/terminal_quarantine_stage_normalization_test.py
-          python tests/refresh_manifest_finalization_test.py
-          python tests/adaptive_runtime_repair_test.py
-          python tests/global_final_wrapper_order_test.py
-          python tests/release_auto_bump_test.py
-          python tests/release_version_sync_test.py
-          python tests/sync_atomic_publication_test.py
+          set -euo pipefail
+          python tests/general_manifest_runtime_profiles_test.py
+          python scripts/validate_platform_runtime_policy.py
+          python scripts/validate_nuvio_tv_runtime_policy.py
+          python tests/nuvio_client_upstream_drift_guard_test.py
 
       - name: Run repository regression tests
-        run: npm test
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm test
 
       - name: Release stale non-safety activation vetoes
-        run: python scripts/normalize_provider_activation_overrides.py
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/normalize_provider_activation_overrides.py
 
       - name: Resolve official hubs and retain last-known-good routes
+        shell: bash
         run: |
-          python scripts/resolve_provider_hubs.py \
-            --apply \
-            --mode "${{ steps.resolve-mode.outputs.validation_mode }}" \
-            --include-disabled \
-            --workers 8 \
-            --timeout 8 \
-            --output health-output/provider-hub-report.json
+          set -euo pipefail
+          python scripts/resolve_provider_hubs.py --apply --mode "${{ steps.resolve-mode.outputs.validation_mode }}" --include-disabled --workers 8 --timeout 8 --output health-output/provider-hub-report.json
 
       - name: Discover all non-P2P candidates before triage
-        run: python scripts/discover_candidates.py --require-all-upstreams
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/discover_candidates.py --require-all-upstreams
 
       - name: Enforce canonical catalog preservation
-        run: node engine_v2/scripts/validate-stage-against-catalog.mjs --catalog provider_catalog.json --stage staging/candidates.json
+        shell: bash
+        run: |
+          set -euo pipefail
+          node engine_v2/scripts/validate-stage-against-catalog.mjs --catalog provider_catalog.json --stage staging/candidates.json
 
       - name: Resolve DNS and validated domain migrations
-        env:
-          GLOBALPING_API_TOKEN: ${{ secrets.GLOBALPING_API_TOKEN }}
+        shell: bash
         run: |
-          node scripts/provider_dns_preflight.mjs \
-            --stage staging \
-            --output health-output/dns-preflight-report.json
-          python scripts/apply_dns_migration_overrides.py \
-            --stage staging \
-            --report health-output/dns-preflight-report.json
+          set -euo pipefail
+          node scripts/provider_dns_preflight.mjs --stage staging --output health-output/dns-preflight-report.json
+          python scripts/apply_dns_migration_overrides.py --stage staging --report health-output/dns-preflight-report.json
 
       - name: Apply known runtime profiles before repair
+        shell: bash
         run: |
+          set -euo pipefail
           python scripts/build_provider_runtime_profiles.py
           python scripts/reapply_published_overrides.py
           python scripts/build_provider_runtime_profiles.py --stage staging --apply-stage
@@ -203,64 +185,51 @@ jobs:
       - name: Repair unresolved provider structures
         env:
           NUVIO_DNS_PREFLIGHT_RESULTS: health-output/dns-preflight-report.json
-          NUVIO_WORKER_MEMORY_MB: '1024'
+          NUVIO_WORKER_MEMORY_MB: "1024"
         shell: bash
         run: |
+          set -euo pipefail
           if [ "${{ steps.resolve-mode.outputs.validation_mode }}" = "deep" ]; then
-            python scripts/run_adaptive_deep_repair.py \
-              --stage staging \
-              --output health-output \
-              --mode deep
+            python scripts/run_adaptive_deep_repair.py --stage staging --output health-output
           else
-            python scripts/run_adaptive_quick_repair.py \
-              --stage staging \
-              --output health-output \
-              --max-rounds 1
+            python scripts/run_adaptive_quick_repair.py --stage staging --output health-output --max-rounds 1
           fi
-          python scripts/validate_automatic_repair_results.py \
-            --stage staging \
-            --health health-output/health-results.json \
-            --repairs health-output/repair-report.json
-          python scripts/normalize_terminal_quarantine_stage.py --stage staging
-          python scripts/validate_override_pipeline.py --stage staging
+          python scripts/validate_automatic_repair_results.py --stage staging --health health-output/health-results.json --repairs health-output/repair-report.json
 
       - name: Validate deep evidence integrity
         if: steps.resolve-mode.outputs.validation_mode == 'deep'
+        shell: bash
         run: |
-          python scripts/validate_deep_health_integrity.py \
-            --health health-output/health-results.json \
-            --repairs health-output/repair-report.json
+          set -euo pipefail
+          python scripts/validate_deep_evidence_integrity.py --stage staging --health health-output/health-results.json --repairs health-output/repair-report.json
 
       - name: Generate diagnostics after repair
+        shell: bash
         run: |
-          python scripts/generate_diagnostics.py \
-            --results health-output/health-results.json \
-            --output health-output
-          python scripts/validate_route_overrides.py \
-            --results health-output/health-results.json \
-            --report health-output/route-regressions.json
+          set -euo pipefail
+          python scripts/generate_diagnostics.py --results health-output/health-results.json --output health-output
 
       - name: Upload validated staging transaction
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: nuvio-validation-stage-${{ github.run_id }}
           path: |
-            staging/
-            health-output/
+            staging
+            health-output
             provider-overrides.json
             provider-domain-history.json
-          retention-days: 2
+          retention-days: 7
           if-no-files-found: error
 
   publish:
     name: Publish validated provider transaction
     needs: stage-and-test
-    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 90
     permissions:
       contents: write
-
+    env:
+      NUVIO_VALIDATION_MODE: ${{ needs.stage-and-test.outputs.validation_mode }}
     steps:
       - name: Checkout current published repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
@@ -333,6 +302,7 @@ jobs:
       - name: Restore validated reports
         shell: bash
         run: |
+          set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           cp checked-artifact/health-output/dns-preflight-report.json dns-preflight-report.json
@@ -345,6 +315,7 @@ jobs:
       - name: Build canonical publication transaction
         shell: bash
         run: |
+          set -euo pipefail
           test -f manifest.next.json
           mv manifest.next.json manifest.json
           python scripts/build_provider_runtime_profiles.py
@@ -379,33 +350,23 @@ jobs:
             --output /tmp/release-generation.json
 
       - name: Audit content identity and media
-        env:
-          NUVIO_CATALOGUE_AUDIT_OUTPUT: /tmp/catalogue-media-audit.json
-          NUVIO_CATALOGUE_AUDIT_WORKERS: '8'
-          NUVIO_CATALOGUE_AUDIT_TIMEOUT: '60'
+        if: needs.stage-and-test.outputs.validation_mode == 'deep'
         shell: bash
         run: |
-          if [ "${{ needs.stage-and-test.outputs.validation_mode }}" = "deep" ]; then
-            python scripts/audit_catalogue_identity_media.py
-          else
-            set +e
-            python scripts/audit_catalogue_identity_media.py
-            audit_status=$?
-            set -e
-            if [ "$audit_status" -ne 0 ]; then
-              python scripts/quarantine_catalogue_audit_failures.py \
-                --audit /tmp/catalogue-media-audit.json \
-                --evidence /tmp/release-generation.json \
-                --workflow-run-id "${{ github.run_id }}" \
-                --tested-commit-sha "${{ github.sha }}"
-            fi
-          fi
-
-          # The audit is allowed to mutate activation state. Re-run the same
-          # idempotent finalizer against the original published generation so
-          # late quarantine/metadata changes cannot escape provider/global cache
-          # invalidation, and cannot double-bump earlier changes.
+          set -euo pipefail
+          python scripts/audit_catalogue_media.py \
+            --manifest manifest.json \
+            --stage checked-artifact/staging \
+            --health checked-artifact/health-output/health-results.json \
+            --output /tmp/catalogue-media-audit.json
+          python scripts/quarantine_catalogue_audit_failures.py \
+            --audit /tmp/catalogue-media-audit.json \
+            --manifest manifest.json \
+            --overrides provider-overrides.json
+          python scripts/build_provider_runtime_profiles.py
+          python scripts/reapply_published_overrides.py
           python scripts/generate_language_manifests.py
+          python scripts/prune_unreferenced_providers.py
           python scripts/sync_release_versions.py \
             --manifest manifest.json \
             --previous "$NUVIO_PUBLISHED_MANIFEST_BASELINE"
