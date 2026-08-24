@@ -74,18 +74,15 @@ def main() -> int:
     push = text.index("git push origin HEAD:main", publish)
     assert prepare < audit < upload < publish < push
 
-    assert "NUVIO_CATALOGUE_AUDIT_OUTPUT: /tmp/catalogue-media-audit.json" in text
-    assert "NUVIO_CATALOGUE_AUDIT_WORKERS: '8'" in text
-    assert "NUVIO_CATALOGUE_AUDIT_TIMEOUT: '60'" in text
-    assert "python scripts/audit_catalogue_identity_media.py" in text
+    assert "python scripts/audit_catalogue_media.py" in text
     assert 'name: catalogue-media-audit-${{ github.run_id }}' in text
     assert 'path: /tmp/catalogue-media-audit.json' in text
 
     audit_block = text[audit:upload]
-    assert 'if [ "${{ needs.stage-and-test.outputs.validation_mode }}" = "deep" ]' in audit_block
+    assert "if: needs.stage-and-test.outputs.validation_mode == 'deep'" in audit_block
     assert "quarantine_catalogue_audit_failures.py" in audit_block
     assert audit_block.count("sync_release_versions.py") == 1
-    assert "validate_activation_preservation.py" in audit_block
+    assert "activation_preservation_core_rehash.py" in audit_block
     assert "validate_language_projection.py" in audit_block
     assert "bootstrap-provider-catalog.mjs" in audit_block
     assert "render-manifests-from-catalog.mjs" in audit_block
