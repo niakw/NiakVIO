@@ -1,3 +1,4 @@
+# One-shot: self-deletes after its validated repair is committed.
 name: Core runtime domain invocation repair once
 
 on:
@@ -32,7 +33,7 @@ jobs:
               """Return the end of one complete invoked function expression.
 
               The first balanced parenthesis closes the ``(function(...) {...})``
-              expression, not the IIFE statement.  Ownership must also consume the
+              expression, not the IIFE statement. Ownership must also consume the
               following invocation ``(global, rules)``; otherwise every rebuild
               leaves that argument expression behind and appends another copy.
               """
@@ -105,8 +106,6 @@ jobs:
               elif text[end:end + 1] in ("\r", "\n"):
                   end += 1
               return end'''
-          # The function lives inside a raw dedented source string, so source-level
-          # indentation is intentionally zero here.
           text = text[:start] + fixed + text[end:]
           core_path.write_text(text, encoding='utf-8')
 
