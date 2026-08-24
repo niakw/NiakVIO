@@ -357,7 +357,7 @@ jobs:
             --manifest manifest.json \
             --previous "$NUVIO_PUBLISHED_MANIFEST_BASELINE"
 
-          python scripts/validate_activation_preservation.py
+          python scripts/activation_preservation_core_rehash.py
           python scripts/validate_language_projection.py
 
           # Compatibility promoters emit a candidate manifest. ARCHI2 imports
@@ -409,7 +409,7 @@ jobs:
           python scripts/sync_release_versions.py \
             --manifest manifest.json \
             --previous "$NUVIO_PUBLISHED_MANIFEST_BASELINE"
-          python scripts/validate_activation_preservation.py
+          python scripts/activation_preservation_core_rehash.py
           python scripts/validate_language_projection.py
           node engine_v2/scripts/bootstrap-provider-catalog.mjs \
             --general manifest.json \
@@ -513,7 +513,7 @@ jobs:
           fi
           npm test
           node engine_v2/tests/provider-catalog.test.mjs
-          python scripts/validate_activation_preservation.py
+          python scripts/activation_preservation_core_rehash.py
           python scripts/validate_language_projection.py
           python scripts/validate_release_integrity.py
           python scripts/release_evidence_fence.py validate \

@@ -20,10 +20,10 @@ assert "Capture published manifest baseline" in workflow
 
 build = workflow.index("Build canonical publication transaction")
 first_version = workflow.index("python scripts/sync_release_versions.py", build)
-first_activation = workflow.index("python scripts/validate_activation_preservation.py", first_version)
+first_activation = workflow.index("python scripts/activation_preservation_core_rehash.py", first_version)
 audit = workflow.index("Audit content identity and media", first_activation)
 final_version = workflow.index("python scripts/sync_release_versions.py", audit)
-final_activation = workflow.index("python scripts/validate_activation_preservation.py", final_version)
+final_activation = workflow.index("python scripts/activation_preservation_core_rehash.py", final_version)
 final_catalog = workflow.index("node engine_v2/scripts/bootstrap-provider-catalog.mjs", final_activation)
 hashes = workflow.index("python scripts/generate_release_hashes.py", final_catalog)
 commit = workflow.index('git commit -m "chore: publish validated ARCHI2 provider transaction"', hashes)
