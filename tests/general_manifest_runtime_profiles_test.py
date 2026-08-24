@@ -100,7 +100,7 @@ try:
                 assert caps[provider_id].get('strategy') != 'quarantined', provider_id
 
             prior = original_caps.get(provider_id, {}).get('observed_origins')
-            if isinstance(prior, list) and prior:
+            if is_global_quarantine and isinstance(prior, list) and prior:
                 assert caps[provider_id].get('observed_origins') == prior, (
                     provider_id,
                     prior,

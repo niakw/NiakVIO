@@ -68,6 +68,19 @@ overlay = module._refresh_policy_overlay(
 assert current_enabled == {"active", "active-failed"}
 assert hard_q == {"hard-q"}
 assert audit_q == {"audit-q"}
+
+recovered_audit_name = {
+    "scrapers": [
+        {"id": "recovered", "enabled": True, "filename": "providers/recovered--nuvio-audit-quarantine--old.js"}
+    ]
+}
+recovered_provenance = {
+    "providers": {
+        "recovered": {"published_filename": "providers/recovered--nuvio-audit-quarantine--old.js"}
+    }
+}
+assert module._publication_quarantine_ids(recovered_audit_name, recovered_provenance) == set()
+
 # Existing non-safety providers are allowed to let current proof decide.
 assert "enabled" not in overlay["provider_patches"]["historic"]["manifest_overrides"]
 assert "enabled" not in overlay["provider_patches"]["audit-q"]["manifest_overrides"]

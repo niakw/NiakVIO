@@ -84,21 +84,33 @@ def _publication_quarantine_ids(
     manifest: dict[str, Any],
     provenance: dict[str, Any],
 ) -> set[str]:
+    """Return only publication quarantines that are still live now.
+
+    Content-addressed filenames and provenance survive recovery by design.
+    They are historical evidence, not current activation authority. A
+    publication-scoped quarantine therefore exists only while the current
+    manifest row is disabled and still points at audit-quarantine evidence.
+    """
     quarantined: set[str] = set()
-    for row in manifest.get("scrapers") or []:
-        if not isinstance(row, dict):
+    current_rows = _manifest_rows(manifest)
+    for cid, row in current_rows.items():
+        if row.get("enabled") is not False:
             continue
         filename = str(row.get("filename") or "")
-        if "--nuvio-audit-quarantine--" in filename or "NUVIO_PROVIDER_QUARANTINE_V1" in filename:
-            quarantined.add(_canonical(row.get("id")))
+        if "--nuvio-audit-quarantine--" in filename:
+            quarantined.add(cid)
 
     providers = provenance.get("providers") if isinstance(provenance.get("providers"), dict) else {}
     for raw_id, row in providers.items():
         if not isinstance(row, dict):
             continue
+        cid = _canonical(raw_id)
+        current = current_rows.get(cid)
+        if not current or current.get("enabled") is not False:
+            continue
         filename = str(row.get("published_filename") or "")
         if "--nuvio-audit-quarantine--" in filename:
-            quarantined.add(_canonical(raw_id))
+            quarantined.add(cid)
     return {value for value in quarantined if value}
 
 
