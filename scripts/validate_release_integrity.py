@@ -6,7 +6,7 @@ import json
 import pathlib
 import re
 
-from validate_activation_preservation import validate as validate_activation_preservation
+from activation_preservation_core_rehash import validate as validate_activation_preservation
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 
