@@ -119,6 +119,21 @@ def _regressions() -> None:
     floor = provider_export_floor(animekai)
     assert floor > animekai.index("module['exports']")
 
+    # DooFlix: no CommonJS export at all; getStreams itself is the runtime-global
+    # public API. It is provider-owned only when it is the final declaration before Core.
+    dooflix = (
+        "const __async=(a,b,c)=>Promise.resolve();"
+        "function helper(){};"
+        "function getStreams(id,type='movie',season=null,episode=null){return __async(this,null,function*(){return [];});}\n"
+        + core
+    )
+    floor = provider_export_floor(dooflix)
+    assert floor > dooflix.index("function getStreams")
+    assert dooflix[floor:].lstrip().startswith("/* NUVIO_GLOBAL_CATALOGUE_ALIAS_RECOVERY_V2:")
+    assert provider_export_floor(
+        "function getStreams(){return [];}dangerousCall();\n" + core
+    ) == -1
+
     for unsafe in (
         "if(x){module.exports={getStreams};}else{global.getStreams=dangerousCall();}\n",
         "if(x){module.exports={getStreams};}else{global.box={getStreams:dangerousCall()};}\n",
