@@ -106,7 +106,7 @@ assert {"mut-a", "mut-b"} <= selected
 assert scope["mutationCount"] == 2
 assert scope["fullCatalogueRetest"] is False
 assert scope["policy"]["providerSpecificExceptions"] is False
-assert set(scope["sentinelTypes"].values())
+assert scope["sentinelTypes"]
 assert len(scope["sentinelProviders"]) <= 3
 assert scope["selectedCount"] <= scope["mutationCount"] + 3
 assert "disabled-sentinel" not in scope["sentinelProviders"]
