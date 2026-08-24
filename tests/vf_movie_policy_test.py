@@ -7,7 +7,10 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'scripts'))
-from activation_preservation_core_rehash import configured_safety_quarantine as configured_safety_quarantine_rehash
+from activation_preservation_core_rehash import (
+    configured_safety_quarantine as configured_safety_quarantine_rehash,
+    validate as validate_activation_preservation_rehash,
+)
 
 overrides = json.loads((ROOT / 'provider-overrides.json').read_text())
 hubs = json.loads((ROOT / 'provider-hubs.json').read_text())['providers']
@@ -37,6 +40,13 @@ promotion_by_id = {
 }
 patches = overrides['provider_patches']
 official = overrides['official_domain_hubs']
+
+# The repository-wide activation contract is authoritative for every historical
+# LKG provider. This deliberately replaces provider-specific "must be enabled"
+# assertions: an inconclusive CI result cannot shrink the LKG, while a genuinely
+# conclusive disable/quarantine is allowed by the same global validator.
+activation_errors = validate_activation_preservation_rehash()
+assert not activation_errors, activation_errors
 
 # Mainstream VF movie providers must remain represented as movie-capable
 # providers. Activation follows the current deep proof policy: a provider may
@@ -96,11 +106,10 @@ for provider_id in ('purstream', 'coflix', 'frenchstream', 'movix', 'nakios', 's
     assert by_id[provider_id]['supportedTypes'] == ['movie', 'tv', 'anime'], provider_id
     assert type_policy[provider_id]['supportedTypes'] == ['movie', 'tv', 'anime'], provider_id
 
-# Goated is a manually confirmed Interstellar provider in Nuvio and its
-# activation must likewise survive an isolated GitHub-runner failure.
-assert by_id['goated']['enabled'] is True
+# Goated remains a confirmed movie-capable provider. Whether it is currently
+# active is governed by the same repository-wide evidence policy above rather
+# than a one-provider exception.
 assert 'movie' in by_id['goated']['supportedTypes']
-assert 'goated' in activation['active_ids']
 
 # Playback capability is a catalogue-wide contract, not a provider-specific
 # exception list. When a provider explicitly says the external player is not
