@@ -104,10 +104,10 @@ assert 'goated' in activation['active_ids']
 
 # Playback capability is a catalogue-wide contract, not a provider-specific
 # exception list. When a provider explicitly says the external player is not
-# required, it must advertise at least one direct-media format that Nuvio can
-# hand to its native player. Providers that omit the flag retain their upstream
-# semantics and are validated by the runtime/lab gates.
-direct_media_formats = {'mp4', 'mkv', 'm3u8'}
+# required, it must advertise at least one direct-media format that the shared
+# direct-media probe understands. MPEG-DASH is first-class direct media here:
+# direct_media_probe.cjs validates MPD structure alongside HLS and binary media.
+direct_media_formats = {'mp4', 'mkv', 'm3u8', 'dash'}
 for provider_id, row in sorted(by_id.items()):
     flag = row.get('supportsExternalPlayer')
     if flag is None:
