@@ -1,5 +1,5 @@
 name: NiakVIO minimal final Core seal
-# target: test-body-after-sealed-metadata-v2
+# target: test-body-after-sealed-metadata-v3
 
 on:
   push:
@@ -53,6 +53,7 @@ jobs:
         run: |
           set -euo pipefail
           git merge-base --is-ancestor 30e5504e00b37b41d8b4bd756f791b38840591de HEAD
+          python3 scripts/generate_release_hashes.py
           python3 scripts/validate_release_integrity.py
           python3 scripts/reapply_published_overrides.py --check
           python3 tests/activation_preservation_core_rehash_test.py
