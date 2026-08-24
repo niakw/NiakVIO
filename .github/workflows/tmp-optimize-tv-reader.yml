@@ -20,40 +20,61 @@ jobs:
           ref: main
           fetch-depth: 0
 
-      - name: Apply provider-agnostic TV orchestration patch
+      - name: Apply, verify and commit TV orchestration
         shell: bash
         run: |
-          set -euo pipefail
-          python3 scripts/apply_tv_reader_optimization.py
-
-      - name: Run targeted structural and unit tests
-        shell: bash
-        run: |
-          set -euo pipefail
-          python3 -m py_compile \
-            scripts/native_tv_route_checkpoint.py \
-            scripts/build_native_reader_retest_manifest.py \
-            scripts/apply_tv_reader_optimization.py
-          python3 tests/native_tv_route_resume_test.py
-          python3 tests/native_corpus_device_lab_test.py
-          grep -q 'retest-manifest.json' .github/workflows/native-android-route-reader.yml
-          grep -q 'timeout --signal=TERM --kill-after=2m' scripts/run_native_corpus_tv_suite.sh
-          grep -q 'native-tv-route-representative-' .github/workflows/native-android-route-reader.yml
-
-      - name: Refresh release hashes and integrity
-        shell: bash
-        run: |
-          set -euo pipefail
-          python3 scripts/generate_release_hashes.py
-          python3 scripts/validate_release_integrity.py
-
-      - name: Commit optimized TV orchestration and consume one-shot
-        shell: bash
-        run: |
-          set -euo pipefail
+          set -u
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          rm -f .github/workflows/tmp-optimize-tv-reader.yml scripts/apply_tv_reader_optimization.py
+          mkdir -p automation
+          REPORT=automation/tv-reader-migration-failure.txt
+          rm -f "$REPORT"
+
+          patch_status=0
+          python3 scripts/apply_tv_reader_optimization.py > /tmp/tv-patch.log 2>&1 || patch_status=$?
+
+          compile_status=99
+          resume_test_status=99
+          corpus_test_status=99
+          integrity_status=99
+          if [ "$patch_status" -eq 0 ]; then
+            compile_status=0
+            python3 -m py_compile scripts/native_tv_route_checkpoint.py scripts/build_native_reader_retest_manifest.py scripts/apply_tv_reader_optimization.py > /tmp/tv-compile.log 2>&1 || compile_status=$?
+            resume_test_status=0
+            python3 tests/native_tv_route_resume_test.py > /tmp/tv-resume-test.log 2>&1 || resume_test_status=$?
+            corpus_test_status=0
+            python3 tests/native_corpus_device_lab_test.py > /tmp/tv-corpus-test.log 2>&1 || corpus_test_status=$?
+          fi
+
+          if [ "$patch_status" -eq 0 ] && [ "$compile_status" -eq 0 ] && [ "$resume_test_status" -eq 0 ] && [ "$corpus_test_status" -eq 0 ]; then
+            integrity_status=0
+            python3 scripts/generate_release_hashes.py > /tmp/tv-hashes.log 2>&1 || integrity_status=$?
+            if [ "$integrity_status" -eq 0 ]; then
+              python3 scripts/validate_release_integrity.py > /tmp/tv-integrity.log 2>&1 || integrity_status=$?
+            fi
+          fi
+
+          if [ "$patch_status" -ne 0 ] || [ "$compile_status" -ne 0 ] || [ "$resume_test_status" -ne 0 ] || [ "$corpus_test_status" -ne 0 ] || [ "$integrity_status" -ne 0 ]; then
+            {
+              echo "TV reader migration failed"
+              echo "patch_status=$patch_status"
+              echo "compile_status=$compile_status"
+              echo "resume_test_status=$resume_test_status"
+              echo "corpus_test_status=$corpus_test_status"
+              echo "integrity_status=$integrity_status"
+              for f in /tmp/tv-patch.log /tmp/tv-compile.log /tmp/tv-resume-test.log /tmp/tv-corpus-test.log /tmp/tv-hashes.log /tmp/tv-integrity.log; do
+                echo "===== $f ====="
+                if [ -f "$f" ]; then tail -n 120 "$f"; else echo "not-run"; fi
+              done
+            } > "$REPORT"
+            git add "$REPORT"
+            git diff --cached --check
+            git commit -m 'ci: report TV reader migration failure [skip ci]'
+            git push origin HEAD:main
+            exit 1
+          fi
+
+          rm -f .github/workflows/tmp-optimize-tv-reader.yml scripts/apply_tv_reader_optimization.py "$REPORT"
           python3 scripts/generate_release_hashes.py
           python3 scripts/validate_release_integrity.py
           git add -A
