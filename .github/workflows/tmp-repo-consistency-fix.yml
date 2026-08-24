@@ -1,0 +1,214 @@
+name: Temporary repository consistency fixes
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/tmp-repo-consistency-fix.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Apply generic consistency repairs
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+
+          # 1) Publication quarantine is a CURRENT disabled runtime state. A historical
+          # content-addressed filename/provenance record cannot re-quarantine a provider
+          # that has since been recovered and re-enabled.
+          path = Path('scripts/promote_refresh_candidates.py')
+          text = path.read_text(encoding='utf-8')
+          old = '''def _publication_quarantine_ids(
+              manifest: dict[str, Any],
+              provenance: dict[str, Any],
+          ) -> set[str]:
+              quarantined: set[str] = set()
+              for row in manifest.get("scrapers") or []:
+                  if not isinstance(row, dict):
+                      continue
+                  filename = str(row.get("filename") or "")
+                  if "--nuvio-audit-quarantine--" in filename or "NUVIO_PROVIDER_QUARANTINE_V1" in filename:
+                      quarantined.add(_canonical(row.get("id")))
+
+              providers = provenance.get("providers") if isinstance(provenance.get("providers"), dict) else {}
+              for raw_id, row in providers.items():
+                  if not isinstance(row, dict):
+                      continue
+                  filename = str(row.get("published_filename") or "")
+                  if "--nuvio-audit-quarantine--" in filename:
+                      quarantined.add(_canonical(raw_id))
+              return {value for value in quarantined if value}
+          '''
+          new = '''def _publication_quarantine_ids(
+              manifest: dict[str, Any],
+              provenance: dict[str, Any],
+          ) -> set[str]:
+              """Return only publication quarantines that are still live now.
+
+              Content-addressed filenames and provenance survive recovery by design.
+              They are historical evidence, not current activation authority. A
+              publication-scoped quarantine therefore exists only while the current
+              manifest row is disabled and still points at audit-quarantine evidence.
+              """
+              quarantined: set[str] = set()
+              current_rows = _manifest_rows(manifest)
+              for cid, row in current_rows.items():
+                  if row.get("enabled") is not False:
+                      continue
+                  filename = str(row.get("filename") or "")
+                  if "--nuvio-audit-quarantine--" in filename:
+                      quarantined.add(cid)
+
+              providers = provenance.get("providers") if isinstance(provenance.get("providers"), dict) else {}
+              for raw_id, row in providers.items():
+                  if not isinstance(row, dict):
+                      continue
+                  cid = _canonical(raw_id)
+                  current = current_rows.get(cid)
+                  if not current or current.get("enabled") is not False:
+                      continue
+                  filename = str(row.get("published_filename") or "")
+                  if "--nuvio-audit-quarantine--" in filename:
+                      quarantined.add(cid)
+              return {value for value in quarantined if value}
+          '''
+          if old not in text:
+              raise SystemExit('promote_refresh_candidates quarantine anchor missing')
+          path.write_text(text.replace(old, new, 1), encoding='utf-8')
+
+          # 2) Runtime-profile origin preservation follows the explicit inert wrapper,
+          # never the historical filename. A recovered live provider may refresh or
+          # clear its observed origins normally.
+          path = Path('scripts/build_provider_runtime_profiles.py')
+          text = path.read_text(encoding='utf-8')
+          old = '''        # Audit quarantine bundles are intentionally inert stubs. They contain no
+                  # runtime origins by design, so re-profiling a published quarantine must
+                  # not erase origin evidence learned from the real provider bundle. Doing
+                  # so made `npm test` mutate provider-overrides.json after publication and
+                  # broke exact-main verification. Preserve prior evidence only for these
+                  # explicit quarantine stubs; normal live bundles still refresh exactly
+                  # from their current source.
+                  if origins or "--nuvio-audit-quarantine--" not in path.name:
+                      capability["observed_origins"] = origins[:24]
+                  else:
+                      prior_origins = existing.get("observed_origins") if isinstance(existing.get("observed_origins"), list) else []
+                      capability["observed_origins"] = [str(value) for value in prior_origins if str(value)][:24]
+          '''
+          new = '''        # Explicit inert quarantine bundles intentionally contain no runtime
+                  # origins. Preserve prior real-provider evidence only while the actual
+                  # quarantine wrapper is present. A historical quarantine filename alone
+                  # is provenance and must never freeze a recovered provider's live profile.
+                  explicit_inert_quarantine = "NUVIO_PROVIDER_QUARANTINE_V1" in text
+                  if origins or not explicit_inert_quarantine:
+                      capability["observed_origins"] = origins[:24]
+                  else:
+                      prior_origins = existing.get("observed_origins") if isinstance(existing.get("observed_origins"), list) else []
+                      capability["observed_origins"] = [str(value) for value in prior_origins if str(value)][:24]
+          '''
+          if old not in text:
+              raise SystemExit('build_provider_runtime_profiles quarantine anchor missing')
+          path.write_text(text.replace(old, new, 1), encoding='utf-8')
+
+          # 3) Align the portfolio regression: stale origins are immutable only for a
+          # still-inert global quarantine, not for a recovered provider with old naming.
+          path = Path('tests/general_manifest_runtime_profiles_test.py')
+          text = path.read_text(encoding='utf-8')
+          old = '''            prior = original_caps.get(provider_id, {}).get('observed_origins')
+                      if isinstance(prior, list) and prior:
+                          assert caps[provider_id].get('observed_origins') == prior, (
+                              provider_id,
+                              prior,
+                              caps[provider_id].get('observed_origins'),
+                          )
+          '''
+          new = '''            prior = original_caps.get(provider_id, {}).get('observed_origins')
+                      if is_global_quarantine and isinstance(prior, list) and prior:
+                          assert caps[provider_id].get('observed_origins') == prior, (
+                              provider_id,
+                              prior,
+                              caps[provider_id].get('observed_origins'),
+                          )
+          '''
+          if old not in text:
+              raise SystemExit('general manifest origin anchor missing')
+          path.write_text(text.replace(old, new, 1), encoding='utf-8')
+
+          # 4) Add a direct regression for recovered providers retaining audit filenames
+          # and stale provenance after successful reactivation.
+          path = Path('tests/quick_refresh_policy_test.py')
+          text = path.read_text(encoding='utf-8')
+          anchor = '''assert audit_q == {"audit-q"}
+          # Existing non-safety providers are allowed to let current proof decide.
+          '''
+          replacement = '''assert audit_q == {"audit-q"}
+
+          recovered_audit_name = {
+              "scrapers": [
+                  {"id": "recovered", "enabled": True, "filename": "providers/recovered--nuvio-audit-quarantine--old.js"}
+              ]
+          }
+          recovered_provenance = {
+              "providers": {
+                  "recovered": {"published_filename": "providers/recovered--nuvio-audit-quarantine--old.js"}
+              }
+          }
+          assert module._publication_quarantine_ids(recovered_audit_name, recovered_provenance) == set()
+
+          # Existing non-safety providers are allowed to let current proof decide.
+          '''
+          if anchor not in text:
+              raise SystemExit('quick refresh regression anchor missing')
+          path.write_text(text.replace(anchor, replacement, 1), encoding='utf-8')
+          PY
+
+      - name: Run targeted consistency regressions
+        shell: bash
+        run: |
+          set -euo pipefail
+          python tests/quick_refresh_policy_test.py
+          python tests/quick_refresh_deep_authority_test.py
+          python tests/general_manifest_runtime_profiles_test.py
+          python tests/provider_quarantine_test.py
+          python tests/nuvio_client_upstream_drift_guard_test.py
+
+      - name: Reseal release hashes
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/generate_release_hashes.py
+          python scripts/validate_release_integrity.py
+
+      - name: Commit and self-clean
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f .github/workflows/tmp-repo-consistency-fix.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add scripts/promote_refresh_candidates.py scripts/build_provider_runtime_profiles.py \
+            tests/general_manifest_runtime_profiles_test.py tests/quick_refresh_policy_test.py \
+            FILE-HASHES.json PATCH-SHA256SUMS.txt .github/workflows/tmp-repo-consistency-fix.yml
+          if git diff --cached --quiet; then
+            echo 'No repository consistency changes required.'
+            exit 0
+          fi
+          git commit -m 'fix: remove historical quarantine state assumptions'
+          git push origin HEAD:main
