@@ -24,8 +24,23 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          printf '%s' 'ZnJvbSBwYXRobGliIGltcG9ydCBQYXRoCgpxdWFyYW50aW5lID0gUGF0aCgic2NyaXB0cy9xdWFyYW50aW5lX2NhdGFsb2d1ZV9hdWRpdF9mYWlsdXJlcy5weSIpCnRleHQgPSBxdWFyYW50aW5lLnJlYWRfdGV4dChlbmNvZGluZz0idXRmLTgiKQphbmNob3IgPSAnICAgIHBhcnNlci5hZGRfYXJndW1lbnQoIi0tdGVzdGVkLWNvbW1pdC1zaGEiLCBkZWZhdWx0PSIiKVxuJwpsZWdhY3kgPSAoCiAgICAnICAgICMgVGVtcG9yYXJ5IENMSSBjb21wYXRpYmlsaXR5IGZvciBpbi1mbGlnaHQgRGVlcCB3b3JrZmxvd3MgY3JlYXRlZCBiZWZvcmUgdGhlIGNhbm9uaWNhbCBhdWRpdCBtaWdyYXRpb24uXG4nCiAgICAnICAgIHBhcnNlci5hZGRfYXJndW1lbnQoIi0tbWFuaWZlc3QiLCBoZWxwPWFyZ3BhcnNlLlNVUFBSRVNTKVxuJwogICAgJyAgICBwYXJzZXIuYWRkX2FyZ3VtZW50KCItLW92ZXJyaWRlcyIsIGhlbHA9YXJncGFyc2UuU1VQUFJFU1MpXG4nCikKaWYgJ3BhcnNlci5hZGRfYXJndW1lbnQoIi0tbWFuaWZlc3QiLCBoZWxwPWFyZ3BhcnNlLlNVUFBSRVNTKScgbm90IGluIHRleHQ6CiAgICBpZiBhbmNob3Igbm90IGluIHRleHQ6CiAgICAgICAgcmFpc2UgU3lzdGVtRXhpdCgicXVhcmFudGluZSBwYXJzZXIgYW5jaG9yIG5vdCBmb3VuZCIpCiAgICB0ZXh0ID0gdGV4dC5yZXBsYWNlKGFuY2hvciwgYW5jaG9yICsgbGVnYWN5LCAxKQogICAgcXVhcmFudGluZS53cml0ZV90ZXh0KHRleHQsIGVuY29kaW5nPSJ1dGYtOCIpCgpQYXRoKCJzY3JpcHRzL2F1ZGl0X2NhdGFsb2d1ZV9tZWRpYS5weSIpLndyaXRlX3RleHQoJyMhL3Vzci9iaW4vZW52IHB5dGhvbjNcbiMgU1BEWC1MaWNlbnNlLUlkZW50aWZpZXI6IEdQTC0zLjAtb25seVxuIiIiQ29tcGF0aWJpbGl0eSBlbnRyeXBvaW50IGZvciBhbiBpbi1mbGlnaHQgRGVlcCBwdWJsaXNoZXIuXG5cblRoZSBjYW5vbmljYWwgZmluaXRlIGF1ZGl0IGlzIGF1ZGl0X2NhdGFsb2d1ZV9pZGVudGl0eV9tZWRpYS5weS4gVGhpcyBhZGFwdGVyXG5vbmx5IHRyYW5zbGF0ZXMgdGhlIHJldGlyZWQgYXJndW1lbnQtYmFzZWQgd29ya2Zsb3cgY29udHJhY3QgaW50byB0aGF0IGF1ZGl0J3NcbmVudmlyb25tZW50IGNvbnRyYWN0OyBpdCBkb2VzIG5vdCBkdXBsaWNhdGUgYXVkaXQgb3IgcXVhcmFudGluZSBwb2xpY3kuXG4iIiJcbmZyb20gX19mdXR1cmVfXyBpbXBvcnQgYW5ub3RhdGlvbnNcblxuaW1wb3J0IGFyZ3BhcnNlXG5pbXBvcnQgb3NcbmltcG9ydCBzdWJwcm9jZXNzXG5pbXBvcnQgc3lzXG5mcm9tIHBhdGhsaWIgaW1wb3J0IFBhdGhcblxuUk9PVCA9IFBhdGgoX19maWxlX18pLnJlc29sdmUoKS5wYXJlbnRzWzFdXG5DQU5PTklDQUwgPSBST09UIC8gInNjcmlwdHMiIC8gImF1ZGl0X2NhdGFsb2d1ZV9pZGVudGl0eV9tZWRpYS5weSJcblxuXG5kZWYgbWFpbigpIC0+IGludDpcbiAgICBwYXJzZXIgPSBhcmdwYXJzZS5Bcmd1bWVudFBhcnNlcigpXG4gICAgcGFyc2VyLmFkZF9hcmd1bWVudCgiLS1tYW5pZmVzdCIsIHR5cGU9UGF0aCwgcmVxdWlyZWQ9VHJ1ZSlcbiAgICBwYXJzZXIuYWRkX2FyZ3VtZW50KCItLXN0YWdlIiwgdHlwZT1QYXRoLCByZXF1aXJlZD1UcnVlKVxuICAgIHBhcnNlci5hZGRfYXJndW1lbnQoIi0taGVhbHRoIiwgdHlwZT1QYXRoLCByZXF1aXJlZD1UcnVlKVxuICAgIHBhcnNlci5hZGRfYXJndW1lbnQoIi0tb3V0cHV0IiwgdHlwZT1QYXRoLCByZXF1aXJlZD1UcnVlKVxuICAgIGFyZ3MgPSBwYXJzZXIucGFyc2VfYXJncygpXG5cbiAgICByZXF1aXJlZCA9IHtcbiAgICAgICAgIm1hbmlmZXN0IjogYXJncy5tYW5pZmVzdCxcbiAgICAgICAgInN0YWdlIGNhbmRpZGF0ZXMiOiBhcmdzLnN0YWdlIC8gImNhbmRpZGF0ZXMuanNvbiIsXG4gICAgICAgICJoZWFsdGggZXZpZGVuY2UiOiBhcmdzLmhlYWx0aCxcbiAgICAgICAgImNhbm9uaWNhbCBhdWRpdG9yIjogQ0FOT05JQ0FMLFxuICAgIH1cbiAgICBtaXNzaW5nID0gW2Yie2xhYmVsfToge3BhdGh9IiBmb3IgbGFiZWwsIHBhdGggaW4gcmVxdWlyZWQuaXRlbXMoKSBpZiBub3QgcGF0aC5pc19maWxlKCldXG4gICAgaWYgbWlzc2luZzpcbiAgICAgICAgcHJpbnQoImxlZ2FjeSBjYXRhbG9ndWUgYXVkaXQgY29tcGF0aWJpbGl0eSBmYWlsZWQ6IiwgZmlsZT1zeXMuc3RkZXJyKVxuICAgICAgICBmb3IgaXRlbSBpbiBtaXNzaW5nOlxuICAgICAgICAgICAgcHJpbnQoZiItIG1pc3Npbmcge2l0ZW19IiwgZmlsZT1zeXMuc3RkZXJyKVxuICAgICAgICByZXR1cm4gMlxuXG4gICAgZW52ID0gZGljdChvcy5lbnZpcm9uKVxuICAgIGVudlsiTlVWSU9fQ0FUQUxPR1VFX0FVRElUX09VVFBVVCJdID0gc3RyKGFyZ3Mub3V0cHV0LnJlc29sdmUoKSlcbiAgICBjb21wbGV0ZWQgPSBzdWJwcm9jZXNzLnJ1bihbc3lzLmV4ZWN1dGFibGUsIHN0cihDQU5PTklDQUwpXSwgY3dkPVJPT1QsIGVudj1lbnYsIGNoZWNrPUZhbHNlKVxuICAgIHJldHVybiBpbnQoY29tcGxldGVkLnJldHVybmNvZGUpXG5cblxuaWYgX19uYW1lX18gPT0gIl9fbWFpbl9fIjpcbiAgICByYWlzZSBTeXN0ZW1FeGl0KG1haW4oKSlcbicsIGVuY29kaW5nPSJ1dGYtOCIpCg==' | base64 -d > /tmp/postdeep_patch.py
-          python /tmp/postdeep_patch.py
+          printf '%s' 'IyEvdXNyL2Jpbi9lbnYgcHl0aG9uMwojIFNQRFgtTGljZW5zZS1JZGVudGlmaWVyOiBHUEwtMy4wLW9ubHkKIiIiQ29tcGF0aWJpbGl0eSBlbnRyeXBvaW50IGZvciBhbiBpbi1mbGlnaHQgRGVlcCBwdWJsaXNoZXIuCgpUaGUgY2Fub25pY2FsIGZpbml0ZSBhdWRpdCBpcyBhdWRpdF9jYXRhbG9ndWVfaWRlbnRpdHlfbWVkaWEucHkuIFRoaXMgYWRhcHRlcgpvbmx5IHRyYW5zbGF0ZXMgdGhlIHJldGlyZWQgYXJndW1lbnQtYmFzZWQgd29ya2Zsb3cgY29udHJhY3QgaW50byB0aGF0IGF1ZGl0J3MKZW52aXJvbm1lbnQgY29udHJhY3Q7IGl0IGRvZXMgbm90IGR1cGxpY2F0ZSBhdWRpdCBvciBxdWFyYW50aW5lIHBvbGljeS4KIiIiCmZyb20gX19mdXR1cmVfXyBpbXBvcnQgYW5ub3RhdGlvbnMKCmltcG9ydCBhcmdwYXJzZQppbXBvcnQgb3MKaW1wb3J0IHN1YnByb2Nlc3MKaW1wb3J0IHN5cwpmcm9tIHBhdGhsaWIgaW1wb3J0IFBhdGgKClJPT1QgPSBQYXRoKF9fZmlsZV9fKS5yZXNvbHZlKCkucGFyZW50c1sxXQpDQU5PTklDQUwgPSBST09UIC8gInNjcmlwdHMiIC8gImF1ZGl0X2NhdGFsb2d1ZV9pZGVudGl0eV9tZWRpYS5weSIKCgpkZWYgbWFpbigpIC0+IGludDoKICAgIHBhcnNlciA9IGFyZ3BhcnNlLkFyZ3VtZW50UGFyc2VyKCkKICAgIHBhcnNlci5hZGRfYXJndW1lbnQoIi0tbWFuaWZlc3QiLCB0eXBlPVBhdGgsIHJlcXVpcmVkPVRydWUpCiAgICBwYXJzZXIuYWRkX2FyZ3VtZW50KCItLXN0YWdlIiwgdHlwZT1QYXRoLCByZXF1aXJlZD1UcnVlKQogICAgcGFyc2VyLmFkZF9hcmd1bWVudCgiLS1oZWFsdGgiLCB0eXBlPVBhdGgsIHJlcXVpcmVkPVRydWUpCiAgICBwYXJzZXIuYWRkX2FyZ3VtZW50KCItLW91dHB1dCIsIHR5cGU9UGF0aCwgcmVxdWlyZWQ9VHJ1ZSkKICAgIGFyZ3MgPSBwYXJzZXIucGFyc2VfYXJncygpCgogICAgcmVxdWlyZWQgPSB7CiAgICAgICAgIm1hbmlmZXN0IjogYXJncy5tYW5pZmVzdCwKICAgICAgICAic3RhZ2UgY2FuZGlkYXRlcyI6IGFyZ3Muc3RhZ2UgLyAiY2FuZGlkYXRlcy5qc29uIiwKICAgICAgICAiaGVhbHRoIGV2aWRlbmNlIjogYXJncy5oZWFsdGgsCiAgICAgICAgImNhbm9uaWNhbCBhdWRpdG9yIjogQ0FOT05JQ0FMLAogICAgfQogICAgbWlzc2luZyA9IFtmIntsYWJlbH06IHtwYXRofSIgZm9yIGxhYmVsLCBwYXRoIGluIHJlcXVpcmVkLml0ZW1zKCkgaWYgbm90IHBhdGguaXNfZmlsZSgpXQogICAgaWYgbWlzc2luZzoKICAgICAgICBwcmludCgibGVnYWN5IGNhdGFsb2d1ZSBhdWRpdCBjb21wYXRpYmlsaXR5IGZhaWxlZDoiLCBmaWxlPXN5cy5zdGRlcnIpCiAgICAgICAgZm9yIGl0ZW0gaW4gbWlzc2luZzoKICAgICAgICAgICAgcHJpbnQoZiItIG1pc3Npbmcge2l0ZW19IiwgZmlsZT1zeXMuc3RkZXJyKQogICAgICAgIHJldHVybiAyCgogICAgZW52ID0gZGljdChvcy5lbnZpcm9uKQogICAgZW52WyJOVVZJT19DQVRBTE9HVUVfQVVESVRfT1VUUFVUIl0gPSBzdHIoYXJncy5vdXRwdXQucmVzb2x2ZSgpKQogICAgY29tcGxldGVkID0gc3VicHJvY2Vzcy5ydW4oW3N5cy5leGVjdXRhYmxlLCBzdHIoQ0FOT05JQ0FMKV0sIGN3ZD1ST09ULCBlbnY9ZW52LCBjaGVjaz1GYWxzZSkKICAgIHJldHVybiBpbnQoY29tcGxldGVkLnJldHVybmNvZGUpCgoKaWYgX19uYW1lX18gPT0gIl9fbWFpbl9fIjoKICAgIHJhaXNlIFN5c3RlbUV4aXQobWFpbigpKQo=' | base64 -d > scripts/audit_catalogue_media.py
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('scripts/quarantine_catalogue_audit_failures.py')
+          text = path.read_text(encoding='utf-8')
+          anchor = '    parser.add_argument("--tested-commit-sha", default="")\n'
+          legacy = (
+              '    # Temporary CLI compatibility for in-flight Deep workflows created before the canonical audit migration.\n'
+              '    parser.add_argument("--manifest", help=argparse.SUPPRESS)\n'
+              '    parser.add_argument("--overrides", help=argparse.SUPPRESS)\n'
+          )
+          if 'parser.add_argument("--manifest", help=argparse.SUPPRESS)' not in text:
+              if anchor not in text:
+                  raise SystemExit('quarantine parser anchor not found')
+              text = text.replace(anchor, anchor + legacy, 1)
+              path.write_text(text, encoding='utf-8')
+          PY
           python -m py_compile scripts/audit_catalogue_media.py scripts/quarantine_catalogue_audit_failures.py
           python tests/catalogue_audit_transient_hls_test.py
           python tests/sync_catalogue_audit_gate_test.py
@@ -39,7 +54,6 @@ jobs:
           rm -f .github/workflows/tmp-postdeep-compat.yml
           python scripts/generate_release_hashes.py
           python scripts/validate_release_integrity.py
-
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add scripts/audit_catalogue_media.py scripts/quarantine_catalogue_audit_failures.py \
@@ -47,10 +61,6 @@ jobs:
             .github/workflows/tmp-fix-learning-artifact-layout.yml \
             .github/workflows/tmp-resume-quick-publish.yml \
             .github/workflows/tmp-postdeep-compat.yml
-          if git diff --cached --quiet; then
-            echo 'No compatibility change required.'
-            exit 0
-          fi
           git commit -m 'fix: bridge in-flight Deep audit contract [skip ci]'
           git fetch origin main
           git rebase origin/main
