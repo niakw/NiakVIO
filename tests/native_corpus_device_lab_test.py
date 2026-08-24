@@ -177,7 +177,7 @@ for required in (
 assert "NiakVIO Brain learning lab" not in reader_learning
 assert "gh run list --workflow native-android-route-reader.yml" not in reader_learning
 assert "native-corpus-device-lab.yml" not in brain_learning
-assert "--native-summary" not in brain_learning
+assert "--native-summary brain-learning-input/native-reader-summary.json" in brain_learning
 assert "--provider-portfolio" not in brain_learning
 assert "nativeReaderRepairMemory" in brain_learning
 
