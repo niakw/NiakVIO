@@ -206,8 +206,20 @@ for required in (
     assert required in prepare_client, required
 assert "raw.githubusercontent.com" in resolve_repository
 assert "10.0.2.2" in resolve_repository
-assert "10.0.2.2" not in prepare_client
-assert "cleartext" not in prepare_client.casefold()
+# Explanatory documentation may name the retired emulator route; executable
+# preparation code must never construct it or relax Android cleartext policy.
+assert '"http://10.0.2.2' not in prepare_client
+assert "'http://10.0.2.2" not in prepare_client
+for forbidden in (
+    "android:usesCleartextTraffic",
+    "networkSecurityConfig",
+    "cleartextTrafficPermitted",
+):
+    assert forbidden not in prepare_client, forbidden
+materialization_guard = prepare_client.index("if not _materialization_requested():")
+materialization_return = prepare_client.index("\n        return", materialization_guard)
+materialization_commands = prepare_client.index("commands = (", materialization_return)
+assert materialization_guard < materialization_return < materialization_commands
 
 # The production Nuvio player is primary evidence; transport probing comes after it.
 for required in (
