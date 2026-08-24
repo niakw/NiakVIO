@@ -25,6 +25,7 @@ on:
 permissions:
   contents: read
   security-events: read
+  issues: write
 
 concurrency:
   group: niakvio-final-provider-security-main
@@ -35,6 +36,13 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
+      - name: Announce issue 69 security gate
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          gh issue comment 69 --repo "$GITHUB_REPOSITORY" --body "#69 security gate started: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID} on ${GITHUB_SHA}. Global hardening + active provider scan + exact-SHA CodeQL + all High/Critical alerts."
+
       - name: Checkout exact main
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
@@ -159,3 +167,19 @@ jobs:
           if bad:
               raise SystemExit('open high/critical CodeQL alerts remain on main')
           PY
+
+      - name: Report issue 69 security success
+        if: success()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          gh issue comment 69 --repo "$GITHUB_REPOSITORY" --body "#69 security gate SUCCEEDED: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID} on ${GITHUB_SHA}. Global hardening tests, active provider scan, exact-SHA CodeQL and repository-wide High/Critical gate are green."
+
+      - name: Report issue 69 security failure
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          gh issue comment 69 --repo "$GITHUB_REPOSITORY" --body "#69 security gate FAILED: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID} on ${GITHUB_SHA}. Inspect this run before any unrelated validation."
