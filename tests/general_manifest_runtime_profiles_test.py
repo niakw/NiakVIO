@@ -53,10 +53,13 @@ try:
     for provider_id in ids:
         row = by_id[provider_id]
         filename = str(row.get('filename') or '')
-        is_audit_quarantine = '--nuvio-audit-quarantine--' in filename
+        has_audit_provenance_filename = '--nuvio-audit-quarantine--' in filename
         bundle = (ROOT / filename).read_text(encoding='utf-8')
         is_scoped = 'NUVIO_CATALOGUE_SCOPE_QUARANTINE_V1' in bundle
-        if caps[provider_id].get('strategy') == 'quarantined':
+        is_global_quarantine = 'NUVIO_PROVIDER_QUARANTINE_V1' in bundle
+        strategy_is_quarantined = caps[provider_id].get('strategy') == 'quarantined'
+
+        if strategy_is_quarantined:
             if is_scoped:
                 # A scoped quarantine is a partial runtime state: the wrapper
                 # blocks only proven-bad scopes and may remain enabled for the
@@ -67,10 +70,13 @@ try:
                         supported = [supported]
                     assert any(str(value).strip() for value in supported), provider_id
             else:
-                # A truly global quarantine remains fail-closed.
+                # A truly global quarantine remains fail-closed and must carry
+                # the explicit inert runtime wrapper. Filename provenance alone
+                # is never sufficient to infer current quarantine state.
                 assert row.get('enabled') is False, provider_id
-                assert 'NUVIO_PROVIDER_QUARANTINE_V1' in bundle, provider_id
-        if is_audit_quarantine:
+                assert is_global_quarantine, provider_id
+
+        if has_audit_provenance_filename:
             if is_scoped:
                 # A scoped identity quarantine blocks only proven-bad
                 # fixture/media scopes. The provider remains enabled whenever
@@ -80,10 +86,19 @@ try:
                     if isinstance(supported, str):
                         supported = [supported]
                     assert any(str(value).strip() for value in supported), provider_id
-            else:
+            elif is_global_quarantine or strategy_is_quarantined:
                 # Legacy/global audit quarantine is still fail-closed.
                 assert row.get('enabled') is False, provider_id
-                assert 'NUVIO_PROVIDER_QUARANTINE_V1' in bundle, provider_id
+                assert is_global_quarantine, provider_id
+            else:
+                # Recovered providers may legitimately retain a content-addressed
+                # filename containing the historical audit-quarantine provenance.
+                # Runtime capability + explicit quarantine wrappers are the
+                # authority. StreamZo is the canonical regression for this case:
+                # it was repaired/reactivated while retaining its old filename.
+                assert row.get('enabled') in (True, False), provider_id
+                assert caps[provider_id].get('strategy') != 'quarantined', provider_id
+
             prior = original_caps.get(provider_id, {}).get('observed_origins')
             if isinstance(prior, list) and prior:
                 assert caps[provider_id].get('observed_origins') == prior, (
