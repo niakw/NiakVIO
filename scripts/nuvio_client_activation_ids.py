@@ -15,7 +15,8 @@ a provider-pipeline veto; unverifiable or divergent client history stays fail-cl
 
 The provider pipeline watches this compatibility primitive, so a reviewed change
 here intentionally receives an independent Quick validation before Deep/learning.
-This also provides a clean Quick checkpoint after recovery-state regression fixes.
+This checkpoint follows the repository-wide cleanup of historical quarantine-state
+assumptions so recovered providers are validated from their current runtime state.
 """
 from __future__ import annotations
 
