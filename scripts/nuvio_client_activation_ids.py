@@ -10,6 +10,9 @@ case-insensitively, while Nuvio treats the resulting scraper id as a new entry.
 Official client-runtime compatibility refs are tracked separately in `sources.json`;
 this module only manages provider cache/activation identity and never approves a
 Mobile, Desktop or TV runtime-contract change.
+
+The provider pipeline watches this compatibility primitive, so a reviewed change
+here intentionally receives an independent Quick validation before Deep/learning.
 """
 from __future__ import annotations
 
