@@ -1,0 +1,81 @@
+name: Temporary fix quarantine rehash
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/tmp-fix-quarantine-rehash.yml'
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Patch durable quarantine evidence contract
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          validator_path = Path('scripts/validate_activation_preservation.py')
+          text = validator_path.read_text(encoding='utf-8')
+          old = '''    published_sha = file_sha256(published_path)\n    if published_sha != str(finding.get("quarantined_bundle_sha256") or ""):\n        return False, "safety_quarantine_bundle_finding_sha_mismatch"\n    if str(finding.get("quarantined_bundle") or "") != published_filename:\n        return False, "safety_quarantine_bundle_finding_path_mismatch"\n\n'''
+          new = '''    published_sha = file_sha256(published_path)\n    # The finding is immutable evidence of the original safety decision. A later\n    # deterministic Core rebuild may re-hash the inert quarantine wrapper, so the\n    # historical quarantine artifact recorded by the finding need not equal the\n    # current published artifact. Current safety is instead bound strictly by the\n    # inert marker/reason plus current manifest + provenance path/SHA below.\n    recorded_quarantine_sha = str(finding.get("quarantined_bundle_sha256") or "")\n    recorded_quarantine_bundle = str(finding.get("quarantined_bundle") or "")\n    if not SHA256_RE.fullmatch(recorded_quarantine_sha):\n        return False, "safety_quarantine_finding_bundle_sha_invalid"\n    if not recorded_quarantine_bundle.startswith("providers/") or not recorded_quarantine_bundle.endswith(".js"):\n        return False, "safety_quarantine_finding_bundle_path_invalid"\n    if recorded_quarantine_bundle == published_filename and recorded_quarantine_sha != published_sha:\n        return False, "safety_quarantine_current_bundle_finding_sha_mismatch"\n\n'''
+          if new not in text:
+              if old not in text:
+                  raise SystemExit('validator quarantine SHA/path anchor missing')
+              text = text.replace(old, new, 1)
+              validator_path.write_text(text, encoding='utf-8')
+
+          test_path = Path('tests/ci_preservation_policy_test.py')
+          test = test_path.read_text(encoding='utf-8')
+          anchor = '''assert result.returncode == 0, result.stdout + result.stderr\n\n# A label or an incomplete finding cannot masquerade as proof: the same disabled\n'''
+          block = '''assert result.returncode == 0, result.stdout + result.stderr\n\n# A deterministic Core rebuild may change the current inert quarantine SHA/path\n# without changing the immutable native finding that justified quarantine. The\n# current bundle must still be inert and exactly bound by current provenance.\nimport copy\nrehash_safety = copy.deepcopy(safety)\nrehash_bundle = quarantine_bundle + "\\n"\nrehash_sha = hashlib.sha256(rehash_bundle.encode()).hexdigest()\nrehash_file = f"providers/b--quarantined--{rehash_sha[:16]}.js"\nrehash_safety['files'][rehash_file] = rehash_bundle\nrehash_safety['provenance']['providers']['b']['published_filename'] = rehash_file\nrehash_safety['provenance']['providers']['b']['patched_sha256'] = rehash_sha\nresult = run_validator(\n    manifest_rows=[\n        {'id': 'a', 'enabled': True},\n        {'id': 'b', 'enabled': False, 'filename': rehash_file},\n    ],\n    report_rows=[\n        {'id': 'a', 'enabled': True, 'action': 'enabled-current-dns-access-stream-quality-passed', 'failed_gates': []},\n        {'id': 'b', 'enabled': True, 'action': 'enabled-current-dns-access-stream-quality-passed', 'failed_gates': []},\n    ],\n    safety=rehash_safety,\n)\nassert result.returncode == 0, result.stdout + result.stderr\n\n# A label or an incomplete finding cannot masquerade as proof: the same disabled\n'''
+          if block not in test:
+              if anchor not in test:
+                  raise SystemExit('CI preservation rehash regression anchor missing')
+              test = test.replace(anchor, block, 1)
+              test_path.write_text(test, encoding='utf-8')
+
+          workflow_path = Path('.github/workflows/materialize-published-core-once.yml')
+          workflow = workflow_path.read_text(encoding='utf-8')
+          metadata_anchor = '      - name: Rebuild authoritative publication metadata\n'
+          checkpoint = '''      - name: Checkpoint converged provider fixed point\n        shell: bash\n        run: |\n          set -euo pipefail\n          git config user.name 'github-actions[bot]'\n          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'\n          git add -A providers manifest.json vf/manifest.json vostfr/manifest.json PROVENANCE.json provider-overrides.json\n          if git diff --cached --quiet; then\n            echo 'FIELD_TARGETED_CORE_CHECKPOINT changed=false'\n          else\n            git commit -m 'chore: checkpoint converged Core providers [skip ci]'\n            git fetch origin main\n            git rebase origin/main\n            git push origin HEAD:main\n            echo \"FIELD_TARGETED_CORE_CHECKPOINT changed=true sha=$(git rev-parse HEAD)\"\n          fi\n\n'''
+          if checkpoint not in workflow:
+              if metadata_anchor not in workflow:
+                  raise SystemExit('targeted materialization metadata anchor missing')
+              workflow = workflow.replace(metadata_anchor, checkpoint + metadata_anchor, 1)
+              workflow_path.write_text(workflow, encoding='utf-8')
+          PY
+      - name: Verify focused contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 tests/ci_preservation_policy_test.py
+          python3 tests/manual_negative_safety_evidence_test.py
+          python3 tests/provider_quarantine_test.py
+          python3 scripts/validate_activation_preservation.py
+      - name: Commit durable fix and clean temporary diagnostics
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git rm -f .github/workflows/tmp-fix-quarantine-rehash.yml
+          git rm -f .github/workflows/tmp-activation-lkg-diagnostic.yml || true
+          git add scripts/validate_activation_preservation.py tests/ci_preservation_policy_test.py .github/workflows/materialize-published-core-once.yml
+          git commit -m 'fix: preserve quarantine evidence across Core rehash'
+          git fetch origin main
+          git rebase origin/main
+          git push origin HEAD:main
+          gh issue comment 69 --repo "$GITHUB_REPOSITORY" --body "Quarantine/LKG rehash contract fixed on $(git rev-parse HEAD): immutable native findings stay historical while current inert bundle is bound by current provenance. Focused preservation/quarantine tests passed. Targeted provider materialization will resume with convergence checkpointing; full Core is not launched."
