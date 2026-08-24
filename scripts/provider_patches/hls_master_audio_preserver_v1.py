@@ -33,7 +33,6 @@ def _load(filename: str, module_name: str):
 
 _IMPL = _load("hls_master_audio_preserver_impl_v1.py", "nuvio_hls_master_audio_impl_v1")
 
-# Preserve the module API used by existing tests/tools.
 AUDIO_MARKER = _IMPL.AUDIO_MARKER
 SAFETY_MARKER = _IMPL.SAFETY_MARKER
 HLS_INTEGRITY_MARKER = _IMPL.HLS_INTEGRITY_MARKER
@@ -41,10 +40,6 @@ GUARD = _IMPL.GUARD
 TV_PREDICATE = _IMPL.TV_PREDICATE
 SAFETY_WRAPPER = _IMPL.SAFETY_WRAPPER
 
-# Every entry below is a Core-owned boundary which must remain outside the HLS
-# playback validator. In particular the security hook marker may already exist on
-# a second reconstruction before facts/identity/presentation are rebuilt; treating
-# it as a finalizer prevents the legacy implementation from moving HLS past it.
 _CORE_FINALIZERS = (
     "NUVIO_GLOBAL_PROVIDER_SECURITY_HOOK_V1",
     "NUVIO_GLOBAL_STREAM_FACTS_V1",
@@ -65,28 +60,13 @@ def _wrapper_bounds(text: str, marker: str) -> tuple[int, int] | None:
 
 
 def _ensure_audio_marker_before_safety(text: str) -> str:
-    """Keep the audio-rewrite marker deterministic across Core rebuilds.
-
-    The implementation mutates provider source only on the first pass. The global
-    Core boundary intentionally preserves that already-rewritten provider source
-    while discarding generated tail markers. On the next pass there is therefore
-    nothing left for the legacy GUARD substitution to change, so it would omit the
-    marker and rotate the bundle hash. Reinsert the marker at its canonical position
-    immediately before the runtime media-safety wrapper.
-    """
     marker_comment = f"/* {AUDIO_MARKER} */"
     if marker_comment in text:
         return text
     safety_start = text.find(f"/* {SAFETY_MARKER}:")
     if safety_start < 0:
         return text.rstrip() + f"\n{marker_comment}\n"
-    return (
-        text[:safety_start].rstrip()
-        + "\n"
-        + marker_comment
-        + "\n"
-        + text[safety_start:].lstrip()
-    )
+    return text[:safety_start].rstrip() + "\n" + marker_comment + "\n" + text[safety_start:].lstrip()
 
 
 def _place_hls_before_core_finalizers(text: str) -> str:
@@ -96,9 +76,7 @@ def _place_hls_before_core_finalizers(text: str) -> str:
     start, end = bounds
     core_positions = [
         position
-        for position in (
-            text.find(f"/* {marker}") for marker in _CORE_FINALIZERS
-        )
+        for position in (text.find(f"/* {marker}") for marker in _CORE_FINALIZERS)
         if position >= 0
     ]
     if not core_positions or start < min(core_positions):
@@ -113,9 +91,7 @@ def _place_hls_before_core_finalizers(text: str) -> str:
 
     core_positions = [
         position
-        for position in (
-            body.find(f"/* {marker}") for marker in _CORE_FINALIZERS
-        )
+        for position in (body.find(f"/* {marker}") for marker in _CORE_FINALIZERS)
         if position >= 0
     ]
     if not core_positions:
@@ -130,7 +106,43 @@ def _place_hls_before_core_finalizers(text: str) -> str:
     ).rstrip() + "\n"
 
 
+def _place_safety_before_hls(text: str) -> str:
+    """Keep audio-marker -> media-safety -> HLS as a deterministic generated unit."""
+    bounds = _wrapper_bounds(text, SAFETY_MARKER)
+    if bounds is None:
+        return _ensure_audio_marker_before_safety(text)
+
+    start, end = bounds
+    safety_segment = text[start:end].strip()
+    marker_comment = f"/* {AUDIO_MARKER} */"
+    body = (text[:start] + text[end:]).replace(marker_comment, "").strip()
+
+    candidates: list[int] = []
+    hls_start = body.find(f"/* {HLS_INTEGRITY_MARKER}:")
+    if hls_start >= 0:
+        candidates.append(hls_start)
+    candidates.extend(
+        position
+        for position in (body.find(f"/* {marker}") for marker in _CORE_FINALIZERS)
+        if position >= 0
+    )
+
+    if candidates:
+        insertion = min(candidates)
+        prefix = body[:insertion].rstrip()
+        suffix = body[insertion:].lstrip()
+    else:
+        prefix = body.rstrip()
+        suffix = ""
+
+    unit = marker_comment + "\n" + safety_segment
+    output = (prefix + "\n" + unit) if prefix else unit
+    if suffix:
+        output += "\n" + suffix
+    return output.rstrip() + "\n"
+
+
 def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> str:
     output = _IMPL.apply(text, options=options, **kwargs)
-    output = _ensure_audio_marker_before_safety(output)
+    output = _place_safety_before_hls(output)
     return _place_hls_before_core_finalizers(output)
