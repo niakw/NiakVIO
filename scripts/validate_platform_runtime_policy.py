@@ -72,27 +72,27 @@ def validate_platform_field(errors: list[str], provider_id: str, row: dict[str, 
 def run_client_upstream_guard() -> int:
     if os.environ.get("GITHUB_ACTIONS") != "true":
         return 0
-    # Upstream Nuvio heads are external, time-varying inputs. A contract change
-    # must be reviewed by the dedicated client-drift/lab workflows, but must not
-    # make an otherwise deterministic pull-request regression gate flaky. Keep
-    # the guard strict for main pushes, schedules and manual production runs.
-    if os.environ.get("GITHUB_EVENT_NAME") == "pull_request":
-        print("Nuvio client upstream drift guard deferred to dedicated PR client-drift checks")
-        return 0
     if os.environ.get("NUVIO_SKIP_CLIENT_UPSTREAM_GUARD") == "1":
         print("Nuvio client upstream drift guard skipped explicitly")
         return 0
+
+    # Client HEADs are external and time-varying. Platform/provider policy
+    # validation must remain deterministic: it records current drift, while the
+    # dedicated client-drift/native-Lab gates retain strict review authority.
+    # A caller that is itself such a dedicated audit can opt back into strict
+    # exit semantics explicitly.
+    strict = os.environ.get("NUVIO_REQUIRE_CLIENT_UPSTREAM_GUARD") == "1"
     output = ROOT / "health-output" / "nuvio-client-upstream-status.json"
-    process = subprocess.run(
-        [
-            sys.executable,
-            str(ROOT / "scripts" / "check_nuvio_client_upstreams.py"),
-            "--output",
-            str(output),
-        ],
-        cwd=ROOT,
-        check=False,
-    )
+    command = [
+        sys.executable,
+        str(ROOT / "scripts" / "check_nuvio_client_upstreams.py"),
+        "--output",
+        str(output),
+    ]
+    if not strict:
+        command.append("--no-fail")
+        print("Nuvio client upstream drift is observational here; dedicated client audit remains authoritative")
+    process = subprocess.run(command, cwd=ROOT, check=False)
     return int(process.returncode)
 
 
