@@ -1,4 +1,4 @@
-name: NiakVIO Brain learning lab
+name: LEARNING - Brain repair sandbox
 
 on:
   workflow_dispatch:
@@ -36,7 +36,7 @@ concurrency:
 
 jobs:
   experiment:
-    name: Read-only provider repair sandbox
+    name: LEARNING - Sandbox repair and evidence
     runs-on: ubuntu-latest
     timeout-minutes: 55
     permissions:
@@ -229,7 +229,7 @@ jobs:
           if-no-files-found: error
 
   publish-learning:
-    name: Publish sanitized Brain memory branch
+    name: LEARNING - Publish sanitized memory
     needs: experiment
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -246,12 +246,16 @@ jobs:
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
         with:
           name: niakvio-brain-learning-state
-          path: brain-learning-output
+          # The artifact contains both brain-learning-output/* and brain-learning-input/*.
+          # Extract at repository root so the original relative paths are preserved.
+          path: .
 
       - name: Validate artifact cannot publish production
         shell: bash
         run: |
           set -euo pipefail
+          test -s brain-learning-output/latest.json
+          test -s brain-learning-output/latest.md
           node -e "const x=require('./brain-learning-output/latest.json'); if(x.productionWritesAllowed!==false||x.publicationAllowed!==false) process.exit(1)"
           if grep -Eiq 'https?://|authorization[=:]|cookie[=:]|token[=:]' brain-learning-output/latest.json; then
             echo 'refusing unsafe learning artifact' >&2
