@@ -1,0 +1,402 @@
+name: RESUME - Deep evidence and publish
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/tmp-resume-deep-evidence.yml'
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: nuvio-provider-publish-main
+  cancel-in-progress: false
+
+jobs:
+  reconstruct-checkpoint:
+    name: RECOVERY - Reconstruct lost post-repair checkpoint only
+    runs-on: ubuntu-latest
+    timeout-minutes: 70
+    steps:
+      - name: Checkout current main
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          fetch-depth: 2
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+          package-manager-cache: false
+
+      - name: Install pinned runtime dependencies
+        run: |
+          if [ -f package-lock.json ]; then
+            npm ci --ignore-scripts --no-audit --no-fund
+          else
+            npm install --ignore-scripts --no-audit --no-fund --package-lock=false
+          fi
+
+      - name: RECOVERY - Release stale non-safety activation vetoes
+        run: python scripts/normalize_provider_activation_overrides.py
+
+      - name: RECOVERY - Resolve official hubs
+        run: python scripts/resolve_provider_hubs.py --apply --mode deep --include-disabled --workers 8 --timeout 8 --output health-output/provider-hub-report.json
+
+      - name: RECOVERY - Recreate candidate staging
+        run: python scripts/discover_candidates.py --require-all-upstreams
+
+      - name: RECOVERY - Enforce canonical catalog preservation
+        run: node engine_v2/scripts/validate-stage-against-catalog.mjs --catalog provider_catalog.json --stage staging/candidates.json
+
+      - name: RECOVERY - Recreate DNS evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/provider_dns_preflight.mjs --stage staging --output health-output/dns-preflight-report.json
+          python scripts/apply_dns_migration_overrides.py --stage staging --report health-output/dns-preflight-report.json
+
+      - name: RECOVERY - Reapply runtime profiles
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/build_provider_runtime_profiles.py
+          python scripts/reapply_published_overrides.py
+          python scripts/build_provider_runtime_profiles.py --stage staging --apply-stage
+          python scripts/normalize_terminal_quarantine_stage.py --stage staging
+          python scripts/validate_override_pipeline.py --stage staging
+
+      - name: RECOVERY - Recreate only lost Deep repair evidence
+        env:
+          NUVIO_DNS_PREFLIGHT_RESULTS: health-output/dns-preflight-report.json
+          NUVIO_WORKER_MEMORY_MB: '1024'
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/run_adaptive_deep_repair.py --stage staging --output health-output
+          python scripts/validate_automatic_repair_results.py --stage staging --health health-output/health-results.json --repairs health-output/repair-report.json
+
+      - name: RECOVERY - Upload post-repair checkpoint
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: deep-recovery-checkpoint-${{ github.run_id }}
+          path: |
+            staging
+            health-output
+            provider-overrides.json
+            provider-domain-history.json
+          retention-days: 7
+          if-no-files-found: error
+
+  resume-from-evidence:
+    name: RESUME - Validate deep evidence integrity onward
+    needs: reconstruct-checkpoint
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout current main
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          fetch-depth: 2
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+
+      - name: Download reconstructed post-repair checkpoint
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          name: deep-recovery-checkpoint-${{ github.run_id }}
+          path: recovery
+
+      - name: Validate deep evidence integrity
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/validate_deep_evidence_integrity.py \
+            --stage recovery/staging \
+            --health recovery/health-output/health-results.json \
+            --repairs recovery/health-output/repair-report.json
+
+      - name: Generate diagnostics after repair
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/generate_diagnostics.py \
+            --results recovery/health-output/health-results.json \
+            --output recovery/health-output
+
+      - name: Assemble validated staging transaction
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p validated-stage
+          cp -a recovery/staging validated-stage/staging
+          cp -a recovery/health-output validated-stage/health-output
+          cp recovery/provider-overrides.json validated-stage/provider-overrides.json
+          cp recovery/provider-domain-history.json validated-stage/provider-domain-history.json
+          test -s validated-stage/staging/candidates.json
+          test -s validated-stage/staging/upstream-lkg-pending.json
+          test -s validated-stage/health-output/health-results.json
+          test -s validated-stage/health-output/repair-report.json
+          test -s validated-stage/health-output/diagnostics-report.json
+
+      - name: Upload validated staging transaction
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: nuvio-validation-stage-${{ github.run_id }}
+          path: |
+            validated-stage/staging
+            validated-stage/health-output
+            validated-stage/provider-overrides.json
+            validated-stage/provider-domain-history.json
+          retention-days: 7
+          if-no-files-found: error
+
+  publish:
+    name: RESUME - Publish validated Deep transaction
+    needs: resume-from-evidence
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    permissions:
+      contents: write
+      actions: read
+    env:
+      NUVIO_VALIDATION_MODE: deep
+    steps:
+      - name: Checkout current published repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+
+      - name: Capture published manifest baseline
+        shell: bash
+        run: |
+          set -euo pipefail
+          NUVIO_PUBLISHED_MANIFEST_BASELINE="$RUNNER_TEMP/published-manifest.json"
+          echo "NUVIO_PUBLISHED_MANIFEST_BASELINE=$NUVIO_PUBLISHED_MANIFEST_BASELINE" >> "$GITHUB_ENV"
+          git show HEAD:manifest.json > "$NUVIO_PUBLISHED_MANIFEST_BASELINE"
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+          package-manager-cache: false
+
+      - name: Install pinned runtime dependencies
+        run: |
+          if [ -f package-lock.json ]; then
+            npm ci --ignore-scripts --no-audit --no-fund
+          else
+            npm install --ignore-scripts --no-audit --no-fund --package-lock=false
+          fi
+
+      - name: Download validated staging transaction
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          name: nuvio-validation-stage-${{ github.run_id }}
+          path: checked-artifact
+
+      - name: Restore validated routing state
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp checked-artifact/provider-overrides.json provider-overrides.json
+          cp checked-artifact/provider-domain-history.json provider-domain-history.json
+          python scripts/build_provider_runtime_profiles.py
+          python scripts/reapply_published_overrides.py
+
+      - name: Promote only proven candidates
+        env:
+          NUVIO_STAGE: checked-artifact/staging
+          NUVIO_HEALTH_RESULTS: checked-artifact/health-output/health-results.json
+        run: python scripts/promote_candidates.py
+
+      - name: Finalize upstream last-known-good snapshots
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f checked-artifact/staging/upstream-lkg-pending.json
+          python scripts/finalize_upstream_lkg.py --pending checked-artifact/staging/upstream-lkg-pending.json --keep-generations 2
+
+      - name: Prune stale bundles and validate overrides
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/prune_unreferenced_providers.py
+          python scripts/validate_published_overrides.py
+
+      - name: Restore validated reports
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          cp checked-artifact/health-output/dns-preflight-report.json dns-preflight-report.json
+          cp checked-artifact/health-output/provider-hub-report.json provider-hub-report.json
+          cp checked-artifact/health-output/diagnostics-report.json diagnostics-report.json
+          cp checked-artifact/health-output/diagnostics-report.html diagnostics-report.html
+          cp checked-artifact/health-output/route-regressions.json route-regressions.json
+          cp checked-artifact/health-output/repair-report.json repair-report.json
+
+      - name: Build canonical publication transaction
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f manifest.next.json
+          mv manifest.next.json manifest.json
+          python scripts/build_provider_runtime_profiles.py
+          python scripts/reapply_published_overrides.py
+          python scripts/generate_language_manifests.py
+          python scripts/prune_unreferenced_providers.py
+          python scripts/sync_release_versions.py --manifest manifest.json --previous "$NUVIO_PUBLISHED_MANIFEST_BASELINE"
+          python scripts/activation_preservation_core_rehash.py
+          python scripts/validate_language_projection.py
+          node engine_v2/scripts/bootstrap-provider-catalog.mjs --general manifest.json --vf vf/manifest.json --output provider_catalog.json
+          node engine_v2/scripts/render-manifests-from-catalog.mjs --catalog provider_catalog.json --general manifest.json --vf vf/manifest.json
+          node engine_v2/tests/provider-catalog.test.mjs
+          python scripts/release_evidence_fence.py fingerprint --manifest manifest.json --root . --output /tmp/release-generation.json
+
+      - name: Audit content identity and media
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/audit_catalogue_media.py \
+            --manifest manifest.json \
+            --stage checked-artifact/staging \
+            --health checked-artifact/health-output/health-results.json \
+            --output /tmp/catalogue-media-audit.json
+          python scripts/quarantine_catalogue_audit_failures.py \
+            --audit /tmp/catalogue-media-audit.json \
+            --manifest manifest.json \
+            --overrides provider-overrides.json
+          python scripts/build_provider_runtime_profiles.py
+          python scripts/reapply_published_overrides.py
+          python scripts/generate_language_manifests.py
+          python scripts/prune_unreferenced_providers.py
+          python scripts/sync_release_versions.py --manifest manifest.json --previous "$NUVIO_PUBLISHED_MANIFEST_BASELINE"
+          python scripts/activation_preservation_core_rehash.py
+          python scripts/validate_language_projection.py
+          node engine_v2/scripts/bootstrap-provider-catalog.mjs --general manifest.json --vf vf/manifest.json --output provider_catalog.json
+          node engine_v2/scripts/render-manifests-from-catalog.mjs --catalog provider_catalog.json --general manifest.json --vf vf/manifest.json
+          node engine_v2/tests/provider-catalog.test.mjs
+          python scripts/release_evidence_fence.py fingerprint --manifest manifest.json --root . --output /tmp/release-generation.json
+
+      - name: Upload catalogue/media audit
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: catalogue-media-audit-${{ github.run_id }}
+          path: /tmp/catalogue-media-audit.json
+          retention-days: 7
+          if-no-files-found: warn
+
+      - name: Measure Interstellar real coverage
+        continue-on-error: true
+        run: python scripts/interstellar_nuvio_matrix.py --workers 8 --timeout 90 --minimum-automatic 0 --output /tmp/interstellar-nuvio-matrix.json
+
+      - name: Upload real coverage diagnostics
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: interstellar-real-coverage-${{ github.run_id }}
+          path: /tmp/interstellar-nuvio-matrix.json
+          retention-days: 7
+          if-no-files-found: warn
+
+      - name: Publish atomic ARCHI2 transaction
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/release_evidence_fence.py validate --manifest manifest.json --root . --evidence /tmp/release-generation.json
+          python scripts/generate_release_hashes.py
+          python scripts/validate_release_integrity.py
+          node engine_v2/tests/provider-catalog.test.mjs
+          git add manifest.json vf/manifest.json provider_catalog.json \
+            package.json package-lock.json sources.json nuvio-client-id-state.json \
+            FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json \
+            PROVENANCE.json provider-overrides.json provider-domain-history.json \
+            upstream-lkg.json upstream-lkg/ health-report.json health-history.json \
+            dns-preflight-report.json provider-hub-report.json diagnostics-report.json \
+            diagnostics-report.html route-regressions.json repair-report.json
+          git add -A providers
+          if git diff --cached --quiet; then
+            echo 'No validated provider change.'
+          else
+            git commit -m 'chore: publish validated ARCHI2 provider transaction'
+            git reset --hard HEAD
+            git clean -fdx
+            git fetch origin main
+            git rebase origin/main
+            python scripts/generate_release_hashes.py
+            python scripts/validate_release_integrity.py
+            git add FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json
+            if ! git diff --cached --quiet; then
+              git commit --amend --no-edit
+            fi
+            python scripts/release_evidence_fence.py validate --manifest manifest.json --root . --evidence /tmp/release-generation.json
+            git push origin HEAD:main
+          fi
+
+      - name: Verify exact published main
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin main
+          git reset --hard origin/main
+          git clean -fdx
+          if [ -f package-lock.json ]; then
+            npm ci --ignore-scripts --no-audit --no-fund
+          else
+            npm install --ignore-scripts --no-audit --no-fund --package-lock=false
+          fi
+          npm test
+          node engine_v2/tests/provider-catalog.test.mjs
+          python scripts/activation_preservation_core_rehash.py
+          python scripts/validate_language_projection.py
+          python scripts/validate_release_integrity.py
+          python scripts/release_evidence_fence.py validate --manifest manifest.json --root . --evidence /tmp/release-generation.json
+          git diff --exit-code
+
+      - name: Cleanup temporary resume workflow and refresh hashes
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin main
+          git reset --hard origin/main
+          git clean -fdx
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git rm .github/workflows/tmp-resume-deep-evidence.yml
+          python scripts/generate_release_hashes.py
+          python scripts/validate_release_integrity.py
+          git add FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json
+          git commit -m 'chore: remove Deep evidence resume workflow [skip ci]'
+          git push origin HEAD:main
+
+      - name: Verify cleaned main integrity
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin main
+          git reset --hard origin/main
+          test ! -e .github/workflows/tmp-resume-deep-evidence.yml
+          python scripts/validate_release_integrity.py
+          git diff --exit-code
