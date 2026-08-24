@@ -11,12 +11,24 @@ on:
 
 permissions:
   contents: read
+  issues: write
+
+concurrency:
+  group: niakvio-core-resume-after-native-contract
+  cancel-in-progress: true
 
 jobs:
   resume-core-suite:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
+      - name: Announce targeted resume
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          gh issue comment 69 --repo "$GITHUB_REPOSITORY" --body "Targeted Core resume started: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID} on ${GITHUB_SHA}. Resuming at native_corpus_device_lab_test.py; Core normalization/convergence/Terser are not repeated."
+
       - name: Checkout exact main
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
@@ -66,3 +78,19 @@ jobs:
 
       - name: Verify release integrity
         run: python3 scripts/validate_release_integrity.py
+
+      - name: Report targeted resume success
+        if: success()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          gh issue comment 69 --repo "$GITHUB_REPOSITORY" --body "Targeted Core resume SUCCEEDED: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID} on ${GITHUB_SHA}. Remaining pretest + repository test body + release integrity passed without repeating Core normalization/convergence/Terser."
+
+      - name: Report targeted resume failure
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          gh issue comment 69 --repo "$GITHUB_REPOSITORY" --body "Targeted Core resume FAILED: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID} on ${GITHUB_SHA}. Inspect this run only; do not restart full Core."
