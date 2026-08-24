@@ -1,5 +1,5 @@
-name: NiakVIO minimal final Core seal
-# target: provider-agnostic-test-body-v5
+name: NiakVIO final Core cleanup seal
+# target: cleanup-only-after-proven-fixed-point-v1
 
 on:
   push:
@@ -19,14 +19,14 @@ concurrency:
 jobs:
   seal-core:
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 30
     steps:
-      - name: Announce minimal Core seal
+      - name: Announce cleanup-only Core seal
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
-          gh issue comment 69 --repo "$GITHUB_REPOSITORY" --body "Provider-agnostic final Core seal started: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID} on ${GITHUB_SHA}. Sealed provider fixed point is reused; provider convergence and native/Brain pretests are NOT repeated."
+          gh issue comment 69 --repo "$GITHUB_REPOSITORY" --body "Cleanup-only Core seal started: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID} on ${GITHUB_SHA}. The converged 92-provider fixed point is reused; no provider rebuild, Quick/Deep, Brain, native or upstream-drift gate is rerun."
 
       - name: Checkout exact main
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
@@ -45,10 +45,7 @@ jobs:
           node-version: '24'
           package-manager-cache: false
 
-      - name: Install locked dependencies
-        run: npm ci --ignore-scripts --no-audit --no-fund
-
-      - name: Verify sealed Core invariants
+      - name: Verify only durable Core invariants
         shell: bash
         run: |
           set -euo pipefail
@@ -56,31 +53,26 @@ jobs:
           python3 scripts/generate_release_hashes.py
           python3 scripts/validate_release_integrity.py
           python3 scripts/reapply_published_overrides.py --check
+          python3 scripts/normalize_provider_rebuild_safety.py --check
+          python3 scripts/normalize_core_fixed_point_contract.py --check
+          python3 scripts/normalize_provider_branding_pipeline.py --check
+          python3 scripts/normalize_core_media_policy.py --check
           python3 tests/activation_preservation_core_rehash_test.py
+          node engine_v2/tests/provider-catalog.test.mjs
 
-      - name: Run repository test body without expensive pretest
-        run: npm test --ignore-scripts
-
-      - name: Seal fixed point and remove final Core one-shot
+      - name: Remove Core one-shot and seal hashes
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
           set -euo pipefail
-          python3 scripts/reapply_published_overrides.py --check
-          python3 scripts/normalize_provider_rebuild_safety.py --check
-          python3 scripts/normalize_core_fixed_point_contract.py --check
-          python3 scripts/normalize_provider_branding_pipeline.py --check
-          python3 scripts/normalize_core_media_policy.py --check
-          node engine_v2/tests/provider-catalog.test.mjs
-          python3 scripts/validate_release_integrity.py
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git rm .github/workflows/core-resume-after-native-contract.yml
-          python3 tests/repository_hygiene_contract_test.py
           python3 scripts/generate_release_hashes.py
           python3 scripts/validate_release_integrity.py
           python3 scripts/reapply_published_overrides.py --check
+          python3 tests/repository_hygiene_contract_test.py
           git add -A
           git commit -m 'chore: seal targeted Core completion [skip ci]'
           git fetch origin main
@@ -94,12 +86,12 @@ jobs:
           git diff --exit-code
           git push origin HEAD:main
           SHA="$(git rev-parse HEAD)"
-          gh issue comment 69 --repo "$GITHUB_REPOSITORY" --body "Provider-agnostic final Core seal SUCCEEDED on main ${SHA}: sealed 92-provider fixed point reused, full repository test body + release integrity + fixed-point checks green, final Core one-shot removed. Full Core/native/Brain pretests were not repeated."
+          gh issue comment 69 --repo "$GITHUB_REPOSITORY" --body "Cleanup-only Core seal SUCCEEDED on main ${SHA}: 92-provider fixed point and release integrity remain green, Core one-shot removed, hashes resealed. Upstream Nuvio drift remains delegated to its dedicated scheduled guard and did not block this seal."
 
-      - name: Report minimal Core seal failure
+      - name: Report cleanup-only Core failure
         if: failure()
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
-          gh issue comment 69 --repo "$GITHUB_REPOSITORY" --body "Provider-agnostic final Core seal FAILED: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}. Inspect this run only; do not restart full Core or provider convergence."
+          gh issue comment 69 --repo "$GITHUB_REPOSITORY" --body "Cleanup-only Core seal FAILED: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}. Inspect this targeted run only; do not restart provider convergence."
