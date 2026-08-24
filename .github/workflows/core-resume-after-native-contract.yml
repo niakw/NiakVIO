@@ -1,0 +1,68 @@
+name: NiakVIO Core resume after native contract
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/core-resume-after-native-contract.yml'
+      - 'tests/native_corpus_device_lab_test.py'
+      - 'tests/native_human_ux_policy_lock_test.py'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  resume-core-suite:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout exact main
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+          package-manager-cache: false
+
+      - name: Install locked dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Resume pretest from corrected native contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 tests/native_corpus_device_lab_test.py
+          python3 tests/native_human_ux_policy_lock_test.py
+          python3 tests/native_corpus_suite_summary_test.py
+          python3 tests/native_corpus_transport_capability_test.py
+          python3 tests/streamzo_native_platform_contract_test.py
+          python3 tests/native_player_diagnostics_codegen_test.py
+          node tests/native_player_diagnostics.test.cjs
+          python3 tests/native_reader_gate_test.py
+          python3 tests/targeted_manifest_staging_test.py
+          python3 tests/native_reader_exhaustive_acceptance_test.py
+          python3 tests/native_reader_brain_repair_test.py
+          python3 tests/native_reader_provider_retention_policy_test.py
+          python3 tests/native_reader_learning_memory_test.py
+          python3 tests/native_reader_backlog_test.py
+          python3 tests/provider_security_hardening_test.py
+          python3 tests/provider_purification_contract_test.py
+          node engine_v2/tests/native-reader-brain-v4.test.mjs
+          node engine_v2/tests/native-reader-diagnosis.test.mjs
+          node engine_v2/tests/repair-brain.test.mjs
+
+      - name: Run repository test body without repeating pretest
+        run: npm test --ignore-scripts
+
+      - name: Verify release integrity
+        run: python3 scripts/validate_release_integrity.py
