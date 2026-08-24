@@ -1,0 +1,37 @@
+name: TEMP - Deep reporter once
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/tmp-deep-reporter-once.yml'
+
+permissions:
+  contents: write
+  actions: read
+  issues: write
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Report current Deep and self-delete
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          TARGET=6f33734e7aebd740a1a04fc261c4c99a58d55005
+          sleep 5
+          DATA=$(gh run list --repo "$GITHUB_REPOSITORY" --workflow sync.yml --limit 20 --json databaseId,event,headSha,status,conclusion,displayTitle,createdAt)
+          ROW=$(printf '%s' "$DATA" | jq -c --arg sha "$TARGET" '[.[] | select(.headSha==$sha)] | first // {}')
+          gh issue comment 69 --repo "$GITHUB_REPOSITORY" --body "DEEP_RUN_REPORT target=${TARGET} data=${ROW}"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git rm .github/workflows/tmp-deep-reporter-once.yml
+          git commit -m 'chore: remove Deep reporter [skip ci]'
+          git push origin HEAD:main
