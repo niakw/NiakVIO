@@ -87,7 +87,34 @@ def _scan_runtime_domain_iife_end(text: str, start: int) -> int | None:
     return end
 ''').lstrip("\n")
 
-ORPHAN_HELPER = dedent(r'''
+RUNTIME_HELPERS = dedent(r'''
+def _runtime_domain_expected_payload(rules: dict[str, str]) -> list[list[str]]:
+    import base64
+    return [
+        [base64.b64encode(old.encode("utf-8")).decode("ascii"), new]
+        for old, new in sorted(rules.items())
+    ]
+
+
+def _runtime_domain_span_matches_rules(candidate: str, rules: dict[str, str]) -> bool:
+    """Return whether one owned IIFE already carries exactly the requested rules."""
+    if not rules:
+        return False
+    needle = 'typeof globalThis!=="undefined"?globalThis:this,'
+    position = candidate.rfind(needle)
+    if position < 0:
+        return False
+    tail = candidate[position + len(needle):]
+    try:
+        payload, payload_end = json.JSONDecoder().raw_decode(tail)
+    except (TypeError, ValueError, json.JSONDecodeError):
+        return False
+    remainder = tail[payload_end:].strip()
+    if remainder not in (")", ");"):
+        return False
+    return payload == _runtime_domain_expected_payload(rules)
+
+
 def _strip_runtime_domain_orphan_calls(
     text: str,
     rules: dict[str, str],
@@ -183,19 +210,39 @@ def normalized(text: str) -> str:
     text = text[:scanner_start] + SCANNER + text[scanner_end:]
 
     inject_anchor = "\n\ndef _inject_runtime_domain_overrides("
-    helper_start = text.find("def _strip_runtime_domain_orphan_calls(")
-    if helper_start >= 0:
+    helper_starts = [
+        position
+        for marker in (
+            "def _runtime_domain_expected_payload(",
+            "def _runtime_domain_span_matches_rules(",
+            "def _strip_runtime_domain_orphan_calls(",
+        )
+        if (position := text.find(marker)) >= 0
+    ]
+    if helper_starts:
+        helper_start = min(helper_starts)
         helper_end = text.index(inject_anchor, helper_start)
-        text = text[:helper_start] + ORPHAN_HELPER + text[helper_end:]
+        text = text[:helper_start] + RUNTIME_HELPERS + text[helper_end:]
     else:
-        text = text.replace(inject_anchor, "\n\n" + ORPHAN_HELPER + inject_anchor, 1)
+        text = text.replace(inject_anchor, "\n\n" + RUNTIME_HELPERS + inject_anchor, 1)
 
     old = '''    marker = "NUVIO_RUNTIME_DOMAIN_OVERRIDES_V1"\n    marker_comment = f"/* {marker} */"\n    spans = _runtime_domain_wrapper_spans(text)\n'''
-    new = '''    marker = "NUVIO_RUNTIME_DOMAIN_OVERRIDES_V1"\n    marker_comment = f"/* {marker} */"\n    text, orphan_count = _strip_runtime_domain_orphan_calls(text, rules)\n    spans = _runtime_domain_wrapper_spans(text)\n'''
+    new = '''    marker = "NUVIO_RUNTIME_DOMAIN_OVERRIDES_V1"\n    marker_comment = f"/* {marker} */"\n    text, orphan_count = _strip_runtime_domain_orphan_calls(text, rules)\n    spans = _runtime_domain_wrapper_spans(text)\n    existing_span = spans[0] if len(spans) == 1 else None\n    if rules and existing_span is not None:\n        candidate = text[existing_span[0]:existing_span[1]]\n        if _runtime_domain_span_matches_rules(candidate, rules):\n            return text, 0 if text == original_text else max(1, orphan_count)\n'''
     if old in text:
         text = text.replace(old, new, 1)
     elif new not in text:
-        raise ValueError("runtime-domain span-discovery anchor missing")
+        previous = '''    marker = "NUVIO_RUNTIME_DOMAIN_OVERRIDES_V1"\n    marker_comment = f"/* {marker} */"\n    text, orphan_count = _strip_runtime_domain_orphan_calls(text, rules)\n    spans = _runtime_domain_wrapper_spans(text)\n'''
+        if previous not in text:
+            raise ValueError("runtime-domain span-discovery anchor missing")
+        text = text.replace(previous, new, 1)
+
+    stale_existing_re = re.compile(
+        r"\n    existing_span = spans\[0\] if len\(spans\) == 1 else None\n"
+        r"    if existing_span is not None and marker_comment in text\[existing_span\[0\]:existing_span\[1\]\]:\n"
+        r"        output = text\[:existing_span\[0\]\] \+ bootstrap \+ text\[existing_span\[1\]:\]\n"
+        r"        return output, 0 if output == original_text else len\(rules\)\n"
+    )
+    text = stale_existing_re.sub("", text, count=1)
 
     for stale in (
         "    base, orphan_count = _strip_runtime_domain_orphan_calls(base, rules)\n",
@@ -204,10 +251,16 @@ def normalized(text: str) -> str:
     ):
         text = text.replace(stale, "")
 
+    if text.count("def _runtime_domain_expected_payload(") != 1:
+        raise ValueError("runtime-domain expected payload helper must exist exactly once")
+    if text.count("def _runtime_domain_span_matches_rules(") != 1:
+        raise ValueError("runtime-domain span matcher must exist exactly once")
     if text.count("def _strip_runtime_domain_orphan_calls(") != 1:
         raise ValueError("runtime-domain orphan cleaner must exist exactly once")
     if text.count("_strip_runtime_domain_orphan_calls(text, rules)") != 1:
         raise ValueError("runtime-domain orphan cleaner must run once before span discovery")
+    if text.count("_runtime_domain_span_matches_rules(candidate, rules)") != 1:
+        raise ValueError("runtime-domain markerless fixed-point reuse is missing")
     if "_strip_runtime_domain_orphan_calls(base" in text:
         raise ValueError("post-span orphan cleanup remains")
     return text
@@ -222,24 +275,51 @@ def behavior_contract(text: str) -> None:
     inject = namespace["_inject_runtime_domain_overrides"]
     rules = {"old.example": "new.example", "older.example": "new.example"}
     provider = "const providerByte=1;function getStreams(){};module.exports=__provider;\n"
-    canonical, _ = inject(provider, rules)  # type: ignore[operator]
+
+    canonical, _ = inject(provider, rules)
+    canonical_again, _ = inject(canonical, rules)
+    assert canonical_again == canonical
+
     markerless = canonical.replace("/* NUVIO_RUNTIME_DOMAIN_OVERRIDES_V1 */\n", "", 1)
-    repaired, _ = inject(markerless, rules)  # type: ignore[operator]
+    repaired, _ = inject(markerless, rules)
+    assert repaired == markerless
+    for _ in range(10):
+        repeated, _ = inject(repaired, rules)
+        assert repeated == repaired
+        repaired = repeated
     assert repaired.count("__nuvioDomainOverrideV1") == 1
     assert repaired.endswith(provider)
 
+    stale = markerless.replace("new.example", "stale.example")
+    refreshed, _ = inject(stale, rules)
+    assert refreshed != stale
+    refreshed_again, _ = inject(refreshed, rules)
+    assert refreshed_again == refreshed
+
+    duplicate = markerless + markerless + provider
+    collapsed, _ = inject(duplicate, rules)
+    assert collapsed.count("__nuvioDomainOverrideV1") == 1
+    collapsed_again, _ = inject(collapsed, rules)
+    assert collapsed_again == collapsed
+
     import base64
-    payload = json.dumps(
+    single_payload = json.dumps(
         [[base64.b64encode(b"old.example").decode("ascii"), "new.example"]],
         separators=(",", ":"),
     )
-    orphan = f'typeof globalThis!=="undefined"?globalThis:this,{payload};'
-    damaged = orphan + repaired
-    cleaned, _ = inject(damaged, rules)  # type: ignore[operator]
-    assert orphan not in cleaned
+    orphans = (
+        f'typeof globalThis!=="undefined"?globalThis:this,{single_payload};',
+        f'(typeof globalThis!=="undefined"?globalThis:this,{single_payload});',
+        f'(typeof globalThis!=="undefined"?globalThis:this,{single_payload})',
+    )
+    damaged = "\n".join(orphans * 3) + "\n" + repaired
+    cleaned, _ = inject(damaged, rules)
+    for orphan in orphans:
+        assert orphan not in cleaned
     assert cleaned.count("__nuvioDomainOverrideV1") == 1
-    foreign = orphan.replace("new.example", "foreign.example")
-    preserved, _ = inject(foreign + repaired, rules)  # type: ignore[operator]
+
+    foreign = orphans[0].replace("new.example", "foreign.example")
+    preserved, _ = inject(foreign + "\n" + repaired, rules)
     assert foreign in preserved
 
 
@@ -256,7 +336,7 @@ def main() -> int:
         if current != expected:
             raise SystemExit("runtime-domain fixed-point normalizer is not materialized")
         behavior_contract(current)
-        print("runtime-domain fixed-point contract verified: full IIFE ownership + authorized orphan cleanup")
+        print("runtime-domain fixed-point contract verified: full IIFE ownership + markerless reuse + authorized orphan cleanup")
         return 0
     changed = current != expected
     if changed:
