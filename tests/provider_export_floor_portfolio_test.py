@@ -67,8 +67,6 @@ def _regressions() -> None:
     assert floor > vegamovies.index("module.exports")
     assert vegamovies[floor:].lstrip().startswith("/* NUVIO_TV_PLAYABLE_FIRST_V1")
 
-    # CTGMovies/FibWatch: the object export is wrapped in a boolean-expression
-    # parenthesis. Only syntactic closing parentheses may appear before Core.
     wrapped = (
         "function getStreams(){};"
         "typeof module!=='undefined'&&module.exports&&("
@@ -81,8 +79,6 @@ def _regressions() -> None:
         "module.exports={getStreams});dangerousCall();\n" + core
     ) == -1
 
-    # StreamFlix/YFlix/MalluMV/VidNest: explicit CommonJS branch with a global
-    # fallback. The fallback is provider glue only when it contains global bindings.
     braced = (
         "function getStreams(){};"
         "if(typeof module!=='undefined'&&module.exports){"
@@ -110,8 +106,6 @@ def _regressions() -> None:
     floor = provider_export_floor(moonflix)
     assert floor > moonflix.index("module.exports")
 
-    # AnimeKai: ternary global fallback may publish a small object, but that object
-    # itself must have a getStreams key with identifier-only values.
     animekai = (
         "function getStreams(){};x?module['exports']={'getStreams':getStreams}:"
         "global['AnimeKai']={'getStreams':getStreams};\n" + core
@@ -119,19 +113,19 @@ def _regressions() -> None:
     floor = provider_export_floor(animekai)
     assert floor > animekai.index("module['exports']")
 
-    # DooFlix: no CommonJS export at all; getStreams itself is the runtime-global
-    # public API. It is provider-owned only when it is the final declaration before Core.
+    # DooFlix has no CommonJS export. Its real obfuscated signature contains a
+    # nested call in a default argument; balanced signature parsing must retain it.
     dooflix = (
         "const __async=(a,b,c)=>Promise.resolve();"
         "function helper(){};"
-        "function getStreams(id,type='movie',season=null,episode=null){return __async(this,null,function*(){return [];});}\n"
+        "function getStreams(id,type=_decode(0x130),season=null,episode=null){return __async(this,null,function*(){return [];});}\n"
         + core
     )
     floor = provider_export_floor(dooflix)
     assert floor > dooflix.index("function getStreams")
     assert dooflix[floor:].lstrip().startswith("/* NUVIO_GLOBAL_CATALOGUE_ALIAS_RECOVERY_V2:")
     assert provider_export_floor(
-        "function getStreams(){return [];}dangerousCall();\n" + core
+        "function getStreams(id,type=_decode(0x130)){return [];}dangerousCall();\n" + core
     ) == -1
 
     for unsafe in (
@@ -144,7 +138,6 @@ def _regressions() -> None:
 
 
 def _shape_excerpt(text: str, marker_positions: list[int]) -> str:
-    """Return a compact diagnostic immediately before the first generated layer."""
     marker = min(marker_positions) if marker_positions else len(text)
     start = max(0, marker - 1800)
     excerpt = re.sub(r"\s+", " ", text[start:min(len(text), marker + 100)]).strip()
