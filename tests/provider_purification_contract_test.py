@@ -28,6 +28,9 @@ for required in (
     'process.argv.includes("--format-only")',
     'forceFormatOnly || risky',
     '"format-only"',
+    'RETAINED_AUDIO_MARKER = "/* NUVIO_HLS_MASTER_AUDIO_PRESERVER_V1 */"',
+    "function canonicalizeRetainedCoreBoundary(code)",
+    "canonicalizeRetainedCoreBoundary(result.code)",
 ):
     assert required in node, required
 
@@ -74,6 +77,26 @@ assert first.startswith(prefix)
 assert second == first
 assert first_report.get("ownedPrefixPreserved") is True
 assert second_report.get("ownedPrefixPreserved") is True
+
+# Terser preserves NUVIO comments, but its comment attachment must never turn the
+# retained in-place HLS marker into a whitespace accumulator. This is the exact
+# failure mode that previously made Einthusan and Moonflix rotate hashes forever.
+audio_marker = "/* NUVIO_HLS_MASTER_AUDIO_PRESERVER_V1 */"
+core_boundary = "/* NUVIO_GLOBAL_CORE_START_BOUNDARY_V1 */"
+retained_body = (
+    'module.exports={getStreams:async function(){return [];}};\n\n\n\n\n'
+    + audio_marker
+    + '\n\n\n'
+    + core_boundary
+    + '\n'
+).encode("utf-8")
+retained_first, _retained_first_report = purify_bytes(retained_body)
+retained_second, _retained_second_report = purify_bytes(retained_first)
+retained_text = retained_first.decode("utf-8")
+assert retained_second == retained_first
+assert retained_text.count(audio_marker) == 1
+assert "\n\n" + audio_marker not in retained_text
+assert audio_marker + "\n\n" not in retained_text
 
 # Deep proves the exact purified baseline and every later Brain/runtime mutation.
 assert "purify_registry(stage, output / \"provider-purification.json\")" in deep
