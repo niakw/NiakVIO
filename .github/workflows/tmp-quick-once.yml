@@ -1,0 +1,72 @@
+name: Temporary independent Quick validation
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/tmp-quick-once.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: write
+  issues: write
+
+jobs:
+  quick:
+    runs-on: ubuntu-latest
+    timeout-minutes: 100
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+          ref: main
+      - name: Remove one-shot before validation
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git rm .github/workflows/tmp-quick-once.yml
+          git commit -m 'chore: remove quick validation one-shot [skip ci]'
+          git push origin HEAD:main
+          echo "CLEAN_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+      - name: Dispatch Quick only
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh workflow run sync.yml --ref main -f mode=quick
+          for i in $(seq 1 60); do
+            RUN_ID=$(gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/sync.yml/runs?event=workflow_dispatch&branch=main&per_page=20" --jq ".workflow_runs[] | select(.head_sha == \"${CLEAN_SHA}\") | .id" | head -1)
+            if [ -n "$RUN_ID" ]; then
+              echo "QUICK_RUN_ID=$RUN_ID" >> "$GITHUB_ENV"
+              gh issue comment 69 --body "Post-#69 independent Quick validation started on \`${CLEAN_SHA}\`: run ${RUN_ID}. No Deep/current Brain chain is launched by this one-shot."
+              exit 0
+            fi
+            sleep 2
+          done
+          echo 'Quick run was not discovered' >&2
+          exit 2
+      - name: Wait for Quick result
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          for i in $(seq 1 180); do
+            STATUS=$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${QUICK_RUN_ID}" --jq .status)
+            CONCLUSION=$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${QUICK_RUN_ID}" --jq '.conclusion // ""')
+            if [ "$STATUS" = completed ]; then
+              gh issue comment 69 --body "Post-#69 independent Quick validation completed on \`${CLEAN_SHA}\`: run ${QUICK_RUN_ID}, conclusion **${CONCLUSION}**."
+              test "$CONCLUSION" = success
+              exit
+            fi
+            sleep 20
+          done
+          echo 'Quick validation did not complete inside one-shot bound' >&2
+          exit 3
