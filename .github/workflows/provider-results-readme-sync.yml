@@ -6,6 +6,15 @@ on:
       - Native Android route reader acceptance
       - Native Desktop reader acceptance
     types: [completed]
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/update_provider_device_results.py'
+      - 'automation/provider-device-results.json'
+      - 'manifest.json'
+      - 'assets/providers/index.json'
+      - 'assets/providers/emojis.json'
+      - '.github/workflows/provider-results-readme-sync.yml'
   workflow_dispatch:
     inputs:
       run_id:
@@ -23,7 +32,7 @@ concurrency:
 
 jobs:
   update-results:
-    if: ${{ github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion != 'cancelled' && github.event.workflow_run.event == 'push' && github.event.workflow_run.head_branch == 'main') }}
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event_name == 'push' || (github.event.workflow_run.conclusion != 'cancelled' && github.event.workflow_run.event == 'push' && github.event.workflow_run.head_branch == 'main') }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -44,18 +53,22 @@ jobs:
           EVENT_NAME: ${{ github.event_name }}
           EVENT_RUN_ID: ${{ github.event.workflow_run.id }}
           INPUT_RUN_ID: ${{ inputs.run_id }}
+          CURRENT_RUN_ID: ${{ github.run_id }}
         shell: bash
         run: |
           set -euo pipefail
           if [ "$EVENT_NAME" = "workflow_run" ]; then
             RUN_ID="$EVENT_RUN_ID"
-          else
+          elif [ "$EVENT_NAME" = "workflow_dispatch" ]; then
             RUN_ID="$INPUT_RUN_ID"
+          else
+            RUN_ID="$CURRENT_RUN_ID"
           fi
           [[ "$RUN_ID" =~ ^[0-9]+$ ]] || { echo "invalid native reader run id: $RUN_ID" >&2; exit 2; }
           echo "run_id=$RUN_ID" >> "$GITHUB_OUTPUT"
 
       - name: Download exact positive-evidence diagnostics
+        if: ${{ github.event_name != 'push' }}
         env:
           GH_TOKEN: ${{ github.token }}
           RUN_ID: ${{ steps.source.outputs.run_id }}
@@ -92,7 +105,19 @@ jobs:
             --results automation/provider-device-results.json \
             --readme README.md
 
-      - name: Publish result matrix only when changed
+      - name: Validate trust-first README contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q 'Lectures natives confirmées' README.md
+          grep -q 'Voir les .* providers actifs' README.md
+          grep -q 'PREUVES LECTEUR' README.md
+          if grep -q '| TV | Mobile | Desktop macOS | Desktop Windows |' README.md; then
+            echo 'legacy sparse per-device matrix unexpectedly returned' >&2
+            exit 1
+          fi
+
+      - name: Publish result showcase only when changed
         shell: bash
         run: |
           set -euo pipefail
@@ -100,10 +125,10 @@ jobs:
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add README.md automation/provider-device-results.json
           if git diff --cached --quiet; then
-            echo 'Provider/device result matrix already current.'
+            echo 'Provider/device result showcase already current.'
             exit 0
           fi
-          git commit -m 'docs: refresh native provider result matrix'
+          git commit -m 'docs: refresh native provider proof showcase'
           git fetch origin main
           git rebase origin/main
           git push origin HEAD:main
