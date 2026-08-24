@@ -84,10 +84,11 @@ finally:
 
 # A real published provider proves the ordering contract end-to-end: quality and
 # language are extracted from the original upstream stream name first, then the
-# local row name/title are replaced by the committed provider emoji/name. Execute
-# this assertion under the official native-host capability shape so the unrelated
-# web-runtime media preflight does not turn example.com into a network dependency.
-raw = b'''globalThis.getStreams=async function(){return [{url:"https://example.com/video.m3u8",name:"1080p VFF",title:"raw upstream title"}]};\n'''
+# local row name/title are replaced by the committed provider emoji/name. The
+# transport is a deterministic local fetch stub returning a valid media playlist:
+# this exercises the real HLS/runtime guards without making the test depend on an
+# external host or pretending that a non-functional native bridge exists.
+raw = b'''globalThis.getStreams=async function(){return [{url:"https://example.invalid/video.m3u8",name:"1080p VFF",title:"raw upstream title"}]};\n'''
 branded, records = apply_overrides("peachify", raw, phase="discovery")
 branded_text = branded.decode("utf-8")
 assert "NUVIO_GLOBAL_STREAM_PRESENTATION_V1" in branded_text
@@ -98,7 +99,8 @@ assert any(record.get("scope") == "global_provider_branding" for record in recor
 with tempfile.NamedTemporaryFile("wb", suffix=".js", delete=False) as handle:
     handle.write(branded)
     handle.write(
-        b'\nglobalThis.__native_fetch=function(){return null};'
+        b'\nvar __nuvioTestPlaylist="#EXTM3U\\n#EXT-X-VERSION:3\\n#EXTINF:120,\\nsegment-1.ts\\n#EXTINF:120,\\nsegment-2.ts\\n#EXT-X-ENDLIST\\n";'
+        b'globalThis.fetch=async function(url){return{ok:true,status:200,url:String(url),headers:{get:function(name){return String(name).toLowerCase()==="content-type"?"application/vnd.apple.mpegurl":null}},text:async function(){return __nuvioTestPlaylist}}};'
         b'Promise.resolve(globalThis.getStreams()).then(function(rows){var r=rows[0];'
         b'if(!r||r.name!=="\xf0\x9f\x8d\x91 Peachify"||r.title!=="\xf0\x9f\x8d\x91 Peachify"||r.quality!=="1080p"||r.language!=="VFF")'
         b'{console.error(JSON.stringify(r));process.exit(4)}console.log(JSON.stringify(r))'
