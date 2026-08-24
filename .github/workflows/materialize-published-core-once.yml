@@ -1,0 +1,114 @@
+name: Materialize published Core once
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/materialize-published-core-once.yml'
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout exact main
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Capture publication baseline
+        shell: bash
+        run: git show HEAD:manifest.json > "$RUNNER_TEMP/manifest-before.json"
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+          package-manager-cache: false
+
+      - name: Install locked dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Converge published providers under current Core
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/normalize_provider_rebuild_safety.py --check
+          python3 scripts/normalize_core_fixed_point_contract.py --check
+          python3 scripts/normalize_provider_branding_pipeline.py --check
+          python3 scripts/normalize_core_media_policy.py --check
+          python3 scripts/build_provider_runtime_profiles.py
+          converged=0
+          for pass in 1 2 3 4 5 6; do
+            echo "FIELD_TARGETED_CORE_CONVERGENCE pass=${pass}"
+            python3 scripts/reapply_published_overrides.py
+            if python3 scripts/reapply_published_overrides.py --check; then
+              converged=1
+              echo "FIELD_TARGETED_CORE_CONVERGENCE converged_at=${pass}"
+              break
+            fi
+          done
+          if [[ "$converged" -ne 1 ]]; then
+            echo 'published Core failed to converge within 6 passes' >&2
+            exit 1
+          fi
+
+      - name: Rebuild authoritative publication metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/generate_language_manifests.py
+          python3 scripts/prune_unreferenced_providers.py
+          python3 scripts/sync_release_versions.py --manifest manifest.json --previous "$RUNNER_TEMP/manifest-before.json"
+          node engine_v2/scripts/bootstrap-provider-catalog.mjs --general manifest.json --vf vf/manifest.json --output provider_catalog.json
+          node engine_v2/scripts/render-manifests-from-catalog.mjs --catalog provider_catalog.json --general manifest.json --vf vf/manifest.json
+          python3 scripts/generate_language_manifests.py
+          python3 scripts/sync_release_versions.py --manifest manifest.json --previous "$RUNNER_TEMP/manifest-before.json"
+          python3 scripts/prune_unreferenced_providers.py
+          python3 scripts/generate_release_hashes.py
+          python3 scripts/validate_release_integrity.py
+
+      - name: Verify published fixed point
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/reapply_published_overrides.py --check
+          python3 scripts/normalize_provider_rebuild_safety.py --check
+          python3 scripts/normalize_core_fixed_point_contract.py --check
+          python3 scripts/normalize_provider_branding_pipeline.py --check
+          python3 scripts/normalize_core_media_policy.py --check
+          python3 tests/provider_purification_contract_test.py
+          python3 tests/provider_wrapper_isolation_test.py
+          python3 tests/provider_security_hardening_test.py
+          python3 tests/prune_unreferenced_providers_test.py
+          node engine_v2/tests/provider-catalog.test.mjs
+          python3 scripts/validate_release_integrity.py
+
+      - name: Publish targeted materialization without starting full CI
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git rm .github/workflows/materialize-published-core-once.yml
+          git add -A
+          git commit -m 'chore: converge published Core fixed point [skip ci]'
+          git fetch origin main
+          git rebase origin/main
+          python3 scripts/reapply_published_overrides.py --check
+          python3 scripts/validate_release_integrity.py
+          git push origin HEAD:main
+          SHA="$(git rev-parse HEAD)"
+          gh issue comment 69 --repo "$GITHUB_REPOSITORY" --body "Published Core fixed-point materialized on main ${SHA} without launching the full Core workflow. Provider reapply converged; manifests/catalogue/versioning/release hashes and fixed-point checks passed. One-shot removed itself."
