@@ -237,7 +237,10 @@ def provider_proof_summary(
     for row in matching:
         fixture = str(row.get("fixture") or "").strip()
         fixture_row = fixtures.get(fixture) if isinstance(fixtures.get(fixture), dict) else {}
-        media_type = str(row.get("mediaType") or fixture_row.get("mediaType") or "unknown").casefold()
+        # The corpus/fixture identity is canonical for display. A provider may expose
+        # an anime through a generic TV route; that transport/request shape must not
+        # relabel the actual work as a non-anime series in public evidence.
+        media_type = str(fixture_row.get("mediaType") or row.get("mediaType") or "unknown").casefold()
         label = str(fixture_row.get("label") or fixture.replace("-", " ").title())
         kind = media_label(media_type)
         content = f"{media_icon(media_type)} {label} · {kind}" if label else f"{media_icon(media_type)} {kind}"
@@ -316,6 +319,7 @@ def render(results: dict[str, Any]) -> str:
         for device, date in (summary.get("devices") or {}).items()
         if str(date or "")
     }
+    platform_label = "plateforme native" if len(device_coverage) == 1 else "plateformes natives"
 
     lines = [
         START,
@@ -332,7 +336,7 @@ def render(results: dict[str, Any]) -> str:
         "",
         "> **Ici, NiakVIO n'affiche que des succès natifs réellement conservés.** Une preuve signifie que le lecteur officiel Nuvio a atteint un état sain pour le **provider + contenu + device exacts**. L'absence de preuve n'est jamais maquillée en succès — et n'est pas non plus présentée comme un échec.",
         "",
-        f"**{len(verified)} providers** disposent actuellement d'au moins une preuve lecteur native conservée, sur **{len(verified_cases)} cas de lecture distincts** et **{len(device_coverage)} famille(s) de device** déjà représentée(s). L'inventaire complet reste synchronisé automatiquement sur `manifest.json`.",
+        f"**{len(verified)} providers** disposent actuellement d'au moins une preuve lecteur native conservée, sur **{len(verified_cases)} cas de lecture distincts** et **{len(device_coverage)} {platform_label}** déjà représentée{'s' if len(device_coverage) != 1 else ''}. L'inventaire complet reste synchronisé automatiquement sur `manifest.json`.",
         "",
         "### ✅ Lectures natives confirmées",
         "",
@@ -383,7 +387,8 @@ def render(results: dict[str, Any]) -> str:
         ) or "Type non déclaré"
         proof_count = int(summary.get("nativeProofCount") or 0)
         if proof_count:
-            state = f"✅ **Preuve native conservée** · {proof_count} validation(s) lecteur"
+            proof_label = "validation lecteur" if proof_count == 1 else "validations lecteur"
+            state = f"✅ **Preuve native conservée** · {proof_count} {proof_label}"
         else:
             state = "🟢 **Actif dans le manifest** · prochaine preuve native conservée dès validation positive"
         lines.append(f"| {provider_label(provider)} | {types} | {state} |")
