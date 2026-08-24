@@ -210,8 +210,11 @@ def test_runtime_domain_authorized_orphans_are_removed_fail_closed() -> None:
     )
     damaged = "\n".join(orphans * 3) + "\n" + markerless
     cleaned, _ = inject_domain_overrides(damaged, rules)
-    for orphan in orphans:
-        assert orphan not in cleaned
+    # The parenthesized orphan byte sequence is also a legitimate substring of
+    # the complete IIFE invocation when there is only one rule. Therefore the
+    # fail-closed invariant must be structural: all standalone historical tails
+    # disappear and the exact markerless canonical artifact is recovered.
+    assert cleaned == markerless
     assert cleaned.count("__nuvioDomainOverrideV1") == 1
     cleaned_again, _ = inject_domain_overrides(cleaned, rules)
     assert cleaned_again == cleaned
