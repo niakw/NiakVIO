@@ -22,9 +22,6 @@ assert len(badges) == 73, f"expected complete 73-badge image catalog, got {len(b
 by_id = {str(row.get("id") or ""): row for row in badges if isinstance(row, dict)}
 assert len(by_id) == len(badges), "badge ids must be unique"
 
-# Every badge in the catalog must have both render sizes for all three contrast
-# variants. The UI chooses dark for gray/dark Nuvio themes, light for white/light
-# themes, while transparent remains available for contexts that provide contrast.
 for badge_id, row in by_id.items():
     assets = row.get("assets") or {}
     for theme in ("transparent", "dark", "light"):
@@ -37,9 +34,6 @@ for badge_id, row in by_id.items():
             assert path.suffix.lower() == ".webp", (badge_id, rel)
             assert path.stat().st_size > 0, (badge_id, rel, "empty image")
 
-# Structural existence is not enough for light-theme assets: lock the deterministic
-# contrast QA report produced from transparent artwork so a future asset refresh
-# cannot silently reintroduce white-on-white/tiny-label regressions.
 assert light_qa.get("revision") == "light-contrast-v3-native-size", light_qa.get("revision")
 assert light_qa.get("catalogBadges") == len(badges), light_qa.get("catalogBadges")
 assert light_qa.get("assetCount") == len(badges) * 2, light_qa.get("assetCount")
@@ -68,13 +62,18 @@ assert mapping["display"]["preferredThemeFolders"] == {
 }
 assert mapping["display"]["transparentAssets"] == "assets/transparent"
 assert mapping["display"]["hideUnknownBadges"] is True
+assert mapping["display"]["alwaysReplaceProviderDescription"] is True
+assert mapping["display"]["fallbackWhenNativeBadgesDisabled"] == "emojiTechnicalLine"
+assert mapping["display"]["nativeBadgeFeeds"] == {
+    "dark_app_background": "assets/stream-badges-dark.json",
+    "light_app_background": "assets/stream-badges-light.json",
+}
 assert "Use assets/dark when the Nuvio application background is gray/dark." in readme
 assert "Use assets/light when the Nuvio application background is white/light." in readme
+assert "DUAL-MODE RUNTIME RULE" in readme
 
-# These are the exact image IDs emitted by the shared Core presentation wrapper.
-# Keep them aligned with the existing complete asset catalog rather than inventing
-# near-duplicate aliases such as 5-1-audio/7-1-audio/dts-hd-ma/sdh.
 core_badge_ids = {
+    "uhd-blu-ray",
     "4k-ultra-hd",
     "1080p-full-hd",
     "720p-hd",
@@ -118,19 +117,34 @@ for badge_id in core_badge_ids:
 for stale_id in ("dts-hd-ma", "7-1-audio", "5-1-audio", "sdh"):
     assert f'"{stale_id}"' not in core, f"stale non-catalog badge alias leaked from Core: {stale_id}"
 
-# The most important branded/technical image cases must retain a declared asset
-# provenance rather than silently being regenerated from unrelated facts.
 for badge_id in ("4k-ultra-hd", "blu-ray-disc", "dolby-vision", "dolby-atmos"):
     assert by_id[badge_id].get("assetBasis"), (badge_id, "missing asset provenance")
 
-# No resolution-only presentation is allowed to imply physical-media provenance.
 rules = "\n".join(mapping.get("rules") or [])
 assert "Never infer Blu-ray or Ultra HD Blu-ray from 1080p/2160p alone." in rules
 assert "REMUX must be confirmed" in rules
+assert "Always replace every provider-owned stream description" in rules
+assert "TMDB may fill media context" in rules
+
+# Exact import payloads consumed by official Nuvio StreamBadgeRules. The feed uses
+# the existing 96x40 theme-aware assets; the Core text remains the universal
+# matcher/fallback and therefore never depends on the account setting itself.
+for theme in ("dark", "light"):
+    feed_path = ROOT / f"assets/stream-badges-{theme}.json"
+    feed = json.loads(feed_path.read_text(encoding="utf-8"))
+    assert len(feed.get("filters") or []) == len(badges), (theme, len(feed.get("filters") or []))
+    assert len(feed.get("groups") or []) == len(catalog.get("groups") or []), theme
+    feed_by_id = {str(row.get("id") or ""): row for row in feed.get("filters") or []}
+    assert set(feed_by_id) == set(by_id), theme
+    for badge_id, row in feed_by_id.items():
+        expected_rel = by_id[badge_id]["assets"][theme]["96x40"]
+        assert row["imageURL"].endswith(expected_rel), (theme, badge_id, row["imageURL"])
+        assert row["pattern"] == by_id[badge_id]["pattern"], (theme, badge_id)
+        assert row["isEnabled"] is True
 
 print(
     "badge asset contract passed: "
     f"catalog={len(badges)} themes=3 sizes=2 core_ids={len(core_badge_ids)} "
     f"light_qa_rows={len(qa_rows)} min_white_separation={light_qa['whiteBackgroundMinimumSeparationRatio']} "
-    "dark_light_contrast=true image_fallbacks=true"
+    "native_streambadge_feeds=true emoji_fallback=true"
 )
