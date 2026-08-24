@@ -280,10 +280,9 @@ def _safe_binding_object(value: str) -> bool:
 
 def _safe_global_assignments(body: str) -> bool:
     """Accept a list of global bindings to identifiers or safe provider objects."""
-    body = body.strip()
+    body = body.strip().rstrip(";").strip()
     if body.startswith("(") and body.endswith(")"):
         body = body[1:-1].strip()
-    body = body.rstrip(";").strip()
     if not body:
         return False
     target = re.compile(
@@ -367,8 +366,6 @@ def _terminal_named_function_suffix_end(text: str, cursor: int, limit: int) -> i
 def _terminal_provider_export_end(text: str, object_end: int, limit: int) -> int | None:
     """Accept only proven provider glue between an object export and owned Core."""
     raw_suffix = text[object_end:limit]
-    # Boolean-expression wrappers such as ``&&(module.exports={...});`` may leave
-    # only syntactic closing parentheses after the object assignment.
     if re.fullmatch(r"\s*\)+\s*;?\s*", raw_suffix):
         return limit
     if _safe_else_global_suffix(raw_suffix):
@@ -387,21 +384,13 @@ def _terminal_provider_export_end(text: str, object_end: int, limit: int) -> int
         return function_end if function_end is not None and not text[function_end:limit].strip() else None
     if text[cursor] != ":":
         return None
-    # Ternary fallbacks may expose either an identifier directly or the same small
-    # getStreams binding object through a global slot. Calls/nested objects fail.
     if _safe_global_assignments(text[cursor + 1:limit]):
         return limit
     return None
 
 
 def _provider_export_floor(text: str) -> int:
-    """Return a proven provider/Core boundary, never a generic CommonJS guess.
-
-    Exact Nuvio ``__provider`` bridges remain authoritative. Direct/obfuscated
-    CommonJS object exports are accepted only when the object itself exports
-    ``getStreams`` and the complete terminal provider glue is adjacent to a known
-    repository-owned generated wrapper marker.
-    """
+    """Return a proven provider/Core boundary, never a generic CommonJS guess."""
     exact_patterns = (
         r"\bmodule\.exports\s*=\s*__provider\b",
         r"\bglobalThis\.getStreams\s*=\s*__provider\.getStreams\b",
