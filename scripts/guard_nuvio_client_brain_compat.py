@@ -1,10 +1,16 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: GPL-3.0-only
-"""Fail-closed Nuvio client provider-contract guard before Brain mutation.
+"""Nuvio client compatibility guard before provider Brain mutation.
 
-The full upstream checker deliberately remains stricter than this guard: reader/UI/player
-changes still require native reader re-audit, while provider Brain mutation is blocked only
-when the changed client surface can alter provider request/result/extraction semantics.
+The full upstream checker remains stricter than this guard: reader/UI/player
+changes still require native reader re-audit. A linear upstream
+``contract_review_required`` is an adaptation signal, not a pipeline veto: Quick
+and Deep exercise NiakVIO's version-adaptive layers against the latest official
+client contract and retain the exact changed paths/tokens for native review.
+
+We still fail closed when the upstream state itself cannot be established
+(verification error/inconclusive) or when history diverges. In those cases there
+is no trustworthy version to adapt against.
 """
 from __future__ import annotations
 
@@ -43,9 +49,15 @@ def path_matches(filename: str, rules: list[str]) -> bool:
 def classify_provider_mutation_compat(
     report: dict[str, Any], config: dict[str, Any]
 ) -> tuple[list[str], list[str]]:
-    """Return (blocking provider drift, reader-only re-audit pending)."""
+    """Return (unverifiable blockers, linear adaptation/re-audit pending clients).
+
+    A known linear HEAD with provider-contract changes is safe to *exercise* via
+    the adaptive NiakVIO layers. It remains pending native proof, but it must not
+    make Quick/Deep red before that proof can even be produced. Only states where
+    the target revision itself is unknown/untrustworthy remain blocking.
+    """
     blockers: list[str] = []
-    reader_pending: list[str] = []
+    adaptation_pending: list[str] = []
     configured = config.get("clients") or {}
     results = report.get("clients") or {}
 
@@ -101,23 +113,17 @@ def classify_provider_mutation_compat(
             if relevant:
                 semantic_hits[str(filename)] = relevant
 
+        # Linear provider-contract drift is adaptation work, not an inability to
+        # establish the target runtime. Keep it visible and require native proof,
+        # while allowing the adaptive provider pipeline to exercise the new HEAD.
         if hard_hits or semantic_hits:
-            detail: list[str] = []
-            if hard_hits:
-                detail.append("paths=" + ",".join(hard_hits[:8]))
-            if semantic_hits:
-                semantic_detail = ",".join(
-                    f"{filename}:{'/'.join(tokens)}"
-                    for filename, tokens in list(semantic_hits.items())[:8]
-                )
-                detail.append("semantic=" + semantic_detail)
-            blockers.append(f"{client_id}:provider_contract_drift:" + ";".join(detail))
+            adaptation_pending.append(client_id)
             continue
 
         if bool(result.get("review_required")) or client_id in (report.get("review_required") or []):
-            reader_pending.append(client_id)
+            adaptation_pending.append(client_id)
 
-    return blockers, reader_pending
+    return blockers, sorted(set(adaptation_pending))
 
 
 def guard(output: Path) -> dict[str, Any]:
@@ -147,19 +153,19 @@ def guard(output: Path) -> dict[str, Any]:
 
     report = load_json(output)
     config = load_json(CONFIG)
-    blockers, reader_pending = classify_provider_mutation_compat(report, config)
+    blockers, adaptation_pending = classify_provider_mutation_compat(report, config)
     if blockers:
         raise RuntimeError(
-            "Nuvio client provider contract drift blocks provider Brain mutation: "
+            "Nuvio client state cannot be established safely for adaptive provider repair: "
             + " | ".join(blockers)
         )
 
     inconclusive = [str(value) for value in report.get("inconclusive") or [] if str(value)]
     if inconclusive:
-        # Defensive redundancy: classify_provider_mutation_compat already blocks each
-        # configured inconclusive client, but never let a malformed summary weaken it.
+        # Defensive redundancy: classification above blocks each configured
+        # inconclusive client; never let a malformed summary weaken that fence.
         raise RuntimeError(
-            "Nuvio client runtime verification is inconclusive; fail-closed before provider Brain mutation: "
+            "Nuvio client runtime verification is inconclusive; target revision cannot be adapted safely: "
             + ", ".join(inconclusive)
         )
 
@@ -167,14 +173,15 @@ def guard(output: Path) -> dict[str, Any]:
         "FIELD_NUVIO_CLIENT_BRAIN_COMPAT "
         f"verified={len(report.get('verified') or [])} "
         f"safe_advance={len(report.get('safe_advance_available') or [])} "
-        f"reader_reaudit_pending={len(reader_pending)} "
-        "provider_contract_blockers=0 provider_mutation_allowed=true"
+        f"adaptation_pending={len(adaptation_pending)} "
+        "unverifiable_blockers=0 provider_mutation_allowed=true"
     )
-    if reader_pending:
+    if adaptation_pending:
         print(
-            "FIELD_NUVIO_CLIENT_READER_REAUDIT_PENDING clients="
-            + ",".join(reader_pending)
-            + " provider_mutation_allowed=true native_reader_acceptance_required=true"
+            "FIELD_NUVIO_CLIENT_ADAPTATION_PENDING clients="
+            + ",".join(adaptation_pending)
+            + " contract_review_blocking=false provider_mutation_allowed=true "
+              "native_reader_acceptance_required=true compatibility_proposal_on_adaptation_failure=true"
         )
     return report
 
