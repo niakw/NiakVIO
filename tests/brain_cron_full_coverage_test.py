@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+# Harmless checkpoint: this test path intentionally triggers the isolated Brain learning lab.
 import importlib.util
 import json
 from pathlib import Path
