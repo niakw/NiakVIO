@@ -363,6 +363,31 @@ def _terminal_named_function_suffix_end(text: str, cursor: int, limit: int) -> i
         consumed = True
 
 
+def _terminal_getstreams_function_end(text: str, core_start: int) -> int | None:
+    """Bound providers whose public API is a terminal getStreams declaration.
+
+    This covers bundles such as DooFlix that deliberately rely on the runtime global
+    declaration instead of a CommonJS export. The declaration must end immediately
+    before a repository-owned Core marker; any executable suffix fails closed.
+    """
+    matches = list(re.finditer(r"\bfunction\s+getStreams\s*\([^()]*\)\s*\{", text[:core_start]))
+    for match in reversed(matches):
+        open_brace = text.find("{", match.start(), match.end())
+        if open_brace < 0:
+            continue
+        end = _balanced_terminal_object_end(text, open_brace, core_start)
+        if end is None:
+            continue
+        cursor = end
+        while cursor < core_start and text[cursor].isspace():
+            cursor += 1
+        if cursor < core_start and text[cursor] == ";":
+            cursor += 1
+        if not text[cursor:core_start].strip():
+            return cursor
+    return None
+
+
 def _terminal_provider_export_end(text: str, object_end: int, limit: int) -> int | None:
     """Accept only proven provider glue between an object export and owned Core."""
     raw_suffix = text[object_end:limit]
@@ -456,6 +481,14 @@ def _provider_export_floor(text: str) -> int:
         if statement_end is None:
             continue
         return statement_end
+
+    # Some providers expose the classic runtime-global declaration directly and do
+    # not publish a CommonJS object at all. Accept it only when it is the terminal
+    # provider statement immediately preceding the first owned Core layer.
+    for core_start in core_starts:
+        function_end = _terminal_getstreams_function_end(text, core_start)
+        if function_end is not None:
+            return function_end
     return -1
 ''').lstrip("\n")
 
@@ -499,6 +532,8 @@ def harden_generated_apply(text: str) -> str:
         raise ValueError("safe CommonJS else fallback parser must be generated exactly once")
     if text.count("def _terminal_named_function_suffix_end(") != 1:
         raise ValueError("terminal named-function suffix parser must be generated exactly once")
+    if text.count("def _terminal_getstreams_function_end(") != 1:
+        raise ValueError("terminal getStreams function parser must be generated exactly once")
     if text.count("def _terminal_provider_export_end(") != 1:
         raise ValueError("terminal provider export statement parser must be generated exactly once")
     if text.count("def _provider_export_floor(") != 1:
