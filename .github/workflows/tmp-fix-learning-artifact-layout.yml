@@ -20,7 +20,7 @@ jobs:
           ref: main
           fetch-depth: 0
 
-      - name: Patch Learning workflow structurally
+      - name: Patch Learning workflow by semantic lines
         shell: bash
         run: |
           set -euo pipefail
@@ -28,46 +28,44 @@ jobs:
           from pathlib import Path
 
           path = Path('.github/workflows/brain-learning-lab.yml')
-          text = path.read_text(encoding='utf-8')
+          lines = path.read_text(encoding='utf-8').splitlines()
 
-          replacements = {
-              'name: NiakVIO Brain learning lab': 'name: LEARNING - Brain repair sandbox',
-              '    name: Read-only provider repair sandbox': '    name: LEARNING - Repair sandbox',
-              '    name: Publish sanitized Brain memory branch': '    name: LEARNING - Publish sanitized memory',
-          }
-          for old, new in replacements.items():
-              if old not in text:
-                  raise SystemExit(f'Learning workflow anchor not found: {old}')
-              text = text.replace(old, new, 1)
+          def replace_once(old, new):
+              hits = [i for i, line in enumerate(lines) if line == old]
+              if len(hits) != 1:
+                  raise SystemExit(f'expected one line {old!r}, got {len(hits)}')
+              lines[hits[0]] = new
 
-          old_path = '          path: brain-learning-output\n'
-          if text.count(old_path) != 1:
-              raise SystemExit(f'expected exactly one artifact download path, got {text.count(old_path)}')
-          text = text.replace(
-              old_path,
-              '          # Artifact paths already contain brain-learning-output/* and brain-learning-input/*.\n'
-              '          # Restore at workspace root to avoid brain-learning-output/brain-learning-output/*.\n'
-              '          path: .\n',
-              1,
-          )
+          replace_once('name: NiakVIO Brain learning lab', 'name: LEARNING - Brain repair sandbox')
+          replace_once('    name: Read-only provider repair sandbox', '    name: LEARNING - Repair sandbox')
+          replace_once('    name: Publish sanitized Brain memory branch', '    name: LEARNING - Publish sanitized memory')
 
-          marker = '''      - name: Validate artifact cannot publish production
-                shell: bash
-                run: |
-                  set -euo pipefail
-          '''
-          if marker not in text:
-              raise SystemExit('Learning validation step anchor not found')
-          text = text.replace(
-              marker,
-              marker
-              + '          test -s brain-learning-output/latest.json\n'
-              + '          test -s brain-learning-output/latest.md\n'
-              + '          test -s brain-learning-output/repair-proposal.json\n',
-              1,
-          )
+          path_hits = [i for i, line in enumerate(lines) if line == '          path: brain-learning-output']
+          if len(path_hits) != 1:
+              raise SystemExit(f'expected one artifact download path, got {len(path_hits)}')
+          i = path_hits[0]
+          lines[i:i+1] = [
+              '          # Artifact entries already retain brain-learning-output/* and brain-learning-input/*.',
+              '          # Restore at workspace root to avoid nesting those roots twice.',
+              '          path: .',
+          ]
 
-          path.write_text(text, encoding='utf-8')
+          step_hits = [i for i, line in enumerate(lines) if line.strip() == '- name: Validate artifact cannot publish production']
+          if len(step_hits) != 1:
+              raise SystemExit(f'expected one artifact validation step, got {len(step_hits)}')
+          start = step_hits[0]
+          set_hits = [i for i in range(start + 1, min(start + 8, len(lines))) if lines[i].strip() == 'set -euo pipefail']
+          if len(set_hits) != 1:
+              raise SystemExit(f'expected one set -euo pipefail in validation step, got {len(set_hits)}')
+          insert_at = set_hits[0] + 1
+          tests = [
+              '          test -s brain-learning-output/latest.json',
+              '          test -s brain-learning-output/latest.md',
+              '          test -s brain-learning-output/repair-proposal.json',
+          ]
+          lines[insert_at:insert_at] = tests
+
+          path.write_text('\n'.join(lines) + '\n', encoding='utf-8')
           PY
           grep -F 'name: LEARNING - Brain repair sandbox' .github/workflows/brain-learning-lab.yml
           grep -F 'name: LEARNING - Repair sandbox' .github/workflows/brain-learning-lab.yml
