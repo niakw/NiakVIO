@@ -23,6 +23,7 @@ _REHASHABLE_REASONS = {
     "safety_quarantine_bundle_finding_sha_mismatch",
     "safety_quarantine_bundle_finding_path_mismatch",
 }
+_LEGACY_CONFIGURED_SAFETY_QUARANTINE = legacy.configured_safety_quarantine
 
 
 def _configured_safety_quarantine_with_core_rehash(
@@ -67,20 +68,33 @@ def _configured_safety_quarantine_with_core_rehash(
     return True, f"{rebound_reason}:deterministic_core_rehash"
 
 
+def configured_safety_quarantine(
+    provider_id: str,
+    manifest_row: dict[str, Any] | None,
+    patch: dict[str, Any] | None,
+    provenance: dict[str, Any] | None,
+    finding: dict[str, Any] | None,
+) -> tuple[bool, str]:
+    """Validate a configured safety quarantine against the current Core bundle.
+
+    This is the stable helper for callers that inspect one provider at a time.
+    It preserves the immutable historical evidence contract while accepting only
+    deterministic current-bundle SHA/path drift already accepted by release
+    integrity validation.
+    """
+    return _configured_safety_quarantine_with_core_rehash(
+        _LEGACY_CONFIGURED_SAFETY_QUARANTINE,
+        provider_id,
+        manifest_row,
+        patch,
+        provenance,
+        finding,
+    )
+
+
 def validate() -> list[str]:
     original = legacy.configured_safety_quarantine
-
-    def adapted(provider_id, manifest_row, patch, provenance, finding):
-        return _configured_safety_quarantine_with_core_rehash(
-            original,
-            provider_id,
-            manifest_row,
-            patch,
-            provenance,
-            finding,
-        )
-
-    legacy.configured_safety_quarantine = adapted
+    legacy.configured_safety_quarantine = configured_safety_quarantine
     try:
         return legacy.validate()
     finally:
