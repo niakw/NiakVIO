@@ -19,50 +19,62 @@ jobs:
         with:
           ref: main
           fetch-depth: 0
-      - name: Patch artifact download contract
+
+      - name: Patch Learning workflow structurally
         shell: bash
         run: |
           set -euo pipefail
           python - <<'PY'
           from pathlib import Path
+
           path = Path('.github/workflows/brain-learning-lab.yml')
           text = path.read_text(encoding='utf-8')
-          old = '''      - name: Download sanitized state produced by read-only sandbox
-                uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
-                with:
-                  name: niakvio-brain-learning-state
-                  path: brain-learning-output
 
-              - name: Validate artifact cannot publish production
+          replacements = {
+              'name: NiakVIO Brain learning lab': 'name: LEARNING - Brain repair sandbox',
+              '    name: Read-only provider repair sandbox': '    name: LEARNING - Repair sandbox',
+              '    name: Publish sanitized Brain memory branch': '    name: LEARNING - Publish sanitized memory',
+          }
+          for old, new in replacements.items():
+              if old not in text:
+                  raise SystemExit(f'Learning workflow anchor not found: {old}')
+              text = text.replace(old, new, 1)
+
+          old_path = '          path: brain-learning-output\n'
+          if text.count(old_path) != 1:
+              raise SystemExit(f'expected exactly one artifact download path, got {text.count(old_path)}')
+          text = text.replace(
+              old_path,
+              '          # Artifact paths already contain brain-learning-output/* and brain-learning-input/*.\n'
+              '          # Restore at workspace root to avoid brain-learning-output/brain-learning-output/*.\n'
+              '          path: .\n',
+              1,
+          )
+
+          marker = '''      - name: Validate artifact cannot publish production
                 shell: bash
                 run: |
                   set -euo pipefail
-                  node -e "const x=require('./brain-learning-output/latest.json'); if(x.productionWritesAllowed!==false||x.publicationAllowed!==false) process.exit(1)"
           '''
-          new = '''      - name: Download sanitized state produced by read-only sandbox
-                uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
-                with:
-                  name: niakvio-brain-learning-state
-                  # The artifact contains both brain-learning-output/* and
-                  # brain-learning-input/*. Downloading into brain-learning-output
-                  # nests those roots one level too deep. Restore at workspace root.
-                  path: .
+          if marker not in text:
+              raise SystemExit('Learning validation step anchor not found')
+          text = text.replace(
+              marker,
+              marker
+              + '          test -s brain-learning-output/latest.json\n'
+              + '          test -s brain-learning-output/latest.md\n'
+              + '          test -s brain-learning-output/repair-proposal.json\n',
+              1,
+          )
 
-              - name: Validate artifact cannot publish production
-                shell: bash
-                run: |
-                  set -euo pipefail
-                  test -s brain-learning-output/latest.json
-                  test -s brain-learning-output/latest.md
-                  test -s brain-learning-output/repair-proposal.json
-                  node -e "const x=require('./brain-learning-output/latest.json'); if(x.productionWritesAllowed!==false||x.publicationAllowed!==false) process.exit(1)"
-          '''
-          if old not in text:
-              raise SystemExit('Learning artifact layout anchor not found')
-          path.write_text(text.replace(old, new, 1), encoding='utf-8')
+          path.write_text(text, encoding='utf-8')
           PY
+          grep -F 'name: LEARNING - Brain repair sandbox' .github/workflows/brain-learning-lab.yml
+          grep -F 'name: LEARNING - Repair sandbox' .github/workflows/brain-learning-lab.yml
+          grep -F 'name: LEARNING - Publish sanitized memory' .github/workflows/brain-learning-lab.yml
           grep -F 'path: .' .github/workflows/brain-learning-lab.yml
           grep -F 'test -s brain-learning-output/latest.json' .github/workflows/brain-learning-lab.yml
+
       - name: Commit fix and self-clean
         shell: bash
         run: |
