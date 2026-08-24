@@ -2,9 +2,13 @@
 import json
 import importlib.util
 import re
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / 'scripts'))
+from activation_preservation_core_rehash import configured_safety_quarantine as configured_safety_quarantine_rehash
+
 overrides = json.loads((ROOT / 'provider-overrides.json').read_text())
 hubs = json.loads((ROOT / 'provider-hubs.json').read_text())['providers']
 manifest = json.loads((ROOT / 'manifest.json').read_text())['scrapers']
@@ -40,8 +44,9 @@ official = overrides['official_domain_hubs']
 # decision, or a complete client-lab/configured quarantine or publication-scoped
 # catalogue-audit quarantine must match the currently inert bundle.
 # CI-inconclusive/network-only evidence may never silently shrink the catalogue.
-# This mirrors validate_activation_preservation.py rather than hard-coding stale
-# pre-audit promotion state.
+# This mirrors release-integrity activation preservation, including deterministic
+# Core rehashes of an already-inert quarantine bundle, rather than hard-coding
+# stale pre-audit promotion state.
 expected_vf_movie = {
     'purstream', 'frenchstream', 'streamzo', 'movix', 'coflix', 'wookafr',
     'flemmix', 'nakios', 'toflix', 'papadustream',
@@ -57,7 +62,7 @@ for provider_id in sorted(expected_vf_movie):
     if row['enabled'] is True:
         assert provider_id in activation['active_ids'], provider_id
         continue
-    safety_accepted, _ = activation_validator.configured_safety_quarantine(
+    safety_accepted, _ = configured_safety_quarantine_rehash(
         provider_id,
         row,
         patch_rows.get(provider_id),
