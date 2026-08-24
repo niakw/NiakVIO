@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 """Resolve exact latest official Nuvio client revisions for native Labs.
 
-The upstream drift checker remains the single authority for contract/semantic audit.
-This helper only turns its report into fail-closed workflow outputs: Labs run the
-current official branch HEAD, while contract_ref and accepted_ref remain attached as
-audit context. An unresolved HEAD is never silently replaced by an older accepted ref.
+The upstream drift checker remains the authority for contract/semantic audit, but
+``contract_review_required`` is deliberately *not* a Lab veto. Labs always exercise
+the latest resolved official HEAD and let NiakVIO's version-adaptive preparation
+layer prove whether our harness still fits that client revision. Only an unresolved
+HEAD is fatal here; an older accepted ref is never used as a silent fallback.
 """
 from __future__ import annotations
 
@@ -62,10 +63,13 @@ def main() -> int:
         accepted = clean(row.get("accepted_ref"), 40)
         contract = clean(row.get("contract_ref") or row.get("verified_ref"), 40)
         status = clean(row.get("status"), 96) or "unknown"
+        adaptation_required = status == "contract_review_required" or bool(row.get("review_required"))
         outputs[f"{prefix}_sha"] = head
         outputs[f"{prefix}_accepted_ref"] = accepted
         outputs[f"{prefix}_contract_ref"] = contract
         outputs[f"{prefix}_drift_status"] = status
+        outputs[f"{prefix}_adaptation_required"] = str(adaptation_required).lower()
+        outputs[f"{prefix}_lab_blocking"] = "false"
         fingerprint_parts.append(f"{prefix}={head}")
         resolved[client_id] = {
             "head": head,
@@ -73,13 +77,20 @@ def main() -> int:
             "contractRef": contract or None,
             "driftStatus": status,
             "reviewRequired": bool(row.get("review_required")),
+            "adaptationRequired": adaptation_required,
+            "labBlocking": False,
+            "adaptationPolicy": "latest-head-version-adaptive-preparation",
         }
 
     fingerprint = ";".join(fingerprint_parts)
     outputs["runtime_fingerprint"] = fingerprint
     payload = {
-        "schemaVersion": 1,
-        "policy": "latest-official-head-for-labs; accepted/contract refs retained for audit only; no stale fallback",
+        "schemaVersion": 2,
+        "policy": (
+            "latest-official-head-for-labs; contract_review_required is observational/nonblocking; "
+            "run version-adaptive NiakVIO preparation on that HEAD; promote compatibility after proof; "
+            "open a NiakVIO compatibility proposal only when adaptation itself fails; no stale fallback"
+        ),
         "runtimeFingerprint": fingerprint,
         "clients": resolved,
     }
@@ -96,7 +107,8 @@ def main() -> int:
         print(
             f"FIELD_NUVIO_LAB_HEAD client={client_id} head={row['head'][:12]} "
             f"accepted={(row['acceptedRef'] or '-')[:12]} contract={(row['contractRef'] or '-')[:12]} "
-            f"status={row['driftStatus']}"
+            f"status={row['driftStatus']} adaptation_required={str(row['adaptationRequired']).lower()} "
+            "lab_blocking=false"
         )
     return 0
 
