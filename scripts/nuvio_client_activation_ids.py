@@ -13,6 +13,7 @@ Mobile, Desktop or TV runtime-contract change.
 
 The provider pipeline watches this compatibility primitive, so a reviewed change
 here intentionally receives an independent Quick validation before Deep/learning.
+This also provides a clean Quick checkpoint after recovery-state regression fixes.
 """
 from __future__ import annotations
 
