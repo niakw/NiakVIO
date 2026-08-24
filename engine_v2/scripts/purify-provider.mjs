@@ -14,6 +14,7 @@ import process from "node:process";
 import { minify } from "terser";
 
 const EXPECTED_TERSER_VERSION = "5.50.0";
+const RETAINED_AUDIO_MARKER = "/* NUVIO_HLS_MASTER_AUDIO_PRESERVER_V1 */";
 
 function arg(name) {
   const index = process.argv.indexOf(name);
@@ -27,6 +28,26 @@ function riskFlags(code) {
   if (/\.toString\s*\(\s*\)/.test(code) && /\bfunction\b|=>/.test(code)) flags.push("function_source_introspection");
   if (/\bsourceURL\b|\bsourceMappingURL\b/.test(code)) flags.push("source_directive");
   return flags;
+}
+
+function canonicalizeRetainedCoreBoundary(code) {
+  const first = code.indexOf(RETAINED_AUDIO_MARKER);
+  if (first < 0) return code;
+  if (code.indexOf(RETAINED_AUDIO_MARKER, first + RETAINED_AUDIO_MARKER.length) >= 0) {
+    throw new Error("duplicate retained HLS master audio marker");
+  }
+
+  // The audio marker records an in-place provider rewrite and can therefore
+  // remain immediately before the generated Core start boundary when the rest
+  // of the Core tail is stripped/rebuilt. Terser is free to attach preserved
+  // comments to surrounding AST nodes and can otherwise grow blank lines at
+  // this exact seam across publication passes. Own only surrounding whitespace:
+  // one newline before and one after the marker, with all JS bytes untouched.
+  const left = code.slice(0, first).replace(/[ \t\r\n]+$/, "");
+  const right = code.slice(first + RETAINED_AUDIO_MARKER.length).replace(/^[ \t\r\n]+/, "");
+  const prefix = left ? `${left}\n` : "";
+  const suffix = right ? `\n${right}` : "";
+  return `${prefix}${RETAINED_AUDIO_MARKER}${suffix}`;
 }
 
 async function terserVersion() {
@@ -100,7 +121,8 @@ async function main() {
   });
   if (!result.code) throw new Error("Terser returned no code");
 
-  const purified = `${result.code}\n`;
+  const canonical = canonicalizeRetainedCoreBoundary(result.code);
+  const purified = `${canonical}\n`;
   await fs.mkdir(path.dirname(path.resolve(output)), { recursive: true });
   await fs.writeFile(output, purified, "utf8");
 
