@@ -2,6 +2,10 @@ name: FIX - Resume Core finalizer after fixed-point checks
 
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/tmp-resume-core-finalize.yml'
 
 permissions:
   contents: write
@@ -130,6 +134,10 @@ jobs:
           print(f'FIELD_FINAL_TERSER_FIXED_POINT providers={checked} tool=terser version={TERSER_VERSION} mangle=false')
           PY
 
+      - name: Consume Core recovery one-shot before full suite
+        shell: bash
+        run: rm -f .github/workflows/tmp-resume-core-finalize.yml
+
       - name: Validate complete repository suite
         run: npm test
 
@@ -178,6 +186,8 @@ jobs:
           python tests/provider_branding_contract_test.py
           python tests/global_playback_integrity_policy_test.py
           python tests/global_stream_identity_test.py
+          python tests/global_stream_presentation_test.py
+          python tests/global_stream_presentation_pipeline_test.py
           python tests/runtime_capability_media_safety_v4_test.py
           python tests/provider_wrapper_isolation_test.py
           python tests/stream_output_sanitizer_fail_closed_test.py
@@ -190,6 +200,7 @@ jobs:
           python scripts/reapply_published_overrides.py --check
           python scripts/validate_release_integrity.py
           node engine_v2/tests/provider-catalog.test.mjs
+          test ! -e .github/workflows/tmp-resume-core-finalize.yml
           test -z "$(git status --porcelain)"
 
       - name: Report recovery success
@@ -197,4 +208,4 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
-        run: gh issue comment 69 --repo "$GITHUB_REPOSITORY" --body "Core step-resume recovery succeeded: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}."
+        run: gh issue comment 69 --repo "$GITHUB_REPOSITORY" --body "Core V11 step-resume recovery succeeded: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}."
