@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import base64
 import importlib.util
 import json
 import re
@@ -166,19 +167,59 @@ def test_runtime_domain_markerless_bootstrap_reaches_one_copy() -> None:
     first, _ = inject_domain_overrides(provider, rules)
     assert first.count("__nuvioDomainOverrideV1") == 1
     assert first.count("NUVIO_RUNTIME_DOMAIN_OVERRIDES_V1") == 1
+    first_again, _ = inject_domain_overrides(first, rules)
+    assert first_again == first
 
+    # Terser may legitimately drop the ownership comment. The reserved key and
+    # exact generated payload are the durable structural identity; restoring only
+    # the comment would create a Core/Terser hash ping-pong forever.
     markerless = first.replace("/* NUVIO_RUNTIME_DOMAIN_OVERRIDES_V1 */\n", "", 1)
     second, _ = inject_domain_overrides(markerless, rules)
+    assert second == markerless
     assert second.count("__nuvioDomainOverrideV1") == 1
-    assert second.count("NUVIO_RUNTIME_DOMAIN_OVERRIDES_V1") == 1
+    assert second.count("NUVIO_RUNTIME_DOMAIN_OVERRIDES_V1") == 0
     assert second.endswith(provider)
 
     current = second
-    for _ in range(6):
-        current = current.replace("/* NUVIO_RUNTIME_DOMAIN_OVERRIDES_V1 */\n", "", 1)
-        current, _ = inject_domain_overrides(current, rules)
-        assert current.count("__nuvioDomainOverrideV1") == 1
-        assert current.count("NUVIO_RUNTIME_DOMAIN_OVERRIDES_V1") == 1
+    for _ in range(10):
+        repeated, _ = inject_domain_overrides(current, rules)
+        assert repeated == current
+        assert repeated.count("__nuvioDomainOverrideV1") == 1
+        assert repeated.count("NUVIO_RUNTIME_DOMAIN_OVERRIDES_V1") == 0
+        current = repeated
+
+    stale = markerless.replace("new.example", "stale.example")
+    refreshed, _ = inject_domain_overrides(stale, rules)
+    assert refreshed != stale
+    assert refreshed.count("__nuvioDomainOverrideV1") == 1
+    refreshed_again, _ = inject_domain_overrides(refreshed, rules)
+    assert refreshed_again == refreshed
+
+
+def test_runtime_domain_authorized_orphans_are_removed_fail_closed() -> None:
+    rules = {"old.example": "new.example"}
+    provider = "const providerByte=1;function getStreams(){};module.exports=__provider;\n"
+    canonical, _ = inject_domain_overrides(provider, rules)
+    markerless = canonical.replace("/* NUVIO_RUNTIME_DOMAIN_OVERRIDES_V1 */\n", "", 1)
+    encoded = base64.b64encode(b"old.example").decode("ascii")
+    payload = json.dumps([[encoded, "new.example"]], separators=(",", ":"))
+    orphans = (
+        f'typeof globalThis!=="undefined"?globalThis:this,{payload};',
+        f'(typeof globalThis!=="undefined"?globalThis:this,{payload});',
+        f'(typeof globalThis!=="undefined"?globalThis:this,{payload})',
+    )
+    damaged = "\n".join(orphans * 3) + "\n" + markerless
+    cleaned, _ = inject_domain_overrides(damaged, rules)
+    for orphan in orphans:
+        assert orphan not in cleaned
+    assert cleaned.count("__nuvioDomainOverrideV1") == 1
+    cleaned_again, _ = inject_domain_overrides(cleaned, rules)
+    assert cleaned_again == cleaned
+
+    foreign = orphans[0].replace("new.example", "foreign.example")
+    preserved, _ = inject_domain_overrides(foreign + "\n" + markerless, rules)
+    assert foreign in preserved
+    assert preserved.count("__nuvioDomainOverrideV1") == 1
 
 
 def test_runtime_domain_duplicate_bootstraps_collapse_fail_closed() -> None:
@@ -191,6 +232,8 @@ def test_runtime_domain_duplicate_bootstraps_collapse_fail_closed() -> None:
     assert collapsed.count("__nuvioDomainOverrideV1") == 1
     assert collapsed.count("NUVIO_RUNTIME_DOMAIN_OVERRIDES_V1") == 1
     assert collapsed.endswith(provider)
+    collapsed_again, _ = inject_domain_overrides(collapsed, rules)
+    assert collapsed_again == collapsed
 
     try:
         inject_domain_overrides('const reserved="__nuvioDomainOverrideV1";\n' + provider, rules)
@@ -237,6 +280,7 @@ if __name__ == "__main__":
     test_terminal_commonjs_fallback_remains_fail_closed()
     test_exact_provider_bridge_remains_authoritative()
     test_runtime_domain_markerless_bootstrap_reaches_one_copy()
+    test_runtime_domain_authorized_orphans_are_removed_fail_closed()
     test_runtime_domain_duplicate_bootstraps_collapse_fail_closed()
     test_runtime_safety_owned_wrapper_separator_is_canonical()
     test_real_provider_portfolio_export_boundaries()
