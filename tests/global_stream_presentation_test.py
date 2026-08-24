@@ -20,6 +20,16 @@ def load(name: str):
     return module
 
 
+# Materialize the durable Core contract before loading the patch. This mirrors the
+# Core finalizer and keeps the test valid on a fresh checkout of the V11 control plane.
+normalizer_path = ROOT / "scripts" / "normalize_stream_presentation_v11.py"
+spec = importlib.util.spec_from_file_location("normalize_stream_presentation_v11", normalizer_path)
+assert spec and spec.loader
+normalizer = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(normalizer)
+normalizer.normalize(apply=True)
+normalizer.assert_contract()
+
 facts = load("global_stream_facts_v1.py")
 presentation = load("global_stream_presentation_v1.py")
 
@@ -28,7 +38,7 @@ with_facts = facts.apply(legacy, context={"provider_id": "purstream"})
 assert "NUVIO_GLOBAL_STREAM_FACTS_V1" in with_facts
 patched = presentation.apply(with_facts, context={"provider_id": "purstream"})
 assert "NUVIO_GLOBAL_STREAM_PRESENTATION_V1" in patched
-assert "all-providers-facts-badge-dedupe-tmdb-fallback-v10" in patched
+assert "all-providers-forced-description-badge-emoji-tmdb-v11" in patched
 assert patched == presentation.apply(patched, context={"provider_id": "purstream"})
 
 
@@ -77,12 +87,12 @@ assert "HEVC" in row["displayBadges"], row
 assert row["presentationFacts"]["quality"] == "2160p"
 assert row["presentationFacts"]["format"] == "HLS"
 assert "Interstellar • 2014 • Science-fiction, Drame" in row["description"], row
-assert "Des explorateurs traversent un trou de ver" in row["description"], row
 assert "Unknown" not in row["description"]
-# Latest UI rule: once represented by a badge, technical data is not duplicated
-# in the user-facing text below it.
-for duplicate in ("4K", "2160p", "BLU-RAY", "Dual Audio", "HEVC", "AAC", "2h49", "-12"):
-    assert duplicate not in row["description"], (duplicate, row)
+for expected in (
+    "🎞️ ", "2160p", "BLU-RAY", "HEVC", "HLS",
+    "🔊 AAC", "🌐 Dual Audio", "⏱ 2h49", "🔞 -12",
+):
+    assert expected in row["description"], (expected, row)
 
 # Empty provider output must not start an optional TMDB request that can outlive
 # the provider route and make native evidence look incomplete.
@@ -95,8 +105,8 @@ empty_result = run(
 )
 assert empty_result == {"streams": [], "calls": 0}, empty_result
 
-# Resolution alone never invents Blu-ray provenance, but it does expose the
-# resolution badge id while keeping the textual media description clean.
+# Resolution alone never invents Blu-ray provenance. It remains visible in the
+# emoji technical line and can independently match a native resolution badge.
 plain = "module.exports={getStreams:async()=>[{name:'Cineby',url:'https://media.example/video.mp4',quality:'1080p'}]};\n"
 plain_patched = presentation.apply(plain, context={"provider_id": "cineby"})
 plain_row = run(
@@ -108,11 +118,12 @@ assert plain_row["quality"] == "1080p"
 assert "sourceType" not in plain_row
 assert plain_row["badgeIds"] == ["1080p-full-hd"], plain_row
 assert "BLU-RAY" not in plain_row["description"]
-assert "1080p" not in plain_row["description"]
+assert "🎞️ 1080p" in plain_row["description"]
+assert "MP4" in plain_row["description"]
 assert "Example • 2026" in plain_row["description"]
 
 # Metadata-poor reconstructed HLS keeps playback intact, derives HLS only from the
-# actual URL and uses the request/TMDB identity instead of leaving Unknown labels.
+# actual URL and uses request/TMDB identity instead of leaking Unknown labels.
 unknown = "module.exports={getStreams:async()=>[{name:'Movix',url:'https://media.example/u.m3u8',description:'Unknown',size:'Unknown',headers:{Origin:'https://movix.example'}}]};\n"
 unknown_patched = presentation.apply(unknown, context={"provider_id": "movix"})
 unknown_row = run(
@@ -127,8 +138,9 @@ assert unknown_row["presentationFacts"]["format"] == "HLS"
 assert "size" not in unknown_row
 assert "Unknown" not in unknown_row["description"]
 assert "Fallback title • 2026" in unknown_row["description"]
+assert "🎞️ HLS" in unknown_row["description"]
 
-# A true file size is not a badge in V2 and therefore remains useful text data.
+# A true file size remains visible even if a client ignores the structured size key.
 sized = "module.exports={getStreams:async()=>[{name:'Example',url:'https://media.example/video.mkv',size:'8.4 GB',quality:'720p'}]};\n"
 sized_row = run(
     presentation.apply(sized, context={"provider_id": "example"}),
@@ -137,6 +149,26 @@ sized_row = run(
 )
 assert sized_row["size"] == "8.4 GB"
 assert "720p-hd" in sized_row["badgeIds"]
-assert "720p" not in sized_row["description"]
+assert "🎞️ 720p" in sized_row["description"]
+assert "💾 8.4 GB" in sized_row["description"]
 
-print("global stream presentation + badge/text dedupe contract tests passed")
+# Provider-owned UI layout is input-only. Core may read technical facts from it,
+# but the original text itself must never survive into the rendered description.
+garbage = "module.exports={getStreams:async()=>[{name:'AnyProvider',url:'https://media.example/master.m3u8',description:'Unknown | UNKNOWN | provider private layout',quality:'1080p',audio:'Dolby Atmos TrueHD 7.1',sourceType:'UHD Blu-ray',releaseType:'REMUX',language:'VFF',subtitles:'VOSTFR'}]};\n"
+garbage_row = run(
+    presentation.apply(garbage, context={"provider_id": "anyprovider"}),
+    tmdb_ok,
+    "p.getStreams({tmdbId:'157336',mediaType:'movie',title:'Interstellar',year:2014}).then(v=>console.log(JSON.stringify(v[0])))",
+)
+assert "provider private layout" not in garbage_row["description"]
+assert "Unknown" not in garbage_row["description"]
+for expected in (
+    "🎞️ 1080p", "ULTRA HD BLU-RAY REMUX",
+    "🔊 Dolby Atmos • TrueHD • 7.1", "🌐 VFF • VOSTFR",
+    "⏱ 2h49", "🔞 -12",
+):
+    assert expected in garbage_row["description"], (expected, garbage_row)
+for badge_id in ("uhd-blu-ray", "remux", "dolby-atmos", "truehd", "7.1", "vff", "vostfr"):
+    assert badge_id in garbage_row["badgeIds"], (badge_id, garbage_row)
+
+print("global stream presentation + native-badge/emoji fallback contract tests passed")
