@@ -7,6 +7,7 @@ import subprocess
 import sys
 from pathlib import Path
 
+from normalize_fusion_badge_feed import normalize as normalize_fusion_badge_feed
 from normalize_runtime_domain_fixed_point import behavior_contract, normalized as normalize_runtime_domain_fixed_point
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -64,6 +65,11 @@ def is_hls_entry(entry: dict, policy_targets: set[str]) -> bool:
 
 def main() -> int:
     materialize_runtime_domain_fixed_point()
+    fusion_changed = normalize_fusion_badge_feed(apply=True)
+    print(
+        "FIELD_FUSION_BADGE_FEED "
+        f"changed={int(fusion_changed)} url=https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-fusion.json"
+    )
 
     manifest = load(MANIFEST)
     config = load(OVERRIDES)
