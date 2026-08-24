@@ -12,14 +12,19 @@ MAIN_PATH = ROOT / "manifest.json"
 VF_PATH = ROOT / "vf" / "manifest.json"
 ALL_NON_TV_RUNTIME_BLOCKS = {"android", "ios", "desktop"}
 COFLIX_REQUIRED_RUNTIME_MARKERS = {
-    "NUVIO_TV_TARGET_MEDIA_V3",
     "NUVIO_TARGET_MEDIA_HOST_FILTER_V4",
     "NUVIO_STREAM_OUTPUT_SANITIZER",
-    '"probeAllUrls":true',
     "/wp-admin/",
     "/wp-json/",
     "/wp-content/plugins/ajax-search-lite/",
 }
+JS_TRUE_FIELD = re.compile(
+    r"(?<![A-Za-z0-9_$])(?:[\"']?probeAllUrls[\"']?)\s*:\s*true\b"
+)
+JS_POSITIVE_MAX_PROBES = re.compile(
+    r"(?<![A-Za-z0-9_$])(?:[\"']?maxProbes[\"']?)\s*:\s*(\d+)\b"
+)
+TV_TARGET_MEDIA_CURRENT = re.compile(r"NUVIO_TV_TARGET_MEDIA_V(?:[4-9]|[1-9]\d+)\b")
 
 
 def load(path: Path) -> dict[str, Any]:
@@ -59,12 +64,28 @@ def report_has_playable_evidence(report: dict[str, Any]) -> bool:
 
 
 def strict_all_url_media_guard(text: str) -> bool:
+    """Recognize the executable all-URL sanitizer contract, minified or pretty.
+
+    Published bundles are JavaScript, so object keys may legally be quoted or
+    unquoted. The old validator only accepted JSON-style quoted keys and produced
+    false negatives after minification even though probeAllUrls=true/maxProbes>0
+    were present in the executable config.
+    """
     if "NUVIO_STREAM_OUTPUT_SANITIZER" not in text:
         return False
-    if '"probeAllUrls":true' not in text:
+    if JS_TRUE_FIELD.search(text) is None:
         return False
-    match = re.search(r'"maxProbes":(\d+)', text)
+    match = JS_POSITIVE_MAX_PROBES.search(text)
     return bool(match and int(match.group(1)) > 0)
+
+
+def coflix_strict_runtime_guard(text: str) -> list[str]:
+    missing = sorted(marker for marker in COFLIX_REQUIRED_RUNTIME_MARKERS if marker not in text)
+    if TV_TARGET_MEDIA_CURRENT.search(text) is None:
+        missing.append("NUVIO_TV_TARGET_MEDIA_V4+")
+    if JS_TRUE_FIELD.search(text) is None:
+        missing.append("probeAllUrls:true")
+    return sorted(set(missing))
 
 
 def platform_values(row: dict[str, Any], key: str) -> set[str]:
@@ -207,7 +228,7 @@ def main() -> int:
             )
             continue
         if provider_id == "coflix":
-            missing = sorted(marker for marker in COFLIX_REQUIRED_RUNTIME_MARKERS if marker not in text)
+            missing = coflix_strict_runtime_guard(text)
             if missing:
                 errors.append(
                     "coflix: NuvioTV safety chain incomplete; missing " + ", ".join(missing)
