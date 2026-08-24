@@ -1,12 +1,12 @@
 {
   "name": "Nuvio Curated Providers — VF uniquement",
-  "version": "5.20.72",
+  "version": "5.20.73",
   "scrapers": [
     {
       "id": "anime-sama",
       "name": "🐍 Anime-Sama",
       "description": "Watch AnimeSama France",
-      "version": "1.1.79",
+      "version": "1.1.81",
       "author": "Gowaru",
       "supportedTypes": [
         "movie",
@@ -29,14 +29,14 @@
       "id": "PURSTREAM",
       "name": "💧 Purstream",
       "description": "Films and series in French (VF) / subtitled French (VOSTFR) / multi-language (MULTI) from purstream.art.",
-      "version": "3.0.25",
+      "version": "3.0.27",
       "author": "wooodyhood",
       "supportedTypes": [
         "movie",
         "tv",
         "anime"
       ],
-      "filename": "../providers/purstream--published-baseline--8a6d99ff2afed321.js",
+      "filename": "../providers/purstream--nuvio--8a6d99ff2afed321.js",
       "enabled": true,
       "hasSettings": true,
       "formats": [
@@ -78,13 +78,13 @@
       "id": "DESIFLIX",
       "name": "🇮🇳 DesiFlix",
       "description": "Bollywood, Hollywood, and South Indian movies, in Dual Language",
-      "version": "1.0.26",
+      "version": "1.0.28",
       "author": "Nuvio Team",
       "supportedTypes": [
         "movie",
         "tv"
       ],
-      "filename": "../providers/desiflix--published-baseline--97202d5b5e7ea418.js",
+      "filename": "../providers/desiflix--nuvio--c0e77fb505eb1724.js",
       "enabled": true,
       "hasSettings": false,
       "formats": [
@@ -100,24 +100,24 @@
       "supportsExternalPlayer": false
     },
     {
-      "id": "PAPADUSTREAM",
-      "name": "🍿 Papadustream",
-      "description": "Films et séries TV en streaming HLS via Papadustream.",
-      "version": "1.0.31",
+      "id": "MUGIWARASTREAM",
+      "name": "👒 Mugiwara-no-Streaming",
+      "description": "Streaming gratuit d'animes et scans en bonne qualite via API Next.js.",
+      "version": "1.0.50",
       "author": "Gowaru",
       "supportedTypes": [
         "movie",
-        "tv",
         "anime"
       ],
-      "filename": "../providers/papadustream--published-baseline--16ff8faa775ebf84.js",
+      "filename": "../providers/mugiwarastream--nuvio--2e3cb031cc8fc20f.js",
       "enabled": true,
-      "logo": "https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/96x40/papadustream.webp",
+      "logo": "https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/96x40/mugiwarastream.webp",
       "contentLanguage": [
-        "fr",
-        "en"
+        "fr"
       ],
       "formats": [
+        "mp4",
+        "mkv",
         "m3u8"
       ],
       "limited": false,
@@ -128,13 +128,13 @@
       "id": "french-manga",
       "name": "🇫🇷 French-Manga",
       "description": "Animes VF et VOSTFR en streaming sur French-Manga.net",
-      "version": "1.0.37",
+      "version": "1.0.39",
       "author": "Gowaru",
       "supportedTypes": [
         "movie",
         "anime"
       ],
-      "filename": "../providers/french-manga--nuvio--76dabe6dd0e8a3bc.js",
+      "filename": "../providers/french-manga--nuvio--71869900fe1c940f.js",
       "enabled": true,
       "logo": "https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/96x40/french-manga.webp",
       "contentLanguage": [
@@ -274,34 +274,6 @@
       "supportsExternalPlayer": false
     },
     {
-      "id": "GOATED",
-      "name": "🐐 Goated",
-      "description": "4K • 1080p Movies & Series in Multi Language",
-      "version": "1.0.18",
-      "author": "Nuvio Team",
-      "supportedTypes": [
-        "movie",
-        "tv"
-      ],
-      "filename": "../providers/goated--nuvio--f4c775a9bb2b35ed.js",
-      "enabled": true,
-      "hasSettings": true,
-      "formats": [
-        "mkv",
-        "mp4",
-        "m3u8"
-      ],
-      "logo": "https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/96x40/goated.webp",
-      "contentLanguage": [
-        "en",
-        "hi",
-        "ru",
-        "es"
-      ],
-      "supportsExternalPlayer": false,
-      "disabledPlatforms": []
-    },
-    {
       "id": "MOVIX",
       "name": "🎥 Movix",
       "description": "Films, Séries et Animes en VF et VOSTFR.",
@@ -328,24 +300,24 @@
       "supportsExternalPlayer": true
     },
     {
-      "id": "MUGIWARASTREAM",
-      "name": "👒 Mugiwara-no-Streaming",
-      "description": "Streaming gratuit d'animes et scans en bonne qualite via API Next.js.",
-      "version": "1.0.48",
+      "id": "PAPADUSTREAM",
+      "name": "🍿 Papadustream",
+      "description": "Films et séries TV en streaming HLS via Papadustream.",
+      "version": "1.0.31",
       "author": "Gowaru",
       "supportedTypes": [
         "movie",
+        "tv",
         "anime"
       ],
-      "filename": "../providers/mugiwarastream--published-baseline--2e3cb031cc8fc20f.js",
+      "filename": "../providers/papadustream--published-baseline--16ff8faa775ebf84.js",
       "enabled": true,
-      "logo": "https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/96x40/mugiwarastream.webp",
+      "logo": "https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/96x40/papadustream.webp",
       "contentLanguage": [
-        "fr"
+        "fr",
+        "en"
       ],
       "formats": [
-        "mp4",
-        "mkv",
         "m3u8"
       ],
       "limited": false,
@@ -477,14 +449,14 @@
       "id": "anime-ultime",
       "name": "🔥 Anime-Ultime",
       "description": "Animes VOSTFR et VF en streaming sur v5.anime-ultime.net (séries licenciées exclues par le site).",
-      "version": "0.0.16",
+      "version": "0.0.18",
       "author": "Gowaru",
       "supportedTypes": [
         "anime",
         "movie",
         "tv"
       ],
-      "filename": "../providers/anime-ultime--published-baseline--2b226d67b6c7c074.js",
+      "filename": "../providers/anime-ultime--nuvio--2b226d67b6c7c074.js",
       "enabled": false,
       "logo": "https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/96x40/anime-ultime.webp",
       "contentLanguage": [
@@ -501,13 +473,13 @@
       "id": "ANIMOFLIX",
       "name": "🎞️ AnimoFlix",
       "description": "Regarder des animes VF et VOSTFR gratuitement sur AnimoFlix.",
-      "version": "1.0.41",
+      "version": "1.0.43",
       "author": "Gowaru",
       "supportedTypes": [
         "movie",
         "anime"
       ],
-      "filename": "../providers/animoflix--published-baseline--da124c254986da95.js",
+      "filename": "../providers/animoflix--nuvio--da124c254986da95.js",
       "enabled": false,
       "logo": "https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/96x40/animoflix.webp",
       "contentLanguage": [
@@ -525,12 +497,12 @@
       "id": "voiranime-homes",
       "name": "🏠 VoirAnime.homes",
       "description": "Animes VF et VOSTFR en streaming sur voiranime.homes (moteur DLE, miroir French-Manga).",
-      "version": "0.0.15",
+      "version": "0.0.17",
       "author": "Gowaru",
       "supportedTypes": [
         "anime"
       ],
-      "filename": "../providers/voiranime-homes--published-baseline--de0c48c75feff843.js",
+      "filename": "../providers/voiranime-homes--nuvio--de0c48c75feff843.js",
       "enabled": false,
       "logo": "https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/96x40/voiranime-homes.webp",
       "contentLanguage": [
@@ -649,12 +621,12 @@
       "id": "waveanime",
       "name": "🌊 WaveAnime",
       "description": "Animes en DASH (MPD) via waveanime.fr — lecture native ExoPlayer/Media3 (Android), non supporté par AVPlayer (iOS).",
-      "version": "0.0.17",
+      "version": "0.0.19",
       "author": "Gowaru",
       "supportedTypes": [
         "anime"
       ],
-      "filename": "../providers/waveanime--published-baseline--cec096fb9b53e746.js",
+      "filename": "../providers/waveanime--nuvio--cec096fb9b53e746.js",
       "enabled": false,
       "logo": "https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/96x40/waveanime.webp",
       "contentLanguage": [
@@ -666,6 +638,34 @@
       "limited": true,
       "disabledPlatforms": [],
       "supportsExternalPlayer": false
+    },
+    {
+      "id": "GOATED",
+      "name": "🐐 Goated",
+      "description": "4K • 1080p Movies & Series in Multi Language",
+      "version": "1.0.18",
+      "author": "Nuvio Team",
+      "supportedTypes": [
+        "movie",
+        "tv"
+      ],
+      "filename": "../providers/goated--nuvio--f4c775a9bb2b35ed.js",
+      "enabled": true,
+      "hasSettings": true,
+      "formats": [
+        "mkv",
+        "mp4",
+        "m3u8"
+      ],
+      "logo": "https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/96x40/goated.webp",
+      "contentLanguage": [
+        "en",
+        "hi",
+        "ru",
+        "es"
+      ],
+      "supportsExternalPlayer": false,
+      "disabledPlatforms": []
     }
   ]
 }

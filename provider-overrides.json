@@ -430,12 +430,14 @@
     },
     "moviesdrive": {
       "replacements": {
-        "new3.moviesdrives.my": "new2.moviesdrive.christmas",
-        "new1.moviesdrive.christmas": "new2.moviesdrive.christmas"
+        "new3.moviesdrives.my": "new3.moviesdrive.christmas",
+        "new1.moviesdrive.christmas": "new3.moviesdrive.christmas",
+        "new2.moviesdrive.christmas": "new3.moviesdrive.christmas"
       },
       "runtime_domain_replacements": {
-        "new3.moviesdrives.my": "new2.moviesdrive.christmas",
-        "new1.moviesdrive.christmas": "new2.moviesdrive.christmas"
+        "new3.moviesdrives.my": "new3.moviesdrive.christmas",
+        "new1.moviesdrive.christmas": "new3.moviesdrive.christmas",
+        "new2.moviesdrive.christmas": "new3.moviesdrive.christmas"
       },
       "notes": [
         "Automatically migrated new3.moviesdrives.my to new7.moviesdrives.my after French ISP DNS/HTTP preflight redirect validation."
@@ -443,7 +445,7 @@
       "capability": "html_scraper",
       "profiles": [],
       "official_hub": "https://moviesdrives.mov/",
-      "official_site": "https://new2.moviesdrive.christmas",
+      "official_site": "https://new3.moviesdrive.christmas",
       "required_values": [],
       "manifest_overrides": {
         "disabledPlatforms": []
@@ -825,14 +827,14 @@
     "4khdhub": {
       "capability": "html_scraper",
       "replacements": {
-        "4khdhub.click": "4khdhub.one",
-        "new3.hdhub4u.cl": "4khdhub.one",
-        "new4.hdhub4u.cl": "4khdhub.one"
+        "4khdhub.click": "new4.hdhub4u.cl",
+        "new3.hdhub4u.cl": "new4.hdhub4u.cl",
+        "4khdhub.one": "new4.hdhub4u.cl"
       },
       "runtime_domain_replacements": {
-        "4khdhub.click": "4khdhub.one",
-        "new3.hdhub4u.cl": "4khdhub.one",
-        "new4.hdhub4u.cl": "4khdhub.one"
+        "4khdhub.click": "new4.hdhub4u.cl",
+        "new3.hdhub4u.cl": "new4.hdhub4u.cl",
+        "4khdhub.one": "new4.hdhub4u.cl"
       },
       "required_values": [],
       "route_replacements": {},
@@ -851,7 +853,7 @@
         "Use the current HDHub4u terminal route and reject HTML/error bodies returned as HLS media."
       ],
       "official_hub": "https://hdhub4u.ec/",
-      "official_site": "https://4khdhub.one",
+      "official_site": "https://new4.hdhub4u.cl",
       "manifest_overrides": {}
     },
     "4khdhubnew": {
@@ -922,10 +924,14 @@
     },
     "animesalt": {
       "capability": "html_scraper",
-      "replacements": {},
-      "runtime_domain_replacements": {},
+      "replacements": {
+        "animesalt.link": "animesalt.cx"
+      },
+      "runtime_domain_replacements": {
+        "animesalt.link": "animesalt.cx"
+      },
       "official_hub": "http://animesalt.ac/",
-      "official_site": "https://animesalt.link",
+      "official_site": "https://animesalt.cx",
       "required_values": [],
       "manifest_overrides": {
         "disabledPlatforms": []
@@ -1123,10 +1129,14 @@
     },
     "hdghartv": {
       "capability": "html_scraper",
-      "replacements": {},
-      "runtime_domain_replacements": {},
+      "replacements": {
+        "hdghartv.cc": "download.hdghartv.com.pk"
+      },
+      "runtime_domain_replacements": {
+        "hdghartv.cc": "download.hdghartv.com.pk"
+      },
       "official_hub": "https://hdghartv.com.pk/",
-      "official_site": "https://hdghartv.cc",
+      "official_site": "https://download.hdghartv.com.pk/HDGharTV_V2.7.apk",
       "required_values": [],
       "manifest_overrides": {
         "disabledPlatforms": []
@@ -1221,12 +1231,14 @@
       "capability": "html_scraper",
       "profiles": [],
       "replacements": {
-        "m4uplay.store": "new3.movies4u.clinic",
-        "new2.movies4u.clinic": "new3.movies4u.clinic"
+        "m4uplay.store": "movies4u.review",
+        "new2.movies4u.clinic": "movies4u.review",
+        "new3.movies4u.clinic": "movies4u.review"
       },
       "runtime_domain_replacements": {
-        "m4uplay.store": "new3.movies4u.clinic",
-        "new2.movies4u.clinic": "new3.movies4u.clinic"
+        "m4uplay.store": "movies4u.review",
+        "new2.movies4u.clinic": "movies4u.review",
+        "new3.movies4u.clinic": "movies4u.review"
       },
       "required_values": [],
       "route_replacements": {},
@@ -1245,7 +1257,7 @@
         "Use the current Movies4u terminal route and drop unresolved or non-media direct links before playback."
       ],
       "official_hub": "https://movies4u.tube/",
-      "official_site": "https://new3.movies4u.clinic",
+      "official_site": "https://movies4u.review",
       "manifest_overrides": {
         "disabledPlatforms": []
       }
@@ -1871,7 +1883,7 @@
     "learned_skills": {},
     "brain": {
       "name": "NiakVIO Brain",
-      "controlPlaneVersion": 3,
+      "controlPlaneVersion": 4,
       "learningOnValidatedRepair": true,
       "lastMode": "quick",
       "fallbackPolicy": "lkg_only_after_repair_budget",
@@ -1931,7 +1943,7 @@
       "allow_html_url": true,
       "requires_direct_media": false,
       "observed_origins": [
-        "https://4khdhub.one"
+        "https://new4.hdhub4u.cl"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
@@ -2073,7 +2085,7 @@
       "requires_direct_media": false,
       "observed_origins": [
         "https://as-cdn21.top",
-        "https://animesalt.link"
+        "https://animesalt.cx"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
@@ -2524,7 +2536,7 @@
       "allow_html_url": true,
       "requires_direct_media": false,
       "observed_origins": [
-        "https://hdghartv.cc"
+        "https://download.hdghartv.com.pk"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
@@ -2625,7 +2637,7 @@
       "requires_direct_media": false,
       "observed_origins": [
         "https://hc-zf3c.vercel.app",
-        "https://new3.movies4u.clinic"
+        "https://movies4u.review"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
@@ -2637,7 +2649,7 @@
       "requires_direct_media": false,
       "observed_origins": [
         "https://mdrive.lol",
-        "https://new2.moviesdrive.christmas"
+        "https://new3.moviesdrive.christmas"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
@@ -2782,8 +2794,7 @@
         "https://lodash.com",
         "https://openjsf.org",
         "http://underscorejs.org",
-        "https://papadustream-v2.watch",
-        "https://www.dailymotion.com"
+        "https://papadustream-v2.watch"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true,
@@ -4904,6 +4915,8 @@
       "moonflix",
       "vidlove"
     ],
-    "non_safety_hard_disable_count": 8
+    "non_safety_hard_disable_count": 8,
+    "provider_security_hardening_candidates": 201,
+    "provider_security_hardening_applied": 0
   }
 }
