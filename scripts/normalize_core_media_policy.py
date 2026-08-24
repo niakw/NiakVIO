@@ -27,6 +27,7 @@ APPLY_OVERRIDES = ROOT / "scripts/apply_provider_overrides.py"
 GLOBAL_SECURITY_HOOK = "scripts/provider_patches/global_provider_security_hardening_v1.py"
 GLOBAL_BRANDING_HOOK = "scripts/provider_patches/global_provider_branding_v1.py"
 ALLOWED_SHARED_PURSTREAM_SCRIPTS = {
+    "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
     "scripts/provider_patches/native_sync_fetch_target_order_v1.py",
     "scripts/provider_patches/runtime_capability_media_safety_v4.py",
 }
