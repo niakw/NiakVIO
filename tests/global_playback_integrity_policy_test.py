@@ -19,6 +19,31 @@ if not spec or not spec.loader:
 module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(module)
 
+hls_spec = importlib.util.spec_from_file_location(
+    "hls_master_audio_preserver_v1",
+    ROOT / "scripts" / "provider_patches" / "hls_master_audio_preserver_v1.py",
+)
+if not hls_spec or not hls_spec.loader:
+    raise RuntimeError("cannot import hls_master_audio_preserver_v1")
+hls_audio = importlib.util.module_from_spec(hls_spec)
+hls_spec.loader.exec_module(hls_audio)
+
+# This exact boundary used to grow by 2-3 newline bytes on every publication pass,
+# leaving otherwise unchanged providers permanently stale until the 6-pass timeout.
+# Keep it in the fast preflight test, before any portfolio-wide reconstruction.
+audio_marker = f"/* {hls_audio.AUDIO_MARKER} */"
+for blank_lines in range(1, 10):
+    noisy = "module.exports={getStreams:async()=>[]};" + ("\n" * blank_lines) + audio_marker + ("\n" * blank_lines)
+    canonical = hls_audio._canonicalize_audio_marker_boundary(noisy)
+    assert canonical == "module.exports={getStreams:async()=>[]};\n" + audio_marker + "\n", (blank_lines, canonical)
+    assert hls_audio._canonicalize_audio_marker_boundary(canonical) == canonical
+
+seed = "module.exports={getStreams:async()=>[]};\n\n\n\n" + audio_marker + "\n\n\n"
+first_hls = hls_audio.apply(seed, context={"provider_id": "generic-hls-provider"})
+second_hls = hls_audio.apply(first_hls, context={"provider_id": "generic-hls-provider"})
+assert second_hls == first_hls
+assert "\n\n" + audio_marker not in first_hls
+
 cfg = json.loads((ROOT / "provider-overrides.json").read_text(encoding="utf-8"))
 policy = cfg.get("playback_integrity_policy") or {}
 assert policy.get("version") == 3
