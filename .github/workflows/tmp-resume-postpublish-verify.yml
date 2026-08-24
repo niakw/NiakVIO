@@ -1,0 +1,109 @@
+name: RESUME - Post-publish verify and cleanup
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/tmp-resume-postpublish-verify.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  verify-cleanup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - name: Checkout exact published main
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+          package-manager-cache: false
+
+      - name: Install pinned runtime dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -f package-lock.json ]; then
+            npm ci --ignore-scripts --no-audit --no-fund
+          else
+            npm install --ignore-scripts --no-audit --no-fund --package-lock=false
+          fi
+
+      - name: Verify exact published main without rebuilding Deep
+        shell: bash
+        run: |
+          set -euo pipefail
+          python tests/vf_movie_policy_test.py
+          npm test
+          node engine_v2/tests/provider-catalog.test.mjs
+          python scripts/activation_preservation_core_rehash.py
+          python scripts/validate_language_projection.py
+          python scripts/generate_release_hashes.py
+          python scripts/validate_release_integrity.py
+          python scripts/release_evidence_fence.py fingerprint --manifest manifest.json --root . --output /tmp/postpublish-release-generation.json
+          python scripts/release_evidence_fence.py validate --manifest manifest.json --root . --evidence /tmp/postpublish-release-generation.json
+
+      - name: Cleanup consumed temporary workflows and refresh hashes
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          rm -f \
+            .github/workflows/tmp-resume-deep-evidence.yml \
+            .github/workflows/tmp-resume-publish-from-reports.yml \
+            .github/workflows/tmp-postdeep-compat.yml \
+            .github/workflows/tmp-fix-learning-artifact-layout.yml \
+            .github/workflows/tmp-resume-quick-publish.yml \
+            .github/workflows/tmp-resume-postpublish-verify.yml
+          python scripts/generate_release_hashes.py
+          python scripts/validate_release_integrity.py
+          node engine_v2/tests/provider-catalog.test.mjs
+          git add -A .github/workflows FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json tests/vf_movie_policy_test.py
+          git diff --cached --check
+          if ! git diff --cached --quiet; then
+            git commit -m 'chore: finalize post-publish verification cleanup [skip ci]'
+            git fetch origin main
+            git rebase origin/main
+            python scripts/generate_release_hashes.py
+            python scripts/validate_release_integrity.py
+            git add FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json
+            if ! git diff --cached --quiet; then
+              git commit --amend --no-edit
+            fi
+            git push origin HEAD:main
+          fi
+
+      - name: Verify cleaned main integrity
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin main
+          git reset --hard origin/main
+          git clean -fdx
+          for path in \
+            .github/workflows/tmp-resume-deep-evidence.yml \
+            .github/workflows/tmp-resume-publish-from-reports.yml \
+            .github/workflows/tmp-postdeep-compat.yml \
+            .github/workflows/tmp-fix-learning-artifact-layout.yml \
+            .github/workflows/tmp-resume-quick-publish.yml \
+            .github/workflows/tmp-resume-postpublish-verify.yml; do
+            test ! -e "$path"
+          done
+          python scripts/validate_release_integrity.py
+          python scripts/activation_preservation_core_rehash.py
+          python scripts/validate_language_projection.py
+          node engine_v2/tests/provider-catalog.test.mjs
+          git diff --exit-code
