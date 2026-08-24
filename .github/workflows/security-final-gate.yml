@@ -17,6 +17,8 @@ on:
       - 'scripts/provider_security_hardening.py'
       - 'scripts/provider_patches/global_provider_security_hardening_v1.py'
       - 'scripts/normalize_core_media_policy.py'
+      - 'scripts/normalize_published_security_finalization.py'
+      - 'scripts/reapply_published_overrides.py'
       - 'scripts/apply_provider_overrides.py'
       - 'scripts/harden_staged_provider_security.py'
       - 'scripts/provider_purification.py'
@@ -75,6 +77,7 @@ jobs:
           python tests/core_media_policy_test.py
           python tests/runtime_capability_media_safety_v4_test.py
           python tests/native_corpus_device_lab_test.py
+          python scripts/normalize_published_security_finalization.py --check
 
       - name: Scan every published provider for known unsafe shapes
         shell: bash
@@ -180,7 +183,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
-          gh issue comment 69 --repo "$GITHUB_REPOSITORY" --body "#69 security gate SUCCEEDED: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID} on ${GITHUB_SHA}. Global hardening tests, full published-provider scan, exact-SHA CodeQL and repository-wide High/Critical gate are green."
+          gh issue comment 69 --repo "$GITHUB_REPOSITORY" --body "#69 security gate SUCCEEDED: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID} on ${GITHUB_SHA}. Global hardening contract, full published-provider scan, exact-SHA CodeQL and repository-wide High/Critical gate are green."
 
       - name: Report issue 69 security failure
         if: failure()
