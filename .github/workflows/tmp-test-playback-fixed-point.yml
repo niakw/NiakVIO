@@ -1,0 +1,48 @@
+name: TEST - Shared playback fixed point
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/tmp-test-playback-fixed-point.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Verify exact regression and adjacent playback contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 tests/override_net_noop_regression_test.py
+          python3 tests/hls_playback_integrity_test.py
+          python3 tests/global_playback_integrity_policy_test.py
+          python3 tests/provider_purification_contract_test.py
+          python3 tests/native_sync_fetch_target_order_test.py
+      - name: Remove consumed verifier
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          rm -f .github/workflows/tmp-test-playback-fixed-point.yml
+          git add -A
+          git diff --cached --check
+          git commit -m 'chore: remove consumed playback verifier [skip ci]'
+          git pull --rebase origin main
+          git push origin HEAD:main
