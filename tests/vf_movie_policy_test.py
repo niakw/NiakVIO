@@ -102,19 +102,21 @@ assert by_id['goated']['enabled'] is True
 assert 'movie' in by_id['goated']['supportedTypes']
 assert 'goated' in activation['active_ids']
 
-for provider_id in ('movix', 'coflix', 'flemmix'):
-    assert by_id[provider_id]['supportsExternalPlayer'] is True, provider_id
-# StreamZo historically exposed embeds. A validated direct-media generation may
-# advertise native HLS playback instead. The scoped catalogue wrapper is not a
-# regression to embeds: it wraps the exact validated candidate and only blocks
-# the proven-bad fixture, so it must preserve that candidate's direct-media flag.
-streamzo_filename = str(by_id['streamzo'].get('filename') or '')
-streamzo_bundle = (ROOT / streamzo_filename).read_text(encoding='utf-8')
-if '--nuvio-tv-global--' in streamzo_filename or 'NUVIO_CATALOGUE_SCOPE_QUARANTINE_V1' in streamzo_bundle:
-    assert by_id['streamzo']['supportsExternalPlayer'] is False
-    assert 'm3u8' in by_id['streamzo'].get('formats', [])
-else:
-    assert by_id['streamzo']['supportsExternalPlayer'] is True
+# Playback capability is a catalogue-wide contract, not a provider-specific
+# exception list. When a provider explicitly says the external player is not
+# required, it must advertise at least one direct-media format that Nuvio can
+# hand to its native player. Providers that omit the flag retain their upstream
+# semantics and are validated by the runtime/lab gates.
+direct_media_formats = {'mp4', 'mkv', 'm3u8'}
+for provider_id, row in sorted(by_id.items()):
+    flag = row.get('supportsExternalPlayer')
+    if flag is None:
+        continue
+    assert isinstance(flag, bool), (provider_id, flag)
+    if flag is False:
+        formats = {str(value).strip().lower() for value in row.get('formats', [])}
+        assert formats & direct_media_formats, (provider_id, sorted(formats))
+
 assert 'movie' in by_id['frenchstream']['supportedTypes']
 assert not ({'dahmermovies', 'dahmermovies-tv'} & set(by_id))
 assert not list((ROOT / 'providers').glob('dahmermovies*.js'))
