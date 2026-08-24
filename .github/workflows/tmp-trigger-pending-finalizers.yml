@@ -1,0 +1,33 @@
+name: TRIGGER - pending NiakVIO finalizers
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/tmp-trigger-pending-finalizers.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  trigger:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Trigger pending finalizers and self-delete
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          printf '\n# explicit-finalizer-trigger-%s\n' "${GITHUB_RUN_ID}" >> .github/workflows/tmp-apply-stream-presentation-v11.yml
+          printf '\n# explicit-finalizer-trigger-%s\n' "${GITHUB_RUN_ID}" >> .github/workflows/tmp-optimize-tv-reader.yml
+          git rm .github/workflows/tmp-trigger-pending-finalizers.yml
+          git add .github/workflows/tmp-apply-stream-presentation-v11.yml .github/workflows/tmp-optimize-tv-reader.yml
+          git commit -m 'ci: trigger pending Core and TV finalizers'
+          git fetch origin main
+          git rebase origin/main
+          git push origin HEAD:main
