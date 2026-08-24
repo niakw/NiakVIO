@@ -1,0 +1,80 @@
+name: Temporary priority Quick Deep Learning sequence
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/tmp-priority-qdl-once.yml"
+
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  group: tmp-priority-qdl-once
+  cancel-in-progress: false
+
+jobs:
+  sequence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Remove one-shot before validation
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git rm .github/workflows/tmp-priority-qdl-once.yml
+          git commit -m 'chore: remove priority validation one-shot [skip ci]'
+          git fetch origin main
+          git rebase origin/main
+          git push origin HEAD:main
+
+      - name: Run Quick and require green
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          START="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          gh workflow run sync.yml --ref main -f mode=quick
+          sleep 5
+          RUN_ID="$(gh run list --workflow sync.yml --branch main --event workflow_dispatch --limit 20 --json databaseId,createdAt --jq '[.[] | select(.createdAt >= "'"$START"'")] | sort_by(.createdAt) | last | .databaseId')"
+          test -n "$RUN_ID" && test "$RUN_ID" != "null"
+          echo "FIELD_PRIORITY_QUICK_RUN id=$RUN_ID"
+          gh run watch "$RUN_ID" --exit-status
+
+      - name: Run Deep and require green
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          START="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          gh workflow run sync.yml --ref main -f mode=deep
+          sleep 5
+          RUN_ID="$(gh run list --workflow sync.yml --branch main --event workflow_dispatch --limit 20 --json databaseId,createdAt --jq '[.[] | select(.createdAt >= "'"$START"'")] | sort_by(.createdAt) | last | .databaseId')"
+          test -n "$RUN_ID" && test "$RUN_ID" != "null"
+          echo "FIELD_PRIORITY_DEEP_RUN id=$RUN_ID"
+          gh run watch "$RUN_ID" --exit-status
+
+      - name: Run Brain learning and require green
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          START="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          gh workflow run brain-learning-lab.yml --ref main
+          sleep 5
+          RUN_ID="$(gh run list --workflow brain-learning-lab.yml --branch main --event workflow_dispatch --limit 20 --json databaseId,createdAt --jq '[.[] | select(.createdAt >= "'"$START"'")] | sort_by(.createdAt) | last | .databaseId')"
+          test -n "$RUN_ID" && test "$RUN_ID" != "null"
+          echo "FIELD_PRIORITY_BRAIN_LEARNING_RUN id=$RUN_ID"
+          gh run watch "$RUN_ID" --exit-status
