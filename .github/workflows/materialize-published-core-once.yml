@@ -1,4 +1,5 @@
 name: Materialize published Core once
+# target: checkpointed-quarantine-rehash-v2
 
 on:
   push:
@@ -50,6 +51,12 @@ jobs:
       - name: Install locked dependencies
         run: npm ci --ignore-scripts --no-audit --no-fund
 
+      - name: Verify quarantine rehash contract before provider work
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 tests/activation_preservation_core_rehash_test.py
+
       - name: Converge published providers under current Core
         shell: bash
         run: |
@@ -72,6 +79,24 @@ jobs:
           if [[ "$converged" -ne 1 ]]; then
             echo 'published Core failed to converge within 6 passes' >&2
             exit 1
+          fi
+
+      - name: Checkpoint converged provider fixed point
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A -- providers manifest.json vf/manifest.json vostfr/manifest.json PROVENANCE.json provider-overrides.json
+          if git diff --cached --quiet; then
+            echo 'FIELD_TARGETED_CORE_CHECKPOINT changed=false'
+          else
+            git commit -m 'chore: checkpoint converged Core providers [skip ci]'
+            git fetch origin main
+            git rebase origin/main
+            python3 scripts/reapply_published_overrides.py --check
+            git push origin HEAD:main
+            echo "FIELD_TARGETED_CORE_CHECKPOINT changed=true sha=$(git rev-parse HEAD)"
           fi
 
       - name: Rebuild authoritative publication metadata
@@ -98,6 +123,7 @@ jobs:
           python3 scripts/normalize_core_fixed_point_contract.py --check
           python3 scripts/normalize_provider_branding_pipeline.py --check
           python3 scripts/normalize_core_media_policy.py --check
+          python3 tests/activation_preservation_core_rehash_test.py
           python3 tests/provider_purification_contract_test.py
           python3 tests/provider_wrapper_isolation_test.py
           python3 tests/provider_security_hardening_test.py
@@ -130,4 +156,4 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
-          gh issue comment 69 --repo "$GITHUB_REPOSITORY" --body "Targeted published-Core materialization FAILED: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID} on ${GITHUB_SHA}. Full Core was not restarted."
+          gh issue comment 69 --repo "$GITHUB_REPOSITORY" --body "Targeted published-Core materialization FAILED: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID} on ${GITHUB_SHA}. Full Core was not restarted; any successful provider checkpoint remains on main."
