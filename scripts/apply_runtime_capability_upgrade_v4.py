@@ -14,7 +14,8 @@ MANIFEST = ROOT / "manifest.json"
 OVERRIDES = ROOT / "provider-overrides.json"
 CORE_SAFETY = ROOT / "scripts" / "core_rebuild_safety.py"
 CORE_FIXED_POINT = ROOT / "scripts" / "normalize_core_fixed_point_contract.py"
-TARGET_ORDER_PATCH = "scripts/provider_patches/native_sync_fetch_target_order_diag.py"
+TARGET_ORDER_COMPAT_PATCH = "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py"
+TARGET_ORDER_PATCH = "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
 RUNTIME_PATCH = "scripts/provider_patches/runtime_capability_media_safety_v4.py"
 
 
@@ -84,7 +85,16 @@ def main() -> int:
         if not isinstance(scripts, list):
             raise ValueError(f"provider_patches.{provider_id}.patch_scripts must be an array")
         original = list(scripts)
-        scripts = [script for script in scripts if script not in {TARGET_ORDER_PATCH, "scripts/provider_patches/native_sync_fetch_target_order_v1.py", RUNTIME_PATCH}]
+        scripts = [
+            script for script in scripts
+            if script not in {
+                TARGET_ORDER_COMPAT_PATCH,
+                TARGET_ORDER_PATCH,
+                "scripts/provider_patches/native_sync_fetch_target_order_diag.py",
+                RUNTIME_PATCH,
+            }
+        ]
+        scripts.append(TARGET_ORDER_COMPAT_PATCH)
         scripts.append(TARGET_ORDER_PATCH)
         scripts.append(RUNTIME_PATCH)
         if scripts != original:
@@ -94,6 +104,7 @@ def main() -> int:
     config["runtime_capability_media_safety"] = {
         "version": 4,
         "scope": "all_hls_capable_providers",
+        "target_order_compat_patch": TARGET_ORDER_COMPAT_PATCH,
         "target_order_patch": TARGET_ORDER_PATCH,
         "final_patch": RUNTIME_PATCH,
         "platforms": {
@@ -109,7 +120,7 @@ def main() -> int:
             "obvious_html_or_php_page_url",
             "malformed_nested_url",
         ],
-        "wrapper_upgrade": "target traversal ordering precedes final safety wrapper; final patch strips any previous global media safety wrapper before install",
+        "wrapper_upgrade": "Terser-normalized V5 compatibility precedes strict target traversal ordering; final safety patch remains last",
         "targets": sorted(set(targets)),
     }
     dump(OVERRIDES, config)
