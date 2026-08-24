@@ -19,7 +19,12 @@ assert "--manifest manifest.json" in workflow
 assert workflow.count(baseline_arg) >= 2
 assert "Capture published manifest baseline" in workflow
 assert 'git show HEAD:manifest.json > "$NUVIO_PUBLISHED_MANIFEST_BASELINE"' in workflow
-assert "python scripts/validate_activation_preservation.py" in workflow
+# Exact-published verification must use the Core-rehash-aware adapter. The
+# adapter delegates to the strict legacy validator and only permits a
+# deterministic content-hash/path rebinding of already-proven inert quarantine
+# bundles; it does not relax activation evidence.
+assert "python scripts/activation_preservation_core_rehash.py" in workflow
+assert (ROOT / "scripts" / "activation_preservation_core_rehash.py").is_file()
 assert "python scripts/validate_language_projection.py" in workflow
 assert workflow.index(version_call) < workflow.index("python scripts/validate_language_projection.py")
 assert workflow.rindex(version_call) < workflow.index("python scripts/generate_release_hashes.py")
