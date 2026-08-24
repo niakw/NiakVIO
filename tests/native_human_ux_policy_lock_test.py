@@ -92,7 +92,7 @@ assert "avd-v1-" not in ANDROID_WORKFLOW
 canonical_cache_lines = [
     line.strip()
     for line in ANDROID_WORKFLOW.splitlines()
-    if line.strip().startswith("key: avd-v3-")
+    if line.strip().startswith("key: avd-v4-")
 ]
 assert len(canonical_cache_lines) == 3, canonical_cache_lines
 assert sum("tv-api31-android-tv-x86-tv_1080p" in line for line in canonical_cache_lines) == 2
