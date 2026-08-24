@@ -28,18 +28,28 @@ def apply(source: str, options: dict[str, Any] | None = None, **_kwargs: Any) ->
     del options
     if BASE.MARKER in source or BASE.TARGET_MARKER not in source:
         return source
-    # Only the known playback-context V5 shape is eligible. Anything else is
-    # intentionally left for the strict V1 patch, which will fail closed if unknown.
+    # Only the playback-context V5 family is eligible. Canonical/unminified V5
+    # belongs to the strict V1 transformer and must pass through untouched.
     if "NUVIO_TV_TARGET_MEDIA_V5_PLAYBACK_CONTEXT" not in source:
         return source
-    resolve_count = source.count(MINIFIED_CONTEXT_RESOLVE)
+
     rows_count = source.count(BASE.CONTEXT_TV_ROWS)
+    canonical_resolve_count = source.count(BASE.CONTEXT_RESOLVE)
+    if canonical_resolve_count == 1 and rows_count == 1:
+        return source
+
+    resolve_count = source.count(MINIFIED_CONTEXT_RESOLVE)
     if resolve_count == 0 and rows_count == 0:
         return source
     if resolve_count != 1 or rows_count != 1:
+        # A canonical V5 shape that the strict V1 patch recognizes (including a
+        # source embedded among unrelated provider wrappers) is not a compact-form
+        # ambiguity. Everything else remains fail-closed.
+        if canonical_resolve_count == 1:
+            return source
         raise RuntimeError(
             "Terser V5 target-order compatibility shape is ambiguous: "
-            f"resolve={resolve_count} tvRows={rows_count}"
+            f"resolve={resolve_count} canonicalResolve={canonical_resolve_count} tvRows={rows_count}"
         )
     patched = source.replace(
         MINIFIED_CONTEXT_RESOLVE,
