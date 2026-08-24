@@ -1601,6 +1601,39 @@ def healthy_categories(variant: dict[str, Any]) -> set[str]:
     return {str(value) for value in (evidence.get("healthy_fixture_categories") or []) if value}
 
 
+def ci_result_is_inconclusive(variant: dict[str, Any], activation: dict[str, Any]) -> bool:
+    """Treat either the explicit CI class or an inconclusive runtime status as uncertainty."""
+    health = variant.get("health", {}) if isinstance(variant.get("health"), dict) else {}
+    classification = str(health.get("ci_classification") or "")
+    status = str(health.get("status") or "runtime_error")
+    return classification == "inconclusive" or status in inconclusive_statuses(activation)
+
+
+def previous_state_is_safety_quarantine(
+    entry: dict[str, Any] | None, provenance: dict[str, Any] | None
+) -> bool:
+    """Recognize a previously published safety state without weakening its validator.
+
+    This helper only decides whether the promoter must retain the old disabled
+    artifact when current evidence is inconclusive. The activation-preservation
+    validator remains authoritative and re-verifies the complete quarantine
+    evidence before publication.
+    """
+    if not isinstance(entry, dict) or not isinstance(provenance, dict):
+        return False
+    if entry.get("enabled") is not False:
+        return False
+    filename = str(entry.get("filename") or "")
+    blockers = {str(value) for value in provenance.get("activation_blockers") or []}
+    mode = str(provenance.get("activation_mode") or "")
+    return (
+        mode == "configured_safety_quarantine"
+        or "configured_safety_quarantine" in blockers
+        or "catalogue_audit_playable_identity_contradiction" in blockers
+        or "--nuvio-audit-quarantine--" in filename
+    )
+
+
 def choose_variant_with_baseline_protection(
     variants: list[dict[str, Any]],
     rank,
@@ -1894,79 +1927,109 @@ def main() -> int:
                 and old_target.exists()
             )
             old_was_enabled = bool(old_entry.get("enabled", False))
-            current_ci_inconclusive = (
-                str(selected.get("health", {}).get("ci_classification") or "")
-                == "inconclusive"
-            )
+            old_provenance = previous_provenance.get("providers", {}).get(cid, {})
+            old_safety_quarantine = previous_state_is_safety_quarantine(old_entry, old_provenance)
+            current_ci_inconclusive = ci_result_is_inconclusive(selected, activation)
             restore_activation_lkg = bool(
                 cid in activation_lkg_ids
                 and current_ci_inconclusive
                 and gates.get("01_policy_safe_no_p2p", {}).get("passed", False)
             )
-            preserve_current = (
+            preserve_previous_state = (
                 not enabled
                 and current_ci_inconclusive
-                and (old_was_enabled or restore_activation_lkg)
+                and (old_was_enabled or restore_activation_lkg or old_safety_quarantine)
                 and not auto_disabled
                 and upstream_enabled
                 and old_artifact_available
                 and observed_status in preserve_statuses
                 and not metadata_is_excluded(old_entry, sources)
             )
-            if preserve_current:
+            if preserve_previous_state:
                 retained = dict(old_entry)
-                retained["enabled"] = True
+                # Never turn a proven safety quarantine back on merely because
+                # the new CI run is uncertain. Conversely, an LKG-active state
+                # remains active until current conclusive evidence says otherwise.
+                retained["enabled"] = False if old_safety_quarantine else True
                 entries[cid] = retained
-                old_provenance = previous_provenance.get("providers", {}).get(cid, {})
                 retained_digest = hashlib.sha256(old_target.read_bytes()).hexdigest()
-                provenance[cid] = {
-                    **old_provenance,
-                    "id": cid,
-                    "published_filename": old_filename,
-                    "sha256": retained_digest,
-                    "patched_sha256": retained_digest,
-                    "checked_at": now,
-                    "check_mode": mode,
-                    "check_status": observed_status,
-                    "activation_eligible": False,
-                    "activation_mode": "preserved_current_ci_uncertain",
-                    "activation_blockers": blockers,
-                    "preserved_reason": "ci_uncertain_kept_last_published_artifact",
-                    "restored_from_activation_lkg": bool(restore_activation_lkg and not old_was_enabled),
-                    "preservation_upstream_enabled": upstream_enabled,
-                    "preservation_live_upstream_sources": sorted(
+
+                if old_safety_quarantine:
+                    provenance[cid] = {
+                        **old_provenance,
+                        "checked_at": now,
+                        "check_mode": mode,
+                        "check_status": observed_status,
+                        "preserved_reason": "ci_uncertain_kept_last_conclusive_safety_quarantine",
+                        "preserved_candidate_key": selected.get("key"),
+                        "preserved_candidate_sha256": selected.get("sha256"),
+                    }
+                    report_items.append(
                         {
-                            str(variant.get("source") or "")
-                            for variant in live_upstream_variants
-                            if str(variant.get("source") or "")
+                            "id": cid,
+                            "action": "preserved-conclusive-safety-quarantine-ci-uncertain",
+                            "enabled": False,
+                            "activation_eligible": False,
+                            "activation_mode": str(old_provenance.get("activation_mode") or "safety_quarantine"),
+                            "failed_gates": [
+                                name for name, value in gates.items() if not value.get("passed")
+                            ],
+                            "activation_blockers": list(old_provenance.get("activation_blockers") or blockers),
+                            "activation_gates": gates,
+                            "observed_status": observed_status,
+                            "published_filename": old_filename,
+                            "variant_count": len(variants),
                         }
-                    ),
-                    "preserved_candidate_key": selected.get("key"),
-                    "preserved_candidate_sha256": selected.get("sha256"),
-                }
-                report_items.append(
-                    {
+                    )
+                else:
+                    provenance[cid] = {
+                        **old_provenance,
                         "id": cid,
-                        "action": (
-                            "restored-activation-lkg-enabled-ci-uncertain"
-                            if restore_activation_lkg and not old_was_enabled
-                            else "preserved-current-enabled-ci-uncertain"
-                        ),
-                        "enabled": True,
-                        "restored_from_activation_lkg": bool(restore_activation_lkg and not old_was_enabled),
-                        "preservation_upstream_enabled": upstream_enabled,
+                        "published_filename": old_filename,
+                        "sha256": retained_digest,
+                        "patched_sha256": retained_digest,
+                        "checked_at": now,
+                        "check_mode": mode,
+                        "check_status": observed_status,
                         "activation_eligible": False,
                         "activation_mode": "preserved_current_ci_uncertain",
-                        "failed_gates": [
-                            name for name, value in gates.items() if not value.get("passed")
-                        ],
                         "activation_blockers": blockers,
-                        "activation_gates": gates,
-                        "observed_status": observed_status,
-                        "published_filename": old_filename,
-                        "variant_count": len(variants),
+                        "preserved_reason": "ci_uncertain_kept_last_published_artifact",
+                        "restored_from_activation_lkg": bool(restore_activation_lkg and not old_was_enabled),
+                        "preservation_upstream_enabled": upstream_enabled,
+                        "preservation_live_upstream_sources": sorted(
+                            {
+                                str(variant.get("source") or "")
+                                for variant in live_upstream_variants
+                                if str(variant.get("source") or "")
+                            }
+                        ),
+                        "preserved_candidate_key": selected.get("key"),
+                        "preserved_candidate_sha256": selected.get("sha256"),
                     }
-                )
+                    report_items.append(
+                        {
+                            "id": cid,
+                            "action": (
+                                "restored-activation-lkg-enabled-ci-uncertain"
+                                if restore_activation_lkg and not old_was_enabled
+                                else "preserved-current-enabled-ci-uncertain"
+                            ),
+                            "enabled": True,
+                            "restored_from_activation_lkg": bool(restore_activation_lkg and not old_was_enabled),
+                            "preservation_upstream_enabled": upstream_enabled,
+                            "activation_eligible": False,
+                            "activation_mode": "preserved_current_ci_uncertain",
+                            "failed_gates": [
+                                name for name, value in gates.items() if not value.get("passed")
+                            ],
+                            "activation_blockers": blockers,
+                            "activation_gates": gates,
+                            "observed_status": observed_status,
+                            "published_filename": old_filename,
+                            "variant_count": len(variants),
+                        }
+                    )
                 continue
 
             try:

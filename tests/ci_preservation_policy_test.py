@@ -39,6 +39,10 @@ assert 'gates.get("01_policy_safe_no_p2p", {}).get("passed", False)' in promoter
 assert 'selected_is_published_baseline' not in promoter
 assert 'entries[cid] = retained' in promoter
 assert 'continue\n\n            try:\n                destination, digest = copy_candidate(selected)' in promoter
+assert 'previous_state_is_safety_quarantine' in promoter
+assert 'ci_result_is_inconclusive' in promoter
+assert 'preserved-conclusive-safety-quarantine-ci-uncertain' in promoter
+assert 'ci_uncertain_kept_last_conclusive_safety_quarantine' in promoter
 
 validator_source = (ROOT / 'scripts/validate_activation_preservation.py').read_text(encoding='utf-8')
 assert 'ci_inconclusive_is_not_disablement_proof' in validator_source
@@ -239,6 +243,27 @@ spec = importlib.util.spec_from_file_location(
 assert spec is not None and spec.loader is not None
 promoter_module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(promoter_module)
+
+
+# Generic Brain state preservation: no provider-specific exception is allowed.
+assert promoter_module.ci_result_is_inconclusive(
+    {"health": {"status": "no_streams", "ci_classification": ""}}, config
+) is True
+assert promoter_module.ci_result_is_inconclusive(
+    {"health": {"status": "healthy", "ci_classification": "conclusive"}}, config
+) is False
+assert promoter_module.previous_state_is_safety_quarantine(
+    {"enabled": False, "filename": "providers/example--nuvio-audit-quarantine--deadbeef.js"},
+    {"activation_blockers": ["catalogue_audit_playable_identity_contradiction"]},
+) is True
+assert promoter_module.previous_state_is_safety_quarantine(
+    {"enabled": False, "filename": "providers/example--ordinary.js"},
+    {"activation_mode": "configured_safety_quarantine"},
+) is True
+assert promoter_module.previous_state_is_safety_quarantine(
+    {"enabled": False, "filename": "providers/example--ordinary.js"},
+    {"activation_mode": "disabled", "activation_blockers": ["02_healthy_functional_status"]},
+) is False
 
 
 def language_gate_item(*, streams=1, payloads=1, runtime_languages=None, manifest_languages=None):
