@@ -15,6 +15,8 @@ from typing import Any
 
 from normalize_provider_branding_pipeline import assert_contract as assert_branding_pipeline_contract
 from normalize_provider_branding_pipeline import normalize as normalize_branding_pipeline
+from normalize_stream_presentation_v11 import assert_contract as assert_stream_presentation_contract
+from normalize_stream_presentation_v11 import normalize as normalize_stream_presentation
 
 ROOT = Path(__file__).resolve().parents[1]
 OVERRIDES = ROOT / "provider-overrides.json"
@@ -131,6 +133,9 @@ def normalize_source_files(*, apply: bool) -> list[str]:
         changed.extend(f"scripts/apply_provider_overrides.py:{item}" for item in branding_changes)
         if apply:
             APPLY_OVERRIDES.write_text(normalized_apply, encoding="utf-8")
+
+    presentation_changes = normalize_stream_presentation(apply=apply)
+    changed.extend(f"stream_presentation:{item}" for item in presentation_changes)
     return changed
 
 
@@ -194,6 +199,7 @@ def assert_policy(value: dict[str, Any]) -> None:
         raise ValueError("shared runtime identity safety revision is not current")
     if "NUVIO_GLOBAL_STREAM_PRESENTATION_V1" not in presentation_text:
         raise ValueError("shared stream presentation wrapper is missing")
+    assert_stream_presentation_contract()
     if "NUVIO_GLOBAL_PROVIDER_SECURITY_HOOK_V1" not in security_text:
         raise ValueError("shared provider security Core hook is missing")
     if "NUVIO_GLOBAL_PROVIDER_BRANDING_V1" not in branding_text:
@@ -239,7 +245,7 @@ def main() -> int:
     print(
         "FIELD_CORE_MEDIA_POLICY "
         f"provider_specific_media_repairs=0 changed={len(changed) + len(source_changes)} "
-        "identity=global_runtime presentation=global_core branding=post_presentation_global_core "
+        "identity=global_runtime presentation=global_core_v11 branding=post_presentation_global_core "
         "compatibility=shared security=global_core"
     )
     return 0
