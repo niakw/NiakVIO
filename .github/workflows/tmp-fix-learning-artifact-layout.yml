@@ -1,0 +1,77 @@
+name: FIX - Brain learning artifact layout
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/tmp-fix-learning-artifact-layout.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    name: FIX - Normalize Learning artifact consumer
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Patch artifact download contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('.github/workflows/brain-learning-lab.yml')
+          text = path.read_text(encoding='utf-8')
+          old = '''      - name: Download sanitized state produced by read-only sandbox
+                uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+                with:
+                  name: niakvio-brain-learning-state
+                  path: brain-learning-output
+
+              - name: Validate artifact cannot publish production
+                shell: bash
+                run: |
+                  set -euo pipefail
+                  node -e "const x=require('./brain-learning-output/latest.json'); if(x.productionWritesAllowed!==false||x.publicationAllowed!==false) process.exit(1)"
+          '''
+          new = '''      - name: Download sanitized state produced by read-only sandbox
+                uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+                with:
+                  name: niakvio-brain-learning-state
+                  # The artifact contains both brain-learning-output/* and
+                  # brain-learning-input/*. Downloading into brain-learning-output
+                  # nests those roots one level too deep. Restore at workspace root.
+                  path: .
+
+              - name: Validate artifact cannot publish production
+                shell: bash
+                run: |
+                  set -euo pipefail
+                  test -s brain-learning-output/latest.json
+                  test -s brain-learning-output/latest.md
+                  test -s brain-learning-output/repair-proposal.json
+                  node -e "const x=require('./brain-learning-output/latest.json'); if(x.productionWritesAllowed!==false||x.publicationAllowed!==false) process.exit(1)"
+          '''
+          if old not in text:
+              raise SystemExit('Learning artifact layout anchor not found')
+          path.write_text(text.replace(old, new, 1), encoding='utf-8')
+          PY
+          grep -F 'path: .' .github/workflows/brain-learning-lab.yml
+          grep -F 'test -s brain-learning-output/latest.json' .github/workflows/brain-learning-lab.yml
+      - name: Commit fix and self-clean
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f .github/workflows/tmp-fix-learning-artifact-layout.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add .github/workflows/brain-learning-lab.yml .github/workflows/tmp-fix-learning-artifact-layout.yml
+          git commit -m 'fix: restore Brain learning artifact at workspace root'
+          git fetch origin main
+          git rebase origin/main
+          git push origin HEAD:main
