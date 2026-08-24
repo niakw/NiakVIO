@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import importlib.util
+import os
 import subprocess
 import tempfile
 import xml.etree.ElementTree as ET
@@ -88,32 +89,49 @@ with tempfile.TemporaryDirectory() as tmp:
     assert not (repo / "androidApp/src/main/AndroidManifest.xml").exists()
 
 
-def reach_gate(lines: list[str]):
+def reach_gate(lines: list[str], *, blocking: bool = False):
     with tempfile.TemporaryDirectory() as tmp:
         log = Path(tmp) / "reader.log"
         log.write_text("\n".join(lines) + "\n", encoding="utf-8")
+        env = os.environ.copy()
+        if blocking:
+            env["NIAKVIO_NATIVE_PLAYER_GATE_BLOCKING"] = "1"
+        else:
+            env.pop("NIAKVIO_NATIVE_PLAYER_GATE_BLOCKING", None)
         return subprocess.run(
             ["node", str(PLAYER_REACH_GATE), str(log)],
             cwd=ROOT,
             text=True,
             capture_output=True,
+            env=env,
         )
 
 
 # A setup attempt is not a reader reach, even if a terminal FIELD_NATIVE_PLAYER row
-# exists. This locks the exact false-green that occurred on Mobile in run 32521934832.
-no_launch = reach_gate([
+# exists. It remains structured negative evidence owned by the Brain rather than a
+# Lab-infrastructure failure. Strict callers can explicitly restore exit 4.
+no_launch_lines = [
     "FIELD_NATIVE_PLAYER client=mobile fixture=sinners provider64=x request_type=movie route_mode=declared index=0 state=error engine=nuvio-mobile http_status=0 failure_stage=player_setup error_code=NO_LAUNCH_INTENT"
-])
-assert no_launch.returncode == 4, (no_launch.stdout, no_launch.stderr)
+]
+no_launch = reach_gate(no_launch_lines)
+assert no_launch.returncode == 0, (no_launch.stdout, no_launch.stderr)
 assert "production_player_never_reached" in no_launch.stderr
 assert "setup_rejected=1" in no_launch.stderr
+assert "blocking=false" in no_launch.stderr
+assert "owner=brain" in no_launch.stderr
+
+strict_no_launch = reach_gate(no_launch_lines, blocking=True)
+assert strict_no_launch.returncode == 4, (strict_no_launch.stdout, strict_no_launch.stderr)
+assert "blocking=true" in strict_no_launch.stderr
+assert "owner=brain" in strict_no_launch.stderr
 
 setup_only = reach_gate([
     "FIELD_NATIVE_PLAYER client=mobile fixture=sinners provider64=x request_type=movie route_mode=declared index=0 state=error engine=nuvio-mobile-production http_status=0 failure_stage=player_setup error_code=WRONG_ACTIVITY"
 ])
-assert setup_only.returncode == 4, (setup_only.stdout, setup_only.stderr)
+assert setup_only.returncode == 0, (setup_only.stdout, setup_only.stderr)
 assert "setup_rejected=1" in setup_only.stderr
+assert "blocking=false" in setup_only.stderr
+assert "owner=brain" in setup_only.stderr
 
 real_player_error = reach_gate([
     "FIELD_NATIVE_PLAYER client=tv fixture=sinners provider64=x request_type=movie route_mode=declared index=0 state=error engine=nuvio-tv-production http_status=0 failure_stage=player error_code=HTTP_403"
