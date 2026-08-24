@@ -3,11 +3,17 @@
 from __future__ import annotations
 
 import json
+import subprocess
+import sys
 from pathlib import Path
+
+from normalize_runtime_domain_fixed_point import behavior_contract, normalized as normalize_runtime_domain_fixed_point
 
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = ROOT / "manifest.json"
 OVERRIDES = ROOT / "provider-overrides.json"
+CORE_SAFETY = ROOT / "scripts" / "core_rebuild_safety.py"
+CORE_FIXED_POINT = ROOT / "scripts" / "normalize_core_fixed_point_contract.py"
 TARGET_ORDER_PATCH = "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
 RUNTIME_PATCH = "scripts/provider_patches/runtime_capability_media_safety_v4.py"
 
@@ -18,6 +24,31 @@ def load(path: Path):
 
 def dump(path: Path, value) -> None:
     path.write_text(json.dumps(value, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+
+def materialize_runtime_domain_fixed_point() -> None:
+    """Activate the durable Core scanner before any content-addressed provider rebuild.
+
+    The Core contract normalizer must run again after the owning safety module changes,
+    otherwise apply_provider_overrides.py would still contain the previous generated
+    scanner for this run. Keeping both operations here makes the expensive 92-provider
+    loop consume exactly the implementation that its fixed-point checks are proving.
+    """
+    current = CORE_SAFETY.read_text(encoding="utf-8")
+    expected = normalize_runtime_domain_fixed_point(current)
+    changed = expected != current
+    if changed:
+        CORE_SAFETY.write_text(expected, encoding="utf-8")
+    behavior_contract(expected)
+    subprocess.run(
+        [sys.executable, str(CORE_FIXED_POINT), "--apply"],
+        cwd=ROOT,
+        check=True,
+    )
+    print(
+        "FIELD_RUNTIME_DOMAIN_FIXED_POINT "
+        f"changed={int(changed)} activation=explicit pre_provider_rebuild=true"
+    )
 
 
 def is_hls_entry(entry: dict, policy_targets: set[str]) -> bool:
@@ -31,6 +62,8 @@ def is_hls_entry(entry: dict, policy_targets: set[str]) -> bool:
 
 
 def main() -> int:
+    materialize_runtime_domain_fixed_point()
+
     manifest = load(MANIFEST)
     config = load(OVERRIDES)
     policy = config.get("playback_integrity_policy") if isinstance(config.get("playback_integrity_policy"), dict) else {}
