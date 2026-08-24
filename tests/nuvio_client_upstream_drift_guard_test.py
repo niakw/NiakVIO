@@ -109,11 +109,12 @@ def main() -> int:
     assert "patch_files = [name for name in files if path_matches(name, patch_rules)]" in source
     assert '"--no-fail"' in brain_source
     assert "classify_provider_mutation_compat" in brain_source
+    assert "adaptation_pending" in brain_source
+    assert "contract_review_blocking=false" in brain_source
 
     # Hard contract paths model provider request/result/extraction. Reader/UI stream
-    # surfaces remain semantic-review paths: they still force fresh native reader
-    # proof when runtime-sensitive tokens move, without making presentation-only UI
-    # changes look like provider-contract breakage.
+    # surfaces remain semantic-review paths so the report records the exact native
+    # adaptation surface while Quick/Deep can still exercise the known linear HEAD.
     upstreams = json.loads(CONFIG.read_text(encoding="utf-8"))["clients"]
     mobile = upstreams["nuvio-mobile"]
     mobile_stream_root = "composeApp/src/commonMain/kotlin/com/nuvio/app/features/streams/"
@@ -203,9 +204,9 @@ def main() -> int:
     assert diverged["status"] == "contract_review_required"
     assert diverged["review_required"] is True
 
-    # Brain-specific fence: full reader review remains pending for UI/player-only
-    # drift, but provider mutation is allowed unless request/result/extraction
-    # semantics are implicated.
+    # Brain-specific fence: every known linear contract/semantic drift becomes an
+    # adaptation + native re-audit signal, even when provider semantics moved.
+    # Only an unverifiable target revision or divergent history blocks mutation.
     blockers, pending = classify(
         {
             "status": "contract_review_required",
@@ -239,8 +240,8 @@ def main() -> int:
             "semantic_token_hits": {},
         }
     )
-    assert any("provider_contract_drift" in value for value in blockers)
-    assert pending == []
+    assert blockers == []
+    assert pending == ["client"]
 
     blockers, pending = classify(
         {
@@ -251,8 +252,8 @@ def main() -> int:
             "semantic_token_hits": {"player/Playback.kt": ["StreamItem"]},
         }
     )
-    assert any("provider_contract_drift" in value for value in blockers)
-    assert pending == []
+    assert blockers == []
+    assert pending == ["client"]
 
     blockers, _pending = classify(
         {
