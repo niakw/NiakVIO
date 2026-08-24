@@ -1,5 +1,5 @@
-name: Materialize published Core once
-# target: checkpointed-quarantine-rehash-v4
+name: Finalize published Core metadata once
+# target: metadata-only-after-checkpoint-v1
 
 on:
   push:
@@ -16,26 +16,20 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  materialize:
+  finalize-metadata:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 30
     steps:
-      - name: Announce targeted materialization
+      - name: Announce metadata-only resume
         env:
           GH_TOKEN: ${{ github.token }}
-        shell: bash
-        run: |
-          gh issue comment 69 --repo "$GITHUB_REPOSITORY" --body "Targeted published-Core materialization started: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID} on ${GITHUB_SHA}. Only provider fixed-point + publication metadata are rebuilt; full Core/Deep/Labs are not restarted."
+        run: gh issue comment 69 --repo "$GITHUB_REPOSITORY" --body "Core metadata-only resume started: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID} on ${GITHUB_SHA}. Provider convergence is NOT repeated; checkpoint 41e68b71 is reused."
 
       - name: Checkout exact main
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           ref: main
           fetch-depth: 0
-
-      - name: Capture publication baseline
-        shell: bash
-        run: git show HEAD:manifest.json > "$RUNNER_TEMP/manifest-before.json"
 
       - name: Set up Python
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
@@ -51,87 +45,33 @@ jobs:
       - name: Install locked dependencies
         run: npm ci --ignore-scripts --no-audit --no-fund
 
-      - name: Verify quarantine rehash contract before provider work
+      - name: Require proven provider checkpoint
         shell: bash
         run: |
           set -euo pipefail
-          python3 tests/activation_preservation_core_rehash_test.py
-
-      - name: Converge published providers under current Core
-        shell: bash
-        run: |
-          set -euo pipefail
-          python3 scripts/normalize_provider_rebuild_safety.py --check
-          python3 scripts/normalize_core_fixed_point_contract.py --check
-          python3 scripts/normalize_provider_branding_pipeline.py --check
-          python3 scripts/normalize_core_media_policy.py --check
-          python3 scripts/build_provider_runtime_profiles.py
-          converged=0
-          for pass in 1 2 3 4 5 6; do
-            echo "FIELD_TARGETED_CORE_CONVERGENCE pass=${pass}"
-            python3 scripts/reapply_published_overrides.py
-            if python3 scripts/reapply_published_overrides.py --check; then
-              converged=1
-              echo "FIELD_TARGETED_CORE_CONVERGENCE converged_at=${pass}"
-              break
-            fi
-          done
-          if [[ "$converged" -ne 1 ]]; then
-            echo 'published Core failed to converge within 6 passes' >&2
-            exit 1
-          fi
-
-      - name: Checkpoint converged provider fixed point
-        shell: bash
-        run: |
-          set -euo pipefail
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -A -- providers manifest.json vf/manifest.json PROVENANCE.json provider-overrides.json
-          if git diff --cached --quiet; then
-            echo 'FIELD_TARGETED_CORE_CHECKPOINT changed=false'
-          else
-            git commit -m 'chore: checkpoint converged Core providers [skip ci]'
-            git fetch origin main
-            git rebase origin/main
-            python3 scripts/reapply_published_overrides.py --check
-            git push origin HEAD:main
-            echo "FIELD_TARGETED_CORE_CHECKPOINT changed=true sha=$(git rev-parse HEAD)"
-          fi
-
-      - name: Rebuild authoritative publication metadata
-        shell: bash
-        run: |
-          set -euo pipefail
-          python3 scripts/generate_language_manifests.py
-          python3 scripts/prune_unreferenced_providers.py
-          python3 scripts/sync_release_versions.py --manifest manifest.json --previous "$RUNNER_TEMP/manifest-before.json"
-          node engine_v2/scripts/bootstrap-provider-catalog.mjs --general manifest.json --vf vf/manifest.json --output provider_catalog.json
-          node engine_v2/scripts/render-manifests-from-catalog.mjs --catalog provider_catalog.json --general manifest.json --vf vf/manifest.json
-          python3 scripts/generate_language_manifests.py
-          python3 scripts/sync_release_versions.py --manifest manifest.json --previous "$RUNNER_TEMP/manifest-before.json"
-          python3 scripts/prune_unreferenced_providers.py
-          python3 scripts/generate_release_hashes.py
-          python3 scripts/validate_release_integrity.py
-
-      - name: Verify published fixed point
-        shell: bash
-        run: |
-          set -euo pipefail
+          git merge-base --is-ancestor 41e68b71cf846af2deed274c4730d0527b855081 HEAD
           python3 scripts/reapply_published_overrides.py --check
           python3 scripts/normalize_provider_rebuild_safety.py --check
           python3 scripts/normalize_core_fixed_point_contract.py --check
           python3 scripts/normalize_provider_branding_pipeline.py --check
           python3 scripts/normalize_core_media_policy.py --check
           python3 tests/activation_preservation_core_rehash_test.py
-          python3 tests/provider_purification_contract_test.py
-          python3 tests/provider_wrapper_isolation_test.py
-          python3 tests/provider_security_hardening_test.py
-          python3 tests/prune_unreferenced_providers_test.py
-          node engine_v2/tests/provider-catalog.test.mjs
-          python3 scripts/validate_release_integrity.py
 
-      - name: Publish targeted materialization without starting full CI
+      - name: Rebuild publication metadata only
+        shell: bash
+        run: |
+          set -euo pipefail
+          git show 8cc553d1b1576ea8ad116f3ec2ea5cb356aa9326:manifest.json > "$RUNNER_TEMP/manifest-before-core-materialization.json"
+          python3 scripts/generate_language_manifests.py
+          python3 scripts/prune_unreferenced_providers.py
+          python3 scripts/sync_release_versions.py --manifest manifest.json --previous "$RUNNER_TEMP/manifest-before-core-materialization.json"
+          node engine_v2/scripts/bootstrap-provider-catalog.mjs --general manifest.json --vf vf/manifest.json --output provider_catalog.json
+          node engine_v2/scripts/render-manifests-from-catalog.mjs --catalog provider_catalog.json --general manifest.json --vf vf/manifest.json
+          python3 scripts/generate_language_manifests.py
+          python3 scripts/sync_release_versions.py --manifest manifest.json --previous "$RUNNER_TEMP/manifest-before-core-materialization.json"
+          python3 scripts/prune_unreferenced_providers.py
+
+      - name: Remove one-shot then seal exact release hashes
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
@@ -140,20 +80,32 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git rm .github/workflows/materialize-published-core-once.yml
+          python3 scripts/generate_release_hashes.py
+          python3 scripts/validate_release_integrity.py
+          python3 scripts/reapply_published_overrides.py --check
+          python3 tests/activation_preservation_core_rehash_test.py
+          python3 tests/provider_purification_contract_test.py
+          python3 tests/provider_wrapper_isolation_test.py
+          python3 tests/provider_security_hardening_test.py
+          python3 tests/prune_unreferenced_providers_test.py
+          node engine_v2/tests/provider-catalog.test.mjs
           git add -A
-          git commit -m 'chore: converge published Core fixed point [skip ci]'
+          git commit -m 'chore: finalize published Core metadata [skip ci]'
           git fetch origin main
           git rebase origin/main
-          python3 scripts/reapply_published_overrides.py --check
+          python3 scripts/generate_release_hashes.py
           python3 scripts/validate_release_integrity.py
+          python3 scripts/reapply_published_overrides.py --check
+          git add FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json
+          if ! git diff --cached --quiet; then
+            git commit --amend --no-edit
+          fi
           git push origin HEAD:main
           SHA="$(git rev-parse HEAD)"
-          gh issue comment 69 --repo "$GITHUB_REPOSITORY" --body "Published Core fixed-point materialized on main ${SHA} without launching the full Core workflow. Provider reapply converged; manifests/catalogue/versioning/release hashes and fixed-point checks passed. One-shot removed itself."
+          gh issue comment 69 --repo "$GITHUB_REPOSITORY" --body "Published Core metadata finalized on main ${SHA}: provider checkpoint reused, release metadata/hashes sealed after one-shot removal, release integrity and fixed-point checks green. Full Core was not restarted."
 
-      - name: Report targeted materialization failure
+      - name: Report metadata resume failure
         if: failure()
         env:
           GH_TOKEN: ${{ github.token }}
-        shell: bash
-        run: |
-          gh issue comment 69 --repo "$GITHUB_REPOSITORY" --body "Targeted published-Core materialization FAILED: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID} on ${GITHUB_SHA}. Full Core was not restarted; any successful provider checkpoint remains on main."
+        run: gh issue comment 69 --repo "$GITHUB_REPOSITORY" --body "Core metadata-only resume FAILED: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}. Provider checkpoint remains on main; do not restart full Core."
