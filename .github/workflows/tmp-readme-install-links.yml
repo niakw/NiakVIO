@@ -1,5 +1,4 @@
 name: FIX - Publish README install links
-# Trigger this one-shot once without CI skip; its publication commit uses [skip ci].
 
 on:
   push:
@@ -21,73 +20,22 @@ jobs:
           ref: main
           fetch-depth: 0
 
-      - name: Patch install links only
+      - name: Patch and validate install links
+        env:
+          INSTALL_BLOCK_B64: IyMgQWpvdXRlciBOaWFrVklPIMOgIE51dmlvCgojIyMgTWFuaWZlc3QgZ8OpbsOpcmFsIOKAlCByZWNvbW1hbmTDqQoKVG91cyBsZXMgcHJvdmlkZXJzIHB1Ymxpw6lzIDogVkYsIFZPU1RGUiwgVk8gZXQgYXV0cmVzIGxhbmd1ZXMuCgpgYGB0ZXh0Cmh0dHBzOi8vcmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbS9uaWFrdy9OaWFrVklPL3JlZnMvaGVhZHMvbWFpbi9tYW5pZmVzdC5qc29uCmBgYAoKIyMjIE1hbmlmZXN0IGZyYW5jb3Bob25lCgpQcm9qZWN0aW9uIGNlbnRyw6llIHN1ciBsZXMgcHJvdmlkZXJzIHByb3Bvc2FudCBkdSBmcmFuw6dhaXMgb3UgZHUgc291cy10aXRyYWdlIGZyYW7Dp2Fpcy4KCmBgYHRleHQKaHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL25pYWt3L05pYWtWSU8vcmVmcy9oZWFkcy9tYWluL3ZmL21hbmlmZXN0Lmpzb24KYGBgCgojIyMgQmFkZ2VzIFN0cmVhbUJhZGdlIOKAlCByZWNvbW1hbmTDqQoKUG91ciB1biByw6lnbGFnZSB1bmlxdWUgYXUgbml2ZWF1IGR1IGNvbXB0ZSBOdXZpbywgdXRpbGlzZXogbGUgZmVlZCAqKkZ1c2lvbioqLiBJbCBlbXBsb2llIGxlcyB2YXJpYW50ZXMgOTbDlzQwIGF2ZWMgY2hpcCBzb21icmUgY29uw6d1ZXMgcG91ciByZXN0ZXIgbGlzaWJsZXMgc3VyIGZvbmRzIHNvbWJyZXMgY29tbWUgY2xhaXJzLgoKKipGdXNpb24g4oCUIHJlY29tbWFuZMOpKioKCmBgYHRleHQKaHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL25pYWt3L05pYWtWSU8vbWFpbi9hc3NldHMvc3RyZWFtLWJhZGdlcy1mdXNpb24uanNvbgpgYGAKCkZlZWRzIHNww6ljaWZpcXVlcyBzaSBsZSBjbGllbnQgcGV1dCBzw6lsZWN0aW9ubmVyIGxlIHRow6htZSA6CgoqKkZvbmQgc29tYnJlIC8gZ3JpcyoqCgpgYGB0ZXh0Cmh0dHBzOi8vcmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbS9uaWFrdy9OaWFrVklPL21haW4vYXNzZXRzL3N0cmVhbS1iYWRnZXMtZGFyay5qc29uCmBgYAoKKipGb25kIGNsYWlyIC8gYmxhbmMqKgoKYGBgdGV4dApodHRwczovL3Jhdy5naXRodWJ1c2VyY29udGVudC5jb20vbmlha3cvTmlha1ZJTy9tYWluL2Fzc2V0cy9zdHJlYW0tYmFkZ2VzLWxpZ2h0Lmpzb24KYGBgCgpDYXRhbG9ndWUgY29tcGxldCBldCBtYXBwaW5nIENvcmUvQnJhaW4vVUkgOiBbYGJhZGdlX2NhdGFsb2dfdjJfY29tcGxldGUuanNvbmBdKGFzc2V0cy9iYWRnZV9jYXRhbG9nX3YyX2NvbXBsZXRlLmpzb24pIMK3IFtgbWFwcGluZ19jb3JlX2JyYWluX3VpX3YyX2NvbXBsZXRlLmpzb25gXShhc3NldHMvbWFwcGluZ19jb3JlX2JyYWluX3VpX3YyX2NvbXBsZXRlLmpzb24pLgoKRGFucyBOdXZpbywgY29waWV6IGwnVVJMIGR1IG1hbmlmZXN0IHNvdWhhaXTDqSBkYW5zIGxhIGdlc3Rpb24gZGVzIHBsdWdpbnMvcHJvdmlkZXJzLCBwdWlzIGFqb3V0ZXogbGUgZmVlZCBiYWRnZXMgZGFucyBsZXMgcsOpZ2xhZ2VzIFN0cmVhbUJhZGdlIGxvcnNxdWUgY2V0dGUgZm9uY3Rpb24gZXN0IGRpc3BvbmlibGUuCgoqKkxlcyBVUkwgcmVzdGVudCBzdGFibGVzLioqIE5pYWtWSU8gcGV1dCBmYWlyZSDDqXZvbHVlciBkZXJyacOocmUgZWxsZXMgbGVzIGJ1bmRsZXMsIHZlcnNpb25zLCBkb21haW5lcywgcsOoZ2xlcyBydW50aW1lLCBwcmV1dmVzIGV0IMOpdGF0cyBkJ2FjdGl2YXRpb24uCgo+IE5pYWtWSU8gbmUgc3RvY2tlIG5pIG4naMOpYmVyZ2UgZGUgdmlkw6lvLiBMZSBwcm9qZXQgbWFpbnRpZW50IGRlcyBtYW5pZmVzdHMsIGRlcyBtw6l0YWRvbm7DqWVzLCBkZXMgcsOoZ2xlcyBkZSBjb21wYXRpYmlsaXTDqSBldCBkZXMgYnVuZGxlcyBkZSBwcm92aWRlcnMgY29uc29tbcOpcyBjw7R0w6kgY2xpZW50Lgo=
         shell: bash
         run: |
           set -euo pipefail
           python - <<'PY'
+          import base64, os
           from pathlib import Path
-
           path = Path('README.md')
           text = path.read_text(encoding='utf-8')
           start = text.index('## Ajouter NiakVIO à Nuvio')
           end = text.index('\n---\n\n## Écosystème et sources', start)
-          replacement = '''## Ajouter NiakVIO à Nuvio
-
-### Manifest général — recommandé
-
-Tous les providers publiés : VF, VOSTFR, VO et autres langues.
-
-```text
-https://raw.githubusercontent.com/niakw/NiakVIO/refs/heads/main/manifest.json
-```
-
-### Manifest francophone
-
-Projection centrée sur les providers proposant du français ou du sous-titrage français.
-
-```text
-https://raw.githubusercontent.com/niakw/NiakVIO/refs/heads/main/vf/manifest.json
-```
-
-### Badges StreamBadge — recommandé
-
-Pour un réglage unique au niveau du compte Nuvio, utilisez le feed **Fusion**. Il emploie les variantes 96×40 avec chip sombre conçues pour rester lisibles sur fonds sombres comme clairs.
-
-**Fusion — recommandé**
-
-```text
-https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-fusion.json
-```
-
-Feeds spécifiques si le client peut sélectionner le thème :
-
-**Fond sombre / gris**
-
-```text
-https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-dark.json
-```
-
-**Fond clair / blanc**
-
-```text
-https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-light.json
-```
-
-Catalogue complet et mapping Core/Brain/UI : [`badge_catalog_v2_complete.json`](assets/badge_catalog_v2_complete.json) · [`mapping_core_brain_ui_v2_complete.json`](assets/mapping_core_brain_ui_v2_complete.json).
-
-Dans Nuvio, copiez l'URL du manifest souhaité dans la gestion des plugins/providers, puis ajoutez le feed badges dans les réglages StreamBadge lorsque cette fonction est disponible.
-
-**Les URL restent stables.** NiakVIO peut faire évoluer derrière elles les bundles, versions, domaines, règles runtime, preuves et états d'activation.
-
-> NiakVIO ne stocke ni n'héberge de vidéo. Le projet maintient des manifests, des métadonnées, des règles de compatibilité et des bundles de providers consommés côté client.
-'''
-          next_text = text[:start] + replacement + text[end:]
-          if next_text == text:
-              raise SystemExit('README install links already current; refusing no-op one-shot')
-          path.write_text(next_text, encoding='utf-8')
+          replacement = base64.b64decode(os.environ['INSTALL_BLOCK_B64']).decode('utf-8')
+          path.write_text(text[:start] + replacement + text[end:], encoding='utf-8')
           PY
-
           grep -Fq 'https://raw.githubusercontent.com/niakw/NiakVIO/refs/heads/main/manifest.json' README.md
           grep -Fq 'https://raw.githubusercontent.com/niakw/NiakVIO/refs/heads/main/vf/manifest.json' README.md
           grep -Fq 'https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-fusion.json' README.md
