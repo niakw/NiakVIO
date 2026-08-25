@@ -50,20 +50,23 @@ GitHub repository secret:
 
 CodeScene describes these tokens as usable to **access REST API and other programmatic endpoints**. If the token expires or is revoked, generate a replacement CodeScene API/PAT token and replace `CODESCENE_TOKEN` in GitHub repository secrets.
 
-## Manual refresh only
+## Refresh policy
 
-The exports are **not refreshed automatically** on push and there is **no scheduled/cron refresh**.
+The exports are **not refreshed on every push**.
 
-Two workflows are kept:
+Two refresh modes are kept:
+
+- **Weekly automatic refresh** — every Sunday at `04:17 UTC`, `.github/workflows/external-code-audit-refresh.yml` dispatches a complete refresh of SonarQube Cloud, DeepSource and CodeScene.
+- **Manual refresh** — run **Refresh External Code Audit** whenever a fresh snapshot is needed immediately.
+
+Two workflows are involved:
 
 - `.github/workflows/external-code-audit.yml` — the real collector. It connects to SonarQube Cloud, DeepSource GraphQL API and CodeScene REST API, then writes the AI-readable evidence in this directory.
-- `.github/workflows/external-code-audit-refresh.yml` — a manual convenience launcher that dispatches the collector for all three services in one action.
+- `.github/workflows/external-code-audit-refresh.yml` — the weekly/manual convenience launcher that dispatches the collector for all three services in one action.
 
 The service collectors live under `scripts/external_audit/` so API-specific logic stays out of the workflow YAML and can be maintained/tested independently.
 
-Run **Refresh External Code Audit** manually only when a fresh snapshot is requested. That single manual action refreshes SonarQube Cloud, DeepSource and CodeScene exports together and updates `audit/ai-external/`.
-
-Typical reasons to run it: after substantial repository changes, before/after a cleanup/refactor pass, after changing the Sonar organization key, rotating `DEEPSOURCE_API`, rotating the CodeScene token, or when fresh audit evidence is explicitly requested.
+Typical reasons for a manual refresh: after substantial repository changes, before/after a cleanup/refactor pass, after changing the Sonar organization key, rotating `DEEPSOURCE_API`, rotating the CodeScene token, or when fresh audit evidence is explicitly requested.
 
 ## Contract
 
