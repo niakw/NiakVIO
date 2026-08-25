@@ -1,0 +1,102 @@
+name: Apply runtime gate safety fix on main once v2
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/gate-runtime-main-fix-once-v2.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+      - name: Set up Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: "24"
+          package-manager-cache: false
+      - name: Apply corrected runtime gate patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          source_path = Path('.github/workflows/gate-runtime-main-fix-once.yml')
+          raw_lines = source_path.read_text(encoding='utf-8').splitlines()
+          begin = raw_lines.index("          python3 - <<'PY'") + 1
+          end = raw_lines.index('          PY', begin)
+          body = []
+          for line in raw_lines[begin:end]:
+              if line.startswith('          '):
+                  body.append(line[10:])
+              else:
+                  body.append(line)
+          script = '\n'.join(body) + '\n'
+
+          old = '''    provider_issue_anchor = "for (const issue of providerLoadIssues) {\\n"
+              sentinel_outcomes = '''
+          # The old integrator correctly built the sentinel block but assumed this
+          # loop existed only once. There are two: grouping and provider outcomes.
+          # Patch only its uniqueness guard/replacement to operate on the last one.
+          old_guard = '''    if text.count(provider_issue_anchor) != 1:
+                  raise SystemExit(f"{diagnose}: provider issue anchor missing")
+              text = text.replace(provider_issue_anchor, sentinel_outcomes, 1)
+          '''
+          new_guard = '''    provider_issue_at = text.rfind(provider_issue_anchor)
+              if provider_issue_at < 0:
+                  raise SystemExit(f"{diagnose}: provider issue outcome anchor missing")
+              text = text[:provider_issue_at] + sentinel_outcomes + text[provider_issue_at + len(provider_issue_anchor):]
+          '''
+          if old_guard not in script:
+              raise SystemExit('old integrator provider-outcome guard not found')
+          script = script.replace(old_guard, new_guard, 1)
+          exec(compile(script, str(source_path) + ':embedded-python', 'exec'), {'__name__': '__main__'})
+          PY
+      - name: Remove obsolete one-shot workflows before verification
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f .github/workflows/runtime-gate-integration-once.yml
+          rm -f .github/workflows/gate-runtime-main-fix-once.yml
+          rm -f .github/workflows/gate-runtime-main-fix-once-v2.yml
+      - name: Verify runtime gate safety contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check scripts/gate_native_cross_client_runtime.cjs
+          node --check engine_v2/scripts/diagnose-native-reader.mjs
+          python3 -m py_compile scripts/restage_native_corpus_client.py
+          python3 tests/native_cross_client_runtime_gate_test.py
+          python3 tests/native_reader_brain_repair_test.py
+          python3 tests/native_corpus_device_lab_test.py
+          python3 tests/native_reader_runtime_bootstrap_test.py
+          python3 tests/repository_hygiene_contract_test.py
+      - name: Commit verified gate fix to main
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No gate integration diff to commit."
+            exit 0
+          fi
+          git commit -m "fix(labs): block runtime sentinels before Brain repair"
+          for attempt in 1 2 3 4; do
+            git pull --rebase origin main
+            if git push origin HEAD:main; then
+              exit 0
+            fi
+          done
+          echo "unable to publish verified gate fix after retries" >&2
+          exit 1
