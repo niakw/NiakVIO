@@ -1,0 +1,101 @@
+name: AUDIT - Materialize V12 presentation
+
+on:
+  push:
+    branches:
+      - audit/repository-final-cleanup-2026-08-25
+    paths:
+      - '.github/workflows/tmp-audit-v12-materialize.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - name: Checkout audit branch
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: audit/repository-final-cleanup-2026-08-25
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+
+      - name: Set up Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+          package-manager-cache: false
+
+      - name: Install locked dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Migrate Core policy reference to V12
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('scripts/normalize_core_media_policy.py')
+          text = path.read_text(encoding='utf-8')
+          text = text.replace('from normalize_stream_presentation_v11 import', 'from normalize_stream_presentation_v12 import')
+          text = text.replace('presentation=global_core_v11', 'presentation=global_core_v12')
+          path.write_text(text, encoding='utf-8')
+          PY
+
+      - name: Normalize V12 feeds mapping and provider bundles
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/normalize_stream_presentation_v12.py --apply
+          python3 scripts/normalize_core_media_policy.py --apply
+          python3 scripts/reapply_published_overrides.py
+
+      - name: Validate presentation and badge contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 tests/global_stream_presentation_test.py
+          python3 tests/global_stream_presentation_pipeline_test.py
+          python3 tests/global_core_presentation_pipeline_test.py
+          python3 tests/badge_asset_contract_test.py
+          python3 scripts/normalize_stream_presentation_v12.py --check
+          python3 scripts/normalize_core_media_policy.py --check
+
+      - name: Validate full provider boundaries
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 tests/full_provider_portfolio_audit_test.py
+          python3 tests/provider_export_floor_portfolio_test.py
+          python3 tests/provider_purification_contract_test.py
+
+      - name: Remove superseded one-shots and regenerate integrity
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f .github/workflows/tmp-trigger-pending-finalizers.yml
+          rm -f .github/workflows/tmp-apply-stream-presentation-v11.yml
+          rm -f .github/workflows/tmp-audit-v12-materialize.yml
+          python3 scripts/generate_release_hashes.py
+          python3 scripts/validate_release_integrity.py
+          git diff --check
+
+      - name: Commit exact audited materialization
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          if git diff --cached --quiet; then
+            echo 'No materialization changes'
+            exit 0
+          fi
+          git commit -m 'fix: materialize cross-client stream presentation V12 [skip ci]'
+          git push origin HEAD:audit/repository-final-cleanup-2026-08-25
