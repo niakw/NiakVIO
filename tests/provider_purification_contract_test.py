@@ -30,6 +30,9 @@ for required in (
     '"format-only"',
     'RETAINED_AUDIO_MARKER = "/* NUVIO_HLS_MASTER_AUDIO_PRESERVER_V1 */"',
     "function canonicalizeRetainedCoreBoundary(code)",
+    "function canonicalizeFloatedGeneratedMarkers(code)",
+    "function canonicalizeOwnedBoundaries(code)",
+    "floatedGeneratedMarkersCanonicalized",
     "const canonicalSource = withTerminalNewline(code);",
     "Buffer.byteLength(terserCandidate) >= Buffer.byteLength(canonicalSource)",
     '"boundary-canonicalization"',
@@ -103,6 +106,27 @@ assert retained_text.count(audio_marker) == 1
 assert "\n\n" + audio_marker not in retained_text
 assert audio_marker + "\n\n" not in retained_text
 assert retained_first_report.get("retainedAudioBoundaryCanonicalized") is True
+
+# A preserved generated comment may also float inside the provider export bridge,
+# exactly as observed for AnimePahe and AnimeZey. Repair/prefix markers remain
+# untouched; only this proven `marker */);(function` boundary is canonicalized so
+# the strict export-floor parser never has to weaken its trust model.
+floated_marker = "/* NUVIO_GLOBAL_MEDIA_ENRICHMENT_V1:test */"
+floated_body = (
+    'function getStreams(){return [];}\n'
+    'typeof module!=="undefined"&&module.exports?module.exports={getStreams}:'
+    '(global.getStreams=getStreams '
+    + floated_marker
+    + ');(function(g,c){g.__nuvioMediaTest=c;})(globalThis,{});\n'
+).encode("utf-8")
+floated_first, floated_report = purify_bytes(floated_body)
+floated_second, _floated_second_report = purify_bytes(floated_first)
+floated_text = floated_first.decode("utf-8")
+assert floated_second == floated_first
+assert floated_text.count(floated_marker) == 1
+assert "getStreams " + floated_marker + ");(function" not in floated_text
+assert ");\n" + floated_marker + "\n(function" in floated_text
+assert int(floated_report.get("floatedGeneratedMarkersCanonicalized") or 0) >= 1
 
 # Deep proves the exact purified baseline and every later Brain/runtime mutation.
 assert "purify_registry(stage, output / \"provider-purification.json\")" in deep
