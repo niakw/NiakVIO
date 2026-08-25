@@ -7,9 +7,17 @@ on:
     paths:
       - '.github/workflows/badge-light-contrast.yml'
       - 'scripts/regenerate_light_badges.py'
+      - 'scripts/normalize_fusion_badge_feed.py'
+      - 'scripts/provider_patches/global_stream_presentation_v1.py'
       - 'tests/badge_asset_contract_test.py'
+      - 'assets/README.txt'
       - 'assets/badge_catalog_v2_complete.json'
+      - 'assets/mapping_core_brain_ui_v2_complete.json'
+      - 'assets/stream-badges-dark.json'
+      - 'assets/stream-badges-light.json'
+      - 'assets/stream-badges-fusion.json'
       - 'assets/transparent/**'
+      - 'assets/dark/**'
       - 'assets/light/**'
       - 'assets/docs/LIGHT_BADGE_QA.json'
 
@@ -41,12 +49,13 @@ jobs:
         shell: bash
         run: python -m pip install --disable-pip-version-check --no-cache-dir 'Pillow==11.3.0'
 
-      - name: Verify committed light variants without regeneration
+      - name: Verify committed badge variants and feeds without regeneration
         shell: bash
         run: |
           set -euo pipefail
           python tests/badge_asset_contract_test.py
           python scripts/regenerate_light_badges.py --check
+          python scripts/normalize_fusion_badge_feed.py --check
 
       - name: Verify exact asset cardinality and native dimensions
         shell: bash
