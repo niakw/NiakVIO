@@ -39,15 +39,17 @@ function canonicalizeRetainedCoreBoundary(code) {
 
   // The audio marker records an in-place provider rewrite and can therefore
   // remain immediately before the generated Core start boundary when the rest
-  // of the Core tail is stripped/rebuilt. Terser is free to attach preserved
-  // comments to surrounding AST nodes and can otherwise grow blank lines at
-  // this exact seam across publication passes. Own only surrounding whitespace:
-  // one newline before and one after the marker, with all JS bytes untouched.
+  // of the Core tail is stripped/rebuilt. Own only surrounding whitespace: one
+  // newline before and one after the marker, with all JavaScript bytes untouched.
   const left = code.slice(0, first).replace(/[ \t\r\n]+$/, "");
   const right = code.slice(first + RETAINED_AUDIO_MARKER.length).replace(/^[ \t\r\n]+/, "");
   const prefix = left ? `${left}\n` : "";
   const suffix = right ? `\n${right}` : "";
   return `${prefix}${RETAINED_AUDIO_MARKER}${suffix}`;
+}
+
+function withTerminalNewline(code) {
+  return code.endsWith("\n") ? code : `${code}\n`;
 }
 
 async function terserVersion() {
@@ -71,7 +73,8 @@ async function main() {
   const forceFormatOnly = process.argv.includes("--format-only");
   if (!input || !output) throw new Error("usage: purify-provider.mjs --input <file.js> --output <file.js> [--format-only]");
 
-  const code = await fs.readFile(input, "utf8");
+  const source = await fs.readFile(input, "utf8");
+  const code = canonicalizeRetainedCoreBoundary(source);
   const flags = riskFlags(code);
   const version = await terserVersion();
   if (version !== EXPECTED_TERSER_VERSION) {
@@ -121,12 +124,19 @@ async function main() {
   });
   if (!result.code) throw new Error("Terser returned no code");
 
-  const canonical = canonicalizeRetainedCoreBoundary(result.code);
-  const purified = `${canonical}\n`;
+  const canonicalSource = withTerminalNewline(code);
+  const terserCandidate = withTerminalNewline(canonicalizeRetainedCoreBoundary(result.code));
+  // Boundary canonicalization is an owned metadata normalization, not an
+  // optimization. Never discard it merely because an already-compact provider
+  // gives Terser no size win. If Terser is not strictly smaller, publish the
+  // canonical source bytes; the second pass then proves the same fixed point.
+  const useCanonicalSource = Buffer.byteLength(terserCandidate) >= Buffer.byteLength(canonicalSource);
+  const purified = useCanonicalSource ? canonicalSource : terserCandidate;
   await fs.mkdir(path.dirname(path.resolve(output)), { recursive: true });
   await fs.writeFile(output, purified, "utf8");
 
-  const mode = forceFormatOnly ? "format-only" : (risky ? "risk-format-only" : "conservative-compression");
+  const baseMode = forceFormatOnly ? "format-only" : (risky ? "risk-format-only" : "conservative-compression");
+  const mode = useCanonicalSource && source !== canonicalSource ? "boundary-canonicalization" : baseMode;
   const payload = {
     schemaVersion: 2,
     tool: "terser",
@@ -134,10 +144,11 @@ async function main() {
     phase: "provider-purification-v1",
     mode,
     mangle: false,
-    conservativeCompression: mode === "conservative-compression",
+    conservativeCompression: !useCanonicalSource && baseMode === "conservative-compression",
     riskFlags: flags,
-    bytesBefore: Buffer.byteLength(code),
+    bytesBefore: Buffer.byteLength(source),
     bytesAfter: Buffer.byteLength(purified),
+    retainedAudioBoundaryCanonicalized: source !== canonicalSource && source.includes(RETAINED_AUDIO_MARKER),
   };
   process.stdout.write(`NIAKVIO_PURIFICATION_RESULT=${JSON.stringify(payload)}\n`);
 }
