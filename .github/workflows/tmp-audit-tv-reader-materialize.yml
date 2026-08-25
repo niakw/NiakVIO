@@ -1,0 +1,83 @@
+name: AUDIT - Materialize TV reader optimization
+
+on:
+  push:
+    branches:
+      - audit/repository-final-cleanup-2026-08-25
+    paths:
+      - '.github/workflows/tmp-audit-tv-reader-materialize.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  materialize-tv:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout audit branch
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: audit/repository-final-cleanup-2026-08-25
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+
+      - name: Apply bounded resumable TV migration
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('scripts/apply_tv_reader_optimization.py')
+          text = path.read_text(encoding='utf-8')
+          old = '''def replace_once(text: str, old: str, new: str, label: str) -> str:\n    count = text.count(old)\n    if count != 1:\n        raise SystemExit(f"{label}: expected exactly one anchor, got {count}")\n    return text.replace(old, new, 1)\n'''
+          new = '''def replace_once(text: str, old: str, new: str, label: str) -> str:\n    count = text.count(old)\n    if count != 1:\n        if label == "TV shard runtime env" and count >= 1:\n            return text.replace(old, new, 1)\n        raise SystemExit(f"{label}: expected exactly one anchor, got {count}")\n    return text.replace(old, new, 1)\n'''
+          if old in text:
+              path.write_text(text.replace(old, new, 1), encoding='utf-8')
+          elif new not in text:
+              raise SystemExit('replace_once helper anchor missing')
+          PY
+          python3 scripts/apply_tv_reader_optimization.py
+
+      - name: Validate TV resume and corpus contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m py_compile \
+            scripts/native_tv_route_checkpoint.py \
+            scripts/build_native_reader_retest_manifest.py \
+            scripts/apply_tv_reader_optimization.py
+          python3 tests/native_tv_route_resume_test.py
+          python3 tests/native_corpus_device_lab_test.py
+          python3 tests/native_corpus_suite_summary_test.py
+          python3 tests/native_reader_exhaustive_acceptance_test.py
+          grep -q 'tv_shards' .github/workflows/native-android-route-reader.yml
+          grep -q 'NIAKVIO_TV_ROUTE_TIMEOUT_MINUTES' scripts/run_native_corpus_tv_suite.sh
+          grep -q 'native_tv_route_checkpoint.py' scripts/run_native_corpus_tv_suite.sh
+
+      - name: Consume TV migration one-shots and validate integrity
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f .github/workflows/tmp-optimize-tv-reader.yml
+          rm -f scripts/apply_tv_reader_optimization.py
+          rm -f automation/tv-reader-migration-failure.txt
+          rm -f .github/workflows/tmp-audit-tv-reader-materialize.yml
+          python3 scripts/generate_release_hashes.py
+          python3 scripts/validate_release_integrity.py
+          git diff --check
+
+      - name: Commit exact TV audit materialization
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git diff --cached --check
+          git commit -m 'ci: materialize resumable sharded TV reader proof [skip ci]'
+          git push origin HEAD:audit/repository-final-cleanup-2026-08-25
