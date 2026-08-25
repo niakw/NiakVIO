@@ -5,6 +5,10 @@ on:
     workflows:
       - Native Android route reader acceptance
       - Native Desktop reader acceptance
+      - Niakvio provider pipeline
+      - Emergency publish corrected providers
+      - Fast publish corrected providers
+      - NiakVIO Core media finalizer
     types: [completed]
   push:
     branches: [main]
@@ -32,7 +36,7 @@ concurrency:
 
 jobs:
   update-results:
-    if: ${{ github.event_name == 'workflow_dispatch' || github.event_name == 'push' || (github.event.workflow_run.conclusion != 'cancelled' && github.event.workflow_run.event == 'push' && github.event.workflow_run.head_branch == 'main') }}
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event_name == 'push' || (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion != 'cancelled' && github.event.workflow_run.head_branch == 'main' && (github.event.workflow_run.event == 'push' || github.event.workflow_run.name == 'Niakvio provider pipeline' || github.event.workflow_run.name == 'Emergency publish corrected providers' || github.event.workflow_run.name == 'Fast publish corrected providers' || github.event.workflow_run.name == 'NiakVIO Core media finalizer')) }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -47,7 +51,7 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Resolve native reader run
+      - name: Resolve source run
         id: source
         env:
           EVENT_NAME: ${{ github.event_name }}
@@ -64,11 +68,11 @@ jobs:
           else
             RUN_ID="$CURRENT_RUN_ID"
           fi
-          [[ "$RUN_ID" =~ ^[0-9]+$ ]] || { echo "invalid native reader run id: $RUN_ID" >&2; exit 2; }
+          [[ "$RUN_ID" =~ ^[0-9]+$ ]] || { echo "invalid source run id: $RUN_ID" >&2; exit 2; }
           echo "run_id=$RUN_ID" >> "$GITHUB_OUTPUT"
 
       - name: Download exact positive-evidence diagnostics
-        if: ${{ github.event_name != 'push' }}
+        if: ${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'workflow_run' && (github.event.workflow_run.name == 'Native Android route reader acceptance' || github.event.workflow_run.name == 'Native Desktop reader acceptance')) }}
         env:
           GH_TOKEN: ${{ github.token }}
           RUN_ID: ${{ steps.source.outputs.run_id }}
@@ -99,23 +103,41 @@ jobs:
           set -euo pipefail
           git fetch origin main
           git reset --hard origin/main
+          mkdir -p provider-results-input
           python scripts/update_provider_device_results.py \
             --diagnostics-root provider-results-input \
             --run-id "$RUN_ID" \
             --results automation/provider-device-results.json \
             --readme README.md
 
-      - name: Validate trust-first README contract
+      - name: Validate trust-first README contract and manifest sync
         shell: bash
         run: |
           set -euo pipefail
           grep -q 'Lectures natives confirmées' README.md
           grep -q 'Voir les .* providers actifs' README.md
           grep -q 'PREUVES LECTEUR' README.md
+          grep -Fq 'https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-fusion.json' README.md
           if grep -q '| TV | Mobile | Desktop macOS | Desktop Windows |' README.md; then
             echo 'legacy sparse per-device matrix unexpectedly returned' >&2
             exit 1
           fi
+          python - <<'PY'
+          import json, re
+          manifest = json.load(open('manifest.json', encoding='utf-8'))
+          expected = sum(1 for row in manifest.get('scrapers', []) if isinstance(row, dict) and row.get('enabled') is True)
+          readme = open('README.md', encoding='utf-8').read()
+          match = re.search(r'PROVIDERS_ACTIFS-(\d+)-16a34a', readme)
+          if not match:
+              raise SystemExit('README active-provider shield missing')
+          actual = int(match.group(1))
+          if actual != expected:
+              raise SystemExit(f'README active-provider drift: readme={actual} manifest={expected}')
+          disclosure = f'Voir les {expected} providers actifs'
+          if disclosure not in readme:
+              raise SystemExit(f'README disclosure drift: expected {disclosure!r}')
+          print(f'FIELD_README_MANIFEST_SYNC active={expected}')
+          PY
 
       - name: Publish result showcase only when changed
         shell: bash
@@ -128,7 +150,7 @@ jobs:
             echo 'Provider/device result showcase already current.'
             exit 0
           fi
-          git commit -m 'docs: refresh native provider proof showcase'
+          git commit -m 'docs: refresh native provider proof showcase [skip ci]'
           git fetch origin main
           git rebase origin/main
           git push origin HEAD:main
