@@ -207,6 +207,30 @@ def _stable_candidate(data: bytes, *, format_only: bool) -> tuple[bytes, dict[st
     return first, result, True, None
 
 
+def _has_mandatory_boundary_cleanup(result: dict[str, Any]) -> bool:
+    """Whether a stable candidate contains required NiakVIO boundary cleanup.
+
+    Boundary canonicalization is correctness metadata normalization, not a size
+    optimization. It must survive candidate selection even when the canonical
+    spelling is byte-neutral or slightly larger than the source representation.
+    """
+    if str(result.get("mode") or "") == "boundary-canonicalization":
+        return True
+    if bool(result.get("retainedAudioBoundaryCanonicalized")):
+        return True
+    return int(result.get("floatedGeneratedMarkersCanonicalized") or 0) > 0
+
+
+def _change_reason(data: bytes, chosen: bytes, result: dict[str, Any]) -> str:
+    if chosen == data:
+        return "no_safe_fixed_point_size_gain"
+    if _has_mandatory_boundary_cleanup(result):
+        return "boundary_canonicalized_valid_and_fixed_point"
+    if len(chosen) < len(data):
+        return "size_reduced_valid_and_fixed_point"
+    return "stable_transform_valid_and_fixed_point"
+
+
 def _purify_body_bytes(data: bytes) -> tuple[bytes, dict[str, Any]]:
     """Purify bytes that contain provider/Core code but no owned prefix wrapper."""
     before_sha = sha256(data)
@@ -235,16 +259,16 @@ def _purify_body_bytes(data: bytes) -> tuple[bytes, dict[str, Any]]:
         stable = False
         reason = f"first_pass_error:{type(exc).__name__}:{exc}"
 
-    if stable and len(compressed) < len(data):
+    compressed_required = _has_mandatory_boundary_cleanup(compressed_result)
+    if stable and (compressed == data or len(compressed) < len(data) or compressed_required):
         chosen = compressed
         selected_result = compressed_result
         selected_mode = str(compressed_result.get("mode") or "conservative-compression")
-    elif stable and compressed == data:
-        chosen = data
-        selected_result = compressed_result
-        selected_mode = str(compressed_result.get("mode") or "conservative-compression")
     else:
-        fallback_reason = reason or "compression_not_fixed_point"
+        fallback_reason = reason or (
+            "compression_size_growth_without_mandatory_cleanup"
+            if stable else "compression_not_fixed_point"
+        )
         try:
             formatted, formatted_result, format_stable, format_reason = _stable_candidate(data, format_only=True)
         except Exception as exc:
@@ -252,27 +276,24 @@ def _purify_body_bytes(data: bytes) -> tuple[bytes, dict[str, Any]]:
             formatted_result = selected_result
             format_stable = False
             format_reason = f"format_first_pass_error:{type(exc).__name__}:{exc}"
-        if format_stable and len(formatted) < len(data):
+        formatted_required = _has_mandatory_boundary_cleanup(formatted_result)
+        if format_stable and (formatted == data or len(formatted) < len(data) or formatted_required):
             chosen = formatted
             selected_result = formatted_result
-            selected_mode = "format-only"
-        elif format_stable and formatted == data:
-            chosen = data
-            selected_result = formatted_result
-            selected_mode = "format-only"
+            selected_mode = str(formatted_result.get("mode") or "format-only")
         else:
             chosen = data
             selected_mode = "original"
             fixed_point_verified = True
-            fallback_reason = f"{fallback_reason};{format_reason or 'format_not_fixed_point'}"
+            fallback_reason = f"{fallback_reason};{format_reason or 'format_size_growth_without_mandatory_cleanup'}"
 
     chosen_sha = sha256(chosen)
-    applied = chosen != data and len(chosen) < len(data)
+    applied = chosen != data
     report = {
         **selected_result,
         "mode": selected_mode,
         "applied": applied,
-        "reason": "size_reduced_valid_and_fixed_point" if applied else "no_safe_fixed_point_size_gain",
+        "reason": _change_reason(data, chosen, selected_result),
         "fallbackReason": fallback_reason,
         "fixedPointVerified": fixed_point_verified,
         "sourceSha256": before_sha,
@@ -281,6 +302,8 @@ def _purify_body_bytes(data: bytes) -> tuple[bytes, dict[str, Any]]:
         "bytesAfter": len(chosen),
         "bytesSaved": max(0, len(data) - len(chosen)),
         "savingPercent": round(max(0, len(data) - len(chosen)) * 100 / max(1, len(data)), 2),
+        "sizeReduced": len(chosen) < len(data),
+        "boundaryCanonicalized": _has_mandatory_boundary_cleanup(selected_result),
         "validator": "validate_provider_artifact.cjs",
         "requiresRuntimeRetest": True,
     }
@@ -300,17 +323,18 @@ def purify_bytes(data: bytes) -> tuple[bytes, dict[str, Any]]:
 
     purified_body, body_report = _purify_body_bytes(body)
     chosen = prefix + purified_body
-    applied = chosen != data and len(chosen) < len(data)
+    applied = chosen != data
     report = {
         **body_report,
         "applied": applied,
-        "reason": "size_reduced_valid_and_fixed_point" if applied else "no_safe_fixed_point_size_gain",
+        "reason": _change_reason(data, chosen, body_report),
         "sourceSha256": sha256(data),
         "candidateSha256": sha256(chosen),
         "bytesBefore": len(data),
         "bytesAfter": len(chosen),
         "bytesSaved": max(0, len(data) - len(chosen)),
         "savingPercent": round(max(0, len(data) - len(chosen)) * 100 / max(1, len(data)), 2),
+        "sizeReduced": len(chosen) < len(data),
         "ownedPrefixPreserved": True,
         "ownedPrefixBytes": len(prefix),
         "fixedPointVerified": bool(body_report.get("fixedPointVerified", True)),
