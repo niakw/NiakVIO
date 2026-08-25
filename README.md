@@ -20,7 +20,7 @@
 Tous les providers publiés : VF, VOSTFR, VO et autres langues.
 
 ```text
-https://raw.githubusercontent.com/niakw/Niakvio/refs/heads/main/manifest.json
+https://raw.githubusercontent.com/niakw/NiakVIO/refs/heads/main/manifest.json
 ```
 
 ### Manifest francophone
@@ -28,10 +28,36 @@ https://raw.githubusercontent.com/niakw/Niakvio/refs/heads/main/manifest.json
 Projection centrée sur les providers proposant du français ou du sous-titrage français.
 
 ```text
-https://raw.githubusercontent.com/niakw/Niakvio/refs/heads/main/vf/manifest.json
+https://raw.githubusercontent.com/niakw/NiakVIO/refs/heads/main/vf/manifest.json
 ```
 
-Dans Nuvio, copiez l'URL du manifest souhaité dans la gestion des plugins/providers puis actualisez le repository lorsque nécessaire.
+### Badges StreamBadge — recommandé
+
+Pour un réglage unique au niveau du compte Nuvio, utilisez le feed **Fusion**. Il emploie les variantes 96×40 avec chip sombre conçues pour rester lisibles sur fonds sombres comme clairs.
+
+**Fusion — recommandé**
+
+```text
+https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-fusion.json
+```
+
+Feeds spécifiques si le client peut sélectionner le thème :
+
+**Fond sombre / gris**
+
+```text
+https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-dark.json
+```
+
+**Fond clair / blanc**
+
+```text
+https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-light.json
+```
+
+Catalogue complet et mapping Core/Brain/UI : [`badge_catalog_v2_complete.json`](assets/badge_catalog_v2_complete.json) · [`mapping_core_brain_ui_v2_complete.json`](assets/mapping_core_brain_ui_v2_complete.json).
+
+Dans Nuvio, copiez l'URL du manifest souhaité dans la gestion des plugins/providers, puis ajoutez le feed badges dans les réglages StreamBadge lorsque cette fonction est disponible.
 
 **Les URL restent stables.** NiakVIO peut faire évoluer derrière elles les bundles, versions, domaines, règles runtime, preuves et états d'activation.
 
