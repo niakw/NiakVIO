@@ -47,7 +47,7 @@ jobs:
           fi
 
           # Manual launches are deliberately forced: useful after rotating
-          # credentials or changing a provider-side/shared-report configuration.
+          # credentials or changing an external service/API configuration.
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             echo "refresh=true" >> "$GITHUB_OUTPUT"
             echo "reason=manual dispatch" >> "$GITHUB_OUTPUT"
