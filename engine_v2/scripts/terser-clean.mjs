@@ -29,21 +29,33 @@ export function canonicalizeRetainedCoreBoundary(code) {
 }
 
 export function canonicalizeGeneratedMarkerBoundaries(code) {
-  // Terser may attach a preserved NUVIO marker before `);`, between `)` and `;`,
-  // or after `);`; it may also vary whitespace and the following IIFE syntax.
-  // Collapse every owned representation to one byte-stable boundary. Leading
-  // whitespace belongs to this generated boundary too: leaving it behind caused
-  // AnimePahe/AnimeZey to grow one newline per rebuild.
+  // Terser can preserve a generated NUVIO comment before a statement terminator,
+  // between `)` and `;`, or after the terminator. It can also remove redundant
+  // parentheses entirely, turning `);` into `;`. Preserve whichever terminator is
+  // semantically real and collapse all owned whitespace/comment placements to one
+  // stable boundary before the following generated IIFE/wrapper.
+  const canonical = (terminator, rawMarker) => `${terminator}\n/* ${String(rawMarker).trim()} */\n`;
   const patterns = [
-    new RegExp(String.raw`[ \t\r\n]*${GENERATED_MARKER}[ \t\r\n]*\);[ \t\r\n]*${GENERATED_SUFFIX}`, "g"),
-    new RegExp(String.raw`\)[ \t\r\n]*${GENERATED_MARKER}[ \t\r\n]*;[ \t\r\n]*${GENERATED_SUFFIX}`, "g"),
-    new RegExp(String.raw`\);[ \t\r\n]*${GENERATED_MARKER}[ \t\r\n]*${GENERATED_SUFFIX}`, "g"),
+    {
+      re: new RegExp(String.raw`[ \t\r\n]*${GENERATED_MARKER}[ \t\r\n]*(\);|;)[ \t\r\n]*${GENERATED_SUFFIX}`, "g"),
+      replace: (_match, rawMarker, terminator) => canonical(terminator, rawMarker),
+    },
+    {
+      re: new RegExp(String.raw`\)[ \t\r\n]*${GENERATED_MARKER}[ \t\r\n]*;[ \t\r\n]*${GENERATED_SUFFIX}`, "g"),
+      replace: (_match, rawMarker) => canonical(");", rawMarker),
+    },
+    {
+      re: new RegExp(String.raw`(\);|;)[ \t\r\n]*${GENERATED_MARKER}[ \t\r\n]*${GENERATED_SUFFIX}`, "g"),
+      replace: (_match, terminator, rawMarker) => canonical(terminator, rawMarker),
+    },
   ];
+
   let moved = 0;
   let output = code;
-  for (const pattern of patterns) {
-    output = output.replace(pattern, (match, rawMarker) => {
-      const replacement = `);\n/* ${String(rawMarker).trim()} */\n`;
+  for (const { re, replace } of patterns) {
+    output = output.replace(re, (...args) => {
+      const match = args[0];
+      const replacement = replace(...args);
       if (match !== replacement) moved += 1;
       return replacement;
     });
