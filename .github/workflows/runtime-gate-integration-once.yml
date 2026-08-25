@@ -28,24 +28,15 @@ jobs:
           python3 - <<'PY'
           from pathlib import Path
 
-          def replace_exact(path: Path, old: str, new: str, expected: int = 1) -> None:
-              text = path.read_text(encoding="utf-8")
-              count = text.count(old)
-              if count != expected:
-                  raise SystemExit(f"{path}: anchor count for {old!r} is {count}, expected {expected}")
-              path.write_text(text.replace(old, new), encoding="utf-8")
-
           android = Path(".github/workflows/native-android-route-reader.yml")
           text = android.read_text(encoding="utf-8")
           path_anchor = '      - "scripts/gate_native_reader_result.cjs"\n'
-          if '      - "scripts/gate_native_cross_client_runtime.cjs"\n' not in text:
+          cross_path = '      - "scripts/gate_native_cross_client_runtime.cjs"\n'
+          if cross_path not in text:
               count = text.count(path_anchor)
               if count != 2:
                   raise SystemExit(f"{android}: reader gate path anchor count={count}")
-              text = text.replace(
-                  path_anchor,
-                  path_anchor + '      - "scripts/gate_native_cross_client_runtime.cjs"\n',
-              )
+              text = text.replace(path_anchor, path_anchor + cross_path)
           step_anchor = "      - name: Materialize bounded generic Brain mutations across three representative routes\n"
           if "Gate systemic TV and Mobile runtime divergence" not in text:
               if text.count(step_anchor) != 1:
@@ -68,7 +59,7 @@ jobs:
               aggregate = '''
 
             cross-runtime-gate:
-              if: ${{ always() && inputs.device == 'all' }}
+              if: __IF_ALL__
               needs: [native-corpus]
               runs-on: ubuntu-latest
               timeout-minutes: 10
@@ -76,7 +67,7 @@ jobs:
                 - name: Checkout exact NiakVIO generation
                   uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
                   with:
-                    ref: ${{ github.sha }}
+                    ref: __GITHUB_SHA__
                     path: niakvio
                     persist-credentials: false
                 - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
@@ -86,17 +77,17 @@ jobs:
                 - name: Download Desktop extraction-runtime evidence
                   uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
                   with:
-                    name: native-corpus-desktop-all-${{ github.run_id }}
+                    name: native-corpus-desktop-all-__RUN_ID__
                     path: cross-runtime/desktop
                 - name: Download Mobile extraction-runtime evidence
                   uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
                   with:
-                    name: native-corpus-mobile-all-${{ github.run_id }}
+                    name: native-corpus-mobile-all-__RUN_ID__
                     path: cross-runtime/mobile
                 - name: Download TV extraction-runtime evidence
                   uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
                   with:
-                    name: native-corpus-tv-all-${{ github.run_id }}
+                    name: native-corpus-tv-all-__RUN_ID__
                     path: cross-runtime/tv
                 - name: Gate Desktop Mobile TV runtime divergence
                   shell: bash
@@ -107,6 +98,10 @@ jobs:
                       --require-clients desktop,mobile,tv \\
                       --min-comparisons 6
           '''
+              expression_open = chr(36) + "{{"
+              aggregate = aggregate.replace("__IF_ALL__", expression_open + " always() && inputs.device == 'all' }}")
+              aggregate = aggregate.replace("__GITHUB_SHA__", expression_open + " github.sha }}")
+              aggregate = aggregate.replace("__RUN_ID__", expression_open + " github.run_id }}")
               text += aggregate
           targeted.write_text(text, encoding="utf-8")
 
@@ -116,20 +111,12 @@ jobs:
           if 'CROSS_RUNTIME_GATE = ROOT / "scripts/gate_native_cross_client_runtime.cjs"' not in text:
               if text.count(constant_anchor) != 1:
                   raise SystemExit(f"{lab_test}: gate constant anchor missing")
-              text = text.replace(
-                  constant_anchor,
-                  constant_anchor + 'CROSS_RUNTIME_GATE = ROOT / "scripts/gate_native_cross_client_runtime.cjs"\n',
-                  1,
-              )
+              text = text.replace(constant_anchor, constant_anchor + 'CROSS_RUNTIME_GATE = ROOT / "scripts/gate_native_cross_client_runtime.cjs"\n', 1)
           source_anchor = 'reader_gate = READER_GATE.read_text(encoding="utf-8")\n'
           if 'cross_runtime_gate = CROSS_RUNTIME_GATE.read_text' not in text:
               if text.count(source_anchor) != 1:
                   raise SystemExit(f"{lab_test}: reader gate source anchor missing")
-              text = text.replace(
-                  source_anchor,
-                  source_anchor + 'cross_runtime_gate = CROSS_RUNTIME_GATE.read_text(encoding="utf-8")\n',
-                  1,
-              )
+              text = text.replace(source_anchor, source_anchor + 'cross_runtime_gate = CROSS_RUNTIME_GATE.read_text(encoding="utf-8")\n', 1)
           assertion_anchor = '# Collection integrity stays strict; provider/playback outcomes are evidence.\n'
           if 'systemic_cross_client_divergence' not in text:
               if text.count(assertion_anchor) != 1:
@@ -157,11 +144,7 @@ jobs:
           if 'restage_client = (SCRIPTS / "restage_native_corpus_client.py")' not in text:
               if text.count(variable_anchor) != 1:
                   raise SystemExit(f"{bootstrap}: variable anchor missing")
-              text = text.replace(
-                  variable_anchor,
-                  variable_anchor + 'restage_client = (SCRIPTS / "restage_native_corpus_client.py").read_text(encoding="utf-8")\n',
-                  1,
-              )
+              text = text.replace(variable_anchor, variable_anchor + 'restage_client = (SCRIPTS / "restage_native_corpus_client.py").read_text(encoding="utf-8")\n', 1)
           print_anchor = 'print(\n    "native reader runtime bootstrap contract passed: "'
           if 'NIAKVIO_NATIVE_RUNTIME_ERROR_TRAP' not in text:
               if text.count(print_anchor) != 1:
