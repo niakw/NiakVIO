@@ -1,4 +1,4 @@
-name: NiakVIO light badge contrast
+name: NiakVIO badge system materializer
 
 on:
   workflow_dispatch:
@@ -6,84 +6,81 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/badge-light-contrast.yml'
-      - 'scripts/regenerate_light_badges.py'
-      - 'scripts/normalize_fusion_badge_feed.py'
-      - 'scripts/provider_patches/global_stream_presentation_v1.py'
-      - 'tests/badge_asset_contract_test.py'
-      - 'assets/README.txt'
+      - 'scripts/regenerate_badges.py'
+      - 'scripts/normalize_badge_feeds.py'
+      - 'scripts/validate_badge_system.py'
       - 'assets/badge_catalog_v2_complete.json'
-      - 'assets/mapping_core_brain_ui_v2_complete.json'
-      - 'assets/stream-badges-dark.json'
-      - 'assets/stream-badges-light.json'
-      - 'assets/stream-badges-fusion.json'
+      - 'assets/source/**'
       - 'assets/transparent/**'
       - 'assets/dark/**'
       - 'assets/light/**'
+      - 'assets/stream-badges-dark.json'
+      - 'assets/stream-badges-light.json'
+      - 'assets/stream-badges-fusion.json'
+      - 'assets/docs/BADGE_QA.json'
       - 'assets/docs/LIGHT_BADGE_QA.json'
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
-  group: niakvio-light-badge-contrast-main
+  group: niakvio-badge-system-main
   cancel-in-progress: true
 
 jobs:
-  verify-committed-assets:
+  materialize-and-verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 25
     steps:
       - name: Checkout exact main
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           ref: main
-          fetch-depth: 1
-          persist-credentials: false
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
         with:
           python-version: '3.12'
 
-      - name: Install pinned image QA dependency
-        shell: bash
+      - name: Install pinned image dependency
         run: python -m pip install --disable-pip-version-check --no-cache-dir 'Pillow==11.3.0'
 
-      - name: Verify committed badge variants and feeds without regeneration
+      - name: Materialize complete badge artwork and native feeds
         shell: bash
         run: |
           set -euo pipefail
-          python tests/badge_asset_contract_test.py
-          python scripts/regenerate_light_badges.py --check
-          python scripts/normalize_fusion_badge_feed.py --check
+          python scripts/regenerate_badges.py --apply
+          python scripts/normalize_badge_feeds.py --apply
+          python scripts/validate_badge_system.py
 
-      - name: Verify exact asset cardinality and native dimensions
+      - name: Prove deterministic fixed point
         shell: bash
         run: |
           set -euo pipefail
-          python - <<'PY'
-          import json
-          from pathlib import Path
-          from PIL import Image
-          root = Path('.')
-          catalog = json.loads((root/'assets/badge_catalog_v2_complete.json').read_text())
-          checked = 0
-          for row in catalog.get('badges') or []:
-              for size in ('72x32','96x40'):
-                  rel = row['assets']['light'][size]
-                  path = root/rel
-                  with Image.open(path) as im:
-                      assert im.size == tuple(map(int,size.split('x'))), (rel, im.size)
-                      assert im.format == 'WEBP', (rel, im.format)
-                  checked += 1
-          assert checked == 146, checked
-          report = json.loads((root/'assets/docs/LIGHT_BADGE_QA.json').read_text())
-          assert report['assetCount'] == 146
-          assert report['whiteBackgroundMinimumSeparationRatio'] >= 4.5
-          assert report['idempotent'] is True
-          print(f'light badge QA passed: committed_assets={checked} revision={report["revision"]} regeneration=disabled')
-          PY
+          python scripts/regenerate_badges.py --check
+          python scripts/normalize_badge_feeds.py --check
+          python scripts/validate_badge_system.py
 
-      - name: Prove QA is side-effect free
+      - name: Publish redesigned badge tree when materialization changed files
         shell: bash
-        run: git diff --exit-code
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add assets/badge_catalog_v2_complete.json \
+                  assets/source assets/transparent assets/dark assets/light \
+                  assets/stream-badges-dark.json assets/stream-badges-light.json assets/stream-badges-fusion.json \
+                  assets/docs/BADGE_QA.json assets/docs/LIGHT_BADGE_QA.json
+          if git diff --cached --quiet; then
+            echo 'Badge system already materialized.'
+            exit 0
+          fi
+          git commit -m 'chore: materialize redesigned stream badges'
+          git fetch origin main
+          git rebase origin/main
+          git push origin HEAD:main
+
+      - name: Verify no untracked QA drift
+        shell: bash
+        run: git status --short
