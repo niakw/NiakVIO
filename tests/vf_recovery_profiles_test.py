@@ -17,6 +17,14 @@ COFLIX_EXACT = "scripts/provider_patches/coflix_exact_catalogue.py"
 STREAMZO_IDENTITY = "scripts/provider_patches/streamzo_source_identity_v3.py"
 TV_PLAYABLE_FIRST = "scripts/provider_patches/nuvio_tv_playable_first_v1.py"
 QUARANTINE = "scripts/provider_patches/quarantine_provider_v1.py"
+NATIVE_TARGET_ORDER_COMPAT = "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py"
+NATIVE_TARGET_ORDER = "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
+RUNTIME_MEDIA_SAFETY = "scripts/provider_patches/runtime_capability_media_safety_v4.py"
+SHARED_RUNTIME_TAIL = [
+    NATIVE_TARGET_ORDER_COMPAT,
+    NATIVE_TARGET_ORDER,
+    RUNTIME_MEDIA_SAFETY,
+]
 COFLIX_BLOCKED_PATHS = {
     "/wp-admin/",
     "/wp-json/",
@@ -26,6 +34,24 @@ COFLIX_BLOCKED_PATHS = {
 
 def target_options(provider: dict) -> dict:
     return (provider.get("patch_script_options") or {}).get(TARGET) or {}
+
+
+def provider_profile(scripts: list[str], provider_id: str) -> list[str]:
+    """Return the provider-owned profile after validating the optional Core tail.
+
+    apply_runtime_capability_upgrade_v4.py materializes the three shared runtime
+    patches after provider-specific recovery/compatibility layers. The VF profile
+    contract must remain valid before and after that Core materialization, while a
+    partial, duplicated or misplaced Core tail must fail closed.
+    """
+    counts = {path: scripts.count(path) for path in SHARED_RUNTIME_TAIL}
+    present = [path for path, count in counts.items() if count]
+    if not present:
+        return list(scripts)
+    assert present == SHARED_RUNTIME_TAIL, (provider_id, scripts, counts)
+    assert all(count == 1 for count in counts.values()), (provider_id, scripts, counts)
+    assert scripts[-len(SHARED_RUNTIME_TAIL):] == SHARED_RUNTIME_TAIL, (provider_id, scripts)
+    return scripts[:-len(SHARED_RUNTIME_TAIL)]
 
 
 def main() -> int:
@@ -39,13 +65,15 @@ def main() -> int:
         assert DESKTOP in scripts, (provider_id, scripts)
         assert OLD_DIRECT not in scripts, (provider_id, scripts)
         assert scripts.index(TARGET) < scripts.index(DESKTOP), (provider_id, scripts)
+        provider_profile(scripts, provider_id)
         options = target_options(provider)
         assert options.get("force_rewrap_target_media") is True, (provider_id, options)
         assert int(options.get("max_candidates") or 0) >= 20, (provider_id, options)
 
     coflix = providers["coflix"]
     scripts = coflix.get("patch_scripts") or []
-    assert scripts == [RECOVERY, COFLIX_EXACT, TARGET, STRICT_SANITIZER, DESKTOP], scripts
+    coflix_profile = provider_profile(scripts, "coflix")
+    assert coflix_profile == [RECOVERY, COFLIX_EXACT, TARGET, STRICT_SANITIZER, DESKTOP], scripts
     recovery = (coflix.get("patch_script_options") or {}).get(RECOVERY) or {}
     assert recovery.get("strategy") == "html", recovery
     assert recovery.get("base_url") == "https://coflix.esq", recovery
@@ -65,14 +93,16 @@ def main() -> int:
 
     frenchstream = providers["frenchstream"]
     fs_scripts = frenchstream.get("patch_scripts") or []
-    assert FRENCHSTREAM_RAW_TV in fs_scripts, fs_scripts
-    assert fs_scripts[-5:] == [FRENCHSTREAM_RAW_TV, TARGET, SANITIZER, DESKTOP, QUARANTINE], fs_scripts
+    fs_profile = provider_profile(fs_scripts, "frenchstream")
+    assert FRENCHSTREAM_RAW_TV in fs_profile, fs_scripts
+    assert fs_profile[-5:] == [FRENCHSTREAM_RAW_TV, TARGET, SANITIZER, DESKTOP, QUARANTINE], fs_scripts
     assert frenchstream.get("manifest_overrides", {}).get("enabled") is False, frenchstream
     assert "s1.fsvid.lol" in (target_options(frenchstream).get("blocked_hosts") or []), target_options(frenchstream)
 
     streamzo = providers["streamzo"]
     sz_scripts = streamzo.get("patch_scripts") or []
-    assert sz_scripts[-5:] == [TARGET, SANITIZER, DESKTOP, STREAMZO_IDENTITY, TV_PLAYABLE_FIRST], sz_scripts
+    sz_profile = provider_profile(sz_scripts, "streamzo")
+    assert sz_profile[-5:] == [TARGET, SANITIZER, DESKTOP, STREAMZO_IDENTITY, TV_PLAYABLE_FIRST], sz_scripts
 
     print("VF terminal recovery profile tests passed")
     return 0
