@@ -99,6 +99,7 @@ jobs:
               Path('tests/native_human_ux_policy_lock_test.py'),
           ):
               source = test_path.read_text(encoding='utf-8').replace(old_key, new_key)
+              source = source.replace('cached_profiles=v4-emulator-config', 'cached_profiles=v5-emulator-signing')
               test_path.write_text(source, encoding='utf-8')
 
           avd_test = Path('tests/native_android_avd_cache_contract_test.py')
@@ -131,6 +132,14 @@ jobs:
           if guard not in source:
               raise SystemExit('human UX cache guard marker missing')
           human.write_text(source.replace(guard, extra, 1), encoding='utf-8')
+
+          evidence = Path('tests/native_evidence_contract_test.py')
+          source = evidence.read_text(encoding='utf-8')
+          old = '        "augment_native_provider_loading.py",\n'
+          new = '        "augment_native_provider_loading_compat.py",\n'
+          if source.count(old) != 1:
+              raise SystemExit(f'native evidence provider-loading adapter marker count={source.count(old)}')
+          evidence.write_text(source.replace(old, new, 1), encoding='utf-8')
           PY
 
           python3 tests/native_android_avd_cache_contract_test.py
@@ -146,7 +155,7 @@ jobs:
           git rm .github/workflows/tmp-fix-android-avd-signing.yml
           git config user.name "niakw"
           git config user.email "foissy.tommy@gmail.com"
-          git add .github/workflows/native-android-route-reader.yml tests/native_android_avd_cache_contract_test.py tests/native_corpus_device_lab_test.py tests/native_human_ux_policy_lock_test.py
+          git add .github/workflows/native-android-route-reader.yml tests/native_android_avd_cache_contract_test.py tests/native_corpus_device_lab_test.py tests/native_human_ux_policy_lock_test.py tests/native_evidence_contract_test.py
           git diff --cached --check
           git commit -m "fix(android): bind warm AVDs to debug signing key"
           git push origin HEAD:main
