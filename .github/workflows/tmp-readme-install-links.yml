@@ -1,0 +1,108 @@
+name: FIX - Publish README install links
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/tmp-readme-install-links.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  publish-readme-links:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout current main
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Patch install links only
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path('README.md')
+          text = path.read_text(encoding='utf-8')
+          start = text.index('## Ajouter NiakVIO à Nuvio')
+          end = text.index('\n---\n\n## Écosystème et sources', start)
+          replacement = '''## Ajouter NiakVIO à Nuvio
+
+### Manifest général — recommandé
+
+Tous les providers publiés : VF, VOSTFR, VO et autres langues.
+
+```text
+https://raw.githubusercontent.com/niakw/NiakVIO/refs/heads/main/manifest.json
+```
+
+### Manifest francophone
+
+Projection centrée sur les providers proposant du français ou du sous-titrage français.
+
+```text
+https://raw.githubusercontent.com/niakw/NiakVIO/refs/heads/main/vf/manifest.json
+```
+
+### Badges StreamBadge — recommandé
+
+Pour un réglage unique au niveau du compte Nuvio, utilisez le feed **Fusion**. Il emploie les variantes 96×40 avec chip sombre conçues pour rester lisibles sur fonds sombres comme clairs.
+
+**Fusion — recommandé**
+
+```text
+https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-fusion.json
+```
+
+Feeds spécifiques si le client peut sélectionner le thème :
+
+**Fond sombre / gris**
+
+```text
+https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-dark.json
+```
+
+**Fond clair / blanc**
+
+```text
+https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-light.json
+```
+
+Catalogue complet et mapping Core/Brain/UI : [`badge_catalog_v2_complete.json`](assets/badge_catalog_v2_complete.json) · [`mapping_core_brain_ui_v2_complete.json`](assets/mapping_core_brain_ui_v2_complete.json).
+
+Dans Nuvio, copiez l'URL du manifest souhaité dans la gestion des plugins/providers, puis ajoutez le feed badges dans les réglages StreamBadge lorsque cette fonction est disponible.
+
+**Les URL restent stables.** NiakVIO peut faire évoluer derrière elles les bundles, versions, domaines, règles runtime, preuves et états d'activation.
+
+> NiakVIO ne stocke ni n'héberge de vidéo. Le projet maintient des manifests, des métadonnées, des règles de compatibilité et des bundles de providers consommés côté client.
+'''
+          next_text = text[:start] + replacement + text[end:]
+          if next_text == text:
+              raise SystemExit('README install links already current; refusing no-op one-shot')
+          path.write_text(next_text, encoding='utf-8')
+          PY
+
+          grep -Fq 'https://raw.githubusercontent.com/niakw/NiakVIO/refs/heads/main/manifest.json' README.md
+          grep -Fq 'https://raw.githubusercontent.com/niakw/NiakVIO/refs/heads/main/vf/manifest.json' README.md
+          grep -Fq 'https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-fusion.json' README.md
+          grep -Fq 'https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-dark.json' README.md
+          grep -Fq 'https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-light.json' README.md
+          ! grep -Fq 'raw.githubusercontent.com/niakw/Niakvio/' README.md
+
+      - name: Publish README and consume one-shot
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f .github/workflows/tmp-readme-install-links.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add README.md .github/workflows/tmp-readme-install-links.yml
+          git commit -m 'docs: publish Nuvio manifest and StreamBadge links [skip ci]'
+          git fetch origin main
+          git rebase origin/main
+          git push origin HEAD:main
