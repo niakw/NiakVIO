@@ -1,0 +1,118 @@
+name: AUDIT - materialize V12 and cleanup
+
+on:
+  push:
+    branches: [audit/repository-final-cleanup-2026-08-25]
+    paths:
+      - '.github/workflows/tmp-audit-v12-materialize.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout audit branch
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: audit/repository-final-cleanup-2026-08-25
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+
+      - name: Set up Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+          package-manager-cache: false
+
+      - name: Harden V12 normalizer invariants
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path('scripts/normalize_stream_presentation_v12.py')
+          text = path.read_text(encoding='utf-8')
+          old = '''def _normalize_core(text: str) -> str:\n    if REVISION in text:\n        return text\n    if OLD_CORE_REVISION not in text:\n        raise ValueError("stream presentation source is neither expected V12 revision")\n\n    text = text.replace(OLD_CORE_REVISION, REVISION)\n'''
+          new = '''def _normalize_core(text: str) -> str:\n    materialized = (\n        "function technicalLines(f,fs,includeQuality)",\n        'if(f.quality)out.quality=f.quality;else if("quality" in out)delete out.quality',\n        'if("language" in out)delete out.language',\n        "out.description=visible;out.size=envelope",\n        '"clientProjection": "quality-preserved;size-multiline-envelope;language-suppressed"',\n    )\n    if REVISION in text:\n        missing = [token for token in materialized if token not in text]\n        if missing:\n            raise ValueError("V12 revision marker present without full materialization: " + ", ".join(missing))\n        return text\n    if OLD_CORE_REVISION not in text:\n        raise ValueError("stream presentation source is neither expected V12 revision")\n\n    text = text.replace(OLD_CORE_REVISION, REVISION)\n'''
+          if old not in text:
+              raise SystemExit('V12 normalizer guard anchor missing')
+          text = text.replace(old, new, 1)
+          duplicated = 'f.subtitles=f.subtitles.filter(function(v){return v!==f.language});var audioCombined=uniq((f.audioTech||[]).concat([f.audioCodec,f.audioChannels].filter(Boolean))).join(" ");if(f.quality)out.quality=f.quality;else if("quality" in out)delete out.quality;if("language" in out)delete out.language;if(f.codec)out.codec=f.codec;var audioCombined=uniq((f.audioTech||[]).concat([f.audioCodec,f.audioChannels].filter(Boolean))).join(" ");'
+          cleaned = 'f.subtitles=f.subtitles.filter(function(v){return v!==f.language});if(f.quality)out.quality=f.quality;else if("quality" in out)delete out.quality;if("language" in out)delete out.language;if(f.codec)out.codec=f.codec;var audioCombined=uniq((f.audioTech||[]).concat([f.audioCodec,f.audioChannels].filter(Boolean))).join(" ");'
+          if duplicated not in text:
+              raise SystemExit('V12 duplicate audioCombined anchor missing')
+          text = text.replace(duplicated, cleaned, 1)
+          path.write_text(text, encoding='utf-8')
+          PY
+
+      - name: Align V12 badge contract test
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('tests/badge_asset_contract_test.py')
+          text = path.read_text(encoding='utf-8')
+          text = text.replace(
+              'assert mapping["display"]["clientProjection"]["suppressedLegacyRecompositionFields"] == ["quality", "language"]',
+              'assert mapping["display"]["clientProjection"]["preservedLegacyFields"] == ["quality"]\nassert mapping["display"]["clientProjection"]["suppressedLegacyRecompositionFields"] == ["language"]',
+          )
+          text = text.replace(
+              'assert mapping["display"]["fallbackWhenNativeBadgesDisabled"] == "emojiTechnicalLine"',
+              'assert mapping["display"]["fallbackWhenNativeBadgesDisabled"] == "multilineEmojiTechnicalGroups"',
+          )
+          path.write_text(text, encoding='utf-8')
+          PY
+
+      - name: Materialize V12
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/normalize_stream_presentation_v12.py --apply
+          python3 scripts/normalize_core_media_policy.py --apply
+          python3 scripts/reapply_published_overrides.py
+          python3 scripts/prune_unreferenced_providers.py
+
+      - name: Validate V12 and native badge transport
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/normalize_stream_presentation_v12.py --check
+          python3 tests/global_stream_presentation_test.py
+          python3 tests/global_stream_presentation_pipeline_test.py
+          python3 tests/badge_asset_contract_test.py
+          node engine_v2/tests/stream-presentation.test.mjs
+          python3 tests/native_corpus_device_lab_test.py
+
+      - name: Validate generated publication state
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 tests/prune_unreferenced_providers_test.py
+          python3 tests/full_provider_portfolio_audit_test.py
+          python3 tests/provider_export_floor_portfolio_test.py
+          python3 scripts/generate_release_hashes.py
+          python3 scripts/validate_release_integrity.py
+          git diff --check
+
+      - name: Commit materialized audit tree and self-delete
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f .github/workflows/tmp-audit-v12-materialize.yml
+          python3 scripts/generate_release_hashes.py
+          python3 scripts/validate_release_integrity.py
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git diff --cached --check
+          git commit -m 'audit: materialize V12 presentation and badge transport [skip ci]'
+          git push origin HEAD:audit/repository-final-cleanup-2026-08-25
