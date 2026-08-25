@@ -6,6 +6,13 @@ on:
     # Daily safety check. The job exits without dispatching when repository code
     # has not changed since the last committed external-audit export.
     - cron: '17 4 * * *'
+  push:
+    branches:
+      - main
+    paths:
+      # Self-test/maintenance trigger only. Normal repository evolution is
+      # handled by the daily stale check below.
+      - .github/workflows/external-code-audit-refresh.yml
 
 permissions:
   contents: read
