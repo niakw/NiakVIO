@@ -5,6 +5,13 @@ on:
     branches: [main]
     paths:
       - ".github/workflows/**"
+      - "engine_v2/src/stream-presentation.mjs"
+      - "engine_v2/tests/stream-presentation.test.mjs"
+      - "scripts/audit_repository_tree.py"
+      - "scripts/normalize_stream_presentation_v12.py"
+      - "scripts/provider_patches/global_stream_presentation_v1.py"
+      - "tests/global_stream_presentation_test.py"
+      - "tests/repository_hygiene_contract_test.py"
       - "tests/workflow_security_policy_test.py"
   workflow_dispatch:
 
@@ -19,7 +26,7 @@ jobs:
   validate:
     name: Validate pinned Actions and workflow contracts
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
       - name: Checkout repository with candidate major
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -58,11 +65,57 @@ jobs:
           git grep -q 'actions/setup-node@820762786026740c76f36085b0efc47a31fe5020' -- .github/workflows
           git grep -q 'actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97' -- .github/workflows
 
+      - name: Lint workflows and embedded shell scripts
+        shell: bash
+        run: |
+          set -euo pipefail
+          ACTIONLINT_VERSION='1.7.12'
+          ACTIONLINT_SHA256='8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8'
+          ARCHIVE="$RUNNER_TEMP/actionlint.tar.gz"
+          BIN_DIR="$RUNNER_TEMP/actionlint"
+          curl --fail --silent --show-error --location \
+            "https://github.com/rhysd/actionlint/releases/download/v${ACTIONLINT_VERSION}/actionlint_${ACTIONLINT_VERSION}_linux_amd64.tar.gz" \
+            --output "$ARCHIVE"
+          printf '%s  %s\n' "$ACTIONLINT_SHA256" "$ARCHIVE" | sha256sum --check --strict
+          mkdir -p "$BIN_DIR"
+          tar -xzf "$ARCHIVE" -C "$BIN_DIR" actionlint
+          command -v shellcheck
+          "$BIN_DIR/actionlint" -version
+          "$BIN_DIR/actionlint" -shellcheck "$(command -v shellcheck)"
+
+      - name: Audit every tracked repository path
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/audit_repository_tree.py \
+            --output "$RUNNER_TEMP/repository-tree-audit.json" \
+            --fail-hard
+          python3 - "$RUNNER_TEMP/repository-tree-audit.json" <<'PY'
+          import json, sys
+          payload = json.load(open(sys.argv[1], encoding="utf-8"))
+          print(f"tracked files: {payload['trackedFiles']}")
+          print(f"tracked bytes: {payload['trackedBytes']}")
+          for key, rows in payload["findings"].items():
+              if rows:
+                  print(f"{key}: {len(rows)}")
+          PY
+
+      - name: Upload repository tree audit
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.0
+        with:
+          name: repository-tree-audit-${{ github.run_id }}
+          path: ${{ runner.temp }}/repository-tree-audit.json
+          retention-days: 14
+          if-no-files-found: error
+
       - name: Validate workflow architecture contracts
         run: |
           python3 tests/workflow_security_policy_test.py
           python3 tests/ci_preservation_policy_test.py
+          python3 tests/repository_hygiene_contract_test.py
           python3 tests/native_corpus_device_lab_test.py
           python3 tests/native_corpus_suite_summary_test.py
+          python3 tests/global_stream_presentation_test.py
           node tests/nuvio_client_lab.test.cjs
           node engine_v2/tests/contracts.test.mjs
+          node engine_v2/tests/stream-presentation.test.mjs
