@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { normalizeStreamCandidate } from "../src/contracts.mjs";
 import {
   buildBadges,
+  buildTechnicalLines,
   presentStreamCandidate,
   normalizeSourceType,
 } from "../src/stream-presentation.mjs";
@@ -27,11 +28,16 @@ assert.equal(facts.duration, 169);
 assert.equal(facts.sourceType, "BluRay");
 assert.equal(facts.ageRating, "-12");
 
-const presented = presentStreamCandidate(facts, {
+const presented = presentStreamCandidate({
+  ...facts,
+  description: "🔥 provider private layout",
+  size: "private prose | 8.4 GB | click now",
+}, {
   title: "Interstellar",
   year: 2014,
   runtime: 169,
   certification: "-12",
+  genres: [{ name: "Science-fiction" }, { name: "Drame" }],
 }, { id: "purstream", name: "Purstream" });
 
 assert.equal(presented.title, "Purstream");
@@ -40,14 +46,27 @@ assert.equal(presented.codec, "HEVC");
 assert.equal(presented.audio, "E-AC3 5.1");
 assert.equal(presented.duration, 169);
 assert.equal(presented.sourceType, "BLU-RAY");
-assert.match(presented.description, /【4K】/);
-assert.match(presented.description, /【BLU-RAY】/);
-assert.match(presented.description, /🌐 VFF/);
-assert.match(presented.description, /🎞 HEVC/);
-assert.match(presented.description, /🔊 E-AC3 5\.1/);
-assert.match(presented.description, /⏱ 2h49/);
-assert.match(presented.description, /🔞 -12/);
-assert.match(presented.description, /Interstellar • 2014/);
+assert.equal(presented.fileSize, "8.4 GB");
+assert.doesNotMatch(presented.description, /provider private|click now/i);
+assert.deepEqual(presented.description.split("\n"), [
+  "🎬 Interstellar • 2014 • Science-fiction, Drame",
+  "🎞️ 2160p • BLU-RAY • HLS",
+  "🔊 E-AC3 5.1",
+  "🌐 VFF",
+  "⏱ 2h49 • 💾 8.4 GB • 🔞 -12",
+]);
+assert.deepEqual(presented.displayBadges, [
+  "4K",
+  "BLU-RAY",
+  "E-AC3 5.1",
+  "VFF",
+  "2h49",
+  "-12",
+]);
+
+const withoutQuality = buildTechnicalLines(presented.presentationFacts, { includeQuality: false });
+assert.equal(withoutQuality[0], "🎞️ BLU-RAY • HLS");
+assert(!withoutQuality.join("\n").includes("2160p"));
 
 const tmdbFallback = presentStreamCandidate({
   name: "Cineby",
@@ -62,20 +81,20 @@ const tmdbFallback = presentStreamCandidate({
 assert.doesNotMatch(tmdbFallback.description ?? "", /Unknown/i);
 assert.match(tmdbFallback.description, /⏱ 2h17/);
 assert.match(tmdbFallback.description, /🔞 16\+/);
-assert.match(tmdbFallback.description, /Sinners • 2025/);
+assert.match(tmdbFallback.description, /🎬 Sinners • 2025/);
 
 const noInventedBluray = presentStreamCandidate({
   name: "FrenchStream",
   url: "https://media.example/1080.mp4",
   quality: "1080p",
 }, {}, { name: "FrenchStream" });
-assert.match(noInventedBluray.description, /【1080P】/);
+assert.match(noInventedBluray.description, /🎞️ 1080p • MP4/);
 assert.doesNotMatch(noInventedBluray.description, /BLU-RAY/i);
 assert.equal(normalizeSourceType("1080p"), null);
 assert.equal(normalizeSourceType("some provider label"), null);
 
 const badges = buildBadges({ quality: "4K", language: "VFQ", codec: "H.264" });
-assert.deepEqual(badges, ["【4K】", "🌐 VFQ", "🎞 H.264"]);
+assert.deepEqual(badges, ["4K", "AVC", "VFQ"]);
 
 const normalizedMovie = normalizeTmdbPayload({
   id: 157336,
@@ -128,4 +147,4 @@ assert.equal(fallbackWithoutId.title, "Sinners");
 assert.equal(fallbackWithoutId.year, 2025);
 assert.equal(fallbackWithoutId.source, "request");
 
-console.log("engine v2 stream presentation and shared TMDB metadata tests passed");
+console.log("engine v2 stream presentation V12 tests passed: provider prose removed, multiline groups canonical");
