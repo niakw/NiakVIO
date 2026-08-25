@@ -18,7 +18,7 @@ ACCEPTANCE_PREPARE="${NIAKVIO}/scripts/prepare_native_reader_acceptance.py"
 INSTRUMENTER="${NIAKVIO}/scripts/instrument_native_client_evidence.py"
 REPOSITORY_HTTP_INSTRUMENTER="${NIAKVIO}/scripts/instrument_native_repository_http_evidence.py"
 REQUEST_CONTRACT="${NIAKVIO}/scripts/augment_native_corpus_request_contract.py"
-PROVIDER_LOADING="${NIAKVIO}/scripts/augment_native_provider_loading.py"
+PROVIDER_LOADING="${NIAKVIO}/scripts/augment_native_provider_loading_compat.py"
 TV_HILT_FINALIZER="${NIAKVIO}/scripts/finalize_native_tv_test_entrypoint.py"
 REPOSITORY_RESOLVER="${NIAKVIO}/scripts/resolve_native_repository.sh"
 LAB_TRANSPORT="${NIAKVIO}/scripts/configure_native_android_lab_transport.py"
@@ -53,8 +53,9 @@ PROVIDER_LOADING_URL_ARGS=()
 if [[ "$ALLOW_LOCAL_MANIFEST" = "1" ]]; then PROVIDER_LOADING_URL_ARGS+=(--allow-local-lab-url); fi
 CONFIGURED_ACCEPTANCE_PROVIDER_SCOPE="$(python3 - <<'PY' 2>/dev/null || true
 import json
+import os
 from pathlib import Path
-path = Path(__import__('os').environ['GITHUB_WORKSPACE']) / 'niakvio/.github/triggers/nuvio-client-lab.json'
+path = Path(os.environ['GITHUB_WORKSPACE']) / 'niakvio/.github/triggers/nuvio-client-lab.json'
 try:
     data = json.loads(path.read_text(encoding='utf-8'))
     print(str((data.get('native_reader_acceptance') or {}).get('provider_scope') or 'fixture'))
