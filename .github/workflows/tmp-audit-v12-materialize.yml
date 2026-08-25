@@ -42,15 +42,14 @@ jobs:
           python3 - <<'PY'
           from pathlib import Path
 
-          # Core policy must use V12 directly; the V11 module remains only a compatibility shim.
           policy = Path('scripts/normalize_core_media_policy.py')
           text = policy.read_text(encoding='utf-8')
           text = text.replace('from normalize_stream_presentation_v11 import', 'from normalize_stream_presentation_v12 import')
           text = text.replace('presentation=global_core_v11', 'presentation=global_core_v12')
           policy.write_text(text, encoding='utf-8')
 
-          # "Dual Audio" is a provider phrase. The canonical Core language fact is Multi,
-          # which is also the exact stable token consumed by the official multi badge rule.
+          # Provider wording is input-only. Canonical language vocabulary uses Multi,
+          # matching the stable StreamBadge token and removing Purstream/Vega/Hind drift.
           for rel in (
               'scripts/provider_patches/global_stream_facts_v1.py',
               'scripts/provider_patches/global_stream_presentation_v1.py',
@@ -58,19 +57,25 @@ jobs:
               path = Path(rel)
               text = path.read_text(encoding='utf-8')
               old = 'if(/\\bDUAL(?:[- ]?AUDIO)?\\b/.test(u))return"Dual Audio";'
-              if old not in text and 'if(/\\bDUAL(?:[- ]?AUDIO)?\\b/.test(u))return"Multi";' not in text:
+              new = 'if(/\\bDUAL(?:[- ]?AUDIO)?\\b/.test(u))return"Multi";'
+              if old not in text and new not in text:
                   raise SystemExit(f'Dual Audio canonicalization anchor missing: {rel}')
-              path.write_text(text.replace(old, 'if(/\\bDUAL(?:[- ]?AUDIO)?\\b/.test(u))return"Multi";'), encoding='utf-8')
+              path.write_text(text.replace(old, new), encoding='utf-8')
 
-          # The previous audit hypothesis about regex double escaping was false: JSON/API
-          # rendering escaped the backslashes, while runtime-loaded patterns are valid.
-          # Keep catalog bytes authoritative and prove regex execution in tests instead.
+          # Preserve catalog regex semantics exactly. The earlier double-escape suspicion
+          # was disproved by executable matching; validate by compiling instead.
           normalizer = Path('scripts/normalize_stream_presentation_v12.py')
           text = normalizer.read_text(encoding='utf-8')
+          if 'import re\n' not in text:
+              text = text.replace('import json\n', 'import json\nimport re\n', 1)
           start = text.index('def _normalize_catalog_patterns(')
           end = text.index('\ndef _feed_payload', start)
-          replacement = '''def _normalize_catalog_patterns(catalog: dict[str, object]) -> tuple[dict[str, object], int]:\n    """Preserve catalog regexes byte-semantically; runtime tests prove executability."""\n    return json.loads(json.dumps(catalog)), 0\n\n'''
-          normalizer.write_text(text[:start] + replacement + text[end + 1:], encoding='utf-8')
+          replacement = '''def _normalize_catalog_patterns(catalog: dict[str, object]) -> tuple[dict[str, object], int]:\n    """Preserve catalog regex semantics; executable tests are the authority."""\n    return json.loads(json.dumps(catalog)), 0\n\n'''
+          text = text[:start] + replacement + text[end + 1:]
+          contract_start = text.index('        for row in filters:', text.index('def assert_contract'))
+          contract_end = text.index('\n\ndef main()', contract_start)
+          contract_loop = '''        for row in filters:\n            pattern = str(row.get("pattern") or "")\n            if not pattern or not row.get("imageURL"):\n                raise ValueError(f"native StreamBadge feed row invalid: {path.name} {row.get('id')}")\n            try:\n                re.compile(pattern)\n            except re.error as exc:\n                raise ValueError(\n                    f"native StreamBadge regex invalid: {path.name} {row.get('id')}: {exc}"\n                ) from exc\n'''
+          normalizer.write_text(text[:contract_start] + contract_loop + text[contract_end:], encoding='utf-8')
 
           test = Path('tests/global_stream_presentation_test.py')
           text = test.read_text(encoding='utf-8')
@@ -120,12 +125,10 @@ jobs:
           python3 tests/provider_export_floor_portfolio_test.py
           python3 tests/provider_purification_contract_test.py
 
-      - name: Remove superseded one-shots and regenerate integrity
+      - name: Remove audit one-shot and regenerate integrity
         shell: bash
         run: |
           set -euo pipefail
-          rm -f .github/workflows/tmp-trigger-pending-finalizers.yml
-          rm -f .github/workflows/tmp-apply-stream-presentation-v11.yml
           rm -f .github/workflows/tmp-audit-v12-materialize.yml
           python3 scripts/generate_release_hashes.py
           python3 scripts/validate_release_integrity.py
