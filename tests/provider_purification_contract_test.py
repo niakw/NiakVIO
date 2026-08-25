@@ -36,9 +36,12 @@ for required in (
     "await minifyAndClean(code, {",
     "const terserCandidate = result.code;",
     "Buffer.byteLength(terserCandidate) >= Buffer.byteLength(canonicalSource)",
+    "const finalClean = cleanTerserOutput(selected);",
+    "const purified = finalClean.code;",
     '"boundary-canonicalization"',
     "retainedAudioBoundaryCanonicalized",
     "floatedGeneratedMarkersCanonicalized",
+    "finalCleanupVerified: true",
 ):
     assert required in node, required
 
@@ -49,7 +52,7 @@ for required in (
     'import { minify } from "terser";',
     'RETAINED_AUDIO_MARKER = "/* NUVIO_HLS_MASTER_AUDIO_PRESERVER_V1 */"',
     "function canonicalizeRetainedCoreBoundary(code)",
-    "function canonicalizeFloatedGeneratedMarkers(code)",
+    "function canonicalizeGeneratedMarkerBoundaries(code)",
     "function canonicalizeOwnedBoundaries(code)",
     "function cleanTerserOutput(code)",
     "async function minifyAndClean(code, options)",
@@ -133,27 +136,47 @@ assert retained_text.count(audio_marker) == 1
 assert "\n\n" + audio_marker not in retained_text
 assert audio_marker + "\n\n" not in retained_text
 assert retained_first_report.get("retainedAudioBoundaryCanonicalized") is True
+assert retained_first_report.get("finalCleanupVerified") is True
 
-# A preserved generated comment may also float inside the provider export bridge,
-# exactly as observed for AnimePahe and AnimeZey. Repair/prefix markers remain
-# untouched; only this proven `marker */);(function` boundary is canonicalized so
-# the strict export-floor parser never has to weaken its trust model.
+# Terser can attach preserved generated comments on either side of the provider
+# export terminator and can vary whitespace/IIFE syntax. Every owned representation
+# must collapse to exactly `);\nMARKER\n<suffix>` with no whitespace left before
+# `);`, then remain byte-identical on the second public purification pass.
 floated_marker = "/* NUVIO_GLOBAL_MEDIA_ENRICHMENT_V1:test */"
-floated_body = (
-    'function getStreams(){return [];}\n'
-    'typeof module!=="undefined"&&module.exports?module.exports={getStreams}:'
-    '(global.getStreams=getStreams '
-    + floated_marker
-    + ');(function(g,c){g.__nuvioMediaTest=c;})(globalThis,{});\n'
-).encode("utf-8")
-floated_first, floated_report = purify_bytes(floated_body)
-floated_second, _floated_second_report = purify_bytes(floated_first)
-floated_text = floated_first.decode("utf-8")
-assert floated_second == floated_first
-assert floated_text.count(floated_marker) == 1
-assert "getStreams " + floated_marker + ");(function" not in floated_text
-assert ");\n" + floated_marker + "\n(function" in floated_text
-assert int(floated_report.get("floatedGeneratedMarkersCanonicalized") or 0) >= 1
+floated_variants = (
+    (
+        "before-close",
+        '(global.getStreams=getStreams \n\t' + floated_marker + '\r\n );(function(g,c){g.__nuvioMediaTest=c;})(globalThis,{});',
+    ),
+    (
+        "between-close-semicolon",
+        '(global.getStreams=getStreams) \r\n' + floated_marker + '\t; !function(g,c){g.__nuvioMediaTest=c}(globalThis,{});',
+    ),
+    (
+        "after-close",
+        '(global.getStreams=getStreams); \r\n\t' + floated_marker + '  (function(g,c){g.__nuvioMediaTest=c;})(globalThis,{});',
+    ),
+    (
+        "arrow-iife",
+        '(global.getStreams=getStreams\n' + floated_marker + ');(()=>{globalThis.__nuvioMediaTest=1})();',
+    ),
+)
+for variant_name, fallback_tail in floated_variants:
+    floated_body = (
+        'function getStreams(){return [];}\n'
+        'typeof module!=="undefined"&&module.exports?module.exports={getStreams}:'
+        + fallback_tail
+        + '\n'
+    ).encode("utf-8")
+    floated_first, floated_report = purify_bytes(floated_body)
+    floated_second, _floated_second_report = purify_bytes(floated_first)
+    floated_text = floated_first.decode("utf-8")
+    assert floated_second == floated_first, variant_name
+    assert floated_text.count(floated_marker) == 1, variant_name
+    assert "getStreams);\n" + floated_marker + "\n" in floated_text, variant_name
+    assert not re.search(r"getStreams[ \t\r\n]+\);\n" + re.escape(floated_marker), floated_text), variant_name
+    assert int(floated_report.get("floatedGeneratedMarkersCanonicalized") or 0) >= 1, variant_name
+    assert floated_report.get("finalCleanupVerified") is True, variant_name
 
 # Deep proves the exact purified baseline and every later Brain/runtime mutation.
 assert "purify_registry(stage, output / \"provider-purification.json\")" in deep
