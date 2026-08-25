@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 from pathlib import Path
+import re
 import sys
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -7,7 +8,10 @@ sys.path.insert(0, str(ROOT / "scripts"))
 
 from provider_purification import purify_bytes, split_owned_prefix_bootstraps  # noqa: E402
 
-node = (ROOT / "engine_v2/scripts/purify-provider.mjs").read_text(encoding="utf-8")
+node_path = ROOT / "engine_v2/scripts/purify-provider.mjs"
+cleaner_path = ROOT / "engine_v2/scripts/terser-clean.mjs"
+node = node_path.read_text(encoding="utf-8")
+terser_clean = cleaner_path.read_text(encoding="utf-8")
 helper = (ROOT / "scripts/provider_purification.py").read_text(encoding="utf-8")
 deep = (ROOT / "scripts/run_adaptive_deep_repair.py").read_text(encoding="utf-8")
 reapply = (ROOT / "scripts/reapply_published_overrides.py").read_text(encoding="utf-8")
@@ -28,17 +32,40 @@ for required in (
     'process.argv.includes("--format-only")',
     'forceFormatOnly || risky',
     '"format-only"',
+    'from "./terser-clean.mjs"',
+    "await minifyAndClean(code, {",
+    "const terserCandidate = result.code;",
+    "Buffer.byteLength(terserCandidate) >= Buffer.byteLength(canonicalSource)",
+    '"boundary-canonicalization"',
+    "retainedAudioBoundaryCanonicalized",
+    "floatedGeneratedMarkersCanonicalized",
+):
+    assert required in node, required
+
+# The Terser gateway owns every post-minify cleanup. New direct Terser imports or
+# requires anywhere else in tracked JS tooling are a contract failure: callers
+# must not be able to forget boundary cleanup before validation/hash/publication.
+for required in (
+    'import { minify } from "terser";',
     'RETAINED_AUDIO_MARKER = "/* NUVIO_HLS_MASTER_AUDIO_PRESERVER_V1 */"',
     "function canonicalizeRetainedCoreBoundary(code)",
     "function canonicalizeFloatedGeneratedMarkers(code)",
     "function canonicalizeOwnedBoundaries(code)",
-    "floatedGeneratedMarkersCanonicalized",
-    "const canonicalSource = withTerminalNewline(code);",
-    "Buffer.byteLength(terserCandidate) >= Buffer.byteLength(canonicalSource)",
-    '"boundary-canonicalization"',
-    "retainedAudioBoundaryCanonicalized",
+    "function cleanTerserOutput(code)",
+    "async function minifyAndClean(code, options)",
+    "const result = await minify(code, options);",
+    "const cleaned = cleanTerserOutput(result.code);",
 ):
-    assert required in node, required
+    assert required in terser_clean, required
+
+direct_terser = re.compile(r"(?:from\s+['\"]terser['\"]|require\(\s*['\"]terser['\"]\s*\))")
+for suffix in ("*.js", "*.mjs", "*.cjs"):
+    for path in ROOT.rglob(suffix):
+        if any(part in {"node_modules", ".git"} for part in path.parts):
+            continue
+        text = path.read_text(encoding="utf-8", errors="ignore")
+        if direct_terser.search(text):
+            assert path.resolve() == cleaner_path.resolve(), f"direct Terser bypasses mandatory cleanup: {path.relative_to(ROOT)}"
 
 # The build-only dependency is exact/pinned and every accepted body transform must
 # be structurally valid and byte-stable under an identical second Terser pass.
