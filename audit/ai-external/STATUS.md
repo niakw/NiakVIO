@@ -1,12 +1,12 @@
 # External code-audit status
 
-Generated from `niakw/NiakVIO` at commit `da94939c39480b9e9b6242993a53c53bb3f9a160`.
+Generated from `niakw/NiakVIO` at commit `3ef14ca76daf38e2e168633fefdd7bacff8de223`.
 
 | Source | Status | Findings/files | Notes |
 |---|---:|---:|---|
-| SonarQube Cloud | PARTIAL/ERROR | — | SONAR_KEY repository secret is missing/unavailable |
-| DeepSource | PARTIAL/ERROR | — | DEEPSOURCE_PASS repository secret is missing/unavailable |
-| CodeScene | PARTIAL/ERROR | — | CODESCENE_TOKEN repository secret is missing/unavailable |
+| SonarQube Cloud | PARTIAL/ERROR | — | project discovery failed: HTTP 401 |
+| DeepSource | PARTIAL/ERROR | — | authentication failed |
+| CodeScene | OK | 688 | OK |
 
 ## AI reading order
 
