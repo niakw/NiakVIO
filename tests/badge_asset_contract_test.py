@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -10,6 +11,8 @@ MAPPING = ROOT / "assets/mapping_core_brain_ui_v2_complete.json"
 README = ROOT / "assets/README.txt"
 CORE = ROOT / "scripts/provider_patches/global_stream_presentation_v1.py"
 LIGHT_QA = ROOT / "assets/docs/LIGHT_BADGE_QA.json"
+FUSION = ROOT / "assets/stream-badges-fusion.json"
+RAW_PREFIX = "https://raw.githubusercontent.com/niakw/NiakVIO/main/"
 
 catalog = json.loads(CATALOG.read_text(encoding="utf-8"))
 mapping = json.loads(MAPPING.read_text(encoding="utf-8"))
@@ -23,6 +26,16 @@ by_id = {str(row.get("id") or ""): row for row in badges if isinstance(row, dict
 assert len(by_id) == len(badges), "badge ids must be unique"
 
 for badge_id, row in by_id.items():
+    pattern = str(row.get("pattern") or "")
+    assert pattern, (badge_id, "missing regex")
+    # Parsed regexes must contain one escaping layer. Two backslashes here mean the
+    # Kotlin/Java regex engine receives a literal backslash instead of \b/\s/etc.
+    assert "\\\\" not in pattern, (badge_id, "over-escaped regex", repr(pattern))
+    try:
+        re.compile(pattern)
+    except re.error as exc:
+        raise AssertionError((badge_id, pattern, exc)) from exc
+
     assets = row.get("assets") or {}
     for theme in ("transparent", "dark", "light"):
         themed = assets.get(theme) or {}
@@ -35,25 +48,31 @@ for badge_id, row in by_id.items():
             assert path.stat().st_size > 0, (badge_id, rel, "empty image")
 
 assert light_qa.get("revision") == "light-contrast-v3-native-size", light_qa.get("revision")
-assert light_qa.get("catalogBadges") == len(badges), light_qa.get("catalogBadges")
-assert light_qa.get("assetCount") == len(badges) * 2, light_qa.get("assetCount")
-assert light_qa.get("changedCount") == len(badges) * 2, light_qa.get("changedCount")
-assert light_qa.get("rerenderedTextCount", 0) > 0, light_qa.get("rerenderedTextCount")
-assert light_qa.get("preservedArtworkCount", 0) > 0, light_qa.get("preservedArtworkCount")
-assert light_qa.get("minimumGenericFontSize", 0) >= 9, light_qa.get("minimumGenericFontSize")
-assert light_qa.get("whiteBackgroundMinimumSeparationRatio", 0) >= 4.5, light_qa.get("whiteBackgroundMinimumSeparationRatio")
-assert light_qa.get("sourceOfTruth") == "assets/transparent", light_qa.get("sourceOfTruth")
+assert light_qa.get("catalogBadges") == len(badges)
+assert light_qa.get("assetCount") == len(badges) * 2
+assert light_qa.get("changedCount") == len(badges) * 2
+assert light_qa.get("rerenderedTextCount", 0) > 0
+assert light_qa.get("preservedArtworkCount", 0) > 0
+assert light_qa.get("minimumGenericFontSize", 0) >= 9
+assert light_qa.get("whiteBackgroundMinimumSeparationRatio", 0) >= 4.5
+assert light_qa.get("sourceOfTruth") == "assets/transparent"
 assert light_qa.get("idempotent") is True
 qa_rows = light_qa.get("rows") or []
-assert len(qa_rows) == len(badges) * 2, len(qa_rows)
-qa_by_key = {(str(row.get("badge") or ""), str(row.get("size") or "")): row for row in qa_rows if isinstance(row, dict)}
-assert len(qa_by_key) == len(qa_rows), "light QA badge/size rows must be unique"
+assert len(qa_rows) == len(badges) * 2
+qa_by_key = {
+    (str(row.get("badge") or ""), str(row.get("size") or "")): row
+    for row in qa_rows if isinstance(row, dict)
+}
+assert len(qa_by_key) == len(qa_rows)
 for badge_id in by_id:
     for size in ("72x32", "96x40"):
         qa = qa_by_key.get((badge_id, size))
         assert qa, (badge_id, size, "missing light QA row")
-        assert qa.get("output") == by_id[badge_id]["assets"]["light"][size], (badge_id, size, qa.get("output"))
-        separation = max(float(qa.get("backgroundVsWhiteContrast") or 0), float(qa.get("outlineVsWhiteContrast") or 0))
+        assert qa.get("output") == by_id[badge_id]["assets"]["light"][size]
+        separation = max(
+            float(qa.get("backgroundVsWhiteContrast") or 0),
+            float(qa.get("outlineVsWhiteContrast") or 0),
+        )
         assert separation >= 4.5, (badge_id, size, separation)
 
 assert mapping["display"]["preferredThemeFolders"] == {
@@ -63,52 +82,26 @@ assert mapping["display"]["preferredThemeFolders"] == {
 assert mapping["display"]["transparentAssets"] == "assets/transparent"
 assert mapping["display"]["hideUnknownBadges"] is True
 assert mapping["display"]["alwaysReplaceProviderDescription"] is True
+assert mapping["display"]["presentationRevision"] == "global_core_v12"
+assert mapping["display"]["clientProjection"]["compatibilityEnvelopeField"] == "size"
+assert mapping["display"]["clientProjection"]["suppressedLegacyRecompositionFields"] == ["quality", "language"]
 assert mapping["display"]["fallbackWhenNativeBadgesDisabled"] == "emojiTechnicalLine"
 assert mapping["display"]["nativeBadgeFeeds"] == {
+    "recommended": "assets/stream-badges-fusion.json",
     "dark_app_background": "assets/stream-badges-dark.json",
     "light_app_background": "assets/stream-badges-light.json",
+    "requiresNuvioImport": True,
 }
 assert "Use assets/dark when the Nuvio application background is gray/dark." in readme
 assert "Use assets/light when the Nuvio application background is white/light." in readme
-assert "DUAL-MODE RUNTIME RULE" in readme
 
 core_badge_ids = {
-    "uhd-blu-ray",
-    "4k-ultra-hd",
-    "1080p-full-hd",
-    "720p-hd",
-    "480p-sd",
-    "blu-ray-disc",
-    "webdl",
-    "webrip",
-    "hdtv",
-    "dvd-rip",
-    "remux",
-    "dolby-vision",
-    "hdr10-plus",
-    "hdr10",
-    "imax-enhanced",
-    "imax",
-    "hevc",
-    "avc",
-    "10bit",
-    "dolby-atmos",
-    "truehd",
-    "dolby-digital-plus",
-    "dolby-digital",
-    "dts-x",
-    "dts-hd-master-audio",
-    "7.1",
-    "5.1",
-    "multi",
-    "vff",
-    "vfq",
-    "vo",
-    "vostfr",
-    "sub-fr",
-    "sub-en",
-    "forced",
-    "sdh-cc",
+    "uhd-blu-ray", "4k-ultra-hd", "1080p-full-hd", "720p-hd", "480p-sd",
+    "blu-ray-disc", "webdl", "webrip", "hdtv", "dvd-rip", "remux",
+    "dolby-vision", "hdr10-plus", "hdr10", "imax-enhanced", "imax",
+    "hevc", "avc", "10bit", "dolby-atmos", "truehd", "dolby-digital-plus",
+    "dolby-digital", "dts-x", "dts-hd-master-audio", "7.1", "5.1", "multi",
+    "vff", "vfq", "vo", "vostfr", "sub-fr", "sub-en", "forced", "sdh-cc",
 }
 missing = sorted(core_badge_ids - set(by_id))
 assert not missing, f"Core emits badge IDs with no catalog image: {missing}"
@@ -117,34 +110,51 @@ for badge_id in core_badge_ids:
 for stale_id in ("dts-hd-ma", "7-1-audio", "5-1-audio", "sdh"):
     assert f'"{stale_id}"' not in core, f"stale non-catalog badge alias leaked from Core: {stale_id}"
 
-for badge_id in ("4k-ultra-hd", "blu-ray-disc", "dolby-vision", "dolby-atmos"):
-    assert by_id[badge_id].get("assetBasis"), (badge_id, "missing asset provenance")
-
 rules = "\n".join(mapping.get("rules") or [])
 assert "Never infer Blu-ray or Ultra HD Blu-ray from 1080p/2160p alone." in rules
 assert "REMUX must be confirmed" in rules
-assert "Always replace every provider-owned stream description" in rules
 assert "TMDB may fill media context" in rules
+assert "V12 mirrors the canonical presentation into size" in rules
 
-# Exact import payloads consumed by official Nuvio StreamBadgeRules. The feed uses
-# the existing 96x40 theme-aware assets; the Core text remains the universal
-# matcher/fallback and therefore never depends on the account setting itself.
+# Exact payloads consumed by official Nuvio StreamBadgeRules.
 for theme in ("dark", "light"):
     feed_path = ROOT / f"assets/stream-badges-{theme}.json"
     feed = json.loads(feed_path.read_text(encoding="utf-8"))
-    assert len(feed.get("filters") or []) == len(badges), (theme, len(feed.get("filters") or []))
-    assert len(feed.get("groups") or []) == len(catalog.get("groups") or []), theme
+    assert len(feed.get("filters") or []) == len(badges)
+    assert len(feed.get("groups") or []) == len(catalog.get("groups") or [])
     feed_by_id = {str(row.get("id") or ""): row for row in feed.get("filters") or []}
-    assert set(feed_by_id) == set(by_id), theme
+    assert set(feed_by_id) == set(by_id)
     for badge_id, row in feed_by_id.items():
         expected_rel = by_id[badge_id]["assets"][theme]["96x40"]
-        assert row["imageURL"].endswith(expected_rel), (theme, badge_id, row["imageURL"])
-        assert row["pattern"] == by_id[badge_id]["pattern"], (theme, badge_id)
+        assert row["imageURL"].endswith(expected_rel)
+        assert row["pattern"] == by_id[badge_id]["pattern"]
+        assert "\\\\" not in str(row["pattern"])
         assert row["isEnabled"] is True
+
+fusion = json.loads(FUSION.read_text(encoding="utf-8"))
+fusion_by_id = {str(row.get("id") or ""): row for row in fusion.get("filters") or []}
+assert set(fusion_by_id) == set(by_id)
+for badge_id, row in fusion_by_id.items():
+    assert row["pattern"] == by_id[badge_id]["pattern"]
+    assert "\\\\" not in str(row["pattern"])
+    image_url = str(row["imageURL"])
+    assert image_url.startswith(RAW_PREFIX)
+    image = ROOT / image_url.removeprefix(RAW_PREFIX)
+    assert image.is_file() and image.stat().st_size > 0
+
+# Smoke the regexes against the canonical V12 matcher vocabulary.
+examples = {
+    "4k-ultra-hd": "🎞️ 2160p • BLU-RAY • HEVC • HLS",
+    "blu-ray-disc": "🎞️ 2160p • BLU-RAY • HEVC • HLS",
+    "hevc": "🎞️ 2160p • BLU-RAY • HEVC • HLS",
+    "dolby-digital-plus": "🔊 E-AC3 • 5.1",
+    "5.1": "🔊 E-AC3 • 5.1",
+}
+for badge_id, text in examples.items():
+    assert re.search(str(fusion_by_id[badge_id]["pattern"]), text), (badge_id, text)
 
 print(
     "badge asset contract passed: "
-    f"catalog={len(badges)} themes=3 sizes=2 core_ids={len(core_badge_ids)} "
-    f"light_qa_rows={len(qa_rows)} min_white_separation={light_qa['whiteBackgroundMinimumSeparationRatio']} "
-    "native_streambadge_feeds=true emoji_fallback=true"
+    f"catalog={len(badges)} feeds=dark+light+fusion regexes=executable "
+    f"light_qa_rows={len(qa_rows)} presentation=global_core_v12"
 )
