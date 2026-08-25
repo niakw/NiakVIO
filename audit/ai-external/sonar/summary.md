@@ -3,14 +3,27 @@
 - Access: public Sonar organization/project; no Sonar login or API token used.
 - Project: `NiakVIO`
 - Project key: `niakw_NiakVIO`
-- Open findings exported: **2481**
-- Severity: `CRITICAL` 1016, `MINOR` 688, `MAJOR` 660, `BLOCKER` 117
-- Type: `CODE_SMELL` 2211, `VULNERABILITY` 160, `BUG` 110
+- Open findings exported: **2494**
+- Severity: `CRITICAL` 1021, `MINOR` 694, `MAJOR` 662, `BLOCKER` 117
+- Type: `CODE_SMELL` 2222, `VULNERABILITY` 159, `BUG` 113
 
 ## Findings
 
-- `niakw_NiakVIO:.github/workflows/external-code-audit.yml:148` **BLOCKER / VULNERABILITY** `githubactions:S8482` — Avoid executing downloaded artifacts directly without verification.
-- `niakw_NiakVIO:.github/workflows/external-code-audit.yml:148` **MAJOR / VULNERABILITY** `githubactions:S6506` — Not enforcing HTTPS here might allow for redirections to insecure websites. Make sure it is safe here.
+- `niakw_NiakVIO:scripts/external_audit/codescene.py:57` **CRITICAL / CODE_SMELL** `python:S1192` — Define a constant instead of duplicating this literal "status.json" 5 times.
+- `niakw_NiakVIO:scripts/external_audit/codescene.py:82` **MAJOR / CODE_SMELL** `python:S3358` — Extract this nested conditional expression into an independent statement.
+- `niakw_NiakVIO:scripts/external_audit/sonar.py:57` **CRITICAL / CODE_SMELL** `python:S1192` — Define a constant instead of duplicating this literal "status.json" 4 times.
+- `niakw_NiakVIO:scripts/external_audit/sonar.py:82` **MAJOR / CODE_SMELL** `python:S3358` — Extract this nested conditional expression into an independent statement.
+- `niakw_NiakVIO:scripts/gate_native_cross_client_runtime.cjs:40` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
+- `niakw_NiakVIO:scripts/gate_native_cross_client_runtime.cjs:51` **MAJOR / CODE_SMELL** `javascript:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
+- `niakw_NiakVIO:scripts/gate_native_cross_client_runtime.cjs:51` **MINOR / CODE_SMELL** `javascript:S6353` — Use concise character class syntax '\w' instead of '[A-Za-z0-9_]'.
+- `niakw_NiakVIO:scripts/gate_native_cross_client_runtime.cjs:58` **MINOR / CODE_SMELL** `javascript:S7781` — Prefer `String#replaceAll()` over `String#replace()`.
+- `niakw_NiakVIO:scripts/gate_native_cross_client_runtime.cjs:58` **MINOR / CODE_SMELL** `javascript:S7781` — Prefer `String#replaceAll()` over `String#replace()`.
+- `niakw_NiakVIO:scripts/gate_native_cross_client_runtime.cjs:72` **MINOR / CODE_SMELL** `javascript:S7781` — Prefer `String#replaceAll()` over `String#split().join()`.
+- `niakw_NiakVIO:scripts/gate_native_cross_client_runtime.cjs:132` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
+- `niakw_NiakVIO:scripts/gate_native_cross_client_runtime.cjs:138` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
+- `niakw_NiakVIO:scripts/gate_native_player_reached.cjs:25` **MINOR / CODE_SMELL** `javascript:S7781` — Prefer `String#replaceAll()` over `String#replace()`.
+- `niakw_NiakVIO:scripts/gate_native_player_reached.cjs:25` **MINOR / CODE_SMELL** `javascript:S7781` — Prefer `String#replaceAll()` over `String#replace()`.
+- `niakw_NiakVIO:audit/ai-external/deepsource/network-json.json:335` **BLOCKER / VULNERABILITY** `json:S6418` — "token" detected here, make sure this is not a hard-coded secret.
 - `niakw_NiakVIO:scripts/provider_purification.py:234` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 18 to the 15 allowed.
 - `niakw_NiakVIO:engine_v2/scripts/terser-clean.mjs:20` **MINOR / CODE_SMELL** `javascript:S7765` — Use `.includes()`, rather than `.indexOf()`, when checking for existence.
 - `niakw_NiakVIO:engine_v2/scripts/terser-clean.mjs:24` **MAJOR / CODE_SMELL** `javascript:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.

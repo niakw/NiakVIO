@@ -1,85 +1,189 @@
-# DeepSource shared report
+# DeepSource API audit
 
-- Access: password-protected shared report; no DeepSource account login or API token used.
-- Report: `https://app.deepsource.com/report/7497cac1-bd35-47f8-ac92-3503e0a34c65`
-- Readable characters: **1863**
-- Captured JSON responses: **16**
+- Access: official DeepSource GraphQL API using GitHub Actions secret `DEEPSOURCE_API`.
+- Endpoint: `https://api.deepsource.com/graphql/`
+- Repository: `niakw/NiakVIO`
+- Default branch: `main`
+- Repository issue rules exported: **3**
+- Concrete issue occurrences exported: **172**
+- Dependency vulnerabilities exported: **0**
+- Analysis runs exported: **30**
+- Autofix-capable occurrences: **0**
+- AI-autofix-capable occurrences: **0**
+- Severity: `MINOR` 126, `CRITICAL` 46
+- Category: `SECRETS` 172
 
-## Report text
+## Findings
 
-niakw
-REPORTS
-Code Health Trend
-Issue Distribution
-Issues Autofixed
-Issues Prevented
-Active 3rd-party vulnerabilities
-MISRA C
-CWE/SANS Top 25
-OWASP® Top 10
-— Summary
-— Intended use
-— Continuous Code Health
-— About DeepSource
-REPOSITORY
-NiakVIO
-Code Health Trend report
-
-Created on Aug 25, 2026
-
-Summary
-
-DeepSource continuously scans niakw’s source code to detect code health issues. This report provides the current and historical snapshot of active, resolved and net new code health issues introduced to niakw’s source code, limited to the repositories tracked on DeepSource.
-
-Intended use of this report
-
-This report can be used by the niakw team to track how many new issues are being introduced to the codebase and how many existing issues are being resolved. The goal of this report is to provide insights about the net change in code health.
-
-Continuous Code Health
-
-DeepSource integrates with niakw’s software development workflows to provide developers and key stakeholders a way to identify and fix code health issues continuously and proactively. This report is dynamic. As niakw’s team improves its source code security posture, the changes will be reflected in this report.
-
-NET NEW ISSUES THIS MONTH
-
-2
-
-Last 7 days
-
-Not enough data to show a trend. Please come back later.
-
-Label 0
-Label 2
-Label 4
-Label 6
--20
--10
-0
-10
-20
-CURRENT
-
-2
-
-1 MONTH AGO
-
-N/A
-
-3 MONTHS AGO
-
-N/A
-
-6 MONTHS AGO
-
-N/A
-
-12 MONTHS AGO
-
-N/A
-
-About DeepSource
-
-DeepSource is a technology company that builds tools for developers. It provides a set of tools that fit into a developer’s workflow. Our cloud-based technology scans code in multiple languages and detects flaws in the codebase including, but not restricted to security and performance issues, bug risks, and anti-patterns.
-
-DeepSource is based in San Francisco, California and Bengaluru, India.
-
-© 2026 DeepSource Corp.
+- `upstream-lkg/providers/8fc6c9c3b021df2df2430dbd2559aece034cea02c5f0f9d4d514eebbb394584c.js:77` **CRITICAL / SECRETS** `SCT-1000` — Secrets should never be checked into source code. Ideally, they should be injected into the runtime and then the values should be picked from there.
+- `automation/targeted-provider-findings.md:314` **CRITICAL / SECRETS** `SCT-1000` — Secrets should never be checked into source code. Ideally, they should be injected into the runtime and then the values should be picked from there.
+- `automation/targeted-provider-findings.md:305` **CRITICAL / SECRETS** `SCT-1000` — Secrets should never be checked into source code. Ideally, they should be injected into the runtime and then the values should be picked from there.
+- `automation/targeted-provider-findings.md:299` **CRITICAL / SECRETS** `SCT-1000` — Secrets should never be checked into source code. Ideally, they should be injected into the runtime and then the values should be picked from there.
+- `automation/targeted-provider-findings.md:281` **CRITICAL / SECRETS** `SCT-1000` — Secrets should never be checked into source code. Ideally, they should be injected into the runtime and then the values should be picked from there.
+- `automation/targeted-provider-findings.md:275` **CRITICAL / SECRETS** `SCT-1000` — Secrets should never be checked into source code. Ideally, they should be injected into the runtime and then the values should be picked from there.
+- `automation/targeted-provider-findings.md:218` **CRITICAL / SECRETS** `SCT-1000` — Secrets should never be checked into source code. Ideally, they should be injected into the runtime and then the values should be picked from there.
+- `automation/targeted-provider-findings.md:94` **CRITICAL / SECRETS** `SCT-1000` — Secrets should never be checked into source code. Ideally, they should be injected into the runtime and then the values should be picked from there.
+- `automation/targeted-provider-contexts.json:483` **CRITICAL / SECRETS** `SCT-1000` — Secrets should never be checked into source code. Ideally, they should be injected into the runtime and then the values should be picked from there.
+- `automation/targeted-provider-contexts.json:438` **CRITICAL / SECRETS** `SCT-1000` — Secrets should never be checked into source code. Ideally, they should be injected into the runtime and then the values should be picked from there.
+- `automation/targeted-provider-contexts.json:437` **CRITICAL / SECRETS** `SCT-1000` — Secrets should never be checked into source code. Ideally, they should be injected into the runtime and then the values should be picked from there.
+- `automation/targeted-provider-contexts.json:434` **CRITICAL / SECRETS** `SCT-1000` — Secrets should never be checked into source code. Ideally, they should be injected into the runtime and then the values should be picked from there.
+- `automation/targeted-provider-contexts.json:433` **CRITICAL / SECRETS** `SCT-1000` — Secrets should never be checked into source code. Ideally, they should be injected into the runtime and then the values should be picked from there.
+- `automation/targeted-provider-contexts.json:432` **CRITICAL / SECRETS** `SCT-1000` — Secrets should never be checked into source code. Ideally, they should be injected into the runtime and then the values should be picked from there.
+- `automation/targeted-provider-contexts.json:431` **CRITICAL / SECRETS** `SCT-1000` — Secrets should never be checked into source code. Ideally, they should be injected into the runtime and then the values should be picked from there.
+- `automation/targeted-provider-contexts.json:430` **CRITICAL / SECRETS** `SCT-1000` — Secrets should never be checked into source code. Ideally, they should be injected into the runtime and then the values should be picked from there.
+- `automation/targeted-provider-contexts.json:429` **CRITICAL / SECRETS** `SCT-1000` — Secrets should never be checked into source code. Ideally, they should be injected into the runtime and then the values should be picked from there.
+- `automation/targeted-provider-contexts.json:428` **CRITICAL / SECRETS** `SCT-1000` — Secrets should never be checked into source code. Ideally, they should be injected into the runtime and then the values should be picked from there.
+- `automation/targeted-provider-contexts.json:427` **CRITICAL / SECRETS** `SCT-1000` — Secrets should never be checked into source code. Ideally, they should be injected into the runtime and then the values should be picked from there.
+- `automation/targeted-provider-contexts.json:415` **CRITICAL / SECRETS** `SCT-1000` — Secrets should never be checked into source code. Ideally, they should be injected into the runtime and then the values should be picked from there.
+- `automation/targeted-provider-contexts.json:414` **CRITICAL / SECRETS** `SCT-1000` — Secrets should never be checked into source code. Ideally, they should be injected into the runtime and then the values should be picked from there.
+- `automation/targeted-provider-contexts.json:413` **CRITICAL / SECRETS** `SCT-1000` — Secrets should never be checked into source code. Ideally, they should be injected into the runtime and then the values should be picked from there.
+- `automation/targeted-provider-contexts.json:412` **CRITICAL / SECRETS** `SCT-1000` — Secrets should never be checked into source code. Ideally, they should be injected into the runtime and then the values should be picked from there.
+- `automation/targeted-provider-contexts.json:411` **CRITICAL / SECRETS** `SCT-1000` — Secrets should never be checked into source code. Ideally, they should be injected into the runtime and then the values should be picked from there.
+- `automation/targeted-provider-contexts.json:410` **CRITICAL / SECRETS** `SCT-1000` — Secrets should never be checked into source code. Ideally, they should be injected into the runtime and then the values should be picked from there.
+- `automation/targeted-provider-contexts.json:409` **CRITICAL / SECRETS** `SCT-1000` — Secrets should never be checked into source code. Ideally, they should be injected into the runtime and then the values should be picked from there.
+- `automation/targeted-provider-contexts.json:408` **CRITICAL / SECRETS** `SCT-1000` — Secrets should never be checked into source code. Ideally, they should be injected into the runtime and then the values should be picked from there.
+- `automation/targeted-provider-contexts.json:394` **CRITICAL / SECRETS** `SCT-1000` — Secrets should never be checked into source code. Ideally, they should be injected into the runtime and then the values should be picked from there.
+- `automation/targeted-provider-contexts.json:365` **CRITICAL / SECRETS** `SCT-1000` — Secrets should never be checked into source code. Ideally, they should be injected into the runtime and then the values should be picked from there.
+- `automation/targeted-provider-contexts.json:142` **CRITICAL / SECRETS** `SCT-1000` — Secrets should never be checked into source code. Ideally, they should be injected into the runtime and then the values should be picked from there.
+- `automation/nuvio-tv-target-diagnostics-v2.json:1183` **CRITICAL / SECRETS** `SCT-1004` — Leaking a JavaScript Web Token (JWT) in the source code can pose a serious security risk, as it can give unauthorized access to resources and sensitive information in the web application. This can lead to data breaches and loss of confidential information. If a JWT secret has been leaked, you can deprecate the old secret and use a new one to mitigate the vulnerability.
+- `automation/nuvio-tv-target-diagnostics-v2.json:1182` **CRITICAL / SECRETS** `SCT-1004` — Leaking a JavaScript Web Token (JWT) in the source code can pose a serious security risk, as it can give unauthorized access to resources and sensitive information in the web application. This can lead to data breaches and loss of confidential information. If a JWT secret has been leaked, you can deprecate the old secret and use a new one to mitigate the vulnerability.
+- `automation/nuvio-tv-target-diagnostics-v2.json:1160` **CRITICAL / SECRETS** `SCT-1004` — Leaking a JavaScript Web Token (JWT) in the source code can pose a serious security risk, as it can give unauthorized access to resources and sensitive information in the web application. This can lead to data breaches and loss of confidential information. If a JWT secret has been leaked, you can deprecate the old secret and use a new one to mitigate the vulnerability.
+- `automation/nuvio-tv-target-diagnostics-v2.json:1159` **CRITICAL / SECRETS** `SCT-1004` — Leaking a JavaScript Web Token (JWT) in the source code can pose a serious security risk, as it can give unauthorized access to resources and sensitive information in the web application. This can lead to data breaches and loss of confidential information. If a JWT secret has been leaked, you can deprecate the old secret and use a new one to mitigate the vulnerability.
+- `automation/nuvio-tv-target-diagnostics-v2.json:1114` **CRITICAL / SECRETS** `SCT-1004` — Leaking a JavaScript Web Token (JWT) in the source code can pose a serious security risk, as it can give unauthorized access to resources and sensitive information in the web application. This can lead to data breaches and loss of confidential information. If a JWT secret has been leaked, you can deprecate the old secret and use a new one to mitigate the vulnerability.
+- `automation/nuvio-tv-target-diagnostics-v2.json:1113` **CRITICAL / SECRETS** `SCT-1004` — Leaking a JavaScript Web Token (JWT) in the source code can pose a serious security risk, as it can give unauthorized access to resources and sensitive information in the web application. This can lead to data breaches and loss of confidential information. If a JWT secret has been leaked, you can deprecate the old secret and use a new one to mitigate the vulnerability.
+- `automation/nuvio-tv-target-diagnostics-v2.json:1001` **CRITICAL / SECRETS** `SCT-1004` — Leaking a JavaScript Web Token (JWT) in the source code can pose a serious security risk, as it can give unauthorized access to resources and sensitive information in the web application. This can lead to data breaches and loss of confidential information. If a JWT secret has been leaked, you can deprecate the old secret and use a new one to mitigate the vulnerability.
+- `automation/nuvio-tv-target-diagnostics-v2.json:1000` **CRITICAL / SECRETS** `SCT-1004` — Leaking a JavaScript Web Token (JWT) in the source code can pose a serious security risk, as it can give unauthorized access to resources and sensitive information in the web application. This can lead to data breaches and loss of confidential information. If a JWT secret has been leaked, you can deprecate the old secret and use a new one to mitigate the vulnerability.
+- `automation/nuvio-tv-target-diagnostics-v2.json:933` **CRITICAL / SECRETS** `SCT-1004` — Leaking a JavaScript Web Token (JWT) in the source code can pose a serious security risk, as it can give unauthorized access to resources and sensitive information in the web application. This can lead to data breaches and loss of confidential information. If a JWT secret has been leaked, you can deprecate the old secret and use a new one to mitigate the vulnerability.
+- `automation/nuvio-tv-target-diagnostics-v2.json:932` **CRITICAL / SECRETS** `SCT-1004` — Leaking a JavaScript Web Token (JWT) in the source code can pose a serious security risk, as it can give unauthorized access to resources and sensitive information in the web application. This can lead to data breaches and loss of confidential information. If a JWT secret has been leaked, you can deprecate the old secret and use a new one to mitigate the vulnerability.
+- `automation/nuvio-tv-target-diagnostics-v2.json:930` **CRITICAL / SECRETS** `SCT-1004` — Leaking a JavaScript Web Token (JWT) in the source code can pose a serious security risk, as it can give unauthorized access to resources and sensitive information in the web application. This can lead to data breaches and loss of confidential information. If a JWT secret has been leaked, you can deprecate the old secret and use a new one to mitigate the vulnerability.
+- `automation/nuvio-tv-target-diagnostics-v2.json:925` **CRITICAL / SECRETS** `SCT-1004` — Leaking a JavaScript Web Token (JWT) in the source code can pose a serious security risk, as it can give unauthorized access to resources and sensitive information in the web application. This can lead to data breaches and loss of confidential information. If a JWT secret has been leaked, you can deprecate the old secret and use a new one to mitigate the vulnerability.
+- `automation/nuvio-tv-target-diagnostics-v2.json:841` **CRITICAL / SECRETS** `SCT-1004` — Leaking a JavaScript Web Token (JWT) in the source code can pose a serious security risk, as it can give unauthorized access to resources and sensitive information in the web application. This can lead to data breaches and loss of confidential information. If a JWT secret has been leaked, you can deprecate the old secret and use a new one to mitigate the vulnerability.
+- `automation/nuvio-tv-target-diagnostics-v2.json:788` **CRITICAL / SECRETS** `SCT-1004` — Leaking a JavaScript Web Token (JWT) in the source code can pose a serious security risk, as it can give unauthorized access to resources and sensitive information in the web application. This can lead to data breaches and loss of confidential information. If a JWT secret has been leaked, you can deprecate the old secret and use a new one to mitigate the vulnerability.
+- `automation/nuvio-tv-target-diagnostics-v2.json:765` **CRITICAL / SECRETS** `SCT-1004` — Leaking a JavaScript Web Token (JWT) in the source code can pose a serious security risk, as it can give unauthorized access to resources and sensitive information in the web application. This can lead to data breaches and loss of confidential information. If a JWT secret has been leaked, you can deprecate the old secret and use a new one to mitigate the vulnerability.
+- `automation/nuvio-tv-target-diagnostics-v2.json:742` **CRITICAL / SECRETS** `SCT-1004` — Leaking a JavaScript Web Token (JWT) in the source code can pose a serious security risk, as it can give unauthorized access to resources and sensitive information in the web application. This can lead to data breaches and loss of confidential information. If a JWT secret has been leaked, you can deprecate the old secret and use a new one to mitigate the vulnerability.
+- `upstream-lkg/providers/e3a5ca37785b04610a23a44a509dabf134c9154a35dd91d3070f3766029b5792.js:75` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `upstream-lkg/providers/95a080c30f77d7dd9f7bd151d0d4f976164328cd1ce61cecad330199e91c2683.js:71` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `upstream-lkg/providers/95a080c30f77d7dd9f7bd151d0d4f976164328cd1ce61cecad330199e91c2683.js:50` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `upstream-lkg/providers/95a080c30f77d7dd9f7bd151d0d4f976164328cd1ce61cecad330199e91c2683.js:49` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `upstream-lkg/providers/95a080c30f77d7dd9f7bd151d0d4f976164328cd1ce61cecad330199e91c2683.js:23` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `upstream-lkg/providers/8fc6c9c3b021df2df2430dbd2559aece034cea02c5f0f9d4d514eebbb394584c.js:78` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `upstream-lkg/providers/8fc6c9c3b021df2df2430dbd2559aece034cea02c5f0f9d4d514eebbb394584c.js:67` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `upstream-lkg/providers/5b3d2c649dc4b5c223e70dd0e0d74fb544f15f99019864d44502dded2c6928d4.js:69` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `providers/wookafr--nuvio--54cf1e436bd79660.js:81` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `providers/wookafr--nuvio--54cf1e436bd79660.js:79` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `providers/wookafr--nuvio--54cf1e436bd79660.js:72` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `providers/wookafr--nuvio--54cf1e436bd79660.js:70` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `providers/waveanime--nuvio--73791b692bd0e1d9.js:36` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `providers/waveanime--nuvio--73791b692bd0e1d9.js:34` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `providers/waveanime--nuvio--73791b692bd0e1d9.js:27` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `providers/vostfree--published-baseline--d33e42b147e5400e.js:36` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `providers/vostfree--published-baseline--d33e42b147e5400e.js:34` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `providers/vostfree--published-baseline--d33e42b147e5400e.js:27` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `providers/voiranime-rip--nuvio--458eb5b12513e5f5.js:37` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `providers/voiranime-rip--nuvio--458eb5b12513e5f5.js:35` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `providers/voiranime-rip--nuvio--458eb5b12513e5f5.js:28` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `providers/voiranime-rip--nuvio--458eb5b12513e5f5.js:26` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `providers/voiranime-homes--nuvio--25807f04525cee91.js:36` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `providers/voiranime-homes--nuvio--25807f04525cee91.js:34` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `providers/voiranime-homes--nuvio--25807f04525cee91.js:27` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `providers/voiranime--nuvio--3d53c7be817311cc.js:37` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `providers/voiranime--nuvio--3d53c7be817311cc.js:35` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `providers/voiranime--nuvio--3d53c7be817311cc.js:28` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `providers/voiranime--nuvio--3d53c7be817311cc.js:26` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `providers/streamzo--nuvio--2dbca5c2f8ff75d3.js:61` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `providers/streamzo--nuvio--2dbca5c2f8ff75d3.js:59` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `providers/streamzo--nuvio--2dbca5c2f8ff75d3.js:52` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `providers/streamzo--nuvio--2dbca5c2f8ff75d3.js:50` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `providers/streamzo--nuvio--2dbca5c2f8ff75d3.js:41` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `providers/streamzo--nuvio--2dbca5c2f8ff75d3.js:26` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `providers/streamzo--nuvio--2dbca5c2f8ff75d3.js:24` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `providers/showbox--nuvio--40cc30aa37186a3b.js:17` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `providers/showbox--nuvio--40cc30aa37186a3b.js:15` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `providers/showbox--nuvio--40cc30aa37186a3b.js:8` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `providers/peachify--nuvio--2a80a0c70fb02936.js:17` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `providers/peachify--nuvio--2a80a0c70fb02936.js:15` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `providers/peachify--nuvio--2a80a0c70fb02936.js:8` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `providers/papadustream--published-baseline--2ad9117d7ef6efef.js:39` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `providers/papadustream--published-baseline--2ad9117d7ef6efef.js:37` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `providers/papadustream--published-baseline--2ad9117d7ef6efef.js:30` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `providers/papadustream--published-baseline--2ad9117d7ef6efef.js:28` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `providers/mugiwarastream--nuvio--4b18fcabe65da565.js:37` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `providers/mugiwarastream--nuvio--4b18fcabe65da565.js:35` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `providers/mugiwarastream--nuvio--4b18fcabe65da565.js:28` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `providers/mugiwarastream--nuvio--4b18fcabe65da565.js:26` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `providers/movix--nuvio--d83ac3961958f339.js:86` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `providers/movix--nuvio--d83ac3961958f339.js:84` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `providers/movix--nuvio--d83ac3961958f339.js:77` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `providers/movix--nuvio--d83ac3961958f339.js:75` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `providers/movix--nuvio--d83ac3961958f339.js:66` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `providers/movieblast--nuvio--013cf11bf5416d1d.js:17` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `providers/movieblast--nuvio--013cf11bf5416d1d.js:15` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `providers/movieblast--nuvio--013cf11bf5416d1d.js:8` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `providers/gramcinema--nuvio--bef899cb14e5a528.js:17` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `providers/gramcinema--nuvio--bef899cb14e5a528.js:15` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `providers/gramcinema--nuvio--bef899cb14e5a528.js:8` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `providers/french-manga--nuvio--704ee4a3c3ed1713.js:53` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `providers/french-manga--nuvio--704ee4a3c3ed1713.js:51` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `providers/french-manga--nuvio--704ee4a3c3ed1713.js:44` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `providers/french-manga--nuvio--704ee4a3c3ed1713.js:42` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `providers/flemmix--nuvio--28feb933173e1d93.js:86` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `providers/flemmix--nuvio--28feb933173e1d93.js:84` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `providers/flemmix--nuvio--28feb933173e1d93.js:77` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `providers/flemmix--nuvio--28feb933173e1d93.js:75` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `providers/flemmix--nuvio--28feb933173e1d93.js:66` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `providers/einthusan--nuvio--9cda64843f899a9c.js:105` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `providers/einthusan--nuvio--9cda64843f899a9c.js:103` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `providers/einthusan--nuvio--9cda64843f899a9c.js:96` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `providers/dulourd--published-baseline--ba6600a0b792d09f.js:36` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `providers/dulourd--published-baseline--ba6600a0b792d09f.js:34` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `providers/dulourd--published-baseline--ba6600a0b792d09f.js:27` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `providers/coflix--nuvio--8e68a045b7688c8d.js:99` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `providers/coflix--nuvio--8e68a045b7688c8d.js:97` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `providers/coflix--nuvio--8e68a045b7688c8d.js:90` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `providers/coflix--nuvio--8e68a045b7688c8d.js:88` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `providers/coflix--nuvio--8e68a045b7688c8d.js:68` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `providers/cinemacity.js:75` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `providers/animoflix--nuvio--e28375272adfd418.js:36` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `providers/animoflix--nuvio--e28375272adfd418.js:34` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `providers/animoflix--nuvio--e28375272adfd418.js:27` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `providers/animevostfr--published-baseline--5d6497ae52716b17.js:38` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `providers/animevostfr--published-baseline--5d6497ae52716b17.js:36` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `providers/animevostfr--published-baseline--5d6497ae52716b17.js:29` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `providers/animevostfr--published-baseline--5d6497ae52716b17.js:25` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `providers/animesultra--published-baseline--7e81bf8966c61069.js:36` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `providers/animesultra--published-baseline--7e81bf8966c61069.js:34` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `providers/animesultra--published-baseline--7e81bf8966c61069.js:27` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `providers/animesama-co--nuvio--35cc3353ca8e0638.js:37` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `providers/animesama-co--nuvio--35cc3353ca8e0638.js:35` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `providers/animesama-co--nuvio--35cc3353ca8e0638.js:28` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `providers/animesama-co--nuvio--35cc3353ca8e0638.js:26` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `providers/anime-ultime--nuvio--d1ff8e6c7dddda0f.js:36` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `providers/anime-ultime--nuvio--d1ff8e6c7dddda0f.js:34` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `providers/anime-ultime--nuvio--d1ff8e6c7dddda0f.js:27` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `providers/anime-sama--nuvio--1534014f7ac87d40.js:76` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `providers/anime-sama--nuvio--1534014f7ac87d40.js:74` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `providers/anime-sama--nuvio--1534014f7ac87d40.js:67` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `providers/anime-sama--nuvio--1534014f7ac87d40.js:63` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `providers/allwish--nuvio--ac90de9f5b97f5ea.js:17` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `providers/allwish--nuvio--ac90de9f5b97f5ea.js:15` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `providers/allwish--nuvio--ac90de9f5b97f5ea.js:8` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `automation/targeted-provider-findings.md:181` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `automation/targeted-provider-contexts.json:436` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `automation/targeted-provider-contexts.json:435` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `automation/targeted-provider-contexts.json:401` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `automation/targeted-provider-contexts.json:396` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `automation/targeted-provider-contexts.json:294` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `automation/nuvio-tv-target-diagnostics-v2.json:1087` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `automation/nuvio-tv-target-diagnostics-v2.json:1079` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `automation/nuvio-tv-target-diagnostics-v2.json:1068` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `automation/nuvio-tv-target-diagnostics-v2.json:1060` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `automation/nuvio-tv-target-diagnostics-v2.json:974` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `automation/nuvio-tv-target-diagnostics-v2.json:966` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `automation/nuvio-tv-target-diagnostics-v2.json:955` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `automation/nuvio-tv-target-diagnostics-v2.json:947` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `automation/nuvio-tv-target-diagnostics-v2.json:935` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `automation/nuvio-tv-target-diagnostics-v2.json:934` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `automation/nuvio-tv-target-diagnostics-v2.json:903` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `automation/nuvio-tv-target-diagnostics-v2.json:895` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `automation/nuvio-tv-target-diagnostics-v2.json:884` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.
+- `automation/nuvio-tv-target-diagnostics-v2.json:876` **MINOR / SECRETS** `SCT-A000` — Hardcoded secret with a low Shannon entropy (<4.5) detected in source code. This could be a valid secret and it is recommended to audit the use and verify if it is indeed valid.

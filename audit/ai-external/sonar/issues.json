@@ -1,71 +1,770 @@
 [
   {
-    "key": "AaA5771b7NO4hX22az60",
-    "rule": "githubactions:S8482",
-    "severity": "BLOCKER",
-    "component": "niakw_NiakVIO:.github/workflows/external-code-audit.yml",
+    "key": "AaA6EuPG61gpaPDSr80O",
+    "rule": "python:S1192",
+    "severity": "CRITICAL",
+    "component": "niakw_NiakVIO:scripts/external_audit/codescene.py",
     "project": "niakw_NiakVIO",
-    "line": 148,
-    "hash": "0944286da7ec39d510a2123ca7a35c55",
+    "line": 57,
+    "hash": "5567b83c3150ff6102455ad93525451c",
     "textRange": {
-      "startLine": 148,
-      "endLine": 148,
-      "startOffset": 13,
-      "endOffset": 100
+      "startLine": 57,
+      "endLine": 57,
+      "startOffset": 9,
+      "endOffset": 22
     },
-    "flows": [],
+    "flows": [
+      {
+        "locations": [
+          {
+            "component": "niakw_NiakVIO:scripts/external_audit/codescene.py",
+            "textRange": {
+              "startLine": 63,
+              "endLine": 63,
+              "startOffset": 9,
+              "endOffset": 22
+            },
+            "msg": "Duplication"
+          }
+        ]
+      },
+      {
+        "locations": [
+          {
+            "component": "niakw_NiakVIO:scripts/external_audit/codescene.py",
+            "textRange": {
+              "startLine": 88,
+              "endLine": 88,
+              "startOffset": 9,
+              "endOffset": 22
+            },
+            "msg": "Duplication"
+          }
+        ]
+      },
+      {
+        "locations": [
+          {
+            "component": "niakw_NiakVIO:scripts/external_audit/codescene.py",
+            "textRange": {
+              "startLine": 94,
+              "endLine": 94,
+              "startOffset": 9,
+              "endOffset": 22
+            },
+            "msg": "Duplication"
+          }
+        ]
+      },
+      {
+        "locations": [
+          {
+            "component": "niakw_NiakVIO:scripts/external_audit/codescene.py",
+            "textRange": {
+              "startLine": 183,
+              "endLine": 183,
+              "startOffset": 5,
+              "endOffset": 18
+            },
+            "msg": "Duplication"
+          }
+        ]
+      }
+    ],
     "status": "OPEN",
-    "message": "Avoid executing downloaded artifacts directly without verification.",
-    "effort": "15min",
-    "debt": "15min",
+    "message": "Define a constant instead of duplicating this literal \"status.json\" 5 times.",
+    "effort": "10min",
+    "debt": "10min",
     "assignee": "niakw-Gum91@github",
     "tags": [
-      "cwe"
+      "design"
     ],
-    "creationDate": "2026-08-25T17:17:29+0000",
-    "updateDate": "2026-08-25T17:17:55+0000",
-    "type": "VULNERABILITY",
+    "creationDate": "2026-08-25T17:56:38+0000",
+    "updateDate": "2026-08-25T17:57:16+0000",
+    "type": "CODE_SMELL",
     "organization": "niakw",
-    "cleanCodeAttribute": "TRUSTWORTHY",
-    "cleanCodeAttributeCategory": "RESPONSIBLE",
+    "cleanCodeAttribute": "DISTINCT",
+    "cleanCodeAttributeCategory": "ADAPTABLE",
     "impacts": [
       {
-        "softwareQuality": "SECURITY",
+        "softwareQuality": "MAINTAINABILITY",
         "severity": "HIGH"
       }
     ],
     "issueStatus": "OPEN",
     "projectName": "NiakVIO",
     "internalTags": [],
-    "lastChangeAnalysisUuid": "1ea36ffa-1754-4dbd-a375-f824dd0a95f0",
+    "lastChangeAnalysisUuid": "d6b9cd7b-f838-48cb-9ba1-354634cad002",
     "lastChangeSource": "ANALYSIS"
   },
   {
-    "key": "AaA5771b7NO4hX22az61",
-    "rule": "githubactions:S6506",
+    "key": "AaA6EuPG61gpaPDSr80P",
+    "rule": "python:S3358",
     "severity": "MAJOR",
-    "component": "niakw_NiakVIO:.github/workflows/external-code-audit.yml",
+    "component": "niakw_NiakVIO:scripts/external_audit/codescene.py",
     "project": "niakw_NiakVIO",
-    "line": 148,
-    "hash": "0944286da7ec39d510a2123ca7a35c55",
+    "line": 82,
+    "hash": "20eb5017992a54c601ce42ab581d5daf",
     "textRange": {
-      "startLine": 148,
-      "endLine": 148,
-      "startOffset": 13,
-      "endOffset": 58
+      "startLine": 82,
+      "endLine": 84,
+      "startOffset": 4,
+      "endOffset": 13
+    },
+    "flows": [
+      {
+        "locations": [
+          {
+            "component": "niakw_NiakVIO:scripts/external_audit/codescene.py",
+            "textRange": {
+              "startLine": 81,
+              "endLine": 81,
+              "startOffset": 21,
+              "endOffset": 23
+            },
+            "msg": "Parent conditional expression."
+          }
+        ]
+      }
+    ],
+    "status": "OPEN",
+    "message": "Extract this nested conditional expression into an independent statement.",
+    "effort": "5min",
+    "debt": "5min",
+    "assignee": "niakw-Gum91@github",
+    "tags": [
+      "confusing"
+    ],
+    "creationDate": "2026-08-25T17:56:38+0000",
+    "updateDate": "2026-08-25T17:57:16+0000",
+    "type": "CODE_SMELL",
+    "organization": "niakw",
+    "cleanCodeAttribute": "CLEAR",
+    "cleanCodeAttributeCategory": "INTENTIONAL",
+    "impacts": [
+      {
+        "softwareQuality": "MAINTAINABILITY",
+        "severity": "MEDIUM"
+      }
+    ],
+    "issueStatus": "OPEN",
+    "projectName": "NiakVIO",
+    "internalTags": [],
+    "lastChangeAnalysisUuid": "d6b9cd7b-f838-48cb-9ba1-354634cad002",
+    "lastChangeSource": "ANALYSIS"
+  },
+  {
+    "key": "AaA6EuRN61gpaPDSr80Q",
+    "rule": "python:S1192",
+    "severity": "CRITICAL",
+    "component": "niakw_NiakVIO:scripts/external_audit/sonar.py",
+    "project": "niakw_NiakVIO",
+    "line": 57,
+    "hash": "5567b83c3150ff6102455ad93525451c",
+    "textRange": {
+      "startLine": 57,
+      "endLine": 57,
+      "startOffset": 9,
+      "endOffset": 22
+    },
+    "flows": [
+      {
+        "locations": [
+          {
+            "component": "niakw_NiakVIO:scripts/external_audit/sonar.py",
+            "textRange": {
+              "startLine": 71,
+              "endLine": 71,
+              "startOffset": 9,
+              "endOffset": 22
+            },
+            "msg": "Duplication"
+          }
+        ]
+      },
+      {
+        "locations": [
+          {
+            "component": "niakw_NiakVIO:scripts/external_audit/sonar.py",
+            "textRange": {
+              "startLine": 86,
+              "endLine": 86,
+              "startOffset": 9,
+              "endOffset": 22
+            },
+            "msg": "Duplication"
+          }
+        ]
+      },
+      {
+        "locations": [
+          {
+            "component": "niakw_NiakVIO:scripts/external_audit/sonar.py",
+            "textRange": {
+              "startLine": 186,
+              "endLine": 186,
+              "startOffset": 5,
+              "endOffset": 18
+            },
+            "msg": "Duplication"
+          }
+        ]
+      }
+    ],
+    "status": "OPEN",
+    "message": "Define a constant instead of duplicating this literal \"status.json\" 4 times.",
+    "effort": "8min",
+    "debt": "8min",
+    "assignee": "niakw-Gum91@github",
+    "tags": [
+      "design"
+    ],
+    "creationDate": "2026-08-25T17:56:18+0000",
+    "updateDate": "2026-08-25T17:57:16+0000",
+    "type": "CODE_SMELL",
+    "organization": "niakw",
+    "cleanCodeAttribute": "DISTINCT",
+    "cleanCodeAttributeCategory": "ADAPTABLE",
+    "impacts": [
+      {
+        "softwareQuality": "MAINTAINABILITY",
+        "severity": "HIGH"
+      }
+    ],
+    "issueStatus": "OPEN",
+    "projectName": "NiakVIO",
+    "internalTags": [],
+    "lastChangeAnalysisUuid": "d6b9cd7b-f838-48cb-9ba1-354634cad002",
+    "lastChangeSource": "ANALYSIS"
+  },
+  {
+    "key": "AaA6EuRN61gpaPDSr80R",
+    "rule": "python:S3358",
+    "severity": "MAJOR",
+    "component": "niakw_NiakVIO:scripts/external_audit/sonar.py",
+    "project": "niakw_NiakVIO",
+    "line": 82,
+    "hash": "d0f9b5134248904c6238d82f1d6f7f6f",
+    "textRange": {
+      "startLine": 82,
+      "endLine": 82,
+      "startOffset": 38,
+      "endOffset": 85
+    },
+    "flows": [
+      {
+        "locations": [
+          {
+            "component": "niakw_NiakVIO:scripts/external_audit/sonar.py",
+            "textRange": {
+              "startLine": 82,
+              "endLine": 82,
+              "startOffset": 21,
+              "endOffset": 23
+            },
+            "msg": "Parent conditional expression."
+          }
+        ]
+      }
+    ],
+    "status": "OPEN",
+    "message": "Extract this nested conditional expression into an independent statement.",
+    "effort": "5min",
+    "debt": "5min",
+    "assignee": "niakw-Gum91@github",
+    "tags": [
+      "confusing"
+    ],
+    "creationDate": "2026-08-25T17:56:18+0000",
+    "updateDate": "2026-08-25T17:57:16+0000",
+    "type": "CODE_SMELL",
+    "organization": "niakw",
+    "cleanCodeAttribute": "CLEAR",
+    "cleanCodeAttributeCategory": "INTENTIONAL",
+    "impacts": [
+      {
+        "softwareQuality": "MAINTAINABILITY",
+        "severity": "MEDIUM"
+      }
+    ],
+    "issueStatus": "OPEN",
+    "projectName": "NiakVIO",
+    "internalTags": [],
+    "lastChangeAnalysisUuid": "d6b9cd7b-f838-48cb-9ba1-354634cad002",
+    "lastChangeSource": "ANALYSIS"
+  },
+  {
+    "key": "AaA6DFF6AgjWB_r7xmX6",
+    "rule": "javascript:S2871",
+    "severity": "CRITICAL",
+    "component": "niakw_NiakVIO:scripts/gate_native_cross_client_runtime.cjs",
+    "project": "niakw_NiakVIO",
+    "line": 40,
+    "hash": "512a2d7d7de64ff5c1c6e79975ed237a",
+    "textRange": {
+      "startLine": 40,
+      "endLine": 40,
+      "startOffset": 16,
+      "endOffset": 20
     },
     "flows": [],
     "status": "OPEN",
-    "message": "Not enforcing HTTPS here might allow for redirections to insecure websites. Make sure it is safe here.",
-    "effort": "30min",
-    "debt": "30min",
+    "message": "Provide a compare function to avoid sorting elements alphabetically.",
+    "effort": "10min",
+    "debt": "10min",
     "assignee": "niakw-Gum91@github",
     "tags": [
-      "cwe",
-      "former-hotspot"
+      "bad-practice",
+      "type-dependent"
     ],
-    "creationDate": "2026-08-25T17:17:29+0000",
-    "updateDate": "2026-08-25T17:17:55+0000",
+    "creationDate": "2026-08-25T17:48:51+0000",
+    "updateDate": "2026-08-25T17:49:04+0000",
+    "type": "BUG",
+    "organization": "niakw",
+    "cleanCodeAttribute": "CLEAR",
+    "cleanCodeAttributeCategory": "INTENTIONAL",
+    "impacts": [
+      {
+        "softwareQuality": "RELIABILITY",
+        "severity": "HIGH"
+      }
+    ],
+    "issueStatus": "OPEN",
+    "projectName": "NiakVIO",
+    "internalTags": [],
+    "lastChangeAnalysisUuid": "146c4bbe-7063-4c82-a668-8e18fb182eae",
+    "lastChangeSource": "ANALYSIS"
+  },
+  {
+    "key": "AaA6DFF6AgjWB_r7xmX7",
+    "rule": "javascript:S8786",
+    "severity": "MAJOR",
+    "component": "niakw_NiakVIO:scripts/gate_native_cross_client_runtime.cjs",
+    "project": "niakw_NiakVIO",
+    "line": 51,
+    "hash": "4a476bc2a6c2f480991199b4c73e3484",
+    "textRange": {
+      "startLine": 51,
+      "endLine": 51,
+      "startOffset": 13,
+      "endOffset": 40
+    },
+    "flows": [],
+    "status": "OPEN",
+    "message": "Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.",
+    "effort": "20min",
+    "debt": "20min",
+    "assignee": "niakw-Gum91@github",
+    "tags": [
+      "performance",
+      "regex"
+    ],
+    "creationDate": "2026-08-25T17:48:51+0000",
+    "updateDate": "2026-08-25T17:49:04+0000",
+    "type": "CODE_SMELL",
+    "organization": "niakw",
+    "cleanCodeAttribute": "EFFICIENT",
+    "cleanCodeAttributeCategory": "INTENTIONAL",
+    "impacts": [
+      {
+        "softwareQuality": "RELIABILITY",
+        "severity": "MEDIUM"
+      }
+    ],
+    "issueStatus": "OPEN",
+    "projectName": "NiakVIO",
+    "internalTags": [],
+    "lastChangeAnalysisUuid": "146c4bbe-7063-4c82-a668-8e18fb182eae",
+    "lastChangeSource": "ANALYSIS"
+  },
+  {
+    "key": "AaA6DFF6AgjWB_r7xmX8",
+    "rule": "javascript:S6353",
+    "severity": "MINOR",
+    "component": "niakw_NiakVIO:scripts/gate_native_cross_client_runtime.cjs",
+    "project": "niakw_NiakVIO",
+    "line": 51,
+    "hash": "4a476bc2a6c2f480991199b4c73e3484",
+    "textRange": {
+      "startLine": 51,
+      "endLine": 51,
+      "startOffset": 15,
+      "endOffset": 27
+    },
+    "flows": [],
+    "status": "OPEN",
+    "message": "Use concise character class syntax '\\w' instead of '[A-Za-z0-9_]'.",
+    "effort": "5min",
+    "debt": "5min",
+    "assignee": "niakw-Gum91@github",
+    "tags": [
+      "editable-source",
+      "regex",
+      "type-dependent"
+    ],
+    "creationDate": "2026-08-25T17:48:51+0000",
+    "updateDate": "2026-08-25T17:49:04+0000",
+    "type": "CODE_SMELL",
+    "organization": "niakw",
+    "cleanCodeAttribute": "CLEAR",
+    "cleanCodeAttributeCategory": "INTENTIONAL",
+    "impacts": [
+      {
+        "softwareQuality": "MAINTAINABILITY",
+        "severity": "LOW"
+      }
+    ],
+    "issueStatus": "OPEN",
+    "projectName": "NiakVIO",
+    "internalTags": [],
+    "lastChangeAnalysisUuid": "146c4bbe-7063-4c82-a668-8e18fb182eae",
+    "lastChangeSource": "ANALYSIS"
+  },
+  {
+    "key": "AaA6DFF6AgjWB_r7xmX-",
+    "rule": "javascript:S7781",
+    "severity": "MINOR",
+    "component": "niakw_NiakVIO:scripts/gate_native_cross_client_runtime.cjs",
+    "project": "niakw_NiakVIO",
+    "line": 58,
+    "hash": "126b4b708306f81fb2d52e5672cfb752",
+    "textRange": {
+      "startLine": 58,
+      "endLine": 58,
+      "startOffset": 46,
+      "endOffset": 53
+    },
+    "flows": [],
+    "status": "OPEN",
+    "message": "Prefer `String#replaceAll()` over `String#replace()`.",
+    "effort": "5min",
+    "debt": "5min",
+    "assignee": "niakw-Gum91@github",
+    "tags": [
+      "editable-source",
+      "es2021",
+      "readability"
+    ],
+    "creationDate": "2026-08-25T17:48:51+0000",
+    "updateDate": "2026-08-25T17:49:04+0000",
+    "type": "CODE_SMELL",
+    "organization": "niakw",
+    "cleanCodeAttribute": "CLEAR",
+    "cleanCodeAttributeCategory": "INTENTIONAL",
+    "impacts": [
+      {
+        "softwareQuality": "RELIABILITY",
+        "severity": "LOW"
+      },
+      {
+        "softwareQuality": "MAINTAINABILITY",
+        "severity": "LOW"
+      }
+    ],
+    "issueStatus": "OPEN",
+    "projectName": "NiakVIO",
+    "internalTags": [],
+    "lastChangeAnalysisUuid": "146c4bbe-7063-4c82-a668-8e18fb182eae",
+    "lastChangeSource": "ANALYSIS"
+  },
+  {
+    "key": "AaA6DFF6AgjWB_r7xmX9",
+    "rule": "javascript:S7781",
+    "severity": "MINOR",
+    "component": "niakw_NiakVIO:scripts/gate_native_cross_client_runtime.cjs",
+    "project": "niakw_NiakVIO",
+    "line": 58,
+    "hash": "126b4b708306f81fb2d52e5672cfb752",
+    "textRange": {
+      "startLine": 58,
+      "endLine": 58,
+      "startOffset": 27,
+      "endOffset": 34
+    },
+    "flows": [],
+    "status": "OPEN",
+    "message": "Prefer `String#replaceAll()` over `String#replace()`.",
+    "effort": "5min",
+    "debt": "5min",
+    "assignee": "niakw-Gum91@github",
+    "tags": [
+      "editable-source",
+      "es2021",
+      "readability"
+    ],
+    "creationDate": "2026-08-25T17:48:51+0000",
+    "updateDate": "2026-08-25T17:49:04+0000",
+    "type": "CODE_SMELL",
+    "organization": "niakw",
+    "cleanCodeAttribute": "CLEAR",
+    "cleanCodeAttributeCategory": "INTENTIONAL",
+    "impacts": [
+      {
+        "softwareQuality": "RELIABILITY",
+        "severity": "LOW"
+      },
+      {
+        "softwareQuality": "MAINTAINABILITY",
+        "severity": "LOW"
+      }
+    ],
+    "issueStatus": "OPEN",
+    "projectName": "NiakVIO",
+    "internalTags": [],
+    "lastChangeAnalysisUuid": "146c4bbe-7063-4c82-a668-8e18fb182eae",
+    "lastChangeSource": "ANALYSIS"
+  },
+  {
+    "key": "AaA6DFF6AgjWB_r7xmX_",
+    "rule": "javascript:S7781",
+    "severity": "MINOR",
+    "component": "niakw_NiakVIO:scripts/gate_native_cross_client_runtime.cjs",
+    "project": "niakw_NiakVIO",
+    "line": 72,
+    "hash": "7c63aaee22c660bf452248e2d3a0f5c6",
+    "textRange": {
+      "startLine": 72,
+      "endLine": 72,
+      "startOffset": 29,
+      "endOffset": 33
+    },
+    "flows": [],
+    "status": "OPEN",
+    "message": "Prefer `String#replaceAll()` over `String#split().join()`.",
+    "effort": "5min",
+    "debt": "5min",
+    "assignee": "niakw-Gum91@github",
+    "tags": [
+      "editable-source",
+      "es2021",
+      "readability"
+    ],
+    "creationDate": "2026-08-25T17:48:51+0000",
+    "updateDate": "2026-08-25T17:49:04+0000",
+    "type": "CODE_SMELL",
+    "organization": "niakw",
+    "cleanCodeAttribute": "CLEAR",
+    "cleanCodeAttributeCategory": "INTENTIONAL",
+    "impacts": [
+      {
+        "softwareQuality": "RELIABILITY",
+        "severity": "LOW"
+      },
+      {
+        "softwareQuality": "MAINTAINABILITY",
+        "severity": "LOW"
+      }
+    ],
+    "issueStatus": "OPEN",
+    "projectName": "NiakVIO",
+    "internalTags": [],
+    "lastChangeAnalysisUuid": "146c4bbe-7063-4c82-a668-8e18fb182eae",
+    "lastChangeSource": "ANALYSIS"
+  },
+  {
+    "key": "AaA6DFF6AgjWB_r7xmYA",
+    "rule": "javascript:S2871",
+    "severity": "CRITICAL",
+    "component": "niakw_NiakVIO:scripts/gate_native_cross_client_runtime.cjs",
+    "project": "niakw_NiakVIO",
+    "line": 132,
+    "hash": "439e837d1f25bd6c71384b64ad94652a",
+    "textRange": {
+      "startLine": 132,
+      "endLine": 132,
+      "startOffset": 64,
+      "endOffset": 68
+    },
+    "flows": [],
+    "status": "OPEN",
+    "message": "Provide a compare function to avoid sorting elements alphabetically.",
+    "effort": "10min",
+    "debt": "10min",
+    "assignee": "niakw-Gum91@github",
+    "tags": [
+      "bad-practice",
+      "type-dependent"
+    ],
+    "creationDate": "2026-08-25T17:48:51+0000",
+    "updateDate": "2026-08-25T17:49:04+0000",
+    "type": "BUG",
+    "organization": "niakw",
+    "cleanCodeAttribute": "CLEAR",
+    "cleanCodeAttributeCategory": "INTENTIONAL",
+    "impacts": [
+      {
+        "softwareQuality": "RELIABILITY",
+        "severity": "HIGH"
+      }
+    ],
+    "issueStatus": "OPEN",
+    "projectName": "NiakVIO",
+    "internalTags": [],
+    "lastChangeAnalysisUuid": "146c4bbe-7063-4c82-a668-8e18fb182eae",
+    "lastChangeSource": "ANALYSIS"
+  },
+  {
+    "key": "AaA6DFF6AgjWB_r7xmYB",
+    "rule": "javascript:S2871",
+    "severity": "CRITICAL",
+    "component": "niakw_NiakVIO:scripts/gate_native_cross_client_runtime.cjs",
+    "project": "niakw_NiakVIO",
+    "line": 138,
+    "hash": "785a4dcf79776673dfa0dc993295849a",
+    "textRange": {
+      "startLine": 138,
+      "endLine": 138,
+      "startOffset": 67,
+      "endOffset": 71
+    },
+    "flows": [],
+    "status": "OPEN",
+    "message": "Provide a compare function to avoid sorting elements alphabetically.",
+    "effort": "10min",
+    "debt": "10min",
+    "assignee": "niakw-Gum91@github",
+    "tags": [
+      "bad-practice",
+      "type-dependent"
+    ],
+    "creationDate": "2026-08-25T17:48:51+0000",
+    "updateDate": "2026-08-25T17:49:04+0000",
+    "type": "BUG",
+    "organization": "niakw",
+    "cleanCodeAttribute": "CLEAR",
+    "cleanCodeAttributeCategory": "INTENTIONAL",
+    "impacts": [
+      {
+        "softwareQuality": "RELIABILITY",
+        "severity": "HIGH"
+      }
+    ],
+    "issueStatus": "OPEN",
+    "projectName": "NiakVIO",
+    "internalTags": [],
+    "lastChangeAnalysisUuid": "146c4bbe-7063-4c82-a668-8e18fb182eae",
+    "lastChangeSource": "ANALYSIS"
+  },
+  {
+    "key": "AaA6DBHp9usF5GeAEmZ_",
+    "rule": "javascript:S7781",
+    "severity": "MINOR",
+    "component": "niakw_NiakVIO:scripts/gate_native_player_reached.cjs",
+    "project": "niakw_NiakVIO",
+    "line": 25,
+    "hash": "126b4b708306f81fb2d52e5672cfb752",
+    "textRange": {
+      "startLine": 25,
+      "endLine": 25,
+      "startOffset": 27,
+      "endOffset": 34
+    },
+    "flows": [],
+    "status": "OPEN",
+    "message": "Prefer `String#replaceAll()` over `String#replace()`.",
+    "effort": "5min",
+    "debt": "5min",
+    "assignee": "niakw-Gum91@github",
+    "tags": [
+      "editable-source",
+      "es2021",
+      "readability"
+    ],
+    "creationDate": "2026-08-25T17:47:12+0000",
+    "updateDate": "2026-08-25T17:47:25+0000",
+    "type": "CODE_SMELL",
+    "organization": "niakw",
+    "cleanCodeAttribute": "CLEAR",
+    "cleanCodeAttributeCategory": "INTENTIONAL",
+    "impacts": [
+      {
+        "softwareQuality": "RELIABILITY",
+        "severity": "LOW"
+      },
+      {
+        "softwareQuality": "MAINTAINABILITY",
+        "severity": "LOW"
+      }
+    ],
+    "issueStatus": "OPEN",
+    "projectName": "NiakVIO",
+    "internalTags": [],
+    "lastChangeAnalysisUuid": "c6fa654d-35ee-42ba-8b68-3db3993cdc21",
+    "lastChangeSource": "ANALYSIS"
+  },
+  {
+    "key": "AaA6DBHp9usF5GeAEmaA",
+    "rule": "javascript:S7781",
+    "severity": "MINOR",
+    "component": "niakw_NiakVIO:scripts/gate_native_player_reached.cjs",
+    "project": "niakw_NiakVIO",
+    "line": 25,
+    "hash": "126b4b708306f81fb2d52e5672cfb752",
+    "textRange": {
+      "startLine": 25,
+      "endLine": 25,
+      "startOffset": 46,
+      "endOffset": 53
+    },
+    "flows": [],
+    "status": "OPEN",
+    "message": "Prefer `String#replaceAll()` over `String#replace()`.",
+    "effort": "5min",
+    "debt": "5min",
+    "assignee": "niakw-Gum91@github",
+    "tags": [
+      "editable-source",
+      "es2021",
+      "readability"
+    ],
+    "creationDate": "2026-08-25T17:47:12+0000",
+    "updateDate": "2026-08-25T17:47:25+0000",
+    "type": "CODE_SMELL",
+    "organization": "niakw",
+    "cleanCodeAttribute": "CLEAR",
+    "cleanCodeAttributeCategory": "INTENTIONAL",
+    "impacts": [
+      {
+        "softwareQuality": "RELIABILITY",
+        "severity": "LOW"
+      },
+      {
+        "softwareQuality": "MAINTAINABILITY",
+        "severity": "LOW"
+      }
+    ],
+    "issueStatus": "OPEN",
+    "projectName": "NiakVIO",
+    "internalTags": [],
+    "lastChangeAnalysisUuid": "c6fa654d-35ee-42ba-8b68-3db3993cdc21",
+    "lastChangeSource": "ANALYSIS"
+  },
+  {
+    "key": "AaA6BnJFDJpul7RU1HtG",
+    "rule": "json:S6418",
+    "severity": "BLOCKER",
+    "component": "niakw_NiakVIO:audit/ai-external/deepsource/network-json.json",
+    "project": "niakw_NiakVIO",
+    "line": 335,
+    "hash": "82ad43f17ce4e839ae7da27983579268",
+    "textRange": {
+      "startLine": 335,
+      "endLine": 335,
+      "startOffset": 19,
+      "endOffset": 107
+    },
+    "flows": [],
+    "status": "OPEN",
+    "message": "\"token\" detected here, make sure this is not a hard-coded secret.",
+    "effort": "30min",
+    "debt": "30min",
+    "tags": [
+      "cwe",
+      "former-hotspot",
+      "secret"
+    ],
+    "creationDate": "2026-08-25T17:41:02+0000",
+    "updateDate": "2026-08-25T17:41:18+0000",
     "type": "VULNERABILITY",
     "organization": "niakw",
     "cleanCodeAttribute": "TRUSTWORTHY",
@@ -73,13 +772,13 @@
     "impacts": [
       {
         "softwareQuality": "SECURITY",
-        "severity": "MEDIUM"
+        "severity": "BLOCKER"
       }
     ],
     "issueStatus": "OPEN",
     "projectName": "NiakVIO",
     "internalTags": [],
-    "lastChangeAnalysisUuid": "1ea36ffa-1754-4dbd-a375-f824dd0a95f0",
+    "lastChangeAnalysisUuid": "59986b1f-0be6-40f4-91e2-bb3cc7322ddb",
     "lastChangeSource": "ANALYSIS"
   },
   {
@@ -21901,11 +22600,11 @@
     "cleanCodeAttributeCategory": "INTENTIONAL",
     "impacts": [
       {
-        "softwareQuality": "MAINTAINABILITY",
+        "softwareQuality": "RELIABILITY",
         "severity": "LOW"
       },
       {
-        "softwareQuality": "RELIABILITY",
+        "softwareQuality": "MAINTAINABILITY",
         "severity": "LOW"
       }
     ],
@@ -21948,11 +22647,11 @@
     "cleanCodeAttributeCategory": "INTENTIONAL",
     "impacts": [
       {
-        "softwareQuality": "MAINTAINABILITY",
+        "softwareQuality": "RELIABILITY",
         "severity": "LOW"
       },
       {
-        "softwareQuality": "RELIABILITY",
+        "softwareQuality": "MAINTAINABILITY",
         "severity": "LOW"
       }
     ],
@@ -22899,11 +23598,11 @@
     "cleanCodeAttributeCategory": "INTENTIONAL",
     "impacts": [
       {
-        "softwareQuality": "MAINTAINABILITY",
+        "softwareQuality": "RELIABILITY",
         "severity": "LOW"
       },
       {
-        "softwareQuality": "RELIABILITY",
+        "softwareQuality": "MAINTAINABILITY",
         "severity": "LOW"
       }
     ],
@@ -22946,11 +23645,11 @@
     "cleanCodeAttributeCategory": "INTENTIONAL",
     "impacts": [
       {
-        "softwareQuality": "MAINTAINABILITY",
+        "softwareQuality": "RELIABILITY",
         "severity": "LOW"
       },
       {
-        "softwareQuality": "RELIABILITY",
+        "softwareQuality": "MAINTAINABILITY",
         "severity": "LOW"
       }
     ],
@@ -26709,11 +27408,11 @@
     "cleanCodeAttributeCategory": "INTENTIONAL",
     "impacts": [
       {
-        "softwareQuality": "MAINTAINABILITY",
+        "softwareQuality": "RELIABILITY",
         "severity": "LOW"
       },
       {
-        "softwareQuality": "RELIABILITY",
+        "softwareQuality": "MAINTAINABILITY",
         "severity": "LOW"
       }
     ],
@@ -26756,11 +27455,11 @@
     "cleanCodeAttributeCategory": "INTENTIONAL",
     "impacts": [
       {
-        "softwareQuality": "MAINTAINABILITY",
+        "softwareQuality": "RELIABILITY",
         "severity": "LOW"
       },
       {
-        "softwareQuality": "RELIABILITY",
+        "softwareQuality": "MAINTAINABILITY",
         "severity": "LOW"
       }
     ],
@@ -32417,11 +33116,11 @@
     "cleanCodeAttributeCategory": "INTENTIONAL",
     "impacts": [
       {
-        "softwareQuality": "MAINTAINABILITY",
+        "softwareQuality": "RELIABILITY",
         "severity": "LOW"
       },
       {
-        "softwareQuality": "RELIABILITY",
+        "softwareQuality": "MAINTAINABILITY",
         "severity": "LOW"
       }
     ],
@@ -32464,11 +33163,11 @@
     "cleanCodeAttributeCategory": "INTENTIONAL",
     "impacts": [
       {
-        "softwareQuality": "MAINTAINABILITY",
+        "softwareQuality": "RELIABILITY",
         "severity": "LOW"
       },
       {
-        "softwareQuality": "RELIABILITY",
+        "softwareQuality": "MAINTAINABILITY",
         "severity": "LOW"
       }
     ],
@@ -32974,11 +33673,11 @@
     "cleanCodeAttributeCategory": "INTENTIONAL",
     "impacts": [
       {
-        "softwareQuality": "MAINTAINABILITY",
+        "softwareQuality": "RELIABILITY",
         "severity": "LOW"
       },
       {
-        "softwareQuality": "RELIABILITY",
+        "softwareQuality": "MAINTAINABILITY",
         "severity": "LOW"
       }
     ],
@@ -33021,11 +33720,11 @@
     "cleanCodeAttributeCategory": "INTENTIONAL",
     "impacts": [
       {
-        "softwareQuality": "MAINTAINABILITY",
+        "softwareQuality": "RELIABILITY",
         "severity": "LOW"
       },
       {
-        "softwareQuality": "RELIABILITY",
+        "softwareQuality": "MAINTAINABILITY",
         "severity": "LOW"
       }
     ],
@@ -33153,11 +33852,11 @@
     "cleanCodeAttributeCategory": "INTENTIONAL",
     "impacts": [
       {
-        "softwareQuality": "MAINTAINABILITY",
+        "softwareQuality": "RELIABILITY",
         "severity": "LOW"
       },
       {
-        "softwareQuality": "RELIABILITY",
+        "softwareQuality": "MAINTAINABILITY",
         "severity": "LOW"
       }
     ],
@@ -33200,11 +33899,11 @@
     "cleanCodeAttributeCategory": "INTENTIONAL",
     "impacts": [
       {
-        "softwareQuality": "MAINTAINABILITY",
+        "softwareQuality": "RELIABILITY",
         "severity": "LOW"
       },
       {
-        "softwareQuality": "RELIABILITY",
+        "softwareQuality": "MAINTAINABILITY",
         "severity": "LOW"
       }
     ],
@@ -36521,11 +37220,11 @@
     "cleanCodeAttributeCategory": "INTENTIONAL",
     "impacts": [
       {
-        "softwareQuality": "MAINTAINABILITY",
+        "softwareQuality": "RELIABILITY",
         "severity": "LOW"
       },
       {
-        "softwareQuality": "RELIABILITY",
+        "softwareQuality": "MAINTAINABILITY",
         "severity": "LOW"
       }
     ],
@@ -36568,11 +37267,11 @@
     "cleanCodeAttributeCategory": "INTENTIONAL",
     "impacts": [
       {
-        "softwareQuality": "MAINTAINABILITY",
+        "softwareQuality": "RELIABILITY",
         "severity": "LOW"
       },
       {
-        "softwareQuality": "RELIABILITY",
+        "softwareQuality": "MAINTAINABILITY",
         "severity": "LOW"
       }
     ],
@@ -37974,11 +38673,11 @@
     "cleanCodeAttributeCategory": "INTENTIONAL",
     "impacts": [
       {
-        "softwareQuality": "MAINTAINABILITY",
+        "softwareQuality": "RELIABILITY",
         "severity": "LOW"
       },
       {
-        "softwareQuality": "RELIABILITY",
+        "softwareQuality": "MAINTAINABILITY",
         "severity": "LOW"
       }
     ],
@@ -38063,11 +38762,11 @@
     "cleanCodeAttributeCategory": "INTENTIONAL",
     "impacts": [
       {
-        "softwareQuality": "MAINTAINABILITY",
+        "softwareQuality": "RELIABILITY",
         "severity": "LOW"
       },
       {
-        "softwareQuality": "RELIABILITY",
+        "softwareQuality": "MAINTAINABILITY",
         "severity": "LOW"
       }
     ],
@@ -38152,11 +38851,11 @@
     "cleanCodeAttributeCategory": "INTENTIONAL",
     "impacts": [
       {
-        "softwareQuality": "MAINTAINABILITY",
+        "softwareQuality": "RELIABILITY",
         "severity": "LOW"
       },
       {
-        "softwareQuality": "RELIABILITY",
+        "softwareQuality": "MAINTAINABILITY",
         "severity": "LOW"
       }
     ],
@@ -38241,11 +38940,11 @@
     "cleanCodeAttributeCategory": "INTENTIONAL",
     "impacts": [
       {
-        "softwareQuality": "MAINTAINABILITY",
+        "softwareQuality": "RELIABILITY",
         "severity": "LOW"
       },
       {
-        "softwareQuality": "RELIABILITY",
+        "softwareQuality": "MAINTAINABILITY",
         "severity": "LOW"
       }
     ],
@@ -38330,11 +39029,11 @@
     "cleanCodeAttributeCategory": "INTENTIONAL",
     "impacts": [
       {
-        "softwareQuality": "MAINTAINABILITY",
+        "softwareQuality": "RELIABILITY",
         "severity": "LOW"
       },
       {
-        "softwareQuality": "RELIABILITY",
+        "softwareQuality": "MAINTAINABILITY",
         "severity": "LOW"
       }
     ],
@@ -38419,11 +39118,11 @@
     "cleanCodeAttributeCategory": "INTENTIONAL",
     "impacts": [
       {
-        "softwareQuality": "MAINTAINABILITY",
+        "softwareQuality": "RELIABILITY",
         "severity": "LOW"
       },
       {
-        "softwareQuality": "RELIABILITY",
+        "softwareQuality": "MAINTAINABILITY",
         "severity": "LOW"
       }
     ],
@@ -38508,11 +39207,11 @@
     "cleanCodeAttributeCategory": "INTENTIONAL",
     "impacts": [
       {
-        "softwareQuality": "MAINTAINABILITY",
+        "softwareQuality": "RELIABILITY",
         "severity": "LOW"
       },
       {
-        "softwareQuality": "RELIABILITY",
+        "softwareQuality": "MAINTAINABILITY",
         "severity": "LOW"
       }
     ],
@@ -38597,11 +39296,11 @@
     "cleanCodeAttributeCategory": "INTENTIONAL",
     "impacts": [
       {
-        "softwareQuality": "MAINTAINABILITY",
+        "softwareQuality": "RELIABILITY",
         "severity": "LOW"
       },
       {
-        "softwareQuality": "RELIABILITY",
+        "softwareQuality": "MAINTAINABILITY",
         "severity": "LOW"
       }
     ],
@@ -46341,11 +47040,11 @@
     "cleanCodeAttributeCategory": "INTENTIONAL",
     "impacts": [
       {
-        "softwareQuality": "MAINTAINABILITY",
+        "softwareQuality": "RELIABILITY",
         "severity": "LOW"
       },
       {
-        "softwareQuality": "RELIABILITY",
+        "softwareQuality": "MAINTAINABILITY",
         "severity": "LOW"
       }
     ],
@@ -48622,7 +49321,7 @@
     "issueStatus": "OPEN",
     "projectName": "NiakVIO",
     "internalTags": [],
-    "lastChangeAnalysisUuid": "6a8c0378-2458-4340-b7e2-620ab99098d6",
+    "lastChangeAnalysisUuid": "d6b9cd7b-f838-48cb-9ba1-354634cad002",
     "lastChangeSource": "ANALYSIS"
   },
   {
@@ -48694,7 +49393,7 @@
     "issueStatus": "OPEN",
     "projectName": "NiakVIO",
     "internalTags": [],
-    "lastChangeAnalysisUuid": "6a8c0378-2458-4340-b7e2-620ab99098d6",
+    "lastChangeAnalysisUuid": "d6b9cd7b-f838-48cb-9ba1-354634cad002",
     "lastChangeSource": "ANALYSIS"
   },
   {
@@ -50567,11 +51266,11 @@
     "cleanCodeAttributeCategory": "INTENTIONAL",
     "impacts": [
       {
-        "softwareQuality": "MAINTAINABILITY",
+        "softwareQuality": "RELIABILITY",
         "severity": "LOW"
       },
       {
-        "softwareQuality": "RELIABILITY",
+        "softwareQuality": "MAINTAINABILITY",
         "severity": "LOW"
       }
     ],
@@ -50614,11 +51313,11 @@
     "cleanCodeAttributeCategory": "INTENTIONAL",
     "impacts": [
       {
-        "softwareQuality": "MAINTAINABILITY",
+        "softwareQuality": "RELIABILITY",
         "severity": "LOW"
       },
       {
-        "softwareQuality": "RELIABILITY",
+        "softwareQuality": "MAINTAINABILITY",
         "severity": "LOW"
       }
     ],
@@ -62574,11 +63273,11 @@
     "cleanCodeAttributeCategory": "INTENTIONAL",
     "impacts": [
       {
-        "softwareQuality": "MAINTAINABILITY",
+        "softwareQuality": "RELIABILITY",
         "severity": "LOW"
       },
       {
-        "softwareQuality": "RELIABILITY",
+        "softwareQuality": "MAINTAINABILITY",
         "severity": "LOW"
       }
     ],
@@ -62621,11 +63320,11 @@
     "cleanCodeAttributeCategory": "INTENTIONAL",
     "impacts": [
       {
-        "softwareQuality": "MAINTAINABILITY",
+        "softwareQuality": "RELIABILITY",
         "severity": "LOW"
       },
       {
-        "softwareQuality": "RELIABILITY",
+        "softwareQuality": "MAINTAINABILITY",
         "severity": "LOW"
       }
     ],
@@ -62921,11 +63620,11 @@
     "cleanCodeAttributeCategory": "INTENTIONAL",
     "impacts": [
       {
-        "softwareQuality": "MAINTAINABILITY",
+        "softwareQuality": "RELIABILITY",
         "severity": "LOW"
       },
       {
-        "softwareQuality": "RELIABILITY",
+        "softwareQuality": "MAINTAINABILITY",
         "severity": "LOW"
       }
     ],
@@ -62968,11 +63667,11 @@
     "cleanCodeAttributeCategory": "INTENTIONAL",
     "impacts": [
       {
-        "softwareQuality": "MAINTAINABILITY",
+        "softwareQuality": "RELIABILITY",
         "severity": "LOW"
       },
       {
-        "softwareQuality": "RELIABILITY",
+        "softwareQuality": "MAINTAINABILITY",
         "severity": "LOW"
       }
     ],
@@ -63144,11 +63843,11 @@
     "cleanCodeAttributeCategory": "INTENTIONAL",
     "impacts": [
       {
-        "softwareQuality": "MAINTAINABILITY",
+        "softwareQuality": "RELIABILITY",
         "severity": "HIGH"
       },
       {
-        "softwareQuality": "RELIABILITY",
+        "softwareQuality": "MAINTAINABILITY",
         "severity": "HIGH"
       }
     ],
@@ -118172,11 +118871,11 @@
     "cleanCodeAttributeCategory": "INTENTIONAL",
     "impacts": [
       {
-        "softwareQuality": "RELIABILITY",
+        "softwareQuality": "MAINTAINABILITY",
         "severity": "LOW"
       },
       {
-        "softwareQuality": "MAINTAINABILITY",
+        "softwareQuality": "RELIABILITY",
         "severity": "LOW"
       }
     ],
@@ -118218,11 +118917,11 @@
     "cleanCodeAttributeCategory": "INTENTIONAL",
     "impacts": [
       {
-        "softwareQuality": "RELIABILITY",
+        "softwareQuality": "MAINTAINABILITY",
         "severity": "LOW"
       },
       {
-        "softwareQuality": "MAINTAINABILITY",
+        "softwareQuality": "RELIABILITY",
         "severity": "LOW"
       }
     ],
@@ -118264,11 +118963,11 @@
     "cleanCodeAttributeCategory": "INTENTIONAL",
     "impacts": [
       {
-        "softwareQuality": "RELIABILITY",
+        "softwareQuality": "MAINTAINABILITY",
         "severity": "LOW"
       },
       {
-        "softwareQuality": "MAINTAINABILITY",
+        "softwareQuality": "RELIABILITY",
         "severity": "LOW"
       }
     ],
@@ -118310,12 +119009,12 @@
     "cleanCodeAttributeCategory": "CONSISTENT",
     "impacts": [
       {
-        "softwareQuality": "RELIABILITY",
-        "severity": "MEDIUM"
-      },
-      {
         "softwareQuality": "MAINTAINABILITY",
         "severity": "LOW"
+      },
+      {
+        "softwareQuality": "RELIABILITY",
+        "severity": "MEDIUM"
       }
     ],
     "issueStatus": "OPEN",
@@ -118356,12 +119055,12 @@
     "cleanCodeAttributeCategory": "CONSISTENT",
     "impacts": [
       {
-        "softwareQuality": "RELIABILITY",
-        "severity": "MEDIUM"
-      },
-      {
         "softwareQuality": "MAINTAINABILITY",
         "severity": "LOW"
+      },
+      {
+        "softwareQuality": "RELIABILITY",
+        "severity": "MEDIUM"
       }
     ],
     "issueStatus": "OPEN",
@@ -118402,12 +119101,12 @@
     "cleanCodeAttributeCategory": "CONSISTENT",
     "impacts": [
       {
-        "softwareQuality": "RELIABILITY",
-        "severity": "MEDIUM"
-      },
-      {
         "softwareQuality": "MAINTAINABILITY",
         "severity": "LOW"
+      },
+      {
+        "softwareQuality": "RELIABILITY",
+        "severity": "MEDIUM"
       }
     ],
     "issueStatus": "OPEN",
@@ -118448,11 +119147,11 @@
     "cleanCodeAttributeCategory": "CONSISTENT",
     "impacts": [
       {
-        "softwareQuality": "RELIABILITY",
+        "softwareQuality": "MAINTAINABILITY",
         "severity": "LOW"
       },
       {
-        "softwareQuality": "MAINTAINABILITY",
+        "softwareQuality": "RELIABILITY",
         "severity": "LOW"
       }
     ],
@@ -118731,11 +119430,11 @@
     "cleanCodeAttributeCategory": "CONSISTENT",
     "impacts": [
       {
-        "softwareQuality": "RELIABILITY",
+        "softwareQuality": "MAINTAINABILITY",
         "severity": "LOW"
       },
       {
-        "softwareQuality": "MAINTAINABILITY",
+        "softwareQuality": "RELIABILITY",
         "severity": "LOW"
       }
     ],
@@ -118777,12 +119476,12 @@
     "cleanCodeAttributeCategory": "CONSISTENT",
     "impacts": [
       {
-        "softwareQuality": "RELIABILITY",
-        "severity": "MEDIUM"
-      },
-      {
         "softwareQuality": "MAINTAINABILITY",
         "severity": "LOW"
+      },
+      {
+        "softwareQuality": "RELIABILITY",
+        "severity": "MEDIUM"
       }
     ],
     "issueStatus": "OPEN",
@@ -118864,12 +119563,12 @@
     "cleanCodeAttributeCategory": "CONSISTENT",
     "impacts": [
       {
-        "softwareQuality": "RELIABILITY",
-        "severity": "MEDIUM"
-      },
-      {
         "softwareQuality": "MAINTAINABILITY",
         "severity": "LOW"
+      },
+      {
+        "softwareQuality": "RELIABILITY",
+        "severity": "MEDIUM"
       }
     ],
     "issueStatus": "OPEN",
@@ -118910,12 +119609,12 @@
     "cleanCodeAttributeCategory": "CONSISTENT",
     "impacts": [
       {
-        "softwareQuality": "RELIABILITY",
-        "severity": "MEDIUM"
-      },
-      {
         "softwareQuality": "MAINTAINABILITY",
         "severity": "LOW"
+      },
+      {
+        "softwareQuality": "RELIABILITY",
+        "severity": "MEDIUM"
       }
     ],
     "issueStatus": "OPEN",
@@ -120157,12 +120856,12 @@
     "cleanCodeAttributeCategory": "CONSISTENT",
     "impacts": [
       {
-        "softwareQuality": "RELIABILITY",
-        "severity": "MEDIUM"
-      },
-      {
         "softwareQuality": "MAINTAINABILITY",
         "severity": "LOW"
+      },
+      {
+        "softwareQuality": "RELIABILITY",
+        "severity": "MEDIUM"
       }
     ],
     "issueStatus": "OPEN",
@@ -120203,12 +120902,12 @@
     "cleanCodeAttributeCategory": "CONSISTENT",
     "impacts": [
       {
-        "softwareQuality": "RELIABILITY",
-        "severity": "MEDIUM"
-      },
-      {
         "softwareQuality": "MAINTAINABILITY",
         "severity": "LOW"
+      },
+      {
+        "softwareQuality": "RELIABILITY",
+        "severity": "MEDIUM"
       }
     ],
     "issueStatus": "OPEN",
@@ -120249,12 +120948,12 @@
     "cleanCodeAttributeCategory": "CONSISTENT",
     "impacts": [
       {
-        "softwareQuality": "RELIABILITY",
-        "severity": "MEDIUM"
-      },
-      {
         "softwareQuality": "MAINTAINABILITY",
         "severity": "LOW"
+      },
+      {
+        "softwareQuality": "RELIABILITY",
+        "severity": "MEDIUM"
       }
     ],
     "issueStatus": "OPEN",
@@ -120909,11 +121608,11 @@
     "cleanCodeAttributeCategory": "INTENTIONAL",
     "impacts": [
       {
-        "softwareQuality": "RELIABILITY",
+        "softwareQuality": "MAINTAINABILITY",
         "severity": "LOW"
       },
       {
-        "softwareQuality": "MAINTAINABILITY",
+        "softwareQuality": "RELIABILITY",
         "severity": "LOW"
       }
     ],
@@ -120955,12 +121654,12 @@
     "cleanCodeAttributeCategory": "CONSISTENT",
     "impacts": [
       {
-        "softwareQuality": "RELIABILITY",
-        "severity": "MEDIUM"
-      },
-      {
         "softwareQuality": "MAINTAINABILITY",
         "severity": "LOW"
+      },
+      {
+        "softwareQuality": "RELIABILITY",
+        "severity": "MEDIUM"
       }
     ],
     "issueStatus": "OPEN",
@@ -121001,12 +121700,12 @@
     "cleanCodeAttributeCategory": "CONSISTENT",
     "impacts": [
       {
-        "softwareQuality": "RELIABILITY",
-        "severity": "MEDIUM"
-      },
-      {
         "softwareQuality": "MAINTAINABILITY",
         "severity": "LOW"
+      },
+      {
+        "softwareQuality": "RELIABILITY",
+        "severity": "MEDIUM"
       }
     ],
     "issueStatus": "OPEN",
@@ -122177,12 +122876,12 @@
     "cleanCodeAttributeCategory": "CONSISTENT",
     "impacts": [
       {
-        "softwareQuality": "RELIABILITY",
-        "severity": "MEDIUM"
-      },
-      {
         "softwareQuality": "MAINTAINABILITY",
         "severity": "LOW"
+      },
+      {
+        "softwareQuality": "RELIABILITY",
+        "severity": "MEDIUM"
       }
     ],
     "issueStatus": "OPEN",
@@ -122264,11 +122963,11 @@
     "cleanCodeAttributeCategory": "CONSISTENT",
     "impacts": [
       {
-        "softwareQuality": "RELIABILITY",
+        "softwareQuality": "MAINTAINABILITY",
         "severity": "LOW"
       },
       {
-        "softwareQuality": "MAINTAINABILITY",
+        "softwareQuality": "RELIABILITY",
         "severity": "LOW"
       }
     ],
@@ -122435,12 +123134,12 @@
     "cleanCodeAttributeCategory": "CONSISTENT",
     "impacts": [
       {
-        "softwareQuality": "RELIABILITY",
-        "severity": "MEDIUM"
-      },
-      {
         "softwareQuality": "MAINTAINABILITY",
         "severity": "LOW"
+      },
+      {
+        "softwareQuality": "RELIABILITY",
+        "severity": "MEDIUM"
       }
     ],
     "issueStatus": "OPEN",
@@ -122481,12 +123180,12 @@
     "cleanCodeAttributeCategory": "CONSISTENT",
     "impacts": [
       {
-        "softwareQuality": "RELIABILITY",
-        "severity": "MEDIUM"
-      },
-      {
         "softwareQuality": "MAINTAINABILITY",
         "severity": "LOW"
+      },
+      {
+        "softwareQuality": "RELIABILITY",
+        "severity": "MEDIUM"
       }
     ],
     "issueStatus": "OPEN",
@@ -125336,11 +126035,11 @@
     "cleanCodeAttributeCategory": "INTENTIONAL",
     "impacts": [
       {
-        "softwareQuality": "RELIABILITY",
+        "softwareQuality": "MAINTAINABILITY",
         "severity": "LOW"
       },
       {
-        "softwareQuality": "MAINTAINABILITY",
+        "softwareQuality": "RELIABILITY",
         "severity": "LOW"
       }
     ],
@@ -125424,12 +126123,12 @@
     "cleanCodeAttributeCategory": "CONSISTENT",
     "impacts": [
       {
-        "softwareQuality": "RELIABILITY",
-        "severity": "MEDIUM"
-      },
-      {
         "softwareQuality": "MAINTAINABILITY",
         "severity": "LOW"
+      },
+      {
+        "softwareQuality": "RELIABILITY",
+        "severity": "MEDIUM"
       }
     ],
     "issueStatus": "OPEN",
@@ -127996,12 +128695,12 @@
     "cleanCodeAttributeCategory": "CONSISTENT",
     "impacts": [
       {
-        "softwareQuality": "RELIABILITY",
-        "severity": "MEDIUM"
-      },
-      {
         "softwareQuality": "MAINTAINABILITY",
         "severity": "LOW"
+      },
+      {
+        "softwareQuality": "RELIABILITY",
+        "severity": "MEDIUM"
       }
     ],
     "issueStatus": "OPEN",
@@ -128671,11 +129370,11 @@
     "cleanCodeAttributeCategory": "CONSISTENT",
     "impacts": [
       {
-        "softwareQuality": "RELIABILITY",
+        "softwareQuality": "MAINTAINABILITY",
         "severity": "LOW"
       },
       {
-        "softwareQuality": "MAINTAINABILITY",
+        "softwareQuality": "RELIABILITY",
         "severity": "LOW"
       }
     ],
@@ -128717,11 +129416,11 @@
     "cleanCodeAttributeCategory": "CONSISTENT",
     "impacts": [
       {
-        "softwareQuality": "RELIABILITY",
+        "softwareQuality": "MAINTAINABILITY",
         "severity": "LOW"
       },
       {
-        "softwareQuality": "MAINTAINABILITY",
+        "softwareQuality": "RELIABILITY",
         "severity": "LOW"
       }
     ],
@@ -128763,11 +129462,11 @@
     "cleanCodeAttributeCategory": "CONSISTENT",
     "impacts": [
       {
-        "softwareQuality": "RELIABILITY",
+        "softwareQuality": "MAINTAINABILITY",
         "severity": "LOW"
       },
       {
-        "softwareQuality": "MAINTAINABILITY",
+        "softwareQuality": "RELIABILITY",
         "severity": "LOW"
       }
     ],
@@ -128809,12 +129508,12 @@
     "cleanCodeAttributeCategory": "CONSISTENT",
     "impacts": [
       {
-        "softwareQuality": "RELIABILITY",
-        "severity": "MEDIUM"
-      },
-      {
         "softwareQuality": "MAINTAINABILITY",
         "severity": "LOW"
+      },
+      {
+        "softwareQuality": "RELIABILITY",
+        "severity": "MEDIUM"
       }
     ],
     "issueStatus": "OPEN",
@@ -130267,12 +130966,12 @@
     "cleanCodeAttributeCategory": "CONSISTENT",
     "impacts": [
       {
-        "softwareQuality": "RELIABILITY",
-        "severity": "MEDIUM"
-      },
-      {
         "softwareQuality": "MAINTAINABILITY",
         "severity": "LOW"
+      },
+      {
+        "softwareQuality": "RELIABILITY",
+        "severity": "MEDIUM"
       }
     ],
     "issueStatus": "OPEN",
@@ -130313,12 +131012,12 @@
     "cleanCodeAttributeCategory": "CONSISTENT",
     "impacts": [
       {
-        "softwareQuality": "RELIABILITY",
-        "severity": "MEDIUM"
-      },
-      {
         "softwareQuality": "MAINTAINABILITY",
         "severity": "LOW"
+      },
+      {
+        "softwareQuality": "RELIABILITY",
+        "severity": "MEDIUM"
       }
     ],
     "issueStatus": "OPEN",
@@ -132811,12 +133510,12 @@
     "cleanCodeAttributeCategory": "CONSISTENT",
     "impacts": [
       {
-        "softwareQuality": "RELIABILITY",
-        "severity": "MEDIUM"
-      },
-      {
         "softwareQuality": "MAINTAINABILITY",
         "severity": "LOW"
+      },
+      {
+        "softwareQuality": "RELIABILITY",
+        "severity": "MEDIUM"
       }
     ],
     "issueStatus": "OPEN",
@@ -132940,12 +133639,12 @@
     "cleanCodeAttributeCategory": "CONSISTENT",
     "impacts": [
       {
-        "softwareQuality": "RELIABILITY",
-        "severity": "MEDIUM"
-      },
-      {
         "softwareQuality": "MAINTAINABILITY",
         "severity": "LOW"
+      },
+      {
+        "softwareQuality": "RELIABILITY",
+        "severity": "MEDIUM"
       }
     ],
     "issueStatus": "OPEN",
@@ -134657,11 +135356,11 @@
     "cleanCodeAttributeCategory": "INTENTIONAL",
     "impacts": [
       {
-        "softwareQuality": "RELIABILITY",
+        "softwareQuality": "MAINTAINABILITY",
         "severity": "LOW"
       },
       {
-        "softwareQuality": "MAINTAINABILITY",
+        "softwareQuality": "RELIABILITY",
         "severity": "LOW"
       }
     ],
@@ -135444,12 +136143,12 @@
     "cleanCodeAttributeCategory": "CONSISTENT",
     "impacts": [
       {
-        "softwareQuality": "RELIABILITY",
-        "severity": "MEDIUM"
-      },
-      {
         "softwareQuality": "MAINTAINABILITY",
         "severity": "LOW"
+      },
+      {
+        "softwareQuality": "RELIABILITY",
+        "severity": "MEDIUM"
       }
     ],
     "issueStatus": "OPEN",
@@ -135490,12 +136189,12 @@
     "cleanCodeAttributeCategory": "CONSISTENT",
     "impacts": [
       {
-        "softwareQuality": "RELIABILITY",
-        "severity": "MEDIUM"
-      },
-      {
         "softwareQuality": "MAINTAINABILITY",
         "severity": "LOW"
+      },
+      {
+        "softwareQuality": "RELIABILITY",
+        "severity": "MEDIUM"
       }
     ],
     "issueStatus": "OPEN",
@@ -136726,12 +137425,12 @@
     "cleanCodeAttributeCategory": "CONSISTENT",
     "impacts": [
       {
-        "softwareQuality": "RELIABILITY",
-        "severity": "MEDIUM"
-      },
-      {
         "softwareQuality": "MAINTAINABILITY",
         "severity": "LOW"
+      },
+      {
+        "softwareQuality": "RELIABILITY",
+        "severity": "MEDIUM"
       }
     ],
     "issueStatus": "OPEN",
@@ -136772,12 +137471,12 @@
     "cleanCodeAttributeCategory": "CONSISTENT",
     "impacts": [
       {
-        "softwareQuality": "RELIABILITY",
-        "severity": "MEDIUM"
-      },
-      {
         "softwareQuality": "MAINTAINABILITY",
         "severity": "LOW"
+      },
+      {
+        "softwareQuality": "RELIABILITY",
+        "severity": "MEDIUM"
       }
     ],
     "issueStatus": "OPEN",
@@ -141111,12 +141810,12 @@
     "cleanCodeAttributeCategory": "CONSISTENT",
     "impacts": [
       {
-        "softwareQuality": "RELIABILITY",
-        "severity": "MEDIUM"
-      },
-      {
         "softwareQuality": "MAINTAINABILITY",
         "severity": "LOW"
+      },
+      {
+        "softwareQuality": "RELIABILITY",
+        "severity": "MEDIUM"
       }
     ],
     "issueStatus": "OPEN",
@@ -141157,11 +141856,11 @@
     "cleanCodeAttributeCategory": "CONSISTENT",
     "impacts": [
       {
-        "softwareQuality": "RELIABILITY",
+        "softwareQuality": "MAINTAINABILITY",
         "severity": "LOW"
       },
       {
-        "softwareQuality": "MAINTAINABILITY",
+        "softwareQuality": "RELIABILITY",
         "severity": "LOW"
       }
     ],
@@ -141244,11 +141943,11 @@
     "cleanCodeAttributeCategory": "CONSISTENT",
     "impacts": [
       {
-        "softwareQuality": "RELIABILITY",
+        "softwareQuality": "MAINTAINABILITY",
         "severity": "LOW"
       },
       {
-        "softwareQuality": "MAINTAINABILITY",
+        "softwareQuality": "RELIABILITY",
         "severity": "LOW"
       }
     ],
@@ -141373,11 +142072,11 @@
     "cleanCodeAttributeCategory": "CONSISTENT",
     "impacts": [
       {
-        "softwareQuality": "RELIABILITY",
+        "softwareQuality": "MAINTAINABILITY",
         "severity": "LOW"
       },
       {
-        "softwareQuality": "MAINTAINABILITY",
+        "softwareQuality": "RELIABILITY",
         "severity": "LOW"
       }
     ],
@@ -141825,12 +142524,12 @@
     "cleanCodeAttributeCategory": "CONSISTENT",
     "impacts": [
       {
-        "softwareQuality": "RELIABILITY",
-        "severity": "MEDIUM"
-      },
-      {
         "softwareQuality": "MAINTAINABILITY",
         "severity": "LOW"
+      },
+      {
+        "softwareQuality": "RELIABILITY",
+        "severity": "MEDIUM"
       }
     ],
     "issueStatus": "OPEN",
@@ -141913,12 +142612,12 @@
     "cleanCodeAttributeCategory": "CONSISTENT",
     "impacts": [
       {
-        "softwareQuality": "RELIABILITY",
-        "severity": "MEDIUM"
-      },
-      {
         "softwareQuality": "MAINTAINABILITY",
         "severity": "LOW"
+      },
+      {
+        "softwareQuality": "RELIABILITY",
+        "severity": "MEDIUM"
       }
     ],
     "issueStatus": "OPEN",
@@ -143037,11 +143736,11 @@
     "cleanCodeAttributeCategory": "INTENTIONAL",
     "impacts": [
       {
-        "softwareQuality": "RELIABILITY",
+        "softwareQuality": "MAINTAINABILITY",
         "severity": "LOW"
       },
       {
-        "softwareQuality": "MAINTAINABILITY",
+        "softwareQuality": "RELIABILITY",
         "severity": "LOW"
       }
     ],
@@ -143083,11 +143782,11 @@
     "cleanCodeAttributeCategory": "INTENTIONAL",
     "impacts": [
       {
-        "softwareQuality": "RELIABILITY",
+        "softwareQuality": "MAINTAINABILITY",
         "severity": "LOW"
       },
       {
-        "softwareQuality": "MAINTAINABILITY",
+        "softwareQuality": "RELIABILITY",
         "severity": "LOW"
       }
     ],
@@ -144190,12 +144889,12 @@
     "cleanCodeAttributeCategory": "CONSISTENT",
     "impacts": [
       {
-        "softwareQuality": "RELIABILITY",
-        "severity": "MEDIUM"
-      },
-      {
         "softwareQuality": "MAINTAINABILITY",
         "severity": "LOW"
+      },
+      {
+        "softwareQuality": "RELIABILITY",
+        "severity": "MEDIUM"
       }
     ],
     "issueStatus": "OPEN",
@@ -144277,12 +144976,12 @@
     "cleanCodeAttributeCategory": "CONSISTENT",
     "impacts": [
       {
-        "softwareQuality": "RELIABILITY",
-        "severity": "MEDIUM"
-      },
-      {
         "softwareQuality": "MAINTAINABILITY",
         "severity": "LOW"
+      },
+      {
+        "softwareQuality": "RELIABILITY",
+        "severity": "MEDIUM"
       }
     ],
     "issueStatus": "OPEN",
