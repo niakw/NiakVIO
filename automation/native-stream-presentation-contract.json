@@ -1,5 +1,5 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "revision": "global_core_v12",
   "purpose": "Keep one provider-agnostic stream presentation while adapting its transport to the fields preserved by official Nuvio plugin readers.",
   "canonical": {
@@ -8,18 +8,21 @@
     "structured_facts_field": "presentationFacts",
     "badge_ids_field": "badgeIds",
     "badge_labels_field": "displayBadges",
+    "preserved_legacy_fields": [
+      "quality"
+    ],
     "suppressed_legacy_recomposition_fields": [
-      "quality",
       "language"
     ],
     "technical_groups": [
-      "🎞️ video",
+      "🎞️ video/source/codec/format",
       "🔊 audio",
       "🌐 language/subtitles",
-      "⏱ duration",
-      "💾 file size",
-      "🔞 age rating"
+      "⏱ duration + 💾 file size + 🔞 age rating"
     ],
+    "layout": "multiline",
+    "provider_description_policy": "input facts only; never visible",
+    "provider_size_policy": "extract only a factual byte-size token; never reuse surrounding provider prose",
     "media_context": "TMDB when available",
     "stream_provenance_rule": "TMDB never invents quality/source/codec/audio/language facts"
   },
@@ -42,8 +45,12 @@
         "subtitles"
       ],
       "visible_subtitle_projection": "quality • size • language",
-      "v12_result": "size only, because V12 clears transport quality/language",
-      "badge_match_fields_include": ["name", "title", "description"],
+      "v12_result": "quality plus multiline size envelope; transport language suppressed to avoid duplication",
+      "badge_match_fields_include": [
+        "name",
+        "title",
+        "description"
+      ],
       "source_repository": "NuvioMedia/NuvioMobile"
     },
     "nuvio-desktop": {
@@ -64,8 +71,12 @@
         "subtitles"
       ],
       "visible_subtitle_projection": "quality • size • language",
-      "v12_result": "size only, because V12 clears transport quality/language",
-      "badge_match_fields_include": ["name", "title", "description"],
+      "v12_result": "quality plus multiline size envelope; transport language suppressed to avoid duplication",
+      "badge_match_fields_include": [
+        "name",
+        "title",
+        "description"
+      ],
       "source_repository": "NuvioMedia/NuvioDesktop"
     },
     "nuvio-tv": {
@@ -85,9 +96,13 @@
         "headers"
       ],
       "visible_description_projection": "size",
-      "legacy_quality_projection": "quality is appended to title/name when non-empty",
-      "v12_result": "size only, with no duplicate quality suffix",
-      "badge_match_fields_include": ["name", "title", "description"],
+      "quality_projection": "quality is appended to title/name when non-empty",
+      "v12_result": "provider - quality title plus multiline size envelope description",
+      "badge_match_fields_include": [
+        "name",
+        "title",
+        "description"
+      ],
       "source_repository": "NuvioMedia/NuvioTV"
     }
   },
@@ -95,9 +110,10 @@
     "renderer_owner": "official Nuvio client",
     "provider_can_auto_install_rules": false,
     "requires_nuvio_rule_import": true,
+    "catalog_regex_policy": "after JSON parsing every regex escape has exactly one backslash",
     "recommended_feed": "https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-fusion.json",
     "dark_feed": "https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-dark.json",
     "light_feed": "https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-light.json",
-    "fallback": "canonical emoji technical line remains visible when no badge feed is imported"
+    "fallback": "canonical multiline emoji technical groups remain visible when no badge feed is imported"
   }
 }
