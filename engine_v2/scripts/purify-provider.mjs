@@ -50,15 +50,25 @@ function canonicalizeRetainedCoreBoundary(code) {
 
 function canonicalizeFloatedGeneratedMarkers(code) {
   // Terser can preserve one of our comments while attaching it to the final AST
-  // node of the provider export expression. The exact shape below proves that
-  // the comment belongs to the generated IIFE which begins immediately after the
-  // already-present terminal `);`. Move only that NUVIO-owned comment across the
-  // punctuation; JavaScript bytes and execution order are otherwise unchanged.
+  // node of the provider export expression. Two equivalent shapes are observed:
+  // the marker may still sit before the terminal `);`, or Terser may already have
+  // attached it immediately after that punctuation. Normalize both to the same
+  // owned boundary before choosing bytes, otherwise the first pass can publish
+  // `);/* NUVIO_... */(function` while the contract expects a stable line boundary.
   let moved = 0;
-  const pattern = /\/\*\s*(NUVIO_[^*\r\n]+?)\s*\*\/[ \t\r\n]*\);[ \t\r\n]*\(function\b/g;
-  const output = code.replace(pattern, (_match, rawMarker) => {
+  const canonical = (rawMarker) => `);\n/* ${String(rawMarker).trim()} */\n(function`;
+
+  const settledPattern = /\);[ \t\r\n]*\/\*\s*(NUVIO_[^*\r\n]+?)\s*\*\/[ \t\r\n]*\(function\b/g;
+  let output = code.replace(settledPattern, (match, rawMarker) => {
+    const replacement = canonical(rawMarker);
+    if (match !== replacement) moved += 1;
+    return replacement;
+  });
+
+  const floatedPattern = /\/\*\s*(NUVIO_[^*\r\n]+?)\s*\*\/[ \t\r\n]*\);[ \t\r\n]*\(function\b/g;
+  output = output.replace(floatedPattern, (_match, rawMarker) => {
     moved += 1;
-    return `);\n/* ${String(rawMarker).trim()} */\n(function`;
+    return canonical(rawMarker);
   });
   return { code: output, moved };
 }
