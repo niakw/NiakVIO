@@ -129,6 +129,7 @@ def combine_runtime_memory(
 
 def gate_representative_runtime_before_learning() -> None:
     """Fail closed on systemic TV/Mobile runtime divergence before Brain repair."""
+    # Canonical Android acceptance reaches this boundary before Brain repair materialization.
     workspace_raw = os.environ.get("GITHUB_WORKSPACE", "").strip()
     if not workspace_raw:
         return
