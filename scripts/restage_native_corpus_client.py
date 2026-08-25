@@ -17,6 +17,67 @@ import finalize_native_android_reader_source as reader_source_finalizer  # noqa:
 
 CORPUS_PATH = ROOT / ".github/triggers/nuvio-client-lab.json"
 DEFAULT_PR_PROVIDER_LIMIT = 4
+RUNTIME_ERROR_SENTINEL = "__NIAKVIO_RUNTIME_ERROR__"
+
+# Nuvio Desktop/Mobile/TV currently catch JavaScript exceptions raised by
+# getStreams() inside their official QuickJS runtime and deliberately materialize
+# them as an empty array. That behavior is fine for the applications, but it makes
+# a diagnostic Lab unable to distinguish a legitimate empty provider response from
+# a Core/runtime incompatibility. This test-only wrapper preserves the exception as
+# a harmless synthetic result. The collection/runtime gates recognize the sentinel
+# before treating it as media evidence. No production provider bundle is modified.
+RUNTIME_TRAP_HELPER = r'''
+    private fun trapRuntimeErrors(code: String): String = code + """
+;/* NIAKVIO_NATIVE_RUNTIME_ERROR_TRAP */
+(function () {
+    var marker = "__NIAKVIO_RUNTIME_ERROR__";
+    var makeError = function (error) {
+        var message = "unknown_runtime_error";
+        try {
+            if (error && error.message) message = String(error.message);
+            else if (error != null) message = String(error);
+        } catch (_) {}
+        return [{
+            title: marker,
+            name: marker,
+            url: "data:application/x-niakvio-runtime-error,1",
+            quality: "",
+            language: "",
+            provider: marker + ":" + message,
+            type: marker
+        }];
+    };
+    var exportsObject = null;
+    try {
+        if (typeof module !== "undefined" && module && module.exports) {
+            exportsObject = module.exports;
+        }
+    } catch (_) {}
+    var original = null;
+    if (exportsObject && typeof exportsObject.getStreams === "function") {
+        original = exportsObject.getStreams;
+    } else if (typeof globalThis !== "undefined" && typeof globalThis.getStreams === "function") {
+        original = globalThis.getStreams;
+    }
+    var wrapped;
+    if (typeof original !== "function") {
+        wrapped = async function () {
+            return makeError(new Error("getStreams_not_found"));
+        };
+    } else {
+        wrapped = async function () {
+            try {
+                return await original.apply(this, arguments);
+            } catch (error) {
+                return makeError(error);
+            }
+        };
+    }
+    if (exportsObject) exportsObject.getStreams = wrapped;
+    else if (typeof globalThis !== "undefined") globalThis.getStreams = wrapped;
+})();
+""".trimIndent()
+'''
 
 
 def _is_pull_request() -> bool:
@@ -61,7 +122,26 @@ def staged_providers(manifest_path: str, provider: str | None = None, fixture: s
         raise SystemExit(str(error)) from error
 
 
+def preserve_runtime_errors(source: str, client: str) -> str:
+    """Instrument only the generated diagnostic source, never published JS."""
+    helper_anchor = "    private fun b64(value: Any?): String ="
+    if source.count(helper_anchor) != 1:
+        raise SystemExit(f"unable to add {client} runtime-error trap: helper anchor count={source.count(helper_anchor)}")
+    source = source.replace(helper_anchor, RUNTIME_TRAP_HELPER + "\n" + helper_anchor, 1)
+
+    if client == "desktop":
+        code_anchor = "                    code = File(root, provider.asset).readText(),"
+        code_replacement = "                    code = trapRuntimeErrors(File(root, provider.asset).readText()),"
+    else:
+        code_anchor = "                    code = code(provider.asset),"
+        code_replacement = "                    code = trapRuntimeErrors(code(provider.asset)),"
+    if source.count(code_anchor) != 1:
+        raise SystemExit(f"unable to wrap {client} provider code: anchor count={source.count(code_anchor)}")
+    return source.replace(code_anchor, code_replacement, 1)
+
+
 def collector_test(source: str, client: str) -> str:
+    source = preserve_runtime_errors(source, client)
     if client == "desktop":
         old = '        assertTrue(errors.isEmpty(), "native provider runtime errors: " + errors.take(12).joinToString(" | "))\n'
         new = '        assertTrue(providers.isNotEmpty(), "native corpus provider list must not be empty")\n'
@@ -120,7 +200,8 @@ def main() -> int:
         f"FIELD_NATIVE_CORPUS_RESTAGED_ISOLATED target={args.target} fixture={args.fixture} "
         f"tmdb={fixture.get('tmdbId')} provider={provider or ('fixture' if pr_bounded else 'all')} "
         f"providers={len(providers)} player_probes={probes} manifest={manifest_path} "
-        f"ci_mode={'pr-bounded' if pr_bounded else 'deep'} provider_limit={_pr_provider_limit() if pr_bounded else 0}"
+        f"ci_mode={'pr-bounded' if pr_bounded else 'deep'} provider_limit={_pr_provider_limit() if pr_bounded else 0} "
+        f"runtime_error_trap={RUNTIME_ERROR_SENTINEL}"
     )
     return 0
 
