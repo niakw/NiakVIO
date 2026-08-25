@@ -11,6 +11,8 @@
 import { minify } from "terser";
 
 export const RETAINED_AUDIO_MARKER = "/* NUVIO_HLS_MASTER_AUDIO_PRESERVER_V1 */";
+const GENERATED_MARKER = String.raw`\/\*\s*(NUVIO_[^*\r\n]+?)\s*\*\/`;
+const GENERATED_SUFFIX = String.raw`(?=(?:[;!~+\-]\s*)?(?:\(\s*)?(?:async\s+)?function\b|(?:[;!~+\-]\s*)?\(\s*(?:\([^)]*\)|[$\w]+)\s*=>)`;
 
 export function canonicalizeRetainedCoreBoundary(code) {
   const first = code.indexOf(RETAINED_AUDIO_MARKER);
@@ -19,10 +21,6 @@ export function canonicalizeRetainedCoreBoundary(code) {
     throw new Error("duplicate retained HLS master audio marker");
   }
 
-  // The audio marker records an in-place provider rewrite and can therefore
-  // remain immediately before the generated Core start boundary when the rest
-  // of the Core tail is stripped/rebuilt. Own only surrounding whitespace: one
-  // newline before and one after the marker, with all JavaScript bytes untouched.
   const left = code.slice(0, first).replace(/[ \t\r\n]+$/, "");
   const right = code.slice(first + RETAINED_AUDIO_MARKER.length).replace(/^[ \t\r\n]+/, "");
   const prefix = left ? `${left}\n` : "";
@@ -30,38 +28,36 @@ export function canonicalizeRetainedCoreBoundary(code) {
   return `${prefix}${RETAINED_AUDIO_MARKER}${suffix}`;
 }
 
-export function canonicalizeFloatedGeneratedMarkers(code) {
-  // Terser can preserve one of our comments while attaching it to the final AST
-  // node of the provider export expression. Two equivalent shapes are observed:
-  // the marker may still sit before the terminal `);`, or Terser may already have
-  // attached it immediately after that punctuation. Normalize both to the same
-  // owned boundary before choosing bytes, otherwise the first pass can publish
-  // `);/* NUVIO_... */(function` while the contract expects a stable line boundary.
+export function canonicalizeGeneratedMarkerBoundaries(code) {
+  // Terser may attach a preserved NUVIO marker before `);`, between `)` and `;`,
+  // or after `);`; it may also vary whitespace and the following IIFE syntax.
+  // Collapse every owned representation to one byte-stable boundary. Leading
+  // whitespace belongs to this generated boundary too: leaving it behind caused
+  // AnimePahe/AnimeZey to grow one newline per rebuild.
+  const patterns = [
+    new RegExp(String.raw`[ \t\r\n]*${GENERATED_MARKER}[ \t\r\n]*\);[ \t\r\n]*${GENERATED_SUFFIX}`, "g"),
+    new RegExp(String.raw`\)[ \t\r\n]*${GENERATED_MARKER}[ \t\r\n]*;[ \t\r\n]*${GENERATED_SUFFIX}`, "g"),
+    new RegExp(String.raw`\);[ \t\r\n]*${GENERATED_MARKER}[ \t\r\n]*${GENERATED_SUFFIX}`, "g"),
+  ];
   let moved = 0;
-  const canonical = (rawMarker) => `);\n/* ${String(rawMarker).trim()} */\n(function`;
-
-  const settledPattern = /\);[ \t\r\n]*\/\*\s*(NUVIO_[^*\r\n]+?)\s*\*\/[ \t\r\n]*\(function\b/g;
-  let output = code.replace(settledPattern, (match, rawMarker) => {
-    const replacement = canonical(rawMarker);
-    if (match !== replacement) moved += 1;
-    return replacement;
-  });
-
-  const floatedPattern = /\/\*\s*(NUVIO_[^*\r\n]+?)\s*\*\/[ \t\r\n]*\);[ \t\r\n]*\(function\b/g;
-  output = output.replace(floatedPattern, (_match, rawMarker) => {
-    moved += 1;
-    return canonical(rawMarker);
-  });
+  let output = code;
+  for (const pattern of patterns) {
+    output = output.replace(pattern, (match, rawMarker) => {
+      const replacement = `);\n/* ${String(rawMarker).trim()} */\n`;
+      if (match !== replacement) moved += 1;
+      return replacement;
+    });
+  }
   return { code: output, moved };
 }
 
 export function canonicalizeOwnedBoundaries(code) {
   const audio = canonicalizeRetainedCoreBoundary(code);
-  const floated = canonicalizeFloatedGeneratedMarkers(audio);
+  const generated = canonicalizeGeneratedMarkerBoundaries(audio);
   return {
-    code: floated.code,
+    code: generated.code,
     retainedAudioChanged: audio !== code,
-    floatedMarkerCount: floated.moved,
+    floatedMarkerCount: generated.moved,
   };
 }
 
