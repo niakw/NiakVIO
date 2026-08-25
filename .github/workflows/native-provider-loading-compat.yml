@@ -1,0 +1,58 @@
+name: Native provider-loading compatibility
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/native-provider-loading-compat.yml'
+      - '.github/triggers/nuvio-client-lab.json'
+      - 'manifest.json'
+      - 'scripts/prepare_native_corpus_validation.py'
+      - 'scripts/restage_native_corpus_client.py'
+      - 'scripts/augment_native_corpus_request_contract.py'
+      - 'scripts/augment_native_provider_loading.py'
+      - 'scripts/augment_native_provider_loading_compat.py'
+      - 'tests/native_provider_loading_compat_test.py'
+      - 'tests/native_evidence_codegen_pipeline_test.py'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/native-provider-loading-compat.yml'
+      - '.github/triggers/nuvio-client-lab.json'
+      - 'manifest.json'
+      - 'scripts/prepare_native_corpus_validation.py'
+      - 'scripts/restage_native_corpus_client.py'
+      - 'scripts/augment_native_corpus_request_contract.py'
+      - 'scripts/augment_native_provider_loading.py'
+      - 'scripts/augment_native_provider_loading_compat.py'
+      - 'tests/native_provider_loading_compat_test.py'
+      - 'tests/native_evidence_codegen_pipeline_test.py'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: native-provider-loading-compat-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Checkout exact candidate
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+      - name: Validate restage to official provider-loading compatibility
+        run: python3 tests/native_provider_loading_compat_test.py
+      - name: Validate complete native evidence codegen chain
+        run: python3 tests/native_evidence_codegen_pipeline_test.py
+      - name: Prove tests are side-effect free
+        run: git diff --exit-code
