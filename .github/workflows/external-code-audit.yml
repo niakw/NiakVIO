@@ -2,129 +2,135 @@ name: External Code Audit
 
 on:
   workflow_dispatch:
-  push:
-    paths:
-      - .github/workflows/external-code-audit.yml
 
 permissions:
   contents: write
 
 concurrency:
   group: external-code-audit
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   collect:
     name: Export AI-readable audit logs
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     env:
       REPO_SLUG: niakw/NiakVIO
       OUT: audit/ai-external
       SONAR_KEY: ${{ secrets.SONAR_KEY }}
       DEEPSOURCE_PASS: ${{ secrets.DEEPSOURCE_PASS }}
+      DEEPSOURCE_REPORT_URL: https://app.deepsource.com/report/7497cac1-bd35-47f8-ac92-3503e0a34c65
       CODESCENE_TOKEN: ${{ secrets.CODESCENE_TOKEN }}
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - name: Checkout current main
+        uses: actions/checkout@v5
         with:
+          ref: main
           fetch-depth: 0
 
       - name: Prepare export directory
+        shell: bash
         run: |
           set -euo pipefail
+          echo "AUDITED_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
           mkdir -p "$OUT"/{sonar,deepsource,codescene}
           find "$OUT/sonar" "$OUT/deepsource" "$OUT/codescene" -type f -delete
 
-      - name: Export SonarQube Cloud
+      - name: Export SonarQube Cloud public project data
         continue-on-error: true
+        shell: bash
         run: |
           python3 <<'PY'
           import json, os, pathlib, urllib.parse, urllib.request, urllib.error
           from collections import Counter
 
           out = pathlib.Path(os.environ['OUT']) / 'sonar'
-          key = os.environ.get('SONAR_KEY', '').strip()
+          org = os.environ.get('SONAR_KEY', '').strip()
           base = 'https://sonarcloud.io'
-          status = {'source':'SonarQube Cloud','ok':False,'errors':[]}
+          status = {'source':'SonarQube Cloud','ok':False,'errors':[],'access_mode':'public organization key'}
 
           def save(name, value):
               (out/name).write_text(json.dumps(value, indent=2, ensure_ascii=False)+'\n', encoding='utf-8')
 
-          def get(path, params=None, token=None):
+          def get(path, params=None):
               url = base + path
               if params:
                   url += '?' + urllib.parse.urlencode(params)
-              headers = {'Accept':'application/json'}
-              if token:
-                  headers['Authorization'] = 'Bearer ' + token
               try:
-                  with urllib.request.urlopen(urllib.request.Request(url, headers=headers), timeout=45) as r:
+                  req = urllib.request.Request(url, headers={'Accept':'application/json','User-Agent':'NiakVIO-external-audit/1.0'})
+                  with urllib.request.urlopen(req, timeout=45) as r:
                       return json.load(r), None
               except urllib.error.HTTPError as e:
                   return None, f'HTTP {e.code}'
               except Exception as e:
                   return None, type(e).__name__
 
-          if not key:
+          if not org:
               status['errors'].append('SONAR_KEY repository secret is missing/unavailable')
               save('status.json', status)
               raise SystemExit(0)
 
-          projects, err = get('/api/projects/search', {'organization':key,'ps':500})
-          auth_token = None
-          if err or not isinstance(projects, dict) or 'components' not in projects:
-              projects, err = get('/api/projects/search', {'q':'NiakVIO','ps':500}, token=key)
-              auth_token = key
-          if err or not projects:
-              status['errors'].append('project discovery failed: '+str(err))
+          # Public Sonar organization/project discovery. SONAR_KEY is never used
+          # as an Authorization header or bearer token.
+          projects, err = get('/api/components/search_projects', {'organization':org,'ps':500,'p':1})
+          if err or not isinstance(projects, dict):
+              projects, err = get('/api/components/search', {'organization':org,'qualifiers':'TRK','ps':500,'p':1})
+          if err or not isinstance(projects, dict):
+              status['errors'].append('public project discovery failed: '+str(err))
               save('status.json', status)
               raise SystemExit(0)
 
           save('projects.json', projects)
           components = projects.get('components', [])
           matches = [p for p in components if 'niakvio' in str(p.get('name','')).lower() or 'niakvio' in str(p.get('key','')).lower()]
-          project = matches[0] if matches else (components[0] if components else None)
+          project = matches[0] if matches else (components[0] if len(components) == 1 else None)
           if not project:
-              status['errors'].append('NiakVIO project not found')
+              status['errors'].append('NiakVIO project not found in public organization project list')
+              status['project_count'] = len(components)
               save('status.json', status)
               raise SystemExit(0)
 
           project_key = project.get('key')
           status['project'] = project.get('name') or project_key
+          status['project_key'] = project_key
+
           issues = []
-          page = 1
-          while page <= 200:
-              payload, err = get('/api/issues/search', {
+          for page in range(1, 201):
+              payload, ierr = get('/api/issues/search', {
                   'componentKeys':project_key,'resolved':'false','ps':500,'p':page
-              }, token=auth_token)
-              if err or not payload:
-                  status['errors'].append('issues export: '+str(err))
+              })
+              if ierr or not isinstance(payload, dict):
+                  status['errors'].append('public issues export unavailable: '+str(ierr))
                   break
               batch = payload.get('issues', [])
               issues.extend(batch)
               total = (payload.get('paging') or {}).get('total', payload.get('total', len(issues)))
               if not batch or len(issues) >= int(total or 0):
                   break
-              page += 1
           save('issues.json', issues)
 
-          hotspots, err = get('/api/hotspots/search', {'projectKey':project_key,'ps':500}, token=auth_token)
-          save('hotspots.json', hotspots if hotspots is not None else {'hotspots':[],'unavailable':True,'error':err})
+          hotspots, herr = get('/api/hotspots/search', {'projectKey':project_key,'ps':500})
+          save('hotspots.json', hotspots if hotspots is not None else {'hotspots':[],'unavailable':True,'error':herr})
 
-          measures, err = get('/api/measures/component', {
+          measures, merr = get('/api/measures/component', {
               'component':project_key,
               'metricKeys':'bugs,vulnerabilities,security_hotspots,code_smells,duplicated_lines_density,cognitive_complexity,complexity,sqale_index,reliability_rating,security_rating,sqale_rating,ncloc,coverage'
-          }, token=auth_token)
-          save('measures.json', measures if measures is not None else {'unavailable':True,'error':err})
+          })
+          save('measures.json', measures if measures is not None else {'unavailable':True,'error':merr})
+
+          analyses, aerr = get('/api/project_analyses/search', {'project':project_key,'ps':100})
+          save('analyses.json', analyses if analyses is not None else {'unavailable':True,'error':aerr})
 
           sev = Counter(str(i.get('severity','UNKNOWN')) for i in issues)
           typ = Counter(str(i.get('type','UNKNOWN')) for i in issues)
           lines = [
               '# SonarQube Cloud audit','',
+              '- Access: public Sonar organization/project; no Sonar login or API token used.',
               f'- Project: `{status["project"]}`',
-              f'- Open findings: **{len(issues)}**',
+              f'- Project key: `{project_key}`',
+              f'- Open findings exported: **{len(issues)}**',
               '- Severity: '+(', '.join(f'`{k}` {v}' for k,v in sev.most_common()) or 'none'),
               '- Type: '+(', '.join(f'`{k}` {v}' for k,v in typ.most_common()) or 'none'),
               '', '## Findings',''
@@ -136,95 +142,143 @@ jobs:
               msg = ' '.join(str(i.get('message','')).split())
               lines.append(f'- `{loc}` **{i.get("severity","?")} / {i.get("type","?")}** `{i.get("rule","?")}` — {msg}')
           (out/'summary.md').write_text('\n'.join(lines)+'\n', encoding='utf-8')
-          status['finding_count'] = len(issues)
+
+          # Project discovery itself is enough to prove that SONAR_KEY is the
+          # right public organization reference. Individual public endpoints may
+          # expose more or less data depending on Sonar Cloud policy.
           status['ok'] = True
+          status['finding_count'] = len(issues)
+          status['public_measures_available'] = measures is not None
+          status['public_hotspots_available'] = hotspots is not None
           save('status.json', status)
           PY
 
-      - name: Install DeepSource CLI
+      - name: Install browser for DeepSource shared report
         continue-on-error: true
+        shell: bash
         run: |
-          mkdir -p "$RUNNER_TEMP/deepsource-bin"
-          if curl -fsSL https://cli.deepsource.com/install | BINDIR="$RUNNER_TEMP/deepsource-bin" sh; then
-            echo "DEEPSOURCE_BIN=$RUNNER_TEMP/deepsource-bin/deepsource" >> "$GITHUB_ENV"
-          else
-            printf '{"source":"DeepSource","ok":false,"errors":["CLI installation failed"]}\n' > "$OUT/deepsource/status.json"
-          fi
+          set -euo pipefail
+          DS_BROWSER="$RUNNER_TEMP/deepsource-browser"
+          mkdir -p "$DS_BROWSER"
+          cd "$DS_BROWSER"
+          npm init -y >/dev/null 2>&1
+          npm install --silent playwright@1.55.0
+          npx playwright install --with-deps chromium
+          echo "DS_BROWSER=$DS_BROWSER" >> "$GITHUB_ENV"
 
-      - name: Export DeepSource
+      - name: Export DeepSource shared report
         continue-on-error: true
+        shell: bash
         run: |
-          set +e
           if [ -z "${DEEPSOURCE_PASS:-}" ]; then
-            printf '{"source":"DeepSource","ok":false,"errors":["DEEPSOURCE_PASS repository secret is missing/unavailable"]}\n' > "$OUT/deepsource/status.json"
+            printf '{"source":"DeepSource","ok":false,"access_mode":"shared report + password","errors":["DEEPSOURCE_PASS repository secret is missing/unavailable"]}\n' > "$OUT/deepsource/status.json"
             exit 0
           fi
-          if [ -z "${DEEPSOURCE_BIN:-}" ] || [ ! -x "$DEEPSOURCE_BIN" ]; then
-            printf '{"source":"DeepSource","ok":false,"errors":["DeepSource CLI unavailable"]}\n' > "$OUT/deepsource/status.json"
-            exit 0
-          fi
-          if ! "$DEEPSOURCE_BIN" auth login --with-token "$DEEPSOURCE_PASS" >/dev/null 2>&1; then
-            printf '{"source":"DeepSource","ok":false,"errors":["authentication failed"]}\n' > "$OUT/deepsource/status.json"
+          if [ -z "${DS_BROWSER:-}" ] || [ ! -d "$DS_BROWSER/node_modules/playwright" ]; then
+            printf '{"source":"DeepSource","ok":false,"access_mode":"shared report + password","errors":["Playwright browser unavailable"]}\n' > "$OUT/deepsource/status.json"
             exit 0
           fi
 
-          export_ds() {
-            file="$1"; shift
-            "$DEEPSOURCE_BIN" "$@" --repo "gh/$REPO_SLUG" --output json > "$OUT/deepsource/$file.json" 2> "$OUT/deepsource/$file.err"
-            rc=$?
-            if [ "$rc" -ne 0 ]; then
-              printf '{"error":"DeepSource command failed","exit_code":%s}\n' "$rc" > "$OUT/deepsource/$file.json"
-            fi
-            return 0
+          cd "$DS_BROWSER"
+          node <<'JS'
+          const fs = require('fs');
+          const path = require('path');
+          const { chromium } = require('playwright');
+
+          const reportUrl = process.env.DEEPSOURCE_REPORT_URL;
+          const password = process.env.DEEPSOURCE_PASS || '';
+          const out = path.join(process.env.GITHUB_WORKSPACE, process.env.OUT, 'deepsource');
+          fs.mkdirSync(out, { recursive: true });
+          const status = {source:'DeepSource', ok:false, access_mode:'shared report + password', errors:[]};
+          const captured = [];
+
+          function safeUrl(raw) {
+            try {
+              const u = new URL(raw);
+              for (const key of [...u.searchParams.keys()]) {
+                if (/pass|password|token|secret|key|auth/i.test(key)) u.searchParams.set(key, '[REDACTED]');
+              }
+              return u.toString();
+            } catch { return raw; }
           }
 
-          export_ds repository repo status
-          export_ds issues issues --default-branch --verbose
-          export_ds vulnerabilities vulnerabilities --default-branch --verbose
-          export_ds metrics metrics --default-branch --verbose
-          export_ds runs runs --limit 100
-          export_ds report-card report-card
+          (async () => {
+            const browser = await chromium.launch({headless:true});
+            const context = await browser.newContext({userAgent:'NiakVIO-external-audit/1.0'});
+            const page = await context.newPage();
 
-          python3 - <<'PY'
-          import json, os, pathlib
-          from collections import Counter
-          out = pathlib.Path(os.environ['OUT'])/'deepsource'
-          try:
-              raw = json.loads((out/'issues.json').read_text(encoding='utf-8'))
-          except Exception:
-              raw = {}
-          issues = raw.get('issues', []) if isinstance(raw, dict) else (raw if isinstance(raw, list) else [])
-          if not isinstance(issues, list): issues=[]
-          sev = Counter(str(i.get('severity','UNKNOWN')) for i in issues if isinstance(i,dict))
-          cat = Counter(str(i.get('category','UNKNOWN')) for i in issues if isinstance(i,dict))
-          lines = ['# DeepSource audit','',f'- Findings: **{len(issues)}**',
-                   '- Severity: '+(', '.join(f'`{k}` {v}' for k,v in sev.most_common()) or 'none'),
-                   '- Category: '+(', '.join(f'`{k}` {v}' for k,v in cat.most_common()) or 'none'),
-                   '', '## Findings','']
-          for i in issues:
-              if not isinstance(i,dict): continue
-              location = i.get('location') if isinstance(i.get('location'),dict) else {}
-              path = i.get('path') or i.get('file_path') or location.get('path') or '?'
-              line = i.get('line') or i.get('line_number') or location.get('line')
-              loc = f'{path}:{line}' if line else str(path)
-              code = i.get('shortcode') or i.get('issue_code') or i.get('code') or '?'
-              title = ' '.join(str(i.get('title') or i.get('message') or i.get('description') or '').split())
-              lines.append(f'- `{loc}` **{i.get("severity","?")} / {i.get("category","?")}** `{code}` — {title}')
-          (out/'summary.md').write_text('\n'.join(lines)+'\n', encoding='utf-8')
-          (out/'status.json').write_text(json.dumps({'source':'DeepSource','ok':True,'finding_count':len(issues),'errors':[]}, indent=2)+'\n', encoding='utf-8')
-          PY
-          find "$OUT/deepsource" -name '*.err' -size 0 -delete
-          exit 0
+            page.on('response', async (res) => {
+              try {
+                const ct = (res.headers()['content-type'] || '').toLowerCase();
+                if (!ct.includes('json') || !res.url().includes('deepsource')) return;
+                const data = await res.json();
+                captured.push({url:safeUrl(res.url()), status:res.status(), data});
+              } catch {}
+            });
 
-      - name: Export CodeScene
+            try {
+              await page.goto(reportUrl, {waitUntil:'domcontentloaded', timeout:60000});
+              await page.waitForTimeout(1500);
+
+              const pwd = page.locator('input[type="password"], input[name*="password" i]').first();
+              if (await pwd.count()) {
+                await pwd.fill(password);
+                const form = pwd.locator('xpath=ancestor::form[1]');
+                const submit = form.locator('button[type="submit"], input[type="submit"]').first();
+                if (await submit.count()) await submit.click();
+                else await pwd.press('Enter');
+                await page.waitForTimeout(2500);
+                await page.waitForLoadState('networkidle', {timeout:20000}).catch(()=>{});
+              }
+
+              const stillLocked = await page.locator('input[type="password"], input[name*="password" i]').count();
+              const text = await page.locator('body').innerText().catch(()=> '');
+              fs.writeFileSync(path.join(out,'report.txt'), text + '\n', 'utf8');
+              fs.writeFileSync(path.join(out,'network-json.json'), JSON.stringify(captured, null, 2) + '\n', 'utf8');
+
+              if (stillLocked) {
+                status.errors.push('shared report remained password-locked after submitting DEEPSOURCE_PASS');
+              } else if (text.trim().length < 80) {
+                status.errors.push('shared report opened but returned too little readable content');
+              } else {
+                status.ok = true;
+              }
+              status.report_url = reportUrl;
+              status.readable_characters = text.length;
+              status.json_responses = captured.length;
+
+              const md = [
+                '# DeepSource shared report','',
+                '- Access: password-protected shared report; no DeepSource account login or API token used.',
+                `- Report: \`${reportUrl}\``,
+                `- Readable characters: **${text.length}**`,
+                `- Captured JSON responses: **${captured.length}**`,
+                '', '## Report text','', text
+              ].join('\n');
+              fs.writeFileSync(path.join(out,'summary.md'), md + '\n', 'utf8');
+            } catch (e) {
+              status.errors.push(`${e.name || 'Error'}: ${e.message || String(e)}`);
+            } finally {
+              fs.writeFileSync(path.join(out,'status.json'), JSON.stringify(status, null, 2) + '\n', 'utf8');
+              await browser.close();
+            }
+          })().catch((e) => {
+            status.errors.push(`${e.name || 'Error'}: ${e.message || String(e)}`);
+            fs.writeFileSync(path.join(out,'status.json'), JSON.stringify(status, null, 2) + '\n', 'utf8');
+            process.exitCode = 0;
+          });
+          JS
+
+      - name: Export CodeScene REST API data
         continue-on-error: true
+        shell: bash
         run: |
           python3 <<'PY'
           import json, os, pathlib, urllib.parse, urllib.request, urllib.error
           out = pathlib.Path(os.environ['OUT'])/'codescene'
           token = os.environ.get('CODESCENE_TOKEN','').strip()
           base = 'https://api.codescene.io/v2'
-          status = {'source':'CodeScene','ok':False,'errors':[]}
+          status = {'source':'CodeScene','ok':False,'errors':[],'access_mode':'REST API bearer token'}
 
           def save(name, value):
               (out/name).write_text(json.dumps(value, indent=2, ensure_ascii=False)+'\n', encoding='utf-8')
@@ -288,15 +342,19 @@ jobs:
               if arch is not None: break
           save('architecture-hotspots.json', arch if arch is not None else {'unavailable':True})
 
-          def health(f):
-              h=f.get('code_health')
-              if isinstance(h,dict): return h.get('health_now') or h.get('score') or h.get('value')
-              return h
-          lines=['# CodeScene audit','',f'- Project: `{status["project"]}`',f'- File metrics exported: **{len(files)}**','','## Files / Code Health','']
-          sortable=sorted([f for f in files if isinstance(f,dict)], key=lambda f:(health(f) is None, health(f) if isinstance(health(f),(int,float)) else 999))
-          for f in sortable:
+          latest_summary = latest.get('summary',{}) if isinstance(latest,dict) else {}
+          high = latest.get('high_level_metrics',{}) if isinstance(latest,dict) else {}
+          lines=['# CodeScene audit','',f'- Project: `{status["project"]}`',f'- File metrics exported: **{len(files)}**']
+          if high:
+              lines += [f'- Code Health weighted average: `{high.get("code_health_weighted_average_current")}`',
+                        f'- Hotspot score: `{high.get("current_score")}`']
+          if latest_summary:
+              lines += [f'- Files with Code Health: `{latest_summary.get("files_with_code_health")}`']
+          lines += ['', '## Files','']
+          for f in files:
+              if not isinstance(f,dict): continue
               name=f.get('name') or f.get('path') or '?'
-              lines.append(f'- `{name}` — Code Health `{health(f)}`; changes `{f.get("change_frequency","?")}`; defects `{f.get("number_of_defects","?")}`; LOC `{f.get("lines_of_code","?")}`')
+              lines.append(f'- `{name}` — changes `{f.get("change_frequency","?")}`; defects `{f.get("number_of_defects","?")}`; LOC `{f.get("lines_of_code","?")}`; Code Health `{f.get("code_health","?")}`')
           (out/'summary.md').write_text('\n'.join(lines)+'\n', encoding='utf-8')
           status['ok']=True
           status['file_count']=len(files)
@@ -305,6 +363,7 @@ jobs:
 
       - name: Build AI index
         if: always()
+        shell: bash
         run: |
           python3 <<'PY'
           import json, os, pathlib, datetime
@@ -313,31 +372,52 @@ jobs:
           for name in ('sonar','deepsource','codescene'):
               try: statuses.append(json.loads((root/name/'status.json').read_text(encoding='utf-8')))
               except Exception: statuses.append({'source':name,'ok':False,'errors':['status unavailable']})
-          lines=['# External code-audit status','',f'Generated from `{os.environ["REPO_SLUG"]}` at commit `{os.environ.get("GITHUB_SHA","")}`.','',
-                 '| Source | Status | Findings/files | Notes |','|---|---:|---:|---|']
+          lines=['# External code-audit status','',f'Generated from `{os.environ["REPO_SLUG"]}` at commit `{os.environ.get("AUDITED_SHA","")}`.','',
+                 '| Source | Status | Findings/files | Access | Notes |','|---|---:|---:|---|---|']
           for s in statuses:
-              count=s.get('finding_count',s.get('file_count','—'))
+              count=s.get('finding_count',s.get('file_count',s.get('json_responses','—')))
               notes='; '.join(s.get('errors') or []) or 'OK'
-              lines.append(f'| {s.get("source","?")} | {"OK" if s.get("ok") else "PARTIAL/ERROR"} | {count} | {notes} |')
+              lines.append(f'| {s.get("source","?")} | {"OK" if s.get("ok") else "PARTIAL/ERROR"} | {count} | {s.get("access_mode","?")} | {notes} |')
           lines += ['', '## AI reading order','',
-                    '1. Read `STATUS.md`.','2. Read each source `summary.md` when available.','3. Open raw JSON for exact fields/context.','',
+                    '1. Read `STATUS.md`.','2. Read each source `summary.md` when available.','3. Open raw JSON/text for exact fields/context.','',
                     '> Evidence only: no external autofix is applied automatically.']
           (root/'STATUS.md').write_text('\n'.join(lines)+'\n',encoding='utf-8')
-          meta={'repository':os.environ['REPO_SLUG'],'sha':os.environ.get('GITHUB_SHA'),'run_id':os.environ.get('GITHUB_RUN_ID'),'generated_at_utc':datetime.datetime.now(datetime.timezone.utc).isoformat()}
+          meta={'repository':os.environ['REPO_SLUG'],'sha':os.environ.get('AUDITED_SHA'),'run_id':os.environ.get('GITHUB_RUN_ID'),'generated_at_utc':datetime.datetime.now(datetime.timezone.utc).isoformat()}
           (root/'manifest.json').write_text(json.dumps(meta,indent=2)+'\n',encoding='utf-8')
           PY
 
-      - name: Commit refreshed audit exports
+      - name: Commit refreshed audit exports safely
         if: always()
+        shell: bash
         run: |
           set -euo pipefail
+          SNAPSHOT="$RUNNER_TEMP/ai-external-export"
+          rm -rf "$SNAPSHOT"
+          mkdir -p "$SNAPSHOT"
+          cp -a "$OUT"/. "$SNAPSHOT"/
+
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git add "$OUT"
-          if git diff --cached --quiet; then
-            echo 'No audit export changes.'
-            exit 0
-          fi
-          git commit -m 'chore(audit): refresh external AI audit logs [skip ci]'
-          git pull --rebase origin main
-          git push origin HEAD:main
+
+          for attempt in 1 2 3; do
+            git fetch origin main
+            git reset --hard origin/main
+            mkdir -p "$OUT"
+            find "$OUT" -mindepth 1 -maxdepth 1 ! -name README.md -exec rm -rf {} +
+            cp -a "$SNAPSHOT"/. "$OUT"/
+            git add "$OUT"
+
+            if git diff --cached --quiet; then
+              echo 'No audit export changes.'
+              exit 0
+            fi
+
+            git commit -m 'chore(audit): refresh external AI audit logs [skip ci]'
+            if git push origin HEAD:main; then
+              exit 0
+            fi
+            echo "Push raced with main; retrying ($attempt/3)."
+          done
+
+          echo 'Unable to publish refreshed audit exports after 3 attempts.' >&2
+          exit 1
