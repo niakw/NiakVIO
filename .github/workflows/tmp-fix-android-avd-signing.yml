@@ -148,14 +148,14 @@ jobs:
           python3 tests/native_evidence_contract_test.py
           ! grep -R --line-number 'avd-v4-' .github/workflows/native-android-route-reader.yml tests/native_android_avd_cache_contract_test.py tests/native_corpus_device_lab_test.py tests/native_human_ux_policy_lock_test.py
 
-      - name: Commit verified repair and self-delete
+      - name: Commit verified non-workflow contracts
         shell: bash
         run: |
           set -euo pipefail
-          git rm .github/workflows/tmp-fix-android-avd-signing.yml
+          git restore --source=HEAD -- .github/workflows/native-android-route-reader.yml .github/workflows/tmp-fix-android-avd-signing.yml
           git config user.name "niakw"
           git config user.email "foissy.tommy@gmail.com"
-          git add .github/workflows/native-android-route-reader.yml tests/native_android_avd_cache_contract_test.py tests/native_corpus_device_lab_test.py tests/native_human_ux_policy_lock_test.py tests/native_evidence_contract_test.py
+          git add tests/native_android_avd_cache_contract_test.py tests/native_corpus_device_lab_test.py tests/native_human_ux_policy_lock_test.py tests/native_evidence_contract_test.py
           git diff --cached --check
-          git commit -m "fix(android): bind warm AVDs to debug signing key"
+          git commit -m "test(android): lock AVD signing generation contract"
           git push origin HEAD:main
