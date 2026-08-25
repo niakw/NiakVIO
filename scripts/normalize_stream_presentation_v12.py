@@ -27,6 +27,27 @@ def _json_text(value: Any) -> str:
     return json.dumps(value, ensure_ascii=False, indent=2) + "\n"
 
 
+def _normalize_catalog_patterns(catalog: dict[str, Any]) -> tuple[dict[str, Any], int]:
+    """Collapse the historical double escaping that made Nuvio regexes literal.
+
+    The source catalog accidentally stored two backslash characters for regex escapes
+    such as ``\\b``. JSON then serialized both, and the official Kotlin/Java regex
+    engines received ``\\\\b`` (a literal backslash plus ``b``) instead of a word
+    boundary. A single collapse is enough and leaves already-correct patterns intact.
+    """
+    normalized = json.loads(json.dumps(catalog))
+    changed = 0
+    for badge in normalized.get("badges") or []:
+        if not isinstance(badge, dict):
+            continue
+        pattern = str(badge.get("pattern") or "")
+        fixed = pattern.replace("\\\\", "\\")
+        if fixed != pattern:
+            badge["pattern"] = fixed
+            changed += 1
+    return normalized, changed
+
+
 def _feed_payload(catalog: dict[str, Any], theme: str) -> dict[str, Any]:
     groups = [
         {
@@ -76,7 +97,13 @@ def normalize(*, apply: bool) -> list[str]:
             "silently reconstruct security-sensitive provider wrappers"
         )
 
-    catalog = json.loads(CATALOG.read_text(encoding="utf-8"))
+    raw_catalog = json.loads(CATALOG.read_text(encoding="utf-8"))
+    catalog, pattern_changes = _normalize_catalog_patterns(raw_catalog)
+    if pattern_changes:
+        changed.append(f"badge_catalog_regex_escaping:{pattern_changes}")
+        if apply:
+            CATALOG.write_text(_json_text(catalog), encoding="utf-8")
+
     for theme, path in (("dark", DARK_FEED), ("light", LIGHT_FEED), ("dark", FUSION_FEED)):
         wanted = _json_text(_feed_payload(catalog, theme))
         current = path.read_text(encoding="utf-8") if path.is_file() else ""
@@ -142,6 +169,9 @@ def assert_contract() -> None:
             raise ValueError(f"stream presentation V12 contract missing: {token}")
 
     catalog = json.loads(CATALOG.read_text(encoding="utf-8"))
+    normalized_catalog, pattern_changes = _normalize_catalog_patterns(catalog)
+    if pattern_changes or normalized_catalog != catalog:
+        raise ValueError("badge catalog still contains over-escaped regex patterns")
     expected = len(catalog.get("badges") or [])
     for path in (FUSION_FEED, DARK_FEED, LIGHT_FEED):
         if not path.is_file():
@@ -152,8 +182,9 @@ def assert_contract() -> None:
         if len(filters) != expected or not groups:
             raise ValueError(f"native StreamBadge feed incomplete: {path.name}")
         for row in filters:
-            if not row.get("pattern") or not row.get("imageURL"):
-                raise ValueError(f"native StreamBadge feed row incomplete: {path.name}")
+            pattern = str(row.get("pattern") or "")
+            if not pattern or "\\\\" in pattern or not row.get("imageURL"):
+                raise ValueError(f"native StreamBadge feed row invalid: {path.name} {row.get('id')}")
 
 
 def main() -> int:
@@ -166,7 +197,8 @@ def main() -> int:
     changes = normalize(apply=args.apply)
     if args.check and changes:
         raise SystemExit("stream presentation V12 normalization required: " + ", ".join(changes))
-    assert_contract()
+    if args.apply or not changes:
+        assert_contract()
     print(f"FIELD_STREAM_PRESENTATION_V12 changed={len(changes)} revision={REVISION}")
     return 0
 
