@@ -1,0 +1,212 @@
+name: Integrate native cross-runtime gate once
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/runtime-gate-integration-once.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  integrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: "24"
+          package-manager-cache: false
+      - name: Integrate blocking cross-runtime gates
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          def replace_exact(path: Path, old: str, new: str, expected: int = 1) -> None:
+              text = path.read_text(encoding="utf-8")
+              count = text.count(old)
+              if count != expected:
+                  raise SystemExit(f"{path}: anchor count for {old!r} is {count}, expected {expected}")
+              path.write_text(text.replace(old, new), encoding="utf-8")
+
+          android = Path(".github/workflows/native-android-route-reader.yml")
+          text = android.read_text(encoding="utf-8")
+          path_anchor = '      - "scripts/gate_native_reader_result.cjs"\n'
+          if '      - "scripts/gate_native_cross_client_runtime.cjs"\n' not in text:
+              count = text.count(path_anchor)
+              if count != 2:
+                  raise SystemExit(f"{android}: reader gate path anchor count={count}")
+              text = text.replace(
+                  path_anchor,
+                  path_anchor + '      - "scripts/gate_native_cross_client_runtime.cjs"\n',
+              )
+          step_anchor = "      - name: Materialize bounded generic Brain mutations across three representative routes\n"
+          if "Gate systemic TV and Mobile runtime divergence" not in text:
+              if text.count(step_anchor) != 1:
+                  raise SystemExit(f"{android}: Brain materialization anchor count={text.count(step_anchor)}")
+              gate_step = '''      - name: Gate systemic TV and Mobile runtime divergence
+                shell: bash
+                run: |
+                  set -euo pipefail
+                  node niakvio/scripts/gate_native_cross_client_runtime.cjs \\
+                    --dir "$GITHUB_WORKSPACE/baseline-reader" \\
+                    --require-clients mobile,tv \\
+                    --min-comparisons 3
+          '''
+              text = text.replace(step_anchor, gate_step + step_anchor, 1)
+          android.write_text(text, encoding="utf-8")
+
+          targeted = Path(".github/workflows/native-corpus-device-targeted.yml")
+          text = targeted.read_text(encoding="utf-8")
+          if "cross-runtime-gate:" not in text:
+              aggregate = '''
+
+            cross-runtime-gate:
+              if: ${{ always() && inputs.device == 'all' }}
+              needs: [native-corpus]
+              runs-on: ubuntu-latest
+              timeout-minutes: 10
+              steps:
+                - name: Checkout exact NiakVIO generation
+                  uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+                  with:
+                    ref: ${{ github.sha }}
+                    path: niakvio
+                    persist-credentials: false
+                - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+                  with:
+                    node-version: "24"
+                    package-manager-cache: false
+                - name: Download Desktop extraction-runtime evidence
+                  uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+                  with:
+                    name: native-corpus-desktop-all-${{ github.run_id }}
+                    path: cross-runtime/desktop
+                - name: Download Mobile extraction-runtime evidence
+                  uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+                  with:
+                    name: native-corpus-mobile-all-${{ github.run_id }}
+                    path: cross-runtime/mobile
+                - name: Download TV extraction-runtime evidence
+                  uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+                  with:
+                    name: native-corpus-tv-all-${{ github.run_id }}
+                    path: cross-runtime/tv
+                - name: Gate Desktop Mobile TV runtime divergence
+                  shell: bash
+                  run: |
+                    set -euo pipefail
+                    node niakvio/scripts/gate_native_cross_client_runtime.cjs \\
+                      --dir "$GITHUB_WORKSPACE/cross-runtime" \\
+                      --require-clients desktop,mobile,tv \\
+                      --min-comparisons 6
+          '''
+              text += aggregate
+          targeted.write_text(text, encoding="utf-8")
+
+          lab_test = Path("tests/native_corpus_device_lab_test.py")
+          text = lab_test.read_text(encoding="utf-8")
+          constant_anchor = 'READER_GATE = ROOT / "scripts/gate_native_reader_result.cjs"\n'
+          if 'CROSS_RUNTIME_GATE = ROOT / "scripts/gate_native_cross_client_runtime.cjs"' not in text:
+              if text.count(constant_anchor) != 1:
+                  raise SystemExit(f"{lab_test}: gate constant anchor missing")
+              text = text.replace(
+                  constant_anchor,
+                  constant_anchor + 'CROSS_RUNTIME_GATE = ROOT / "scripts/gate_native_cross_client_runtime.cjs"\n',
+                  1,
+              )
+          source_anchor = 'reader_gate = READER_GATE.read_text(encoding="utf-8")\n'
+          if 'cross_runtime_gate = CROSS_RUNTIME_GATE.read_text' not in text:
+              if text.count(source_anchor) != 1:
+                  raise SystemExit(f"{lab_test}: reader gate source anchor missing")
+              text = text.replace(
+                  source_anchor,
+                  source_anchor + 'cross_runtime_gate = CROSS_RUNTIME_GATE.read_text(encoding="utf-8")\n',
+                  1,
+              )
+          assertion_anchor = '# Collection integrity stays strict; provider/playback outcomes are evidence.\n'
+          if 'systemic_cross_client_divergence' not in text:
+              if text.count(assertion_anchor) != 1:
+                  raise SystemExit(f"{lab_test}: collection assertion anchor missing")
+              assertions = '''# Cross-client runtime compatibility is a blocking contract, not merely a Brain signal.
+          for required in (
+              "FIELD_NATIVE_CROSS_RUNTIME_GATE",
+              "systemic_cross_client_divergence",
+              "missing_required_clients",
+              "__NIAKVIO_RUNTIME_ERROR__",
+          ):
+              assert required in cross_runtime_gate, required
+          assert "Gate systemic TV and Mobile runtime divergence" in android_reader
+          assert "--require-clients mobile,tv" in android_reader
+          assert "cross-runtime-gate:" in targeted_runtime
+          assert "--require-clients desktop,mobile,tv" in targeted_runtime
+
+          '''
+              text = text.replace(assertion_anchor, assertions + assertion_anchor, 1)
+          lab_test.write_text(text, encoding="utf-8")
+
+          bootstrap = Path("tests/native_reader_runtime_bootstrap_test.py")
+          text = bootstrap.read_text(encoding="utf-8")
+          variable_anchor = 'corpus_client = (SCRIPTS / "prepare_native_corpus_client.py").read_text(encoding="utf-8")\n'
+          if 'restage_client = (SCRIPTS / "restage_native_corpus_client.py")' not in text:
+              if text.count(variable_anchor) != 1:
+                  raise SystemExit(f"{bootstrap}: variable anchor missing")
+              text = text.replace(
+                  variable_anchor,
+                  variable_anchor + 'restage_client = (SCRIPTS / "restage_native_corpus_client.py").read_text(encoding="utf-8")\n',
+                  1,
+              )
+          print_anchor = 'print(\n    "native reader runtime bootstrap contract passed: "'
+          if 'NIAKVIO_NATIVE_RUNTIME_ERROR_TRAP' not in text:
+              if text.count(print_anchor) != 1:
+                  raise SystemExit(f"{bootstrap}: print anchor missing")
+              assertions = '''# Official Nuvio runtimes intentionally swallow getStreams exceptions into []; the
+          # diagnostic source must preserve those exceptions without changing production JS.
+          for required in (
+              "NIAKVIO_NATIVE_RUNTIME_ERROR_TRAP",
+              "__NIAKVIO_RUNTIME_ERROR__",
+              "trapRuntimeErrors",
+              "data:application/x-niakvio-runtime-error,1",
+          ):
+              assert required in restage_client, required
+          assert "code = trapRuntimeErrors(File(root, provider.asset).readText())" in restage_client
+          assert "code = trapRuntimeErrors(code(provider.asset))" in restage_client
+
+          '''
+              text = text.replace(print_anchor, assertions + print_anchor, 1)
+          bootstrap.write_text(text, encoding="utf-8")
+          PY
+      - name: Verify runtime-gate contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check scripts/gate_native_cross_client_runtime.cjs
+          node --check scripts/gate_native_player_reached.cjs
+          python3 -m py_compile scripts/restage_native_corpus_client.py
+          python3 tests/native_cross_client_runtime_gate_test.py
+          python3 tests/native_reader_runtime_bootstrap_test.py
+          python3 tests/native_corpus_device_lab_test.py
+      - name: Commit verified integration and remove one-shot workflow
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f .github/workflows/runtime-gate-integration-once.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .github/workflows/native-android-route-reader.yml \
+                  .github/workflows/native-corpus-device-targeted.yml \
+                  tests/native_corpus_device_lab_test.py \
+                  tests/native_reader_runtime_bootstrap_test.py \
+                  .github/workflows/runtime-gate-integration-once.yml
+          if git diff --cached --quiet; then
+            echo "No integration diff to commit."
+            exit 0
+          fi
+          git commit -m "fix(labs): enforce cross-device runtime compatibility"
+          git push origin HEAD:main
