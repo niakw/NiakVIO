@@ -1,0 +1,170 @@
+name: Temporary Android AVD signing cache repair
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/tmp-fix-android-avd-signing.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          fetch-depth: 1
+      - name: Patch persistent AVD/signing contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          workflow_path = Path('.github/workflows/native-android-route-reader.yml')
+          text = workflow_path.read_text(encoding='utf-8')
+          setup = '      - uses: gradle/actions/setup-gradle@0723195856401067f7a2779048b490ace7a47d7c\n'
+
+          old_tv = '''      - name: Restore TV AVD snapshot
+                  id: avd-cache
+                  uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25
+                  with:
+                    path: |
+                      ~/.android/avd/*
+                      ~/.android/adb*
+                    key: avd-v4-${{ runner.os }}-tv-api31-android-tv-x86-tv_1080p
+          '''
+          new_tv = '''      - name: Restore TV AVD snapshot and matching debug signing key
+                  id: avd-cache
+                  uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25
+                  with:
+                    path: |
+                      ~/.android/avd/*
+                      ~/.android/adb*
+                      ~/.android/debug.keystore
+                    key: avd-v5-${{ runner.os }}-tv-api31-android-tv-x86-tv_1080p
+          '''
+          tv_checkout = '      - name: Checkout latest official NuvioTV HEAD and stage first route\n'
+          tv_anchor = setup + tv_checkout
+          if text.count(tv_anchor) != 1 or text.count(old_tv) != 1:
+              raise SystemExit(f'TV AVD patch anchors invalid checkout={text.count(tv_anchor)} cache={text.count(old_tv)}')
+          text = text.replace(old_tv, '', 1)
+          text = text.replace(tv_anchor, setup + new_tv + tv_checkout, 1)
+
+          old_mobile = '''      - name: Restore Mobile AVD snapshot
+                  id: avd-cache
+                  uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25
+                  with:
+                    path: |
+                      ~/.android/avd/*
+                      ~/.android/adb*
+                    key: avd-v4-${{ runner.os }}-mobile-api35-google_apis-x86_64-pixel_2
+          '''
+          new_mobile = '''      - name: Restore Mobile AVD snapshot and matching debug signing key
+                  id: avd-cache
+                  uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25
+                  with:
+                    path: |
+                      ~/.android/avd/*
+                      ~/.android/adb*
+                      ~/.android/debug.keystore
+                    key: avd-v5-${{ runner.os }}-mobile-api35-google_apis-x86_64-pixel_2
+          '''
+          mobile_checkout = '      - name: Checkout latest official NuvioMobile HEAD and stage first route\n'
+          mobile_anchor = setup + mobile_checkout
+          if text.count(mobile_anchor) != 1 or text.count(old_mobile) != 1:
+              raise SystemExit(f'Mobile AVD patch anchors invalid checkout={text.count(mobile_anchor)} cache={text.count(old_mobile)}')
+          text = text.replace(old_mobile, '', 1)
+          text = text.replace(mobile_anchor, setup + new_mobile + mobile_checkout, 1)
+
+          old_repair = '''      - name: Restore TV AVD snapshot for candidate retest
+                  if: steps.repair.outputs.proposals != '0'
+                  id: repair-avd-cache
+                  uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25
+                  with:
+                    path: |
+                      ~/.android/avd/*
+                      ~/.android/adb*
+                    key: avd-v4-${{ runner.os }}-tv-api31-android-tv-x86-tv_1080p
+          '''
+          new_repair = '''      - name: Restore TV AVD snapshot and matching debug signing key for candidate retest
+                  if: steps.repair.outputs.proposals != '0'
+                  id: repair-avd-cache
+                  uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25
+                  with:
+                    path: |
+                      ~/.android/avd/*
+                      ~/.android/adb*
+                      ~/.android/debug.keystore
+                    key: avd-v5-${{ runner.os }}-tv-api31-android-tv-x86-tv_1080p
+          '''
+          repair_checkout = "      - name: Checkout latest official NuvioTV HEAD for candidate retest\n"
+          if text.count(old_repair) != 1 or text.count(repair_checkout) != 1:
+              raise SystemExit(f'Repair AVD patch anchors invalid checkout={text.count(repair_checkout)} cache={text.count(old_repair)}')
+          text = text.replace(old_repair, '', 1)
+          text = text.replace(repair_checkout, new_repair + repair_checkout, 1)
+
+          if 'avd-v4-${{ runner.os }}-' in text:
+              raise SystemExit('stale canonical avd-v4 key remains in Android route workflow')
+          workflow_path.write_text(text, encoding='utf-8')
+
+          for test_path in (
+              Path('tests/native_android_avd_cache_contract_test.py'),
+              Path('tests/native_corpus_device_lab_test.py'),
+              Path('tests/native_human_ux_policy_lock_test.py'),
+          ):
+              source = test_path.read_text(encoding='utf-8').replace('avd-v4-${{ runner.os }}-', 'avd-v5-${{ runner.os }}-')
+              test_path.write_text(source, encoding='utf-8')
+
+          avd_test = Path('tests/native_android_avd_cache_contract_test.py')
+          source = avd_test.read_text(encoding='utf-8')
+          marker = '''for line in workflow.splitlines():
+              if "key: avd-v5-" in line:
+                  assert "needs.resolve.outputs.mobile_sha" not in line
+                  assert "needs.resolve.outputs.tv_sha" not in line
+                  assert "needs.resolve.outputs.runtime_fingerprint" not in line
+          '''
+          addition = marker + '''
+          # A warm guest may already contain a debug-signed Nuvio package. The signing
+          # key is therefore part of the same persistent Lab generation and must be
+          # restored before the official client APK is built, otherwise Android rejects
+          # the update with INSTALL_FAILED_UPDATE_INCOMPATIBLE.
+          assert workflow.count("~/.android/debug.keystore") == 3
+          assert workflow.index("Restore TV AVD snapshot and matching debug signing key") < workflow.index("Checkout latest official NuvioTV HEAD and stage first route")
+          assert workflow.index("Restore Mobile AVD snapshot and matching debug signing key") < workflow.index("Checkout latest official NuvioMobile HEAD and stage first route")
+          assert workflow.index("Restore TV AVD snapshot and matching debug signing key for candidate retest") < workflow.index("Checkout latest official NuvioTV HEAD for candidate retest")
+          '''
+          if marker not in source:
+              raise SystemExit('AVD contract insertion marker missing')
+          avd_test.write_text(source.replace(marker, addition, 1), encoding='utf-8')
+
+          human = Path('tests/native_human_ux_policy_lock_test.py')
+          source = human.read_text(encoding='utf-8')
+          source = source.replace('if line.strip().startswith("key: avd-v4-")', 'if line.strip().startswith("key: avd-v5-")')
+          guard = 'assert "restore-keys:" not in ANDROID_WORKFLOW\n'
+          extra = guard + 'assert ANDROID_WORKFLOW.count("~/.android/debug.keystore") == 3\n'
+          if guard not in source:
+              raise SystemExit('human UX cache guard marker missing')
+          human.write_text(source.replace(guard, extra, 1), encoding='utf-8')
+          PY
+
+          python3 tests/native_android_avd_cache_contract_test.py
+          python3 tests/native_corpus_device_lab_test.py
+          python3 tests/native_human_ux_policy_lock_test.py
+          python3 tests/native_evidence_contract_test.py
+          ! grep -R --line-number 'avd-v4-${{ runner.os }}-' .github/workflows/native-android-route-reader.yml tests/native_android_avd_cache_contract_test.py tests/native_corpus_device_lab_test.py tests/native_human_ux_policy_lock_test.py
+
+      - name: Commit verified repair and self-delete
+        shell: bash
+        run: |
+          set -euo pipefail
+          git rm .github/workflows/tmp-fix-android-avd-signing.yml
+          git config user.name "niakw"
+          git config user.email "foissy.tommy@gmail.com"
+          git add .github/workflows/native-android-route-reader.yml tests/native_android_avd_cache_contract_test.py tests/native_corpus_device_lab_test.py tests/native_human_ux_policy_lock_test.py
+          git diff --cached --check
+          git commit -m "fix(android): bind warm AVDs to debug signing key"
+          git push origin HEAD:main
