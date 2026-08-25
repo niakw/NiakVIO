@@ -32,3 +32,15 @@ The theme-ready files already contain a subtle chip/background/border so white o
 DISPLAY RULE
 ------------
 The primary stream row should show one compact badge per confirmed fact, in one line when the viewport allows it. The technical text line remains below it. Missing facts simply disappear.
+
+DUAL-MODE RUNTIME RULE
+----------------------
+NiakVIO always replaces provider-owned stream descriptions with the shared Core presentation.
+Technical truth comes from provider/stream facts; TMDB fills only safe media context such as title/year/episode/genres/runtime/age when useful.
+
+If native StreamBadge is active, import one of these feeds according to the Nuvio theme:
+- assets/stream-badges-dark.json
+- assets/stream-badges-light.json
+The technical line deliberately keeps the matcher tokens so the official Nuvio StreamBadge renderer can show the real image assets.
+
+If StreamBadge is inactive, the exact same description remains styled with emoji groups (🎞️ video, 🔊 audio, 🌐 language/subtitles, ⏱ duration, 💾 size, 🔞 age). No provider Unknown/private layout is allowed through.

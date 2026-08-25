@@ -25,7 +25,17 @@
       "tv": "18-22"
     },
     "keepTechnicalTextLine": true,
-    "hideUnknownBadges": true
+    "hideUnknownBadges": true,
+    "alwaysReplaceProviderDescription": true,
+    "nativeBadgeFeeds": {
+      "dark_app_background": "assets/stream-badges-dark.json",
+      "light_app_background": "assets/stream-badges-light.json"
+    },
+    "fallbackWhenNativeBadgesDisabled": "emojiTechnicalLine",
+    "presentationSources": {
+      "technicalTruth": "provider/stream facts",
+      "mediaContextFallback": "TMDB"
+    }
   },
   "rules": [
     "Never infer Blu-ray or Ultra HD Blu-ray from 1080p/2160p alone.",
@@ -33,7 +43,11 @@
     "REMUX must be confirmed by source metadata or naming, never inferred from resolution.",
     "Dolby Vision/HDR10+/IMAX Enhanced/Atmos/TrueHD/DTS:X are shown only when confirmed.",
     "Prefer one badge per fact in the primary row; retain additional details in the technical text line.",
-    "Use dark folder on gray/dark Nuvio themes and light folder on white/light Nuvio themes."
+    "Use dark folder on gray/dark Nuvio themes and light folder on white/light Nuvio themes.",
+    "Always replace every provider-owned stream description with the shared Core presentation.",
+    "When native StreamBadge rules are active, technical text provides matcher tokens for image badges.",
+    "When native StreamBadge rules are inactive, emoji-grouped technical text remains the universal visual fallback.",
+    "TMDB may fill media context, runtime and age rating, but never invent stream resolution/source/codec/audio/language facts."
   ],
   "bestCaseExample": {
     "title": "ECLIPSE RISING",

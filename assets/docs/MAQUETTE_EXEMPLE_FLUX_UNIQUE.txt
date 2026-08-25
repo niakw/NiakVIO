@@ -24,3 +24,11 @@ Sur fond gris/sombre Nuvio : charger assets/dark/{72x32|96x40}/<id>.webp
 Sur fond blanc/clair Nuvio : charger assets/light/{72x32|96x40}/<id>.webp
 
 La version transparent existe seulement comme source/fallback ; pour l'UI Nuvio finale, les variantes dark/light sont recommandées afin que les logos restent lisibles sur n'importe quel fond derrière la description.
+
+RUNTIME DUAL-MODE
+-----------------
+- StreamBadge actif : les tokens de la ligne technique déclenchent les vrais badges image du feed dark/light.
+- StreamBadge inactif : la ligne technique reste visible avec groupes emoji, par exemple :
+  🎞️ 2160p • Ultra HD Blu-ray REMUX • HEVC 10-bit • Dolby Vision • IMAX Enhanced  |  🔊 Dolby Atmos • TrueHD • 7.1  |  🌐 VFF • VOSTFR
+- Dans les deux modes, la description originale du provider est entièrement remplacée par le Core.
+- TMDB enrichit uniquement le contexte média absent ; les faits techniques restent issus du flux/provider.
