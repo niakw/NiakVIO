@@ -208,6 +208,11 @@ jobs:
         run: |
           set -euo pipefail
           python scripts/generate_diagnostics.py --results health-output/health-results.json --output health-output
+          python scripts/validate_route_overrides.py \
+            --config provider-overrides.json \
+            --results health-output/health-results.json \
+            --report health-output/route-regressions.json
+          test -s health-output/route-regressions.json
 
       - name: Upload validated staging transaction
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
