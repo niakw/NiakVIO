@@ -103,6 +103,7 @@ jobs:
 
           avd_test = Path('tests/native_android_avd_cache_contract_test.py')
           source = avd_test.read_text(encoding='utf-8')
+          source = source.replace('if "key: avd-v4-" in line:', 'if "key: avd-v5-" in line:')
           marker = '''for line in workflow.splitlines():
               if "key: avd-v5-" in line:
                   assert "needs.resolve.outputs.mobile_sha" not in line
