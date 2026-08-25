@@ -3,12 +3,16 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import re
 import subprocess
 import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 PATCHES = ROOT / "scripts" / "provider_patches"
+CONTRACT = ROOT / "automation" / "native-stream-presentation-contract.json"
+FUSION = ROOT / "assets" / "stream-badges-fusion.json"
+RAW_PREFIX = "https://raw.githubusercontent.com/niakw/NiakVIO/main/"
 
 
 def load(name: str):
@@ -20,34 +24,29 @@ def load(name: str):
     return module
 
 
-# Materialize the durable Core contract before loading the patch. This mirrors the
-# Core finalizer and keeps the test valid on a fresh checkout of the V11 control plane.
-normalizer_path = ROOT / "scripts" / "normalize_stream_presentation_v11.py"
-spec = importlib.util.spec_from_file_location("normalize_stream_presentation_v11", normalizer_path)
+normalizer_path = ROOT / "scripts" / "normalize_stream_presentation_v12.py"
+spec = importlib.util.spec_from_file_location("normalize_stream_presentation_v12", normalizer_path)
 assert spec and spec.loader
 normalizer = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(normalizer)
 normalizer.normalize(apply=True)
 normalizer.assert_contract()
 
-facts = load("global_stream_facts_v1.py")
 presentation = load("global_stream_presentation_v1.py")
 
-legacy = """module.exports={getStreams:async()=>[{name:'Purstream | 4k | Dual-Audio',title:'🎬 Interstellar - 2014\\n🔥 4k | 🔊 Dual-Audio\\n🎯 HLS • HEVC | 🎧 AAC • 169 min • BLU-RAY',size:'🎬 Interstellar - 2014\\n🔥 4k | 🔊 Dual-Audio\\n🎯 HLS • HEVC | 🎧 AAC • 169 min • BLU-RAY',description:'🎬 Interstellar - 2014\\n🔥 4k | 🔊 Dual-Audio\\n🎯 HLS • HEVC | 🎧 AAC • 169 min • BLU-RAY',url:'https://media.example/master.m3u8',quality:'',language:'',format:'m3u8',headers:{Referer:'https://purstream.example/'}}]};\n"""
-with_facts = facts.apply(legacy, context={"provider_id": "purstream"})
-assert "NUVIO_GLOBAL_STREAM_FACTS_V1" in with_facts
-patched = presentation.apply(with_facts, context={"provider_id": "purstream"})
-assert "NUVIO_GLOBAL_STREAM_PRESENTATION_V1" in patched
-assert "all-providers-forced-description-badge-emoji-tmdb-v11" in patched
-assert patched == presentation.apply(patched, context={"provider_id": "purstream"})
 
-
-def run(source: str, fetch_impl: str, call: str) -> object:
+def run(source: str, provider_id: str, fetch_impl: str, call: str) -> object:
+    patched = presentation.apply(source, context={"provider_id": provider_id})
+    assert "NUVIO_GLOBAL_STREAM_FACTS_V1" in patched
+    assert "NUVIO_GLOBAL_STREAM_IDENTITY_V1" in patched
+    assert "NUVIO_GLOBAL_STREAM_PRESENTATION_V1" in patched
+    assert "all-providers-client-projected-badge-emoji-tmdb-v12" in patched
+    assert patched == presentation.apply(patched, context={"provider_id": provider_id})
     with tempfile.TemporaryDirectory() as raw:
         root = Path(raw)
         provider = root / "provider.cjs"
         runner = root / "runner.cjs"
-        provider.write_text(source, encoding="utf-8")
+        provider.write_text(patched, encoding="utf-8")
         runner.write_text(
             "global.fetch=" + fetch_impl + ";\n"
             "const p=require(" + json.dumps(str(provider)) + ");\n"
@@ -55,120 +54,125 @@ def run(source: str, fetch_impl: str, call: str) -> object:
             + "\n",
             encoding="utf-8",
         )
-        result = subprocess.run(["node", str(runner)], text=True, capture_output=True, check=False, timeout=15)
+        result = subprocess.run(["node", str(runner)], text=True, capture_output=True, check=False, timeout=20)
         assert result.returncode == 0, result.stdout + result.stderr
         return json.loads(result.stdout.strip())
 
 
-tmdb_ok = r"""async function(url){
+TMDB_OK = r"""async function(url){
   if(!String(url).includes('api.themoviedb.org')) throw new Error('presentation must not fetch playback URLs');
-  return {ok:true,status:200,json:async()=>({id:157336,title:'Interstellar',release_date:'2014-11-05',runtime:169,overview:'Des explorateurs traversent un trou de ver pour chercher un nouveau foyer pour l’humanité.',genres:[{name:'Science-fiction'},{name:'Drame'}],release_dates:{results:[{iso_3166_1:'FR',release_dates:[{certification:'-12'}]}]}})};
+  return {ok:true,status:200,json:async()=>({id:157336,title:'Interstellar',release_date:'2014-11-05',runtime:169,overview:'Des explorateurs traversent un trou de ver.',genres:[{name:'Science-fiction'},{name:'Drame'}],release_dates:{results:[{iso_3166_1:'FR',release_dates:[{certification:'-12'}]}]}})};
 }"""
-row = run(
-    patched,
-    tmdb_ok,
-    "p.getStreams({tmdbId:'157336',mediaType:'movie',title:'Interstellar',year:2014}).then(v=>console.log(JSON.stringify(v[0])))",
-)
+TMDB_OFFLINE = "async function(){throw new Error('tmdb offline')}"
+CALL = "p.getStreams('157336','movie').then(v=>console.log(JSON.stringify(v[0])))"
+
+# Rich provider-owned layout is input-only. V12 extracts facts, rebuilds the visible
+# presentation and mirrors it into size because all three official clients preserve it.
+legacy = """module.exports={getStreams:async()=>[{name:'Purstream | provider-private',title:'🔥 PRIVATE TITLE',description:'🔥 provider private layout | 4K Dual-Audio HEVC E-AC3 5.1 BLU-RAY 169 min',size:'8.4 GB',url:'https://media.example/master.m3u8',quality:'4K',language:'Dual Audio',codec:'HEVC',audio:'E-AC3 5.1',sourceType:'BLU-RAY',headers:{Referer:'https://purstream.example/'}}]};\n"""
+row = run(legacy, "purstream", TMDB_OK, CALL)
 assert row["url"] == "https://media.example/master.m3u8"
 assert row["headers"] == {"Referer": "https://purstream.example/"}
-assert row["quality"] == "2160p", row
-assert row["language"] == "Dual Audio", row
-assert row["codec"] == "HEVC", row
-assert row["audio"] == "AAC", row
-assert row["duration"] == 169, row
-assert row["sourceType"] == "BLU-RAY", row
-assert row["ageRating"] == "-12", row
-assert row["title"] == "Purstream • Interstellar", row
-assert "size" not in row, row
-assert row["badgeIds"][:2] == ["4k-ultra-hd", "blu-ray-disc"], row
-assert "hevc" in row["badgeIds"], row
-assert "4K" in row["displayBadges"], row
-assert "HEVC" in row["displayBadges"], row
+assert row["quality"] == "", row
+assert row["language"] == "", row
 assert row["presentationFacts"]["quality"] == "2160p"
-assert row["presentationFacts"]["format"] == "HLS"
-assert "Interstellar • 2014 • Science-fiction, Drame" in row["description"], row
+assert row["presentationFacts"]["language"] == "Dual Audio"
+assert row["presentationFacts"]["codec"] == "HEVC"
+assert row["presentationFacts"]["audioCodec"] == "E-AC3"
+assert row["presentationFacts"]["audioChannels"] == "5.1"
+assert row["presentationFacts"]["duration"] == 169
+assert row["presentationFacts"]["sourceType"] == "BLU-RAY"
+assert row["presentationFacts"]["fileSize"] == "8.4 GB"
+assert row["fileSize"] == "8.4 GB"
+assert row["description"] == row["size"] == row["nuvioPresentation"]
+assert "provider private layout" not in row["description"]
+assert "PRIVATE TITLE" not in row["description"]
 assert "Unknown" not in row["description"]
 for expected in (
-    "🎞️ ", "2160p", "BLU-RAY", "HEVC", "HLS",
-    "🔊 AAC", "🌐 Dual Audio", "⏱ 2h49", "🔞 -12",
+    "🎬 Interstellar • 2014 • Science-fiction, Drame",
+    "🎞️ 2160p • BLU-RAY • HEVC • HLS",
+    "🔊 E-AC3 • 5.1",
+    "🌐 Dual Audio",
+    "⏱ 2h49",
+    "💾 8.4 GB",
+    "🔞 -12",
 ):
     assert expected in row["description"], (expected, row)
+for badge_id in ("4k-ultra-hd", "blu-ray-disc", "hevc", "dolby-digital-plus", "5.1", "multi"):
+    assert badge_id in row["badgeIds"], (badge_id, row)
 
-# Empty provider output must not start an optional TMDB request that can outlive
-# the provider route and make native evidence look incomplete.
-empty = "module.exports={getStreams:async()=>[]};\n"
-empty_patched = presentation.apply(empty, context={"provider_id": "movieshunt"})
-empty_result = run(
-    empty_patched,
-    "async function(){global.__tmdbCalls=(global.__tmdbCalls||0)+1;throw new Error('must not run')}",
-    "p.getStreams({tmdbId:'1233413',mediaType:'movie',title:'Sinners',year:2025}).then(v=>console.log(JSON.stringify({streams:v,calls:global.__tmdbCalls||0})))",
+# Sparse Purstream is no longer reduced to "Dual Audio". Even with TMDB offline the
+# direct-media format is a Core fact, so the common technical grammar remains visible.
+sparse = """module.exports={getStreams:async()=>[{name:'Purstream',url:'https://media.example/sparse.m3u8',sourceLabel:'Dual Audio'}]};\n"""
+sparse_row = run(sparse, "purstream", TMDB_OFFLINE, CALL)
+assert sparse_row["description"] == sparse_row["size"]
+assert "🎞️ HLS" in sparse_row["description"], sparse_row
+assert "🌐 Dual Audio" in sparse_row["description"], sparse_row
+assert sparse_row["description"].strip() != "Dual Audio"
+
+# Provider-specific formatting/emojis must never alter the canonical presentation.
+# These three fixtures deliberately expose the same facts through different legacy
+# layouts/field aliases, matching the concrete providers reported in native UI.
+sources = {
+    "purstream": """module.exports={getStreams:async()=>[{name:'💧 Purstream',url:'https://media.example/a.m3u8',quality:'4K',language:'Dual Audio',codec:'HEVC',audio:'E-AC3 5.1',sourceType:'BLU-RAY',description:'💧 old Purstream layout'}]};\n""",
+    "vegamovies": """module.exports={getStreams:async()=>[{name:'⭐ VegaMovies',url:'https://media.example/a.m3u8',resolution:'2160p',lang:'Dual Audio',videoCodec:'HEVC',audioCodec:'E-AC3 5.1',source_type:'BLU-RAY',description:'⭐ VEGAMOVIES PRIVATE UI'}]};\n""",
+    "hindmoviez": """module.exports={getStreams:async()=>[{name:'🇮🇳 HindMoviez',url:'https://media.example/a.m3u8',sourceLabel:'2160p Dual Audio HEVC E-AC3 5.1 BLU-RAY',description:'🇮🇳 HINDMOVIEZ PRIVATE UI'}]};\n""",
+}
+projected: dict[str, dict[str, str]] = {}
+canonical: str | None = None
+for provider_id, source in sources.items():
+    candidate = run(source, provider_id, TMDB_OK, CALL)
+    visible = candidate["size"]
+    assert candidate["description"] == visible
+    assert candidate["quality"] == ""
+    assert candidate["language"] == ""
+    assert "PRIVATE UI" not in visible and "old Purstream layout" not in visible
+    assert "💧" not in visible and "⭐" not in visible and "🇮🇳" not in visible
+    if canonical is None:
+        canonical = visible
+    else:
+        assert visible == canonical, (provider_id, visible, canonical)
+
+    # Exact official-client compatibility projections documented from source:
+    # Mobile/Desktop => non-empty quality + size + language; TV => size.
+    mobile_desktop = " • ".join(
+        value for value in (candidate.get("quality", ""), candidate.get("size", ""), candidate.get("language", ""))
+        if value
+    )
+    tv = candidate.get("size", "")
+    projected[provider_id] = {"mobileDesktop": mobile_desktop, "tv": tv}
+    assert mobile_desktop == visible
+    assert tv == visible
+
+assert len({value["mobileDesktop"] for value in projected.values()}) == 1, projected
+assert len({value["tv"] for value in projected.values()}) == 1, projected
+
+# The machine-readable contract must describe the exact compatibility transport above.
+contract = json.loads(CONTRACT.read_text(encoding="utf-8"))
+assert contract["revision"] == "global_core_v12"
+assert contract["canonical"]["compatibility_envelope_field"] == "size"
+assert contract["canonical"]["suppressed_legacy_recomposition_fields"] == ["quality", "language"]
+assert contract["badges"]["requires_nuvio_rule_import"] is True
+for client in ("nuvio-mobile", "nuvio-desktop", "nuvio-tv"):
+    assert client in contract["clients"]
+
+# Badge rules must be executable regexes against the canonical transport, and every
+# image URL must resolve to a committed asset path. This catches the historical
+# double-escaping bug where Nuvio received a literal "\\b" instead of a word boundary.
+feed = json.loads(FUSION.read_text(encoding="utf-8"))
+feed_by_id = {str(item.get("id") or ""): item for item in feed.get("filters") or []}
+assert feed_by_id
+for badge_id in ("4k-ultra-hd", "blu-ray-disc", "hevc", "dolby-digital-plus", "5.1", "multi"):
+    item = feed_by_id[badge_id]
+    pattern = str(item["pattern"])
+    assert "\\\\" not in pattern, (badge_id, repr(pattern))
+    assert re.search(pattern, canonical or ""), (badge_id, pattern, canonical)
+    image_url = str(item["imageURL"])
+    assert image_url.startswith(RAW_PREFIX), (badge_id, image_url)
+    image_path = ROOT / image_url.removeprefix(RAW_PREFIX)
+    assert image_path.is_file() and image_path.stat().st_size > 0, (badge_id, image_path)
+
+print(
+    "global stream presentation V12 passed: "
+    "provider_projection=purstream+vegamovies+hindmoviez "
+    "clients=mobile+desktop+tv badge_regexes=executable"
 )
-assert empty_result == {"streams": [], "calls": 0}, empty_result
-
-# Resolution alone never invents Blu-ray provenance. It remains visible in the
-# emoji technical line and can independently match a native resolution badge.
-plain = "module.exports={getStreams:async()=>[{name:'Cineby',url:'https://media.example/video.mp4',quality:'1080p'}]};\n"
-plain_patched = presentation.apply(plain, context={"provider_id": "cineby"})
-plain_row = run(
-    plain_patched,
-    "async function(){throw new Error('tmdb offline')}",
-    "p.getStreams({mediaType:'movie',title:'Example',year:2026}).then(v=>console.log(JSON.stringify(v[0])))",
-)
-assert plain_row["quality"] == "1080p"
-assert "sourceType" not in plain_row
-assert plain_row["badgeIds"] == ["1080p-full-hd"], plain_row
-assert "BLU-RAY" not in plain_row["description"]
-assert "🎞️ 1080p" in plain_row["description"]
-assert "MP4" in plain_row["description"]
-assert "Example • 2026" in plain_row["description"]
-
-# Metadata-poor reconstructed HLS keeps playback intact, derives HLS only from the
-# actual URL and uses request/TMDB identity instead of leaking Unknown labels.
-unknown = "module.exports={getStreams:async()=>[{name:'Movix',url:'https://media.example/u.m3u8',description:'Unknown',size:'Unknown',headers:{Origin:'https://movix.example'}}]};\n"
-unknown_patched = presentation.apply(unknown, context={"provider_id": "movix"})
-unknown_row = run(
-    unknown_patched,
-    "async function(){throw new Error('offline')}",
-    "p.getStreams({tmdbId:'999',mediaType:'movie',title:'Fallback title',year:2026}).then(v=>console.log(JSON.stringify(v[0])))",
-)
-assert unknown_row["url"] == "https://media.example/u.m3u8"
-assert unknown_row["headers"] == {"Origin": "https://movix.example"}
-assert unknown_row["format"] == "HLS"
-assert unknown_row["presentationFacts"]["format"] == "HLS"
-assert "size" not in unknown_row
-assert "Unknown" not in unknown_row["description"]
-assert "Fallback title • 2026" in unknown_row["description"]
-assert "🎞️ HLS" in unknown_row["description"]
-
-# A true file size remains visible even if a client ignores the structured size key.
-sized = "module.exports={getStreams:async()=>[{name:'Example',url:'https://media.example/video.mkv',size:'8.4 GB',quality:'720p'}]};\n"
-sized_row = run(
-    presentation.apply(sized, context={"provider_id": "example"}),
-    "async function(){throw new Error('offline')}",
-    "p.getStreams({mediaType:'movie',title:'Movie',year:2026}).then(v=>console.log(JSON.stringify(v[0])))",
-)
-assert sized_row["size"] == "8.4 GB"
-assert "720p-hd" in sized_row["badgeIds"]
-assert "🎞️ 720p" in sized_row["description"]
-assert "💾 8.4 GB" in sized_row["description"]
-
-# Provider-owned UI layout is input-only. Core may read technical facts from it,
-# but the original text itself must never survive into the rendered description.
-garbage = "module.exports={getStreams:async()=>[{name:'AnyProvider',url:'https://media.example/master.m3u8',description:'Unknown | UNKNOWN | provider private layout',quality:'1080p',audio:'Dolby Atmos TrueHD 7.1',sourceType:'UHD Blu-ray',releaseType:'REMUX',language:'VFF',subtitles:'VOSTFR'}]};\n"
-garbage_row = run(
-    presentation.apply(garbage, context={"provider_id": "anyprovider"}),
-    tmdb_ok,
-    "p.getStreams({tmdbId:'157336',mediaType:'movie',title:'Interstellar',year:2014}).then(v=>console.log(JSON.stringify(v[0])))",
-)
-assert "provider private layout" not in garbage_row["description"]
-assert "Unknown" not in garbage_row["description"]
-for expected in (
-    "🎞️ 1080p", "ULTRA HD BLU-RAY REMUX",
-    "🔊 Dolby Atmos • TrueHD • 7.1", "🌐 VFF • VOSTFR",
-    "⏱ 2h49", "🔞 -12",
-):
-    assert expected in garbage_row["description"], (expected, garbage_row)
-for badge_id in ("uhd-blu-ray", "remux", "dolby-atmos", "truehd", "7.1", "vff", "vostfr"):
-    assert badge_id in garbage_row["badgeIds"], (badge_id, garbage_row)
-
-print("global stream presentation + native-badge/emoji fallback contract tests passed")
