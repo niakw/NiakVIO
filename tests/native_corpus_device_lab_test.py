@@ -109,8 +109,8 @@ for required in (
     "NIAKVIO_REGRESSION_STREAM_SCOPE: all",
     "--provider all --streams all",
     'NIAKVIO_REQUIRE_READER_SUCCESS: "1"',
-    "avd-v4-${{ runner.os }}-tv-api31-android-tv-x86-tv_1080p",
-    "avd-v4-${{ runner.os }}-mobile-api35-google_apis-x86_64-pixel_2",
+    "avd-v5-${{ runner.os }}-tv-api31-android-tv-x86-tv_1080p",
+    "avd-v5-${{ runner.os }}-mobile-api35-google_apis-x86_64-pixel_2",
     "Prime Android adb server",
     "prime_android_lab_adb.sh",
     "build_native_reader_brain_repair.py",
@@ -350,7 +350,7 @@ print(
     "native device lab contract passed: "
     f"fixtures={len(expected_slugs)} providers={len(stageable)} android_exhaustive=true "
     "desktop_native=true tv_wrong_media_regressions=3 macos_witness=true "
-    "brain_retest=movie-tv-anime cached_profiles=v4-emulator-config targeted_manual=true "
+    "brain_retest=movie-tv-anime cached_profiles=v5-emulator-signing targeted_manual=true "
     "reader_learning_idempotent=true trusted_main_learning=true missing_artifact_retriable=true "
     "pr_bounded=true production_player_only=true https_repository_acceptance=true repair_materialization_explicit=true"
 )

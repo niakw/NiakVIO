@@ -12,13 +12,21 @@ mobile_suite = (ROOT / "scripts/run_native_corpus_mobile_suite.sh").read_text(en
 # invalidated whenever an official Nuvio app commit advances; the guest userdata
 # is deliberately retained so a warm Lab can reuse the installed client/profile
 # and provider cache instead of recreating the device on every run.
-assert "avd-v4-${{ runner.os }}-mobile-api35-google_apis-x86_64-pixel_2" in workflow
-assert "avd-v4-${{ runner.os }}-tv-api31-android-tv-x86-tv_1080p" in workflow
+assert "avd-v5-${{ runner.os }}-mobile-api35-google_apis-x86_64-pixel_2" in workflow
+assert "avd-v5-${{ runner.os }}-tv-api31-android-tv-x86-tv_1080p" in workflow
 for line in workflow.splitlines():
-    if "key: avd-v4-" in line:
+    if "key: avd-v5-" in line:
         assert "needs.resolve.outputs.mobile_sha" not in line
         assert "needs.resolve.outputs.tv_sha" not in line
         assert "needs.resolve.outputs.runtime_fingerprint" not in line
+
+# A warm guest may already contain a debug-signed Nuvio package. Keep the
+# signing key in the same persistent Lab generation and restore it before
+# building the official client APK, otherwise Android rejects the update.
+assert workflow.count("~/.android/debug.keystore") == 3
+assert workflow.index("Restore TV AVD snapshot and matching debug signing key") < workflow.index("Checkout latest official NuvioTV HEAD and stage first route")
+assert workflow.index("Restore Mobile AVD snapshot and matching debug signing key") < workflow.index("Checkout latest official NuvioMobile HEAD and stage first route")
+assert workflow.index("Restore TV AVD snapshot and matching debug signing key for candidate retest") < workflow.index("Checkout latest official NuvioTV HEAD for candidate retest")
 
 # A cache miss must not attempt to load a snapshot that cannot exist yet. The
 # representative run cold-boots the newly-created AVD directly, while a warm

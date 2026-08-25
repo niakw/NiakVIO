@@ -183,7 +183,7 @@ for suite, client in ((tv_suite, "tv"), (mobile_suite, "mobile")):
     for required in (
         "instrument_native_client_evidence.py",
         "instrument_native_repository_http_evidence.py",
-        "augment_native_provider_loading.py",
+        "augment_native_provider_loading_compat.py",
         "gate_native_reader_coverage.cjs",
         "gate_native_reader_result.cjs",
         "gate_native_player_reached.cjs",

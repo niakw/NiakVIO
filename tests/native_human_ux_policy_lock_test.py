@@ -92,7 +92,7 @@ assert "avd-v1-" not in ANDROID_WORKFLOW
 canonical_cache_lines = [
     line.strip()
     for line in ANDROID_WORKFLOW.splitlines()
-    if line.strip().startswith("key: avd-v4-")
+    if line.strip().startswith("key: avd-v5-")
 ]
 assert len(canonical_cache_lines) == 3, canonical_cache_lines
 assert sum("tv-api31-android-tv-x86-tv_1080p" in line for line in canonical_cache_lines) == 2
@@ -104,6 +104,7 @@ for line in canonical_cache_lines:
 assert ANDROID_WORKFLOW.count("Prime Android adb server") >= 3
 assert "prime_android_lab_adb.sh" in ANDROID_WORKFLOW
 assert "restore-keys:" not in ANDROID_WORKFLOW
+assert ANDROID_WORKFLOW.count("~/.android/debug.keystore") == 3
 
 human_path = POLICY["human_ux_acceptance_path"]
 for step in (
