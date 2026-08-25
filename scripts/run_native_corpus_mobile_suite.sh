@@ -83,6 +83,13 @@ MOBILE_TASK=$(printf '%s\n' "$tasks" | awk 'tolower($1) ~ /connected.*device.*te
 if [[ -z "${MOBILE_TASK:-}" ]]; then MOBILE_TASK=$(printf '%s\n' "$tasks" | awk 'tolower($1) ~ /device.*test/ && tolower($0) ~ /connected/ {print $1; exit}'); fi
 if [[ -z "${MOBILE_TASK:-}" ]]; then echo "Unable to resolve NuvioMobile connected device-test task" >&2; exit 97; fi
 
+# Cached AVDs can retain an older Nuvio debug APK signed by a different CI key.
+# That is lab state, not product state: clear it before installing the exact candidate.
+if adb shell pm path com.nuviodebug.com >/dev/null 2>&1; then
+  echo "FIELD_NATIVE_MOBILE_APP_CLEANUP package=com.nuviodebug.com reason=cached_avd_signature_safety"
+  adb uninstall com.nuviodebug.com >/dev/null 2>&1 || true
+fi
+
 "$MOBILE_ROOT/gradlew" -p "$MOBILE_ROOT" :androidApp:installFullDebug -Pnuvio.android.distribution=full --console=plain || exit $?
 if ! adb shell pm path com.nuviodebug.com >/dev/null 2>&1; then
   echo "Official NuvioMobile debug application com.nuviodebug.com is not installed" >&2
