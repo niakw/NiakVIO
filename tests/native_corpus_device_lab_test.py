@@ -117,15 +117,27 @@ for required in (
     "compare_native_reader_brain_repair.py",
     "--max-providers 24",
     "native-reader-brain-repair-${{ github.run_id }}",
-    "native-tv-route-representative-${{ github.run_id }}",
+    "native-tv-route-representative-${{ github.run_id }}-attempt-${{ github.run_attempt }}-shard-${{ matrix.shard }}",
     "native-mobile-route-representative-${{ github.run_id }}",
     "representative-cross-client-brain.json",
     "tv-reader-repair-comparison-${fixture}.json",
-    "Re-read every provider and returned stream for all representative routes after Brain mutation",
+    "Re-read mutated providers plus deterministic sentinels after Brain mutation",
 ):
     assert required in android_reader, required
-assert android_reader.count('NIAKVIO_TARGET_FIXTURES: "sinners-2025 breaking-bad-s01e01 jujutsu-kaisen-s01e01"') >= 3
+assert android_reader.count('NIAKVIO_TARGET_FIXTURES: "sinners-2025 breaking-bad-s01e01 jujutsu-kaisen-s01e01"') >= 2
+assert 'matrix: ${{ fromJSON(needs.resolve.outputs.tv_shards) }}' in android_reader
+assert 'NIAKVIO_TARGET_FIXTURES: ${{ matrix.fixtures }}' in android_reader
+assert 'NIAKVIO_TV_PRIORITY_APPEND: "0"' in android_reader
+assert 'NIAKVIO_TV_ROUTE_TIMEOUT_MINUTES: "45"' in android_reader
+assert 'merge-multiple: true' in android_reader
+assert 'native-reader-repair/retest-manifest.json' in android_reader
+assert 'build_native_reader_retest_manifest.py' in android_reader
+assert 'NIAKVIO_TARGET_MANIFEST: native-reader-repair/manifest.json' not in android_reader
 assert "TV_PRIORITY_FIXTURES" in tv_suite
+assert "native_tv_route_checkpoint.py" in tv_suite
+assert "timeout --signal=TERM --kill-after=2m" in tv_suite
+assert "FIELD_NATIVE_CORPUS_TV_RESUME" in tv_suite
+assert "FIELD_NATIVE_CORPUS_TV_ROUTE_TIMEOUT" in tv_suite
 for fixture in tv_wrong_media_regressions:
     assert fixture in tv_suite or fixture in corpus["native_reader_acceptance"]["tv_priority_regressions"], fixture
 assert "avd-v1-" not in android_reader
