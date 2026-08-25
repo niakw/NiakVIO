@@ -35,20 +35,52 @@ jobs:
       - name: Install locked dependencies
         run: npm ci --ignore-scripts
 
-      - name: Migrate Core policy reference to V12
+      - name: Align V12 canonical source contracts
         shell: bash
         run: |
           set -euo pipefail
           python3 - <<'PY'
           from pathlib import Path
-          path = Path('scripts/normalize_core_media_policy.py')
-          text = path.read_text(encoding='utf-8')
+
+          # Core policy must use V12 directly; the V11 module remains only a compatibility shim.
+          policy = Path('scripts/normalize_core_media_policy.py')
+          text = policy.read_text(encoding='utf-8')
           text = text.replace('from normalize_stream_presentation_v11 import', 'from normalize_stream_presentation_v12 import')
           text = text.replace('presentation=global_core_v11', 'presentation=global_core_v12')
-          path.write_text(text, encoding='utf-8')
+          policy.write_text(text, encoding='utf-8')
+
+          # "Dual Audio" is a provider phrase. The canonical Core language fact is Multi,
+          # which is also the exact stable token consumed by the official multi badge rule.
+          for rel in (
+              'scripts/provider_patches/global_stream_facts_v1.py',
+              'scripts/provider_patches/global_stream_presentation_v1.py',
+          ):
+              path = Path(rel)
+              text = path.read_text(encoding='utf-8')
+              old = 'if(/\\bDUAL(?:[- ]?AUDIO)?\\b/.test(u))return"Dual Audio";'
+              if old not in text and 'if(/\\bDUAL(?:[- ]?AUDIO)?\\b/.test(u))return"Multi";' not in text:
+                  raise SystemExit(f'Dual Audio canonicalization anchor missing: {rel}')
+              path.write_text(text.replace(old, 'if(/\\bDUAL(?:[- ]?AUDIO)?\\b/.test(u))return"Multi";'), encoding='utf-8')
+
+          # The previous audit hypothesis about regex double escaping was false: JSON/API
+          # rendering escaped the backslashes, while runtime-loaded patterns are valid.
+          # Keep catalog bytes authoritative and prove regex execution in tests instead.
+          normalizer = Path('scripts/normalize_stream_presentation_v12.py')
+          text = normalizer.read_text(encoding='utf-8')
+          start = text.index('def _normalize_catalog_patterns(')
+          end = text.index('\ndef _feed_payload', start)
+          replacement = '''def _normalize_catalog_patterns(catalog: dict[str, object]) -> tuple[dict[str, object], int]:\n    """Preserve catalog regexes byte-semantically; runtime tests prove executability."""\n    return json.loads(json.dumps(catalog)), 0\n\n'''
+          normalizer.write_text(text[:start] + replacement + text[end + 1:], encoding='utf-8')
+
+          test = Path('tests/global_stream_presentation_test.py')
+          text = test.read_text(encoding='utf-8')
+          text = text.replace('assert row["presentationFacts"]["language"] == "Dual Audio"', 'assert row["presentationFacts"]["language"] == "Multi"')
+          text = text.replace('"🌐 Dual Audio",', '"🌐 Multi",')
+          text = text.replace('assert "🌐 Dual Audio" in sparse_row["description"], sparse_row', 'assert "🌐 Multi" in sparse_row["description"], sparse_row')
+          test.write_text(text, encoding='utf-8')
           PY
 
-      - name: Normalize V12 feeds mapping and provider bundles
+      - name: Normalize V12 mapping feeds and provider bundles
         shell: bash
         run: |
           set -euo pipefail
@@ -56,7 +88,7 @@ jobs:
           python3 scripts/normalize_core_media_policy.py --apply
           python3 scripts/reapply_published_overrides.py
 
-      - name: Validate presentation and badge contracts
+      - name: Validate presentation badge and client contracts
         shell: bash
         run: |
           set -euo pipefail
@@ -64,6 +96,19 @@ jobs:
           python3 tests/global_stream_presentation_pipeline_test.py
           python3 tests/global_core_presentation_pipeline_test.py
           python3 tests/badge_asset_contract_test.py
+          python3 - <<'PY'
+          import json, re
+          from pathlib import Path
+          for rel in ('assets/stream-badges-fusion.json','assets/stream-badges-dark.json','assets/stream-badges-light.json'):
+              payload=json.loads(Path(rel).read_text(encoding='utf-8'))
+              assert payload.get('filters') and payload.get('groups'), rel
+              for row in payload['filters']:
+                  re.compile(str(row['pattern']))
+                  asset=str(row['imageURL']).removeprefix('https://raw.githubusercontent.com/niakw/NiakVIO/main/')
+                  path=Path(asset)
+                  assert path.is_file() and path.stat().st_size > 0, (rel,row.get('id'),asset)
+          print('all StreamBadge feed regexes compile and all image assets exist')
+          PY
           python3 scripts/normalize_stream_presentation_v12.py --check
           python3 scripts/normalize_core_media_policy.py --check
 
