@@ -1,0 +1,376 @@
+name: Apply runtime gate safety fix on main once
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/gate-runtime-main-fix-once.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+      - name: Set up Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: "24"
+          package-manager-cache: false
+      - name: Patch runtime gate and Brain boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          def replace_once(path: Path, old: str, new: str) -> None:
+              text = path.read_text(encoding="utf-8")
+              count = text.count(old)
+              if count != 1:
+                  raise SystemExit(f"{path}: expected one anchor, found {count}: {old[:100]!r}")
+              path.write_text(text.replace(old, new, 1), encoding="utf-8")
+
+          # 1) The representative Android acceptance must gate TV/Mobile runtime
+          # divergence before the Brain is allowed to materialize any provider repair.
+          android = Path(".github/workflows/native-android-route-reader.yml")
+          text = android.read_text(encoding="utf-8")
+          cross_path = '      - "scripts/gate_native_cross_client_runtime.cjs"\n'
+          if cross_path not in text:
+              reader_path = '      - "scripts/gate_native_reader_result.cjs"\n'
+              count = text.count(reader_path)
+              if count != 2:
+                  raise SystemExit(f"{android}: reader gate path anchor count={count}")
+              text = text.replace(reader_path, reader_path + cross_path)
+          brain_anchor = "      - name: Materialize bounded generic Brain mutations across three representative routes\n"
+          gate_name = "      - name: Gate systemic TV and Mobile runtime divergence before Brain\n"
+          if gate_name not in text:
+              if text.count(brain_anchor) != 1:
+                  raise SystemExit(f"{android}: Brain anchor count={text.count(brain_anchor)}")
+              gate_step = '''      - name: Gate systemic TV and Mobile runtime divergence before Brain
+                shell: bash
+                run: |
+                  set -euo pipefail
+                  node niakvio/scripts/gate_native_cross_client_runtime.cjs \\
+                    --dir "$GITHUB_WORKSPACE/baseline-reader" \\
+                    --require-clients mobile,tv \\
+                    --min-comparisons 3
+          '''
+              text = text.replace(brain_anchor, gate_step + brain_anchor, 1)
+          android.write_text(text, encoding="utf-8")
+
+          # 2) Defense in depth: a diagnostic sentinel is runtime evidence, never a
+          # healthy extracted stream and never provider-mutation evidence.
+          diagnose = Path("engine_v2/scripts/diagnose-native-reader.mjs")
+          text = diagnose.read_text(encoding="utf-8")
+          if "runtimeErrorSentinelObserved" not in text:
+              anchor = "const nonblockingSmoke = process.env.NIAKVIO_BRAIN_NONBLOCKING === '1';\n"
+              if text.count(anchor) != 1:
+                  raise SystemExit(f"{diagnose}: nonblocking anchor missing")
+              text = text.replace(anchor, anchor + "const RUNTIME_ERROR_SENTINEL = '__NIAKVIO_RUNTIME_ERROR__';\n", 1)
+
+              signature_anchor = '''function extractionSignature(row) {
+            return `${row.requestType}:media_extraction_gap:${String(row.provider || '').toLowerCase()}:${row.fixture}`;
+          }
+          '''
+              runtime_key = '''function extractionSignature(row) {
+            return `${row.requestType}:media_extraction_gap:${String(row.provider || '').toLowerCase()}:${row.fixture}`;
+          }
+          function runtimeExecutionKey(row) {
+            return [
+              String(row.client || 'unknown').trim().toLowerCase(),
+              String(row.fixture || 'unknown'),
+              String(row.provider || '').trim().toLowerCase(),
+              String(row.requestType || 'unknown').trim().toLowerCase(),
+            ].join('\\u0000');
+          }
+          '''
+              if text.count(signature_anchor) != 1:
+                  raise SystemExit(f"{diagnose}: extraction signature anchor missing")
+              text = text.replace(signature_anchor, runtime_key, 1)
+
+              rows_anchor = '''const readerRows = [];
+          const resultRows = [];
+          const providerLoadObservations = [];
+          '''
+              rows_replacement = '''const readerRows = [];
+          const resultRows = [];
+          const providerLoadObservations = [];
+          const runtimeSentinelByKey = new Map();
+          '''
+              if text.count(rows_anchor) != 1:
+                  raise SystemExit(f"{diagnose}: row declaration anchor missing")
+              text = text.replace(rows_anchor, rows_replacement, 1)
+
+              player_anchor = "    const marker = raw.indexOf('FIELD_NATIVE_PLAYER ');\n"
+              sentinel_parser = '''    const rowAt = raw.indexOf('FIELD_NATIVE_ROW ');
+            if (rowAt >= 0) {
+              const f = fields(raw.slice(rowAt).trim());
+              const type = decode(f.type64);
+              const title = decode(f.title64);
+              if (type === RUNTIME_ERROR_SENTINEL || title === RUNTIME_ERROR_SENTINEL) {
+                const observation = {
+                  client: f.client || 'unknown',
+                  fixture: f.fixture || 'unknown',
+                  provider: decode(f.provider64),
+                  requestType: String(f.request_type || 'unknown').toLowerCase(),
+                  routeMode: String(f.route_mode || 'declared').toLowerCase(),
+                  index: Number(f.index || 0),
+                  state: 'runtime_error',
+                  failureClass: 'client_runtime_error',
+                  failureDomain: 'client_runtime',
+                  providerMutationEligible: false,
+                  failureStage: 'provider_runtime',
+                  httpStatus: 0,
+                  errorCode: 'RUNTIME_ERROR_SENTINEL',
+                  host: '',
+                  durationSeconds: null,
+                  loadBytes: 0,
+                  loadDurationMs: 0,
+                  observationLayer: 'runtime',
+                };
+                runtimeSentinelByKey.set(runtimeExecutionKey(observation), observation);
+              }
+            }
+
+          ''' + player_anchor
+              if text.count(player_anchor) != 1:
+                  raise SystemExit(f"{diagnose}: player anchor missing")
+              text = text.replace(player_anchor, sentinel_parser, 1)
+
+              classification_anchor = '''const declaredRows = readerRows.filter((row) => row.routeMode !== 'capability_probe');
+          const capabilityRows = readerRows.filter((row) => row.routeMode === 'capability_probe');
+          const failures = declaredRows.filter(isReaderFailure);
+          const providerEligibleFailures = failures.filter((row) => row.providerMutationEligible);
+          const clientRuntimeFailures = failures.filter((row) => !row.providerMutationEligible);
+          '''
+              classification_replacement = '''const runtimeSentinelObservations = [...runtimeSentinelByKey.values()];
+          const brainReaderRows = readerRows.filter((row) => !runtimeSentinelByKey.has(runtimeExecutionKey(row)));
+          const runtimeSentinelReaderRows = readerRows.filter((row) => runtimeSentinelByKey.has(runtimeExecutionKey(row)));
+          const brainResultRows = resultRows.filter((row) => !runtimeSentinelByKey.has(runtimeExecutionKey(row)));
+
+          const declaredRows = brainReaderRows.filter((row) => row.routeMode !== 'capability_probe');
+          const capabilityRows = brainReaderRows.filter((row) => row.routeMode === 'capability_probe');
+          const failures = declaredRows.filter(isReaderFailure);
+          const providerEligibleFailures = failures.filter((row) => row.providerMutationEligible);
+          const clientRuntimeFailures = [
+            ...failures.filter((row) => !row.providerMutationEligible),
+            ...runtimeSentinelObservations,
+          ];
+          '''
+              if text.count(classification_anchor) != 1:
+                  raise SystemExit(f"{diagnose}: classification anchor missing")
+              text = text.replace(classification_anchor, classification_replacement, 1)
+
+              results_anchor = '''const declaredResultRows = resultRows.filter((row) => row.routeMode !== 'capability_probe');
+          const capabilityResultRows = resultRows.filter((row) => row.routeMode === 'capability_probe');
+          '''
+              results_replacement = '''const declaredResultRows = brainResultRows.filter((row) => row.routeMode !== 'capability_probe');
+          const capabilityResultRows = brainResultRows.filter((row) => row.routeMode === 'capability_probe');
+          '''
+              if text.count(results_anchor) != 1:
+                  raise SystemExit(f"{diagnose}: result classification anchor missing")
+              text = text.replace(results_anchor, results_replacement, 1)
+
+              old = "const playerObservations = readerRows.map((row) => ({\n"
+              new = "const playerObservations = brainReaderRows.map((row) => ({\n"
+              if text.count(old) != 1:
+                  raise SystemExit(f"{diagnose}: player observations anchor missing")
+              text = text.replace(old, new, 1)
+
+              old = "const observations = [...playerObservations, ...extractionObservations];\n"
+              new = "const observations = [...playerObservations, ...extractionObservations, ...runtimeSentinelObservations];\n"
+              if text.count(old) != 1:
+                  raise SystemExit(f"{diagnose}: observations anchor missing")
+              text = text.replace(old, new, 1)
+
+              provider_issue_anchor = "for (const issue of providerLoadIssues) {\n"
+              sentinel_outcomes = '''for (const row of runtimeSentinelObservations) {
+            const current = ensureProviderOutcome(row.provider);
+            current.observed += 1;
+            current.failures += 1;
+            current.clientRuntimeFailures += 1;
+            current.failureClasses.client_runtime_error = Number(current.failureClasses.client_runtime_error || 0) + 1;
+            current.clients.add(row.client);
+            current.fixtures.add(row.fixture);
+            current.requestTypes.add(row.requestType);
+          }
+          ''' + provider_issue_anchor
+              if text.count(provider_issue_anchor) != 1:
+                  raise SystemExit(f"{diagnose}: provider issue anchor missing")
+              text = text.replace(provider_issue_anchor, sentinel_outcomes, 1)
+
+              payload_anchor = "  readerObserved: readerRows.length,\n"
+              payload_replacement = '''  readerObserved: readerRows.length,
+            runtimeErrorSentinelObserved: runtimeSentinelObservations.length,
+            runtimeErrorSentinelReaderRowsExcluded: runtimeSentinelReaderRows.length,
+          '''
+              if text.count(payload_anchor) != 1:
+                  raise SystemExit(f"{diagnose}: payload reader anchor missing")
+              text = text.replace(payload_anchor, payload_replacement, 1)
+
+              old = "  readerLoadErrorEvidence: readerRows.filter((row) => row.loadDurationMs > 0 || row.loadBytes > 0 || row.httpStatus > 0).length,\n"
+              new = "  readerLoadErrorEvidence: brainReaderRows.filter((row) => row.loadDurationMs > 0 || row.loadBytes > 0 || row.httpStatus > 0).length,\n"
+              if text.count(old) != 1:
+                  raise SystemExit(f"{diagnose}: reader load evidence anchor missing")
+              text = text.replace(old, new, 1)
+
+              policy_anchor = "    clientRuntimeFailureLearningAllowed: false,\n"
+              policy_replacement = policy_anchor + "    runtimeErrorSentinelLearningAllowed: false,\n"
+              if text.count(policy_anchor) != 1:
+                  raise SystemExit(f"{diagnose}: policy anchor missing")
+              text = text.replace(policy_anchor, policy_replacement, 1)
+
+              console_anchor = "  `client_runtime_failures=${payload.clientRuntimeReaderFailures} cross_client_provider_groups=${payload.crossClientProviderFailureGroups} ` +\n"
+              console_replacement = "  `client_runtime_failures=${payload.clientRuntimeReaderFailures} runtime_sentinels=${payload.runtimeErrorSentinelObserved} ` +\n  `cross_client_provider_groups=${payload.crossClientProviderFailureGroups} ` +\n"
+              if text.count(console_anchor) != 1:
+                  raise SystemExit(f"{diagnose}: console anchor missing")
+              text = text.replace(console_anchor, console_replacement, 1)
+
+              diagnose.write_text(text, encoding="utf-8")
+
+          # 3) Regression: two official clients may each report count=1 only because
+          # the diagnostic wrapper materialized a runtime exception sentinel. That
+          # must yield zero healthy extraction evidence and zero repair proposals.
+          test = Path("tests/native_reader_brain_repair_test.py")
+          text = test.read_text(encoding="utf-8")
+          if "runtime sentinel must never become provider repair evidence" not in text:
+              const_anchor = 'DIAGNOSE = ROOT / "engine_v2/scripts/diagnose-native-reader.mjs"\n'
+              if text.count(const_anchor) != 1:
+                  raise SystemExit(f"{test}: diagnose constant anchor missing")
+              text = text.replace(const_anchor, const_anchor + 'SENTINEL = "__NIAKVIO_RUNTIME_ERROR__"\n', 1)
+
+              sig_anchor = '''    route_mode: str = "declared",
+          ) -> None:
+          '''
+              sig_replacement = '''    route_mode: str = "declared",
+              runtime_sentinel: bool = False,
+          ) -> None:
+          '''
+              if text.count(sig_anchor) != 1:
+                  raise SystemExit(f"{test}: write_result_log signature anchor missing")
+              text = text.replace(sig_anchor, sig_replacement, 1)
+
+              write_anchor = '    path.write_text("\\n".join(lines) + "\\n", encoding="utf-8")\n'
+              sentinel_insert = '''    if runtime_sentinel:
+              lines.insert(
+                  -1,
+                  (
+                      f"FIELD_NATIVE_ROW client={client} fixture=sinners-2025 provider64={provider64} "
+                      f"request_type=movie route_mode={route_mode} index=0 title64={b64(SENTINEL)} "
+                      f"name64={b64(SENTINEL)} quality64= language64= type64={b64(SENTINEL)} host64= media_hint64="
+                  ),
+              )
+          ''' + write_anchor
+              if text.count(write_anchor) != 1:
+                  raise SystemExit(f"{test}: write anchor missing")
+              text = text.replace(write_anchor, sentinel_insert, 1)
+
+              test_anchor = '''    # Disabled providers and undeclared capability probes are observational only and
+              # cannot contribute to count=0 repair consensus.
+          '''
+              sentinel_test = '''    # A runtime sentinel must never become provider repair evidence, even when two
+              # independent official clients each materialize it as a synthetic count=1 stream.
+              sentinel_tv_log = tmp / "runtime-sentinel-tv.log"
+              sentinel_mobile_log = tmp / "runtime-sentinel-mobile.log"
+              write_result_log(sentinel_tv_log, client="tv", count=1, enabled=True, runtime_sentinel=True)
+              write_result_log(sentinel_mobile_log, client="mobile", count=1, enabled=True, runtime_sentinel=True)
+              sentinel_json = tmp / "runtime-sentinel.json"
+              sentinel_diagnosis = run_diagnose([sentinel_tv_log, sentinel_mobile_log], sentinel_json)
+              assert sentinel_diagnosis["runtimeErrorSentinelObserved"] == 2, sentinel_diagnosis
+              assert sentinel_diagnosis["extractionHealthy"] == 0, sentinel_diagnosis
+              assert sentinel_diagnosis["extractionFailures"] == 0, sentinel_diagnosis
+              assert sentinel_diagnosis["plans"] == [], sentinel_diagnosis
+              assert sentinel_diagnosis["policy"]["learningAllowed"] is False, sentinel_diagnosis
+              assert sentinel_diagnosis["policy"]["runtimeErrorSentinelLearningAllowed"] is False, sentinel_diagnosis
+              sentinel_report = run_builder(sentinel_json, tmp / "runtime-sentinel-repair")
+              assert sentinel_report["proposalCount"] == 0, sentinel_report
+              # runtime sentinel must never become provider repair evidence
+
+          ''' + test_anchor
+              if text.count(test_anchor) != 1:
+                  raise SystemExit(f"{test}: disabled-provider test anchor missing")
+              text = text.replace(test_anchor, sentinel_test, 1)
+              test.write_text(text, encoding="utf-8")
+
+          # 4) Repository contract: permanent workflows must reference the gate, and
+          # the Android representative Brain boundary must be explicitly ordered.
+          lab_test = Path("tests/native_corpus_device_lab_test.py")
+          text = lab_test.read_text(encoding="utf-8")
+          if 'CROSS_RUNTIME_GATE = ROOT / "scripts/gate_native_cross_client_runtime.cjs"' not in text:
+              anchor = 'READER_GATE = ROOT / "scripts/gate_native_reader_result.cjs"\n'
+              if text.count(anchor) != 1:
+                  raise SystemExit(f"{lab_test}: reader gate constant anchor missing")
+              text = text.replace(anchor, anchor + 'CROSS_RUNTIME_GATE = ROOT / "scripts/gate_native_cross_client_runtime.cjs"\n', 1)
+          if 'cross_runtime_gate = CROSS_RUNTIME_GATE.read_text' not in text:
+              anchor = 'reader_gate = READER_GATE.read_text(encoding="utf-8")\n'
+              if text.count(anchor) != 1:
+                  raise SystemExit(f"{lab_test}: reader gate source anchor missing")
+              text = text.replace(anchor, anchor + 'cross_runtime_gate = CROSS_RUNTIME_GATE.read_text(encoding="utf-8")\n', 1)
+          if "Gate systemic TV and Mobile runtime divergence before Brain" not in text:
+              anchor = '# Collection integrity stays strict; provider/playback outcomes are evidence.\n'
+              if text.count(anchor) != 1:
+                  raise SystemExit(f"{lab_test}: collection anchor missing")
+              assertions = '''# Cross-client runtime compatibility is a blocking contract and runs before Brain repair.
+          for required in (
+              "FIELD_NATIVE_CROSS_RUNTIME_GATE",
+              "systemic_cross_client_divergence",
+              "missing_required_clients",
+              "__NIAKVIO_RUNTIME_ERROR__",
+          ):
+              assert required in cross_runtime_gate, required
+          assert "Gate systemic TV and Mobile runtime divergence before Brain" in android_reader
+          assert android_reader.index("Gate systemic TV and Mobile runtime divergence before Brain") < android_reader.index("Materialize bounded generic Brain mutations across three representative routes")
+          assert "--require-clients mobile,tv" in android_reader
+          assert '      - "scripts/gate_native_cross_client_runtime.cjs"' in android_reader
+          assert "cross-runtime-gate:" in targeted_runtime
+          assert "--require-clients desktop,mobile,tv" in targeted_runtime
+
+          '''
+              text = text.replace(anchor, assertions + anchor, 1)
+          lab_test.write_text(text, encoding="utf-8")
+          PY
+      - name: Remove obsolete one-shot workflows before verification
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f .github/workflows/runtime-gate-integration-once.yml
+          rm -f .github/workflows/gate-runtime-main-fix-once.yml
+      - name: Verify runtime gate safety contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check scripts/gate_native_cross_client_runtime.cjs
+          node --check engine_v2/scripts/diagnose-native-reader.mjs
+          python3 -m py_compile scripts/restage_native_corpus_client.py
+          python3 tests/native_cross_client_runtime_gate_test.py
+          python3 tests/native_reader_brain_repair_test.py
+          python3 tests/native_corpus_device_lab_test.py
+          python3 tests/native_reader_runtime_bootstrap_test.py
+          python3 tests/repository_hygiene_contract_test.py
+      - name: Commit verified gate fix to main
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No gate integration diff to commit."
+            exit 0
+          fi
+          git commit -m "fix(labs): block runtime sentinels before Brain repair"
+          for attempt in 1 2 3 4; do
+            git pull --rebase origin main
+            if git push origin HEAD:main; then
+              exit 0
+            fi
+          done
+          echo "unable to publish verified gate fix after retries" >&2
+          exit 1
