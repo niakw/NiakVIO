@@ -2,20 +2,8 @@ name: Refresh External Code Audit
 
 on:
   workflow_dispatch:
-  schedule:
-    # Daily safety check. The job exits without dispatching when repository code
-    # has not changed since the last committed external-audit export.
-    - cron: '17 4 * * *'
-  push:
-    branches:
-      - main
-    paths:
-      # Self-test/maintenance trigger only. Normal repository evolution is
-      # handled by the daily stale check below.
-      - .github/workflows/external-code-audit-refresh.yml
 
 permissions:
-  contents: read
   actions: write
 
 concurrency:
@@ -23,64 +11,17 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  refresh-if-needed:
-    name: Refresh Sonar / DeepSource / CodeScene exports if stale
+  refresh:
+    name: Manually refresh Sonar / DeepSource / CodeScene exports
     runs-on: ubuntu-latest
     timeout-minutes: 5
 
     steps:
-      - name: Checkout main history
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
-        with:
-          ref: main
-          fetch-depth: 0
-          persist-credentials: false
-
-      - name: Check whether audit evidence is stale
-        id: stale
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          LAST_SHA=""
-          if [ -f audit/ai-external/manifest.json ]; then
-            LAST_SHA="$(jq -r '.sha // empty' audit/ai-external/manifest.json 2>/dev/null || true)"
-          fi
-
-          # Manual launches are deliberately forced: useful after rotating
-          # credentials or changing an external service/API configuration.
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "refresh=true" >> "$GITHUB_OUTPUT"
-            echo "reason=manual dispatch" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-
-          if [ -z "$LAST_SHA" ] || ! git cat-file -e "$LAST_SHA^{commit}" 2>/dev/null; then
-            echo "refresh=true" >> "$GITHUB_OUTPUT"
-            echo "reason=no usable previous audit SHA" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-
-          # Ignore generated audit evidence itself. If everything else is
-          # unchanged, there is nothing useful to refresh.
-          if git diff --quiet "$LAST_SHA" HEAD -- . ':(exclude)audit/ai-external/**'; then
-            echo "refresh=false" >> "$GITHUB_OUTPUT"
-            echo "reason=repository unchanged since last audit" >> "$GITHUB_OUTPUT"
-          else
-            echo "refresh=true" >> "$GITHUB_OUTPUT"
-            echo "reason=repository changed since last audit" >> "$GITHUB_OUTPUT"
-          fi
-
       - name: Dispatch external collectors
-        if: steps.stale.outputs.refresh == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
           set -euo pipefail
-          echo "Refreshing external audit: ${{ steps.stale.outputs.reason }}"
+          echo "Manual refresh requested: SonarQube Cloud + DeepSource + CodeScene"
           gh workflow run external-code-audit.yml --repo "$GITHUB_REPOSITORY" --ref main
-
-      - name: No refresh needed
-        if: steps.stale.outputs.refresh != 'true'
-        run: echo "External audit is current; no collector run required."
