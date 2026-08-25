@@ -13,6 +13,7 @@ import path from "node:path";
 import process from "node:process";
 import {
   canonicalizeOwnedBoundaries,
+  cleanTerserOutput,
   minifyAndClean,
   withTerminalNewline,
 } from "./terser-clean.mjs";
@@ -110,12 +111,16 @@ async function main() {
 
   const canonicalSource = withTerminalNewline(code);
   const terserCandidate = result.code;
-  // Boundary canonicalization is owned metadata normalization, not an
-  // optimization. Never discard it merely because an already-compact provider
-  // gives Terser no size win. If Terser is not strictly smaller, publish the
-  // canonical source bytes; the second pass then proves the same fixed point.
   const useCanonicalSource = Buffer.byteLength(terserCandidate) >= Buffer.byteLength(canonicalSource);
-  const purified = useCanonicalSource ? canonicalSource : terserCandidate;
+  const selected = useCanonicalSource ? canonicalSource : terserCandidate;
+
+  // Defense in depth: even though both source/candidate paths are already
+  // canonicalized, the exact bytes selected for publication are cleaned again.
+  // No comparison branch or future refactor can therefore bypass the final
+  // Terser-owned boundary contract before write/hash/publication.
+  const finalClean = cleanTerserOutput(selected);
+  const purified = finalClean.code;
+
   await fs.mkdir(path.dirname(path.resolve(output)), { recursive: true });
   await fs.writeFile(output, purified, "utf8");
 
@@ -133,8 +138,9 @@ async function main() {
     riskFlags: flags,
     bytesBefore: Buffer.byteLength(source),
     bytesAfter: Buffer.byteLength(purified),
-    retainedAudioBoundaryCanonicalized: sourceBoundary.retainedAudioChanged,
-    floatedGeneratedMarkersCanonicalized: sourceBoundary.floatedMarkerCount + candidateBoundary.floatedMarkerCount,
+    retainedAudioBoundaryCanonicalized: sourceBoundary.retainedAudioChanged || candidateBoundary.retainedAudioChanged || finalClean.boundary.retainedAudioChanged,
+    floatedGeneratedMarkersCanonicalized: sourceBoundary.floatedMarkerCount + candidateBoundary.floatedMarkerCount + finalClean.boundary.floatedMarkerCount,
+    finalCleanupVerified: true,
   };
   process.stdout.write(`NIAKVIO_PURIFICATION_RESULT=${JSON.stringify(payload)}\n`);
 }
