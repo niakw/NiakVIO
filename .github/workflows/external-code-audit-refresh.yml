@@ -30,7 +30,7 @@ jobs:
 
     steps:
       - name: Checkout main history
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           ref: main
           fetch-depth: 0
@@ -46,8 +46,8 @@ jobs:
             LAST_SHA="$(jq -r '.sha // empty' audit/ai-external/manifest.json 2>/dev/null || true)"
           fi
 
-          # Manual launches are deliberately forced: useful after rotating API
-          # credentials or changing a provider-side configuration.
+          # Manual launches are deliberately forced: useful after rotating
+          # credentials or changing a provider-side/shared-report configuration.
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             echo "refresh=true" >> "$GITHUB_OUTPUT"
             echo "reason=manual dispatch" >> "$GITHUB_OUTPUT"
