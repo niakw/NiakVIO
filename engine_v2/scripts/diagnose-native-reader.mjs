@@ -22,6 +22,7 @@ const outputPath = outputIndex >= 0 && args[outputIndex + 1]
   : path.resolve('targeted-reader-brain.json');
 const logPaths = args.filter((value, index) => index !== outputIndex && index !== outputIndex + 1 && value !== '--output').map((value) => path.resolve(value));
 const nonblockingSmoke = process.env.NIAKVIO_BRAIN_NONBLOCKING === '1';
+const RUNTIME_ERROR_SENTINEL = '__NIAKVIO_RUNTIME_ERROR__';
 
 function decode(value) {
   if (!value) return '';
@@ -96,11 +97,20 @@ function routeKey(row) {
 function extractionSignature(row) {
   return `${row.requestType}:media_extraction_gap:${String(row.provider || '').toLowerCase()}:${row.fixture}`;
 }
+function runtimeExecutionKey(row) {
+  return [
+    String(row.client || 'unknown').trim().toLowerCase(),
+    String(row.fixture || 'unknown'),
+    String(row.provider || '').trim().toLowerCase(),
+    String(row.requestType || 'unknown').trim().toLowerCase(),
+  ].join('\u0000');
+}
 
 const evidence = assessNativeEvidence(logPaths);
 const readerRows = [];
 const resultRows = [];
 const providerLoadObservations = [];
+const runtimeSentinelByKey = new Map();
 for (const file of logPaths) {
   if (!fs.existsSync(file)) continue;
   for (const raw of fs.readFileSync(file, 'utf8').split(/\r?\n/)) {
@@ -132,6 +142,36 @@ for (const file of logPaths) {
       });
     }
 
+    const rowAt = raw.indexOf('FIELD_NATIVE_ROW ');
+  if (rowAt >= 0) {
+    const f = fields(raw.slice(rowAt).trim());
+    const type = decode(f.type64);
+    const title = decode(f.title64);
+    if (type === RUNTIME_ERROR_SENTINEL || title === RUNTIME_ERROR_SENTINEL) {
+      const observation = {
+        client: f.client || 'unknown',
+        fixture: f.fixture || 'unknown',
+        provider: decode(f.provider64),
+        requestType: String(f.request_type || 'unknown').toLowerCase(),
+        routeMode: String(f.route_mode || 'declared').toLowerCase(),
+        index: Number(f.index || 0),
+        state: 'runtime_error',
+        failureClass: 'client_runtime_error',
+        failureDomain: 'client_runtime',
+        providerMutationEligible: false,
+        failureStage: 'provider_runtime',
+        httpStatus: 0,
+        errorCode: 'RUNTIME_ERROR_SENTINEL',
+        host: '',
+        durationSeconds: null,
+        loadBytes: 0,
+        loadDurationMs: 0,
+        observationLayer: 'runtime',
+      };
+      runtimeSentinelByKey.set(runtimeExecutionKey(observation), observation);
+    }
+  }
+
     const marker = raw.indexOf('FIELD_NATIVE_PLAYER ');
     if (marker < 0) continue;
     const f = fields(raw.slice(marker).trim());
@@ -157,17 +197,25 @@ for (const file of logPaths) {
   }
 }
 
-const declaredRows = readerRows.filter((row) => row.routeMode !== 'capability_probe');
-const capabilityRows = readerRows.filter((row) => row.routeMode === 'capability_probe');
+const runtimeSentinelObservations = [...runtimeSentinelByKey.values()];
+const brainReaderRows = readerRows.filter((row) => !runtimeSentinelByKey.has(runtimeExecutionKey(row)));
+const runtimeSentinelReaderRows = readerRows.filter((row) => runtimeSentinelByKey.has(runtimeExecutionKey(row)));
+const brainResultRows = resultRows.filter((row) => !runtimeSentinelByKey.has(runtimeExecutionKey(row)));
+
+const declaredRows = brainReaderRows.filter((row) => row.routeMode !== 'capability_probe');
+const capabilityRows = brainReaderRows.filter((row) => row.routeMode === 'capability_probe');
 const failures = declaredRows.filter(isReaderFailure);
 const providerEligibleFailures = failures.filter((row) => row.providerMutationEligible);
-const clientRuntimeFailures = failures.filter((row) => !row.providerMutationEligible);
+const clientRuntimeFailures = [
+  ...failures.filter((row) => !row.providerMutationEligible),
+  ...runtimeSentinelObservations,
+];
 const declaredHealthy = declaredRows.filter((row) => !isReaderFailure(row));
 const capabilityFailures = capabilityRows.filter(isReaderFailure);
 const capabilityHealthy = capabilityRows.filter((row) => !isReaderFailure(row));
 
-const declaredResultRows = resultRows.filter((row) => row.routeMode !== 'capability_probe');
-const capabilityResultRows = resultRows.filter((row) => row.routeMode === 'capability_probe');
+const declaredResultRows = brainResultRows.filter((row) => row.routeMode !== 'capability_probe');
+const capabilityResultRows = brainResultRows.filter((row) => row.routeMode === 'capability_probe');
 const enabledDeclaredResults = declaredResultRows.filter((row) => row.enabled);
 const extractionFailures = enabledDeclaredResults.filter((row) => row.count === 0);
 const extractionHealthy = enabledDeclaredResults.filter((row) => row.count > 0);
@@ -312,7 +360,7 @@ const providerLoadPriorities = [...loadGrouped.values()]
   }))
   .sort((a, b) => b.occurrences - a.occurrences || a.provider.localeCompare(b.provider));
 
-const playerObservations = readerRows.map((row) => ({
+const playerObservations = brainReaderRows.map((row) => ({
   provider: String(row.provider || '').toLowerCase(), client: row.client, fixture: row.fixture,
   requestType: row.requestType, routeMode: row.routeMode, index: row.index,
   state: row.state, failureClass: row.failureClass, failureDomain: row.failureDomain,
@@ -334,7 +382,7 @@ const extractionHealthyObservations = extractionHealthy.map((row) => ({
   requestType: row.requestType, routeMode: row.routeMode, returnedCount: row.count,
   observationLayer: 'extraction', state: 'non_empty', failureClass: 'healthy',
 }));
-const observations = [...playerObservations, ...extractionObservations];
+const observations = [...playerObservations, ...extractionObservations, ...runtimeSentinelObservations];
 const providerMap = new Map();
 function ensureProviderOutcome(provider) {
   const key = String(provider || '').toLowerCase();
@@ -383,6 +431,16 @@ for (const row of enabledDeclaredResults) {
     current.failureClasses.media_extraction_gap = Number(current.failureClasses.media_extraction_gap || 0) + 1;
   }
 }
+for (const row of runtimeSentinelObservations) {
+  const current = ensureProviderOutcome(row.provider);
+  current.observed += 1;
+  current.failures += 1;
+  current.clientRuntimeFailures += 1;
+  current.failureClasses.client_runtime_error = Number(current.failureClasses.client_runtime_error || 0) + 1;
+  current.clients.add(row.client);
+  current.fixtures.add(row.fixture);
+  current.requestTypes.add(row.requestType);
+}
 for (const issue of providerLoadIssues) {
   const current = ensureProviderOutcome(issue.provider);
   current.loadFailures += 1;
@@ -429,6 +487,8 @@ const payload = {
   evidenceProblems: evidence.problems,
   evidenceStats: evidence.stats,
   readerObserved: readerRows.length,
+  runtimeErrorSentinelObserved: runtimeSentinelObservations.length,
+  runtimeErrorSentinelReaderRowsExcluded: runtimeSentinelReaderRows.length,
   readerDeclaredObserved: declaredRows.length,
   readerHealthy: declaredHealthy.length,
   readerFailures: failures.length,
@@ -445,7 +505,7 @@ const payload = {
   capabilityProbeFailures: capabilityFailures.length,
   providerLoadObservedFailures: providerLoadObservations.length,
   providerLoadActionableFailures: providerLoadIssues.length,
-  readerLoadErrorEvidence: readerRows.filter((row) => row.loadDurationMs > 0 || row.loadBytes > 0 || row.httpStatus > 0).length,
+  readerLoadErrorEvidence: brainReaderRows.filter((row) => row.loadDurationMs > 0 || row.loadBytes > 0 || row.httpStatus > 0).length,
   observations,
   extractionHealthyObservations,
   providerLoadObservations,
@@ -462,6 +522,7 @@ const payload = {
     repairPlanningAllowed: providerLearningAllowed,
     providerMutationRequiresCrossClientConsensus: true,
     clientRuntimeFailureLearningAllowed: false,
+    runtimeErrorSentinelLearningAllowed: false,
     repositoryLearningAllowed: evidence.complete && providerLoadIssues.length > 0,
     providerLoadJsMutationAllowed: false,
     coreOrManifestLoadProposalAllowed: evidence.complete && providerLoadIssues.length > 0,
@@ -481,7 +542,8 @@ console.log(
   `FIELD_NATIVE_READER_BRAIN evidence_complete=${payload.evidenceComplete} observed=${payload.readerObserved} ` +
   `declared=${payload.readerDeclaredObserved} healthy=${payload.readerHealthy} failures=${payload.readerFailures} ` +
   `provider_eligible_failures=${payload.providerEligibleReaderFailures} extraction_failures=${payload.extractionFailures} ` +
-  `client_runtime_failures=${payload.clientRuntimeReaderFailures} cross_client_provider_groups=${payload.crossClientProviderFailureGroups} ` +
+  `client_runtime_failures=${payload.clientRuntimeReaderFailures} runtime_sentinels=${payload.runtimeErrorSentinelObserved} ` +
+  `cross_client_provider_groups=${payload.crossClientProviderFailureGroups} ` +
   `provider_load_failures=${payload.providerLoadActionableFailures} capability_probes=${payload.capabilityProbeObserved} ` +
   `capability_probe_healthy=${payload.capabilityProbeHealthy} capability_probe_failures=${payload.capabilityProbeFailures} ` +
   `priorities=${priorities.length} provider_load_priorities=${providerLoadPriorities.length} provider_outcomes=${providerOutcomes.length} ` +

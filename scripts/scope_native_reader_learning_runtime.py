@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import subprocess
 import tempfile
 from pathlib import Path
@@ -21,6 +22,7 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 MERGER = ROOT / "scripts" / "merge_native_reader_repair_learning.py"
+CROSS_RUNTIME_GATE = ROOT / "scripts" / "gate_native_cross_client_runtime.cjs"
 
 
 def read_json(path: Path) -> dict[str, Any]:
@@ -125,7 +127,41 @@ def combine_runtime_memory(
     return result
 
 
+def gate_representative_runtime_before_learning() -> None:
+    """Fail closed on systemic TV/Mobile runtime divergence before Brain repair."""
+    workspace_raw = os.environ.get("GITHUB_WORKSPACE", "").strip()
+    if not workspace_raw:
+        return
+    baseline = Path(workspace_raw).resolve() / "baseline-reader"
+    tv = baseline / "tv"
+    mobile = baseline / "mobile"
+    if not tv.is_dir() and not mobile.is_dir():
+        return
+    if not tv.is_dir() or not mobile.is_dir():
+        raise RuntimeError(
+            f"incomplete pre-Brain runtime evidence: tv={tv.is_dir()} mobile={mobile.is_dir()}"
+        )
+    command = [
+        "node",
+        str(CROSS_RUNTIME_GATE),
+        "--dir", str(baseline),
+        "--require-clients", "mobile,tv",
+        "--min-comparisons", "3",
+    ]
+    process = subprocess.run(command, cwd=ROOT, text=True, capture_output=True)
+    if process.stdout:
+        print(process.stdout, end="")
+    if process.stderr:
+        print(process.stderr, end="")
+    if process.returncode != 0:
+        raise RuntimeError(
+            f"pre-Brain cross-runtime gate failed with exit code {process.returncode}"
+        )
+    print("FIELD_NATIVE_READER_RUNTIME_PREBRAIN_GATE status=pass clients=mobile,tv")
+
+
 def run_filter(args: argparse.Namespace) -> int:
+    gate_representative_runtime_before_learning()
     fingerprint = clean_fingerprint(args.runtime_fingerprint)
     state = read_json(args.state)
     scoped = scoped_state(state, fingerprint)

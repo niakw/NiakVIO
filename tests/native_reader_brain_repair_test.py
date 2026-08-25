@@ -11,6 +11,7 @@ ROOT = Path(__file__).resolve().parents[1]
 BUILDER = ROOT / "scripts/build_native_reader_brain_repair.py"
 COMPARE = ROOT / "scripts/compare_native_reader_brain_repair.py"
 DIAGNOSE = ROOT / "engine_v2/scripts/diagnose-native-reader.mjs"
+SENTINEL = "__NIAKVIO_RUNTIME_ERROR__"
 
 
 def b64(value: str) -> str:
@@ -38,6 +39,7 @@ def write_result_log(
     count: int = 0,
     enabled: bool = True,
     route_mode: str = "declared",
+    runtime_sentinel: bool = False,
 ) -> None:
     provider64 = b64(provider)
     lines = [
@@ -67,6 +69,15 @@ def write_result_log(
         ),
         f"FIELD_NATIVE_CORPUS_END client={client} fixture=sinners-2025 errors=0",
     ]
+    if runtime_sentinel:
+        lines.insert(
+            -1,
+            (
+                f"FIELD_NATIVE_ROW client={client} fixture=sinners-2025 provider64={provider64} "
+                f"request_type=movie route_mode={route_mode} index=0 title64={b64(SENTINEL)} "
+                f"name64={b64(SENTINEL)} quality64= language64= type64={b64(SENTINEL)} host64= media_hint64="
+            ),
+        )
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
@@ -263,6 +274,24 @@ with tempfile.TemporaryDirectory(dir=ROOT) as tmp_raw:
     assert zero_peer_report["proposalCount"] == 0, zero_peer_report
     assert zero_peer_report["skipped"][0]["reason"] == "client_specific_failure_has_healthy_peer", zero_peer_report
     assert zero_peer_report["skipped"][0]["healthyClients"] == ["desktop"], zero_peer_report
+
+    # A runtime sentinel must never become provider repair evidence, even when two
+    # independent official clients each materialize it as a synthetic count=1 stream.
+    sentinel_tv_log = tmp / "runtime-sentinel-tv.log"
+    sentinel_mobile_log = tmp / "runtime-sentinel-mobile.log"
+    write_result_log(sentinel_tv_log, client="tv", count=1, enabled=True, runtime_sentinel=True)
+    write_result_log(sentinel_mobile_log, client="mobile", count=1, enabled=True, runtime_sentinel=True)
+    sentinel_json = tmp / "runtime-sentinel.json"
+    sentinel_diagnosis = run_diagnose([sentinel_tv_log, sentinel_mobile_log], sentinel_json)
+    assert sentinel_diagnosis["runtimeErrorSentinelObserved"] == 2, sentinel_diagnosis
+    assert sentinel_diagnosis["extractionHealthy"] == 0, sentinel_diagnosis
+    assert sentinel_diagnosis["extractionFailures"] == 0, sentinel_diagnosis
+    assert sentinel_diagnosis["plans"] == [], sentinel_diagnosis
+    assert sentinel_diagnosis["policy"]["learningAllowed"] is False, sentinel_diagnosis
+    assert sentinel_diagnosis["policy"]["runtimeErrorSentinelLearningAllowed"] is False, sentinel_diagnosis
+    sentinel_report = run_builder(sentinel_json, tmp / "runtime-sentinel-repair")
+    assert sentinel_report["proposalCount"] == 0, sentinel_report
+    # runtime sentinel must never become provider repair evidence
 
     # Disabled providers and undeclared capability probes are observational only and
     # cannot contribute to count=0 repair consensus.
