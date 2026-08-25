@@ -29,15 +29,17 @@ export function canonicalizeRetainedCoreBoundary(code) {
 }
 
 export function canonicalizeGeneratedMarkerBoundaries(code) {
-  // Terser can preserve a generated NUVIO comment before a statement terminator,
-  // between `)` and `;`, or after the terminator. It can also remove redundant
-  // parentheses entirely, turning `);` into `;`. Preserve whichever terminator is
-  // semantically real and collapse all owned whitespace/comment placements to one
-  // stable boundary before the following generated IIFE/wrapper.
+  // A preserved marker immediately before `);` can be attached by Terser to the
+  // preceding provider/export expression and must be moved after that terminator.
+  // In contrast, NiakVIO-generated wrappers canonically begin `/* marker */` then
+  // `;(function...)`: that bare semicolon is the wrapper's ASI guard and belongs
+  // AFTER the marker. Never reinterpret that owned guard as a preceding terminator.
+  // Markers already following a real `);`/`;`, and markers between `)` and `;`,
+  // are still normalized to one byte-stable boundary.
   const canonical = (terminator, rawMarker) => `${terminator}\n/* ${String(rawMarker).trim()} */\n`;
   const patterns = [
     {
-      re: new RegExp(String.raw`[ \t\r\n]*${GENERATED_MARKER}[ \t\r\n]*(\);|;)[ \t\r\n]*${GENERATED_SUFFIX}`, "g"),
+      re: new RegExp(String.raw`[ \t\r\n]*${GENERATED_MARKER}[ \t\r\n]*(\);)[ \t\r\n]*${GENERATED_SUFFIX}`, "g"),
       replace: (_match, rawMarker, terminator) => canonical(terminator, rawMarker),
     },
     {
