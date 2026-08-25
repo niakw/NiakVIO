@@ -75,7 +75,7 @@ assert row["headers"] == {"Referer": "https://purstream.example/"}
 assert row["quality"] == "", row
 assert row["language"] == "", row
 assert row["presentationFacts"]["quality"] == "2160p"
-assert row["presentationFacts"]["language"] == "Dual Audio"
+assert row["presentationFacts"]["language"] == "Multi"
 assert row["presentationFacts"]["codec"] == "HEVC"
 assert row["presentationFacts"]["audioCodec"] == "E-AC3"
 assert row["presentationFacts"]["audioChannels"] == "5.1"
@@ -91,7 +91,7 @@ for expected in (
     "🎬 Interstellar • 2014 • Science-fiction, Drame",
     "🎞️ 2160p • BLU-RAY • HEVC • HLS",
     "🔊 E-AC3 • 5.1",
-    "🌐 Dual Audio",
+    "🌐 Multi",
     "⏱ 2h49",
     "💾 8.4 GB",
     "🔞 -12",
@@ -106,7 +106,7 @@ sparse = """module.exports={getStreams:async()=>[{name:'Purstream',url:'https://
 sparse_row = run(sparse, "purstream", TMDB_OFFLINE, CALL)
 assert sparse_row["description"] == sparse_row["size"]
 assert "🎞️ HLS" in sparse_row["description"], sparse_row
-assert "🌐 Dual Audio" in sparse_row["description"], sparse_row
+assert "🌐 Multi" in sparse_row["description"], sparse_row
 assert sparse_row["description"].strip() != "Dual Audio"
 
 # Provider-specific formatting/emojis must never alter the canonical presentation.

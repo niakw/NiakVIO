@@ -28,13 +28,27 @@
     "hideUnknownBadges": true,
     "alwaysReplaceProviderDescription": true,
     "nativeBadgeFeeds": {
+      "recommended": "assets/stream-badges-fusion.json",
       "dark_app_background": "assets/stream-badges-dark.json",
-      "light_app_background": "assets/stream-badges-light.json"
+      "light_app_background": "assets/stream-badges-light.json",
+      "requiresNuvioImport": true
     },
     "fallbackWhenNativeBadgesDisabled": "emojiTechnicalLine",
     "presentationSources": {
       "technicalTruth": "provider/stream facts",
       "mediaContextFallback": "TMDB"
+    },
+    "presentationRevision": "global_core_v12",
+    "clientProjection": {
+      "canonicalVisibleField": "description",
+      "compatibilityEnvelopeField": "size",
+      "suppressedLegacyRecompositionFields": [
+        "quality",
+        "language"
+      ],
+      "structuredFactsField": "presentationFacts",
+      "mobileDesktopSubtitle": "quality + size + language => size only after V12 suppression",
+      "tvDescription": "size"
     }
   },
   "rules": [
@@ -47,7 +61,11 @@
     "Always replace every provider-owned stream description with the shared Core presentation.",
     "When native StreamBadge rules are active, technical text provides matcher tokens for image badges.",
     "When native StreamBadge rules are inactive, emoji-grouped technical text remains the universal visual fallback.",
-    "TMDB may fill media context, runtime and age rating, but never invent stream resolution/source/codec/audio/language facts."
+    "TMDB may fill media context, runtime and age rating, but never invent stream resolution/source/codec/audio/language facts.",
+    "Provider-owned presentation text is input-only; Core rebuilds the visible stream presentation.",
+    "V12 mirrors the canonical presentation into size because official Nuvio plugin readers preserve size on Mobile, Desktop and TV.",
+    "V12 clears transport quality/language after preserving their truth in presentationFacts to prevent client-side duplicate formatting.",
+    "Native StreamBadge image rules require import in Nuvio settings; canonical text remains the matcher and emoji fallback."
   ],
   "bestCaseExample": {
     "title": "ECLIPSE RISING",
