@@ -217,7 +217,7 @@ def assert_brain_contract(text: str) -> None:
         "systemicExtractionFailures = extractionFailures.filter",
         "failureDomain: 'client_runtime'",
         "providerMutationEligible: false, coreOrManifestProposalAllowed: true",
-        "clientRuntimeExtractionLearningAllowed: falsb,
+        "clientRuntimeExtractionLearningAllowed: false",
         "coreRuntimeCompatibilityProposalAllowed:",
     )
     missing = [value for value in required if value not in text]
@@ -237,7 +237,7 @@ def normalize_files(*, apply: bool) -> list[str]:
         APPLY_TARGET.write_text(apply_normalized, encoding="utf-8")
 
     brain_source = BRAIN_TARGET.read_text(encoding="utf-8")
-    brain_normalized, brain_changes = normalize_brain("rain_source" if False else brain_source)
+    brain_normalized, brain_changes = normalize_brain(brain_source)
     assert_brain_contract(brain_normalized)
     changes.extend(f"brain:{item}" for item in brain_changes)
     if apply and brain_normalized != brain_source:
