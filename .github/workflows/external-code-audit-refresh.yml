@@ -2,6 +2,9 @@ name: Refresh External Code Audit
 
 on:
   workflow_dispatch:
+  schedule:
+    # Weekly refresh every Sunday at 04:17 UTC.
+    - cron: '17 4 * * 0'
 
 permissions:
   actions: write
@@ -12,7 +15,7 @@ concurrency:
 
 jobs:
   refresh:
-    name: Manually refresh Sonar / DeepSource / CodeScene exports
+    name: Refresh Sonar / DeepSource / CodeScene exports
     runs-on: ubuntu-latest
     timeout-minutes: 5
 
@@ -23,5 +26,5 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          echo "Manual refresh requested: SonarQube Cloud + DeepSource + CodeScene"
+          echo "Refreshing external audit: SonarQube Cloud + DeepSource + CodeScene"
           gh workflow run external-code-audit.yml --repo "$GITHUB_REPOSITORY" --ref main
