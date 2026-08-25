@@ -139,21 +139,25 @@ assert retained_first_report.get("retainedAudioBoundaryCanonicalized") is True
 assert retained_first_report.get("finalCleanupVerified") is True
 
 # Terser can attach preserved generated comments on either side of the provider
-# export terminator and can vary whitespace/IIFE syntax. Every owned representation
-# must collapse to exactly `);\nMARKER\n<suffix>` with no whitespace left before
-# `);`, then remain byte-identical on the second public purification pass.
+# export terminator, between `)` and `;`, remove redundant parentheses, and vary
+# whitespace/IIFE syntax. Every owned representation must collapse to one stable
+# `TERMINATOR\nMARKER\n<suffix>` boundary and remain byte-identical on pass two.
 floated_marker = "/* NUVIO_GLOBAL_MEDIA_ENRICHMENT_V1:test */"
 floated_variants = (
     (
-        "before-close",
+        "before-bare-semicolon",
         '(global.getStreams=getStreams \n\t' + floated_marker + '\r\n );(function(g,c){g.__nuvioMediaTest=c;})(globalThis,{});',
+    ),
+    (
+        "real-provider-parenthesized",
+        '(global.getStreams=getStreams,global.onSettings=getStreams \n' + floated_marker + ');(function(g,c){g.__nuvioMediaTest=c;})(globalThis,{});',
     ),
     (
         "between-close-semicolon",
         '(global.getStreams=getStreams) \r\n' + floated_marker + '\t; !function(g,c){g.__nuvioMediaTest=c}(globalThis,{});',
     ),
     (
-        "after-close",
+        "after-terminator",
         '(global.getStreams=getStreams); \r\n\t' + floated_marker + '  (function(g,c){g.__nuvioMediaTest=c;})(globalThis,{});',
     ),
     (
@@ -173,8 +177,8 @@ for variant_name, fallback_tail in floated_variants:
     floated_text = floated_first.decode("utf-8")
     assert floated_second == floated_first, variant_name
     assert floated_text.count(floated_marker) == 1, variant_name
-    assert "getStreams);\n" + floated_marker + "\n" in floated_text, variant_name
-    assert not re.search(r"getStreams[ \t\r\n]+\);\n" + re.escape(floated_marker), floated_text), variant_name
+    assert (";\n" + floated_marker + "\n") in floated_text, variant_name
+    assert not re.search(r"getStreams[ \t\r\n]+(?:\)|;)\s*\n?" + re.escape(floated_marker), floated_text), variant_name
     assert int(floated_report.get("floatedGeneratedMarkersCanonicalized") or 0) >= 1, variant_name
     assert floated_report.get("finalCleanupVerified") is True, variant_name
 
