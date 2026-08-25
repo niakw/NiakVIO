@@ -50,7 +50,7 @@ assert.equal(presented.fileSize, "8.4 GB");
 assert.doesNotMatch(presented.description, /provider private|click now/i);
 assert.deepEqual(presented.description.split("\n"), [
   "🎬 Interstellar • 2014 • Science-fiction, Drame",
-  "🎞️ 2160p • BLU-RAY • HLS",
+  "🎞️ 2160p • BLU-RAY • HEVC • HLS",
   "🔊 E-AC3 5.1",
   "🌐 VFF",
   "⏱ 2h49 • 💾 8.4 GB • 🔞 -12",
@@ -58,6 +58,7 @@ assert.deepEqual(presented.description.split("\n"), [
 assert.deepEqual(presented.displayBadges, [
   "4K",
   "BLU-RAY",
+  "HEVC",
   "E-AC3 5.1",
   "VFF",
   "2h49",
@@ -65,7 +66,7 @@ assert.deepEqual(presented.displayBadges, [
 ]);
 
 const withoutQuality = buildTechnicalLines(presented.presentationFacts, { includeQuality: false });
-assert.equal(withoutQuality[0], "🎞️ BLU-RAY • HLS");
+assert.equal(withoutQuality[0], "🎞️ BLU-RAY • HEVC • HLS");
 assert(!withoutQuality.join("\n").includes("2160p"));
 
 const tmdbFallback = presentStreamCandidate({

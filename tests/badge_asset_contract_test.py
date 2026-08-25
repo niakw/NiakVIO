@@ -84,8 +84,9 @@ assert mapping["display"]["hideUnknownBadges"] is True
 assert mapping["display"]["alwaysReplaceProviderDescription"] is True
 assert mapping["display"]["presentationRevision"] == "global_core_v12"
 assert mapping["display"]["clientProjection"]["compatibilityEnvelopeField"] == "size"
-assert mapping["display"]["clientProjection"]["suppressedLegacyRecompositionFields"] == ["quality", "language"]
-assert mapping["display"]["fallbackWhenNativeBadgesDisabled"] == "emojiTechnicalLine"
+assert mapping["display"]["clientProjection"]["preservedLegacyFields"] == ["quality"]
+assert mapping["display"]["clientProjection"]["suppressedLegacyRecompositionFields"] == ["language"]
+assert mapping["display"]["fallbackWhenNativeBadgesDisabled"] == "multilineEmojiTechnicalGroups"
 assert mapping["display"]["nativeBadgeFeeds"] == {
     "recommended": "assets/stream-badges-fusion.json",
     "dark_app_background": "assets/stream-badges-dark.json",

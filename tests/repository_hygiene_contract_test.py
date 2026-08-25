@@ -52,8 +52,10 @@ assert "normalize_stream_presentation_v12" in core_policy
 assert "presentation=global_core_v12" in core_policy
 
 presentation = (ROOT / "scripts/provider_patches/global_stream_presentation_v1.py").read_text(encoding="utf-8")
-assert "all-providers-client-projected-badge-emoji-tmdb-v12" in presentation
-assert 'out.description=visible;out.size=visible;out.quality="";out.language=""' in presentation
+assert "all-providers-client-projected-quality-preserved-badge-emoji-tmdb-v12" in presentation
+assert 'out.description=visible;out.size=envelope' in presentation
+assert 'if(f.quality)out.quality=f.quality;else if("quality" in out)delete out.quality' in presentation
+assert 'if("language" in out)delete out.language' in presentation
 
 validator = (ROOT / "scripts/validate_provider_artifact.cjs").read_text(encoding="utf-8")
 assert "mode=syntax-only" in validator

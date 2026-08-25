@@ -33,7 +33,7 @@
       "light_app_background": "assets/stream-badges-light.json",
       "requiresNuvioImport": true
     },
-    "fallbackWhenNativeBadgesDisabled": "emojiTechnicalLine",
+    "fallbackWhenNativeBadgesDisabled": "multilineEmojiTechnicalGroups",
     "presentationSources": {
       "technicalTruth": "provider/stream facts",
       "mediaContextFallback": "TMDB"
@@ -42,13 +42,16 @@
     "clientProjection": {
       "canonicalVisibleField": "description",
       "compatibilityEnvelopeField": "size",
+      "preservedLegacyFields": [
+        "quality"
+      ],
       "suppressedLegacyRecompositionFields": [
-        "quality",
         "language"
       ],
       "structuredFactsField": "presentationFacts",
-      "mobileDesktopSubtitle": "quality + size + language => size only after V12 suppression",
-      "tvDescription": "size"
+      "mobileDesktopSubtitle": "quality + multiline size envelope",
+      "tvTitle": "provider + quality",
+      "tvDescription": "multiline size envelope"
     }
   },
   "rules": [
@@ -65,7 +68,11 @@
     "Provider-owned presentation text is input-only; Core rebuilds the visible stream presentation.",
     "V12 mirrors the canonical presentation into size because official Nuvio plugin readers preserve size on Mobile, Desktop and TV.",
     "V12 clears transport quality/language after preserving their truth in presentationFacts to prevent client-side duplicate formatting.",
-    "Native StreamBadge image rules require import in Nuvio settings; canonical text remains the matcher and emoji fallback."
+    "Native StreamBadge image rules require import in Nuvio settings; canonical text remains the matcher and emoji fallback.",
+    "V12 preserves normalized quality because official Nuvio clients use it for stream labels/sorting.",
+    "V12 mirrors complementary multiline presentation into size because official Nuvio plugin readers preserve size on Mobile, Desktop and TV.",
+    "V12 suppresses transport language after preserving it in presentationFacts and the multiline envelope to prevent duplicate client formatting.",
+    "Native StreamBadge image rules require import in Nuvio settings; canonical text remains the matcher and multiline emoji fallback."
   ],
   "bestCaseExample": {
     "title": "ECLIPSE RISING",
