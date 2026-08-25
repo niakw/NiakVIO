@@ -3,12 +3,14 @@
 - Access: public Sonar organization/project; no Sonar login or API token used.
 - Project: `NiakVIO`
 - Project key: `niakw_NiakVIO`
-- Open findings exported: **2494**
-- Severity: `CRITICAL` 1021, `MINOR` 694, `MAJOR` 662, `BLOCKER` 117
-- Type: `CODE_SMELL` 2222, `VULNERABILITY` 159, `BUG` 113
+- Open findings exported: **2495**
+- Severity: `CRITICAL` 1021, `MINOR` 694, `MAJOR` 663, `BLOCKER` 117
+- Type: `CODE_SMELL` 2223, `VULNERABILITY` 159, `BUG` 113
 
 ## Findings
 
+- `niakw_NiakVIO:tests/native_provider_loading_compat_test.py:14` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:scripts/augment_native_provider_loading_compat.py:49` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
 - `niakw_NiakVIO:scripts/external_audit/codescene.py:57` **CRITICAL / CODE_SMELL** `python:S1192` — Define a constant instead of duplicating this literal "status.json" 5 times.
 - `niakw_NiakVIO:scripts/external_audit/codescene.py:82` **MAJOR / CODE_SMELL** `python:S3358` — Extract this nested conditional expression into an independent statement.
 - `niakw_NiakVIO:scripts/external_audit/sonar.py:57` **CRITICAL / CODE_SMELL** `python:S1192` — Define a constant instead of duplicating this literal "status.json" 4 times.
@@ -23,7 +25,6 @@
 - `niakw_NiakVIO:scripts/gate_native_cross_client_runtime.cjs:138` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
 - `niakw_NiakVIO:scripts/gate_native_player_reached.cjs:25` **MINOR / CODE_SMELL** `javascript:S7781` — Prefer `String#replaceAll()` over `String#replace()`.
 - `niakw_NiakVIO:scripts/gate_native_player_reached.cjs:25` **MINOR / CODE_SMELL** `javascript:S7781` — Prefer `String#replaceAll()` over `String#replace()`.
-- `niakw_NiakVIO:audit/ai-external/deepsource/network-json.json:335` **BLOCKER / VULNERABILITY** `json:S6418` — "token" detected here, make sure this is not a hard-coded secret.
 - `niakw_NiakVIO:scripts/provider_purification.py:234` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 18 to the 15 allowed.
 - `niakw_NiakVIO:engine_v2/scripts/terser-clean.mjs:20` **MINOR / CODE_SMELL** `javascript:S7765` — Use `.includes()`, rather than `.indexOf()`, when checking for existence.
 - `niakw_NiakVIO:engine_v2/scripts/terser-clean.mjs:24` **MAJOR / CODE_SMELL** `javascript:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
@@ -157,18 +158,18 @@
 - `niakw_NiakVIO:engine_v2/scripts/diagnose-native-media-capabilities.mjs:27` **MAJOR / CODE_SMELL** `javascript:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
 - `niakw_NiakVIO:engine_v2/scripts/diagnose-native-media-capabilities.mjs:27` **MINOR / CODE_SMELL** `javascript:S6353` — Use concise character class syntax '\w' instead of '[A-Za-z0-9_]'.
 - `niakw_NiakVIO:engine_v2/scripts/diagnose-native-media-capabilities.mjs:46` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
-- `niakw_NiakVIO:engine_v2/scripts/diagnose-native-reader.mjs:28` **MINOR / CODE_SMELL** `javascript:S7781` — Prefer `String#replaceAll()` over `String#replace()`.
-- `niakw_NiakVIO:engine_v2/scripts/diagnose-native-reader.mjs:28` **MINOR / CODE_SMELL** `javascript:S7781` — Prefer `String#replaceAll()` over `String#replace()`.
-- `niakw_NiakVIO:engine_v2/scripts/diagnose-native-reader.mjs:34` **MAJOR / CODE_SMELL** `javascript:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
-- `niakw_NiakVIO:engine_v2/scripts/diagnose-native-reader.mjs:34` **MINOR / CODE_SMELL** `javascript:S6353` — Use concise character class syntax '\w' instead of '[A-Za-z0-9_]'.
-- `niakw_NiakVIO:engine_v2/scripts/diagnose-native-reader.mjs:272` **MINOR / CODE_SMELL** `javascript:S1940` — Use the opposite operator (<=) instead.
-- `niakw_NiakVIO:engine_v2/scripts/diagnose-native-reader.mjs:288` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
-- `niakw_NiakVIO:engine_v2/scripts/diagnose-native-reader.mjs:289` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
-- `niakw_NiakVIO:engine_v2/scripts/diagnose-native-reader.mjs:307` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
-- `niakw_NiakVIO:engine_v2/scripts/diagnose-native-reader.mjs:308` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
-- `niakw_NiakVIO:engine_v2/scripts/diagnose-native-reader.mjs:409` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
-- `niakw_NiakVIO:engine_v2/scripts/diagnose-native-reader.mjs:410` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
-- `niakw_NiakVIO:engine_v2/scripts/diagnose-native-reader.mjs:411` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
+- `niakw_NiakVIO:engine_v2/scripts/diagnose-native-reader.mjs:29` **MINOR / CODE_SMELL** `javascript:S7781` — Prefer `String#replaceAll()` over `String#replace()`.
+- `niakw_NiakVIO:engine_v2/scripts/diagnose-native-reader.mjs:29` **MINOR / CODE_SMELL** `javascript:S7781` — Prefer `String#replaceAll()` over `String#replace()`.
+- `niakw_NiakVIO:engine_v2/scripts/diagnose-native-reader.mjs:35` **MAJOR / CODE_SMELL** `javascript:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
+- `niakw_NiakVIO:engine_v2/scripts/diagnose-native-reader.mjs:35` **MINOR / CODE_SMELL** `javascript:S6353` — Use concise character class syntax '\w' instead of '[A-Za-z0-9_]'.
+- `niakw_NiakVIO:engine_v2/scripts/diagnose-native-reader.mjs:320` **MINOR / CODE_SMELL** `javascript:S1940` — Use the opposite operator (<=) instead.
+- `niakw_NiakVIO:engine_v2/scripts/diagnose-native-reader.mjs:336` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
+- `niakw_NiakVIO:engine_v2/scripts/diagnose-native-reader.mjs:337` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
+- `niakw_NiakVIO:engine_v2/scripts/diagnose-native-reader.mjs:355` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
+- `niakw_NiakVIO:engine_v2/scripts/diagnose-native-reader.mjs:356` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
+- `niakw_NiakVIO:engine_v2/scripts/diagnose-native-reader.mjs:467` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
+- `niakw_NiakVIO:engine_v2/scripts/diagnose-native-reader.mjs:468` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
+- `niakw_NiakVIO:engine_v2/scripts/diagnose-native-reader.mjs:469` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
 - `niakw_NiakVIO:engine_v2/scripts/plan-repairs.mjs:173` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function that depends on "String.localeCompare", to reliably sort elements alphabetically.
 - `niakw_NiakVIO:engine_v2/scripts/plan-repairs.mjs:193` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function that depends on "String.localeCompare", to reliably sort elements alphabetically.
 - `niakw_NiakVIO:engine_v2/scripts/plan-repairs.mjs:235` **CRITICAL / CODE_SMELL** `javascript:S3776` — Refactor this function to reduce its Cognitive Complexity from 21 to the 15 allowed.
@@ -321,8 +322,8 @@
 - `niakw_NiakVIO:scripts/resolve_native_repository.sh:19` **MAJOR / CODE_SMELL** `shelldre:S7682` — Add an explicit return statement at the end of the function.
 - `niakw_NiakVIO:scripts/resolve_native_repository.sh:165` **MAJOR / CODE_SMELL** `shelldre:S7682` — Add an explicit return statement at the end of the function.
 - `niakw_NiakVIO:scripts/resolve_nuvio_lab_heads.py:25` **MAJOR / VULNERABILITY** `pythonsecurity:S8707` — LLMs running this code with faulty CLI arguments can escape file system restrictions. Refactor this code to validate the constructed path before accessing the file system.
-- `niakw_NiakVIO:scripts/scope_native_reader_learning_runtime.py:35` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
-- `niakw_NiakVIO:scripts/scope_native_reader_learning_runtime.py:81` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 16 to the 15 allowed.
+- `niakw_NiakVIO:scripts/scope_native_reader_learning_runtime.py:37` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
+- `niakw_NiakVIO:scripts/scope_native_reader_learning_runtime.py:83` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 16 to the 15 allowed.
 - `niakw_NiakVIO:scripts/watch_native_device_frontend.sh:33` **CRITICAL / CODE_SMELL** `shelldre:S131` — Add a default case (*) to handle unexpected values.
 - `niakw_NiakVIO:tests/adaptive_safe_structured_parse_profile_test.py:16` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
 - `niakw_NiakVIO:tests/brain_cron_full_coverage_test.py:74` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
@@ -337,7 +338,7 @@
 - `niakw_NiakVIO:tests/native_player_diagnostics.test.cjs` **BLOCKER / CODE_SMELL** `javascript:S2187` — Add some tests to this file or delete it.
 - `niakw_NiakVIO:tests/native_player_diagnostics_codegen_test.py:17` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
 - `niakw_NiakVIO:tests/native_reader_backlog_test.py:199` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
-- `niakw_NiakVIO:tests/native_reader_brain_repair_test.py:329` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:tests/native_reader_brain_repair_test.py:358` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
 - `niakw_NiakVIO:tests/native_reader_exhaustive_acceptance_test.py:96` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
 - `niakw_NiakVIO:tests/native_reader_learning_memory_test.py:62` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
 - `niakw_NiakVIO:tests/native_reader_learning_memory_test.py:129` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
