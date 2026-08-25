@@ -2,13 +2,14 @@
 """Enforce NiakVIO's cross-client unified stream presentation V12.
 
 V12 keeps one provider-agnostic Core presentation while projecting it through the
-legacy fields actually preserved by official Nuvio plugin readers. It also maintains
-badge feeds whose regexes match the same canonical visible text.
+legacy fields actually preserved by official Nuvio plugin readers. Badge feeds are
+regenerated from the committed catalog without rewriting the catalog's regexes.
 """
 from __future__ import annotations
 
 import argparse
 import json
+import re
 from pathlib import Path
 from typing import Any
 
@@ -25,27 +26,6 @@ RAW_BASE = "https://raw.githubusercontent.com/niakw/NiakVIO/main/"
 
 def _json_text(value: Any) -> str:
     return json.dumps(value, ensure_ascii=False, indent=2) + "\n"
-
-
-def _normalize_catalog_patterns(catalog: dict[str, Any]) -> tuple[dict[str, Any], int]:
-    """Collapse the historical double escaping that made Nuvio regexes literal.
-
-    The source catalog accidentally stored two backslash characters for regex escapes
-    such as ``\\b``. JSON then serialized both, and the official Kotlin/Java regex
-    engines received ``\\\\b`` (a literal backslash plus ``b``) instead of a word
-    boundary. A single collapse is enough and leaves already-correct patterns intact.
-    """
-    normalized = json.loads(json.dumps(catalog))
-    changed = 0
-    for badge in normalized.get("badges") or []:
-        if not isinstance(badge, dict):
-            continue
-        pattern = str(badge.get("pattern") or "")
-        fixed = pattern.replace("\\\\", "\\")
-        if fixed != pattern:
-            badge["pattern"] = fixed
-            changed += 1
-    return normalized, changed
 
 
 def _feed_payload(catalog: dict[str, Any], theme: str) -> dict[str, Any]:
@@ -69,6 +49,10 @@ def _feed_payload(catalog: dict[str, Any], theme: str) -> dict[str, Any]:
         rel = str((((badge.get("assets") or {}).get(theme) or {}).get("96x40") or ""))
         if not badge_id or not name or not pattern or not rel:
             raise ValueError(f"incomplete badge feed row: {badge_id or '<missing>'} theme={theme}")
+        try:
+            re.compile(pattern)
+        except re.error as exc:
+            raise ValueError(f"invalid badge regex: {badge_id}: {exc}") from exc
         filters.append(
             {
                 "id": badge_id,
@@ -97,13 +81,7 @@ def normalize(*, apply: bool) -> list[str]:
             "silently reconstruct security-sensitive provider wrappers"
         )
 
-    raw_catalog = json.loads(CATALOG.read_text(encoding="utf-8"))
-    catalog, pattern_changes = _normalize_catalog_patterns(raw_catalog)
-    if pattern_changes:
-        changed.append(f"badge_catalog_regex_escaping:{pattern_changes}")
-        if apply:
-            CATALOG.write_text(_json_text(catalog), encoding="utf-8")
-
+    catalog = json.loads(CATALOG.read_text(encoding="utf-8"))
     for theme, path in (("dark", DARK_FEED), ("light", LIGHT_FEED), ("dark", FUSION_FEED)):
         wanted = _json_text(_feed_payload(catalog, theme))
         current = path.read_text(encoding="utf-8") if path.is_file() else ""
@@ -169,10 +147,16 @@ def assert_contract() -> None:
             raise ValueError(f"stream presentation V12 contract missing: {token}")
 
     catalog = json.loads(CATALOG.read_text(encoding="utf-8"))
-    normalized_catalog, pattern_changes = _normalize_catalog_patterns(catalog)
-    if pattern_changes or normalized_catalog != catalog:
-        raise ValueError("badge catalog still contains over-escaped regex patterns")
     expected = len(catalog.get("badges") or [])
+    for badge in catalog.get("badges") or []:
+        if not isinstance(badge, dict):
+            continue
+        pattern = str(badge.get("pattern") or "")
+        try:
+            re.compile(pattern)
+        except re.error as exc:
+            raise ValueError(f"invalid badge catalog regex: {badge.get('id')}: {exc}") from exc
+
     for path in (FUSION_FEED, DARK_FEED, LIGHT_FEED):
         if not path.is_file():
             raise ValueError(f"native StreamBadge feed missing: {path.name}")
@@ -183,8 +167,12 @@ def assert_contract() -> None:
             raise ValueError(f"native StreamBadge feed incomplete: {path.name}")
         for row in filters:
             pattern = str(row.get("pattern") or "")
-            if not pattern or "\\\\" in pattern or not row.get("imageURL"):
+            if not pattern or not row.get("imageURL"):
                 raise ValueError(f"native StreamBadge feed row invalid: {path.name} {row.get('id')}")
+            try:
+                re.compile(pattern)
+            except re.error as exc:
+                raise ValueError(f"invalid generated badge regex: {path.name} {row.get('id')}: {exc}") from exc
 
 
 def main() -> int:
