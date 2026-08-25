@@ -5,7 +5,10 @@
     "selection_rule": "Prefer runtime capability detection inside generated provider code; use client version/ref gates only when a behavior cannot be detected safely at runtime.",
     "unknown_generation": "fail-closed for automatic mutation capabilities not proven on the baseline generation",
     "reader_only_drift": "may require native reader re-proof without invalidating provider-only capabilities",
-    "provider_contract_drift": "blocks automatic Brain provider mutation until audited"
+    "provider_contract_drift": "blocks automatic Brain provider mutation until audited",
+    "client_runtime_equivalence": "Never infer runtime compatibility from a sibling client. Desktop, Mobile and TV must each execute the shared provider/Core bundle in their own official runtime; success on one client is evidence for that client only.",
+    "runtime_error_observability": "Official clients may intentionally collapse getStreams JavaScript exceptions into an empty result for application resilience. Native Labs must preserve those exceptions as diagnostic evidence and must not classify the resulting empty application value as a successful runtime execution.",
+    "cross_client_divergence": "A single provider/client discrepancy remains Brain evidence. A systematic client-wide empty/runtime-error pattern while an official peer succeeds is a blocking runtime-contract failure."
   },
   "capability_universe": [
     "invocation",
@@ -72,7 +75,12 @@
         "request_shape": "getStreams(tmdbId, mediaType, season, episode)",
         "stable_between_baseline_and_current": true,
         "changed_provider_contract_paths": [],
-        "reader_only_changes": ["android PlayerEngine", "ios player bridge/engine", "player settings"]
+        "reader_only_changes": ["android PlayerEngine", "ios player bridge/engine", "player settings"],
+        "runtime_validation": "execute the exact official Mobile runtime/distribution; Desktop success is not Mobile proof",
+        "runtime_family_equivalent_to_sibling_clients": false,
+        "official_getStreams_error_behavior": "application runtime catches JavaScript getStreams errors and captures []",
+        "lab_error_policy": "diagnostic runtime trap preserves swallowed errors before collection/cross-client gates",
+        "surface_note": "Mobile and Desktop currently share several runtime bridge subtrees, but their PluginRuntime/JsBindings/network sources are independently versioned and must be diffed separately."
       },
       "brain_capabilities": [
         "invocation", "media-type", "settings", "dns", "hub", "search", "telegram", "lkg",
@@ -111,7 +119,12 @@
         "request_shape": "getStreams(tmdbId, mediaType, season, episode)",
         "stable_between_baseline_and_current": true,
         "changed_provider_contract_paths": ["composeApp/src/commonMain/kotlin/com/nuvio/app/features/streams/StreamsRepository.kt"],
-        "audited_change": "fetchAddonResponseText preserves normal httpGetText behavior and adds Cache-Control no-cache only for forceRefresh"
+        "audited_change": "fetchAddonResponseText preserves normal httpGetText behavior and adds Cache-Control no-cache only for forceRefresh",
+        "runtime_validation": "execute the exact official Desktop runtime and re-prove macOS/Windows reader behavior; Mobile success is not Desktop proof",
+        "runtime_family_equivalent_to_sibling_clients": false,
+        "official_getStreams_error_behavior": "application runtime catches JavaScript getStreams errors and captures []",
+        "lab_error_policy": "diagnostic runtime trap preserves swallowed errors before collection/cross-client gates",
+        "surface_note": "Desktop and Mobile currently share several runtime bridge subtrees, but their PluginRuntime/JsBindings/network sources are independently versioned and must be diffed separately."
       },
       "brain_capabilities": [
         "invocation", "media-type", "settings", "dns", "hub", "search", "telegram", "lkg",
@@ -153,7 +166,12 @@
           "app/src/main/java/com/nuvio/tv/data/repository/StreamRepositoryImpl.kt",
           "app/src/main/java/com/nuvio/tv/domain/repository/StreamRepository.kt"
         ],
-        "audited_change": "forceRefresh default remains backward-compatible; session cache key includes profile, media identity and source/debrid configuration; provider positional invocation and returned URL/header ingestion remain preserved"
+        "audited_change": "forceRefresh default remains backward-compatible; session cache key includes profile, media identity and source/debrid configuration; provider positional invocation and returned URL/header ingestion remain preserved",
+        "runtime_validation": "execute NuvioTV's own Android-TV QuickJS/host implementation; Desktop/Mobile success is never TV proof",
+        "runtime_family_equivalent_to_sibling_clients": false,
+        "official_getStreams_error_behavior": "application runtime catches JavaScript getStreams errors and captures []",
+        "lab_error_policy": "diagnostic runtime trap preserves swallowed errors before collection/cross-client gates",
+        "surface_note": "TV owns a distinct monolithic Android runtime/host implementation and is intentionally treated as a separate runtime family."
       },
       "brain_capabilities": [
         "invocation", "media-type", "settings", "dns", "hub", "search", "telegram", "lkg",
