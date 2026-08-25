@@ -2,694 +2,697 @@
 
 - Project: `NiakVIO`
 - File metrics exported: **688**
+- Code Health weighted average: `7.09`
+- Hotspot score: `4.18`
+- Files with Code Health: `565`
 
-## Files / Code Health
+## Files
 
-- `nuvio_tv_direct_media.py` — Code Health `None`; changes `2`; defects `0`; LOC `54`
-- `vf_movie_policy_test.py` — Code Health `None`; changes `18`; defects `0`; LOC `142`
-- `purstream.mjs` — Code Health `None`; changes `2`; defects `0`; LOC `375`
-- `mugiwarastream.js` — Code Health `None`; changes `1`; defects `0`; LOC `41`
-- `apply_provider_overrides.py` — Code Health `None`; changes `29`; defects `0`; LOC `1060`
-- `anidb--published-baseline--f93d3a8296b4c9f7.js` — Code Health `None`; changes `1`; defects `0`; LOC `7`
-- `c9d6434703f8e8734d234bc13d23c1c547df40d6989cfc1ba26aec8eeff446e8.js` — Code Health `None`; changes `1`; defects `0`; LOC `40`
-- `core_media_policy_test.py` — Code Health `None`; changes `8`; defects `0`; LOC `89`
-- `b3dd59d3d01746d53ab7dc95ae8ba825018f90f39d8f3f52113451d0eb14d04d.js` — Code Health `None`; changes `1`; defects `0`; LOC `40`
-- `migrate_deep_stream_sampling_v2.py` — Code Health `None`; changes `4`; defects `0`; LOC `174`
-- `fibwatch--nuvio--3fbd34a1173227f9.js` — Code Health `None`; changes `1`; defects `0`; LOC `7`
-- `global_media_enrichment_direct_safety_test.py` — Code Health `None`; changes `2`; defects `0`; LOC `71`
-- `provider_capabilities.py` — Code Health `None`; changes `1`; defects `0`; LOC `38`
-- `animesalt--published-baseline--0d76f17b552ac4e3.js` — Code Health `None`; changes `1`; defects `0`; LOC `32`
-- `vidzy_hostname_decoder_test.py` — Code Health `None`; changes `2`; defects `0`; LOC `147`
-- `02173d75d873826f33e7bd45bb1c7973e557845548a8634b3ed1a5161c89abb8.js` — Code Health `None`; changes `1`; defects `0`; LOC `1`
-- `provider_dns_preflight.mjs` — Code Health `None`; changes `7`; defects `0`; LOC `928`
-- `streamzo_public_catalogue_v2.py` — Code Health `None`; changes `2`; defects `0`; LOC `61`
-- `a2e813f6167a7f619db6f6e505fbe368c59044e6dce3a14fa0751e0748d4bc8d.js` — Code Health `None`; changes `1`; defects `0`; LOC `40`
-- `native_human_ux_policy_lock_test.py` — Code Health `None`; changes `2`; defects `0`; LOC `118`
-- `quick_refresh_deep_authority_test.py` — Code Health `None`; changes `2`; defects `0`; LOC `101`
-- `b1a1110e74e8d58580bafd9ed488d65dde3a334dd65759a41939da4ffe311bb7.js` — Code Health `None`; changes `1`; defects `0`; LOC `40`
-- `quarantine_provider_v1.py` — Code Health `None`; changes `1`; defects `0`; LOC `19`
-- `audit_catalogue_identity_media.py` — Code Health `None`; changes `12`; defects `0`; LOC `403`
-- `runtime-adapters.mjs` — Code Health `None`; changes `1`; defects `0`; LOC `45`
-- `cinemacity--published-baseline--01f9adfc536166aa.js` — Code Health `None`; changes `1`; defects `0`; LOC `7`
-- `native_repository_http_instrumentation_test.py` — Code Health `None`; changes `1`; defects `0`; LOC `82`
-- `bc4308578b53310c050c71b8e1835e0e0068300bd19a7826eba0e394d62bfbdd.js` — Code Health `None`; changes `1`; defects `0`; LOC `1`
-- `targeted_provider_route_diagnostics.py` — Code Health `None`; changes `1`; defects `0`; LOC `221`
-- `topcartoons--published-baseline--820bdd5a5604e3c7.js` — Code Health `None`; changes `1`; defects `0`; LOC `2`
-- `build-provider-specs.mjs` — Code Health `None`; changes `1`; defects `0`; LOC `33`
-- `voiranime-rip--nuvio--458eb5b12513e5f5.js` — Code Health `None`; changes `2`; defects `0`; LOC `6`
-- `targeted_vf_catalogue_adapters_test.py` — Code Health `None`; changes `3`; defects `0`; LOC `110`
-- `native_corpus_suite_summary_test.py` — Code Health `None`; changes `3`; defects `0`; LOC `113`
-- `global_provider_branding_v1.py` — Code Health `None`; changes `4`; defects `0`; LOC `84`
-- `deep_health_integrity_test.py` — Code Health `None`; changes `5`; defects `0`; LOC `36`
-- `adaptive_runtime_recovery_v5.py` — Code Health `None`; changes `7`; defects `0`; LOC `117`
-- `nakios--nuvio--eeef3c79803b4c7e.js` — Code Health `None`; changes `1`; defects `0`; LOC `42`
-- `matroska_metadata_test.py` — Code Health `None`; changes `1`; defects `0`; LOC `19`
-- `upstream-provider-watch.test.mjs` — Code Health `None`; changes `1`; defects `0`; LOC `67`
-- `2c1837a3000d08140a84f68769c804315a0e6395739f4d84b18b0cf93df23a4c.js` — Code Health `None`; changes `1`; defects `0`; LOC `40`
-- `450b43a5eaebb8b3f3710fcf393271f5d739df9e0967d1f175d36b4fae17c8da.js` — Code Health `None`; changes `1`; defects `0`; LOC `1`
-- `global_catalogue_alias_recovery_test.py` — Code Health `None`; changes `5`; defects `0`; LOC `118`
-- `finalize_native_android_reader_source.py` — Code Health `None`; changes `1`; defects `0`; LOC `49`
-- `repair-brain.test.mjs` — Code Health `None`; changes `8`; defects `0`; LOC `176`
-- `d8e0de49215c6ea2ac55e5f2bbc8c1c8c4b0da761436e8ba656ffd9033ded843.js` — Code Health `None`; changes `1`; defects `0`; LOC `40`
-- `papadustream.js` — Code Health `None`; changes `1`; defects `0`; LOC `40`
-- `dvdplay--published-baseline--b0b9db9376a338ef.js` — Code Health `None`; changes `1`; defects `0`; LOC `2`
-- `e4928ad7affd0f9d417fee3c3f90bcaf0f37ed2c577ab52dd391a6cd1635f12f.js` — Code Health `None`; changes `1`; defects `0`; LOC `1`
-- `enforce_provider_priority.py` — Code Health `None`; changes `1`; defects `0`; LOC `32`
-- `catalogue_audit_coverage_test.py` — Code Health `None`; changes `3`; defects `0`; LOC `51`
-- `finalize_upstream_lkg.py` — Code Health `None`; changes `1`; defects `0`; LOC `10`
-- `95a080c30f77d7dd9f7bd151d0d4f976164328cd1ce61cecad330199e91c2683.js` — Code Health `None`; changes `1`; defects `0`; LOC `409`
-- `hls_master_audio_preserver_impl_v1.py` — Code Health `None`; changes `1`; defects `0`; LOC `333`
-- `animekai--nuvio--e9e27bb0a8c6808a.js` — Code Health `None`; changes `1`; defects `0`; LOC `7`
-- `3b567b1e8e83d64777b617ee9323f411dab1474c700864058c4444e4f52cf842.js` — Code Health `None`; changes `1`; defects `0`; LOC `491`
-- `nuvio_tv_target_diagnostics_v2.py` — Code Health `None`; changes `1`; defects `0`; LOC `245`
-- `native_corpus_device_lab_test.py` — Code Health `None`; changes `15`; defects `0`; LOC `306`
-- `diagnose-native-media-capabilities.mjs` — Code Health `None`; changes `1`; defects `0`; LOC `65`
-- `desktop_runtime_compat_v1.py` — Code Health `None`; changes `5`; defects `0`; LOC `262`
-- `3e554771641bd6208cd763c6ee6aa12a06ad858a52d7430cd43571fa9cde068d.js` — Code Health `None`; changes `1`; defects `0`; LOC `559`
-- `ctgmovies--nuvio--ac92f41c27a6e922.js` — Code Health `None`; changes `1`; defects `0`; LOC `6`
-- `tmdb-metadata.mjs` — Code Health `None`; changes `1`; defects `0`; LOC `123`
-- `allwish.js` — Code Health `None`; changes `1`; defects `0`; LOC `1`
-- `hls_playback_integrity_test.py` — Code Health `None`; changes `5`; defects `0`; LOC `116`
-- `4khdhubnew--nuvio-audit-quarantine--7947316d3cbed215.js` — Code Health `None`; changes `1`; defects `0`; LOC `1`
-- `build-historical-learning.mjs` — Code Health `None`; changes `3`; defects `0`; LOC `306`
-- `667e5fba43cdd8840b4625ce13ae71cd2d4bdea3d668297a5a845c21b0e0399f.js` — Code Health `None`; changes `1`; defects `0`; LOC `40`
-- `dulourd--published-baseline--ba6600a0b792d09f.js` — Code Health `None`; changes `2`; defects `0`; LOC `6`
-- `89d80b0ac5aac7e946680f35f3fa7ba4859e2a9e9ab42ef8a811b51518e63cac.js` — Code Health `None`; changes `1`; defects `0`; LOC `1`
-- `test_adaptive_global_provider_repair.py` — Code Health `None`; changes `1`; defects `0`; LOC `27`
-- `resolve_provider_hub_search_fallback.py` — Code Health `None`; changes `1`; defects `0`; LOC `163`
-- `augment_native_corpus_request_contract.py` — Code Health `None`; changes `1`; defects `0`; LOC `141`
-- `dooflix--published-baseline--7e568e3bdfff7f79.js` — Code Health `None`; changes `1`; defects `0`; LOC `6`
-- `nuvio_tv_target_media_v5.py` — Code Health `None`; changes `2`; defects `0`; LOC `204`
-- `bb241938cc73484976226c98bf2412cc53ab5205843627e6bb3fa7eaa73e61d4.js` — Code Health `None`; changes `1`; defects `0`; LOC `1`
-- `ingest-provider-upstreams.mjs` — Code Health `None`; changes `2`; defects `0`; LOC `106`
-- `general_manifest_runtime_profiles_test.py` — Code Health `None`; changes `9`; defects `0`; LOC `87`
-- `vidnest--nuvio--98ba2ea849699870.js` — Code Health `None`; changes `1`; defects `0`; LOC `67`
-- `castle--nuvio--07233e264382c093.js` — Code Health `None`; changes `1`; defects `0`; LOC `8`
-- `d3b04a5ee1a13fed77192b5226d46001508fe321fa747f0c519d0c23d5b1a974.js` — Code Health `None`; changes `1`; defects `0`; LOC `1`
-- `expose_strict_wrapper_original.py` — Code Health `None`; changes `1`; defects `0`; LOC `22`
-- `onlykdrama--nuvio--ab026578ec82b558.js` — Code Health `None`; changes `1`; defects `0`; LOC `8`
-- `native_hls_integrity_budget_test.py` — Code Health `None`; changes `2`; defects `0`; LOC `38`
-- `647edc750491af2165d0d8ab9d49e799c87e5d6e7571728e63582936589562a8.js` — Code Health `None`; changes `1`; defects `0`; LOC `1`
-- `global_stream_identity_test.py` — Code Health `None`; changes `2`; defects `0`; LOC `142`
-- `34adb013fbac73ba3688f9bcc93e6418e28aeda1433dd04eb50cdec9cb6a82c8.js` — Code Health `None`; changes `1`; defects `0`; LOC `1`
-- `resolver-core.mjs` — Code Health `None`; changes `3`; defects `0`; LOC `238`
-- `recipe-memory.test.mjs` — Code Health `None`; changes `2`; defects `0`; LOC `33`
-- `test_targeted_vf_repair.py` — Code Health `None`; changes `1`; defects `0`; LOC `48`
-- `9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js` — Code Health `None`; changes `1`; defects `0`; LOC `828`
-- `full_provider_portfolio_audit_test.py` — Code Health `None`; changes `1`; defects `0`; LOC `121`
-- `run_adaptive_quick_repair.py` — Code Health `None`; changes `8`; defects `0`; LOC `339`
-- `streamzo_native_platform_contract_test.py` — Code Health `None`; changes `4`; defects `0`; LOC `26`
-- `65e7dabe9629f1185c046e156941f6cf05312e9c52996c70c24a6b6ddc075a9c.js` — Code Health `None`; changes `2`; defects `0`; LOC `428`
-- `frenchstream_raw_tv_fallback.py` — Code Health `None`; changes `1`; defects `0`; LOC `27`
-- `4c2f6637886f64ebf5de1bf26ac51d947640b196122207edc561e515d57370f4.js` — Code Health `None`; changes `1`; defects `0`; LOC `40`
-- `repository_hygiene_contract_test.py` — Code Health `None`; changes `7`; defects `0`; LOC `91`
-- `papadustream--published-baseline--2ad9117d7ef6efef.js` — Code Health `None`; changes `2`; defects `0`; LOC `7`
-- `provider_priority_test.py` — Code Health `None`; changes `1`; defects `0`; LOC `9`
-- `brain_cron_full_coverage_test.py` — Code Health `None`; changes `2`; defects `0`; LOC `132`
-- `restore_provider_type_policy.py` — Code Health `None`; changes `1`; defects `0`; LOC `112`
-- `movieshunt.js` — Code Health `None`; changes `1`; defects `0`; LOC `1`
-- `tv_provider_hardening_test.py` — Code Health `None`; changes `8`; defects `0`; LOC `153`
-- `native_player_diagnostics_codegen.py` — Code Health `None`; changes `1`; defects `0`; LOC `262`
-- `mobile_vf_runtime_probe.mjs` — Code Health `None`; changes `2`; defects `0`; LOC `252`
-- `native_evidence_codegen_pipeline_test.py` — Code Health `None`; changes `1`; defects `0`; LOC `153`
-- `purify_native_reader_repair.py` — Code Health `None`; changes `1`; defects `0`; LOC `88`
-- `recover_nuvio_regressions.py` — Code Health `None`; changes `1`; defects `0`; LOC `279`
-- `moviesmod--published-baseline--fc900c3385feff74.js` — Code Health `None`; changes `1`; defects `0`; LOC `120`
-- `provider_security_hardening_test.py` — Code Health `None`; changes `6`; defects `0`; LOC `171`
-- `25135c174b05435d6dc8fe5216eb78b836150646ed15a7da65e8e85d70bd1c98.js` — Code Health `None`; changes `1`; defects `0`; LOC `388`
-- `e8d286f2035eba8d57b2b73c863c2cd5a412ffa8157a2b5adbcc0a84b6cd4d24.js` — Code Health `None`; changes `1`; defects `0`; LOC `40`
-- `a78fcf9d8e5c807ad87992943a373d63380a94d9e1dc3ef98b855fc0edc2b360.js` — Code Health `None`; changes `1`; defects `0`; LOC `40`
-- `validate_nuvio_tv_runtime_policy.py` — Code Health `None`; changes `8`; defects `0`; LOC `216`
-- `animesultra.js` — Code Health `None`; changes `1`; defects `0`; LOC `40`
-- `reapply_adaptive_runtime_revision_test.py` — Code Health `None`; changes `2`; defects `0`; LOC `25`
-- `animesultra--published-baseline--7e81bf8966c61069.js` — Code Health `None`; changes `2`; defects `0`; LOC `6`
-- `persianstremio--nuvio--eb27e60141a40d46.js` — Code Health `None`; changes `1`; defects `0`; LOC `6`
-- `81b0afffb337390782cace12c5d657c6aa42765d05f5da986022284a99bafb98.js` — Code Health `None`; changes `1`; defects `0`; LOC `1`
-- `release_hash_scope_test.py` — Code Health `None`; changes `9`; defects `0`; LOC `64`
-- `desiflix--nuvio--1a9878e6b9328c79.js` — Code Health `None`; changes `1`; defects `0`; LOC `8`
-- `repair-brain.mjs` — Code Health `None`; changes `6`; defects `0`; LOC `187`
-- `nuvio_tv_direct_media_v2.py` — Code Health `None`; changes `3`; defects `0`; LOC `70`
-- `5cc8283a945c663ea55e049931f22c3f9afdeb3ff38e564899dc5359d40600c1.js` — Code Health `None`; changes `1`; defects `0`; LOC `1`
-- `global_catalogue_alias_recovery_v2.py` — Code Health `None`; changes `5`; defects `0`; LOC `98`
-- `provider_compiled_manifest.py` — Code Health `None`; changes `1`; defects `0`; LOC `105`
-- `build-provider-knowledge.mjs` — Code Health `None`; changes `1`; defects `0`; LOC `97`
-- `nuvio_client_upstream_drift_guard_test.py` — Code Health `None`; changes `8`; defects `0`; LOC `305`
-- `f807e7dfaac61d41fcaf837f34b5f65e2bfffc0dc18baf61ca22dffb43f6c9d8.js` — Code Health `None`; changes `1`; defects `0`; LOC `40`
-- `42ace3856f73576f8006045462acfed03e91d6e9b244153d5146168aa7441081.js` — Code Health `None`; changes `1`; defects `0`; LOC `40`
-- `check_nuvio_client_upstreams.py` — Code Health `None`; changes `5`; defects `0`; LOC `545`
-- `global_provider_security_hardening_v1.py` — Code Health `None`; changes `4`; defects `0`; LOC `48`
-- `runtime_repair.py` — Code Health `None`; changes `5`; defects `0`; LOC `349`
-- `11124b38985b9780ad49e040b5d30a7143bc9541e27c7e314e70d9778a227af9.js` — Code Health `None`; changes `1`; defects `0`; LOC `1`
-- `learning-lab.mjs` — Code Health `None`; changes `3`; defects `0`; LOC `307`
-- `provider_branding_contract_test.py` — Code Health `None`; changes `2`; defects `0`; LOC `72`
-- `moviebox.js` — Code Health `None`; changes `1`; defects `0`; LOC `1`
-- `finalize_native_tv_test_entrypoint.py` — Code Health `None`; changes `1`; defects `0`; LOC `77`
-- `edbd55715d44e088dfd2079a02d63adb4c923f68498d16c2b1a0614c2f854d88.js` — Code Health `None`; changes `1`; defects `0`; LOC `40`
-- `0641a31d6068d8d2f3e5ca5d734494b24f69b89d6a5d027ae1a7b5eee1953d1a.js` — Code Health `None`; changes `1`; defects `0`; LOC `1`
-- `1b23fb0b7740e707fb2e3c5f6f69ca51c4bb4fc6afc8f1ae851af22e3f66bb89.js` — Code Health `None`; changes `1`; defects `0`; LOC `1`
-- `d6b79c8d8e8e19d4362d33cdd8a9107e425ce1eeefb55b56f8ec8b961126e09f.js` — Code Health `None`; changes `1`; defects `0`; LOC `305`
-- `provider_diagnostics_test.py` — Code Health `None`; changes `5`; defects `0`; LOC `47`
-- `core_terminal_export_floor_test.py` — Code Health `None`; changes `10`; defects `0`; LOC `233`
-- `global_stream_facts_v1.py` — Code Health `None`; changes `1`; defects `0`; LOC `35`
-- `cinemm--published-baseline--09bbc907f9a99fc0.js` — Code Health `None`; changes `1`; defects `0`; LOC `7`
-- `cinefreak--nuvio-audit-quarantine--7947316d3cbed215.js` — Code Health `None`; changes `1`; defects `0`; LOC `1`
-- `apply_live_safety_repair.py` — Code Health `None`; changes `1`; defects `0`; LOC `323`
-- `streamflix--published-baseline--b30cc507d5f1cc6a.js` — Code Health `None`; changes `1`; defects `0`; LOC `6`
-- `diagnose-native-reader.mjs` — Code Health `None`; changes `1`; defects `0`; LOC `478`
-- `vixsrc--nuvio--63d048b9551c8e82.js` — Code Health `None`; changes `1`; defects `0`; LOC `2`
-- `sync_atomic_publication_test.py` — Code Health `None`; changes `6`; defects `0`; LOC `36`
-- `aggregate_archi2_ab_reports.py` — Code Health `None`; changes `1`; defects `0`; LOC `94`
-- `29128d8b2dac99a3ae3ff8e771ccbe14598efab021981b02867c7f3f7fc0e6c4.js` — Code Health `None`; changes `1`; defects `0`; LOC `1`
-- `streamzo_source_identity_v3.py` — Code Health `None`; changes `1`; defects `0`; LOC `41`
-- `mallumv--nuvio--d24f0f13c3076da5.js` — Code Health `None`; changes `3`; defects `0`; LOC `92`
-- `vidnest.js` — Code Health `None`; changes `1`; defects `0`; LOC `388`
-- `brain_repair_runtime.py` — Code Health `None`; changes `4`; defects `0`; LOC `409`
-- `harden_staged_provider_security.py` — Code Health `None`; changes `1`; defects `0`; LOC `127`
-- `0b4533ed32c82b28813b97fe9deb44d97d1f1884adf1a8208d231967347ae3ce.js` — Code Health `None`; changes `2`; defects `0`; LOC `1`
-- `goated--nuvio--90b365f09b3494cb.js` — Code Health `None`; changes `1`; defects `0`; LOC `8`
-- `0dbdc78b24804babc29f0674da00a46e7b7915ebb5278d58790439d4ba03690b.js` — Code Health `None`; changes `1`; defects `0`; LOC `352`
-- `global_stream_presentation_pipeline_test.py` — Code Health `None`; changes `1`; defects `0`; LOC `36`
-- `vidnest-anime--nuvio--21c00c7ea7b8c39f.js` — Code Health `None`; changes `1`; defects `0`; LOC `6`
-- `a9e7deb56fd5b3c93458e01fe7d32a764ee1defe3e88759dcb68f448006ded31.js` — Code Health `None`; changes `1`; defects `0`; LOC `404`
-- `generate_diagnostics.py` — Code Health `None`; changes `3`; defects `0`; LOC `158`
-- `render-manifests-from-catalog.mjs` — Code Health `None`; changes `1`; defects `0`; LOC `17`
-- `46e83c8d710830679b7f17eacb03e014fc4195237cd423fe63254862549f24ff.js` — Code Health `None`; changes `1`; defects `0`; LOC `1`
-- `metadata_context_recovery.py` — Code Health `None`; changes `1`; defects `0`; LOC `120`
-- `netmirror--published-baseline--b2d283c572efdfb0.js` — Code Health `None`; changes `1`; defects `0`; LOC `3`
-- `mugiwarastream--nuvio--4b18fcabe65da565.js` — Code Health `None`; changes `3`; defects `0`; LOC `6`
-- `hdghartv--nuvio--a0a7ce92b1f31dc6.js` — Code Health `None`; changes `1`; defects `0`; LOC `34`
-- `build_brain_repair_proposal.py` — Code Health `None`; changes `2`; defects `0`; LOC `199`
-- `animezey_stream_host_v1_test.py` — Code Health `None`; changes `1`; defects `0`; LOC `10`
-- `f19ec5a037e53220e1457e6db0cb9abee1d2f9f299c594dddefb14df7822c847.js` — Code Health `None`; changes `1`; defects `0`; LOC `1`
-- `provider_catalogue_breadth_test.py` — Code Health `None`; changes `2`; defects `0`; LOC `73`
-- `e64aea603b3c3786a9f03e2a7b5dbee7e5666918a0ad606aeec87469ffafc4ec.js` — Code Health `None`; changes `1`; defects `0`; LOC `1`
-- `native_reader_runtime_bootstrap_test.py` — Code Health `None`; changes `1`; defects `0`; LOC `131`
-- `wookafr--nuvio--54cf1e436bd79660.js` — Code Health `None`; changes `2`; defects `0`; LOC `45`
-- `allmovieland--published-baseline--6d16963ec1e0815b.js` — Code Health `None`; changes `1`; defects `0`; LOC `119`
-- `configure_native_android_lab_transport.py` — Code Health `None`; changes `1`; defects `0`; LOC `62`
-- `6796beaa02d57e69cb033eec47a14a3b74782a0d08bcfd260421f10d4041392e.js` — Code Health `None`; changes `1`; defects `0`; LOC `1`
-- `normalize_stream_presentation_v11.py` — Code Health `None`; changes `1`; defects `0`; LOC `210`
-- `native_evidence_contract_test.py` — Code Health `None`; changes `1`; defects `0`; LOC `210`
-- `apply_native_hls_integrity_budget_upgrade_v1.py` — Code Health `None`; changes `1`; defects `0`; LOC `60`
-- `cleanup_nuvio_recovery.py` — Code Health `None`; changes `1`; defects `0`; LOC `33`
-- `purify-provider.mjs` — Code Health `None`; changes `8`; defects `0`; LOC `122`
-- `d2b77225d84c2929f5a4f1c90f1de3b43f45628c70543df2451f21d7c87cc6bd.js` — Code Health `None`; changes `2`; defects `0`; LOC `646`
-- `vostfree--published-baseline--d33e42b147e5400e.js` — Code Health `None`; changes `2`; defects `0`; LOC `6`
-- `validate_override_pipeline.py` — Code Health `None`; changes `6`; defects `0`; LOC `160`
-- `discover_candidates.py` — Code Health `None`; changes `5`; defects `0`; LOC `436`
-- `nuvio_tv_test_bootstrap.py` — Code Health `None`; changes `1`; defects `0`; LOC `3`
-- `videasy--nuvio--0cb553fe39423d9a.js` — Code Health `None`; changes `1`; defects `0`; LOC `69`
-- `repair_identity_gate_test.py` — Code Health `None`; changes `2`; defects `0`; LOC `56`
-- `promote_target_media_v3.py` — Code Health `None`; changes `2`; defects `0`; LOC `260`
-- `stream_output_recovery.py` — Code Health `None`; changes `1`; defects `0`; LOC `34`
-- `global_provider_policy_test.py` — Code Health `None`; changes `6`; defects `0`; LOC `74`
-- `reapply_provider_versioning_test.py` — Code Health `None`; changes `4`; defects `0`; LOC `34`
-- `publish_desktop_runtime_compat.py` — Code Health `None`; changes `6`; defects `0`; LOC `292`
-- `direct_media_dimensions_test.py` — Code Health `None`; changes `2`; defects `0`; LOC `25`
-- `purstream--nuvio--a28c9c80256074a4.js` — Code Health `None`; changes `1`; defects `0`; LOC `8`
-- `compare_native_reader_brain_repair.py` — Code Health `None`; changes `1`; defects `0`; LOC `120`
-- `classify_native_reader_ownership.py` — Code Health `None`; changes `1`; defects `0`; LOC `171`
-- `vostfree.js` — Code Health `None`; changes `1`; defects `0`; LOC `40`
-- `domain-discovery.test.mjs` — Code Health `None`; changes `2`; defects `0`; LOC `44`
-- `validate_release_integrity.py` — Code Health `None`; changes `3`; defects `0`; LOC `139`
-- `nuvio_tv_playable_first_v1.py` — Code Health `None`; changes `3`; defects `0`; LOC `60`
-- `prepare_retry_targets.py` — Code Health `None`; changes `1`; defects `0`; LOC `59`
-- `contracts.test.mjs` — Code Health `None`; changes `2`; defects `0`; LOC `124`
-- `8fc6c9c3b021df2df2430dbd2559aece034cea02c5f0f9d4d514eebbb394584c.js` — Code Health `None`; changes `1`; defects `0`; LOC `241`
-- `instrument_native_repository_http_evidence.py` — Code Health `None`; changes `1`; defects `0`; LOC `26`
-- `provider-ingest.test.mjs` — Code Health `None`; changes `1`; defects `0`; LOC `61`
-- `lkg_regression_policy_test.py` — Code Health `None`; changes `2`; defects `0`; LOC `13`
-- `stream_output_sanitizer_v5.py` — Code Health `None`; changes `4`; defects `0`; LOC `288`
-- `vf_catalogue_recovery.py` — Code Health `None`; changes `4`; defects `0`; LOC `262`
-- `d1b156dffd03425f57e3ac042ddadf05edc56d834be0134a013abf8e54b9bf9b.js` — Code Health `None`; changes `1`; defects `0`; LOC `256`
-- `nuvio_activation_refresh_test.py` — Code Health `None`; changes `1`; defects `0`; LOC `59`
-- `validate_deep_evidence_integrity.py` — Code Health `None`; changes `1`; defects `0`; LOC `80`
-- `upstream_lkg.py` — Code Health `None`; changes `1`; defects `0`; LOC `197`
-- `nuvio_lab_head_resolver_test.py` — Code Health `None`; changes `2`; defects `0`; LOC `81`
-- `validate_automatic_repair_results.py` — Code Health `None`; changes `2`; defects `0`; LOC `72`
-- `refresh_manifest_finalization_test.py` — Code Health `None`; changes `5`; defects `0`; LOC `149`
-- `playimdb--nuvio--aaecc853df5fb5a8.js` — Code Health `None`; changes `1`; defects `0`; LOC `6`
-- `nuvio_tv_target_media_v3.py` — Code Health `None`; changes `1`; defects `0`; LOC `58`
-- `native_catalogue_recovery_budget_v1.py` — Code Health `None`; changes `3`; defects `0`; LOC `82`
-- `ci_preservation_policy_test.py` — Code Health `None`; changes `9`; defects `0`; LOC `288`
-- `hls_runtime_integrity_v1.py` — Code Health `None`; changes `8`; defects `0`; LOC `323`
-- `2691befa44f5d8d8f30c1711021a9fb0fdfe09a90f5640dd97ede5670f3dca5a.js` — Code Health `None`; changes `1`; defects `0`; LOC `1`
-- `migrate_direct_media_dimensions_v1.py` — Code Health `None`; changes `2`; defects `0`; LOC `129`
-- `1shows--nuvio-audit-quarantine--7947316d3cbed215.js` — Code Health `None`; changes `1`; defects `0`; LOC `1`
-- `brain_repair_runtime.py` — Code Health `None`; changes `1`; defects `0`; LOC `127`
-- `provider-catalog.mjs` — Code Health `None`; changes `3`; defects `0`; LOC `196`
-- `vidlink.js` — Code Health `None`; changes `1`; defects `0`; LOC `1`
-- `provider_export_floor_portfolio_test.py` — Code Health `None`; changes `6`; defects `0`; LOC `173`
-- `validate_activation_preservation.py` — Code Health `None`; changes `7`; defects `0`; LOC `349`
-- `87a896138f1da5cc7459f5255161d8dae69fd67aef1c88d4ba62617d5ac584e7.js` — Code Health `None`; changes `1`; defects `0`; LOC `40`
-- `overrides_test.py` — Code Health `None`; changes `23`; defects `0`; LOC `150`
-- `streamzo_public_catalogue.py` — Code Health `None`; changes `2`; defects `0`; LOC `38`
-- `nuvio_client_activation_ids.py` — Code Health `None`; changes `7`; defects `0`; LOC `143`
-- `cinevibe.js` — Code Health `None`; changes `1`; defects `0`; LOC `308`
-- `kurage--nuvio--6543d20fdea5148a.js` — Code Health `None`; changes `1`; defects `0`; LOC `7`
-- `migrate_matroska_metadata_v1.py` — Code Health `None`; changes `1`; defects `0`; LOC `167`
-- `provider_purification_contract_test.py` — Code Health `None`; changes `10`; defects `0`; LOC `176`
-- `voiranime--nuvio--3d53c7be817311cc.js` — Code Health `None`; changes `3`; defects `0`; LOC `6`
-- `283284e818443cd3ef98ca58aaf0b2c594ecd61219881cb2561baf6c37e545e9.js` — Code Health `None`; changes `1`; defects `0`; LOC `1`
-- `update_availability_report.py` — Code Health `None`; changes `1`; defects `0`; LOC `161`
-- `opaque_native_media_enrichment_test.py` — Code Health `None`; changes `1`; defects `0`; LOC `77`
-- `tv_regression_matrix.py` — Code Health `None`; changes `2`; defects `0`; LOC `242`
-- `native_corpus_transport_capability_test.py` — Code Health `None`; changes `1`; defects `0`; LOC `53`
-- `build_provider_runtime_profiles.py` — Code Health `None`; changes `9`; defects `0`; LOC `262`
-- `instrument_native_client_evidence.py` — Code Health `None`; changes `1`; defects `0`; LOC `26`
-- `hdhub4u--published-baseline--d16a6b090e2d03a0.js` — Code Health `None`; changes `2`; defects `0`; LOC `69`
-- `native_reader_ownership_policy_test.py` — Code Health `None`; changes `1`; defects `0`; LOC `97`
-- `9d8e329755b00a42b1c05cd06a764a2993e1874f67b3b4e2a96b25894d62ceba.js` — Code Health `None`; changes `1`; defects `0`; LOC `1`
-- `validate-stage-against-catalog.mjs` — Code Health `None`; changes `1`; defects `0`; LOC `52`
-- `french-manga--nuvio--704ee4a3c3ed1713.js` — Code Health `None`; changes `2`; defects `0`; LOC `8`
-- `coflix--nuvio--8e68a045b7688c8d.js` — Code Health `None`; changes `2`; defects `0`; LOC `47`
-- `global_stream_identity_v1.py` — Code Health `None`; changes `1`; defects `0`; LOC `71`
-- `toflix_explicit_vf_v1.py` — Code Health `None`; changes `2`; defects `0`; LOC `34`
-- `tv_build_candidate_bundles.py` — Code Health `None`; changes `3`; defects `0`; LOC `70`
-- `provider_quarantine_test.py` — Code Health `None`; changes `4`; defects `0`; LOC `45`
-- `build_nuvio_client_lab_matrix.py` — Code Health `None`; changes `1`; defects `0`; LOC `56`
-- `update_provider_device_results.py` — Code Health `None`; changes `5`; defects `0`; LOC `409`
-- `catalogue_audit_transient_hls_test.py` — Code Health `None`; changes `1`; defects `0`; LOC `23`
-- `desktop_runtime_compat_test.py` — Code Health `None`; changes `3`; defects `0`; LOC `70`
-- `normalize_fusion_badge_feed.py` — Code Health `None`; changes `1`; defects `0`; LOC `82`
-- `apply_runtime_capability_upgrade_v4.py` — Code Health `None`; changes `7`; defects `0`; LOC `118`
-- `deep_repair_loop.py` — Code Health `None`; changes `5`; defects `0`; LOC `361`
-- `stream_output_sanitizer_direct_normalization_test.py` — Code Health `None`; changes `3`; defects `0`; LOC `126`
-- `deep_repair_rollback_test.py` — Code Health `None`; changes `6`; defects `0`; LOC `49`
-- `materialize_core_fixed_point_hardening.py` — Code Health `None`; changes `2`; defects `0`; LOC `49`
-- `8acb890bad4a1d442b8d358019aff908aa3f1ad9f5d947a7666f0d1f7bbcaed3.js` — Code Health `None`; changes `1`; defects `0`; LOC `40`
-- `native_sync_fetch_target_order_v1.py` — Code Health `None`; changes `2`; defects `0`; LOC `62`
-- `provider_evidence_model.py` — Code Health `None`; changes `2`; defects `0`; LOC `52`
-- `terser-clean.mjs` — Code Health `None`; changes `4`; defects `0`; LOC `73`
-- `targeted_manifest_staging_test.py` — Code Health `None`; changes `1`; defects `0`; LOC `41`
-- `runtime-adapters.test.mjs` — Code Health `None`; changes `1`; defects `0`; LOC `27`
-- `validate_deep_health_integrity.py` — Code Health `None`; changes `3`; defects `0`; LOC `130`
-- `repair_profile_persistence.py` — Code Health `None`; changes `1`; defects `0`; LOC `24`
-- `toflix.js` — Code Health `None`; changes `1`; defects `0`; LOC `1`
-- `movix_multi_source.py` — Code Health `None`; changes `2`; defects `0`; LOC `12`
-- `adaptive_extension_media_proof_test.py` — Code Health `None`; changes `2`; defects `0`; LOC `70`
-- `uhdmovies--nuvio--739ddfc148e800ea.js` — Code Health `None`; changes `1`; defects `0`; LOC `69`
-- `69b4277574bf29bd898305b9043988f725ad30914e86a803c1d951ac4e556e6b.js` — Code Health `None`; changes `2`; defects `0`; LOC `1`
-- `00389aa68899e4924186a24741e3b0a00cebb12486bf3e91fda6ff47311ae8ea.js` — Code Health `None`; changes `1`; defects `0`; LOC `444`
-- `merge_native_reader_learning_failures.py` — Code Health `None`; changes `2`; defects `0`; LOC `197`
-- `native_reader_gate_test.py` — Code Health `None`; changes `1`; defects `0`; LOC `40`
-- `tv_hls_duration_identity.py` — Code Health `None`; changes `1`; defects `0`; LOC `94`
-- `243edd8c76b0995a72e02ba6ff7ca47add6063b1d471ebe378d3d6842bd8cadb.js` — Code Health `None`; changes `1`; defects `0`; LOC `1`
-- `release_evidence_fence.py` — Code Health `None`; changes `1`; defects `0`; LOC `89`
-- `910588acb9a44abb569391dc61643aead09fef349f00887740bb9fa5889bd36e.js` — Code Health `None`; changes `1`; defects `0`; LOC `382`
-- `native_android_lab_transport_test.py` — Code Health `None`; changes `1`; defects `0`; LOC `70`
-- `global_stream_presentation_v1.py` — Code Health `None`; changes `2`; defects `0`; LOC `96`
-- `0a32e94f712ecb4baf1d71869f41658ae43196447220434ba692e1d990237132.js` — Code Health `None`; changes `1`; defects `0`; LOC `15`
-- `native_reader_runtime_scope_test.py` — Code Health `None`; changes `1`; defects `0`; LOC `83`
-- `runtime_repair.py` — Code Health `None`; changes `10`; defects `0`; LOC `336`
-- `media_duration_identity_test.py` — Code Health `None`; changes `2`; defects `0`; LOC `127`
-- `purstream-adapter.test.mjs` — Code Health `None`; changes `1`; defects `0`; LOC `86`
-- `anime-sama--nuvio--1534014f7ac87d40.js` — Code Health `None`; changes `2`; defects `0`; LOC `43`
-- `recipe-memory.mjs` — Code Health `None`; changes `2`; defects `0`; LOC `133`
-- `provider-ingest.mjs` — Code Health `None`; changes `1`; defects `0`; LOC `111`
-- `6ca973dc475e0dc633d5654a139e1aa3a961ad3f3381cf9d09372a611a7dfa8b.js` — Code Health `None`; changes `1`; defects `0`; LOC `41`
-- `provider_activation_override_normalization_test.py` — Code Health `None`; changes `1`; defects `0`; LOC `43`
-- `anime-ultime--nuvio--d1ff8e6c7dddda0f.js` — Code Health `None`; changes `3`; defects `0`; LOC `6`
-- `vidnest-anime.js` — Code Health `None`; changes `1`; defects `0`; LOC `421`
-- `promote_target_media_v4.py` — Code Health `None`; changes `1`; defects `0`; LOC `91`
-- `cineby.js` — Code Health `None`; changes `1`; defects `0`; LOC `1`
-- `purstream.js` — Code Health `None`; changes `1`; defects `0`; LOC `1`
-- `streamzo--nuvio--2dbca5c2f8ff75d3.js` — Code Health `None`; changes `3`; defects `0`; LOC `12`
-- `7613343c5da60daeafe3be8882b3a7636c0ff4db3e62f22831a715f0d01e7b27.js` — Code Health `None`; changes `1`; defects `0`; LOC `421`
-- `prepare_native_corpus_validation.py` — Code Health `None`; changes `2`; defects `0`; LOC `425`
-- `sync_release_versions.py` — Code Health `None`; changes `6`; defects `0`; LOC `250`
-- `restage_native_corpus_fixture.py` — Code Health `None`; changes `1`; defects `0`; LOC `43`
-- `04c8664fd3977a3279fc262be15e2dde88b409e79eb27cc2ae0d1c0b1056b7f9.js` — Code Health `None`; changes `1`; defects `0`; LOC `1`
-- `quick_refresh_policy_test.py` — Code Health `None`; changes `6`; defects `0`; LOC `108`
-- `normalize_hls_override_policy.py` — Code Health `None`; changes `1`; defects `0`; LOC `81`
-- `264b604bab0dedf5f1b50cd0b165ecb50fffb516c6cb8eca50ba07c0bcbec995.js` — Code Health `None`; changes `1`; defects `0`; LOC `40`
-- `native-reader-brain-v4.test.mjs` — Code Health `None`; changes `1`; defects `0`; LOC `26`
-- `native_client_test_bootstrap.py` — Code Health `None`; changes `1`; defects `0`; LOC `101`
-- `nuvio_tv_target_media_v4.py` — Code Health `None`; changes `5`; defects `0`; LOC `18`
-- `adaptive_safe_structured_parse_profile_test.py` — Code Health `None`; changes `1`; defects `0`; LOC `71`
-- `provider-analysis.mjs` — Code Health `None`; changes `2`; defects `0`; LOC `168`
-- `override_net_noop_regression_test.py` — Code Health `None`; changes `3`; defects `0`; LOC `54`
-- `422d7f2fc6c51ea3d4f77596382cd817b1d482997c46ff7509b6ce11b205404d.js` — Code Health `None`; changes `1`; defects `0`; LOC `1`
-- `provider_security_hardening.py` — Code Health `None`; changes `5`; defects `0`; LOC `325`
-- `8fb7fbc12e23d28185927a5a7f47fa65874ff0d1b1f3e01f4dbf9813c4fc7862.js` — Code Health `None`; changes `1`; defects `0`; LOC `1`
-- `language_manifest_metadata_consistency_test.py` — Code Health `None`; changes `1`; defects `0`; LOC `35`
-- `validate_policy.py` — Code Health `None`; changes `5`; defects `0`; LOC `532`
-- `bootstrap-provider-catalog.mjs` — Code Health `None`; changes `3`; defects `0`; LOC `37`
-- `validate_platform_runtime_policy.py` — Code Health `None`; changes `4`; defects `0`; LOC `186`
-- `movieblast--nuvio--013cf11bf5416d1d.js` — Code Health `None`; changes `1`; defects `0`; LOC `7`
-- `0e28c37dfc872ff53b807b22053d3a58a5d0bd97f9a2dd6f1d15e8fd1d20c34f.js` — Code Health `None`; changes `1`; defects `0`; LOC `40`
-- `cbf14d7c8fe2e76ed4aabc6a0dfa3677e3c0059fe6f6b1ac8d600065a7f4c359.js` — Code Health `None`; changes `1`; defects `0`; LOC `40`
-- `papadustream_anime_tv_v1.py` — Code Health `None`; changes `1`; defects `0`; LOC `42`
-- `publish_cross_platform_runtime_policy.py` — Code Health `None`; changes `5`; defects `0`; LOC `159`
-- `30c207564c1b85bc0fd01bfc9a4741727593c535b9b13c2702b2c0453326b8f8.js` — Code Health `None`; changes `1`; defects `0`; LOC `289`
-- `5989f97be6cce82a382e7dc29b8bc8e4c0441146fb994cf1950607fe5cae8bce.js` — Code Health `None`; changes `1`; defects `0`; LOC `1`
-- `scoped_playback_context_regression_test.py` — Code Health `None`; changes `3`; defects `0`; LOC `91`
-- `publish_nuvio_tv_compat_v2.py` — Code Health `None`; changes `2`; defects `0`; LOC `225`
-- `native_reader_backlog_test.py` — Code Health `None`; changes `1`; defects `0`; LOC `198`
-- `native_sync_fetch_target_order_test.py` — Code Health `None`; changes `3`; defects `0`; LOC `149`
-- `vf_catalogue_identity_hardening_test.py` — Code Health `None`; changes `1`; defects `0`; LOC `32`
-- `streamzo_source_identity_v2.py` — Code Health `None`; changes `1`; defects `0`; LOC `40`
-- `validate_settings_pipeline.py` — Code Health `None`; changes `3`; defects `0`; LOC `46`
-- `activation_preservation_core_rehash_test.py` — Code Health `None`; changes `1`; defects `0`; LOC `105`
-- `25fb224e2ac0575055aca1dfce4263bc069780b99d86433692f770289971c3ce.js` — Code Health `None`; changes `6`; defects `0`; LOC `1`
-- `vixsrc.js` — Code Health `None`; changes `1`; defects `0`; LOC `1`
-- `prune_unreferenced_providers.py` — Code Health `None`; changes `5`; defects `0`; LOC `139`
-- `5b3d2c649dc4b5c223e70dd0e0d74fb544f15f99019864d44502dded2c6928d4.js` — Code Health `None`; changes `1`; defects `0`; LOC `470`
-- `adaptive_runtime_recovery_v4.py` — Code Health `None`; changes `3`; defects `0`; LOC `90`
-- `quick_repair_acceptance_policy_test.py` — Code Health `None`; changes `1`; defects `0`; LOC `60`
-- `native_corpus_collector_assertion_test.py` — Code Health `None`; changes `1`; defects `0`; LOC `46`
-- `d93b33e3999ffb1e5dca8fff16f9208e987b8b2b7470fe7d66d451bd9388d26c.js` — Code Health `None`; changes `1`; defects `0`; LOC `40`
-- `hianime.js` — Code Health `None`; changes `1`; defects `0`; LOC `1`
-- `targeted_vf_repair_config_test.py` — Code Health `None`; changes `1`; defects `0`; LOC `15`
-- `learning-lab-memory.test.mjs` — Code Health `None`; changes `2`; defects `0`; LOC `101`
-- `stream-presentation.test.mjs` — Code Health `None`; changes `1`; defects `0`; LOC `120`
-- `b4966c7fd78842d59085fe197bc89ddbbc6c23c9a0f9c5ba6b114eedb7673f00.js` — Code Health `None`; changes `1`; defects `0`; LOC `1`
-- `promote_refresh_candidates.py` — Code Health `None`; changes `5`; defects `0`; LOC `410`
-- `validate_published_overrides.py` — Code Health `None`; changes `11`; defects `0`; LOC `240`
-- `domain_refresh_workflow_test.py` — Code Health `None`; changes `2`; defects `0`; LOC `22`
-- `published_overrides_test.py` — Code Health `None`; changes `11`; defects `0`; LOC `180`
-- `global_media_enrichment_v1.py` — Code Health `None`; changes `6`; defects `0`; LOC `169`
-- `prepare_native_reader_acceptance.py` — Code Health `None`; changes `1`; defects `0`; LOC `244`
-- `hls_master_audio_preserver_v1.py` — Code Health `None`; changes `14`; defects `0`; LOC `149`
-- `4b75a13ad9f3a9e7c067e8cbd18a66830cce4ad0d7e75ed28eca66cf1ed32b5d.js` — Code Health `None`; changes `1`; defects `0`; LOC `1`
-- `frenchstream--published-baseline--afc63f94bce386c8.js` — Code Health `None`; changes `1`; defects `0`; LOC `2`
-- `type_scoped_activation_test.py` — Code Health `None`; changes `5`; defects `0`; LOC `88`
-- `sync_catalogue_audit_gate_test.py` — Code Health `None`; changes `4`; defects `0`; LOC `89`
-- `native_repository_cache_contract_test.py` — Code Health `None`; changes `1`; defects `0`; LOC `83`
-- `kisskh--nuvio--87a7819756de4754.js` — Code Health `None`; changes `1`; defects `0`; LOC `6`
-- `apply_dns_migration_overrides.py` — Code Health `None`; changes `6`; defects `0`; LOC `167`
-- `showbox.js` — Code Health `None`; changes `1`; defects `0`; LOC `1`
-- `prepare_native_corpus_client.py` — Code Health `None`; changes `5`; defects `0`; LOC `248`
-- `movix_api_route_discovery_test.py` — Code Health `None`; changes `1`; defects `0`; LOC `48`
-- `reapply_published_overrides.py` — Code Health `None`; changes `18`; defects `0`; LOC `560`
-- `provider_versioning_test.py` — Code Health `None`; changes `1`; defects `0`; LOC `18`
-- `apply_native_catalogue_recovery_budget_upgrade_v1.py` — Code Health `None`; changes `2`; defects `0`; LOC `64`
-- `sync_curated.py` — Code Health `None`; changes `1`; defects `0`; LOC `440`
-- `5e60b3b7c16a1013c1b7d2c05ea21deae0e43977f7c29e4e36c4e4439e7a581c.js` — Code Health `None`; changes `1`; defects `0`; LOC `40`
-- `0e8ad342ffe970ea100695f521f10bdf880d869aa9228713a0848a20dc9bd412.js` — Code Health `None`; changes `1`; defects `0`; LOC `107`
-- `hdhub4u.js` — Code Health `None`; changes `1`; defects `0`; LOC `1`
-- `provider_compiler.py` — Code Health `None`; changes `3`; defects `0`; LOC `411`
-- `evidence.test.mjs` — Code Health `None`; changes `2`; defects `0`; LOC `48`
-- `showbox--nuvio--40cc30aa37186a3b.js` — Code Health `None`; changes `1`; defects `0`; LOC `7`
-- `84c238d709658061acae138864ed54a023ab9a5c458fef1466aef84a0852a802.js` — Code Health `None`; changes `1`; defects `0`; LOC `40`
-- `native-reader-diagnosis.test.mjs` — Code Health `None`; changes `1`; defects `0`; LOC `208`
-- `runtime_capability_media_safety_v4.py` — Code Health `None`; changes `5`; defects `0`; LOC `148`
-- `vidsrc.js` — Code Health `None`; changes `1`; defects `0`; LOC `1`
-- `global_playback_integrity_policy_test.py` — Code Health `None`; changes `9`; defects `0`; LOC `160`
-- `override_text_utils.py` — Code Health `None`; changes `1`; defects `0`; LOC `36`
-- `yflix--published-baseline--73c2ad08ce54c5ec.js` — Code Health `None`; changes `1`; defects `0`; LOC `6`
-- `animoflix--nuvio--e28375272adfd418.js` — Code Health `None`; changes `3`; defects `0`; LOC `6`
-- `resolve_provider_hubs.py` — Code Health `None`; changes `8`; defects `0`; LOC `972`
-- `generate_language_manifests.py` — Code Health `None`; changes `3`; defects `0`; LOC `284`
-- `validate_mobile_runtime_policy.py` — Code Health `None`; changes `2`; defects `0`; LOC `68`
-- `tv_hls_master_quality.py` — Code Health `None`; changes `1`; defects `0`; LOC `78`
-- `audit_catalogue_media.py` — Code Health `None`; changes `1`; defects `0`; LOC `38`
-- `normalize_provider_activation_overrides.py` — Code Health `None`; changes `1`; defects `0`; LOC `96`
-- `stream_output_sanitizer_reconfiguration_test.py` — Code Health `None`; changes `2`; defects `0`; LOC `39`
-- `hianime--nuvio--16f46d55f1792499.js` — Code Health `None`; changes `1`; defects `0`; LOC `7`
-- `activation_preservation_core_rehash.py` — Code Health `None`; changes `3`; defects `0`; LOC `255`
-- `vf_category_evidence_policy_test.py` — Code Health `None`; changes `1`; defects `0`; LOC `14`
-- `safe_structured_parse_skill_test.py` — Code Health `None`; changes `1`; defects `0`; LOC `38`
-- `provider_rebuild.py` — Code Health `None`; changes `1`; defects `0`; LOC `165`
-- `native_tv_route_checkpoint.py` — Code Health `None`; changes `1`; defects `0`; LOC `143`
-- `e1549e3093c7b378c12ea2227c07090f6a50376e139979446e2a96f27e3e119a.js` — Code Health `None`; changes `1`; defects `0`; LOC `308`
-- `668797edb270c5fed931b08e0c92ca6693420041838f3b8ef49e28ddb1e7e463.js` — Code Health `None`; changes `1`; defects `0`; LOC `1`
-- `manual_negative_safety_evidence_test.py` — Code Health `None`; changes `1`; defects `0`; LOC `73`
-- `repair_identity_gate.py` — Code Health `None`; changes `5`; defects `0`; LOC `87`
-- `1b6f2bfc911be7f66d813b6ee9007144b261ee8594010968bf76b0c691a1345c.js` — Code Health `None`; changes `1`; defects `0`; LOC `40`
-- `decision-engine.mjs` — Code Health `None`; changes `1`; defects `0`; LOC `76`
-- `vegamovies--nuvio--5ca48f57a1be24a4.js` — Code Health `None`; changes `2`; defects `0`; LOC `70`
-- `media-validator.test.mjs` — Code Health `None`; changes `2`; defects `0`; LOC `203`
-- `global_stream_presentation_test.py` — Code Health `None`; changes `2`; defects `0`; LOC `144`
-- `upstream_lkg_test.py` — Code Health `None`; changes `1`; defects `0`; LOC `45`
-- `workflow_security_policy_test.py` — Code Health `None`; changes `1`; defects `0`; LOC `34`
-- `goatapi--nuvio--62c60c07d77f525c.js` — Code Health `None`; changes `1`; defects `0`; LOC `7`
-- `healthy_sibling_resolution_test.py` — Code Health `None`; changes `1`; defects `0`; LOC `46`
-- `repairable_observation_statuses_test.py` — Code Health `None`; changes `2`; defects `0`; LOC `76`
-- `moonflix--nuvio--0f23f8933a15be90.js` — Code Health `None`; changes `2`; defects `0`; LOC `7`
-- `provider_wrapper_isolation_test.py` — Code Health `None`; changes `2`; defects `0`; LOC `67`
-- `watch-upstream-providers.mjs` — Code Health `None`; changes `1`; defects `0`; LOC `215`
-- `9db362a48297eabbbbbf658a2aef5ea3084a9df09c64436f5b8b36e09b576619.js` — Code Health `None`; changes `1`; defects `0`; LOC `40`
-- `bba8152dfabeba85879015ad2b313022784dcd07560d07a1b3fed152d703c4e8.js` — Code Health `None`; changes `1`; defects `0`; LOC `1`
-- `category_regression_policy_test.py` — Code Health `None`; changes `4`; defects `0`; LOC `28`
-- `evidence.mjs` — Code Health `None`; changes `2`; defects `0`; LOC `90`
-- `extract_target_provider_routes_v3.py` — Code Health `None`; changes `1`; defects `0`; LOC `81`
-- `e3a5ca37785b04610a23a44a509dabf134c9154a35dd91d3070f3766029b5792.js` — Code Health `None`; changes `1`; defects `0`; LOC `279`
-- `provider-spec-builder.test.mjs` — Code Health `None`; changes `1`; defects `0`; LOC `57`
-- `terminal_quarantine_stage_normalization_test.py` — Code Health `None`; changes `2`; defects `0`; LOC `84`
-- `audit_all_nuvio_tv_providers.py` — Code Health `None`; changes `1`; defects `0`; LOC `380`
-- `request_header_recovery.py` — Code Health `None`; changes `1`; defects `0`; LOC `79`
-- `native_tv_route_resume_test.py` — Code Health `None`; changes `2`; defects `0`; LOC `106`
-- `html_search_recovery.py` — Code Health `None`; changes `3`; defects `0`; LOC `151`
-- `coflix_exact_catalogue.py` — Code Health `None`; changes `1`; defects `0`; LOC `31`
-- `native_reader_learning_memory_test.py` — Code Health `None`; changes `1`; defects `0`; LOC `117`
-- `flemmix--nuvio--28feb933173e1d93.js` — Code Health `None`; changes `2`; defects `0`; LOC `46`
-- `global_final_wrapper_order_test.py` — Code Health `None`; changes `1`; defects `0`; LOC `50`
-- `audit_provider_catalogue_breadth.py` — Code Health `None`; changes `1`; defects `0`; LOC `394`
-- `weekly_upstream_provider_discovery_test.py` — Code Health `None`; changes `1`; defects `0`; LOC `112`
-- `03865cdddc4b4ae9e8155e1ccdf691b725ede65a9d86b3f4ca9b4943eed9d0bb.js` — Code Health `None`; changes `1`; defects `0`; LOC `1`
-- `generic_recovery_hardening_test.py` — Code Health `None`; changes `3`; defects `0`; LOC `97`
-- `73098d13964fbeca2b19a3c80782a27b08129898b8da5a82f9b8088f37168d68.js` — Code Health `None`; changes `1`; defects `0`; LOC `279`
-- `e00e7b0d65b15622e0b6bcdce3ccc92d6226853197962348ced4af47343f07ab.js` — Code Health `None`; changes `1`; defects `0`; LOC `1`
-- `normalize_runtime_domain_fixed_point.py` — Code Health `None`; changes `2`; defects `0`; LOC `311`
-- `native_sync_fetch_target_order_minified_v5.py` — Code Health `None`; changes `3`; defects `0`; LOC `46`
-- `cineby--nuvio--362be8a6f3f6d912.js` — Code Health `None`; changes `1`; defects `0`; LOC `7`
-- `8f6931a418a437f64d697f6eafdc27b8c2408cefd9accc5c7e7d9810871ed81a.js` — Code Health `None`; changes `1`; defects `0`; LOC `1`
-- `live-purstream-v2.mjs` — Code Health `None`; changes `2`; defects `0`; LOC `155`
-- `build_native_reader_retest_manifest.py` — Code Health `None`; changes `1`; defects `0`; LOC `97`
-- `waveanime--nuvio--73791b692bd0e1d9.js` — Code Health `None`; changes `3`; defects `0`; LOC `6`
-- `4khdhub--nuvio--0f6f5c2d6b7d183d.js` — Code Health `None`; changes `1`; defects `0`; LOC `9`
-- `health_check.mjs` — Code Health `None`; changes `20`; defects `0`; LOC `1798`
-- `check-nuvio-contracts.mjs` — Code Health `None`; changes `1`; defects `0`; LOC `83`
-- `animevostfr.js` — Code Health `None`; changes `1`; defects `0`; LOC `40`
-- `native_lab_observational_purity_test.py` — Code Health `None`; changes `1`; defects `0`; LOC `191`
-- `stream_output_sanitizer_v6.py` — Code Health `None`; changes `3`; defects `0`; LOC `135`
-- `normalize_terminal_quarantine_stage.py` — Code Health `None`; changes `3`; defects `0`; LOC `112`
-- `native_pr_timeout_contract_test.py` — Code Health `None`; changes `1`; defects `0`; LOC `17`
-- `zinkmovies--published-baseline--8d8ebe793ab0b274.js` — Code Health `None`; changes `1`; defects `0`; LOC `6`
-- `vidrock--nuvio--cc31f1a86b46e585.js` — Code Health `None`; changes `1`; defects `0`; LOC `7`
-- `18c3688c2dc26c877a9302916b19b0dad5537dbac06954496627907c59920b22.js` — Code Health `None`; changes `1`; defects `0`; LOC `40`
-- `release_auto_bump_test.py` — Code Health `None`; changes `2`; defects `0`; LOC `142`
-- `01be002c28d0e160b59ae64a6d27e9a6f002db14bff071b47c58c43b40f5754e.js` — Code Health `None`; changes `1`; defects `0`; LOC `41`
-- `native_player_diagnostics_codegen_test.py` — Code Health `None`; changes `2`; defects `0`; LOC `121`
-- `moviebox--published-baseline--33507d0a8889b61b.js` — Code Health `None`; changes `1`; defects `0`; LOC `3`
-- `provider-spec-builder.mjs` — Code Health `None`; changes `1`; defects `0`; LOC `119`
-- `videasy.js` — Code Health `None`; changes `1`; defects `0`; LOC `1`
-- `merge_native_reader_backlog.py` — Code Health `None`; changes `1`; defects `0`; LOC `396`
-- `sekai--nuvio-audit-quarantine--7947316d3cbed215.js` — Code Health `None`; changes `1`; defects `0`; LOC `1`
-- `plan-repairs.mjs` — Code Health `None`; changes `6`; defects `0`; LOC `339`
-- `stream_output_sanitizer.py` — Code Health `None`; changes `6`; defects `0`; LOC `258`
-- `provider_coverage_preservation_test.py` — Code Health `None`; changes `3`; defects `0`; LOC `152`
-- `ad02f9faf8385c8857123ccb2931aa171f219a43c822daef32822ce1a834dbe5.js` — Code Health `None`; changes `1`; defects `0`; LOC `1`
-- `0f9f52a4c69bebe4c843c0b3ae06a410d3688569316446f45877ad964c316499.js` — Code Health `None`; changes `1`; defects `0`; LOC `1`
-- `canonical_media_types_test.py` — Code Health `None`; changes `1`; defects `0`; LOC `129`
-- `animesama-co--nuvio--35cc3353ca8e0638.js` — Code Health `None`; changes `2`; defects `0`; LOC `6`
-- `hindmoviez--nuvio--b89e6b383aa6a823.js` — Code Health `None`; changes `1`; defects `0`; LOC `7`
-- `global_local_repair_pipeline_test.py` — Code Health `None`; changes `1`; defects `0`; LOC `26`
-- `streamzo_target_media_profile_test.py` — Code Health `None`; changes `3`; defects `0`; LOC `77`
-- `vidlove--nuvio--b83caf048087c209.js` — Code Health `None`; changes `1`; defects `0`; LOC `8`
-- `streamzo_data_embed.py` — Code Health `None`; changes `2`; defects `0`; LOC `22`
-- `prune_unreferenced_providers_test.py` — Code Health `None`; changes `6`; defects `0`; LOC `82`
-- `toflix_explicit_vf_v2.py` — Code Health `None`; changes `1`; defects `0`; LOC `33`
-- `augment_native_desktop_player.py` — Code Health `None`; changes `1`; defects `0`; LOC `257`
-- `moviesdrive.js` — Code Health `None`; changes `1`; defects `0`; LOC `1`
-- `prepare_native_candidate_repository.py` — Code Health `None`; changes `1`; defects `0`; LOC `80`
-- `vidsrc--nuvio-audit-quarantine--7947316d3cbed215.js` — Code Health `None`; changes `1`; defects `0`; LOC `1`
-- `export_nuvio_client_refs.py` — Code Health `None`; changes `2`; defects `0`; LOC `48`
-- `df33f490a73779f40b29ad612863fd4b192768567338a2171289fe5316e40ef6.js` — Code Health `None`; changes `1`; defects `0`; LOC `1`
-- `streamflix.js` — Code Health `None`; changes `1`; defects `0`; LOC `404`
-- `stage_published.py` — Code Health `None`; changes `1`; defects `0`; LOC `115`
-- `domain-discovery.mjs` — Code Health `None`; changes `3`; defects `0`; LOC `237`
-- `anizone.js` — Code Health `None`; changes `1`; defects `0`; LOC `352`
-- `extract_targeted_route_contexts.py` — Code Health `None`; changes `1`; defects `0`; LOC `207`
-- `f96d16c8b4e067394dd41f41a7fbc1a5bb1c3179c5198d35faaaa627e3cac02e.js` — Code Health `None`; changes `1`; defects `0`; LOC `1`
-- `global_stream_output_guard_test.py` — Code Health `None`; changes `5`; defects `0`; LOC `7`
-- `adaptive_domain_recovery.py` — Code Health `None`; changes `5`; defects `0`; LOC `111`
-- `27a986268c9948edf86b5d9150493dcb8f6263fcad3c260f93403bc9348cb8fc.js` — Code Health `None`; changes `1`; defects `0`; LOC `1`
-- `cinemacity.js` — Code Health `None`; changes `1`; defects `0`; LOC `279`
-- `35f3a66b3ff1e7d73fca85955920bb134d2e14f74e12a8ceb362782f06ae8c48.js` — Code Health `None`; changes `6`; defects `0`; LOC `1`
-- `2e732f8baa25726b09d0716455e930142527c7e7b3dce981be6a2ba115c463e5.js` — Code Health `None`; changes `1`; defects `0`; LOC `1`
-- `8a8be4b37545ad4dc2e163e1f4476ff4e128a99691389ecbe3e6901aafbe0ea3.js` — Code Health `None`; changes `1`; defects `0`; LOC `40`
-- `87bbb1d8359caec9c7b98f22c9a88a9045c8bb1b5c0780a0e04842ab62bbabdb.js` — Code Health `None`; changes `1`; defects `0`; LOC `246`
-- `00ccdc1b1c728e059c68677ce60fe2d69317a1b5cf894dc1bf8e78ab4c38e725.js` — Code Health `None`; changes `1`; defects `0`; LOC `40`
-- `audit_all_nuvio_tv_providers_v2.py` — Code Health `None`; changes `1`; defects `0`; LOC `48`
-- `mycima--nuvio--9d15ea128d78ab9f.js` — Code Health `None`; changes `1`; defects `0`; LOC `93`
-- `1ab9fb1cec10acffb9d1e4a59f04ed1b18e20c5cef7632d63e0336c24a89eabe.js` — Code Health `None`; changes `1`; defects `0`; LOC `40`
-- `9750c41a72fe7978d81eabd1b3704529cac0c13a7830a1d608afec5c892271cd.js` — Code Health `None`; changes `2`; defects `0`; LOC `1`
-- `b38a464f826f7ea87fee2c4e483ccbe9d5925e8a89a678a816b77873245611eb.js` — Code Health `None`; changes `1`; defects `0`; LOC `1`
-- `ca1223b5ee78c12b0cbca6f208e977a14ab78d699893f6225aac04f8b60f8a94.js` — Code Health `None`; changes `1`; defects `0`; LOC `347`
-- `c83b23943f9783f2b57008fac62f5fd2a05fea0c826f4b1ca74d53198152b286.js` — Code Health `None`; changes `1`; defects `0`; LOC `1`
-- `normalize_provider_rebuild_safety.py` — Code Health `None`; changes `13`; defects `0`; LOC `244`
-- `native_reader_brain_repair_test.py` — Code Health `None`; changes `1`; defects `0`; LOC `310`
-- `normalize_provider_branding_pipeline.py` — Code Health `None`; changes `1`; defects `0`; LOC `94`
-- `b90ce3c9aceca167d9f97d57ba2487029b0dd75e61abc4d7e8ad1dd97864a1d5.js` — Code Health `None`; changes `1`; defects `0`; LOC `1`
-- `new_provider_same_deep_profile_test.py` — Code Health `None`; changes `4`; defects `0`; LOC `43`
-- `french_manga_player_capture_v1_test.py` — Code Health `None`; changes `1`; defects `0`; LOC `11`
-- `bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js` — Code Health `None`; changes `2`; defects `0`; LOC `904`
-- `native_media_type_capability_test.py` — Code Health `None`; changes `1`; defects `0`; LOC `119`
-- `1a87a44dbbfb3bc6e7757c401eb0730e994f8661a8cc3b77741c3b36ba522c90.js` — Code Health `None`; changes `1`; defects `0`; LOC `45`
-- `scope_native_reader_learning_runtime.py` — Code Health `None`; changes `1`; defects `0`; LOC `168`
-- `quick_repair_probe_profile_test.py` — Code Health `None`; changes `7`; defects `0`; LOC `142`
-- `animeworld--nuvio--3485cf86203b430f.js` — Code Health `None`; changes `1`; defects `0`; LOC `7`
-- `run_adaptive_deep_repair.py` — Code Health `None`; changes `9`; defects `0`; LOC `106`
-- `promote_candidates.py` — Code Health `None`; changes `26`; defects `0`; LOC `2242`
-- `peachify--nuvio--2a80a0c70fb02936.js` — Code Health `None`; changes `3`; defects `0`; LOC `7`
-- `stream_output_sanitizer_fail_closed_test.py` — Code Health `None`; changes `3`; defects `0`; LOC `84`
-- `runtime_repair_test.py` — Code Health `None`; changes `5`; defects `0`; LOC `238`
-- `toflix--nuvio-audit-quarantine--7947316d3cbed215.js` — Code Health `None`; changes `1`; defects `0`; LOC `1`
-- `deep_stream_sampling_test.py` — Code Health `None`; changes `2`; defects `0`; LOC `25`
-- `allwish--nuvio--ac90de9f5b97f5ea.js` — Code Health `None`; changes `1`; defects `0`; LOC `7`
-- `movies4u--nuvio--de03f0e4bd791c91.js` — Code Health `None`; changes `3`; defects `0`; LOC `8`
-- `movix--nuvio--d83ac3961958f339.js` — Code Health `None`; changes `2`; defects `0`; LOC `46`
-- `resolve_nuvio_lab_heads.py` — Code Health `None`; changes `2`; defects `0`; LOC `98`
-- `provider_engine_normalizer.py` — Code Health `None`; changes `7`; defects `0`; LOC `403`
-- `08a5b7bc99ec727d02517885af164c09323d82578a67c14717fa4088d5f081d3.js` — Code Health `None`; changes `1`; defects `0`; LOC `40`
-- `platform_runtime_upstream_observation_policy_test.py` — Code Health `None`; changes `1`; defects `0`; LOC `40`
-- `faca2f10062c81707f8e3274c805f9947d6ee495c9c109c91a39be743b1da6fa.js` — Code Health `None`; changes `1`; defects `0`; LOC `40`
-- `e62064b45a10a505612be560f20cbd39ad34be7fa69c4fcafe51d9714f72aa05.js` — Code Health `None`; changes `1`; defects `0`; LOC `40`
-- `nuvio_tv_direct_media_v2_exposed.py` — Code Health `None`; changes `1`; defects `0`; LOC `16`
-- `vidlink--published-baseline--aace426e05988149.js` — Code Health `None`; changes `1`; defects `0`; LOC `7`
-- `stream-presentation.mjs` — Code Health `None`; changes `1`; defects `0`; LOC `158`
-- `9513cf00755eb1b6bbeb570f9524fde4c6eeffd7ea61d28ff3f7a9882a692f0a.js` — Code Health `None`; changes `1`; defects `0`; LOC `1`
-- `yflix.js` — Code Health `None`; changes `1`; defects `0`; LOC `347`
-- `animezey_stream_host_v1.py` — Code Health `None`; changes `1`; defects `0`; LOC `23`
-- `platform_runtime_probe.mjs` — Code Health `None`; changes `2`; defects `0`; LOC `269`
-- `anikototv--nuvio--611d21f1c069d93b.js` — Code Health `None`; changes `1`; defects `0`; LOC `8`
-- `nuvio_runtime_compatibility.py` — Code Health `None`; changes `1`; defects `0`; LOC `151`
-- `audit_native_client_checkout.py` — Code Health `None`; changes `1`; defects `0`; LOC `181`
-- `moviesdrive--nuvio--8a201261602b813e.js` — Code Health `None`; changes `1`; defects `0`; LOC `9`
-- `a8516b7fcc81ce7013b51f3be9a905de9defe34d654e52c01d0a944dbb624a89.js` — Code Health `None`; changes `1`; defects `0`; LOC `1`
-- `bedc41b8caf7e7cb371b5b96bb949970278c8a51b83847eaa64f46ca0317c521.js` — Code Health `None`; changes `1`; defects `0`; LOC `1`
-- `strict_native_identity_guard_test.py` — Code Health `None`; changes `5`; defects `0`; LOC `40`
-- `uhdmovies.js` — Code Health `None`; changes `1`; defects `0`; LOC `1`
-- `playback_context_compat_test.py` — Code Health `None`; changes `3`; defects `0`; LOC `132`
-- `86b8c3a4dff3c98c05db88eb075936b2f4ec00d504b967f1150bdfbd6fa620ac.js` — Code Health `None`; changes `1`; defects `0`; LOC `1`
-- `repair_profile_persistence_test.py` — Code Health `None`; changes `1`; defects `0`; LOC `28`
-- `animepahe--published-baseline--1bafa3c8c1349575.js` — Code Health `None`; changes `1`; defects `0`; LOC `119`
-- `probe-provider-domains.mjs` — Code Health `None`; changes `3`; defects `0`; LOC `107`
-- `interstellar_nuvio_matrix.py` — Code Health `None`; changes `2`; defects `0`; LOC `200`
-- `anizone--published-baseline--f695a6982dc37212.js` — Code Health `None`; changes `1`; defects `0`; LOC `7`
-- `7b658f1f8d1456986d235a9aadee3cad314fb9ba7ddd907978e16a14b6054e74.js` — Code Health `None`; changes `1`; defects `0`; LOC `1`
-- `a1f38e1819d61f9efd91648372ead67ce805c1ffd9f46acdff136d83a9e0715e.js` — Code Health `None`; changes `2`; defects `0`; LOC `1`
-- `resolver-core.test.mjs` — Code Health `None`; changes `2`; defects `0`; LOC `83`
-- `provider_specific_adapters_test.py` — Code Health `None`; changes `6`; defects `0`; LOC `69`
-- `faccc37938836b50acc6a8862e14b818a086289b63ba9c6d18d654ca933d8aac.js` — Code Health `None`; changes `1`; defects `0`; LOC `1`
-- `582bea0104f796f980202729f988aef4ceeef9b8d90182eda0deb053fba21043.js` — Code Health `None`; changes `1`; defects `0`; LOC `40`
-- `migrate_media_duration_identity_v1.py` — Code Health `None`; changes `2`; defects `0`; LOC `206`
-- `runtime_capability_media_safety_v4_test.py` — Code Health `None`; changes `5`; defects `0`; LOC `122`
-- `c91c43aedb5b489c07a030766fd22550cf8773fce6845f21f4a20c7398efeb94.js` — Code Health `None`; changes `1`; defects `0`; LOC `216`
-- `allanime--nuvio-audit-quarantine--7947316d3cbed215.js` — Code Health `None`; changes `1`; defects `0`; LOC `1`
-- `migrate_tv_catalogue_fixtures_v1.py` — Code Health `None`; changes `1`; defects `0`; LOC `90`
-- `provider_purification.py` — Code Health `None`; changes `5`; defects `0`; LOC `428`
-- `isolate_native_android_tests.py` — Code Health `None`; changes `1`; defects `0`; LOC `47`
-- `gramcinema--nuvio--bef899cb14e5a528.js` — Code Health `None`; changes `1`; defects `0`; LOC `7`
-- `frenchstream_detail_players.py` — Code Health `None`; changes `2`; defects `0`; LOC `15`
-- `report_new_upstream_providers.py` — Code Health `None`; changes `1`; defects `0`; LOC `204`
-- `provider_capabilities_test.py` — Code Health `None`; changes `1`; defects `0`; LOC `26`
-- `test_global_provider_repair.py` — Code Health `None`; changes `1`; defects `0`; LOC `101`
-- `language_domain_homepage_fallback_test.py` — Code Health `None`; changes `1`; defects `0`; LOC `90`
-- `cinevibe--nuvio--94d415b19785b5cc.js` — Code Health `None`; changes `1`; defects `0`; LOC `6`
-- `vidfast--nuvio--034abb817645da08.js` — Code Health `None`; changes `1`; defects `0`; LOC `68`
-- `native_android_avd_cache_contract_test.py` — Code Health `None`; changes `4`; defects `0`; LOC `46`
-- `regenerate_light_badges.py` — Code Health `None`; changes `1`; defects `0`; LOC `214`
-- `allanime.js` — Code Health `None`; changes `1`; defects `0`; LOC `1`
-- `test_route_overrides.py` — Code Health `None`; changes `2`; defects `0`; LOC `32`
-- `f679614bf1f955dcfea633d527e9ce40b56768ec3ff32648a651f565c121b70c.js` — Code Health `None`; changes `1`; defects `0`; LOC `1`
-- `cinefreak.js` — Code Health `None`; changes `1`; defects `0`; LOC `1`
-- `45da927a6eabb07e8b09c2b187b424af16403d77933e2fc50007c216fffe9abe.js` — Code Health `None`; changes `1`; defects `0`; LOC `40`
-- `target_media_host_filter_v4.py` — Code Health `None`; changes `1`; defects `0`; LOC `28`
-- `43c70c0cad61e4f16fe3d114a87045d6aeb71047dda1d104f31d055a129ce135.js` — Code Health `None`; changes `1`; defects `0`; LOC `487`
-- `e9ab3933199a83511b39fb0392411c2ea478071f77baecc66fca2fe28432095d.js` — Code Health `None`; changes `1`; defects `0`; LOC `40`
-- `quarantine_catalogue_audit_failures.py` — Code Health `None`; changes `3`; defects `0`; LOC `386`
-- `french-manga.js` — Code Health `None`; changes `1`; defects `0`; LOC `40`
-- `animezey--nuvio--e175bf5a3f407060.js` — Code Health `None`; changes `1`; defects `0`; LOC `8`
-- `animevostfr--published-baseline--5d6497ae52716b17.js` — Code Health `None`; changes `2`; defects `0`; LOC `7`
-- `dns_preflight.test.mjs` — Code Health `None`; changes `6`; defects `0`; LOC `226`
-- `update_availability.py` — Code Health `None`; changes `2`; defects `0`; LOC `290`
-- `d67399b8f3d221dea530132cbaafc95777469e1f12fed665b7c2d90f5823e195.js` — Code Health `None`; changes `1`; defects `0`; LOC `766`
-- `migrate_type_scoped_activation_v1.py` — Code Health `None`; changes `1`; defects `0`; LOC `239`
-- `generate_release_hashes.py` — Code Health `None`; changes `19`; defects `0`; LOC `138`
-- `promote_global_nuvio_tv_candidates.py` — Code Health `None`; changes `4`; defects `0`; LOC `318`
-- `98aeea26aa4511affc468b897dc050ca1d481684fcf712693fb8b1928f7135f8.js` — Code Health `None`; changes `1`; defects `0`; LOC `321`
-- `60ec5bba1e6d0052b9fa495ddaeec23841a43dcaee18158db5f222e055c0c209.js` — Code Health `None`; changes `1`; defects `0`; LOC `1`
-- `enforce_main_only_repository_policy.py` — Code Health `None`; changes `2`; defects `0`; LOC `60`
-- `movieshunt--nuvio--71081d56107fce18.js` — Code Health `None`; changes `3`; defects `0`; LOC `62`
-- `animekai.js` — Code Health `None`; changes `1`; defects `0`; LOC `1`
-- `short_hls_preview_guard_test.py` — Code Health `None`; changes `3`; defects `0`; LOC `47`
-- `nuvio_tv_target_media_playback_context_test.py` — Code Health `None`; changes `2`; defects `0`; LOC `106`
-- `animetsu--published-baseline--84c9b28540b01e3a.js` — Code Health `None`; changes `1`; defects `0`; LOC `6`
-- `provider-branding.mjs` — Code Health `None`; changes `1`; defects `0`; LOC `40`
-- `349fcae9fefac1123f155ece222e4789e277c83c249fb7d7a6964eeb709da908.js` — Code Health `None`; changes `1`; defects `0`; LOC `40`
-- `safe_structured_parse_v1.py` — Code Health `None`; changes `1`; defects `0`; LOC `89`
-- `release_version_sync_test.py` — Code Health `None`; changes `11`; defects `0`; LOC `74`
-- `merge_native_reader_repair_learning.py` — Code Health `None`; changes `1`; defects `0`; LOC `261`
-- `override_transaction_order_test.py` — Code Health `None`; changes `1`; defects `0`; LOC `54`
-- `native_reader_provider_retention_policy_test.py` — Code Health `None`; changes `1`; defects `0`; LOC `92`
-- `summarize_targeted_contexts.py` — Code Health `None`; changes `1`; defects `0`; LOC `61`
-- `global_core_presentation_pipeline_test.py` — Code Health `None`; changes `3`; defects `0`; LOC `20`
-- `adaptive_domain_recovery_test.py` — Code Health `None`; changes `2`; defects `0`; LOC `58`
-- `french_manga_target_media_profile_test.py` — Code Health `None`; changes `1`; defects `0`; LOC `3`
-- `removed_provider_regression_test.py` — Code Health `None`; changes `3`; defects `0`; LOC `23`
-- `15ea49f3f86be417b8f03e6395b8d0a6a0a1c5eedc2d133520cb627e2840be3d.js` — Code Health `None`; changes `1`; defects `0`; LOC `1`
-- `provider_hub_registry_test.py` — Code Health `None`; changes `3`; defects `0`; LOC `125`
-- `079f1fda3eaa41570c0152d0f2d0e87f27bceb6bdfca1bd6ff0f49a30bf27cf3.js` — Code Health `None`; changes `1`; defects `0`; LOC `40`
-- `native_reader_exhaustive_acceptance_test.py` — Code Health `None`; changes `1`; defects `0`; LOC `97`
-- `db5eae7135585d0287da40f976f7a37e8cd0accb89092a3ba7c01d2928ca3f68.js` — Code Health `None`; changes `1`; defects `0`; LOC `40`
-- `822936ae3176278a967f2708ea7dfaaea69e6258784f360e9ef3f1991382b3aa.js` — Code Health `None`; changes `1`; defects `0`; LOC `15`
-- `run_brain_learning_sandbox.py` — Code Health `None`; changes `1`; defects `0`; LOC `94`
-- `french_manga_player_capture_v1.py` — Code Health `None`; changes `1`; defects `0`; LOC `28`
-- `build_native_reader_learning_summary.py` — Code Health `None`; changes `3`; defects `0`; LOC `153`
-- `nuvio_client_lab_dynamic_selection_test.py` — Code Health `None`; changes `1`; defects `0`; LOC `30`
-- `vf_recovery_profiles_test.py` — Code Health `None`; changes `5`; defects `0`; LOC `95`
-- `validate_language_projection.py` — Code Health `None`; changes `2`; defects `0`; LOC `56`
-- `0ce8feb778037bb82841a77dc50781156b39832fd6add819cfdc6a87817dd998.js` — Code Health `None`; changes `1`; defects `0`; LOC `45`
-- `runtime_media_safety_guard_test.py` — Code Health `None`; changes `1`; defects `0`; LOC `81`
-- `normalize_published_security_finalization.py` — Code Health `None`; changes `1`; defects `0`; LOC `70`
-- `10036dcfaf83f4c9cce6c0e0ae2711858e4d48427cfa1e16dbe8f299a3991c9b.js` — Code Health `None`; changes `1`; defects `0`; LOC `40`
-- `eab1cf4e750e28dc3acf1b5b59d6a38ff0cd1abe07ae0272fae478daa2321f75.js` — Code Health `None`; changes `1`; defects `0`; LOC `40`
-- `normalize_core_media_policy.py` — Code Health `None`; changes `9`; defects `0`; LOC `213`
-- `validate_vf_projection.py` — Code Health `None`; changes `2`; defects `0`; LOC `47`
-- `fcb661e3daad58a862e0a4d17811604a212f5c3c44c0df3756ddfbcfed272527.js` — Code Health `None`; changes `1`; defects `0`; LOC `1`
-- `toflix_official_endpoint.py` — Code Health `None`; changes `1`; defects `0`; LOC `63`
-- `brain_repair_proposal_test.py` — Code Health `None`; changes `2`; defects `0`; LOC `120`
-- `provider_repair_promotion_guard_test.py` — Code Health `None`; changes `1`; defects `0`; LOC `26`
-- `language_projection_test.py` — Code Health `None`; changes `2`; defects `0`; LOC `93`
-- `normalize_core_fixed_point_contract.py` — Code Health `None`; changes `13`; defects `0`; LOC `312`
-- `reapply_adaptive_domain_revision_test.py` — Code Health `None`; changes `2`; defects `0`; LOC `45`
-- `harden_nuvio_mobile_device_test.py` — Code Health `None`; changes `2`; defects `0`; LOC `143`
-- `voiranime-homes--nuvio--25807f04525cee91.js` — Code Health `None`; changes `3`; defects `0`; LOC `6`
-- `prepare_native_client_validation.py` — Code Health `None`; changes `2`; defects `0`; LOC `325`
-- `build_native_reader_brain_repair.py` — Code Health `None`; changes `1`; defects `0`; LOC `455`
-- `contracts.mjs` — Code Health `None`; changes `2`; defects `0`; LOC `210`
-- `anime-sama.js` — Code Health `None`; changes `1`; defects `0`; LOC `40`
-- `einthusan--nuvio--9cda64843f899a9c.js` — Code Health `None`; changes `2`; defects `0`; LOC `93`
-- `instrument_native_desktop_evidence.py` — Code Health `None`; changes `1`; defects `0`; LOC `24`
-- `e97516075e2f0d47042ab2cfef717d615a79ff6a4f44ff4667c75b027fc1a0fc.js` — Code Health `None`; changes `1`; defects `0`; LOC `1`
-- `xpass--nuvio--32d5c763509158e6.js` — Code Health `None`; changes `1`; defects `0`; LOC `7`
-- `provider_portfolio_ranking_test.py` — Code Health `None`; changes `4`; defects `0`; LOC `91`
-- `provider-analysis.test.mjs` — Code Health `None`; changes `1`; defects `0`; LOC `44`
-- `3fcf49618b0401cdb95e845ab94e7d5855161c2f4ecd36a108685302c4aaa8fb.js` — Code Health `None`; changes `1`; defects `0`; LOC `40`
-- `apply_tv_reader_optimization.py` — Code Health `None`; changes `1`; defects `0`; LOC `170`
-- `native_hls_integrity_budget_v1.py` — Code Health `None`; changes `2`; defects `0`; LOC `48`
-- `03358fc46a1850a950007441d1e9410d63fa18bd2b20ca2238b4b62baa5b6682.js` — Code Health `None`; changes `1`; defects `0`; LOC `40`
-- `decision-engine.test.mjs` — Code Health `None`; changes `1`; defects `0`; LOC `18`
-- `platform_filter_semantics_test.py` — Code Health `None`; changes `1`; defects `0`; LOC `41`
-- `frenchstream_dle_catalogue.py` — Code Health `None`; changes `1`; defects `0`; LOC `38`
-- `d29f91dc106efd746198692f9e7608fa9a5e2ed922e253158a5ac8fcd4426c80.js` — Code Health `None`; changes `1`; defects `0`; LOC `40`
-- `contract-watcher.mjs` — Code Health `None`; changes `1`; defects `0`; LOC `73`
-- `augment_native_provider_loading.py` — Code Health `None`; changes `1`; defects `0`; LOC `364`
-- `guard_nuvio_client_brain_compat.py` — Code Health `None`; changes `2`; defects `0`; LOC `164`
-- `contract-watcher.test.mjs` — Code Health `None`; changes `1`; defects `0`; LOC `38`
-- `adaptive_runtime_repair_test.py` — Code Health `None`; changes `8`; defects `0`; LOC `158`
-- `adaptive_binary_probe_test.py` — Code Health `None`; changes `1`; defects `0`; LOC `60`
-- `06a14293c93a83d3060684e042e7087031463c775717f8b5f1dfeaa0ba30d429.js` — Code Health `None`; changes `1`; defects `0`; LOC `1`
-- `core_rebuild_safety.py` — Code Health `None`; changes `19`; defects `0`; LOC `671`
-- `media-validator.mjs` — Code Health `None`; changes `2`; defects `0`; LOC `556`
-- `tv_catalogue_fixture_coverage_test.py` — Code Health `None`; changes `3`; defects `0`; LOC `14`
-- `badge_asset_contract_test.py` — Code Health `None`; changes `3`; defects `0`; LOC `134`
-- `validate_route_overrides.py` — Code Health `None`; changes `1`; defects `0`; LOC `78`
-- `adaptive_runtime_recovery.py` — Code Health `None`; changes `4`; defects `0`; LOC `71`
-- `complete_native_desktop_frontend_phases.py` — Code Health `None`; changes `1`; defects `0`; LOC `85`
-- `provider-catalog.test.mjs` — Code Health `None`; changes `3`; defects `0`; LOC `101`
-- `native_catalogue_recovery_budget_test.py` — Code Health `None`; changes `4`; defects `0`; LOC `53`
-- `restage_native_corpus_client.py` — Code Health `None`; changes `3`; defects `0`; LOC `106`
+- `nuvio_tv_direct_media.py` — changes `2`; defects `0`; LOC `54`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `vf_movie_policy_test.py` — changes `18`; defects `0`; LOC `142`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `purstream.mjs` — changes `2`; defects `0`; LOC `375`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 7.18}`
+- `mugiwarastream.js` — changes `1`; defects `0`; LOC `41`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 5.02}`
+- `apply_provider_overrides.py` — changes `29`; defects `0`; LOC `1060`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 1.95}`
+- `anidb--published-baseline--f93d3a8296b4c9f7.js` — changes `1`; defects `0`; LOC `7`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 1.48}`
+- `c9d6434703f8e8734d234bc13d23c1c547df40d6989cfc1ba26aec8eeff446e8.js` — changes `1`; defects `0`; LOC `40`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 4.53}`
+- `core_media_policy_test.py` — changes `8`; defects `0`; LOC `89`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `b3dd59d3d01746d53ab7dc95ae8ba825018f90f39d8f3f52113451d0eb14d04d.js` — changes `1`; defects `0`; LOC `40`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 4.56}`
+- `migrate_deep_stream_sampling_v2.py` — changes `4`; defects `0`; LOC `174`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 8.98}`
+- `fibwatch--nuvio--3fbd34a1173227f9.js` — changes `1`; defects `0`; LOC `7`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 1.58}`
+- `global_media_enrichment_direct_safety_test.py` — changes `2`; defects `0`; LOC `71`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `provider_capabilities.py` — changes `1`; defects `0`; LOC `38`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 9.09}`
+- `animesalt--published-baseline--0d76f17b552ac4e3.js` — changes `1`; defects `0`; LOC `32`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 1.16}`
+- `vidzy_hostname_decoder_test.py` — changes `2`; defects `0`; LOC `147`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 9.28}`
+- `02173d75d873826f33e7bd45bb1c7973e557845548a8634b3ed1a5161c89abb8.js` — changes `1`; defects `0`; LOC `1`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 7.53}`
+- `provider_dns_preflight.mjs` — changes `7`; defects `0`; LOC `928`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 3.78}`
+- `streamzo_public_catalogue_v2.py` — changes `2`; defects `0`; LOC `61`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `a2e813f6167a7f619db6f6e505fbe368c59044e6dce3a14fa0751e0748d4bc8d.js` — changes `1`; defects `0`; LOC `40`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 8.28}`
+- `native_human_ux_policy_lock_test.py` — changes `2`; defects `0`; LOC `118`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `quick_refresh_deep_authority_test.py` — changes `2`; defects `0`; LOC `101`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `b1a1110e74e8d58580bafd9ed488d65dde3a334dd65759a41939da4ffe311bb7.js` — changes `1`; defects `0`; LOC `40`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 8.28}`
+- `quarantine_provider_v1.py` — changes `1`; defects `0`; LOC `19`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `audit_catalogue_identity_media.py` — changes `12`; defects `0`; LOC `403`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 7.03}`
+- `runtime-adapters.mjs` — changes `1`; defects `0`; LOC `45`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `cinemacity--published-baseline--01f9adfc536166aa.js` — changes `1`; defects `0`; LOC `7`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 1.45}`
+- `native_repository_http_instrumentation_test.py` — changes `1`; defects `0`; LOC `82`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `bc4308578b53310c050c71b8e1835e0e0068300bd19a7826eba0e394d62bfbdd.js` — changes `1`; defects `0`; LOC `1`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 5.6}`
+- `targeted_provider_route_diagnostics.py` — changes `1`; defects `0`; LOC `221`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 9.09}`
+- `topcartoons--published-baseline--820bdd5a5604e3c7.js` — changes `1`; defects `0`; LOC `2`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `build-provider-specs.mjs` — changes `1`; defects `0`; LOC `33`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `voiranime-rip--nuvio--458eb5b12513e5f5.js` — changes `2`; defects `0`; LOC `6`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 1.18}`
+- `targeted_vf_catalogue_adapters_test.py` — changes `3`; defects `0`; LOC `110`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `native_corpus_suite_summary_test.py` — changes `3`; defects `0`; LOC `113`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 9.68}`
+- `global_provider_branding_v1.py` — changes `4`; defects `0`; LOC `84`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 9.66}`
+- `deep_health_integrity_test.py` — changes `5`; defects `0`; LOC `36`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `adaptive_runtime_recovery_v5.py` — changes `7`; defects `0`; LOC `117`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `nakios--nuvio--eeef3c79803b4c7e.js` — changes `1`; defects `0`; LOC `42`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 1.24}`
+- `matroska_metadata_test.py` — changes `1`; defects `0`; LOC `19`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `upstream-provider-watch.test.mjs` — changes `1`; defects `0`; LOC `67`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `2c1837a3000d08140a84f68769c804315a0e6395739f4d84b18b0cf93df23a4c.js` — changes `1`; defects `0`; LOC `40`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 8.28}`
+- `450b43a5eaebb8b3f3710fcf393271f5d739df9e0967d1f175d36b4fae17c8da.js` — changes `1`; defects `0`; LOC `1`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 7.78}`
+- `global_catalogue_alias_recovery_test.py` — changes `5`; defects `0`; LOC `118`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `finalize_native_android_reader_source.py` — changes `1`; defects `0`; LOC `49`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 9.41}`
+- `repair-brain.test.mjs` — changes `8`; defects `0`; LOC `176`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `d8e0de49215c6ea2ac55e5f2bbc8c1c8c4b0da761436e8ba656ffd9033ded843.js` — changes `1`; defects `0`; LOC `40`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 4.64}`
+- `papadustream.js` — changes `1`; defects `0`; LOC `40`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 4.5}`
+- `dvdplay--published-baseline--b0b9db9376a338ef.js` — changes `1`; defects `0`; LOC `2`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `e4928ad7affd0f9d417fee3c3f90bcaf0f37ed2c577ab52dd391a6cd1635f12f.js` — changes `1`; defects `0`; LOC `1`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 6.84}`
+- `enforce_provider_priority.py` — changes `1`; defects `0`; LOC `32`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `catalogue_audit_coverage_test.py` — changes `3`; defects `0`; LOC `51`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 9.38}`
+- `finalize_upstream_lkg.py` — changes `1`; defects `0`; LOC `10`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `95a080c30f77d7dd9f7bd151d0d4f976164328cd1ce61cecad330199e91c2683.js` — changes `1`; defects `0`; LOC `409`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 4.46}`
+- `hls_master_audio_preserver_impl_v1.py` — changes `1`; defects `0`; LOC `333`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `animekai--nuvio--e9e27bb0a8c6808a.js` — changes `1`; defects `0`; LOC `7`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 1.34}`
+- `3b567b1e8e83d64777b617ee9323f411dab1474c700864058c4444e4f52cf842.js` — changes `1`; defects `0`; LOC `491`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 6.16}`
+- `nuvio_tv_target_diagnostics_v2.py` — changes `1`; defects `0`; LOC `245`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 7.2}`
+- `native_corpus_device_lab_test.py` — changes `15`; defects `0`; LOC `306`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `diagnose-native-media-capabilities.mjs` — changes `1`; defects `0`; LOC `65`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `desktop_runtime_compat_v1.py` — changes `5`; defects `0`; LOC `262`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 8.55}`
+- `3e554771641bd6208cd763c6ee6aa12a06ad858a52d7430cd43571fa9cde068d.js` — changes `1`; defects `0`; LOC `559`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 5.38}`
+- `ctgmovies--nuvio--ac92f41c27a6e922.js` — changes `1`; defects `0`; LOC `6`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 2.06}`
+- `tmdb-metadata.mjs` — changes `1`; defects `0`; LOC `123`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 9.07}`
+- `allwish.js` — changes `1`; defects `0`; LOC `1`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `hls_playback_integrity_test.py` — changes `5`; defects `0`; LOC `116`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `4khdhubnew--nuvio-audit-quarantine--7947316d3cbed215.js` — changes `1`; defects `0`; LOC `1`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `build-historical-learning.mjs` — changes `3`; defects `0`; LOC `306`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 7.49}`
+- `667e5fba43cdd8840b4625ce13ae71cd2d4bdea3d668297a5a845c21b0e0399f.js` — changes `1`; defects `0`; LOC `40`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 4.64}`
+- `dulourd--published-baseline--ba6600a0b792d09f.js` — changes `2`; defects `0`; LOC `6`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 1.26}`
+- `89d80b0ac5aac7e946680f35f3fa7ba4859e2a9e9ab42ef8a811b51518e63cac.js` — changes `1`; defects `0`; LOC `1`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `test_adaptive_global_provider_repair.py` — changes `1`; defects `0`; LOC `27`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `resolve_provider_hub_search_fallback.py` — changes `1`; defects `0`; LOC `163`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 7.99}`
+- `augment_native_corpus_request_contract.py` — changes `1`; defects `0`; LOC `141`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 7.98}`
+- `dooflix--published-baseline--7e568e3bdfff7f79.js` — changes `1`; defects `0`; LOC `6`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 1.31}`
+- `nuvio_tv_target_media_v5.py` — changes `2`; defects `0`; LOC `204`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 8.52}`
+- `bb241938cc73484976226c98bf2412cc53ab5205843627e6bb3fa7eaa73e61d4.js` — changes `1`; defects `0`; LOC `1`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `ingest-provider-upstreams.mjs` — changes `2`; defects `0`; LOC `106`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `general_manifest_runtime_profiles_test.py` — changes `9`; defects `0`; LOC `87`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `vidnest--nuvio--98ba2ea849699870.js` — changes `1`; defects `0`; LOC `67`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 1.81}`
+- `castle--nuvio--07233e264382c093.js` — changes `1`; defects `0`; LOC `8`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 1.58}`
+- `d3b04a5ee1a13fed77192b5226d46001508fe321fa747f0c519d0c23d5b1a974.js` — changes `1`; defects `0`; LOC `1`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `expose_strict_wrapper_original.py` — changes `1`; defects `0`; LOC `22`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `onlykdrama--nuvio--ab026578ec82b558.js` — changes `1`; defects `0`; LOC `8`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 1.26}`
+- `native_hls_integrity_budget_test.py` — changes `2`; defects `0`; LOC `38`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `647edc750491af2165d0d8ab9d49e799c87e5d6e7571728e63582936589562a8.js` — changes `1`; defects `0`; LOC `1`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `global_stream_identity_test.py` — changes `2`; defects `0`; LOC `142`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `34adb013fbac73ba3688f9bcc93e6418e28aeda1433dd04eb50cdec9cb6a82c8.js` — changes `1`; defects `0`; LOC `1`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 6.83}`
+- `resolver-core.mjs` — changes `3`; defects `0`; LOC `238`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 7.49}`
+- `recipe-memory.test.mjs` — changes `2`; defects `0`; LOC `33`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `test_targeted_vf_repair.py` — changes `1`; defects `0`; LOC `48`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js` — changes `1`; defects `0`; LOC `828`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 3.32}`
+- `full_provider_portfolio_audit_test.py` — changes `1`; defects `0`; LOC `121`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 8.81}`
+- `run_adaptive_quick_repair.py` — changes `8`; defects `0`; LOC `339`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 6.9}`
+- `streamzo_native_platform_contract_test.py` — changes `4`; defects `0`; LOC `26`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `65e7dabe9629f1185c046e156941f6cf05312e9c52996c70c24a6b6ddc075a9c.js` — changes `2`; defects `0`; LOC `428`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 7.21}`
+- `frenchstream_raw_tv_fallback.py` — changes `1`; defects `0`; LOC `27`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `4c2f6637886f64ebf5de1bf26ac51d947640b196122207edc561e515d57370f4.js` — changes `1`; defects `0`; LOC `40`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 4.55}`
+- `repository_hygiene_contract_test.py` — changes `7`; defects `0`; LOC `91`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `papadustream--published-baseline--2ad9117d7ef6efef.js` — changes `2`; defects `0`; LOC `7`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 1.13}`
+- `provider_priority_test.py` — changes `1`; defects `0`; LOC `9`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `brain_cron_full_coverage_test.py` — changes `2`; defects `0`; LOC `132`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 8.27}`
+- `restore_provider_type_policy.py` — changes `1`; defects `0`; LOC `112`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 7.98}`
+- `movieshunt.js` — changes `1`; defects `0`; LOC `1`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 6.15}`
+- `tv_provider_hardening_test.py` — changes `8`; defects `0`; LOC `153`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `native_player_diagnostics_codegen.py` — changes `1`; defects `0`; LOC `262`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 9.41}`
+- `mobile_vf_runtime_probe.mjs` — changes `2`; defects `0`; LOC `252`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 7.3}`
+- `native_evidence_codegen_pipeline_test.py` — changes `1`; defects `0`; LOC `153`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `purify_native_reader_repair.py` — changes `1`; defects `0`; LOC `88`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 8.61}`
+- `recover_nuvio_regressions.py` — changes `1`; defects `0`; LOC `279`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 7.86}`
+- `moviesmod--published-baseline--fc900c3385feff74.js` — changes `1`; defects `0`; LOC `120`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 1.17}`
+- `provider_security_hardening_test.py` — changes `6`; defects `0`; LOC `171`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `25135c174b05435d6dc8fe5216eb78b836150646ed15a7da65e8e85d70bd1c98.js` — changes `1`; defects `0`; LOC `388`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 6.56}`
+- `e8d286f2035eba8d57b2b73c863c2cd5a412ffa8157a2b5adbcc0a84b6cd4d24.js` — changes `1`; defects `0`; LOC `40`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 4.56}`
+- `a78fcf9d8e5c807ad87992943a373d63380a94d9e1dc3ef98b855fc0edc2b360.js` — changes `1`; defects `0`; LOC `40`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 4.43}`
+- `validate_nuvio_tv_runtime_policy.py` — changes `8`; defects `0`; LOC `216`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 6.93}`
+- `animesultra.js` — changes `1`; defects `0`; LOC `40`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 8.28}`
+- `reapply_adaptive_runtime_revision_test.py` — changes `2`; defects `0`; LOC `25`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `animesultra--published-baseline--7e81bf8966c61069.js` — changes `2`; defects `0`; LOC `6`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 1.26}`
+- `persianstremio--nuvio--eb27e60141a40d46.js` — changes `1`; defects `0`; LOC `6`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 2.06}`
+- `81b0afffb337390782cace12c5d657c6aa42765d05f5da986022284a99bafb98.js` — changes `1`; defects `0`; LOC `1`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 5.85}`
+- `release_hash_scope_test.py` — changes `9`; defects `0`; LOC `64`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `desiflix--nuvio--1a9878e6b9328c79.js` — changes `1`; defects `0`; LOC `8`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 1.32}`
+- `repair-brain.mjs` — changes `6`; defects `0`; LOC `187`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 6.16}`
+- `nuvio_tv_direct_media_v2.py` — changes `3`; defects `0`; LOC `70`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `5cc8283a945c663ea55e049931f22c3f9afdeb3ff38e564899dc5359d40600c1.js` — changes `1`; defects `0`; LOC `1`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 9.53}`
+- `global_catalogue_alias_recovery_v2.py` — changes `5`; defects `0`; LOC `98`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 9.68}`
+- `provider_compiled_manifest.py` — changes `1`; defects `0`; LOC `105`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 9.18}`
+- `build-provider-knowledge.mjs` — changes `1`; defects `0`; LOC `97`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `nuvio_client_upstream_drift_guard_test.py` — changes `8`; defects `0`; LOC `305`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 8.8}`
+- `f807e7dfaac61d41fcaf837f34b5f65e2bfffc0dc18baf61ca22dffb43f6c9d8.js` — changes `1`; defects `0`; LOC `40`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 8.28}`
+- `42ace3856f73576f8006045462acfed03e91d6e9b244153d5146168aa7441081.js` — changes `1`; defects `0`; LOC `40`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 4.43}`
+- `check_nuvio_client_upstreams.py` — changes `5`; defects `0`; LOC `545`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 6.17}`
+- `global_provider_security_hardening_v1.py` — changes `4`; defects `0`; LOC `48`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `runtime_repair.py` — changes `5`; defects `0`; LOC `349`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 7.01}`
+- `11124b38985b9780ad49e040b5d30a7143bc9541e27c7e314e70d9778a227af9.js` — changes `1`; defects `0`; LOC `1`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `learning-lab.mjs` — changes `3`; defects `0`; LOC `307`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 7.96}`
+- `provider_branding_contract_test.py` — changes `2`; defects `0`; LOC `72`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `moviebox.js` — changes `1`; defects `0`; LOC `1`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `finalize_native_tv_test_entrypoint.py` — changes `1`; defects `0`; LOC `77`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 9.51}`
+- `edbd55715d44e088dfd2079a02d63adb4c923f68498d16c2b1a0614c2f854d88.js` — changes `1`; defects `0`; LOC `40`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 8.28}`
+- `0641a31d6068d8d2f3e5ca5d734494b24f69b89d6a5d027ae1a7b5eee1953d1a.js` — changes `1`; defects `0`; LOC `1`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 4.17}`
+- `1b23fb0b7740e707fb2e3c5f6f69ca51c4bb4fc6afc8f1ae851af22e3f66bb89.js` — changes `1`; defects `0`; LOC `1`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `d6b79c8d8e8e19d4362d33cdd8a9107e425ce1eeefb55b56f8ec8b961126e09f.js` — changes `1`; defects `0`; LOC `305`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 7.34}`
+- `provider_diagnostics_test.py` — changes `5`; defects `0`; LOC `47`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `core_terminal_export_floor_test.py` — changes `10`; defects `0`; LOC `233`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `global_stream_facts_v1.py` — changes `1`; defects `0`; LOC `35`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `cinemm--published-baseline--09bbc907f9a99fc0.js` — changes `1`; defects `0`; LOC `7`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 1.19}`
+- `cinefreak--nuvio-audit-quarantine--7947316d3cbed215.js` — changes `1`; defects `0`; LOC `1`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `apply_live_safety_repair.py` — changes `1`; defects `0`; LOC `323`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 7.99}`
+- `streamflix--published-baseline--b30cc507d5f1cc6a.js` — changes `1`; defects `0`; LOC `6`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 1.43}`
+- `diagnose-native-reader.mjs` — changes `1`; defects `0`; LOC `478`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `vixsrc--nuvio--63d048b9551c8e82.js` — changes `1`; defects `0`; LOC `2`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `sync_atomic_publication_test.py` — changes `6`; defects `0`; LOC `36`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `aggregate_archi2_ab_reports.py` — changes `1`; defects `0`; LOC `94`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 9.1}`
+- `29128d8b2dac99a3ae3ff8e771ccbe14598efab021981b02867c7f3f7fc0e6c4.js` — changes `1`; defects `0`; LOC `1`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `streamzo_source_identity_v3.py` — changes `1`; defects `0`; LOC `41`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `mallumv--nuvio--d24f0f13c3076da5.js` — changes `3`; defects `0`; LOC `92`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 1.15}`
+- `vidnest.js` — changes `1`; defects `0`; LOC `388`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 6.56}`
+- `brain_repair_runtime.py` — changes `4`; defects `0`; LOC `409`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 5.62}`
+- `harden_staged_provider_security.py` — changes `1`; defects `0`; LOC `127`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 9.16}`
+- `0b4533ed32c82b28813b97fe9deb44d97d1f1884adf1a8208d231967347ae3ce.js` — changes `2`; defects `0`; LOC `1`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `goated--nuvio--90b365f09b3494cb.js` — changes `1`; defects `0`; LOC `8`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 1.23}`
+- `0dbdc78b24804babc29f0674da00a46e7b7915ebb5278d58790439d4ba03690b.js` — changes `1`; defects `0`; LOC `352`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 6.12}`
+- `global_stream_presentation_pipeline_test.py` — changes `1`; defects `0`; LOC `36`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `vidnest-anime--nuvio--21c00c7ea7b8c39f.js` — changes `1`; defects `0`; LOC `6`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 1.41}`
+- `a9e7deb56fd5b3c93458e01fe7d32a764ee1defe3e88759dcb68f448006ded31.js` — changes `1`; defects `0`; LOC `404`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 6.33}`
+- `generate_diagnostics.py` — changes `3`; defects `0`; LOC `158`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 8.67}`
+- `render-manifests-from-catalog.mjs` — changes `1`; defects `0`; LOC `17`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `46e83c8d710830679b7f17eacb03e014fc4195237cd423fe63254862549f24ff.js` — changes `1`; defects `0`; LOC `1`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 5.9}`
+- `metadata_context_recovery.py` — changes `1`; defects `0`; LOC `120`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 9.45}`
+- `netmirror--published-baseline--b2d283c572efdfb0.js` — changes `1`; defects `0`; LOC `3`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 5.34}`
+- `mugiwarastream--nuvio--4b18fcabe65da565.js` — changes `3`; defects `0`; LOC `6`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 1.22}`
+- `hdghartv--nuvio--a0a7ce92b1f31dc6.js` — changes `1`; defects `0`; LOC `34`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 1.16}`
+- `build_brain_repair_proposal.py` — changes `2`; defects `0`; LOC `199`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 7.83}`
+- `animezey_stream_host_v1_test.py` — changes `1`; defects `0`; LOC `10`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `f19ec5a037e53220e1457e6db0cb9abee1d2f9f299c594dddefb14df7822c847.js` — changes `1`; defects `0`; LOC `1`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `provider_catalogue_breadth_test.py` — changes `2`; defects `0`; LOC `73`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 9.6}`
+- `e64aea603b3c3786a9f03e2a7b5dbee7e5666918a0ad606aeec87469ffafc4ec.js` — changes `1`; defects `0`; LOC `1`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 7.74}`
+- `native_reader_runtime_bootstrap_test.py` — changes `1`; defects `0`; LOC `131`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `wookafr--nuvio--54cf1e436bd79660.js` — changes `2`; defects `0`; LOC `45`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 1.12}`
+- `allmovieland--published-baseline--6d16963ec1e0815b.js` — changes `1`; defects `0`; LOC `119`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 1.17}`
+- `configure_native_android_lab_transport.py` — changes `1`; defects `0`; LOC `62`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 9.6}`
+- `6796beaa02d57e69cb033eec47a14a3b74782a0d08bcfd260421f10d4041392e.js` — changes `1`; defects `0`; LOC `1`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 6.15}`
+- `normalize_stream_presentation_v11.py` — changes `1`; defects `0`; LOC `210`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 8.08}`
+- `native_evidence_contract_test.py` — changes `1`; defects `0`; LOC `210`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 9.68}`
+- `apply_native_hls_integrity_budget_upgrade_v1.py` — changes `1`; defects `0`; LOC `60`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 9.38}`
+- `cleanup_nuvio_recovery.py` — changes `1`; defects `0`; LOC `33`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `purify-provider.mjs` — changes `8`; defects `0`; LOC `122`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 9.47}`
+- `d2b77225d84c2929f5a4f1c90f1de3b43f45628c70543df2451f21d7c87cc6bd.js` — changes `2`; defects `0`; LOC `646`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 5.11}`
+- `vostfree--published-baseline--d33e42b147e5400e.js` — changes `2`; defects `0`; LOC `6`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 1.3}`
+- `validate_override_pipeline.py` — changes `6`; defects `0`; LOC `160`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 7.66}`
+- `discover_candidates.py` — changes `5`; defects `0`; LOC `436`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 5.9}`
+- `nuvio_tv_test_bootstrap.py` — changes `1`; defects `0`; LOC `3`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `videasy--nuvio--0cb553fe39423d9a.js` — changes `1`; defects `0`; LOC `69`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 1.27}`
+- `repair_identity_gate_test.py` — changes `2`; defects `0`; LOC `56`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 9.68}`
+- `promote_target_media_v3.py` — changes `2`; defects `0`; LOC `260`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 7.69}`
+- `stream_output_recovery.py` — changes `1`; defects `0`; LOC `34`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `global_provider_policy_test.py` — changes `6`; defects `0`; LOC `74`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `reapply_provider_versioning_test.py` — changes `4`; defects `0`; LOC `34`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `publish_desktop_runtime_compat.py` — changes `6`; defects `0`; LOC `292`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 7.65}`
+- `direct_media_dimensions_test.py` — changes `2`; defects `0`; LOC `25`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `purstream--nuvio--a28c9c80256074a4.js` — changes `1`; defects `0`; LOC `8`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 1.31}`
+- `compare_native_reader_brain_repair.py` — changes `1`; defects `0`; LOC `120`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 8.82}`
+- `classify_native_reader_ownership.py` — changes `1`; defects `0`; LOC `171`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 8.5}`
+- `vostfree.js` — changes `1`; defects `0`; LOC `40`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 4.86}`
+- `domain-discovery.test.mjs` — changes `2`; defects `0`; LOC `44`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `validate_release_integrity.py` — changes `3`; defects `0`; LOC `139`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 8.55}`
+- `nuvio_tv_playable_first_v1.py` — changes `3`; defects `0`; LOC `60`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `prepare_retry_targets.py` — changes `1`; defects `0`; LOC `59`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `contracts.test.mjs` — changes `2`; defects `0`; LOC `124`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `8fc6c9c3b021df2df2430dbd2559aece034cea02c5f0f9d4d514eebbb394584c.js` — changes `1`; defects `0`; LOC `241`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 8.22}`
+- `instrument_native_repository_http_evidence.py` — changes `1`; defects `0`; LOC `26`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `provider-ingest.test.mjs` — changes `1`; defects `0`; LOC `61`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `lkg_regression_policy_test.py` — changes `2`; defects `0`; LOC `13`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `stream_output_sanitizer_v5.py` — changes `4`; defects `0`; LOC `288`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 8.57}`
+- `vf_catalogue_recovery.py` — changes `4`; defects `0`; LOC `262`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 8.67}`
+- `d1b156dffd03425f57e3ac042ddadf05edc56d834be0134a013abf8e54b9bf9b.js` — changes `1`; defects `0`; LOC `256`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 7.82}`
+- `nuvio_activation_refresh_test.py` — changes `1`; defects `0`; LOC `59`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `validate_deep_evidence_integrity.py` — changes `1`; defects `0`; LOC `80`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 9.6}`
+- `upstream_lkg.py` — changes `1`; defects `0`; LOC `197`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 7.05}`
+- `nuvio_lab_head_resolver_test.py` — changes `2`; defects `0`; LOC `81`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `validate_automatic_repair_results.py` — changes `2`; defects `0`; LOC `72`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 9.5}`
+- `refresh_manifest_finalization_test.py` — changes `5`; defects `0`; LOC `149`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `playimdb--nuvio--aaecc853df5fb5a8.js` — changes `1`; defects `0`; LOC `6`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 1.61}`
+- `nuvio_tv_target_media_v3.py` — changes `1`; defects `0`; LOC `58`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `native_catalogue_recovery_budget_v1.py` — changes `3`; defects `0`; LOC `82`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `ci_preservation_policy_test.py` — changes `9`; defects `0`; LOC `288`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `hls_runtime_integrity_v1.py` — changes `8`; defects `0`; LOC `323`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 7.88}`
+- `2691befa44f5d8d8f30c1711021a9fb0fdfe09a90f5640dd97ede5670f3dca5a.js` — changes `1`; defects `0`; LOC `1`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 8.95}`
+- `migrate_direct_media_dimensions_v1.py` — changes `2`; defects `0`; LOC `129`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 9.21}`
+- `1shows--nuvio-audit-quarantine--7947316d3cbed215.js` — changes `1`; defects `0`; LOC `1`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `brain_repair_runtime.py` — changes `1`; defects `0`; LOC `127`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 9.23}`
+- `provider-catalog.mjs` — changes `3`; defects `0`; LOC `196`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 6.87}`
+- `vidlink.js` — changes `1`; defects `0`; LOC `1`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `provider_export_floor_portfolio_test.py` — changes `6`; defects `0`; LOC `173`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 8.96}`
+- `validate_activation_preservation.py` — changes `7`; defects `0`; LOC `349`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 5.59}`
+- `87a896138f1da5cc7459f5255161d8dae69fd67aef1c88d4ba62617d5ac584e7.js` — changes `1`; defects `0`; LOC `40`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 4.43}`
+- `overrides_test.py` — changes `23`; defects `0`; LOC `150`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 8.7}`
+- `streamzo_public_catalogue.py` — changes `2`; defects `0`; LOC `38`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `nuvio_client_activation_ids.py` — changes `7`; defects `0`; LOC `143`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 8.16}`
+- `cinevibe.js` — changes `1`; defects `0`; LOC `308`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 5.63}`
+- `kurage--nuvio--6543d20fdea5148a.js` — changes `1`; defects `0`; LOC `7`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 1.21}`
+- `migrate_matroska_metadata_v1.py` — changes `1`; defects `0`; LOC `167`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 9.01}`
+- `provider_purification_contract_test.py` — changes `10`; defects `0`; LOC `176`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `voiranime--nuvio--3d53c7be817311cc.js` — changes `3`; defects `0`; LOC `6`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 1.19}`
+- `283284e818443cd3ef98ca58aaf0b2c594ecd61219881cb2561baf6c37e545e9.js` — changes `1`; defects `0`; LOC `1`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `update_availability_report.py` — changes `1`; defects `0`; LOC `161`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 9.43}`
+- `opaque_native_media_enrichment_test.py` — changes `1`; defects `0`; LOC `77`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `tv_regression_matrix.py` — changes `2`; defects `0`; LOC `242`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 7.18}`
+- `native_corpus_transport_capability_test.py` — changes `1`; defects `0`; LOC `53`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `build_provider_runtime_profiles.py` — changes `9`; defects `0`; LOC `262`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 7.27}`
+- `instrument_native_client_evidence.py` — changes `1`; defects `0`; LOC `26`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `hdhub4u--published-baseline--d16a6b090e2d03a0.js` — changes `2`; defects `0`; LOC `69`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 1.24}`
+- `native_reader_ownership_policy_test.py` — changes `1`; defects `0`; LOC `97`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `9d8e329755b00a42b1c05cd06a764a2993e1874f67b3b4e2a96b25894d62ceba.js` — changes `1`; defects `0`; LOC `1`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 7.05}`
+- `validate-stage-against-catalog.mjs` — changes `1`; defects `0`; LOC `52`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `french-manga--nuvio--704ee4a3c3ed1713.js` — changes `2`; defects `0`; LOC `8`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 1.040875506750462}`
+- `coflix--nuvio--8e68a045b7688c8d.js` — changes `2`; defects `0`; LOC `47`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 1.012996126783738}`
+- `global_stream_identity_v1.py` — changes `1`; defects `0`; LOC `71`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `toflix_explicit_vf_v1.py` — changes `2`; defects `0`; LOC `34`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `tv_build_candidate_bundles.py` — changes `3`; defects `0`; LOC `70`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 9.68}`
+- `provider_quarantine_test.py` — changes `4`; defects `0`; LOC `45`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `build_nuvio_client_lab_matrix.py` — changes `1`; defects `0`; LOC `56`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 9.68}`
+- `update_provider_device_results.py` — changes `5`; defects `0`; LOC `409`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 6.03}`
+- `catalogue_audit_transient_hls_test.py` — changes `1`; defects `0`; LOC `23`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `desktop_runtime_compat_test.py` — changes `3`; defects `0`; LOC `70`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `normalize_fusion_badge_feed.py` — changes `1`; defects `0`; LOC `82`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 9.24}`
+- `apply_runtime_capability_upgrade_v4.py` — changes `7`; defects `0`; LOC `118`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 9.66}`
+- `deep_repair_loop.py` — changes `5`; defects `0`; LOC `361`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 6.86}`
+- `stream_output_sanitizer_direct_normalization_test.py` — changes `3`; defects `0`; LOC `126`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 9.38}`
+- `deep_repair_rollback_test.py` — changes `6`; defects `0`; LOC `49`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `materialize_core_fixed_point_hardening.py` — changes `2`; defects `0`; LOC `49`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 9.37}`
+- `8acb890bad4a1d442b8d358019aff908aa3f1ad9f5d947a7666f0d1f7bbcaed3.js` — changes `1`; defects `0`; LOC `40`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 8.28}`
+- `native_sync_fetch_target_order_v1.py` — changes `2`; defects `0`; LOC `62`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 8.81}`
+- `provider_evidence_model.py` — changes `2`; defects `0`; LOC `52`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 9.38}`
+- `terser-clean.mjs` — changes `4`; defects `0`; LOC `73`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `targeted_manifest_staging_test.py` — changes `1`; defects `0`; LOC `41`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `runtime-adapters.test.mjs` — changes `1`; defects `0`; LOC `27`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `validate_deep_health_integrity.py` — changes `3`; defects `0`; LOC `130`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 7.22}`
+- `repair_profile_persistence.py` — changes `1`; defects `0`; LOC `24`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `toflix.js` — changes `1`; defects `0`; LOC `1`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 7.03}`
+- `movix_multi_source.py` — changes `2`; defects `0`; LOC `12`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `adaptive_extension_media_proof_test.py` — changes `2`; defects `0`; LOC `70`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `uhdmovies--nuvio--739ddfc148e800ea.js` — changes `1`; defects `0`; LOC `69`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 1.17}`
+- `69b4277574bf29bd898305b9043988f725ad30914e86a803c1d951ac4e556e6b.js` — changes `2`; defects `0`; LOC `1`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 6.48}`
+- `00389aa68899e4924186a24741e3b0a00cebb12486bf3e91fda6ff47311ae8ea.js` — changes `1`; defects `0`; LOC `444`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 5.87}`
+- `merge_native_reader_learning_failures.py` — changes `2`; defects `0`; LOC `197`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 7.97}`
+- `native_reader_gate_test.py` — changes `1`; defects `0`; LOC `40`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 9.68}`
+- `tv_hls_duration_identity.py` — changes `1`; defects `0`; LOC `94`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 9.0}`
+- `243edd8c76b0995a72e02ba6ff7ca47add6063b1d471ebe378d3d6842bd8cadb.js` — changes `1`; defects `0`; LOC `1`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 5.98}`
+- `release_evidence_fence.py` — changes `1`; defects `0`; LOC `89`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 9.23}`
+- `910588acb9a44abb569391dc61643aead09fef349f00887740bb9fa5889bd36e.js` — changes `1`; defects `0`; LOC `382`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 6.44}`
+- `native_android_lab_transport_test.py` — changes `1`; defects `0`; LOC `70`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `global_stream_presentation_v1.py` — changes `2`; defects `0`; LOC `96`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `0a32e94f712ecb4baf1d71869f41658ae43196447220434ba692e1d990237132.js` — changes `1`; defects `0`; LOC `15`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 4.42}`
+- `native_reader_runtime_scope_test.py` — changes `1`; defects `0`; LOC `83`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `runtime_repair.py` — changes `10`; defects `0`; LOC `336`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 6.42}`
+- `media_duration_identity_test.py` — changes `2`; defects `0`; LOC `127`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `purstream-adapter.test.mjs` — changes `1`; defects `0`; LOC `86`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `anime-sama--nuvio--1534014f7ac87d40.js` — changes `2`; defects `0`; LOC `43`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 2.2}`
+- `recipe-memory.mjs` — changes `2`; defects `0`; LOC `133`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 8.13}`
+- `provider-ingest.mjs` — changes `1`; defects `0`; LOC `111`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 9.84}`
+- `6ca973dc475e0dc633d5654a139e1aa3a961ad3f3381cf9d09372a611a7dfa8b.js` — changes `1`; defects `0`; LOC `41`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 4.58}`
+- `provider_activation_override_normalization_test.py` — changes `1`; defects `0`; LOC `43`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `anime-ultime--nuvio--d1ff8e6c7dddda0f.js` — changes `3`; defects `0`; LOC `6`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 1.29}`
+- `vidnest-anime.js` — changes `1`; defects `0`; LOC `421`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 7.51}`
+- `promote_target_media_v4.py` — changes `1`; defects `0`; LOC `91`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 9.37}`
+- `cineby.js` — changes `1`; defects `0`; LOC `1`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `purstream.js` — changes `1`; defects `0`; LOC `1`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 7.53}`
+- `streamzo--nuvio--2dbca5c2f8ff75d3.js` — changes `3`; defects `0`; LOC `12`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 1.35}`
+- `7613343c5da60daeafe3be8882b3a7636c0ff4db3e62f22831a715f0d01e7b27.js` — changes `1`; defects `0`; LOC `421`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 7.51}`
+- `prepare_native_corpus_validation.py` — changes `2`; defects `0`; LOC `425`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 9.09}`
+- `sync_release_versions.py` — changes `6`; defects `0`; LOC `250`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 7.99}`
+- `restage_native_corpus_fixture.py` — changes `1`; defects `0`; LOC `43`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `04c8664fd3977a3279fc262be15e2dde88b409e79eb27cc2ae0d1c0b1056b7f9.js` — changes `1`; defects `0`; LOC `1`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `quick_refresh_policy_test.py` — changes `6`; defects `0`; LOC `108`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `normalize_hls_override_policy.py` — changes `1`; defects `0`; LOC `81`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 8.81}`
+- `264b604bab0dedf5f1b50cd0b165ecb50fffb516c6cb8eca50ba07c0bcbec995.js` — changes `1`; defects `0`; LOC `40`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 4.38}`
+- `native-reader-brain-v4.test.mjs` — changes `1`; defects `0`; LOC `26`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `native_client_test_bootstrap.py` — changes `1`; defects `0`; LOC `101`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 9.48}`
+- `nuvio_tv_target_media_v4.py` — changes `5`; defects `0`; LOC `18`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `adaptive_safe_structured_parse_profile_test.py` — changes `1`; defects `0`; LOC `71`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `provider-analysis.mjs` — changes `2`; defects `0`; LOC `168`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 9.07}`
+- `override_net_noop_regression_test.py` — changes `3`; defects `0`; LOC `54`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `422d7f2fc6c51ea3d4f77596382cd817b1d482997c46ff7509b6ce11b205404d.js` — changes `1`; defects `0`; LOC `1`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 7.2}`
+- `provider_security_hardening.py` — changes `5`; defects `0`; LOC `325`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 8.26}`
+- `8fb7fbc12e23d28185927a5a7f47fa65874ff0d1b1f3e01f4dbf9813c4fc7862.js` — changes `1`; defects `0`; LOC `1`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `language_manifest_metadata_consistency_test.py` — changes `1`; defects `0`; LOC `35`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `validate_policy.py` — changes `5`; defects `0`; LOC `532`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 6.59}`
+- `bootstrap-provider-catalog.mjs` — changes `3`; defects `0`; LOC `37`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `validate_platform_runtime_policy.py` — changes `4`; defects `0`; LOC `186`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 6.54}`
+- `movieblast--nuvio--013cf11bf5416d1d.js` — changes `1`; defects `0`; LOC `7`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 1.58}`
+- `0e28c37dfc872ff53b807b22053d3a58a5d0bd97f9a2dd6f1d15e8fd1d20c34f.js` — changes `1`; defects `0`; LOC `40`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 4.55}`
+- `cbf14d7c8fe2e76ed4aabc6a0dfa3677e3c0059fe6f6b1ac8d600065a7f4c359.js` — changes `1`; defects `0`; LOC `40`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 8.28}`
+- `papadustream_anime_tv_v1.py` — changes `1`; defects `0`; LOC `42`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `publish_cross_platform_runtime_policy.py` — changes `5`; defects `0`; LOC `159`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 7.36}`
+- `30c207564c1b85bc0fd01bfc9a4741727593c535b9b13c2702b2c0453326b8f8.js` — changes `1`; defects `0`; LOC `289`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 8.02}`
+- `5989f97be6cce82a382e7dc29b8bc8e4c0441146fb994cf1950607fe5cae8bce.js` — changes `1`; defects `0`; LOC `1`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 8.22}`
+- `scoped_playback_context_regression_test.py` — changes `3`; defects `0`; LOC `91`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 9.68}`
+- `publish_nuvio_tv_compat_v2.py` — changes `2`; defects `0`; LOC `225`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 8.37}`
+- `native_reader_backlog_test.py` — changes `1`; defects `0`; LOC `198`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 9.68}`
+- `native_sync_fetch_target_order_test.py` — changes `3`; defects `0`; LOC `149`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `vf_catalogue_identity_hardening_test.py` — changes `1`; defects `0`; LOC `32`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `streamzo_source_identity_v2.py` — changes `1`; defects `0`; LOC `40`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `validate_settings_pipeline.py` — changes `3`; defects `0`; LOC `46`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `activation_preservation_core_rehash_test.py` — changes `1`; defects `0`; LOC `105`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `25fb224e2ac0575055aca1dfce4263bc069780b99d86433692f770289971c3ce.js` — changes `6`; defects `0`; LOC `1`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 6.58}`
+- `vixsrc.js` — changes `1`; defects `0`; LOC `1`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 1.0073177377763536}`
+- `prune_unreferenced_providers.py` — changes `5`; defects `0`; LOC `139`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 9.05}`
+- `5b3d2c649dc4b5c223e70dd0e0d74fb544f15f99019864d44502dded2c6928d4.js` — changes `1`; defects `0`; LOC `470`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 4.78}`
+- `adaptive_runtime_recovery_v4.py` — changes `3`; defects `0`; LOC `90`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 9.52}`
+- `quick_repair_acceptance_policy_test.py` — changes `1`; defects `0`; LOC `60`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 9.68}`
+- `native_corpus_collector_assertion_test.py` — changes `1`; defects `0`; LOC `46`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `d93b33e3999ffb1e5dca8fff16f9208e987b8b2b7470fe7d66d451bd9388d26c.js` — changes `1`; defects `0`; LOC `40`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 8.28}`
+- `hianime.js` — changes `1`; defects `0`; LOC `1`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `targeted_vf_repair_config_test.py` — changes `1`; defects `0`; LOC `15`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `learning-lab-memory.test.mjs` — changes `2`; defects `0`; LOC `101`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `stream-presentation.test.mjs` — changes `1`; defects `0`; LOC `120`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `b4966c7fd78842d59085fe197bc89ddbbc6c23c9a0f9c5ba6b114eedb7673f00.js` — changes `1`; defects `0`; LOC `1`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `promote_refresh_candidates.py` — changes `5`; defects `0`; LOC `410`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 6.63}`
+- `validate_published_overrides.py` — changes `11`; defects `0`; LOC `240`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 5.7}`
+- `domain_refresh_workflow_test.py` — changes `2`; defects `0`; LOC `22`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `published_overrides_test.py` — changes `11`; defects `0`; LOC `180`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `global_media_enrichment_v1.py` — changes `6`; defects `0`; LOC `169`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 9.02}`
+- `prepare_native_reader_acceptance.py` — changes `1`; defects `0`; LOC `244`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 7.65}`
+- `hls_master_audio_preserver_v1.py` — changes `14`; defects `0`; LOC `149`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 9.09}`
+- `4b75a13ad9f3a9e7c067e8cbd18a66830cce4ad0d7e75ed28eca66cf1ed32b5d.js` — changes `1`; defects `0`; LOC `1`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `frenchstream--published-baseline--afc63f94bce386c8.js` — changes `1`; defects `0`; LOC `2`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `type_scoped_activation_test.py` — changes `5`; defects `0`; LOC `88`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `sync_catalogue_audit_gate_test.py` — changes `4`; defects `0`; LOC `89`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `native_repository_cache_contract_test.py` — changes `1`; defects `0`; LOC `83`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `kisskh--nuvio--87a7819756de4754.js` — changes `1`; defects `0`; LOC `6`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 1.38}`
+- `apply_dns_migration_overrides.py` — changes `6`; defects `0`; LOC `167`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 7.69}`
+- `showbox.js` — changes `1`; defects `0`; LOC `1`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `prepare_native_corpus_client.py` — changes `5`; defects `0`; LOC `248`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 7.56}`
+- `movix_api_route_discovery_test.py` — changes `1`; defects `0`; LOC `48`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `reapply_published_overrides.py` — changes `18`; defects `0`; LOC `560`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 5.03}`
+- `provider_versioning_test.py` — changes `1`; defects `0`; LOC `18`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `apply_native_catalogue_recovery_budget_upgrade_v1.py` — changes `2`; defects `0`; LOC `64`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 9.38}`
+- `sync_curated.py` — changes `1`; defects `0`; LOC `440`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 7.38}`
+- `5e60b3b7c16a1013c1b7d2c05ea21deae0e43977f7c29e4e36c4e4439e7a581c.js` — changes `1`; defects `0`; LOC `40`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 8.28}`
+- `0e8ad342ffe970ea100695f521f10bdf880d869aa9228713a0848a20dc9bd412.js` — changes `1`; defects `0`; LOC `107`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 9.21}`
+- `hdhub4u.js` — changes `1`; defects `0`; LOC `1`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 8.06}`
+- `provider_compiler.py` — changes `3`; defects `0`; LOC `411`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 5.71}`
+- `evidence.test.mjs` — changes `2`; defects `0`; LOC `48`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `showbox--nuvio--40cc30aa37186a3b.js` — changes `1`; defects `0`; LOC `7`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 1.58}`
+- `84c238d709658061acae138864ed54a023ab9a5c458fef1466aef84a0852a802.js` — changes `1`; defects `0`; LOC `40`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 4.66}`
+- `native-reader-diagnosis.test.mjs` — changes `1`; defects `0`; LOC `208`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `runtime_capability_media_safety_v4.py` — changes `5`; defects `0`; LOC `148`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 9.1}`
+- `vidsrc.js` — changes `1`; defects `0`; LOC `1`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 7.0}`
+- `global_playback_integrity_policy_test.py` — changes `9`; defects `0`; LOC `160`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 9.38}`
+- `override_text_utils.py` — changes `1`; defects `0`; LOC `36`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `yflix--published-baseline--73c2ad08ce54c5ec.js` — changes `1`; defects `0`; LOC `6`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 1.36}`
+- `animoflix--nuvio--e28375272adfd418.js` — changes `3`; defects `0`; LOC `6`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 1.28}`
+- `resolve_provider_hubs.py` — changes `8`; defects `0`; LOC `972`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 2.2}`
+- `generate_language_manifests.py` — changes `3`; defects `0`; LOC `284`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 7.43}`
+- `validate_mobile_runtime_policy.py` — changes `2`; defects `0`; LOC `68`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 9.27}`
+- `tv_hls_master_quality.py` — changes `1`; defects `0`; LOC `78`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 8.51}`
+- `audit_catalogue_media.py` — changes `1`; defects `0`; LOC `38`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `normalize_provider_activation_overrides.py` — changes `1`; defects `0`; LOC `96`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 9.15}`
+- `stream_output_sanitizer_reconfiguration_test.py` — changes `2`; defects `0`; LOC `39`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `hianime--nuvio--16f46d55f1792499.js` — changes `1`; defects `0`; LOC `7`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 1.34}`
+- `activation_preservation_core_rehash.py` — changes `3`; defects `0`; LOC `255`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 7.99}`
+- `vf_category_evidence_policy_test.py` — changes `1`; defects `0`; LOC `14`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `safe_structured_parse_skill_test.py` — changes `1`; defects `0`; LOC `38`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `provider_rebuild.py` — changes `1`; defects `0`; LOC `165`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 7.91}`
+- `native_tv_route_checkpoint.py` — changes `1`; defects `0`; LOC `143`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 8.94}`
+- `e1549e3093c7b378c12ea2227c07090f6a50376e139979446e2a96f27e3e119a.js` — changes `1`; defects `0`; LOC `308`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 5.63}`
+- `668797edb270c5fed931b08e0c92ca6693420041838f3b8ef49e28ddb1e7e463.js` — changes `1`; defects `0`; LOC `1`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 7.85}`
+- `manual_negative_safety_evidence_test.py` — changes `1`; defects `0`; LOC `73`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `repair_identity_gate.py` — changes `5`; defects `0`; LOC `87`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 8.72}`
+- `1b6f2bfc911be7f66d813b6ee9007144b261ee8594010968bf76b0c691a1345c.js` — changes `1`; defects `0`; LOC `40`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 8.28}`
+- `decision-engine.mjs` — changes `1`; defects `0`; LOC `76`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 9.38}`
+- `vegamovies--nuvio--5ca48f57a1be24a4.js` — changes `2`; defects `0`; LOC `70`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 1.085707948730167}`
+- `media-validator.test.mjs` — changes `2`; defects `0`; LOC `203`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 8.72}`
+- `global_stream_presentation_test.py` — changes `2`; defects `0`; LOC `144`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `upstream_lkg_test.py` — changes `1`; defects `0`; LOC `45`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `workflow_security_policy_test.py` — changes `1`; defects `0`; LOC `34`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `goatapi--nuvio--62c60c07d77f525c.js` — changes `1`; defects `0`; LOC `7`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 1.26}`
+- `healthy_sibling_resolution_test.py` — changes `1`; defects `0`; LOC `46`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `repairable_observation_statuses_test.py` — changes `2`; defects `0`; LOC `76`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `moonflix--nuvio--0f23f8933a15be90.js` — changes `2`; defects `0`; LOC `7`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 1.56}`
+- `provider_wrapper_isolation_test.py` — changes `2`; defects `0`; LOC `67`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `watch-upstream-providers.mjs` — changes `1`; defects `0`; LOC `215`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 8.67}`
+- `9db362a48297eabbbbbf658a2aef5ea3084a9df09c64436f5b8b36e09b576619.js` — changes `1`; defects `0`; LOC `40`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 8.28}`
+- `bba8152dfabeba85879015ad2b313022784dcd07560d07a1b3fed152d703c4e8.js` — changes `1`; defects `0`; LOC `1`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `category_regression_policy_test.py` — changes `4`; defects `0`; LOC `28`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `evidence.mjs` — changes `2`; defects `0`; LOC `90`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `extract_target_provider_routes_v3.py` — changes `1`; defects `0`; LOC `81`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 9.63}`
+- `e3a5ca37785b04610a23a44a509dabf134c9154a35dd91d3070f3766029b5792.js` — changes `1`; defects `0`; LOC `279`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 7.32}`
+- `provider-spec-builder.test.mjs` — changes `1`; defects `0`; LOC `57`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `terminal_quarantine_stage_normalization_test.py` — changes `2`; defects `0`; LOC `84`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `audit_all_nuvio_tv_providers.py` — changes `1`; defects `0`; LOC `380`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 7.63}`
+- `request_header_recovery.py` — changes `1`; defects `0`; LOC `79`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `native_tv_route_resume_test.py` — changes `2`; defects `0`; LOC `106`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `html_search_recovery.py` — changes `3`; defects `0`; LOC `151`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 7.58}`
+- `coflix_exact_catalogue.py` — changes `1`; defects `0`; LOC `31`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `native_reader_learning_memory_test.py` — changes `1`; defects `0`; LOC `117`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `flemmix--nuvio--28feb933173e1d93.js` — changes `2`; defects `0`; LOC `46`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 1.54}`
+- `global_final_wrapper_order_test.py` — changes `1`; defects `0`; LOC `50`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `audit_provider_catalogue_breadth.py` — changes `1`; defects `0`; LOC `394`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 6.67}`
+- `weekly_upstream_provider_discovery_test.py` — changes `1`; defects `0`; LOC `112`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 9.68}`
+- `03865cdddc4b4ae9e8155e1ccdf691b725ede65a9d86b3f4ca9b4943eed9d0bb.js` — changes `1`; defects `0`; LOC `1`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 6.21}`
+- `generic_recovery_hardening_test.py` — changes `3`; defects `0`; LOC `97`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `73098d13964fbeca2b19a3c80782a27b08129898b8da5a82f9b8088f37168d68.js` — changes `1`; defects `0`; LOC `279`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 7.19}`
+- `e00e7b0d65b15622e0b6bcdce3ccc92d6226853197962348ced4af47343f07ab.js` — changes `1`; defects `0`; LOC `1`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 6.98}`
+- `normalize_runtime_domain_fixed_point.py` — changes `2`; defects `0`; LOC `311`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 9.41}`
+- `native_sync_fetch_target_order_minified_v5.py` — changes `3`; defects `0`; LOC `46`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 9.68}`
+- `cineby--nuvio--362be8a6f3f6d912.js` — changes `1`; defects `0`; LOC `7`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 1.58}`
+- `8f6931a418a437f64d697f6eafdc27b8c2408cefd9accc5c7e7d9810871ed81a.js` — changes `1`; defects `0`; LOC `1`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 7.86}`
+- `live-purstream-v2.mjs` — changes `2`; defects `0`; LOC `155`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 9.68}`
+- `build_native_reader_retest_manifest.py` — changes `1`; defects `0`; LOC `97`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 9.22}`
+- `waveanime--nuvio--73791b692bd0e1d9.js` — changes `3`; defects `0`; LOC `6`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 1.12}`
+- `4khdhub--nuvio--0f6f5c2d6b7d183d.js` — changes `1`; defects `0`; LOC `9`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 1.14}`
+- `health_check.mjs` — changes `20`; defects `0`; LOC `1798`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 1.71}`
+- `check-nuvio-contracts.mjs` — changes `1`; defects `0`; LOC `83`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `animevostfr.js` — changes `1`; defects `0`; LOC `40`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 8.28}`
+- `native_lab_observational_purity_test.py` — changes `1`; defects `0`; LOC `191`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `stream_output_sanitizer_v6.py` — changes `3`; defects `0`; LOC `135`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 8.54}`
+- `normalize_terminal_quarantine_stage.py` — changes `3`; defects `0`; LOC `112`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 8.22}`
+- `native_pr_timeout_contract_test.py` — changes `1`; defects `0`; LOC `17`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `zinkmovies--published-baseline--8d8ebe793ab0b274.js` — changes `1`; defects `0`; LOC `6`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 1.49}`
+- `vidrock--nuvio--cc31f1a86b46e585.js` — changes `1`; defects `0`; LOC `7`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 1.58}`
+- `18c3688c2dc26c877a9302916b19b0dad5537dbac06954496627907c59920b22.js` — changes `1`; defects `0`; LOC `40`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 4.78}`
+- `release_auto_bump_test.py` — changes `2`; defects `0`; LOC `142`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `01be002c28d0e160b59ae64a6d27e9a6f002db14bff071b47c58c43b40f5754e.js` — changes `1`; defects `0`; LOC `41`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 4.79}`
+- `native_player_diagnostics_codegen_test.py` — changes `2`; defects `0`; LOC `121`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `moviebox--published-baseline--33507d0a8889b61b.js` — changes `1`; defects `0`; LOC `3`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 5.34}`
+- `provider-spec-builder.mjs` — changes `1`; defects `0`; LOC `119`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 8.95}`
+- `videasy.js` — changes `1`; defects `0`; LOC `1`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 6.29}`
+- `merge_native_reader_backlog.py` — changes `1`; defects `0`; LOC `396`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 5.58}`
+- `sekai--nuvio-audit-quarantine--7947316d3cbed215.js` — changes `1`; defects `0`; LOC `1`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `plan-repairs.mjs` — changes `6`; defects `0`; LOC `339`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 8.39}`
+- `stream_output_sanitizer.py` — changes `6`; defects `0`; LOC `258`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 8.82}`
+- `provider_coverage_preservation_test.py` — changes `3`; defects `0`; LOC `152`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 9.68}`
+- `ad02f9faf8385c8857123ccb2931aa171f219a43c822daef32822ce1a834dbe5.js` — changes `1`; defects `0`; LOC `1`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 8.52}`
+- `0f9f52a4c69bebe4c843c0b3ae06a410d3688569316446f45877ad964c316499.js` — changes `1`; defects `0`; LOC `1`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 2.86}`
+- `canonical_media_types_test.py` — changes `1`; defects `0`; LOC `129`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 9.68}`
+- `animesama-co--nuvio--35cc3353ca8e0638.js` — changes `2`; defects `0`; LOC `6`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 1.18}`
+- `hindmoviez--nuvio--b89e6b383aa6a823.js` — changes `1`; defects `0`; LOC `7`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 1.49}`
+- `global_local_repair_pipeline_test.py` — changes `1`; defects `0`; LOC `26`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 9.68}`
+- `streamzo_target_media_profile_test.py` — changes `3`; defects `0`; LOC `77`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `vidlove--nuvio--b83caf048087c209.js` — changes `1`; defects `0`; LOC `8`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 1.58}`
+- `streamzo_data_embed.py` — changes `2`; defects `0`; LOC `22`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `prune_unreferenced_providers_test.py` — changes `6`; defects `0`; LOC `82`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `toflix_explicit_vf_v2.py` — changes `1`; defects `0`; LOC `33`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `augment_native_desktop_player.py` — changes `1`; defects `0`; LOC `257`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 9.68}`
+- `moviesdrive.js` — changes `1`; defects `0`; LOC `1`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `prepare_native_candidate_repository.py` — changes `1`; defects `0`; LOC `80`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 9.24}`
+- `vidsrc--nuvio-audit-quarantine--7947316d3cbed215.js` — changes `1`; defects `0`; LOC `1`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `export_nuvio_client_refs.py` — changes `2`; defects `0`; LOC `48`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 9.68}`
+- `df33f490a73779f40b29ad612863fd4b192768567338a2171289fe5316e40ef6.js` — changes `1`; defects `0`; LOC `1`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `streamflix.js` — changes `1`; defects `0`; LOC `404`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 6.33}`
+- `stage_published.py` — changes `1`; defects `0`; LOC `115`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 8.91}`
+- `domain-discovery.mjs` — changes `3`; defects `0`; LOC `237`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 7.1}`
+- `anizone.js` — changes `1`; defects `0`; LOC `352`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 6.12}`
+- `extract_targeted_route_contexts.py` — changes `1`; defects `0`; LOC `207`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 9.58}`
+- `f96d16c8b4e067394dd41f41a7fbc1a5bb1c3179c5198d35faaaa627e3cac02e.js` — changes `1`; defects `0`; LOC `1`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 7.43}`
+- `global_stream_output_guard_test.py` — changes `5`; defects `0`; LOC `7`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `adaptive_domain_recovery.py` — changes `5`; defects `0`; LOC `111`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 9.35}`
+- `27a986268c9948edf86b5d9150493dcb8f6263fcad3c260f93403bc9348cb8fc.js` — changes `1`; defects `0`; LOC `1`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 5.85}`
+- `cinemacity.js` — changes `1`; defects `0`; LOC `279`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 7.32}`
+- `35f3a66b3ff1e7d73fca85955920bb134d2e14f74e12a8ceb362782f06ae8c48.js` — changes `6`; defects `0`; LOC `1`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 8.06}`
+- `2e732f8baa25726b09d0716455e930142527c7e7b3dce981be6a2ba115c463e5.js` — changes `1`; defects `0`; LOC `1`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 7.66}`
+- `8a8be4b37545ad4dc2e163e1f4476ff4e128a99691389ecbe3e6901aafbe0ea3.js` — changes `1`; defects `0`; LOC `40`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 4.64}`
+- `87bbb1d8359caec9c7b98f22c9a88a9045c8bb1b5c0780a0e04842ab62bbabdb.js` — changes `1`; defects `0`; LOC `246`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 6.97}`
+- `00ccdc1b1c728e059c68677ce60fe2d69317a1b5cf894dc1bf8e78ab4c38e725.js` — changes `1`; defects `0`; LOC `40`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 8.28}`
+- `audit_all_nuvio_tv_providers_v2.py` — changes `1`; defects `0`; LOC `48`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 9.45}`
+- `mycima--nuvio--9d15ea128d78ab9f.js` — changes `1`; defects `0`; LOC `93`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 1.33}`
+- `1ab9fb1cec10acffb9d1e4a59f04ed1b18e20c5cef7632d63e0336c24a89eabe.js` — changes `1`; defects `0`; LOC `40`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 8.28}`
+- `9750c41a72fe7978d81eabd1b3704529cac0c13a7830a1d608afec5c892271cd.js` — changes `2`; defects `0`; LOC `1`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `b38a464f826f7ea87fee2c4e483ccbe9d5925e8a89a678a816b77873245611eb.js` — changes `1`; defects `0`; LOC `1`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 1.31}`
+- `ca1223b5ee78c12b0cbca6f208e977a14ab78d699893f6225aac04f8b60f8a94.js` — changes `1`; defects `0`; LOC `347`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 6.16}`
+- `c83b23943f9783f2b57008fac62f5fd2a05fea0c826f4b1ca74d53198152b286.js` — changes `1`; defects `0`; LOC `1`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 7.0}`
+- `normalize_provider_rebuild_safety.py` — changes `13`; defects `0`; LOC `244`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 8.09}`
+- `native_reader_brain_repair_test.py` — changes `1`; defects `0`; LOC `310`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 9.68}`
+- `normalize_provider_branding_pipeline.py` — changes `1`; defects `0`; LOC `94`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 9.09}`
+- `b90ce3c9aceca167d9f97d57ba2487029b0dd75e61abc4d7e8ad1dd97864a1d5.js` — changes `1`; defects `0`; LOC `1`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `new_provider_same_deep_profile_test.py` — changes `4`; defects `0`; LOC `43`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `french_manga_player_capture_v1_test.py` — changes `1`; defects `0`; LOC `11`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js` — changes `2`; defects `0`; LOC `904`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 4.43}`
+- `native_media_type_capability_test.py` — changes `1`; defects `0`; LOC `119`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 9.68}`
+- `1a87a44dbbfb3bc6e7757c401eb0730e994f8661a8cc3b77741c3b36ba522c90.js` — changes `1`; defects `0`; LOC `45`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 3.63}`
+- `scope_native_reader_learning_runtime.py` — changes `1`; defects `0`; LOC `168`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 8.63}`
+- `quick_repair_probe_profile_test.py` — changes `7`; defects `0`; LOC `142`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `animeworld--nuvio--3485cf86203b430f.js` — changes `1`; defects `0`; LOC `7`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 1.58}`
+- `run_adaptive_deep_repair.py` — changes `9`; defects `0`; LOC `106`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 9.38}`
+- `promote_candidates.py` — changes `26`; defects `0`; LOC `2242`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 1.94}`
+- `peachify--nuvio--2a80a0c70fb02936.js` — changes `3`; defects `0`; LOC `7`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 1.14}`
+- `stream_output_sanitizer_fail_closed_test.py` — changes `3`; defects `0`; LOC `84`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `runtime_repair_test.py` — changes `5`; defects `0`; LOC `238`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 9.38}`
+- `toflix--nuvio-audit-quarantine--7947316d3cbed215.js` — changes `1`; defects `0`; LOC `1`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `deep_stream_sampling_test.py` — changes `2`; defects `0`; LOC `25`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `allwish--nuvio--ac90de9f5b97f5ea.js` — changes `1`; defects `0`; LOC `7`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 1.58}`
+- `movies4u--nuvio--de03f0e4bd791c91.js` — changes `3`; defects `0`; LOC `8`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 1.0842102505386508}`
+- `movix--nuvio--d83ac3961958f339.js` — changes `2`; defects `0`; LOC `46`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 1.32}`
+- `resolve_nuvio_lab_heads.py` — changes `2`; defects `0`; LOC `98`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 9.48}`
+- `provider_engine_normalizer.py` — changes `7`; defects `0`; LOC `403`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 5.69}`
+- `08a5b7bc99ec727d02517885af164c09323d82578a67c14717fa4088d5f081d3.js` — changes `1`; defects `0`; LOC `40`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 8.28}`
+- `platform_runtime_upstream_observation_policy_test.py` — changes `1`; defects `0`; LOC `40`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `faca2f10062c81707f8e3274c805f9947d6ee495c9c109c91a39be743b1da6fa.js` — changes `1`; defects `0`; LOC `40`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 4.33}`
+- `e62064b45a10a505612be560f20cbd39ad34be7fa69c4fcafe51d9714f72aa05.js` — changes `1`; defects `0`; LOC `40`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 8.28}`
+- `nuvio_tv_direct_media_v2_exposed.py` — changes `1`; defects `0`; LOC `16`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `vidlink--published-baseline--aace426e05988149.js` — changes `1`; defects `0`; LOC `7`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 1.58}`
+- `stream-presentation.mjs` — changes `1`; defects `0`; LOC `158`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 8.28}`
+- `9513cf00755eb1b6bbeb570f9524fde4c6eeffd7ea61d28ff3f7a9882a692f0a.js` — changes `1`; defects `0`; LOC `1`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `yflix.js` — changes `1`; defects `0`; LOC `347`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 6.16}`
+- `animezey_stream_host_v1.py` — changes `1`; defects `0`; LOC `23`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `platform_runtime_probe.mjs` — changes `2`; defects `0`; LOC `269`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 7.04}`
+- `anikototv--nuvio--611d21f1c069d93b.js` — changes `1`; defects `0`; LOC `8`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 1.34}`
+- `nuvio_runtime_compatibility.py` — changes `1`; defects `0`; LOC `151`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 8.54}`
+- `audit_native_client_checkout.py` — changes `1`; defects `0`; LOC `181`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 7.1}`
+- `moviesdrive--nuvio--8a201261602b813e.js` — changes `1`; defects `0`; LOC `9`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 1.39}`
+- `a8516b7fcc81ce7013b51f3be9a905de9defe34d654e52c01d0a944dbb624a89.js` — changes `1`; defects `0`; LOC `1`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `bedc41b8caf7e7cb371b5b96bb949970278c8a51b83847eaa64f46ca0317c521.js` — changes `1`; defects `0`; LOC `1`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `strict_native_identity_guard_test.py` — changes `5`; defects `0`; LOC `40`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `uhdmovies.js` — changes `1`; defects `0`; LOC `1`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 6.48}`
+- `playback_context_compat_test.py` — changes `3`; defects `0`; LOC `132`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `86b8c3a4dff3c98c05db88eb075936b2f4ec00d504b967f1150bdfbd6fa620ac.js` — changes `1`; defects `0`; LOC `1`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `repair_profile_persistence_test.py` — changes `1`; defects `0`; LOC `28`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `animepahe--published-baseline--1bafa3c8c1349575.js` — changes `1`; defects `0`; LOC `119`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 1.24}`
+- `probe-provider-domains.mjs` — changes `3`; defects `0`; LOC `107`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `interstellar_nuvio_matrix.py` — changes `2`; defects `0`; LOC `200`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 9.39}`
+- `anizone--published-baseline--f695a6982dc37212.js` — changes `1`; defects `0`; LOC `7`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 1.35}`
+- `7b658f1f8d1456986d235a9aadee3cad314fb9ba7ddd907978e16a14b6054e74.js` — changes `1`; defects `0`; LOC `1`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `a1f38e1819d61f9efd91648372ead67ce805c1ffd9f46acdff136d83a9e0715e.js` — changes `2`; defects `0`; LOC `1`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 7.18}`
+- `resolver-core.test.mjs` — changes `2`; defects `0`; LOC `83`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `provider_specific_adapters_test.py` — changes `6`; defects `0`; LOC `69`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `faccc37938836b50acc6a8862e14b818a086289b63ba9c6d18d654ca933d8aac.js` — changes `1`; defects `0`; LOC `1`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 9.19}`
+- `582bea0104f796f980202729f988aef4ceeef9b8d90182eda0deb053fba21043.js` — changes `1`; defects `0`; LOC `40`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 8.28}`
+- `migrate_media_duration_identity_v1.py` — changes `2`; defects `0`; LOC `206`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 8.42}`
+- `runtime_capability_media_safety_v4_test.py` — changes `5`; defects `0`; LOC `122`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `c91c43aedb5b489c07a030766fd22550cf8773fce6845f21f4a20c7398efeb94.js` — changes `1`; defects `0`; LOC `216`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 8.07}`
+- `allanime--nuvio-audit-quarantine--7947316d3cbed215.js` — changes `1`; defects `0`; LOC `1`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `migrate_tv_catalogue_fixtures_v1.py` — changes `1`; defects `0`; LOC `90`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 9.38}`
+- `provider_purification.py` — changes `5`; defects `0`; LOC `428`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 7.2}`
+- `isolate_native_android_tests.py` — changes `1`; defects `0`; LOC `47`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 9.48}`
+- `gramcinema--nuvio--bef899cb14e5a528.js` — changes `1`; defects `0`; LOC `7`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 1.24}`
+- `frenchstream_detail_players.py` — changes `2`; defects `0`; LOC `15`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `report_new_upstream_providers.py` — changes `1`; defects `0`; LOC `204`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 7.76}`
+- `provider_capabilities_test.py` — changes `1`; defects `0`; LOC `26`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `test_global_provider_repair.py` — changes `1`; defects `0`; LOC `101`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 6.94}`
+- `language_domain_homepage_fallback_test.py` — changes `1`; defects `0`; LOC `90`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `cinevibe--nuvio--94d415b19785b5cc.js` — changes `1`; defects `0`; LOC `6`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 1.77}`
+- `vidfast--nuvio--034abb817645da08.js` — changes `1`; defects `0`; LOC `68`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 1.45}`
+- `native_android_avd_cache_contract_test.py` — changes `4`; defects `0`; LOC `46`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `regenerate_light_badges.py` — changes `1`; defects `0`; LOC `214`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 7.98}`
+- `allanime.js` — changes `1`; defects `0`; LOC `1`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 6.58}`
+- `test_route_overrides.py` — changes `2`; defects `0`; LOC `32`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `f679614bf1f955dcfea633d527e9ce40b56768ec3ff32648a651f565c121b70c.js` — changes `1`; defects `0`; LOC `1`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `cinefreak.js` — changes `1`; defects `0`; LOC `1`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 7.2}`
+- `45da927a6eabb07e8b09c2b187b424af16403d77933e2fc50007c216fffe9abe.js` — changes `1`; defects `0`; LOC `40`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 4.03}`
+- `target_media_host_filter_v4.py` — changes `1`; defects `0`; LOC `28`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `43c70c0cad61e4f16fe3d114a87045d6aeb71047dda1d104f31d055a129ce135.js` — changes `1`; defects `0`; LOC `487`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 6.16}`
+- `e9ab3933199a83511b39fb0392411c2ea478071f77baecc66fca2fe28432095d.js` — changes `1`; defects `0`; LOC `40`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 4.71}`
+- `quarantine_catalogue_audit_failures.py` — changes `3`; defects `0`; LOC `386`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 6.89}`
+- `french-manga.js` — changes `1`; defects `0`; LOC `40`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 8.28}`
+- `animezey--nuvio--e175bf5a3f407060.js` — changes `1`; defects `0`; LOC `8`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 1.42}`
+- `animevostfr--published-baseline--5d6497ae52716b17.js` — changes `2`; defects `0`; LOC `7`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 1.18}`
+- `dns_preflight.test.mjs` — changes `6`; defects `0`; LOC `226`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `update_availability.py` — changes `2`; defects `0`; LOC `290`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 6.61}`
+- `d67399b8f3d221dea530132cbaafc95777469e1f12fed665b7c2d90f5823e195.js` — changes `1`; defects `0`; LOC `766`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 5.9}`
+- `migrate_type_scoped_activation_v1.py` — changes `1`; defects `0`; LOC `239`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 8.26}`
+- `generate_release_hashes.py` — changes `19`; defects `0`; LOC `138`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 9.66}`
+- `promote_global_nuvio_tv_candidates.py` — changes `4`; defects `0`; LOC `318`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 7.56}`
+- `98aeea26aa4511affc468b897dc050ca1d481684fcf712693fb8b1928f7135f8.js` — changes `1`; defects `0`; LOC `321`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 8.09}`
+- `60ec5bba1e6d0052b9fa495ddaeec23841a43dcaee18158db5f222e055c0c209.js` — changes `1`; defects `0`; LOC `1`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 6.53}`
+- `enforce_main_only_repository_policy.py` — changes `2`; defects `0`; LOC `60`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 8.95}`
+- `movieshunt--nuvio--71081d56107fce18.js` — changes `3`; defects `0`; LOC `62`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 1.28}`
+- `animekai.js` — changes `1`; defects `0`; LOC `1`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 7.32}`
+- `short_hls_preview_guard_test.py` — changes `3`; defects `0`; LOC `47`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `nuvio_tv_target_media_playback_context_test.py` — changes `2`; defects `0`; LOC `106`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 9.5}`
+- `animetsu--published-baseline--84c9b28540b01e3a.js` — changes `1`; defects `0`; LOC `6`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 1.38}`
+- `provider-branding.mjs` — changes `1`; defects `0`; LOC `40`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 9.5}`
+- `349fcae9fefac1123f155ece222e4789e277c83c249fb7d7a6964eeb709da908.js` — changes `1`; defects `0`; LOC `40`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 8.28}`
+- `safe_structured_parse_v1.py` — changes `1`; defects `0`; LOC `89`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `release_version_sync_test.py` — changes `11`; defects `0`; LOC `74`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `merge_native_reader_repair_learning.py` — changes `1`; defects `0`; LOC `261`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 6.76}`
+- `override_transaction_order_test.py` — changes `1`; defects `0`; LOC `54`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `native_reader_provider_retention_policy_test.py` — changes `1`; defects `0`; LOC `92`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `summarize_targeted_contexts.py` — changes `1`; defects `0`; LOC `61`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 9.63}`
+- `global_core_presentation_pipeline_test.py` — changes `3`; defects `0`; LOC `20`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `adaptive_domain_recovery_test.py` — changes `2`; defects `0`; LOC `58`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `french_manga_target_media_profile_test.py` — changes `1`; defects `0`; LOC `3`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `removed_provider_regression_test.py` — changes `3`; defects `0`; LOC `23`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `15ea49f3f86be417b8f03e6395b8d0a6a0a1c5eedc2d133520cb627e2840be3d.js` — changes `1`; defects `0`; LOC `1`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 5.94}`
+- `provider_hub_registry_test.py` — changes `3`; defects `0`; LOC `125`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `079f1fda3eaa41570c0152d0f2d0e87f27bceb6bdfca1bd6ff0f49a30bf27cf3.js` — changes `1`; defects `0`; LOC `40`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 4.45}`
+- `native_reader_exhaustive_acceptance_test.py` — changes `1`; defects `0`; LOC `97`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `db5eae7135585d0287da40f976f7a37e8cd0accb89092a3ba7c01d2928ca3f68.js` — changes `1`; defects `0`; LOC `40`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 4.5}`
+- `822936ae3176278a967f2708ea7dfaaea69e6258784f360e9ef3f1991382b3aa.js` — changes `1`; defects `0`; LOC `15`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 4.2}`
+- `run_brain_learning_sandbox.py` — changes `1`; defects `0`; LOC `94`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 8.66}`
+- `french_manga_player_capture_v1.py` — changes `1`; defects `0`; LOC `28`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `build_native_reader_learning_summary.py` — changes `3`; defects `0`; LOC `153`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 9.3}`
+- `nuvio_client_lab_dynamic_selection_test.py` — changes `1`; defects `0`; LOC `30`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `vf_recovery_profiles_test.py` — changes `5`; defects `0`; LOC `95`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 9.47}`
+- `validate_language_projection.py` — changes `2`; defects `0`; LOC `56`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 9.58}`
+- `0ce8feb778037bb82841a77dc50781156b39832fd6add819cfdc6a87817dd998.js` — changes `1`; defects `0`; LOC `45`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 3.44}`
+- `runtime_media_safety_guard_test.py` — changes `1`; defects `0`; LOC `81`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `normalize_published_security_finalization.py` — changes `1`; defects `0`; LOC `70`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 9.53}`
+- `10036dcfaf83f4c9cce6c0e0ae2711858e4d48427cfa1e16dbe8f299a3991c9b.js` — changes `1`; defects `0`; LOC `40`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 4.34}`
+- `eab1cf4e750e28dc3acf1b5b59d6a38ff0cd1abe07ae0272fae478daa2321f75.js` — changes `1`; defects `0`; LOC `40`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 4.78}`
+- `normalize_core_media_policy.py` — changes `9`; defects `0`; LOC `213`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 6.81}`
+- `validate_vf_projection.py` — changes `2`; defects `0`; LOC `47`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `fcb661e3daad58a862e0a4d17811604a212f5c3c44c0df3756ddfbcfed272527.js` — changes `1`; defects `0`; LOC `1`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `toflix_official_endpoint.py` — changes `1`; defects `0`; LOC `63`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 8.28}`
+- `brain_repair_proposal_test.py` — changes `2`; defects `0`; LOC `120`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 9.44}`
+- `provider_repair_promotion_guard_test.py` — changes `1`; defects `0`; LOC `26`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `language_projection_test.py` — changes `2`; defects `0`; LOC `93`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `normalize_core_fixed_point_contract.py` — changes `13`; defects `0`; LOC `312`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 8.85}`
+- `reapply_adaptive_domain_revision_test.py` — changes `2`; defects `0`; LOC `45`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `harden_nuvio_mobile_device_test.py` — changes `2`; defects `0`; LOC `143`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 9.13}`
+- `voiranime-homes--nuvio--25807f04525cee91.js` — changes `3`; defects `0`; LOC `6`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 1.26}`
+- `prepare_native_client_validation.py` — changes `2`; defects `0`; LOC `325`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `build_native_reader_brain_repair.py` — changes `1`; defects `0`; LOC `455`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 5.42}`
+- `contracts.mjs` — changes `2`; defects `0`; LOC `210`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 7.84}`
+- `anime-sama.js` — changes `1`; defects `0`; LOC `40`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 4.86}`
+- `einthusan--nuvio--9cda64843f899a9c.js` — changes `2`; defects `0`; LOC `93`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 1.39}`
+- `instrument_native_desktop_evidence.py` — changes `1`; defects `0`; LOC `24`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `e97516075e2f0d47042ab2cfef717d615a79ff6a4f44ff4667c75b027fc1a0fc.js` — changes `1`; defects `0`; LOC `1`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 5.73}`
+- `xpass--nuvio--32d5c763509158e6.js` — changes `1`; defects `0`; LOC `7`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 1.54}`
+- `provider_portfolio_ranking_test.py` — changes `4`; defects `0`; LOC `91`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 9.68}`
+- `provider-analysis.test.mjs` — changes `1`; defects `0`; LOC `44`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `3fcf49618b0401cdb95e845ab94e7d5855161c2f4ecd36a108685302c4aaa8fb.js` — changes `1`; defects `0`; LOC `40`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 4.05}`
+- `apply_tv_reader_optimization.py` — changes `1`; defects `0`; LOC `170`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 9.5}`
+- `native_hls_integrity_budget_v1.py` — changes `2`; defects `0`; LOC `48`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 9.68}`
+- `03358fc46a1850a950007441d1e9410d63fa18bd2b20ca2238b4b62baa5b6682.js` — changes `1`; defects `0`; LOC `40`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 8.28}`
+- `decision-engine.test.mjs` — changes `1`; defects `0`; LOC `18`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `platform_filter_semantics_test.py` — changes `1`; defects `0`; LOC `41`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `frenchstream_dle_catalogue.py` — changes `1`; defects `0`; LOC `38`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `d29f91dc106efd746198692f9e7608fa9a5e2ed922e253158a5ac8fcd4426c80.js` — changes `1`; defects `0`; LOC `40`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 4.54}`
+- `contract-watcher.mjs` — changes `1`; defects `0`; LOC `73`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 9.84}`
+- `augment_native_provider_loading.py` — changes `1`; defects `0`; LOC `364`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 7.3}`
+- `guard_nuvio_client_brain_compat.py` — changes `2`; defects `0`; LOC `164`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 8.49}`
+- `contract-watcher.test.mjs` — changes `1`; defects `0`; LOC `38`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `adaptive_runtime_repair_test.py` — changes `8`; defects `0`; LOC `158`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `adaptive_binary_probe_test.py` — changes `1`; defects `0`; LOC `60`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `06a14293c93a83d3060684e042e7087031463c775717f8b5f1dfeaa0ba30d429.js` — changes `1`; defects `0`; LOC `1`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 7.96}`
+- `core_rebuild_safety.py` — changes `19`; defects `0`; LOC `671`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 8.92}`
+- `media-validator.mjs` — changes `2`; defects `0`; LOC `556`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 6.67}`
+- `tv_catalogue_fixture_coverage_test.py` — changes `3`; defects `0`; LOC `14`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `badge_asset_contract_test.py` — changes `3`; defects `0`; LOC `134`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `validate_route_overrides.py` — changes `1`; defects `0`; LOC `78`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 7.71}`
+- `adaptive_runtime_recovery.py` — changes `4`; defects `0`; LOC `71`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 9.55}`
+- `complete_native_desktop_frontend_phases.py` — changes `1`; defects `0`; LOC `85`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `provider-catalog.test.mjs` — changes `3`; defects `0`; LOC `101`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 10.0}`
+- `native_catalogue_recovery_budget_test.py` — changes `4`; defects `0`; LOC `53`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': '-'}`
+- `restage_native_corpus_client.py` — changes `3`; defects `0`; LOC `106`; Code Health `{'year_score': '-', 'month_score': '-', 'current_score': 9.09}`

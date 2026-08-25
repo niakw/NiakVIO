@@ -1,0 +1,2492 @@
+# SonarQube Cloud audit
+
+- Access: public Sonar organization/project; no Sonar login or API token used.
+- Project: `NiakVIO`
+- Project key: `niakw_NiakVIO`
+- Open findings exported: **2481**
+- Severity: `CRITICAL` 1016, `MINOR` 688, `MAJOR` 660, `BLOCKER` 117
+- Type: `CODE_SMELL` 2211, `VULNERABILITY` 160, `BUG` 110
+
+## Findings
+
+- `niakw_NiakVIO:.github/workflows/external-code-audit.yml:148` **BLOCKER / VULNERABILITY** `githubactions:S8482` — Avoid executing downloaded artifacts directly without verification.
+- `niakw_NiakVIO:.github/workflows/external-code-audit.yml:148` **MAJOR / VULNERABILITY** `githubactions:S6506` — Not enforcing HTTPS here might allow for redirections to insecure websites. Make sure it is safe here.
+- `niakw_NiakVIO:scripts/provider_purification.py:234` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 18 to the 15 allowed.
+- `niakw_NiakVIO:engine_v2/scripts/terser-clean.mjs:20` **MINOR / CODE_SMELL** `javascript:S7765` — Use `.includes()`, rather than `.indexOf()`, when checking for existence.
+- `niakw_NiakVIO:engine_v2/scripts/terser-clean.mjs:24` **MAJOR / CODE_SMELL** `javascript:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
+- `niakw_NiakVIO:engine_v2/scripts/purify-provider.mjs:127` **MAJOR / CODE_SMELL** `javascript:S3358` — Extract this nested ternary operation into an independent statement.
+- `niakw_NiakVIO:scripts/normalize_fusion_badge_feed.py:25` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 20 to the 15 allowed.
+- `niakw_NiakVIO:tests/global_stream_presentation_test.py:27` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:scripts/normalize_stream_presentation_v11.py:91` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 17 to the 15 allowed.
+- `niakw_NiakVIO:scripts/normalize_stream_presentation_v11.py:128` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 23 to the 15 allowed.
+- `niakw_NiakVIO:scripts/normalize_stream_presentation_v11.py:136` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
+- `niakw_NiakVIO:scripts/normalize_stream_presentation_v11.py:172` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
+- `niakw_NiakVIO:scripts/normalize_stream_presentation_v11.py:191` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
+- `niakw_NiakVIO:scripts/normalize_stream_presentation_v11.py:206` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
+- `niakw_NiakVIO:tests/native_tv_route_resume_test.py:16` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:scripts/build_native_reader_retest_manifest.py:21` **MAJOR / VULNERABILITY** `pythonsecurity:S8707` — LLMs running this code with faulty CLI arguments can escape file system restrictions. Refactor this code to validate the constructed path before accessing the file system.
+- `niakw_NiakVIO:scripts/build_native_reader_retest_manifest.py:29` **MAJOR / VULNERABILITY** `pythonsecurity:S8707` — LLMs running this code with faulty CLI arguments can escape file system restrictions. Refactor this code to validate the constructed path before accessing the file system.
+- `niakw_NiakVIO:scripts/build_native_reader_retest_manifest.py:43` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 16 to the 15 allowed.
+- `niakw_NiakVIO:scripts/native_tv_route_checkpoint.py:102` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 16 to the 15 allowed.
+- `niakw_NiakVIO:scripts/native_tv_route_checkpoint.py:128` **MINOR / CODE_SMELL** `python:S5713` — Remove this redundant Exception class; it derives from another which is already caught.
+- `niakw_NiakVIO:scripts/activation_preservation_core_rehash.py:71` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
+- `niakw_NiakVIO:scripts/activation_preservation_core_rehash.py:82` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 16 to the 15 allowed.
+- `niakw_NiakVIO:scripts/activation_preservation_core_rehash.py:138` **CRITICAL / CODE_SMELL** `python:S1192` — Define a constant instead of duplicating this literal "providers/" 3 times.
+- `niakw_NiakVIO:scripts/activation_preservation_core_rehash.py:156` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 21 to the 15 allowed.
+- `niakw_NiakVIO:scripts/promote_candidates.py:1674` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 151 to the 15 allowed.
+- `niakw_NiakVIO:scripts/validate_deep_evidence_integrity.py:25` **MAJOR / VULNERABILITY** `pythonsecurity:S8707` — LLMs running this code with faulty CLI arguments can escape file system restrictions. Refactor this code to validate the constructed path before accessing the file system.
+- `niakw_NiakVIO:scripts/validate_deep_evidence_integrity.py:31` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 16 to the 15 allowed.
+- `niakw_NiakVIO:scripts/validate_deep_evidence_integrity.py:43` **MINOR / CODE_SMELL** `python:S5713` — Remove this redundant Exception class; it derives from another which is already caught.
+- `niakw_NiakVIO:scripts/validate_deep_evidence_integrity.py:49` **MINOR / CODE_SMELL** `python:S5713` — Remove this redundant Exception class; it derives from another which is already caught.
+- `niakw_NiakVIO:scripts/validate_deep_evidence_integrity.py:55` **MINOR / CODE_SMELL** `python:S5713` — Remove this redundant Exception class; it derives from another which is already caught.
+- `niakw_NiakVIO:scripts/validate_deep_evidence_integrity.py:79` **MAJOR / VULNERABILITY** `pythonsecurity:S8705` — LLMs running this code with faulty CLI arguments can escape from shell sandboxes. Refactor this code to validate untrusted data before passing them to OS commands.
+- `niakw_NiakVIO:tests/dns_preflight.test.mjs` **BLOCKER / CODE_SMELL** `javascript:S2187` — Add some tests to this file or delete it.
+- `niakw_NiakVIO:scripts/build_provider_runtime_profiles.py:155` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 26 to the 15 allowed.
+- `niakw_NiakVIO:scripts/promote_refresh_candidates.py:83` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 16 to the 15 allowed.
+- `niakw_NiakVIO:scripts/validate_nuvio_tv_runtime_policy.py:22` **MAJOR / CODE_SMELL** `python:S6395` — Unwrap this unnecessarily grouped subpattern.
+- `niakw_NiakVIO:scripts/validate_nuvio_tv_runtime_policy.py:25` **MAJOR / CODE_SMELL** `python:S6395` — Unwrap this unnecessarily grouped subpattern.
+- `niakw_NiakVIO:scripts/resolve_nuvio_lab_heads.py:43` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 16 to the 15 allowed.
+- `niakw_NiakVIO:tests/platform_runtime_upstream_observation_policy_test.py:12` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:scripts/reapply_published_overrides.py:270` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 160 to the 15 allowed.
+- `niakw_NiakVIO:scripts/normalize_published_security_finalization.py:77` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
+- `niakw_NiakVIO:providers/1shows--nuvio-audit-quarantine--7947316d3cbed215.js:2` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:providers/4khdhubnew--nuvio-audit-quarantine--7947316d3cbed215.js:2` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:providers/allanime--nuvio-audit-quarantine--7947316d3cbed215.js:2` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:providers/cinefreak--nuvio-audit-quarantine--7947316d3cbed215.js:2` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:providers/sekai--nuvio-audit-quarantine--7947316d3cbed215.js:2` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:providers/toflix--nuvio-audit-quarantine--7947316d3cbed215.js:2` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:providers/vidsrc--nuvio-audit-quarantine--7947316d3cbed215.js:2` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:scripts/apply_provider_overrides.py:185` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 63 to the 15 allowed.
+- `niakw_NiakVIO:scripts/apply_provider_overrides.py:283` **MAJOR / CODE_SMELL** `python:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
+- `niakw_NiakVIO:scripts/apply_provider_overrides.py:336` **MINOR / CODE_SMELL** `python:S5713` — Remove this redundant Exception class; it derives from another which is already caught.
+- `niakw_NiakVIO:scripts/apply_provider_overrides.py:344` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 58 to the 15 allowed.
+- `niakw_NiakVIO:scripts/apply_provider_overrides.py:399` **MINOR / CODE_SMELL** `python:S5713` — Remove this redundant Exception class; it derives from another which is already caught.
+- `niakw_NiakVIO:scripts/apply_provider_overrides.py:432` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 24 to the 15 allowed.
+- `niakw_NiakVIO:scripts/apply_provider_overrides.py:528` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 37 to the 15 allowed.
+- `niakw_NiakVIO:scripts/apply_provider_overrides.py:574` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 39 to the 15 allowed.
+- `niakw_NiakVIO:scripts/apply_provider_overrides.py:626` **MAJOR / CODE_SMELL** `python:S6035` — Replace this alternation with a character class.
+- `niakw_NiakVIO:scripts/apply_provider_overrides.py:626` **MAJOR / CODE_SMELL** `python:S6035` — Replace this alternation with a character class.
+- `niakw_NiakVIO:scripts/apply_provider_overrides.py:638` **MAJOR / CODE_SMELL** `python:S3457` — Add replacement fields or use a normal string instead of an f-string.
+- `niakw_NiakVIO:scripts/apply_provider_overrides.py:646` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 30 to the 15 allowed.
+- `niakw_NiakVIO:scripts/apply_provider_overrides.py:694` **MAJOR / CODE_SMELL** `python:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
+- `niakw_NiakVIO:scripts/apply_provider_overrides.py:698` **MAJOR / CODE_SMELL** `python:S6019` — Fix this reluctant quantifier that will only ever match 1 repetition.
+- `niakw_NiakVIO:scripts/apply_provider_overrides.py:698` **MAJOR / CODE_SMELL** `python:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
+- `niakw_NiakVIO:scripts/apply_provider_overrides.py:706` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 21 to the 15 allowed.
+- `niakw_NiakVIO:scripts/apply_provider_overrides.py:734` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 19 to the 15 allowed.
+- `niakw_NiakVIO:scripts/apply_provider_overrides.py:768` **MAJOR / CODE_SMELL** `python:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
+- `niakw_NiakVIO:scripts/apply_provider_overrides.py:791` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 16 to the 15 allowed.
+- `niakw_NiakVIO:scripts/apply_provider_overrides.py:910` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 145 to the 15 allowed.
+- `niakw_NiakVIO:scripts/provider_engine_normalizer.py:355` **MAJOR / CODE_SMELL** `python:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
+- `niakw_NiakVIO:scripts/update_provider_device_results.py:225` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 26 to the 15 allowed.
+- `niakw_NiakVIO:scripts/update_provider_device_results.py:291` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 28 to the 15 allowed.
+- `niakw_NiakVIO:scripts/normalize_provider_rebuild_safety.py:221` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 23 to the 15 allowed.
+- `niakw_NiakVIO:scripts/normalize_runtime_domain_fixed_point.py:276` **CRITICAL / CODE_SMELL** `python:S1192` — Define a constant instead of duplicating this literal "new.example" 5 times.
+- `niakw_NiakVIO:scripts/normalize_runtime_domain_fixed_point.py:274` **BLOCKER / VULNERABILITY** `pythonsecurity:S5334` — Change this code to not dynamically execute code influenced by user-controlled data.
+- `niakw_NiakVIO:scripts/core_rebuild_safety.py:690` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 22 to the 15 allowed.
+- `niakw_NiakVIO:tests/core_terminal_export_floor_test.py:42` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:tests/core_terminal_export_floor_test.py:33` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:scripts/provider_patches/runtime_capability_media_safety_v4.py:33` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 17 to the 15 allowed.
+- `niakw_NiakVIO:scripts/provider_purification.py:177` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
+- `niakw_NiakVIO:scripts/normalize_provider_rebuild_safety.py:217` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
+- `niakw_NiakVIO:scripts/normalize_provider_rebuild_safety.py:82` **CRITICAL / CODE_SMELL** `python:S1192` — Define a constant instead of duplicating this literal "wrapper.rstrip()" 3 times.
+- `niakw_NiakVIO:scripts/validate_provider_artifact.cjs:19` **MAJOR / VULNERABILITY** `jssecurity:S8705` — LLMs running this code with faulty CLI arguments can escape from shell sandboxes. Refactor this code to validate untrusted data before passing them to OS commands.
+- `niakw_NiakVIO:scripts/validate_provider_artifact.cjs:24` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:scripts/build_native_reader_learning_summary.py:35` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 18 to the 15 allowed.
+- `niakw_NiakVIO:scripts/merge_native_reader_learning_failures.py:66` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 80 to the 15 allowed.
+- `niakw_NiakVIO:scripts/merge_native_reader_learning_failures.py:142` **MINOR / CODE_SMELL** `python:S7496` — Replace this set constructor call by a set literal.
+- `niakw_NiakVIO:scripts/merge_native_reader_learning_failures.py:143` **MINOR / CODE_SMELL** `python:S7496` — Replace this set constructor call by a set literal.
+- `niakw_NiakVIO:scripts/classify_native_reader_ownership.py:87` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 23 to the 15 allowed.
+- `niakw_NiakVIO:scripts/build_native_reader_learning_summary.py:14` **MAJOR / VULNERABILITY** `pythonsecurity:S8707` — LLMs running this code with faulty CLI arguments can escape file system restrictions. Refactor this code to validate the constructed path before accessing the file system.
+- `niakw_NiakVIO:scripts/merge_native_reader_learning_failures.py:27` **MAJOR / VULNERABILITY** `pythonsecurity:S8707` — LLMs running this code with faulty CLI arguments can escape file system restrictions. Refactor this code to validate the constructed path before accessing the file system.
+- `niakw_NiakVIO:scripts/materialize_core_fixed_point_hardening.py:54` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
+- `niakw_NiakVIO:scripts/provider_security_hardening.py:42` **MAJOR / CODE_SMELL** `python:S5843` — Simplify this regular expression to reduce its complexity from 24 to the 20 allowed.
+- `niakw_NiakVIO:scripts/provider_security_hardening.py:262` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 20 to the 15 allowed.
+- `niakw_NiakVIO:scripts/normalize_core_media_policy.py:136` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
+- `niakw_NiakVIO:scripts/normalize_core_media_policy.py:181` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 16 to the 15 allowed.
+- `niakw_NiakVIO:scripts/normalize_provider_branding_pipeline.py:71` **CRITICAL / CODE_SMELL** `python:S1192` — Define a constant instead of duplicating this literal '"scope": "global_provider_branding"' 3 times.
+- `niakw_NiakVIO:scripts/normalize_provider_branding_pipeline.py:106` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
+- `niakw_NiakVIO:scripts/update_provider_device_results.py:181` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 28 to the 15 allowed.
+- `niakw_NiakVIO:tests/provider_branding_contract_test.py:44` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:tests/provider_branding_contract_test.py:59` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:scripts/normalize_core_media_policy.py:143` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 17 to the 15 allowed.
+- `niakw_NiakVIO:engine_v2/tests/provider-catalog.test.mjs` **BLOCKER / CODE_SMELL** `javascript:S2187` — Add some tests to this file or delete it.
+- `niakw_NiakVIO:scripts/normalize_provider_rebuild_safety.py:263` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
+- `niakw_NiakVIO:.github/workflows/provider-results-readme-sync.yml:44` **MAJOR / VULNERABILITY** `githubactions:S7631` — Make sure that no untrusted code is executed from a fork.
+- `niakw_NiakVIO:scripts/update_provider_device_results.py:47` **MAJOR / VULNERABILITY** `pythonsecurity:S8707` — LLMs running this code with faulty CLI arguments can escape file system restrictions. Refactor this code to validate the constructed path before accessing the file system.
+- `niakw_NiakVIO:scripts/update_provider_device_results.py:73` **MAJOR / CODE_SMELL** `python:S3358` — Extract this nested conditional expression into an independent statement.
+- `niakw_NiakVIO:scripts/update_provider_device_results.py:104` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 46 to the 15 allowed.
+- `niakw_NiakVIO:scripts/update_provider_device_results.py:447` **MAJOR / VULNERABILITY** `pythonsecurity:S8707` — LLMs running this code with faulty CLI arguments can escape file system restrictions. Refactor this code to validate the constructed path before accessing the file system.
+- `niakw_NiakVIO:scripts/update_provider_device_results.py:450` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
+- `niakw_NiakVIO:scripts/update_provider_device_results.py:450` **MAJOR / VULNERABILITY** `pythonsecurity:S8707` — LLMs running this code with faulty CLI arguments can escape file system restrictions. Refactor this code to validate the constructed path before accessing the file system.
+- `niakw_NiakVIO:scripts/update_provider_device_results.py:451` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
+- `niakw_NiakVIO:scripts/update_provider_device_results.py:451` **MAJOR / VULNERABILITY** `pythonsecurity:S8707` — LLMs running this code with faulty CLI arguments can escape file system restrictions. Refactor this code to validate the constructed path before accessing the file system.
+- `niakw_NiakVIO:scripts/normalize_core_fixed_point_contract.py:337` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
+- `niakw_NiakVIO:scripts/normalize_core_fixed_point_contract.py:237` **CRITICAL / CODE_SMELL** `python:S1192` — Define a constant instead of duplicating this literal "purified, purification = purify_bytes(patched)" 4 times.
+- `niakw_NiakVIO:tests/native_sync_fetch_target_order_test.py:154` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:tests/native_sync_fetch_target_order_test.py:155` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:scripts/enforce_main_only_repository_policy.py:43` **MAJOR / CODE_SMELL** `python:S3457` — Add replacement fields or use a normal string instead of an f-string.
+- `niakw_NiakVIO:scripts/normalize_core_media_policy.py:128` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
+- `niakw_NiakVIO:scripts/normalize_core_media_policy.py:238` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
+- `niakw_NiakVIO:tests/core_media_policy_test.py:16` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:tests/global_core_presentation_pipeline_test.py:35` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:scripts/regenerate_light_badges.py:157` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 46 to the 15 allowed.
+- `niakw_NiakVIO:scripts/provider_patches/runtime_capability_media_safety_v4.py:70` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 22 to the 15 allowed.
+- `niakw_NiakVIO:tests/brain_repair_proposal_test.py:21` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:scripts/provider_security_hardening.py:150` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 16 to the 15 allowed.
+- `niakw_NiakVIO:tests/provider_security_hardening_test.py:205` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:scripts/harden_staged_provider_security.py:52` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 26 to the 15 allowed.
+- `niakw_NiakVIO:scripts/harden_staged_provider_security.py:129` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
+- `niakw_NiakVIO:scripts/provider_security_hardening.py:26` **MAJOR / CODE_SMELL** `python:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
+- `niakw_NiakVIO:.github/workflows/native-reader-learning-sync.yml:31` **MAJOR / VULNERABILITY** `githubactions:S7631` — Make sure that no untrusted code is executed from a fork.
+- `niakw_NiakVIO:.github/workflows/weekly-upstream-provider-discovery.yml:58` **MAJOR / VULNERABILITY** `githubactions:S8543` — Using dependencies without locking resolved versions is security-sensitive.
+- `niakw_NiakVIO:engine_v2/providers/purstream.mjs:275` **MINOR / CODE_SMELL** `javascript:S6594` — Use the "RegExp.exec()" method instead.
+- `niakw_NiakVIO:engine_v2/providers/purstream.mjs:276` **MINOR / CODE_SMELL** `javascript:S6594` — Use the "RegExp.exec()" method instead.
+- `niakw_NiakVIO:engine_v2/scripts/diagnose-native-media-capabilities.mjs:27` **MAJOR / CODE_SMELL** `javascript:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
+- `niakw_NiakVIO:engine_v2/scripts/diagnose-native-media-capabilities.mjs:27` **MINOR / CODE_SMELL** `javascript:S6353` — Use concise character class syntax '\w' instead of '[A-Za-z0-9_]'.
+- `niakw_NiakVIO:engine_v2/scripts/diagnose-native-media-capabilities.mjs:46` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
+- `niakw_NiakVIO:engine_v2/scripts/diagnose-native-reader.mjs:28` **MINOR / CODE_SMELL** `javascript:S7781` — Prefer `String#replaceAll()` over `String#replace()`.
+- `niakw_NiakVIO:engine_v2/scripts/diagnose-native-reader.mjs:28` **MINOR / CODE_SMELL** `javascript:S7781` — Prefer `String#replaceAll()` over `String#replace()`.
+- `niakw_NiakVIO:engine_v2/scripts/diagnose-native-reader.mjs:34` **MAJOR / CODE_SMELL** `javascript:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
+- `niakw_NiakVIO:engine_v2/scripts/diagnose-native-reader.mjs:34` **MINOR / CODE_SMELL** `javascript:S6353` — Use concise character class syntax '\w' instead of '[A-Za-z0-9_]'.
+- `niakw_NiakVIO:engine_v2/scripts/diagnose-native-reader.mjs:272` **MINOR / CODE_SMELL** `javascript:S1940` — Use the opposite operator (<=) instead.
+- `niakw_NiakVIO:engine_v2/scripts/diagnose-native-reader.mjs:288` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
+- `niakw_NiakVIO:engine_v2/scripts/diagnose-native-reader.mjs:289` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
+- `niakw_NiakVIO:engine_v2/scripts/diagnose-native-reader.mjs:307` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
+- `niakw_NiakVIO:engine_v2/scripts/diagnose-native-reader.mjs:308` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
+- `niakw_NiakVIO:engine_v2/scripts/diagnose-native-reader.mjs:409` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
+- `niakw_NiakVIO:engine_v2/scripts/diagnose-native-reader.mjs:410` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
+- `niakw_NiakVIO:engine_v2/scripts/diagnose-native-reader.mjs:411` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
+- `niakw_NiakVIO:engine_v2/scripts/plan-repairs.mjs:173` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function that depends on "String.localeCompare", to reliably sort elements alphabetically.
+- `niakw_NiakVIO:engine_v2/scripts/plan-repairs.mjs:193` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function that depends on "String.localeCompare", to reliably sort elements alphabetically.
+- `niakw_NiakVIO:engine_v2/scripts/plan-repairs.mjs:235` **CRITICAL / CODE_SMELL** `javascript:S3776` — Refactor this function to reduce its Cognitive Complexity from 21 to the 15 allowed.
+- `niakw_NiakVIO:engine_v2/scripts/purify-provider.mjs:148` **MAJOR / CODE_SMELL** `javascript:S7785` — Prefer top-level await over using a promise chain.
+- `niakw_NiakVIO:engine_v2/scripts/watch-upstream-providers.mjs:156` **MINOR / CODE_SMELL** `javascript:S7778` — Do not call `Array#push()` multiple times.
+- `niakw_NiakVIO:engine_v2/scripts/watch-upstream-providers.mjs:173` **MINOR / CODE_SMELL** `javascript:S7781` — Prefer `String#replaceAll()` over `String#replace()`.
+- `niakw_NiakVIO:engine_v2/scripts/watch-upstream-providers.mjs:174` **MINOR / CODE_SMELL** `javascript:S7781` — Prefer `String#replaceAll()` over `String#replace()`.
+- `niakw_NiakVIO:engine_v2/scripts/watch-upstream-providers.mjs:174` **MINOR / CODE_SMELL** `javascript:S7780` — `String.raw` should be used to avoid escaping `\`.
+- `niakw_NiakVIO:engine_v2/scripts/watch-upstream-providers.mjs:180` **MAJOR / CODE_SMELL** `javascript:S3358` — Extract this nested ternary operation into an independent statement.
+- `niakw_NiakVIO:engine_v2/scripts/watch-upstream-providers.mjs:231` **MAJOR / CODE_SMELL** `javascript:S7785` — Prefer top-level await over using a promise chain.
+- `niakw_NiakVIO:engine_v2/src/contracts.mjs:201` **MINOR / CODE_SMELL** `javascript:S6594` — Use the "RegExp.exec()" method instead.
+- `niakw_NiakVIO:engine_v2/src/contracts.mjs:213` **MINOR / CODE_SMELL** `javascript:S6594` — Use the "RegExp.exec()" method instead.
+- `niakw_NiakVIO:engine_v2/src/contracts.mjs:213` **MAJOR / CODE_SMELL** `javascript:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
+- `niakw_NiakVIO:engine_v2/src/contracts.mjs:213` **MAJOR / CODE_SMELL** `javascript:S5843` — Simplify this regular expression to reduce its complexity from 25 to the 20 allowed.
+- `niakw_NiakVIO:engine_v2/src/media-validator.mjs:1` **CRITICAL / CODE_SMELL** `javascript:S3776` — Refactor this function to reduce its Cognitive Complexity from 18 to the 15 allowed.
+- `niakw_NiakVIO:engine_v2/src/media-validator.mjs:79` **MAJOR / CODE_SMELL** `javascript:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
+- `niakw_NiakVIO:engine_v2/src/media-validator.mjs:107` **MAJOR / CODE_SMELL** `javascript:S3358` — Extract this nested ternary operation into an independent statement.
+- `niakw_NiakVIO:engine_v2/src/media-validator.mjs:315` **MAJOR / CODE_SMELL** `javascript:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
+- `niakw_NiakVIO:engine_v2/src/media-validator.mjs:379` **CRITICAL / CODE_SMELL** `javascript:S3776` — Refactor this function to reduce its Cognitive Complexity from 41 to the 15 allowed.
+- `niakw_NiakVIO:engine_v2/src/media-validator.mjs:436` **MINOR / CODE_SMELL** `javascript:S6594` — Use the "RegExp.exec()" method instead.
+- `niakw_NiakVIO:engine_v2/src/media-validator.mjs:459` **MAJOR / CODE_SMELL** `javascript:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
+- `niakw_NiakVIO:engine_v2/src/media-validator.mjs:498` **MINOR / CODE_SMELL** `javascript:S6594` — Use the "RegExp.exec()" method instead.
+- `niakw_NiakVIO:engine_v2/src/media-validator.mjs:575` **MAJOR / CODE_SMELL** `javascript:S6035` — Replace this alternation with a character class.
+- `niakw_NiakVIO:engine_v2/src/repair-brain.mjs:84` **CRITICAL / CODE_SMELL** `javascript:S3776` — Refactor this function to reduce its Cognitive Complexity from 52 to the 15 allowed.
+- `niakw_NiakVIO:engine_v2/src/repair-brain.mjs:155` **CRITICAL / CODE_SMELL** `javascript:S3776` — Refactor this function to reduce its Cognitive Complexity from 20 to the 15 allowed.
+- `niakw_NiakVIO:engine_v2/src/resolver-core.mjs:20` **CRITICAL / CODE_SMELL** `javascript:S3776` — Refactor this function to reduce its Cognitive Complexity from 33 to the 15 allowed.
+- `niakw_NiakVIO:engine_v2/src/stream-presentation.mjs:84` **MINOR / CODE_SMELL** `javascript:S6594` — Use the "RegExp.exec()" method instead.
+- `niakw_NiakVIO:engine_v2/src/stream-presentation.mjs:131` **MINOR / CODE_SMELL** `javascript:S6594` — Use the "RegExp.exec()" method instead.
+- `niakw_NiakVIO:engine_v2/src/stream-presentation.mjs:131` **MAJOR / CODE_SMELL** `javascript:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
+- `niakw_NiakVIO:engine_v2/src/stream-presentation.mjs:131` **MAJOR / CODE_SMELL** `javascript:S5843` — Simplify this regular expression to reduce its complexity from 25 to the 20 allowed.
+- `niakw_NiakVIO:engine_v2/src/stream-presentation.mjs:145` **MINOR / CODE_SMELL** `javascript:S6594` — Use the "RegExp.exec()" method instead.
+- `niakw_NiakVIO:engine_v2/src/stream-presentation.mjs:147` **MINOR / CODE_SMELL** `javascript:S6594` — Use the "RegExp.exec()" method instead.
+- `niakw_NiakVIO:engine_v2/src/stream-presentation.mjs:163` **MINOR / CODE_SMELL** `javascript:S6594` — Use the "RegExp.exec()" method instead.
+- `niakw_NiakVIO:engine_v2/src/tmdb-metadata.mjs:130` **MINOR / CODE_SMELL** `javascript:S6594` — Use the "RegExp.exec()" method instead.
+- `niakw_NiakVIO:engine_v2/tests/contracts.test.mjs` **BLOCKER / CODE_SMELL** `javascript:S2187` — Add some tests to this file or delete it.
+- `niakw_NiakVIO:engine_v2/tests/learning-lab-memory.test.mjs` **BLOCKER / CODE_SMELL** `javascript:S2187` — Add some tests to this file or delete it.
+- `niakw_NiakVIO:engine_v2/tests/media-validator.test.mjs` **BLOCKER / CODE_SMELL** `javascript:S2187` — Add some tests to this file or delete it.
+- `niakw_NiakVIO:engine_v2/tests/native-reader-brain-v4.test.mjs` **BLOCKER / CODE_SMELL** `javascript:S2187` — Add some tests to this file or delete it.
+- `niakw_NiakVIO:engine_v2/tests/native-reader-diagnosis.test.mjs` **BLOCKER / CODE_SMELL** `javascript:S2187` — Add some tests to this file or delete it.
+- `niakw_NiakVIO:engine_v2/tests/repair-brain.test.mjs` **BLOCKER / CODE_SMELL** `javascript:S2187` — Add some tests to this file or delete it.
+- `niakw_NiakVIO:engine_v2/tests/stream-presentation.test.mjs` **BLOCKER / CODE_SMELL** `javascript:S2187` — Add some tests to this file or delete it.
+- `niakw_NiakVIO:engine_v2/tests/upstream-provider-watch.test.mjs` **BLOCKER / CODE_SMELL** `javascript:S2187` — Add some tests to this file or delete it.
+- `niakw_NiakVIO:scripts/analyze_native_corpus_collection.cjs:97` **MAJOR / VULNERABILITY** `jssecurity:S8707` — LLMs running this code with faulty CLI arguments can escape file system restrictions. Refactor this code to validate the constructed path before accessing the file system.
+- `niakw_NiakVIO:scripts/analyze_native_corpus_collection.cjs:100` **MAJOR / VULNERABILITY** `jssecurity:S8705` — LLMs running this code with faulty CLI arguments can escape from shell sandboxes. Refactor this code to validate untrusted data before passing them to OS commands.
+- `niakw_NiakVIO:scripts/analyze_native_corpus_results.cjs:204` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
+- `niakw_NiakVIO:scripts/analyze_native_corpus_results.cjs:205` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
+- `niakw_NiakVIO:scripts/analyze_native_corpus_results.cjs:206` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
+- `niakw_NiakVIO:scripts/analyze_native_media_type_capabilities.cjs:14` **MINOR / CODE_SMELL** `javascript:S7781` — Prefer `String#replaceAll()` over `String#replace()`.
+- `niakw_NiakVIO:scripts/analyze_native_media_type_capabilities.cjs:14` **MINOR / CODE_SMELL** `javascript:S7781` — Prefer `String#replaceAll()` over `String#replace()`.
+- `niakw_NiakVIO:scripts/analyze_native_media_type_capabilities.cjs:20` **MAJOR / CODE_SMELL** `javascript:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
+- `niakw_NiakVIO:scripts/analyze_native_media_type_capabilities.cjs:20` **MINOR / CODE_SMELL** `javascript:S6353` — Use concise character class syntax '\w' instead of '[A-Za-z0-9_]'.
+- `niakw_NiakVIO:scripts/analyze_native_media_type_capabilities.cjs:42` **CRITICAL / CODE_SMELL** `javascript:S3776` — Refactor this function to reduce its Cognitive Complexity from 65 to the 15 allowed.
+- `niakw_NiakVIO:scripts/analyze_native_media_type_capabilities.cjs:47` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:scripts/analyze_native_media_type_capabilities.cjs:171` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
+- `niakw_NiakVIO:scripts/analyze_native_media_type_capabilities.cjs:204` **MAJOR / CODE_SMELL** `javascript:S4043` — Move this array "sort" operation to a separate statement or replace it with "toSorted".
+- `niakw_NiakVIO:scripts/analyze_native_media_type_capabilities.cjs:205` **MAJOR / CODE_SMELL** `javascript:S4043` — Move this array "sort" operation to a separate statement or replace it with "toSorted".
+- `niakw_NiakVIO:scripts/audit_native_client_checkout.py:29` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 49 to the 15 allowed.
+- `niakw_NiakVIO:scripts/augment_native_corpus_request_contract.py:44` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 21 to the 15 allowed.
+- `niakw_NiakVIO:scripts/augment_native_corpus_request_contract.py:45` **MAJOR / VULNERABILITY** `pythonsecurity:S8707` — LLMs running this code with faulty CLI arguments can escape file system restrictions. Refactor this code to validate the constructed path before accessing the file system.
+- `niakw_NiakVIO:scripts/augment_native_corpus_request_contract.py:108` **MAJOR / CODE_SMELL** `python:S6326` — Replace spaces with quantifier `{4}`.
+- `niakw_NiakVIO:scripts/augment_native_corpus_request_contract.py:108` **MAJOR / CODE_SMELL** `python:S6326` — Replace spaces with quantifier `{4}`.
+- `niakw_NiakVIO:scripts/augment_native_corpus_request_contract.py:156` **MAJOR / VULNERABILITY** `pythonsecurity:S8707` — LLMs running this code with faulty CLI arguments can escape file system restrictions. Refactor this code to validate the constructed path before accessing the file system.
+- `niakw_NiakVIO:scripts/augment_native_provider_loading.py:39` **MINOR / CODE_SMELL** `python:S1313` — Make sure using this hardcoded IP address "10.0.2.2" is safe here.
+- `niakw_NiakVIO:scripts/augment_native_provider_loading.py:66` **MAJOR / VULNERABILITY** `pythonsecurity:S8707` — LLMs running this code with faulty CLI arguments can escape file system restrictions. Refactor this code to validate the constructed path before accessing the file system.
+- `niakw_NiakVIO:scripts/augment_native_provider_loading.py:340` **MAJOR / CODE_SMELL** `python:S6326` — Replace spaces with quantifier `{4}`.
+- `niakw_NiakVIO:scripts/augment_native_provider_loading.py:340` **MAJOR / CODE_SMELL** `python:S6326` — Replace spaces with quantifier `{4}`.
+- `niakw_NiakVIO:scripts/build_native_reader_brain_repair.py:60` **MINOR / CODE_SMELL** `python:S5713` — Remove this redundant Exception class; it derives from another which is already caught.
+- `niakw_NiakVIO:scripts/build_native_reader_brain_repair.py:66` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
+- `niakw_NiakVIO:scripts/build_native_reader_brain_repair.py:118` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 80 to the 15 allowed.
+- `niakw_NiakVIO:scripts/build_native_reader_brain_repair.py:269` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 17 to the 15 allowed.
+- `niakw_NiakVIO:scripts/build_native_reader_brain_repair.py:320` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 46 to the 15 allowed.
+- `niakw_NiakVIO:scripts/check_nuvio_client_upstreams.py:23` **MAJOR / VULNERABILITY** `pythonsecurity:S8707` — LLMs running this code with faulty CLI arguments can escape file system restrictions. Refactor this code to validate the constructed path before accessing the file system.
+- `niakw_NiakVIO:scripts/check_nuvio_client_upstreams.py:394` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 17 to the 15 allowed.
+- `niakw_NiakVIO:scripts/check_nuvio_client_upstreams.py:441` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 47 to the 15 allowed.
+- `niakw_NiakVIO:scripts/compare_native_reader_brain_repair.py:13` **MAJOR / VULNERABILITY** `pythonsecurity:S8707` — LLMs running this code with faulty CLI arguments can escape file system restrictions. Refactor this code to validate the constructed path before accessing the file system.
+- `niakw_NiakVIO:scripts/compare_native_reader_brain_repair.py:53` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 18 to the 15 allowed.
+- `niakw_NiakVIO:scripts/complete_native_desktop_frontend_phases.py:53` **BLOCKER / CODE_SMELL** `python:S3516` — Refactor this method to not always return the same value.
+- `niakw_NiakVIO:scripts/complete_native_desktop_frontend_phases.py:63` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
+- `niakw_NiakVIO:scripts/enrich_native_corpus_summary_with_player.cjs:27` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
+- `niakw_NiakVIO:scripts/enrich_native_corpus_summary_with_player.cjs:31` **MINOR / CODE_SMELL** `javascript:S7781` — Prefer `String#replaceAll()` over `String#replace()`.
+- `niakw_NiakVIO:scripts/enrich_native_corpus_summary_with_player.cjs:31` **MINOR / CODE_SMELL** `javascript:S7781` — Prefer `String#replaceAll()` over `String#replace()`.
+- `niakw_NiakVIO:scripts/enrich_native_corpus_summary_with_player.cjs:37` **MAJOR / CODE_SMELL** `javascript:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
+- `niakw_NiakVIO:scripts/enrich_native_corpus_summary_with_player.cjs:37` **MINOR / CODE_SMELL** `javascript:S6353` — Use concise character class syntax '\w' instead of '[A-Za-z0-9_]'.
+- `niakw_NiakVIO:scripts/enrich_native_corpus_summary_with_player.cjs:101` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
+- `niakw_NiakVIO:scripts/enrich_native_corpus_summary_with_player.cjs:102` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
+- `niakw_NiakVIO:scripts/enrich_native_corpus_summary_with_player.cjs:111` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
+- `niakw_NiakVIO:scripts/enrich_native_corpus_summary_with_player.cjs:112` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
+- `niakw_NiakVIO:scripts/enrich_native_corpus_summary_with_player.cjs:121` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
+- `niakw_NiakVIO:scripts/enrich_native_corpus_summary_with_player.cjs:122` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
+- `niakw_NiakVIO:scripts/enrich_native_corpus_summary_with_player.cjs:128` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function that depends on "String.localeCompare", to reliably sort elements alphabetically.
+- `niakw_NiakVIO:scripts/enrich_native_corpus_summary_with_player.cjs:132` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
+- `niakw_NiakVIO:scripts/enrich_native_corpus_summary_with_player.cjs:135` **MAJOR / CODE_SMELL** `javascript:S3358` — Extract this nested ternary operation into an independent statement.
+- `niakw_NiakVIO:scripts/gate_native_reader_coverage.cjs:28` **MINOR / CODE_SMELL** `javascript:S7781` — Prefer `String#replaceAll()` over `String#replace()`.
+- `niakw_NiakVIO:scripts/gate_native_reader_coverage.cjs:28` **MINOR / CODE_SMELL** `javascript:S7781` — Prefer `String#replaceAll()` over `String#replace()`.
+- `niakw_NiakVIO:scripts/gate_native_reader_coverage.cjs:34` **MAJOR / CODE_SMELL** `javascript:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
+- `niakw_NiakVIO:scripts/gate_native_reader_coverage.cjs:34` **MINOR / CODE_SMELL** `javascript:S6353` — Use concise character class syntax '\w' instead of '[A-Za-z0-9_]'.
+- `niakw_NiakVIO:scripts/gate_native_reader_result.cjs:15` **MINOR / CODE_SMELL** `javascript:S7781` — Prefer `String#replaceAll()` over `String#replace()`.
+- `niakw_NiakVIO:scripts/gate_native_reader_result.cjs:15` **MINOR / CODE_SMELL** `javascript:S7781` — Prefer `String#replaceAll()` over `String#replace()`.
+- `niakw_NiakVIO:scripts/gate_native_reader_result.cjs:21` **MAJOR / CODE_SMELL** `javascript:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
+- `niakw_NiakVIO:scripts/gate_native_reader_result.cjs:21` **MINOR / CODE_SMELL** `javascript:S6353` — Use concise character class syntax '\w' instead of '[A-Za-z0-9_]'.
+- `niakw_NiakVIO:scripts/guard_nuvio_client_brain_compat.py:49` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 33 to the 15 allowed.
+- `niakw_NiakVIO:scripts/merge_native_reader_backlog.py:118` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 16 to the 15 allowed.
+- `niakw_NiakVIO:scripts/merge_native_reader_backlog.py:188` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 121 to the 15 allowed.
+- `niakw_NiakVIO:scripts/merge_native_reader_backlog.py:429` **MAJOR / VULNERABILITY** `pythonsecurity:S8707` — LLMs running this code with faulty CLI arguments can escape file system restrictions. Refactor this code to validate the constructed path before accessing the file system.
+- `niakw_NiakVIO:scripts/merge_native_reader_backlog.py:431` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
+- `niakw_NiakVIO:scripts/merge_native_reader_backlog.py:431` **MAJOR / VULNERABILITY** `pythonsecurity:S8707` — LLMs running this code with faulty CLI arguments can escape file system restrictions. Refactor this code to validate the constructed path before accessing the file system.
+- `niakw_NiakVIO:scripts/merge_native_reader_repair_learning.py:116` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 82 to the 15 allowed.
+- `niakw_NiakVIO:scripts/merge_native_reader_repair_learning.py:229` **MAJOR / CODE_SMELL** `python:S3358` — Extract this nested conditional expression into an independent statement.
+- `niakw_NiakVIO:scripts/merge_native_reader_repair_learning.py:285` **MAJOR / VULNERABILITY** `pythonsecurity:S8707` — LLMs running this code with faulty CLI arguments can escape file system restrictions. Refactor this code to validate the constructed path before accessing the file system.
+- `niakw_NiakVIO:scripts/merge_native_reader_repair_learning.py:287` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
+- `niakw_NiakVIO:scripts/merge_native_reader_repair_learning.py:287` **MAJOR / VULNERABILITY** `pythonsecurity:S8707` — LLMs running this code with faulty CLI arguments can escape file system restrictions. Refactor this code to validate the constructed path before accessing the file system.
+- `niakw_NiakVIO:scripts/native_client_test_bootstrap.py:78` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
+- `niakw_NiakVIO:scripts/native_evidence_completeness.cjs:8` **MAJOR / CODE_SMELL** `javascript:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
+- `niakw_NiakVIO:scripts/native_evidence_completeness.cjs:8` **MINOR / CODE_SMELL** `javascript:S6353` — Use concise character class syntax '\w' instead of '[A-Za-z0-9_]'.
+- `niakw_NiakVIO:scripts/native_evidence_completeness.cjs:16` **MINOR / CODE_SMELL** `javascript:S7781` — Prefer `String#replaceAll()` over `String#replace()`.
+- `niakw_NiakVIO:scripts/native_evidence_completeness.cjs:16` **MINOR / CODE_SMELL** `javascript:S7781` — Prefer `String#replaceAll()` over `String#replace()`.
+- `niakw_NiakVIO:scripts/native_evidence_completeness.cjs:88` **CRITICAL / CODE_SMELL** `javascript:S3776` — Refactor this function to reduce its Cognitive Complexity from 178 to the 15 allowed.
+- `niakw_NiakVIO:scripts/native_evidence_completeness.cjs:304` **MAJOR / CODE_SMELL** `javascript:S3358` — Extract this nested ternary operation into an independent statement.
+- `niakw_NiakVIO:scripts/native_evidence_completeness.cjs:314` **MINOR / CODE_SMELL** `javascript:S7781` — Prefer `String#replaceAll()` over `String#replace()`.
+- `niakw_NiakVIO:scripts/native_evidence_completeness.cjs:314` **MAJOR / BUG** `javascript:S6324` — Remove this control character.
+- `niakw_NiakVIO:scripts/native_evidence_completeness.cjs:318` **MINOR / CODE_SMELL** `javascript:S7781` — Prefer `String#replaceAll()` over `String#replace()`.
+- `niakw_NiakVIO:scripts/native_evidence_completeness.cjs:318` **MAJOR / BUG** `javascript:S6324` — Remove this control character.
+- `niakw_NiakVIO:scripts/native_evidence_completeness.cjs:322` **MINOR / CODE_SMELL** `javascript:S7781` — Prefer `String#replaceAll()` over `String#replace()`.
+- `niakw_NiakVIO:scripts/native_evidence_completeness.cjs:322` **MAJOR / BUG** `javascript:S6324` — Remove this control character.
+- `niakw_NiakVIO:scripts/native_evidence_completeness.cjs:326` **MINOR / CODE_SMELL** `javascript:S7781` — Prefer `String#replaceAll()` over `String#replace()`.
+- `niakw_NiakVIO:scripts/native_evidence_completeness.cjs:326` **MAJOR / BUG** `javascript:S6324` — Remove this control character.
+- `niakw_NiakVIO:scripts/native_evidence_completeness.cjs:330` **MINOR / CODE_SMELL** `javascript:S7781` — Prefer `String#replaceAll()` over `String#replace()`.
+- `niakw_NiakVIO:scripts/native_evidence_completeness.cjs:330` **MAJOR / BUG** `javascript:S6324` — Remove this control character.
+- `niakw_NiakVIO:scripts/native_evidence_completeness.cjs:334` **MINOR / CODE_SMELL** `javascript:S7781` — Prefer `String#replaceAll()` over `String#replace()`.
+- `niakw_NiakVIO:scripts/native_evidence_completeness.cjs:334` **MAJOR / BUG** `javascript:S6324` — Remove this control character.
+- `niakw_NiakVIO:scripts/native_evidence_completeness.cjs:338` **MINOR / CODE_SMELL** `javascript:S7781` — Prefer `String#replaceAll()` over `String#replace()`.
+- `niakw_NiakVIO:scripts/native_evidence_completeness.cjs:338` **MAJOR / BUG** `javascript:S6324` — Remove this control character.
+- `niakw_NiakVIO:scripts/native_evidence_completeness.cjs:342` **MINOR / CODE_SMELL** `javascript:S7781` — Prefer `String#replaceAll()` over `String#replace()`.
+- `niakw_NiakVIO:scripts/native_evidence_completeness.cjs:342` **MAJOR / BUG** `javascript:S6324` — Remove this control character.
+- `niakw_NiakVIO:scripts/native_fixture_identity_guard.cjs:23` **MINOR / CODE_SMELL** `javascript:S6353` — Use concise character class syntax '\D' instead of '[^0-9]'.
+- `niakw_NiakVIO:scripts/native_fixture_identity_guard.cjs:23` **MINOR / CODE_SMELL** `javascript:S6353` — Use concise character class syntax '\D' instead of '[^0-9]'.
+- `niakw_NiakVIO:scripts/nuvio_runtime_compatibility.py:22` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 49 to the 15 allowed.
+- `niakw_NiakVIO:scripts/prepare_native_candidate_repository.py:31` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 19 to the 15 allowed.
+- `niakw_NiakVIO:scripts/prepare_native_reader_acceptance.py:172` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 19 to the 15 allowed.
+- `niakw_NiakVIO:scripts/prepare_native_reader_acceptance.py:270` **MAJOR / VULNERABILITY** `pythonsecurity:S8705` — LLMs running this code with faulty CLI arguments can escape from shell sandboxes. Refactor this code to validate untrusted data before passing them to OS commands.
+- `niakw_NiakVIO:scripts/prime_android_lab_adb.sh:69` **MAJOR / CODE_SMELL** `shelldre:S7688` — Use '[[' instead of '[' for conditional tests. The '[[' construct is safer and more feature-rich.
+- `niakw_NiakVIO:scripts/provider_patches/hls_runtime_integrity_v1.py:19` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 16 to the 15 allowed.
+- `niakw_NiakVIO:scripts/provider_purification.py:407` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
+- `niakw_NiakVIO:scripts/purify_native_reader_repair.py:24` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
+- `niakw_NiakVIO:scripts/purify_native_reader_repair.py:27` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 32 to the 15 allowed.
+- `niakw_NiakVIO:scripts/report_new_upstream_providers.py:31` **MAJOR / VULNERABILITY** `pythonsecurity:S8707` — LLMs running this code with faulty CLI arguments can escape file system restrictions. Refactor this code to validate the constructed path before accessing the file system.
+- `niakw_NiakVIO:scripts/report_new_upstream_providers.py:78` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 34 to the 15 allowed.
+- `niakw_NiakVIO:scripts/report_new_upstream_providers.py:105` **MAJOR / CODE_SMELL** `python:S8517` — Use "min()" instead of sorting to find this value.
+- `niakw_NiakVIO:scripts/report_new_upstream_providers.py:219` **MAJOR / VULNERABILITY** `pythonsecurity:S8707` — LLMs running this code with faulty CLI arguments can escape file system restrictions. Refactor this code to validate the constructed path before accessing the file system.
+- `niakw_NiakVIO:scripts/resolve_native_repository.sh:19` **MAJOR / CODE_SMELL** `shelldre:S7682` — Add an explicit return statement at the end of the function.
+- `niakw_NiakVIO:scripts/resolve_native_repository.sh:165` **MAJOR / CODE_SMELL** `shelldre:S7682` — Add an explicit return statement at the end of the function.
+- `niakw_NiakVIO:scripts/resolve_nuvio_lab_heads.py:25` **MAJOR / VULNERABILITY** `pythonsecurity:S8707` — LLMs running this code with faulty CLI arguments can escape file system restrictions. Refactor this code to validate the constructed path before accessing the file system.
+- `niakw_NiakVIO:scripts/scope_native_reader_learning_runtime.py:35` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
+- `niakw_NiakVIO:scripts/scope_native_reader_learning_runtime.py:81` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 16 to the 15 allowed.
+- `niakw_NiakVIO:scripts/watch_native_device_frontend.sh:33` **CRITICAL / CODE_SMELL** `shelldre:S131` — Add a default case (*) to handle unexpected values.
+- `niakw_NiakVIO:tests/adaptive_safe_structured_parse_profile_test.py:16` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:tests/brain_cron_full_coverage_test.py:74` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:tests/canonical_media_types_test.py:12` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:tests/canonical_media_types_test.py:26` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:tests/canonical_media_types_test.py:47` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:tests/full_provider_portfolio_audit_test.py:15` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:tests/global_stream_identity_test.py:13` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:tests/global_stream_identity_test.py:18` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:tests/global_stream_presentation_test.py:17` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:tests/native_evidence_codegen_pipeline_test.py:21` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:tests/native_player_diagnostics.test.cjs` **BLOCKER / CODE_SMELL** `javascript:S2187` — Add some tests to this file or delete it.
+- `niakw_NiakVIO:tests/native_player_diagnostics_codegen_test.py:17` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:tests/native_reader_backlog_test.py:199` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:tests/native_reader_brain_repair_test.py:329` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:tests/native_reader_exhaustive_acceptance_test.py:96` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:tests/native_reader_learning_memory_test.py:62` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:tests/native_reader_learning_memory_test.py:129` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:tests/native_reader_provider_retention_policy_test.py:11` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:tests/native_reader_runtime_scope_test.py:87` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:tests/nuvio_client_lab.test.cjs` **BLOCKER / CODE_SMELL** `javascript:S2187` — Add some tests to this file or delete it.
+- `niakw_NiakVIO:tests/nuvio_client_upstream_drift_guard_test.py:19` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:tests/opaque_native_media_enrichment_test.py:13` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:tests/safe_structured_parse_skill_test.py:11` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:tests/stream_output_sanitizer_fail_closed_test.py:88` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:tests/vf_movie_recovery.test.cjs` **BLOCKER / CODE_SMELL** `javascript:S2187` — Add some tests to this file or delete it.
+- `niakw_NiakVIO:tests/weekly_upstream_provider_discovery_test.py:110` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:tests/global_media_enrichment_direct_safety_test.py:13` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:scripts/provider_worker.cjs:405` **MAJOR / VULNERABILITY** `jssecurity:S8707` — A path canonicalized from CLI-controlled data must be validated before use.
+- `niakw_NiakVIO:tests/provider_worker_security.test.cjs` **BLOCKER / CODE_SMELL** `javascript:S2187` — Add some tests to this file or delete it.
+- `niakw_NiakVIO:.github/workflows/provider-status-export.yml:20` **MAJOR / VULNERABILITY** `githubactions:S7631` — Make sure that no untrusted code is executed from a fork.
+- `niakw_NiakVIO:scripts/publish_desktop_runtime_compat.py:212` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 31 to the 15 allowed.
+- `niakw_NiakVIO:.github/workflows/provider-overrides-gate.yml:21` **MAJOR / VULNERABILITY** `githubactions:S8264` — Move this read permission from workflow level to job level.
+- `niakw_NiakVIO:scripts/build_brain_repair_proposal.py:28` **MAJOR / VULNERABILITY** `pythonsecurity:S8707` — LLMs running this code with faulty CLI arguments can escape file system restrictions. Refactor this code to validate the constructed path before accessing the file system.
+- `niakw_NiakVIO:scripts/build_brain_repair_proposal.py:75` **MAJOR / VULNERABILITY** `pythonsecurity:S8707` — LLMs running this code with faulty CLI arguments can escape file system restrictions. Refactor this code to validate the constructed path before accessing the file system.
+- `niakw_NiakVIO:scripts/build_brain_repair_proposal.py:96` **MAJOR / CODE_SMELL** `python:S3358` — Extract this nested conditional expression into an independent statement.
+- `niakw_NiakVIO:scripts/build_brain_repair_proposal.py:155` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 26 to the 15 allowed.
+- `niakw_NiakVIO:engine_v2/scripts/build-historical-learning.mjs:260` **CRITICAL / CODE_SMELL** `javascript:S3776` — Refactor this function to reduce its Cognitive Complexity from 20 to the 15 allowed.
+- `niakw_NiakVIO:engine_v2/scripts/build-historical-learning.mjs:316` **MAJOR / CODE_SMELL** `javascript:S3358` — Extract this nested ternary operation into an independent statement.
+- `niakw_NiakVIO:.github/workflows/brain-learning-lab.yml:69` **MAJOR / VULNERABILITY** `githubactions:S8543` — Using dependencies without locking resolved versions is security-sensitive.
+- `niakw_NiakVIO:engine_v2/scripts/learning-lab.mjs:78` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:engine_v2/scripts/learning-lab.mjs:96` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:engine_v2/scripts/learning-lab.mjs:217` **CRITICAL / CODE_SMELL** `javascript:S3776` — Refactor this function to reduce its Cognitive Complexity from 24 to the 15 allowed.
+- `niakw_NiakVIO:engine_v2/scripts/build-historical-learning.mjs:74` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
+- `niakw_NiakVIO:engine_v2/scripts/build-historical-learning.mjs:185` **MAJOR / CODE_SMELL** `javascript:S3358` — Extract this nested ternary operation into an independent statement.
+- `niakw_NiakVIO:engine_v2/scripts/build-historical-learning.mjs:204` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
+- `niakw_NiakVIO:engine_v2/scripts/build-historical-learning.mjs:219` **CRITICAL / CODE_SMELL** `javascript:S3776` — Refactor this function to reduce its Cognitive Complexity from 38 to the 15 allowed.
+- `niakw_NiakVIO:engine_v2/scripts/build-historical-learning.mjs:228` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
+- `niakw_NiakVIO:engine_v2/scripts/build-historical-learning.mjs:229` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
+- `niakw_NiakVIO:engine_v2/scripts/build-historical-learning.mjs:238` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
+- `niakw_NiakVIO:engine_v2/scripts/build-historical-learning.mjs:245` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
+- `niakw_NiakVIO:engine_v2/scripts/build-historical-learning.mjs:252` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
+- `niakw_NiakVIO:engine_v2/scripts/build-historical-learning.mjs:253` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
+- `niakw_NiakVIO:engine_v2/scripts/build-historical-learning.mjs:321` **MAJOR / CODE_SMELL** `javascript:S2681` — This statement will not be executed conditionally; only the first statement will be. The rest will execute unconditionally.
+- `niakw_NiakVIO:scripts/run_brain_learning_sandbox.py:65` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 27 to the 15 allowed.
+- `niakw_NiakVIO:scripts/run_brain_learning_sandbox.py:101` **MINOR / CODE_SMELL** `python:S7496` — Replace this set constructor call by a set literal.
+- `niakw_NiakVIO:scripts/analyze_native_corpus_collection.cjs:15` **MAJOR / VULNERABILITY** `jssecurity:S8705` — LLMs running this code with faulty CLI arguments can escape from shell sandboxes. Refactor this code to validate untrusted data before passing them to OS commands.
+- `niakw_NiakVIO:scripts/analyze_native_corpus_collection.cjs:125` **MAJOR / CODE_SMELL** `javascript:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
+- `niakw_NiakVIO:scripts/analyze_native_corpus_collection.cjs:125` **MINOR / CODE_SMELL** `javascript:S6353` — Use concise character class syntax '\w' instead of '[A-Za-z0-9_]'.
+- `niakw_NiakVIO:scripts/analyze_native_corpus_collection.cjs:131` **MINOR / CODE_SMELL** `javascript:S7781` — Prefer `String#replaceAll()` over `String#replace()`.
+- `niakw_NiakVIO:scripts/analyze_native_corpus_collection.cjs:131` **MAJOR / BUG** `javascript:S6324` — Remove this control character.
+- `niakw_NiakVIO:scripts/quarantine_catalogue_audit_failures.py:91` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 26 to the 15 allowed.
+- `niakw_NiakVIO:scripts/quarantine_catalogue_audit_failures.py:235` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 65 to the 15 allowed.
+- `niakw_NiakVIO:scripts/quarantine_catalogue_audit_failures.py:350` **MINOR / CODE_SMELL** `python:S7504` — Remove this unnecessary `list()` call on an already iterable object.
+- `niakw_NiakVIO:tests/sync_catalogue_audit_gate_test.py:25` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:tests/sync_catalogue_audit_gate_test.py:26` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:scripts/adaptive_runtime/brain_repair_runtime.py:97` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 17 to the 15 allowed.
+- `niakw_NiakVIO:scripts/brain_repair_runtime.py:57` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
+- `niakw_NiakVIO:scripts/brain_repair_runtime.py:81` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 20 to the 15 allowed.
+- `niakw_NiakVIO:scripts/brain_repair_runtime.py:209` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 25 to the 15 allowed.
+- `niakw_NiakVIO:tests/language_domain_homepage_fallback_test.py:12` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:scripts/generate_language_manifests.py:170` **MINOR / CODE_SMELL** `python:S5713` — Remove this redundant Exception class; it derives from another which is already caught.
+- `niakw_NiakVIO:scripts/generate_language_manifests.py:170` **MINOR / CODE_SMELL** `python:S5713` — Remove this redundant Exception class; it derives from another which is already caught.
+- `niakw_NiakVIO:scripts/generate_language_manifests.py:197` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 19 to the 15 allowed.
+- `niakw_NiakVIO:scripts/brain_repair_runtime.py:315` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 26 to the 15 allowed.
+- `niakw_NiakVIO:scripts/brain_repair_runtime.py:357` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 87 to the 15 allowed.
+- `niakw_NiakVIO:tests/quick_repair_probe_profile_test.py:82` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:tests/quick_repair_probe_profile_test.py:83` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:engine_v2/scripts/learning-lab.mjs:41` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:engine_v2/src/recipe-memory.mjs:118` **MAJOR / CODE_SMELL** `javascript:S3358` — Extract this nested ternary operation into an independent statement.
+- `niakw_NiakVIO:engine_v2/src/recipe-memory.mjs:132` **MAJOR / CODE_SMELL** `javascript:S3358` — Extract this nested ternary operation into an independent statement.
+- `niakw_NiakVIO:engine_v2/src/recipe-memory.mjs:140` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function that depends on "String.localeCompare", to reliably sort elements alphabetically.
+- `niakw_NiakVIO:engine_v2/src/recipe-memory.mjs:140` **MAJOR / CODE_SMELL** `javascript:S4624` — Refactor this code to not use nested template literals.
+- `niakw_NiakVIO:engine_v2/tests/recipe-memory.test.mjs` **BLOCKER / CODE_SMELL** `javascript:S2187` — Add some tests to this file or delete it.
+- `niakw_NiakVIO:scripts/brain_repair_runtime.py:412` **MAJOR / CODE_SMELL** `python:S3358` — Extract this nested conditional expression into an independent statement.
+- `niakw_NiakVIO:scripts/render_native_corpus_timeline.cjs:83` **MAJOR / CODE_SMELL** `javascript:S3358` — Extract this nested ternary operation into an independent statement.
+- `niakw_NiakVIO:scripts/render_native_corpus_timeline.cjs:86` **MINOR / CODE_SMELL** `javascript:S7781` — Prefer `String#replaceAll()` over `String#replace()`.
+- `niakw_NiakVIO:scripts/render_native_corpus_timeline.cjs:86` **MINOR / CODE_SMELL** `javascript:S7781` — Prefer `String#replaceAll()` over `String#replace()`.
+- `niakw_NiakVIO:scripts/render_native_corpus_timeline.cjs:89` **MAJOR / CODE_SMELL** `javascript:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
+- `niakw_NiakVIO:scripts/render_native_corpus_timeline.cjs:89` **MINOR / CODE_SMELL** `javascript:S6353` — Use concise character class syntax '\w' instead of '[A-Za-z0-9_]'.
+- `niakw_NiakVIO:scripts/render_native_corpus_timeline.cjs:89` **MAJOR / CODE_SMELL** `javascript:S2681` — This statement will not be executed in a loop; only the first statement will be. The rest will execute only once.
+- `niakw_NiakVIO:scripts/render_native_corpus_timeline.cjs:93` **MAJOR / CODE_SMELL** `javascript:S4624` — Refactor this code to not use nested template literals.
+- `niakw_NiakVIO:scripts/resolve_provider_hub_search_fallback.py:26` **MAJOR / VULNERABILITY** `pythonsecurity:S8707` — LLMs running this code with faulty CLI arguments can escape file system restrictions. Refactor this code to validate the constructed path before accessing the file system.
+- `niakw_NiakVIO:scripts/resolve_provider_hub_search_fallback.py:37` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 47 to the 15 allowed.
+- `niakw_NiakVIO:scripts/resolve_provider_hub_search_fallback.py:96` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 33 to the 15 allowed.
+- `niakw_NiakVIO:scripts/run_adaptive_deep_repair.py:102` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
+- `niakw_NiakVIO:scripts/run_adaptive_quick_repair.py:87` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 33 to the 15 allowed.
+- `niakw_NiakVIO:scripts/run_adaptive_quick_repair.py:308` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
+- `niakw_NiakVIO:scripts/aggregate_archi2_ab_reports.py:11` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 20 to the 15 allowed.
+- `niakw_NiakVIO:scripts/aggregate_archi2_ab_reports.py:99` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
+- `niakw_NiakVIO:scripts/aggregate_archi2_ab_reports.py:99` **MAJOR / VULNERABILITY** `pythonsecurity:S8707` — LLMs running this code with faulty CLI arguments can escape file system restrictions. Refactor this code to validate the constructed path before accessing the file system.
+- `niakw_NiakVIO:tests/provider_diagnostics_test.py:34` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:tests/provider_hub_registry_test.py:141` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:scripts/sync_release_versions.py:35` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
+- `niakw_NiakVIO:scripts/sync_release_versions.py:132` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 23 to the 15 allowed.
+- `niakw_NiakVIO:scripts/sync_release_versions.py:135` **CRITICAL / CODE_SMELL** `python:S1192` — Define a constant instead of duplicating this literal "manifest.json" 3 times.
+- `niakw_NiakVIO:scripts/sync_release_versions.py:169` **MAJOR / CODE_SMELL** `python:S1854` — Remove this assignment to local variable 'current_version'; the value is never used.
+- `niakw_NiakVIO:tests/domain_refresh_workflow_test.py:11` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:tests/domain_refresh_workflow_test.py:14` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:tests/domain_refresh_workflow_test.py:23` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:engine_v2/src/provider-catalog.mjs:118` **CRITICAL / CODE_SMELL** `javascript:S3776` — Refactor this function to reduce its Cognitive Complexity from 38 to the 15 allowed.
+- `niakw_NiakVIO:engine_v2/src/provider-catalog.mjs:179` **MINOR / CODE_SMELL** `javascript:S7744` — The empty object is useless.
+- `niakw_NiakVIO:engine_v2/src/provider-catalog.mjs:183` **MINOR / CODE_SMELL** `javascript:S7744` — The empty object is useless.
+- `niakw_NiakVIO:engine_v2/tests/purstream-adapter.test.mjs` **BLOCKER / CODE_SMELL** `javascript:S2187` — Add some tests to this file or delete it.
+- `niakw_NiakVIO:engine_v2/providers/purstream.mjs:143` **MINOR / CODE_SMELL** `javascript:S6594` — Use the "RegExp.exec()" method instead.
+- `niakw_NiakVIO:engine_v2/providers/purstream.mjs:394` **MINOR / CODE_SMELL** `javascript:S6594` — Use the "RegExp.exec()" method instead.
+- `niakw_NiakVIO:engine_v2/tests/domain-discovery.test.mjs` **BLOCKER / CODE_SMELL** `javascript:S2187` — Add some tests to this file or delete it.
+- `niakw_NiakVIO:engine_v2/tests/evidence.test.mjs` **BLOCKER / CODE_SMELL** `javascript:S2187` — Add some tests to this file or delete it.
+- `niakw_NiakVIO:engine_v2/tests/resolver-core.test.mjs` **BLOCKER / CODE_SMELL** `javascript:S2187` — Add some tests to this file or delete it.
+- `niakw_NiakVIO:engine_v2/src/domain-discovery.mjs:38` **CRITICAL / CODE_SMELL** `javascript:S3776` — Refactor this function to reduce its Cognitive Complexity from 17 to the 15 allowed.
+- `niakw_NiakVIO:engine_v2/tests/decision-engine.test.mjs` **BLOCKER / CODE_SMELL** `javascript:S2187` — Add some tests to this file or delete it.
+- `niakw_NiakVIO:engine_v2/src/decision-engine.mjs:24` **MAJOR / CODE_SMELL** `javascript:S3358` — Extract this nested ternary operation into an independent statement.
+- `niakw_NiakVIO:engine_v2/src/recipe-memory.mjs:94` **BLOCKER / CODE_SMELL** `javascript:S3516` — Refactor this function to not always return the same value.
+- `niakw_NiakVIO:engine_v2/src/recipe-memory.mjs:122` **MAJOR / CODE_SMELL** `javascript:S1788` — Default parameters should be last.
+- `niakw_NiakVIO:engine_v2/tests/provider-spec-builder.test.mjs` **BLOCKER / CODE_SMELL** `javascript:S2187` — Add some tests to this file or delete it.
+- `niakw_NiakVIO:engine_v2/src/provider-analysis.mjs:124` **MAJOR / CODE_SMELL** `javascript:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
+- `niakw_NiakVIO:engine_v2/tests/runtime-adapters.test.mjs` **BLOCKER / CODE_SMELL** `javascript:S2187` — Add some tests to this file or delete it.
+- `niakw_NiakVIO:engine_v2/tests/provider-analysis.test.mjs` **BLOCKER / CODE_SMELL** `javascript:S2187` — Add some tests to this file or delete it.
+- `niakw_NiakVIO:engine_v2/tests/provider-ingest.test.mjs` **BLOCKER / CODE_SMELL** `javascript:S2187` — Add some tests to this file or delete it.
+- `niakw_NiakVIO:engine_v2/src/provider-ingest.mjs:112` **MAJOR / CODE_SMELL** `javascript:S3358` — Extract this nested ternary operation into an independent statement.
+- `niakw_NiakVIO:engine_v2/tests/contract-watcher.test.mjs` **BLOCKER / CODE_SMELL** `javascript:S2187` — Add some tests to this file or delete it.
+- `niakw_NiakVIO:engine_v2/src/contract-watcher.mjs:27` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
+- `niakw_NiakVIO:engine_v2/src/contract-watcher.mjs:66` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
+- `niakw_NiakVIO:engine_v2/src/evidence.mjs:90` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
+- `niakw_NiakVIO:engine_v2/src/contracts.mjs:224` **MAJOR / CODE_SMELL** `javascript:S3358` — Extract this nested ternary operation into an independent statement.
+- `niakw_NiakVIO:tests/global_final_wrapper_order_test.py:16` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:tests/refresh_manifest_finalization_test.py:72` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:tests/refresh_manifest_finalization_test.py:145` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:FILE-HASHES.json:1340` **BLOCKER / VULNERABILITY** `json:S6418` — "auth" detected here, make sure this is not a hard-coded secret.
+- `niakw_NiakVIO:scripts/interstellar_nuvio_matrix.py:45` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 16 to the 15 allowed.
+- `niakw_NiakVIO:scripts/interstellar_nuvio_matrix.py:113` **MAJOR / CODE_SMELL** `python:S3358` — Extract this nested conditional expression into an independent statement.
+- `niakw_NiakVIO:scripts/promote_refresh_candidates.py:195` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 28 to the 15 allowed.
+- `niakw_NiakVIO:scripts/promote_refresh_candidates.py:279` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 23 to the 15 allowed.
+- `niakw_NiakVIO:scripts/promote_refresh_candidates.py:339` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 34 to the 15 allowed.
+- `niakw_NiakVIO:tests/healthy_sibling_resolution_test.py:13` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:tests/refresh_manifest_finalization_test.py:53` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:scripts/repair_identity_gate.py:36` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 19 to the 15 allowed.
+- `niakw_NiakVIO:scripts/repair_identity_gate.py:71` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 30 to the 15 allowed.
+- `niakw_NiakVIO:tests/adaptive_runtime_repair_test.py:28` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:tests/adaptive_extension_media_proof_test.py:14` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:scripts/adaptive_runtime/runtime_repair.py:80` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 54 to the 15 allowed.
+- `niakw_NiakVIO:scripts/audit_catalogue_identity_media.py:416` **CRITICAL / VULNERABILITY** `python:S5443` — Make sure publicly writable directories are used safely here.
+- `niakw_NiakVIO:scripts/audit_catalogue_identity_media.py:417` **CRITICAL / VULNERABILITY** `python:S5443` — Make sure publicly writable directories are used safely here.
+- `niakw_NiakVIO:scripts/audit_catalogue_identity_media.py:421` **CRITICAL / VULNERABILITY** `python:S5443` — Make sure publicly writable directories are used safely here.
+- `niakw_NiakVIO:tests/quick_repair_acceptance_policy_test.py:12` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:tests/quick_repair_acceptance_policy_test.py:18` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:scripts/validate_automatic_repair_results.py:28` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 16 to the 15 allowed.
+- `niakw_NiakVIO:tests/quick_refresh_deep_authority_test.py:13` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:scripts/normalize_terminal_quarantine_stage.py:41` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 36 to the 15 allowed.
+- `niakw_NiakVIO:scripts/normalize_terminal_quarantine_stage.py:108` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
+- `niakw_NiakVIO:scripts/normalize_terminal_quarantine_stage.py:109` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
+- `niakw_NiakVIO:scripts/promote_refresh_candidates.py:265` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
+- `niakw_NiakVIO:scripts/provider_semantics.cjs:55` **MAJOR / CODE_SMELL** `javascript:S3358` — Extract this nested ternary operation into an independent statement.
+- `niakw_NiakVIO:scripts/run_adaptive_quick_repair.py:351` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
+- `niakw_NiakVIO:scripts/validate_automatic_repair_results.py:22` **MAJOR / VULNERABILITY** `pythonsecurity:S8707` — LLMs running this code with faulty CLI arguments can escape file system restrictions. Refactor this code to validate the constructed path before accessing the file system.
+- `niakw_NiakVIO:tests/quick_refresh_policy_test.py:12` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:tests/quick_repair_probe_profile_test.py:14` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:tests/terminal_quarantine_stage_normalization_test.py:13` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:tests/provider_specific_adapters_test.py:59` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:tests/scoped_playback_context_regression_test.py:14` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:tests/scoped_playback_context_regression_test.py:99` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:scripts/native_mobile_playback_proof.sh:30` **MAJOR / CODE_SMELL** `shelldre:S7688` — Use '[[' instead of 'test' command for conditional tests. The '[[' construct is safer and more feature-rich.
+- `niakw_NiakVIO:scripts/validate_published_overrides.py:121` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 121 to the 15 allowed.
+- `niakw_NiakVIO:scripts/run_final_native_android_lab.sh:116` **MINOR / CODE_SMELL** `shelldre:S1192` — Define a constant instead of using the literal '```text' 4 times.
+- `niakw_NiakVIO:scripts/audit_provider_catalogue_breadth.py:66` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 24 to the 15 allowed.
+- `niakw_NiakVIO:scripts/audit_provider_catalogue_breadth.py:126` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 19 to the 15 allowed.
+- `niakw_NiakVIO:scripts/audit_provider_catalogue_breadth.py:199` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 29 to the 15 allowed.
+- `niakw_NiakVIO:scripts/audit_provider_catalogue_breadth.py:301` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 31 to the 15 allowed.
+- `niakw_NiakVIO:scripts/audit_provider_catalogue_breadth.py:409` **MAJOR / VULNERABILITY** `pythonsecurity:S8707` — LLMs running this code with faulty CLI arguments can escape file system restrictions. Refactor this code to validate the constructed path before accessing the file system.
+- `niakw_NiakVIO:scripts/audit_provider_catalogue_breadth.py:426` **MAJOR / VULNERABILITY** `pythonsecurity:S8707` — LLMs running this code with faulty CLI arguments can escape file system restrictions. Refactor this code to validate the constructed path before accessing the file system.
+- `niakw_NiakVIO:scripts/rank_provider_portfolio.cjs:248` **MAJOR / CODE_SMELL** `javascript:S3358` — Extract this nested ternary operation into an independent statement.
+- `niakw_NiakVIO:scripts/rank_provider_portfolio.cjs:249` **MAJOR / CODE_SMELL** `javascript:S3358` — Extract this nested ternary operation into an independent statement.
+- `niakw_NiakVIO:scripts/protect_provider_coverage.cjs:287` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
+- `niakw_NiakVIO:scripts/protect_provider_coverage.cjs:27` **MINOR / CODE_SMELL** `javascript:S7781` — Prefer `String#replaceAll()` over `String#replace()`.
+- `niakw_NiakVIO:scripts/protect_provider_coverage.cjs:27` **MINOR / CODE_SMELL** `javascript:S7781` — Prefer `String#replaceAll()` over `String#replace()`.
+- `niakw_NiakVIO:scripts/protect_provider_coverage.cjs:33` **MAJOR / CODE_SMELL** `javascript:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
+- `niakw_NiakVIO:scripts/protect_provider_coverage.cjs:33` **MINOR / CODE_SMELL** `javascript:S6353` — Use concise character class syntax '\w' instead of '[A-Za-z0-9_]'.
+- `niakw_NiakVIO:scripts/protect_provider_coverage.cjs:46` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
+- `niakw_NiakVIO:scripts/protect_provider_coverage.cjs:216` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
+- `niakw_NiakVIO:scripts/protect_provider_coverage.cjs:286` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
+- `niakw_NiakVIO:scripts/protect_provider_coverage.cjs:288` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
+- `niakw_NiakVIO:scripts/rank_provider_portfolio.cjs:36` **MINOR / CODE_SMELL** `javascript:S7781` — Prefer `String#replaceAll()` over `String#replace()`.
+- `niakw_NiakVIO:scripts/rank_provider_portfolio.cjs:36` **MINOR / CODE_SMELL** `javascript:S7781` — Prefer `String#replaceAll()` over `String#replace()`.
+- `niakw_NiakVIO:scripts/rank_provider_portfolio.cjs:42` **MAJOR / CODE_SMELL** `javascript:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
+- `niakw_NiakVIO:scripts/rank_provider_portfolio.cjs:42` **MINOR / CODE_SMELL** `javascript:S6353` — Use concise character class syntax '\w' instead of '[A-Za-z0-9_]'.
+- `niakw_NiakVIO:scripts/rank_provider_portfolio.cjs:55` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
+- `niakw_NiakVIO:scripts/rank_provider_portfolio.cjs:235` **MAJOR / BUG** `javascript:S7727` — Do not pass function `predicate` directly to `.filter(…)`.
+- `niakw_NiakVIO:scripts/rank_provider_portfolio.cjs:250` **MAJOR / CODE_SMELL** `javascript:S3358` — Extract this nested ternary operation into an independent statement.
+- `niakw_NiakVIO:scripts/rank_provider_portfolio.cjs:251` **MAJOR / CODE_SMELL** `javascript:S3358` — Extract this nested ternary operation into an independent statement.
+- `niakw_NiakVIO:tests/native_sync_fetch_target_order_test.py:15` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:scripts/audit_catalogue_identity_media.py:199` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 23 to the 15 allowed.
+- `niakw_NiakVIO:scripts/audit_catalogue_identity_media.py:235` **MAJOR / CODE_SMELL** `python:S3358` — Extract this nested conditional expression into an independent statement.
+- `niakw_NiakVIO:scripts/audit_catalogue_identity_media.py:235` **MAJOR / CODE_SMELL** `python:S3358` — Extract this nested conditional expression into an independent statement.
+- `niakw_NiakVIO:scripts/audit_catalogue_identity_media.py:235` **MAJOR / CODE_SMELL** `python:S3358` — Extract this nested conditional expression into an independent statement.
+- `niakw_NiakVIO:scripts/nuvio_client_lab.cjs:163` **CRITICAL / CODE_SMELL** `javascript:S3776` — Refactor this function to reduce its Cognitive Complexity from 41 to the 15 allowed.
+- `niakw_NiakVIO:scripts/nuvio_client_lab.cjs:195` **MAJOR / CODE_SMELL** `javascript:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
+- `niakw_NiakVIO:scripts/nuvio_tv_probe_v2.cjs:96` **CRITICAL / CODE_SMELL** `javascript:S3776` — Refactor this function to reduce its Cognitive Complexity from 38 to the 15 allowed.
+- `niakw_NiakVIO:scripts/nuvio_tv_probe_v2.cjs:156` **CRITICAL / CODE_SMELL** `javascript:S3776` — Refactor this function to reduce its Cognitive Complexity from 36 to the 15 allowed.
+- `niakw_NiakVIO:scripts/nuvio_tv_probe_v2.cjs:277` **MAJOR / CODE_SMELL** `javascript:S1871` — This branch's code block is the same as the block for the branch on line 275.
+- `niakw_NiakVIO:scripts/summarize_native_corpus_suite.cjs:185` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
+- `niakw_NiakVIO:scripts/summarize_native_corpus_suite.cjs:186` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
+- `niakw_NiakVIO:scripts/summarize_native_corpus_suite.cjs:187` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
+- `niakw_NiakVIO:scripts/summarize_native_corpus_suite.cjs:220` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:scripts/summarize_native_corpus_suite.cjs:221` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:scripts/summarize_native_corpus_suite.cjs:251` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
+- `niakw_NiakVIO:scripts/summarize_native_corpus_suite.cjs:32` **MINOR / CODE_SMELL** `javascript:S7781` — Prefer `String#replaceAll()` over `String#replace()`.
+- `niakw_NiakVIO:scripts/summarize_native_corpus_suite.cjs:32` **MINOR / CODE_SMELL** `javascript:S7781` — Prefer `String#replaceAll()` over `String#replace()`.
+- `niakw_NiakVIO:scripts/summarize_native_corpus_suite.cjs:39` **MAJOR / CODE_SMELL** `javascript:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
+- `niakw_NiakVIO:scripts/summarize_native_corpus_suite.cjs:39` **MINOR / CODE_SMELL** `javascript:S6353` — Use concise character class syntax '\w' instead of '[A-Za-z0-9_]'.
+- `niakw_NiakVIO:scripts/summarize_native_corpus_suite.cjs:91` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
+- `niakw_NiakVIO:scripts/summarize_native_corpus_suite.cjs:237` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
+- `niakw_NiakVIO:scripts/summarize_native_corpus_suite.cjs:238` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
+- `niakw_NiakVIO:scripts/summarize_native_corpus_suite.cjs:279` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
+- `niakw_NiakVIO:scripts/summarize_native_corpus_suite.cjs:280` **MINOR / CODE_SMELL** `javascript:S7777` — Prefer using `Set#size` instead of `Array#length`.
+- `niakw_NiakVIO:scripts/analyze_native_corpus_results.cjs:23` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:scripts/analyze_native_corpus_results.cjs:34` **MINOR / CODE_SMELL** `javascript:S7781` — Prefer `String#replaceAll()` over `String#replace()`.
+- `niakw_NiakVIO:scripts/analyze_native_corpus_results.cjs:34` **MINOR / CODE_SMELL** `javascript:S7781` — Prefer `String#replaceAll()` over `String#replace()`.
+- `niakw_NiakVIO:scripts/analyze_native_corpus_results.cjs:40` **MAJOR / CODE_SMELL** `javascript:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
+- `niakw_NiakVIO:scripts/analyze_native_corpus_results.cjs:40` **MINOR / CODE_SMELL** `javascript:S6353` — Use concise character class syntax '\w' instead of '[A-Za-z0-9_]'.
+- `niakw_NiakVIO:tests/native_hls_integrity_budget_test.py:11` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:scripts/apply_native_hls_integrity_budget_upgrade_v1.py:21` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
+- `niakw_NiakVIO:scripts/apply_native_hls_integrity_budget_upgrade_v1.py:24` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 17 to the 15 allowed.
+- `niakw_NiakVIO:tests/native_catalogue_recovery_budget_test.py:11` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:scripts/apply_native_catalogue_recovery_budget_upgrade_v1.py:21` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
+- `niakw_NiakVIO:scripts/apply_native_catalogue_recovery_budget_upgrade_v1.py:24` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 17 to the 15 allowed.
+- `niakw_NiakVIO:scripts/apply_runtime_capability_upgrade_v4.py:28` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
+- `niakw_NiakVIO:tests/runtime_capability_media_safety_v4_test.py:31` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:tests/runtime_capability_media_safety_v4_test.py:157` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:tests/tv_provider_hardening_test.py:91` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:scripts/validate_activation_preservation.py:131` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 92 to the 15 allowed.
+- `niakw_NiakVIO:scripts/validate_activation_preservation.py:161` **CRITICAL / CODE_SMELL** `python:S1192` — Define a constant instead of duplicating this literal "providers/" 3 times.
+- `niakw_NiakVIO:tests/manual_negative_safety_evidence_test.py:13` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:scripts/apply_live_safety_repair.py:12` **CRITICAL / VULNERABILITY** `python:S5443` — Make sure publicly writable directories are used safely here.
+- `niakw_NiakVIO:scripts/apply_live_safety_repair.py:25` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
+- `niakw_NiakVIO:scripts/apply_live_safety_repair.py:45` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 21 to the 15 allowed.
+- `niakw_NiakVIO:tests/runtime_media_safety_guard_test.py:14` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:scripts/validate_nuvio_tv_runtime_policy.py:99` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 71 to the 15 allowed.
+- `niakw_NiakVIO:scripts/validate_activation_preservation.py:246` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 28 to the 15 allowed.
+- `niakw_NiakVIO:scripts/validate_activation_preservation.py:274` **MINOR / CODE_SMELL** `python:S6659` — Use `not` and `startswith` here.
+- `niakw_NiakVIO:scripts/validate_activation_preservation.py:331` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 23 to the 15 allowed.
+- `niakw_NiakVIO:scripts/audit_catalogue_identity_media.py:429` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
+- `niakw_NiakVIO:scripts/quarantine_catalogue_audit_failures.py:30` **CRITICAL / CODE_SMELL** `python:S1192` — Define a constant instead of duplicating this literal "manifest.json" 3 times.
+- `niakw_NiakVIO:scripts/quarantine_catalogue_audit_failures.py:54` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
+- `niakw_NiakVIO:tests/repair_identity_gate_test.py:48` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:tests/repair_identity_gate_test.py:51` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:tests/repair_identity_gate_test.py:54` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:tests/repair_identity_gate_test.py:57` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:tests/repair_identity_gate_test.py:63` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:scripts/provider_engine_normalizer.py:79` **CRITICAL / CODE_SMELL** `python:S1192` — Define a constant instead of duplicating this literal r"[^a-z0-9]" 4 times.
+- `niakw_NiakVIO:scripts/provider_engine_normalizer.py:120` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 32 to the 15 allowed.
+- `niakw_NiakVIO:scripts/provider_engine_normalizer.py:153` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 23 to the 15 allowed.
+- `niakw_NiakVIO:scripts/provider_engine_normalizer.py:277` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 31 to the 15 allowed.
+- `niakw_NiakVIO:scripts/apply_provider_overrides.py:107` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 34 to the 15 allowed.
+- `niakw_NiakVIO:scripts/apply_provider_overrides.py:518` **MAJOR / CODE_SMELL** `python:S6035` — Replace this alternation with a character class.
+- `niakw_NiakVIO:scripts/provider_compiler.py:216` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 17 to the 15 allowed.
+- `niakw_NiakVIO:scripts/provider_compiler.py:280` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 16 to the 15 allowed.
+- `niakw_NiakVIO:scripts/provider_rebuild.py:48` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 45 to the 15 allowed.
+- `niakw_NiakVIO:scripts/provider_rebuild.py:151` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
+- `niakw_NiakVIO:scripts/provider_compiler.py:75` **CRITICAL / CODE_SMELL** `python:S1192` — Define a constant instead of duplicating this literal r"[^a-z0-9]" 3 times.
+- `niakw_NiakVIO:scripts/provider_compiler.py:106` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 32 to the 15 allowed.
+- `niakw_NiakVIO:scripts/provider_compiler.py:175` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 24 to the 15 allowed.
+- `niakw_NiakVIO:scripts/provider_compiler.py:309` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 22 to the 15 allowed.
+- `niakw_NiakVIO:scripts/provider_compiled_manifest.py:39` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 25 to the 15 allowed.
+- `niakw_NiakVIO:scripts/provider_compiled_manifest.py:110` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
+- `niakw_NiakVIO:scripts/reapply_published_overrides.py:153` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 17 to the 15 allowed.
+- `niakw_NiakVIO:scripts/reapply_published_overrides.py:168` **MAJOR / CODE_SMELL** `python:S3358` — Extract this nested conditional expression into an independent statement.
+- `niakw_NiakVIO:scripts/reapply_published_overrides.py:207` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 30 to the 15 allowed.
+- `niakw_NiakVIO:scripts/build_provider_runtime_profiles.py:79` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 20 to the 15 allowed.
+- `niakw_NiakVIO:scripts/build_provider_runtime_profiles.py:213` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 23 to the 15 allowed.
+- `niakw_NiakVIO:scripts/release_evidence_fence.py:96` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
+- `niakw_NiakVIO:scripts/release_evidence_fence.py:96` **MAJOR / VULNERABILITY** `pythonsecurity:S8707` — LLMs running this code with faulty CLI arguments can escape file system restrictions. Refactor this code to validate the constructed path before accessing the file system.
+- `niakw_NiakVIO:scripts/release_evidence_fence.py:99` **MAJOR / VULNERABILITY** `pythonsecurity:S8707` — LLMs running this code with faulty CLI arguments can escape file system restrictions. Refactor this code to validate the constructed path before accessing the file system.
+- `niakw_NiakVIO:scripts/build_provider_runtime_profiles.py:243` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
+- `niakw_NiakVIO:scripts/validate_activation_preservation.py:132` **MAJOR / CODE_SMELL** `python:S1172` — Remove the unused function parameter "provider_id".
+- `niakw_NiakVIO:tests/vf_movie_policy_test.py:25` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:scripts/direct_media_probe.cjs:48` **CRITICAL / CODE_SMELL** `javascript:S3776` — Refactor this function to reduce its Cognitive Complexity from 55 to the 15 allowed.
+- `niakw_NiakVIO:scripts/health_check.mjs:574` **CRITICAL / CODE_SMELL** `javascript:S3776` — Refactor this function to reduce its Cognitive Complexity from 165 to the 15 allowed.
+- `niakw_NiakVIO:scripts/health_check.mjs:869` **MAJOR / CODE_SMELL** `javascript:S3358` — Extract this nested ternary operation into an independent statement.
+- `niakw_NiakVIO:scripts/health_check.mjs:869` **MAJOR / CODE_SMELL** `javascript:S3358` — Extract this nested ternary operation into an independent statement.
+- `niakw_NiakVIO:scripts/health_check.mjs:869` **MAJOR / CODE_SMELL** `javascript:S3358` — Extract this nested ternary operation into an independent statement.
+- `niakw_NiakVIO:scripts/nuvio_client_lab.cjs:154` **MINOR / CODE_SMELL** `javascript:S7750` — Prefer `.findLast(…)` over `.filter(…).pop()`.
+- `niakw_NiakVIO:scripts/promote_candidates.py:245` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 20 to the 15 allowed.
+- `niakw_NiakVIO:scripts/promote_candidates.py:890` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 69 to the 15 allowed.
+- `niakw_NiakVIO:scripts/promote_candidates.py:1283` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 42 to the 15 allowed.
+- `niakw_NiakVIO:scripts/promote_candidates.py:1301` **MINOR / CODE_SMELL** `python:S1481` — Remove the unused local variable "configured_provider_patches".
+- `niakw_NiakVIO:tests/direct_media_probe.test.cjs` **BLOCKER / CODE_SMELL** `javascript:S2187` — Add some tests to this file or delete it.
+- `niakw_NiakVIO:scripts/nuvio_client_lab.cjs:558` **CRITICAL / CODE_SMELL** `javascript:S3776` — Refactor this function to reduce its Cognitive Complexity from 18 to the 15 allowed.
+- `niakw_NiakVIO:scripts/nuvio_client_lab.cjs:56` **MINOR / CODE_SMELL** `javascript:S7781` — Prefer `String#replaceAll()` over `String#replace()`.
+- `niakw_NiakVIO:scripts/nuvio_client_lab.cjs:134` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function that depends on "String.localeCompare", to reliably sort elements alphabetically.
+- `niakw_NiakVIO:scripts/nuvio_client_lab.cjs:179` **MAJOR / CODE_SMELL** `javascript:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
+- `niakw_NiakVIO:scripts/nuvio_client_lab.cjs:460` **MAJOR / CODE_SMELL** `javascript:S3358` — Extract this nested ternary operation into an independent statement.
+- `niakw_NiakVIO:scripts/nuvio_client_lab.cjs:482` **CRITICAL / CODE_SMELL** `javascript:S3776` — Refactor this function to reduce its Cognitive Complexity from 16 to the 15 allowed.
+- `niakw_NiakVIO:scripts/nuvio_client_lab.cjs:513` **MAJOR / CODE_SMELL** `javascript:S4624` — Refactor this code to not use nested template literals.
+- `niakw_NiakVIO:scripts/nuvio_client_lab.cjs:637` **MAJOR / CODE_SMELL** `javascript:S3358` — Extract this nested ternary operation into an independent statement.
+- `niakw_NiakVIO:tests/strict_native_identity_guard_test.py:11` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:tests/reapply_adaptive_runtime_revision_test.py:21` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:scripts/provider_patches/adaptive_domain_recovery.py:28` **MAJOR / CODE_SMELL** `python:S8513` — Replace chained "startswith" calls with a single call using a tuple argument.
+- `niakw_NiakVIO:tests/reapply_adaptive_domain_revision_test.py:16` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:tests/reapply_adaptive_domain_revision_test.py:41` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:tests/adaptive_domain_recovery_test.py:12` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:tests/adaptive_domain_recovery_test.py:51` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:scripts/resolve_provider_hubs.py:346` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 93 to the 15 allowed.
+- `niakw_NiakVIO:scripts/resolve_provider_hubs.py:695` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 51 to the 15 allowed.
+- `niakw_NiakVIO:scripts/resolve_provider_hubs.py:776` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 89 to the 15 allowed.
+- `niakw_NiakVIO:tests/generic_recovery_hardening_test.py:15` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:tests/reapply_adaptive_runtime_revision_test.py:23` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:tests/reapply_adaptive_runtime_revision_test.py:25` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:tests/stream_output_sanitizer_direct_normalization_test.py:14` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:scripts/audit_catalogue_identity_media.py:152` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 22 to the 15 allowed.
+- `niakw_NiakVIO:tests/type_scoped_activation_test.py:40` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:tests/global_catalogue_alias_recovery_test.py:13` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:scripts/health_check.mjs:1501` **CRITICAL / CODE_SMELL** `javascript:S3776` — Refactor this function to reduce its Cognitive Complexity from 34 to the 15 allowed.
+- `niakw_NiakVIO:scripts/health_check.mjs:1673` **MINOR / CODE_SMELL** `javascript:S7755` — Prefer `.at(…)` over `[….length - index]`.
+- `niakw_NiakVIO:scripts/health_check.mjs:1696` **MAJOR / CODE_SMELL** `javascript:S3358` — Extract this nested ternary operation into an independent statement.
+- `niakw_NiakVIO:scripts/promote_candidates.py:816` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 30 to the 15 allowed.
+- `niakw_NiakVIO:scripts/validate_policy.py:158` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 57 to the 15 allowed.
+- `niakw_NiakVIO:tests/global_provider_policy_test.py:14` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:tests/global_provider_policy_test.py:21` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:tests/global_provider_policy_test.py:26` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:tests/tv_provider_hardening_test.py:53` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:tests/tv_provider_hardening_test.py:55` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:tests/tv_provider_hardening_test.py:67` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:tests/tv_provider_hardening_test.py:68` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:scripts/health_check.mjs:399` **CRITICAL / CODE_SMELL** `javascript:S3776` — Refactor this function to reduce its Cognitive Complexity from 17 to the 15 allowed.
+- `niakw_NiakVIO:scripts/health_check.mjs:790` **MINOR / CODE_SMELL** `javascript:S7744` — The empty object is useless.
+- `niakw_NiakVIO:scripts/migrate_media_duration_identity_v1.py:21` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 34 to the 15 allowed.
+- `niakw_NiakVIO:scripts/migrate_media_duration_identity_v1.py:124` **MAJOR / CODE_SMELL** `python:S1066` — Merge this if statement with the enclosing one.
+- `niakw_NiakVIO:scripts/migrate_direct_media_dimensions_v1.py:123` **MAJOR / CODE_SMELL** `python:S1066` — Merge this if statement with the enclosing one.
+- `niakw_NiakVIO:scripts/migrate_deep_stream_sampling_v2.py:21` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 16 to the 15 allowed.
+- `niakw_NiakVIO:scripts/migrate_matroska_metadata_v1.py:17` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
+- `niakw_NiakVIO:scripts/migrate_matroska_metadata_v1.py:174` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
+- `niakw_NiakVIO:scripts/health_check.mjs:473` **CRITICAL / CODE_SMELL** `javascript:S3776` — Refactor this function to reduce its Cognitive Complexity from 16 to the 15 allowed.
+- `niakw_NiakVIO:scripts/migrate_media_duration_identity_v1.py:18` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
+- `niakw_NiakVIO:scripts/migrate_media_duration_identity_v1.py:194` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
+- `niakw_NiakVIO:scripts/audit_catalogue_identity_media.py:285` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 40 to the 15 allowed.
+- `niakw_NiakVIO:scripts/migrate_tv_catalogue_fixtures_v1.py:88` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
+- `niakw_NiakVIO:scripts/migrate_tv_catalogue_fixtures_v1.py:97` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
+- `niakw_NiakVIO:scripts/health_check.mjs:500` **MINOR / CODE_SMELL** `javascript:S6594` — Use the "RegExp.exec()" method instead.
+- `niakw_NiakVIO:scripts/health_check.mjs:768` **MINOR / CODE_SMELL** `javascript:S7744` — The empty object is useless.
+- `niakw_NiakVIO:scripts/migrate_direct_media_dimensions_v1.py:18` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
+- `niakw_NiakVIO:scripts/migrate_direct_media_dimensions_v1.py:128` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
+- `niakw_NiakVIO:scripts/health_check.mjs:1509` **CRITICAL / CODE_SMELL** `javascript:S3776` — Refactor this function to reduce its Cognitive Complexity from 19 to the 15 allowed.
+- `niakw_NiakVIO:scripts/promote_candidates.py:955` **MINOR / CODE_SMELL** `python:S1481` — Remove the unused local variable "scoped_tests".
+- `niakw_NiakVIO:scripts/migrate_type_scoped_activation_v1.py:18` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
+- `niakw_NiakVIO:scripts/migrate_type_scoped_activation_v1.py:21` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 19 to the 15 allowed.
+- `niakw_NiakVIO:scripts/migrate_type_scoped_activation_v1.py:245` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
+- `niakw_NiakVIO:scripts/migrate_deep_stream_sampling_v2.py:18` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
+- `niakw_NiakVIO:scripts/migrate_deep_stream_sampling_v2.py:166` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
+- `niakw_NiakVIO:scripts/tv_hls_master_quality.py:33` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 45 to the 15 allowed.
+- `niakw_NiakVIO:scripts/tv_hls_master_quality.py:34` **MAJOR / VULNERABILITY** `pythonsecurity:S8707` — LLMs running this code with faulty CLI arguments can escape file system restrictions. Refactor this code to validate the constructed path before accessing the file system.
+- `niakw_NiakVIO:tests/tv_provider_hardening_test.py:56` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:scripts/tv_hls_duration_identity.py:23` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 16 to the 15 allowed.
+- `niakw_NiakVIO:scripts/tv_hls_duration_identity.py:60` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 34 to the 15 allowed.
+- `niakw_NiakVIO:scripts/tv_hls_duration_identity.py:66` **MAJOR / VULNERABILITY** `pythonsecurity:S8707` — LLMs running this code with faulty CLI arguments can escape file system restrictions. Refactor this code to validate the constructed path before accessing the file system.
+- `niakw_NiakVIO:scripts/tv_hls_duration_identity.py:98` **CRITICAL / CODE_SMELL** `python:S5797` — Replace this expression; used as a condition it will always be constant.
+- `niakw_NiakVIO:scripts/tv_build_candidate_bundles.py:22` **CRITICAL / CODE_SMELL** `python:S1192` — Define a constant instead of duplicating this literal "scripts/provider_patches/nuvio_tv_playable_first_v1.py" 5 times.
+- `niakw_NiakVIO:scripts/tv_regression_matrix.py:182` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 34 to the 15 allowed.
+- `niakw_NiakVIO:scripts/tv_regression_matrix.py:138` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 16 to the 15 allowed.
+- `niakw_NiakVIO:scripts/tv_regression_matrix.py:160` **MAJOR / CODE_SMELL** `python:S3358` — Extract this nested conditional expression into an independent statement.
+- `niakw_NiakVIO:tests/ci_preservation_policy_test.py:243` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:scripts/generate_release_hashes.py:85` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 16 to the 15 allowed.
+- `niakw_NiakVIO:scripts/validate_published_overrides.py:83` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 22 to the 15 allowed.
+- `niakw_NiakVIO:tests/stream_output_sanitizer_fail_closed_test.py:12` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:scripts/direct_media_probe.cjs:42` **MAJOR / CODE_SMELL** `javascript:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
+- `niakw_NiakVIO:scripts/direct_media_probe.cjs:51` **MINOR / CODE_SMELL** `javascript:S7765` — Use `.includes()` instead of `.some()` when checking value existence.
+- `niakw_NiakVIO:scripts/direct_media_probe.cjs:154` **CRITICAL / CODE_SMELL** `javascript:S3776` — Refactor this function to reduce its Cognitive Complexity from 30 to the 15 allowed.
+- `niakw_NiakVIO:scripts/direct_media_probe.cjs:251` **MAJOR / CODE_SMELL** `javascript:S6557` — Use 'String#startsWith' method instead.
+- `niakw_NiakVIO:scripts/health_check.mjs:173` **CRITICAL / CODE_SMELL** `javascript:S3776` — Refactor this function to reduce its Cognitive Complexity from 63 to the 15 allowed.
+- `niakw_NiakVIO:scripts/health_check.mjs:688` **MAJOR / CODE_SMELL** `javascript:S4165` — Review this redundant assignment: "audioManifestReachable" already holds the assigned value along all execution paths.
+- `niakw_NiakVIO:scripts/promote_candidates.py:1468` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 18 to the 15 allowed.
+- `niakw_NiakVIO:scripts/nuvio_tv_probe_v2.cjs:85` **MAJOR / CODE_SMELL** `javascript:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
+- `niakw_NiakVIO:scripts/reapply_published_overrides.py:200` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
+- `niakw_NiakVIO:scripts/check_nuvio_client_upstreams.py:30` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
+- `niakw_NiakVIO:scripts/check_nuvio_client_upstreams.py:30` **MAJOR / VULNERABILITY** `pythonsecurity:S8707` — LLMs running this code with faulty CLI arguments can escape file system restrictions. Refactor this code to validate the constructed path before accessing the file system.
+- `niakw_NiakVIO:scripts/check_nuvio_client_upstreams.py:80` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 45 to the 15 allowed.
+- `niakw_NiakVIO:scripts/check_nuvio_client_upstreams.py:244` **CRITICAL / CODE_SMELL** `python:S1192` — Define a constant instead of duplicating this literal "refs/niakvio/head" 3 times.
+- `niakw_NiakVIO:scripts/check_nuvio_client_upstreams.py:244` **CRITICAL / CODE_SMELL** `python:S1192` — Define a constant instead of duplicating this literal "refs/niakvio/base" 3 times.
+- `niakw_NiakVIO:scripts/check_nuvio_client_upstreams.py:301` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 24 to the 15 allowed.
+- `niakw_NiakVIO:tests/stream_output_sanitizer_reconfiguration_test.py:11` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:scripts/check_nuvio_client_upstreams.py:590` **MAJOR / VULNERABILITY** `pythonsecurity:S8707` — LLMs running this code with faulty CLI arguments can escape file system restrictions. Refactor this code to validate the constructed path before accessing the file system.
+- `niakw_NiakVIO:scripts/validate_platform_runtime_policy.py:99` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 98 to the 15 allowed.
+- `niakw_NiakVIO:tests/nuvio_client_upstream_drift_guard_test.py:14` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:scripts/validate_nuvio_tv_runtime_policy.py:52` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 20 to the 15 allowed.
+- `niakw_NiakVIO:scripts/validate_mobile_runtime_policy.py:37` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 19 to the 15 allowed.
+- `niakw_NiakVIO:scripts/validate_platform_runtime_policy.py:16` **CRITICAL / CODE_SMELL** `python:S1192` — Define a constant instead of duplicating this literal "manifest.json" 3 times.
+- `niakw_NiakVIO:scripts/publish_cross_platform_runtime_policy.py:22` **CRITICAL / CODE_SMELL** `python:S1192` — Define a constant instead of duplicating this literal "manifest.json" 3 times.
+- `niakw_NiakVIO:scripts/publish_cross_platform_runtime_policy.py:36` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
+- `niakw_NiakVIO:scripts/publish_cross_platform_runtime_policy.py:90` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 52 to the 15 allowed.
+- `niakw_NiakVIO:scripts/platform_runtime_probe.mjs:168` **MINOR / CODE_SMELL** `javascript:S7744` — The empty object is useless.
+- `niakw_NiakVIO:scripts/platform_runtime_probe.mjs:191` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:scripts/platform_runtime_probe.mjs:200` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
+- `niakw_NiakVIO:scripts/platform_runtime_probe.mjs:201` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
+- `niakw_NiakVIO:scripts/platform_runtime_probe.mjs:297` **MAJOR / CODE_SMELL** `javascript:S7785` — Prefer top-level await over using a promise chain.
+- `niakw_NiakVIO:scripts/mobile_vf_runtime_probe.mjs:179` **MINOR / CODE_SMELL** `javascript:S7744` — The empty object is useless.
+- `niakw_NiakVIO:scripts/mobile_vf_runtime_probe.mjs:220` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
+- `niakw_NiakVIO:scripts/mobile_vf_runtime_probe.mjs:221` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
+- `niakw_NiakVIO:scripts/mobile_vf_runtime_probe.mjs:276` **MAJOR / CODE_SMELL** `javascript:S7785` — Prefer top-level await over using a promise chain.
+- `niakw_NiakVIO:scripts/validate_published_overrides.py:276` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
+- `niakw_NiakVIO:.github/workflows/sync.yml:478` **MAJOR / VULNERABILITY** `githubactions:S8543` — Using dependencies without locking resolved versions is security-sensitive.
+- `niakw_NiakVIO:tests/release_hash_scope_test.py:11` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:scripts/validate_deep_health_integrity.py:64` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 77 to the 15 allowed.
+- `niakw_NiakVIO:scripts/prune_unreferenced_providers.py:101` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 37 to the 15 allowed.
+- `niakw_NiakVIO:scripts/provider_patches/desktop_runtime_compat_v1.py:21` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 17 to the 15 allowed.
+- `niakw_NiakVIO:tests/deep_repair_rollback_test.py:53` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:scripts/promote_global_nuvio_tv_candidates.py:45` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
+- `niakw_NiakVIO:scripts/promote_global_nuvio_tv_candidates.py:271` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 16 to the 15 allowed.
+- `niakw_NiakVIO:scripts/promote_global_nuvio_tv_candidates.py:273` **CRITICAL / CODE_SMELL** `python:S1192` — Define a constant instead of duplicating this literal "manifest.json" 4 times.
+- `niakw_NiakVIO:scripts/publish_desktop_runtime_compat.py:54` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
+- `niakw_NiakVIO:tests/desktop_runtime_compat_test.py:15` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:automation/strict-main-reactivation.json:859` **BLOCKER / VULNERABILITY** `json:S6418` — "api_key" detected here, make sure this is not a hard-coded secret.
+- `niakw_NiakVIO:automation/strict-main-reactivation.json:926` **BLOCKER / VULNERABILITY** `json:S6418` — "api_key" detected here, make sure this is not a hard-coded secret.
+- `niakw_NiakVIO:scripts/normalize_hls_override_policy.py:30` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 30 to the 15 allowed.
+- `niakw_NiakVIO:scripts/promote_target_media_v4.py:25` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
+- `niakw_NiakVIO:scripts/promote_target_media_v4.py:39` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 19 to the 15 allowed.
+- `niakw_NiakVIO:scripts/promote_target_media_v3.py:32` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
+- `niakw_NiakVIO:scripts/promote_target_media_v3.py:214` **CRITICAL / CODE_SMELL** `python:S1192` — Define a constant instead of duplicating this literal "manifest.json" 4 times.
+- `niakw_NiakVIO:automation/nuvio-tv-global-audit.json:6224` **BLOCKER / VULNERABILITY** `json:S6418` — "api_key" detected here, make sure this is not a hard-coded secret.
+- `niakw_NiakVIO:scripts/audit_all_nuvio_tv_providers.py:41` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
+- `niakw_NiakVIO:scripts/audit_all_nuvio_tv_providers.py:248` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 18 to the 15 allowed.
+- `niakw_NiakVIO:scripts/nuvio_tv_target_diagnostics_v2.py:126` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 26 to the 15 allowed.
+- `niakw_NiakVIO:scripts/nuvio_tv_target_diagnostics_v2.py:127` **CRITICAL / CODE_SMELL** `python:S1192` — Define a constant instead of duplicating this literal "https://streamzo.fr/interstellar" 3 times.
+- `niakw_NiakVIO:scripts/nuvio_tv_target_diagnostics_v2.py:176` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 29 to the 15 allowed.
+- `niakw_NiakVIO:scripts/nuvio_tv_target_diagnostics_v2.py:190` **MAJOR / CODE_SMELL** `python:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
+- `niakw_NiakVIO:scripts/nuvio_tv_target_diagnostics_v2.py:216` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 25 to the 15 allowed.
+- `niakw_NiakVIO:scripts/nuvio_tv_target_diagnostics_v2.py:231` **MAJOR / CODE_SMELL** `python:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
+- `niakw_NiakVIO:scripts/publish_nuvio_tv_compat_v2.py:52` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
+- `niakw_NiakVIO:scripts/publish_nuvio_tv_compat_v2.py:163` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 17 to the 15 allowed.
+- `niakw_NiakVIO:scripts/publish_nuvio_tv_compat_v2.py:165` **CRITICAL / CODE_SMELL** `python:S1192` — Define a constant instead of duplicating this literal "manifest.json" 4 times.
+- `niakw_NiakVIO:scripts/nuvio_tv_probe_v2.cjs:8` **MAJOR / CODE_SMELL** `javascript:S5843` — Simplify this regular expression to reduce its complexity from 23 to the 20 allowed.
+- `niakw_NiakVIO:scripts/nuvio_tv_probe_v2.cjs:229` **MAJOR / CODE_SMELL** `javascript:S6557` — Use 'String#startsWith' method instead.
+- `niakw_NiakVIO:scripts/nuvio_tv_probe_v2.cjs:229` **MAJOR / CODE_SMELL** `javascript:S6557` — Use 'String#startsWith' method instead.
+- `niakw_NiakVIO:scripts/summarize_targeted_contexts.py:58` **CRITICAL / CODE_SMELL** `python:S1192` — Define a constant instead of duplicating this literal "\n### Worker actuel\n" 3 times.
+- `niakw_NiakVIO:scripts/extract_targeted_route_contexts.py:149` **CRITICAL / CODE_SMELL** `python:S1192` — Define a constant instead of duplicating this literal "https://streamzo.fr/interstellar" 3 times.
+- `niakw_NiakVIO:automation/targeted-provider-routes.json:711` **BLOCKER / VULNERABILITY** `secrets:S6708` — Make sure this Discord Webhook URL gets revoked, changed, and removed from the code.
+- `niakw_NiakVIO:scripts/targeted_provider_route_diagnostics.py:19` **MAJOR / CODE_SMELL** `python:S5869` — Remove duplicates in this character class.
+- `niakw_NiakVIO:scripts/targeted_provider_route_diagnostics.py:171` **CRITICAL / CODE_SMELL** `python:S1192` — Define a constant instead of duplicating this literal "https://streamzo.fr/" 3 times.
+- `niakw_NiakVIO:scripts/targeted_provider_route_diagnostics.py:180` **CRITICAL / CODE_SMELL** `python:S1192` — Define a constant instead of duplicating this literal "https://www.fstream.org/" 3 times.
+- `niakw_NiakVIO:scripts/targeted_provider_route_diagnostics.py:195` **CRITICAL / CODE_SMELL** `python:S1192` — Define a constant instead of duplicating this literal "https://movix.fun/" 4 times.
+- `niakw_NiakVIO:scripts/nuvio_client_activation_ids.py:69` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 36 to the 15 allowed.
+- `niakw_NiakVIO:tests/nuvio_activation_refresh_test.py:13` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:scripts/nuvio_client_activation_ids.py:41` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
+- `niakw_NiakVIO:scripts/restore_provider_type_policy.py:11` **CRITICAL / CODE_SMELL** `python:S1192` — Define a constant instead of duplicating this literal "manifest.json" 3 times.
+- `niakw_NiakVIO:scripts/restore_provider_type_policy.py:20` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
+- `niakw_NiakVIO:scripts/restore_provider_type_policy.py:41` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 18 to the 15 allowed.
+- `niakw_NiakVIO:scripts/restore_provider_type_policy.py:97` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 18 to the 15 allowed.
+- `niakw_NiakVIO:tests/provider_repair_promotion_guard_test.py:19` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:scripts/recover_nuvio_regressions.py:165` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 27 to the 15 allowed.
+- `niakw_NiakVIO:scripts/recover_nuvio_regressions.py:198` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
+- `niakw_NiakVIO:scripts/recover_nuvio_regressions.py:233` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
+- `niakw_NiakVIO:scripts/recover_nuvio_regressions.py:242` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
+- `niakw_NiakVIO:scripts/enforce_provider_priority.py:33` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
+- `niakw_NiakVIO:tests/targeted_vf_repair_config_test.py:16` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:tests/global_local_repair_pipeline_test.py:6` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:scripts/resolve_provider_hubs.py:901` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 52 to the 15 allowed.
+- `niakw_NiakVIO:scripts/resolve_provider_hubs.py:961` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 24 to the 15 allowed.
+- `niakw_NiakVIO:tests/movix_api_route_discovery_test.py:42` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:scripts/provider_patches/vf_catalogue_recovery.py:18` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 17 to the 15 allowed.
+- `niakw_NiakVIO:scripts/validate_override_pipeline.py:50` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 74 to the 15 allowed.
+- `niakw_NiakVIO:tests/deep_repair_rollback_test.py:33` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:scripts/health_check.mjs:47` **MAJOR / CODE_SMELL** `javascript:S3358` — Extract this nested ternary operation into an independent statement.
+- `niakw_NiakVIO:scripts/health_check.mjs:1204` **MAJOR / CODE_SMELL** `javascript:S3358` — Extract this nested ternary operation into an independent statement.
+- `niakw_NiakVIO:scripts/health_check.mjs:1204` **MAJOR / CODE_SMELL** `javascript:S4624` — Refactor this code to not use nested template literals.
+- `niakw_NiakVIO:scripts/health_check.mjs:1255` **CRITICAL / CODE_SMELL** `javascript:S3776` — Refactor this function to reduce its Cognitive Complexity from 33 to the 15 allowed.
+- `niakw_NiakVIO:tests/provider_worker_invocation.test.cjs` **BLOCKER / CODE_SMELL** `javascript:S2187` — Add some tests to this file or delete it.
+- `niakw_NiakVIO:tests/runtime_repair_test.py:188` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:tests/runtime_repair_test.py:197` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:tests/runtime_repair_test.py:200` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:tests/runtime_repair_test.py:211` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:scripts/deep_repair_loop.py:114` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 79 to the 15 allowed.
+- `niakw_NiakVIO:scripts/generate_diagnostics.py:94` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 17 to the 15 allowed.
+- `niakw_NiakVIO:scripts/generate_diagnostics.py:99` **MAJOR / VULNERABILITY** `pythonsecurity:S8707` — LLMs running this code with faulty CLI arguments can escape file system restrictions. Refactor this code to validate the constructed path before accessing the file system.
+- `niakw_NiakVIO:scripts/health_check.mjs:1752` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
+- `niakw_NiakVIO:scripts/health_check.mjs:1902` **MAJOR / CODE_SMELL** `javascript:S4624` — Refactor this code to not use nested template literals.
+- `niakw_NiakVIO:scripts/health_check.mjs:1902` **MAJOR / CODE_SMELL** `javascript:S4624` — Refactor this code to not use nested template literals.
+- `niakw_NiakVIO:scripts/provider_worker.cjs:330` **CRITICAL / CODE_SMELL** `javascript:S3776` — Refactor this function to reduce its Cognitive Complexity from 19 to the 15 allowed.
+- `niakw_NiakVIO:scripts/provider_worker.cjs:605` **MAJOR / CODE_SMELL** `javascript:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
+- `niakw_NiakVIO:scripts/provider_worker.cjs:606` **MAJOR / CODE_SMELL** `javascript:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
+- `niakw_NiakVIO:scripts/provider_worker.cjs:607` **MINOR / CODE_SMELL** `javascript:S6594` — Use the "RegExp.exec()" method instead.
+- `niakw_NiakVIO:scripts/provider_worker.cjs:608` **MINOR / CODE_SMELL** `javascript:S6594` — Use the "RegExp.exec()" method instead.
+- `niakw_NiakVIO:scripts/provider_worker.cjs:609` **MINOR / CODE_SMELL** `javascript:S7780` — `String.raw` should be used to avoid escaping `\`.
+- `niakw_NiakVIO:scripts/provider_worker.cjs:629` **CRITICAL / CODE_SMELL** `javascript:S3776` — Refactor this function to reduce its Cognitive Complexity from 23 to the 15 allowed.
+- `niakw_NiakVIO:scripts/provider_worker.cjs:669` **MAJOR / CODE_SMELL** `javascript:S3358` — Extract this nested ternary operation into an independent statement.
+- `niakw_NiakVIO:scripts/provider_worker.cjs:718` **CRITICAL / CODE_SMELL** `javascript:S3776` — Refactor this function to reduce its Cognitive Complexity from 31 to the 15 allowed.
+- `niakw_NiakVIO:scripts/provider_worker.cjs:842` **MAJOR / CODE_SMELL** `javascript:S3358` — Extract this nested ternary operation into an independent statement.
+- `niakw_NiakVIO:scripts/provider_worker.cjs:850` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:scripts/runtime_repair.py:78` **MAJOR / CODE_SMELL** `python:S1871` — Either merge this branch with the identical one on line "76" or change one of the implementations.
+- `niakw_NiakVIO:scripts/runtime_repair.py:221` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 19 to the 15 allowed.
+- `niakw_NiakVIO:scripts/validate_deep_health_integrity.py:19` **MAJOR / VULNERABILITY** `pythonsecurity:S8707` — LLMs running this code with faulty CLI arguments can escape file system restrictions. Refactor this code to validate the constructed path before accessing the file system.
+- `niakw_NiakVIO:upstream-lkg/providers/00389aa68899e4924186a24741e3b0a00cebb12486bf3e91fda6ff47311ae8ea.js:6` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/00389aa68899e4924186a24741e3b0a00cebb12486bf3e91fda6ff47311ae8ea.js:7` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/00389aa68899e4924186a24741e3b0a00cebb12486bf3e91fda6ff47311ae8ea.js:8` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/00389aa68899e4924186a24741e3b0a00cebb12486bf3e91fda6ff47311ae8ea.js:9` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/00389aa68899e4924186a24741e3b0a00cebb12486bf3e91fda6ff47311ae8ea.js:10` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/00389aa68899e4924186a24741e3b0a00cebb12486bf3e91fda6ff47311ae8ea.js:11` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/00389aa68899e4924186a24741e3b0a00cebb12486bf3e91fda6ff47311ae8ea.js:12` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/00389aa68899e4924186a24741e3b0a00cebb12486bf3e91fda6ff47311ae8ea.js:12` **MAJOR / CODE_SMELL** `javascript:S1121` — Extract the assignment of "obj[key]" from this expression.
+- `niakw_NiakVIO:upstream-lkg/providers/00389aa68899e4924186a24741e3b0a00cebb12486bf3e91fda6ff47311ae8ea.js:13` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/00389aa68899e4924186a24741e3b0a00cebb12486bf3e91fda6ff47311ae8ea.js:14` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/00389aa68899e4924186a24741e3b0a00cebb12486bf3e91fda6ff47311ae8ea.js:18` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/00389aa68899e4924186a24741e3b0a00cebb12486bf3e91fda6ff47311ae8ea.js:18` **MAJOR / CODE_SMELL** `javascript:S2814` — 'prop' is already defined.
+- `niakw_NiakVIO:upstream-lkg/providers/00389aa68899e4924186a24741e3b0a00cebb12486bf3e91fda6ff47311ae8ea.js:24` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/00389aa68899e4924186a24741e3b0a00cebb12486bf3e91fda6ff47311ae8ea.js:25` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/00389aa68899e4924186a24741e3b0a00cebb12486bf3e91fda6ff47311ae8ea.js:27` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/00389aa68899e4924186a24741e3b0a00cebb12486bf3e91fda6ff47311ae8ea.js:34` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/00389aa68899e4924186a24741e3b0a00cebb12486bf3e91fda6ff47311ae8ea.js:41` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/00389aa68899e4924186a24741e3b0a00cebb12486bf3e91fda6ff47311ae8ea.js:42` **MAJOR / CODE_SMELL** `javascript:S1121` — Extract the assignment of "generator" from this expression.
+- `niakw_NiakVIO:upstream-lkg/providers/00389aa68899e4924186a24741e3b0a00cebb12486bf3e91fda6ff47311ae8ea.js:47` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/00389aa68899e4924186a24741e3b0a00cebb12486bf3e91fda6ff47311ae8ea.js:48` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/00389aa68899e4924186a24741e3b0a00cebb12486bf3e91fda6ff47311ae8ea.js:49` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/00389aa68899e4924186a24741e3b0a00cebb12486bf3e91fda6ff47311ae8ea.js:50` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/00389aa68899e4924186a24741e3b0a00cebb12486bf3e91fda6ff47311ae8ea.js:86` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/00389aa68899e4924186a24741e3b0a00cebb12486bf3e91fda6ff47311ae8ea.js:92` **MAJOR / CODE_SMELL** `javascript:S3358` — Extract this nested ternary operation into an independent statement.
+- `niakw_NiakVIO:upstream-lkg/providers/00389aa68899e4924186a24741e3b0a00cebb12486bf3e91fda6ff47311ae8ea.js:92` **MAJOR / CODE_SMELL** `javascript:S3358` — Extract this nested ternary operation into an independent statement.
+- `niakw_NiakVIO:upstream-lkg/providers/00389aa68899e4924186a24741e3b0a00cebb12486bf3e91fda6ff47311ae8ea.js:105` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/00389aa68899e4924186a24741e3b0a00cebb12486bf3e91fda6ff47311ae8ea.js:145` **MINOR / CODE_SMELL** `javascript:S7770` — arrow function is equivalent to `Boolean`. Use `Boolean` directly.
+- `niakw_NiakVIO:upstream-lkg/providers/00389aa68899e4924186a24741e3b0a00cebb12486bf3e91fda6ff47311ae8ea.js:153` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.parseInt` over `parseInt`.
+- `niakw_NiakVIO:upstream-lkg/providers/00389aa68899e4924186a24741e3b0a00cebb12486bf3e91fda6ff47311ae8ea.js:219` **CRITICAL / CODE_SMELL** `javascript:S3776` — Refactor this function to reduce its Cognitive Complexity from 52 to the 15 allowed.
+- `niakw_NiakVIO:upstream-lkg/providers/00389aa68899e4924186a24741e3b0a00cebb12486bf3e91fda6ff47311ae8ea.js:242` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.parseInt` over `parseInt`.
+- `niakw_NiakVIO:upstream-lkg/providers/00389aa68899e4924186a24741e3b0a00cebb12486bf3e91fda6ff47311ae8ea.js:267` **CRITICAL / CODE_SMELL** `javascript:S3776` — Refactor this function to reduce its Cognitive Complexity from 16 to the 15 allowed.
+- `niakw_NiakVIO:upstream-lkg/providers/00389aa68899e4924186a24741e3b0a00cebb12486bf3e91fda6ff47311ae8ea.js:273` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/00389aa68899e4924186a24741e3b0a00cebb12486bf3e91fda6ff47311ae8ea.js:273` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/00389aa68899e4924186a24741e3b0a00cebb12486bf3e91fda6ff47311ae8ea.js:286` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/00389aa68899e4924186a24741e3b0a00cebb12486bf3e91fda6ff47311ae8ea.js:311` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/00389aa68899e4924186a24741e3b0a00cebb12486bf3e91fda6ff47311ae8ea.js:398` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/00389aa68899e4924186a24741e3b0a00cebb12486bf3e91fda6ff47311ae8ea.js:411` **MAJOR / CODE_SMELL** `javascript:S4624` — Refactor this code to not use nested template literals.
+- `niakw_NiakVIO:upstream-lkg/providers/0dbdc78b24804babc29f0674da00a46e7b7915ebb5278d58790439d4ba03690b.js:5` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/0dbdc78b24804babc29f0674da00a46e7b7915ebb5278d58790439d4ba03690b.js:6` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/0dbdc78b24804babc29f0674da00a46e7b7915ebb5278d58790439d4ba03690b.js:7` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/0dbdc78b24804babc29f0674da00a46e7b7915ebb5278d58790439d4ba03690b.js:8` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/0dbdc78b24804babc29f0674da00a46e7b7915ebb5278d58790439d4ba03690b.js:9` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/0dbdc78b24804babc29f0674da00a46e7b7915ebb5278d58790439d4ba03690b.js:10` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/0dbdc78b24804babc29f0674da00a46e7b7915ebb5278d58790439d4ba03690b.js:11` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/0dbdc78b24804babc29f0674da00a46e7b7915ebb5278d58790439d4ba03690b.js:12` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/0dbdc78b24804babc29f0674da00a46e7b7915ebb5278d58790439d4ba03690b.js:13` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/0dbdc78b24804babc29f0674da00a46e7b7915ebb5278d58790439d4ba03690b.js:13` **MAJOR / CODE_SMELL** `javascript:S1121` — Extract the assignment of "obj[key]" from this expression.
+- `niakw_NiakVIO:upstream-lkg/providers/0dbdc78b24804babc29f0674da00a46e7b7915ebb5278d58790439d4ba03690b.js:14` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/0dbdc78b24804babc29f0674da00a46e7b7915ebb5278d58790439d4ba03690b.js:15` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/0dbdc78b24804babc29f0674da00a46e7b7915ebb5278d58790439d4ba03690b.js:19` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/0dbdc78b24804babc29f0674da00a46e7b7915ebb5278d58790439d4ba03690b.js:19` **MAJOR / CODE_SMELL** `javascript:S2814` — 'prop' is already defined.
+- `niakw_NiakVIO:upstream-lkg/providers/0dbdc78b24804babc29f0674da00a46e7b7915ebb5278d58790439d4ba03690b.js:25` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/0dbdc78b24804babc29f0674da00a46e7b7915ebb5278d58790439d4ba03690b.js:29` **MAJOR / CODE_SMELL** `javascript:S1121` — Extract the assignment of "desc" from this expression.
+- `niakw_NiakVIO:upstream-lkg/providers/0dbdc78b24804babc29f0674da00a46e7b7915ebb5278d58790439d4ba03690b.js:33` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/0dbdc78b24804babc29f0674da00a46e7b7915ebb5278d58790439d4ba03690b.js:33` **MAJOR / CODE_SMELL** `javascript:S878` — Unexpected use of comma operator.
+- `niakw_NiakVIO:upstream-lkg/providers/0dbdc78b24804babc29f0674da00a46e7b7915ebb5278d58790439d4ba03690b.js:38` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/0dbdc78b24804babc29f0674da00a46e7b7915ebb5278d58790439d4ba03690b.js:41` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/0dbdc78b24804babc29f0674da00a46e7b7915ebb5278d58790439d4ba03690b.js:43` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/0dbdc78b24804babc29f0674da00a46e7b7915ebb5278d58790439d4ba03690b.js:50` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/0dbdc78b24804babc29f0674da00a46e7b7915ebb5278d58790439d4ba03690b.js:57` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/0dbdc78b24804babc29f0674da00a46e7b7915ebb5278d58790439d4ba03690b.js:58` **MAJOR / CODE_SMELL** `javascript:S1121` — Extract the assignment of "generator" from this expression.
+- `niakw_NiakVIO:upstream-lkg/providers/0dbdc78b24804babc29f0674da00a46e7b7915ebb5278d58790439d4ba03690b.js:63` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/0dbdc78b24804babc29f0674da00a46e7b7915ebb5278d58790439d4ba03690b.js:66` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/0dbdc78b24804babc29f0674da00a46e7b7915ebb5278d58790439d4ba03690b.js:67` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/0dbdc78b24804babc29f0674da00a46e7b7915ebb5278d58790439d4ba03690b.js:83` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:upstream-lkg/providers/0dbdc78b24804babc29f0674da00a46e7b7915ebb5278d58790439d4ba03690b.js:97` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:upstream-lkg/providers/0dbdc78b24804babc29f0674da00a46e7b7915ebb5278d58790439d4ba03690b.js:110` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:upstream-lkg/providers/0dbdc78b24804babc29f0674da00a46e7b7915ebb5278d58790439d4ba03690b.js:123` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:upstream-lkg/providers/0dbdc78b24804babc29f0674da00a46e7b7915ebb5278d58790439d4ba03690b.js:145` **MINOR / CODE_SMELL** `javascript:S7781` — Prefer `String#replaceAll()` over `String#replace()`.
+- `niakw_NiakVIO:upstream-lkg/providers/0dbdc78b24804babc29f0674da00a46e7b7915ebb5278d58790439d4ba03690b.js:145` **MINOR / CODE_SMELL** `javascript:S7758` — Prefer `String.fromCodePoint()` over `String.fromCharCode()`.
+- `niakw_NiakVIO:upstream-lkg/providers/0dbdc78b24804babc29f0674da00a46e7b7915ebb5278d58790439d4ba03690b.js:145` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.parseInt` over `parseInt`.
+- `niakw_NiakVIO:upstream-lkg/providers/0dbdc78b24804babc29f0674da00a46e7b7915ebb5278d58790439d4ba03690b.js:145` **MINOR / CODE_SMELL** `javascript:S7781` — Prefer `String#replaceAll()` over `String#replace()`.
+- `niakw_NiakVIO:upstream-lkg/providers/0dbdc78b24804babc29f0674da00a46e7b7915ebb5278d58790439d4ba03690b.js:151` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:upstream-lkg/providers/0dbdc78b24804babc29f0674da00a46e7b7915ebb5278d58790439d4ba03690b.js:165` **MAJOR / CODE_SMELL** `javascript:S6535` — Unnecessary escape character: \-.
+- `niakw_NiakVIO:upstream-lkg/providers/0dbdc78b24804babc29f0674da00a46e7b7915ebb5278d58790439d4ba03690b.js:165` **MAJOR / CODE_SMELL** `javascript:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
+- `niakw_NiakVIO:upstream-lkg/providers/0dbdc78b24804babc29f0674da00a46e7b7915ebb5278d58790439d4ba03690b.js:165` **MAJOR / CODE_SMELL** `javascript:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
+- `niakw_NiakVIO:upstream-lkg/providers/0dbdc78b24804babc29f0674da00a46e7b7915ebb5278d58790439d4ba03690b.js:165` **MAJOR / CODE_SMELL** `javascript:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
+- `niakw_NiakVIO:upstream-lkg/providers/0dbdc78b24804babc29f0674da00a46e7b7915ebb5278d58790439d4ba03690b.js:165` **MAJOR / CODE_SMELL** `javascript:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
+- `niakw_NiakVIO:upstream-lkg/providers/0dbdc78b24804babc29f0674da00a46e7b7915ebb5278d58790439d4ba03690b.js:165` **MAJOR / CODE_SMELL** `javascript:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
+- `niakw_NiakVIO:upstream-lkg/providers/0dbdc78b24804babc29f0674da00a46e7b7915ebb5278d58790439d4ba03690b.js:165` **MAJOR / CODE_SMELL** `javascript:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
+- `niakw_NiakVIO:upstream-lkg/providers/0dbdc78b24804babc29f0674da00a46e7b7915ebb5278d58790439d4ba03690b.js:165` **MAJOR / CODE_SMELL** `javascript:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
+- `niakw_NiakVIO:upstream-lkg/providers/0dbdc78b24804babc29f0674da00a46e7b7915ebb5278d58790439d4ba03690b.js:170` **MAJOR / CODE_SMELL** `javascript:S6535` — Unnecessary escape character: \-.
+- `niakw_NiakVIO:upstream-lkg/providers/0dbdc78b24804babc29f0674da00a46e7b7915ebb5278d58790439d4ba03690b.js:172` **MAJOR / CODE_SMELL** `javascript:S6535` — Unnecessary escape character: \-.
+- `niakw_NiakVIO:upstream-lkg/providers/0dbdc78b24804babc29f0674da00a46e7b7915ebb5278d58790439d4ba03690b.js:174` **MAJOR / CODE_SMELL** `javascript:S6535` — Unnecessary escape character: \-.
+- `niakw_NiakVIO:upstream-lkg/providers/0dbdc78b24804babc29f0674da00a46e7b7915ebb5278d58790439d4ba03690b.js:176` **MINOR / CODE_SMELL** `javascript:S7780` — `String.raw` should be used to avoid escaping `\`.
+- `niakw_NiakVIO:upstream-lkg/providers/0dbdc78b24804babc29f0674da00a46e7b7915ebb5278d58790439d4ba03690b.js:176` **MINOR / CODE_SMELL** `javascript:S7780` — `String.raw` should be used to avoid escaping `\`.
+- `niakw_NiakVIO:upstream-lkg/providers/0dbdc78b24804babc29f0674da00a46e7b7915ebb5278d58790439d4ba03690b.js:180` **CRITICAL / CODE_SMELL** `javascript:S3776` — Refactor this function to reduce its Cognitive Complexity from 36 to the 15 allowed.
+- `niakw_NiakVIO:upstream-lkg/providers/0dbdc78b24804babc29f0674da00a46e7b7915ebb5278d58790439d4ba03690b.js:245` **CRITICAL / CODE_SMELL** `javascript:S3776` — Refactor this function to reduce its Cognitive Complexity from 25 to the 15 allowed.
+- `niakw_NiakVIO:upstream-lkg/providers/0dbdc78b24804babc29f0674da00a46e7b7915ebb5278d58790439d4ba03690b.js:248` **MAJOR / CODE_SMELL** `javascript:S1854` — Remove this useless assignment to variable "mappedEp".
+- `niakw_NiakVIO:upstream-lkg/providers/0dbdc78b24804babc29f0674da00a46e7b7915ebb5278d58790439d4ba03690b.js:255` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/0dbdc78b24804babc29f0674da00a46e7b7915ebb5278d58790439d4ba03690b.js:268` **MAJOR / CODE_SMELL** `javascript:S1854` — Remove this useless assignment to variable "searchQuery".
+- `niakw_NiakVIO:upstream-lkg/providers/0dbdc78b24804babc29f0674da00a46e7b7915ebb5278d58790439d4ba03690b.js:288` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/0dbdc78b24804babc29f0674da00a46e7b7915ebb5278d58790439d4ba03690b.js:342` **MINOR / CODE_SMELL** `javascript:S7780` — `String.raw` should be used to avoid escaping `\`.
+- `niakw_NiakVIO:upstream-lkg/providers/0dbdc78b24804babc29f0674da00a46e7b7915ebb5278d58790439d4ba03690b.js:363` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:upstream-lkg/providers/0e8ad342ffe970ea100695f521f10bdf880d869aa9228713a0848a20dc9bd412.js:17` **MAJOR / CODE_SMELL** `javascript:S1121` — Extract the assignment of "desc" from this expression.
+- `niakw_NiakVIO:upstream-lkg/providers/0e8ad342ffe970ea100695f521f10bdf880d869aa9228713a0848a20dc9bd412.js:39` **MAJOR / CODE_SMELL** `javascript:S1121` — Extract the assignment of "generator" from this expression.
+- `niakw_NiakVIO:upstream-lkg/providers/25135c174b05435d6dc8fe5216eb78b836150646ed15a7da65e8e85d70bd1c98.js:51` **MAJOR / CODE_SMELL** `javascript:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
+- `niakw_NiakVIO:upstream-lkg/providers/25135c174b05435d6dc8fe5216eb78b836150646ed15a7da65e8e85d70bd1c98.js:60` **MINOR / CODE_SMELL** `javascript:S7758` — Prefer `String.fromCodePoint()` over `String.fromCharCode()`.
+- `niakw_NiakVIO:upstream-lkg/providers/25135c174b05435d6dc8fe5216eb78b836150646ed15a7da65e8e85d70bd1c98.js:68` **MINOR / CODE_SMELL** `javascript:S7758` — Prefer `String#codePointAt()` over `String#charCodeAt()`.
+- `niakw_NiakVIO:upstream-lkg/providers/25135c174b05435d6dc8fe5216eb78b836150646ed15a7da65e8e85d70bd1c98.js:98` **MINOR / CODE_SMELL** `javascript:S7758` — Prefer `String.fromCodePoint()` over `String.fromCharCode()`.
+- `niakw_NiakVIO:upstream-lkg/providers/25135c174b05435d6dc8fe5216eb78b836150646ed15a7da65e8e85d70bd1c98.js:153` **MINOR / CODE_SMELL** `javascript:S1126` — Replace this if-then-else flow by a single return statement.
+- `niakw_NiakVIO:upstream-lkg/providers/25135c174b05435d6dc8fe5216eb78b836150646ed15a7da65e8e85d70bd1c98.js:191` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.parseInt` over `parseInt`.
+- `niakw_NiakVIO:upstream-lkg/providers/25135c174b05435d6dc8fe5216eb78b836150646ed15a7da65e8e85d70bd1c98.js:217` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.parseInt` over `parseInt`.
+- `niakw_NiakVIO:upstream-lkg/providers/25135c174b05435d6dc8fe5216eb78b836150646ed15a7da65e8e85d70bd1c98.js:393` **MAJOR / CODE_SMELL** `javascript:S3800` — Refactor this function to always return the same type.
+- `niakw_NiakVIO:upstream-lkg/providers/25135c174b05435d6dc8fe5216eb78b836150646ed15a7da65e8e85d70bd1c98.js:433` **MAJOR / CODE_SMELL** `javascript:S4624` — Refactor this code to not use nested template literals.
+- `niakw_NiakVIO:upstream-lkg/providers/25135c174b05435d6dc8fe5216eb78b836150646ed15a7da65e8e85d70bd1c98.js:468` **CRITICAL / CODE_SMELL** `javascript:S2004` — Refactor this code to not nest functions more than 5 levels deep.
+- `niakw_NiakVIO:upstream-lkg/providers/25135c174b05435d6dc8fe5216eb78b836150646ed15a7da65e8e85d70bd1c98.js:474` **CRITICAL / CODE_SMELL** `javascript:S2004` — Refactor this code to not nest functions more than 5 levels deep.
+- `niakw_NiakVIO:upstream-lkg/providers/25135c174b05435d6dc8fe5216eb78b836150646ed15a7da65e8e85d70bd1c98.js:475` **CRITICAL / CODE_SMELL** `javascript:S2004` — Refactor this code to not nest functions more than 5 levels deep.
+- `niakw_NiakVIO:upstream-lkg/providers/25135c174b05435d6dc8fe5216eb78b836150646ed15a7da65e8e85d70bd1c98.js:480` **CRITICAL / CODE_SMELL** `javascript:S2004` — Refactor this code to not nest functions more than 5 levels deep.
+- `niakw_NiakVIO:upstream-lkg/providers/25135c174b05435d6dc8fe5216eb78b836150646ed15a7da65e8e85d70bd1c98.js:496` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.parseInt` over `parseInt`.
+- `niakw_NiakVIO:upstream-lkg/providers/25135c174b05435d6dc8fe5216eb78b836150646ed15a7da65e8e85d70bd1c98.js:497` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.isNaN` over `isNaN`.
+- `niakw_NiakVIO:upstream-lkg/providers/25135c174b05435d6dc8fe5216eb78b836150646ed15a7da65e8e85d70bd1c98.js:505` **CRITICAL / CODE_SMELL** `javascript:S2004` — Refactor this code to not nest functions more than 5 levels deep.
+- `niakw_NiakVIO:upstream-lkg/providers/30c207564c1b85bc0fd01bfc9a4741727593c535b9b13c2702b2c0453326b8f8.js:5` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/30c207564c1b85bc0fd01bfc9a4741727593c535b9b13c2702b2c0453326b8f8.js:6` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/30c207564c1b85bc0fd01bfc9a4741727593c535b9b13c2702b2c0453326b8f8.js:7` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/30c207564c1b85bc0fd01bfc9a4741727593c535b9b13c2702b2c0453326b8f8.js:8` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/30c207564c1b85bc0fd01bfc9a4741727593c535b9b13c2702b2c0453326b8f8.js:9` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/30c207564c1b85bc0fd01bfc9a4741727593c535b9b13c2702b2c0453326b8f8.js:10` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/30c207564c1b85bc0fd01bfc9a4741727593c535b9b13c2702b2c0453326b8f8.js:11` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/30c207564c1b85bc0fd01bfc9a4741727593c535b9b13c2702b2c0453326b8f8.js:11` **MAJOR / CODE_SMELL** `javascript:S1121` — Extract the assignment of "obj[key]" from this expression.
+- `niakw_NiakVIO:upstream-lkg/providers/30c207564c1b85bc0fd01bfc9a4741727593c535b9b13c2702b2c0453326b8f8.js:12` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/30c207564c1b85bc0fd01bfc9a4741727593c535b9b13c2702b2c0453326b8f8.js:13` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/30c207564c1b85bc0fd01bfc9a4741727593c535b9b13c2702b2c0453326b8f8.js:17` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/30c207564c1b85bc0fd01bfc9a4741727593c535b9b13c2702b2c0453326b8f8.js:17` **MAJOR / CODE_SMELL** `javascript:S2814` — 'prop' is already defined.
+- `niakw_NiakVIO:upstream-lkg/providers/30c207564c1b85bc0fd01bfc9a4741727593c535b9b13c2702b2c0453326b8f8.js:23` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/30c207564c1b85bc0fd01bfc9a4741727593c535b9b13c2702b2c0453326b8f8.js:24` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/30c207564c1b85bc0fd01bfc9a4741727593c535b9b13c2702b2c0453326b8f8.js:26` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/30c207564c1b85bc0fd01bfc9a4741727593c535b9b13c2702b2c0453326b8f8.js:33` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/30c207564c1b85bc0fd01bfc9a4741727593c535b9b13c2702b2c0453326b8f8.js:40` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/30c207564c1b85bc0fd01bfc9a4741727593c535b9b13c2702b2c0453326b8f8.js:41` **MAJOR / CODE_SMELL** `javascript:S1121` — Extract the assignment of "generator" from this expression.
+- `niakw_NiakVIO:upstream-lkg/providers/30c207564c1b85bc0fd01bfc9a4741727593c535b9b13c2702b2c0453326b8f8.js:46` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/30c207564c1b85bc0fd01bfc9a4741727593c535b9b13c2702b2c0453326b8f8.js:47` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/30c207564c1b85bc0fd01bfc9a4741727593c535b9b13c2702b2c0453326b8f8.js:85` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/30c207564c1b85bc0fd01bfc9a4741727593c535b9b13c2702b2c0453326b8f8.js:93` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/30c207564c1b85bc0fd01bfc9a4741727593c535b9b13c2702b2c0453326b8f8.js:121` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/30c207564c1b85bc0fd01bfc9a4741727593c535b9b13c2702b2c0453326b8f8.js:144` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:upstream-lkg/providers/30c207564c1b85bc0fd01bfc9a4741727593c535b9b13c2702b2c0453326b8f8.js:177` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:upstream-lkg/providers/30c207564c1b85bc0fd01bfc9a4741727593c535b9b13c2702b2c0453326b8f8.js:181` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:upstream-lkg/providers/30c207564c1b85bc0fd01bfc9a4741727593c535b9b13c2702b2c0453326b8f8.js:204` **MAJOR / CODE_SMELL** `javascript:S1854` — Remove this useless assignment to variable "targetId".
+- `niakw_NiakVIO:upstream-lkg/providers/30c207564c1b85bc0fd01bfc9a4741727593c535b9b13c2702b2c0453326b8f8.js:214` **MINOR / CODE_SMELL** `javascript:S7754` — Prefer `.some(…)` over non-zero length check from `.filter(…)`.
+- `niakw_NiakVIO:upstream-lkg/providers/30c207564c1b85bc0fd01bfc9a4741727593c535b9b13c2702b2c0453326b8f8.js:246` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.parseInt` over `parseInt`.
+- `niakw_NiakVIO:upstream-lkg/providers/30c207564c1b85bc0fd01bfc9a4741727593c535b9b13c2702b2c0453326b8f8.js:246` **MAJOR / CODE_SMELL** `javascript:S3358` — Extract this nested ternary operation into an independent statement.
+- `niakw_NiakVIO:upstream-lkg/providers/30c207564c1b85bc0fd01bfc9a4741727593c535b9b13c2702b2c0453326b8f8.js:246` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.parseInt` over `parseInt`.
+- `niakw_NiakVIO:upstream-lkg/providers/30c207564c1b85bc0fd01bfc9a4741727593c535b9b13c2702b2c0453326b8f8.js:247` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.parseInt` over `parseInt`.
+- `niakw_NiakVIO:upstream-lkg/providers/30c207564c1b85bc0fd01bfc9a4741727593c535b9b13c2702b2c0453326b8f8.js:283` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.parseInt` over `parseInt`.
+- `niakw_NiakVIO:upstream-lkg/providers/30c207564c1b85bc0fd01bfc9a4741727593c535b9b13c2702b2c0453326b8f8.js:283` **MAJOR / CODE_SMELL** `javascript:S3358` — Extract this nested ternary operation into an independent statement.
+- `niakw_NiakVIO:upstream-lkg/providers/30c207564c1b85bc0fd01bfc9a4741727593c535b9b13c2702b2c0453326b8f8.js:283` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.parseInt` over `parseInt`.
+- `niakw_NiakVIO:upstream-lkg/providers/30c207564c1b85bc0fd01bfc9a4741727593c535b9b13c2702b2c0453326b8f8.js:284` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.parseInt` over `parseInt`.
+- `niakw_NiakVIO:upstream-lkg/providers/3b567b1e8e83d64777b617ee9323f411dab1474c700864058c4444e4f52cf842.js:5` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/3b567b1e8e83d64777b617ee9323f411dab1474c700864058c4444e4f52cf842.js:6` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/3b567b1e8e83d64777b617ee9323f411dab1474c700864058c4444e4f52cf842.js:7` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/3b567b1e8e83d64777b617ee9323f411dab1474c700864058c4444e4f52cf842.js:8` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/3b567b1e8e83d64777b617ee9323f411dab1474c700864058c4444e4f52cf842.js:9` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/3b567b1e8e83d64777b617ee9323f411dab1474c700864058c4444e4f52cf842.js:10` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/3b567b1e8e83d64777b617ee9323f411dab1474c700864058c4444e4f52cf842.js:11` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/3b567b1e8e83d64777b617ee9323f411dab1474c700864058c4444e4f52cf842.js:12` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/3b567b1e8e83d64777b617ee9323f411dab1474c700864058c4444e4f52cf842.js:13` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/3b567b1e8e83d64777b617ee9323f411dab1474c700864058c4444e4f52cf842.js:14` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/3b567b1e8e83d64777b617ee9323f411dab1474c700864058c4444e4f52cf842.js:15` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/3b567b1e8e83d64777b617ee9323f411dab1474c700864058c4444e4f52cf842.js:15` **MAJOR / CODE_SMELL** `javascript:S1121` — Extract the assignment of "obj[key]" from this expression.
+- `niakw_NiakVIO:upstream-lkg/providers/3b567b1e8e83d64777b617ee9323f411dab1474c700864058c4444e4f52cf842.js:16` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/3b567b1e8e83d64777b617ee9323f411dab1474c700864058c4444e4f52cf842.js:17` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/3b567b1e8e83d64777b617ee9323f411dab1474c700864058c4444e4f52cf842.js:21` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/3b567b1e8e83d64777b617ee9323f411dab1474c700864058c4444e4f52cf842.js:21` **MAJOR / CODE_SMELL** `javascript:S2814` — 'prop' is already defined.
+- `niakw_NiakVIO:upstream-lkg/providers/3b567b1e8e83d64777b617ee9323f411dab1474c700864058c4444e4f52cf842.js:27` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/3b567b1e8e83d64777b617ee9323f411dab1474c700864058c4444e4f52cf842.js:28` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/3b567b1e8e83d64777b617ee9323f411dab1474c700864058c4444e4f52cf842.js:29` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/3b567b1e8e83d64777b617ee9323f411dab1474c700864058c4444e4f52cf842.js:30` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/3b567b1e8e83d64777b617ee9323f411dab1474c700864058c4444e4f52cf842.js:31` **MINOR / CODE_SMELL** `javascript:S7765` — Use `.includes()`, rather than `.indexOf()`, when checking for existence.
+- `niakw_NiakVIO:upstream-lkg/providers/3b567b1e8e83d64777b617ee9323f411dab1474c700864058c4444e4f52cf842.js:34` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/3b567b1e8e83d64777b617ee9323f411dab1474c700864058c4444e4f52cf842.js:34` **MAJOR / CODE_SMELL** `javascript:S2814` — 'prop' is already defined.
+- `niakw_NiakVIO:upstream-lkg/providers/3b567b1e8e83d64777b617ee9323f411dab1474c700864058c4444e4f52cf842.js:35` **MINOR / CODE_SMELL** `javascript:S7765` — Use `.includes()`, rather than `.indexOf()`, when checking for existence.
+- `niakw_NiakVIO:upstream-lkg/providers/3b567b1e8e83d64777b617ee9323f411dab1474c700864058c4444e4f52cf842.js:40` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/3b567b1e8e83d64777b617ee9323f411dab1474c700864058c4444e4f52cf842.js:44` **MAJOR / CODE_SMELL** `javascript:S1121` — Extract the assignment of "desc" from this expression.
+- `niakw_NiakVIO:upstream-lkg/providers/3b567b1e8e83d64777b617ee9323f411dab1474c700864058c4444e4f52cf842.js:48` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/3b567b1e8e83d64777b617ee9323f411dab1474c700864058c4444e4f52cf842.js:48` **MAJOR / CODE_SMELL** `javascript:S878` — Unexpected use of comma operator.
+- `niakw_NiakVIO:upstream-lkg/providers/3b567b1e8e83d64777b617ee9323f411dab1474c700864058c4444e4f52cf842.js:53` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/3b567b1e8e83d64777b617ee9323f411dab1474c700864058c4444e4f52cf842.js:56` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/3b567b1e8e83d64777b617ee9323f411dab1474c700864058c4444e4f52cf842.js:58` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/3b567b1e8e83d64777b617ee9323f411dab1474c700864058c4444e4f52cf842.js:65` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/3b567b1e8e83d64777b617ee9323f411dab1474c700864058c4444e4f52cf842.js:72` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/3b567b1e8e83d64777b617ee9323f411dab1474c700864058c4444e4f52cf842.js:73` **MAJOR / CODE_SMELL** `javascript:S1121` — Extract the assignment of "generator" from this expression.
+- `niakw_NiakVIO:upstream-lkg/providers/3b567b1e8e83d64777b617ee9323f411dab1474c700864058c4444e4f52cf842.js:78` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/3b567b1e8e83d64777b617ee9323f411dab1474c700864058c4444e4f52cf842.js:81` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/3b567b1e8e83d64777b617ee9323f411dab1474c700864058c4444e4f52cf842.js:82` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/3b567b1e8e83d64777b617ee9323f411dab1474c700864058c4444e4f52cf842.js:83` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/3b567b1e8e83d64777b617ee9323f411dab1474c700864058c4444e4f52cf842.js:116` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:upstream-lkg/providers/3b567b1e8e83d64777b617ee9323f411dab1474c700864058c4444e4f52cf842.js:129` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:upstream-lkg/providers/3b567b1e8e83d64777b617ee9323f411dab1474c700864058c4444e4f52cf842.js:142` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:upstream-lkg/providers/3b567b1e8e83d64777b617ee9323f411dab1474c700864058c4444e4f52cf842.js:163` **MINOR / CODE_SMELL** `javascript:S1481` — Remove the declaration of the unused '_' variable.
+- `niakw_NiakVIO:upstream-lkg/providers/3b567b1e8e83d64777b617ee9323f411dab1474c700864058c4444e4f52cf842.js:163` **MINOR / CODE_SMELL** `javascript:S1481` — Remove the declaration of the unused 'quote1' variable.
+- `niakw_NiakVIO:upstream-lkg/providers/3b567b1e8e83d64777b617ee9323f411dab1474c700864058c4444e4f52cf842.js:163` **MAJOR / CODE_SMELL** `javascript:S1854` — Remove this useless assignment to variable "quote1".
+- `niakw_NiakVIO:upstream-lkg/providers/3b567b1e8e83d64777b617ee9323f411dab1474c700864058c4444e4f52cf842.js:163` **MINOR / CODE_SMELL** `javascript:S1481` — Remove the declaration of the unused 'quote2' variable.
+- `niakw_NiakVIO:upstream-lkg/providers/3b567b1e8e83d64777b617ee9323f411dab1474c700864058c4444e4f52cf842.js:163` **MAJOR / CODE_SMELL** `javascript:S1854` — Remove this useless assignment to variable "quote2".
+- `niakw_NiakVIO:upstream-lkg/providers/3b567b1e8e83d64777b617ee9323f411dab1474c700864058c4444e4f52cf842.js:164` **MINOR / CODE_SMELL** `javascript:S7781` — Prefer `String#replaceAll()` over `String#replace()`.
+- `niakw_NiakVIO:upstream-lkg/providers/3b567b1e8e83d64777b617ee9323f411dab1474c700864058c4444e4f52cf842.js:164` **MINOR / CODE_SMELL** `javascript:S7781` — Prefer `String#replaceAll()` over `String#replace()`.
+- `niakw_NiakVIO:upstream-lkg/providers/3b567b1e8e83d64777b617ee9323f411dab1474c700864058c4444e4f52cf842.js:164` **MINOR / CODE_SMELL** `javascript:S7781` — Prefer `String#replaceAll()` over `String#replace()`.
+- `niakw_NiakVIO:upstream-lkg/providers/3b567b1e8e83d64777b617ee9323f411dab1474c700864058c4444e4f52cf842.js:165` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.parseInt` over `parseInt`.
+- `niakw_NiakVIO:upstream-lkg/providers/3b567b1e8e83d64777b617ee9323f411dab1474c700864058c4444e4f52cf842.js:166` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.parseInt` over `parseInt`.
+- `niakw_NiakVIO:upstream-lkg/providers/3b567b1e8e83d64777b617ee9323f411dab1474c700864058c4444e4f52cf842.js:168` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.parseInt` over `parseInt`.
+- `niakw_NiakVIO:upstream-lkg/providers/3b567b1e8e83d64777b617ee9323f411dab1474c700864058c4444e4f52cf842.js:168` **MINOR / CODE_SMELL** `javascript:S7758` — Prefer `String.fromCodePoint()` over `String.fromCharCode()`.
+- `niakw_NiakVIO:upstream-lkg/providers/3b567b1e8e83d64777b617ee9323f411dab1474c700864058c4444e4f52cf842.js:180` **CRITICAL / CODE_SMELL** `javascript:S3776` — Refactor this function to reduce its Cognitive Complexity from 28 to the 15 allowed.
+- `niakw_NiakVIO:upstream-lkg/providers/3b567b1e8e83d64777b617ee9323f411dab1474c700864058c4444e4f52cf842.js:191` **MAJOR / CODE_SMELL** `javascript:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
+- `niakw_NiakVIO:upstream-lkg/providers/3b567b1e8e83d64777b617ee9323f411dab1474c700864058c4444e4f52cf842.js:256` **MINOR / CODE_SMELL** `javascript:S7758` — Prefer `String.fromCodePoint()` over `String.fromCharCode()`.
+- `niakw_NiakVIO:upstream-lkg/providers/3b567b1e8e83d64777b617ee9323f411dab1474c700864058c4444e4f52cf842.js:256` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.parseInt` over `parseInt`.
+- `niakw_NiakVIO:upstream-lkg/providers/3b567b1e8e83d64777b617ee9323f411dab1474c700864058c4444e4f52cf842.js:294` **MINOR / CODE_SMELL** `javascript:S1481` — Remove the declaration of the unused '_' variable.
+- `niakw_NiakVIO:upstream-lkg/providers/3b567b1e8e83d64777b617ee9323f411dab1474c700864058c4444e4f52cf842.js:295` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.parseInt` over `parseInt`.
+- `niakw_NiakVIO:upstream-lkg/providers/3b567b1e8e83d64777b617ee9323f411dab1474c700864058c4444e4f52cf842.js:295` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.parseInt` over `parseInt`.
+- `niakw_NiakVIO:upstream-lkg/providers/3b567b1e8e83d64777b617ee9323f411dab1474c700864058c4444e4f52cf842.js:296` **MINOR / CODE_SMELL** `javascript:S6594` — Use the "RegExp.exec()" method instead.
+- `niakw_NiakVIO:upstream-lkg/providers/3b567b1e8e83d64777b617ee9323f411dab1474c700864058c4444e4f52cf842.js:297` **MINOR / CODE_SMELL** `javascript:S6594` — Use the "RegExp.exec()" method instead.
+- `niakw_NiakVIO:upstream-lkg/providers/3b567b1e8e83d64777b617ee9323f411dab1474c700864058c4444e4f52cf842.js:343` **CRITICAL / CODE_SMELL** `javascript:S3776` — Refactor this function to reduce its Cognitive Complexity from 38 to the 15 allowed.
+- `niakw_NiakVIO:upstream-lkg/providers/3b567b1e8e83d64777b617ee9323f411dab1474c700864058c4444e4f52cf842.js:354` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/3b567b1e8e83d64777b617ee9323f411dab1474c700864058c4444e4f52cf842.js:401` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/3b567b1e8e83d64777b617ee9323f411dab1474c700864058c4444e4f52cf842.js:424` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/3b567b1e8e83d64777b617ee9323f411dab1474c700864058c4444e4f52cf842.js:463` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/3b567b1e8e83d64777b617ee9323f411dab1474c700864058c4444e4f52cf842.js:480` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:upstream-lkg/providers/3b567b1e8e83d64777b617ee9323f411dab1474c700864058c4444e4f52cf842.js:486` **MAJOR / BUG** `javascript:S3531` — Add a "yield" statement to this generator.
+- `niakw_NiakVIO:upstream-lkg/providers/3e554771641bd6208cd763c6ee6aa12a06ad858a52d7430cd43571fa9cde068d.js:100` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/3e554771641bd6208cd763c6ee6aa12a06ad858a52d7430cd43571fa9cde068d.js:101` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/3e554771641bd6208cd763c6ee6aa12a06ad858a52d7430cd43571fa9cde068d.js:136` **MAJOR / CODE_SMELL** `javascript:S6661` — Use an object spread instead of `Object.assign` eg: `{ ...foo }`.
+- `niakw_NiakVIO:upstream-lkg/providers/3e554771641bd6208cd763c6ee6aa12a06ad858a52d7430cd43571fa9cde068d.js:165` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/3e554771641bd6208cd763c6ee6aa12a06ad858a52d7430cd43571fa9cde068d.js:181` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/3e554771641bd6208cd763c6ee6aa12a06ad858a52d7430cd43571fa9cde068d.js:205` **MAJOR / CODE_SMELL** `javascript:S107` — Function 'buildVideoEasyUrl' has too many parameters (8). Maximum allowed is 7.
+- `niakw_NiakVIO:upstream-lkg/providers/3e554771641bd6208cd763c6ee6aa12a06ad858a52d7430cd43571fa9cde068d.js:324` **CRITICAL / CODE_SMELL** `javascript:S3776` — Refactor this function to reduce its Cognitive Complexity from 30 to the 15 allowed.
+- `niakw_NiakVIO:upstream-lkg/providers/3e554771641bd6208cd763c6ee6aa12a06ad858a52d7430cd43571fa9cde068d.js:349` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.parseInt` over `parseInt`.
+- `niakw_NiakVIO:upstream-lkg/providers/3e554771641bd6208cd763c6ee6aa12a06ad858a52d7430cd43571fa9cde068d.js:376` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.parseInt` over `parseInt`.
+- `niakw_NiakVIO:upstream-lkg/providers/3e554771641bd6208cd763c6ee6aa12a06ad858a52d7430cd43571fa9cde068d.js:383` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.parseInt` over `parseInt`.
+- `niakw_NiakVIO:upstream-lkg/providers/3e554771641bd6208cd763c6ee6aa12a06ad858a52d7430cd43571fa9cde068d.js:426` **CRITICAL / CODE_SMELL** `javascript:S3776` — Refactor this function to reduce its Cognitive Complexity from 55 to the 15 allowed.
+- `niakw_NiakVIO:upstream-lkg/providers/3e554771641bd6208cd763c6ee6aa12a06ad858a52d7430cd43571fa9cde068d.js:503` **MAJOR / CODE_SMELL** `javascript:S1854` — Remove this useless assignment to variable "streamType".
+- `niakw_NiakVIO:upstream-lkg/providers/3e554771641bd6208cd763c6ee6aa12a06ad858a52d7430cd43571fa9cde068d.js:504` **MAJOR / CODE_SMELL** `javascript:S6661` — Use an object spread instead of `Object.assign` eg: `{ ...foo }`.
+- `niakw_NiakVIO:upstream-lkg/providers/3e554771641bd6208cd763c6ee6aa12a06ad858a52d7430cd43571fa9cde068d.js:510` **MAJOR / CODE_SMELL** `javascript:S1854` — Remove this useless assignment to variable "streamType".
+- `niakw_NiakVIO:upstream-lkg/providers/3e554771641bd6208cd763c6ee6aa12a06ad858a52d7430cd43571fa9cde068d.js:515` **MAJOR / CODE_SMELL** `javascript:S1854` — Remove this useless assignment to variable "streamType".
+- `niakw_NiakVIO:upstream-lkg/providers/3e554771641bd6208cd763c6ee6aa12a06ad858a52d7430cd43571fa9cde068d.js:521` **MAJOR / CODE_SMELL** `javascript:S1854` — Remove this useless assignment to variable "streamType".
+- `niakw_NiakVIO:upstream-lkg/providers/3e554771641bd6208cd763c6ee6aa12a06ad858a52d7430cd43571fa9cde068d.js:558` **MAJOR / CODE_SMELL** `javascript:S107` — Function 'fetchFromServer' has too many parameters (9). Maximum allowed is 7.
+- `niakw_NiakVIO:upstream-lkg/providers/3e554771641bd6208cd763c6ee6aa12a06ad858a52d7430cd43571fa9cde068d.js:600` **MINOR / CODE_SMELL** `javascript:S7781` — Prefer `String#replaceAll()` over `String#replace()`.
+- `niakw_NiakVIO:upstream-lkg/providers/3e554771641bd6208cd763c6ee6aa12a06ad858a52d7430cd43571fa9cde068d.js:652` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.parseInt` over `parseInt`.
+- `niakw_NiakVIO:upstream-lkg/providers/3e554771641bd6208cd763c6ee6aa12a06ad858a52d7430cd43571fa9cde068d.js:653` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.isNaN` over `isNaN`.
+- `niakw_NiakVIO:upstream-lkg/providers/43c70c0cad61e4f16fe3d114a87045d6aeb71047dda1d104f31d055a129ce135.js:6` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/43c70c0cad61e4f16fe3d114a87045d6aeb71047dda1d104f31d055a129ce135.js:7` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/43c70c0cad61e4f16fe3d114a87045d6aeb71047dda1d104f31d055a129ce135.js:8` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/43c70c0cad61e4f16fe3d114a87045d6aeb71047dda1d104f31d055a129ce135.js:9` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/43c70c0cad61e4f16fe3d114a87045d6aeb71047dda1d104f31d055a129ce135.js:10` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/43c70c0cad61e4f16fe3d114a87045d6aeb71047dda1d104f31d055a129ce135.js:10` **MAJOR / CODE_SMELL** `javascript:S1121` — Extract the assignment of "obj[key]" from this expression.
+- `niakw_NiakVIO:upstream-lkg/providers/43c70c0cad61e4f16fe3d114a87045d6aeb71047dda1d104f31d055a129ce135.js:11` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/43c70c0cad61e4f16fe3d114a87045d6aeb71047dda1d104f31d055a129ce135.js:12` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/43c70c0cad61e4f16fe3d114a87045d6aeb71047dda1d104f31d055a129ce135.js:16` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/43c70c0cad61e4f16fe3d114a87045d6aeb71047dda1d104f31d055a129ce135.js:16` **MAJOR / CODE_SMELL** `javascript:S2814` — 'prop' is already defined.
+- `niakw_NiakVIO:upstream-lkg/providers/43c70c0cad61e4f16fe3d114a87045d6aeb71047dda1d104f31d055a129ce135.js:22` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/43c70c0cad61e4f16fe3d114a87045d6aeb71047dda1d104f31d055a129ce135.js:24` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/43c70c0cad61e4f16fe3d114a87045d6aeb71047dda1d104f31d055a129ce135.js:31` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/43c70c0cad61e4f16fe3d114a87045d6aeb71047dda1d104f31d055a129ce135.js:38` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/43c70c0cad61e4f16fe3d114a87045d6aeb71047dda1d104f31d055a129ce135.js:39` **MAJOR / CODE_SMELL** `javascript:S1121` — Extract the assignment of "generator" from this expression.
+- `niakw_NiakVIO:upstream-lkg/providers/43c70c0cad61e4f16fe3d114a87045d6aeb71047dda1d104f31d055a129ce135.js:44` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/43c70c0cad61e4f16fe3d114a87045d6aeb71047dda1d104f31d055a129ce135.js:45` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/43c70c0cad61e4f16fe3d114a87045d6aeb71047dda1d104f31d055a129ce135.js:46` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/43c70c0cad61e4f16fe3d114a87045d6aeb71047dda1d104f31d055a129ce135.js:47` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/43c70c0cad61e4f16fe3d114a87045d6aeb71047dda1d104f31d055a129ce135.js:48` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/43c70c0cad61e4f16fe3d114a87045d6aeb71047dda1d104f31d055a129ce135.js:49` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/43c70c0cad61e4f16fe3d114a87045d6aeb71047dda1d104f31d055a129ce135.js:50` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/43c70c0cad61e4f16fe3d114a87045d6aeb71047dda1d104f31d055a129ce135.js:51` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/43c70c0cad61e4f16fe3d114a87045d6aeb71047dda1d104f31d055a129ce135.js:58` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/43c70c0cad61e4f16fe3d114a87045d6aeb71047dda1d104f31d055a129ce135.js:98` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/43c70c0cad61e4f16fe3d114a87045d6aeb71047dda1d104f31d055a129ce135.js:101` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:upstream-lkg/providers/43c70c0cad61e4f16fe3d114a87045d6aeb71047dda1d104f31d055a129ce135.js:107` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/43c70c0cad61e4f16fe3d114a87045d6aeb71047dda1d104f31d055a129ce135.js:122` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.parseInt` over `parseInt`.
+- `niakw_NiakVIO:upstream-lkg/providers/43c70c0cad61e4f16fe3d114a87045d6aeb71047dda1d104f31d055a129ce135.js:133` **MAJOR / BUG** `javascript:S3531` — Add a "yield" statement to this generator.
+- `niakw_NiakVIO:upstream-lkg/providers/43c70c0cad61e4f16fe3d114a87045d6aeb71047dda1d104f31d055a129ce135.js:157` **MINOR / CODE_SMELL** `javascript:S7758` — Prefer `String#codePointAt()` over `String#charCodeAt()`.
+- `niakw_NiakVIO:upstream-lkg/providers/43c70c0cad61e4f16fe3d114a87045d6aeb71047dda1d104f31d055a129ce135.js:158` **MAJOR / CODE_SMELL** `javascript:S3358` — Extract this nested ternary operation into an independent statement.
+- `niakw_NiakVIO:upstream-lkg/providers/43c70c0cad61e4f16fe3d114a87045d6aeb71047dda1d104f31d055a129ce135.js:160` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/43c70c0cad61e4f16fe3d114a87045d6aeb71047dda1d104f31d055a129ce135.js:161` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/43c70c0cad61e4f16fe3d114a87045d6aeb71047dda1d104f31d055a129ce135.js:363` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.parseInt` over `parseInt`.
+- `niakw_NiakVIO:upstream-lkg/providers/43c70c0cad61e4f16fe3d114a87045d6aeb71047dda1d104f31d055a129ce135.js:364` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.isNaN` over `isNaN`.
+- `niakw_NiakVIO:upstream-lkg/providers/43c70c0cad61e4f16fe3d114a87045d6aeb71047dda1d104f31d055a129ce135.js:388` **CRITICAL / CODE_SMELL** `javascript:S3776` — Refactor this function to reduce its Cognitive Complexity from 16 to the 15 allowed.
+- `niakw_NiakVIO:upstream-lkg/providers/43c70c0cad61e4f16fe3d114a87045d6aeb71047dda1d104f31d055a129ce135.js:451` **CRITICAL / CODE_SMELL** `javascript:S3776` — Refactor this function to reduce its Cognitive Complexity from 26 to the 15 allowed.
+- `niakw_NiakVIO:upstream-lkg/providers/43c70c0cad61e4f16fe3d114a87045d6aeb71047dda1d104f31d055a129ce135.js:452` **MAJOR / CODE_SMELL** `javascript:S4624` — Refactor this code to not use nested template literals.
+- `niakw_NiakVIO:upstream-lkg/providers/43c70c0cad61e4f16fe3d114a87045d6aeb71047dda1d104f31d055a129ce135.js:464` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/43c70c0cad61e4f16fe3d114a87045d6aeb71047dda1d104f31d055a129ce135.js:475` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/43c70c0cad61e4f16fe3d114a87045d6aeb71047dda1d104f31d055a129ce135.js:485` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/5b3d2c649dc4b5c223e70dd0e0d74fb544f15f99019864d44502dded2c6928d4.js:5` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/5b3d2c649dc4b5c223e70dd0e0d74fb544f15f99019864d44502dded2c6928d4.js:6` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/5b3d2c649dc4b5c223e70dd0e0d74fb544f15f99019864d44502dded2c6928d4.js:7` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/5b3d2c649dc4b5c223e70dd0e0d74fb544f15f99019864d44502dded2c6928d4.js:8` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/5b3d2c649dc4b5c223e70dd0e0d74fb544f15f99019864d44502dded2c6928d4.js:9` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/5b3d2c649dc4b5c223e70dd0e0d74fb544f15f99019864d44502dded2c6928d4.js:10` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/5b3d2c649dc4b5c223e70dd0e0d74fb544f15f99019864d44502dded2c6928d4.js:11` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/5b3d2c649dc4b5c223e70dd0e0d74fb544f15f99019864d44502dded2c6928d4.js:12` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/5b3d2c649dc4b5c223e70dd0e0d74fb544f15f99019864d44502dded2c6928d4.js:13` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/5b3d2c649dc4b5c223e70dd0e0d74fb544f15f99019864d44502dded2c6928d4.js:14` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/5b3d2c649dc4b5c223e70dd0e0d74fb544f15f99019864d44502dded2c6928d4.js:15` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/5b3d2c649dc4b5c223e70dd0e0d74fb544f15f99019864d44502dded2c6928d4.js:15` **MAJOR / CODE_SMELL** `javascript:S1121` — Extract the assignment of "obj[key]" from this expression.
+- `niakw_NiakVIO:upstream-lkg/providers/5b3d2c649dc4b5c223e70dd0e0d74fb544f15f99019864d44502dded2c6928d4.js:16` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/5b3d2c649dc4b5c223e70dd0e0d74fb544f15f99019864d44502dded2c6928d4.js:17` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/5b3d2c649dc4b5c223e70dd0e0d74fb544f15f99019864d44502dded2c6928d4.js:21` **MAJOR / CODE_SMELL** `javascript:S2814` — 'prop' is already defined.
+- `niakw_NiakVIO:upstream-lkg/providers/5b3d2c649dc4b5c223e70dd0e0d74fb544f15f99019864d44502dded2c6928d4.js:21` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/5b3d2c649dc4b5c223e70dd0e0d74fb544f15f99019864d44502dded2c6928d4.js:27` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/5b3d2c649dc4b5c223e70dd0e0d74fb544f15f99019864d44502dded2c6928d4.js:28` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/5b3d2c649dc4b5c223e70dd0e0d74fb544f15f99019864d44502dded2c6928d4.js:32` **MAJOR / CODE_SMELL** `javascript:S1121` — Extract the assignment of "desc" from this expression.
+- `niakw_NiakVIO:upstream-lkg/providers/5b3d2c649dc4b5c223e70dd0e0d74fb544f15f99019864d44502dded2c6928d4.js:36` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/5b3d2c649dc4b5c223e70dd0e0d74fb544f15f99019864d44502dded2c6928d4.js:36` **MAJOR / CODE_SMELL** `javascript:S878` — Unexpected use of comma operator.
+- `niakw_NiakVIO:upstream-lkg/providers/5b3d2c649dc4b5c223e70dd0e0d74fb544f15f99019864d44502dded2c6928d4.js:41` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/5b3d2c649dc4b5c223e70dd0e0d74fb544f15f99019864d44502dded2c6928d4.js:44` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/5b3d2c649dc4b5c223e70dd0e0d74fb544f15f99019864d44502dded2c6928d4.js:46` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/5b3d2c649dc4b5c223e70dd0e0d74fb544f15f99019864d44502dded2c6928d4.js:53` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/5b3d2c649dc4b5c223e70dd0e0d74fb544f15f99019864d44502dded2c6928d4.js:60` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/5b3d2c649dc4b5c223e70dd0e0d74fb544f15f99019864d44502dded2c6928d4.js:61` **MAJOR / CODE_SMELL** `javascript:S1121` — Extract the assignment of "generator" from this expression.
+- `niakw_NiakVIO:upstream-lkg/providers/5b3d2c649dc4b5c223e70dd0e0d74fb544f15f99019864d44502dded2c6928d4.js:66` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/5b3d2c649dc4b5c223e70dd0e0d74fb544f15f99019864d44502dded2c6928d4.js:67` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/5b3d2c649dc4b5c223e70dd0e0d74fb544f15f99019864d44502dded2c6928d4.js:68` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/5b3d2c649dc4b5c223e70dd0e0d74fb544f15f99019864d44502dded2c6928d4.js:69` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/5b3d2c649dc4b5c223e70dd0e0d74fb544f15f99019864d44502dded2c6928d4.js:70` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/5b3d2c649dc4b5c223e70dd0e0d74fb544f15f99019864d44502dded2c6928d4.js:71` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/5b3d2c649dc4b5c223e70dd0e0d74fb544f15f99019864d44502dded2c6928d4.js:78` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/5b3d2c649dc4b5c223e70dd0e0d74fb544f15f99019864d44502dded2c6928d4.js:85` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/5b3d2c649dc4b5c223e70dd0e0d74fb544f15f99019864d44502dded2c6928d4.js:86` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/5b3d2c649dc4b5c223e70dd0e0d74fb544f15f99019864d44502dded2c6928d4.js:89` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/5b3d2c649dc4b5c223e70dd0e0d74fb544f15f99019864d44502dded2c6928d4.js:92` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/5b3d2c649dc4b5c223e70dd0e0d74fb544f15f99019864d44502dded2c6928d4.js:93` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/5b3d2c649dc4b5c223e70dd0e0d74fb544f15f99019864d44502dded2c6928d4.js:94` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/5b3d2c649dc4b5c223e70dd0e0d74fb544f15f99019864d44502dded2c6928d4.js:99` **MAJOR / VULNERABILITY** `javascript:S2245` — Make sure that using this pseudorandom number generator is safe here.
+- `niakw_NiakVIO:upstream-lkg/providers/5b3d2c649dc4b5c223e70dd0e0d74fb544f15f99019864d44502dded2c6928d4.js:102` **MAJOR / VULNERABILITY** `javascript:S2245` — Make sure that using this pseudorandom number generator is safe here.
+- `niakw_NiakVIO:upstream-lkg/providers/5b3d2c649dc4b5c223e70dd0e0d74fb544f15f99019864d44502dded2c6928d4.js:104` **MAJOR / VULNERABILITY** `javascript:S2245` — Make sure that using this pseudorandom number generator is safe here.
+- `niakw_NiakVIO:upstream-lkg/providers/5b3d2c649dc4b5c223e70dd0e0d74fb544f15f99019864d44502dded2c6928d4.js:125` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function that depends on "String.localeCompare", to reliably sort elements alphabetically.
+- `niakw_NiakVIO:upstream-lkg/providers/5b3d2c649dc4b5c223e70dd0e0d74fb544f15f99019864d44502dded2c6928d4.js:132` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:upstream-lkg/providers/5b3d2c649dc4b5c223e70dd0e0d74fb544f15f99019864d44502dded2c6928d4.js:135` **MAJOR / CODE_SMELL** `javascript:S6535` — Unnecessary escape character: \/.
+- `niakw_NiakVIO:upstream-lkg/providers/5b3d2c649dc4b5c223e70dd0e0d74fb544f15f99019864d44502dded2c6928d4.js:139` **MAJOR / CODE_SMELL** `javascript:S6535` — Unnecessary escape character: \/.
+- `niakw_NiakVIO:upstream-lkg/providers/5b3d2c649dc4b5c223e70dd0e0d74fb544f15f99019864d44502dded2c6928d4.js:241` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/5b3d2c649dc4b5c223e70dd0e0d74fb544f15f99019864d44502dded2c6928d4.js:267` **MAJOR / CODE_SMELL** `javascript:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
+- `niakw_NiakVIO:upstream-lkg/providers/5b3d2c649dc4b5c223e70dd0e0d74fb544f15f99019864d44502dded2c6928d4.js:267` **MAJOR / CODE_SMELL** `javascript:S6019` — Fix this reluctant quantifier that will only ever match 0 repetitions.
+- `niakw_NiakVIO:upstream-lkg/providers/5b3d2c649dc4b5c223e70dd0e0d74fb544f15f99019864d44502dded2c6928d4.js:267` **MAJOR / BUG** `javascript:S6323` — Remove this empty alternative.
+- `niakw_NiakVIO:upstream-lkg/providers/5b3d2c649dc4b5c223e70dd0e0d74fb544f15f99019864d44502dded2c6928d4.js:267` **MINOR / CODE_SMELL** `javascript:S7781` — Prefer `String#replaceAll()` over `String#replace()`.
+- `niakw_NiakVIO:upstream-lkg/providers/5b3d2c649dc4b5c223e70dd0e0d74fb544f15f99019864d44502dded2c6928d4.js:270` **MINOR / CODE_SMELL** `javascript:S6594` — Use the "RegExp.exec()" method instead.
+- `niakw_NiakVIO:upstream-lkg/providers/5b3d2c649dc4b5c223e70dd0e0d74fb544f15f99019864d44502dded2c6928d4.js:271` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.parseInt` over `parseInt`.
+- `niakw_NiakVIO:upstream-lkg/providers/5b3d2c649dc4b5c223e70dd0e0d74fb544f15f99019864d44502dded2c6928d4.js:313` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/5b3d2c649dc4b5c223e70dd0e0d74fb544f15f99019864d44502dded2c6928d4.js:353` **CRITICAL / CODE_SMELL** `javascript:S3776` — Refactor this function to reduce its Cognitive Complexity from 71 to the 15 allowed.
+- `niakw_NiakVIO:upstream-lkg/providers/5b3d2c649dc4b5c223e70dd0e0d74fb544f15f99019864d44502dded2c6928d4.js:356` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/5b3d2c649dc4b5c223e70dd0e0d74fb544f15f99019864d44502dded2c6928d4.js:364` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:upstream-lkg/providers/5b3d2c649dc4b5c223e70dd0e0d74fb544f15f99019864d44502dded2c6928d4.js:386` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/5b3d2c649dc4b5c223e70dd0e0d74fb544f15f99019864d44502dded2c6928d4.js:401` **MAJOR / CODE_SMELL** `javascript:S4624` — Refactor this code to not use nested template literals.
+- `niakw_NiakVIO:upstream-lkg/providers/5b3d2c649dc4b5c223e70dd0e0d74fb544f15f99019864d44502dded2c6928d4.js:450` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/5b3d2c649dc4b5c223e70dd0e0d74fb544f15f99019864d44502dded2c6928d4.js:462` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:upstream-lkg/providers/5b3d2c649dc4b5c223e70dd0e0d74fb544f15f99019864d44502dded2c6928d4.js:467` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/5b3d2c649dc4b5c223e70dd0e0d74fb544f15f99019864d44502dded2c6928d4.js:479` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:upstream-lkg/providers/65e7dabe9629f1185c046e156941f6cf05312e9c52996c70c24a6b6ddc075a9c.js:41` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/73098d13964fbeca2b19a3c80782a27b08129898b8da5a82f9b8088f37168d68.js:5` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/73098d13964fbeca2b19a3c80782a27b08129898b8da5a82f9b8088f37168d68.js:6` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/73098d13964fbeca2b19a3c80782a27b08129898b8da5a82f9b8088f37168d68.js:7` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/73098d13964fbeca2b19a3c80782a27b08129898b8da5a82f9b8088f37168d68.js:8` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/73098d13964fbeca2b19a3c80782a27b08129898b8da5a82f9b8088f37168d68.js:9` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/73098d13964fbeca2b19a3c80782a27b08129898b8da5a82f9b8088f37168d68.js:10` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/73098d13964fbeca2b19a3c80782a27b08129898b8da5a82f9b8088f37168d68.js:11` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/73098d13964fbeca2b19a3c80782a27b08129898b8da5a82f9b8088f37168d68.js:12` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/73098d13964fbeca2b19a3c80782a27b08129898b8da5a82f9b8088f37168d68.js:13` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/73098d13964fbeca2b19a3c80782a27b08129898b8da5a82f9b8088f37168d68.js:14` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/73098d13964fbeca2b19a3c80782a27b08129898b8da5a82f9b8088f37168d68.js:15` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/73098d13964fbeca2b19a3c80782a27b08129898b8da5a82f9b8088f37168d68.js:15` **MAJOR / CODE_SMELL** `javascript:S1121` — Extract the assignment of "obj[key]" from this expression.
+- `niakw_NiakVIO:upstream-lkg/providers/73098d13964fbeca2b19a3c80782a27b08129898b8da5a82f9b8088f37168d68.js:16` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/73098d13964fbeca2b19a3c80782a27b08129898b8da5a82f9b8088f37168d68.js:17` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/73098d13964fbeca2b19a3c80782a27b08129898b8da5a82f9b8088f37168d68.js:21` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/73098d13964fbeca2b19a3c80782a27b08129898b8da5a82f9b8088f37168d68.js:21` **MAJOR / CODE_SMELL** `javascript:S2814` — 'prop' is already defined.
+- `niakw_NiakVIO:upstream-lkg/providers/73098d13964fbeca2b19a3c80782a27b08129898b8da5a82f9b8088f37168d68.js:27` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/73098d13964fbeca2b19a3c80782a27b08129898b8da5a82f9b8088f37168d68.js:28` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/73098d13964fbeca2b19a3c80782a27b08129898b8da5a82f9b8088f37168d68.js:32` **MAJOR / CODE_SMELL** `javascript:S1121` — Extract the assignment of "desc" from this expression.
+- `niakw_NiakVIO:upstream-lkg/providers/73098d13964fbeca2b19a3c80782a27b08129898b8da5a82f9b8088f37168d68.js:36` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/73098d13964fbeca2b19a3c80782a27b08129898b8da5a82f9b8088f37168d68.js:36` **MAJOR / CODE_SMELL** `javascript:S878` — Unexpected use of comma operator.
+- `niakw_NiakVIO:upstream-lkg/providers/73098d13964fbeca2b19a3c80782a27b08129898b8da5a82f9b8088f37168d68.js:41` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/73098d13964fbeca2b19a3c80782a27b08129898b8da5a82f9b8088f37168d68.js:44` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/73098d13964fbeca2b19a3c80782a27b08129898b8da5a82f9b8088f37168d68.js:46` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/73098d13964fbeca2b19a3c80782a27b08129898b8da5a82f9b8088f37168d68.js:53` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/73098d13964fbeca2b19a3c80782a27b08129898b8da5a82f9b8088f37168d68.js:60` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/73098d13964fbeca2b19a3c80782a27b08129898b8da5a82f9b8088f37168d68.js:61` **MAJOR / CODE_SMELL** `javascript:S1121` — Extract the assignment of "generator" from this expression.
+- `niakw_NiakVIO:upstream-lkg/providers/73098d13964fbeca2b19a3c80782a27b08129898b8da5a82f9b8088f37168d68.js:66` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/73098d13964fbeca2b19a3c80782a27b08129898b8da5a82f9b8088f37168d68.js:69` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/73098d13964fbeca2b19a3c80782a27b08129898b8da5a82f9b8088f37168d68.js:70` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/73098d13964fbeca2b19a3c80782a27b08129898b8da5a82f9b8088f37168d68.js:79` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/73098d13964fbeca2b19a3c80782a27b08129898b8da5a82f9b8088f37168d68.js:80` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/73098d13964fbeca2b19a3c80782a27b08129898b8da5a82f9b8088f37168d68.js:90` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:upstream-lkg/providers/73098d13964fbeca2b19a3c80782a27b08129898b8da5a82f9b8088f37168d68.js:96` **CRITICAL / CODE_SMELL** `javascript:S3776` — Refactor this function to reduce its Cognitive Complexity from 29 to the 15 allowed.
+- `niakw_NiakVIO:upstream-lkg/providers/73098d13964fbeca2b19a3c80782a27b08129898b8da5a82f9b8088f37168d68.js:97` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/73098d13964fbeca2b19a3c80782a27b08129898b8da5a82f9b8088f37168d68.js:128` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.parseInt` over `parseInt`.
+- `niakw_NiakVIO:upstream-lkg/providers/73098d13964fbeca2b19a3c80782a27b08129898b8da5a82f9b8088f37168d68.js:134` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/73098d13964fbeca2b19a3c80782a27b08129898b8da5a82f9b8088f37168d68.js:136` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/73098d13964fbeca2b19a3c80782a27b08129898b8da5a82f9b8088f37168d68.js:138` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/73098d13964fbeca2b19a3c80782a27b08129898b8da5a82f9b8088f37168d68.js:152` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:upstream-lkg/providers/73098d13964fbeca2b19a3c80782a27b08129898b8da5a82f9b8088f37168d68.js:166` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:upstream-lkg/providers/73098d13964fbeca2b19a3c80782a27b08129898b8da5a82f9b8088f37168d68.js:174` **CRITICAL / CODE_SMELL** `javascript:S3776` — Refactor this function to reduce its Cognitive Complexity from 28 to the 15 allowed.
+- `niakw_NiakVIO:upstream-lkg/providers/73098d13964fbeca2b19a3c80782a27b08129898b8da5a82f9b8088f37168d68.js:175` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/73098d13964fbeca2b19a3c80782a27b08129898b8da5a82f9b8088f37168d68.js:219` **MINOR / CODE_SMELL** `javascript:S7747` — `for…of` can iterate over iterable, it's unnecessary to convert to an array.
+- `niakw_NiakVIO:upstream-lkg/providers/73098d13964fbeca2b19a3c80782a27b08129898b8da5a82f9b8088f37168d68.js:290` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:upstream-lkg/providers/7613343c5da60daeafe3be8882b3a7636c0ff4db3e62f22831a715f0d01e7b27.js:63` **MAJOR / CODE_SMELL** `javascript:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
+- `niakw_NiakVIO:upstream-lkg/providers/7613343c5da60daeafe3be8882b3a7636c0ff4db3e62f22831a715f0d01e7b27.js:72` **MINOR / CODE_SMELL** `javascript:S7758` — Prefer `String.fromCodePoint()` over `String.fromCharCode()`.
+- `niakw_NiakVIO:upstream-lkg/providers/7613343c5da60daeafe3be8882b3a7636c0ff4db3e62f22831a715f0d01e7b27.js:80` **MINOR / CODE_SMELL** `javascript:S7758` — Prefer `String#codePointAt()` over `String#charCodeAt()`.
+- `niakw_NiakVIO:upstream-lkg/providers/7613343c5da60daeafe3be8882b3a7636c0ff4db3e62f22831a715f0d01e7b27.js:110` **MINOR / CODE_SMELL** `javascript:S7758` — Prefer `String.fromCodePoint()` over `String.fromCharCode()`.
+- `niakw_NiakVIO:upstream-lkg/providers/7613343c5da60daeafe3be8882b3a7636c0ff4db3e62f22831a715f0d01e7b27.js:170` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.parseInt` over `parseInt`.
+- `niakw_NiakVIO:upstream-lkg/providers/7613343c5da60daeafe3be8882b3a7636c0ff4db3e62f22831a715f0d01e7b27.js:216` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/7613343c5da60daeafe3be8882b3a7636c0ff4db3e62f22831a715f0d01e7b27.js:303` **MAJOR / CODE_SMELL** `javascript:S3800` — Refactor this function to always return the same type.
+- `niakw_NiakVIO:upstream-lkg/providers/7613343c5da60daeafe3be8882b3a7636c0ff4db3e62f22831a715f0d01e7b27.js:475` **MINOR / CODE_SMELL** `javascript:S7778` — Do not call `Array#push()` multiple times.
+- `niakw_NiakVIO:upstream-lkg/providers/7613343c5da60daeafe3be8882b3a7636c0ff4db3e62f22831a715f0d01e7b27.js:508` **MAJOR / CODE_SMELL** `javascript:S4043` — Move this array "sort" operation to a separate statement or replace it with "toSorted".
+- `niakw_NiakVIO:upstream-lkg/providers/7613343c5da60daeafe3be8882b3a7636c0ff4db3e62f22831a715f0d01e7b27.js:509` **CRITICAL / CODE_SMELL** `javascript:S2004` — Refactor this code to not nest functions more than 5 levels deep.
+- `niakw_NiakVIO:upstream-lkg/providers/7613343c5da60daeafe3be8882b3a7636c0ff4db3e62f22831a715f0d01e7b27.js:509` **MAJOR / CODE_SMELL** `javascript:S7721` — Move function 'getPriority' to the outer scope.
+- `niakw_NiakVIO:upstream-lkg/providers/87bbb1d8359caec9c7b98f22c9a88a9045c8bb1b5c0780a0e04842ab62bbabdb.js:5` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/87bbb1d8359caec9c7b98f22c9a88a9045c8bb1b5c0780a0e04842ab62bbabdb.js:6` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/87bbb1d8359caec9c7b98f22c9a88a9045c8bb1b5c0780a0e04842ab62bbabdb.js:7` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/87bbb1d8359caec9c7b98f22c9a88a9045c8bb1b5c0780a0e04842ab62bbabdb.js:8` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/87bbb1d8359caec9c7b98f22c9a88a9045c8bb1b5c0780a0e04842ab62bbabdb.js:9` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/87bbb1d8359caec9c7b98f22c9a88a9045c8bb1b5c0780a0e04842ab62bbabdb.js:10` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/87bbb1d8359caec9c7b98f22c9a88a9045c8bb1b5c0780a0e04842ab62bbabdb.js:11` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/87bbb1d8359caec9c7b98f22c9a88a9045c8bb1b5c0780a0e04842ab62bbabdb.js:11` **MAJOR / CODE_SMELL** `javascript:S1121` — Extract the assignment of "obj[key]" from this expression.
+- `niakw_NiakVIO:upstream-lkg/providers/87bbb1d8359caec9c7b98f22c9a88a9045c8bb1b5c0780a0e04842ab62bbabdb.js:12` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/87bbb1d8359caec9c7b98f22c9a88a9045c8bb1b5c0780a0e04842ab62bbabdb.js:13` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/87bbb1d8359caec9c7b98f22c9a88a9045c8bb1b5c0780a0e04842ab62bbabdb.js:17` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/87bbb1d8359caec9c7b98f22c9a88a9045c8bb1b5c0780a0e04842ab62bbabdb.js:17` **MAJOR / CODE_SMELL** `javascript:S2814` — 'prop' is already defined.
+- `niakw_NiakVIO:upstream-lkg/providers/87bbb1d8359caec9c7b98f22c9a88a9045c8bb1b5c0780a0e04842ab62bbabdb.js:23` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/87bbb1d8359caec9c7b98f22c9a88a9045c8bb1b5c0780a0e04842ab62bbabdb.js:24` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/87bbb1d8359caec9c7b98f22c9a88a9045c8bb1b5c0780a0e04842ab62bbabdb.js:26` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/87bbb1d8359caec9c7b98f22c9a88a9045c8bb1b5c0780a0e04842ab62bbabdb.js:33` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/87bbb1d8359caec9c7b98f22c9a88a9045c8bb1b5c0780a0e04842ab62bbabdb.js:40` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/87bbb1d8359caec9c7b98f22c9a88a9045c8bb1b5c0780a0e04842ab62bbabdb.js:41` **MAJOR / CODE_SMELL** `javascript:S1121` — Extract the assignment of "generator" from this expression.
+- `niakw_NiakVIO:upstream-lkg/providers/87bbb1d8359caec9c7b98f22c9a88a9045c8bb1b5c0780a0e04842ab62bbabdb.js:46` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/87bbb1d8359caec9c7b98f22c9a88a9045c8bb1b5c0780a0e04842ab62bbabdb.js:47` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/87bbb1d8359caec9c7b98f22c9a88a9045c8bb1b5c0780a0e04842ab62bbabdb.js:48` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/87bbb1d8359caec9c7b98f22c9a88a9045c8bb1b5c0780a0e04842ab62bbabdb.js:49` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/87bbb1d8359caec9c7b98f22c9a88a9045c8bb1b5c0780a0e04842ab62bbabdb.js:50` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/87bbb1d8359caec9c7b98f22c9a88a9045c8bb1b5c0780a0e04842ab62bbabdb.js:51` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/87bbb1d8359caec9c7b98f22c9a88a9045c8bb1b5c0780a0e04842ab62bbabdb.js:91` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/87bbb1d8359caec9c7b98f22c9a88a9045c8bb1b5c0780a0e04842ab62bbabdb.js:94` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.parseInt` over `parseInt`.
+- `niakw_NiakVIO:upstream-lkg/providers/87bbb1d8359caec9c7b98f22c9a88a9045c8bb1b5c0780a0e04842ab62bbabdb.js:94` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.parseInt` over `parseInt`.
+- `niakw_NiakVIO:upstream-lkg/providers/87bbb1d8359caec9c7b98f22c9a88a9045c8bb1b5c0780a0e04842ab62bbabdb.js:96` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:upstream-lkg/providers/87bbb1d8359caec9c7b98f22c9a88a9045c8bb1b5c0780a0e04842ab62bbabdb.js:111` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:upstream-lkg/providers/87bbb1d8359caec9c7b98f22c9a88a9045c8bb1b5c0780a0e04842ab62bbabdb.js:134` **CRITICAL / CODE_SMELL** `javascript:S3776` — Refactor this function to reduce its Cognitive Complexity from 52 to the 15 allowed.
+- `niakw_NiakVIO:upstream-lkg/providers/87bbb1d8359caec9c7b98f22c9a88a9045c8bb1b5c0780a0e04842ab62bbabdb.js:135` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/87bbb1d8359caec9c7b98f22c9a88a9045c8bb1b5c0780a0e04842ab62bbabdb.js:146` **MAJOR / CODE_SMELL** `javascript:S3358` — Extract this nested ternary operation into an independent statement.
+- `niakw_NiakVIO:upstream-lkg/providers/87bbb1d8359caec9c7b98f22c9a88a9045c8bb1b5c0780a0e04842ab62bbabdb.js:165` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/87bbb1d8359caec9c7b98f22c9a88a9045c8bb1b5c0780a0e04842ab62bbabdb.js:183` **MINOR / CODE_SMELL** `javascript:S7765` — Use `.includes()`, rather than `.indexOf()`, when checking for existence.
+- `niakw_NiakVIO:upstream-lkg/providers/87bbb1d8359caec9c7b98f22c9a88a9045c8bb1b5c0780a0e04842ab62bbabdb.js:183` **MINOR / CODE_SMELL** `javascript:S7765` — Use `.includes()`, rather than `.indexOf()`, when checking for existence.
+- `niakw_NiakVIO:upstream-lkg/providers/87bbb1d8359caec9c7b98f22c9a88a9045c8bb1b5c0780a0e04842ab62bbabdb.js:192` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:upstream-lkg/providers/87bbb1d8359caec9c7b98f22c9a88a9045c8bb1b5c0780a0e04842ab62bbabdb.js:204` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/87bbb1d8359caec9c7b98f22c9a88a9045c8bb1b5c0780a0e04842ab62bbabdb.js:224` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/87bbb1d8359caec9c7b98f22c9a88a9045c8bb1b5c0780a0e04842ab62bbabdb.js:225` **MAJOR / CODE_SMELL** `javascript:S3358` — Extract this nested ternary operation into an independent statement.
+- `niakw_NiakVIO:upstream-lkg/providers/87bbb1d8359caec9c7b98f22c9a88a9045c8bb1b5c0780a0e04842ab62bbabdb.js:225` **MAJOR / CODE_SMELL** `javascript:S3358` — Extract this nested ternary operation into an independent statement.
+- `niakw_NiakVIO:upstream-lkg/providers/87bbb1d8359caec9c7b98f22c9a88a9045c8bb1b5c0780a0e04842ab62bbabdb.js:235` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:upstream-lkg/providers/8fc6c9c3b021df2df2430dbd2559aece034cea02c5f0f9d4d514eebbb394584c.js:5` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/8fc6c9c3b021df2df2430dbd2559aece034cea02c5f0f9d4d514eebbb394584c.js:6` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/8fc6c9c3b021df2df2430dbd2559aece034cea02c5f0f9d4d514eebbb394584c.js:7` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/8fc6c9c3b021df2df2430dbd2559aece034cea02c5f0f9d4d514eebbb394584c.js:8` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/8fc6c9c3b021df2df2430dbd2559aece034cea02c5f0f9d4d514eebbb394584c.js:9` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/8fc6c9c3b021df2df2430dbd2559aece034cea02c5f0f9d4d514eebbb394584c.js:10` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/8fc6c9c3b021df2df2430dbd2559aece034cea02c5f0f9d4d514eebbb394584c.js:11` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/8fc6c9c3b021df2df2430dbd2559aece034cea02c5f0f9d4d514eebbb394584c.js:12` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/8fc6c9c3b021df2df2430dbd2559aece034cea02c5f0f9d4d514eebbb394584c.js:13` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/8fc6c9c3b021df2df2430dbd2559aece034cea02c5f0f9d4d514eebbb394584c.js:14` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/8fc6c9c3b021df2df2430dbd2559aece034cea02c5f0f9d4d514eebbb394584c.js:15` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/8fc6c9c3b021df2df2430dbd2559aece034cea02c5f0f9d4d514eebbb394584c.js:15` **MAJOR / CODE_SMELL** `javascript:S1121` — Extract the assignment of "obj[key]" from this expression.
+- `niakw_NiakVIO:upstream-lkg/providers/8fc6c9c3b021df2df2430dbd2559aece034cea02c5f0f9d4d514eebbb394584c.js:16` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/8fc6c9c3b021df2df2430dbd2559aece034cea02c5f0f9d4d514eebbb394584c.js:17` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/8fc6c9c3b021df2df2430dbd2559aece034cea02c5f0f9d4d514eebbb394584c.js:21` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/8fc6c9c3b021df2df2430dbd2559aece034cea02c5f0f9d4d514eebbb394584c.js:21` **MAJOR / CODE_SMELL** `javascript:S2814` — 'prop' is already defined.
+- `niakw_NiakVIO:upstream-lkg/providers/8fc6c9c3b021df2df2430dbd2559aece034cea02c5f0f9d4d514eebbb394584c.js:27` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/8fc6c9c3b021df2df2430dbd2559aece034cea02c5f0f9d4d514eebbb394584c.js:28` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/8fc6c9c3b021df2df2430dbd2559aece034cea02c5f0f9d4d514eebbb394584c.js:32` **MAJOR / CODE_SMELL** `javascript:S1121` — Extract the assignment of "desc" from this expression.
+- `niakw_NiakVIO:upstream-lkg/providers/8fc6c9c3b021df2df2430dbd2559aece034cea02c5f0f9d4d514eebbb394584c.js:36` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/8fc6c9c3b021df2df2430dbd2559aece034cea02c5f0f9d4d514eebbb394584c.js:36` **MAJOR / CODE_SMELL** `javascript:S878` — Unexpected use of comma operator.
+- `niakw_NiakVIO:upstream-lkg/providers/8fc6c9c3b021df2df2430dbd2559aece034cea02c5f0f9d4d514eebbb394584c.js:41` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/8fc6c9c3b021df2df2430dbd2559aece034cea02c5f0f9d4d514eebbb394584c.js:44` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/8fc6c9c3b021df2df2430dbd2559aece034cea02c5f0f9d4d514eebbb394584c.js:46` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/8fc6c9c3b021df2df2430dbd2559aece034cea02c5f0f9d4d514eebbb394584c.js:53` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/8fc6c9c3b021df2df2430dbd2559aece034cea02c5f0f9d4d514eebbb394584c.js:60` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/8fc6c9c3b021df2df2430dbd2559aece034cea02c5f0f9d4d514eebbb394584c.js:61` **MAJOR / CODE_SMELL** `javascript:S1121` — Extract the assignment of "generator" from this expression.
+- `niakw_NiakVIO:upstream-lkg/providers/8fc6c9c3b021df2df2430dbd2559aece034cea02c5f0f9d4d514eebbb394584c.js:66` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/8fc6c9c3b021df2df2430dbd2559aece034cea02c5f0f9d4d514eebbb394584c.js:67` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/8fc6c9c3b021df2df2430dbd2559aece034cea02c5f0f9d4d514eebbb394584c.js:68` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/8fc6c9c3b021df2df2430dbd2559aece034cea02c5f0f9d4d514eebbb394584c.js:69` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/8fc6c9c3b021df2df2430dbd2559aece034cea02c5f0f9d4d514eebbb394584c.js:73` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/8fc6c9c3b021df2df2430dbd2559aece034cea02c5f0f9d4d514eebbb394584c.js:77` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/8fc6c9c3b021df2df2430dbd2559aece034cea02c5f0f9d4d514eebbb394584c.js:78` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/8fc6c9c3b021df2df2430dbd2559aece034cea02c5f0f9d4d514eebbb394584c.js:79` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/8fc6c9c3b021df2df2430dbd2559aece034cea02c5f0f9d4d514eebbb394584c.js:82` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/8fc6c9c3b021df2df2430dbd2559aece034cea02c5f0f9d4d514eebbb394584c.js:133` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.parseInt` over `parseInt`.
+- `niakw_NiakVIO:upstream-lkg/providers/8fc6c9c3b021df2df2430dbd2559aece034cea02c5f0f9d4d514eebbb394584c.js:146` **MINOR / CODE_SMELL** `javascript:S1481` — Remove the declaration of the unused 'set1' variable.
+- `niakw_NiakVIO:upstream-lkg/providers/8fc6c9c3b021df2df2430dbd2559aece034cea02c5f0f9d4d514eebbb394584c.js:146` **MAJOR / CODE_SMELL** `javascript:S1854` — Remove this useless assignment to variable "set1".
+- `niakw_NiakVIO:upstream-lkg/providers/8fc6c9c3b021df2df2430dbd2559aece034cea02c5f0f9d4d514eebbb394584c.js:160` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.parseInt` over `parseInt`.
+- `niakw_NiakVIO:upstream-lkg/providers/910588acb9a44abb569391dc61643aead09fef349f00887740bb9fa5889bd36e.js:5` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/910588acb9a44abb569391dc61643aead09fef349f00887740bb9fa5889bd36e.js:6` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/910588acb9a44abb569391dc61643aead09fef349f00887740bb9fa5889bd36e.js:7` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/910588acb9a44abb569391dc61643aead09fef349f00887740bb9fa5889bd36e.js:8` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/910588acb9a44abb569391dc61643aead09fef349f00887740bb9fa5889bd36e.js:9` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/910588acb9a44abb569391dc61643aead09fef349f00887740bb9fa5889bd36e.js:10` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/910588acb9a44abb569391dc61643aead09fef349f00887740bb9fa5889bd36e.js:11` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/910588acb9a44abb569391dc61643aead09fef349f00887740bb9fa5889bd36e.js:12` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/910588acb9a44abb569391dc61643aead09fef349f00887740bb9fa5889bd36e.js:13` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/910588acb9a44abb569391dc61643aead09fef349f00887740bb9fa5889bd36e.js:14` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/910588acb9a44abb569391dc61643aead09fef349f00887740bb9fa5889bd36e.js:15` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/910588acb9a44abb569391dc61643aead09fef349f00887740bb9fa5889bd36e.js:15` **MAJOR / CODE_SMELL** `javascript:S1121` — Extract the assignment of "obj[key]" from this expression.
+- `niakw_NiakVIO:upstream-lkg/providers/910588acb9a44abb569391dc61643aead09fef349f00887740bb9fa5889bd36e.js:16` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/910588acb9a44abb569391dc61643aead09fef349f00887740bb9fa5889bd36e.js:17` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/910588acb9a44abb569391dc61643aead09fef349f00887740bb9fa5889bd36e.js:21` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/910588acb9a44abb569391dc61643aead09fef349f00887740bb9fa5889bd36e.js:21` **MAJOR / CODE_SMELL** `javascript:S2814` — 'prop' is already defined.
+- `niakw_NiakVIO:upstream-lkg/providers/910588acb9a44abb569391dc61643aead09fef349f00887740bb9fa5889bd36e.js:27` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/910588acb9a44abb569391dc61643aead09fef349f00887740bb9fa5889bd36e.js:28` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/910588acb9a44abb569391dc61643aead09fef349f00887740bb9fa5889bd36e.js:32` **MAJOR / CODE_SMELL** `javascript:S1121` — Extract the assignment of "desc" from this expression.
+- `niakw_NiakVIO:upstream-lkg/providers/910588acb9a44abb569391dc61643aead09fef349f00887740bb9fa5889bd36e.js:36` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/910588acb9a44abb569391dc61643aead09fef349f00887740bb9fa5889bd36e.js:36` **MAJOR / CODE_SMELL** `javascript:S878` — Unexpected use of comma operator.
+- `niakw_NiakVIO:upstream-lkg/providers/910588acb9a44abb569391dc61643aead09fef349f00887740bb9fa5889bd36e.js:41` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/910588acb9a44abb569391dc61643aead09fef349f00887740bb9fa5889bd36e.js:44` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/910588acb9a44abb569391dc61643aead09fef349f00887740bb9fa5889bd36e.js:46` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/910588acb9a44abb569391dc61643aead09fef349f00887740bb9fa5889bd36e.js:53` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/910588acb9a44abb569391dc61643aead09fef349f00887740bb9fa5889bd36e.js:60` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/910588acb9a44abb569391dc61643aead09fef349f00887740bb9fa5889bd36e.js:61` **MAJOR / CODE_SMELL** `javascript:S1121` — Extract the assignment of "generator" from this expression.
+- `niakw_NiakVIO:upstream-lkg/providers/910588acb9a44abb569391dc61643aead09fef349f00887740bb9fa5889bd36e.js:66` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/910588acb9a44abb569391dc61643aead09fef349f00887740bb9fa5889bd36e.js:69` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/910588acb9a44abb569391dc61643aead09fef349f00887740bb9fa5889bd36e.js:70` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/910588acb9a44abb569391dc61643aead09fef349f00887740bb9fa5889bd36e.js:71` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/910588acb9a44abb569391dc61643aead09fef349f00887740bb9fa5889bd36e.js:72` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/910588acb9a44abb569391dc61643aead09fef349f00887740bb9fa5889bd36e.js:73` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/910588acb9a44abb569391dc61643aead09fef349f00887740bb9fa5889bd36e.js:83` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/910588acb9a44abb569391dc61643aead09fef349f00887740bb9fa5889bd36e.js:84` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/910588acb9a44abb569391dc61643aead09fef349f00887740bb9fa5889bd36e.js:94` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:upstream-lkg/providers/910588acb9a44abb569391dc61643aead09fef349f00887740bb9fa5889bd36e.js:103` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:upstream-lkg/providers/910588acb9a44abb569391dc61643aead09fef349f00887740bb9fa5889bd36e.js:171` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:upstream-lkg/providers/910588acb9a44abb569391dc61643aead09fef349f00887740bb9fa5889bd36e.js:178` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/910588acb9a44abb569391dc61643aead09fef349f00887740bb9fa5889bd36e.js:193` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:upstream-lkg/providers/910588acb9a44abb569391dc61643aead09fef349f00887740bb9fa5889bd36e.js:227` **MINOR / CODE_SMELL** `javascript:S7781` — Prefer `String#replaceAll()` over `String#replace()`.
+- `niakw_NiakVIO:upstream-lkg/providers/910588acb9a44abb569391dc61643aead09fef349f00887740bb9fa5889bd36e.js:228` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:upstream-lkg/providers/910588acb9a44abb569391dc61643aead09fef349f00887740bb9fa5889bd36e.js:234` **CRITICAL / CODE_SMELL** `javascript:S3776` — Refactor this function to reduce its Cognitive Complexity from 18 to the 15 allowed.
+- `niakw_NiakVIO:upstream-lkg/providers/910588acb9a44abb569391dc61643aead09fef349f00887740bb9fa5889bd36e.js:261` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/910588acb9a44abb569391dc61643aead09fef349f00887740bb9fa5889bd36e.js:274` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:upstream-lkg/providers/910588acb9a44abb569391dc61643aead09fef349f00887740bb9fa5889bd36e.js:282` **CRITICAL / CODE_SMELL** `javascript:S3776` — Refactor this function to reduce its Cognitive Complexity from 19 to the 15 allowed.
+- `niakw_NiakVIO:upstream-lkg/providers/910588acb9a44abb569391dc61643aead09fef349f00887740bb9fa5889bd36e.js:312` **MAJOR / CODE_SMELL** `javascript:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
+- `niakw_NiakVIO:upstream-lkg/providers/910588acb9a44abb569391dc61643aead09fef349f00887740bb9fa5889bd36e.js:326` **CRITICAL / CODE_SMELL** `javascript:S3776` — Refactor this function to reduce its Cognitive Complexity from 18 to the 15 allowed.
+- `niakw_NiakVIO:upstream-lkg/providers/910588acb9a44abb569391dc61643aead09fef349f00887740bb9fa5889bd36e.js:330` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.parseInt` over `parseInt`.
+- `niakw_NiakVIO:upstream-lkg/providers/910588acb9a44abb569391dc61643aead09fef349f00887740bb9fa5889bd36e.js:337` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.parseInt` over `parseInt`.
+- `niakw_NiakVIO:upstream-lkg/providers/910588acb9a44abb569391dc61643aead09fef349f00887740bb9fa5889bd36e.js:365` **MAJOR / CODE_SMELL** `javascript:S4624` — Refactor this code to not use nested template literals.
+- `niakw_NiakVIO:upstream-lkg/providers/95a080c30f77d7dd9f7bd151d0d4f976164328cd1ce61cecad330199e91c2683.js:1` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/95a080c30f77d7dd9f7bd151d0d4f976164328cd1ce61cecad330199e91c2683.js:3` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/95a080c30f77d7dd9f7bd151d0d4f976164328cd1ce61cecad330199e91c2683.js:10` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/95a080c30f77d7dd9f7bd151d0d4f976164328cd1ce61cecad330199e91c2683.js:17` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/95a080c30f77d7dd9f7bd151d0d4f976164328cd1ce61cecad330199e91c2683.js:18` **MAJOR / CODE_SMELL** `javascript:S1121` — Extract the assignment of "generator" from this expression.
+- `niakw_NiakVIO:upstream-lkg/providers/95a080c30f77d7dd9f7bd151d0d4f976164328cd1ce61cecad330199e91c2683.js:32` **CRITICAL / CODE_SMELL** `javascript:S3776` — Refactor this function to reduce its Cognitive Complexity from 16 to the 15 allowed.
+- `niakw_NiakVIO:upstream-lkg/providers/95a080c30f77d7dd9f7bd151d0d4f976164328cd1ce61cecad330199e91c2683.js:35` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/95a080c30f77d7dd9f7bd151d0d4f976164328cd1ce61cecad330199e91c2683.js:37` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/95a080c30f77d7dd9f7bd151d0d4f976164328cd1ce61cecad330199e91c2683.js:48` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/95a080c30f77d7dd9f7bd151d0d4f976164328cd1ce61cecad330199e91c2683.js:65` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/95a080c30f77d7dd9f7bd151d0d4f976164328cd1ce61cecad330199e91c2683.js:75` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:upstream-lkg/providers/95a080c30f77d7dd9f7bd151d0d4f976164328cd1ce61cecad330199e91c2683.js:81` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/95a080c30f77d7dd9f7bd151d0d4f976164328cd1ce61cecad330199e91c2683.js:84` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/95a080c30f77d7dd9f7bd151d0d4f976164328cd1ce61cecad330199e91c2683.js:87` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:upstream-lkg/providers/95a080c30f77d7dd9f7bd151d0d4f976164328cd1ce61cecad330199e91c2683.js:93` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/95a080c30f77d7dd9f7bd151d0d4f976164328cd1ce61cecad330199e91c2683.js:96` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/95a080c30f77d7dd9f7bd151d0d4f976164328cd1ce61cecad330199e91c2683.js:99` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:upstream-lkg/providers/95a080c30f77d7dd9f7bd151d0d4f976164328cd1ce61cecad330199e91c2683.js:103` **CRITICAL / CODE_SMELL** `javascript:S3776` — Refactor this function to reduce its Cognitive Complexity from 22 to the 15 allowed.
+- `niakw_NiakVIO:upstream-lkg/providers/95a080c30f77d7dd9f7bd151d0d4f976164328cd1ce61cecad330199e91c2683.js:125` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.parseInt` over `parseInt`.
+- `niakw_NiakVIO:upstream-lkg/providers/95a080c30f77d7dd9f7bd151d0d4f976164328cd1ce61cecad330199e91c2683.js:168` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.parseInt` over `parseInt`.
+- `niakw_NiakVIO:upstream-lkg/providers/95a080c30f77d7dd9f7bd151d0d4f976164328cd1ce61cecad330199e91c2683.js:184` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/95a080c30f77d7dd9f7bd151d0d4f976164328cd1ce61cecad330199e91c2683.js:195` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/95a080c30f77d7dd9f7bd151d0d4f976164328cd1ce61cecad330199e91c2683.js:195` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/95a080c30f77d7dd9f7bd151d0d4f976164328cd1ce61cecad330199e91c2683.js:204` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/95a080c30f77d7dd9f7bd151d0d4f976164328cd1ce61cecad330199e91c2683.js:211` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/95a080c30f77d7dd9f7bd151d0d4f976164328cd1ce61cecad330199e91c2683.js:211` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/95a080c30f77d7dd9f7bd151d0d4f976164328cd1ce61cecad330199e91c2683.js:239` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/95a080c30f77d7dd9f7bd151d0d4f976164328cd1ce61cecad330199e91c2683.js:273` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/95a080c30f77d7dd9f7bd151d0d4f976164328cd1ce61cecad330199e91c2683.js:286` **MINOR / CODE_SMELL** `javascript:S1481` — Remove the declaration of the unused 'versionName' variable.
+- `niakw_NiakVIO:upstream-lkg/providers/95a080c30f77d7dd9f7bd151d0d4f976164328cd1ce61cecad330199e91c2683.js:286` **MAJOR / CODE_SMELL** `javascript:S1854` — Remove this useless assignment to variable "versionName".
+- `niakw_NiakVIO:upstream-lkg/providers/95a080c30f77d7dd9f7bd151d0d4f976164328cd1ce61cecad330199e91c2683.js:317` **CRITICAL / CODE_SMELL** `javascript:S3776` — Refactor this function to reduce its Cognitive Complexity from 18 to the 15 allowed.
+- `niakw_NiakVIO:upstream-lkg/providers/95a080c30f77d7dd9f7bd151d0d4f976164328cd1ce61cecad330199e91c2683.js:388` **MAJOR / BUG** `javascript:S3531` — Add a "yield" statement to this generator.
+- `niakw_NiakVIO:upstream-lkg/providers/98aeea26aa4511affc468b897dc050ca1d481684fcf712693fb8b1928f7135f8.js:5` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/98aeea26aa4511affc468b897dc050ca1d481684fcf712693fb8b1928f7135f8.js:6` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/98aeea26aa4511affc468b897dc050ca1d481684fcf712693fb8b1928f7135f8.js:7` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/98aeea26aa4511affc468b897dc050ca1d481684fcf712693fb8b1928f7135f8.js:8` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/98aeea26aa4511affc468b897dc050ca1d481684fcf712693fb8b1928f7135f8.js:9` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/98aeea26aa4511affc468b897dc050ca1d481684fcf712693fb8b1928f7135f8.js:10` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/98aeea26aa4511affc468b897dc050ca1d481684fcf712693fb8b1928f7135f8.js:11` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/98aeea26aa4511affc468b897dc050ca1d481684fcf712693fb8b1928f7135f8.js:12` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/98aeea26aa4511affc468b897dc050ca1d481684fcf712693fb8b1928f7135f8.js:13` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/98aeea26aa4511affc468b897dc050ca1d481684fcf712693fb8b1928f7135f8.js:14` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/98aeea26aa4511affc468b897dc050ca1d481684fcf712693fb8b1928f7135f8.js:15` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/98aeea26aa4511affc468b897dc050ca1d481684fcf712693fb8b1928f7135f8.js:15` **MAJOR / CODE_SMELL** `javascript:S1121` — Extract the assignment of "obj[key]" from this expression.
+- `niakw_NiakVIO:upstream-lkg/providers/98aeea26aa4511affc468b897dc050ca1d481684fcf712693fb8b1928f7135f8.js:16` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/98aeea26aa4511affc468b897dc050ca1d481684fcf712693fb8b1928f7135f8.js:17` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/98aeea26aa4511affc468b897dc050ca1d481684fcf712693fb8b1928f7135f8.js:21` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/98aeea26aa4511affc468b897dc050ca1d481684fcf712693fb8b1928f7135f8.js:21` **MAJOR / CODE_SMELL** `javascript:S2814` — 'prop' is already defined.
+- `niakw_NiakVIO:upstream-lkg/providers/98aeea26aa4511affc468b897dc050ca1d481684fcf712693fb8b1928f7135f8.js:27` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/98aeea26aa4511affc468b897dc050ca1d481684fcf712693fb8b1928f7135f8.js:28` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/98aeea26aa4511affc468b897dc050ca1d481684fcf712693fb8b1928f7135f8.js:32` **MAJOR / CODE_SMELL** `javascript:S1121` — Extract the assignment of "desc" from this expression.
+- `niakw_NiakVIO:upstream-lkg/providers/98aeea26aa4511affc468b897dc050ca1d481684fcf712693fb8b1928f7135f8.js:36` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/98aeea26aa4511affc468b897dc050ca1d481684fcf712693fb8b1928f7135f8.js:36` **MAJOR / CODE_SMELL** `javascript:S878` — Unexpected use of comma operator.
+- `niakw_NiakVIO:upstream-lkg/providers/98aeea26aa4511affc468b897dc050ca1d481684fcf712693fb8b1928f7135f8.js:41` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/98aeea26aa4511affc468b897dc050ca1d481684fcf712693fb8b1928f7135f8.js:44` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/98aeea26aa4511affc468b897dc050ca1d481684fcf712693fb8b1928f7135f8.js:46` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/98aeea26aa4511affc468b897dc050ca1d481684fcf712693fb8b1928f7135f8.js:53` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/98aeea26aa4511affc468b897dc050ca1d481684fcf712693fb8b1928f7135f8.js:60` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/98aeea26aa4511affc468b897dc050ca1d481684fcf712693fb8b1928f7135f8.js:61` **MAJOR / CODE_SMELL** `javascript:S1121` — Extract the assignment of "generator" from this expression.
+- `niakw_NiakVIO:upstream-lkg/providers/98aeea26aa4511affc468b897dc050ca1d481684fcf712693fb8b1928f7135f8.js:66` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/98aeea26aa4511affc468b897dc050ca1d481684fcf712693fb8b1928f7135f8.js:69` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/98aeea26aa4511affc468b897dc050ca1d481684fcf712693fb8b1928f7135f8.js:70` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/98aeea26aa4511affc468b897dc050ca1d481684fcf712693fb8b1928f7135f8.js:71` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/98aeea26aa4511affc468b897dc050ca1d481684fcf712693fb8b1928f7135f8.js:72` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/98aeea26aa4511affc468b897dc050ca1d481684fcf712693fb8b1928f7135f8.js:73` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/98aeea26aa4511affc468b897dc050ca1d481684fcf712693fb8b1928f7135f8.js:83` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/98aeea26aa4511affc468b897dc050ca1d481684fcf712693fb8b1928f7135f8.js:84` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/98aeea26aa4511affc468b897dc050ca1d481684fcf712693fb8b1928f7135f8.js:94` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:upstream-lkg/providers/98aeea26aa4511affc468b897dc050ca1d481684fcf712693fb8b1928f7135f8.js:103` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:upstream-lkg/providers/98aeea26aa4511affc468b897dc050ca1d481684fcf712693fb8b1928f7135f8.js:171` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:upstream-lkg/providers/98aeea26aa4511affc468b897dc050ca1d481684fcf712693fb8b1928f7135f8.js:178` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/98aeea26aa4511affc468b897dc050ca1d481684fcf712693fb8b1928f7135f8.js:193` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:upstream-lkg/providers/98aeea26aa4511affc468b897dc050ca1d481684fcf712693fb8b1928f7135f8.js:209` **CRITICAL / CODE_SMELL** `javascript:S3776` — Refactor this function to reduce its Cognitive Complexity from 18 to the 15 allowed.
+- `niakw_NiakVIO:upstream-lkg/providers/98aeea26aa4511affc468b897dc050ca1d481684fcf712693fb8b1928f7135f8.js:236` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/98aeea26aa4511affc468b897dc050ca1d481684fcf712693fb8b1928f7135f8.js:249` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:upstream-lkg/providers/98aeea26aa4511affc468b897dc050ca1d481684fcf712693fb8b1928f7135f8.js:316` **MINOR / CODE_SMELL** `javascript:S7747` — `for…of` can iterate over iterable, it's unnecessary to convert to an array.
+- `niakw_NiakVIO:upstream-lkg/providers/98aeea26aa4511affc468b897dc050ca1d481684fcf712693fb8b1928f7135f8.js:321` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/98aeea26aa4511affc468b897dc050ca1d481684fcf712693fb8b1928f7135f8.js:325` **MAJOR / CODE_SMELL** `javascript:S4624` — Refactor this code to not use nested template literals.
+- `niakw_NiakVIO:upstream-lkg/providers/98aeea26aa4511affc468b897dc050ca1d481684fcf712693fb8b1928f7135f8.js:332` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:5` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:6` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:7` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:8` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:9` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:10` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:11` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:12` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:13` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:14` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:15` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:15` **MAJOR / CODE_SMELL** `javascript:S1121` — Extract the assignment of "obj[key]" from this expression.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:16` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:17` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:21` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:21` **MAJOR / CODE_SMELL** `javascript:S2814` — 'prop' is already defined.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:27` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:28` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:32` **MAJOR / CODE_SMELL** `javascript:S1121` — Extract the assignment of "desc" from this expression.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:36` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:36` **MAJOR / CODE_SMELL** `javascript:S878` — Unexpected use of comma operator.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:41` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:44` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:46` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:53` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:60` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:61` **MAJOR / CODE_SMELL** `javascript:S1121` — Extract the assignment of "generator" from this expression.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:66` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:69` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:70` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:71` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:72` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:73` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:74` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:85` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:92` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.parseFloat` over `parseFloat`.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:115` **MINOR / CODE_SMELL** `javascript:S7758` — Prefer `String.fromCodePoint()` over `String.fromCharCode()`.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:115` **MAJOR / CODE_SMELL** `javascript:S3358` — Extract this nested ternary operation into an independent statement.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:115` **MINOR / CODE_SMELL** `javascript:S7758` — Prefer `String#codePointAt()` over `String#charCodeAt()`.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:118` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:122` **MAJOR / CODE_SMELL** `javascript:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:130` **MINOR / CODE_SMELL** `javascript:S7758` — Prefer `String.fromCodePoint()` over `String.fromCharCode()`.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:138` **MINOR / CODE_SMELL** `javascript:S6353` — Use concise character class syntax '\d' instead of '[0-9]'.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:138` **MINOR / CODE_SMELL** `javascript:S6353` — Use concise character class syntax '\d' instead of '[0-9]'.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:176` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:222` **CRITICAL / CODE_SMELL** `javascript:S3776` — Refactor this function to reduce its Cognitive Complexity from 30 to the 15 allowed.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:249` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.parseInt` over `parseInt`.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:273` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:285` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.parseInt` over `parseInt`.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:291` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:292` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:294` **CRITICAL / CODE_SMELL** `javascript:S3776` — Refactor this function to reduce its Cognitive Complexity from 16 to the 15 allowed.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:300` **MAJOR / CODE_SMELL** `javascript:S5843` — Simplify this regular expression to reduce its complexity from 33 to the 20 allowed.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:310` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:332` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:338` **CRITICAL / CODE_SMELL** `javascript:S3776` — Refactor this function to reduce its Cognitive Complexity from 37 to the 15 allowed.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:339` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:357` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:358` **MAJOR / CODE_SMELL** `javascript:S3358` — Extract this nested ternary operation into an independent statement.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:358` **MINOR / CODE_SMELL** `javascript:S7781` — Prefer `String#replaceAll()` over `String#replace()`.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:366` **MINOR / CODE_SMELL** `javascript:S7781` — Prefer `String#replaceAll()` over `String#replace()`.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:388` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:392` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:408` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:414` **MAJOR / BUG** `javascript:S3531` — Add a "yield" statement to this generator.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:415` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:424` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:431` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:437` **MAJOR / CODE_SMELL** `javascript:S3358` — Extract this nested ternary operation into an independent statement.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:437` **MAJOR / CODE_SMELL** `javascript:S3358` — Extract this nested ternary operation into an independent statement.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:442` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:448` **CRITICAL / CODE_SMELL** `javascript:S3776` — Refactor this function to reduce its Cognitive Complexity from 63 to the 15 allowed.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:449` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:480` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.parseInt` over `parseInt`.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:484` **MAJOR / CODE_SMELL** `javascript:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:488` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.parseFloat` over `parseFloat`.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:496` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:498` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:500` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:521` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:523` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:529` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:532` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:536` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:538` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:547` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:553` **CRITICAL / CODE_SMELL** `javascript:S3776` — Refactor this function to reduce its Cognitive Complexity from 31 to the 15 allowed.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:561` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:566` **MINOR / CODE_SMELL** `javascript:S6594` — Use the "RegExp.exec()" method instead.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:567` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:574` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:577` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:581` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:590` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:594` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:597` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:601` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:639` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:652` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:658` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.parseInt` over `parseInt`.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:660` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:681` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:703` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:727` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.parseInt` over `parseInt`.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:753` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.parseInt` over `parseInt`.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:759` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:upstream-lkg/providers/9c1149723e462761700eb5f67d19271225bbf29d2c4670d60314b77361a98c21.js:772` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:upstream-lkg/providers/a9e7deb56fd5b3c93458e01fe7d32a764ee1defe3e88759dcb68f448006ded31.js:94` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/a9e7deb56fd5b3c93458e01fe7d32a764ee1defe3e88759dcb68f448006ded31.js:200` **CRITICAL / CODE_SMELL** `javascript:S3776` — Refactor this function to reduce its Cognitive Complexity from 29 to the 15 allowed.
+- `niakw_NiakVIO:upstream-lkg/providers/a9e7deb56fd5b3c93458e01fe7d32a764ee1defe3e88759dcb68f448006ded31.js:206` **MAJOR / CODE_SMELL** `javascript:S1854` — Remove this useless assignment to variable "expectedResponses".
+- `niakw_NiakVIO:upstream-lkg/providers/a9e7deb56fd5b3c93458e01fe7d32a764ee1defe3e88759dcb68f448006ded31.js:206` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.parseInt` over `parseInt`.
+- `niakw_NiakVIO:upstream-lkg/providers/a9e7deb56fd5b3c93458e01fe7d32a764ee1defe3e88759dcb68f448006ded31.js:230` **MAJOR / CODE_SMELL** `javascript:S1854` — Remove this useless assignment to variable "expectedResponses".
+- `niakw_NiakVIO:upstream-lkg/providers/a9e7deb56fd5b3c93458e01fe7d32a764ee1defe3e88759dcb68f448006ded31.js:247` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.parseInt` over `parseInt`.
+- `niakw_NiakVIO:upstream-lkg/providers/a9e7deb56fd5b3c93458e01fe7d32a764ee1defe3e88759dcb68f448006ded31.js:265` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:upstream-lkg/providers/a9e7deb56fd5b3c93458e01fe7d32a764ee1defe3e88759dcb68f448006ded31.js:271` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:upstream-lkg/providers/a9e7deb56fd5b3c93458e01fe7d32a764ee1defe3e88759dcb68f448006ded31.js:314` **MAJOR / CODE_SMELL** `javascript:S3800` — Refactor this function to always return the same type.
+- `niakw_NiakVIO:upstream-lkg/providers/a9e7deb56fd5b3c93458e01fe7d32a764ee1defe3e88759dcb68f448006ded31.js:328` **MAJOR / CODE_SMELL** `javascript:S3800` — Refactor this function to always return the same type.
+- `niakw_NiakVIO:upstream-lkg/providers/a9e7deb56fd5b3c93458e01fe7d32a764ee1defe3e88759dcb68f448006ded31.js:398` **MAJOR / CODE_SMELL** `javascript:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
+- `niakw_NiakVIO:upstream-lkg/providers/a9e7deb56fd5b3c93458e01fe7d32a764ee1defe3e88759dcb68f448006ded31.js:399` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.parseInt` over `parseInt`.
+- `niakw_NiakVIO:upstream-lkg/providers/a9e7deb56fd5b3c93458e01fe7d32a764ee1defe3e88759dcb68f448006ded31.js:402` **CRITICAL / CODE_SMELL** `javascript:S3776` — Refactor this function to reduce its Cognitive Complexity from 21 to the 15 allowed.
+- `niakw_NiakVIO:upstream-lkg/providers/a9e7deb56fd5b3c93458e01fe7d32a764ee1defe3e88759dcb68f448006ded31.js:433` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.parseInt` over `parseInt`.
+- `niakw_NiakVIO:upstream-lkg/providers/c91c43aedb5b489c07a030766fd22550cf8773fce6845f21f4a20c7398efeb94.js:6` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/c91c43aedb5b489c07a030766fd22550cf8773fce6845f21f4a20c7398efeb94.js:7` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/c91c43aedb5b489c07a030766fd22550cf8773fce6845f21f4a20c7398efeb94.js:8` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/c91c43aedb5b489c07a030766fd22550cf8773fce6845f21f4a20c7398efeb94.js:9` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/c91c43aedb5b489c07a030766fd22550cf8773fce6845f21f4a20c7398efeb94.js:10` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/c91c43aedb5b489c07a030766fd22550cf8773fce6845f21f4a20c7398efeb94.js:10` **MAJOR / CODE_SMELL** `javascript:S1121` — Extract the assignment of "obj[key]" from this expression.
+- `niakw_NiakVIO:upstream-lkg/providers/c91c43aedb5b489c07a030766fd22550cf8773fce6845f21f4a20c7398efeb94.js:11` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/c91c43aedb5b489c07a030766fd22550cf8773fce6845f21f4a20c7398efeb94.js:12` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/c91c43aedb5b489c07a030766fd22550cf8773fce6845f21f4a20c7398efeb94.js:16` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/c91c43aedb5b489c07a030766fd22550cf8773fce6845f21f4a20c7398efeb94.js:16` **MAJOR / CODE_SMELL** `javascript:S2814` — 'prop' is already defined.
+- `niakw_NiakVIO:upstream-lkg/providers/c91c43aedb5b489c07a030766fd22550cf8773fce6845f21f4a20c7398efeb94.js:22` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/c91c43aedb5b489c07a030766fd22550cf8773fce6845f21f4a20c7398efeb94.js:24` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/c91c43aedb5b489c07a030766fd22550cf8773fce6845f21f4a20c7398efeb94.js:31` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/c91c43aedb5b489c07a030766fd22550cf8773fce6845f21f4a20c7398efeb94.js:38` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/c91c43aedb5b489c07a030766fd22550cf8773fce6845f21f4a20c7398efeb94.js:39` **MAJOR / CODE_SMELL** `javascript:S1121` — Extract the assignment of "generator" from this expression.
+- `niakw_NiakVIO:upstream-lkg/providers/c91c43aedb5b489c07a030766fd22550cf8773fce6845f21f4a20c7398efeb94.js:44` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/c91c43aedb5b489c07a030766fd22550cf8773fce6845f21f4a20c7398efeb94.js:45` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/c91c43aedb5b489c07a030766fd22550cf8773fce6845f21f4a20c7398efeb94.js:46` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/c91c43aedb5b489c07a030766fd22550cf8773fce6845f21f4a20c7398efeb94.js:77` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/c91c43aedb5b489c07a030766fd22550cf8773fce6845f21f4a20c7398efeb94.js:83` **MAJOR / CODE_SMELL** `javascript:S3358` — Extract this nested ternary operation into an independent statement.
+- `niakw_NiakVIO:upstream-lkg/providers/c91c43aedb5b489c07a030766fd22550cf8773fce6845f21f4a20c7398efeb94.js:83` **MAJOR / CODE_SMELL** `javascript:S3358` — Extract this nested ternary operation into an independent statement.
+- `niakw_NiakVIO:upstream-lkg/providers/c91c43aedb5b489c07a030766fd22550cf8773fce6845f21f4a20c7398efeb94.js:94` **CRITICAL / CODE_SMELL** `javascript:S3776` — Refactor this function to reduce its Cognitive Complexity from 24 to the 15 allowed.
+- `niakw_NiakVIO:upstream-lkg/providers/c91c43aedb5b489c07a030766fd22550cf8773fce6845f21f4a20c7398efeb94.js:142` **MINOR / CODE_SMELL** `javascript:S6325` — Use a regular expression literal instead of the 'RegExp' constructor.
+- `niakw_NiakVIO:upstream-lkg/providers/c91c43aedb5b489c07a030766fd22550cf8773fce6845f21f4a20c7398efeb94.js:142` **MINOR / CODE_SMELL** `javascript:S7780` — `String.raw` should be used to avoid escaping `\`.
+- `niakw_NiakVIO:upstream-lkg/providers/c91c43aedb5b489c07a030766fd22550cf8773fce6845f21f4a20c7398efeb94.js:212` **MINOR / CODE_SMELL** `javascript:S1481` — Remove the declaration of the unused 'subtitles' variable.
+- `niakw_NiakVIO:upstream-lkg/providers/c91c43aedb5b489c07a030766fd22550cf8773fce6845f21f4a20c7398efeb94.js:212` **MAJOR / CODE_SMELL** `javascript:S1854` — Remove this useless assignment to variable "subtitles".
+- `niakw_NiakVIO:upstream-lkg/providers/ca1223b5ee78c12b0cbca6f208e977a14ab78d699893f6225aac04f8b60f8a94.js:17` **MAJOR / VULNERABILITY** `javascript:S2245` — Make sure that using this pseudorandom number generator is safe here.
+- `niakw_NiakVIO:upstream-lkg/providers/ca1223b5ee78c12b0cbca6f208e977a14ab78d699893f6225aac04f8b60f8a94.js:20` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:upstream-lkg/providers/ca1223b5ee78c12b0cbca6f208e977a14ab78d699893f6225aac04f8b60f8a94.js:60` **MAJOR / CODE_SMELL** `javascript:S6661` — Use an object spread instead of `Object.assign` eg: `{ ...foo }`.
+- `niakw_NiakVIO:upstream-lkg/providers/ca1223b5ee78c12b0cbca6f208e977a14ab78d699893f6225aac04f8b60f8a94.js:96` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/ca1223b5ee78c12b0cbca6f208e977a14ab78d699893f6225aac04f8b60f8a94.js:118` **CRITICAL / CODE_SMELL** `javascript:S3776` — Refactor this function to reduce its Cognitive Complexity from 36 to the 15 allowed.
+- `niakw_NiakVIO:upstream-lkg/providers/ca1223b5ee78c12b0cbca6f208e977a14ab78d699893f6225aac04f8b60f8a94.js:123` **MINOR / CODE_SMELL** `javascript:S4138` — Expected a `for-of` loop instead of a `for` loop with this simple iteration.
+- `niakw_NiakVIO:upstream-lkg/providers/ca1223b5ee78c12b0cbca6f208e977a14ab78d699893f6225aac04f8b60f8a94.js:130` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.parseInt` over `parseInt`.
+- `niakw_NiakVIO:upstream-lkg/providers/ca1223b5ee78c12b0cbca6f208e977a14ab78d699893f6225aac04f8b60f8a94.js:131` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.parseInt` over `parseInt`.
+- `niakw_NiakVIO:upstream-lkg/providers/ca1223b5ee78c12b0cbca6f208e977a14ab78d699893f6225aac04f8b60f8a94.js:132` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.parseInt` over `parseInt`.
+- `niakw_NiakVIO:upstream-lkg/providers/ca1223b5ee78c12b0cbca6f208e977a14ab78d699893f6225aac04f8b60f8a94.js:154` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:upstream-lkg/providers/ca1223b5ee78c12b0cbca6f208e977a14ab78d699893f6225aac04f8b60f8a94.js:174` **MAJOR / CODE_SMELL** `javascript:S4043` — Move this array "sort" operation to a separate statement or replace it with "toSorted".
+- `niakw_NiakVIO:upstream-lkg/providers/ca1223b5ee78c12b0cbca6f208e977a14ab78d699893f6225aac04f8b60f8a94.js:182` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/ca1223b5ee78c12b0cbca6f208e977a14ab78d699893f6225aac04f8b60f8a94.js:222` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/ca1223b5ee78c12b0cbca6f208e977a14ab78d699893f6225aac04f8b60f8a94.js:233` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/ca1223b5ee78c12b0cbca6f208e977a14ab78d699893f6225aac04f8b60f8a94.js:258` **MAJOR / CODE_SMELL** `javascript:S4030` — Either use this collection's contents or remove the collection.
+- `niakw_NiakVIO:upstream-lkg/providers/ca1223b5ee78c12b0cbca6f208e977a14ab78d699893f6225aac04f8b60f8a94.js:259` **MAJOR / CODE_SMELL** `javascript:S4030` — Either use this collection's contents or remove the collection.
+- `niakw_NiakVIO:upstream-lkg/providers/ca1223b5ee78c12b0cbca6f208e977a14ab78d699893f6225aac04f8b60f8a94.js:277` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/ca1223b5ee78c12b0cbca6f208e977a14ab78d699893f6225aac04f8b60f8a94.js:280` **CRITICAL / CODE_SMELL** `javascript:S2004` — Refactor this code to not nest functions more than 5 levels deep.
+- `niakw_NiakVIO:upstream-lkg/providers/ca1223b5ee78c12b0cbca6f208e977a14ab78d699893f6225aac04f8b60f8a94.js:281` **CRITICAL / CODE_SMELL** `javascript:S2004` — Refactor this code to not nest functions more than 5 levels deep.
+- `niakw_NiakVIO:upstream-lkg/providers/ca1223b5ee78c12b0cbca6f208e977a14ab78d699893f6225aac04f8b60f8a94.js:307` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/ca1223b5ee78c12b0cbca6f208e977a14ab78d699893f6225aac04f8b60f8a94.js:317` **MAJOR / CODE_SMELL** `javascript:S4624` — Refactor this code to not use nested template literals.
+- `niakw_NiakVIO:upstream-lkg/providers/ca1223b5ee78c12b0cbca6f208e977a14ab78d699893f6225aac04f8b60f8a94.js:317` **MAJOR / CODE_SMELL** `javascript:S4624` — Refactor this code to not use nested template literals.
+- `niakw_NiakVIO:upstream-lkg/providers/ca1223b5ee78c12b0cbca6f208e977a14ab78d699893f6225aac04f8b60f8a94.js:360` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/ca1223b5ee78c12b0cbca6f208e977a14ab78d699893f6225aac04f8b60f8a94.js:395` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/d1b156dffd03425f57e3ac042ddadf05edc56d834be0134a013abf8e54b9bf9b.js:5` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d1b156dffd03425f57e3ac042ddadf05edc56d834be0134a013abf8e54b9bf9b.js:6` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d1b156dffd03425f57e3ac042ddadf05edc56d834be0134a013abf8e54b9bf9b.js:7` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d1b156dffd03425f57e3ac042ddadf05edc56d834be0134a013abf8e54b9bf9b.js:8` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d1b156dffd03425f57e3ac042ddadf05edc56d834be0134a013abf8e54b9bf9b.js:9` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d1b156dffd03425f57e3ac042ddadf05edc56d834be0134a013abf8e54b9bf9b.js:10` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d1b156dffd03425f57e3ac042ddadf05edc56d834be0134a013abf8e54b9bf9b.js:11` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d1b156dffd03425f57e3ac042ddadf05edc56d834be0134a013abf8e54b9bf9b.js:12` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d1b156dffd03425f57e3ac042ddadf05edc56d834be0134a013abf8e54b9bf9b.js:13` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d1b156dffd03425f57e3ac042ddadf05edc56d834be0134a013abf8e54b9bf9b.js:14` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d1b156dffd03425f57e3ac042ddadf05edc56d834be0134a013abf8e54b9bf9b.js:15` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d1b156dffd03425f57e3ac042ddadf05edc56d834be0134a013abf8e54b9bf9b.js:15` **MAJOR / CODE_SMELL** `javascript:S1121` — Extract the assignment of "obj[key]" from this expression.
+- `niakw_NiakVIO:upstream-lkg/providers/d1b156dffd03425f57e3ac042ddadf05edc56d834be0134a013abf8e54b9bf9b.js:16` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d1b156dffd03425f57e3ac042ddadf05edc56d834be0134a013abf8e54b9bf9b.js:17` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d1b156dffd03425f57e3ac042ddadf05edc56d834be0134a013abf8e54b9bf9b.js:21` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d1b156dffd03425f57e3ac042ddadf05edc56d834be0134a013abf8e54b9bf9b.js:21` **MAJOR / CODE_SMELL** `javascript:S2814` — 'prop' is already defined.
+- `niakw_NiakVIO:upstream-lkg/providers/d1b156dffd03425f57e3ac042ddadf05edc56d834be0134a013abf8e54b9bf9b.js:27` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d1b156dffd03425f57e3ac042ddadf05edc56d834be0134a013abf8e54b9bf9b.js:28` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d1b156dffd03425f57e3ac042ddadf05edc56d834be0134a013abf8e54b9bf9b.js:32` **MAJOR / CODE_SMELL** `javascript:S1121` — Extract the assignment of "desc" from this expression.
+- `niakw_NiakVIO:upstream-lkg/providers/d1b156dffd03425f57e3ac042ddadf05edc56d834be0134a013abf8e54b9bf9b.js:36` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d1b156dffd03425f57e3ac042ddadf05edc56d834be0134a013abf8e54b9bf9b.js:36` **MAJOR / CODE_SMELL** `javascript:S878` — Unexpected use of comma operator.
+- `niakw_NiakVIO:upstream-lkg/providers/d1b156dffd03425f57e3ac042ddadf05edc56d834be0134a013abf8e54b9bf9b.js:41` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/d1b156dffd03425f57e3ac042ddadf05edc56d834be0134a013abf8e54b9bf9b.js:44` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d1b156dffd03425f57e3ac042ddadf05edc56d834be0134a013abf8e54b9bf9b.js:46` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d1b156dffd03425f57e3ac042ddadf05edc56d834be0134a013abf8e54b9bf9b.js:53` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d1b156dffd03425f57e3ac042ddadf05edc56d834be0134a013abf8e54b9bf9b.js:60` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d1b156dffd03425f57e3ac042ddadf05edc56d834be0134a013abf8e54b9bf9b.js:61` **MAJOR / CODE_SMELL** `javascript:S1121` — Extract the assignment of "generator" from this expression.
+- `niakw_NiakVIO:upstream-lkg/providers/d1b156dffd03425f57e3ac042ddadf05edc56d834be0134a013abf8e54b9bf9b.js:66` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d1b156dffd03425f57e3ac042ddadf05edc56d834be0134a013abf8e54b9bf9b.js:69` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d1b156dffd03425f57e3ac042ddadf05edc56d834be0134a013abf8e54b9bf9b.js:70` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d1b156dffd03425f57e3ac042ddadf05edc56d834be0134a013abf8e54b9bf9b.js:71` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d1b156dffd03425f57e3ac042ddadf05edc56d834be0134a013abf8e54b9bf9b.js:72` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d1b156dffd03425f57e3ac042ddadf05edc56d834be0134a013abf8e54b9bf9b.js:81` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d1b156dffd03425f57e3ac042ddadf05edc56d834be0134a013abf8e54b9bf9b.js:93` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.parseInt` over `parseInt`.
+- `niakw_NiakVIO:upstream-lkg/providers/d1b156dffd03425f57e3ac042ddadf05edc56d834be0134a013abf8e54b9bf9b.js:149` **CRITICAL / CODE_SMELL** `javascript:S3776` — Refactor this function to reduce its Cognitive Complexity from 18 to the 15 allowed.
+- `niakw_NiakVIO:upstream-lkg/providers/d1b156dffd03425f57e3ac042ddadf05edc56d834be0134a013abf8e54b9bf9b.js:164` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.parseInt` over `parseInt`.
+- `niakw_NiakVIO:upstream-lkg/providers/d1b156dffd03425f57e3ac042ddadf05edc56d834be0134a013abf8e54b9bf9b.js:201` **MINOR / CODE_SMELL** `javascript:S7781` — Prefer `String#replaceAll()` over `String#replace()`.
+- `niakw_NiakVIO:upstream-lkg/providers/d1b156dffd03425f57e3ac042ddadf05edc56d834be0134a013abf8e54b9bf9b.js:210` **MINOR / CODE_SMELL** `javascript:S7781` — Prefer `String#replaceAll()` over `String#replace()`.
+- `niakw_NiakVIO:upstream-lkg/providers/d1b156dffd03425f57e3ac042ddadf05edc56d834be0134a013abf8e54b9bf9b.js:212` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/d1b156dffd03425f57e3ac042ddadf05edc56d834be0134a013abf8e54b9bf9b.js:216` **MAJOR / CODE_SMELL** `javascript:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
+- `niakw_NiakVIO:upstream-lkg/providers/d1b156dffd03425f57e3ac042ddadf05edc56d834be0134a013abf8e54b9bf9b.js:217` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.parseInt` over `parseInt`.
+- `niakw_NiakVIO:upstream-lkg/providers/d1b156dffd03425f57e3ac042ddadf05edc56d834be0134a013abf8e54b9bf9b.js:220` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/d1b156dffd03425f57e3ac042ddadf05edc56d834be0134a013abf8e54b9bf9b.js:223` **MAJOR / CODE_SMELL** `javascript:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
+- `niakw_NiakVIO:upstream-lkg/providers/d1b156dffd03425f57e3ac042ddadf05edc56d834be0134a013abf8e54b9bf9b.js:224` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.parseInt` over `parseInt`.
+- `niakw_NiakVIO:upstream-lkg/providers/d1b156dffd03425f57e3ac042ddadf05edc56d834be0134a013abf8e54b9bf9b.js:227` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/d1b156dffd03425f57e3ac042ddadf05edc56d834be0134a013abf8e54b9bf9b.js:228` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/d1b156dffd03425f57e3ac042ddadf05edc56d834be0134a013abf8e54b9bf9b.js:246` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/d2b77225d84c2929f5a4f1c90f1de3b43f45628c70543df2451f21d7c87cc6bd.js:69` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d67399b8f3d221dea530132cbaafc95777469e1f12fed665b7c2d90f5823e195.js:18` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:upstream-lkg/providers/d67399b8f3d221dea530132cbaafc95777469e1f12fed665b7c2d90f5823e195.js:28` **MINOR / CODE_SMELL** `javascript:S1874` — The signature '(string: string): string' of 'escape' is deprecated.
+- `niakw_NiakVIO:upstream-lkg/providers/d67399b8f3d221dea530132cbaafc95777469e1f12fed665b7c2d90f5823e195.js:36` **MINOR / CODE_SMELL** `javascript:S1874` — The signature '(string: string): string' of 'unescape' is deprecated.
+- `niakw_NiakVIO:upstream-lkg/providers/d67399b8f3d221dea530132cbaafc95777469e1f12fed665b7c2d90f5823e195.js:44` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d67399b8f3d221dea530132cbaafc95777469e1f12fed665b7c2d90f5823e195.js:45` **MINOR / CODE_SMELL** `javascript:S7758` — Prefer `String.fromCodePoint()` over `String.fromCharCode()`.
+- `niakw_NiakVIO:upstream-lkg/providers/d67399b8f3d221dea530132cbaafc95777469e1f12fed665b7c2d90f5823e195.js:45` **MINOR / CODE_SMELL** `javascript:S7758` — Prefer `String#codePointAt()` over `String#charCodeAt()`.
+- `niakw_NiakVIO:upstream-lkg/providers/d67399b8f3d221dea530132cbaafc95777469e1f12fed665b7c2d90f5823e195.js:60` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d67399b8f3d221dea530132cbaafc95777469e1f12fed665b7c2d90f5823e195.js:61` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d67399b8f3d221dea530132cbaafc95777469e1f12fed665b7c2d90f5823e195.js:63` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d67399b8f3d221dea530132cbaafc95777469e1f12fed665b7c2d90f5823e195.js:64` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d67399b8f3d221dea530132cbaafc95777469e1f12fed665b7c2d90f5823e195.js:67` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d67399b8f3d221dea530132cbaafc95777469e1f12fed665b7c2d90f5823e195.js:67` **MINOR / CODE_SMELL** `javascript:S7723` — Use `new Array()` instead of `Array()`.
+- `niakw_NiakVIO:upstream-lkg/providers/d67399b8f3d221dea530132cbaafc95777469e1f12fed665b7c2d90f5823e195.js:67` **MINOR / CODE_SMELL** `javascript:S7723` — Use `new Array()` instead of `Array()`.
+- `niakw_NiakVIO:upstream-lkg/providers/d67399b8f3d221dea530132cbaafc95777469e1f12fed665b7c2d90f5823e195.js:68` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d67399b8f3d221dea530132cbaafc95777469e1f12fed665b7c2d90f5823e195.js:68` **MAJOR / CODE_SMELL** `javascript:S2392` — Consider moving declaration of 'i' as it is referenced outside current binding context.
+- `niakw_NiakVIO:upstream-lkg/providers/d67399b8f3d221dea530132cbaafc95777469e1f12fed665b7c2d90f5823e195.js:69` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d67399b8f3d221dea530132cbaafc95777469e1f12fed665b7c2d90f5823e195.js:69` **MAJOR / CODE_SMELL** `javascript:S2392` — Consider moving declaration of 'j' as it is referenced outside current binding context.
+- `niakw_NiakVIO:upstream-lkg/providers/d67399b8f3d221dea530132cbaafc95777469e1f12fed665b7c2d90f5823e195.js:72` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d67399b8f3d221dea530132cbaafc95777469e1f12fed665b7c2d90f5823e195.js:76` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d67399b8f3d221dea530132cbaafc95777469e1f12fed665b7c2d90f5823e195.js:82` **MINOR / CODE_SMELL** `javascript:S1481` — Remove the declaration of the unused 'urlObj' variable.
+- `niakw_NiakVIO:upstream-lkg/providers/d67399b8f3d221dea530132cbaafc95777469e1f12fed665b7c2d90f5823e195.js:82` **MAJOR / CODE_SMELL** `javascript:S1854` — Remove this useless assignment to variable "urlObj".
+- `niakw_NiakVIO:upstream-lkg/providers/d67399b8f3d221dea530132cbaafc95777469e1f12fed665b7c2d90f5823e195.js:115` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.parseInt` over `parseInt`.
+- `niakw_NiakVIO:upstream-lkg/providers/d67399b8f3d221dea530132cbaafc95777469e1f12fed665b7c2d90f5823e195.js:131` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:upstream-lkg/providers/d67399b8f3d221dea530132cbaafc95777469e1f12fed665b7c2d90f5823e195.js:154` **MINOR / CODE_SMELL** `javascript:S7750` — Prefer `.findLast(…)` over `.filter(…).pop()`.
+- `niakw_NiakVIO:upstream-lkg/providers/d67399b8f3d221dea530132cbaafc95777469e1f12fed665b7c2d90f5823e195.js:167` **MAJOR / BUG** `javascript:S4822` — Consider removing this 'try' statement as promise rejection is already captured by '.catch()' method.
+- `niakw_NiakVIO:upstream-lkg/providers/d67399b8f3d221dea530132cbaafc95777469e1f12fed665b7c2d90f5823e195.js:174` **MINOR / CODE_SMELL** `javascript:S6594` — Use the "RegExp.exec()" method instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d67399b8f3d221dea530132cbaafc95777469e1f12fed665b7c2d90f5823e195.js:175` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/d67399b8f3d221dea530132cbaafc95777469e1f12fed665b7c2d90f5823e195.js:183` **MINOR / CODE_SMELL** `javascript:S7755` — Prefer `.at(…)` over `[….length - index]`.
+- `niakw_NiakVIO:upstream-lkg/providers/d67399b8f3d221dea530132cbaafc95777469e1f12fed665b7c2d90f5823e195.js:184` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/d67399b8f3d221dea530132cbaafc95777469e1f12fed665b7c2d90f5823e195.js:200` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d67399b8f3d221dea530132cbaafc95777469e1f12fed665b7c2d90f5823e195.js:204` **MAJOR / CODE_SMELL** `javascript:S7721` — Move function 'toAbsolute' to the outer scope.
+- `niakw_NiakVIO:upstream-lkg/providers/d67399b8f3d221dea530132cbaafc95777469e1f12fed665b7c2d90f5823e195.js:213` **CRITICAL / CODE_SMELL** `javascript:S3776` — Refactor this function to reduce its Cognitive Complexity from 17 to the 15 allowed.
+- `niakw_NiakVIO:upstream-lkg/providers/d67399b8f3d221dea530132cbaafc95777469e1f12fed665b7c2d90f5823e195.js:216` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d67399b8f3d221dea530132cbaafc95777469e1f12fed665b7c2d90f5823e195.js:217` **MINOR / CODE_SMELL** `javascript:S7765` — Use `.includes()`, rather than `.indexOf()`, when checking for existence.
+- `niakw_NiakVIO:upstream-lkg/providers/d67399b8f3d221dea530132cbaafc95777469e1f12fed665b7c2d90f5823e195.js:221` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d67399b8f3d221dea530132cbaafc95777469e1f12fed665b7c2d90f5823e195.js:221` **MAJOR / CODE_SMELL** `javascript:S6535` — Unnecessary escape character: \/.
+- `niakw_NiakVIO:upstream-lkg/providers/d67399b8f3d221dea530132cbaafc95777469e1f12fed665b7c2d90f5823e195.js:221` **MAJOR / CODE_SMELL** `javascript:S6535` — Unnecessary escape character: \?.
+- `niakw_NiakVIO:upstream-lkg/providers/d67399b8f3d221dea530132cbaafc95777469e1f12fed665b7c2d90f5823e195.js:223` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d67399b8f3d221dea530132cbaafc95777469e1f12fed665b7c2d90f5823e195.js:224` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d67399b8f3d221dea530132cbaafc95777469e1f12fed665b7c2d90f5823e195.js:230` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d67399b8f3d221dea530132cbaafc95777469e1f12fed665b7c2d90f5823e195.js:239` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d67399b8f3d221dea530132cbaafc95777469e1f12fed665b7c2d90f5823e195.js:249` **MAJOR / CODE_SMELL** `javascript:S3800` — Refactor this function to always return the same type.
+- `niakw_NiakVIO:upstream-lkg/providers/d67399b8f3d221dea530132cbaafc95777469e1f12fed665b7c2d90f5823e195.js:269` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/d67399b8f3d221dea530132cbaafc95777469e1f12fed665b7c2d90f5823e195.js:285` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/d67399b8f3d221dea530132cbaafc95777469e1f12fed665b7c2d90f5823e195.js:330` **MINOR / CODE_SMELL** `javascript:S6594` — Use the "RegExp.exec()" method instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d67399b8f3d221dea530132cbaafc95777469e1f12fed665b7c2d90f5823e195.js:337` **MINOR / CODE_SMELL** `javascript:S6594` — Use the "RegExp.exec()" method instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d67399b8f3d221dea530132cbaafc95777469e1f12fed665b7c2d90f5823e195.js:337` **MAJOR / CODE_SMELL** `javascript:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
+- `niakw_NiakVIO:upstream-lkg/providers/d67399b8f3d221dea530132cbaafc95777469e1f12fed665b7c2d90f5823e195.js:363` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/d67399b8f3d221dea530132cbaafc95777469e1f12fed665b7c2d90f5823e195.js:567` **MAJOR / CODE_SMELL** `javascript:S3800` — Refactor this function to always return the same type.
+- `niakw_NiakVIO:upstream-lkg/providers/d67399b8f3d221dea530132cbaafc95777469e1f12fed665b7c2d90f5823e195.js:568` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d67399b8f3d221dea530132cbaafc95777469e1f12fed665b7c2d90f5823e195.js:569` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d67399b8f3d221dea530132cbaafc95777469e1f12fed665b7c2d90f5823e195.js:570` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d67399b8f3d221dea530132cbaafc95777469e1f12fed665b7c2d90f5823e195.js:572` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d67399b8f3d221dea530132cbaafc95777469e1f12fed665b7c2d90f5823e195.js:576` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d67399b8f3d221dea530132cbaafc95777469e1f12fed665b7c2d90f5823e195.js:577` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d67399b8f3d221dea530132cbaafc95777469e1f12fed665b7c2d90f5823e195.js:578` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d67399b8f3d221dea530132cbaafc95777469e1f12fed665b7c2d90f5823e195.js:579` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d67399b8f3d221dea530132cbaafc95777469e1f12fed665b7c2d90f5823e195.js:580` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d67399b8f3d221dea530132cbaafc95777469e1f12fed665b7c2d90f5823e195.js:586` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:upstream-lkg/providers/d67399b8f3d221dea530132cbaafc95777469e1f12fed665b7c2d90f5823e195.js:719` **MINOR / CODE_SMELL** `javascript:S6594` — Use the "RegExp.exec()" method instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d67399b8f3d221dea530132cbaafc95777469e1f12fed665b7c2d90f5823e195.js:772` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d67399b8f3d221dea530132cbaafc95777469e1f12fed665b7c2d90f5823e195.js:773` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d67399b8f3d221dea530132cbaafc95777469e1f12fed665b7c2d90f5823e195.js:775` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d67399b8f3d221dea530132cbaafc95777469e1f12fed665b7c2d90f5823e195.js:776` **MINOR / CODE_SMELL** `javascript:S7765` — Use `.includes()`, rather than `.indexOf()`, when checking for existence.
+- `niakw_NiakVIO:upstream-lkg/providers/d67399b8f3d221dea530132cbaafc95777469e1f12fed665b7c2d90f5823e195.js:777` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d67399b8f3d221dea530132cbaafc95777469e1f12fed665b7c2d90f5823e195.js:789` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.parseInt` over `parseInt`.
+- `niakw_NiakVIO:upstream-lkg/providers/d67399b8f3d221dea530132cbaafc95777469e1f12fed665b7c2d90f5823e195.js:800` **MAJOR / CODE_SMELL** `javascript:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
+- `niakw_NiakVIO:upstream-lkg/providers/d67399b8f3d221dea530132cbaafc95777469e1f12fed665b7c2d90f5823e195.js:819` **MINOR / CODE_SMELL** `javascript:S7755` — Prefer `.at(…)` over `[….length - index]`.
+- `niakw_NiakVIO:upstream-lkg/providers/d67399b8f3d221dea530132cbaafc95777469e1f12fed665b7c2d90f5823e195.js:819` **MINOR / CODE_SMELL** `javascript:S7755` — Prefer `.at(…)` over `[….length - index]`.
+- `niakw_NiakVIO:upstream-lkg/providers/d67399b8f3d221dea530132cbaafc95777469e1f12fed665b7c2d90f5823e195.js:823` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:upstream-lkg/providers/d67399b8f3d221dea530132cbaafc95777469e1f12fed665b7c2d90f5823e195.js:830` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d67399b8f3d221dea530132cbaafc95777469e1f12fed665b7c2d90f5823e195.js:869` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d67399b8f3d221dea530132cbaafc95777469e1f12fed665b7c2d90f5823e195.js:870` **MAJOR / CODE_SMELL** `javascript:S3800` — Refactor this function to always return the same type.
+- `niakw_NiakVIO:upstream-lkg/providers/d67399b8f3d221dea530132cbaafc95777469e1f12fed665b7c2d90f5823e195.js:871` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/d67399b8f3d221dea530132cbaafc95777469e1f12fed665b7c2d90f5823e195.js:876` **MAJOR / CODE_SMELL** `javascript:S3800` — Refactor this function to always return the same type.
+- `niakw_NiakVIO:upstream-lkg/providers/d67399b8f3d221dea530132cbaafc95777469e1f12fed665b7c2d90f5823e195.js:884` **MAJOR / CODE_SMELL** `javascript:S3800` — Refactor this function to always return the same type.
+- `niakw_NiakVIO:upstream-lkg/providers/d67399b8f3d221dea530132cbaafc95777469e1f12fed665b7c2d90f5823e195.js:896` **CRITICAL / CODE_SMELL** `javascript:S2004` — Refactor this code to not nest functions more than 5 levels deep.
+- `niakw_NiakVIO:upstream-lkg/providers/d67399b8f3d221dea530132cbaafc95777469e1f12fed665b7c2d90f5823e195.js:904` **CRITICAL / CODE_SMELL** `javascript:S2004` — Refactor this code to not nest functions more than 5 levels deep.
+- `niakw_NiakVIO:upstream-lkg/providers/d67399b8f3d221dea530132cbaafc95777469e1f12fed665b7c2d90f5823e195.js:908` **CRITICAL / CODE_SMELL** `javascript:S2004` — Refactor this code to not nest functions more than 5 levels deep.
+- `niakw_NiakVIO:upstream-lkg/providers/d67399b8f3d221dea530132cbaafc95777469e1f12fed665b7c2d90f5823e195.js:933` **CRITICAL / CODE_SMELL** `javascript:S2004` — Refactor this code to not nest functions more than 5 levels deep.
+- `niakw_NiakVIO:upstream-lkg/providers/d6b79c8d8e8e19d4362d33cdd8a9107e425ce1eeefb55b56f8ec8b961126e09f.js:5` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d6b79c8d8e8e19d4362d33cdd8a9107e425ce1eeefb55b56f8ec8b961126e09f.js:6` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d6b79c8d8e8e19d4362d33cdd8a9107e425ce1eeefb55b56f8ec8b961126e09f.js:7` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d6b79c8d8e8e19d4362d33cdd8a9107e425ce1eeefb55b56f8ec8b961126e09f.js:8` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d6b79c8d8e8e19d4362d33cdd8a9107e425ce1eeefb55b56f8ec8b961126e09f.js:9` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d6b79c8d8e8e19d4362d33cdd8a9107e425ce1eeefb55b56f8ec8b961126e09f.js:10` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d6b79c8d8e8e19d4362d33cdd8a9107e425ce1eeefb55b56f8ec8b961126e09f.js:11` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d6b79c8d8e8e19d4362d33cdd8a9107e425ce1eeefb55b56f8ec8b961126e09f.js:12` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d6b79c8d8e8e19d4362d33cdd8a9107e425ce1eeefb55b56f8ec8b961126e09f.js:13` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d6b79c8d8e8e19d4362d33cdd8a9107e425ce1eeefb55b56f8ec8b961126e09f.js:14` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d6b79c8d8e8e19d4362d33cdd8a9107e425ce1eeefb55b56f8ec8b961126e09f.js:15` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d6b79c8d8e8e19d4362d33cdd8a9107e425ce1eeefb55b56f8ec8b961126e09f.js:15` **MAJOR / CODE_SMELL** `javascript:S1121` — Extract the assignment of "obj[key]" from this expression.
+- `niakw_NiakVIO:upstream-lkg/providers/d6b79c8d8e8e19d4362d33cdd8a9107e425ce1eeefb55b56f8ec8b961126e09f.js:16` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d6b79c8d8e8e19d4362d33cdd8a9107e425ce1eeefb55b56f8ec8b961126e09f.js:17` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d6b79c8d8e8e19d4362d33cdd8a9107e425ce1eeefb55b56f8ec8b961126e09f.js:21` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d6b79c8d8e8e19d4362d33cdd8a9107e425ce1eeefb55b56f8ec8b961126e09f.js:21` **MAJOR / CODE_SMELL** `javascript:S2814` — 'prop' is already defined.
+- `niakw_NiakVIO:upstream-lkg/providers/d6b79c8d8e8e19d4362d33cdd8a9107e425ce1eeefb55b56f8ec8b961126e09f.js:27` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d6b79c8d8e8e19d4362d33cdd8a9107e425ce1eeefb55b56f8ec8b961126e09f.js:28` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d6b79c8d8e8e19d4362d33cdd8a9107e425ce1eeefb55b56f8ec8b961126e09f.js:32` **MAJOR / CODE_SMELL** `javascript:S1121` — Extract the assignment of "desc" from this expression.
+- `niakw_NiakVIO:upstream-lkg/providers/d6b79c8d8e8e19d4362d33cdd8a9107e425ce1eeefb55b56f8ec8b961126e09f.js:36` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d6b79c8d8e8e19d4362d33cdd8a9107e425ce1eeefb55b56f8ec8b961126e09f.js:36` **MAJOR / CODE_SMELL** `javascript:S878` — Unexpected use of comma operator.
+- `niakw_NiakVIO:upstream-lkg/providers/d6b79c8d8e8e19d4362d33cdd8a9107e425ce1eeefb55b56f8ec8b961126e09f.js:41` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/d6b79c8d8e8e19d4362d33cdd8a9107e425ce1eeefb55b56f8ec8b961126e09f.js:44` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d6b79c8d8e8e19d4362d33cdd8a9107e425ce1eeefb55b56f8ec8b961126e09f.js:46` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d6b79c8d8e8e19d4362d33cdd8a9107e425ce1eeefb55b56f8ec8b961126e09f.js:53` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d6b79c8d8e8e19d4362d33cdd8a9107e425ce1eeefb55b56f8ec8b961126e09f.js:60` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d6b79c8d8e8e19d4362d33cdd8a9107e425ce1eeefb55b56f8ec8b961126e09f.js:61` **MAJOR / CODE_SMELL** `javascript:S1121` — Extract the assignment of "generator" from this expression.
+- `niakw_NiakVIO:upstream-lkg/providers/d6b79c8d8e8e19d4362d33cdd8a9107e425ce1eeefb55b56f8ec8b961126e09f.js:66` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d6b79c8d8e8e19d4362d33cdd8a9107e425ce1eeefb55b56f8ec8b961126e09f.js:69` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d6b79c8d8e8e19d4362d33cdd8a9107e425ce1eeefb55b56f8ec8b961126e09f.js:70` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d6b79c8d8e8e19d4362d33cdd8a9107e425ce1eeefb55b56f8ec8b961126e09f.js:71` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d6b79c8d8e8e19d4362d33cdd8a9107e425ce1eeefb55b56f8ec8b961126e09f.js:72` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d6b79c8d8e8e19d4362d33cdd8a9107e425ce1eeefb55b56f8ec8b961126e09f.js:73` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d6b79c8d8e8e19d4362d33cdd8a9107e425ce1eeefb55b56f8ec8b961126e09f.js:102` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:upstream-lkg/providers/d6b79c8d8e8e19d4362d33cdd8a9107e425ce1eeefb55b56f8ec8b961126e09f.js:113` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:upstream-lkg/providers/d6b79c8d8e8e19d4362d33cdd8a9107e425ce1eeefb55b56f8ec8b961126e09f.js:126` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:upstream-lkg/providers/d6b79c8d8e8e19d4362d33cdd8a9107e425ce1eeefb55b56f8ec8b961126e09f.js:141` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:upstream-lkg/providers/d6b79c8d8e8e19d4362d33cdd8a9107e425ce1eeefb55b56f8ec8b961126e09f.js:150` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d6b79c8d8e8e19d4362d33cdd8a9107e425ce1eeefb55b56f8ec8b961126e09f.js:185` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:upstream-lkg/providers/d6b79c8d8e8e19d4362d33cdd8a9107e425ce1eeefb55b56f8ec8b961126e09f.js:223` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:upstream-lkg/providers/d6b79c8d8e8e19d4362d33cdd8a9107e425ce1eeefb55b56f8ec8b961126e09f.js:240` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:upstream-lkg/providers/d6b79c8d8e8e19d4362d33cdd8a9107e425ce1eeefb55b56f8ec8b961126e09f.js:249` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:upstream-lkg/providers/d6b79c8d8e8e19d4362d33cdd8a9107e425ce1eeefb55b56f8ec8b961126e09f.js:255` **MAJOR / BUG** `javascript:S3531` — Add a "yield" statement to this generator.
+- `niakw_NiakVIO:upstream-lkg/providers/d6b79c8d8e8e19d4362d33cdd8a9107e425ce1eeefb55b56f8ec8b961126e09f.js:290` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/d6b79c8d8e8e19d4362d33cdd8a9107e425ce1eeefb55b56f8ec8b961126e09f.js:316` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:upstream-lkg/providers/e1549e3093c7b378c12ea2227c07090f6a50376e139979446e2a96f27e3e119a.js:30` **MINOR / CODE_SMELL** `javascript:S7758` — Prefer `String#codePointAt()` over `String#charCodeAt()`.
+- `niakw_NiakVIO:upstream-lkg/providers/e1549e3093c7b378c12ea2227c07090f6a50376e139979446e2a96f27e3e119a.js:41` **MINOR / CODE_SMELL** `javascript:S7758` — Prefer `String#codePointAt()` over `String#charCodeAt()`.
+- `niakw_NiakVIO:upstream-lkg/providers/e1549e3093c7b378c12ea2227c07090f6a50376e139979446e2a96f27e3e119a.js:43` **MINOR / CODE_SMELL** `javascript:S7758` — Prefer `String.fromCodePoint()` over `String.fromCharCode()`.
+- `niakw_NiakVIO:upstream-lkg/providers/e1549e3093c7b378c12ea2227c07090f6a50376e139979446e2a96f27e3e119a.js:45` **MINOR / CODE_SMELL** `javascript:S7758` — Prefer `String.fromCodePoint()` over `String.fromCharCode()`.
+- `niakw_NiakVIO:upstream-lkg/providers/e1549e3093c7b378c12ea2227c07090f6a50376e139979446e2a96f27e3e119a.js:57` **MINOR / CODE_SMELL** `javascript:S1874` — The signature '(string: string): string' of 'unescape' is deprecated.
+- `niakw_NiakVIO:upstream-lkg/providers/e1549e3093c7b378c12ea2227c07090f6a50376e139979446e2a96f27e3e119a.js:71` **MINOR / CODE_SMELL** `javascript:S1874` — The signature '(string: string): string' of 'escape' is deprecated.
+- `niakw_NiakVIO:upstream-lkg/providers/e1549e3093c7b378c12ea2227c07090f6a50376e139979446e2a96f27e3e119a.js:96` **MINOR / CODE_SMELL** `javascript:S7781` — Prefer `String#replaceAll()` over `String#replace()`.
+- `niakw_NiakVIO:upstream-lkg/providers/e1549e3093c7b378c12ea2227c07090f6a50376e139979446e2a96f27e3e119a.js:96` **MINOR / CODE_SMELL** `javascript:S7781` — Prefer `String#replaceAll()` over `String#replace()`.
+- `niakw_NiakVIO:upstream-lkg/providers/e1549e3093c7b378c12ea2227c07090f6a50376e139979446e2a96f27e3e119a.js:96` **MINOR / CODE_SMELL** `javascript:S7781` — Prefer `String#replaceAll()` over `String#replace()`.
+- `niakw_NiakVIO:upstream-lkg/providers/e1549e3093c7b378c12ea2227c07090f6a50376e139979446e2a96f27e3e119a.js:170` **CRITICAL / CODE_SMELL** `javascript:S3776` — Refactor this function to reduce its Cognitive Complexity from 54 to the 15 allowed.
+- `niakw_NiakVIO:upstream-lkg/providers/e1549e3093c7b378c12ea2227c07090f6a50376e139979446e2a96f27e3e119a.js:206` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.parseInt` over `parseInt`.
+- `niakw_NiakVIO:upstream-lkg/providers/e1549e3093c7b378c12ea2227c07090f6a50376e139979446e2a96f27e3e119a.js:230` **CRITICAL / CODE_SMELL** `javascript:S3776` — Refactor this function to reduce its Cognitive Complexity from 53 to the 15 allowed.
+- `niakw_NiakVIO:upstream-lkg/providers/e1549e3093c7b378c12ea2227c07090f6a50376e139979446e2a96f27e3e119a.js:236` **MINOR / CODE_SMELL** `javascript:S6594` — Use the "RegExp.exec()" method instead.
+- `niakw_NiakVIO:upstream-lkg/providers/e1549e3093c7b378c12ea2227c07090f6a50376e139979446e2a96f27e3e119a.js:240` **MINOR / CODE_SMELL** `javascript:S6594` — Use the "RegExp.exec()" method instead.
+- `niakw_NiakVIO:upstream-lkg/providers/e1549e3093c7b378c12ea2227c07090f6a50376e139979446e2a96f27e3e119a.js:240` **MAJOR / CODE_SMELL** `javascript:S5869` — Remove duplicates in this character class.
+- `niakw_NiakVIO:upstream-lkg/providers/e1549e3093c7b378c12ea2227c07090f6a50376e139979446e2a96f27e3e119a.js:242` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.parseInt` over `parseInt`.
+- `niakw_NiakVIO:upstream-lkg/providers/e1549e3093c7b378c12ea2227c07090f6a50376e139979446e2a96f27e3e119a.js:276` **MAJOR / CODE_SMELL** `javascript:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
+- `niakw_NiakVIO:upstream-lkg/providers/e1549e3093c7b378c12ea2227c07090f6a50376e139979446e2a96f27e3e119a.js:276` **MINOR / CODE_SMELL** `javascript:S6594` — Use the "RegExp.exec()" method instead.
+- `niakw_NiakVIO:upstream-lkg/providers/e1549e3093c7b378c12ea2227c07090f6a50376e139979446e2a96f27e3e119a.js:278` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.parseInt` over `parseInt`.
+- `niakw_NiakVIO:upstream-lkg/providers/e1549e3093c7b378c12ea2227c07090f6a50376e139979446e2a96f27e3e119a.js:293` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.isNaN` over `isNaN`.
+- `niakw_NiakVIO:upstream-lkg/providers/e1549e3093c7b378c12ea2227c07090f6a50376e139979446e2a96f27e3e119a.js:294` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.parseInt` over `parseInt`.
+- `niakw_NiakVIO:upstream-lkg/providers/e1549e3093c7b378c12ea2227c07090f6a50376e139979446e2a96f27e3e119a.js:295` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.parseInt` over `parseInt`.
+- `niakw_NiakVIO:upstream-lkg/providers/e1549e3093c7b378c12ea2227c07090f6a50376e139979446e2a96f27e3e119a.js:338` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/e1549e3093c7b378c12ea2227c07090f6a50376e139979446e2a96f27e3e119a.js:344` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/e1549e3093c7b378c12ea2227c07090f6a50376e139979446e2a96f27e3e119a.js:372` **MINOR / CODE_SMELL** `javascript:S1481` — Remove the declaration of the unused 'index' variable.
+- `niakw_NiakVIO:upstream-lkg/providers/e1549e3093c7b378c12ea2227c07090f6a50376e139979446e2a96f27e3e119a.js:372` **MAJOR / CODE_SMELL** `javascript:S1854` — Remove this useless assignment to variable "index".
+- `niakw_NiakVIO:upstream-lkg/providers/e1549e3093c7b378c12ea2227c07090f6a50376e139979446e2a96f27e3e119a.js:412` **MAJOR / CODE_SMELL** `javascript:S4624` — Refactor this code to not use nested template literals.
+- `niakw_NiakVIO:upstream-lkg/providers/e3a5ca37785b04610a23a44a509dabf134c9154a35dd91d3070f3766029b5792.js:5` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/e3a5ca37785b04610a23a44a509dabf134c9154a35dd91d3070f3766029b5792.js:6` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/e3a5ca37785b04610a23a44a509dabf134c9154a35dd91d3070f3766029b5792.js:7` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/e3a5ca37785b04610a23a44a509dabf134c9154a35dd91d3070f3766029b5792.js:8` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/e3a5ca37785b04610a23a44a509dabf134c9154a35dd91d3070f3766029b5792.js:9` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/e3a5ca37785b04610a23a44a509dabf134c9154a35dd91d3070f3766029b5792.js:10` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/e3a5ca37785b04610a23a44a509dabf134c9154a35dd91d3070f3766029b5792.js:11` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/e3a5ca37785b04610a23a44a509dabf134c9154a35dd91d3070f3766029b5792.js:12` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/e3a5ca37785b04610a23a44a509dabf134c9154a35dd91d3070f3766029b5792.js:13` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/e3a5ca37785b04610a23a44a509dabf134c9154a35dd91d3070f3766029b5792.js:14` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/e3a5ca37785b04610a23a44a509dabf134c9154a35dd91d3070f3766029b5792.js:15` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/e3a5ca37785b04610a23a44a509dabf134c9154a35dd91d3070f3766029b5792.js:15` **MAJOR / CODE_SMELL** `javascript:S1121` — Extract the assignment of "obj[key]" from this expression.
+- `niakw_NiakVIO:upstream-lkg/providers/e3a5ca37785b04610a23a44a509dabf134c9154a35dd91d3070f3766029b5792.js:16` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/e3a5ca37785b04610a23a44a509dabf134c9154a35dd91d3070f3766029b5792.js:17` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/e3a5ca37785b04610a23a44a509dabf134c9154a35dd91d3070f3766029b5792.js:21` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/e3a5ca37785b04610a23a44a509dabf134c9154a35dd91d3070f3766029b5792.js:21` **MAJOR / CODE_SMELL** `javascript:S2814` — 'prop' is already defined.
+- `niakw_NiakVIO:upstream-lkg/providers/e3a5ca37785b04610a23a44a509dabf134c9154a35dd91d3070f3766029b5792.js:27` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/e3a5ca37785b04610a23a44a509dabf134c9154a35dd91d3070f3766029b5792.js:28` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/e3a5ca37785b04610a23a44a509dabf134c9154a35dd91d3070f3766029b5792.js:32` **MAJOR / CODE_SMELL** `javascript:S1121` — Extract the assignment of "desc" from this expression.
+- `niakw_NiakVIO:upstream-lkg/providers/e3a5ca37785b04610a23a44a509dabf134c9154a35dd91d3070f3766029b5792.js:36` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/e3a5ca37785b04610a23a44a509dabf134c9154a35dd91d3070f3766029b5792.js:36` **MAJOR / CODE_SMELL** `javascript:S878` — Unexpected use of comma operator.
+- `niakw_NiakVIO:upstream-lkg/providers/e3a5ca37785b04610a23a44a509dabf134c9154a35dd91d3070f3766029b5792.js:41` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/e3a5ca37785b04610a23a44a509dabf134c9154a35dd91d3070f3766029b5792.js:44` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/e3a5ca37785b04610a23a44a509dabf134c9154a35dd91d3070f3766029b5792.js:46` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/e3a5ca37785b04610a23a44a509dabf134c9154a35dd91d3070f3766029b5792.js:53` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/e3a5ca37785b04610a23a44a509dabf134c9154a35dd91d3070f3766029b5792.js:60` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/e3a5ca37785b04610a23a44a509dabf134c9154a35dd91d3070f3766029b5792.js:61` **MAJOR / CODE_SMELL** `javascript:S1121` — Extract the assignment of "generator" from this expression.
+- `niakw_NiakVIO:upstream-lkg/providers/e3a5ca37785b04610a23a44a509dabf134c9154a35dd91d3070f3766029b5792.js:66` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/e3a5ca37785b04610a23a44a509dabf134c9154a35dd91d3070f3766029b5792.js:69` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/e3a5ca37785b04610a23a44a509dabf134c9154a35dd91d3070f3766029b5792.js:70` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/e3a5ca37785b04610a23a44a509dabf134c9154a35dd91d3070f3766029b5792.js:72` **MAJOR / VULNERABILITY** `javascript:S2068` — Review this potentially hard-coded password.
+- `niakw_NiakVIO:upstream-lkg/providers/e3a5ca37785b04610a23a44a509dabf134c9154a35dd91d3070f3766029b5792.js:75` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/e3a5ca37785b04610a23a44a509dabf134c9154a35dd91d3070f3766029b5792.js:78` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/e3a5ca37785b04610a23a44a509dabf134c9154a35dd91d3070f3766029b5792.js:82` **MAJOR / CODE_SMELL** `javascript:S6397` — Replace this character class by the character itself.
+- `niakw_NiakVIO:upstream-lkg/providers/e3a5ca37785b04610a23a44a509dabf134c9154a35dd91d3070f3766029b5792.js:82` **MAJOR / CODE_SMELL** `javascript:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
+- `niakw_NiakVIO:upstream-lkg/providers/e3a5ca37785b04610a23a44a509dabf134c9154a35dd91d3070f3766029b5792.js:85` **CRITICAL / CODE_SMELL** `javascript:S1994` — This loop's stop condition tests "buffer, str, i" but the incrementer updates "bs, bc, output, String".
+- `niakw_NiakVIO:upstream-lkg/providers/e3a5ca37785b04610a23a44a509dabf134c9154a35dd91d3070f3766029b5792.js:85` **MAJOR / CODE_SMELL** `javascript:S1121` — Extract the assignment of "buffer" from this expression.
+- `niakw_NiakVIO:upstream-lkg/providers/e3a5ca37785b04610a23a44a509dabf134c9154a35dd91d3070f3766029b5792.js:85` **MAJOR / CODE_SMELL** `javascript:S3358` — Extract this nested ternary operation into an independent statement.
+- `niakw_NiakVIO:upstream-lkg/providers/e3a5ca37785b04610a23a44a509dabf134c9154a35dd91d3070f3766029b5792.js:85` **MAJOR / CODE_SMELL** `javascript:S1121` — Extract the assignment of "output" from this expression.
+- `niakw_NiakVIO:upstream-lkg/providers/e3a5ca37785b04610a23a44a509dabf134c9154a35dd91d3070f3766029b5792.js:85` **MINOR / CODE_SMELL** `javascript:S7758` — Prefer `String.fromCodePoint()` over `String.fromCharCode()`.
+- `niakw_NiakVIO:upstream-lkg/providers/e3a5ca37785b04610a23a44a509dabf134c9154a35dd91d3070f3766029b5792.js:89` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:upstream-lkg/providers/e3a5ca37785b04610a23a44a509dabf134c9154a35dd91d3070f3766029b5792.js:119` **CRITICAL / CODE_SMELL** `javascript:S3776` — Refactor this function to reduce its Cognitive Complexity from 30 to the 15 allowed.
+- `niakw_NiakVIO:upstream-lkg/providers/e3a5ca37785b04610a23a44a509dabf134c9154a35dd91d3070f3766029b5792.js:120` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/e3a5ca37785b04610a23a44a509dabf134c9154a35dd91d3070f3766029b5792.js:146` **MAJOR / CODE_SMELL** `javascript:S1871` — This branch's code block is the same as the block for the branch on line 144.
+- `niakw_NiakVIO:upstream-lkg/providers/e3a5ca37785b04610a23a44a509dabf134c9154a35dd91d3070f3766029b5792.js:172` **CRITICAL / CODE_SMELL** `javascript:S3776` — Refactor this function to reduce its Cognitive Complexity from 41 to the 15 allowed.
+- `niakw_NiakVIO:upstream-lkg/providers/e3a5ca37785b04610a23a44a509dabf134c9154a35dd91d3070f3766029b5792.js:176` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/e3a5ca37785b04610a23a44a509dabf134c9154a35dd91d3070f3766029b5792.js:182` **MINOR / CODE_SMELL** `javascript:S6594` — Use the "RegExp.exec()" method instead.
+- `niakw_NiakVIO:upstream-lkg/providers/e3a5ca37785b04610a23a44a509dabf134c9154a35dd91d3070f3766029b5792.js:182` **MINOR / CODE_SMELL** `javascript:S6325` — Use a regular expression literal instead of the 'RegExp' constructor.
+- `niakw_NiakVIO:upstream-lkg/providers/e3a5ca37785b04610a23a44a509dabf134c9154a35dd91d3070f3766029b5792.js:182` **MINOR / CODE_SMELL** `javascript:S7780` — `String.raw` should be used to avoid escaping `\`.
+- `niakw_NiakVIO:upstream-lkg/providers/e3a5ca37785b04610a23a44a509dabf134c9154a35dd91d3070f3766029b5792.js:182` **MINOR / CODE_SMELL** `javascript:S6594` — Use the "RegExp.exec()" method instead.
+- `niakw_NiakVIO:upstream-lkg/providers/e3a5ca37785b04610a23a44a509dabf134c9154a35dd91d3070f3766029b5792.js:182` **MINOR / CODE_SMELL** `javascript:S6325` — Use a regular expression literal instead of the 'RegExp' constructor.
+- `niakw_NiakVIO:upstream-lkg/providers/e3a5ca37785b04610a23a44a509dabf134c9154a35dd91d3070f3766029b5792.js:182` **MINOR / CODE_SMELL** `javascript:S7780` — `String.raw` should be used to avoid escaping `\`.
+- `niakw_NiakVIO:upstream-lkg/providers/e3a5ca37785b04610a23a44a509dabf134c9154a35dd91d3070f3766029b5792.js:182` **MINOR / CODE_SMELL** `javascript:S6594` — Use the "RegExp.exec()" method instead.
+- `niakw_NiakVIO:upstream-lkg/providers/e3a5ca37785b04610a23a44a509dabf134c9154a35dd91d3070f3766029b5792.js:182` **MINOR / CODE_SMELL** `javascript:S6325` — Use a regular expression literal instead of the 'RegExp' constructor.
+- `niakw_NiakVIO:upstream-lkg/providers/e3a5ca37785b04610a23a44a509dabf134c9154a35dd91d3070f3766029b5792.js:182` **MINOR / CODE_SMELL** `javascript:S7780` — `String.raw` should be used to avoid escaping `\`.
+- `niakw_NiakVIO:upstream-lkg/providers/e3a5ca37785b04610a23a44a509dabf134c9154a35dd91d3070f3766029b5792.js:183` **MINOR / CODE_SMELL** `javascript:S6594` — Use the "RegExp.exec()" method instead.
+- `niakw_NiakVIO:upstream-lkg/providers/e3a5ca37785b04610a23a44a509dabf134c9154a35dd91d3070f3766029b5792.js:183` **MINOR / CODE_SMELL** `javascript:S6325` — Use a regular expression literal instead of the 'RegExp' constructor.
+- `niakw_NiakVIO:upstream-lkg/providers/e3a5ca37785b04610a23a44a509dabf134c9154a35dd91d3070f3766029b5792.js:183` **MINOR / CODE_SMELL** `javascript:S7780` — `String.raw` should be used to avoid escaping `\`.
+- `niakw_NiakVIO:upstream-lkg/providers/e3a5ca37785b04610a23a44a509dabf134c9154a35dd91d3070f3766029b5792.js:191` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:upstream-lkg/providers/e3a5ca37785b04610a23a44a509dabf134c9154a35dd91d3070f3766029b5792.js:194` **MINOR / CODE_SMELL** `javascript:S7718` — The catch parameter `e2` should be named `error_`.
+- `niakw_NiakVIO:upstream-lkg/providers/e3a5ca37785b04610a23a44a509dabf134c9154a35dd91d3070f3766029b5792.js:208` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:upstream-lkg/providers/e3a5ca37785b04610a23a44a509dabf134c9154a35dd91d3070f3766029b5792.js:222` **MINOR / CODE_SMELL** `javascript:S6594` — Use the "RegExp.exec()" method instead.
+- `niakw_NiakVIO:upstream-lkg/providers/e3a5ca37785b04610a23a44a509dabf134c9154a35dd91d3070f3766029b5792.js:222` **MAJOR / CODE_SMELL** `javascript:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
+- `niakw_NiakVIO:upstream-lkg/providers/e3a5ca37785b04610a23a44a509dabf134c9154a35dd91d3070f3766029b5792.js:235` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/e3a5ca37785b04610a23a44a509dabf134c9154a35dd91d3070f3766029b5792.js:254` **MAJOR / CODE_SMELL** `javascript:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
+- `niakw_NiakVIO:upstream-lkg/providers/e3a5ca37785b04610a23a44a509dabf134c9154a35dd91d3070f3766029b5792.js:265` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/e3a5ca37785b04610a23a44a509dabf134c9154a35dd91d3070f3766029b5792.js:274` **MAJOR / CODE_SMELL** `javascript:S6660` — 'If' statement should not be the only statement in 'else' block
+- `niakw_NiakVIO:upstream-lkg/providers/e3a5ca37785b04610a23a44a509dabf134c9154a35dd91d3070f3766029b5792.js:277` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/e3a5ca37785b04610a23a44a509dabf134c9154a35dd91d3070f3766029b5792.js:280` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:tests/provider_hub_registry_test.py:113` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:tests/provider_hub_registry_test.py:115` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:tests/provider_hub_registry_test.py:117` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:tests/upstream_lkg_test.py:46` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:scripts/provider_patches/toflix_official_endpoint.py:11` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 34 to the 15 allowed.
+- `niakw_NiakVIO:scripts/discover_candidates.py:113` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 156 to the 15 allowed.
+- `niakw_NiakVIO:scripts/resolve_provider_hubs.py:79` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
+- `niakw_NiakVIO:scripts/resolve_provider_hubs.py:79` **MAJOR / VULNERABILITY** `pythonsecurity:S8707` — LLMs running this code with faulty CLI arguments can escape file system restrictions. Refactor this code to validate the constructed path before accessing the file system.
+- `niakw_NiakVIO:scripts/resolve_provider_hubs.py:80` **MAJOR / VULNERABILITY** `pythonsecurity:S8707` — LLMs running this code with faulty CLI arguments can escape file system restrictions. Refactor this code to validate the constructed path before accessing the file system.
+- `niakw_NiakVIO:scripts/resolve_provider_hubs.py:96` **CRITICAL / CODE_SMELL** `python:S1192` — Define a constant instead of duplicating this literal "https://" 4 times.
+- `niakw_NiakVIO:scripts/resolve_provider_hubs.py:96` **CRITICAL / CODE_SMELL** `python:S1192` — Define a constant instead of duplicating this literal "http://" 4 times.
+- `niakw_NiakVIO:scripts/resolve_provider_hubs.py:342` **MAJOR / CODE_SMELL** `python:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
+- `niakw_NiakVIO:scripts/resolve_provider_hubs.py:414` **MINOR / CODE_SMELL** `python:S7494` — Replace set constructor call with a set comprehension.
+- `niakw_NiakVIO:scripts/resolve_provider_hubs.py:476` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 20 to the 15 allowed.
+- `niakw_NiakVIO:scripts/resolve_provider_hubs.py:523` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 50 to the 15 allowed.
+- `niakw_NiakVIO:scripts/resolve_provider_hubs.py:592` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 19 to the 15 allowed.
+- `niakw_NiakVIO:scripts/resolve_provider_hubs.py:665` **MAJOR / CODE_SMELL** `python:S5869` — Remove duplicates in this character class.
+- `niakw_NiakVIO:scripts/upstream_lkg.py:21` **CRITICAL / CODE_SMELL** `python:S1192` — Define a constant instead of duplicating this literal "upstream-lkg.json" 3 times.
+- `niakw_NiakVIO:scripts/upstream_lkg.py:109` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 17 to the 15 allowed.
+- `niakw_NiakVIO:scripts/upstream_lkg.py:185` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 41 to the 15 allowed.
+- `niakw_NiakVIO:upstream-lkg/providers/65e7dabe9629f1185c046e156941f6cf05312e9c52996c70c24a6b6ddc075a9c.js:2` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/65e7dabe9629f1185c046e156941f6cf05312e9c52996c70c24a6b6ddc075a9c.js:3` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/65e7dabe9629f1185c046e156941f6cf05312e9c52996c70c24a6b6ddc075a9c.js:4` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/65e7dabe9629f1185c046e156941f6cf05312e9c52996c70c24a6b6ddc075a9c.js:5` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/65e7dabe9629f1185c046e156941f6cf05312e9c52996c70c24a6b6ddc075a9c.js:6` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/65e7dabe9629f1185c046e156941f6cf05312e9c52996c70c24a6b6ddc075a9c.js:7` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/65e7dabe9629f1185c046e156941f6cf05312e9c52996c70c24a6b6ddc075a9c.js:8` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/65e7dabe9629f1185c046e156941f6cf05312e9c52996c70c24a6b6ddc075a9c.js:8` **MAJOR / CODE_SMELL** `javascript:S1121` — Extract the assignment of "obj[key]" from this expression.
+- `niakw_NiakVIO:upstream-lkg/providers/65e7dabe9629f1185c046e156941f6cf05312e9c52996c70c24a6b6ddc075a9c.js:9` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/65e7dabe9629f1185c046e156941f6cf05312e9c52996c70c24a6b6ddc075a9c.js:10` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/65e7dabe9629f1185c046e156941f6cf05312e9c52996c70c24a6b6ddc075a9c.js:14` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/65e7dabe9629f1185c046e156941f6cf05312e9c52996c70c24a6b6ddc075a9c.js:14` **MAJOR / CODE_SMELL** `javascript:S2814` — 'prop' is already defined.
+- `niakw_NiakVIO:upstream-lkg/providers/65e7dabe9629f1185c046e156941f6cf05312e9c52996c70c24a6b6ddc075a9c.js:20` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/65e7dabe9629f1185c046e156941f6cf05312e9c52996c70c24a6b6ddc075a9c.js:21` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/65e7dabe9629f1185c046e156941f6cf05312e9c52996c70c24a6b6ddc075a9c.js:23` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/65e7dabe9629f1185c046e156941f6cf05312e9c52996c70c24a6b6ddc075a9c.js:30` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/65e7dabe9629f1185c046e156941f6cf05312e9c52996c70c24a6b6ddc075a9c.js:37` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/65e7dabe9629f1185c046e156941f6cf05312e9c52996c70c24a6b6ddc075a9c.js:38` **MAJOR / CODE_SMELL** `javascript:S1121` — Extract the assignment of "generator" from this expression.
+- `niakw_NiakVIO:upstream-lkg/providers/65e7dabe9629f1185c046e156941f6cf05312e9c52996c70c24a6b6ddc075a9c.js:42` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/65e7dabe9629f1185c046e156941f6cf05312e9c52996c70c24a6b6ddc075a9c.js:43` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/65e7dabe9629f1185c046e156941f6cf05312e9c52996c70c24a6b6ddc075a9c.js:44` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/65e7dabe9629f1185c046e156941f6cf05312e9c52996c70c24a6b6ddc075a9c.js:45` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/65e7dabe9629f1185c046e156941f6cf05312e9c52996c70c24a6b6ddc075a9c.js:54` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/65e7dabe9629f1185c046e156941f6cf05312e9c52996c70c24a6b6ddc075a9c.js:58` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:upstream-lkg/providers/65e7dabe9629f1185c046e156941f6cf05312e9c52996c70c24a6b6ddc075a9c.js:76` **MAJOR / CODE_SMELL** `javascript:S4624` — Refactor this code to not use nested template literals.
+- `niakw_NiakVIO:upstream-lkg/providers/65e7dabe9629f1185c046e156941f6cf05312e9c52996c70c24a6b6ddc075a9c.js:97` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.parseInt` over `parseInt`.
+- `niakw_NiakVIO:upstream-lkg/providers/65e7dabe9629f1185c046e156941f6cf05312e9c52996c70c24a6b6ddc075a9c.js:102` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.parseInt` over `parseInt`.
+- `niakw_NiakVIO:upstream-lkg/providers/65e7dabe9629f1185c046e156941f6cf05312e9c52996c70c24a6b6ddc075a9c.js:113` **MAJOR / CODE_SMELL** `javascript:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
+- `niakw_NiakVIO:upstream-lkg/providers/65e7dabe9629f1185c046e156941f6cf05312e9c52996c70c24a6b6ddc075a9c.js:118` **CRITICAL / CODE_SMELL** `javascript:S1994` — This loop's stop condition tests "buffer, str, i" but the incrementer updates "bs, bc, output, String".
+- `niakw_NiakVIO:upstream-lkg/providers/65e7dabe9629f1185c046e156941f6cf05312e9c52996c70c24a6b6ddc075a9c.js:118` **MAJOR / CODE_SMELL** `javascript:S1121` — Extract the assignment of "buffer" from this expression.
+- `niakw_NiakVIO:upstream-lkg/providers/65e7dabe9629f1185c046e156941f6cf05312e9c52996c70c24a6b6ddc075a9c.js:118` **MAJOR / CODE_SMELL** `javascript:S3358` — Extract this nested ternary operation into an independent statement.
+- `niakw_NiakVIO:upstream-lkg/providers/65e7dabe9629f1185c046e156941f6cf05312e9c52996c70c24a6b6ddc075a9c.js:118` **MAJOR / CODE_SMELL** `javascript:S1121` — Extract the assignment of "output" from this expression.
+- `niakw_NiakVIO:upstream-lkg/providers/65e7dabe9629f1185c046e156941f6cf05312e9c52996c70c24a6b6ddc075a9c.js:118` **MINOR / CODE_SMELL** `javascript:S7758` — Prefer `String.fromCodePoint()` over `String.fromCharCode()`.
+- `niakw_NiakVIO:upstream-lkg/providers/65e7dabe9629f1185c046e156941f6cf05312e9c52996c70c24a6b6ddc075a9c.js:125` **MAJOR / CODE_SMELL** `javascript:S3358` — Extract this nested ternary operation into an independent statement.
+- `niakw_NiakVIO:upstream-lkg/providers/65e7dabe9629f1185c046e156941f6cf05312e9c52996c70c24a6b6ddc075a9c.js:125` **MINOR / CODE_SMELL** `javascript:S7758` — Prefer `String.fromCodePoint()` over `String.fromCharCode()`.
+- `niakw_NiakVIO:upstream-lkg/providers/65e7dabe9629f1185c046e156941f6cf05312e9c52996c70c24a6b6ddc075a9c.js:125` **MINOR / CODE_SMELL** `javascript:S7758` — Prefer `String#codePointAt()` over `String#charCodeAt()`.
+- `niakw_NiakVIO:upstream-lkg/providers/65e7dabe9629f1185c046e156941f6cf05312e9c52996c70c24a6b6ddc075a9c.js:161` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.parseFloat` over `parseFloat`.
+- `niakw_NiakVIO:upstream-lkg/providers/65e7dabe9629f1185c046e156941f6cf05312e9c52996c70c24a6b6ddc075a9c.js:182` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.parseFloat` over `parseFloat`.
+- `niakw_NiakVIO:upstream-lkg/providers/65e7dabe9629f1185c046e156941f6cf05312e9c52996c70c24a6b6ddc075a9c.js:184` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/65e7dabe9629f1185c046e156941f6cf05312e9c52996c70c24a6b6ddc075a9c.js:200` **MAJOR / CODE_SMELL** `javascript:S108` — Empty block statement.
+- `niakw_NiakVIO:upstream-lkg/providers/65e7dabe9629f1185c046e156941f6cf05312e9c52996c70c24a6b6ddc075a9c.js:205` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.parseInt` over `parseInt`.
+- `niakw_NiakVIO:upstream-lkg/providers/65e7dabe9629f1185c046e156941f6cf05312e9c52996c70c24a6b6ddc075a9c.js:206` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.isNaN` over `isNaN`.
+- `niakw_NiakVIO:upstream-lkg/providers/65e7dabe9629f1185c046e156941f6cf05312e9c52996c70c24a6b6ddc075a9c.js:212` **MAJOR / CODE_SMELL** `javascript:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
+- `niakw_NiakVIO:upstream-lkg/providers/65e7dabe9629f1185c046e156941f6cf05312e9c52996c70c24a6b6ddc075a9c.js:232` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/65e7dabe9629f1185c046e156941f6cf05312e9c52996c70c24a6b6ddc075a9c.js:250` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/65e7dabe9629f1185c046e156941f6cf05312e9c52996c70c24a6b6ddc075a9c.js:262` **MAJOR / CODE_SMELL** `javascript:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
+- `niakw_NiakVIO:upstream-lkg/providers/65e7dabe9629f1185c046e156941f6cf05312e9c52996c70c24a6b6ddc075a9c.js:263` **MAJOR / CODE_SMELL** `javascript:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
+- `niakw_NiakVIO:upstream-lkg/providers/65e7dabe9629f1185c046e156941f6cf05312e9c52996c70c24a6b6ddc075a9c.js:265` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.parseInt` over `parseInt`.
+- `niakw_NiakVIO:upstream-lkg/providers/65e7dabe9629f1185c046e156941f6cf05312e9c52996c70c24a6b6ddc075a9c.js:364` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/65e7dabe9629f1185c046e156941f6cf05312e9c52996c70c24a6b6ddc075a9c.js:404` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/65e7dabe9629f1185c046e156941f6cf05312e9c52996c70c24a6b6ddc075a9c.js:408` **MAJOR / CODE_SMELL** `javascript:S4624` — Refactor this code to not use nested template literals.
+- `niakw_NiakVIO:upstream-lkg/providers/65e7dabe9629f1185c046e156941f6cf05312e9c52996c70c24a6b6ddc075a9c.js:425` **MINOR / CODE_SMELL** `javascript:S7751` — Prefer `Array#flat()` over `Array#reduce()` to flatten an array.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:32` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:40` **MINOR / CODE_SMELL** `javascript:S1874` — The signature '(string: string): string' of 'escape' is deprecated.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:48` **MINOR / CODE_SMELL** `javascript:S1874` — The signature '(string: string): string' of 'unescape' is deprecated.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:56` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:57` **MINOR / CODE_SMELL** `javascript:S7758` — Prefer `String.fromCodePoint()` over `String.fromCharCode()`.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:57` **MINOR / CODE_SMELL** `javascript:S7758` — Prefer `String#codePointAt()` over `String#charCodeAt()`.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:63` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.parseInt` over `parseInt`.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:84` **MINOR / CODE_SMELL** `javascript:S7750` — Prefer `.findLast(…)` over `.filter(…).pop()`.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:108` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:115` **MAJOR / BUG** `javascript:S4822` — Consider removing this 'try' statement as promise rejection is already captured by '.catch()' method.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:122` **MINOR / CODE_SMELL** `javascript:S6594` — Use the "RegExp.exec()" method instead.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:123` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:131` **MINOR / CODE_SMELL** `javascript:S7755` — Prefer `.at(…)` over `[….length - index]`.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:132` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:149` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:153` **MAJOR / CODE_SMELL** `javascript:S7721` — Move function 'toAbsolute' to the outer scope.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:162` **CRITICAL / CODE_SMELL** `javascript:S3776` — Refactor this function to reduce its Cognitive Complexity from 17 to the 15 allowed.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:165` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:166` **MINOR / CODE_SMELL** `javascript:S7765` — Use `.includes()`, rather than `.indexOf()`, when checking for existence.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:170` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:170` **MAJOR / CODE_SMELL** `javascript:S6535` — Unnecessary escape character: \/.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:170` **MAJOR / CODE_SMELL** `javascript:S6535` — Unnecessary escape character: \?.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:172` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:173` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:179` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:188` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:198` **MAJOR / CODE_SMELL** `javascript:S3800` — Refactor this function to always return the same type.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:218` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:233` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:276` **CRITICAL / CODE_SMELL** `javascript:S3776` — Refactor this function to reduce its Cognitive Complexity from 39 to the 15 allowed.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:288` **MINOR / CODE_SMELL** `javascript:S6594` — Use the "RegExp.exec()" method instead.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:296` **MINOR / CODE_SMELL** `javascript:S6594` — Use the "RegExp.exec()" method instead.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:297` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:308` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:316` **MINOR / CODE_SMELL** `javascript:S6594` — Use the "RegExp.exec()" method instead.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:316` **MAJOR / CODE_SMELL** `javascript:S5869` — Remove duplicates in this character class.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:317` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:326` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:333` **MINOR / CODE_SMELL** `javascript:S6594` — Use the "RegExp.exec()" method instead.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:334` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:340` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:346` **MINOR / CODE_SMELL** `javascript:S6594` — Use the "RegExp.exec()" method instead.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:347` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:353` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:359` **MINOR / CODE_SMELL** `javascript:S6594` — Use the "RegExp.exec()" method instead.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:366` **MINOR / CODE_SMELL** `javascript:S6594` — Use the "RegExp.exec()" method instead.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:366` **MAJOR / CODE_SMELL** `javascript:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:373` **MINOR / CODE_SMELL** `javascript:S6594` — Use the "RegExp.exec()" method instead.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:399` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:589` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:590` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:592` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:593` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:596` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:596` **MINOR / CODE_SMELL** `javascript:S7723` — Use `new Array()` instead of `Array()`.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:596` **MINOR / CODE_SMELL** `javascript:S7723` — Use `new Array()` instead of `Array()`.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:597` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:597` **MAJOR / CODE_SMELL** `javascript:S2392` — Consider moving declaration of 'i' as it is referenced outside current binding context.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:598` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:598` **MAJOR / CODE_SMELL** `javascript:S2392` — Consider moving declaration of 'j' as it is referenced outside current binding context.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:601` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:605` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:613` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:614` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:616` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:617` **MINOR / CODE_SMELL** `javascript:S7765` — Use `.includes()`, rather than `.indexOf()`, when checking for existence.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:618` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:640` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.parseInt` over `parseInt`.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:646` **MAJOR / CODE_SMELL** `javascript:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:649` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.parseFloat` over `parseFloat`.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:679` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.parseInt` over `parseInt`.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:700` **MAJOR / CODE_SMELL** `javascript:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:718` **MINOR / CODE_SMELL** `javascript:S7755` — Prefer `.at(…)` over `[….length - index]`.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:718` **MINOR / CODE_SMELL** `javascript:S7755` — Prefer `.at(…)` over `[….length - index]`.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:722` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:829` **MAJOR / CODE_SMELL** `javascript:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:835` **MINOR / CODE_SMELL** `javascript:S7781` — Prefer `String#replaceAll()` over `String#replace()`.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:836` **MINOR / CODE_SMELL** `javascript:S7781` — Prefer `String#replaceAll()` over `String#replace()`.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:837` **MINOR / CODE_SMELL** `javascript:S7781` — Prefer `String#replaceAll()` over `String#replace()`.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:838` **MINOR / CODE_SMELL** `javascript:S7781` — Prefer `String#replaceAll()` over `String#replace()`.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:839` **MINOR / CODE_SMELL** `javascript:S7781` — Prefer `String#replaceAll()` over `String#replace()`.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:840` **MINOR / CODE_SMELL** `javascript:S7781` — Prefer `String#replaceAll()` over `String#replace()`.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:863` **MINOR / CODE_SMELL** `javascript:S7781` — Prefer `String#replaceAll()` over `String#replace()`.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:864` **MINOR / CODE_SMELL** `javascript:S7781` — Prefer `String#replaceAll()` over `String#replace()`.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:865` **MINOR / CODE_SMELL** `javascript:S7781` — Prefer `String#replaceAll()` over `String#replace()`.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:866` **MINOR / CODE_SMELL** `javascript:S7781` — Prefer `String#replaceAll()` over `String#replace()`.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:867` **MINOR / CODE_SMELL** `javascript:S7781` — Prefer `String#replaceAll()` over `String#replace()`.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:868` **MINOR / CODE_SMELL** `javascript:S7781` — Prefer `String#replaceAll()` over `String#replace()`.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:924` **MAJOR / CODE_SMELL** `javascript:S3800` — Refactor this function to always return the same type.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:1002` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:1020` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:1046` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:1078` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:1079` **MAJOR / CODE_SMELL** `javascript:S3800` — Refactor this function to always return the same type.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:1080` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:1085` **MAJOR / CODE_SMELL** `javascript:S3800` — Refactor this function to always return the same type.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:1100` **MAJOR / CODE_SMELL** `javascript:S3800` — Refactor this function to always return the same type.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:1109` **CRITICAL / CODE_SMELL** `javascript:S2004` — Refactor this code to not nest functions more than 5 levels deep.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:1109` **MAJOR / CODE_SMELL** `javascript:S3800` — Refactor this function to always return the same type.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:1113` **CRITICAL / CODE_SMELL** `javascript:S2004` — Refactor this code to not nest functions more than 5 levels deep.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:1124` **CRITICAL / CODE_SMELL** `javascript:S2004` — Refactor this code to not nest functions more than 5 levels deep.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:1127` **CRITICAL / CODE_SMELL** `javascript:S2004` — Refactor this code to not nest functions more than 5 levels deep.
+- `niakw_NiakVIO:upstream-lkg/providers/bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677.js:1130` **CRITICAL / CODE_SMELL** `javascript:S2004` — Refactor this code to not nest functions more than 5 levels deep.
+- `niakw_NiakVIO:upstream-lkg/providers/d2b77225d84c2929f5a4f1c90f1de3b43f45628c70543df2451f21d7c87cc6bd.js:5` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d2b77225d84c2929f5a4f1c90f1de3b43f45628c70543df2451f21d7c87cc6bd.js:6` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d2b77225d84c2929f5a4f1c90f1de3b43f45628c70543df2451f21d7c87cc6bd.js:7` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d2b77225d84c2929f5a4f1c90f1de3b43f45628c70543df2451f21d7c87cc6bd.js:8` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d2b77225d84c2929f5a4f1c90f1de3b43f45628c70543df2451f21d7c87cc6bd.js:9` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d2b77225d84c2929f5a4f1c90f1de3b43f45628c70543df2451f21d7c87cc6bd.js:10` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d2b77225d84c2929f5a4f1c90f1de3b43f45628c70543df2451f21d7c87cc6bd.js:11` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d2b77225d84c2929f5a4f1c90f1de3b43f45628c70543df2451f21d7c87cc6bd.js:12` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d2b77225d84c2929f5a4f1c90f1de3b43f45628c70543df2451f21d7c87cc6bd.js:13` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d2b77225d84c2929f5a4f1c90f1de3b43f45628c70543df2451f21d7c87cc6bd.js:14` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d2b77225d84c2929f5a4f1c90f1de3b43f45628c70543df2451f21d7c87cc6bd.js:15` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d2b77225d84c2929f5a4f1c90f1de3b43f45628c70543df2451f21d7c87cc6bd.js:15` **MAJOR / CODE_SMELL** `javascript:S1121` — Extract the assignment of "obj[key]" from this expression.
+- `niakw_NiakVIO:upstream-lkg/providers/d2b77225d84c2929f5a4f1c90f1de3b43f45628c70543df2451f21d7c87cc6bd.js:16` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d2b77225d84c2929f5a4f1c90f1de3b43f45628c70543df2451f21d7c87cc6bd.js:17` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d2b77225d84c2929f5a4f1c90f1de3b43f45628c70543df2451f21d7c87cc6bd.js:21` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d2b77225d84c2929f5a4f1c90f1de3b43f45628c70543df2451f21d7c87cc6bd.js:21` **MAJOR / CODE_SMELL** `javascript:S2814` — 'prop' is already defined.
+- `niakw_NiakVIO:upstream-lkg/providers/d2b77225d84c2929f5a4f1c90f1de3b43f45628c70543df2451f21d7c87cc6bd.js:27` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d2b77225d84c2929f5a4f1c90f1de3b43f45628c70543df2451f21d7c87cc6bd.js:28` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d2b77225d84c2929f5a4f1c90f1de3b43f45628c70543df2451f21d7c87cc6bd.js:32` **MAJOR / CODE_SMELL** `javascript:S1121` — Extract the assignment of "desc" from this expression.
+- `niakw_NiakVIO:upstream-lkg/providers/d2b77225d84c2929f5a4f1c90f1de3b43f45628c70543df2451f21d7c87cc6bd.js:36` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d2b77225d84c2929f5a4f1c90f1de3b43f45628c70543df2451f21d7c87cc6bd.js:36` **MAJOR / CODE_SMELL** `javascript:S878` — Unexpected use of comma operator.
+- `niakw_NiakVIO:upstream-lkg/providers/d2b77225d84c2929f5a4f1c90f1de3b43f45628c70543df2451f21d7c87cc6bd.js:41` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/d2b77225d84c2929f5a4f1c90f1de3b43f45628c70543df2451f21d7c87cc6bd.js:44` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d2b77225d84c2929f5a4f1c90f1de3b43f45628c70543df2451f21d7c87cc6bd.js:46` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d2b77225d84c2929f5a4f1c90f1de3b43f45628c70543df2451f21d7c87cc6bd.js:53` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d2b77225d84c2929f5a4f1c90f1de3b43f45628c70543df2451f21d7c87cc6bd.js:60` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d2b77225d84c2929f5a4f1c90f1de3b43f45628c70543df2451f21d7c87cc6bd.js:61` **MAJOR / CODE_SMELL** `javascript:S1121` — Extract the assignment of "generator" from this expression.
+- `niakw_NiakVIO:upstream-lkg/providers/d2b77225d84c2929f5a4f1c90f1de3b43f45628c70543df2451f21d7c87cc6bd.js:66` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d2b77225d84c2929f5a4f1c90f1de3b43f45628c70543df2451f21d7c87cc6bd.js:70` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d2b77225d84c2929f5a4f1c90f1de3b43f45628c70543df2451f21d7c87cc6bd.js:75` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d2b77225d84c2929f5a4f1c90f1de3b43f45628c70543df2451f21d7c87cc6bd.js:76` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d2b77225d84c2929f5a4f1c90f1de3b43f45628c70543df2451f21d7c87cc6bd.js:81` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d2b77225d84c2929f5a4f1c90f1de3b43f45628c70543df2451f21d7c87cc6bd.js:93` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.parseInt` over `parseInt`.
+- `niakw_NiakVIO:upstream-lkg/providers/d2b77225d84c2929f5a4f1c90f1de3b43f45628c70543df2451f21d7c87cc6bd.js:146` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d2b77225d84c2929f5a4f1c90f1de3b43f45628c70543df2451f21d7c87cc6bd.js:150` **MAJOR / CODE_SMELL** `javascript:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
+- `niakw_NiakVIO:upstream-lkg/providers/d2b77225d84c2929f5a4f1c90f1de3b43f45628c70543df2451f21d7c87cc6bd.js:158` **MINOR / CODE_SMELL** `javascript:S7758` — Prefer `String.fromCodePoint()` over `String.fromCharCode()`.
+- `niakw_NiakVIO:upstream-lkg/providers/d2b77225d84c2929f5a4f1c90f1de3b43f45628c70543df2451f21d7c87cc6bd.js:174` **MAJOR / CODE_SMELL** `javascript:S3800` — Refactor this function to always return the same type.
+- `niakw_NiakVIO:upstream-lkg/providers/d2b77225d84c2929f5a4f1c90f1de3b43f45628c70543df2451f21d7c87cc6bd.js:177` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.parseInt` over `parseInt`.
+- `niakw_NiakVIO:upstream-lkg/providers/d2b77225d84c2929f5a4f1c90f1de3b43f45628c70543df2451f21d7c87cc6bd.js:182` **MINOR / CODE_SMELL** `javascript:S4138` — Expected a `for-of` loop instead of a `for` loop with this simple iteration.
+- `niakw_NiakVIO:upstream-lkg/providers/d2b77225d84c2929f5a4f1c90f1de3b43f45628c70543df2451f21d7c87cc6bd.js:191` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.parseInt` over `parseInt`.
+- `niakw_NiakVIO:upstream-lkg/providers/d2b77225d84c2929f5a4f1c90f1de3b43f45628c70543df2451f21d7c87cc6bd.js:192` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.parseInt` over `parseInt`.
+- `niakw_NiakVIO:upstream-lkg/providers/d2b77225d84c2929f5a4f1c90f1de3b43f45628c70543df2451f21d7c87cc6bd.js:197` **MINOR / CODE_SMELL** `javascript:S7780` — `String.raw` should be used to avoid escaping `\`.
+- `niakw_NiakVIO:upstream-lkg/providers/d2b77225d84c2929f5a4f1c90f1de3b43f45628c70543df2451f21d7c87cc6bd.js:197` **MINOR / CODE_SMELL** `javascript:S7780` — `String.raw` should be used to avoid escaping `\`.
+- `niakw_NiakVIO:upstream-lkg/providers/d2b77225d84c2929f5a4f1c90f1de3b43f45628c70543df2451f21d7c87cc6bd.js:202` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:upstream-lkg/providers/d2b77225d84c2929f5a4f1c90f1de3b43f45628c70543df2451f21d7c87cc6bd.js:208` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d2b77225d84c2929f5a4f1c90f1de3b43f45628c70543df2451f21d7c87cc6bd.js:209` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d2b77225d84c2929f5a4f1c90f1de3b43f45628c70543df2451f21d7c87cc6bd.js:213` **MINOR / CODE_SMELL** `javascript:S7758` — Prefer `String.fromCodePoint()` over `String.fromCharCode()`.
+- `niakw_NiakVIO:upstream-lkg/providers/d2b77225d84c2929f5a4f1c90f1de3b43f45628c70543df2451f21d7c87cc6bd.js:213` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.parseInt` over `parseInt`.
+- `niakw_NiakVIO:upstream-lkg/providers/d2b77225d84c2929f5a4f1c90f1de3b43f45628c70543df2451f21d7c87cc6bd.js:239` **MINOR / CODE_SMELL** `javascript:S7750` — Prefer `.findLast(…)` over `.filter(…).pop()`.
+- `niakw_NiakVIO:upstream-lkg/providers/d2b77225d84c2929f5a4f1c90f1de3b43f45628c70543df2451f21d7c87cc6bd.js:257` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:upstream-lkg/providers/d2b77225d84c2929f5a4f1c90f1de3b43f45628c70543df2451f21d7c87cc6bd.js:263` **MAJOR / BUG** `javascript:S3531` — Add a "yield" statement to this generator.
+- `niakw_NiakVIO:upstream-lkg/providers/d2b77225d84c2929f5a4f1c90f1de3b43f45628c70543df2451f21d7c87cc6bd.js:264` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d2b77225d84c2929f5a4f1c90f1de3b43f45628c70543df2451f21d7c87cc6bd.js:276` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/d2b77225d84c2929f5a4f1c90f1de3b43f45628c70543df2451f21d7c87cc6bd.js:277` **MAJOR / CODE_SMELL** `javascript:S3358` — Extract this nested ternary operation into an independent statement.
+- `niakw_NiakVIO:upstream-lkg/providers/d2b77225d84c2929f5a4f1c90f1de3b43f45628c70543df2451f21d7c87cc6bd.js:277` **MINOR / CODE_SMELL** `javascript:S7781` — Prefer `String#replaceAll()` over `String#replace()`.
+- `niakw_NiakVIO:upstream-lkg/providers/d2b77225d84c2929f5a4f1c90f1de3b43f45628c70543df2451f21d7c87cc6bd.js:287` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:upstream-lkg/providers/d2b77225d84c2929f5a4f1c90f1de3b43f45628c70543df2451f21d7c87cc6bd.js:331` **MINOR / CODE_SMELL** `javascript:S7750` — Prefer `.findLast(…)` over `.filter(…).pop()`.
+- `niakw_NiakVIO:upstream-lkg/providers/d2b77225d84c2929f5a4f1c90f1de3b43f45628c70543df2451f21d7c87cc6bd.js:347` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:upstream-lkg/providers/d2b77225d84c2929f5a4f1c90f1de3b43f45628c70543df2451f21d7c87cc6bd.js:354` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:upstream-lkg/providers/d2b77225d84c2929f5a4f1c90f1de3b43f45628c70543df2451f21d7c87cc6bd.js:370` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:upstream-lkg/providers/d2b77225d84c2929f5a4f1c90f1de3b43f45628c70543df2451f21d7c87cc6bd.js:391` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:upstream-lkg/providers/d2b77225d84c2929f5a4f1c90f1de3b43f45628c70543df2451f21d7c87cc6bd.js:417` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:upstream-lkg/providers/d2b77225d84c2929f5a4f1c90f1de3b43f45628c70543df2451f21d7c87cc6bd.js:436` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:upstream-lkg/providers/d2b77225d84c2929f5a4f1c90f1de3b43f45628c70543df2451f21d7c87cc6bd.js:454` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:upstream-lkg/providers/d2b77225d84c2929f5a4f1c90f1de3b43f45628c70543df2451f21d7c87cc6bd.js:479` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:upstream-lkg/providers/d2b77225d84c2929f5a4f1c90f1de3b43f45628c70543df2451f21d7c87cc6bd.js:505` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:upstream-lkg/providers/d2b77225d84c2929f5a4f1c90f1de3b43f45628c70543df2451f21d7c87cc6bd.js:527` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.parseInt` over `parseInt`.
+- `niakw_NiakVIO:upstream-lkg/providers/d2b77225d84c2929f5a4f1c90f1de3b43f45628c70543df2451f21d7c87cc6bd.js:533` **CRITICAL / CODE_SMELL** `javascript:S3776` — Refactor this function to reduce its Cognitive Complexity from 46 to the 15 allowed.
+- `niakw_NiakVIO:upstream-lkg/providers/d2b77225d84c2929f5a4f1c90f1de3b43f45628c70543df2451f21d7c87cc6bd.js:560` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.parseInt` over `parseInt`.
+- `niakw_NiakVIO:upstream-lkg/providers/d2b77225d84c2929f5a4f1c90f1de3b43f45628c70543df2451f21d7c87cc6bd.js:585` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.parseInt` over `parseInt`.
+- `niakw_NiakVIO:upstream-lkg/providers/d2b77225d84c2929f5a4f1c90f1de3b43f45628c70543df2451f21d7c87cc6bd.js:604` **MAJOR / CODE_SMELL** `javascript:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
+- `niakw_NiakVIO:upstream-lkg/providers/d2b77225d84c2929f5a4f1c90f1de3b43f45628c70543df2451f21d7c87cc6bd.js:604` **MAJOR / CODE_SMELL** `javascript:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
+- `niakw_NiakVIO:upstream-lkg/providers/d2b77225d84c2929f5a4f1c90f1de3b43f45628c70543df2451f21d7c87cc6bd.js:606` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/d2b77225d84c2929f5a4f1c90f1de3b43f45628c70543df2451f21d7c87cc6bd.js:632` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/d2b77225d84c2929f5a4f1c90f1de3b43f45628c70543df2451f21d7c87cc6bd.js:642` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:upstream-lkg/providers/d2b77225d84c2929f5a4f1c90f1de3b43f45628c70543df2451f21d7c87cc6bd.js:654` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:upstream-lkg/providers/d2b77225d84c2929f5a4f1c90f1de3b43f45628c70543df2451f21d7c87cc6bd.js:659` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:tests/patched_provider_runtime_smoke.test.cjs` **BLOCKER / CODE_SMELL** `javascript:S2187` — Add some tests to this file or delete it.
+- `niakw_NiakVIO:scripts/health_check.mjs:1712` **MAJOR / CODE_SMELL** `javascript:S3358` — Extract this nested ternary operation into an independent statement.
+- `niakw_NiakVIO:tests/provider_signature_fallback.test.cjs` **BLOCKER / CODE_SMELL** `javascript:S2187` — Add some tests to this file or delete it.
+- `niakw_NiakVIO:scripts/provider_patches/adaptive_domain_recovery.py:35` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 18 to the 15 allowed.
+- `niakw_NiakVIO:scripts/provider_capabilities.py:41` **MAJOR / CODE_SMELL** `python:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
+- `niakw_NiakVIO:scripts/resolve_provider_hubs.py:127` **CRITICAL / VULNERABILITY** `python:S4423` — Use a stronger protocol, or upgrade to Python 3.10+ which uses secure defaults.
+- `niakw_NiakVIO:scripts/resolve_provider_hubs.py:297` **MAJOR / CODE_SMELL** `python:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
+- `niakw_NiakVIO:tests/provider_versioning_test.py:10` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:scripts/provider_dns_preflight.mjs:210` **MAJOR / CODE_SMELL** `javascript:S3358` — Extract this nested ternary operation into an independent statement.
+- `niakw_NiakVIO:scripts/provider_dns_preflight.mjs:211` **MAJOR / CODE_SMELL** `javascript:S3358` — Extract this nested ternary operation into an independent statement.
+- `niakw_NiakVIO:scripts/provider_dns_preflight.mjs:790` **MINOR / CODE_SMELL** `javascript:S7750` — Prefer `.find(…)` over `.filter(…)`.
+- `niakw_NiakVIO:scripts/apply_dns_migration_overrides.py:83` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 54 to the 15 allowed.
+- `niakw_NiakVIO:scripts/apply_dns_migration_overrides.py:196` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
+- `niakw_NiakVIO:scripts/provider_dns_preflight.mjs:541` **CRITICAL / CODE_SMELL** `javascript:S3776` — Refactor this function to reduce its Cognitive Complexity from 31 to the 15 allowed.
+- `niakw_NiakVIO:scripts/provider_dns_preflight.mjs:74` **MINOR / CODE_SMELL** `javascript:S7744` — The empty object is useless.
+- `niakw_NiakVIO:scripts/provider_dns_preflight.mjs:143` **MAJOR / CODE_SMELL** `javascript:S3358` — Extract this nested ternary operation into an independent statement.
+- `niakw_NiakVIO:scripts/provider_dns_preflight.mjs:143` **MAJOR / CODE_SMELL** `javascript:S3358` — Extract this nested ternary operation into an independent statement.
+- `niakw_NiakVIO:scripts/provider_dns_preflight.mjs:170` **MINOR / CODE_SMELL** `javascript:S6594` — Use the "RegExp.exec()" method instead.
+- `niakw_NiakVIO:scripts/provider_dns_preflight.mjs:171` **MINOR / CODE_SMELL** `javascript:S6594` — Use the "RegExp.exec()" method instead.
+- `niakw_NiakVIO:scripts/provider_dns_preflight.mjs:185` **MAJOR / CODE_SMELL** `javascript:S3358` — Extract this nested ternary operation into an independent statement.
+- `niakw_NiakVIO:scripts/apply_dns_migration_overrides.py:83` **BLOCKER / CODE_SMELL** `python:S3516` — Refactor this method to not always return the same value.
+- `niakw_NiakVIO:scripts/apply_dns_migration_overrides.py:93` **MAJOR / VULNERABILITY** `pythonsecurity:S8707` — LLMs running this code with faulty CLI arguments can escape file system restrictions. Refactor this code to validate the constructed path before accessing the file system.
+- `niakw_NiakVIO:scripts/apply_dns_migration_overrides.py:95` **MAJOR / VULNERABILITY** `pythonsecurity:S8707` — LLMs running this code with faulty CLI arguments can escape file system restrictions. Refactor this code to validate the constructed path before accessing the file system.
+- `niakw_NiakVIO:scripts/apply_dns_migration_overrides.py:154` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
+- `niakw_NiakVIO:scripts/apply_dns_migration_overrides.py:154` **MAJOR / VULNERABILITY** `pythonsecurity:S8707` — LLMs running this code with faulty CLI arguments can escape file system restrictions. Refactor this code to validate the constructed path before accessing the file system.
+- `niakw_NiakVIO:scripts/provider_dns_preflight.mjs:420` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
+- `niakw_NiakVIO:scripts/provider_dns_preflight.mjs:429` **CRITICAL / CODE_SMELL** `javascript:S3776` — Refactor this function to reduce its Cognitive Complexity from 19 to the 15 allowed.
+- `niakw_NiakVIO:scripts/provider_dns_preflight.mjs:470` **MAJOR / CODE_SMELL** `javascript:S3358` — Extract this nested ternary operation into an independent statement.
+- `niakw_NiakVIO:scripts/provider_dns_preflight.mjs:470` **MAJOR / CODE_SMELL** `javascript:S3358` — Extract this nested ternary operation into an independent statement.
+- `niakw_NiakVIO:scripts/provider_dns_preflight.mjs:597` **MAJOR / CODE_SMELL** `javascript:S3358` — Extract this nested ternary operation into an independent statement.
+- `niakw_NiakVIO:scripts/provider_dns_preflight.mjs:647` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
+- `niakw_NiakVIO:scripts/provider_dns_preflight.mjs:663` **CRITICAL / CODE_SMELL** `javascript:S3776` — Refactor this function to reduce its Cognitive Complexity from 26 to the 15 allowed.
+- `niakw_NiakVIO:scripts/provider_dns_preflight.mjs:672` **MINOR / CODE_SMELL** `javascript:S7744` — The empty object is useless.
+- `niakw_NiakVIO:scripts/provider_dns_preflight.mjs:697` **MINOR / CODE_SMELL** `javascript:S7744` — The empty object is useless.
+- `niakw_NiakVIO:scripts/provider_dns_preflight.mjs:997` **MAJOR / CODE_SMELL** `javascript:S7785` — Prefer top-level await over using a promise chain.
+- `niakw_NiakVIO:scripts/reapply_published_overrides.py:39` **CRITICAL / CODE_SMELL** `python:S1192` — Define a constant instead of duplicating this literal "manifest.json" 3 times.
+- `niakw_NiakVIO:scripts/reapply_published_overrides.py:256` **MAJOR / CODE_SMELL** `python:S1172` — Remove the unused function parameter "changed".
+- `niakw_NiakVIO:.github/workflows/sync.yml:267` **MAJOR / VULNERABILITY** `githubactions:S8543` — Using dependencies without locking resolved versions is security-sensitive.
+- `niakw_NiakVIO:.github/workflows/availability.yml:47` **MAJOR / VULNERABILITY** `githubactions:S8543` — Using dependencies without locking resolved versions is security-sensitive.
+- `niakw_NiakVIO:.github/workflows/sync.yml:120` **MAJOR / VULNERABILITY** `githubactions:S8543` — Using dependencies without locking resolved versions is security-sensitive.
+- `niakw_NiakVIO:tests/network_guard.test.cjs` **BLOCKER / CODE_SMELL** `javascript:S2187` — Add some tests to this file or delete it.
+- `niakw_NiakVIO:tests/overrides_test.py:29` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:scripts/deep_repair_loop.py:56` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
+- `niakw_NiakVIO:scripts/deep_repair_loop.py:56` **MAJOR / VULNERABILITY** `pythonsecurity:S8707` — LLMs running this code with faulty CLI arguments can escape file system restrictions. Refactor this code to validate the constructed path before accessing the file system.
+- `niakw_NiakVIO:scripts/deep_repair_loop.py:102` **CRITICAL / CODE_SMELL** `python:S1192` — Define a constant instead of duplicating this literal "health-results.json" 3 times.
+- `niakw_NiakVIO:scripts/deep_repair_loop.py:110` **MAJOR / VULNERABILITY** `pythonsecurity:S8705` — LLMs running this code with faulty CLI arguments can escape from shell sandboxes. Refactor this code to validate untrusted data before passing them to OS commands.
+- `niakw_NiakVIO:scripts/discover_candidates.py:90` **MAJOR / CODE_SMELL** `python:S8513` — Replace chained "startswith" calls with a single call using a tuple argument.
+- `niakw_NiakVIO:scripts/generate_release_hashes.py:16` **CRITICAL / CODE_SMELL** `python:S1192` — Define a constant instead of duplicating this literal "FILE-HASHES.json" 3 times.
+- `niakw_NiakVIO:scripts/generate_release_hashes.py:16` **CRITICAL / CODE_SMELL** `python:S1192` — Define a constant instead of duplicating this literal "PATCH-SHA256SUMS.txt" 3 times.
+- `niakw_NiakVIO:scripts/health_check.mjs:36` **MAJOR / CODE_SMELL** `javascript:S3358` — Extract this nested ternary operation into an independent statement.
+- `niakw_NiakVIO:scripts/health_check.mjs:38` **MAJOR / CODE_SMELL** `javascript:S3358` — Extract this nested ternary operation into an independent statement.
+- `niakw_NiakVIO:scripts/health_check.mjs:148` **MINOR / CODE_SMELL** `javascript:S6594` — Use the "RegExp.exec()" method instead.
+- `niakw_NiakVIO:scripts/health_check.mjs:167` **MAJOR / CODE_SMELL** `javascript:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
+- `niakw_NiakVIO:scripts/health_check.mjs:200` **MINOR / CODE_SMELL** `javascript:S6594` — Use the "RegExp.exec()" method instead.
+- `niakw_NiakVIO:scripts/health_check.mjs:200` **MAJOR / CODE_SMELL** `javascript:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
+- `niakw_NiakVIO:scripts/health_check.mjs:354` **CRITICAL / CODE_SMELL** `javascript:S3776` — Refactor this function to reduce its Cognitive Complexity from 16 to the 15 allowed.
+- `niakw_NiakVIO:scripts/health_check.mjs:551` **MINOR / CODE_SMELL** `javascript:S7744` — The empty object is useless.
+- `niakw_NiakVIO:scripts/health_check.mjs:551` **MINOR / CODE_SMELL** `javascript:S7744` — The empty object is useless.
+- `niakw_NiakVIO:scripts/health_check.mjs:717` **MAJOR / CODE_SMELL** `javascript:S4165` — Review this redundant assignment: "variantReachable" already holds the assigned value along all execution paths.
+- `niakw_NiakVIO:scripts/health_check.mjs:804` **MAJOR / CODE_SMELL** `javascript:S4165` — Review this redundant assignment: "payloadVerified" already holds the assigned value along all execution paths.
+- `niakw_NiakVIO:scripts/health_check.mjs:805` **MAJOR / CODE_SMELL** `javascript:S4165` — Review this redundant assignment: "playbackVerified" already holds the assigned value along all execution paths.
+- `niakw_NiakVIO:scripts/health_check.mjs:1037` **MAJOR / CODE_SMELL** `javascript:S3358` — Extract this nested ternary operation into an independent statement.
+- `niakw_NiakVIO:scripts/health_check.mjs:1303` **CRITICAL / CODE_SMELL** `javascript:S3776` — Refactor this function to reduce its Cognitive Complexity from 28 to the 15 allowed.
+- `niakw_NiakVIO:scripts/health_check.mjs:1347` **CRITICAL / CODE_SMELL** `javascript:S3776` — Refactor this function to reduce its Cognitive Complexity from 22 to the 15 allowed.
+- `niakw_NiakVIO:scripts/health_check.mjs:1378` **MAJOR / CODE_SMELL** `javascript:S5843` — Simplify this regular expression to reduce its complexity from 21 to the 20 allowed.
+- `niakw_NiakVIO:scripts/health_check.mjs:1394` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
+- `niakw_NiakVIO:scripts/health_check.mjs:1395` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function that depends on "String.localeCompare", to reliably sort elements alphabetically.
+- `niakw_NiakVIO:scripts/health_check.mjs:1396` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function that depends on "String.localeCompare", to reliably sort elements alphabetically.
+- `niakw_NiakVIO:scripts/health_check.mjs:1399` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function that depends on "String.localeCompare", to reliably sort elements alphabetically.
+- `niakw_NiakVIO:scripts/health_check.mjs:1547` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
+- `niakw_NiakVIO:scripts/health_check.mjs:1615` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
+- `niakw_NiakVIO:scripts/health_check.mjs:1616` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
+- `niakw_NiakVIO:scripts/health_check.mjs:1617` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
+- `niakw_NiakVIO:scripts/health_check.mjs:1618` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
+- `niakw_NiakVIO:scripts/health_check.mjs:1623` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
+- `niakw_NiakVIO:scripts/health_check.mjs:1624` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
+- `niakw_NiakVIO:scripts/health_check.mjs:1625` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function that depends on "String.localeCompare", to reliably sort elements alphabetically.
+- `niakw_NiakVIO:scripts/health_check.mjs:1642` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function that depends on "String.localeCompare", to reliably sort elements alphabetically.
+- `niakw_NiakVIO:scripts/health_check.mjs:1716` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
+- `niakw_NiakVIO:scripts/health_check.mjs:1724` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
+- `niakw_NiakVIO:scripts/health_check.mjs:1725` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
+- `niakw_NiakVIO:scripts/health_check.mjs:1726` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
+- `niakw_NiakVIO:scripts/health_check.mjs:1742` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
+- `niakw_NiakVIO:scripts/health_check.mjs:1745` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
+- `niakw_NiakVIO:scripts/health_check.mjs:1776` **MAJOR / CODE_SMELL** `javascript:S3358` — Extract this nested ternary operation into an independent statement.
+- `niakw_NiakVIO:scripts/health_check.mjs:1778` **MAJOR / CODE_SMELL** `javascript:S3358` — Extract this nested ternary operation into an independent statement.
+- `niakw_NiakVIO:scripts/health_check.mjs:1819` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
+- `niakw_NiakVIO:scripts/health_check.mjs:1820` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
+- `niakw_NiakVIO:scripts/health_check.mjs:1830` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
+- `niakw_NiakVIO:scripts/health_check.mjs:1853` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
+- `niakw_NiakVIO:scripts/health_check.mjs:1854` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
+- `niakw_NiakVIO:scripts/health_check.mjs:1855` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
+- `niakw_NiakVIO:scripts/health_check.mjs:1856` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
+- `niakw_NiakVIO:scripts/health_check.mjs:1857` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
+- `niakw_NiakVIO:scripts/health_check.mjs:1858` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
+- `niakw_NiakVIO:scripts/health_check.mjs:1860` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
+- `niakw_NiakVIO:scripts/network_guard.cjs:7` **MINOR / CODE_SMELL** `javascript:S1313` — Make sure using a hardcoded IP address 169.254.169.254 is safe here.
+- `niakw_NiakVIO:scripts/network_guard.cjs:7` **MINOR / CODE_SMELL** `javascript:S1313` — Make sure using a hardcoded IP address 100.100.100.200 is safe here.
+- `niakw_NiakVIO:scripts/network_guard.cjs:24` **MINOR / CODE_SMELL** `javascript:S6594` — Use the "RegExp.exec()" method instead.
+- `niakw_NiakVIO:scripts/network_guard.cjs:31` **MAJOR / CODE_SMELL** `javascript:S3358` — Extract this nested ternary operation into an independent statement.
+- `niakw_NiakVIO:scripts/network_guard.cjs:40` **MINOR / CODE_SMELL** `javascript:S7754` — Prefer `.some(…)` over `.find(…)`.
+- `niakw_NiakVIO:scripts/network_guard.cjs:46` **MAJOR / CODE_SMELL** `javascript:S3358` — Extract this nested ternary operation into an independent statement.
+- `niakw_NiakVIO:scripts/promote_candidates.py:52` **CRITICAL / CODE_SMELL** `python:S1192` — Define a constant instead of duplicating this literal "manifest.json" 3 times.
+- `niakw_NiakVIO:scripts/promote_candidates.py:323` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 16 to the 15 allowed.
+- `niakw_NiakVIO:scripts/promote_candidates.py:429` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 76 to the 15 allowed.
+- `niakw_NiakVIO:scripts/promote_candidates.py:432` **MAJOR / CODE_SMELL** `python:S1854` — Remove this assignment to local variable 'supported_types'; the value is never used.
+- `niakw_NiakVIO:scripts/promote_candidates.py:493` **MAJOR / CODE_SMELL** `python:S5843` — Simplify this regular expression to reduce its complexity from 21 to the 20 allowed.
+- `niakw_NiakVIO:scripts/promote_candidates.py:500` **MAJOR / CODE_SMELL** `python:S5843` — Simplify this regular expression to reduce its complexity from 26 to the 20 allowed.
+- `niakw_NiakVIO:scripts/promote_candidates.py:504` **MAJOR / CODE_SMELL** `python:S5843` — Simplify this regular expression to reduce its complexity from 44 to the 20 allowed.
+- `niakw_NiakVIO:scripts/promote_candidates.py:574` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 21 to the 15 allowed.
+- `niakw_NiakVIO:scripts/promote_candidates.py:1117` **MAJOR / CODE_SMELL** `python:S1854` — Remove this assignment to local variable 'language_present'; the value is never used.
+- `niakw_NiakVIO:scripts/promote_candidates.py:1471` **MAJOR / CODE_SMELL** `python:S1172` — Remove the unused function parameter "history_item".
+- `niakw_NiakVIO:scripts/promote_candidates.py:1474` **MAJOR / CODE_SMELL** `python:S1172` — Remove the unused function parameter "evidence_registry".
+- `niakw_NiakVIO:scripts/promote_candidates.py:1475` **MAJOR / CODE_SMELL** `python:S1172` — Remove the unused function parameter "previous_record".
+- `niakw_NiakVIO:scripts/promote_candidates.py:1850` **MAJOR / CODE_SMELL** `python:S1515` — Add a parameter to function "rank" and use variable "decisions" as its default value;The value of "decisions" might change at the next loop iteration.
+- `niakw_NiakVIO:scripts/provider_worker.cjs:116` **MAJOR / CODE_SMELL** `javascript:S3358` — Extract this nested ternary operation into an independent statement.
+- `niakw_NiakVIO:scripts/provider_worker.cjs:117` **MAJOR / CODE_SMELL** `javascript:S3358` — Extract this nested ternary operation into an independent statement.
+- `niakw_NiakVIO:scripts/provider_worker.cjs:118` **MAJOR / CODE_SMELL** `javascript:S3358` — Extract this nested ternary operation into an independent statement.
+- `niakw_NiakVIO:scripts/provider_worker.cjs:155` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function that depends on "String.localeCompare", to reliably sort elements alphabetically.
+- `niakw_NiakVIO:scripts/provider_worker.cjs:156` **MAJOR / CODE_SMELL** `javascript:S4624` — Refactor this code to not use nested template literals.
+- `niakw_NiakVIO:scripts/provider_worker.cjs:225` **CRITICAL / CODE_SMELL** `javascript:S3776` — Refactor this function to reduce its Cognitive Complexity from 23 to the 15 allowed.
+- `niakw_NiakVIO:scripts/provider_worker.cjs:233` **MAJOR / CODE_SMELL** `javascript:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
+- `niakw_NiakVIO:scripts/provider_worker.cjs:318` **MINOR / CODE_SMELL** `javascript:S7744` — The empty object is useless.
+- `niakw_NiakVIO:scripts/provider_worker.cjs:422` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:scripts/provider_worker.cjs:422` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:scripts/provider_worker.cjs:500` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:scripts/provider_worker.cjs:523` **CRITICAL / CODE_SMELL** `javascript:S3776` — Refactor this function to reduce its Cognitive Complexity from 22 to the 15 allowed.
+- `niakw_NiakVIO:scripts/provider_worker.cjs:552` **MAJOR / CODE_SMELL** `javascript:S5843` — Simplify this regular expression to reduce its complexity from 32 to the 20 allowed.
+- `niakw_NiakVIO:scripts/provider_worker.cjs:552` **MAJOR / CODE_SMELL** `javascript:S6535` — Unnecessary escape character: \".
+- `niakw_NiakVIO:scripts/provider_worker.cjs:552` **MAJOR / CODE_SMELL** `javascript:S6535` — Unnecessary escape character: \".
+- `niakw_NiakVIO:scripts/provider_worker.cjs:552` **MAJOR / CODE_SMELL** `javascript:S6535` — Unnecessary escape character: \".
+- `niakw_NiakVIO:scripts/provider_worker.cjs:552` **MAJOR / CODE_SMELL** `javascript:S6535` — Unnecessary escape character: \".
+- `niakw_NiakVIO:scripts/provider_worker.cjs:552` **MAJOR / CODE_SMELL** `javascript:S6535` — Unnecessary escape character: \".
+- `niakw_NiakVIO:scripts/provider_worker.cjs:552` **MAJOR / CODE_SMELL** `javascript:S6535` — Unnecessary escape character: \".
+- `niakw_NiakVIO:scripts/provider_worker.cjs:556` **MAJOR / CODE_SMELL** `javascript:S6535` — Unnecessary escape character: \".
+- `niakw_NiakVIO:scripts/provider_worker.cjs:576` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function that depends on "String.localeCompare", to reliably sort elements alphabetically.
+- `niakw_NiakVIO:scripts/provider_worker.cjs:588` **MAJOR / CODE_SMELL** `javascript:S3358` — Extract this nested ternary operation into an independent statement.
+- `niakw_NiakVIO:scripts/provider_worker.cjs:733` **MAJOR / VULNERABILITY** `jssecurity:S8707` — A path canonicalized from CLI-controlled data must be validated before use.
+- `niakw_NiakVIO:scripts/provider_worker.cjs:809` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
+- `niakw_NiakVIO:scripts/provider_worker.cjs:859` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
+- `niakw_NiakVIO:scripts/runtime_repair.py:341` **MINOR / CODE_SMELL** `python:S1481` — Remove the unused local variable "evidence".
+- `niakw_NiakVIO:scripts/stage_published.py:54` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 21 to the 15 allowed.
+- `niakw_NiakVIO:scripts/sync_curated.py:146` **MAJOR / CODE_SMELL** `python:S8513` — Replace chained "startswith" calls with a single call using a tuple argument.
+- `niakw_NiakVIO:scripts/sync_curated.py:222` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 17 to the 15 allowed.
+- `niakw_NiakVIO:scripts/sync_curated.py:257` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 34 to the 15 allowed.
+- `niakw_NiakVIO:scripts/update_availability.py:77` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 91 to the 15 allowed.
+- `niakw_NiakVIO:scripts/update_availability.py:147` **MAJOR / CODE_SMELL** `python:S3358` — Extract this nested conditional expression into an independent statement.
+- `niakw_NiakVIO:scripts/update_availability_report.py:75` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 19 to the 15 allowed.
+- `niakw_NiakVIO:scripts/validate_release_integrity.py:26` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 32 to the 15 allowed.
+- `niakw_NiakVIO:scripts/validate_release_integrity.py:57` **MAJOR / CODE_SMELL** `python:S6326` — Replace spaces with quantifier `{2}`.
+- `niakw_NiakVIO:scripts/validate_release_integrity.py:79` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 24 to the 15 allowed.
+- `niakw_NiakVIO:scripts/validate_release_integrity.py:123` **CRITICAL / CODE_SMELL** `python:S1192` — Define a constant instead of duplicating this literal "manifest.json" 3 times.
+- `niakw_NiakVIO:scripts/validate_release_integrity.py:124` **CRITICAL / CODE_SMELL** `python:S1192` — Define a constant instead of duplicating this literal "vf/manifest.json" 3 times.
+- `niakw_NiakVIO:scripts/validate_route_overrides.py:12` **MAJOR / VULNERABILITY** `pythonsecurity:S8707` — LLMs running this code with faulty CLI arguments can escape file system restrictions. Refactor this code to validate the constructed path before accessing the file system.
+- `niakw_NiakVIO:scripts/validate_route_overrides.py:16` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 68 to the 15 allowed.
+- `niakw_NiakVIO:scripts/validate_route_overrides.py:78` **MAJOR / VULNERABILITY** `pythonsecurity:S8707` — LLMs running this code with faulty CLI arguments can escape file system restrictions. Refactor this code to validate the constructed path before accessing the file system.
+- `niakw_NiakVIO:scripts/provider_patches/html_search_recovery.py:23` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 59 to the 15 allowed.
+- `niakw_NiakVIO:scripts/provider_patches/metadata_context_recovery.py:56` **MAJOR / CODE_SMELL** `python:S1515` — Add a parameter to function "replace_call" and use variable "p1" as its default value;The value of "p1" might change at the next loop iteration.
+- `niakw_NiakVIO:scripts/provider_patches/metadata_context_recovery.py:56` **MAJOR / CODE_SMELL** `python:S1515` — Add a parameter to function "replace_call" and use variable "p3" as its default value;The value of "p3" might change at the next loop iteration.
+- `niakw_NiakVIO:scripts/provider_patches/metadata_context_recovery.py:56` **MAJOR / CODE_SMELL** `python:S1515` — Add a parameter to function "replace_call" and use variable "p4" as its default value;The value of "p4" might change at the next loop iteration.
+- `niakw_NiakVIO:scripts/provider_patches/metadata_context_recovery.py:56` **MAJOR / CODE_SMELL** `python:S1515` — Add a parameter to function "replace_call" and use variable "p2" as its default value;The value of "p2" might change at the next loop iteration.
+- `niakw_NiakVIO:scripts/provider_patches/metadata_context_recovery.py:57` **MAJOR / CODE_SMELL** `python:S1515` — Add a parameter to function "replace_call" and use variable "context" as its default value;The value of "context" might change at the next loop iteration.
+- `niakw_NiakVIO:providers/streamflix.js:94` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:providers/streamflix.js:200` **CRITICAL / CODE_SMELL** `javascript:S3776` — Refactor this function to reduce its Cognitive Complexity from 29 to the 15 allowed.
+- `niakw_NiakVIO:providers/streamflix.js:206` **MAJOR / CODE_SMELL** `javascript:S1854` — Remove this useless assignment to variable "expectedResponses".
+- `niakw_NiakVIO:providers/streamflix.js:206` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.parseInt` over `parseInt`.
+- `niakw_NiakVIO:providers/streamflix.js:230` **MAJOR / CODE_SMELL** `javascript:S1854` — Remove this useless assignment to variable "expectedResponses".
+- `niakw_NiakVIO:providers/streamflix.js:247` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.parseInt` over `parseInt`.
+- `niakw_NiakVIO:providers/streamflix.js:265` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:providers/streamflix.js:271` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:providers/streamflix.js:314` **MAJOR / CODE_SMELL** `javascript:S3800` — Refactor this function to always return the same type.
+- `niakw_NiakVIO:providers/streamflix.js:328` **MAJOR / CODE_SMELL** `javascript:S3800` — Refactor this function to always return the same type.
+- `niakw_NiakVIO:providers/streamflix.js:398` **MAJOR / CODE_SMELL** `javascript:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
+- `niakw_NiakVIO:providers/streamflix.js:399` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.parseInt` over `parseInt`.
+- `niakw_NiakVIO:providers/streamflix.js:402` **CRITICAL / CODE_SMELL** `javascript:S3776` — Refactor this function to reduce its Cognitive Complexity from 21 to the 15 allowed.
+- `niakw_NiakVIO:providers/streamflix.js:433` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.parseInt` over `parseInt`.
+- `niakw_NiakVIO:providers/vidnest-anime.js:63` **MAJOR / CODE_SMELL** `javascript:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
+- `niakw_NiakVIO:providers/vidnest-anime.js:72` **MINOR / CODE_SMELL** `javascript:S7758` — Prefer `String.fromCodePoint()` over `String.fromCharCode()`.
+- `niakw_NiakVIO:providers/vidnest-anime.js:80` **MINOR / CODE_SMELL** `javascript:S7758` — Prefer `String#codePointAt()` over `String#charCodeAt()`.
+- `niakw_NiakVIO:providers/vidnest-anime.js:110` **MINOR / CODE_SMELL** `javascript:S7758` — Prefer `String.fromCodePoint()` over `String.fromCharCode()`.
+- `niakw_NiakVIO:providers/vidnest-anime.js:170` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.parseInt` over `parseInt`.
+- `niakw_NiakVIO:providers/vidnest-anime.js:216` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:providers/vidnest-anime.js:303` **MAJOR / CODE_SMELL** `javascript:S3800` — Refactor this function to always return the same type.
+- `niakw_NiakVIO:providers/vidnest-anime.js:475` **MINOR / CODE_SMELL** `javascript:S7778` — Do not call `Array#push()` multiple times.
+- `niakw_NiakVIO:providers/vidnest-anime.js:508` **MAJOR / CODE_SMELL** `javascript:S4043` — Move this array "sort" operation to a separate statement or replace it with "toSorted".
+- `niakw_NiakVIO:providers/vidnest-anime.js:509` **CRITICAL / CODE_SMELL** `javascript:S2004` — Refactor this code to not nest functions more than 5 levels deep.
+- `niakw_NiakVIO:providers/vidnest-anime.js:509` **MAJOR / CODE_SMELL** `javascript:S7721` — Move function 'getPriority' to the outer scope.
+- `niakw_NiakVIO:providers/vidnest.js:51` **MAJOR / CODE_SMELL** `javascript:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
+- `niakw_NiakVIO:providers/vidnest.js:60` **MINOR / CODE_SMELL** `javascript:S7758` — Prefer `String.fromCodePoint()` over `String.fromCharCode()`.
+- `niakw_NiakVIO:providers/vidnest.js:68` **MINOR / CODE_SMELL** `javascript:S7758` — Prefer `String#codePointAt()` over `String#charCodeAt()`.
+- `niakw_NiakVIO:providers/vidnest.js:98` **MINOR / CODE_SMELL** `javascript:S7758` — Prefer `String.fromCodePoint()` over `String.fromCharCode()`.
+- `niakw_NiakVIO:providers/vidnest.js:153` **MINOR / CODE_SMELL** `javascript:S1126` — Replace this if-then-else flow by a single return statement.
+- `niakw_NiakVIO:providers/vidnest.js:191` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.parseInt` over `parseInt`.
+- `niakw_NiakVIO:providers/vidnest.js:217` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.parseInt` over `parseInt`.
+- `niakw_NiakVIO:providers/vidnest.js:393` **MAJOR / CODE_SMELL** `javascript:S3800` — Refactor this function to always return the same type.
+- `niakw_NiakVIO:providers/vidnest.js:433` **MAJOR / CODE_SMELL** `javascript:S4624` — Refactor this code to not use nested template literals.
+- `niakw_NiakVIO:providers/vidnest.js:468` **CRITICAL / CODE_SMELL** `javascript:S2004` — Refactor this code to not nest functions more than 5 levels deep.
+- `niakw_NiakVIO:providers/vidnest.js:474` **CRITICAL / CODE_SMELL** `javascript:S2004` — Refactor this code to not nest functions more than 5 levels deep.
+- `niakw_NiakVIO:providers/vidnest.js:475` **CRITICAL / CODE_SMELL** `javascript:S2004` — Refactor this code to not nest functions more than 5 levels deep.
+- `niakw_NiakVIO:providers/vidnest.js:480` **CRITICAL / CODE_SMELL** `javascript:S2004` — Refactor this code to not nest functions more than 5 levels deep.
+- `niakw_NiakVIO:providers/vidnest.js:496` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.parseInt` over `parseInt`.
+- `niakw_NiakVIO:providers/vidnest.js:497` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.isNaN` over `isNaN`.
+- `niakw_NiakVIO:providers/vidnest.js:505` **CRITICAL / CODE_SMELL** `javascript:S2004` — Refactor this code to not nest functions more than 5 levels deep.
+- `niakw_NiakVIO:providers/yflix.js:17` **MAJOR / VULNERABILITY** `javascript:S2245` — Make sure that using this pseudorandom number generator is safe here.
+- `niakw_NiakVIO:providers/yflix.js:20` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:providers/yflix.js:60` **MAJOR / CODE_SMELL** `javascript:S6661` — Use an object spread instead of `Object.assign` eg: `{ ...foo }`.
+- `niakw_NiakVIO:providers/yflix.js:96` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:providers/yflix.js:118` **CRITICAL / CODE_SMELL** `javascript:S3776` — Refactor this function to reduce its Cognitive Complexity from 36 to the 15 allowed.
+- `niakw_NiakVIO:providers/yflix.js:123` **MINOR / CODE_SMELL** `javascript:S4138` — Expected a `for-of` loop instead of a `for` loop with this simple iteration.
+- `niakw_NiakVIO:providers/yflix.js:130` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.parseInt` over `parseInt`.
+- `niakw_NiakVIO:providers/yflix.js:131` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.parseInt` over `parseInt`.
+- `niakw_NiakVIO:providers/yflix.js:132` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.parseInt` over `parseInt`.
+- `niakw_NiakVIO:providers/yflix.js:154` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:providers/yflix.js:174` **MAJOR / CODE_SMELL** `javascript:S4043` — Move this array "sort" operation to a separate statement or replace it with "toSorted".
+- `niakw_NiakVIO:providers/yflix.js:182` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:providers/yflix.js:222` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:providers/yflix.js:233` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:providers/yflix.js:258` **MAJOR / CODE_SMELL** `javascript:S4030` — Either use this collection's contents or remove the collection.
+- `niakw_NiakVIO:providers/yflix.js:259` **MAJOR / CODE_SMELL** `javascript:S4030` — Either use this collection's contents or remove the collection.
+- `niakw_NiakVIO:providers/yflix.js:277` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:providers/yflix.js:280` **CRITICAL / CODE_SMELL** `javascript:S2004` — Refactor this code to not nest functions more than 5 levels deep.
+- `niakw_NiakVIO:providers/yflix.js:281` **CRITICAL / CODE_SMELL** `javascript:S2004` — Refactor this code to not nest functions more than 5 levels deep.
+- `niakw_NiakVIO:providers/yflix.js:307` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:providers/yflix.js:317` **MAJOR / CODE_SMELL** `javascript:S4624` — Refactor this code to not use nested template literals.
+- `niakw_NiakVIO:providers/yflix.js:317` **MAJOR / CODE_SMELL** `javascript:S4624` — Refactor this code to not use nested template literals.
+- `niakw_NiakVIO:providers/yflix.js:360` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:providers/yflix.js:395` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:providers/anizone.js:5` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:providers/anizone.js:6` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:providers/anizone.js:7` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:providers/anizone.js:8` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:providers/anizone.js:9` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:providers/anizone.js:10` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:providers/anizone.js:11` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:providers/anizone.js:12` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:providers/anizone.js:13` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:providers/anizone.js:13` **MAJOR / CODE_SMELL** `javascript:S1121` — Extract the assignment of "obj[key]" from this expression.
+- `niakw_NiakVIO:providers/anizone.js:14` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:providers/anizone.js:15` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:providers/anizone.js:19` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:providers/anizone.js:19` **MAJOR / CODE_SMELL** `javascript:S2814` — 'prop' is already defined.
+- `niakw_NiakVIO:providers/anizone.js:25` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:providers/anizone.js:29` **MAJOR / CODE_SMELL** `javascript:S1121` — Extract the assignment of "desc" from this expression.
+- `niakw_NiakVIO:providers/anizone.js:33` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:providers/anizone.js:33` **MAJOR / CODE_SMELL** `javascript:S878` — Unexpected use of comma operator.
+- `niakw_NiakVIO:providers/anizone.js:38` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:providers/anizone.js:41` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:providers/anizone.js:43` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:providers/anizone.js:50` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:providers/anizone.js:57` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:providers/anizone.js:58` **MAJOR / CODE_SMELL** `javascript:S1121` — Extract the assignment of "generator" from this expression.
+- `niakw_NiakVIO:providers/anizone.js:63` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:providers/anizone.js:66` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:providers/anizone.js:67` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:providers/anizone.js:83` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:providers/anizone.js:97` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:providers/anizone.js:110` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:providers/anizone.js:123` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:providers/anizone.js:145` **MINOR / CODE_SMELL** `javascript:S7781` — Prefer `String#replaceAll()` over `String#replace()`.
+- `niakw_NiakVIO:providers/anizone.js:145` **MINOR / CODE_SMELL** `javascript:S7758` — Prefer `String.fromCodePoint()` over `String.fromCharCode()`.
+- `niakw_NiakVIO:providers/anizone.js:145` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.parseInt` over `parseInt`.
+- `niakw_NiakVIO:providers/anizone.js:145` **MINOR / CODE_SMELL** `javascript:S7781` — Prefer `String#replaceAll()` over `String#replace()`.
+- `niakw_NiakVIO:providers/anizone.js:151` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:providers/anizone.js:165` **MAJOR / CODE_SMELL** `javascript:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
+- `niakw_NiakVIO:providers/anizone.js:165` **MAJOR / CODE_SMELL** `javascript:S6535` — Unnecessary escape character: \-.
+- `niakw_NiakVIO:providers/anizone.js:165` **MAJOR / CODE_SMELL** `javascript:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
+- `niakw_NiakVIO:providers/anizone.js:165` **MAJOR / CODE_SMELL** `javascript:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
+- `niakw_NiakVIO:providers/anizone.js:165` **MAJOR / CODE_SMELL** `javascript:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
+- `niakw_NiakVIO:providers/anizone.js:165` **MAJOR / CODE_SMELL** `javascript:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
+- `niakw_NiakVIO:providers/anizone.js:165` **MAJOR / CODE_SMELL** `javascript:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
+- `niakw_NiakVIO:providers/anizone.js:165` **MAJOR / CODE_SMELL** `javascript:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
+- `niakw_NiakVIO:providers/anizone.js:170` **MAJOR / CODE_SMELL** `javascript:S6535` — Unnecessary escape character: \-.
+- `niakw_NiakVIO:providers/anizone.js:172` **MAJOR / CODE_SMELL** `javascript:S6535` — Unnecessary escape character: \-.
+- `niakw_NiakVIO:providers/anizone.js:174` **MAJOR / CODE_SMELL** `javascript:S6535` — Unnecessary escape character: \-.
+- `niakw_NiakVIO:providers/anizone.js:176` **MINOR / CODE_SMELL** `javascript:S7780` — `String.raw` should be used to avoid escaping `\`.
+- `niakw_NiakVIO:providers/anizone.js:176` **MINOR / CODE_SMELL** `javascript:S7780` — `String.raw` should be used to avoid escaping `\`.
+- `niakw_NiakVIO:providers/anizone.js:180` **CRITICAL / CODE_SMELL** `javascript:S3776` — Refactor this function to reduce its Cognitive Complexity from 36 to the 15 allowed.
+- `niakw_NiakVIO:providers/anizone.js:245` **CRITICAL / CODE_SMELL** `javascript:S3776` — Refactor this function to reduce its Cognitive Complexity from 25 to the 15 allowed.
+- `niakw_NiakVIO:providers/anizone.js:248` **MAJOR / CODE_SMELL** `javascript:S1854` — Remove this useless assignment to variable "mappedEp".
+- `niakw_NiakVIO:providers/anizone.js:255` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:providers/anizone.js:268` **MAJOR / CODE_SMELL** `javascript:S1854` — Remove this useless assignment to variable "searchQuery".
+- `niakw_NiakVIO:providers/anizone.js:288` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:providers/anizone.js:342` **MINOR / CODE_SMELL** `javascript:S7780` — `String.raw` should be used to avoid escaping `\`.
+- `niakw_NiakVIO:providers/anizone.js:363` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:providers/cinemacity.js:5` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:providers/cinemacity.js:6` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:providers/cinemacity.js:7` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:providers/cinemacity.js:8` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:providers/cinemacity.js:9` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:providers/cinemacity.js:10` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:providers/cinemacity.js:11` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:providers/cinemacity.js:12` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:providers/cinemacity.js:13` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:providers/cinemacity.js:14` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:providers/cinemacity.js:15` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:providers/cinemacity.js:15` **MAJOR / CODE_SMELL** `javascript:S1121` — Extract the assignment of "obj[key]" from this expression.
+- `niakw_NiakVIO:providers/cinemacity.js:16` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:providers/cinemacity.js:17` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:providers/cinemacity.js:21` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:providers/cinemacity.js:21` **MAJOR / CODE_SMELL** `javascript:S2814` — 'prop' is already defined.
+- `niakw_NiakVIO:providers/cinemacity.js:27` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:providers/cinemacity.js:28` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:providers/cinemacity.js:32` **MAJOR / CODE_SMELL** `javascript:S1121` — Extract the assignment of "desc" from this expression.
+- `niakw_NiakVIO:providers/cinemacity.js:36` **MAJOR / CODE_SMELL** `javascript:S878` — Unexpected use of comma operator.
+- `niakw_NiakVIO:providers/cinemacity.js:36` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:providers/cinemacity.js:41` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:providers/cinemacity.js:44` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:providers/cinemacity.js:46` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:providers/cinemacity.js:53` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:providers/cinemacity.js:60` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:providers/cinemacity.js:61` **MAJOR / CODE_SMELL** `javascript:S1121` — Extract the assignment of "generator" from this expression.
+- `niakw_NiakVIO:providers/cinemacity.js:66` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:providers/cinemacity.js:69` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:providers/cinemacity.js:70` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:providers/cinemacity.js:72` **MAJOR / VULNERABILITY** `javascript:S2068` — Review this potentially hard-coded password.
+- `niakw_NiakVIO:providers/cinemacity.js:75` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:providers/cinemacity.js:78` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:providers/cinemacity.js:82` **MAJOR / CODE_SMELL** `javascript:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
+- `niakw_NiakVIO:providers/cinemacity.js:82` **MAJOR / CODE_SMELL** `javascript:S6397` — Replace this character class by the character itself.
+- `niakw_NiakVIO:providers/cinemacity.js:85` **CRITICAL / CODE_SMELL** `javascript:S1994` — This loop's stop condition tests "buffer, str, i" but the incrementer updates "bs, bc, output, String".
+- `niakw_NiakVIO:providers/cinemacity.js:85` **MAJOR / CODE_SMELL** `javascript:S1121` — Extract the assignment of "buffer" from this expression.
+- `niakw_NiakVIO:providers/cinemacity.js:85` **MAJOR / CODE_SMELL** `javascript:S3358` — Extract this nested ternary operation into an independent statement.
+- `niakw_NiakVIO:providers/cinemacity.js:85` **MAJOR / CODE_SMELL** `javascript:S1121` — Extract the assignment of "output" from this expression.
+- `niakw_NiakVIO:providers/cinemacity.js:85` **MINOR / CODE_SMELL** `javascript:S7758` — Prefer `String.fromCodePoint()` over `String.fromCharCode()`.
+- `niakw_NiakVIO:providers/cinemacity.js:89` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:providers/cinemacity.js:119` **CRITICAL / CODE_SMELL** `javascript:S3776` — Refactor this function to reduce its Cognitive Complexity from 30 to the 15 allowed.
+- `niakw_NiakVIO:providers/cinemacity.js:120` **CRITICAL / CODE_SMELL** `javascript:S3504` — Unexpected var, use let or const instead.
+- `niakw_NiakVIO:providers/cinemacity.js:146` **MAJOR / CODE_SMELL** `javascript:S1871` — This branch's code block is the same as the block for the branch on line 144.
+- `niakw_NiakVIO:providers/cinemacity.js:172` **CRITICAL / CODE_SMELL** `javascript:S3776` — Refactor this function to reduce its Cognitive Complexity from 41 to the 15 allowed.
+- `niakw_NiakVIO:providers/cinemacity.js:176` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:providers/cinemacity.js:182` **MINOR / CODE_SMELL** `javascript:S6594` — Use the "RegExp.exec()" method instead.
+- `niakw_NiakVIO:providers/cinemacity.js:182` **MINOR / CODE_SMELL** `javascript:S6325` — Use a regular expression literal instead of the 'RegExp' constructor.
+- `niakw_NiakVIO:providers/cinemacity.js:182` **MINOR / CODE_SMELL** `javascript:S7780` — `String.raw` should be used to avoid escaping `\`.
+- `niakw_NiakVIO:providers/cinemacity.js:182` **MINOR / CODE_SMELL** `javascript:S6594` — Use the "RegExp.exec()" method instead.
+- `niakw_NiakVIO:providers/cinemacity.js:182` **MINOR / CODE_SMELL** `javascript:S6325` — Use a regular expression literal instead of the 'RegExp' constructor.
+- `niakw_NiakVIO:providers/cinemacity.js:182` **MINOR / CODE_SMELL** `javascript:S7780` — `String.raw` should be used to avoid escaping `\`.
+- `niakw_NiakVIO:providers/cinemacity.js:182` **MINOR / CODE_SMELL** `javascript:S6594` — Use the "RegExp.exec()" method instead.
+- `niakw_NiakVIO:providers/cinemacity.js:182` **MINOR / CODE_SMELL** `javascript:S6325` — Use a regular expression literal instead of the 'RegExp' constructor.
+- `niakw_NiakVIO:providers/cinemacity.js:182` **MINOR / CODE_SMELL** `javascript:S7780` — `String.raw` should be used to avoid escaping `\`.
+- `niakw_NiakVIO:providers/cinemacity.js:183` **MINOR / CODE_SMELL** `javascript:S6594` — Use the "RegExp.exec()" method instead.
+- `niakw_NiakVIO:providers/cinemacity.js:183` **MINOR / CODE_SMELL** `javascript:S6325` — Use a regular expression literal instead of the 'RegExp' constructor.
+- `niakw_NiakVIO:providers/cinemacity.js:183` **MINOR / CODE_SMELL** `javascript:S7780` — `String.raw` should be used to avoid escaping `\`.
+- `niakw_NiakVIO:providers/cinemacity.js:191` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:providers/cinemacity.js:194` **MINOR / CODE_SMELL** `javascript:S7718` — The catch parameter `e2` should be named `error_`.
+- `niakw_NiakVIO:providers/cinemacity.js:208` **MINOR / CODE_SMELL** `javascript:S2486` — Handle this exception or don't catch it at all.
+- `niakw_NiakVIO:providers/cinemacity.js:222` **MINOR / CODE_SMELL** `javascript:S6594` — Use the "RegExp.exec()" method instead.
+- `niakw_NiakVIO:providers/cinemacity.js:222` **MAJOR / CODE_SMELL** `javascript:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
+- `niakw_NiakVIO:providers/cinemacity.js:235` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:providers/cinemacity.js:254` **MAJOR / CODE_SMELL** `javascript:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
+- `niakw_NiakVIO:providers/cinemacity.js:265` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:providers/cinemacity.js:274` **MAJOR / CODE_SMELL** `javascript:S6660` — 'If' statement should not be the only statement in 'else' block
+- `niakw_NiakVIO:providers/cinemacity.js:277` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:providers/cinemacity.js:280` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:providers/cinevibe.js:30` **MINOR / CODE_SMELL** `javascript:S7758` — Prefer `String#codePointAt()` over `String#charCodeAt()`.
+- `niakw_NiakVIO:providers/cinevibe.js:41` **MINOR / CODE_SMELL** `javascript:S7758` — Prefer `String#codePointAt()` over `String#charCodeAt()`.
+- `niakw_NiakVIO:providers/cinevibe.js:43` **MINOR / CODE_SMELL** `javascript:S7758` — Prefer `String.fromCodePoint()` over `String.fromCharCode()`.
+- `niakw_NiakVIO:providers/cinevibe.js:45` **MINOR / CODE_SMELL** `javascript:S7758` — Prefer `String.fromCodePoint()` over `String.fromCharCode()`.
+- `niakw_NiakVIO:providers/cinevibe.js:57` **MINOR / CODE_SMELL** `javascript:S1874` — The signature '(string: string): string' of 'unescape' is deprecated.
+- `niakw_NiakVIO:providers/cinevibe.js:71` **MINOR / CODE_SMELL** `javascript:S1874` — The signature '(string: string): string' of 'escape' is deprecated.
+- `niakw_NiakVIO:providers/cinevibe.js:96` **MINOR / CODE_SMELL** `javascript:S7781` — Prefer `String#replaceAll()` over `String#replace()`.
+- `niakw_NiakVIO:providers/cinevibe.js:96` **MINOR / CODE_SMELL** `javascript:S7781` — Prefer `String#replaceAll()` over `String#replace()`.
+- `niakw_NiakVIO:providers/cinevibe.js:96` **MINOR / CODE_SMELL** `javascript:S7781` — Prefer `String#replaceAll()` over `String#replace()`.
+- `niakw_NiakVIO:providers/cinevibe.js:170` **CRITICAL / CODE_SMELL** `javascript:S3776` — Refactor this function to reduce its Cognitive Complexity from 54 to the 15 allowed.
+- `niakw_NiakVIO:providers/cinevibe.js:206` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.parseInt` over `parseInt`.
+- `niakw_NiakVIO:providers/cinevibe.js:230` **CRITICAL / CODE_SMELL** `javascript:S3776` — Refactor this function to reduce its Cognitive Complexity from 53 to the 15 allowed.
+- `niakw_NiakVIO:providers/cinevibe.js:236` **MINOR / CODE_SMELL** `javascript:S6594` — Use the "RegExp.exec()" method instead.
+- `niakw_NiakVIO:providers/cinevibe.js:240` **MINOR / CODE_SMELL** `javascript:S6594` — Use the "RegExp.exec()" method instead.
+- `niakw_NiakVIO:providers/cinevibe.js:240` **MAJOR / CODE_SMELL** `javascript:S5869` — Remove duplicates in this character class.
+- `niakw_NiakVIO:providers/cinevibe.js:242` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.parseInt` over `parseInt`.
+- `niakw_NiakVIO:providers/cinevibe.js:276` **MINOR / CODE_SMELL** `javascript:S6594` — Use the "RegExp.exec()" method instead.
+- `niakw_NiakVIO:providers/cinevibe.js:276` **MAJOR / CODE_SMELL** `javascript:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
+- `niakw_NiakVIO:providers/cinevibe.js:278` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.parseInt` over `parseInt`.
+- `niakw_NiakVIO:providers/cinevibe.js:293` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.isNaN` over `isNaN`.
+- `niakw_NiakVIO:providers/cinevibe.js:294` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.parseInt` over `parseInt`.
+- `niakw_NiakVIO:providers/cinevibe.js:295` **MINOR / CODE_SMELL** `javascript:S7773` — Prefer `Number.parseInt` over `parseInt`.
+- `niakw_NiakVIO:providers/cinevibe.js:338` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:providers/cinevibe.js:344` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:providers/cinevibe.js:372` **MINOR / CODE_SMELL** `javascript:S1481` — Remove the declaration of the unused 'index' variable.
+- `niakw_NiakVIO:providers/cinevibe.js:372` **MAJOR / CODE_SMELL** `javascript:S1854` — Remove this useless assignment to variable "index".
+- `niakw_NiakVIO:providers/cinevibe.js:412` **MAJOR / CODE_SMELL** `javascript:S4624` — Refactor this code to not use nested template literals.
