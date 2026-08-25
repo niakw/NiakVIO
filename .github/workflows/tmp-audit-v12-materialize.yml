@@ -42,25 +42,28 @@ jobs:
           text = path.read_text(encoding='utf-8')
           old = '''def _normalize_core(text: str) -> str:\n    if REVISION in text:\n        return text\n    if OLD_CORE_REVISION not in text:\n        raise ValueError("stream presentation source is neither expected V12 revision")\n\n    text = text.replace(OLD_CORE_REVISION, REVISION)\n'''
           new = '''def _normalize_core(text: str) -> str:\n    materialized = (\n        "function technicalLines(f,fs,includeQuality)",\n        'if(f.quality)out.quality=f.quality;else if("quality" in out)delete out.quality',\n        'if("language" in out)delete out.language',\n        "out.description=visible;out.size=envelope",\n        '"clientProjection": "quality-preserved;size-multiline-envelope;language-suppressed"',\n    )\n    if REVISION in text:\n        missing = [token for token in materialized if token not in text]\n        if missing:\n            raise ValueError("V12 revision marker present without full materialization: " + ", ".join(missing))\n        return text\n    if OLD_CORE_REVISION not in text:\n        raise ValueError("stream presentation source is neither expected V12 revision")\n\n    text = text.replace(OLD_CORE_REVISION, REVISION)\n'''
-          if old not in text:
+          if old in text:
+              text = text.replace(old, new, 1)
+          elif new not in text:
               raise SystemExit('V12 normalizer guard anchor missing')
-          text = text.replace(old, new, 1)
           duplicated = 'f.subtitles=f.subtitles.filter(function(v){return v!==f.language});var audioCombined=uniq((f.audioTech||[]).concat([f.audioCodec,f.audioChannels].filter(Boolean))).join(" ");if(f.quality)out.quality=f.quality;else if("quality" in out)delete out.quality;if("language" in out)delete out.language;if(f.codec)out.codec=f.codec;var audioCombined=uniq((f.audioTech||[]).concat([f.audioCodec,f.audioChannels].filter(Boolean))).join(" ");'
           cleaned = 'f.subtitles=f.subtitles.filter(function(v){return v!==f.language});if(f.quality)out.quality=f.quality;else if("quality" in out)delete out.quality;if("language" in out)delete out.language;if(f.codec)out.codec=f.codec;var audioCombined=uniq((f.audioTech||[]).concat([f.audioCodec,f.audioChannels].filter(Boolean))).join(" ");'
-          if duplicated not in text:
-              raise SystemExit('V12 duplicate audioCombined anchor missing')
-          text = text.replace(duplicated, cleaned, 1)
+          if duplicated in text:
+              text = text.replace(duplicated, cleaned, 1)
+          elif cleaned not in text:
+              raise SystemExit('V12 audioCombined invariant missing')
           path.write_text(text, encoding='utf-8')
           PY
 
-      - name: Align V12 badge contract test
+      - name: Align final V12 contract tests
         shell: bash
         run: |
           set -euo pipefail
           python3 - <<'PY'
           from pathlib import Path
-          path = Path('tests/badge_asset_contract_test.py')
-          text = path.read_text(encoding='utf-8')
+
+          badge = Path('tests/badge_asset_contract_test.py')
+          text = badge.read_text(encoding='utf-8')
           text = text.replace(
               'assert mapping["display"]["clientProjection"]["suppressedLegacyRecompositionFields"] == ["quality", "language"]',
               'assert mapping["display"]["clientProjection"]["preservedLegacyFields"] == ["quality"]\nassert mapping["display"]["clientProjection"]["suppressedLegacyRecompositionFields"] == ["language"]',
@@ -69,7 +72,22 @@ jobs:
               'assert mapping["display"]["fallbackWhenNativeBadgesDisabled"] == "emojiTechnicalLine"',
               'assert mapping["display"]["fallbackWhenNativeBadgesDisabled"] == "multilineEmojiTechnicalGroups"',
           )
-          path.write_text(text, encoding='utf-8')
+          badge.write_text(text, encoding='utf-8')
+
+          engine = Path('engine_v2/tests/stream-presentation.test.mjs')
+          text = engine.read_text(encoding='utf-8')
+          text = text.replace('"🎞️ 2160p • BLU-RAY • HLS",', '"🎞️ 2160p • BLU-RAY • HEVC • HLS",')
+          text = text.replace('  "BLU-RAY",\n  "E-AC3 5.1",', '  "BLU-RAY",\n  "HEVC",\n  "E-AC3 5.1",')
+          text = text.replace('assert.equal(withoutQuality[0], "🎞️ BLU-RAY • HLS");', 'assert.equal(withoutQuality[0], "🎞️ BLU-RAY • HEVC • HLS");')
+          engine.write_text(text, encoding='utf-8')
+
+          hygiene = Path('tests/repository_hygiene_contract_test.py')
+          text = hygiene.read_text(encoding='utf-8')
+          text = text.replace(
+              'assert "all-providers-client-projected-badge-emoji-tmdb-v12" in presentation\nassert \'out.description=visible;out.size=visible;out.quality="";out.language=""\' in presentation',
+              'assert "all-providers-client-projected-quality-preserved-badge-emoji-tmdb-v12" in presentation\nassert \'out.description=visible;out.size=envelope\' in presentation\nassert \'if(f.quality)out.quality=f.quality;else if("quality" in out)delete out.quality\' in presentation\nassert \'if("language" in out)delete out.language\' in presentation',
+          )
+          hygiene.write_text(text, encoding='utf-8')
           PY
 
       - name: Materialize V12
@@ -91,6 +109,7 @@ jobs:
           python3 tests/badge_asset_contract_test.py
           node engine_v2/tests/stream-presentation.test.mjs
           python3 tests/native_corpus_device_lab_test.py
+          python3 tests/repository_hygiene_contract_test.py
 
       - name: Validate generated publication state
         shell: bash
@@ -103,11 +122,10 @@ jobs:
           python3 scripts/validate_release_integrity.py
           git diff --check
 
-      - name: Commit materialized audit tree and self-delete
+      - name: Commit materialized audit tree
         shell: bash
         run: |
           set -euo pipefail
-          rm -f .github/workflows/tmp-audit-v12-materialize.yml
           python3 scripts/generate_release_hashes.py
           python3 scripts/validate_release_integrity.py
           git config user.name 'github-actions[bot]'
