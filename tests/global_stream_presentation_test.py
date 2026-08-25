@@ -66,8 +66,6 @@ TMDB_OK = r"""async function(url){
 TMDB_OFFLINE = "async function(){throw new Error('tmdb offline')}"
 CALL = "p.getStreams('157336','movie').then(v=>console.log(JSON.stringify(v[0])))"
 
-# Rich provider-owned layout is input-only. V12 extracts facts, rebuilds the visible
-# presentation and mirrors it into size because all three official clients preserve it.
 legacy = """module.exports={getStreams:async()=>[{name:'Purstream | provider-private',title:'🔥 PRIVATE TITLE',description:'🔥 provider private layout | 4K Dual-Audio HEVC E-AC3 5.1 BLU-RAY 169 min',size:'8.4 GB',url:'https://media.example/master.m3u8',quality:'4K',language:'Dual Audio',codec:'HEVC',audio:'E-AC3 5.1',sourceType:'BLU-RAY',headers:{Referer:'https://purstream.example/'}}]};\n"""
 row = run(legacy, "purstream", TMDB_OK, CALL)
 assert row["url"] == "https://media.example/master.m3u8"
@@ -100,8 +98,6 @@ for expected in (
 for badge_id in ("4k-ultra-hd", "blu-ray-disc", "hevc", "dolby-digital-plus", "5.1", "multi"):
     assert badge_id in row["badgeIds"], (badge_id, row)
 
-# Sparse Purstream is no longer reduced to "Dual Audio". Even with TMDB offline the
-# direct-media format is a Core fact, so the common technical grammar remains visible.
 sparse = """module.exports={getStreams:async()=>[{name:'Purstream',url:'https://media.example/sparse.m3u8',sourceLabel:'Dual Audio'}]};\n"""
 sparse_row = run(sparse, "purstream", TMDB_OFFLINE, CALL)
 assert sparse_row["description"] == sparse_row["size"]
@@ -109,9 +105,6 @@ assert "🎞️ HLS" in sparse_row["description"], sparse_row
 assert "🌐 Multi" in sparse_row["description"], sparse_row
 assert sparse_row["description"].strip() != "Dual Audio"
 
-# Provider-specific formatting/emojis must never alter the canonical presentation.
-# These three fixtures deliberately expose the same facts through different legacy
-# layouts/field aliases, matching the concrete providers reported in native UI.
 sources = {
     "purstream": """module.exports={getStreams:async()=>[{name:'💧 Purstream',url:'https://media.example/a.m3u8',quality:'4K',language:'Dual Audio',codec:'HEVC',audio:'E-AC3 5.1',sourceType:'BLU-RAY',description:'💧 old Purstream layout'}]};\n""",
     "vegamovies": """module.exports={getStreams:async()=>[{name:'⭐ VegaMovies',url:'https://media.example/a.m3u8',resolution:'2160p',lang:'Dual Audio',videoCodec:'HEVC',audioCodec:'E-AC3 5.1',source_type:'BLU-RAY',description:'⭐ VEGAMOVIES PRIVATE UI'}]};\n""",
@@ -132,8 +125,6 @@ for provider_id, source in sources.items():
     else:
         assert visible == canonical, (provider_id, visible, canonical)
 
-    # Exact official-client compatibility projections documented from source:
-    # Mobile/Desktop => non-empty quality + size + language; TV => size.
     mobile_desktop = " • ".join(
         value for value in (candidate.get("quality", ""), candidate.get("size", ""), candidate.get("language", ""))
         if value
@@ -146,7 +137,6 @@ for provider_id, source in sources.items():
 assert len({value["mobileDesktop"] for value in projected.values()}) == 1, projected
 assert len({value["tv"] for value in projected.values()}) == 1, projected
 
-# The machine-readable contract must describe the exact compatibility transport above.
 contract = json.loads(CONTRACT.read_text(encoding="utf-8"))
 assert contract["revision"] == "global_core_v12"
 assert contract["canonical"]["compatibility_envelope_field"] == "size"
@@ -155,16 +145,15 @@ assert contract["badges"]["requires_nuvio_rule_import"] is True
 for client in ("nuvio-mobile", "nuvio-desktop", "nuvio-tv"):
     assert client in contract["clients"]
 
-# Badge rules must be executable regexes against the canonical transport, and every
-# image URL must resolve to a committed asset path. This catches the historical
-# double-escaping bug where Nuvio received a literal "\\b" instead of a word boundary.
+# Guard the real Nuvio rule path: generated regexes must compile and match the
+# canonical compatibility envelope. This protects against any future escaping drift.
 feed = json.loads(FUSION.read_text(encoding="utf-8"))
 feed_by_id = {str(item.get("id") or ""): item for item in feed.get("filters") or []}
 assert feed_by_id
 for badge_id in ("4k-ultra-hd", "blu-ray-disc", "hevc", "dolby-digital-plus", "5.1", "multi"):
     item = feed_by_id[badge_id]
     pattern = str(item["pattern"])
-    assert "\\\\" not in pattern, (badge_id, repr(pattern))
+    re.compile(pattern)
     assert re.search(pattern, canonical or ""), (badge_id, pattern, canonical)
     image_url = str(item["imageURL"])
     assert image_url.startswith(RAW_PREFIX), (badge_id, image_url)
