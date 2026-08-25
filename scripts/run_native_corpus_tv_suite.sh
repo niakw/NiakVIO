@@ -24,6 +24,7 @@ REPOSITORY_RESOLVER="${NIAKVIO}/scripts/resolve_native_repository.sh"
 LAB_TRANSPORT="${NIAKVIO}/scripts/configure_native_android_lab_transport.py"
 FRONTEND_CAPTURE="${NIAKVIO}/scripts/capture_native_device_frontend.sh"
 FRONTEND_WATCHER="${NIAKVIO}/scripts/watch_native_device_frontend.sh"
+CHECKPOINT_TOOL="${NIAKVIO}/scripts/native_tv_route_checkpoint.py"
 EVIDENCE_ROOT="${WORKSPACE}/native-evidence/tv"
 TEST_SOURCE="${TV_ROOT}/app/src/androidTest/java/com/nuvio/tv/core/plugin/NiakvioNativeCorpusTvTest.kt"
 DEFAULT_FIXTURES=(sinners-2025 interstellar mon-ninja-et-moi-3 colony-2021 breaking-bad-s01e01 revenant-s01e01 jujutsu-kaisen-s01e01 mushoku-tensei-s01e01 failure-frame-s01e01 hell-teacher-nube-2025-s01e01)
@@ -42,6 +43,10 @@ READER_ACCEPTANCE="${NIAKVIO_READER_ACCEPTANCE:-0}"
 PRIMARY_FIXTURE="${NIAKVIO_PRIMARY_FIXTURE:-sinners-2025}"
 PRIMARY_STREAM_SCOPE="${NIAKVIO_PRIMARY_STREAM_SCOPE:-all}"
 REGRESSION_STREAM_SCOPE="${NIAKVIO_REGRESSION_STREAM_SCOPE:-2}"
+TV_PRIORITY_APPEND="${NIAKVIO_TV_PRIORITY_APPEND:-1}"
+ROUTE_TIMEOUT_MINUTES="${NIAKVIO_TV_ROUTE_TIMEOUT_MINUTES:-45}"
+CHECKPOINT_ROOT="${NIAKVIO_TV_CHECKPOINT_DIR:-${EVIDENCE_ROOT}/checkpoints}"
+RESUME_CHECKPOINT_ROOT="${NIAKVIO_TV_RESUME_CHECKPOINT_DIR:-${CHECKPOINT_ROOT}}"
 SOURCE_SHA="${NIAKVIO_SOURCE_SHA:-$(git -C "$NIAKVIO" rev-parse HEAD)}"
 SOURCE_REPOSITORY="${GITHUB_REPOSITORY:-niakw/NiakVIO}"
 source "$REPOSITORY_RESOLVER"
@@ -78,7 +83,7 @@ fi
 # the generic representative movie/series/anime trio. Candidate Brain retests use a
 # different manifest path and intentionally keep their bounded original fixture set.
 TV_PRIORITY_FIXTURES=()
-if [[ "$TARGET_MANIFEST" = "manifest.json" ]]; then
+if [[ "$TARGET_MANIFEST" = "manifest.json" && "$TV_PRIORITY_APPEND" = "1" ]]; then
   while IFS= read -r fixture; do
     [[ -n "$fixture" ]] && TV_PRIORITY_FIXTURES+=("$fixture")
   done < <(python3 - <<'PY' 2>/dev/null || true
@@ -107,7 +112,12 @@ SOFT_FAILURES=0
 PROVIDER_ARGS=()
 if [[ -n "$TARGET_PROVIDER" && "$TARGET_PROVIDER" != "all" && "$TARGET_PROVIDER" != "fixture" ]]; then PROVIDER_ARGS=(--provider "$TARGET_PROVIDER"); fi
 
-mkdir -p "$EVIDENCE_ROOT"
+mkdir -p "$EVIDENCE_ROOT" "$CHECKPOINT_ROOT"
+if ! [[ "$ROUTE_TIMEOUT_MINUTES" =~ ^[0-9]+$ ]] || (( ROUTE_TIMEOUT_MINUTES < 10 || ROUTE_TIMEOUT_MINUTES > 90 )); then
+  echo "invalid NIAKVIO_TV_ROUTE_TIMEOUT_MINUTES=$ROUTE_TIMEOUT_MINUTES" >&2
+  exit 2
+fi
+MANIFEST_PATH="${NIAKVIO}/${TARGET_MANIFEST}"
 python3 "$LAB_TRANSPORT" "$TV_ROOT/app/src/androidTest/AndroidManifest.xml" || exit $?
 python3 "$INSTRUMENTER" tv "$TV_ROOT" || exit $?
 python3 "$REPOSITORY_HTTP_INSTRUMENTER" tv "$TV_ROOT" || exit $?
@@ -118,10 +128,22 @@ for fixture in "${FIXTURES[@]}"; do
   echo "===== TV CORPUS FIXTURE: $fixture ====="
   STREAM_SCOPE="$REGRESSION_STREAM_SCOPE"
   if [[ "$fixture" = "$PRIMARY_FIXTURE" ]]; then STREAM_SCOPE="$PRIMARY_STREAM_SCOPE"; fi
+  PROVIDER_SCOPE="${TARGET_PROVIDER:-all}"
   if [[ "$READER_ACCEPTANCE" = "1" ]]; then
-    PROVIDER_SCOPE="$TARGET_PROVIDER"
     if [[ -z "$PROVIDER_SCOPE" || "$PROVIDER_SCOPE" = "fixture" ]]; then PROVIDER_SCOPE="$CONFIGURED_ACCEPTANCE_PROVIDER_SCOPE"; fi
     if [[ -z "$PROVIDER_SCOPE" ]]; then PROVIDER_SCOPE="fixture"; fi
+  fi
+  LOG="${WORKSPACE}/tv-native-corpus-${fixture}.log"
+  CHECKPOINT="${CHECKPOINT_ROOT}/${fixture}.json"
+  RESUME_CHECKPOINT="${RESUME_CHECKPOINT_ROOT}/${fixture}.json"
+  if python3 "$CHECKPOINT_TOOL" verify \
+      --checkpoint "$RESUME_CHECKPOINT" --log "$LOG" --fixture "$fixture" \
+      --manifest "$MANIFEST_PATH" --client-root "$TV_ROOT" \
+      --provider-scope "$PROVIDER_SCOPE" --stream-scope "$STREAM_SCOPE"; then
+    echo "FIELD_NATIVE_CORPUS_TV_RESUME fixture=$fixture checkpoint=$RESUME_CHECKPOINT reused=true"
+    continue
+  fi
+  if [[ "$READER_ACCEPTANCE" = "1" ]]; then
     python3 "$ACCEPTANCE_PREPARE" tv --fixture "$fixture" --workspace "$WORKSPACE" --provider "$PROVIDER_SCOPE" --streams "$STREAM_SCOPE" --manifest "$TARGET_MANIFEST" || { SOFT_FAILURES=$((SOFT_FAILURES+1)); continue; }
   else
     python3 "$RESTAGE" tv --fixture "$fixture" --workspace "$WORKSPACE" "${PROVIDER_ARGS[@]}" --player-probes "$PLAYER_PROBES" --manifest "$TARGET_MANIFEST" || { SOFT_FAILURES=$((SOFT_FAILURES+1)); continue; }
@@ -141,8 +163,11 @@ for fixture in "${FIXTURES[@]}"; do
   WATCH_PID=$!
 
   RUNTIME_STATUS=0
-  "$TV_ROOT/gradlew" -p "$TV_ROOT" :app:connectedFullDebugAndroidTest --console=plain 2>&1 | tee "$GRADLE_LOG"
+  timeout --signal=TERM --kill-after=2m "${ROUTE_TIMEOUT_MINUTES}m" "$TV_ROOT/gradlew" -p "$TV_ROOT" :app:connectedFullDebugAndroidTest --console=plain 2>&1 | tee "$GRADLE_LOG"
   RUNTIME_STATUS=${PIPESTATUS[0]}
+  if [[ "$RUNTIME_STATUS" -eq 124 || "$RUNTIME_STATUS" -eq 137 ]]; then
+    echo "FIELD_NATIVE_CORPUS_TV_ROUTE_TIMEOUT fixture=$fixture minutes=$ROUTE_TIMEOUT_MINUTES status=$RUNTIME_STATUS" | tee -a "$GRADLE_LOG"
+  fi
   sleep 1
   kill "$WATCH_PID" 2>/dev/null || true
   wait "$WATCH_PID" 2>/dev/null || true
@@ -161,6 +186,12 @@ for fixture in "${FIXTURES[@]}"; do
   fi
   OBSERVED_READER_STATUS=0
   node "$READER_GATE" "$LOG" || OBSERVED_READER_STATUS=$?
+  python3 "$CHECKPOINT_TOOL" record \
+    --checkpoint "$CHECKPOINT" --log "$LOG" --fixture "$fixture" \
+    --manifest "$MANIFEST_PATH" --client-root "$TV_ROOT" \
+    --provider-scope "$PROVIDER_SCOPE" --stream-scope "$STREAM_SCOPE" \
+    --runtime-status "$RUNTIME_STATUS" --collection-status "$ANALYSIS_STATUS" \
+    --coverage-status "$COVERAGE_STATUS" --reader-status "$OBSERVED_READER_STATUS"
   if [[ "$RUNTIME_STATUS" -ne 0 || "$ANALYSIS_STATUS" -ne 0 || "$COVERAGE_STATUS" -ne 0 || "$OBSERVED_READER_STATUS" -ne 0 ]]; then
     SOFT_FAILURES=$((SOFT_FAILURES+1))
   fi
