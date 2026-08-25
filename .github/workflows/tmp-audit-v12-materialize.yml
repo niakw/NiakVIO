@@ -48,8 +48,7 @@ jobs:
           text = text.replace('presentation=global_core_v11', 'presentation=global_core_v12')
           policy.write_text(text, encoding='utf-8')
 
-          # Provider wording is input-only. Canonical language vocabulary uses Multi,
-          # matching the stable StreamBadge token and removing Purstream/Vega/Hind drift.
+          # Provider wording is input-only. Canonical language vocabulary uses Multi.
           for rel in (
               'scripts/provider_patches/global_stream_facts_v1.py',
               'scripts/provider_patches/global_stream_presentation_v1.py',
@@ -62,19 +61,43 @@ jobs:
                   raise SystemExit(f'Dual Audio canonicalization anchor missing: {rel}')
               path.write_text(text.replace(old, new), encoding='utf-8')
 
-          # Preserve catalog regex semantics exactly. The earlier double-escape suspicion
-          # was disproved by executable matching; validate by compiling instead.
+          # Historical catalog patterns contain doubled regex escapes. Collapse exactly
+          # one level, then assert no doubled escape survives and compile every pattern.
           normalizer = Path('scripts/normalize_stream_presentation_v12.py')
           text = normalizer.read_text(encoding='utf-8')
           if 'import re\n' not in text:
               text = text.replace('import json\n', 'import json\nimport re\n', 1)
           start = text.index('def _normalize_catalog_patterns(')
           end = text.index('\ndef _feed_payload', start)
-          replacement = '''def _normalize_catalog_patterns(catalog: dict[str, object]) -> tuple[dict[str, object], int]:\n    """Preserve catalog regex semantics; executable tests are the authority."""\n    return json.loads(json.dumps(catalog)), 0\n\n'''
+          replacement = r'''def _normalize_catalog_patterns(catalog: dict[str, Any]) -> tuple[dict[str, Any], int]:
+    """Collapse one historical JSON-regex escape layer, then stay idempotent."""
+    normalized = json.loads(json.dumps(catalog))
+    changed = 0
+    for badge in normalized.get("badges") or []:
+        if not isinstance(badge, dict):
+            continue
+        pattern = str(badge.get("pattern") or "")
+        fixed = pattern.replace("\\\\", "\\")
+        if fixed != pattern:
+            badge["pattern"] = fixed
+            changed += 1
+    return normalized, changed
+
+'''
           text = text[:start] + replacement + text[end + 1:]
           contract_start = text.index('        for row in filters:', text.index('def assert_contract'))
           contract_end = text.index('\n\ndef main()', contract_start)
-          contract_loop = '''        for row in filters:\n            pattern = str(row.get("pattern") or "")\n            if not pattern or not row.get("imageURL"):\n                raise ValueError(f"native StreamBadge feed row invalid: {path.name} {row.get('id')}")\n            try:\n                re.compile(pattern)\n            except re.error as exc:\n                raise ValueError(\n                    f"native StreamBadge regex invalid: {path.name} {row.get('id')}: {exc}"\n                ) from exc\n'''
+          contract_loop = r'''        for row in filters:
+            pattern = str(row.get("pattern") or "")
+            if not pattern or "\\" in pattern or not row.get("imageURL"):
+                raise ValueError(f"native StreamBadge feed row invalid: {path.name} {row.get('id')}")
+            try:
+                re.compile(pattern)
+            except re.error as exc:
+                raise ValueError(
+                    f"native StreamBadge regex invalid: {path.name} {row.get('id')}: {exc}"
+                ) from exc
+'''
           normalizer.write_text(text[:contract_start] + contract_loop + text[contract_end:], encoding='utf-8')
 
           test = Path('tests/global_stream_presentation_test.py')
@@ -108,11 +131,13 @@ jobs:
               payload=json.loads(Path(rel).read_text(encoding='utf-8'))
               assert payload.get('filters') and payload.get('groups'), rel
               for row in payload['filters']:
-                  re.compile(str(row['pattern']))
+                  pattern=str(row['pattern'])
+                  assert '\\\\' not in pattern, (rel,row.get('id'),repr(pattern))
+                  re.compile(pattern)
                   asset=str(row['imageURL']).removeprefix('https://raw.githubusercontent.com/niakw/NiakVIO/main/')
                   path=Path(asset)
                   assert path.is_file() and path.stat().st_size > 0, (rel,row.get('id'),asset)
-          print('all StreamBadge feed regexes compile and all image assets exist')
+          print('all StreamBadge feed regexes are canonical, compile, and reference committed assets')
           PY
           python3 scripts/normalize_stream_presentation_v12.py --check
           python3 scripts/normalize_core_media_policy.py --check
