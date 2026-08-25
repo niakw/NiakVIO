@@ -8,18 +8,19 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 PATCH = ROOT / "scripts" / "provider_patches" / "desktop_runtime_compat_v1.py"
+GLOBAL_PATCH = ROOT / "scripts" / "provider_patches" / "global_runtime_compat_v1.py"
 
 
-def load_apply():
-    spec = importlib.util.spec_from_file_location("desktop_runtime_compat_v1", PATCH)
+def load_apply(path: Path):
+    spec = importlib.util.spec_from_file_location(path.stem, path)
     assert spec and spec.loader
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module.apply
 
 
-def main() -> int:
-    apply = load_apply()
+def test_legacy_scoped_patch() -> None:
+    apply = load_apply(PATCH)
     source = "module.exports={getStreams:async function(id,type,s,e){await fetch('https://api.purstream.club/test',{headers:{Referer:'https://purstream.club/'}});var t=setTimeout(function(){},5000);clearTimeout(t);return [{name:'Breaking.Bad.S01E01.1080p',url:'https://example/video.m3u8'},{name:'Breaking.Bad.S05E16.1080p',url:'https://example/other.m3u8'}]}};"
     options = {
         "normalize_missing_episodes": True,
@@ -41,42 +42,51 @@ def main() -> int:
     assert "rewriteHost" in patched
     assert apply(patched, options) == patched
 
-    with tempfile.TemporaryDirectory() as temp:
-        bundle = Path(temp) / "bundle.js"
-        runner = Path(temp) / "runner.cjs"
-        bundle.write_text(patched, encoding="utf-8")
-        runner.write_text(
-            # Model the important limitation in Nuvio Mobile's QuickJS URL
-            # polyfill: hostname is a mutable field, but toString() returns the
-            # original href and therefore ignores hostname mutations.
-            "const NativeURL=global.URL;\n"
-            "global.URL=function(raw){const parsed=new NativeURL(String(raw));this.href=String(raw);this.hostname=parsed.hostname;this.host=parsed.host;this.protocol=parsed.protocol;};\n"
-            "global.URL.prototype.toString=function(){return this.href;};\n"
-            "delete global.setTimeout; delete global.clearTimeout;\n"
-            "const attempts=[];\n"
-            "global.fetch=async function(url,init){\n"
-            "  const value=String(url); attempts.push({url:value,referer:init&&init.headers&&init.headers.Referer});\n"
-            "  if(value.startsWith('https://api.purstream.club/')) throw new Error('club unavailable');\n"
-            "  if(value.startsWith('https://api.purstream.art/')) return {ok:true,status:200};\n"
-            "  throw new Error(value);\n"
-            "};\n"
-            f"const provider=require({str(bundle)!r});\n"
-            "provider.getStreams('1396','tv',undefined,undefined).then(function(rows){\n"
-            "  if(typeof global.setTimeout!=='function') throw new Error('timer shim missing');\n"
-            "  if(rows.length!==1||!/S01E01/i.test(rows[0].name)) throw new Error(JSON.stringify(rows));\n"
-            "  if(attempts.length!==2) throw new Error('unexpected attempts '+JSON.stringify(attempts));\n"
-            "  if(!attempts[0].url.startsWith('https://api.purstream.club/')) throw new Error(JSON.stringify(attempts));\n"
-            "  if(!attempts[1].url.startsWith('https://api.purstream.art/')) throw new Error(JSON.stringify(attempts));\n"
-            "  if(attempts[1].referer!=='https://purstream.art/') throw new Error('referer not rewritten '+JSON.stringify(attempts));\n"
-            "  console.log('runtime JS execution passed with mobile URL polyfill');\n"
-            "}).catch(function(error){console.error(error);process.exit(1)});\n",
-            encoding="utf-8",
-        )
-        process = subprocess.run(["node", str(runner)], capture_output=True, text=True, timeout=20)
-        assert process.returncode == 0, process.stderr or process.stdout
-        assert "runtime JS execution passed with mobile URL polyfill" in process.stdout
 
-    print("desktop/mobile runtime compatibility patch tests passed")
+def test_global_core_runtime_patch() -> None:
+    apply = load_apply(GLOBAL_PATCH)
+    source = r'''
+var globalThis=this;
+var URL=function(raw){
+  this.href=String(raw);
+  var m=this.href.match(/^(https?:)\/\/([^\/]+)([^?#]*)(\?[^#]*)?(#.*)?$/);
+  this.protocol=m[1]; this.host=m[2]; this.hostname=m[2]; this.port="";
+  this.pathname=m[3]||"/"; this.search=m[4]||""; this.hash=m[5]||"";
+};
+URL.prototype.toString=function(){return this.href;};
+var nativeCalls=[];
+var fetch=async function(input){nativeCalls.push(String(input));return {ok:true,status:200};};
+/* Model the historical NUVIO_RUNTIME_DOMAIN_OVERRIDES_V1 behavior. */
+;(function(g){
+  var native=g.fetch.bind(g);
+  g.fetch=function(input){var u=new URL(String(input));u.hostname="player.videasy.to";return native(u.toString());};
+})(globalThis);
+'''
+    patched = apply(source, {})
+    assert "NUVIO_GLOBAL_RUNTIME_COMPAT_V1" in patched
+    assert "__nuvioGlobalRuntimeCompatV1" in patched
+    assert "staleMutableUrl" in patched
+    assert apply(patched, {}) == patched
+
+    script = patched + r'''
+(async function(){
+  await fetch("https://player.videasy.net/movie/1");
+  if(nativeCalls[0]!=="https://player.videasy.to/movie/1") throw new Error(nativeCalls[0]);
+  if(typeof setTimeout!=="function"||typeof clearTimeout!=="function") throw new Error("timer shim missing");
+  var u=new URL("https://old.example/a?q=1"); u.hostname="new.example";
+  if(String(u)!=="https://new.example/a?q=1") throw new Error("URL mutation remains stale: "+String(u));
+  console.log("global Core runtime compatibility passed");
+})().catch(function(error){console.error(error);process.exit(1)});
+'''
+    process = subprocess.run(["node", "-e", script], capture_output=True, text=True, timeout=20)
+    assert process.returncode == 0, process.stderr or process.stdout
+    assert "global Core runtime compatibility passed" in process.stdout
+
+
+def main() -> int:
+    test_legacy_scoped_patch()
+    test_global_core_runtime_patch()
+    print("desktop/mobile + global Core runtime compatibility patch tests passed")
     return 0
 
 

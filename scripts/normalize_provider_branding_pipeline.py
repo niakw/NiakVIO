@@ -1,16 +1,20 @@
 #!/usr/bin/env python3
-"""Keep provider branding as the final Core stream presentation layer.
+"""Keep the final Core provider tail ordered and runtime-portable.
 
-Branding must run after stream fact extraction/presentation: many upstream providers
-encode quality/language/codec facts in their original stream name. Running the
-branding wrapper earlier would erase those facts before the shared presentation
-layer can normalize them. This normalizer materializes and then guards that ordering
-inside apply_provider_overrides.py for every provider.
+Runtime compatibility executes first, stream presentation second, and provider
+branding last. The legacy filename is retained because it is part of the current
+fixed-point pipeline; the implementation now guards the complete Core tail.
 """
 from __future__ import annotations
 
 import argparse
 from pathlib import Path
+
+from normalize_core_runtime_compat import (
+    assert_apply_contract as assert_runtime_contract,
+    normalize_apply as normalize_runtime_apply,
+    normalize_files as normalize_runtime_files,
+)
 
 ROOT = Path(__file__).resolve().parents[1]
 TARGET = ROOT / "scripts/apply_provider_overrides.py"
@@ -55,7 +59,9 @@ REPLACEMENT = '''        if text != before:
 
 
 def normalize(text: str) -> tuple[str, list[str]]:
-    changed: list[str] = []
+    text, runtime_changes = normalize_runtime_apply(text)
+    changed: list[str] = [f"runtime:{item}" for item in runtime_changes]
+
     if CONST not in text:
         if PRESENTATION_CONST not in text:
             raise ValueError("GLOBAL_STREAM_PRESENTATION constant anchor missing")
@@ -77,15 +83,17 @@ def normalize(text: str) -> tuple[str, list[str]]:
 
 
 def assert_contract(text: str) -> None:
+    assert_runtime_contract(text)
     if text.count(CONST) != 1:
         raise ValueError("GLOBAL_PROVIDER_BRANDING constant must exist exactly once")
     if text.count('"scope": "global_provider_branding"') != 1:
         raise ValueError("global provider branding application must exist exactly once")
+    runtime = text.find('"scope": "global_runtime_compat"')
     presentation = text.find('"scope": "global_stream_presentation"')
     branding = text.find('"scope": "global_provider_branding"')
     final_return = text.find("    if text == original_text:", branding)
-    if presentation < 0 or branding < 0 or final_return < 0 or not (presentation < branding < final_return):
-        raise ValueError("Core order must be stream presentation -> provider branding -> return")
+    if min(runtime, presentation, branding, final_return) < 0 or not (runtime < presentation < branding < final_return):
+        raise ValueError("Core order must be runtime compatibility -> stream presentation -> provider branding -> return")
     if text.count(BRANDING_MARKER) != 1:
         raise ValueError("provider branding generated-tail marker must exist exactly once")
 
@@ -97,16 +105,22 @@ def main() -> int:
     args = parser.parse_args()
     if args.apply == args.check:
         raise SystemExit("choose exactly one of --apply or --check")
+
     current = TARGET.read_text(encoding="utf-8")
     normalized, changed = normalize(current)
     assert_contract(normalized)
-    if args.check and changed:
-        raise SystemExit("provider branding pipeline normalization required: " + ", ".join(changed))
     if args.apply and normalized != current:
         TARGET.write_text(normalized, encoding="utf-8")
+
+    runtime_file_changes = normalize_runtime_files(apply=args.apply)
+    all_changes = changed + [f"runtime_file:{item}" for item in runtime_file_changes if not item.startswith("apply:")]
+    if args.check and all_changes:
+        raise SystemExit("Core tail pipeline normalization required: " + ", ".join(all_changes))
+
     print(
         "FIELD_PROVIDER_BRANDING_PIPELINE "
-        f"changed={len(changed)} order=presentation_then_branding facts_preserved=true"
+        f"changed={len(all_changes)} order=runtime_then_presentation_then_branding "
+        "facts_preserved=true runtime_portable=true brain_systemic_guard=true"
     )
     return 0
 
