@@ -6,6 +6,7 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/core-media-finalize-main.yml'
+      - 'README.md'
       - 'package.json'
       - 'package-lock.json'
       - 'automation/nuvio-client-upstreams.json'
@@ -67,11 +68,13 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          python scripts/normalize_repository_docs.py --apply
           python scripts/normalize_runtime_repository_dependencies.py --apply
           python scripts/normalize_provider_rebuild_safety.py --apply
           python scripts/normalize_core_fixed_point_contract.py --apply
           python scripts/normalize_provider_branding_pipeline.py --apply
           python -m py_compile \
+            scripts/normalize_repository_docs.py \
             scripts/normalize_runtime_repository_dependencies.py \
             scripts/normalize_provider_rebuild_safety.py \
             scripts/normalize_provider_branding_pipeline.py \
@@ -93,6 +96,7 @@ jobs:
           python tests/global_stream_identity_test.py
           python tests/provider_purification_contract_test.py
           python tests/prune_unreferenced_providers_test.py
+          python scripts/normalize_repository_docs.py --check
           python scripts/normalize_runtime_repository_dependencies.py --check
           python scripts/normalize_provider_rebuild_safety.py --check
           python scripts/normalize_core_fixed_point_contract.py --check
@@ -132,6 +136,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          python scripts/normalize_repository_docs.py --check
           python scripts/normalize_runtime_repository_dependencies.py --check
           python scripts/normalize_provider_rebuild_safety.py --check
           python scripts/normalize_core_fixed_point_contract.py --check
@@ -238,6 +243,7 @@ jobs:
           git reset --hard origin/main
           git clean -fdx
           npm ci --ignore-scripts --no-audit --no-fund
+          python scripts/normalize_repository_docs.py --check
           python scripts/normalize_runtime_repository_dependencies.py --check
           python scripts/normalize_provider_rebuild_safety.py --check
           python scripts/normalize_core_fixed_point_contract.py --check
