@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate Dark, Light and Fusion Nuvio StreamBadge imports with native chip styling."""
+"""Generate Dark, Light and Fusion Nuvio StreamBadge imports with native bordered chip styling."""
 from __future__ import annotations
 
 import argparse
@@ -31,9 +31,28 @@ ACCENTS = {
 
 
 def style(theme: str, group: str) -> dict[str, str]:
+    """Use Nuvio's native border instead of baking chrome into the artwork."""
+    accent = ACCENTS.get(group, "#94A3B8")
     if theme == "light":
-        return {"tagColor": "#F7F9FC", "tagStyle": "filled", "textColor": "#111827", "borderColor": ACCENTS.get(group, "#64748B")}
-    return {"tagColor": "#151A22", "tagStyle": "filled", "textColor": "#FFFFFF", "borderColor": ACCENTS.get(group, "#94A3B8")}
+        return {
+            "tagColor": "#FFFFFF",
+            "tagStyle": "bordered",
+            "textColor": "#111827",
+            "borderColor": accent,
+        }
+    if theme == "fusion":
+        return {
+            "tagColor": "#11151C",
+            "tagStyle": "bordered",
+            "textColor": "#FFFFFF",
+            "borderColor": accent,
+        }
+    return {
+        "tagColor": "#0F141B",
+        "tagStyle": "bordered",
+        "textColor": "#FFFFFF",
+        "borderColor": accent,
+    }
 
 
 def build(theme: str) -> dict[str, Any]:
@@ -44,7 +63,14 @@ def build(theme: str) -> dict[str, Any]:
         if not isinstance(group, dict):
             continue
         gid = str(group.get("id") or "")
-        groups.append({"id": gid, "name": str(group.get("name") or gid), "color": ACCENTS.get(gid, "#64748B"), "isExpanded": True})
+        accent = ACCENTS.get(gid, "#64748B")
+        groups.append({
+            "id": gid,
+            "name": str(group.get("name") or gid),
+            "color": accent,
+            "borderColor": accent,
+            "isExpanded": True,
+        })
     filters = []
     for badge in catalog.get("badges") or []:
         if not isinstance(badge, dict):
@@ -90,7 +116,7 @@ def main() -> int:
     changed = normalize(apply=args.apply)
     if args.check and changed:
         raise SystemExit("badge feed normalization required: " + ",".join(changed))
-    print("FIELD_BADGE_FEEDS changed=" + str(len(changed)) + " themes=dark,light,fusion native_style=1")
+    print("FIELD_BADGE_FEEDS changed=" + str(len(changed)) + " themes=dark,light,fusion native_style=bordered")
     return 0
 
 
