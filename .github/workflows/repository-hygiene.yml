@@ -187,52 +187,86 @@ jobs:
           ref: main
           fetch-depth: 0
 
-      - name: Delete retired temporary branches
+      - name: Validate exact workflow trigger paths
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          root = Path(".")
+          failures = []
+          workflows = sorted((root / ".github" / "workflows").glob("*.y*ml"))
+          for workflow in workflows:
+              lines = workflow.read_text(encoding="utf-8").splitlines()
+              i = 0
+              while i < len(lines):
+                  match = re.match(r"^(\s*)paths:\s*$", lines[i])
+                  if not match:
+                      i += 1
+                      continue
+                  indent = len(match.group(1))
+                  i += 1
+                  while i < len(lines):
+                      line = lines[i]
+                      if not line.strip():
+                          i += 1
+                          continue
+                      current_indent = len(line) - len(line.lstrip())
+                      if current_indent <= indent:
+                          break
+                      item = re.match(r"""^\s*-\s*['"]?([^'"]+)['"]?\s*(?:#.*)?$""", line)
+                      if item:
+                          path = item.group(1).strip()
+                          if (
+                              path
+                              and "${{" not in path
+                              and not any(ch in path for ch in "*?[]!")
+                              and not (root / path).exists()
+                          ):
+                              failures.append(f"{workflow}: {path}")
+                      i += 1
+
+          if failures:
+              for failure in failures:
+                  print(f"DEAD_WORKFLOW_TRIGGER_PATH {failure}")
+              raise SystemExit(f"dead exact workflow trigger paths remain: {len(failures)}")
+          print(f"FIELD_WORKFLOW_TRIGGER_PATHS status=ok workflows={len(workflows)}")
+          PY
+
+      - name: Delete every unexpected non-PR branch
+        env:
+          GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
           set -euo pipefail
           git fetch --prune origin '+refs/heads/*:refs/remotes/origin/*'
-          keep_regex='^(main|brain-learning/proposals)$'
-          retired=(
-            'audit/repository-final-cleanup-2026-08-25'
-            'work/final-runtime-bundle-20260825'
-            'agent/native-player-diagnostics-brain-v4'
-            'agent/native-player-lab'
-            'agent/profile-reuse-pr68-v2'
-            'agent/profile-reuse-pr68'
-            'brain-repair/proposals'
-            'chore/codeql-triage'
-            'chore/codeql-triage-trigger'
-            'chore/codeql-verify-trigger'
-            'ci/avd-cache-targeted'
-            'ci/native-reader-budget-fix'
-            'cleanup/actions-queue'
-            'final/native-reader-brain-v4'
-            'fix/codeql-wrapper-sources'
-            'lab/desktop-mobile-real'
-            'lab/tv-real'
-            'lab/mobile-runner-recovery-20260826'
-            'lab/desktop-raw-bisect-20260826'
-            'postmerge/global-provider-security-v1'
-            'scratch/native-lab-core-fixes-20260821'
-            'tmp/native-profile-contract-fixes'
-            'trigger/codeql-final-count'
-            'trigger/codeql-provider-dismiss'
-            'trigger/codeql-wrapper-source-hardening'
-            'work/native-reader-backlog'
+          mapfile -t open_pr_branches < <(
+            gh api --paginate "repos/${GITHUB_REPOSITORY}/pulls?state=open&per_page=100" \
+              --jq ".[] | select(.head.repo.full_name == \"${GITHUB_REPOSITORY}\") | .head.ref" \
+              | sort -u
           )
+          mapfile -t branches < <(
+            git for-each-ref --format='%(refname:strip=3)' refs/remotes/origin \
+              | grep -v '^HEAD$' | sort -u
+          )
+
           deleted=0
-          for branch in "${retired[@]}"; do
-            if [[ "$branch" =~ $keep_regex ]]; then
-              echo "Refusing to delete protected persistent branch: $branch" >&2
-              exit 1
+          for branch in "${branches[@]}"; do
+            case "$branch" in
+              main|brain-learning/proposals) continue ;;
+            esac
+            if printf '%s\n' "${open_pr_branches[@]}" | grep -Fqx -- "$branch"; then
+              echo "Active pull-request branch allowed temporarily: $branch"
+              continue
             fi
-            if git ls-remote --exit-code --heads origin "refs/heads/$branch" >/dev/null 2>&1; then
-              git push origin --delete "$branch"
-              deleted=$((deleted+1))
-            fi
+            echo "Deleting unexpected non-PR branch: $branch"
+            git push origin --delete "$branch"
+            deleted=$((deleted+1))
           done
-          echo "FIELD_REPOSITORY_HYGIENE deleted=$deleted keep=main,brain-learning/proposals"
+          echo "FIELD_REPOSITORY_HYGIENE deleted=$deleted keep=main,brain-learning/proposals active_pr_branches=${#open_pr_branches[@]}"
+
 
       - name: Prove only intentional or active-PR branches remain
         env:
@@ -254,10 +288,39 @@ jobs:
               main|brain-learning/proposals) continue ;;
             esac
             if printf '%s\n' "${open_pr_branches[@]}" | grep -Fqx -- "$branch"; then
-              echo "Active pull-request branch allowed temporarily: $branch"
               continue
             fi
             echo "Unexpected branch remains: $branch" >&2
             unexpected=1
           done
           exit "$unexpected"
+
+      - name: Regenerate and validate release hash fixed point
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/generate_release_hashes.py
+          python3 scripts/validate_release_integrity.py
+
+      - name: Publish refreshed release hashes
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json automation/PLATFORM-RUNTIME-CONTRACTS.md
+          if git diff --cached --quiet; then
+            echo "FIELD_REPOSITORY_HASH_REFRESH changed=0"
+            exit 0
+          fi
+          git commit -m "chore(hygiene): refresh release hashes [skip ci]"
+          git fetch origin main
+          git rebase origin/main
+          python3 scripts/generate_release_hashes.py
+          python3 scripts/validate_release_integrity.py
+          git add FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json automation/PLATFORM-RUNTIME-CONTRACTS.md
+          if ! git diff --cached --quiet; then
+            git commit --amend --no-edit
+          fi
+          git push origin HEAD:main
+          echo "FIELD_REPOSITORY_HASH_REFRESH changed=1"

@@ -1,11 +1,8 @@
 name: Provider catalogue breadth lab
 
 on:
+  # Report-only census: intentionally manual. Do not keep a synthetic dead trigger file.
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - ".github/triggers/provider-catalogue-breadth-lab"
 
 permissions:
   contents: read
