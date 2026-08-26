@@ -10,9 +10,10 @@ failure.
 
 This postprocessor preserves the official result unchanged. Only when that result is
 empty, it performs a second diagnostic execution through the same repository path on a
-copy of the already-loaded scraper code. The diagnostic copy traps uncaught exceptions
-and captures provider console output. Production provider files and upstream Nuvio
-runtime sources are never modified.
+copy of the already-loaded scraper code. The diagnostic copy traps uncaught exceptions,
+captures provider console output where the runtime permits it, and wraps the official
+fetch polyfill to record requested URL/method plus native response status/statusText.
+Production provider files and upstream Nuvio runtime sources are never modified.
 """
 from __future__ import annotations
 
@@ -34,6 +35,7 @@ CONSOLE_HELPER = r'''
     var marker = "__NIAKVIO_RUNTIME_DIAGNOSTIC__";
     var messages = [];
     var originalConsole = (typeof globalThis !== "undefined" && globalThis.console) ? globalThis.console : null;
+    var originalFetch = (typeof globalThis !== "undefined" && typeof globalThis.fetch === "function") ? globalThis.fetch : null;
     var stringify = function (value) {
         try {
             if (value && value.message) return String(value.message);
@@ -56,8 +58,16 @@ CONSOLE_HELPER = r'''
             var line = level + ":" + parts.join(" ");
             if (line.length > 1200) line = line.slice(0, 1200) + "...[truncated]";
             messages.push(line);
-            if (messages.length > 24) messages.shift();
+            if (messages.length > 32) messages.shift();
         } catch (_) {}
+    };
+    var inputUrl = function (input) {
+        try {
+            if (typeof input === "string") return input;
+            if (input && typeof input.url === "string") return input.url;
+            if (input && typeof input.href === "string") return input.href;
+            return String(input || "");
+        } catch (_) { return "[unprintable-url]"; }
     };
     var diagnosticConsole = {};
     ["log", "error", "warn", "info", "debug"].forEach(function (level) {
@@ -74,6 +84,27 @@ CONSOLE_HELPER = r'''
         if (typeof globalThis !== "undefined") globalThis.console = diagnosticConsole;
     } catch (_) {}
 
+    // Capture transport facts independently of console.*. NuvioDesktop's official
+    // FetchBridge converts native exceptions to an ordinary response with status=0,
+    // so this records the signal providers may otherwise catch and turn into [].
+    try {
+        if (originalFetch && typeof globalThis !== "undefined") {
+            globalThis.fetch = async function (input, init) {
+                var method = "GET";
+                try { method = String((init && init.method) || "GET").toUpperCase(); } catch (_) {}
+                var url = inputUrl(input);
+                try {
+                    var response = await originalFetch.apply(this, arguments);
+                    capture("fetch", [method, url, "status=" + stringify(response && response.status), "ok=" + stringify(response && response.ok), "statusText=" + stringify(response && response.statusText)]);
+                    return response;
+                } catch (error) {
+                    capture("fetch-error", [method, url, stringify(error)]);
+                    throw error;
+                }
+            };
+        }
+    } catch (_) {}
+
     var exportsObject = null;
     try {
         if (typeof module !== "undefined" && module && module.exports) exportsObject = module.exports;
@@ -83,7 +114,7 @@ CONSOLE_HELPER = r'''
     else if (typeof globalThis !== "undefined" && typeof globalThis.getStreams === "function") original = globalThis.getStreams;
 
     var makeDiagnostic = function () {
-        var detail = messages.length ? messages.join(" | ") : "no_console_output";
+        var detail = messages.length ? messages.join(" | ") : "no_console_or_fetch_output";
         return [{
             title: marker,
             name: marker,
@@ -107,6 +138,7 @@ CONSOLE_HELPER = r'''
             } finally {
                 try {
                     if (typeof globalThis !== "undefined" && originalConsole) globalThis.console = originalConsole;
+                    if (typeof globalThis !== "undefined" && originalFetch) globalThis.fetch = originalFetch;
                 } catch (_) {}
             }
         };
@@ -167,7 +199,7 @@ def augment(path: Path) -> bool:
     if count != 1:
         raise SystemExit(f"desktop runtime diagnostics official-call anchor count={count}")
     path.write_text(text.replace(OFFICIAL_CALL, DIAGNOSTIC_CALL, 1), encoding="utf-8")
-    print(f"FIELD_NATIVE_DESKTOP_RUNTIME_DIAGNOSTICS added=true console_capture=true source={path}")
+    print(f"FIELD_NATIVE_DESKTOP_RUNTIME_DIAGNOSTICS added=true console_capture=true fetch_capture=true source={path}")
     return True
 
 
