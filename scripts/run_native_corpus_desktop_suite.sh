@@ -91,6 +91,7 @@ for fixture in "${FIXTURES[@]}"; do
       local commit="$1"
       local output="$2"
       local manifest_json provider_path
+      git -C "$NIAKVIO" fetch --quiet --no-tags origin "$commit" || return 1
       manifest_json="$(git -C "$NIAKVIO" show "$commit:manifest.json")" || return 1
       provider_path="$(python3 -c 'import json,sys; d=json.load(sys.stdin); wanted=sys.argv[1].lower(); print(next((r.get("filename","") for r in d.get("scrapers",[]) if str(r.get("id","")).lower()==wanted),""))' "$TARGET_PROVIDER" <<<"$manifest_json")"
       [[ -n "$provider_path" ]] || return 1
