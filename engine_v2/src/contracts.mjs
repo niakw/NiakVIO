@@ -3,8 +3,6 @@ export const CANONICAL_MEDIA_TYPES = Object.freeze(["movie", "tv", "anime"]);
 
 const SERIES_ALIASES = new Set(["series", "show", "other"]);
 
-// External/client-facing requests remain tolerant because official Nuvio clients
-// may surface aliases such as "series". NiakVIO normalizes those at the boundary.
 export function normalizeMediaType(value) {
   const raw = String(value ?? "").trim().toLowerCase();
   if (!raw) throw new Error("mediaType is required");
@@ -13,8 +11,6 @@ export function normalizeMediaType(value) {
   throw new Error(`unsupported mediaType: ${raw}`);
 }
 
-// Provider manifests/specs are stricter than request inputs: one global vocabulary
-// prevents divergent publication contracts and ambiguous lab coverage.
 export function normalizeProviderMediaType(value) {
   const raw = String(value ?? "").trim().toLowerCase();
   if (!CANONICAL_MEDIA_TYPES.includes(raw)) {
@@ -52,17 +48,10 @@ export function normalizeResolveRequest(input = {}) {
 
 export function adaptRequestForDevice(input, device) {
   const request = normalizeResolveRequest({ ...input, device });
-  // The provider runtime receives NiakVIO's canonical vocabulary. Official Nuvio
-  // aliases are accepted only before this boundary, never persisted in provider specs.
   return {
     device: request.device,
     call: "getStreams",
-    args: [
-      request.tmdbId ?? request.title,
-      request.mediaType,
-      request.season ?? undefined,
-      request.episode ?? undefined,
-    ],
+    args: [request.tmdbId ?? request.title, request.mediaType, request.season ?? undefined, request.episode ?? undefined],
     settings: request.settings,
     canonical: request,
   };
@@ -71,15 +60,9 @@ export function adaptRequestForDevice(input, device) {
 export function normalizeStreamCandidate(raw = {}, context = {}) {
   const nested = isPlainObject(raw.url) ? raw.url : null;
   const nestedUrl = nested?.url ?? null;
-  // A signed provider URL is an opaque playback credential. Never rebuild it or
-  // move its query parameters: only discard accidental outer whitespace.
   const url = String(nestedUrl ?? raw.url ?? "").trim();
   if (!url) throw new Error("stream url is required");
 
-  // Nuvio/Stremio providers use several equivalent header surfaces. The Core must
-  // preserve all of them because Referer/Origin/Cookie/Authorization may be required
-  // again for HLS child playlists, keys and segments. Later/more explicit sources win
-  // case-insensitively without producing duplicate header names.
   const headers = mergeHeaders(
     nested?.behaviorHints?.proxyHeaders?.request,
     raw.behaviorHints?.proxyHeaders?.request,
@@ -91,6 +74,7 @@ export function normalizeStreamCandidate(raw = {}, context = {}) {
   const subtitles = Array.isArray(raw.subtitles)
     ? raw.subtitles.map(normalizeSubtitle).filter(Boolean)
     : [];
+  const behaviorHints = mergePlainObjects(nested?.behaviorHints, raw.behaviorHints);
 
   return {
     title: textOrNull(raw.title) ?? textOrNull(raw.name) ?? context.providerName ?? "Unknown",
@@ -98,21 +82,38 @@ export function normalizeStreamCandidate(raw = {}, context = {}) {
     description: textOrNull(raw.description),
     url,
     quality: normalizeQualityLabel(raw.quality ?? raw.resolution),
-    size: textOrNull(raw.size),
-    language: textOrNull(raw.language ?? raw.lang ?? raw.audioLanguage),
+    size: scalarOrNull(raw.size),
+    language: textOrNull(raw.language ?? raw.lang ?? raw.audioLanguage ?? raw.audio_language),
     codec: textOrNull(raw.codec ?? raw.videoCodec ?? raw.video_codec),
     audio: textOrNull(raw.audio ?? raw.audioCodec ?? raw.audio_codec),
-    duration: normalizeDurationMinutes(raw.duration ?? raw.durationMinutes ?? raw.runtime),
-    sourceType: textOrNull(raw.sourceType ?? raw.source_type ?? raw.releaseType ?? raw.release_type),
-    ageRating: textOrNull(raw.ageRating ?? raw.age_rating ?? raw.certification),
+    duration: normalizeDurationMinutes(raw.duration ?? raw.durationMinutes ?? raw.duration_minutes ?? raw.runtime ?? raw.runtimeMinutes ?? raw.runtime_minutes),
+    sourceType: textOrNull(raw.sourceType ?? raw.source_type),
+    releaseType: textOrNull(raw.releaseType ?? raw.release_type),
+    format: textOrNull(raw.format ?? raw.container ?? raw.mimeType ?? raw.contentType),
+    ageRating: textOrNull(raw.ageRating ?? raw.age_rating ?? raw.certification ?? raw.contentRating),
+    sourceLabel: textOrNull(raw.sourceLabel ?? raw.source_label ?? raw.label ?? raw.server),
+    filename: textOrNull(raw.filename ?? raw.fileName ?? raw.file_name),
+    behaviorHints: Object.keys(behaviorHints).length ? behaviorHints : null,
+    videoTech: cloneStringOrArray(raw.videoTech ?? raw.video_tech ?? raw.visualTags ?? raw.hdr),
+    hdr: textOrNull(raw.hdr ?? raw.hdrFormat ?? raw.hdr_format),
+    bitDepth: textOrNull(raw.bitDepth ?? raw.bit_depth),
+    badgeIds: normalizeDisplayList(raw.badgeIds),
+    displayBadges: normalizeDisplayList(raw.displayBadges),
+    presentationFacts: isPlainObject(raw.presentationFacts) ? structuredClone(raw.presentationFacts) : null,
+    edition: textOrNull(raw.edition ?? raw.editions),
+    releaseGroup: textOrNull(raw.releaseGroup ?? raw.release_group ?? raw.group),
+    bitrate: scalarOrNull(raw.bitrate ?? raw.bitRate ?? raw.bit_rate),
+    container: textOrNull(raw.container ?? raw.format),
+    encode: textOrNull(raw.encode ?? raw.encoder),
+    indexer: textOrNull(raw.indexer),
+    network: textOrNull(raw.network),
+    folderSize: scalarOrNull(raw.folderSize ?? raw.folder_size),
+    seeders: numberOrNull(raw.seeders ?? raw.seeds),
     provider: textOrNull(raw.provider) ?? context.providerId ?? null,
     type: textOrNull(raw.type),
     headers,
     subtitles,
-    provenance: {
-      providerId: context.providerId ?? null,
-      source: context.source ?? null,
-    },
+    provenance: { providerId: context.providerId ?? null, source: context.source ?? null },
   };
 }
 
@@ -192,6 +193,40 @@ function mergeHeaders(...sources) {
     }
   }
   return out;
+}
+
+function mergePlainObjects(...sources) {
+  const out = {};
+  for (const source of sources) {
+    if (!isPlainObject(source)) continue;
+    for (const [key, value] of Object.entries(source)) {
+      if (isPlainObject(value) && isPlainObject(out[key])) out[key] = mergePlainObjects(out[key], value);
+      else out[key] = structuredClone(value);
+    }
+  }
+  return out;
+}
+
+function cloneStringOrArray(value) {
+  if (Array.isArray(value)) return value.map(textOrNull).filter(Boolean);
+  return textOrNull(value);
+}
+
+function normalizeDisplayList(value) {
+  if (!Array.isArray(value)) return [];
+  return value.map(textOrNull).filter(Boolean);
+}
+
+function scalarOrNull(value) {
+  if (value == null || value === "") return null;
+  if (typeof value === "number" || typeof value === "boolean") return value;
+  return textOrNull(value);
+}
+
+function numberOrNull(value) {
+  if (value == null || value === "") return null;
+  const number = Number(value);
+  return Number.isFinite(number) ? number : null;
 }
 
 function normalizeQualityLabel(value) {
