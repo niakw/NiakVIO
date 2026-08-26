@@ -18,9 +18,14 @@ core = CORE.read_text(encoding="utf-8")
 light_qa = json.loads(LIGHT_QA.read_text(encoding="utf-8"))
 
 badges = catalog.get("badges") or []
-assert len(badges) == 73, f"expected complete 73-badge image catalog, got {len(badges)}"
+# The catalog is intentionally extensible. Guard its known complete baseline and
+# semantic inventory instead of freezing CI to an historical exact count. Every
+# additional badge is still forced through unique-id, asset, QA and feed checks
+# below, so growth cannot bypass validation.
+assert len(badges) >= 74, f"expected at least the complete 74-badge baseline, got {len(badges)}"
 by_id = {str(row.get("id") or ""): row for row in badges if isinstance(row, dict)}
 assert len(by_id) == len(badges), "badge ids must be unique"
+assert "vf" in by_id, "generic VF badge must remain in the image catalog"
 
 for badge_id, row in by_id.items():
     assets = row.get("assets") or {}
