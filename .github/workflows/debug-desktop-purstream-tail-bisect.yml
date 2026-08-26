@@ -1,0 +1,157 @@
+name: Debug Desktop Purstream Core tail bisect
+
+on:
+  push:
+    branches:
+      - debug/desktop-zero-stream-bisect
+    paths:
+      - ".github/workflows/debug-desktop-purstream-tail-bisect.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  purstream-tail-bisect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout NiakVIO debug branch
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          path: niakvio
+          persist-credentials: false
+
+      - uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: gradle/actions/setup-gradle@0723195856401067f7a2779048b490ace7a47d7c
+
+      - name: Install Linux Desktop native dependencies
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev
+
+      - name: Stage current Purstream tail variants
+        shell: bash
+        run: |
+          set -euxo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          root=Path("niakvio")
+          data=json.loads((root/"manifest.json").read_text(encoding="utf-8"))
+          row=next(r for r in data["scrapers"] if str(r.get("id","")).lower()=="purstream")
+          text=(root/row["filename"]).read_text(encoding="utf-8")
+          markers=[
+              ("runtime", "/* NUVIO_GLOBAL_RUNTIME_COMPAT_V1 */"),
+              ("facts", "/* NUVIO_GLOBAL_STREAM_FACTS_V1:"),
+              ("identity", "/* NUVIO_GLOBAL_STREAM_IDENTITY_V1:"),
+              ("presentation", "/* NUVIO_GLOBAL_STREAM_PRESENTATION_V1:"),
+              ("branding", "/* NUVIO_GLOBAL_PROVIDER_BRANDING_V1:"),
+          ]
+          positions={}
+          for label, marker in markers:
+              pos=text.find(marker)
+              if pos < 0:
+                  raise SystemExit(f"missing {label} marker")
+              positions[label]=pos
+          ordered=[positions[x[0]] for x in markers]
+          if ordered != sorted(ordered):
+              raise SystemExit(f"unexpected tail order: {positions}")
+          out=Path.cwd()
+          (out/"purstream-tail-00-base.js").write_text(text[:positions["runtime"]].rstrip()+"\n", encoding="utf-8")
+          (out/"purstream-tail-10-runtime.js").write_text(text[:positions["facts"]].rstrip()+"\n", encoding="utf-8")
+          (out/"purstream-tail-20-facts.js").write_text(text[:positions["identity"]].rstrip()+"\n", encoding="utf-8")
+          (out/"purstream-tail-30-identity.js").write_text(text[:positions["presentation"]].rstrip()+"\n", encoding="utf-8")
+          (out/"purstream-tail-40-presentation.js").write_text(text[:positions["branding"]].rstrip()+"\n", encoding="utf-8")
+          (out/"purstream-tail-50-full.js").write_text(text, encoding="utf-8")
+          print("FIELD_DESKTOP_PURSTREAM_TAIL_STAGE path="+row["filename"]+" positions="+json.dumps(positions,sort_keys=True))
+          PY
+
+      - name: Checkout official NuvioDesktop runtime
+        shell: bash
+        run: |
+          set -euxo pipefail
+          git clone --filter=blob:none https://github.com/NuvioMedia/NuvioDesktop.git nuvio-desktop
+          git -C nuvio-desktop checkout 182c0587c991c3fd0138155ef66fa23cc09d5f0b
+          touch nuvio-desktop/local.properties
+
+      - name: Install focused tail bisect test
+        shell: bash
+        run: |
+          set -euxo pipefail
+          target="nuvio-desktop/composeApp/src/desktopTest/kotlin/com/nuvio/app/features/plugins/NiakvioPurstreamTailBisectTest.kt"
+          cat > "$target" <<'KOTLIN'
+          package com.nuvio.app.features.plugins
+
+          import com.nuvio.app.features.plugins.runtime.PluginRuntime
+          import java.io.File
+          import kotlinx.coroutines.runBlocking
+          import kotlin.test.Test
+
+          class NiakvioPurstreamTailBisectTest {
+              @Test
+              fun bisectTail() = runBlocking {
+                  val workspace = File(System.getenv("GITHUB_WORKSPACE"))
+                  val variants = listOf(
+                      "base" to "purstream-tail-00-base.js",
+                      "runtime" to "purstream-tail-10-runtime.js",
+                      "facts" to "purstream-tail-20-facts.js",
+                      "identity" to "purstream-tail-30-identity.js",
+                      "presentation" to "purstream-tail-40-presentation.js",
+                      "full" to "purstream-tail-50-full.js",
+                  )
+                  val output = mutableListOf<String>()
+                  for ((label, file) in variants) {
+                      val started = System.currentTimeMillis()
+                      val rows = PluginRuntime.executePlugin(
+                          code = File(workspace, file).readText(),
+                          tmdbId = "157336",
+                          mediaType = "movie",
+                          season = null,
+                          episode = null,
+                          scraperId = "PURSTREAM",
+                      )
+                      val elapsed = System.currentTimeMillis() - started
+                      val line = label + "=" + rows.size
+                      output += line
+                      println("FIELD_DESKTOP_PURSTREAM_TAIL_BISECT label=" + label + " count=" + rows.size + " duration_ms=" + elapsed)
+                  }
+                  File(workspace, "purstream-tail-bisect.txt").writeText(output.joinToString("\n") + "\n")
+              }
+          }
+          KOTLIN
+
+      - name: Execute tail bisect
+        shell: bash
+        run: |
+          set -euxo pipefail
+          ./nuvio-desktop/gradlew -p nuvio-desktop             :composeApp:desktopTest             --tests 'com.nuvio.app.features.plugins.NiakvioPurstreamTailBisectTest'             --no-build-cache --no-configuration-cache --console=plain
+          cat "$GITHUB_WORKSPACE/purstream-tail-bisect.txt"
+
+      - name: Report first zero transition
+        shell: bash
+        run: |
+          set -euxo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          rows={}
+          for line in Path("purstream-tail-bisect.txt").read_text().splitlines():
+              k,v=line.split("=",1); rows[k]=int(v)
+          order=["base","runtime","facts","identity","presentation","full"]
+          cause="none"
+          previous=None
+          for label in order:
+              value=rows[label]
+              if previous is not None and previous[1] > 0 and value == 0:
+                  cause=label
+                  break
+              previous=(label,value)
+          print("FIELD_DESKTOP_PURSTREAM_TAIL_SUMMARY " + " ".join(f"{k}={rows[k]}" for k in order))
+          print("FIELD_DESKTOP_PURSTREAM_TAIL_CAUSE layer="+cause)
+          if cause=="none":
+              raise SystemExit(1)
+          PY
