@@ -1,5 +1,5 @@
 name: Native Desktop stream canary
-# Final NiakVIO validation trigger: Desktop macOS + Windows only.
+# Final NiakVIO validation: materialize the current Core candidate, then test official Desktop macOS + Windows.
 
 on:
   pull_request:
@@ -102,7 +102,7 @@ jobs:
 
   desktop-canary:
     needs: [contract, resolve]
-    timeout-minutes: 35
+    timeout-minutes: 45
     strategy:
       fail-fast: false
       matrix:
@@ -133,6 +133,31 @@ jobs:
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
         with: {node-version: "24", package-manager-cache: false}
       - uses: gradle/actions/setup-gradle@0723195856401067f7a2779048b490ace7a47d7c
+
+      - name: Materialize current NiakVIO Core candidate
+        shell: bash
+        run: |
+          set -euxo pipefail
+          cd "$GITHUB_WORKSPACE/niakvio"
+          npm ci --ignore-scripts --no-audit --no-fund
+          python3 scripts/normalize_core_media_policy.py --apply
+          python3 scripts/apply_runtime_capability_upgrade_v4.py
+          python3 scripts/build_provider_runtime_profiles.py
+          converged=0
+          for pass in 1 2 3 4; do
+            python3 scripts/reapply_published_overrides.py
+            if python3 scripts/reapply_published_overrides.py --check; then
+              converged=1
+              break
+            fi
+          done
+          test "$converged" -eq 1
+          python3 tests/global_stream_presentation_test.py
+          node engine_v2/tests/runtime-adapters.test.mjs
+          node engine_v2/tests/stream-presentation.test.mjs
+          hits="$(grep -l 'NUVIO_GLOBAL_RUNTIME_COMPAT_V1' providers/*.js | wc -l | tr -d ' ')"
+          test "$hits" -ge 3
+          echo "FIELD_DESKTOP_CANARY_CORE_MATERIALIZED runtime_compat_providers=$hits"
 
       - name: Checkout official NuvioDesktop HEAD
         shell: bash
