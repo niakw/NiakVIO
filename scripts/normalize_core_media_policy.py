@@ -15,8 +15,8 @@ from typing import Any
 
 from normalize_provider_branding_pipeline import assert_contract as assert_branding_pipeline_contract
 from normalize_provider_branding_pipeline import normalize as normalize_branding_pipeline
-from normalize_stream_presentation_v11 import assert_contract as assert_stream_presentation_contract
-from normalize_stream_presentation_v11 import normalize as normalize_stream_presentation
+from normalize_stream_presentation_v12 import assert_contract as assert_stream_presentation_contract
+from normalize_stream_presentation_v12 import normalize as normalize_stream_presentation
 
 ROOT = Path(__file__).resolve().parents[1]
 OVERRIDES = ROOT / "provider-overrides.json"
@@ -246,7 +246,7 @@ def main() -> int:
     print(
         "FIELD_CORE_MEDIA_POLICY "
         f"provider_specific_media_repairs=0 changed={len(changed) + len(source_changes)} "
-        "identity=global_runtime presentation=global_core_v11 branding=post_presentation_global_core "
+        "identity=global_runtime presentation=global_core_v12 branding=post_presentation_global_core "
         "compatibility=shared security=global_core"
     )
     return 0
