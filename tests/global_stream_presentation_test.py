@@ -24,13 +24,13 @@ normalizer = load_path(NORMALIZER, "normalize_stream_presentation_v12")
 normalizer.normalize(apply=True)
 normalizer.assert_contract()
 presentation = load_path(PATCHES / "global_stream_presentation_v1.py", "global_stream_presentation_v1")
-assert presentation.REVISION == "all-providers-title-quality-ordered-description-v12"
+assert presentation.REVISION == "all-providers-title-quality-ordered-description-v13"
 
 
 def run(source: str, provider_id: str, call: str, fetch_impl: str | None = None):
     patched = presentation.apply(source, context={"provider_id": provider_id})
     assert "NUVIO_GLOBAL_STREAM_PRESENTATION_V1" in patched
-    assert "all-providers-title-quality-ordered-description-v12" in patched
+    assert "all-providers-title-quality-ordered-description-v13" in patched
     assert patched == presentation.apply(patched, context={"provider_id": provider_id})
     with tempfile.TemporaryDirectory() as raw:
         root = Path(raw)
@@ -83,6 +83,22 @@ assert "HEVC 10bit" in lines[3] and "HLS" in lines[3] and "💾 8.4 GB" in lines
 assert "2160p" not in row["description"] and "4K" not in row["description"]
 assert "Unknown" not in row["description"]
 
+# NuvioTV's official local-plugin model discards provider description and maps
+# LocalScraperResult.size -> Stream.description. On TV only, tunnel the complete
+# Core description through size so emojis/technical facts and regex badge tokens survive.
+tv_row = run(
+    source,
+    "purstream",
+    "global.TMDB_API_KEY='tv-key';global.SCRAPER_ID='purstream';p.getStreams({tmdbId:'157336',mediaType:'movie',title:'Interstellar',year:2014}).then(v=>console.log(JSON.stringify(v[0])))",
+    tmdb,
+)
+assert tv_row["size"] == tv_row["description"], tv_row
+assert tv_row["description"].splitlines()[0] == "🎬 Interstellar • 2014"
+assert "⏱ 2h49" in tv_row["description"] and "🔞 -12" in tv_row["description"]
+assert "🇫🇷 MULTI (VF/VO)" in tv_row["description"]
+assert "🎞️ WEB-DL" in tv_row["description"] and "HEVC 10bit" in tv_row["description"]
+assert "💾 8.4 GB" in tv_row["description"]
+
 # Generic French tokens normalize to VF; explicit Canadian French stays VFQ.
 vf = run("module.exports={getStreams:async()=>[{name:'Movix',url:'https://x.example/a.mp4',language:'fr',quality:'1080p'}]};\n", "movix", "p.getStreams({mediaType:'movie',title:'Film',year:2026}).then(v=>console.log(JSON.stringify(v[0])))")
 assert vf["language"] == "VF" and "🇫🇷 VF" in vf["description"]
@@ -116,4 +132,4 @@ assert "🎬 Sinners • 2025" in sparse["description"]
 assert "Unknown" not in sparse["description"]
 assert "BLU-RAY" not in sparse["description"]
 
-print("global stream presentation V12 contract tests passed")
+print("global stream presentation V13 contract tests passed")

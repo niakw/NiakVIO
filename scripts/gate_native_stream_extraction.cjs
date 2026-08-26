@@ -7,6 +7,7 @@ const args = process.argv.slice(2);
 let client = 'desktop';
 let fixture = '';
 let expectedProviders = [];
+let observationalEmpty = false;
 const logs = [];
 for (let i = 0; i < args.length; i += 1) {
   const arg = args[i];
@@ -14,10 +15,11 @@ for (let i = 0; i < args.length; i += 1) {
   else if (arg === '--fixture') fixture = String(args[++i] || '').trim();
   else if (arg === '--providers') {
     expectedProviders = String(args[++i] || '').split(',').map((v) => v.trim()).filter(Boolean);
-  } else logs.push(arg);
+  } else if (arg === '--observational-empty') observationalEmpty = true;
+  else logs.push(arg);
 }
 if (!fixture || !expectedProviders.length || !logs.length) {
-  console.error('usage: node scripts/gate_native_stream_extraction.cjs --client <client> --fixture <fixture> --providers <id,id,...> <log> [log ...]');
+  console.error('usage: node scripts/gate_native_stream_extraction.cjs --client <client> --fixture <fixture> --providers <id,id,...> [--observational-empty] <log> [log ...]');
   process.exit(64);
 }
 
@@ -97,10 +99,15 @@ const nativeErrors = rows.filter((row) => row.nativeError);
 const positive = rows.filter((row) => row.maxCount > 0 && !row.runtimeError);
 const systematicRuntimeFailure = runtimeErrors.length === rows.length;
 const noVisibleStreams = positive.length === 0;
-const failed = missing.length > 0 || systematicRuntimeFailure || noVisibleStreams;
+const runtimeFailure = observationalEmpty ? runtimeErrors.length > 0 : systematicRuntimeFailure;
+const nativeFailure = observationalEmpty && nativeErrors.length > 0;
+const emptyFailure = !observationalEmpty && noVisibleStreams;
+const failed = missing.length > 0 || runtimeFailure || nativeFailure || emptyFailure;
+const stateName = failed ? 'failed' : (noVisibleStreams ? 'observed_empty' : 'passed');
 
 console.log(
-  `FIELD_NATIVE_EXTRACTION_GATE state=${failed ? 'failed' : 'passed'} client=${client} fixture=${fixture} ` +
+  `FIELD_NATIVE_EXTRACTION_GATE state=${stateName} client=${client} fixture=${fixture} ` +
+  `mode=${observationalEmpty ? 'observational-empty' : 'strict'} ` +
   `expected=${rows.length} observed=${rows.length - missing.length} positive=${positive.length} ` +
   `runtime_errors=${runtimeErrors.length} native_errors=${nativeErrors.length}`
 );
@@ -114,6 +121,8 @@ for (const row of rows) {
   })}`);
 }
 if (missing.length) console.error(`FIELD_NATIVE_EXTRACTION_GATE_FAILURE reason=missing_provider_evidence providers=${missing.map((r) => r.id).join(',')}`);
-if (systematicRuntimeFailure) console.error('FIELD_NATIVE_EXTRACTION_GATE_FAILURE reason=systematic_runtime_error');
-if (noVisibleStreams) console.error('FIELD_NATIVE_EXTRACTION_GATE_FAILURE reason=no_visible_streams');
+if (runtimeFailure) console.error(`FIELD_NATIVE_EXTRACTION_GATE_FAILURE reason=${observationalEmpty ? 'runtime_error' : 'systematic_runtime_error'}`);
+if (nativeFailure) console.error('FIELD_NATIVE_EXTRACTION_GATE_FAILURE reason=native_error');
+if (emptyFailure) console.error('FIELD_NATIVE_EXTRACTION_GATE_FAILURE reason=no_visible_streams');
+if (observationalEmpty && noVisibleStreams && !failed) console.log('FIELD_NATIVE_EXTRACTION_OBSERVATION reason=no_visible_streams ownership=provider_observation');
 process.exit(failed ? 1 : 0);

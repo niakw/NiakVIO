@@ -31,7 +31,7 @@ def sentinel_row(provider: str) -> str:
     )
 
 
-def run(lines: list[str]) -> subprocess.CompletedProcess[str]:
+def run(lines: list[str], *, observational_empty: bool = False) -> subprocess.CompletedProcess[str]:
     with tempfile.TemporaryDirectory() as raw:
         log = Path(raw) / "native.log"
         log.write_text("\n".join(lines) + "\n", encoding="utf-8")
@@ -45,6 +45,7 @@ def run(lines: list[str]) -> subprocess.CompletedProcess[str]:
                 "sinners-2025",
                 "--providers",
                 ",".join(PROVIDERS),
+                *(["--observational-empty"] if observational_empty else []),
                 str(log),
             ],
             cwd=ROOT,
@@ -73,6 +74,14 @@ all_empty = run([result("cineby", 0), result("VIDEASY", 0), result("PURSTREAM", 
 assert all_empty.returncode == 1
 assert "reason=no_visible_streams" in all_empty.stderr
 
+observational_empty = run(
+    [result("cineby", 0), result("VIDEASY", 0), result("PURSTREAM", 0)],
+    observational_empty=True,
+)
+assert observational_empty.returncode == 0, observational_empty.stdout + observational_empty.stderr
+assert "state=observed_empty" in observational_empty.stdout
+assert "ownership=provider_observation" in observational_empty.stdout
+
 systematic_runtime = run([
     result("cineby", 1), sentinel_row("cineby"),
     result("VIDEASY", 1), sentinel_row("VIDEASY"),
@@ -82,8 +91,18 @@ assert systematic_runtime.returncode == 1
 assert "reason=systematic_runtime_error" in systematic_runtime.stderr
 assert "reason=no_visible_streams" in systematic_runtime.stderr
 
+observational_runtime = run(
+    [result("cineby", 1), sentinel_row("cineby"), result("VIDEASY", 0), result("PURSTREAM", 0)],
+    observational_empty=True,
+)
+assert observational_runtime.returncode == 1
+assert "reason=runtime_error" in observational_runtime.stderr
+
 missing = run([result("cineby", 1), result("VIDEASY", 0)])
 assert missing.returncode == 1
 assert "reason=missing_provider_evidence" in missing.stderr
 
-print("native stream extraction gate passed: real-positive required, runtime sentinel excluded, complete canary evidence required")
+workflow = (ROOT / ".github/workflows/native-desktop-stream-canary.yml").read_text(encoding="utf-8")
+assert "--observational-empty" in workflow
+
+print("native stream extraction gate passed: strict positives preserved; Desktop canary empty-provider observations are nonblocking; runtime/missing evidence stays blocking")

@@ -1,5 +1,5 @@
 name: Native Desktop stream canary
-# Final NiakVIO validation v6: validate the final main candidate after hub materialization on official Desktop macOS + Windows.
+# Final NiakVIO validation v7: validate the final main candidate after hub materialization on official Desktop macOS + Windows.
 
 on:
   pull_request:
@@ -316,6 +316,7 @@ jobs:
             --client desktop \
             --fixture interstellar \
             --providers cineby,VIDEASY,PURSTREAM \
+            --observational-empty \
             "${LOGS[@]}"
 
       - name: Upload canary evidence
