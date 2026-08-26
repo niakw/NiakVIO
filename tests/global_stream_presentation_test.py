@@ -9,7 +9,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 PATCHES = ROOT / "scripts" / "provider_patches"
-NORMALIZER = ROOT / "scripts" / "normalize_stream_presentation_v11.py"
+NORMALIZER = ROOT / "scripts" / "normalize_stream_presentation_v12.py"
 
 
 def load_path(path: Path, name: str):
