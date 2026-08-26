@@ -1,5 +1,5 @@
 name: Native Desktop stream canary
-# Final NiakVIO validation v4: materialize the current Core candidate, then test official Desktop macOS + Windows.
+# Final NiakVIO validation v5: materialize the current Core candidate, then test official Desktop macOS + Windows.
 
 on:
   pull_request:
@@ -34,6 +34,7 @@ on:
       - "scripts/restage_native_corpus_client.py"
       - "scripts/augment_native_corpus_request_contract.py"
       - "scripts/augment_native_provider_loading_compat.py"
+      - "scripts/augment_native_desktop_runtime_diagnostics.py"
       - "scripts/augment_native_desktop_player.py"
       - "scripts/complete_native_desktop_frontend_phases.py"
       - "scripts/instrument_native_desktop_evidence.py"
@@ -73,6 +74,7 @@ on:
       - "scripts/restage_native_corpus_client.py"
       - "scripts/augment_native_corpus_request_contract.py"
       - "scripts/augment_native_provider_loading_compat.py"
+      - "scripts/augment_native_desktop_runtime_diagnostics.py"
       - "scripts/augment_native_desktop_player.py"
       - "scripts/complete_native_desktop_frontend_phases.py"
       - "scripts/instrument_native_desktop_evidence.py"
@@ -144,8 +146,8 @@ jobs:
     runs-on: ${{ matrix.runner }}
     env:
       WEBVIEW2_VERSION: 1.0.4078.44
-      NIAKVIO_TARGET_FIXTURE: sinners-2025
-      NIAKVIO_PRIMARY_FIXTURE: sinners-2025
+      NIAKVIO_TARGET_FIXTURE: interstellar
+      NIAKVIO_PRIMARY_FIXTURE: interstellar
       NIAKVIO_TARGET_MANIFEST: manifest.json
       NIAKVIO_PRIMARY_STREAM_SCOPE: "1"
       NIAKVIO_REGRESSION_STREAM_SCOPE: "1"
@@ -199,7 +201,7 @@ jobs:
           git -C nuvio-desktop checkout "$NUVIO_DESKTOP_SHA"
           git -C nuvio-desktop lfs pull --include="composeApp/src/desktopMain/native/macos/runtime/**,composeApp/src/desktopMain/native/windows/runtime/**" --exclude=""
           touch nuvio-desktop/local.properties
-          python3 niakvio/scripts/prepare_native_corpus_client.py desktop --fixture sinners-2025 --workspace "$GITHUB_WORKSPACE" --manifest manifest.json
+          python3 niakvio/scripts/prepare_native_corpus_client.py desktop --fixture interstellar --workspace "$GITHUB_WORKSPACE" --manifest manifest.json
 
       - name: Install official Windows WebView2 dependency
         if: matrix.os_name == 'windows'
@@ -235,28 +237,28 @@ jobs:
             --no-configuration-cache --console=plain
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
-      - name: Probe independent Sinners providers
+      - name: Probe independent Interstellar providers
         shell: bash
         run: |
           set -u
           PROVIDERS=(cineby VIDEASY PURSTREAM)
           LOGS=()
           for provider in "${PROVIDERS[@]}"; do
-            echo "===== DESKTOP CANARY: sinners-2025 / $provider / ${{ matrix.os_name }} ====="
+            echo "===== DESKTOP CANARY: interstellar / $provider / ${{ matrix.os_name }} ====="
             NIAKVIO_TARGET_PROVIDER="$provider" \
               bash "$GITHUB_WORKSPACE/niakvio/scripts/run_native_corpus_desktop_suite.sh" || true
-            source_log="$GITHUB_WORKSPACE/desktop-native-corpus-${{ matrix.os_name }}-sinners-2025.log"
+            source_log="$GITHUB_WORKSPACE/desktop-native-corpus-${{ matrix.os_name }}-interstellar.log"
             canary_log="$GITHUB_WORKSPACE/desktop-canary-${{ matrix.os_name }}-${provider}.log"
             if [[ -s "$source_log" ]]; then
               cp "$source_log" "$canary_log"
             else
-              printf 'FIELD_NATIVE_CANARY_PLACEHOLDER client=desktop fixture=sinners-2025 provider=%s reason=no_route_log\n' "$provider" > "$canary_log"
+              printf 'FIELD_NATIVE_CANARY_PLACEHOLDER client=desktop fixture=interstellar provider=%s reason=no_route_log\n' "$provider" > "$canary_log"
             fi
             LOGS+=("$canary_log")
           done
           node "$GITHUB_WORKSPACE/niakvio/scripts/gate_native_stream_extraction.cjs" \
             --client desktop \
-            --fixture sinners-2025 \
+            --fixture interstellar \
             --providers cineby,VIDEASY,PURSTREAM \
             "${LOGS[@]}"
 
