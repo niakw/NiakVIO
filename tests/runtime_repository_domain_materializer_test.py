@@ -109,11 +109,23 @@ assert REPOSITORY_URL not in assign_result
 assert f'baseUrl={json.dumps(zink_site)};return Promise.resolve();' in assign_result
 assert "const keepAssign=true" in assign_result
 
-try:
-    materialize("const untouched=true;", "missingResolver", "https://example.com")
-except ValueError as exc:
-    assert "resolver not found" in str(exc)
-else:
-    raise AssertionError("missing resolver must fail closed")
+# Idempotent/purified input: when both the historical resolver and its registry
+# dependency are already absent there is nothing left to materialize. This is
+# the shape used by global-Core fixtures and by providers after purification.
+clean_source = "const untouched=true;"
+assert materialize(clean_source, "missingResolver", "https://example.com") == clean_source
 
-print("runtime repository domain materializer tests passed: object/list/scalar/context/assign + fail-closed")
+# Fail closed only when the repository dependency still exists but the expected
+# resolver has disappeared/renamed. That is a genuine upstream-shape drift.
+try:
+    materialize(
+        f'const DOMAINS_URL="{REPOSITORY_URL}"; const untouched=true;',
+        "missingResolver",
+        "https://example.com",
+    )
+except ValueError as exc:
+    assert "resolver not found while registry dependency remains" in str(exc)
+else:
+    raise AssertionError("missing resolver with live registry dependency must fail closed")
+
+print("runtime repository domain materializer tests passed: object/list/scalar/context/assign/idempotence + fail-closed")
