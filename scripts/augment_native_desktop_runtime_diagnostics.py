@@ -231,7 +231,23 @@ DIAGNOSTIC_CALL = f'''val rows = PluginRepository.executeScraper(loadedScraper, 
                         episode = episode,
                         scraperId = loadedScraper.id,
                     )
-                    emit("FIELD_NATIVE_DESKTOP_RUNTIME_BISECT client=desktop fixture=$fixtureSlug provider64=${{b64(provider.id)}} request_type=$requestMediaType route_mode=$routeMode repository_count=${{rows.size}} direct_manifest_id_count=${{directManifestIdRows.size}} direct_loaded_id_count=${{directLoadedIdRows.size}} loaded_scraper_id64=${{b64(loadedScraper.id)}}")
+                    fun historicalCount(envName: String): Int {
+                        val path = System.getenv(envName).orEmpty()
+                        if (path.isBlank()) return -1
+                        val file = File(path)
+                        if (!file.isFile) return -2
+                        return PluginRuntime.executePlugin(
+                            code = file.readText(),
+                            tmdbId = tmdbId,
+                            mediaType = requestMediaType,
+                            season = season,
+                            episode = episode,
+                            scraperId = provider.id,
+                        ).size
+                    }
+                    val preBrainCount = historicalCount("NIAKVIO_DESKTOP_PRE_BRAIN_CODE")
+                    val postBrainCount = historicalCount("NIAKVIO_DESKTOP_POST_BRAIN_CODE")
+                    emit("FIELD_NATIVE_DESKTOP_RUNTIME_BISECT client=desktop fixture=$fixtureSlug provider64=${{b64(provider.id)}} request_type=$requestMediaType route_mode=$routeMode repository_count=${{rows.size}} direct_manifest_id_count=${{directManifestIdRows.size}} direct_loaded_id_count=${{directLoadedIdRows.size}} pre_brain_count=$preBrainCount post_brain_count=$postBrainCount loaded_scraper_id64=${{b64(loadedScraper.id)}}")
 
                     val diagnosticRows = PluginRepository.executeScraper(
                         loadedScraper.copy(code = captureRuntimeConsole(trapRuntimeErrors(loadedScraper.code))),

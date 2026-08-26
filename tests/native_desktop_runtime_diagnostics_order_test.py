@@ -40,6 +40,9 @@ assert 'try { fetch = diagnosticFetch; } catch (_) {}' in generated
 assert 'try { fetch = state.originalFetch; } catch (_) {}' in generated
 assert "__NIAKVIO_RUNTIME_DIAG_STATE__" in generated
 assert "diagnostic_nonempty" in generated
+assert "pre_brain_count=$preBrainCount post_brain_count=$postBrainCount" in generated
+assert "NIAKVIO_DESKTOP_PRE_BRAIN_CODE" in generated
+assert "NIAKVIO_DESKTOP_POST_BRAIN_CODE" in generated
 assert 'private fun captureRuntimeConsole(code: String): String = code + """' not in generated
 
 print("native Desktop runtime diagnostics order contract passed")
