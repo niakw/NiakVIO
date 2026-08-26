@@ -21,6 +21,9 @@ badges = [row for row in (catalog.get("badges") or []) if isinstance(row, dict)]
 assert len(badges) >= 74, f"expected complete 74-badge baseline or newer, got {len(badges)}"
 by_id = {str(row.get("id") or ""): row for row in badges}
 assert len(by_id) == len(badges), "badge ids must be unique"
+# The asset/feed catalog deliberately keeps VFF as an input/compatibility badge.
+# Stream presentation V12 canonicalizes generic VFF evidence to the public VF
+# output, so VFF must exist in the catalog without being a Core-emitted badge ID.
 assert {"vf", "vff", "vfq", "vo", "multi", "vostfr"} <= set(by_id)
 assert by_id["vf"]["pattern"] != by_id["vff"]["pattern"]
 
@@ -70,12 +73,13 @@ core_badge_ids = {
     "blu-ray-disc", "webdl", "webrip", "hdtv", "dvd-rip", "remux",
     "dolby-vision", "hdr10-plus", "hdr10", "imax-enhanced", "imax", "hevc", "avc", "10bit",
     "dolby-atmos", "truehd", "dolby-digital-plus", "dolby-digital", "dts-x", "dts-hd-master-audio",
-    "7.1", "5.1", "multi", "vf", "vff", "vfq", "vo", "vostfr", "sub-fr", "sub-en", "forced", "sdh-cc",
+    "7.1", "5.1", "multi", "vf", "vfq", "vo", "vostfr", "sub-fr", "sub-en", "forced", "sdh-cc",
 }
 missing = sorted(core_badge_ids - set(by_id))
 assert not missing, f"Core emits badge IDs with no catalog image: {missing}"
 for badge_id in core_badge_ids:
     assert f'"{badge_id}"' in core, f"expected shared Core to reference locked badge id {badge_id}"
+assert '"vff"' not in core, "V12 must canonicalize generic VFF evidence to the VF output badge"
 for stale_id in ("dts-hd-ma", "7-1-audio", "5-1-audio", "sdh"):
     assert f'"{stale_id}"' not in core, f"stale non-catalog badge alias leaked from Core: {stale_id}"
 
@@ -96,9 +100,10 @@ for theme in ("dark", "light", "fusion"):
     for group in groups:
         assert str(group.get("color") or "").startswith("#")
         assert str(group.get("borderColor") or "").startswith("#")
-    feed_by_id = {str(row.get("id") or ""): row for row in filters}
-    assert set(feed_by_id) == set(by_id), theme
-    for badge_id, row in feed_by_id.items():
+    feed_by_id = {str(row.get("id") or "") for row in filters}
+    assert feed_by_id == set(by_id), theme
+    rows_by_id = {str(row.get("id") or ""): row for row in filters}
+    for badge_id, row in rows_by_id.items():
         asset_theme = "transparent" if theme == "fusion" else theme
         expected_rel = by_id[badge_id]["assets"][asset_theme]["96x40"]
         assert row["imageURL"].endswith(expected_rel), (theme, badge_id, row["imageURL"])
