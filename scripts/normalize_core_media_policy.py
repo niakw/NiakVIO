@@ -35,17 +35,8 @@ POLICY_NOTE = (
     "Purstream has no provider-specific repair hooks; content identity, stream facts, "
     "presentation and platform compatibility are handled by shared Core/capability layers."
 )
-# Exact historical block that made one provider a special Desktop compatibility
-# target. The normalizer removes it once and --check prevents resurrection.
-_PURSTREAM_DESKTOP_TARGET = '''    "purstream": {
-        "normalize_missing_episodes": True,
-        "domain_failover": {
-            "host_prefixes": ["api.purstream", "purstream"],
-            "suffixes": ["club", "mx", "ch", "ac", "cx", "art", "co", "me", "to", "store"],
-        },
-    },
-'''
-
+# Desktop compatibility is domain-agnostic. Provider URLs/domains remain provider-owned.
+FORBIDDEN_DESKTOP_DOMAIN_RUNTIME = ("domainFailover", "rewriteHost", "orderedSuffixes")
 
 def load() -> dict[str, Any]:
     value = json.loads(OVERRIDES.read_text(encoding="utf-8"))
@@ -121,12 +112,6 @@ def normalize(value: dict[str, Any]) -> tuple[dict[str, Any], list[str]]:
 
 def normalize_source_files(*, apply: bool) -> list[str]:
     changed: list[str] = []
-    source = DESKTOP_COMPAT.read_text(encoding="utf-8")
-    if _PURSTREAM_DESKTOP_TARGET in source:
-        changed.append("scripts/publish_desktop_runtime_compat.py:provider_specific_target")
-        if apply:
-            DESKTOP_COMPAT.write_text(source.replace(_PURSTREAM_DESKTOP_TARGET, ""), encoding="utf-8")
-
     apply_source = APPLY_OVERRIDES.read_text(encoding="utf-8")
     normalized_apply, branding_changes = normalize_branding_pipeline(apply_source)
     assert_branding_pipeline_contract(normalized_apply)
@@ -218,9 +203,13 @@ def assert_policy(value: dict[str, Any]) -> None:
     if not hooks or hooks[-1] != GLOBAL_SECURITY_HOOK:
         raise ValueError("global configurable Core tail must end with provider security")
 
-    desktop_text = DESKTOP_COMPAT.read_text(encoding="utf-8")
-    if _PURSTREAM_DESKTOP_TARGET in desktop_text:
-        raise ValueError("provider-specific Desktop compatibility target remains")
+    desktop_text = (ROOT / "scripts/provider_patches/desktop_runtime_compat_v1.py").read_text(encoding="utf-8")
+    forbidden_desktop = [token for token in FORBIDDEN_DESKTOP_DOMAIN_RUNTIME if token in desktop_text]
+    if forbidden_desktop:
+        raise ValueError(
+            "Desktop runtime compatibility must not rewrite provider domains: "
+            + ", ".join(forbidden_desktop)
+        )
 
 
 def main() -> int:

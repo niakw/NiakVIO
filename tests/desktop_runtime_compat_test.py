@@ -21,15 +21,17 @@ def load_apply(path: Path):
 
 def test_legacy_scoped_patch() -> None:
     apply = load_apply(PATCH)
-    source = "module.exports={getStreams:async function(id,type,s,e){await fetch('https://api.purstream.club/test',{headers:{Referer:'https://purstream.club/'}});var t=setTimeout(function(){},5000);clearTimeout(t);return [{name:'Breaking.Bad.S01E01.1080p',url:'https://example/video.m3u8'},{name:'Breaking.Bad.S05E16.1080p',url:'https://example/other.m3u8'}]}};"
+    source = (
+        "module.exports={getStreams:async function(id,type,s,e){"
+        "await fetch('https://api.purstream.id/test',{headers:{Referer:'https://purstream.id/'}});"
+        "var t=setTimeout(function(){},5000);clearTimeout(t);"
+        "return [{name:'Breaking.Bad.S01E01.1080p',url:'https://example/video.m3u8'},"
+        "{name:'Breaking.Bad.S05E16.1080p',url:'https://example/other.m3u8'}]}};"
+    )
     options = {
         "normalize_missing_episodes": True,
         "filter_episode_labels": True,
         "max_series_streams": 1,
-        "domain_failover": {
-            "host_prefixes": ["api.purstream", "purstream"],
-            "suffixes": ["club", "art"],
-        },
     }
     patched = apply(source, options)
     assert "NUVIO_DESKTOP_RUNTIME_COMPAT_V1" in patched
@@ -37,11 +39,22 @@ def test_legacy_scoped_patch() -> None:
     assert "args[2]=positive" in patched
     assert "episodeMatch" in patched
     assert "output.slice(0,config.maxSeriesStreams)" in patched
-    assert '"hostPrefixes":["api.purstream","purstream"]' in patched
-    assert '"suffixes":["club","art"]' in patched
-    assert "rewriteHost" in patched
+    assert "domainFailover" not in patched
+    assert "rewriteHost" not in patched
+    assert "orderedSuffixes" not in patched
+    assert "api.purstream.id/test" in patched
     assert apply(patched, options) == patched
 
+    for forbidden in (
+        {"domain_failover": {"host_prefixes": ["api.purstream"], "suffixes": ["club"]}},
+        {"domain_replacements": {"api.purstream.id": "api.purstream.club"}},
+    ):
+        try:
+            apply(source, forbidden)
+        except ValueError as error:
+            assert "domain-agnostic" in str(error)
+        else:
+            raise AssertionError(f"domain rewrite option was incorrectly accepted: {forbidden}")
 
 def test_global_core_runtime_patch() -> None:
     apply = load_apply(GLOBAL_PATCH)
@@ -86,7 +99,7 @@ var fetch=async function(input){nativeCalls.push(String(input));return {ok:true,
 def main() -> int:
     test_legacy_scoped_patch()
     test_global_core_runtime_patch()
-    print("desktop/mobile + global Core runtime compatibility patch tests passed")
+    print("desktop/mobile + global Core runtime compatibility patch tests passed: provider domains remain authoritative")
     return 0
 
 

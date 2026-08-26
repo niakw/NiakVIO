@@ -1,12 +1,10 @@
 #!/usr/bin/env python3
-"""Append a Nuvio runtime compatibility wrapper to provider bundles.
+"""Append Nuvio Desktop/Mobile runtime compatibility helpers to provider bundles.
 
-The wrapper remains compatible with the Desktop QuickJS runtime, but its URL
-rewrites deliberately avoid mutating ``URL.hostname``. Nuvio Mobile's current
-QuickJS URL polyfill exposes hostname as a plain field while ``toString()``
-returns the original ``href``; mutating hostname therefore does not rewrite the
-request URL on Android. Host replacement is performed on the URL string so the
-same bundle works on Desktop and Mobile.
+This patch is deliberately domain-agnostic. Provider URLs are authoritative and
+must be used exactly as emitted by the provider; runtime compatibility may fill
+missing timers or normalize request/episode semantics, but must never invent
+alternate provider domains or static TLD failovers.
 """
 from __future__ import annotations
 
@@ -15,34 +13,17 @@ import json
 from typing import Any
 
 MARKER_PREFIX = "NUVIO_DESKTOP_RUNTIME_COMPAT_V1"
-PATCH_REVISION = 4
+PATCH_REVISION = 5
 
 
 def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> str:
     options = dict(options or {})
-    raw_replacements = options.get("domain_replacements") or {}
-    domain_replacements = {
-        str(source).strip().casefold(): str(target).strip().casefold()
-        for source, target in dict(raw_replacements).items()
-        if str(source).strip() and str(target).strip()
-    }
-
-    raw_failover = dict(options.get("domain_failover") or {})
-    failover_prefixes: list[str] = []
-    for value in raw_failover.get("host_prefixes") or []:
-        item = str(value).strip().casefold().strip(".")
-        if item and item not in failover_prefixes:
-            failover_prefixes.append(item)
-    failover_suffixes: list[str] = []
-    for value in raw_failover.get("suffixes") or []:
-        item = str(value).strip().casefold().strip(".")
-        if item and item not in failover_suffixes:
-            failover_suffixes.append(item)
-    domain_failover = (
-        {"hostPrefixes": failover_prefixes, "suffixes": failover_suffixes}
-        if failover_prefixes and failover_suffixes
-        else {}
-    )
+    forbidden = {"domain_replacements", "domain_failover"} & set(options)
+    if forbidden:
+        raise ValueError(
+            "Desktop runtime compatibility is domain-agnostic; remove options: "
+            + ", ".join(sorted(forbidden))
+        )
 
     config = {
         "patchRevision": PATCH_REVISION,
@@ -51,8 +32,6 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
         "fallbackEpisode": max(1, int(options.get("fallback_episode", 1))),
         "filterEpisodeLabels": bool(options.get("filter_episode_labels", False)),
         "maxSeriesStreams": max(0, min(int(options.get("max_series_streams", 0)), 100)),
-        "domainReplacements": domain_replacements,
-        "domainFailover": domain_failover,
     }
     payload = json.dumps(config, separators=(",", ":"))
     marker = f"{MARKER_PREFIX}:{hashlib.sha256(payload.encode('utf-8')).hexdigest()[:12]}"
@@ -65,135 +44,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
   "use strict";
   if(!g)return;
 
-  var hasReplacements=!!(config.domainReplacements&&Object.keys(config.domainReplacements).length);
-  var hasFailover=!!(config.domainFailover&&Array.isArray(config.domainFailover.hostPrefixes)&&config.domainFailover.hostPrefixes.length&&Array.isArray(config.domainFailover.suffixes)&&config.domainFailover.suffixes.length);
-  if((hasReplacements||hasFailover)&&typeof g.fetch==="function"){
-    var fetchKey="__nuvioDesktopFetchCompatV1",fetchState=g[fetchKey];
-    if(!fetchState){
-      fetchState={native:g.fetch.bind(g),rules:Object.create(null),failovers:Object.create(null)};
-      g[fetchKey]=fetchState;
-
-      // Do not mutate URL.hostname here. Nuvio Mobile's QuickJS URL polyfill
-      // stores href separately and its toString() returns that unchanged href.
-      // Rewrite the authority in the original string instead.
-      function rewriteHost(raw,newHost){
-        raw=String(raw||"");
-        newHost=String(newHost||"").toLowerCase();
-        if(!newHost)return raw;
-        return raw.replace(/^([a-z][a-z0-9+.-]*:\/\/)([^\/?#]+)/i,function(_all,scheme,authority){
-          var userinfo="",hostPort=authority,at=authority.lastIndexOf("@");
-          if(at>=0){userinfo=authority.slice(0,at+1);hostPort=authority.slice(at+1);}
-          var port="";
-          if(hostPort.charAt(0)==="["){
-            var close=hostPort.indexOf("]");
-            if(close>=0)port=hostPort.slice(close+1);
-          }else{
-            var colon=hostPort.lastIndexOf(":");
-            if(colon>0&&/^:\d+$/.test(hostPort.slice(colon)))port=hostPort.slice(colon);
-          }
-          return scheme+userinfo+newHost+port;
-        });
-      }
-      function requestWithUrl(input,urlText){
-        try{
-          if(typeof Request!=="undefined"&&input instanceof Request)return new Request(urlText,input);
-        }catch(_error){}
-        return urlText;
-      }
-      function hostnameOf(raw){
-        try{return String(new URL(String(raw)).hostname||"").toLowerCase();}catch(_error){return "";}
-      }
-      function rewriteInitFailover(init,rule,oldSuffix,newSuffix){
-        if(!init||typeof init!=="object"||!rule||!oldSuffix||!newSuffix||oldSuffix===newSuffix)return init;
-        var copy={};
-        Object.keys(init).forEach(function(name){copy[name]=init[name];});
-        var headers=init.headers;
-        if(headers&&typeof headers==="object"&&!Array.isArray(headers)){
-          var nextHeaders={};
-          Object.keys(headers).forEach(function(name){
-            var value=headers[name];
-            if(typeof value==="string"){
-              (rule.prefixes||[]).forEach(function(relatedPrefix){
-                value=value.split(relatedPrefix+"."+oldSuffix).join(relatedPrefix+"."+newSuffix);
-              });
-            }
-            nextHeaders[name]=value;
-          });
-          copy.headers=nextHeaders;
-        }
-        return copy;
-      }
-      function failoverMatch(hostname){
-        var keys=Object.keys(fetchState.failovers);
-        for(var i=0;i<keys.length;i++){
-          var prefix=keys[i];
-          if(hostname.indexOf(prefix+".")===0)return prefix;
-        }
-        return null;
-      }
-      function orderedSuffixes(rule){
-        var output=[];
-        if(rule.selected)output.push(rule.selected);
-        rule.suffixes.forEach(function(suffix){if(output.indexOf(suffix)===-1)output.push(suffix);});
-        return output;
-      }
-
-      g.fetch=async function(input,init){
-        var raw;
-        try{raw=(input&&typeof input==="object"&&typeof input.url==="string")?input.url:String(input);}catch(_error){raw=String(input);}
-        var hostname=hostnameOf(raw);
-        if(!hostname)return fetchState.native(input,init);
-
-        var replacement=fetchState.rules[hostname];
-        if(replacement){
-          raw=rewriteHost(raw,replacement);
-          hostname=hostnameOf(raw)||replacement;
-        }
-
-        var prefix=failoverMatch(hostname);
-        if(!prefix){
-          return fetchState.native(requestWithUrl(input,raw),init);
-        }
-
-        var rule=fetchState.failovers[prefix],suffixes=orderedSuffixes(rule);
-        var originalSuffix=hostname.slice(prefix.length+1);
-        var lastResponse=null,lastError=null;
-        for(var i=0;i<suffixes.length;i++){
-          var suffix=suffixes[i];
-          var candidateRaw=rewriteHost(raw,prefix+"."+suffix);
-          try{
-            var response=await fetchState.native(
-              requestWithUrl(input,candidateRaw),
-              rewriteInitFailover(init,rule,originalSuffix,suffix)
-            );
-            lastResponse=response;
-            if(response&&response.ok){rule.selected=suffix;return response;}
-          }catch(error){
-            lastError=error;
-          }
-        }
-        if(lastResponse)return lastResponse;
-        throw lastError||new Error("Nuvio runtime domain failover exhausted for "+prefix);
-      };
-    }
-
-    Object.keys(config.domainReplacements||{}).forEach(function(source){
-      fetchState.rules[String(source).toLowerCase()]=String(config.domainReplacements[source]).toLowerCase();
-    });
-    if(hasFailover){
-      var group={prefixes:[],suffixes:[],selected:null};
-      config.domainFailover.hostPrefixes.forEach(function(prefix){
-        prefix=String(prefix||"").toLowerCase();
-        if(prefix&&group.prefixes.indexOf(prefix)===-1)group.prefixes.push(prefix);
-      });
-      config.domainFailover.suffixes.forEach(function(suffix){
-        suffix=String(suffix||"").toLowerCase();
-        if(suffix&&group.suffixes.indexOf(suffix)===-1)group.suffixes.push(suffix);
-      });
-      group.prefixes.forEach(function(prefix){fetchState.failovers[prefix]=group;});
-    }
-  }
-
+  // Runtime portability only. Never rewrite provider URLs/domains here.
   if(typeof g.setTimeout!=="function"){
     g.setTimeout=function(callback,delay){
       if((Number(delay)||0)<=0&&typeof callback==="function"&&typeof Promise!=="undefined"){
