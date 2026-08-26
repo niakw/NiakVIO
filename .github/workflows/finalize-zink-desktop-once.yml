@@ -82,7 +82,6 @@ jobs:
           python - <<'PY'
           import json
           from pathlib import Path
-          from urllib.parse import urlparse
 
           def http(value):
               return isinstance(value,str) and value.startswith(('http://','https://'))
@@ -108,41 +107,37 @@ jobs:
               'goated':'https://goated.cx/',
           }
 
-          def route_for(pid):
-              row=hubs.get(pid) or {}
-              # Trust order is the global contract: configured hub/method first.
-              hub=row.get('hub')
-              if http(hub): return hub
-              sources=sorted(
-                  [s for s in row.get('sources',[]) if isinstance(s,dict) and s.get('type')!='search' and http(s.get('url'))],
-                  key=lambda s:-int(s.get('priority') or 0),
-              )
-              if sources: return sources[0]['url']
+          def runtime_route(pid):
+              # Hubs / Telegram / Yandex / curated direct URLs are discovery inputs.
+              # resolve_provider_hubs.py validates them and persists only the resolved
+              # terminal into official_site and/or provider-domain-history. Never put
+              # a discovery hub itself into provider runtime bytes.
               patch=patches.get(pid) or {}
-              if http(patch.get('official_site')): return patch['official_site']
+              if http(patch.get('official_site')):
+                  return patch['official_site'], 'validated_official_site'
               current=(history.get(pid) or {}).get('current') or {}
-              if http(current.get('url')): return current['url']
-              if http(row.get('direct')): return row['direct']
-              for candidate in row.get('direct_candidates') or []:
-                  if http(candidate): return candidate
-              # No curated/resolved route: preserve the provider's own default URL.
-              return defaults[pid]
+              if http(current.get('url')):
+                  return current['url'], 'validated_history_lkg'
+              # If no configured method produced a validated terminal, preserve the
+              # provider's embedded/upstream default rather than inventing a route.
+              return defaults[pid], 'embedded_provider_fallback'
 
           for pid,repo_url in repo_urls.items():
               patch=patches.setdefault(pid,{})
-              route=route_for(pid)
+              route,source=runtime_route(pid)
               patch.setdefault('replacements',{})[repo_url]=route
               notes=list(patch.get('notes') or [])
-              note='Centralize domain discovery through provider-hubs.json/history; provider-side GitHub domain registries are maintenance-only and the embedded provider URL remains the final fallback.'
+              note='Address discovery is centralized: configured hub/Telegram/search/direct methods resolve to a validated terminal; if none validates, preserve the embedded provider URL. Repository registries are maintenance-only.'
               if note not in notes: notes.append(note)
               patch['notes']=notes
-              print(f'FIELD_CENTRALIZED_ROUTE provider={pid} route={route} fallback={defaults[pid]}')
+              print(f'FIELD_CENTRALIZED_ROUTE provider={pid} route={route} source={source} fallback={defaults[pid]}')
 
-          # ZinkMovies refreshDomains only mutates baseUrl from the old repository JSON.
-          # Neutralize that updater entirely; baseUrl therefore stays on its embedded
-          # fallback unless the centralized resolver has already rewritten the host.
+          # ZinkMovies refreshDomains only existed to mutate baseUrl from repository JSON.
+          # Neutralize it after centralized resolution; the validated terminal or embedded
+          # provider fallback is used directly.
           z=patches['zinkmovies']
-          site=str(z.get('official_site') or defaults['zinkmovies']).rstrip('/')
+          site,source=runtime_route('zinkmovies')
+          site=site.rstrip('/')
           z['fixed_endpoint']={
               'resolver_function':'refreshDomains',
               'api':site,
