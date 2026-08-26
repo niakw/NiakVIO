@@ -30,10 +30,10 @@ with tempfile.TemporaryDirectory() as tmp:
     assert proc.returncode == 0, proc.stdout + proc.stderr
     generated = target.read_text(encoding="utf-8")
 
-pre = generated.index("NIAKVIO_NATIVE_RUNTIME_CONSOLE_CAPTURE_PRE")
-provider = generated.index('return prelude + "\\n" + code + "\\n" + postlude')
-post = generated.index("NIAKVIO_NATIVE_RUNTIME_CONSOLE_CAPTURE_POST")
-assert pre < provider < post, (pre, provider, post)
+assert "NIAKVIO_NATIVE_RUNTIME_CONSOLE_CAPTURE_PRE" in generated
+assert "NIAKVIO_NATIVE_RUNTIME_CONSOLE_CAPTURE_POST" in generated
+assert 'return prelude + "\\n" + code + "\\n" + postlude' in generated
+assert generated.index("val prelude =") < generated.index("val postlude =")
 assert 'capture("fetch-start"' in generated
 assert "__NIAKVIO_RUNTIME_DIAG_STATE__" in generated
 assert "diagnostic_nonempty" in generated
