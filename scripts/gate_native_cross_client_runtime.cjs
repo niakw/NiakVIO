@@ -71,6 +71,9 @@ function routeKey(f) {
 function routeLabel(key) {
   return key.split('\u0000').join(':');
 }
+function explicitlyDisabled(f) {
+  return String(f.enabled || '').trim().toLowerCase() === 'false';
+}
 
 const routes = new Map();
 const clientsSeen = new Set();
@@ -98,18 +101,18 @@ for (const file of files) {
     if (client && client !== 'unknown') clientsSeen.add(client);
 
     if (line.startsWith('FIELD_NATIVE_RESULT ')) {
-      if (String(f.route_mode || 'declared').toLowerCase() === 'capability_probe') continue;
+      if (String(f.route_mode || 'declared').toLowerCase() === 'capability_probe' || explicitlyDisabled(f)) continue;
       const row = observation(routeKey(f), client);
       row.count = Math.max(0, Number(f.count ?? f.returned ?? 0) || 0);
       resultRows += 1;
     } else if (line.startsWith('FIELD_NATIVE_ERROR ')) {
-      if (String(f.route_mode || 'declared').toLowerCase() === 'capability_probe') continue;
+      if (String(f.route_mode || 'declared').toLowerCase() === 'capability_probe' || explicitlyDisabled(f)) continue;
       const row = observation(routeKey(f), client);
       row.runtimeError = true;
       if (row.count == null) row.count = 0;
       explicitRuntimeErrors += 1;
     } else if (line.startsWith('FIELD_NATIVE_ROW ')) {
-      if (String(f.route_mode || 'declared').toLowerCase() === 'capability_probe') continue;
+      if (String(f.route_mode || 'declared').toLowerCase() === 'capability_probe' || explicitlyDisabled(f)) continue;
       const type = decode(f.type64);
       const title = decode(f.title64);
       if (type !== RUNTIME_ERROR_SENTINEL && title !== RUNTIME_ERROR_SENTINEL) continue;
@@ -158,6 +161,8 @@ function failed(row) {
 const clientStats = Object.fromEntries(requiredClients.map((client) => [client, {
   comparisons: 0,
   failuresAgainstHealthyPeer: 0,
+  zeroFailuresAgainstHealthyPeer: 0,
+  runtimeFailuresAgainstHealthyPeer: 0,
   healthyAgainstPeer: 0,
   sentinelFailures: 0,
 }]));
@@ -178,6 +183,8 @@ for (const [key, byClient] of routes) {
     stats.comparisons += 1;
     if (failed(own)) {
       stats.failuresAgainstHealthyPeer += 1;
+      if (own.runtimeError) stats.runtimeFailuresAgainstHealthyPeer += 1;
+      else stats.zeroFailuresAgainstHealthyPeer += 1;
       if (own.sentinel) stats.sentinelFailures += 1;
       divergences.push({
         route: routeLabel(key),
@@ -203,12 +210,34 @@ if (comparableRoutes < minComparisons) {
   process.exit(2);
 }
 
+// A zero result is provider/extraction evidence, not by itself proof that the client
+// runtime is broken. Brain is specifically allowed to learn from those asymmetric
+// provider outcomes. Block before Brain only when a client has completely collapsed
+// across all comparable healthy-peer routes, or when runtime exceptions/sentinels are
+// themselves systemic. This keeps provider repair evidence out of the runtime gate.
 const systemic = [];
 for (const client of requiredClients) {
   const stats = clientStats[client];
-  const ratio = stats.comparisons ? stats.failuresAgainstHealthyPeer / stats.comparisons : 0;
-  if (stats.comparisons >= minComparisons && stats.failuresAgainstHealthyPeer >= minComparisons && ratio >= failureRatio) {
-    systemic.push({ client, ...stats, failureRatio: ratio });
+  const runtimeRatio = stats.comparisons ? stats.runtimeFailuresAgainstHealthyPeer / stats.comparisons : 0;
+  const completeZeroCollapse = (
+    stats.comparisons >= minComparisons &&
+    stats.healthyAgainstPeer === 0 &&
+    stats.zeroFailuresAgainstHealthyPeer >= minComparisons &&
+    stats.runtimeFailuresAgainstHealthyPeer === 0
+  );
+  const systemicRuntimeFailure = (
+    stats.comparisons >= minComparisons &&
+    stats.runtimeFailuresAgainstHealthyPeer >= minComparisons &&
+    runtimeRatio >= failureRatio
+  );
+  if (completeZeroCollapse || systemicRuntimeFailure) {
+    systemic.push({
+      client,
+      ...stats,
+      failureRatio: stats.comparisons ? stats.failuresAgainstHealthyPeer / stats.comparisons : 0,
+      runtimeFailureRatio: runtimeRatio,
+      reason: systemicRuntimeFailure ? 'runtime_errors' : 'complete_zero_collapse',
+    });
   }
 }
 
