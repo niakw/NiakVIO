@@ -15,6 +15,7 @@ MANIFEST = ROOT / "manifest.json"
 OVERRIDES = ROOT / "provider-overrides.json"
 CORE_SAFETY = ROOT / "scripts" / "core_rebuild_safety.py"
 CORE_FIXED_POINT = ROOT / "scripts" / "normalize_core_fixed_point_contract.py"
+APPLY_OVERRIDES = ROOT / "scripts" / "apply_provider_overrides.py"
 TARGET_ORDER_COMPAT_PATCH = "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py"
 TARGET_ORDER_PATCH = "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
 RUNTIME_PATCH = "scripts/provider_patches/runtime_capability_media_safety_v4.py"
@@ -26,6 +27,37 @@ def load(path: Path):
 
 def dump(path: Path, value) -> None:
     path.write_text(json.dumps(value, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+
+def normalize_post_export_tail_floor() -> int:
+    """Make generated Core-tail ownership inclusive at the provider export floor.
+
+    A retained generated marker can begin at exactly the byte returned by
+    ``_provider_export_floor``. Treating only ``index > floor`` as generated leaves
+    that marker attached to the provider base. Terser then preserves the boundary
+    while each reconstruction adds whitespace before it, so content-addressed
+    provider hashes never converge. Generated markers at *or after* the proven
+    export floor are Core-owned; anything before the floor still fails closed.
+    """
+    text = APPLY_OVERRIDES.read_text(encoding="utf-8")
+    replacements = {
+        "if boundary_index > floor:": "if boundary_index >= floor:",
+        "if index > floor:": "if index >= floor:",
+    }
+    changed = 0
+    for old, new in replacements.items():
+        if old in text:
+            text = text.replace(old, new)
+            changed += 1
+    if "if boundary_index > floor:" in text or "if index > floor:" in text:
+        raise ValueError("strict post-export Core-tail ownership remains")
+    for required in ("if boundary_index >= floor:", "if index >= floor:"):
+        if required not in text:
+            raise ValueError(f"inclusive post-export Core-tail ownership missing: {required}")
+    if changed:
+        APPLY_OVERRIDES.write_text(text, encoding="utf-8")
+    print(f"FIELD_CORE_TAIL_EXPORT_FLOOR changed={changed} inclusive=true")
+    return changed
 
 
 def materialize_runtime_domain_fixed_point() -> None:
@@ -47,6 +79,7 @@ def materialize_runtime_domain_fixed_point() -> None:
         cwd=ROOT,
         check=True,
     )
+    normalize_post_export_tail_floor()
     print(
         "FIELD_RUNTIME_DOMAIN_FIXED_POINT "
         f"changed={int(changed)} activation=explicit pre_provider_rebuild=true"
