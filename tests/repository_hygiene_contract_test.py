@@ -107,6 +107,7 @@ for stale in (
     "lab/tv-real",
     "lab/desktop-mobile-real",
     "provider-rebuild-offline.yml",
+    "engine-regression-offline.yml",
 ):
     assert stale not in readme, f"README resurrected retired reference: {stale}"
     assert stale not in architecture, f"ARCHITECTURE resurrected retired reference: {stale}"
