@@ -11,6 +11,8 @@ on:
       - 'package-lock.json'
       - 'automation/nuvio-client-upstreams.json'
       - 'assets/providers/emojis.json'
+      - 'engine_v2/src/**'
+      - 'engine_v2/tests/**'
       - 'engine_v2/src/provider-branding.mjs'
       - 'engine_v2/scripts/bootstrap-provider-catalog.mjs'
       - 'engine_v2/tests/provider-catalog.test.mjs'
@@ -208,6 +210,10 @@ jobs:
           python tests/badge_asset_contract_test.py
           python tests/repository_hygiene_contract_test.py
           python scripts/reapply_published_overrides.py --check
+          node engine_v2/tests/contracts.test.mjs
+          node engine_v2/tests/stream-presentation.test.mjs
+          node engine_v2/tests/media-validator.test.mjs
+          node engine_v2/tests/resolver-core.test.mjs
           node engine_v2/tests/provider-catalog.test.mjs
 
       - name: Prove every published provider is final Terser fixed-point
@@ -304,6 +310,10 @@ jobs:
           python tests/repository_hygiene_contract_test.py
           python scripts/reapply_published_overrides.py --check
           python scripts/validate_release_integrity.py
+          node engine_v2/tests/contracts.test.mjs
+          node engine_v2/tests/stream-presentation.test.mjs
+          node engine_v2/tests/media-validator.test.mjs
+          node engine_v2/tests/resolver-core.test.mjs
           node engine_v2/tests/provider-catalog.test.mjs
           python - <<'PY'
           import json
