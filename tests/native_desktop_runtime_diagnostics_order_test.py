@@ -35,6 +35,9 @@ assert "NIAKVIO_NATIVE_RUNTIME_CONSOLE_CAPTURE_POST" in generated
 assert 'return prelude + "\\n" + code + "\\n" + postlude' in generated
 assert generated.index("val prelude =") < generated.index("val postlude =")
 assert 'capture("fetch-start"' in generated
+assert 'originalFetch: (typeof fetch === "function") ? fetch' in generated
+assert 'try { fetch = diagnosticFetch; } catch (_) {}' in generated
+assert 'try { fetch = state.originalFetch; } catch (_) {}' in generated
 assert "__NIAKVIO_RUNTIME_DIAG_STATE__" in generated
 assert "diagnostic_nonempty" in generated
 assert 'private fun captureRuntimeConsole(code: String): String = code + """' not in generated

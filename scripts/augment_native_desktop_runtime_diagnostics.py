@@ -39,7 +39,7 @@ CONSOLE_HELPER = r'''
         marker: "__NIAKVIO_RUNTIME_DIAGNOSTIC__",
         messages: [],
         originalConsole: g && g.console ? g.console : null,
-        originalFetch: g && typeof g.fetch === "function" ? g.fetch : null
+        originalFetch: (typeof fetch === "function") ? fetch : (g && typeof g.fetch === "function" ? g.fetch : null)
     };
     var stringify = function (value) {
         try {
@@ -118,7 +118,11 @@ CONSOLE_HELPER = r'''
                 }
             };
             diagnosticFetch.__nuvioNativeRuntimeDiagnostic = true;
-            g.fetch = diagnosticFetch;
+            // NuvioDesktop's polyfill is declared as top-level `var fetch = ...`,
+            // which can be visible to provider code without being exposed as
+            // globalThis.fetch in QuickJS. Update both bindings when possible.
+            try { fetch = diagnosticFetch; } catch (_) {}
+            try { g.fetch = diagnosticFetch; } catch (_) {}
         }
     } catch (error) {
         capture("fetch-install-error", [stringify(error)]);
@@ -164,7 +168,10 @@ CONSOLE_HELPER = r'''
     var restore = function () {
         try {
             if (g && state.originalConsole) g.console = state.originalConsole;
-            if (g && state.originalFetch) g.fetch = state.originalFetch;
+            if (state.originalFetch) {
+                try { fetch = state.originalFetch; } catch (_) {}
+                try { if (g) g.fetch = state.originalFetch; } catch (_) {}
+            }
         } catch (_) {}
     };
 
