@@ -15,15 +15,17 @@ concurrency:
 
 jobs:
   collect:
-    name: Export AI-readable audit logs
+    name: Refresh services and export AI-readable audit logs
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 35
     env:
       REPO_SLUG: niakw/NiakVIO
       OUT: audit/ai-external
       SONAR_KEY: ${{ secrets.SONAR_KEY }}
       DEEPSOURCE_API: ${{ secrets.DEEPSOURCE_API }}
       CODESCENE_TOKEN: ${{ secrets.CODESCENE_TOKEN }}
+      EXTERNAL_REFRESH_WAIT_SECONDS: '900'
+      EXTERNAL_REFRESH_POLL_SECONDS: '15'
 
     steps:
       - name: Checkout current main
@@ -39,6 +41,10 @@ jobs:
           echo "AUDITED_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
           mkdir -p "$OUT"/{sonar,deepsource,codescene}
           find "$OUT/sonar" "$OUT/deepsource" "$OUT/codescene" -type f -delete
+
+      - name: Request fresh Sonar / DeepSource / CodeScene analyses
+        continue-on-error: true
+        run: python3 scripts/external_audit/request_refresh.py
 
       - name: Export SonarQube Cloud public project data
         continue-on-error: true
