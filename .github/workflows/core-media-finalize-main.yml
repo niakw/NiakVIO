@@ -21,12 +21,12 @@ permissions:
   contents: write
   issues: write
 
-# A Core run can publish its own permanent materialization to main. That push may
-# legitimately trigger another Core run, but it must never cancel the exact run
-# whose result an orchestrator is already watching as authoritative evidence.
+# Push generations are latest-wins so obsolete Core work cannot pile up. Explicit
+# workflow_dispatch runs keep an isolated group because the final orchestrator may
+# watch one exact dispatch as authoritative evidence.
 concurrency:
-  group: niakvio-core-media-finalize-main-${{ github.run_id }}
-  cancel-in-progress: false
+  group: niakvio-core-media-finalize-main-${{ github.event_name == 'workflow_dispatch' && github.run_id || 'main-push' }}
+  cancel-in-progress: ${{ github.event_name == 'push' }}
 
 jobs:
   finalize-main:
@@ -40,11 +40,23 @@ jobs:
         run: |
           gh issue comment 69 --repo "$GITHUB_REPOSITORY" --body "Core finalizer started: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID} on ${GITHUB_SHA}. Durable fixed-point normalization + final Terser + complete repository suite."
 
-      - name: Checkout exact main
+      - name: Checkout exact event generation
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
-          ref: main
+          ref: ${{ github.sha }}
           fetch-depth: 0
+
+      - name: Reject stale Core generation before work
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin main
+          current="$(git rev-parse origin/main)"
+          if [ "$current" != "$GITHUB_SHA" ]; then
+            echo "FIELD_CORE_STALE_GENERATION event=$GITHUB_SHA current=$current action=reject" >&2
+            exit 1
+          fi
+          echo "FIELD_CORE_GENERATION_ACTIVE sha=$GITHUB_SHA"
 
       - name: Capture publication baseline
         shell: bash
@@ -219,6 +231,12 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          git fetch origin main
+          current="$(git rev-parse origin/main)"
+          if [ "$current" != "$GITHUB_SHA" ]; then
+            echo "FIELD_CORE_STALE_PUBLICATION event=$GITHUB_SHA current=$current action=reject" >&2
+            exit 1
+          fi
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add -A
@@ -226,8 +244,6 @@ jobs:
             echo 'Core media policy already fully materialized on main.'
           else
             git commit -m 'chore: materialize global Core media policy'
-            git fetch origin main
-            git rebase origin/main
             python scripts/generate_release_hashes.py
             python scripts/validate_release_integrity.py
             git add FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json
