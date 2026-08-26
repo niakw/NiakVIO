@@ -67,10 +67,12 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          python scripts/normalize_runtime_repository_dependencies.py --apply
           python scripts/normalize_provider_rebuild_safety.py --apply
           python scripts/normalize_core_fixed_point_contract.py --apply
           python scripts/normalize_provider_branding_pipeline.py --apply
           python -m py_compile \
+            scripts/normalize_runtime_repository_dependencies.py \
             scripts/normalize_provider_rebuild_safety.py \
             scripts/normalize_provider_branding_pipeline.py \
             scripts/normalize_terminal_quarantine_stage.py \
@@ -81,6 +83,7 @@ jobs:
             scripts/apply_provider_overrides.py \
             scripts/provider_engine_normalizer.py \
             scripts/reapply_published_overrides.py \
+            scripts/provider_patches/runtime_repository_domain_materializer_v1.py \
             scripts/provider_patches/global_provider_branding_v1.py \
             scripts/provider_patches/stream_output_sanitizer_v6.py
           python tests/core_terminal_export_floor_test.py
@@ -90,6 +93,7 @@ jobs:
           python tests/global_stream_identity_test.py
           python tests/provider_purification_contract_test.py
           python tests/prune_unreferenced_providers_test.py
+          python scripts/normalize_runtime_repository_dependencies.py --check
           python scripts/normalize_provider_rebuild_safety.py --check
           python scripts/normalize_core_fixed_point_contract.py --check
           python scripts/normalize_provider_branding_pipeline.py --check
@@ -128,6 +132,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          python scripts/normalize_runtime_repository_dependencies.py --check
           python scripts/normalize_provider_rebuild_safety.py --check
           python scripts/normalize_core_fixed_point_contract.py --check
           python scripts/normalize_provider_branding_pipeline.py --check
@@ -233,6 +238,7 @@ jobs:
           git reset --hard origin/main
           git clean -fdx
           npm ci --ignore-scripts --no-audit --no-fund
+          python scripts/normalize_runtime_repository_dependencies.py --check
           python scripts/normalize_provider_rebuild_safety.py --check
           python scripts/normalize_core_fixed_point_contract.py --check
           python scripts/normalize_provider_branding_pipeline.py --check
