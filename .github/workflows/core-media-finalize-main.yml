@@ -22,6 +22,7 @@ permissions:
   issues: write
 
 # Push generations are latest-wins so obsolete Core work cannot pile up. Explicit
+# Desktop recovery seal: publish the already-landed identity v5 / presentation v14 fixed point.
 # workflow_dispatch runs keep an isolated group because the final orchestrator may
 # watch one exact dispatch as authoritative evidence.
 concurrency:
