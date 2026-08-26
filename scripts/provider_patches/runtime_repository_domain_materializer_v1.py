@@ -172,8 +172,19 @@ def apply(
     )
     output, changed = _replace_named_function(text, function_name, replacement)
     if not changed:
-        provider_id = str((context or {}).get("provider_id") or "unknown")
-        raise ValueError(f"runtime repository resolver not found provider={provider_id} function={function_name}")
+        # A discovery/global-Core fixture, an already-purified provider, or a
+        # newer upstream may legitimately no longer expose the historical
+        # resolver. Absence is safe only when none of the configured runtime
+        # repository registries remains in the bytes. If a registry is still
+        # present, fail closed: the provider changed shape and requires review.
+        remaining = [url for url in forbidden_urls if url in text]
+        if remaining:
+            provider_id = str((context or {}).get("provider_id") or "unknown")
+            raise ValueError(
+                "runtime repository resolver not found while registry dependency remains "
+                f"provider={provider_id} function={function_name} urls={','.join(remaining)}"
+            )
+        return text
 
     # URL constants may remain after the resolver body is replaced. They are dead
     # after Terser, but remove them now so repository-dependency validation is
