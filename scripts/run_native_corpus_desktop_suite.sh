@@ -17,6 +17,7 @@ INSTRUMENTER="${NIAKVIO}/scripts/instrument_native_desktop_evidence.py"
 REPOSITORY_HTTP_INSTRUMENTER="${NIAKVIO}/scripts/instrument_native_repository_http_evidence.py"
 REQUEST_CONTRACT="${NIAKVIO}/scripts/augment_native_corpus_request_contract.py"
 PROVIDER_LOADING="${NIAKVIO}/scripts/augment_native_provider_loading_compat.py"
+RUNTIME_DIAGNOSTICS="${NIAKVIO}/scripts/augment_native_desktop_runtime_diagnostics.py"
 REPOSITORY_RESOLVER="${NIAKVIO}/scripts/resolve_native_repository.sh"
 PLAYER_AUGMENT="${NIAKVIO}/scripts/augment_native_desktop_player.py"
 FRONTEND_PHASES="${NIAKVIO}/scripts/complete_native_desktop_frontend_phases.py"
@@ -83,6 +84,7 @@ for fixture in "${FIXTURES[@]}"; do
   else
     python3 "$PROVIDER_LOADING" desktop --manifest "$TARGET_MANIFEST" --manifest-url "$MANIFEST_URL" --source "$TEST_SOURCE" --platform "$HOST_OS" || { SOFT_FAILURES=$((SOFT_FAILURES+1)); continue; }
   fi
+  python3 "$RUNTIME_DIAGNOSTICS" --source "$TEST_SOURCE" || { SOFT_FAILURES=$((SOFT_FAILURES+1)); continue; }
   EXPECTED_MINUTES="$(python3 - "$fixture" "$NIAKVIO/.github/triggers/nuvio-client-lab.json" <<'PY'
 import json, sys
 slug, path = sys.argv[1], sys.argv[2]
