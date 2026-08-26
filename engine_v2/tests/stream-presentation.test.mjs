@@ -1,11 +1,16 @@
 import assert from "node:assert/strict";
 import { normalizeStreamCandidate } from "../src/contracts.mjs";
 import {
+  buildBadgeIds,
   buildBadges,
-  presentStreamCandidate,
+  normalizeLanguage,
   normalizeSourceType,
+  presentStreamCandidate,
 } from "../src/stream-presentation.mjs";
 import { createTmdbMetadataResolver, normalizeTmdbPayload } from "../src/tmdb-metadata.mjs";
+
+const vfProvider = { id: "purstream", name: "Purstream", languages: ["fr"] };
+const voProvider = { id: "cineby", name: "Cineby", languages: ["en"] };
 
 const facts = normalizeStreamCandidate({
   name: "Purstream",
@@ -19,63 +24,111 @@ const facts = normalizeStreamCandidate({
   ageRating: "-12",
 }, { providerId: "purstream" });
 
-assert.equal(facts.quality, "2160p");
-assert.equal(facts.language, "VFF");
-assert.equal(facts.codec, "x265");
-assert.equal(facts.audio, "DDP 5.1");
-assert.equal(facts.duration, 169);
-assert.equal(facts.sourceType, "BluRay");
-assert.equal(facts.ageRating, "-12");
-
 const presented = presentStreamCandidate(facts, {
   title: "Interstellar",
   year: 2014,
   runtime: 169,
   certification: "-12",
-}, { id: "purstream", name: "Purstream" });
+  mediaType: "movie",
+}, vfProvider);
 
-assert.equal(presented.title, "Purstream");
+assert.equal(presented.title, "Purstream - 4K");
 assert.equal(presented.quality, "2160p");
+assert.equal(presented.language, "VF");
 assert.equal(presented.codec, "HEVC");
 assert.equal(presented.audio, "E-AC3 5.1");
 assert.equal(presented.duration, 169);
 assert.equal(presented.sourceType, "BLU-RAY");
-assert.match(presented.description, /【4K】/);
-assert.match(presented.description, /【BLU-RAY】/);
-assert.match(presented.description, /🌐 VFF/);
-assert.match(presented.description, /🎞 HEVC/);
-assert.match(presented.description, /🔊 E-AC3 5\.1/);
-assert.match(presented.description, /⏱ 2h49/);
-assert.match(presented.description, /🔞 -12/);
-assert.match(presented.description, /Interstellar • 2014/);
+assert.deepEqual(presented.description.split("\n"), [
+  "🎬 Interstellar • 2014",
+  "⏱ 2h49 • 🔞 -12",
+  "🇫🇷 VF",
+  "🎞️ BLU-RAY • HEVC • HLS  |  🔊 E-AC3 5.1",
+]);
+assert.doesNotMatch(presented.description, /2160p|\b4K\b/i);
+assert.ok(presented.badgeIds.includes("4k-ultra-hd"));
+assert.ok(presented.badgeIds.includes("blu-ray-disc"));
+assert.ok(presented.badgeIds.includes("hevc"));
+assert.ok(presented.badgeIds.includes("vf"));
+assert.ok(presented.badgeIds.includes("age-12"));
+
+const multiVf = presentStreamCandidate({
+  name: "Purstream",
+  url: "https://media.example/multi.m3u8",
+  language: "Dual Audio",
+}, { title: "Film", year: 2026, mediaType: "movie" }, vfProvider);
+assert.match(multiVf.description, /^🎬 Film • 2026\n🇫🇷 MULTI \(VF\/VO\)/m);
+assert.equal(multiVf.language, "MULTI (VF/VO)");
+assert.ok(multiVf.badgeIds.includes("multi"));
+
+const multiVo = presentStreamCandidate({
+  name: "Cineby",
+  url: "https://media.example/multi.m3u8",
+  language: "MULTI",
+}, { title: "Film", year: 2026, mediaType: "movie" }, voProvider);
+assert.match(multiVo.description, /🌐 MULTI/);
+assert.equal(multiVo.language, "MULTI");
+
+const vostfr = presentStreamCandidate({
+  name: "Purstream",
+  url: "https://media.example/vost.m3u8",
+  language: "VOSTFR",
+}, { title: "Film", year: 2026, mediaType: "movie" }, vfProvider);
+assert.equal(vostfr.language, "VOSTFR");
+assert.match(vostfr.description, /🌐🇫🇷 VOSTFR/);
+
+const vfq = presentStreamCandidate({
+  name: "Purstream",
+  url: "https://media.example/vfq.m3u8",
+  language: "fr-CA",
+}, { title: "Film", year: 2026, mediaType: "movie" }, vfProvider);
+assert.equal(vfq.language, "VFQ");
+assert.match(vfq.description, /🇫🇷 VFQ/);
+
+const vfPlusVost = presentStreamCandidate({
+  name: "Purstream",
+  url: "https://media.example/vf-vost.m3u8",
+  language: "VF",
+  description: "VOSTFR available",
+}, { title: "Film", year: 2026, mediaType: "movie" }, vfProvider);
+assert.equal(vfPlusVost.language, "MULTI (VF/VO)");
+assert.match(vfPlusVost.description, /🇫🇷 MULTI \(VF\/VO\)/);
+assert.doesNotMatch(vfPlusVost.description, /VOSTFR available/);
+
+const series = presentStreamCandidate({
+  name: "Purstream",
+  url: "https://media.example/episode.m3u8",
+  language: "VF",
+}, { title: "Jujutsu Kaisen", year: 2020, runtime: 24, certification: "-12", mediaType: "anime", season: 1, episode: 1 }, vfProvider);
+assert.equal(series.description.split("\n")[0], "📺 Jujutsu Kaisen • 2020 • S01E01");
+assert.equal(series.description.split("\n")[1], "⏱ 24min • 🔞 -12");
 
 const tmdbFallback = presentStreamCandidate({
   name: "Cineby",
   url: "https://media.example/unknown.mp4",
   description: "Unknown",
-}, {
-  title: "Sinners",
-  year: 2025,
-  runtime: 137,
-  certification: "16+",
-}, { name: "Cineby" });
+}, { title: "Sinners", year: 2025, runtime: 137, certification: "16+", mediaType: "movie" }, voProvider);
 assert.doesNotMatch(tmdbFallback.description ?? "", /Unknown/i);
 assert.match(tmdbFallback.description, /⏱ 2h17/);
 assert.match(tmdbFallback.description, /🔞 16\+/);
-assert.match(tmdbFallback.description, /Sinners • 2025/);
+assert.match(tmdbFallback.description, /🎬 Sinners • 2025/);
 
 const noInventedBluray = presentStreamCandidate({
   name: "FrenchStream",
   url: "https://media.example/1080.mp4",
   quality: "1080p",
-}, {}, { name: "FrenchStream" });
-assert.match(noInventedBluray.description, /【1080P】/);
-assert.doesNotMatch(noInventedBluray.description, /BLU-RAY/i);
+}, { title: "Example", year: 2026, mediaType: "movie" }, { name: "FrenchStream", languages: ["fr"] });
+assert.equal(noInventedBluray.title, "FrenchStream - 1080p");
+assert.doesNotMatch(noInventedBluray.description, /1080p|BLU-RAY/i);
+assert.equal(noInventedBluray.sourceType, null);
 assert.equal(normalizeSourceType("1080p"), null);
 assert.equal(normalizeSourceType("some provider label"), null);
 
-const badges = buildBadges({ quality: "4K", language: "VFQ", codec: "H.264" });
-assert.deepEqual(badges, ["【4K】", "🌐 VFQ", "🎞 H.264"]);
+assert.equal(normalizeLanguage({ language: "fr" }, vfProvider), "VF");
+assert.equal(normalizeLanguage({ language: "VFQ" }, vfProvider), "VFQ");
+assert.equal(normalizeLanguage({ language: "MULTI" }, voProvider), "MULTI");
+assert.deepEqual(buildBadges({ quality: "2160p", language: "VFQ", codec: "AVC" }), ["4K", "AVC", "VFQ"]);
+assert.deepEqual(buildBadgeIds({ quality: "2160p", language: "VFQ", codec: "AVC", subtitles: [] }), ["4k-ultra-hd", "avc", "vfq"]);
 
 const normalizedMovie = normalizeTmdbPayload({
   id: 157336,
@@ -128,4 +181,4 @@ assert.equal(fallbackWithoutId.title, "Sinners");
 assert.equal(fallbackWithoutId.year, 2025);
 assert.equal(fallbackWithoutId.source, "request");
 
-console.log("engine v2 stream presentation and shared TMDB metadata tests passed");
+console.log("engine v2 stream presentation V12 and shared TMDB metadata tests passed");
