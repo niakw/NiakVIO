@@ -19,89 +19,139 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  cleanup:
-    runs-on: windows-2022
-    timeout-minutes: 10
+  purge-stale-actions:
+    # Dedicated lightweight pool: this job must be able to start even while stale
+    # native/Core generations saturate the normal hosted runner queues.
+    runs-on: ubuntu-slim
+    timeout-minutes: 5
+    env:
+      GH_TOKEN: ${{ github.token }}
     steps:
-      - name: Cancel stale main workflow generations
-        env:
-          GH_TOKEN: ${{ github.token }}
+      - name: Force-cancel stale main workflow generations
         shell: bash
         run: |
           set -euo pipefail
-          repo="$GITHUB_REPOSITORY"
-          current_run="$GITHUB_RUN_ID"
-          cancelled=0
-          already_finished=0
-          stable=0
+          python3 - <<'PY'
+          import json
+          import os
+          import time
+          import urllib.error
+          import urllib.parse
+          import urllib.request
 
-          cancel_stale_for_head() {
-            local current_head="$1"
-            local status run_id head_sha workflow_name live_status
-            for status in queued in_progress; do
-              while IFS=$'\t' read -r run_id head_sha workflow_name; do
-                [ -n "$run_id" ] || continue
-                if [ "$run_id" = "$current_run" ] || [ "$head_sha" = "$current_head" ]; then
-                  continue
-                fi
-                echo "FIELD_STALE_MAIN_RUN_CANCEL_REQUEST run=$run_id status=$status head=${head_sha:0:12} workflow=$workflow_name current=${current_head:0:12}"
-                if gh api -X POST "repos/$repo/actions/runs/$run_id/cancel" >/dev/null 2>&1; then
-                  cancelled=$((cancelled+1))
-                else
-                  live_status="$(gh api "repos/$repo/actions/runs/$run_id" --jq '.status' 2>/dev/null || printf 'unknown')"
-                  if [ "$live_status" = "completed" ]; then
-                    already_finished=$((already_finished+1))
-                  else
-                    echo "Unable to cancel stale main run $run_id (status=$live_status)" >&2
-                    return 1
-                  fi
-                fi
-              done < <(
-                gh api --paginate "repos/$repo/actions/runs?branch=main&status=$status&per_page=100" \
-                  --jq '.workflow_runs[] | [.id, .head_sha, .name] | @tsv'
-              )
-            done
+          repo = os.environ["GITHUB_REPOSITORY"]
+          token = os.environ["GH_TOKEN"]
+          current_run = int(os.environ["GITHUB_RUN_ID"])
+          api = "https://api.github.com"
+          headers = {
+              "Accept": "application/vnd.github+json",
+              "Authorization": f"Bearer {token}",
+              "X-GitHub-Api-Version": "2022-11-28",
+              "User-Agent": "NiakVIO-stale-run-purger",
           }
 
-          for sweep in 1 2 3 4; do
-            before="$(gh api "repos/$repo/branches/main" --jq '.commit.sha')"
-            echo "FIELD_STALE_MAIN_RUN_SWEEP sweep=$sweep head=$before"
-            cancel_stale_for_head "$before"
-            sleep 3
-            after="$(gh api "repos/$repo/branches/main" --jq '.commit.sha')"
-            if [ "$before" = "$after" ]; then
-              stable=1
-              current_head="$after"
-              break
-            fi
-            echo "main moved during stale-run cleanup: ${before:0:12} -> ${after:0:12}; repeating sweep"
-          done
+          def request(path: str, method: str = "GET"):
+              req = urllib.request.Request(
+                  api + path,
+                  data=b"" if method == "POST" else None,
+                  headers=headers,
+                  method=method,
+              )
+              with urllib.request.urlopen(req, timeout=30) as response:
+                  body = response.read()
+                  return json.loads(body) if body else {}
 
-          if [ "$stable" -ne 1 ]; then
-            echo "main did not stabilize during stale-run cleanup" >&2
-            exit 1
-          fi
+          def main_head() -> str:
+              return str(request(f"/repos/{repo}/branches/main")["commit"]["sha"])
 
-          remaining=0
-          for status in queued in_progress; do
-            while IFS=$'\t' read -r run_id head_sha workflow_name; do
-              [ -n "$run_id" ] || continue
-              if [ "$run_id" = "$current_run" ] || [ "$head_sha" = "$current_head" ]; then
-                continue
-              fi
-              echo "Stale main run remains active after cleanup: run=$run_id status=$status head=$head_sha workflow=$workflow_name" >&2
-              remaining=$((remaining+1))
-            done < <(
-              gh api --paginate "repos/$repo/actions/runs?branch=main&status=$status&per_page=100" \
-                --jq '.workflow_runs[] | [.id, .head_sha, .name] | @tsv'
-            )
-          done
-          if [ "$remaining" -ne 0 ]; then
-            exit 1
-          fi
+          def active_runs(status: str):
+              page = 1
+              while True:
+                  query = urllib.parse.urlencode(
+                      {"branch": "main", "status": status, "per_page": 100, "page": page}
+                  )
+                  payload = request(f"/repos/{repo}/actions/runs?{query}")
+                  rows = payload.get("workflow_runs") or []
+                  yield from rows
+                  if len(rows) < 100:
+                      break
+                  page += 1
 
-          echo "FIELD_STALE_MAIN_RUN_CLEANUP current=$current_head cancelled=$cancelled already_finished=$already_finished remaining=0"
+          cancelled: set[int] = set()
+          final_head = main_head()
+          for sweep in range(1, 7):
+              before = main_head()
+              candidates = []
+              for status in ("queued", "in_progress"):
+                  for row in active_runs(status):
+                      run_id = int(row.get("id") or 0)
+                      run_head = str(row.get("head_sha") or "")
+                      if not run_id or run_id == current_run or run_head == before:
+                          continue
+                      candidates.append(
+                          (run_id, status, run_head, str(row.get("name") or "unknown"))
+                      )
 
+              print(
+                  f"FIELD_STALE_MAIN_RUN_SWEEP sweep={sweep} head={before} "
+                  f"candidates={len(candidates)}"
+              )
+              for run_id, status, run_head, name in candidates:
+                  if run_id in cancelled:
+                      continue
+                  print(
+                      f"FIELD_STALE_MAIN_RUN_CANCEL_REQUEST run={run_id} status={status} "
+                      f"head={run_head[:12]} workflow={name} current={before[:12]}"
+                  )
+                  try:
+                      request(f"/repos/{repo}/actions/runs/{run_id}/cancel", "POST")
+                      cancelled.add(run_id)
+                  except urllib.error.HTTPError as error:
+                      live = request(f"/repos/{repo}/actions/runs/{run_id}")
+                      if live.get("status") != "completed":
+                          raise RuntimeError(
+                              f"cancel failed for stale run {run_id}: HTTP {error.code}, "
+                              f"status={live.get('status')}"
+                          ) from error
+
+              time.sleep(2)
+              after = main_head()
+              final_head = after
+              if before == after:
+                  break
+              print(
+                  f"FIELD_STALE_MAIN_HEAD_MOVED before={before[:12]} after={after[:12]} retry=true"
+              )
+
+          remaining = []
+          for status in ("queued", "in_progress"):
+              for row in active_runs(status):
+                  run_id = int(row.get("id") or 0)
+                  run_head = str(row.get("head_sha") or "")
+                  if run_id == current_run or run_head == final_head:
+                      continue
+                  remaining.append(
+                      (run_id, status, run_head, str(row.get("name") or "unknown"))
+                  )
+
+          print(
+              f"FIELD_STALE_MAIN_RUN_CLEANUP current={final_head} "
+              f"cancelled={len(cancelled)} remaining={len(remaining)}"
+          )
+          if remaining:
+              for run_id, status, run_head, name in remaining[:50]:
+                  print(
+                      f"STALE_REMAINS run={run_id} status={status} "
+                      f"head={run_head[:12]} workflow={name}"
+                  )
+              raise SystemExit(f"stale main Actions remain active: {len(remaining)}")
+          PY
+
+  cleanup:
+    needs: purge-stale-actions
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
       - name: Checkout main
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
