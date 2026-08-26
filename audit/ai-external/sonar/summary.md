@@ -3,12 +3,88 @@
 - Access: public Sonar organization/project; no Sonar login or API token used.
 - Project: `NiakVIO`
 - Project key: `niakw_NiakVIO`
-- Open findings exported: **2495**
-- Severity: `CRITICAL` 1021, `MINOR` 694, `MAJOR` 663, `BLOCKER` 117
-- Type: `CODE_SMELL` 2223, `VULNERABILITY` 159, `BUG` 113
+- Open findings exported: **2557**
+- Severity: `CRITICAL` 1038, `MAJOR` 699, `MINOR` 699, `BLOCKER` 121
+- Type: `CODE_SMELL` 2274, `VULNERABILITY` 166, `BUG` 117
 
 ## Findings
 
+- `niakw_NiakVIO:scripts/external_audit/request_refresh.py:84` **CRITICAL / CODE_SMELL** `python:S1192` — Define a constant instead of duplicating this literal "application/json" 8 times.
+- `niakw_NiakVIO:scripts/external_audit/request_refresh.py:283` **CRITICAL / CODE_SMELL** `python:S1192` — Define a constant instead of duplicating this literal "AUDITED_SHA missing" 3 times.
+- `niakw_NiakVIO:scripts/gate_native_stream_extraction.cjs:106` **MAJOR / CODE_SMELL** `javascript:S3358` — Extract this nested ternary operation into an independent statement.
+- `niakw_NiakVIO:tests/global_stream_presentation_test.py:97` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:tests/global_stream_presentation_test.py:99` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:.github/workflows/repository-hygiene.yml:13` **MAJOR / VULNERABILITY** `githubactions:S8233` — Move this write permission from workflow level to job level.
+- `niakw_NiakVIO:engine_v2/scripts/diagnose-native-reader.mjs:554` **MAJOR / BUG** `javascript:S1534` — Duplicate name 'systemicExtractionGroups'.
+- `niakw_NiakVIO:scripts/normalize_runtime_repository_dependencies.py:43` **CRITICAL / CODE_SMELL** `python:S1192` — Define a constant instead of duplicating this literal "$from" 5 times.
+- `niakw_NiakVIO:scripts/normalize_runtime_repository_dependencies.py:201` **MAJOR / CODE_SMELL** `python:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
+- `niakw_NiakVIO:scripts/normalize_runtime_repository_dependencies.py:207` **MAJOR / CODE_SMELL** `python:S6019` — Fix this reluctant quantifier that will only ever match 0 repetitions.
+- `niakw_NiakVIO:scripts/normalize_runtime_repository_dependencies.py:214` **MAJOR / CODE_SMELL** `python:S6326` — Replace spaces with quantifier `{4}`.
+- `niakw_NiakVIO:scripts/normalize_runtime_repository_dependencies.py:214` **MAJOR / CODE_SMELL** `python:S6326` — Replace spaces with quantifier `{4}`.
+- `niakw_NiakVIO:scripts/normalize_runtime_repository_dependencies.py:214` **MAJOR / CODE_SMELL** `python:S6019` — Fix this reluctant quantifier that will only ever match 0 repetitions.
+- `niakw_NiakVIO:scripts/normalize_runtime_repository_dependencies.py:229` **MAJOR / BUG** `python:S3923` — This conditional expression returns the same value whether the condition is "true" or "false".
+- `niakw_NiakVIO:scripts/normalize_runtime_repository_dependencies.py:279` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 18 to the 15 allowed.
+- `niakw_NiakVIO:scripts/provider_patches/runtime_repository_domain_materializer_v1.py:26` **CRITICAL / CODE_SMELL** `python:S1192` — Define a constant instead of duplicating this literal "$from" 3 times.
+- `niakw_NiakVIO:scripts/provider_patches/runtime_repository_domain_materializer_v1.py:136` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 21 to the 15 allowed.
+- `niakw_NiakVIO:scripts/normalize_repository_docs.py:65` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
+- `niakw_NiakVIO:scripts/normalize_runtime_repository_dependencies.py:118` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 24 to the 15 allowed.
+- `niakw_NiakVIO:scripts/normalize_runtime_repository_dependencies.py:342` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
+- `niakw_NiakVIO:scripts/provider_patches/runtime_repository_domain_materializer_v1.py:29` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 34 to the 15 allowed.
+- `niakw_NiakVIO:scripts/validate_provider_artifact.cjs:13` **CRITICAL / CODE_SMELL** `javascript:S3776` — Refactor this function to reduce its Cognitive Complexity from 25 to the 15 allowed.
+- `niakw_NiakVIO:scripts/validate_provider_artifact.cjs:57` **MAJOR / VULNERABILITY** `jssecurity:S8707` — A path canonicalized from CLI-controlled data must be validated before use.
+- `niakw_NiakVIO:scripts/generate_release_hashes.py:27` **CRITICAL / CODE_SMELL** `python:S1192` — Define a constant instead of duplicating this literal "PATCH-SHA256SUMS.txt" 3 times.
+- `niakw_NiakVIO:scripts/generate_release_hashes.py:98` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 16 to the 15 allowed.
+- `niakw_NiakVIO:scripts/normalize_stream_presentation_v12.py:36` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 29 to the 15 allowed.
+- `niakw_NiakVIO:scripts/generate_release_hashes.py:122` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
+- `niakw_NiakVIO:scripts/render_platform_runtime_contracts.py:43` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 34 to the 15 allowed.
+- `niakw_NiakVIO:scripts/render_platform_runtime_contracts.py:224` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
+- `niakw_NiakVIO:scripts/provider_patches/global_stream_presentation_v1.py:42` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 23 to the 15 allowed.
+- `niakw_NiakVIO:scripts/apply_runtime_capability_upgrade_v4.py:58` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
+- `niakw_NiakVIO:tests/global_stream_presentation_test.py:82` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:tests/global_stream_presentation_test.py:83` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:tests/global_stream_presentation_test.py:104` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:tests/global_stream_presentation_test.py:111` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:tests/global_stream_presentation_test.py:116` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:tests/global_stream_presentation_test.py:120` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:tests/global_stream_presentation_test.py:122` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:engine_v2/src/stream-presentation.mjs:22` **MAJOR / CODE_SMELL** `javascript:S4624` — Refactor this code to not use nested template literals.
+- `niakw_NiakVIO:engine_v2/src/stream-presentation.mjs:139` **CRITICAL / CODE_SMELL** `javascript:S3776` — Refactor this function to reduce its Cognitive Complexity from 22 to the 15 allowed.
+- `niakw_NiakVIO:engine_v2/src/stream-presentation.mjs:144` **MAJOR / CODE_SMELL** `javascript:S5843` — Simplify this regular expression to reduce its complexity from 25 to the 20 allowed.
+- `niakw_NiakVIO:engine_v2/src/stream-presentation.mjs:207` **MINOR / CODE_SMELL** `javascript:S6594` — Use the "RegExp.exec()" method instead.
+- `niakw_NiakVIO:engine_v2/src/stream-presentation.mjs:207` **MAJOR / CODE_SMELL** `javascript:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
+- `niakw_NiakVIO:engine_v2/src/stream-presentation.mjs:207` **MAJOR / CODE_SMELL** `javascript:S5843` — Simplify this regular expression to reduce its complexity from 33 to the 20 allowed.
+- `niakw_NiakVIO:engine_v2/src/stream-presentation.mjs:210` **MAJOR / CODE_SMELL** `javascript:S3358` — Extract this nested ternary operation into an independent statement.
+- `niakw_NiakVIO:engine_v2/src/stream-presentation.mjs:239` **MINOR / CODE_SMELL** `javascript:S6594` — Use the "RegExp.exec()" method instead.
+- `niakw_NiakVIO:engine_v2/src/stream-presentation.mjs:290` **MAJOR / CODE_SMELL** `javascript:S6397` — Replace this character class by the character itself.
+- `niakw_NiakVIO:engine_v2/src/stream-presentation.mjs:296` **MAJOR / CODE_SMELL** `javascript:S5843` — Simplify this regular expression to reduce its complexity from 35 to the 20 allowed.
+- `niakw_NiakVIO:engine_v2/src/stream-presentation.mjs:316` **MAJOR / CODE_SMELL** `javascript:S3358` — Extract this nested ternary operation into an independent statement.
+- `niakw_NiakVIO:engine_v2/src/stream-presentation.mjs:318` **MAJOR / CODE_SMELL** `javascript:S4624` — Refactor this code to not use nested template literals.
+- `niakw_NiakVIO:engine_v2/src/stream-presentation.mjs:327` **MAJOR / CODE_SMELL** `javascript:S4624` — Refactor this code to not use nested template literals.
+- `niakw_NiakVIO:engine_v2/src/contracts.mjs:210` **MAJOR / CODE_SMELL** `javascript:S3800` — Refactor this function to always return the same type.
+- `niakw_NiakVIO:engine_v2/src/contracts.mjs:220` **MAJOR / CODE_SMELL** `javascript:S3800` — Refactor this function to always return the same type.
+- `niakw_NiakVIO:tests/badge_asset_contract_test.py:36` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:scripts/normalize_core_runtime_compat.py:244` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
+- `niakw_NiakVIO:engine_v2/src/runtime-systemic.mjs:31` **CRITICAL / CODE_SMELL** `javascript:S3776` — Refactor this function to reduce its Cognitive Complexity from 18 to the 15 allowed.
+- `niakw_NiakVIO:engine_v2/src/runtime-systemic.mjs:32` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:engine_v2/src/runtime-systemic.mjs:70` **MAJOR / CODE_SMELL** `javascript:S4043` — Move this array "sort" operation to a separate statement or replace it with "toSorted".
+- `niakw_NiakVIO:engine_v2/src/runtime-systemic.mjs:70` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
+- `niakw_NiakVIO:engine_v2/src/runtime-systemic.mjs:71` **MAJOR / CODE_SMELL** `javascript:S4043` — Move this array "sort" operation to a separate statement or replace it with "toSorted".
+- `niakw_NiakVIO:engine_v2/src/runtime-systemic.mjs:71` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
+- `niakw_NiakVIO:scripts/normalize_core_runtime_compat.py:237` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
+- `niakw_NiakVIO:scripts/normalize_provider_branding_pipeline.py:113` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
+- `niakw_NiakVIO:.github/workflows/repository-hygiene.yml:15` **MAJOR / VULNERABILITY** `githubactions:S8264` — Move this read permission from workflow level to job level.
+- `niakw_NiakVIO:scripts/normalize_badge_feeds.py:58` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 22 to the 15 allowed.
+- `niakw_NiakVIO:scripts/regenerate_badges.py:54` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 36 to the 15 allowed.
+- `niakw_NiakVIO:scripts/regenerate_badges.py:134` **BLOCKER / CODE_SMELL** `python:S3516` — Refactor this method to not always return the same value.
+- `niakw_NiakVIO:scripts/regenerate_badges.py:134` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 16 to the 15 allowed.
+- `niakw_NiakVIO:scripts/regenerate_badges.py:221` **MAJOR / CODE_SMELL** `python:S3358` — Extract this nested conditional expression into an independent statement.
+- `niakw_NiakVIO:scripts/regenerate_badges.py:245` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 55 to the 15 allowed.
+- `niakw_NiakVIO:scripts/regenerate_badges.py:252` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
+- `niakw_NiakVIO:scripts/regenerate_badges.py:347` **MAJOR / CODE_SMELL** `python:S5799` — Merge these implicitly concatenated strings; or did you forget a comma?
+- `niakw_NiakVIO:scripts/gate_native_stream_extraction.cjs:29` **MINOR / CODE_SMELL** `javascript:S7781` — Prefer `String#replaceAll()` over `String#replace()`.
+- `niakw_NiakVIO:scripts/gate_native_stream_extraction.cjs:29` **MINOR / CODE_SMELL** `javascript:S7781` — Prefer `String#replaceAll()` over `String#replace()`.
+- `niakw_NiakVIO:scripts/gate_native_stream_extraction.cjs:35` **MAJOR / CODE_SMELL** `javascript:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
+- `niakw_NiakVIO:scripts/gate_native_stream_extraction.cjs:35` **MINOR / CODE_SMELL** `javascript:S6353` — Use concise character class syntax '\w' instead of '[A-Za-z0-9_]'.
 - `niakw_NiakVIO:tests/native_provider_loading_compat_test.py:14` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
 - `niakw_NiakVIO:scripts/augment_native_provider_loading_compat.py:49` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
 - `niakw_NiakVIO:scripts/external_audit/codescene.py:57` **CRITICAL / CODE_SMELL** `python:S1192` — Define a constant instead of duplicating this literal "status.json" 5 times.
@@ -21,22 +97,15 @@
 - `niakw_NiakVIO:scripts/gate_native_cross_client_runtime.cjs:58` **MINOR / CODE_SMELL** `javascript:S7781` — Prefer `String#replaceAll()` over `String#replace()`.
 - `niakw_NiakVIO:scripts/gate_native_cross_client_runtime.cjs:58` **MINOR / CODE_SMELL** `javascript:S7781` — Prefer `String#replaceAll()` over `String#replace()`.
 - `niakw_NiakVIO:scripts/gate_native_cross_client_runtime.cjs:72` **MINOR / CODE_SMELL** `javascript:S7781` — Prefer `String#replaceAll()` over `String#split().join()`.
-- `niakw_NiakVIO:scripts/gate_native_cross_client_runtime.cjs:132` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
-- `niakw_NiakVIO:scripts/gate_native_cross_client_runtime.cjs:138` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
+- `niakw_NiakVIO:scripts/gate_native_cross_client_runtime.cjs:137` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
+- `niakw_NiakVIO:scripts/gate_native_cross_client_runtime.cjs:143` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
 - `niakw_NiakVIO:scripts/gate_native_player_reached.cjs:25` **MINOR / CODE_SMELL** `javascript:S7781` — Prefer `String#replaceAll()` over `String#replace()`.
 - `niakw_NiakVIO:scripts/gate_native_player_reached.cjs:25` **MINOR / CODE_SMELL** `javascript:S7781` — Prefer `String#replaceAll()` over `String#replace()`.
 - `niakw_NiakVIO:scripts/provider_purification.py:234` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 18 to the 15 allowed.
 - `niakw_NiakVIO:engine_v2/scripts/terser-clean.mjs:20` **MINOR / CODE_SMELL** `javascript:S7765` — Use `.includes()`, rather than `.indexOf()`, when checking for existence.
 - `niakw_NiakVIO:engine_v2/scripts/terser-clean.mjs:24` **MAJOR / CODE_SMELL** `javascript:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
 - `niakw_NiakVIO:engine_v2/scripts/purify-provider.mjs:127` **MAJOR / CODE_SMELL** `javascript:S3358` — Extract this nested ternary operation into an independent statement.
-- `niakw_NiakVIO:scripts/normalize_fusion_badge_feed.py:25` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 20 to the 15 allowed.
-- `niakw_NiakVIO:tests/global_stream_presentation_test.py:27` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
-- `niakw_NiakVIO:scripts/normalize_stream_presentation_v11.py:91` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 17 to the 15 allowed.
-- `niakw_NiakVIO:scripts/normalize_stream_presentation_v11.py:128` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 23 to the 15 allowed.
-- `niakw_NiakVIO:scripts/normalize_stream_presentation_v11.py:136` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
-- `niakw_NiakVIO:scripts/normalize_stream_presentation_v11.py:172` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
-- `niakw_NiakVIO:scripts/normalize_stream_presentation_v11.py:191` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
-- `niakw_NiakVIO:scripts/normalize_stream_presentation_v11.py:206` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
+- `niakw_NiakVIO:scripts/normalize_fusion_badge_feed.py:25` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 16 to the 15 allowed.
 - `niakw_NiakVIO:tests/native_tv_route_resume_test.py:16` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
 - `niakw_NiakVIO:scripts/build_native_reader_retest_manifest.py:21` **MAJOR / VULNERABILITY** `pythonsecurity:S8707` — LLMs running this code with faulty CLI arguments can escape file system restrictions. Refactor this code to validate the constructed path before accessing the file system.
 - `niakw_NiakVIO:scripts/build_native_reader_retest_manifest.py:29` **MAJOR / VULNERABILITY** `pythonsecurity:S8707` — LLMs running this code with faulty CLI arguments can escape file system restrictions. Refactor this code to validate the constructed path before accessing the file system.
@@ -59,7 +128,7 @@
 - `niakw_NiakVIO:scripts/promote_refresh_candidates.py:83` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 16 to the 15 allowed.
 - `niakw_NiakVIO:scripts/validate_nuvio_tv_runtime_policy.py:22` **MAJOR / CODE_SMELL** `python:S6395` — Unwrap this unnecessarily grouped subpattern.
 - `niakw_NiakVIO:scripts/validate_nuvio_tv_runtime_policy.py:25` **MAJOR / CODE_SMELL** `python:S6395` — Unwrap this unnecessarily grouped subpattern.
-- `niakw_NiakVIO:scripts/resolve_nuvio_lab_heads.py:43` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 16 to the 15 allowed.
+- `niakw_NiakVIO:scripts/resolve_nuvio_lab_heads.py:51` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 16 to the 15 allowed.
 - `niakw_NiakVIO:tests/platform_runtime_upstream_observation_policy_test.py:12` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
 - `niakw_NiakVIO:scripts/reapply_published_overrides.py:270` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 160 to the 15 allowed.
 - `niakw_NiakVIO:scripts/normalize_published_security_finalization.py:77` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
@@ -70,26 +139,26 @@
 - `niakw_NiakVIO:providers/sekai--nuvio-audit-quarantine--7947316d3cbed215.js:2` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
 - `niakw_NiakVIO:providers/toflix--nuvio-audit-quarantine--7947316d3cbed215.js:2` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
 - `niakw_NiakVIO:providers/vidsrc--nuvio-audit-quarantine--7947316d3cbed215.js:2` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
-- `niakw_NiakVIO:scripts/apply_provider_overrides.py:185` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 63 to the 15 allowed.
-- `niakw_NiakVIO:scripts/apply_provider_overrides.py:283` **MAJOR / CODE_SMELL** `python:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
-- `niakw_NiakVIO:scripts/apply_provider_overrides.py:336` **MINOR / CODE_SMELL** `python:S5713` — Remove this redundant Exception class; it derives from another which is already caught.
-- `niakw_NiakVIO:scripts/apply_provider_overrides.py:344` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 58 to the 15 allowed.
-- `niakw_NiakVIO:scripts/apply_provider_overrides.py:399` **MINOR / CODE_SMELL** `python:S5713` — Remove this redundant Exception class; it derives from another which is already caught.
-- `niakw_NiakVIO:scripts/apply_provider_overrides.py:432` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 24 to the 15 allowed.
-- `niakw_NiakVIO:scripts/apply_provider_overrides.py:528` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 37 to the 15 allowed.
-- `niakw_NiakVIO:scripts/apply_provider_overrides.py:574` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 39 to the 15 allowed.
-- `niakw_NiakVIO:scripts/apply_provider_overrides.py:626` **MAJOR / CODE_SMELL** `python:S6035` — Replace this alternation with a character class.
-- `niakw_NiakVIO:scripts/apply_provider_overrides.py:626` **MAJOR / CODE_SMELL** `python:S6035` — Replace this alternation with a character class.
-- `niakw_NiakVIO:scripts/apply_provider_overrides.py:638` **MAJOR / CODE_SMELL** `python:S3457` — Add replacement fields or use a normal string instead of an f-string.
-- `niakw_NiakVIO:scripts/apply_provider_overrides.py:646` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 30 to the 15 allowed.
-- `niakw_NiakVIO:scripts/apply_provider_overrides.py:694` **MAJOR / CODE_SMELL** `python:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
-- `niakw_NiakVIO:scripts/apply_provider_overrides.py:698` **MAJOR / CODE_SMELL** `python:S6019` — Fix this reluctant quantifier that will only ever match 1 repetition.
-- `niakw_NiakVIO:scripts/apply_provider_overrides.py:698` **MAJOR / CODE_SMELL** `python:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
-- `niakw_NiakVIO:scripts/apply_provider_overrides.py:706` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 21 to the 15 allowed.
-- `niakw_NiakVIO:scripts/apply_provider_overrides.py:734` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 19 to the 15 allowed.
-- `niakw_NiakVIO:scripts/apply_provider_overrides.py:768` **MAJOR / CODE_SMELL** `python:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
-- `niakw_NiakVIO:scripts/apply_provider_overrides.py:791` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 16 to the 15 allowed.
-- `niakw_NiakVIO:scripts/apply_provider_overrides.py:910` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 145 to the 15 allowed.
+- `niakw_NiakVIO:scripts/apply_provider_overrides.py:187` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 63 to the 15 allowed.
+- `niakw_NiakVIO:scripts/apply_provider_overrides.py:285` **MAJOR / CODE_SMELL** `python:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
+- `niakw_NiakVIO:scripts/apply_provider_overrides.py:338` **MINOR / CODE_SMELL** `python:S5713` — Remove this redundant Exception class; it derives from another which is already caught.
+- `niakw_NiakVIO:scripts/apply_provider_overrides.py:346` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 58 to the 15 allowed.
+- `niakw_NiakVIO:scripts/apply_provider_overrides.py:401` **MINOR / CODE_SMELL** `python:S5713` — Remove this redundant Exception class; it derives from another which is already caught.
+- `niakw_NiakVIO:scripts/apply_provider_overrides.py:434` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 24 to the 15 allowed.
+- `niakw_NiakVIO:scripts/apply_provider_overrides.py:530` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 37 to the 15 allowed.
+- `niakw_NiakVIO:scripts/apply_provider_overrides.py:576` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 39 to the 15 allowed.
+- `niakw_NiakVIO:scripts/apply_provider_overrides.py:628` **MAJOR / CODE_SMELL** `python:S6035` — Replace this alternation with a character class.
+- `niakw_NiakVIO:scripts/apply_provider_overrides.py:628` **MAJOR / CODE_SMELL** `python:S6035` — Replace this alternation with a character class.
+- `niakw_NiakVIO:scripts/apply_provider_overrides.py:640` **MAJOR / CODE_SMELL** `python:S3457` — Add replacement fields or use a normal string instead of an f-string.
+- `niakw_NiakVIO:scripts/apply_provider_overrides.py:648` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 30 to the 15 allowed.
+- `niakw_NiakVIO:scripts/apply_provider_overrides.py:696` **MAJOR / CODE_SMELL** `python:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
+- `niakw_NiakVIO:scripts/apply_provider_overrides.py:700` **MAJOR / CODE_SMELL** `python:S6019` — Fix this reluctant quantifier that will only ever match 1 repetition.
+- `niakw_NiakVIO:scripts/apply_provider_overrides.py:700` **MAJOR / CODE_SMELL** `python:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
+- `niakw_NiakVIO:scripts/apply_provider_overrides.py:708` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 21 to the 15 allowed.
+- `niakw_NiakVIO:scripts/apply_provider_overrides.py:736` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 19 to the 15 allowed.
+- `niakw_NiakVIO:scripts/apply_provider_overrides.py:770` **MAJOR / CODE_SMELL** `python:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
+- `niakw_NiakVIO:scripts/apply_provider_overrides.py:793` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 16 to the 15 allowed.
+- `niakw_NiakVIO:scripts/apply_provider_overrides.py:912` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 147 to the 15 allowed.
 - `niakw_NiakVIO:scripts/provider_engine_normalizer.py:355` **MAJOR / CODE_SMELL** `python:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
 - `niakw_NiakVIO:scripts/update_provider_device_results.py:225` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 26 to the 15 allowed.
 - `niakw_NiakVIO:scripts/update_provider_device_results.py:291` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 28 to the 15 allowed.
@@ -103,8 +172,8 @@
 - `niakw_NiakVIO:scripts/provider_purification.py:177` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
 - `niakw_NiakVIO:scripts/normalize_provider_rebuild_safety.py:217` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
 - `niakw_NiakVIO:scripts/normalize_provider_rebuild_safety.py:82` **CRITICAL / CODE_SMELL** `python:S1192` — Define a constant instead of duplicating this literal "wrapper.rstrip()" 3 times.
-- `niakw_NiakVIO:scripts/validate_provider_artifact.cjs:19` **MAJOR / VULNERABILITY** `jssecurity:S8705` — LLMs running this code with faulty CLI arguments can escape from shell sandboxes. Refactor this code to validate untrusted data before passing them to OS commands.
-- `niakw_NiakVIO:scripts/validate_provider_artifact.cjs:24` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
+- `niakw_NiakVIO:scripts/validate_provider_artifact.cjs:80` **MAJOR / VULNERABILITY** `jssecurity:S8705` — LLMs running this code with faulty CLI arguments can escape from shell sandboxes. Refactor this code to validate untrusted data before passing them to OS commands.
+- `niakw_NiakVIO:scripts/validate_provider_artifact.cjs:85` **MINOR / CODE_SMELL** `javascript:S6582` — Prefer using an optional chain expression instead, as it's more concise and easier to read.
 - `niakw_NiakVIO:scripts/build_native_reader_learning_summary.py:35` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 18 to the 15 allowed.
 - `niakw_NiakVIO:scripts/merge_native_reader_learning_failures.py:66` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 80 to the 15 allowed.
 - `niakw_NiakVIO:scripts/merge_native_reader_learning_failures.py:142` **MINOR / CODE_SMELL** `python:S7496` — Replace this set constructor call by a set literal.
@@ -115,14 +184,13 @@
 - `niakw_NiakVIO:scripts/materialize_core_fixed_point_hardening.py:54` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
 - `niakw_NiakVIO:scripts/provider_security_hardening.py:42` **MAJOR / CODE_SMELL** `python:S5843` — Simplify this regular expression to reduce its complexity from 24 to the 20 allowed.
 - `niakw_NiakVIO:scripts/provider_security_hardening.py:262` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 20 to the 15 allowed.
-- `niakw_NiakVIO:scripts/normalize_core_media_policy.py:136` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
-- `niakw_NiakVIO:scripts/normalize_core_media_policy.py:181` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 16 to the 15 allowed.
-- `niakw_NiakVIO:scripts/normalize_provider_branding_pipeline.py:71` **CRITICAL / CODE_SMELL** `python:S1192` — Define a constant instead of duplicating this literal '"scope": "global_provider_branding"' 3 times.
-- `niakw_NiakVIO:scripts/normalize_provider_branding_pipeline.py:106` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
+- `niakw_NiakVIO:scripts/normalize_core_media_policy.py:121` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
+- `niakw_NiakVIO:scripts/normalize_core_media_policy.py:166` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 16 to the 15 allowed.
+- `niakw_NiakVIO:scripts/normalize_provider_branding_pipeline.py:77` **CRITICAL / CODE_SMELL** `python:S1192` — Define a constant instead of duplicating this literal '"scope": "global_provider_branding"' 3 times.
 - `niakw_NiakVIO:scripts/update_provider_device_results.py:181` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 28 to the 15 allowed.
 - `niakw_NiakVIO:tests/provider_branding_contract_test.py:44` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
 - `niakw_NiakVIO:tests/provider_branding_contract_test.py:59` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
-- `niakw_NiakVIO:scripts/normalize_core_media_policy.py:143` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 17 to the 15 allowed.
+- `niakw_NiakVIO:scripts/normalize_core_media_policy.py:128` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 17 to the 15 allowed.
 - `niakw_NiakVIO:engine_v2/tests/provider-catalog.test.mjs` **BLOCKER / CODE_SMELL** `javascript:S2187` — Add some tests to this file or delete it.
 - `niakw_NiakVIO:scripts/normalize_provider_rebuild_safety.py:263` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
 - `niakw_NiakVIO:.github/workflows/provider-results-readme-sync.yml:44` **MAJOR / VULNERABILITY** `githubactions:S7631` — Make sure that no untrusted code is executed from a fork.
@@ -134,13 +202,13 @@
 - `niakw_NiakVIO:scripts/update_provider_device_results.py:450` **MAJOR / VULNERABILITY** `pythonsecurity:S8707` — LLMs running this code with faulty CLI arguments can escape file system restrictions. Refactor this code to validate the constructed path before accessing the file system.
 - `niakw_NiakVIO:scripts/update_provider_device_results.py:451` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
 - `niakw_NiakVIO:scripts/update_provider_device_results.py:451` **MAJOR / VULNERABILITY** `pythonsecurity:S8707` — LLMs running this code with faulty CLI arguments can escape file system restrictions. Refactor this code to validate the constructed path before accessing the file system.
-- `niakw_NiakVIO:scripts/normalize_core_fixed_point_contract.py:337` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
+- `niakw_NiakVIO:scripts/normalize_core_fixed_point_contract.py:341` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
 - `niakw_NiakVIO:scripts/normalize_core_fixed_point_contract.py:237` **CRITICAL / CODE_SMELL** `python:S1192` — Define a constant instead of duplicating this literal "purified, purification = purify_bytes(patched)" 4 times.
 - `niakw_NiakVIO:tests/native_sync_fetch_target_order_test.py:154` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
 - `niakw_NiakVIO:tests/native_sync_fetch_target_order_test.py:155` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
 - `niakw_NiakVIO:scripts/enforce_main_only_repository_policy.py:43` **MAJOR / CODE_SMELL** `python:S3457` — Add replacement fields or use a normal string instead of an f-string.
-- `niakw_NiakVIO:scripts/normalize_core_media_policy.py:128` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
-- `niakw_NiakVIO:scripts/normalize_core_media_policy.py:238` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
+- `niakw_NiakVIO:.github/workflows/repository-hygiene.yml:14` **MAJOR / VULNERABILITY** `githubactions:S8233` — Move this write permission from workflow level to job level.
+- `niakw_NiakVIO:scripts/normalize_core_media_policy.py:228` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
 - `niakw_NiakVIO:tests/core_media_policy_test.py:16` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
 - `niakw_NiakVIO:tests/global_core_presentation_pipeline_test.py:35` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
 - `niakw_NiakVIO:scripts/regenerate_light_badges.py:157` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 46 to the 15 allowed.
@@ -158,18 +226,18 @@
 - `niakw_NiakVIO:engine_v2/scripts/diagnose-native-media-capabilities.mjs:27` **MAJOR / CODE_SMELL** `javascript:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
 - `niakw_NiakVIO:engine_v2/scripts/diagnose-native-media-capabilities.mjs:27` **MINOR / CODE_SMELL** `javascript:S6353` — Use concise character class syntax '\w' instead of '[A-Za-z0-9_]'.
 - `niakw_NiakVIO:engine_v2/scripts/diagnose-native-media-capabilities.mjs:46` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
-- `niakw_NiakVIO:engine_v2/scripts/diagnose-native-reader.mjs:29` **MINOR / CODE_SMELL** `javascript:S7781` — Prefer `String#replaceAll()` over `String#replace()`.
-- `niakw_NiakVIO:engine_v2/scripts/diagnose-native-reader.mjs:29` **MINOR / CODE_SMELL** `javascript:S7781` — Prefer `String#replaceAll()` over `String#replace()`.
-- `niakw_NiakVIO:engine_v2/scripts/diagnose-native-reader.mjs:35` **MAJOR / CODE_SMELL** `javascript:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
-- `niakw_NiakVIO:engine_v2/scripts/diagnose-native-reader.mjs:35` **MINOR / CODE_SMELL** `javascript:S6353` — Use concise character class syntax '\w' instead of '[A-Za-z0-9_]'.
-- `niakw_NiakVIO:engine_v2/scripts/diagnose-native-reader.mjs:320` **MINOR / CODE_SMELL** `javascript:S1940` — Use the opposite operator (<=) instead.
-- `niakw_NiakVIO:engine_v2/scripts/diagnose-native-reader.mjs:336` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
-- `niakw_NiakVIO:engine_v2/scripts/diagnose-native-reader.mjs:337` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
-- `niakw_NiakVIO:engine_v2/scripts/diagnose-native-reader.mjs:355` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
-- `niakw_NiakVIO:engine_v2/scripts/diagnose-native-reader.mjs:356` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
-- `niakw_NiakVIO:engine_v2/scripts/diagnose-native-reader.mjs:467` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
-- `niakw_NiakVIO:engine_v2/scripts/diagnose-native-reader.mjs:468` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
-- `niakw_NiakVIO:engine_v2/scripts/diagnose-native-reader.mjs:469` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
+- `niakw_NiakVIO:engine_v2/scripts/diagnose-native-reader.mjs:30` **MINOR / CODE_SMELL** `javascript:S7781` — Prefer `String#replaceAll()` over `String#replace()`.
+- `niakw_NiakVIO:engine_v2/scripts/diagnose-native-reader.mjs:30` **MINOR / CODE_SMELL** `javascript:S7781` — Prefer `String#replaceAll()` over `String#replace()`.
+- `niakw_NiakVIO:engine_v2/scripts/diagnose-native-reader.mjs:36` **MAJOR / CODE_SMELL** `javascript:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
+- `niakw_NiakVIO:engine_v2/scripts/diagnose-native-reader.mjs:36` **MINOR / CODE_SMELL** `javascript:S6353` — Use concise character class syntax '\w' instead of '[A-Za-z0-9_]'.
+- `niakw_NiakVIO:engine_v2/scripts/diagnose-native-reader.mjs:347` **MINOR / CODE_SMELL** `javascript:S1940` — Use the opposite operator (<=) instead.
+- `niakw_NiakVIO:engine_v2/scripts/diagnose-native-reader.mjs:363` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
+- `niakw_NiakVIO:engine_v2/scripts/diagnose-native-reader.mjs:364` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
+- `niakw_NiakVIO:engine_v2/scripts/diagnose-native-reader.mjs:382` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
+- `niakw_NiakVIO:engine_v2/scripts/diagnose-native-reader.mjs:383` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
+- `niakw_NiakVIO:engine_v2/scripts/diagnose-native-reader.mjs:507` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
+- `niakw_NiakVIO:engine_v2/scripts/diagnose-native-reader.mjs:508` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
+- `niakw_NiakVIO:engine_v2/scripts/diagnose-native-reader.mjs:509` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
 - `niakw_NiakVIO:engine_v2/scripts/plan-repairs.mjs:173` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function that depends on "String.localeCompare", to reliably sort elements alphabetically.
 - `niakw_NiakVIO:engine_v2/scripts/plan-repairs.mjs:193` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function that depends on "String.localeCompare", to reliably sort elements alphabetically.
 - `niakw_NiakVIO:engine_v2/scripts/plan-repairs.mjs:235` **CRITICAL / CODE_SMELL** `javascript:S3776` — Refactor this function to reduce its Cognitive Complexity from 21 to the 15 allowed.
@@ -180,10 +248,10 @@
 - `niakw_NiakVIO:engine_v2/scripts/watch-upstream-providers.mjs:174` **MINOR / CODE_SMELL** `javascript:S7780` — `String.raw` should be used to avoid escaping `\`.
 - `niakw_NiakVIO:engine_v2/scripts/watch-upstream-providers.mjs:180` **MAJOR / CODE_SMELL** `javascript:S3358` — Extract this nested ternary operation into an independent statement.
 - `niakw_NiakVIO:engine_v2/scripts/watch-upstream-providers.mjs:231` **MAJOR / CODE_SMELL** `javascript:S7785` — Prefer top-level await over using a promise chain.
-- `niakw_NiakVIO:engine_v2/src/contracts.mjs:201` **MINOR / CODE_SMELL** `javascript:S6594` — Use the "RegExp.exec()" method instead.
-- `niakw_NiakVIO:engine_v2/src/contracts.mjs:213` **MINOR / CODE_SMELL** `javascript:S6594` — Use the "RegExp.exec()" method instead.
-- `niakw_NiakVIO:engine_v2/src/contracts.mjs:213` **MAJOR / CODE_SMELL** `javascript:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
-- `niakw_NiakVIO:engine_v2/src/contracts.mjs:213` **MAJOR / CODE_SMELL** `javascript:S5843` — Simplify this regular expression to reduce its complexity from 25 to the 20 allowed.
+- `niakw_NiakVIO:engine_v2/src/contracts.mjs:236` **MINOR / CODE_SMELL** `javascript:S6594` — Use the "RegExp.exec()" method instead.
+- `niakw_NiakVIO:engine_v2/src/contracts.mjs:248` **MINOR / CODE_SMELL** `javascript:S6594` — Use the "RegExp.exec()" method instead.
+- `niakw_NiakVIO:engine_v2/src/contracts.mjs:248` **MAJOR / CODE_SMELL** `javascript:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
+- `niakw_NiakVIO:engine_v2/src/contracts.mjs:248` **MAJOR / CODE_SMELL** `javascript:S5843` — Simplify this regular expression to reduce its complexity from 25 to the 20 allowed.
 - `niakw_NiakVIO:engine_v2/src/media-validator.mjs:1` **CRITICAL / CODE_SMELL** `javascript:S3776` — Refactor this function to reduce its Cognitive Complexity from 18 to the 15 allowed.
 - `niakw_NiakVIO:engine_v2/src/media-validator.mjs:79` **MAJOR / CODE_SMELL** `javascript:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
 - `niakw_NiakVIO:engine_v2/src/media-validator.mjs:107` **MAJOR / CODE_SMELL** `javascript:S3358` — Extract this nested ternary operation into an independent statement.
@@ -195,15 +263,12 @@
 - `niakw_NiakVIO:engine_v2/src/media-validator.mjs:575` **MAJOR / CODE_SMELL** `javascript:S6035` — Replace this alternation with a character class.
 - `niakw_NiakVIO:engine_v2/src/repair-brain.mjs:84` **CRITICAL / CODE_SMELL** `javascript:S3776` — Refactor this function to reduce its Cognitive Complexity from 52 to the 15 allowed.
 - `niakw_NiakVIO:engine_v2/src/repair-brain.mjs:155` **CRITICAL / CODE_SMELL** `javascript:S3776` — Refactor this function to reduce its Cognitive Complexity from 20 to the 15 allowed.
-- `niakw_NiakVIO:engine_v2/src/resolver-core.mjs:20` **CRITICAL / CODE_SMELL** `javascript:S3776` — Refactor this function to reduce its Cognitive Complexity from 33 to the 15 allowed.
-- `niakw_NiakVIO:engine_v2/src/stream-presentation.mjs:84` **MINOR / CODE_SMELL** `javascript:S6594` — Use the "RegExp.exec()" method instead.
-- `niakw_NiakVIO:engine_v2/src/stream-presentation.mjs:131` **MINOR / CODE_SMELL** `javascript:S6594` — Use the "RegExp.exec()" method instead.
-- `niakw_NiakVIO:engine_v2/src/stream-presentation.mjs:131` **MAJOR / CODE_SMELL** `javascript:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
-- `niakw_NiakVIO:engine_v2/src/stream-presentation.mjs:131` **MAJOR / CODE_SMELL** `javascript:S5843` — Simplify this regular expression to reduce its complexity from 25 to the 20 allowed.
-- `niakw_NiakVIO:engine_v2/src/stream-presentation.mjs:145` **MINOR / CODE_SMELL** `javascript:S6594` — Use the "RegExp.exec()" method instead.
-- `niakw_NiakVIO:engine_v2/src/stream-presentation.mjs:147` **MINOR / CODE_SMELL** `javascript:S6594` — Use the "RegExp.exec()" method instead.
-- `niakw_NiakVIO:engine_v2/src/stream-presentation.mjs:163` **MINOR / CODE_SMELL** `javascript:S6594` — Use the "RegExp.exec()" method instead.
-- `niakw_NiakVIO:engine_v2/src/tmdb-metadata.mjs:130` **MINOR / CODE_SMELL** `javascript:S6594` — Use the "RegExp.exec()" method instead.
+- `niakw_NiakVIO:engine_v2/src/resolver-core.mjs:17` **CRITICAL / CODE_SMELL** `javascript:S3776` — Refactor this function to reduce its Cognitive Complexity from 33 to the 15 allowed.
+- `niakw_NiakVIO:engine_v2/src/stream-presentation.mjs:135` **MINOR / CODE_SMELL** `javascript:S6594` — Use the "RegExp.exec()" method instead.
+- `niakw_NiakVIO:engine_v2/src/stream-presentation.mjs:217` **MINOR / CODE_SMELL** `javascript:S6594` — Use the "RegExp.exec()" method instead.
+- `niakw_NiakVIO:engine_v2/src/stream-presentation.mjs:219` **MINOR / CODE_SMELL** `javascript:S6594` — Use the "RegExp.exec()" method instead.
+- `niakw_NiakVIO:engine_v2/src/stream-presentation.mjs:374` **MINOR / CODE_SMELL** `javascript:S6594` — Use the "RegExp.exec()" method instead.
+- `niakw_NiakVIO:engine_v2/src/tmdb-metadata.mjs:134` **MINOR / CODE_SMELL** `javascript:S6594` — Use the "RegExp.exec()" method instead.
 - `niakw_NiakVIO:engine_v2/tests/contracts.test.mjs` **BLOCKER / CODE_SMELL** `javascript:S2187` — Add some tests to this file or delete it.
 - `niakw_NiakVIO:engine_v2/tests/learning-lab-memory.test.mjs` **BLOCKER / CODE_SMELL** `javascript:S2187` — Add some tests to this file or delete it.
 - `niakw_NiakVIO:engine_v2/tests/media-validator.test.mjs` **BLOCKER / CODE_SMELL** `javascript:S2187` — Add some tests to this file or delete it.
@@ -243,7 +308,7 @@
 - `niakw_NiakVIO:scripts/build_native_reader_brain_repair.py:320` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 46 to the 15 allowed.
 - `niakw_NiakVIO:scripts/check_nuvio_client_upstreams.py:23` **MAJOR / VULNERABILITY** `pythonsecurity:S8707` — LLMs running this code with faulty CLI arguments can escape file system restrictions. Refactor this code to validate the constructed path before accessing the file system.
 - `niakw_NiakVIO:scripts/check_nuvio_client_upstreams.py:394` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 17 to the 15 allowed.
-- `niakw_NiakVIO:scripts/check_nuvio_client_upstreams.py:441` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 47 to the 15 allowed.
+- `niakw_NiakVIO:scripts/check_nuvio_client_upstreams.py:441` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 50 to the 15 allowed.
 - `niakw_NiakVIO:scripts/compare_native_reader_brain_repair.py:13` **MAJOR / VULNERABILITY** `pythonsecurity:S8707` — LLMs running this code with faulty CLI arguments can escape file system restrictions. Refactor this code to validate the constructed path before accessing the file system.
 - `niakw_NiakVIO:scripts/compare_native_reader_brain_repair.py:53` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 18 to the 15 allowed.
 - `niakw_NiakVIO:scripts/complete_native_desktop_frontend_phases.py:53` **BLOCKER / CODE_SMELL** `python:S3516` — Refactor this method to not always return the same value.
@@ -321,7 +386,7 @@
 - `niakw_NiakVIO:scripts/report_new_upstream_providers.py:219` **MAJOR / VULNERABILITY** `pythonsecurity:S8707` — LLMs running this code with faulty CLI arguments can escape file system restrictions. Refactor this code to validate the constructed path before accessing the file system.
 - `niakw_NiakVIO:scripts/resolve_native_repository.sh:19` **MAJOR / CODE_SMELL** `shelldre:S7682` — Add an explicit return statement at the end of the function.
 - `niakw_NiakVIO:scripts/resolve_native_repository.sh:165` **MAJOR / CODE_SMELL** `shelldre:S7682` — Add an explicit return statement at the end of the function.
-- `niakw_NiakVIO:scripts/resolve_nuvio_lab_heads.py:25` **MAJOR / VULNERABILITY** `pythonsecurity:S8707` — LLMs running this code with faulty CLI arguments can escape file system restrictions. Refactor this code to validate the constructed path before accessing the file system.
+- `niakw_NiakVIO:scripts/resolve_nuvio_lab_heads.py:33` **MAJOR / VULNERABILITY** `pythonsecurity:S8707` — LLMs running this code with faulty CLI arguments can escape file system restrictions. Refactor this code to validate the constructed path before accessing the file system.
 - `niakw_NiakVIO:scripts/scope_native_reader_learning_runtime.py:37` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
 - `niakw_NiakVIO:scripts/scope_native_reader_learning_runtime.py:83` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 16 to the 15 allowed.
 - `niakw_NiakVIO:scripts/watch_native_device_frontend.sh:33` **CRITICAL / CODE_SMELL** `shelldre:S131` — Add a default case (*) to handle unexpected values.
@@ -345,7 +410,7 @@
 - `niakw_NiakVIO:tests/native_reader_provider_retention_policy_test.py:11` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
 - `niakw_NiakVIO:tests/native_reader_runtime_scope_test.py:87` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
 - `niakw_NiakVIO:tests/nuvio_client_lab.test.cjs` **BLOCKER / CODE_SMELL** `javascript:S2187` — Add some tests to this file or delete it.
-- `niakw_NiakVIO:tests/nuvio_client_upstream_drift_guard_test.py:19` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:tests/nuvio_client_upstream_drift_guard_test.py:20` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
 - `niakw_NiakVIO:tests/opaque_native_media_enrichment_test.py:13` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
 - `niakw_NiakVIO:tests/safe_structured_parse_skill_test.py:11` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
 - `niakw_NiakVIO:tests/stream_output_sanitizer_fail_closed_test.py:88` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
@@ -458,11 +523,11 @@
 - `niakw_NiakVIO:engine_v2/src/contract-watcher.mjs:27` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
 - `niakw_NiakVIO:engine_v2/src/contract-watcher.mjs:66` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
 - `niakw_NiakVIO:engine_v2/src/evidence.mjs:90` **CRITICAL / BUG** `javascript:S2871` — Provide a compare function to avoid sorting elements alphabetically.
-- `niakw_NiakVIO:engine_v2/src/contracts.mjs:224` **MAJOR / CODE_SMELL** `javascript:S3358` — Extract this nested ternary operation into an independent statement.
+- `niakw_NiakVIO:engine_v2/src/contracts.mjs:259` **MAJOR / CODE_SMELL** `javascript:S3358` — Extract this nested ternary operation into an independent statement.
 - `niakw_NiakVIO:tests/global_final_wrapper_order_test.py:16` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
 - `niakw_NiakVIO:tests/refresh_manifest_finalization_test.py:72` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
 - `niakw_NiakVIO:tests/refresh_manifest_finalization_test.py:145` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
-- `niakw_NiakVIO:FILE-HASHES.json:1340` **BLOCKER / VULNERABILITY** `json:S6418` — "auth" detected here, make sure this is not a hard-coded secret.
+- `niakw_NiakVIO:FILE-HASHES.json:1424` **BLOCKER / VULNERABILITY** `json:S6418` — "auth" detected here, make sure this is not a hard-coded secret.
 - `niakw_NiakVIO:scripts/interstellar_nuvio_matrix.py:45` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 16 to the 15 allowed.
 - `niakw_NiakVIO:scripts/interstellar_nuvio_matrix.py:113` **MAJOR / CODE_SMELL** `python:S3358` — Extract this nested conditional expression into an independent statement.
 - `niakw_NiakVIO:scripts/promote_refresh_candidates.py:195` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 28 to the 15 allowed.
@@ -559,7 +624,7 @@
 - `niakw_NiakVIO:tests/native_catalogue_recovery_budget_test.py:11` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
 - `niakw_NiakVIO:scripts/apply_native_catalogue_recovery_budget_upgrade_v1.py:21` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
 - `niakw_NiakVIO:scripts/apply_native_catalogue_recovery_budget_upgrade_v1.py:24` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 17 to the 15 allowed.
-- `niakw_NiakVIO:scripts/apply_runtime_capability_upgrade_v4.py:28` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
+- `niakw_NiakVIO:scripts/apply_runtime_capability_upgrade_v4.py:29` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
 - `niakw_NiakVIO:tests/runtime_capability_media_safety_v4_test.py:31` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
 - `niakw_NiakVIO:tests/runtime_capability_media_safety_v4_test.py:157` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
 - `niakw_NiakVIO:tests/tv_provider_hardening_test.py:91` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
@@ -586,8 +651,8 @@
 - `niakw_NiakVIO:scripts/provider_engine_normalizer.py:120` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 32 to the 15 allowed.
 - `niakw_NiakVIO:scripts/provider_engine_normalizer.py:153` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 23 to the 15 allowed.
 - `niakw_NiakVIO:scripts/provider_engine_normalizer.py:277` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 31 to the 15 allowed.
-- `niakw_NiakVIO:scripts/apply_provider_overrides.py:107` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 34 to the 15 allowed.
-- `niakw_NiakVIO:scripts/apply_provider_overrides.py:518` **MAJOR / CODE_SMELL** `python:S6035` — Replace this alternation with a character class.
+- `niakw_NiakVIO:scripts/apply_provider_overrides.py:109` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 34 to the 15 allowed.
+- `niakw_NiakVIO:scripts/apply_provider_overrides.py:520` **MAJOR / CODE_SMELL** `python:S6035` — Replace this alternation with a character class.
 - `niakw_NiakVIO:scripts/provider_compiler.py:216` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 17 to the 15 allowed.
 - `niakw_NiakVIO:scripts/provider_compiler.py:280` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 16 to the 15 allowed.
 - `niakw_NiakVIO:scripts/provider_rebuild.py:48` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 45 to the 15 allowed.
@@ -694,7 +759,6 @@
 - `niakw_NiakVIO:scripts/tv_regression_matrix.py:138` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 16 to the 15 allowed.
 - `niakw_NiakVIO:scripts/tv_regression_matrix.py:160` **MAJOR / CODE_SMELL** `python:S3358` — Extract this nested conditional expression into an independent statement.
 - `niakw_NiakVIO:tests/ci_preservation_policy_test.py:243` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
-- `niakw_NiakVIO:scripts/generate_release_hashes.py:85` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 16 to the 15 allowed.
 - `niakw_NiakVIO:scripts/validate_published_overrides.py:83` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 22 to the 15 allowed.
 - `niakw_NiakVIO:tests/stream_output_sanitizer_fail_closed_test.py:12` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
 - `niakw_NiakVIO:scripts/direct_media_probe.cjs:42` **MAJOR / CODE_SMELL** `javascript:S8786` — Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.
@@ -713,9 +777,9 @@
 - `niakw_NiakVIO:scripts/check_nuvio_client_upstreams.py:244` **CRITICAL / CODE_SMELL** `python:S1192` — Define a constant instead of duplicating this literal "refs/niakvio/base" 3 times.
 - `niakw_NiakVIO:scripts/check_nuvio_client_upstreams.py:301` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 24 to the 15 allowed.
 - `niakw_NiakVIO:tests/stream_output_sanitizer_reconfiguration_test.py:11` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
-- `niakw_NiakVIO:scripts/check_nuvio_client_upstreams.py:590` **MAJOR / VULNERABILITY** `pythonsecurity:S8707` — LLMs running this code with faulty CLI arguments can escape file system restrictions. Refactor this code to validate the constructed path before accessing the file system.
-- `niakw_NiakVIO:scripts/validate_platform_runtime_policy.py:99` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 98 to the 15 allowed.
-- `niakw_NiakVIO:tests/nuvio_client_upstream_drift_guard_test.py:14` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:scripts/check_nuvio_client_upstreams.py:594` **MAJOR / VULNERABILITY** `pythonsecurity:S8707` — LLMs running this code with faulty CLI arguments can escape file system restrictions. Refactor this code to validate the constructed path before accessing the file system.
+- `niakw_NiakVIO:scripts/validate_platform_runtime_policy.py:100` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 98 to the 15 allowed.
+- `niakw_NiakVIO:tests/nuvio_client_upstream_drift_guard_test.py:15` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
 - `niakw_NiakVIO:scripts/validate_nuvio_tv_runtime_policy.py:52` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 20 to the 15 allowed.
 - `niakw_NiakVIO:scripts/validate_mobile_runtime_policy.py:37` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 19 to the 15 allowed.
 - `niakw_NiakVIO:scripts/validate_platform_runtime_policy.py:16` **CRITICAL / CODE_SMELL** `python:S1192` — Define a constant instead of duplicating this literal "manifest.json" 3 times.
@@ -736,13 +800,12 @@
 - `niakw_NiakVIO:tests/release_hash_scope_test.py:11` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
 - `niakw_NiakVIO:scripts/validate_deep_health_integrity.py:64` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 77 to the 15 allowed.
 - `niakw_NiakVIO:scripts/prune_unreferenced_providers.py:101` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 37 to the 15 allowed.
-- `niakw_NiakVIO:scripts/provider_patches/desktop_runtime_compat_v1.py:21` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 17 to the 15 allowed.
 - `niakw_NiakVIO:tests/deep_repair_rollback_test.py:53` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
 - `niakw_NiakVIO:scripts/promote_global_nuvio_tv_candidates.py:45` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
 - `niakw_NiakVIO:scripts/promote_global_nuvio_tv_candidates.py:271` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 16 to the 15 allowed.
 - `niakw_NiakVIO:scripts/promote_global_nuvio_tv_candidates.py:273` **CRITICAL / CODE_SMELL** `python:S1192` — Define a constant instead of duplicating this literal "manifest.json" 4 times.
 - `niakw_NiakVIO:scripts/publish_desktop_runtime_compat.py:54` **BLOCKER / VULNERABILITY** `pythonsecurity:S2083` — Change this code to not construct the path from user-controlled data.
-- `niakw_NiakVIO:tests/desktop_runtime_compat_test.py:15` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
+- `niakw_NiakVIO:tests/desktop_runtime_compat_test.py:16` **MAJOR / CODE_SMELL** `python:S9073` — Split this composite assertion into separate assertions.
 - `niakw_NiakVIO:automation/strict-main-reactivation.json:859` **BLOCKER / VULNERABILITY** `json:S6418` — "api_key" detected here, make sure this is not a hard-coded secret.
 - `niakw_NiakVIO:automation/strict-main-reactivation.json:926` **BLOCKER / VULNERABILITY** `json:S6418` — "api_key" detected here, make sure this is not a hard-coded secret.
 - `niakw_NiakVIO:scripts/normalize_hls_override_policy.py:30` **CRITICAL / CODE_SMELL** `python:S3776` — Refactor this function to reduce its Cognitive Complexity from 30 to the 15 allowed.
@@ -2171,8 +2234,7 @@
 - `niakw_NiakVIO:scripts/deep_repair_loop.py:102` **CRITICAL / CODE_SMELL** `python:S1192` — Define a constant instead of duplicating this literal "health-results.json" 3 times.
 - `niakw_NiakVIO:scripts/deep_repair_loop.py:110` **MAJOR / VULNERABILITY** `pythonsecurity:S8705` — LLMs running this code with faulty CLI arguments can escape from shell sandboxes. Refactor this code to validate untrusted data before passing them to OS commands.
 - `niakw_NiakVIO:scripts/discover_candidates.py:90` **MAJOR / CODE_SMELL** `python:S8513` — Replace chained "startswith" calls with a single call using a tuple argument.
-- `niakw_NiakVIO:scripts/generate_release_hashes.py:16` **CRITICAL / CODE_SMELL** `python:S1192` — Define a constant instead of duplicating this literal "FILE-HASHES.json" 3 times.
-- `niakw_NiakVIO:scripts/generate_release_hashes.py:16` **CRITICAL / CODE_SMELL** `python:S1192` — Define a constant instead of duplicating this literal "PATCH-SHA256SUMS.txt" 3 times.
+- `niakw_NiakVIO:scripts/generate_release_hashes.py:27` **CRITICAL / CODE_SMELL** `python:S1192` — Define a constant instead of duplicating this literal "FILE-HASHES.json" 3 times.
 - `niakw_NiakVIO:scripts/health_check.mjs:36` **MAJOR / CODE_SMELL** `javascript:S3358` — Extract this nested ternary operation into an independent statement.
 - `niakw_NiakVIO:scripts/health_check.mjs:38` **MAJOR / CODE_SMELL** `javascript:S3358` — Extract this nested ternary operation into an independent statement.
 - `niakw_NiakVIO:scripts/health_check.mjs:148` **MINOR / CODE_SMELL** `javascript:S6594` — Use the "RegExp.exec()" method instead.
