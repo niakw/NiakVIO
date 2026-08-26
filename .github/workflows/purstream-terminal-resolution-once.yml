@@ -1,0 +1,73 @@
+name: Purstream terminal resolution once
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/purstream-terminal-resolution-once.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: purstream-terminal-resolution-once
+  cancel-in-progress: false
+
+jobs:
+  resolve:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+      - name: Resolve Purstream only
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp provider-overrides.json "$RUNNER_TEMP/overrides.before.json"
+          cp provider-domain-history.json "$RUNNER_TEMP/history.before.json"
+          python scripts/resolve_provider_hubs.py \
+            --provider purstream \
+            --include-disabled \
+            --mode deep \
+            --workers 1 \
+            --timeout 12 \
+            --apply \
+            --output "$RUNNER_TEMP/purstream-hub-report.json"
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          report=json.loads((Path(os.environ['RUNNER_TEMP'])/'purstream-hub-report.json').read_text())
+          row=(report.get('providers') or {}).get('purstream') or {}
+          keep={k:row.get(k) for k in ('provider_id','status','official_site','validated_api','selected_source_type','selected_source','site_status','site_final_url','reason','applied_changes')}
+          print('FIELD_PURSTREAM_TERMINAL_RESOLUTION',json.dumps(keep,ensure_ascii=False,sort_keys=True))
+          if row.get('status') not in {'validated','site_validated','retained_last_known_good'}:
+              raise SystemExit('Purstream has no validated/LKG terminal route')
+          if not row.get('official_site'):
+              raise SystemExit('Purstream terminal resolution has no official_site')
+          PY
+          echo '--- provider-overrides diff ---'
+          diff -u "$RUNNER_TEMP/overrides.before.json" provider-overrides.json || true
+          echo '--- provider-domain-history diff ---'
+          diff -u "$RUNNER_TEMP/history.before.json" provider-domain-history.json || true
+      - name: Publish validated routing state and remove one-shot
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f .github/workflows/purstream-terminal-resolution-once.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add provider-overrides.json provider-domain-history.json .github/workflows/purstream-terminal-resolution-once.yml
+          if git diff --cached --quiet; then
+            echo 'No routing state changes; one-shot deletion is the only expected change but workflow was untracked in index.'
+            exit 1
+          fi
+          git commit -m 'fix: persist validated Purstream terminal route'
+          git fetch origin main
+          git rebase origin/main
+          git push origin HEAD:main
