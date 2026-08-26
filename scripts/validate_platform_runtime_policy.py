@@ -18,6 +18,7 @@ VF = ROOT / "vf" / "manifest.json"
 PROFILE_TOKEN = {"android": "android", "ios": "ios", "desktop": "desktop"}
 EXPECTED_TAGS = {
     "android": {"android"},
+    "android-tv": {"android-tv", "tv"},
     "ios": {"ios"},
     "windows": {"desktop", "jvm", "windows"},
     "macos": {"desktop", "jvm", "macos"},
@@ -212,7 +213,7 @@ def main() -> int:
     print(
         "platform runtime policy validated: "
         f"release={main_doc.get('version')} general={len(main_rows)} vf={len(vf_rows)} "
-        "clients=android,ios,windows,macos,linux"
+        "clients=android,android-tv,ios,windows,macos,linux"
     )
     return 0
 
