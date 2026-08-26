@@ -1,16 +1,16 @@
 {
   "schema_version": 63,
-  "generated_at": "2026-08-26T09:06:44.769412+00:00",
+  "generated_at": "2026-08-26T13:21:00.837887+00:00",
   "test_environment": "github-actions-node",
   "checked_providers": 92,
   "status_counts": {
     "healthy": 12,
     "reachable": 0,
-    "blocked": 10,
+    "blocked": 12,
     "degraded": 2,
-    "no_streams": 23,
+    "no_streams": 22,
     "provider_unreachable": 16,
-    "runtime_error": 19,
+    "runtime_error": 18,
     "unavailable": 10,
     "excluded": 0
   },
@@ -1560,14 +1560,16 @@
     },
     {
       "id": "streamzo",
-      "status": "no_streams",
+      "status": "degraded",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
       "consecutive_successes": 0,
       "hosts": [],
-      "response_categories": [],
+      "response_categories": [
+        "endpoint_reachable"
+      ],
       "host_health": {
         "static.cloudflareinsights.com": {
           "last_checked_at": "2026-08-26T02:02:27.434613+00:00",
@@ -1658,14 +1660,14 @@
           "consecutive_blocked": 0
         },
         "moon.peakstorm.top": {
-          "last_checked_at": "2026-08-26T02:02:27.434613+00:00",
-          "last_category": "playable",
-          "reachable": true,
+          "last_checked_at": "2026-08-26T13:21:00.837887+00:00",
+          "last_category": "endpoint_reachable",
+          "reachable": false,
           "http_status": 200,
-          "latency_ms": 166,
+          "latency_ms": 54,
           "kind": "hls",
           "consecutive_hard_failures": 0,
-          "consecutive_successes": 16,
+          "consecutive_successes": 0,
           "consecutive_blocked": 0
         }
       },
@@ -1958,17 +1960,21 @@
     },
     {
       "id": "videasy",
-      "status": "provider_unreachable",
+      "status": "healthy",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 0,
-      "hosts": [],
-      "response_categories": [],
+      "consecutive_successes": 1,
+      "hosts": [
+        "moon.peakstorm.top"
+      ],
+      "response_categories": [
+        "playable"
+      ],
       "host_health": {
         "moon.ironwallnet.net": {
-          "last_checked_at": "2026-08-26T04:59:27.077579+00:00",
+          "last_checked_at": "2026-08-26T13:21:00.837887+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -1979,7 +1985,7 @@
           "consecutive_blocked": 0
         },
         "lemonvertex.site": {
-          "last_checked_at": "2026-08-26T04:59:27.077579+00:00",
+          "last_checked_at": "2026-08-26T13:21:00.837887+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -1990,14 +1996,14 @@
           "consecutive_blocked": 0
         },
         "moon.peakstorm.top": {
-          "last_checked_at": "2026-08-26T04:59:27.077579+00:00",
+          "last_checked_at": "2026-08-26T13:21:00.837887+00:00",
           "last_category": "playable",
           "reachable": true,
           "http_status": 200,
-          "latency_ms": 23,
+          "latency_ms": 57,
           "kind": "hls",
           "consecutive_hard_failures": 0,
-          "consecutive_successes": 6,
+          "consecutive_successes": 7,
           "consecutive_blocked": 0
         }
       },
@@ -2154,19 +2160,21 @@
     },
     {
       "id": "animezey",
-      "status": "degraded",
+      "status": "healthy",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 0,
-      "hosts": [],
+      "consecutive_successes": 1,
+      "hosts": [
+        "1.animezeydl.workers.dev"
+      ],
       "response_categories": [
-        "host_down"
+        "playable"
       ],
       "host_health": {
         "animezey16082023.animezey16082023.workers.dev": {
-          "last_checked_at": "2026-08-25T13:15:28.940677+00:00",
+          "last_checked_at": "2026-08-26T13:21:00.837887+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2177,14 +2185,14 @@
           "consecutive_blocked": 0
         },
         "1.animezeydl.workers.dev": {
-          "last_checked_at": "2026-08-26T02:02:27.434613+00:00",
-          "last_category": "host_down",
-          "reachable": false,
-          "http_status": 500,
-          "latency_ms": 402,
-          "kind": "direct",
-          "consecutive_hard_failures": 1,
-          "consecutive_successes": 0,
+          "last_checked_at": "2026-08-26T13:21:00.837887+00:00",
+          "last_category": "playable",
+          "reachable": true,
+          "http_status": 206,
+          "latency_ms": 1296,
+          "kind": "matroska",
+          "consecutive_hard_failures": 0,
+          "consecutive_successes": 1,
           "consecutive_blocked": 0
         }
       },
@@ -2404,18 +2412,14 @@
     },
     {
       "id": "animesama-co",
-      "status": "healthy",
+      "status": "provider_unreachable",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 2,
-      "hosts": [
-        "video.sibnet.ru"
-      ],
-      "response_categories": [
-        "playable"
-      ],
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
       "host_health": {
         "video.sibnet.ru": {
           "last_checked_at": "2026-08-25T20:50:45.510796+00:00",
@@ -2592,7 +2596,7 @@
     },
     {
       "id": "dulourd",
-      "status": "runtime_error",
+      "status": "blocked",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
@@ -2994,18 +2998,14 @@
     },
     {
       "id": "voiranime-rip",
-      "status": "healthy",
+      "status": "no_streams",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 2,
-      "hosts": [
-        "video.sibnet.ru"
-      ],
-      "response_categories": [
-        "playable"
-      ],
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
       "host_health": {
         "video.sibnet.ru": {
           "last_checked_at": "2026-08-26T02:02:27.434613+00:00",
@@ -3115,7 +3115,7 @@
     },
     {
       "id": "anime-ultime",
-      "status": "no_streams",
+      "status": "blocked",
       "action": "unchanged",
       "enabled": false,
       "consecutive_hard_failures": 0,
