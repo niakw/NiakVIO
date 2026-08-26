@@ -10,6 +10,8 @@ Desktop reader/canary consumers intentionally share this resolver so their final
 proofs are tied to the same official client-revision policy as the Core audit.
 That shared resolution is also the final cross-workflow checkpoint after repository
 hygiene consolidation, so native proofs never silently target a stale accepted ref.
+The sealed checkpoint therefore covers the Core fixed-point and both Desktop native
+proof families after the canary topology regression guard has passed.
 """
 from __future__ import annotations
 
