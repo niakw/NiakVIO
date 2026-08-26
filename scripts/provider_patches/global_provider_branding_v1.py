@@ -5,6 +5,7 @@ Provider artwork stays in native ``scraper.logo``. Until Nuvio exposes that logo
 on local stream rows, one committed emoji per provider gives the textual stream
 name/title a stable identity. This layer runs *after* Core stream presentation so
 it never destroys provider-returned technical facts before they are normalized.
+V5 preserves the canonical ``PROVIDER - QUALITY`` suffix produced by Core V12.
 """
 from __future__ import annotations
 
