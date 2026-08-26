@@ -145,7 +145,8 @@ assert "Always replace every provider-owned stream description" in rules
 assert "TMDB may fill media context" in rules
 
 # Exact import payloads consumed by official Nuvio StreamBadgeRules. Fusion is an
-# account-level cross-theme feed; dark/light remain available for theme-specific use.
+# account-level cross-theme feed using transparent source artwork; dark/light remain
+# available for theme-specific use.
 for theme in ("dark", "light", "fusion"):
     feed_path = ROOT / f"assets/stream-badges-{theme}.json"
     feed = json.loads(feed_path.read_text(encoding="utf-8"))
@@ -154,7 +155,7 @@ for theme in ("dark", "light", "fusion"):
     feed_by_id = {str(row.get("id") or ""): row for row in feed.get("filters") or []}
     assert set(feed_by_id) == set(by_id), theme
     for badge_id, row in feed_by_id.items():
-        asset_theme = "dark" if theme == "fusion" else theme
+        asset_theme = "transparent" if theme == "fusion" else theme
         expected_rel = by_id[badge_id]["assets"][asset_theme]["96x40"]
         assert row["imageURL"].endswith(expected_rel), (theme, badge_id, row["imageURL"])
         assert row["pattern"] == by_id[badge_id]["pattern"], (theme, badge_id)
