@@ -14,10 +14,10 @@
     "nuvio-mobile": {
       "repository": "NuvioMedia/NuvioMobile",
       "branch": "cmp-rewrite",
-      "verified_ref": "b80ee5ab8a550f1385c438071694a51ed3b0ef00",
+      "verified_ref": "4e838e470055d61facab285d283d7ec8f00c0347",
       "platforms": ["android", "ios"],
       "contract": "automation/platform-runtime-contracts.json",
-      "audit_note": "2026-08-22: provider request/result/extraction contract remains pinned to audited b80ee5ab8a55. The 11 subsequent commits through 0363f38c88a4 were reviewed: no plugin runtime, StreamsRepository, StreamParser, StreamModels, StreamFetchSupport, PlaybackUrlCredentials or StreamLinkCacheRepository file changed. The only streams-area change is StreamsScreen.kt and is presentation-only episode-thumbnail blur state; player changes are reader/UI state. Fresh native reader proof is still required, but this is not provider contract drift.",
+      "audit_note": "2026-08-26: Mobile runtime and transport contract re-audited through current cmp-rewrite HEAD 4e838e470055. Detailed runtime read was performed at 071fc431a446; the sole subsequent commit changes only android-release.yml. QuickJS positional getStreams, PluginRuntimeResult projection, Android OkHttp Proxy.NO_PROXY transport and iOS Ktor/Darwin transport are therefore current and now explicitly tracked.",
       "contract_paths": [
         "composeApp/src/fullCommonMain/kotlin/com/nuvio/app/features/plugins/",
         "composeApp/src/commonMain/kotlin/com/nuvio/app/features/plugins/",
@@ -25,6 +25,8 @@
         "composeApp/src/iosFull/kotlin/com/nuvio/app/features/plugins/",
         "composeApp/src/androidPlaystore/kotlin/com/nuvio/app/features/plugins/",
         "composeApp/src/iosAppStore/kotlin/com/nuvio/app/features/plugins/",
+        "composeApp/src/androidMain/kotlin/com/nuvio/app/features/addons/AddonPlatform.android.kt",
+        "composeApp/src/iosMain/kotlin/com/nuvio/app/features/addons/AddonPlatform.ios.kt",
         "composeApp/src/commonMain/kotlin/com/nuvio/app/features/streams/PlaybackUrlCredentials.kt",
         "composeApp/src/commonMain/kotlin/com/nuvio/app/features/streams/StreamFetchSupport.kt",
         "composeApp/src/commonMain/kotlin/com/nuvio/app/features/streams/StreamLinkCacheRepository.kt",
@@ -39,6 +41,8 @@
         "composeApp/src/iosFull/kotlin/com/nuvio/app/features/plugins/",
         "composeApp/src/androidPlaystore/kotlin/com/nuvio/app/features/plugins/",
         "composeApp/src/iosAppStore/kotlin/com/nuvio/app/features/plugins/",
+        "composeApp/src/androidMain/kotlin/com/nuvio/app/features/addons/AddonPlatform.android.kt",
+        "composeApp/src/iosMain/kotlin/com/nuvio/app/features/addons/AddonPlatform.ios.kt",
         "composeApp/src/commonMain/kotlin/com/nuvio/app/features/streams/PlaybackUrlCredentials.kt",
         "composeApp/src/commonMain/kotlin/com/nuvio/app/features/streams/StreamFetchSupport.kt",
         "composeApp/src/commonMain/kotlin/com/nuvio/app/features/streams/StreamLinkCacheRepository.kt",
@@ -59,23 +63,24 @@
         "gradle/libs.versions.toml"
       ],
       "semantic_review_tokens": [
-        "getStreams", "PluginRuntimeResult", "StreamItem", "behaviorHints", "proxyHeaders", "MediaItem", "setMedia", "videoUrl", "playbackUrl", "httpHeaders", "dataSource", "sourceFactory", "externalPlayer", "quickjs", "media3", "exoplayer", "ktor", "okhttp"
+        "getStreams", "PluginRuntimeResult", "StreamItem", "behaviorHints", "proxyHeaders", "MediaItem", "setMedia", "videoUrl", "playbackUrl", "httpHeaders", "dataSource", "sourceFactory", "externalPlayer", "SCRAPER_ID", "SCRAPER_SETTINGS", "TMDB_API_KEY", "TextEncoder", "TextDecoder", "WebAssembly", "Proxy.NO_PROXY", "IPv4FirstDns", "quickjs", "media3", "exoplayer", "ktor", "okhttp"
       ],
       "brain_mutation_semantic_tokens": [
-        "getStreams", "PluginRuntimeResult", "StreamItem", "behaviorHints", "proxyHeaders", "videoUrl", "playbackUrl", "httpHeaders", "quickjs", "ktor", "okhttp"
+        "getStreams", "PluginRuntimeResult", "StreamItem", "behaviorHints", "proxyHeaders", "videoUrl", "playbackUrl", "httpHeaders", "SCRAPER_ID", "SCRAPER_SETTINGS", "TMDB_API_KEY", "TextEncoder", "TextDecoder", "WebAssembly", "Proxy.NO_PROXY", "IPv4FirstDns", "quickjs", "ktor", "okhttp"
       ]
     },
     "nuvio-desktop": {
       "repository": "NuvioMedia/NuvioDesktop",
       "branch": "Dev",
-      "verified_ref": "85877828687722fdc4ed5c16766068df94640b8a",
+      "verified_ref": "a4fe0bf1a98ff9a8ca50e1a9dccde7ca842bd817",
       "platforms": ["windows", "macos", "linux"],
       "contract": "automation/platform-runtime-contracts.json",
-      "audit_note": "2026-08-22: audited 76 commits from 463cd0b72a8f to 858778286877. The only provider-stream contract change routes StreamsRepository through fetchAddonResponseText; the normal path still calls httpGetText and forceRefresh only adds Cache-Control: no-cache. Resource URL construction, StreamParser, plugin runtime, positional getStreams and provider URL/header ingestion remain unchanged. Desktop native route failures on this head are zero-stream extraction gaps rather than repository/provider loading failures, so provider Brain mutation remains cross-client fail-closed.",
+      "audit_note": "2026-08-26: Desktop runtime and transport contract re-audited at current Dev HEAD a4fe0bf1a98f. QuickJS positional getStreams and result projection match the current Mobile family, while Desktop keeps its distinct async __native_fetch bridge and JVM OkHttp transport without Proxy.NO_PROXY. Those transport files are now hard contract paths so future silent networking drift blocks advancement.",
       "contract_paths": [
         "composeApp/src/fullCommonMain/kotlin/com/nuvio/app/features/plugins/",
         "composeApp/src/commonMain/kotlin/com/nuvio/app/features/plugins/",
         "composeApp/src/desktopMain/kotlin/com/nuvio/app/features/plugins/",
+        "composeApp/src/desktopMain/kotlin/com/nuvio/app/features/addons/AddonPlatform.desktop.kt",
         "composeApp/src/commonMain/kotlin/com/nuvio/app/features/streams/",
         "composeApp/src/desktopMain/kotlin/com/nuvio/app/features/streams/"
       ],
@@ -83,6 +88,7 @@
         "composeApp/src/fullCommonMain/kotlin/com/nuvio/app/features/plugins/",
         "composeApp/src/commonMain/kotlin/com/nuvio/app/features/plugins/",
         "composeApp/src/desktopMain/kotlin/com/nuvio/app/features/plugins/",
+        "composeApp/src/desktopMain/kotlin/com/nuvio/app/features/addons/AddonPlatform.desktop.kt",
         "composeApp/src/commonMain/kotlin/com/nuvio/app/features/streams/",
         "composeApp/src/desktopMain/kotlin/com/nuvio/app/features/streams/"
       ],
@@ -93,21 +99,22 @@
         "gradle/libs.versions.toml"
       ],
       "semantic_review_tokens": [
-        "getStreams", "PluginRuntimeResult", "StreamItem", "behaviorHints", "proxyHeaders", "MediaItem", "setMedia", "videoUrl", "playbackUrl", "httpHeaders", "dataSource", "sourceFactory", "externalPlayer", "quickjs", "media3", "exoplayer", "ktor", "okhttp", "vlc"
+        "getStreams", "PluginRuntimeResult", "StreamItem", "behaviorHints", "proxyHeaders", "MediaItem", "setMedia", "videoUrl", "playbackUrl", "httpHeaders", "dataSource", "sourceFactory", "externalPlayer", "SCRAPER_ID", "SCRAPER_SETTINGS", "TMDB_API_KEY", "TextEncoder", "TextDecoder", "WebAssembly", "Proxy.NO_PROXY", "IPv4FirstDns", "quickjs", "media3", "exoplayer", "ktor", "okhttp", "vlc"
       ],
       "brain_mutation_semantic_tokens": [
-        "getStreams", "PluginRuntimeResult", "StreamItem", "behaviorHints", "proxyHeaders", "videoUrl", "playbackUrl", "httpHeaders", "quickjs", "ktor", "okhttp"
+        "getStreams", "PluginRuntimeResult", "StreamItem", "behaviorHints", "proxyHeaders", "videoUrl", "playbackUrl", "httpHeaders", "SCRAPER_ID", "SCRAPER_SETTINGS", "TMDB_API_KEY", "TextEncoder", "TextDecoder", "WebAssembly", "Proxy.NO_PROXY", "IPv4FirstDns", "quickjs", "ktor", "okhttp"
       ]
     },
     "nuvio-tv": {
       "repository": "NuvioMedia/NuvioTV",
       "branch": "dev",
-      "verified_ref": "188efb59dc8a30b62332f330dfc16941ff1f6f7e",
+      "verified_ref": "0d8f99e2b92be5e2dedbbd0eaf9ccd00c78d020a",
       "platforms": ["android-tv"],
       "contract": "automation/nuvio-tv-runtime-contract.json",
-      "audit_note": "2026-08-22: audited 116 commits from 6103a1444852 to 188efb59dc8a. StreamRepository adds forceRefresh with a backward-compatible default plus playback-time local-plugin pause/resume. StreamRepositoryImpl adds a session cache keyed by profile, media type, videoId, season, episode and source/debrid configuration before calling the same provider extraction path; executeScrapersStreaming still receives tmdbId, mediaType, season and episode and stream URL/header mapping is preserved. Player networking now consumes behaviorHints/proxyHeaders more explicitly; exact current-head official TV route-reader acceptance is green through real player reach, so this reader/provider contract is re-audited for Brain compatibility.",
+      "audit_note": "2026-08-26: TV contract re-audited through current dev HEAD 0d8f99e2b92b. PluginRuntime positional getStreams, Proxy.NO_PROXY/IPv4FirstDns transport, TMDB_API_KEY injection and LocalScraperResult projection are unchanged. Recent PluginManager changes only bound scraper orchestration to MAX_CONCURRENT_SCRAPERS on low-RAM devices and skip duplicate repository writes; they do not change request arguments or returned stream mapping.",
       "contract_paths": [
         "app/src/full/java/com/nuvio/tv/core/plugin/",
+        "app/src/main/java/com/nuvio/tv/core/network/IPv4FirstDns.kt",
         "app/src/main/java/com/nuvio/tv/data/local/PluginDataStore.kt",
         "app/src/main/java/com/nuvio/tv/data/remote/api/AddonApi.kt",
         "app/src/main/java/com/nuvio/tv/data/repository/StreamRepositoryImpl.kt",
@@ -117,6 +124,7 @@
       ],
       "brain_mutation_contract_paths": [
         "app/src/full/java/com/nuvio/tv/core/plugin/",
+        "app/src/main/java/com/nuvio/tv/core/network/IPv4FirstDns.kt",
         "app/src/main/java/com/nuvio/tv/data/local/PluginDataStore.kt",
         "app/src/main/java/com/nuvio/tv/data/remote/api/AddonApi.kt",
         "app/src/main/java/com/nuvio/tv/data/repository/StreamRepositoryImpl.kt",
@@ -130,10 +138,10 @@
         "gradle/libs.versions.toml"
       ],
       "semantic_review_tokens": [
-        "getStreams", "StreamItem", "behaviorHints", "proxyHeaders", "MediaItem", "setMedia", "videoUrl", "playbackUrl", "httpHeaders", "dataSource", "sourceFactory", "externalPlayer", "SCRAPER_SETTINGS", "quickjs", "media3", "exoplayer", "ktor", "okhttp"
+        "getStreams", "StreamItem", "behaviorHints", "proxyHeaders", "MediaItem", "setMedia", "videoUrl", "playbackUrl", "httpHeaders", "dataSource", "sourceFactory", "externalPlayer", "SCRAPER_ID", "SCRAPER_SETTINGS", "TMDB_API_KEY", "TextEncoder", "TextDecoder", "WebAssembly", "Proxy.NO_PROXY", "IPv4FirstDns", "quickjs", "media3", "exoplayer", "ktor", "okhttp"
       ],
       "brain_mutation_semantic_tokens": [
-        "getStreams", "StreamItem", "behaviorHints", "proxyHeaders", "videoUrl", "playbackUrl", "httpHeaders", "SCRAPER_SETTINGS", "quickjs", "ktor", "okhttp"
+        "getStreams", "StreamItem", "behaviorHints", "proxyHeaders", "videoUrl", "playbackUrl", "httpHeaders", "SCRAPER_ID", "SCRAPER_SETTINGS", "TMDB_API_KEY", "TextEncoder", "TextDecoder", "WebAssembly", "Proxy.NO_PROXY", "IPv4FirstDns", "quickjs", "ktor", "okhttp"
       ]
     }
   }
