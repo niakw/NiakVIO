@@ -4,14 +4,7 @@
 Provider artwork stays in native ``scraper.logo``. Until Nuvio exposes that logo
 on local stream rows, one committed emoji per provider gives the textual stream
 name/title a stable identity. This layer runs *after* Core stream presentation so
-it never destroys provider-returned quality/language/codec facts before they are
-normalized.
-
-Every currently published provider must exist in ``assets/providers/emojis.json``
-(the repository contract checks exact 92/92 coverage). A provider discovered only
-inside a future/synthetic Core probe may still pass safely with a regional-indicator
-emoji derived from the first alphabetic letter of its readable provider name; it is
-not publishable until the committed inventory is updated.
+it never destroys provider-returned technical facts before they are normalized.
 """
 from __future__ import annotations
 
@@ -32,12 +25,9 @@ def _fallback_name(provider_id: str) -> str:
 
 
 def _initial_emoji(name: str) -> str:
-    """Return the Unicode regional-indicator emoji for the first A-Z letter."""
     for char in str(name or "").upper():
         if "A" <= char <= "Z":
             return chr(0x1F1E6 + ord(char) - ord("A"))
-    # _fallback_name always supplies Source for an empty/non-alphabetic id, so
-    # this is a defensive invariant rather than a visible generic fallback.
     return chr(0x1F1E6 + ord("S") - ord("A"))
 
 
@@ -77,24 +67,22 @@ def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> st
     if not provider_id:
         return text
     row = _load_provider(provider_id)
-
     payload = {
         "providerId": provider_id,
         "providerName": row["name"],
         "providerEmoji": row["emoji"],
-        "implementationRevision": "post-presentation-emoji-stream-label-v4",
+        "implementationRevision": "post-presentation-emoji-title-quality-v5",
     }
     serialized = json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
     marker = f"{MARKER}:{hashlib.sha256(serialized.encode('utf-8')).hexdigest()[:12]}"
     text = _strip_existing(text)
-
     wrapper = r'''
 /* MARKER_PLACEHOLDER */
 ;(function(g,c){"use strict";
 function slot(v){if(Array.isArray(v))return{key:null,list:v};if(v&&typeof v==="object"){for(var i=0;i<3;i++){var k=["streams","results","data"][i];if(Array.isArray(v[k]))return{key:k,list:v[k]}}}return null}
 function rebuild(v,x,list){if(x.key===null)return list;var o=Object.assign({},v);o[x.key]=list;return o}
 function label(){return(String(c.providerEmoji||"").trim()+" "+String(c.providerName||c.providerId||"Source").trim()).trim()}
-function title(v,old){old=String(old||"").trim();if(!old)return v;var token=" • ",i=old.indexOf(token);return i>=0?v+old.slice(i):v}
+function title(v,old){old=String(old||"").trim();if(!old)return v;var token=" - ",i=old.lastIndexOf(token);return i>=0?v+old.slice(i):v}
 function brand(r){if(!r||typeof r!=="object")return r;var o=Object.assign({},r),v=label();if(!v)return o;o.title=title(v,o.title);o.name=v;return o}
 function install(o,k){if(!o||typeof o[k]!=="function"||o[k].__nuvioGlobalProviderBrandingV1)return false;var native=o[k];var wrap=async function(){var v=await native.apply(this,arguments),x=slot(v);if(!x||!x.list.length)return v;return rebuild(v,x,x.list.map(brand))};wrap.__nuvioGlobalProviderBrandingV1=true;o[k]=wrap;return true}
 var ok=false;try{if(typeof module!=="undefined"&&module.exports){ok=install(module.exports,"getStreams")||install(module.exports,"streams")}}catch(_e){}try{if(g&&typeof g.getStreams==="function"){if(ok&&typeof module!=="undefined"&&module.exports)g.getStreams=module.exports.getStreams;else install(g,"getStreams")}}catch(_e){}
