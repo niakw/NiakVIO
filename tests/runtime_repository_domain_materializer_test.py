@@ -2,11 +2,14 @@
 from __future__ import annotations
 
 import json
+import sys
 from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
 
 from scripts.provider_patches.runtime_repository_domain_materializer_v1 import MARKER, apply
 
-ROOT = Path(__file__).resolve().parents[1]
 REPOSITORY_URL = "https://raw.githubusercontent.com/example/repository/main/domains.json"
 
 
