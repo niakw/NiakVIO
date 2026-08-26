@@ -8,6 +8,8 @@ layer prove whether our harness still fits that client revision. Only an unresol
 HEAD is fatal here; an older accepted ref is never used as a silent fallback.
 Desktop reader/canary consumers intentionally share this resolver so their final
 proofs are tied to the same official client-revision policy as the Core audit.
+That shared resolution is also the final cross-workflow checkpoint after repository
+hygiene consolidation, so native proofs never silently target a stale accepted ref.
 """
 from __future__ import annotations
 
