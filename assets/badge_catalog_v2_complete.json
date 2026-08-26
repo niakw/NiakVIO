@@ -78,7 +78,7 @@
       "name": "Blu-ray Disc",
       "text": "BLU-RAY",
       "brand": true,
-      "pattern": "(?i)(?!.*\\\\b(?:uhd|ultra[ ._-]?hd)\\\\b)(?!.*\\\\bremux\\\\b)\\\\b(blu[ ._-]?ray|bluray|bd[ ._-]?rip|bdrip|brrip)\\\\b",
+      "pattern": "(?i)(?!.*\\b(?:uhd|ultra[ ._-]?hd)\\b)(?!.*\\bremux\\b)\\b(blu[ ._-]?ray|bluray|bd[ ._-]?rip|bdrip|brrip)\\b",
       "assetBasis": "user_supplied_brand_or_technical_asset",
       "order": 2,
       "assets": {
@@ -103,7 +103,7 @@
       "name": "UHD REMUX",
       "text": "UHD REMUX",
       "brand": false,
-      "pattern": "(?i)\\\\b(?:uhd|2160p|4k)[ ._-]+remux\\\\b|\\\\bremux[ ._-]+(?:uhd|2160p|4k)\\\\b",
+      "pattern": "(?i)\\b(?:uhd|2160p|4k)[ ._-]+remux\\b|\\bremux[ ._-]+(?:uhd|2160p|4k)\\b",
       "assetBasis": "niakvio_generated_generic",
       "order": 3,
       "assets": {
@@ -128,7 +128,7 @@
       "name": "Blu-ray REMUX",
       "text": "BD REMUX",
       "brand": false,
-      "pattern": "(?i)\\\\b(?:blu[ ._-]?ray|bd)[ ._-]+remux\\\\b|\\\\bremux[ ._-]+(?:blu[ ._-]?ray|bd)\\\\b",
+      "pattern": "(?i)\\b(?:blu[ ._-]?ray|bd)[ ._-]+remux\\b|\\bremux[ ._-]+(?:blu[ ._-]?ray|bd)\\b",
       "assetBasis": "niakvio_generated_generic",
       "order": 4,
       "assets": {
@@ -578,7 +578,7 @@
       "name": "HDR10",
       "text": "HDR10",
       "brand": false,
-      "pattern": "(?i)\\\\bhdr[ ]?10\\\\b(?![ ]?\\\\+|[ ]?plus)",
+      "pattern": "(?i)\\bhdr[ ]?10\\b(?![ ]?\\+|[ ]?plus)",
       "assetBasis": "user_supplied_brand_or_technical_asset",
       "order": 22,
       "assets": {
@@ -703,7 +703,7 @@
       "name": "IMAX",
       "text": "IMAX",
       "brand": true,
-      "pattern": "(?i)\\\\bimax\\\\b(?![ ._-]?enhanced)",
+      "pattern": "(?i)\\bimax\\b(?![ ._-]?enhanced)",
       "assetBasis": "user_supplied_brand_or_technical_asset",
       "order": 27,
       "assets": {
@@ -1528,7 +1528,7 @@
       "name": "VF",
       "text": "VF",
       "brand": false,
-      "pattern": "(?i)\\\\bvf\\\\b(?![fq])|\\\\bfr(?:a|e)?\\\\b|\\\\bfrench\\\\b|\\\\bfran[cç]ais\\\\b",
+      "pattern": "(?i)\\bvf\\b(?![fq])|\\bfr(?:a|e)?\\b|\\bfrench\\b|\\bfran[cç]ais\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "VF",
       "order": 60,
@@ -1553,7 +1553,7 @@
       "name": "VFF",
       "text": "VFF",
       "brand": false,
-      "pattern": "(?i)\\\\bvff\\\\b",
+      "pattern": "(?i)\\bvff\\b",
       "assetBasis": "niakvio_generated_generic",
       "order": 61,
       "assets": {
@@ -1578,7 +1578,7 @@
       "name": "VFQ",
       "text": "VFQ",
       "brand": false,
-      "pattern": "(?i)\\\\b(vfq|fr[-_ ]?ca|fran[cç]ais[ ._-]?(?:canadien|qu[eé]b[eé]cois)|qu[eé]b[eé]cois)\\\\b",
+      "pattern": "(?i)\\b(vfq|fr[-_ ]?ca|fran[cç]ais[ ._-]?(?:canadien|qu[eé]b[eé]cois)|qu[eé]b[eé]cois)\\b",
       "assetBasis": "niakvio_generated_generic",
       "order": 62,
       "assets": {
