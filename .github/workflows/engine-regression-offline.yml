@@ -15,6 +15,8 @@ on:
       - "FILE-HASHES.json"
       - "PATCH-SHA256SUMS.txt"
       - "SHA256SUMS.json"
+      - "engine_v2/src/**"
+      - "engine_v2/tests/**"
       - "scripts/apply_provider_overrides.py"
       - "scripts/reapply_published_overrides.py"
       - "scripts/validate_published_overrides.py"
@@ -77,6 +79,13 @@ jobs:
 
       - name: Install pinned dependencies without lifecycle scripts
         run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Validate Engine v2 core contracts
+        run: |
+          node engine_v2/tests/contracts.test.mjs
+          node engine_v2/tests/stream-presentation.test.mjs
+          node engine_v2/tests/media-validator.test.mjs
+          node engine_v2/tests/resolver-core.test.mjs
 
       - name: Compile engine boundaries
         run: |
