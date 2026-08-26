@@ -12,7 +12,8 @@ This postprocessor preserves the official result unchanged. Only when that resul
 empty, it performs a second diagnostic execution through the same repository path on a
 copy of the already-loaded scraper code. The diagnostic copy traps uncaught exceptions,
 captures provider console output where the runtime permits it, and wraps the official
-fetch polyfill to record requested URL/method plus native response status/statusText.
+fetch polyfill before provider evaluation so closure-captured requests record requested
+URL/method plus native response status/statusText.
 Production provider files and upstream Nuvio runtime sources are never modified.
 """
 from __future__ import annotations
@@ -29,13 +30,17 @@ OFFICIAL_CALL = (
 )
 
 CONSOLE_HELPER = r'''
-    private fun captureRuntimeConsole(code: String): String = code + """
-;/* NIAKVIO_NATIVE_RUNTIME_CONSOLE_CAPTURE */
-(function () {
-    var marker = "__NIAKVIO_RUNTIME_DIAGNOSTIC__";
-    var messages = [];
-    var originalConsole = (typeof globalThis !== "undefined" && globalThis.console) ? globalThis.console : null;
-    var originalFetch = (typeof globalThis !== "undefined" && typeof globalThis.fetch === "function") ? globalThis.fetch : null;
+    private fun captureRuntimeConsole(code: String): String {
+        val prelude = """
+;/* NIAKVIO_NATIVE_RUNTIME_CONSOLE_CAPTURE_PRE */
+(function (g) {
+    var key = "__NIAKVIO_RUNTIME_DIAG_STATE__";
+    var state = {
+        marker: "__NIAKVIO_RUNTIME_DIAGNOSTIC__",
+        messages: [],
+        originalConsole: g && g.console ? g.console : null,
+        originalFetch: g && typeof g.fetch === "function" ? g.fetch : null
+    };
     var stringify = function (value) {
         try {
             if (value && value.message) return String(value.message);
@@ -56,9 +61,9 @@ CONSOLE_HELPER = r'''
             var parts = [];
             for (var i = 0; i < args.length; i++) parts.push(stringify(args[i]));
             var line = level + ":" + parts.join(" ");
-            if (line.length > 1200) line = line.slice(0, 1200) + "...[truncated]";
-            messages.push(line);
-            if (messages.length > 32) messages.shift();
+            if (line.length > 1600) line = line.slice(0, 1600) + "...[truncated]";
+            state.messages.push(line);
+            if (state.messages.length > 64) state.messages.shift();
         } catch (_) {}
     };
     var inputUrl = function (input) {
@@ -69,41 +74,69 @@ CONSOLE_HELPER = r'''
             return String(input || "");
         } catch (_) { return "[unprintable-url]"; }
     };
+    state.stringify = stringify;
+    state.capture = capture;
+    state.inputUrl = inputUrl;
+    if (g) g[key] = state;
+
     var diagnosticConsole = {};
     ["log", "error", "warn", "info", "debug"].forEach(function (level) {
         diagnosticConsole[level] = function () {
             capture(level, arguments);
             try {
-                if (originalConsole && typeof originalConsole[level] === "function") {
-                    originalConsole[level].apply(originalConsole, arguments);
+                if (state.originalConsole && typeof state.originalConsole[level] === "function") {
+                    state.originalConsole[level].apply(state.originalConsole, arguments);
                 }
             } catch (_) {}
         };
     });
-    try {
-        if (typeof globalThis !== "undefined") globalThis.console = diagnosticConsole;
-    } catch (_) {}
+    try { if (g) g.console = diagnosticConsole; } catch (_) {}
 
-    // Capture transport facts independently of console.*. NuvioDesktop's official
-    // FetchBridge converts native exceptions to an ordinary response with status=0,
-    // so this records the signal providers may otherwise catch and turn into [].
+    // This must be installed before provider code evaluation. Providers commonly
+    // capture fetch into a closure while loading; post-evaluation wrapping misses it.
     try {
-        if (originalFetch && typeof globalThis !== "undefined") {
-            globalThis.fetch = async function (input, init) {
+        if (state.originalFetch && g) {
+            var diagnosticFetch = async function (input, init) {
                 var method = "GET";
                 try { method = String((init && init.method) || "GET").toUpperCase(); } catch (_) {}
                 var url = inputUrl(input);
+                capture("fetch-start", [method, url]);
                 try {
-                    var response = await originalFetch.apply(this, arguments);
-                    capture("fetch", [method, url, "status=" + stringify(response && response.status), "ok=" + stringify(response && response.ok), "statusText=" + stringify(response && response.statusText)]);
+                    var response = await state.originalFetch.apply(this, arguments);
+                    capture("fetch", [
+                        method,
+                        url,
+                        "status=" + stringify(response && response.status),
+                        "ok=" + stringify(response && response.ok),
+                        "statusText=" + stringify(response && response.statusText),
+                        "finalUrl=" + stringify(response && response.url)
+                    ]);
                     return response;
                 } catch (error) {
-                    capture("fetch-error", [method, url, stringify(error)]);
+                    capture("fetch-error", [method, url, stringify(error), error && error.stack ? error.stack : ""]);
                     throw error;
                 }
             };
+            diagnosticFetch.__nuvioNativeRuntimeDiagnostic = true;
+            g.fetch = diagnosticFetch;
         }
-    } catch (_) {}
+    } catch (error) {
+        capture("fetch-install-error", [stringify(error)]);
+    }
+})(typeof globalThis !== "undefined" ? globalThis : this);
+""".trimIndent()
+
+        val postlude = """
+;/* NIAKVIO_NATIVE_RUNTIME_CONSOLE_CAPTURE_POST */
+(function (g) {
+    var key = "__NIAKVIO_RUNTIME_DIAG_STATE__";
+    var state = (g && g[key]) || { messages: [] };
+    var marker = state.marker || "__NIAKVIO_RUNTIME_DIAGNOSTIC__";
+    var stringify = state.stringify || function (value) {
+        try { return String(value == null ? value : value.message || value); }
+        catch (_) { return "[unprintable]"; }
+    };
+    var capture = state.capture || function () {};
 
     var exportsObject = null;
     try {
@@ -111,10 +144,12 @@ CONSOLE_HELPER = r'''
     } catch (_) {}
     var original = null;
     if (exportsObject && typeof exportsObject.getStreams === "function") original = exportsObject.getStreams;
-    else if (typeof globalThis !== "undefined" && typeof globalThis.getStreams === "function") original = globalThis.getStreams;
+    else if (g && typeof g.getStreams === "function") original = g.getStreams;
 
     var makeDiagnostic = function () {
-        var detail = messages.length ? messages.join(" | ") : "no_console_or_fetch_output";
+        var detail = state.messages && state.messages.length
+            ? state.messages.join(" | ")
+            : "no_console_or_fetch_output";
         return [{
             title: marker,
             name: marker,
@@ -126,9 +161,20 @@ CONSOLE_HELPER = r'''
         }];
     };
 
+    var restore = function () {
+        try {
+            if (g && state.originalConsole) g.console = state.originalConsole;
+            if (g && state.originalFetch) g.fetch = state.originalFetch;
+        } catch (_) {}
+    };
+
     var wrapped;
     if (typeof original !== "function") {
-        wrapped = async function () { return makeDiagnostic(); };
+        capture("getStreams-missing", ["no exported getStreams"]);
+        wrapped = async function () {
+            try { return makeDiagnostic(); }
+            finally { restore(); }
+        };
     } else {
         wrapped = async function () {
             try {
@@ -144,17 +190,17 @@ CONSOLE_HELPER = r'''
                 capture("getStreams-error", [stringify(error), error && error.stack ? error.stack : ""]);
                 return makeDiagnostic();
             } finally {
-                try {
-                    if (typeof globalThis !== "undefined" && originalConsole) globalThis.console = originalConsole;
-                    if (typeof globalThis !== "undefined" && originalFetch) globalThis.fetch = originalFetch;
-                } catch (_) {}
+                restore();
             }
         };
     }
     if (exportsObject) exportsObject.getStreams = wrapped;
-    else if (typeof globalThis !== "undefined") globalThis.getStreams = wrapped;
-})();
+    else if (g) g.getStreams = wrapped;
+})(typeof globalThis !== "undefined" ? globalThis : this);
 """.trimIndent()
+
+        return prelude + "\n" + code + "\n" + postlude
+    }
 '''
 
 DIAGNOSTIC_CALL = f'''val rows = PluginRepository.executeScraper(loadedScraper, tmdbId, requestMediaType, season, episode).getOrThrow()
@@ -204,6 +250,8 @@ DIAGNOSTIC_CALL = f'''val rows = PluginRepository.executeScraper(loadedScraper, 
                         emit("FIELD_NATIVE_ROW client=desktop fixture=$fixtureSlug provider64=${{b64(provider.id)}} request_type=$requestMediaType route_mode=$routeMode index=-1 title64=${{b64(runtimeError.title)}} name64=${{b64(runtimeError.name)}} quality64=${{b64(runtimeError.quality)}} language64=${{b64(runtimeError.language)}} type64=${{b64(runtimeError.type)}} diagnostic=true")
                     }} else if (runtimeDiagnostic != null) {{
                         emit("{MARKER} client=desktop fixture=$fixtureSlug provider64=${{b64(provider.id)}} request_type=$requestMediaType route_mode=$routeMode class=caught_or_empty detail64=${{b64(runtimeDiagnostic.provider)}}")
+                    }} else if (diagnosticRows.isNotEmpty()) {{
+                        emit("{MARKER} client=desktop fixture=$fixtureSlug provider64=${{b64(provider.id)}} request_type=$requestMediaType route_mode=$routeMode class=diagnostic_nonempty count=${{diagnosticRows.size}} detail64=${{b64(\"diagnostic_nonempty\")}}")
                     }} else {{
                         emit("{MARKER} client=desktop fixture=$fixtureSlug provider64=${{b64(provider.id)}} request_type=$requestMediaType route_mode=$routeMode class=empty_without_diagnostic detail64=${{b64(\"empty_without_diagnostic\")}}")
                     }}
