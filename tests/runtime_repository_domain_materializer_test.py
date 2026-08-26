@@ -1,8 +1,12 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import json
+from pathlib import Path
+
 from scripts.provider_patches.runtime_repository_domain_materializer_v1 import MARKER, apply
 
+ROOT = Path(__file__).resolve().parents[1]
 REPOSITORY_URL = "https://raw.githubusercontent.com/example/repository/main/domains.json"
 
 
@@ -58,9 +62,16 @@ assert REPOSITORY_URL not in scalar_result
 assert 'Promise.resolve("https://new4.hdhub4u.cl")' in scalar_result
 assert "const keepScalar=true" in scalar_result
 
-# Context references deliberately use a real configured provider so the test
-# proves that resolve_provider_hubs.py -> provider-overrides.json -> patch bytes
-# is an actual data path rather than a duplicated constant.
+# Context references deliberately use real configured providers. The expected
+# values are read from the same durable routing state written by
+# resolve_provider_hubs.py; tests therefore keep following a newly validated
+# domain instead of pinning yesterday's terminal URL.
+config = json.loads((ROOT / "provider-overrides.json").read_text(encoding="utf-8"))
+providers = config["provider_patches"]
+cineby_site = str(providers["cineby"]["official_site"]).rstrip("/")
+cineby_api = str(providers["cineby"]["official_api"]).rstrip("/")
+zink_site = str(providers["zinkmovies"]["official_site"]).rstrip("/")
+
 resolved_source = f'''const DOMAINS_URL="{REPOSITORY_URL}";
 function getDomains(){{return fetch(DOMAINS_URL).then(r=>r.json())}}
 '''
@@ -73,12 +84,12 @@ resolved_result = materialize(
     },
     provider_id="cineby",
 )
-assert '"site":"https://www.cineby.at"' in resolved_result
-assert '"api":"https://api.speedracelight.com"' in resolved_result
+assert f'"site":{json.dumps(cineby_site)}' in resolved_result
+assert f'"api":{json.dumps(cineby_api)}' in resolved_result
 
 # Zink-style discovery is side-effect based: refreshDomains() historically
 # mutated baseUrl rather than returning a registry object. Preserve that API
-# shape while removing the repository fetch.
+# shape while removing the repository fetch and following the persisted terminal.
 assign_source = f'''let baseUrl="https://old.invalid";
 const DOMAINS_JSON_URL="{REPOSITORY_URL}";
 function refreshDomains(){{return fetch(DOMAINS_JSON_URL).then(r=>r.json()).then(d=>{{baseUrl=d.zinkmovies}})}}
@@ -87,12 +98,12 @@ const keepAssign=true;
 assign_result = materialize(
     assign_source,
     "refreshDomains",
-    {"$from": "official_site", "fallback": "https://zinkmovies.wtf"},
+    {"$from": "official_site", "fallback": "https://fallback.invalid"},
     provider_id="zinkmovies",
     extra_options={"mode": "assign", "assign_target": "baseUrl"},
 )
 assert REPOSITORY_URL not in assign_result
-assert 'baseUrl="https://zinkmovies.wtf";return Promise.resolve();' in assign_result
+assert f'baseUrl={json.dumps(zink_site)};return Promise.resolve();' in assign_result
 assert "const keepAssign=true" in assign_result
 
 try:
