@@ -375,7 +375,8 @@
     "purstream": {
       "notes": [
         "Do not map the provider to the hub itself. resolve_provider_hubs.py follows the official-address page and persists only a runtime-validated terminal site/API.",
-        "Purstream has no provider-specific repair hooks; content identity, stream facts, presentation and platform compatibility are handled by shared Core/capability layers."
+        "Purstream has no provider-specific repair hooks; content identity, stream facts, presentation and platform compatibility are handled by shared Core/capability layers.",
+        "Official hub purstream.wiki currently resolves to purstream.id; materialize the validated terminal and never keep an upstream repository lookup in published runtime bytes."
       ],
       "capability": "official_domain_hub",
       "official_hub": "https://purstream.wiki",
@@ -393,7 +394,21 @@
       "patch_script_options": {},
       "manifest_overrides": {
         "disabledPlatforms": []
-      }
+      },
+      "official_site": "https://purstream.id",
+      "official_api": "https://api.purstream.id/api/v1",
+      "fixed_endpoint": {
+        "resolver_function": "detectPurstreamDomain",
+        "api": "https://api.purstream.id/api/v1",
+        "referer": "https://purstream.id/"
+      },
+      "replacements": {
+        "https://raw.githubusercontent.com/wooodyhood/nuvio-repo/main/domains.json": "https://purstream.wiki/"
+      },
+      "required_values": [
+        "api.purstream.id",
+        "purstream.id"
+      ]
     },
     "vidfast": {
       "replacements": {

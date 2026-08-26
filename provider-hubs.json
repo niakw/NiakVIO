@@ -2639,8 +2639,12 @@
         "purstream"
       ],
       "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
-      "direct_candidates": [],
-      "allowed_terminal_hosts": [],
+      "direct_candidates": [
+        "https://purstream.id/"
+      ],
+      "allowed_terminal_hosts": [
+        "purstream.id"
+      ],
       "search_queries": [],
       "sources": [
         {
@@ -2653,7 +2657,14 @@
       "search_confirmation_runs": 2,
       "validation_scope": "site_plus_api",
       "require_api_validation": true,
-      "persist_official_site_without_api": false
+      "persist_official_site_without_api": false,
+      "direct": "https://purstream.id/",
+      "allowed_terminal_host_patterns": [
+        "^purstream\\.[a-z0-9-]{2,20}$"
+      ],
+      "resolution_method": "hub_current_address",
+      "resolution_note": "Read the current Purstream address exposed by the official hub; accept URL or host text, then validate the terminal before persistence.",
+      "last_verified": "2026-08-26"
     },
     "toflix": {
       "id": "toflix",

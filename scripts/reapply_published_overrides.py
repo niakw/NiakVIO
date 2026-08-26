@@ -404,8 +404,10 @@ def main() -> int:
         patched = purified
         assert_hardened(patched.decode("utf-8", errors="strict"))
         changed = patched != original
+        # Validate every final published artifact, not only bundles whose bytes changed.
+        # This makes new publication/security policies retroactive across the full catalogue.
+        validate_artifact(patched, provider_id)
         if changed:
-            validate_artifact(patched, provider_id)
             applied_count += 1
         digest = hashlib.sha256(patched).hexdigest()
         new_relative = f"providers/{published_name(provider_id, path, digest, changed)}"
