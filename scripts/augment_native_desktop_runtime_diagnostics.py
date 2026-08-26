@@ -133,7 +133,12 @@ CONSOLE_HELPER = r'''
         wrapped = async function () {
             try {
                 var result = await original.apply(this, arguments);
-                if (Array.isArray(result) && result.length === 0) return makeDiagnostic();
+                var empty = Array.isArray(result) ? result.length === 0 :
+                    !!(result && typeof result === "object" &&
+                        ((Array.isArray(result.streams) && result.streams.length === 0) ||
+                         (Array.isArray(result.results) && result.results.length === 0) ||
+                         (Array.isArray(result.data) && result.data.length === 0)));
+                if (empty) return makeDiagnostic();
                 return result;
             } finally {
                 try {
@@ -151,6 +156,27 @@ CONSOLE_HELPER = r'''
 
 DIAGNOSTIC_CALL = f'''val rows = PluginRepository.executeScraper(loadedScraper, tmdbId, requestMediaType, season, episode).getOrThrow()
                 if (rows.isEmpty()) {{
+                    // Cross-check the exact same loaded code through the historical
+                    // direct runtime path. This isolates repository/ID handling from
+                    // provider/Core behavior without changing production code.
+                    val directManifestIdRows = PluginRuntime.executePlugin(
+                        code = loadedScraper.code,
+                        tmdbId = tmdbId,
+                        mediaType = requestMediaType,
+                        season = season,
+                        episode = episode,
+                        scraperId = provider.id,
+                    )
+                    val directLoadedIdRows = PluginRuntime.executePlugin(
+                        code = loadedScraper.code,
+                        tmdbId = tmdbId,
+                        mediaType = requestMediaType,
+                        season = season,
+                        episode = episode,
+                        scraperId = loadedScraper.id,
+                    )
+                    emit("FIELD_NATIVE_DESKTOP_RUNTIME_BISECT client=desktop fixture=$fixtureSlug provider64=${b64(provider.id)} request_type=$requestMediaType route_mode=$routeMode repository_count=${rows.size} direct_manifest_id_count=${directManifestIdRows.size} direct_loaded_id_count=${directLoadedIdRows.size} loaded_scraper_id64=${b64(loadedScraper.id)}")
+
                     val diagnosticRows = PluginRepository.executeScraper(
                         loadedScraper.copy(code = captureRuntimeConsole(trapRuntimeErrors(loadedScraper.code))),
                         tmdbId,
