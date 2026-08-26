@@ -1,5 +1,5 @@
 name: Native Desktop stream canary
-# Final NiakVIO validation v2: materialize the current Core candidate, then test official Desktop macOS + Windows.
+# Final NiakVIO validation v3: materialize the current Core candidate, then test official Desktop macOS + Windows.
 
 on:
   pull_request:
@@ -13,6 +13,7 @@ on:
       - "providers/**"
       - "automation/nuvio-client-upstreams.json"
       - "automation/platform-runtime-contracts.json"
+      - "scripts/apply_runtime_capability_upgrade_v4.py"
       - "scripts/check_nuvio_client_upstreams.py"
       - "scripts/resolve_nuvio_lab_heads.py"
       - "scripts/prepare_native_corpus_client.py"
@@ -37,6 +38,7 @@ on:
       - "providers/**"
       - "automation/nuvio-client-upstreams.json"
       - "automation/platform-runtime-contracts.json"
+      - "scripts/apply_runtime_capability_upgrade_v4.py"
       - "scripts/check_nuvio_client_upstreams.py"
       - "scripts/resolve_nuvio_lab_heads.py"
       - "scripts/prepare_native_corpus_client.py"
