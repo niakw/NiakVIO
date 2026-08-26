@@ -62,7 +62,8 @@ on:
       - "tests/native_stream_extraction_gate_test.py"
       - "tests/native_desktop_runtime_diagnostics_order_test.py"
   push:
-    branches: [main]
+    # Branch-only Lab execution; main remains unchanged.
+    branches: [main, debug/desktop-zero-stream-bisect]
     paths:
       - ".github/workflows/native-desktop-stream-canary.yml"
       - ".github/triggers/nuvio-client-lab.json"
