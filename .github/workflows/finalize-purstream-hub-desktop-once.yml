@@ -53,7 +53,6 @@ jobs:
           sources = [s for s in (row.get('sources') or []) if isinstance(s, dict) and s.get('type') != 'direct']
           if not any(s.get('type') == 'hub' and s.get('url') == 'https://purstream.wiki/' for s in sources):
               sources.insert(0, {'type':'hub','url':'https://purstream.wiki/','priority':110,'purpose':'Official current-address hub'})
-          sources.append({'type':'direct','url':'https://purstream.id/','priority':95,'purpose':'Current terminal observed from official hub and subject to runtime validation'})
           row['sources'] = sources
           hub_path.write_text(json.dumps(hubs, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
 
@@ -93,7 +92,7 @@ jobs:
           path.write_text(text.replace(old,new,1),encoding='utf-8')
           PY
 
-      - name: Prove Purstream override removes repository runtime dependency
+      - name: Prove Purstream override and global fallback contract
         shell: bash
         run: |
           set -euo pipefail
@@ -104,9 +103,29 @@ jobs:
           p=hubs['providers']['purstream']
           assert p['hub']=='https://purstream.wiki/'
           assert p['direct']=='https://purstream.id/'
+          assert p['direct_candidates']==['https://purstream.id/']
+          assert all(s.get('type') in {'hub','telegram_public','redirect','search'} for s in p.get('sources',[]))
           overrides=json.loads(Path('provider-overrides.json').read_text())['provider_patches']['purstream']
           assert overrides['fixed_endpoint']['api']=='https://api.purstream.id/api/v1'
           assert overrides['fixed_endpoint']['referer']=='https://purstream.id/'
+          PY
+          python - <<'PY'
+          import sys
+          sys.path.insert(0,'scripts')
+          import resolve_provider_hubs as r
+          cfg={'direct_candidates':['https://example-provider.invalid/'], 'direct_fallback':'https://example-provider.invalid/', 'sources':[]}
+          original_gather=r.gather_candidates
+          try:
+              r.gather_candidates=lambda *_args, **_kwargs: ([], [])
+              retained=r.resolve_one('example-provider',cfg,{'current':{'url':'https://example-provider.test'}},'quick',0.1)
+              assert retained['status']=='retained_last_known_good'
+              assert retained['official_site']=='https://example-provider.test'
+              untouched=r.resolve_one('example-provider',cfg,{},'quick',0.1)
+              assert untouched['status']=='inconclusive'
+              assert untouched['reason']=='no_runtime_validated_terminal_site'
+          finally:
+              r.gather_candidates=original_gather
+          print('FIELD_PROVIDER_ADDRESS_FALLBACK state=passed policy=configured_sources_then_direct_then_lkg_else_leave_upstream_unchanged')
           PY
           python - <<'PY'
           import sys
