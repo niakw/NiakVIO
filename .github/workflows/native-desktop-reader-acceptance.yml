@@ -82,11 +82,11 @@ on:
 permissions:
   contents: read
 
-# PR revisions may cancel stale validation, but every main/workflow_dispatch run
-# gets its own group. Long native evidence collection must survive later main pushes.
+# Push/PR revisions are latest-wins. Explicit workflow_dispatch runs stay isolated
+# because the final orchestrator may watch one exact dispatch as authoritative proof.
 concurrency:
-  group: native-desktop-reader-${{ github.event.pull_request.number || github.run_id }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+  group: native-desktop-reader-${{ github.event_name == 'workflow_dispatch' && github.run_id || github.event.pull_request.number || 'main-push' }}
+  cancel-in-progress: ${{ github.event_name != 'workflow_dispatch' }}
 
 jobs:
   resolve:
