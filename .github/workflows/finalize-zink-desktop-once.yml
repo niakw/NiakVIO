@@ -1,0 +1,144 @@
+name: Finalize remaining provider repository routing once
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/finalize-zink-desktop-once.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: finalize-zink-desktop-once
+  cancel-in-progress: false
+
+jobs:
+  finalize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+          package-manager-cache: false
+
+      - name: Inventory published runtime repository dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json,re
+          from pathlib import Path
+          manifest=json.loads(Path('manifest.json').read_text())
+          hits=[]
+          rx=re.compile(r'https?://(?:raw\.)?githubusercontent\.com/[^"\'`\\\s)]+',re.I)
+          for row in manifest.get('scrapers',[]):
+              path=Path(str(row.get('filename') or ''))
+              if not path.is_file():
+                  continue
+              urls=sorted(set(rx.findall(path.read_text(encoding='utf-8',errors='replace'))))
+              if urls:
+                  hits.append((str(row.get('id')),str(path),urls))
+          for provider,path,urls in hits:
+              print(f'FIELD_RUNTIME_REPOSITORY_DEP provider={provider} path={path} urls={";".join(urls)}')
+          print(f'FIELD_RUNTIME_REPOSITORY_DEP_COUNT count={len(hits)}')
+          PY
+
+      - name: Put ZinkMovies under centralized hub resolution
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path('provider-hubs.json')
+          data=json.loads(p.read_text())
+          row=data['providers']['zinkmovies']
+          row['hub']='https://redirect.zinkmovies.org/'
+          row['resolver']='official_outbound'
+          row['allowed_terminal_host_patterns']=[r'^(?:[a-z0-9-]+\.)*zinkmovies\.[a-z0-9-]{2,20}$']
+          old=list(row.get('old_site_hosts') or [])
+          if 'zinkmovies.wtf' not in old: old.append('zinkmovies.wtf')
+          row['old_site_hosts']=old
+          row['resolution_method']='hub_outbound_terminal'
+          row['resolution_note']='Resolve the current ZinkMovies terminal from the curated redirect hub; retain the provider default URL when no terminal validates.'
+          p.write_text(json.dumps(data,ensure_ascii=False,indent=2)+'\n')
+          PY
+
+          python scripts/resolve_provider_hubs.py \
+            --provider zinkmovies --mode quick --apply --timeout 10 \
+            --output health-output/zinkmovies-final-resolution.json
+
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path('provider-overrides.json')
+          data=json.loads(p.read_text())
+          patch=data.setdefault('provider_patches',{}).setdefault('zinkmovies',{})
+          site=str(patch.get('official_site') or 'https://zinkmovies.wtf').rstrip('/')
+          hub='https://redirect.zinkmovies.org/'
+          replacements=patch.setdefault('replacements',{})
+          replacements['https://raw.githubusercontent.com/PirateZoro9/asura-providers/main/urls.json']=hub
+          # The provider's original MAIN_URL remains the fallback when hub resolution
+          # is inconclusive; when a terminal validates, the resolver supplies the
+          # zinkmovies.wtf -> current-host replacement automatically.
+          patch['fixed_endpoint']={
+              'resolver_function':'refreshDomains',
+              'api':site,
+              'referer':site+'/'
+          }
+          patch['official_hub']=hub.rstrip('/')
+          notes=list(patch.get('notes') or [])
+          for note in (
+              'Centralize ZinkMovies domain discovery through provider-hubs.json instead of executing an upstream GitHub domain registry at provider runtime.',
+              'Keep the provider MAIN_URL as fallback whenever no hub/search/direct terminal is runtime-validated.'
+          ):
+              if note not in notes: notes.append(note)
+          patch['notes']=notes
+          p.write_text(json.dumps(data,ensure_ascii=False,indent=2)+'\n')
+          print('FIELD_ZINK_ROUTE site='+site+' hub='+hub)
+          PY
+
+      - name: Prove all final published providers are repository-independent
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/reapply_published_overrides.py
+          python scripts/reapply_published_overrides.py --check
+          python tests/provider_hub_registry_test.py
+          python tests/provider_hub_curated_baseline_test.py
+          python - <<'PY'
+          import json,re
+          from pathlib import Path
+          manifest=json.loads(Path('manifest.json').read_text())
+          rx=re.compile(r'https?://(?:raw\.)?githubusercontent\.com/',re.I)
+          bad=[]
+          for row in manifest.get('scrapers',[]):
+              path=Path(str(row.get('filename') or ''))
+              if path.is_file() and rx.search(path.read_text(encoding='utf-8',errors='replace')):
+                  bad.append(str(row.get('id')))
+          if bad:
+              raise SystemExit('runtime repository dependencies remain: '+','.join(bad))
+          print('FIELD_ALL_PUBLISHED_REPOSITORY_INDEPENDENT state=passed')
+          PY
+
+      - name: Publish and self-clean
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f .github/workflows/finalize-zink-desktop-once.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add provider-hubs.json provider-overrides.json provider-domain-history.json manifest.json vf/manifest.json vostfr/manifest.json PROVENANCE.json providers/ .github/workflows/
+          git commit -m 'fix: centralize remaining provider domain routing'
+          git fetch origin main
+          git rebase origin/main
+          git push origin HEAD:main
