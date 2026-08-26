@@ -128,7 +128,27 @@ with tempfile.TemporaryDirectory(prefix="niakvio-cross-runtime-") as tmp:
     assert completed.returncode == 1, (completed.stdout, completed.stderr)
     assert "systemic_cross_client_divergence" in completed.stderr
     assert '"client":"mobile"' in completed.stderr
-    assert '"reason":"complete_zero_collapse"' in completed.stderr
+    assert '"reason":"complete_client_collapse"' in completed.stderr
+
+    # A totally broken client may mix empty provider outcomes and runtime errors.
+    # It is still a complete client collapse even when the runtime-error ratio alone
+    # is below the systemic threshold.
+    mobile.write_text(
+        "\n".join(
+            [
+                result("mobile", "mixed-0", "mixed-0", 0),
+                result("mobile", "mixed-1", "mixed-1", 1),
+                sentinel("mobile", "mixed-1", "mixed-1"),
+                result("mobile", "mixed-2", "mixed-2", 0),
+                result("mobile", "mixed-3", "mixed-3", 0),
+            ]
+        )
+        + "\n"
+    )
+    tv.write_text("\n".join(result("tv", f"mixed-{i}", f"mixed-{i}", 1) for i in range(4)) + "\n")
+    completed = run_gate(root)
+    assert completed.returncode == 1, (completed.stdout, completed.stderr)
+    assert '"reason":"complete_client_collapse"' in completed.stderr
 
     # Swallowed QuickJS exceptions are represented by the diagnostic sentinel and
     # count as runtime failures even though the official client reports count=1.
