@@ -9,12 +9,17 @@ on:
       - 'engine_v2/**'
       - 'package.json'
       - 'package-lock.json'
+      - 'provider-hubs.json'
+      - 'scripts/resolve_provider_hubs.py'
+      - 'scripts/normalize_runtime_repository_dependencies.py'
+      - 'scripts/provider_patches/runtime_repository_domain_materializer_v1.py'
       - 'scripts/brain_repair_runtime.py'
       - 'scripts/adaptive_runtime/brain_repair_runtime.py'
       - 'scripts/build_provider_runtime_profiles.py'
       - 'scripts/generate_language_manifests.py'
       - 'scripts/audit_catalogue_identity_media.py'
       - 'scripts/quarantine_catalogue_audit_failures.py'
+      - 'tests/runtime_repository_domain_materializer_test.py'
       - 'tests/general_manifest_runtime_profiles_test.py'
       - 'tests/quick_repair_probe_profile_test.py'
       - 'tests/sync_catalogue_audit_gate_test.py'
@@ -56,7 +61,7 @@ jobs:
               engine_v2/src/*|engine_v2/scripts/*)
                 canonical_trigger=true
                 ;;
-              engine_v2/*|package.json|package-lock.json|scripts/brain_repair_runtime.py|scripts/adaptive_runtime/brain_repair_runtime.py|scripts/build_provider_runtime_profiles.py|scripts/generate_language_manifests.py|scripts/audit_catalogue_identity_media.py|scripts/quarantine_catalogue_audit_failures.py|tests/general_manifest_runtime_profiles_test.py|tests/quick_repair_probe_profile_test.py|tests/sync_catalogue_audit_gate_test.py|tests/vf_movie_recovery.test.cjs|tests/provider_catalogue_breadth_test.py|.github/workflows/archi2-change-dispatch.yml)
+              engine_v2/*|package.json|package-lock.json|provider-hubs.json|scripts/resolve_provider_hubs.py|scripts/normalize_runtime_repository_dependencies.py|scripts/provider_patches/runtime_repository_domain_materializer_v1.py|scripts/brain_repair_runtime.py|scripts/adaptive_runtime/brain_repair_runtime.py|scripts/build_provider_runtime_profiles.py|scripts/generate_language_manifests.py|scripts/audit_catalogue_identity_media.py|scripts/quarantine_catalogue_audit_failures.py|tests/runtime_repository_domain_materializer_test.py|tests/general_manifest_runtime_profiles_test.py|tests/quick_repair_probe_profile_test.py|tests/sync_catalogue_audit_gate_test.py|tests/vf_movie_recovery.test.cjs|tests/provider_catalogue_breadth_test.py|.github/workflows/archi2-change-dispatch.yml)
                 uncovered_trigger=true
                 ;;
             esac
