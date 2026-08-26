@@ -140,6 +140,9 @@ CONSOLE_HELPER = r'''
                          (Array.isArray(result.data) && result.data.length === 0)));
                 if (empty) return makeDiagnostic();
                 return result;
+            } catch (error) {
+                capture("getStreams-error", [stringify(error), error && error.stack ? error.stack : ""]);
+                return makeDiagnostic();
             } finally {
                 try {
                     if (typeof globalThis !== "undefined" && originalConsole) globalThis.console = originalConsole;

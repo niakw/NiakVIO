@@ -29,7 +29,7 @@ base = r'''module.exports={getStreams:async function(){return [
 
 patched = identity.apply(base, context={"provider_id": "example"})
 assert "NUVIO_GLOBAL_STREAM_IDENTITY_V1" in patched
-assert "cross-client-positive-mismatch-anime-confirmed-fail-open-v4" in patched
+assert "cross-client-positive-mismatch-native-tmdb-fail-open-v5" in patched
 assert identity.apply(patched, context={"provider_id": "example"}) == patched
 
 # The final Core presentation composes facts + identity before presentation, so
@@ -170,7 +170,7 @@ fail_open_source = r'''module.exports={getStreams:async()=>[
  {name:'Server 2',filename:'Interstellar.Nolan.Cut.2014.1080p.BluRay.mkv',url:'https://cdn.example/interstellar-cut.m3u8'}
 ]};'''
 fail_open_patched = identity.apply(fail_open_source, context={"provider_id": "example"})
-assert "cross-client-positive-mismatch-anime-confirmed-fail-open-v4" in fail_open_patched
+assert "cross-client-positive-mismatch-native-tmdb-fail-open-v5" in fail_open_patched
 fail_open_runner = r'''
 const assert=require('assert');
 global.fetch=async()=>{throw new Error('simulated Desktop TMDB transport failure')};
@@ -188,4 +188,32 @@ try:
 finally:
     fail_open_path.unlink(missing_ok=True)
 
-print('global stream identity TV/anime/homonymous-movie + Desktop fail-open regression tests passed')
+# Native Desktop/Mobile bridges do not expose a runtime-owned TMDB_API_KEY.
+# Optional identity enrichment must therefore stay local/fail-open and must never
+# spend the client's full getStreams timeout on a secondary TMDB request.
+native_bridge_source = r'''module.exports={getStreams:async()=>[
+ {name:'Server 1',title:'Interstellar 2014 1080p',url:'https://cdn.example/interstellar.m3u8'},
+ {name:'Server 2',url:'https://cdn.example/opaque.m3u8'}
+]};'''
+native_bridge_patched = identity.apply(native_bridge_source, context={"provider_id": "example"})
+native_bridge_runner = r'''
+const assert=require('assert');
+let fetchCalls=0;
+global.__native_fetch=async()=>{throw new Error('native bridge must not be used for optional TMDB enrichment')};
+global.fetch=async()=>{fetchCalls++;throw new Error('TMDB must be skipped on native bridge without runtime key')};
+PATCHED
+module.exports.getStreams('157336','movie',undefined,undefined).then(rows=>{
+  assert.equal(fetchCalls,0,'unexpected optional TMDB fetch');
+  assert.equal(rows.length,2,JSON.stringify(rows));
+}).catch(e=>{console.error(e);process.exit(3)});
+'''.replace('PATCHED', native_bridge_patched)
+with tempfile.NamedTemporaryFile('w', suffix='.cjs', encoding='utf-8', delete=False) as handle:
+    handle.write(native_bridge_runner)
+    native_bridge_path = Path(handle.name)
+try:
+    proc = subprocess.run(['node', str(native_bridge_path)], cwd=ROOT, text=True, capture_output=True, timeout=20)
+    assert proc.returncode == 0, proc.stdout + proc.stderr
+finally:
+    native_bridge_path.unlink(missing_ok=True)
+
+print('global stream identity TV/anime/homonymous-movie + native Desktop fail-open regression tests passed')
