@@ -17,6 +17,14 @@ assert len(by_id) == len(badges)
 assert {"vf", "vff", "vfq", "vo", "multi", "vostfr"} <= set(by_id)
 assert by_id["vf"]["pattern"] != by_id["vff"]["pattern"]
 
+# Nuvio clients compile filter.pattern directly (Java Pattern on TV). After JSON
+# decoding every regex escape must therefore be one backslash, never a literal
+# double-backslash sequence such as "\\\\b".
+for badge_id, row in by_id.items():
+    pattern = str(row.get("pattern") or "")
+    assert "\\\\" not in pattern, (badge_id, pattern, "double-escaped runtime regex")
+
+
 checked = 0
 for badge_id, row in by_id.items():
     for theme in ("transparent", "dark", "light"):
@@ -62,5 +70,7 @@ for theme in ("dark", "light", "fusion"):
         assert str(row.get("borderColor") or "").startswith("#"), (theme, row.get("id"))
         assert str(row.get("textColor") or "").startswith("#"), (theme, row.get("id"))
         assert row.get("isEnabled") is True
+        pattern = str(row.get("pattern") or "")
+        assert "\\\\" not in pattern, (theme, row.get("id"), pattern, "double-escaped runtime regex")
 
 print(f"badge asset contract passed: badges={len(badges)} assets={checked} themes=3 sizes=2 native_chip_style=bordered vf_generic=true")

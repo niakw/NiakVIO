@@ -40,7 +40,7 @@ VF_ROW = {
     "name": "VF",
     "text": "VF",
     "brand": False,
-    "pattern": r"(?i)\\bvf\\b(?![fq])|\\bfr(?:a|e)?\\b|\\bfrench\\b|\\bfran[cç]ais\\b",
+    "pattern": r"(?i)\bvf\b(?![fq])|\bfr(?:a|e)?\b|\bfrench\b|\bfran[cç]ais\b",
     "assetBasis": "niakvio_generated_generic",
     "fallbackText": "VF",
 }
@@ -59,14 +59,14 @@ def _normalize_catalog(catalog: dict[str, Any]) -> tuple[dict[str, Any], bool]:
         rows.insert(insert_at, dict(VF_ROW))
         changed = True
     pattern_overrides = {
-        "blu-ray-disc": r"(?i)(?!.*\\b(?:uhd|ultra[ ._-]?hd)\\b)(?!.*\\bremux\\b)\\b(blu[ ._-]?ray|bluray|bd[ ._-]?rip|bdrip|brrip)\\b",
-        "uhd-remux": r"(?i)\\b(?:uhd|2160p|4k)[ ._-]+remux\\b|\\bremux[ ._-]+(?:uhd|2160p|4k)\\b",
-        "blu-ray-remux": r"(?i)\\b(?:blu[ ._-]?ray|bd)[ ._-]+remux\\b|\\bremux[ ._-]+(?:blu[ ._-]?ray|bd)\\b",
-        "hdr10": r"(?i)\\bhdr[ ]?10\\b(?![ ]?\\+|[ ]?plus)",
-        "imax": r"(?i)\\bimax\\b(?![ ._-]?enhanced)",
+        "blu-ray-disc": r"(?i)(?!.*\b(?:uhd|ultra[ ._-]?hd)\b)(?!.*\bremux\b)\b(blu[ ._-]?ray|bluray|bd[ ._-]?rip|bdrip|brrip)\b",
+        "uhd-remux": r"(?i)\b(?:uhd|2160p|4k)[ ._-]+remux\b|\bremux[ ._-]+(?:uhd|2160p|4k)\b",
+        "blu-ray-remux": r"(?i)\b(?:blu[ ._-]?ray|bd)[ ._-]+remux\b|\bremux[ ._-]+(?:blu[ ._-]?ray|bd)\b",
+        "hdr10": r"(?i)\bhdr[ ]?10\b(?![ ]?\+|[ ]?plus)",
+        "imax": r"(?i)\bimax\b(?![ ._-]?enhanced)",
         "vf": VF_ROW["pattern"],
-        "vff": r"(?i)\\bvff\\b",
-        "vfq": r"(?i)\\b(vfq|fr[-_ ]?ca|fran[cç]ais[ ._-]?(?:canadien|qu[eé]b[eé]cois)|qu[eé]b[eé]cois)\\b",
+        "vff": r"(?i)\bvff\b",
+        "vfq": r"(?i)\b(vfq|fr[-_ ]?ca|fran[cç]ais[ ._-]?(?:canadien|qu[eé]b[eé]cois)|qu[eé]b[eé]cois)\b",
     }
     for row in rows:
         badge_id = str(row.get("id") or "")
