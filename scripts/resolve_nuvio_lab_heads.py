@@ -6,6 +6,8 @@ The upstream drift checker remains the authority for contract/semantic audit, bu
 the latest resolved official HEAD and let NiakVIO's version-adaptive preparation
 layer prove whether our harness still fits that client revision. Only an unresolved
 HEAD is fatal here; an older accepted ref is never used as a silent fallback.
+Desktop reader/canary consumers intentionally share this resolver so their final
+proofs are tied to the same official client-revision policy as the Core audit.
 """
 from __future__ import annotations
 
