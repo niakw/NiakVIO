@@ -31,35 +31,76 @@ jobs:
           set -euo pipefail
           repo="$GITHUB_REPOSITORY"
           current_run="$GITHUB_RUN_ID"
-          current_head="$(gh api "repos/$repo/branches/main" --jq '.commit.sha')"
           cancelled=0
           already_finished=0
+          stable=0
 
+          cancel_stale_for_head() {
+            local current_head="$1"
+            local status run_id head_sha workflow_name live_status
+            for status in queued in_progress; do
+              while IFS=$'\t' read -r run_id head_sha workflow_name; do
+                [ -n "$run_id" ] || continue
+                if [ "$run_id" = "$current_run" ] || [ "$head_sha" = "$current_head" ]; then
+                  continue
+                fi
+                echo "FIELD_STALE_MAIN_RUN_CANCEL_REQUEST run=$run_id status=$status head=${head_sha:0:12} workflow=$workflow_name current=${current_head:0:12}"
+                if gh api -X POST "repos/$repo/actions/runs/$run_id/cancel" >/dev/null 2>&1; then
+                  cancelled=$((cancelled+1))
+                else
+                  live_status="$(gh api "repos/$repo/actions/runs/$run_id" --jq '.status' 2>/dev/null || printf 'unknown')"
+                  if [ "$live_status" = "completed" ]; then
+                    already_finished=$((already_finished+1))
+                  else
+                    echo "Unable to cancel stale main run $run_id (status=$live_status)" >&2
+                    return 1
+                  fi
+                fi
+              done < <(
+                gh api --paginate "repos/$repo/actions/runs?branch=main&status=$status&per_page=100" \
+                  --jq '.workflow_runs[] | [.id, .head_sha, .name] | @tsv'
+              )
+            done
+          }
+
+          for sweep in 1 2 3 4; do
+            before="$(gh api "repos/$repo/branches/main" --jq '.commit.sha')"
+            echo "FIELD_STALE_MAIN_RUN_SWEEP sweep=$sweep head=$before"
+            cancel_stale_for_head "$before"
+            sleep 3
+            after="$(gh api "repos/$repo/branches/main" --jq '.commit.sha')"
+            if [ "$before" = "$after" ]; then
+              stable=1
+              current_head="$after"
+              break
+            fi
+            echo "main moved during stale-run cleanup: ${before:0:12} -> ${after:0:12}; repeating sweep"
+          done
+
+          if [ "$stable" -ne 1 ]; then
+            echo "main did not stabilize during stale-run cleanup" >&2
+            exit 1
+          fi
+
+          remaining=0
           for status in queued in_progress; do
             while IFS=$'\t' read -r run_id head_sha workflow_name; do
               [ -n "$run_id" ] || continue
               if [ "$run_id" = "$current_run" ] || [ "$head_sha" = "$current_head" ]; then
                 continue
               fi
-              echo "FIELD_STALE_MAIN_RUN_CANCEL_REQUEST run=$run_id status=$status head=${head_sha:0:12} workflow=$workflow_name current=${current_head:0:12}"
-              if gh api -X POST "repos/$repo/actions/runs/$run_id/cancel" >/dev/null 2>&1; then
-                cancelled=$((cancelled+1))
-              else
-                live_status="$(gh api "repos/$repo/actions/runs/$run_id" --jq '.status' 2>/dev/null || printf 'unknown')"
-                if [ "$live_status" = "completed" ]; then
-                  already_finished=$((already_finished+1))
-                else
-                  echo "Unable to cancel stale main run $run_id (status=$live_status)" >&2
-                  exit 1
-                fi
-              fi
+              echo "Stale main run remains active after cleanup: run=$run_id status=$status head=$head_sha workflow=$workflow_name" >&2
+              remaining=$((remaining+1))
             done < <(
               gh api --paginate "repos/$repo/actions/runs?branch=main&status=$status&per_page=100" \
                 --jq '.workflow_runs[] | [.id, .head_sha, .name] | @tsv'
             )
           done
+          if [ "$remaining" -ne 0 ]; then
+            exit 1
+          fi
 
-          echo "FIELD_STALE_MAIN_RUN_CLEANUP current=$current_head cancelled=$cancelled already_finished=$already_finished"
+          echo "FIELD_STALE_MAIN_RUN_CLEANUP current=$current_head cancelled=$cancelled already_finished=$already_finished remaining=0"
 
       - name: Checkout main
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
