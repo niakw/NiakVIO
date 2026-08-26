@@ -11,7 +11,7 @@ REPORT = ROOT / "assets/docs/BADGE_QA.json"
 
 catalog = json.loads(CATALOG.read_text(encoding="utf-8"))
 badges = [row for row in (catalog.get("badges") or []) if isinstance(row, dict)]
-assert len(badges) == 74, f"expected 74 redesigned badges including generic VF, got {len(badges)}"
+assert len(badges) >= 74, f"expected at least 74 redesigned badges including generic VF, got {len(badges)}"
 by_id = {str(row.get("id") or ""): row for row in badges}
 assert len(by_id) == len(badges)
 assert {"vf", "vff", "vfq", "vo", "multi", "vostfr"} <= set(by_id)
@@ -28,33 +28,39 @@ for badge_id, row in by_id.items():
             payload = path.read_bytes()
             assert payload[:4] == b"RIFF" and payload[8:12] == b"WEBP", rel
             checked += 1
-assert checked == 74 * 3 * 2, checked
+assert checked == len(badges) * 3 * 2, checked
 
 report = json.loads(REPORT.read_text(encoding="utf-8"))
 assert report["revision"] == "full-surface-v4-native-chip"
-assert report["catalogBadges"] == 74
-assert report["assetCount"] == 444
+assert report["catalogBadges"] == len(badges)
+assert report["assetCount"] == len(badges) * 3 * 2
 assert report["nativeChipChrome"] is True
 assert report["webpLossless"] is True
 assert report["idempotent"] is True
 rows = report.get("rows") or []
-assert len(rows) == 444
+assert len(rows) == len(badges) * 3 * 2
 for row in rows:
     assert float(row.get("heightCoverage") or 0) > 0, row
     if not row.get("brand"):
         assert max(float(row.get("widthCoverage") or 0), float(row.get("heightCoverage") or 0)) >= 0.78, row
 
+catalog_groups = {str(row.get("id") or "") for row in (catalog.get("groups") or []) if isinstance(row, dict)}
 for theme in ("dark", "light", "fusion"):
     feed = json.loads((ROOT / f"assets/stream-badges-{theme}.json").read_text(encoding="utf-8"))
     filters = feed.get("filters") or []
-    assert len(filters) == 74, (theme, len(filters))
+    groups = feed.get("groups") or []
+    assert len(filters) == len(badges), (theme, len(filters))
     ids = {str(row.get("id") or "") for row in filters}
     assert ids == set(by_id), theme
+    assert {str(row.get("id") or "") for row in groups} == catalog_groups, theme
+    for group in groups:
+        assert str(group.get("color") or "").startswith("#"), (theme, group.get("id"), "color")
+        assert str(group.get("borderColor") or "").startswith("#"), (theme, group.get("id"), "borderColor")
     for row in filters:
-        assert row.get("tagStyle") == "filled", (theme, row.get("id"), row.get("tagStyle"))
+        assert row.get("tagStyle") == "bordered", (theme, row.get("id"), row.get("tagStyle"))
         assert str(row.get("tagColor") or "").startswith("#"), (theme, row.get("id"))
         assert str(row.get("borderColor") or "").startswith("#"), (theme, row.get("id"))
         assert str(row.get("textColor") or "").startswith("#"), (theme, row.get("id"))
         assert row.get("isEnabled") is True
 
-print(f"badge asset contract passed: badges={len(badges)} assets={checked} themes=3 sizes=2 native_chip_style=true vf_generic=true")
+print(f"badge asset contract passed: badges={len(badges)} assets={checked} themes=3 sizes=2 native_chip_style=bordered vf_generic=true")
