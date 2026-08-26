@@ -221,7 +221,7 @@ jobs:
                           path = item.group(1).strip()
                           if (
                               path
-                              and "${{" not in path
+                              and ("$" + "{{") not in path
                               and not any(ch in path for ch in "*?[]!")
                               and not (root / path).exists()
                           ):
