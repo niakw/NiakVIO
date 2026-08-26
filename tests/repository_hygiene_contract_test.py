@@ -50,6 +50,12 @@ for rel in retired_paths:
 # the naming contract generic prevents a new forgotten self-cleaning workflow from
 # silently becoming part of the long-lived CI surface.
 workflow_dir = ROOT / ".github/workflows"
+retired_workflow_names = (
+    "external-code-audit-refresh.yml",
+    "main-only-policy.yml",
+    "actions-maintenance.yml",
+    "native-provider-loading-compat.yml",
+)
 for workflow in workflow_dir.iterdir():
     if not workflow.is_file() or workflow.suffix not in {".yml", ".yaml"}:
         continue
@@ -58,6 +64,12 @@ for workflow in workflow_dir.iterdir():
         marker in name
         for marker in ("-once.", "_once.", "-temp.", "_temp.", "-temporary.", "_temporary.")
     ), f"temporary/one-shot workflow must not remain on main: {workflow.relative_to(ROOT)}"
+    source = workflow.read_text(encoding="utf-8")
+    for retired_name in retired_workflow_names:
+        assert retired_name not in source, (
+            f"permanent workflow still references retired workflow {retired_name}: "
+            f"{workflow.relative_to(ROOT)}"
+        )
 
 materializer = ROOT / "scripts/materialize_core_fixed_point_hardening.py"
 assert materializer.is_file()
@@ -127,4 +139,4 @@ assert "python" in codeql
 assert "security-extended" in codeql
 assert "db488ddef3bf6cb639b32c2e9a7c0a7ea8271d28" in codeql
 
-print("repository hygiene contract passed: main-only code workflow, permanent Core/reader hardening, syntax-only provider validation, no retired one-shots")
+print("repository hygiene contract passed: main-only code workflow, permanent Core/reader hardening, syntax-only provider validation, no retired one-shots or workflow references")
