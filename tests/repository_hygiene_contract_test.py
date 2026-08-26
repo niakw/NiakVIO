@@ -17,6 +17,7 @@ retired_paths = (
     ".github/workflows/provider-fixed-point-audit.yml",
     ".github/workflows/provider-fixed-point-diagnostic.yml",
     ".github/workflows/core-runtime-domain-invocation-fix-once.yml",
+    ".github/workflows/finalize-zink-desktop-once.yml",
     ".github/triggers/final-native-client-validation-v2",
     ".github/triggers/native-corpus-device-lab",
     ".github/triggers/permanent-android-real-client",
@@ -37,6 +38,20 @@ retired_paths = (
 )
 for rel in retired_paths:
     assert not (ROOT / rel).exists(), f"retired path resurrected: {rel}"
+
+# One-shot/temporary workflows are migration machinery, not permanent repository
+# architecture. Once a migration lands on main its workflow must disappear; keeping
+# the naming contract generic prevents a new forgotten self-cleaning workflow from
+# silently becoming part of the long-lived CI surface.
+workflow_dir = ROOT / ".github/workflows"
+for workflow in workflow_dir.iterdir():
+    if not workflow.is_file() or workflow.suffix not in {".yml", ".yaml"}:
+        continue
+    name = workflow.name.lower()
+    assert not any(
+        marker in name
+        for marker in ("-once.", "_once.", "-temp.", "_temp.", "-temporary.", "_temporary.")
+    ), f"temporary/one-shot workflow must not remain on main: {workflow.relative_to(ROOT)}"
 
 materializer = ROOT / "scripts/materialize_core_fixed_point_hardening.py"
 assert materializer.is_file()
