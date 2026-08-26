@@ -22,11 +22,13 @@ from override_text_utils import replace_literal
 ROOT = Path(__file__).resolve().parents[1]
 CONFIG = ROOT / "provider-overrides.json"
 GLOBAL_STREAM_PRESENTATION = "scripts/provider_patches/global_stream_presentation_v1.py"
+GLOBAL_RUNTIME_COMPAT = "scripts/provider_patches/global_runtime_compat_v1.py"
 GLOBAL_PROVIDER_BRANDING = "scripts/provider_patches/global_provider_branding_v1.py"
 CORE_START_MARKER = "NUVIO_GLOBAL_CORE_START_BOUNDARY_V1"
 GENERATED_CORE_TAIL_MARKERS = (
     "NUVIO_GLOBAL_STREAM_FACTS_V1",
     "NUVIO_GLOBAL_STREAM_IDENTITY_V1",
+    "NUVIO_GLOBAL_RUNTIME_COMPAT_V1",
     "NUVIO_GLOBAL_STREAM_PRESENTATION_V1",
 )
 
@@ -868,7 +870,7 @@ def _strip_generated_core_tail(text: str) -> tuple[str, bool]:
     Terser is allowed to preserve comments while changing their attachment to
     AST nodes. Therefore a Core boundary/marker found before the provider export
     is stale metadata, not a truncation point. Stale boundary comments are
-    removed, then only markers strictly after the export floor may delimit the
+    removed, then only markers at or after the export floor may delimit the
     generated Core tail. Unknown export shapes fail closed and retain all bytes.
     """
     original = text
@@ -878,7 +880,7 @@ def _strip_generated_core_tail(text: str) -> tuple[str, bool]:
         return text, False
 
     boundary_index = text.find(boundary_needle, floor)
-    if boundary_index > floor:
+    if boundary_index >= floor:
         prefix = text[:boundary_index].replace(boundary_needle, "").rstrip()
         return prefix, True
 
@@ -901,7 +903,7 @@ def _strip_generated_core_tail(text: str) -> tuple[str, bool]:
     starts = []
     for marker in legacy_markers:
         index = text.find(f"/* {marker}", floor)
-        if index > floor:
+        if index >= floor:
             starts.append(index)
     if starts:
         return text[:min(starts)].rstrip(), True
@@ -1139,6 +1141,19 @@ def apply_overrides(
             if str(value).strip() and str(value) not in staged_hooks
         ]
         _apply_playback_stage(legacy_tail_hooks)
+
+        # Runtime portability is a Core concern. Apply it to every reconstructed
+        # provider after provider-specific network/playback recovery but before any
+        # stream wrapper. It only normalizes JS host semantics (URL/fetch/timers).
+        before = text
+        text = _apply_patch_script(text, provider_id, GLOBAL_RUNTIME_COMPAT, {}, None)
+        if text != before:
+            applied.append({
+                "type": "patch_script",
+                "path": GLOBAL_RUNTIME_COMPAT,
+                "phase": phase,
+                "scope": "global_runtime_compat",
+            })
 
         # Presentation is a Core-wide finalization layer, not a provider capability.
         # Apply it after catalogue/media/playback recovery to every reconstructed

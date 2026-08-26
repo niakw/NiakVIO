@@ -487,7 +487,7 @@ Lorsqu'une transaction change réellement une donnée visible côté client :
 | `brain-learning-lab.yml` | expérimentation et mémoire du Repair Brain en sandbox |
 | `availability.yml` | disponibilité des providers publiés |
 | `domain-refresh.yml` | observation des domaines |
-| `engine-regression-offline.yml` | non-régressions moteur hors réseau |
+| `core-media-finalize-main.yml` | fixed-point Core, non-régressions Engine v2 et intégrité de publication |
 | `provider-catalogue-breadth-lab.yml` | largeur de catalogue |
 | `provider-status-export.yml` | snapshot diagnostic |
 

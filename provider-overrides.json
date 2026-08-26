@@ -375,8 +375,8 @@
     "purstream": {
       "notes": [
         "Do not map the provider to the hub itself. resolve_provider_hubs.py follows the official-address page and persists only a runtime-validated terminal site/API.",
-        "Purstream has no provider-specific repair hooks; content identity, stream facts, presentation and platform compatibility are handled by shared Core/capability layers.",
-        "Official hub purstream.wiki currently resolves to purstream.id; materialize the validated terminal and never keep an upstream repository lookup in published runtime bytes."
+        "Official hub purstream.wiki currently resolves to purstream.id; materialize the validated terminal and never keep an upstream repository lookup in published runtime bytes.",
+        "Purstream has no provider-specific repair hooks; content identity, stream facts, presentation and platform compatibility are handled by shared Core/capability layers."
       ],
       "capability": "official_domain_hub",
       "official_hub": "https://purstream.wiki",
@@ -643,7 +643,8 @@
         "uhdmovies.pink": "uhdmovies.autos"
       },
       "notes": [
-        "Automatically migrated uhdmovies.pink to uhdmovies.casa after DNS/HTTP preflight validation of a redirect or a reachable same-role provider endpoint."
+        "Automatically migrated uhdmovies.pink to uhdmovies.casa after DNS/HTTP preflight validation of a redirect or a reachable same-role provider endpoint.",
+        "UHDMovies runtime domain discovery is materialized from NiakVIO's persisted terminal; the TVVVV domains.json registry is maintenance-only and never fetched during playback."
       ],
       "capability": "html_scraper",
       "profiles": [],
@@ -653,8 +654,22 @@
       "manifest_overrides": {
         "disabledPlatforms": []
       },
-      "patch_script_options": {},
+      "patch_script_options": {
+        "scripts/provider_patches/runtime_repository_domain_materializer_v1.py": {
+          "resolver_function": "domainCandidates",
+          "materialized_value": [
+            {
+              "$from": "official_site",
+              "fallback": "https://uhdmovies.autos"
+            }
+          ],
+          "forbidden_urls": [
+            "https://raw.githubusercontent.com/phisher98/TVVVV/refs/heads/main/domains.json"
+          ]
+        }
+      },
       "patch_scripts": [
+        "scripts/provider_patches/runtime_repository_domain_materializer_v1.py",
         "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
         "scripts/provider_patches/native_sync_fetch_target_order_v1.py",
         "scripts/provider_patches/runtime_capability_media_safety_v4.py"
@@ -892,6 +907,7 @@
       "route_replacements": {},
       "required_route_values": [],
       "patch_scripts": [
+        "scripts/provider_patches/runtime_repository_domain_materializer_v1.py",
         "scripts/provider_patches/stream_output_sanitizer_v5.py"
       ],
       "patch_script_options": {
@@ -899,10 +915,21 @@
           "probe_direct_media": true,
           "max_probes": 6,
           "probe_all_urls": true
+        },
+        "scripts/provider_patches/runtime_repository_domain_materializer_v1.py": {
+          "resolver_function": "fetchLatestDomain",
+          "materialized_value": {
+            "$from": "official_site",
+            "fallback": "https://new4.hdhub4u.cl"
+          },
+          "forbidden_urls": [
+            "https://raw.githubusercontent.com/phisher98/TVVVV/refs/heads/main/domains.json"
+          ]
         }
       },
       "notes": [
-        "Use the current HDHub4u terminal route and reject HTML/error bodies returned as HLS media."
+        "Use the current HDHub4u terminal route and reject HTML/error bodies returned as HLS media.",
+        "4KHDHub runtime domain discovery is materialized from NiakVIO's persisted terminal; the TVVVV domains.json registry is maintenance-only and never fetched during playback."
       ],
       "official_hub": "https://hdhub4u.ec/",
       "official_site": "https://new4.hdhub4u.cl",
@@ -1765,9 +1792,28 @@
         "disabledPlatforms": []
       },
       "patch_scripts": [
+        "scripts/provider_patches/runtime_repository_domain_materializer_v1.py",
         "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
         "scripts/provider_patches/native_sync_fetch_target_order_v1.py",
         "scripts/provider_patches/runtime_capability_media_safety_v4.py"
+      ],
+      "patch_script_options": {
+        "scripts/provider_patches/runtime_repository_domain_materializer_v1.py": {
+          "resolver_function": "refreshDomains",
+          "mode": "assign",
+          "assign_target": "baseUrl",
+          "materialized_value": {
+            "$from": "official_site",
+            "fallback": "https://zinkmovies.wtf"
+          },
+          "forbidden_urls": [
+            "https://raw.githubusercontent.com/PirateZoro9/asura-providers/main/urls.json"
+          ]
+        }
+      },
+      "official_site": "https://zinkmovies.wtf",
+      "notes": [
+        "ZinkMovies address discovery is owned by provider-hubs.json and the resolver; the validated terminal is materialized into baseUrl and the upstream repository registry is never fetched at playback."
       ]
     },
     "brandnew": {
@@ -1781,11 +1827,33 @@
       "official_hub": "https://warflix.cv/",
       "official_site": "https://cineby.top",
       "required_values": [],
-      "patch_script_options": {},
+      "patch_script_options": {
+        "scripts/provider_patches/runtime_repository_domain_materializer_v1.py": {
+          "resolver_function": "getDomains",
+          "materialized_value": {
+            "cineby": {
+              "$from": "official_site",
+              "fallback": "https://www.cineby.at"
+            },
+            "speedracelight": {
+              "$from": "official_api",
+              "fallback": "https://api.speedracelight.com"
+            }
+          },
+          "forbidden_urls": [
+            "https://raw.githubusercontent.com/sapariyaneel/nuvio-plugin/refs/heads/main/domains.json"
+          ]
+        }
+      },
       "patch_scripts": [
+        "scripts/provider_patches/runtime_repository_domain_materializer_v1.py",
         "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
         "scripts/provider_patches/native_sync_fetch_target_order_v1.py",
         "scripts/provider_patches/runtime_capability_media_safety_v4.py"
+      ],
+      "official_api": "https://api.speedracelight.com",
+      "notes": [
+        "Cineby runtime domain discovery is materialized from NiakVIO's persisted terminal/API; the upstream GitHub domains.json is maintenance-only and never fetched during playback."
       ]
     },
     "animezey": {
@@ -1821,6 +1889,7 @@
     "goated": {
       "capability": "api_stream_resolver",
       "patch_scripts": [
+        "scripts/provider_patches/runtime_repository_domain_materializer_v1.py",
         "scripts/provider_patches/nuvio_tv_direct_media_v2.py",
         "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
         "scripts/provider_patches/native_sync_fetch_target_order_v1.py",
@@ -1831,6 +1900,15 @@
           "provider_name": "Goated",
           "max_candidates": 10,
           "timeout_ms": 12000
+        },
+        "scripts/provider_patches/runtime_repository_domain_materializer_v1.py": {
+          "resolver_function": "getDomains",
+          "materialized_value": {
+            "reallyfast": "https://api.reallyfast.xyz"
+          },
+          "forbidden_urls": [
+            "https://raw.githubusercontent.com/sapariyaneel/nuvio-plugin/refs/heads/main/domains.json"
+          ]
         }
       },
       "manifest_overrides": {
@@ -1840,6 +1918,10 @@
       "published_types": [
         "movie",
         "tv"
+      ],
+      "official_site": "https://goated.cx",
+      "notes": [
+        "Goated runtime API discovery is materialized from its provider fallback instead of fetching the upstream GitHub domains.json during playback."
       ]
     },
     "voiranime-homes": {
@@ -2258,7 +2340,8 @@
         "Preserve the documented iframe/player contract; do not reject HTML embed URLs or force direct-media headers."
       ],
       "observed_origins": [
-        "https://vidfast.vc"
+        "https://vidfast.vc",
+        "https://old.invalid"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
@@ -2273,7 +2356,11 @@
       ],
       "allow_html_url": false,
       "observed_origins": [
-        "https://api.purstream"
+        "https://purstream.wiki",
+        "https://api.purstream",
+        "https://api.purstream.id",
+        "https://purstream.id",
+        "https://old.invalid"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true,
@@ -2289,7 +2376,8 @@
       "allow_html_url": true,
       "requires_direct_media": false,
       "observed_origins": [
-        "https://new4.hdhub4u.cl"
+        "https://new4.hdhub4u.cl",
+        "https://old.invalid"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
@@ -2332,7 +2420,8 @@
       "allow_html_url": true,
       "requires_direct_media": false,
       "observed_origins": [
-        "https://allmovieland.art"
+        "https://allmovieland.art",
+        "https://old.invalid"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
@@ -2343,7 +2432,8 @@
       "allow_html_url": true,
       "requires_direct_media": false,
       "observed_origins": [
-        "https://megaplay.buzz"
+        "https://megaplay.buzz",
+        "https://old.invalid"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
@@ -2353,7 +2443,9 @@
       "validation": "provider_native",
       "allow_html_url": true,
       "requires_direct_media": false,
-      "observed_origins": [],
+      "observed_origins": [
+        "https://old.invalid"
+      ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
     },
@@ -2364,7 +2456,8 @@
       "requires_direct_media": false,
       "observed_origins": [
         "https://graphql.anilist.co",
-        "https://anikototv.to"
+        "https://anikototv.to",
+        "https://old.invalid"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
@@ -2390,7 +2483,8 @@
         "https://lodash.com",
         "https://openjsf.org",
         "http://underscorejs.org",
-        "https://anime-sama.store"
+        "https://anime-sama.store",
+        "https://old.invalid"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true,
@@ -2407,7 +2501,8 @@
       "observed_origins": [
         "https://graphql.anilist.co",
         "https://enc-dec.app",
-        "https://v3-cinemeta.strem.io"
+        "https://v3-cinemeta.strem.io",
+        "https://old.invalid"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
@@ -2419,7 +2514,8 @@
       "requires_direct_media": false,
       "observed_origins": [
         "https://kwik.cx",
-        "https://animepahe.pw"
+        "https://animepahe.pw",
+        "https://old.invalid"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
@@ -2431,7 +2527,8 @@
       "requires_direct_media": false,
       "observed_origins": [
         "https://as-cdn21.top",
-        "https://animesalt.cx"
+        "https://animesalt.cx",
+        "https://old.invalid"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
@@ -2461,7 +2558,8 @@
         "https://lodash.com",
         "https://openjsf.org",
         "http://underscorejs.org",
-        "https://anime-sama.store"
+        "https://anime-sama.store",
+        "https://old.invalid"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true,
@@ -2492,7 +2590,8 @@
         "https://ww.animesultra.org",
         "https://lodash.com",
         "https://openjsf.org",
-        "http://underscorejs.org"
+        "http://underscorejs.org",
+        "https://old.invalid"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true,
@@ -2510,7 +2609,8 @@
         "https://animetsu.live",
         "https://graphql.anilist.co",
         "https://api4.thetvdb.com",
-        "https://aiometadata.elfhosted.com"
+        "https://aiometadata.elfhosted.com",
+        "https://old.invalid"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
@@ -2539,7 +2639,8 @@
         "https://v2.animevostfr.org",
         "https://lodash.com",
         "https://openjsf.org",
-        "http://underscorejs.org"
+        "http://underscorejs.org",
+        "https://old.invalid"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true,
@@ -2554,7 +2655,8 @@
       "allow_html_url": true,
       "requires_direct_media": false,
       "observed_origins": [
-        "https://play.zephyrflick.top"
+        "https://play.zephyrflick.top",
+        "https://old.invalid"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
@@ -2581,7 +2683,8 @@
         "https://kitsu.io",
         "https://lodash.com",
         "https://openjsf.org",
-        "http://underscorejs.org"
+        "http://underscorejs.org",
+        "https://old.invalid"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true,
@@ -2598,7 +2701,8 @@
       "observed_origins": [
         "https://anizone.to",
         "https://id-mapping-api-malid.hf.space",
-        "https://api.jikan.moe"
+        "https://api.jikan.moe",
+        "https://old.invalid"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
@@ -2609,7 +2713,8 @@
       "allow_html_url": false,
       "requires_direct_media": false,
       "observed_origins": [
-        "https://api.hlowb.com"
+        "https://api.hlowb.com",
+        "https://old.invalid"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
@@ -2631,7 +2736,8 @@
       "allow_html_url": false,
       "requires_direct_media": true,
       "observed_origins": [
-        "https://animemapping.realbestia.com"
+        "https://animemapping.realbestia.com",
+        "https://old.invalid"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
@@ -2643,7 +2749,8 @@
       "requires_direct_media": false,
       "observed_origins": [
         "https://cinemm.com",
-        "https://v3-cinemeta.strem.io"
+        "https://v3-cinemeta.strem.io",
+        "https://old.invalid"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
@@ -2654,7 +2761,8 @@
       "allow_html_url": false,
       "requires_direct_media": true,
       "observed_origins": [
-        "https://cinevibe.asia"
+        "https://cinevibe.asia",
+        "https://old.invalid"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
@@ -2681,7 +2789,8 @@
         "https://coflix.esq",
         "https://lodash.com",
         "https://openjsf.org",
-        "http://underscorejs.org"
+        "http://underscorejs.org",
+        "https://old.invalid"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true,
@@ -2698,7 +2807,8 @@
       "requires_direct_media": true,
       "observed_origins": [
         "https://ctgmovies.com",
-        "https://cockpit.103.109.92.178.nip.io"
+        "https://cockpit.103.109.92.178.nip.io",
+        "https://old.invalid"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
@@ -2709,7 +2819,8 @@
       "allow_html_url": true,
       "requires_direct_media": false,
       "observed_origins": [
-        "https://manifest.desitvhub.eu.org"
+        "https://manifest.desitvhub.eu.org",
+        "https://old.invalid"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
@@ -2719,7 +2830,9 @@
       "validation": "provider_native",
       "allow_html_url": true,
       "requires_direct_media": false,
-      "observed_origins": [],
+      "observed_origins": [
+        "https://old.invalid"
+      ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
     },
@@ -2746,7 +2859,8 @@
         "https://kitsu.io",
         "https://lodash.com",
         "https://openjsf.org",
-        "http://underscorejs.org"
+        "http://underscorejs.org",
+        "https://old.invalid"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
@@ -2768,7 +2882,8 @@
       "observed_origins": [
         "https://einthusan.asaddon.com",
         "https://einthusan.tv",
-        "https://cdn2.einthusan.io"
+        "https://cdn2.einthusan.io",
+        "https://old.invalid"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
@@ -2779,7 +2894,8 @@
       "allow_html_url": true,
       "requires_direct_media": false,
       "observed_origins": [
-        "https://urlshortlink.top"
+        "https://urlshortlink.top",
+        "https://old.invalid"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
@@ -2807,7 +2923,8 @@
         "https://lodash.com",
         "https://openjsf.org",
         "http://underscorejs.org",
-        "http://ww547.wiflix-hd.vip"
+        "http://ww547.wiflix-hd.vip",
+        "https://old.invalid"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
@@ -2836,7 +2953,8 @@
         "https://v3-cinemeta.strem.io",
         "https://lodash.com",
         "https://openjsf.org",
-        "http://underscorejs.org"
+        "http://underscorejs.org",
+        "https://old.invalid"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true,
@@ -2860,7 +2978,8 @@
       "allow_html_url": true,
       "requires_direct_media": false,
       "observed_origins": [
-        "https://goatapi.imreallydagoatt.workers.dev"
+        "https://goatapi.imreallydagoatt.workers.dev",
+        "https://old.invalid"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
@@ -2871,7 +2990,8 @@
       "allow_html_url": true,
       "requires_direct_media": false,
       "observed_origins": [
-        "https://bollywood.eu.org"
+        "https://bollywood.eu.org",
+        "https://old.invalid"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
@@ -2882,7 +3002,8 @@
       "allow_html_url": true,
       "requires_direct_media": false,
       "observed_origins": [
-        "https://download.hdghartv.com.pk"
+        "https://download.hdghartv.com.pk",
+        "https://old.invalid"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
@@ -2893,7 +3014,8 @@
       "allow_html_url": true,
       "requires_direct_media": false,
       "observed_origins": [
-        "https://new4.hdhub4u.cl"
+        "https://new4.hdhub4u.cl",
+        "https://old.invalid"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
@@ -2903,7 +3025,9 @@
       "validation": "provider_native",
       "allow_html_url": true,
       "requires_direct_media": false,
-      "observed_origins": [],
+      "observed_origins": [
+        "https://old.invalid"
+      ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
     },
@@ -2913,7 +3037,8 @@
       "allow_html_url": false,
       "requires_direct_media": true,
       "observed_origins": [
-        "https://mvlink.blog"
+        "https://mvlink.blog",
+        "https://old.invalid"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
@@ -2925,7 +3050,8 @@
       "requires_direct_media": true,
       "observed_origins": [
         "https://api4.thetvdb.com",
-        "https://aiometadata.elfhosted.com"
+        "https://aiometadata.elfhosted.com",
+        "https://old.invalid"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
@@ -2938,7 +3064,8 @@
       "observed_origins": [
         "https://kurage.live",
         "https://arm.haglund.dev",
-        "https://v3-cinemeta.strem.io"
+        "https://v3-cinemeta.strem.io",
+        "https://old.invalid"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
@@ -2951,7 +3078,8 @@
       "observed_origins": [
         "https://mallumv.wiki",
         "https://pixeldrain.net",
-        "https://mallumv.space"
+        "https://mallumv.space",
+        "https://old.invalid"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
@@ -2962,7 +3090,8 @@
       "allow_html_url": true,
       "requires_direct_media": false,
       "observed_origins": [
-        "https://app.cloud-mb.xyz"
+        "https://app.cloud-mb.xyz",
+        "https://old.invalid"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
@@ -2983,7 +3112,8 @@
       "requires_direct_media": false,
       "observed_origins": [
         "https://hc-zf3c.vercel.app",
-        "https://movies4u.review"
+        "https://movies4u.review",
+        "https://old.invalid"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
@@ -2995,7 +3125,8 @@
       "requires_direct_media": false,
       "observed_origins": [
         "https://mdrive.lol",
-        "https://new3.moviesdrive.christmas"
+        "https://new3.moviesdrive.christmas",
+        "https://old.invalid"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
@@ -3007,7 +3138,8 @@
       "requires_direct_media": true,
       "observed_origins": [
         "https://abhilinks.site",
-        "https://vcloud.zip"
+        "https://vcloud.zip",
+        "https://old.invalid"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
@@ -3021,7 +3153,8 @@
         "https://moviesmod.army",
         "https://links.modpro.blog",
         "https://driveseed.org",
-        "https://moviesmod.zone"
+        "https://moviesmod.zone",
+        "https://old.invalid"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
@@ -3046,7 +3179,8 @@
         "https://api.movix.fun",
         "https://lodash.com",
         "https://openjsf.org",
-        "http://underscorejs.org"
+        "http://underscorejs.org",
+        "https://old.invalid"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
@@ -3071,7 +3205,8 @@
         "https://npms.io",
         "https://lodash.com",
         "https://openjsf.org",
-        "http://underscorejs.org"
+        "http://underscorejs.org",
+        "https://old.invalid"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true,
@@ -3087,7 +3222,8 @@
       "requires_direct_media": false,
       "observed_origins": [
         "https://mycima.camp",
-        "https://dood.re"
+        "https://dood.re",
+        "https://old.invalid"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
@@ -3099,7 +3235,8 @@
       "requires_direct_media": false,
       "observed_origins": [
         "https://nakios.live",
-        "https://api.nakios.live"
+        "https://api.nakios.live",
+        "https://old.invalid"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true,
@@ -3123,7 +3260,9 @@
       "validation": "provider_native",
       "allow_html_url": true,
       "requires_direct_media": false,
-      "observed_origins": [],
+      "observed_origins": [
+        "https://old.invalid"
+      ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
     },
@@ -3140,7 +3279,8 @@
         "https://lodash.com",
         "https://openjsf.org",
         "http://underscorejs.org",
-        "https://papadustream-v2.watch"
+        "https://papadustream-v2.watch",
+        "https://old.invalid"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true,
@@ -3155,7 +3295,8 @@
       "requires_direct_media": false,
       "observed_origins": [
         "https://uwu.eat-peach.sbs",
-        "https://usa.eat-peach.sbs"
+        "https://usa.eat-peach.sbs",
+        "https://old.invalid"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
@@ -3165,7 +3306,9 @@
       "validation": "media_url",
       "allow_html_url": false,
       "requires_direct_media": true,
-      "observed_origins": [],
+      "observed_origins": [
+        "https://old.invalid"
+      ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
     },
@@ -3176,7 +3319,8 @@
       "requires_direct_media": true,
       "observed_origins": [
         "https://streamdata.vaplayer.ru",
-        "https://nextgencloudfabric.com"
+        "https://nextgencloudfabric.com",
+        "https://old.invalid"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
@@ -3209,7 +3353,8 @@
       "allow_html_url": true,
       "requires_direct_media": false,
       "observed_origins": [
-        "https://www.febbox.com"
+        "https://www.febbox.com",
+        "https://old.invalid"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
@@ -3220,7 +3365,8 @@
       "allow_html_url": false,
       "requires_direct_media": false,
       "observed_origins": [
-        "https://api.streamflix.app"
+        "https://api.streamflix.app",
+        "https://old.invalid"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
@@ -3247,7 +3393,8 @@
         "https://npms.io",
         "https://lodash.com",
         "https://openjsf.org",
-        "http://underscorejs.org"
+        "http://underscorejs.org",
+        "https://old.invalid"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true,
@@ -3281,7 +3428,8 @@
       "allow_html_url": true,
       "requires_direct_media": false,
       "observed_origins": [
-        "https://uhdmovies.autos"
+        "https://uhdmovies.autos",
+        "https://old.invalid"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
@@ -3293,7 +3441,8 @@
       "requires_direct_media": false,
       "observed_origins": [
         "https://vcloud.zip",
-        "https://1vegamovies.cc"
+        "https://1vegamovies.cc",
+        "https://old.invalid"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
@@ -3304,7 +3453,8 @@
       "allow_html_url": false,
       "requires_direct_media": false,
       "observed_origins": [
-        "https://www.vidking.net"
+        "https://www.vidking.net",
+        "https://old.invalid"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
@@ -3315,7 +3465,8 @@
       "allow_html_url": true,
       "requires_direct_media": false,
       "observed_origins": [
-        "https://vidlink.pro"
+        "https://vidlink.pro",
+        "https://old.invalid"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
@@ -3331,7 +3482,8 @@
         "https://vidnest.fun",
         "https://aesdec.nuvioapp.space",
         "https://flashstream.cc",
-        "https://lethe399key.com"
+        "https://lethe399key.com",
+        "https://old.invalid"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
@@ -3346,7 +3498,8 @@
         "https://vidnest.fun",
         "https://aesdec.nuvioapp.space",
         "https://graphql.anilist.co",
-        "https://api.ani.zip"
+        "https://api.ani.zip",
+        "https://old.invalid"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
@@ -3357,7 +3510,8 @@
       "allow_html_url": true,
       "requires_direct_media": false,
       "observed_origins": [
-        "https://vidrock.ru"
+        "https://vidrock.ru",
+        "https://old.invalid"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
@@ -3406,7 +3560,8 @@
         "https://lodash.com",
         "https://openjsf.org",
         "http://underscorejs.org",
-        "https://voiranime.homes"
+        "https://voiranime.homes",
+        "https://old.invalid"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true,
@@ -3439,7 +3594,8 @@
         "https://v3-cinemeta.strem.io",
         "https://lodash.com",
         "https://openjsf.org",
-        "http://underscorejs.org"
+        "http://underscorejs.org",
+        "https://old.invalid"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true,
@@ -3474,7 +3630,8 @@
         "https://ipv4.vostfree.ws",
         "https://lodash.com",
         "https://openjsf.org",
-        "http://underscorejs.org"
+        "http://underscorejs.org",
+        "https://old.invalid"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true,
@@ -3508,7 +3665,8 @@
         "https://lodash.com",
         "https://openjsf.org",
         "http://underscorejs.org",
-        "https://www.dailymotion.com"
+        "https://www.dailymotion.com",
+        "https://old.invalid"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
@@ -3519,7 +3677,8 @@
       "allow_html_url": true,
       "requires_direct_media": false,
       "observed_origins": [
-        "https://play.xpass.top"
+        "https://play.xpass.top",
+        "https://old.invalid"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
@@ -3531,7 +3690,8 @@
       "requires_direct_media": false,
       "observed_origins": [
         "https://enc-dec.app",
-        "https://1moviesz.to"
+        "https://1moviesz.to",
+        "https://old.invalid"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
@@ -3544,7 +3704,8 @@
       "observed_origins": [
         "https://zinkmovies.wtf",
         "https://gemma416okl.com",
-        "https://i-arch-400.keymi417exx.com"
+        "https://i-arch-400.keymi417exx.com",
+        "https://old.invalid"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
@@ -3566,7 +3727,10 @@
       "allow_html_url": false,
       "requires_direct_media": false,
       "observed_origins": [
-        "https://www.cineby.at"
+        "https://www.cineby.at",
+        "https://cineby.top",
+        "https://api.speedracelight.com",
+        "https://old.invalid"
       ],
       "generated_from_manifest_or_stage": true
     },
@@ -3575,7 +3739,9 @@
       "validation": "media_url",
       "allow_html_url": false,
       "requires_direct_media": true,
-      "observed_origins": [],
+      "observed_origins": [
+        "https://old.invalid"
+      ],
       "generated_from_manifest_or_stage": true
     },
     "anime-ultime": {
@@ -3602,7 +3768,8 @@
         "https://v3-cinemeta.strem.io",
         "https://lodash.com",
         "https://openjsf.org",
-        "http://underscorejs.org"
+        "http://underscorejs.org",
+        "https://old.invalid"
       ],
       "generated_from_manifest_or_stage": true
     },
@@ -3613,7 +3780,8 @@
       "requires_direct_media": false,
       "observed_origins": [
         "https://api.reallyfast.xyz",
-        "https://goated.cx"
+        "https://goated.cx",
+        "https://old.invalid"
       ],
       "generated_from_manifest_or_stage": true
     },
@@ -3641,7 +3809,8 @@
         "https://v3-cinemeta.strem.io",
         "https://lodash.com",
         "https://openjsf.org",
-        "http://underscorejs.org"
+        "http://underscorejs.org",
+        "https://old.invalid"
       ],
       "generated_from_manifest_or_stage": true
     },
@@ -3656,7 +3825,8 @@
         "https://npms.io",
         "https://lodash.com",
         "https://openjsf.org",
-        "http://underscorejs.org"
+        "http://underscorejs.org",
+        "https://old.invalid"
       ],
       "generated_from_manifest_or_stage": true
     },
@@ -4643,7 +4813,8 @@
       "requires_direct_media": false,
       "observed_origins": [
         "https://ballerinacappuccinalovestungtungtungsahur.com",
-        "https://player.vidlove.cc"
+        "https://player.vidlove.cc",
+        "https://old.invalid"
       ],
       "generated_from_manifest_or_stage": true
     },
@@ -4656,7 +4827,8 @@
         "https://player.moonflix.website",
         "https://confident-harmony-production-0578.up.railway.app",
         "https://hvhyu-production.up.railway.app",
-        "https://series-production-5c1c.up.railway.app"
+        "https://series-production-5c1c.up.railway.app",
+        "https://old.invalid"
       ],
       "generated_from_manifest_or_stage": true
     },

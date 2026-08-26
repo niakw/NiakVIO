@@ -4,6 +4,7 @@ import path from 'node:path';
 import process from 'node:process';
 import { createRequire } from 'node:module';
 import { BRAIN_CONTROL_PLANE_VERSION, planRepair } from '../src/repair-brain.mjs';
+import { classifySystemicExtraction, extractionExecutionKey } from '../src/runtime-systemic.mjs';
 
 const require = createRequire(import.meta.url);
 const {
@@ -220,6 +221,10 @@ const enabledDeclaredResults = declaredResultRows.filter((row) => row.enabled);
 const extractionFailures = enabledDeclaredResults.filter((row) => row.count === 0);
 const extractionHealthy = enabledDeclaredResults.filter((row) => row.count > 0);
 const ignoredDisabledExtractionFailures = declaredResultRows.filter((row) => !row.enabled && row.count === 0);
+const systemicExtraction = classifySystemicExtraction(enabledDeclaredResults);
+const systemicExtractionKeys = systemicExtraction.systemicExecutionKeys;
+const systemicExtractionFailures = extractionFailures.filter((row) => systemicExtractionKeys.has(extractionExecutionKey(row)));
+const providerExtractionFailures = extractionFailures.filter((row) => !systemicExtractionKeys.has(extractionExecutionKey(row)));
 
 const readerPlans = evidence.complete ? providerEligibleFailures.map((row) => {
   const failureEvidence = {
@@ -263,7 +268,7 @@ const readerPlans = evidence.complete ? providerEligibleFailures.map((row) => {
   };
 }) : [];
 
-const extractionPlans = evidence.complete ? extractionFailures.map((row) => {
+const extractionPlans = evidence.complete ? providerExtractionFailures.map((row) => {
   const signature = extractionSignature(row);
   const failureEvidence = {
     invoked: true,
@@ -280,6 +285,28 @@ const extractionPlans = evidence.complete ? extractionFailures.map((row) => {
     httpStatus: 0, errorCode: '', errorClass: '', host: '', durationSeconds: null,
     loadBytes: 0, loadDurationMs: 0, mediaDataType: -1, trackType: -1, returnedCount: 0,
     signature, action: plan.action, exitReason: plan.exitReason,
+    hypotheses: plan.hypotheses.map((hypothesis) => ({
+      id: hypothesis.id,
+      capabilities: [...(hypothesis.capabilities || [])],
+      actions: [...(hypothesis.actions || [])],
+    })),
+  };
+}) : [];
+const systemicExtractionPlans = evidence.complete ? systemicExtractionFailures.map((row) => {
+  const signature = `${row.requestType}:runtime_contract_drift:${String(row.client || 'unknown').toLowerCase()}:${row.fixture}`;
+  const plan = planRepair({
+    invoked: true,
+    contractDrift: true,
+    signature,
+    request: { mediaType: row.requestType },
+  }, { signature, maxHypotheses: 3 });
+  return {
+    provider: String(row.provider || '').toLowerCase(), client: row.client, fixture: row.fixture,
+    requestType: row.requestType, routeMode: row.routeMode, index: -1,
+    state: 'empty', failureClass: 'runtime_contract_drift', failureDomain: 'client_runtime',
+    providerMutationEligible: false, coreOrManifestProposalAllowed: true,
+    failureStage: 'provider_runtime_compat', returnedCount: 0, signature,
+    action: plan.action, exitReason: plan.exitReason,
     hypotheses: plan.hypotheses.map((hypothesis) => ({
       id: hypothesis.id,
       capabilities: [...(hypothesis.capabilities || [])],
@@ -369,7 +396,7 @@ const playerObservations = brainReaderRows.map((row) => ({
   durationSeconds: row.durationSeconds, loadBytes: row.loadBytes, loadDurationMs: row.loadDurationMs,
   observationLayer: 'player',
 }));
-const extractionObservations = extractionFailures.map((row) => ({
+const extractionObservations = providerExtractionFailures.map((row) => ({
   provider: String(row.provider || '').toLowerCase(), client: row.client, fixture: row.fixture,
   requestType: row.requestType, routeMode: row.routeMode, index: -1,
   state: 'empty', failureClass: 'media_extraction_gap', failureDomain: 'provider_extraction',
@@ -377,12 +404,20 @@ const extractionObservations = extractionFailures.map((row) => ({
   httpStatus: 0, errorCode: '', host: '', durationSeconds: null, loadBytes: 0, loadDurationMs: 0,
   returnedCount: 0, observationLayer: 'extraction',
 }));
+const systemicExtractionObservations = systemicExtractionFailures.map((row) => ({
+  provider: String(row.provider || '').toLowerCase(), client: row.client, fixture: row.fixture,
+  requestType: row.requestType, routeMode: row.routeMode, index: -1,
+  state: 'empty', failureClass: 'runtime_contract_drift', failureDomain: 'client_runtime',
+  providerMutationEligible: false, failureStage: 'provider_runtime_compat',
+  httpStatus: 0, errorCode: '', host: '', durationSeconds: null, loadBytes: 0, loadDurationMs: 0,
+  returnedCount: 0, observationLayer: 'runtime',
+}));
 const extractionHealthyObservations = extractionHealthy.map((row) => ({
   provider: String(row.provider || '').toLowerCase(), client: row.client, fixture: row.fixture,
   requestType: row.requestType, routeMode: row.routeMode, returnedCount: row.count,
   observationLayer: 'extraction', state: 'non_empty', failureClass: 'healthy',
 }));
-const observations = [...playerObservations, ...extractionObservations, ...runtimeSentinelObservations];
+const observations = [...playerObservations, ...extractionObservations, ...systemicExtractionObservations, ...runtimeSentinelObservations];
 const providerMap = new Map();
 function ensureProviderOutcome(provider) {
   const key = String(provider || '').toLowerCase();
@@ -427,8 +462,13 @@ for (const row of enabledDeclaredResults) {
   else {
     current.extractionFailures += 1;
     current.failures += 1;
-    current.providerEligibleFailures += 1;
-    current.failureClasses.media_extraction_gap = Number(current.failureClasses.media_extraction_gap || 0) + 1;
+    if (systemicExtractionKeys.has(extractionExecutionKey(row))) {
+      current.clientRuntimeFailures += 1;
+      current.failureClasses.runtime_contract_drift = Number(current.failureClasses.runtime_contract_drift || 0) + 1;
+    } else {
+      current.providerEligibleFailures += 1;
+      current.failureClasses.media_extraction_gap = Number(current.failureClasses.media_extraction_gap || 0) + 1;
+    }
   }
 }
 for (const row of runtimeSentinelObservations) {
@@ -497,6 +537,9 @@ const payload = {
   extractionResultObserved: enabledDeclaredResults.length,
   extractionHealthy: extractionHealthy.length,
   extractionFailures: extractionFailures.length,
+  providerExtractionFailures: providerExtractionFailures.length,
+  clientRuntimeExtractionFailures: systemicExtractionFailures.length,
+  systemicExtractionGroups: systemicExtraction.systemicGroups.length,
   ignoredDisabledExtractionFailures: ignoredDisabledExtractionFailures.length,
   capabilityResultObserved: capabilityResultRows.length,
   crossClientProviderFailureGroups: crossClientProviderFailures.length,
@@ -508,6 +551,8 @@ const payload = {
   readerLoadErrorEvidence: brainReaderRows.filter((row) => row.loadDurationMs > 0 || row.loadBytes > 0 || row.httpStatus > 0).length,
   observations,
   extractionHealthyObservations,
+  systemicExtractionGroups: systemicExtraction.systemicGroups,
+  clientRuntimeExtractionPlans: systemicExtractionPlans,
   providerLoadObservations,
   providerLoadIssues,
   providerOutcomes,
@@ -522,6 +567,8 @@ const payload = {
     repairPlanningAllowed: providerLearningAllowed,
     providerMutationRequiresCrossClientConsensus: true,
     clientRuntimeFailureLearningAllowed: false,
+    clientRuntimeExtractionLearningAllowed: false,
+    coreRuntimeCompatibilityProposalAllowed: evidence.complete && systemicExtractionFailures.length > 0,
     runtimeErrorSentinelLearningAllowed: false,
     repositoryLearningAllowed: evidence.complete && providerLoadIssues.length > 0,
     providerLoadJsMutationAllowed: false,
@@ -542,6 +589,7 @@ console.log(
   `FIELD_NATIVE_READER_BRAIN evidence_complete=${payload.evidenceComplete} observed=${payload.readerObserved} ` +
   `declared=${payload.readerDeclaredObserved} healthy=${payload.readerHealthy} failures=${payload.readerFailures} ` +
   `provider_eligible_failures=${payload.providerEligibleReaderFailures} extraction_failures=${payload.extractionFailures} ` +
+  `provider_extraction_failures=${payload.providerExtractionFailures} systemic_extraction_failures=${payload.clientRuntimeExtractionFailures} ` +
   `client_runtime_failures=${payload.clientRuntimeReaderFailures} runtime_sentinels=${payload.runtimeErrorSentinelObserved} ` +
   `cross_client_provider_groups=${payload.crossClientProviderFailureGroups} ` +
   `provider_load_failures=${payload.providerLoadActionableFailures} capability_probes=${payload.capabilityProbeObserved} ` +
