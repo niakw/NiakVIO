@@ -98,15 +98,16 @@ for (const file of files) {
     const line = raw.slice(marker).trim();
     const f = fields(line);
     const client = normalizedClient(f.client);
-    if (client && client !== 'unknown') clientsSeen.add(client);
 
     if (line.startsWith('FIELD_NATIVE_RESULT ')) {
       if (String(f.route_mode || 'declared').toLowerCase() === 'capability_probe' || explicitlyDisabled(f)) continue;
+      if (client && client !== 'unknown') clientsSeen.add(client);
       const row = observation(routeKey(f), client);
       row.count = Math.max(0, Number(f.count ?? f.returned ?? 0) || 0);
       resultRows += 1;
     } else if (line.startsWith('FIELD_NATIVE_ERROR ')) {
       if (String(f.route_mode || 'declared').toLowerCase() === 'capability_probe' || explicitlyDisabled(f)) continue;
+      if (client && client !== 'unknown') clientsSeen.add(client);
       const row = observation(routeKey(f), client);
       row.runtimeError = true;
       if (row.count == null) row.count = 0;
@@ -116,6 +117,7 @@ for (const file of files) {
       const type = decode(f.type64);
       const title = decode(f.title64);
       if (type !== RUNTIME_ERROR_SENTINEL && title !== RUNTIME_ERROR_SENTINEL) continue;
+      if (client && client !== 'unknown') clientsSeen.add(client);
       const row = observation(routeKey(f), client);
       row.runtimeError = true;
       row.sentinel = true;
@@ -212,31 +214,30 @@ if (comparableRoutes < minComparisons) {
 
 // A zero result is provider/extraction evidence, not by itself proof that the client
 // runtime is broken. Brain is specifically allowed to learn from those asymmetric
-// provider outcomes. Block before Brain only when a client has completely collapsed
-// across all comparable healthy-peer routes, or when runtime exceptions/sentinels are
-// themselves systemic. This keeps provider repair evidence out of the runtime gate.
+// provider outcomes. Block before Brain when a client has no healthy result across
+// all comparable healthy-peer routes (regardless of whether failures are zero counts
+// or runtime errors), or when runtime exceptions/sentinels are independently systemic.
 const systemic = [];
 for (const client of requiredClients) {
   const stats = clientStats[client];
   const runtimeRatio = stats.comparisons ? stats.runtimeFailuresAgainstHealthyPeer / stats.comparisons : 0;
-  const completeZeroCollapse = (
+  const completeClientCollapse = (
     stats.comparisons >= minComparisons &&
     stats.healthyAgainstPeer === 0 &&
-    stats.zeroFailuresAgainstHealthyPeer >= minComparisons &&
-    stats.runtimeFailuresAgainstHealthyPeer === 0
+    stats.failuresAgainstHealthyPeer >= minComparisons
   );
   const systemicRuntimeFailure = (
     stats.comparisons >= minComparisons &&
     stats.runtimeFailuresAgainstHealthyPeer >= minComparisons &&
     runtimeRatio >= failureRatio
   );
-  if (completeZeroCollapse || systemicRuntimeFailure) {
+  if (completeClientCollapse || systemicRuntimeFailure) {
     systemic.push({
       client,
       ...stats,
       failureRatio: stats.comparisons ? stats.failuresAgainstHealthyPeer / stats.comparisons : 0,
       runtimeFailureRatio: runtimeRatio,
-      reason: systemicRuntimeFailure ? 'runtime_errors' : 'complete_zero_collapse',
+      reason: systemicRuntimeFailure ? 'runtime_errors' : 'complete_client_collapse',
     });
   }
 }
