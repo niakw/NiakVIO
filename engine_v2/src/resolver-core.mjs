@@ -11,9 +11,6 @@ export class ResolverCore {
     this.maxRepairHypotheses = Math.max(1, Math.min(3, Number(options.maxRepairHypotheses ?? 3)));
     this.mediaValidator = options.mediaValidator ?? validateMediaCandidates;
     this.mediaValidationOptions = options.mediaValidationOptions ?? {};
-    // Optional shared metadata resolver (normally TMDB-backed). Metadata enriches
-    // presentation only: a metadata outage must never turn a playable provider into
-    // a provider failure or fabricate media facts.
     this.metadataResolver = typeof options.metadataResolver === "function" ? options.metadataResolver : null;
   }
 
@@ -218,6 +215,9 @@ function presentationMetadata(context) {
   return {
     title: request.title ?? null,
     year: request.year ?? null,
+    mediaType: request.mediaType ?? null,
+    season: request.season ?? null,
+    episode: request.episode ?? null,
     ...shared,
     ...providerMetadata,
   };
@@ -246,9 +246,6 @@ function applyValidationResult(context, result = {}) {
     };
   });
 
-  // Validation/ranking is part of the canonical Core contract, not a device hack.
-  // Proven playable rows lead; the validator can therefore prefer a stable 1080p
-  // fallback over a flaky 2160p route while leaving untested rows in stable order.
   annotated.sort((a, b) => a.rank - b.rank || a.originalIndex - b.originalIndex);
   context.streams = annotated.map((row) => row.stream);
   context.evidence.playableStreams = context.streams.filter((stream) => stream.playable === true).length;
