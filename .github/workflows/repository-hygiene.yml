@@ -10,18 +10,57 @@ on:
     - cron: '23 6 * * 1'
 
 permissions:
+  actions: write
   contents: write
   pull-requests: read
 
 concurrency:
   group: niakvio-repository-hygiene
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   cleanup:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
+      - name: Cancel stale main workflow generations
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          repo="$GITHUB_REPOSITORY"
+          current_run="$GITHUB_RUN_ID"
+          current_head="$(gh api "repos/$repo/branches/main" --jq '.commit.sha')"
+          cancelled=0
+          already_finished=0
+
+          for status in queued in_progress; do
+            while IFS=$'\t' read -r run_id head_sha workflow_name; do
+              [ -n "$run_id" ] || continue
+              if [ "$run_id" = "$current_run" ] || [ "$head_sha" = "$current_head" ]; then
+                continue
+              fi
+              echo "FIELD_STALE_MAIN_RUN_CANCEL_REQUEST run=$run_id status=$status head=${head_sha:0:12} workflow=$workflow_name current=${current_head:0:12}"
+              if gh api -X POST "repos/$repo/actions/runs/$run_id/cancel" >/dev/null 2>&1; then
+                cancelled=$((cancelled+1))
+              else
+                live_status="$(gh api "repos/$repo/actions/runs/$run_id" --jq '.status' 2>/dev/null || printf 'unknown')"
+                if [ "$live_status" = "completed" ]; then
+                  already_finished=$((already_finished+1))
+                else
+                  echo "Unable to cancel stale main run $run_id (status=$live_status)" >&2
+                  exit 1
+                fi
+              fi
+            done < <(
+              gh api --paginate "repos/$repo/actions/runs?branch=main&status=$status&per_page=100" \
+                --jq '.workflow_runs[] | [.id, .head_sha, .name] | @tsv'
+            )
+          done
+
+          echo "FIELD_STALE_MAIN_RUN_CLEANUP current=$current_head cancelled=$cancelled already_finished=$already_finished"
+
       - name: Checkout main
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
