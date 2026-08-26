@@ -33,13 +33,15 @@ https://raw.githubusercontent.com/niakw/NiakVIO/refs/heads/main/vf/manifest.json
 
 ### Badges StreamBadge — recommandé
 
-Pour un réglage unique au niveau du compte Nuvio, utilisez le feed **Fusion**. Il emploie les variantes 96×40 avec chip sombre conçues pour rester lisibles sur fonds sombres comme clairs.
+Pour un réglage unique au niveau du compte Nuvio, utilisez le feed **Fusion v2**. Il emploie les variantes 96×40 avec chip sombre conçues pour rester lisibles sur fonds sombres comme clairs.
 
-**Fusion — recommandé**
+**Fusion v2 — recommandé**
 
 ```text
-https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-fusion.json
+https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-fusion-v2.json
 ```
+
+> NuvioTV conserve localement les règles d'un feed déjà importé. Si l'ancien `stream-badges-fusion.json` avait déjà été ajouté, supprimez cet import puis ajoutez **Fusion v2** : l'URL versionnée force un import frais des règles corrigées.
 
 Feeds spécifiques si le client peut sélectionner le thème :
 
@@ -55,9 +57,9 @@ https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-dark.j
 https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-light.json
 ```
 
-Catalogue complet et mapping Core/Brain/UI : [`badge_catalog_v2_complete.json`](assets/badge_catalog_v2_complete.json) · [`mapping_core_brain_ui_v2_complete.json`](assets/mapping_core_brain_ui_v2_complete.json).
+Catalogue complet et mapping Core/Brain/UI : [`badge_catalog_v2_complete.json`](assets/badge_catalog_v2_complete.json) · [`mapping_core_brain_ui_v2_complete.json`](assets/mapping_core_brain_ui_v2_complete.json) · [documentation badges/assets](assets/README.md).
 
-Dans Nuvio, copiez l'URL du manifest souhaité dans la gestion des plugins/providers, puis ajoutez le feed badges dans les réglages StreamBadge lorsque cette fonction est disponible.
+Dans Nuvio, copiez l'URL du manifest souhaité dans la gestion des plugins/providers, puis ajoutez le feed badges dans les réglages StreamBadge lorsque cette fonction est disponible. **Le feed StreamBadge est indépendant du manifest providers.**
 
 **Les URL restent stables.** NiakVIO peut faire évoluer derrière elles les bundles, versions, domaines, règles runtime, preuves et états d'activation.
 
