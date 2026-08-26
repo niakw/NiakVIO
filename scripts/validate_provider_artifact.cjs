@@ -10,15 +10,54 @@ if (!file || !fs.existsSync(file)) {
   process.exit(2);
 }
 
+function stripCommentsPreservingStrings(input) {
+  let out = '';
+  let quote = null;
+  let escaped = false;
+  for (let i = 0; i < input.length; i += 1) {
+    const ch = input[i];
+    const next = input[i + 1] || '';
+    if (quote) {
+      out += ch;
+      if (escaped) {
+        escaped = false;
+      } else if (ch === '\\') {
+        escaped = true;
+      } else if (ch === quote) {
+        quote = null;
+      }
+      continue;
+    }
+    if (ch === '"' || ch === "'" || ch === '`') {
+      quote = ch;
+      out += ch;
+      continue;
+    }
+    if (ch === '/' && next === '/') {
+      while (i < input.length && input[i] !== '\n' && input[i] !== '\r') i += 1;
+      out += input[i] || '';
+      continue;
+    }
+    if (ch === '/' && next === '*') {
+      i += 2;
+      while (i < input.length && !(input[i] === '*' && input[i + 1] === '/')) i += 1;
+      i += 1;
+      continue;
+    }
+    out += ch;
+  }
+  return out;
+}
+
 // Published provider bundles must be runtime-self-contained with respect to source
-// repositories. GitHub remains valid for provenance, licensing, maintenance and
-// CI discovery, but a player must never need a repository/raw-repository URL to
-// discover a provider domain, API, route table or any other playback dependency.
-// Keep this static: provider artifacts are upstream-derived and are never executed
-// by this validator.
+// repositories. GitHub remains valid in comments for provenance/licensing and in
+// repository-side CI metadata, but executable provider code must never need a
+// repository/raw-repository URL to discover a domain, API, route table or playback
+// dependency. Keep this static: provider artifacts are never executed here.
 const source = fs.readFileSync(file, 'utf8');
+const executableSource = stripCommentsPreservingStrings(source);
 const repositoryUrl = /https?:\/\/(?:raw\.githubusercontent\.com|github\.com|api\.github\.com|gist\.github\.com|gist\.githubusercontent\.com)(?:[/:?#]|$)/ig;
-const repositoryMatches = [...source.matchAll(repositoryUrl)].map((match) => match[0]);
+const repositoryMatches = [...executableSource.matchAll(repositoryUrl)].map((match) => match[0]);
 if (repositoryMatches.length) {
   const hosts = [...new Set(repositoryMatches.map((value) => {
     try { return new URL(value).hostname.toLowerCase(); } catch (_) { return value; }
