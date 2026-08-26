@@ -562,7 +562,11 @@ def main() -> int:
             if result.get("error"):
                 message += "; " + str(result["error"])
             failures.append(message)
-            annotation("error", "Nuvio client runtime re-audit required", message)
+            annotation(
+                "warning" if args.no_fail else "error",
+                "Nuvio client runtime re-audit required",
+                message,
+            )
             print(message, file=sys.stderr)
 
     if args.apply_safe_advance and not failures and not report["inconclusive"]:
