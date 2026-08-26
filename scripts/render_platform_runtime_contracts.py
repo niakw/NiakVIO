@@ -37,6 +37,8 @@ LABELS = {
     "behavior_hints_projection": "Projection behaviorHints / proxyHeaders",
 }
 
+HARD_DIFFERENCE_STATES = {"absent", "incompatible", "audit-required"}
+
 
 def load_contract() -> dict:
     data = json.loads(CONTRACT.read_text(encoding="utf-8"))
@@ -88,6 +90,31 @@ def cell(capability: dict) -> str:
     return f"**{esc(capability['state'])}** — {esc(capability['detail'])}"
 
 
+def difference_cell(capabilities: list[dict]) -> str:
+    signatures = {
+        (str(capability.get("state") or ""), str(capability.get("detail") or ""))
+        for capability in capabilities
+    }
+    if len(signatures) == 1:
+        return "🟢 **Identique**"
+
+    states = {str(capability.get("state") or "") for capability in capabilities}
+    hard_states = states & HARD_DIFFERENCE_STATES
+    # A uniformly absent capability is not a cross-device difference; that case
+    # already returned above. A subset missing/incompatible/stale is a real gap.
+    if hard_states:
+        labels = []
+        if "absent" in hard_states:
+            labels.append("absent")
+        if "incompatible" in hard_states:
+            labels.append("incompatible")
+        if "audit-required" in hard_states:
+            labels.append("ré-audit")
+        return "🔴 **Écart de capacité** — " + ", ".join(labels)
+
+    return "🟠 **Différence**"
+
+
 def render(data: dict) -> str:
     clients = data["clients"]
     ids = list(clients)
@@ -99,13 +126,24 @@ def render(data: dict) -> str:
         "",
         f"Dernier audit du contrat : **{esc(data['audited_at'])}**.",
         "",
+        "**Lecture rapide :** 🟢 identique sur tous les clients · 🟠 implémentation/sémantique différente · 🔴 capacité absente, incompatible ou à ré-auditer sur au moins un client.",
+        "",
         "## Matrice des capacités",
         "",
-        "| Capacité | " + " | ".join(esc(clients[cid]["display_name"]) for cid in ids) + " |",
-        "| --- | " + " | ".join("---" for _ in ids) + " |",
+        "| Capacité | Écart | " + " | ".join(esc(clients[cid]["display_name"]) for cid in ids) + " |",
+        "| --- | --- | " + " | ".join("---" for _ in ids) + " |",
     ]
     for key in order:
-        lines.append("| " + esc(LABELS[key]) + " | " + " | ".join(cell(clients[cid]["capabilities"][key]) for cid in ids) + " |")
+        capabilities = [clients[cid]["capabilities"][key] for cid in ids]
+        lines.append(
+            "| "
+            + esc(LABELS[key])
+            + " | "
+            + difference_cell(capabilities)
+            + " | "
+            + " | ".join(cell(capability) for capability in capabilities)
+            + " |"
+        )
 
     lines += [
         "",
