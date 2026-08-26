@@ -10,6 +10,8 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
+import subprocess
 import sys
 from pathlib import Path
 
@@ -21,6 +23,7 @@ from render_platform_runtime_contracts import load_contract, render as render_pl
 
 ROOT = Path(__file__).resolve().parents[1]
 RUNTIME_CONTRACT_README = ROOT / "automation" / "PLATFORM-RUNTIME-CONTRACTS.md"
+CORE_PUBLISH_FREEZE = ROOT / "automation" / "CORE-PUBLISH-FREEZE"
 GENERATED = {"FILE-HASHES.json", "PATCH-SHA256SUMS.txt"}
 IGNORED_PARTS = {
     ".git",
@@ -119,7 +122,40 @@ def materialize_generated_release_docs() -> None:
     RUNTIME_CONTRACT_README.write_text(rendered, encoding="utf-8")
 
 
+def enforce_core_publication_authority() -> None:
+    """Fail closed when a Core finalizer is frozen or no longer authoritative."""
+    if os.environ.get("GITHUB_ACTIONS") != "true":
+        return
+    if os.environ.get("GITHUB_WORKFLOW") != "NiakVIO Core media finalizer":
+        return
+
+    if CORE_PUBLISH_FREEZE.is_file():
+        raise SystemExit(
+            "Core publication freeze is active; refusing release hash materialization/publish"
+        )
+
+    run_sha = os.environ.get("GITHUB_SHA", "").strip()
+    if not run_sha:
+        raise SystemExit("Core finalizer has no GITHUB_SHA; refusing publication")
+    try:
+        authoritative_sha = subprocess.check_output(
+            ["git", "rev-parse", "origin/main"],
+            cwd=ROOT,
+            text=True,
+        ).strip()
+    except (OSError, subprocess.CalledProcessError) as exc:
+        raise SystemExit(f"unable to resolve authoritative origin/main: {exc}") from exc
+
+    if authoritative_sha != run_sha:
+        raise SystemExit(
+            "stale Core finalizer refused: "
+            f"run_sha={run_sha} authoritative_main={authoritative_sha}"
+        )
+
+
 def main() -> int:
+    enforce_core_publication_authority()
+
     # Generated human-readable contracts are part of the durable release tree.
     # Materialize them before any digest is computed so the hash inventory and
     # README are one fixed point rather than two independently updated states.

@@ -9,10 +9,12 @@ permanent workflow surface on main.
 from __future__ import annotations
 
 import argparse
+import os
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 README = ROOT / "README.md"
+CORE_PUBLISH_FREEZE = ROOT / "automation" / "CORE-PUBLISH-FREEZE"
 
 REPLACEMENTS = {
     "| `engine-regression-offline.yml` | non-régressions moteur hors réseau |":
@@ -31,7 +33,18 @@ def normalized(text: str) -> str:
     return result
 
 
+def enforce_core_publish_freeze() -> None:
+    if os.environ.get("GITHUB_ACTIONS") != "true":
+        return
+    if os.environ.get("GITHUB_WORKFLOW") != "NiakVIO Core media finalizer":
+        return
+    if CORE_PUBLISH_FREEZE.is_file():
+        raise SystemExit("Core publication freeze is active; refusing stale/future Core finalizer")
+
+
 def main() -> int:
+    enforce_core_publish_freeze()
+
     parser = argparse.ArgumentParser()
     parser.add_argument("--apply", action="store_true")
     parser.add_argument("--check", action="store_true")
