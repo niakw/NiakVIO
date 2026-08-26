@@ -8,9 +8,11 @@ on:
       - ".github/workflows/native-desktop-stream-canary.yml"
       - ".github/triggers/nuvio-client-lab.json"
       - "manifest.json"
+      - "vf/manifest.json"
       - "provider_catalog.json"
       - "provider-overrides.json"
       - "providers/**"
+      - "sources.json"
       - "automation/nuvio-client-upstreams.json"
       - "automation/platform-runtime-contracts.json"
       - "automation/PLATFORM-RUNTIME-CONTRACTS.md"
@@ -41,7 +43,16 @@ on:
       - "scripts/complete_native_desktop_frontend_phases.py"
       - "scripts/instrument_native_desktop_evidence.py"
       - "scripts/instrument_native_repository_http_evidence.py"
+      - "scripts/resolve_native_repository.sh"
+      - "scripts/prepare_native_candidate_repository.py"
+      - "scripts/nuvio_desktop_test_jvm.init.gradle"
       - "scripts/run_native_corpus_desktop_suite.sh"
+      - "scripts/analyze_native_corpus_collection.cjs"
+      - "scripts/native_fixture_identity_guard.cjs"
+      - "scripts/gate_native_reader_coverage.cjs"
+      - "scripts/gate_native_reader_result.cjs"
+      - "scripts/gate_native_player_reached.cjs"
+      - "scripts/native_evidence_completeness.cjs"
       - "scripts/gate_native_stream_extraction.cjs"
       - "tests/native_stream_extraction_gate_test.py"
   push:
@@ -50,9 +61,11 @@ on:
       - ".github/workflows/native-desktop-stream-canary.yml"
       - ".github/triggers/nuvio-client-lab.json"
       - "manifest.json"
+      - "vf/manifest.json"
       - "provider_catalog.json"
       - "provider-overrides.json"
       - "providers/**"
+      - "sources.json"
       - "automation/nuvio-client-upstreams.json"
       - "automation/platform-runtime-contracts.json"
       - "automation/PLATFORM-RUNTIME-CONTRACTS.md"
@@ -83,7 +96,16 @@ on:
       - "scripts/complete_native_desktop_frontend_phases.py"
       - "scripts/instrument_native_desktop_evidence.py"
       - "scripts/instrument_native_repository_http_evidence.py"
+      - "scripts/resolve_native_repository.sh"
+      - "scripts/prepare_native_candidate_repository.py"
+      - "scripts/nuvio_desktop_test_jvm.init.gradle"
       - "scripts/run_native_corpus_desktop_suite.sh"
+      - "scripts/analyze_native_corpus_collection.cjs"
+      - "scripts/native_fixture_identity_guard.cjs"
+      - "scripts/gate_native_reader_coverage.cjs"
+      - "scripts/gate_native_reader_result.cjs"
+      - "scripts/gate_native_player_reached.cjs"
+      - "scripts/native_evidence_completeness.cjs"
       - "scripts/gate_native_stream_extraction.cjs"
       - "tests/native_stream_extraction_gate_test.py"
   workflow_dispatch:
@@ -91,9 +113,11 @@ on:
 permissions:
   contents: read
 
+# PR revisions may cancel stale validation, but every main/workflow_dispatch run
+# gets its own group. Long native evidence collection must survive later main pushes.
 concurrency:
-  group: native-desktop-stream-canary-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
+  group: native-desktop-stream-canary-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   contract:
