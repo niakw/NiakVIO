@@ -29,7 +29,7 @@ base = r'''module.exports={getStreams:async function(){return [
 
 patched = identity.apply(base, context={"provider_id": "example"})
 assert "NUVIO_GLOBAL_STREAM_IDENTITY_V1" in patched
-assert "cross-client-positive-mismatch-anime-confirmed-v3" in patched
+assert "cross-client-positive-mismatch-anime-confirmed-fail-open-v4" in patched
 assert identity.apply(patched, context={"provider_id": "example"}) == patched
 
 # The final Core presentation composes facts + identity before presentation, so
