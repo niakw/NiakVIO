@@ -42,7 +42,16 @@ def run(source: str, provider_id: str, call: str, fetch_impl: str | None = None)
             "global.fetch=" + fetch + ";\nconst p=require(" + json.dumps(str(provider)) + ");\n" + call + "\n",
             encoding="utf-8",
         )
-        result = subprocess.run(["node", str(runner)], text=True, capture_output=True, timeout=15)
+        # The contract intentionally contains emoji. Never inherit the Windows
+        # runner's cp1252 locale when decoding Node stdout/stderr.
+        result = subprocess.run(
+            ["node", str(runner)],
+            text=True,
+            encoding="utf-8",
+            errors="strict",
+            capture_output=True,
+            timeout=15,
+        )
         assert result.returncode == 0, result.stdout + result.stderr
         return json.loads(result.stdout.strip())
 
