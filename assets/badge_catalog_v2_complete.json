@@ -53,7 +53,7 @@
       "name": "Ultra HD Blu-ray",
       "text": "UHD BLU-RAY",
       "brand": true,
-      "pattern": "(?i)\\\\b(ultra[ ._-]?hd[ ._-]?blu[ ._-]?ray|uhd[ ._-]?blu[ ._-]?ray|uhd[ ._-]?bd)\\\\b",
+      "pattern": "(?i)\\b(ultra[ ._-]?hd[ ._-]?blu[ ._-]?ray|uhd[ ._-]?blu[ ._-]?ray|uhd[ ._-]?bd)\\b",
       "assetBasis": "official_reference_retrieved",
       "order": 1,
       "assets": {
@@ -78,7 +78,7 @@
       "name": "Blu-ray Disc",
       "text": "BLU-RAY",
       "brand": true,
-      "pattern": "(?i)(?!.*\\\\b(?:uhd|ultra[ ._-]?hd)\\\\b)(?!.*\\\\bremux\\\\b)\\\\b(blu[ ._-]?ray|bluray|bd[ ._-]?rip|bdrip|brrip)\\\\b",
+      "pattern": "(?i)(?!.*\\b(?:uhd|ultra[ ._-]?hd)\\b)(?!.*\\bremux\\b)\\b(blu[ ._-]?ray|bluray|bd[ ._-]?rip|bdrip|brrip)\\b",
       "assetBasis": "user_supplied_brand_or_technical_asset",
       "order": 2,
       "assets": {
@@ -103,7 +103,7 @@
       "name": "UHD REMUX",
       "text": "UHD REMUX",
       "brand": false,
-      "pattern": "(?i)\\\\b(?:uhd|2160p|4k)[ ._-]+remux\\\\b|\\\\bremux[ ._-]+(?:uhd|2160p|4k)\\\\b",
+      "pattern": "(?i)\\b(?:uhd|2160p|4k)[ ._-]+remux\\b|\\bremux[ ._-]+(?:uhd|2160p|4k)\\b",
       "assetBasis": "niakvio_generated_generic",
       "order": 3,
       "assets": {
@@ -128,7 +128,7 @@
       "name": "Blu-ray REMUX",
       "text": "BD REMUX",
       "brand": false,
-      "pattern": "(?i)\\\\b(?:blu[ ._-]?ray|bd)[ ._-]+remux\\\\b|\\\\bremux[ ._-]+(?:blu[ ._-]?ray|bd)\\\\b",
+      "pattern": "(?i)\\b(?:blu[ ._-]?ray|bd)[ ._-]+remux\\b|\\bremux[ ._-]+(?:blu[ ._-]?ray|bd)\\b",
       "assetBasis": "niakvio_generated_generic",
       "order": 4,
       "assets": {
@@ -153,7 +153,7 @@
       "name": "REMUX",
       "text": "REMUX",
       "brand": false,
-      "pattern": "(?i)\\\\bremux\\\\b",
+      "pattern": "(?i)\\bremux\\b",
       "assetBasis": "user_supplied_brand_or_technical_asset",
       "order": 5,
       "assets": {
@@ -178,7 +178,7 @@
       "name": "BDMV",
       "text": "BDMV",
       "brand": false,
-      "pattern": "(?i)\\\\bbdmv\\\\b",
+      "pattern": "(?i)\\bbdmv\\b",
       "assetBasis": "niakvio_generated_generic",
       "order": 6,
       "assets": {
@@ -203,7 +203,7 @@
       "name": "WEB-DL",
       "text": "WEB-DL",
       "brand": false,
-      "pattern": "(?i)\\\\bweb[ ._-]?dl\\\\b",
+      "pattern": "(?i)\\bweb[ ._-]?dl\\b",
       "assetBasis": "user_supplied_brand_or_technical_asset",
       "order": 7,
       "assets": {
@@ -228,7 +228,7 @@
       "name": "WEBRip",
       "text": "WEBRIP",
       "brand": false,
-      "pattern": "(?i)\\\\bweb[ ._-]?rip\\\\b",
+      "pattern": "(?i)\\bweb[ ._-]?rip\\b",
       "assetBasis": "user_supplied_brand_or_technical_asset",
       "order": 8,
       "assets": {
@@ -253,7 +253,7 @@
       "name": "HDTV",
       "text": "HDTV",
       "brand": false,
-      "pattern": "(?i)\\\\bhdtv\\\\b",
+      "pattern": "(?i)\\bhdtv\\b",
       "assetBasis": "user_supplied_brand_or_technical_asset",
       "order": 9,
       "assets": {
@@ -278,7 +278,7 @@
       "name": "DVD Rip",
       "text": "DVD RIP",
       "brand": false,
-      "pattern": "(?i)\\\\bdvd[ ._-]?rip\\\\b",
+      "pattern": "(?i)\\bdvd[ ._-]?rip\\b",
       "assetBasis": "user_supplied_brand_or_technical_asset",
       "order": 10,
       "assets": {
@@ -303,7 +303,7 @@
       "name": "DVD",
       "text": "DVD",
       "brand": false,
-      "pattern": "(?i)\\\\bdvd\\\\b",
+      "pattern": "(?i)\\bdvd\\b",
       "assetBasis": "niakvio_generated_generic",
       "order": 11,
       "assets": {
@@ -328,7 +328,7 @@
       "name": "4K Ultra HD",
       "text": "4K UHD",
       "brand": false,
-      "pattern": "(?i)\\\\b(4k|2160p|uhd|ultra[ ]?hd)\\\\b",
+      "pattern": "(?i)\\b(4k|2160p|uhd|ultra[ ]?hd)\\b",
       "assetBasis": "user_supplied_brand_or_technical_asset",
       "order": 12,
       "assets": {
@@ -353,7 +353,7 @@
       "name": "2160p",
       "text": "2160p",
       "brand": false,
-      "pattern": "(?i)\\\\b2160p\\\\b",
+      "pattern": "(?i)\\b2160p\\b",
       "assetBasis": "niakvio_generated_generic",
       "order": 13,
       "assets": {
@@ -378,7 +378,7 @@
       "name": "1440p QHD",
       "text": "1440p",
       "brand": false,
-      "pattern": "(?i)\\\\b1440p\\\\b",
+      "pattern": "(?i)\\b1440p\\b",
       "assetBasis": "niakvio_generated_generic",
       "order": 14,
       "assets": {
@@ -403,7 +403,7 @@
       "name": "1080p Full HD",
       "text": "1080p",
       "brand": false,
-      "pattern": "(?i)\\\\b(1080p|fhd|full[ ]?hd)\\\\b",
+      "pattern": "(?i)\\b(1080p|fhd|full[ ]?hd)\\b",
       "assetBasis": "user_supplied_brand_or_technical_asset",
       "order": 15,
       "assets": {
@@ -428,7 +428,7 @@
       "name": "1080i",
       "text": "1080i",
       "brand": false,
-      "pattern": "(?i)\\\\b1080i\\\\b",
+      "pattern": "(?i)\\b1080i\\b",
       "assetBasis": "niakvio_generated_generic",
       "order": 16,
       "assets": {
@@ -453,7 +453,7 @@
       "name": "720p HD",
       "text": "720p",
       "brand": false,
-      "pattern": "(?i)\\\\b720p\\\\b",
+      "pattern": "(?i)\\b720p\\b",
       "assetBasis": "user_supplied_brand_or_technical_asset",
       "order": 17,
       "assets": {
@@ -478,7 +478,7 @@
       "name": "576p",
       "text": "576p",
       "brand": false,
-      "pattern": "(?i)\\\\b576p\\\\b",
+      "pattern": "(?i)\\b576p\\b",
       "assetBasis": "niakvio_generated_generic",
       "order": 18,
       "assets": {
@@ -503,7 +503,7 @@
       "name": "480p SD",
       "text": "480p",
       "brand": false,
-      "pattern": "(?i)\\\\b480p\\\\b",
+      "pattern": "(?i)\\b480p\\b",
       "assetBasis": "user_supplied_brand_or_technical_asset",
       "order": 19,
       "assets": {
@@ -528,7 +528,7 @@
       "name": "Dolby Vision",
       "text": "DOLBY VISION",
       "brand": true,
-      "pattern": "(?i)\\\\b(dolby[ ]?vision|dovi|dv)\\\\b",
+      "pattern": "(?i)\\b(dolby[ ]?vision|dovi|dv)\\b",
       "assetBasis": "user_supplied_brand_or_technical_asset",
       "order": 20,
       "assets": {
@@ -553,7 +553,7 @@
       "name": "HDR10+",
       "text": "HDR10+",
       "brand": true,
-      "pattern": "(?i)\\\\b(hdr10\\\\+|hdr10[ ]?plus|hdr[ ]?10[ ]?\\\\+)\\\\b",
+      "pattern": "(?i)\\b(hdr10\\+|hdr10[ ]?plus|hdr[ ]?10[ ]?\\+)\\b",
       "assetBasis": "user_supplied_brand_or_technical_asset",
       "order": 21,
       "assets": {
@@ -578,7 +578,7 @@
       "name": "HDR10",
       "text": "HDR10",
       "brand": false,
-      "pattern": "(?i)\\\\bhdr[ ]?10\\\\b(?![ ]?\\\\+|[ ]?plus)",
+      "pattern": "(?i)\\bhdr[ ]?10\\b(?![ ]?\\+|[ ]?plus)",
       "assetBasis": "user_supplied_brand_or_technical_asset",
       "order": 22,
       "assets": {
@@ -603,7 +603,7 @@
       "name": "HDR",
       "text": "HDR",
       "brand": false,
-      "pattern": "(?i)\\\\bhdr\\\\b",
+      "pattern": "(?i)\\bhdr\\b",
       "assetBasis": "user_supplied_brand_or_technical_asset",
       "order": 23,
       "assets": {
@@ -628,7 +628,7 @@
       "name": "HLG",
       "text": "HLG",
       "brand": false,
-      "pattern": "(?i)\\\\bhlg\\\\b",
+      "pattern": "(?i)\\bhlg\\b",
       "assetBasis": "niakvio_generated_generic",
       "order": 24,
       "assets": {
@@ -653,7 +653,7 @@
       "name": "SDR",
       "text": "SDR",
       "brand": false,
-      "pattern": "(?i)\\\\bsdr\\\\b",
+      "pattern": "(?i)\\bsdr\\b",
       "assetBasis": "user_supplied_brand_or_technical_asset",
       "order": 25,
       "assets": {
@@ -678,7 +678,7 @@
       "name": "IMAX Enhanced",
       "text": "IMAX ENHANCED",
       "brand": true,
-      "pattern": "(?i)\\\\bimax[ ._-]?enhanced\\\\b",
+      "pattern": "(?i)\\bimax[ ._-]?enhanced\\b",
       "assetBasis": "user_supplied_brand_or_technical_asset",
       "order": 26,
       "assets": {
@@ -703,7 +703,7 @@
       "name": "IMAX",
       "text": "IMAX",
       "brand": true,
-      "pattern": "(?i)\\\\bimax\\\\b(?![ ._-]?enhanced)",
+      "pattern": "(?i)\\bimax\\b(?![ ._-]?enhanced)",
       "assetBasis": "user_supplied_brand_or_technical_asset",
       "order": 27,
       "assets": {
@@ -728,7 +728,7 @@
       "name": "3D",
       "text": "3D",
       "brand": false,
-      "pattern": "(?i)\\\\b(3d|sbs|hsbs|ou|hou)\\\\b",
+      "pattern": "(?i)\\b(3d|sbs|hsbs|ou|hou)\\b",
       "assetBasis": "niakvio_generated_generic",
       "order": 28,
       "assets": {
@@ -753,7 +753,7 @@
       "name": "AV1",
       "text": "AV1",
       "brand": false,
-      "pattern": "(?i)\\\\bav1\\\\b",
+      "pattern": "(?i)\\bav1\\b",
       "assetBasis": "niakvio_generated_generic",
       "order": 29,
       "assets": {
@@ -778,7 +778,7 @@
       "name": "HEVC / H.265",
       "text": "HEVC",
       "brand": false,
-      "pattern": "(?i)\\\\b(hevc|h[ ._-]?265|x265)\\\\b",
+      "pattern": "(?i)\\b(hevc|h[ ._-]?265|x265)\\b",
       "assetBasis": "user_supplied_brand_or_technical_asset",
       "order": 30,
       "assets": {
@@ -803,7 +803,7 @@
       "name": "AVC / H.264",
       "text": "AVC",
       "brand": false,
-      "pattern": "(?i)\\\\b(avc|h[ ._-]?264|x264)\\\\b",
+      "pattern": "(?i)\\b(avc|h[ ._-]?264|x264)\\b",
       "assetBasis": "user_supplied_brand_or_technical_asset",
       "order": 31,
       "assets": {
@@ -828,7 +828,7 @@
       "name": "VP9",
       "text": "VP9",
       "brand": false,
-      "pattern": "(?i)\\\\bvp9\\\\b",
+      "pattern": "(?i)\\bvp9\\b",
       "assetBasis": "niakvio_generated_generic",
       "order": 32,
       "assets": {
@@ -853,7 +853,7 @@
       "name": "MPEG-2",
       "text": "MPEG-2",
       "brand": false,
-      "pattern": "(?i)\\\\bmpeg[ ._-]?2\\\\b",
+      "pattern": "(?i)\\bmpeg[ ._-]?2\\b",
       "assetBasis": "niakvio_generated_generic",
       "order": 33,
       "assets": {
@@ -878,7 +878,7 @@
       "name": "VC-1",
       "text": "VC-1",
       "brand": false,
-      "pattern": "(?i)\\\\bvc[ ._-]?1\\\\b",
+      "pattern": "(?i)\\bvc[ ._-]?1\\b",
       "assetBasis": "niakvio_generated_generic",
       "order": 34,
       "assets": {
@@ -903,7 +903,7 @@
       "name": "12-bit",
       "text": "12BIT",
       "brand": false,
-      "pattern": "(?i)\\\\b12[ ._-]?bit\\\\b",
+      "pattern": "(?i)\\b12[ ._-]?bit\\b",
       "assetBasis": "niakvio_generated_generic",
       "order": 35,
       "assets": {
@@ -928,7 +928,7 @@
       "name": "10-bit",
       "text": "10BIT",
       "brand": false,
-      "pattern": "(?i)\\\\b(10[ ._-]?bit|10b|hi10p)\\\\b",
+      "pattern": "(?i)\\b(10[ ._-]?bit|10b|hi10p)\\b",
       "assetBasis": "user_supplied_brand_or_technical_asset",
       "order": 36,
       "assets": {
@@ -953,7 +953,7 @@
       "name": "8-bit",
       "text": "8BIT",
       "brand": false,
-      "pattern": "(?i)\\\\b8[ ._-]?bit\\\\b",
+      "pattern": "(?i)\\b8[ ._-]?bit\\b",
       "assetBasis": "user_supplied_brand_or_technical_asset",
       "order": 37,
       "assets": {
@@ -978,7 +978,7 @@
       "name": "Dolby Atmos",
       "text": "DOLBY ATMOS",
       "brand": true,
-      "pattern": "(?i)\\\\b(dolby[ ]?atmos|atmos)\\\\b",
+      "pattern": "(?i)\\b(dolby[ ]?atmos|atmos)\\b",
       "assetBasis": "user_supplied_brand_or_technical_asset",
       "order": 38,
       "assets": {
@@ -1003,7 +1003,7 @@
       "name": "Dolby TrueHD",
       "text": "TRUEHD",
       "brand": true,
-      "pattern": "(?i)\\\\b(truehd|true[ ]?hd|dolby[ ]?truehd)\\\\b",
+      "pattern": "(?i)\\b(truehd|true[ ]?hd|dolby[ ]?truehd)\\b",
       "assetBasis": "user_supplied_brand_or_technical_asset",
       "order": 39,
       "assets": {
@@ -1028,7 +1028,7 @@
       "name": "Dolby Digital Plus / E-AC-3",
       "text": "DD+",
       "brand": true,
-      "pattern": "(?i)\\\\b(ddp|dd\\\\+|dolby[ ._-]?digital[ ._-]?plus|e-?ac-?3)\\\\b",
+      "pattern": "(?i)\\b(ddp|dd\\+|dolby[ ._-]?digital[ ._-]?plus|e-?ac-?3)\\b",
       "assetBasis": "user_supplied_brand_or_technical_asset",
       "order": 40,
       "assets": {
@@ -1053,7 +1053,7 @@
       "name": "Dolby Digital / AC-3",
       "text": "DOLBY DIGITAL",
       "brand": true,
-      "pattern": "(?i)\\\\b(dolby[ ._-]?digital|ac-?3|dd)\\\\b",
+      "pattern": "(?i)\\b(dolby[ ._-]?digital|ac-?3|dd)\\b",
       "assetBasis": "user_supplied_brand_or_technical_asset",
       "order": 41,
       "assets": {
@@ -1078,7 +1078,7 @@
       "name": "DTS:X",
       "text": "DTS:X",
       "brand": true,
-      "pattern": "(?i)\\\\bdts[: ._-]?x\\\\b",
+      "pattern": "(?i)\\bdts[: ._-]?x\\b",
       "assetBasis": "user_supplied_brand_or_technical_asset",
       "order": 42,
       "assets": {
@@ -1103,7 +1103,7 @@
       "name": "DTS-HD Master Audio",
       "text": "DTS-HD MA",
       "brand": true,
-      "pattern": "(?i)\\\\b(dts[ ._-]?hd[ ._-]?ma|dts[ ._-]?hd[ ._-]?master)\\\\b",
+      "pattern": "(?i)\\b(dts[ ._-]?hd[ ._-]?ma|dts[ ._-]?hd[ ._-]?master)\\b",
       "assetBasis": "user_supplied_brand_or_technical_asset",
       "order": 43,
       "assets": {
@@ -1128,7 +1128,7 @@
       "name": "DTS-HD High Resolution Audio",
       "text": "DTS-HD HRA",
       "brand": true,
-      "pattern": "(?i)\\\\b(dts[ ._-]?hd[ ._-]?(hra|high[ ._-]?resolution))\\\\b",
+      "pattern": "(?i)\\b(dts[ ._-]?hd[ ._-]?(hra|high[ ._-]?resolution))\\b",
       "assetBasis": "niakvio_generated_generic",
       "order": 44,
       "assets": {
@@ -1153,7 +1153,7 @@
       "name": "DTS-HD",
       "text": "DTS-HD",
       "brand": true,
-      "pattern": "(?i)\\\\bdts[ ._-]?hd\\\\b",
+      "pattern": "(?i)\\bdts[ ._-]?hd\\b",
       "assetBasis": "user_supplied_brand_or_technical_asset",
       "order": 45,
       "assets": {
@@ -1178,7 +1178,7 @@
       "name": "DTS",
       "text": "DTS",
       "brand": true,
-      "pattern": "(?i)\\\\bdts\\\\b",
+      "pattern": "(?i)\\bdts\\b",
       "assetBasis": "user_supplied_brand_or_technical_asset",
       "order": 46,
       "assets": {
@@ -1203,7 +1203,7 @@
       "name": "AAC",
       "text": "AAC",
       "brand": false,
-      "pattern": "(?i)\\\\baac\\\\b",
+      "pattern": "(?i)\\baac\\b",
       "assetBasis": "niakvio_generated_generic",
       "order": 47,
       "assets": {
@@ -1228,7 +1228,7 @@
       "name": "FLAC",
       "text": "FLAC",
       "brand": false,
-      "pattern": "(?i)\\\\bflac\\\\b",
+      "pattern": "(?i)\\bflac\\b",
       "assetBasis": "niakvio_generated_generic",
       "order": 48,
       "assets": {
@@ -1253,7 +1253,7 @@
       "name": "LPCM",
       "text": "LPCM",
       "brand": false,
-      "pattern": "(?i)\\\\blpcm\\\\b",
+      "pattern": "(?i)\\blpcm\\b",
       "assetBasis": "niakvio_generated_generic",
       "order": 49,
       "assets": {
@@ -1278,7 +1278,7 @@
       "name": "PCM",
       "text": "PCM",
       "brand": false,
-      "pattern": "(?i)\\\\bpcm\\\\b",
+      "pattern": "(?i)\\bpcm\\b",
       "assetBasis": "niakvio_generated_generic",
       "order": 50,
       "assets": {
@@ -1303,7 +1303,7 @@
       "name": "Opus",
       "text": "OPUS",
       "brand": false,
-      "pattern": "(?i)\\\\bopus\\\\b",
+      "pattern": "(?i)\\bopus\\b",
       "assetBasis": "niakvio_generated_generic",
       "order": 51,
       "assets": {
@@ -1328,7 +1328,7 @@
       "name": "MP3",
       "text": "MP3",
       "brand": false,
-      "pattern": "(?i)\\\\bmp3\\\\b",
+      "pattern": "(?i)\\bmp3\\b",
       "assetBasis": "niakvio_generated_generic",
       "order": 52,
       "assets": {
@@ -1353,7 +1353,7 @@
       "name": "ALAC",
       "text": "ALAC",
       "brand": false,
-      "pattern": "(?i)\\\\balac\\\\b",
+      "pattern": "(?i)\\balac\\b",
       "assetBasis": "niakvio_generated_generic",
       "order": 53,
       "assets": {
@@ -1378,7 +1378,7 @@
       "name": "7.1 Audio",
       "text": "7.1",
       "brand": false,
-      "pattern": "(?i)\\\\b(7\\\\.1|8ch|8[ ]?channel)\\\\b",
+      "pattern": "(?i)\\b(7\\.1|8ch|8[ ]?channel)\\b",
       "assetBasis": "user_supplied_brand_or_technical_asset",
       "order": 54,
       "assets": {
@@ -1403,7 +1403,7 @@
       "name": "5.1 Audio",
       "text": "5.1",
       "brand": false,
-      "pattern": "(?i)\\\\b(5\\\\.1|6ch|6[ ]?channel)\\\\b",
+      "pattern": "(?i)\\b(5\\.1|6ch|6[ ]?channel)\\b",
       "assetBasis": "user_supplied_brand_or_technical_asset",
       "order": 55,
       "assets": {
@@ -1428,7 +1428,7 @@
       "name": "2.1 Audio",
       "text": "2.1",
       "brand": false,
-      "pattern": "(?i)\\\\b2\\\\.1\\\\b",
+      "pattern": "(?i)\\b2\\.1\\b",
       "assetBasis": "niakvio_generated_generic",
       "order": 56,
       "assets": {
@@ -1453,7 +1453,7 @@
       "name": "2.0 Stereo",
       "text": "2.0",
       "brand": false,
-      "pattern": "(?i)\\\\b(2\\\\.0|stereo|2ch)\\\\b",
+      "pattern": "(?i)\\b(2\\.0|stereo|2ch)\\b",
       "assetBasis": "niakvio_generated_generic",
       "order": 57,
       "assets": {
@@ -1478,7 +1478,7 @@
       "name": "1.0 Mono",
       "text": "1.0",
       "brand": false,
-      "pattern": "(?i)\\\\b(1\\\\.0|mono|1ch)\\\\b",
+      "pattern": "(?i)\\b(1\\.0|mono|1ch)\\b",
       "assetBasis": "niakvio_generated_generic",
       "order": 58,
       "assets": {
@@ -1503,7 +1503,7 @@
       "name": "Multi",
       "text": "MULTI",
       "brand": false,
-      "pattern": "(?i)\\\\bmulti\\\\b",
+      "pattern": "(?i)\\bmulti\\b",
       "assetBasis": "niakvio_generated_generic",
       "order": 59,
       "assets": {
@@ -1528,7 +1528,7 @@
       "name": "VF",
       "text": "VF",
       "brand": false,
-      "pattern": "(?i)\\\\bvf\\\\b(?![fq])|\\\\bfr(?:a|e)?\\\\b|\\\\bfrench\\\\b|\\\\bfran[cç]ais\\\\b",
+      "pattern": "(?i)\\bvf\\b(?![fq])|\\bfr(?:a|e)?\\b|\\bfrench\\b|\\bfran[cç]ais\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "VF",
       "order": 60,
@@ -1553,7 +1553,7 @@
       "name": "VFF",
       "text": "VFF",
       "brand": false,
-      "pattern": "(?i)\\\\bvff\\\\b",
+      "pattern": "(?i)\\bvff\\b",
       "assetBasis": "niakvio_generated_generic",
       "order": 61,
       "assets": {
@@ -1578,7 +1578,7 @@
       "name": "VFQ",
       "text": "VFQ",
       "brand": false,
-      "pattern": "(?i)\\\\b(vfq|fr[-_ ]?ca|fran[cç]ais[ ._-]?(?:canadien|qu[eé]b[eé]cois)|qu[eé]b[eé]cois)\\\\b",
+      "pattern": "(?i)\\b(vfq|fr[-_ ]?ca|fran[cç]ais[ ._-]?(?:canadien|qu[eé]b[eé]cois)|qu[eé]b[eé]cois)\\b",
       "assetBasis": "niakvio_generated_generic",
       "order": 62,
       "assets": {
@@ -1603,7 +1603,7 @@
       "name": "VO",
       "text": "VO",
       "brand": false,
-      "pattern": "(?i)\\\\bvo\\\\b",
+      "pattern": "(?i)\\bvo\\b",
       "assetBasis": "niakvio_generated_generic",
       "order": 63,
       "assets": {
@@ -1628,7 +1628,7 @@
       "name": "VOSTFR",
       "text": "VOSTFR",
       "brand": false,
-      "pattern": "(?i)\\\\bvostfr\\\\b",
+      "pattern": "(?i)\\bvostfr\\b",
       "assetBasis": "niakvio_generated_generic",
       "order": 64,
       "assets": {
@@ -1653,7 +1653,7 @@
       "name": "French subtitles",
       "text": "SUB FR",
       "brand": false,
-      "pattern": "(?i)\\\\b(sub[ ._-]?fr|fre[nch]*[ ._-]?sub)\\\\b",
+      "pattern": "(?i)\\b(sub[ ._-]?fr|fre[nch]*[ ._-]?sub)\\b",
       "assetBasis": "niakvio_generated_generic",
       "order": 65,
       "assets": {
@@ -1678,7 +1678,7 @@
       "name": "English subtitles",
       "text": "SUB EN",
       "brand": false,
-      "pattern": "(?i)\\\\b(sub[ ._-]?en|eng[lish]*[ ._-]?sub)\\\\b",
+      "pattern": "(?i)\\b(sub[ ._-]?en|eng[lish]*[ ._-]?sub)\\b",
       "assetBasis": "niakvio_generated_generic",
       "order": 66,
       "assets": {
@@ -1703,7 +1703,7 @@
       "name": "Forced subtitles",
       "text": "FORCED",
       "brand": false,
-      "pattern": "(?i)\\\\bforced\\\\b",
+      "pattern": "(?i)\\bforced\\b",
       "assetBasis": "niakvio_generated_generic",
       "order": 67,
       "assets": {
@@ -1728,7 +1728,7 @@
       "name": "SDH / CC",
       "text": "SDH/CC",
       "brand": false,
-      "pattern": "(?i)\\\\b(sdh|closed[ ]?caption|cc)\\\\b",
+      "pattern": "(?i)\\b(sdh|closed[ ]?caption|cc)\\b",
       "assetBasis": "niakvio_generated_generic",
       "order": 68,
       "assets": {
@@ -1753,7 +1753,7 @@
       "name": "Tous publics",
       "text": "TOUS",
       "brand": false,
-      "pattern": "(?i)\\\\b(tous[ ]?publics|all[ ]?ages|g)\\\\b",
+      "pattern": "(?i)\\b(tous[ ]?publics|all[ ]?ages|g)\\b",
       "assetBasis": "niakvio_generated_generic",
       "order": 69,
       "assets": {
@@ -1778,7 +1778,7 @@
       "name": "12+",
       "text": "12+",
       "brand": false,
-      "pattern": "(?i)\\\\b(-?12|12\\\\+)\\\\b",
+      "pattern": "(?i)\\b(-?12|12\\+)\\b",
       "assetBasis": "niakvio_generated_generic",
       "order": 70,
       "assets": {
@@ -1803,7 +1803,7 @@
       "name": "16+",
       "text": "16+",
       "brand": false,
-      "pattern": "(?i)\\\\b(-?16|16\\\\+)\\\\b",
+      "pattern": "(?i)\\b(-?16|16\\+)\\b",
       "assetBasis": "niakvio_generated_generic",
       "order": 71,
       "assets": {
@@ -1828,7 +1828,7 @@
       "name": "18+",
       "text": "18+",
       "brand": false,
-      "pattern": "(?i)\\\\b(-?18|18\\\\+)\\\\b",
+      "pattern": "(?i)\\b(-?18|18\\+)\\b",
       "assetBasis": "niakvio_generated_generic",
       "order": 72,
       "assets": {
@@ -1853,7 +1853,7 @@
       "name": "PG-13",
       "text": "PG-13",
       "brand": false,
-      "pattern": "(?i)\\\\bpg-?13\\\\b",
+      "pattern": "(?i)\\bpg-?13\\b",
       "assetBasis": "niakvio_generated_generic",
       "order": 73,
       "assets": {
@@ -1878,7 +1878,7 @@
       "name": "TV-MA",
       "text": "TV-MA",
       "brand": false,
-      "pattern": "(?i)\\\\btv-?ma\\\\b",
+      "pattern": "(?i)\\btv-?ma\\b",
       "assetBasis": "niakvio_generated_generic",
       "order": 74,
       "assets": {
