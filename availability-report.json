@@ -1,17 +1,17 @@
 {
   "schema_version": 63,
-  "generated_at": "2026-08-26T04:59:27.077579+00:00",
+  "generated_at": "2026-08-26T09:06:44.769412+00:00",
   "test_environment": "github-actions-node",
   "checked_providers": 92,
   "status_counts": {
-    "healthy": 14,
+    "healthy": 12,
     "reachable": 0,
-    "blocked": 11,
-    "degraded": 1,
+    "blocked": 10,
+    "degraded": 2,
     "no_streams": 23,
-    "provider_unreachable": 15,
-    "runtime_error": 17,
-    "unavailable": 11,
+    "provider_unreachable": 16,
+    "runtime_error": 19,
+    "unavailable": 10,
     "excluded": 0
   },
   "policy": {
@@ -706,7 +706,7 @@
     },
     {
       "id": "hindmoviez",
-      "status": "unavailable",
+      "status": "degraded",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
@@ -1910,7 +1910,7 @@
     },
     {
       "id": "voiranime",
-      "status": "no_streams",
+      "status": "runtime_error",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
@@ -1958,18 +1958,14 @@
     },
     {
       "id": "videasy",
-      "status": "healthy",
+      "status": "provider_unreachable",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 2,
-      "hosts": [
-        "moon.peakstorm.top"
-      ],
-      "response_categories": [
-        "playable"
-      ],
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
       "host_health": {
         "moon.ironwallnet.net": {
           "last_checked_at": "2026-08-26T04:59:27.077579+00:00",
@@ -2197,18 +2193,14 @@
     },
     {
       "id": "movieblast",
-      "status": "healthy",
+      "status": "no_streams",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 2,
-      "hosts": [
-        "mblinkmove.mycdn-mb.xyz"
-      ],
-      "response_categories": [
-        "playable"
-      ],
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
       "host_health": {
         "mblinkserie.mycdn-mb.xyz": {
           "last_checked_at": "2026-08-25T17:00:00.499117+00:00",
@@ -2600,7 +2592,7 @@
     },
     {
       "id": "dulourd",
-      "status": "blocked",
+      "status": "runtime_error",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
