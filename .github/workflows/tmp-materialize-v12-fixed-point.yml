@@ -1,0 +1,49 @@
+name: Temporary V12 fixed-point materializer
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/tmp-materialize-v12-fixed-point.yml"
+      - "scripts/normalize_stream_presentation_v11.py"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+      - name: Materialize V12 and regenerate inventories
+        shell: bash
+        run: |
+          set -euxo pipefail
+          if [[ -f scripts/materialize_stream_presentation_v12_once.py ]]; then
+            python3 scripts/materialize_stream_presentation_v12_once.py
+          fi
+          python3 scripts/normalize_stream_presentation_v11.py --check
+          python3 tests/global_stream_presentation_test.py
+          python3 scripts/generate_release_hashes.py
+          git diff --check
+      - name: Commit fixed point
+        shell: bash
+        run: |
+          set -euxo pipefail
+          if git diff --quiet && git diff --cached --quiet; then
+            echo "FIELD_V12_FIXED_POINT changed=false"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "build: materialize stream presentation V12 fixed point"
+          git push origin HEAD:main
+          echo "FIELD_V12_FIXED_POINT changed=true"
