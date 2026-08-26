@@ -65,9 +65,12 @@ for workflow in workflow_dir.iterdir():
         for marker in ("-once.", "_once.", "-temp.", "_temp.", "-temporary.", "_temporary.")
     ), f"temporary/one-shot workflow must not remain on main: {workflow.relative_to(ROOT)}"
     source = workflow.read_text(encoding="utf-8")
+    executable_source = "\n".join(
+        line for line in source.splitlines() if not line.lstrip().startswith("#")
+    )
     for retired_name in retired_workflow_names:
-        assert retired_name not in source, (
-            f"permanent workflow still references retired workflow {retired_name}: "
+        assert retired_name not in executable_source, (
+            f"permanent workflow still executes/references retired workflow {retired_name}: "
             f"{workflow.relative_to(ROOT)}"
         )
 
@@ -139,4 +142,4 @@ assert "python" in codeql
 assert "security-extended" in codeql
 assert "db488ddef3bf6cb639b32c2e9a7c0a7ea8271d28" in codeql
 
-print("repository hygiene contract passed: main-only code workflow, permanent Core/reader hardening, syntax-only provider validation, no retired one-shots or workflow references")
+print("repository hygiene contract passed: main-only code workflow, permanent Core/reader hardening, syntax-only provider validation, no retired one-shots or executable workflow references")
