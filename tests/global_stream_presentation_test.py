@@ -135,7 +135,7 @@ assert "BLU-RAY" not in sparse["description"]
 # Native Desktop bridge: optional TMDB enrichment is skipped when the client does
 # not expose a runtime-owned TMDB_API_KEY. Provider streams must return immediately.
 desktop_native = run(
-    "module.exports={getStreams:async()=>[{name:'Cineby',url:'https://x.example/a.mp4',quality:'1080p',language:'VO'}]};\\n",
+    "module.exports={getStreams:async()=>[{name:'Cineby',url:'https://x.example/a.mp4',quality:'1080p',language:'VO'}]};\n",
     "cineby",
     "global.__native_fetch=async()=>{throw new Error('unexpected native TMDB fetch')};let calls=0;global.fetch=async()=>{calls++;throw new Error('TMDB must be skipped')};p.getStreams('157336','movie').then(v=>console.log(JSON.stringify({row:v[0],calls})))",
 )
