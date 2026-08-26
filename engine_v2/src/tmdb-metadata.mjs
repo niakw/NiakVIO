@@ -1,15 +1,17 @@
 // Shared factual metadata resolver for Core presentation/catalogue matching.
-// The default key is the same public TMDB v3 key already embedded by upstream
-// provider bundles in this repository; callers can override it with TMDB_API_KEY.
-const DEFAULT_TMDB_API_KEY = "1865f43a0549ca50d341dd9ab8b29f49";
+// Credentials must be supplied by the caller or environment; never embed a
+// third-party/public TMDB credential in repository source.
 const TMDB_BASE = "https://api.themoviedb.org/3";
 
 export function createTmdbMetadataResolver(options = {}) {
   const fetchImpl = options.fetchImpl ?? fetch;
-  const apiKey = String(options.apiKey ?? process.env.TMDB_API_KEY ?? DEFAULT_TMDB_API_KEY).trim();
+  const accessToken = String(options.accessToken ?? process.env.TMDB_ACCESS_TOKEN ?? "").trim();
+  const apiKey = String(options.apiKey ?? process.env.TMDB_API_KEY ?? "").trim();
   const language = String(options.language ?? "fr-FR").trim() || "fr-FR";
   const timeoutMs = Math.max(1000, Math.min(15000, Number(options.timeoutMs ?? 6000)));
-  if (!apiKey) throw new Error("TMDB API key is required");
+  if (!accessToken && !apiKey) {
+    throw new Error("TMDB credentials are required (TMDB_ACCESS_TOKEN or TMDB_API_KEY)");
+  }
 
   return async function resolveTmdbMetadata(request = {}) {
     const tmdbId = String(request.tmdbId ?? "").trim();
@@ -18,12 +20,14 @@ export function createTmdbMetadataResolver(options = {}) {
     const kind = mediaType === "movie" ? "movie" : "tv";
     const append = kind === "movie" ? "release_dates,alternative_titles" : "content_ratings,alternative_titles";
     const url = new URL(`${TMDB_BASE}/${kind}/${tmdbId}`);
-    url.searchParams.set("api_key", apiKey);
+    if (!accessToken) url.searchParams.set("api_key", apiKey);
     url.searchParams.set("language", language);
     url.searchParams.set("append_to_response", append);
 
+    const headers = { Accept: "application/json" };
+    if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
     const response = await fetchImpl(url, {
-      headers: { Accept: "application/json" },
+      headers,
       signal: AbortSignal.timeout(timeoutMs),
     });
     if (!response.ok) throw new Error(`TMDB HTTP ${response.status}`);
