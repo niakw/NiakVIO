@@ -5,6 +5,29 @@ on:
     branches: [main]
     paths:
       - ".github/workflows/**"
+      - ".github/triggers/nuvio-client-lab.json"
+      - "manifest.json"
+      - "scripts/prepare_native_corpus_validation.py"
+      - "scripts/restage_native_corpus_client.py"
+      - "scripts/augment_native_corpus_request_contract.py"
+      - "scripts/augment_native_provider_loading.py"
+      - "scripts/augment_native_provider_loading_compat.py"
+      - "tests/native_provider_loading_compat_test.py"
+      - "tests/native_evidence_codegen_pipeline_test.py"
+      - "tests/workflow_security_policy_test.py"
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/**"
+      - ".github/triggers/nuvio-client-lab.json"
+      - "manifest.json"
+      - "scripts/prepare_native_corpus_validation.py"
+      - "scripts/restage_native_corpus_client.py"
+      - "scripts/augment_native_corpus_request_contract.py"
+      - "scripts/augment_native_provider_loading.py"
+      - "scripts/augment_native_provider_loading_compat.py"
+      - "tests/native_provider_loading_compat_test.py"
+      - "tests/native_evidence_codegen_pipeline_test.py"
       - "tests/workflow_security_policy_test.py"
   workflow_dispatch:
 
@@ -66,3 +89,11 @@ jobs:
           python3 tests/native_corpus_suite_summary_test.py
           node tests/nuvio_client_lab.test.cjs
           node engine_v2/tests/contracts.test.mjs
+
+      - name: Validate native provider-loading compatibility
+        run: |
+          python3 tests/native_provider_loading_compat_test.py
+          python3 tests/native_evidence_codegen_pipeline_test.py
+
+      - name: Prove compatibility checks are side-effect free
+        run: git diff --exit-code
