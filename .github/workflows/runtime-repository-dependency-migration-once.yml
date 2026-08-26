@@ -26,7 +26,7 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Restore actionable curated rows and freeze inventory baseline
+      - name: Freeze curated inventory baseline
         shell: bash
         env:
           CURATED_BASELINE_COMMIT: 892e41f3c017f77b0dae60aa16c285cfb56595fb
@@ -38,7 +38,6 @@ jobs:
           import json
           import os
           import re
-          import urllib.parse
           from pathlib import Path
 
           root = Path('.')
@@ -47,7 +46,7 @@ jobs:
           legacy = json.loads(source_bytes)
           path = root / 'provider-hubs.json'
           current = json.loads(path.read_text(encoding='utf-8'))
-          providers = current.setdefault('providers', {})
+          providers = current.get('providers') or {}
           if not isinstance(providers, dict):
               raise SystemExit('provider-hubs.json providers must be an object')
 
@@ -64,15 +63,7 @@ jobs:
               if not isinstance(value, str):
                   return None
               match = re.search(r'https?://[^\s,;]+', value.strip(), re.I)
-              if not match:
-                  return None
-              return match.group(0).rstrip(').,;')
-
-          def hostname(url):
-              try:
-                  return (urllib.parse.urlparse(url).hostname or '').lower().strip('.')
-              except Exception:
-                  return ''
+              return match.group(0).rstrip(').,;') if match else None
 
           def search_query(value):
               if not isinstance(value, str):
@@ -84,57 +75,9 @@ jobs:
               return (match.group(1) if match else text).strip().strip('"') or None
 
           def actionable(row):
-              if not isinstance(row, dict):
-                  return False
-              return bool(first_url(row.get('hub')) or first_url(row.get('direct')) or search_query(row.get('hub')))
-
-          def normalize(provider_id, row):
-              target = {
-                  'id': provider_id,
-                  'name': row.get('name') or provider_id,
-                  'manifest_status': row.get('manifest_status') or 'Actif',
-                  'category': row.get('category'),
-                  'source': 'curated_user_registry',
-                  'schema_notes': 'Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.',
-                  'aliases': list(dict.fromkeys([*(row.get('aliases') or []), provider_id])),
-                  'search_confirmation_runs': 2,
-              }
-              hub_raw = row.get('hub')
-              hub_url = first_url(hub_raw)
-              direct_url = first_url(row.get('direct'))
-              query = search_query(hub_raw)
-              sources = []
-              if hub_url:
-                  target['hub'] = hub_url
-                  hub_host = hostname(hub_url)
-                  source_type = 'telegram_public' if hub_host in {'t.me', 'telegram.me'} else 'hub'
-                  sources.append({
-                      'type': source_type,
-                      'url': hub_url,
-                      'priority': 110 if source_type == 'telegram_public' else 100,
-                      'purpose': 'Curated authoritative address source',
-                  })
-              else:
-                  target['hub'] = None
-              if direct_url:
-                  target['direct'] = direct_url
-                  target['direct_candidates'] = [direct_url]
-                  direct_host = hostname(direct_url)
-                  if direct_host:
-                      target['allowed_terminal_hosts'] = [direct_host]
-              if query:
-                  target['search_queries'] = [query]
-                  sources.append({
-                      'type': 'search',
-                      'query': query,
-                      'priority': 35,
-                      'purpose': 'Fallback discovery when curated sources fail',
-                  })
-              if sources:
-                  target['sources'] = sources
-              if row.get('resolver'):
-                  target['resolver'] = row['resolver']
-              return target
+              return isinstance(row, dict) and bool(
+                  first_url(row.get('hub')) or first_url(row.get('direct')) or search_query(row.get('hub'))
+              )
 
           required = sorted(
               provider_id for provider_id, row in legacy_rows.items()
@@ -148,24 +91,17 @@ jobs:
               provider_id for provider_id, row in legacy_rows.items()
               if provider_id not in retired and isinstance(row, dict) and row.get('source') == 'user_chat'
           )
-          missing_before = sorted(set(required) - set(providers))
-          restored = []
-          for provider_id in missing_before:
-              row = legacy_rows[provider_id]
-              providers[provider_id] = normalize(provider_id, row)
-              restored.append(provider_id)
+          missing = sorted(set(required) - set(providers))
+          if missing:
+              raise SystemExit(f'curated provider hub inventory regression: missing={missing}')
 
-          for provider_id in retired:
-              providers.pop(provider_id, None)
-
-          current['schema_version'] = max(int(current.get('schema_version') or 0), 3)
           current['curated_baseline_commit'] = baseline_commit
           current['curated_baseline_policy'] = 'Actionable user-curated provider IDs are append-only unless explicitly retired with a reason.'
           path.write_text(json.dumps(current, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
 
           baseline = {
               'schema_version': 1,
-              'description': 'Non-regression inventory derived from the original workbook plus chat-supplied hub registry. A schema migration may enrich rows but may not silently drop actionable curated providers.',
+              'description': 'Non-regression inventory derived from the original workbook plus chat-supplied hub registry. Schema migrations may enrich rows but may not silently drop actionable curated providers.',
               'source_commit': baseline_commit,
               'source_sha256': hashlib.sha256(source_bytes).hexdigest(),
               'required_registry_ids': required,
@@ -180,20 +116,22 @@ jobs:
           test_path = root / 'tests' / 'provider_hub_curated_baseline_test.py'
           test_path.write_text('''import json\nfrom pathlib import Path\n\nROOT = Path(__file__).resolve().parents[1]\nbaseline = json.loads((ROOT / "automation" / "provider-hub-curated-baseline.json").read_text(encoding="utf-8"))\nregistry = json.loads((ROOT / "provider-hubs.json").read_text(encoding="utf-8"))\nproviders = registry.get("providers") or {}\nrequired = set(baseline.get("required_registry_ids") or [])\nretired = set((baseline.get("explicitly_retired") or {}).keys())\nsupplemental = set(baseline.get("supplemental_user_chat_ids") or [])\nmissing = sorted(required - set(providers))\nassert not missing, f"curated provider hub inventory regression: missing={missing}"\nassert not (retired & set(providers)), f"explicitly retired provider hubs restored unexpectedly: {sorted(retired & set(providers))}"\nassert supplemental <= set(providers), f"chat-supplied hub rows lost: {sorted(supplemental - set(providers))}"\nassert registry.get("curated_baseline_commit") == baseline.get("source_commit")\nfor provider_id in sorted(required):\n    row = providers[provider_id]\n    assert isinstance(row, dict), provider_id\n    assert row.get("sources") or row.get("direct_candidates") or row.get("search_queries"), provider_id\nprint(f"provider hub curated baseline passed required={len(required)} supplemental={len(supplemental)} retired={len(retired)}")\n''', encoding='utf-8')
 
-          missing_after = sorted(set(required) - set(providers))
-          if missing_after:
-              raise SystemExit(f'curated registry restoration incomplete: {missing_after}')
+          purstream = providers['purstream']
+          if str(purstream.get('hub') or '').rstrip('/') != 'https://purstream.wiki':
+              raise SystemExit(f"Purstream authoritative hub drifted: {purstream.get('hub')!r}")
+          if not (purstream.get('sources') or purstream.get('direct_candidates')):
+              raise SystemExit('Purstream authoritative hub has no usable source contract')
           print('FIELD_PROVIDER_HUB_BASELINE', json.dumps({
               'required': len(required),
               'metadata_only': len(metadata_only),
               'supplemental': supplemental,
-              'missing_before': missing_before,
-              'restored': restored,
+              'missing': missing,
               'retired': sorted(retired),
+              'purstream_resolver': purstream.get('resolver'),
           }, sort_keys=True))
           PY
 
-      - name: Prove restored registry and non-regression contract
+      - name: Prove curated inventory non-regression
         shell: bash
         run: |
           set -euo pipefail
@@ -201,18 +139,8 @@ jobs:
           python -m json.tool automation/provider-hub-curated-baseline.json >/dev/null
           python tests/provider_hub_curated_baseline_test.py
           python tests/provider_hub_registry_test.py
-          python - <<'PY'
-          import json
-          registry = json.load(open('provider-hubs.json', encoding='utf-8'))['providers']
-          for provider in ('nakios', 'purstream', 'toflix', 'coflix', 'flemmix'):
-              if provider not in registry:
-                  raise SystemExit(f'missing restored user-curated provider: {provider}')
-          assert registry['purstream']['hub'].rstrip('/') == 'https://purstream.wiki'
-          assert registry['purstream'].get('resolver') == 'same_brand'
-          print('FIELD_PROVIDER_HUB_USER_CHAT_RESTORE state=passed providers=nakios,purstream,toflix,coflix,flemmix')
-          PY
 
-      - name: Remove one-shot and publish restoration
+      - name: Remove one-shot and publish baseline contract
         shell: bash
         run: |
           set -euo pipefail
@@ -220,7 +148,7 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add provider-hubs.json automation/provider-hub-curated-baseline.json tests/provider_hub_curated_baseline_test.py .github/workflows/runtime-repository-dependency-migration-once.yml
-          git commit -m 'fix: preserve curated provider hub inventory'
+          git commit -m 'test: preserve curated provider hub inventory'
           git fetch origin main
           git rebase origin/main
           git push origin HEAD:main
