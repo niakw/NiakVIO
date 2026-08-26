@@ -2,6 +2,9 @@ name: External Code Audit
 
 on:
   workflow_dispatch:
+  schedule:
+    # Weekly refresh every Sunday at 04:17 UTC.
+    - cron: '17 4 * * 0'
 
 permissions:
   contents: write
