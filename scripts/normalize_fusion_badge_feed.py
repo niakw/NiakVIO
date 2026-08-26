@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
-"""Build the single account-level Fusion Badge URL for Nuvio.
+"""Build the account-level Fusion StreamBadge feed from the canonical badge generator.
 
-Nuvio account settings accept raw badge JSON URLs, but a rule has one imageURL and
-cannot dynamically switch image assets when the app theme changes. NiakVIO therefore
-uses the dark-chip 96x40 variants for the account-level Fusion feed: the contained
-chip/border remains readable on both dark and light application backgrounds. The
-separate dark/light feeds remain available for clients that can select by theme.
+Fusion is not a second styling implementation. It delegates to normalize_badge_feeds
+so Dark, Light and Fusion always share the exact same group palette, native bordered
+chrome and validation rules. Fusion uses transparent 96x40 artwork with a dark neutral
+native chip, making the same account-level feed readable on light and dark app themes.
 """
 from __future__ import annotations
 
@@ -14,53 +13,30 @@ import json
 from pathlib import Path
 from typing import Any
 
+from normalize_badge_feeds import build as build_theme
+
 ROOT = Path(__file__).resolve().parents[1]
-CATALOG = ROOT / "assets/badge_catalog_v2_complete.json"
 OUTPUT = ROOT / "assets/stream-badges-fusion.json"
 RAW_BASE = "https://raw.githubusercontent.com/niakw/NiakVIO/main/"
-ASSET_THEME = "dark"
+ASSET_THEME = "transparent"
 ASSET_SIZE = "96x40"
 
 
 def build() -> dict[str, Any]:
-    catalog = json.loads(CATALOG.read_text(encoding="utf-8"))
-    groups = [
-        {
-            "id": str(group.get("id") or ""),
-            "name": str(group.get("name") or ""),
-            "color": "",
-            "isExpanded": True,
-        }
-        for group in (catalog.get("groups") or [])
-        if isinstance(group, dict)
-    ]
-    filters: list[dict[str, Any]] = []
-    for badge in catalog.get("badges") or []:
-        if not isinstance(badge, dict):
-            continue
-        badge_id = str(badge.get("id") or "")
-        rel = str((((badge.get("assets") or {}).get(ASSET_THEME) or {}).get(ASSET_SIZE) or ""))
-        pattern = str(badge.get("pattern") or "")
-        name = str(badge.get("name") or badge.get("text") or badge_id)
-        if not badge_id or not rel or not pattern or not name:
-            raise ValueError(f"incomplete Fusion badge row: {badge_id or '<missing>'}")
-        filters.append(
-            {
-                "id": badge_id,
-                "groupId": str(badge.get("group") or ""),
-                "name": name,
-                "pattern": pattern,
-                "imageURL": RAW_BASE + rel,
-                "isEnabled": True,
-                "tagColor": "",
-                "tagStyle": "",
-                "textColor": "",
-                "borderColor": "",
-            }
-        )
-    if len(filters) != len(catalog.get("badges") or []):
-        raise ValueError("Fusion feed must cover the complete badge catalog")
-    return {"filters": filters, "groups": groups}
+    payload = build_theme("fusion")
+    filters = payload.get("filters") or []
+    groups = payload.get("groups") or []
+    if not filters or not groups:
+        raise ValueError("Fusion feed must contain filters and groups")
+    for row in filters:
+        if row.get("tagStyle") != "bordered":
+            raise ValueError(f"Fusion badge style drift: {row.get('id')}")
+        if "/assets/transparent/96x40/" not in str(row.get("imageURL") or ""):
+            raise ValueError(f"Fusion badge must use transparent 96x40 artwork: {row.get('id')}")
+        for key in ("tagColor", "textColor", "borderColor"):
+            if not str(row.get(key) or "").startswith("#"):
+                raise ValueError(f"Fusion badge {key} missing: {row.get('id')}")
+    return payload
 
 
 def normalize(*, apply: bool) -> bool:
@@ -85,6 +61,7 @@ def main() -> int:
     print(
         "FIELD_FUSION_BADGE_FEED "
         f"changed={int(changed)} theme={ASSET_THEME} size={ASSET_SIZE} "
+        "native_style=bordered canonical_generator=normalize_badge_feeds "
         f"url={RAW_BASE}assets/stream-badges-fusion.json"
     )
     return 0
