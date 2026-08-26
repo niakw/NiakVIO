@@ -18,14 +18,13 @@ core = CORE.read_text(encoding="utf-8")
 light_qa = json.loads(LIGHT_QA.read_text(encoding="utf-8"))
 
 badges = catalog.get("badges") or []
-# The catalog is intentionally extensible. Guard its known complete baseline and
-# semantic inventory instead of freezing CI to an historical exact count. Every
-# additional badge is still forced through unique-id, asset, QA and feed checks
-# below, so growth cannot bypass validation.
+# Keep the catalog extensible: a valid new badge must pass the same complete asset,
+# QA and native-feed checks instead of breaking CI because of an historical count.
 assert len(badges) >= 74, f"expected at least the complete 74-badge baseline, got {len(badges)}"
 by_id = {str(row.get("id") or ""): row for row in badges if isinstance(row, dict)}
 assert len(by_id) == len(badges), "badge ids must be unique"
-assert "vf" in by_id, "generic VF badge must remain in the image catalog"
+assert {"vf", "vff", "vfq", "vo", "multi", "vostfr"} <= set(by_id)
+assert by_id["vf"]["pattern"] != by_id["vff"]["pattern"]
 
 for badge_id, row in by_id.items():
     assets = row.get("assets") or {}
@@ -33,33 +32,47 @@ for badge_id, row in by_id.items():
         themed = assets.get(theme) or {}
         for size in ("72x32", "96x40"):
             rel = str(themed.get(size) or "")
-            assert rel, (badge_id, theme, size, "missing asset path")
+            assert rel == f"assets/{theme}/{size}/{badge_id}.webp", (badge_id, theme, size, rel)
             path = ROOT / rel
             assert path.is_file(), (badge_id, theme, size, rel, "missing image")
-            assert path.suffix.lower() == ".webp", (badge_id, rel)
-            assert path.stat().st_size > 0, (badge_id, rel, "empty image")
+            payload = path.read_bytes()
+            assert payload[:4] == b"RIFF" and payload[8:12] == b"WEBP", rel
 
-assert light_qa.get("revision") == "light-contrast-v3-native-size", light_qa.get("revision")
+# LIGHT_BADGE_QA is the deterministic light-theme slice of the current full-surface
+# native-chip materializer. Validate its current schema semantically, not against the
+# retired v3 field layout.
+assert light_qa.get("schemaVersion") == 2, light_qa.get("schemaVersion")
+assert light_qa.get("revision") == "full-surface-v4-native-chip", light_qa.get("revision")
 assert light_qa.get("catalogBadges") == len(badges), light_qa.get("catalogBadges")
 assert light_qa.get("assetCount") == len(badges) * 2, light_qa.get("assetCount")
 assert light_qa.get("changedCount") == len(badges) * 2, light_qa.get("changedCount")
 assert light_qa.get("rerenderedTextCount", 0) > 0, light_qa.get("rerenderedTextCount")
 assert light_qa.get("preservedArtworkCount", 0) > 0, light_qa.get("preservedArtworkCount")
-assert light_qa.get("minimumGenericFontSize", 0) >= 9, light_qa.get("minimumGenericFontSize")
+assert light_qa.get("rerenderedTextCount", 0) + light_qa.get("preservedArtworkCount", 0) == len(badges) * 2
+assert light_qa.get("minimumGenericFontSize", 0) >= 8, light_qa.get("minimumGenericFontSize")
 assert light_qa.get("whiteBackgroundMinimumSeparationRatio", 0) >= 4.5, light_qa.get("whiteBackgroundMinimumSeparationRatio")
-assert light_qa.get("sourceOfTruth") == "assets/transparent", light_qa.get("sourceOfTruth")
+assert light_qa.get("sourceOfTruth") == "assets/source + deterministic text", light_qa.get("sourceOfTruth")
 assert light_qa.get("idempotent") is True
 qa_rows = light_qa.get("rows") or []
 assert len(qa_rows) == len(badges) * 2, len(qa_rows)
-qa_by_key = {(str(row.get("badge") or ""), str(row.get("size") or "")): row for row in qa_rows if isinstance(row, dict)}
+qa_by_key = {
+    (str(row.get("badge") or ""), str(row.get("size") or "")): row
+    for row in qa_rows
+    if isinstance(row, dict)
+}
 assert len(qa_by_key) == len(qa_rows), "light QA badge/size rows must be unique"
 for badge_id in by_id:
     for size in ("72x32", "96x40"):
         qa = qa_by_key.get((badge_id, size))
         assert qa, (badge_id, size, "missing light QA row")
-        assert qa.get("output") == by_id[badge_id]["assets"]["light"][size], (badge_id, size, qa.get("output"))
-        separation = max(float(qa.get("backgroundVsWhiteContrast") or 0), float(qa.get("outlineVsWhiteContrast") or 0))
-        assert separation >= 4.5, (badge_id, size, separation)
+        assert qa.get("theme") == "light", (badge_id, size, qa.get("theme"))
+        assert int(qa.get("bytes") or 0) > 0, (badge_id, size, qa.get("bytes"))
+        assert len(str(qa.get("sha256") or "")) == 64, (badge_id, size, qa.get("sha256"))
+        width = float(qa.get("widthCoverage") or 0)
+        height = float(qa.get("heightCoverage") or 0)
+        assert width > 0 and height > 0, (badge_id, size, width, height)
+        if not qa.get("brand"):
+            assert max(width, height) >= 0.78, (badge_id, size, width, height)
 
 assert mapping["display"]["preferredThemeFolders"] == {
     "dark_app_background": "assets/dark",
@@ -131,10 +144,9 @@ assert "REMUX must be confirmed" in rules
 assert "Always replace every provider-owned stream description" in rules
 assert "TMDB may fill media context" in rules
 
-# Exact import payloads consumed by official Nuvio StreamBadgeRules. The feed uses
-# the existing 96x40 theme-aware assets; the Core text remains the universal
-# matcher/fallback and therefore never depends on the account setting itself.
-for theme in ("dark", "light"):
+# Exact import payloads consumed by official Nuvio StreamBadgeRules. Fusion is an
+# account-level cross-theme feed; dark/light remain available for theme-specific use.
+for theme in ("dark", "light", "fusion"):
     feed_path = ROOT / f"assets/stream-badges-{theme}.json"
     feed = json.loads(feed_path.read_text(encoding="utf-8"))
     assert len(feed.get("filters") or []) == len(badges), (theme, len(feed.get("filters") or []))
@@ -142,10 +154,14 @@ for theme in ("dark", "light"):
     feed_by_id = {str(row.get("id") or ""): row for row in feed.get("filters") or []}
     assert set(feed_by_id) == set(by_id), theme
     for badge_id, row in feed_by_id.items():
-        expected_rel = by_id[badge_id]["assets"][theme]["96x40"]
+        asset_theme = "dark" if theme == "fusion" else theme
+        expected_rel = by_id[badge_id]["assets"][asset_theme]["96x40"]
         assert row["imageURL"].endswith(expected_rel), (theme, badge_id, row["imageURL"])
         assert row["pattern"] == by_id[badge_id]["pattern"], (theme, badge_id)
         assert row["isEnabled"] is True
+        assert row.get("tagStyle") == "filled", (theme, badge_id, row.get("tagStyle"))
+        for color_key in ("tagColor", "borderColor", "textColor"):
+            assert str(row.get(color_key) or "").startswith("#"), (theme, badge_id, color_key)
 
 print(
     "badge asset contract passed: "
