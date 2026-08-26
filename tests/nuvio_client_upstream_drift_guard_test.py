@@ -130,10 +130,23 @@ def main() -> int:
         "python3 tests/nuvio_client_upstream_drift_guard_test.py",
     ):
         assert required in desktop_canary, required
-    assert desktop_canary.index("normalize_runtime_repository_dependencies.py --apply") < desktop_canary.index(
+
+    materialize_marker = "      - name: Materialize current NiakVIO Core candidate\n"
+    checkout_marker = "      - name: Checkout official NuvioDesktop HEAD\n"
+    assert materialize_marker in desktop_canary
+    assert checkout_marker in desktop_canary
+    materialize_block = desktop_canary.split(materialize_marker, 1)[1].split(checkout_marker, 1)[0]
+    for required in (
+        "normalize_runtime_repository_dependencies.py --apply",
+        "normalize_core_media_policy.py --apply",
+        "reapply_published_overrides.py",
+        "normalize_runtime_repository_dependencies.py --check",
+    ):
+        assert required in materialize_block, required
+    assert materialize_block.index("normalize_runtime_repository_dependencies.py --apply") < materialize_block.index(
         "normalize_core_media_policy.py --apply"
     )
-    assert desktop_canary.index("normalize_core_media_policy.py --apply") < desktop_canary.index(
+    assert materialize_block.index("normalize_core_media_policy.py --apply") < materialize_block.index(
         "reapply_published_overrides.py"
     )
 
