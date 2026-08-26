@@ -76,7 +76,9 @@ jobs:
           def live_status(run_id: int) -> str:
               try:
                   return str(request(f"/repos/{repo}/actions/runs/{run_id}").get("status") or "unknown")
-              except Exception:
+              except urllib.error.HTTPError as error:
+                  if error.code == 404:
+                      return "deleted"
                   return "unknown"
 
           def cancel_run(run_id: int) -> str:
@@ -84,17 +86,30 @@ jobs:
                   request(f"/repos/{repo}/actions/runs/{run_id}/cancel", "POST")
                   return "cancel"
               except urllib.error.HTTPError as normal_error:
-                  if live_status(run_id) == "completed":
-                      return "already_completed"
+                  if live_status(run_id) in {"completed", "deleted"}:
+                      return "already_finished"
                   print(f"FIELD_CANCEL_FALLBACK run={run_id} normal_http={normal_error.code} force=true")
                   try:
                       request(f"/repos/{repo}/actions/runs/{run_id}/force-cancel", "POST")
                       return "force-cancel"
                   except urllib.error.HTTPError as force_error:
-                      status = live_status(run_id)
-                      if status == "completed":
-                          return "already_completed"
-                      return f"failed:{normal_error.code}/{force_error.code}:{status}"
+                      if live_status(run_id) in {"completed", "deleted"}:
+                          return "already_finished"
+                      print(
+                          f"FIELD_DELETE_FALLBACK run={run_id} normal_http={normal_error.code} "
+                          f"force_http={force_error.code} delete=true"
+                      )
+                      try:
+                          request(f"/repos/{repo}/actions/runs/{run_id}", "DELETE")
+                          return "delete"
+                      except urllib.error.HTTPError as delete_error:
+                          status = live_status(run_id)
+                          if status in {"completed", "deleted"}:
+                              return "already_finished"
+                          return (
+                              f"failed:{normal_error.code}/{force_error.code}/"
+                              f"{delete_error.code}:{status}"
+                          )
 
           requested = set()
           failures = {}
@@ -106,12 +121,7 @@ jobs:
                       if not run_id or run_id == current_run:
                           continue
                       candidates.append(
-                          (
-                              run_id,
-                              status,
-                              str(row.get("head_sha") or ""),
-                              str(row.get("name") or "unknown"),
-                          )
+                          (run_id, status, str(row.get("head_sha") or ""), str(row.get("name") or "unknown"))
                       )
 
               print(f"FIELD_ACTION_PURGE_SWEEP sweep={sweep} candidates={len(candidates)}")
@@ -130,22 +140,14 @@ jobs:
                       failures[run_id] = outcome
                   else:
                       failures.pop(run_id, None)
-
-              time.sleep(3)
+              time.sleep(2)
 
           remaining = []
           for status in ("queued", "in_progress"):
               for row in active_runs(status):
                   run_id = int(row.get("id") or 0)
                   if run_id and run_id != current_run:
-                      remaining.append(
-                          (
-                              run_id,
-                              status,
-                              str(row.get("head_sha") or ""),
-                              str(row.get("name") or "unknown"),
-                          )
-                      )
+                      remaining.append((run_id, status, str(row.get("head_sha") or ""), str(row.get("name") or "unknown")))
 
           print(
               f"FIELD_ACTION_PURGE_DONE requested={len(requested)} "
