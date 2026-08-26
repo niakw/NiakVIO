@@ -7,6 +7,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 retired_paths = (
     ".github/workflows/provider-rebuild-offline.yml",
+    ".github/workflows/engine-regression-offline.yml",
     ".github/workflows/permanent-lab-branch-guard.yml",
     ".github/workflows/docs-branch-policy-cleanup.yml",
     ".github/workflows/core-media-normalize-main.yml",
@@ -18,6 +19,7 @@ retired_paths = (
     ".github/workflows/provider-fixed-point-diagnostic.yml",
     ".github/workflows/core-runtime-domain-invocation-fix-once.yml",
     ".github/workflows/finalize-zink-desktop-once.yml",
+    ".github/triggers/offline-engine-regression",
     ".github/triggers/final-native-client-validation-v2",
     ".github/triggers/native-corpus-device-lab",
     ".github/triggers/permanent-android-real-client",
