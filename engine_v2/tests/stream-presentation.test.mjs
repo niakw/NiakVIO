@@ -171,10 +171,44 @@ const tmdbResolver = createTmdbMetadataResolver({
 });
 const tvMetadata = await tmdbResolver({ tmdbId: "95396", mediaType: "tv", title: "Severance" });
 assert.match(requestedUrl, /\/tv\/95396/);
+assert.match(requestedUrl, /api_key=test-key/);
 assert.match(requestedUrl, /language=fr-FR/);
 assert.equal(tvMetadata.runtime, 50);
 assert.equal(tvMetadata.certification, "12");
 assert.equal(tvMetadata.source, "tmdb");
+
+let bearerUrl = "";
+let bearerHeaders = null;
+const bearerResolver = createTmdbMetadataResolver({
+  accessToken: "test-access-token",
+  apiKey: "must-not-be-used",
+  fetchImpl: async (url, options) => {
+    bearerUrl = String(url);
+    bearerHeaders = options.headers;
+    return {
+      ok: true,
+      async json() {
+        return {
+          id: 157336,
+          title: "Interstellar",
+          original_title: "Interstellar",
+          release_date: "2014-11-05",
+          runtime: 169,
+          alternative_titles: { titles: [] },
+          release_dates: { results: [] },
+        };
+      },
+    };
+  },
+});
+await bearerResolver({ tmdbId: "157336", mediaType: "movie", title: "Interstellar" });
+assert.doesNotMatch(bearerUrl, /api_key=/);
+assert.equal(bearerHeaders.Authorization, "Bearer test-access-token");
+
+assert.throws(
+  () => createTmdbMetadataResolver({ accessToken: "", apiKey: "" }),
+  /TMDB credentials are required/,
+);
 
 const fallbackWithoutId = await tmdbResolver({ mediaType: "movie", title: "Sinners", year: 2025 });
 assert.equal(fallbackWithoutId.title, "Sinners");
