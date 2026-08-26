@@ -3,16 +3,18 @@
   "client": "NuvioTV",
   "platform": "android-tv",
   "integration": "plugin-provider-repository",
-  "runtime_contract": "getStreams(tmdbId, mediaType, season, episode) plus global SCRAPER_SETTINGS",
+  "runtime_contract": "getStreams(tmdbId, mediaType, season, episode) plus global SCRAPER_ID, SCRAPER_SETTINGS and TV-only TMDB_API_KEY",
   "source_repository": "NuvioMedia/NuvioTV",
   "source_branch": "dev",
-  "source_ref": "188efb59dc8a30b62332f330dfc16941ff1f6f7e",
+  "source_ref": "0d8f99e2b92be5e2dedbbd0eaf9ccd00c78d020a",
   "runtime_source": "app/src/full/java/com/nuvio/tv/core/plugin/PluginRuntime.kt",
   "settings_source": "app/src/main/java/com/nuvio/tv/data/local/PluginDataStore.kt",
   "stream_repository_source": "app/src/main/java/com/nuvio/tv/data/repository/StreamRepositoryImpl.kt",
   "manifest_model_source": "app/src/main/java/com/nuvio/tv/domain/model/Plugin.kt",
   "plugin_manager_source": "app/src/full/java/com/nuvio/tv/core/plugin/PluginManager.kt",
+  "transport_dns_source": "app/src/main/java/com/nuvio/tv/core/network/IPv4FirstDns.kt",
   "player_source_prefix": "app/src/main/java/com/nuvio/tv/ui/screens/player/",
+  "cross_client_contract": "automation/platform-runtime-contracts.json",
   "probe": "scripts/nuvio_tv_probe_v2.cjs",
   "promoter": "scripts/promote_global_nuvio_tv_candidates.py",
   "direct_media_patch": "scripts/provider_patches/nuvio_tv_direct_media_v2.py",
@@ -23,6 +25,17 @@
     "real-video-container-signature"
   ],
   "player_model": "direct-media-first",
+  "runtime_capabilities": {
+    "fetch_transport": "OkHttp + Proxy.NO_PROXY + IPv4FirstDns",
+    "fetch_timeout_seconds": 30,
+    "plugin_timeout_seconds": 60,
+    "outer_scraper_timeout_seconds": 120,
+    "tmdb_api_key_global": true,
+    "text_encoder_decoder": false,
+    "webassembly": false,
+    "subtitles_projected": false,
+    "headers_projected_to_behavior_hints": true
+  },
   "manifest_platform_filtering": {
     "fields_parsed": [
       "supportedPlatforms",
@@ -32,29 +45,30 @@
     "consequence": "Do not rely on manifest platform fields to hide an unsafe provider from NuvioTV; the provider output itself must be strict-media safe or globally disabled."
   },
   "audit": {
-    "date": "2026-08-22",
-    "previous_ref": "6103a144485277f06ebc31456f1949c65b304e8e",
-    "audited_ref": "188efb59dc8a30b62332f330dfc16941ff1f6f7e",
-    "commits_reviewed": 116,
+    "date": "2026-08-26",
+    "previous_ref": "188efb59dc8a30b62332f330dfc16941ff1f6f7e",
+    "audited_ref": "0d8f99e2b92be5e2dedbbd0eaf9ccd00c78d020a",
     "hard_contract_paths_changed": true,
     "plugin_runtime_positional_getstreams_unchanged": true,
     "provider_stream_repository_contract_unchanged": true,
     "provider_url_header_ingestion_unchanged": true,
     "semantic_changes_reviewed": [
-      "StreamRepository adds backward-compatible forceRefresh=false and playback-time local plugin pause/resume",
-      "StreamRepositoryImpl adds session caching keyed by profile, type, videoId, season, episode and source/debrid configuration",
-      "provider executeScrapersStreaming positional tmdbId/mediaType/season/episode invocation remains unchanged",
-      "stream URL and behaviorHints/proxyHeaders ingestion remain preserved through the player path",
-      "exact current-head official TV route-reader proof reaches the production player successfully"
+      "PluginRuntime remains unchanged for positional getStreams, SCRAPER_ID/SCRAPER_SETTINGS/TMDB_API_KEY injection, Proxy.NO_PROXY fetch and LocalScraperResult mapping",
+      "PluginManager bounds scraper async/launch orchestration to Dispatchers.IO.limitedParallelism(MAX_CONCURRENT_SCRAPERS) to prevent low-RAM native thread exhaustion",
+      "PluginManager skips duplicate repository insertion when the normalized repository URL already exists",
+      "repository/addon persistence skips unchanged writes without altering provider request arguments or returned stream mapping",
+      "LocalScraperResult still preserves URL, headers, seeders, peers and infoHash but has no subtitles field",
+      "headers are still projected into behaviorHints.proxyHeaders.request for playback"
     ],
     "runtime_reproof_required": false
   },
   "notes": [
     "NuvioTV provider compatibility is a distinct runtime family from Nuvio Mobile and Nuvio Desktop.",
-    "The source_ref is the exact official NuvioTV commit most recently source-audited against this contract and re-proven by NiakVIO native-client tests before publication.",
-    "The 2026-08-22 audit reviewed the new search-session cache and repository interface changes; cache identity includes profile, media identity and source configuration and does not collapse distinct episode requests.",
-    "Provider extraction still uses positional getStreams and preserves returned URL/header material; playback networking continues to consume behaviorHints/proxyHeaders.",
-    "NuvioTV currently parses supportedPlatforms/disabledPlatforms in the manifest model but its PluginManager does not apply those fields when building enabled scrapers.",
+    "The source_ref is the exact official NuvioTV commit most recently source-audited against this contract.",
+    "NuvioTV injects TMDB_API_KEY into the plugin runtime; Mobile/Desktop do not expose that runtime global.",
+    "NuvioTV currently does not expose TextEncoder/TextDecoder or WebAssembly from PluginRuntime and LocalScraperResult does not preserve provider-returned subtitles.",
+    "Provider extraction still uses positional getStreams and preserves returned URL/header material; playback networking consumes behaviorHints/proxyHeaders.",
+    "NuvioTV parses supportedPlatforms/disabledPlatforms in the manifest model but PluginManager does not apply those fields when building enabled scrapers.",
     "A zero-stream result is not by itself proof of incompatibility.",
     "Providers blocked on every Mobile/Desktop runtime but still enabled in the shared manifest must sanitize all NuvioTV-returned URLs against real media payloads.",
     "Promoted direct-media wrappers require strict HLS, DASH or real container evidence."
