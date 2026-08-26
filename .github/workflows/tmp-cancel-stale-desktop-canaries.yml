@@ -1,0 +1,28 @@
+name: Temporary stale Desktop canary cleanup
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/tmp-cancel-stale-desktop-canaries.yml"
+  workflow_dispatch:
+
+permissions:
+  actions: write
+  contents: read
+
+jobs:
+  cancel:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Cancel superseded Desktop canary runs
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euxo pipefail
+          for run_id in 32949167169 32949445830; do
+            gh api --method POST "/repos/${GITHUB_REPOSITORY}/actions/runs/${run_id}/cancel" || true
+          done
+          echo "FIELD_STALE_DESKTOP_CANARIES_CANCEL_REQUESTED count=2"
