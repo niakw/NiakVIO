@@ -20,7 +20,11 @@ on:
       - "scripts/apply_provider_overrides.py"
       - "scripts/apply_runtime_capability_upgrade_v4.py"
       - "scripts/core_rebuild_safety.py"
+      - "scripts/normalize_repository_docs.py"
+      - "scripts/normalize_runtime_repository_dependencies.py"
+      - "scripts/normalize_provider_rebuild_safety.py"
       - "scripts/normalize_core_fixed_point_contract.py"
+      - "scripts/normalize_provider_branding_pipeline.py"
       - "scripts/normalize_core_media_policy.py"
       - "scripts/normalize_stream_presentation_v11.py"
       - "scripts/provider_purification.py"
@@ -32,6 +36,7 @@ on:
       - "engine_v2/tests/runtime-adapters.test.mjs"
       - "engine_v2/tests/stream-presentation.test.mjs"
       - "tests/global_stream_presentation_test.py"
+      - "tests/nuvio_client_upstream_drift_guard_test.py"
       - "scripts/check_nuvio_client_upstreams.py"
       - "scripts/resolve_nuvio_lab_heads.py"
       - "scripts/prepare_native_corpus_client.py"
@@ -73,7 +78,11 @@ on:
       - "scripts/apply_provider_overrides.py"
       - "scripts/apply_runtime_capability_upgrade_v4.py"
       - "scripts/core_rebuild_safety.py"
+      - "scripts/normalize_repository_docs.py"
+      - "scripts/normalize_runtime_repository_dependencies.py"
+      - "scripts/normalize_provider_rebuild_safety.py"
       - "scripts/normalize_core_fixed_point_contract.py"
+      - "scripts/normalize_provider_branding_pipeline.py"
       - "scripts/normalize_core_media_policy.py"
       - "scripts/normalize_stream_presentation_v11.py"
       - "scripts/provider_purification.py"
@@ -85,6 +94,7 @@ on:
       - "engine_v2/tests/runtime-adapters.test.mjs"
       - "engine_v2/tests/stream-presentation.test.mjs"
       - "tests/global_stream_presentation_test.py"
+      - "tests/nuvio_client_upstream_drift_guard_test.py"
       - "scripts/check_nuvio_client_upstreams.py"
       - "scripts/resolve_nuvio_lab_heads.py"
       - "scripts/prepare_native_corpus_client.py"
@@ -139,6 +149,8 @@ jobs:
         run: python3 scripts/render_platform_runtime_contracts.py --check
       - name: Validate extraction gate semantics
         run: python3 tests/native_stream_extraction_gate_test.py
+      - name: Validate client drift and Desktop fixed-point topology
+        run: python3 tests/nuvio_client_upstream_drift_guard_test.py
 
   resolve:
     runs-on: ubuntu-latest
@@ -202,18 +214,32 @@ jobs:
           set -euxo pipefail
           cd "$GITHUB_WORKSPACE/niakvio"
           npm ci --ignore-scripts --no-audit --no-fund
+          # Keep the Desktop canary on the exact same durable fixed-point ordering
+          # as the authoritative Core finalizer. Runtime repository dependencies
+          # must be removed before any provider rebuild can re-emit their bytes.
+          python3 scripts/normalize_repository_docs.py --apply
+          python3 scripts/normalize_runtime_repository_dependencies.py --apply
+          python3 scripts/normalize_provider_rebuild_safety.py --apply
+          python3 scripts/normalize_core_fixed_point_contract.py --apply
+          python3 scripts/normalize_provider_branding_pipeline.py --apply
           python3 scripts/normalize_core_media_policy.py --apply
           python3 scripts/apply_runtime_capability_upgrade_v4.py
           python3 scripts/build_provider_runtime_profiles.py
           converged=0
-          for pass in 1 2 3 4; do
+          for pass in 1 2 3 4 5 6; do
+            echo "FIELD_DESKTOP_CANARY_REBUILD_CONVERGENCE pass=${pass}"
             python3 scripts/reapply_published_overrides.py
             if python3 scripts/reapply_published_overrides.py --check; then
               converged=1
+              echo "FIELD_DESKTOP_CANARY_REBUILD_CONVERGENCE converged_at=${pass}"
               break
             fi
           done
           test "$converged" -eq 1
+          python3 scripts/normalize_runtime_repository_dependencies.py --check
+          python3 scripts/normalize_provider_rebuild_safety.py --check
+          python3 scripts/normalize_core_fixed_point_contract.py --check
+          python3 scripts/normalize_provider_branding_pipeline.py --check
           python3 tests/global_stream_presentation_test.py
           node engine_v2/tests/runtime-adapters.test.mjs
           node engine_v2/tests/stream-presentation.test.mjs
