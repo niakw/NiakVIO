@@ -13,6 +13,7 @@ hygiene consolidation, so native proofs never silently target a stale accepted r
 The sealed checkpoint therefore covers the Core fixed-point and both Desktop native
 proof families after the canary topology regression guard has passed. Main-push
 validation is latest-wins, while explicit orchestrator dispatches remain isolated.
+The temporary Core publication freeze is removed only for this sealed validation set.
 """
 from __future__ import annotations
 
