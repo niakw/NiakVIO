@@ -261,9 +261,11 @@ jobs:
           echo "HYGIENE_RUN=$HYGIENE_RUN" >> "$STATE_FILE"
           watch_gate hygiene "$HYGIENE_RUN" "$RESULT_SHA"
 
-          MAINONLY_RUN="$(dispatch_and_capture main-only-policy.yml)"
-          echo "MAINONLY_RUN=$MAINONLY_RUN" >> "$STATE_FILE"
-          watch_gate mainonly "$MAINONLY_RUN" "$RESULT_SHA"
+          # main-only-policy.yml was retired after its enforcement was absorbed by
+          # the permanent repository policy + hygiene contracts. Keep the final seal
+          # on the durable script instead of dispatching a deleted one-shot workflow.
+          python scripts/enforce_main_only_repository_policy.py --check
+          echo "FIELD_FINAL_MAIN_ONLY_POLICY status=ok owner=permanent-script" >> "$STATE_FILE"
 
           git fetch origin main
           git reset --hard origin/main
@@ -334,7 +336,7 @@ jobs:
           - CodeQL: https://github.com/${REPO}/actions/runs/${CODEQL_RUN}
           - Three-upstream discovery review: https://github.com/${REPO}/actions/runs/${UPSTREAMS_RUN}
           - Repository hygiene: https://github.com/${REPO}/actions/runs/${HYGIENE_RUN}
-          - Main-only policy: https://github.com/${REPO}/actions/runs/${MAINONLY_RUN}
+          - Main-only policy: permanent enforce_main_only_repository_policy.py check on ${FINAL_SHA}
 
           Native playback/provider failures were treated as structured observations, not manifest publication locks. Emulator/ADB/AVD/runner defects remained fatal to final proof; official Nuvio client-runtime failures were retained as vendor-wait evidence; provider-owned failures were imported into sanitized Brain learning for independent Deep/skill follow-up. Final main remained sealed with exactly 92 providers, no open PRs, and only main plus brain-learning/proposals branches.
           EOF
