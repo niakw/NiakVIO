@@ -9,6 +9,7 @@ ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "scripts" / "check_nuvio_client_upstreams.py"
 BRAIN_GUARD = ROOT / "scripts" / "guard_nuvio_client_brain_compat.py"
 CONFIG = ROOT / "automation" / "nuvio-client-upstreams.json"
+DESKTOP_CANARY = ROOT / ".github" / "workflows" / "native-desktop-stream-canary.yml"
 
 spec = importlib.util.spec_from_file_location("nuvio_client_upstream_guard", SCRIPT)
 assert spec is not None and spec.loader is not None
@@ -103,14 +104,38 @@ def main() -> int:
 
     source = SCRIPT.read_text(encoding="utf-8")
     brain_source = BRAIN_GUARD.read_text(encoding="utf-8")
+    desktop_canary = DESKTOP_CANARY.read_text(encoding="utf-8")
     assert '"--clients"' in source
     assert "ThreadPoolExecutor" in source
     assert "parallel-git-ls-remote-plus-targeted-partial-tree-diff" in source
     assert "patch_files = [name for name in files if path_matches(name, patch_rules)]" in source
+    assert '"warning" if args.no_fail else "error"' in source
     assert '"--no-fail"' in brain_source
     assert "classify_provider_mutation_compat" in brain_source
     assert "adaptation_pending" in brain_source
     assert "contract_review_blocking=false" in brain_source
+
+    # The Desktop canary must materialize the exact durable Core fixed-point before
+    # any provider rebuild. Otherwise a purified Cineby can transiently regain its
+    # retired raw.githubusercontent.com repository dependency and fail validation.
+    for required in (
+        "python3 scripts/normalize_repository_docs.py --apply",
+        "python3 scripts/normalize_runtime_repository_dependencies.py --apply",
+        "python3 scripts/normalize_provider_rebuild_safety.py --apply",
+        "python3 scripts/normalize_core_fixed_point_contract.py --apply",
+        "python3 scripts/normalize_provider_branding_pipeline.py --apply",
+        "python3 scripts/normalize_core_media_policy.py --apply",
+        "for pass in 1 2 3 4 5 6; do",
+        "python3 scripts/normalize_runtime_repository_dependencies.py --check",
+        "python3 tests/nuvio_client_upstream_drift_guard_test.py",
+    ):
+        assert required in desktop_canary, required
+    assert desktop_canary.index("normalize_runtime_repository_dependencies.py --apply") < desktop_canary.index(
+        "normalize_core_media_policy.py --apply"
+    )
+    assert desktop_canary.index("normalize_core_media_policy.py --apply") < desktop_canary.index(
+        "reapply_published_overrides.py"
+    )
 
     # Hard contract paths model provider request/result/extraction. Reader/UI stream
     # surfaces remain semantic-review paths so the report records the exact native
