@@ -1,34 +1,57 @@
-MAQUETTE — UN SEUL FLUX PRÉCIS, TOUS LES BADGES SUR UNE LIGNE
-================================================================
+MAQUETTE — UN SEUL FLUX PRÉCIS, CONTRAT V12 FINAL
+===================================================
 
-Titre fictif : ECLIPSE RISING (2025)
-Flux exact : Ultra HD Blu-ray REMUX, 2160p/4K, Dolby Vision, IMAX Enhanced, HEVC, 10-bit, Dolby Atmos, TrueHD, 7.1, VFF, VOSTFR.
+Exemple : Interstellar (2014)
+Provider : Purstream (catalogue VF)
+Flux exact : 2160p/4K, WEB-DL, HEVC 10-bit, Dolby Vision, HLS, E-AC3 5.1, 8.4 GB, VF + VOSTFR.
 
-LIGNE DE BADGES (ordre exact)
-------------------------------
-[ULTRA HD BLU-RAY] [4K UHD] [REMUX] [DOLBY VISION] [IMAX ENHANCED] [HEVC] [10BIT] [DOLBY ATMOS] [TRUEHD] [7.1] [VFF] [VOSTFR]
+TITRE DU FLUX
+-------------
+💧 Purstream - 4K
 
-Une information = un badge.
-Aucune variante concurrente n'est affichée dans cette maquette : pas de HDR10+ en plus si l'exemple choisi est Dolby Vision, pas de DTS:X en plus si l'audio choisi est Dolby Atmos/TrueHD, etc.
-
-DESCRIPTION TECHNIQUE SOUS LA LIGNE
+DESCRIPTION — FALLBACK TEXTE / EMOJI
 -------------------------------------
-2160p • Ultra HD Blu-ray REMUX • HEVC 10-bit • Dolby Vision • IMAX Enhanced • Dolby Atmos TrueHD 7.1 • VFF • VOSTFR
+🎬 Interstellar • 2014
+⏱ 2h49 • 🔞 -12
+🇫🇷 MULTI (VF/VO)
+🎞️ WEB-DL • HEVC 10bit • Dolby Vision • HLS  |  🔊 E-AC3 • 5.1  |  💾 8.4 GB
 
-VARIANTES DE FOND
+RÈGLES DE LANGUE
+----------------
+- Provider/catégorie VF :
+  - fr / fra / french / français / vf / vff générique -> 🇫🇷 VF
+  - VF canadienne / fr-CA / VFQ explicite -> 🇫🇷 VFQ
+  - VF + VOSTFR, Dual Audio ou MULTI explicite -> 🇫🇷 MULTI (VF/VO)
+  - VOSTFR explicite seul -> 🌐🇫🇷 VOSTFR
+  - sans information de flux -> fallback 🇫🇷 VF
+- Provider/catégorie VO :
+  - VO -> 🌐 VO
+  - MULTI -> 🌐 MULTI
+  - sans information de flux -> fallback 🌐 VO
+
+La qualité reste UNIQUEMENT dans le titre. Elle ne doit jamais être répétée dans la description.
+Un simple 1080p ne permet jamais d'inventer une provenance BLU-RAY.
+TMDB peut compléter uniquement le contexte média sûr (titre, année, durée, classification), jamais les faits techniques du flux.
+
+BADGES NATIFS STREAMBADGE
+-------------------------
+Ligne visuelle équivalente pour l'exemple :
+[4K] [WEB-DL] [DOLBY VISION] [HEVC] [10BIT] [E-AC3] [5.1] [MULTI] [VOSTFR]
+
+- Une information = un badge.
+- Les artworks NiakVIO occupent au maximum la surface utile de leurs dimensions natives.
+- Deux tailles : 72x32 et 96x40, WebP.
+- Dark : assets/dark/{72x32|96x40}/<id>.webp
+- Light : assets/light/{72x32|96x40}/<id>.webp
+- Fusion : assets/transparent/96x40/<id>.webp
+- Les feeds utilisent tagStyle=bordered avec tagColor, textColor et borderColor non vides.
+- La couleur de bordure dépend de la famille technique afin de retrouver la lisibilité du meilleur rendu ColorfulAndConcise tout en conservant les artworks/tailles/variantes plus complets de NiakVIO.
+
+ORDRE ET PROPRIÉTÉ
 ------------------
-- previews/MAQUETTE_EXEMPLE_FLUX_UNIQUE_DARK.png utilise les badges assets/dark/…
-- previews/MAQUETTE_EXEMPLE_FLUX_UNIQUE_LIGHT.png utilise les badges assets/light/…
-
-Sur fond gris/sombre Nuvio : charger assets/dark/{72x32|96x40}/<id>.webp
-Sur fond blanc/clair Nuvio : charger assets/light/{72x32|96x40}/<id>.webp
-
-La version transparent existe seulement comme source/fallback ; pour l'UI Nuvio finale, les variantes dark/light sont recommandées afin que les logos restent lisibles sur n'importe quel fond derrière la description.
-
-RUNTIME DUAL-MODE
------------------
-- StreamBadge actif : les tokens de la ligne technique déclenchent les vrais badges image du feed dark/light.
-- StreamBadge inactif : la ligne technique reste visible avec groupes emoji, par exemple :
-  🎞️ 2160p • Ultra HD Blu-ray REMUX • HEVC 10-bit • Dolby Vision • IMAX Enhanced  |  🔊 Dolby Atmos • TrueHD • 7.1  |  🌐 VFF • VOSTFR
-- Dans les deux modes, la description originale du provider est entièrement remplacée par le Core.
-- TMDB enrichit uniquement le contexte média absent ; les faits techniques restent issus du flux/provider.
+- Le provider fournit les faits et les attributs ; il ne possède pas la mise en page finale.
+- Le Core reconstruit titre + quatre lignes de description.
+- Le système badges est l'unique propriétaire des feeds Dark/Light/Fusion et de leur chrome natif (bordure/fond/texte).
+- Le branding provider s'exécute après la présentation et conserve le suffixe « - QUALITÉ ».
+- StreamBadge actif : les tokens structurés/texte déclenchent les images.
+- StreamBadge inactif : les quatre lignes ci-dessus restent lisibles comme fallback universel.
