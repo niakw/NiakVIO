@@ -89,10 +89,30 @@ with tempfile.TemporaryDirectory() as tmp:
     assert not (repo / "androidApp/src/main/AndroidManifest.xml").exists()
 
 
-def reach_gate(lines: list[str], *, blocking: bool = False):
+def complete_reach_evidence(lines: list[str]) -> list[str]:
+    player = next((line for line in lines if line.startswith("FIELD_NATIVE_PLAYER ")), "")
+    parsed = dict(
+        token.split("=", 1)
+        for token in player.split()[1:]
+        if "=" in token
+    )
+    client = parsed.get("client", "test")
+    fixture = parsed.get("fixture", "sinners")
+    provider = parsed.get("provider64", parsed.get("provider", "x"))
+    request_type = parsed.get("request_type", "movie")
+    return [
+        f"FIELD_NATIVE_CORPUS_BEGIN client={client} fixture={fixture} providers=1",
+        f"FIELD_NATIVE_RESULT client={client} fixture={fixture} provider64={provider} request_type={request_type} route_mode=declared state=ok count=0",
+        *lines,
+        f"FIELD_NATIVE_CORPUS_END client={client} fixture={fixture} providers=1",
+    ]
+
+
+def reach_gate(lines: list[str], *, blocking: bool = False, complete: bool = True):
     with tempfile.TemporaryDirectory() as tmp:
         log = Path(tmp) / "reader.log"
-        log.write_text("\n".join(lines) + "\n", encoding="utf-8")
+        evidence = complete_reach_evidence(lines) if complete else lines
+        log.write_text("\n".join(evidence) + "\n", encoding="utf-8")
         env = os.environ.copy()
         if blocking:
             env["NIAKVIO_NATIVE_PLAYER_GATE_BLOCKING"] = "1"
@@ -108,11 +128,21 @@ def reach_gate(lines: list[str], *, blocking: bool = False):
 
 
 # A setup attempt is not a reader reach, even if a terminal FIELD_NATIVE_PLAYER row
-# exists. It remains structured negative evidence owned by the Brain rather than a
-# Lab-infrastructure failure. Strict callers can explicitly restore exit 4.
+# exists. With a structurally complete corpus it remains negative evidence owned by
+# the Brain rather than a Lab-infrastructure failure. Strict callers can explicitly
+# restore exit 4.
 no_launch_lines = [
     "FIELD_NATIVE_PLAYER client=mobile fixture=sinners provider64=x request_type=movie route_mode=declared index=0 state=error engine=nuvio-mobile http_status=0 failure_stage=player_setup error_code=NO_LAUNCH_INTENT"
 ]
+
+# The fail-closed corpus rule remains independently enforced: an isolated player row
+# is incomplete evidence and must never be downgraded to ordinary Brain evidence.
+incomplete_no_launch = reach_gate(no_launch_lines, complete=False)
+assert incomplete_no_launch.returncode == 5, (incomplete_no_launch.stdout, incomplete_no_launch.stderr)
+assert "incomplete_native_evidence" in incomplete_no_launch.stderr
+assert "blocking=true" in incomplete_no_launch.stderr
+assert "owner=lab_infra" in incomplete_no_launch.stderr
+
 no_launch = reach_gate(no_launch_lines)
 assert no_launch.returncode == 0, (no_launch.stdout, no_launch.stderr)
 assert "production_player_never_reached" in no_launch.stderr
