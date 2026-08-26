@@ -93,50 +93,84 @@ def digest(path: Path) -> str:
 
 
 def inventory(*, include_file_hashes: bool) -> dict[str, str]:
-    values: dict[str, str] = {}
+    files: dict[str, str] = {}
     for path in sorted(ROOT.rglob("*")):
         if not path.is_file():
             continue
         relative = path.relative_to(ROOT).as_posix()
         if any(part in IGNORED_PARTS for part in path.relative_to(ROOT).parts):
             continue
-        if relative in GENERATED:
-            if not include_file_hashes or relative == "PATCH-SHA256SUMS.txt":
-                continue
-        if relative in IGNORED_FILES or any(relative.startswith(prefix) for prefix in IGNORED_PREFIXES):
+        if relative in IGNORED_FILES:
             continue
-        values[relative] = digest(path)
-    return values
+        if any(relative.startswith(prefix) for prefix in IGNORED_PREFIXES):
+            continue
+        if relative == "PATCH-SHA256SUMS.txt":
+            continue
+        if relative == "FILE-HASHES.json" and not include_file_hashes:
+            continue
+        if path.suffix in {".zip", ".sha256"}:
+            continue
+        files[relative] = digest(path)
+    return files
 
 
-def sync_runtime_contract_readme() -> None:
-    contract = load_contract(ROOT / "automation" / "platform-runtime-contracts.json")
-    rendered = render_platform_runtime_contracts(contract)
-    current = RUNTIME_CONTRACT_README.read_text(encoding="utf-8") if RUNTIME_CONTRACT_README.exists() else ""
-    if current != rendered:
-        RUNTIME_CONTRACT_README.write_text(rendered, encoding="utf-8")
-        print("FIELD_PLATFORM_RUNTIME_CONTRACT_README synchronized=true")
-    else:
-        print("FIELD_PLATFORM_RUNTIME_CONTRACT_README synchronized=false")
+def materialize_generated_release_docs() -> None:
+    rendered = render_platform_runtime_contracts(load_contract())
+    RUNTIME_CONTRACT_README.write_text(rendered, encoding="utf-8")
 
 
-def main() -> None:
-    sync_runtime_contract_readme()
-    file_hashes = inventory(include_file_hashes=False)
+def main() -> int:
+    # Generated human-readable contracts are part of the durable release tree.
+    # Materialize them before any digest is computed so the hash inventory and
+    # README are one fixed point rather than two independently updated states.
+    materialize_generated_release_docs()
+
+    version = json.loads((ROOT / "package.json").read_text(encoding="utf-8"))["version"]
+
+    core_paths = list(CORE_FILES) + [relative for relative in OPTIONAL_CORE_FILES if (ROOT / relative).is_file()]
+    core = {relative: digest(ROOT / relative) for relative in core_paths}
+    (ROOT / "SHA256SUMS.json").write_text(
+        json.dumps(
+            {
+                "schema_version": 3,
+                "release": version,
+                "algorithm": "sha256",
+                "files": core,
+            },
+            ensure_ascii=False,
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    files = inventory(include_file_hashes=False)
     (ROOT / "FILE-HASHES.json").write_text(
-        json.dumps(file_hashes, indent=2, sort_keys=True) + "\n",
+        json.dumps(
+            {
+                "schema_version": 79,
+                "release": version,
+                "algorithm": "sha256",
+                "excluded_generated_files": sorted(GENERATED),
+                "excluded_mutable_operational_files": sorted(IGNORED_FILES),
+                "excluded_mutable_operational_prefixes": sorted(IGNORED_PREFIXES),
+                "files": files,
+            },
+            ensure_ascii=False,
+            indent=2,
+        )
+        + "\n",
         encoding="utf-8",
     )
-    patch_hashes = inventory(include_file_hashes=True)
-    (ROOT / "PATCH-SHA256SUMS.txt").write_text(
-        "".join(f"{checksum}  {relative}\n" for relative, checksum in sorted(patch_hashes.items())),
-        encoding="utf-8",
-    )
+
+    patch_inventory = inventory(include_file_hashes=True)
+    lines = [f"{sha}  ./{relative}" for relative, sha in patch_inventory.items()]
+    (ROOT / "PATCH-SHA256SUMS.txt").write_text("\n".join(lines) + "\n", encoding="utf-8")
     print(
-        "FIELD_RELEASE_HASHES "
-        f"file_hashes={len(file_hashes)} patch_hashes={len(patch_hashes)} generated=2"
+        f"release hashes generated: core={len(core)}, files={len(files)}, patch={len(patch_inventory)}"
     )
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())
