@@ -163,4 +163,29 @@ try:
 finally:
     movie_path.unlink(missing_ok=True)
 
-print('global stream identity TV/anime/homonymous-movie regression tests passed')
+# Desktop regression: a TMDB transport failure is absence of evidence, not
+# evidence that every year-bearing row is the wrong movie.
+fail_open_source = r'''module.exports={getStreams:async()=>[
+ {name:'Server 1',title:'Interstellar IMAX 2014 1080p WEB-DL',url:'https://cdn.example/interstellar-imax.m3u8'},
+ {name:'Server 2',filename:'Interstellar.Nolan.Cut.2014.1080p.BluRay.mkv',url:'https://cdn.example/interstellar-cut.m3u8'}
+]};'''
+fail_open_patched = identity.apply(fail_open_source, context={"provider_id": "example"})
+assert "cross-client-positive-mismatch-anime-confirmed-fail-open-v4" in fail_open_patched
+fail_open_runner = r'''
+const assert=require('assert');
+global.fetch=async()=>{throw new Error('simulated Desktop TMDB transport failure')};
+PATCHED
+module.exports.getStreams('157336','movie',undefined,undefined).then(rows=>{
+  assert.equal(rows.length,2,JSON.stringify(rows));
+}).catch(e=>{console.error(e);process.exit(3)});
+'''.replace('PATCHED', fail_open_patched)
+with tempfile.NamedTemporaryFile('w', suffix='.cjs', encoding='utf-8', delete=False) as handle:
+    handle.write(fail_open_runner)
+    fail_open_path = Path(handle.name)
+try:
+    proc = subprocess.run(['node', str(fail_open_path)], cwd=ROOT, text=True, capture_output=True, timeout=20)
+    assert proc.returncode == 0, proc.stdout + proc.stderr
+finally:
+    fail_open_path.unlink(missing_ok=True)
+
+print('global stream identity TV/anime/homonymous-movie + Desktop fail-open regression tests passed')

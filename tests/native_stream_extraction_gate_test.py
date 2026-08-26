@@ -103,6 +103,6 @@ assert missing.returncode == 1
 assert "reason=missing_provider_evidence" in missing.stderr
 
 workflow = (ROOT / ".github/workflows/native-desktop-stream-canary.yml").read_text(encoding="utf-8")
-assert "--observational-empty" in workflow
+assert "--observational-empty" not in workflow
 
-print("native stream extraction gate passed: strict positives preserved; Desktop canary empty-provider observations are nonblocking; runtime/missing evidence stays blocking")
+print("native stream extraction gate passed: authoritative Desktop canary requires a real positive; observational-empty remains diagnostics-only")
