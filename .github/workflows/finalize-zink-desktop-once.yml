@@ -16,7 +16,7 @@ concurrency:
 jobs:
   finalize:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 18
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
@@ -30,7 +30,7 @@ jobs:
           node-version: '24'
           package-manager-cache: false
 
-      - name: Inventory published runtime repository dependencies
+      - name: Inventory runtime repository lookups
         shell: bash
         run: |
           set -euo pipefail
@@ -38,21 +38,19 @@ jobs:
           import json,re
           from pathlib import Path
           manifest=json.loads(Path('manifest.json').read_text())
-          hits=[]
           rx=re.compile(r'https?://(?:raw\.)?githubusercontent\.com/[^"\'`\\\s)]+',re.I)
+          hits=[]
           for row in manifest.get('scrapers',[]):
               path=Path(str(row.get('filename') or ''))
-              if not path.is_file():
-                  continue
+              if not path.is_file(): continue
               urls=sorted(set(rx.findall(path.read_text(encoding='utf-8',errors='replace'))))
-              if urls:
-                  hits.append((str(row.get('id')),str(path),urls))
+              if urls: hits.append((str(row.get('id')),str(path),urls))
           for provider,path,urls in hits:
               print(f'FIELD_RUNTIME_REPOSITORY_DEP provider={provider} path={path} urls={";".join(urls)}')
           print(f'FIELD_RUNTIME_REPOSITORY_DEP_COUNT count={len(hits)}')
           PY
 
-      - name: Put ZinkMovies under centralized hub resolution
+      - name: Refresh centralized terminal routes
         shell: bash
         run: |
           set -euo pipefail
@@ -72,47 +70,101 @@ jobs:
           row['resolution_note']='Resolve the current ZinkMovies terminal from the curated redirect hub; retain the provider default URL when no terminal validates.'
           p.write_text(json.dumps(data,ensure_ascii=False,indent=2)+'\n')
           PY
-
           python scripts/resolve_provider_hubs.py \
-            --provider zinkmovies --mode quick --apply --timeout 10 \
-            --output health-output/zinkmovies-final-resolution.json
+            --provider zinkmovies --provider cineby --provider 4khdhub --provider uhdmovies --provider goated \
+            --mode quick --apply --timeout 10 \
+            --output health-output/final-provider-routing.json
 
+      - name: Remove provider-side repository domain registries
+        shell: bash
+        run: |
+          set -euo pipefail
           python - <<'PY'
           import json
           from pathlib import Path
-          p=Path('provider-overrides.json')
-          data=json.loads(p.read_text())
-          patch=data.setdefault('provider_patches',{}).setdefault('zinkmovies',{})
-          site=str(patch.get('official_site') or 'https://zinkmovies.wtf').rstrip('/')
-          hub='https://redirect.zinkmovies.org/'
-          replacements=patch.setdefault('replacements',{})
-          replacements['https://raw.githubusercontent.com/PirateZoro9/asura-providers/main/urls.json']=hub
-          # The provider's original MAIN_URL remains the fallback when hub resolution
-          # is inconclusive; when a terminal validates, the resolver supplies the
-          # zinkmovies.wtf -> current-host replacement automatically.
-          patch['fixed_endpoint']={
+          from urllib.parse import urlparse
+
+          def http(value):
+              return isinstance(value,str) and value.startswith(('http://','https://'))
+
+          hubs=json.loads(Path('provider-hubs.json').read_text()).get('providers',{})
+          history=json.loads(Path('provider-domain-history.json').read_text()).get('providers',{})
+          path=Path('provider-overrides.json')
+          data=json.loads(path.read_text())
+          patches=data.setdefault('provider_patches',{})
+
+          repo_urls={
+              'zinkmovies':'https://raw.githubusercontent.com/PirateZoro9/asura-providers/main/urls.json',
+              '4khdhub':'https://raw.githubusercontent.com/phisher98/TVVVV/refs/heads/main/domains.json',
+              'cineby':'https://raw.githubusercontent.com/sapariyaneel/nuvio-plugin/refs/heads/main/domains.json',
+              'uhdmovies':'https://raw.githubusercontent.com/phisher98/TVVVV/refs/heads/main/domains.json',
+              'goated':'https://raw.githubusercontent.com/sapariyaneel/nuvio-plugin/refs/heads/main/domains.json',
+          }
+          defaults={
+              'zinkmovies':'https://zinkmovies.wtf/',
+              '4khdhub':'https://new4.hdhub4u.cl/',
+              'cineby':'https://cineby.top/',
+              'uhdmovies':'https://uhdmovies.autos/',
+              'goated':'https://goated.cx/',
+          }
+
+          def route_for(pid):
+              row=hubs.get(pid) or {}
+              # Trust order is the global contract: configured hub/method first.
+              hub=row.get('hub')
+              if http(hub): return hub
+              sources=sorted(
+                  [s for s in row.get('sources',[]) if isinstance(s,dict) and s.get('type')!='search' and http(s.get('url'))],
+                  key=lambda s:-int(s.get('priority') or 0),
+              )
+              if sources: return sources[0]['url']
+              patch=patches.get(pid) or {}
+              if http(patch.get('official_site')): return patch['official_site']
+              current=(history.get(pid) or {}).get('current') or {}
+              if http(current.get('url')): return current['url']
+              if http(row.get('direct')): return row['direct']
+              for candidate in row.get('direct_candidates') or []:
+                  if http(candidate): return candidate
+              # No curated/resolved route: preserve the provider's own default URL.
+              return defaults[pid]
+
+          for pid,repo_url in repo_urls.items():
+              patch=patches.setdefault(pid,{})
+              route=route_for(pid)
+              patch.setdefault('replacements',{})[repo_url]=route
+              notes=list(patch.get('notes') or [])
+              note='Centralize domain discovery through provider-hubs.json/history; provider-side GitHub domain registries are maintenance-only and the embedded provider URL remains the final fallback.'
+              if note not in notes: notes.append(note)
+              patch['notes']=notes
+              print(f'FIELD_CENTRALIZED_ROUTE provider={pid} route={route} fallback={defaults[pid]}')
+
+          # ZinkMovies refreshDomains only mutates baseUrl from the old repository JSON.
+          # Neutralize that updater entirely; baseUrl therefore stays on its embedded
+          # fallback unless the centralized resolver has already rewritten the host.
+          z=patches['zinkmovies']
+          site=str(z.get('official_site') or defaults['zinkmovies']).rstrip('/')
+          z['fixed_endpoint']={
               'resolver_function':'refreshDomains',
               'api':site,
               'referer':site+'/'
           }
-          patch['official_hub']=hub.rstrip('/')
-          notes=list(patch.get('notes') or [])
-          for note in (
-              'Centralize ZinkMovies domain discovery through provider-hubs.json instead of executing an upstream GitHub domain registry at provider runtime.',
-              'Keep the provider MAIN_URL as fallback whenever no hub/search/direct terminal is runtime-validated.'
-          ):
-              if note not in notes: notes.append(note)
-          patch['notes']=notes
-          p.write_text(json.dumps(data,ensure_ascii=False,indent=2)+'\n')
-          print('FIELD_ZINK_ROUTE site='+site+' hub='+hub)
+          z['official_hub']='https://redirect.zinkmovies.org'
+          path.write_text(json.dumps(data,ensure_ascii=False,indent=2)+'\n')
           PY
 
-      - name: Prove all final published providers are repository-independent
+      - name: Materialize and prove repository-independent catalogue
         shell: bash
         run: |
           set -euo pipefail
-          python scripts/reapply_published_overrides.py
-          python scripts/reapply_published_overrides.py --check
+          converged=0
+          for pass in 1 2 3 4; do
+            python scripts/reapply_published_overrides.py
+            if python scripts/reapply_published_overrides.py --check; then
+              converged=1
+              break
+            fi
+          done
+          test "$converged" -eq 1
           python tests/provider_hub_registry_test.py
           python tests/provider_hub_curated_baseline_test.py
           python - <<'PY'
@@ -122,11 +174,10 @@ jobs:
           rx=re.compile(r'https?://(?:raw\.)?githubusercontent\.com/',re.I)
           bad=[]
           for row in manifest.get('scrapers',[]):
-              path=Path(str(row.get('filename') or ''))
-              if path.is_file() and rx.search(path.read_text(encoding='utf-8',errors='replace')):
+              p=Path(str(row.get('filename') or ''))
+              if p.is_file() and rx.search(p.read_text(encoding='utf-8',errors='replace')):
                   bad.append(str(row.get('id')))
-          if bad:
-              raise SystemExit('runtime repository dependencies remain: '+','.join(bad))
+          if bad: raise SystemExit('runtime repository dependencies remain: '+','.join(bad))
           print('FIELD_ALL_PUBLISHED_REPOSITORY_INDEPENDENT state=passed')
           PY
 
