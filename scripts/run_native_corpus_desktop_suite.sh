@@ -120,7 +120,7 @@ PY
 
   if [[ -s "$BASE_LOG" ]]; then cp "$BASE_LOG" "$LOG"; else : > "$LOG"; fi
   if [[ -s "$HTTP_LOG" ]]; then cat "$HTTP_LOG" >> "$LOG"; fi
-  rm -f "$HTTP_LOG" "$GRADLE_LOG"
+  rm -f "$HTTP_LOG"
   echo "FIELD_NATIVE_EVIDENCE_INSTRUMENTED client=desktop" >> "$LOG"
   cat "$LOG" || true
 
