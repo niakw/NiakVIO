@@ -4,7 +4,7 @@
 
 Runtime provider bundles may inherit GitHub-hosted JSON registries from upstreams.
 Those links are maintenance inputs, not playback dependencies. This normalizer
-persists a reusable patch configuration so every future reapply/sync materializes
+persists reusable patch configuration so every future reapply/sync materializes
 reviewed endpoints before publication.
 """
 from __future__ import annotations
@@ -17,6 +17,7 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 CONFIG = ROOT / "provider-overrides.json"
 PATCH = "scripts/provider_patches/runtime_repository_domain_materializer_v1.py"
+TVVVV_DOMAINS = "https://raw.githubusercontent.com/phisher98/TVVVV/refs/heads/main/domains.json"
 
 CINEBY_REPOSITORY_DOMAINS = (
     "https://raw.githubusercontent.com/sapariyaneel/nuvio-plugin/refs/heads/main/domains.json"
@@ -29,11 +30,33 @@ CINEBY_NOTE = (
 )
 CINEBY_OPTIONS = {
     "resolver_function": "getDomains",
-    "values": {
+    "materialized_value": {
         "cineby": CINEBY_SITE,
         "speedracelight": CINEBY_API,
     },
     "forbidden_urls": [CINEBY_REPOSITORY_DOMAINS],
+}
+
+UHDMOVIES_SITE = "https://uhdmovies.autos"
+UHDMOVIES_NOTE = (
+    "UHDMovies runtime domain discovery is materialized from the reviewed terminal; "
+    "the TVVVV domains.json registry is maintenance-only and never fetched during playback."
+)
+UHDMOVIES_OPTIONS = {
+    "resolver_function": "domainCandidates",
+    "materialized_value": [UHDMOVIES_SITE],
+    "forbidden_urls": [TVVVV_DOMAINS],
+}
+
+FOURKHDHUB_SITE = "https://new4.hdhub4u.cl"
+FOURKHDHUB_NOTE = (
+    "4KHDHub runtime domain discovery is materialized from NiakVIO's reviewed terminal; "
+    "the TVVVV domains.json registry is maintenance-only and never fetched during playback."
+)
+FOURKHDHUB_OPTIONS = {
+    "resolver_function": "fetchLatestDomain",
+    "materialized_value": FOURKHDHUB_SITE,
+    "forbidden_urls": [TVVVV_DOMAINS],
 }
 
 
@@ -54,68 +77,140 @@ def _notes(value: object) -> list[str]:
     raise ValueError("provider notes must be a string or array")
 
 
-def normalize(value: dict[str, Any]) -> tuple[dict[str, Any], list[str]]:
+def _ensure_materializer(
+    providers: dict[str, Any],
+    provider_id: str,
+    *,
+    options_value: dict[str, Any],
+    note: str,
+    official_site: str | None = None,
+    official_api: str | None = None,
+) -> list[str]:
     changed: list[str] = []
-    providers = value.get("provider_patches")
-    if not isinstance(providers, dict):
-        raise ValueError("provider_patches must be an object")
-
-    row = providers.get("cineby")
-    if not isinstance(row, dict):
-        raise ValueError("provider_patches.cineby must be an object")
+    raw_row = providers.get(provider_id)
+    if raw_row is None:
+        raw_row = {}
+        providers[provider_id] = raw_row
+        changed.append(f"provider_patches.{provider_id}")
+    if not isinstance(raw_row, dict):
+        raise ValueError(f"provider_patches.{provider_id} must be an object")
+    row = raw_row
 
     scripts = row.get("patch_scripts") or []
     if not isinstance(scripts, list):
-        raise ValueError("provider_patches.cineby.patch_scripts must be an array")
+        raise ValueError(f"provider_patches.{provider_id}.patch_scripts must be an array")
     normalized_scripts = [str(path) for path in scripts if str(path).strip()]
     if PATCH not in normalized_scripts:
         normalized_scripts.append(PATCH)
     if normalized_scripts != scripts:
         row["patch_scripts"] = normalized_scripts
-        changed.append("provider_patches.cineby.patch_scripts")
+        changed.append(f"provider_patches.{provider_id}.patch_scripts")
 
     options = row.get("patch_script_options") or {}
     if not isinstance(options, dict):
-        raise ValueError("provider_patches.cineby.patch_script_options must be an object")
-    if options.get(PATCH) != CINEBY_OPTIONS:
-        options[PATCH] = CINEBY_OPTIONS
+        raise ValueError(f"provider_patches.{provider_id}.patch_script_options must be an object")
+    if options.get(PATCH) != options_value:
+        options[PATCH] = options_value
         row["patch_script_options"] = options
-        changed.append("provider_patches.cineby.patch_script_options")
+        changed.append(f"provider_patches.{provider_id}.patch_script_options")
 
-    if row.get("official_site") != CINEBY_SITE:
-        row["official_site"] = CINEBY_SITE
-        changed.append("provider_patches.cineby.official_site")
-    if row.get("official_api") != CINEBY_API:
-        row["official_api"] = CINEBY_API
-        changed.append("provider_patches.cineby.official_api")
+    if official_site is not None and row.get("official_site") != official_site:
+        row["official_site"] = official_site
+        changed.append(f"provider_patches.{provider_id}.official_site")
+    if official_api is not None and row.get("official_api") != official_api:
+        row["official_api"] = official_api
+        changed.append(f"provider_patches.{provider_id}.official_api")
 
     notes = _notes(row.get("notes"))
+    registry_urls = set(str(url) for url in (options_value.get("forbidden_urls") or []))
     notes = [
-        note for note in notes
-        if CINEBY_REPOSITORY_DOMAINS not in note or "maintenance-only" in note.casefold()
+        existing for existing in notes
+        if not any(url in existing for url in registry_urls) or "maintenance-only" in existing.casefold()
     ]
-    if CINEBY_NOTE not in notes:
-        notes.append(CINEBY_NOTE)
+    if note not in notes:
+        notes.append(note)
     if notes != row.get("notes"):
         row["notes"] = notes
-        changed.append("provider_patches.cineby.notes")
+        changed.append(f"provider_patches.{provider_id}.notes")
+    return changed
 
+
+def normalize(value: dict[str, Any]) -> tuple[dict[str, Any], list[str]]:
+    providers = value.get("provider_patches")
+    if not isinstance(providers, dict):
+        raise ValueError("provider_patches must be an object")
+    changed: list[str] = []
+    changed += _ensure_materializer(
+        providers,
+        "cineby",
+        options_value=CINEBY_OPTIONS,
+        note=CINEBY_NOTE,
+        official_site=CINEBY_SITE,
+        official_api=CINEBY_API,
+    )
+    changed += _ensure_materializer(
+        providers,
+        "uhdmovies",
+        options_value=UHDMOVIES_OPTIONS,
+        note=UHDMOVIES_NOTE,
+        official_site=UHDMOVIES_SITE,
+    )
+    changed += _ensure_materializer(
+        providers,
+        "4khdhub",
+        options_value=FOURKHDHUB_OPTIONS,
+        note=FOURKHDHUB_NOTE,
+        official_site=FOURKHDHUB_SITE,
+    )
     return value, changed
+
+
+def _assert_provider(
+    providers: dict[str, Any],
+    provider_id: str,
+    *,
+    expected_options: dict[str, Any],
+    official_site: str | None = None,
+    official_api: str | None = None,
+) -> None:
+    row = providers.get(provider_id)
+    if not isinstance(row, dict):
+        raise ValueError(f"provider_patches.{provider_id} must remain configured")
+    scripts = [str(path) for path in (row.get("patch_scripts") or [])]
+    if PATCH not in scripts:
+        raise ValueError(f"{provider_id} runtime repository materializer is missing")
+    options = row.get("patch_script_options") or {}
+    if not isinstance(options, dict) or options.get(PATCH) != expected_options:
+        raise ValueError(f"{provider_id} runtime repository materializer options drifted")
+    if official_site is not None and row.get("official_site") != official_site:
+        raise ValueError(f"{provider_id} reviewed site endpoint drifted")
+    if official_api is not None and row.get("official_api") != official_api:
+        raise ValueError(f"{provider_id} reviewed API endpoint drifted")
 
 
 def assert_contract(value: dict[str, Any]) -> None:
     providers = value.get("provider_patches") or {}
-    row = providers.get("cineby")
-    if not isinstance(row, dict):
-        raise ValueError("provider_patches.cineby must remain configured")
-    scripts = [str(path) for path in (row.get("patch_scripts") or [])]
-    if PATCH not in scripts:
-        raise ValueError("Cineby runtime repository materializer is missing")
-    options = row.get("patch_script_options") or {}
-    if not isinstance(options, dict) or options.get(PATCH) != CINEBY_OPTIONS:
-        raise ValueError("Cineby runtime repository materializer options drifted")
-    if row.get("official_site") != CINEBY_SITE or row.get("official_api") != CINEBY_API:
-        raise ValueError("Cineby reviewed site/API endpoints drifted")
+    if not isinstance(providers, dict):
+        raise ValueError("provider_patches must remain an object")
+    _assert_provider(
+        providers,
+        "cineby",
+        expected_options=CINEBY_OPTIONS,
+        official_site=CINEBY_SITE,
+        official_api=CINEBY_API,
+    )
+    _assert_provider(
+        providers,
+        "uhdmovies",
+        expected_options=UHDMOVIES_OPTIONS,
+        official_site=UHDMOVIES_SITE,
+    )
+    _assert_provider(
+        providers,
+        "4khdhub",
+        expected_options=FOURKHDHUB_OPTIONS,
+        official_site=FOURKHDHUB_SITE,
+    )
     if not (ROOT / PATCH).is_file():
         raise ValueError("runtime repository domain materializer implementation is missing")
 
@@ -139,7 +234,8 @@ def main() -> int:
 
     print(
         "FIELD_RUNTIME_REPOSITORY_DEPENDENCIES "
-        f"changed={len(changed)} cineby=materialized repository_runtime_fetches=0"
+        f"changed={len(changed)} cineby=materialized uhdmovies=materialized "
+        "4khdhub=materialized repository_runtime_fetches=0"
     )
     return 0
 

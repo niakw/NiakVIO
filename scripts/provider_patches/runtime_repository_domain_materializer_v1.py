@@ -5,7 +5,7 @@
 Published providers must not fetch GitHub repositories at playback time merely to
 resolve a mutable site/API hostname. The maintenance plane resolves and reviews
 those values; this patch replaces the provider's named registry resolver with a
-small static object and removes the configured repository URL literals.
+static reviewed value and removes configured repository URL literals.
 """
 from __future__ import annotations
 
@@ -64,6 +64,29 @@ def _replace_named_function(text: str, function_name: str, replacement: str) -> 
     raise ValueError(f"unterminated function body: {function_name}")
 
 
+def _normalize_payload(value: Any) -> Any:
+    if isinstance(value, str):
+        url = value.strip().rstrip("/")
+        if not url.startswith(("http://", "https://")):
+            raise ValueError(f"invalid materialized runtime domain: {value!r}")
+        return url
+    if isinstance(value, list):
+        if not value:
+            raise ValueError("materialized runtime domain list must not be empty")
+        return [_normalize_payload(item) for item in value]
+    if isinstance(value, dict):
+        if not value:
+            raise ValueError("materialized runtime domain object must not be empty")
+        normalized: dict[str, Any] = {}
+        for key, item in value.items():
+            name = str(key).strip()
+            if not name:
+                raise ValueError("materialized runtime domain key must not be empty")
+            normalized[name] = _normalize_payload(item)
+        return normalized
+    raise ValueError(f"unsupported materialized runtime domain payload: {type(value).__name__}")
+
+
 def apply(
     text: str,
     *,
@@ -72,21 +95,14 @@ def apply(
 ) -> str:
     options = dict(options or {})
     function_name = str(options.get("resolver_function") or "").strip()
-    values = options.get("values")
+    raw_payload = options.get("materialized_value", options.get("values"))
     forbidden_urls = [str(value) for value in (options.get("forbidden_urls") or []) if str(value).strip()]
     if not function_name:
         raise ValueError("runtime repository domain materializer requires resolver_function")
-    if not isinstance(values, dict) or not values:
-        raise ValueError("runtime repository domain materializer requires non-empty values")
+    if raw_payload is None:
+        raise ValueError("runtime repository domain materializer requires materialized_value or values")
 
-    normalized: dict[str, str] = {}
-    for key, value in values.items():
-        name = str(key).strip()
-        url = str(value).strip().rstrip("/")
-        if not name or not url.startswith(("http://", "https://")):
-            raise ValueError(f"invalid materialized runtime domain: {key!r}={value!r}")
-        normalized[name] = url
-
+    normalized = _normalize_payload(raw_payload)
     payload = json.dumps(normalized, ensure_ascii=True, separators=(",", ":"))
     replacement = (
         f"function {function_name}(){{"
