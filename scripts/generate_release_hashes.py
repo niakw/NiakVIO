@@ -12,7 +12,10 @@ import hashlib
 import json
 from pathlib import Path
 
+from render_platform_runtime_contracts import load_contract, render as render_platform_runtime_contracts
+
 ROOT = Path(__file__).resolve().parents[1]
+RUNTIME_CONTRACT_README = ROOT / "automation" / "PLATFORM-RUNTIME-CONTRACTS.md"
 GENERATED = {"FILE-HASHES.json", "PATCH-SHA256SUMS.txt"}
 IGNORED_PARTS = {
     ".git",
@@ -42,9 +45,11 @@ CORE_FILES = [
     "vf/manifest.json",
     "provider-overrides.json",
     "automation/platform-runtime-contracts.json",
+    "automation/PLATFORM-RUNTIME-CONTRACTS.md",
     "automation/nuvio-tv-runtime-contract.json",
     "automation/nuvio-client-upstreams.json",
     "automation/nuvio-client-safety-findings.json",
+    "scripts/render_platform_runtime_contracts.py",
     "scripts/deep_repair_loop.py",
     "scripts/runtime_repair.py",
     "scripts/apply_provider_overrides.py",
@@ -104,7 +109,17 @@ def inventory(*, include_file_hashes: bool) -> dict[str, str]:
     return files
 
 
+def materialize_generated_release_docs() -> None:
+    rendered = render_platform_runtime_contracts(load_contract())
+    RUNTIME_CONTRACT_README.write_text(rendered, encoding="utf-8")
+
+
 def main() -> int:
+    # Generated human-readable contracts are part of the durable release tree.
+    # Materialize them before any digest is computed so the hash inventory and
+    # README are one fixed point rather than two independently updated states.
+    materialize_generated_release_docs()
+
     version = json.loads((ROOT / "package.json").read_text(encoding="utf-8"))["version"]
 
     core_paths = list(CORE_FILES) + [relative for relative in OPTIONAL_CORE_FILES if (ROOT / relative).is_file()]
