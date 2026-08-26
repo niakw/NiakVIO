@@ -1,16 +1,14 @@
 #!/usr/bin/env python3
-"""Enforce NiakVIO unified stream presentation V12.
+"""Enforce the permanently materialized NiakVIO stream presentation V12.
 
-The filename remains stable temporarily because normalize_core_media_policy imports it.
+The historical filename remains stable because normalize_core_media_policy imports it.
 Presentation code is canonical in global_stream_presentation_v1.py. Badge artwork and
 native StreamBadge feeds are owned exclusively by the badge-system materializer; this
-normalizer only validates that the presentation contract can consume those feeds.
+normalizer validates that the committed presentation contract can consume those feeds.
 """
 from __future__ import annotations
 
 import argparse
-import base64
-import hashlib
 import json
 from pathlib import Path
 
@@ -20,40 +18,19 @@ DARK_FEED = ROOT / "assets/stream-badges-dark.json"
 LIGHT_FEED = ROOT / "assets/stream-badges-light.json"
 FUSION_FEED = ROOT / "assets/stream-badges-fusion.json"
 REVISION = "all-providers-title-quality-ordered-description-v12"
-STAGED_SHA256 = "8b436e032540e3c3f054efdcb43447234a079d57000555d96b366ca52fcb17a5"
-STAGED_PARTS = [ROOT / f"scripts/.v12-staging-part{i}.b64" for i in range(1, 5)]
-STAGED_HELPER = ROOT / "scripts/materialize_stream_presentation_v12_once.py"
-
-
-def _consume_staged_v12(*, apply: bool) -> bool:
-    if not all(path.is_file() for path in STAGED_PARTS):
-        return False
-    payload = base64.b64decode("".join(path.read_text(encoding="utf-8").strip() for path in STAGED_PARTS))
-    digest = hashlib.sha256(payload).hexdigest()
-    if digest != STAGED_SHA256:
-        raise ValueError(f"staged V12 checksum mismatch: {digest}")
-    if apply:
-        CORE.write_bytes(payload)
-        for path in STAGED_PARTS:
-            path.unlink()
-        if STAGED_HELPER.is_file():
-            STAGED_HELPER.unlink()
-    return True
 
 
 def normalize(*, apply: bool) -> list[str]:
+    # ``apply`` is retained for compatibility with the Core normalization pipeline,
+    # but V12 is now a committed fixed point: no hidden staging or one-shot rewrite
+    # is permitted during a build/test run.
+    _ = apply
     text = CORE.read_text(encoding="utf-8")
     if REVISION not in text:
-        staged = _consume_staged_v12(apply=apply)
-        if staged and apply:
-            text = CORE.read_text(encoding="utf-8")
-        if REVISION not in text:
-            if staged and not apply:
-                return ["global_stream_presentation_v12"]
-            raise ValueError(
-                "stream presentation V12 source is not materialized; "
-                "global_stream_presentation_v1.py must be updated atomically with this normalizer"
-            )
+        raise ValueError(
+            "stream presentation V12 source is not materialized; "
+            "global_stream_presentation_v1.py must contain the canonical V12 source"
+        )
     return []
 
 
