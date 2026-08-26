@@ -35,6 +35,15 @@ POLICY_NOTE = (
     "Purstream has no provider-specific repair hooks; content identity, stream facts, "
     "presentation and platform compatibility are handled by shared Core/capability layers."
 )
+ZINK_REPOSITORY_DOMAIN_SOURCE = (
+    "https://raw.githubusercontent.com/PirateZoro9/asura-providers/main/urls.json"
+)
+ZINK_OFFICIAL_HUB = "https://redirect.zinkmovies.org/"
+ZINK_DEFAULT_SITE = "https://zinkmovies.wtf"
+ZINK_POLICY_NOTE = (
+    "Runtime domain discovery is materialized from the official ZinkMovies address hub; "
+    "the upstream repository URL is maintenance-only and must never remain a runtime dependency."
+)
 
 # Exact historical block that made one provider a special Desktop compatibility
 # target. The normalizer removes it once and --check prevents resurrection.
@@ -71,6 +80,42 @@ def _normalize_global_tail(value: dict[str, Any], changed: list[str]) -> None:
     if normalized != hooks:
         playback["global_discovery_hooks"] = normalized
         changed.append("playback_integrity_policy.global_discovery_hooks:security_tail")
+
+
+def _normalize_zink_domain_discovery(providers: dict[str, Any], changed: list[str]) -> None:
+    """Keep ZinkMovies runtime routing on its official address source, never a repo."""
+    row = providers.get("zinkmovies")
+    if not isinstance(row, dict):
+        raise ValueError("provider_patches.zinkmovies must be an object")
+
+    replacements = row.get("replacements") or {}
+    if not isinstance(replacements, dict):
+        raise ValueError("provider_patches.zinkmovies.replacements must be an object")
+    if replacements.get(ZINK_REPOSITORY_DOMAIN_SOURCE) != ZINK_OFFICIAL_HUB:
+        replacements[ZINK_REPOSITORY_DOMAIN_SOURCE] = ZINK_OFFICIAL_HUB
+        row["replacements"] = replacements
+        changed.append("provider_patches.zinkmovies.replacements:repository_to_official_hub")
+
+    if row.get("official_hub") != ZINK_OFFICIAL_HUB:
+        row["official_hub"] = ZINK_OFFICIAL_HUB
+        changed.append("provider_patches.zinkmovies.official_hub")
+    if not str(row.get("official_site") or "").strip():
+        row["official_site"] = ZINK_DEFAULT_SITE
+        changed.append("provider_patches.zinkmovies.official_site")
+
+    notes_value = row.get("notes") or []
+    if isinstance(notes_value, str):
+        notes = [notes_value]
+    elif isinstance(notes_value, list):
+        notes = [str(note) for note in notes_value]
+    else:
+        raise ValueError("provider_patches.zinkmovies.notes must be a string or array")
+    notes = [note for note in notes if "repository" not in note.casefold() or "maintenance-only" in note.casefold()]
+    if ZINK_POLICY_NOTE not in notes:
+        notes.append(ZINK_POLICY_NOTE)
+    if notes != notes_value:
+        row["notes"] = notes
+        changed.append("provider_patches.zinkmovies.notes")
 
 
 def normalize(value: dict[str, Any]) -> tuple[dict[str, Any], list[str]]:
@@ -115,6 +160,7 @@ def normalize(value: dict[str, Any]) -> tuple[dict[str, Any], list[str]]:
         row["notes"] = notes
         changed.append("provider_patches.purstream.notes")
 
+    _normalize_zink_domain_discovery(providers, changed)
     _normalize_global_tail(value, changed)
     return value, changed
 
@@ -185,6 +231,17 @@ def assert_policy(value: dict[str, Any]) -> None:
     forbidden = sorted((scripts | options) - ALLOWED_SHARED_PURSTREAM_SCRIPTS)
     if forbidden:
         raise ValueError("provider-specific media repair/configuration remains active: " + ", ".join(forbidden))
+
+    zink = value["provider_patches"].get("zinkmovies")
+    if not isinstance(zink, dict):
+        raise ValueError("provider_patches.zinkmovies must remain configured")
+    zink_replacements = zink.get("replacements") or {}
+    if zink_replacements.get(ZINK_REPOSITORY_DOMAIN_SOURCE) != ZINK_OFFICIAL_HUB:
+        raise ValueError("ZinkMovies repository domain lookup must materialize to the official hub")
+    if zink.get("official_hub") != ZINK_OFFICIAL_HUB:
+        raise ValueError("ZinkMovies official hub contract is missing")
+    if not str(zink.get("official_site") or "").strip():
+        raise ValueError("ZinkMovies requires a materialized terminal fallback")
 
     runtime = ROOT / "scripts/provider_patches/runtime_capability_media_safety_v4.py"
     presentation = ROOT / "scripts/provider_patches/global_stream_presentation_v1.py"
