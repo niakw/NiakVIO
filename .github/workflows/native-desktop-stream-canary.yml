@@ -13,6 +13,8 @@ on:
       - "providers/**"
       - "automation/nuvio-client-upstreams.json"
       - "automation/platform-runtime-contracts.json"
+      - "automation/PLATFORM-RUNTIME-CONTRACTS.md"
+      - "scripts/render_platform_runtime_contracts.py"
       - "scripts/apply_provider_overrides.py"
       - "scripts/apply_runtime_capability_upgrade_v4.py"
       - "scripts/core_rebuild_safety.py"
@@ -53,6 +55,8 @@ on:
       - "providers/**"
       - "automation/nuvio-client-upstreams.json"
       - "automation/platform-runtime-contracts.json"
+      - "automation/PLATFORM-RUNTIME-CONTRACTS.md"
+      - "scripts/render_platform_runtime_contracts.py"
       - "scripts/apply_provider_overrides.py"
       - "scripts/apply_runtime_capability_upgrade_v4.py"
       - "scripts/core_rebuild_safety.py"
@@ -107,6 +111,8 @@ jobs:
         with:
           node-version: '24'
           package-manager-cache: false
+      - name: Validate living cross-device runtime contract
+        run: python3 scripts/render_platform_runtime_contracts.py --check
       - name: Validate extraction gate semantics
         run: python3 tests/native_stream_extraction_gate_test.py
 
