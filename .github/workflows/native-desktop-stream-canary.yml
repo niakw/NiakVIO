@@ -293,6 +293,70 @@ jobs:
             --no-configuration-cache --console=plain
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
+      - name: Enable pre-evaluation native fetch diagnostics
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path("niakvio/scripts/augment_native_desktop_runtime_diagnostics.py")
+          text = path.read_text(encoding="utf-8")
+
+          old = '    private fun captureRuntimeConsole(code: String): String = code + """\n'
+          new = r'''    private fun captureRuntimeConsole(code: String): String = """
+;/* NIAKVIO_NATIVE_FETCH_PRE_EVAL_TRACE */
+(function(g){
+    try {
+        var originalNativeFetch = g && g.__native_fetch;
+        var trace = [];
+        if (g) g.__niakvioNativeFetchTrace = trace;
+        if (typeof originalNativeFetch === "function") {
+            g.__native_fetch = async function(url, method, headers, body, followRedirects) {
+                var verb = String(method || "GET");
+                var target = String(url || "");
+                try {
+                    var raw = await originalNativeFetch.apply(this, arguments);
+                    var parsed = null;
+                    try { parsed = JSON.parse(String(raw || "{}")); } catch (_) {}
+                    var status = parsed && parsed.status != null ? String(parsed.status) : "unknown";
+                    var ok = parsed && parsed.ok != null ? String(parsed.ok) : "unknown";
+                    var statusText = parsed && parsed.statusText != null ? String(parsed.statusText) : "";
+                    trace.push("native-fetch:" + verb + ":" + target + ":status=" + status + ":ok=" + ok + ":statusText=" + statusText);
+                    if (trace.length > 64) trace.shift();
+                    return raw;
+                } catch (error) {
+                    var message = "";
+                    try { message = error && error.message ? String(error.message) : String(error); } catch (_) {}
+                    trace.push("native-fetch-error:" + verb + ":" + target + ":" + message);
+                    if (trace.length > 64) trace.shift();
+                    throw error;
+                }
+            };
+        }
+    } catch (_) {}
+})(typeof globalThis !== "undefined" ? globalThis : this);
+""".trimIndent() + "\n" + code + """
+'''
+          if text.count(old) != 1:
+              raise SystemExit(f"native diagnostic prelude anchor count={text.count(old)}")
+          text = text.replace(old, new, 1)
+
+          old_detail = '        var detail = messages.length ? messages.join(" | ") : "no_console_or_fetch_output";\n'
+          new_detail = '''        try {
+            var nativeTrace = (typeof globalThis !== "undefined" && Array.isArray(globalThis.__niakvioNativeFetchTrace))
+                ? globalThis.__niakvioNativeFetchTrace : [];
+            if (nativeTrace.length) messages = messages.concat(nativeTrace);
+        } catch (_) {}
+        var detail = messages.length ? messages.join(" | ") : "no_console_or_fetch_output";
+'''
+          if text.count(old_detail) != 1:
+              raise SystemExit(f"native diagnostic detail anchor count={text.count(old_detail)}")
+          text = text.replace(old_detail, new_detail, 1)
+          path.write_text(text, encoding="utf-8")
+          print("FIELD_NATIVE_FETCH_PRE_EVAL_DIAGNOSTICS status=enabled runtime_mutation=false provider_mutation=false test_copy_only=true")
+          PY
+
       - name: Probe independent Interstellar providers
         shell: bash
         run: |
