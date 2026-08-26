@@ -148,7 +148,7 @@ def normalize_apply(text: str) -> str:
         Terser is allowed to preserve comments while changing their attachment to
         AST nodes. Therefore a Core boundary/marker found before the provider export
         is stale metadata, not a truncation point. Stale boundary comments are
-        removed, then only markers strictly after the export floor may delimit the
+        removed, then only markers at or after the export floor may delimit the
         generated Core tail. Unknown export shapes fail closed and retain all bytes.
         """
         original = text
@@ -158,7 +158,7 @@ def normalize_apply(text: str) -> str:
             return text, False
 
         boundary_index = text.find(boundary_needle, floor)
-        if boundary_index > floor:
+        if boundary_index >= floor:
             prefix = text[:boundary_index].replace(boundary_needle, "").rstrip()
             return prefix, True
 
@@ -181,7 +181,7 @@ def normalize_apply(text: str) -> str:
         starts = []
         for marker in legacy_markers:
             index = text.find(f"/* {marker}", floor)
-            if index > floor:
+            if index >= floor:
                 starts.append(index)
         if starts:
             return text[:min(starts)].rstrip(), True
@@ -264,6 +264,8 @@ def assert_contract() -> None:
         "def _provider_export_floor(text: str) -> int:",
         'r"\\bmodule\\.exports\\s*=\\s*__provider\\b"',
         'boundary_index = text.find(boundary_needle, floor)',
+        'if boundary_index >= floor:',
+        'if index >= floor:',
         'text.replace(boundary_needle, "")',
         'text.find(f"/* {marker}", floor)',
         "provider_floor = _provider_export_floor(text)",
@@ -278,6 +280,8 @@ def assert_contract() -> None:
         "return text, 0 if text == original_text else max(1, orphan_count)",
     ):
         assert required in apply_text, f"missing apply fixed-point contract: {required}"
+    assert "if boundary_index > floor:" not in apply_text
+    assert "if index > floor:" not in apply_text
     assert f'HOOK_BOUNDARY = "{SECURITY_BOUNDARY}"' in security_text
 
     for required in (
