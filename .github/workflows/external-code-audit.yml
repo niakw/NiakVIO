@@ -2,6 +2,12 @@ name: External Code Audit
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      # Manual refresh marker only: normal repository pushes do not trigger this workflow.
+      - audit/ai-external/.refresh-request
   schedule:
     # Weekly refresh every Sunday at 04:17 UTC.
     - cron: '17 4 * * 0'
