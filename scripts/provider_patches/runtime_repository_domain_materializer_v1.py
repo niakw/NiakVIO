@@ -6,14 +6,24 @@ Published providers must not fetch GitHub repositories at playback time merely t
 resolve a mutable site/API hostname. The maintenance plane resolves and reviews
 those values; this patch replaces the provider's named registry resolver with a
 static reviewed value and removes configured repository URL literals.
+
+Materialized values may reference ``official_site`` / ``official_api`` through a
+``{"$from": ..., "fallback": ...}`` node. Those references are resolved from the
+current provider-overrides.json at patch time, so hub/Telegram/search/LKG address
+resolution automatically feeds the next provider rebuild without copying the
+terminal URL into a second configuration surface.
 """
 from __future__ import annotations
 
 import json
 import re
+from pathlib import Path
 from typing import Any
 
 MARKER = "NUVIO_RUNTIME_REPOSITORY_DOMAIN_MATERIALIZER_V1"
+ROOT = Path(__file__).resolve().parents[2]
+CONFIG = ROOT / "provider-overrides.json"
+_CONTEXT_KEYS = {"$from", "fallback"}
 
 
 def _replace_named_function(text: str, function_name: str, replacement: str) -> tuple[str, bool]:
@@ -64,6 +74,42 @@ def _replace_named_function(text: str, function_name: str, replacement: str) -> 
     raise ValueError(f"unterminated function body: {function_name}")
 
 
+def _provider_config(context: dict[str, Any] | None) -> dict[str, Any]:
+    provider_id = str((context or {}).get("provider_id") or "").strip().casefold()
+    if not provider_id:
+        return {}
+    value = json.loads(CONFIG.read_text(encoding="utf-8"))
+    providers = value.get("provider_patches") or {}
+    if not isinstance(providers, dict):
+        raise ValueError("provider_patches must be an object")
+    row = providers.get(provider_id) or {}
+    if not isinstance(row, dict):
+        raise ValueError(f"provider_patches.{provider_id} must be an object")
+    return row
+
+
+def _resolve_context_payload(value: Any, context: dict[str, Any] | None) -> Any:
+    if isinstance(value, dict) and "$from" in value and set(value).issubset(_CONTEXT_KEYS):
+        field = str(value.get("$from") or "").strip()
+        if not field:
+            raise ValueError("materialized runtime context reference requires $from")
+        row = _provider_config(context)
+        selected = row.get(field)
+        if selected is None or (isinstance(selected, str) and not selected.strip()):
+            selected = value.get("fallback")
+        if selected is None:
+            provider_id = str((context or {}).get("provider_id") or "unknown")
+            raise ValueError(
+                f"materialized runtime context value missing provider={provider_id} field={field}"
+            )
+        return selected
+    if isinstance(value, list):
+        return [_resolve_context_payload(item, context) for item in value]
+    if isinstance(value, dict):
+        return {str(key): _resolve_context_payload(item, context) for key, item in value.items()}
+    return value
+
+
 def _normalize_payload(value: Any) -> Any:
     if isinstance(value, str):
         url = value.strip().rstrip("/")
@@ -97,17 +143,31 @@ def apply(
     function_name = str(options.get("resolver_function") or "").strip()
     raw_payload = options.get("materialized_value", options.get("values"))
     forbidden_urls = [str(value) for value in (options.get("forbidden_urls") or []) if str(value).strip()]
+    mode = str(options.get("mode") or "return").strip().casefold()
     if not function_name:
         raise ValueError("runtime repository domain materializer requires resolver_function")
     if raw_payload is None:
         raise ValueError("runtime repository domain materializer requires materialized_value or values")
 
-    normalized = _normalize_payload(raw_payload)
+    resolved_payload = _resolve_context_payload(raw_payload, context)
+    normalized = _normalize_payload(resolved_payload)
     payload = json.dumps(normalized, ensure_ascii=True, separators=(",", ":"))
+    if mode == "return":
+        body = f"return Promise.resolve({payload});"
+    elif mode == "assign":
+        target = str(options.get("assign_target") or "").strip()
+        if not re.fullmatch(r"[A-Za-z_$][A-Za-z0-9_$]*", target):
+            raise ValueError("runtime repository assignment mode requires a safe assign_target identifier")
+        if not isinstance(normalized, str):
+            raise ValueError("runtime repository assignment mode requires a scalar URL payload")
+        body = f"{target}={payload};return Promise.resolve();"
+    else:
+        raise ValueError(f"unsupported runtime repository materializer mode: {mode}")
+
     replacement = (
         f"function {function_name}(){{"
         f"/* {MARKER} */"
-        f"return Promise.resolve({payload});"
+        f"{body}"
         "}"
     )
     output, changed = _replace_named_function(text, function_name, replacement)
