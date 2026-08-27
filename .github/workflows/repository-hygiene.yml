@@ -20,8 +20,9 @@ jobs:
     permissions:
       actions: write
       contents: read
-    # Keep queue hygiene on the lightweight pool. Every hygiene generation cancels
-    # queued/in-progress main runs from older SHAs so only the current main proof survives.
+    # Keep one non-manual main generation per workflow. A newer unrelated commit
+    # must not kill the only useful Android/Desktop proof, but duplicate generations
+    # of the same workflow are cancelled aggressively.
     runs-on: ubuntu-slim
     timeout-minutes: 5
     env:
@@ -61,14 +62,16 @@ jobs:
                   body = response.read()
                   return json.loads(body) if body else {}
 
+          ACTIVE_STATUSES = {"queued", "in_progress", "waiting", "pending", "requested"}
+
           def main_head() -> str:
               return str(request(f"/repos/{repo}/branches/main")["commit"]["sha"])
 
-          def active_runs(status: str):
+          def main_runs():
               page = 1
               while True:
                   query = urllib.parse.urlencode(
-                      {"branch": "main", "status": status, "per_page": 100, "page": page}
+                      {"branch": "main", "per_page": 100, "page": page}
                   )
                   payload = request(f"/repos/{repo}/actions/runs?{query}")
                   rows = payload.get("workflow_runs") or []
@@ -76,6 +79,53 @@ jobs:
                   if len(rows) < 100:
                       return
                   page += 1
+
+          def workflow_key(row) -> str:
+              return str(
+                  row.get("path")
+                  or row.get("workflow_id")
+                  or row.get("name")
+                  or "unknown"
+              )
+
+          def duplicate_active_runs():
+              rows = list(main_runs())
+              latest = {}
+              for row in rows:
+                  # Explicit manual proofs are authoritative/isolated and must
+                  # never be replaced by an automatic push generation.
+                  if str(row.get("event") or "") == "workflow_dispatch":
+                      continue
+                  key = workflow_key(row)
+                  if key not in latest:
+                      latest[key] = row
+
+              duplicates = []
+              for row in rows:
+                  run_id = int(row.get("id") or 0)
+                  status = str(row.get("status") or "")
+                  event = str(row.get("event") or "")
+                  if (
+                      not run_id
+                      or run_id == current_run
+                      or event == "workflow_dispatch"
+                      or status not in ACTIVE_STATUSES
+                  ):
+                      continue
+                  key = workflow_key(row)
+                  newest_id = int((latest.get(key) or {}).get("id") or 0)
+                  if newest_id and newest_id != run_id:
+                      duplicates.append(
+                          (
+                              run_id,
+                              status,
+                              str(row.get("head_sha") or ""),
+                              str(row.get("name") or "unknown"),
+                              key,
+                              newest_id,
+                          )
+                      )
+              return duplicates
 
           def live_status(run_id: int) -> str:
               try:
@@ -106,32 +156,23 @@ jobs:
           failures = {}
           for sweep in range(1, 7):
               head = main_head()
-              candidates = []
-              for status in ("queued", "in_progress"):
-                  for row in active_runs(status):
-                      run_id = int(row.get("id") or 0)
-                      run_head = str(row.get("head_sha") or "")
-                      if not run_id or run_id == current_run or run_head == head:
-                          continue
-                      candidates.append(
-                          (run_id, status, run_head, str(row.get("name") or "unknown"))
-                      )
-
+              candidates = duplicate_active_runs()
               actionable = [row for row in candidates if row[0] not in platform_orphans]
               print(
                   f"FIELD_STALE_MAIN_SWEEP sweep={sweep} current={head} "
-                  f"candidates={len(candidates)} actionable={len(actionable)} "
+                  f"duplicate_generations={len(candidates)} actionable={len(actionable)} "
                   f"platform_orphans={len(platform_orphans)}"
               )
               if not actionable:
                   break
 
-              for run_id, status, run_head, name in actionable:
+              for run_id, status, run_head, name, key, newest_id in actionable:
                   outcome = cancel_stale(run_id)
                   requested.add(run_id)
                   print(
                       f"FIELD_STALE_MAIN_CANCEL run={run_id} status={status} "
-                      f"head={run_head[:12]} workflow={name} outcome={outcome}"
+                      f"head={run_head[:12]} workflow={name} key={key} "
+                      f"newest={newest_id} outcome={outcome}"
                   )
                   if outcome == "github-orphan-queued":
                       platform_orphans.add(run_id)
@@ -142,38 +183,31 @@ jobs:
                       failures.pop(run_id, None)
               time.sleep(2)
 
-          final_head = main_head()
-          remaining_actionable = []
-          remaining_orphans = []
-          for status in ("queued", "in_progress"):
-              for row in active_runs(status):
-                  run_id = int(row.get("id") or 0)
-                  run_head = str(row.get("head_sha") or "")
-                  if not run_id or run_id == current_run or run_head == final_head:
-                      continue
-                  item = (run_id, status, run_head, str(row.get("name") or "unknown"))
-                  if run_id in platform_orphans and status == "queued":
-                      remaining_orphans.append(item)
-                  else:
-                      remaining_actionable.append(item)
+          remaining = duplicate_active_runs()
+          remaining_actionable = [row for row in remaining if row[0] not in platform_orphans]
+          remaining_orphans = [row for row in remaining if row[0] in platform_orphans]
 
           print(
-              f"FIELD_STALE_MAIN_DONE current={final_head} requested={len(requested)} "
+              f"FIELD_STALE_MAIN_DONE current={main_head()} requested={len(requested)} "
               f"remaining_actionable={len(remaining_actionable)} "
               f"github_orphans={len(remaining_orphans)} failures={len(failures)}"
           )
-          for run_id, status, run_head, name in remaining_orphans:
+          for run_id, status, run_head, name, key, newest_id in remaining_orphans:
               print(
                   f"::warning title=GitHub Actions orphaned queued run::run={run_id} "
-                  f"head={run_head[:12]} workflow={name}; cancel and force-cancel both return 409"
+                  f"head={run_head[:12]} workflow={name} key={key} newest={newest_id}; "
+                  "cancel and force-cancel both return 409"
               )
           if remaining_actionable:
-              for run_id, status, run_head, name in remaining_actionable[:50]:
+              for run_id, status, run_head, name, key, newest_id in remaining_actionable[:50]:
                   print(
                       f"STALE_ACTIONABLE_REMAINS run={run_id} status={status} "
-                      f"head={run_head[:12]} workflow={name} error={failures.get(run_id, 'pending')}"
+                      f"head={run_head[:12]} workflow={name} key={key} newest={newest_id} "
+                      f"error={failures.get(run_id, 'pending')}"
                   )
-              raise SystemExit(f"actionable stale main workflow runs remain: {len(remaining_actionable)}")
+              raise SystemExit(
+                  f"duplicate active main workflow generations remain: {len(remaining_actionable)}"
+              )
           PY
 
   cleanup:
