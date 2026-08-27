@@ -15,6 +15,7 @@ from __future__ import annotations
 import argparse
 import copy
 import json
+import re
 import subprocess
 from pathlib import Path
 from typing import Any
@@ -22,6 +23,7 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 ADAPTIVE_PROFILE = "adaptive_runtime_recovery"
 ADAPTIVE_SCRIPT = "scripts/provider_patches/adaptive_runtime_recovery_v5.py"
+POLICY_PATH = ROOT / "engine_v2" / "config" / "brain-policy.json"
 
 
 def load_json(path: Path) -> dict[str, Any]:
@@ -152,6 +154,80 @@ def apply_proposal(overrides: dict[str, Any], pid: str, profile: str, candidate:
     }
 
 
+def _safe_text(value: Any, limit: int = 240) -> str:
+    text = re.sub(r"https?://\\S+", "<url>", str(value or ""))
+    text = re.sub(
+        r"(?i)(token|authorization|cookie|secret)\\s*[:=]\\s*\\S+",
+        r"\\1=<redacted>",
+        text,
+    )
+    return " ".join(text.split())[:limit]
+
+
+def _sanitized_learned_skill(raw: Any) -> dict[str, Any] | None:
+    if not isinstance(raw, dict) or raw.get("validated") is not True:
+        return None
+    skill_id = _safe_text(raw.get("id"), 160)
+    failure_class = _safe_text(raw.get("failureClass") or raw.get("failure_class"), 96)
+    profile = _safe_text(raw.get("profile"), 96)
+    if not skill_id or not failure_class or not profile:
+        return None
+    maturity = _safe_text(raw.get("maturity") or "experimental", 32)
+    if maturity not in {"experimental", "candidate", "trusted"}:
+        maturity = "experimental"
+    success_count = max(0, int(raw.get("successCount") or 0))
+    failure_count = max(0, int(raw.get("failureCount") or 0))
+    confidence = max(0.0, min(1.0, float(raw.get("confidence") or 0.0)))
+    return {
+        "id": skill_id,
+        "failureClass": failure_class,
+        "profile": profile,
+        "actions": [_safe_text(value, 240) for value in raw.get("actions") or [] if _safe_text(value, 240)][:12],
+        "capabilities": sorted({_safe_text(value, 64) for value in raw.get("capabilities") or [] if _safe_text(value, 64)})[:24],
+        "providers": sorted({str(value or "").strip().casefold()[:128] for value in raw.get("providers") or [] if str(value or "").strip()})[:96],
+        "successCount": success_count,
+        "failureCount": failure_count,
+        "validated": True,
+        "confidence": confidence,
+        "maturity": maturity,
+        "autoApply": maturity == "trusted" and raw.get("autoApply") is True,
+        "lastValidatedMode": _safe_text(raw.get("lastValidatedMode"), 32),
+    }
+
+
+def merge_candidate_learned_skills(proposed: dict[str, Any], current: dict[str, Any]) -> list[dict[str, Any]]:
+    policy = load_json(POLICY_PATH)
+    maturity = policy.get("skillMaturity") if isinstance(policy.get("skillMaturity"), dict) else {}
+    candidate_successes = max(1, int(maturity.get("candidateSuccesses") or 2))
+    runtime = current.get("runtime_repair") if isinstance(current.get("runtime_repair"), dict) else {}
+    current_skills = runtime.get("learned_skills") if isinstance(runtime.get("learned_skills"), dict) else {}
+    target_runtime = proposed.setdefault("runtime_repair", {})
+    target_skills = target_runtime.setdefault("learned_skills", {})
+    if not isinstance(target_skills, dict):
+        target_skills = {}
+        target_runtime["learned_skills"] = target_skills
+
+    rows: list[dict[str, Any]] = []
+    for key, raw in sorted(current_skills.items()):
+        skill = _sanitized_learned_skill(raw)
+        if skill is None or int(skill.get("successCount") or 0) < candidate_successes:
+            continue
+        skill_key = str(key or skill["id"]).strip()[:192]
+        if target_skills.get(skill_key) == skill:
+            continue
+        target_skills[skill_key] = skill
+        rows.append({
+            "skillId": skill_key,
+            "failureClass": skill["failureClass"],
+            "profile": skill["profile"],
+            "maturity": skill["maturity"],
+            "successCount": skill["successCount"],
+            "providers": skill["providers"],
+            "proposalType": "validated_learned_skill",
+        })
+    return rows
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--stage", type=Path, required=True)
@@ -164,7 +240,9 @@ def main() -> int:
     stage = load_json(args.stage)
     report = load_json(args.repair_report)
     original, baseline_source = load_proposal_baseline(args.overrides)
+    current_overrides = load_json(args.overrides)
     proposed = copy.deepcopy(original)
+    learned_skill_proposals = merge_candidate_learned_skills(proposed, current_overrides)
 
     candidates = {
         str(row.get("key") or ""): row
@@ -206,9 +284,11 @@ def main() -> int:
     summary = {
         "schemaVersion": 1,
         "baselineSource": baseline_source,
-        "proposalCount": len(proposals),
+        "proposalCount": len(proposals) + len(learned_skill_proposals),
+        "providerProposalCount": len(proposals),
+        "learnedSkillProposalCount": len(learned_skill_proposals),
         "providers": sorted({row["providerId"] for row in proposals if row.get("providerId")}),
-        "proposals": proposals,
+        "proposals": [*proposals, *learned_skill_proposals],
         "skipped": skipped,
         "policy": {
             "publicationAllowed": False,
@@ -221,7 +301,8 @@ def main() -> int:
     write_json(args.summary, summary)
     print(
         "FIELD_BRAIN_REPAIR_PROPOSAL "
-        f"proposals={len(proposals)} providers={len(summary['providers'])} skipped={len(skipped)} "
+        f"proposals={summary['proposalCount']} provider_proposals={len(proposals)} "
+        f"learned_skill_proposals={len(learned_skill_proposals)} providers={len(summary['providers'])} skipped={len(skipped)} "
         f"baseline={baseline_source}"
     )
     return 0
