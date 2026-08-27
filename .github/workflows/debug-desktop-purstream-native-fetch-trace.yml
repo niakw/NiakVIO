@@ -58,29 +58,31 @@ jobs:
           from pathlib import Path
           p=Path("nuvio-desktop/composeApp/src/fullCommonMain/kotlin/com/nuvio/app/features/plugins/runtime/network/FetchBridge.kt")
           s=p.read_text()
-          old="""            try {
-                performNativeFetch(url, method, headersJson, body, followRedirects)
-            } catch (ce: CancellationException) {
-                throw ce
-            } catch (t: Throwable) {
-                log.e(t) { "Fetch bridge error for $method $url" }
-"""
-          new="""            try {
-                println("FIELD_DESKTOP_NATIVE_FETCH_START method=" + method + " url=" + url)
-                val nativeResult = performNativeFetch(url, method, headersJson, body, followRedirects)
-                val parsedResult = runCatching { json.parseToJsonElement(nativeResult) as? JsonObject }.getOrNull()
-                val traceStatus = parsedResult?.get("status")?.jsonPrimitive?.contentOrNull ?: "?"
-                val traceOk = parsedResult?.get("ok")?.jsonPrimitive?.contentOrNull ?: "?"
-                val traceUrl = parsedResult?.get("url")?.jsonPrimitive?.contentOrNull ?: url
-                println("FIELD_DESKTOP_NATIVE_FETCH_RESULT method=" + method + " status=" + traceStatus + " ok=" + traceOk + " url=" + url + " finalUrl=" + traceUrl)
-                nativeResult
-            } catch (ce: CancellationException) {
-                println("FIELD_DESKTOP_NATIVE_FETCH_CANCEL method=" + method + " url=" + url + " message=" + (ce.message ?: ""))
-                throw ce
-            } catch (t: Throwable) {
-                println("FIELD_DESKTOP_NATIVE_FETCH_ERROR method=" + method + " url=" + url + " type=" + (t::class.simpleName ?: "Throwable") + " message=" + (t.message ?: ""))
-                log.e(t) { "Fetch bridge error for $method $url" }
-"""
+          old = "\\n".join([
+              '            try {',
+              '                performNativeFetch(url, method, headersJson, body, followRedirects)',
+              '            } catch (ce: CancellationException) {',
+              '                throw ce',
+              '            } catch (t: Throwable) {',
+              '                log.e(t) { "Fetch bridge error for $method $url" }',
+          ]) + "\\n"
+          new = "\\n".join([
+              '            try {',
+              '                println("FIELD_DESKTOP_NATIVE_FETCH_START method=" + method + " url=" + url)',
+              '                val nativeResult = performNativeFetch(url, method, headersJson, body, followRedirects)',
+              '                val parsedResult = runCatching { json.parseToJsonElement(nativeResult) as? JsonObject }.getOrNull()',
+              '                val traceStatus = parsedResult?.get("status")?.jsonPrimitive?.contentOrNull ?: "?"',
+              '                val traceOk = parsedResult?.get("ok")?.jsonPrimitive?.contentOrNull ?: "?"',
+              '                val traceUrl = parsedResult?.get("url")?.jsonPrimitive?.contentOrNull ?: url',
+              '                println("FIELD_DESKTOP_NATIVE_FETCH_RESULT method=" + method + " status=" + traceStatus + " ok=" + traceOk + " url=" + url + " finalUrl=" + traceUrl)',
+              '                nativeResult',
+              '            } catch (ce: CancellationException) {',
+              '                println("FIELD_DESKTOP_NATIVE_FETCH_CANCEL method=" + method + " url=" + url + " message=" + (ce.message ?: ""))',
+              '                throw ce',
+              '            } catch (t: Throwable) {',
+              '                println("FIELD_DESKTOP_NATIVE_FETCH_ERROR method=" + method + " url=" + url + " type=" + (t::class.simpleName ?: "Throwable") + " message=" + (t.message ?: ""))',
+              '                log.e(t) { "Fetch bridge error for $method $url" }',
+          ]) + "\\n"
           if s.count(old)!=1:
               raise SystemExit("FetchBridge target block not found exactly once")
           p.write_text(s.replace(old,new))
