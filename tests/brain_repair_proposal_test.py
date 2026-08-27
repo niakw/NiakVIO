@@ -48,6 +48,25 @@ def main() -> None:
                 "bar": {"profiles": []},
             },
             "patch_profiles": {"metadata_context_recovery": {"phase": "runtime"}},
+            "runtime_repair": {
+                "learned_skills": {
+                    "search_gap:adaptive_runtime_recovery": {
+                        "id": "search_gap:adaptive_runtime_recovery",
+                        "failureClass": "search_gap",
+                        "profile": "adaptive_runtime_recovery",
+                        "actions": ["apply validated adaptive strategy"],
+                        "capabilities": ["search", "routes"],
+                        "providers": ["foo", "bar"],
+                        "successCount": 2,
+                        "failureCount": 0,
+                        "validated": True,
+                        "confidence": 1.0,
+                        "maturity": "candidate",
+                        "autoApply": False,
+                        "lastValidatedMode": "learning",
+                    }
+                }
+            },
         })
         write(stage, {
             "candidates": [
@@ -124,8 +143,14 @@ def main() -> None:
         assert foo["patch_script_options"][adaptive]["provider_name"] == "Foo"
         assert bar["profiles"] == ["metadata_context_recovery"]
         assert proposal["baselineSource"] == "input-file"
-        assert proposal["proposalCount"] == 2
+        assert proposal["proposalCount"] == 3
+        assert proposal["providerProposalCount"] == 2
+        assert proposal["learnedSkillProposalCount"] == 1
         assert proposal["providers"] == ["bar", "foo"]
+        learned = proposed["runtime_repair"]["learned_skills"]["search_gap:adaptive_runtime_recovery"]
+        assert learned["maturity"] == "candidate"
+        assert learned["successCount"] == 2
+        assert learned["providers"] == ["bar", "foo"]
         assert proposal["policy"]["pullRequestOnly"] is True
         assert proposal["policy"]["requiresHumanMerge"] is True
         assert proposal["policy"]["publicationAllowed"] is False
