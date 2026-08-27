@@ -95,12 +95,12 @@ on:
 permissions:
   contents: read
 
-# PR revisions may cancel stale validation, but every main/workflow_dispatch run
-# gets its own group. A long native proof must never be killed just because a
-# later main commit lands while its emulator is booting.
+# Latest commit wins on main/PR so expensive emulator generations never pile up.
+# Manual dispatches remain isolated because an explicitly requested proof may be
+# watched as authoritative evidence even if main advances concurrently.
 concurrency:
-  group: native-android-route-reader-${{ github.event.pull_request.number || github.run_id }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+  group: native-android-route-reader-${{ github.event_name == 'workflow_dispatch' && github.run_id || github.event.pull_request.number || 'main' }}
+  cancel-in-progress: ${{ github.event_name != 'workflow_dispatch' }}
 
 env:
   NIAKVIO_REPRESENTATIVE_FIXTURES: "sinners-2025 breaking-bad-s01e01 jujutsu-kaisen-s01e01"

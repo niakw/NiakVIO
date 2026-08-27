@@ -18,8 +18,8 @@ permissions:
   actions: read
 
 concurrency:
-  group: codeql-${{ github.event.pull_request.number || github.run_id }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+  group: codeql-${{ github.event_name == 'workflow_dispatch' && github.run_id || github.event.pull_request.number || 'main' }}
+  cancel-in-progress: ${{ github.event_name != 'workflow_dispatch' }}
 
 jobs:
   analyze:

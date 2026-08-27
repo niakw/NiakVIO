@@ -20,8 +20,8 @@ jobs:
     permissions:
       actions: write
       contents: read
-    # Keep queue hygiene on the lightweight pool. Only generations older than the
-    # current main HEAD are touched; current validation runs are never cancelled.
+    # Keep queue hygiene on the lightweight pool. Every hygiene generation cancels
+    # queued/in-progress main runs from older SHAs so only the current main proof survives.
     runs-on: ubuntu-slim
     timeout-minutes: 5
     env:
