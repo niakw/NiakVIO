@@ -163,7 +163,7 @@ for fixture in "${FIXTURES[@]}"; do
   WATCH_PID=$!
 
   RUNTIME_STATUS=0
-  timeout --signal=TERM --kill-after=2m "${ROUTE_TIMEOUT_MINUTES}m" "$TV_ROOT/gradlew" -p "$TV_ROOT" :app:connectedFullDebugAndroidTest --console=plain 2>&1 | tee "$GRADLE_LOG"
+  timeout --signal=TERM --kill-after=2m "${ROUTE_TIMEOUT_MINUTES}m" "$TV_ROOT/gradlew" -p "$TV_ROOT" :app:connectedFullDebugAndroidTest --console=plain --max-workers=1 2>&1 | tee "$GRADLE_LOG"
   RUNTIME_STATUS=${PIPESTATUS[0]}
   if [[ "$RUNTIME_STATUS" -eq 124 || "$RUNTIME_STATUS" -eq 137 ]]; then
     echo "FIELD_NATIVE_CORPUS_TV_ROUTE_TIMEOUT fixture=$fixture minutes=$ROUTE_TIMEOUT_MINUTES status=$RUNTIME_STATUS" | tee -a "$GRADLE_LOG"
