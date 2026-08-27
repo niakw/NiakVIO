@@ -36,45 +36,27 @@ def run_node(source: str, harness: str) -> dict:
         return json.loads(proc.stdout.strip().splitlines()[-1])
 
 
-def test_platform_fingerprint_and_tv_description(root: Path) -> None:
+def test_hls_hook_keeps_runtime_safety_ownership_separate(root: Path) -> None:
     guard = load_module(
         root / "scripts/provider_patches/hls_master_audio_preserver_v1.py",
         "hls_master_audio_preserver_v1",
     )
     base = (
+        'async function preserveMaster(body){'
+        'if(!/#EXT-X-STREAM-INF/i.test(body))return;'
+        '}\n'
         'module.exports={getStreams:async()=>[{title:"Purstream 1080p Dual Audio",'
         'name:"Purstream",url:"https://cdn.test/master.m3u8",type:"hls",language:"fr"}]};\n'
     )
     patched = guard.apply(base, context={"provider_id": "purstream"})
     assert patched == guard.apply(patched, context={"provider_id": "purstream"})
-    assert "followRedirects" in patched
+    assert "NUVIO_HLS_MASTER_AUDIO_PRESERVER_V1" in patched
+    assert "#EXT-X-MEDIA" in patched
+    # Core V15 gives runtime/native media safety to runtime_capability_media_safety_v4.
+    # The HLS adapter must not resurrect the historical platform fingerprint wrapper.
+    assert "followRedirects" not in patched
+    assert "NUVIO_GLOBAL_RUNTIME_MEDIA_SAFETY_V1" not in patched
     assert 'if(typeof g.__native_fetch==="function")return true' not in patched
-
-    harness = r'''
-const fs=require('fs'), vm=require('vm');
-const code=fs.readFileSync('provider.js','utf8');
-function response(){return {ok:true,status:200,url:'https://cdn.test/master.m3u8',headers:{get:(n)=>n.toLowerCase()==='content-type'?'application/vnd.apple.mpegurl':null},text:async()=> '#EXTM3U\n#EXTINF:600,\nseg.ts\n#EXTINF:600,\nseg2.ts\n'};}
-async function run(kind){
- const ctx={console,URL,setTimeout,clearTimeout,TextDecoder,Uint8Array,ArrayBuffer,module:{exports:{}},exports:{}};ctx.globalThis=ctx;
- if(kind==='desktop'){
-   ctx.__native_fetch=(url,method,headers,body,followRedirects)=>'{}';
-   ctx.fetch=async function(url,options){var followRedirects=options&&options.redirect!=='manual';void followRedirects;return response();};
- }else{
-   ctx.__native_fetch=(url,method,headers,body)=>'{}';
-   ctx.fetch=async function(url,options){var signal=options&&options.signal;void signal;ctx.__native_fetch(url,'GET',JSON.stringify((options&&options.headers)||{}),'');return response();};
-   ctx.__NUVIO_TV_RUNTIME__=true;
- }
- vm.createContext(ctx);vm.runInContext(code,ctx);
- return (await ctx.module.exports.getStreams('1','movie'))[0];
-}
-(async()=>{const desktop=await run('desktop'),tv=await run('tv');console.log(JSON.stringify({desktop,tv}));})();
-'''
-    result = run_node(patched, harness)
-    desktop, tv = result["desktop"], result["tv"]
-    assert not desktop.get("size"), desktop
-    assert tv.get("size") == "fr • HLS", tv
-    assert not desktop.get("headers"), desktop
-    assert not tv.get("headers"), tv
 
 
 def test_embed_cookie_and_header_inheritance(root: Path) -> None:
@@ -143,7 +125,7 @@ function resp(url,status,ct,body,setCookie){return{ok:status>=200&&status<300,st
 
 def main() -> None:
     root = Path(__file__).resolve().parents[1]
-    test_platform_fingerprint_and_tv_description(root)
+    test_hls_hook_keeps_runtime_safety_ownership_separate(root)
     test_embed_cookie_and_header_inheritance(root)
     test_cookie_scope_does_not_leak(root)
     print("playback context compatibility tests passed")
