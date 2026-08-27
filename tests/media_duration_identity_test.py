@@ -30,7 +30,9 @@ assert 'async function probeStream(stream, mode, fixture = null)' in source
 assert 'expectedDurationMinutes: fixture.expectedDurationMinutes ?? null' in source
 assert source.count('probeStream(stream, modeConfig, normalizedFixture)') >= 2
 assert 'durationIdentityRatio = mediaDurationSeconds / expectedDurationSeconds' in source
-assert "durationIdentityMismatch ? 'duration_identity_mismatch'" in source
+assert "function playbackCategory(" in source
+assert "if (durationIdentityMismatch) return 'duration_identity_mismatch';" in source
+assert "category: playbackCategory(" in source
 assert 'playbackVerified = false;' in source
 assert 'payloadVerified = false;' in source
 
@@ -38,7 +40,7 @@ assert 'payloadVerified = false;' in source
 # provider title alone, and must happen before the final playable classification.
 parse_idx = source.index('function parseMp4MovieDurationSeconds(body)')
 ratio_idx = source.index('durationIdentityRatio = mediaDurationSeconds / expectedDurationSeconds')
-category_idx = source.index("durationIdentityMismatch ? 'duration_identity_mismatch'")
+category_idx = source.index("category: playbackCategory(")
 assert parse_idx < ratio_idx < category_idx
 
 
