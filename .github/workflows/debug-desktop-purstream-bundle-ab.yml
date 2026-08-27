@@ -65,7 +65,7 @@ jobs:
           git -C nuvio-desktop checkout 182c0587c991c3fd0138155ef66fa23cc09d5f0b
           touch nuvio-desktop/local.properties
 
-      - name: Trace Desktop native HTTP in disposable checkout
+      - name: Trace Desktop OkHttp requests in disposable checkout
         shell: bash
         run: |
           set -euxo pipefail
@@ -73,60 +73,31 @@ jobs:
           from pathlib import Path
           p=Path("nuvio-desktop/composeApp/src/desktopMain/kotlin/com/nuvio/app/features/addons/AddonPlatform.desktop.kt")
           s=p.read_text()
-          if "import java.io.File" not in s:
-              s=s.replace("import java.io.ByteArrayOutputStream", "import java.io.ByteArrayOutputStream\nimport java.io.File")
-          old='''    client.newCall(request).execute().use { response ->
-        RawHttpResponse(
-            status = response.code,
-            statusText = response.message,
-            url = response.request.url.toString(),
-            body = readResponseBodyLimited(response.body, maxResponseBodyBytes),
-            headers = response.headers.toMultimap().mapValues { (_, values) ->
-                values.joinToString(",")
-            }.mapKeys { (name, _) ->
-                name.lowercase()
-            },
-        )
-    }
-'''
-          new='''    val traceFile = System.getenv("NIAKVIO_NATIVE_FETCH_TRACE_FILE")?.takeIf { it.isNotBlank() }?.let(::File)
-    runCatching { traceFile?.appendText("START\\t" + method + "\\t" + url + "\\n") }
-    try {
-        client.newCall(request).execute().use { response ->
-            val responseBody = readResponseBodyLimited(response.body, maxResponseBodyBytes)
-            runCatching {
-                traceFile?.appendText(
-                    "RESULT\\t" + method + "\\t" + response.code + "\\t" +
-                        response.request.url.toString() + "\\t" +
-                        responseBody.take(320).replace("\\n", " ").replace("\\r", " ") + "\\n"
-                )
-            }
-            RawHttpResponse(
-                status = response.code,
-                statusText = response.message,
-                url = response.request.url.toString(),
-                body = responseBody,
-                headers = response.headers.toMultimap().mapValues { (_, values) ->
-                    values.joinToString(",")
-                }.mapKeys { (name, _) ->
-                    name.lowercase()
-                },
-            )
-        }
-    } catch (t: Throwable) {
-        runCatching {
-            traceFile?.appendText(
-                "ERROR\\t" + method + "\\t" + url + "\\t" +
-                    (t::class.simpleName ?: "Throwable") + "\\t" +
-                    (t.message ?: "").replace("\\n", " ").replace("\\r", " ") + "\\n"
-            )
-        }
-        throw t
-    }
-'''
-          if s.count(old)!=1:
-              raise SystemExit("httpRequestRaw target block not found exactly once")
-          p.write_text(s.replace(old,new))
+          s=s.replace("import java.io.ByteArrayOutputStream\\n", "import java.io.ByteArrayOutputStream\\nimport java.io.File\\n", 1)
+          old="\\n".join([
+              "    .followSslRedirects(true)",
+              "    .build()",
+          ])
+          new="\\n".join([
+              "    .followSslRedirects(true)",
+              "    .addInterceptor { chain ->",
+              "        val request = chain.request()",
+              "        val trace = System.getenv(\\\"NIAKVIO_NATIVE_FETCH_TRACE_FILE\\\")?.takeIf { it.isNotBlank() }?.let(::File)",
+              "        runCatching { trace?.appendText(\\\"START\\\\t\\\" + request.method + \\\"\\\\t\\\" + request.url + \\\"\\\\n\\\") }",
+              "        try {",
+              "            val response = chain.proceed(request)",
+              "            runCatching { trace?.appendText(\\\"RESULT\\\\t\\\" + request.method + \\\"\\\\t\\\" + response.code + \\\"\\\\t\\\" + request.url + \\\"\\\\t\\\" + response.request.url + \\\"\\\\n\\\") }",
+              "            response",
+              "        } catch (t: Throwable) {",
+              "            runCatching { trace?.appendText(\\\"ERROR\\\\t\\\" + request.method + \\\"\\\\t\\\" + request.url + \\\"\\\\t\\\" + (t::class.simpleName ?: \\\"Throwable\\\") + \\\"\\\\t\\\" + (t.message ?: \\\"\\\").replace(\\\"\\\\n\\\", \\\" \\\") + \\\"\\\\n\\\") }",
+              "            throw t",
+              "        }",
+              "    }",
+              "    .build()",
+          ])
+          if s.count(old) != 1:
+              raise SystemExit("desktopHttpClient builder anchor not found exactly once")
+          p.write_text(s.replace(old,new,1))
           PY
           git -C nuvio-desktop diff --check
 
