@@ -34,7 +34,7 @@ https://raw.githubusercontent.com/niakw/NiakVIO/refs/heads/main/vf/manifest.json
 
 ### Manifest VO sans anime ([Comment l’ajouter ?](docs/fr/how-to-add-manifest.md))
 
-Copie du manifest général, en retirant **uniquement les providers qui déclarent exclusivement le type anime**. Les providers mixtes film/série + anime restent présents.
+Copie du manifest général en retirant les providers qui **déclarent uniquement le type `anime`** ou dont l'**id / nom contient `anim`** (insensible à la casse). Un provider mixte film/série/anime reste présent sauf si son identité indique clairement qu'il est orienté anime.
 
 ```text
 https://raw.githubusercontent.com/niakw/NiakVIO/refs/heads/main/no-anime/manifest.json
@@ -42,7 +42,7 @@ https://raw.githubusercontent.com/niakw/NiakVIO/refs/heads/main/no-anime/manifes
 
 ### Manifest VF sans anime ([Comment l’ajouter ?](docs/fr/how-to-add-manifest.md))
 
-Copie du manifest francophone, avec le même filtre : seuls les providers exclusivement anime sont retirés.
+Copie du manifest francophone avec le même filtre déterministe : type `anime` seul, ou `anim` présent dans l'id / nom du provider.
 
 ```text
 https://raw.githubusercontent.com/niakw/NiakVIO/refs/heads/main/vf-no-anime/manifest.json
