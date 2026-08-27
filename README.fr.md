@@ -16,7 +16,7 @@
 
 ## Ajouter NiakVIO à Nuvio
 
-### Manifest général — recommandé
+### Manifest général — recommandé ([Comment l’ajouter ?](docs/fr/how-to-add-manifest.md))
 
 Tous les providers publiés : VF, VOSTFR, VO et autres langues.
 
@@ -24,7 +24,7 @@ Tous les providers publiés : VF, VOSTFR, VO et autres langues.
 https://raw.githubusercontent.com/niakw/NiakVIO/refs/heads/main/manifest.json
 ```
 
-### Manifest francophone
+### Manifest francophone ([Comment l’ajouter ?](docs/fr/how-to-add-manifest.md))
 
 Projection centrée sur les providers proposant du français ou du sous-titrage français.
 
@@ -32,7 +32,7 @@ Projection centrée sur les providers proposant du français ou du sous-titrage 
 https://raw.githubusercontent.com/niakw/NiakVIO/refs/heads/main/vf/manifest.json
 ```
 
-### Badges StreamBadge — recommandé
+### Badges StreamBadge — recommandé ([Comment les ajouter ?](docs/fr/how-to-add-stream-badges.md))
 
 Pour un réglage unique au niveau du compte Nuvio, utilisez le feed **Fusion v2**. Il emploie les variantes 96×40 avec chip sombre conçues pour rester lisibles sur fonds sombres comme clairs.
 

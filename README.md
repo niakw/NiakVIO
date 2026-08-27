@@ -11,19 +11,19 @@
 
 ## Add NiakVIO to Nuvio
 
-### General manifest — recommended
+### General manifest — recommended ([How to add?](docs/how-to-add-manifest.md))
 
 ```text
 https://raw.githubusercontent.com/niakw/NiakVIO/refs/heads/main/manifest.json
 ```
 
-### French-focused manifest
+### French-focused manifest ([How to add?](docs/how-to-add-manifest.md))
 
 ```text
 https://raw.githubusercontent.com/niakw/NiakVIO/refs/heads/main/vf/manifest.json
 ```
 
-### StreamBadge feed — recommended
+### StreamBadge feed — recommended ([How to add?](docs/how-to-add-stream-badges.md))
 
 ```text
 https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-fusion-v2.json
