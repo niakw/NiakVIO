@@ -56,6 +56,23 @@ const readerMemory = {
   },
 };
 write(previous, {
+  learnedSkills: {
+    'search_gap:adaptive_runtime_recovery': {
+      id: 'search_gap:adaptive_runtime_recovery',
+      failureClass: 'search_gap',
+      profile: 'adaptive_runtime_recovery',
+      actions: ['apply validated adaptive_runtime_recovery strategy for search_gap'],
+      capabilities: ['search', 'routes'],
+      providers: ['legacy-provider'],
+      successCount: 2,
+      failureCount: 0,
+      validated: true,
+      confidence: 1,
+      maturity: 'candidate',
+      autoApply: false,
+      lastValidatedMode: 'learning',
+    },
+  },
   experimentMemory: { entries: [{
     providerId: 'foo', providerVersion: '*', signature: 'sig-foo', failureClass: 'search_gap', profile: 'adaptive_runtime_recovery',
     attempts: 1, successes: 0, failures: 1, consecutiveFailures: 1, lastOutcome: 'rejected', lastReason: 'no improvement', lastSeenAt: '2026-08-16T00:00:00Z',
@@ -72,7 +89,23 @@ write(portfolio, {
   observedProviders: 1,
   providers: [{ provider: 'foo', recommendation: 'repair_runtime_or_transport', runtimeErrors: 1, transportFailures: 0, identityContradictions: 0, catalogueCoverageRate: 0.2, score: 10 }],
 });
-write(overrides, { runtime_repair: { learned_skills: {} } });
+write(overrides, { runtime_repair: { learned_skills: {
+  'search_gap:adaptive_runtime_recovery': {
+    id: 'search_gap:adaptive_runtime_recovery',
+    failureClass: 'search_gap',
+    profile: 'adaptive_runtime_recovery',
+    actions: ['apply validated adaptive_runtime_recovery strategy for search_gap'],
+    capabilities: ['search', 'parser'],
+    providers: ['foo'],
+    successCount: 3,
+    failureCount: 0,
+    validated: true,
+    confidence: 1,
+    maturity: 'trusted',
+    autoApply: true,
+    lastValidatedMode: 'learning',
+  },
+} } });
 
 const result = spawnSync(process.execPath, [script,
   '--output-dir', out,
@@ -98,7 +131,15 @@ assert.equal(latest.nativeFeedback.readerRepairRejected, 2);
 assert.equal(latest.nativeFeedback.readerRepairInconclusive, 1);
 assert.equal(latest.productionWritesAllowed, false);
 assert.equal(latest.publicationAllowed, false);
-console.log('learning lab negative-memory, native-reader-memory and backlog preservation tests passed');
+const learned = latest.learnedSkills['search_gap:adaptive_runtime_recovery'];
+assert.ok(learned, 'positive learned skill memory missing');
+assert.deepEqual(learned.providers.sort(), ['foo', 'legacy-provider']);
+assert.equal(learned.successCount, 3);
+assert.equal(learned.maturity, 'trusted');
+assert.equal(learned.autoApply, true);
+assert.ok(learned.capabilities.includes('parser'));
+assert.equal(latest.learnedSkillCount, 1);
+console.log('learning lab positive/negative memory, native-reader-memory and backlog preservation tests passed');
 
 function write(file, value) {
   fs.writeFileSync(file, JSON.stringify(value, null, 2) + '\n');
