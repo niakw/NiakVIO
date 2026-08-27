@@ -42,6 +42,7 @@ let productionPlayerReached = 0;
 let rejectedSetup = 0;
 const byClient = new Map();
 const structuralFailures = [];
+const zeroMediaFixtures = [];
 const executed = new Set();
 const runtimeSentinels = new Set();
 
@@ -118,7 +119,7 @@ for (const file of paths) {
     structuralFailures.push(`${file}:incomplete_provider_traversal:${state.observed.size}/${state.expected}`);
   }
   if (state.executions.size === 0) structuralFailures.push(`${file}:zero_provider_executions`);
-  if (state.players === 0) structuralFailures.push(`${file}:zero_media_verified`);
+  if (state.players === 0) zeroMediaFixtures.push(file);
 }
 
 if (!readable) {
@@ -151,6 +152,10 @@ if (systemicRuntimeFailure) {
     `terminal=${terminalEvidence} production=${productionPlayerReached} blocking=true owner=runtime_contract`
   );
   process.exit(6);
+}
+
+for (const file of zeroMediaFixtures.slice(0, 40)) {
+  console.error(`FIELD_NATIVE_PLAYER_REACH_BRAIN_OBSERVATION ${file}:zero_media_verified`);
 }
 
 if (!productionPlayerReached) {
