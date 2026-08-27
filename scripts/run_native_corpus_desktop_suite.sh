@@ -86,27 +86,6 @@ for fixture in "${FIXTURES[@]}"; do
   fi
   python3 "$RUNTIME_DIAGNOSTICS" --source "$TEST_SOURCE" || { SOFT_FAILURES=$((SOFT_FAILURES+1)); continue; }
 
-  if [[ -n "${NIAKVIO_DESKTOP_PRE_BRAIN_COMMIT:-}" && "$TARGET_PROVIDER" != "all" && "$TARGET_PROVIDER" != "fixture" ]]; then
-    materialize_historical_provider() {
-      local commit="$1"
-      local output="$2"
-      local manifest_json provider_path
-      git -C "$NIAKVIO" fetch --quiet --no-tags origin "$commit" || return 1
-      manifest_json="$(git -C "$NIAKVIO" show "$commit:manifest.json")" || return 1
-      provider_path="$(python3 -c 'import json,sys; d=json.load(sys.stdin); wanted=sys.argv[1].lower(); print(next((r.get("filename","") for r in d.get("scrapers",[]) if str(r.get("id","")).lower()==wanted),""))' "$TARGET_PROVIDER" <<<"$manifest_json")"
-      [[ -n "$provider_path" ]] || return 1
-      git -C "$NIAKVIO" show "$commit:$provider_path" > "$output"
-      [[ -s "$output" ]]
-    }
-    PRE_BRAIN_CODE="$WORKSPACE/desktop-pre-brain-${HOST_OS}-${TARGET_PROVIDER}.js"
-    POST_BRAIN_CODE="$WORKSPACE/desktop-post-brain-${HOST_OS}-${TARGET_PROVIDER}.js"
-    materialize_historical_provider "$NIAKVIO_DESKTOP_PRE_BRAIN_COMMIT" "$PRE_BRAIN_CODE" || { echo "FIELD_NATIVE_DESKTOP_HISTORY_ERROR stage=pre provider=$TARGET_PROVIDER" >&2; SOFT_FAILURES=$((SOFT_FAILURES+1)); continue; }
-    materialize_historical_provider "${NIAKVIO_DESKTOP_POST_BRAIN_COMMIT:-775d35d586e2e0bafe0bb54b0ecd30527b99f51c}" "$POST_BRAIN_CODE" || { echo "FIELD_NATIVE_DESKTOP_HISTORY_ERROR stage=post provider=$TARGET_PROVIDER" >&2; SOFT_FAILURES=$((SOFT_FAILURES+1)); continue; }
-    export NIAKVIO_DESKTOP_PRE_BRAIN_CODE="$PRE_BRAIN_CODE"
-    export NIAKVIO_DESKTOP_POST_BRAIN_CODE="$POST_BRAIN_CODE"
-  else
-    unset NIAKVIO_DESKTOP_PRE_BRAIN_CODE NIAKVIO_DESKTOP_POST_BRAIN_CODE || true
-  fi
   EXPECTED_MINUTES="$(python3 - "$fixture" "$NIAKVIO/.github/triggers/nuvio-client-lab.json" <<'PY'
 import json, sys
 slug, path = sys.argv[1], sys.argv[2]
