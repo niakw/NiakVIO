@@ -12,6 +12,8 @@ import urllib.request
 from pathlib import Path
 from typing import Any
 
+from evidence_sanitization import sanitize_evidence
+
 ROOT = Path(__file__).resolve().parents[1]
 OUTPUT = ROOT / "automation" / "targeted-provider-contexts.json"
 UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/148 Safari/537.36"
@@ -216,7 +218,7 @@ def main() -> int:
         },
     }
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)
-    OUTPUT.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    persisted_report = sanitize_evidence(report)\n    OUTPUT.write_text(json.dumps(persisted_report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(json.dumps({
         "streamzo_worker": report["streamzo"]["worker"].get("stream_count"),
         "frenchstream_worker": report["frenchstream"]["worker"].get("stream_count"),

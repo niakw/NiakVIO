@@ -19,6 +19,14 @@ for path in sorted([*WORKFLOWS.glob('*.yml'), *WORKFLOWS.glob('*.yaml')]):
         errors.append(f'{rel}: permissions write-all is forbidden')
     if 'permissions:' not in text:
         errors.append(f'{rel}: explicit permissions are required')
+    if 'npm install --ignore-scripts --no-audit --no-fund --package-lock=false' in text:
+        errors.append(f'{rel}: unpinned npm fallback is forbidden; use npm ci with package-lock.json')
+    if (
+        re.search(r'^\s*workflow_run\s*:', text, re.MULTILINE)
+        and re.search(r'^\s*contents\s*:\s*write\s*$', text, re.MULTILINE)
+        and 'github.event.workflow_run.head_repository.full_name == github.repository' not in text
+    ):
+        errors.append(f'{rel}: workflow_run writer must require the source run to belong to this repository')
     for match in USES.finditer(text):
         value = match.group(1).strip('"\'')
         if value.startswith('./'):

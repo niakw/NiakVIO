@@ -63,11 +63,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          if [ -f package-lock.json ]; then
-            npm ci --ignore-scripts --no-audit --no-fund
-          else
-            npm install --ignore-scripts --no-audit --no-fund --package-lock=false
-          fi
+          npm ci --ignore-scripts --no-audit --no-fund
 
       - name: Validate Brain cron skills and full provider coverage
         shell: bash

@@ -165,7 +165,12 @@ def reapply_adaptive_domain_revision(data: bytes) -> tuple[bytes, list[dict[str,
             decoded = json.loads(base64.b64decode(encoded).decode("utf-8"))
         except Exception:
             continue
-        candidate = decoded if isinstance(decoded, list) else decoded.get("groups") if isinstance(decoded, dict) else None
+        if isinstance(decoded, list):
+            candidate = decoded
+        elif isinstance(decoded, dict):
+            candidate = decoded.get("groups")
+        else:
+            candidate = None
         if isinstance(candidate, list) and all(isinstance(row, dict) for row in candidate):
             groups = candidate
     if not groups:
@@ -204,6 +209,19 @@ def write_manifest(path: Path, value: dict[str, Any]) -> None:
     write_json(path, value)
 
 
+def _origin_belongs_to_other_provider(
+    provider_id: str,
+    origin_host: str,
+    api_hosts: dict[str, set[str]],
+) -> bool:
+    provider_key = str(provider_id).casefold()
+    return any(
+        owner != provider_key
+        and any(_host_belongs(origin_host, owner_host) for owner_host in hosts)
+        for owner, hosts in api_hosts.items()
+    )
+
+
 def sanitize_capability_origins(config: dict[str, Any]) -> tuple[dict[str, Any], int]:
     """Drop API origins owned by another provider from generated capability metadata."""
     patches = config.get("provider_patches") if isinstance(config.get("provider_patches"), dict) else {}
@@ -215,19 +233,11 @@ def sanitize_capability_origins(config: dict[str, Any]) -> tuple[dict[str, Any],
             continue
         kept: list[Any] = []
         for value in row["observed_origins"]:
-            host = _host(value)
-            foreign = False
-            if host:
-                for owner, hosts in api_hosts.items():
-                    if owner == str(provider_id).casefold():
-                        continue
-                    if any(_host_belongs(host, owner_host) for owner_host in hosts):
-                        foreign = True
-                        break
-            if foreign:
+            origin_host = _host(value)
+            if origin_host and _origin_belongs_to_other_provider(provider_id, origin_host, api_hosts):
                 removed += 1
-            else:
-                kept.append(value)
+                continue
+            kept.append(value)
         row["observed_origins"] = kept
     meta = config.setdefault("provider_engine_normalization", {})
     if isinstance(meta, dict):
@@ -253,7 +263,7 @@ def validate_artifact(data: bytes, provider_id: str) -> None:
         temporary.unlink(missing_ok=True)
 
 
-def published_name(provider_id: str, old_path: Path, digest: str, changed: bool) -> str:
+def published_name(provider_id: str, old_path: Path, digest: str) -> str:
     parts = old_path.stem.split("--")
     source = parts[-2] if len(parts) >= 3 else "nuvio"
     return f"{safe_fragment(provider_id.casefold())}--{safe_fragment(source)}--{digest[:16]}.js"
@@ -410,7 +420,7 @@ def main() -> int:
         if changed:
             applied_count += 1
         digest = hashlib.sha256(patched).hexdigest()
-        new_relative = f"providers/{published_name(provider_id, path, digest, changed)}"
+        new_relative = f"providers/{published_name(provider_id, path, digest)}"
         updates[provider_id] = (relative, new_relative)
         outputs[new_relative] = patched
         old_paths.add(relative)

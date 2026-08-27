@@ -17,8 +17,7 @@ on:
       - ".github/workflows/provider-overrides-gate.yml"
   workflow_dispatch:
 
-permissions:
-  contents: read
+permissions: {}
 
 concurrency:
   group: provider-overrides-gate-${{ github.event.pull_request.number || github.ref }}
@@ -26,6 +25,8 @@ concurrency:
 
 jobs:
   validate:
+    permissions:
+      contents: read
     name: Validate provider override proposal
     runs-on: ubuntu-latest
     timeout-minutes: 25

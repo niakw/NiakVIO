@@ -1,12 +1,34 @@
 #!/usr/bin/env node
 'use strict';
 const path = require('node:path');
+const os = require('node:os');
 const fs = require('node:fs');
 const { spawnSync } = require('node:child_process');
 
-const file = path.resolve(process.argv[2] || '');
-if (!file || !fs.existsSync(file)) {
-  console.error('provider artifact missing:', file);
+const ROOT = fs.realpathSync(path.resolve(__dirname, '..'));
+const TEMP_ROOT = fs.realpathSync(os.tmpdir());
+const requestedFile = path.resolve(process.argv[2] || '');
+
+function isWithin(root, candidate) {
+  const relative = path.relative(root, candidate);
+  return relative === '' || (!relative.startsWith(`..${path.sep}`) && relative !== '..' && !path.isAbsolute(relative));
+}
+
+let file = '';
+try {
+  file = fs.realpathSync(requestedFile);
+} catch (_) {
+  console.error('provider artifact missing:', requestedFile);
+  process.exit(2);
+}
+
+const fileStat = fs.lstatSync(file);
+if (!fileStat.isFile() || fileStat.isSymbolicLink()) {
+  console.error('provider artifact must be a regular non-symlink file:', file);
+  process.exit(2);
+}
+if (![ROOT, TEMP_ROOT].some((root) => isWithin(root, file))) {
+  console.error('provider artifact path outside allowed roots:', file);
   process.exit(2);
 }
 

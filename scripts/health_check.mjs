@@ -31,20 +31,83 @@ const DNS_PREFLIGHT_PATH = path.resolve(
   process.env.NUVIO_DNS_PREFLIGHT_RESULTS || path.join(OUTPUT_DIR, 'dns-preflight-report.json'),
 );
 
-const requestedMode = process.argv.includes('--retry')
-  ? 'retry'
-  : process.argv.includes('--availability')
-    ? 'availability'
-    : process.argv.includes('--deep')
-      ? 'deep'
-      : 'quick';
+function compareText(left, right) {
+  const a = String(left);
+  const b = String(right);
+  return a < b ? -1 : a > b ? 1 : 0;
+}
+
+function requestedHealthMode(argv) {
+  if (argv.includes('--retry')) return 'retry';
+  if (argv.includes('--availability')) return 'availability';
+  if (argv.includes('--deep')) return 'deep';
+  return 'quick';
+}
+
+function defaultWorkerMemoryMb(mode) {
+  if (mode === 'deep') return 512;
+  if (mode === 'quick') return 384;
+  return 256;
+}
+
+function playbackCategory(playbackVerified, identityStatus, durationIdentityMismatch, shortVodPreview, fallbackCategory) {
+  if (playbackVerified) return 'playable';
+  if (identityStatus === 'contradiction') return 'content_identity_mismatch';
+  if (durationIdentityMismatch) return 'duration_identity_mismatch';
+  if (shortVodPreview) return 'short_vod_preview';
+  return fallbackCategory;
+}
+
+function fixtureRotationPeriod(mode) {
+  if (mode === 'retry') return 60 * 60 * 1000;
+  if (mode === 'availability') return 4 * 60 * 60 * 1000;
+  return 24 * 60 * 60 * 1000;
+}
+
+function activationFixtureSelection(primary, fallback) {
+  const healthyFallback = fallback.find((item) => item.status === 'healthy');
+  if (healthyFallback) return [healthyFallback];
+  if (fallback.length) return fallback;
+  return primary;
+}
+
+function candidateScore(status, healthyAverage, coverageRatio, claims, fixtureResults) {
+  if (status === 'healthy') return Math.round(healthyAverage * 0.8 + coverageRatio * 20);
+  if (
+    status === 'reachable'
+    && claims.description_present
+    && claims.max_height
+    && claims.accepted_languages.length
+  ) {
+    return 25;
+  }
+  return Math.max(0, ...fixtureResults.map((item) => Number(item.score || 0)));
+}
+
+function ciClassification(status, inconclusiveStatuses) {
+  if (status === 'excluded' || status === 'unavailable' || status === 'degraded') {
+    return 'conclusive_failure';
+  }
+  if (inconclusiveStatuses.has(status)) return 'inconclusive';
+  if (status === 'healthy') return 'conclusive_success';
+  return 'unknown';
+}
+
+function formatHealthDiagnosticSuffix(failures, errorSuffix) {
+  let suffix = '';
+  if (failures) suffix += `; failures=${failures}`;
+  if (errorSuffix) suffix += `; error=${errorSuffix}`;
+  return suffix;
+}
+
+const requestedMode = requestedHealthMode(process.argv);
 
 const registry = JSON.parse(await fs.readFile(REGISTRY_PATH, 'utf8'));
 const config = JSON.parse(await fs.readFile(CONFIG_PATH, 'utf8'));
 const modeConfig = config.modes?.[requestedMode] || config.modes?.quick || {};
 
 function configuredWorkerMemoryMb() {
-  const fallback = requestedMode === 'deep' ? 512 : requestedMode === 'quick' ? 384 : 256;
+  const fallback = defaultWorkerMemoryMb(requestedMode);
   const configured = Number(process.env.NUVIO_WORKER_MEMORY_MB || modeConfig.worker_memory_mb || fallback);
   if (!Number.isFinite(configured)) return fallback;
   return Math.max(128, Math.min(2048, Math.round(configured)));
@@ -684,9 +747,7 @@ async function probeStream(stream, mode, fixture = null) {
           audioManifestReachable = false;
           if (mode.probe_first_segment) audioSegmentReachable = false;
         }
-      } else if (master.audioTracks.length) {
-        audioManifestReachable = null;
-      } else {
+      } else if (!master.audioTracks.length) {
         audioManifestReachable = true;
       }
 
@@ -713,9 +774,7 @@ async function probeStream(stream, mode, fixture = null) {
         } catch {
           variantReachable = false;
         }
-      } else if (master.bestVariant) {
-        variantReachable = null;
-      } else {
+      } else if (!master.bestVariant) {
         variantReachable = true;
       }
 
@@ -800,9 +859,6 @@ async function probeStream(stream, mode, fixture = null) {
           }
         }
       }
-    } else {
-      payloadVerified = false;
-      playbackVerified = false;
     }
 
     let durationIdentityMismatch = false;
@@ -866,7 +922,7 @@ async function probeStream(stream, mode, fixture = null) {
       playback_verified: playbackVerified,
       payload_verified: payloadVerified,
       direct_signature_verified: directSignatureVerified,
-      category: playbackVerified ? 'playable' : (contentIdentity.status === 'contradiction' ? 'content_identity_mismatch' : (durationIdentityMismatch ? 'duration_identity_mismatch' : (shortVodPreview ? 'short_vod_preview' : classification.category))),
+      category: playbackCategory(playbackVerified, contentIdentity.status, durationIdentityMismatch, shortVodPreview, classification.category),
       http_status: result.status,
       kind,
       bytes_sampled: result.body.length,
@@ -1032,11 +1088,7 @@ function fixtureKey(fixture) {
 function fixturesForCandidate(candidate) {
   const profile = candidateProfile(candidate);
   const limit = Math.max(1, Number(modeConfig.fixture_limit || 1));
-  const period = requestedMode === 'retry'
-    ? 60 * 60 * 1000
-    : requestedMode === 'availability'
-      ? 4 * 60 * 60 * 1000
-      : 24 * 60 * 60 * 1000;
+  const period = fixtureRotationPeriod(requestedMode);
   const slot = Math.floor(Date.now() / period);
   const start = requestedMode === 'deep' ? 0 : slot % profile.pool.length;
 
@@ -1391,12 +1443,12 @@ function manifestClaims(candidate) {
   if (description.length >= 8) curationScore += 1;
   return {
     max_height: explicitHeight,
-    accepted_languages: [...languages].sort(),
-    supported_types: [...new Set(types)].sort(),
-    formats: [...new Set(formats)].sort(),
+    accepted_languages: [...languages].sort(compareText),
+    supported_types: [...new Set(types)].sort(compareText),
+    formats: [...new Set(formats)].sort(compareText),
     description_present: description.length >= 8,
     curation_score: curationScore,
-    quality_signals: [...new Set(qualitySignals)].sort(),
+    quality_signals: [...new Set(qualitySignals)].sort(compareText),
   };
 }
 
@@ -1544,7 +1596,7 @@ async function testCandidate(candidate) {
     const failureClass = classification.failureClass;
     const score = scoreTest(worker, probes, status);
     const playable = probes.filter((probe) => probe.playback_verified);
-    const reachableHosts = [...new Set(playable.map((probe) => probe.host).filter(Boolean))].sort();
+    const reachableHosts = [...new Set(playable.map((probe) => probe.host).filter(Boolean))].sort(compareText);
     const verifiedMax = Math.max(0, ...playable.flatMap((probe) => probe.verifiedHeights || [])) || null;
     const reportedMax = Math.max(0, ...playable.flatMap((probe) => probe.reportedHeights || [])) || null;
     const effectiveMax = Math.max(0, ...playable.map((probe) => probe.effective_height || 0)) || null;
@@ -1612,17 +1664,17 @@ async function testCandidate(candidate) {
       reported_max_height: reportedMax,
       effective_max_height: effectiveMax,
       max_bandwidth: maxBandwidth,
-      audio_languages: [...new Set(playable.flatMap((probe) => probe.audioLanguages || []))].sort(),
-      subtitle_languages: [...new Set(playable.flatMap((probe) => probe.subtitleLanguages || []))].sort(),
-      accepted_audio_languages: [...new Set(playable.flatMap((probe) => probe.accepted_audio_languages || []))].sort(),
-      accepted_subtitle_languages: [...new Set(playable.flatMap((probe) => probe.accepted_subtitle_languages || []))].sort(),
+      audio_languages: [...new Set(playable.flatMap((probe) => probe.audioLanguages || []))].sort(compareText),
+      subtitle_languages: [...new Set(playable.flatMap((probe) => probe.subtitleLanguages || []))].sort(compareText),
+      accepted_audio_languages: [...new Set(playable.flatMap((probe) => probe.accepted_audio_languages || []))].sort(compareText),
+      accepted_subtitle_languages: [...new Set(playable.flatMap((probe) => probe.accepted_subtitle_languages || []))].sort(compareText),
       accepted_subtitles_advertised: playable.reduce((sum, probe) => sum + Number(probe.accepted_subtitles_advertised || 0), 0),
       accepted_subtitles_reachable: playable.reduce((sum, probe) => sum + Number(probe.accepted_subtitles_reachable || 0), 0),
       subtitles_advertised: playable.reduce((sum, probe) => sum + Number(probe.subtitles_advertised || 0), 0),
       subtitles_reachable: playable.reduce((sum, probe) => sum + Number(probe.subtitles_reachable || 0), 0),
-      codecs: [...new Set(playable.flatMap((probe) => probe.codecs || []))].sort(),
-      hdr_formats: [...new Set(playable.flatMap((probe) => probe.hdrFormats || []))].sort(),
-      formats: [...new Set(playable.map((probe) => probe.kind).filter(Boolean))].sort(),
+      codecs: [...new Set(playable.flatMap((probe) => probe.codecs || []))].sort(compareText),
+      hdr_formats: [...new Set(playable.flatMap((probe) => probe.hdrFormats || []))].sort(compareText),
+      formats: [...new Set(playable.map((probe) => probe.kind).filter(Boolean))].sort(compareText),
       host_results: probes
         .filter((probe) => probe.host)
         .map((probe) => ({
@@ -1639,7 +1691,7 @@ async function testCandidate(candidate) {
           content_identity_reason: probe.content_identity_reason || null,
           duration_identity_mismatch: Boolean(probe.duration_identity_mismatch),
         })),
-      response_categories: [...new Set(probes.map((probe) => probe.category).filter(Boolean))].sort(),
+      response_categories: [...new Set(probes.map((probe) => probe.category).filter(Boolean))].sort(compareText),
       median_probe_latency_ms: median(playable.map((probe) => probe.latency_ms)),
       error: worker.ok ? null : sanitizeError(worker.error),
       probe_errors: probes
@@ -1670,7 +1722,7 @@ async function testCandidate(candidate) {
       for (const fixture of categoryFallbacks) {
         fallbackExecuted = true;
         await executeFixture(fixture, 'fallback');
-        const latest = fixtureResults[fixtureResults.length - 1];
+        const latest = fixtureResults.at(-1);
         if (latest?.fixture?.category === category && latest.status === 'healthy') break;
         if (latest?.status === 'excluded') break;
       }
@@ -1690,10 +1742,9 @@ async function testCandidate(candidate) {
     const primary = fixtureResults.filter((item) => item.fixture_phase === 'primary' && item.fixture?.category === category);
     if (primary.some((item) => item.status === 'healthy')) return primary;
     const fallback = fixtureResults.filter((item) => item.fixture_phase === 'fallback' && item.fixture?.category === category);
-    const healthyFallback = fallback.find((item) => item.status === 'healthy');
     // Once an alternate title proves current playback, earlier catalogue misses
     // remain diagnostics and do not dilute the activation coverage ratio.
-    return healthyFallback ? [healthyFallback] : (fallback.length ? fallback : primary);
+    return activationFixtureSelection(primary, fallback);
   });
   const healthyTests = fixtureResults.filter((item) => item.status === 'healthy');
   const activationHealthyTests = activationTests.filter((item) => item.status === 'healthy');
@@ -1707,13 +1758,9 @@ async function testCandidate(candidate) {
     ? activationHealthyTests.length / activationTests.length
     : 0;
   const claims = manifestClaims(candidate);
-  const score = status === 'healthy'
-    ? Math.round(healthyAverage * 0.8 + coverageRatio * 20)
-    : status === 'reachable' && claims.description_present && claims.max_height && claims.accepted_languages.length
-      ? 25
-      : Math.max(0, ...fixtureResults.map((item) => Number(item.score || 0)));
+  const score = candidateScore(status, healthyAverage, coverageRatio, claims, fixtureResults);
 
-  const healthyCategories = [...new Set(activationHealthyTests.map((item) => item.fixture.category).filter(Boolean))].sort();
+  const healthyCategories = [...new Set(activationHealthyTests.map((item) => item.fixture.category).filter(Boolean))].sort(compareText);
   const playableStreams = fixtureResults.reduce((sum, item) => sum + Number(item.streams_playable || 0), 0);
   const payloadVerifiedStreams = fixtureResults.reduce((sum, item) => sum + Number(item.payload_verified_streams || 0), 0);
   const identityVerifiedStreams = fixtureResults.reduce((sum, item) => sum + Number(item.identity_verified_streams || 0), 0);
@@ -1721,9 +1768,9 @@ async function testCandidate(candidate) {
   const identityContradictionCount = fixtureResults.reduce((sum, item) => sum + Number(item.identity_contradiction_count || 0), 0);
   const durationIdentityMismatchCount = fixtureResults.reduce((sum, item) => sum + Number(item.duration_identity_mismatch_count || 0), 0);
   const playableFixtures = fixtureResults.filter((item) => Number(item.streams_playable || 0) > 0).length;
-  const reachableHosts = [...new Set(healthyTests.flatMap((item) => item.reachable_hosts || []))].sort();
-  const acceptedAudio = [...new Set(healthyTests.flatMap((item) => item.accepted_audio_languages || []))].sort();
-  const acceptedSubtitles = [...new Set(healthyTests.flatMap((item) => item.accepted_subtitle_languages || []))].sort();
+  const reachableHosts = [...new Set(healthyTests.flatMap((item) => item.reachable_hosts || []))].sort(compareText);
+  const acceptedAudio = [...new Set(healthyTests.flatMap((item) => item.accepted_audio_languages || []))].sort(compareText);
+  const acceptedSubtitles = [...new Set(healthyTests.flatMap((item) => item.accepted_subtitle_languages || []))].sort(compareText);
   const inconclusiveStatuses = new Set(activationConfig.inconclusive_statuses || ['no_streams', 'blocked', 'provider_unreachable', 'runtime_error']);
   const settingsProfileAttempts = fixtureResults.flatMap((item) =>
     Array.isArray(item.settings_diagnostics)
@@ -1739,17 +1786,17 @@ async function testCandidate(candidate) {
   );
   const selectedProfiles = [...new Set(
     fixtureResults.map((item) => item.execution_context?.selected_settings_profile).filter(Boolean),
-  )].sort();
+  )].sort(compareText);
   const selectedSettingKeys = [...new Set(
     fixtureResults.flatMap((item) => item.execution_context?.selected_setting_keys || []),
-  )].sort();
+  )].sort(compareText);
   const settingsProfilesTestedTotal = settingsProfileAttempts.length;
   const settingsProfilesProducingStreams = settingsProfileAttempts.filter((item) => item.stream_count > 0).length;
   const fixtureStatusCounts = Object.fromEntries(
     ['healthy', 'reachable', 'blocked', 'degraded', 'no_streams', 'provider_unreachable', 'runtime_error', 'unavailable', 'excluded']
       .map((fixtureStatus) => [fixtureStatus, fixtureResults.filter((item) => item.status === fixtureStatus).length]),
   );
-  const failureClasses = [...new Set(fixtureResults.map((item) => item.failure_class).filter(Boolean))].sort();
+  const failureClasses = [...new Set(fixtureResults.map((item) => item.failure_class).filter(Boolean))].sort(compareText);
   const runtimeErrorFixtures = fixtureResults
     .filter((item) => item.status === 'runtime_error' || item.error_details)
     .map((item) => ({
@@ -1771,13 +1818,7 @@ async function testCandidate(candidate) {
     sha256: candidate.sha256,
     mode: requestedMode,
     status,
-    ci_classification: status === 'excluded' || status === 'unavailable' || status === 'degraded'
-      ? 'conclusive_failure'
-      : inconclusiveStatuses.has(status)
-        ? 'inconclusive'
-        : status === 'healthy'
-          ? 'conclusive_success'
-          : 'unknown',
+    ci_classification: ciClassification(status, inconclusiveStatuses),
     score,
     dns_preflight: dnsPreflight,
     candidate_profile: {
@@ -1816,8 +1857,8 @@ async function testCandidate(candidate) {
       reported_max_height: Math.max(0, ...healthyTests.map((item) => item.reported_max_height || 0)) || null,
       effective_max_height: Math.max(0, ...healthyTests.map((item) => item.effective_max_height || 0)) || null,
       max_bandwidth: Math.max(0, ...healthyTests.map((item) => item.max_bandwidth || 0)) || null,
-      audio_languages: [...new Set(healthyTests.flatMap((item) => item.audio_languages || []))].sort(),
-      subtitle_languages: [...new Set(healthyTests.flatMap((item) => item.subtitle_languages || []))].sort(),
+      audio_languages: [...new Set(healthyTests.flatMap((item) => item.audio_languages || []))].sort(compareText),
+      subtitle_languages: [...new Set(healthyTests.flatMap((item) => item.subtitle_languages || []))].sort(compareText),
       accepted_audio_languages: acceptedAudio,
       accepted_subtitle_languages: acceptedSubtitles,
       accepted_subtitles_advertised: healthyTests.reduce((sum, item) => sum + Number(item.accepted_subtitles_advertised || 0), 0),
@@ -1827,7 +1868,7 @@ async function testCandidate(candidate) {
       disallowed_streams: fixtureResults.reduce((sum, item) => sum + Number(item.disallowed_streams || 0), 0),
       provider_server_accessible: fixtureResults.some((item) => item.provider_server_accessible),
       provider_server_successful_response: fixtureResults.some((item) => item.provider_server_successful_response),
-      provider_server_hosts: [...new Set(fixtureResults.flatMap((item) => item.provider_server_hosts || []))].sort(),
+      provider_server_hosts: [...new Set(fixtureResults.flatMap((item) => item.provider_server_hosts || []))].sort(compareText),
       provider_server_http_statuses: [...new Set(fixtureResults.flatMap((item) => item.provider_server_http_statuses || []))].sort((a, b) => a - b),
       manifest_description_present: claims.description_present,
       manifest_supported_types: claims.supported_types,
@@ -1850,14 +1891,14 @@ async function testCandidate(candidate) {
     verified_max_height: Math.max(0, ...fixtureResults.map((item) => item.verified_max_height || 0)) || null,
     reported_max_height: Math.max(0, ...fixtureResults.map((item) => item.reported_max_height || 0)) || null,
     max_bandwidth: Math.max(0, ...fixtureResults.map((item) => item.max_bandwidth || 0)) || null,
-    audio_languages: [...new Set(fixtureResults.flatMap((item) => item.audio_languages || []))].sort(),
-    subtitle_languages: [...new Set(fixtureResults.flatMap((item) => item.subtitle_languages || []))].sort(),
-    codecs: [...new Set(fixtureResults.flatMap((item) => item.codecs || []))].sort(),
-    hdr_formats: [...new Set(fixtureResults.flatMap((item) => item.hdr_formats || []))].sort(),
-    formats: [...new Set(fixtureResults.flatMap((item) => item.formats || []))].sort(),
-    hosts: [...new Set(fixtureResults.flatMap((item) => item.reachable_hosts || []))].sort(),
+    audio_languages: [...new Set(fixtureResults.flatMap((item) => item.audio_languages || []))].sort(compareText),
+    subtitle_languages: [...new Set(fixtureResults.flatMap((item) => item.subtitle_languages || []))].sort(compareText),
+    codecs: [...new Set(fixtureResults.flatMap((item) => item.codecs || []))].sort(compareText),
+    hdr_formats: [...new Set(fixtureResults.flatMap((item) => item.hdr_formats || []))].sort(compareText),
+    formats: [...new Set(fixtureResults.flatMap((item) => item.formats || []))].sort(compareText),
+    hosts: [...new Set(fixtureResults.flatMap((item) => item.reachable_hosts || []))].sort(compareText),
     host_results: fixtureResults.flatMap((item) => item.host_results || []),
-    response_categories: [...new Set(fixtureResults.flatMap((item) => item.response_categories || []))].sort(),
+    response_categories: [...new Set(fixtureResults.flatMap((item) => item.response_categories || []))].sort(compareText),
     tests: fixtureResults,
   };
 }
@@ -1899,7 +1940,7 @@ async function runPool(items, worker, limit) {
       process.stdout.write(
         `[${index + 1}/${items.length}] ${result.key}: ${result.status} `
         + `(score=${result.score}; fixtures=${fixtureCount}; streams=${returnedStreams}; runtime_errors=${runtimeErrors}`
-        + `${failures ? `; failures=${failures}` : ''}${errorSuffix ? `; error=${errorSuffix}` : ''})\n`,
+        + `${formatHealthDiagnosticSuffix(failures, errorSuffix)})\n`,
       );
     }
   }

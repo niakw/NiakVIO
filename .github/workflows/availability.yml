@@ -41,11 +41,7 @@ jobs:
 
       - name: Install pinned direct runtime dependencies without lifecycle scripts
         run: |
-          if [ -f package-lock.json ]; then
-            npm ci --ignore-scripts --no-audit --no-fund
-          else
-            npm install --ignore-scripts --no-audit --no-fund --package-lock=false
-          fi
+          npm ci --ignore-scripts --no-audit --no-fund
 
       - name: Stage current published providers
         run: python scripts/stage_published.py

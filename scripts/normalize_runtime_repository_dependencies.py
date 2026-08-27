@@ -226,7 +226,7 @@ def _normalize_core_media_ownership(*, apply: bool) -> list[str]:
         "_normalize_zink_domain_discovery",
         "repository domain lookup must materialize to the official hub",
     )
-    check_source = normalized if apply else normalized
+    check_source = normalized
     if any(token in check_source for token in forbidden):
         raise ValueError("Core media policy still owns provider address routing")
     return changed

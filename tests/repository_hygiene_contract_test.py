@@ -111,9 +111,21 @@ assert "--baseline-health brain-learning-input/baseline-health.json" in brain
 assert "tests/native_reader_ownership_policy_test.py" in brain
 
 hygiene = (ROOT / ".github/workflows/repository-hygiene.yml").read_text(encoding="utf-8")
-assert "brain-repair/proposals" in hygiene
+assert "brain-learning/proposals" in hygiene
 assert "git push origin --delete" in hygiene
 assert "main|brain-learning/proposals" in hygiene
+assert "permissions: {}" in hygiene
+assert """  purge-stale-actions:
+    permissions:
+      actions: write
+      contents: read
+""" in hygiene
+assert """  cleanup:
+    needs: purge-stale-actions
+    permissions:
+      contents: write
+      pull-requests: read
+""" in hygiene
 
 install = (ROOT / "INSTALL.md").read_text(encoding="utf-8")
 assert "final-native-client-validation-v2.yml" not in install
@@ -143,3 +155,49 @@ assert "security-extended" in codeql
 assert "db488ddef3bf6cb639b32c2e9a7c0a7ea8271d28" in codeql
 
 print("repository hygiene contract passed: main-only code workflow, permanent Core/reader hardening, syntax-only provider validation, no retired one-shots or executable workflow references")
+
+
+# External provider hub fetches must keep the platform trust store and reject
+# legacy TLS protocol negotiation explicitly.
+resolver = (ROOT / "scripts/resolve_provider_hubs.py").read_text(encoding="utf-8")
+assert "ssl.create_default_context()" in resolver
+assert "context.minimum_version = ssl.TLSVersion.TLSv1_2" in resolver
+
+
+# Provider syntax validation accepts only regular files materialized inside the
+# repository or the system temp root used by fixed-point validation.
+validator = (ROOT / "scripts/validate_provider_artifact.cjs").read_text(encoding="utf-8")
+assert "node:os" in validator
+assert "TEMP_ROOT = fs.realpathSync(os.tmpdir())" in validator
+assert "fs.realpathSync(requestedFile)" in validator
+assert "fileStat.isSymbolicLink()" in validator
+assert "provider artifact path outside allowed roots" in validator
+
+
+# Audit remediation contracts for low-risk diagnostics/tooling fixes.
+tv_hls = (ROOT / "scripts/tv_hls_duration_identity.py").read_text(encoding="utf-8")
+assert "from urllib.parse import urljoin, urlparse" in tv_hls
+assert '"playlist_host": urlparse(final_url).hostname' in tv_hls
+assert "if False else None" not in tv_hls
+
+portfolio = (ROOT / "scripts/rank_provider_portfolio.cjs").read_text(encoding="utf-8")
+assert "selected.filter((row) => predicate(row)).length" in portfolio
+assert "selected.filter(predicate).length" not in portfolio
+
+frontend_watch = (ROOT / "scripts/watch_native_device_frontend.sh").read_text(encoding="utf-8")
+assert '    *) ;;' in frontend_watch
+
+
+# Secure temporary-file contracts.
+sync = (ROOT / ".github/workflows/sync.yml").read_text(encoding="utf-8")
+assert "/tmp/release-generation.json" not in sync
+assert "$RUNNER_TEMP/release-generation.json" in sync
+
+catalogue_audit = (ROOT / "scripts/audit_catalogue_identity_media.py").read_text(encoding="utf-8")
+assert 'TEMP_ROOT = Path(os.environ.get("RUNNER_TEMP") or (ROOT / ".tmp")).resolve()' in catalogue_audit
+assert 'Path("/tmp/release-generation.json")' not in catalogue_audit
+
+live_safety = (ROOT / "scripts/apply_live_safety_repair.py").read_text(encoding="utf-8")
+assert "niakvio-live-safety-prestate.json" in live_safety
+assert "Path('/tmp/niakvio-live-safety-prestate.json')" not in live_safety
+assert "path.parent.mkdir(parents=True, exist_ok=True)" in live_safety

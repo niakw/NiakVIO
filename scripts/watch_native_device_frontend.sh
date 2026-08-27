@@ -47,5 +47,6 @@ adb logcat -v brief -s NiakvioCorpus:I NiakvioEvidence:I '*:S' | while IFS= read
     *FIELD_NATIVE_PLAYER*) capture_once "player-result" ;;
     *FIELD_NATIVE_ERROR*) capture_once "provider-error" ;;
     *FIELD_NATIVE_CORPUS_END*) capture_once "corpus-end" ;;
+    *) ;;
   esac
 done

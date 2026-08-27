@@ -27,6 +27,7 @@ from pathlib import Path
 from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
+TEMP_ROOT = Path(os.environ.get("RUNNER_TEMP") or (ROOT / ".tmp")).resolve()
 MANIFEST = ROOT / "manifest.json"
 VF_MANIFEST = ROOT / "vf" / "manifest.json"
 PROBE = ROOT / "scripts" / "nuvio_tv_probe_v2.cjs"
@@ -413,12 +414,12 @@ def main() -> int:
         (
             path
             for path in (
-                Path("/tmp/refresh-release-generation.json"),
-                Path("/tmp/release-generation.json"),
+                TEMP_ROOT / "refresh-release-generation.json",
+                TEMP_ROOT / "release-generation.json",
             )
             if path.is_file()
         ),
-        Path("/tmp/release-generation.json"),
+        TEMP_ROOT / "release-generation.json",
     )
     if (
         conclusive_failure
