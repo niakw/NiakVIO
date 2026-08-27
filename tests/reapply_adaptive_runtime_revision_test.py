@@ -32,4 +32,12 @@ unchanged,records=reapply.reapply_adaptive_runtime_revision(base.encode(),preser
 assert unchanged.decode()==base and records==[]
 unchanged,records=reapply.reapply_adaptive_runtime_revision(legacy.encode(),{'local_patches':[]})
 assert unchanged.decode()==legacy and records==[]
+
+v5_source='/* NUVIO_VERIFIED_MEDIA_RUNTIME_RECOVERY_V5:test */\n'+base
+v5_provenance={'local_patches':[{
+    'type':'patch_profile','profile':'adaptive_runtime_recovery','phase':'runtime',
+    'revision':5,'options':options,
+}]}
+unchanged,records=reapply.reapply_adaptive_runtime_revision(v5_source.encode(),v5_provenance)
+assert unchanged.decode()==v5_source and records==[]
 print('adaptive runtime revision reapply test passed')
