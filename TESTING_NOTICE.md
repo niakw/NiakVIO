@@ -32,6 +32,14 @@ Transient CI/runtime data should be sanitized before it is persisted or publishe
 
 When the same compatibility assertion can be made with metadata, a lawful public preview, a trailer or another lower-exposure input, that input should be preferred. This is a testing-minimization policy, **not a claim that every native Lab test uses trailers**.
 
+### International and jurisdiction-specific use
+
+Copyright exceptions and limitations vary by country. This repository does not assume that fair use, fair dealing, research/testing, quotation, transient-copying, interoperability or any other exception applies to a particular test.
+
+This policy does not grant a licence or content-access right. It does not authorize bypassing authentication, paywalls, encryption, access controls or technological protection measures. If applicable law or binding service terms do not permit an action, the repository notice does not make that action permitted.
+
+Contributors should keep test inputs and persisted evidence no broader than technically necessary and should prefer lower-exposure, lawfully public inputs whenever they can establish the same compatibility assertion.
+
 ### What a passing test means
 
 A passing test means only that a specific software path produced a bounded technical observation at a specific time. It does not determine:
@@ -81,6 +89,14 @@ Les données transitoires de CI/runtime doivent être sanitizées avant toute pe
 ### Privilégier les entrées à exposition réduite
 
 Lorsque la même assertion de compatibilité peut être vérifiée avec des métadonnées, une preview publique licite, une bande-annonce ou une autre entrée à exposition réduite, cette entrée doit être privilégiée. Il s'agit d'une politique de minimisation des tests, **pas d'une affirmation selon laquelle tous les Labs natifs utilisent des bandes-annonces**.
+
+### Utilisation internationale et règles propres à chaque juridiction
+
+Les exceptions et limitations au droit d'auteur varient selon les pays. Le dépôt ne présume pas que le fair use, fair dealing, la recherche, le test, la citation, la copie transitoire, l'interopérabilité ou une autre exception locale s'applique à un test donné.
+
+Cette politique n'accorde aucune licence ni droit d'accès à un contenu. Elle n'autorise pas le contournement d'une authentification, d'un paywall, d'un chiffrement, d'un contrôle d'accès ou d'une mesure technique de protection. Si la loi applicable ou des conditions de service opposables n'autorisent pas une action, cette notice ne la rend pas autorisée.
+
+Les contributeurs doivent limiter les entrées de test et les preuves persistées au strict nécessaire technique et privilégier les entrées publiques licites à exposition réduite lorsqu'elles permettent d'établir la même assertion de compatibilité.
 
 ### Signification d'un test réussi
 

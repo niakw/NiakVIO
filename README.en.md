@@ -34,7 +34,7 @@ Dark and light feeds are also available under `assets/`.
 > NiakVIO does not store or host video. It maintains manifests, metadata, compatibility rules and provider bundles consumed client-side.
 
 > [!IMPORTANT]
-> **Work references are test fixtures.** Titles, years, seasons and episodes visible in the README, source code, CI logs or artifacts are deterministic **test identifiers** used to verify matching, compatibility and wrong-media regressions. They are not a content catalogue, an offer, an endorsement or a statement about third-party rights/licensing. NiakVIO must not publish media files, clips, subtitle payloads, decryption keys, access tokens or complete playback URLs. See [`TESTING_NOTICE.md`](TESTING_NOTICE.md) and [`DISCLAIMER.md`](DISCLAIMER.md).
+> **Work references are test fixtures.** Titles, years, seasons and episodes visible in the README, source code, CI logs or artifacts are deterministic **test identifiers** used to verify matching, compatibility and wrong-media regressions. They are not a content catalogue, an offer, an endorsement or a statement about third-party rights/licensing. NiakVIO must not publish media files, clips, subtitle payloads, decryption keys, access tokens or complete playback URLs. **Copyright exceptions and limitations differ by jurisdiction; NiakVIO does not assume that fair use, fair dealing, research/testing or any other exception applies, and grants no right to access or use third-party material.** See [`TESTING_NOTICE.md`](TESTING_NOTICE.md) and [`DISCLAIMER.md`](DISCLAIMER.md).
 
 ---
 
@@ -178,6 +178,16 @@ Inconsistent generations must not silently replace a previously healthy publishe
 - `brain-learning/proposals` stores sanitized learning memory only;
 - automated Brain repair proposals require human review/merge;
 - official Nuvio repositories are consumed read-only.
+
+---
+
+## International / jurisdiction-specific use
+
+Copyright, related-rights, database, contract and technological-protection rules vary by country. NiakVIO's documentation does not choose or presume a copyright exception for users worldwide.
+
+The repository follows a conservative technical policy: minimize persisted evidence, prefer metadata or lawful public previews/trailers when they can prove the same assertion, do not publish complete playback URLs or protected payloads, and never treat a successful test as proof of authorization.
+
+Nothing in this repository grants a licence, waives third-party rights, authorizes circumvention of authentication, paywalls, access controls, encryption or technological protection measures, or authorizes conduct prohibited by applicable law or binding service terms. Users and contributors are responsible for the rules that apply where they act.
 
 ---
 

@@ -18,6 +18,7 @@ import json
 import os
 import subprocess
 import sys
+import time
 from pathlib import Path
 from typing import Any
 
@@ -132,26 +133,47 @@ def guard(output: Path) -> dict[str, Any]:
 
     output = output.resolve()
     output.parent.mkdir(parents=True, exist_ok=True)
-    completed = subprocess.run(
-        [sys.executable, str(CHECKER), "--no-fail", "--output", str(output)],
-        cwd=ROOT,
-        capture_output=True,
-        text=True,
-        timeout=240,
-        check=False,
-    )
-    if completed.returncode != 0:
-        details = "\n".join(
-            part.strip()
-            for part in (completed.stdout, completed.stderr)
-            if part and part.strip()
+    report: dict[str, Any] | None = None
+    for attempt in range(1, 4):
+        completed = subprocess.run(
+            [sys.executable, str(CHECKER), "--no-fail", "--output", str(output)],
+            cwd=ROOT,
+            capture_output=True,
+            text=True,
+            timeout=240,
+            check=False,
         )
-        raise RuntimeError(
-            "Nuvio client verification failed before provider Brain mutation: "
-            + details[-2200:]
-        )
+        if completed.returncode != 0:
+            details = "\n".join(
+                part.strip()
+                for part in (completed.stdout, completed.stderr)
+                if part and part.strip()
+            )
+            raise RuntimeError(
+                "Nuvio client verification failed before provider Brain mutation: "
+                + details[-2200:]
+            )
+        candidate = load_json(output)
+        transient = [
+            str(client_id)
+            for client_id, row in (candidate.get("clients") or {}).items()
+            if isinstance(row, dict)
+            and str(row.get("status") or "")
+            in {"verification_error", "verification_inconclusive"}
+        ]
+        if transient and attempt < 3:
+            print(
+                "FIELD_NUVIO_CLIENT_VERIFY_RETRY "
+                f"attempt={attempt} clients={','.join(sorted(transient))}"
+            )
+            time.sleep(attempt * 2)
+            continue
+        report = candidate
+        break
 
-    report = load_json(output)
+    if report is None:
+        raise RuntimeError("Nuvio client verification produced no usable report")
+
     config = load_json(CONFIG)
     blockers, adaptation_pending = classify_provider_mutation_compat(report, config)
     if blockers:

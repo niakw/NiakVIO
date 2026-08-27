@@ -24,6 +24,14 @@ A passing test establishes only a technical observation at a specific time. It d
 
 See [`TESTING_NOTICE.md`](TESTING_NOTICE.md) for the repository-wide fixture policy.
 
+## International and jurisdiction-specific rules
+
+Copyright limitations and exceptions differ between jurisdictions. This project does not rely on, promise or represent that any particular doctrine — including fair use, fair dealing, research, testing, quotation, transient copying or interoperability — applies to a particular test or user.
+
+Nothing in this repository grants a copyright licence, content-access right or permission to bypass paywalls, authentication, access controls, encryption or other technological protection measures. If applicable law or binding service terms do not permit a test or use, this notice does not authorize it.
+
+The repository's minimization and sanitization rules are risk-reduction practices, not a substitute for jurisdiction-specific legal analysis.
+
 They do not establish:
 
 - ownership of any content;
@@ -72,4 +80,6 @@ Les preuves publiques doivent rester minimales et sanitizées : pas de fichier a
 
 Un test réussi prouve seulement une observation technique ponctuelle ; il ne prouve pas la situation juridique du contenu, du provider, de l'hébergeur ou de l'utilisation qui en est faite.
 
-L'utilisation du logiciel doit respecter la loi applicable, les conditions des services concernés et les droits des tiers. Ce document est informatif et ne constitue pas un avis juridique. Voir [`TESTING_NOTICE.md`](TESTING_NOTICE.md).
+Les exceptions et limitations de droit d'auteur diffèrent selon les juridictions. NiakVIO ne présume pas qu'une exception particulière (recherche, test, citation, copie transitoire ou équivalent local) s'applique à un test ou à un utilisateur donné. Rien dans le dépôt n'accorde de licence ni n'autorise le contournement d'un paywall, d'une authentification, d'un contrôle d'accès, d'un chiffrement ou d'une mesure technique de protection.
+
+L'utilisation du logiciel doit respecter la loi applicable, les conditions des services concernés et les droits des tiers. Les règles de minimisation/sanitization réduisent l'exposition technique mais ne remplacent pas une analyse juridique locale. Ce document est informatif et ne constitue pas un avis juridique. Voir [`TESTING_NOTICE.md`](TESTING_NOTICE.md).

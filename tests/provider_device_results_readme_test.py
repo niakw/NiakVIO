@@ -61,5 +61,6 @@ assert "fixtures de test" in rendered
 assert "TESTING_NOTICE.md" in rendered
 assert "DISCLAIMER.md" in rendered
 assert "Fixtures de test réellement validées" in rendered
+assert "Cadre des œuvres citées" in rendered
 
 print("provider device README coverage test passed")

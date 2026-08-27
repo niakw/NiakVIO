@@ -363,6 +363,8 @@ def render(results: dict[str, Any]) -> str:
         "",
         "> **Ici, NiakVIO n'affiche que des succès natifs réellement conservés.** Une preuve signifie que le lecteur officiel Nuvio a atteint un état sain pour le **provider + fixture de test + device exacts**. L'absence de preuve n'est jamais maquillée en succès — et n'est pas non plus présentée comme un échec.",
         "",
+        "> **Cadre des œuvres citées :** les titres/épisodes du tableau sont des **fixtures de test**, pas un catalogue ni une offre de contenu. Les résultats décrivent uniquement une observation technique sanitizée. Voir [`TESTING_NOTICE.md`](TESTING_NOTICE.md) et [`DISCLAIMER.md`](DISCLAIMER.md).",
+        "",
         f"**{len(verified)} providers** disposent actuellement d'au moins une preuve lecteur native conservée, sur **{len(verified_cases)} cas de lecture distincts** et **{len(device_coverage)} {platform_label}** déjà représentée{'s' if len(device_coverage) != 1 else ''}. L'inventaire complet reste synchronisé automatiquement sur `manifest.json`.",
         "",
         "### 📡 Couverture des lecteurs officiels",
