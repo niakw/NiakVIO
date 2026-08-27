@@ -68,7 +68,7 @@
         "version_code": 109
       },
       "current_audited": {
-        "ref": "4e838e470055d61facab285d283d7ec8f00c0347",
+        "ref": "582ae863800414aff5f4a17a533ab19713a99ce4",
         "version_name": "0.4.11",
         "version_code": 115
       },
@@ -95,7 +95,7 @@
         "official_getStreams_error_behavior": "application runtime catches JavaScript getStreams errors and captures []",
         "lab_error_policy": "diagnostic runtime trap preserves swallowed errors before collection/cross-client gates",
         "surface_note": "Mobile and Desktop currently share several runtime bridge subtrees, but their PluginRuntime/JsBindings/network sources are independently versioned and must be diffed separately.",
-        "audited_change": "Repository refresh cadence/cache logic changed while PluginRuntime positional getStreams and PluginRuntimeResult projection remain unchanged through the audited cmp-rewrite HEAD."
+        "audited_change": "Repository refresh cadence/cache logic changed while PluginRuntime positional getStreams and PluginRuntimeResult projection remain unchanged through the audited cmp-rewrite HEAD. No provider/stream contract path changed in the two commits up to 582ae863800414aff5f4a17a533ab19713a99ce4."
       },
       "brain_capabilities": [
         "invocation",
@@ -170,7 +170,7 @@
         "version_code": 17
       },
       "current_audited": {
-        "ref": "a4fe0bf1a98ff9a8ca50e1a9dccde7ca842bd817",
+        "ref": "24f63e42c6debfc7a20200bc3a9a9586370c44f0",
         "version_name": "0.1.20-alpha",
         "version_code": 20
       },
@@ -187,7 +187,7 @@
           "composeApp/src/commonMain/kotlin/com/nuvio/app/features/plugins/PluginModels.kt",
           "composeApp/src/fullCommonMain/kotlin/com/nuvio/app/features/plugins/PluginRepository.kt"
         ],
-        "audited_change": "Desktop repository refresh/cache behavior advanced while QuickJS positional getStreams, PluginRuntimeResult projection and forceRefresh no-cache semantics remain compatible at the audited Dev HEAD.",
+        "audited_change": "Desktop repository refresh/cache behavior advanced while QuickJS positional getStreams, PluginRuntimeResult projection and forceRefresh no-cache semantics remain compatible at the audited Dev HEAD. No provider/stream contract path changed in the fourteen commits up to 24f63e42c6debfc7a20200bc3a9a9586370c44f0.",
         "runtime_validation": "execute the exact official Desktop runtime and re-prove macOS/Windows reader behavior; Mobile success is not Desktop proof",
         "runtime_family_equivalent_to_sibling_clients": false,
         "official_getStreams_error_behavior": "application runtime catches JavaScript getStreams errors and captures []",
@@ -259,7 +259,7 @@
         "version_code": 1045
       },
       "current_audited": {
-        "ref": "0d8f99e2b92be5e2dedbbd0eaf9ccd00c78d020a",
+        "ref": "ba44afb080d878ba123c978e791be8115e324fe9",
         "version_name": "0.8.9-beta",
         "version_code": 1050
       },
@@ -276,7 +276,7 @@
           "app/src/main/java/com/nuvio/tv/domain/repository/StreamRepository.kt",
           "app/src/full/java/com/nuvio/tv/core/plugin/PluginManager.kt"
         ],
-        "audited_change": "forceRefresh/session-cache behavior remains compatible; PluginManager now bounds scraper orchestration and avoids duplicate repository writes without changing positional getStreams or returned stream/header ingestion.",
+        "audited_change": "forceRefresh/session-cache behavior remains compatible; PluginManager now bounds scraper orchestration and avoids duplicate repository writes without changing positional getStreams or returned stream/header ingestion. The seventeen-commit delta up to ba44afb080d878ba123c978e791be8115e324fe9 only adds an episode-overlay UI model in the audited contract scope; getStreams/repository/header ingestion remains unchanged.",
         "runtime_validation": "execute NuvioTV's own Android-TV QuickJS/host implementation; Desktop/Mobile success is never TV proof",
         "runtime_family_equivalent_to_sibling_clients": false,
         "official_getStreams_error_behavior": "application runtime catches JavaScript getStreams errors and captures []",
